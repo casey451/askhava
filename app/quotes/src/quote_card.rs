@@ -140,24 +140,77 @@ const LINKING_WORDS: &[&str] = &[
     "por", "para", "o", "es",
 ];
 
+/// Words that carry a "no": a summary may not drop one from a clause it uses (PICK-004).
+const NEGATIONS: &[&str] = &[
+    "no", "not", "t", "without", "none", "never", "nor", "except", "excluded", "sin", "nunca",
+    "ni", "nada", "excepto",
+];
+
 fn words(text: &str) -> impl Iterator<Item = String> + '_ {
     text.split(|c: char| !c.is_alphanumeric())
         .filter(|w| !w.is_empty())
         .map(str::to_lowercase)
 }
 
+/// The words of `text`, each with its clause number; a clause ends at `,` `.` `;` `:` `!` `?` or a
+/// line break, except inside a number such as "1,200".
+fn clause_words(text: &str) -> Vec<(usize, String)> {
+    let chars: Vec<char> = text.chars().collect();
+    let digit = |j: Option<usize>| {
+        j.and_then(|j| chars.get(j))
+            .is_some_and(char::is_ascii_digit)
+    };
+    let (mut out, mut clause, mut word) = (Vec::new(), 0, String::new());
+    for (i, &c) in chars.iter().enumerate() {
+        if c.is_alphanumeric() {
+            word.extend(c.to_lowercase());
+            continue;
+        }
+        if !word.is_empty() {
+            out.push((clause, std::mem::take(&mut word)));
+        }
+        if ",.;:!?\n".contains(c) && !(digit(i.checked_sub(1)) && digit(Some(i + 1))) {
+            clause += 1;
+        }
+    }
+    if !word.is_empty() {
+        out.push((clause, word));
+    }
+    out
+}
+
+/// PICK-004, D-1112: the summary's words, linking words aside, appear in the original in the same
+/// order, and in every clause it draws on it keeps the clause's last word and every number and
+/// negation, so it can't move a price to another item or turn "not included" into "included".
+fn adds_nothing(original: &str, summary: &str) -> bool {
+    let own = clause_words(original);
+    let mut used = vec![false; own.len()];
+    let mut next = 0;
+    for w in words(summary).filter(|w| !LINKING_WORDS.contains(&w.as_str())) {
+        let Some(at) = own[next..].iter().position(|(_, o)| *o == w) else {
+            return false;
+        };
+        used[next + at] = true;
+        next += at + 1;
+    }
+    own.iter().enumerate().all(|(i, (clause, word))| {
+        let drawn_on = own.iter().zip(&used).any(|((c, _), &u)| u && c == clause);
+        let last = own.get(i + 1).is_none_or(|(c, _)| c != clause);
+        let kept = word.bytes().any(|b| b.is_ascii_digit()) || NEGATIONS.contains(&word.as_str());
+        used[i] || !drawn_on || !(last || kept)
+    })
+}
+
 /// PICK-003, PICK-004: the summary to show, or none: none while the setting is off, and none when
-/// any word or number of it is not in `original` (a price, scope, warranty or other claim the
-/// business did not write) beyond [`LINKING_WORDS`] (D-1112).
+/// it adds a word or number the business did not write beyond [`LINKING_WORDS`], reorders the
+/// business's words, or drops a number, a negation or a clause's last word from a clause it uses
+/// (D-1112).
 #[must_use]
 pub fn check_summary(setting: SummarySetting, original: &str, summary: &str) -> Option<Summary> {
     if setting == SummarySetting::Off || summary.trim().is_empty() {
         return None;
     }
-    let own: Vec<String> = words(original).collect();
-    words(summary)
-        .all(|w| LINKING_WORDS.contains(&w.as_str()) || own.contains(&w))
-        .then(|| Summary(summary.trim().to_owned()))
+    adds_nothing(original, summary).then(|| Summary(summary.trim().to_owned()))
 }
 
 /// Everything one quote card shows (PICK-040, PICK-041, PICK-044).
@@ -417,7 +470,7 @@ const ES: Words = Words {
         "Precio fijo: el precio que el negocio da por el trabajo descrito. Pida por escrito cualquier cambio antes de que empiece el trabajo.",
         "Rango de precio: el precio más bajo y el más alto que el negocio cobraría por este trabajo. Pregunte qué haría que cueste lo más alto.",
         "Servicio regular: lo que el negocio cobra por cada visita, semana o mes (la cotización dice cuál). Pregunte qué incluye cada visita.",
-        "Paquetes: hasta 3 opciones que ofrece el negocio, cada una con su precio. Usted elige una.",
+        "Paquetes: opciones que ofrece el negocio, cada una con su precio. Usted elige una.",
         "Cargo por revisión: lo que el negocio cobra por venir a revisar el trabajo. Ahí mismo, el negocio le da el precio del trabajo.",
     ],
     free_estimate: "Cotización gratis: el negocio viene y le da el precio del trabajo en el lugar.",

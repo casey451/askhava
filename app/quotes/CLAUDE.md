@@ -42,7 +42,7 @@ The layer-5 crate that decides who receives each job card, and later holds the c
 - PICK-007, CARD-010: `intake::text_bounce` bounces notes, wording or a tier name when `final_gate` would cut a word, or on a restricted phrase; `Bounce` carries no text (D-1051).
 - TXT-042, JOB-025: each accepted quote schedules `quotes.windows_end` for the last window end; `windows_ended` re-schedules for a later card, else passes `Windows { quoted, sent, choosable }` to `jobs::api::all_windows_ended`; `choosable` leaves out withdrawn quotes and those `picks` marked with `mark_unavailable` after a failed pick (D-1051).
 - PICK-005, PICK-040, PICK-041, PICK-044: `QuoteCard::lines`: name, license lines, the "check it yourself" line, WORD-014's "Independent business, not affiliated with Ask Hava.", "Gets emergency requests at night" only for an after-hours business (BIZ-007), the six facts in fixed order, the format's definition plus "Free estimate" for no trip fee (never on a visit-fee quote), then the business's own words; English or Spanish (D-1111, D-1113).
-- PICK-003, PICK-004, D-373: `check_summary` returns none while `SummarySetting::Off` and none when any summary word or number is outside the original wording and `LINKING_WORDS`; `switch_on` needs a `D-<n>` decision and a published policy holding `POLICY_SUMMARY_SENTENCE`; `quote_card` never fills a summary, as none is stored (D-1112).
+- PICK-003, PICK-004, D-373: `check_summary` returns none while `SummarySetting::Off` and none when any summary word or number is outside the original wording and `LINKING_WORDS`, out of the original's order, or drops a number, a negation (`NEGATIONS`) or the last word of a clause it draws on; `switch_on` needs a `D-<n>` decision and a published policy holding `POLICY_SUMMARY_SENTENCE`; `quote_card` never fills a summary, as none is stored (D-1112).
 - Not here yet: the first-quote move to Quotes ready (JOB-009); the PICK-040 fact columns (T148, so `CardSource::facts` comes from the caller); the Google and Yelp links (T165) and the price line (T164) on the card; the "no longer available" line (D-1051); the stored owner-portal summary setting; the withdraw action (PICK-051); calling `mark_unavailable` on a failed pick is `picks`' (T063).
 - Not here yet: the card notice and the provider-accepted count (CARD-019 to CARD-021, T147); the BIZ-049 largest-job and recurring-work skips (T155, D-492); CARD-015's daily check feeds `verified`.
 
@@ -60,7 +60,7 @@ The layer-5 crate that decides who receives each job card, and later holds the c
 - A quote is taken only inside its card's 24 hours and before Confirm; an unconfirmed quote is never shown; the all-quotes-in text is queued once, after the last window: `tests/integration/tests/quote_window.rs`.
 - Contact in a quote bounces, and a bounce line repeats nothing the business wrote: `src/tests/quote_bounce.rs`.
 - The business's preview is the homeowner's card, character for character, and the night line moves nothing: `tests/integration/tests/quote_card.rs`, `src/tests/quote_card.rs::td_pick_44_after_hours_line_only_when_ticked`.
-- No summary while the setting is off, none that adds a word: `src/tests/quote_card.rs::td_pick_29_summary_off_by_default_and_never_adds_a_claim`.
+- No summary while the setting is off, none that adds a word or flips or moves a claim: `src/tests/quote_card.rs::td_pick_29_summary_off_by_default_and_never_adds_a_claim`.
 - A setup charge never changes whether a quote passes: `src/tests/quote_parse.rs::td_fee_27_setup_never_counts`.
 
 ## How to change

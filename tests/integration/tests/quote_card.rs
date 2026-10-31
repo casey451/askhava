@@ -88,6 +88,8 @@ async fn quoted(db: &mut Db, job: Uuid, after_hours: bool) -> Uuid {
 
 /// TD-PICK-18, TD-PICK-29, TD-PICK-44: the stored wording and visit show with no summary; the
 /// business preview equals the homeowner card; only the ticked business gets the night line.
+/// PICK-005 rests on `QuoteCard::lines` taking no viewer argument, so there is no business-only
+/// path to differ; this test only shows two reads of the stored quote give the same lines.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_pick_44_card_from_the_stored_quote(mut db: Db) {
     let job = create(&mut db, at("02T21:00:00"), false, Actor::System)

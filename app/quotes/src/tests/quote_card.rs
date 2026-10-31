@@ -146,6 +146,22 @@ fn td_pick_29_summary_off_by_default_and_never_adds_a_claim() {
             "{added}"
         );
     }
+    for (original, flipped) in [
+        ("Permit not included, parts included", "Permit included"),
+        ("Labor 285, parts 90", "Parts 285"),
+        ("Labor 285, parts 90", "Labor 90"),
+        ("No warranty, parts included", "Warranty included"),
+        ("Warranty excluded, parts included", "Warranty included"),
+    ] {
+        let got = check_summary(SummarySetting::On, original, flipped);
+        assert_eq!(got, None, "{original} / {flipped}");
+    }
+    let kept = check_summary(
+        SummarySetting::On,
+        "No warranty, parts included",
+        "Parts included",
+    );
+    assert!(kept.is_some());
     let mut c = card(Format::Firm, TripFee::Counts, false);
     let off = texts(&c, CardLanguage::English).join("\n");
     assert!(!off.contains("Summary by"));
