@@ -1,6 +1,6 @@
 [package]
 name = "askhava-messaging"
-description = "Ask Hava messaging: fixed English and Spanish text templates chosen by ID and language and quiet hours (TXT-001 to TXT-008, TXT-010, TXT-039, TXT-025, BIZ-018, WORD-008, QH-001 to QH-009), the outbox and sender directory (TXT-009, TXT-011, D-492)"
+description = "Ask Hava messaging: fixed English and Spanish text templates chosen by ID and language and quiet hours (TXT-001 to TXT-008, TXT-010, TXT-039, TXT-025, BIZ-018, WORD-008, QH-001 to QH-009), the outbox and sender directory (TXT-009, TXT-011, D-492), inbox dedupe and delivery statuses (TXT-012, TXT-013)"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -8,6 +8,7 @@ publish.workspace = true
 
 [dependencies]
 askhava-adapters = { workspace = true }
+askhava-core = { workspace = true }
 askhava-privacy = { workspace = true }
 jiff = { workspace = true }
 secrecy = { workspace = true }

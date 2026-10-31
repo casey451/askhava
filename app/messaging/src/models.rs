@@ -1,9 +1,13 @@
-//! The outbox and sender-directory rows and their queries, all in the `messaging` schema (TXT-011,
-//! D-492). No query holds a phone number, only opaque IDs, keys and blind-index digests (PRIV-002).
+//! The outbox, sender-directory, inbox and delivery-event rows and their queries, all in the
+//! `messaging` schema (TXT-011, TXT-012, TXT-013, D-492). No query holds a phone number, only
+//! opaque IDs, keys, Twilio message SIDs and blind-index digests (PRIV-002).
 
+use askhava_core::api::Dedupe;
 use sqlx::PgConnection;
 use sqlx::types::Uuid;
 use thiserror::Error;
+
+use crate::status::DeliveryStatus;
 
 /// Why a `messaging` outbox or directory call failed. No variant carries a value (PRIV-016).
 #[derive(Debug, Error, PartialEq, Eq)]
@@ -34,6 +38,96 @@ pub enum OutboxError {
     /// The database refused or dropped the statement.
     #[error("the messaging database statement failed")]
     Database,
+}
+
+/// Why a Twilio inbound or status webhook was not recorded. No variant carries a value (PRIV-016).
+#[derive(Debug, Error, PartialEq, Eq)]
+pub enum InboxError {
+    /// The delivery is not Twilio's, or a field (MessageSid, ErrorCode) is missing or ill-shaped.
+    #[error("the webhook is not a well-formed Twilio delivery")]
+    BadWebhook,
+    /// The database refused or dropped the statement.
+    #[error("the messaging database statement failed")]
+    Database,
+}
+
+/// Records `event_key` under `source` in `messaging.webhook_event`; true on its first delivery
+/// (SEC-017, TXT-012).
+pub(crate) async fn first_event(
+    db: &mut PgConnection,
+    source: &str,
+    event_key: &str,
+) -> Result<bool, InboxError> {
+    let row = sqlx::query_scalar!(
+        "INSERT INTO messaging.webhook_event (source, event_key) VALUES ($1, $2) \
+         ON CONFLICT (source, event_key) DO NOTHING RETURNING event_key",
+        source,
+        event_key
+    )
+    .fetch_optional(db)
+    .await
+    .map_err(|_| InboxError::Database)?;
+    Ok(Dedupe::from_returning(row).is_first())
+}
+
+/// Inserts the inbox row of inbound text `sid` and returns its ID (TXT-012).
+pub(crate) async fn insert_inbox(db: &mut PgConnection, sid: &str) -> Result<Uuid, InboxError> {
+    sqlx::query_scalar!(
+        "INSERT INTO messaging.inbox (message_sid) VALUES ($1) RETURNING id",
+        sid
+    )
+    .fetch_one(db)
+    .await
+    .map_err(|_| InboxError::Database)
+}
+
+/// Appends one delivery event for provider SID `sid` (TXT-013).
+pub(crate) async fn insert_delivery(
+    db: &mut PgConnection,
+    sid: &str,
+    status: DeliveryStatus,
+    error_code: Option<i32>,
+) -> Result<(), InboxError> {
+    sqlx::query!(
+        "INSERT INTO messaging.delivery_event (provider_sid, status, error_code) \
+         VALUES ($1, $2, $3)",
+        sid,
+        status.as_str(),
+        error_code
+    )
+    .execute(db)
+    .await
+    .map(|_| ())
+    .map_err(|_| InboxError::Database)
+}
+
+/// Outbox row `id`'s own status and provider SID, if the row exists.
+pub(crate) async fn outbox_state(
+    db: &mut PgConnection,
+    id: Uuid,
+) -> Result<Option<(String, Option<String>)>, OutboxError> {
+    let row = sqlx::query!(
+        "SELECT status, provider_sid FROM messaging.outbox WHERE id = $1",
+        id
+    )
+    .fetch_optional(db)
+    .await
+    .map_err(|_| OutboxError::Database)?;
+    Ok(row.map(|r| (r.status, r.provider_sid)))
+}
+
+/// Every delivery event of provider SID `sid`, oldest first (TXT-013).
+pub(crate) async fn delivery_events(
+    db: &mut PgConnection,
+    sid: &str,
+) -> Result<Vec<String>, OutboxError> {
+    sqlx::query_scalar!(
+        "SELECT status FROM messaging.delivery_event WHERE provider_sid = $1 ORDER BY id",
+        sid
+    )
+    .fetch_all(db)
+    .await
+    .map_err(|_| OutboxError::Database)
 }
 
 /// A queued row, claimed for one send attempt: the IDs its key is derived from, and its body.

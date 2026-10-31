@@ -342,6 +342,7 @@ dependencies = [
  "jiff-sqlx",
  "secrecy",
  "serde_json",
+ "sha1",
  "sha2 0.11.1",
  "sqlx",
  "tokio",
@@ -372,6 +373,7 @@ name = "askhava-messaging"
 version = "0.1.0"
 dependencies = [
  "askhava-adapters",
+ "askhava-core",
  "askhava-privacy",
  "jiff",
  "proptest",
