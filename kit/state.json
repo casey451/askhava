@@ -7467,7 +7467,16 @@
     970,
     971,
     972
-   ]
+   ],
+   "reviewed_sha": "d965a0fc826e79e439be75888db7f11a3fc8acc0",
+   "review_lease": {
+    "task": "T182",
+    "session": "actions-41185781859",
+    "expires": "2026-10-31T11:46:12Z",
+    "lane": "2"
+   },
+   "branch": "claude/task/T182-businesses-pause-quiet-times",
+   "head_check_since": null
   },
   {
    "id": "T042",
@@ -11285,7 +11294,7 @@
    }
   }
  },
- "updated_at": "2026-10-31T09:21:54Z",
+ "updated_at": "2026-10-31T09:30:05Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -11383,7 +11392,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "ca85498f7f2d9ddddd7f855418812f0da84824e2",
+ "runner_sha": "d965a0fc826e79e439be75888db7f11a3fc8acc0",
  "starter": "actions",
  "smoke_runs": [
   {
