@@ -1,0 +1,124 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id, homeowner_id, job_id, language, first_inbox_id, consent_template, consent_sent_at, opened_at, closed_at FROM intake.conversation WHERE id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "intake.conversation",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "homeowner_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "intake.conversation",
+            "name": "homeowner_id"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "job_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "intake.conversation",
+            "name": "job_id"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "language",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "intake.conversation",
+            "name": "language"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "first_inbox_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "intake.conversation",
+            "name": "first_inbox_id"
+          }
+        }
+      },
+      {
+        "ordinal": 5,
+        "name": "consent_template",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "intake.conversation",
+            "name": "consent_template"
+          }
+        }
+      },
+      {
+        "ordinal": 6,
+        "name": "consent_sent_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "intake.conversation",
+            "name": "consent_sent_at"
+          }
+        }
+      },
+      {
+        "ordinal": 7,
+        "name": "opened_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "intake.conversation",
+            "name": "opened_at"
+          }
+        }
+      },
+      {
+        "ordinal": 8,
+        "name": "closed_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "intake.conversation",
+            "name": "closed_at"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "039a1757e88187db90b9b38fa346f5c8b3e83ecf45564c20cb904c8a42c7d02c"
+}

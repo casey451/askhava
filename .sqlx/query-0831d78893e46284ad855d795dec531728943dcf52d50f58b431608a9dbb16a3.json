@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE intake.consent_record SET channel = 'web_chat'",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "0831d78893e46284ad855d795dec531728943dcf52d50f58b431608a9dbb16a3"
+}

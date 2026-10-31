@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "TRUNCATE intake.consent_record",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "e59ef95603aaaac2419cc5ce59db481f0fcf431e6980c737b4df9d96e19b3a2c"
+}
