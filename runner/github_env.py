@@ -907,6 +907,9 @@ class GitHubEnv:
           none when main is already in it). An open pull request with auto-merge on is closed with a
           comment first, so no push of unreviewed work can merge; the runner opens a fresh one after
           review (`_open_pr`), and the closed number is recorded in the task's `runner_closed_prs`;
+        - a resync (the task's `resync`, D-891) whose reviewed head is still origin's tip, with a pull
+          request that is open or one the runner closed: the branch starts at that head and main is NOT
+          merged in, since the worker merges it and resolves the conflict itself ("resync": True);
         - its pull request was merged or closed by someone, its pull requests cannot be read, the
           auto-merge one cannot be closed, or merging main conflicts: a fresh branch from main under a
           new name (`<branch>-a<attempt>`); on a conflict the open pull request is closed with a
@@ -936,12 +939,18 @@ class GitHubEnv:
         gone = "unreadable" if pr is None else self._pr_end(pr, task["id"])
         if gone:
             return self._fresh(self._new_name(task, attempt), main, renamed_from=branch, why=f"its pull request was {gone}")
-        tip = remote if self._is_ancestor(main, remote) else self._merge_main(branch, remote, main)
+        resync = task.get("resync") or {}
+        extra: dict[str, Any] = {}
+        if resync and remote == resync.get("from"):
+            # A resync (D-891): the worker merges main into the reviewed head itself, so it is not merged here.
+            tip: str | None = remote
+            extra = {"resync": True, "main": main, "paths": [str(p) for p in resync.get("paths") or []]}
+        else:
+            tip = remote if self._is_ancestor(main, remote) else self._merge_main(branch, remote, main)
         if tip is None:
             new = self._new_name(task, attempt)
             closed = self._close_open_pr(branch, CONFLICT_NOTE.format(branch=branch, new=new), task["id"], session)
             return self._fresh(new, main, renamed_from=branch, why="merging main into it conflicted", closed_pr=closed)
-        extra: dict[str, Any] = {}
         if pr and pr.get("state") == "open" and pr.get("auto_merge"):
             dropped = self._close_open_pr(branch, AUTO_MERGE_NOTE.format(branch=branch), task["id"], session)
             if dropped is None:

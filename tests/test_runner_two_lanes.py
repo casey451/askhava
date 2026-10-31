@@ -14,6 +14,7 @@ import subprocess
 import sys
 from datetime import timedelta
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
 import pytest
@@ -232,21 +233,125 @@ def test_drill_a_pull_request_still_showing_the_head_before_the_update_waits(tmp
     assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=12)) == "done" and st.status(env.store, "T002") == st.DONE
 
 
-def test_drill_a_real_conflict_fails_the_attempt_and_the_retry_continues_the_branch(tmp_path: Path) -> None:
-    env, graph = _two_merge_pending(tmp_path)
-    env.prs["T002"] = dict(green_pr(head_of("T002"), merged=False), number=7, state="open", auto_merge=True)
+RESYNC_PREP = {"branch": "claude/task/T002-x", "branch_ready": True, "base": "origin/claude/task/T002-x", "resync": True}
+
+
+def _conflict(env: FakeEnv, number: int = 7) -> None:
+    """T002's open pull request (auto-merge on) and a real conflict merging main into its reviewed head."""
+    env.prs["T002"] = dict(green_pr(str(st.entry(env.store, "T002")["reviewed_sha"]), merged=False), number=number,
+                           state="open", auto_merge=True)
     env.update = {"status": "conflict", "paths": ["Cargo.lock", "docs/architecture.md"], "main": "main0002"}
+
+
+def test_drill_a_real_conflict_is_resynced_on_the_same_attempt_and_reviewed_again(tmp_path: Path) -> None:
+    """The conflict no longer fails the attempt (D-891): the task goes back on its attempt, the next claim
+    takes it first, and its worker hands in the merge, which is reviewed and pushed like any hand-in."""
+    env, graph = _two_merge_pending(tmp_path)
+    _conflict(env)
+    env.worker, env.prep = handed_off, RESYNC_PREP
+    assert cycle.run_cycle(two_lane(graph, tmp_path, "s3", "2"), env, NOW + timedelta(minutes=10)) == "handed_off"
+    t2 = st.entry(env.store, "T002")
+    assert t2["status"] == st.IN_PROGRESS and t2["attempts"] == 0 and st.lane_of(env.store, "T002") == "2"
+    assert t2["resync"]["paths"] == ["Cargo.lock", "docs/architecture.md"] and t2["resync"]["from"] == head_of("T002")
+    assert t2["resync"]["attempt"] == 1 and len(t2["resyncs"]) == 1 and "lane_strikes" not in env.store
+    assert t2["runner_closed_prs"] == [7] and cycle.DROP_MARKER in env.closed_prs[0][1] and "same attempt" in env.closed_prs[0][1]
+    assert t2["history"][-1]["result"] == cycle.RESYNC and env.prepared_for[-1] == ("T002", 1)
+    assert env.runs[-1][0] == "T002" and env.runs[-1][2].startswith("resync, not a new attempt (D-891)")
+    assert env.runs[-1][1] == MODELS["sonnet"]  # the attempt's own model: attempts did not move
+    env.worker = lambda task, model, log: reviewed(task, model, paths=["app/b/x.py"], head="m-t002")
+    del env.prs["T002"]
+    res = env.worker(_task_of(graph, "T002"), MODELS["sonnet"], "")
+    assert cycle.finish(two_lane(graph, tmp_path, "s3", "2"), env, env.read_state(), _task_of(graph, "T002"), res,
+                        MODELS["sonnet"], NOW + timedelta(minutes=20)) == st.MERGE_PENDING
+    t2 = st.entry(env.store, "T002")
+    assert t2["reviewed_sha"] == "m-t002" and t2["attempts"] == 0 and "resync" not in t2 and len(t2["resyncs"]) == 1
+    assert t2["history"][-1]["resync"] is True and t2["history"][-1]["attempt"] == 1
+    assert ("claude/task/T002-x", "m-t002") in env.branch_pushes and ("claude/task/T002-x", "m-t002") in env.auto_merges
+    assert cycle.plan_since(t2) == t2["history"][-2]["started_at"]  # a resync resumes its attempt (D-677 measures from it)
+
+
+def _task_of(graph: list[dict[str, Any]], tid: str) -> dict[str, Any]:
+    return next(t for t in graph if t["id"] == tid)
+
+
+def test_drill_a_conflict_after_the_resync_limit_fails_the_attempt_and_strikes(tmp_path: Path) -> None:
+    env, graph = _two_merge_pending(tmp_path)
+    earlier = [{"attempt": 1, "from": "x", "paths": ["Cargo.toml"], "at": "t"}] * cycle.RESYNC_LIMIT
+    env.store = st.with_task(env.store, "T002", resyncs=[{"attempt": 0, "from": "y", "paths": [], "at": "t"}, *earlier])
+    _conflict(env)
     assert cycle.run_cycle(two_lane(graph, tmp_path, "s3", "2"), env, NOW + timedelta(minutes=10)) == "update_conflict"
     t2 = st.entry(env.store, "T002")
-    assert t2["status"] == st.QUEUED and t2["attempts"] == 1 and "conflicts in Cargo.lock, docs/architecture.md" in t2["last_failure"]
-    assert t2["runner_closed_prs"] == [7] and env.closed_prs[0][0] == 7 and cycle.DROP_MARKER in env.closed_prs[0][1]
-    assert t2["history"][-1]["result"] == "update_conflict" and env.store["lane_strikes"]["2"]["count"] == 1
-    env.prep = {"branch": "claude/task/T002-x", "branch_ready": True, "base": "origin/claude/task/T002-x"}
-    env.worker = handed_off
+    assert t2["status"] == st.QUEUED and t2["attempts"] == 1 and "again after 2 resyncs" in t2["last_failure"]
+    assert "resync" not in t2 and t2["runner_closed_prs"] == [7] and env.store["lane_strikes"]["2"]["count"] == 1
+    assert t2["history"][-1]["result"] == "update_conflict"
+    env.store = st.with_task(env.store, "T002", resyncs=earlier[:1])  # an earlier attempt's resyncs never count
+    assert len([r for r in st.entry(env.store, "T002")["resyncs"] if r["attempt"] == 2]) == 0
+
+
+def test_drill_a_resync_that_cannot_start_on_the_reviewed_head_fails_the_attempt(tmp_path: Path) -> None:
+    """origin moved, or its pull request was closed by someone: prepare_branch makes no resync branch, so
+    the resync cannot run, and the attempt fails as the conflict did before D-891; the retry follows D-583."""
+    env, graph = _two_merge_pending(tmp_path)
+    _conflict(env)
+    env.prep = {"branch": "claude/task/T002-x-a2", "branch_ready": True, "base": "main", "renamed_from": "claude/task/T002-x"}
+    assert cycle.run_cycle(two_lane(graph, tmp_path, "s3", "2"), env, NOW + timedelta(minutes=10)) == st.QUEUED
+    t2 = st.entry(env.store, "T002")
+    assert t2["attempts"] == 1 and "resync" not in t2 and "the resync could not start" in t2["last_failure"]
+    assert env.runs == [("T001", MODELS["sonnet"], ""), ("T002", MODELS["sonnet"], "")]  # no resync worker ran
+
+
+def test_drill_a_resync_that_crashed_after_its_reviewed_push_re_runs_as_a_plain_attempt(tmp_path: Path) -> None:
+    """The resync's merge was reviewed and pushed, then the session died before the release: the lease
+    expires with `resync` still set (release_expired), and origin's tip already is `reviewed_sha`. The
+    re-run clears `resync` and goes on like any crashed attempt, never failing it (D-891)."""
+    env, graph = _two_merge_pending(tmp_path)
+    _conflict(env)
+    env.worker, env.prep = handed_off, RESYNC_PREP
+    assert cycle.run_cycle(two_lane(graph, tmp_path, "s3", "2"), env, NOW + timedelta(minutes=10)) == "handed_off"
+    env.store = st.with_task(env.store, "T002", reviewed_sha="m-t002")  # the review record, then the crash
     del env.prs["T002"]
-    assert cycle.run_cycle(two_lane(graph, tmp_path, "s4", "2"), env, NOW + timedelta(minutes=11)) == "handed_off"
-    assert env.prepared_for[-1] == ("T002", 2) and env.runs[-1][2].startswith("merging main into the task branch conflicts")
-    assert st.lane_of(env.store, "T002") == "2"
+    env.prep = {"branch": "claude/task/T002-x", "branch_ready": True, "base": "origin/claude/task/T002-x", "remote_sha": "m-t002"}
+    later = NOW + timedelta(hours=st.LEASE_HOURS, minutes=11)
+    assert cycle.run_cycle(two_lane(graph, tmp_path, "s4", "2"), env, later) == "handed_off"
+    t2 = st.entry(env.store, "T002")
+    assert t2["status"] == st.IN_PROGRESS and t2["attempts"] == 0 and "resync" not in t2 and len(t2["resyncs"]) == 1
+    assert env.runs[-1][0] == "T002" and not env.runs[-1][2].startswith("resync")
+    env.store = st.with_task(env.store, "T002", resync=t2["resyncs"][0], reviewed_sha="other")  # tip is not the review
+    assert cycle._resync_gate(two_lane(graph, tmp_path, "s4", "2"), env, {"state": env.store},
+                              {"id": "T002", "branch_prep": env.prep}, "2") == "fail"
+
+
+def test_drill_a_resync_whose_close_fails_waits_so_any_merge_is_judged(tmp_path: Path) -> None:
+    env, graph = _two_merge_pending(tmp_path)
+    _conflict(env)
+    env.close_ok = False
+    assert cycle.run_cycle(two_lane(graph, tmp_path, "s3", "1"), env, NOW + timedelta(minutes=10)) == "merge_pending"
+    t2 = st.entry(env.store, "T002")
+    assert t2["status"] == st.MERGE_PENDING and "resync" not in t2 and "could not be turned off" in t2["auto_merge"]["why"]
+
+
+def test_the_handoff_carries_the_resync_text_only_for_a_resync_branch() -> None:
+    note = {"attempt": 1, "from": "h", "main": "main0002abcdef0", "paths": ["Cargo.toml"], "at": "t"}
+    state = st.claim(st.with_task(st.new_state(), "T002", resync=note), "T002", "a", NOW)
+    cfg = dataclasses.replace(config([staged("T002")], Path("."), "a"), lanes=1)
+    prep = dict(RESYNC_PREP, main="main0002abcdef0")
+    env = SimpleNamespace(last_state=state, dry_run=True, branch_for=lambda tid: "claude/task/T002-x", prepared=prep)
+    info = entry.write_handoff(cfg, env)  # type: ignore[arg-type]  # reason: a stand-in for GitHubEnv
+    assert info["resync"].startswith("resync, not a new attempt") and "conflicts in Cargo.toml" in info["resync"]
+    assert "WITHOUT main merged in" in info["branch_note"] and "git merge main0002abcd" in info["branch_note"]
+    plain = SimpleNamespace(**{**vars(env), "prepared": {"branch": "claude/task/T002-x", "branch_ready": True, "base": "main"}})
+    assert entry.write_handoff(cfg, plain)["resync"] == ""  # type: ignore[arg-type]  # reason: as above
+
+
+def test_drill_a_failed_resync_is_a_failed_attempt(tmp_path: Path) -> None:
+    env, graph = _two_merge_pending(tmp_path)
+    _conflict(env)
+    env.prep = RESYNC_PREP
+    env.worker = lambda task, model, log: cycle.WorkerResult("tests_failed", log="smoke red after the merge")
+    assert cycle.run_cycle(two_lane(graph, tmp_path, "s3", "2"), env, NOW + timedelta(minutes=10)) == st.QUEUED
+    t2 = st.entry(env.store, "T002")
+    assert t2["attempts"] == 1 and "resync" not in t2 and t2["last_failure"] == "smoke red after the merge"
+    assert t2["history"][-1]["resync"] is True and t2["history"][-1]["result"] == st.QUEUED
 
 
 def test_drill_a_conflict_whose_close_fails_waits_so_any_merge_is_judged(tmp_path: Path) -> None:
