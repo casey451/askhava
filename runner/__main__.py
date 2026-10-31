@@ -25,6 +25,12 @@ line of JSON with what changed.
                                     main in docs/decisions.md and in the task's own `decisions` list, and
                                     its kit/tasks.json entry or prompt changed on main; once per decision,
                                     never under a lease that matters (D-677)
+  python3 -m runner --reserve-decision --reason TEXT
+                                    take ONE D-number from the live counter for a change made outside
+                                    the runner (a plan change, a human fix): the next free number at or
+                                    above `next_decision`, above main's highest entry and every reserved
+                                    number, kept in `plan_reservations` with `next_decision` moved past
+                                    it, and printed as `reserved D-####` (D-1058)
   python3 -m runner --restore-lanes end a fall back to one lane (`lanes_fallback`, D-620)
   RUNNER_LANE                       the lane a backup-runner run serves (its gate picks it): the run
                                     claims only on that lane; unset, the first free lane (D-620);
@@ -96,6 +102,7 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
     ap.add_argument("--plan-fix", default="")
     ap.add_argument("--reason", default="")
     ap.add_argument("--restore-lanes", action="store_true")
+    ap.add_argument("--reserve-decision", action="store_true")
     return ap.parse_args(argv)
 
 
@@ -281,6 +288,30 @@ def plan_fix_requeue(tid: str, decision: str, reason: str, cfg: cycle.Config, en
     return "requeued_after_plan_fix"
 
 
+def reserve_decision(args: argparse.Namespace, cfg: cycle.Config, env: GitHubEnv) -> str:
+    """`--reserve-decision --reason TEXT`: one D-number for a plan change from the live counter (D-1058).
+
+    Main's docs/decisions.md is read fresh (GitHubEnv.decision_numbers); the reservation goes through
+    update_state, which re-reads claude/kit-state and takes the number again from the fresh state after
+    a lost race, so two sessions never get the same number. Refused with an empty reason or when main's
+    file cannot be read (a bad read would otherwise hand out a number main already has)."""
+    reason = args.reason.strip()
+    if not reason:
+        return "reserve_refused: --reason is empty"
+    taken = env.decision_numbers()
+    if taken is None:
+        return "reserve_refused: main's docs/decisions.md could not be read"
+    got: dict[str, int] = {}
+
+    def take(fresh: st.State) -> st.State:
+        out, got["number"] = st.reserve_plan_number(fresh, taken, reason, cfg.session, now_utc())
+        return out
+
+    if env.update_state(take) is None:
+        return "lost_race"
+    return f"reserved D-{got['number']:03d}"
+
+
 def restore_lanes(env: GitHubEnv) -> str:
     """`--restore-lanes`: end a fall back to one lane through update_state, so every lane in
     kit/runner.json is used again (D-620); the fall back is kept in `lanes_fallback_history`."""
@@ -349,6 +380,8 @@ def run(args: argparse.Namespace, cfg: cycle.Config, env: GitHubEnv) -> str:
         return requeue_task(args, cfg, env)
     if args.restore_lanes:
         return restore_lanes(env)
+    if args.reserve_decision:
+        return reserve_decision(args, cfg, env)
     return cycle_with_retries(cfg, env)
 
 
