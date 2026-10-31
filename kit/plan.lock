@@ -56,7 +56,7 @@
   "scripts/check_state.py": "eb0afa5a32a4648d2a0bf24bc972e00ff6d2347c7f0be81aff384b39f9df0393",
   "scripts/gen_prompts.py": "d3b05c9a6993d900cd28bc55076f69b6f4c4f1c30045a30ccc8e5c5522ca2707",
   "scripts/pacing.py": "a6a8df5d6ed8464ea2b4301ff05dcf46069d5bcd6b11b632f33ffe74355aace0",
-  "scripts/pii_scan.py": "26bf4685dcd9d3fc67ea8c6446a23d3e45e50ea2cce3aaed76773a3745b57379",
+  "scripts/pii_scan.py": "d9f9b4c9c629ea1f49ef6978480074d05bed2180d3d6dea31e9df1167a9dff59",
   "scripts/progress.py": "6a31a132e709c974e5e71468a8e6fa8c212b753bad7501713250f39c0e5d08be",
   "scripts/quota_probe.py": "d1cace9111244af5f26ddde33ac306abf69f3fb7cee1eb7035900dc69c5e14ec",
   "scripts/smoke.sh": "1c976e493c877c2006b18f27aae5624c9f987ca1c1f4234561bde72a235c5a00",
