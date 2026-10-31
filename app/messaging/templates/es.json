@@ -5,6 +5,18 @@
     "segments": 2,
     "text": "Ask Hava: Recibido. Ahora, unas preguntas. Ask Hava no es contratista; usted contrata al negocio que elija. Textos automatizados sobre su solicitud; frecuencia variable. Pueden aplicar cargos de msj y datos. PARAR para salir, AYUDA para ayuda. Términos: askhava.com/terms Privacidad: askhava.com/privacy"
   },
+  "consent_safety_call": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 3,
+    "text": "Ask Hava: Recibido. Ahora, unas preguntas. Ask Hava no es contratista; usted contrata al negocio que elija. Textos automatizados sobre su solicitud; frecuencia variable. Pueden aplicar cargos de msj y datos. Si reporta un peligro como gas o humo y no podemos enviarle textos, podemos intentar una llamada grabada a este teléfono. No la espere: llame al 911. PARAR para salir, AYUDA para ayuda. Términos: askhava.com/terms Privacidad: askhava.com/privacy"
+  },
+  "who_is_this": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 4,
+    "text": "Ask Hava: Ask Hava es un servicio local. Nuestros textos son automatizados. El dueño de Ask Hava recibe los mensajes de AYUDA de inmediato y normalmente responde en 2 días, o en 24 horas si su trabajo es urgente."
+  },
   "opt_out_confirmation": {
     "audience": "homeowner",
     "draft": true,
