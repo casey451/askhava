@@ -50,6 +50,23 @@ const PRICE_WORDS: &[&str] = &[
     "cuesta",
     "cuestan",
     "barato",
+    "barata",
+    "caro",
+    "cara",
+    "presupuesto",
+    "presupuestos",
+    "cotizacion",
+    "cotizaciones",
+    "cobrar",
+    "cobra",
+    "cobro",
+    "fee",
+    "fees",
+    "charge",
+    "charges",
+    "quote",
+    "quotes",
+    "quoted",
 ];
 /// The AI-019 cause words, English and Spanish, folded (AI-019, D-492).
 const CAUSE_WORDS: &[&str] = &[
@@ -62,9 +79,13 @@ const CAUSE_WORDS: &[&str] = &[
     "parece que",
     "seguramente",
     "suena a",
+    "suena al",
     "el problema es",
     "necesita un nuevo",
+    "necesita uno nuevo",
     "necesita una nueva",
+    "necesita unos nuevos",
+    "necesita unas nuevas",
 ];
 /// The WORD-003 claims, folded (WORD-003).
 const CLAIM_WORDS: &[&str] = &[
@@ -153,17 +174,13 @@ pub(crate) fn check_output(
         Screened::Fallback(hit) => return Err(CheckHit::Screen(hit)),
     };
     let folded = fold(&text);
-    let any = |list: &[&str]| list.iter().any(|p| has_phrase(&folded, p));
-    if text.contains('$') || any(PRICE_WORDS) {
-        return Err(CheckHit::Price);
-    }
-    if any(CAUSE_WORDS) {
-        return Err(CheckHit::Cause);
+    if let Some(hit) = price_or_cause(&text, &folded) {
+        return Err(hit);
     }
     if word_022().is_none_or(|list| list.iter().any(|p| has_phrase(&folded, p))) {
         return Err(CheckHit::NotAContractor);
     }
-    if any(CLAIM_WORDS) {
+    if CLAIM_WORDS.iter().any(|p| has_phrase(&folded, p)) {
         return Err(CheckHit::Claim);
     }
     let names = against.business_names.iter().map(|n| fold(n));
@@ -182,6 +199,18 @@ pub(crate) fn check_output(
     Ok(text)
 }
 
+/// The two checks that run before WORD-022: a `$` or price word, then a cause word (AI-019).
+pub(crate) fn price_or_cause(text: &str, folded: &str) -> Option<CheckHit> {
+    let any = |list: &[&str]| list.iter().any(|p| has_phrase(folded, p));
+    if text.contains('$') || any(PRICE_WORDS) {
+        Some(CheckHit::Price)
+    } else if any(CAUSE_WORDS) {
+        Some(CheckHit::Cause)
+    } else {
+        None
+    }
+}
+
 /// Accents dropped, lower-cased, curly apostrophes straightened and whitespace collapsed, so
 /// "PROBABLEMENTE", "Probablemente" and "próbablemente" fold alike (AI-019, D-492).
 pub(crate) fn fold(text: &str) -> String {
@@ -192,6 +221,13 @@ pub(crate) fn fold(text: &str) -> String {
         .flat_map(char::to_lowercase)
         .collect();
     plain.split_whitespace().collect::<Vec<_>>().join(" ")
+}
+
+/// A digit in any script: `char::is_numeric` covers every Unicode decimal digit (Nd), so
+/// "٩٢٨" or "９２８" count like "928"; it also takes other number signs such as "½", which only
+/// makes the checks refuse more (CARD-008, AI-019).
+fn is_digit(c: char) -> bool {
+    c.is_numeric()
 }
 
 fn is_word(c: char) -> bool {
@@ -242,7 +278,7 @@ pub(crate) fn word_022() -> Option<&'static [String]> {
         .as_deref()
 }
 
-/// AI-019's "adds no fact": a digit run, or a capitalized word not starting a sentence, that her
+/// AI-019's "adds no fact": a digit run (any script), or a capitalized word not starting a sentence, that her
 /// words, answers and photo notes do not hold (D-988).
 fn adds_fact(text: &str, sources: &[&str]) -> bool {
     let known: HashSet<String> = sources
@@ -250,12 +286,12 @@ fn adds_fact(text: &str, sources: &[&str]) -> bool {
         .map(|s| fold(s))
         .flat_map(|s| {
             let words = s.split(|c| !is_word(c));
-            let digits = s.split(|c: char| !c.is_ascii_digit());
+            let digits = s.split(|c: char| !is_digit(c));
             words.chain(digits).map(str::to_owned).collect::<Vec<_>>()
         })
         .collect();
     let unknown = |w: &str| !w.is_empty() && !known.contains(&fold(w));
-    let numbers = text.split(|c: char| !c.is_ascii_digit());
+    let numbers = text.split(|c: char| !is_digit(c));
     if numbers.filter(|n| !n.is_empty()).any(unknown) {
         return true;
     }
@@ -272,12 +308,12 @@ fn adds_fact(text: &str, sources: &[&str]) -> bool {
     })
 }
 
-/// CARD-008's shapes: 7 or more digits (spaces, dashes, dots and brackets between), a run of
+/// CARD-008's shapes: 7 or more digits in any script (spaces, dashes, dots and brackets between), a run of
 /// number words, an email sign or a contact phrase.
 fn is_contact(text: &str, folded: &str) -> bool {
     let mut run = 0;
     for c in text.chars() {
-        if c.is_ascii_digit() {
+        if is_digit(c) {
             run += 1;
         } else if !" -.()".contains(c) {
             run = 0;
