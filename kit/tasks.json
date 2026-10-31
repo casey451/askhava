@@ -4472,7 +4472,7 @@
    "budget": {
     "files": 7,
     "lines": 400,
-    "context_pct": 24
+    "context_pct": 31
    },
    "checks": [
     "Ci",
@@ -4543,7 +4543,7 @@
    "budget": {
     "files": 5,
     "lines": 300,
-    "context_pct": 24
+    "context_pct": 28
    },
    "checks": [
     "Ci",
@@ -14484,7 +14484,7 @@
     "T163",
     "T044",
     "T184",
-    "T187"
+    "T050"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -14534,7 +14534,8 @@
     "D-431",
     "D-434",
     "D-492",
-    "D-1030"
+    "D-1030",
+    "D-1126"
    ],
    "cites": [],
    "budget": {
@@ -14565,7 +14566,8 @@
     "T156",
     "T163",
     "T045",
-    "T044"
+    "T044",
+    "T054"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -14611,7 +14613,8 @@
     "D-434",
     "D-446",
     "D-460",
-    "D-1030"
+    "D-1030",
+    "D-1126"
    ],
    "cites": [],
    "budget": {
