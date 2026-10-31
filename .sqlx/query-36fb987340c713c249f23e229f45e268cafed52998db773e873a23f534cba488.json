@@ -1,0 +1,41 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT rows_recorded, rows_skipped FROM licensing.list_import WHERE source = $1 AND list_date = $2",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "rows_recorded",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "licensing.list_import",
+            "name": "rows_recorded"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "rows_skipped",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "licensing.list_import",
+            "name": "rows_skipped"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Date"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "36fb987340c713c249f23e229f45e268cafed52998db773e873a23f534cba488"
+}

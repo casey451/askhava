@@ -332,6 +332,7 @@ dependencies = [
  "askhava-catalog",
  "askhava-core",
  "askhava-jobs",
+ "askhava-licensing",
  "askhava-messaging",
  "askhava-ops",
  "askhava-privacy",
@@ -373,9 +374,12 @@ name = "askhava-licensing"
 version = "0.1.0"
 dependencies = [
  "askhava-catalog",
+ "jiff",
+ "jiff-sqlx",
  "proptest",
  "serde",
  "serde-saphyr",
+ "sqlx",
  "thiserror",
 ]
 

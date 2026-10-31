@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO licensing.license_check (business_id, source, license_number, list_date, status) SELECT $1, 'roc', $2, list_date, $3 FROM licensing.list_import WHERE id = $4",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "0dce61acc1ca4b3df7f6795c02b189da10cc5b82573277302f61f57e48f08fad"
+}
