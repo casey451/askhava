@@ -258,7 +258,7 @@
    "budget": {
     "files": 4,
     "lines": 300,
-    "context_pct": 11
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -320,7 +320,7 @@
    "budget": {
     "files": 3,
     "lines": 400,
-    "context_pct": 15
+    "context_pct": 28
    },
    "checks": [
     "Ci",
@@ -370,7 +370,7 @@
    "budget": {
     "files": 1,
     "lines": 30,
-    "context_pct": 6
+    "context_pct": 7
    },
    "checks": [
     "Ci",
@@ -432,7 +432,7 @@
    "budget": {
     "files": 13,
     "lines": 600,
-    "context_pct": 10
+    "context_pct": 48
    },
    "checks": [
     "Ci",
@@ -496,7 +496,7 @@
    "budget": {
     "files": 4,
     "lines": 400,
-    "context_pct": 15
+    "context_pct": 63
    },
    "checks": [
     "Ci",
@@ -579,7 +579,7 @@
    "budget": {
     "files": 5,
     "lines": 400,
-    "context_pct": 16
+    "context_pct": 65
    },
    "checks": [
     "Ci",
@@ -651,7 +651,7 @@
    "budget": {
     "files": 9,
     "lines": 500,
-    "context_pct": 20
+    "context_pct": 69
    },
    "checks": [
     "Ci",
@@ -701,7 +701,7 @@
    "budget": {
     "files": 1,
     "lines": 150,
-    "context_pct": 19
+    "context_pct": 30
    },
    "checks": [
     "Ci",
@@ -754,7 +754,7 @@
    "budget": {
     "files": 5,
     "lines": 150,
-    "context_pct": 22
+    "context_pct": 45
    },
    "checks": [
     "Ci",
@@ -820,7 +820,7 @@
    "budget": {
     "files": 10,
     "lines": 200,
-    "context_pct": 15
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -874,7 +874,7 @@
    "budget": {
     "files": 2,
     "lines": 400,
-    "context_pct": 15
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -937,7 +937,7 @@
    "budget": {
     "files": 2,
     "lines": 600,
-    "context_pct": 18
+    "context_pct": 30
    },
    "checks": [
     "Ci",
@@ -990,7 +990,7 @@
    "budget": {
     "files": 1,
     "lines": 500,
-    "context_pct": 15
+    "context_pct": 28
    },
    "checks": [
     "Ci",
@@ -1045,7 +1045,7 @@
    "budget": {
     "files": 4,
     "lines": 250,
-    "context_pct": 12
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -1117,7 +1117,7 @@
    "budget": {
     "files": 6,
     "lines": 450,
-    "context_pct": 13
+    "context_pct": 29
    },
    "checks": [
     "Ci",
@@ -1178,7 +1178,7 @@
    "budget": {
     "files": 6,
     "lines": 400,
-    "context_pct": 18
+    "context_pct": 30
    },
    "checks": [
     "Ci",
@@ -1239,7 +1239,7 @@
    "budget": {
     "files": 4,
     "lines": 450,
-    "context_pct": 15
+    "context_pct": 30
    },
    "checks": [
     "Ci",
@@ -1310,7 +1310,7 @@
    "budget": {
     "files": 7,
     "lines": 350,
-    "context_pct": 15
+    "context_pct": 28
    },
    "checks": [
     "Ci",
@@ -1375,7 +1375,7 @@
    "budget": {
     "files": 7,
     "lines": 450,
-    "context_pct": 15
+    "context_pct": 29
    },
    "checks": [
     "Ci",
@@ -1442,7 +1442,7 @@
    "budget": {
     "files": 8,
     "lines": 350,
-    "context_pct": 16
+    "context_pct": 35
    },
    "checks": [
     "Ci",
@@ -1511,7 +1511,7 @@
    "budget": {
     "files": 8,
     "lines": 350,
-    "context_pct": 17
+    "context_pct": 37
    },
    "checks": [
     "Ci",
@@ -1571,7 +1571,7 @@
    "budget": {
     "files": 3,
     "lines": 300,
-    "context_pct": 12
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -1638,7 +1638,7 @@
    "budget": {
     "files": 5,
     "lines": 400,
-    "context_pct": 13
+    "context_pct": 27
    },
    "checks": [
     "Ci",
@@ -1697,7 +1697,7 @@
    "budget": {
     "files": 3,
     "lines": 120,
-    "context_pct": 16
+    "context_pct": 26
    },
    "checks": [
     "Ci",
@@ -1758,7 +1758,7 @@
    "budget": {
     "files": 7,
     "lines": 400,
-    "context_pct": 12
+    "context_pct": 31
    },
    "checks": [
     "Ci",
@@ -1824,7 +1824,7 @@
    "budget": {
     "files": 9,
     "lines": 400,
-    "context_pct": 16
+    "context_pct": 30
    },
    "checks": [
     "Ci",
@@ -1874,7 +1874,7 @@
    "budget": {
     "files": 3,
     "lines": 300,
-    "context_pct": 14
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -1934,7 +1934,7 @@
    "budget": {
     "files": 3,
     "lines": 250,
-    "context_pct": 17
+    "context_pct": 28
    },
    "checks": [
     "Ci",
@@ -2009,7 +2009,7 @@
    "budget": {
     "files": 8,
     "lines": 550,
-    "context_pct": 15
+    "context_pct": 35
    },
    "checks": [
     "Ci",
@@ -2068,7 +2068,7 @@
    "budget": {
     "files": 7,
     "lines": 150,
-    "context_pct": 13
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -2123,7 +2123,7 @@
    "budget": {
     "files": 1,
     "lines": 250,
-    "context_pct": 12
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -2204,7 +2204,7 @@
    "budget": {
     "files": 9,
     "lines": 550,
-    "context_pct": 15
+    "context_pct": 33
    },
    "checks": [
     "Ci",
@@ -2287,7 +2287,7 @@
    "budget": {
     "files": 10,
     "lines": 600,
-    "context_pct": 18
+    "context_pct": 32
    },
    "checks": [
     "Ci",
@@ -2348,7 +2348,7 @@
    "budget": {
     "files": 4,
     "lines": 300,
-    "context_pct": 13
+    "context_pct": 26
    },
    "checks": [
     "Ci",
@@ -2430,7 +2430,7 @@
    "budget": {
     "files": 5,
     "lines": 600,
-    "context_pct": 14
+    "context_pct": 26
    },
    "checks": [
     "Ci",
@@ -2512,7 +2512,7 @@
    "budget": {
     "files": 4,
     "lines": 550,
-    "context_pct": 14
+    "context_pct": 28
    },
    "checks": [
     "Ci",
@@ -2573,7 +2573,7 @@
    "budget": {
     "files": 5,
     "lines": 350,
-    "context_pct": 12
+    "context_pct": 27
    },
    "checks": [
     "Ci",
@@ -2631,7 +2631,7 @@
    "budget": {
     "files": 5,
     "lines": 300,
-    "context_pct": 12
+    "context_pct": 26
    },
    "checks": [
     "Ci",
@@ -2713,7 +2713,7 @@
    "budget": {
     "files": 7,
     "lines": 500,
-    "context_pct": 14
+    "context_pct": 34
    },
    "checks": [
     "Ci",
@@ -2779,7 +2779,7 @@
    "budget": {
     "files": 2,
     "lines": 250,
-    "context_pct": 14
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -2843,7 +2843,7 @@
    "budget": {
     "files": 10,
     "lines": 400,
-    "context_pct": 12
+    "context_pct": 28
    },
    "checks": [
     "Ci",
@@ -2903,7 +2903,7 @@
    "budget": {
     "files": 4,
     "lines": 250,
-    "context_pct": 13
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -2982,7 +2982,7 @@
    "budget": {
     "files": 5,
     "lines": 550,
-    "context_pct": 14
+    "context_pct": 28
    },
    "checks": [
     "Ci",
@@ -3033,7 +3033,7 @@
    "budget": {
     "files": 2,
     "lines": 350,
-    "context_pct": 12
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -3110,7 +3110,7 @@
    "budget": {
     "files": 9,
     "lines": 550,
-    "context_pct": 19
+    "context_pct": 30
    },
    "checks": [
     "Ci",
@@ -3182,7 +3182,7 @@
    "budget": {
     "files": 5,
     "lines": 500,
-    "context_pct": 15
+    "context_pct": 28
    },
    "checks": [
     "Ci",
@@ -3244,7 +3244,7 @@
    "budget": {
     "files": 5,
     "lines": 350,
-    "context_pct": 18
+    "context_pct": 27
    },
    "checks": [
     "Ci",
@@ -3308,7 +3308,7 @@
    "budget": {
     "files": 3,
     "lines": 300,
-    "context_pct": 12
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -3374,7 +3374,7 @@
    "budget": {
     "files": 3,
     "lines": 400,
-    "context_pct": 12
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -3473,7 +3473,7 @@
    "budget": {
     "files": 9,
     "lines": 400,
-    "context_pct": 16
+    "context_pct": 39
    },
    "checks": [
     "Ci",
@@ -3547,7 +3547,7 @@
    "budget": {
     "files": 4,
     "lines": 300,
-    "context_pct": 14
+    "context_pct": 32
    },
    "checks": [
     "Ci",
@@ -3650,7 +3650,7 @@
    "budget": {
     "files": 6,
     "lines": 550,
-    "context_pct": 16
+    "context_pct": 39
    },
    "checks": [
     "Ci",
@@ -3728,7 +3728,7 @@
    "budget": {
     "files": 4,
     "lines": 550,
-    "context_pct": 14
+    "context_pct": 32
    },
    "checks": [
     "Ci",
@@ -3796,7 +3796,7 @@
    "budget": {
     "files": 8,
     "lines": 400,
-    "context_pct": 13
+    "context_pct": 27
    },
    "checks": [
     "Ci",
@@ -3853,7 +3853,7 @@
    "budget": {
     "files": 5,
     "lines": 350,
-    "context_pct": 12
+    "context_pct": 27
    },
    "checks": [
     "Ci",
@@ -3917,7 +3917,7 @@
    "budget": {
     "files": 4,
     "lines": 250,
-    "context_pct": 13
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -3987,7 +3987,7 @@
    "budget": {
     "files": 4,
     "lines": 400,
-    "context_pct": 13
+    "context_pct": 28
    },
    "checks": [
     "Ci",
@@ -4049,7 +4049,7 @@
    "budget": {
     "files": 2,
     "lines": 250,
-    "context_pct": 12
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -4117,7 +4117,7 @@
    "budget": {
     "files": 4,
     "lines": 400,
-    "context_pct": 13
+    "context_pct": 29
    },
    "checks": [
     "Ci",
@@ -4187,7 +4187,7 @@
    "budget": {
     "files": 9,
     "lines": 400,
-    "context_pct": 12
+    "context_pct": 27
    },
    "checks": [
     "Ci",
@@ -4256,7 +4256,7 @@
    "budget": {
     "files": 6,
     "lines": 250,
-    "context_pct": 12
+    "context_pct": 30
    },
    "checks": [
     "Ci",
@@ -4325,7 +4325,7 @@
    "budget": {
     "files": 3,
     "lines": 350,
-    "context_pct": 13
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -4387,7 +4387,7 @@
    "budget": {
     "files": 3,
     "lines": 300,
-    "context_pct": 12
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -4464,7 +4464,7 @@
    "budget": {
     "files": 5,
     "lines": 400,
-    "context_pct": 13
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -4532,7 +4532,7 @@
    "budget": {
     "files": 3,
     "lines": 300,
-    "context_pct": 13
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -4615,7 +4615,7 @@
    "budget": {
     "files": 2,
     "lines": 450,
-    "context_pct": 14
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -4682,7 +4682,7 @@
    "budget": {
     "files": 2,
     "lines": 350,
-    "context_pct": 13
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -4742,7 +4742,7 @@
    "budget": {
     "files": 4,
     "lines": 400,
-    "context_pct": 12
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -4806,7 +4806,7 @@
    "budget": {
     "files": 4,
     "lines": 250,
-    "context_pct": 13
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -4890,7 +4890,7 @@
    "budget": {
     "files": 10,
     "lines": 600,
-    "context_pct": 15
+    "context_pct": 31
    },
    "checks": [
     "Ci",
@@ -4969,7 +4969,7 @@
    "budget": {
     "files": 5,
     "lines": 500,
-    "context_pct": 14
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -5038,7 +5038,7 @@
    "budget": {
     "files": 6,
     "lines": 550,
-    "context_pct": 13
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -5101,7 +5101,7 @@
    "budget": {
     "files": 3,
     "lines": 300,
-    "context_pct": 24
+    "context_pct": 34
    },
    "checks": [
     "Ci",
@@ -5172,7 +5172,7 @@
    "budget": {
     "files": 5,
     "lines": 300,
-    "context_pct": 10
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -5259,7 +5259,7 @@
    "budget": {
     "files": 9,
     "lines": 600,
-    "context_pct": 14
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -5307,7 +5307,7 @@
    "budget": {
     "files": 2,
     "lines": 200,
-    "context_pct": 11
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -5392,7 +5392,7 @@
    "budget": {
     "files": 3,
     "lines": 350,
-    "context_pct": 16
+    "context_pct": 24
    },
    "checks": [
     "Ci",
@@ -5465,7 +5465,7 @@
    "budget": {
     "files": 3,
     "lines": 350,
-    "context_pct": 14
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -5539,7 +5539,7 @@
    "budget": {
     "files": 5,
     "lines": 450,
-    "context_pct": 13
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -5646,7 +5646,7 @@
    "budget": {
     "files": 2,
     "lines": 400,
-    "context_pct": 13
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -5727,7 +5727,7 @@
    "budget": {
     "files": 6,
     "lines": 400,
-    "context_pct": 15
+    "context_pct": 26
    },
    "checks": [
     "Ci",
@@ -5786,7 +5786,7 @@
    "budget": {
     "files": 6,
     "lines": 300,
-    "context_pct": 12
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -5863,7 +5863,7 @@
    "budget": {
     "files": 7,
     "lines": 350,
-    "context_pct": 15
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -5937,7 +5937,7 @@
    "budget": {
     "files": 2,
     "lines": 300,
-    "context_pct": 15
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -6006,7 +6006,7 @@
    "budget": {
     "files": 5,
     "lines": 550,
-    "context_pct": 13
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -6069,7 +6069,7 @@
    "budget": {
     "files": 4,
     "lines": 450,
-    "context_pct": 12
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -6138,7 +6138,7 @@
    "budget": {
     "files": 6,
     "lines": 450,
-    "context_pct": 13
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -6222,7 +6222,7 @@
    "budget": {
     "files": 6,
     "lines": 350,
-    "context_pct": 14
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -6304,7 +6304,7 @@
    "budget": {
     "files": 5,
     "lines": 300,
-    "context_pct": 16
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -6381,7 +6381,7 @@
    "budget": {
     "files": 5,
     "lines": 500,
-    "context_pct": 19
+    "context_pct": 28
    },
    "checks": [
     "Ci",
@@ -6466,7 +6466,7 @@
    "budget": {
     "files": 3,
     "lines": 350,
-    "context_pct": 15
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -6543,7 +6543,7 @@
    "budget": {
     "files": 2,
     "lines": 350,
-    "context_pct": 14
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -6595,7 +6595,7 @@
    "budget": {
     "files": 2,
     "lines": 300,
-    "context_pct": 12
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -6667,7 +6667,7 @@
    "budget": {
     "files": 2,
     "lines": 350,
-    "context_pct": 14
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -6748,7 +6748,7 @@
    "budget": {
     "files": 3,
     "lines": 350,
-    "context_pct": 14
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -6822,7 +6822,7 @@
    "budget": {
     "files": 6,
     "lines": 500,
-    "context_pct": 14
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -6889,7 +6889,7 @@
    "budget": {
     "files": 7,
     "lines": 600,
-    "context_pct": 13
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -6962,7 +6962,7 @@
    "budget": {
     "files": 8,
     "lines": 450,
-    "context_pct": 13
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -7037,7 +7037,7 @@
    "budget": {
     "files": 6,
     "lines": 300,
-    "context_pct": 14
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -7104,7 +7104,7 @@
    "budget": {
     "files": 8,
     "lines": 200,
-    "context_pct": 14
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -7168,7 +7168,7 @@
    "budget": {
     "files": 2,
     "lines": 450,
-    "context_pct": 13
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -7224,7 +7224,7 @@
    "budget": {
     "files": 1,
     "lines": 250,
-    "context_pct": 12
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -7278,7 +7278,7 @@
    "budget": {
     "files": 1,
     "lines": 300,
-    "context_pct": 12
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -7336,7 +7336,7 @@
    "budget": {
     "files": 2,
     "lines": 200,
-    "context_pct": 11
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -7386,7 +7386,6 @@
     "docs/spec/job-cards.md",
     "docs/spec/lifecycle.md",
     "docs/spec/quiet-hours.md",
-    "twin/",
     "docs/brains/rust-production.md",
     "docs/audit/rust-trial-2-2026-10-29.md"
    ],
@@ -7399,13 +7398,14 @@
    "tests": [],
    "decisions": [
     "D-107",
-    "D-491"
+    "D-491",
+    "D-1030"
    ],
    "cites": [],
    "budget": {
     "files": 10,
     "lines": 450,
-    "context_pct": 14
+    "context_pct": 41
    },
    "checks": [
     "Ci",
@@ -7476,7 +7476,7 @@
    "budget": {
     "files": 2,
     "lines": 400,
-    "context_pct": 13
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -7541,7 +7541,7 @@
    "budget": {
     "files": 7,
     "lines": 500,
-    "context_pct": 13
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -7610,7 +7610,7 @@
    "budget": {
     "files": 4,
     "lines": 400,
-    "context_pct": 13
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -7671,7 +7671,7 @@
    "budget": {
     "files": 5,
     "lines": 350,
-    "context_pct": 12
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -7742,7 +7742,7 @@
    "budget": {
     "files": 2,
     "lines": 450,
-    "context_pct": 13
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -7813,7 +7813,7 @@
    "budget": {
     "files": 4,
     "lines": 400,
-    "context_pct": 13
+    "context_pct": 24
    },
    "checks": [
     "Ci",
@@ -7910,7 +7910,7 @@
    "budget": {
     "files": 7,
     "lines": 450,
-    "context_pct": 15
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -8003,7 +8003,7 @@
    "budget": {
     "files": 5,
     "lines": 350,
-    "context_pct": 15
+    "context_pct": 24
    },
    "checks": [
     "Ci",
@@ -8094,7 +8094,7 @@
    "budget": {
     "files": 3,
     "lines": 500,
-    "context_pct": 16
+    "context_pct": 24
    },
    "checks": [
     "Ci",
@@ -8167,7 +8167,7 @@
    "budget": {
     "files": 4,
     "lines": 500,
-    "context_pct": 13
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -8243,7 +8243,7 @@
    "budget": {
     "files": 6,
     "lines": 400,
-    "context_pct": 15
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -8313,7 +8313,7 @@
    "budget": {
     "files": 2,
     "lines": 250,
-    "context_pct": 15
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -8396,7 +8396,7 @@
    "budget": {
     "files": 9,
     "lines": 350,
-    "context_pct": 15
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -8460,7 +8460,7 @@
    "budget": {
     "files": 4,
     "lines": 350,
-    "context_pct": 14
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -8535,7 +8535,7 @@
    "budget": {
     "files": 7,
     "lines": 550,
-    "context_pct": 15
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -8605,7 +8605,7 @@
    "budget": {
     "files": 4,
     "lines": 500,
-    "context_pct": 14
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -8671,7 +8671,7 @@
    "budget": {
     "files": 1,
     "lines": 400,
-    "context_pct": 13
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -8733,7 +8733,7 @@
    "budget": {
     "files": 3,
     "lines": 350,
-    "context_pct": 13
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -8798,7 +8798,7 @@
    "budget": {
     "files": 5,
     "lines": 400,
-    "context_pct": 13
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -8859,7 +8859,7 @@
    "budget": {
     "files": 2,
     "lines": 300,
-    "context_pct": 13
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -8933,7 +8933,7 @@
    "budget": {
     "files": 10,
     "lines": 600,
-    "context_pct": 13
+    "context_pct": 24
    },
    "checks": [
     "Ci",
@@ -8994,7 +8994,7 @@
    "budget": {
     "files": 5,
     "lines": 300,
-    "context_pct": 12
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -9063,7 +9063,7 @@
    "budget": {
     "files": 4,
     "lines": 300,
-    "context_pct": 13
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -9140,7 +9140,7 @@
    "budget": {
     "files": 2,
     "lines": 400,
-    "context_pct": 14
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -9205,7 +9205,7 @@
    "budget": {
     "files": 2,
     "lines": 400,
-    "context_pct": 13
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -9261,7 +9261,7 @@
    "budget": {
     "files": 4,
     "lines": 400,
-    "context_pct": 12
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -9317,7 +9317,7 @@
    "budget": {
     "files": 4,
     "lines": 400,
-    "context_pct": 12
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -9372,7 +9372,7 @@
    "budget": {
     "files": 2,
     "lines": 600,
-    "context_pct": 12
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -9431,7 +9431,7 @@
    "budget": {
     "files": 2,
     "lines": 600,
-    "context_pct": 12
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -9526,7 +9526,7 @@
    "budget": {
     "files": 5,
     "lines": 400,
-    "context_pct": 20
+    "context_pct": 29
    },
    "checks": [
     "Ci",
@@ -9614,7 +9614,7 @@
    "budget": {
     "files": 7,
     "lines": 400,
-    "context_pct": 20
+    "context_pct": 28
    },
    "checks": [
     "Ci",
@@ -9722,7 +9722,7 @@
    "budget": {
     "files": 6,
     "lines": 400,
-    "context_pct": 16
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -9816,7 +9816,7 @@
    "budget": {
     "files": 4,
     "lines": 350,
-    "context_pct": 20
+    "context_pct": 28
    },
    "checks": [
     "Ci",
@@ -9899,7 +9899,7 @@
    "budget": {
     "files": 9,
     "lines": 400,
-    "context_pct": 19
+    "context_pct": 28
    },
    "checks": [
     "Ci",
@@ -9986,7 +9986,7 @@
    "budget": {
     "files": 10,
     "lines": 400,
-    "context_pct": 19
+    "context_pct": 28
    },
    "checks": [
     "Ci",
@@ -10070,7 +10070,7 @@
    "budget": {
     "files": 7,
     "lines": 400,
-    "context_pct": 19
+    "context_pct": 28
    },
    "checks": [
     "Ci",
@@ -10168,7 +10168,7 @@
    "budget": {
     "files": 10,
     "lines": 400,
-    "context_pct": 20
+    "context_pct": 29
    },
    "checks": [
     "Ci",
@@ -10254,7 +10254,7 @@
    "budget": {
     "files": 7,
     "lines": 400,
-    "context_pct": 20
+    "context_pct": 29
    },
    "checks": [
     "Ci",
@@ -10338,7 +10338,7 @@
    "budget": {
     "files": 7,
     "lines": 300,
-    "context_pct": 20
+    "context_pct": 29
    },
    "checks": [
     "Ci",
@@ -10399,7 +10399,7 @@
    "budget": {
     "files": 3,
     "lines": 300,
-    "context_pct": 13
+    "context_pct": 24
    },
    "checks": [
     "Ci",
@@ -10489,7 +10489,7 @@
    "budget": {
     "files": 3,
     "lines": 400,
-    "context_pct": 13
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -10559,7 +10559,7 @@
    "budget": {
     "files": 7,
     "lines": 600,
-    "context_pct": 14
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -10631,7 +10631,7 @@
    "budget": {
     "files": 9,
     "lines": 350,
-    "context_pct": 13
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -10716,7 +10716,7 @@
    "budget": {
     "files": 6,
     "lines": 300,
-    "context_pct": 16
+    "context_pct": 24
    },
    "checks": [
     "Ci",
@@ -10799,7 +10799,7 @@
    "budget": {
     "files": 6,
     "lines": 300,
-    "context_pct": 16
+    "context_pct": 24
    },
    "checks": [
     "Ci",
@@ -10896,7 +10896,7 @@
    "budget": {
     "files": 7,
     "lines": 250,
-    "context_pct": 16
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -10984,7 +10984,7 @@
    "budget": {
     "files": 7,
     "lines": 500,
-    "context_pct": 16
+    "context_pct": 26
    },
    "checks": [
     "Ci",
@@ -11060,7 +11060,7 @@
    "budget": {
     "files": 3,
     "lines": 500,
-    "context_pct": 13
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -11143,7 +11143,7 @@
    "budget": {
     "files": 1,
     "lines": 250,
-    "context_pct": 14
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -11223,7 +11223,7 @@
    "budget": {
     "files": 2,
     "lines": 200,
-    "context_pct": 13
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -11314,7 +11314,7 @@
    "budget": {
     "files": 10,
     "lines": 400,
-    "context_pct": 15
+    "context_pct": 27
    },
    "checks": [
     "Ci",
@@ -11417,7 +11417,7 @@
    "budget": {
     "files": 8,
     "lines": 400,
-    "context_pct": 17
+    "context_pct": 26
    },
    "checks": [
     "Ci",
@@ -11485,7 +11485,7 @@
    "budget": {
     "files": 5,
     "lines": 300,
-    "context_pct": 14
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -11542,7 +11542,7 @@
    "budget": {
     "files": 2,
     "lines": 300,
-    "context_pct": 13
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -11621,7 +11621,7 @@
    "budget": {
     "files": 4,
     "lines": 350,
-    "context_pct": 14
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -11686,7 +11686,7 @@
    "budget": {
     "files": 4,
     "lines": 300,
-    "context_pct": 14
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -11764,7 +11764,7 @@
    "budget": {
     "files": 9,
     "lines": 450,
-    "context_pct": 14
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -11822,7 +11822,7 @@
    "budget": {
     "files": 4,
     "lines": 350,
-    "context_pct": 13
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -11880,7 +11880,7 @@
    "budget": {
     "files": 2,
     "lines": 300,
-    "context_pct": 12
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -12297,7 +12297,7 @@
    "budget": {
     "files": 2,
     "lines": 300,
-    "context_pct": 14
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -12356,7 +12356,7 @@
    "budget": {
     "files": 5,
     "lines": 400,
-    "context_pct": 13
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -12426,7 +12426,7 @@
    "budget": {
     "files": 3,
     "lines": 350,
-    "context_pct": 13
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -12493,7 +12493,7 @@
    "budget": {
     "files": 2,
     "lines": 400,
-    "context_pct": 4
+    "context_pct": 5
    },
    "checks": [
     "Ci",
@@ -12546,7 +12546,7 @@
    "budget": {
     "files": 2,
     "lines": 550,
-    "context_pct": 12
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -12599,7 +12599,7 @@
    "budget": {
     "files": 2,
     "lines": 550,
-    "context_pct": 12
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -12664,7 +12664,7 @@
    "budget": {
     "files": 3,
     "lines": 400,
-    "context_pct": 13
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -12724,7 +12724,7 @@
    "budget": {
     "files": 1,
     "lines": 300,
-    "context_pct": 13
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -12922,7 +12922,7 @@
    "budget": {
     "files": 1,
     "lines": 300,
-    "context_pct": 11
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -13008,7 +13008,7 @@
    "budget": {
     "files": 3,
     "lines": 400,
-    "context_pct": 13
+    "context_pct": 59
    },
    "checks": [
     "Ci",
@@ -13155,7 +13155,7 @@
    "budget": {
     "files": 6,
     "lines": 450,
-    "context_pct": 13
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -13259,7 +13259,7 @@
    "budget": {
     "files": 5,
     "lines": 450,
-    "context_pct": 13
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -13331,7 +13331,7 @@
    "budget": {
     "files": 4,
     "lines": 500,
-    "context_pct": 14
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -13413,7 +13413,7 @@
    "budget": {
     "files": 8,
     "lines": 400,
-    "context_pct": 14
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -13485,7 +13485,7 @@
    "budget": {
     "files": 5,
     "lines": 400,
-    "context_pct": 12
+    "context_pct": 24
    },
    "checks": [
     "Ci",
@@ -13544,7 +13544,7 @@
    "budget": {
     "files": 2,
     "lines": 200,
-    "context_pct": 13
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -13592,7 +13592,7 @@
    "budget": {
     "files": 1,
     "lines": 100,
-    "context_pct": 12
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -13661,7 +13661,7 @@
    "budget": {
     "files": 2,
     "lines": 300,
-    "context_pct": 14
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -13709,7 +13709,7 @@
    "budget": {
     "files": 2,
     "lines": 200,
-    "context_pct": 11
+    "context_pct": 19
    },
    "checks": [
     "Ci",
@@ -13769,7 +13769,7 @@
    "budget": {
     "files": 2,
     "lines": 350,
-    "context_pct": 14
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -13826,7 +13826,7 @@
    "budget": {
     "files": 2,
     "lines": 300,
-    "context_pct": 17
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -13933,7 +13933,7 @@
    "budget": {
     "files": 3,
     "lines": 300,
-    "context_pct": 12
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -13996,7 +13996,7 @@
    "budget": {
     "files": 2,
     "lines": 400,
-    "context_pct": 13
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -14221,7 +14221,7 @@
    "budget": {
     "files": 3,
     "lines": 600,
-    "context_pct": 18
+    "context_pct": 31
    },
    "checks": [
     "Ci",
@@ -14277,7 +14277,7 @@
    "budget": {
     "files": 2,
     "lines": 600,
-    "context_pct": 20
+    "context_pct": 38
    },
    "checks": [
     "Ci",
@@ -14351,7 +14351,7 @@
    "budget": {
     "files": 10,
     "lines": 400,
-    "context_pct": 16
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -14413,7 +14413,7 @@
    "budget": {
     "files": 2,
     "lines": 300,
-    "context_pct": 15
+    "context_pct": 24
    },
    "checks": [
     "Ci",
@@ -14492,7 +14492,7 @@
    "budget": {
     "files": 6,
     "lines": 450,
-    "context_pct": 18
+    "context_pct": 35
    },
    "checks": [
     "Ci",
@@ -14564,7 +14564,7 @@
    "budget": {
     "files": 2,
     "lines": 350,
-    "context_pct": 18
+    "context_pct": 35
    },
    "checks": [
     "Ci",
@@ -14631,7 +14631,7 @@
    "budget": {
     "files": 7,
     "lines": 300,
-    "context_pct": 18
+    "context_pct": 26
    },
    "checks": [
     "Ci",
@@ -14706,7 +14706,7 @@
    "budget": {
     "files": 8,
     "lines": 450,
-    "context_pct": 19
+    "context_pct": 27
    },
    "checks": [
     "Ci",
@@ -14786,7 +14786,7 @@
    "budget": {
     "files": 10,
     "lines": 400,
-    "context_pct": 14
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -14858,7 +14858,7 @@
    "budget": {
     "files": 8,
     "lines": 400,
-    "context_pct": 14
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -14911,7 +14911,7 @@
    "budget": {
     "files": 2,
     "lines": 300,
-    "context_pct": 12
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -14993,7 +14993,7 @@
    "budget": {
     "files": 7,
     "lines": 500,
-    "context_pct": 18
+    "context_pct": 27
    },
    "checks": [
     "Ci",
@@ -15060,7 +15060,7 @@
    "budget": {
     "files": 3,
     "lines": 300,
-    "context_pct": 18
+    "context_pct": 28
    },
    "checks": [
     "Ci",
@@ -15143,7 +15143,7 @@
    "budget": {
     "files": 10,
     "lines": 500,
-    "context_pct": 18
+    "context_pct": 29
    },
    "checks": [
     "Ci",
@@ -15209,7 +15209,7 @@
    "budget": {
     "files": 5,
     "lines": 450,
-    "context_pct": 13
+    "context_pct": 26
    },
    "checks": [
     "Ci",
@@ -15274,7 +15274,7 @@
    "budget": {
     "files": 4,
     "lines": 350,
-    "context_pct": 13
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -15356,7 +15356,7 @@
    "budget": {
     "files": 10,
     "lines": 450,
-    "context_pct": 17
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -15435,7 +15435,7 @@
    "budget": {
     "files": 9,
     "lines": 350,
-    "context_pct": 16
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -15506,7 +15506,7 @@
    "budget": {
     "files": 6,
     "lines": 400,
-    "context_pct": 12
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -15580,7 +15580,7 @@
    "budget": {
     "files": 6,
     "lines": 400,
-    "context_pct": 13
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -15643,7 +15643,7 @@
    "budget": {
     "files": 7,
     "lines": 400,
-    "context_pct": 12
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -15717,7 +15717,7 @@
    "budget": {
     "files": 6,
     "lines": 400,
-    "context_pct": 13
+    "context_pct": 24
    },
    "checks": [
     "Ci",
@@ -15783,7 +15783,7 @@
    "budget": {
     "files": 8,
     "lines": 200,
-    "context_pct": 14
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -15839,7 +15839,7 @@
    "budget": {
     "files": 5,
     "lines": 100,
-    "context_pct": 13
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -15909,7 +15909,7 @@
    "budget": {
     "files": 7,
     "lines": 500,
-    "context_pct": 17
+    "context_pct": 32
    },
    "checks": [
     "Ci",
@@ -15968,7 +15968,7 @@
    "budget": {
     "files": 4,
     "lines": 200,
-    "context_pct": 14
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -16032,7 +16032,7 @@
    "budget": {
     "files": 3,
     "lines": 300,
-    "context_pct": 13
+    "context_pct": 22
    },
    "checks": [
     "Ci",

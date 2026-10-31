@@ -1345,3 +1345,9 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **What she hears.** "Ask Hava: Got it. We'll send this to the 5 <trade> businesses on Ask Hava." (or "the 1 <trade> business"), the number being exactly who would get the card. If nobody in her town covers it, she gets the "We don't cover <trade> jobs yet" text and it is noted for recruiting.
 - **SPLIT.** A request needing two kinds of business with nobody licensed for both gets "Ask Hava: This needs 2 kinds of business. Reply SPLIT to send it as 2 requests, one per trade." SPLIT (or DIVIDIR) opens the second job; each goes out alone.
 - **For you to look at.** The Spanish versions of these texts are drafts for your translator. Nothing yet calls the late-card step when a business unpauses or ticks a new job type, and nothing yet reads your pause switches into matching: both are wiring for a later task (D-1021).
+
+## Task size numbers re-measured (D-1030, October 31)
+
+- **What you approved.** Each task tells its worker roughly how much of its reading space it will use. Those numbers were stale (about half the real size), and nearly every task was over the old 20% limit. They are now measured fresh for every task, and the limits are 45% for ordinary tasks and 50% for tooling tasks.
+- **Two calls Claude made.** A clean-up task that sweeps the whole app folder is no longer counted as reading every file in it, since it only searches it. The one clean-up task that also runs the full twin check (T126) measures 59%, so clean-up tasks got their own limit of 65%. Three finished twin tasks (T005 to T007) measure 63 to 69%; their numbers are kept as measured under a limit only they can use.
+- **Keeping the numbers honest.** Every plan change now re-checks the numbers strictly before it is committed. Ordinary task merges still only note small drift, because every merge moves some numbers by a point and a task cannot fix the task list itself.

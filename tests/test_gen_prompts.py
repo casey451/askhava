@@ -325,6 +325,38 @@ def test_check_prints_token_estimates_and_notes_drift(
     assert "T900: about" in out and "tokens" in out and "regenerate to refresh" in out
 
 
+def test_strict_check_fails_a_stale_stored_budget(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """D-1030: --check notes drift, --check --strict fails it until the budgets are regenerated."""
+    root = make_repo(tmp_path, [fake_task()])
+    assert gp.main(["--root", str(root)]) == 0
+    assert gp.main(["--root", str(root), "--check", "--strict"]) == 0
+    (root / "app").mkdir()
+    (root / "app" / "fake.py").write_text("q" * 200_000, encoding="utf-8")
+    capsys.readouterr()
+    assert gp.main(["--root", str(root), "--check"]) == 0
+    assert gp.main(["--root", str(root), "--check", "--strict"]) == 1
+    out = capsys.readouterr().out
+    assert "ERROR T900: stored context_pct" in out and "regenerate" in out and "1 problems" in out
+    assert gp.main(["--root", str(root)]) == 0
+    assert gp.main(["--root", str(root), "--check", "--strict"]) == 0
+
+
+def test_owned_directories_count_nothing_and_owned_files_count_once(tmp_path: Path) -> None:
+    """D-1030: a swept tree is not loaded; a directory read leaves out the owned files it holds."""
+    root = make_repo(tmp_path, [fake_task()])
+    (root / "tree").mkdir()
+    (root / "tree" / "own.py").write_text("o" * 1_000, encoding="utf-8")
+    (root / "tree" / "other.py").write_text("r" * 300, encoding="utf-8")
+    (root / "swept").mkdir()
+    (root / "swept" / "big.rs").write_text("s" * 50_000, encoding="utf-8")
+    task = fake_task(owns=["swept/", "tree/own.py", "missing.py"], reads=["tree/", "tree/own.py", "docs/spec/x.md"])
+    assert gp.context_bytes(root, task, "p" * 7) == 7 + 1_000 + 300
+    reread = fake_task(owns=["tree/"], reads=["tree/"])
+    assert gp.context_bytes(root, reread, "") == 1_300  # an owned directory is no reason to skip reading it
+
+
 def test_four_digit_decisions_are_read_and_superseded(tmp_path: Path) -> None:
     """D-930: a D-1000 entry is pasted like any other and may supersede an older one; D-99 is no entry."""
     (tmp_path / "docs").mkdir()
