@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-10-31T20:50:26Z by runner dc6769c7f8f1 (actions).
+Updated 2026-10-31T21:43:33Z by runner 9f8528ea9351 (actions).
 
 **Requirements verified:** 107 of 725 (14.8%) · partial 151 · unstarted 467
 **Tasks merged (throughput only):** 72 of 221
@@ -49,8 +49,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 
 ## Needs attention
-- MAIN IS RED: tree; only FIX-MAIN runs
-- BLOCKED T156: Ci: not green on head 7274a85
+- nothing
 
 ## Last usage reading
 - {"task": "FIX-MAIN", "at": "2026-10-31T20:26:53Z", "input_tokens": 122, "output_tokens": 25524, "cache_read_input_tokens": 1999144, "cache_creation_input_tokens": 164567}

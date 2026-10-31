@@ -11567,8 +11567,8 @@
     "T044",
     "T184"
    ],
-   "status": "BLOCKED",
-   "attempts": 0,
+   "status": "QUEUED",
+   "attempts": 1,
    "slug": "intake-question-bank",
    "type": "build",
    "stage": "2",
@@ -11681,7 +11681,8 @@
    ],
    "update_waiting_since": null,
    "update_push_failures": null,
-   "reason": "Ci: not green on head 7274a85"
+   "reason": "Ci: not green on head 7274a85",
+   "last_failure": "reverted by FIX-MAIN (tree red on 26b176e5aab2)"
   },
   {
    "id": "T208",
@@ -13369,7 +13370,7 @@
    }
   }
  },
- "updated_at": "2026-10-31T20:50:26Z",
+ "updated_at": "2026-10-31T21:43:33Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -13467,15 +13468,9 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "dc6769c7f8f10a5e98793f681977bbbff7f96bb9",
+ "runner_sha": "9f8528ea93518b9eaf33d98eb969158a87953e5a",
  "starter": "actions",
  "smoke_runs": [
-  {
-   "sha": "e498654f22499fd09fa81bd4b1c26291c22c1473",
-   "ok": true,
-   "at": "2026-10-31T07:51:41Z",
-   "why": "start routine"
-  },
   {
    "sha": "e498654f22499fd09fa81bd4b1c26291c22c1473",
    "ok": true,
@@ -13589,37 +13584,15 @@
    "ok": true,
    "at": "2026-10-31T19:31:06Z",
    "why": "start routine"
+  },
+  {
+   "sha": "9f8528ea93518b9eaf33d98eb969158a87953e5a",
+   "ok": true,
+   "at": "2026-10-31T21:34:47Z",
+   "why": "verify FIX-MAIN"
   }
  ],
- "main_red": {
-  "check": "tree",
-  "sha": "26b176e5aab228dba7e0637bc909b6516f1692b6",
-  "task": "T156",
-  "revert_sha": "26b176e5aab228dba7e0637bc909b6516f1692b6",
-  "files": [
-   ".sqlx/query-0031b2035f3954d59c004e8f21fc911a5eaa6835d99057417e4cf441ac822eb8.json",
-   ".sqlx/query-afc2fda06cb4ac2aff8f42f84bae858395c9647aaf47313a22d89219ad5b0017.json",
-   "Cargo.lock",
-   "app/intake/CLAUDE.md",
-   "app/intake/Cargo.toml",
-   "app/intake/src/api.rs",
-   "app/intake/src/golden_run.rs",
-   "app/intake/src/lib.rs",
-   "app/intake/src/models.rs",
-   "app/intake/src/question_bank.rs",
-   "app/intake/src/routing_confidence.rs",
-   "app/intake/src/tests/mod.rs",
-   "app/intake/src/tests/question_bank.rs",
-   "app/server/Cargo.toml",
-   "app/server/src/bin/worker.rs",
-   "docs/architecture.md",
-   "docs/decisions.md",
-   "docs/for-casey-review.md",
-   "migrations/0083_intake_golden_result.sql",
-   "tests/integration/tests/routing_confidence.rs"
-  ],
-  "set_at": "2026-10-31T19:43:49Z"
- },
+ "main_red": null,
  "pacing": {
   "last": "FIX-MAIN estimated 2.8M tokens (calibrated); five-hour window has 20.6M left, week 348.9M after 1.7M still running in another lane (ledger); claimed",
   "at": "2026-10-31T20:06:00Z",
@@ -13652,6 +13625,37 @@
    "set_at": "2026-10-29T16:58:58Z",
    "cleared_at": "2026-10-29T18:17:43Z",
    "false_red": true
+  },
+  {
+   "check": "tree",
+   "sha": "26b176e5aab228dba7e0637bc909b6516f1692b6",
+   "task": "T156",
+   "revert_sha": "26b176e5aab228dba7e0637bc909b6516f1692b6",
+   "files": [
+    ".sqlx/query-0031b2035f3954d59c004e8f21fc911a5eaa6835d99057417e4cf441ac822eb8.json",
+    ".sqlx/query-afc2fda06cb4ac2aff8f42f84bae858395c9647aaf47313a22d89219ad5b0017.json",
+    "Cargo.lock",
+    "app/intake/CLAUDE.md",
+    "app/intake/Cargo.toml",
+    "app/intake/src/api.rs",
+    "app/intake/src/golden_run.rs",
+    "app/intake/src/lib.rs",
+    "app/intake/src/models.rs",
+    "app/intake/src/question_bank.rs",
+    "app/intake/src/routing_confidence.rs",
+    "app/intake/src/tests/mod.rs",
+    "app/intake/src/tests/question_bank.rs",
+    "app/server/Cargo.toml",
+    "app/server/src/bin/worker.rs",
+    "docs/architecture.md",
+    "docs/decisions.md",
+    "docs/for-casey-review.md",
+    "migrations/0083_intake_golden_result.sql",
+    "tests/integration/tests/routing_confidence.rs"
+   ],
+   "set_at": "2026-10-31T19:43:49Z",
+   "cleared_at": "2026-10-31T21:34:47Z",
+   "cleared_on": "9f8528ea93518b9eaf33d98eb969158a87953e5a"
   }
  ],
  "smoke_env_problems": [
