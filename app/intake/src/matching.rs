@@ -9,8 +9,12 @@
 //! fallback (INT-015). The longest phrase wins, so "water heater" is plumbing (R-37) and "spa
 //! heater" pool repair, never the furnace rule's "heater". After a trade is chosen, [`candidates`] keeps
 //! that trade's keyword job types (D-102) and every license-boundary keyword job type (D-105), so
-//! CARD-001's license check sees the job in the homeowner's own words. [`two_trades`] and
-//! [`starts_second`] are INT-032's two-job detection and its ALSO / TAMBIÉN reply.
+//! CARD-001's license check sees the job in the homeowner's own words; a licensed trade-only
+//! phrase keeps the catalog's licensed-only job type it names ("water heater" is plumbing's "water
+//! heater replacement", T183). Candidates spanning trades fall under
+//! different licenses, so "Which fits best?" is asked and [`Candidates::fit_step`] reads its reply
+//! (INT-014, D-1003). [`two_trades`] and [`starts_second`] are INT-032's two-job detection and its
+//! ALSO / TAMBIÉN reply.
 
 use crate::rules::fold;
 
@@ -70,8 +74,8 @@ const RULES: &[Rule] = &[
     ),
     rule(HVAC, Some("thermostat"), &["thermostat"], true),
     rule(HVAC, Some("furnace repair"), &["furnace", "heater"], true),
-    rule(PLUMBING, None, &["water heater"], false),
-    rule(POOL, None, &["pool heater", "spa heater"], false),
+    rule(PLUMBING, None, &["water heater"], true),
+    rule(POOL, None, &["pool heater", "spa heater"], true),
     rule(
         HVAC,
         Some("evaporative (swamp) cooler repair"),
@@ -122,6 +126,16 @@ pub fn trade_label(trade: &str) -> String {
     }
 }
 
+/// The catalog's licensed-only job types (a category's `refused` list in
+/// `docs/catalog/categories.yaml`, covered only by the licenses `docs/catalog/license_map.yaml`
+/// names) that a trade-only license-boundary phrase of the trade names: "water heater" and "pool
+/// heater"/"spa heater" (D-105, D-1003). They are not in the category's `job_types`, so
+/// [`job_types_of`] never lists them.
+const LICENSED_ONLY: &[(&str, &str)] = &[
+    (PLUMBING, "water heater replacement"),
+    (POOL, "gas pool heater"),
+];
+
 /// The catalog job types the keyword rules know for `trade`, listed by "Which fits best?" (D-102).
 #[must_use]
 pub fn job_types_of(trade: &str) -> Vec<&'static str> {
@@ -150,6 +164,17 @@ pub struct KeywordReading {
     pub job_types: Vec<(&'static str, &'static str)>,
     /// The job types among `job_types` that sit behind a license (D-105).
     pub boundary: Vec<(&'static str, &'static str)>,
+    /// The licensed-only (trade, job type) pairs a trade-only licensed phrase names ("water
+    /// heater" is plumbing's "water heater replacement"), kept as candidates whatever trade is
+    /// read or answered (D-105, D-1003).
+    pub licensed_only: Vec<(&'static str, &'static str)>,
+}
+
+impl KeywordReading {
+    /// Every (trade, job type) pair the words name: `job_types`, then `licensed_only`.
+    fn named_jobs(&self) -> impl Iterator<Item = &(&'static str, &'static str)> {
+        self.job_types.iter().chain(&self.licensed_only)
+    }
 }
 
 /// Where a phrase first appears in `padded` (folded, space-padded) as whole words.
@@ -198,6 +223,11 @@ pub fn keyword_reading(words: &str) -> KeywordReading {
             out.job_types.push((r.trade, job));
             if r.boundary {
                 out.boundary.push((r.trade, job));
+            }
+        } else if r.boundary {
+            let pair = LICENSED_ONLY.iter().find(|(t, _)| *t == r.trade);
+            if let Some(&pair) = pair.filter(|p| !out.licensed_only.contains(p)) {
+                out.licensed_only.push(pair);
             }
         }
     }
@@ -293,11 +323,7 @@ impl TradeQuestion {
     pub fn read(&self, words: &str) -> TradeAnswer {
         let folded = fold(words);
         let padded = format!(" {folded} ");
-        let mut numbers: Vec<usize> = folded.split(' ').filter_map(|t| t.parse().ok()).collect();
-        numbers.dedup();
-        if let [n] = numbers.as_slice()
-            && let Some(trade) = n.checked_sub(1).and_then(|i| self.options.get(i))
-        {
+        if let Some(trade) = lone_number(&folded, &self.options) {
             return TradeAnswer::Trade(trade.clone());
         }
         let hits: Vec<&String> = self
@@ -326,6 +352,16 @@ impl TradeQuestion {
     }
 }
 
+/// The option a reply names by one number alone, counted from 1 (INT-012).
+fn lone_number<'a, T>(folded: &str, options: &'a [T]) -> Option<&'a T> {
+    let mut numbers: Vec<usize> = folded.split(' ').filter_map(|t| t.parse().ok()).collect();
+    numbers.dedup();
+    match numbers.as_slice() {
+        [n] => n.checked_sub(1).and_then(|i| options.get(i)),
+        _ => None,
+    }
+}
+
 /// Whether the reply holds, as whole words, a keyword of `trade` (longest phrase first) or a
 /// non-generic word of its label.
 fn option_named(padded: &str, trade: &str) -> bool {
@@ -341,18 +377,22 @@ pub struct Candidates {
     /// (trade, job type) pairs; `<trade>_other` only when nothing names a job type of the trade.
     pub job_types: Vec<(String, String)>,
     /// The job types "Which fits best?" lists, when it is asked (INT-014): the trade's job types
-    /// when none was named, or the candidates when they span more than one trade.
+    /// and any other trade's candidates when none of the trade was named, or the candidates when
+    /// they span more than one trade, since no license class covers two of the keyword trades
+    /// (`docs/catalog/license_map.yaml`, D-1003).
     pub which_fits: Option<Vec<String>>,
 }
 
 /// The candidates for `trade` (D-102, D-105): the readings' and the keywords' job types of that
-/// trade, never replaced by `<trade>_other`, plus every license-boundary keyword job type, so a
-/// card goes only to a license covering all of them (CARD-001).
+/// trade, never replaced by `<trade>_other`, plus every license-boundary keyword job type and
+/// every licensed-only job type a trade-only phrase names, whatever other job type of its trade is
+/// named, so a card goes only to a license covering all of them (CARD-001, D-1003).
 #[must_use]
 pub fn candidates(trade: &str, readings: [Reading<'_>; 2], kw: &KeywordReading) -> Candidates {
     let mut jobs: Vec<(String, String)> = Vec::new();
     let read = readings.iter().filter_map(|r| Some((r.trade, r.job_type?)));
-    for (t, j) in read.chain(kw.job_types.iter().copied()) {
+    let named_jobs = kw.named_jobs().map(|&(t, j)| (t, j));
+    for (t, j) in read.chain(named_jobs) {
         if t == trade {
             add_once(&mut jobs, t, j);
         }
@@ -361,21 +401,122 @@ pub fn candidates(trade: &str, readings: [Reading<'_>; 2], kw: &KeywordReading) 
     if !named {
         add_once(&mut jobs, trade, &format!("{trade}_other"));
     }
-    for (t, j) in &kw.boundary {
+    for (t, j) in kw.boundary.iter().chain(&kw.licensed_only) {
         add_once(&mut jobs, t, j);
     }
-    let spans = jobs.iter().any(|(t, _)| t != trade);
-    let which_fits = if !named {
-        Some(job_types_of(trade).into_iter().map(str::to_owned).collect())
-    } else if spans {
-        Some(jobs.iter().map(|(_, j)| j.clone()).collect())
-    } else {
-        None
-    };
+    let which_fits = which_fits(trade, named, &jobs);
     Candidates {
         job_types: jobs,
         which_fits,
     }
+}
+
+/// The "Which fits best?" options (INT-014, D-102, D-1003): with no job type of `trade` named,
+/// its job types (or `<trade>_other` when the rules know none) and then the other trades'
+/// candidates, asked only with two or more; with candidates across trades, all of them;
+/// otherwise no question.
+fn which_fits(trade: &str, named: bool, jobs: &[(String, String)]) -> Option<Vec<String>> {
+    let others = jobs
+        .iter()
+        .filter(|(t, _)| t != trade)
+        .map(|(_, j)| j.clone());
+    if !named {
+        let mut own: Vec<String> = job_types_of(trade).into_iter().map(str::to_owned).collect();
+        if own.is_empty() {
+            own.push(format!("{trade}_other"));
+        }
+        own.extend(others);
+        (own.len() > 1).then_some(own)
+    } else if jobs.iter().any(|(t, _)| t != trade) {
+        Some(jobs.iter().map(|(_, j)| j.clone()).collect())
+    } else {
+        None
+    }
+}
+
+/// What intake does after a reply to "Which fits best?" (INT-014, INT-015, D-103, D-105).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum FitStep {
+    /// The homeowner chose this job type: the candidates are that job type alone, under its trade.
+    Chosen(Candidates),
+    /// Ask once more, with the same numbered options in the same order (D-103).
+    AskAgain(Vec<String>),
+    /// "Not sure", a second unusable reply or no question: every candidate stays, so only a
+    /// license covering all of them gets the card (CARD-001).
+    KeepAll(Candidates),
+}
+
+impl Candidates {
+    /// Reads the `asked`-th (1 or 2) reply to "Which fits best?" (INT-012, INT-014, INT-015): a
+    /// lone option number or the whole words of exactly one option chooses it; otherwise the
+    /// question is asked once more, then every candidate stays (D-103, D-105).
+    #[must_use]
+    pub fn fit_step(&self, words: &str, asked: u8) -> FitStep {
+        let Some(options) = &self.which_fits else {
+            return FitStep::KeepAll(self.clone());
+        };
+        let folded = fold(words);
+        if let Some(job) = fit_choice(options, &folded) {
+            return self
+                .chosen(job)
+                .map_or_else(|| FitStep::KeepAll(self.clone()), FitStep::Chosen);
+        }
+        if asked < 2 && !not_sure(&folded) {
+            FitStep::AskAgain(options.clone())
+        } else {
+            FitStep::KeepAll(self.clone())
+        }
+    }
+
+    /// The candidates once the homeowner chose `job`: that job type alone, under the trade it
+    /// belongs to, so its licenses get the card (D-105, CARD-001). The trade is the candidate's,
+    /// else the keyword rule's, else the `<trade>_other` prefix; `None` (every candidate stays)
+    /// if none names it, so a choice never carries an empty trade.
+    fn chosen(&self, job: &str) -> Option<Candidates> {
+        let listed = self.job_types.iter().find(|(_, j)| j == job);
+        let trade = listed
+            .map(|(t, _)| t.as_str())
+            .or_else(|| {
+                RULES
+                    .iter()
+                    .find(|r| r.job_type == Some(job))
+                    .map(|r| r.trade)
+            })
+            .or_else(|| job.strip_suffix("_other"))?;
+        Some(Candidates {
+            job_types: vec![(trade.to_owned(), job.to_owned())],
+            which_fits: None,
+        })
+    }
+}
+
+/// The one option a folded reply names (INT-012, D-103): by a lone number, or by the whole words
+/// of exactly one option; a number and words naming a different option make the reply unusable.
+fn fit_choice<'a>(options: &'a [String], folded: &str) -> Option<&'a String> {
+    let by_words = options_named(options, folded);
+    match lone_number(folded, options) {
+        Some(job) if by_words.iter().all(|w| *w == job) => Some(job),
+        Some(_) => None,
+        None => match by_words.as_slice() {
+            [one] => Some(one),
+            _ => None,
+        },
+    }
+}
+
+/// The options a folded reply names by whole words: the option's own phrase, a keyword of it, or
+/// for `<trade>_other` a phrase of that trade that names no job type of it.
+fn options_named<'a>(options: &'a [String], folded: &str) -> Vec<&'a String> {
+    let padded = format!(" {folded} ");
+    let kw = keyword_reading(folded);
+    let named = |option: &&String| match option.strip_suffix("_other") {
+        Some(t) => kw.trades.contains(&t) && !kw.named_jobs().any(|(had, _)| *had == t),
+        None => {
+            first_at(&padded, &[fold(option).as_str()]).is_some()
+                || kw.named_jobs().any(|(_, j)| j == option)
+        }
+    };
+    options.iter().filter(named).collect()
 }
 
 /// Adds a (trade, job type) pair unless it is already there.
