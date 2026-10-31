@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE businesses.business SET pause_reason = $2 WHERE id = $1 AND status = 'paused' AND pause_reason = 'self'",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "fff56f262be8e9d13c721730f2fbb3f9f7204c6556e39a4c99c563c43a921645"
+}

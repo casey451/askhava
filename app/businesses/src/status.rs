@@ -142,3 +142,29 @@ pub fn next(from: AccountStatus, event: Event) -> Result<AccountStatus, Refused>
         ) => Err(Refused),
     }
 }
+
+/// The rule reason that replaces a business's own pause, when `event` is a pause for another
+/// reason and the business is paused only by itself (BIZ-009, BIZ-010, D-970).
+///
+/// [`next`] refuses a pause on a paused business, so without this a self-pause would block a later
+/// pause for complaints, the license, no covered job type or by Casey, and a self-resume would
+/// then reactivate a business its rules had paused. The status stays paused; only the reason
+/// changes, and a self-resume is then refused (D-969). A pause for another reason is never
+/// replaced (`None`).
+#[must_use]
+pub fn replaces_self_pause(
+    from: AccountStatus,
+    current: Option<PauseReason>,
+    event: Event,
+) -> Option<PauseReason> {
+    let asked = match event {
+        Event::Pause(r) => Some(r),
+        Event::Checked(_)
+        | Event::OwnerApproved(_)
+        | Event::CategoryOpened
+        | Event::Resume
+        | Event::Remove => None,
+    }?;
+    let self_paused = from == AccountStatus::Paused && current == Some(PauseReason::SelfPaused);
+    (self_paused && asked != PauseReason::SelfPaused).then_some(asked)
+}
