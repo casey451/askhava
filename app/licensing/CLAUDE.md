@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The layer-3 crate that decides, from a business's licenses alone, whether it may receive a job's card (`docs/architecture.md` section 3). T034 built the agency-licensed categories (pest by attestation, alarm, inspection, septic), the city-list match for no-license categories and the boundary job types (dryer vents, holiday lights, appliances, pools). T035 added the handyman limits (`src/handyman.rs`), T036 the daily list imports and daily check (`src/imports.rs`, `src/service.rs`), T153 the license-map class coverage, T180 the live lookup, T037 the card lines.
+The layer-3 crate that decides, from a business's licenses alone, whether it may receive a job's card (`docs/architecture.md` section 3). T034 built the agency-licensed categories (pest by attestation, alarm, inspection, septic), the city-list match for no-license categories and the boundary job types (dryer vents, holiday lights, appliances, pools). T035 added the handyman limits (`src/handyman.rs`), T036 the daily list imports and daily check (`src/imports.rs`, `src/service.rs`), T153 the license class map (`src/class_map.rs`), T180 the live lookup, T037 the card lines.
 
 ## What it owns
 
@@ -13,6 +13,7 @@ The layer-3 crate that decides, from a business's licenses alone, whether it may
 - `src/models.rs`: `LicenseKind` (the catalog's `license.kind`), `Agency` (code, license-map name, its one category), `PestRecordCategory`, `PestAttestation` (checked constructor), `CityListStanding`, `CityRecord` (no `Debug`), `Holder`, `Job`, `Eligibility`, `NoCardReason`, `SaleAnswer`, `InspectionFee`, `LicensingError`.
 - `src/rules.rs`: the pure rules; no database.
 - `src/handyman.rs`: the handyman limits (T035): `never_handyman`, `check_quote`, `split_job`, `QuotePrice`, `QuoteSubmission`, `QuoteRefusal`, `HandymanJob`, `JobRequest`, `NeverHandyman`, `HANDYMAN_CARD_LINE`, `HANDYMAN_LIMIT_CENTS`, `SPLIT_JOB_WINDOW_DAYS`; it compiles in `docs/catalog/gas_keywords.yaml` (D-897).
+- `src/class_map.rs` (T153, pure): `ClassMap` (`shipped`, `load`, `class_covers`, `covers`, `job_types`, `sign_up`, `check_project_limit`, `opening`), `request_intake`, `SignUpOutcome`, `ProjectLimitRefusal`, `Opening`, `RequestIntake`, `ClassMapError`, `JobTypeKey`, `STRUCTURAL_JOB_TYPES`; it compiles in `docs/catalog/license_map.yaml` and `categories.yaml`.
 - `src/lines.rs` (T037, pure): `licensed_lines`, `no_license_lines`, `LicenseFacts`, `NoLicenseFacts`, `Issuer`, `CardLine`, `CardLanguage`, `LinesError`; the words and agency links are `templates/license_lines.json`.
 - Migration `0048_licensing_agency_rules.sql`: the `licensing` schema and `licensing.business_license` (one row per other-agency license; a pest row is `self_attested` with its record categories and `paused_at`; no `DELETE` for `askhava_app`).
 - Migration `0050_licensing_imports.sql`: `licensing.list_import`, `licensing.agency_record` (ROC rows), `licensing.city_license_entry`, `licensing.license_check`; append-only for `askhava_app`, no contact column (D-902).
@@ -36,6 +37,10 @@ The layer-3 crate that decides, from a business's licenses alone, whether it may
 - LIC-009: `handlers::end_date_pauses` (from 00:00 Arizona time on the end or bond-cancel date).
 - LIC-039: `handlers::list_failure_alerts`, `alert_list_failure` (`licensing.list_failing` at 12 hours, `licensing.list_still_failing` for the OPS-032 push at 24, both `normal`, never `high`, so OPS-001 safe mode can't start from them; both on a run that jumps past 24 hours; D-939, D-942) and `lookup_while_list_fails` (one lookup per active business, `lookup_spacing` apart).
 - LIC-026, LIC-034: `lines::licensed_lines` (check line with date and link; pest gets none, LIC-047). LIC-037: its since-line only when the record has an issue year. LIC-038, LIC-032, WORD-006: `lines::no_license_lines` (handyman line first, city line with the year only when the list has one, insurance as reported). WORD-016: no rating, review, hire count or ranking exists in these types.
+- LIC-043, LIC-035: `class_map::ClassMap::load` and `resolve` (grants only where the map lists them, `scope` tags for subclassifications, `includes` for dual, KB and KA classes, unclear rows never inherited, D-392); `covers` fills `Holder::roc_covers`.
+- LIC-044: `ClassMap::sign_up` (`CommercialOnly` when every class is commercial-only; `NothingMapped` when nothing is covered, D-984); the words are the portal's.
+- LIC-045: `ClassMap::check_project_limit` (R-61 $50,000, R-62 $5,000, top of the price, only when every qualifying class has a limit, D-985) and `STRUCTURAL_JOB_TYPES` for `no_structural` (D-983).
+- LIC-046: `ClassMap::opening` and `request_intake` (`launch_open` false is `ComingLater`; under the active-business setting is `TooFewBusinesses`, INT-017); a launch-open disabled category fails the load.
 - LIC-010: the lists are read only by license number (`read_back`, `check_license`) or matched against one business's names (`service::city_standing`); no function lists them out and no contact column is stored.
 
 ## Never break
@@ -48,7 +53,8 @@ The layer-3 crate that decides, from a business's licenses alone, whether it may
 - A gas, smoke-alarm, sprinkler or permit-type request never gets a `HandymanCard`, and an unreadable gas list blocks every one: `src/tests/prop_handyman_never_gas.rs`, `src/tests/handyman.rs::malformed_gas_file_is_refused`.
 - The older `eligibility` (in `src/api.rs`, from `rules`) does not apply the AI-012, LIC-021, LIC-022 handyman block; code that chooses recipients must call `eligibility_for_request`.
 - The gas list keeps every AI-012 word: `src/tests/handyman.rs::gas_list_holds_ai_012_words_and_catches_d_157_cases`.
-- `Holder::roc_covers` means the license map covers this job type (T153); this crate never reads a class name to decide ROC cover.
+- `Holder::roc_covers` means the license map covers this job type (T153); this crate never reads a class name to decide ROC cover outside `class_map`, and `class_map` reads only the map: `src/tests/class_map.rs::td_lic_19_golden_rows`, `td_lic_19_matching_examples_agree`.
+- An unclear row is never inherited and R-62 never gets structural work: `src/tests/class_map.rs::td_lic_19_unclear_row_is_never_inherited`, `src/tests/class_limits.rs::r_62_never_receives_structural_work`.
 - A changed list header records nothing, and a malformed row never stops an import: `tests/integration/tests/license_imports.rs::daily_roc_import_records_rows_and_counts_malformed_ones`.
 - A cleanly cut list under half the previous one never becomes the latest: `tests/integration/tests/license_imports.rs::a_list_under_half_the_previous_one_is_refused`.
 - A card needs the latest daily check `active`: `tests/integration/tests/license_imports.rs::card_needs_latest_daily_check_active`.
@@ -60,6 +66,7 @@ The layer-3 crate that decides, from a business's licenses alone, whether it may
 - Add an agency-licensed category: an `Agency` variant (code, map name, category), the `agencies` row in `docs/catalog/license_map.yaml`, the migration check list in a new migration; run `cargo test -p askhava-licensing`.
 - Add a pest record category: `PestRecordCategory`, `needed_for`, a `licensing.business_license` column and the map's `record_category_needed`.
 - Add a gas word: `docs/catalog/gas_keywords.yaml`, then `python3 scripts/check_plan_lock.py --write` and a `docs/decisions.md` entry. Add a permit-type or never-at-any-price job type: `PERMIT_TYPE` or `NEVER_AT_ANY_PRICE` in `src/handyman.rs` and a case in `src/tests/handyman.rs`.
+- Change which classes get which job types: edit `docs/catalog/license_map.yaml` only (run `python3 scripts/check_catalog.py`), then `cargo test -p askhava-licensing tests::class_`; never special-case a class in code.
 - Change a card line: `templates/license_lines.json` (both languages) and `src/tests/license_lines.rs`; run `python3 scripts/check_copy.py`.
 - Change the city-list match: `rules::city_list_standing`, `compared`; update LIC-011 and D-856.
 - Change a list layout: `ROC_HEADER` or `CITY_HEADER` and its parser in `src/imports.rs`, the fixtures in `tests/integration/tests/license_imports.rs`, and D-902.
@@ -72,6 +79,8 @@ The layer-3 crate that decides, from a business's licenses alone, whether it may
 - `src/tests/handyman.rs`: TD-LIC-08 (every worked example through `check_quote`, the certification box, the card line), TD-LIC-09 (the gas list and the blocked job types), TD-LIC-10 (the split-job window and totals).
 - `src/tests/prop_handyman_never_gas.rs`: property tests for TD-LIC-09 (gas words and blocked candidates never reach a handyman), TD-LIC-08 (accepted exactly when certified and under the limit) and TD-LIC-10 (near jobs reaching $1,000 are blocked).
 - `src/tests/imports.rs` (pure, D-932): the list readers: header check, skipped and counted malformed rows (wrong field count, unclosed quote, over-long field, bad date, unknown status), the `TooFewRows` refusal for both lists, the half-size check (`shrank_too_far`, D-905), quoted fields and number normalising; it keeps `app/licensing/` at or above its 95% branch floor.
+- `src/tests/class_map.rs`: TD-LIC-19 (golden rows, general classes, unclear rows, subclassification scope, ticked-but-uncovered, the matching examples' `map_covers`, bad maps) and TD-LIC-21 (openings, the active-business setting, a disabled launch-open category).
+- `src/tests/class_limits.rs`: TD-LIC-20 (commercial-only stop, C-37 plus R-11, the R-61 and R-62 limits at and over), D-983 and D-984.
 - `src/tests/license_lines.rs`: TD-LIC-11, TD-LIC-14, TD-LIC-25 (the lines, their order, links, Spanish, no ranking words).
 - `tests/integration/tests/license_lookup_failures.rs` (database, T180): TD-LIC-04 (one lookup at the pick), TD-LIC-05 (unknown, clocks, end dates), TD-LIC-15 (the failing-list alerts, both `normal`, a run that jumps past both limits, and the throttled lookups).
 - `tests/integration/tests/license_imports.rs` (database): the imports with planted malformed rows, the read-back, the daily check and card gate, the city match and append-only tables.
