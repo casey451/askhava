@@ -12381,7 +12381,7 @@
   {
    "id": "FIX-MAIN",
    "deps": [],
-   "status": "QUEUED",
+   "status": "IN_PROGRESS",
    "attempts": 1,
    "type": "harness",
    "model": "claude-sonnet-5-5",
@@ -12416,7 +12416,7 @@
    "retry_after": null,
    "last_failure": "Governance: failure; Ci: failure; Ci: failure; Checks: failure; Checks: failure\nChecks failed at step: Plan lock and change rules (docs/governance.md)\nCi failed at step: Both jobs passed",
    "reason": null,
-   "attempt_started_at": "2026-10-31T19:47:25Z",
+   "attempt_started_at": "2026-10-31T20:06:00Z",
    "stale_leases": [
     {
      "task": "FIX-MAIN",
@@ -12555,8 +12555,8 @@
   "source": "ledger",
   "by_task": {
    "FIX-MAIN": {
-    "estimated_bytes": 1550363,
-    "estimated_tokens": 2816357,
+    "estimated_bytes": 1552047,
+    "estimated_tokens": 2819416,
     "input_tokens": 42,
     "output_tokens": 10024,
     "cache_creation_input_tokens": 79263,
@@ -13236,7 +13236,7 @@
    }
   }
  },
- "updated_at": "2026-10-31T20:02:07Z",
+ "updated_at": "2026-10-31T20:06:03Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -13334,7 +13334,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "7336f9944e50b45762a2d668cdab3c366cd73ccd",
+ "runner_sha": "48d96c65a0122cdf5bdfa42770ecd97b64e0d2a1",
  "starter": "actions",
  "smoke_runs": [
   {
@@ -13488,26 +13488,26 @@
   "set_at": "2026-10-31T19:43:49Z"
  },
  "pacing": {
-  "last": "FIX-MAIN estimated 2.8M tokens (calibrated); five-hour window has 20.7M left, week 349.1M after 1.7M still running in another lane (ledger); claimed",
-  "at": "2026-10-31T19:47:25Z",
+  "last": "FIX-MAIN estimated 2.8M tokens (calibrated); five-hour window has 20.6M left, week 348.9M after 1.7M still running in another lane (ledger); claimed",
+  "at": "2026-10-31T20:06:00Z",
   "decision": "claim",
   "waiting_until": null,
   "standing": {
    "five_hour": {
-    "used": 6312381,
+    "used": 6449364,
     "budget": 27000000,
-    "left": 20687619,
+    "left": 20550636,
     "resets_at": "2026-10-31T23:22:27Z"
    },
    "week": {
-    "used": 100941936,
+    "used": 101078919,
     "budget": 450000000,
-    "left": 349058064,
+    "left": 348921081,
     "resets_at": "2026-11-05T18:38:52Z"
    }
   },
   "remaining_estimate": 239516649,
-  "projected_finish": "2026-11-04T13:12:36Z"
+  "projected_finish": "2026-11-04T13:31:10Z"
  },
  "main_red_history": [
   {
