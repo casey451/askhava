@@ -615,11 +615,34 @@ class GitHubEnv:
         return {0: True, 1: False}.get(code)
 
     def decision_numbers(self) -> set[int] | None:
-        """The D-numbers on main's docs/decisions.md (fetched fresh); claims reserve decision numbers
-        above them (D-530). None when the file cannot be read or holds no entry, so a bad read never
-        makes a claim hand out D-001 to D-005."""
+        """The D-numbers on main's docs/decisions.md (fetched fresh), plus those on the head of every open
+        pull request from a `claude/` branch that is not a task branch (a plan or harness change waiting
+        to merge, D-1144); claims reserve decision numbers above them all (D-530). None when main's file
+        cannot be read or holds no entry, so a bad read never makes a claim hand out D-001 to D-005."""
         numbers = set(st.decision_numbers(self._show(self.main_head() or None, DECISIONS_FILE) or ""))
-        return numbers or None
+        return (numbers | self.open_plan_decision_numbers()) if numbers else None
+
+    def open_plan_decision_numbers(self) -> set[int]:
+        """D-numbers on the heads of open plan and harness pull requests (`claude/` branches that are not
+        task branches), read through the contents API; a request that fails contributes nothing (D-1144).
+        T047's claim on October 31 took the block D-1127 to D-1131 while two such pull requests held
+        D-1127 and D-1128, numbered above the counter as the interim rule asked; main's highest entry,
+        not the counter, set the block, so a plan number only becomes safe once its pull request is open."""
+        try:
+            pulls = self.gh_json(f"repos/{self.repo}/pulls?state=open&per_page=100")
+        except (RuntimeError, ValueError):
+            return set()
+        found: set[int] = set()
+        for pull in pulls if isinstance(pulls, list) else []:
+            ref = str((pull.get("head") or {}).get("ref") or "")
+            sha = str((pull.get("head") or {}).get("sha") or "")
+            if not ref.startswith("claude/") or verify.TASK_BRANCH.match(ref) or not sha:
+                continue
+            code, out, _ = self._run(["gh", "api", "-H", "Accept: application/vnd.github.raw",
+                                      f"repos/{self.repo}/contents/{DECISIONS_FILE}?ref={sha}"], None, self.root)
+            if code == 0:
+                found |= set(st.decision_numbers(out or ""))
+        return found
 
     def plan_evidence(self, task_id: str, prompt: str, since: str) -> dict[str, Any] | None:
         """What `--requeue --plan-fix` checks on main (D-677): main's head (fetched fresh) and main's

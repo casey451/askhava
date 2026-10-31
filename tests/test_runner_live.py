@@ -1313,3 +1313,40 @@ def test_reserve_decision_command_takes_one_number_from_the_live_counter(repo: d
     stored = json.loads(origin_file(repo, "claude/kit-state", "kit/state.json"))
     assert stored["next_decision"] == 109 and [r["number"] for r in stored["plan_reservations"]] == [107, 108]
     assert stored["plan_reservations"][0]["session"] == "overseer-casey-approved" and stored["plan_reservations"][0]["reason"] == "plan change"
+
+
+def test_claims_reserve_above_the_decisions_of_open_plan_pull_requests(repo: dict[str, Path], tmp_path: Path) -> None:
+    """D-1144: a plan or harness pull request still open holds D-numbers main does not have yet; a claim's
+    block starts above them too, so the block and the pull request cannot collide when both land."""
+
+    class PlanGh(OfflineGh):
+        def __call__(self, args: list[str], stdin: str | None, cwd: Path) -> tuple[int, str, str]:
+            if args[0] == "gh" and args[-1].endswith("pulls?state=open&per_page=100"):
+                self.calls.append(args)
+                return 0, json.dumps([
+                    {"number": 7, "head": {"ref": "claude/pacing-spread", "sha": "a" * 40}},
+                    {"number": 8, "head": {"ref": "claude/task/T047-quote-texts", "sha": "b" * 40}},
+                    {"number": 9, "head": {"ref": "dependabot/npm/x", "sha": "c" * 40}},
+                ]), ""
+            if args[0] == "gh" and "contents/docs/decisions.md?ref=" in args[-1]:
+                self.calls.append(args)
+                sha = args[-1].rsplit("=", 1)[1]
+                return (0, "# Decisions\n\n- **D-001** a.\n- **D-040** b.\n- **D-052** plan change.\n", "") if sha == "a" * 40 else (1, "", "boom")
+            return super().__call__(args, stdin, cwd)
+
+    gh = PlanGh([])
+    env = make_env(repo["a"], tmp_path, run=gh)
+    seed = repo["seed"]
+    git(seed, "checkout", "-q", "main")
+    (seed / "docs").mkdir()
+    (seed / "docs" / "decisions.md").write_text("# Decisions\n\n- **D-001** a.\n- **D-040** b.\n")
+    git(seed, "add", "-A")
+    git(seed, "commit", "-qm", "decisions")
+    git(seed, "push", "-q", "origin", "main")
+    assert env.decision_numbers() == {1, 40, 52}
+    reads = [c[-1] for c in gh.calls if "contents/docs/decisions.md" in c[-1]]
+    assert reads == [f"repos/fake-owner/fake-repo/contents/docs/decisions.md?ref={'a' * 40}"], "task and dependabot branches are not read"
+    state = st.reserve_decisions(st.with_task(st.new_state(), "K10"), "K10", env.decision_numbers() or set())
+    assert st.entry(state, "K10")["decision_ids"] == [53, 54, 55, 56, 57]
+    env.gh_json = lambda path: (_ for _ in ()).throw(RuntimeError("HTTP 502"))  # type: ignore[method-assign]  # reason: the API is down
+    assert env.decision_numbers() == {1, 40}, "an unreadable pull-request list leaves main's numbers"
