@@ -1,7 +1,7 @@
 {
  "schema": 1,
  "phase": "kit",
- "current": "T038",
+ "current": "T036",
  "backup_runner": "on",
  "ruleset_verified": true,
  "lease": null,
@@ -6435,12 +6435,12 @@
     "T035",
     "T176"
    ],
-   "status": "QUEUED",
+   "status": "IN_PROGRESS",
    "attempts": 1,
    "slug": "licensing-imports",
    "type": "build",
    "stage": "2",
-   "attempt_started_at": "2026-10-31T03:35:35Z",
+   "attempt_started_at": "2026-10-31T04:21:54Z",
    "decision_ids": [
     902,
     903,
@@ -9966,7 +9966,7 @@
    }
   }
  },
- "updated_at": "2026-10-31T04:19:09Z",
+ "updated_at": "2026-10-31T04:31:50Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -10064,15 +10064,9 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "dcf5b31cacae4bad8b6bafaddec3b768f9f494ac",
+ "runner_sha": "0e41caa8b702dc6cd5a783f1ab363308819700fa",
  "starter": "actions",
  "smoke_runs": [
-  {
-   "sha": "6a92164fdcd6e282e136c82b5d1569b02c81f173",
-   "ok": false,
-   "at": "2026-10-30T21:40:04Z",
-   "why": "start routine"
-  },
   {
    "sha": "6a92164fdcd6e282e136c82b5d1569b02c81f173",
    "ok": true,
@@ -10186,30 +10180,36 @@
    "ok": true,
    "at": "2026-10-31T03:52:50Z",
    "why": "start routine"
+  },
+  {
+   "sha": "0e41caa8b702dc6cd5a783f1ab363308819700fa",
+   "ok": true,
+   "at": "2026-10-31T04:21:54Z",
+   "why": "start routine"
   }
  ],
  "main_red": null,
  "pacing": {
-  "last": "T038 estimated 1.7M tokens (calibrated); five-hour window has 25.0M left, week 382.8M after 948k still running in another lane (ledger); claimed",
-  "at": "2026-10-31T03:52:50Z",
+  "last": "T036 estimated 948k tokens (calibrated); five-hour window has 22.8M left, week 380.5M after 1.7M still running in another lane (ledger); claimed",
+  "at": "2026-10-31T04:21:54Z",
   "decision": "claim",
   "waiting_until": null,
   "standing": {
    "five_hour": {
-    "used": 1972421,
+    "used": 4223706,
     "budget": 27000000,
-    "left": 25027579,
+    "left": 22776294,
     "resets_at": "2026-10-31T07:27:33Z"
    },
    "week": {
-    "used": 67234407,
+    "used": 69485692,
     "budget": 450000000,
-    "left": 382765593,
+    "left": 380514308,
     "resets_at": "2026-11-05T18:38:52Z"
    }
   },
-  "remaining_estimate": 229788064,
-  "projected_finish": "2026-11-03T17:40:06Z"
+  "remaining_estimate": 231360507,
+  "projected_finish": "2026-11-03T18:44:22Z"
  },
  "main_red_history": [
   {
