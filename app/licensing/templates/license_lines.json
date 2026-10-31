@@ -7,6 +7,7 @@
   },
   "en": {
     "agencies": {
+      "pest_management": "Arizona Department of Agriculture",
       "home_inspector": "Board of Technical Registration",
       "alarm_business": "Board of Technical Registration",
       "septage_hauler": "ADEQ"
@@ -24,6 +25,7 @@
   },
   "es": {
     "agencies": {
+      "pest_management": "Arizona Department of Agriculture",
       "home_inspector": "Board of Technical Registration",
       "alarm_business": "Board of Technical Registration",
       "septage_hauler": "ADEQ"

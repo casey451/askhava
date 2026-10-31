@@ -7,7 +7,7 @@
 //! card line states only a public record or the business's own answer: nothing here can produce a
 //! rating, review count, hire count or ranking (WORD-016). The pest-management card's LIC-047 line
 //! is not built here: a self-attested license has no check date, so [`licensed_lines`] gives it
-//! no lines. The "About us" line (BIZ-022) and the card order on the quote page are other tasks'.
+//! no check line, only the LIC-037 since-line when the record has an issue year. The "About us" line (BIZ-022) and the card order on the quote page are other tasks'.
 
 use std::collections::BTreeMap;
 use std::sync::LazyLock;
@@ -146,7 +146,8 @@ fn format_date(words: &Words, date: Date) -> Result<String, LinesError> {
 ///
 /// The check line carries the agency's link. The since-line appears only when the state record has
 /// an original issue year, so a record with none gets no such line. A pest-management license is
-/// self-attested (LIC-047) and gets no lines here.
+/// self-attested (LIC-047) and gets no check line, but LIC-037 has no pest exception, so it gets the
+/// since-line when the record has a year (TD-LIC-25).
 ///
 /// # Errors
 ///
@@ -158,7 +159,6 @@ pub fn licensed_lines(
     let (all, words) = words(language)?;
     let (link_key, checked, since, agency) = match facts.issuer {
         Issuer::Roc => ("roc", &words.roc_checked, &words.roc_since, String::new()),
-        Issuer::Agency(Agency::PestManagement) => return Ok(Vec::new()),
         Issuer::Agency(a) => {
             let name = words
                 .agencies
@@ -172,6 +172,9 @@ pub fn licensed_lines(
             )
         }
     };
+    if facts.issuer == Issuer::Agency(Agency::PestManagement) {
+        return Ok(since_line(facts, since, &agency).into_iter().collect());
+    }
     let date = format_date(words, facts.checked_on)?;
     let text = checked
         .replace("{agency}", &agency)
@@ -185,13 +188,18 @@ pub fn licensed_lines(
         text,
         link: Some(link.clone()),
     }];
-    if let Some(year) = facts.since_year {
-        let text = since
-            .replace("{agency}", &agency)
-            .replace("{year}", &year.to_string());
-        lines.push(CardLine::plain(text));
-    }
+    lines.extend(since_line(facts, since, &agency));
     Ok(lines)
+}
+
+/// The "license since" line, when the state record has an original issue year (LIC-037).
+fn since_line(facts: &LicenseFacts, since: &str, agency: &str) -> Option<CardLine> {
+    let year = facts.since_year?;
+    Some(CardLine::plain(
+        since
+            .replace("{agency}", agency)
+            .replace("{year}", &year.to_string()),
+    ))
 }
 
 /// The lines of a no-license card, in order: the LIC-024 handyman line when it applies, then the

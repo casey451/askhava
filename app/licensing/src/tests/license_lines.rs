@@ -63,15 +63,23 @@ fn td_lic_11_agency_line_has_date_and_link() {
     assert!(alarm[0].link.is_some());
 }
 
-/// TD-LIC-11 / LIC-047: a self-attested pest license gets no check line here.
+/// TD-LIC-25 / LIC-047 / LIC-037: a self-attested pest license gets no check line, but a
+/// since-line when the record has an issue year and nothing when it has none.
 #[test]
-fn td_lic_11_pest_gets_no_check_line() {
+fn td_lic_25_pest_gets_since_line_only() {
     let lines = licensed_lines(
         &agency(Agency::PestManagement, Some(2010)),
         CardLanguage::English,
     )
     .unwrap();
-    assert!(lines.is_empty());
+    assert_eq!(
+        texts(&lines),
+        ["Arizona Department of Agriculture license since 2010"]
+    );
+    assert!(lines[0].link.is_none());
+    let none =
+        licensed_lines(&agency(Agency::PestManagement, None), CardLanguage::English).unwrap();
+    assert!(none.is_empty());
 }
 
 /// TD-LIC-11: the Spanish check line has the same facts.
