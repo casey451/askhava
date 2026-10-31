@@ -383,3 +383,4 @@
 - 2026-10-31T03:23:04Z runner f410e15e0055 (actions): {}
 - 2026-10-31T03:23:13Z runner f410e15e0055 (actions): {"T035": "IN_PROGRESS -> MERGE_PENDING"}
 - 2026-10-31T03:35:37Z runner 0e41caa8b702 (actions): {"T035": "MERGE_PENDING -> DONE"}
+- 2026-10-31T03:45:42Z runner 0e41caa8b702 (actions): {"T036": "QUEUED -> IN_PROGRESS"}; T036 estimated 948k tokens (calibrated); five-hour window has 26.0M left, week 383.7M (ledger); claimed
