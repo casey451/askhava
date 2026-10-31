@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO intake.golden_result (catalog_version, rows_total, rows_right, ran_at) VALUES ($1, $2, $3, $4) ON CONFLICT (catalog_version) DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Int4",
+        "Int4",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "0031b2035f3954d59c004e8f21fc911a5eaa6835d99057417e4cf441ac822eb8"
+}
