@@ -12555,7 +12555,7 @@
    }
   }
  },
- "updated_at": "2026-10-31T15:18:35Z",
+ "updated_at": "2026-10-31T15:29:16Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -12653,15 +12653,9 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "93191376de44898c759dfb746a5723bc1bacd92d",
+ "runner_sha": "2a0f0e3ef73c2f9eed229c388424d471542e6947",
  "starter": "actions",
  "smoke_runs": [
-  {
-   "sha": "7c4b75de0b2c74b561b27e8112e68baeba8e188d",
-   "ok": true,
-   "at": "2026-10-31T05:06:29Z",
-   "why": "start routine"
-  },
   {
    "sha": "7c4b75de0b2c74b561b27e8112e68baeba8e188d",
    "ok": true,
@@ -12775,6 +12769,12 @@
    "ok": true,
    "at": "2026-10-31T14:43:38Z",
    "why": "start routine"
+  },
+  {
+   "sha": "2a0f0e3ef73c2f9eed229c388424d471542e6947",
+   "ok": false,
+   "at": "2026-10-31T15:21:42Z",
+   "why": "start routine"
   }
  ],
  "main_red": null,
@@ -12831,6 +12831,11 @@
   {
    "sha": "e3aa84d074c496313e59d278b64104f8ed887a2e",
    "at": "2026-10-31T00:00:00Z",
+   "why": "smoke red while Ci, Twin and Ally were green on the head"
+  },
+  {
+   "sha": "2a0f0e3ef73c2f9eed229c388424d471542e6947",
+   "at": "2026-10-31T15:21:42Z",
    "why": "smoke red while Ci, Twin and Ally were green on the head"
   }
  ],
