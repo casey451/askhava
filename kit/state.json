@@ -9103,8 +9103,8 @@
     "T186",
     "T032"
    ],
-   "status": "MERGE_PENDING",
-   "attempts": 0,
+   "status": "QUEUED",
+   "attempts": 1,
    "slug": "quotes-homeowner-texts",
    "type": "build",
    "stage": "2",
@@ -9122,13 +9122,42 @@
      "model": "claude-sonnet-5-5",
      "model_evidence_count": 89,
      "head_sha": "fe2d5c8228df36bd6cc76d94d1b62c21abb1230c",
-     "pr": null,
-     "checks": null,
+     "pr": 215,
+     "checks": [
+      {
+       "name": "Governance",
+       "conclusion": "failure"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "failure"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "failure"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-sonnet-5-5",
      "path_check_ok": true,
      "started_at": "2026-10-31T23:09:00Z",
      "ended_at": "2026-10-31T23:47:51Z",
-     "result": "MERGE_PENDING"
+     "result": "check_failed"
     }
    ],
    "reviewed_sha": "fe2d5c8228df36bd6cc76d94d1b62c21abb1230c",
@@ -9142,7 +9171,8 @@
     "enabled": true,
     "why": "auto-merge on #215 (gh pr merge)",
     "head": "fe2d5c8228df36bd6cc76d94d1b62c21abb1230c"
-   }
+   },
+   "last_failure": "Governance: failure; Ci: failure; Checks: failure\nChecks failed at step: Plan lock and change rules (docs/governance.md)\nCi failed at step: Both jobs passed"
   },
   {
    "id": "T048",
@@ -13601,7 +13631,7 @@
    }
   }
  },
- "updated_at": "2026-10-31T23:51:36Z",
+ "updated_at": "2026-10-31T23:51:42Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
