@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO intake.property (homeowner_id, contact_id, town, created_at) SELECT homeowner_id, gen_random_uuid(), $2, $3 FROM intake.conversation WHERE id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "d3b74e7b14f2fe726a6b2b040f191d24d10eafcfe53db7d1d9fad5ff2557acc2"
+}

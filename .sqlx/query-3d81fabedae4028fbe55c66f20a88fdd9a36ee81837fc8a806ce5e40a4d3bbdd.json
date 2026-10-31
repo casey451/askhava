@@ -1,0 +1,100 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id, conversation_id, inbox_id, matched, text_queued_at, safe_at, created_at FROM intake.emergency_event WHERE conversation_id = $1 ORDER BY created_at, id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "intake.emergency_event",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "conversation_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "intake.emergency_event",
+            "name": "conversation_id"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "inbox_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "intake.emergency_event",
+            "name": "inbox_id"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "matched",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "intake.emergency_event",
+            "name": "matched"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "text_queued_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "intake.emergency_event",
+            "name": "text_queued_at"
+          }
+        }
+      },
+      {
+        "ordinal": 5,
+        "name": "safe_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "intake.emergency_event",
+            "name": "safe_at"
+          }
+        }
+      },
+      {
+        "ordinal": 6,
+        "name": "created_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "intake.emergency_event",
+            "name": "created_at"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      true,
+      false,
+      false,
+      true,
+      true,
+      false
+    ]
+  },
+  "hash": "3d81fabedae4028fbe55c66f20a88fdd9a36ee81837fc8a806ce5e40a4d3bbdd"
+}
