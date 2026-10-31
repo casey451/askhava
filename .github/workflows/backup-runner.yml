@@ -51,7 +51,7 @@ jobs:
       run: ${{ steps.tick.outputs.run || steps.check.outputs.run }}
       lane: ${{ steps.lane.outputs.lane || '1' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Read the flag on claude/kit-state
         id: check
         env:
@@ -212,7 +212,7 @@ jobs:
     steps:
       # persist-credentials: false so pushes go out as the Claude GitHub App,
       # not as GITHUB_TOKEN.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: main
           fetch-depth: 0
