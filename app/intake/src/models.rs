@@ -2,7 +2,8 @@
 //!
 //! One row type per table; T181 added the consent and terms records (`0054_intake_terms_acceptance.sql`);
 //! T039, T040 and T043 add their queries here. T040 keeps a request's jobs as `intake_answer` rows
-//! (no new table, D-993). Every row holds IDs, codes
+//! (no new table, D-993); T050 adds the homeowner pause (`0076_intake_optout_jobs.sql`, CON-029).
+//! Every row holds IDs, codes
 //! and times only, never a contact value or homeowner text (PRIV-001, PRIV-028).
 
 use jiff::Timestamp;
@@ -863,5 +864,39 @@ pub(crate) async fn request_of_job(
     .fetch_optional(db)
     .await
     .map(|r| r.map(|r| (r.id, r.homeowner_id)))
+    .map_err(|_| IntakeError::Database)
+}
+
+/// Marks job `job` of request `conversation` paused by the homeowner from inbox row `inbox` at
+/// `at` (CON-029, migration `0076_intake_optout_jobs.sql`); a job already paused keeps its pause.
+pub(crate) async fn insert_pause(
+    db: &mut PgConnection,
+    (conversation, job): (Uuid, Uuid),
+    inbox: Uuid,
+    at: Timestamp,
+) -> Result<(), IntakeError> {
+    sqlx::query!(
+        "INSERT INTO intake.homeowner_pause (conversation_id, job_id, inbox_id, paused_at) \
+         VALUES ($1, $2, $3, $4) ON CONFLICT (job_id) WHERE ended_at IS NULL DO NOTHING",
+        conversation,
+        job,
+        inbox,
+        at.to_sqlx() as _
+    )
+    .execute(db)
+    .await
+    .map(|_| ())
+    .map_err(|_| IntakeError::Database)
+}
+
+/// Whether job `job` has an open homeowner pause (CON-029).
+pub(crate) async fn is_paused(db: &mut PgConnection, job: Uuid) -> Result<bool, IntakeError> {
+    sqlx::query_scalar!(
+        "SELECT EXISTS (SELECT 1 FROM intake.homeowner_pause \
+         WHERE job_id = $1 AND ended_at IS NULL) AS \"paused!\"",
+        job
+    )
+    .fetch_one(db)
+    .await
     .map_err(|_| IntakeError::Database)
 }
