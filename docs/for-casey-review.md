@@ -1408,3 +1408,8 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 
 - **Your call.** With the budget to be spent by Thursday rather than saved, the 39 queued tasks that were set to run on the cheaper Sonnet model now run on Opus, and the 14 whose reviewer was Sonnet get an Opus reviewer. Finished tasks keep the model they ran on; T047, already running, finishes on its original setup.
 - **Why not a second review instead.** The attempts lost so far came from plan gaps, merge conflicts and a flaky test, not from a reviewer missing something; a second reviewer would cost about as much as the worker. The stronger model on first attempts is where the tokens buy accuracy.
+
+## The runner now reads your real plan usage (D-1155, November 1)
+
+- **What was wrong.** The runner paced itself on its own estimate because the probe that should read the plan's usage never had a login to use inside the build job.
+- **What changed.** The build action already reports the plan's live usage during each session; the job now keeps the last reading at the end of every session, and the pacer uses it for the next claim, so the Thursday spend line measures against the same percentage you see. No secret is passed around: the reading is taken from the session's own output after it ends.
