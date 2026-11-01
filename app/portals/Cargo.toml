@@ -1,6 +1,6 @@
 [package]
 name = "askhava-portals"
-description = "Ask Hava portals: the shared web security (sessions, __Host- cookies, CSRF, cross-site refusal, security headers, security events; SEC-009, SEC-012, SEC-042, SEC-048) and, from later tasks, the homeowner, business and owner portals"
+description = "Ask Hava portals: the shared web security (sessions, __Host- cookies, CSRF, cross-site refusal, security headers, security events; SEC-009, SEC-012, SEC-042, SEC-048) the homeowner quote page (PICK-008 to PICK-012, T052) and, from later tasks, the homeowner, business and owner portals"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -8,8 +8,12 @@ publish.workspace = true
 
 [dependencies]
 askhava-core = { workspace = true }
+askhava-intake = { workspace = true }
+askhava-jobs = { workspace = true }
 askhava-ops = { workspace = true }
 askhava-privacy = { workspace = true }
+askhava-quotes = { workspace = true }
+askama = { workspace = true }
 axum = { workspace = true }
 axum-extra = { workspace = true }
 jiff = { workspace = true }
@@ -23,7 +27,7 @@ thiserror = { workspace = true }
 tracing = { workspace = true }
 
 [dev-dependencies]
-askama = { workspace = true }
+proptest = { workspace = true }
 
 [lints]
 workspace = true
