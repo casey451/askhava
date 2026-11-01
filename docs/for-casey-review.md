@@ -1417,4 +1417,4 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 ## The spend line now runs on your real plan percentage (D-1167, November 1)
 
 - **What happened.** The runner's first in-band reading came in at 6:02 pm: 59% of the week used, reset Thursday 10:00 am Phoenix. The line had been set in the runner's own estimate, which sits about 10% lower, so left alone it would have waited most of Sunday before claiming.
-- **What changed.** The line now starts from that 59% reading and ends at about 97% at 7:00 am Thursday, three hours before the reset — about one task every two hours, each on Opus. The old 10% safety margin is gone; the three-hour time margin does that job now.
+- **What changed.** The line now starts from that 59% reading and ends at about 97% at 7:00 am Thursday, three hours before the reset — about one task every hour and a half, each on Opus. The old 10% safety margin is gone; the three-hour time margin does that job now.
