@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The layer-8 crate for the homeowner, business and owner portals (`docs/architecture.md` section 3). T051 built the shared web security every browser-facing page uses: sessions and their `__Host-` cookies, CSRF tokens, the cross-site refusal, the SEC-012 headers, `no-store` for contact and photo pages, the realm proofs for vault reads and the SEC-048 security events. T052 added the homeowner's quote page (D-1233 to D-1236); T055 the pick review step and the pick result page (D-1248 to D-1252). Not here yet: sign-in for any realm (later portals tasks), action links (T148), the pick code step and the stored page pick (T187, D-1248), the emergency switch on the review step (D-1249), the quote page's close button, STOP's still-open line, card facts and names, Spanish (D-1236).
+The layer-8 crate for the homeowner, business and owner portals (`docs/architecture.md` section 3). T051 built the shared web security every browser-facing page uses: sessions and their `__Host-` cookies, CSRF tokens, the cross-site refusal, the SEC-012 headers, `no-store` for contact and photo pages, the realm proofs for vault reads and the SEC-048 security events. T052 added the homeowner's quote page (D-1233 to D-1236); T055 the pick review step and the pick result page (D-1248 to D-1252). Not here yet: sign-in for any realm (later portals tasks), action links (T148), sending and checking the pick code and the stored page pick (D-1248, D-1264), the emergency switch on the review step (D-1249), the quote page's close button, STOP's still-open line, card facts and names, Spanish (D-1236).
 
 ## What it owns
 
@@ -10,7 +10,7 @@ The layer-8 crate for the homeowner, business and owner portals (`docs/architect
 - `src/session.rs`: `SESSION_COOKIE`, `PRE_SESSION_COOKIE`, `PortalsError`, `Realm`, `Session` (`id`, `realm`, `homeowner_proof`, `owner_proof`), `start_session`, `current_session`, `ensure_pre_session`, `csrf_token`, `csrf_matches`.
 - `src/security.rs`: `security_headers`, `no_store`, `refuse_cross_site`, `is_cross_site`, `WebSecurity`, `CsrfField`, `ButtonForm`, `CsrfForm`, `SecurityEventKind`, `SecurityEvent`, `record_security_event`, `EVENTS_PER_HOUR_ALERT`, the header values `CONTENT_SECURITY_POLICY`, `STRICT_TRANSPORT_SECURITY`, `PERMISSIONS_POLICY`.
 - `src/quote_page.rs` (T052): `quote_page_routes` (`GET /q/{token}`, `QUOTE_PAGE_ROUTE`), `number_quotes`, `Numbered`, `token_expired`, `TOKEN_LIFE_AFTER_CLOSE`; crate-private `PageView` over `templates/quote_page.html`. `static/quote_page.ts`: the 30-second poll and the status line (D-1235).
-- `src/pick_flow.rs` (T055): `pick_flow_routes` (`POST /q/{token}` the review step, `POST /q/{token}/pick` the final Pick, `PICK_ROUTE`), `result_page`, `PageLanguage`; crate-private `ReviewView` over `templates/pick_review.html` (review and result).
+- `src/pick_flow.rs` (T055): `pick_flow_routes` (`POST /q/{token}` the review step, `POST /q/{token}/pick` the final Pick, `PICK_ROUTE`), `result_page`, `PageLanguage`; crate-private `ReviewView` over `templates/pick_review.html` (review and result); T187: `POST /q/{token}/code` (`CODE_ROUTE`), crate-private `CodeView` over `templates/pick_code.html` (the code-and-contact step).
 - `askama.toml`: template folders `templates/` then `../site/templates/`, so every portal page extends `base.html` (D-491).
 - `sqlx.toml`: `timestamptz` as jiff timestamps. `src/api.rs`: the public surface, plus a re-export of axum-extra's `CookieJar`.
 
@@ -32,6 +32,7 @@ The layer-8 crate for the homeowner, business and owner portals (`docs/architect
 - PICK-013, PICK-016, PICK-017, D-1248, D-1251: the review step says what happens next (the 6-digit code first), shows "or reply <n> YES" and "Go back" to the card, and puts only the Terms line (`#terms-line`, body text, default underlined link colour) right after the final Pick button; it shows no Confirm end time, $100 cap or key-terms summary. The final Pick re-checks the link and quote and re-renders the review under "Nothing was picked" (`#pick-not-open`, focused) until T187's code step stores the pick.
 - PICK-012, PICK-032, D-1251: `takes_pick` lets a pick through in Open, No quotes yet, Quotes ready and Awaiting confirm (a new pick replaces the waiting one), never once the business confirmed.
 - A11Y-014, PICK-045, PICK-054: `result_page`'s `h1#pick-result` has `tabindex="-1"` and `autofocus`; it carries the next steps, the acceptance end time when `accept_by` is given, the `data:` vCard "Add Ask Hava to your contacts" (askhava.com only, no texting-number claim) and the after-Done line, never a reward.
+- PICK-014, PICK-018, A11Y-010 to A11Y-013, A11Y-015, A11Y-016, A11Y-032, D-1264, D-1265: the code step offers a masked call or a shared email (no call window), one `autocomplete="one-time-code"` `inputmode="numeric"` code field read by `picks::api::rules::parse_code`, labels and hints before inputs; a failed "Finish my pick" gives an "Error: " title, a focused `role="alert"` summary of links, inline messages and kept values; "Send a new code" clears only the code; the 10-minute limit is plain text. It sends and stores nothing yet and says so (`#pick-not-open`).
 - A11Y-030, A11Y-031: forms post with `novalidate`, keep their submit button enabled and lean on the handler's idempotency key; a refused CSRF token is a bare 403.
 
 ## Never break
@@ -45,6 +46,7 @@ The layer-8 crate for the homeowner, business and owner portals (`docs/architect
 - Token 30-day edge, 404 for re-issued, revoked and malformed tokens, noindex, no contact, cross-site POST refused: `tests/security/tests/quote_token.rs`.
 - The quote page's fixed lines, no rating or summary element, empty status region, still-open line: `tests/integration/tests/quote_page.rs`.
 - Only the Terms line beside the final Pick, link underlined in the link colour, no $100 or liability words, Go back to the card, no end time on the review step (the result may show it, PICK-045): `src/tests/pick_flow.rs`, `tests/e2e/pick_flow.spec.ts`.
+- The code step: labels before hints before inputs, one paste-friendly one-time-code field, a linked focused error summary, values kept, no timer, masked call or email only: `tests/a11y/pick_forms.spec.ts`, `pick_flow::code_tests`.
 - `refuse_cross_site` is never layered over webhooks (their callers send no `Origin`).
 
 ## How to change
@@ -68,4 +70,5 @@ The layer-8 crate for the homeowner, business and owner portals (`docs/architect
 - `src/tests/prop_arrival_order.rs` (TD-PICK-04, TD-PICK-05): `cargo test -p askhava-portals tests::prop_arrival_order`.
 - `src/tests/pick_flow.rs` (TD-PICK-08, TD-PICK-28, TD-PICK-30, TD-A11Y-02): `cargo test -p askhava-portals tests::pick_flow`.
 - `tests/e2e/pick_flow.spec.ts` (TD-PICK-08, TD-PICK-24, TD-PICK-28, TD-PICK-30, TD-A11Y-02): `npx playwright test --config tests/e2e/playwright.config.ts tests/e2e/pick_flow.spec.ts` (needs DATABASE_URL).
+- `tests/a11y/pick_forms.spec.ts` (TD-PICK-06 paste and autofill, TD-PICK-19 contact choice): `npx playwright test --config tests/a11y/playwright.config.ts tests/a11y/pick_forms.spec.ts` (needs DATABASE_URL); `pick_flow::code_tests`: `cargo test -p askhava-portals code_tests`.
 - `src/security.rs` `tests` (TD-SEC-04, SEC-011) and `src/session.rs` `tests` (TD-SEC-25, SEC-046): `cargo test -p askhava-portals`.

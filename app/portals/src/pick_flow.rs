@@ -15,6 +15,16 @@
 //! Hava contact card and the after-Done line (PICK-054). Both routes are POST only,
 //! behind the cross-site refusal, read through [`CsrfForm`], `no-store` and `noindex`; neither
 //! changes anything, so a double submit is harmless (A11Y-031). No name, phone or address is read.
+//!
+//! T187 adds the code-and-contact step (`templates/pick_code.html`, `POST` [`CODE_ROUTE`]): how the
+//! business reaches her, a call through the masked number or an email she shares (PICK-018; the
+//! accepted-quote copy goes to that email, PICK-042), and
+//! one `autocomplete="one-time-code"` code field that takes paste (PICK-014, A11Y-013, A11Y-032).
+//! Labels and hints come before each input (A11Y-010); a failed submit gets an "Error: " title, a
+//! focused summary linking each field and kept values (A11Y-011, A11Y-012); the code's 10-minute
+//! limit is said up front in plain words, with "Send a new code" in the same form keeping her
+//! choices (A11Y-015, A11Y-016). Until Verify and the stored page pick are wired (D-1248), the
+//! page says no code was sent and nothing is picked (D-1264).
 
 use std::sync::Arc;
 
@@ -22,6 +32,7 @@ use askama::Template;
 use askhava_core::api::{Clock, LinkToken};
 use askhava_jobs::api::quote_token::resolve;
 use askhava_jobs::api::{JobStatus, current, job_number};
+use askhava_picks::api::rules::parse_code;
 use askhava_quotes::api::page_quotes;
 use axum::Router;
 use axum::extract::{FromRef, Path, State};
@@ -38,6 +49,9 @@ use crate::session::csrf_token;
 
 /// The final Pick's route on the review step (PICK-016, PICK-017).
 pub const PICK_ROUTE: &str = "/q/{token}/pick";
+
+/// The code-and-contact step's route (PICK-013, PICK-018, T187).
+pub const CODE_ROUTE: &str = "/q/{token}/code";
 
 /// The language of the review step's Terms line (PICK-016: English and Spanish).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -171,6 +185,7 @@ pub fn pick_flow_routes(pool: PgPool, clock: Arc<dyn Clock>) -> Router {
     Router::new()
         .route(QUOTE_PAGE_ROUTE, post(review))
         .route(PICK_ROUTE, post(final_pick))
+        .route(CODE_ROUTE, post(code_step))
         .with_state(state)
         .layer(from_fn(no_store))
         .layer(from_fn_with_state(security, refuse_cross_site))
@@ -214,7 +229,7 @@ async fn final_pick(
 }
 
 /// `view` as a `noindex` page, or a bare 500 (logged once) when the template fails.
-fn render(view: ReviewView) -> Response {
+fn render(view: impl Template) -> Response {
     match view.render() {
         Ok(html) => page(html),
         Err(_) => {
@@ -276,4 +291,172 @@ fn page(html: String) -> Response {
     let robots = HeaderValue::from_static("noindex, nofollow");
     let name = HeaderName::from_static("x-robots-tag");
     ([(name, robots)], Html(html)).into_response()
+}
+
+/// The posted code-and-contact form. No `Debug`: it carries her email (PRIV-016).
+#[derive(serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+struct CodeForm {
+    #[serde(default)]
+    csrf: String,
+    quote: usize,
+    #[serde(default)]
+    code: String,
+    #[serde(default)]
+    reach: String,
+    #[serde(default)]
+    email: String,
+    #[serde(default)]
+    send: String,
+}
+
+impl CsrfField for CodeForm {
+    fn csrf(&self) -> &str {
+        &self.csrf
+    }
+}
+
+/// The code-and-contact step (`templates/pick_code.html`): what she entered, kept, and the
+/// message for each field that failed (A11Y-011, A11Y-012).
+#[derive(Template)]
+#[template(path = "pick_code.html")]
+struct CodeView {
+    /// The request (job) number.
+    request: i64,
+    /// The quote's number on the page.
+    quote: usize,
+    /// The quote page's token, for the form's address and "Go back".
+    token: String,
+    /// The form's CSRF token (SEC-042).
+    csrf: String,
+    /// The code as typed or pasted, kept after an error.
+    code: String,
+    /// `call` or `email` when chosen (PICK-018).
+    reach: String,
+    /// The email she typed, kept after an error.
+    email: String,
+    /// The code field's message.
+    code_error: Option<&'static str>,
+    /// The contact choice's message.
+    reach_error: Option<&'static str>,
+    /// The email field's message.
+    email_error: Option<&'static str>,
+    /// `true` when any field failed: the title starts "Error: " and the summary shows.
+    failed: bool,
+}
+
+impl CodeView {
+    /// The step for `form` (PICK-013, PICK-018, A11Y-010 to A11Y-012, A11Y-015): on arrival no
+    /// check; "Send a new code" clears only the code; "Finish my pick" checks every field.
+    fn checked(request: i64, token: String, csrf: String, form: CodeForm) -> Self {
+        let mut view = Self {
+            request,
+            quote: form.quote,
+            token,
+            csrf,
+            code: form.code,
+            reach: form.reach,
+            email: form.email,
+            code_error: None,
+            reach_error: None,
+            email_error: None,
+            failed: false,
+        };
+        match form.send.as_str() {
+            "new" => view.code.clear(),
+            "pick" => {
+                view.code_error = code_problem(&view.code);
+                view.reach_error = reach_problem(&view.reach);
+                view.email_error = (view.reach == "email")
+                    .then(|| email_problem(&view.email))
+                    .flatten();
+                view.failed = view.code_error.is_some()
+                    || view.reach_error.is_some()
+                    || view.email_error.is_some();
+            }
+            _ => {}
+        }
+        view
+    }
+}
+
+/// The code field's message, if any (PICK-014: spaces and dashes are allowed, as when pasted).
+fn code_problem(code: &str) -> Option<&'static str> {
+    if code.trim().is_empty() {
+        Some("Enter the 6-digit code from our text.")
+    } else if parse_code(code).is_none() {
+        Some("The code must be 6 numbers, like 123456.")
+    } else {
+        None
+    }
+}
+
+/// The contact choice's message, if any (PICK-018: a masked call or a shared email).
+fn reach_problem(reach: &str) -> Option<&'static str> {
+    (!matches!(reach, "call" | "email")).then_some("Choose how the business should reach you.")
+}
+
+/// The email field's message when email was chosen: one `@`, a dotted domain, no spaces.
+fn email_problem(email: &str) -> Option<&'static str> {
+    let email = email.trim();
+    let shaped = email.len() <= 254
+        && !email.contains(char::is_whitespace)
+        && email.split_once('@').is_some_and(|(name, domain)| {
+            !name.is_empty()
+                && !domain.contains('@')
+                && domain.split('.').all(|p| !p.is_empty())
+                && domain.contains('.')
+        });
+    (!shaped).then_some("Enter your email address, like name@example.com.")
+}
+
+/// `POST /q/{token}/code`: the code-and-contact step for a quote that can still be picked
+/// (PICK-013, PICK-018); a bad link is a bare 404, a quote that can't be picked goes back to its
+/// card. It sends and checks nothing yet and stores no pick (D-1248, D-1264).
+async fn code_step(
+    State(flow): State<PickFlow>,
+    Path(raw): Path<String>,
+    jar: CookieJar,
+    CsrfForm(form): CsrfForm<CodeForm>,
+) -> Response {
+    let request = match pickable(&flow, &raw, form.quote).await {
+        Ok(Some(request)) => request,
+        Ok(None) => return back(&raw, form.quote),
+        Err(status) => return status.into_response(),
+    };
+    let csrf = csrf_token(&jar).unwrap_or_default();
+    render(CodeView::checked(request, raw, csrf, form))
+}
+
+#[cfg(test)]
+mod code_tests {
+    //! The code step's checks (PICK-014, PICK-018, A11Y-011, A11Y-012). Fake values only.
+
+    use super::{code_problem, email_problem, reach_problem};
+
+    #[test]
+    fn pick_014_pasted_code_with_spaces_or_dashes_passes() {
+        assert_eq!(code_problem("123 456"), None);
+        assert_eq!(code_problem("123-456"), None);
+        assert!(code_problem("").is_some());
+        assert!(code_problem("12345").is_some());
+    }
+
+    #[test]
+    fn pick_018_only_call_or_email_and_a_shaped_email() {
+        assert_eq!(reach_problem("call"), None);
+        assert_eq!(reach_problem("email"), None);
+        assert!(reach_problem("text").is_some());
+        assert_eq!(email_problem("sample@example.com"), None);
+        for bad in [
+            "",
+            "sample",
+            "a@b",
+            "a b@example.com",
+            "a@@example.com",
+            "@example.com",
+        ] {
+            assert!(email_problem(bad).is_some(), "{bad}");
+        }
+    }
 }
