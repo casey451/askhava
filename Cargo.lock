@@ -543,6 +543,7 @@ dependencies = [
  "askhava-intake",
  "askhava-jobs",
  "askhava-ops",
+ "askhava-picks",
  "askhava-privacy",
  "askhava-quotes",
  "axum",
