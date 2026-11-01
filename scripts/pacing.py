@@ -170,7 +170,7 @@ def read_quota(command: str | None = None) -> dict[str, Any] | None:
         PROBE_NOTE[:] = [line for line in done.stderr.splitlines() if line.strip()][-1:]
         reading = json.loads(done.stdout)
     except (OSError, ValueError, subprocess.SubprocessError) as error:
-        PROBE_NOTE[:] = PROBE_NOTE or [f"{type(error).__name__}: {str(error)[:120]}"]
+        PROBE_NOTE[:] = PROBE_NOTE or [f"{type(error).__name__}: {' '.join(str(error).split())[:120]}"]
         return None
     ok = isinstance(reading, dict) and all(isinstance(reading.get(w), dict) and "utilization" in reading[w] for w in WINDOWS)
     return reading if ok else None
