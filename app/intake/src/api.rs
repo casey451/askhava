@@ -11,8 +11,13 @@
 //! keyword second opinion, the trade question and INT-032's two trades (AI-011, INT-012, INT-013,
 //! INT-015, INT-032, T042); "Which fits best?" and its reply (INT-014, CARD-001, T183); the
 //! no-reply reminder and close, the LIST reply and the call-back clock (INT-019, INT-021, INT-023,
-//! TXT-031, T048).
+//! TXT-031, T048); closing a job on CLOSE, the close button or a cancel-intent message, and
+//! "Close which?" (JOB-018 to JOB-023, T049).
 
+pub use crate::closing::{
+    CLOSE_MENTION_TEMPLATE, CLOSE_WHICH_TEMPLATE, Closing, JOB_CLOSED_TEMPLATE,
+    JOBS_CLOSED_TEMPLATE, answer_close, close_from_page,
+};
 pub use crate::conversation::{
     Answer, JobStart, Opened, Recorded, Taken, ask_name_address, begin_job, hear, joining_job,
     record_answer, stop_if_under_18, take_name_address,
@@ -60,11 +65,11 @@ pub mod rules {
         Check, Choice, Hazard, Urgency, beep_is_alarm, check, choice, is_safe_reply, urgency,
     };
     pub use crate::rules::{
-        AgeStop, CONSENT_CALL_TEMPLATE, CONSENT_TEMPLATE, DISCLOSURE_TEMPLATE, Inbound,
-        JOIN_SHARE_PERCENT, JOIN_WINDOW, NAME_ADDRESS_TEMPLATE, Plan, SAFETY_TEMPLATE, Send,
-        Settings, Then, UNDER_18_TEMPLATE, accepts_word_answer, age_stop, asks_who, cancel_like,
-        consent_language, consent_template, follow_up_joins, joins_open_job, language_code,
-        language_from_code, opens_job, pick_option, plan, reads_spanish, shares_words,
-        split_name_address, wanted_language,
+        AgeStop, CONSENT_CALL_TEMPLATE, CONSENT_TEMPLATE, CloseReading, CloseTarget,
+        DISCLOSURE_TEMPLATE, Inbound, JOIN_SHARE_PERCENT, JOIN_WINDOW, NAME_ADDRESS_TEMPLATE, Plan,
+        SAFETY_TEMPLATE, Send, Settings, Then, UNDER_18_TEMPLATE, accepts_word_answer, age_stop,
+        asks_who, cancel_like, close_reading, consent_language, consent_template, follow_up_joins,
+        joins_open_job, language_code, language_from_code, number_named, opens_job, pick_option,
+        plan, reads_spanish, shares_words, split_name_address, wanted_language,
     };
 }

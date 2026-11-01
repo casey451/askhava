@@ -294,5 +294,29 @@
     "draft": true,
     "segments": 2,
     "text": "Ask Hava: Cerramos la solicitud {job} porque no tuvimos respuesta. No hay problema. Escríbanos cuando quiera y empezamos de nuevo."
+  },
+  "close_which": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 2,
+    "text": "Ask Hava: ¿Cuál cerramos? Tiene abiertas las solicitudes {job}. Responda CERRAR y el número, o CERRAR TODO."
+  },
+  "close_mention": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 1,
+    "text": "Ask Hava: Para cerrar la solicitud {job}, responda CERRAR {job}."
+  },
+  "job_closed": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 2,
+    "text": "Ask Hava: La solicitud {job} está cerrada, como pidió. Escríbanos cuando quiera para empezar una nueva."
+  },
+  "jobs_closed": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 2,
+    "text": "Ask Hava: Las solicitudes {job} están cerradas, como pidió. Escríbanos cuando quiera para empezar una nueva."
   }
 }
