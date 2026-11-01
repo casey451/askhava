@@ -228,5 +228,15 @@
     "audience": "homeowner",
     "segments": 1,
     "text": "Ask Hava: Quotes may be slow with only {count} on Ask Hava so far."
+  },
+  "intake_reminder": {
+    "audience": "homeowner",
+    "segments": 1,
+    "text": "Ask Hava: Request {job} is still open. Answer our last question when you can and we'll pick up where we left off."
+  },
+  "intake_closed_no_reply": {
+    "audience": "homeowner",
+    "segments": 1,
+    "text": "Ask Hava: We closed request {job} because we didn't hear back. No problem. Text us any time and we'll start again."
   }
 }

@@ -7,7 +7,8 @@
 //! job-opening path: the first job of a request, and the second job after an ALSO reply (INT-032;
 //! the two-trade detection and the reply are T042's). [`stop_if_under_18`] sends the one INT-038
 //! reply and closes the request. The name-and-address answer goes to the vault and nowhere else
-//! (INT-027, D-146): nothing in this file touches an AI.
+//! (INT-027, D-146): nothing in this file touches an AI. A new job's no-reply wait and each
+//! reply's restart of it are `handlers`' (INT-019).
 
 use askhava_core::api::Guarded;
 use askhava_jobs::api::{JobStatus, create, current, move_to};
@@ -19,6 +20,7 @@ use secrecy::SecretString;
 use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection};
 
+use crate::handlers::{restart_no_reply, schedule_no_reply};
 use crate::models::{self, IntakeError};
 use crate::rules::{
     AgeStop, NAME_ADDRESS_TEMPLATE, UNDER_18_TEMPLATE, accepts_word_answer, age_stop,
@@ -93,6 +95,7 @@ pub async fn begin_job(db: &mut PgConnection, start: &JobStart<'_>) -> Result<Op
     let choice = job.simple().to_string();
     models::insert_plain(&mut tx, start.conversation, (&kind, &choice), start.at).await?;
     models::set_first_job(&mut tx, start.conversation, job).await?;
+    schedule_no_reply(&mut tx, (job, start.conversation)).await?;
     tx.commit().await.map_err(|_| IntakeError::Database)?;
     Ok(Opened::Created(job))
 }
@@ -117,18 +120,23 @@ fn job_kind(trade: &str, property: Option<Uuid>) -> Result<String, IntakeError> 
 }
 
 /// Notes that the homeowner wrote to request `conversation` at `msg.received_at`, the start of
-/// INT-010's window for the next message.
+/// INT-010's window for the next message, and restarts each of its Intake jobs' no-reply wait
+/// there (INT-019, D-807).
 ///
 /// # Errors
 ///
-/// [`IntakeError::Database`].
+/// [`IntakeError::Job`] or [`IntakeError::Database`].
 pub async fn hear(
     db: &mut PgConnection,
     conversation: Uuid,
     msg: &TextIn<'_>,
 ) -> Result<(), IntakeError> {
     let ids = (conversation, msg.inbox_id);
-    models::insert_answer(db, ids, (HEARD, "msg"), msg.received_at).await
+    models::insert_answer(db, ids, (HEARD, "msg"), msg.received_at).await?;
+    for job in models::request_jobs(db, conversation).await? {
+        restart_no_reply(db, (job, conversation), msg.received_at).await?;
+    }
+    Ok(())
 }
 
 /// The job a message at `now` joins even if it is read as another trade: the homeowner's newest

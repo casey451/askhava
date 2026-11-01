@@ -3,6 +3,7 @@
 mod consent;
 mod conversation;
 mod emergency;
+mod intake_timeouts;
 mod prop_consent_first;
 mod prop_keyword_boundary;
 mod routing_outcomes;
