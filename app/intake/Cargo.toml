@@ -7,6 +7,7 @@ rust-version.workspace = true
 publish.workspace = true
 
 [dependencies]
+askhava-ai = { workspace = true }
 askhava-businesses = { workspace = true }
 askhava-catalog = { workspace = true }
 askhava-core = { workspace = true }
@@ -19,6 +20,8 @@ askhava-quotes = { workspace = true }
 jiff = { workspace = true }
 jiff-sqlx = { workspace = true, features = ["postgres"] }
 secrecy = { workspace = true }
+serde = { workspace = true }
+serde-saphyr = { workspace = true }
 serde_json = { workspace = true }
 sha2 = { workspace = true }
 sqlx = { workspace = true }
