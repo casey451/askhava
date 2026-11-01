@@ -17,6 +17,9 @@
 //! in order, its own words beside any checked summary, the after-hours line, the same for the
 //! homeowner and the business's preview (PICK-003 to PICK-005, PICK-040, PICK-041, PICK-044).
 //!
+//! T047 added the homeowner quote texts in `notify`: the first-quote text, the 3-hour update gap, the
+//! LIST text and the cards-out text (TXT-016, TXT-017, TXT-031 to TXT-033, WORD-011).
+//!
 //! Other crates reach it only through [`api`].
 
 pub mod api;
@@ -25,6 +28,7 @@ mod gate;
 mod handlers;
 mod intake;
 mod models;
+mod notify;
 mod quote_card;
 mod rules;
 mod service;

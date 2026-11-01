@@ -1,0 +1,191 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT business_id, format, amount_cents, low_cents, high_cents, tier_names, tier_cents, period, setup_cents, hourly_rate_cents, hours_low, hours_high, confirm_on_site, earliest_visit::text AS visit, visit_part FROM quotes.quote WHERE job_id = $1 AND confirmed AND withdrawn_at IS NULL AND unavailable_at IS NULL ORDER BY received_at, business_id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "business_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "quotes.quote",
+            "name": "business_id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "format",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "quotes.quote",
+            "name": "format"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "amount_cents",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "quotes.quote",
+            "name": "amount_cents"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "low_cents",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "quotes.quote",
+            "name": "low_cents"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "high_cents",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "quotes.quote",
+            "name": "high_cents"
+          }
+        }
+      },
+      {
+        "ordinal": 5,
+        "name": "tier_names",
+        "type_info": "TextArray",
+        "origin": {
+          "Table": {
+            "table": "quotes.quote",
+            "name": "tier_names"
+          }
+        }
+      },
+      {
+        "ordinal": 6,
+        "name": "tier_cents",
+        "type_info": "Int8Array",
+        "origin": {
+          "Table": {
+            "table": "quotes.quote",
+            "name": "tier_cents"
+          }
+        }
+      },
+      {
+        "ordinal": 7,
+        "name": "period",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "quotes.quote",
+            "name": "period"
+          }
+        }
+      },
+      {
+        "ordinal": 8,
+        "name": "setup_cents",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "quotes.quote",
+            "name": "setup_cents"
+          }
+        }
+      },
+      {
+        "ordinal": 9,
+        "name": "hourly_rate_cents",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "quotes.quote",
+            "name": "hourly_rate_cents"
+          }
+        }
+      },
+      {
+        "ordinal": 10,
+        "name": "hours_low",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "quotes.quote",
+            "name": "hours_low"
+          }
+        }
+      },
+      {
+        "ordinal": 11,
+        "name": "hours_high",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "quotes.quote",
+            "name": "hours_high"
+          }
+        }
+      },
+      {
+        "ordinal": 12,
+        "name": "confirm_on_site",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "quotes.quote",
+            "name": "confirm_on_site"
+          }
+        }
+      },
+      {
+        "ordinal": 13,
+        "name": "visit",
+        "type_info": "Text",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 14,
+        "name": "visit_part",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "quotes.quote",
+            "name": "visit_part"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      false,
+      null,
+      true
+    ]
+  },
+  "hash": "aafde508321e872905c9c0fd9ae2a421d17f8ee32cf5c63750f6f1058396d11f"
+}

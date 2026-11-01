@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The layer-5 crate that decides who receives each job card, and later holds the cards and the quotes (`docs/architecture.md` section 3). T044 built the matching: a card goes to every active, verified business serving the job's Arizona offer towns whose licenses cover every candidate job type and which ticked one, with no cap (D-1013 to D-1015). T184 added the owner pauses, "jobs nobody else covers", late cards and the coverage count intake tells the homeowner (D-1018 to D-1022). T045 added the anonymous job card and the final plain-code gate every card passes last (D-1024 to D-1026). T185 added the carrier-restricted removal to that gate and the per-business Spanish, fee-free and "Sent to <N> businesses." lines (D-1031 to D-1033). T046 added quote intake (the 24-hour window, the checked quote, its bounces and the stored record) and the every-window-ended check that hands the counts to `jobs` (D-1048 to D-1052). T186 added the quote card: the same lines for the homeowner and the business's preview, its own words always, an AI summary only when allowed and claim-free (D-1111 to D-1113).
+The layer-5 crate that decides who receives each job card, and later holds the cards and the quotes (`docs/architecture.md` section 3). T044 built the matching: a card goes to every active, verified business serving the job's Arizona offer towns whose licenses cover every candidate job type and which ticked one, with no cap (D-1013 to D-1015). T184 added the owner pauses, "jobs nobody else covers", late cards and the coverage count intake tells the homeowner (D-1018 to D-1022). T045 added the anonymous job card and the final plain-code gate every card passes last (D-1024 to D-1026). T185 added the carrier-restricted removal to that gate and the per-business Spanish, fee-free and "Sent to <N> businesses." lines (D-1031 to D-1033). T046 added quote intake (the 24-hour window, the checked quote, its bounces and the stored record) and the every-window-ended check that hands the counts to `jobs` (D-1048 to D-1052). T186 added the quote card: the same lines for the homeowner and the business's preview, its own words always, an AI summary only when allowed and claim-free (D-1111 to D-1113). T047 added the homeowner's quote texts: the first-quote text, the 3-hour update gap, the LIST text and the cards-out text (D-1190 to D-1194).
 
 ## What it owns
 
@@ -10,6 +10,7 @@ The layer-5 crate that decides who receives each job card, and later holds the c
 - `src/models.rs`: `CardJob`, `CardLines`, `OfferTown`, `CardBusiness`, `CardDecision`, `Skip`, `Pooled`, `OwnerPauses`, `Pool`, `Coverage`, `Recipient`, `QuotesError`, the `quotes.job_card` queries and the `quotes.quote` queries (`card_sent_at`, `upsert_quote`, `edit_facts`, `mark_unavailable`, `confirm_quote`, `shown_quotes`, `window_state`, `stored_card`).
 - `src/intake.rs`: `Format`, `Period`, `DayPart`, `Price`, `QuoteForm`, `QuoteRules`, `Bounce` (with the business's line, `message`), `Quote` (only `parse_quote` makes one), `Submitted`, `window_open`, `parse_quote` (pure), `submit_quote`, `confirm_quote`, `mark_unavailable`, `shown_quotes`. `Price` and `QuoteForm` have hand-written `Debug` that leaves out the notes, original wording and tier names (R6).
 - `src/quote_card.rs`: `QuoteCard` (`lines(language)`, no viewer argument), `QuoteFacts`, `TripFee`, `Parts`, `Permit`, `Spanish`, `CardSource`, `quote_card` (reads `models::stored_card` and the business's after-hours tick), `SummarySetting` (default `Off`), `switch_on`, `POLICY_SUMMARY_SENTENCE`, `check_summary`, `Summary` (only `check_summary` makes one); the English and Spanish card words (`EN`, `ES`).
+- `src/notify.rs`: `Reader`, `Sent`, `Notice`, `notice`, `notice_for`, `first_quote_text`, `Counts`, `update_text`, `Listed`, `list_texts_from`, `list_texts`, `which_job_text`, `arizona_time`, `CardsOut`, `cards_out_text`, `UPDATE_GAP`, `LIST_PAGE`, `SLOW_AT_MOST`. Builds words and decisions only; `intake` sends. `models::list_rows` reads the pickable quotes.
 - `src/handlers.rs`: the `quotes.windows_end` task: `schedule`, `windows_ended`, `run_windows_end`, `WindowsCheck`.
 - `src/rules.rs` (pure): `card_for`, `card_under`, `match_job`, `coverage`, `recipients`, `owner_paused`, `gate`, `serves`, `ticked`, `covered`.
 - `src/cards.rs` (pure): `CardParts`, `JobCard` (private fields: town, place, photo IDs, text), `Place`, `Timing`, `Danger`, `DEFAULT_MIN_WORDS`, `build_card`, `JobCard::text_for`.
@@ -43,6 +44,9 @@ The layer-5 crate that decides who receives each job card, and later holds the c
 - TXT-042, JOB-025: each accepted quote schedules `quotes.windows_end` for the last window end; `windows_ended` re-schedules for a later card, else passes `Windows { quoted, sent, choosable }` to `jobs::api::all_windows_ended`; `choosable` leaves out withdrawn quotes and those `picks` marked with `mark_unavailable` after a failed pick (D-1051).
 - PICK-005, PICK-040, PICK-041, PICK-044: `QuoteCard::lines`: name, license lines, the "check it yourself" line, WORD-014's "Independent business, not affiliated with Ask Hava.", "Gets emergency requests at night" only for an after-hours business (BIZ-007), the six facts in fixed order, the format's definition plus "Free estimate" for no trip fee (never on a visit-fee quote), then the business's own words; English or Spanish (D-1111, D-1113).
 - PICK-003, PICK-004, D-373: `check_summary` returns none while `SummarySetting::Off` and none when any summary word or number is outside the original wording and `LINKING_WORDS`, out of the original's order, or drops a number, a negation (`NEGATIONS`) or the last word of a clause it draws on; `switch_on` needs a `D-<n>` decision and a published policy holding `POLICY_SUMMARY_SENTENCE`; `quote_card` never fills a summary, as none is stored (D-1112).
+- TXT-016, TXT-017, D-1190: `notify::notice` holds an update until exactly `UPDATE_GAP` (3 hours) after the previous quote text's delivery (`Sent`, the caller's); the first-quote text has no amount (D-1191).
+- TXT-031, WORD-011, PICK-002, D-358: `list_texts_from` numbers the pickable quotes in arrival order, 10 to a text, each ending with the "2 YES" line, share sentence and Terms line; `amount` prints the stored amount and period and converts, rounds and adds nothing.
+- TXT-032, TXT-033: `cards_out_text` joins `request_out` with the held, "Today" and "slow" sentences; `arizona_time` writes every time as Arizona time plus the recipient's zone clock when it differs.
 - Not here yet: the first-quote move to Quotes ready (JOB-009); the PICK-040 fact columns (T148, so `CardSource::facts` comes from the caller); the Google and Yelp links (T165) and the price line (T164) on the card; the "no longer available" line (D-1051); the stored owner-portal summary setting; the withdraw action (PICK-051); calling `mark_unavailable` on a failed pick is `picks`' (T063).
 - Not here yet: the card notice and the provider-accepted count (CARD-019 to CARD-021, T147); the BIZ-049 largest-job and recurring-work skips (T155, D-492); CARD-015's daily check feeds `verified`.
 
@@ -63,6 +67,9 @@ The layer-5 crate that decides who receives each job card, and later holds the c
 - No summary while the setting is off, none that adds a word or flips or moves a claim: `src/tests/quote_card.rs::td_pick_29_summary_off_by_default_and_never_adds_a_claim`.
 - A setup charge never changes whether a quote passes: `src/tests/quote_parse.rs::td_fee_27_setup_never_counts`.
 
+- Amounts and periods in the LIST text are the stored ones, no other period or figure: `src/tests/prop_quote_texts.rs`, `tests/integration/tests/quote_texts.rs::td_txt_21_amounts_are_stored_words_until_the_business_edits`.
+- Updates held to 2:59:59, sent at 3:00:00: `src/tests/prop_quote_texts.rs`, `quote_texts.rs::td_txt_06_first_quote_then_updates_at_most_every_three_hours`.
+
 ## How to change
 
 - Change what a quote stores: a new migration on `quotes.quote`, the `Columns` spread in `models.rs`, `cargo sqlx prepare --workspace -- --all-targets --all-features`; never add an expiry (PICK-051).
@@ -74,10 +81,12 @@ The layer-5 crate that decides who receives each job card, and later holds the c
 - Add a card line or a kind of place: a field on `CardParts` or a `Place` variant, its line in `build_card`, a case in `prop_card_no_contact.rs`; never add a free-text field that bypasses the gate.
 - Add a matching check (such as BIZ-049's skips): a `Skip` variant, a step in `rules::card_for`, a field on `CardJob` or `CardBusiness`, cases in both test files; update CARD-001's line here.
 - Change which classes get which job types: `docs/catalog/license_map.yaml` only (`app/licensing/CLAUDE.md`), then `cargo test -p askhava-quotes`.
+- Change a quote text's words: the `messaging` templates in both languages (`quote_*`, `request_out_*`, only those keys) and the line words in `src/notify.rs`; the expected texts in `quote_texts.rs`.
 - Change the card table: a new migration, then `sqlx migrate run` and `cargo sqlx prepare --workspace -- --all-targets --all-features`.
 
 ## Tests that guard it
 
+- `src/tests/prop_quote_texts.rs` and `tests/integration/tests/quote_texts.rs`: TD-TXT-06, TD-TXT-11, TD-TXT-14, TD-TXT-20, TD-TXT-21 (`cargo test -p askhava-quotes tests::prop_quote_texts`, `cargo test -p askhava-integration --test quote_texts`).
 - `src/tests/quote_parse.rs`: TD-PICK-01 (pure window), TD-PICK-02 (fields, refusals), TD-FEE-27's quote-form cases and property (`cargo test -p askhava-quotes tests::quote_parse`).
 - `src/tests/quote_bounce.rs`: TD-PICK-03 (`cargo test -p askhava-quotes tests::quote_bounce`).
 - `src/tests/quote_card.rs` and `tests/integration/tests/quote_card.rs`: TD-PICK-18, TD-PICK-29, TD-PICK-44 (`cargo test -p askhava-quotes tests::quote_card`, `cargo test -p askhava-integration --test quote_card`).

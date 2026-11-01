@@ -240,5 +240,47 @@
     "draft": true,
     "segments": 1,
     "text": "Ask Hava: Este trabajo necesita 2 tipos de negocio. Responda DIVIDIR y lo enviamos como 2 solicitudes, una para cada oficio."
+  },
+  "quote_update": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 3,
+    "text": "Ask Hava: Ya tiene {quoted} cotizaciones de la solicitud {job}. {quoted} de {count} negocios han cotizado hasta ahora. Véalas aquí: {link} ¿No puede abrir enlaces? Responda LISTA."
+  },
+  "quote_list": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 1,
+    "text": "Ask Hava: Sus cotizaciones de la solicitud {job}:"
+  },
+  "quote_list_end": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 4,
+    "text": "Ask Hava: Para elegir, responda el número y SÍ, por ejemplo 2 SÍ. Al elegir, el negocio recibe su nombre de pila y la dirección del trabajo cuando acepte.\nAl elegir, usted acepta los Términos: askhava.com/terms"
+  },
+  "quote_list_which": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 2,
+    "text": "Ask Hava: Tiene cotizaciones en más de una solicitud. Responda LISTA y el número de la solicitud, por ejemplo LISTA {job}."
+  },
+  "request_out_held": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 1,
+    "text": "Ask Hava: Sale a las {time}."
+  },
+  "request_out_today": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 3,
+    "text": "Ask Hava: Puede elegir en cuanto llegue la primera cotización. Si no puede esperar, también está bien llamar a una empresa que conozca."
+  },
+  "request_out_slow": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 1,
+    "text": "Ask Hava: Las cotizaciones pueden tardar, pues hasta ahora solo hay {count} en Ask Hava."
   }
 }

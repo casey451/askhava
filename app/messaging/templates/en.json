@@ -193,5 +193,40 @@
     "audience": "homeowner",
     "segments": 1,
     "text": "Ask Hava: This needs 2 kinds of business. Reply SPLIT to send it as 2 requests, one per trade."
+  },
+  "quote_update": {
+    "audience": "homeowner",
+    "segments": 2,
+    "text": "Ask Hava: You now have {quoted} quotes for request {job}. {quoted} of {count} businesses have quoted so far. See them here: {link} Can't open links? Reply LIST."
+  },
+  "quote_list": {
+    "audience": "homeowner",
+    "segments": 1,
+    "text": "Ask Hava: Your quotes for request {job}:"
+  },
+  "quote_list_end": {
+    "audience": "homeowner",
+    "segments": 2,
+    "text": "Ask Hava: To pick, reply the number and YES, for example 2 YES. Picking shares your first name and job address with that business once it accepts.\nBy picking, you agree to the Terms: askhava.com/terms"
+  },
+  "quote_list_which": {
+    "audience": "homeowner",
+    "segments": 1,
+    "text": "Ask Hava: You have quotes on more than one request. Reply LIST and the request number, for example LIST {job}."
+  },
+  "request_out_held": {
+    "audience": "homeowner",
+    "segments": 1,
+    "text": "Ask Hava: It goes out at {time}."
+  },
+  "request_out_today": {
+    "audience": "homeowner",
+    "segments": 1,
+    "text": "Ask Hava: You can pick as soon as the first quote arrives. If it can't wait, it's fine to call a company you know too."
+  },
+  "request_out_slow": {
+    "audience": "homeowner",
+    "segments": 1,
+    "text": "Ask Hava: Quotes may be slow with only {count} on Ask Hava so far."
   }
 }

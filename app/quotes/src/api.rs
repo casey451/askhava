@@ -19,6 +19,9 @@
 //! T186: [`quote_card`] reads a shown quote's [`QuoteCard`], whose [`QuoteCard::lines`] are the
 //! same for homeowner and business (PICK-005, PICK-040, PICK-041, PICK-044); [`check_summary`]
 //! and [`switch_on`] keep AI summaries off unless allowed and claim-free (PICK-003, PICK-004).
+//! T047: [`first_quote_text`], [`notice`] (the 3-hour gap), [`list_texts`], [`cards_out_text`] and
+//! [`arizona_time`] build the homeowner's quote texts; `intake` sends them (TXT-016, TXT-017,
+//! TXT-031 to TXT-033, WORD-011).
 
 pub use crate::cards::{CardParts, DEFAULT_MIN_WORDS, Danger, JobCard, Place, Timing, build_card};
 pub use crate::gate::final_gate;
@@ -30,6 +33,11 @@ pub use crate::intake::{
 pub use crate::models::{
     CardBusiness, CardDecision, CardJob, CardLines, Coverage, OfferTown, OwnerPauses, Pool, Pooled,
     QuotesError, Recipient, Skip,
+};
+pub use crate::notify::{
+    CardsOut, Counts, LIST_PAGE, Listed, Notice, Reader, SLOW_AT_MOST, Sent, UPDATE_GAP,
+    arizona_time, cards_out_text, first_quote_text, list_texts, list_texts_from, notice,
+    notice_for, update_text, which_job_text,
 };
 pub use crate::quote_card::{
     CardSource, POLICY_SUMMARY_SENTENCE, Parts, Permit, QuoteCard, QuoteFacts, Spanish, Summary,
