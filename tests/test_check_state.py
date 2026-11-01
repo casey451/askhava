@@ -76,3 +76,20 @@ def test_cli(tmp_path: Path) -> None:
     assert cs.main(["--state", str(path)]) == 0
     path.write_text("{not json")
     assert cs.main(["--state", str(path)]) == 1
+
+
+def test_usage_source_carries_a_note_and_a_session_reading_is_allowed() -> None:
+    """D-1156: the pacing source names its reason ("ledger; quota_probe: ...") or the session reading;
+    the runner's first cycle after D-1128 refused the live state over the enum this replaces."""
+    base = json.loads(FIXTURE.read_text(encoding="utf-8"))
+    base.setdefault("usage", {})
+    for ok in ("ledger", "quota_cmd", "ledger; quota_probe: no token: CLAUDE_CODE_OAUTH_TOKEN unset", "session_reading 2026-11-01T00:30:00Z (week)"):
+        base["usage"]["source"] = ok
+        assert not [p for p in cs.check(base) if "usage.source" in p], ok
+    base["usage"]["source"] = "bogus"
+    assert any("usage.source" in p for p in cs.check(base))
+    base["usage"]["source"] = "ledger"
+    base["usage"]["session_reading"] = {"at": "2026-11-01T00:30:00Z", "week": {"utilization": 0.55, "resets_at": "2026-11-05T17:00:00Z"}}
+    assert not [p for p in cs.check(base) if "session_reading" in p]
+    base["usage"]["session_reading"] = {"week": {}}
+    assert any("session_reading" in p for p in cs.check(base))
