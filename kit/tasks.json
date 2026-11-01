@@ -5306,7 +5306,7 @@
    "id": "T240",
    "slug": "homeowner-job-texts",
    "title": "intake: the homeowner's job texts when a request moves on by itself",
-   "goal": "`intake` registers and runs the `jobs.homeowner_text` handler (D-871, D-1030 (A)) in `app/intake/src/job_texts.rs`, so the texts that `jobs` and `quotes` already queue reach the homeowner: the 6 p.m. move of an Open job to No quotes yet (`no_quotes_yet`, JOB-010), the 5-day close with no quotes (`closed_no_quotes`, JOB-011), the 3-day close with no pick (`closed_no_pick`, JOB-012) and every quote window ended on a Quotes ready job (`all_quotes_in`, TXT-042). For each event it finds the request and homeowner from the job ID (the `job.<trade>.<property>` intake answer whose choice is the job ID, D-993; its own queries in this file), skips a job whose status moved on since the event's version and a contact without a consent record or with an opt-out (CON-021, CON-028), renders the template in her language with the request number and, for TXT-042, `quoted`, `count` and her quote-page link issued at send time by `jobs::api::quote_token::issue` (T014's, the URL T052's page serves; never in a payload or a log, SEC-037, TXT-040), and queues one outbox row under the event's dedupe key. Quiet hours use both zones: `messaging::api::send_window` (new, `app/messaging/src/send_window.rs`) reads the recipient's phone from the vault inside `messaging` and returns the next instant inside 8 a.m. to 8 p.m. in both Arizona and the area-code zone by `rules::decide` (QH-001, QH-006), so intake never sees the number (PRIV-002, D-1196); a text outside it is queued again for that instant, and a held close text is still sent while any other held text of a closed job is dropped (QH-007). Registers the handler in `app/server/src/lib.rs` (shared). The 24-hour reminder and the INT-019 close keep T048's Arizona-only `texting_window`; switching them to `send_window` is listed for the plan, not done here (D-1215).",
+   "goal": "`intake` registers and runs the `jobs.homeowner_text` handler (D-871, D-1030 (A)) in `app/intake/src/job_texts.rs`, so the texts that `jobs` and `quotes` already queue reach the homeowner: the 6 p.m. move of an Open job to No quotes yet (`no_quotes_yet`, JOB-010), the 5-day close with no quotes (`closed_no_quotes`, JOB-011), the 3-day close with no pick (`closed_no_pick`, JOB-012) and every quote window ended on a Quotes ready job (`all_quotes_in`, TXT-042). For each event it finds the request and homeowner from the job ID (the `job.<trade>.<property>` intake answer whose choice is the job ID, D-993; its own queries in this file), skips a job whose status moved on since the event's version, a contact without a consent record (CON-021) and an opted-out contact, whose job carries on by email and the quote page instead (CON-028), renders the template in her language with the request number and, for TXT-042, `quoted`, `count` and her quote-page link issued at send time by `jobs::api::quote_token::issue` (T014's, the URL T052's page serves; never in a payload or a log, SEC-037, TXT-040), and queues one outbox row under the event's dedupe key. Quiet hours use both zones: `messaging::api::send_window` (new, `app/messaging/src/send_window.rs`) reads the recipient's phone from the vault inside `messaging` and returns the next instant inside 8 a.m. to 8 p.m. in both Arizona and the area-code zone by `rules::decide` (QH-001, QH-006), so intake never sees the number (the vault grants `messaging` and `calls`, never `intake`, D-1196); a text outside it is queued again for that instant, and a held close text is still sent while any other held text of a closed job is dropped (QH-007). Registers the handler in `app/server/src/lib.rs` (shared). The 24-hour reminder and the INT-019 close keep T048's Arizona-only `texting_window`; switching them to `send_window` is listed for the plan, not done here (D-1215).",
    "type": "build",
    "phase": 1,
    "stage": "2",
@@ -5352,7 +5352,9 @@
     "QH-001",
     "QH-006",
     "QH-007",
-    "SEC-037"
+    "SEC-037",
+    "CON-021",
+    "CON-028"
    ],
    "tests": [
     "TD-JOB-03",
@@ -5365,7 +5367,8 @@
     "D-1196",
     "D-1198",
     "D-1199",
-    "D-1215"
+    "D-1215",
+    "D-1216"
    ],
    "cites": [],
    "budget": {
@@ -5385,7 +5388,7 @@
    "id": "T241",
    "slug": "inbound-text-route",
    "title": "server and intake: the Twilio inbound-text route and replies inside an open request",
-   "goal": "Twilio's inbound-text and status webhooks reach the app (D-861: no routing task existed): `app/server/src/inbound_text.rs` adds the two POST routes, merged in `build_router` (`app/server/src/lib.rs`, shared), each taking only a delivery the adapter's signature check passed (403 otherwise, SEC-017) and answering 200 whatever the outcome except on a database error. An inbound text runs, in order and once per MessageSid (TXT-012): `messaging::api::receive_inbound`, `privacy::api::read_inbound` (the raw text goes no further), `messaging::api::on_inbound_text` (an opt-out word ends it there, CON-008), `messaging::api::reply_to_help` (HELP, INFO, AYUDA), then, for a number that is not a linked business phone, `intake::api::receive_reply`; a status callback runs `receive_status`. A text from a linked business phone is recorded and goes to no homeowner path (business replies are later tasks'). `receive_reply` (new, `app/intake/src/replies.rs`) is the dispatcher inside an open request (D-999, D-1199 (4)): a text that is only LIST or LISTA, optionally with a request number, goes to `answer_list` with the businesses' public names (TXT-031); any other reply first calls `hear`, which restarts each Intake job's 72-hour no-reply wait at the reply (INT-019, D-807), then `receive_text` as today, so consent, the 911 screen, CLOSE, cancel and <n> YES keep their owners' paths. The INT-032 \"That's 2 jobs\" copy and its conversation wiring stay D-999's open gap, not this task's.",
+   "goal": "Twilio's inbound-text and status webhooks reach the app (D-861: no routing task existed): `app/server/src/inbound_text.rs` adds the two POST routes, merged in `build_router` (`app/server/src/lib.rs`, shared), each taking only a delivery the adapter's `X-Twilio-Signature` check (`adapters::api::verify_webhook`) passed, 403 and a log line otherwise (SEC-016, SEC-039). Twilio signs the full public URL it posted to, and no setting holds it yet: this task adds `ASKHAVA_PUBLIC_BASE_URL` to the typed settings in `app/core/src/settings.rs` (a shared path, D-493), read from the environment and never hard-coded, and builds each delivery's URL from it plus the route path and query string and answering 200 whatever the outcome except on a database error. An inbound text runs, in order and once per MessageSid (TXT-012; a status callback once per MessageSid and MessageStatus, SEC-039): `messaging::api::receive_inbound`, `privacy::api::read_inbound` (the raw text goes no further), `messaging::api::on_inbound_text` (an opt-out word ends it there, CON-008), `messaging::api::reply_to_help` (HELP, INFO, AYUDA), then, for a number that is not a linked business phone, `intake::api::receive_reply`; a status callback runs `receive_status`. A text from a linked business phone is recorded and goes to no homeowner path (business replies are later tasks'). `receive_reply` (new, `app/intake/src/replies.rs`) is the dispatcher inside an open request (D-999, D-1199 (4)): a text that is only LIST or LISTA, optionally with a request number, goes to `answer_list` with the businesses' public names (TXT-031); any other reply first calls `hear`, which restarts each Intake job's 72-hour no-reply wait at the reply (INT-019, D-807), then `receive_text` as today, so consent, the 911 screen, CLOSE, cancel and <n> YES keep their owners' paths. The INT-032 \"That's 2 jobs\" copy and its conversation wiring stay D-999's open gap, not this task's. The worker's handler registry in `app/server/src/lib.rs` already holds `NO_REPLY_KIND`, the off-database stream, `TIMER_KIND` and `quotes::api::WINDOWS_KIND` (D-1216); this task adds routes only, no handler.",
    "type": "build",
    "phase": 1,
    "stage": "2",
@@ -5425,8 +5428,9 @@
     "TXT-012",
     "TXT-031",
     "INT-019",
-    "SEC-017",
-    "CON-008"
+    "CON-008",
+    "SEC-016",
+    "SEC-039"
    ],
    "tests": [
     "TD-TXT-04",
@@ -5439,7 +5443,8 @@
     "D-999",
     "D-1197",
     "D-1199",
-    "D-1215"
+    "D-1215",
+    "D-1216"
    ],
    "cites": [],
    "budget": {
