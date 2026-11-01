@@ -13,6 +13,7 @@ askhava-core = { workspace = true }
 askhava-jobs = { workspace = true }
 askhava-messaging = { workspace = true }
 askhava-ops = { workspace = true }
+askhava-picks = { workspace = true }
 askhava-privacy = { workspace = true }
 askhava-quotes = { workspace = true }
 jiff = { workspace = true }

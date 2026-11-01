@@ -402,6 +402,7 @@ dependencies = [
  "askhava-jobs",
  "askhava-messaging",
  "askhava-ops",
+ "askhava-picks",
  "askhava-privacy",
  "askhava-quotes",
  "jiff",
@@ -429,6 +430,7 @@ dependencies = [
  "askhava-licensing",
  "askhava-messaging",
  "askhava-ops",
+ "askhava-picks",
  "askhava-portals",
  "askhava-privacy",
  "askhava-quotes",
@@ -509,6 +511,25 @@ dependencies = [
  "jiff",
  "jiff-sqlx",
  "serde_json",
+ "sqlx",
+ "thiserror",
+]
+
+[[package]]
+name = "askhava-picks"
+version = "0.1.0"
+dependencies = [
+ "askhava-adapters",
+ "askhava-core",
+ "askhava-jobs",
+ "askhava-messaging",
+ "askhava-ops",
+ "askhava-quotes",
+ "jiff",
+ "jiff-sqlx",
+ "secrecy",
+ "serde_json",
+ "sha2 0.11.1",
  "sqlx",
  "thiserror",
 ]
@@ -596,6 +617,7 @@ dependencies = [
  "askhava-fixtures",
  "askhava-jobs",
  "askhava-ops",
+ "askhava-picks",
  "askhava-portals",
  "askhava-privacy",
  "axum",
