@@ -1,0 +1,25 @@
+[package]
+name = "askhava-picks"
+description = "Ask Hava picks: the 6-digit pick code with its clock, tries, cooldown and Verify send caps, and the \"<number> YES\" text pick with its Terms line, replacement and status replies (PICK-013 to PICK-016, PICK-031, PICK-032, PICK-036, PICK-055, CON-029)"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+askhava-adapters = { workspace = true }
+askhava-core = { workspace = true }
+askhava-jobs = { workspace = true }
+askhava-messaging = { workspace = true }
+askhava-ops = { workspace = true }
+askhava-quotes = { workspace = true }
+jiff = { workspace = true }
+jiff-sqlx = { workspace = true, features = ["postgres"] }
+secrecy = { workspace = true }
+serde_json = { workspace = true }
+sha2 = { workspace = true }
+sqlx = { workspace = true }
+thiserror = { workspace = true }
+
+[lints]
+workspace = true

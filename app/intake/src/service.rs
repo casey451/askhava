@@ -20,6 +20,9 @@ use askhava_core::api::{NewTask, enqueue as enqueue_task};
 use askhava_jobs::api::current;
 use askhava_messaging::api::{Language, NewText, Relation, enqueue, render};
 use askhava_ops::api::{Actor, AuditEntry, Change, audit};
+use askhava_picks::api::{
+    PicksError, TextPickDone, TextPickIn, terms_line, text_pick, withdraw_paused,
+};
 use jiff::Timestamp;
 use secrecy::SecretString;
 use sha2::{Digest, Sha256};
@@ -959,10 +962,13 @@ pub async fn on_opt_out(
             let ids = (conversation, *job);
             inserted |= models::insert_pause(&mut tx, ids, msg.inbox_id, msg.received_at).await?;
         }
+        let actor = Actor::Homeowner(homeowner);
         if inserted {
-            let actor = Actor::Homeowner(homeowner);
             audit_action(&mut tx, actor, "intake.paused_by_homeowner", conversation).await?;
         }
+        withdraw_paused(&mut tx, &jobs, actor, msg.received_at)
+            .await
+            .map_err(|_| IntakeError::Database)?;
     }
     let payload = serde_json::json!({
         "conversation": conversation, "jobs": jobs, "paused": paused, "inbox": msg.inbox_id,
@@ -1001,4 +1007,90 @@ async fn live_jobs(db: &mut PgConnection, conversation: Uuid) -> Result<Vec<Uuid
 /// [`IntakeError::Database`].
 pub async fn paused_by_homeowner(db: &mut PgConnection, job: Uuid) -> Result<bool, IntakeError> {
     models::is_paused(db, job).await
+}
+
+/// The published homeowner Terms a text pick accepts: its version and exact text (TERMS-016).
+#[derive(Debug, Clone, Copy)]
+pub struct PublishedTerms<'a> {
+    /// The published version.
+    pub version: &'a str,
+    /// The exact published text; only its SHA256 is stored.
+    pub text: &'a str,
+}
+
+/// Handles a "<number> YES" text from the homeowner's own phone (PICK-015, PICK-016, PICK-031,
+/// PICK-032, PICK-036, CON-029): under the homeowner lock, `picks` plans and acts on her open
+/// request's live jobs, each with its CANCEL pause, so a paused job takes no new pick; a pick
+/// stores one terms acceptance with channel `text_pick` and this inbound text (TERMS-016,
+/// TERMS-033). `None` for a text that is not a pick, an opt-out or HELP, a number with no open
+/// request (another phone gets nothing), or a pick the job moved away from.
+///
+/// # Errors
+///
+/// [`IntakeError::Job`], [`IntakeError::Template`], [`IntakeError::Outbox`],
+/// [`IntakeError::Audit`] or [`IntakeError::Database`]; nothing is kept on an error.
+pub async fn answer_text_pick(
+    db: &mut PgConnection,
+    secret: &SecretString,
+    msg: &TextIn<'_>,
+    (settings, terms): (Settings, &PublishedTerms<'_>),
+) -> Result<Option<TextPickDone>, IntakeError> {
+    let found = models::open_conversation(db, msg.contact).await?;
+    let in_scope = !msg.inbound.opt_out && !msg.inbound.help;
+    let Some(conversation) = found.filter(|_| in_scope) else {
+        return Ok(None);
+    };
+    let mut tx = db.begin().await.map_err(|_| IntakeError::Database)?;
+    let (homeowner, _) = models::conversation_state(&mut tx, conversation)
+        .await?
+        .ok_or(IntakeError::UnknownRequest)?;
+    models::lock_homeowner(&mut tx, homeowner).await?;
+    let mut jobs = Vec::new();
+    for job in live_jobs(&mut tx, conversation).await? {
+        jobs.push((job, models::is_paused(&mut tx, job).await?));
+    }
+    let language = request_language(&mut tx, conversation).await?;
+    let input = TextPickIn {
+        contact: msg.contact,
+        inbox: msg.inbox_id,
+        words: msg.inbound.words,
+        jobs: &jobs,
+        language: (language, settings.spanish_conversations_on),
+        actor: Actor::Homeowner(homeowner),
+        at: msg.received_at,
+    };
+    let done = match text_pick(&mut tx, secret, &input).await {
+        Ok(Some(done)) => done,
+        Ok(None) | Err(PicksError::MovedOn) => return Ok(None),
+        Err(e) => return Err(pick_error(&e)),
+    };
+    if let Some(pick) = done.pick {
+        let acceptance = TermsAcceptance {
+            conversation,
+            pick,
+            document: "homeowner_terms",
+            version: terms.version,
+            published_text: terms.text,
+            language,
+            channel: TermsChannel::TextPick {
+                inbox_id: msg.inbox_id,
+            },
+            assent_line: terms_line(language),
+            accepted_at: msg.received_at,
+        };
+        record_terms_acceptance(&mut tx, &acceptance).await?;
+    }
+    tx.commit().await.map_err(|_| IntakeError::Database)?;
+    Ok(Some(done))
+}
+
+/// The intake error for a `picks` failure.
+fn pick_error(e: &PicksError) -> IntakeError {
+    match e {
+        PicksError::Job | PicksError::Quotes | PicksError::MovedOn => IntakeError::Job,
+        PicksError::Template => IntakeError::Template,
+        PicksError::Outbox => IntakeError::Outbox,
+        PicksError::Audit => IntakeError::Audit,
+        PicksError::Database | PicksError::Verify => IntakeError::Database,
+    }
 }

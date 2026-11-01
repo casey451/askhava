@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO picks.terms_line (job_id, outbox_id, template_version, queued_at) VALUES ($1, $2, $3, $4) ON CONFLICT (job_id, outbox_id) DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Text",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "c919ad49ee4f0c7cfd189566e950572d041901543929a43b4a384f5f3e6bb45c"
+}
