@@ -9474,7 +9474,7 @@
    "deps": [
     "T049"
    ],
-   "status": "MERGE_PENDING",
+   "status": "DONE",
    "attempts": 0,
    "slug": "intake-optout-jobs",
    "type": "build",
@@ -9493,13 +9493,50 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 117,
      "head_sha": "478ec61404561e90e4706c2058e616a126178162",
-     "pr": null,
-     "checks": null,
+     "pr": 227,
+     "checks": [
+      {
+       "name": "backup",
+       "conclusion": null
+      },
+      {
+       "name": "gate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-01T14:28:01Z",
      "ended_at": "2026-11-01T15:05:52Z",
-     "result": "MERGE_PENDING"
+     "result": "done"
     }
    ],
    "reviewed_sha": "06b01073c1c9668ed75ac7467352805938cdec68",
@@ -9528,7 +9565,23 @@
     }
    ],
    "update_waiting_since": null,
-   "update_push_failures": null
+   "update_push_failures": null,
+   "merged_sha": "98dcb24199682aa218187c71a7ed80e8bcdb7ff6",
+   "merged_at": "2026-11-01T15:23:47Z",
+   "files": [
+    ".sqlx/query-be76930959050b285ccdebd055ef370c7fee000e9bdfd04a8adf8555d44e0ac6.json",
+    ".sqlx/query-e22278ca099a8789b9e70c5c5ca2472e223fb1702e676ab39c4c5be0dc18fae9.json",
+    "app/intake/CLAUDE.md",
+    "app/intake/src/api.rs",
+    "app/intake/src/models.rs",
+    "app/intake/src/service.rs",
+    "app/intake/src/tests/mod.rs",
+    "app/intake/src/tests/prop_optout_no_close.rs",
+    "docs/architecture.md",
+    "docs/decisions.md",
+    "migrations/0076_intake_optout_jobs.sql",
+    "tests/integration/tests/optout_job_notice.rs"
+   ]
   },
   {
    "id": "T051",
@@ -14093,7 +14146,7 @@
    }
   }
  },
- "updated_at": "2026-11-01T15:11:59Z",
+ "updated_at": "2026-11-01T15:27:36Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -14191,7 +14244,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "915d211e997881f10dd7528e6051a83a141187c4",
+ "runner_sha": "98dcb24199682aa218187c71a7ed80e8bcdb7ff6",
  "starter": "actions",
  "smoke_runs": [
   {
