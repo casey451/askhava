@@ -141,10 +141,11 @@ tests/               the Rust test-layer crates integration, security and recove
                      `tests/e2e/fixtures.ts` gives every spec the `control` fixture over the test-control router,
                      `tests/e2e/webserver.ts` (the config's `globalSetup`, D-958) builds and starts the stand-ins,
                      worker and web binary with `test-control` and stops them after the run;
-                     `tests/a11y/` (T053, D-1238 to D-1240) reuses that `globalSetup`, reads its page list from
+                     `tests/a11y/` (T053, D-1238 to D-1241) reuses that `globalSetup`, reads its page list from
                      the GET routes in app/*/src (a route with no seeded state fails), seeds each state's fake
                      data through psql on DATABASE_URL and runs axe and the structure, target, contrast, reflow,
-                     spacing and motion checks at 320, 768 and 1280 px; and
+                     spacing and motion checks at 320, 768 and 1280 px (CSP bypassed only for text spacing,
+                     D-1241; JSON report in test-results/a11y-report); and
                      `package.json`, `tsconfig.json` and `eslint.config.js` at the root pin the TypeScript tooling (D-741);
                      pytest for docs and contract. Every database test uses `#[sqlx::test(migrator = ...)]`, one
                      fresh database per test (D-481)

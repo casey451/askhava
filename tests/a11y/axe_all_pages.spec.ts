@@ -2,9 +2,11 @@
 // TD-A11Y-01's incomplete-result cases; docs/test-design.md section 6).
 //
 // The page list is the route table (fixtures.ts `ROUTES`): a GET route with no state in
-// `PAGE_STATES` fails here. Each state at each width must have no violation of the WCAG 2.0, 2.1
-// and 2.2 A and AA rules; every axe "incomplete" result is attached to the report and fails unless
-// listed in `REVIEWED_INCOMPLETE`. The planted case proves a violation is reported. Fake data only.
+// `PAGE_STATES` fails here, and so does an "unparsed route" or other routing call the scan can't
+// list. Each state at each width must have no violation of the WCAG 2.0, 2.1 and 2.2 A and AA
+// rules; every axe "incomplete" result is attached and annotated in the JSON report, printed to
+// the console, and fails unless listed in `REVIEWED_INCOMPLETE`. The planted case proves a
+// violation is reported. Fake data only.
 import { PAGE_STATES, REVIEWED_INCOMPLETE, ROUTES, STATES_TO_CHECK, WIDTHS, axeScan, expect, open, test } from "./fixtures";
 
 test("A11Y-002: every GET route in the route table has page states", () => {
@@ -15,14 +17,17 @@ test("A11Y-002: every GET route in the route table has page states", () => {
 
 for (const state of STATES_TO_CHECK) {
   for (const width of WIDTHS) {
-    test(`A11Y-001 A11Y-002: axe on ${state.route} (${state.name}) at ${String(width)}px`, async ({ page, pageUrl }, info) => {
+    test(`A11Y-001 A11Y-002 A11Y-025 TD-A11Y-01: axe on ${state.route} (${state.name}) at ${String(width)}px`, async ({ page, pageUrl }, info) => {
       await open(page, pageUrl(state), width);
       await expect(page.getByText(state.shows).first()).toBeVisible();
       await expect(page.getByText(state.hides)).toHaveCount(0);
       const { violations, incomplete } = await axeScan(page);
       await info.attach("axe incomplete (A11Y-025)", { body: JSON.stringify(incomplete), contentType: "application/json" });
+      info.annotations.push({ type: "axe incomplete (A11Y-025)", description: incomplete.join("; ") || "none" });
+      if (incomplete.length > 0) console.log(`axe incomplete on ${state.route} (${state.name}) at ${String(width)}px:`, incomplete);
       expect(violations).toEqual([]);
-      const unreviewed = incomplete.filter((rule) => !REVIEWED_INCOMPLETE.includes(`${rule} on ${state.route}`));
+      const ruleOf = (result: string): string => result.split(":")[0] ?? result;
+      const unreviewed = incomplete.filter((result) => !REVIEWED_INCOMPLETE.includes(`${ruleOf(result)} on ${state.route}`));
       expect(unreviewed, "TD-A11Y-01: unreviewed axe incomplete results").toEqual([]);
     });
   }

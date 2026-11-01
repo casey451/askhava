@@ -5,7 +5,8 @@
 // nothing scrolls or runs off sideways except inside a data table's focusable, labelled region,
 // and every table sits in one. With WCAG 1.4.12's spacing applied, at every width, no text is
 // clipped, no two text boxes overlap and no control is hidden. With reduced motion asked for,
-// every animation and transition lasts 0 s and nothing scrolls smoothly. The planted case proves
+// at every width, every animation and transition lasts 0 s and nothing scrolls smoothly. Only the
+// text-spacing tests turn on `bypassCSP`, to add their stylesheet. The planted case proves
 // sideways scrolling at 320 px is reported. Fake data only.
 import { STATES_TO_CHECK, TARGETS, TEXT_SPACING, WIDTHS, expect, open, test } from "./fixtures";
 
@@ -82,20 +83,30 @@ for (const state of STATES_TO_CHECK) {
   });
 
   for (const width of WIDTHS) {
-    test(`A11Y-009: ${where} takes the text-spacing override at ${String(width)}px`, async ({ page, pageUrl }) => {
+    test(`A11Y-009: ${where} stops all motion for reduced motion at ${String(width)}px`, async ({ page, pageUrl }) => {
+      await page.emulateMedia({ reducedMotion: "reduce" });
       await open(page, pageUrl(state), width);
-      await page.addStyleTag({ content: TEXT_SPACING });
-      expect(await page.evaluate(spacingProblems, TARGETS)).toEqual([]);
-      expect(await page.evaluate(reflowProblems)).toEqual([]);
+      expect(await page.evaluate(motionProblems)).toEqual([]);
     });
   }
-
-  test(`A11Y-009: ${where} stops all motion for reduced motion`, async ({ page, pageUrl }) => {
-    await page.emulateMedia({ reducedMotion: "reduce" });
-    await open(page, pageUrl(state), 1280);
-    expect(await page.evaluate(motionProblems)).toEqual([]);
-  });
 }
+
+// Only these tests bypass the page's CSP, which allows no inline style (SEC-013), so they can add
+// the text-spacing stylesheet; every other test here and in the suite runs under the real CSP.
+test.describe("text spacing", () => {
+  test.use({ bypassCSP: true });
+
+  for (const state of STATES_TO_CHECK) {
+    for (const width of WIDTHS) {
+      test(`A11Y-009: ${state.route} (${state.name}) takes the text-spacing override at ${String(width)}px`, async ({ page, pageUrl }) => {
+        await open(page, pageUrl(state), width);
+        await page.addStyleTag({ content: TEXT_SPACING });
+        expect(await page.evaluate(spacingProblems, TARGETS)).toEqual([]);
+        expect(await page.evaluate(reflowProblems)).toEqual([]);
+      });
+    }
+  }
+});
 
 test("A11Y-008: planted sideways scrolling at 320px is reported", async ({ page, pageUrl }) => {
   const [state] = STATES_TO_CHECK;

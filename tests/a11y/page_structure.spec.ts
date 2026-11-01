@@ -84,7 +84,7 @@ function helpPlace(): string {
 
 for (const state of STATES_TO_CHECK) {
   for (const width of WIDTHS) {
-    test(`A11Y-003 A11Y-004 A11Y-018 A11Y-026: structure of ${state.route} (${state.name}) at ${String(width)}px`, async ({ page, pageUrl }) => {
+    test(`A11Y-003 A11Y-004 A11Y-018 A11Y-026 TD-A11Y-01: structure of ${state.route} (${state.name}) at ${String(width)}px`, async ({ page, pageUrl }) => {
       await open(page, pageUrl(state), width);
       expect((await axeScan(page, STRUCTURE_RULES)).violations).toEqual([]);
       expect(await page.evaluate(structureProblems, state.statusRegions)).toEqual([]);
@@ -101,7 +101,7 @@ for (const state of STATES_TO_CHECK) {
 test("A11Y-017: help is in the same place on every page", async ({ page, pageUrl }) => {
   const places = new Set<string>();
   for (const state of STATES_TO_CHECK) {
-    for (const width of [320, 1280]) {
+    for (const width of WIDTHS) {
       await open(page, pageUrl(state), width);
       places.add(await page.evaluate(helpPlace));
     }
