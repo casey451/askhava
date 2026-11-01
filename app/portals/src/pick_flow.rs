@@ -226,15 +226,11 @@ fn render(view: ReviewView) -> Response {
 
 /// True while the job takes a page pick: from the first quote (PICK-012: Open, No quotes yet,
 /// Quotes ready) and in Awaiting confirm, where the new pick replaces the waiting one until the
-/// business confirms (PICK-032, PICK-045 "You can still pick another quote", D-1251).
+/// business confirms (PICK-032, PICK-045 "You can still pick another quote", D-1251). The same
+/// four statuses as [`JobStatus::takes_quotes`], read through it so the status module stays the
+/// only place that names a variant (SEC-031).
 pub(crate) const fn takes_pick(status: JobStatus) -> bool {
-    matches!(
-        status,
-        JobStatus::Open
-            | JobStatus::NoQuotesYet
-            | JobStatus::QuotesReady
-            | JobStatus::AwaitingConfirm
-    )
+    status.takes_quotes()
 }
 
 /// The request number when quote `quote` behind token `raw` can be picked now: the link opens
