@@ -1287,7 +1287,7 @@ def test_run_command_falls_back_when_the_long_token_is_refused(monkeypatch: pyte
         def __init__(self, code: int) -> None:
             self.returncode, self.stdout, self.stderr = code, "", ""
 
-    def fake_run(args: list[str], stdin: Any, cwd: Any, env: Any) -> Done:
+    def fake_run(args: list[str], stdin: Any, cwd: Any, env: Any, timeout: int = 600) -> Done:
         calls.append(list(args))
         return Done(1 if len(calls) == 1 else 0)
 
@@ -1350,3 +1350,44 @@ def test_claims_reserve_above_the_decisions_of_open_plan_pull_requests(repo: dic
     assert st.entry(state, "K10")["decision_ids"] == [53, 54, 55, 56, 57]
     env.gh_json = lambda path: (_ for _ in ()).throw(RuntimeError("HTTP 502"))  # type: ignore[method-assign]  # reason: the API is down
     assert env.decision_numbers() == {1, 40}, "an unreadable pull-request list leaves main's numbers"
+
+
+def test_a_smoke_test_that_outruns_its_budget_is_a_red_smoke_not_a_crash(repo: dict[str, Path], tmp_path: Path) -> None:
+    """D-1178: scripts/smoke.sh gets SMOKE_TIMEOUT seconds; past them the cycle records a red smoke with
+    the reason instead of dying on TimeoutExpired, so the row is written and the next run tries again."""
+    import subprocess
+
+    from runner import github_env
+
+    def slow(args: list[str], stdin: str | None, cwd: Path) -> tuple[int, str, str]:
+        if args[:2] == ["bash", "scripts/smoke.sh"]:
+            raise subprocess.TimeoutExpired(args, github_env.SMOKE_TIMEOUT)
+        return run_command(args, stdin, cwd)
+
+    env = make_env(repo["a"], tmp_path, run=slow)
+    ok, head = env.smoke_main()
+    assert ok is False and head == env.main_head()
+    assert env.log[-1] == f"smoke on {head[:12]}: exit 124; smoke timed out after {github_env.SMOKE_TIMEOUT} seconds"
+    assert github_env.SMOKE_TIMEOUT < 600, "the session's Bash call is 600 seconds; the runner must answer first"
+
+
+def test_run_command_gives_the_smoke_its_own_timeout(monkeypatch: pytest.MonkeyPatch) -> None:
+    from runner import github_env
+
+    seen: list[int] = []
+
+    def fake(args: list[str], stdin: str | None, cwd: Path, env: dict[str, str] | None, timeout: int = 600):
+        seen.append(timeout)
+        return subprocess.CompletedProcess(args, 0, "", "")
+
+    import subprocess
+
+    monkeypatch.setattr(github_env, "_run", fake)
+    monkeypatch.setenv("GITHUB_WORKSPACE", "/work/askhava")
+    monkeypatch.delenv("CARGO_TARGET_DIR", raising=False)
+    github_env.run_command(["bash", "scripts/smoke.sh"], None, Path("."))
+    github_env.run_command(["git", "status"], None, Path("."))
+    assert seen == [github_env.SMOKE_TIMEOUT, 600]
+    assert github_env._smoke_env()["CARGO_TARGET_DIR"] == "/work/askhava/target", "the smoke reuses the job's cached build"
+    monkeypatch.setenv("CARGO_TARGET_DIR", "/elsewhere")
+    assert github_env._smoke_env()["CARGO_TARGET_DIR"] == "/elsewhere"
