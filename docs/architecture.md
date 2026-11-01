@@ -118,7 +118,10 @@ app/
                      other crates reach it through `askama.toml` `dirs` (D-481)
     static/          CSS, fonts, images and `.ts` sources; `npm run build` (tsc) writes the `.js` beside each
                      source in the Docker build stage and before local and CI e2e runs (T173); the generated
-                     `.js` is not committed; served by tower-http `ServeDir` with content-hash cache busting
+                     `.js` is not committed (`npm run build` is `tsc --ignoreConfig --strict` over
+                     `app/*/static/*.ts`); the image keeps only the `.js`, at `/srv/askhava/static/<crate>/`,
+                     the `/static/<crate>/` paths templates load (D-1281); to be served by tower-http `ServeDir`
+                     with content-hash cache busting (no route serves `/static/` yet, D-1235)
 migrations/          SQL files `0NNN_<slug>.sql`, NNN the owning task's serial position in the runner's order (D-485; gaps are
                      allowed, numbers only rise, and a number is frozen once applied to the test project, D-491), each
                      beginning `-- <module> (T###)`, `<module>` being the schema the migration touches (D-492) (line 2 when
@@ -145,7 +148,9 @@ tests/               the Rust test-layer crates integration, security and recove
                      the GET routes in app/*/src (a route with no seeded state fails), seeds each state's fake
                      data through psql on DATABASE_URL and runs axe and the structure, target, contrast, reflow,
                      spacing and motion checks at 320, 768 and 1280 px (CSP bypassed only for text spacing,
-                     D-1241; JSON report in test-results/a11y-report); and
+                     D-1241; JSON report in test-results/a11y-report); `Ci`'s `E2e` job runs tests/e2e and
+                     `Ally` runs tests/a11y, each with Node 22, `npm run build`, cached Chromium, a test-control
+                     build and a Postgres service (stripe-mock too in `E2e`), T173, D-1282; and
                      `package.json`, `tsconfig.json` and `eslint.config.js` at the root pin the TypeScript tooling (D-741);
                      pytest for docs and contract. Every database test uses `#[sqlx::test(migrator = ...)]`, one
                      fresh database per test (D-481)
@@ -474,9 +479,9 @@ Written as they happen to the `storage` adapter (OPS-010, OPS-011; `sources/01_s
 | @axe-core/playwright | 4.13.0 (2026-08-11) | MPL-2.0 | axe in Playwright; 4.14.0 is past the cutoff |
 | eslint / typescript-eslint | 10.12.0 / 8.71.2 | MIT | TypeScript lint |
 | gitleaks | 8.28.0 (pinned with its SHA-256 in `ci.yml` and `backup-runner.yml`, run with `--redact --verbose`, D-582) | MIT | Secret scan |
-| stripe/stripe-mock image, OWASP ZAP image, Docker base image | `rust:1.99.0-slim-trixie` and `debian:trixie-slim` (digests in `Dockerfile`, D-652); stripe-mock and ZAP images **verify at T009** | — | Pinned by digest (SEC-021); the runtime is a Debian slim image with `libssl3t64` and CA certificates |
+| stripe/stripe-mock image, OWASP ZAP image, Docker base image | `rust:1.99.0-slim-trixie`, `debian:trixie-slim` and `node:22.23.4-trixie-slim` (the browser-script stage; digests in `Dockerfile`, D-652, D-1281); stripe-mock `v0.206.0` (digest in `ci.yml`'s `E2e` job, D-1282); the ZAP image **verify at T009** | — | Pinned by digest (SEC-021); the runtime is a Debian slim image with `libssl3t64` and CA certificates |
 
-The architecture test's own helpers (a TOML reader, `regex`, `walkdir` or `cargo_metadata`) are pinned by T175 under the new-library rule and added to `kit/allowed_crates.txt` in the same decision (D-481). `Ci` caches the Cargo registry and `target/` with `Swatinem/rust-cache` pinned by commit SHA, keyed on `Cargo.lock` and the toolchain, with `CARGO_INCREMENTAL=0` and `[profile.dev] debug = "line-tables-only"`; the per-crate clippy runs are dropped in favour of the single `cargo build -p askhava-server` boundary build; the audit tools install prebuilt and pinned; coverage runs in its own parallel job (`Coverage`; `Checks` runs the rest and `Ci` is the gate over both, D-694); a warm run must finish in 15 minutes or less, and the Actions-minutes budget is confirmed with Casey before T001 (D-481).
+The architecture test's own helpers (a TOML reader, `regex`, `walkdir` or `cargo_metadata`) are pinned by T175 under the new-library rule and added to `kit/allowed_crates.txt` in the same decision (D-481). `Ci` caches the Cargo registry and `target/` with `Swatinem/rust-cache` pinned by commit SHA, keyed on `Cargo.lock` and the toolchain, with `CARGO_INCREMENTAL=0` and `[profile.dev] debug = "line-tables-only"`; the per-crate clippy runs are dropped in favour of the single `cargo build -p askhava-server` boundary build; the audit tools install prebuilt and pinned; coverage runs in its own parallel job (`Coverage`; `Checks` runs the rest, `E2e` the Playwright journeys, and `Ci` is the gate over all three, D-694, D-1282); a warm run must finish in 15 minutes or less, and the Actions-minutes budget is confirmed with Casey before T001 (D-481).
 
 **Resolution and audit run in this session:** a scratch workspace with every crate above at its exact version, on Rust 1.99.0, resolved 401 crates and built (the full 19-crate skeleton trial of D-488 resolved 421 external packages with the same pins, `docs/audit/rust-skeleton-trial-2026-10-29.md`); `cargo clippy --workspace --all-targets -- -D warnings` passed. `cargo audit` (0.22.2, 1,381 advisories) found no vulnerabilities and one unmaintained warning: RUSTSEC-2026-0374, `basic-toml`, used only at compile time by `askama_derive` to read Askama's config. `cargo deny check licenses bans sources advisories` (0.20.2) passed with the license list above, crates.io as the only source, wildcard versions denied except workspace paths, and that one advisory ignored with its reason; duplicate versions are warnings only. T009 writes this `deny.toml` and re-runs both; `Ci` runs `cargo audit` (fails on any vulnerability) and `cargo deny` on every PR. The scratch workspace is not committed. npm packages are audited when T020 writes `package-lock.json`.
 
