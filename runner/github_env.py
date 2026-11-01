@@ -264,6 +264,25 @@ def fit_failure_log(base: str, details: list[tuple[str, list[str]]], cap: int = 
     return "\n".join(parts)
 
 
+def annotation_lines(notes: Any, lines: int = EXCERPT_LINES) -> list[str]:
+    """The failure-level check-run annotations as excerpt lines, the last `lines` kept (D-1263).
+
+    Each message line becomes one row, led by `path:start_line: ` when the annotation names a file
+    (not the bare `.github` that Actions gives its own "Process completed with exit code 1."). Rows
+    are cut to EXCERPT_WIDTH and token-shaped strings replaced, as in `log_excerpt`. [] for anything
+    that is not a list of annotations."""
+    kept: list[str] = []
+    for note in notes if isinstance(notes, list) else []:
+        if not isinstance(note, dict) or note.get("annotation_level") != "failure":
+            continue
+        path = str(note.get("path") or "")
+        where = f"{path}:{note.get('start_line')}: " if path and path != ".github" else ""
+        for row in str(note.get("message") or "").splitlines():
+            if row.strip():
+                kept.append(TOKEN_LIKE.sub("[redacted]", where + row)[:EXCERPT_WIDTH])
+    return kept[-lines:]
+
+
 def _job_id(run: dict[str, Any]) -> str | None:
     """The Actions job behind a check run, from its details URL; None for a check from another app."""
     found = JOB_URL.search(str(run.get("details_url") or ""))
@@ -798,8 +817,9 @@ class GitHubEnv:
 
         First the "name: conclusion" list of every failed check run, as before. Then, once per check
         name (its latest run), the Actions job's failed step names and the tail of that step's log
-        (`log_excerpt`), all within FAILURE_LOG_CAP characters. A detail that cannot be read is left
-        out, so on any API error the log is exactly the plain list."""
+        (`log_excerpt`), or, when no log line could be had, the check run's failure annotations
+        (D-1263), all within FAILURE_LOG_CAP characters. A detail that cannot be read is left out, so on
+        any API error the log is exactly the plain list."""
         failed = [r for r in runs if r.get("conclusion") in FAILED_CONCLUSIONS]
         base = "; ".join(f"{r.get('name')}: {r.get('conclusion')}" for r in failed)
         latest: dict[str, dict[str, Any]] = {}
@@ -809,7 +829,11 @@ class GitHubEnv:
         return fit_failure_log(base, details)
 
     def _job_detail(self, run: dict[str, Any]) -> tuple[str, list[str]] | None:
-        """(header naming the failed steps, log excerpt) for one failed check run, or None."""
+        """(header naming the failed steps, excerpt) for one failed check run, or None (D-582).
+
+        The excerpt is the tail of the failed step's log (`_log_lines`); when that is empty, the check
+        run's failure annotations stand in (`_annotation_lines`, D-1263), so the retry worker still
+        learns what failed when the log download is refused."""
         job = _job_id(run)
         if job is None:
             return None
@@ -818,12 +842,40 @@ class GitHubEnv:
             names = [str(s.get("name")) for s in steps if s.get("conclusion") in FAILED_CONCLUSIONS]
             if not names:
                 return None
-            code, text, _ = self._run(["gh", "api", f"repos/{self.repo}/actions/jobs/{job}/logs"], None, self.root)
+            excerpt = self._log_lines(job)
         except BEST_EFFORT_ERRORS as exc:
-            self.log.append(f"job {job} detail unreadable: {str(exc)[:200]}")
+            self.log.append(f"job {job} detail unreadable: {TOKEN_LIKE.sub('[redacted]', str(exc))[:200]}")
             return None
-        excerpt = log_excerpt(text) if code == 0 else []
-        return f"{run.get('name')} failed at step: {', '.join(names)}", excerpt
+        return f"{run.get('name')} failed at step: {', '.join(names)}", excerpt or self._annotation_lines(run)
+
+    def _log_lines(self, job: str) -> list[str]:
+        """`log_excerpt` of an Actions job's log, or [] with the reason in the cycle log (D-1263).
+
+        A refused download (`gh api` exit code and the first 200 characters of its stderr, token-shaped
+        strings redacted) and a log with no `##[error]` line are both written down, so the next failure
+        shows why the log was not used instead of failing silently as every one did from D-582 on."""
+        code, text, err = self._run(["gh", "api", f"repos/{self.repo}/actions/jobs/{job}/logs"], None, self.root)
+        if code != 0:
+            self.log.append(f"job {job} log unreadable (exit {code}): {TOKEN_LIKE.sub('[redacted]', err.strip())[:200]}")
+            return []
+        excerpt = log_excerpt(text)
+        if not excerpt:
+            self.log.append(f"job {job} log has no error line ({len(text)} characters read)")
+        return excerpt
+
+    def _annotation_lines(self, run: dict[str, Any]) -> list[str]:
+        """The failure annotations of a check run (`annotation_lines`), read with the job token
+        (`checks: read`, D-502) and needing no log download (D-1263); [] when the run has no id or the
+        read fails, with the reason in the cycle log."""
+        check = run.get("id")
+        if not check:
+            return []
+        try:
+            notes = self.gh_json(f"repos/{self.repo}/check-runs/{check}/annotations?per_page=50")
+        except BEST_EFFORT_ERRORS as exc:
+            self.log.append(f"check run {check} annotations unreadable: {TOKEN_LIKE.sub('[redacted]', str(exc))[:200]}")
+            return []
+        return annotation_lines(notes)
 
     def _merge_facts(self, number: int, head: str, merged: str, merged_at: str) -> dict[str, Any]:
         """Trees of the tested head and the squash commit, and the merge's files (--no-renames)."""
