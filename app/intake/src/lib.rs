@@ -33,6 +33,7 @@ mod routing_confidence;
 mod rules;
 mod safety_text;
 mod service;
+mod status;
 mod summary_step;
 
 #[cfg(test)]

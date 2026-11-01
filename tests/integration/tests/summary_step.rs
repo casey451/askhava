@@ -4,18 +4,21 @@
 //! The homeowner is texted the card (or the link) with no contact detail; SEND, OK or YES approves
 //! it at once; EDIT asks what to change and the new card is shown; no reply in 30 minutes approves
 //! the card as shown; an emergency job skips the step; and only the card she was shown passes the
-//! approved-card check the card sender runs.
+//! approved-card check the card sender runs. The wait starts once the text is seen sent; each
+//! show is its own text and timer; SEND is audited as the homeowner, the auto-send as the system.
 
 use askhava_intake::api::rules::{Inbound, Settings};
 use askhava_intake::api::{
-    AUTO_SEND_AFTER, CARD_EDIT_TEMPLATE, CARD_LINK_TEMPLATE, CARD_SHOWN_TEMPLATE,
-    CARDS_APPROVED_KIND, CardStep, CardTimer, JobStart, Opened, Preview, Shown, TextIn,
-    answer_card, approved_card, begin_job, card_digest, card_timer_step, receive_text, show_card,
+    APPROVED_ACTION, AUTO_SEND_AFTER, AUTO_SENT_ACTION, CARD_EDIT_TEMPLATE, CARD_LINK_TEMPLATE,
+    CARD_SHOWN_TEMPLATE, CARD_TIMER_KIND, CARDS_APPROVED_KIND, CardStep, CardTimer, JobStart,
+    Opened, Preview, RECHECK_AFTER, Shown, TextIn, answer_card, approved_card, begin_job,
+    card_digest, card_timer_step, receive_text, show_card,
 };
 use askhava_jobs::api::job_number;
 use askhava_quotes::api::{CardParts, DEFAULT_MIN_WORDS, JobCard, Place, Timing, build_card};
-use jiff::Timestamp;
+use jiff::{SignedDuration, Timestamp};
 use secrecy::SecretString;
+use serde_json::Value;
 use sqlx::types::Uuid;
 
 type Db = sqlx::pool::PoolConnection<sqlx::Postgres>;
@@ -117,13 +120,60 @@ async fn approvals(db: &mut Db, job: Uuid) -> Vec<String> {
     .expect("tasks")
 }
 
-fn timer(id: Uuid, job: Uuid, card: &JobCard, shown_at: i64) -> CardTimer {
+/// The latest show's card timer task due last, as the worker would read it.
+async fn latest_timer(db: &mut Db, job: Uuid) -> CardTimer {
+    let p: Value = sqlx::query_scalar(
+        "SELECT payload FROM core.task WHERE kind = $1 AND payload->>'job' = $2 \
+         ORDER BY (payload->>'show')::bigint DESC, run_at DESC LIMIT 1",
+    )
+    .bind(CARD_TIMER_KIND)
+    .bind(job.to_string())
+    .fetch_one(&mut **db)
+    .await
+    .expect("timer");
+    let id = |key: &str| Uuid::parse_str(p[key].as_str().expect("id")).expect("uuid");
+    let time = |key: &str| Timestamp::from_microsecond(p[key].as_i64().expect("time")).expect("t");
     CardTimer {
-        job,
-        conversation: id,
-        card: card_digest(card.text()),
-        due: at(shown_at) + AUTO_SEND_AFTER,
+        job: id("job"),
+        conversation: id("conversation"),
+        card: p["card"].as_str().expect("card").to_owned(),
+        show: time("show"),
+        outbox: id("outbox"),
+        wait: SignedDuration::from_secs(p["wait"].as_i64().expect("wait")),
+        due: time("due"),
+        watch: p["watch"].as_bool().expect("watch"),
     }
+}
+
+/// Marks outbox row `id` sent, as `messaging::api::send` does (fake SID).
+async fn mark_sent(db: &mut Db, id: Uuid) {
+    sqlx::query(
+        "UPDATE messaging.outbox SET status = 'sent', sent_at = now(), body = NULL, \
+         provider_sid = 'SM' || repeat('a', 32) WHERE id = $1",
+    )
+    .bind(id)
+    .execute(&mut **db)
+    .await
+    .expect("sent");
+}
+
+/// Runs the job's latest timer at its due time; returns whether it approved.
+async fn run_latest(db: &mut Db, job: Uuid) -> (CardTimer, bool) {
+    let t = latest_timer(db, job).await;
+    let approved = card_timer_step(db, &t, t.due).await.expect("step");
+    (t, approved)
+}
+
+/// The audit rows of the request's card approvals: (actor kind, action).
+async fn audits(db: &mut Db, id: Uuid) -> Vec<(String, String)> {
+    sqlx::query_as(
+        "SELECT actor_kind, action FROM ops.audit_log WHERE subject_id = $1 \
+         AND action LIKE 'intake.card_%' ORDER BY id",
+    )
+    .bind(id)
+    .fetch_all(&mut **db)
+    .await
+    .expect("audit")
 }
 
 /// TD-INT-23, TD-AI-17 (INT-041, CARD-007): a short card is texted in full with no contact detail
@@ -147,6 +197,8 @@ async fn td_int_23_send_ok_or_yes_sends_the_card_she_was_shown(mut db: Db) {
         let step = reply(&mut db, (contact, word), (id, job)).await;
         assert_eq!(step, CardStep::Sent, "{word}");
         assert_eq!(approvals(&mut db, job).await, [card_digest(shown.text())]);
+        let by_her = [("homeowner".to_owned(), APPROVED_ACTION.to_owned())];
+        assert_eq!(audits(&mut db, id).await, by_her, "{word} is her approval");
         assert!(
             approved_card(&mut db, (id, job), &shown)
                 .await
@@ -161,7 +213,8 @@ async fn td_int_23_send_ok_or_yes_sends_the_card_she_was_shown(mut db: Db) {
 }
 
 /// TD-INT-23 (INT-041): a card too long for 2 segments sends the link text; no reply in 30
-/// minutes sends the card as shown, and not a minute before.
+/// minutes sends the card as shown, and not a minute before. The 30 minutes start once the text is
+/// seen sent: while it is held (quiet hours) the timer only looks again (D-1278).
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_int_23_a_long_card_links_and_goes_after_30_minutes(mut db: Db) {
     let (id, job, number) = request(&mut db, 0x8201).await;
@@ -175,17 +228,55 @@ async fn td_int_23_a_long_card_links_and_goes_after_30_minutes(mut db: Db) {
         "Ask Hava: Request {number} is ready. Take a look before it goes out: {LINK} {TAIL}"
     );
     assert_eq!(body(&mut db, sent.outbox_id).await, want);
-    let t = timer(id, job, &long, 2);
-    let early = card_timer_step(&mut db, &t, at(31)).await.expect("early");
-    assert!(!early && approvals(&mut db, job).await.is_empty());
-    assert!(card_timer_step(&mut db, &t, at(32)).await.expect("due"));
-    assert!(!card_timer_step(&mut db, &t, at(33)).await.expect("again"));
+    let first = latest_timer(&mut db, job).await;
+    assert!(first.watch && first.due == at(2) && first.outbox == sent.outbox_id);
+    for held in 0..3 {
+        let (t, approved) = run_latest(&mut db, job).await;
+        assert!(
+            !approved && t.watch,
+            "held {held}: no approval while unsent"
+        );
+    }
+    let held = latest_timer(&mut db, job).await;
+    assert_eq!(
+        held.due,
+        at(2) + RECHECK_AFTER * 3,
+        "it looks again each minute"
+    );
+    mark_sent(&mut db, sent.outbox_id).await;
+    let (seen, approved) = run_latest(&mut db, job).await;
+    assert!(!approved && seen.watch);
+    let wait = latest_timer(&mut db, job).await;
+    assert!(!wait.watch && wait.due == seen.due + AUTO_SEND_AFTER);
+    let early = wait.due - SignedDuration::from_mins(1);
+    assert!(!card_timer_step(&mut db, &wait, early).await.expect("early"));
+    assert!(approvals(&mut db, job).await.is_empty());
+    assert!(
+        card_timer_step(&mut db, &wait, wait.due)
+            .await
+            .expect("due")
+    );
+    assert!(
+        !card_timer_step(&mut db, &wait, wait.due)
+            .await
+            .expect("again")
+    );
     assert_eq!(approvals(&mut db, job).await.len(), 1);
+    let by_timer = [("system".to_owned(), AUTO_SENT_ACTION.to_owned())];
+    assert_eq!(audits(&mut db, id).await, by_timer);
     assert!(
         approved_card(&mut db, (id, job), &long)
             .await
             .expect("check")
     );
+}
+
+/// Runs the latest show's timers to the end of the wait with its text sent.
+async fn run_out(db: &mut Db, job: Uuid) -> bool {
+    let watching = latest_timer(db, job).await;
+    mark_sent(db, watching.outbox).await;
+    run_latest(db, job).await;
+    run_latest(db, job).await.1
 }
 
 /// TD-INT-23 (INT-041): EDIT asks what to change; the old card's timer then sends nothing; the
@@ -195,6 +286,7 @@ async fn td_int_23_edit_asks_and_shows_the_new_card(mut db: Db) {
     let (id, job, number) = request(&mut db, 0x8301).await;
     let first = card("Kitchen sink drips under the cabinet when the tap runs.");
     show(&mut db, (id, job), &first, 2).await;
+    let old = latest_timer(&mut db, job).await;
     let CardStep::Edit(asked) = reply(&mut db, (0x8301, "EDIT"), (id, job)).await else {
         panic!("asks what to change");
     };
@@ -204,18 +296,22 @@ async fn td_int_23_edit_asks_and_shows_the_new_card(mut db: Db) {
             .await
             .contains(&number.to_string())
     );
-    let old = timer(id, job, &first, 2);
-    assert!(!card_timer_step(&mut db, &old, at(40)).await.expect("old"));
+    let old_wait = CardTimer {
+        watch: false,
+        due: old.due + AUTO_SEND_AFTER,
+        ..old.clone()
+    };
+    assert!(
+        !card_timer_step(&mut db, &old_wait, at(40))
+            .await
+            .expect("old")
+    );
     let second = card("Bathroom sink drips under the cabinet when the tap runs.");
     let Shown::Texted(sent) = show(&mut db, (id, job), &second, 5).await else {
         panic!("the new card");
     };
     assert!(body(&mut db, sent.outbox_id).await.contains(second.text()));
-    assert!(
-        card_timer_step(&mut db, &timer(id, job, &second, 5), at(35))
-            .await
-            .expect("new")
-    );
+    assert!(run_out(&mut db, job).await, "the new card goes");
     assert!(
         approved_card(&mut db, (id, job), &second)
             .await
@@ -229,6 +325,42 @@ async fn td_int_23_edit_asks_and_shows_the_new_card(mut db: Db) {
     assert_eq!(
         show(&mut db, (id, job), &first, 36).await,
         Shown::AlreadySent
+    );
+}
+
+/// TD-INT-23 (INT-041): after EDIT the same card text shown again is a new text she gets, and
+/// the first show's timer, due earlier, never approves it early: only the new show's timer does.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_int_23_the_same_card_shown_again_is_a_new_text_and_wait(mut db: Db) {
+    let (id, job, _) = request(&mut db, 0x8501).await;
+    let same = card("Kitchen sink drips under the cabinet when the tap runs.");
+    let Shown::Texted(one) = show(&mut db, (id, job), &same, 2).await else {
+        panic!("texted");
+    };
+    mark_sent(&mut db, one.outbox_id).await;
+    run_latest(&mut db, job).await;
+    let old_wait = latest_timer(&mut db, job).await;
+    assert!(!old_wait.watch);
+    assert!(matches!(
+        reply(&mut db, (0x8501, "EDIT"), (id, job)).await,
+        CardStep::Edit(_)
+    ));
+    let Shown::Texted(two) = show(&mut db, (id, job), &same, 20).await else {
+        panic!("texted again");
+    };
+    assert_ne!(one.outbox_id, two.outbox_id, "a new text, not deduped");
+    assert!(body(&mut db, two.outbox_id).await.contains(same.text()));
+    let early = card_timer_step(&mut db, &old_wait, old_wait.due).await;
+    assert!(!early.expect("old"), "the first show's timer does nothing");
+    assert!(approvals(&mut db, job).await.is_empty());
+    assert!(
+        run_out(&mut db, job).await,
+        "the second show's timer approves"
+    );
+    assert!(
+        approved_card(&mut db, (id, job), &same)
+            .await
+            .expect("check")
     );
 }
 

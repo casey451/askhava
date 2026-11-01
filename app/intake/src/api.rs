@@ -79,10 +79,10 @@ pub use crate::service::{
     terms_acceptances,
 };
 pub use crate::summary_step::{
-    AUTO_SEND_AFTER, CARD_EDIT_TEMPLATE, CARD_LINK_TEMPLATE, CARD_SHOWN_TEMPLATE, CARD_SLOT,
-    CARD_TIMER_KIND, CARDS_APPROVED_KIND, CardReply, CardStep, CardTimer, MAX_CARD_SEGMENTS,
-    Preview, Shown, answer_card, approved_card, card_digest, card_reply, card_timer_step,
-    preview_text, run_card_timer, show_card,
+    APPROVED_ACTION, AUTO_SEND_AFTER, AUTO_SENT_ACTION, CARD_EDIT_TEMPLATE, CARD_LINK_TEMPLATE,
+    CARD_SHOWN_TEMPLATE, CARD_SLOT, CARD_TIMER_KIND, CARDS_APPROVED_KIND, CardReply, CardStep,
+    CardTimer, MAX_CARD_SEGMENTS, Preview, RECHECK_AFTER, Shown, answer_card, approved_card,
+    card_digest, card_reply, card_timer_step, preview_text, run_card_timer, show_card,
 };
 
 /// The pure first-reply rules, for the rules bridge and other crates' property tests.

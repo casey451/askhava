@@ -3,23 +3,27 @@
 //!
 //! After matching and the card gate (`quotes::api::build_card`), [`show_card`] texts her the card
 //! itself when the whole text fits in [`MAX_CARD_SEGMENTS`], else the link text to her page, and
-//! queues one [`CARD_TIMER_KIND`] task at the end of the wait (default [`AUTO_SEND_AFTER`], a
-//! setting read into the text). An emergency job skips the step. [`answer_card`] reads her reply:
-//! SEND, OK, YES or ENVIAR approves the card at once; EDIT or CAMBIAR asks what to change (the
-//! caller then builds the new card and calls [`show_card`] again). With no reply the timer
-//! approves the card she was shown. Nothing waits on a reply (D-419).
+//! queues one [`CARD_TIMER_KIND`] task that watches the text until it is sent, then waits the
+//! wait from there (default [`AUTO_SEND_AFTER`], a setting read into the text), so the wait never
+//! starts before she has the card (D-1278). An emergency job skips the step. [`answer_card`]
+//! reads her reply: SEND, OK, YES or ENVIAR approves the card at once; EDIT or CAMBIAR asks what
+//! to change (the caller then builds the new card and calls [`show_card`] again). With no reply
+//! the timer approves the card she was shown. Nothing waits on a reply (D-419).
 //!
-//! State is `intake_answer` rows under `card.<job>`: `shown.<digest>`, `edit`, `sent.<digest>`,
-//! the digest being 32 hex digits of the SHA256 of the card text, so no homeowner text is stored
-//! here (PRIV-001). Approval enqueues one [`CARDS_APPROVED_KIND`] event per job for the card
-//! sender, which sends only a card for which [`approved_card`] holds: the card the businesses get
-//! equals, character for character, the card she was shown (TD-INT-23, TD-AI-17).
+//! State is `intake_answer` rows under `card.<job>`: `shown.<digest>.<show>`, `edit`,
+//! `sent.<digest>`, the digest being 32 hex digits of the SHA256 of the card text, so no homeowner
+//! text is stored here (PRIV-001), and `<show>` the row's own time in microseconds: each show is
+//! its own text and its own timer, so a timer of an earlier show never approves a later one. Rows
+//! are written in time order (`next_time`), so the latest row is the state. Approval enqueues one
+//! [`CARDS_APPROVED_KIND`] event per job for the card sender, which sends only a card for which
+//! [`approved_card`] holds: the card the businesses get equals, character for character, the card
+//! she was shown (TD-INT-23, TD-AI-17).
 
 use askhava_core::api::{
     Claimed, Clock, HandlerError, NewTask, SystemClock, enqueue as enqueue_task,
 };
 use askhava_jobs::api::job_number;
-use askhava_messaging::api::{Language, count_segments, render};
+use askhava_messaging::api::{Language, count_segments, delivery_status, render};
 use askhava_ops::api::Actor;
 use askhava_quotes::api::JobCard;
 use jiff::{SignedDuration, Timestamp};
@@ -32,6 +36,7 @@ use crate::handlers::queue_body as queue;
 use crate::models::{self, IntakeError};
 use crate::rules::language_from_code;
 use crate::service::{Queued, TextIn, audit_action, card_allowed, sha256_hex};
+use crate::status::card_text_watch;
 
 /// The card texted in full (INT-041); its `[card]` slot takes the card text.
 pub const CARD_SHOWN_TEMPLATE: &str = "card_shown";
@@ -49,6 +54,12 @@ pub const CARDS_APPROVED_KIND: &str = "intake.cards_approved";
 pub const AUTO_SEND_AFTER: SignedDuration = SignedDuration::from_mins(30);
 /// The card is texted in full only when the whole text fits in this many segments (INT-041).
 pub const MAX_CARD_SEGMENTS: usize = 2;
+/// How often a card timer looks again for the card text to be sent (D-1278).
+pub const RECHECK_AFTER: SignedDuration = SignedDuration::from_mins(1);
+/// The audit action of a SEND, OK, YES or ENVIAR reply (the homeowner approved).
+pub const APPROVED_ACTION: &str = "intake.card_approved";
+/// The audit action of the no-reply auto-send (the timer approved).
+pub const AUTO_SENT_ACTION: &str = "intake.card_auto_sent";
 const BAD_PAYLOAD: &str = "bad intake card timer payload";
 const FAILED: &str = "the intake card timer failed";
 
@@ -134,7 +145,8 @@ pub enum Shown {
 }
 
 /// INT-041: shows the card to the homeowner and starts the wait; one transaction under the
-/// homeowner lock. The same card shown twice is one text and one timer.
+/// homeowner lock. Every call is a new show: its own text (even of the same card text, after an
+/// EDIT) and its own timer; only the latest show's timer can approve.
 ///
 /// # Errors
 ///
@@ -163,21 +175,27 @@ pub async fn show_card(
     let mut tx = db.begin().await.map_err(|_| IntakeError::Database)?;
     if state(&mut tx, p.conversation, p.job)
         .await?
+        .1
         .starts_with("sent.")
     {
         return Ok(Shown::AlreadySent);
     }
-    let choice = format!("shown.{digest}");
-    models::insert_plain(&mut tx, p.conversation, (&question(p.job), &choice), p.at).await?;
+    let show = next_time(&mut tx, (p.conversation, p.job), p.at).await?;
+    let choice = shown_choice(&digest, show);
+    models::insert_plain(&mut tx, p.conversation, (&question(p.job), &choice), show).await?;
+    let subject = [p.job, card_id(&digest), show_id(show)];
+    let queued = queue(&mut tx, secret, (contact, template), &subject, &body).await?;
     let timer = CardTimer {
         job: p.job,
         conversation: p.conversation,
         card: digest,
-        due: p.at + p.wait,
+        show,
+        outbox: queued.outbox_id,
+        wait: p.wait,
+        due: show,
+        watch: true,
     };
     queue_timer(&mut tx, &timer).await?;
-    let subject = [p.job, card_id(&timer.card)];
-    let queued = queue(&mut tx, secret, (contact, template), &subject, &body).await?;
     tx.commit().await.map_err(|_| IntakeError::Database)?;
     Ok(Shown::Texted(queued))
 }
@@ -212,17 +230,20 @@ pub async fn answer_card(
         return Ok(CardStep::Nothing);
     };
     let mut tx = db.begin().await.map_err(|_| IntakeError::Database)?;
-    let now = state(&mut tx, conversation, job).await?;
-    let Some(digest) = now.strip_prefix("shown.") else {
+    let (homeowner, now) = state(&mut tx, conversation, job).await?;
+    let Some(digest) = shown_digest(&now) else {
         return Ok(CardStep::Nothing);
     };
+    let ids = (conversation, job);
     let step = if reply == CardReply::Send {
-        approve(&mut tx, (conversation, job), digest, msg.received_at).await?;
+        let by = (Actor::Homeowner(homeowner), APPROVED_ACTION);
+        approve(&mut tx, ids, (digest, by), msg.received_at).await?;
         CardStep::Sent
     } else {
+        let at = next_time(&mut tx, ids, msg.received_at).await?;
         let row = (conversation, msg.inbox_id);
-        models::insert_answer(&mut tx, row, (&question(job), "edit"), msg.received_at).await?;
-        CardStep::Edit(ask_edit(&mut tx, secret, (conversation, job), msg.inbox_id).await?)
+        models::insert_answer(&mut tx, row, (&question(job), "edit"), at).await?;
+        CardStep::Edit(ask_edit(&mut tx, secret, ids, msg.inbox_id).await?)
     };
     tx.commit().await.map_err(|_| IntakeError::Database)?;
     Ok(step)
@@ -237,17 +258,29 @@ pub struct CardTimer {
     pub conversation: Uuid,
     /// The [`card_digest`] of the card shown.
     pub card: String,
-    /// When the wait ends.
+    /// The time of the show it belongs to (the `<show>` of its `shown.<digest>.<show>` row).
+    pub show: Timestamp,
+    /// The outbox row of that show's text.
+    pub outbox: Uuid,
+    /// The wait (the setting, [`AUTO_SEND_AFTER`]), counted from when the text is seen sent.
+    pub wait: SignedDuration,
+    /// When it runs.
     pub due: Timestamp,
+    /// True while the text is not yet seen sent; false once the wait is running.
+    pub watch: bool,
 }
 
-/// Runs a card timer at `now`: before `due`, or once that card is no longer the one waiting (a
-/// SEND, an EDIT or a newer card), it does nothing; else it approves the card as shown. Returns
-/// whether it approved. Safe to run twice.
+/// Runs a card timer at `now`. Before `due`, or once its show is no longer the one waiting (a
+/// SEND, an EDIT or a newer show), it does nothing. A watching timer reads the text's delivery
+/// status: not yet sent (held by quiet hours, say), it looks again after [`RECHECK_AFTER`]; sent,
+/// it queues the end of the wait at `now + wait`, so she has the card for the whole wait; failed
+/// or undelivered, it stops (D-1278). A waiting timer approves the card as shown. Returns whether
+/// it approved. Safe to run twice.
 ///
 /// # Errors
 ///
-/// [`IntakeError::UnknownRequest`], [`IntakeError::Audit`] or [`IntakeError::Database`].
+/// [`IntakeError::UnknownRequest`], [`IntakeError::Outbox`], [`IntakeError::Audit`] or
+/// [`IntakeError::Database`].
 pub async fn card_timer_step(
     db: &mut PgConnection,
     t: &CardTimer,
@@ -257,12 +290,36 @@ pub async fn card_timer_step(
         return Ok(false);
     }
     let mut tx = db.begin().await.map_err(|_| IntakeError::Database)?;
-    if state(&mut tx, t.conversation, t.job).await? != format!("shown.{}", t.card) {
+    if state(&mut tx, t.conversation, t.job).await?.1 != shown_choice(&t.card, t.show) {
         return Ok(false);
     }
-    approve(&mut tx, (t.conversation, t.job), &t.card, now).await?;
+    let approved = if t.watch {
+        watch(&mut tx, t, now).await?;
+        false
+    } else {
+        let by = (Actor::System, AUTO_SENT_ACTION);
+        approve(&mut tx, (t.conversation, t.job), (&t.card, by), now).await?;
+        true
+    };
     tx.commit().await.map_err(|_| IntakeError::Database)?;
-    Ok(true)
+    Ok(approved)
+}
+
+/// A watching timer's next step: look again, start the wait, or stop (D-1278).
+async fn watch(tx: &mut PgConnection, t: &CardTimer, now: Timestamp) -> Result<(), IntakeError> {
+    let status = delivery_status(tx, t.outbox)
+        .await
+        .map_err(|_| IntakeError::Outbox)?;
+    let Some(watch) = card_text_watch(status) else {
+        return Ok(());
+    };
+    let due = now + if watch { RECHECK_AFTER } else { t.wait };
+    let next = CardTimer {
+        due,
+        watch,
+        ..t.clone()
+    };
+    queue_timer(tx, &next).await
 }
 
 /// The [`CARD_TIMER_KIND`] handler `server` registers: [`card_timer_step`] on the payload.
@@ -298,32 +355,61 @@ fn question(job: Uuid) -> String {
     format!("card.{}", job.simple())
 }
 
-/// A stable ID for one card text, so each new card is its own outbox text (TXT-011).
+/// A stable ID for one card text (TXT-011).
 fn card_id(digest: &str) -> Uuid {
     Uuid::parse_str(digest).unwrap_or(Uuid::nil())
 }
 
-/// Locks the request's homeowner and reads the job's card state ("" when none).
+/// An ID for one show, so each show is its own outbox text, even of the same card (TXT-011).
+fn show_id(show: Timestamp) -> Uuid {
+    Uuid::from_u128(u128::from(show.as_microsecond().unsigned_abs()))
+}
+
+/// The state row of a show: `shown.<digest>.<show in microseconds>`.
+fn shown_choice(digest: &str, show: Timestamp) -> String {
+    format!("shown.{digest}.{}", show.as_microsecond())
+}
+
+/// The card digest of a `shown.<digest>.<show>` state, `None` for any other state.
+fn shown_digest(state: &str) -> Option<&str> {
+    let rest = state.strip_prefix("shown.")?;
+    rest.split_once('.').map(|(digest, _)| digest)
+}
+
+/// The time to write the job's next card row: `at`, or one microsecond after the latest row when
+/// that is not earlier, so rows are written in time order whatever clock each caller used.
+async fn next_time(
+    tx: &mut PgConnection,
+    (conversation, job): (Uuid, Uuid),
+    at: Timestamp,
+) -> Result<Timestamp, IntakeError> {
+    let latest = models::latest_answer_time(tx, conversation, &question(job)).await?;
+    Ok(latest.map_or(at, |t| at.max(t + SignedDuration::from_micros(1))))
+}
+
+/// Locks the request's homeowner and reads the job's card state ("" when none), with the homeowner.
 async fn state(
     tx: &mut PgConnection,
     conversation: Uuid,
     job: Uuid,
-) -> Result<String, IntakeError> {
+) -> Result<(Uuid, String), IntakeError> {
     let (homeowner, _) = models::conversation_state(tx, conversation)
         .await?
         .ok_or(IntakeError::UnknownRequest)?;
     models::lock_homeowner(tx, homeowner).await?;
     let now = models::latest_answer(tx, conversation, &question(job)).await?;
-    Ok(now.unwrap_or_default())
+    Ok((homeowner, now.unwrap_or_default()))
 }
 
-/// Records the approval and enqueues the one [`CARDS_APPROVED_KIND`] event of the job (JOB-005).
+/// Records the approval of card `digest` by `actor` (audited as `action`) and enqueues the one
+/// [`CARDS_APPROVED_KIND`] event of the job (JOB-005).
 async fn approve(
     tx: &mut PgConnection,
     (conversation, job): (Uuid, Uuid),
-    digest: &str,
+    (digest, (actor, action)): (&str, (Actor, &'static str)),
     at: Timestamp,
 ) -> Result<(), IntakeError> {
+    let at = next_time(tx, (conversation, job), at).await?;
     let choice = format!("sent.{digest}");
     models::insert_plain(tx, conversation, (&question(job), &choice), at).await?;
     let payload = json!({"job": job, "conversation": conversation, "card": digest});
@@ -332,14 +418,20 @@ async fn approve(
     enqueue_task(tx, &task)
         .await
         .map_err(|_| IntakeError::Database)?;
-    audit_action(tx, Actor::System, "intake.card_approved", conversation).await
+    audit_action(tx, actor, action, conversation).await
 }
 
+/// Queues timer `t`; its key names the show, the due time and the phase, so a re-run of the same
+/// step queues nothing more.
 async fn queue_timer(tx: &mut PgConnection, t: &CardTimer) -> Result<(), IntakeError> {
-    let due = t.due.as_microsecond();
-    let payload = json!({"job": t.job, "conversation": t.conversation, "card": t.card, "due": due});
+    let (show, due) = (t.show.as_microsecond(), t.due.as_microsecond());
+    let payload = json!({
+        "job": t.job, "conversation": t.conversation, "card": t.card, "show": show,
+        "outbox": t.outbox, "wait": t.wait.as_secs(), "due": due, "watch": t.watch,
+    });
     let mut task = NewTask::new(CARD_TIMER_KIND, payload, t.due);
-    task.dedupe_key = Some(format!("{CARD_TIMER_KIND}.{}.{}.{due}", t.job, t.card));
+    let phase = if t.watch { "watch" } else { "wait" };
+    task.dedupe_key = Some(format!("{CARD_TIMER_KIND}.{}.{show}.{phase}.{due}", t.job));
     enqueue_task(tx, &task)
         .await
         .map(|_| ())
@@ -352,7 +444,11 @@ fn parse(p: &Value) -> Option<CardTimer> {
         job: id("job")?,
         conversation: id("conversation")?,
         card: p["card"].as_str()?.to_owned(),
+        show: Timestamp::from_microsecond(p["show"].as_i64()?).ok()?,
+        outbox: id("outbox")?,
+        wait: SignedDuration::from_secs(p["wait"].as_i64()?),
         due: Timestamp::from_microsecond(p["due"].as_i64()?).ok()?,
+        watch: p["watch"].as_bool()?,
     })
 }
 

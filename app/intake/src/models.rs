@@ -537,6 +537,24 @@ pub(crate) async fn latest_answer(
     .map_err(|_| IntakeError::Database)
 }
 
+/// The time of the latest stored answer to `question` in `conversation`, if any (T208).
+pub(crate) async fn latest_answer_time(
+    db: &mut PgConnection,
+    conversation: Uuid,
+    question: &str,
+) -> Result<Option<Timestamp>, IntakeError> {
+    sqlx::query_scalar!(
+        "SELECT max(answered_at) FROM intake.intake_answer WHERE conversation_id = $1 \
+         AND question_id = $2",
+        conversation,
+        question
+    )
+    .fetch_one(db)
+    .await
+    .map(|t| t.map(|t| t.to_jiff()))
+    .map_err(|_| IntakeError::Database)
+}
+
 /// What the release of an emergency job waits on (INT-029): consent recorded, no 911 text still
 /// waiting for SAFE, the emergency choice, and the ZIP and area check (a property in a town).
 pub(crate) struct ReleaseState {
