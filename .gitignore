@@ -8,3 +8,5 @@ node_modules/
 test-results/
 playwright-report/
 *.profraw
+# War-games run logs (D-1154): results go in docs/phase2/, never the raw logs
+/wargames/runs/
