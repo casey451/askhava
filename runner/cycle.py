@@ -781,11 +781,26 @@ def offending_merge(state: State) -> tuple[str, str, list[str]]:
 
 
 def _smoke(state: State, env: Env, now: datetime, why: str) -> tuple[State, bool, str]:
-    """Run the smoke test on main and record the run in state (the 'verified' of governance 5.3)."""
+    """Run the smoke test on main and record the run in state (the 'verified' of governance 5.3).
+    A run that outran its budget is recorded with `timed_out` (D-1178)."""
     ok, head = env.smoke_main()
     run = {"sha": head, "ok": ok, "at": st.iso(now), "why": why}
+    if _smoke_timed_out(env):
+        run["timed_out"] = True
     out = dict(state, smoke_runs=[*state.get("smoke_runs", [])[-19:], run])
     return out, ok, head
+
+
+def _smoke_timed_out(env: Env) -> bool:
+    """Whether the env's last smoke run outran SMOKE_TIMEOUT (the real Env sets `smoke_timed_out`)."""
+    return bool(getattr(env, "smoke_timed_out", False))
+
+
+SMOKE_TIMEOUTS_BEFORE_NOTE = 3  # timeouts on one head before the outbox hears of it (D-1178)
+
+
+def _smoke_timeouts(state: State, head: str) -> int:
+    return sum(1 for r in state.get("smoke_runs", []) if r.get("sha") == head and r.get("timed_out"))
 
 
 def _nightly_red_on_head(env: Env) -> str:
@@ -1153,6 +1168,15 @@ def _next_step(cfg: Config, env: Env, state: State, base: State, now: datetime, 
         return "fix_main" if state.get("main_red") else (result or "idle")
     if ids[0] != st.FIX_MAIN:
         state, ok, head = _smoke(state, env, now, "start routine")  # BUILD_BRIEF.md:240
+        if not ok and _smoke_timed_out(env):
+            # The smoke outran its budget: no verdict on main, no strike (D-498 is for a red result),
+            # nothing claimed this cycle; the next run tries again. After a few on one head Casey's
+            # outbox hears of it, since a smoke that never finishes starves the build (D-1178).
+            if _smoke_timeouts(state, head) == SMOKE_TIMEOUTS_BEFORE_NOTE:
+                outbox.write_outbox(cfg.outbox_dir, "smoke-timeouts", "Runner: the smoke test keeps timing out", "info",
+                                    f"{SMOKE_TIMEOUTS_BEFORE_NOTE} smoke runs on main at {head[:12]} outran their budget; "
+                                    "the build is not red, but no task is claimed until a smoke finishes.")
+            return "smoke_timeout" if state == base or env.push_state(state, base) else "lost_race"
         if not ok:
             if env.main_checks_green(head) is True and _smoke_env_strikes(state, head) < SMOKE_ENV_STRIKES:
                 # Ci, Twin and Ally passed on this very commit: the smoke failed in the runner's own

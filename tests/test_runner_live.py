@@ -1383,6 +1383,11 @@ def test_run_command_gives_the_smoke_its_own_timeout(monkeypatch: pytest.MonkeyP
     import subprocess
 
     monkeypatch.setattr(github_env, "_run", fake)
+    monkeypatch.setenv("GITHUB_WORKSPACE", "/work/askhava")
+    monkeypatch.delenv("CARGO_TARGET_DIR", raising=False)
     github_env.run_command(["bash", "scripts/smoke.sh"], None, Path("."))
     github_env.run_command(["git", "status"], None, Path("."))
     assert seen == [github_env.SMOKE_TIMEOUT, 600]
+    assert github_env._smoke_env()["CARGO_TARGET_DIR"] == "/work/askhava/target", "the smoke reuses the job's cached build"
+    monkeypatch.setenv("CARGO_TARGET_DIR", "/elsewhere")
+    assert github_env._smoke_env()["CARGO_TARGET_DIR"] == "/elsewhere"

@@ -114,9 +114,18 @@ def run_command(args: list[str], stdin: str | None, cwd: Path) -> tuple[int, str
         done = _run(long_args, stdin, cwd, _long_token_env(long_args))
         if done.returncode == 0:
             return done.returncode, done.stdout, done.stderr
-    timeout = SMOKE_TIMEOUT if args[:2] == ["bash", "scripts/smoke.sh"] else 600
-    done = _run(args, stdin, cwd, _env_for(args), timeout)
+    smoke = args[:2] == ["bash", "scripts/smoke.sh"]
+    done = _run(args, stdin, cwd, _smoke_env() if smoke else _env_for(args), SMOKE_TIMEOUT if smoke else 600)
     return done.returncode, done.stdout, done.stderr
+
+
+def _smoke_env() -> dict[str, str]:
+    """The smoke test's environment: the checkout's `target` as CARGO_TARGET_DIR, so a smoke run in a
+    detached worktree reuses the job's cached build instead of compiling the workspace from cold in a
+    temporary directory (D-1178); an explicit CARGO_TARGET_DIR is kept."""
+    env = dict(os.environ)
+    env.setdefault("CARGO_TARGET_DIR", str(Path(os.environ.get("GITHUB_WORKSPACE") or Path.cwd()) / "target"))
+    return env
 
 
 def _run(args: list[str], stdin: str | None, cwd: Path, env: dict[str, str] | None, timeout: int = 600) -> subprocess.CompletedProcess[str]:
@@ -677,16 +686,17 @@ class GitHubEnv:
         if self.dry_run:
             self.log.append(f"dry-run: smoke test not run on {head[:12]}")
             return True, head
+        self.smoke_timed_out = False
         with tempfile.TemporaryDirectory() as tmp:
             tree = Path(tmp) / "main"
             self.git("worktree", "add", "--detach", str(tree), head)
             try:
                 code, out, err = self._run(["bash", "scripts/smoke.sh"], None, tree)
             except subprocess.TimeoutExpired:
-                # A smoke test that outruns the budget is a red smoke of the runner's own environment,
-                # not a crash: the cycle records it (a D-498 strike while Ci is green) and the next run,
-                # with a fresher build cache, tries again (D-1178).
+                # A smoke test that outruns the budget is not a crash and not a verdict on main: the
+                # cycle notes it (never a D-498 strike) and the next run tries again (D-1178).
                 code, out, err = 124, "", f"smoke timed out after {SMOKE_TIMEOUT} seconds"
+                self.smoke_timed_out = True
             finally:
                 self.git("worktree", "remove", "--force", str(tree), check=False)
         tail = (out + err).strip().splitlines()
