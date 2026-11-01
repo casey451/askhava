@@ -954,12 +954,15 @@ pub async fn on_opt_out(
     }
     let paused = sole_cancel(msg.inbound.words);
     if paused {
+        let mut inserted = false;
         for job in &jobs {
-            models::insert_pause(&mut tx, (conversation, *job), msg.inbox_id, msg.received_at)
-                .await?;
+            let ids = (conversation, *job);
+            inserted |= models::insert_pause(&mut tx, ids, msg.inbox_id, msg.received_at).await?;
         }
-        let actor = Actor::Homeowner(homeowner);
-        audit_action(&mut tx, actor, "intake.paused_by_homeowner", conversation).await?;
+        if inserted {
+            let actor = Actor::Homeowner(homeowner);
+            audit_action(&mut tx, actor, "intake.paused_by_homeowner", conversation).await?;
+        }
     }
     let payload = serde_json::json!({
         "conversation": conversation, "jobs": jobs, "paused": paused, "inbox": msg.inbox_id,

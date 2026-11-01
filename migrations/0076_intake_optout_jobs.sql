@@ -14,3 +14,4 @@ CREATE TABLE intake.homeowner_pause (
 );
 CREATE UNIQUE INDEX homeowner_pause_open_idx ON intake.homeowner_pause (job_id)
   WHERE ended_at IS NULL;
+REVOKE DELETE, TRUNCATE ON intake.homeowner_pause FROM askhava_app;

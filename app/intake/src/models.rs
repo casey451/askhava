@@ -869,12 +869,13 @@ pub(crate) async fn request_of_job(
 
 /// Marks job `job` of request `conversation` paused by the homeowner from inbox row `inbox` at
 /// `at` (CON-029, migration `0076_intake_optout_jobs.sql`); a job already paused keeps its pause.
+/// Returns whether a pause row was inserted (`false` for a job already paused).
 pub(crate) async fn insert_pause(
     db: &mut PgConnection,
     (conversation, job): (Uuid, Uuid),
     inbox: Uuid,
     at: Timestamp,
-) -> Result<(), IntakeError> {
+) -> Result<bool, IntakeError> {
     sqlx::query!(
         "INSERT INTO intake.homeowner_pause (conversation_id, job_id, inbox_id, paused_at) \
          VALUES ($1, $2, $3, $4) ON CONFLICT (job_id) WHERE ended_at IS NULL DO NOTHING",
@@ -885,7 +886,7 @@ pub(crate) async fn insert_pause(
     )
     .execute(db)
     .await
-    .map(|_| ())
+    .map(|r| r.rows_affected() > 0)
     .map_err(|_| IntakeError::Database)
 }
 

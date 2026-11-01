@@ -72,6 +72,18 @@ async fn events(db: &mut Db) -> i64 {
         .expect("tasks")
 }
 
+/// The `intake.paused_by_homeowner` audit rows for request `id`.
+async fn pause_audits(db: &mut Db, id: Uuid) -> i64 {
+    sqlx::query_scalar(
+        "SELECT count(*) FROM ops.audit_log \
+         WHERE action = 'intake.paused_by_homeowner' AND subject_id = $1",
+    )
+    .bind(id)
+    .fetch_one(&mut **db)
+    .await
+    .expect("audit")
+}
+
 /// TD-CON-21 (CON-028, CON-012, JOB-020, CON-029): STOP or bare CANCEL from a number with a live
 /// job gets only the bare confirmation text; the job keeps its status, no "still open" line is
 /// texted, and the CON-028 event is enqueued once per opt-out text.
@@ -150,6 +162,12 @@ async fn td_con_21_stop_with_a_live_job_gets_the_bare_confirmation_only(mut db: 
         assert_eq!(
             paused_by_homeowner(&mut db, job).await,
             Ok(word == "cancel")
+        );
+        let audits = pause_audits(&mut db, id).await;
+        assert_eq!(
+            audits,
+            i64::from(word == "cancel"),
+            "{word}: one audit row, not one per run"
         );
     }
 }
