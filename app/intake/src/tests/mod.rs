@@ -11,5 +11,6 @@ mod prop_optout_no_close;
 mod question_bank;
 mod routing_outcomes;
 mod safety_text;
+mod summary_step;
 mod trade_question;
 mod twin_warnings_regression;

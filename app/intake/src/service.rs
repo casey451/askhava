@@ -425,7 +425,7 @@ async fn beep_open(tx: &mut PgConnection, id: Uuid) -> Result<bool, IntakeError>
 }
 
 /// SHA256 of `text` as 64 lower-case hex digits.
-fn sha256_hex(text: &str) -> String {
+pub(crate) fn sha256_hex(text: &str) -> String {
     Sha256::digest(text.as_bytes())
         .iter()
         .map(|b| format!("{b:02x}"))
@@ -452,7 +452,7 @@ fn consent_of(decided: &Plan) -> (&'static str, Language) {
 }
 
 /// One audit row about request `conversation` (JOB-005, PRIV-028: IDs only).
-async fn audit_action(
+pub(crate) async fn audit_action(
     tx: &mut PgConnection,
     actor: Actor,
     action: &'static str,
