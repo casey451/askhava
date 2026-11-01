@@ -1,13 +1,13 @@
 # Ask Hava build status
 
-Updated 2026-11-01T16:02:49Z by runner 98dcb2419968 (actions).
+Updated 2026-11-01T16:12:21Z by runner fb6b23794bda (actions).
 
-**Requirements verified:** 95 of 726 (13.1%) · partial 189 · unstarted 442
-**Tasks merged (throughput only):** 78 of 229
+**Requirements verified:** 96 of 726 (13.2%) · partial 195 · unstarted 435
+**Tasks merged (throughput only):** 79 of 229
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 0 | 2 | 33 | 35 |
+| accessibility | 0 | 3 | 32 | 35 |
 | ai | 11 | 11 | 6 | 28 |
 | businesses | 5 | 4 | 48 | 57 |
 | calls | 0 | 2 | 23 | 25 |
@@ -15,18 +15,18 @@ Updated 2026-11-01T16:02:49Z by runner 98dcb2419968 (actions).
 | fees | 0 | 6 | 47 | 53 |
 | intake | 13 | 19 | 9 | 41 |
 | job-cards | 3 | 13 | 6 | 22 |
-| licensing | 28 | 18 | 2 | 48 |
+| licensing | 29 | 17 | 2 | 48 |
 | lifecycle | 3 | 21 | 4 | 28 |
 | messaging | 11 | 11 | 23 | 45 |
 | ops-recovery | 1 | 3 | 50 | 54 |
 | privacy | 1 | 12 | 18 | 31 |
 | quiet-hours | 1 | 8 | 0 | 9 |
-| quotes-pick | 1 | 12 | 43 | 56 |
+| quotes-pick | 1 | 17 | 38 | 56 |
 | recurring | 0 | 2 | 9 | 11 |
 | security | 8 | 22 | 24 | 54 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 0 | 28 | 28 |
-| wording | 2 | 1 | 28 | 31 |
+| wording | 2 | 2 | 27 | 31 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
@@ -36,7 +36,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
 - stage 1: 11 of 11 done
-- stage 2: 67 of 80 done
+- stage 2: 68 of 80 done
 - stage 3: 0 of 25 done
 - stage 4: 0 of 50 done
 - stage 5: 0 of 42 done
