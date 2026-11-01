@@ -5,9 +5,10 @@
 // question set, (4) the card shown and sent, (5) quotes on the quote page, (6) the pick by code and
 // the contact choice. The reduced form leaves out the photo, the review links, the share box, the
 // payment and the call, and seeds the two diagnostic-visit quotes instead of a business quoting.
-// What runs today is steps 5 and 6 up to the code-and-contact form. The rest cannot run yet and is
-// marked `test.fixme` with its reason, so every run lists it as not done (D-1280): no route takes an
-// inbound text (T241), and the final Pick neither sends nor checks a code (D-1248, D-1264). The
+// What runs today is step 5 and part of step 6: the review step, then the code-and-contact form
+// reached directly by rewriting the final form's action to /code, not through the real final Pick
+// button, which neither sends nor checks a code yet (D-1248, D-1264). Steps 1 to 4 (no route takes
+// an inbound text, T241) and the verified pick are not in this file; D-1280 records them. The
 // test-control router has no seeding route, so the job and its quotes are seeded through psql on
 // DATABASE_URL, as tests/e2e/pick_flow.spec.ts does (D-1280). POSTs are re-sent with a same-origin
 // https Origin until D-1250's fix lands. Fake data only: no name, phone or address is stored.
@@ -46,10 +47,6 @@ async function httpsOrigin(page: Page): Promise<void> {
   });
 }
 
-test.fixme("J1 steps 1 to 4: text in and consent, ZIP and trade, urgency and questions, the card shown and sent (needs T241's inbound-text route, D-1280)", () => {
-  // Not runnable: no route in app/server takes an inbound text yet (T241).
-});
-
 test("J1 step 5: both seeded diagnostic-visit quotes are on the quote page, in arrival order, each with Pick", async ({ page }) => {
   const path = seedTwoDiagnosticQuotes();
   await page.goto(path);
@@ -65,7 +62,7 @@ test("J1 step 5: both seeded diagnostic-visit quotes are on the quote page, in a
   await expect(page.locator("#no-quotes")).toHaveCount(0);
 });
 
-test("J1 step 6 (as far as it is built): Pick #2, the review step, then the code-and-contact form with the call or email choice", async ({ page }) => {
+test("J1 step 6 (partial): Pick #2 and the review step, then the code-and-contact form reached directly (form action rewritten to /code), with the call or email choice", async ({ page }) => {
   const path = seedTwoDiagnosticQuotes();
   await httpsOrigin(page);
   await page.goto(path);
@@ -84,8 +81,4 @@ test("J1 step 6 (as far as it is built): Pick #2, the review step, then the code
   await expect(page.getByLabel(/^Email\./)).not.toBeChecked();
   await expect(page.getByLabel("6-digit code")).toHaveAttribute("autocomplete", "one-time-code");
   await expect(page.getByRole("button", { name: "Finish my pick" })).toBeEnabled();
-});
-
-test.fixme("J1 step 6, the pick by code: the code text arrives, the code is checked and the pick is stored (needs Verify and the stored page pick, D-1248, D-1264, D-1280)", () => {
-  // Not runnable: the final Pick sends no code and stores no pick yet (D-1264).
 });
