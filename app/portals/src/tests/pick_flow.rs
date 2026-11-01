@@ -4,7 +4,9 @@
 
 use askama::Template;
 
-use crate::pick_flow::{PageLanguage, ReviewView, result_page};
+use askhava_jobs::api::JobStatus;
+
+use crate::pick_flow::{PageLanguage, ReviewView, result_page, takes_pick};
 
 const TOKEN: &str = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
 
@@ -30,10 +32,11 @@ fn td_pick_08_review_says_what_happens_next_with_go_back() {
         "You're picking one business for this request. If it falls through, you can pick another quote.",
         "You hire the business directly. Ask Hava isn't part of your agreement with it.",
         "or reply 2 YES",
+        "After you press Pick, we text a 6-digit code to your phone.",
     ] {
         assert!(html.contains(line), "missing: {line}");
     }
-    let back = format!("<a href=\"/q/{TOKEN}#quote-2\">Go back</a>");
+    let back = format!("<a href=\"/q/{TOKEN}?#quote-2\">Go back</a>");
     assert!(html.contains(&back), "Go back returns to the card");
     assert!(html.contains(&format!("action=\"/q/{TOKEN}/pick\"")));
 }
@@ -78,8 +81,48 @@ fn td_a11y_02_final_pick_button_never_disabled() {
 }
 
 #[test]
-fn a11y_014_result_heading_takes_focus_and_shows_the_after_done_lines() {
-    let html = result_page(1042, 2, TOKEN.to_owned()).expect("result renders");
+fn td_a11y_02_final_pick_before_the_code_step_says_nothing_was_picked() {
+    let mut view = ReviewView::review(1042, 2, TOKEN.to_owned(), "csrf-sample".to_owned());
+    view.not_open = true;
+    let html = view.render().expect("review renders");
+    assert!(
+        html.contains("Nothing was picked."),
+        "D-1251: the press is not silent"
+    );
+    assert!(
+        html.contains("id=\"final-pick\""),
+        "the review stays usable"
+    );
+    assert!(!html.contains("disabled"), "A11Y-031: no disabled submit");
+    assert!(!review(PageLanguage::En).contains("Nothing was picked"));
+}
+
+#[test]
+fn pick_012_pick_032_a_pick_is_taken_until_the_business_confirms() {
+    assert!(
+        takes_pick(JobStatus::Open),
+        "PICK-012: from the first quote"
+    );
+    assert!(takes_pick(JobStatus::QuotesReady));
+    assert!(
+        takes_pick(JobStatus::AwaitingConfirm),
+        "PICK-032: replaces the waiting pick"
+    );
+    for status in [
+        JobStatus::Intake,
+        JobStatus::PaymentPending,
+        JobStatus::Connected,
+    ] {
+        assert!(!takes_pick(status), "{status:?}");
+    }
+    for status in JobStatus::ALL.into_iter().filter(|s| s.is_final()) {
+        assert!(!takes_pick(status), "{status:?}");
+    }
+}
+
+#[test]
+fn a11y_014_result_heading_carries_autofocus_and_the_after_done_lines() {
+    let html = result_page(1042, 2, TOKEN.to_owned(), None).expect("result renders");
     let heading =
         "<h1 id=\"pick-result\" tabindex=\"-1\" autofocus>Done. The business has your pick.</h1>";
     assert!(html.contains(heading), "focusable result heading");
@@ -92,7 +135,23 @@ fn a11y_014_result_heading_takes_focus_and_shows_the_after_done_lines() {
         assert!(html.contains(line), "missing: {line}");
     }
     assert!(!html.contains("final-pick"), "no second Pick on the result");
-    for banned in ["reward", "Reward", "until", "$"] {
+    assert!(
+        !html.contains("so you know it's us"),
+        "PICK-054: no texting number yet"
+    );
+    for banned in ["reward", "Reward"] {
         assert!(!html.contains(banned), "result shows {banned}");
     }
+}
+
+#[test]
+fn pick_045_result_shows_the_acceptance_end_time_when_given() {
+    let time = "6:10 p.m. Arizona time".to_owned();
+    let html = result_page(1042, 2, TOKEN.to_owned(), Some(time)).expect("result renders");
+    assert!(html.contains("The business has until 6:10 p.m. Arizona time to accept."));
+    let none = result_page(1042, 2, TOKEN.to_owned(), None).expect("result renders");
+    assert!(
+        !none.contains("id=\"accept-by\""),
+        "no end time without a value"
+    );
 }

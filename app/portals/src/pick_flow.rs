@@ -1,15 +1,18 @@
 //! The quote page's pick review step and the pick result (PICK-016, PICK-017, PICK-045, PICK-054,
-//! A11Y-014, A11Y-031; T055, D-1248 to D-1250).
+//! A11Y-014, A11Y-031; T055, D-1248 to D-1251).
 //!
 //! A quote card's Pick form posts to the quote page's own address (`POST /q/{token}`); the answer
 //! is the review step (`templates/pick_review.html`): what happens next, "or reply <n> YES", a
 //! "Go back" link to the card, and the final Pick form posting to [`PICK_ROUTE`] with only "By
 //! picking, you agree to the Terms" directly beside its button (PICK-016) and no Confirm end time
-//! (TD-PICK-28). The final Pick is where the Verify code step (PICK-013, T187) starts; until it and
-//! the stored page pick exist, the final POST re-checks the link and the quote and sends the
-//! homeowner back to her card, so no page claims a pick that was not made (D-1248). [`result_page`]
-//! renders the page shown once a pick is stored: its heading takes focus on load (A11Y-014), it
-//! offers the Ask Hava contact card and the after-Done line (PICK-054). Both routes are POST only,
+//! (TD-PICK-28). The review lists the Verify code step (PICK-013, T187) the final Pick starts;
+//! until it and the stored page pick exist, the final POST re-checks the link and the quote and
+//! shows the review again under "Nothing was picked", so no page claims a pick that was not made
+//! (D-1248, D-1251). A quote can be picked from the first quote (PICK-012) until the business
+//! confirms: in Awaiting confirm a new page pick replaces the waiting one (PICK-032, PICK-045,
+//! D-1251). [`result_page`] renders the page shown once a pick is stored: its heading takes focus
+//! on load (A11Y-014), it shows the acceptance end time when the caller has it (PICK-045), the Ask
+//! Hava contact card and the after-Done line (PICK-054). Both routes are POST only,
 //! behind the cross-site refusal, read through [`CsrfForm`], `no-store` and `noindex`; neither
 //! changes anything, so a double submit is harmless (A11Y-031). No name, phone or address is read.
 
@@ -18,7 +21,7 @@ use std::sync::Arc;
 use askama::Template;
 use askhava_core::api::{Clock, LinkToken};
 use askhava_jobs::api::quote_token::resolve;
-use askhava_jobs::api::{current, job_number};
+use askhava_jobs::api::{JobStatus, current, job_number};
 use askhava_quotes::api::page_quotes;
 use axum::Router;
 use axum::extract::{FromRef, Path, State};
@@ -86,6 +89,11 @@ pub(crate) struct ReviewView {
     pub(crate) terms: (&'static str, &'static str, &'static str),
     /// `true` once the pick is stored: the result shows instead of the review.
     pub(crate) done: bool,
+    /// `true` when the final Pick was pressed before the page pick exists: the review shows again
+    /// under "Nothing was picked" (D-1251).
+    pub(crate) not_open: bool,
+    /// The result's acceptance end time, worded by the caller (PICK-045, T063's window).
+    pub(crate) accept_by: Option<String>,
 }
 
 impl ReviewView {
@@ -99,6 +107,8 @@ impl ReviewView {
             csrf,
             terms,
             done: false,
+            not_open: false,
+            accept_by: None,
         }
     }
 
@@ -114,15 +124,23 @@ impl ReviewView {
 
 /// The page shown once a page pick of quote `quote` on request `request` is stored, with `token`
 /// for the link back to the quote page: its heading takes focus (A11Y-014), then PICK-045's next
-/// steps, the "Add Ask Hava to your contacts" card and the after-Done line (PICK-054). The
-/// stored page pick (T187) calls it; it never says when the business must accept (TD-PICK-28).
+/// steps and, when `accept_by` is given, "The business has until <accept_by> to accept." (PICK-045:
+/// the portal shows the acceptance end time; T063's Confirm window supplies it, D-1251), the "Add
+/// Ask Hava to your contacts" card and the after-Done line (PICK-054). The stored page pick (T187)
+/// calls it. Only the review step hides the end time (TD-PICK-28).
 ///
 /// # Errors
 ///
 /// [`askama::Error`] when the template fails to render.
-pub fn result_page(request: i64, quote: usize, token: String) -> Result<String, askama::Error> {
+pub fn result_page(
+    request: i64,
+    quote: usize,
+    token: String,
+    accept_by: Option<String>,
+) -> Result<String, askama::Error> {
     let mut view = ReviewView::review(request, quote, token, String::new());
     view.done = true;
+    view.accept_by = accept_by;
     view.render()
 }
 
@@ -172,7 +190,32 @@ async fn review(
         Err(status) => return status.into_response(),
     };
     let csrf = csrf_token(&jar).unwrap_or_default();
-    match ReviewView::review(request, form.quote, raw, csrf).render() {
+    render(ReviewView::review(request, form.quote, raw, csrf))
+}
+
+/// `POST /q/{token}/pick`: the final Pick. It re-checks the link and the quote; the code step and
+/// the stored pick are T187's, so for now it shows the review again under "Nothing was picked"
+/// (D-1248, D-1251); a quote that can't be picked goes back to the quote page.
+async fn final_pick(
+    State(flow): State<PickFlow>,
+    Path(raw): Path<String>,
+    jar: CookieJar,
+    CsrfForm(form): CsrfForm<PickForm>,
+) -> Response {
+    let request = match pickable(&flow, &raw, form.quote).await {
+        Ok(Some(request)) => request,
+        Ok(None) => return back(&raw, form.quote),
+        Err(status) => return status.into_response(),
+    };
+    let csrf = csrf_token(&jar).unwrap_or_default();
+    let mut view = ReviewView::review(request, form.quote, raw, csrf);
+    view.not_open = true;
+    render(view)
+}
+
+/// `view` as a `noindex` page, or a bare 500 (logged once) when the template fails.
+fn render(view: ReviewView) -> Response {
+    match view.render() {
         Ok(html) => page(html),
         Err(_) => {
             tracing::warn!("pick review template failed");
@@ -181,23 +224,23 @@ async fn review(
     }
 }
 
-/// `POST /q/{token}/pick`: the final Pick. It re-checks the link and the quote; the code step and
-/// the stored pick are T187's, so for now it returns the homeowner to her card (D-1248).
-async fn final_pick(
-    State(flow): State<PickFlow>,
-    Path(raw): Path<String>,
-    CsrfForm(form): CsrfForm<PickForm>,
-) -> Response {
-    match pickable(&flow, &raw, form.quote).await {
-        Ok(_) => back(&raw, form.quote),
-        Err(status) => status.into_response(),
-    }
+/// True while the job takes a page pick: from the first quote (PICK-012: Open, No quotes yet,
+/// Quotes ready) and in Awaiting confirm, where the new pick replaces the waiting one until the
+/// business confirms (PICK-032, PICK-045 "You can still pick another quote", D-1251).
+pub(crate) const fn takes_pick(status: JobStatus) -> bool {
+    matches!(
+        status,
+        JobStatus::Open
+            | JobStatus::NoQuotesYet
+            | JobStatus::QuotesReady
+            | JobStatus::AwaitingConfirm
+    )
 }
 
 /// The request number when quote `quote` behind token `raw` can be picked now: the link opens
-/// (SEC-037, PICK-011), the job has had no pick (PICK-012) and the quote is on the page and
-/// available (PICK-008). `Ok(None)` when it can't; `Err(404)` for a bad link, `Err(500)` on a
-/// failed read (logged once, with no value).
+/// (SEC-037, PICK-011), the job takes a pick ([`takes_pick`]: PICK-012, PICK-032) and the quote is
+/// on the page and available (PICK-008). `Ok(None)` when it can't; `Err(404)` for a bad link,
+/// `Err(500)` on a failed read (logged once, with no value).
 async fn pickable(flow: &PickFlow, raw: &str, quote: usize) -> Result<Option<i64>, StatusCode> {
     let token = LinkToken::parse(raw).map_err(|_| StatusCode::NOT_FOUND)?;
     let read = |()| {
@@ -211,7 +254,7 @@ async fn pickable(flow: &PickFlow, raw: &str, quote: usize) -> Result<Option<i64
     if token_expired(row.status.is_final(), row.status_at, flow.clock.now()) {
         return Err(StatusCode::NOT_FOUND);
     }
-    if !row.status.takes_quote_edits() {
+    if !takes_pick(row.status) {
         return Ok(None);
     }
     let quotes = page_quotes(&mut db, job).await.map_err(|_| read(()))?;

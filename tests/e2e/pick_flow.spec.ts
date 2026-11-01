@@ -1,14 +1,14 @@
 /// <reference types="node" />
 // The quote page's pick review step in a browser (T055; TD-PICK-08, TD-PICK-24, TD-PICK-28,
-// TD-PICK-30, TD-A11Y-02; PICK-016, PICK-017, A11Y-014, A11Y-031; D-1248 to D-1250).
+// TD-PICK-30, TD-A11Y-02; PICK-016, PICK-017, A11Y-014, A11Y-031; D-1248 to D-1251).
 //
 // A job in Quotes ready with three quotes (#2 no longer available) is seeded through psql on
 // DATABASE_URL, as tests/a11y/fixtures.ts does. Under the site's `Referrer-Policy: no-referrer` the
 // browser sends `Origin: null` on a same-origin form POST, which `security::is_cross_site` (T051's)
 // refuses; that is logged for a fix in D-1250. Until it is fixed, `page.route` re-sends each POST to
 // the quote page with the https Origin a same-origin request has, so the step itself is tested. The stored page
-// pick and its result page are T187's (D-1248): here the final Pick returns to the card and nothing
-// is picked. The Spanish Terms line is checked in app/portals/src/tests/pick_flow.rs until the page
+// pick and its result page are T187's (D-1248): here the final Pick shows "Nothing was picked" and
+// nothing is picked (D-1251). The Spanish Terms line is checked in app/portals/src/tests/pick_flow.rs until the page
 // reads the request's language (D-1249). Fake data only.
 import { createHash, randomBytes } from "node:crypto";
 import { spawnSync } from "node:child_process";
@@ -57,18 +57,20 @@ async function openReview(page: Page, quote: number): Promise<string> {
   return path;
 }
 
-test("TD-PICK-08 TD-PICK-24 PICK-017: the review step says what happens next, with Go back", async ({ page }) => {
+test("TD-PICK-08 TD-PICK-24 PICK-017: the review step holds the code step, both PICK-017 lines and or reply 1 YES; Go back returns to the card", async ({ page }) => {
   const path = await openReview(page, 1);
   const main = page.locator("main");
+  await expect(main).toContainText("After you press Pick, we text a 6-digit code to your phone.");
   await expect(main).toContainText("You're picking one business for this request. If it falls through, you can pick another quote.");
   await expect(main).toContainText("You hire the business directly. Ask Hava isn't part of your agreement with it.");
   await expect(main).toContainText("or reply 1 YES");
   await page.getByRole("link", { name: "Go back" }).click();
-  await expect(page).toHaveURL(new RegExp(`${path}#quote-1$`));
-  await expect(page.getByRole("button", { name: "Pick #1" })).toBeVisible();
+  await expect(page).toHaveURL(new RegExp(`${path}\\?#quote-1$`));
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(/^Your quotes for request /);
+  await expect(page.locator("#quote-1").getByRole("button", { name: "Pick #1" })).toBeVisible();
 });
 
-test("TD-PICK-30 PICK-016: only the Terms line beside the final Pick, body size, link underlined in the link colour", async ({ page }) => {
+test("TD-PICK-30 PICK-016: in English, only the Terms line beside the final Pick, body size, link underlined in the header link colour; no $100 or liability words", async ({ page }) => {
   await openReview(page, 3);
   const beside = page.locator("#final-pick + p");
   await expect(beside).toHaveText("By picking, you agree to the Terms");
@@ -98,25 +100,31 @@ test("TD-PICK-30 PICK-016: only the Terms line beside the final Pick, body size,
   for (const banned of ["$100", "liability", "Liability", "key terms", "Key terms"]) expect(text).not.toContain(banned);
 });
 
-test("TD-PICK-28: the review step shows no Confirm end time", async ({ page }) => {
+test("TD-PICK-28: the review step shows no end-time words", async ({ page }) => {
   await openReview(page, 1);
   const text = await page.locator("main").innerText();
   for (const banned of ["until", "confirm by", "a.m.", "p.m.", "business hours"]) expect(text).not.toContain(banned);
 });
 
-test("TD-A11Y-02 A11Y-014: polite status region on the page, the final Pick is never disabled and changes nothing yet", async ({ page }) => {
-  const path = await openReview(page, 1);
+test("TD-A11Y-02: the final Pick is enabled and, before the code step, says nothing was picked", async ({ page }) => {
+  await openReview(page, 1);
   await expect(page.getByRole("button", { name: "Pick #1" })).toBeEnabled();
   await page.getByRole("button", { name: "Pick #1" }).click();
-  await expect(page).toHaveURL(new RegExp(`${path}#quote-1$`));
+  await expect(page.locator("#pick-not-open")).toHaveText("Nothing was picked. Picking on this page isn't open yet, so no code was sent.");
+  await expect(page.getByRole("button", { name: "Pick #1" })).toBeEnabled();
+});
+
+test("TD-A11Y-02: back on the quote page the status region is role=status, not assertive, and empty", async ({ page }) => {
+  const path = await openReview(page, 1);
+  await page.getByRole("link", { name: "Go back" }).click();
+  await expect(page).toHaveURL(new RegExp(`${path}\\?#quote-1$`));
   const status = page.locator("#quote-status");
   await expect(status).toHaveAttribute("role", "status");
   await expect(status).not.toHaveAttribute("aria-live", "assertive");
   await expect(status).toBeEmpty();
-  await expect(page.getByRole("button", { name: "Pick #1" })).toBeVisible();
 });
 
-test("TD-PICK-24: the review step has no axe violation at 320, 768 and 1280 px", async ({ page }) => {
+test("TD-PICK-24 (axe part): the review step has no axe violation at 320, 768 and 1280 px", async ({ page }) => {
   await openReview(page, 1);
   for (const width of WIDTHS) {
     await page.setViewportSize({ width, height: 900 });

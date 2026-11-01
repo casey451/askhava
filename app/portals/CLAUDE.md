@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The layer-8 crate for the homeowner, business and owner portals (`docs/architecture.md` section 3). T051 built the shared web security every browser-facing page uses: sessions and their `__Host-` cookies, CSRF tokens, the cross-site refusal, the SEC-012 headers, `no-store` for contact and photo pages, the realm proofs for vault reads and the SEC-048 security events. T052 added the homeowner's quote page (D-1233 to D-1236); T055 the pick review step and the pick result page (D-1248 to D-1250). Not here yet: sign-in for any realm (later portals tasks), action links (T148), the pick code step and the stored page pick (T187, D-1248), the emergency switch on the review step (D-1249), the quote page's close button, STOP's still-open line, card facts and names, Spanish (D-1236).
+The layer-8 crate for the homeowner, business and owner portals (`docs/architecture.md` section 3). T051 built the shared web security every browser-facing page uses: sessions and their `__Host-` cookies, CSRF tokens, the cross-site refusal, the SEC-012 headers, `no-store` for contact and photo pages, the realm proofs for vault reads and the SEC-048 security events. T052 added the homeowner's quote page (D-1233 to D-1236); T055 the pick review step and the pick result page (D-1248 to D-1252). Not here yet: sign-in for any realm (later portals tasks), action links (T148), the pick code step and the stored page pick (T187, D-1248), the emergency switch on the review step (D-1249), the quote page's close button, STOP's still-open line, card facts and names, Spanish (D-1236).
 
 ## What it owns
 
@@ -29,8 +29,9 @@ The layer-8 crate for the homeowner, business and owner portals (`docs/architect
 - PICK-010, SEC-037: the page reads no name, phone or address; `X-Robots-Tag: noindex, nofollow` and `no_store`; malformed, unknown, re-issued or revoked tokens are a bare 404.
 - PICK-011: `token_expired` is true from exactly 30 days after the job entered a final status.
 - WORD-005, CON-003, CON-028, TXT-016: the fixed page lines live in `templates/quote_page.html`; the still-open line shows while `intake::api::paused_by_homeowner` on a live job.
-- PICK-016, PICK-017, D-1248: the review step says what happens next, shows "or reply <n> YES" and "Go back" to the card, and puts only the Terms line (`#terms-line`, body text, default underlined link colour) right after the final Pick button; it shows no Confirm end time, $100 cap or key-terms summary. The final Pick re-checks the link and quote and returns to the card (303) until T187's code step stores the pick.
-- A11Y-014, PICK-045, PICK-054: `result_page`'s `h1#pick-result` has `tabindex="-1"` and `autofocus`; it carries the next steps, the `data:` vCard "Add Ask Hava to your contacts" (askhava.com only) and the after-Done line, never a reward.
+- PICK-013, PICK-016, PICK-017, D-1248, D-1251: the review step says what happens next (the 6-digit code first), shows "or reply <n> YES" and "Go back" to the card, and puts only the Terms line (`#terms-line`, body text, default underlined link colour) right after the final Pick button; it shows no Confirm end time, $100 cap or key-terms summary. The final Pick re-checks the link and quote and re-renders the review under "Nothing was picked" (`#pick-not-open`, focused) until T187's code step stores the pick.
+- PICK-012, PICK-032, D-1251: `takes_pick` lets a pick through in Open, No quotes yet, Quotes ready and Awaiting confirm (a new pick replaces the waiting one), never once the business confirmed.
+- A11Y-014, PICK-045, PICK-054: `result_page`'s `h1#pick-result` has `tabindex="-1"` and `autofocus`; it carries the next steps, the acceptance end time when `accept_by` is given, the `data:` vCard "Add Ask Hava to your contacts" (askhava.com only, no texting-number claim) and the after-Done line, never a reward.
 - A11Y-030, A11Y-031: forms post with `novalidate`, keep their submit button enabled and lean on the handler's idempotency key; a refused CSRF token is a bare 403.
 
 ## Never break
@@ -43,7 +44,7 @@ The layer-8 crate for the homeowner, business and owner portals (`docs/architect
 - Quote numbers follow arrival and never move; Pick and "or reply <n> YES" from #1; no sort or filter control: `src/tests/prop_arrival_order.rs`, `tests/integration/tests/quote_page.rs`.
 - Token 30-day edge, 404 for re-issued, revoked and malformed tokens, noindex, no contact, cross-site POST refused: `tests/security/tests/quote_token.rs`.
 - The quote page's fixed lines, no rating or summary element, empty status region, still-open line: `tests/integration/tests/quote_page.rs`.
-- Only the Terms line beside the final Pick, link underlined in the link colour, no $100 or liability words, Go back to the card, no end time: `src/tests/pick_flow.rs`, `tests/e2e/pick_flow.spec.ts`.
+- Only the Terms line beside the final Pick, link underlined in the link colour, no $100 or liability words, Go back to the card, no end time on the review step (the result may show it, PICK-045): `src/tests/pick_flow.rs`, `tests/e2e/pick_flow.spec.ts`.
 - `refuse_cross_site` is never layered over webhooks (their callers send no `Origin`).
 
 ## How to change
@@ -53,7 +54,7 @@ The layer-8 crate for the homeowner, business and owner portals (`docs/architect
 - Log a sign-in failure, a denial or a webhook signature failure: `record_security_event` with the route template and an actor ID, never the phone or the path.
 - Change the CSP or a header: `security.rs` constants, then `headers.rs` and `no_third_party.rs` (`cargo test -p askhava-security --test headers --test no_third_party`).
 - Change a quote-page line: `templates/quote_page.html` (the fixed lines change only with the spec), then `cargo test -p askhava-integration --test quote_page` and `python3 scripts/check_copy.py`; status words are the `data-one`/`data-many` attributes, never in `quote_page.ts`.
-- Change the pick flow: `src/pick_flow.rs` and `templates/pick_review.html` (PICK-017's two sentences, the Terms line and PICK-054's lines are spec words), then `cargo test -p askhava-portals tests::pick_flow` and `npx playwright test --config tests/e2e/playwright.config.ts tests/e2e/pick_flow.spec.ts`; the code step goes into `final_pick` before `result_page` (T187).
+- Change the pick flow: `src/pick_flow.rs` and `templates/pick_review.html` (PICK-017's two sentences, the Terms line and PICK-054's lines are spec words), then `cargo test -p askhava-portals tests::pick_flow` and `npx playwright test --config tests/e2e/playwright.config.ts tests/e2e/pick_flow.spec.ts`; the code step replaces `final_pick`'s "Nothing was picked" render and calls `result_page` with the Confirm window's end time (T187, T063).
 - Add to a quote card: a field on `quotes::api::PageQuote` (`app/quotes/src/api.rs`) or the card read, then the template; check `tsc --noEmit` and `eslint` for `static/quote_page.ts`.
 - Add a table or column: a new migration (`-- portals (T###)` first line), regenerate `.sqlx/` (online build with `SQLX_OFFLINE_DIR=.sqlx`).
 
