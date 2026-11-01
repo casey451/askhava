@@ -53,23 +53,20 @@ def _window(raw: Any) -> dict[str, Any] | None:
 
 
 def latest_reading(text: str) -> dict[str, Any] | None:
-    """The windows of the last `rate_limit_event` in an execution file's text, in pacing's names, or
-    None when the file holds none. `unifiedWindows` is read first; a bare `rateLimitType` with a
-    `utilization` names one window the same way."""
-    found: dict[str, Any] | None = None
+    """The latest value of each window across the `rate_limit_event` messages of an execution file's
+    text, in pacing's names, or None when the file holds none. `unifiedWindows` is read first; a bare
+    `rateLimitType` with a `utilization` names one window the same way."""
+    found: dict[str, Any] = {}
     for message in _messages(text):
         if not isinstance(message, dict) or message.get("type") != "rate_limit_event":
             continue
         info = message.get("rate_limit_info") if isinstance(message.get("rate_limit_info"), dict) else message
         unified = info.get("unifiedWindows") if isinstance(info.get("unifiedWindows"), dict) else {}
-        windows = {ours: _window(unified.get(theirs)) for ours, theirs in WINDOWS.items()}
         for ours, theirs in WINDOWS.items():
-            if windows[ours] is None and info.get("rateLimitType") == theirs:
-                windows[ours] = _window(info)
-        good = {k: v for k, v in windows.items() if v is not None}
-        if good:
-            found = good
-    return found
+            window = _window(unified.get(theirs)) or (_window(info) if info.get("rateLimitType") == theirs else None)
+            if window is not None:
+                found[ours] = window  # the latest value per window; an event naming one window keeps the other
+    return found or None
 
 
 def record(state: st.State, reading: dict[str, Any], now: datetime) -> st.State:

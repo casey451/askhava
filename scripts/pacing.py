@@ -232,7 +232,18 @@ def session_reading(state: State, now: datetime) -> dict[str, Any] | None:
         return None
     if age < timedelta(0) or age > timedelta(hours=SESSION_READING_HOURS):
         return None
-    good = {w: found[w] for w in WINDOWS if isinstance(found.get(w), dict) and "utilization" in found[w]}
+    good = {}
+    for w in WINDOWS:
+        window = found.get(w)
+        if not isinstance(window, dict) or "utilization" not in window:
+            continue
+        reset = window.get("resets_at")
+        try:
+            if isinstance(reset, str) and parse(reset) <= now:
+                continue  # a window already reset says nothing about the current one
+        except ValueError:
+            continue
+        good[w] = window
     return {"at": found["at"], **good} if good else None
 
 

@@ -29,6 +29,9 @@ def test_latest_reading_takes_the_last_event_from_an_array_or_jsonl() -> None:
     assert ur.latest_reading(json.dumps([{"type": "assistant"}])) is None and ur.latest_reading("") is None
     bare = {"type": "rate_limit_event", "rate_limit_info": {"rateLimitType": "seven_day", "utilization": 1.4, "resetsAt": 1793898000}}
     assert ur.latest_reading(json.dumps([bare])) == {"week": {"utilization": 1.0, "resets_at": "2026-11-05T17:00:00Z"}}
+    five = {"type": "rate_limit_event", "rate_limit_info": {"rateLimitType": "five_hour", "utilization": 0.3, "resetsAt": 1793400000}}
+    both = ur.latest_reading(json.dumps([bare, five]))
+    assert both and both["week"]["utilization"] == 1.0 and both["five_hour"]["utilization"] == 0.3, "a later event naming one window keeps the other"
 
 
 def test_record_and_read_file(tmp_path: Path) -> None:
@@ -56,3 +59,7 @@ def test_pacing_uses_a_fresh_session_reading_for_the_windows_it_holds() -> None:
     assert source == "ledger" and stale["week"]["used"] == 1_000_000
     quota = {"five_hour": {"utilization": 0.1}, "week": {"utilization": 0.2}}
     assert pc.standing(state, cfg, NOW, quota)[1] == "quota_cmd", "a probe reading still wins"
+    past = ur.record(state, {"week": {"utilization": 0.9, "resets_at": pc.iso(NOW - timedelta(minutes=1))},
+                             "five_hour": {"utilization": 0.9, "resets_at": pc.iso(NOW + timedelta(hours=1))}}, NOW)
+    stand, source = pc.standing(past, cfg, NOW, None)
+    assert "(five_hour)" in source and stand["week"]["used"] == 1_000_000, "a window already reset is dropped, the other kept"
