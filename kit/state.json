@@ -11439,7 +11439,7 @@
   {
    "id": "T140",
    "deps": [
-    "T139"
+    "T239"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -11486,7 +11486,13 @@
     "T140",
     "T141",
     "T216",
-    "T171"
+    "T171",
+    "T234",
+    "T235",
+    "T236",
+    "T237",
+    "T238",
+    "T239"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -12890,6 +12896,72 @@
     "migrations/0083_intake_golden_result.sql",
     "tests/integration/tests/routing_confidence.rs"
    ]
+  },
+  {
+   "id": "T234",
+   "deps": [
+    "T139"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "wargames-harness",
+   "type": "harness",
+   "stage": "6"
+  },
+  {
+   "id": "T235",
+   "deps": [
+    "T234"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "wargames-money",
+   "type": "harness",
+   "stage": "6"
+  },
+  {
+   "id": "T236",
+   "deps": [
+    "T235"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "ai-call-budgets",
+   "type": "build",
+   "stage": "6"
+  },
+  {
+   "id": "T237",
+   "deps": [
+    "T236"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "wargames-round-1",
+   "type": "harness",
+   "stage": "6"
+  },
+  {
+   "id": "T238",
+   "deps": [
+    "T237"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "wargames-round-2",
+   "type": "harness",
+   "stage": "6"
+  },
+  {
+   "id": "T239",
+   "deps": [
+    "T238"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "wargames-final-round",
+   "type": "harness",
+   "stage": "6"
   }
  ],
  "owner_waits": [],
@@ -13638,7 +13710,7 @@
    }
   }
  },
- "updated_at": "2026-11-01T02:35:51Z",
+ "updated_at": "2026-11-01T03:05:15Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -13736,7 +13808,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "53ef35f27a4935cf273bc3e00884b0e9833416a2",
+ "runner_sha": "83dac288109407722c3096c3181cbfe361114898",
  "starter": "actions",
  "smoke_runs": [
   {
