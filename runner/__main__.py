@@ -9,8 +9,11 @@ line of JSON with what changed.
   python3 -m runner --after [--transcript P ... | --worker-agent ID ...] [--reviewer-transcript P ...
                     | --reviewer-agent ID ...] [--outcome submitted|tests_failed|usage_limit|...]
                                     finish the handed-off task: path check (git diff --no-renames),
-                                    model check from the transcripts, review record (reviewed_sha
-                                    and lease) pushed, branch pushed, MERGE_PENDING
+                                    model check from the transcripts, the pre-hand-in gate (main's
+                                    scripts/prehandin.sh --quick on the head; red: `prehandin_red`,
+                                    lease kept, up to 2 fix rounds, then a failed attempt, D-1300),
+                                    review record (reviewed_sha and lease) pushed, branch pushed,
+                                    MERGE_PENDING
   python3 -m runner --renew         renew this session's lease (every 30 minutes while working)
   python3 -m runner --record-proof N --evidence TEXT
                                     record stage N's named proof for scripts/stage_exit.py
@@ -69,7 +72,7 @@ from pathlib import Path, PurePosixPath
 from typing import Any
 
 from runner import cycle, lanes as lane_policy, proof, state as st
-from runner.github_env import GitHubEnv, find_transcripts, state_diff
+from runner.github_env import PREHANDIN_RED, GitHubEnv, find_transcripts, state_diff
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
@@ -225,10 +228,38 @@ def owner_paths(codeowners: Path) -> tuple[str, ...]:
     return tuple(line.split()[0].lstrip("/") for line in lines if line.strip() and not line.lstrip().startswith("#"))
 
 
+PREHANDIN_HOLDS = 2  # fix rounds a session gets for a red pre-hand-in gate before the hand-in fails (D-1300)
+PREHANDIN_HELD = "prehandin_red"  # --after's result when it held the hand-in for a fix round; the lease stays held
+
+
 def after(args: argparse.Namespace, cfg: cycle.Config, env: GitHubEnv) -> str:
     transcripts = list(args.transcript) + find_transcripts(args.worker_agent)
     reviews = list(args.reviewer_transcript) + find_transcripts(args.reviewer_agent)
-    return cycle.after_handoff(cfg, env, lambda task: env.collect_result(task, args.outcome, transcripts, reviews, args.log))
+    log = args.log
+    held = str(read_handoff().get("prehandin_log") or "")
+    if held and args.outcome != "submitted":
+        log = f"{log}; the last pre-hand-in gate before it: {held}"  # the retry still reads why the gate was red (D-1300)
+    return cycle.after_handoff(cfg, env, lambda task: env.collect_result(task, args.outcome, transcripts, reviews, log),
+                               hold_red_gate)
+
+
+def hold_red_gate(res: cycle.WorkerResult) -> str:
+    """PREHANDIN_HELD when the pre-hand-in gate failed the hand-in and the session has used fewer than
+    PREHANDIN_HOLDS fix rounds (counted in the local hand-off file), else '' so `finish` records the
+    failure with the gate's output as `last_failure` for the retry (D-1300). A held hand-in writes nothing
+    to claude/kit-state: the session gives the printed output to a new worker, commits the fix on the same
+    branch, has the reviewer read the fix and runs `--after` again. The gate's output is kept in the
+    hand-off file, so a session that then ends without handing in (backup-runner.yml's safety step) still
+    leaves it in `last_failure`. Without a hand-off file (RUNNER_WORKER_CMD, a test) nothing is held."""
+    found = read_handoff()
+    rounds = int(found.get("prehandin_holds", 0))
+    if not found or not res.log.startswith(PREHANDIN_RED) or rounds >= PREHANDIN_HOLDS:
+        return ""
+    found.update(prehandin_holds=rounds + 1, prehandin_log=res.log)
+    (ROOT / HANDOFF).write_text(json.dumps(found), encoding="utf-8")
+    print(f"runner: hand-in held, fix round {rounds + 1} of {PREHANDIN_HOLDS}; give this to a new worker, commit the fix "
+          f"on the same branch, then run --after again (D-1300):\n{res.log}")
+    return PREHANDIN_HELD
 
 
 def renew(cfg: cycle.Config, env: GitHubEnv) -> str:
@@ -488,7 +519,7 @@ def main(argv: list[str] | None = None) -> int:
     return 2 if result == "state_invalid" else 0
 
 
-AFTER_KEEPS_HANDOFF = ("not_lease_holder", "lost_race", "state_invalid")
+AFTER_KEEPS_HANDOFF = ("not_lease_holder", "lost_race", "state_invalid", PREHANDIN_HELD)
 
 
 def close_handoff(result: str) -> None:

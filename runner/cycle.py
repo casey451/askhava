@@ -1793,8 +1793,11 @@ def session_lease(state: State, session: str, now: datetime) -> dict[str, Any] |
     return next((lease for lease in st.live_leases(state, now).values() if lease.get("session") == session), None)
 
 
-def after_handoff(cfg: Config, env: Env, res_for: Callable[[dict[str, Any]], WorkerResult]) -> str:
-    """`python3 -m runner --after`: finish the task this session holds the lease on, on whichever lane."""
+def after_handoff(cfg: Config, env: Env, res_for: Callable[[dict[str, Any]], WorkerResult],
+                  hold: Callable[[WorkerResult], str] = lambda res: "") -> str:
+    """`python3 -m runner --after`: finish the task this session holds the lease on, on whichever lane.
+    When `hold` answers a result for the hand-in (the pre-hand-in gate was red and the session still has
+    a fix round, D-1300), nothing is finished or written: the lease stays held, the task IN_PROGRESS."""
     state = env.read_state()
     lease = session_lease(state, cfg.session, cfg.clock())
     if lease is None:
@@ -1805,4 +1808,5 @@ def after_handoff(cfg: Config, env: Env, res_for: Callable[[dict[str, Any]], Wor
     if st.status(state, tid) != st.IN_PROGRESS:
         return f"{tid} is {st.status(state, tid)}"
     model = attempt_model(task, int(st.entry(state, tid).get("attempts", 0)), cfg.models)
-    return finish(cfg, env, state, task, res_for(task), model, cfg.clock())
+    res = res_for(task)
+    return hold(res) or finish(cfg, env, state, task, res, model, cfg.clock())

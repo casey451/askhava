@@ -70,6 +70,11 @@ DECISIONS_FILE = "docs/decisions.md"  # read from main to reserve decision numbe
 TASKS_FILE = "kit/tasks.json"  # read from main for a plan-fix re-queue (D-677)
 PUSH_RETRIES = 3
 SMOKE_TIMEOUT = 540  # seconds for scripts/smoke.sh, under the session's 600-second Bash call so the runner answers first (D-1178)
+PREHANDIN = "scripts/prehandin.sh"  # the pre-hand-in gate; main's copy runs on a submitted head at --after (D-1300)
+PREHANDIN_TIMEOUT = 240  # seconds for its --quick part (about 20 s measured), well inside --after's 600-second Bash call
+PREHANDIN_RED = "pre-hand-in gate red"  # how a gate failure's log starts; runner/__main__.py `after` holds on it (D-1300)
+PREHANDIN_LINES = 30  # the gate output's last lines kept in the failure log, each cut to EXCERPT_WIDTH,
+PREHANDIN_CAP = 3000  # and at most this many characters of them (the end kept), so last_failure stays small
 UPDATE_ATTEMPTS = 5  # update_state's read-transform-push tries (D-515)
 UPDATE_ERRORS = (RuntimeError, ValueError, OSError, subprocess.SubprocessError)  # a failed read or push: one lost try
 RUNNER_FILES = (STATE_FILE, NIGHTLY_FILE, ANSWERS_FILE, RUNNER_LOG, "STATUS.md", "PROGRESS.md", "inbox", "outbox")
@@ -116,8 +121,15 @@ def run_command(args: list[str], stdin: str | None, cwd: Path) -> tuple[int, str
         if done.returncode == 0:
             return done.returncode, done.stdout, done.stderr
     smoke = args[:2] == ["bash", "scripts/smoke.sh"]
-    done = _run(args, stdin, cwd, _smoke_env() if smoke else _env_for(args), SMOKE_TIMEOUT if smoke else 600)
+    done = _run(args, stdin, cwd, _smoke_env() if smoke else _env_for(args), _timeout_for(args))
     return done.returncode, done.stdout, done.stderr
+
+
+def _timeout_for(args: list[str]) -> int:
+    """SMOKE_TIMEOUT for scripts/smoke.sh (D-1178), PREHANDIN_TIMEOUT for the pre-hand-in gate (D-1300), else 600."""
+    if args[:2] == ["bash", "scripts/smoke.sh"]:
+        return SMOKE_TIMEOUT
+    return PREHANDIN_TIMEOUT if any(a.endswith("/prehandin.sh") or a == PREHANDIN for a in args[:4]) else 600
 
 
 def _smoke_env() -> dict[str, str]:
@@ -1296,12 +1308,52 @@ class GitHubEnv:
             return WorkerResult("tests_failed", log=NOT_BUILT_ON.format(branch=branch), branch=branch, head_sha=head)
         if outcome == "submitted" and base:
             head = self._hand_in_in_order(branch, head, base)
+            red = self.prehandin(branch, head, base)  # a red gate fails the hand-in before any review record or push (D-1300)
+            outcome, log = ("tests_failed", red) if red else (outcome, log)
         changed = self.git("diff", "--no-renames", "--name-only", f"{base}...{head}", check=False) if head else ""
         evidence, usage = read_transcripts(transcripts)
         review, review_usage = read_transcripts(reviewer_transcripts)
         usage = {k: usage.get(k, 0) + review_usage.get(k, 0) for k in {*usage, *review_usage}}  # both count (pacing)
         return WorkerResult(outcome, [p for p in changed.splitlines() if p], evidence, reset_at, log, branch, head, review, usage,
                             self._commits_ahead(base, head))
+
+    def prehandin(self, branch: str, head: str, main: str) -> str:
+        """'' when main's scripts/prehandin.sh --quick passes on `head` against `main`, else the failure log
+        (PREHANDIN_RED, then the gate's last lines, redacted) (D-1300).
+
+        Main's copy of the gate runs (a task branch cannot weaken it) in a detached worktree of the head,
+        so the checks run over exactly the tree that would be pushed, with the head's own scripts as `Ci`
+        runs them. Only exit status 1 is red: a gate main does not have yet, a dry run, a worktree git
+        cannot make, a timeout or any other exit is logged and lets the hand-in through, so the gate
+        never fails an attempt for a reason that is not the work's."""
+        script = self._show(main, PREHANDIN) if main and head and not self.dry_run else None
+        if not script:
+            return ""
+        with tempfile.TemporaryDirectory() as tmp:
+            tree, gate = Path(tmp) / "head", Path(tmp) / "prehandin.sh"
+            gate.write_text(script, encoding="utf-8")
+            if self._run(["git", "worktree", "add", "--detach", str(tree), head], None, self.root)[0] != 0:
+                self.log.append(f"pre-hand-in gate not run: no worktree of {head[:12]}")
+                return ""
+            try:
+                code, out, err = self._run(["env", f"PREHANDIN_ROOT={tree}", "bash", str(gate), "--quick", "--base", main,
+                                            "--branch", branch], None, tree)
+            except subprocess.TimeoutExpired:
+                code, out, err = 124, "", f"timed out after {PREHANDIN_TIMEOUT} seconds"
+            finally:
+                self.git("worktree", "remove", "--force", str(tree), check=False)
+        return self._gate_verdict(head, code, out + err)
+
+    def _gate_verdict(self, head: str, code: int, output: str) -> str:
+        """The gate's exit status and output as prehandin's answer, with one cycle-log line (D-1300)."""
+        rows = [TOKEN_LIKE.sub("[redacted]", ANSI.sub("", r))[:EXCERPT_WIDTH] for r in output.strip().splitlines()]
+        last = rows[-1] if rows else ""
+        if code != 1:
+            self.log.append(f"pre-hand-in gate on {head[:12]}: exit {code}; {last}" + ("" if code == 0 else " (not a verdict: let through)"))
+            return ""
+        self.log.append(f"pre-hand-in gate on {head[:12]}: red; {last}")
+        tail = "\n".join(rows[-PREHANDIN_LINES:])[-PREHANDIN_CAP:]
+        return f"{PREHANDIN_RED} on {head[:12]} (bash scripts/prehandin.sh, D-1300):\n{tail}"
 
     def _decisions_in_order(self, branch: str, head: str, main: str) -> str | None:
         """`UpdateMerge.in_order` of `head`: a commit on top of it whose docs/decisions.md has the new
