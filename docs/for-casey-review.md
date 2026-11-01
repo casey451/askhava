@@ -1419,6 +1419,12 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **What happened.** The runner's first in-band reading came in at 6:02 pm: 59% of the week used, reset Thursday 10:00 am Phoenix. The line had been set in the runner's own estimate, which sits about 10% lower, so left alone it would have waited most of Sunday before claiming.
 - **What changed.** The line now starts from that 59% reading and ends at about 97% at 7:00 am Thursday, three hours before the reset — about one task every hour and a half, each on Opus. The old 10% safety margin is gone; the three-hour time margin does that job now.
 
+## No more pacing holds (D-1189, November 1)
+
+- **What you asked for.** At 5:07 am Sunday: no more pausing; running out of the week's plan early is fine; don't go faster where slower gives a better result.
+- **What changed.** The spend line is gone, so the runner claims the next task as soon as it fits the five-hour and weekly limits, and stops only when the week is about 97% used, until Thursday's reset. Everything that makes the work careful stays: one lane, Opus on every task, one independent review, the smoke test every cycle.
+- **One thing to know.** GitHub's hourly timer for the runner is unreliable (it skipped seven hours overnight), so Claude starts the runner itself whenever the lane sits idle with work ready. A small change to let the runner schedule its own next run can come later.
+
 ## War games before anything goes live (D-1154, November 1)
 
 - **What you asked for.** Once the build is done, and before going live or hooking Twilio up for real, Claude tries to break the business: every kind of homeowner and business, pranksters and people trying to burn AI credits, jobs finished with test-mode money you can see in the owner portal, run as chaotically as possible until a full run finds nothing new.
