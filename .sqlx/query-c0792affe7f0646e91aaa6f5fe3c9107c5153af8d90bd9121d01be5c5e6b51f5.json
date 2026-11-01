@@ -1,0 +1,46 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT count(*) FILTER (WHERE contact_id = $2) AS \"to_number!\", count(*) FILTER (WHERE contact_id = $2 AND channel = 'call') AS \"calls!\", count(*) FILTER (WHERE job_id = $1) AS \"for_job!\", count(*) AS \"global!\" FROM picks.code_attempt WHERE sent_at >= $3",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "to_number!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 1,
+        "name": "calls!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 2,
+        "name": "for_job!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 3,
+        "name": "global!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      null,
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "c0792affe7f0646e91aaa6f5fe3c9107c5153af8d90bd9121d01be5c5e6b51f5"
+}

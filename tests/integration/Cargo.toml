@@ -13,6 +13,7 @@ sqlx = { workspace = true }
 askhava-ai = { workspace = true }
 askhava-core = { workspace = true }
 askhava-ops = { workspace = true }
+askhava-picks = { workspace = true }
 askhava-intake = { workspace = true }
 askhava-catalog = { workspace = true }
 askhava-adapters = { workspace = true }

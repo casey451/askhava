@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE picks.code_attempt SET tries = tries + 1, last_try_at = $2 WHERE id = $1 RETURNING tries",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "tries",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "picks.code_attempt",
+            "name": "tries"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "83c6163f3ca87e3a88c9375bb3f0a267ec8fa544d4749383a742ec69f65d10fa"
+}

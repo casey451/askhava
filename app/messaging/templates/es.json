@@ -318,5 +318,47 @@
     "draft": true,
     "segments": 2,
     "text": "Ask Hava: Las solicitudes {job} están cerradas, como pidió. Escríbanos cuando quiera para empezar una nueva."
+  },
+  "text_pick_terms": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 4,
+    "text": "Ask Hava: Falta un paso para la cotización {quoted} de la solicitud {job}. Responda {quoted} SÍ otra vez para elegir. Al elegir, el negocio recibe su nombre de pila y la dirección del trabajo cuando acepte.\nAl elegir, usted acepta los Términos: askhava.com/terms"
+  },
+  "text_pick_which": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 5,
+    "text": "Ask Hava: Tiene cotizaciones en más de una solicitud. Agregue el número de solicitud para saber cuál, por ejemplo {job} 2 SÍ. Al elegir, el negocio recibe su nombre de pila y la dirección del trabajo cuando acepte.\nAl elegir, usted acepta los Términos: askhava.com/terms"
+  },
+  "text_pick_done": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 3,
+    "text": "Ask Hava: Listo. Eligió la cotización {quoted} de la solicitud {job}. Le avisaremos por texto cuando el negocio acepte. Todavía puede elegir otra cotización. Responda LISTA para verlas."
+  },
+  "text_pick_no_quote": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 2,
+    "text": "Ask Hava: No hay una cotización {quoted} para elegir en la solicitud {job}. Responda LISTA para ver sus cotizaciones."
+  },
+  "text_pick_confirmed": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 2,
+    "text": "Ask Hava: El negocio aceptó su elección para la solicitud {job}. Para cerrar la solicitud, responda CERRAR {job}."
+  },
+  "text_pick_waiting": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 2,
+    "text": "Ask Hava: Aún no hay cotizaciones para la solicitud {job}. Le avisaremos por texto cuando llegue la primera."
+  },
+  "text_pick_none": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 1,
+    "text": "Ask Hava: No tiene cotizaciones para elegir ahora."
   }
 }

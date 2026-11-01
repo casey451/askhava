@@ -258,5 +258,40 @@
     "audience": "homeowner",
     "segments": 1,
     "text": "Ask Hava: Requests {job} are closed, as you asked. Text us any time to start a new one."
+  },
+  "text_pick_terms": {
+    "audience": "homeowner",
+    "segments": 2,
+    "text": "Ask Hava: One more step for quote {quoted} on request {job}. Reply {quoted} YES again to pick. Picking shares your first name and job address with that business once it accepts.\nBy picking, you agree to the Terms: askhava.com/terms"
+  },
+  "text_pick_which": {
+    "audience": "homeowner",
+    "segments": 2,
+    "text": "Ask Hava: You have quotes on more than one request. Add the request number so we know which one, like {job} 2 YES. Picking shares your first name and job address with that business once it accepts.\nBy picking, you agree to the Terms: askhava.com/terms"
+  },
+  "text_pick_done": {
+    "audience": "homeowner",
+    "segments": 2,
+    "text": "Ask Hava: Done. You picked quote {quoted} for request {job}. We'll text you when the business accepts. You can still pick another quote. Reply LIST to see them."
+  },
+  "text_pick_no_quote": {
+    "audience": "homeowner",
+    "segments": 1,
+    "text": "Ask Hava: There's no quote {quoted} to pick on request {job}. Reply LIST to see your quotes."
+  },
+  "text_pick_confirmed": {
+    "audience": "homeowner",
+    "segments": 1,
+    "text": "Ask Hava: The business accepted your pick for request {job}. To close the request, reply CLOSE {job}."
+  },
+  "text_pick_waiting": {
+    "audience": "homeowner",
+    "segments": 1,
+    "text": "Ask Hava: No quotes yet for request {job}. We'll text you when the first one comes in."
+  },
+  "text_pick_none": {
+    "audience": "homeowner",
+    "segments": 1,
+    "text": "Ask Hava: You have no quotes to pick right now."
   }
 }
