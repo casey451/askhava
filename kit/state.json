@@ -12996,7 +12996,7 @@
    "output_tokens": 115034,
    "cache_read_input_tokens": 10931546
   },
-  "source": "session_reading 2026-11-01T02:35:50Z (week)",
+  "source": "session_reading 2026-11-01T03:09:25Z (week)",
   "by_task": {
    "FIX-MAIN": {
     "estimated_bytes": 1552047,
@@ -13710,7 +13710,7 @@
    }
   }
  },
- "updated_at": "2026-11-01T03:09:25Z",
+ "updated_at": "2026-11-01T06:54:06Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -13811,12 +13811,6 @@
  "runner_sha": "83dac288109407722c3096c3181cbfe361114898",
  "starter": "actions",
  "smoke_runs": [
-  {
-   "sha": "4f3c5e4dfafc89e207bd480334f6eedecee319d4",
-   "ok": true,
-   "at": "2026-10-31T10:27:52Z",
-   "why": "start routine"
-  },
   {
    "sha": "82640e8e0b8f422cdbf366c41bd2e3ed01bd076d",
    "ok": true,
@@ -13930,30 +13924,36 @@
    "ok": true,
    "at": "2026-11-01T03:05:13Z",
    "why": "start routine"
+  },
+  {
+   "sha": "83dac288109407722c3096c3181cbfe361114898",
+   "ok": true,
+   "at": "2026-11-01T06:50:13Z",
+   "why": "start routine"
   }
  ],
  "main_red": null,
  "pacing": {
-  "last": "T047 estimated 679k tokens (calibrated); five-hour window has 27.3M left, week 70.0M (session_reading 2026-11-01T02:35:50Z (week)); on the spend line (D-1128), waiting until 2026-11-01T10:36:35Z",
-  "at": "2026-11-01T03:05:13Z",
+  "last": "T047 estimated 679k tokens (calibrated); five-hour window has 29.1M left, week 68.0M (session_reading 2026-11-01T03:09:25Z (week)); on the spend line (D-1128), waiting until 2026-11-01T13:28:38Z",
+  "at": "2026-11-01T06:50:13Z",
   "decision": "wait",
-  "waiting_until": "2026-11-01T10:36:35Z",
+  "waiting_until": "2026-11-01T13:28:38Z",
   "standing": {
    "five_hour": {
-    "used": 1784806,
+    "used": 0,
     "budget": 29100000,
-    "left": 27315194,
-    "resets_at": "2026-11-01T04:47:51Z"
+    "left": 29100000,
+    "resets_at": null
    },
    "week": {
-    "used": 124000000,
+    "used": 126000000,
     "budget": 194000000,
-    "left": 70000000,
+    "left": 68000000,
     "resets_at": "2026-11-05T17:00:00Z"
    }
   },
   "remaining_estimate": 331731030,
-  "projected_finish": "2026-11-13T02:21:33Z"
+  "projected_finish": "2026-11-13T06:06:33Z"
  },
  "main_red_history": [
   {
