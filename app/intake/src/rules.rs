@@ -527,40 +527,35 @@ pub enum CloseReading {
     Other,
 }
 
-/// Phrases that show cancel intent anywhere in a message (JOB-019, D-1200), folded.
-const INTENT_PHRASES: &[&str] = &[
+/// Whole clauses that show cancel intent once filler words are trimmed (JOB-019, D-1200,
+/// D-1203), folded. They never match inside a longer clause, so "the plumber had to cancel the
+/// job" and "never mind the heater" are not intent.
+const INTENT_CLAUSES: &[&str] = &[
     "never mind",
     "nevermind",
     "nvm",
     "forget it",
-    "no longer need",
+    "forget about it",
     "no longer needed",
-    "dont need it",
-    "dont need this",
-    "do not need it",
-    "please cancel",
-    "cancel please",
     "cancel it",
     "cancel this",
     "cancel that",
     "cancel my request",
     "cancel the request",
+    "cancel this request",
     "cancel my job",
     "cancel the job",
+    "cancel this job",
     "close my request",
     "close the request",
     "close this request",
-    "ya no lo necesito",
-    "ya no necesito",
-    "ya no hace falta",
-    "ya no quiero",
-    "no lo necesito",
+    "close my job",
+    "close it",
     "olvidalo",
     "olvidelo",
     "no quiero nada",
-    "por favor cancele",
-    "por favor cancela",
-    "cancelar por favor",
+    "ya no hace falta",
+    "no hace falta",
     "cancelalo",
     "cancelala",
     "cancelelo",
@@ -569,10 +564,63 @@ const INTENT_PHRASES: &[&str] = &[
     "cancelar mi solicitud",
     "cancelar la solicitud",
     "cerrar mi solicitud",
+    "cierre mi solicitud",
+    "cierra mi solicitud",
 ];
-/// Messages that show cancel intent only as the whole message: "ya no" alone, never "el aire ya
-/// no funciona" (JOB-019, D-1200).
-const INTENT_WHOLE: &[&str] = &["ya no", "ya no gracias", "close", "cerrar"];
+/// "I no longer need ..." clauses (JOB-019, D-1203): the phrase, and whether it may end the
+/// clause with no object. Anything after it but a word from [`NEED_OBJECTS`] ("today", "esperar")
+/// makes it a request: "I don't need it today", "ya no quiero esperar".
+const NEED_PHRASES: &[(&str, bool)] = &[
+    ("no longer need", false),
+    ("dont need", false),
+    ("do not need", false),
+    ("ya no necesito", true),
+    ("ya no lo necesito", true),
+    ("ya no la necesito", true),
+    ("ya no los necesito", true),
+    ("no lo necesito", true),
+    ("no la necesito", true),
+    ("ya no quiero", true),
+];
+/// The objects that may end a [`NEED_PHRASES`] clause, folded.
+const NEED_OBJECTS: &[&str] = &[
+    "it",
+    "this",
+    "that",
+    "them",
+    "help",
+    "the help",
+    "your help",
+    "quotes",
+    "the quotes",
+    "anything",
+    "anyone",
+    "the service",
+    "nada",
+    "ayuda",
+    "la ayuda",
+    "el servicio",
+];
+/// Words trimmed from the start of a clause before it is matched ("ok never mind", "we no longer
+/// need this", "can you cancel my request").
+const LEAD_FILLER: &[&str] = &[
+    "please", "pls", "plz", "ok", "okay", "actually", "sorry", "oh", "hi", "hey", "hello", "so",
+    "well", "yeah", "yes", "i", "we", "can", "could", "would", "you", "id", "like", "to", "want",
+    "just", "bueno", "pues", "hola", "si", "por", "favor", "porfa", "oye",
+];
+/// Words trimmed from the end of a clause before it is matched ("never mind thank you",
+/// "I don't need it anymore"). "now" and "today" are not here: "I don't need it now" is a request.
+const TAIL_FILLER: &[&str] = &[
+    "please", "pls", "plz", "thanks", "thank", "you", "thx", "ty", "gracias", "anymore", "after",
+    "all", "mas", "ya", "por", "favor", "porfa",
+];
+/// The trimmed words that make a bare cancel word intent: "please cancel", "cancelar por favor".
+const POLITE: &[&str] = &["please", "pls", "plz", "por", "favor", "porfa"];
+/// Bare cancel words that are intent only with a polite word ("cancel" alone is an opt-out word).
+const CANCEL_ALONE: &[&str] = &["cancel", "cancelar", "cancela", "cancele"];
+/// Messages that show cancel intent only as the whole message, after trimming: "ya no" alone,
+/// never "el aire ya no funciona" (JOB-019, D-1200).
+const INTENT_WHOLE: &[&str] = &["ya no", "close", "cerrar"];
 /// Words that mention cancelling (JOB-023), folded.
 const CANCEL_MENTIONS: &[&str] = &[
     "cancel",
@@ -590,34 +638,100 @@ const CANCEL_MENTIONS: &[&str] = &[
 /// The words for "all" in a CLOSE text or a "Close which?" answer, folded.
 const ALL_WORDS: &[&str] = &["all", "todo", "todos", "todas", "both", "ambos", "ambas"];
 
-/// Reads `words` for closing (JOB-019 to JOB-023, D-1200). `asked` is true while the request's
-/// "Close which?" waits for an answer, so a lone number or "all" answers it. "cancel" alone, and a
-/// message that only mentions cancelling, is [`CloseReading::Mention`] and never closes (JOB-020).
+/// Reads `words` for closing (JOB-019 to JOB-023, D-1200, D-1203). `asked` holds the open request
+/// numbers while the request's "Close which?" waits for an answer (empty otherwise): a lone
+/// number answers it only when it is one of them, and "all" only while it waits; anything else
+/// is left to the normal intake. "cancel" alone, and a message that only mentions cancelling, is
+/// [`CloseReading::Mention`] and never closes (JOB-020).
 #[must_use]
-pub fn close_reading(words: &str, asked: bool) -> CloseReading {
+pub fn close_reading(words: &str, asked: &[i64]) -> CloseReading {
     let folded = fold(words);
     let tokens: Vec<&str> = folded.split(' ').filter(|t| !t.is_empty()).collect();
-    let target = |t: &str| match t.parse::<i64>() {
-        Ok(n) if t.bytes().all(|b| b.is_ascii_digit()) => Some(CloseTarget::Number(n)),
-        _ => ALL_WORDS.contains(&t).then_some(CloseTarget::All),
-    };
-    match tokens.as_slice() {
-        ["close" | "cerrar", t] | [t] if asked || tokens.len() == 2 => {
-            if let Some(target) = target(t) {
-                return CloseReading::Close(target);
-            }
-        }
-        _ => {}
-    }
-    let padded = format!(" {folded} ");
-    let phrase = INTENT_PHRASES
-        .iter()
-        .any(|p| padded.contains(&format!(" {p} ")));
-    if phrase || INTENT_WHOLE.contains(&folded.as_str()) {
+    if let Some(target) = close_target(&tokens, asked) {
+        CloseReading::Close(target)
+    } else if shows_intent(words) {
         CloseReading::Intent
     } else if tokens.iter().any(|t| CANCEL_MENTIONS.contains(t)) {
         CloseReading::Mention
     } else {
         CloseReading::Other
     }
+}
+
+/// "CLOSE <number>" or "CLOSE ALL", or a lone answer to a waiting "Close which?" (JOB-019,
+/// JOB-021, D-1203).
+fn close_target(tokens: &[&str], asked: &[i64]) -> Option<CloseTarget> {
+    let target = |t: &str| match t.parse::<i64>() {
+        Ok(n) if t.bytes().all(|b| b.is_ascii_digit()) => Some(CloseTarget::Number(n)),
+        _ => ALL_WORDS.contains(&t).then_some(CloseTarget::All),
+    };
+    match tokens {
+        ["close" | "cerrar", t] => target(t),
+        [t] => match target(t)? {
+            CloseTarget::Number(n) if asked.contains(&n) => Some(CloseTarget::Number(n)),
+            CloseTarget::All if !asked.is_empty() => Some(CloseTarget::All),
+            _ => None,
+        },
+        _ => None,
+    }
+}
+
+/// Whether the message shows cancel intent (JOB-019, D-1203): the whole message trims to one of
+/// [`INTENT_WHOLE`], or one of its clauses (split at , . ; : ! ? and new lines) trims to an
+/// intent clause, a need phrase with an allowed ending, or a polite bare cancel word.
+fn shows_intent(words: &str) -> bool {
+    let (whole, _) = trimmed(words);
+    INTENT_WHOLE.contains(&whole.as_str())
+        || words
+            .split([',', '.', ';', ':', '!', '?', '\n'])
+            .any(|clause| {
+                let (core, polite) = trimmed(clause);
+                INTENT_CLAUSES.contains(&core.as_str())
+                    || ends_in_need(&core)
+                    || (polite && CANCEL_ALONE.contains(&core.as_str()))
+            })
+}
+
+/// `words` folded with [`LEAD_FILLER`] and [`TAIL_FILLER`] trimmed, and whether a trimmed word
+/// was a polite one.
+fn trimmed(words: &str) -> (String, bool) {
+    let folded = fold(words);
+    let mut t: Vec<&str> = folded.split(' ').filter(|w| !w.is_empty()).collect();
+    let mut polite = false;
+    while let Some(first) = t.first().copied()
+        && LEAD_FILLER.contains(&first)
+    {
+        polite |= POLITE.contains(&first);
+        t.remove(0);
+    }
+    while let Some(last) = t.last().copied()
+        && TAIL_FILLER.contains(&last)
+    {
+        polite |= POLITE.contains(&last);
+        t.pop();
+    }
+    (t.join(" "), polite)
+}
+
+/// Whether a trimmed clause is a [`NEED_PHRASES`] phrase with nothing after it (where allowed)
+/// or one of [`NEED_OBJECTS`] (D-1203).
+fn ends_in_need(core: &str) -> bool {
+    NEED_PHRASES.iter().any(|(need, alone)| {
+        core.strip_prefix(need)
+            .is_some_and(|rest| match rest.strip_prefix(' ') {
+                Some(object) => NEED_OBJECTS.contains(&object),
+                None => rest.is_empty() && *alone,
+            })
+    })
+}
+
+/// The first open request number written in `words` ("cancel 1042"), so the JOB-023 line names
+/// the job the homeowner meant (D-1203).
+#[must_use]
+pub fn number_named(words: &str, open: &[i64]) -> Option<i64> {
+    fold(words)
+        .split(' ')
+        .filter(|t| !t.is_empty() && t.bytes().all(|b| b.is_ascii_digit()))
+        .filter_map(|t| t.parse::<i64>().ok())
+        .find(|n| open.contains(n))
 }

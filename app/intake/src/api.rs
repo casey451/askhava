@@ -69,7 +69,7 @@ pub mod rules {
         DISCLOSURE_TEMPLATE, Inbound, JOIN_SHARE_PERCENT, JOIN_WINDOW, NAME_ADDRESS_TEMPLATE, Plan,
         SAFETY_TEMPLATE, Send, Settings, Then, UNDER_18_TEMPLATE, accepts_word_answer, age_stop,
         asks_who, cancel_like, close_reading, consent_language, consent_template, follow_up_joins,
-        joins_open_job, language_code, language_from_code, opens_job, pick_option, plan,
-        reads_spanish, shares_words, split_name_address, wanted_language,
+        joins_open_job, language_code, language_from_code, number_named, opens_job, pick_option,
+        plan, reads_spanish, shares_words, split_name_address, wanted_language,
     };
 }

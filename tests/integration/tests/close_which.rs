@@ -215,3 +215,56 @@ async fn td_job_05_the_page_button_closes(mut db: Db) {
     let row = conversation(&mut db, id).await.expect("read").expect("row");
     assert!(row.closed_at.is_some());
 }
+
+/// TD-JOB-05 (JOB-021, D-1203): a "Close which?" never answered does not take a later lone number
+/// that is not an open request (a ZIP code), nor anything once the jobs are answered; an open
+/// number still answers it.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_job_05_close_which_ignores_numbers_not_open(mut db: Db) {
+    let (_, jobs) = request(&mut db, 0x9501, &["plumbing", "hvac"]).await;
+    let ask = text(0x9501, "never mind", 10);
+    answer_close(&mut db, &secret(), &ask).await.expect("ask");
+    for (minute, words) in [(11, "86403"), (12, "2")] {
+        let done = answer_close(&mut db, &secret(), &text(0x9501, words, minute))
+            .await
+            .expect("number");
+        assert_eq!(done, (Closing::Nothing, None), "{words}");
+    }
+    for (job, _) in &jobs {
+        assert_eq!(status(&mut db, *job).await, "intake", "nothing closes");
+    }
+    let second = jobs[1].1.to_string();
+    let (done, _) = answer_close(&mut db, &secret(), &text(0x9501, &second, 13))
+        .await
+        .expect("answer");
+    assert_eq!(done, Closing::Closed(vec![jobs[1].1]));
+    let done = answer_close(&mut db, &secret(), &text(0x9501, "all", 14))
+        .await
+        .expect("all");
+    assert_eq!(
+        done,
+        (Closing::Nothing, None),
+        "answered: all is not a close"
+    );
+    assert_eq!(status(&mut db, jobs[0].0).await, "intake");
+}
+
+/// TD-JOB-05 (JOB-023, D-1203): "cancel <number>" with several open jobs gets the how-to line for
+/// that number, not the newest, and closes nothing.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_job_05_mention_names_the_number_written(mut db: Db) {
+    let (_, jobs) = request(&mut db, 0x9601, &["plumbing", "hvac"]).await;
+    let first = jobs[0].1;
+    let words = format!("cancel {first}");
+    let (done, sent) = answer_close(&mut db, &secret(), &text(0x9601, &words, 10))
+        .await
+        .expect("mention");
+    assert_eq!(done, Closing::Explained(first));
+    assert_eq!(
+        body(&mut db, sent.expect("how-to").outbox_id).await,
+        format!("Ask Hava: To close request {first}, reply CLOSE {first}.")
+    );
+    for (job, _) in &jobs {
+        assert_eq!(status(&mut db, *job).await, "intake");
+    }
+}

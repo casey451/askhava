@@ -3,7 +3,7 @@
 
 use askhava_messaging::api::{Language, render};
 
-use crate::api::rules::{CloseReading, CloseTarget, close_reading};
+use crate::api::rules::{CloseReading, CloseTarget, close_reading, number_named};
 use crate::api::{
     CLOSE_MENTION_TEMPLATE, CLOSE_WHICH_TEMPLATE, JOB_CLOSED_TEMPLATE, JOBS_CLOSED_TEMPLATE,
 };
@@ -13,13 +13,13 @@ use crate::api::{
 fn td_job_05_close_and_its_number() {
     let number = CloseReading::Close(CloseTarget::Number(1042));
     for words in ["CLOSE 1042", "close #1042", "Cerrar 1042", " CLOSE  1042 "] {
-        assert_eq!(close_reading(words, false), number, "{words}");
+        assert_eq!(close_reading(words, &[]), number, "{words}");
     }
     let all = CloseReading::Close(CloseTarget::All);
     for words in ["CLOSE ALL", "cerrar todo", "CERRAR TODAS"] {
-        assert_eq!(close_reading(words, false), all, "{words}");
+        assert_eq!(close_reading(words, &[]), all, "{words}");
     }
-    assert_eq!(close_reading("CLOSE 10 42", false), CloseReading::Other);
+    assert_eq!(close_reading("CLOSE 10 42", &[]), CloseReading::Other);
 }
 
 /// TD-JOB-05 (JOB-019, D-1200): longer cancel-intent messages close, in English and Spanish.
@@ -37,7 +37,7 @@ fn td_job_05_cancel_intent_in_english_and_spanish() {
         "olvídalo",
         "CLOSE",
     ] {
-        assert_eq!(close_reading(words, false), CloseReading::Intent, "{words}");
+        assert_eq!(close_reading(words, &[]), CloseReading::Intent, "{words}");
     }
 }
 
@@ -53,11 +53,7 @@ fn td_job_05_cancel_alone_or_mentioned_never_closes() {
         "the electrician cancelled on me",
         "cancel 1042",
     ] {
-        assert_eq!(
-            close_reading(words, false),
-            CloseReading::Mention,
-            "{words}"
-        );
+        assert_eq!(close_reading(words, &[]), CloseReading::Mention, "{words}");
     }
     for words in [
         "el aire ya no funciona",
@@ -65,23 +61,88 @@ fn td_job_05_cancel_alone_or_mentioned_never_closes() {
         "close the gate",
         "1042",
     ] {
-        assert_eq!(close_reading(words, false), CloseReading::Other, "{words}");
+        assert_eq!(close_reading(words, &[]), CloseReading::Other, "{words}");
     }
 }
 
-/// TD-JOB-05 (JOB-021): while "Close which?" waits, a lone number or ALL answers it; otherwise
-/// they close nothing.
+/// TD-JOB-05 (JOB-021, D-1203): while "Close which?" waits, a lone open number or ALL answers it;
+/// otherwise they close nothing.
 #[test]
 fn td_job_05_close_which_answers() {
+    let asked = [1042, 1043];
     let number = CloseReading::Close(CloseTarget::Number(1043));
-    assert_eq!(close_reading("1043", true), number);
-    assert_eq!(close_reading("1043", false), CloseReading::Other);
+    assert_eq!(close_reading("1043", &asked), number);
+    assert_eq!(close_reading("1043", &[]), CloseReading::Other);
     let all = CloseReading::Close(CloseTarget::All);
     for words in ["all", "ALL", "todas", "both"] {
-        assert_eq!(close_reading(words, true), all, "{words}");
-        assert_eq!(close_reading(words, false), CloseReading::Other, "{words}");
+        assert_eq!(close_reading(words, &asked), all, "{words}");
+        assert_eq!(close_reading(words, &[]), CloseReading::Other, "{words}");
     }
-    assert_eq!(close_reading("ok", true), CloseReading::Other);
+    assert_eq!(close_reading("ok", &asked), CloseReading::Other);
+}
+
+/// TD-JOB-05 (JOB-021, D-1203): a waiting "Close which?" never takes a lone number that is not one
+/// of the open requests (a ZIP code, a count, a day): it is left to the normal intake.
+#[test]
+fn td_job_05_close_which_ignores_numbers_not_open() {
+    for words in ["86403", "2", "1044"] {
+        assert_eq!(
+            close_reading(words, &[1042, 1043]),
+            CloseReading::Other,
+            "{words}"
+        );
+    }
+}
+
+/// TD-JOB-05 (JOB-019, JOB-023, D-1203): someone else cancelling, an ambiguous phrase inside a
+/// longer sentence, or "I don't need it today" is not cancel intent.
+#[test]
+fn td_job_05_mentions_and_need_sentences_are_not_intent() {
+    for words in [
+        "The last plumber had to cancel the job, can you find someone?",
+        "my brother said he would cancel it if the part is late",
+        "they had to cancel that appointment, the AC is still out",
+        "the electrician wants to cancel this week, can someone else come",
+    ] {
+        assert_eq!(close_reading(words, &[]), CloseReading::Mention, "{words}");
+    }
+    for words in [
+        "ya no quiero esperar, necesito alguien hoy",
+        "no lo necesito hoy, puede ser mañana",
+        "I don't need it today, next week is fine",
+        "I don't need it now, maybe next month",
+        "never mind the heater, the AC is out",
+        "the old faucet, forget it fixed, the new one leaks",
+        "we dont need it fixed until Monday",
+    ] {
+        assert_eq!(close_reading(words, &[]), CloseReading::Other, "{words}");
+    }
+}
+
+/// TD-JOB-05 (JOB-019, D-1203): filler around an intent clause still reads as intent.
+#[test]
+fn td_job_05_intent_with_filler() {
+    for words in [
+        "ok never mind, my husband fixed it",
+        "Actually forget it. Thanks!",
+        "can you cancel my request please",
+        "please cancel",
+        "cancelar por favor",
+        "ya no, gracias",
+        "No longer needed, thank you",
+    ] {
+        assert_eq!(close_reading(words, &[]), CloseReading::Intent, "{words}");
+    }
+}
+
+/// TD-JOB-05 (JOB-023, D-1203): the how-to line names the open number the message holds.
+#[test]
+fn td_job_05_number_named_picks_an_open_number() {
+    let open = [1042, 1043];
+    assert_eq!(number_named("cancel 1042", &open), Some(1042));
+    assert_eq!(number_named("cancel #1043 please", &open), Some(1043));
+    assert_eq!(number_named("cancel 86403", &open), None);
+    assert_eq!(number_named("cancel", &open), None);
 }
 
 /// TD-JOB-05 (JOB-021 to JOB-023): the JOB-023 line equals the spec; "Close which?" lists the

@@ -1,10 +1,11 @@
-//! Closing a job at the homeowner's word (JOB-018 to JOB-023, D-005, D-1200 to D-1202).
+//! Closing a job at the homeowner's word (JOB-018 to JOB-023, D-005, D-1200 to D-1203).
 //!
 //! [`answer_close`] reads one homeowner text with [`close_reading`]: "CLOSE 1042" (or CERRAR)
 //! closes that job, "CLOSE ALL" every open job; a cancel-intent message closes the only open job
 //! and says so, or, with several open jobs, asks "Close which?" with each number and an ALL
-//! option and closes nothing until answered (a lone number or ALL then answers it); a message
-//! that only mentions cancelling gets the JOB-023 how-to-close line and closes nothing. An
+//! option and closes nothing until answered (a lone open number or ALL then answers it; any other
+//! lone number is left to the normal intake); a message that only mentions cancelling gets the
+//! JOB-023 how-to-close line, naming the open number it holds, and closes nothing. An
 //! opt-out (bare "cancel" included) changes no job (D-005): `messaging` already answered it.
 //! [`close_from_page`] is the quote page's close button. A close moves the job to Cancelled from
 //! any status before Done (JOB-018), with its audit row, and closes the request once every job is
@@ -19,7 +20,7 @@ use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection};
 
 use crate::models::{self, IntakeError};
-use crate::rules::{CloseReading, CloseTarget, close_reading, language_from_code};
+use crate::rules::{CloseReading, CloseTarget, close_reading, language_from_code, number_named};
 use crate::service::{Queued, TextIn};
 
 /// "Close which?" with the open request numbers and the ALL option (JOB-021).
@@ -73,8 +74,14 @@ pub async fn answer_close(
     models::lock_homeowner(&mut tx, homeowner).await?;
     let open = open_jobs(&mut tx, conversation).await?;
     let waiting = models::latest_answer(&mut tx, conversation, WHICH_QUESTION).await?;
-    let reading = close_reading(msg.inbound.words, waiting.as_deref() == Some("asked"));
-    let closing = decide(reading, &open);
+    let numbers: Vec<i64> = open.iter().map(|j| j.1).collect();
+    let asked: &[i64] = if waiting.as_deref() == Some("asked") {
+        &numbers
+    } else {
+        &[]
+    };
+    let reading = close_reading(msg.inbound.words, asked);
+    let closing = decide(reading, &numbers, number_named(msg.inbound.words, &numbers));
     let at = msg.received_at;
     let mark = match &closing {
         Closing::Closed(_) if waiting.as_deref() == Some("asked") => Some("answered"),
@@ -96,21 +103,25 @@ pub async fn answer_close(
     Ok((closing, text))
 }
 
-/// The rule (JOB-019 to JOB-023, D-1201): a number not open gets the how-to line with one open
-/// job and "Close which?" with several; intent closes the only job or asks which.
-fn decide(reading: CloseReading, open: &[Open]) -> Closing {
-    let numbers: Vec<i64> = open.iter().map(|j| j.1).collect();
+/// The rule (JOB-019 to JOB-023, D-1201, D-1203): a number not open gets the how-to line with
+/// one open job and "Close which?" with several; intent closes the only job or asks which; a
+/// mention names the open number it holds ("cancel 1042"), else the newest.
+fn decide(reading: CloseReading, numbers: &[i64], named: Option<i64>) -> Closing {
     let (Some(&newest), several) = (numbers.last(), numbers.len() > 1) else {
         return Closing::Nothing;
     };
     match reading {
-        CloseReading::Close(CloseTarget::All) => Closing::Closed(numbers),
+        CloseReading::Close(CloseTarget::All) => Closing::Closed(numbers.to_vec()),
         CloseReading::Close(CloseTarget::Number(n)) if numbers.contains(&n) => {
             Closing::Closed(vec![n])
         }
-        CloseReading::Close(_) | CloseReading::Intent if several => Closing::Which(numbers),
-        CloseReading::Intent => Closing::Closed(numbers),
-        CloseReading::Close(_) | CloseReading::Mention => Closing::Explained(newest),
+        CloseReading::Close(_) | CloseReading::Intent if several => {
+            Closing::Which(numbers.to_vec())
+        }
+        CloseReading::Intent => Closing::Closed(numbers.to_vec()),
+        CloseReading::Close(_) | CloseReading::Mention => {
+            Closing::Explained(named.unwrap_or(newest))
+        }
         CloseReading::Other => Closing::Nothing,
     }
 }
