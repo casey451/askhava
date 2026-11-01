@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT EXISTS (SELECT 1 FROM intake.homeowner_pause WHERE job_id = $1 AND ended_at IS NULL) AS \"paused!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "paused!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "be76930959050b285ccdebd055ef370c7fee000e9bdfd04a8adf8555d44e0ac6"
+}

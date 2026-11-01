@@ -12,8 +12,12 @@
 //! (INT-005, INT-025); nothing waits for a consent reply (CON-004, D-419). The urgency, choice and
 //! release steps follow: [`ask_how_soon`], [`answer_how_soon`] (with the INT-033 night count),
 //! [`answer_choice`] and [`release_emergency`], which enqueues the event `quotes` turns into cards.
+//! [`on_opt_out`] runs after `messaging` has listed an opted-out number: it changes no job status
+//! (CON-012, JOB-020, D-005), marks the live jobs paused by the homeowner on a sole-word CANCEL or
+//! CANCELAR (CON-029) and enqueues [`OPTED_OUT_LIVE_KIND`] for the CON-028 notice (D-129, D-372).
 
 use askhava_core::api::{NewTask, enqueue as enqueue_task};
+use askhava_jobs::api::current;
 use askhava_messaging::api::{Language, NewText, Relation, enqueue, render};
 use askhava_ops::api::{Actor, AuditEntry, Change, audit};
 use jiff::Timestamp;
@@ -29,7 +33,7 @@ use crate::models::{
 };
 use crate::rules::{
     CONSENT_CALL_TEMPLATE, CONSENT_TEMPLATE, DISCLOSURE_TEMPLATE, Inbound, Plan, SAFETY_TEMPLATE,
-    Send, Settings, Then, language_code, language_from_code, plan, wanted_language,
+    Send, Settings, Then, fold, language_code, language_from_code, plan, wanted_language,
 };
 
 /// The INT-037 question to a smoke or CO alarm said only to beep.
@@ -895,4 +899,106 @@ pub async fn terms_acceptances(
     conversation: Uuid,
 ) -> Result<Vec<TermsAcceptanceRow>, IntakeError> {
     models::acceptances(db, conversation).await
+}
+
+/// The event an opt-out from a number with a live job enqueues (CON-028, CON-029, D-129, D-372):
+/// its handlers send the "still open" line by email (T094), show it on the quote page (T052) and
+/// withdraw a paused job's waiting pick (T054). Payload: `conversation`, `jobs`, `paused`, `inbox`.
+pub const OPTED_OUT_LIVE_KIND: &str = "intake.opted_out_live_job";
+
+/// What [`on_opt_out`] did for an opt-out from a number with a live job.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct OptOutJobs {
+    /// The open request.
+    pub conversation: Uuid,
+    /// Its live jobs (any status before a final one), none of which changed status (CON-012).
+    pub jobs: Vec<Uuid>,
+    /// Whether the text was a sole-word CANCEL or CANCELAR, which paused them (CON-029).
+    pub paused: bool,
+    /// The [`OPTED_OUT_LIVE_KIND`] task, `None` when this inbox row already queued it.
+    pub task: Option<i64>,
+}
+
+/// Whether `words` is only CANCEL or CANCELAR, in any case or punctuation (CON-029, D-129).
+#[must_use]
+pub fn sole_cancel(words: &str) -> bool {
+    matches!(fold(words).as_str(), "cancel" | "cancelar")
+}
+
+/// Handles an opt-out text `messaging` has already listed and confirmed (CON-012, CON-028, CON-029,
+/// JOB-020, D-005, D-129). With no open request or no live job it does nothing (`None`). Otherwise,
+/// in one transaction under the homeowner lock, it changes no job status, sends no text (the
+/// confirmation stays bare, CON-009), marks every live job paused by the homeowner on a sole-word
+/// CANCEL or CANCELAR, and enqueues one [`OPTED_OUT_LIVE_KIND`] task per inbox row. A text that is
+/// not an opt-out does nothing.
+///
+/// # Errors
+///
+/// [`IntakeError::Job`], [`IntakeError::Audit`] or [`IntakeError::Database`].
+pub async fn on_opt_out(
+    db: &mut PgConnection,
+    msg: &TextIn<'_>,
+) -> Result<Option<OptOutJobs>, IntakeError> {
+    let found = models::open_conversation(db, msg.contact).await?;
+    let Some(conversation) = found.filter(|_| msg.inbound.opt_out) else {
+        return Ok(None);
+    };
+    let mut tx = db.begin().await.map_err(|_| IntakeError::Database)?;
+    let (homeowner, _) = models::conversation_state(&mut tx, conversation)
+        .await?
+        .ok_or(IntakeError::UnknownRequest)?;
+    models::lock_homeowner(&mut tx, homeowner).await?;
+    let jobs = live_jobs(&mut tx, conversation).await?;
+    if jobs.is_empty() {
+        return Ok(None);
+    }
+    let paused = sole_cancel(msg.inbound.words);
+    if paused {
+        let mut inserted = false;
+        for job in &jobs {
+            let ids = (conversation, *job);
+            inserted |= models::insert_pause(&mut tx, ids, msg.inbox_id, msg.received_at).await?;
+        }
+        if inserted {
+            let actor = Actor::Homeowner(homeowner);
+            audit_action(&mut tx, actor, "intake.paused_by_homeowner", conversation).await?;
+        }
+    }
+    let payload = serde_json::json!({
+        "conversation": conversation, "jobs": jobs, "paused": paused, "inbox": msg.inbox_id,
+    });
+    let mut task = NewTask::new(OPTED_OUT_LIVE_KIND, payload, msg.received_at);
+    task.dedupe_key = Some(format!("{OPTED_OUT_LIVE_KIND}.{}", msg.inbox_id));
+    let task = enqueue_task(&mut tx, &task)
+        .await
+        .map_err(|_| IntakeError::Database)?;
+    tx.commit().await.map_err(|_| IntakeError::Database)?;
+    Ok(Some(OptOutJobs {
+        conversation,
+        jobs,
+        paused,
+        task,
+    }))
+}
+
+/// The request's jobs before a final status (CON-028's "live job").
+async fn live_jobs(db: &mut PgConnection, conversation: Uuid) -> Result<Vec<Uuid>, IntakeError> {
+    let mut live = Vec::new();
+    for job in models::request_jobs(db, conversation).await? {
+        let status = current(db, job).await.map_err(|_| IntakeError::Job)?.status;
+        if !status.is_final() {
+            live.push(job);
+        }
+    }
+    Ok(live)
+}
+
+/// Whether job `job` is paused by the homeowner (CON-029): while it is, no new pick, Confirm,
+/// charge or release happens for it; quotes still arrive and timers keep running.
+///
+/// # Errors
+///
+/// [`IntakeError::Database`].
+pub async fn paused_by_homeowner(db: &mut PgConnection, job: Uuid) -> Result<bool, IntakeError> {
+    models::is_paused(db, job).await
 }
