@@ -13116,7 +13116,9 @@
    "reads": [],
    "requirements": [],
    "tests": [],
-   "decisions": [],
+   "decisions": [
+    "D-1154"
+   ],
    "cites": [
     "BUILD_BRIEF.md:174"
    ],
@@ -13132,7 +13134,10 @@
     "kind": "account-checkpoint",
     "waits_on_owner": true,
     "resume": "Casey comments 'accounts done' in the issue",
-    "outbox": "Your turn: set up accounts"
+    "outbox": "Your turn: set up accounts",
+    "steps": [
+     "Set up the Claude Console workspace under the same Anthropic account as your Claude subscription, which you say includes $200 a month of API credit, so the live product's Claude API key, made from that account at Gate C, draws on that credit instead of a separately billed account (D-1154)."
+    ]
    }
   },
   {
@@ -13864,6 +13869,415 @@
    "prompt": "kit/prompts/T139.md"
   },
   {
+   "id": "T234",
+   "slug": "wargames-harness",
+   "title": "War games harness: persona library, scenario runner and chaos injectors",
+   "goal": "Phase 2 war games (Casey, October 31, D-1154), part 1: `wargames/` (Python, standard library only) drives the Railway test site through its real entry points (signed inbound texts and status callbacks to the texting webhook, the web intake and web chat, signed inbound business email replies, the homeowner, business and owner portal pages) and, for faults the sandboxes cannot make, a local lane (`--target local`: the stand-ins and the test-control router, as `Ci`'s journeys run). A persona library (`wargames/personas.py`) holds both sides: ordinary, confused and vanishing homeowners; Spanish speakers; tenants; STOP and START mid-job; pranksters and AI-credit drainers (photo spam, bursts of requests, endless rambling intake, re-entry loops, opt-out and opt-in churn, one- and two-word messages); people posing as businesses; contractors gaming quotes (bounced contact details, edits, double picks, after-hours claims, never confirming). Chaos injectors (`wargames/chaos.py`): duplicate and replayed webhooks, out-of-order texts, the clock at the 8 a.m. and 8 p.m. quiet-hour edges and at the 24-hour and 4-business-hour timer edges (local lane), a vendor outage mid-flow and the AI returning junk (local lane, through the stand-ins' fault and plant headers). The campaign session plays personas live too, improvising beyond the library, and adds each new one to it. Fake data only (BUILD_BRIEF.md:66, PRIV-019): every persona's name, phone (555-0100 to 555-0199), email (example.com) and street comes from the fixture generator, and no real number, key or person is ever used; signing secrets and test keys are read the way T129's sandbox mode reads its credentials (from the build environment's secrets, never printed, logged or committed); an entry point whose secret this session cannot reach runs on the local lane only and the run log says so; timers on the test site are shortened only through settings, as T136 does, and each simulated business day is recorded with its wall-clock span. `wargames/anomalies.py` checks after every step, from outside effects only (docs/test-design.md section 1 rule 1): no duplicate outbound text, email or charge; consent text first on every path; an opt-out word stops every text; no text outside quiet hours; no homeowner contact detail outside the vault or on any text to a business; every status change has an audit row; and every anomaly is logged as one JSON line with the request, job and message IDs (`wargames/runs/<run>.jsonl`, fake IDs only).",
+   "type": "harness",
+   "phase": 2,
+   "stage": "6",
+   "module": null,
+   "deps": [
+    "T139"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness",
+    "security",
+    "privacy"
+   ],
+   "owns": [
+    "wargames/__init__.py",
+    "wargames/__main__.py",
+    "wargames/personas.py",
+    "wargames/scenarios.py",
+    "wargames/drivers.py",
+    "wargames/chaos.py",
+    "wargames/anomalies.py",
+    "tests/wargames/test_wargames.py"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/threat-model.md",
+    "docs/deploy.md",
+    "docs/phase2/e2e-test-site.md",
+    "stand_ins/server.py",
+    "tests/contract/conftest.py"
+   ],
+   "requirements": [],
+   "tests": [],
+   "decisions": [
+    "D-1154"
+   ],
+   "cites": [
+    "BUILD_BRIEF.md:196",
+    "BUILD_BRIEF.md:66"
+   ],
+   "budget": {
+    "files": 8,
+    "lines": 700,
+    "context_pct": 28
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T234-wargames-harness",
+   "prompt": "kit/prompts/T234.md",
+   "acceptance": "`python3 -m wargames run --target local --smoke` runs one scenario of every persona class and every chaos injector against the local lane and exits 0 with an anomaly log, and `--target test-site --smoke` does the same against the Railway test site (or records which entry points ran on the local lane only and why); `tests/wargames/test_wargames.py` proves each anomaly check fires on a planted defect (a duplicate send, a text at 20:00:00 Arizona time, a sentinel phone on a business text, a status change with no audit row) and stays quiet on a clean run; `scripts/pii_scan.py` passes on the persona library and the logs."
+  },
+  {
+   "id": "T235",
+   "slug": "wargames-money",
+   "title": "Money war game: jobs to completion through Stripe test mode, ledger equals Stripe to the cent",
+   "goal": "War games part 2 (D-1154): `wargames/money.py` runs full jobs to completion on the Railway test site with Stripe in test mode, so introduction fees by job size ($25 / $75 / $199, each tier at and either side of its edges), free first wins, repeat-customer and fee-free $0 rows, declined and 3DS test cards, a double confirm, a payment that succeeds after the job moved on, refunds on a cancel before the business talked to the homeowner and on a failed pick, and a dispute all appear in the owner portal's money view and the businesses' statements. `wargames/reconcile.py` proves, to the cent, that the ledger (the owner portal's ledger export) equals the Stripe test-mode records (charges, refunds, disputes and processing fees read with the test key) and that the owner portal's rundown and each business statement CSV equal the ledger; any difference is an anomaly with its job and Stripe IDs. Fake data only (BUILD_BRIEF.md:66, PRIV-019): every persona's name, phone (555-0100 to 555-0199), email (example.com) and street comes from the fixture generator, and no real number, key or person is ever used; signing secrets and test keys are read the way T129's sandbox mode reads its credentials (from the build environment's secrets, never printed, logged or committed); an entry point whose secret this session cannot reach runs on the local lane only and the run log says so; `docs/phase2/money-war-game.md` records the jobs, the totals by entry type and the reconciliation result.",
+   "type": "harness",
+   "phase": 2,
+   "stage": "6",
+   "module": null,
+   "deps": [
+    "T234"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness",
+    "money"
+   ],
+   "owns": [
+    "wargames/money.py",
+    "wargames/reconcile.py",
+    "tests/wargames/test_reconcile.py",
+    "docs/phase2/money-war-game.md"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/spec/fees.md",
+    "docs/spec/businesses.md",
+    "docs/brains/payments-stripe.md",
+    "docs/phase2/e2e-test-site.md"
+   ],
+   "requirements": [
+    "FEE-021",
+    "FEE-023",
+    "FEE-025",
+    "FEE-026",
+    "FEE-028",
+    "FEE-029",
+    "FEE-030",
+    "FEE-051",
+    "BIZ-015"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-1154"
+   ],
+   "cites": [
+    "BUILD_BRIEF.md:196",
+    "BUILD_BRIEF.md:66"
+   ],
+   "budget": {
+    "files": 4,
+    "lines": 600,
+    "context_pct": 20
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T235-wargames-money",
+   "prompt": "kit/prompts/T235.md",
+   "acceptance": "At least 60 jobs run to a confirmed pick and charge in Stripe test mode, covering every tier edge, a free first win, a $0 repeat customer, each refund path and a dispute; `python3 -m wargames reconcile` reports zero differences between the ledger, Stripe test mode, the owner portal's money view and every statement CSV, to the cent, and `tests/wargames/test_reconcile.py` proves it reports a planted one-cent difference, a missing refund and a charge with no ledger row; the counts and totals are in `docs/phase2/money-war-game.md`."
+  },
+  {
+   "id": "T236",
+   "slug": "ai-call-budgets",
+   "title": "AI-call budgets per conversation and per job, and no AI call before the area check",
+   "goal": "Credit-drain defense for the war games (D-1154): AI-021's global daily cap stays, and below it no AI call is made before the consent text went and the ZIP and area check passed, only the first 1,600 characters of the scrubbed message are sent, and each conversation (one phone, or one verified web-chat session) and each job has its own AI-call budget, past which the step runs on the AI-off path with nothing said to the person and an `ai.call_stat` row with outcome `budget` (AI-028). `IntakeCall` carries the conversation and job it is for; the caller in `intake` passes them; the budgets and the length cap are settings in `AiConfig`; the migration adds the `budget` outcome and the conversation and job columns to `ai.call_stat`.",
+   "type": "build",
+   "phase": 2,
+   "stage": "6",
+   "module": "ai",
+   "deps": [
+    "T235"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security"
+   ],
+   "owns": [
+    "app/ai/src/budget.rs",
+    "app/ai/src/tests/budget.rs",
+    "app/ai/src/service.rs",
+    "app/ai/src/models.rs",
+    "migrations/0197_ai_call_budget.sql",
+    "tests/integration/tests/ai_budget.rs",
+    "app/intake/src/service.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/ai.md",
+    "docs/spec/intake.md",
+    "docs/brains/ai-intake.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "AI-028"
+   ],
+   "tests": [
+    "TD-AI-18"
+   ],
+   "decisions": [
+    "D-1154"
+   ],
+   "cites": [
+    "BUILD_BRIEF.md:196",
+    "BUILD_BRIEF.md:66"
+   ],
+   "budget": {
+    "files": 7,
+    "lines": 450,
+    "context_pct": 30
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T236-ai-call-budgets",
+   "prompt": "kit/prompts/T236.md"
+  },
+  {
+   "id": "T237",
+   "slug": "wargames-round-1",
+   "title": "War games round 1: the first chaotic run, findings fixed",
+   "goal": "War games round 1 (D-1154): run the whole cast of `wargames/personas.py` and every chaos injector against the Railway test site and the local lane, as chaotically as the business could ever be run: overlapping jobs, pranks and AI-credit drains in the middle of real ones, businesses gaming quotes while homeowners vanish, opt out and come back, and money flowing through Stripe test mode (T235's jobs mixed in). The session plays personas live beyond the library and adds each new one. Every anomaly becomes one row of the findings table in `docs/phase2/war-games.md` (WG-###, round, persona, scenario, request, job and message IDs, the requirement ID it breaks, severity, status). Each Critical, High or Medium finding is fixed in this task with a regression test, in the owned folders, that fails without the fix, and its scenario re-run green; a Low finding is fixed or listed; a finding whose fix would change a requirement, a test-design entry or a locked file is not fixed here: it goes to the top of `docs/for-casey-review.md` as a plan-change item with its WG number; fixes beyond the 800-line budget are carried, listed as open, to the next round. Fake data only (BUILD_BRIEF.md:66, PRIV-019): every persona's name, phone (555-0100 to 555-0199), email (example.com) and street comes from the fixture generator, and no real number, key or person is ever used; ",
+   "type": "harness",
+   "phase": 2,
+   "stage": "6",
+   "module": null,
+   "deps": [
+    "T236"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness",
+    "money",
+    "privacy",
+    "recovery",
+    "security"
+   ],
+   "owns": [
+    "wargames/",
+    "docs/phase2/war-games.md",
+    "app/",
+    "migrations/",
+    "tests/integration/tests/",
+    "tests/security/tests/",
+    "tests/e2e/"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/threat-model.md",
+    "docs/spec/ai.md",
+    "docs/spec/security.md",
+    "docs/spec/intake.md",
+    "docs/spec/consent.md",
+    "docs/phase2/money-war-game.md",
+    "docs/brains/sms-compliance.md"
+   ],
+   "requirements": [
+    "AI-021",
+    "AI-028",
+    "SEC-014",
+    "SEC-015",
+    "INT-007",
+    "INT-022",
+    "CON-030",
+    "SEC-017"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-1154"
+   ],
+   "cites": [
+    "BUILD_BRIEF.md:196",
+    "BUILD_BRIEF.md:66"
+   ],
+   "budget": {
+    "files": 14,
+    "lines": 800,
+    "context_pct": 28
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T237-wargames-round-1",
+   "prompt": "kit/prompts/T237.md",
+   "acceptance": "`docs/phase2/war-games.md` records round 1: start and end times, the simulated business days and their wall-clock spans, completed jobs and how many were paid in Stripe test mode, conversations by persona class (every class of `wargames/personas.py` at least 3 times, abusers at least 40 conversations), every finding with its IDs and status, and the AI calls made per abusive conversation against the AI-028 budgets (from the `ai.call_stat` counts on the owner pages); at least 5 simulated business days and 100 completed jobs (40 paid); `python3 -m wargames reconcile` is green over every job of the campaign so far."
+  },
+  {
+   "id": "T238",
+   "slug": "wargames-round-2",
+   "title": "War games round 2: the findings of round 1 fixed and the whole cast run again",
+   "goal": "War games round 2 (D-1154): run the whole cast of `wargames/personas.py` and every chaos injector against the Railway test site and the local lane, as chaotically as the business could ever be run: overlapping jobs, pranks and AI-credit drains in the middle of real ones, businesses gaming quotes while homeowners vanish, opt out and come back, and money flowing through Stripe test mode (T235's jobs mixed in). The session plays personas live beyond the library and adds each new one. Every anomaly becomes one row of the findings table in `docs/phase2/war-games.md` (WG-###, round, persona, scenario, request, job and message IDs, the requirement ID it breaks, severity, status). Each Critical, High or Medium finding is fixed in this task with a regression test, in the owned folders, that fails without the fix, and its scenario re-run green; a Low finding is fixed or listed; a finding whose fix would change a requirement, a test-design entry or a locked file is not fixed here: it goes to the top of `docs/for-casey-review.md` as a plan-change item with its WG number; fixes beyond the 800-line budget are carried, listed as open, to the next round. Fake data only (BUILD_BRIEF.md:66, PRIV-019): every persona's name, phone (555-0100 to 555-0199), email (example.com) and street comes from the fixture generator, and no real number, key or person is ever used; Round 1's open findings are fixed first, then the run starts from scratch, with each persona's script varied from round 1 (new timings, languages and orders).",
+   "type": "harness",
+   "phase": 2,
+   "stage": "6",
+   "module": null,
+   "deps": [
+    "T237"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness",
+    "money",
+    "privacy",
+    "recovery",
+    "security"
+   ],
+   "owns": [
+    "wargames/",
+    "docs/phase2/war-games.md",
+    "app/",
+    "migrations/",
+    "tests/integration/tests/",
+    "tests/security/tests/",
+    "tests/e2e/"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/threat-model.md",
+    "docs/spec/ai.md",
+    "docs/spec/security.md",
+    "docs/spec/intake.md",
+    "docs/spec/consent.md",
+    "docs/phase2/money-war-game.md",
+    "docs/brains/sms-compliance.md"
+   ],
+   "requirements": [
+    "AI-021",
+    "AI-028",
+    "SEC-014",
+    "SEC-015",
+    "INT-007",
+    "INT-022",
+    "CON-030",
+    "SEC-017"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-1154"
+   ],
+   "cites": [
+    "BUILD_BRIEF.md:196",
+    "BUILD_BRIEF.md:66"
+   ],
+   "budget": {
+    "files": 14,
+    "lines": 800,
+    "context_pct": 28
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T238-wargames-round-2",
+   "prompt": "kit/prompts/T238.md",
+   "acceptance": "`docs/phase2/war-games.md` records round 2: start and end times, the simulated business days and their wall-clock spans, completed jobs and how many were paid in Stripe test mode, conversations by persona class (every class of `wargames/personas.py` at least 3 times, abusers at least 40 conversations), every finding with its IDs and status, and the AI calls made per abusive conversation against the AI-028 budgets (from the `ai.call_stat` counts on the owner pages); at least 5 simulated business days and 100 completed jobs (40 paid); no round-1 finding is still open unless it waits on a plan change named in `docs/for-casey-review.md`; `python3 -m wargames reconcile` is green over every job of the campaign so far."
+  },
+  {
+   "id": "T239",
+   "slug": "wargames-final-round",
+   "title": "War games final round and report: a full run that finds nothing new",
+   "goal": "War games round 3 (D-1154): run the whole cast of `wargames/personas.py` and every chaos injector against the Railway test site and the local lane, as chaotically as the business could ever be run: overlapping jobs, pranks and AI-credit drains in the middle of real ones, businesses gaming quotes while homeowners vanish, opt out and come back, and money flowing through Stripe test mode (T235's jobs mixed in). The session plays personas live beyond the library and adds each new one. Every anomaly becomes one row of the findings table in `docs/phase2/war-games.md` (WG-###, round, persona, scenario, request, job and message IDs, the requirement ID it breaks, severity, status). Each Critical, High or Medium finding is fixed in this task with a regression test, in the owned folders, that fails without the fix, and its scenario re-run green; a Low finding is fixed or listed; a finding whose fix would change a requirement, a test-design entry or a locked file is not fixed here: it goes to the top of `docs/for-casey-review.md` as a plan-change item with its WG number; fixes beyond the 800-line budget are carried, listed as open, to the next round. Fake data only (BUILD_BRIEF.md:66, PRIV-019): every persona's name, phone (555-0100 to 555-0199), email (example.com) and street comes from the fixture generator, and no real number, key or person is ever used; This is the clean run: if it finds anything new, the finding is fixed as above, the round is recorded as not clean, and the report and the top of `docs/for-casey-review.md` say a further round is needed, which only a plan change can add (D-1154). The task then completes `docs/phase2/war-games.md` as the report: the cast, the runs, every finding with its fix (commit) or open status, the money reconciliation, the credit-drain defense as proven (each drain persona's AI calls stayed within AI-021 and AI-028, measured), and the final run.",
+   "type": "harness",
+   "phase": 2,
+   "stage": "6",
+   "module": null,
+   "deps": [
+    "T238"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness",
+    "money",
+    "privacy",
+    "recovery",
+    "security"
+   ],
+   "owns": [
+    "wargames/",
+    "docs/phase2/war-games.md",
+    "app/",
+    "migrations/",
+    "tests/integration/tests/",
+    "tests/security/tests/",
+    "tests/e2e/"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/threat-model.md",
+    "docs/spec/ai.md",
+    "docs/spec/security.md",
+    "docs/spec/intake.md",
+    "docs/spec/consent.md",
+    "docs/phase2/money-war-game.md",
+    "docs/brains/sms-compliance.md"
+   ],
+   "requirements": [
+    "AI-021",
+    "AI-028",
+    "SEC-014",
+    "SEC-015",
+    "INT-007",
+    "INT-022",
+    "CON-030",
+    "SEC-017"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-1154"
+   ],
+   "cites": [
+    "BUILD_BRIEF.md:196",
+    "BUILD_BRIEF.md:66"
+   ],
+   "budget": {
+    "files": 14,
+    "lines": 800,
+    "context_pct": 28
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T239-wargames-final-round",
+   "prompt": "kit/prompts/T239.md",
+   "acceptance": "`docs/phase2/war-games.md` records round 3: start and end times, the simulated business days and their wall-clock spans, completed jobs and how many were paid in Stripe test mode, conversations by persona class (every class of `wargames/personas.py` at least 3 times, abusers at least 40 conversations), every finding with its IDs and status, and the AI calls made per abusive conversation against the AI-028 budgets (from the `ai.call_stat` counts on the owner pages); at least 5 simulated business days and 100 completed jobs (40 paid) in this round, and at least 15 days and 300 jobs (120 paid) over the three rounds; the round finds no new finding of any severity, or the report says plainly that it did and which; the report has the cast, runs, findings, fixes and final-run sections; `python3 -m wargames reconcile` is green over every job of the campaign so far."
+  },
+  {
    "id": "T140",
    "slug": "final-audit",
    "title": "Fresh Opus audit: no open Critical or High findings",
@@ -13873,7 +14287,7 @@
    "stage": "6",
    "module": null,
    "deps": [
-    "T139"
+    "T239"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -13924,7 +14338,7 @@
    "id": "T141",
    "slug": "handover-pack",
    "title": "Handover pack: owner guide, runbook, results, conformance notes, Gate C key checklist",
-   "goal": "Handover pack: owner guide, runbook, results, conformance notes, Gate C key checklist `docs/README.md` is the start-here map for a session that has never seen the code: one line per folder and document, and the common changes (fees, categories and job types, text templates, settings and switches, legal pages) with the files, spec lines and tests each one touches (docs/code-docs.md, D-473).",
+   "goal": "Handover pack: owner guide, runbook, results, conformance notes, Gate C key checklist `docs/README.md` is the start-here map for a session that has never seen the code: one line per folder and document, and the common changes (fees, categories and job types, text templates, settings and switches, legal pages) with the files, spec lines and tests each one touches (docs/code-docs.md, D-473). The Gate C key checklist (`docs/account-checklist.md` Part 2) gets one item before the live AI key is entered: the live Claude API key is created in the Console under the same Anthropic account as Casey's Claude subscription, so production AI usage draws on the subscription's included API credit ($200 a month, Casey, October 31) instead of a separately billed account, and Casey confirms on the Console's billing page that usage is drawn from that credit (D-1154).",
    "type": "docs",
    "phase": 2,
    "stage": "6",
@@ -13963,7 +14377,8 @@
     "D-473",
     "D-480",
     "D-492",
-    "D-1143"
+    "D-1143",
+    "D-1154"
    ],
    "cites": [
     "BUILD_BRIEF.md:523",
@@ -14052,7 +14467,13 @@
     "T140",
     "T141",
     "T216",
-    "T171"
+    "T171",
+    "T234",
+    "T235",
+    "T236",
+    "T237",
+    "T238",
+    "T239"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
