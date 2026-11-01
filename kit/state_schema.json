@@ -559,10 +559,24 @@
         },
         "source": {
           "type": "string",
-          "enum": [
-            "ledger",
-            "quota_cmd"
-          ]
+          "pattern": "^(ledger|quota_cmd|session_reading)( .*|; .*)?$"
+        },
+        "session_reading": {
+          "type": "object",
+          "required": [
+            "at"
+          ],
+          "properties": {
+            "at": {
+              "type": "string"
+            },
+            "week": {
+              "type": "object"
+            },
+            "five_hour": {
+              "type": "object"
+            }
+          }
         },
         "windows": {
           "type": "object",
