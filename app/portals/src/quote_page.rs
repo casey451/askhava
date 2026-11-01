@@ -173,13 +173,19 @@ async fn load(
     let request = job_number(&mut db, job)
         .await
         .map_err(|_| PageError::Read)?;
-    let paused = paused_by_homeowner(&mut db, job).await;
+    let still_open = if is_final {
+        false
+    } else {
+        paused_by_homeowner(&mut db, job)
+            .await
+            .map_err(|_| PageError::Read)?
+    };
     let quotes = page_quotes(&mut db, job)
         .await
         .map_err(|_| PageError::Read)?;
     Ok(Some(PageView {
         request,
-        still_open: !is_final && paused.map_err(|_| PageError::Read)?,
+        still_open,
         live: !is_final,
         pick_open: row.status.takes_quote_edits(),
         csrf,

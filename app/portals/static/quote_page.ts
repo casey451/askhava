@@ -1,9 +1,9 @@
 // The quote page's live list (PICK-009, A11Y-033, D-492). While the job is live it fetches this
 // same page every 30 seconds, adds each quote it has not shown yet at the end of the list, swaps a
-// quote that became "no longer available", and writes one short line per batch into the status
-// region, never one line per quote. Every word it writes comes from the page's own data
-// attributes, so the words stay in the template. Without JavaScript the page works the same on a
-// reload.
+// card that became "no longer available" or whose Pick form came or went, and writes one short
+// line per batch into the status region (new quotes and quotes no longer available together),
+// never one line per quote. Every word it writes comes from the page's own data attributes, so
+// the words stay in the template. Without JavaScript the page works the same on a reload.
 
 const POLL_MS = 30_000;
 
@@ -18,9 +18,22 @@ function byNumber(list: HTMLElement): Map<string, Element> {
   return found;
 }
 
-function merge(list: HTMLElement, fresh: Element): number {
+interface Batch {
+  added: number;
+  gone: number;
+}
+
+// A card is replaced when its quote became unavailable or its Pick form came or went
+// (data-pickable), so a closed job loses its Pick buttons on the same fetch.
+function changed(old: Element, item: Element): boolean {
+  return ["data-available", "data-pickable"].some(
+    (name) => old.getAttribute(name) !== item.getAttribute(name),
+  );
+}
+
+function merge(list: HTMLElement, fresh: Element): Batch {
   const shown = byNumber(list);
-  let added = 0;
+  const batch: Batch = { added: 0, gone: 0 };
   for (const item of Array.from(fresh.children)) {
     const n = item.getAttribute("data-number");
     if (n === null) {
@@ -29,19 +42,34 @@ function merge(list: HTMLElement, fresh: Element): number {
     const old = shown.get(n);
     if (old === undefined) {
       list.append(document.importNode(item, true));
-      added += 1;
-    } else if (old.getAttribute("data-available") !== item.getAttribute("data-available")) {
+      batch.added += 1;
+    } else if (changed(old, item)) {
+      const wasOpen = old.getAttribute("data-available") === "true";
+      if (wasOpen && item.getAttribute("data-available") === "false") {
+        batch.gone += 1;
+      }
       old.replaceWith(document.importNode(item, true));
     }
   }
-  return added;
+  return batch;
 }
 
-function summary(status: HTMLElement, added: number): string {
-  if (added === 1) {
-    return status.dataset.one ?? "";
+function words(one: string | undefined, many: string | undefined, count: number): string {
+  if (count === 0) {
+    return "";
   }
-  return (status.dataset.many ?? "").replace("{n}", String(added));
+  if (count === 1) {
+    return one ?? "";
+  }
+  return (many ?? "").replace("{n}", String(count));
+}
+
+// One status line per batch (A11Y-033): new quotes and quotes no longer available share it.
+function summary(status: HTMLElement, batch: Batch): string {
+  const d = status.dataset;
+  return [words(d.one, d.many, batch.added), words(d.goneOne, d.goneMany, batch.gone)]
+    .filter((part) => part !== "")
+    .join(" ");
 }
 
 async function refresh(list: HTMLElement, status: HTMLElement): Promise<boolean> {
@@ -58,12 +86,19 @@ async function refresh(list: HTMLElement, status: HTMLElement): Promise<boolean>
   if (fresh === null) {
     return false;
   }
-  const added = merge(list, fresh);
-  if (added > 0) {
+  // This merge runs on every fetch, including the last one that finds the job no longer live,
+  // so the final state is shown before polling stops.
+  const batch = merge(list, fresh);
+  if (batch.added > 0) {
     document.getElementById("no-quotes")?.remove();
-    status.textContent = summary(status, added);
   }
-  return fresh.getAttribute("data-live") === "true";
+  const line = summary(status, batch);
+  if (line !== "") {
+    status.textContent = line;
+  }
+  const live = fresh.getAttribute("data-live") === "true";
+  list.dataset.live = String(live);
+  return live;
 }
 
 function start(): void {

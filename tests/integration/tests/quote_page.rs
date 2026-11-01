@@ -106,6 +106,7 @@ fn position(body: &str, text: &str) -> usize {
 
 /// TD-PICK-04 (PICK-008, PICK-009, PICK-012, PICK-015, D-084): arrival order whatever the business
 /// IDs; an unavailable quote keeps #2 with no Pick button; a later quote is #4 and moves none.
+/// TD-PICK-18 (PICK-041): every available card carries the same "check it yourself" line.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_pick_04_arrival_order_numbers_stay(pool: PgPool) {
     let (job, token) = open_job(&pool).await;
@@ -120,10 +121,18 @@ async fn td_pick_04_arrival_order_numbers_stay(pool: PgPool) {
     let first = position(&body, "Sample wording from business 3");
     let third = position(&body, "Sample wording from business 2");
     let fourth = position(&body, "Sample wording from business 4");
-    let gone = position(&body, "No longer available");
+    let gone = position(&body, "Quote #2 (no longer available)</h2>");
     assert!(first < gone && gone < third && third < fourth);
+    assert!(body.contains("No longer available, so it can't be picked."));
     assert!(!body.contains("Sample wording from business 1"));
+    let card_line = "Ask Hava doesn't rank businesses; check it yourself.";
+    assert_eq!(
+        body.matches(card_line).count(),
+        3,
+        "PICK-041 on each available card"
+    );
     for n in [1, 3, 4] {
+        assert!(body.contains(&format!(">Quote #{n}</h2>")), "{n}");
         assert!(body.contains(&format!("Pick #{n}</button>")), "{n}");
         assert!(body.contains(&format!("or reply {n} YES")), "{n}");
     }
