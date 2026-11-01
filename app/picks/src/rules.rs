@@ -278,25 +278,28 @@ pub enum Plan {
 }
 
 /// The text-pick rule (PICK-031, PICK-032, PICK-036, PICK-016, CON-029, D-068, D-147): a job takes a
-/// pick in Quotes ready or Awaiting confirm; with more than one (or a named number that is none of
-/// them) Ask Hava asks which; with none it gives the status reply; with one, a pause stops it, an
-/// unknown or unavailable quote is refused, a missing Terms line is sent first, and otherwise it
-/// picks, replaces the waiting pick or repeats it.
+/// pick in Quotes ready or Awaiting confirm. A job paused by the homeowner takes no new pick
+/// (CON-029), so "exactly one job" counts only the jobs not paused: with more than one of them (or
+/// a named number that is none of the open jobs) Ask Hava asks which, listing them; with none open
+/// it gives the status reply; with only paused ones open the YES is refused as paused. With one
+/// chosen job, a pause stops it, an unknown or unavailable quote is refused, a missing Terms line
+/// is sent first, and otherwise it picks, replaces the waiting pick or repeats it.
 #[must_use]
 pub fn plan_text_pick(pick: TextPick, jobs: &[JobView]) -> Plan {
     let open: Vec<&JobView> = jobs
         .iter()
         .filter(|j| matches!(j.stage, Stage::Ready | Stage::Waiting))
         .collect();
+    let live: Vec<&JobView> = open.iter().copied().filter(|j| !j.paused).collect();
     let chosen: Vec<&JobView> = match pick.job {
         Some(n) => open.iter().copied().filter(|j| j.number == n).collect(),
-        None => open.clone(),
+        None => live.clone(),
     };
     let [job] = chosen.as_slice() else {
-        return if open.is_empty() {
-            Plan::Status
-        } else {
-            Plan::Which(open.iter().map(|j| j.number).collect())
+        return match (live.as_slice(), open.first()) {
+            ([], None) => Plan::Status,
+            ([], Some(paused)) => Plan::Paused(paused.job),
+            (many, _) => Plan::Which(many.iter().map(|j| j.number).collect()),
         };
     };
     let index = pick.quote.checked_sub(1);

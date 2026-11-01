@@ -329,7 +329,7 @@
     "audience": "homeowner",
     "draft": true,
     "segments": 5,
-    "text": "Ask Hava: Tiene cotizaciones en más de una solicitud. Agregue el número de solicitud para saber cuál, por ejemplo {job} 2 SÍ. Al elegir, el negocio recibe su nombre de pila y la dirección del trabajo cuando acepte.\nAl elegir, usted acepta los Términos: askhava.com/terms"
+    "text": "Ask Hava: Tiene cotizaciones en las solicitudes {job}. Agregue el número de solicitud para saber cuál, por ejemplo {number} 2 SÍ. Al elegir, el negocio recibe su nombre de pila y la dirección del trabajo cuando acepte.\nAl elegir, usted acepta los Términos: askhava.com/terms"
   },
   "text_pick_done": {
     "audience": "homeowner",

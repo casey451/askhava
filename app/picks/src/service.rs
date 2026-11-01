@@ -224,15 +224,34 @@ fn number(views: &[JobView], job: Uuid) -> String {
     find(views, job).number.to_string()
 }
 
-/// Asks which request (D-068); the text ends with the Terms line, recorded for each listed job.
+/// The request numbers as words, "1042, 1043 and 1044" ("y" in Spanish), as "Close which?" lists
+/// them (D-068).
+fn joined(numbers: &[i64], language: Language) -> String {
+    let words: Vec<String> = numbers.iter().map(i64::to_string).collect();
+    let and = match language {
+        Language::En => " and ",
+        Language::Es => " y ",
+    };
+    match words.split_last() {
+        Some((last, rest)) if !rest.is_empty() => format!("{}{and}{last}", rest.join(", ")),
+        _ => words.concat(),
+    }
+}
+
+/// Asks which request, listing every request number that takes a pick and giving the first as the
+/// example (`{job}` is the list, `{number}` the example; D-068, numbered as for CLOSE); the text
+/// ends with the Terms line, recorded for each listed job.
 async fn which(
     tx: &mut PgConnection,
     out: &mut Out<'_, '_>,
     numbers: &[i64],
     views: &[JobView],
 ) -> Result<Option<Uuid>, PicksError> {
-    let list: Vec<String> = numbers.iter().map(i64::to_string).collect();
-    let values = [("job", list[0].clone())];
+    let first = numbers.first().map_or_else(String::new, i64::to_string);
+    let values = [
+        ("job", joined(numbers, out.input.language.0)),
+        ("number", first),
+    ];
     let (outbox, version) = out
         .say(tx, WHICH_TEMPLATE, &[out.input.inbox], &values)
         .await?;
@@ -263,7 +282,9 @@ async fn terms_first(
 /// Picks quote `quote` of `job` by text (PICK-015, PICK-031, PICK-032): the same quote again only
 /// repeats the reply; another quote cancels the waiting pick and enqueues the business's
 /// withdrawal notice; from Quotes ready the job moves to Awaiting confirm. The new pick is logged
-/// with the channel `text` and its inbound text, and the pick notice is enqueued at once.
+/// with the channel `text` and its inbound text, and the pick notice is enqueued at once. A waiting
+/// pick that is no longer waiting when it is ended (the business confirmed it meanwhile) is
+/// [`PicksError::MovedOn`]: the caller rolls back and no second pick is made.
 async fn pick_quote(
     tx: &mut PgConnection,
     out: &mut Out<'_, '_>,
@@ -277,7 +298,9 @@ async fn pick_quote(
         _ => {
             if let Some((old, _, business)) = waiting {
                 let by = (input.actor, input.at);
-                end(tx, (job.job, old, business), "replaced", by).await?;
+                if !end(tx, (job.job, old, business), "replaced", by).await? {
+                    return Err(PicksError::MovedOn);
+                }
             }
             if let Some(arrow) = pick_move(job.stage) {
                 let moved = move_to(tx, job.job, arrow, input.at, input.actor).await;
@@ -315,21 +338,23 @@ async fn new_pick(
 }
 
 /// Cancels a waiting pick with `reason` and enqueues the business's withdrawal notice; after this
-/// the business can no longer confirm it (PICK-032, CON-029). A pick no longer waiting is left.
+/// the business can no longer confirm it (PICK-032, CON-029). A pick no longer waiting (the
+/// business confirmed it meanwhile) is left as it is and `false` returned, so no notice goes.
 async fn end(
     tx: &mut PgConnection,
     (job, pick, business): (Uuid, Uuid, Uuid),
     reason: &'static str,
     (actor, at): (Actor, Timestamp),
-) -> Result<(), PicksError> {
+) -> Result<bool, PicksError> {
     if !models::end_pick(tx, pick, reason, at).await? {
-        return Ok(());
+        return Ok(false);
     }
     pick_audit(tx, actor, "picks.withdrawn", pick).await?;
     let payload = serde_json::json!({
         "pick": pick, "job": job, "business": business, "reason": reason,
     });
-    event(tx, PICK_WITHDRAWN_KIND, pick, payload, at).await
+    event(tx, PICK_WITHDRAWN_KIND, pick, payload, at).await?;
+    Ok(true)
 }
 
 /// Withdraws the pick waiting for Confirm on each of `jobs`, paused by the homeowner's CANCEL, and
@@ -347,8 +372,9 @@ pub async fn withdraw_paused(
 ) -> Result<Vec<Uuid>, PicksError> {
     let mut withdrawn = Vec::new();
     for &job in jobs {
-        if let Some((pick, _, business)) = models::waiting_pick(tx, job).await? {
-            end(tx, (job, pick, business), "paused", (actor, at)).await?;
+        if let Some((pick, _, business)) = models::waiting_pick(tx, job).await?
+            && end(tx, (job, pick, business), "paused", (actor, at)).await?
+        {
             withdrawn.push(pick);
         }
     }

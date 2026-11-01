@@ -267,7 +267,7 @@
   "text_pick_which": {
     "audience": "homeowner",
     "segments": 2,
-    "text": "Ask Hava: You have quotes on more than one request. Add the request number so we know which one, like {job} 2 YES. Picking shares your first name and job address with that business once it accepts.\nBy picking, you agree to the Terms: askhava.com/terms"
+    "text": "Ask Hava: You have quotes on requests {job}. Add the request number so we know which one, like {number} 2 YES. Picking shares your first name and job address with that business once it accepts.\nBy picking, you agree to the Terms: askhava.com/terms"
   },
   "text_pick_done": {
     "audience": "homeowner",

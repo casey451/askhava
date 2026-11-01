@@ -235,3 +235,25 @@ fn td_pick_40_terms_line_first_and_td_con_12_pause_blocks() {
         Plan::Paused(paused.job)
     );
 }
+
+/// TD-CON-12 (PICK-031, CON-029): a paused job does not count toward "exactly one job", so the one
+/// job not paused picks without a which-request question; with two not paused the question lists
+/// only those; a named paused job is still refused.
+#[test]
+fn td_con_12_a_paused_job_is_not_counted_as_open() {
+    let mut paused = job(1, Stage::Waiting);
+    paused.paused = true;
+    let other = job(2, Stage::Ready);
+    let both = [paused.clone(), other.clone()];
+    assert_eq!(plan_text_pick(pick(1), &both), Plan::Pick(other.job));
+    let named = TextPick {
+        job: Some(paused.number),
+        quote: 1,
+    };
+    assert_eq!(plan_text_pick(named, &both), Plan::Paused(paused.job));
+    let three = [paused, other, job(3, Stage::Ready)];
+    assert_eq!(
+        plan_text_pick(pick(1), &three),
+        Plan::Which(vec![1002, 1003])
+    );
+}

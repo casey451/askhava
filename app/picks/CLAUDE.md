@@ -22,7 +22,7 @@ The layer-6 crate that takes the homeowner's pick and carries it to the business
 - PICK-013, D-366: a voice code only for `CodeVia::CallTapped`, the homeowner's tap; never by itself.
 - PICK-055, D-480, D-1244: per Arizona calendar day, 5 codes per number (counted by vault contact ID), 3 calls per number, 10 per job; no call from 9 p.m. to 8 a.m. Arizona time unless `own_session`; at or above the caller's global threshold nothing goes and one `picks.verify_daily_cap` High alert is raised per day. Verify is called after the commit, with an `IdempotencyKey` over the send's row ID.
 - PICK-015, D-290: `read_text_pick` reads "<n> YES/SÍ/SI" with any words after, or "<request> <n> YES".
-- PICK-031, PICK-032, PICK-036, D-068, D-147, D-1246: `plan_text_pick`: a job takes a pick in Quotes ready or Awaiting confirm; more than one asks which; none gives the status reply (confirmed line with CLOSE for Payment pending or Connected, waiting line for a job collecting quotes, the none line otherwise); another quote while one waits replaces it (old pick `cancelled`, `replaced`, a `picks.pick_withdrawn` event for its business); from Quotes ready the job moves to Awaiting confirm; each new pick enqueues `picks.pick_made` at once.
+- PICK-031, PICK-032, PICK-036, D-068, D-147, D-1246: `plan_text_pick`: a job takes a pick in Quotes ready or Awaiting confirm; a job paused by the homeowner is not counted; more than one not paused asks which, listing their numbers in `{job}` with the first as the `{number}` example; none gives the status reply (confirmed line with CLOSE for Payment pending or Connected, waiting line for a job collecting quotes, the none line otherwise); another quote while one waits replaces it (old pick `cancelled`, `replaced`, a `picks.pick_withdrawn` event for its business; if the business confirmed it meanwhile, `PicksError::MovedOn` and nothing is picked); from Quotes ready the job moves to Awaiting confirm; each new pick enqueues `picks.pick_made` at once.
 - PICK-016, D-492: a pick only for a job with a `picks.terms_line` row; otherwise `text_pick_terms` goes and is recorded (template `<id>:<lang>:<12 hex of the SHA256 of the words>`); a text pick is stored with channel `text` and its inbound text; `intake::answer_text_pick` stores the terms acceptance.
 - CON-029, D-1245: `withdraw_paused` (called by `intake::on_opt_out` in its transaction on CANCEL or CANCELAR) cancels each waiting pick with `paused` and enqueues the business's notice; job status and timers are untouched; `intake` passes each job's pause, so a paused job's YES is `Plan::Paused` with no pick and no text.
 
@@ -32,7 +32,7 @@ The layer-6 crate that takes the homeowner's pick and carries it to the business
 - Voice only on the tap and never at night from another session; every cap holds; one alert a day; no number stored: `pick_code.rs::pick_055_*`.
 - No pick before the Terms line; one acceptance per text pick: `tests/integration/tests/text_pick.rs::td_pick_40_*`.
 - Another phone gets nothing; two jobs ask which: `text_pick.rs::td_pick_07_*`.
-- A second YES replaces and tells the first business; confirmed and status replies: `text_pick.rs::td_pick_14_*`.
+- A second YES replaces and tells the first business, but never after the business confirmed; confirmed and status replies: `text_pick.rs::td_pick_14_*`.
 - CANCEL withdraws the waiting pick, keeps the status, blocks new picks: `text_pick.rs::td_con_12_*`.
 
 ## How to change

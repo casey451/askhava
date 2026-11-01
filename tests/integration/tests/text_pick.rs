@@ -226,6 +226,7 @@ async fn td_pick_07_another_phone_and_two_jobs(mut db: Db) {
     assert_eq!(template, WHICH_TEMPLATE);
     assert!(body.ends_with(TERMS_LINE));
     assert!(body.contains(&format!("{} 2 YES", numbers[0])));
+    assert!(body.contains(&format!("requests {} and {}.", numbers[0], numbers[1])));
     for job in &jobs {
         assert!(terms_line_sent(&mut db, *job).await.expect("read"));
         assert!(picks(&mut db, *job).await.is_empty());
@@ -282,6 +283,58 @@ async fn td_pick_14_replace_confirmed_and_status(mut db: Db) {
     assert_eq!(yes(&mut db, other, "2 YES", 20).await, Some(Plan::Status));
     let last = texts(&mut db, other).await.last().cloned().expect("status");
     assert_eq!(last.0, WAITING_TEMPLATE);
+}
+
+/// PICK-032: a business confirms the waiting pick while a second YES is replacing it. The second
+/// YES's withdrawal finds the pick no longer waiting, so it rolls back: no second pick, no
+/// withdrawal notice, no reply, and the business's confirmed pick stands.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_pick_14_replace_after_the_business_confirmed_moves_on(pool: sqlx::PgPool) {
+    let her = Uuid::from_u128(0x54_0007);
+    let mut db = pool.acquire().await.expect("connection");
+    let (_, jobs) = jobs_ready(&mut db, her, &["plumbing"], 2).await;
+    let job = jobs[0];
+    yes(&mut db, her, "1 YES", 10).await;
+    assert_eq!(yes(&mut db, her, "1 YES", 11).await, Some(Plan::Pick(job)));
+    let before = texts(&mut db, her).await.len();
+    let mut confirm = pool.begin().await.expect("business transaction");
+    sqlx::query("UPDATE picks.pick SET status = 'needs_card' WHERE job_id = $1")
+        .bind(job)
+        .execute(&mut *confirm)
+        .await
+        .expect("confirm");
+    let mut second = pool.acquire().await.expect("connection");
+    let (replaced, ()) = tokio::join!(yes(&mut second, her, "2 YES", 12), async {
+        wait_for_lock(&pool).await;
+        confirm.commit().await.expect("commit");
+    });
+    assert_eq!(replaced, None);
+    let picked = picks(&mut db, job).await;
+    assert_eq!(picked.len(), 1);
+    assert_eq!(
+        (picked[0].0, picked[0].4.as_str()),
+        (business(1), "needs_card")
+    );
+    assert!(tasks(&mut db, PICK_WITHDRAWN_KIND).await.is_empty());
+    assert_eq!(texts(&mut db, her).await.len(), before);
+}
+
+/// Waits until a connection to this test's database is blocked on a row lock.
+async fn wait_for_lock(pool: &sqlx::PgPool) {
+    for _ in 0..500 {
+        let blocked: i64 = sqlx::query_scalar(
+            "SELECT count(*) FROM pg_stat_activity \
+             WHERE datname = current_database() AND wait_event_type = 'Lock'",
+        )
+        .fetch_one(pool)
+        .await
+        .expect("activity");
+        if blocked > 0 {
+            return;
+        }
+        tokio::time::sleep(std::time::Duration::from_millis(10)).await;
+    }
+    panic!("the second YES never reached the waiting pick's row lock");
 }
 
 /// A request for `her` with one job left in Open (no quotes yet).
