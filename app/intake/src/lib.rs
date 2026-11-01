@@ -13,6 +13,8 @@
 //! (INT-019, INT-021, INT-023, `handlers`).
 //! T049 added closing at the homeowner's word: CLOSE, the close button, cancel intent and "Close
 //! which?" (JOB-018 to JOB-023, `closing`).
+//! T156 added the question set one question at a time, routing confidence and the golden run
+//! (`question_bank`, `routing_confidence`, `golden_run`).
 //! Other crates reach it only through [`api`].
 
 pub mod api;
@@ -20,10 +22,13 @@ mod closing;
 mod conversation;
 mod emergency;
 mod emergency_count;
+mod golden_run;
 mod handlers;
 mod matching;
 mod models;
+mod question_bank;
 mod routing;
+mod routing_confidence;
 mod rules;
 mod safety_text;
 mod service;
