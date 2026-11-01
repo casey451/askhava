@@ -282,5 +282,17 @@
     "draft": true,
     "segments": 1,
     "text": "Ask Hava: Las cotizaciones pueden tardar, pues hasta ahora solo hay {count} en Ask Hava."
+  },
+  "intake_reminder": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 2,
+    "text": "Ask Hava: La solicitud {job} sigue abierta. Responda a nuestra última pregunta cuando pueda y seguimos donde quedamos."
+  },
+  "intake_closed_no_reply": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 2,
+    "text": "Ask Hava: Cerramos la solicitud {job} porque no tuvimos respuesta. No hay problema. Escríbanos cuando quiera y empezamos de nuevo."
   }
 }

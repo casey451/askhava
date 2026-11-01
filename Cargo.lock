@@ -616,6 +616,7 @@ version = "0.1.0"
 dependencies = [
  "askhava-adapters",
  "askhava-core",
+ "askhava-intake",
  "askhava-jobs",
  "askhava-ops",
  "askhava-portals",

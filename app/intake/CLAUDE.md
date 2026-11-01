@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The layer-7 crate that turns a homeowner's inbound text into a request (`docs/architecture.md` section 3). T038 built the first reply: the consent text first on every path, after the 911 text on a 911-list match, never asking for a reply and never sent twice for one request, and the `intake` tables. T181 added the consent record, the card and text gates and the homeowner terms acceptance at a pick. T152 added the one INT-004 911 text's words, quiet-hours kind and 5-minute check. T039 added the 911-list stem matcher on every message, the SAFE hold, the INT-037 question, "How soon?", the INT-033 night count, the emergency-or-regular choice and the emergency release. T040 added what opens a job, duplicates, the join window, exact answers, the name-and-address question and the under-18 reply. T042 added the keyword second opinion, the trade question rules, the INT-010 after-window word share and INT-032's two-trade detection (pure; not yet wired into the conversation, D-999). T183 added "Which fits best?" across licenses and its reply (`Candidates::fit_step`, D-1003). Not here yet: the question order, the `two_jobs` text and the conversation wiring of T042's rules (no owning task yet, a plan gap for the runner, D-999), the conversation wiring of routing and the coverage line (T043, T184 built, below), web chat (T103).
+The layer-7 crate that turns a homeowner's inbound text into a request (`docs/architecture.md` section 3). T038 built the first reply: the consent text first on every path, after the 911 text on a 911-list match, never asking for a reply and never sent twice for one request, and the `intake` tables. T181 added the consent record, the card and text gates and the homeowner terms acceptance at a pick. T152 added the one INT-004 911 text's words, quiet-hours kind and 5-minute check. T039 added the 911-list stem matcher on every message, the SAFE hold, the INT-037 question, "How soon?", the INT-033 night count, the emergency-or-regular choice and the emergency release. T040 added what opens a job, duplicates, the join window, exact answers, the name-and-address question and the under-18 reply. T042 added the keyword second opinion, the trade question rules, the INT-010 after-window word share and INT-032's two-trade detection (pure; not yet wired into the conversation, D-999). T183 added "Which fits best?" across licenses and its reply (`Candidates::fit_step`, D-1003). T048 added the no-reply reminder and close, the LIST reply and the call-back clock (`handlers.rs`, D-1195 to D-1198); the `jobs.homeowner_text` sender is not built (D-1198). Not here yet: the question order, the `two_jobs` text and the conversation wiring of T042's rules (no owning task yet, a plan gap for the runner, D-999), the conversation wiring of routing and the coverage line (T043, T184 built, below), web chat (T103).
 
 ## What it owns
 
@@ -18,6 +18,7 @@ The layer-7 crate that turns a homeowner's inbound text into a request (`docs/ar
 - `src/models.rs`: `IntakeError`, one row type per table, the crate-private queries. `sqlx.toml`: `timestamptz` as jiff timestamps.
 - Templates it uses in `app/messaging/templates/`: `consent`, `consent_safety_call` and `who_is_this` (added by T038, D-907), `emergency_911`; `beep_question`, `how_soon`, `needed_by_day`, `emergency_choice`, `night_count_many` (`{count}`, `{trade}`), `night_count_one`, `night_count_none` (`{trade}`) (T039, D-979).
 - `src/routing.rs` (T043, T184): `route` (pure: `Request`, `Outcome`, `Why`), `apply` (one transaction), `tell_coverage` (from `quotes::api::Coverage`), `is_split_reply`, `split_request`, `trade_is_open`, `recruiting_demand`, `check_towns` (`Town`, `TownRefused`), `move_refused`, `asks_property_management`; templates `not_covered` (`{trade}`), `out_of_area`, `coverage_count_many` (`{count}`, `{trade}`), `coverage_count_one` (`{trade}`) and `split_offer` (en, es).
+- `src/handlers.rs` (T048): `NO_REPLY_KIND` tasks (`NoReply` steps `remind`, `close`, `tell`; `Wait`), `run_no_reply` (registered by `server` with the `ID_SECRET`), `no_reply_step`, `texting_window`, crate-private `schedule_no_reply` (from `begin_job`) and `restart_no_reply` (from `hear`); `list_ask` (`ListAsk`) and `answer_list`; `counts_urgent`, `call_back_due`, `CALL_BACK_DAYS`, `HEAR_BACK_WITHIN`, `REMIND_AFTER`, `CLOSE_AFTER`; templates `intake_reminder` and `intake_closed_no_reply` (en, es). `models::recipient` reads a request's contact ID and language.
 - `src/api.rs`: the public surface; `api::rules` re-exports the pure rules.
 
 ## Rules it enforces
@@ -52,6 +53,10 @@ The layer-7 crate that turns a homeowner's inbound text into a request (`docs/ar
 - INT-016, INT-017, INT-022, LIC-017, LIC-018, D-1008: `route` checks the area first (outside the towns list: Closed early, no demand row), then moves outside Arizona, then home watch rent or leasing words, then a trade that is not open; only the last writes a recruiting-demand row; `apply` is safe to run twice.
 - INT-017, INT-032, D-1019, D-1020: `tell_coverage` queues the count line (N from `quotes::api::coverage`, the singular for 1) or the SPLIT offer, and on `Coverage::NotCovered` moves only the told job to Not covered (plus a demand row) while another job of the request is live, else runs `apply` with `Why::NobodyCovers` (D-1020); `split_request` opens the second trade's job on SPLIT or DIVIDIR alone and does not check that a SPLIT offer was made: the conversation wiring must call it only for the reply to a `Coverage::Split` offer (D-1020). A job already final gets no count line or SPLIT offer.
 
+- INT-019, D-1195, D-807: every new job gets a reminder task at `texting_window(timer_from + 24h)` and a close at `timer_from + 72h`; `hear` restarts each Intake job's wait and queues a new pair; a step runs only while the job is in Intake with the same `timer_from` (the close also when Closed early was entered exactly at the 72-hour mark, i.e. `jobs`' own timer won). The close closes the request once all its jobs are final. Texts go only with a consent record, once per job; a night close sends its text at 8 a.m. through a `tell` step (D-1196: Arizona only; the area-code zone is the send path's).
+- TXT-031, D-1197: `answer_list` answers LIST/LISTA (with an optional request number) for the request's jobs with a shown quote; one job: `quotes::api::list_texts` pages; several: `which_job_text`; none: nothing. Names come from the caller.
+- INT-021, D-1198: intake has no `askhava-ai` dependency, so every step runs at once on the keyword rules and fixed questions; no template is a "we have your message" text. INT-023: `call_back_due` is 24 hours when `counts_urgent` (Today, emergency job, or a 911-list keyword before "How soon?" is answered), else `days` (default 4).
+
 ## Never break
 
 - The English consent text equals CON-031, GSM-7 in 2 segments: `tests::consent::td_con_18_english_consent_text_is_con_031_exactly`.
@@ -71,6 +76,8 @@ The layer-7 crate that turns a homeowner's inbound text into a request (`docs/ar
 - Two first texts at once open one request and queue one consent text: `td_con_01_concurrent_first_texts_queue_one_consent_text`.
 - One consent record per request, none from a reply; one full terms row per pick, append-only: `tests/integration/tests/consent_records.rs`.
 
+- The INT-019 closing text equals the spec; nothing goes before 24:00:00; a reply restarts the wait; the text still goes when `jobs`' timer closes first: `tests::intake_timeouts::td_pick_33_*`, `tests/integration/tests/intake_timeouts.rs`.
+
 ## How to change
 
 - Add a keyword or a trade to the second opinion: a row in `RULES` in `matching.rs` (catalog category ID and job type name, folded whole-word phrases, boundary true for a licensed job type), a label in `trade_label` if needed, then run both T042 test commands; `td_int_03_keyword_job_types_are_catalog_job_types` checks the job type against `docs/catalog/categories.yaml`.
@@ -82,6 +89,8 @@ The layer-7 crate that turns a homeowner's inbound text into a request (`docs/ar
 - Add a table or column: a new migration (`-- intake (T###)` first line), its row type in `models.rs`, regenerate `.sqlx/` (online build with `SQLX_OFFLINE_DIR=.sqlx`).
 
 ## Tests that guard it
+
+- `src/tests/intake_timeouts.rs` and `tests/integration/tests/intake_timeouts.rs` (TD-INT-08, TD-INT-14 call-back cases, TD-PICK-33 INT-019 template, TD-AI-12): `cargo test -p askhava-intake tests::intake_timeouts`, `cargo test -p askhava-integration --test intake_timeouts`.
 
 - `src/tests/routing_outcomes.rs` (TD-INT-14, TD-INT-19, TD-LIC-07): `cargo test -p askhava-intake tests::routing_outcomes`.
 - `tests/integration/tests/not_covered.rs` (TD-INT-14, TD-INT-19, TD-LIC-01): `cargo test -p askhava-integration --test not_covered`.
