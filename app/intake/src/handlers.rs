@@ -341,7 +341,9 @@ async fn tell(
         .map(Some)
 }
 
-async fn queue_body(
+/// Queues `body` from `template` to the request's homeowner `recipient` about `subject`
+/// (TXT-011: the outbox key is over template, recipient and subject).
+pub(crate) async fn queue_body(
     db: &mut PgConnection,
     secret: &SecretString,
     (recipient, template): (Uuid, &'static str),

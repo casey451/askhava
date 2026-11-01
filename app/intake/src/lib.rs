@@ -15,6 +15,7 @@
 //! which?" (JOB-018 to JOB-023, `closing`).
 //! T156 added the question set one question at a time, routing confidence and the golden run
 //! (`question_bank`, `routing_confidence`, `golden_run`).
+//! T208 added the card approval step: the card shown, EDIT or SEND, the auto-send (`summary_step`).
 //! Other crates reach it only through [`api`].
 
 pub mod api;
@@ -32,6 +33,8 @@ mod routing_confidence;
 mod rules;
 mod safety_text;
 mod service;
+mod status;
+mod summary_step;
 
 #[cfg(test)]
 mod tests;

@@ -360,5 +360,23 @@
     "draft": true,
     "segments": 1,
     "text": "Ask Hava: No tiene cotizaciones para elegir ahora."
+  },
+  "card_shown": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 3,
+    "text": "Ask Hava: Así verán los negocios la solicitud {job}: [card] Sale en {time}. Responda CAMBIAR para cambiarla, o ENVIAR para enviarla ya."
+  },
+  "card_link": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 3,
+    "text": "Ask Hava: La solicitud {job} está lista. Revísela antes de que salga: {link} Sale en {time}. Responda CAMBIAR para cambiarla, o ENVIAR para enviarla ya."
+  },
+  "card_edit": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 2,
+    "text": "Ask Hava: Claro, ¿qué cambiamos en la solicitud {job}? Díganos en un texto y le mostramos cómo queda. No sale nada hasta que lo vea."
   }
 }
