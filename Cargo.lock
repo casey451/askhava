@@ -564,6 +564,7 @@ dependencies = [
  "askhava-core",
  "askhava-jobs",
  "askhava-licensing",
+ "askhava-messaging",
  "jiff",
  "jiff-sqlx",
  "proptest",
