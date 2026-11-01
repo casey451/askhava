@@ -43,6 +43,9 @@ pub enum IntakeError {
     /// The quotes module could not read the quotes or build the LIST text (TXT-031).
     #[error("intake could not read the quotes")]
     Quotes,
+    /// The `ops` alert could not be raised (INT-023's call-back).
+    #[error("intake could not raise an alert")]
+    Alert,
 }
 
 /// `intake.homeowner`: one person by vault contact ID.

@@ -15,20 +15,23 @@
 //! INT-021: intake never calls the AI (no `askhava-ai` dependency, D-1030), so every step already
 //! runs at once on the AI-off path: keyword rules and the fixed questions, no hold, no "we have
 //! your message" text, no retry. TXT-031: [`answer_list`] answers LIST or LISTA with `quotes`' LIST
-//! lines. INT-023: [`call_back_due`] and [`counts_urgent`] give the call-back deadline.
+//! lines. INT-023: [`queue_call_back`] raises the call-back alert to Casey with its deadline
+//! ([`call_back_due`], [`counts_urgent`]); its callers are the failed-text path (T094) and web chat
+//! (T103). [`answer_list`] has no caller yet either: the conversation dispatcher is the D-999 gap.
 
 use askhava_core::api::{
-    Claimed, HandlerError, NewTask, arizona, arizona_time, enqueue as enqueue_task,
+    Claimed, Clock, HandlerError, NewTask, SystemClock, arizona, arizona_time,
+    enqueue as enqueue_task,
 };
 use askhava_jobs::api::{JobRow, JobStatus, current, job_number, move_to, restart_timer};
 use askhava_messaging::api::{Language, NewText, Relation, enqueue, render};
-use askhava_ops::api::Actor;
+use askhava_ops::api::{Actor, NewAlert, Severity, raise_alert};
 use askhava_quotes::api::{Reader, list_texts, shown_quotes, which_job_text};
 use jiff::{SignedDuration, Timestamp};
 use secrecy::SecretString;
 use serde_json::{Value, json};
 use sqlx::types::Uuid;
-use sqlx::{PgConnection, PgPool};
+use sqlx::{Connection, PgConnection, PgPool};
 
 use crate::models::{self, IntakeError};
 use crate::rules::language_from_code;
@@ -109,7 +112,7 @@ pub fn texting_window(at: Timestamp) -> Timestamp {
 }
 
 /// Queues job `job`'s reminder and close, counted from its current `timer_from`, if it is still in
-/// Intake (INT-019). Safe to run twice: the dedupe key names job, step and start.
+/// Intake (INT-019). Safe to run twice: the dedupe key names job, step, start and run time.
 pub(crate) async fn schedule_no_reply(
     db: &mut PgConnection,
     (job, conversation): (Uuid, Uuid),
@@ -153,7 +156,12 @@ async fn queue_step(db: &mut PgConnection, wait: &Wait, at: Timestamp) -> Result
     let payload = json!({"job": wait.job, "conversation": wait.conversation,
         "step": wait.step.code(), "from": from});
     let mut task = NewTask::new(NO_REPLY_KIND, payload, at);
-    let key = format!("{NO_REPLY_KIND}.{}.{}.{from}", wait.job, wait.step.code());
+    let run = at.as_microsecond();
+    let key = format!(
+        "{NO_REPLY_KIND}.{}.{}.{from}.{run}",
+        wait.job,
+        wait.step.code()
+    );
     task.dedupe_key = Some(key);
     enqueue_task(db, &task)
         .await
@@ -184,15 +192,17 @@ pub async fn run_no_reply(
 ) -> Result<(), HandlerError> {
     let wait = parse(&task.payload).ok_or(HandlerError(BAD_PAYLOAD))?;
     let mut db = pool.acquire().await.map_err(|_| HandlerError(FAILED))?;
-    no_reply_step(&mut db, &secret, &wait)
+    no_reply_step(&mut db, &secret, &wait, SystemClock.now())
         .await
         .map(|_| ())
         .map_err(|_| HandlerError(FAILED))
 }
 
-/// Runs one no-reply step (INT-019, JOB-006): re-checks the job first, so a step whose wait was
-/// restarted by a reply, or whose job left Intake another way, sends nothing. Returns the text it
-/// queued, if any. Safe to run twice: the outbox keeps one row per text.
+/// Runs one no-reply step at `now` (INT-019, JOB-006, QH-001): re-checks the job first, so a step
+/// whose wait was restarted by a reply, or whose job left Intake another way, sends nothing. A step
+/// run before its due time does nothing; a text step run in quiet hours queues itself again for the
+/// next 8 a.m. Arizona and sends nothing now. Returns the text it queued, if any. Safe to run
+/// twice: the outbox keeps one row per text.
 ///
 /// # Errors
 ///
@@ -202,18 +212,50 @@ pub async fn no_reply_step(
     db: &mut PgConnection,
     secret: &SecretString,
     wait: &Wait,
+    now: Timestamp,
 ) -> Result<Option<Queued>, IntakeError> {
+    if now < earliest(wait) {
+        return Ok(None);
+    }
     let job = current(db, wait.job).await.map_err(|_| IntakeError::Job)?;
     match wait.step {
-        NoReply::Remind if waiting(&job, wait.from) => {
-            tell(db, secret, wait, REMINDER_TEMPLATE).await
-        }
-        NoReply::Close => close(db, secret, wait, &job).await,
+        NoReply::Remind if waiting(&job, wait.from) => tell_in_window(db, secret, wait, now).await,
+        NoReply::Close => close(db, secret, wait, (&job, now)).await,
         NoReply::Tell if closed_by_wait(&job, wait.from) => {
-            tell(db, secret, wait, CLOSED_TEMPLATE).await
+            tell_in_window(db, secret, wait, now).await
         }
         NoReply::Remind | NoReply::Tell => Ok(None),
     }
+}
+
+/// The first instant step `wait` may act: the reminder at 24 hours (in the window), the close
+/// and its held text at 72 hours (INT-019).
+fn earliest(wait: &Wait) -> Timestamp {
+    match wait.step {
+        NoReply::Remind => texting_window(wait.from + REMIND_AFTER),
+        NoReply::Close | NoReply::Tell => wait.from + CLOSE_AFTER,
+    }
+}
+
+/// Sends the step's text now when `now` is inside the texting window, else queues the same step
+/// for the window's next opening (QH-001, QH-008: checked when the step runs, not only when it
+/// was queued).
+async fn tell_in_window(
+    db: &mut PgConnection,
+    secret: &SecretString,
+    wait: &Wait,
+    now: Timestamp,
+) -> Result<Option<Queued>, IntakeError> {
+    let open = texting_window(now);
+    if open != now {
+        queue_step(db, wait, open).await?;
+        return Ok(None);
+    }
+    let template = match wait.step {
+        NoReply::Remind => REMINDER_TEMPLATE,
+        NoReply::Close | NoReply::Tell => CLOSED_TEMPLATE,
+    };
+    tell(db, secret, wait, template).await
 }
 
 /// Still in Intake, waiting since `from`.
@@ -230,7 +272,7 @@ async fn close(
     db: &mut PgConnection,
     secret: &SecretString,
     wait: &Wait,
-    job: &JobRow,
+    (job, now): (&JobRow, Timestamp),
 ) -> Result<Option<Queued>, IntakeError> {
     let due = wait.from + CLOSE_AFTER;
     if waiting(job, wait.from) {
@@ -245,16 +287,11 @@ async fn close(
         return Ok(None);
     }
     close_if_done(db, wait.conversation, due).await?;
-    let open = texting_window(due);
-    if open == due {
-        return tell(db, secret, wait, CLOSED_TEMPLATE).await;
-    }
     let held = Wait {
         step: NoReply::Tell,
         ..*wait
     };
-    queue_step(db, &held, open).await?;
-    Ok(None)
+    tell_in_window(db, secret, &held, now).await
 }
 
 /// Closes request `conversation` at `at` once every job it opened is final, so the next text
@@ -337,7 +374,7 @@ pub struct ListAsk {
 }
 
 /// Reads `words` as a LIST text (TXT-031): LIST or LISTA in any case, optionally followed by one
-/// request number; anything else is `None`.
+/// request number written in digits only (no sign); anything else is `None`.
 #[must_use]
 pub fn list_ask(words: &str) -> Option<ListAsk> {
     let mut parts = words.split_whitespace();
@@ -348,7 +385,8 @@ pub fn list_ask(words: &str) -> Option<ListAsk> {
         _ => return None,
     };
     let job = match parts.next() {
-        Some(n) => Some(n.parse().ok()?),
+        Some(n) if n.bytes().all(|b| b.is_ascii_digit()) => Some(n.parse().ok()?),
+        Some(_) => return None,
         None => None,
     };
     parts.next().is_none().then_some(ListAsk { spanish, job })
@@ -437,4 +475,99 @@ pub fn call_back_due(requested_at: Timestamp, urgent: bool, days: i64) -> Timest
     } else {
         requested_at + SignedDuration::from_hours(24 * days)
     }
+}
+
+/// The `ops` alert kind of a call-back due within [`HEAR_BACK_WITHIN`]: an item of Casey's OPS-032
+/// daytime push (INT-023, D-277).
+pub const CALL_BACK_URGENT_ALERT: &str = "intake.call_back_urgent";
+/// The `ops` alert kind of a call-back due within the setting's days (INT-023, D-226).
+pub const CALL_BACK_ALERT: &str = "intake.call_back";
+/// The `intake_answer` question that records a request's call-back, choice `urgent` or `regular`.
+const CALL_BACK_QUESTION: &str = "call_back";
+
+/// A call-back alert queued for Casey (INT-023).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct CallBack {
+    /// Due within 24 hours ([`counts_urgent`]).
+    pub urgent: bool,
+    /// When the call-back is due ([`call_back_due`]).
+    pub due: Timestamp,
+    /// False when an earlier call queued it already and nothing new was raised.
+    pub raised: bool,
+}
+
+/// Queues the call-back alert to Casey for request `conversation`, asked at `requested_at`, whose
+/// homeowner can be reached by neither text nor email (INT-023, D-226, D-277, D-1199): urgency read
+/// from the request (emergency choice, "How soon?" Today, or a 911-list match before "How soon?"),
+/// one `ops` alert ([`CALL_BACK_URGENT_ALERT`] or [`CALL_BACK_ALERT`], severity normal, the
+/// request by ID only) and one `call_back` answer row, in one transaction. Safe to call twice: the
+/// homeowner row is locked and a second call raises nothing. `days` is the setting (default
+/// [`CALL_BACK_DAYS`]). The callers are the failed-text path (TD-TXT-05, T094) and web chat (T103).
+///
+/// # Errors
+///
+/// [`IntakeError::UnknownRequest`], [`IntakeError::Alert`] or [`IntakeError::Database`].
+pub async fn queue_call_back(
+    db: &mut PgConnection,
+    conversation: Uuid,
+    requested_at: Timestamp,
+    days: i64,
+) -> Result<CallBack, IntakeError> {
+    let mut tx = db.begin().await.map_err(|_| IntakeError::Database)?;
+    let (homeowner, _) = models::conversation_state(&mut tx, conversation)
+        .await?
+        .ok_or(IntakeError::UnknownRequest)?;
+    models::lock_homeowner(&mut tx, homeowner).await?;
+    let earlier = models::latest_answer(&mut tx, conversation, CALL_BACK_QUESTION).await?;
+    let urgent = match earlier.as_deref() {
+        Some(code) => code == "urgent",
+        None => request_urgent(&mut tx, conversation).await?,
+    };
+    let due = call_back_due(requested_at, urgent, days);
+    let raised = earlier.is_none();
+    if raised {
+        let kind = if urgent {
+            CALL_BACK_URGENT_ALERT
+        } else {
+            CALL_BACK_ALERT
+        };
+        let alert = NewAlert {
+            kind,
+            severity: Severity::Normal,
+            subject: Some(("intake.conversation", conversation)),
+        };
+        raise_alert(&mut tx, &alert)
+            .await
+            .map_err(|_| IntakeError::Alert)?;
+        let code = if urgent { "urgent" } else { "regular" };
+        models::insert_plain(
+            &mut tx,
+            conversation,
+            (CALL_BACK_QUESTION, code),
+            requested_at,
+        )
+        .await?;
+    }
+    tx.commit().await.map_err(|_| IntakeError::Database)?;
+    Ok(CallBack {
+        urgent,
+        due,
+        raised,
+    })
+}
+
+/// [`counts_urgent`] on what request `conversation` stored: its "How soon?" answer, a 911-list
+/// match (any emergency event but an INT-037 beep question) and the emergency choice (D-277).
+async fn request_urgent(db: &mut PgConnection, conversation: Uuid) -> Result<bool, IntakeError> {
+    let how_soon = models::latest_answer(db, conversation, "how_soon").await?;
+    let choice = models::latest_answer(db, conversation, "emergency_choice").await?;
+    let keyword = models::events(db, conversation)
+        .await?
+        .iter()
+        .any(|e| e.matched != "beep_question");
+    Ok(counts_urgent(
+        how_soon.as_deref(),
+        keyword,
+        choice.as_deref() == Some("emergency"),
+    ))
 }

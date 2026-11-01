@@ -49,21 +49,34 @@ fn td_pick_33_int_019_closing_text_equals_the_spec() {
     }
 }
 
-/// TD-INT-08, TD-AI-12 (INT-021, AI-008, D-492): intake has no AI dependency, so no step waits on
-/// the AI, and no template is a "we have your message" holding text.
+/// The sample placeholder values every template renders with (the T026 registry test's list).
+const VALUES: &[(&str, &str)] = &[
+    ("job", "1042"),
+    ("count", "3"),
+    ("trade", "plumbing"),
+    ("link", "askhava.com/q/x"),
+    ("quoted", "2"),
+    ("business", "Test Plumbing"),
+    ("number", "the masked number"),
+    ("time", "5 p.m."),
+    ("reply_time", "2 days"),
+];
+
+/// TD-INT-08, TD-AI-12 (INT-021, AI-008, D-492): no step holds the homeowner with a "we have your
+/// message" text: no template, placeholders filled, in either language, is one.
 #[test]
-fn td_int_08_no_hold_text_and_no_ai_call_in_intake() {
-    let manifest = include_str!("../../Cargo.toml");
-    assert!(!manifest.contains("askhava-ai"));
+fn td_int_08_no_template_is_a_hold_text() {
     for id in template_ids().expect("ids") {
         for language in [Language::En, Language::Es] {
-            let Ok(text) = render(&id, language, true, &[]) else {
-                continue;
-            };
+            let text = render(&id, language, true, VALUES).expect("renders");
             let body = text.body.to_lowercase();
-            assert!(!body.contains("we have your message"), "{id}");
-            assert!(!body.contains("got your message"), "{id}");
-            assert!(!body.contains("tenemos su mensaje"), "{id}");
+            for hold in [
+                "we have your message",
+                "got your message",
+                "tenemos su mensaje",
+            ] {
+                assert!(!body.contains(hold), "{id}: {hold}");
+            }
         }
     }
 }
@@ -104,6 +117,9 @@ fn td_int_08_list_and_lista_words() {
         "list my sink",
         "LIST abc",
         "LIST 12 34",
+        "LIST -5",
+        "LIST +5",
+        "LISTA 1.5",
         "listen",
         "",
         "my list",

@@ -8,8 +8,9 @@
 use askhava_core::api::Claimed;
 use askhava_intake::api::rules::{Inbound, Settings};
 use askhava_intake::api::{
-    CLOSED_TEMPLATE, JobStart, NO_REPLY_KIND, NoReply, Opened, REMINDER_TEMPLATE, TextIn, Wait,
-    answer_list, begin_job, conversation, hear, no_reply_step, receive_text,
+    CALL_BACK_ALERT, CALL_BACK_DAYS, CALL_BACK_URGENT_ALERT, CLOSED_TEMPLATE, JobStart,
+    NO_REPLY_KIND, NoReply, Opened, REMINDER_TEMPLATE, TextIn, Wait, answer_list, begin_job,
+    conversation, hear, no_reply_step, queue_call_back, receive_text,
 };
 use askhava_jobs::api::{JobStatus, TIMER_KIND, current, move_to, run_timer};
 use askhava_licensing::api::LicenseKind;
@@ -112,12 +113,14 @@ async fn td_int_08_reminder_at_24_hours_and_close_at_72(mut db: Db) {
     ];
     assert_eq!(steps(&mut db, job).await, due, "nothing is due at 23:59:59");
     let remind = wait(id, job, NoReply::Remind, from);
-    let sent = no_reply_step(&mut db, &secret(), &remind)
+    let early = no_reply_step(&mut db, &secret(), &remind, az("03T09:59:59")).await;
+    assert!(early.expect("early").is_none(), "nothing at 23:59:59");
+    let sent = no_reply_step(&mut db, &secret(), &remind, az("03T10:00:00"))
         .await
         .expect("remind");
     let sent = sent.expect("the reminder");
     assert_eq!(sent.template, REMINDER_TEMPLATE);
-    let again = no_reply_step(&mut db, &secret(), &remind)
+    let again = no_reply_step(&mut db, &secret(), &remind, az("03T10:00:00"))
         .await
         .expect("again");
     assert_eq!(
@@ -126,7 +129,13 @@ async fn td_int_08_reminder_at_24_hours_and_close_at_72(mut db: Db) {
         "one reminder"
     );
     let close = wait(id, job, NoReply::Close, from);
-    let told = no_reply_step(&mut db, &secret(), &close)
+    let early = no_reply_step(&mut db, &secret(), &close, az("05T09:59:59")).await;
+    assert!(early.expect("early").is_none(), "no close before 72 hours");
+    assert_eq!(
+        current(&mut db, job).await.expect("job").status.code(),
+        "intake"
+    );
+    let told = no_reply_step(&mut db, &secret(), &close, az("05T10:00:00"))
         .await
         .expect("close");
     let told = told.expect("the closing text");
@@ -141,6 +150,53 @@ async fn td_int_08_reminder_at_24_hours_and_close_at_72(mut db: Db) {
     assert_eq!(row.status_at, az("05T10:00:00"));
     let open = conversation(&mut db, id).await.expect("read").expect("row");
     assert!(open.closed_at.is_some(), "the next text starts again");
+    no_hold_and_no_retry(&mut db, 0x8001).await;
+}
+
+/// INT-021, D-492: nothing sent to `contact` is a "we have your message" hold text, and no task
+/// waits to retry an AI step.
+async fn no_hold_and_no_retry(db: &mut Db, contact: u128) {
+    let bodies: Vec<String> =
+        sqlx::query_scalar("SELECT body FROM messaging.outbox WHERE recipient_id = $1")
+            .bind(Uuid::from_u128(contact))
+            .fetch_all(&mut **db)
+            .await
+            .expect("bodies");
+    assert!(!bodies.is_empty());
+    for body in bodies {
+        assert!(
+            !body.to_lowercase().contains("we have your message"),
+            "{body}"
+        );
+    }
+    let kinds: Vec<String> = sqlx::query_scalar("SELECT DISTINCT kind FROM core.task")
+        .fetch_all(&mut **db)
+        .await
+        .expect("kinds");
+    for kind in kinds {
+        assert!(
+            !kind.starts_with("ai.") && !kind.contains("retry"),
+            "{kind}"
+        );
+    }
+}
+
+/// TD-INT-08 (INT-019, QH-001, QH-008): quiet hours are checked again when a step runs, so a
+/// reminder that runs late, at night, sends nothing and waits for 8 a.m. Arizona.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_int_08_a_reminder_run_at_night_waits_for_8_am(mut db: Db) {
+    let from = az("02T10:00:00");
+    let (id, job) = request(&mut db, 0x8007, from).await;
+    let remind = wait(id, job, NoReply::Remind, from);
+    let late = no_reply_step(&mut db, &secret(), &remind, az("03T21:00:00")).await;
+    assert!(late.expect("late").is_none(), "no text at 9 p.m.");
+    let due = steps(&mut db, job).await;
+    assert!(due.contains(&("remind".to_owned(), az("04T08:00:00"))));
+    let sent = no_reply_step(&mut db, &secret(), &remind, az("04T08:00:00")).await;
+    assert_eq!(
+        sent.expect("8 a.m.").map(|q| q.template),
+        Some(REMINDER_TEMPLATE)
+    );
 }
 
 /// TD-INT-08 (INT-019, QH-001, moved from TD-CON-11): a reminder or close at night waits for 8 a.m.
@@ -155,14 +211,14 @@ async fn td_int_08_night_reminder_and_closing_text_held_to_8_am(mut db: Db) {
     ];
     assert_eq!(steps(&mut db, job).await, due);
     let close = wait(id, job, NoReply::Close, from);
-    let now = no_reply_step(&mut db, &secret(), &close)
+    let now = no_reply_step(&mut db, &secret(), &close, az("05T21:30:00"))
         .await
         .expect("close");
     assert!(now.is_none(), "no closing text at night");
     let held = steps(&mut db, job).await;
     assert_eq!(held.last(), Some(&("tell".to_owned(), az("06T08:00:00"))));
     let tell = wait(id, job, NoReply::Tell, from);
-    let told = no_reply_step(&mut db, &secret(), &tell)
+    let told = no_reply_step(&mut db, &secret(), &tell, az("06T08:00:00"))
         .await
         .expect("tell");
     assert_eq!(told.map(|q| q.template), Some(CLOSED_TEMPLATE));
@@ -176,9 +232,14 @@ async fn td_int_08_a_reply_restarts_the_wait(mut db: Db) {
     let (id, job) = request(&mut db, 0x8003, from).await;
     let reply = text(0x8003, "under the sink", az("02T15:00:00"));
     hear(&mut db, id, &reply).await.expect("hear");
-    for step in [NoReply::Remind, NoReply::Close] {
+    for (step, at) in [
+        (NoReply::Remind, az("03T10:00:00")),
+        (NoReply::Close, az("05T10:00:00")),
+    ] {
         let old = wait(id, job, step, from);
-        let done = no_reply_step(&mut db, &secret(), &old).await.expect("old");
+        let done = no_reply_step(&mut db, &secret(), &old, at)
+            .await
+            .expect("old");
         assert!(done.is_none());
     }
     assert_eq!(
@@ -206,7 +267,7 @@ async fn td_int_08_the_jobs_timer_closing_first_still_texts(pool: sqlx::PgPool) 
     };
     run_timer(pool, task).await.expect("timer");
     let close = wait(id, job, NoReply::Close, from);
-    let told = no_reply_step(&mut db, &secret(), &close)
+    let told = no_reply_step(&mut db, &secret(), &close, az("05T10:00:00"))
         .await
         .expect("close");
     assert_eq!(told.map(|q| q.template), Some(CLOSED_TEMPLATE));
@@ -216,7 +277,7 @@ async fn td_int_08_the_jobs_timer_closing_first_still_texts(pool: sqlx::PgPool) 
     assert!(moved.expect("cancel").applied().is_some());
     let close = wait(other, cancelled, NoReply::Close, from);
     assert!(
-        no_reply_step(&mut db, &secret(), &close)
+        no_reply_step(&mut db, &secret(), &close, az("05T10:00:00"))
             .await
             .expect("close")
             .is_none()
@@ -309,4 +370,41 @@ async fn td_int_08_list_and_lista_route_to_the_list_lines(mut db: Db) {
     .await;
     let which = which.expect("which");
     assert_eq!(which[0].template, "quote_list_which");
+}
+
+/// The open `ops` alerts about request `id`: their kinds.
+async fn alerts(db: &mut Db, id: Uuid) -> Vec<String> {
+    sqlx::query_scalar("SELECT kind FROM ops.alert WHERE subject_id = $1 ORDER BY raised_at, id")
+        .bind(id)
+        .fetch_all(&mut **db)
+        .await
+        .expect("alerts")
+}
+
+/// TD-INT-08, TD-INT-14 (INT-023, D-226, D-277): a request no text or email can reach gets one
+/// call-back alert to Casey, due in the setting's 4 days; a 911-list match before "How soon?"
+/// makes it urgent, due within 24 hours and an OPS-032 push item; a second call raises nothing.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_int_08_call_back_alert_to_casey_by_urgency(mut db: Db) {
+    let at = az("02T10:00:00");
+    let (plain, _) = request(&mut db, 0x8008, at).await;
+    let back = queue_call_back(&mut db, plain, at, CALL_BACK_DAYS).await;
+    let back = back.expect("call-back");
+    assert!(!back.urgent && back.raised);
+    assert_eq!(back.due, az("06T10:00:00"));
+    let again = queue_call_back(&mut db, plain, at, CALL_BACK_DAYS).await;
+    assert!(!again.expect("again").raised, "one alert per request");
+    assert_eq!(
+        alerts(&mut db, plain).await,
+        vec![CALL_BACK_ALERT.to_owned()]
+    );
+    let msg = text(0x8009, "I smell gas by the water heater", at);
+    let handled = receive_text(&mut db, &secret(), &msg, Settings::default()).await;
+    let urgent = handled.expect("open").conversation.expect("request");
+    let back = queue_call_back(&mut db, urgent, at, CALL_BACK_DAYS).await;
+    let back = back.expect("urgent call-back");
+    assert!(back.urgent);
+    assert_eq!(back.due, az("03T10:00:00"));
+    let kinds = alerts(&mut db, urgent).await;
+    assert_eq!(kinds, vec![CALL_BACK_URGENT_ALERT.to_owned()]);
 }
