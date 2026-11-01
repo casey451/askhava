@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO intake.homeowner_pause (conversation_id, job_id, inbox_id, paused_at) VALUES ($1, $2, $3, $4) ON CONFLICT (job_id) WHERE ended_at IS NULL DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "e22278ca099a8789b9e70c5c5ca2472e223fb1702e676ab39c4c5be0dc18fae9"
+}
