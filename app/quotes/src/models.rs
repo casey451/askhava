@@ -1,7 +1,8 @@
 //! The records matching reads and returns, and the `quotes.job_card` query (migration
 //! `0067_quotes_matching.sql`; CARD-001 to CARD-004, CARD-016, CARD-018, LIC-035); T046 adds
 //! the `quotes.quote` queries (migration `0070_quotes_quote.sql`; PICK-001, PICK-002, TXT-042);
-//! T186 adds [`stored_card`], what a quote card reads of a shown quote (PICK-003, PICK-040).
+//! T186 adds [`stored_card`], what a quote card reads of a shown quote (PICK-003, PICK-040);
+//! T047 adds [`list_rows`], the pickable quotes the LIST text states (TXT-031, PICK-002).
 //!
 //! Nothing here holds a homeowner's detail: a job is its offer towns, its candidate job types and
 //! its scrubbed text (PRIV-001); a business is IDs, codes and ticks.
@@ -17,7 +18,7 @@ use jiff_sqlx::ToSqlx;
 use sqlx::PgConnection;
 use sqlx::types::Uuid;
 
-use crate::intake::{DayPart, Format, Price, Quote};
+use crate::intake::{DayPart, Format, Period, Price, Quote};
 
 /// Why a quotes call failed. No variant carries a value (rust brain R5, R6).
 #[derive(Debug, thiserror::Error, PartialEq, Eq)]
@@ -34,6 +35,9 @@ pub enum QuotesError {
     /// The business could not be read through `businesses::api` (PICK-044).
     #[error("the business could not be read")]
     Business,
+    /// A homeowner text could not be built from its templates (TXT-016, TXT-031, TXT-032).
+    #[error("the text could not be built")]
+    Text,
 }
 
 /// A town a job is offered in: the job's own town first, then any neighbouring towns (CARD-002).
@@ -492,4 +496,116 @@ pub(crate) async fn stored_card(
         original: row.original,
         earliest_visit: visit,
     }))
+}
+
+/// One quote the LIST text states: who made it, the price exactly as stored and the earliest visit
+/// (TXT-031, PICK-002, WORD-011).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct ListRow {
+    pub business: Uuid,
+    pub price: Price,
+    pub earliest_visit: Option<(jiff::civil::Date, DayPart)>,
+}
+
+/// The period a stored `period` code names.
+fn period_of(code: &str) -> Option<Period> {
+    [
+        Period::Visit,
+        Period::Week,
+        Period::Month,
+        Period::Quarter,
+        Period::Year,
+    ]
+    .into_iter()
+    .find(|p| p.code() == code)
+}
+
+/// The columns of one stored quote that make up its price.
+struct PriceColumns {
+    format: Format,
+    amount: Option<i64>,
+    range: (Option<i64>, Option<i64>),
+    tiers: (Option<Vec<String>>, Option<Vec<i64>>),
+    period: Option<String>,
+    setup: Option<i64>,
+    rate: Option<i64>,
+    hours: (Option<i32>, Option<i32>),
+    on_site: bool,
+}
+
+/// Puts a stored quote's price back together exactly as the business entered it (PICK-002).
+fn price_of(c: PriceColumns) -> Option<Price> {
+    let cents = |v: Option<i64>| v.and_then(|v| u64::try_from(v).ok());
+    if let Some(rate) = cents(c.rate) {
+        let hours = c.hours.0.zip(c.hours.1);
+        let hours = hours.and_then(|(l, h)| Some((u32::try_from(l).ok()?, u32::try_from(h).ok()?)));
+        return Some(Price::Hourly { rate, hours });
+    }
+    match c.format {
+        Format::Firm => cents(c.amount).map(Price::Firm),
+        Format::DiagnosticVisit => cents(c.amount).map(Price::VisitFee),
+        Format::Range => Some(Price::Range {
+            low: cents(c.range.0)?,
+            high: cents(c.range.1)?,
+            on_site: c.on_site,
+        }),
+        Format::Monthly => Some(Price::Monthly {
+            cents: cents(c.amount)?,
+            period: period_of(c.period.as_deref()?)?,
+            setup: cents(c.setup),
+        }),
+        Format::Tiers => {
+            let (names, prices) = (c.tiers.0?, c.tiers.1?);
+            let prices = prices.into_iter().map(|v| u64::try_from(v).ok());
+            let tiers: Option<Vec<(String, u64)>> = names
+                .into_iter()
+                .zip(prices)
+                .map(|(n, p)| Some((n, p?)))
+                .collect();
+            tiers.map(Price::Tiers)
+        }
+    }
+}
+
+/// TXT-031, PICK-002: the job's pickable quotes in arrival order: confirmed, not withdrawn and
+/// not marked unavailable by a failed pick, oldest first (ties by business ID).
+pub(crate) async fn list_rows(
+    db: &mut PgConnection,
+    job: Uuid,
+) -> Result<Vec<ListRow>, QuotesError> {
+    let rows = sqlx::query!(
+        "SELECT business_id, format, amount_cents, low_cents, high_cents, tier_names, tier_cents, \
+         period, setup_cents, hourly_rate_cents, hours_low, hours_high, confirm_on_site, \
+         earliest_visit::text AS visit, visit_part FROM quotes.quote \
+         WHERE job_id = $1 AND confirmed AND withdrawn_at IS NULL AND unavailable_at IS NULL \
+         ORDER BY received_at, business_id",
+        job
+    )
+    .fetch_all(db)
+    .await
+    .map_err(|_| QuotesError::Database)?;
+    rows.into_iter()
+        .map(|r| {
+            let format = Format::from_code(&r.format).ok_or(QuotesError::Database)?;
+            let price = price_of(PriceColumns {
+                format,
+                amount: r.amount_cents,
+                range: (r.low_cents, r.high_cents),
+                tiers: (r.tier_names, r.tier_cents),
+                period: r.period,
+                setup: r.setup_cents,
+                rate: r.hourly_rate_cents,
+                hours: (r.hours_low, r.hours_high),
+                on_site: r.confirm_on_site,
+            })
+            .ok_or(QuotesError::Database)?;
+            let part = r.visit_part.as_deref().and_then(DayPart::from_code);
+            let date = r.visit.and_then(|d| d.parse::<jiff::civil::Date>().ok());
+            Ok(ListRow {
+                business: r.business_id,
+                price,
+                earliest_visit: date.zip(part),
+            })
+        })
+        .collect()
 }
