@@ -244,7 +244,7 @@ Rule: test or sandbox first. Never paste a key into chat, an issue, a file or an
 | Account checkpoint | Lob (test key) | Environment secret locked to api.lob.com; Railway test variable | Identity letters (T133) |
 | Account checkpoint | Sentry | Railway test variable (DSN) | Error monitoring |
 | Account checkpoint | UptimeRobot | No key; you add the test site's /healthz | Uptime alerts |
-| Account checkpoint | Claude Console workspace (separate from your Claude plan) | Environment secret locked to api.anthropic.com; Railway test variable | Real-AI test on fake data (T137); its API terms are recorded for B5 |
+| Account checkpoint | Claude Console workspace, under the same Anthropic account as your Claude subscription so the live key later draws on its included API credit (D-1154) | Environment secret locked to api.anthropic.com; Railway test variable | Real-AI test on fake data (T137); its API terms are recorded for B5 |
 | Account checkpoint (optional) | Concept-image provider (chosen then) | Environment secret locked to its host; Railway test variable | Concept images for design jobs (INT-046); its terms recorded; switch stays off without it |
 | Account checkpoint | Storage bucket (chosen then, D-094) | Railway test variable | Audit stream and backups |
 | At the start of the hand-run test (D-468) | LLC, EIN, live Stripe for the paid weeks; then city license, TPT path, Google Workspace, DNS (SPF, DKIM, DMARC); insurance later (D-426) | Not keys | Section 8 |

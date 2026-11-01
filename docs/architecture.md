@@ -145,6 +145,8 @@ tests/               the Rust test-layer crates integration, security and recove
                      pytest for docs and contract. Every database test uses `#[sqlx::test(migrator = ...)]`, one
                      fresh database per test (D-481)
 twin/                the twin (Python) and its hard-failing gate, calling the Rust rules through rules_bridge
+wargames/            the Phase 2 war games (Python, standard library): personas, scenario runner, chaos injectors and the
+                     money reconciliation, driving the Railway test site's real entry points (T234, T235, D-1154)
 ```
 
 - Sentinel scan: `tests/security/tests/sentinel_db_logs.rs` (T217) writes the fixture sentinels (`askhava-fixtures`) through the vault, sends a request carrying them through the `build_router` layers and runs the off-database stream, then searches every table but `privacy.contact` (bytea as hex too), the JSON log, the stream's stand-in objects and a capturing Sentry transport for them; T120 repeats it after J1 to J4 (TD-PRIV-02, PRIV-016, PRIV-019, D-795).
