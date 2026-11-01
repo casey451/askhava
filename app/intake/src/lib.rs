@@ -11,9 +11,12 @@
 //! after-window word share and INT-032's two-trade detection (`matching`).
 //! T048 added the no-reply reminder and close, the LIST reply and the call-back clock
 //! (INT-019, INT-021, INT-023, `handlers`).
+//! T049 added closing at the homeowner's word: CLOSE, the close button, cancel intent and "Close
+//! which?" (JOB-018 to JOB-023, `closing`).
 //! Other crates reach it only through [`api`].
 
 pub mod api;
+mod closing;
 mod conversation;
 mod emergency;
 mod emergency_count;

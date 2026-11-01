@@ -1439,3 +1439,10 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **What is missing.** When a request moves on by itself (the 6 p.m. move to Open, a close with no quotes, a close after quotes with no pick, "every quote window has ended"), the system records that a text to the homeowner is due, but nothing sends it yet. The plan gave this to T048; it turned out bigger than T048's size limit, because the text needs the quote-page link and the homeowner's own time zone. The runner should give it its own task.
 - **Also not wired yet.** The code that answers LIST and that restarts the 72-hour clock when she replies is built and tested, but no incoming text reaches it until the task that routes replies inside an open request exists (the same gap as D-999).
 - **Call-backs.** When a homeowner can't be reached by text or email, Ask Hava now raises one call-back alert for you: urgent ones (Today, emergency, or a 911-type word) are due within 24 hours and go in your 9 a.m. / 3 p.m. push; others are due within 4 days. The parts that notice "can't be reached" (failed texts, web chat) come with later tasks.
+
+## Closing a request by text (T049, D-1200 to D-1202, November 1)
+
+- **What closes.** "CLOSE 1042" (or CERRAR 1042), "CLOSE ALL", the close button on the quote page, or a clear message like "please cancel my request", "never mind", "no longer need it", "ya no lo necesito". The word "cancel" alone never closes anything: it is an opt-out, which stops texts but leaves the request alone.
+- **Worth a look.** Spanish "ya no" closes only when it is the whole message (or "ya no lo necesito" and the like), because "el aire ya no funciona" means the AC stopped working. The phrase list is short on purpose; tell me if you want words added.
+- **Several open jobs.** She gets "Close which?" with each number and CLOSE ALL, and nothing closes until she answers. A message that only mentions cancelling ("I had to cancel the plumber") gets "To close request 1042, reply CLOSE 1042."
+- **Not wired yet.** Like LIST, this waits for the task that routes replies inside an open request (D-999), and for the quote page's close button route.

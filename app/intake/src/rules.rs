@@ -504,3 +504,120 @@ pub fn split_name_address(raw: &str) -> Option<(String, String)> {
     let address = words[at..].join(" ");
     (!name.is_empty()).then_some((name, address))
 }
+
+/// Which jobs a CLOSE text names (JOB-019, JOB-021).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CloseTarget {
+    /// One request number: "CLOSE 1042", or "1042" alone in answer to "Close which?".
+    Number(i64),
+    /// Every open job: "CLOSE ALL", "CERRAR TODAS", or "all" alone in answer to "Close which?".
+    All,
+}
+
+/// How a message reads for closing (JOB-019 to JOB-023).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CloseReading {
+    /// CLOSE or CERRAR with a number or ALL, or the answer to "Close which?".
+    Close(CloseTarget),
+    /// A cancel-intent message ("please cancel my request", "never mind", "ya no"), or CLOSE alone.
+    Intent,
+    /// Mentions cancel without cancel intent ("I had to cancel the plumber", "cancel" alone).
+    Mention,
+    /// Nothing about closing.
+    Other,
+}
+
+/// Phrases that show cancel intent anywhere in a message (JOB-019, D-1200), folded.
+const INTENT_PHRASES: &[&str] = &[
+    "never mind",
+    "nevermind",
+    "nvm",
+    "forget it",
+    "no longer need",
+    "no longer needed",
+    "dont need it",
+    "dont need this",
+    "do not need it",
+    "please cancel",
+    "cancel please",
+    "cancel it",
+    "cancel this",
+    "cancel that",
+    "cancel my request",
+    "cancel the request",
+    "cancel my job",
+    "cancel the job",
+    "close my request",
+    "close the request",
+    "close this request",
+    "ya no lo necesito",
+    "ya no necesito",
+    "ya no hace falta",
+    "ya no quiero",
+    "no lo necesito",
+    "olvidalo",
+    "olvidelo",
+    "no quiero nada",
+    "por favor cancele",
+    "por favor cancela",
+    "cancelar por favor",
+    "cancelalo",
+    "cancelala",
+    "cancelelo",
+    "cancela mi solicitud",
+    "cancele mi solicitud",
+    "cancelar mi solicitud",
+    "cancelar la solicitud",
+    "cerrar mi solicitud",
+];
+/// Messages that show cancel intent only as the whole message: "ya no" alone, never "el aire ya
+/// no funciona" (JOB-019, D-1200).
+const INTENT_WHOLE: &[&str] = &["ya no", "ya no gracias", "close", "cerrar"];
+/// Words that mention cancelling (JOB-023), folded.
+const CANCEL_MENTIONS: &[&str] = &[
+    "cancel",
+    "canceled",
+    "cancelled",
+    "canceling",
+    "cancelling",
+    "cancellation",
+    "cancelar",
+    "cancela",
+    "cancele",
+    "cancelo",
+    "cancelacion",
+];
+/// The words for "all" in a CLOSE text or a "Close which?" answer, folded.
+const ALL_WORDS: &[&str] = &["all", "todo", "todos", "todas", "both", "ambos", "ambas"];
+
+/// Reads `words` for closing (JOB-019 to JOB-023, D-1200). `asked` is true while the request's
+/// "Close which?" waits for an answer, so a lone number or "all" answers it. "cancel" alone, and a
+/// message that only mentions cancelling, is [`CloseReading::Mention`] and never closes (JOB-020).
+#[must_use]
+pub fn close_reading(words: &str, asked: bool) -> CloseReading {
+    let folded = fold(words);
+    let tokens: Vec<&str> = folded.split(' ').filter(|t| !t.is_empty()).collect();
+    let target = |t: &str| match t.parse::<i64>() {
+        Ok(n) if t.bytes().all(|b| b.is_ascii_digit()) => Some(CloseTarget::Number(n)),
+        _ => ALL_WORDS.contains(&t).then_some(CloseTarget::All),
+    };
+    match tokens.as_slice() {
+        ["close" | "cerrar", t] | [t] if asked || tokens.len() == 2 => {
+            if let Some(target) = target(t) {
+                return CloseReading::Close(target);
+            }
+        }
+        _ => {}
+    }
+    let padded = format!(" {folded} ");
+    let phrase = INTENT_PHRASES
+        .iter()
+        .any(|p| padded.contains(&format!(" {p} ")));
+    if phrase || INTENT_WHOLE.contains(&folded.as_str()) {
+        CloseReading::Intent
+    } else if tokens.iter().any(|t| CANCEL_MENTIONS.contains(t)) {
+        CloseReading::Mention
+    } else {
+        CloseReading::Other
+    }
+}
