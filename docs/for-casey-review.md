@@ -1511,3 +1511,9 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **Spanish cards will nearly always go by link.** Spanish accents make the text longer to send, so the full card rarely fits in 2 segments. The Spanish wording is still a draft for the native-speaker review.
 - **The 30 minutes start when she gets the text (D-1278, D-1279).** If the text is held overnight by quiet hours, the clock waits too. If the text can't be delivered, the card doesn't go out on its own; who gets told then isn't built yet. If she asks to change the card and it comes back the same, she still gets it again with a fresh 30 minutes.
 - **Not connected yet.** Nothing calls this step until the conversation wiring is built, and the sender that texts cards to businesses doesn't exist yet. The page behind the link is T095's.
+
+## Page and journey checks on every change (T173, D-1280 to D-1283, November 1)
+
+- **What was built.** Every change now runs the browser journeys as part of `Ci` and the accessibility suite (axe at phone, tablet and desktop widths) as `Ally`. One failing check in either turns it red, so the change can't merge. Any axe result that needs a person to look at it is listed on the run's summary page.
+- **The image now carries the small browser scripts.** The production image compiles the quote page's script and keeps only the result. Nothing serves those files to the browser yet, so the quote page still works the way it does without JavaScript (D-1235).
+- **The homeowner journey check is only half there.** The stage-2 proof is meant to walk a homeowner from her first text to picking a quote. Today only the quote page and the pick form can be walked: the app can't yet receive a text (T241 is still waiting), and the pick code is neither sent nor checked. Those steps show as "not done" on every run until they're built (D-1280). Stage 2 shouldn't be called finished on this file alone.

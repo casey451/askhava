@@ -1,6 +1,7 @@
 # Required check "Ci" (ruleset protect-main). Job name must stay exactly "Ci".
-# Three jobs: "Checks" (everything except coverage) and "Coverage" (branch coverage against
-# tests/coverage_floor.json, D-694) run in parallel; "Ci" is the gate, green only when both are.
+# Four jobs: "Checks" (everything except coverage), "Coverage" (branch coverage against
+# tests/coverage_floor.json, D-694) and "E2e" (the Playwright journeys in tests/e2e against the app
+# with stand-ins, T173) run in parallel; "Ci" is the gate, green only when all three are.
 name: ci
 on:
   # Push only, no pull_request trigger (D-1087): exactly one run per head commit. A second,
@@ -387,17 +388,130 @@ jobs:
           sys.exit(1 if failures else 0)
           PY
 
+  e2e:
+    # The journeys of docs/test-design.md section 5 (BUILD_BRIEF.md:476, T173, D-481). Playwright's
+    # globalSetup (tests/e2e/webserver.ts, T227) builds `server` and `worker` with
+    # askhava-core/test-control (a no-op after the build step below), runs `server migrate`, starts
+    # stand_ins/server.py on 127.0.0.1:4010 and both binaries. The stand-in server is a Python process,
+    # not an image, so globalSetup starts it rather than `services:`; Postgres and stripe-mock are
+    # services, each pinned by digest (SEC-021, SEC-045). Any failed assertion fails this job and so Ci.
+    name: "E2e"
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:16@sha256:1beaa3084eee2676f20a9cd9928f0bf2c5bf674f8e49f81017912183d377c61c
+        env:
+          POSTGRES_USER: askhava_ci
+          POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_DB: askhava_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U askhava_ci"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+      stripe-mock:
+        image: stripe/stripe-mock:v0.206.0@sha256:aeb96b83e87a893d2ac005e363ac01ffa6e59a5ad85b49c155dfc9129de02e78
+        ports:
+          - 12111:12111
+    env:
+      DATABASE_URL: postgres://askhava_ci@localhost:5432/askhava_ci
+      SQLX_OFFLINE: "true"
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+          fetch-depth: 200
+
+      - name: Does this change touch the app or the journeys? (same idea as Checks, D-489)
+        id: changes
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git fetch --no-tags --depth=200 "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}" main:refs/remotes/origin/main
+          if [ "$EVENT_NAME" = "schedule" ] || [ "$EVENT_NAME" = "workflow_dispatch" ] || [ "$GITHUB_REF_NAME" = "main" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          base="$(git merge-base origin/main HEAD)"
+          run=false
+          git diff --no-renames --name-only "$base" HEAD \
+            | grep -Eq '^(app/|migrations/|stand_ins/|tests/(e2e|a11y)/|package(-lock)?\.json|tsconfig|Cargo\.(toml|lock)|rust-toolchain\.toml|\.sqlx/|\.github/workflows/(ci|a11y)\.yml)' && run=true
+          echo "run=$run" >> "$GITHUB_OUTPUT"; echo "run=$run"
+
+      - name: Database roles the migrations grant to (askhava_app, askhava_migrator; D-092, D-491)
+        if: steps.changes.outputs.run == 'true'
+        run: |
+          for role in askhava_app askhava_migrator; do
+            psql "$DATABASE_URL" -qtc "SELECT 1 FROM pg_roles WHERE rolname = '${role}'" | grep -q 1 \
+              || psql "$DATABASE_URL" -qc "CREATE ROLE ${role} NOLOGIN"
+            psql "$DATABASE_URL" -qc "GRANT ${role} TO askhava_ci" >/dev/null
+          done
+
+      - name: Rust toolchain (the pinned release from rust-toolchain.toml)
+        if: steps.changes.outputs.run == 'true'
+        run: |
+          rustup toolchain install "$(sed -n 's/^channel *= *"\(.*\)"/\1/p' rust-toolchain.toml)" --profile minimal
+
+      - name: Rust build cache (its own key: the test-control feature changes the build, D-693)
+        if: steps.changes.outputs.run == 'true'
+        uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          shared-key: e2e
+
+      - name: Build server and worker with test-control (never the release build, SEC-035)
+        if: steps.changes.outputs.run == 'true'
+        run: |
+          cargo build -p askhava-server --bins --locked --features askhava-core/test-control
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        if: steps.changes.outputs.run == 'true'
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: npm ci and the browser scripts (npm run build writes the .js beside each .ts)
+        if: steps.changes.outputs.run == 'true'
+        run: |
+          npm ci --ignore-scripts
+          npm run build
+
+      - name: Playwright browser cache (keyed by package-lock.json, which pins @playwright/test)
+        id: browsers
+        if: steps.changes.outputs.run == 'true'
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Chromium and its system libraries
+        if: steps.changes.outputs.run == 'true'
+        env:
+          CACHE_HIT: ${{ steps.browsers.outputs.cache-hit }}
+        run: |
+          if [ "$CACHE_HIT" = "true" ]; then
+            npx playwright install-deps chromium
+          else
+            npx playwright install --with-deps chromium
+          fi
+
+      - name: The journeys (npx playwright test tests/e2e)
+        if: steps.changes.outputs.run == 'true'
+        run: |
+          npx playwright test --config tests/e2e/playwright.config.ts tests/e2e
+
   ci:
-    # The required check. Green only when Checks and Coverage both are (a skipped step inside them is green).
+    # The required check. Green only when Checks, Coverage and E2e all are (a skipped step inside them is green).
     name: "Ci"
-    needs: [checks, coverage]
+    needs: [checks, coverage, e2e]
     if: always()
     runs-on: ubuntu-latest
     steps:
-      - name: Both jobs passed
+      - name: All three jobs passed
         env:
           CHECKS: ${{ needs.checks.result }}
           COVERAGE: ${{ needs.coverage.result }}
+          E2E: ${{ needs.e2e.result }}
         run: |
-          echo "Checks: $CHECKS, Coverage: $COVERAGE"
-          [ "$CHECKS" = "success" ] && [ "$COVERAGE" = "success" ]
+          echo "Checks: $CHECKS, Coverage: $COVERAGE, E2e: $E2E"
+          [ "$CHECKS" = "success" ] && [ "$COVERAGE" = "success" ] && [ "$E2E" = "success" ]
