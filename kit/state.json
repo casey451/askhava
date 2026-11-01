@@ -9103,7 +9103,7 @@
     "T186",
     "T032"
    ],
-   "status": "MERGE_PENDING",
+   "status": "DONE",
    "attempts": 1,
    "slug": "quotes-homeowner-texts",
    "type": "build",
@@ -9164,13 +9164,50 @@
      "model": "claude-sonnet-5-5",
      "model_evidence_count": 30,
      "head_sha": "2964b33181c91cabcfda5f6785c426c56d824750",
-     "pr": null,
-     "checks": null,
+     "pr": 222,
+     "checks": [
+      {
+       "name": "backup",
+       "conclusion": null
+      },
+      {
+       "name": "gate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-sonnet-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-01T12:16:50Z",
      "ended_at": "2026-11-01T12:30:06Z",
-     "result": "MERGE_PENDING"
+     "result": "done"
     }
    ],
    "reviewed_sha": "2964b33181c91cabcfda5f6785c426c56d824750",
@@ -9185,7 +9222,26 @@
     "why": "auto-merge on #222 (gh pr merge)",
     "head": "2964b33181c91cabcfda5f6785c426c56d824750"
    },
-   "last_failure": "Governance: failure; Ci: failure; Checks: failure\nChecks failed at step: Plan lock and change rules (docs/governance.md)\nCi failed at step: Both jobs passed"
+   "last_failure": "Governance: failure; Ci: failure; Checks: failure\nChecks failed at step: Plan lock and change rules (docs/governance.md)\nCi failed at step: Both jobs passed",
+   "merged_sha": "7fa83a79e55a9cac92199ffe7cdb34b466398a59",
+   "merged_at": "2026-11-01T12:39:09Z",
+   "files": [
+    ".sqlx/query-aafde508321e872905c9c0fd9ae2a421d17f8ee32cf5c63750f6f1058396d11f.json",
+    "Cargo.lock",
+    "app/messaging/templates/en.json",
+    "app/messaging/templates/es.json",
+    "app/quotes/CLAUDE.md",
+    "app/quotes/Cargo.toml",
+    "app/quotes/src/api.rs",
+    "app/quotes/src/lib.rs",
+    "app/quotes/src/models.rs",
+    "app/quotes/src/notify.rs",
+    "app/quotes/src/tests/mod.rs",
+    "app/quotes/src/tests/prop_quote_texts.rs",
+    "docs/architecture.md",
+    "docs/decisions.md",
+    "tests/integration/tests/quote_texts.rs"
+   ]
   },
   {
    "id": "T048",
@@ -13723,7 +13779,7 @@
    }
   }
  },
- "updated_at": "2026-11-01T12:30:24Z",
+ "updated_at": "2026-11-01T12:41:41Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -13821,7 +13877,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "2964b33181c91cabcfda5f6785c426c56d824750",
+ "runner_sha": "7fa83a79e55a9cac92199ffe7cdb34b466398a59",
  "starter": "actions",
  "smoke_runs": [
   {

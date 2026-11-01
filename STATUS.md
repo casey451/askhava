@@ -1,9 +1,9 @@
 # Ask Hava build status
 
-Updated 2026-11-01T12:30:24Z by runner 2964b33181c9 (actions).
+Updated 2026-11-01T12:41:41Z by runner 7fa83a79e55a (actions).
 
-**Requirements verified:** 105 of 726 (14.5%) · partial 162 · unstarted 459
-**Tasks merged (throughput only):** 74 of 227
+**Requirements verified:** 105 of 726 (14.5%) · partial 168 · unstarted 453
+**Tasks merged (throughput only):** 75 of 227
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -17,7 +17,7 @@ Updated 2026-11-01T12:30:24Z by runner 2964b33181c9 (actions).
 | job-cards | 3 | 13 | 6 | 22 |
 | licensing | 28 | 18 | 2 | 48 |
 | lifecycle | 3 | 15 | 10 | 28 |
-| messaging | 11 | 6 | 28 | 45 |
+| messaging | 11 | 11 | 23 | 45 |
 | ops-recovery | 1 | 3 | 50 | 54 |
 | privacy | 1 | 12 | 18 | 31 |
 | quiet-hours | 6 | 3 | 0 | 9 |
@@ -26,7 +26,7 @@ Updated 2026-11-01T12:30:24Z by runner 2964b33181c9 (actions).
 | security | 8 | 22 | 24 | 54 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 0 | 28 | 28 |
-| wording | 2 | 0 | 29 | 31 |
+| wording | 2 | 1 | 28 | 31 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
@@ -36,7 +36,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
 - stage 1: 11 of 11 done
-- stage 2: 63 of 78 done
+- stage 2: 64 of 78 done
 - stage 3: 0 of 25 done
 - stage 4: 0 of 50 done
 - stage 5: 0 of 42 done
