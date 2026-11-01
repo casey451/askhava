@@ -233,8 +233,14 @@ jobs:
             ~/.cargo/git/db
             ~/.cargo/bin
             target
-          key: rust-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}
-          restore-keys: rust-${{ runner.os }}-
+          # One entry per commit of main (D-1178): actions/cache never updates an existing key, so a key
+          # by Cargo.lock alone froze the target directory at the last dependency change and every cycle
+          # rebuilt everything since, until the smoke test outran the runner's timeout. The restore keys
+          # take the newest snapshot of the same lock, then any.
+          key: rust-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}-${{ github.sha }}
+          restore-keys: |
+            rust-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}-
+            rust-${{ runner.os }}-
       - name: Smoke-test prerequisites (what Ci installs for itself)
         run: |
           python3 -m pip install --quiet pytest==9.1.1 PyYAML==6.0.1

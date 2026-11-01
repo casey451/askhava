@@ -69,6 +69,7 @@ ANSWERS_FILE = "kit/owner_answers.jsonl"
 DECISIONS_FILE = "docs/decisions.md"  # read from main to reserve decision numbers (D-530)
 TASKS_FILE = "kit/tasks.json"  # read from main for a plan-fix re-queue (D-677)
 PUSH_RETRIES = 3
+SMOKE_TIMEOUT = 540  # seconds for scripts/smoke.sh, under the session's 600-second Bash call so the runner answers first (D-1178)
 UPDATE_ATTEMPTS = 5  # update_state's read-transform-push tries (D-515)
 UPDATE_ERRORS = (RuntimeError, ValueError, OSError, subprocess.SubprocessError)  # a failed read or push: one lost try
 RUNNER_FILES = (STATE_FILE, NIGHTLY_FILE, ANSWERS_FILE, RUNNER_LOG, "STATUS.md", "PROGRESS.md", "inbox", "outbox")
@@ -113,12 +114,22 @@ def run_command(args: list[str], stdin: str | None, cwd: Path) -> tuple[int, str
         done = _run(long_args, stdin, cwd, _long_token_env(long_args))
         if done.returncode == 0:
             return done.returncode, done.stdout, done.stderr
-    done = _run(args, stdin, cwd, _env_for(args))
+    smoke = args[:2] == ["bash", "scripts/smoke.sh"]
+    done = _run(args, stdin, cwd, _smoke_env() if smoke else _env_for(args), SMOKE_TIMEOUT if smoke else 600)
     return done.returncode, done.stdout, done.stderr
 
 
-def _run(args: list[str], stdin: str | None, cwd: Path, env: dict[str, str] | None) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(args, input=stdin, capture_output=True, text=True, cwd=cwd, timeout=600, check=False, env=env)
+def _smoke_env() -> dict[str, str]:
+    """The smoke test's environment: the checkout's `target` as CARGO_TARGET_DIR, so a smoke run in a
+    detached worktree reuses the job's cached build instead of compiling the workspace from cold in a
+    temporary directory (D-1178); an explicit CARGO_TARGET_DIR is kept."""
+    env = dict(os.environ)
+    env.setdefault("CARGO_TARGET_DIR", str(Path(os.environ.get("GITHUB_WORKSPACE") or Path.cwd()) / "target"))
+    return env
+
+
+def _run(args: list[str], stdin: str | None, cwd: Path, env: dict[str, str] | None, timeout: int = 600) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(args, input=stdin, capture_output=True, text=True, cwd=cwd, timeout=timeout, check=False, env=env)
 
 
 REMOTE_GIT = ("fetch", "push", "ls-remote")
@@ -675,11 +686,17 @@ class GitHubEnv:
         if self.dry_run:
             self.log.append(f"dry-run: smoke test not run on {head[:12]}")
             return True, head
+        self.smoke_timed_out = False
         with tempfile.TemporaryDirectory() as tmp:
             tree = Path(tmp) / "main"
             self.git("worktree", "add", "--detach", str(tree), head)
             try:
                 code, out, err = self._run(["bash", "scripts/smoke.sh"], None, tree)
+            except subprocess.TimeoutExpired:
+                # A smoke test that outruns the budget is not a crash and not a verdict on main: the
+                # cycle notes it (never a D-498 strike) and the next run tries again (D-1178).
+                code, out, err = 124, "", f"smoke timed out after {SMOKE_TIMEOUT} seconds"
+                self.smoke_timed_out = True
             finally:
                 self.git("worktree", "remove", "--force", str(tree), check=False)
         tail = (out + err).strip().splitlines()

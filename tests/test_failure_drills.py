@@ -684,6 +684,11 @@ def test_drill_red_main_reverts_clears_and_continues(tmp_path: Path) -> None:
     env.prs[st.FIX_MAIN] = green_pr(sha="revert01", tree="t-revert")
     env.head = "main0002"
     env.nightly = {"conclusion": "failure", "sha": "main0001"}  # an old red nightly does not hold the new head
+    env.smoke_green, env.smoke_timed_out = False, True  # a verify smoke that outran its budget is no verdict (D-1178)
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=15)) == "main_red"
+    assert env.store["main_red"] and st.status(env.store, st.FIX_MAIN) == st.DONE and env.store["smoke_runs"][-1]["timed_out"]
+    assert not list(cfg.outbox_dir.glob("*revert*")), "revert_landed_red is not raised for a timeout"
+    env.smoke_green, env.smoke_timed_out = True, False
     assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=20)) == "main_cleared"
     assert not env.store["main_red"] and env.store["main_red_history"][-1]["cleared_on"] == "main0002"
     assert env.store["smoke_runs"][-1] == {"sha": "main0002", "ok": True, "at": st.iso(NOW + timedelta(minutes=20)), "why": "verify FIX-MAIN"}
@@ -1060,6 +1065,23 @@ def test_drill_three_excused_smoke_reds_on_one_head_turn_main_red(tmp_path: Path
     env.smoke_green, env.checks_green = False, True
     assert [cycle.run_cycle(cfg, env, NOW) for _ in range(3)] == ["smoke_env", "smoke_env", "smoke_env"]
     assert cycle.run_cycle(cfg, env, NOW) == "main_red" and env.store["main_red"]["check"] == "smoke"
+
+
+def test_drill_a_smoke_timeout_is_noted_never_a_strike_and_never_red(tmp_path: Path) -> None:
+    """D-1178: a smoke that outran its budget claims nothing and blames nobody, however often it repeats
+    on one head; the third on a head writes one outbox note, and a later red result is still judged."""
+    env, cfg = FakeEnv(), config([make_task("T001")], tmp_path)
+    env.smoke_green, env.checks_green, env.smoke_timed_out = False, True, True
+    assert [cycle.run_cycle(cfg, env, NOW) for _ in range(4)] == ["smoke_timeout"] * 4
+    assert env.store.get("main_red") is None and env.runs == [] and not env.store.get("smoke_env_problems")
+    assert all(r.get("timed_out") for r in env.store["smoke_runs"][-4:])
+    assert not st.entry(env.store, st.FIX_MAIN)
+    notes = sorted(cfg.outbox_dir.glob("*smoke-timeouts*"))
+    assert len(notes) == 1 and "outran their budget" in notes[0].read_text(encoding="utf-8")
+    env.smoke_timed_out = False
+    assert cycle.run_cycle(cfg, env, NOW) == "smoke_env", "a real red result after the timeouts is judged as before"
+    env.smoke_green = True
+    assert cycle.run_cycle(cfg, env, NOW) == st.MERGE_PENDING and env.runs[0][0] == "T001"
 
 
 def test_drill_a_handed_off_fix_main_reaches_the_session_as_handed_off(tmp_path: Path) -> None:
