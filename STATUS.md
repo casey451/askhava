@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-01T20:15:54Z by runner c3ff451a5050 (actions).
+Updated 2026-11-01T20:16:02Z by runner c3ff451a5050 (actions).
 
 **Requirements verified:** 117 of 726 (16.1%) · partial 195 · unstarted 414
 **Tasks merged (throughput only):** 82 of 229
@@ -46,10 +46,10 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T187 (lease until 2026-11-01T22:39:13Z)
+- nothing
 
 ## Needs attention
 - nothing
 
 ## Last usage reading
-- {"task": "T055", "at": "2026-11-01T19:15:22Z", "input_tokens": 87, "cache_read_input_tokens": 1658088, "output_tokens": 26004, "cache_creation_input_tokens": 203436}
+- {"task": "T187", "at": "2026-11-01T20:15:53Z", "cache_read_input_tokens": 807604, "cache_creation_input_tokens": 127322, "output_tokens": 17589, "input_tokens": 59}
