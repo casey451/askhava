@@ -22,6 +22,10 @@
 //! T047: [`first_quote_text`], [`notice`] (the 3-hour gap), [`list_texts`], [`cards_out_text`] and
 //! [`arizona_time`] build the homeowner's quote texts; `intake` sends them (TXT-016, TXT-017,
 //! TXT-031 to TXT-033, WORD-011).
+//! T052: [`page_quotes`] lists a job's shown quotes in arrival order, unavailable ones included,
+//! for the homeowner's quote page (PICK-008, D-1233).
+
+use sqlx::types::Uuid;
 
 pub use crate::cards::{CardParts, DEFAULT_MIN_WORDS, Danger, JobCard, Place, Timing, build_card};
 pub use crate::gate::final_gate;
@@ -44,6 +48,50 @@ pub use crate::quote_card::{
     SummarySetting, SwitchRefused, TripFee, check_summary, quote_card, switch_on,
 };
 pub use crate::service::{card_holders, coverage, send_cards, send_job_cards, send_late_cards};
+
+/// One shown quote as the homeowner's quote page lists it (PICK-008, D-1233). No homeowner or
+/// business contact detail: the wording passed the PICK-007 bounce before it was stored.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PageQuote {
+    /// The business that quoted.
+    pub business: Uuid,
+    /// When the quote first arrived; an edit keeps it, so its place never moves (PICK-051).
+    pub received_at: jiff::Timestamp,
+    /// `picks` marked it after a failed pick, so it shows "no longer available" (JOB-025, D-084).
+    pub unavailable: bool,
+    /// The business's own words (PICK-003).
+    pub original: String,
+}
+
+/// PICK-008, D-084: `job`'s confirmed, unwithdrawn quotes in arrival order (time received, then
+/// business ID), the unavailable ones kept in their place so no number moves.
+///
+/// # Errors
+///
+/// [`QuotesError::Database`].
+pub async fn page_quotes(
+    db: &mut sqlx::PgConnection,
+    job: Uuid,
+) -> Result<Vec<PageQuote>, QuotesError> {
+    let rows = sqlx::query!(
+        "SELECT business_id, received_at, unavailable_at IS NOT NULL AS \"unavailable!\", \
+         original FROM quotes.quote WHERE job_id = $1 AND confirmed AND withdrawn_at IS NULL \
+         ORDER BY received_at, business_id",
+        job
+    )
+    .fetch_all(db)
+    .await
+    .map_err(|_| QuotesError::Database)?;
+    Ok(rows
+        .into_iter()
+        .map(|r| PageQuote {
+            business: r.business_id,
+            received_at: r.received_at.to_jiff(),
+            unavailable: r.unavailable,
+            original: r.original,
+        })
+        .collect())
+}
 
 /// The pure matching rules, for the rules bridge and other crates' property tests.
 pub mod rules {

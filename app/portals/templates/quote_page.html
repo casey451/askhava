@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{#- The homeowner's quote page (T052; PICK-008 to PICK-012, PICK-015, WORD-005, A11Y-033, CON-003, CON-028,
+    D-491 to D-493). Every eligible quote in arrival order, numbered, no sort or filter control, no
+    rating, review or hire count and no summary element while AI quote summaries are off (D-190,
+    D-373). No name, phone or address is ever passed in (PICK-010). The status region is empty at
+    first render; quote_page.ts writes one line per batch into it (A11Y-033). Every available card
+    carries the PICK-041 "check it yourself" line (TD-PICK-18). The Pick form posts to this same
+    address (the pick step is T055's). -#}
+{% block title %}Your quotes for request {{ request }}{% endblock %}
+{% block main %}
+<h1>Your quotes for request {{ request }}</h1>
+{% if still_open %}
+<p>Your request {{ request }} is still open. Close it on your quote page.</p>
+{% endif %}
+<p>Free for you. The business you pick pays Ask Hava a set introduction fee.</p>
+<p>Ask Hava doesn't rank businesses or show ratings. Check each business yourself: its license, and its reviews on Google and Yelp.</p>
+<p>Every eligible quote shown, in the order received. #1 means first received, not first choice.</p>
+<p id="quote-status" role="status" data-one="1 new quote added below." data-many="{n} new quotes added below." data-gone-one="1 quote is no longer available." data-gone-many="{n} quotes are no longer available."></p>
+{% if quotes.is_empty() %}
+<p id="no-quotes">No quotes yet. New quotes show up here as they come in, and Ask Hava texts you when the first one arrives.</p>
+{% endif %}
+<ol id="quotes" data-live="{{ live }}">
+{% for q in quotes %}
+<li id="quote-{{ q.number }}" data-number="{{ q.number }}" data-available="{{ !q.quote.unavailable }}" data-pickable="{{ pick_open }}">
+<article aria-labelledby="quote-{{ q.number }}-title">
+{% if q.quote.unavailable %}
+<h2 id="quote-{{ q.number }}-title">Quote #{{ q.number }} (no longer available)</h2>
+<p>No longer available, so it can't be picked.</p>
+{% else %}
+<h2 id="quote-{{ q.number }}-title">Quote #{{ q.number }}</h2>
+<p>Ask Hava doesn't rank businesses; check it yourself.</p>
+<p>In their words:</p>
+<blockquote><p>{{ q.quote.original }}</p></blockquote>
+{% if pick_open %}
+<form method="post" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<input type="hidden" name="quote" value="{{ q.number }}">
+<button type="submit">Pick #{{ q.number }}</button>
+<p>or reply {{ q.number }} YES</p>
+</form>
+{% endif %}
+{% endif %}
+</article>
+</li>
+{% endfor %}
+</ol>
+<p>Can't open links? Reply LIST to get your quotes by text.</p>
+<p>Ask Hava is not a contractor and does not perform, bid on or supervise work.</p>
+<script type="module" src="/static/portals/quote_page.js"></script>
+{% endblock %}
