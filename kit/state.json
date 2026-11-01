@@ -9103,7 +9103,7 @@
     "T186",
     "T032"
    ],
-   "status": "IN_PROGRESS",
+   "status": "MERGE_PENDING",
    "attempts": 1,
    "slug": "quotes-homeowner-texts",
    "type": "build",
@@ -9158,6 +9158,19 @@
      "started_at": "2026-10-31T23:09:00Z",
      "ended_at": "2026-10-31T23:47:51Z",
      "result": "check_failed"
+    },
+    {
+     "attempt": 2,
+     "model": "claude-sonnet-5-5",
+     "model_evidence_count": 30,
+     "head_sha": "2964b33181c91cabcfda5f6785c426c56d824750",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-sonnet-5-5",
+     "path_check_ok": true,
+     "started_at": "2026-11-01T12:16:50Z",
+     "ended_at": "2026-11-01T12:30:06Z",
+     "result": "MERGE_PENDING"
     }
    ],
    "reviewed_sha": "2964b33181c91cabcfda5f6785c426c56d824750",
@@ -9169,11 +9182,10 @@
    "branch": "claude/task/T047-quotes-homeowner-texts-a2",
    "auto_merge": {
     "enabled": true,
-    "why": "auto-merge on #215 (gh pr merge)",
-    "head": "fe2d5c8228df36bd6cc76d94d1b62c21abb1230c"
+    "why": "auto-merge on #222 (gh pr merge)",
+    "head": "2964b33181c91cabcfda5f6785c426c56d824750"
    },
-   "last_failure": "Governance: failure; Ci: failure; Checks: failure\nChecks failed at step: Plan lock and change rules (docs/governance.md)\nCi failed at step: Both jobs passed",
-   "head_check_since": null
+   "last_failure": "Governance: failure; Ci: failure; Checks: failure\nChecks failed at step: Plan lock and change rules (docs/governance.md)\nCi failed at step: Both jobs passed"
   },
   {
    "id": "T048",
@@ -12991,11 +13003,11 @@
  "usage": {
   "last_reading": {
    "task": "T047",
-   "at": "2026-10-31T23:47:51Z",
-   "input_tokens": 205,
-   "cache_creation_input_tokens": 576413,
-   "output_tokens": 115034,
-   "cache_read_input_tokens": 10931546
+   "at": "2026-11-01T12:30:06Z",
+   "output_tokens": 15429,
+   "cache_creation_input_tokens": 130049,
+   "cache_read_input_tokens": 1423148,
+   "input_tokens": 88
   },
   "source": "session_reading 2026-11-01T06:54:18Z (week)",
   "by_task": {
@@ -13686,21 +13698,21 @@
    "T047": {
     "estimated_bytes": 400941,
     "estimated_tokens": 679538,
-    "input_tokens": 205,
-    "cache_creation_input_tokens": 576413,
-    "output_tokens": 115034,
-    "cache_read_input_tokens": 10931546,
+    "input_tokens": 293,
+    "cache_creation_input_tokens": 706462,
+    "output_tokens": 130463,
+    "cache_read_input_tokens": 12354694,
     "last_model": "claude-sonnet-5-5"
    }
   },
   "windows": {
    "five_hour": {
-    "start": "2026-10-31T23:47:51Z",
-    "tokens": 1784806
+    "start": "2026-11-01T12:30:06Z",
+    "tokens": 287880
    },
    "week": {
     "start": "2026-10-29T18:38:52Z",
-    "tokens": 106204208
+    "tokens": 106492088
    }
   },
   "session_reading": {
@@ -13711,7 +13723,7 @@
    }
   }
  },
- "updated_at": "2026-11-01T12:30:06Z",
+ "updated_at": "2026-11-01T12:30:14Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",

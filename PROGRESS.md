@@ -543,3 +543,4 @@
 - 2026-11-01T12:22:58Z runner 5ef0cacb03d1 (actions): {"T047": "QUEUED -> IN_PROGRESS"}; T047 estimated 680k tokens (calibrated); five-hour window has 29.1M left, week 68.0M (session_reading 2026-11-01T06:54:18Z (week)); claimed
 - 2026-11-01T12:23:04Z runner 5ef0cacb03d1 (actions): {}
 - 2026-11-01T12:30:06Z runner 2964b33181c9 (actions): {}
+- 2026-11-01T12:30:14Z runner 2964b33181c9 (actions): {"T047": "IN_PROGRESS -> MERGE_PENDING"}
