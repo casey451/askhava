@@ -69,6 +69,7 @@ ANSWERS_FILE = "kit/owner_answers.jsonl"
 DECISIONS_FILE = "docs/decisions.md"  # read from main to reserve decision numbers (D-530)
 TASKS_FILE = "kit/tasks.json"  # read from main for a plan-fix re-queue (D-677)
 PUSH_RETRIES = 3
+SMOKE_TIMEOUT = 540  # seconds for scripts/smoke.sh, under the session's 600-second Bash call so the runner answers first (D-1178)
 UPDATE_ATTEMPTS = 5  # update_state's read-transform-push tries (D-515)
 UPDATE_ERRORS = (RuntimeError, ValueError, OSError, subprocess.SubprocessError)  # a failed read or push: one lost try
 RUNNER_FILES = (STATE_FILE, NIGHTLY_FILE, ANSWERS_FILE, RUNNER_LOG, "STATUS.md", "PROGRESS.md", "inbox", "outbox")
@@ -113,12 +114,13 @@ def run_command(args: list[str], stdin: str | None, cwd: Path) -> tuple[int, str
         done = _run(long_args, stdin, cwd, _long_token_env(long_args))
         if done.returncode == 0:
             return done.returncode, done.stdout, done.stderr
-    done = _run(args, stdin, cwd, _env_for(args))
+    timeout = SMOKE_TIMEOUT if args[:2] == ["bash", "scripts/smoke.sh"] else 600
+    done = _run(args, stdin, cwd, _env_for(args), timeout)
     return done.returncode, done.stdout, done.stderr
 
 
-def _run(args: list[str], stdin: str | None, cwd: Path, env: dict[str, str] | None) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(args, input=stdin, capture_output=True, text=True, cwd=cwd, timeout=600, check=False, env=env)
+def _run(args: list[str], stdin: str | None, cwd: Path, env: dict[str, str] | None, timeout: int = 600) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(args, input=stdin, capture_output=True, text=True, cwd=cwd, timeout=timeout, check=False, env=env)
 
 
 REMOTE_GIT = ("fetch", "push", "ls-remote")
@@ -680,6 +682,11 @@ class GitHubEnv:
             self.git("worktree", "add", "--detach", str(tree), head)
             try:
                 code, out, err = self._run(["bash", "scripts/smoke.sh"], None, tree)
+            except subprocess.TimeoutExpired:
+                # A smoke test that outruns the budget is a red smoke of the runner's own environment,
+                # not a crash: the cycle records it (a D-498 strike while Ci is green) and the next run,
+                # with a fresher build cache, tries again (D-1178).
+                code, out, err = 124, "", f"smoke timed out after {SMOKE_TIMEOUT} seconds"
             finally:
                 self.git("worktree", "remove", "--force", str(tree), check=False)
         tail = (out + err).strip().splitlines()
