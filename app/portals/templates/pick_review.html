@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{#- The pick review step and the pick result (T055; PICK-016, PICK-017, PICK-045, PICK-054,
+    A11Y-014, D-1248 to D-1251). The review says what happens next, shows "or reply <n> YES" and
+    "Go back", and puts only the Terms line directly after the final Pick button: body-size text,
+    the link underlined in the site's link colour (D-492). The review shows no Confirm end time, no
+    $100 cap and no key-terms summary (TD-PICK-28, TD-PICK-30); `not_open` adds "Nothing was
+    picked" until the code step exists (D-1251). The result's heading takes focus on load
+    (A11Y-014); the acceptance end time when given (PICK-045), the contact card and the after-Done
+    line follow (PICK-054). "Go back" carries an empty query ("?") because the review is the POST
+    answer at the quote page's own address, where a bare "#quote-<n>" only scrolls (D-1251). No
+    name, phone or address. -#}
+{% block title %}{% if done %}Done: your pick for request {{ request }}{% else %}Check your pick for request {{ request }}{% endif %}{% endblock %}
+{% block main %}
+{% if done %}
+<h1 id="pick-result" tabindex="-1" autofocus>Done. The business has your pick.</h1>
+<p>We'll text you when they accept. You can still pick another quote on <a href="/q/{{ token }}">your quote page</a>.</p>
+{% if let Some(time) = accept_by %}<p id="accept-by">The business has until {{ time }} to accept.</p>
+{% endif %}<p><a href="data:text/vcard;charset=utf-8,BEGIN%3AVCARD%0D%0AVERSION%3A3.0%0D%0AFN%3AAsk%20Hava%0D%0AORG%3AAsk%20Hava%20LLC%0D%0AURL%3Ahttps%3A%2F%2Faskhava.com%0D%0AEND%3AVCARD%0D%0A" download="ask-hava.vcf">Add Ask Hava to your contacts</a></p>
+<p>Know someone who needs quotes? Send them askhava.com.</p>
+{% else %}
+{% if not_open %}<p id="pick-not-open" tabindex="-1" autofocus>Nothing was picked. Picking on this page isn't open yet, so no code was sent.</p>
+{% endif %}<h1>Check your pick: quote #{{ quote }}</h1>
+<h2>What happens next</h2>
+<ul>
+<li>After you press Pick, we text a 6-digit code to your phone. Type it on the next page to finish.</li>
+<li>You're picking one business for this request. If it falls through, you can pick another quote.</li>
+<li>We'll pass your pick to the business and text you when it's accepted. Your phone number stays private.</li>
+<li>You hire the business directly. Ask Hava isn't part of your agreement with it.</li>
+</ul>
+<form method="post" action="/q/{{ token }}/pick" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<input type="hidden" name="quote" value="{{ quote }}">
+<button type="submit" id="final-pick">Pick #{{ quote }}</button>
+<p id="terms-line" lang="{{ terms.0 }}">{{ terms.1 }} <a href="/terms">{{ terms.2 }}</a></p>
+</form>
+<p>or reply {{ quote }} YES</p>
+<p><a href="/q/{{ token }}?#quote-{{ quote }}">Go back</a></p>
+{% endif %}
+{% endblock %}
