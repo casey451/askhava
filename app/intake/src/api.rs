@@ -16,7 +16,9 @@
 //! pause and the CON-028 event (CON-012, CON-028, CON-029, JOB-020, T050); the "<number> YES" text
 //! pick handed to `picks` with its terms acceptance, and the pause's pick withdrawal (PICK-015,
 //! PICK-016, PICK-031, T054); the question set one question at a time, routing confidence and
-//! the stored golden runs (INT-039, INT-040, CARD-007, OPS-040, T156).
+//! the stored golden runs (INT-039, INT-040, CARD-007, OPS-040, T156); the card approval step:
+//! the card shown by text or link, EDIT or SEND, the auto-send and the approved-card check
+//! (INT-041, CARD-007, T208).
 
 pub use crate::closing::{
     CLOSE_MENTION_TEMPLATE, CLOSE_WHICH_TEMPLATE, Closing, JOB_CLOSED_TEMPLATE,
@@ -75,6 +77,12 @@ pub use crate::service::{
     how_soon, may_text, offer_emergency_choice, on_opt_out, paused_by_homeowner, receive_answer,
     receive_text, record_terms_acceptance, release_emergency, safe_hold, sole_cancel,
     terms_acceptances,
+};
+pub use crate::summary_step::{
+    APPROVED_ACTION, AUTO_SEND_AFTER, AUTO_SENT_ACTION, CARD_EDIT_TEMPLATE, CARD_LINK_TEMPLATE,
+    CARD_SHOWN_TEMPLATE, CARD_SLOT, CARD_TIMER_KIND, CARDS_APPROVED_KIND, CardReply, CardStep,
+    CardTimer, MAX_CARD_SEGMENTS, Preview, RECHECK_AFTER, Shown, answer_card, approved_card,
+    card_digest, card_reply, card_timer_step, preview_text, run_card_timer, show_card,
 };
 
 /// The pure first-reply rules, for the rules bridge and other crates' property tests.

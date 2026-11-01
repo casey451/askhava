@@ -81,7 +81,7 @@ pub fn build_router(pool: PgPool, test_control: Router) -> Router {
 /// `NO_HANDLER` and dead-lettered after its attempts (JOB-006). `stream` is the off-database
 /// stream writer and its nightly check (OPS-011, PRIV-029, D-734); `jobs` runs the job status
 /// timers (JOB-003, JOB-006); `quotes` the every-window-ended check (TXT-042, JOB-025); `intake` the
-/// no-reply reminder and close (INT-019).
+/// no-reply reminder and close (INT-019) and the card approval auto-send (INT-041).
 #[must_use]
 pub fn register_handlers<S>(stream: Arc<offdb_stream::OffDbStream<S>>) -> Registry
 where
@@ -92,6 +92,10 @@ where
     registry.register(askhava_intake::api::NO_REPLY_KIND, move |pool, task| {
         askhava_intake::api::run_no_reply(pool, secret.clone(), task)
     });
+    registry.register(
+        askhava_intake::api::CARD_TIMER_KIND,
+        askhava_intake::api::run_card_timer,
+    );
     offdb_stream::register(&mut registry, stream);
     registry.register(askhava_jobs::api::TIMER_KIND, askhava_jobs::api::run_timer);
     registry.register(

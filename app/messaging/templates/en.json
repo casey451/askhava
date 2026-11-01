@@ -293,5 +293,20 @@
     "audience": "homeowner",
     "segments": 1,
     "text": "Ask Hava: You have no quotes to pick right now."
+  },
+  "card_shown": {
+    "audience": "homeowner",
+    "segments": 2,
+    "text": "Ask Hava: Here's request {job} as businesses will see it: [card] It goes out in {time}. Reply EDIT to change it, or SEND to send it now."
+  },
+  "card_link": {
+    "audience": "homeowner",
+    "segments": 2,
+    "text": "Ask Hava: Request {job} is ready. Take a look before it goes out: {link} It goes out in {time}. Reply EDIT to change it, or SEND to send it now."
+  },
+  "card_edit": {
+    "audience": "homeowner",
+    "segments": 1,
+    "text": "Ask Hava: Sure, what should we change on request {job}? Tell us in one text and we'll show you how it looks now. Nothing goes out until you've seen it."
   }
 }
