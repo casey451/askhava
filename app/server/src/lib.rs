@@ -11,7 +11,7 @@ use std::sync::Arc;
 
 use askhava_adapters::api::StorageAdapter;
 use askhava_core::api::{LogGuard, Registry, Settings, SystemClock, init_logging, request_span};
-use askhava_portals::api::{quote_page_routes, security_headers};
+use askhava_portals::api::{pick_flow_routes, quote_page_routes, security_headers};
 use axum::Router;
 use axum::body::Body;
 use sqlx::PgPool;
@@ -57,13 +57,15 @@ pub fn start_up() -> io::Result<(Settings, LogGuard)> {
 /// they apply to them. `test_control` is `askhava_core::api::TestControl::router()`, which has no
 /// routes in the release build (SEC-035, D-739). The outermost layer sets the SEC-012 security
 /// headers on every response, a 404 included (T051). The homeowner's quote page is `portals`'
-/// (`/q/{token}`, T052).
+/// (`/q/{token}`, T052); its pick review step posts to the same path (`pick_flow`, T055).
 pub fn build_router(pool: PgPool, test_control: Router) -> Router {
     let quote_page = quote_page_routes(pool.clone(), Arc::new(SystemClock));
+    let pick_flow = pick_flow_routes(pool.clone(), Arc::new(SystemClock));
     let (log, _writer) = offdb_stream::RequestLog::spawn(pool);
     Router::new()
         .merge(test_control)
         .merge(quote_page)
+        .merge(pick_flow)
         .layer(axum::middleware::from_fn_with_state(
             log,
             offdb_stream::log_request,
