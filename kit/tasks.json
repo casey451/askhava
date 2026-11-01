@@ -15223,7 +15223,6 @@
     "docs/spec/ai.md",
     "docs/spec/job-cards.md",
     "docs/catalog/question_bank.yaml",
-    "docs/catalog/intake_golden.yaml",
     "docs/spec/messaging.md",
     "docs/brains/accessibility-forms.md",
     "docs/brains/rust-production.md",
@@ -15253,7 +15252,7 @@
    "budget": {
     "files": 6,
     "lines": 350,
-    "context_pct": 43
+    "context_pct": 39
    },
    "checks": [
     "Ci",
