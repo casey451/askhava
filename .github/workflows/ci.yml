@@ -24,7 +24,8 @@ jobs:
   checks:
     name: "Checks"
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    # 40, not 25: a change to tests/mutation/mutants.toml or its script runs every named mutant (D-1285).
+    timeout-minutes: 40
     # Postgres for the Rust integration tests (D-453), pinned by digest (SEC-021, SEC-045). Dependabot's
     # docker ecosystem opens a PR when the digest moves (.github/dependabot.yml, D-492).
     services:
@@ -102,7 +103,7 @@ jobs:
 
       - name: A check that exists on main cannot be skipped by deleting its inputs (D-479)
         run: |
-          for f in Cargo.toml Cargo.lock package-lock.json rust-toolchain.toml deny.toml tests/coverage_floor.json; do
+          for f in Cargo.toml Cargo.lock package-lock.json rust-toolchain.toml deny.toml tests/coverage_floor.json tests/mutation/mutants.toml; do
             if git cat-file -e "origin/main:$f" 2>/dev/null; then
               test -f "$f" || { echo "$f exists on main but not here: a required check would be skipped"; exit 1; }
             fi
@@ -123,7 +124,7 @@ jobs:
           base="$(git merge-base origin/main HEAD)"
           files="$(git diff --no-renames --name-only "$base" HEAD)"
           rust=false; npm=false
-          echo "$files" | grep -Eq '^(app/|tests/(integration|security|recovery|fixtures)/|migrations/|stand_ins/|kit/layers\.json|kit/allowed_crates\.txt|Cargo\.(toml|lock)|rust-toolchain\.toml|clippy\.toml|deny\.toml|\.sqlx/|\.github/workflows/ci\.yml)' && rust=true
+          echo "$files" | grep -Eq '^(app/|tests/(integration|security|recovery|fixtures|mutation)/|scripts/run_named_mutants\.py|migrations/|stand_ins/|kit/layers\.json|kit/allowed_crates\.txt|Cargo\.(toml|lock)|rust-toolchain\.toml|clippy\.toml|deny\.toml|\.sqlx/|\.github/workflows/ci\.yml)' && rust=true
           echo "$files" | grep -Eq '^(package(-lock)?\.json|tsconfig|eslint\.config|tests/(e2e|a11y)/|app/[^/]+/static/.*\.ts$)' && npm=true
           echo "rust=$rust" >> "$GITHUB_OUTPUT"; echo "npm=$npm" >> "$GITHUB_OUTPUT"
           echo "rust=$rust npm=$npm"
@@ -220,6 +221,14 @@ jobs:
             cargo build -p askhava-server --locked
             cargo test --workspace --locked
           fi
+
+      - name: Named mutants of the files this change touches (scripts/run_named_mutants.py, D-481)
+        # Each tests/mutation/mutants.toml entry whose file the branch changed (every entry when the list
+        # or the script changed) is applied in place, in the target dir the tests above built, and its
+        # tests must fail. A scheduled call (nightly-main) skips it: nightly-main runs the full list itself.
+        if: steps.changes.outputs.rust == 'true' && github.event_name == 'push' && hashFiles('tests/mutation/mutants.toml') != ''
+        run: |
+          python3 scripts/run_named_mutants.py --base origin/main
 
       - name: Rust dependency audit (cargo-audit, cargo-deny)
         if: steps.changes.outputs.rust == 'true'

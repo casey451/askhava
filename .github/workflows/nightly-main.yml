@@ -13,11 +13,135 @@ jobs:
     uses: ./.github/workflows/twin.yml
   a11y:
     uses: ./.github/workflows/a11y.yml
+  named-mutants:
+    # Every entry of tests/mutation/mutants.toml, applied in place; any survivor fails the night and so
+    # makes main red (BUILD_BRIEF.md:472, docs/test-design.md section 4, D-481).
+    name: named-mutants
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    services:
+      postgres:
+        image: postgres:16@sha256:1beaa3084eee2676f20a9cd9928f0bf2c5bf674f8e49f81017912183d377c61c
+        env:
+          POSTGRES_USER: askhava_ci
+          POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_DB: askhava_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U askhava_ci"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgres://askhava_ci@localhost:5432/askhava_ci
+      SQLX_OFFLINE: "true"
+      CARGO_INCREMENTAL: "0"
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - name: Database roles, toolchain and migrations (as in Ci's Coverage job)
+        run: |
+          for role in askhava_app askhava_migrator; do
+            psql "$DATABASE_URL" -qc "CREATE ROLE ${role} NOLOGIN"
+            psql "$DATABASE_URL" -qc "GRANT ${role} TO askhava_ci" >/dev/null
+          done
+          rustup toolchain install "$(sed -n 's/^channel *= *"\(.*\)"/\1/p' rust-toolchain.toml)" --profile minimal
+          for f in $(ls migrations/*.sql | sort); do psql "$DATABASE_URL" -q -v ON_ERROR_STOP=1 -f "$f"; done
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          shared-key: mutants
+      - name: Every named mutant (python3 scripts/run_named_mutants.py --all)
+        run: |
+          python3 scripts/run_named_mutants.py --all
+  cargo-mutants:
+    # cargo-mutants 27.1.0 (MIT, docs/architecture.md) on the rule files tests/mutation/mutants.toml lists,
+    # with each crate's own tests (docs/test-design.md line 60). Report only until
+    # tests/mutation/equivalent.toml exists with its Opus-reviewed reasons (D-1286): its survivors are
+    # uploaded as the cargo-mutants artifact and do not decide the night; the named mutants do.
+    name: cargo-mutants
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    services:
+      postgres:
+        image: postgres:16@sha256:1beaa3084eee2676f20a9cd9928f0bf2c5bf674f8e49f81017912183d377c61c
+        env:
+          POSTGRES_USER: askhava_ci
+          POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_DB: askhava_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U askhava_ci"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgres://askhava_ci@localhost:5432/askhava_ci
+      SQLX_OFFLINE: "true"
+      CARGO_INCREMENTAL: "0"
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - name: Database roles, toolchain and cargo-mutants 27.1.0
+        run: |
+          for role in askhava_app askhava_migrator; do
+            psql "$DATABASE_URL" -qc "CREATE ROLE ${role} NOLOGIN"
+            psql "$DATABASE_URL" -qc "GRANT ${role} TO askhava_ci" >/dev/null
+          done
+          rustup toolchain install "$(sed -n 's/^channel *= *"\(.*\)"/\1/p' rust-toolchain.toml)" --profile minimal
+          cargo install cargo-mutants --version 27.1.0 --locked
+      - name: cargo mutants on the listed rule files (report only, D-1286)
+        run: |
+          args=()
+          while read -r f; do args+=(--file "$f"); done < <(python3 -c 'import tomllib; print("\n".join(tomllib.load(open("tests/mutation/mutants.toml", "rb"))["cargo_mutants_files"]))')
+          cargo mutants --no-shuffle --timeout-multiplier 3 "${args[@]}" || echo "cargo-mutants: see the artifact for survivors (report only, D-1286)"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: always()
+        with:
+          name: cargo-mutants
+          path: mutants.out
+          if-no-files-found: ignore
+  stripe-ips:
+    # TD-SEC-30 (SEC-049, D-492): the committed copy of Stripe's webhook IP list must equal the published
+    # one; a difference fails the night, so a pull request updates app/adapters/data/stripe_webhook_ips.json.
+    # The app never fetches the list at startup; only this job reads it.
+    name: stripe-ips
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - name: The comparison fails on a planted extra or missing address, then the published list is compared
+        run: |
+          cat > "$RUNNER_TEMP/compare_ips.py" <<'PY'
+          import json, sys
+          committed, published = (set(json.load(open(p, encoding="utf-8"))["WEBHOOKS"]) for p in sys.argv[1:3])
+          for ip in sorted(published - committed):
+              print(f"missing from the committed copy: {ip}")
+          for ip in sorted(committed - published):
+              print(f"not in Stripe's published list: {ip}")
+          sys.exit(0 if committed == published else 1)
+          PY
+          copy=app/adapters/data/stripe_webhook_ips.json
+          python3 - "$copy" "$RUNNER_TEMP" <<'PY'
+          import json, sys
+          ips = json.load(open(sys.argv[1], encoding="utf-8"))["WEBHOOKS"]
+          json.dump({"WEBHOOKS": ips + ["192.0.2.1"]}, open(f"{sys.argv[2]}/extra.json", "w"))
+          json.dump({"WEBHOOKS": ips[1:]}, open(f"{sys.argv[2]}/missing.json", "w"))
+          PY
+          for planted in extra missing; do
+            if python3 "$RUNNER_TEMP/compare_ips.py" "$RUNNER_TEMP/$planted.json" "$copy"; then
+              echo "TD-SEC-30: the comparison passed a planted $planted address"; exit 1
+            fi
+          done
+          python3 "$RUNNER_TEMP/compare_ips.py" "$copy" "$copy"
+          curl -sSfL --max-time 60 -o "$RUNNER_TEMP/published.json" https://stripe.com/files/ips/ips_webhooks.json
+          python3 "$RUNNER_TEMP/compare_ips.py" "$copy" "$RUNNER_TEMP/published.json"
   record:
     # Writes kit/nightly.json to claude/kit-state so the runner and scripts/progress.py can
     # see whether the last full run on main was green, and on which commit (docs/governance.md).
     name: record
-    needs: [ci, twin, a11y]
+    needs: [ci, twin, a11y, named-mutants, stripe-ips]
     if: always() && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
@@ -30,6 +154,8 @@ jobs:
       CI_RESULT: ${{ needs.ci.result }}
       TWIN_RESULT: ${{ needs.twin.result }}
       A11Y_RESULT: ${{ needs.a11y.result }}
+      MUTANTS_RESULT: ${{ needs.named-mutants.result }}
+      STRIPE_IPS_RESULT: ${{ needs.stripe-ips.result }}
       TESTED_SHA: ${{ github.sha }}
       GH_TOKEN: ${{ github.token }}
     steps:
@@ -41,7 +167,8 @@ jobs:
           export STARTED_AT="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" --jq .run_started_at)"
           python3 - <<'PY'
           import json, os, datetime
-          results = {k: os.environ[v] for k, v in (("ci", "CI_RESULT"), ("twin", "TWIN_RESULT"), ("a11y", "A11Y_RESULT"))}
+          results = {k: os.environ[v] for k, v in (("ci", "CI_RESULT"), ("twin", "TWIN_RESULT"), ("a11y", "A11Y_RESULT"),
+                                                     ("named_mutants", "MUTANTS_RESULT"), ("stripe_ips", "STRIPE_IPS_RESULT"))}
           conclusion = "success" if all(r == "success" for r in results.values()) else "failure"
           stamp = {"schema": 1, "conclusion": conclusion, "results": results,
                    "started_at": os.environ["STARTED_AT"],
@@ -55,7 +182,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add kit/nightly.json
           git diff --cached --quiet && exit 0
-          git commit -m "nightly-main: $CI_RESULT/$TWIN_RESULT/$A11Y_RESULT on ${TESTED_SHA:0:7}"
+          git commit -m "nightly-main: $CI_RESULT/$TWIN_RESULT/$A11Y_RESULT/$MUTANTS_RESULT/$STRIPE_IPS_RESULT on ${TESTED_SHA:0:7}"
           for i in 1 2 3 4 5; do
             git push origin HEAD:claude/kit-state && exit 0
             git fetch origin claude/kit-state && git rebase origin/claude/kit-state

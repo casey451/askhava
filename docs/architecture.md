@@ -153,7 +153,11 @@ tests/               the Rust test-layer crates integration, security and recove
                      build and a Postgres service (stripe-mock too in `E2e`), T173, D-1282; and
                      `package.json`, `tsconfig.json` and `eslint.config.js` at the root pin the TypeScript tooling (D-741);
                      pytest for docs and contract. Every database test uses `#[sqlx::test(migrator = ...)]`, one
-                     fresh database per test (D-481)
+                     fresh database per test (D-481); `tests/mutation/mutants.toml` holds the named mutants
+                     (exact text replacements and the tests that must fail), applied in place by
+                     `scripts/run_named_mutants.py`: `Ci`'s `Checks` runs those of the files a branch changed,
+                     nightly-main's `named-mutants` job all of them, and its `cargo-mutants` job the listed rule
+                     files, report only for now (T056, D-1285, D-1286)
 twin/                the twin (Python) and its hard-failing gate, calling the Rust rules through rules_bridge
 wargames/            the Phase 2 war games (Python, standard library): personas, scenario runner, chaos injectors and the
                      money reconciliation, driving the Railway test site's real entry points (T234, T235, D-1154)
@@ -468,7 +472,7 @@ Written as they happen to the `storage` adapter (OPS-010, OPS-011; `sources/01_s
 | proptest | 1.12.0 (2026-10-10) | MIT OR Apache-2.0 | Property tests |
 | trybuild | 1.0.122 (2026-10-07) | MIT OR Apache-2.0 | Compile-fail proofs (SEC-030, SEC-031); one `TestCases` per test binary, its `.stderr` files tied to the exact rustc version (D-488) |
 | toml | 1.1.8 | MIT OR Apache-2.0 | The architecture test reads every `Cargo.toml` and `kit/layers.json` (D-481, D-488) |
-| cargo-mutants | 27.1.0 (2026-06-02) | MIT | Nightly mutation tests |
+| cargo-mutants | 27.1.0 (2026-06-02) | MIT | Nightly mutation tests (nightly-main `cargo-mutants` job, report only until `tests/mutation/equivalent.toml` exists, D-1286) |
 | cargo-audit | 0.22.2 (2026-06-05) | Apache-2.0 OR MIT | RustSec advisories on every PR |
 | cargo-deny | 0.20.2 (2026-07-09) | MIT OR Apache-2.0 | Licenses, bans, sources |
 | cargo-llvm-cov | 0.9.1 (2026-09-06) | Apache-2.0 OR MIT | Coverage; branch mode on `nightly-2026-10-15` (chosen at T169, D-694) used only to measure, over `rules.rs` and `service.rs` files, in its own CI job |

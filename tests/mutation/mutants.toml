@@ -1,0 +1,168 @@
+# Named mutants (docs/test-design.md section 4; D-481). Protected (BUILD_BRIEF.md:70).
+#
+# scripts/run_named_mutants.py applies each entry in place: `find` must occur exactly once in
+# `file`, it is replaced by `replace`, and `cargo test --locked -p <package> <target> -- <tests>`
+# must fail; the file is then restored. A group's keys apply to each of its mutants; a mutant may
+# override any of them. `target` defaults to "--lib" (the in-crate tests under src/tests/).
+# Ci runs the mutants of the files a pull request changed (every mutant when this file or the
+# script changes); nightly-main runs them all and fails on a survivor (BUILD_BRIEF.md:472).
+# The task that writes rule code adds its mutants here (T056 stage 2, T073 the money rules and
+# the license check at pick, TD-PICK-09, D-479).
+#
+# TD-LIC-13 (LIC-033): the license filter mutants below, with tests/coverage_floor.json's 95%
+# branch floors on app/licensing/ and app/privacy/ (PRIV-022).
+#
+# cargo-mutants (nightly-main) runs on these files with the in-crate tests (test-design line 60).
+cargo_mutants_files = [
+  "app/catalog/src/rules.rs",
+  "app/licensing/src/rules.rs",
+  "app/quotes/src/rules.rs",
+  "app/messaging/src/rules.rs",
+  "app/intake/src/rules.rs",
+]
+
+# ---------------------------------------------------------------------------------------------
+# License filter: TD-LIC-02, TD-LIC-05, TD-LIC-08, TD-LIC-09, TD-INT-03; matching M01 to M16.
+
+[[group]]
+rule = "License filter"
+file = "app/quotes/src/rules.rs"
+package = "askhava-quotes"
+tests = ["tests::matching_examples", "tests::prop_matching_props"]
+mutants = [
+  { name = "covers every candidate job type -> covers any", find = "            Eligibility::NoCard(reason) => return CardDecision::Skip(Skip::NotCovered(reason)),", replace = "            Eligibility::NoCard(reason) if job.candidates.len() == 1 => return CardDecision::Skip(Skip::NotCovered(reason)),\n            Eligibility::NoCard(_) => {}" },
+  { name = "ticked-job-type check dropped", find = "if checklist && !job.candidates", replace = "if false && checklist && !job.candidates" },
+]
+
+[[group]]
+rule = "License filter"
+file = "app/licensing/src/class_map.rs"
+package = "askhava-licensing"
+tests = ["tests::class_map"]
+mutants = [
+  { name = "sub-license treated as its full class (R-39R as R-39, LIC-035)", find = "let in_scope = row.scope.as_ref().is_none_or(", replace = "let in_scope = true || row.scope.as_ref().is_none_or(" },
+]
+
+[[group]]
+rule = "License filter"
+file = "app/licensing/src/rules.rs"
+package = "askhava-licensing"
+tests = ["tests::agency_rules", "tests::prop_rules", "tests::scope_examples", "tests::prop_handyman_never_gas"]
+mutants = [
+  { name = "handyman_allowed ignored", find = "if !(job.handyman_allowed && holder.handyman) {", replace = "if !(holder.handyman) {" },
+  { name = "handyman on a pending city list gets the card", find = "        CityListStanding::Pending => Eligibility::NoCard(NoCardReason::CityListPending),\n    }\n}", replace = "        CityListStanding::Pending => Eligibility::HandymanCard,\n    }\n}" },
+  { name = "gas and permit-type override removed from eligibility_for_request (AI-012)", find = "    if blocked {", replace = "    if false && blocked {" },
+]
+
+[[group]]
+rule = "License filter"
+file = "app/licensing/src/handyman.rs"
+package = "askhava-licensing"
+tests = ["tests::handyman", "tests::prop_handyman_never_gas"]
+mutants = [
+  { name = "handyman limit >= 1000 -> > 1000", find = "top >= HANDYMAN_LIMIT_CENTS => Err(QuoteRefusal::OverHandymanLimit)", replace = "top > HANDYMAN_LIMIT_CENTS => Err(QuoteRefusal::OverHandymanLimit)" },
+  { name = "limit judged on the midpoint instead of the top", find = "Self::Range { low, high } => Some(low.max(high)),", replace = "Self::Range { low, high } => Some((low + high) / 2)," },
+  { name = "gas keyword override removed (AI-012)", find = ".any(|text| gas.iter().any(|p| contains(text, p)))", replace = ".any(|text| false && gas.iter().any(|p| contains(text, p)))" },
+  { name = "permit-type job allowed to a handyman", find = "permit.then_some(NeverHandyman::PermitType)", replace = "permit.then_some(NeverHandyman::PermitType).filter(|_| false)" },
+]
+
+[[group]]
+rule = "License filter"
+package = "askhava-integration"
+mutants = [
+  { name = "card sent when the latest daily check is not Active", file = "app/licensing/src/service.rs", find = "r.status == \"active\" && r.fresh", replace = "r.fresh", target = "--test license_imports", tests = ["card_needs_latest_daily_check_active"] },
+  { name = "license end date ignored", file = "app/licensing/src/handlers.rs", find = "[license_ends_on, bond_cancelled_on]", replace = "[None, bond_cancelled_on]", target = "--test license_lookup_failures", tests = ["end_and_bond_cancel_dates_pause_from_arizona_midnight"] },
+]
+
+[[group]]
+rule = "License filter"
+file = "app/intake/src/matching.rs"
+package = "askhava-intake"
+tests = ["tests::twin_warnings_regression", "tests::prop_keyword_boundary"]
+mutants = [
+  { name = "plain-keyword job types dropped after a trade answer (twin C1, D-102)", find = "for (t, j) in read.chain(named_jobs) {", replace = "for (t, j) in read.chain(named_jobs.filter(|_| false)) {" },
+]
+
+# ---------------------------------------------------------------------------------------------
+# Consent and opt-out: TD-CON-01 to TD-CON-06, TD-CON-11, TD-CON-12, TD-JOB-05.
+
+[[group]]
+rule = "Consent and opt-out"
+file = "app/messaging/src/rules.rs"
+package = "askhava-messaging"
+tests = ["tests::optout_words", "tests::prop_optout_props"]
+mutants = [
+  { name = "opt-out word removed: stop", find = "    \"stop\",\n", replace = "    \"stop-x\",\n" },
+  { name = "opt-out word removed: stopall", find = "    \"stopall\",\n", replace = "    \"stopall-x\",\n" },
+  { name = "opt-out word removed: unsubscribe", find = "    \"unsubscribe\",\n", replace = "    \"unsubscribe-x\",\n" },
+  { name = "opt-out word removed: cancel", find = "    \"cancel\",\n", replace = "    \"cancel-x\",\n" },
+  { name = "opt-out word removed: end", find = "    \"end\",\n", replace = "    \"end-x\",\n" },
+  { name = "opt-out word removed: revoke", find = "    \"revoke\",\n", replace = "    \"revoke-x\",\n" },
+  { name = "opt-out word removed: optout", find = "    \"optout\",\n", replace = "    \"optout-x\",\n" },
+  { name = "opt-out word removed: quit", find = "    \"quit\",\n", replace = "    \"quit-x\",\n" },
+  { name = "opt-out word removed: parar", find = "    \"parar\",\n    \"alto\",\n    \"cancelar\",\n    \"baja\",\n];", replace = "    \"parar-x\",\n    \"alto\",\n    \"cancelar\",\n    \"baja\",\n];" },
+  { name = "opt-out word removed: alto", find = "    \"parar\",\n    \"alto\",\n", replace = "    \"parar\",\n    \"alto-x\",\n" },
+  { name = "opt-out word removed: cancelar", find = "    \"alto\",\n    \"cancelar\",\n", replace = "    \"alto\",\n    \"cancelar-x\",\n" },
+  { name = "opt-out word removed: baja", find = "    \"cancelar\",\n    \"baja\",\n];", replace = "    \"cancelar\",\n    \"baja-x\",\n];" },
+  { name = "opt-out word removed: opt out", find = "[&str; 1] = [\"opt out\"];", replace = "[&str; 1] = [\"opt out-x\"];" },
+  { name = "sole-word match -> contains-word (\"can stop by at 3\" opts out)", find = ".find(|w| **w == folded)", replace = ".find(|w| folded.split(' ').any(|t| t == **w))" },
+  { name = "send rule skips the opt-out check", find = "    let Some(Listing { since, event }) = listing else {", replace = "    let Some(Listing { since, event }) = None::<Listing> else {" },
+  { name = "HELP after STOP not answered", find = "    template_id == HELP_TEMPLATE\n", replace = "    false\n" },
+]
+
+[[group]]
+rule = "Consent and opt-out"
+file = "app/messaging/src/optout.rs"
+package = "askhava-integration"
+target = "--test optout_flow"
+tests = ["td_con_05", "td_con_20", "td_con_13"]
+mutants = [
+  { name = "send path skips the opt-out check", find = "if !rules::may_send_to(listing, &template, &subject, now) {", replace = "if false && !rules::may_send_to(listing, &template, &subject, now) {" },
+  { name = "a second opt-out confirmation", find = "let answered = by_provider || listed || !added;", replace = "let answered = by_provider;" },
+  { name = "a 21610 failure retried", find = "    models::block(&mut tx, id).await?;\n", replace = "" },
+]
+
+[[group]]
+rule = "Consent and opt-out"
+file = "app/intake/src/rules.rs"
+package = "askhava-intake"
+tests = ["tests::consent", "tests::prop_consent_first", "tests::close_cancel", "tests::prop_optout_no_close"]
+mutants = [
+  { name = "a non-consent text first: the consent text dropped", find = "    if consent_sent {", replace = "    if true {" },
+  { name = "the consent text sent twice for one request", find = "    if consent_sent {", replace = "    if false {" },
+  { name = "STOP answered with the consent text", find = "if msg.opt_out || msg.help {", replace = "if msg.help {" },
+  { name = "bare HELP answered with the consent text", find = "if msg.opt_out || msg.help {", replace = "if msg.opt_out {" },
+  { name = "an opt-out closing a job (D-005)", find = "const INTENT_WHOLE: &[&str] = &[\"ya no\", \"close\", \"cerrar\"];", replace = "const INTENT_WHOLE: &[&str] = &[\"ya no\", \"close\", \"cerrar\", \"stop\", \"cancel\"];" },
+  { name = "bare \"cancel\" closing a job", find = "(polite && CANCEL_ALONE.contains(", replace = "(true && CANCEL_ALONE.contains(" },
+]
+
+[[group]]
+rule = "Consent and opt-out"
+file = "app/intake/src/service.rs"
+package = "askhava-intake"
+tests = ["tests::prop_optout_no_close"]
+mutants = [
+  { name = "a sole-word CANCEL with a live job not pausing the job", find = "matches!(fold(words).as_str(), \"cancel\" | \"cancelar\")", replace = "matches!(fold(words).as_str(), \"cancel-x\" | \"cancelar-x\")" },
+  { name = "a job card sent before consent", find = "Ok(!models::consent_records(db, conversation).await?.is_empty())", replace = "Ok(models::consent_records(db, conversation).await.is_ok())", package = "askhava-integration", target = "--test consent_records", tests = ["td_con_03"] },
+]
+
+# ---------------------------------------------------------------------------------------------
+# Quiet hours: TD-QH-01, TD-QH-02.
+
+[[group]]
+rule = "Quiet hours"
+file = "app/messaging/src/rules.rs"
+package = "askhava-messaging"
+tests = ["tests::quiet_hours", "tests::prop_quiet_hours_props"]
+mutants = [
+  { name = "end 20:00 -> 21:00 (the superseded v9.3 window)", find = "const CLOSE_HOUR: i8 = 20;", replace = "const CLOSE_HOUR: i8 = 21;" },
+  { name = "start 08:00 -> 07:00", find = "const OPEN_HOUR: i8 = 8;", replace = "const OPEN_HOUR: i8 = 7;" },
+  { name = "only Arizona time checked", find = "    for zone in zones {\n        if !in_window", replace = "    for zone in zones.iter().take(0) {\n        if !in_window" },
+  { name = "only the recipient's zone checked", find = "    if !in_window(&at.in_tz(ARIZONA)?) {", replace = "    if false && !in_window(&at.in_tz(ARIZONA)?) {" },
+  { name = "an area code not in the table texted instead of refused", find = "            .map(Vec::as_slice)\n            .ok_or(QuietHoursError::UnknownAreaCode)", replace = "            .map(Vec::as_slice)\n            .or(Some(&[]))\n            .ok_or(QuietHoursError::UnknownAreaCode)" },
+  { name = "a non-urgent kind added to the night exceptions", find = "Kind::Update | Kind::Other => false,", replace = "Kind::Update | Kind::Other => true," },
+  { name = "an emergency job's quote texts held at night (D-136)", find = "Kind::Quote | Kind::QuoteCount | Kind::JobQuestion | Kind::PickStep => msg.emergency_job,", replace = "Kind::Quote | Kind::QuoteCount | Kind::JobQuestion | Kind::PickStep => false," },
+  { name = "the 15-minute direct-reply window widened", find = "const REPLY_MINUTES: i64 = 15;", replace = "const REPLY_MINUTES: i64 = 16;" },
+  { name = "retries skipping the check (QH-008)", find = "    decide(table, msg, now)\n}", replace = "    let _ = (table, msg, now);\n    Ok(Decision::Send)\n}" },
+  { name = "20:00:00 allowed", find = "(OPEN_HOUR..CLOSE_HOUR).contains(", replace = "(OPEN_HOUR..=CLOSE_HOUR).contains(" },
+]
