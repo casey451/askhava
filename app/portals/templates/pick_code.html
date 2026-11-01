@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{#- The pick's code-and-contact step (T187; PICK-013, PICK-014, PICK-018, A11Y-010 to A11Y-013,
+    A11Y-015, A11Y-016, A11Y-032; D-1264 to D-1266). Every field has a visible label with its hint
+    before the input; a failed submit puts "Error: " in the title and a focused summary first, each
+    line a link to its field (paragraphs, so the links are spaced, A11Y-006), and every value
+    stays. The code field is one input, one-time-code autofill and numeric keys, paste allowed.
+    The code's limit is plain text, never a countdown. "Send a new code" sits in the same form,
+    so her choices stay. The contact choice is a call through the masked number or an email
+    she shares (the accepted-quote copy goes to that email, PICK-042); no call window is
+    asked (D-440). Until Verify is wired the page says no code was sent (D-1248, D-1264). -#}
+{% block title %}{% if failed %}Error: {% endif %}Finish your pick for request {{ request }}{% endblock %}
+{% block main %}
+<h1>Finish your pick for request {{ request }}</h1>
+<p>You picked quote #{{ quote }}.</p>
+{% if failed %}<div id="error-summary" role="alert" tabindex="-1" autofocus>
+<h2>Fix this to finish your pick</h2>
+{% if let Some(message) = reach_error %}<p><a href="#reach-call">{{ message }}</a></p>
+{% endif %}{% if let Some(message) = email_error %}<p><a href="#email">{{ message }}</a></p>
+{% endif %}{% if let Some(message) = code_error %}<p><a href="#code">{{ message }}</a></p>
+{% endif %}</div>
+{% else %}<p id="pick-not-open" tabindex="-1" autofocus>Nothing was picked, and no code was sent. Picking on this page isn't open yet.</p>
+{% endif %}<form method="post" action="/q/{{ token }}/code" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<input type="hidden" name="quote" value="{{ quote }}">
+<fieldset aria-describedby="reach-hint{% if reach_error.is_some() %} reach-error{% endif %}">
+<legend>How should the business reach you?</legend>
+<p id="reach-hint">If you choose a call, they may call from 8 a.m. to 8 p.m. Arizona time. On an emergency job, they may call at any hour.</p>
+{% if let Some(message) = reach_error %}<p id="reach-error">Error: {{ message }}</p>
+{% endif %}<p><input type="radio" id="reach-call" name="reach" value="call"{% if reach == "call" %} checked{% endif %}>
+<label for="reach-call">A phone call. They call an Ask Hava number that rings your phone. They never see your number.</label></p>
+<p><input type="radio" id="reach-email" name="reach" value="email"{% if reach == "email" %} checked{% endif %}>
+<label for="reach-email">Email. We give this business the email address you type below. They never see your phone number.</label></p>
+</fieldset>
+<p><label for="email">Email address</label></p>
+<p id="email-hint">Fill this in only if you chose email. When they accept, we'll email you a copy of the quote.</p>
+{% if let Some(message) = email_error %}<p id="email-error">Error: {{ message }}</p>
+{% endif %}<p><input type="email" id="email" name="email" value="{{ email }}" autocomplete="email" aria-describedby="email-hint{% if email_error.is_some() %} email-error{% endif %}"{% if email_error.is_some() %} aria-invalid="true"{% endif %}></p>
+<p><label for="code">6-digit code</label></p>
+<p id="code-hint">Type or paste the code from our text, or your phone may fill it in. It works for 10 minutes. If it runs out, press "Send a new code". You won't lose your answers.</p>
+{% if let Some(message) = code_error %}<p id="code-error">Error: {{ message }}</p>
+{% endif %}<p><input type="text" id="code" name="code" value="{{ code }}" inputmode="numeric" autocomplete="one-time-code" aria-describedby="code-hint{% if code_error.is_some() %} code-error{% endif %}"{% if code_error.is_some() %} aria-invalid="true"{% endif %}></p>
+<p><button type="submit" name="send" value="pick" id="finish-pick">Finish my pick</button></p>
+<p><button type="submit" name="send" value="new" id="new-code">Send a new code</button></p>
+</form>
+<p><a href="/q/{{ token }}?#quote-{{ quote }}">Back to your quotes</a></p>
+{% endblock %}

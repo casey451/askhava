@@ -6,7 +6,7 @@
 //! SEC-048 security events (SEC-009, SEC-011 to SEC-013, SEC-034, SEC-042, SEC-046, SEC-048).
 //! T052 built the homeowner's quote page (`quote_page`, PICK-008 to PICK-012, WORD-005, A11Y-033).
 //! T055 built the pick review step and the pick result page (`pick_flow`, PICK-016, PICK-017,
-//! PICK-045, PICK-054, A11Y-014).
+//! PICK-045, PICK-054, A11Y-014); T187 its code-and-contact step (PICK-018, A11Y-010 to A11Y-016).
 //! Portal pages extend the shared layout `app/site/templates/base.html` through `askama.toml`.
 //! Other crates reach it only through [`api`].
 
