@@ -103,6 +103,7 @@ fn pick_012_pick_032_a_pick_is_taken_until_the_business_confirms() {
         takes_pick(JobStatus::Open),
         "PICK-012: from the first quote"
     );
+    assert!(takes_pick(JobStatus::NoQuotesYet));
     assert!(takes_pick(JobStatus::QuotesReady));
     assert!(
         takes_pick(JobStatus::AwaitingConfirm),
