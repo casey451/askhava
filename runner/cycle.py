@@ -816,6 +816,8 @@ def clear_main_red(cfg: Config, state: State, env: Env, now: datetime) -> tuple[
     for that head, a successful nightly; then the reverted task returns with attempts+1 (5.3, 5.4).
     A red smoke run after FIX-MAIN merged is revert_landed_red: FIX-MAIN stays DONE (D-1099)."""
     state, ok, head = _smoke(state, env, now, "verify FIX-MAIN")
+    if not ok and _smoke_timed_out(env):
+        return state, "main_red"  # no verdict yet: main stays red until a smoke finishes (D-1178)
     if not ok:
         return revert_landed_red(cfg, state, head, now), "main_red"
     nightly = env.read_nightly() or {}

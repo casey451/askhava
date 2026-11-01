@@ -684,6 +684,11 @@ def test_drill_red_main_reverts_clears_and_continues(tmp_path: Path) -> None:
     env.prs[st.FIX_MAIN] = green_pr(sha="revert01", tree="t-revert")
     env.head = "main0002"
     env.nightly = {"conclusion": "failure", "sha": "main0001"}  # an old red nightly does not hold the new head
+    env.smoke_green, env.smoke_timed_out = False, True  # a verify smoke that outran its budget is no verdict (D-1178)
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=15)) == "main_red"
+    assert env.store["main_red"] and st.status(env.store, st.FIX_MAIN) == st.DONE and env.store["smoke_runs"][-1]["timed_out"]
+    assert not list(cfg.outbox_dir.glob("*revert*")), "revert_landed_red is not raised for a timeout"
+    env.smoke_green, env.smoke_timed_out = True, False
     assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=20)) == "main_cleared"
     assert not env.store["main_red"] and env.store["main_red_history"][-1]["cleared_on"] == "main0002"
     assert env.store["smoke_runs"][-1] == {"sha": "main0002", "ok": True, "at": st.iso(NOW + timedelta(minutes=20)), "why": "verify FIX-MAIN"}
@@ -1064,7 +1069,7 @@ def test_drill_three_excused_smoke_reds_on_one_head_turn_main_red(tmp_path: Path
 
 def test_drill_a_smoke_timeout_is_noted_never_a_strike_and_never_red(tmp_path: Path) -> None:
     """D-1178: a smoke that outran its budget claims nothing and blames nobody, however often it repeats
-    on one head; the fourth on a head writes one outbox note, and a later red result is still judged."""
+    on one head; the third on a head writes one outbox note, and a later red result is still judged."""
     env, cfg = FakeEnv(), config([make_task("T001")], tmp_path)
     env.smoke_green, env.checks_green, env.smoke_timed_out = False, True, True
     assert [cycle.run_cycle(cfg, env, NOW) for _ in range(4)] == ["smoke_timeout"] * 4
