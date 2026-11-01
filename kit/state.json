@@ -10112,7 +10112,7 @@
     "T052",
     "T176"
    ],
-   "status": "MERGE_PENDING",
+   "status": "DONE",
    "attempts": 0,
    "slug": "picks-code",
    "type": "build",
@@ -10131,13 +10131,54 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 200,
      "head_sha": "f955d615228843a82a5e5ce2743a53eba9a4d039",
-     "pr": null,
-     "checks": null,
+     "pr": 231,
+     "checks": [
+      {
+       "name": "backup",
+       "conclusion": null
+      },
+      {
+       "name": "gate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-01T16:55:22Z",
      "ended_at": "2026-11-01T17:44:59Z",
-     "result": "MERGE_PENDING"
+     "result": "done"
     }
    ],
    "reviewed_sha": "c1dd62bab69061aeafd9f95d77a6109925d85320",
@@ -10166,7 +10207,50 @@
     }
    ],
    "update_waiting_since": null,
-   "update_push_failures": null
+   "update_push_failures": null,
+   "merged_sha": "3573d325a1d4ee78359f3af1f4a8f045af1b69d5",
+   "merged_at": "2026-11-01T17:59:05Z",
+   "files": [
+    ".sqlx/query-0f1a95fadd096cfd47b99ee9ea12986cdfdabbeb91d08df497c8e6f147c53b60.json",
+    ".sqlx/query-14920c54328d8fbf2b2c54aeddf6bfc05141487321490d2812e17a3e6016f59b.json",
+    ".sqlx/query-28e700f3db446187f1151730d77d3c2d670e5e54122d9ed43f27ce23ea82874a.json",
+    ".sqlx/query-3abb616bd46d7208b1f2a0f263e7d691e7fab5a7e724f182eb89a31aa1eed534.json",
+    ".sqlx/query-4ad309522814261b5f5574d21cbaefc4c9a0a7edf8beba8de1fa7c9384edccd0.json",
+    ".sqlx/query-6d00344147c5a4117e86d203199a6ad24d04723dbcf9ee214eab91faf6e141d6.json",
+    ".sqlx/query-7585bd29b38ec019f64fdaea5877978b26dc63268565e7b7b13f574d8bb1aa72.json",
+    ".sqlx/query-83c6163f3ca87e3a88c9375bb3f0a267ec8fa544d4749383a742ec69f65d10fa.json",
+    ".sqlx/query-ab0e0330bb4f29b42b39cbc12115fdcc06b9a7a30debdc388783d842f1ac0f08.json",
+    ".sqlx/query-af6223f3ad7dafc32eae9ff8151d1aef2b556692ca892c77818fb3d78bc6b43a.json",
+    ".sqlx/query-c0792affe7f0646e91aaa6f5fe3c9107c5153af8d90bd9121d01be5c5e6b51f5.json",
+    ".sqlx/query-c919ad49ee4f0c7cfd189566e950572d041901543929a43b4a384f5f3e6bb45c.json",
+    "Cargo.lock",
+    "Cargo.toml",
+    "app/intake/CLAUDE.md",
+    "app/intake/Cargo.toml",
+    "app/intake/src/api.rs",
+    "app/intake/src/service.rs",
+    "app/messaging/templates/en.json",
+    "app/messaging/templates/es.json",
+    "app/picks/CLAUDE.md",
+    "app/picks/Cargo.toml",
+    "app/picks/sqlx.toml",
+    "app/picks/src/api.rs",
+    "app/picks/src/lib.rs",
+    "app/picks/src/models.rs",
+    "app/picks/src/rules.rs",
+    "app/picks/src/service.rs",
+    "app/picks/src/status.rs",
+    "app/picks/src/tests/mod.rs",
+    "app/picks/src/tests/pick_code_rules.rs",
+    "docs/architecture.md",
+    "docs/decisions.md",
+    "docs/for-casey-review.md",
+    "migrations/0079_picks_code.sql",
+    "tests/integration/Cargo.toml",
+    "tests/integration/tests/text_pick.rs",
+    "tests/security/Cargo.toml",
+    "tests/security/tests/pick_code.rs"
+   ]
   },
   {
    "id": "T227",
@@ -14409,7 +14493,7 @@
    }
   }
  },
- "updated_at": "2026-11-01T17:51:16Z",
+ "updated_at": "2026-11-01T18:02:14Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -14507,7 +14591,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "607c88fbe6a3402ca2227ef074e2a9f9f2e0fc3c",
+ "runner_sha": "3573d325a1d4ee78359f3af1f4a8f045af1b69d5",
  "starter": "actions",
  "smoke_runs": [
   {
