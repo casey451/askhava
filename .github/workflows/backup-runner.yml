@@ -250,6 +250,7 @@ jobs:
           tar -xzf "$RUNNER_TEMP/gitleaks.tgz" -C "$RUNNER_TEMP/gitleaks"
           echo "$RUNNER_TEMP/gitleaks" >> "$GITHUB_PATH"
       - uses: anthropics/claude-code-action@v1
+        id: claude
         env:
           RUNNER_STARTER: actions
           # The lane this run serves: the runner claims only on it (D-620).
@@ -289,6 +290,22 @@ jobs:
             8. Report the runner's output lines and stop.
 
             Never break section 2. Never claim a test passed unless you ran it here.
+      - name: Keep the plan usage the session reported, for pacing (D-1155)
+        if: always()
+        env:
+          RUNNER_STARTER: actions
+          RUNNER_LANE: ${{ needs.gate.outputs.lane }}
+          GH_TOKEN: ${{ github.token }}
+          RUNNER_CHECKS_TOKEN: ${{ github.token }}
+          RUNNER_PUSH_TOKEN: ${{ secrets.RUNNER_PUSH_TOKEN }}
+          EXECUTION_FILE: ${{ steps.claude.outputs.execution_file }}
+        run: |
+          set -u
+          # The action streams rate_limit_event messages with the plan's own windows and writes every
+          # message to its execution file; the last one is the figure Casey reads under /usage. No token
+          # is involved: the file is read after the session ended (D-1155).
+          [ -n "$EXECUTION_FILE" ] && [ -f "$EXECUTION_FILE" ] || { echo "no execution file"; exit 0; }
+          python3 -m runner --usage-reading "$EXECUTION_FILE" 2>&1 || true
       - name: Hand in for a session that stopped without handing in (D-503)
         if: always()
         id: safety
