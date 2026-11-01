@@ -1490,10 +1490,10 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **Not finished yet.** The step tells her a 6-digit code comes next. The final Pick doesn't pick anything yet: it says "Nothing was picked" until the code step (T187) is built (D-1248, D-1251). She can pick again while the first business hasn't confirmed, as the "You can still pick another quote" line promises, but the quote page still hides its Pick buttons then; that needs a follow-up (D-1251). The "Done" page after a pick is ready for that task: the heading gets focus, "Add Ask Hava to your contacts" and "Know someone who needs quotes? Send them askhava.com." The emergency switch and a Spanish page are open (D-1249).
 - **Worth a look.** A real browser's form posts are refused by the site's cross-site check (D-1250): the "no-referrer" setting makes the browser send `Origin: null`. Every form on the site is affected; a fix is proposed for a security task.
 
-## The pick code and contact form (T187, D-1264 to D-1268, November 1)
+## The pick code and contact form (T187, D-1264 to D-1266, November 1)
 
 - **What she sees.** After the check step comes one form: how the business reaches her (a phone call through an Ask Hava number, so they never see her number, or an email she types), then the 6-digit code box. She can type, paste or let her phone fill the code. It says a code works for 10 minutes and that "Send a new code" keeps her answers.
 - **Mistakes.** If something is missing, the page title starts "Error:", a box at the top lists each problem as a link to its field, and everything she typed stays.
 - **Not finished yet.** No code is sent and nothing is picked: the form says so at the top. Sending and checking the code, and saving the pick, need wiring that no task owns yet (D-1264). Messages for a wrong or run-out code come with that wiring.
-- **Worth a look.** There is no pop-up warning a minute before the code runs out; the 10-minute limit is stated up front instead, and a new code is one press away (D-1265).
+- **Worth a look.** There is no pop-up warning a minute before the code runs out; the 10-minute limit is stated up front instead, and a new code is one press away. The rule asks for a warning shortly before the end; that comes with the wiring (D-1265).
 
