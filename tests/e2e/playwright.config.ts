@@ -4,7 +4,9 @@
 // (test-control feature) and the stand-ins, waits for the web port, and stops them after the run.
 // `controlSecret` is the value that file gave the web binary, so the `control` fixture in
 // fixtures.ts can reach the test-control router. Specs live beside this file as `*.spec.ts`; they
-// import `test` and `expect` from ./fixtures. Run: npx playwright test --config tests/e2e/playwright.config.ts
+// import `test` and `expect` from ./fixtures. In CI (`CI` set; the Ci job's "E2e" part, T173) a
+// stray `test.only` fails the run and each failure is also an annotation on the commit; no test is
+// retried, so one failing assertion turns `Ci` red. Run: npx playwright test --config tests/e2e/playwright.config.ts
 import { defineConfig } from "@playwright/test";
 import type { ControlOptions } from "./fixtures";
 import { controlSecret, webPort } from "./webserver";
@@ -15,7 +17,9 @@ export default defineConfig<ControlOptions>({
   globalSetup: "./webserver.ts",
   fullyParallel: false,
   workers: 1,
-  reporter: [["list"]],
+  forbidOnly: process.env.CI !== undefined,
+  retries: 0,
+  reporter: process.env.CI === undefined ? [["list"]] : [["list"], ["github"]],
   outputDir: "../../test-results",
   use: {
     baseURL: `http://127.0.0.1:${String(webPort())}`,
