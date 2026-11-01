@@ -319,7 +319,57 @@ fn td_int_18_smell_answer_asks_what_kind_and_1_or_2_sends_the_911_text() {
     );
 }
 
-/// TD-INT-18: two smell answers in one set ask the smell question once (INT-039, D-1037).
+/// TD-INT-18, INT-004: a smell answer and the smell list are never skipped, by keyword or by a
+/// reading over the threshold, so answer 1 still gives the 911 text.
+#[test]
+fn td_int_18_smell_answers_are_never_skipped() {
+    let bank = bank();
+    let words = "Strange noise or smell like gas or rotten egg";
+    let mut run = BankRun::new(
+        &bank.sets["hvac_repair"],
+        false,
+        false,
+        BankSettings::default(),
+    );
+    for (id, reply) in [("system_type", "1"), ("symptom", "5"), ("smell_kind", "1")] {
+        let p = ask(&mut run, words, &AiTurn::default()).expect("asked");
+        assert_eq!(p.id, id);
+        let heard = run.hear(reply);
+        assert_eq!(heard == Heard::Safety911, id == "smell_kind", "{id}");
+    }
+    let settings = BankSettings {
+        ai_on: true,
+        skip_threshold: Some(0.9),
+    };
+    let mut run = BankRun::new(&bank.sets["hvac_repair"], false, false, settings);
+    for (id, answer, reply) in [
+        ("system_type", 1, "1"),
+        ("symptom", 5, "5"),
+        ("smell_kind", 1, "1"),
+    ] {
+        let ai = AiTurn {
+            reading: Some((id, answer, 1.0)),
+            ..AiTurn::default()
+        };
+        if id == "system_type" {
+            let p = ask(&mut run, WORDS, &AiTurn::default()).expect("asked");
+            assert_eq!(p.id, id);
+        } else {
+            let p = ask(&mut run, WORDS, &ai).expect("asked");
+            assert_eq!(p.id, id, "a sure reading never skips a smell answer");
+        }
+        let heard = run.hear(reply);
+        assert_eq!(heard == Heard::Safety911, id == "smell_kind", "{id}");
+    }
+    let mut set = bank.sets["electrical"].clone();
+    set.questions[0].options_en = Some(vec!["Strange noise or smell".into(), "Other".into()]);
+    let first = set.questions[0].id.clone();
+    let mut run = BankRun::new(&set, false, false, BankSettings::default());
+    let p = ask(&mut run, "strange noise or smell", &AiTurn::default()).expect("asked");
+    assert_eq!(p.id, first, "a smell answer of no stated kind is asked");
+}
+
+/// TD-INT-18: two smell answers in one set ask the smell question once (INT-039, D-1269).
 #[test]
 fn td_int_18_smell_question_is_asked_once() {
     let mut set = bank().sets["electrical"].clone();

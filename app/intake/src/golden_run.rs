@@ -9,7 +9,7 @@
 //! the compiled-in catalog, question bank and golden set, so a new build with a changed file runs
 //! once (the worker calls [`run_golden`] at start-up). `test_set.csv` uses the knowledge base's
 //! own trade and job-type codes, which map to no catalog job type yet, so it is not run here
-//! (D-1039). The 90% target is the report's; nothing here blocks on it.
+//! (D-1271). The 90% target is the report's; nothing here blocks on it.
 
 use askhava_catalog::api::{QuestionBank, question_bank};
 use jiff::Timestamp;

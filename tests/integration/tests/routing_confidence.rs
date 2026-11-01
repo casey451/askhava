@@ -170,6 +170,7 @@ async fn golden_results_are_append_only_for_the_app_role(pool: sqlx::PgPool) {
     for sql in [
         "UPDATE intake.golden_result SET rows_right = 0",
         "DELETE FROM intake.golden_result",
+        "TRUNCATE intake.golden_result",
     ] {
         assert!(sqlx::query(sql).execute(&mut *db).await.is_err(), "{sql}");
     }

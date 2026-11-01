@@ -15,13 +15,13 @@
 
 use crate::matching::{FitStep, KeywordReading, Opinion, Reading, TradeQuestion, second_opinion};
 
-/// The high-confidence setting's default (INT-040, D-1038): both readings at or above it.
+/// The high-confidence setting's default (INT-040, D-1270): both readings at or above it.
 pub const HIGH_CONFIDENCE: f64 = 0.8;
 /// The card marker for a job sent with every remaining candidate (INT-040, CARD-007).
 pub const NOT_CERTAIN: &str = "Job type not certain";
-/// The keyword rules' confidence for one trade and one job type named (D-1038).
+/// The keyword rules' confidence for one trade and one job type named (D-1270).
 const KEYWORD_SURE: f64 = 1.0;
-/// The keyword rules' confidence for a trade with no single job type (D-1038).
+/// The keyword rules' confidence for a trade with no single job type (D-1270).
 const KEYWORD_TRADE_ONLY: f64 = 0.5;
 
 /// One reading with its confidence, 0 to 1 (INT-040).

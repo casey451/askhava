@@ -11,7 +11,8 @@
 //! question is skipped only when the reading's confidence reaches [`BankSettings::skip_threshold`],
 //! which is unset until a recorded real-model run (AI-027) sets it, so nothing is skipped. A
 //! numbered answer naming a smell of no stated kind is followed by [`SMELL_EN`]; its answers 1 and 2
-//! give [`Heard::Safety911`], the caller's INT-004 text and hold. Nothing here sends or stores.
+//! give [`Heard::Safety911`], the caller's INT-004 text and hold; a smell answer and the smell
+//! list are never skipped, so that check always runs. Nothing here sends or stores.
 
 use askhava_ai::api::{WriteSources, accept_question};
 use askhava_catalog::api::{Question, QuestionSet};
@@ -237,7 +238,18 @@ impl<'a> BankRun<'a> {
         shown && (!self.emergency || q.emergency) && !smell_done
     }
 
+    /// The answer a skip would store, never for the smell list or an answer that asks the smell
+    /// question: those are always asked, so `hear` runs the INT-004 check on them (INT-039).
     fn skip_answer(&self, q: &Question, words: &str, ai: &AiTurn<'_>) -> Option<u32> {
+        let n = self.skip_reading(q, words, ai)?;
+        let english = q.options_en.as_ref();
+        let smelly = english
+            .and_then(|o| o.get(n as usize - 1))
+            .is_some_and(|o| asks_smell_kind(o));
+        (!is_smell(q) && !smelly).then_some(n)
+    }
+
+    fn skip_reading(&self, q: &Question, words: &str, ai: &AiTurn<'_>) -> Option<u32> {
         let options = self.options_of(q)?;
         if !self.settings.ai_on {
             return keyword_answer(options, words);
