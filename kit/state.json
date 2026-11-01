@@ -12848,12 +12848,11 @@
      "result": "not_done"
     }
    ],
-   "reviewed_sha": "7274a85ee3e42f2737961ec9ec4246c91deacfaf",
+   "reviewed_sha": "f53409de715fac586ef28a93ce0189d230d410bb",
    "review_lease": {
     "task": "T156",
-    "session": "actions-41230303819",
-    "expires": "2026-10-31T21:50:17Z",
-    "lane": "2"
+    "session": "actions-41347109630",
+    "expires": "2026-11-01T23:34:44Z"
    },
    "branch": "claude/task/T156-intake-question-bank-a2",
    "auto_merge": {
@@ -12861,23 +12860,9 @@
     "why": "auto-merge on #195 (gh pr merge)",
     "head": "40109ef102e4ef5edf860f7bf9c385d487028d84"
    },
-   "update_merges": [
-    {
-     "from": "40109ef102e4ef5edf860f7bf9c385d487028d84",
-     "to": "7274a85ee3e42f2737961ec9ec4246c91deacfaf",
-     "main": "3253d8f0ed2b6d36e00dc45e133880974f2d93f8",
-     "how": "runner",
-     "checks": {
-      "Twin": "success",
-      "Ally": "success"
-     },
-     "at": "2026-10-31T19:27:57Z"
-    }
-   ],
-   "update_waiting_since": null,
-   "update_push_failures": null,
    "reason": "Ci: not green on head 7274a85",
-   "last_failure": "reverted by FIX-MAIN (tree red on 26b176e5aab2)"
+   "last_failure": "reverted by FIX-MAIN (tree red on 26b176e5aab2)",
+   "head_check_since": null
   },
   {
    "id": "T208",
@@ -14759,7 +14744,7 @@
    }
   }
  },
- "updated_at": "2026-11-01T20:39:01Z",
+ "updated_at": "2026-11-01T21:03:49Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -14857,7 +14842,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "fe4ae0352ad549f64c7cfd608f40d33ef4727513",
+ "runner_sha": "f53409de715fac586ef28a93ce0189d230d410bb",
  "starter": "actions",
  "smoke_runs": [
   {
