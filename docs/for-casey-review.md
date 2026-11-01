@@ -1424,6 +1424,11 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **What was wrong.** T208, the step where the homeowner approves her job card before it goes out, had grown to 47% of a session's working memory, over the 45% limit, because the intake files it changes got bigger in T048 and T049.
 - **What changed.** It no longer loads the fake sample-request list used for the routing test (that list belongs to T154 and T156, not to the approval step). Nothing it must build or test changed, and the limit stayed at 45%. It now measures 39%.
 
+## A retry now learns what failed (D-1263, November 1)
+
+- **What was wrong.** When a task's checks failed, the next attempt was meant to get the last lines of the failing step's output. It never did: on every failure since October 30, including T055 today, it got only the names of the failed checks and steps, so it had to guess what broke. Downloading the step's output was being refused, and the runner threw the refusal away without a word.
+- **What changed.** The runner now writes down why the download was refused, so the cause shows the next time, and falls back to the error notes GitHub attaches to the failed check (file, line and message), which need no download. No permission or setting changed.
+
 ## No more pacing holds (D-1189, November 1)
 
 - **What you asked for.** At 5:07 am Sunday: no more pausing; running out of the week's plan early is fine; don't go faster where slower gives a better result.
