@@ -34,6 +34,10 @@ line of JSON with what changed.
                                     number, kept in `plan_reservations` with `next_decision` moved past
                                     it, and printed as `reserved D-####` (D-1058)
   python3 -m runner --restore-lanes end a fall back to one lane (`lanes_fallback`, D-620)
+  python3 -m runner --usage-reading FILE
+                                    keep the plan usage the action reported about itself (the last
+                                    `rate_limit_event` in its execution file) as usage.session_reading,
+                                    which pacing reads while fresh (D-1155)
   RUNNER_LANE                       the lane a backup-runner run serves (its gate picks it): the run
                                     claims only on that lane; unset, the first free lane (D-620);
                                     with two or more lanes a cycle that hands off starts one run
@@ -105,6 +109,7 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
     ap.add_argument("--reason", default="")
     ap.add_argument("--restore-lanes", action="store_true")
     ap.add_argument("--reserve-decision", action="store_true")
+    ap.add_argument("--usage-reading", type=Path)
     return ap.parse_args(argv)
 
 
@@ -384,7 +389,25 @@ def run(args: argparse.Namespace, cfg: cycle.Config, env: GitHubEnv) -> str:
         return restore_lanes(env)
     if args.reserve_decision:
         return reserve_decision(args, cfg, env)
+    if args.usage_reading:
+        return usage_reading(args.usage_reading, env)
     return cycle_with_retries(cfg, env)
+
+
+def usage_reading(path: Path, env: GitHubEnv) -> str:
+    """`--usage-reading FILE`: keep the plan usage the action reported about itself (the last
+    `rate_limit_event` of its execution file) as state.usage.session_reading, through update_state, for
+    pacing (D-1155). A file with no such event, or one that cannot be read, changes nothing."""
+    from runner import usage_reading as reading_mod
+
+    found = reading_mod.read_file(path)
+    if not found:
+        return "usage_reading_none"
+    now = now_utc()
+    if env.update_state(lambda fresh: reading_mod.record(fresh, found, now)) is None:
+        return "lost_race"
+    windows = ", ".join(f"{w} {found[w]['utilization']:.0%}" for w in ("week", "five_hour") if w in found)
+    return f"usage_reading_recorded: {windows}"
 
 
 LOST_RACE_RETRIES = 2  # extra cycles after a lost race, with two lanes and a handed-off worker (D-620)

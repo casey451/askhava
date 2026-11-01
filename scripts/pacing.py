@@ -20,7 +20,10 @@ a window starts at its first use and rolls over (start = now, tokens = 0) once i
 
 **Real quota.** When PACING_QUOTA_CMD is set, it is run (no shell) and must print JSON
 {"five_hour": {"utilization": 0..1, "resets_at": ISO}, "week": {...}}; that reading wins over the
-ledger. state.usage.source records which was used ("quota_cmd" or "ledger").
+ledger. Next comes the reading the build action itself reported at the end of its last session
+(state.usage.session_reading, from its `rate_limit_event` stream messages, D-1155), used while it is
+under SESSION_READING_HOURS old for the windows it holds. state.usage.source records which was used
+("quota_cmd", "session_reading <at> (<windows>)" or "ledger", with the probe's reason when it failed).
 
 **Decision** (`decide`): claim when estimate <= budget * (1 - headroom) - used in both windows;
 otherwise wait until the latest reset among the windows it does not fit; "defer" when it cannot fit
@@ -167,7 +170,7 @@ def read_quota(command: str | None = None) -> dict[str, Any] | None:
         PROBE_NOTE[:] = [line for line in done.stderr.splitlines() if line.strip()][-1:]
         reading = json.loads(done.stdout)
     except (OSError, ValueError, subprocess.SubprocessError) as error:
-        PROBE_NOTE[:] = PROBE_NOTE or [f"{type(error).__name__}: {str(error)[:120]}"]
+        PROBE_NOTE[:] = PROBE_NOTE or [f"{type(error).__name__}: {' '.join(str(error).split())[:120]}"]
         return None
     ok = isinstance(reading, dict) and all(isinstance(reading.get(w), dict) and "utilization" in reading[w] for w in WINDOWS)
     return reading if ok else None
@@ -191,10 +194,13 @@ def standing(
     time; plus the source used."""
     out: dict[str, dict[str, Any]] = {}
     ledger = windows(state, cfg, now)
+    reading = None if quota else session_reading(state, now)
     for w in WINDOWS:
         budget = float(cfg[f"budget_tokens_{w}"])
         if quota:
             used, reset = float(quota[w]["utilization"]) * budget, quota[w].get("resets_at")
+        elif reading and isinstance(reading.get(w), dict):
+            used, reset = float(reading[w]["utilization"]) * budget, reading[w].get("resets_at")
         else:
             start = ledger[w]["start"]
             used = float(ledger[w]["tokens"])
@@ -202,7 +208,43 @@ def standing(
         used += reserved
         eff = budget * (1 - float(cfg["headroom"]))
         out[w] = {"used": int(used), "budget": int(eff), "left": int(eff - used), "resets_at": reset}
-    return out, "quota_cmd" if quota else ("ledger; " + PROBE_NOTE[0][:160] if PROBE_NOTE else "ledger")
+    if quota:
+        return out, "quota_cmd"
+    if reading:
+        return out, "session_reading " + str(reading.get("at")) + (" (" + ", ".join(w for w in WINDOWS if isinstance(reading.get(w), dict)) + ")")
+    return out, "ledger; " + PROBE_NOTE[0][:160] if PROBE_NOTE else "ledger"
+
+
+SESSION_READING_HOURS = 6  # a usage reading the action reported this long ago still beats the ledger (D-1155)
+
+
+def session_reading(state: State, now: datetime) -> dict[str, Any] | None:
+    """The plan usage the build action itself reported at the end of a session (`rate_limit_event` in its
+    execution file, recorded by `python3 -m runner --usage-reading`, D-1155): state.usage.session_reading
+    = {"at": ISO, "week": {"utilization": 0..1, "resets_at": ISO}, "five_hour": {...} when reported}.
+    None when absent, malformed, or older than SESSION_READING_HOURS; a window it lacks uses the ledger."""
+    found = (state.get("usage") or {}).get("session_reading")
+    if not isinstance(found, dict) or not isinstance(found.get("at"), str):
+        return None
+    try:
+        age = now - parse(found["at"])
+    except ValueError:
+        return None
+    if age < timedelta(0) or age > timedelta(hours=SESSION_READING_HOURS):
+        return None
+    good = {}
+    for w in WINDOWS:
+        window = found.get(w)
+        if not isinstance(window, dict) or "utilization" not in window:
+            continue
+        reset = window.get("resets_at")
+        try:
+            if isinstance(reset, str) and parse(reset) <= now:
+                continue  # a window already reset says nothing about the current one
+        except ValueError:
+            continue
+        good[w] = window
+    return {"at": found["at"], **good} if good else None
 
 
 def _verdict(need: int, stand: dict[str, dict[str, Any]], now: datetime) -> tuple[str, str | None]:
