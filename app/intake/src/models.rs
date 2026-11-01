@@ -847,3 +847,21 @@ pub(crate) async fn recipient(
     .map(|r| r.map(|r| (r.contact_id, r.language)))
     .map_err(|_| IntakeError::Database)
 }
+
+/// The open request that opened job `job` and its homeowner, if any (JOB-019's close button).
+pub(crate) async fn request_of_job(
+    db: &mut PgConnection,
+    job: Uuid,
+) -> Result<Option<(Uuid, Uuid)>, IntakeError> {
+    sqlx::query!(
+        "SELECT c.id, c.homeowner_id FROM intake.conversation c WHERE c.closed_at IS NULL \
+         AND (c.job_id = $1 OR EXISTS (SELECT 1 FROM intake.intake_answer a \
+         WHERE a.conversation_id = c.id AND a.question_id LIKE 'job.%' AND a.choice = $2))",
+        job,
+        job.simple().to_string()
+    )
+    .fetch_optional(db)
+    .await
+    .map(|r| r.map(|r| (r.id, r.homeowner_id)))
+    .map_err(|_| IntakeError::Database)
+}

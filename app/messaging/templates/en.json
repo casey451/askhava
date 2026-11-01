@@ -238,5 +238,25 @@
     "audience": "homeowner",
     "segments": 1,
     "text": "Ask Hava: We closed request {job} because we didn't hear back. No problem. Text us any time and we'll start again."
+  },
+  "close_which": {
+    "audience": "homeowner",
+    "segments": 1,
+    "text": "Ask Hava: Close which? You have requests {job} open. Reply CLOSE and the number, or CLOSE ALL."
+  },
+  "close_mention": {
+    "audience": "homeowner",
+    "segments": 1,
+    "text": "Ask Hava: To close request {job}, reply CLOSE {job}."
+  },
+  "job_closed": {
+    "audience": "homeowner",
+    "segments": 1,
+    "text": "Ask Hava: Request {job} is closed, as you asked. Text us any time to start a new one."
+  },
+  "jobs_closed": {
+    "audience": "homeowner",
+    "segments": 1,
+    "text": "Ask Hava: Requests {job} are closed, as you asked. Text us any time to start a new one."
   }
 }

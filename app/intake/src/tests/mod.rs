@@ -1,5 +1,6 @@
 //! In-crate tests for `askhava-intake`.
 
+mod close_cancel;
 mod consent;
 mod conversation;
 mod emergency;
