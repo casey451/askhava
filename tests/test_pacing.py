@@ -138,8 +138,9 @@ def test_projection_uses_the_tighter_sustained_rate(tmp_path: Path) -> None:
 
 
 def test_real_config_loads_and_cli_runs(capsys: Any) -> None:
+    """The committed config: headroom 0.03 since D-1167 (the spend line carries the time margin)."""
     cfg = pc.load_config()
-    assert cfg["headroom"] == 0.10 and set(cfg["model_multiplier"]) == {"haiku", "sonnet", "opus"}
+    assert cfg["headroom"] == 0.03 and set(cfg["model_multiplier"]) == {"haiku", "sonnet", "opus"}
     assert pc.main(["--state", "/nonexistent.json", "--task", "T058"]) == 0
     assert "projected finish" in capsys.readouterr().out
 

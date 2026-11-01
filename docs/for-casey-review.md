@@ -1413,3 +1413,8 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 
 - **What was wrong.** The runner paced itself on its own estimate because the probe that should read the plan's usage never had a login to use inside the build job.
 - **What changed.** The build action already reports the plan's live usage during each session; the job now keeps the last reading at the end of every session, and the pacer uses it for the next claim, so the Thursday spend line measures against the same percentage you see. No secret is passed around: the reading is taken from the session's own output after it ends.
+
+## The spend line now runs on your real plan percentage (D-1167, November 1)
+
+- **What happened.** The runner's first in-band reading came in at 6:02 pm: 59% of the week used, reset Thursday 10:00 am Phoenix. The line had been set in the runner's own estimate, which sits about 10% lower, so left alone it would have waited most of Sunday before claiming.
+- **What changed.** The line now starts from that 59% reading and ends at about 97% at 7:00 am Thursday, three hours before the reset — about one task every two hours, each on Opus. The old 10% safety margin is gone; the three-hour time margin does that job now.
