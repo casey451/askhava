@@ -82,6 +82,7 @@ FAILED_CONCLUSIONS = ("failure", "cancelled", "timed_out")
 FAILURE_LOG_CAP = 1500
 EXCERPT_LINES = 15
 EXCERPT_WIDTH = 200
+LOG_RETRY_SECONDS = 10  # the wait before the one retry of a refused job-log download (D-1263)
 JOB_URL = re.compile(r"/actions/runs/\d+/job/(\d+)")
 LOG_STAMP = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z ")
 ANSI = re.compile(r"\x1b\[[0-9;]*[A-Za-z]")
@@ -267,7 +268,8 @@ def fit_failure_log(base: str, details: list[tuple[str, list[str]]], cap: int = 
 def annotation_lines(notes: Any, lines: int = EXCERPT_LINES) -> list[str]:
     """The failure-level check-run annotations as excerpt lines, the last `lines` kept (D-1263).
 
-    Each message line becomes one row, led by `path:start_line: ` when the annotation names a file
+    Each message line becomes one row, led by `path:start_line: ` (`path: ` without a start line) when
+    the annotation names a file
     (not the bare `.github` that Actions gives its own "Process completed with exit code 1."). Rows
     are cut to EXCERPT_WIDTH and token-shaped strings replaced, as in `log_excerpt`. [] for anything
     that is not a list of annotations."""
@@ -276,7 +278,8 @@ def annotation_lines(notes: Any, lines: int = EXCERPT_LINES) -> list[str]:
         if not isinstance(note, dict) or note.get("annotation_level") != "failure":
             continue
         path = str(note.get("path") or "")
-        where = f"{path}:{note.get('start_line')}: " if path and path != ".github" else ""
+        line = note.get("start_line")
+        where = (f"{path}:{line}: " if line is not None else f"{path}: ") if path and path != ".github" else ""
         for row in str(note.get("message") or "").splitlines():
             if row.strip():
                 kept.append(TOKEN_LIKE.sub("[redacted]", where + row)[:EXCERPT_WIDTH])
@@ -851,10 +854,16 @@ class GitHubEnv:
     def _log_lines(self, job: str) -> list[str]:
         """`log_excerpt` of an Actions job's log, or [] with the reason in the cycle log (D-1263).
 
-        A refused download (`gh api` exit code and the first 200 characters of its stderr, token-shaped
-        strings redacted) and a log with no `##[error]` line are both written down, so the next failure
-        shows why the log was not used instead of failing silently as every one did from D-582 on."""
-        code, text, err = self._run(["gh", "api", f"repos/{self.repo}/actions/jobs/{job}/logs"], None, self.root)
+        A refused download is tried once more after LOG_RETRY_SECONDS, since a log read right after its
+        check completed may not be ready. One still refused (`gh api` exit code and the first 200
+        characters of its stderr, token-shaped strings redacted) and a log with no `##[error]` line are
+        both written down, so the next failure shows why the log was not used instead of failing
+        silently as every one did from D-582 on."""
+        args = ["gh", "api", f"repos/{self.repo}/actions/jobs/{job}/logs"]
+        code, text, err = self._run(args, None, self.root)
+        if code != 0:
+            time.sleep(LOG_RETRY_SECONDS)
+            code, text, err = self._run(args, None, self.root)
         if code != 0:
             self.log.append(f"job {job} log unreadable (exit {code}): {TOKEN_LIKE.sub('[redacted]', err.strip())[:200]}")
             return []

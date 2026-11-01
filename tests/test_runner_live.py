@@ -862,9 +862,10 @@ ANNOTATIONS = [
 ]
 
 
-def _annotated_env(tmp_path: Path, replies: dict[str, Any], logs: tuple[int, str, str]) -> tuple[GitHubEnv, FakeRunner]:
+def _annotated_env(tmp_path: Path, replies: dict[str, Any], *logs: tuple[int, str, str]) -> tuple[GitHubEnv, FakeRunner]:
     """A PR env whose one failed Ci run (job 9001, check run 901) failed at the pytest step; the log
-    download answers `logs`, every other gh call the fake's `replies`."""
+    downloads answer `logs` in turn (the last one repeated), every other gh call the fake's `replies`."""
+    answers = list(logs)
     runs = _failed_runs(("Ci", "9001", "2026-10-30T07:00:00Z"))
     runs["check_runs"][0]["id"] = 901
     job = {"steps": [{"name": PYTEST_STEP, "conclusion": "failure"}]}
@@ -873,22 +874,40 @@ def _annotated_env(tmp_path: Path, replies: dict[str, Any], logs: tuple[int, str
     def run(args: list[str], stdin: str | None, cwd: Path) -> tuple[int, str, str]:
         if args[-1].endswith("/logs"):
             fake.calls.append(args)
-            return logs
+            return answers.pop(0) if len(answers) > 1 else answers[0]
         return fake(args, stdin, cwd)
 
     env._run = run
     return env, fake
 
 
-def test_failure_log_uses_the_annotations_when_the_log_download_fails(tmp_path: Path) -> None:
-    """D-1263: a refused log download is logged (exit code, redacted stderr) and the check run's
-    failure annotations become the excerpt."""
-    env, _ = _annotated_env(tmp_path, {"repos/o/r/check-runs/901/annotations": ANNOTATIONS},
+@pytest.fixture(autouse=True)
+def _no_log_retry_wait(monkeypatch: pytest.MonkeyPatch) -> list[float]:
+    """The one retry of a refused log download (D-1263) sleeps LOG_RETRY_SECONDS; recorded, not slept."""
+    waits: list[float] = []
+    monkeypatch.setattr(ge.time, "sleep", waits.append)
+    return waits
+
+
+def test_failure_log_uses_the_annotations_when_the_log_download_fails(tmp_path: Path, _no_log_retry_wait: list[float]) -> None:
+    """D-1263: a log download refused twice (once retried after LOG_RETRY_SECONDS) is logged (exit
+    code, redacted stderr) and the check run's failure annotations become the excerpt."""
+    env, fake = _annotated_env(tmp_path, {"repos/o/r/check-runs/901/annotations": ANNOTATIONS},
                             (1, "", f"HTTP 403: Resource not accessible by integration {FAKE_TOKEN}"))
     log = (env.pr_for("K10") or {})["failure_log"]
     assert log == ("Ci: failure\nCi failed at step: " + PYTEST_STEP + "\ntests/test_fake.py:12: assert 1 == 2\n"
                    "tests/test_fake.py:12: saw [redacted]\nProcess completed with exit code 1.")
     assert any(line.startswith("job 9001 log unreadable (exit 1): HTTP 403") for line in env.log)
+    assert sum(a[-1].endswith("/logs") for a in fake.calls) == 2 and _no_log_retry_wait == [ge.LOG_RETRY_SECONDS]
+
+
+def test_failure_log_retries_a_refused_log_download_once(tmp_path: Path, _no_log_retry_wait: list[float]) -> None:
+    """D-1263: a log not ready at the first read is read again after LOG_RETRY_SECONDS and used."""
+    env, fake = _annotated_env(tmp_path, {"repos/o/r/check-runs/901/annotations": ANNOTATIONS},
+                               (1, "", "HTTP 404: Not Found"), (0, JOB_LOG, ""))
+    log = (env.pr_for("K10") or {})["failure_log"]
+    assert log.endswith("leaks found: 2\n##[error]Process completed with exit code 1.") and env.log == []
+    assert _no_log_retry_wait == [ge.LOG_RETRY_SECONDS] and not any("annotations" in a[-1] for a in fake.calls)
     assert not any(FAKE_TOKEN in line for line in env.log) and len(log) <= ge.FAILURE_LOG_CAP
 
 
@@ -909,6 +928,8 @@ def test_failure_log_is_the_step_list_without_a_log_or_annotations(tmp_path: Pat
         assert (env.pr_for("K10") or {})["failure_log"] == f"Ci: failure\nCi failed at step: {PYTEST_STEP}"
         assert any("job 9001 log has no error line (9 characters read)" in line for line in env.log)
     assert any("check run 901 annotations unreadable" in line for line in env.log)
+    no_line = {"annotation_level": "failure", "path": "tests/test_fake.py", "message": "collection error"}
+    assert ge.annotation_lines([no_line]) == ["tests/test_fake.py: collection error"]
     assert ge.annotation_lines({"message": "not a list"}) == [] and ge.annotation_lines(["x", {"annotation_level": "failure"}]) == []
 
 
