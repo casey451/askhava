@@ -1419,6 +1419,11 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **What happened.** The runner's first in-band reading came in at 6:02 pm: 59% of the week used, reset Thursday 10:00 am Phoenix. The line had been set in the runner's own estimate, which sits about 10% lower, so left alone it would have waited most of Sunday before claiming.
 - **What changed.** The line now starts from that 59% reading and ends at about 97% at 7:00 am Thursday, three hours before the reset — about one task every hour and a half, each on Opus. The old 10% safety margin is gone; the three-hour time margin does that job now.
 
+## T208 fits its context budget again (D-1227, November 1)
+
+- **What was wrong.** T208, the step where the homeowner approves her job card before it goes out, had grown to 47% of a session's working memory, over the 45% limit, because the intake files it changes got bigger in T048 and T049.
+- **What changed.** It no longer loads the fake sample-request list used for the routing test (that list belongs to T154 and T156, not to the approval step). Nothing it must build or test changed, and the limit stayed at 45%. It now measures 39%.
+
 ## No more pacing holds (D-1189, November 1)
 
 - **What you asked for.** At 5:07 am Sunday: no more pausing; running out of the week's plan early is fine; don't go faster where slower gives a better result.
