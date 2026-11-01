@@ -40,6 +40,12 @@ pub enum IntakeError {
     /// The vault could not store the name and address.
     #[error("intake could not store the name and address")]
     Vault,
+    /// The quotes module could not read the quotes or build the LIST text (TXT-031).
+    #[error("intake could not read the quotes")]
+    Quotes,
+    /// The `ops` alert could not be raised (INT-023's call-back).
+    #[error("intake could not raise an alert")]
+    Alert,
 }
 
 /// `intake.homeowner`: one person by vault contact ID.
@@ -823,4 +829,21 @@ pub(crate) async fn demand_rows(
             created_at: r.created_at.to_jiff(),
         })
         .collect())
+}
+
+/// The homeowner's vault contact ID and the language code of request `conversation`, the
+/// recipient of its no-reply texts (INT-019); `None` when it does not exist.
+pub(crate) async fn recipient(
+    db: &mut PgConnection,
+    conversation: Uuid,
+) -> Result<Option<(Uuid, String)>, IntakeError> {
+    sqlx::query!(
+        "SELECT h.contact_id, c.language FROM intake.conversation c \
+         JOIN intake.homeowner h ON h.id = c.homeowner_id WHERE c.id = $1",
+        conversation
+    )
+    .fetch_optional(db)
+    .await
+    .map(|r| r.map(|r| (r.contact_id, r.language)))
+    .map_err(|_| IntakeError::Database)
 }
