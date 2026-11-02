@@ -198,7 +198,8 @@ MAX_HARNESS_CONTEXT_PCT = 50
 MAX_CLEANUP_CONTEXT_PCT = 65
 # Harness tasks finished before D-1036 that edited the twin's two largest files whole (63 to 69%); their
 # measured budgets are history, stored honestly under a limit of their own rather than trimmed (D-1036).
-CONTEXT_LIMIT_HISTORY = frozenset({"T005", "T006", "T007"})
+# T170 finished (October 30) reading the whole brief at 51% of the window; its record is history too (D-1350).
+CONTEXT_LIMIT_HISTORY = frozenset({"T005", "T006", "T007", "T170"})
 MAX_HISTORY_CONTEXT_PCT = 75
 MAX_REQUIREMENTS = 12  # was 25 (D-119)
 MAX_TESTS = 6
