@@ -913,6 +913,24 @@ def test_failure_log_download_allows_escape_sequences(tmp_path: Path, _no_log_re
     assert "FAILED tests/test_fake.py::t" in log and "\x1b" not in log
 
 
+def test_failure_log_download_falls_back_when_gh_lacks_the_flag(tmp_path: Path, _no_log_retry_wait: list[float]) -> None:
+    """D-1398: a `gh` that answers "unknown flag" is asked again without `--allow-escape-sequences`."""
+    plain = "2026-10-30T07:00:01.0000000Z ##[group]Run pytest\n2026-10-30T07:00:01.5000000Z ##[endgroup]\n2026-10-30T07:00:02.0000000Z FAILED tests/test_fake.py::t\n2026-10-30T07:00:03.0000000Z ##[error]Process completed with exit code 1.\n"
+    env, fake = _annotated_env(tmp_path, {}, (1, "", "unknown flag: --allow-escape-sequences"), (0, plain, ""))
+    log = (env.pr_for("K10") or {})["failure_log"]
+    downloads = [a for a in fake.calls if a[-1].endswith("/jobs/9001/logs")]
+    assert [("--allow-escape-sequences" in a) for a in downloads] == [True, False] and _no_log_retry_wait == []
+    assert "FAILED tests/test_fake.py::t" in log
+
+
+def test_log_excerpt_strips_osc_private_csi_and_control_characters() -> None:
+    """D-1398: hyperlink (OSC), private CSI and C0 control sequences never reach the retry's prompt."""
+    text = ("##[group]Run pytest\n##[endgroup]\n\x1b]8;;http://example.invalid\x07link\x1b]8;;\x07 \x1b[?25l"
+            "\x1b[1;31mFAILED\x1b[0m\x08 tests/test_fake.py::t\x07\n##[error]Process completed with exit code 1.\n")
+    excerpt = ge.log_excerpt(text)
+    assert excerpt == ["link FAILED tests/test_fake.py::t", "##[error]Process completed with exit code 1."]
+
+
 def test_failure_log_retries_a_refused_log_download_once(tmp_path: Path, _no_log_retry_wait: list[float]) -> None:
     """D-1263: a log not ready at the first read is read again after LOG_RETRY_SECONDS and used."""
     env, fake = _annotated_env(tmp_path, {"repos/o/r/check-runs/901/annotations": ANNOTATIONS},

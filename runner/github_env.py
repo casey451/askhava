@@ -91,7 +91,10 @@ EXCERPT_WIDTH = 200
 LOG_RETRY_SECONDS = 10  # the wait before the one retry of a refused job-log download (D-1263)
 JOB_URL = re.compile(r"/actions/runs/\d+/job/(\d+)")
 LOG_STAMP = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z ")
-ANSI = re.compile(r"\x1b\[[0-9;]*[A-Za-z]")
+# CSI sequences (private ones with `?` included), OSC strings (hyperlinks, titles) and two-byte
+# escapes; then the C0 controls other than tab (D-582, D-1398: a log reaches the retry's prompt).
+ANSI = re.compile(r"\x1b(?:\[[0-?]*[ -/]*[@-~]|\][^\x07\x1b]*(?:\x07|\x1b\\)|[@-Z\\-_])")
+CONTROL = re.compile(r"[\x00-\x08\x0b-\x1f\x7f]")
 # Defence in depth only: Actions already masks secrets as *** and gitleaks runs with --redact.
 TOKEN_LIKE = re.compile(r"gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|x-access-token:[^@\s]+@")
 # A best-effort read or write (a failure detail, the branch preparation) that fails is left out, never raised.
@@ -273,7 +276,7 @@ def log_excerpt(text: str, lines: int = EXCERPT_LINES) -> list[str]:
     left out: that is where Actions prints the step's command and its `env:` block, so no environment
     dump reaches the excerpt. Token-shaped strings are replaced as a second guard. [] when the log
     holds no error line."""
-    rows = [LOG_STAMP.sub("", ANSI.sub("", row)) for row in text.splitlines()]
+    rows = [LOG_STAMP.sub("", CONTROL.sub("", ANSI.sub("", row))) for row in text.splitlines()]
     end = next((i for i, row in enumerate(rows) if row.startswith("##[error]")), None)
     if end is None:
         return []
@@ -909,9 +912,14 @@ class GitHubEnv:
         silently as every one did from D-582 on."""
         # `--allow-escape-sequences`: a log that carries terminal colour codes is otherwise refused by
         # `gh api` with "the response contains terminal escape sequences", which lost the excerpt of
-        # T225's Coverage failure (D-1398); `log_excerpt` strips the codes itself.
-        args = ["gh", "api", "--allow-escape-sequences", f"repos/{self.repo}/actions/jobs/{job}/logs"]
+        # T225's Coverage failure (D-1398); `log_excerpt` strips the codes itself. A `gh` too old for
+        # the flag ("unknown flag") is asked again without it, so an older host loses nothing.
+        path = f"repos/{self.repo}/actions/jobs/{job}/logs"
+        args = ["gh", "api", "--allow-escape-sequences", path]
         code, text, err = self._run(args, None, self.root)
+        if code != 0 and "unknown flag" in err:
+            args = ["gh", "api", path]
+            code, text, err = self._run(args, None, self.root)
         if code != 0:
             time.sleep(LOG_RETRY_SECONDS)
             code, text, err = self._run(args, None, self.root)
