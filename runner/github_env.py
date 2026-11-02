@@ -907,7 +907,10 @@ class GitHubEnv:
         characters of its stderr, token-shaped strings redacted) and a log with no `##[error]` line are
         both written down, so the next failure shows why the log was not used instead of failing
         silently as every one did from D-582 on."""
-        args = ["gh", "api", f"repos/{self.repo}/actions/jobs/{job}/logs"]
+        # `--allow-escape-sequences`: a log that carries terminal colour codes is otherwise refused by
+        # `gh api` with "the response contains terminal escape sequences", which lost the excerpt of
+        # T225's Coverage failure (D-1398); `log_excerpt` strips the codes itself.
+        args = ["gh", "api", "--allow-escape-sequences", f"repos/{self.repo}/actions/jobs/{job}/logs"]
         code, text, err = self._run(args, None, self.root)
         if code != 0:
             time.sleep(LOG_RETRY_SECONDS)

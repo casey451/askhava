@@ -902,6 +902,17 @@ def test_failure_log_uses_the_annotations_when_the_log_download_fails(tmp_path: 
     assert sum(a[-1].endswith("/logs") for a in fake.calls) == 2 and _no_log_retry_wait == [ge.LOG_RETRY_SECONDS]
 
 
+def test_failure_log_download_allows_escape_sequences(tmp_path: Path, _no_log_retry_wait: list[float]) -> None:
+    """D-1398: the log download passes `--allow-escape-sequences`, since `gh api` otherwise refuses a
+    log with colour codes; `log_excerpt` strips them from the excerpt."""
+    coloured = "2026-10-30T07:00:01.0000000Z ##[group]Run pytest\n2026-10-30T07:00:01.5000000Z ##[endgroup]\n2026-10-30T07:00:02.0000000Z \x1b[31mFAILED\x1b[0m tests/test_fake.py::t\n2026-10-30T07:00:03.0000000Z ##[error]Process completed with exit code 1.\n"
+    env, fake = _annotated_env(tmp_path, {}, (0, coloured, ""))
+    log = (env.pr_for("K10") or {})["failure_log"]
+    downloads = [a for a in fake.calls if a[-1].endswith("/jobs/9001/logs")]
+    assert downloads and all("--allow-escape-sequences" in a for a in downloads)
+    assert "FAILED tests/test_fake.py::t" in log and "\x1b" not in log
+
+
 def test_failure_log_retries_a_refused_log_download_once(tmp_path: Path, _no_log_retry_wait: list[float]) -> None:
     """D-1263: a log not ready at the first read is read again after LOG_RETRY_SECONDS and used."""
     env, fake = _annotated_env(tmp_path, {"repos/o/r/check-runs/901/annotations": ANNOTATIONS},

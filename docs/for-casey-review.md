@@ -1610,3 +1610,8 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **What happened.** A text that fails is tried again 10, 20 and 30 minutes later. If the third retry fails too, a quote link or missed-call text goes by email (and shows in the portal) when there's an email on file. A homeowner with no email becomes a call-back alert for you: due in 24 hours for an urgent job, 4 days otherwise.
 - **Emails.** Every email now goes through one outbox, once each, with the footer the rules require: why they get it, a "Manage email notices" link and the Ask Hava LLC P.O. box. Above 90 of the free plan's 100 a day, only the open-cards, missed-cards and weekly digest emails wait for midnight UTC; job cards, picks, reminders and receipts still go. A provider "limit reached" refusal waits and is never dropped.
 - **Worth a look.** When you rent the P.O. box or private mailbox, its address goes into a setting (no home address is accepted). The opt-out email uses the exact opt-out text, which says "at this number"; in an email that reads a little oddly. Changing it would be a spec change, so say if you want it reworded. How Resend counts its day (midnight UTC is assumed) gets checked before going live.
+
+## The retry now sees why coverage failed (harness change, D-1398, November 2)
+
+- **What happened.** T225's first try failed the coverage floor in Ci. The runner tried to read the failing job's log to tell the retry what broke, but GitHub's tool refused to print it because the log had colour codes in it. The second try got only the step name.
+- **What changed.** The runner now asks for the log anyway and strips the colour codes itself, as it already did for other logs. Nothing else about failure handling changed.
