@@ -21,6 +21,7 @@ import pytest
 from runner import __main__ as entry, cycle, github_env as ge, state as st, verify
 from runner.github_env import (
     GitHubEnv,
+    agent_id_list,
     alias_for,
     find_transcripts,
     parse_inbox_file,
@@ -1014,6 +1015,19 @@ def test_transcripts_found_by_agent_id_and_read_for_models_and_tokens(tmp_path: 
     assert len(paths) == 1
     models, usage = read_transcripts(paths)
     assert models == [MODELS["haiku"]] and usage["cache_read_input_tokens"] == 5 and usage["output_tokens"] == 4
+
+
+def test_transcripts_found_when_agent_ids_are_joined_in_one_flag(tmp_path: Path) -> None:
+    """D-1328: `--worker-agent a,b` (or `agent-a agent-b`) names two transcripts, not one missing file."""
+    folder = tmp_path / ".claude" / "projects" / "-repo" / "sess-1" / "subagents"
+    folder.mkdir(parents=True)
+    rec = json.dumps({"message": {"model": MODELS["opus"], "usage": {"input_tokens": 1, "output_tokens": 1}}})
+    for name in ("agent-w1.jsonl", "agent-w2.jsonl"):
+        (folder / name).write_text(rec + "\n")
+    assert agent_id_list(["w1,w2", "agent-w2", " ", "w3 w1"]) == ["w1", "w2", "w3"]
+    assert len(find_transcripts(["w1,w2"], home=tmp_path)) == 2
+    assert len(find_transcripts(["agent-w1 agent-w2"], home=tmp_path)) == 2
+    assert find_transcripts(["w1,w2,missing"], home=tmp_path) == find_transcripts(["w1", "w2"], home=tmp_path)
 
 
 def test_alias_for_full_model_ids() -> None:

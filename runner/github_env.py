@@ -1465,10 +1465,23 @@ def read_transcripts(paths: Iterable[str]) -> tuple[list[str], dict[str, int]]:
     return models, totals
 
 
+def agent_id_list(agent_ids: Iterable[str]) -> list[str]:
+    """The agent IDs named by `--worker-agent` flags, one per flag or several joined by commas or
+    spaces in one flag, each without an `agent-` prefix (D-1328: T241's first attempt passed
+    `--worker-agent a,b`, no transcript matched, and a finished hand-in failed for lack of evidence)."""
+    ids: list[str] = []
+    for value in agent_ids:
+        for part in value.replace(",", " ").split():
+            agent = part[len("agent-"):] if part.startswith("agent-") else part
+            if agent and agent not in ids:
+                ids.append(agent)
+    return ids
+
+
 def find_transcripts(agent_ids: Iterable[str], home: Path | None = None) -> list[str]:
     """Paths of subagent transcripts by agent ID (D-170 layout); a missing one is simply not found."""
     base = home or Path.home()
     found: list[str] = []
-    for agent in agent_ids:
+    for agent in agent_id_list(agent_ids):
         found += sorted(glob.glob(str(base / ".claude" / "projects" / "*" / "*" / "subagents" / f"agent-{agent}.jsonl")))
     return found
