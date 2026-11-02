@@ -29,7 +29,7 @@ pub use crate::reader::{
     read_inbound_email,
 };
 pub use crate::scrub::{
-    CommonWords, DEFAULT_COMMON_WORDS, Known, NameMemory, REMOVED, ScrubbedText, scrub,
+    CommonWords, DEFAULT_COMMON_WORDS, Known, NameMemory, REMOVED, ScrubbedText, is_format, scrub,
 };
 pub use crate::vault::{
     BASELINE_FLOOR, BASELINE_HOURS, RATE_MULTIPLE, Vault, check_read_rates, find_by_phone,

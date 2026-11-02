@@ -239,8 +239,9 @@ pub async fn delivery_status(
 }
 
 /// The number to text: a homeowner's from the vault for contact `recipient` (PRIV-003, PRIV-004,
-/// D-849), a business phone as the caller gave it.
-async fn recipient_phone(
+/// D-849), a business phone as the caller gave it. `optout::send_checked` reads the number it
+/// checks against the suppression list here too, so both see the same number (D-1362).
+pub(crate) async fn recipient_phone(
     db: &mut PgConnection,
     to: To<'_>,
     recipient: Uuid,

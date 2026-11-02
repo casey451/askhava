@@ -8,7 +8,7 @@ The layer-2 crate that holds every homeowner contact detail (name, phone, email,
 
 - `src/lib.rs`: the crate root; one `mod` line per file.
 - `src/api.rs`: the public surface: re-exports, the capability types `ReleaseProof`, `ReleaseBasis`, `ReleaseMint` (`mint(pick_id, contact_id, basis)`), `release_mint()`, `HomeownerSessionProof`, `OwnerSessionProof`, `SessionMint` (`homeowner`, `owner`), `session_mint()`; the reads `read_contact`, `read_for_release`, `read_own_contact`, `read_for_owner`; the inline `realm_tests` (D-751).
-- `src/scrub.rs`: `ScrubbedText` (`as_str`), `scrub`, `CommonWords`, `DEFAULT_COMMON_WORDS`, `Known`, `NameMemory`, `REMOVED`; the crate-private `normalize`.
+- `src/scrub.rs`: `ScrubbedText` (`as_str`), `scrub`, `CommonWords`, `DEFAULT_COMMON_WORDS`, `Known`, `NameMemory`, `REMOVED`, `is_format` (the one Cf list, which `ai`'s screen also uses, D-1362); the crate-private `normalize`.
 - `src/reader.rs`: `read_inbound`, `InboundWords`, `Flags`, `Inbound`; `read_inbound_email`, `SignedDelivery`, `EmailContext`, `InboundEmail`, `InboundError`, `EmailAuth`, `Standing`, `SenderIndex`, `email_index`, `WEBHOOK_TOLERANCE_SECS`.
 - `src/models.rs`: `VaultError`, `Field`, `Reader`, `Purpose`, `OwnerPurpose`, `Grant`, `GRANTS`, `grant_for`, `NewContact`, `ContactDetails`, `IndexPurpose`, `normalize_phone`.
 - `src/vault.rs`: `Vault` (`new`, `seal_version`, `index_version`, `blind_index`), `store_contact`, `find_by_phone`, `rotate_batch`, `check_read_rates`, the crate-private `read` and `refuse`; `RATE_MULTIPLE`, `BASELINE_HOURS`, `BASELINE_FLOOR`.
