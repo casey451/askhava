@@ -1,0 +1,38 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT EXISTS (SELECT 1 FROM quotes.job_card WHERE job_id = $1 AND business_id = $2) AS \"holds!\", (SELECT count(*) FROM quotes.job_card WHERE job_id = $1) AS \"sent!\", (SELECT count(*) FROM quotes.quote WHERE job_id = $1 AND confirmed AND withdrawn_at IS NULL) AS \"quoted!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "holds!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 1,
+        "name": "sent!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 2,
+        "name": "quoted!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "3f36efd078d06ab7b5031661a4757c45fac63b7f8b0e4aef7f6a185598018a1c"
+}
