@@ -650,6 +650,7 @@ dependencies = [
  "askhava-core",
  "askhava-intake",
  "askhava-jobs",
+ "askhava-messaging",
  "askhava-ops",
  "askhava-portals",
  "askhava-privacy",

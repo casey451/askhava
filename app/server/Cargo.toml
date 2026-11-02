@@ -15,6 +15,7 @@ askhava-adapters = { workspace = true }
 askhava-core = { workspace = true }
 askhava-intake = { workspace = true }
 askhava-jobs = { workspace = true }
+askhava-messaging = { workspace = true }
 askhava-ops = { workspace = true }
 askhava-portals = { workspace = true }
 askhava-privacy = { workspace = true }
