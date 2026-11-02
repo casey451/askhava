@@ -42,6 +42,7 @@ usage from the transcripts themselves (D-170: ~/.claude/projects/<proj>/<session
 from __future__ import annotations
 
 import glob
+import importlib.util
 import json
 import os
 import random
@@ -130,6 +131,33 @@ def _timeout_for(args: list[str]) -> int:
     if args[:2] == ["bash", "scripts/smoke.sh"]:
         return SMOKE_TIMEOUT
     return PREHANDIN_TIMEOUT if any(a.endswith("/prehandin.sh") or a == PREHANDIN for a in args[:4]) else 600
+
+
+def _pii_patterns() -> tuple[re.Pattern[str], ...]:
+    """scripts/pii_scan.py's key, phone and email patterns (standard library only, loaded by path), or ()
+    when it cannot be loaded, so a missing scanner never stops a hand-in (D-1300)."""
+    spec = importlib.util.spec_from_file_location("pii_scan_patterns", Path(__file__).resolve().parent.parent / "scripts" / "pii_scan.py")
+    if spec is None or spec.loader is None:
+        return ()
+    try:
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        return (*mod.KEY_PATTERNS.values(), mod.PHONE, mod.PHONE_PLUS, mod.EMAIL)
+    except (OSError, AttributeError, SyntaxError, ImportError):
+        return ()
+
+
+GATE_REDACT = _pii_patterns()
+
+
+def _redact_gate_row(row: str) -> str:
+    """One line of the gate's output for the failure log: ANSI removed, GitHub tokens (TOKEN_LIKE) and every
+    key, phone and email shape scripts/pii_scan.py knows (GATE_REDACT) replaced, so a check that echoes what
+    it found never carries it into kit/state.json (D-1300)."""
+    row = TOKEN_LIKE.sub("[redacted]", ANSI.sub("", row))
+    for pattern in GATE_REDACT:
+        row = pattern.sub("[redacted]", row)
+    return row
 
 
 def _smoke_env() -> dict[str, str]:
@@ -1324,8 +1352,9 @@ class GitHubEnv:
         Main's copy of the gate runs (a task branch cannot weaken it) in a detached worktree of the head,
         so the checks run over exactly the tree that would be pushed, with the head's own scripts as `Ci`
         runs them. Only exit status 1 is red: a gate main does not have yet, a dry run, a worktree git
-        cannot make, a timeout or any other exit is logged and lets the hand-in through, so the gate
-        never fails an attempt for a reason that is not the work's."""
+        cannot make, a timeout or any other exit (3 is the gate's own "cannot check": no base, no merge
+        base) is logged and lets the hand-in through, so the gate never fails an attempt for a reason that
+        is not the work's. A check script main added after the head was made is skipped by the gate."""
         script = self._show(main, PREHANDIN) if main and head and not self.dry_run else None
         if not script:
             return ""
@@ -1346,7 +1375,7 @@ class GitHubEnv:
 
     def _gate_verdict(self, head: str, code: int, output: str) -> str:
         """The gate's exit status and output as prehandin's answer, with one cycle-log line (D-1300)."""
-        rows = [TOKEN_LIKE.sub("[redacted]", ANSI.sub("", r))[:EXCERPT_WIDTH] for r in output.strip().splitlines()]
+        rows = [_redact_gate_row(r)[:EXCERPT_WIDTH] for r in output.strip().splitlines()]
         last = rows[-1] if rows else ""
         if code != 1:
             self.log.append(f"pre-hand-in gate on {head[:12]}: exit {code}; {last}" + ("" if code == 0 else " (not a verdict: let through)"))

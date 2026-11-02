@@ -246,8 +246,8 @@ def after(args: argparse.Namespace, cfg: cycle.Config, env: GitHubEnv) -> str:
 def hold_red_gate(res: cycle.WorkerResult) -> str:
     """PREHANDIN_HELD when the pre-hand-in gate failed the hand-in and the session has used fewer than
     PREHANDIN_HOLDS fix rounds (counted in the local hand-off file), else '' so `finish` records the
-    failure with the gate's output as `last_failure` for the retry (D-1300). A held hand-in writes nothing
-    to claude/kit-state: the session gives the printed output to a new worker, commits the fix on the same
+    failure with the gate's output as `last_failure` for the retry (D-1300). A held hand-in does not write
+    kit/state.json (only the cycle's runner_log.jsonl row is pushed): the session gives the printed output to a new worker, commits the fix on the same
     branch, has the reviewer read the fix and runs `--after` again. The gate's output is kept in the
     hand-off file, so a session that then ends without handing in (backup-runner.yml's safety step) still
     leaves it in `last_failure`. Without a hand-off file (RUNNER_WORKER_CMD, a test) nothing is held."""
@@ -257,8 +257,9 @@ def hold_red_gate(res: cycle.WorkerResult) -> str:
         return ""
     found.update(prehandin_holds=rounds + 1, prehandin_log=res.log)
     (ROOT / HANDOFF).write_text(json.dumps(found), encoding="utf-8")
-    print(f"runner: hand-in held, fix round {rounds + 1} of {PREHANDIN_HOLDS}; give this to a new worker, commit the fix "
-          f"on the same branch, then run --after again (D-1300):\n{res.log}")
+    print(f"runner: hand-in held, fix round {rounds + 1} of {PREHANDIN_HOLDS}; give this to a new worker on the hand-off's "
+          "model, commit the fix on the same branch, then run --after again. If a check names a script the branch "
+          "lacks, merge origin/main into the branch (a plain merge, never a reset or rebase) (D-1300):\n" + res.log)
     return PREHANDIN_HELD
 
 

@@ -103,6 +103,21 @@ def test_a_gate_that_cannot_give_a_verdict_never_fails_the_work(repo: dict[str, 
     assert any(f"exit 124; timed out after {ge.PREHANDIN_TIMEOUT} seconds" in r for r in env.log)
 
 
+def test_exit_3_from_the_gate_is_logged_and_let_through() -> None:
+    env = ge.GitHubEnv(Path("."), [], Path("."), repo="o/r", starter="manual", runner_sha="x")
+    assert env._gate_verdict("f" * 40, 3, "CANNOT CHECK: no merge base between origin/main and HEAD") == ""
+    assert env.log[-1].endswith("exit 3; CANNOT CHECK: no merge base between origin/main and HEAD (not a verdict: let through)")
+
+
+def test_the_gate_output_loses_every_key_phone_and_email_shape_pii_scan_knows() -> None:
+    """Review NIT 4: pii_scan's patterns are applied to the captured output too, not only GitHub tokens."""
+    env = ge.GitHubEnv(Path("."), [], Path("."), repo="o/r", starter="manual", runner_sha="x")
+    found = "docs/x.md:3: phone 928-555-2368 mail jo.fake@corp.invalid.zz key sk_live_" + "A1" * 10 + " sk-ant-" + "b" * 24
+    out = env._gate_verdict("f" * 40, 1, found + "\nFAILED: pii_scan")
+    assert ge.GATE_REDACT and "928-555-2368" not in out and "jo.fake@" not in out and "sk_live_" not in out
+    assert "sk-ant-" not in out and out.count("[redacted]") >= 4 and "docs/x.md:3" in out
+
+
 def test_the_gate_output_is_redacted_and_capped() -> None:
     env = ge.GitHubEnv(Path("."), [], Path("."), repo="o/r", starter="manual", runner_sha="x")
     noisy = "\n".join([f"line {n} ghp_{'a' * 30}" for n in range(200)] + ["\x1b[31mFAILED: pii_scan\x1b[0m"])
@@ -199,9 +214,45 @@ def test_the_gate_stops_at_the_first_red_check_with_its_name(tmp_path: Path) -> 
     done = subprocess.run(["bash", str(GATE), "--quick", "--base", "origin/main"], cwd=work, capture_output=True, text=True,
                           env={"PATH": "/usr/bin:/bin", "PREHANDIN_ROOT": str(work), "HOME": str(tmp_path)}, check=False)
     assert done.returncode == 1 and "FAILED: sources/ differs from kit/sources.sha256" in done.stdout
-    bad = subprocess.run(["bash", str(GATE), "--base", "nowhere"], cwd=work, capture_output=True, text=True,
-                         env={"PATH": "/usr/bin:/bin", "PREHANDIN_ROOT": str(work), "HOME": str(tmp_path)}, check=False)
-    assert bad.returncode == 1 and "FAILED: base nowhere is not a commit here" in bad.stdout
+
+
+def _run_gate(work: Path, tmp_path: Path, *args: str) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(["bash", str(GATE), *args], cwd=work, capture_output=True, text=True,
+                          env={"PATH": "/usr/bin:/bin", "PREHANDIN_ROOT": str(work), "HOME": str(tmp_path)}, check=False)
+
+
+def test_a_git_problem_exits_3_never_the_red_1(tmp_path: Path) -> None:
+    """Review NIT 5: no such base or no merge base is not a verdict on the work, so it is never exit 1."""
+    work = _git_repo(tmp_path)
+    bad = _run_gate(work, tmp_path, "--quick", "--base", "nowhere")
+    assert bad.returncode == 3 and "CANNOT CHECK: base nowhere is not a commit here" in bad.stdout
+    git(work, "checkout", "-q", "--orphan", "claude/task/T998-unrelated")
+    git(work, "commit", "-qm", "unrelated history")
+    lone = _run_gate(work, tmp_path, "--quick", "--base", "origin/main")
+    assert lone.returncode == 3 and "CANNOT CHECK: no merge base" in lone.stdout
+
+
+def test_a_check_script_the_head_lacks_is_skipped_not_failed(tmp_path: Path) -> None:
+    """Review SHOULD-FIX 1: main's gate on a head made before main added a check script skips that check
+    (as Ci on the branch would) instead of failing the work; the checks the head has still run."""
+    work = _git_repo(tmp_path)
+    (work / "kit").mkdir()
+    (work / "sources").mkdir()
+    (work / "sources" / "s.md").write_text("fake source\n")
+    (work / "kit" / "sources.sha256").write_text(subprocess.run(["sha256sum", "sources/s.md"], cwd=work, capture_output=True,
+                                                                 text=True, check=True).stdout)
+    (work / "scripts").mkdir()
+    for name in ("pii_scan", "trace_spec", "validate_tasks", "check_catalog", "check_legal_docs", "check_ai_smell",
+                 "check_copy", "check_code_docs", "check_rust_rules", "check_plan_lock", "gen_prompts", "check_pr_change"):
+        (work / "scripts" / f"{name}.py").write_text("print('fake check: green')\n")
+    git(work, "add", "-A")
+    git(work, "commit", "-qm", "head without check_crates")
+    done = _run_gate(work, tmp_path, "--quick", "--base", "origin/main")
+    assert done.returncode == 0, done.stdout
+    assert "skipped: scripts/check_crates.py not on this head" in done.stdout and "ok  pii_scan" in done.stdout
+    (work / "scripts" / "check_copy.py").write_text("raise SystemExit('fake copy problem')\n")
+    red = _run_gate(work, tmp_path, "--quick", "--base", "origin/main")
+    assert red.returncode == 1 and "FAILED: check_copy" in red.stdout and "fake copy problem" in red.stdout
 
 
 CALLS = [("kit/prompts/TEMPLATE.md", "prehandin: green"), (".github/workflows/backup-runner.yml", "runner: prehandin_red")]

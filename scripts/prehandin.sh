@@ -24,7 +24,7 @@
 #   --branch  the branch name check_pr_change.py checks paths for (default the current branch)
 # PREHANDIN_ROOT names the checkout to check when this file is run from elsewhere (the runner runs
 # main's copy against the handed-in tree). Exit 0 means green; on red the failing check's last lines are
-# printed and the exit status is 1.
+# printed and the exit status is 1; a git problem (no such base, no merge base) exits 3, never 1.
 set -euo pipefail
 cd "${PREHANDIN_ROOT:-$(dirname "$0")/..}"
 
@@ -44,8 +44,9 @@ if [ -z "${BASE}" ]; then
   BASE="origin/main"
 fi
 BRANCH="${BRANCH:-$(git symbolic-ref --short -q HEAD || true)}"
-git rev-parse --verify --quiet "${BASE}^{commit}" >/dev/null || { echo "FAILED: base ${BASE} is not a commit here"; exit 1; }
-MERGE_BASE="$(git merge-base "${BASE}" HEAD)" || { echo "FAILED: no merge base between ${BASE} and HEAD"; exit 1; }
+# A git problem is not a verdict on the work: exit 3, which the runner logs and lets through (D-1300).
+git rev-parse --verify --quiet "${BASE}^{commit}" >/dev/null || { echo "CANNOT CHECK: base ${BASE} is not a commit here"; exit 3; }
+MERGE_BASE="$(git merge-base "${BASE}" HEAD)" || { echo "CANNOT CHECK: no merge base between ${BASE} and HEAD"; exit 3; }
 CHANGED="$(git diff --no-renames --name-only "${MERGE_BASE}" HEAD)"
 
 step() { printf '\n== %s\n' "$1"; }
@@ -103,6 +104,12 @@ quick_part() {
   step "Plan, wording and source rules (as Ci runs them)"
   local check
   for check in pii_scan trace_spec validate_tasks check_catalog check_legal_docs check_ai_smell check_copy check_code_docs check_rust_rules check_crates check_plan_lock; do
+    if [ ! -f "scripts/${check}.py" ]; then
+      # A check main added after this branch was made: Ci on the branch would not run it either. Merging
+      # origin/main into the branch (a plain merge, never a reset or rebase) brings it (D-1300).
+      echo "skipped: scripts/${check}.py not on this head"
+      continue
+    fi
     run_check "${check}" python3 "scripts/${check}.py"
   done
   run_check "gen_prompts --check" python3 scripts/gen_prompts.py --check

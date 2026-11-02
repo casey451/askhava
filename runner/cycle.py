@@ -1797,7 +1797,8 @@ def after_handoff(cfg: Config, env: Env, res_for: Callable[[dict[str, Any]], Wor
                   hold: Callable[[WorkerResult], str] = lambda res: "") -> str:
     """`python3 -m runner --after`: finish the task this session holds the lease on, on whichever lane.
     When `hold` answers a result for the hand-in (the pre-hand-in gate was red and the session still has
-    a fix round, D-1300), nothing is finished or written: the lease stays held, the task IN_PROGRESS."""
+    a fix round, D-1300), nothing is finished and kit/state.json is not written: the lease stays held and the
+    task IN_PROGRESS (runner/__main__.py still pushes its runner_log.jsonl row)."""
     state = env.read_state()
     lease = session_lease(state, cfg.session, cfg.clock())
     if lease is None:
