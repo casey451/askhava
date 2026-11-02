@@ -61,4 +61,4 @@ Short rules loaded into every session. The full rules live elsewhere; read them,
 
 ## When Claude stops and asks Casey (BUILD_BRIEF.md §16)
 
-Only at: a hands-on task only a human can do; the account checkpoint; real texts to Casey's own phone in Phase 2; the go for the askhava.com page (Stage 0.5); Gate C and the first live charge (`BUILD_BRIEF.md:546`–`BUILD_BRIEF.md:551`). Gate B is Casey's own click-through after "Finished". Everything else Claude decides and logs in `docs/decisions.md` and `docs/for-casey-review.md` (`BUILD_BRIEF.md:542`).
+Only at: a hands-on task only a human can do; the account checkpoint; real texts to Casey's own phone in Phase 2; the go for the askhava.com page (Stage 0.5); Gate C and the first live charge; the war-games go (T243, D-1473) (`BUILD_BRIEF.md:546`–`BUILD_BRIEF.md:552`). Gate B is Casey's own click-through after "Finished". Everything else Claude decides and logs in `docs/decisions.md` and `docs/for-casey-review.md` (`BUILD_BRIEF.md:542`).

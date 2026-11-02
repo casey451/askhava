@@ -1554,6 +1554,22 @@ def test_drill_an_empty_cleanup_hand_in_resolves_without_a_pr_and_the_runner_rec
     assert st.status(env.store, "T008") == st.DONE and st.entry(env.store, "T008")["proof_waits_for"] is None
 
 
+def test_drill_a_hand_proved_stage_cleanup_says_why_and_how_its_proof_is_recorded(tmp_path: Path) -> None:
+    """D-1473: a cleanup task of a stage the runner does not prove (proof.HAND_RECORDED) is not left at a
+    bare "stage proof missing": the cycle notes the reason and the `--record-proof` command, once."""
+    graph = [make_task("T074", stage="3"), make_task("T075", ["T074"], stage="3", type="cleanup")]
+    state = st.with_task(st.sync_graph(st.new_state(), graph), "T074", status=st.DONE, merged_sha="m74")
+    state = st.with_task(state, "T075", status=st.BLOCKED, reason=st.PROOF_MISSING, merged_sha="m75")
+    cfg = dataclasses.replace(config(graph, tmp_path), proof_stages=frozenset({"1", "2", "4"}),
+                              stage_proof=lambda s, stage: (None, ["never called for stage 3"]))
+    out = cycle.record_proofs(cfg, state, NOW)
+    waits = st.entry(out, "T075")["proof_waits_for"]
+    assert len(waits) == 1 and "--record-proof 3 --evidence TEXT" in waits[0] and "cargo-mutants" in waits[0]
+    assert cycle.record_proofs(cfg, out, NOW) is out
+    proved = dict(out, stage_proofs={"3": {"evidence": "hand run", "main_sha": "n", "at": "x"}})
+    assert cycle.record_proofs(cfg, proved, NOW) is proved and st.status(cycle.release_proven(proved), "T075") == st.DONE
+
+
 def test_drill_a_task_stuck_merge_pending_on_an_empty_hand_in_heals_itself(tmp_path: Path) -> None:
     """The live state of October 30 (D-551): T008 MERGE_PENDING, its reviewed head main's tip at hand-in,
     no PR (GitHub opens none without a diff), auto-merge 'no open PR for the branch'. The next cycle
