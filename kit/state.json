@@ -14302,7 +14302,8 @@
   {
    "id": "T234",
    "deps": [
-    "T139"
+    "T139",
+    "T242"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -14575,6 +14576,17 @@
    ],
    "update_waiting_since": null,
    "update_push_failures": null
+  },
+  {
+   "id": "T242",
+   "deps": [
+    "T139"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "pre-war-games-review",
+   "type": "audit",
+   "stage": "6"
   }
  ],
  "owner_waits": [],
@@ -15449,7 +15461,7 @@
    }
   }
  },
- "updated_at": "2026-11-02T03:47:51Z",
+ "updated_at": "2026-11-02T03:53:08Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -15547,7 +15559,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "5511d52e42d2f8011c58f9a4bd234e81d71fc1a8",
+ "runner_sha": "ec53d8aa5058f3c80095fd3c613653e0fe3a0e80",
  "starter": "actions",
  "smoke_runs": [
   {
