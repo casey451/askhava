@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE payments.pay_timer SET due_at = $3, left_seconds = $4\n             WHERE pick_id = $1 AND kind = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Timestamptz",
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "4c2d5743485a889f56ab79b64a8439d650c47b00e0a7e2ba15313652f57bbed3"
+}

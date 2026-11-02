@@ -26,15 +26,29 @@
 //! or the business's free first win inside the [`in_free_win_window`] (FEE-010, FEE-012), and
 //! writes its $0 entry; [`Waiver::NotWaived`] means the caller charges.
 
+//!
+//! T062: [`open_intent`] makes the pick's one PaymentIntent (FEE-047); [`confirm_and_pay`] is the
+//! only charge, one [`Press`] at a time, each with its own key (FEE-016, FEE-017, FEE-037,
+//! FEE-041), answering a [`ChargeOutcome`]; [`run_charge_check`], [`run_pay_timer`] and
+//! [`sync_pause`] are the FEE-019 check, the FEE-018 and FEE-020 timers and the FEE-038 pause.
+
+pub use crate::charge::{
+    ATTEMPT_ACTION, ATTEMPT_SUBJECT, INTENT_ACTION, IntentStripe, confirm_and_pay, open_intent,
+    set_fee_limit,
+};
 pub use crate::free_wins::{
     FREE_WIN_ACTION, FREE_WIN_WINDOW_DAYS, REPEAT_ACTION, Waiver, WinCheck, in_free_win_window,
     record_entity_keys, waive_at_confirm,
 };
+pub use crate::handlers::{
+    CARD_FIX_KIND, CARD_FIX_SECONDS, CHECK_AFTER, CHECK_KIND, EndReason, PICK_ENDED_KIND,
+    STRIPE_DOWN_SECONDS, TIMER_KIND, charges_paused, run_charge_check, run_pay_timer, sync_pause,
+};
 pub use crate::ledger::{Appended, EntryKind, LedgerEntry, LedgerError, NewEntry, ledger_append};
 pub use crate::models::{
-    AUTHORIZATION_TEXT, AUTHORIZATION_VERSION, BusinessId, CardError, CustomerId,
-    ENTITY_KEY_ACTION, EntityKey, EntityKind, FreeWinError, JoinDates, SavedCard,
-    SetupIntentRequest,
+    AUTHORIZATION_TEXT, AUTHORIZATION_VERSION, BusinessId, CardError, ChargeError, ChargeOutcome,
+    CustomerId, ENTITY_KEY_ACTION, EntityKey, EntityKind, FreeWinError, JoinDates, PickNow, Press,
+    SavedCard, SetupIntentRequest, attempt_label, intent_label,
 };
 pub use crate::rules::{
     Fee, FeeError, FeeJob, FeeMode, FeeQuote, FeeTerms, LockDates, Period, PeriodJob, PickedFee,
@@ -46,3 +60,4 @@ pub use crate::service::{
     FEE_MODE_ID, FEE_MODE_SUBJECT_KIND, Saved, accept_authorization, customer_of, ensure_customer,
     may_confirm, record_fee_at_confirm, save_card, switch_fee_mode,
 };
+pub use crate::status::AttemptStatus;

@@ -1,0 +1,52 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT business_id, job_id, emergency FROM payments.pick_intent WHERE pick_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "business_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "payments.pick_intent",
+            "name": "business_id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "job_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "payments.pick_intent",
+            "name": "job_id"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "emergency",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "payments.pick_intent",
+            "name": "emergency"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "9061c858a086ea357dc4a68167ccb59bd749f68d07b7784b71ef36f0f17bad1e"
+}

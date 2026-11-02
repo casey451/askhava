@@ -5,8 +5,12 @@
 //! PICK-016, PICK-031, PICK-032, PICK-036); [`withdraw_paused`] withdraws a paused job's waiting
 //! pick (CON-029); [`terms_line_sent`] and [`record_terms_line`] read and write the PICK-016 Terms
 //! line record; [`terms_line`] is the assent line a text pick accepts.
+//!
+//! T062: [`run_card_fix_notice`] turns `payments`' card-fix event into the business's notice
+//! (FEE-020, D-492).
 
 pub use crate::models::PicksError;
+pub use crate::money_notices::{BUSINESS_NOTICE_KIND, CARD_FIX_TEMPLATE, run_card_fix_notice};
 pub use crate::service::{
     CONFIRMED_TEMPLATE, CodeCheck, CodeSent, CodeTo, DONE_TEMPLATE, NO_QUOTE_TEMPLATE,
     NONE_TEMPLATE, PICK_MADE_KIND, PICK_WITHDRAWN_KIND, TERMS_TEMPLATE, TextPickDone, TextPickIn,

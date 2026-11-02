@@ -1621,3 +1621,10 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **What happened.** The fee-mode switch (tiers or one flat fee per job type) is built: switching is logged, and every business must accept a new card authorization before its next charge. But the card authorization text you approved quotes the $25 / $75 / $199 tiers, and there is no wording yet for flat mode.
 - **What I chose.** I did not write legal wording for you. The system stores the exact text each business was shown, with its version and time. Before the switch is offered in your owner portal, the flat-mode wording needs your go as a spec change.
 - **Worth a look.** The version number for the card wording and the one for the fee mode currently share one counter; whoever next changes either must raise it past both. A later task splits them. Flat mode keeps the $75 cap on recurring services.
+
+## Confirm and pay: how a charge runs and when a pick is let go (T062, D-1424 to D-1428, November 2)
+
+- **What is built.** Each pick has one Stripe payment, made once. Every "Confirm and pay" press is one try with its own key, so a double click or a reload never charges twice, and the server never tries a charge by itself. If a try times out, no new try goes until Stripe says the first one failed.
+- **When a pick is let go.** A declined card gives the business 1 business hour to fix it (60 minutes at any hour on an emergency job), and its money contacts get a notice. If Stripe can't be reached for 4 hours, the pick is let go too. Both clocks stop while your charging switch (or the pause-everything switch) is on, and pick up where they left off.
+- **Monthly limit.** A business can set a monthly fee limit. A press that would go over it charges nothing and ends that pick at once. Reaching the limit exactly is still charged.
+- **Not finished yet.** The notice's wording is in (English, Spanish draft), but the step that actually emails it, and the step that offers the homeowner the next quote, come in later tasks. Until then those requests wait in the queue. Safe mode has no switch of its own yet; the pause-everything switch stands in for it.

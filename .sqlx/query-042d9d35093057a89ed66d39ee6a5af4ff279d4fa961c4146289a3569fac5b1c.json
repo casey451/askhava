@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT stripe_intent_id FROM payments.pick_intent WHERE pick_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "stripe_intent_id",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "payments.pick_intent",
+            "name": "stripe_intent_id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "042d9d35093057a89ed66d39ee6a5af4ff279d4fa961c4146289a3569fac5b1c"
+}

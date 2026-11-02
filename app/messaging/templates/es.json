@@ -378,5 +378,11 @@
     "draft": true,
     "segments": 2,
     "text": "Ask Hava: Claro, ¿qué cambiamos en la solicitud {job}? Díganos en un texto y le mostramos cómo queda. No sale nada hasta que lo vea."
+  },
+  "card_fix_notice": {
+    "audience": "business",
+    "draft": true,
+    "segments": 3,
+    "text": "Ask Hava: Su tarjeta no pasó para el trabajo {job}. No se le cobró nada. Después de las {time}, el propietario puede elegir la cotización de otro negocio. Intente de nuevo o use otra tarjeta: {link}"
   }
 }

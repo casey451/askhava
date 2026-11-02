@@ -17,6 +17,8 @@ askhava-intake = { workspace = true }
 askhava-jobs = { workspace = true }
 askhava-messaging = { workspace = true }
 askhava-ops = { workspace = true }
+askhava-payments = { workspace = true }
+askhava-picks = { workspace = true }
 askhava-portals = { workspace = true }
 askhava-privacy = { workspace = true }
 askhava-quotes = { workspace = true }

@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE payments.pay_timer SET ended_at = $3\n         WHERE pick_id = $1 AND ended_at IS NULL AND ($2::text IS NULL OR kind = $2)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "3204318ed5c84b2a118168f51b8c6e281606adb66d78ffb30e90f4b9e0df1ea8"
+}

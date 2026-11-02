@@ -1,0 +1,30 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT ended_at IS NOT NULL AS \"ended!\", EXISTS (SELECT 1 FROM payments.charge_attempt a\n             WHERE a.pick_id = i.pick_id AND a.status = 'succeeded') AS \"paid!\"\n           FROM payments.pick_intent i WHERE pick_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "ended!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 1,
+        "name": "paid!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null,
+      null
+    ]
+  },
+  "hash": "369c17ddb121d59fcb339873cd3f3e04ffbcd21c43a78cc3450483435c633026"
+}

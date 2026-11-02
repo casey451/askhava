@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE payments.charge_attempt SET status = $3, decided_at = $4\n         WHERE pick_id = $1 AND try_no = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Int4",
+        "Text",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "4279a2006a74abe17a109acd4bbb435bea14e9985fe86a741a22168b32ad7455"
+}

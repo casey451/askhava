@@ -14,13 +14,21 @@
 //!
 //! T061 added free first wins (one per entity key, inside the 90-day window) and $0 repeat
 //! customers, [`api::waive_at_confirm`] (FEE-010 to FEE-013, D-069, D-151).
+//!
+//! T062 added the Confirm-and-pay charge: one PaymentIntent per pick, one attempt per press with
+//! its own key, the Stripe outage release, the card-fix window, the charging pause and the
+//! monthly fee limit, [`api::confirm_and_pay`] (FEE-016 to FEE-020, FEE-037, FEE-038, FEE-041,
+//! FEE-047).
 
 pub mod api;
+mod charge;
 mod free_wins;
+mod handlers;
 mod ledger;
 mod models;
 mod rules;
 mod service;
+mod status;
 
 #[cfg(test)]
 mod tests;

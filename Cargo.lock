@@ -534,6 +534,7 @@ dependencies = [
  "secrecy",
  "serde",
  "serde-saphyr",
+ "serde_json",
  "sqlx",
  "thiserror",
  "tokio",
@@ -544,6 +545,7 @@ name = "askhava-picks"
 version = "0.1.0"
 dependencies = [
  "askhava-adapters",
+ "askhava-businesses",
  "askhava-core",
  "askhava-jobs",
  "askhava-messaging",
@@ -673,6 +675,8 @@ dependencies = [
  "askhava-jobs",
  "askhava-messaging",
  "askhava-ops",
+ "askhava-payments",
+ "askhava-picks",
  "askhava-portals",
  "askhava-privacy",
  "askhava-quotes",

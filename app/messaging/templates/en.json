@@ -308,5 +308,10 @@
     "audience": "homeowner",
     "segments": 1,
     "text": "Ask Hava: Sure, what should we change on request {job}? Tell us in one text and we'll show you how it looks now. Nothing goes out until you've seen it."
+  },
+  "card_fix_notice": {
+    "audience": "business",
+    "segments": 2,
+    "text": "Ask Hava: Your card didn't go through for job {job}. You haven't been charged. After {time}, the homeowner can pick another business's quote. Try again or use another card: {link}"
   }
 }
