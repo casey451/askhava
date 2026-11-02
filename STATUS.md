@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-02T13:56:35Z by runner c134524eba95 (actions).
+Updated 2026-11-02T14:07:48Z by runner 7515def2fdc9 (actions).
 
 **Waiting for tokens until 17:00Z; 98 of 230 done; week 98% used, resets Thu 2026-11-05 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-02T13:56:35Z by runner c134524eba95 (actions).
 - **Stage:** stage 3; stage proofs recorded: 1, 2
 - **Lane:** idle since 12:41Z (no task in progress)
 - **Week:** 98% used, 2.0M tokens left; resets Thu 2026-11-05 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:56Z, 0 min before this update
+- **Last run:** 13:56Z, 11 min before this update
 - **Keeper:** last ran 13:56Z, next wake 19:36Z
 
 ## Needs attention
@@ -42,7 +42,6 @@ Updated 2026-11-02T13:56:35Z by runner c134524eba95 (actions).
 | T053 | Accessibility suite: axe at 320/768/1280 on every route, str | done | 1 | 38 min | 16:50Z |  |
 | T052 | portals: the homeowner quote page (token, arrival order, no  | done | 1 | 30 min | 15:57Z |  |
 | T050 | intake: an opt-out changes no job status; the job carries on | done | 1 | 37 min | 15:05Z |  |
-| T049 | intake: CLOSE ####, cancel intent, 'Close which?', bare canc | done | 1 | 34 min | 14:07Z |  |
 
 ### Plan and harness merges on main
 - 13:17Z Harness: the runner wakes itself (keeper), smoke target clean (D-1451) (#264)
