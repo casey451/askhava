@@ -5448,7 +5448,7 @@
    "budget": {
     "files": 4,
     "lines": 450,
-    "context_pct": 10
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -8899,7 +8899,7 @@
    "id": "T089",
    "slug": "security-rate-limits",
    "title": "Rate limits per phone, IP and business; brute-force stops",
-   "goal": "Rate limits per phone, IP and business cover intake, code sends, sign-in links and quote submissions (5 new requests per phone per hour, 50 sign-ups a day, Verify caps), a burst of 100 fake requests in an hour is blocked and alerted, the client IP is trusted only from Cloudflare or the host proxy, and brute-force tests run in the `Ci` security step (SEC-014, SEC-015, SEC-020, SEC-040, PICK-055). The per-phone request limit of SEC-014 is `intake`'s (`app/intake/src/limits.rs`); portals keeps the sign-in and code limits (D-491). The client IP comes from the host-edge header named by a setting while hostnames are DNS-only, `CF-Connecting-IP` only on a proxied hostname from Cloudflare's ranges (SEC-040, D-492).",
+   "goal": "Rate limits per phone, IP and business cover intake, code sends, sign-in links and quote submissions (5 new requests per phone per hour, 50 sign-ups a day, Verify caps), a burst of 100 fake requests in an hour is blocked and alerted, the client IP is trusted only from Cloudflare or the host proxy, and brute-force tests run in the `Ci` security step (SEC-014, SEC-015, SEC-020, SEC-040, PICK-055). The per-phone request limit of SEC-014 is `intake`'s (`app/intake/src/limits.rs`); portals keeps the sign-in and code limits (D-491). The client IP comes from the host-edge header named by the `ASKHAVA_CLIENT_IP_HEADER` setting (its measured value is recorded in the deploy settings table by T135, OPS-050, not here) while hostnames are DNS-only, `CF-Connecting-IP` only on a proxied hostname from Cloudflare's ranges (SEC-040, D-492).",
    "type": "build",
    "phase": 1,
    "stage": "4",
