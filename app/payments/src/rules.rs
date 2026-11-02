@@ -1,17 +1,26 @@
-//! Introduction fee by job size for a chosen one-time quote (FEE-001 to FEE-004, FEE-008,
-//! FEE-043 to FEE-045, D-009, D-033, D-399, D-403).
+//! Introduction fee by job size for a chosen quote (FEE-001 to FEE-004, FEE-008, FEE-039,
+//! FEE-040, FEE-043 to FEE-045, REC-001 to REC-006, REC-010, D-009, D-033, D-399, D-403).
 //!
 //! Pure: a [`FeeQuote`] and its [`FeeJob`] in, a [`Fee`] out. The fee is always exactly one of
 //! the three tiers, $25, $75 or $199, never a percentage of the job and never with tax on top
-//! (FEE-002, FEE-008); a fee-free job type pays $0 (FEE-045). Recurring quotes (the 4-month rule,
-//! the $75 cap and the setup charge left out of the basis, REC-002, FEE-039, FEE-044) are T188's;
-//! this module has no recurring input and no setup amount, so no setup charge can reach a basis
-//! here (D-1400). Nothing here talks to Stripe or the database.
+//! (FEE-002, FEE-008); a fee-free job type pays $0 (FEE-045). [`fee_for`] prices a one-time
+//! quote; [`period_fee_for`] (T188) adds the period: the 4-month rule and the recurring cap
+//! (REC-002, FEE-039). No input has a setup amount, so a setup charge never reaches a basis
+//! (FEE-044, D-1400). [`price_lock_until`] is the early joiner's price lock (FEE-040). Nothing
+//! here talks to Stripe or the database.
+
+use jiff::{SignedDuration, Timestamp, ToSpan};
 
 /// The edge of the $75 tier: a basis of $500.00 or more is at least $75 (FEE-001, D-009).
 const MEDIUM_FROM_CENTS: u64 = 50_000;
 /// The top of the $75 tier, included: a basis over $1,500.00 is $199 (FEE-001, D-009).
 const MEDIUM_UP_TO_CENTS: u64 = 150_000;
+/// REC-002, REC-006: the one month multiplier for recurring services. Never another number.
+pub const RECURRING_MONTHS: u128 = 4;
+/// FEE-040, D-197: a business that joins before this long after launch gets the price lock.
+const LOCK_JOIN_WINDOW: SignedDuration = SignedDuration::from_hours(90 * 24);
+/// FEE-040, D-465: how long the price lock runs, in calendar months (Arizona time).
+const LOCK_MONTHS: i64 = 6;
 
 /// The three introduction fees by job size (FEE-001).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -171,11 +180,137 @@ pub enum FeeError {
     /// A set tier that is not one of the fees.
     #[error("not an introduction fee tier")]
     NotATier,
+    /// A recurring-service quote with no period goes back to the business to state one
+    /// (REC-010, D-159).
+    #[error("a recurring-service quote needs a period")]
+    NeedsPeriod,
+    /// A period on a quote in a category that is not recurring (D-037).
+    #[error("a period is not taken in a category that is not recurring")]
+    PeriodNotRecurring,
+    /// A period on an hourly or diagnostic-visit quote: only a price or a range recurs.
+    #[error("only a fixed price or a range can have a period")]
+    NotRecurringPrice,
+}
+
+/// How often a recurring price is stated; a per-visit price with a weekly visit schedule is
+/// `Weekly` (REC-004, REC-010, D-010, D-159).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Period {
+    /// Per week, or per visit with weekly visits: × 52 ÷ 12 a month.
+    Weekly,
+    /// Every two weeks: × 26 ÷ 12 a month.
+    EveryTwoWeeks,
+    /// Per month.
+    Monthly,
+    /// Per quarter: ÷ 3 a month.
+    Quarterly,
+    /// Per year: ÷ 12 a month.
+    Yearly,
+}
+
+impl Period {
+    /// REC-004, D-010: the monthly amount is the price × the first ÷ the second.
+    const fn per_month(self) -> (u128, u128) {
+        match self {
+            Self::Weekly => (52, 12),
+            Self::EveryTwoWeeks => (26, 12),
+            Self::Monthly => (1, 1),
+            Self::Quarterly => (1, 3),
+            Self::Yearly => (1, 12),
+        }
+    }
+}
+
+/// What the job's category and job type make of a period (REC-001, REC-010, FEE-039, D-037).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Service {
+    /// The category is not recurring: a period is an error.
+    NotRecurring,
+    /// A recurring category's job type listed in its `one_time_job_types`: no period is face
+    /// value, a period is 4 months, and it is never capped (D-265).
+    OneTimeJobType,
+    /// Any other job type in a recurring category: a period is required and the fee is capped.
+    RecurringJobType,
+}
+
+impl Service {
+    /// REC-001, REC-010: from the category's `recurring` flag and whether the job type is one of
+    /// its `one_time_job_types`.
+    #[must_use]
+    pub const fn of(category_recurring: bool, one_time_job_type: bool) -> Self {
+        match (category_recurring, one_time_job_type) {
+            (false, _) => Self::NotRecurring,
+            (true, true) => Self::OneTimeJobType,
+            (true, false) => Self::RecurringJobType,
+        }
+    }
+}
+
+/// The highest tier a recurring job type pays, a setting: $75 by default (FEE-039, D-196).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct RecurringCap(Tier);
+
+impl RecurringCap {
+    /// FEE-039, D-196: the default cap, $75.
+    pub const DEFAULT: Self = Self(Tier::Medium);
+
+    /// FEE-039: the cap setting in dollars; it is always one of the fees.
+    ///
+    /// # Errors
+    ///
+    /// [`FeeError::NotATier`] for an amount that is not $25, $75 or $199.
+    pub const fn from_dollars(dollars: i32) -> Result<Self, FeeError> {
+        match dollars {
+            25 => Ok(Self(Tier::Small)),
+            75 => Ok(Self(Tier::Medium)),
+            199 => Ok(Self(Tier::Large)),
+            _ => Err(FeeError::NotATier),
+        }
+    }
+}
+
+/// The job as a quote with a period sees it (REC-001, FEE-039).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct PeriodJob {
+    /// The one-time fee inputs: format, set tier and fee-free flag.
+    pub job: FeeJob,
+    /// What the category and job type make of a period.
+    pub service: Service,
+    /// The recurring cap setting.
+    pub cap: RecurringCap,
+}
+
+/// What a business that joined early is charged at most (FEE-040, D-197, D-261, D-288, D-465).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct LockDates {
+    /// When Ask Hava launched.
+    pub launch: Timestamp,
+    /// The business's join date (kept through a waitlist, D-175).
+    pub joined: Timestamp,
+    /// When its first trade was switched on.
+    pub first_trade_on: Timestamp,
+    /// For a business that waited on its city-list match, its activation; none otherwise.
+    pub activated: Option<Timestamp>,
 }
 
 /// FEE-003, D-033: the midpoint of `low` to `high`, a half cent rounded down; never overflows.
 const fn midpoint(low: u64, high: u64) -> u64 {
     low / 2 + high / 2 + (low % 2 + high % 2) / 2
+}
+
+/// REC-002, REC-004, REC-005, D-010, D-033: 4 months of a fixed price or of a range's midpoint,
+/// worked exactly and rounded down to the cent once, at the end.
+fn four_months(quote: FeeQuote, period: Period) -> Result<u64, FeeError> {
+    let (sum, halves) = match quote {
+        FeeQuote::Fixed(amount) => (u128::from(amount), 1),
+        FeeQuote::Range { low, high } if low <= high => (u128::from(low) + u128::from(high), 2),
+        FeeQuote::Range { .. } => return Err(FeeError::Amounts),
+        FeeQuote::Hourly { .. } | FeeQuote::DiagnosticVisit { .. } => {
+            return Err(FeeError::NotRecurringPrice);
+        }
+    };
+    let (times, per) = period.per_month();
+    u64::try_from(sum * times * RECURRING_MONTHS / (per * halves)).map_err(|_| FeeError::Amounts)
 }
 
 /// FEE-003, FEE-043, D-033: the fee basis of a priced quote, or none for a set-tier visit.
@@ -222,4 +357,75 @@ pub fn fee_for(quote: FeeQuote, job: FeeJob) -> Result<Fee, FeeError> {
     }
     let tier = basis.map_or(job.visit_tier.tier(), Tier::for_basis);
     Ok(Fee::Charged { basis, tier })
+}
+
+/// FEE-039, FEE-044, REC-002 to REC-006, REC-010, D-037, D-159, D-196, D-265: the introduction
+/// fee by job size of a chosen quote and its period. With no period: a recurring job type goes
+/// back for one, any other is [`fee_for`]'s one-time face value. With a period: an error outside
+/// a recurring category, else the tier of 4 months of the monthly price, a recurring job type
+/// never above `cap`; a fee-free job type still pays $0.
+///
+/// # Errors
+///
+/// [`FeeError::NeedsPeriod`], [`FeeError::PeriodNotRecurring`], [`FeeError::NotRecurringPrice`],
+/// [`FeeError::Amounts`], or [`fee_for`]'s errors with no period.
+pub fn period_fee_for(
+    quote: FeeQuote,
+    period: Option<Period>,
+    job: PeriodJob,
+) -> Result<Fee, FeeError> {
+    let Some(period) = period else {
+        if job.service == Service::RecurringJobType {
+            return Err(FeeError::NeedsPeriod);
+        }
+        return fee_for(quote, job.job);
+    };
+    if job.service == Service::NotRecurring {
+        return Err(FeeError::PeriodNotRecurring);
+    }
+    let basis = four_months(quote, period)?;
+    if job.job.fee_free {
+        return Ok(Fee::FeeFree { basis: Some(basis) });
+    }
+    let tier = Tier::for_basis(basis);
+    let tier = match job.service {
+        Service::RecurringJobType => tier.min(job.cap.0),
+        Service::OneTimeJobType | Service::NotRecurring => tier,
+    };
+    Ok(Fee::Charged {
+        basis: Some(basis),
+        tier,
+    })
+}
+
+/// FEE-040, D-197, D-261, D-288, D-465: when the early joiner's price lock ends, or none for a
+/// business that joined 90 days or more after launch. The lock runs 6 calendar months (Arizona
+/// time) from the latest of the join date, the first trade's switch-on and any activation.
+#[must_use]
+pub fn price_lock_until(dates: LockDates) -> Option<Timestamp> {
+    let window_end = dates.launch.checked_add(LOCK_JOIN_WINDOW).ok()?;
+    if dates.joined >= window_end {
+        return None;
+    }
+    let start = dates
+        .joined
+        .max(dates.first_trade_on)
+        .max(dates.activated.unwrap_or(dates.joined));
+    let end = askhava_core::api::arizona_time(start).checked_add(LOCK_MONTHS.months());
+    end.ok().map(|at| at.timestamp())
+}
+
+/// FEE-040, D-465: the amount charged at `at` for a fee whose current amount is `current` and
+/// whose amount on the join date was `on_join`: never more than `on_join` while the lock runs.
+#[must_use]
+pub fn locked_cents(
+    lock_until: Option<Timestamp>,
+    at: Timestamp,
+    current: u64,
+    on_join: u64,
+) -> u64 {
+    match lock_until {
+        Some(until) if at < until => current.min(on_join),
+        Some(_) | None => current,
+    }
 }
