@@ -12,6 +12,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use askhava_catalog::api::restricted_match;
+use askhava_privacy::api::is_format;
 use serde::Deserialize;
 use serde_json::Value;
 #[cfg(test)]
@@ -317,22 +318,12 @@ pub fn screen_text(kind: TextKind, text: &str) -> Screened {
 }
 
 /// NFKC, Unicode format characters (category Cf) dropped and ideographic full stops written
-/// `.`, as `privacy`'s scrubber normalizes (AI-020, AI-021, D-814).
+/// `.`, as `privacy`'s scrubber normalizes, with its `is_format` list (AI-020, AI-021, D-814).
 fn screen_normalize(text: &str) -> String {
     text.nfkc()
         .filter(|c| !is_format(*c))
         .map(|c| if c == '\u{3002}' { '.' } else { c })
         .collect()
-}
-
-/// Unicode general category Cf (format characters), including the tag block: the same list as
-/// `privacy`'s scrubber, which does not export it (AI-020, D-814).
-fn is_format(c: char) -> bool {
-    matches!(u32::from(c),
-        0x00AD | 0x0600..=0x0605 | 0x061C | 0x06DD | 0x070F | 0x0890..=0x0891 | 0x08E2 | 0x180E
-        | 0x200B..=0x200F | 0x202A..=0x202E | 0x2060..=0x2064 | 0x2066..=0x206F | 0xFEFF
-        | 0xFFF9..=0xFFFB | 0x110BD | 0x110CD | 0x13430..=0x1343F | 0x1BCA0..=0x1BCA3
-        | 0x1D173..=0x1D17A | 0xE0001 | 0xE0020..=0xE007F)
 }
 
 /// A word that is or holds a link: a scheme, `www.`, or a bare domain (last label 2 to 24
