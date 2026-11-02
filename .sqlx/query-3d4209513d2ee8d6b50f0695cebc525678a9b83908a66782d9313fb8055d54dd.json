@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "TRUNCATE payments.ledger_entry",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "3d4209513d2ee8d6b50f0695cebc525678a9b83908a66782d9313fb8055d54dd"
+}

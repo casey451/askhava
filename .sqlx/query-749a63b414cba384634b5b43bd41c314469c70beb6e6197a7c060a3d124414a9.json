@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE payments.ledger_entry SET amount_cents = 1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "749a63b414cba384634b5b43bd41c314469c70beb6e6197a7c060a3d124414a9"
+}

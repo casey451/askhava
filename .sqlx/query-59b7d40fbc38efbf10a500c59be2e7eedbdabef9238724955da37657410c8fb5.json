@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "REVOKE INSERT ON payments.ledger_entry FROM askhava_app",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "59b7d40fbc38efbf10a500c59be2e7eedbdabef9238724955da37657410c8fb5"
+}
