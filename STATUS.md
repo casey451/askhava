@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-02T14:08:11Z by runner 7515def2fdc9 (actions).
+Updated 2026-11-02T22:04:53Z by runner 7515def2fdc9 (actions).
 
 **Waiting for tokens until 17:00Z; 98 of 230 done; week 98% used, resets Thu 2026-11-05 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,9 @@ Updated 2026-11-02T14:08:11Z by runner 7515def2fdc9 (actions).
 - **Stage:** stage 3; stage proofs recorded: 1, 2
 - **Lane:** idle since 12:41Z (no task in progress)
 - **Week:** 98% used, 2.0M tokens left; resets Thu 2026-11-05 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:08Z, 0 min before this update
+- **Last run:** 14:08Z, 7 h 56 min before this update
 - **Keeper:** last ran 14:08Z, next wake 19:48Z
+- **WARNING:** no runner cycle logged for over 90 minutes before this update
 
 ## Needs attention
 - nothing
@@ -34,14 +35,6 @@ Updated 2026-11-02T14:08:11Z by runner 7515def2fdc9 (actions).
 | T056 | Named mutants: license filter, consent and opt-out, quiet ho | done | 1 | 50 min | 00:07Z |  |
 | T173 | Ally and end-to-end in CI: Playwright and axe in Ally, the e | done | 1 | 25 min | 22:55Z |  |
 | T208 | intake: the homeowner's card approval step, after matching a | done | 1 | 50 min | 22:13Z |  |
-| T156 | intake: the question bank's set one question at a time and r | done | 2 | 29 min | 21:03Z | reverted by FIX-MAIN (tree red on 26b176e5aab2) |
-| T187 | portals: pick code and contact choice forms, accessible erro | done | 1 | 36 min | 20:15Z |  |
-| T055 | portals: pick review step, 'Go back', the terms line and the | done | 2 | 25 min | 19:15Z | Ci: failure; Checks: failure / Checks failed at step: Unit, contract and drill tests (pytest) / Ci failed at step: Both  |
-| T055 | portals: pick review step, 'Go back', the terms line and the | check_failed | 1 | 35 min | 18:37Z |  |
-| T054 | picks: pick code (6 digits, 10 minutes, 5 tries, cooldown) a | done | 1 | 49 min | 17:44Z |  |
-| T053 | Accessibility suite: axe at 320/768/1280 on every route, str | done | 1 | 38 min | 16:50Z |  |
-| T052 | portals: the homeowner quote page (token, arrival order, no  | done | 1 | 30 min | 15:57Z |  |
-| T050 | intake: an opt-out changes no job status; the job carries on | done | 1 | 37 min | 15:05Z |  |
 
 ### Plan and harness merges on main
 - 13:17Z Harness: the runner wakes itself (keeper), smoke target clean (D-1451) (#264)
@@ -55,13 +48,10 @@ Updated 2026-11-02T14:08:11Z by runner 7515def2fdc9 (actions).
 - 03:04Z Harness: --worker-agent accepts comma-joined agent IDs (D-1328) (#245)
 - 02:14Z Harness: worker context trims (D-1317) (#243)
 - 00:44Z Harness: pre-hand-in gate (D-1300) (#240)
-- 19:13Z harness: retry workers get the failing lines — log-download diagnostics, one retry, annotations fallback (D-1263) (#233)
-- 14:46Z plan: T208 drops its read of the intake golden set, 47% → 39% of the window (D-1227) (#226)
-- 14:12Z plan: T240 homeowner job texts and T241 inbound text route (D-1215, D-1216) (#225)
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 162 of 726 (22.3%) · partial 199 · unstarted 365
+**Requirements verified:** 173 of 726 (23.8%) · partial 188 · unstarted 365
 **Tasks merged (throughput only):** 98 of 230
 
 | Area | Verified | Partial | Unstarted | Total |
@@ -71,7 +61,7 @@ Updated 2026-11-02T14:08:11Z by runner 7515def2fdc9 (actions).
 | businesses | 5 | 4 | 48 | 57 |
 | calls | 0 | 2 | 23 | 25 |
 | consent | 14 | 12 | 9 | 35 |
-| fees | 0 | 27 | 26 | 53 |
+| fees | 6 | 21 | 26 | 53 |
 | intake | 20 | 14 | 7 | 41 |
 | job-cards | 13 | 4 | 5 | 22 |
 | licensing | 31 | 16 | 1 | 48 |
@@ -81,7 +71,7 @@ Updated 2026-11-02T14:08:11Z by runner 7515def2fdc9 (actions).
 | privacy | 2 | 12 | 17 | 31 |
 | quiet-hours | 6 | 3 | 0 | 9 |
 | quotes-pick | 10 | 18 | 28 | 56 |
-| recurring | 0 | 8 | 3 | 11 |
+| recurring | 5 | 3 | 3 | 11 |
 | security | 9 | 23 | 22 | 54 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 0 | 28 | 28 |
