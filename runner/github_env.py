@@ -41,6 +41,7 @@ usage from the transcripts themselves (D-170: ~/.claude/projects/<proj>/<session
 
 from __future__ import annotations
 
+import dataclasses
 import glob
 import importlib.util
 import json
@@ -56,7 +57,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from runner import state as st, verify
+from runner import state as st, status, verify
 from runner.cycle import DROP_MARKER, WorkerResult
 from runner.update_merge import UpdateMerge
 from runner.state import State
@@ -102,6 +103,7 @@ BEST_EFFORT_ERRORS = (RuntimeError, ValueError, TypeError, AttributeError, KeyEr
 NOT_BUILT_ON = ("the hand-in does not build on origin/{branch}: the remote task branch has commits this attempt "
                 "did not build on, so its push cannot fast-forward (D-583)")
 JOB_TOKEN_READS = ("/check-runs", "/actions/jobs/")  # REST reads that need the job token (D-502, D-582)
+PLAN_MERGE = re.compile(r"^\S+ (?:[Pp]lan|[Hh]arness):")  # plan and harness merge subjects (D-1462)
 RUNNER_WORKFLOW = "backup-runner.yml"  # the workflow a refill run is dispatched on, one run per lane (D-723)
 # The comments on a pull request the runner closes while preparing a retry's branch (D-583). They are
 # posted only once the pull request is closed. The marker lets a later attempt recognise a pull request
@@ -389,16 +391,43 @@ def _running(state: State) -> list[str]:
     return lines
 
 
-def render_status(state: State, progress_md: str, now: datetime, pacing: str = "") -> str:
-    """STATUS.md: progress in verified requirements first (governance 6), the pacing line (window used and
-    left, next reset, projected finish; scripts/pacing.py), then BUILD_BRIEF.md:276-281."""
+@dataclasses.dataclass(frozen=True)
+class Board:
+    """What the owner's dashboard reads beside the state (runner/status.py, D-1462): the task graph, the
+    time of the last cycle-log line, the strict plan check's summary ('' when green or not run) and
+    recent plan and harness merges on `main` (subject lines)."""
+
+    graph: tuple[dict[str, Any], ...] = ()
+    last_run: datetime | None = None
+    strict: str = ""
+    merges: tuple[str, ...] = ()
+
+
+def _redact(text: str) -> str:
+    return TOKEN_LIKE.sub("[redacted]", CONTROL.sub("", ANSI.sub("", text)))
+
+
+def _day_sections(state: State, board: Board, now: datetime) -> list[str]:
+    merges = [f"- {m}" for m in board.merges] or ["- none"]
+    return ["## Last 24 hours", *status.last_day(state, list(board.graph), now, _redact),
+            "", "### Plan and harness merges on main", *merges, ""]
+
+
+def render_status(state: State, progress_md: str, now: datetime, pacing: str = "", board: Board | None = None) -> str:
+    """STATUS.md: the owner's dashboard (runner/status.py, D-1462: verdict, done count, stage, lane, week,
+    last run, keeper; the last 24 hours), then progress in verified requirements (governance 6), the
+    pacing line (scripts/pacing.py), then BUILD_BRIEF.md:276-281."""
+    board = board or Board()
     usage = (state.get("usage") or {}).get("last_reading")
+    attention = [line for line in _attention(state, now) if line != "- nothing"] + status.attention_extra(state, board.strict)
     parts = [
         "# Ask Hava build status", "", f"Updated {st.iso(now)} by runner {str(state.get('runner_sha', ''))[:12]} ({state.get('starter', '')}).",
-        "", progress_md.strip() or "Progress unavailable.", "", "## Pacing", f"- {pacing or 'no reading yet'}",
+        "", *status.dashboard(state, list(board.graph), now, board.last_run),
+        "", "## Needs attention", *(attention or ["- nothing"]), "", *_day_sections(state, board, now),
+        "## Progress (requirements verified)", "", progress_md.strip() or "Progress unavailable.", "", "## Pacing", f"- {pacing or 'no reading yet'}",
         "", "## Tasks done (throughput)", *_stage_counts(state),
         "", "## Running", *_running(state),
-        "", "## Needs attention", *_attention(state, now), "", "## Last usage reading", f"- {json.dumps(usage) if usage else 'none yet'}", "",
+        "", "## Last usage reading", f"- {json.dumps(usage) if usage else 'none yet'}", "",
     ]
     return "\n".join(parts)
 
@@ -430,6 +459,7 @@ class GitHubEnv:
         self.last_state: State | None = None
         self.log: list[str] = []
         self._progress: dict[str, str] = {}
+        self._strict: str | None = None  # strict_check's result, once per process (D-1462)
         self.sleep: Callable[[float], None] = time.sleep  # update_state's wait between tries; tests replace it
         self.prepared: dict[str, Any] = {}  # what prepare_branch made for this attempt, for the hand-off (D-583)
         self.last_rejection = ""  # the last rejected branch push's git output (push_rejection, D-583)
@@ -507,7 +537,8 @@ class GitHubEnv:
         stamped = dict(new, runner_sha=self.runner_sha, starter=self.starter, updated_at=st.iso(now), lease=None, lease_on=self.lease_ref)
         stamped.pop("leases", None)  # the lanes live in lease.json only, like the lease (D-515)
         pace = self.pacing_line(new) if self.pacing_line else ""
-        status = render_status(stamped | {"lease": new.get("lease"), "leases": st.leases_of(new)}, self.progress_markdown(new), now, pace)
+        status = render_status(stamped | {"lease": new.get("lease"), "leases": st.leases_of(new)}, self.progress_markdown(new), now, pace,
+                               self.board(now))
         writes = {STATE_FILE: json.dumps(stamped, indent=1) + "\n", "STATUS.md": status}
         progress = self._show(self.state_head, "PROGRESS.md") or "# Progress\n"
         line = f"- {st.iso(now)} runner {self.runner_sha[:12]} ({self.starter}): {json.dumps(state_diff(base, new)['tasks'])}"
@@ -521,6 +552,36 @@ class GitHubEnv:
         for path in sorted(self.outbox_dir.glob("*.md")) if self.outbox_dir.exists() else []:
             writes[f"outbox/{path.name}"] = path.read_text(encoding="utf-8")
         return writes, []
+
+    def board(self, now: datetime) -> Board:
+        """The dashboard's readings beside the state (D-1462); each one best effort, never raised."""
+        return Board(tuple(self.graph), self._last_run(), self.strict_check(), self._plan_merges(now))
+
+    def _last_run(self) -> datetime | None:
+        """The time of the last kit/runner_log.jsonl line on the state branch (the last cycle that ended)."""
+        try:
+            lines = (self._show(self.state_head, RUNNER_LOG) or "").strip().splitlines()
+            return st.parse(json.loads(lines[-1])["at"]) if lines else None
+        except (*BEST_EFFORT_ERRORS, json.JSONDecodeError):
+            return None
+
+    def strict_check(self) -> str:
+        """`gen_prompts.py --check --strict` (about 2 s), run once per runner process: '' when green or
+        when it could not run (no script, a crash), else its problem count and first problem."""
+        if self._strict is None:
+            code, out, _ = self._run(["python3", "scripts/gen_prompts.py", "--check", "--strict"], None, self.root)
+            problems = [line for line in out.splitlines() if line.startswith("ERROR ")]
+            summary = next((line for line in reversed(out.splitlines()) if line.startswith("checked ")), "")
+            red = code == 1 and summary
+            self._strict = f"{summary}; first: {problems[0][6:][:160] if problems else '?'}" if red else ""
+        return self._strict
+
+    def _plan_merges(self, now: datetime) -> tuple[str, ...]:
+        """Subjects of plan and harness merges on main in the last 24 hours (decision ids in brackets)."""
+        since = st.iso(now - status.DAY)
+        out = self.git("log", f"--since={since}", "--date=format-local:%H:%MZ", "--format=%cd %s", "refs/runner/main",
+                       check=False, env={"TZ": "UTC"})
+        return tuple(line[:160] for line in out.splitlines() if PLAN_MERGE.search(line))
 
     def _trailers(self, what: str) -> str:
         return f"runner: {what}\n\nRunner-Sha: {self.runner_sha}\nRunner-Starter: {self.starter}\n"
