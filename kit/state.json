@@ -10825,7 +10825,15 @@
     1287,
     1288,
     1289
-   ]
+   ],
+   "reviewed_sha": "41ceec4bc83a2c7cc1b7e30ec54f6a511b1a5001",
+   "review_lease": {
+    "task": "T056",
+    "session": "actions-41360801291",
+    "expires": "2026-11-02T02:16:54Z"
+   },
+   "branch": "claude/task/T056-mutants-stage2",
+   "head_check_since": null
   },
   {
    "id": "T057",
@@ -15041,7 +15049,7 @@
    }
   }
  },
- "updated_at": "2026-11-01T23:23:43Z",
+ "updated_at": "2026-11-02T00:07:47Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -15139,7 +15147,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "369d207c56b38686e1e5c0328db57471c699256e",
+ "runner_sha": "41ceec4bc83a2c7cc1b7e30ec54f6a511b1a5001",
  "starter": "actions",
  "smoke_runs": [
   {
