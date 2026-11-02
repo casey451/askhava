@@ -70,7 +70,7 @@ If you are not sure which you are, you are a plan-change session with no plan ch
 3. Write the smallest code that passes, inside your owned files. Functions under 50 lines. Only `api` is `pub`. Money through `payments`; vault plaintext through `privacy::api`; every state change writes an audit row; every outside action carries an idempotency key.
 4. Document as you go (`docs/code-docs.md`): `//!` at the top of every file, `///` on every public item, requirement IDs on rule code, the crate's `CLAUDE.md` updated.
 5. If you changed any words a homeowner or business reads, run `scripts/check_ai_smell.py` and `scripts/check_copy.py`, then the cold read and the copy panel as your prompt describes.
-6. Run `bash scripts/smoke.sh` on your branch. Then `cargo test -p <your test crate>` for your `TD-` entries, and the twin if your prompt says so.
+6. Run `bash scripts/smoke.sh` on your branch. Then `cargo test -p <your test crate>` for your `TD-` entries, and the twin if your prompt says so. Commit, then run `bash scripts/prehandin.sh` last (the `Ci` steps smoke does not run: the change rules against `main`, the PII scan, the npm and cargo audits); the runner runs the same gate at `--after` and holds or fails a red hand-in (D-1300).
 7. Update `docs/architecture.md` (sections 7 to 12 only, unless you are a harness task with a decision) and `docs/decisions.md` in the same commit when behaviour or design changed.
 8. Hand in: push `claude/task/T###-<slug>`; the `auto-pr` workflow opens the pull request. Do not mark the task done.
 
