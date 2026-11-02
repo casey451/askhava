@@ -2,7 +2,8 @@
 //! `0067_quotes_matching.sql`; CARD-001 to CARD-004, CARD-016, CARD-018, LIC-035); T046 adds
 //! the `quotes.quote` queries (migration `0070_quotes_quote.sql`; PICK-001, PICK-002, TXT-042);
 //! T186 adds [`stored_card`], what a quote card reads of a shown quote (PICK-003, PICK-040);
-//! T047 adds [`list_rows`], the pickable quotes the LIST text states (TXT-031, PICK-002).
+//! T047 adds [`list_rows`], the pickable quotes the LIST text states (TXT-031, PICK-002); T213 adds
+//! [`page_counts`], the business job page's counts and card check (CARD-019, CARD-023).
 //!
 //! Nothing here holds a homeowner's detail: a job is its offer towns, its candidate job types and
 //! its scrubbed text (PRIV-001); a business is IDs, codes and ticks.
@@ -608,4 +609,45 @@ pub(crate) async fn list_rows(
             })
         })
         .collect()
+}
+
+/// CARD-023, CARD-019: what the business job page counts for `job`, and whether `business` holds a
+/// card for it (T213).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) struct PageCounts {
+    /// `business` holds a `quotes.job_card` row for the job, so the page may open.
+    pub holds_card: bool,
+    /// The businesses the card went to (one `quotes.job_card` row each).
+    pub sent: u32,
+    /// The quotes shown so far: confirmed and not withdrawn (PICK-002, PICK-006), the
+    /// homeowner's quote page's own rule (`shown_quotes`). On purpose not [`window_state`]'s
+    /// `quoted`, which counts a withdrawn quote too, since TXT-042's "X of N businesses quoted"
+    /// says who quoted, not what she can still see (D-1294).
+    pub quoted: u32,
+}
+
+/// CARD-023, CARD-019: [`PageCounts`] in one statement, so the counts agree with each other.
+pub(crate) async fn page_counts(
+    db: &mut PgConnection,
+    job: Uuid,
+    business: Uuid,
+) -> Result<PageCounts, QuotesError> {
+    let row = sqlx::query!(
+        "SELECT EXISTS (SELECT 1 FROM quotes.job_card WHERE job_id = $1 AND business_id = $2) \
+         AS \"holds!\", \
+         (SELECT count(*) FROM quotes.job_card WHERE job_id = $1) AS \"sent!\", \
+         (SELECT count(*) FROM quotes.quote WHERE job_id = $1 AND confirmed \
+         AND withdrawn_at IS NULL) AS \"quoted!\"",
+        job,
+        business
+    )
+    .fetch_one(db)
+    .await
+    .map_err(|_| QuotesError::Database)?;
+    let count = |n: i64| u32::try_from(n).unwrap_or(u32::MAX);
+    Ok(PageCounts {
+        holds_card: row.holds,
+        sent: count(row.sent),
+        quoted: count(row.quoted),
+    })
 }
