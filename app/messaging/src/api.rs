@@ -6,15 +6,28 @@
 //! and status callbacks once per message ID (TXT-012), read a text's delivery status (TXT-013),
 //! keep the one suppression list and send only through its check (CON-008 to CON-017, CON-030,
 //! CON-035), answer HELP, INFO and AYUDA (CON-018), and tell a module above it when a homeowner
-//! text may go without handing it her number (`send_window`, QH-001, QH-006, D-1301).
+//! text may go without handing it her number (`send_window`, QH-001, QH-006, D-1301); retry a
+//! failed text and then email it or raise a call-back (TXT-014, TXT-015); queue and send every
+//! email once in the SEC-028 layout, holding bulk email above the daily limit's share (OPS-038);
+//! and keep a homeowner's update channel (TXT-018).
 
+pub use crate::email::{
+    COMPLAINT_ALERT, DailyLimit, EMAIL_ACTION, EmailClass, EmailEvent, EmailSent, EmailTo, FROM,
+    MailboxKind, NewEmail, Notice, PostalAddress, REPLY_TO, Recipient, Rendered, UpdateChannel,
+    WEBHOOKS_SILENT_ALERT, check_webhook_silence, email_log, email_status, next_reset, queue_email,
+    receive_email_event, render as render_email, send_email, set_update_channel, update_channel,
+};
 pub use crate::handlers::{Callback, receive_inbound, receive_status};
 pub use crate::keywords::{
     HelpSettings, HelpSettingsError, Keyword, help_text, keyword, reply_to_help,
 };
-pub use crate::models::{InboxError, OutboxError};
+pub use crate::models::{EmailError, EmailLog, InboxError, OutboxError};
 pub use crate::optout::{
     InboundText, Outcome, RevokeChannel, on_inbound_text, send_checked, suppress,
+};
+pub use crate::retries::{
+    CALL_BACK_ALERT, GaveUp, IMPORTANT_TEMPLATES, NO_RUSH_CALL_BACK, RETRY_AFTER, Reach, Step,
+    TEXT_FAILED_EMAIL, Urgency, call_back_due, give_up, next_step, record_failure,
 };
 pub use crate::rules::{
     APP_OPT_OUT_WORDS, AreaCodes, CONFIRM_WITHIN, CONFIRMATION_TEMPLATE, Channel, Classified,

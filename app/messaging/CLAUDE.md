@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The layer-3 crate that sends and receives messages (`docs/architecture.md` section 3). T026 built the template registry (every text is a fixed English or Spanish template chosen by ID and language); T027 built quiet hours; T028 the outbox and the sender directory; T178 inbox dedupe and delivery statuses; T029 opt-outs and the one suppression list. T030 the HELP, INFO and AYUDA reply. Not here yet: inbound routing (the scrubbed text and flags), retries, email and letters (later messaging tasks).
+The layer-3 crate that sends and receives messages (`docs/architecture.md` section 3). T026 built the template registry (every text is a fixed English or Spanish template chosen by ID and language); T027 built quiet hours; T028 the outbox and the sender directory; T178 inbox dedupe and delivery statuses; T029 opt-outs and the one suppression list. T030 the HELP, INFO and AYUDA reply. T094 text retries, the email pipeline, email-provider webhooks and the update channel. Not here yet: letters, the email-sending worker handler and the `core.task` email request for modules above (D-1380).
 
 ## What it owns
 
@@ -21,6 +21,10 @@ The layer-3 crate that sends and receives messages (`docs/architecture.md` secti
 - Migration `0042_messaging_outbox.sql`: the `messaging` schema and grants, `messaging.outbox` (unique `idempotency_key`, `subject_ids`, `recipient_kind` homeowner/business, `status` queued/sending/sent, `attempts`, `provider_sid`, `body` NULL once sent), `messaging.sender_directory` (blind-index digests per key version, unique per digest).
 - Migration `0043_messaging_inbox_delivery.sql`: `messaging.webhook_event` (source `twilio_inbound` or `twilio_status`, event key, primary key on both), `messaging.inbox` (unique `message_sid`), `messaging.delivery_event` (provider SID, folded status, error code, identity `id` for order). No `received_at` has a default: the caller binds it (D-863).
 - Migration `0044_messaging_optout.sql`: `messaging.optout_event` (append-only for `askhava_app`: action `opt_out`/`start`, channel, how detected, the number's active `homeowner-phone` digest, `effective_at`), `messaging.suppression` (one row per index version and digest, the event and `since`), and the outbox's terminal status `blocked` (body NULL).
+- `src/retries.rs` (T094, D-1378): `RETRY_AFTER`, `IMPORTANT_TEMPLATES`, `next_step`, `Step`, `call_back_due`, `Urgency`, `NO_RUSH_CALL_BACK`, `record_failure`, `give_up`, `Reach`, `GaveUp`, `CALL_BACK_ALERT`, `TEXT_FAILED_EMAIL`.
+- `src/email.rs` (T094, D-1379 to D-1381): `PostalAddress`, `MailboxKind`, `Recipient`, `NewEmail`, `EmailClass`, `Notice`, `render`, `queue_email`, `send_email`, `EmailTo`, `EmailSent`, `DailyLimit`, `next_reset`, `email_log`, `receive_email_event`, `EmailEvent`, `email_status`, `check_webhook_silence`, `UpdateChannel`, `update_channel`, `set_update_channel`; `EmailError` and `EmailLog` live in `models.rs`.
+- `templates/email_layout.html`: the one email layout (`lang`, message, SEC-028 footer); every email template extends it (`{% block content %}`).
+- Migration `0089_messaging_retries_email.sql`: outbox status `failed`, `messaging.text_retry`, `messaging.email_outbox` (unique key, `class` notice/bulk, `not_before`, `waiting_for`, parts NULL once sent), `messaging.portal_notice`, `messaging.update_channel`, `messaging.email_event`, `webhook_event` source `resend`.
 - `src/api.rs`: the only public surface: `render`, `template_ids`, the quiet-hours functions, the outbox and sender-directory functions and the re-exported types.
 
 ## Rules it enforces
@@ -52,6 +56,13 @@ The layer-3 crate that sends and receives messages (`docs/architecture.md` secti
 - CON-022, CON-035, CON-036: every opt-out and START is logged in `messaging.optout_event` with channel, `word:<word>` / `phrase:<id>` / `provider` / `carrier:21610`, and time; `optout::suppress` is the entry for the email, form, portal and owner channels (confirmed by email or on screen, never by text).
 - CON-018, D-131, D-066: `keywords::reply_to_help` queues the HELP reply for a text that is only HELP, INFO or AYUDA ("I need help with my sink" is not), once per inbound message, under template ID `help_reply` whatever the variant so `may_send_to` lets it reach an opted-out number; no quiet-hours check applies. Reply times, the away sentence (OPS-026) and the Canadian roaming line come from `HelpSettings` and the number; no personal name, no voice number (D-887 to D-890). START is the provider's `OptOutType` (CON-015).
 
+- TXT-014, TXT-015, INT-023 (D-1378): 3 retries at 10, 20, 30 minutes from the first failure; `record_failure` counts from the row's claims (safe to repeat); `give_up` marks the text `failed` and in one transaction lists an important one for the portal and emails it when an address is on file, or records a call-back (24 hours urgent, 4 days otherwise, High alert when urgent) for a homeowner with none. The vault read happens before the transaction (the vault refuses one inside).
+- SEC-028, A11Y-034: every email is rendered in `email_layout.html` with `lang`, content first, the audience's why-line, "Manage email notices" and the checked `PostalAddress` (box or PMB only); a plain-text part carries the same lines.
+- SEC-018, SEC-037, PRIV-002: `queue_email` stores one row per `email.send` key, no address; `send_email` claims, sends outside any transaction, marks sent and clears the parts; a homeowner's address comes from the vault at send time.
+- OPS-038 (D-1379): `Bulk` email waits for the midnight-UTC reset while more than the share of today's limit went; a provider 429 waits (until the reset when the day is full, else a minute) and is never dropped; `waiting_for` and `sent_at` feed the notice log.
+- SEC-050, SEC-051 (D-1381): `receive_email_event` stores a verified Resend event once per Svix ID with its event time, in one transaction (acknowledge only on `Ok`); `email_status` reads by event time; a complaint raises `messaging.email_complaint`; `check_webhook_silence` raises `messaging.email_webhooks_silent`.
+- TXT-018: `update_channel` is text unless `set_update_channel` stored email or both.
+
 ## Never break
 
 - Every text begins "Ask Hava:" in both languages: `tests::template_registry::every_kind_has_both_languages_and_begins_ask_hava`.
@@ -76,6 +87,8 @@ The layer-3 crate that sends and receives messages (`docs/architecture.md` secti
 - A 21610 refusal is never retried: `optout_flow.rs::td_con_05_a_21610_refusal_is_never_retried`.
 - Two opt-outs at once queue one confirmation, and an earlier listing's confirmation never goes: `optout_flow.rs::td_con_05_two_opt_outs_at_once_queue_one_confirmation`, `td_con_05_only_the_current_listings_confirmation_goes`.
 
+- Retries, give-up, email and webhooks: `tests/integration/tests/text_retries.rs` (`td_txt_05_*`, `td_ops_14_*`, `td_sec_27_*`, `td_con_28_*`); footers and limits: `src/tests/retries.rs` (`td_biz_26_*`, `td_a11y_02_*`).
+
 - The HELP reply holds the help email, askhava.com/help, the LIST line and the settings' times, and only the roaming line differs for Canada: `tests/integration/tests/help_start.rs`.
 
 ## How to change
@@ -87,6 +100,8 @@ The layer-3 crate that sends and receives messages (`docs/architecture.md` secti
 - Map a new Twilio status: add it to `DeliveryStatus::from_twilio` (and, for a new variant, `as_str`, `rank` and the migration's check in a new migration), then run the inbox test.
 - Add an ID to a text's identity: put it in `NewText::subject`; never a phone, name or body word (SEC-018). Changing what the key covers changes every key, so it is a logged decision.
 - Add an opt-out word: CON-008 and CON-030 first; a provider word goes in `PROVIDER_OPT_OUT_WORDS` and `stand_ins/provider_optout.json` (a harness task) and the live Advanced Opt-Out together, an app-only word in `APP_OPT_OUT_WORDS`. Add a phrase: CON-010 first, then `OPT_OUT_PHRASES` with a new pattern ID (never one that fits a normal request) and a case in `td_con_04_*`.
+- Add an email: a `Notice` variant with its English and draft Spanish subject and line (or a child template that `{% extends "email_layout.html" %}`), a template ID for its key, `EmailClass::Bulk` only for the OPS-038 list; run both T094 test commands.
+- Make a text important: add its template ID to `IMPORTANT_TEMPLATES` (TXT-014 lists them).
 - After changing a query, regenerate `.sqlx/` (`cargo sqlx prepare --workspace -- --all-targets --all-features`, or an online build with `SQLX_OFFLINE_DIR=.sqlx`).
 
 ## Tests that guard it
@@ -101,3 +116,5 @@ The layer-3 crate that sends and receives messages (`docs/architecture.md` secti
 - `src/tests/optout_words.rs` (TD-CON-04, TD-CON-20 word lists): `cargo test -p askhava-messaging tests::optout_words`.
 - `src/tests/prop_optout_props.rs` (TD-CON-04, TD-CON-05 properties): `cargo test -p askhava-messaging tests::prop_optout_props`.
 - `tests/integration/tests/optout_flow.rs` (TD-CON-05, TD-CON-13, TD-CON-20): `cargo test -p askhava-integration --test optout_flow`.
+- `src/tests/retries.rs` (TD-TXT-05, TD-OPS-14, TD-BIZ-26, TD-A11Y-02 unit cases): `cargo test -p askhava-messaging tests::retries`.
+- `tests/integration/tests/text_retries.rs` (TD-TXT-05, TD-OPS-14, TD-SEC-27 storage cases, TD-CON-28 email case): `cargo test -p askhava-integration --test text_retries`.

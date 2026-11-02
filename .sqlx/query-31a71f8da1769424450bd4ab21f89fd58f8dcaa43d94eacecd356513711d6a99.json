@@ -1,0 +1,31 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "WITH e AS (INSERT INTO messaging.email_event (provider_id, kind, event_at, received_at) VALUES ($1, $2, $3, $4) RETURNING provider_id) SELECT o.id AS \"id?\" FROM e LEFT JOIN messaging.email_outbox o ON o.provider_id = e.provider_id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id?",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "messaging.email_outbox",
+            "name": "id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Timestamptz",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "31a71f8da1769424450bd4ab21f89fd58f8dcaa43d94eacecd356513711d6a99"
+}

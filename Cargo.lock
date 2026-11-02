@@ -492,6 +492,7 @@ dependencies = [
 name = "askhava-messaging"
 version = "0.1.0"
 dependencies = [
+ "askama",
  "askhava-adapters",
  "askhava-core",
  "askhava-ops",
