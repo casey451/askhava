@@ -433,6 +433,7 @@ dependencies = [
  "askhava-licensing",
  "askhava-messaging",
  "askhava-ops",
+ "askhava-payments",
  "askhava-picks",
  "askhava-portals",
  "askhava-privacy",
@@ -523,10 +524,13 @@ dependencies = [
 name = "askhava-payments"
 version = "0.1.0"
 dependencies = [
+ "askhava-adapters",
  "askhava-catalog",
  "askhava-core",
  "jiff",
+ "jiff-sqlx",
  "proptest",
+ "secrecy",
  "serde",
  "serde-saphyr",
  "sqlx",

@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO payments.customer (business_id, stripe_customer_id) VALUES ($1, $2)\n         ON CONFLICT (business_id) DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "3a45afcf649b55d89710e13d686df35a337b116687fbbdfa868a1885e027d5a2"
+}

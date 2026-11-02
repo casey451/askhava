@@ -19,6 +19,7 @@ askhava-catalog = { workspace = true }
 askhava-adapters = { workspace = true }
 askhava-privacy = { workspace = true }
 askhava-jobs = { workspace = true }
+askhava-payments = { workspace = true }
 askhava-portals = { workspace = true }
 askhava-licensing = { workspace = true }
 askhava-messaging = { workspace = true }
