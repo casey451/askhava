@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SET LOCAL ROLE askhava_app",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "52131e5f41075acffce318782ae991e67d09eedd11dba2d507521c5842aedb2d"
+}
