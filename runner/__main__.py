@@ -54,7 +54,7 @@ The state is validated by scripts/check_state.py first; an invalid state stops t
 Before claiming, scripts/pacing.py decides whether the task fits the usage windows (result `paced`
 when nothing fits; the next cycle after the reset claims it), and scripts/plan_health.py checks the
 task's plan first: a task with a plan gap gets a `plan_gap` mark, uses no attempt and is passed over
-for the next eligible task (D-1339). Each cycle first merges main into claude/kit-state.
+for the next eligible task (D-1350). Each cycle first merges main into claude/kit-state.
 """
 
 from __future__ import annotations
@@ -180,7 +180,7 @@ def build(args: argparse.Namespace, outbox_dir: Path) -> tuple[cycle.Config, Git
                        proof_stages=frozenset(proof.MACHINE_PROOFS), stage_proof=stage_proof,
                        lane_hint=lane_hint(os.environ.get("RUNNER_LANE", "")), locked=locked_path,
                        # eligibility already judged the dependencies' status (a proof-waiting cleanup dep counts,
-                       # D-551), so the check looks only at the plan itself and the DONE deps' files (D-1339)
+                       # D-551), so the check looks only at the plan itself and the DONE deps' files (D-1350)
                        plan_health=plan_health.checker(ROOT, kit, pending_ok=True))
     return cfg, env
 

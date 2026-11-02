@@ -357,7 +357,7 @@ def _waits_for(task: dict[str, Any]) -> str:
 
 
 def _plan_gap_line(task: dict[str, Any]) -> str:
-    """A task held before its claim by the plan-health check (runner.cycle.plan_health_pass, D-1339)."""
+    """A task held before its claim by the plan-health check (runner.cycle.plan_health_pass, D-1350)."""
     gap = task.get("plan_gap") or {}
     problems = "; ".join(str(p) for p in gap.get("problems") or [])
     return f"- PLAN GAP {task['id']} (since {gap.get('at')}, no attempt used; a plan change fixes it): {problems}"

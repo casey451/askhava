@@ -1,4 +1,4 @@
-"""Plan-health check: is a task's plan sound enough to claim it? (A+ plan item 3, D-1339)
+"""Plan-health check: is a task's plan sound enough to claim it? (A+ plan item 3, D-1350)
 
 A worker that starts a task whose plan has a hole spends its attempt finding the hole: a file
 its tests need that no task writes, a dependency whose files never reached `main`, a context
@@ -89,7 +89,7 @@ def cited(texts: Iterable[str]) -> list[str]:
 
 
 def context_problems(root: Path, task: dict[str, Any]) -> list[str]:
-    """(a) The measured context against the task's limit (D-1036, D-1339)."""
+    """(a) The measured context against the task's limit (D-1036, D-1350)."""
     prompt_file = root / str(task.get("prompt") or "")
     if not task.get("prompt") or not prompt_file.is_file():
         return [f"{task['id']}: prompt {task.get('prompt')} is missing; run scripts/gen_prompts.py"]

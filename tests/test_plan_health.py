@@ -1,4 +1,4 @@
-"""Tests for scripts/plan_health.py and the runner's plan-health pass before a claim (D-1339). Fake tasks only."""
+"""Tests for scripts/plan_health.py and the runner's plan-health pass before a claim (D-1350). Fake tasks only."""
 
 from __future__ import annotations
 

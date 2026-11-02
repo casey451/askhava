@@ -211,7 +211,7 @@ class Config:
     # Whether a path is in the locked blueprint (scripts/check_plan_lock.py): a task owning one also owns
     # kit/plan.lock, so two such tasks never run side by side (D-620).
     locked: Callable[[str], bool] | None = None
-    # The plan-health check run before a claim (scripts/plan_health.py checker, D-1339): the problems that
+    # The plan-health check run before a claim (scripts/plan_health.py checker, D-1350): the problems that
     # make a task's plan unsound to claim now ([] when sound). None skips the check.
     plan_health: Callable[[State, str], list[str]] | None = None
 
@@ -1210,7 +1210,7 @@ PLAN_GAP_PROBLEMS_KEPT = 10  # problems stored per task; the rest are counted, n
 
 def plan_health_pass(cfg: Config, state: State, ids: list[str], now: datetime) -> tuple[list[str], State]:
     """Run the plan-health check (scripts/plan_health.py) on the candidates in order, before any claim
-    (A+ plan item 3, D-1339). A task with problems stays QUEUED with its `attempts` untouched and gets a
+    (A+ plan item 3, D-1350). A task with problems stays QUEUED with its `attempts` untouched and gets a
     `plan_gap` mark ({at, problems}) that STATUS.md lists, and drops out of the list, so the claim goes
     to the next sound candidate. Every candidate is checked, since the pacer may pass over the first sound
     one; a sound task's stale mark is cleared, so a plan fixed on main frees the task by itself. FIX-MAIN
@@ -1226,10 +1226,10 @@ def plan_health_pass(cfg: Config, state: State, ids: list[str], now: datetime) -
 
 
 def _health(check: Callable[[State, str], list[str]], state: State, tid: str) -> list[str]:
-    """The check's problems; a check that itself fails holds nothing (the claim goes ahead as before D-1339)."""
+    """The check's problems; a check that itself fails holds nothing (the claim goes ahead as before D-1350)."""
     try:
         return list(check(state, tid))
-    except Exception as exc:  # noqa: BLE001  # reason: a broken plan-health check must never stop the build (D-1339)
+    except Exception as exc:  # noqa: BLE001  # reason: a broken plan-health check must never stop the build (D-1350)
         print(f"runner: plan-health check failed for {tid}: {str(exc)[:200]}")
         return []
 

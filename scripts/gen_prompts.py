@@ -23,7 +23,7 @@ pastes from them; an owned directory counts nothing and an owned file is never
 counted twice through a read (D-1036). A read of docs/architecture.md counts
 as its section 2 (the crate layout every prompt points to) plus the lines that
 name the task's module (`<module>` or app/<module>/), not the whole file: it is
-over 170k bytes and workers read only section 2 and line ranges (D-1339). A
+over 170k bytes and workers read only section 2 and line ranges (D-1350). A
 task that owns it counts it whole. Generating writes the value back into
 kit/tasks.json.
 
@@ -75,7 +75,7 @@ DECISION_QUESTION_CHARS = 200
 DECISION_CHOICE_CHARS = 600
 SUPERSEDED_FILE = "kit/superseded_decisions.json"
 ARCHITECTURE = "docs/architecture.md"
-ARCHITECTURE_LAYOUT = "## 2. "  # the section every prompt's start routine names (crate layout, D-1339)
+ARCHITECTURE_LAYOUT = "## 2. "  # the section every prompt's start routine names (crate layout, D-1350)
 PASTED_READS = ("docs/spec/", "docs/test-design.md", "docs/decisions.md", "docs/brains/")
 BRAINS_DIR = "docs/brains/"
 BRAINS_NOTE = "none (this task lists no brain under its reads)."
@@ -461,7 +461,7 @@ def context_bytes(root: Path, task: dict[str, Any], prompt: str) -> int:
 def architecture_bytes(root: Path, module: str | None) -> int:
     """What a worker loads of docs/architecture.md: section 2 whole, and elsewhere only the lines naming its
     module in backticks or as `app/<module>/` (the module table row, its adapters and runbook lines); 0
-    when the file does not exist (D-1339)."""
+    when the file does not exist (D-1350)."""
     target = root / ARCHITECTURE
     if not target.is_file():
         return 0

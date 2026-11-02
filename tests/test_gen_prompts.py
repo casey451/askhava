@@ -438,7 +438,7 @@ def test_strict_fails_when_the_decisions_log_is_within_a_tenth_of_the_scan_limit
 
 
 def test_architecture_counts_its_layout_section_and_the_module_lines(tmp_path: Path) -> None:
-    """D-1339: a read of docs/architecture.md counts section 2 and the lines naming the task's module."""
+    """D-1350: a read of docs/architecture.md counts section 2 and the lines naming the task's module."""
     root = make_repo(tmp_path, [fake_task()])
     (root / "docs").mkdir()
     layout = "## 2. Processes and code layout\nlayout line\n"

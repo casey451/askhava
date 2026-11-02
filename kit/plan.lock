@@ -43,7 +43,7 @@
   "kit/prompts/TEMPLATE.md": "d2362873ac94a7d957707f3341ba8dfc704ec2de3224411a34426ee5ffff1e03",
   "kit/runner.json": "f103cf4d5d2506af897b04fedba964abeedc30f1a63458766e0f8646ccc53a19",
   "kit/sources.sha256": "853b7f37d6e04259ad9d7b64e16e6cb0111ee4499e37af46aeb3183748c7f335",
-  "kit/tasks.json": "49c2add466896217f0cee0f518ad0887ed68cb50d3663857fdf9dc1031663fe8",
+  "kit/tasks.json": "acf82eb7e0bab4b532b27b7d3551262262a2e270e89ad9fd7d83319cea87f62d",
   "scripts/check_ai_smell.py": "85dabd31a4def57084ccca15c6c8efee89cc3f5a9e376a9ed07f4f6a98a2885a",
   "scripts/check_catalog.py": "169f9b00e9630a8d5240fe9b319082cf9ef97aba7034f2170b7bc1a6ecab3d4c",
   "scripts/check_code_docs.py": "cb5df5710797e221ae5d5a5b2daa9d6c3612e9bca1ccd24f07ea07b34e470fbd",
@@ -54,9 +54,10 @@
   "scripts/check_pr_change.py": "bff82974c36a3b5bbc57f9fdd5bf929b1935e1d0da9ee4bd2b3826e7ccb3cf8d",
   "scripts/check_rust_rules.py": "559029dff80fed3f8a701527b115660bbb19edf05e548b7d4d1caf86d57a573d",
   "scripts/check_state.py": "eb0afa5a32a4648d2a0bf24bc972e00ff6d2347c7f0be81aff384b39f9df0393",
-  "scripts/gen_prompts.py": "42aba4bae729ce16d700ea21cff723b0a95fa14263fb2698f3a06970f949d846",
+  "scripts/gen_prompts.py": "a632a6f5a6f8c6b082252c98efce91472159411cc10a3d6500b1551cd66d2459",
   "scripts/pacing.py": "e3a7c4f493f78189ff12d5e01c7fcbfc90df547ee5ce2d27a58fb2ef98a7854c",
   "scripts/pii_scan.py": "05d1c661e428e5b6ae48e3173c92c7859aacf225a0af7212d35967eedde0502e",
+  "scripts/plan_health.py": "ea5de05cca1803f0876a2062c36dbcf87507b9baa7f0d8de87371e798b92f039",
   "scripts/prehandin.sh": "6056ccb3f6ce553dc02d0442eb3957f0addf494a3695804fb83bd6f59a95d34b",
   "scripts/progress.py": "6a31a132e709c974e5e71468a8e6fa8c212b753bad7501713250f39c0e5d08be",
   "scripts/quota_probe.py": "63f21117d06c02632e2e79698ef828a33668cefc1403cfc261cc2d813d3cf951",
@@ -64,7 +65,7 @@
   "scripts/smoke.sh": "1c976e493c877c2006b18f27aae5624c9f987ca1c1f4234561bde72a235c5a00",
   "scripts/stage_exit.py": "009c0f3ffe26f1181f00b785bce3430c6d1f54651dde0bde6b7375d7cc1a6aa0",
   "scripts/trace_spec.py": "9956b2ffaa7f6e205e6f27338f65cddf7f573afa3c53de697f959adc96923439",
-  "scripts/validate_tasks.py": "70a3bdb188617b55a0d974a55e1024874bb25845a518dc04002479205bc92098"
+  "scripts/validate_tasks.py": "85d217da0af96535660f0c182100efaee52ff4af8cb253d85ff97f0aedc1d176"
  },
  "note": "Fingerprints of the approved blueprint; see scripts/check_plan_lock.py and docs/governance.md.",
  "schema": 1
