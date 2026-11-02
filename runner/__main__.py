@@ -116,6 +116,7 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
     ap.add_argument("--restore-lanes", action="store_true")
     ap.add_argument("--reserve-decision", action="store_true")
     ap.add_argument("--usage-reading", type=Path)
+    ap.add_argument("--keeper-armed", type=int, help="minutes until the keeper just dispatched wakes (D-1451)")
     return ap.parse_args(argv)
 
 
@@ -439,6 +440,8 @@ def run(args: argparse.Namespace, cfg: cycle.Config, env: GitHubEnv) -> str:
         return reserve_decision(args, cfg, env)
     if args.usage_reading:
         return usage_reading(args.usage_reading, env)
+    if args.keeper_armed is not None:
+        return keeper_armed(args.keeper_armed, env)
     return cycle_with_retries(cfg, env)
 
 
@@ -456,6 +459,17 @@ def usage_reading(path: Path, env: GitHubEnv) -> str:
         return "lost_race"
     windows = ", ".join(f"{w} {found[w]['utilization']:.0%}" for w in ("week", "five_hour") if w in found)
     return f"usage_reading_recorded: {windows}"
+
+
+def keeper_armed(minutes: int, env: GitHubEnv) -> str:
+    """`--keeper-armed N`: record `keeper` {last_run_at: now, next_wake_at: now + N minutes} in the state
+    once backup-runner.yml's arm step has dispatched a keeper (D-1451), for STATUS.md's keeper line (D-1462)."""
+    from runner import keeper as keeper_mod
+
+    now = now_utc()
+    if env.update_state(lambda fresh: keeper_mod.record(fresh, minutes, now)) is None:
+        return "lost_race"
+    return f"keeper_armed: {keeper_mod.clamp(str(minutes))} minutes"
 
 
 LOST_RACE_RETRIES = 2  # extra cycles after a lost race, with two lanes and a handed-off worker (D-620)

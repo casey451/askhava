@@ -196,3 +196,30 @@ def test_actions_minutes_states_the_public_repository() -> None:
     minutes = json.loads((ROOT / "kit" / "pacing.json").read_text(encoding="utf-8"))["actions_minutes"]
     assert minutes["repository"] == "public" and minutes["included_per_month"] is None
     assert "private" not in minutes or minutes["private"]["included_per_month"] == 3000
+
+
+def test_the_keeper_key_is_recorded_for_status_and_passes_the_schema() -> None:
+    from scripts import check_state
+
+    out = kp.record(state(), 400, NOW)
+    assert out["keeper"] == {"last_run_at": at(0), "next_wake_at": at(340)}
+    assert "keeper" not in state()  # the input is not changed
+    assert [p for p in check_state.check(out) if "keeper" in p] == []
+
+
+def test_keeper_armed_writes_through_update_state(monkeypatch: Any) -> None:
+    from runner import __main__ as entry
+
+    seen: list[dict[str, Any]] = []
+
+    class Env:
+        def update_state(self, transform: Any) -> dict[str, Any] | None:
+            seen.append(transform(state()))
+            return seen[-1]
+
+    monkeypatch.setattr(entry, "now_utc", lambda: NOW)
+    assert entry.keeper_armed(65, Env()) == "keeper_armed: 65 minutes"  # type: ignore[arg-type]  # reason: a fake env
+    assert seen[0]["keeper"]["next_wake_at"] == at(65)
+    assert entry.parse_args(["--keeper-armed", "20"]).keeper_armed == 20
+    wf = _flow()["jobs"]["backup"]["steps"][-1]["run"]
+    assert 'python3 -m runner --keeper-armed "$minutes"' in wf

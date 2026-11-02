@@ -420,6 +420,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           LANE: ${{ needs.gate.outputs.lane }}
+          RUNNER_STARTER: actions
+          RUNNER_LANE: ${{ needs.gate.outputs.lane }}
+          RUNNER_CHECKS_TOKEN: ${{ github.token }}
+          RUNNER_PUSH_TOKEN: ${{ secrets.RUNNER_PUSH_TOKEN }}
         run: |
           set -u
           raw() { gh api "repos/${GITHUB_REPOSITORY}/contents/$1?ref=$2" -H 'Accept: application/vnd.github.raw' > "$3" 2>/dev/null || echo '{}' > "$3"; }
@@ -431,8 +435,11 @@ jobs:
           echo "$out"
           minutes="$(printf '%s\n' "$out" | sed -n 's/^wake_after=//p')"
           if [ -z "$minutes" ]; then echo "no keeper armed"; exit 0; fi
-          gh workflow run backup-runner.yml --ref main --repo "$GITHUB_REPOSITORY" -f lane="$LANE" -f wake_after="$minutes" \
-            || echo "keeper not armed: the dispatch failed; the hourly tick is the backstop"
+          if ! gh workflow run backup-runner.yml --ref main --repo "$GITHUB_REPOSITORY" -f lane="$LANE" -f wake_after="$minutes"; then
+            echo "keeper not armed: the dispatch failed; the hourly tick is the backstop"; exit 0
+          fi
+          # The `keeper` key for STATUS.md's keeper line (D-1462), through the runner like the usage reading (D-1155).
+          python3 -m runner --keeper-armed "$minutes" 2>&1 | head -1 || true
   keeper:
     name: keeper
     # Only a run the arm step (or a keeper) dispatched with `wake_after` (D-1451). It holds no lock on a cycle: it

@@ -36,7 +36,7 @@ LEASE_MARGIN = 2  # minutes past a lease's expiry
 RESET_MARGIN = 5  # minutes past the pacer's `waiting_until` (a usage window's reset)
 WEEK_STOP = 0.97  # the week's reading at which the build stops for the reset (kit/pacing.json headroom 0.03)
 NOTHING_CLAIMED = frozenset({"idle", "fix_main"})  # a cycle result after which a 20-minute look would find the same
-QUIET = ("not_lease_holder", "renewed", "renew_refused", "usage_reading")  # log rows that say nothing of the cycle
+QUIET = ("not_lease_holder", "renewed", "renew_refused", "usage_reading", "keeper_armed")  # log rows that say nothing of the cycle
 
 Doc = dict[str, Any]
 
@@ -183,6 +183,15 @@ def on_wake(state: Doc, lease_doc: Doc, runs: list[Doc] | None, own_id: str, now
     if why == "idle":
         return "go", None, "nothing live, nothing to wait for and work to do: start a cycle"
     return "rearm", minutes, why
+
+
+def record(state: Doc, minutes: int, now: datetime) -> Doc:
+    """The state with `keeper` = {last_run_at: now, next_wake_at: now + minutes} (kit/state_schema.json, D-1462):
+    the backup run that armed the keeper and when that keeper first wakes (a re-arm is not recorded)."""
+    out: Doc = json.loads(json.dumps(state))
+    wake = now + timedelta(minutes=clamp(str(minutes)))
+    out["keeper"] = {"last_run_at": st.iso(now), "next_wake_at": st.iso(wake)}
+    return out
 
 
 def clamp(text: str) -> int:
