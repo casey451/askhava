@@ -1,0 +1,19 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO payments.payment_method (stripe_payment_method_id, business_id,\n           authorization_id, method_type, usage, brand, last4, saved_at)\n         VALUES ($1, $2, $3, 'card', 'off_session', $4, $5, $6)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Uuid",
+        "Uuid",
+        "Text",
+        "Text",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "10d9d90a9ca92e48c0021ea89383344d7cc773497d4fd1c0687bc10383662713"
+}

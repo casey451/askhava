@@ -2,13 +2,16 @@
 
 ## Purpose
 
-The layer-3 crate through which all money moves (FEE-032, `docs/architecture.md` section 3). T225 built its first part: the append-only ledger `payments.ledger_entry` and its one writer, `ledger_append` (D-1383, D-1384). T058 added the introduction fee by job size of a chosen one-time quote, `fee_for` (D-1399, D-1400). T188 added quotes with a period, `period_fee_for` (the 4-month rule and the recurring cap), and the early joiner's price lock (D-1404 to D-1407). Not here yet: the fee fixed at the pick and the fee-mode switch (T060), Stripe customers and cards, the Confirm-and-pay charge, refunds, disputes and evidence, free first wins, the webhook and the nightly reconcile (T067).
+The layer-3 crate through which all money moves (FEE-032, `docs/architecture.md` section 3). T225 built its first part: the append-only ledger `payments.ledger_entry` and its one writer, `ledger_append` (D-1383, D-1384). T058 added the introduction fee by job size of a chosen one-time quote, `fee_for` (D-1399, D-1400). T188 added quotes with a period, `period_fee_for` (the 4-month rule and the recurring cap), and the early joiner's price lock (D-1404 to D-1407). T059 added Stripe customers made at sign-up with no card and saved cards with the FEE-015 authorization, cards only (D-1409, D-1410). Not here yet: the fee fixed at the pick and the fee-mode switch (T060), the SetupIntent adapter call (T132), the Confirm-and-pay charge, refunds, disputes and evidence, free first wins, the webhook and the nightly reconcile (T067).
 
 ## What it owns
 
 - Migration `0090_payments_ledger.sql`: the `payments` schema and grants; `payments.ledger_entry` (append-only: `kind`, `business_id`, `job_id`, `amount_cents` never negative, `stripe_id`, unique `idempotency_key`, `seq`, `recorded_at`; `askhava_app` may only insert and select).
 - `src/ledger.rs`: `EntryKind` (the eleven FEE-028 kinds; `ALL`, `code`, `is_zero`), `NewEntry` (raw fields), `LedgerEntry` (checked; `new`, `kind`, `amount_cents`), `LedgerError`, `Appended` (`New`, `Already`), `ledger_append`.
 - `src/rules.rs` (pure): `Tier` (`Small`, `Medium`, `Large`; `cents`, `for_basis`), `VisitTier` (`DEFAULT`, `from_dollars`, `tier`), `FeeQuote` (`Fixed`, `Range`, `Hourly`, `DiagnosticVisit`), `FeeJob`, `Fee` (`Charged`, `FeeFree`; `cents`, `basis`), `FeeError`, `fee_for`; T188: `RECURRING_MONTHS`, `Period`, `Service` (`of`), `RecurringCap` (`DEFAULT`, `from_dollars`), `PeriodJob`, `period_fee_for`, `LockDates`, `price_lock_until`, `locked_cents`.
+- Migration `0093_payments_customers_cards.sql`: `payments.customer` (key `business_id`, `stripe_customer_id`; insert and select only), `payments.card_authorization` (append-only: `version`, `text`, `accepted_at`), `payments.payment_method` (`pm_…`, `method_type` = `card`, `usage` = `off_session`, `brand`, `last4`, `authorization_id`, `saved_at`, `removed_at`).
+- `src/models.rs` (T059): `AUTHORIZATION_TEXT`, `AUTHORIZATION_VERSION`, `CardError`, `BusinessId`, `CustomerId` (`parse`, `as_str`), `SavedCard` (`new`, `payment_method`, `brand`, `last4`), `SetupIntentRequest` (`for_customer`, `form`).
+- `src/service.rs` (T059): `CUSTOMER_ACTION`, `customer_of`, `ensure_customer`, `Saved` (`New`, `Already`), `save_card`.
 - `src/api.rs`: the public surface; everything above is re-exported there.
 
 ## Rules it enforces
@@ -26,6 +29,11 @@ The layer-3 crate through which all money moves (FEE-032, `docs/architecture.md`
 - REC-001, REC-010, D-037, D-159: `Service::of(recurring, one_time_job_type)`; a recurring job type with no period is `NeedsPeriod`, a period outside a recurring category `PeriodNotRecurring`, a period on an hourly or diagnostic-visit quote `NotRecurringPrice`; a one-time job with no period is `fee_for`'s face value.
 - FEE-039, D-196, D-265: a recurring job type's tier is never above `RecurringCap` ($75 default, always a tier); a one-time job type is never capped, whatever period is typed.
 - FEE-040, D-465: `price_lock_until` is none for a join 90 days or more after launch, else 6 calendar months (Arizona) from the latest of join, first trade on and activation; `locked_cents` charges at most the join-date amount strictly before that end.
+- FEE-009: a Stripe customer is keyed by `BusinessId`; no `payments` table, type or function names a homeowner (`tests/security/tests/no_homeowner_charge.rs`).
+- FEE-036, D-089: `ensure_customer` makes the customer at sign-up with no card, key derived from the business ID only (SEC-018), no transaction across the Stripe call.
+- FEE-014, D-073: `SavedCard::new` refuses every method type but `card` (`CardsOnly`) and the table checks `method_type = 'card'`; only the `pm_…` ID, brand and last four are stored.
+- FEE-015: `save_card` stores `AUTHORIZATION_TEXT` with `AUTHORIZATION_VERSION` and the acceptance time in the same transaction as the card; it charges nothing.
+- FEE-048, D-490: `SetupIntentRequest::form` saves with `usage=off_session`, cards only; saved cards are stored with `usage = 'off_session'`.
 
 ## Never break
 
@@ -36,6 +44,8 @@ The layer-3 crate through which all money moves (FEE-032, `docs/architecture.md`
 - `ledger_append` runs on the caller's connection, so the entry commits or rolls back with the caller's state change (rust brain R11); never call Stripe inside that transaction.
 - The fee is always $25, $75 or $199 and never falls as the basis rises; a fee-free job type pays $0: `src/tests/prop_fee_props.rs`.
 - Every one-time worked example matches to the cent and the recurring and refused rows are pinned: `src/tests/worked_examples.rs`; every recurring row (and W32) matches through `period_fee_for`, and W20 and W33 need the cap: `src/tests/recurring.rs`.
+- Nothing in `models.rs` or `service.rs` creates a PaymentIntent or charge; saving a card charges nothing (FEE-036): `tests/integration/tests/setup_intent.rs` (its fake Stripe panics on any charge).
+- `payments.card_authorization` is append-only for the app role, and `payments` code never names a homeowner (D-1409): `setup_intent.rs` `td_fee_10_authorizations_are_append_only`, `no_homeowner_charge.rs`.
 
 ## How to change
 
@@ -44,6 +54,7 @@ The layer-3 crate through which all money moves (FEE-032, `docs/architecture.md`
 - After any query change: apply migrations, regenerate `.sqlx/` and run `cargo sqlx prepare --workspace --check -- --all-targets --all-features`.
 - Change a fee tier or edge: `docs/spec/fees.md` FEE-001 and `docs/catalog/worked_examples.yaml` first, then `MEDIUM_FROM_CENTS`, `MEDIUM_UP_TO_CENTS` and `Tier::cents` in `src/rules.rs`; run `cargo test -p askhava-payments -- tests::fee_tiers tests::worked_examples tests::prop_fee_props`.
 - Add a worked example: add the row to the YAML; a recurring or refused row also goes in the pinned list in `src/tests/worked_examples.rs`, and the checked count changes there (and, for a recurring row, in `src/tests/recurring.rs`).
+- Change the FEE-015 wording: FEE-015 in `docs/spec/fees.md` first, then `AUTHORIZATION_TEXT` and a higher `AUTHORIZATION_VERSION` in `src/models.rs` (businesses accept again before the next charge, FEE-007); run `cargo test -p askhava-integration --test setup_intent`.
 
 ## Tests that guard it
 
@@ -51,3 +62,4 @@ The layer-3 crate through which all money moves (FEE-032, `docs/architecture.md`
 - TD-FEE-16's Stripe match and reconcile cases are T067's; its architecture case (only `payments` imports the payments adapter) is T175's.
 - `src/tests/fee_tiers.rs`, `src/tests/worked_examples.rs`, `src/tests/prop_fee_props.rs`: TD-FEE-01, TD-FEE-02, TD-FEE-27 (fee cases), TD-FEE-28, TD-LIC-17 (the $0 fee): `cargo test -p askhava-payments tests::fee_tiers`, `tests::worked_examples`, `tests::prop_fee_props`.
 - `src/tests/recurring.rs`: TD-FEE-03, TD-FEE-21 (fee and lock cases), TD-FEE-24 (activation lock case), TD-FEE-35, TD-FEE-02 (W18, W30): `cargo test -p askhava-payments tests::recurring`. TD-FEE-21's monthly-limit and TD-FEE-24's refund and decline cases are T062's.
+- `src/tests/prop_no_homeowner_charge.rs`, `tests/integration/tests/setup_intent.rs`, `tests/security/tests/no_homeowner_charge.rs`: TD-FEE-07, TD-FEE-10, TD-FEE-32 (saved-card case): `cargo test -p askhava-payments tests::prop_no_homeowner_charge`, `cargo test -p askhava-integration --test setup_intent`, `cargo test -p askhava-security --test no_homeowner_charge`. TD-FEE-10's Confirm-page cases are TD-FEE-40's; the stripe-mock SetupIntent round trip is T132's (D-1410).
