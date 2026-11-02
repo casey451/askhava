@@ -356,9 +356,17 @@ def _waits_for(task: dict[str, Any]) -> str:
     return f" (the proof waits for: {'; '.join(str(w) for w in waits)})" if waits else ""
 
 
+def _plan_gap_line(task: dict[str, Any]) -> str:
+    """A task held before its claim by the plan-health check (runner.cycle.plan_health_pass, D-1339)."""
+    gap = task.get("plan_gap") or {}
+    problems = "; ".join(str(p) for p in gap.get("problems") or [])
+    return f"- PLAN GAP {task['id']} (since {gap.get('at')}, no attempt used; a plan change fixes it): {problems}"
+
+
 def _attention(state: State, now: datetime) -> list[str]:
     lines = [f"- BLOCKED {t['id']}: {t.get('reason', '')}{_waits_for(t)}" for t in state.get("tasks", []) if t.get("status") == st.BLOCKED]
     lines += [f"- Waiting for Casey: {t['id']}" for t in state.get("tasks", []) if t.get("status") == st.WAITING_FOR_OWNER]
+    lines += [_plan_gap_line(t) for t in state.get("tasks", []) if t.get("plan_gap") and t.get("status") not in st.SATISFIED]
     lines += [f"- Deviation {d.get('id')}: {d.get('rule')} ({d.get('owner')}, until {d.get('expiry')})" for d in st.open_deviations(state, now)]
     red = state.get("main_red")
     if red:

@@ -211,6 +211,9 @@ class Config:
     # Whether a path is in the locked blueprint (scripts/check_plan_lock.py): a task owning one also owns
     # kit/plan.lock, so two such tasks never run side by side (D-620).
     locked: Callable[[str], bool] | None = None
+    # The plan-health check run before a claim (scripts/plan_health.py checker, D-1339): the problems that
+    # make a task's plan unsound to claim now ([] when sound). None skips the check.
+    plan_health: Callable[[State, str], list[str]] | None = None
 
 
 # Casey reviews code-owner PRs by day. Such a task is claimed only from 06:00 to 19:00 Arizona time
@@ -1164,6 +1167,7 @@ def _next_step(cfg: Config, env: Env, state: State, base: State, now: datetime, 
     ids = _by_day(cfg, st.eligible(state, now, _passed(cfg, state), cfg.proof_stages), now)
     ids = lanes.compatible_ids(ids, state, now, lambda tid: _task_def(cfg, state, tid), cfg.locked, cfg.proof_stages)
     ids = sorted(ids, key=lambda tid: not st.entry(state, tid).get("resync"))  # a resync finishes reviewed work first (D-891)
+    ids, state = plan_health_pass(cfg, state, ids, now)
     if not ids:
         if state != base and not env.push_state(state, base):
             return "lost_race"
@@ -1199,6 +1203,48 @@ def _next_step(cfg: Config, env: Env, state: State, base: State, now: datetime, 
     # A handed-off FIX-MAIN must reach the session as `handed_off`, or the session stops and the claimed
     # revert is never worked (D-501); only a finished FIX-MAIN cycle reports `fix_main`.
     return "fix_main" if task["id"] == st.FIX_MAIN and done not in ("lost_race", "handed_off") else done
+
+
+PLAN_GAP_PROBLEMS_KEPT = 10  # problems stored per task; the rest are counted, not listed
+
+
+def plan_health_pass(cfg: Config, state: State, ids: list[str], now: datetime) -> tuple[list[str], State]:
+    """Run the plan-health check (scripts/plan_health.py) on the candidates in order, before any claim
+    (A+ plan item 3, D-1339). A task with problems stays QUEUED with its `attempts` untouched and gets a
+    `plan_gap` mark ({at, problems}) that STATUS.md lists, and drops out of the list, so the claim goes
+    to the next sound candidate. Every candidate is checked, since the pacer may pass over the first sound
+    one; a sound task's stale mark is cleared, so a plan fixed on main frees the task by itself. FIX-MAIN
+    is never checked: it is not in the plan."""
+    if cfg.plan_health is None:
+        return ids, state
+    sound: list[str] = []
+    for tid in ids:
+        problems = [] if tid == st.FIX_MAIN else _health(cfg.plan_health, state, tid)
+        state = _mark_plan_gap(state, tid, problems, now)
+        sound += [] if problems else [tid]
+    return sound, state
+
+
+def _health(check: Callable[[State, str], list[str]], state: State, tid: str) -> list[str]:
+    """The check's problems; a check that itself fails holds nothing (the claim goes ahead as before D-1339)."""
+    try:
+        return list(check(state, tid))
+    except Exception as exc:  # noqa: BLE001  # reason: a broken plan-health check must never stop the build (D-1339)
+        print(f"runner: plan-health check failed for {tid}: {str(exc)[:200]}")
+        return []
+
+
+def _mark_plan_gap(state: State, tid: str, problems: list[str], now: datetime) -> State:
+    """Set, refresh or clear one task's `plan_gap` mark; an unchanged list writes nothing (no churn)."""
+    entry = st.entry(state, tid)
+    if not problems:
+        return _without(state, tid, "plan_gap") if "plan_gap" in entry else state
+    kept = problems[:PLAN_GAP_PROBLEMS_KEPT]
+    if len(problems) > len(kept):
+        kept.append(f"and {len(problems) - len(kept)} more (python3 scripts/plan_health.py {tid})")
+    if (entry.get("plan_gap") or {}).get("problems") == kept:
+        return state
+    return st.with_task(state, tid, plan_gap={"at": st.iso(now), "problems": kept})
 
 
 def _task_def(cfg: Config, state: State, tid: str) -> dict[str, Any]:
