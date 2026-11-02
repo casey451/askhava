@@ -1,13 +1,13 @@
 # Ask Hava build status
 
-Updated 2026-11-02T06:07:10Z by runner 83224b016ca6 (actions).
+Updated 2026-11-02T06:15:31Z by runner 6a3834640994 (actions).
 
-**Requirements verified:** 161 of 726 (22.2%) · partial 166 · unstarted 399
-**Tasks merged (throughput only):** 91 of 230
+**Requirements verified:** 161 of 726 (22.2%) · partial 172 · unstarted 393
+**Tasks merged (throughput only):** 92 of 230
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 14 | 9 | 12 | 35 |
+| accessibility | 14 | 10 | 11 | 35 |
 | ai | 12 | 10 | 6 | 28 |
 | businesses | 5 | 4 | 48 | 57 |
 | calls | 0 | 2 | 23 | 25 |
@@ -17,13 +17,13 @@ Updated 2026-11-02T06:07:10Z by runner 83224b016ca6 (actions).
 | job-cards | 13 | 4 | 5 | 22 |
 | licensing | 30 | 17 | 1 | 48 |
 | lifecycle | 9 | 15 | 4 | 28 |
-| messaging | 14 | 9 | 22 | 45 |
-| ops-recovery | 1 | 3 | 50 | 54 |
+| messaging | 14 | 11 | 20 | 45 |
+| ops-recovery | 1 | 4 | 49 | 54 |
 | privacy | 2 | 12 | 17 | 31 |
 | quiet-hours | 6 | 3 | 0 | 9 |
 | quotes-pick | 10 | 18 | 28 | 56 |
 | recurring | 0 | 2 | 9 | 11 |
-| security | 9 | 21 | 24 | 54 |
+| security | 9 | 23 | 22 | 54 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 0 | 28 | 28 |
 | wording | 2 | 2 | 27 | 31 |
@@ -37,7 +37,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 0.5: 0 of 1 done
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
-- stage 3: 0 of 25 done
+- stage 3: 1 of 25 done
 - stage 4: 0 of 50 done
 - stage 5: 0 of 42 done
 - stage 6: 0 of 25 done
