@@ -15656,7 +15656,7 @@
    }
   }
  },
- "updated_at": "2026-11-02T04:47:44Z",
+ "updated_at": "2026-11-02T05:16:31Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -15754,8 +15754,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "2ed9f1f259de3b6ff12dcffc349bdbe2b1fd7a7a",
- "starter": "actions",
+ "runner_sha": "2876127b20e5337c1837430c79b75e02dc530b60",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "83dac288109407722c3096c3181cbfe361114898",
@@ -15978,6 +15978,11 @@
    "main_sha": "5d45d8ef0bee8d8e290462e58aa81c580bf57c1e",
    "by": "runner",
    "at": "2026-10-30T09:13:38Z"
+  },
+  "2": {
+   "evidence": "Recorded by the overseer session (Fable 5.1) from tool runs on main: nightly-main run 41390741157 (workflow_dispatch 04:51Z, recorded in kit/nightly.json at 05:04Z) green on main 2ed9f1f259de, the commit of the stage-2 cleanup merge (T057, #251, D-1362): Ci green (Checks; Coverage with tests/coverage_floor.json floors active; the trybuild compile-fail cases of tests/security incl. T223's planted cross-layer import; migrations applied from empty in number order by the Coverage and E2e jobs; jiff-sqlx timestamptz values written and read back in tests/integration/tests/quote_window.rs, text_pick.rs, intake_timeouts.rs); E2e green (tests/e2e/j1_reduced.spec.ts, the reduced J1 of T173 against stand-ins); Ally green (axe at 320, 768 and 1280 px on every page state, tests/a11y/axe_all_pages.spec.ts); Twin green; named-mutants job green (every tests/mutation/mutants.toml entry, incl. the license filter, consent and opt-out, and quiet hours groups, killed). scripts/progress.py with that nightly: all 161 requirements owned only by stage <=2 tasks (owning tasks and test-design rows) verified; stage_exit.py clauses 1-2 held once T057 is released. T057's scans zero (D-1362).",
+   "main_sha": "2ed9f1f259de3b6ff12dcffc349bdbe2b1fd7a7a",
+   "at": "2026-11-02T05:16:31Z"
   }
  },
  "lane_strikes": {

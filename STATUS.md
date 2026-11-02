@@ -1,29 +1,29 @@
 # Ask Hava build status
 
-Updated 2026-11-02T04:47:44Z by runner 2ed9f1f259de (actions).
+Updated 2026-11-02T05:16:31Z by runner 2876127b20e5 (manual).
 
-**Requirements verified:** 129 of 726 (17.8%) · partial 198 · unstarted 399
-**Tasks merged (throughput only):** 90 of 230
+**Requirements verified:** 161 of 726 (22.2%) · partial 166 · unstarted 399
+**Tasks merged (throughput only):** 90 of 229
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 0 | 23 | 12 | 35 |
+| accessibility | 14 | 9 | 12 | 35 |
 | ai | 12 | 10 | 6 | 28 |
 | businesses | 5 | 4 | 48 | 57 |
 | calls | 0 | 2 | 23 | 25 |
-| consent | 12 | 14 | 9 | 35 |
+| consent | 14 | 12 | 9 | 35 |
 | fees | 0 | 6 | 47 | 53 |
-| intake | 18 | 16 | 7 | 41 |
-| job-cards | 12 | 5 | 5 | 22 |
-| licensing | 29 | 18 | 1 | 48 |
+| intake | 20 | 14 | 7 | 41 |
+| job-cards | 13 | 4 | 5 | 22 |
+| licensing | 30 | 17 | 1 | 48 |
 | lifecycle | 9 | 15 | 4 | 28 |
-| messaging | 13 | 10 | 22 | 45 |
+| messaging | 14 | 9 | 22 | 45 |
 | ops-recovery | 1 | 3 | 50 | 54 |
-| privacy | 1 | 13 | 17 | 31 |
-| quiet-hours | 4 | 5 | 0 | 9 |
-| quotes-pick | 3 | 25 | 28 | 56 |
+| privacy | 2 | 12 | 17 | 31 |
+| quiet-hours | 6 | 3 | 0 | 9 |
+| quotes-pick | 10 | 18 | 28 | 56 |
 | recurring | 0 | 2 | 9 | 11 |
-| security | 8 | 22 | 24 | 54 |
+| security | 9 | 21 | 24 | 54 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 0 | 28 | 28 |
 | wording | 2 | 2 | 27 | 31 |
