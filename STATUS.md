@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-02T13:42:24Z by runner 1064dc5cd3a5 (actions).
+Updated 2026-11-02T13:47:04Z by runner c134524eba95 (actions).
 
 **Waiting for tokens until 17:00Z; 98 of 230 done; week 98% used, resets Thu 2026-11-05 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,11 @@ Updated 2026-11-02T13:42:24Z by runner 1064dc5cd3a5 (actions).
 - **Stage:** stage 3; stage proofs recorded: 1, 2
 - **Lane:** idle since 12:41Z (no task in progress)
 - **Week:** 98% used, 2.0M tokens left; resets Thu 2026-11-05 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:42Z, 0 min before this update
+- **Last run:** 13:42Z, 4 min before this update
 - **Keeper:** last ran 13:42Z, next wake 19:22Z
 
 ## Needs attention
-- Strict plan check red: 2 problem(s) on tasks still to run (+7 on DONE tasks); first: T189: stored context_pct 11% but it measures 16%; regenerate
+- nothing
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -100,7 +100,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 3: 7 of 25 done
 - stage 4: 0 of 50 done
 - stage 5: 0 of 42 done
-- stage 6: 0 of 25 done
+- stage 6: 0 of 26 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
 - stage kit: 14 of 15 done
