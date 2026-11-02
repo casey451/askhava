@@ -11,9 +11,15 @@
 #     as the `Ci` "Checks" job runs them;
 #   extras (unless --quick): what `Ci` adds when the diff against main touches it, by `Ci`'s own path
 #     rules: eslint and `npm audit --audit-level=low` for the npm tree; cargo-audit and cargo-deny for
-#     Rust when both are on the path (`Ci` installs them; elsewhere it says it skipped).
+#     Rust when both are on the path (`Ci` installs them; elsewhere it says it skipped); and, when the diff
+#     touches a crate with a floor in tests/coverage_floor.json, `Ci`'s branch coverage of that crate and
+#     every workspace crate that depends on it (their tests carry its coverage: askhava-payments alone
+#     measured 61%, with askhava-integration 98.8%), judged by scripts/coverage_floor.py, `Ci`'s own
+#     comparison, on those floors only (D-1440). It needs cargo-llvm-cov, the pinned nightly and
+#     DATABASE_URL, else it says it skipped; past PREHANDIN_COVERAGE_TIMEOUT (360 s, so the whole gate
+#     stays inside a 600 s Bash call) it says so and lets `Ci` judge. Measured 271 s warm, 324 s cold for payments, so it is not in --quick (the runner's 240 s).
 # Not here: pytest, cargo and tsc (scripts/smoke.sh runs them; the worker runs both scripts), and `Ci`'s
-# branch-coverage job (a second, instrumented nightly build: 4.5 to 6 minutes in a session, D-1300).
+# workspace-total coverage (4.5 to 6 minutes in a session, D-1300).
 #
 # The worker runs it after `bash scripts/smoke.sh` as the last step before hand-in (kit/prompts/TEMPLATE.md).
 # The runner runs main's copy with --quick on the handed-in head at `python3 -m runner --after` and does not
@@ -134,7 +140,41 @@ extras() {
       echo "skipped: cargo-audit or cargo-deny not on PATH (Ci runs them)"
     fi
   fi
-  echo "not run here: pytest, cargo and tsc (scripts/smoke.sh), Ci's branch coverage, Twin, Ally"
+  coverage
+  echo "not run here: pytest, cargo and tsc (scripts/smoke.sh), Ci's workspace total coverage, Twin, Ally"
+}
+
+# Ci's Coverage job for the floored crates this change touches (D-1440): the same nightly, flags and
+# comparison (scripts/coverage_floor.py; tests/test_prehandin.py keeps NIGHTLY and the flags equal to ci.yml).
+NIGHTLY="nightly-2026-10-15"
+COVERAGE_TIMEOUT="${PREHANDIN_COVERAGE_TIMEOUT:-360}"
+coverage() {
+  [ -f tests/coverage_floor.json ] && [ -f scripts/coverage_floor.py ] && [ -f Cargo.lock ] || return 0
+  local picked packages=() only=() judged="" kind name report code
+  picked="$(printf '%s\n' "${CHANGED}" | python3 scripts/coverage_floor.py select)" \
+    || { echo "skipped: scripts/coverage_floor.py select could not read the workspace (Ci measures it)"; return 0; }
+  [ -n "${picked}" ] || return 0
+  while read -r kind name; do
+    if [ "${kind}" = package ]; then packages+=(-p "${name}"); else only+=(--only "${name}"); judged+=" ${name}"; fi
+  done <<< "${picked}"
+  step "Floored code changed: branch coverage of${judged} (as Ci)"
+  if ! command -v cargo-llvm-cov >/dev/null 2>&1 || ! rustup toolchain list 2>/dev/null | grep -q "^${NIGHTLY}" || [ -z "${DATABASE_URL:-}" ]; then
+    echo "skipped: needs cargo-llvm-cov, the ${NIGHTLY} toolchain and DATABASE_URL (Ci measures it)"
+    return 0
+  fi
+  df -h "${CARGO_LLVM_COV_TARGET_DIR:-.}" 2>/dev/null | tail -1 || true  # disk room for the instrumented build
+  report="$(mktemp)"
+  code=0
+  timeout "${COVERAGE_TIMEOUT}" cargo "+${NIGHTLY}" llvm-cov "${packages[@]}" --locked --branch --json --summary-only \
+    --ignore-filename-regex '(/tests/|/bin/)' --output-path "${report}" >"${report}.log" 2>&1 || code=$?
+  if [ "${code}" -eq 124 ]; then
+    echo "skipped: not finished in ${COVERAGE_TIMEOUT} s (Ci measures it)"
+  elif [ "${code}" -ne 0 ]; then
+    tail -30 "${report}.log"; rm -f "${report}" "${report}.log"; fail "cargo llvm-cov (a test failed under coverage)"
+  else
+    run_check "coverage floor" python3 scripts/coverage_floor.py compare "${report}" "${only[@]}" --base "${BASE}"
+  fi
+  rm -f "${report}" "${report}.log"
 }
 
 quick_part
