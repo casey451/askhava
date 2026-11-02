@@ -8,8 +8,17 @@
 //! (D-073). [`AUTHORIZATION_TEXT`] is the FEE-015 wording, stored with [`AUTHORIZATION_VERSION`]
 //! and the acceptance time, and [`SetupIntentRequest`] is the one way a card is saved on a $0
 //! Confirm page: `usage=off_session`, cards only (FEE-048).
+//!
+//! T061 (FEE-010, FEE-011, D-151, D-152, D-195): [`EntityKey`] is a free-first-win entity key
+//! stored only as a keyed digest, [`JoinDates`] the dates the 90-day window is judged by, and
+//! [`FreeWinError`] why a free-win step failed.
 
+use askhava_adapters::api::IdempotencyKey;
+use jiff::Timestamp;
+use secrecy::SecretString;
 use sqlx::types::Uuid;
+
+use crate::ledger::LedgerError;
 
 /// The FEE-015 card authorization, exactly as `docs/spec/fees.md` words it (D-195, D-196, D-365).
 /// A change of wording is a new [`AUTHORIZATION_VERSION`], accepted again before the next charge
@@ -169,4 +178,113 @@ fn vendor_id(id: &str, prefix: &str) -> Result<String, CardError> {
     } else {
         Err(CardError::BadField)
     }
+}
+
+/// The five free-first-win entity keys (FEE-011, D-019, D-151): a business may have several of
+/// each, and a free first win is allowed once across every business sharing any one of them.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum EntityKind {
+    /// The Arizona ROC license number.
+    Roc,
+    /// The entity on the city business-license list.
+    CityEntity,
+    /// The Stripe card fingerprint of a saved card.
+    CardFingerprint,
+    /// The identity-code contact on the record (its phone or email, D-151).
+    IdentityContact,
+    /// The owner name on the city list (D-151).
+    OwnerName,
+}
+
+impl EntityKind {
+    /// The stored code, matching `payments.entity_key.kind`.
+    #[must_use]
+    pub const fn code(self) -> &'static str {
+        match self {
+            Self::Roc => "roc",
+            Self::CityEntity => "city-entity",
+            Self::CardFingerprint => "card-fingerprint",
+            Self::IdentityContact => "identity-contact",
+            Self::OwnerName => "owner-name",
+        }
+    }
+}
+
+/// The HMAC action under which an entity key's value is digested (PRIV-002, postgres brain P12).
+pub const ENTITY_KEY_ACTION: &str = "payments.entity_key";
+
+/// One entity key as stored: its kind and a keyed digest of the normalized value, never the value
+/// itself, so no contact or owner name sits in a `payments` column (FEE-011, PRIV-002). Only
+/// [`EntityKey::new`] makes one.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct EntityKey {
+    kind: EntityKind,
+    digest: String,
+}
+
+impl EntityKey {
+    /// FEE-011: digests `value` under the ID secret after trimming, lower-casing and collapsing
+    /// inner whitespace, so "ACME  Roofing " and "acme roofing" are one key. The caller passes
+    /// the identity-code contact already in its stored form (`+1` and ten digits, or the email).
+    ///
+    /// # Errors
+    /// [`FreeWinError::EmptyKey`] when nothing is left after normalizing.
+    pub fn new(secret: &SecretString, kind: EntityKind, value: &str) -> Result<Self, FreeWinError> {
+        let normal = value
+            .split_whitespace()
+            .collect::<Vec<_>>()
+            .join(" ")
+            .to_lowercase();
+        if normal.is_empty() {
+            return Err(FreeWinError::EmptyKey);
+        }
+        let digest = IdempotencyKey::derive(secret, ENTITY_KEY_ACTION, &[kind.code(), &normal]);
+        Ok(Self {
+            kind,
+            digest: digest.as_str().to_owned(),
+        })
+    }
+
+    /// The key's kind.
+    #[must_use]
+    pub const fn kind(&self) -> EntityKind {
+        self.kind
+    }
+
+    /// The 64-hex-digit keyed digest stored in `payments.entity_key.digest`.
+    #[must_use]
+    pub fn digest(&self) -> &str {
+        &self.digest
+    }
+}
+
+/// The dates FEE-010 judges a business by: when its sign-up form was submitted (D-152), the
+/// launch date (Gate C, a setting, D-019) and when each category it signed up for was switched on
+/// (D-195). The caller reads them from `businesses` and `catalog`, which `payments` cannot read.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct JoinDates {
+    /// When the business's sign-up form was submitted (FEE-010, D-152).
+    pub joined: Timestamp,
+    /// Launch: the date of Gate C (D-019).
+    pub launch: Timestamp,
+    /// When each category the business signed up for was switched on; none while waitlisted.
+    pub trades_opened: Vec<Timestamp>,
+}
+
+/// Why a free-win step was refused or could not finish. No variant carries a key value (R5).
+#[derive(Debug, thiserror::Error, PartialEq, Eq)]
+pub enum FreeWinError {
+    /// An entity key's value is empty after normalizing.
+    #[error("an entity key is empty")]
+    EmptyKey,
+    /// Another Confirm used a shared key or this business's win at the same moment; nothing was
+    /// written, and the caller runs its Confirm again, which then sees that win.
+    #[error("a free first win was used at the same moment; try again")]
+    Race,
+    /// The ledger refused the $0 entry.
+    #[error("the ledger refused the entry")]
+    Ledger(#[from] LedgerError),
+    /// The database refused or dropped the statement.
+    #[error("the payments database statement failed")]
+    Database,
 }

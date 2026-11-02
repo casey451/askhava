@@ -11,7 +11,12 @@
 //! T059 added Stripe customers made at sign-up with no card, saved cards with the FEE-015
 //! authorization, and cards only (FEE-009, FEE-014, FEE-015, FEE-036, FEE-048, D-1409).
 
+//!
+//! T061 added free first wins (one per entity key, inside the 90-day window) and $0 repeat
+//! customers, [`api::waive_at_confirm`] (FEE-010 to FEE-013, D-069, D-151).
+
 pub mod api;
+mod free_wins;
 mod ledger;
 mod models;
 mod rules;

@@ -20,10 +20,20 @@
 //! [`record_fee_at_confirm`] writes it to the ledger at Confirm, never adjusted afterwards
 //! (FEE-006, JOB-016); [`switch_fee_mode`] logs the owner's [`FeeMode`] switch, and
 //! [`may_confirm`] holds each business to the new [`FeeTerms`] authorization (FEE-007, D-072).
+//!
+//! T061: [`record_entity_keys`] stores a business's [`EntityKey`]s at sign-up (FEE-011, D-151);
+//! [`waive_at_confirm`] decides, before any charge, whether a pick is a repeat customer (FEE-013)
+//! or the business's free first win inside the [`in_free_win_window`] (FEE-010, FEE-012), and
+//! writes its $0 entry; [`Waiver::NotWaived`] means the caller charges.
 
+pub use crate::free_wins::{
+    FREE_WIN_ACTION, FREE_WIN_WINDOW_DAYS, REPEAT_ACTION, Waiver, WinCheck, in_free_win_window,
+    record_entity_keys, waive_at_confirm,
+};
 pub use crate::ledger::{Appended, EntryKind, LedgerEntry, LedgerError, NewEntry, ledger_append};
 pub use crate::models::{
-    AUTHORIZATION_TEXT, AUTHORIZATION_VERSION, BusinessId, CardError, CustomerId, SavedCard,
+    AUTHORIZATION_TEXT, AUTHORIZATION_VERSION, BusinessId, CardError, CustomerId,
+    ENTITY_KEY_ACTION, EntityKey, EntityKind, FreeWinError, JoinDates, SavedCard,
     SetupIntentRequest,
 };
 pub use crate::rules::{
