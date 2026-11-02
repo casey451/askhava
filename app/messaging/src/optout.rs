@@ -22,9 +22,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 
 use askhava_adapters::api::{AdapterError, IdempotencyKey, SentText, SmsAdapter};
 use askhava_ops::api::{NewAlert, Severity, Switch, is_paused, raise_alert};
-use askhava_privacy::api::{
-    Field, IndexPurpose, Purpose, Reader, Vault, normalize_phone, read_contact,
-};
+use askhava_privacy::api::{IndexPurpose, Vault, normalize_phone};
 use jiff::Timestamp;
 use secrecy::{ExposeSecret, SecretString};
 use sqlx::types::Uuid;
@@ -310,7 +308,12 @@ pub async fn send_checked(
     let (recipient, template, subject) = models::outbox_target(db, id)
         .await?
         .ok_or(OutboxError::NotFound)?;
-    let digests = digests(vault, number(db, to, recipient).await?.expose_secret())?;
+    let digests = digests(
+        vault,
+        service::recipient_phone(db, to, recipient)
+            .await?
+            .expose_secret(),
+    )?;
     let listing = models::listing(db, &digests).await?;
     if !rules::may_send_to(listing, &template, &subject, now) {
         return Err(OutboxError::Suppressed);
@@ -336,29 +339,6 @@ pub async fn send_checked(
     models::block(&mut tx, id).await?;
     tx.commit().await.map_err(|_| OutboxError::Database)?;
     Err(OutboxError::Blocked)
-}
-
-/// The number a row goes to: a homeowner's from the vault for contact `recipient` (PRIV-004), a
-/// business phone as given.
-async fn number(
-    db: &mut PgConnection,
-    to: To<'_>,
-    recipient: Uuid,
-) -> Result<SecretString, OutboxError> {
-    match to {
-        To::Business(phone) => Ok(SecretString::from(phone.to_owned())),
-        To::Homeowner { vault, .. } => read_contact(
-            db,
-            vault,
-            (Reader::Messaging, Purpose::Send),
-            recipient,
-            &[Field::Phone],
-        )
-        .await
-        .map_err(|_| OutboxError::Recipient)?
-        .phone
-        .ok_or(OutboxError::Recipient),
-    }
 }
 
 /// The digests of `phone` under the homeowner-phone index key, one per key version, active first,

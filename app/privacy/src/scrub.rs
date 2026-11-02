@@ -425,8 +425,10 @@ fn shift(c: char, zero: u32) -> char {
     char::from_u32(u32::from(c) - zero + u32::from('0')).unwrap_or(c)
 }
 
-/// Unicode general category Cf (format characters), including the tag block (AI-020).
-fn is_format(c: char) -> bool {
+/// Unicode general category Cf (format characters), including the tag block (AI-020). The one
+/// list: `ai`'s screen drops the same characters before it checks AI text (AI-021, D-814, D-1362).
+#[must_use]
+pub fn is_format(c: char) -> bool {
     matches!(u32::from(c),
         0x00AD | 0x0600..=0x0605 | 0x061C | 0x06DD | 0x070F | 0x0890..=0x0891 | 0x08E2 | 0x180E
         | 0x200B..=0x200F | 0x202A..=0x202E | 0x2060..=0x2064 | 0x2066..=0x206F | 0xFEFF
