@@ -1521,3 +1521,16 @@ def test_run_command_gives_the_smoke_its_own_timeout(monkeypatch: pytest.MonkeyP
     assert github_env._smoke_env()["CARGO_TARGET_DIR"] == "/work/askhava/target", "the smoke reuses the job's cached build"
     monkeypatch.setenv("CARGO_TARGET_DIR", "/elsewhere")
     assert github_env._smoke_env()["CARGO_TARGET_DIR"] == "/elsewhere"
+
+
+def test_the_handoff_says_when_the_worker_must_hand_in() -> None:
+    """D-1440: `hand_in_by` is the lease's expiry less 30 minutes, so a worker knows its deadline (T154, D-503)."""
+    state = st.claim(st.with_task(st.new_state(), "K10"), "K10", "a", NOW)
+    cfg = SimpleNamespace(session="a", graph=[TASK], models=MODELS)
+    env = SimpleNamespace(last_state=state, dry_run=True, branch_for=lambda tid: TASK["branch"], prepared={})
+    info = entry.write_handoff(cfg, env)  # type: ignore[arg-type]  # reason: a stand-in for Config and GitHubEnv
+    expected = NOW + timedelta(hours=st.LEASE_HOURS) - timedelta(minutes=30)
+    assert info["hand_in_by"] == st.iso(expected)
+    assert entry.hand_in_by(None) is None and entry.hand_in_by({"task": "K10"}) is None
+    step3 = (Path(__file__).resolve().parent.parent / ".github/workflows/backup-runner.yml").read_text(encoding="utf-8")
+    assert "the handoff's `hand_in_by`" in step3

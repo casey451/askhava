@@ -69,7 +69,7 @@ import sys
 import tempfile
 import uuid
 from collections.abc import Callable
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path, PurePosixPath
 from typing import Any
 
@@ -398,6 +398,21 @@ def _prompt_for(task: dict[str, Any], tid: str) -> str:
     return path if (ROOT / path).is_file() or not task.get("goal") else str(task["goal"])
 
 
+HAND_IN_MARGIN = timedelta(minutes=30)  # a worker hands in this long before the lease ends (D-1440)
+
+
+def hand_in_by(lease: dict[str, Any] | None) -> str | None:
+    """The lease's expiry less HAND_IN_MARGIN as an ISO time, None without a lease (D-1440).
+
+    T154's attempts that "ended without handing in" and D-503's safety hand-in both mean a session ran
+    out of time with the work unhanded: the worker is told the time by which `--after` must have run, so
+    it commits, runs the gate and hands in with room to spare. A `--renew` moves the lease, not this
+    time: the hand-off states the budget the worker was given."""
+    if not lease or not lease.get("expires"):
+        return None
+    return st.iso(st.parse(str(lease["expires"])) - HAND_IN_MARGIN)
+
+
 def write_handoff(cfg: cycle.Config, env: GitHubEnv) -> dict[str, Any]:
     """Tell the session what it was handed (task, branch, prompt, models, its reserved `decision_ids`),
     and remember the session for --after."""
@@ -415,6 +430,9 @@ def write_handoff(cfg: cycle.Config, env: GitHubEnv) -> dict[str, Any]:
         # The branch is already made, on top of an earlier pushed attempt when there is one: never recreate it (D-583).
         "branch_ready": bool(env.prepared.get("branch_ready")), "base": env.prepared.get("base"),
         "branch_note": branch_note(env.prepared),
+        # When the worker must have handed in: the lease's expiry less HAND_IN_MARGIN (D-1440, D-503). The lane
+        # lease this session holds; lane "1"'s `lease` only when it holds none (the same fallback as `tid`).
+        "hand_in_by": hand_in_by(mine or state.get("lease")),
     }
     if not env.dry_run:
         (ROOT / HANDOFF).write_text(json.dumps(info), encoding="utf-8")

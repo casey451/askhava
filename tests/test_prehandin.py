@@ -264,3 +264,113 @@ CALLS = [("kit/prompts/TEMPLATE.md", "prehandin: green"), (".github/workflows/ba
 def test_the_worker_is_told_to_run_the_gate_last(path: str, marker: str) -> None:
     text = (ROOT / path).read_text(encoding="utf-8")
     assert "bash scripts/prehandin.sh" in text and marker in text
+
+
+# ---- per-crate coverage (D-1440)
+
+COVERAGE = ROOT / "scripts" / "coverage_floor.py"
+
+
+def _load_coverage_floor():  # type: ignore[no-untyped-def]  # reason: a module loaded by path
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("coverage_floor", COVERAGE)
+    module = importlib.util.module_from_spec(spec)  # type: ignore[arg-type]  # reason: the path exists
+    spec.loader.exec_module(module)  # type: ignore[union-attr]  # reason: as above
+    return module
+
+
+def _fake_workspace(tmp_path: Path) -> Path:
+    """Fake crates: core <- pay <- glue (tests), lic (floored, nobody depends on it), the excluded askhava-security."""
+    root = tmp_path / "ws"
+    crates = {"app/core": ("fake-core", []), "app/pay": ("fake-pay", ["fake-core"]), "app/lic": ("fake-lic", []),
+              "tests/glue": ("fake-glue", ["fake-pay"]), "tests/security": ("askhava-security", ["fake-pay"])}
+    for folder, (name, deps) in crates.items():
+        (root / folder).mkdir(parents=True)
+        lines = [f'[package]\nname = "{name}"\n', "[dev-dependencies]\n"] + [f"{d} = {{ workspace = true }}\n" for d in deps]
+        (root / folder / "Cargo.toml").write_text("".join(lines) + 'serde = "1"\n')
+    (root / "Cargo.toml").write_text('[workspace]\nmembers = ["app/*", "tests/glue", "tests/security"]\n')
+    (root / "app" / "lic" / "src").mkdir()
+    (root / "app" / "lic" / "src" / "rules.rs").write_text("//! fake\n")
+    (root / "tests" / "coverage_floor.json").write_text(json.dumps({"total": 0.0, "floors": {
+        "app/pay/": 95.0, "app/lic/src/rules.rs": 95.0, "app/core/src/fees.rs": 95.0}}))
+    return root
+
+
+def test_only_floored_crates_the_change_touches_are_measured_with_their_dependents(tmp_path: Path) -> None:
+    cf, root = _load_coverage_floor(), _fake_workspace(tmp_path)
+    assert cf.select(root, ["app/core/src/lib.rs", "docs/x.md"]) == ([], []), \
+        "a floor with no file yet (app/core/src/fees.rs) is never measured, even when its crate changes"
+    assert cf.select(root, ["app/pay/src/fee.rs"]) == (["fake-glue", "fake-pay"], ["app/pay/"]), \
+        "a crate's dependents carry its coverage; Ci's excluded crates stay out"
+    assert cf.select(root, ["app/lic/Cargo.toml"]) == (["fake-lic"], ["app/lic/src/rules.rs"])
+    both = cf.select(root, ["tests/coverage_floor.json"])
+    assert both == (["fake-glue", "fake-lic", "fake-pay"], ["app/pay/", "app/lic/src/rules.rs"]), "a floor change measures all"
+
+
+def _report(tmp_path: Path, root: Path, files: dict[str, tuple[int, int]]) -> Path:
+    rows = [{"filename": f"{root}/{name}", "summary": {"branches": {"count": count, "covered": covered},
+                                                         "lines": {"count": 10, "covered": 10}}}
+            for name, (covered, count) in files.items()]
+    total = {"branches": {"count": sum(c for _, c in files.values()), "covered": sum(v for v, _ in files.values())},
+             "lines": {"count": 10, "covered": 10}}
+    path = tmp_path / "report.json"
+    path.write_text(json.dumps({"data": [{"files": rows, "totals": total}]}))
+    return path
+
+
+def test_the_comparison_judges_floors_as_ci_did_and_only_the_named_ones_per_crate(tmp_path: Path) -> None:
+    cf, root = _load_coverage_floor(), _fake_workspace(tmp_path)
+    floors = json.loads((root / "tests" / "coverage_floor.json").read_text())
+    data = json.loads(_report(tmp_path, root, {"app/pay/src/a.rs": (95, 100), "app/lic/src/rules.rs": (90, 100)})
+                      .read_text())["data"][0]
+    assert cf.judge(floors, data, f"{root}/") == ["app/lic/src/rules.rs 90.00 is below the floor 95.0"]
+    assert cf.judge(floors, data, f"{root}/", ["app/pay/"]) == [], "a per-crate run judges only its own floors"
+    shy = json.loads(_report(tmp_path, root, {"app/pay/src/a.rs": (94995, 100000)}).read_text())["data"][0]
+    assert cf.judge(floors, shy, f"{root}/", ["app/pay/"]) == [], "Ci's 0.005 rounding slack is kept"
+    lines_only = {"files": [{"filename": f"{root}/app/pay/src/a.rs", "summary": {
+        "branches": {"count": 0, "covered": 0}, "lines": {"count": 10, "covered": 9}}}], "totals": data["totals"]}
+    assert cf.judge(floors, lines_only, f"{root}/", ["app/pay/"]) == ["app/pay/ 90.00 is below the floor 95.0"]
+
+
+def test_ci_and_the_gate_measure_and_compare_alike() -> None:
+    """Ci's Coverage job calls scripts/coverage_floor.py (no inline copy left to drift); the gate uses the same
+    nightly and flags, and backup-runner.yml installs Ci's pinned tools for it (D-1440)."""
+    ci = yaml.safe_load((ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8"))["jobs"]["coverage"]
+    steps = {s.get("name", ""): str(s.get("run", "")) for s in ci["steps"]}
+    compare = steps["Compare with tests/coverage_floor.json and refuse a lowered floor (D-694)"]
+    assert 'python3 scripts/coverage_floor.py compare "$COVERAGE_JSON"' in compare and "def percent" not in compare
+    assert "scripts/coverage_floor\\.py" in steps["Does this change touch Rust? (same rule as Checks, D-489)"]
+    measure = steps["Branch coverage (cargo llvm-cov on the pinned nightly)"]
+    gate = GATE.read_text(encoding="utf-8")
+    for flag in ("--locked --branch --json --summary-only", "--ignore-filename-regex '(/tests/|/bin/)'"):
+        assert flag in measure and flag in gate, flag
+    excluded = re.findall(r"--exclude (\S+)", measure)
+    assert tuple(excluded) == _load_coverage_floor().EXCLUDED
+    assert f'NIGHTLY="{ci["env"]["NIGHTLY"]}"' in gate
+    backup = yaml.safe_load((ROOT / ".github/workflows/backup-runner.yml").read_text(encoding="utf-8"))["jobs"]["backup"]
+    for pin in ("NIGHTLY", "LLVM_COV_URL", "LLVM_COV_SHA256"):
+        assert backup["env"][pin] == ci["env"][pin], pin
+    assert "coverage\n" in gate.split("extras() {", 1)[1].split("\n}\n", 1)[0], "full mode runs it; --quick does not"
+
+
+def test_the_gate_skips_coverage_it_cannot_measure_and_never_calls_that_red(tmp_path: Path) -> None:
+    """The gate's own `coverage` function on a branch touching a floored fake crate, with no cargo-llvm-cov on
+    PATH: it names the floor, says it skipped and goes on (the quick checks are left out of this probe)."""
+    work = _git_repo(tmp_path)
+    root = _fake_workspace(tmp_path)
+    for item in ("Cargo.toml", "app", "tests"):
+        subprocess.run(["cp", "-r", str(root / item), str(work)], check=True)
+    (work / "Cargo.lock").write_text("# fake\n")
+    (work / "scripts").mkdir()
+    subprocess.run(["cp", str(COVERAGE), str(work / "scripts")], check=True)
+    git(work, "add", "-A")
+    git(work, "commit", "-qm", "touch a floored crate")
+    body = GATE.read_text(encoding="utf-8").split("\nquick_part\n", 1)[0]
+    probe = tmp_path / "probe.sh"
+    probe.write_text(body.replace("set -euo pipefail", "set -uo pipefail") + "\ncoverage\necho reached-end\n")
+    done = subprocess.run(
+        ["bash", str(probe), "--base", "origin/main"], cwd=work, capture_output=True, text=True,
+        env={"PATH": "/usr/bin:/bin", "PREHANDIN_ROOT": str(work), "HOME": str(tmp_path)}, check=False)
+    assert "branch coverage of app/pay/" in done.stdout and "skipped: needs cargo-llvm-cov" in done.stdout, done.stdout
+    assert "reached-end" in done.stdout and done.returncode == 0

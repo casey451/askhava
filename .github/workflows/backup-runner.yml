@@ -210,6 +210,10 @@ jobs:
       # The same pinned gitleaks as ci.yml, so scripts/smoke.sh runs Ci's secret scan here (D-582).
       GITLEAKS_VERSION: "8.28.0"
       GITLEAKS_SHA256: "a65b5253807a68ac0cafa4414031fd740aeb55f54fb7e55f386acb52e6a840eb"
+      # ci.yml's Coverage pins, for the gate's per-crate coverage (D-1440).
+      NIGHTLY: nightly-2026-10-15
+      LLVM_COV_URL: https://github.com/taiki-e/cargo-llvm-cov/releases/download/v0.9.1/cargo-llvm-cov-x86_64-unknown-linux-musl.tar.gz
+      LLVM_COV_SHA256: 3fca950394a3c49457657c158b1619cec8dfd2647ae5b48746734c0ab969a522
     permissions:
       contents: write
       pull-requests: write
@@ -270,6 +274,28 @@ jobs:
           mkdir -p "$RUNNER_TEMP/gitleaks"
           tar -xzf "$RUNNER_TEMP/gitleaks.tgz" -C "$RUNNER_TEMP/gitleaks"
           echo "$RUNNER_TEMP/gitleaks" >> "$GITHUB_PATH"
+          # Ci's measuring toolchain, so the worker's scripts/prehandin.sh measures the floored crates its
+          # change touches as Ci's Coverage job does (D-1440); the same pins as ci.yml (tests/test_prehandin.py).
+          if [ -f tests/coverage_floor.json ]; then
+            rustup toolchain install "$NIGHTLY" --profile minimal -c llvm-tools-preview
+            curl -sSfL -o "$RUNNER_TEMP/llvm-cov.tgz" "$LLVM_COV_URL"
+            echo "${LLVM_COV_SHA256}  $RUNNER_TEMP/llvm-cov.tgz" | sha256sum -c -
+            mkdir -p "$RUNNER_TEMP/llvm-cov"
+            tar -xzf "$RUNNER_TEMP/llvm-cov.tgz" -C "$RUNNER_TEMP/llvm-cov" cargo-llvm-cov
+            echo "$RUNNER_TEMP/llvm-cov" >> "$GITHUB_PATH"
+            # Its instrumented build (about 6 GB for the workspace) stays out of `target`, which the Rust build
+            # cache saves, so the cache does not double. It goes on /mnt (a separate disk on GitHub's runners)
+            # when that is writable, else /tmp. Both are fresh every job, so every backup run measures COLD:
+            # payments 324 s against the gate's 360 s cap (about even odds), and a privacy change (10 packages)
+            # or a floor-file change (every floored crate) will almost always time out and leave it to Ci. A
+            # separate cache for it is a follow-up (D-1440).
+            covdir=/tmp/llvm-cov-target
+            if sudo -n mkdir -p /mnt/llvm-cov-target 2>/dev/null && sudo -n chown "$(id -u)" /mnt/llvm-cov-target; then
+              covdir=/mnt/llvm-cov-target
+            fi
+            echo "CARGO_LLVM_COV_TARGET_DIR=$covdir" >> "$GITHUB_ENV"
+            df -h "$covdir" /tmp | sed 's/^/disk: /'
+          fi
       - uses: anthropics/claude-code-action@v1
         id: claude
         env:
@@ -306,7 +332,7 @@ jobs:
             Do exactly this:
             1. Run `python3 -m runner` (RUNNER_STARTER=actions is already set) in the foreground with the Bash tool's longest timeout (600000 ms); never with run_in_background. It prints a result line and a JSON line. If a call still times out, run it again: the runner picks up where it stopped. Never end your turn before you have its result line: this job ends when you stop, and a runner still running is killed mid-cycle (D-510).
             2. If the result is anything but `handed_off`, stop. Never do the runner's steps by hand; a live lease naming another session means stop (D-171).
-            3. If it is `handed_off`, the JSON `handoff` names the task, branch, prompt and models (when the output was saved to a file, read the hand-off from `.git/runner_handoff.json`, D-1317). When the hand-off's `last_failure` is not empty, give it to the worker word for word, before the task prompt: the prompt no longer has the worker read the state, where a retry's failure lives (D-1317). Run that one task through a worker subagent on that model (alias haiku, sonnet or opus, D-170) with only the prompt and the files it lists (when `prompt` is not a file path, as for FIX-MAIN, it is the prompt text itself: follow it, revert first); commit to the local branch; do not push it. Tell the worker to number new `docs/decisions.md` entries only from the handoff's `decision_ids`, in order (D-530).
+            3. If it is `handed_off`, the JSON `handoff` names the task, branch, prompt and models (when the output was saved to a file, read the hand-off from `.git/runner_handoff.json`, D-1317). When the hand-off's `last_failure` is not empty, give it to the worker word for word, before the task prompt: the prompt no longer has the worker read the state, where a retry's failure lives (D-1317). Run that one task through a worker subagent on that model (alias haiku, sonnet or opus, D-170) with only the prompt and the files it lists (when `prompt` is not a file path, as for FIX-MAIN, it is the prompt text itself: follow it, revert first); commit to the local branch; do not push it. Tell the worker to number new `docs/decisions.md` entries only from the handoff's `decision_ids`, in order (D-530). Tell the worker the handoff's `hand_in_by` (UTC; the lease's end less 30 minutes): by then it must have committed, run both scripts and stopped, so that step 5 runs before it; past it, report and hand in what is committed rather than start more work (D-1440).
             3b. When the handoff's `branch_ready` is true, the runner has already made that local branch (on top of the task's earlier pushed attempt when there is one, with main merged in): pass the handoff's `branch_note` to the worker word for word and tell it to `git switch` to the branch and never create, reset or rebase it, which replaces step 3 of the prompt's start routine (D-1317). A branch rebuilt from main cannot be pushed, because the runner never force-pushes (D-583).
             3c. When the handoff's `resync` is not empty, the task's reviewed work is finished and only merging main into it conflicts: give the worker the prompt and the `resync` text word for word, and its only job is to merge main into the branch with a normal merge commit, resolve each conflict keeping both sides, change nothing else, run the smoke test and commit. The reviewer in step 4 then reviews the whole diff against main as usual (D-891).
             3a. Run every subagent in the foreground (run_in_background: false) and wait for it to finish. Never end your turn while a subagent is running: this job ends when you stop, and anything still running is killed with it (D-503).
