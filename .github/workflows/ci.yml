@@ -180,7 +180,7 @@ jobs:
       - name: sqlx-cli (no release binaries exist upstream; built once, then restored from the cache, D-693)
         id: sqlx-cli-cache
         if: steps.changes.outputs.rust == 'true' && hashFiles('migrations/*.sql') != ''
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cargo/sqlx-cli
           key: sqlx-cli-0.9.0-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml') }}
@@ -489,7 +489,7 @@ jobs:
       - name: Playwright browser cache (keyed by package-lock.json, which pins @playwright/test)
         id: browsers
         if: steps.changes.outputs.run == 'true'
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
