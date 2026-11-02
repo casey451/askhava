@@ -525,6 +525,7 @@ version = "0.1.0"
 dependencies = [
  "askhava-catalog",
  "askhava-core",
+ "jiff",
  "proptest",
  "serde",
  "serde-saphyr",

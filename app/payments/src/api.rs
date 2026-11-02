@@ -6,6 +6,13 @@
 //! T058: [`fee_for`] turns a chosen one-time quote ([`FeeQuote`], [`FeeJob`]) into its
 //! introduction fee by job size, [`Fee`], at one of the three [`Tier`]s or $0 for a fee-free job
 //! type (FEE-001 to FEE-004, FEE-008, FEE-043, FEE-045, D-1399).
+//!
+//! T188: [`period_fee_for`] adds the quote's [`Period`]: the 4-month rule and the
+//! [`RecurringCap`] (REC-002 to REC-006, REC-010, FEE-039, D-1404), and [`price_lock_until`] with
+//! [`locked_cents`] is the early joiner's price lock (FEE-040, D-1405).
 
 pub use crate::ledger::{Appended, EntryKind, LedgerEntry, LedgerError, NewEntry, ledger_append};
-pub use crate::rules::{Fee, FeeError, FeeJob, FeeQuote, Tier, VisitTier, fee_for};
+pub use crate::rules::{
+    Fee, FeeError, FeeJob, FeeQuote, LockDates, Period, PeriodJob, RECURRING_MONTHS, RecurringCap,
+    Service, Tier, VisitTier, fee_for, locked_cents, period_fee_for, price_lock_until,
+};
