@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO payments.free_win_claim (kind, digest, business_id)\n         SELECT k.kind, k.digest, k.business_id FROM payments.entity_key k\n           JOIN payments.free_win w ON w.business_id = k.business_id\n          WHERE k.business_id = $1 ORDER BY k.kind, k.digest\n         ON CONFLICT DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "20277542fd01d2dc802dfc4df77d0dce27e1bd27fa58c6b697d258362efdd7d0"
+}
