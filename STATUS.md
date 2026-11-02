@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-02T12:57:03Z by runner e9de8c790dd8 (actions).
+Updated 2026-11-02T13:03:15Z by runner e9de8c790dd8 (actions).
 
 **Idle since 12:41Z; 98 of 230 done; week 96% used, resets Thu 2026-11-05 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-02T12:57:03Z by runner e9de8c790dd8 (actions).
 - **Stage:** stage 3; stage proofs recorded: 1, 2
 - **Lane:** idle since 12:41Z (no task in progress)
 - **Week:** 96% used, 8.0M tokens left; resets Thu 2026-11-05 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:56Z, 0 min before this update
+- **Last run:** 12:57Z, 6 min before this update
 - **Keeper:** unknown (the keeper has not recorded a wake yet)
 
 ## Needs attention
@@ -17,7 +17,7 @@ Updated 2026-11-02T12:57:03Z by runner e9de8c790dd8 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T062 | payments: Confirm-and-pay charge with a key per attempt, Str | MERGE_PENDING | 1 | 61 min | 12:41Z |  |
+| T062 | payments: Confirm-and-pay charge with a key per attempt, Str | check_failed | 1 | 61 min | 12:41Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
 | T061 | payments: free first win for the first 90 days, entity keys, | done | 1 | 41 min | 11:26Z |  |
 | T060 | payments: tier fixed at the pick, charged at Confirm, fee-mo | done | 1 | 27 min | 10:30Z |  |
 | T059 | payments: Stripe customers, SetupIntent, card authorization, | done | 1 | 40 min | 09:49Z |  |
