@@ -5,7 +5,8 @@
 //! TXT-011), keep the sender directory of business phones (D-492), record Twilio's inbound texts
 //! and status callbacks once per message ID (TXT-012), read a text's delivery status (TXT-013),
 //! keep the one suppression list and send only through its check (CON-008 to CON-017, CON-030,
-//! CON-035), and answer HELP, INFO and AYUDA (CON-018).
+//! CON-035), answer HELP, INFO and AYUDA (CON-018), and tell a module above it when a homeowner
+//! text may go without handing it her number (`send_window`, QH-001, QH-006, D-1301).
 
 pub use crate::handlers::{Callback, receive_inbound, receive_status};
 pub use crate::keywords::{
@@ -21,6 +22,7 @@ pub use crate::rules::{
     PROVIDER_OPT_OUT_WORDS, ProviderKeyword, QuietHoursError, RESUBSCRIBE_WORDS, Release,
     SPANISH_OPT_OUT_WORDS, classify, decide, detect_opt_out, may_send_to, plan_release, retry,
 };
+pub use crate::send_window::{SendWindow, send_window, window};
 pub use crate::service::{
     NewText, Relation, SEND_ACTION, To, delivery_status, enqueue, may_text, send, sender_add,
     sender_business, sender_remove,

@@ -10,10 +10,15 @@ use std::io;
 use std::sync::Arc;
 
 use askhava_adapters::api::StorageAdapter;
-use askhava_core::api::{LogGuard, Registry, Settings, SystemClock, init_logging, request_span};
+use askhava_core::api::{
+    Environment, IdSecret, LogGuard, Registry, Settings, SystemClock, init_logging, request_span,
+};
+use askhava_intake::api::JobTextKeys;
 use askhava_portals::api::{pick_flow_routes, quote_page_routes, security_headers};
+use askhava_privacy::api::Vault;
 use axum::Router;
 use axum::body::Body;
+use secrecy::SecretString;
 use sqlx::PgPool;
 use tokio::signal::unix::{SignalKind, signal};
 use tower_http::request_id::{MakeRequestUuid, PropagateRequestIdLayer, SetRequestIdLayer};
@@ -76,14 +81,60 @@ pub fn build_router(pool: PgPool, test_control: Router) -> Router {
         .layer(axum::middleware::from_fn(security_headers))
 }
 
+/// The vault's sealing keys, named as in `docs/architecture.md` (PRIV-002, PRIV-024).
+const VAULT_KEY: &str = "VAULT_KEY";
+/// The vault's blind-index keys (PRIV-002).
+const VAULT_INDEX_KEY: &str = "VAULT_INDEX_KEY";
+
+/// The keys of `intake`'s homeowner job-text sender (D-1302): the `ID_SECRET` (version 1) as the
+/// quote-page link key and the outbox key, and the vault built from `VAULT_KEY` and
+/// `VAULT_INDEX_KEY` in `pairs`. Without both vault keys it is `None` in dev and CI (no sender
+/// is registered) and an error in the test and live projects.
+///
+/// # Errors
+///
+/// A weak `ID_SECRET`, a bad vault key, or no vault keys in the test or live project; the
+/// message names a key, never a value.
+pub fn job_text_keys<I>(
+    settings: &Settings,
+    id_secret: &SecretString,
+    pairs: I,
+) -> io::Result<Option<JobTextKeys>>
+where
+    I: IntoIterator<Item = (String, String)>,
+{
+    let (mut seal, mut index) = (None, None);
+    for (key, value) in pairs {
+        match key.as_str() {
+            VAULT_KEY => seal = Some(SecretString::from(value)),
+            VAULT_INDEX_KEY => index = Some(SecretString::from(value)),
+            _ => {}
+        }
+    }
+    let (Some(seal), Some(index)) = (seal, index) else {
+        return match settings.environment() {
+            Environment::Dev | Environment::Ci => Ok(None),
+            Environment::Test | Environment::Live => Err(io::Error::other("missing VAULT_KEY")),
+        };
+    };
+    let vault = Vault::new(&seal, &index, settings.database_url()).map_err(io::Error::other)?;
+    let link = IdSecret::new(1, id_secret.clone()).map_err(io::Error::other)?;
+    Ok(Some(JobTextKeys::new(link, id_secret.clone(), vault)))
+}
+
 /// Every module's `core.task` handlers, one `register` call per kind (D-481, D-491). The worker
 /// runs what it returns; tests hold it in a `OnceLock`. A kind with no handler is failed with
 /// `NO_HANDLER` and dead-lettered after its attempts (JOB-006). `stream` is the off-database
 /// stream writer and its nightly check (OPS-011, PRIV-029, D-734); `jobs` runs the job status
 /// timers (JOB-003, JOB-006); `quotes` the every-window-ended check (TXT-042, JOB-025); `intake` the
-/// no-reply reminder and close (INT-019) and the card approval auto-send (INT-041).
+/// no-reply reminder and close (INT-019), the card approval auto-send (INT-041) and, with
+/// `texts` ([`job_text_keys`]), the homeowner job texts `jobs` queues (JOB-010 to JOB-012,
+/// TXT-042, D-1030 (A)).
 #[must_use]
-pub fn register_handlers<S>(stream: Arc<offdb_stream::OffDbStream<S>>) -> Registry
+pub fn register_handlers<S>(
+    stream: Arc<offdb_stream::OffDbStream<S>>,
+    texts: Option<Arc<JobTextKeys>>,
+) -> Registry
 where
     S: StorageAdapter + Send + Sync + 'static,
 {
@@ -102,6 +153,11 @@ where
         askhava_quotes::api::WINDOWS_KIND,
         askhava_quotes::api::run_windows_end,
     );
+    if let Some(keys) = texts {
+        registry.register(askhava_jobs::api::TEXT_KIND, move |pool, task| {
+            askhava_intake::api::run_job_text(pool, Arc::clone(&keys), task)
+        });
+    }
     registry
 }
 
