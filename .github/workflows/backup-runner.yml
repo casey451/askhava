@@ -16,6 +16,10 @@
 # off starts its refill runs at once (D-723). GitHub keeps one pending job per group and cancels the
 # older, so a dropped run is always replaced by a newer run for the same lane. With "lanes": 1 every run
 # serves lane 1 and every step behaves exactly as before.
+# The keeper (D-1451): GitHub's cron fired 24 times in 123 hours, so every backup job ends by dispatching
+# this workflow with `wake_after`; that run's `keeper` job (one sleeper, its own concurrency group) sleeps,
+# re-reads claude/kit-state, claude/lease and this workflow's runs, and starts an ordinary run only when
+# nothing is live (runner/keeper.py). The hourly cron stays as the backstop.
 name: backup-runner
 on:
   schedule:
@@ -24,6 +28,11 @@ on:
     inputs:
       lane:
         description: "The lane this run serves (D-620); empty lets the gate pick"
+        required: false
+        default: ""
+        type: string
+      wake_after:
+        description: "Minutes a keeper run sleeps before it looks again (D-1451); empty for an ordinary run"
         required: false
         default: ""
         type: string
@@ -42,6 +51,7 @@ jobs:
     if: >-
       (github.event_name != 'pull_request' || (github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'))
       && (github.event_name != 'workflow_run' || startsWith(github.event.workflow_run.head_branch, 'claude/task/'))
+      && (github.event_name != 'workflow_dispatch' || github.event.inputs.wake_after == '')
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -222,7 +232,12 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
       - name: Note when this job started (for the chaining step)
-        run: echo "JOB_START=$(date -u +%Y-%m-%dT%H:%M:%S)" >> "$GITHUB_ENV"
+        # A detached worktree of main as checked out now runs the keeper's two calls at the end, since the session may
+        # leave a task branch (cut before D-1451) checked out; `runner` takes its repository root from its own path,
+        # so a worktree (a real checkout sharing this repository's git config) rather than a copy (D-1451).
+        run: |
+          echo "JOB_START=$(date -u +%Y-%m-%dT%H:%M:%S)" >> "$GITHUB_ENV"
+          git worktree add -q --detach "$RUNNER_TEMP/keeper" HEAD
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -422,3 +437,88 @@ jobs:
             echo "refill lanes: ${refill}"
             for n in $refill; do gh workflow run backup-runner.yml --ref main --repo "$GITHUB_REPOSITORY" -f lane="$n"; done
           elif [ "$again" = "yes" ]; then gh workflow run backup-runner.yml --ref main --repo "$GITHUB_REPOSITORY"; fi
+      - name: Arm the keeper for the next cycle (D-1451)
+        # GitHub's cron fired 24 times in 123 hours (median gap 5 h), so every backup job ends by dispatching one
+        # keeper run that sleeps `wake_after` minutes and then looks again (the `keeper` job below). The minutes
+        # come from runner/keeper.py over the state this cycle left: a lease's end + 2, the pacer's wait + 5,
+        # 20 when there is work, else the next retry or 340; capped at 340 (5 h 40 m) so a sleep fits GitHub's
+        # 6-hour job limit; 340 while Gate P's hold is set (only kit tasks run then); none at all while the flag is
+        # off or a red main waits for a person. A newer keeper cancels the sleeping one (its concurrency group), so
+        # there is one sleeper. A read that fails for any reason but 404 is marked unreadable: the keeper looks again.
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          LANE: ${{ needs.gate.outputs.lane }}
+          RUNNER_STARTER: actions
+          RUNNER_LANE: ${{ needs.gate.outputs.lane }}
+          RUNNER_CHECKS_TOKEN: ${{ github.token }}
+          RUNNER_PUSH_TOKEN: ${{ secrets.RUNNER_PUSH_TOKEN }}
+        run: |
+          set -u
+          raw() {
+            gh api "repos/${GITHUB_REPOSITORY}/contents/$1?ref=$2" -H 'Accept: application/vnd.github.raw' > "$3" 2> "$3.err" && return 0
+            if grep -q "HTTP 404" "$3.err"; then echo '{}' > "$3"; else echo '{"unreadable": true}' > "$3"; fi
+          }
+          raw kit/state.json claude/kit-state "$RUNNER_TEMP/keeper_state.json"
+          raw lease.json claude/lease "$RUNNER_TEMP/keeper_lease.json"
+          raw kit/runner_log.jsonl claude/kit-state "$RUNNER_TEMP/keeper_log.jsonl"
+          out="$(cd "$RUNNER_TEMP/keeper" && python3 -m runner.keeper arm --state "$RUNNER_TEMP/keeper_state.json" --lease "$RUNNER_TEMP/keeper_lease.json" \
+            --log "$RUNNER_TEMP/keeper_log.jsonl" --session "actions-${GITHUB_RUN_ID}" --since "${JOB_START:-9999}" 2>&1 || true)"
+          echo "$out"
+          minutes="$(printf '%s\n' "$out" | sed -n 's/^wake_after=//p')"
+          if [ -z "$minutes" ]; then echo "no keeper armed"; exit 0; fi
+          if ! gh workflow run backup-runner.yml --ref main --repo "$GITHUB_REPOSITORY" -f lane="$LANE" -f wake_after="$minutes"; then
+            echo "keeper not armed: the dispatch failed; the hourly tick is the backstop"; exit 0
+          fi
+          # The `keeper` key for STATUS.md's keeper line (D-1462), through the runner like the usage reading (D-1155).
+          (cd "$RUNNER_TEMP/keeper" && python3 -m runner --keeper-armed "$minutes" 2>&1 | grep '^runner: ') || echo "keeper key not recorded"
+  keeper:
+    name: keeper
+    # Only a run the arm step (or a keeper) dispatched with `wake_after` (D-1451). It holds no lock on a cycle: it
+    # only sleeps, reads claude/kit-state, claude/lease and this workflow's runs, and dispatches. The cycle it
+    # starts is an ordinary dispatched run, through the gate, the lane pick, the backup group and the lease.
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.wake_after != ''
+    runs-on: ubuntu-latest
+    # One sleeper: a newer keeper cancels the one sleeping (the backup group and the lease stay the locks).
+    concurrency:
+      group: backup-runner-keeper
+      cancel-in-progress: true
+    timeout-minutes: 350
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Sleep, then start a cycle only if nothing is live (D-1451)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          WAKE_AFTER: ${{ github.event.inputs.wake_after }}
+          LANE: ${{ github.event.inputs.lane }}
+        run: |
+          set -u
+          minutes="$(python3 -m runner.keeper clamp "$WAKE_AFTER")"
+          echo "keeper for lane ${LANE:-any}: sleeping ${minutes} minutes"
+          sleep "$((minutes * 60))"
+          raw() {
+            gh api "repos/${GITHUB_REPOSITORY}/contents/$1?ref=$2" -H 'Accept: application/vnd.github.raw' > "$3" 2> "$3.err" && return 0
+            if grep -q "HTTP 404" "$3.err"; then echo '{}' > "$3"; else echo '{"unreadable": true}' > "$3"; fi
+          }
+          raw kit/state.json claude/kit-state "$RUNNER_TEMP/keeper_state.json"
+          raw lease.json claude/lease "$RUNNER_TEMP/keeper_lease.json"
+          runs="$RUNNER_TEMP/keeper_runs.json"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/backup-runner.yml/runs?per_page=50" \
+            --jq '[.workflow_runs[] | {id, status}]' > "$runs" 2>/dev/null || rm -f "$runs"
+          out="$(python3 -m runner.keeper wake --state "$RUNNER_TEMP/keeper_state.json" --lease "$RUNNER_TEMP/keeper_lease.json" \
+            --runs "$runs" --run-id "$GITHUB_RUN_ID" 2>&1 || true)"
+          echo "$out"
+          { echo "### Keeper"; echo; printf '%s\n' "$out"; } >> "$GITHUB_STEP_SUMMARY"
+          action="$(printf '%s\n' "$out" | sed -n 's/^action=//p')"
+          again="$(printf '%s\n' "$out" | sed -n 's/^wake_after=//p')"
+          case "$action" in
+            go) gh workflow run backup-runner.yml --ref main --repo "$GITHUB_REPOSITORY" ;;
+            rearm) gh workflow run backup-runner.yml --ref main --repo "$GITHUB_REPOSITORY" -f lane="$LANE" -f wake_after="$again" ;;
+            *) echo "keeper stops" ;;
+          esac
