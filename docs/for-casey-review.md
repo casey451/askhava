@@ -2,6 +2,16 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock, the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## The runner now wakes itself up (D-1451, November 2)
+
+- **The problem.** The build only started its next step when something nudged it: a task finishing, or GitHub's hourly timer. That timer is unreliable: it went off 24 times in 123 hours, with gaps up to almost 8 hours, so a quiet build could sit for hours doing nothing, or wait for a session like this one to nudge it.
+- **What happens now.** Every time the runner finishes a turn, it sets its own alarm: 20 minutes when there is work waiting, just after the current task's time runs out when one is in progress, or just after the usage limit resets when it is waiting on that. When the week reaches about 97%, it sleeps in steps of under 6 hours until the weekly reset and starts again by itself, so no one has to schedule the restart.
+- **The safety.** Only one alarm exists at a time. When it goes off, it checks that nothing else is running and no task is in progress before it starts anything; the existing locks are unchanged. It never starts anything while the runner is switched off or while a broken `main` is waiting for a person. The hourly timer stays as a backup.
+- **Cost.** None in money: the repository is public, so GitHub's build minutes are unlimited. The settings file that still described the old private-repository limit of 3,000 minutes now says that (the old figures are kept in case it ever goes private, when the sleeping alarm would cost minutes).
+- **Also fixed.** One task's test failed because a leftover build from the runner's own check of `main` was reused with the wrong folder baked in. The runner now clears its own project's build pieces after that check (the downloaded libraries stay), so a task always builds its own copy. The price: every task now rebuilds the project's own code once at its start (the libraries it uses stay built), which adds some minutes to each task.
+- **Follow-up for a later plan change.** Have the tests that look up files by their build-time folder (`env!("CARGO_MANIFEST_DIR")`, `fake_data` among them) find that folder while they run instead; then the clean-up above can be dropped and the rebuild cost goes away.
+- **What you may notice.** In GitHub's Actions list, the runner's alarm shows up as many short runs marked cancelled or skipped: each new alarm cancels the one sleeping. That is expected and harmless.
+
 ## Two tasks finishing together no longer cost a try (D-891, October 31)
 
 - **What happened.** On October 30 two tasks (T024 and T028) each lost one of their three tries only because another task merged into the same shared files just before them (a list of code libraries, the architecture notes, this file). The work itself was fine.
@@ -1621,6 +1631,19 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **What happened.** The fee-mode switch (tiers or one flat fee per job type) is built: switching is logged, and every business must accept a new card authorization before its next charge. But the card authorization text you approved quotes the $25 / $75 / $199 tiers, and there is no wording yet for flat mode.
 - **What I chose.** I did not write legal wording for you. The system stores the exact text each business was shown, with its version and time. Before the switch is offered in your owner portal, the flat-mode wording needs your go as a spec change.
 - **Worth a look.** The version number for the card wording and the one for the fee mode currently share one counter; whoever next changes either must raise it past both. A later task splits them. Flat mode keeps the $75 cap on recurring services.
+
+## A status page you can read any time (harness change, D-1462, November 2)
+
+- **What changed.** The build's status page on GitHub (STATUS.md, linked from the README) now opens with a short dashboard: one line saying what the build is doing right now, how many of the tasks are done, which stage it is in, how much of the week's tokens is used and when they reset (in Phoenix time too), and how long ago the runner last ran, with a warning if that was more than 90 minutes ago.
+- **New on the page.** A "Last 24 hours" table of every task that finished or failed that day, how long it took and, for a retry, the start of why the earlier try failed; the plan and harness changes merged that day; and a "Needs attention" list that also flags a build hold or a plan-check problem.
+- **Worth a look.** The task count says "of 230", not "of 228": it counts every build task except your owner gates, the same way the progress figure always has. The page flags a plan check only for tasks still to come. Right now that is two queued tasks (T189 and T079), whose stored size estimates are out of date; tasks already done are only counted. This does not stop the build, and a small plan change will refresh the estimates.
+
+## The build checks coverage before handing in (harness change, D-1440, November 2)
+
+- **What happened.** Money, privacy and licensing code must stay at or above 95% tested. That was only checked after a task was handed in, so a task that dipped below lost a whole attempt (T225 this morning).
+- **What changed.** When a task touches one of those parts, the worker now measures it before handing in, the same way the final check does, and fixes a dip in the same session. Tasks that do not touch those parts are not slowed. The worker is also told the time by which it must hand in (30 minutes before its time slot ends), so a session no longer runs out of time with its work unhanded.
+- **Worth a look.** The measurement takes about 5 minutes, because it has to run the whole-system tests that exercise those parts; measuring a part on its own gave a wrong low reading (61% instead of 99%). If it runs past 6 minutes, the worker skips it and the final check still decides. On the build machines it always starts from scratch, so for now it will often run out of time except on payment changes; keeping its build between runs is a follow-up.
+- **A gap in the plan.** The 95% floor for the catalog's fee-rules file points at a file that does not exist, and no task is set to build it, so that floor is never checked. It needs a plan change to give it an owner (or to move the floor to where the fee rules really live).
 
 ## The runner now proves stages 2 and 4 itself, and the war games wait for your "war games go" (harness change, D-1473, November 2)
 

@@ -69,7 +69,7 @@ import sys
 import tempfile
 import uuid
 from collections.abc import Callable
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path, PurePosixPath
 from typing import Any
 
@@ -116,6 +116,7 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
     ap.add_argument("--restore-lanes", action="store_true")
     ap.add_argument("--reserve-decision", action="store_true")
     ap.add_argument("--usage-reading", type=Path)
+    ap.add_argument("--keeper-armed", type=int, help="minutes until the keeper just dispatched wakes (D-1451)")
     return ap.parse_args(argv)
 
 
@@ -397,6 +398,21 @@ def _prompt_for(task: dict[str, Any], tid: str) -> str:
     return path if (ROOT / path).is_file() or not task.get("goal") else str(task["goal"])
 
 
+HAND_IN_MARGIN = timedelta(minutes=30)  # a worker hands in this long before the lease ends (D-1440)
+
+
+def hand_in_by(lease: dict[str, Any] | None) -> str | None:
+    """The lease's expiry less HAND_IN_MARGIN as an ISO time, None without a lease (D-1440).
+
+    T154's attempts that "ended without handing in" and D-503's safety hand-in both mean a session ran
+    out of time with the work unhanded: the worker is told the time by which `--after` must have run, so
+    it commits, runs the gate and hands in with room to spare. A `--renew` moves the lease, not this
+    time: the hand-off states the budget the worker was given."""
+    if not lease or not lease.get("expires"):
+        return None
+    return st.iso(st.parse(str(lease["expires"])) - HAND_IN_MARGIN)
+
+
 def write_handoff(cfg: cycle.Config, env: GitHubEnv) -> dict[str, Any]:
     """Tell the session what it was handed (task, branch, prompt, models, its reserved `decision_ids`),
     and remember the session for --after."""
@@ -414,6 +430,9 @@ def write_handoff(cfg: cycle.Config, env: GitHubEnv) -> dict[str, Any]:
         # The branch is already made, on top of an earlier pushed attempt when there is one: never recreate it (D-583).
         "branch_ready": bool(env.prepared.get("branch_ready")), "base": env.prepared.get("base"),
         "branch_note": branch_note(env.prepared),
+        # When the worker must have handed in: the lease's expiry less HAND_IN_MARGIN (D-1440, D-503). The lane
+        # lease this session holds; lane "1"'s `lease` only when it holds none (the same fallback as `tid`).
+        "hand_in_by": hand_in_by(mine or state.get("lease")),
     }
     if not env.dry_run:
         (ROOT / HANDOFF).write_text(json.dumps(info), encoding="utf-8")
@@ -439,6 +458,8 @@ def run(args: argparse.Namespace, cfg: cycle.Config, env: GitHubEnv) -> str:
         return reserve_decision(args, cfg, env)
     if args.usage_reading:
         return usage_reading(args.usage_reading, env)
+    if args.keeper_armed is not None:
+        return keeper_armed(args.keeper_armed, env)
     return cycle_with_retries(cfg, env)
 
 
@@ -456,6 +477,17 @@ def usage_reading(path: Path, env: GitHubEnv) -> str:
         return "lost_race"
     windows = ", ".join(f"{w} {found[w]['utilization']:.0%}" for w in ("week", "five_hour") if w in found)
     return f"usage_reading_recorded: {windows}"
+
+
+def keeper_armed(minutes: int, env: GitHubEnv) -> str:
+    """`--keeper-armed N`: record `keeper` {last_run_at: now, next_wake_at: now + N minutes} in the state
+    once backup-runner.yml's arm step has dispatched a keeper (D-1451), for STATUS.md's keeper line (D-1462)."""
+    from runner import keeper as keeper_mod
+
+    now = now_utc()
+    if env.update_state(lambda fresh: keeper_mod.record(fresh, minutes, now)) is None:
+        return "lost_race"
+    return f"keeper_armed: {keeper_mod.clamp(str(minutes))} minutes"
 
 
 LOST_RACE_RETRIES = 2  # extra cycles after a lost race, with two lanes and a handed-off worker (D-620)
