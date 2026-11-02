@@ -29,6 +29,8 @@ If you are not sure which you are, you are a plan-change session with no plan ch
 6. Confirm the task you were given is the next eligible task in `kit/state.json`. If not, stop and report.
 7. Load only the files your task prompt lists. Do not read the whole repository "for context": that is how sessions compact mid-task.
 
+A **worker** follows its prompt's shorter start routine instead: the prompt pastes the rules, and the runner has already read the state and confirmed the task, so the worker skips steps 2 to 4 and 6. It runs the smoke test in the background and checks it at most every 4 minutes, because a subagent's prompt cache expires after a longer silence, and it never reads a whole file over 200 lines (`grep -n`, then a line range). The backup job gives subagents a one-hour cache and saves any Bash output over 15,000 characters to a file (D-1317).
+
 ## 3. Where things are
 
 | Question | File |
