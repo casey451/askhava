@@ -4,9 +4,11 @@
  "results": {
   "ci": "success",
   "twin": "success",
-  "a11y": "success"
+  "a11y": "success",
+  "named_mutants": "success",
+  "stripe_ips": "success"
  },
- "started_at": "2026-11-01T16:02:28Z",
- "ran_at": "2026-11-01T16:15:27Z",
- "sha": "98dcb24199682aa218187c71a7ed80e8bcdb7ff6"
+ "started_at": "2026-11-02T04:51:27Z",
+ "ran_at": "2026-11-02T05:04:07Z",
+ "sha": "2ed9f1f259de3b6ff12dcffc349bdbe2b1fd7a7a"
 }
