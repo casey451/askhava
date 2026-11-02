@@ -296,7 +296,7 @@ jobs:
           base="$(git merge-base origin/main HEAD)"
           rust=false
           git diff --no-renames --name-only "$base" HEAD \
-            | grep -Eq '^(app/|tests/(integration|security|recovery|fixtures|coverage_floor\.json)|migrations/|stand_ins/|kit/layers\.json|kit/allowed_crates\.txt|Cargo\.(toml|lock)|rust-toolchain\.toml|clippy\.toml|deny\.toml|\.sqlx/|\.github/workflows/ci\.yml)' && rust=true
+            | grep -Eq '^(app/|tests/(integration|security|recovery|fixtures|coverage_floor\.json)|scripts/coverage_floor\.py|migrations/|stand_ins/|kit/layers\.json|kit/allowed_crates\.txt|Cargo\.(toml|lock)|rust-toolchain\.toml|clippy\.toml|deny\.toml|\.sqlx/|\.github/workflows/ci\.yml)' && rust=true
           echo "rust=$rust" >> "$GITHUB_OUTPUT"
 
       - name: Database roles the migrations grant to (askhava_app, askhava_migrator; D-092, D-491)
@@ -349,54 +349,9 @@ jobs:
         env:
           COVERAGE_JSON: ${{ runner.temp }}/coverage.json
         run: |
-          python3 - <<'PY'
-          import json, os, subprocess, sys
-
-          def percent(part):
-              """Branch coverage; a part with no branches yet is measured by its lines."""
-              unit = part["branches"] if part["branches"]["count"] else part["lines"]
-              return (100.0 * unit["covered"] / unit["count"]) if unit["count"] else None
-
-          def add(parts, key, summary):
-              slot = parts.setdefault(key, {k: {"count": 0, "covered": 0} for k in ("branches", "lines")})
-              for kind in slot:
-                  slot[kind]["count"] += summary[kind]["count"]
-                  slot[kind]["covered"] += summary[kind]["covered"]
-
-          floors = json.load(open("tests/coverage_floor.json"))
-          data = json.load(open(os.environ["COVERAGE_JSON"]))["data"][0]
-          root = os.getcwd() + "/"
-          crates, floored = {}, {}
-          for f in data["files"]:
-              rel = f["filename"].removeprefix(root)
-              add(crates, "/".join(rel.split("/")[:2]), f["summary"])
-              for prefix in floors["floors"]:
-                  if rel.startswith(prefix):
-                      add(floored, prefix, f["summary"])
-          failures = []
-          for name, part in sorted(crates.items()):
-              print(f"{name}: {percent(part)}")
-          total = percent(data["totals"])
-          print(f"total: {total} (floor {floors['total']})")
-          if total is not None and total + 0.005 < floors["total"]:
-              failures.append(f"total {total:.2f} is below the floor {floors['total']}")
-          for prefix, floor in floors["floors"].items():
-              got = percent(floored[prefix]) if prefix in floored else None
-              print(f"{prefix}: {got} (floor {floor})")
-              if got is not None and got + 0.005 < floor:
-                  failures.append(f"{prefix} {got:.2f} is below the floor {floor}")
-          base = subprocess.run(["git", "show", "origin/main:tests/coverage_floor.json"], capture_output=True, text=True)
-          if base.returncode == 0:
-              old = json.loads(base.stdout)
-              flat = lambda d: {"total": d["total"], **d["floors"]}
-              lowered = [k for k, v in flat(old).items() if flat(floors).get(k, -1) < v]
-              diff = subprocess.run(["git", "diff", "origin/main", "HEAD", "--", "docs/decisions.md"], capture_output=True, text=True).stdout
-              if lowered and "coverage floor" not in diff.lower():
-                  failures.append(f"floor lowered without a docs/decisions.md entry: {lowered}")
-          for line in failures:
-              print("FAIL:", line)
-          sys.exit(1 if failures else 0)
-          PY
+          # The comparison lives in scripts/coverage_floor.py, which the pre-hand-in gate also runs on the
+          # floored crates a change touches, so the two cannot judge differently (D-1440).
+          python3 scripts/coverage_floor.py compare "$COVERAGE_JSON"
 
   e2e:
     # The journeys of docs/test-design.md section 5 (BUILD_BRIEF.md:476, T173, D-481). Playwright's
