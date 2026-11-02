@@ -1540,3 +1540,11 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **Short texts.** A check now holds the texts that tell her about her quotes to short sentences (15 words, or 20 where the spec sets the exact words), each with the link to her page and no prices, except the LIST reply. Her other texts after the request goes out ("request is out", "no quotes yet", "closed", the text-pick replies) are held to 20 words a sentence. Every text to a homeowner is either checked or on a named list of ones left out, so a new text can't skip the check. Today's texts all pass.
 - **Two different quote counts.** The business job page counts the quotes she can still see (a withdrawn one drops off); the "3 of 7 businesses quoted" text still counts a business that quoted and then withdrew.
 - **Worth a look.** When she adds details later, the businesses should get an email about it. No task builds that email yet; it is flagged for the plan.
+
+## The texts a request sends by itself now go out (T240, D-1301 to D-1303, November 2)
+
+- **What was built.** The four texts that were recorded but never sent now go to the homeowner: "No quotes yet" at 6 p.m., the close after 5 days with no quotes, the close after 3 days with no pick, and "All quotes are in ... 2 of 3 businesses quoted" with her quote-page link. This closes the gap listed under T048 above.
+- **Quiet hours.** Each one waits for 8 a.m. to 8 p.m. in both Arizona time and her phone's own time zone. A text held overnight is dropped if the request moved on meanwhile (she picked, or it closed), except the close text itself, which still goes in the morning.
+- **Who never gets one.** Someone with no consent record, and anyone who texted STOP (her request carries on by email and the quote page).
+- **Worth a look.** Sending "All quotes are in" makes a fresh quote-page link, and the earlier link (in the first-quote text) stops working at once, as the quote page already does for any new link. Tell me if older links should keep working.
+- **For the account checkpoint.** The worker sends these only when the two vault keys are set; in the test and live projects it refuses to start without them.
