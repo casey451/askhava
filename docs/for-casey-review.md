@@ -1564,6 +1564,13 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **What changed.** The runner now reads IDs joined by commas or spaces the same as repeated flags, and the session's instructions say to use one flag per worker. The rule that a hand-in with no evidence fails stays as it was.
 - **Worth a look.** The worker never pushed its branch, so nothing of that attempt survives; the retry starts fresh. If a second attempt of any task is ever lost to a formatting slip like this, the fix is to make the runner read the agent IDs from the session itself rather than from a typed command.
 
+## Two finished tasks listed files that were never written (plan change, D-1361, November 2)
+
+- **What happened.** The new plan-health check found that two finished tasks, T024 (the AI connection) and T045 (the anonymous job card), each still listed one file they never wrote: a separate test file for the restricted-words list, and a database migration to store the card text. A third task that waits on T024 (T057, the stage 2 cleanup) would have been held because of it.
+- **What they really built.** T024 put the restricted-words tests inside its own AI test file instead. T045 built the card and its contact-detail filter as plain code with no database table. The card text is fixed by T045's own filter (running it again never changes the text, so every business gets exactly the same card), and a later task (T208) stores a fingerprint of the card the homeowner approved, not her words, so only that card goes out.
+- **What changed.** The two unused file names are taken off those tasks' lists. Three waiting tasks (T148, T151, T104) also stop carrying an old decision (D-353) that pointed at two test files a later plan rewrite (D-491) had already moved to other tasks under new names. Nothing is lost: every requirement and test still has an owner.
+- **Worth a look.** Nothing for you to decide. A separate question about T089 and the deploy notes is not part of this change.
+
 ## A competitive review now sits between the build and the war games (plan change, D-1339, November 1)
 
 - **What you asked.** A mandatory "Pre-war-games competitive gap analysis and feature readiness review" between the finished, verified build and the war games, without disturbing the build. Your full instructions are saved word for word in `docs/reviews/pre-war-games-review-brief.md`, and that file is the review's requirement.
