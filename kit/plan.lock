@@ -57,7 +57,7 @@
   "scripts/gen_prompts.py": "42aba4bae729ce16d700ea21cff723b0a95fa14263fb2698f3a06970f949d846",
   "scripts/pacing.py": "e3a7c4f493f78189ff12d5e01c7fcbfc90df547ee5ce2d27a58fb2ef98a7854c",
   "scripts/pii_scan.py": "05d1c661e428e5b6ae48e3173c92c7859aacf225a0af7212d35967eedde0502e",
-  "scripts/prehandin.sh": "af992a728e45b74e56126bd474fea90ef78e45f4f6ca0586b5ce8b29a47e107d",
+  "scripts/prehandin.sh": "6056ccb3f6ce553dc02d0442eb3957f0addf494a3695804fb83bd6f59a95d34b",
   "scripts/progress.py": "6a31a132e709c974e5e71468a8e6fa8c212b753bad7501713250f39c0e5d08be",
   "scripts/quota_probe.py": "63f21117d06c02632e2e79698ef828a33668cefc1403cfc261cc2d813d3cf951",
   "scripts/run_named_mutants.py": "325ff572d79be0e8e1a23026cbfd81cd50b7671f743f1f550390bd4569ac4f59",

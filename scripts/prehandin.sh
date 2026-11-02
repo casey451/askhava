@@ -53,7 +53,7 @@ step() { printf '\n== %s\n' "$1"; }
 fail() { echo "FAILED: $1"; exit 1; }
 
 # The same path rules as ci.yml's "What this change touches" step (tests/test_prehandin.py keeps them equal).
-RUST_PATHS='^(app/|tests/(integration|security|recovery|fixtures)/|migrations/|stand_ins/|kit/layers\.json|kit/allowed_crates\.txt|Cargo\.(toml|lock)|rust-toolchain\.toml|clippy\.toml|deny\.toml|\.sqlx/|\.github/workflows/ci\.yml)'
+RUST_PATHS='^(app/|tests/(integration|security|recovery|fixtures|mutation)/|scripts/run_named_mutants\.py|migrations/|stand_ins/|kit/layers\.json|kit/allowed_crates\.txt|Cargo\.(toml|lock)|rust-toolchain\.toml|clippy\.toml|deny\.toml|\.sqlx/|\.github/workflows/ci\.yml)'
 NPM_PATHS='^(package(-lock)?\.json|tsconfig|eslint\.config|tests/(e2e|a11y)/|app/[^/]+/static/.*\.ts$)'
 touches() { printf '%s\n' "${CHANGED}" | grep -Eq "$1"; }
 
