@@ -223,3 +223,36 @@ def test_keeper_armed_writes_through_update_state(monkeypatch: Any) -> None:
     assert entry.parse_args(["--keeper-armed", "20"]).keeper_armed == 20
     wf = _flow()["jobs"]["backup"]["steps"][-1]["run"]
     assert 'python3 -m runner --keeper-armed "$minutes"' in wf
+
+
+def test_an_unreadable_state_or_lease_never_looks_free() -> None:
+    unreadable = {"unreadable": True}
+    assert kp.wake_after(state(), unreadable, NOW)[0] == 20 and "could not be read" in kp.wake_after(state(), unreadable, NOW)[1]
+    assert kp.on_wake(state(), unreadable, [], "9", NOW)[:2] == ("rearm", 20)
+    assert kp.on_wake(unreadable, {}, [], "9", NOW)[:2] == ("rearm", 20)  # not "the flag is off"
+    assert kp.wake_after(unreadable, {}, NOW)[0] == 20
+    assert kp.on_wake(state(), {}, [], "9", NOW)[0] == "go"
+
+
+def test_the_workflow_marks_a_failed_read_unreadable_and_runs_the_keeper_from_mains_worktree() -> None:
+    backup = _flow()["jobs"]["backup"]
+    note = next(s for s in backup["steps"] if str(s.get("name", "")).startswith("Note when this job started"))["run"]
+    assert 'git worktree add -q --detach "$RUNNER_TEMP/keeper" HEAD' in note
+    arm = backup["steps"][-1]["run"]
+    assert '(cd "$RUNNER_TEMP/keeper" && python3 -m runner --keeper-armed "$minutes"' in arm
+    assert 'cd "$RUNNER_TEMP/keeper" && python3 -m runner.keeper arm' in arm
+    for script in (arm, _flow()["jobs"]["keeper"]["steps"][-1]["run"]):
+        assert 'grep -q "HTTP 404"' in script and '{"unreadable": true}' in script
+
+
+def test_the_keeper_runs_from_a_worktree_of_the_repository(tmp_path: Path) -> None:
+    """The arm step's call works from a detached worktree: `runner` finds its root by its own path."""
+    tree = tmp_path / "keeper"
+    subprocess.run(["git", "worktree", "add", "-q", "--detach", str(tree), "HEAD"], cwd=ROOT, check=True)
+    try:
+        done = subprocess.run([sys.executable, "-m", "runner.keeper", "clamp", "30"], cwd=tree, capture_output=True, text=True, check=True)
+        assert done.stdout == "30\n"
+        helped = subprocess.run([sys.executable, "-m", "runner", "--help"], cwd=tree, capture_output=True, text=True, check=True)
+        assert "--keeper-armed" in helped.stdout
+    finally:
+        subprocess.run(["git", "worktree", "remove", "--force", str(tree)], cwd=ROOT, check=False)

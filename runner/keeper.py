@@ -10,6 +10,8 @@ itself with `wake_after` (minutes); that run's `keeper` job sleeps, then decides
   pacer waits for a usage window to reset, the week's reading is at WEEK_STOP, or no task could be
   claimed, which includes the T### tasks under Gate P's `build_hold`); a wait past CAP_MINUTES, the
   weekly reset among them, is reached by chained sleeps;
+- an unreadable `kit/state.json` or `lease.json` (the workflow writes {"unreadable": true} for any failed
+  read but a 404) is never read as "nothing live": the keeper looks again in IDLE_MINUTES;
 - `go`: dispatch an ordinary run, which goes through the gate, the lane pick, the backup job's
   concurrency group and the lease exactly as any other start.
 
@@ -22,6 +24,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import re
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -37,6 +40,9 @@ RESET_MARGIN = 5  # minutes past the pacer's `waiting_until` (a usage window's r
 WEEK_STOP = 0.97  # the week's reading at which the build stops for the reset (kit/pacing.json headroom 0.03)
 NOTHING_CLAIMED = frozenset({"idle", "fix_main"})  # a cycle result after which a 20-minute look would find the same
 QUIET = ("not_lease_holder", "renewed", "renew_refused", "usage_reading", "keeper_armed")  # log rows that say nothing of the cycle
+# "T057 is MERGE_PENDING": the answer of an `--after` or a renewal for a task that has already moved on, not a
+# cycle result; the backup-runner chain step skips the same rows with the same pattern (D-723).
+STATUS_ONLY = re.compile(r"\S+ is \S+")
 
 Doc = dict[str, Any]
 
@@ -92,6 +98,8 @@ def wake_after(state: Doc, lease_doc: Doc, now: datetime, last: str = "") -> tup
     nothing to claim: the soonest `retry_after` + RESET_MARGIN, else CAP_MINUTES, so an idle build does
     not start a Claude session every IDLE_MINUTES. `last`, the result the arming cycle itself reported,
     overrides the state's guess: after `idle` (nothing it could claim) the short sleep is never used."""
+    if state.get("unreadable") or lease_doc.get("unreadable"):
+        return IDLE_MINUTES, "claude/kit-state or claude/lease could not be read: look again"
     why = blocker(state)
     if why:
         return None, why
@@ -157,7 +165,7 @@ def last_result(rows: list[Doc], session: str, since: str) -> str:
     """The result of this job's last cycle row in kit/runner_log.jsonl (its own session, from `since`),
     skipping rows that did nothing (a renewal, a usage reading, an `--after` holding no lease)."""
     mine = [str(r.get("result", "")) for r in rows if r.get("session") == session and str(r.get("at", "")) >= since]
-    told = [r for r in mine if not r.startswith(QUIET) and not (" is " in r and len(r.split()) == 3)]
+    told = [r for r in mine if not r.startswith(QUIET) and not STATUS_ONLY.fullmatch(r)]
     return told[-1] if told else ""
 
 
@@ -168,7 +176,7 @@ def live_runs(runs: list[Doc], own_id: str) -> list[Doc]:
 
 def on_wake(state: Doc, lease_doc: Doc, runs: list[Doc] | None, own_id: str, now: datetime) -> tuple[str, int | None, str]:
     """("stop" | "rearm" | "go", minutes for a rearm, why) when a keeper wakes (D-1451)."""
-    why = blocker(state)
+    why = blocker(state) if not state.get("unreadable") else ""
     if why:
         return "stop", None, why
     if runs is None:

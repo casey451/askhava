@@ -228,10 +228,12 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
       - name: Note when this job started (for the chaining step)
-        # The keeper's code is copied now, from main: the session may leave a task branch checked out (D-1451).
+        # A detached worktree of main as checked out now runs the keeper's two calls at the end, since the session may
+        # leave a task branch (cut before D-1451) checked out; `runner` takes its repository root from its own path,
+        # so a worktree (a real checkout sharing this repository's git config) rather than a copy (D-1451).
         run: |
           echo "JOB_START=$(date -u +%Y-%m-%dT%H:%M:%S)" >> "$GITHUB_ENV"
-          mkdir -p "$RUNNER_TEMP/keeper" && cp -r runner "$RUNNER_TEMP/keeper/"
+          git worktree add -q --detach "$RUNNER_TEMP/keeper" HEAD
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -414,8 +416,9 @@ jobs:
         # keeper run that sleeps `wake_after` minutes and then looks again (the `keeper` job below). The minutes
         # come from runner/keeper.py over the state this cycle left: a lease's end + 2, the pacer's wait + 5,
         # 20 when there is work, else the next retry or 340; capped at 340 (5 h 40 m) so a sleep fits GitHub's
-        # 6-hour job limit; none at all while the flag is off, Gate P's hold is set or a red main waits for a
-        # person. A newer keeper cancels the sleeping one (its concurrency group), so there is one sleeper.
+        # 6-hour job limit; 340 while Gate P's hold is set (only kit tasks run then); none at all while the flag is
+        # off or a red main waits for a person. A newer keeper cancels the sleeping one (its concurrency group), so
+        # there is one sleeper. A read that fails for any reason but 404 is marked unreadable: the keeper looks again.
         if: always()
         env:
           GH_TOKEN: ${{ github.token }}
@@ -426,7 +429,10 @@ jobs:
           RUNNER_PUSH_TOKEN: ${{ secrets.RUNNER_PUSH_TOKEN }}
         run: |
           set -u
-          raw() { gh api "repos/${GITHUB_REPOSITORY}/contents/$1?ref=$2" -H 'Accept: application/vnd.github.raw' > "$3" 2>/dev/null || echo '{}' > "$3"; }
+          raw() {
+            gh api "repos/${GITHUB_REPOSITORY}/contents/$1?ref=$2" -H 'Accept: application/vnd.github.raw' > "$3" 2> "$3.err" && return 0
+            if grep -q "HTTP 404" "$3.err"; then echo '{}' > "$3"; else echo '{"unreadable": true}' > "$3"; fi
+          }
           raw kit/state.json claude/kit-state "$RUNNER_TEMP/keeper_state.json"
           raw lease.json claude/lease "$RUNNER_TEMP/keeper_lease.json"
           raw kit/runner_log.jsonl claude/kit-state "$RUNNER_TEMP/keeper_log.jsonl"
@@ -439,7 +445,7 @@ jobs:
             echo "keeper not armed: the dispatch failed; the hourly tick is the backstop"; exit 0
           fi
           # The `keeper` key for STATUS.md's keeper line (D-1462), through the runner like the usage reading (D-1155).
-          python3 -m runner --keeper-armed "$minutes" 2>&1 | head -1 || true
+          (cd "$RUNNER_TEMP/keeper" && python3 -m runner --keeper-armed "$minutes" 2>&1 | grep '^runner: ') || echo "keeper key not recorded"
   keeper:
     name: keeper
     # Only a run the arm step (or a keeper) dispatched with `wake_after` (D-1451). It holds no lock on a cycle: it
@@ -470,7 +476,10 @@ jobs:
           minutes="$(python3 -m runner.keeper clamp "$WAKE_AFTER")"
           echo "keeper for lane ${LANE:-any}: sleeping ${minutes} minutes"
           sleep "$((minutes * 60))"
-          raw() { gh api "repos/${GITHUB_REPOSITORY}/contents/$1?ref=$2" -H 'Accept: application/vnd.github.raw' > "$3" 2>/dev/null || echo '{}' > "$3"; }
+          raw() {
+            gh api "repos/${GITHUB_REPOSITORY}/contents/$1?ref=$2" -H 'Accept: application/vnd.github.raw' > "$3" 2> "$3.err" && return 0
+            if grep -q "HTTP 404" "$3.err"; then echo '{}' > "$3"; else echo '{"unreadable": true}' > "$3"; fi
+          }
           raw kit/state.json claude/kit-state "$RUNNER_TEMP/keeper_state.json"
           raw lease.json claude/lease "$RUNNER_TEMP/keeper_lease.json"
           runs="$RUNNER_TEMP/keeper_runs.json"
