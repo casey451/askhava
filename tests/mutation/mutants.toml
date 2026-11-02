@@ -4,8 +4,9 @@
 # `file`, it is replaced by `replace`, and `cargo test --locked -p <package> <target> -- <tests>`
 # must fail; the file is then restored. A group's keys apply to each of its mutants; a mutant may
 # override any of them. `target` defaults to "--lib" (the in-crate tests under src/tests/).
-# Ci runs the mutants of the files a pull request changed (every mutant when this file or the
-# script changes); nightly-main runs them all and fails on a survivor (BUILD_BRIEF.md:472).
+# Ci runs the mutants whose file or test files a pull request changed (every mutant when this
+# file or the script changes; a `find` a later task's edit made stale is reported, not failed);
+# nightly-main runs them all and fails on a survivor or a stale `find` (BUILD_BRIEF.md:472).
 # The task that writes rule code adds its mutants here (T056 stage 2, T073 the money rules and
 # the license check at pick, TD-PICK-09, D-479).
 #
@@ -13,8 +14,8 @@
 # branch floors on app/licensing/ and app/privacy/ (PRIV-022).
 #
 # cargo-mutants (nightly-main) runs on these files with the in-crate tests (test-design line 60).
+# app/payments/src/rules.rs joins when T073 writes it; app/catalog/ has no rules.rs (D-1286).
 cargo_mutants_files = [
-  "app/catalog/src/rules.rs",
   "app/licensing/src/rules.rs",
   "app/quotes/src/rules.rs",
   "app/messaging/src/rules.rs",
@@ -30,7 +31,7 @@ file = "app/quotes/src/rules.rs"
 package = "askhava-quotes"
 tests = ["tests::matching_examples", "tests::prop_matching_props"]
 mutants = [
-  { name = "covers every candidate job type -> covers any", find = "            Eligibility::NoCard(reason) => return CardDecision::Skip(Skip::NotCovered(reason)),", replace = "            Eligibility::NoCard(reason) if job.candidates.len() == 1 => return CardDecision::Skip(Skip::NotCovered(reason)),\n            Eligibility::NoCard(_) => {}" },
+  { name = "covers every candidate job type -> covers any", find = "            Eligibility::NoCard(reason) => return CardDecision::Skip(Skip::NotCovered(reason)),", replace = "            Eligibility::NoCard(reason) if !job.candidates.iter().any(|c| { let mut h = business.licenses.clone(); h.roc_covers = map.covers(&classes, &c.category, &c.job_type); !matches!(eligibility_for_request(c, &h, &request), Eligibility::NoCard(_)) }) => return CardDecision::Skip(Skip::NotCovered(reason)),\n            Eligibility::NoCard(_) => {}" },
   { name = "ticked-job-type check dropped", find = "if checklist && !job.candidates", replace = "if false && checklist && !job.candidates" },
 ]
 

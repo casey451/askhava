@@ -13,8 +13,15 @@ Usage:
   python3 scripts/run_named_mutants.py --base origin/main  # Ci: mutants of files this branch changed
   python3 scripts/run_named_mutants.py --only "<name>"  # one entry, by name
   python3 scripts/run_named_mutants.py --list [--all | --base REV]
-With --base, a change to the list or to this script runs every mutant. Exit status 1 names each
-mutant that survived or broke, or each entry whose `find` text is missing or repeated.
+With --base, a mutant runs when its `file` changed or one of its test files did (derived from
+`package`, `target` and `tests`: `--lib` with `tests::x` is `<crate>/src/tests/x.rs` or `x/`,
+`--test y` is `<crate>/tests/y.rs` or `y/`, plus the crate's `src/tests/mod.rs` or, for a
+`--test` target, its `src/` helpers), and every mutant runs when the list or this script changed.
+Exit status 1 names each mutant that survived or broke, or each entry whose `find` text is missing
+or repeated. Only with --base, when neither the list nor this script changed, a missing or
+repeated `find` (the rule file was edited by a later task, and the list is protected) is printed
+as STALE and that mutant skipped without failing the pull request; --all (nightly-main) and
+--only still fail on it, so the night turns red until a harness task updates the list (D-1285).
 """
 
 from __future__ import annotations
@@ -46,6 +53,17 @@ class Mutant:
     package: str
     target: str
     tests: tuple[str, ...]
+
+    def test_paths(self, crate_dir: str) -> tuple[str, ...]:
+        """Path prefixes of the files holding this mutant's tests, under its crate's folder."""
+        words = self.target.split()
+        if "--lib" in words:
+            stems = [t.removeprefix("tests::").split("::")[0] for t in self.tests]
+            paths = [f"{crate_dir}/src/tests/{s}" for s in stems]
+            return (*[f"{p}.rs" for p in paths], *[f"{p}/" for p in paths], f"{crate_dir}/src/tests/mod.rs")
+        stems = [words[i + 1] for i, w in enumerate(words[:-1]) if w == "--test"]
+        paths = [f"{crate_dir}/tests/{s}" for s in stems]
+        return (*[f"{p}.rs" for p in paths], *[f"{p}/" for p in paths], f"{crate_dir}/src/")
 
     def command(self, no_run: bool) -> list[str]:
         """The cargo command for this mutant's tests; `no_run` only builds them."""
@@ -95,35 +113,70 @@ def changed_files(base: str) -> set[str]:
     return {line for line in diff.splitlines() if line}
 
 
-def select(mutants: list[Mutant], args: argparse.Namespace) -> list[Mutant]:
-    """The mutants this run applies: all, one by name, or those of the changed files."""
+def crate_dirs() -> dict[str, str]:
+    """Each workspace package name and its folder (app/<module>/, tests/<layer>/)."""
+    dirs = {}
+    for manifest in sorted([*Path("app").glob("*/Cargo.toml"), *Path("tests").glob("*/Cargo.toml")]):
+        package = tomllib.loads(manifest.read_text(encoding="utf-8")).get("package", {})
+        if "name" in package:
+            dirs[package["name"]] = manifest.parent.as_posix()
+    return dirs
+
+
+def touched(m: Mutant, changed: set[str], dirs: dict[str, str]) -> bool:
+    """True when the branch changed the mutant's rule file or one of the files holding its tests."""
+    if m.file in changed:
+        return True
+    crate_dir = dirs.get(m.package)
+    if crate_dir is None:
+        raise SystemExit(f"{m.name}: no workspace crate is named {m.package!r}")
+    prefixes = m.test_paths(crate_dir)
+    return any(f == p or (p.endswith("/") and f.startswith(p)) for f in changed for p in prefixes)
+
+
+def select(mutants: list[Mutant], args: argparse.Namespace) -> tuple[list[Mutant], bool]:
+    """The mutants this run applies (all, one by name, or those a branch touched) and whether a
+    stale `find` fails the run (always, except per pull request with the list unchanged)."""
     if args.only:
         chosen = [m for m in mutants if m.name == args.only]
         if not chosen:
             raise SystemExit(f"no mutant named {args.only!r}")
-        return chosen
+        return chosen, True
     if args.all:
-        return mutants
+        return mutants, True
     changed = changed_files(args.base)
     if {str(MANIFEST), str(SELF)} & changed:
-        return mutants
-    return [m for m in mutants if m.file in changed]
+        return mutants, True
+    dirs = crate_dirs()
+    return [m for m in mutants if touched(m, changed, dirs)], False
 
 
-def problems_in_texts(mutants: list[Mutant]) -> list[str]:
-    """Entries whose `find` text is not in its file exactly once, or equals its replacement."""
-    problems = []
+def problems_in_texts(mutants: list[Mutant]) -> tuple[list[str], dict[str, str]]:
+    """Entries whose `replace` equals `find` (always an error), and, by name, the stale ones:
+    the file is gone or `find` is not in it exactly once."""
+    errors, stale = [], {}
     for m in mutants:
+        if m.find == m.replace:
+            errors.append(f"{m.name}: `replace` equals `find`")
         path = Path(m.file)
         if not path.is_file():
-            problems.append(f"{m.name}: {m.file} does not exist")
+            stale[m.name] = f"{m.name}: {m.file} does not exist"
             continue
         count = path.read_text(encoding="utf-8").count(m.find)
         if count != 1:
-            problems.append(f"{m.name}: `find` occurs {count} times in {m.file}, not once")
-        if m.find == m.replace:
-            problems.append(f"{m.name}: `replace` equals `find`")
-    return problems
+            stale[m.name] = f"{m.name}: `find` occurs {count} times in {m.file}, not once"
+    return errors, stale
+
+
+def checked(mutants: list[Mutant], strict: bool) -> tuple[list[Mutant], list[str]]:
+    """The mutants still runnable and the failures to report; a stale entry is a failure when
+    `strict`, else it is printed as STALE and skipped (a later task edited the rule file)."""
+    errors, stale = problems_in_texts(mutants)
+    if strict:
+        return mutants, errors + list(stale.values())
+    for line in stale.values():
+        print(f"STALE (skipped here; nightly-main fails until tests/mutation/mutants.toml is updated): {line}")
+    return [m for m in mutants if m.name not in stale], errors
 
 
 def run(cmd: list[str]) -> subprocess.CompletedProcess[str]:
@@ -174,8 +227,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--manifest", type=Path, default=MANIFEST)
     args = parser.parse_args(argv)
     signal.signal(signal.SIGTERM, stop_on_term)
-    chosen = select(load(args.manifest), args)
-    problems = problems_in_texts(chosen)
+    chosen, problems = checked(*select(load(args.manifest), args))
     if args.list:
         for m in chosen:
             print(f"{m.rule} | {m.name} | {m.file}")

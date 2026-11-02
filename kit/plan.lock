@@ -59,7 +59,7 @@
   "scripts/pii_scan.py": "05d1c661e428e5b6ae48e3173c92c7859aacf225a0af7212d35967eedde0502e",
   "scripts/progress.py": "6a31a132e709c974e5e71468a8e6fa8c212b753bad7501713250f39c0e5d08be",
   "scripts/quota_probe.py": "63f21117d06c02632e2e79698ef828a33668cefc1403cfc261cc2d813d3cf951",
-  "scripts/run_named_mutants.py": "0de089c4c6414af248d35adae8c7431ca2896539f19608ccc77255001f261fe8",
+  "scripts/run_named_mutants.py": "325ff572d79be0e8e1a23026cbfd81cd50b7671f743f1f550390bd4569ac4f59",
   "scripts/smoke.sh": "1c976e493c877c2006b18f27aae5624c9f987ca1c1f4234561bde72a235c5a00",
   "scripts/stage_exit.py": "009c0f3ffe26f1181f00b785bce3430c6d1f54651dde0bde6b7375d7cc1a6aa0",
   "scripts/trace_spec.py": "9956b2ffaa7f6e205e6f27338f65cddf7f573afa3c53de697f959adc96923439",

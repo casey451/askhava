@@ -155,7 +155,8 @@ tests/               the Rust test-layer crates integration, security and recove
                      pytest for docs and contract. Every database test uses `#[sqlx::test(migrator = ...)]`, one
                      fresh database per test (D-481); `tests/mutation/mutants.toml` holds the named mutants
                      (exact text replacements and the tests that must fail), applied in place by
-                     `scripts/run_named_mutants.py`: `Ci`'s `Checks` runs those of the files a branch changed,
+                     `scripts/run_named_mutants.py`: `Ci`'s `Checks` runs those whose rule or test files a branch changed
+                     (a stale `find` is reported there, failed only at night),
                      nightly-main's `named-mutants` job all of them, and its `cargo-mutants` job the listed rule
                      files, report only for now (T056, D-1285, D-1286)
 twin/                the twin (Python) and its hard-failing gate, calling the Rust rules through rules_bridge

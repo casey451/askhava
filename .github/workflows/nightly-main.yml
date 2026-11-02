@@ -93,7 +93,15 @@ jobs:
         run: |
           args=()
           while read -r f; do args+=(--file "$f"); done < <(python3 -c 'import tomllib; print("\n".join(tomllib.load(open("tests/mutation/mutants.toml", "rb"))["cargo_mutants_files"]))')
-          cargo mutants --no-shuffle --timeout-multiplier 3 "${args[@]}" || echo "cargo-mutants: see the artifact for survivors (report only, D-1286)"
+          # Exit 2 (missed mutants) and 3 (timeouts) are the report; any other failure (a usage error, a red
+          # baseline, a crash) fails this job, so a broken run is never read as a clean report (D-1286).
+          code=0
+          cargo mutants --no-shuffle --timeout-multiplier 3 "${args[@]}" || code=$?
+          case "$code" in
+            0) ;;
+            2|3) echo "cargo-mutants: survivors or timeouts, see the artifact (report only, D-1286)" ;;
+            *) echo "cargo-mutants failed to run (exit $code)"; exit "$code" ;;
+          esac
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: always()
         with:
@@ -135,7 +143,7 @@ jobs:
             fi
           done
           python3 "$RUNNER_TEMP/compare_ips.py" "$copy" "$copy"
-          curl -sSfL --max-time 60 -o "$RUNNER_TEMP/published.json" https://stripe.com/files/ips/ips_webhooks.json
+          curl -sSfL --retry 3 --retry-all-errors --max-time 60 -o "$RUNNER_TEMP/published.json" https://stripe.com/files/ips/ips_webhooks.json
           python3 "$RUNNER_TEMP/compare_ips.py" "$copy" "$RUNNER_TEMP/published.json"
   record:
     # Writes kit/nightly.json to claude/kit-state so the runner and scripts/progress.py can

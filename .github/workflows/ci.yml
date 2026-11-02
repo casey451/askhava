@@ -223,9 +223,10 @@ jobs:
           fi
 
       - name: Named mutants of the files this change touches (scripts/run_named_mutants.py, D-481)
-        # Each tests/mutation/mutants.toml entry whose file the branch changed (every entry when the list
-        # or the script changed) is applied in place, in the target dir the tests above built, and its
-        # tests must fail. A scheduled call (nightly-main) skips it: nightly-main runs the full list itself.
+        # Each tests/mutation/mutants.toml entry whose rule file or test files the branch changed (every
+        # entry when the list or the script changed) is applied in place, in the target dir the tests above
+        # built, and its tests must fail. A `find` a later task's edit made stale is printed STALE and
+        # skipped here (the list is protected); nightly-main fails on it (D-1285). A scheduled call (nightly-main) skips it: nightly-main runs the full list itself.
         if: steps.changes.outputs.rust == 'true' && github.event_name == 'push' && hashFiles('tests/mutation/mutants.toml') != ''
         run: |
           python3 scripts/run_named_mutants.py --base origin/main
