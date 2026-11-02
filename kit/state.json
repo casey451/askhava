@@ -10975,7 +10975,7 @@
     "T240",
     "T241"
    ],
-   "status": "BLOCKED",
+   "status": "DONE",
    "attempts": 0,
    "slug": "cleanup-stage2",
    "type": "cleanup",
@@ -11074,7 +11074,7 @@
    ],
    "update_waiting_since": null,
    "update_push_failures": null,
-   "reason": "stage proof missing",
+   "reason": null,
    "merged_sha": "2ed9f1f259de3b6ff12dcffc349bdbe2b1fd7a7a",
    "merged_at": "2026-11-02T04:43:27Z",
    "files": [
@@ -15656,7 +15656,7 @@
    }
   }
  },
- "updated_at": "2026-11-02T05:16:31Z",
+ "updated_at": "2026-11-02T05:18:50Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -15754,8 +15754,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "2876127b20e5337c1837430c79b75e02dc530b60",
- "starter": "manual",
+ "runner_sha": "2ed9f1f259de3b6ff12dcffc349bdbe2b1fd7a7a",
+ "starter": "actions",
  "smoke_runs": [
   {
    "sha": "83dac288109407722c3096c3181cbfe361114898",

@@ -1,9 +1,9 @@
 # Ask Hava build status
 
-Updated 2026-11-02T05:16:31Z by runner 2876127b20e5 (manual).
+Updated 2026-11-02T05:18:50Z by runner 2ed9f1f259de (actions).
 
 **Requirements verified:** 161 of 726 (22.2%) · partial 166 · unstarted 399
-**Tasks merged (throughput only):** 90 of 229
+**Tasks merged (throughput only):** 91 of 230
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -36,7 +36,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
 - stage 1: 11 of 11 done
-- stage 2: 79 of 80 done
+- stage 2: 80 of 80 done
 - stage 3: 0 of 25 done
 - stage 4: 0 of 50 done
 - stage 5: 0 of 42 done
@@ -49,7 +49,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 
 ## Needs attention
-- BLOCKED T057: stage proof missing
+- nothing
 
 ## Last usage reading
 - {"task": "T057", "at": "2026-11-02T04:26:03Z", "cache_creation_input_tokens": 247587, "cache_read_input_tokens": 6214259, "input_tokens": 227, "output_tokens": 49984}
