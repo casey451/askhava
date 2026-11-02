@@ -1621,3 +1621,9 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **What happened.** The fee-mode switch (tiers or one flat fee per job type) is built: switching is logged, and every business must accept a new card authorization before its next charge. But the card authorization text you approved quotes the $25 / $75 / $199 tiers, and there is no wording yet for flat mode.
 - **What I chose.** I did not write legal wording for you. The system stores the exact text each business was shown, with its version and time. Before the switch is offered in your owner portal, the flat-mode wording needs your go as a spec change.
 - **Worth a look.** The version number for the card wording and the one for the fee mode currently share one counter; whoever next changes either must raise it past both. A later task splits them. Flat mode keeps the $75 cap on recurring services.
+
+## The build checks coverage before handing in (harness change, D-1440, November 2)
+
+- **What happened.** Money, privacy and licensing code must stay at or above 95% tested. That was only checked after a task was handed in, so a task that dipped below lost a whole attempt (T225 this morning).
+- **What changed.** When a task touches one of those parts, the worker now measures it before handing in, the same way the final check does, and fixes a dip in the same session. Tasks that do not touch those parts are not slowed. The worker is also told the time by which it must hand in (30 minutes before its time slot ends), so a session no longer runs out of time with its work unhanded.
+- **Worth a look.** The measurement takes about 5 minutes, because it has to run the whole-system tests that exercise those parts; measuring a part on its own gave a wrong low reading (61% instead of 99%). If it ever runs past 6 minutes, the worker skips it and the final check still decides.
