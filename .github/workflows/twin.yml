@@ -26,7 +26,7 @@ jobs:
         run: PYTHONHASHSEED=0 python3 twin/gate.py --report "$RUNNER_TEMP/twin-report.json"
       - name: Upload the gate report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: twin-report
           path: ${{ runner.temp }}/twin-report.json
