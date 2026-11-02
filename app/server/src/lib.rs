@@ -9,7 +9,7 @@
 use std::io;
 use std::sync::Arc;
 
-use askhava_adapters::api::StorageAdapter;
+use askhava_adapters::api::{StorageAdapter, TwilioConfig};
 use askhava_core::api::{
     Environment, IdSecret, LogGuard, Registry, Settings, SystemClock, init_logging, request_span,
 };
@@ -24,6 +24,7 @@ use tokio::signal::unix::{SignalKind, signal};
 use tower_http::request_id::{MakeRequestUuid, PropagateRequestIdLayer, SetRequestIdLayer};
 use tower_http::trace::TraceLayer;
 
+pub mod inbound_text;
 pub mod offdb_stream;
 
 /// Installs rustls' aws-lc-rs provider as the process default, so sqlx and
@@ -63,14 +64,22 @@ pub fn start_up() -> io::Result<(Settings, LogGuard)> {
 /// routes in the release build (SEC-035, D-739). The outermost layer sets the SEC-012 security
 /// headers on every response, a 404 included (T051). The homeowner's quote page is `portals`'
 /// (`/q/{token}`, T052); its pick review step posts to the same path (`pick_flow`, T055).
-pub fn build_router(pool: PgPool, test_control: Router) -> Router {
+/// `webhooks` ([`webhooks`]) adds Twilio's signature-checked inbound-text and status routes
+/// (`inbound_text`, SEC-016, SEC-039, T241); `None` adds none.
+pub fn build_router(
+    pool: PgPool,
+    test_control: Router,
+    webhooks: Option<Arc<inbound_text::Webhooks>>,
+) -> Router {
     let quote_page = quote_page_routes(pool.clone(), Arc::new(SystemClock));
     let pick_flow = pick_flow_routes(pool.clone(), Arc::new(SystemClock));
+    let twilio = webhooks.map_or_else(Router::new, inbound_text::routes);
     let (log, _writer) = offdb_stream::RequestLog::spawn(pool);
     Router::new()
         .merge(test_control)
         .merge(quote_page)
         .merge(pick_flow)
+        .merge(twilio)
         .layer(axum::middleware::from_fn_with_state(
             log,
             offdb_stream::log_request,
@@ -120,6 +129,56 @@ where
     let vault = Vault::new(&seal, &index, settings.database_url()).map_err(io::Error::other)?;
     let link = IdSecret::new(1, id_secret.clone()).map_err(io::Error::other)?;
     Ok(Some(JobTextKeys::new(link, id_secret.clone(), vault)))
+}
+
+/// The `ID_SECRET` setting, read here for the webhook routes' outbox keys (SEC-018).
+const ID_SECRET: &str = "ASKHAVA_ID_SECRET";
+
+/// What Twilio's webhook routes need (T241, SEC-016, D-1216), from `settings` and the same
+/// `pairs`: with `ASKHAVA_PUBLIC_BASE_URL` set, the Twilio auth token ([`TwilioConfig`]), the
+/// `ID_SECRET` and both vault keys are required; unset, `None` in dev and CI (no routes) and an
+/// error in the test and live projects, which Twilio must reach.
+///
+/// # Errors
+///
+/// A missing or bad key, named, never its value.
+pub fn webhooks<I>(
+    settings: &Settings,
+    pool: PgPool,
+    pairs: I,
+) -> io::Result<Option<Arc<inbound_text::Webhooks>>>
+where
+    I: IntoIterator<Item = (String, String)>,
+{
+    let Some(base) = settings.public_base_url() else {
+        return match settings.environment() {
+            Environment::Dev | Environment::Ci => Ok(None),
+            Environment::Test | Environment::Live => {
+                Err(io::Error::other("missing ASKHAVA_PUBLIC_BASE_URL"))
+            }
+        };
+    };
+    let pairs: Vec<(String, String)> = pairs.into_iter().collect();
+    let twilio = TwilioConfig::from_settings(settings, pairs.clone()).map_err(io::Error::other)?;
+    let id_secret = pairs
+        .iter()
+        .find(|(k, v)| k == ID_SECRET && !v.trim().is_empty())
+        .map(|(_, v)| SecretString::from(v.trim().to_owned()))
+        .ok_or_else(|| io::Error::other("missing ASKHAVA_ID_SECRET"))?;
+    let (Some(seal), Some(index)) = vault_keys(pairs) else {
+        return Err(io::Error::other("missing VAULT_KEY or VAULT_INDEX_KEY"));
+    };
+    let vault = Vault::new(&seal, &index, settings.database_url()).map_err(io::Error::other)?;
+    Ok(Some(Arc::new(inbound_text::Webhooks {
+        pool,
+        clock: Arc::new(SystemClock),
+        public_base: base.to_owned(),
+        auth_token: twilio.auth_token().clone(),
+        id_secret,
+        vault,
+        names: Vec::new(),
+        intake: askhava_intake::api::rules::Settings::default(),
+    })))
 }
 
 /// `VAULT_KEY` and `VAULT_INDEX_KEY` from `pairs`, each `None` when absent or blank.

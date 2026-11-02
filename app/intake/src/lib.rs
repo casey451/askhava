@@ -17,6 +17,8 @@
 //! (`question_bank`, `routing_confidence`, `golden_run`).
 //! T208 added the card approval step: the card shown, EDIT or SEND, the auto-send (`summary_step`).
 //! T240 added the sender of `jobs`' homeowner job texts (JOB-010 to JOB-012, TXT-042, `job_texts`).
+//! T241 added the dispatcher of a reply inside an open request: LIST, then `hear` and
+//! `receive_text` (`replies`, D-999).
 //! Other crates reach it only through [`api`].
 
 pub mod api;
@@ -30,6 +32,7 @@ mod job_texts;
 mod matching;
 mod models;
 mod question_bank;
+mod replies;
 mod routing;
 mod routing_confidence;
 mod rules;

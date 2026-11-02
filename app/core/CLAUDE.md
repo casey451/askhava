@@ -8,7 +8,7 @@ The layer-0 crate every module may call: settings, the database pool and guarded
 
 - `src/lib.rs`: the crate root; one `mod` line per file a task adds.
 - `src/api.rs`: the only public surface; re-exports the items below.
-- `src/settings.rs`: `Settings::from_pairs`, `Environment`, `Vendor`, `SettingsError`, `check_base_url` (D-688). A shared path: each task adds its own `ASKHAVA_*` key to `KEYS` and a typed field (D-493).
+- `src/settings.rs`: `Settings::from_pairs`, `Environment`, `Vendor`, `SettingsError`, `check_base_url` (D-688); `public_base_url` (`ASKHAVA_PUBLIC_BASE_URL`, optional, an `http(s)` origin without query or trailing slash, `https` non-local in live; T241, D-1309). A shared path: each task adds its own `ASKHAVA_*` key to `KEYS` and a typed field (D-493).
 - `src/clock.rs`: `Clock`, `SystemClock`, `ManualClock`, `arizona()`, `arizona_time`, `zone`, `local_time`, `is_business_hours`, `add_business_minutes`.
 - `src/logging.rs`: `Redacted<T>`, `init` (re-exported as `init_logging`), `json_layer`, `request_span`, `sentry_options`, `scrub_event`, `scrub_breadcrumb`, `scrub_text` (D-689).
 - `src/db.rs`: `MIGRATOR` (every file in `migrations/`), `app_pool`, `migrate` (the `server migrate` step), `Guarded<T>`, `DbError` (D-698).

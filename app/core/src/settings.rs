@@ -24,6 +24,7 @@ const SENTRY_DSN: &str = "ASKHAVA_SENTRY_DSN";
 const STRIPE_SECRET_KEY: &str = "ASKHAVA_STRIPE_SECRET_KEY";
 const ALLOW_LIST_TEST: &str = "ASKHAVA_ALLOW_LIST_TEST";
 const ALLOW_LIST_LIVE: &str = "ASKHAVA_ALLOW_LIST_LIVE";
+const PUBLIC_BASE_URL: &str = "ASKHAVA_PUBLIC_BASE_URL";
 
 /// Every key the parser accepts; any other `ASKHAVA_*` key stops startup (D-493).
 const KEYS: &[&str] = &[
@@ -36,6 +37,8 @@ const KEYS: &[&str] = &[
     STRIPE_SECRET_KEY,
     ALLOW_LIST_TEST,
     ALLOW_LIST_LIVE,
+    // The app's own public origin, the base of every signed webhook URL (T241, SEC-016, D-1216).
+    PUBLIC_BASE_URL,
     "ASKHAVA_TWILIO_ACCOUNT_SID",
     "ASKHAVA_STRIPE_ACCOUNT_ID",
     "ASKHAVA_RESEND_DOMAIN",
@@ -219,6 +222,7 @@ pub struct Settings {
     sentry_dsn: Option<SecretString>,
     stripe_secret_key: Option<SecretString>,
     accounts: HashMap<Vendor, String>,
+    public_base_url: Option<String>,
 }
 
 impl Settings {
@@ -244,6 +248,7 @@ impl Settings {
             return Err(SettingsError::TestKeyInLive(STRIPE_SECRET_KEY));
         }
         let accounts = check_accounts(environment, &mut raw)?;
+        let public_base_url = public_base_url(environment, raw.remove(PUBLIC_BASE_URL))?;
         Ok(Self {
             environment,
             database_url: required(&mut raw, DATABASE_URL)?.into(),
@@ -253,6 +258,7 @@ impl Settings {
             sentry_dsn: raw.remove(SENTRY_DSN).map(SecretString::from),
             stripe_secret_key: stripe_secret_key.map(SecretString::from),
             accounts,
+            public_base_url,
         })
     }
 
@@ -308,6 +314,14 @@ impl Settings {
     #[must_use]
     pub fn account(&self, vendor: Vendor) -> Option<&str> {
         self.accounts.get(&vendor).map(String::as_str)
+    }
+
+    /// The app's public origin (`ASKHAVA_PUBLIC_BASE_URL`), without a trailing slash: Twilio
+    /// signs the full URL it posted to, so each webhook's URL is this plus the route path and
+    /// query (SEC-016, D-1216). `None` while unset; never hard-coded.
+    #[must_use]
+    pub fn public_base_url(&self) -> Option<&str> {
+        self.public_base_url.as_deref()
     }
 }
 
@@ -367,6 +381,26 @@ fn is_local_host(host: &str) -> bool {
                 .to_ipv4_mapped()
                 .is_some_and(|v4| v4.is_loopback() || v4.is_unspecified())
     })
+}
+
+/// `ASKHAVA_PUBLIC_BASE_URL`, if set: an `http` or `https` origin passing [`check_base_url`]
+/// (`https` to a non-local host in live), with no query or fragment; a trailing slash is dropped.
+fn public_base_url(
+    environment: Environment,
+    raw: Option<String>,
+) -> Result<Option<String>, SettingsError> {
+    let Some(url) = raw.map(|u| u.trim().trim_end_matches('/').to_owned()) else {
+        return Ok(None);
+    };
+    let host = match url.split_once("://") {
+        Some(("https" | "http", rest)) => url_host(rest),
+        _ => String::new(),
+    };
+    if host.is_empty() || url.contains(['?', '#']) {
+        return Err(SettingsError::Invalid(PUBLIC_BASE_URL));
+    }
+    check_base_url(environment, PUBLIC_BASE_URL, &url)?;
+    Ok(Some(url))
 }
 
 fn collect<I>(pairs: I) -> Result<HashMap<&'static str, String>, SettingsError>
