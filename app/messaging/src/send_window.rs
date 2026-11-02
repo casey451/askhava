@@ -64,7 +64,9 @@ pub fn window(table: &AreaCodes, phone: &str, now: Timestamp) -> Result<SendWind
 /// The window for a non-urgent text to the homeowner with vault contact `contact` at `now`: her
 /// phone is read from the vault here (`Reader::Messaging`, `Purpose::Send`, one audited read), an
 /// opted-out number answers [`SendWindow::OptedOut`], else [`window`] (QH-001, QH-006, CON-013).
-/// Call it outside a transaction: the vault refuses a read inside one.
+/// The read is audited as `Send` whatever the answer: it is the send attempt's own read, and the
+/// vault has no narrower purpose for deciding whether a text may go (D-1305). Call it outside a
+/// transaction: the vault refuses a read inside one.
 ///
 /// # Errors
 ///

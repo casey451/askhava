@@ -2,11 +2,19 @@
 //! D-871, D-1301). Fake IDs, numbers and token only. The database flow (consent, opt-out, quiet
 //! hours, the version check, one outbox row) is `tests/integration/tests/homeowner_job_texts.rs`.
 
+use std::sync::Arc;
+
+use askhava_core::api::{Claimed, HandlerError, IdSecret};
+use askhava_jobs::api::TEXT_KIND;
+use askhava_privacy::api::Vault;
+use secrecy::SecretString;
 use serde_json::json;
+use sqlx::PgPool;
 use sqlx::types::Uuid;
 
 use crate::api::{
-    ALL_QUOTES_IN_TEMPLATE, JOB_TEXT_TEMPLATES, JobText, job_text_body, parse_job_text,
+    ALL_QUOTES_IN_TEMPLATE, JOB_TEXT_TEMPLATES, JobText, JobTextKeys, job_text_body,
+    parse_job_text, run_job_text,
 };
 use askhava_messaging::api::Language;
 
@@ -83,4 +91,40 @@ fn td_job_03_all_quotes_in_has_counts_and_her_link() {
         json!({"job": 1042, "quoted": 2, "count": 3}),
     );
     assert!(job_text_body(&text, Language::En, None).is_err());
+}
+
+/// Fake sender keys built at run time: two distinct all-0x00 and all-0x04 vault keys.
+fn fake_keys() -> Arc<JobTextKeys> {
+    let secret = || SecretString::from("test-only-id-secret-not-a-real-key-000".to_owned());
+    let seal = SecretString::from(format!("1:{}=", "A".repeat(43)));
+    let index = SecretString::from(format!("1:{}BAQ=", "BAQE".repeat(10)));
+    let url = SecretString::from("postgres://askhava_app@db.invalid/askhava".to_owned());
+    let vault = Vault::new(&seal, &index, &url).expect("vault");
+    let link = IdSecret::new(1, secret()).expect("id");
+    Arc::new(JobTextKeys::new(link, secret(), vault))
+}
+
+/// D-871, D-1030 (A): the registered handler refuses a payload that does not parse with its
+/// fixed sentence, before it touches the database (the pool here never connects).
+#[tokio::test]
+async fn td_job_03_run_job_text_refuses_a_bad_payload() {
+    let pool = PgPool::connect_lazy("postgres://fake@db.invalid/fake").expect("lazy pool");
+    let bad = [
+        json!({}),
+        json!({"job": JOB, "version": 3, "template": "consent", "values": {}}),
+        json!({"job": "not-a-uuid", "version": 3, "template": "closed_no_pick"}),
+    ];
+    for payload in bad {
+        let task = Claimed {
+            id: 1,
+            kind: TEXT_KIND.to_owned(),
+            payload,
+            attempts: 1,
+        };
+        let refused = run_job_text(pool.clone(), fake_keys(), task).await;
+        assert_eq!(
+            refused,
+            Err(HandlerError("bad jobs homeowner-text payload"))
+        );
+    }
 }

@@ -86,15 +86,16 @@ const VAULT_KEY: &str = "VAULT_KEY";
 /// The vault's blind-index keys (PRIV-002).
 const VAULT_INDEX_KEY: &str = "VAULT_INDEX_KEY";
 
-/// The keys of `intake`'s homeowner job-text sender (D-1302): the `ID_SECRET` (version 1) as the
-/// quote-page link key and the outbox key, and the vault built from `VAULT_KEY` and
-/// `VAULT_INDEX_KEY` in `pairs`. Without both vault keys it is `None` in dev and CI (no sender
-/// is registered) and an error in the test and live projects.
+/// The keys of `intake`'s homeowner job-text sender (D-1302, D-1306): the `ID_SECRET` as the
+/// quote-page link key (version 1) and the outbox key, and the vault built from `VAULT_KEY` and
+/// `VAULT_INDEX_KEY` in `pairs` (a blank value counts as unset). With neither vault key it is
+/// `None` in dev and CI (no sender is registered) and an error in the test and live projects;
+/// one key without the other is an error everywhere, never a quiet "no sender".
 ///
 /// # Errors
 ///
-/// A weak `ID_SECRET`, a bad vault key, or no vault keys in the test or live project; the
-/// message names a key, never a value.
+/// A weak `ID_SECRET`, a bad vault key, a half-set pair, or no vault keys in the test or live
+/// project; the message names the missing key, never a value.
 pub fn job_text_keys<I>(
     settings: &Settings,
     id_secret: &SecretString,
@@ -103,23 +104,38 @@ pub fn job_text_keys<I>(
 where
     I: IntoIterator<Item = (String, String)>,
 {
+    let (seal, index) = match vault_keys(pairs) {
+        (Some(seal), Some(index)) => (seal, index),
+        (None, None) => {
+            return match settings.environment() {
+                Environment::Dev | Environment::Ci => Ok(None),
+                Environment::Test | Environment::Live => {
+                    Err(io::Error::other("missing VAULT_KEY and VAULT_INDEX_KEY"))
+                }
+            };
+        }
+        (Some(_), None) => return Err(io::Error::other("VAULT_KEY set without VAULT_INDEX_KEY")),
+        (None, Some(_)) => return Err(io::Error::other("VAULT_INDEX_KEY set without VAULT_KEY")),
+    };
+    let vault = Vault::new(&seal, &index, settings.database_url()).map_err(io::Error::other)?;
+    let link = IdSecret::new(1, id_secret.clone()).map_err(io::Error::other)?;
+    Ok(Some(JobTextKeys::new(link, id_secret.clone(), vault)))
+}
+
+/// `VAULT_KEY` and `VAULT_INDEX_KEY` from `pairs`, each `None` when absent or blank.
+fn vault_keys<I>(pairs: I) -> (Option<SecretString>, Option<SecretString>)
+where
+    I: IntoIterator<Item = (String, String)>,
+{
     let (mut seal, mut index) = (None, None);
-    for (key, value) in pairs {
+    for (key, value) in pairs.into_iter().filter(|(_, v)| !v.trim().is_empty()) {
         match key.as_str() {
             VAULT_KEY => seal = Some(SecretString::from(value)),
             VAULT_INDEX_KEY => index = Some(SecretString::from(value)),
             _ => {}
         }
     }
-    let (Some(seal), Some(index)) = (seal, index) else {
-        return match settings.environment() {
-            Environment::Dev | Environment::Ci => Ok(None),
-            Environment::Test | Environment::Live => Err(io::Error::other("missing VAULT_KEY")),
-        };
-    };
-    let vault = Vault::new(&seal, &index, settings.database_url()).map_err(io::Error::other)?;
-    let link = IdSecret::new(1, id_secret.clone()).map_err(io::Error::other)?;
-    Ok(Some(JobTextKeys::new(link, id_secret.clone(), vault)))
+    (seal, index)
 }
 
 /// Every module's `core.task` handlers, one `register` call per kind (D-481, D-491). The worker
@@ -178,4 +194,149 @@ pub fn shutdown_signal() -> io::Result<impl Future<Output = ()>> {
             _ = terminate.recv() => {}
         }
     })
+}
+
+/// The job-text wiring (D-1302, D-1306): `job_text_keys` per environment and per half-set pair,
+/// and `register_handlers` registering the sender under `jobs::api::TEXT_KIND` only with keys.
+/// Fake keys are built at run time; nothing here touches a database.
+#[cfg(test)]
+mod tests {
+    use std::sync::Arc;
+
+    use askhava_core::api::{Settings, SystemClock};
+    use askhava_jobs::api::TEXT_KIND;
+    use secrecy::SecretString;
+
+    use crate::offdb_stream::OffDbStream;
+    use crate::{job_text_keys, register_handlers};
+
+    const TEST_LIST: &str =
+        "twilio:ACtestfake01,stripe:acct_testfake,resend:test.example.com,bucket:askhava-test";
+    const LIVE_LIST: &str =
+        "twilio:AClivefake01,stripe:acct_livefake,resend:mail.example.com,bucket:askhava-live";
+
+    fn pairs(env: &str, extra: &[(&str, &str)]) -> Vec<(String, String)> {
+        let base = [
+            ("ASKHAVA_APP_ENV", env),
+            ("ASKHAVA_DATABASE_URL", "postgres://fake@localhost/fake"),
+            (
+                "ASKHAVA_STORAGE_BASE_URL",
+                "file:///nonexistent/askhava-fake",
+            ),
+        ];
+        base.iter()
+            .chain(extra)
+            .map(|(k, v)| ((*k).to_owned(), (*v).to_owned()))
+            .collect()
+    }
+
+    fn settings(env: &str) -> Settings {
+        let extra: &[(&str, &str)] = match env {
+            "test" => &[("ASKHAVA_ALLOW_LIST_TEST", TEST_LIST)],
+            "live" => &[
+                ("ASKHAVA_ALLOW_LIST_TEST", TEST_LIST),
+                ("ASKHAVA_ALLOW_LIST_LIVE", LIVE_LIST),
+                ("ASKHAVA_TWILIO_ACCOUNT_SID", "AClivefake01"),
+                ("ASKHAVA_STRIPE_ACCOUNT_ID", "acct_livefake"),
+                ("ASKHAVA_RESEND_DOMAIN", "mail.example.com"),
+                ("ASKHAVA_STORAGE_BUCKET", "askhava-live"),
+            ],
+            _ => &[],
+        };
+        Settings::from_pairs(pairs(env, extra)).expect("settings")
+    }
+
+    fn id_secret() -> SecretString {
+        SecretString::from("test-only-id-secret-not-a-real-key-000".to_owned())
+    }
+
+    /// Two distinct fake 32-byte keys, version 1: all 0x00 and all 0x04.
+    fn vault_pairs(seal: bool, index: bool) -> Vec<(String, String)> {
+        let keys = [
+            ("VAULT_KEY", format!("1:{}=", "A".repeat(43)), seal),
+            (
+                "VAULT_INDEX_KEY",
+                format!("1:{}BAQ=", "BAQE".repeat(10)),
+                index,
+            ),
+        ];
+        keys.into_iter()
+            .filter(|(_, _, on)| *on)
+            .map(|(k, v, _)| (k.to_owned(), v))
+            .collect()
+    }
+
+    fn keys(env: &str, seal: bool, index: bool) -> std::io::Result<bool> {
+        job_text_keys(&settings(env), &id_secret(), vault_pairs(seal, index)).map(|k| k.is_some())
+    }
+
+    fn error(env: &str, seal: bool, index: bool) -> String {
+        keys(env, seal, index).expect_err("refused").to_string()
+    }
+
+    #[test]
+    fn no_vault_keys_is_no_sender_in_dev_and_ci_and_an_error_in_test_and_live() {
+        for env in ["dev", "ci"] {
+            assert!(!keys(env, false, false).expect("no sender"), "{env}");
+        }
+        for env in ["test", "live"] {
+            assert_eq!(
+                error(env, false, false),
+                "missing VAULT_KEY and VAULT_INDEX_KEY"
+            );
+        }
+    }
+
+    #[test]
+    fn a_half_set_pair_names_the_missing_key_in_every_environment() {
+        for env in ["dev", "ci", "test", "live"] {
+            assert_eq!(
+                error(env, true, false),
+                "VAULT_KEY set without VAULT_INDEX_KEY"
+            );
+            assert_eq!(
+                error(env, false, true),
+                "VAULT_INDEX_KEY set without VAULT_KEY"
+            );
+        }
+        let blank = [("VAULT_KEY".to_owned(), " ".to_owned())];
+        let index = vault_pairs(false, true).into_iter().chain(blank);
+        let err = job_text_keys(&settings("dev"), &id_secret(), index).map(|k| k.is_some());
+        assert_eq!(
+            err.expect_err("refused").to_string(),
+            "VAULT_INDEX_KEY set without VAULT_KEY"
+        );
+    }
+
+    #[test]
+    fn both_vault_keys_build_the_sender_keys() {
+        for env in ["dev", "ci", "test", "live"] {
+            assert!(keys(env, true, true).expect("keys"), "{env}");
+        }
+        let weak = SecretString::from("short".to_owned());
+        assert!(job_text_keys(&settings("dev"), &weak, vault_pairs(true, true)).is_err());
+    }
+
+    #[test]
+    fn the_sender_is_registered_under_text_kind_only_with_keys() {
+        let dev = settings("dev");
+        let stream = || {
+            let clock = Arc::new(SystemClock);
+            let all = pairs(
+                "dev",
+                &[(
+                    "ASKHAVA_ID_SECRET",
+                    "test-only-id-secret-not-a-real-key-000",
+                )],
+            );
+            Arc::new(OffDbStream::from_settings(&dev, all, clock).expect("stream"))
+        };
+        let texts = job_text_keys(&dev, &id_secret(), vault_pairs(true, true))
+            .expect("keys")
+            .map(Arc::new);
+        let with = format!("{:?}", register_handlers(stream(), texts));
+        let without = format!("{:?}", register_handlers(stream(), None));
+        assert!(with.contains(&format!("{TEXT_KIND:?}")), "{with}");
+        assert!(!without.contains(&format!("{TEXT_KIND:?}")), "{without}");
+    }
 }
