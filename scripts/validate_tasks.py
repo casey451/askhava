@@ -164,23 +164,31 @@ GATE_KINDS = (
     "account-checkpoint",
     "stage-0.5-go",
     "real-texts-casey-phone",
+    "war-games-go",
     "finished",
     "gate-b",
     "gate-c",
     "first-live-charge",
 )
-# Whether each gate waits for Casey (BUILD_BRIEF.md:546-553).
-# Only the real-texts gate is conditional.
+# Whether each gate waits for Casey (BUILD_BRIEF.md:546-553; war-games-go is Casey's added stop, D-1339, D-1473).
+# Only the real-texts gate is conditional; only the war-games gate clears on its exact phrase alone.
 GATE_WAITS = {
     "account-checkpoint": True,
     "stage-0.5-go": True,
     "real-texts-casey-phone": True,
+    "war-games-go": True,
     "finished": False,
     "gate-b": True,
     "gate-c": True,
     "first-live-charge": True,
 }
 CONDITIONAL_GATE = "real-texts-casey-phone"
+# The war games wait for Casey's decision on the pre-war-games review's P0 items (D-1339): the gate follows
+# the task owning the review, every war-games task follows the gate, and only a reply that is exactly the
+# phrase clears it, so a reply naming items to build never starts the war games (D-1473).
+EXACT_GATE = "war-games-go"
+PRE_WAR_GAMES_REVIEW = "docs/reviews/pre-war-games-review.md"
+WAR_GAMES_DIR = "wargames/"
 NO_DEPENDENTS = ("stage-0.5-go", "first-live-charge")
 TWILIO_SANDBOX_PATH = "app/adapters/src/twilio_sms.rs"
 MAX_OWNS = 10  # P-1 (D-485): one session's work; was 14 (D-119)
@@ -436,6 +444,8 @@ def check_gate_fields(task: Task) -> list[str]:
         errors.append(f"{where(task)}: gate {kind} must have waits_on_owner {GATE_WAITS[kind]}")
     if gate.get("conditional", False) is not (kind == CONDITIONAL_GATE):
         errors.append(f"{where(task)}: only gate {CONDITIONAL_GATE} is conditional, and it must be")
+    if gate.get("exact", False) is not (kind == EXACT_GATE):
+        errors.append(f"{where(task)}: only gate {EXACT_GATE} clears on its exact phrase, and it must")
     if task["owns"] or task["checks"]:
         errors.append(f"{where(task)}: a gate owns no paths and runs no checks")
     return errors
@@ -913,6 +923,8 @@ def check_gate_order(graph: Graph) -> list[str]:
     must_follow = (
         ("stage-0.5-go", "account-checkpoint"),
         ("real-texts-casey-phone", "account-checkpoint"),
+        ("war-games-go", "account-checkpoint"),
+        ("finished", "war-games-go"),
         ("gate-b", "finished"),
         ("gate-c", "gate-b"),
         ("gate-c", "finished"),
@@ -940,6 +952,18 @@ def check_gate_dependents(graph: Graph, kinds: dict[str, str]) -> list[str]:
         errors.append(
             f"gate {CONDITIONAL_GATE} must come after the task owning {TWILIO_SANDBOX_PATH}"
         )
+    return errors + check_war_games_gate(graph, kinds[EXACT_GATE])
+
+
+def check_war_games_gate(graph: Graph, gate: str) -> list[str]:
+    """The war-games gate follows the pre-war-games review, and every war-games task follows the gate (D-1473)."""
+    review = [t["id"] for t in graph.tasks if PRE_WAR_GAMES_REVIEW in t["owns"]]
+    errors = [] if any(r in graph.ancestors[gate] for r in review) else [
+        f"gate {EXACT_GATE} must come after the task owning {PRE_WAR_GAMES_REVIEW}"
+    ]
+    for task in graph.tasks:
+        if any(path.startswith(WAR_GAMES_DIR) for path in task["owns"]) and gate not in graph.ancestors[task["id"]]:
+            errors.append(f"{where(task)}: a war-games task must come after gate {EXACT_GATE}")
     return errors
 
 

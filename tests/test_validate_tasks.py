@@ -78,6 +78,8 @@ def gate_fields(kind: str) -> dict[str, Any]:
     fields: dict[str, Any] = {"kind": kind, "waits_on_owner": vt.GATE_WAITS[kind]}
     if kind == vt.CONDITIONAL_GATE:
         fields["conditional"] = True
+    if kind == vt.EXACT_GATE:
+        fields["exact"] = True
     return fields
 
 
@@ -138,7 +140,21 @@ def valid_tasks() -> list[dict[str, Any]]:
             acceptance="The fake sandbox answers like the vendor.",
         ),
         make_gate("T005", "real-texts", "real-texts-casey-phone", ["T004"], "6", 2),
-        make_gate("T006", "finished", "finished", ["T005"], "6", 2),
+        make_task(
+            "T011",
+            "fake-review",
+            type="audit",
+            stage="6",
+            phase=2,
+            deps=["T002"],
+            model=OPUS,
+            reviewer_model=OPUS,
+            review_areas=["docs"],
+            owns=[vt.PRE_WAR_GAMES_REVIEW],
+            cites=["src.md:3"],
+        ),
+        make_gate("T012", "war-games-go", "war-games-go", ["T011"], "6", 2),
+        make_gate("T006", "finished", "finished", ["T005", "T012"], "6", 2),
         make_gate("T007", "gate-b", "gate-b", ["T006"], "6", 2),
         make_gate("T008", "gate-c", "gate-c", ["T007"], "7", 2),
         make_gate("T009", "first-charge", "first-live-charge", ["T008"], "7", 2),
@@ -511,6 +527,8 @@ def test_cleanup_owning_app_needs_opus(tmp_path: Path) -> None:
         ("T007", {"waits_on_owner": False}, "gate gate-b must have waits_on_owner True"),
         ("T007", {"conditional": True}, "only gate real-texts-casey-phone is conditional"),
         ("T005", {"conditional": False}, "only gate real-texts-casey-phone is conditional"),
+        ("T012", {"exact": False}, "only gate war-games-go clears on its exact phrase"),
+        ("T007", {"exact": True}, "only gate war-games-go clears on its exact phrase"),
     ],
 )
 def test_gate_flags_are_fixed(
@@ -789,3 +807,27 @@ def test_four_digit_decision_reference_resolves(tmp_path: Path) -> None:
     with (root / "docs" / "decisions.md").open("a", encoding="utf-8") as f:
         f.write("- **D-1000** Four digits.\n")
     assert not [e for e in vt.run(root).errors if "D-1000" in e]
+
+
+def test_war_games_gate_follows_the_pre_war_games_review(tmp_path: Path) -> None:
+    """D-1473: Casey's war-games go is asked only once the review exists."""
+    tasks = valid_tasks()
+    task(tasks, "T011")["owns"] = ["docs/reviews/other.md"]
+    assert_error(errors_for(tmp_path, tasks), "gate war-games-go must come after the task owning docs/reviews/pre-war-games-review.md")
+
+
+def test_every_war_games_task_follows_the_war_games_gate(tmp_path: Path) -> None:
+    """D-1473: no war-games task can run before Casey's go."""
+    tasks = valid_tasks()
+    games = make_task("T013", "fake-war-games", type="harness", stage="6", phase=2, deps=["T011"], model=OPUS,
+                      reviewer_model=OPUS, review_areas=["harness"], owns=["wargames/fake.py"], cites=["src.md:3"])
+    task(tasks, "T006")["deps"] = ["T005", "T012", "T013"]
+    assert_error(errors_for(tmp_path, [*tasks, games]), "T013 (fake-war-games): a war-games task must come after gate war-games-go")
+    games["deps"] = ["T012"]
+    assert not [e for e in errors_for(tmp_path, [*tasks, games]) if "war-games" in e]
+
+
+def test_war_games_gate_sits_between_the_account_checkpoint_and_finished(tmp_path: Path) -> None:
+    tasks = valid_tasks()
+    task(tasks, "T006")["deps"] = ["T005"]
+    assert_error(errors_for(tmp_path, tasks), "gate finished must come after gate war-games-go")

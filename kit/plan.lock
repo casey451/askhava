@@ -1,6 +1,6 @@
 {
  "items": {
-  "BUILD_BRIEF.md": "7ac5f5fc57f22ee17abfd94e0a8badb77f127a106d7dc2d9098c35c7bc179f37",
+  "BUILD_BRIEF.md": "cbf8975fb475f036c460ee8ba9abb386dfe5d5fcac03ff181a3eebf198020818",
   "CLAUDE.md": "0413240431347a46a9994ec89595768648b41c9feb006bd250f6120ba5e4e31b",
   "docs/architecture.md#3": "4516c6eb5687a675f22d0f31efd9ba27582b238d566c791adcab3ec6ced471c4",
   "docs/architecture.md#4": "7e91e998af692e306f9ecb696a36c03c7da107a6865a4e9996ed035bd88ace43",
@@ -15,7 +15,7 @@
   "docs/catalog/worked_examples.yaml": "81ad240453551a0fdfaa76b40df74346ebe327983ed9341911646dd9b48df5e4",
   "docs/code-docs.md": "b8a87cc6a1614fd558057c21581c4cd3093a155f30a6c6ddb3a473d6f34bc17a",
   "docs/constitution.md": "f63792319463ed4f575659363ea737a9a4858f8b58ba8b281a0dfc235b533dfc",
-  "docs/governance.md": "3b849460ef68f84a9e052502aeaed328b78589a4310b4394a86daba0ddfb5557",
+  "docs/governance.md": "7317ee2d1670d33dc6ffa054314a2cb81e82480834da7e914137e4e8b10c9202",
   "docs/sources.md": "b2f42c566a97b33d85ec2310ca04a405dc85db921b1b4ad081797df837563ff0",
   "docs/spec/accessibility.md": "6c79d880396f086eff6319c505390b23c5f33749806b8244364da19a92b62d50",
   "docs/spec/ai.md": "5d63ebfed44af4d0e5bcfbf7bcb64b9065ea08c6f2888502dd75c27e9e5b3d2e",
@@ -43,7 +43,7 @@
   "kit/prompts/TEMPLATE.md": "d2362873ac94a7d957707f3341ba8dfc704ec2de3224411a34426ee5ffff1e03",
   "kit/runner.json": "f103cf4d5d2506af897b04fedba964abeedc30f1a63458766e0f8646ccc53a19",
   "kit/sources.sha256": "853b7f37d6e04259ad9d7b64e16e6cb0111ee4499e37af46aeb3183748c7f335",
-  "kit/tasks.json": "d1aea61f232968449a48e22404b5993706574a678b381017bf8bb5bd754073b7",
+  "kit/tasks.json": "691e74abdac5ac4b9cfd7f92ca4efb98140d20224ccfcef2f04d87cdddc265d9",
   "scripts/check_ai_smell.py": "85dabd31a4def57084ccca15c6c8efee89cc3f5a9e376a9ed07f4f6a98a2885a",
   "scripts/check_catalog.py": "169f9b00e9630a8d5240fe9b319082cf9ef97aba7034f2170b7bc1a6ecab3d4c",
   "scripts/check_code_docs.py": "cb5df5710797e221ae5d5a5b2daa9d6c3612e9bca1ccd24f07ea07b34e470fbd",
@@ -63,9 +63,9 @@
   "scripts/quota_probe.py": "63f21117d06c02632e2e79698ef828a33668cefc1403cfc261cc2d813d3cf951",
   "scripts/run_named_mutants.py": "325ff572d79be0e8e1a23026cbfd81cd50b7671f743f1f550390bd4569ac4f59",
   "scripts/smoke.sh": "1c976e493c877c2006b18f27aae5624c9f987ca1c1f4234561bde72a235c5a00",
-  "scripts/stage_exit.py": "009c0f3ffe26f1181f00b785bce3430c6d1f54651dde0bde6b7375d7cc1a6aa0",
+  "scripts/stage_exit.py": "bef22183aa42f9a646ef6853fb922b3d9053852b97dd73ca9feebb430f0b0d0f",
   "scripts/trace_spec.py": "9956b2ffaa7f6e205e6f27338f65cddf7f573afa3c53de697f959adc96923439",
-  "scripts/validate_tasks.py": "85d217da0af96535660f0c182100efaee52ff4af8cb253d85ff97f0aedc1d176"
+  "scripts/validate_tasks.py": "895942169f84ddb8e9afe3090805b47a47342a5708bface7bdb0bd38c8aa9ebd"
  },
  "note": "Fingerprints of the approved blueprint; see scripts/check_plan_lock.py and docs/governance.md.",
  "schema": 1
