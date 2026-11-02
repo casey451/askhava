@@ -52,8 +52,9 @@ line of JSON with what changed.
 
 The state is validated by scripts/check_state.py first; an invalid state stops the cycle (exit 2).
 Before claiming, scripts/pacing.py decides whether the task fits the usage windows (result `paced`
-when nothing fits; the next cycle after the reset claims it). Each cycle first merges main into
-claude/kit-state.
+when nothing fits; the next cycle after the reset claims it), and scripts/plan_health.py checks the
+task's plan first: a task with a plan gap gets a `plan_gap` mark, uses no attempt and is passed over
+for the next eligible task (D-1350). Each cycle first merges main into claude/kit-state.
 """
 
 from __future__ import annotations
@@ -67,6 +68,7 @@ import subprocess
 import sys
 import tempfile
 import uuid
+from collections.abc import Callable
 from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
 from typing import Any
@@ -80,6 +82,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 import check_plan_lock  # scripts/, standard library only
 import check_state
 import pacing
+import plan_health
 import progress
 import stage_exit
 
@@ -176,8 +179,21 @@ def build(args: argparse.Namespace, outbox_dir: Path) -> tuple[cycle.Config, Git
                        owner_paths(ROOT / ".github" / "CODEOWNERS") if owner_review(ROOT / "kit" / "runner.json") else (),
                        lanes(ROOT / "kit" / "runner.json"), env.decision_numbers,
                        proof_stages=frozenset(proof.MACHINE_PROOFS), stage_proof=stage_proof,
-                       lane_hint=lane_hint(os.environ.get("RUNNER_LANE", "")), locked=locked_path)
+                       lane_hint=lane_hint(os.environ.get("RUNNER_LANE", "")), locked=locked_path,
+                       plan_health=plan_health_checker(ROOT, kit))
     return cfg, env
+
+
+def plan_health_checker(root: Path, kit: dict[str, Any]) -> Callable[[st.State, str], list[str]] | None:
+    """scripts/plan_health.py's checker, or None (no check, claims as before) when it cannot be built: a
+    plan-health problem must never stop the runner (D-1350). Eligibility already judged the dependencies'
+    status (a proof-waiting cleanup dependency counts, D-551), so the check looks only at the plan itself
+    and the DONE dependencies' files (`pending_ok`)."""
+    try:
+        return plan_health.checker(root, kit, pending_ok=True)
+    except Exception as exc:  # noqa: BLE001  # reason: an unreadable spec or test design must not stop the build (D-1350)
+        print(f"runner: plan health unavailable: {str(exc)[:200]}")
+        return None
 
 
 def lane_hint(raw: str) -> str | None:
