@@ -39,7 +39,7 @@ impl AttemptStatus {
             Self::Processing => "processing",
             Self::Succeeded => "succeeded",
             Self::Declined => "declined",
-            Self::NeedsAction => "needs-action",
+            Self::NeedsAction => "needs_action",
             Self::Unreachable => "unreachable",
         }
     }
@@ -73,6 +73,34 @@ impl AttemptStatus {
         }
     }
 
+    /// What the pick's PaymentIntent, read by asking Stripe directly, means for the `stored`
+    /// attempt (FEE-019, FEE-037): while a `Sent` confirm may still be on its way (`in_flight`),
+    /// an intent that still wants a card is that confirm not landed yet, not a decline, so it
+    /// stays `Sent`.
+    #[must_use]
+    pub fn asked(stored: Self, stripe: &str, in_flight: bool) -> Self {
+        let answer = Self::from_intent(stripe);
+        if in_flight && stored == Self::Sent && answer == Self::Declined {
+            Self::Sent
+        } else {
+            answer
+        }
+    }
+
+    /// The attempt status of a confirm Stripe refused with a 4xx other than 402 or 429 (for
+    /// example `payment_intent_unexpected_state`): that confirm charged nothing, so the pick's
+    /// PaymentIntent read again (`stripe`, `None` when it could not be read) says where the pick
+    /// stands, and an answer that decides nothing is a decline (FEE-016, FEE-037).
+    #[must_use]
+    pub fn after_refusal(stripe: Option<&str>) -> Self {
+        let answer = stripe.map_or(Self::Declined, Self::from_intent);
+        if answer == Self::Sent {
+            Self::Declined
+        } else {
+            answer
+        }
+    }
+
     /// True while Stripe has not decided the attempt, so no new try may start (FEE-037).
     #[must_use]
     pub const fn undecided(self) -> bool {
@@ -82,13 +110,31 @@ impl AttemptStatus {
         }
     }
 
-    /// True while Stripe's answer may still move the attempt: undecided, or waiting on the bank's
-    /// approval (FEE-019 asks again before giving up on it).
+    /// True when Stripe's answer `to` may replace this stored status: an undecided attempt, or one
+    /// waiting on the bank's approval (FEE-019 asks again before giving up on it), takes any
+    /// answer; a decline takes only a success, since a success from Stripe always wins (two
+    /// presses at once can see a decline first); a call that never left takes any answer Stripe
+    /// gives about the pick's PaymentIntent; a success never changes (FEE-016, FEE-037).
     #[must_use]
-    pub const fn may_change(self) -> bool {
+    pub const fn may_become(self, to: Self) -> bool {
         match self {
             Self::Sent | Self::Processing | Self::NeedsAction => true,
-            Self::Succeeded | Self::Declined | Self::Unreachable => false,
+            Self::Declined => to.paid(),
+            Self::Unreachable => to.stripe_answered(),
+            Self::Succeeded => false,
+        }
+    }
+
+    /// True for the bank-approval status, whose notice says the bank must approve (FEE-020).
+    #[must_use]
+    pub const fn needs_approval(self) -> bool {
+        match self {
+            Self::NeedsAction => true,
+            Self::Sent
+            | Self::Processing
+            | Self::Succeeded
+            | Self::Declined
+            | Self::Unreachable => false,
         }
     }
 

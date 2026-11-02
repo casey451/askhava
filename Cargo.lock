@@ -550,6 +550,7 @@ dependencies = [
  "askhava-jobs",
  "askhava-messaging",
  "askhava-ops",
+ "askhava-payments",
  "askhava-quotes",
  "jiff",
  "jiff-sqlx",

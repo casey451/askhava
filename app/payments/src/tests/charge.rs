@@ -19,7 +19,7 @@ const CODES: [&str; 6] = [
     "processing",
     "succeeded",
     "declined",
-    "needs-action",
+    "needs_action",
     "unreachable",
 ];
 
@@ -63,7 +63,7 @@ fn td_fee_20_stripe_answers_and_new_tries() {
         ("succeeded", "succeeded"),
         ("processing", "processing"),
         ("requires_capture", "processing"),
-        ("requires_action", "needs-action"),
+        ("requires_action", "needs_action"),
         ("requires_payment_method", "declined"),
         ("requires_confirmation", "declined"),
         ("canceled", "declined"),
@@ -77,11 +77,11 @@ fn td_fee_20_stripe_answers_and_new_tries() {
     assert_eq!(blocks("sent"), Some(ChargeOutcome::Pending));
     assert_eq!(blocks("processing"), Some(ChargeOutcome::Pending));
     assert_eq!(blocks("succeeded"), Some(ChargeOutcome::AlreadyPaid));
-    for code in ["declined", "needs-action", "unreachable"] {
+    for code in ["declined", "needs_action", "unreachable"] {
         assert_eq!(blocks(code), None, "{code}");
     }
     assert!(!of("sent").settles(of("processing")));
-    assert!(of("succeeded").settles(of("needs-action")));
+    assert!(of("succeeded").settles(of("needs_action")));
     assert!(!of("declined").settles(of("declined")));
 }
 
@@ -92,18 +92,14 @@ fn attempt_effects_and_outcomes() {
     let fix = Some(az(3, 11, 0));
     for code in CODES {
         let status = of(code);
-        let card_fix = ["declined", "needs-action"].contains(&code);
+        let card_fix = ["declined", "needs_action"].contains(&code);
         assert_eq!(status.needs_card_fix(), card_fix, "{code}");
         let quiet = ["sent", "unreachable"].contains(&code);
         assert_eq!(status.stripe_answered(), !quiet, "{code}");
         assert_eq!(status.paid(), code == "succeeded", "{code}");
         let undecided = ["sent", "processing"].contains(&code);
         assert_eq!(status.undecided(), undecided, "{code}");
-        assert_eq!(
-            status.may_change(),
-            undecided || code == "needs-action",
-            "{code}"
-        );
+        assert_eq!(status.needs_approval(), code == "needs_action", "{code}");
     }
     let outcome = |code: &str| of(code).outcome(fix, "pi_FakeT062");
     assert_eq!(outcome("sent"), ChargeOutcome::Pending);
@@ -111,11 +107,52 @@ fn attempt_effects_and_outcomes() {
     let paid = ChargeOutcome::Succeeded("pi_FakeT062".to_owned());
     assert_eq!(outcome("succeeded"), paid);
     assert_eq!(outcome("declined"), ChargeOutcome::Declined(fix));
-    assert_eq!(outcome("needs-action"), ChargeOutcome::NeedsApproval(fix));
+    assert_eq!(outcome("needs_action"), ChargeOutcome::NeedsApproval(fix));
     assert_eq!(outcome("unreachable"), ChargeOutcome::StripeDown);
     assert_eq!(EndReason::StripeDown.code(), "stripe-down");
     assert_eq!(EndReason::CardFix.code(), "card-fix");
     assert_eq!(EndReason::FeeLimit.code(), "fee-limit");
+}
+
+/// TD-FEE-20 (FEE-016, FEE-037, D-153): an undecided or bank-approval attempt takes any answer;
+/// a decline takes only a success (a success from Stripe always wins); a call that never left
+/// takes any answer Stripe gives; a success never changes.
+#[test]
+fn td_fee_20_which_answers_may_replace_a_stored_status() {
+    for from in CODES {
+        for to in CODES {
+            let open = ["sent", "processing", "needs_action"].contains(&from);
+            let want = match from {
+                "succeeded" => false,
+                "declined" => to == "succeeded",
+                "unreachable" => !["sent", "unreachable"].contains(&to),
+                _ => open,
+            };
+            assert_eq!(of(from).may_become(of(to)), want, "{from} -> {to}");
+        }
+    }
+}
+
+/// TD-FEE-20 (FEE-019, FEE-037): an intent that still wants a card while a sent confirm may be
+/// on its way leaves it sent; after that, or for any other stored status, it is a decline; a
+/// refused confirm reads the intent again and an answer that decides nothing is a decline.
+#[test]
+fn td_fee_20_asking_while_a_confirm_is_in_flight_and_a_refused_confirm() {
+    let asked = |stored: &str, stripe: &str, in_flight: bool| {
+        AttemptStatus::asked(of(stored), stripe, in_flight).code()
+    };
+    assert_eq!(asked("sent", "requires_payment_method", true), "sent");
+    assert_eq!(asked("sent", "requires_payment_method", false), "declined");
+    assert_eq!(
+        asked("processing", "requires_payment_method", true),
+        "declined"
+    );
+    assert_eq!(asked("sent", "succeeded", true), "succeeded");
+    let refused = |stripe: Option<&str>| AttemptStatus::after_refusal(stripe).code();
+    assert_eq!(refused(Some("succeeded")), "succeeded");
+    assert_eq!(refused(Some("something_new")), "declined");
+    assert_eq!(refused(Some("requires_payment_method")), "declined");
+    assert_eq!(refused(None), "declined");
 }
 
 /// TD-FEE-11, TD-FEE-24 (FEE-020, PICK-044, D-270): a decline at 7:30 p.m. has 30 minutes that

@@ -383,6 +383,12 @@
     "audience": "business",
     "draft": true,
     "segments": 3,
-    "text": "Ask Hava: Su tarjeta no pasó para el trabajo {job}. No se le cobró nada. Después de las {time}, el propietario puede elegir la cotización de otro negocio. Intente de nuevo o use otra tarjeta: {link}"
+    "text": "Ask Hava: Su tarjeta no pasó para el trabajo {job}. No se le cobró nada. Después de {time}, el propietario puede elegir la cotización de otro negocio. Intente de nuevo o use otra tarjeta: {link}"
+  },
+  "card_approval_notice": {
+    "audience": "business",
+    "draft": true,
+    "segments": 3,
+    "text": "Ask Hava: Su banco pide que apruebe el pago para el trabajo {job}. Todavía no se le cobró nada. Después de {time}, el propietario puede elegir la cotización de otro negocio. Apruébelo aquí: {link}"
   }
 }

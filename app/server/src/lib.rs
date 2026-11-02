@@ -208,7 +208,8 @@ where
 /// stream writer and its nightly check (OPS-011, PRIV-029, D-734); `jobs` runs the job status
 /// timers (JOB-003, JOB-006); `quotes` the every-window-ended check (TXT-042, JOB-025); `intake` the
 /// no-reply reminder and close (INT-019), the card approval auto-send (INT-041); `picks` the FEE-020
-/// card-fix notice on `payments`' event (D-492); and, with
+/// card-fix notice on `payments`' event (D-492); `payments` the pause watch that stops and resumes
+/// the payment timers with the charging pause (FEE-038, D-1427); and, with
 /// `texts` ([`job_text_keys`]), the homeowner job texts `jobs` queues (JOB-010 to JOB-012,
 /// TXT-042, D-1030 (A)).
 #[must_use]
@@ -237,6 +238,12 @@ where
     registry.register(
         askhava_payments::api::CARD_FIX_KIND,
         askhava_picks::api::run_card_fix_notice,
+    );
+    registry.register(
+        askhava_payments::api::PAUSE_KIND,
+        |pool, _task| async move {
+            askhava_payments::api::run_pause_watch(&pool, jiff::Timestamp::now()).await
+        },
     );
     if let Some(keys) = texts {
         registry.register(askhava_jobs::api::TEXT_KIND, move |pool, task| {

@@ -30,19 +30,22 @@
 //! T062: [`open_intent`] makes the pick's one PaymentIntent (FEE-047); [`confirm_and_pay`] is the
 //! only charge, one [`Press`] at a time, each with its own key (FEE-016, FEE-017, FEE-037,
 //! FEE-041), answering a [`ChargeOutcome`]; [`run_charge_check`], [`run_pay_timer`] and
-//! [`sync_pause`] are the FEE-019 check, the FEE-018 and FEE-020 timers and the FEE-038 pause.
+//! [`sync_pause`] are the FEE-019 check, the FEE-018 and FEE-020 timers and the FEE-038 pause;
+//! [`run_pause_watch`] keeps the timers in line with the pause, and [`card_fix_window`] tells
+//! `picks` whether a card-fix notice is still due (FEE-020).
 
 pub use crate::charge::{
-    ATTEMPT_ACTION, ATTEMPT_SUBJECT, INTENT_ACTION, IntentStripe, confirm_and_pay, open_intent,
-    set_fee_limit,
+    ATTEMPT_ACTION, ATTEMPT_SUBJECT, IN_FLIGHT, INTENT_ACTION, IntentStripe, confirm_and_pay,
+    open_intent, set_fee_limit,
 };
 pub use crate::free_wins::{
     FREE_WIN_ACTION, FREE_WIN_WINDOW_DAYS, REPEAT_ACTION, Waiver, WinCheck, in_free_win_window,
     record_entity_keys, waive_at_confirm,
 };
 pub use crate::handlers::{
-    CARD_FIX_KIND, CARD_FIX_SECONDS, CHECK_AFTER, CHECK_KIND, EndReason, PICK_ENDED_KIND,
-    STRIPE_DOWN_SECONDS, TIMER_KIND, charges_paused, run_charge_check, run_pay_timer, sync_pause,
+    CARD_FIX_KIND, CARD_FIX_SECONDS, CHECK_AFTER, CHECK_KIND, CardFixWindow, EndReason,
+    PAUSE_EVERY, PAUSE_KIND, PICK_ENDED_KIND, RECHECK_AFTER, STRIPE_DOWN_SECONDS, TIMER_KIND,
+    card_fix_window, charges_paused, run_charge_check, run_pause_watch, run_pay_timer, sync_pause,
 };
 pub use crate::ledger::{Appended, EntryKind, LedgerEntry, LedgerError, NewEntry, ledger_append};
 pub use crate::models::{

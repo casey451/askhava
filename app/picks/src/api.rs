@@ -10,7 +10,9 @@
 //! (FEE-020, D-492).
 
 pub use crate::models::PicksError;
-pub use crate::money_notices::{BUSINESS_NOTICE_KIND, CARD_FIX_TEMPLATE, run_card_fix_notice};
+pub use crate::money_notices::{
+    BUSINESS_NOTICE_KIND, CARD_APPROVAL_TEMPLATE, CARD_FIX_TEMPLATE, run_card_fix_notice,
+};
 pub use crate::service::{
     CONFIRMED_TEMPLATE, CodeCheck, CodeSent, CodeTo, DONE_TEMPLATE, NO_QUOTE_TEMPLATE,
     NONE_TEMPLATE, PICK_MADE_KIND, PICK_WITHDRAWN_KIND, TERMS_TEMPLATE, TextPickDone, TextPickIn,

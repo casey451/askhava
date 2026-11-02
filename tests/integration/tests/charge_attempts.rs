@@ -20,10 +20,10 @@ use askhava_core::api::{Claimed, arizona};
 use askhava_ops::api::{Actor, Switch, set_switch};
 use askhava_payments::api::{
     ATTEMPT_ACTION, BusinessId, ChargeOutcome, INTENT_ACTION, IntentStripe, PickNow, Press,
-    attempt_label, confirm_and_pay, intent_label, run_charge_check, run_pay_timer, set_fee_limit,
-    sync_pause,
+    attempt_label, confirm_and_pay, intent_label, run_charge_check, run_pause_watch, run_pay_timer,
+    set_fee_limit, sync_pause,
 };
-use jiff::Timestamp;
+use jiff::{SignedDuration, Timestamp};
 use secrecy::SecretString;
 use serde_json::Value;
 use sqlx::PgPool;
@@ -459,6 +459,15 @@ async fn td_fee_21_td_fee_36_a_press_over_the_monthly_limit_is_not_charged(pool:
     ok(pay(&pool, &stripe, &press(0x1052, 1, 2500), az(3, 9, 5)).await);
     let over = pay(&pool, &stripe, &press(0x1053, 1, 2500), az(3, 9, 10)).await;
     assert_eq!(over, ChargeOutcome::OverLimit);
+    let creates = stripe
+        .calls()
+        .iter()
+        .filter(|c| c.starts_with("create"))
+        .count();
+    assert_eq!(
+        creates, 2,
+        "Stripe is not called for the press over the limit"
+    );
     assert_eq!(
         stripe
             .calls()
@@ -470,4 +479,267 @@ async fn td_fee_21_td_fee_36_a_press_over_the_monthly_limit_is_not_charged(pool:
     let ended = tasks(&pool, askhava_payments::api::PICK_ENDED_KIND).await;
     assert_eq!(ended.len(), 1);
     assert_eq!(ended[0].0["reason"], "fee-limit");
+}
+
+fn count(stripe: &FakeStripe, call: &str) -> usize {
+    stripe
+        .calls()
+        .iter()
+        .filter(|c| c.starts_with(call))
+        .count()
+}
+
+async fn attempt_codes(pool: &PgPool, pick: u128) -> Vec<String> {
+    sqlx::query_scalar(
+        "SELECT status FROM payments.charge_attempt WHERE pick_id = $1 ORDER BY try_no",
+    )
+    .bind(Uuid::from_u128(pick))
+    .fetch_all(pool)
+    .await
+    .expect("attempts")
+}
+
+async fn running_timer(pool: &PgPool, pick: u128, kind: &str) -> Option<Timestamp> {
+    let due: Option<Option<jiff_sqlx::Timestamp>> = sqlx::query_scalar(
+        "SELECT due_at FROM payments.pay_timer WHERE pick_id = $1 AND kind = $2 AND ended_at IS NULL",
+    )
+    .bind(Uuid::from_u128(pick))
+    .bind(kind)
+    .fetch_optional(pool)
+    .await
+    .expect("timer");
+    due.flatten().map(|d| d.to_jiff())
+}
+
+fn claimed(payload: Value) -> Claimed {
+    Claimed {
+        id: 1,
+        kind: String::new(),
+        payload,
+        attempts: 1,
+    }
+}
+
+/// TD-FEE-20 (FEE-016, FEE-037): a second press while the first confirm may still be on its way
+/// sees an intent that still wants a card and waits, never recording a decline; a minute on,
+/// the same answer is a failure and try2 goes.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_fee_20_a_press_while_a_confirm_is_in_flight_waits(pool: PgPool) {
+    with_customer(&pool).await;
+    let wants = || intent("requires_payment_method");
+    let stripe = FakeStripe::new(
+        vec![Err(AdapterError::OutcomeUnknown), intent("succeeded")],
+        vec![wants(), wants()],
+    );
+    let pick = 0x1054;
+    pay(&pool, &stripe, &press(pick, 1, 2500), az(3, 9, 0)).await;
+    let soon = az(3, 9, 0)
+        .saturating_add(SignedDuration::from_secs(30))
+        .expect("time");
+    assert_eq!(
+        pay(&pool, &stripe, &press(pick, 2, 2500), soon).await,
+        ChargeOutcome::Pending
+    );
+    assert_eq!(attempt_codes(&pool, pick).await, ["sent"]);
+    let paid = pay(&pool, &stripe, &press(pick, 3, 2500), az(3, 9, 2)).await;
+    assert!(matches!(paid, ChargeOutcome::Succeeded(_)), "{paid:?}");
+    assert_eq!(attempt_codes(&pool, pick).await, ["declined", "succeeded"]);
+}
+
+/// TD-FEE-20 (FEE-016, FEE-019): a success from Stripe always wins: a decline Stripe later
+/// reports as succeeded becomes the success at the card-fix window's end, and the pick stays.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_fee_20_a_later_success_replaces_a_decline(pool: PgPool) {
+    with_customer(&pool).await;
+    let stripe = FakeStripe::new(
+        vec![intent("requires_payment_method")],
+        vec![intent("succeeded")],
+    );
+    let pick = 0x1055;
+    pay(&pool, &stripe, &press(pick, 1, 2500), az(3, 10, 0)).await;
+    let (payload, due) = tasks(&pool, askhava_payments::api::TIMER_KIND).await[0].clone();
+    run_pay_timer(&pool, &stripe, &payload, due)
+        .await
+        .expect("timer");
+    assert_eq!(attempt_codes(&pool, pick).await, ["succeeded"]);
+    assert!(
+        tasks(&pool, askhava_payments::api::PICK_ENDED_KIND)
+            .await
+            .is_empty()
+    );
+    assert_eq!(
+        pay(&pool, &stripe, &press(pick, 2, 2500), az(3, 11, 1)).await,
+        ChargeOutcome::AlreadyPaid
+    );
+}
+
+/// TD-FEE-11 (FEE-018, FEE-020): at the 4-hour release Stripe answers that the card still needs
+/// one: the pick is not released as Stripe down; the card-fix window opens instead, and its
+/// notice is queued. At the window's end with Stripe unreachable, the pick is not ended either:
+/// the window asks again 5 minutes on (FEE-019, D-153).
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_fee_11_a_stripe_answer_at_the_release_opens_the_card_fix_window(pool: PgPool) {
+    with_customer(&pool).await;
+    let stripe = FakeStripe::new(
+        vec![Err(AdapterError::NotSent)],
+        vec![intent("requires_payment_method")],
+    );
+    let pick = 0x1056;
+    pay(&pool, &stripe, &press(pick, 1, 2500), az(3, 9, 0)).await;
+    let (payload, due) = tasks(&pool, askhava_payments::api::TIMER_KIND).await[0].clone();
+    run_pay_timer(&pool, &stripe, &payload, due)
+        .await
+        .expect("release");
+    assert!(
+        tasks(&pool, askhava_payments::api::PICK_ENDED_KIND)
+            .await
+            .is_empty()
+    );
+    assert_eq!(
+        running_timer(&pool, pick, "card-fix").await,
+        Some(az(3, 14, 0))
+    );
+    assert_eq!(
+        tasks(&pool, askhava_payments::api::CARD_FIX_KIND)
+            .await
+            .len(),
+        1
+    );
+    let (payload, due) = tasks(&pool, askhava_payments::api::TIMER_KIND)
+        .await
+        .last()
+        .expect("card-fix timer")
+        .clone();
+    run_pay_timer(&pool, &stripe, &payload, due)
+        .await
+        .expect("asks again later");
+    assert!(
+        tasks(&pool, askhava_payments::api::PICK_ENDED_KIND)
+            .await
+            .is_empty()
+    );
+    assert_eq!(
+        running_timer(&pool, pick, "card-fix").await,
+        Some(az(3, 14, 5))
+    );
+}
+
+/// TD-FEE-11 (FEE-019): a check that finds the attempt still processing queues the next round,
+/// so a processing attempt never blocks the pick without a check.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_fee_11_a_still_processing_attempt_is_checked_again(pool: PgPool) {
+    with_customer(&pool).await;
+    let stripe = FakeStripe::new(vec![intent("processing")], vec![intent("processing")]);
+    pay(&pool, &stripe, &press(0x1057, 1, 2500), az(3, 9, 0)).await;
+    let first = tasks(&pool, askhava_payments::api::CHECK_KIND).await[0].clone();
+    run_charge_check(&pool, &stripe, &first.0, first.1)
+        .await
+        .expect("check");
+    let checks = tasks(&pool, askhava_payments::api::CHECK_KIND).await;
+    assert_eq!(checks.len(), 2);
+    assert_eq!(
+        (checks[1].0["round"].as_i64(), checks[1].1),
+        (Some(1), az(3, 10, 0))
+    );
+}
+
+/// TD-FEE-20 (FEE-038, D-135): the pause watch stops a running card-fix timer when the charging
+/// switch goes on and resumes it with its time left when it goes off, with no call from the
+/// switch's own code.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_fee_20_the_pause_watch_follows_the_charging_switch(pool: PgPool) {
+    with_customer(&pool).await;
+    let stripe = FakeStripe::new(vec![intent("requires_payment_method")], vec![]);
+    let pick = 0x1058;
+    pay(&pool, &stripe, &press(pick, 1, 2500), az(3, 10, 0)).await;
+    assert!(
+        !tasks(&pool, askhava_payments::api::PAUSE_KIND)
+            .await
+            .is_empty()
+    );
+    let mut conn = pool.acquire().await.expect("conn");
+    let owner = Actor::Owner(Uuid::from_u128(0x0e));
+    set_switch(&mut conn, Switch::Charging, true, owner)
+        .await
+        .expect("pause");
+    run_pause_watch(&pool, az(3, 10, 15)).await.expect("watch");
+    assert_eq!(running_timer(&pool, pick, "card-fix").await, None);
+    set_switch(&mut conn, Switch::Charging, false, owner)
+        .await
+        .expect("resume");
+    run_pause_watch(&pool, az(3, 13, 0)).await.expect("watch");
+    assert_eq!(
+        running_timer(&pool, pick, "card-fix").await,
+        Some(az(3, 13, 45))
+    );
+}
+
+/// TD-FEE-11 (FEE-016, FEE-017): a confirm Stripe refuses with a 400 charged nothing: the intent
+/// read again says the pick is paid; and a press from another business charges nothing.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_fee_11_a_refused_confirm_reads_the_intent_and_another_business_is_refused(
+    pool: PgPool,
+) {
+    with_customer(&pool).await;
+    let refused = Err(AdapterError::Vendor {
+        status: 400,
+        code: None,
+    });
+    let stripe = FakeStripe::new(vec![refused], vec![intent("succeeded")]);
+    let pick = 0x1059;
+    let paid = pay(&pool, &stripe, &press(pick, 1, 2500), az(3, 9, 0)).await;
+    assert!(matches!(paid, ChargeOutcome::Succeeded(_)), "{paid:?}");
+    let other = Press {
+        business: BusinessId(Uuid::from_u128(0xb062_0002)),
+        ..press(0x1060, 2, 2500)
+    };
+    let mut mine = FakeStripe::new(vec![intent("requires_payment_method")], vec![]);
+    mine.intent_id = "pi_FakeT062c".to_owned();
+    pay(&pool, &mine, &press(0x1060, 1, 2500), az(3, 9, 0)).await;
+    assert_eq!(
+        pay(&pool, &mine, &other, az(3, 9, 5)).await,
+        ChargeOutcome::MovedOn
+    );
+    assert_eq!(count(&mine, "confirm"), 1);
+}
+
+/// TD-FEE-24 (FEE-020): the card-fix notice is not queued for a pick that ended before the
+/// handler ran, and a bank approval uses its own notice.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_fee_24_no_card_fix_notice_for_an_ended_pick_and_an_approval_notice(pool: PgPool) {
+    with_customer(&pool).await;
+    let mut conn = pool.acquire().await.expect("conn");
+    let job = askhava_jobs::api::create(&mut conn, az(3, 9, 0), false, Actor::System)
+        .await
+        .expect("job");
+    let declined = || intent("requires_payment_method");
+    let stripe = FakeStripe::new(
+        vec![declined(), intent("requires_action")],
+        vec![declined()],
+    );
+    let mut p = press(0x1061, 1, 2500);
+    p.job = job;
+    pay(&pool, &stripe, &p, az(3, 10, 0)).await;
+    let (payload, due) = tasks(&pool, askhava_payments::api::TIMER_KIND).await[0].clone();
+    run_pay_timer(&pool, &stripe, &payload, due)
+        .await
+        .expect("ends");
+    let (event, _) = tasks(&pool, askhava_payments::api::CARD_FIX_KIND).await[0].clone();
+    askhava_picks::api::run_card_fix_notice(pool.clone(), claimed(event))
+        .await
+        .expect("notice");
+    assert!(
+        tasks(&pool, askhava_picks::api::BUSINESS_NOTICE_KIND)
+            .await
+            .is_empty()
+    );
+    let mut q = press(0x1062, 1, 2500);
+    q.job = job;
+    pay(&pool, &stripe, &q, az(3, 10, 0)).await;
+    let (event, _) = tasks(&pool, askhava_payments::api::CARD_FIX_KIND).await[1].clone();
+    askhava_picks::api::run_card_fix_notice(pool.clone(), claimed(event))
+        .await
+        .expect("notice");
+    let (notice, _) = tasks(&pool, askhava_picks::api::BUSINESS_NOTICE_KIND).await[0].clone();
+    assert_eq!(notice["template"], "card_approval_notice");
 }

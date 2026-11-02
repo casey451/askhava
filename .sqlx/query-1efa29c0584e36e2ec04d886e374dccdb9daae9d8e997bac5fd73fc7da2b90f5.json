@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT try_no, status FROM payments.charge_attempt WHERE pick_id = $1\n         ORDER BY try_no DESC LIMIT 1",
+  "query": "SELECT try_no, status, started_at FROM payments.charge_attempt WHERE pick_id = $1\n         ORDER BY try_no DESC LIMIT 1",
   "describe": {
     "columns": [
       {
@@ -24,6 +24,17 @@
             "name": "status"
           }
         }
+      },
+      {
+        "ordinal": 2,
+        "name": "started_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "payments.charge_attempt",
+            "name": "started_at"
+          }
+        }
       }
     ],
     "parameters": {
@@ -33,8 +44,9 @@
     },
     "nullable": [
       false,
+      false,
       false
     ]
   },
-  "hash": "50af00850a532ccfbde0d9181ea153c81a024458937ea8a1b8ad1ae8c4d26730"
+  "hash": "1efa29c0584e36e2ec04d886e374dccdb9daae9d8e997bac5fd73fc7da2b90f5"
 }

@@ -313,5 +313,10 @@
     "audience": "business",
     "segments": 2,
     "text": "Ask Hava: Your card didn't go through for job {job}. You haven't been charged. After {time}, the homeowner can pick another business's quote. Try again or use another card: {link}"
+  },
+  "card_approval_notice": {
+    "audience": "business",
+    "segments": 2,
+    "text": "Ask Hava: Your bank wants you to approve the payment for job {job}. You haven't been charged yet. After {time}, the homeowner can pick another business's quote. Approve it here: {link}"
   }
 }

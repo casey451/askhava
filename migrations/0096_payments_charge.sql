@@ -25,7 +25,7 @@ CREATE TABLE payments.charge_attempt (
   try_no integer NOT NULL CHECK (try_no >= 1),
   press_id uuid NOT NULL,
   status text NOT NULL CHECK (status IN (
-    'sent', 'processing', 'succeeded', 'declined', 'needs-action', 'unreachable'
+    'sent', 'processing', 'succeeded', 'declined', 'needs_action', 'unreachable'
   )),
   started_at timestamptz NOT NULL,
   decided_at timestamptz,

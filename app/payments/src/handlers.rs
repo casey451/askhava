@@ -7,10 +7,15 @@
 //! business's notice (FEE-020, D-492); no answer from Stripe starts the 4-hour release (FEE-018);
 //! an undecided attempt queues [`CHECK_KIND`] for 30 minutes later (FEE-019). A timer is a
 //! `payments.pay_timer` row plus a [`TIMER_KIND`] task at its due time; [`run_pay_timer`] asks
-//! Stripe once more and, unless the pick is paid, ends it with [`PICK_ENDED_KIND`] for `picks` to
-//! offer the next quote. [`sync_pause`] stops every running timer while safe mode or the charging
-//! switch pauses charges and resumes each with the time it had left (FEE-038). `payments` calls
-//! neither `messaging` nor `picks`: every event is a `core.task` of IDs and times (D-491).
+//! Stripe once more: the 4-hour release ends the pick only while Stripe still cannot be reached,
+//! the card-fix window only on Stripe's word that the card still needs fixing, a paid pick stays,
+//! and anything Stripe has not settled asks again in 5 minutes; an ended pick raises
+//! [`PICK_ENDED_KIND`] for `picks` to offer the next quote. Every attempt has a check queued at
+//! its start, and a check that finds it still undecided queues the next (FEE-019). [`sync_pause`]
+//! stops every running timer while safe mode or the charging switch pauses charges and resumes
+//! each with the time it had left (FEE-038); [`run_pause_watch`] runs it every minute while a
+//! timer is open. `payments` calls neither `messaging` nor `picks`: every event is a `core.task`
+//! of IDs and times (D-491).
 
 use askhava_adapters::api::PaymentsAdapter;
 use askhava_core::api::{HandlerError, NewTask, add_business_minutes, enqueue, is_business_hours};
@@ -106,7 +111,7 @@ pub(crate) async fn record(
     .fetch_one(&mut *tx)
     .await)?;
     let from = AttemptStatus::from_code(&from).ok_or(ChargeError::Database)?;
-    if !from.may_change() {
+    if !from.may_become(status) {
         return Ok(from);
     }
     let decided = (!status.undecided()).then(|| at.to_sqlx());
@@ -158,22 +163,30 @@ async fn effects(
         let timer = (CARD_FIX, !row.emergency);
         let fix_by = start_timer(tx, pick, timer, CARD_FIX_SECONDS, at).await?;
         let payload = json!({"pick": pick, "business": row.business_id, "job": row.job_id,
+            "try": try_no, "approval": status.needs_approval(),
             "fix_by": fix_by.map(Timestamp::as_second)});
         queue(tx, CARD_FIX_KIND, payload, at, format!("{pick}.{try_no}")).await?;
     }
     if status.undecided() {
-        let payload = json!({"pick": pick, "try": try_no});
         let check_at = at.saturating_add(CHECK_AFTER).unwrap_or(at);
-        queue(
-            tx,
-            CHECK_KIND,
-            payload,
-            check_at,
-            format!("{pick}.{try_no}"),
-        )
-        .await?;
+        queue_check(tx, pick, try_no, 0, check_at).await?;
     }
     Ok(())
+}
+
+/// Queues round `round` of the "ask Stripe directly" check of attempt `try_no` at `at`
+/// (FEE-019); each round has its own dedupe key, so a check that finds the attempt still
+/// undecided queues the next one and an attempt never waits without a check.
+pub(crate) async fn queue_check(
+    tx: &mut PgConnection,
+    pick: Uuid,
+    try_no: i32,
+    round: i64,
+    at: Timestamp,
+) -> Result<(), ChargeError> {
+    let payload = json!({"pick": pick, "try": try_no, "round": round});
+    let dedupe = format!("{pick}.{try_no}.{round}");
+    queue(tx, CHECK_KIND, payload, at, dedupe).await
 }
 
 async fn queue(
@@ -248,6 +261,9 @@ async fn start_timer(
     if let Some(Some(due)) = started {
         queue_timer(tx, pick, kind, due.to_jiff()).await?;
     }
+    if started.is_some() {
+        queue_watch(tx, at.saturating_add(PAUSE_EVERY).unwrap_or(at)).await?;
+    }
     let running = db(sqlx::query_scalar!(
         "SELECT due_at FROM payments.pay_timer WHERE pick_id = $1 AND kind = $2",
         pick,
@@ -288,13 +304,13 @@ async fn end_timers(
 }
 
 /// Ends the pick once, with its timers, its audit row and [`PICK_ENDED_KIND`] (FEE-018, FEE-020,
-/// FEE-041); a pick already ended changes nothing.
+/// FEE-041); returns false, changing nothing, for a pick already ended or with no PaymentIntent.
 pub(crate) async fn end_pick(
     tx: &mut PgConnection,
     pick: Uuid,
     reason: EndReason,
     at: Timestamp,
-) -> Result<(), ChargeError> {
+) -> Result<bool, ChargeError> {
     let ended = db(sqlx::query!(
         "UPDATE payments.pick_intent SET ended_at = $2 WHERE pick_id = $1 AND ended_at IS NULL
          RETURNING business_id, job_id",
@@ -304,9 +320,23 @@ pub(crate) async fn end_pick(
     .fetch_optional(&mut *tx)
     .await)?;
     let Some(row) = ended else {
-        return Ok(());
+        return Ok(false);
     };
     end_timers(tx, pick, None, at).await?;
+    announce_end(tx, pick, (row.business_id, row.job_id), reason, at).await?;
+    Ok(true)
+}
+
+/// The audit row and the [`PICK_ENDED_KIND`] event of an ended pick, `parties` its business and
+/// job; also for a pick ended before its PaymentIntent was made (FEE-041). The event's dedupe key
+/// is the pick, so it is raised once.
+pub(crate) async fn announce_end(
+    tx: &mut PgConnection,
+    pick: Uuid,
+    (business, job): (Uuid, Uuid),
+    reason: EndReason,
+    at: Timestamp,
+) -> Result<(), ChargeError> {
     let entry = AuditEntry {
         actor: Actor::System,
         action: PICK_ENDED_KIND,
@@ -315,7 +345,7 @@ pub(crate) async fn end_pick(
         change: Change::Action,
     };
     audit(tx, &entry).await.map_err(|_| ChargeError::Database)?;
-    let payload = json!({"pick": pick, "business": row.business_id, "job": row.job_id,
+    let payload = json!({"pick": pick, "business": business, "job": job,
         "reason": reason.code()});
     queue(tx, PICK_ENDED_KIND, payload, at, pick.to_string()).await
 }
@@ -329,12 +359,13 @@ fn pick_of(payload: &Value) -> Result<Uuid, HandlerError> {
 
 const DB_FAILED: HandlerError = HandlerError("payments database statement failed");
 
-/// The [`CHECK_KIND`] handler (FEE-019, FEE-037): if the pick's latest attempt is still
-/// undecided 30 minutes on, ask Stripe directly; safe to run twice (JOB-006).
+/// The [`CHECK_KIND`] handler (FEE-019, FEE-037): if attempt `try` is still the pick's latest
+/// and undecided, ask Stripe directly; while Stripe is unreachable or the attempt is still
+/// undecided (for example `processing`), the next round is queued 30 minutes on, so an attempt
+/// never blocks the pick without a check. Safe to run twice (JOB-006).
 ///
 /// # Errors
-/// A fixed sentence when Stripe cannot be reached (the queue asks again later) or the database
-/// fails.
+/// A fixed sentence when the task is malformed or the database fails.
 pub async fn run_charge_check(
     pool: &PgPool,
     stripe: &impl PaymentsAdapter,
@@ -342,23 +373,63 @@ pub async fn run_charge_check(
     now: Timestamp,
 ) -> Result<(), HandlerError> {
     let pick = pick_of(payload)?;
+    let try_no = payload["try"].as_i64().and_then(|t| i32::try_from(t).ok());
+    let round = payload["round"].as_i64().unwrap_or(0);
     let mut conn = pool.acquire().await.map_err(|_| DB_FAILED)?;
     let open = latest(&mut conn, pick).await.map_err(|_| DB_FAILED)?;
     drop(conn);
-    if !open.is_some_and(|(_, status)| status.undecided()) {
+    if !open.is_some_and(|l| Some(l.try_no) == try_no && l.status.undecided()) {
         return Ok(());
     }
-    match ask_stripe(pool, stripe, pick, now).await {
-        Ok(Some(_)) => Ok(()),
-        Ok(None) => Err(HandlerError("Stripe was not reached")),
-        Err(_) => Err(DB_FAILED),
+    let asked = ask_stripe(pool, stripe, pick, now)
+        .await
+        .map_err(|_| DB_FAILED)?;
+    if asked.is_some_and(|s| !s.undecided()) {
+        return Ok(());
+    }
+    let mut tx = pool.begin().await.map_err(|_| DB_FAILED)?;
+    let next = now.saturating_add(CHECK_AFTER).unwrap_or(now);
+    queue_check(&mut tx, pick, try_no.unwrap_or(0), round + 1, next)
+        .await
+        .map_err(|_| DB_FAILED)?;
+    tx.commit().await.map_err(|_| DB_FAILED)
+}
+
+/// What a payment timer's end comes to once Stripe was asked (FEE-018, FEE-019, FEE-020).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Verdict {
+    /// The pick stays: paid, or Stripe answered and that answer's own effects took over.
+    Stay,
+    /// Stripe has not decided, or (for the card-fix window) could not be reached: ask again in
+    /// [`RECHECK_AFTER`], never giving up without Stripe's answer (FEE-019, D-153).
+    Retime,
+    /// The pick ends with the timer's reason.
+    End,
+}
+
+/// The [`Verdict`] of timer `reason` given Stripe's answer `asked` (`None`: unreachable). The
+/// 4-hour release ends the pick only while Stripe still cannot be reached; once it answers, the
+/// answer's effects (the card-fix window, the 30-minute check) run instead. The card-fix window
+/// ends the pick only on Stripe's word that the card still needs fixing.
+fn verdict(reason: EndReason, asked: Option<AttemptStatus>) -> Verdict {
+    let card_fix = reason == EndReason::CardFix;
+    match asked {
+        None if card_fix => Verdict::Retime,
+        None => Verdict::End,
+        Some(s) if s.paid() => Verdict::Stay,
+        Some(s) if card_fix && s.needs_card_fix() => Verdict::End,
+        Some(s) if !card_fix && s.stripe_answered() => Verdict::Stay,
+        Some(_) => Verdict::Retime,
     }
 }
 
+/// How long a timer whose end Stripe has not settled waits before asking again (FEE-019).
+pub const RECHECK_AFTER: SignedDuration = SignedDuration::from_mins(5);
+
 /// The [`TIMER_KIND`] handler (FEE-018, FEE-019, FEE-020, FEE-038): a timer that ended, was
 /// paused or re-timed does nothing; while charges are paused it is stopped; otherwise Stripe is
-/// asked once more: a paid pick stays, an attempt Stripe has not decided waits (the queue runs
-/// the task again), and otherwise the pick ends.
+/// asked once more and [`verdict`] decides: the pick stays, the timer asks again in
+/// [`RECHECK_AFTER`], or the pick ends.
 ///
 /// # Errors
 /// A fixed sentence when the task is malformed, early or the database fails.
@@ -370,37 +441,70 @@ pub async fn run_pay_timer(
 ) -> Result<(), HandlerError> {
     let pick = pick_of(payload)?;
     let (kind, due) = (payload["kind"].as_str(), payload["due"].as_i64());
-    let reason = match kind {
-        Some(CARD_FIX) => EndReason::CardFix,
-        Some(STRIPE_DOWN) => EndReason::StripeDown,
-        _ => return Err(HandlerError("payments timer has no kind")),
+    let (reason, Some(due)) = (
+        match kind {
+            Some(CARD_FIX) => EndReason::CardFix,
+            Some(STRIPE_DOWN) => EndReason::StripeDown,
+            _ => return Err(HandlerError("payments timer has no kind")),
+        },
+        due,
+    ) else {
+        return Err(HandlerError("payments timer has no due time"));
     };
     let mut conn = pool.acquire().await.map_err(|_| DB_FAILED)?;
-    if running_due(&mut conn, pick, kind).await? != due {
+    if running_due(&mut conn, pick, kind).await? != Some(due) {
         return Ok(());
     }
     if charges_paused(&mut conn).await.map_err(|_| DB_FAILED)? {
         drop(conn);
         return sync_pause(pool, now).await.map_err(|_| DB_FAILED);
     }
-    if due.is_some_and(|d| now.as_second() < d) {
+    if now.as_second() < due {
         return Err(HandlerError("payments timer ran early"));
     }
     drop(conn);
     let asked = ask_stripe(pool, stripe, pick, now)
         .await
         .map_err(|_| DB_FAILED)?;
-    if asked.is_some_and(AttemptStatus::paid) {
+    let verdict = verdict(reason, asked);
+    if verdict == Verdict::Stay {
         return Ok(());
     }
-    if asked.is_some_and(AttemptStatus::undecided) {
-        return Err(HandlerError("the charge attempt is still undecided"));
-    }
     let mut tx = pool.begin().await.map_err(|_| DB_FAILED)?;
-    end_pick(&mut tx, pick, reason, now)
-        .await
-        .map_err(|_| DB_FAILED)?;
+    if verdict == Verdict::Retime {
+        retime(&mut tx, pick, kind, now).await?;
+    } else {
+        end_pick(&mut tx, pick, reason, now)
+            .await
+            .map_err(|_| DB_FAILED)?;
+    }
     tx.commit().await.map_err(|_| DB_FAILED)
+}
+
+/// Moves running timer `kind` to [`RECHECK_AFTER`] from `now` and queues it there.
+async fn retime(
+    tx: &mut PgConnection,
+    pick: Uuid,
+    kind: Option<&str>,
+    now: Timestamp,
+) -> Result<(), HandlerError> {
+    let due = now.saturating_add(RECHECK_AFTER).unwrap_or(now);
+    let moved = sqlx::query!(
+        "UPDATE payments.pay_timer SET due_at = $3 WHERE pick_id = $1 AND kind = $2
+         AND ended_at IS NULL AND due_at IS NOT NULL",
+        pick,
+        kind,
+        due.to_sqlx() as _,
+    )
+    .execute(&mut *tx)
+    .await
+    .map_err(|_| DB_FAILED)?;
+    if let (1, Some(kind)) = (moved.rows_affected(), kind) {
+        queue_timer(tx, pick, kind, due)
+            .await
+            .map_err(|_| DB_FAILED)?;
+    }
+    Ok(())
 }
 
 /// The due time, in Unix seconds, of the pick's running timer `kind`; `None` when it ended or is
@@ -424,8 +528,8 @@ async fn running_due(
 
 /// Brings every open payment timer in line with the charging pause (FEE-038, D-135): while
 /// charges are paused each running timer stops and keeps its time left; once they resume each
-/// stopped one runs again with that time. Whatever flips safe mode or the charging switch calls
-/// it in its own request; the timer handler calls it too.
+/// stopped one runs again with that time. [`run_pause_watch`] calls it every minute while any
+/// timer is open, and the timer handler calls it when it fires during a pause.
 ///
 /// # Errors
 /// [`ChargeError::Database`].
@@ -460,4 +564,74 @@ pub async fn sync_pause(pool: &PgPool, now: Timestamp) -> Result<(), ChargeError
         .await)?;
     }
     db(tx.commit().await)
+}
+
+/// The `core.task` kind of the pause watch (FEE-038): every [`PAUSE_EVERY`] while any payment
+/// timer is open, it brings the timers in line with the charging pause.
+pub const PAUSE_KIND: &str = "payments.pause_watch";
+/// How often the pause watch runs; a timer stops or resumes within this of a switch flip.
+pub const PAUSE_EVERY: SignedDuration = SignedDuration::from_mins(1);
+
+async fn queue_watch(tx: &mut PgConnection, at: Timestamp) -> Result<(), ChargeError> {
+    let minute = at.as_second().div_euclid(60);
+    queue(tx, PAUSE_KIND, json!({}), at, minute.to_string()).await
+}
+
+/// The [`PAUSE_KIND`] handler (FEE-038, D-135): runs [`sync_pause`], then queues itself a minute
+/// on while any payment timer is still open, so a flip of safe mode or the charging switch stops
+/// and resumes the timers without the switch's code calling `payments`. One task per minute
+/// (its dedupe key), however many timers started it.
+///
+/// # Errors
+/// A fixed sentence when the database fails.
+pub async fn run_pause_watch(pool: &PgPool, now: Timestamp) -> Result<(), HandlerError> {
+    sync_pause(pool, now).await.map_err(|_| DB_FAILED)?;
+    let mut tx = pool.begin().await.map_err(|_| DB_FAILED)?;
+    let open = sqlx::query_scalar!(
+        r#"SELECT EXISTS (SELECT 1 FROM payments.pay_timer WHERE ended_at IS NULL) AS "open!""#
+    )
+    .fetch_one(&mut *tx)
+    .await
+    .map_err(|_| DB_FAILED)?;
+    if open {
+        let next = now.saturating_add(PAUSE_EVERY).unwrap_or(now);
+        queue_watch(&mut tx, next).await.map_err(|_| DB_FAILED)?;
+    }
+    tx.commit().await.map_err(|_| DB_FAILED)
+}
+
+/// Where a pick's card-fix window stands, for the FEE-020 notice.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CardFixWindow {
+    /// No fix is needed now: the pick is paid or ended, or no window is open.
+    Closed,
+    /// The window runs until this instant.
+    Running(Timestamp),
+    /// The window is stopped by the charging pause (FEE-038).
+    Stopped,
+}
+
+/// The pick's card-fix window now (FEE-020): `picks`' notice handler sends nothing for a pick
+/// that no longer needs a fix.
+///
+/// # Errors
+/// [`ChargeError::Database`].
+pub async fn card_fix_window(
+    conn: &mut PgConnection,
+    pick: Uuid,
+) -> Result<CardFixWindow, ChargeError> {
+    let due = db(sqlx::query_scalar!(
+        "SELECT t.due_at FROM payments.pay_timer t JOIN payments.pick_intent i USING (pick_id)
+         WHERE t.pick_id = $1 AND t.kind = 'card-fix' AND t.ended_at IS NULL
+           AND i.ended_at IS NULL AND NOT EXISTS (SELECT 1 FROM payments.charge_attempt a
+             WHERE a.pick_id = $1 AND a.status = 'succeeded')",
+        pick
+    )
+    .fetch_optional(conn)
+    .await)?;
+    Ok(match due {
+        None => CardFixWindow::Closed,
+        Some(Some(due)) => CardFixWindow::Running(due.to_jiff()),
+        Some(None) => CardFixWindow::Stopped,
+    })
 }
