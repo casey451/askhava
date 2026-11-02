@@ -707,6 +707,27 @@
     "ci_flags": {
       "type": "object"
     },
+    "keeper": {
+      "$comment": "Optional: the self-scheduling runner's last run and next wake (D-1451); STATUS.md shows 'keeper: unknown' while absent (D-1462).",
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "next_wake_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "last_run_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
     "pacing": {
       "type": "object",
       "properties": {

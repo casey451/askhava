@@ -1622,6 +1622,12 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **What I chose.** I did not write legal wording for you. The system stores the exact text each business was shown, with its version and time. Before the switch is offered in your owner portal, the flat-mode wording needs your go as a spec change.
 - **Worth a look.** The version number for the card wording and the one for the fee mode currently share one counter; whoever next changes either must raise it past both. A later task splits them. Flat mode keeps the $75 cap on recurring services.
 
+## A status page you can read any time (harness change, D-1462, November 2)
+
+- **What changed.** The build's status page on GitHub (STATUS.md, linked from the README) now opens with a short dashboard: one line saying what the build is doing right now, how many of the tasks are done, which stage it is in, how much of the week's tokens is used and when they reset (in Phoenix time too), and how long ago the runner last ran, with a warning if that was more than 90 minutes ago.
+- **New on the page.** A "Last 24 hours" table of every task that finished or failed that day, how long it took and, for a retry, the start of why the earlier try failed; the plan and harness changes merged that day; and a "Needs attention" list that also flags a build hold or a plan-check problem.
+- **Worth a look.** The task count says "of 230", not "of 228": it counts every build task except your owner gates, the same way the progress figure always has. The page flags a plan check only for tasks still to come. Right now that is two queued tasks (T189 and T079), whose stored size estimates are out of date; tasks already done are only counted. This does not stop the build, and a small plan change will refresh the estimates.
+
 ## Confirm and pay: how a charge runs and when a pick is let go (T062, D-1424 to D-1428, November 2)
 
 - **What is built.** Each pick has one Stripe payment, made once. Every "Confirm and pay" press is one try with its own key, so a double click or a reload never charges twice, and the server never tries a charge by itself. If a try times out, no new try goes until Stripe says the first one failed.
