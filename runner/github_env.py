@@ -1465,23 +1465,33 @@ def read_transcripts(paths: Iterable[str]) -> tuple[list[str], dict[str, int]]:
     return models, totals
 
 
+AGENT_ID = re.compile(r"^[0-9a-z]+$")
+
+
 def agent_id_list(agent_ids: Iterable[str]) -> list[str]:
-    """The agent IDs named by `--worker-agent` flags, one per flag or several joined by commas or
-    spaces in one flag, each without an `agent-` prefix (D-1328: T241's first attempt passed
-    `--worker-agent a,b`, no transcript matched, and a finished hand-in failed for lack of evidence)."""
+    """The agent IDs named by `--worker-agent` and `--reviewer-agent` values, one per flag or several
+    joined by commas or spaces in one flag, each without an `agent-` prefix (D-1328: T241's first
+    attempt passed `--worker-agent a,b`, no transcript matched, and a finished hand-in failed for lack
+    of evidence). A value that is not a plain id is reported and dropped, never put in a glob."""
     ids: list[str] = []
     for value in agent_ids:
         for part in value.replace(",", " ").split():
             agent = part[len("agent-"):] if part.startswith("agent-") else part
-            if agent and agent not in ids:
+            if not AGENT_ID.match(agent):
+                print(f"runner: not an agent id, ignored: {part}")
+            elif agent not in ids:
                 ids.append(agent)
     return ids
 
 
 def find_transcripts(agent_ids: Iterable[str], home: Path | None = None) -> list[str]:
-    """Paths of subagent transcripts by agent ID (D-170 layout); a missing one is simply not found."""
+    """Paths of subagent transcripts by agent ID (D-170 layout); an id with no transcript is
+    reported in the job log, so a slip in the hand-in command shows up (D-1328)."""
     base = home or Path.home()
     found: list[str] = []
     for agent in agent_id_list(agent_ids):
-        found += sorted(glob.glob(str(base / ".claude" / "projects" / "*" / "*" / "subagents" / f"agent-{agent}.jsonl")))
+        paths = sorted(glob.glob(str(base / ".claude" / "projects" / "*" / "*" / "subagents" / f"agent-{agent}.jsonl")))
+        if not paths:
+            print(f"runner: no transcript for agent {agent}")
+        found += paths
     return found

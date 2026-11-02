@@ -1024,10 +1024,18 @@ def test_transcripts_found_when_agent_ids_are_joined_in_one_flag(tmp_path: Path)
     rec = json.dumps({"message": {"model": MODELS["opus"], "usage": {"input_tokens": 1, "output_tokens": 1}}})
     for name in ("agent-w1.jsonl", "agent-w2.jsonl"):
         (folder / name).write_text(rec + "\n")
-    assert agent_id_list(["w1,w2", "agent-w2", " ", "w3 w1"]) == ["w1", "w2", "w3"]
+    assert agent_id_list(["w1,w2", "agent-w2", " ", "w3 w1", "*", "agent-"]) == ["w1", "w2", "w3"]
     assert len(find_transcripts(["w1,w2"], home=tmp_path)) == 2
     assert len(find_transcripts(["agent-w1 agent-w2"], home=tmp_path)) == 2
     assert find_transcripts(["w1,w2,missing"], home=tmp_path) == find_transcripts(["w1", "w2"], home=tmp_path)
+    assert find_transcripts(["*"], home=tmp_path) == []
+
+
+def test_transcript_lookup_reports_missing_and_odd_ids(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    """D-1328: an id with no transcript and a value that is not an id both show in the job log."""
+    assert find_transcripts(["missing", "a?b"], home=tmp_path) == []
+    out = capsys.readouterr().out
+    assert "no transcript for agent missing" in out and "not an agent id, ignored: a?b" in out
 
 
 def test_alias_for_full_model_ids() -> None:
