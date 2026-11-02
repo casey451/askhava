@@ -11108,7 +11108,15 @@
     1380,
     1381,
     1382
-   ]
+   ],
+   "reviewed_sha": "83224b016ca64256182020a366497215309ab70c",
+   "review_lease": {
+    "task": "T094",
+    "session": "actions-41393073972",
+    "expires": "2026-11-02T08:18:49Z"
+   },
+   "branch": "claude/task/T094-messaging-retries-email",
+   "head_check_since": null
   },
   {
    "id": "T225",
@@ -15668,7 +15676,7 @@
    }
   }
  },
- "updated_at": "2026-11-02T05:25:37Z",
+ "updated_at": "2026-11-02T06:06:48Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -15766,7 +15774,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "2ed9f1f259de3b6ff12dcffc349bdbe2b1fd7a7a",
+ "runner_sha": "83224b016ca64256182020a366497215309ab70c",
  "starter": "actions",
  "smoke_runs": [
   {
