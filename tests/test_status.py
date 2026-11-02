@@ -111,7 +111,7 @@ def test_no_stage_left_and_unknown_finish() -> None:
     assert status.lane_line({"tasks": []}) == "idle since unknown (no task in progress)"
 
 
-def test_status_md_carries_no_failure_token(tmp_path: Path) -> None:
+def test_status_md_carries_no_failure_token() -> None:
     """A failure text is redacted before it reaches the table (TOKEN_LIKE, defence in depth)."""
     state = fixture()
     state["tasks"][1]["last_failure"] = "push failed: ghp_" + "a" * 30
