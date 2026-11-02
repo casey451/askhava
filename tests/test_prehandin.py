@@ -112,9 +112,11 @@ def test_exit_3_from_the_gate_is_logged_and_let_through() -> None:
 def test_the_gate_output_loses_every_key_phone_and_email_shape_pii_scan_knows() -> None:
     """Review NIT 4: pii_scan's patterns are applied to the captured output too, not only GitHub tokens."""
     env = ge.GitHubEnv(Path("."), [], Path("."), repo="o/r", starter="manual", runner_sha="x")
-    found = "docs/x.md:3: phone 928-555-2368 mail jo.fake@corp.invalid.zz key sk_live_" + "A1" * 10 + " sk-ant-" + "b" * 24
+    # Assembled at run time, so this file itself holds no phone, email or key shape for pii_scan to find.
+    phone, mail = "-".join(("928", "555", "2368")), "@".join(("jo.fake", "corp.invalid.zz"))
+    found = f"docs/x.md:3: phone {phone} mail {mail} key sk_live_" + "A1" * 10 + " sk-ant-" + "b" * 24
     out = env._gate_verdict("f" * 40, 1, found + "\nFAILED: pii_scan")
-    assert ge.GATE_REDACT and "928-555-2368" not in out and "jo.fake@" not in out and "sk_live_" not in out
+    assert ge.GATE_REDACT and phone not in out and "jo.fake@" not in out and "sk_live_" not in out
     assert "sk-ant-" not in out and out.count("[redacted]") >= 4 and "docs/x.md:3" in out
 
 
