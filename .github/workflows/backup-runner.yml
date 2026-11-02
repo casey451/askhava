@@ -204,9 +204,6 @@ jobs:
       NIGHTLY: nightly-2026-10-15
       LLVM_COV_URL: https://github.com/taiki-e/cargo-llvm-cov/releases/download/v0.9.1/cargo-llvm-cov-x86_64-unknown-linux-musl.tar.gz
       LLVM_COV_SHA256: 3fca950394a3c49457657c158b1619cec8dfd2647ae5b48746734c0ab969a522
-      # Its instrumented build (about 6 GB for the workspace) stays out of `target`, which the Rust build cache
-      # saves, so the cache does not double; a per-crate run builds cold (324 s measured for payments, D-1440).
-      CARGO_LLVM_COV_TARGET_DIR: /tmp/llvm-cov-target
     permissions:
       contents: write
       pull-requests: write
@@ -271,6 +268,18 @@ jobs:
             mkdir -p "$RUNNER_TEMP/llvm-cov"
             tar -xzf "$RUNNER_TEMP/llvm-cov.tgz" -C "$RUNNER_TEMP/llvm-cov" cargo-llvm-cov
             echo "$RUNNER_TEMP/llvm-cov" >> "$GITHUB_PATH"
+            # Its instrumented build (about 6 GB for the workspace) stays out of `target`, which the Rust build
+            # cache saves, so the cache does not double. It goes on /mnt (a separate disk on GitHub's runners)
+            # when that is writable, else /tmp. Both are fresh every job, so every backup run measures COLD:
+            # payments 324 s against the gate's 360 s cap (about even odds), and a privacy change (10 packages)
+            # or a floor-file change (every floored crate) will almost always time out and leave it to Ci. A
+            # separate cache for it is a follow-up (D-1440).
+            covdir=/tmp/llvm-cov-target
+            if sudo -n mkdir -p /mnt/llvm-cov-target 2>/dev/null && sudo -n chown "$(id -u)" /mnt/llvm-cov-target; then
+              covdir=/mnt/llvm-cov-target
+            fi
+            echo "CARGO_LLVM_COV_TARGET_DIR=$covdir" >> "$GITHUB_ENV"
+            df -h "$covdir" /tmp | sed 's/^/disk: /'
           fi
       - uses: anthropics/claude-code-action@v1
         id: claude

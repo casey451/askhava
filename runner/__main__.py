@@ -429,7 +429,8 @@ def write_handoff(cfg: cycle.Config, env: GitHubEnv) -> dict[str, Any]:
         # The branch is already made, on top of an earlier pushed attempt when there is one: never recreate it (D-583).
         "branch_ready": bool(env.prepared.get("branch_ready")), "base": env.prepared.get("base"),
         "branch_note": branch_note(env.prepared),
-        # When the worker must have handed in: the lease's expiry less HAND_IN_MARGIN (D-1440, D-503).
+        # When the worker must have handed in: the lease's expiry less HAND_IN_MARGIN (D-1440, D-503). The lane
+        # lease this session holds; lane "1"'s `lease` only when it holds none (the same fallback as `tid`).
         "hand_in_by": hand_in_by(mine or state.get("lease")),
     }
     if not env.dry_run:

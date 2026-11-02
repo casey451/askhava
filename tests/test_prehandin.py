@@ -290,14 +290,17 @@ def _fake_workspace(tmp_path: Path) -> Path:
         lines = [f'[package]\nname = "{name}"\n', "[dev-dependencies]\n"] + [f"{d} = {{ workspace = true }}\n" for d in deps]
         (root / folder / "Cargo.toml").write_text("".join(lines) + 'serde = "1"\n')
     (root / "Cargo.toml").write_text('[workspace]\nmembers = ["app/*", "tests/glue", "tests/security"]\n')
+    (root / "app" / "lic" / "src").mkdir()
+    (root / "app" / "lic" / "src" / "rules.rs").write_text("//! fake\n")
     (root / "tests" / "coverage_floor.json").write_text(json.dumps({"total": 0.0, "floors": {
-        "app/pay/": 95.0, "app/lic/src/rules.rs": 95.0}}))
+        "app/pay/": 95.0, "app/lic/src/rules.rs": 95.0, "app/core/src/fees.rs": 95.0}}))
     return root
 
 
 def test_only_floored_crates_the_change_touches_are_measured_with_their_dependents(tmp_path: Path) -> None:
     cf, root = _load_coverage_floor(), _fake_workspace(tmp_path)
-    assert cf.select(root, ["app/core/src/lib.rs", "docs/x.md"]) == ([], []), "an unfloored crate is not measured"
+    assert cf.select(root, ["app/core/src/lib.rs", "docs/x.md"]) == ([], []), \
+        "a floor with no file yet (app/core/src/fees.rs) is never measured, even when its crate changes"
     assert cf.select(root, ["app/pay/src/fee.rs"]) == (["fake-glue", "fake-pay"], ["app/pay/"]), \
         "a crate's dependents carry its coverage; Ci's excluded crates stay out"
     assert cf.select(root, ["app/lic/Cargo.toml"]) == (["fake-lic"], ["app/lic/src/rules.rs"])

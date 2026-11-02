@@ -16,8 +16,8 @@
 #     every workspace crate that depends on it (their tests carry its coverage: askhava-payments alone
 #     measured 61%, with askhava-integration 98.8%), judged by scripts/coverage_floor.py, `Ci`'s own
 #     comparison, on those floors only (D-1440). It needs cargo-llvm-cov, the pinned nightly and
-#     DATABASE_URL, else it says it skipped; past PREHANDIN_COVERAGE_TIMEOUT (360 s, so the whole gate stays inside a 600 s Bash call) it says so and lets
-#     `Ci` judge. Measured 271 s warm, 324 s cold for payments, so it is not in --quick (the runner's 240 s).
+#     DATABASE_URL, else it says it skipped; past PREHANDIN_COVERAGE_TIMEOUT (360 s, so the whole gate
+#     stays inside a 600 s Bash call) it says so and lets `Ci` judge. Measured 271 s warm, 324 s cold for payments, so it is not in --quick (the runner's 240 s).
 # Not here: pytest, cargo and tsc (scripts/smoke.sh runs them; the worker runs both scripts), and `Ci`'s
 # workspace-total coverage (4.5 to 6 minutes in a session, D-1300).
 #
@@ -162,6 +162,7 @@ coverage() {
     echo "skipped: needs cargo-llvm-cov, the ${NIGHTLY} toolchain and DATABASE_URL (Ci measures it)"
     return 0
   fi
+  df -h "${CARGO_LLVM_COV_TARGET_DIR:-.}" 2>/dev/null | tail -1 || true  # disk room for the instrumented build
   report="$(mktemp)"
   code=0
   timeout "${COVERAGE_TIMEOUT}" cargo "+${NIGHTLY}" llvm-cov "${packages[@]}" --locked --branch --json --summary-only \

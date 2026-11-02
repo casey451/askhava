@@ -1,4 +1,4 @@
-"""Coverage floors (tests/coverage_floor.json, D-694): the comparison `Ci` makes, and which crates a change needs measured.
+"""Coverage floors (tests/coverage_floor.json, D-694): `Ci`'s comparison, and which crates a change must measure.
 
 `Ci`'s Coverage job and the pre-hand-in gate (scripts/prehandin.sh, D-1300) both call this file, so the two
 cannot judge a measurement differently (D-1440; tests/test_prehandin.py keeps the callers equal).
@@ -15,7 +15,10 @@ cannot judge a measurement differently (D-1440; tests/test_prehandin.py keeps th
       crates it touches, each with every workspace crate that depends on it (their tests reach its code,
       as they do in `Ci`'s workspace run), minus `Ci`'s excluded crates. Prints `package NAME` and
       `judge PREFIX` lines; nothing when no floored crate is touched. A change to the floor file selects
-      every floored crate.
+      every floored crate. A floor whose path has no file yet (`app/catalog/src/rules.rs` today) is never
+      selected: there is nothing to measure, and a run for it would be workspace-sized (D-1440 review).
+      Dependencies are read from `[dependencies]`, `[dev-dependencies]` and `[build-dependencies]`; a
+      platform-specific `[target.*.dependencies]` table is not read (no workspace crate has one).
 Exit status: 0 green, 1 red (each failure on a `FAIL:` line).
 """
 
@@ -44,6 +47,7 @@ def percent(part: dict[str, Any]) -> float | None:
 
 
 def add(parts: dict[str, Any], key: str, summary: dict[str, Any]) -> None:
+    """Add a file's branch and line counts to `parts[key]`."""
     slot = parts.setdefault(key, {k: {"count": 0, "covered": 0} for k in ("branches", "lines")})
     for kind in slot:
         slot[kind]["count"] += summary[kind]["count"]
@@ -97,10 +101,13 @@ def lowered(floors: dict[str, Any], base: str) -> list[str]:
     down = [k for k, v in flat(old).items() if flat(floors).get(k, -1) < v]
     diff = subprocess.run(["git", "diff", base, "HEAD", "--", "docs/decisions.md"], capture_output=True, text=True,
                           check=False).stdout
-    return [f"floor lowered without a docs/decisions.md entry: {down}"] if down and "coverage floor" not in diff.lower() else []
+    if down and "coverage floor" not in diff.lower():
+        return [f"floor lowered without a docs/decisions.md entry: {down}"]
+    return []
 
 
 def compare(report: str, only: list[str] | None, base: str) -> int:
+    """The `compare` command: judge the report, refuse a lowered floor, print each failure; 1 when red."""
     floors = json.loads(Path(FLOOR_FILE).read_text(encoding="utf-8"))
     data = json.loads(Path(report).read_text(encoding="utf-8"))["data"][0]
     failures = judge(floors, data, os.getcwd() + "/", only) + lowered(floors, base)
@@ -118,7 +125,8 @@ def members(root: Path) -> dict[str, tuple[str, set[str]]]:
             data = tomllib.loads(manifest.read_text(encoding="utf-8"))
             deps: set[str] = set()
             for section in SECTIONS:
-                deps |= {spec.get("package", key) if isinstance(spec, dict) else key for key, spec in data.get(section, {}).items()}
+                table = data.get(section, {})
+                deps |= {spec.get("package", key) if isinstance(spec, dict) else key for key, spec in table.items()}
             found[data["package"]["name"]] = (manifest.parent.relative_to(root).as_posix(), deps)
     return {name: (folder, deps & set(found)) for name, (folder, deps) in found.items()}
 
@@ -140,6 +148,8 @@ def select(root: Path, changed: list[str]) -> tuple[list[str], list[str]]:
     packages: set[str] = set()
     judged = []
     for prefix in floors:
+        if not (root / prefix).exists():
+            continue  # a floor with no file yet has nothing to measure (D-1440 review)
         owner = next((n for n, (folder, _) in crates.items() if prefix.startswith(folder + "/")), None)
         if owner and (every or any(p.startswith(crates[owner][0] + "/") for p in changed)):
             judged.append(prefix)
@@ -148,6 +158,7 @@ def select(root: Path, changed: list[str]) -> tuple[list[str], list[str]]:
 
 
 def main(argv: list[str] | None = None) -> int:
+    """Parse the command line and run `compare` or `select`."""
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = parser.add_subparsers(dest="command", required=True)
     cmp = sub.add_parser("compare")
