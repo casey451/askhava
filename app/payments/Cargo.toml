@@ -1,6 +1,6 @@
 [package]
 name = "askhava-payments"
-description = "Ask Hava payments: the append-only money ledger and its one writer, ledger_append (FEE-028, FEE-032); Stripe charges, refunds, disputes and the nightly reconcile come in later tasks"
+description = "Ask Hava payments: the append-only money ledger and its one writer, ledger_append (FEE-028, FEE-032), and the introduction fee by job size (FEE-001); Stripe charges, refunds, disputes and the nightly reconcile come in later tasks"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -11,7 +11,11 @@ sqlx = { workspace = true }
 thiserror = { workspace = true }
 
 [dev-dependencies]
+askhava-catalog = { workspace = true }
 askhava-core = { workspace = true }
+proptest = { workspace = true }
+serde = { workspace = true }
+serde-saphyr = { workspace = true }
 tokio = { workspace = true }
 
 [lints]

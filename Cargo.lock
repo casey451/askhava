@@ -523,7 +523,11 @@ dependencies = [
 name = "askhava-payments"
 version = "0.1.0"
 dependencies = [
+ "askhava-catalog",
  "askhava-core",
+ "proptest",
+ "serde",
+ "serde-saphyr",
  "sqlx",
  "thiserror",
  "tokio",
