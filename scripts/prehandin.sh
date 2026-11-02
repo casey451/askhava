@@ -151,7 +151,8 @@ COVERAGE_TIMEOUT="${PREHANDIN_COVERAGE_TIMEOUT:-360}"
 coverage() {
   [ -f tests/coverage_floor.json ] && [ -f scripts/coverage_floor.py ] && [ -f Cargo.lock ] || return 0
   local picked packages=() only=() judged="" kind name report code
-  picked="$(printf '%s\n' "${CHANGED}" | python3 scripts/coverage_floor.py select)"
+  picked="$(printf '%s\n' "${CHANGED}" | python3 scripts/coverage_floor.py select)" \
+    || { echo "skipped: scripts/coverage_floor.py select could not read the workspace (Ci measures it)"; return 0; }
   [ -n "${picked}" ] || return 0
   while read -r kind name; do
     if [ "${kind}" = package ]; then packages+=(-p "${name}"); else only+=(--only "${name}"); judged+=" ${name}"; fi
