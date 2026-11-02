@@ -10,7 +10,8 @@ token counts only, and every failure text shown is cut short and passed through 
 - `last_day`: tasks whose attempt ended in the last 24 hours (title from kit/tasks.json, result,
   attempt, duration, and the retry reason: the first 120 characters of the task's last failure, shown
   on a retry or a failed row of its latest attempt only, since older failures are not kept).
-- `attention_extra`: the build hold, the strict plan check and the keeper's lines for "Needs attention".
+- `attention_extra`: the build hold and the strict plan check (`strict_line`: problems on tasks still to
+  run; those on DONE tasks only counted) for "Needs attention".
 
 The `keeper` key ({next_wake_at, last_run_at}, kit/state_schema.json) is written by the self-scheduling
 runner (D-1451); while it is absent the dashboard says "keeper: unknown".
@@ -190,8 +191,15 @@ def _cell(text: str, width: int = REASON_CHARS) -> str:
     return " / ".join(part.strip() for part in text.splitlines() if part.strip())[:width].replace("|", "\\|")
 
 
+def _attempt_no(row: dict[str, Any]) -> int:
+    try:
+        return int(row.get("attempt") or 1)
+    except (TypeError, ValueError):
+        return 1
+
+
 def _reason(task: dict[str, Any], row: dict[str, Any], latest: bool, redact: Redact) -> str:
-    retried = int(row.get("attempt") or 1) > 1 or row.get("result") != "done"
+    retried = _attempt_no(row) > 1 or row.get("result") != "done"
     failure = str(task.get("last_failure") or "")
     return _cell(redact(failure)) if latest and retried and failure else ""
 
@@ -201,7 +209,7 @@ def last_day(state: State, graph: list[dict[str, Any]], now: datetime, redact: R
     titles = {t["id"]: str(t.get("title", "")) for t in graph}
     rows = []
     for task in state.get("tasks", []):
-        history = task.get("history") or []
+        history = [row for row in task.get("history") or [] if isinstance(row, dict)]
         for index, row in enumerate(history):
             ended = _at(row.get("ended_at"))
             if ended and now - ended <= DAY:
@@ -214,12 +222,26 @@ def last_day(state: State, graph: list[dict[str, Any]], now: datetime, redact: R
     return head + [line for _, line in sorted(rows, key=lambda r: r[0], reverse=True)]
 
 
-def attention_extra(state: State, strict: str) -> list[str]:
+def strict_line(state: State, problems: tuple[str, ...] | list[str]) -> str:
+    """The strict plan check (`gen_prompts.py --check --strict`) judged against the state: '' when no
+    problem names a task still to run (or the check is green); else the count and the first of those,
+    with the problems on DONE or SKIPPED tasks folded into a count (their stored budgets are history)."""
+    done = {t.get("id") for t in state.get("tasks", []) if t.get("status") in st.SATISFIED}
+    past = [p for p in problems if p.split(":", 1)[0] in done]
+    live = [p for p in problems if p not in past]
+    if not live:
+        return ""
+    folded = f" (+{len(past)} on DONE tasks)" if past else ""
+    return f"{len(live)} problem(s) on tasks still to run{folded}; first: {live[0][:160]}"
+
+
+def attention_extra(state: State, strict: tuple[str, ...] | list[str]) -> list[str]:
     """Lines for "Needs attention" beyond blocks, plan gaps, deviations and red main: the build hold and
-    the strict plan check (`gen_prompts.py --check --strict`; '' when green or not run)."""
+    the strict plan check's problems on tasks still to run (`strict_line`)."""
     lines = []
     if state.get("build_hold"):
         lines.append(f"- BUILD HOLD: {state['build_hold']}")
-    if strict:
-        lines.append(f"- Strict plan check red: {strict}")
+    red = strict_line(state, strict)
+    if red:
+        lines.append(f"- Strict plan check red: {red}")
     return lines

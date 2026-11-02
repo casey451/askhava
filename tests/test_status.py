@@ -43,7 +43,7 @@ def fixture(in_flight: bool = True) -> dict[str, object]:
     return st.with_leases_map(state)
 
 
-def render(state: dict[str, object], last_run: datetime | None, strict: str = "") -> str:
+def render(state: dict[str, object], last_run: datetime | None, strict: tuple[str, ...] = ()) -> str:
     return render_status(state, "**Requirements verified:** 1 of 9", NOW, "fake pacing", Board(tuple(GRAPH), last_run, strict, ()))
 
 
@@ -74,9 +74,9 @@ def test_rows_older_than_a_day_are_left_out() -> None:
 
 def test_plan_gap_strict_red_and_hold_need_attention() -> None:
     state = dict(fixture(), build_hold="Gate P: fake hold")
-    text = render(state, NOW, strict="checked 4 prompts, 1 problems; first: T004: fake")
+    text = render(state, NOW, strict=("T001: stored context_pct 1% but it measures 2%; regenerate", "T004: fake drift"))
     assert "- PLAN GAP T004 (since 2026-11-02T12:00:00Z, no attempt used" in text
-    assert "- Strict plan check red: checked 4 prompts, 1 problems; first: T004: fake" in text
+    assert "- Strict plan check red: 1 problem(s) on tasks still to run (+1 on DONE tasks); first: T004: fake drift" in text
     assert "- BUILD HOLD: Gate P: fake hold" in text and "**On hold: Gate P: fake hold;" in text
 
 
@@ -111,11 +111,30 @@ def test_no_stage_left_and_unknown_finish() -> None:
     assert status.lane_line({"tasks": []}) == "idle since unknown (no task in progress)"
 
 
-def test_status_md_carries_no_failure_token() -> None:
-    """A failure text is redacted before it reaches the table (TOKEN_LIKE, defence in depth)."""
+def test_status_md_carries_no_failure_token_phone_or_email() -> None:
+    """A failure text is redacted before it reaches the table (TOKEN_LIKE and the PII scanner's shapes)."""
     state = fixture()
-    state["tasks"][1]["last_failure"] = "push failed: ghp_" + "a" * 30
-    assert "ghp_" not in render(state, NOW) and "[redacted]" in render(state, NOW)
+    state["tasks"][1]["last_failure"] = "ghp_" + "a" * 30 + " 928-555-0100 fake@example.com"
+    text = render(state, NOW)
+    assert "ghp_" not in text and "555-0100" not in text and "fake@example.com" not in text and "[redacted]" in text
+
+
+def test_strict_problems_only_on_done_tasks_are_not_red() -> None:
+    done_only = ("T001: stored context_pct 1% but it measures 2%; regenerate",)
+    assert status.strict_line(fixture(), done_only) == "" and status.strict_line(fixture(), ()) == ""
+    assert "Strict plan check" not in render(fixture(), NOW, strict=done_only)
+
+
+def test_malformed_state_fields_never_stop_the_render() -> None:
+    """A bad field becomes one "unavailable" line (D-1462): attempt "x", a None history row, a string lease."""
+    state = fixture()
+    state["tasks"][1]["history"] = [None, {"attempt": "x", "result": "check_failed", "ended_at": "2026-11-02T11:00:00Z"}]
+    text = render(state, NOW)
+    assert "| T002 | fake: second task | check_failed | x | ? | 11:00Z | Ci: failure" in text
+    state["lease"] = "not a lease"
+    state["leases"] = {"1": "not a lease"}
+    text = render(state, NOW)
+    assert "- dashboard unavailable: AttributeError" in text and "## Progress (requirements verified)" in text
 
 
 def test_board_readings_from_the_env(tmp_path: Path) -> None:
@@ -133,7 +152,7 @@ def test_board_readings_from_the_env(tmp_path: Path) -> None:
     env = GitHubEnv(tmp_path, GRAPH, tmp_path, repo="fake-owner/fake-repo", starter="routine", runner_sha="f" * 40, run=fake)
     env.state_head = "f" * 40
     board = env.board(NOW)
-    assert board.strict == "checked 1 prompts, 1 problems; first: T001: stored context_pct 1% but it measures 2%; regenerate"
+    assert board.strict == ("T001: stored context_pct 1% but it measures 2%; regenerate",)
     assert board.last_run == st.parse("2026-11-02T17:00:00Z") and board.merges == ("12:00Z Harness: fake change (D-9999) (#1)",)
     env.board(NOW)
     assert sum(1 for c in calls if c[:2] == ["python3", "scripts/gen_prompts.py"]) == 1
@@ -146,4 +165,4 @@ def test_board_readings_tolerate_failures(tmp_path: Path) -> None:
     env = GitHubEnv(tmp_path, GRAPH, tmp_path, repo="fake-owner/fake-repo", starter="routine", runner_sha="f" * 40, run=broken)
     env.state_head = "f" * 40
     board = env.board(NOW)
-    assert board.strict == "" and board.last_run is None and board.merges == ()
+    assert board.strict == () and board.last_run is None and board.merges == ()

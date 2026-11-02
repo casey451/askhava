@@ -394,39 +394,55 @@ def _running(state: State) -> list[str]:
 @dataclasses.dataclass(frozen=True)
 class Board:
     """What the owner's dashboard reads beside the state (runner/status.py, D-1462): the task graph, the
-    time of the last cycle-log line, the strict plan check's summary ('' when green or not run) and
-    recent plan and harness merges on `main` (subject lines)."""
+    time of the last cycle-log line, the strict plan check's problem lines (empty when green or not run)
+    and recent plan and harness merges on `main` (subject lines)."""
 
     graph: tuple[dict[str, Any], ...] = ()
     last_run: datetime | None = None
-    strict: str = ""
+    strict: tuple[str, ...] = ()
     merges: tuple[str, ...] = ()
 
 
 def _redact(text: str) -> str:
-    return TOKEN_LIKE.sub("[redacted]", CONTROL.sub("", ANSI.sub("", text)))
+    """A failure text for STATUS.md: as `_redact_gate_row` (tokens and every key, phone and email shape the
+    PII scanner knows), with control characters removed too."""
+    return _redact_gate_row(CONTROL.sub("", ANSI.sub("", text)))
+
+
+def _safe(render: Callable[[], list[str]], what: str) -> list[str]:
+    """A dashboard section, or one line naming the error: a malformed state field never stops a cycle (D-1462)."""
+    try:
+        return render()
+    except Exception as exc:  # noqa: BLE001  # reason: STATUS.md is a view; any error in it must not fail the state push
+        return [f"- {what} unavailable: {type(exc).__name__}"]
 
 
 def _day_sections(state: State, board: Board, now: datetime) -> list[str]:
     merges = [f"- {m}" for m in board.merges] or ["- none"]
-    return ["## Last 24 hours", *status.last_day(state, list(board.graph), now, _redact),
-            "", "### Plan and harness merges on main", *merges, ""]
+    rows = _safe(lambda: status.last_day(state, list(board.graph), now, _redact), "last 24 hours")
+    return ["## Last 24 hours", *rows, "", "### Plan and harness merges on main", *merges, ""]
+
+
+def _needs_attention(state: State, board: Board, now: datetime) -> list[str]:
+    lines = [line for line in _safe(lambda: _attention(state, now), "attention list") if line != "- nothing"]
+    lines += _safe(lambda: status.attention_extra(state, board.strict), "plan check flags")
+    return lines or ["- nothing"]
 
 
 def render_status(state: State, progress_md: str, now: datetime, pacing: str = "", board: Board | None = None) -> str:
     """STATUS.md: the owner's dashboard (runner/status.py, D-1462: verdict, done count, stage, lane, week,
     last run, keeper; the last 24 hours), then progress in verified requirements (governance 6), the
-    pacing line (scripts/pacing.py), then BUILD_BRIEF.md:276-281."""
+    pacing line (scripts/pacing.py), then BUILD_BRIEF.md:276-281. Each dashboard section that fails to
+    render becomes one "unavailable" line instead."""
     board = board or Board()
     usage = (state.get("usage") or {}).get("last_reading")
-    attention = [line for line in _attention(state, now) if line != "- nothing"] + status.attention_extra(state, board.strict)
     parts = [
         "# Ask Hava build status", "", f"Updated {st.iso(now)} by runner {str(state.get('runner_sha', ''))[:12]} ({state.get('starter', '')}).",
-        "", *status.dashboard(state, list(board.graph), now, board.last_run),
-        "", "## Needs attention", *(attention or ["- nothing"]), "", *_day_sections(state, board, now),
+        "", *_safe(lambda: status.dashboard(state, list(board.graph), now, board.last_run), "dashboard"),
+        "", "## Needs attention", *_needs_attention(state, board, now), "", *_day_sections(state, board, now),
         "## Progress (requirements verified)", "", progress_md.strip() or "Progress unavailable.", "", "## Pacing", f"- {pacing or 'no reading yet'}",
-        "", "## Tasks done (throughput)", *_stage_counts(state),
-        "", "## Running", *_running(state),
+        "", "## Tasks done (throughput)", *_safe(lambda: _stage_counts(state), "throughput"),
+        "", "## Running", *_safe(lambda: _running(state), "running list"),
         "", "## Last usage reading", f"- {json.dumps(usage) if usage else 'none yet'}", "",
     ]
     return "\n".join(parts)
@@ -459,7 +475,7 @@ class GitHubEnv:
         self.last_state: State | None = None
         self.log: list[str] = []
         self._progress: dict[str, str] = {}
-        self._strict: str | None = None  # strict_check's result, once per process (D-1462)
+        self._strict: tuple[str, ...] | None = None  # strict_check's result, once per process (D-1462)
         self.sleep: Callable[[float], None] = time.sleep  # update_state's wait between tries; tests replace it
         self.prepared: dict[str, Any] = {}  # what prepare_branch made for this attempt, for the hand-off (D-583)
         self.last_rejection = ""  # the last rejected branch push's git output (push_rejection, D-583)
@@ -565,15 +581,14 @@ class GitHubEnv:
         except (*BEST_EFFORT_ERRORS, json.JSONDecodeError):
             return None
 
-    def strict_check(self) -> str:
-        """`gen_prompts.py --check --strict` (about 2 s), run once per runner process: '' when green or
-        when it could not run (no script, a crash), else its problem count and first problem."""
+    def strict_check(self) -> tuple[str, ...]:
+        """`gen_prompts.py --check --strict` (about 1.3 s), run once per runner process, which is every
+        cycle and every --after: its problem lines when red, () when green or when it could not run (no
+        script, a crash). STATUS.md judges them against the state (`status.strict_line`)."""
         if self._strict is None:
             code, out, _ = self._run(["python3", "scripts/gen_prompts.py", "--check", "--strict"], None, self.root)
-            problems = [line for line in out.splitlines() if line.startswith("ERROR ")]
-            summary = next((line for line in reversed(out.splitlines()) if line.startswith("checked ")), "")
-            red = code == 1 and summary
-            self._strict = f"{summary}; first: {problems[0][6:][:160] if problems else '?'}" if red else ""
+            problems = tuple(line[6:] for line in out.splitlines() if line.startswith("ERROR "))
+            self._strict = problems if code == 1 else ()
         return self._strict
 
     def _plan_merges(self, now: datetime) -> tuple[str, ...]:
