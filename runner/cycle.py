@@ -10,7 +10,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Protocol
 
-from runner import lanes, outbox, state as st, verify
+from runner import lanes, outbox, proof, state as st, verify
 from runner.state import State
 
 MAX_ATTEMPTS = 3  # BUILD_BRIEF.md:540; one more only through a plan-fix re-queue (D-677); FIX-MAIN re-arms (D-1099)
@@ -699,13 +699,17 @@ def record_proofs(cfg: Config, state: State, now: datetime) -> State:
     """For each cleanup task waiting for its stage proof in a stage the runner proves itself
     (cfg.proof_stages, runner/proof.py): record `stage_proofs[N]` once the check finds the evidence
     true, else note on the task what the proof still waits for (`proof_waits_for`, shown in STATUS.md).
+    In a stage proved by hand (proof.HAND_RECORDED) the note is the reason and the command (D-1473).
     Nothing is ever recorded that the check did not find true (D-551)."""
-    if cfg.stage_proof is None:
-        return state
     out = state
     for task in state["tasks"]:
         stage = str(task.get("stage"))
-        if not st.awaits_proof(task) or stage not in cfg.proof_stages or _proof_ok(out, task["id"]):
+        if not st.awaits_proof(task) or _proof_ok(out, task["id"]):
+            continue
+        if stage in proof.HAND_RECORDED:
+            out = _note_proof_waits(out, task, [proof.hand_reason(stage)])
+            continue
+        if cfg.stage_proof is None or stage not in cfg.proof_stages:
             continue
         try:
             record, missing = cfg.stage_proof(out, stage)
@@ -714,9 +718,14 @@ def record_proofs(cfg: Config, state: State, now: datetime) -> State:
         if record:
             proofs = dict(out.get("stage_proofs") or {}, **{stage: dict(record, at=st.iso(now))})
             out = st.with_task(dict(out, stage_proofs=proofs), task["id"], proof_waits_for=None)
-        elif task.get("proof_waits_for") != missing:
-            out = st.with_task(out, task["id"], proof_waits_for=missing)
+        else:
+            out = _note_proof_waits(out, task, missing)
     return out
+
+
+def _note_proof_waits(state: State, task: dict[str, Any], missing: list[str]) -> State:
+    """Set `proof_waits_for` only when it changed, so an unchanged note writes nothing."""
+    return state if task.get("proof_waits_for") == missing else st.with_task(state, task["id"], proof_waits_for=missing)
 
 
 def release_proven(state: State) -> State:
