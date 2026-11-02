@@ -11532,7 +11532,15 @@
     1406,
     1407,
     1408
-   ]
+   ],
+   "reviewed_sha": "e5ab793762fe7980169091c9ef464ba349d8cc5e",
+   "review_lease": {
+    "task": "T188",
+    "session": "actions-41413317141",
+    "expires": "2026-11-02T11:31:57Z"
+   },
+   "branch": "claude/task/T188-payments-four-month-rule",
+   "head_check_since": null
   },
   {
    "id": "T059",
@@ -16084,7 +16092,7 @@
    }
   }
  },
- "updated_at": "2026-11-02T08:36:25Z",
+ "updated_at": "2026-11-02T08:57:15Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -16182,7 +16190,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "9b15dc05f3a900f2462c592aa7e1308082441b02",
+ "runner_sha": "e5ab793762fe7980169091c9ef464ba349d8cc5e",
  "starter": "actions",
  "smoke_runs": [
   {
