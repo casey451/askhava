@@ -1,0 +1,41 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT h.contact_id, c.language FROM intake.conversation c JOIN intake.homeowner h ON h.id = c.homeowner_id WHERE c.job_id = $1 OR EXISTS (SELECT 1 FROM intake.intake_answer a WHERE a.conversation_id = c.id AND a.question_id LIKE 'job.%' AND a.choice = $2) ORDER BY c.opened_at DESC LIMIT 1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "contact_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "intake.homeowner",
+            "name": "contact_id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "language",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "intake.conversation",
+            "name": "language"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "34d2ccb4dd1ef2a903e6c3a0c20778e35ab93dd59a834d4b62d52944e3606f71"
+}

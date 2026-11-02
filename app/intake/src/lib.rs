@@ -16,6 +16,7 @@
 //! T156 added the question set one question at a time, routing confidence and the golden run
 //! (`question_bank`, `routing_confidence`, `golden_run`).
 //! T208 added the card approval step: the card shown, EDIT or SEND, the auto-send (`summary_step`).
+//! T240 added the sender of `jobs`' homeowner job texts (JOB-010 to JOB-012, TXT-042, `job_texts`).
 //! Other crates reach it only through [`api`].
 
 pub mod api;
@@ -25,6 +26,7 @@ mod emergency;
 mod emergency_count;
 mod golden_run;
 mod handlers;
+mod job_texts;
 mod matching;
 mod models;
 mod question_bank;

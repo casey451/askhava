@@ -10,6 +10,7 @@ The layer-3 crate that sends and receives messages (`docs/architecture.md` secti
 - `src/templates.rs`: `Registry` (`parse`, `embedded`, `render`, `language_for`, `template`, `ids`), `count_segments`.
 - `area_codes.json`: the area-code table, `{zone: [codes]}`, US, territories and Canada only (D-100, D-139).
 - `src/rules.rs`: pure quiet-hours logic: `AreaCodes`, `decide`, `retry`, `plan_release`, `Kind`, `Outgoing`, `Decision`, `Held`, `Release`; and the pure opt-out rules: `PROVIDER_OPT_OUT_WORDS`, `SPANISH_OPT_OUT_WORDS`, `APP_OPT_OUT_WORDS`, `RESUBSCRIBE_WORDS`, `OPT_OUT_PHRASES` (with pattern IDs), `detect_opt_out`, `classify`, `ProviderKeyword`, `Detected`, `Classified`, `Listing`, `may_send_to`, `CONFIRM_WITHIN`.
+- `src/send_window.rs` (T240, D-1301): `send_window` (reads a homeowner's phone under the send grant, checks the suppression list, answers `SendWindow`: `Now`, `Hold { until }`, `OptedOut`, `NotTextable`) and the pure `window` (`rules::decide` for a `Kind::Update` text).
 - `src/optout.rs`: the suppression list and opt-out flow: `on_inbound_text`, `suppress`, `send_checked`, `InboundText`, `Outcome`, `RevokeChannel`.
 - `src/service.rs`: the outbox (`enqueue`, `send`, `may_text`, `NewText`, `Relation`, `To`, `SEND_ACTION`), `delivery_status` (TXT-013) and the sender directory (`sender_add`, `sender_remove`, `sender_business`).
 - `src/keywords.rs`: `keyword` (a text that is only HELP, INFO or AYUDA), `Keyword`, `HelpSettings` (checked reply times, away date; refuses a help phone equal to the texting number), `help_text`, `reply_to_help`. Templates `help_reply`, `help_reply_ca`, `help_reply_away`, `help_reply_away_ca` in both languages (D-887).
@@ -32,6 +33,7 @@ The layer-3 crate that sends and receives messages (`docs/architecture.md` secti
 - QH-001, QH-002, QH-003: `rules::decide` (8:00 to before 20:00 in `America/Phoenix` and the area-code zone; a code not in the table, or a non +1 number, is an error and is never texted, whatever the kind).
 - QH-004, QH-005: `rules::night_exception` (the one list of night exceptions; emails and texts, homeowners and businesses alike).
 - QH-006, QH-008: `Decision::Hold { until }` is the next instant both zones are open; `rules::retry` is the same rule.
+- QH-001, QH-003, QH-006, CON-013 for callers that may not read the phone (D-1196, D-1301): `send_window`; the phone stays inside the file.
 - QH-007, TXT-025: `rules::plan_release` drops held texts for a closed job (the caller's `job_closed` check) except one that announces the close, and merges held `Kind::Update`s per job and recipient.
 - TXT-009: `service::may_text`; `enqueue` refuses `Relation::PastCustomer` unless `last_inbound` is strictly after `closed_at`, and `send` checks `To::Homeowner`'s relation again before claiming; the caller supplies both times (D-846).
 - PRIV-003, PRIV-004: `send` reads a homeowner's phone from the vault (`read_contact`, `Reader::Messaging`, `Purpose::Send`) for the row's `recipient_id`; only a business phone comes from the caller (D-849). Each row stores `recipient_kind` (from the `Relation` at enqueue) and `send` refuses a `To` of the other kind with `RecipientKind`, so a homeowner's row cannot skip the vault read or TXT-009. `NewText`'s `Debug` omits the body.
@@ -92,6 +94,7 @@ The layer-3 crate that sends and receives messages (`docs/architecture.md` secti
 - `src/tests/template_registry.rs` (TD-TXT-01, TXT-044): `cargo test -p askhava-messaging tests::template_registry`.
 - `tests/docs/test_template_scan.py` (TD-TXT-02): `python3 -m pytest tests/docs/test_template_scan.py -q -p no:cacheprovider`.
 - `src/tests/quiet_hours.rs` (TD-QH-01, TD-QH-02): `cargo test -p askhava-messaging tests::quiet_hours`.
+- `src/tests/send_window.rs` (TD-QH-01 send-window cases and property): `cargo test -p askhava-messaging tests::send_window`; its vault and suppression path is in `tests/integration/tests/homeowner_job_texts.rs`.
 - `src/tests/prop_quiet_hours_props.rs` (TD-QH-01 property): `cargo test -p askhava-messaging tests::prop_quiet_hours_props`.
 - `tests/integration/tests/outbox.rs` (TD-TXT-03, TD-TXT-04 TXT-011 cases, D-492): `cargo test -p askhava-integration --test outbox`.
 - `tests/integration/tests/inbox.rs` (TD-TXT-04 TXT-012 and TXT-013 cases, D-861): `cargo test -p askhava-integration --test inbox`.

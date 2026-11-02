@@ -18,7 +18,8 @@
 //! PICK-016, PICK-031, T054); the question set one question at a time, routing confidence and
 //! the stored golden runs (INT-039, INT-040, CARD-007, OPS-040, T156); the card approval step:
 //! the card shown by text or link, EDIT or SEND, the auto-send and the approved-card check
-//! (INT-041, CARD-007, T208).
+//! (INT-041, CARD-007, T208); the sender of `jobs`' homeowner job texts with the two-zone send
+//! window (JOB-010 to JOB-012, TXT-042, QH-001, QH-006, QH-007, T240).
 
 pub use crate::closing::{
     CLOSE_MENTION_TEMPLATE, CLOSE_WHICH_TEMPLATE, Closing, JOB_CLOSED_TEMPLATE,
@@ -41,6 +42,10 @@ pub use crate::handlers::{
     CallBack, HEAR_BACK_WITHIN, ListAsk, NO_REPLY_KIND, NoReply, REMIND_AFTER, REMINDER_TEMPLATE,
     Wait, answer_list, call_back_due, counts_urgent, list_ask, no_reply_step, queue_call_back,
     run_no_reply, texting_window,
+};
+pub use crate::job_texts::{
+    ALL_QUOTES_IN_TEMPLATE, JOB_TEXT_TEMPLATES, JobText, JobTextKeys, JobTextSkip, JobTextStep,
+    job_text_body, job_text_step, parse_job_text, run_job_text,
 };
 pub use crate::matching::{
     Candidates, FitStep, KeywordReading, Opinion, Reading, TradeAnswer, TradeQuestion, TradeStep,
