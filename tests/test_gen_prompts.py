@@ -435,3 +435,20 @@ def test_strict_fails_when_the_decisions_log_is_within_a_tenth_of_the_scan_limit
     capsys.readouterr()
     assert gp.main(["--root", str(root), "--check", "--strict"]) == 1
     assert "over 90% of MAX_BYTES" in capsys.readouterr().out
+
+
+def test_architecture_counts_its_layout_section_and_the_module_lines(tmp_path: Path) -> None:
+    """D-1339: a read of docs/architecture.md counts section 2 and the lines naming the task's module."""
+    root = make_repo(tmp_path, [fake_task()])
+    (root / "docs").mkdir()
+    layout = "## 2. Processes and code layout\nlayout line\n"
+    other = "## 3. Modules\n| `fake` | owns things |\n| `other` | " + "x" * 5_000 + " |\nsee app/fake/src\n"
+    (root / "docs/architecture.md").write_text("# Title\n" + layout + other, encoding="utf-8")
+    module_lines = len("| `fake` | owns things |\n") + len("see app/fake/src\n")
+    assert gp.architecture_bytes(root, "fake") == len(layout) + module_lines
+    assert gp.architecture_bytes(root, None) == len(layout)
+    task = fake_task(owns=[], reads=["docs/architecture.md"], module="fake")
+    assert gp.context_bytes(root, task, "") == len(layout) + module_lines
+    owner = fake_task(owns=["docs/architecture.md"], reads=["docs/architecture.md"])
+    assert gp.context_bytes(root, owner, "") == (root / "docs/architecture.md").stat().st_size
+    assert gp.architecture_bytes(tmp_path / "nowhere", "fake") == 0
