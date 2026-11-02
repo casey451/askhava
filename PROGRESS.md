@@ -671,3 +671,4 @@
 - 2026-11-02T04:47:44Z runner 2ed9f1f259de (actions): {}
 - 2026-11-02T05:16:31Z runner 2876127b20e5 (manual): {}
 - 2026-11-02T05:18:50Z runner 2ed9f1f259de (actions): {"T057": "BLOCKED -> DONE"}
+- 2026-11-02T05:25:37Z runner 2ed9f1f259de (actions): {"T094": "QUEUED -> IN_PROGRESS"}; T094 estimated 2.6M tokens (calibrated); five-hour window has 28.2M left, week 18.0M (session_reading 2026-11-02T04:47:43Z (week)); claimed
