@@ -136,8 +136,9 @@ const ID_SECRET: &str = "ASKHAVA_ID_SECRET";
 
 /// What Twilio's webhook routes need (T241, SEC-016, D-1216), from `settings` and the same
 /// `pairs`: with `ASKHAVA_PUBLIC_BASE_URL` set, the Twilio auth token ([`TwilioConfig`]), the
-/// `ID_SECRET` and both vault keys are required; unset, `None` in dev and CI (no routes) and an
-/// error in the test and live projects, which Twilio must reach.
+/// `ID_SECRET` (checked as `job_text_keys` checks it, `IdSecret::new`) and both vault keys are
+/// required, a half-set pair naming the missing key (D-1306); unset, `None` in dev and CI (no
+/// routes) and an error in the test and live projects, which Twilio must reach.
 ///
 /// # Errors
 ///
@@ -165,8 +166,12 @@ where
         .find(|(k, v)| k == ID_SECRET && !v.trim().is_empty())
         .map(|(_, v)| SecretString::from(v.trim().to_owned()))
         .ok_or_else(|| io::Error::other("missing ASKHAVA_ID_SECRET"))?;
-    let (Some(seal), Some(index)) = vault_keys(pairs) else {
-        return Err(io::Error::other("missing VAULT_KEY or VAULT_INDEX_KEY"));
+    IdSecret::new(1, id_secret.clone()).map_err(io::Error::other)?;
+    let (seal, index) = match vault_keys(pairs) {
+        (Some(seal), Some(index)) => (seal, index),
+        (None, None) => return Err(io::Error::other("missing VAULT_KEY and VAULT_INDEX_KEY")),
+        (Some(_), None) => return Err(io::Error::other("VAULT_KEY set without VAULT_INDEX_KEY")),
+        (None, Some(_)) => return Err(io::Error::other("VAULT_INDEX_KEY set without VAULT_KEY")),
     };
     let vault = Vault::new(&seal, &index, settings.database_url()).map_err(io::Error::other)?;
     Ok(Some(Arc::new(inbound_text::Webhooks {
@@ -256,8 +261,9 @@ pub fn shutdown_signal() -> io::Result<impl Future<Output = ()>> {
 }
 
 /// The job-text wiring (D-1302, D-1306): `job_text_keys` per environment and per half-set pair,
-/// and `register_handlers` registering the sender under `jobs::api::TEXT_KIND` only with keys.
-/// Fake keys are built at run time; nothing here touches a database.
+/// and `register_handlers` registering the sender under `jobs::api::TEXT_KIND` only with keys;
+/// the webhook wiring (T241, D-1311): `webhooks` per environment and per missing key. Fake keys
+/// are built at run time; the pool is lazy, so nothing here touches a database.
 #[cfg(test)]
 mod tests {
     use std::sync::Arc;
@@ -267,7 +273,7 @@ mod tests {
     use secrecy::SecretString;
 
     use crate::offdb_stream::OffDbStream;
-    use crate::{job_text_keys, register_handlers};
+    use crate::{job_text_keys, register_handlers, webhooks};
 
     const TEST_LIST: &str =
         "twilio:ACtestfake01,stripe:acct_testfake,resend:test.example.com,bucket:askhava-test";
@@ -397,5 +403,104 @@ mod tests {
         let without = format!("{:?}", register_handlers(stream(), None));
         assert!(with.contains(&format!("{TEXT_KIND:?}")), "{with}");
         assert!(!without.contains(&format!("{TEXT_KIND:?}")), "{without}");
+    }
+
+    const BASE: (&str, &str) = ("ASKHAVA_PUBLIC_BASE_URL", "https://hooks.example.test");
+    const ID: (&str, &str) = (
+        "ASKHAVA_ID_SECRET",
+        "test-only-id-secret-not-a-real-key-000",
+    );
+    const TOKEN: (&str, &str) = ("ASKHAVA_TWILIO_AUTH_TOKEN", "fake_twilio_auth_token");
+    /// Ten distinct fake numbers in the 555-01xx fiction range (CALL-017's pool size).
+    const NUMBERS: &str = "+19285550101,+19285550102,+19285550103,+19285550104,+19285550105,\
+        +19285550106,+19285550107,+19285550108,+19285550109,+19285550110";
+    /// The Twilio keys `TwilioConfig::from_settings` needs in dev, but the auth token.
+    const TWILIO: [(&str, &str); 3] = [
+        ("ASKHAVA_TWILIO_ACCOUNT_SID", "ACtestfake01"),
+        (
+            "ASKHAVA_TWILIO_VERIFY_SERVICE_SID",
+            "VA00000000000000000000000000000001",
+        ),
+        ("ASKHAVA_MASKED_NUMBERS", NUMBERS),
+    ];
+
+    /// `webhooks` over `env`'s fake pairs plus `extra` and the vault keys chosen: `Some` or not.
+    fn hooks(env: &str, extra: &[(&str, &str)], vault: (bool, bool)) -> std::io::Result<bool> {
+        let lists = settings_pairs(env);
+        let all: Vec<(String, String)> = pairs(env, &[lists.as_slice(), extra].concat())
+            .into_iter()
+            .chain(vault_pairs(vault.0, vault.1))
+            .collect();
+        let settings = Settings::from_pairs(all.clone()).expect("settings");
+        let pool = sqlx::PgPool::connect_lazy("postgres://fake@localhost/fake").expect("pool");
+        webhooks(&settings, pool, all).map(|h| h.is_some())
+    }
+
+    /// The allow lists and accounts `settings(env)` adds, as pairs.
+    fn settings_pairs(env: &str) -> Vec<(&'static str, &'static str)> {
+        match env {
+            "test" => vec![("ASKHAVA_ALLOW_LIST_TEST", TEST_LIST)],
+            "live" => vec![
+                ("ASKHAVA_ALLOW_LIST_TEST", TEST_LIST),
+                ("ASKHAVA_ALLOW_LIST_LIVE", LIVE_LIST),
+                ("ASKHAVA_TWILIO_ACCOUNT_SID", "AClivefake01"),
+                ("ASKHAVA_STRIPE_ACCOUNT_ID", "acct_livefake"),
+                ("ASKHAVA_RESEND_DOMAIN", "mail.example.com"),
+                ("ASKHAVA_STORAGE_BUCKET", "askhava-live"),
+            ],
+            _ => Vec::new(),
+        }
+    }
+
+    fn hooks_error(env: &str, extra: &[(&str, &str)], vault: (bool, bool)) -> String {
+        hooks(env, extra, vault).expect_err("refused").to_string()
+    }
+
+    /// T241 (D-1216): with no public base URL, dev and CI build no webhook routes, whatever else
+    /// is set; the test and live projects, which Twilio must reach, refuse to start.
+    #[tokio::test]
+    async fn no_public_base_url_is_no_routes_in_dev_and_ci_and_an_error_in_test_and_live() {
+        for env in ["dev", "ci"] {
+            assert!(!hooks(env, &[], (true, true)).expect("no routes"), "{env}");
+        }
+        for env in ["test", "live"] {
+            assert_eq!(
+                hooks_error(env, &[], (true, true)),
+                "missing ASKHAVA_PUBLIC_BASE_URL"
+            );
+        }
+    }
+
+    /// T241 (SEC-016, SEC-018, D-1306, D-1311): with the base URL set the Twilio auth token, a
+    /// strong `ID_SECRET` and both vault keys are required, each error naming the key.
+    #[tokio::test]
+    async fn with_a_public_base_url_every_key_is_required_and_named() {
+        let twilio = [TWILIO.as_slice(), &[TOKEN]].concat();
+        let full = [&[BASE, ID], twilio.as_slice()].concat();
+        assert!(hooks("dev", &full, (true, true)).expect("routes"));
+        let no_token = hooks_error(
+            "dev",
+            &[&[BASE, ID], TWILIO.as_slice()].concat(),
+            (true, true),
+        );
+        assert!(no_token.contains("ASKHAVA_TWILIO_AUTH_TOKEN"), "{no_token}");
+        let no_id = [&[BASE], twilio.as_slice()].concat();
+        assert_eq!(
+            hooks_error("dev", &no_id, (true, true)),
+            "missing ASKHAVA_ID_SECRET"
+        );
+        let weak = [&[BASE, ("ASKHAVA_ID_SECRET", "short")], twilio.as_slice()].concat();
+        assert_eq!(
+            hooks_error("dev", &weak, (true, true)),
+            "the ID secret is too short or has no version"
+        );
+        let cases = [
+            ((false, false), "missing VAULT_KEY and VAULT_INDEX_KEY"),
+            ((true, false), "VAULT_KEY set without VAULT_INDEX_KEY"),
+            ((false, true), "VAULT_INDEX_KEY set without VAULT_KEY"),
+        ];
+        for (vault, message) in cases {
+            assert_eq!(hooks_error("dev", &full, vault), message);
+        }
     }
 }

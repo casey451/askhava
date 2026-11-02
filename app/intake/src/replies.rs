@@ -30,14 +30,16 @@ pub enum Reply {
 /// Handles one inbound homeowner text that `messaging` let through (TXT-031, INT-019, D-999,
 /// D-1197, D-1199 (4)), in one transaction. With an open request: LIST or LISTA (alone or with
 /// one request number) answered from a job holding a shown quote gives [`Reply::Listed`], `names`
-/// being the businesses' public names; a LIST with no quoted job, or any other text that is not
-/// an opt-out or a HELP keyword, is heard (each Intake job's no-reply wait restarts at
-/// `msg.received_at`) and then handled by `receive_text`. Without one, `receive_text` alone
+/// being the businesses' public names; a LIST with no quoted job or whose list `quotes` cannot
+/// build (`IntakeError::Quotes`, e.g. a name missing from `names`, D-1310), or any other text
+/// that is not an opt-out or a HELP keyword, is heard (each Intake job's no-reply wait restarts
+/// at `msg.received_at`) and then handled by `receive_text`. Without one, `receive_text` alone
 /// (the consent text first, CON-001).
 ///
 /// # Errors
 ///
-/// As `answer_list`, `hear` and `receive_text`; nothing is kept on an error.
+/// As `answer_list` (but `IntakeError::Quotes`), `hear` and `receive_text`; nothing is kept on
+/// an error.
 pub async fn receive_reply(
     db: &mut PgConnection,
     secret: &SecretString,
@@ -50,8 +52,7 @@ pub async fn receive_reply(
     if let Some(conversation) = open.filter(|_| !answered_elsewhere) {
         if list_ask(msg.inbound.words).is_some() {
             let spanish_on = settings.spanish_conversations_on;
-            let queued = answer_list(&mut tx, secret, msg, (conversation, spanish_on), names);
-            let queued = queued.await?;
+            let queued = listed(&mut tx, secret, msg, (conversation, spanish_on), names).await?;
             if !queued.is_empty() {
                 tx.commit().await.map_err(|_| IntakeError::Database)?;
                 return Ok(Reply::Listed(queued));
@@ -62,4 +63,28 @@ pub async fn receive_reply(
     let handled = receive_text(&mut tx, secret, msg, settings).await?;
     tx.commit().await.map_err(|_| IntakeError::Database)?;
     Ok(Reply::Handled(handled))
+}
+
+/// `answer_list` inside a savepoint (D-1310): when `quotes` cannot build the list (a business
+/// with no public name in `names`, say) the savepoint is rolled back and nothing is listed, so the
+/// text is heard and handled as any other reply instead of being lost.
+async fn listed(
+    db: &mut PgConnection,
+    secret: &SecretString,
+    msg: &TextIn<'_>,
+    request: (Uuid, bool),
+    names: &[(Uuid, String)],
+) -> Result<Vec<Queued>, IntakeError> {
+    let mut point = db.begin().await.map_err(|_| IntakeError::Database)?;
+    match answer_list(&mut point, secret, msg, request, names).await {
+        Ok(queued) => {
+            point.commit().await.map_err(|_| IntakeError::Database)?;
+            Ok(queued)
+        }
+        Err(IntakeError::Quotes) => {
+            point.rollback().await.map_err(|_| IntakeError::Database)?;
+            Ok(Vec::new())
+        }
+        Err(e) => Err(e),
+    }
 }

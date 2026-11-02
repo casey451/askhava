@@ -8,8 +8,9 @@
 //! nothing; the same MessageSid three times opens one request with one consent text, and a
 //! status callback is recorded once per (MessageSid, MessageStatus); an opt-out word ends the
 //! text at `messaging`, and later texts from that number reach no request until START; HELP gets
-//! only the HELP reply; a reply restarts the 72-hour wait; LIST gets the LIST text; a business
-//! phone's text reaches no homeowner path; the base URL setting's rules. All data is fake.
+//! only the HELP reply; a reply restarts the 72-hour wait; LIST gets the LIST text, and a LIST
+//! whose list cannot be built is heard as a reply (D-1310); a business phone's text reaches no
+//! homeowner path; the base URL setting's rules. All data is fake.
 
 use std::sync::Arc;
 
@@ -311,12 +312,10 @@ async fn job(pool: &PgPool, h: &Arc<Webhooks>) -> Uuid {
     }
 }
 
-/// TD-TXT-11 (TXT-031): LIST through the route gets the LIST text naming the quoting business.
-#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
-async fn td_txt_11_list_through_the_route_gets_the_list_text(pool: PgPool) {
-    let names = vec![(Uuid::from_u128(1), "Sample Business 1".to_owned())];
-    let h = hooks(&pool, names);
-    let job = job(&pool, &h).await;
+/// A request with one job opened through the route, moved to Open, holding one shown $190 quote
+/// from fake business 1.
+async fn quoted_job(pool: &PgPool, h: &Arc<Webhooks>) -> Uuid {
+    let job = job(pool, h).await;
     let mut db = pool.acquire().await.expect("connection");
     let moved = move_to(
         &mut db,
@@ -354,6 +353,15 @@ async fn td_txt_11_list_through_the_route_gets_the_list_text(pool: PgPool) {
             .await
             .is_ok()
     );
+    job
+}
+
+/// TD-TXT-11 (TXT-031): LIST through the route gets the LIST text naming the quoting business.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_txt_11_list_through_the_route_gets_the_list_text(pool: PgPool) {
+    let names = vec![(Uuid::from_u128(1), "Sample Business 1".to_owned())];
+    let h = hooks(&pool, names);
+    quoted_job(&pool, &h).await;
     assert_eq!(text(&h, 4, HOME, "LIST").await, StatusCode::OK);
     let body: String =
         sqlx::query_scalar("SELECT body FROM messaging.outbox WHERE template_id = 'quote_list'")
@@ -361,6 +369,37 @@ async fn td_txt_11_list_through_the_route_gets_the_list_text(pool: PgPool) {
             .await
             .expect("list");
     assert!(body.contains("1. Sample Business 1: $190."), "{body}");
+}
+
+/// TD-TXT-11, TD-INT-08 (TXT-031, INT-019, D-1310): LIST with a quote waiting but no public name
+/// for its business (production's empty `names`) is not lost: no list goes, and the text is
+/// heard as a reply, so the request's Intake job's 72-hour wait restarts at it.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_txt_11_list_whose_list_cannot_be_built_is_heard_as_a_reply(pool: PgPool) {
+    let h = hooks(&pool, Vec::new());
+    quoted_job(&pool, &h).await;
+    let mut db = pool.acquire().await.expect("connection");
+    let request: Uuid = sqlx::query_scalar("SELECT id FROM intake.conversation")
+        .fetch_one(&pool)
+        .await
+        .expect("request");
+    let start = askhava_intake::api::JobStart {
+        conversation: request,
+        words: "the porch light flickers",
+        emergency: false,
+        trade: "electrical",
+        at: at() - jiff::SignedDuration::from_hours(1),
+    };
+    let Ok(askhava_intake::api::Opened::Created(waiting)) =
+        askhava_intake::api::begin_job(&mut db, &start).await
+    else {
+        panic!("a second job");
+    };
+    assert_eq!(text(&h, 4, HOME, "LIST").await, StatusCode::OK);
+    let lists = "SELECT count(*) FROM messaging.outbox WHERE template_id LIKE 'quote_list%'";
+    assert_eq!(count(&pool, lists).await, 0);
+    let job = askhava_jobs::api::current(&mut db, waiting).await;
+    assert_eq!(job.expect("job").timer_from, at());
 }
 
 /// `Settings::from_pairs` in `env` with `ASKHAVA_PUBLIC_BASE_URL` set to `url`; its value.

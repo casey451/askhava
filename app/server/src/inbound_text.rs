@@ -6,7 +6,9 @@
 //! `ASKHAVA_PUBLIC_BASE_URL` plus the route path and query (Twilio signs the full public URL it
 //! posted to); any other gets 403 and one log line (vendor and reason only). A checked delivery
 //! is answered 200 whatever the outcome, except 500 on a database error, so Twilio retries only
-//! then; the whole delivery is one transaction, so a retry finds nothing half done.
+//! then; the whole delivery is one transaction, so a retry finds nothing half done. Any other
+//! module error that stops a text is logged at warn with the step and the error's variant name
+//! only (D-1311).
 //!
 //! An inbound text runs, in order and once per MessageSid: `messaging::api::receive_inbound`
 //! (a repeat stops here), `privacy::api::read_inbound` (the raw `Body` goes no further),
@@ -27,7 +29,7 @@ use askhava_intake::api::rules::{Check, Inbound, Settings as IntakeSettings, che
 use askhava_intake::api::{IntakeError, TextIn, receive_reply};
 use askhava_messaging::api::{
     APP_OPT_OUT_WORDS, HelpSettings, InboundText, InboxError, OutboxError, Outcome,
-    PROVIDER_OPT_OUT_WORDS, ProviderKeyword, RESUBSCRIBE_WORDS, Relation, on_inbound_text,
+    PROVIDER_OPT_OUT_WORDS, ProviderKeyword, RESUBSCRIBE_WORDS, Relation, keyword, on_inbound_text,
     receive_inbound, receive_status, reply_to_help, sender_business,
 };
 use askhava_privacy::api::{
@@ -81,10 +83,13 @@ pub fn routes(hooks: Arc<Webhooks>) -> Router {
         .with_state(hooks)
 }
 
-/// Why a delivery stopped before the end: `Database` is answered 500, `Ends` 200.
+/// Why a delivery stopped before the end: `Database` is answered 500, `Ends` (a normal end, info)
+/// and `Failed` (a module error after the duplicate check, warn) 200. `Failed` holds the step and
+/// the error's variant name only, never a value (PRIV-016, D-1311).
 enum Halt {
     Database,
     Ends(&'static str),
+    Failed(&'static str, String),
 }
 
 type Step<T> = Result<T, Halt>;
@@ -142,6 +147,14 @@ fn answer(done: Step<()>) -> StatusCode {
         Ok(()) => StatusCode::OK,
         Err(Halt::Ends(step)) => {
             tracing::info!(step, "twilio webhook ended");
+            StatusCode::OK
+        }
+        Err(Halt::Failed(step, error)) => {
+            tracing::warn!(
+                step,
+                error,
+                "twilio webhook step failed; the text was not handled"
+            );
             StatusCode::OK
         }
         Err(Halt::Database) => {
@@ -230,7 +243,9 @@ async fn text(
 
 /// The opt-out check, then the HELP reply (CON-008, CON-013, CON-016, CON-018): an opt-out ends
 /// the text; a listed number's text ends after the HELP reply, which reaches it too (D-131); a
-/// HELP text ends after its reply. `to` is the Ask Hava number Twilio delivered to.
+/// HELP text ends after its reply. `to` is the Ask Hava number Twilio delivered to; the HELP
+/// settings are built from it only for a HELP, INFO or AYUDA text (`keyword`), so a bad `To`
+/// never stops any other text (D-1311).
 async fn screen(
     h: &Webhooks,
     db: &mut PgConnection,
@@ -246,11 +261,15 @@ async fn screen(
         Outcome::Suppressed { .. } => true,
         Outcome::Resubscribed | Outcome::Open => false,
     };
-    let help =
-        HelpSettings::new(HELP_TIMES, None, (None, to)).map_err(|_| Halt::Ends("help_settings"))?;
-    let replied = reply_to_help(db, &h.id_secret, msg, &help)
-        .await
-        .map_err(outbox_halt)?;
+    let replied = if keyword(msg.text).is_some() {
+        let help = HelpSettings::new(HELP_TIMES, None, (None, to))
+            .map_err(|e| Halt::Failed("help_settings", variant(&e)))?;
+        reply_to_help(db, &h.id_secret, msg, &help)
+            .await
+            .map_err(outbox_halt)?
+    } else {
+        None
+    };
     match (replied, listed) {
         (Some(_), _) => Err(Halt::Ends("help")),
         (None, true) => Err(Halt::Ends("suppressed")),
@@ -318,7 +337,7 @@ fn field<'a>(hook: &'a VerifiedWebhook, name: &str) -> Option<&'a str> {
 fn inbox_halt(e: InboxError) -> Halt {
     match e {
         InboxError::Database => Halt::Database,
-        InboxError::BadWebhook => Halt::Ends("bad_webhook"),
+        InboxError::BadWebhook => Halt::Failed("inbox", variant(&e)),
     }
 }
 
@@ -326,7 +345,7 @@ fn outbox_halt(e: OutboxError) -> Halt {
     if matches!(e, OutboxError::Database) {
         Halt::Database
     } else {
-        Halt::Ends("messaging")
+        Halt::Failed("messaging", variant(&e))
     }
 }
 
@@ -334,7 +353,7 @@ fn vault_halt(e: VaultError) -> Halt {
     if matches!(e, VaultError::Database) {
         Halt::Database
     } else {
-        Halt::Ends("vault")
+        Halt::Failed("vault", variant(&e))
     }
 }
 
@@ -342,6 +361,15 @@ fn intake_halt(e: IntakeError) -> Halt {
     if matches!(e, IntakeError::Database) {
         Halt::Database
     } else {
-        Halt::Ends("intake")
+        Halt::Failed("intake", variant(&e))
     }
+}
+
+/// The variant name of error `e` (its `Debug` text up to the first non-name character), so a
+/// log line names the error and never a value it may carry (PRIV-016).
+fn variant(e: &impl std::fmt::Debug) -> String {
+    let text = format!("{e:?}");
+    text.chars()
+        .take_while(char::is_ascii_alphanumeric)
+        .collect()
 }
