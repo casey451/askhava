@@ -2,6 +2,14 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock, the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## The runner now wakes itself up (D-1451, November 2)
+
+- **The problem.** The build only started its next step when something nudged it: a task finishing, or GitHub's hourly timer. That timer is unreliable: it went off 24 times in 123 hours, with gaps up to almost 8 hours, so a quiet build could sit for hours doing nothing, or wait for a session like this one to nudge it.
+- **What happens now.** Every time the runner finishes a turn, it sets its own alarm: 20 minutes when there is work waiting, just after the current task's time runs out when one is in progress, or just after the usage limit resets when it is waiting on that. When the week reaches about 97%, it sleeps in steps of under 6 hours until the weekly reset and starts again by itself, so no one has to schedule the restart.
+- **The safety.** Only one alarm exists at a time. When it goes off, it checks that nothing else is running and no task is in progress before it starts anything; the existing locks are unchanged. It never starts anything while the runner is switched off or while a broken `main` is waiting for a person. The hourly timer stays as a backup.
+- **Cost.** None in money: the repository is public, so GitHub's build minutes are unlimited. The settings file that still described the old private-repository limit of 3,000 minutes now says that (the old figures are kept in case it ever goes private, when the sleeping alarm would cost minutes).
+- **Also fixed.** One task's test failed because a leftover build from the runner's own check of `main` was reused with the wrong folder baked in. The runner now clears its own project's build pieces after that check (the downloaded libraries stay), so a task always builds its own copy.
+
 ## Two tasks finishing together no longer cost a try (D-891, October 31)
 
 - **What happened.** On October 30 two tasks (T024 and T028) each lost one of their three tries only because another task merged into the same shared files just before them (a list of code libraries, the architecture notes, this file). The work itself was fine.

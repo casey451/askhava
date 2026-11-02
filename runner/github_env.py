@@ -71,6 +71,7 @@ DECISIONS_FILE = "docs/decisions.md"  # read from main to reserve decision numbe
 TASKS_FILE = "kit/tasks.json"  # read from main for a plan-fix re-queue (D-677)
 PUSH_RETRIES = 3
 SMOKE_TIMEOUT = 540  # seconds for scripts/smoke.sh, under the session's 600-second Bash call so the runner answers first (D-1178)
+CARGO_CLEAN_MEMBERS = ("cargo", "clean", "--workspace")  # after a smoke run, in the smoke's target dir (D-1451)
 PREHANDIN = "scripts/prehandin.sh"  # the pre-hand-in gate; main's copy runs on a submitted head at --after (D-1300)
 PREHANDIN_TIMEOUT = 240  # seconds for its --quick part (about 20 s measured), well inside --after's 600-second Bash call
 PREHANDIN_RED = "pre-hand-in gate red"  # how a gate failure's log starts; runner/__main__.py `after` holds on it (D-1300)
@@ -124,7 +125,7 @@ def run_command(args: list[str], stdin: str | None, cwd: Path) -> tuple[int, str
         done = _run(long_args, stdin, cwd, _long_token_env(long_args))
         if done.returncode == 0:
             return done.returncode, done.stdout, done.stderr
-    smoke = args[:2] == ["bash", "scripts/smoke.sh"]
+    smoke = args[:2] == ["bash", "scripts/smoke.sh"] or tuple(args) == CARGO_CLEAN_MEMBERS
     done = _run(args, stdin, cwd, _smoke_env() if smoke else _env_for(args), _timeout_for(args))
     return done.returncode, done.stdout, done.stderr
 
@@ -772,9 +773,22 @@ class GitHubEnv:
                 self.smoke_timed_out = True
             finally:
                 self.git("worktree", "remove", "--force", str(tree), check=False)
+                self._forget_smoke_build()
         tail = (out + err).strip().splitlines()
         self.log.append(f"smoke on {head[:12]}: exit {code}; {tail[-1] if tail else ''}")
         return code == 0, head
+
+    def _forget_smoke_build(self) -> None:
+        """`cargo clean --workspace` after a smoke run (D-1451): the smoke built the workspace's own crates
+        from a fresh temporary worktree into the shared target, and those artifacts (with that worktree's
+        paths compiled in through `env!("CARGO_MANIFEST_DIR")`) are newer than the checkout's sources, so
+        Cargo served them to the worker as fresh: T057's `fake_data` read `/tmp/tmp…/main/scripts/pii_scan.py`.
+        Dependencies stay built; only the workspace members rebuild. Skipped without a Cargo.toml."""
+        if not (self.root / "Cargo.toml").exists():
+            return
+        code, _, err = self._run(list(CARGO_CLEAN_MEMBERS), None, self.root)
+        if code != 0:
+            self.log.append(f"cargo clean --workspace after the smoke failed: {err.strip()[-200:]}")
 
     def main_checks_green(self, head: str) -> bool | None:
         """True when `Ci`, `Twin` and `Ally` all concluded success for that commit of main; False when
