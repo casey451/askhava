@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT EXISTS (SELECT 1 FROM payments.free_win WHERE business_id = $1)\n             OR EXISTS (SELECT 1 FROM payments.entity_key k WHERE k.business_id = $1 AND (\n                  EXISTS (SELECT 1 FROM payments.free_win_claim c\n                           WHERE c.kind = k.kind AND c.digest = k.digest)\n               OR EXISTS (SELECT 1 FROM payments.entity_key o\n                            JOIN payments.free_win w ON w.business_id = o.business_id\n                           WHERE o.kind = k.kind AND o.digest = k.digest\n                             AND o.business_id <> $1)))",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "?column?",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "21c738cadcf64221026bc096bc9033c87bf042f0a3820856bf2b96bd66b5bd3d"
+}

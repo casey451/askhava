@@ -8,13 +8,15 @@
 //! the other jobs of the same customer still on record. That call decides, in this order:
 //!
 //! 1. a fee-free job type is not waived here ($0 already, written by `record_fee_at_confirm`);
-//! 2. repeat work: the business already had a confirmed introduction on one of those jobs, so a
+//! 2. a (business, job) already in the ledger keeps the answer it got then, writing nothing
+//!    (D-1422);
+//! 3. repeat work: the business already had a confirmed introduction on one of those jobs, so a
 //!    $0 `repeat-customer` entry, and the free first win is not touched (FEE-013);
-//! 3. a free first win: the business joined inside the 90-day window ([`in_free_win_window`]) and
+//! 4. a free first win: the business joined inside the 90-day window ([`in_free_win_window`]) and
 //!    neither it nor any business sharing one of its entity keys has used one, checked now, at
 //!    use (FEE-011); a $0 `free-first-win` entry plus a `payments.free_win` row holding the
 //!    waived amount (FEE-012), and every key of the business claimed;
-//! 4. otherwise [`Waiver::NotWaived`]: the caller charges the fee.
+//! 5. otherwise [`Waiver::NotWaived`]: the caller charges the fee.
 //!
 //! Everything runs on the caller's connection, inside its Confirm transaction, never across a
 //! Stripe call (R11). Ledger keys come from the job and business IDs only (SEC-018, JOB-006).
@@ -51,9 +53,10 @@ pub fn in_free_win_window(dates: &JoinDates) -> bool {
         })
 }
 
-/// FEE-011, D-151: records the business's entity keys (digests only); a key already recorded is
-/// kept as it is. Keys are never removed, so a later change of ROC number or card still counts
-/// the old one.
+/// FEE-011, D-151, D-1422: records the business's entity keys (digests only); a key already
+/// recorded is kept as it is. Keys are never removed, so a later change of ROC number or card
+/// still counts the old one. When the business already used its win, its keys are claimed too, so
+/// a key recorded after the win still blocks another business's win.
 ///
 /// # Errors
 /// [`FreeWinError::Database`] when a statement fails.
@@ -74,6 +77,17 @@ pub async fn record_entity_keys(
         .await
         .map_err(|_| FreeWinError::Database)?;
     }
+    sqlx::query!(
+        "INSERT INTO payments.free_win_claim (kind, digest, business_id)
+         SELECT k.kind, k.digest, k.business_id FROM payments.entity_key k
+           JOIN payments.free_win w ON w.business_id = k.business_id
+          WHERE k.business_id = $1 ORDER BY k.kind, k.digest
+         ON CONFLICT DO NOTHING",
+        business.0,
+    )
+    .execute(&mut *conn)
+    .await
+    .map_err(|_| FreeWinError::Database)?;
     Ok(())
 }
 
@@ -110,12 +124,13 @@ pub enum Waiver {
 
 /// FEE-010 to FEE-013, D-069, D-151: decides at Confirm, before any charge, whether the pick is
 /// a repeat customer or the business's free first win, and writes the $0 entry (see the module
-/// docs for the order). A repeated call for the same job returns the same answer and writes
-/// nothing new.
+/// docs for the order). A repeated call for the same job returns the answer the ledger already
+/// holds for it and writes nothing new, whatever else changed meanwhile (D-1422).
 ///
 /// # Errors
 /// [`FreeWinError::Race`] when a shared key or this business's win was used by another Confirm
-/// at the same moment (nothing written; run the Confirm again); [`FreeWinError::Ledger`] or
+/// at the same moment, or the claim hit a deadlock or serialization failure (nothing written;
+/// run the Confirm again); [`FreeWinError::Ledger`] or
 /// [`FreeWinError::Database`] when a write fails.
 pub async fn waive_at_confirm(
     conn: &mut PgConnection,
@@ -125,24 +140,45 @@ pub async fn waive_at_confirm(
     if check.picked.cents() == 0 {
         return Ok(Waiver::NotWaived);
     }
+    if let Some(decided) = decided(conn, &check).await? {
+        return Ok(decided);
+    }
     if is_repeat(conn, &check).await? {
         let entry = append_zero(conn, secret, EntryKind::RepeatCustomer, &check).await?;
         return Ok(Waiver::Repeat(entry));
     }
-    if let Some((job, entry, waived_cents)) = used_win(conn, check.business).await? {
-        return Ok(if job == check.job {
-            Waiver::FreeFirstWin {
-                entry: Appended::Already(entry),
-                waived_cents,
-            }
-        } else {
-            Waiver::NotWaived
-        });
-    }
-    if !in_free_win_window(check.dates) || key_taken(conn, check.business).await? {
+    if !in_free_win_window(check.dates) || win_blocked(conn, check.business).await? {
         return Ok(Waiver::NotWaived);
     }
     use_win(conn, secret, &check).await
+}
+
+/// D-1422, JOB-006: the answer already in the ledger for this business and job, if any: its
+/// free first win or repeat entry, or `NotWaived` for a charge or fee-free entry.
+async fn decided(
+    conn: &mut PgConnection,
+    check: &WinCheck<'_>,
+) -> Result<Option<Waiver>, FreeWinError> {
+    let row = sqlx::query!(
+        "SELECT e.id, e.kind, w.waived_cents AS \"waived_cents?\" FROM payments.ledger_entry e
+           LEFT JOIN payments.free_win w ON w.ledger_entry_id = e.id
+          WHERE e.business_id = $1 AND e.job_id = $2
+            AND e.kind IN ('charge', 'free-first-win', 'repeat-customer', 'fee-free-job-type')
+          ORDER BY e.seq LIMIT 1",
+        check.business.0,
+        check.job,
+    )
+    .fetch_optional(conn)
+    .await
+    .map_err(|_| FreeWinError::Database)?;
+    Ok(row.map(|r| match (r.kind.as_str(), r.waived_cents) {
+        ("free-first-win", Some(waived_cents)) => Waiver::FreeFirstWin {
+            entry: Appended::Already(r.id),
+            waived_cents,
+        },
+        ("repeat-customer", _) => Waiver::Repeat(Appended::Already(r.id)),
+        _ => Waiver::NotWaived,
+    }))
 }
 
 /// FEE-013, D-069: the business already had a confirmed introduction (charged, free first win,
@@ -165,34 +201,34 @@ async fn is_repeat(conn: &mut PgConnection, check: &WinCheck<'_>) -> Result<bool
     Ok(found.unwrap_or(false))
 }
 
-/// The business's used free first win: its job, ledger entry and waived cents.
-async fn used_win(
-    conn: &mut PgConnection,
-    business: BusinessId,
-) -> Result<Option<(Uuid, Uuid, i64)>, FreeWinError> {
-    let row = sqlx::query!(
-        "SELECT job_id, ledger_entry_id, waived_cents FROM payments.free_win
-           WHERE business_id = $1",
-        business.0,
-    )
-    .fetch_optional(conn)
-    .await
-    .map_err(|_| FreeWinError::Database)?;
-    Ok(row.map(|r| (r.job_id, r.ledger_entry_id, r.waived_cents)))
-}
-
-/// FEE-011: one of the business's entity keys was already claimed by a used free first win.
-async fn key_taken(conn: &mut PgConnection, business: BusinessId) -> Result<bool, FreeWinError> {
+/// FEE-011, D-1422: the business already used its win, or one of its entity keys is claimed, or
+/// is shared with another business that used its win (a key recorded after that win).
+async fn win_blocked(conn: &mut PgConnection, business: BusinessId) -> Result<bool, FreeWinError> {
     let taken = sqlx::query_scalar!(
-        "SELECT EXISTS (SELECT 1 FROM payments.entity_key k
-           JOIN payments.free_win_claim c ON c.kind = k.kind AND c.digest = k.digest
-           WHERE k.business_id = $1)",
+        "SELECT EXISTS (SELECT 1 FROM payments.free_win WHERE business_id = $1)
+             OR EXISTS (SELECT 1 FROM payments.entity_key k WHERE k.business_id = $1 AND (
+                  EXISTS (SELECT 1 FROM payments.free_win_claim c
+                           WHERE c.kind = k.kind AND c.digest = k.digest)
+               OR EXISTS (SELECT 1 FROM payments.entity_key o
+                            JOIN payments.free_win w ON w.business_id = o.business_id
+                           WHERE o.kind = k.kind AND o.digest = k.digest
+                             AND o.business_id <> $1)))",
         business.0,
     )
     .fetch_one(conn)
     .await
     .map_err(|_| FreeWinError::Database)?;
     Ok(taken.unwrap_or(false))
+}
+
+/// D-1422: a deadlock (40P01) or serialization failure (40001) is a lost race, not a fault.
+fn claim_error(err: &sqlx::Error) -> FreeWinError {
+    let code = err.as_database_error().and_then(|e| e.code());
+    if matches!(code.as_deref(), Some("40P01" | "40001")) {
+        FreeWinError::Race
+    } else {
+        FreeWinError::Database
+    }
 }
 
 /// FEE-011, FEE-012: in a savepoint, the $0 entry, the `free_win` row with the waived amount and
@@ -216,17 +252,18 @@ async fn use_win(
     )
     .execute(&mut *tx)
     .await
-    .map_err(|_| FreeWinError::Database)?;
+    .map_err(|e| claim_error(&e))?;
     let claims = sqlx::query!(
         "WITH mine AS (SELECT kind, digest FROM payments.entity_key WHERE business_id = $1),
               added AS (INSERT INTO payments.free_win_claim (kind, digest, business_id)
-                        SELECT kind, digest, $1 FROM mine ON CONFLICT DO NOTHING RETURNING 1)
+                        SELECT kind, digest, $1 FROM mine ORDER BY kind, digest
+                        ON CONFLICT DO NOTHING RETURNING 1)
          SELECT (SELECT count(*) FROM mine) AS \"keys!\", (SELECT count(*) FROM added) AS \"added!\"",
         check.business.0,
     )
     .fetch_one(&mut *tx)
     .await
-    .map_err(|_| FreeWinError::Database)?;
+    .map_err(|e| claim_error(&e))?;
     if won.rows_affected() != 1 || claims.keys != claims.added {
         tx.rollback().await.map_err(|_| FreeWinError::Database)?;
         return Err(FreeWinError::Race);

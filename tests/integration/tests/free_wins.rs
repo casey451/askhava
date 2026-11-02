@@ -219,6 +219,25 @@ async fn td_fee_08_one_win_per_entity_key(pool: PgPool) {
     assert!(matches!(own, Waiver::FreeFirstWin { .. }));
 }
 
+/// Polls (bounded, 10 s) until a session of this test database waits on a lock: the second
+/// Confirm blocked on the first one's uncommitted claim.
+async fn wait_for_lock_wait(db: &mut PgConnection) {
+    for _ in 0..1_000 {
+        let waiting: bool = sqlx::query_scalar(
+            "SELECT EXISTS (SELECT 1 FROM pg_stat_activity
+               WHERE datname = current_database() AND wait_event_type = 'Lock')",
+        )
+        .fetch_one(&mut *db)
+        .await
+        .expect("activity");
+        if waiting {
+            return;
+        }
+        tokio::time::sleep(std::time::Duration::from_millis(10)).await;
+    }
+    panic!("the second Confirm never waited on the first one's claim");
+}
+
 /// TD-FEE-08 (FEE-011): checked when used: two Confirms sharing a key at the same moment give one
 /// win; the second writes nothing and reports `Race`, and on its retry is not waived.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
@@ -254,7 +273,7 @@ async fn td_fee_08_simultaneous_wins_on_a_shared_key(pool: PgPool) {
         };
         waive_at_confirm(&mut db, &secret(), check).await
     });
-    tokio::time::sleep(std::time::Duration::from_millis(300)).await;
+    wait_for_lock_wait(&mut setup).await;
     tx.commit().await.expect("commit");
     assert_eq!(second.await.expect("task"), Err(FreeWinError::Race));
     let joined = dates(after_launch(10, 0, 0), &[]);
@@ -290,4 +309,103 @@ async fn td_fee_08_free_win_tables_are_append_only(pool: PgPool) {
             .and_then(|e| e.code().map(|c| c.into_owned()));
         assert_eq!(code.as_deref(), Some("42501"), "{sql}");
     }
+}
+
+/// TD-FEE-08 (FEE-011, D-1422): a key recorded after a business used its win is claimed at once,
+/// so a second business with that key is refused, and the guard holds even without the claim row.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_fee_08_key_recorded_after_the_win_still_counts(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("connection");
+    let joined = dates(after_launch(10, 0, 0), &[]);
+    keys(&mut db, biz(1), &[(EntityKind::Roc, "fake roc first")]).await;
+    let won = waive(&mut db, biz(1), job(1), &joined).await;
+    assert!(matches!(won, Waiver::FreeFirstWin { .. }));
+    keys(
+        &mut db,
+        biz(1),
+        &[(EntityKind::CardFingerprint, "fakefp-late")],
+    )
+    .await;
+    keys(
+        &mut db,
+        biz(2),
+        &[(EntityKind::CardFingerprint, "fakefp-late")],
+    )
+    .await;
+    let claims: i64 = sqlx::query_scalar("SELECT count(*) FROM payments.free_win_claim")
+        .fetch_one(&mut *db)
+        .await
+        .expect("claims");
+    assert_eq!(claims, 2);
+    assert_eq!(
+        waive(&mut db, biz(2), job(2), &joined).await,
+        Waiver::NotWaived
+    );
+    sqlx::query("DELETE FROM payments.free_win_claim WHERE business_id = $1")
+        .bind(biz(1).0)
+        .execute(&mut *db)
+        .await
+        .expect("drop claims as the owner role");
+    keys(&mut db, biz(3), &[(EntityKind::Roc, "fake roc first")]).await;
+    assert_eq!(
+        waive(&mut db, biz(3), job(3), &joined).await,
+        Waiver::NotWaived
+    );
+    let count: i64 = sqlx::query_scalar("SELECT count(*) FROM payments.ledger_entry")
+        .fetch_one(&mut *db)
+        .await
+        .expect("ledger");
+    assert_eq!(count, 1);
+}
+
+/// A claim-insert trigger body failing as a deadlock (SQLSTATE 40P01).
+const FAIL_DEADLOCK: &str = "CREATE OR REPLACE FUNCTION payments.fake_fail() RETURNS trigger
+    LANGUAGE plpgsql AS $f$ BEGIN RAISE EXCEPTION 'fake' USING ERRCODE = '40P01'; END $f$";
+/// A claim-insert trigger body failing with any other error (SQLSTATE P0001).
+const FAIL_OTHER: &str = "CREATE OR REPLACE FUNCTION payments.fake_fail() RETURNS trigger
+    LANGUAGE plpgsql AS $f$ BEGIN RAISE EXCEPTION 'fake' USING ERRCODE = 'P0001'; END $f$";
+
+/// TD-FEE-08 (FEE-011, D-1422): a deadlock in the claim is reported as `Race` and anything else
+/// as `Database`; either way nothing is written.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_fee_08_claim_failures_roll_back(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("connection");
+    let joined = dates(after_launch(10, 0, 0), &[]);
+    keys(&mut db, biz(1), &[(EntityKind::Roc, "fake roc fail")]).await;
+    for (code, want) in [
+        ("40P01", FreeWinError::Race),
+        ("P0001", FreeWinError::Database),
+    ] {
+        let body = if code == "40P01" {
+            FAIL_DEADLOCK
+        } else {
+            FAIL_OTHER
+        };
+        sqlx::raw_sql(body)
+            .execute(&mut *db)
+            .await
+            .expect("function");
+        sqlx::raw_sql(
+            "CREATE OR REPLACE TRIGGER fake_fail BEFORE INSERT ON payments.free_win_claim
+             FOR EACH ROW EXECUTE FUNCTION payments.fake_fail()",
+        )
+        .execute(&mut *db)
+        .await
+        .expect("trigger");
+        let fee = picked(40_000, false);
+        let check = WinCheck {
+            business: biz(1),
+            job: job(1),
+            picked: &fee,
+            dates: &joined,
+            same_customer_jobs: &[],
+        };
+        let got = waive_at_confirm(&mut db, &secret(), check).await;
+        assert_eq!(got, Err(want), "{code}");
+    }
+    let count: i64 = sqlx::query_scalar("SELECT count(*) FROM payments.free_win")
+        .fetch_one(&mut *db)
+        .await
+        .expect("wins");
+    assert_eq!(count, 0);
 }

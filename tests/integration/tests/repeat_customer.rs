@@ -164,3 +164,37 @@ async fn td_fee_32_one_ledger_line_per_pick(pool: PgPool) {
     .expect("ledger");
     assert_eq!(per_pick, [1, 1, 1]);
 }
+
+/// TD-FEE-09, TD-FEE-32 (FEE-013, FEE-053, D-1422): a Confirm run again for a job already decided
+/// keeps that answer and writes no second line, even when the customer's other jobs changed.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_fee_09_a_decided_job_keeps_its_answer(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("connection");
+    charged(&mut db, BUSINESS, job(1), 2_500).await;
+    let repeat = waive(&mut db, (BUSINESS, job(2), 90_000), true, &[job(1)]).await;
+    assert!(matches!(repeat, Waiver::Repeat(Appended::New(_))));
+    let purged = waive(&mut db, (BUSINESS, job(2), 90_000), true, &[]).await;
+    assert!(matches!(purged, Waiver::Repeat(Appended::Already(_))));
+    let win = waive(&mut db, (BUSINESS, job(3), 90_000), true, &[]).await;
+    assert!(matches!(
+        win,
+        Waiver::FreeFirstWin {
+            entry: Appended::New(_),
+            ..
+        }
+    ));
+    let later = waive(&mut db, (BUSINESS, job(3), 90_000), true, &[job(1)]).await;
+    assert!(matches!(
+        later,
+        Waiver::FreeFirstWin {
+            entry: Appended::Already(_),
+            waived_cents: 7_500
+        }
+    ));
+    let expected = [
+        ("charge".to_owned(), 2_500),
+        ("repeat-customer".to_owned(), 0),
+        ("free-first-win".to_owned(), 0),
+    ];
+    assert_eq!(kinds(&mut db).await, expected);
+}
