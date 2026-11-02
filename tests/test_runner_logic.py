@@ -464,10 +464,10 @@ def real_gate(gid: str) -> dict[str, Any]:
 def test_war_games_gate_clears_only_on_exactly_its_phrase_and_records_every_other_reply() -> None:
     g = real_gate("T243")
     assert outbox.resume_phrase(g) == "war games go"
-    for text in ("war games go", "War games go.", "  WAR GAMES GO!  "):
+    for text in ("war games go", "War games go.", "  WAR GAMES GO!  ", "'war games go'", '"war games go"', "\u2018war games go\u2019", "'War games go.'"):
         s = outbox.apply_owner_answer(st.new_state(), g, text, NOW)
         assert st.status(s, "T243") == st.DONE, text
-    for text in ("build P0-1 and P0-3, then war games go", "war games go, thanks", "build P0-2", "not war games go yet", "go"):
+    for text in ("build P0-1 and P0-3, then war games go", "war games go, thanks", "build P0-2", "not war games go yet", "go", "'war games' go now"):
         s = outbox.apply_owner_answer(st.new_state(), g, text, NOW)
         assert st.status(s, "T243") == st.QUEUED and st.entry(s, "T243")["answers"] == [text], text
 

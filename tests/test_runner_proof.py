@@ -110,7 +110,7 @@ def test_a_stage_not_listed_is_proved_by_hand_and_says_why() -> None:
     record, waits = proof.machine_proof("3", graph(), done_state(), world())
     assert record is None and "--record-proof 3" in waits[0] and "cargo-mutants" in waits[0]
     record, waits = proof.machine_proof("7", graph(), done_state(), world())
-    assert record is None and waits == ["stage 7's proof is recorded by hand (`python3 -m runner --record-proof 7`)"]
+    assert record is None and waits == ["stage 7's proof is recorded by hand (`python3 -m runner --record-proof 7 --evidence TEXT`)"]
 
 
 def test_owned_up_to_counts_earlier_stages_and_skips_tasks_without_a_numeric_stage() -> None:
@@ -241,5 +241,24 @@ def test_rust_and_playwright_skip_paths_count_as_skips() -> None:
     for body in ("#[ignore]\nfn t() {}", "#[ignore = \"slow\"]", 'test.skip("x", () => {})', "test.fixme(true)",
                  'test.only("x", () => {})', 'test.describe.skip("x", () => {})'):
         assert proof.SKIP_PATHS.search(body), body
-    for body in ("rows.iter().skip(1)", "let only = 1;", "fn skip_the_header() {}"):
+    for body in ('it.skip("x", () => {})', "it.only('x', fn)", 'describe.skip("x", () => {})', 'describe.only("x", f)',
+                 '#[cfg_attr(not(feature = "db"), ignore)]', "testInfo.skip(true)", "test.info().skip()", "test.fail()",
+                 'test.describe.fixme("x", f)', "test.describe.only('x', f)"):
+        assert proof.SKIP_PATHS.search(body), body
+    for body in ("rows.iter().skip(1)", "let only = 1;", "fn skip_the_header() {}", "let mut it = v.iter(); it.skip(1);",
+                 "#[cfg_attr(test, derive(Debug))]", "fn test_failure_is_reported() {}"):
         assert not proof.SKIP_PATHS.search(body), body
+
+
+def test_a_playwright_config_or_fixture_that_skips_or_filters_keeps_the_proof_unrecorded() -> None:
+    """D-1473: a spec is only as unskipped as the config and fixtures that run it."""
+    config, fixtures = "tests/e2e/playwright.config.ts", "tests/e2e/fixtures.ts"
+    ok = marked("2")
+    record, _ = proof.machine_proof("2", stage_graph("2"), stage_state("2"), world(texts=dict(ok, **{config: "// a stray `test.only` fails the run\nexport default {};"})))
+    assert record is not None  # a comment naming test.only is not a skip
+    for path, body in ((config, "export default { testIgnore: ['j1_*'] };"), (config, "export default { grep: /quote/ };"),
+                       (config, "export default { grepInvert: /J1/ };"), (fixtures, "test.skip(true, 'no stand-ins');")):
+        record, waits = proof.machine_proof("2", stage_graph("2"), stage_state("2"), world(texts=dict(ok, **{path: body})))
+        assert record is None and waits == [f"{path} with no skip, testIgnore or grep in nightly commit {'n' * 12}"], body
+    record, waits = proof.machine_proof("2", stage_graph("2"), stage_state("2"), world(texts=ok, missing={config}))
+    assert record is None and waits == [f"{config} in nightly commit {'n' * 12}"]

@@ -40,7 +40,12 @@ class Clause:
     `tests` are test files that must exist in the nightly commit with no skip path; `marks` are
     (path, text) pairs that must appear in that commit (a test or entry the clause needs, such as a
     mutant group or the axe widths); `jobs` are the kit/nightly.json `results` keys that must be
-    "success" (ci holds Checks, Coverage and E2e; a11y is Ally; named_mutants the nightly job)."""
+    "success" (ci holds Checks, Coverage and E2e; a11y is Ally; named_mutants the nightly job).
+
+    A mark is a text proxy that the clause's subject is in place, never the proof itself: `"floors"` in
+    tests/coverage_floor.json says the floors exist, and the ci job's Coverage compare proves them held;
+    the jiff-sqlx marks say intake_timeouts.rs writes and reads a `timestamptz`, and that test passing in
+    the ci job proves the round trip."""
 
     text: str
     tests: tuple[str, ...] = ()
@@ -63,7 +68,8 @@ MACHINE_PROOFS: dict[str, tuple[Clause, ...]] = {
         Clause("stand-ins over HTTP, contract tests green (T167)", ("tests/contract/test_stand_in_server.py",)),
     ),
     "2": (
-        Clause("a planted cross-layer import refused; session-proof compile-fail cases (T223)",
+        Clause("a planted cross-layer import refused (the architecture test scans a planted tree; no `cargo build` is "
+               "planted); session-proof compile-fail cases (T223)",
                ("tests/integration/tests/architecture.rs", "tests/security/tests/session_proof_compile_fail.rs"),
                (("tests/integration/tests/architecture.rs", "fn td_sec_10_planted_violations_fail"),)),
         Clause("migrations apply from empty in number order", ("tests/integration/tests/migrations.rs",)),
@@ -105,6 +111,12 @@ HAND_RECORDED: dict[str, str] = {
 }
 
 
+def hand_reason(stage: str) -> str:
+    """What a stage the runner does not prove waits for: the hand-run command, and why when known."""
+    why = f" ({HAND_RECORDED[stage]})" if stage in HAND_RECORDED else ""
+    return f"stage {stage}'s proof is recorded by hand (`python3 -m runner --record-proof {stage} --evidence TEXT`){why}"
+
+
 def tests_of(stage: str) -> tuple[str, ...]:
     """Every test file named for the stage, once each, in clause order."""
     return tuple(dict.fromkeys(path for clause in MACHINE_PROOFS.get(stage, ()) for path in clause.tests))
@@ -129,12 +141,42 @@ class World:
 
 
 # A test that can skip itself can be green without checking anything, so a named test file must have
-# no skip path at all (D-551): pytest's, Rust's `#[ignore]` and Playwright's skip, fixme and only (D-1473).
+# no skip path at all (D-551): pytest's; Rust's `#[ignore]`, also under `cfg_attr`; Playwright's skip,
+# fixme, only and fail, on `test`, `test.describe` or `describe`, and `testInfo.skip`; and a mocha-style
+# `it.skip("…")` (D-1473). The Playwright config and fixtures beside a named spec are scanned too, with
+# their `//` comments left out, for the same calls and for `testIgnore` and `grep` (SUITE_FILES).
 SKIP_PATHS = re.compile(
-    r"pytest\.skip|skipif|importorskip|mark\.skip|xfail|SkipTest|unittest\.skip|#\[ignore"
-    r"|\btest(?:\.describe)?\.(?:skip|fixme|only)\b|\bdescribe\.(?:skip|only)\b"
+    r"pytest\.skip|skipif|importorskip|mark\.skip|xfail|SkipTest|unittest\.skip"
+    r"|#\[ignore|cfg_attr\(.*\bignore\b"
+    r"|\b(?:test|describe)(?:\.describe)?\.(?:skip|fixme|only|fail)\b|\bit\.(?:skip|fixme|only|fail)\(\s*[\"'`]"
+    r"|\.info\(\)\.skip|testInfo\.skip"
 )
-SKIP_WORDS = "pytest.skip, skipif, importorskip, xfail, #[ignore], test.skip, test.fixme, test.only"
+SKIP_WORDS = "pytest.skip, skipif, importorskip, xfail, #[ignore], test.skip, test.fixme, test.only, test.fail"
+CONFIG_SKIPS = re.compile(r"testIgnore|\bgrep(?:Invert)?\s*:")
+SUITE_FILES: dict[str, tuple[str, ...]] = {
+    "tests/e2e/": ("tests/e2e/playwright.config.ts", "tests/e2e/fixtures.ts"),
+    "tests/a11y/": ("tests/a11y/playwright.config.ts", "tests/a11y/fixtures.ts"),
+}
+
+
+def _code(text: str) -> str:
+    """The text without its whole-line `//` comments (a config's comment may name `test.only`)."""
+    return "\n".join(line for line in text.splitlines() if not line.lstrip().startswith("//"))
+
+
+def _suite_gaps(sha: str, tests: tuple[str, ...], world: World) -> list[str]:
+    """A named spec's Playwright config missing, or its config or fixtures able to skip or filter tests."""
+    gaps = []
+    for prefix, files in SUITE_FILES.items():
+        if not any(path.startswith(prefix) for path in tests):
+            continue
+        for path in files:
+            text = world.read_file(sha, path)
+            if text is None:
+                gaps += [f"{path} in nightly commit {sha[:12]}"] if path.endswith("config.ts") else []
+            elif SKIP_PATHS.search(_code(text)) or CONFIG_SKIPS.search(_code(text)):
+                gaps.append(f"{path} with no skip, testIgnore or grep in nightly commit {sha[:12]}")
+    return gaps
 
 
 def _test_gaps(sha: str, tests: tuple[str, ...], world: World) -> list[str]:
@@ -222,8 +264,7 @@ def owned_up_to(graph: list[dict[str, Any]], rows: Iterable[Any], stage: str) ->
 def machine_proof(stage: str, graph: list[dict[str, Any]], state: State, world: World) -> tuple[dict[str, Any] | None, list[str]]:
     """(the proof record for `stage`, or None, and what the proof still waits for)."""
     if stage not in MACHINE_PROOFS:
-        why = f" ({HAND_RECORDED[stage]})" if stage in HAND_RECORDED else ""
-        return None, [f"stage {stage}'s proof is recorded by hand (`python3 -m runner --record-proof {stage}`){why}"]
+        return None, [hand_reason(stage)]
     tasks = [t for t in graph if str(t.get("stage")) == stage]
     waits = _open_tasks(tasks, state)
     if waits:
@@ -231,7 +272,8 @@ def machine_proof(stage: str, graph: list[dict[str, Any]], state: State, world: 
     sha, waits = _nightly_gaps(tasks, state, world)
     if waits:
         return None, waits
-    waits = _job_gaps(stage, world) + _test_gaps(sha, tests_of(stage), world) + _mark_gaps(sha, stage, world)
+    tests = tests_of(stage)
+    waits = _job_gaps(stage, world) + _test_gaps(sha, tests, world) + _suite_gaps(sha, tests, world) + _mark_gaps(sha, stage, world)
     owned = owned_up_to(graph, world.rows(state), stage)
     waits += [f"requirement {row.req_id} verified" for row in owned if not row.verified]
     if waits:

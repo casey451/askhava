@@ -1,7 +1,7 @@
 {
  "items": {
-  "BUILD_BRIEF.md": "cbf8975fb475f036c460ee8ba9abb386dfe5d5fcac03ff181a3eebf198020818",
-  "CLAUDE.md": "0413240431347a46a9994ec89595768648b41c9feb006bd250f6120ba5e4e31b",
+  "BUILD_BRIEF.md": "d17143b427ffed045c41ea55eaf11bfa758103044ff6e3418fc4f6fd32787a44",
+  "CLAUDE.md": "b0583382f0e224518f101e0d18a294635ccce76569297b6c9333896b56d44ad1",
   "docs/architecture.md#3": "4516c6eb5687a675f22d0f31efd9ba27582b238d566c791adcab3ec6ced471c4",
   "docs/architecture.md#4": "7e91e998af692e306f9ecb696a36c03c7da107a6865a4e9996ed035bd88ace43",
   "docs/architecture.md#5": "252f076ebcfff2cef83e58b162417e20e3ae5162ef91c78a126c1f5a9a635aa9",
@@ -14,7 +14,7 @@
   "docs/catalog/question_bank.yaml": "b860a6a06fe98f281e698d3863a2d3ec453d99cdff88f93b584dd3860e340ccb",
   "docs/catalog/worked_examples.yaml": "81ad240453551a0fdfaa76b40df74346ebe327983ed9341911646dd9b48df5e4",
   "docs/code-docs.md": "b8a87cc6a1614fd558057c21581c4cd3093a155f30a6c6ddb3a473d6f34bc17a",
-  "docs/constitution.md": "f63792319463ed4f575659363ea737a9a4858f8b58ba8b281a0dfc235b533dfc",
+  "docs/constitution.md": "95f9a64beb222f81625b5c932b2d35ee16435c14598baa7a9d6b888d6ccb498d",
   "docs/governance.md": "7d4a281832b83f7ce7946018e471b76353c4c6534d4dac7c94acacee315dde85",
   "docs/sources.md": "b2f42c566a97b33d85ec2310ca04a405dc85db921b1b4ad081797df837563ff0",
   "docs/spec/accessibility.md": "6c79d880396f086eff6319c505390b23c5f33749806b8244364da19a92b62d50",
@@ -66,7 +66,7 @@
   "scripts/smoke.sh": "1c976e493c877c2006b18f27aae5624c9f987ca1c1f4234561bde72a235c5a00",
   "scripts/stage_exit.py": "bef22183aa42f9a646ef6853fb922b3d9053852b97dd73ca9feebb430f0b0d0f",
   "scripts/trace_spec.py": "9956b2ffaa7f6e205e6f27338f65cddf7f573afa3c53de697f959adc96923439",
-  "scripts/validate_tasks.py": "895942169f84ddb8e9afe3090805b47a47342a5708bface7bdb0bd38c8aa9ebd"
+  "scripts/validate_tasks.py": "61dd83efdd8e492954e9908b6bb22e594889e38f6dc6b154a4f92ac277be75d9"
  },
  "note": "Fingerprints of the approved blueprint; see scripts/check_plan_lock.py and docs/governance.md.",
  "schema": 1

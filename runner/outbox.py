@@ -67,8 +67,8 @@ def clears(gate: dict[str, Any], text: str) -> bool:
     if gate["gate"].get("conditional"):
         return conditional_answer(text) is not None
     plain = _plain(text)
-    if gate["gate"].get("exact"):
-        return bool(resume_phrase(gate)) and plain == _plain(resume_phrase(gate))
+    if gate["gate"].get("exact"):  # one surrounding pair of quotes is not part of the reply ('war games go')
+        return bool(resume_phrase(gate)) and plain.strip("' ") == _plain(resume_phrase(gate))
     words = plain.split()
     if len(words) > MAX_ANSWER_WORDS or any(re.search(rf"\b{re.escape(n)}\b", plain) for n in NEGATIONS):
         return False

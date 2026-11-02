@@ -188,7 +188,7 @@ CONDITIONAL_GATE = "real-texts-casey-phone"
 # phrase clears it, so a reply naming items to build never starts the war games (D-1473).
 EXACT_GATE = "war-games-go"
 PRE_WAR_GAMES_REVIEW = "docs/reviews/pre-war-games-review.md"
-WAR_GAMES_DIR = "wargames/"
+WAR_GAMES_PATHS = ("wargames/", "tests/wargames/", "docs/phase2/war-games.md")  # a war-games task owns one
 NO_DEPENDENTS = ("stage-0.5-go", "first-live-charge")
 TWILIO_SANDBOX_PATH = "app/adapters/src/twilio_sms.rs"
 MAX_OWNS = 10  # P-1 (D-485): one session's work; was 14 (D-119)
@@ -961,8 +961,11 @@ def check_war_games_gate(graph: Graph, gate: str) -> list[str]:
     errors = [] if any(r in graph.ancestors[gate] for r in review) else [
         f"gate {EXACT_GATE} must come after the task owning {PRE_WAR_GAMES_REVIEW}"
     ]
-    for task in graph.tasks:
-        if any(path.startswith(WAR_GAMES_DIR) for path in task["owns"]) and gate not in graph.ancestors[task["id"]]:
+    games = [t for t in graph.tasks if any(path.startswith(WAR_GAMES_PATHS) for path in t["owns"])]
+    if not games:
+        errors.append(f"no task owns a war-games path ({', '.join(WAR_GAMES_PATHS)}) for gate {EXACT_GATE} to hold")
+    for task in games:
+        if gate not in graph.ancestors[task["id"]]:
             errors.append(f"{where(task)}: a war-games task must come after gate {EXACT_GATE}")
     return errors
 

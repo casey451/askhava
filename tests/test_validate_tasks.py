@@ -154,7 +154,9 @@ def valid_tasks() -> list[dict[str, Any]]:
             cites=["src.md:3"],
         ),
         make_gate("T012", "war-games-go", "war-games-go", ["T011"], "6", 2),
-        make_gate("T006", "finished", "finished", ["T005", "T012"], "6", 2),
+        make_task("T013", "fake-war-games", type="harness", stage="6", phase=2, deps=["T012"], model=OPUS,
+                  reviewer_model=OPUS, review_areas=["harness"], owns=["wargames/fake.py"], cites=["src.md:3"]),
+        make_gate("T006", "finished", "finished", ["T005", "T013"], "6", 2),
         make_gate("T007", "gate-b", "gate-b", ["T006"], "6", 2),
         make_gate("T008", "gate-c", "gate-c", ["T007"], "7", 2),
         make_gate("T009", "first-charge", "first-live-charge", ["T008"], "7", 2),
@@ -817,17 +819,23 @@ def test_war_games_gate_follows_the_pre_war_games_review(tmp_path: Path) -> None
 
 
 def test_every_war_games_task_follows_the_war_games_gate(tmp_path: Path) -> None:
-    """D-1473: no war-games task can run before Casey's go."""
+    """D-1473: no war-games task (wargames/, tests/wargames/, docs/phase2/war-games.md) runs before Casey's go."""
+    for path in ("wargames/fake.py", "tests/wargames/test_fake.py", "docs/phase2/war-games.md"):
+        tasks = valid_tasks()
+        task(tasks, "T013")["deps"] = ["T011"]
+        task(tasks, "T013")["owns"] = [path]
+        assert_error(errors_for(tmp_path, tasks), "T013 (fake-war-games): a war-games task must come after gate war-games-go")
+    assert not [e for e in errors_for(tmp_path, valid_tasks()) if "war-games" in e]
+
+
+def test_the_war_games_gate_must_hold_some_war_games_task(tmp_path: Path) -> None:
     tasks = valid_tasks()
-    games = make_task("T013", "fake-war-games", type="harness", stage="6", phase=2, deps=["T011"], model=OPUS,
-                      reviewer_model=OPUS, review_areas=["harness"], owns=["wargames/fake.py"], cites=["src.md:3"])
-    task(tasks, "T006")["deps"] = ["T005", "T012", "T013"]
-    assert_error(errors_for(tmp_path, [*tasks, games]), "T013 (fake-war-games): a war-games task must come after gate war-games-go")
-    games["deps"] = ["T012"]
-    assert not [e for e in errors_for(tmp_path, [*tasks, games]) if "war-games" in e]
+    task(tasks, "T013")["owns"] = ["app/fake/other.py"]
+    assert_error(errors_for(tmp_path, tasks), "no task owns a war-games path")
 
 
 def test_war_games_gate_sits_between_the_account_checkpoint_and_finished(tmp_path: Path) -> None:
     tasks = valid_tasks()
     task(tasks, "T006")["deps"] = ["T005"]
+    task(tasks, "T013")["deps"] = ["T002"]
     assert_error(errors_for(tmp_path, tasks), "gate finished must come after gate war-games-go")
