@@ -16603,7 +16603,7 @@
    }
   }
  },
- "updated_at": "2026-11-02T13:22:22Z",
+ "updated_at": "2026-11-02T13:29:34Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -16704,12 +16704,6 @@
  "runner_sha": "21a04e88f344f39917c2d0bd6c0ca32563bdd8bb",
  "starter": "actions",
  "smoke_runs": [
-  {
-   "sha": "d911c816d7dd781d3151fd5cddf0b7d39e8ea92a",
-   "ok": true,
-   "at": "2026-11-01T19:39:13Z",
-   "why": "start routine"
-  },
   {
    "sha": "fe4ae0352ad549f64c7cfd608f40d33ef4727513",
    "ok": true,
@@ -16823,12 +16817,18 @@
    "ok": true,
    "at": "2026-11-02T13:14:51Z",
    "why": "start routine"
+  },
+  {
+   "sha": "1064dc5cd3a55b28bd46a43566a0185b9ddf1b24",
+   "ok": true,
+   "at": "2026-11-02T13:22:31Z",
+   "why": "start routine"
   }
  ],
  "main_red": null,
  "pacing": {
   "last": "T062 estimated 2.1M tokens (calibrated); five-hour window has 15.8M left, week 2.0M (session_reading 2026-11-02T13:03:27Z (week)); waiting until 2026-11-05T17:00:00Z",
-  "at": "2026-11-02T13:14:51Z",
+  "at": "2026-11-02T13:22:31Z",
   "decision": "wait",
   "waiting_until": "2026-11-05T17:00:00Z",
   "standing": {
@@ -16846,7 +16846,7 @@
    }
   },
   "remaining_estimate": 338917081,
-  "projected_finish": "2026-11-14T18:44:33Z"
+  "projected_finish": "2026-11-14T18:52:14Z"
  },
  "main_red_history": [
   {

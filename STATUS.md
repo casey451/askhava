@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-02T13:22:22Z by runner 21a04e88f344 (actions).
+Updated 2026-11-02T13:29:34Z by runner 21a04e88f344 (actions).
 
 **Waiting for tokens until 17:00Z; 98 of 230 done; week 96% used, resets Thu 2026-11-05 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-02T13:22:22Z by runner 21a04e88f344 (actions).
 - **Stage:** stage 3; stage proofs recorded: 1, 2
 - **Lane:** idle since 12:41Z (no task in progress)
 - **Week:** 96% used, 2.0M tokens left; resets Thu 2026-11-05 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:03Z, 18 min before this update
+- **Last run:** 13:22Z, 7 min before this update
 - **Keeper:** unknown (the keeper has not recorded a wake yet)
 
 ## Needs attention
@@ -45,6 +45,7 @@ Updated 2026-11-02T13:22:22Z by runner 21a04e88f344 (actions).
 | T049 | intake: CLOSE ####, cancel intent, 'Close which?', bare canc | done | 1 | 34 min | 14:07Z |  |
 
 ### Plan and harness merges on main
+- 13:17Z Harness: the runner wakes itself (keeper), smoke target clean (D-1451) (#264)
 - 13:11Z Harness: the full pre-hand-in gate measures floored coverage; hand_in_by (D-1440) (#263)
 - 12:48Z Harness: STATUS.md dashboard for the owner (D-1462) (#262)
 - 07:35Z Harness: job-log download allows escape sequences (D-1398) (#254)
@@ -90,7 +91,7 @@ Updated 2026-11-02T13:22:22Z by runner 21a04e88f344 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-02T13:03:27Z (week)): five-hour: 13.3M used, 15.8M left, resets 2026-11-02T14:49:34Z; week: 192.0M used, 2.0M left, resets 2026-11-05T17:00:00Z; projected finish 2026-11-14T18:44:33Z; waiting until 2026-11-05T17:00:00Z.
+- Pacing (session_reading 2026-11-02T13:03:27Z (week)): five-hour: 13.3M used, 15.8M left, resets 2026-11-02T14:49:34Z; week: 192.0M used, 2.0M left, resets 2026-11-05T17:00:00Z; projected finish 2026-11-14T18:52:14Z; waiting until 2026-11-05T17:00:00Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
