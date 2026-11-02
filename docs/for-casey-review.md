@@ -1597,3 +1597,10 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **Inside an open request.** LIST or LISTA gets the quotes list; any other reply restarts the 3-day no-reply clock and carries on as before (CLOSE, cancel, "2 YES", the 911 screen).
 - **Worth a look.** The HELP reply says "2 days, or within 24 hours if your job is urgent" until there's a setting for it. LIST can't name businesses yet (there's no business name on file), so for now a LIST with quotes waiting gets no list; it still counts as her reply, so the 3-day clock restarts and nothing is lost (D-1310). Any step that fails on a text is now logged by its error name, never its content (D-1311).
 - **For the account checkpoint.** The test and live projects need `ASKHAVA_PUBLIC_BASE_URL` (the app's public address, which Twilio signs) or the web process won't start; Twilio's messaging and status webhooks then point at `/webhooks/twilio/sms` and `/webhooks/twilio/status` under it.
+
+## The rate-limit task no longer waits on the deploy notes (plan change, D-1377, November 2)
+
+- **What happened.** The plan-health check found that T089 (rate limits) was told to write down which header carries a visitor's real address in the deploy notes (`docs/deploy.md`). Those notes are written by T135, which sets up the test site two stages later, and the header can only be measured once that site exists. The runner would have held T089 when its turn came.
+- **What changed.** One sentence of the security rule (SEC-040) now says the setting is `ASKHAVA_CLIENT_IP_HEADER` and that its measured value goes into the deploy settings table as part of the test-site task, not the rate-limit task. T089 builds the limits and reads the setting; T135 measures it and records it, as its own instructions already said. No code, test or fee changes.
+- **Housekeeping.** The same pass corrected a stored size figure for T241 (the inbound-text task, just finished) that no longer matched; it was the one problem the strict prompt check reported on `main`.
+- **Worth a look.** Nothing for you to decide. When you set up the test project, the deploy notes will tell you which header value to enter.
