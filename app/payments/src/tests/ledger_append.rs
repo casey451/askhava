@@ -57,8 +57,8 @@ async fn every_entry_type_appends(pool: PgPool) {
     assert_eq!(codes, want);
 }
 
-/// TD-FEE-16 (FEE-028, JOB-006): a repeated key with the same entry writes nothing more; with a
-/// different entry it is refused.
+/// TD-FEE-16 (FEE-028, JOB-006): a repeated key with the same entry writes nothing more; with an
+/// entry that differs in any one field (kind, business, job, amount, Stripe ID) it is refused.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn a_repeated_key_appends_once(pool: PgPool) {
     let mut conn = pool.acquire().await.unwrap();
@@ -68,9 +68,19 @@ async fn a_repeated_key_appends_once(pool: PgPool) {
     };
     let again = ledger_append(&mut conn, &first).await.unwrap();
     assert_eq!(again, Appended::Already(id));
-    let other = entry(EntryKind::Refund, "test:charge:1");
-    let refused = ledger_append(&mut conn, &other).await;
-    assert_eq!(refused, Err(LedgerError::KeyReused));
+    let changes: [fn(&mut NewEntry<'_>); 5] = [
+        |r| r.kind = EntryKind::Refund,
+        |r| r.business = Some(JOB),
+        |r| r.job = Some(BUSINESS),
+        |r| r.amount_cents = 2_500,
+        |r| r.stripe_id = Some("ch_Fake0002"),
+    ];
+    for change in changes {
+        let mut other = raw(EntryKind::Charge, "test:charge:1");
+        change(&mut other);
+        let refused = ledger_append(&mut conn, &LedgerEntry::new(other).unwrap()).await;
+        assert_eq!(refused, Err(LedgerError::KeyReused));
+    }
     assert_eq!(count(&pool).await, 1);
 }
 
@@ -97,6 +107,11 @@ fn the_constructor_refuses_bad_entries() {
     );
     assert_eq!(bad(|r| r.stripe_id = Some("ch_"), Charge), StripeId);
     assert_eq!(bad(|r| r.stripe_id = Some("CH_Fake"), Charge), StripeId);
+    assert_eq!(bad(|r| r.stripe_id = Some("c_Fake"), Charge), StripeId);
+    assert_eq!(
+        bad(|r| r.stripe_id = Some("abcdefghi_Fake"), Charge),
+        StripeId
+    );
     assert_eq!(
         bad(|r| r.stripe_id = Some("nounderscore"), Charge),
         StripeId
