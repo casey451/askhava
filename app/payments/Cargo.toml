@@ -9,6 +9,7 @@ publish.workspace = true
 [dependencies]
 askhava-adapters = { workspace = true }
 askhava-core = { workspace = true }
+askhava-ops = { workspace = true }
 jiff = { workspace = true }
 jiff-sqlx = { workspace = true, features = ["postgres"] }
 secrecy = { workspace = true }

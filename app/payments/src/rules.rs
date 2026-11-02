@@ -1,4 +1,4 @@
-//! Introduction fee by job size for a chosen quote (FEE-001 to FEE-004, FEE-008, FEE-039,
+//! Introduction fee by job size for a chosen quote (FEE-001 to FEE-008, FEE-039,
 //! FEE-040, FEE-043 to FEE-045, REC-001 to REC-006, REC-010, D-009, D-033, D-399, D-403).
 //!
 //! Pure: a [`FeeQuote`] and its [`FeeJob`] in, a [`Fee`] out. The fee is always exactly one of
@@ -6,8 +6,11 @@
 //! (FEE-002, FEE-008); a fee-free job type pays $0 (FEE-045). [`fee_for`] prices a one-time
 //! quote; [`period_fee_for`] (T188) adds the period: the 4-month rule and the recurring cap
 //! (REC-002, FEE-039). No input has a setup amount, so a setup charge never reaches a basis
-//! (FEE-044, D-1400). [`price_lock_until`] is the early joiner's price lock (FEE-040). Nothing
-//! here talks to Stripe or the database.
+//! (FEE-044, D-1400). [`price_lock_until`] is the early joiner's price lock (FEE-040). T060:
+//! [`fee_at_pick`] fixes the fee at the pick from the chosen quote alone as a [`PickedFee`]
+//! (FEE-005), in the [`FeeMode`] of the owner's switch, whose [`FeeTerms`] name the card
+//! authorization a business must accept before a charge (FEE-007, D-072). Nothing here talks to
+//! Stripe or the database.
 
 use jiff::{SignedDuration, Timestamp, ToSpan};
 
@@ -431,4 +434,127 @@ pub fn locked_cents(
         Some(until) if at < until => current.min(on_join),
         Some(_) | None => current,
     }
+}
+
+/// How the introduction fee is set, an owner-portal switch (FEE-007, D-072).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FeeMode {
+    /// The fee is the tier of the chosen quote's basis (FEE-001).
+    Tiers,
+    /// The fee is one flat tier per job type, whatever the quote (FEE-007).
+    Flat,
+}
+
+impl FeeMode {
+    /// The code name logged in the audit row of a switch (PRIV-028).
+    #[must_use]
+    pub const fn code(self) -> &'static str {
+        match self {
+            Self::Tiers => "tiers",
+            Self::Flat => "flat",
+        }
+    }
+}
+
+/// FEE-007, D-072: the fee mode in force and the card-authorization version a business must have
+/// accepted before Ask Hava may charge it under that mode. Every mode change raises the version.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct FeeTerms {
+    mode: FeeMode,
+    authorization_version: i32,
+}
+
+impl FeeTerms {
+    /// The terms as stored by the owner-portal setting (the mode and its required version).
+    #[must_use]
+    pub const fn new(mode: FeeMode, authorization_version: i32) -> Self {
+        Self {
+            mode,
+            authorization_version,
+        }
+    }
+
+    /// The fee mode in force.
+    #[must_use]
+    pub const fn mode(self) -> FeeMode {
+        self.mode
+    }
+
+    /// The lowest authorization version a business must have accepted to be charged.
+    #[must_use]
+    pub const fn authorization_version(self) -> i32 {
+        self.authorization_version
+    }
+
+    /// FEE-007, D-072: the terms after switching to `to`, with the next authorization version, so
+    /// every business accepts again before its next charge; none when `to` is the mode in force
+    /// or the version cannot rise.
+    #[must_use]
+    pub fn switched(self, to: FeeMode) -> Option<Self> {
+        if to == self.mode {
+            return None;
+        }
+        let version = self.authorization_version.checked_add(1)?;
+        Some(Self::new(to, version))
+    }
+}
+
+/// FEE-007, D-072: a job type's flat fee: the owner's edit, else its category's set tier.
+#[must_use]
+pub fn flat_tier(set_tier: VisitTier, edited: Option<Tier>) -> Tier {
+    edited.unwrap_or(set_tier.tier())
+}
+
+/// The introduction fee by job size fixed at the homeowner's pick (FEE-005); only
+/// [`fee_at_pick`] makes one, and nothing changes it afterwards: not an AI flag, not an edit to
+/// another quote, not the final bill or a PROBLEM reply (FEE-006, JOB-016).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct PickedFee {
+    fee: Fee,
+    mode: FeeMode,
+}
+
+impl PickedFee {
+    /// The fee fixed at the pick.
+    #[must_use]
+    pub const fn fee(&self) -> Fee {
+        self.fee
+    }
+
+    /// The fee mode in force at the pick.
+    #[must_use]
+    pub const fn mode(&self) -> FeeMode {
+        self.mode
+    }
+
+    /// FEE-006: the amount charged at Confirm, in cents.
+    #[must_use]
+    pub const fn cents(&self) -> u64 {
+        self.fee.cents()
+    }
+}
+
+/// FEE-005, FEE-007, D-009, D-072: fixes the fee at the pick from the chosen quote alone (its
+/// amounts and period, the job's category and job type, the fee mode); no AI flag and no other
+/// quote is an input. In flat mode a charged fee becomes the job type's [`flat_tier`]
+/// (`flat_edit`, else the category's set tier); a fee-free job type still pays $0 (FEE-045).
+///
+/// # Errors
+///
+/// [`period_fee_for`]'s errors: the chosen quote must still be one the job takes.
+pub fn fee_at_pick(
+    chosen: FeeQuote,
+    period: Option<Period>,
+    job: PeriodJob,
+    mode: FeeMode,
+    flat_edit: Option<Tier>,
+) -> Result<PickedFee, FeeError> {
+    let fee = match (period_fee_for(chosen, period, job)?, mode) {
+        (Fee::Charged { basis, .. }, FeeMode::Flat) => Fee::Charged {
+            basis,
+            tier: flat_tier(job.job.visit_tier, flat_edit),
+        },
+        (fee, FeeMode::Tiers | FeeMode::Flat) => fee,
+    };
+    Ok(PickedFee { fee, mode })
 }
