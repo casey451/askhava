@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO messaging.update_channel (recipient_id, channel, updated_at) VALUES ($1, $2, $3) ON CONFLICT (recipient_id) DO UPDATE SET channel = EXCLUDED.channel, updated_at = EXCLUDED.updated_at",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "f78dff2148e87b64d10b0911416d4c0abdf5f08e5ce57d0fa9878d5d15aaf8c6"
+}

@@ -10,12 +10,17 @@
 //! Opt-outs (`optout`, CON-008 to CON-017, CON-030, CON-035): the rules' detector, the one
 //! suppression list every revocation channel feeds, and the checked send every text goes through.
 //! The HELP, INFO and AYUDA reply (`keywords`, CON-018) is queued for any number, listed or not.
+//! Failed texts are retried and then emailed, shown in the portal or turned into a call-back
+//! (`retries`, TXT-014, TXT-015); every email goes once through the email outbox inside the
+//! SEC-028 layout, and bulk email waits above the daily limit's share (`email`, OPS-038).
 
 pub mod api;
+mod email;
 mod handlers;
 mod keywords;
 mod models;
 mod optout;
+mod retries;
 mod rules;
 mod send_window;
 mod service;

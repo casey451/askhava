@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE messaging.text_retry SET next_at = $2 WHERE outbox_id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "a538356a1fcc5c654a2a0cbec9848742e24f8be596438347d5ac98d89d7fb6f0"
+}

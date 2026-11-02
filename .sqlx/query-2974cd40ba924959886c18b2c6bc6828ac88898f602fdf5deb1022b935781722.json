@@ -1,0 +1,39 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "WITH new AS (INSERT INTO messaging.email_outbox (idempotency_key, template_id, recipient_id, recipient_kind, subject_ids, class, subject, html, plain, not_before, queued_at) VALUES ($1, $2, $3, $4, $5, CASE WHEN $6 THEN 'bulk' ELSE 'notice' END, $7, $8, $9, $10, $10) ON CONFLICT (idempotency_key) DO NOTHING RETURNING id) SELECT id AS \"id!\", true AS \"new!\" FROM new UNION ALL SELECT id, false FROM messaging.email_outbox WHERE idempotency_key = $1 AND NOT EXISTS (SELECT 1 FROM new)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id!",
+        "type_info": "Uuid",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 1,
+        "name": "new!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Uuid",
+        "Text",
+        "UuidArray",
+        "Bool",
+        "Text",
+        "Text",
+        "Text",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      null,
+      null
+    ]
+  },
+  "hash": "2974cd40ba924959886c18b2c6bc6828ac88898f602fdf5deb1022b935781722"
+}
