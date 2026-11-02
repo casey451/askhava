@@ -20,6 +20,10 @@
 //! T047 added the homeowner quote texts in `notify`: the first-quote text, the 3-hour update gap, the
 //! LIST text and the cards-out text (TXT-016, TXT-017, TXT-031 to TXT-033, WORD-011).
 //!
+//! T213 added the business job page's data in `job_page` (the approved card, every answer, later
+//! details, the sent and quote counts, CARD-023) and the TXT-040 short-text check on the homeowner
+//! update templates in `update_texts`.
+//!
 //! Other crates reach it only through [`api`].
 
 pub mod api;
@@ -27,11 +31,13 @@ mod cards;
 mod gate;
 mod handlers;
 mod intake;
+mod job_page;
 mod models;
 mod notify;
 mod quote_card;
 mod rules;
 mod service;
+mod update_texts;
 
 #[cfg(test)]
 mod tests;

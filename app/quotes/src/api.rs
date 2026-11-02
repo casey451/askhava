@@ -24,6 +24,9 @@
 //! TXT-031 to TXT-033, WORD-011).
 //! T052: [`page_quotes`] lists a job's shown quotes in arrival order, unavailable ones included,
 //! for the homeowner's quote page (PICK-008, D-1233).
+//! T213: [`job_page`] reads a job's business [`JobPage`] from [`PageParts`] (CARD-019, CARD-023,
+//! D-434); [`check`] and [`scan`] hold the homeowner update texts in [`UPDATE_TEXTS`] to TXT-040's
+//! [`SHORT`] and [`LIMIT`] words a sentence, her page link and no quote details.
 
 use sqlx::types::Uuid;
 
@@ -34,6 +37,7 @@ pub use crate::intake::{
     Bounce, DayPart, Format, Period, Price, QUOTE_WINDOW, Quote, QuoteForm, QuoteRules, Submitted,
     confirm_quote, mark_unavailable, parse_quote, shown_quotes, submit_quote, window_open,
 };
+pub use crate::job_page::{JobPage, PageParts, job_page};
 pub use crate::models::{
     CardBusiness, CardDecision, CardJob, CardLines, Coverage, OfferTown, OwnerPauses, Pool, Pooled,
     QuotesError, Recipient, Skip,
@@ -48,6 +52,9 @@ pub use crate::quote_card::{
     SummarySetting, SwitchRefused, TripFee, check_summary, quote_card, switch_on,
 };
 pub use crate::service::{card_holders, coverage, send_cards, send_job_cards, send_late_cards};
+pub use crate::update_texts::{
+    LIMIT, Problem, SHORT, Shape, UPDATE_TEXTS, check, scan, sentences, words,
+};
 
 /// One shown quote as the homeowner's quote page lists it (PICK-008, D-1233). No homeowner or
 /// business contact detail: the wording passed the PICK-007 bounce before it was stored.
