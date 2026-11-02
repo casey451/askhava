@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The layer-3 crate through which all money moves (FEE-032, `docs/architecture.md` section 3). T225 built its first part: the append-only ledger `payments.ledger_entry` and its one writer, `ledger_append` (D-1383, D-1384). T058 added the introduction fee by job size of a chosen one-time quote, `fee_for` (D-1399, D-1400). T188 added quotes with a period, `period_fee_for` (the 4-month rule and the recurring cap), and the early joiner's price lock (D-1404 to D-1406). Not here yet: the fee fixed at the pick and the fee-mode switch (T060), Stripe customers and cards, the Confirm-and-pay charge, refunds, disputes and evidence, free first wins, the webhook and the nightly reconcile (T067).
+The layer-3 crate through which all money moves (FEE-032, `docs/architecture.md` section 3). T225 built its first part: the append-only ledger `payments.ledger_entry` and its one writer, `ledger_append` (D-1383, D-1384). T058 added the introduction fee by job size of a chosen one-time quote, `fee_for` (D-1399, D-1400). T188 added quotes with a period, `period_fee_for` (the 4-month rule and the recurring cap), and the early joiner's price lock (D-1404 to D-1407). Not here yet: the fee fixed at the pick and the fee-mode switch (T060), Stripe customers and cards, the Confirm-and-pay charge, refunds, disputes and evidence, free first wins, the webhook and the nightly reconcile (T067).
 
 ## What it owns
 
@@ -22,7 +22,7 @@ The layer-3 crate through which all money moves (FEE-032, `docs/architecture.md`
 - FEE-004, PICK-053, D-418: a diagnostic-visit quote, and an hourly quote with no hours, pays the category's `VisitTier` ($25 or $75 only) in a `diagnostic_visit` job; elsewhere `NotDiagnosticVisit` or `NeedsHours`.
 - FEE-045, D-403: a fee-free job type gives `Fee::FeeFree`, $0, for every quote.
 - FEE-044: no input has a setup amount, so a setup charge never reaches a basis (D-1400, D-1404).
-- REC-002, REC-004, REC-005, REC-006, D-010: `period_fee_for` takes 4 months (`RECURRING_MONTHS`, never another number) of the monthly amount (`Period::per_month`), a range at its exact midpoint, rounded down to the cent once at the end.
+- REC-002, REC-004, REC-005, REC-006, D-010: `period_fee_for` takes 4 months (`RECURRING_MONTHS`, never another number) of the monthly amount (`Period::per_month`; only the five periods, any other visit schedule comes in converted to `Monthly`, D-1407), a range at its exact midpoint, rounded down to the cent once at the end.
 - REC-001, REC-010, D-037, D-159: `Service::of(recurring, one_time_job_type)`; a recurring job type with no period is `NeedsPeriod`, a period outside a recurring category `PeriodNotRecurring`, a period on an hourly or diagnostic-visit quote `NotRecurringPrice`; a one-time job with no period is `fee_for`'s face value.
 - FEE-039, D-196, D-265: a recurring job type's tier is never above `RecurringCap` ($75 default, always a tier); a one-time job type is never capped, whatever period is typed.
 - FEE-040, D-465: `price_lock_until` is none for a join 90 days or more after launch, else 6 calendar months (Arizona) from the latest of join, first trade on and activation; `locked_cents` charges at most the join-date amount strictly before that end.

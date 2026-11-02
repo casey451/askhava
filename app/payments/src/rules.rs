@@ -193,7 +193,9 @@ pub enum FeeError {
 }
 
 /// How often a recurring price is stated; a per-visit price with a weekly visit schedule is
-/// `Weekly` (REC-004, REC-010, D-010, D-159).
+/// `Weekly` (REC-004, REC-010, D-010, D-159). Only these five are taken: a per-visit price on
+/// any other schedule is converted by the caller to a monthly amount and passed as `Monthly`
+/// (D-1407).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Period {
     /// Per week, or per visit with weekly visits: × 52 ÷ 12 a month.
@@ -388,9 +390,10 @@ pub fn period_fee_for(
         return Ok(Fee::FeeFree { basis: Some(basis) });
     }
     let tier = Tier::for_basis(basis);
-    let tier = match job.service {
-        Service::RecurringJobType => tier.min(job.cap.0),
-        Service::OneTimeJobType | Service::NotRecurring => tier,
+    let tier = if job.service == Service::RecurringJobType {
+        tier.min(job.cap.0)
+    } else {
+        tier
     };
     Ok(Fee::Charged {
         basis: Some(basis),

@@ -4,7 +4,7 @@
 
 use std::collections::BTreeMap;
 
-use jiff::{SignedDuration, Timestamp, ToSpan};
+use jiff::{SignedDuration, Timestamp};
 use proptest::prelude::*;
 use serde::Deserialize;
 
@@ -237,10 +237,8 @@ fn period_errors_and_fee_free() {
     );
 }
 
-/// Six calendar months after `start`, Arizona time.
-fn six_months(start: Timestamp) -> Timestamp {
-    let zoned = askhava_core::api::arizona_time(start).checked_add(6.months());
-    zoned.expect("date").timestamp()
+fn at(text: &str) -> Timestamp {
+    text.parse().expect("timestamp")
 }
 
 fn lock(
@@ -257,17 +255,17 @@ fn lock(
     })
 }
 
-/// TD-FEE-21, TD-FEE-24, TD-FEE-35 (FEE-040, D-197, D-261, D-288, D-465): joined 89 days 23:59
+/// TD-FEE-21, TD-FEE-35 (FEE-040, D-197, D-261, D-288, D-465): joined 89 days 23:59
 /// after launch keeps its join-date amounts until exactly 6 months, joined at 90 days has no
-/// lock; a trade opened 100 days after joining and an activation 3 months after joining move
-/// the start.
+/// lock; a trade opened 100 days after launch moves the start. Every end is a literal instant.
 #[test]
 fn td_fee_21_the_early_joiner_price_lock() {
-    let launch: Timestamp = "2027-01-04T15:00:00Z".parse().expect("timestamp");
+    let launch = at("2027-01-04T15:00:00Z");
     let day = SignedDuration::from_hours(24);
     let joined = launch + day * 90 - SignedDuration::from_mins(1);
+    assert_eq!(joined, at("2027-04-04T14:59:00Z"));
     let until = lock(launch, joined, joined, None).expect("locked");
-    assert_eq!(until, six_months(joined));
+    assert_eq!(until, at("2027-10-04T14:59:00Z"));
     let before = until - SignedDuration::from_secs(1);
     assert_eq!(locked_cents(Some(until), before, 3_500, 2_500), 2_500);
     assert_eq!(locked_cents(Some(until), until, 3_500, 2_500), 3_500);
@@ -277,10 +275,34 @@ fn td_fee_21_the_early_joiner_price_lock() {
         None
     );
     let opened = launch + day * 100;
-    assert_eq!(lock(launch, launch, opened, None), Some(six_months(opened)));
-    let activated = launch + day * 90;
-    let waited = lock(launch, launch, launch, Some(activated));
-    assert_eq!(waited, Some(six_months(activated)));
+    let moved = lock(launch, launch, opened, None);
+    assert_eq!(moved, Some(at("2027-10-14T15:00:00Z")));
+}
+
+/// TD-FEE-24 (FEE-040, D-288, D-465): a business waiting on its city-list match, activated 3
+/// months after joining, has its price lock run 6 months from activation, not from joining.
+#[test]
+fn td_fee_24_activated_3_months_after_joining() {
+    let joined = at("2027-01-10T17:00:00Z");
+    let launch = at("2027-01-04T15:00:00Z");
+    let activated = at("2027-04-10T17:00:00Z");
+    let waited = lock(launch, joined, joined, Some(activated));
+    assert_eq!(waited, Some(at("2027-10-10T17:00:00Z")));
+    assert_eq!(
+        lock(launch, joined, joined, None),
+        Some(at("2027-07-10T17:00:00Z"))
+    );
+}
+
+/// FEE-040: a launch or a start so late that the window or the 6 months run past the last
+/// instant gives no lock instead of panicking.
+#[test]
+fn price_lock_past_the_last_instant_is_none() {
+    let last = Timestamp::MAX;
+    assert_eq!(lock(last, last, last, None), None);
+    let launch = last - SignedDuration::from_hours(100 * 24);
+    assert_eq!(lock(launch, launch, last, None), None);
+    assert_eq!(lock(launch, launch, launch, Some(last)), None);
 }
 
 proptest! {
