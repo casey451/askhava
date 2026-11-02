@@ -70,9 +70,9 @@ async fn td_fee_06_the_switch_is_logged(pool: PgPool) {
     assert_eq!(rows, [row]);
 }
 
-/// TD-FEE-06 (FEE-007, D-072): after the switch to flat mode the business can't confirm, and no
-/// fee is recorded, until it accepts the new authorization version; the flat fee is then the
-/// category's set tier whatever the quote.
+/// TD-FEE-06 (FEE-007, D-072, D-1415): after the switch to flat mode the business can't confirm,
+/// and no fee is recorded (a proof taken under the old terms is refused), until it accepts the
+/// new authorization version; the flat fee is then the category's set tier whatever the quote.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_fee_06_no_confirm_without_the_new_authorization(pool: PgPool) {
     let mut db = pool.acquire().await.expect("connection");
@@ -87,7 +87,10 @@ async fn td_fee_06_no_confirm_without_the_new_authorization(pool: PgPool) {
     accept_authorization(&mut db, BUSINESS, START, AUTHORIZATION_TEXT, at(0))
         .await
         .expect("accepted");
-    assert_eq!(may_confirm(&mut db, BUSINESS, START).await, Ok(()));
+    let tiers = may_confirm(&mut db, BUSINESS, START)
+        .await
+        .expect("authorized");
+    assert_eq!((tiers.business(), tiers.terms()), (BUSINESS, START));
     let flat = switch_fee_mode(&mut db, OWNER, START, FeeMode::Flat)
         .await
         .expect("switch")
@@ -107,8 +110,10 @@ async fn td_fee_06_no_confirm_without_the_new_authorization(pool: PgPool) {
         charge: Some("ch_FakeT060b"),
     };
     let secret = SecretString::from("fake-id-secret-t060".to_owned());
-    let early = record_fee_at_confirm(&mut db, &secret, (&picked, flat), confirmed).await;
+    let early = may_confirm(&mut db, BUSINESS, flat).await;
     assert_eq!(early, Err(ConfirmError::NewAuthorizationNeeded));
+    let stale = record_fee_at_confirm(&mut db, &secret, (&picked, tiers), confirmed).await;
+    assert_eq!(stale, Err(ConfirmError::Mismatch));
     let count = "SELECT count(*) FROM payments.ledger_entry";
     let rows: i64 = sqlx::query_scalar(count)
         .fetch_one(&pool)
@@ -124,7 +129,10 @@ async fn td_fee_06_no_confirm_without_the_new_authorization(pool: PgPool) {
     )
     .await
     .expect("accepted again");
-    let late = record_fee_at_confirm(&mut db, &secret, (&picked, flat), confirmed).await;
+    let authorized = may_confirm(&mut db, BUSINESS, flat)
+        .await
+        .expect("authorized");
+    let late = record_fee_at_confirm(&mut db, &secret, (&picked, authorized), confirmed).await;
     assert!(late.is_ok());
     let amount: i64 = sqlx::query_scalar("SELECT amount_cents FROM payments.ledger_entry")
         .fetch_one(&pool)

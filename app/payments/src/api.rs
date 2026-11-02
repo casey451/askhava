@@ -32,7 +32,7 @@ pub use crate::rules::{
     locked_cents, period_fee_for, price_lock_until,
 };
 pub use crate::service::{
-    CONFIRM_FEE_ACTION, CUSTOMER_ACTION, ConfirmError, Confirmed, FEE_MODE_ACTION, FEE_MODE_ID,
-    FEE_MODE_SUBJECT_KIND, Saved, accept_authorization, customer_of, ensure_customer, may_confirm,
-    record_fee_at_confirm, save_card, switch_fee_mode,
+    Authorized, CONFIRM_FEE_ACTION, CUSTOMER_ACTION, ConfirmError, Confirmed, FEE_MODE_ACTION,
+    FEE_MODE_ID, FEE_MODE_SUBJECT_KIND, Saved, accept_authorization, customer_of, ensure_customer,
+    may_confirm, record_fee_at_confirm, save_card, switch_fee_mode,
 };

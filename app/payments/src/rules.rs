@@ -534,10 +534,11 @@ impl PickedFee {
     }
 }
 
-/// FEE-005, FEE-007, D-009, D-072: fixes the fee at the pick from the chosen quote alone (its
-/// amounts and period, the job's category and job type, the fee mode); no AI flag and no other
-/// quote is an input. In flat mode a charged fee becomes the job type's [`flat_tier`]
-/// (`flat_edit`, else the category's set tier); a fee-free job type still pays $0 (FEE-045).
+/// FEE-005, FEE-007, FEE-039, D-009, D-072: fixes the fee at the pick from the chosen quote
+/// alone (its amounts and period, the job's category and job type, the fee mode); no AI flag and
+/// no other quote is an input. In flat mode a charged fee becomes the job type's [`flat_tier`]
+/// (`flat_edit`, else the category's set tier), a recurring job type's never above its
+/// [`RecurringCap`]; a fee-free job type still pays $0 (FEE-045).
 ///
 /// # Errors
 ///
@@ -550,10 +551,15 @@ pub fn fee_at_pick(
     flat_edit: Option<Tier>,
 ) -> Result<PickedFee, FeeError> {
     let fee = match (period_fee_for(chosen, period, job)?, mode) {
-        (Fee::Charged { basis, .. }, FeeMode::Flat) => Fee::Charged {
-            basis,
-            tier: flat_tier(job.job.visit_tier, flat_edit),
-        },
+        (Fee::Charged { basis, .. }, FeeMode::Flat) => {
+            let tier = flat_tier(job.job.visit_tier, flat_edit);
+            let tier = if job.service == Service::RecurringJobType {
+                tier.min(job.cap.0)
+            } else {
+                tier
+            };
+            Fee::Charged { basis, tier }
+        }
         (fee, FeeMode::Tiers | FeeMode::Flat) => fee,
     };
     Ok(PickedFee { fee, mode })

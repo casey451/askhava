@@ -11,8 +11,8 @@ use askhava_jobs::api::{JobStatus, connected_reply, create, current, move_to};
 use askhava_ops::api::Actor;
 use askhava_payments::api::{
     AUTHORIZATION_TEXT, Appended, BusinessId, CardError, ConfirmError, Confirmed, FeeJob, FeeMode,
-    FeeQuote, FeeTerms, LedgerError, PeriodJob, PickedFee, RecurringCap, Service, VisitTier,
-    accept_authorization, fee_at_pick, record_fee_at_confirm,
+    FeeQuote, FeeTerms, PeriodJob, PickedFee, RecurringCap, Service, VisitTier,
+    accept_authorization, fee_at_pick, may_confirm, record_fee_at_confirm,
 };
 use jiff::Timestamp;
 use secrecy::SecretString;
@@ -93,16 +93,30 @@ async fn pick(db: &mut PgConnection, job: Uuid) -> PickedFee {
     fee_at_pick(chosen, None, JOB, FeeMode::Tiers, None).expect("fee")
 }
 
-/// Records the fee at Confirm with a fake charge ID.
+/// Records the fee at Confirm with a fake charge ID, authorized before the charge.
 async fn confirm(db: &mut PgConnection, job: Uuid, picked: &PickedFee) -> Appended {
     let confirmed = Confirmed {
         business: BUSINESS,
         job,
         charge: Some("ch_FakeT060"),
     };
-    record_fee_at_confirm(db, &secret(), (picked, TERMS), confirmed)
+    let authorized = may_confirm(db, BUSINESS, TERMS).await.expect("authorized");
+    record_fee_at_confirm(db, &secret(), (picked, authorized), confirmed)
         .await
         .expect("recorded")
+}
+
+/// An AI reading of `job` with its major flag set or unset (the reading table is append-only).
+async fn ai_major(db: &mut PgConnection, job: Uuid, major: bool) {
+    sqlx::query(
+        "INSERT INTO ai.reading (subject_id, trade_confidence, job_type_confidence, emergency, \
+         urgent, major, spanish) VALUES ($1, 0.9, 0.9, false, false, $2, false)",
+    )
+    .bind(job)
+    .bind(major)
+    .execute(db)
+    .await
+    .expect("reading");
 }
 
 async fn ledger(pool: &PgPool) -> Vec<Row> {
@@ -121,8 +135,11 @@ async fn td_fee_04_fixed_at_the_pick_from_the_chosen_quote(pool: PgPool) {
     let job = Uuid::from_u128(0x0b06_0004);
     quote(&mut db, job, BUSINESS.0, 45_000).await;
     quote(&mut db, job, OTHER, 400_000).await;
+    ai_major(&mut db, job, false).await;
     let picked = pick(&mut db, job).await;
     assert_eq!(picked.cents(), 2_500);
+    ai_major(&mut db, job, true).await;
+    assert_eq!(pick(&mut db, job).await, picked);
     sqlx::query(
         "UPDATE quotes.quote SET amount_cents = 900000, edited_at = now() WHERE business_id = $1",
     )
@@ -142,7 +159,10 @@ async fn td_fee_04_fixed_at_the_pick_from_the_chosen_quote(pool: PgPool) {
     ));
     let rows = ledger(&pool).await;
     assert_eq!(rows.len(), 1);
-    assert_eq!((rows[0].0.as_str(), rows[0].3), ("charge", 2_500));
+    let row = &rows[0];
+    assert_eq!((row.0.as_str(), row.3), ("charge", 2_500));
+    assert_eq!((row.1, row.2), (Some(BUSINESS.0), Some(job)));
+    assert_eq!(row.4.as_deref(), Some("ch_FakeT060"));
 }
 
 /// TD-FEE-05 (FEE-006, JOB-016, D-071): charged at Confirm, once; a day-3 PROBLEM reply about a
@@ -190,8 +210,9 @@ async fn td_fee_05_problem_reply_changes_no_fee(pool: PgPool) {
 }
 
 /// TD-FEE-05 (FEE-006, FEE-045): a fee-free job type records $0 at Confirm with no charge; a
-/// malformed charge ID is refused by the ledger and writes nothing; no authorization is accepted
-/// for a business with no Stripe customer.
+/// charged fee with no charge ID, or one that is not a `ch_…` charge, is refused and writes
+/// nothing, as is a $0 fee with an ID or a proof for another business; no authorization is
+/// accepted for a business with no Stripe customer.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_fee_05_fee_free_and_refused_entries(pool: PgPool) {
     let mut db = pool.acquire().await.expect("connection");
@@ -221,13 +242,34 @@ async fn td_fee_05_fee_free_and_refused_entries(pool: PgPool) {
         charge: Some("not-a-charge"),
     };
     let priced = pick_of(60_000);
-    let refused = record_fee_at_confirm(&mut db, &secret(), (&priced, TERMS), bad).await;
-    assert_eq!(refused, Err(ConfirmError::Ledger(LedgerError::StripeId)));
+    let ok = may_confirm(&mut db, BUSINESS, TERMS)
+        .await
+        .expect("authorized");
     let confirmed = Confirmed {
         charge: None,
         ..bad
     };
-    let recorded = record_fee_at_confirm(&mut db, &secret(), (&free, TERMS), confirmed).await;
+    let pi = Confirmed {
+        charge: Some("pi_FakeT060"),
+        ..bad
+    };
+    for (fee, charge) in [
+        (&priced, bad),
+        (&priced, confirmed),
+        (&priced, pi),
+        (&free, pi),
+    ] {
+        let refused = record_fee_at_confirm(&mut db, &secret(), (fee, ok), charge).await;
+        assert_eq!(refused, Err(ConfirmError::ChargeId));
+    }
+    let elsewhere = Confirmed {
+        business: stranger,
+        ..confirmed
+    };
+    let refused = record_fee_at_confirm(&mut db, &secret(), (&free, ok), elsewhere).await;
+    assert_eq!(refused, Err(ConfirmError::Mismatch));
+    assert!(ledger(&pool).await.is_empty());
+    let recorded = record_fee_at_confirm(&mut db, &secret(), (&free, ok), confirmed).await;
     assert!(matches!(recorded, Ok(Appended::New(_))));
     let rows = ledger(&pool).await;
     assert_eq!(rows.len(), 1);

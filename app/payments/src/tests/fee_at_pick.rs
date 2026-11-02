@@ -90,6 +90,31 @@ fn td_fee_06_flat_mode_defaults_to_the_set_tier() {
     assert_eq!(period, Err(FeeError::PeriodNotRecurring));
 }
 
+/// TD-FEE-06 (FEE-007, FEE-039, D-196): in flat mode a recurring job type's fee is never above
+/// its recurring cap, even when the owner's edit is the large tier; a one-time job type is not
+/// capped.
+#[test]
+fn td_fee_06_flat_mode_keeps_the_recurring_cap() {
+    let recurring = PeriodJob {
+        service: Service::RecurringJobType,
+        ..job(VisitTier::DEFAULT, false)
+    };
+    let quote = FeeQuote::Fixed(10_000);
+    let month = Some(Period::Monthly);
+    let capped = fee_at_pick(quote, month, recurring, FeeMode::Flat, Some(Tier::Large));
+    assert_eq!(capped.expect("fee").cents(), 7_500);
+    let low = PeriodJob {
+        cap: RecurringCap::from_dollars(25).expect("cap"),
+        ..recurring
+    };
+    let edited = fee_at_pick(quote, month, low, FeeMode::Flat, Some(Tier::Medium));
+    assert_eq!(edited.expect("fee").cents(), 2_500);
+    let under = fee_at_pick(quote, month, recurring, FeeMode::Flat, None);
+    assert_eq!(under.expect("fee").cents(), 2_500);
+    let one_time = fee_at_pick(quote, None, PRICED, FeeMode::Flat, Some(Tier::Large));
+    assert_eq!(one_time.expect("fee").cents(), 19_900);
+}
+
 /// TD-FEE-06 (FEE-007, FEE-045): a fee-free job type pays $0 in flat mode too.
 #[test]
 fn td_fee_06_fee_free_stays_free_in_flat_mode() {
