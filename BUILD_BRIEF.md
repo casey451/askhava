@@ -193,7 +193,7 @@ The runner resumes when Casey comments "accounts done" in the issue (§7, "Owner
 4. Run the end-to-end journeys there.
 5. Test the real AI from there; this is the first time any real AI key is used.
 6. Run the ZAP baseline scan.
-7. Run the restore drill with the switchover. Then run the war games (D-1154): every kind of customer and business, pranks and AI-credit drains included, jobs completed with Stripe test-mode money shown in the owner portal, run as chaotically as possible until a full run finds nothing new, before anything goes live.
+7. Run the restore drill with the switchover. Then, after the pre-war-games competitive and feature readiness review (T242, D-1339) and Casey's decision on its P0 items, run the war games (D-1154): every kind of customer and business, pranks and AI-credit drains included, jobs completed with Stripe test-mode money shown in the owner portal, run as chaotically as possible until a full run finds nothing new, before anything goes live.
 8. Run a fresh Opus audit.
 
 Then the runner sends the **"Finished: ready for your review"** message (§16). **Gate B** is Casey's guided click-through plus his screen-reader check (§9), done whenever he's ready; nothing waits on it except Gate C.
