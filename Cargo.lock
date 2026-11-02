@@ -652,6 +652,7 @@ dependencies = [
  "askhava-jobs",
  "askhava-ops",
  "askhava-portals",
+ "askhava-privacy",
  "askhava-quotes",
  "axum",
  "jiff",

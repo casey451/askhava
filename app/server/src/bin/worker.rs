@@ -9,7 +9,8 @@
 //! tests drive the same code (rust brain R14). It also builds the off-database stream writer from
 //! `ASKHAVA_STORAGE_BASE_URL` and `ASKHAVA_ID_SECRET` and queues the nightly chain check (OPS-011,
 //! PRIV-029, D-734). At start-up it runs the intake golden set once for the compiled-in catalog
-//! version (OPS-040, D-493).
+//! version (OPS-040, D-493). With `VAULT_KEY` and `VAULT_INDEX_KEY` set (required in the test and
+//! live projects) it registers `intake`'s homeowner job-text sender (D-1302).
 
 use std::io;
 use std::sync::Arc;
@@ -33,6 +34,8 @@ async fn main() -> io::Result<()> {
     let clock = control.clock();
     let stream = OffDbStream::from_settings(&settings, std::env::vars(), Arc::clone(&clock))
         .map_err(io::Error::other)?;
+    let texts = askhava_server::job_text_keys(&settings, &stream.id_secret, std::env::vars())?
+        .map(Arc::new);
     let mut conn = pool.acquire().await.map_err(io::Error::other)?;
     schedule_verify(&mut conn, clock.now())
         .await
@@ -43,7 +46,7 @@ async fn main() -> io::Result<()> {
     drop(conn);
     let worker = Worker {
         pool,
-        registry: Arc::new(askhava_server::register_handlers(Arc::new(stream))),
+        registry: Arc::new(askhava_server::register_handlers(Arc::new(stream), texts)),
         clock,
         owner,
     };

@@ -17,6 +17,7 @@ mod keywords;
 mod models;
 mod optout;
 mod rules;
+mod send_window;
 mod service;
 mod status;
 mod templates;

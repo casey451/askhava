@@ -368,11 +368,11 @@ def branch_note(prep: dict[str, Any]) -> str:
         return (f"The runner made the local branch {name} at origin/{name}, the reviewed work, WITHOUT main merged in: this is "
                 f"a resync (D-891). Run `git switch {name}`, then `git merge {str(prep.get('main') or 'origin/main')}` (a normal "
                 "merge commit), resolve the conflicts keeping both sides, and commit there; never create, reset or rebase "
-                "the branch, whatever step 3 of the prompt's start routine says (D-583, D-1316).")
+                "the branch, whatever step 3 of the prompt's start routine says (D-583, D-1317).")
     where = "the latest main" if prep.get("base") == "main" else f"origin/{name} (the earlier attempt's work) with the latest main merged in"
     moved = f" The old branch {prep['renamed_from']} is kept for evidence: {prep.get('why')}." if prep.get("renamed_from") else ""
     return (f"The runner made the local branch {name} from {where}.{moved} Run `git switch {name}` and commit there; "
-            "never create, reset or rebase it, whatever step 3 of the prompt's start routine says (D-583, D-1316).")
+            "never create, reset or rebase it, whatever step 3 of the prompt's start routine says (D-583, D-1317).")
 
 
 def _prompt_for(task: dict[str, Any], tid: str) -> str:
