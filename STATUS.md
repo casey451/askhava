@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-02T13:03:27Z by runner e9de8c790dd8 (actions).
+Updated 2026-11-02T13:22:22Z by runner 21a04e88f344 (actions).
 
-**Idle since 12:41Z; 98 of 230 done; week 96% used, resets Thu 2026-11-05 17:00Z (10:00 am Phoenix).**
+**Waiting for tokens until 17:00Z; 98 of 230 done; week 96% used, resets Thu 2026-11-05 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 98 of 230 build tasks (owner gates not counted)
 - **Stage:** stage 3; stage proofs recorded: 1, 2
 - **Lane:** idle since 12:41Z (no task in progress)
-- **Week:** 96% used, 8.0M tokens left; resets Thu 2026-11-05 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:03Z, 0 min before this update
+- **Week:** 96% used, 2.0M tokens left; resets Thu 2026-11-05 17:00Z (10:00 am Phoenix)
+- **Last run:** 13:03Z, 18 min before this update
 - **Keeper:** unknown (the keeper has not recorded a wake yet)
 
 ## Needs attention
@@ -43,9 +43,9 @@ Updated 2026-11-02T13:03:27Z by runner e9de8c790dd8 (actions).
 | T052 | portals: the homeowner quote page (token, arrival order, no  | done | 1 | 30 min | 15:57Z |  |
 | T050 | intake: an opt-out changes no job status; the job carries on | done | 1 | 37 min | 15:05Z |  |
 | T049 | intake: CLOSE ####, cancel intent, 'Close which?', bare canc | done | 1 | 34 min | 14:07Z |  |
-| T048 | intake: 24-hour reminder, 72-hour close, AI outage message,  | done | 1 | 33 min | 13:15Z |  |
 
 ### Plan and harness merges on main
+- 13:11Z Harness: the full pre-hand-in gate measures floored coverage; hand_in_by (D-1440) (#263)
 - 12:48Z Harness: STATUS.md dashboard for the owner (D-1462) (#262)
 - 07:35Z Harness: job-log download allows escape sequences (D-1398) (#254)
 - 04:21Z Plan: SEC-040's measured header is recorded by T135, not T089 (D-1377) (#250)
@@ -90,7 +90,7 @@ Updated 2026-11-02T13:03:27Z by runner e9de8c790dd8 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-02T11:31:09Z (week)): five-hour: 6.2M used, 22.9M left, resets 2026-11-02T14:49:34Z; week: 186.0M used, 8.0M left, resets 2026-11-05T17:00:00Z; projected finish 2026-11-14T15:50:21Z.
+- Pacing (session_reading 2026-11-02T13:03:27Z (week)): five-hour: 13.3M used, 15.8M left, resets 2026-11-02T14:49:34Z; week: 192.0M used, 2.0M left, resets 2026-11-05T17:00:00Z; projected finish 2026-11-14T18:44:33Z; waiting until 2026-11-05T17:00:00Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
