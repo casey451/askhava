@@ -53,7 +53,7 @@ pub use crate::quote_card::{
 };
 pub use crate::service::{card_holders, coverage, send_cards, send_job_cards, send_late_cards};
 pub use crate::update_texts::{
-    LIMIT, Problem, SHORT, Shape, UPDATE_TEXTS, check, scan, sentences, words,
+    LIMIT, NOT_UPDATE_TEXTS, Problem, SHORT, Shape, UPDATE_TEXTS, check, scan,
 };
 
 /// One shown quote as the homeowner's quote page lists it (PICK-008, D-1233). No homeowner or

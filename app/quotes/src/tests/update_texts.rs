@@ -5,9 +5,10 @@
 use askhava_messaging::api::{Audience, Language, Registry};
 
 use crate::api::{
-    Counts, LIMIT, Problem, Reader, SHORT, Shape, UPDATE_TEXTS, check, first_quote_text, scan,
-    sentences, update_text, words,
+    Counts, LIMIT, NOT_UPDATE_TEXTS, Problem, Reader, SHORT, Shape, UPDATE_TEXTS, check,
+    first_quote_text, scan, update_text,
 };
+use crate::update_texts::{sentences, words};
 
 const LINK: &str = "https://askhava.com/q/sample-token";
 
@@ -34,6 +35,8 @@ fn td_txt_25_planted_21_word_sentence_fails_20_passes() {
     };
     assert_eq!(check(&planted(LIMIT + 1), Shape::Fixed), vec![long]);
     assert_eq!(check(&planted(LIMIT + 1), Shape::List), vec![long]);
+    assert_eq!(check(&planted(LIMIT + 1), Shape::Capped), vec![long]);
+    assert_eq!(check(&planted(LIMIT), Shape::Capped), Vec::new());
     assert_eq!(check(&planted(SHORT), Shape::Update), Vec::new());
     let over = Problem::Long {
         sentence: 0,
@@ -54,6 +57,29 @@ fn td_txt_25_link_required_and_no_quote_details() {
     assert_eq!(check(named, Shape::Fixed), vec![Problem::Details]);
     let list = "Ask Hava: Your quotes for request {job}:\n1. {business}: $190.";
     assert_eq!(check(list, Shape::List), Vec::new());
+    let closed = "Ask Hava: Request {job} is closed. Text us any time to start a new one.";
+    assert_eq!(check(closed, Shape::Capped), Vec::new());
+}
+
+/// TD-TXT-25: a rendered update links to her quote page; a Terms or help link, or the page
+/// address with no token, is not her page link.
+#[test]
+fn td_txt_25_rendered_link_is_her_quote_page() {
+    let page = format!("Ask Hava: You have 2 quotes for request 1234. See them here: {LINK}");
+    assert_eq!(check(&page, Shape::Update), Vec::new());
+    for other in [
+        "https://askhava.com/terms",
+        "https://askhava.com/help",
+        "https://askhava.com/q/",
+        "https://askhava.com/q/sample-token/pick",
+    ] {
+        let text = format!("Ask Hava: You have 2 quotes for request 1234. See them here: {other}");
+        assert_eq!(
+            check(&text, Shape::Update),
+            vec![Problem::NoLink],
+            "{other}"
+        );
+    }
 }
 
 /// TD-TXT-25: the opening is not counted, a link or placeholder is one word, and a link's dot
@@ -93,5 +119,26 @@ fn td_txt_25_listed_templates_are_homeowner_texts() {
     let registry = Registry::embedded().expect("registry");
     for (id, _) in UPDATE_TEXTS {
         assert_eq!(registry.audience(id), Some(Audience::Homeowner), "{id}");
+    }
+    for id in NOT_UPDATE_TEXTS {
+        assert_eq!(registry.audience(id), Some(Audience::Homeowner), "{id}");
+    }
+}
+
+/// TD-TXT-25 (D-1293): every homeowner template is scanned or named as left out, never both, so
+/// a new homeowner text cannot skip the scan unnoticed.
+#[test]
+fn td_txt_25_every_homeowner_template_is_scanned_or_left_out() {
+    let registry = Registry::embedded().expect("registry");
+    for id in registry.ids() {
+        if registry.audience(&id) != Some(Audience::Homeowner) {
+            continue;
+        }
+        let scanned = UPDATE_TEXTS.iter().any(|(listed, _)| *listed == id);
+        let left_out = NOT_UPDATE_TEXTS.contains(&id.as_str());
+        assert!(
+            scanned != left_out,
+            "{id}: scanned {scanned}, left out {left_out}"
+        );
     }
 }

@@ -149,3 +149,38 @@ async fn card_023_counts_are_current(mut db: Db) {
     let after = after.expect("read").expect("page");
     assert_eq!((after.sent(), after.quoted()), (2, 1));
 }
+
+/// CARD-008, CARD-023: an answer or later detail with no contact detail reaches the page word for
+/// word; the gate cuts only contact.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn card_023_safe_words_survive_the_gate(mut db: Db) {
+    let job = open_job(&mut db).await;
+    card(&mut db, job, 1).await;
+    let mut parts = parts();
+    let answer = (
+        "Where is the leak".to_owned(),
+        "Under the kitchen sink, left side".to_owned(),
+    );
+    let detail = "Water now reaches the hallway rug.".to_owned();
+    parts.answers = vec![answer.clone()];
+    parts.later = vec![detail.clone()];
+    let page = job_page(&mut db, (job, business(1)), &parts)
+        .await
+        .expect("read")
+        .expect("page");
+    assert_eq!(page.answers(), [answer].as_slice());
+    assert_eq!(page.later(), [detail].as_slice());
+}
+
+/// CARD-023, BIZ-038: a business holding the card for another job gets no page for this one.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn card_023_card_for_another_job_opens_no_page(mut db: Db) {
+    let job = open_job(&mut db).await;
+    let other = open_job(&mut db).await;
+    card(&mut db, other, 1).await;
+    card(&mut db, job, 2).await;
+    let page = job_page(&mut db, (job, business(1)), &parts()).await;
+    assert_eq!(page.map(|p| p.is_none()), Ok(true));
+    let own = job_page(&mut db, (other, business(1)), &parts()).await;
+    assert_eq!(own.map(|p| p.is_some()), Ok(true));
+}

@@ -619,7 +619,10 @@ pub(crate) struct PageCounts {
     pub holds_card: bool,
     /// The businesses the card went to (one `quotes.job_card` row each).
     pub sent: u32,
-    /// The quotes shown so far: confirmed and not withdrawn (PICK-002, PICK-006).
+    /// The quotes shown so far: confirmed and not withdrawn (PICK-002, PICK-006), the
+    /// homeowner's quote page's own rule (`shown_quotes`). On purpose not [`window_state`]'s
+    /// `quoted`, which counts a withdrawn quote too, since TXT-042's "X of N businesses quoted"
+    /// says who quoted, not what she can still see (D-1294).
     pub quoted: u32,
 }
 

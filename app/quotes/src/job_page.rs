@@ -26,6 +26,9 @@ pub struct PageParts {
     /// The card she approved, as businesses received it (INT-041, D-434).
     pub card: JobCard,
     /// Every intake answer, card-field or not, as (question label, answer) wording (CARD-023).
+    /// The caller leaves out the contact questions (her name, street address and any on-site
+    /// contact, INT-041's name-and-address step): those answers are never on the page, and the
+    /// final gate is a backstop for contact she typed elsewhere, not a filter for them (PICK-022).
     pub answers: Vec<(String, String)>,
     /// The details she added after the card went out, oldest first (JOB-010).
     pub later: Vec<String>,
