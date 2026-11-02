@@ -452,3 +452,17 @@ def test_architecture_counts_its_layout_section_and_the_module_lines(tmp_path: P
     owner = fake_task(owns=["docs/architecture.md"], reads=["docs/architecture.md"])
     assert gp.context_bytes(root, owner, "") == (root / "docs/architecture.md").stat().st_size
     assert gp.architecture_bytes(tmp_path / "nowhere", "fake") == 0
+
+
+def test_architecture_sections_a_prompt_cites_count_whole(tmp_path: Path) -> None:
+    """D-1350 review: a prompt citing "architecture section 8" or "sections 7 to 9" counts those sections."""
+    root = tmp_path
+    (root / "docs").mkdir()
+    sections = [f"## {n}. Part {n}\n" + "x" * (100 * n) + "\n" for n in range(1, 11)]
+    (root / "docs/architecture.md").write_text("# Title\n" + "".join(sections), encoding="utf-8")
+    size = {n: len(sections[n - 1]) for n in range(1, 11)}
+    assert gp.cited_sections("`docs/architecture.md` sections 2, 4 and 10; architecture section 8") == {2, 4, 8, 10}
+    assert gp.cited_sections("docs/architecture.md sections 7 to 9 brought up to date") == {7, 8, 9}
+    assert gp.cited_sections("see section 5 of the brief") == set()
+    assert gp.architecture_bytes(root, None, "architecture section 8") == size[2] + size[8]
+    assert gp.architecture_bytes(root, None, "architecture.md sections 7 to 9") == size[2] + size[7] + size[8] + size[9]

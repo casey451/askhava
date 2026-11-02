@@ -11,6 +11,7 @@ from typing import Any
 import plan_health as ph
 from test_failure_drills import NOW, FakeEnv, config, make_task
 
+from runner import __main__ as entry
 from runner import cycle
 from runner import state as st
 from runner.github_env import render_status
@@ -78,6 +79,24 @@ def test_a_path_a_decision_names_is_a_gap_only_when_no_task_owns_it(tmp_path: Pa
     assert problems(root, st.new_state(), "T001") == [
         "T001: tests/integration/test_orphan.py is named by D-001, but no task owns it and it does not exist"
     ]
+
+
+def test_a_superseded_decision_never_holds_a_task(tmp_path: Path) -> None:
+    """D-1350 review: D-001 withdrawn by D-002 is pasted as history only, so what it names is no gap."""
+    log = ("- **D-001** Question: x? Choice: `tests/integration/test_orphan.py`.\n"
+           "- **D-002** Question: y? Choice: D-001 is superseded by D-002; build `app/t001.rs`.\n")
+    root = make_repo(tmp_path, [plan_task("T001", decisions=["D-001"])], log)
+    assert problems(root, st.new_state(), "T001") == []
+
+
+def test_shared_paths_and_gates_are_never_gaps(tmp_path: Path) -> None:
+    row = "| TD-FAKE-02 | B | In | REQ-FAKE-001 | Notes go to `docs/decisions.md` and `docs/nowhere.md` |\n"
+    root = make_repo(tmp_path, [plan_task("T001", tests=["TD-FAKE-02"]), plan_task("T127", ["T001"], type="gate")])
+    (root / "docs/test-design.md").write_text(ROW + row, encoding="utf-8")
+    (root / "docs/decisions.md").unlink()  # missing, yet shared: any task may write it
+    found = problems(root, st.new_state(), "T001")
+    assert len(found) == 1 and found[0].startswith("T001: docs/nowhere.md is named by")
+    assert problems(root, st.new_state(), "T127") == []  # a gate has no prompt and no plan to check
 
 
 def test_a_done_dependency_missing_its_file_and_an_unfinished_one_are_gaps(tmp_path: Path) -> None:
@@ -151,9 +170,45 @@ def test_a_failing_check_holds_nothing_and_long_lists_are_cut(tmp_path: Path) ->
     cfg = config([make_task("T001")], tmp_path)
     cfg.plan_health = broken
     env = FakeEnv()
-    assert cycle.run_cycle(cfg, env, NOW) == st.MERGE_PENDING
+    env.store = st.with_task(st.sync_graph(env.store, cfg.graph), "T001", plan_gap={"at": "2026-11-01T11:00:00Z", "problems": ["old"]})
+    assert cycle.run_cycle(cfg, env, NOW) == st.MERGE_PENDING  # claimed as before D-1350
+    assert st.entry(env.store, "T001")["plan_gap"] == {"at": "2026-11-01T11:00:00Z", "problems": ["old"]}  # no evidence of a fix
     many = [f"gap {i}" for i in range(14)]
     sound, marked = cycle.plan_health_pass(dataclasses.replace(cfg, plan_health=gaps({"T001": many})), st.new_state(), ["T001", "T002"], NOW)
     assert sound == ["T002"]
     kept = st.entry(marked, "T001")["plan_gap"]["problems"]
     assert kept[:10] == many[:10] and kept[10] == "and 4 more (python3 scripts/plan_health.py T001)" and len(kept) == 11
+
+
+def test_fix_main_is_never_checked_and_a_later_gap_is_marked_beside_a_sound_first() -> None:
+    cfg = config([make_task("T001"), make_task("T002")], Path("."))
+    asked: list[str] = []
+
+    def check(state: st.State, tid: str) -> list[str]:
+        asked.append(tid)
+        return ["T002: gap"] if tid == "T002" else []
+
+    cfg.plan_health = check
+    sound, marked = cycle.plan_health_pass(cfg, st.new_state(), [st.FIX_MAIN, "T001", "T002"], NOW)
+    assert sound == [st.FIX_MAIN, "T001"] and asked == ["T001", "T002"]
+    assert st.entry(marked, "T002")["plan_gap"]["problems"] == ["T002: gap"]
+
+
+def test_a_changed_problem_list_keeps_the_time_the_hold_began() -> None:
+    cfg = dataclasses.replace(config([make_task("T001")], Path(".")), plan_health=gaps({"T001": ["first"]}))
+    _, held = cycle.plan_health_pass(cfg, st.new_state(), ["T001"], NOW)
+    later = dataclasses.replace(cfg, plan_health=gaps({"T001": ["first", "second"]}))
+    _, held = cycle.plan_health_pass(later, held, ["T001"], NOW + timedelta(hours=2))
+    assert st.entry(held, "T001")["plan_gap"] == {"at": "2026-11-01T12:00:00Z", "problems": ["first", "second"]}
+
+
+def test_an_unbuildable_checker_leaves_the_runner_without_the_check(tmp_path: Path, capsys: Any, monkeypatch: Any) -> None:
+    """D-1350 review: a spec or test design that cannot be read must not stop the runner."""
+    def boom(root: Path) -> Any:
+        raise ValueError("test design unreadable")
+
+    monkeypatch.setattr(ph.gen_prompts, "load_sources", boom)
+    assert entry.plan_health_checker(tmp_path, {"tasks": []}) is None
+    monkeypatch.undo()
+    assert "runner: plan health unavailable: test design unreadable" in capsys.readouterr().out
+    assert callable(entry.plan_health_checker(make_repo(tmp_path / "ok", [plan_task("T001")]), {"tasks": [plan_task("T001")]}))

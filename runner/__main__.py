@@ -68,6 +68,7 @@ import subprocess
 import sys
 import tempfile
 import uuid
+from collections.abc import Callable
 from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
 from typing import Any
@@ -179,10 +180,20 @@ def build(args: argparse.Namespace, outbox_dir: Path) -> tuple[cycle.Config, Git
                        lanes(ROOT / "kit" / "runner.json"), env.decision_numbers,
                        proof_stages=frozenset(proof.MACHINE_PROOFS), stage_proof=stage_proof,
                        lane_hint=lane_hint(os.environ.get("RUNNER_LANE", "")), locked=locked_path,
-                       # eligibility already judged the dependencies' status (a proof-waiting cleanup dep counts,
-                       # D-551), so the check looks only at the plan itself and the DONE deps' files (D-1350)
-                       plan_health=plan_health.checker(ROOT, kit, pending_ok=True))
+                       plan_health=plan_health_checker(ROOT, kit))
     return cfg, env
+
+
+def plan_health_checker(root: Path, kit: dict[str, Any]) -> Callable[[st.State, str], list[str]] | None:
+    """scripts/plan_health.py's checker, or None (no check, claims as before) when it cannot be built: a
+    plan-health problem must never stop the runner (D-1350). Eligibility already judged the dependencies'
+    status (a proof-waiting cleanup dependency counts, D-551), so the check looks only at the plan itself
+    and the DONE dependencies' files (`pending_ok`)."""
+    try:
+        return plan_health.checker(root, kit, pending_ok=True)
+    except Exception as exc:  # noqa: BLE001  # reason: an unreadable spec or test design must not stop the build (D-1350)
+        print(f"runner: plan health unavailable: {str(exc)[:200]}")
+        return None
 
 
 def lane_hint(raw: str) -> str | None:

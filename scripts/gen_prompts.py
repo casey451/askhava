@@ -21,10 +21,10 @@ over a 200k-token window at about 4 bytes per token, rounded up. A spec file,
 the test design and the decisions log count only through the lines the prompt
 pastes from them; an owned directory counts nothing and an owned file is never
 counted twice through a read (D-1036). A read of docs/architecture.md counts
-as its section 2 (the crate layout every prompt points to) plus the lines that
-name the task's module (`<module>` or app/<module>/), not the whole file: it is
-over 170k bytes and workers read only section 2 and line ranges (D-1350). A
-task that owns it counts it whole. Generating writes the value back into
+as its section 2 (the crate layout every prompt points to), every section the
+prompt itself cites, and the lines that name the task's module (`<module>` or
+app/<module>/), not the whole file: it is over 170k bytes and workers read
+only section 2 and line ranges (D-1350). A task that owns it counts it whole. Generating writes the value back into
 kit/tasks.json.
 
 With --check, nothing is written: the script exits 1 if a prompt is missing,
@@ -75,7 +75,11 @@ DECISION_QUESTION_CHARS = 200
 DECISION_CHOICE_CHARS = 600
 SUPERSEDED_FILE = "kit/superseded_decisions.json"
 ARCHITECTURE = "docs/architecture.md"
-ARCHITECTURE_LAYOUT = "## 2. "  # the section every prompt's start routine names (crate layout, D-1350)
+# A section heading of docs/architecture.md, and a citation of its sections ("architecture section 8",
+# "`docs/architecture.md` sections 2, 4 and 11", "sections 7 to 12"); section 2, the crate layout every
+# prompt's start routine names, always counts (D-1350).
+SECTION_HEADING = re.compile(r"^## (\d+)\. ")
+SECTION_CITE = re.compile(r"architecture(?:\.md`?)? sections? (\d+(?:(?:, | and | to )\d+)*)")
 PASTED_READS = ("docs/spec/", "docs/test-design.md", "docs/decisions.md", "docs/brains/")
 BRAINS_DIR = "docs/brains/"
 BRAINS_NOTE = "none (this task lists no brain under its reads)."
@@ -454,25 +458,42 @@ def context_bytes(root: Path, task: dict[str, Any], prompt: str) -> int:
     owned_set = set(owned)
     reads = [r for r in task["reads"] if not r.startswith(PASTED_READS) and r not in owned_set]
     total = len(prompt.encode("utf-8")) + sum(path_bytes(root, p) for p in dict.fromkeys(owned))
-    sized = (architecture_bytes(root, task.get("module")) if r == ARCHITECTURE else read_bytes(root, r, owned_set) for r in dict.fromkeys(reads))
+    sized = (
+        architecture_bytes(root, task.get("module"), prompt) if r == ARCHITECTURE else read_bytes(root, r, owned_set)
+        for r in dict.fromkeys(reads)
+    )
     return total + sum(sized)
 
 
-def architecture_bytes(root: Path, module: str | None) -> int:
-    """What a worker loads of docs/architecture.md: section 2 whole, and elsewhere only the lines naming its
-    module in backticks or as `app/<module>/` (the module table row, its adapters and runbook lines); 0
-    when the file does not exist (D-1350)."""
+def architecture_bytes(root: Path, module: str | None, prompt: str = "") -> int:
+    """What a worker loads of docs/architecture.md: section 2 whole and every section the prompt itself cites
+    ("architecture section 8", "`docs/architecture.md` sections 7 to 12"), and elsewhere only the lines
+    naming its module in backticks or as `app/<module>/` (the module table row, its adapters and runbook
+    lines); 0 when the file does not exist (D-1350)."""
     target = root / ARCHITECTURE
     if not target.is_file():
         return 0
     marks = (f"`{module}`", f"app/{module}/") if module else ()
-    total, in_layout = 0, False
+    whole = {2} | cited_sections(prompt)
+    total, in_whole = 0, False
     for line in target.read_text(encoding="utf-8").splitlines(keepends=True):
+        heading = SECTION_HEADING.match(line)
         if line.startswith("## "):
-            in_layout = line.startswith(ARCHITECTURE_LAYOUT)
-        if in_layout or any(mark in line for mark in marks):
+            in_whole = bool(heading) and int(heading.group(1)) in whole
+        if in_whole or any(mark in line for mark in marks):
             total += len(line.encode("utf-8"))
     return total
+
+
+def cited_sections(text: str) -> set[int]:
+    """Section numbers of docs/architecture.md a text cites: "section 8", "sections 2, 4 and 11", "sections 7 to 12"."""
+    found: set[int] = set()
+    for match in SECTION_CITE.finditer(text):
+        numbers = [int(n) for n in re.findall(r"\d+", match.group(1))]
+        if " to " in match.group(1) and len(numbers) == 2:
+            numbers = list(range(numbers[0], numbers[1] + 1))
+        found.update(numbers)
+    return found
 
 
 def read_bytes(root: Path, path: str, owned: set[str]) -> int:

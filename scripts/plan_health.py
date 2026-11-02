@@ -15,8 +15,8 @@ attempt used and claim the next task instead. Three checks, each reusing the pla
     ancestors in the dependency graph, or by the shared list, or already exists on disk. The
     ownership test is scripts/check_pr_change.py `task_paths_check` (runner/verify.py
     `check_paths`), the same rule a hand-in is held to (D-1058). A path that a decision the
-    prompt pastes (superseded ones included, since the prompt shows them as history) names is
-    held to a weaker rule: some task in the graph owns it, or it exists. A decision often names
+    prompt pastes is held to a weaker rule: some task in the graph owns it, or it exists. A
+    superseded decision (pasted as "history only, build <successor>") never holds a task. A decision often names
     a later task's file (the deploy notes, the README) as background; that is no gap for this
     task, while a file no task will ever write is.
 (c) **Dependencies.** Every dependency is DONE or SKIPPED in kit/state.json, and every regular
@@ -125,15 +125,18 @@ def path_problems(root: Path, doc: dict[str, Any], src: gen_prompts.Sources, tas
 
 
 def decision_problems(root: Path, doc: dict[str, Any], src: gen_prompts.Sources, task: dict[str, Any]) -> list[str]:
-    """(b) A path a pasted decision names that no task in the graph owns and that does not exist."""
+    """(b) A path a pasted, live decision names that no task in the graph owns and that does not exist.
+
+    A superseded decision is skipped: the prompt marks it "history only, build <successor>" and pastes the
+    successor too, so what it names is no work for the task and never holds it (D-1350)."""
     everyone = [o for t in doc["tasks"] for o in t.get("owns", [])] + list(doc.get("shared_paths", []))
     out: list[str] = []
     for did in task.get("decisions", []):
-        by = src.superseded.get(did)
-        note = f"{did}, superseded by {by} (pasted as history)" if by else did
+        if did in src.superseded:
+            continue
         for path in cited([src.decisions.get(did, "")]):
             if not under(path, everyone) and not (root / path).exists():
-                out.append(f"{task['id']}: {path} is named by {note}, but no task owns it and it does not exist")
+                out.append(f"{task['id']}: {path} is named by {did}, but no task owns it and it does not exist")
     return out
 
 
