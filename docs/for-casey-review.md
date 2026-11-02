@@ -1615,3 +1615,9 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 
 - **What happened.** T225's first try failed the coverage floor in Ci. The runner tried to read the failing job's log to tell the retry what broke, but GitHub's tool refused to print it because the log had colour codes in it. The second try got only the step name.
 - **What changed.** The runner now asks for the log anyway and strips the colour codes itself, as it already did for other logs. Nothing else about failure handling changed.
+
+## Flat-fee mode needs its own card wording (T060, D-1417, D-1418, November 2)
+
+- **What happened.** The fee-mode switch (tiers or one flat fee per job type) is built: switching is logged, and every business must accept a new card authorization before its next charge. But the card authorization text you approved quotes the $25 / $75 / $199 tiers, and there is no wording yet for flat mode.
+- **What I chose.** I did not write legal wording for you. The system stores the exact text each business was shown, with its version and time. Before the switch is offered in your owner portal, the flat-mode wording needs your go as a spec change.
+- **Worth a look.** The version number for the card wording and the one for the fee mode currently share one counter; whoever next changes either must raise it past both. A later task splits them. Flat mode keeps the $75 cap on recurring services.

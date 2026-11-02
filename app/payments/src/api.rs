@@ -15,6 +15,11 @@
 //! [`save_card`] stores a [`SavedCard`] (cards only, FEE-014) with the FEE-015 authorization;
 //! [`SetupIntentRequest`] is the off-session SetupIntent of a $0 Confirm page (FEE-048). Nothing
 //! here takes a homeowner (FEE-009, D-1409).
+//!
+//! T060: [`fee_at_pick`] fixes the fee at the pick from the chosen quote alone (FEE-005);
+//! [`record_fee_at_confirm`] writes it to the ledger at Confirm, never adjusted afterwards
+//! (FEE-006, JOB-016); [`switch_fee_mode`] logs the owner's [`FeeMode`] switch, and
+//! [`may_confirm`] holds each business to the new [`FeeTerms`] authorization (FEE-007, D-072).
 
 pub use crate::ledger::{Appended, EntryKind, LedgerEntry, LedgerError, NewEntry, ledger_append};
 pub use crate::models::{
@@ -22,7 +27,12 @@ pub use crate::models::{
     SetupIntentRequest,
 };
 pub use crate::rules::{
-    Fee, FeeError, FeeJob, FeeQuote, LockDates, Period, PeriodJob, RECURRING_MONTHS, RecurringCap,
-    Service, Tier, VisitTier, fee_for, locked_cents, period_fee_for, price_lock_until,
+    Fee, FeeError, FeeJob, FeeMode, FeeQuote, FeeTerms, LockDates, Period, PeriodJob, PickedFee,
+    RECURRING_MONTHS, RecurringCap, Service, Tier, VisitTier, fee_at_pick, fee_for, flat_tier,
+    locked_cents, period_fee_for, price_lock_until,
 };
-pub use crate::service::{CUSTOMER_ACTION, Saved, customer_of, ensure_customer, save_card};
+pub use crate::service::{
+    Authorized, CONFIRM_FEE_ACTION, CUSTOMER_ACTION, ConfirmError, Confirmed, FEE_MODE_ACTION,
+    FEE_MODE_ID, FEE_MODE_SUBJECT_KIND, Saved, accept_authorization, customer_of, ensure_customer,
+    may_confirm, record_fee_at_confirm, save_card, switch_fee_mode,
+};
