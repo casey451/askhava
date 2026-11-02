@@ -381,7 +381,7 @@ pub async fn send_email(
     to: EmailTo<'_>,
     now: Timestamp,
 ) -> Result<EmailSent, EmailError> {
-    let sent_today = models::emails_sent_since(db, day_start(now)).await?;
+    let sent_today = models::emails_sent_between(db, (day_start(now), now)).await?;
     let hold = limit.holds_bulk(sent_today);
     let Some(claim) = models::claim_email(db, id, (send_kind(to), hold), now).await? else {
         return waiting_or_sent(db, id, (limit, sent_today), now).await;
@@ -561,6 +561,9 @@ pub enum EmailEvent {
     Recorded,
     /// Its message ID was stored before; acknowledge it and change nothing.
     Repeat,
+    /// A well-formed event that is not about an email (not `email.*`, such as `contact.created`
+    /// or `domain.updated`); acknowledge it and store nothing, so it is not sent again.
+    Ignored,
 }
 
 /// The fields read from a Resend event body.
@@ -572,21 +575,26 @@ struct ResendEvent {
     data: ResendData,
 }
 
-/// The email a Resend event is about.
+/// The email a Resend event is about; empty when the event has none (a `contact.*` or
+/// `domain.*` event).
 #[derive(serde::Deserialize)]
 struct ResendData {
+    #[serde(default)]
     email_id: String,
 }
 
 /// Stores one verified email-provider webhook at `now` (SEC-050, SEC-051): deduplicated by its
 /// Svix message ID and stored with the provider's event time in one transaction, so `Ok` (and
 /// only `Ok`) may be acknowledged; a complaint raises the [`COMPLAINT_ALERT`] in that transaction.
-/// The signature, constant-time comparison and 5-minute tolerance are `adapters`' (T018).
+/// An event whose type is not `email.*` is [`EmailEvent::Ignored`] before anything is written, so
+/// the table's checks never turn a valid provider event into a 500 sent again forever. The
+/// signature, constant-time comparison and 5-minute tolerance are `adapters`' (T018).
 ///
 /// # Errors
 ///
-/// [`EmailError::BadWebhook`] (not Resend's, no message ID, or an unreadable body; nothing is
-/// stored) or [`EmailError::Database`] (answer 500 so the provider sends it again).
+/// [`EmailError::BadWebhook`] (not Resend's, no message ID, an unreadable body, or an `email.*`
+/// event with a malformed type or an empty or over-long email ID; nothing is stored) or
+/// [`EmailError::Database`] (answer 500 so the provider sends it again).
 pub async fn receive_email_event(
     db: &mut PgConnection,
     hook: &VerifiedWebhook,
@@ -596,12 +604,9 @@ pub async fn receive_email_event(
         .event_key()
         .filter(|_| hook.vendor() == WebhookVendor::Resend);
     let key = key.ok_or(EmailError::BadWebhook)?;
-    let event: ResendEvent =
-        serde_json::from_slice(hook.body()).map_err(|_| EmailError::BadWebhook)?;
-    let event_at: Timestamp = event
-        .created_at
-        .parse()
-        .map_err(|_| EmailError::BadWebhook)?;
+    let Some((event, event_at)) = parse_event(hook.body())? else {
+        return Ok(EmailEvent::Ignored);
+    };
     let mut tx = db.begin().await.map_err(|_| EmailError::Database)?;
     let first = models::first_event(&mut tx, (RESEND_SOURCE, key.as_str()), now)
         .await
@@ -625,6 +630,31 @@ pub async fn receive_email_event(
     Ok(EmailEvent::Recorded)
 }
 
+/// The longest provider email ID `messaging.email_event` stores (its `provider_id` check).
+const MAX_PROVIDER_ID: usize = 128;
+/// The longest event name after `email.` that `messaging.email_event` stores (its `kind` check).
+const MAX_EVENT_NAME: usize = 32;
+
+/// Reads a Resend event body and checks it against `messaging.email_event`'s checks (SEC-051):
+/// `None` for a type outside `email.*`, the event and its time otherwise.
+fn parse_event(body: &[u8]) -> Result<Option<(ResendEvent, Timestamp)>, EmailError> {
+    let event: ResendEvent = serde_json::from_slice(body).map_err(|_| EmailError::BadWebhook)?;
+    let Some(name) = event.kind.strip_prefix("email.") else {
+        return Ok(None);
+    };
+    let name_ok = (1..=MAX_EVENT_NAME).contains(&name.len())
+        && name.bytes().all(|b| b.is_ascii_lowercase() || b == b'_');
+    let id = event.data.email_id.as_str();
+    if !name_ok || id.is_empty() || id.len() > MAX_PROVIDER_ID {
+        return Err(EmailError::BadWebhook);
+    }
+    let event_at = event
+        .created_at
+        .parse()
+        .map_err(|_| EmailError::BadWebhook)?;
+    Ok(Some((event, event_at)))
+}
+
 /// The latest provider event of email `provider_id` by the provider's event time, such as
 /// `email.delivered` or `email.bounced` (SEC-051, BIZ-045); a late-arriving earlier event never
 /// replaces a later one.
@@ -639,8 +669,14 @@ pub async fn email_status(
     models::latest_email_event(db, provider_id).await
 }
 
-/// Raises the [`WEBHOOKS_SILENT_ALERT`] when emails were sent in the 24 hours before `now` and no
-/// provider webhook arrived in them (SEC-051); returns whether it did. A scheduled task calls it.
+/// How long a sent email has to produce a provider webhook before its silence counts (SEC-051):
+/// an email sent more recently than this says nothing about whether webhooks arrive.
+pub const WEBHOOK_GRACE: SignedDuration = SignedDuration::from_hours(1);
+
+/// Raises the [`WEBHOOKS_SILENT_ALERT`] when no provider webhook arrived in the 24 hours before
+/// `now` while emails were sent in them (SEC-051); returns whether it did. Only emails sent at
+/// least [`WEBHOOK_GRACE`] before `now` count, so an email sent minutes ago never raises it. A
+/// scheduled task calls it.
 ///
 /// # Errors
 ///
@@ -650,7 +686,7 @@ pub async fn check_webhook_silence(
     now: Timestamp,
 ) -> Result<bool, EmailError> {
     let since = now - SignedDuration::from_hours(24);
-    let sent = models::emails_sent_since(db, since).await?;
+    let sent = models::emails_sent_between(db, (since, now - WEBHOOK_GRACE)).await?;
     if sent == 0 || models::email_events_since(db, since).await? > 0 {
         return Ok(false);
     }

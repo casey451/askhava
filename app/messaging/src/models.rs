@@ -542,14 +542,17 @@ pub(crate) async fn insert_email(
     Ok((row.id, row.new))
 }
 
-/// How many emails were sent since `since` (the day's count, OPS-038).
-pub(crate) async fn emails_sent_since(
+/// How many emails were sent from `since` to `until`, both included (the day's count, OPS-038;
+/// the sends a webhook should have followed, SEC-051).
+pub(crate) async fn emails_sent_between(
     db: &mut PgConnection,
-    since: Timestamp,
+    (since, until): (Timestamp, Timestamp),
 ) -> Result<i64, EmailError> {
     sqlx::query_scalar!(
-        "SELECT count(*) AS \"n!\" FROM messaging.email_outbox WHERE status = 'sent' AND sent_at >= $1",
-        since.to_sqlx() as _
+        "SELECT count(*) AS \"n!\" FROM messaging.email_outbox \
+         WHERE status = 'sent' AND sent_at >= $1 AND sent_at <= $2",
+        since.to_sqlx() as _,
+        until.to_sqlx() as _
     )
     .fetch_one(db)
     .await

@@ -136,12 +136,14 @@ pub enum GaveUp {
 /// Gives up outbox text `id` after its retries, at `now`, in one transaction (TXT-014, TXT-015):
 /// marks it failed, lists an important one for the portal and emails it when an address is on
 /// file, and raises a call-back alert for a homeowner with none. `to` is the email recipient
-/// (its `id` is ignored: the row's recipient is used). `None` when the text was already sent,
-/// blocked or given up.
+/// (its `id` is ignored: the row's recipient is used; its `audience` must be the kind `reach`
+/// names, so the email's footer and address lookup match the text's recipient). `None` when the
+/// text was already sent, blocked or given up.
 ///
 /// # Errors
 ///
-/// [`OutboxError::RecipientKind`] when `reach` names the other kind, [`OutboxError::Template`]
+/// [`OutboxError::RecipientKind`] when `reach` or `to.audience` names a kind other than the
+/// text's (nothing is changed), [`OutboxError::Template`]
 /// or [`OutboxError::Database`].
 pub async fn give_up(
     db: &mut PgConnection,
@@ -149,6 +151,9 @@ pub async fn give_up(
     (id, reach, to): (Uuid, Reach<'_>, &Recipient<'_>),
     now: Timestamp,
 ) -> Result<Option<GaveUp>, OutboxError> {
+    if audience_kind(to.audience) != reach_kind(reach) {
+        return Err(OutboxError::RecipientKind);
+    }
     let Some((recipient, ..)) = models::outbox_target(db, id).await? else {
         return Ok(None);
     };

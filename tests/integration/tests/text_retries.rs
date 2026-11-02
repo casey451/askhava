@@ -13,10 +13,10 @@ use askhava_adapters::api::{
 use askhava_messaging::api::{
     Audience, CALL_BACK_ALERT, COMPLAINT_ALERT, DailyLimit, EmailClass, EmailError, EmailEvent,
     EmailSent, EmailTo, GaveUp, Language, MailboxKind, NO_RUSH_CALL_BACK, NewEmail, NewText,
-    Notice, PostalAddress, Reach, Recipient, Relation, RevokeChannel, Step, To, UpdateChannel,
-    Urgency, WEBHOOKS_SILENT_ALERT, check_webhook_silence, email_log, email_status, enqueue,
-    give_up, next_reset, queue_email, receive_email_event, record_failure, send_checked,
-    send_email, set_update_channel, suppress, update_channel,
+    Notice, OutboxError, PostalAddress, Reach, Recipient, Relation, RevokeChannel, Step, To,
+    UpdateChannel, Urgency, WEBHOOK_GRACE, WEBHOOKS_SILENT_ALERT, check_webhook_silence, email_log,
+    email_status, enqueue, give_up, next_reset, queue_email, receive_email_event, record_failure,
+    send_checked, send_email, set_update_channel, suppress, update_channel,
 };
 use askhava_privacy::api::{NewContact, Vault, store_contact};
 use base64::Engine as _;
@@ -156,10 +156,7 @@ async fn fail_four_times(db: &mut Db, vault: &Vault, (her, template): (Uuid, &st
     let mut now = first;
     for after in [10, 20, 30, 0] {
         let sent = send_checked(db, (&secret(), &DeadCarrier, vault), id, (to, FROM), now).await;
-        assert_eq!(
-            sent.err(),
-            Some(askhava_messaging::api::OutboxError::Carrier)
-        );
+        assert_eq!(sent.err(), Some(OutboxError::Carrier));
         let step = record_failure(db, id, now).await.expect("recorded");
         if after == 0 {
             assert_eq!(step, Step::GiveUp);
@@ -248,6 +245,48 @@ async fn td_txt_05_important_text_retried_then_emailed_and_in_the_portal(pool: P
             .contains("Your first quote for request 1042 is in.")
     );
     assert!(bodies[0].1.contains("Manage email notices"));
+}
+
+/// TD-TXT-05, TXT-014: an email recipient whose audience is not the text's kind is refused and
+/// changes nothing, so a homeowner's failed text is never emailed with a business footer; the
+/// matching recipient then gives it up as usual.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_txt_05_give_up_refuses_a_recipient_of_the_other_kind(pool: PgPool) {
+    let (vault, mut db) = (vault(), pool.acquire().await.expect("db"));
+    let her = contact(&mut db, &vault, (PHONE, Some("ada@example.com"))).await;
+    let id = fail_four_times(&mut db, &vault, (her, "first_quote")).await;
+    let now = at("2026-11-02T17:30:00Z");
+    let keys = (&secret(), &postal());
+    let business = Recipient {
+        audience: Audience::Business,
+        ..homeowner(her)
+    };
+    let wrong = give_up(
+        &mut db,
+        keys,
+        (id, reach(&vault, Urgency::NoRush), &business),
+        now,
+    )
+    .await;
+    assert_eq!(wrong, Err(OutboxError::RecipientKind));
+    let (status, emails): (String, i64) = sqlx::query_as(
+        "SELECT o.status, (SELECT count(*) FROM messaging.email_outbox) \
+         FROM messaging.outbox o WHERE o.id = $1",
+    )
+    .bind(id)
+    .fetch_one(&mut *db)
+    .await
+    .expect("row");
+    assert_ne!(status, "failed", "not given up");
+    assert_eq!(emails, 0, "nothing emailed");
+    let right = give_up(
+        &mut db,
+        keys,
+        (id, reach(&vault, Urgency::NoRush), &homeowner(her)),
+        now,
+    )
+    .await;
+    assert!(matches!(right, Ok(Some(GaveUp::Emailed(_)))), "{right:?}");
 }
 
 /// TD-TXT-05, TXT-015, INT-023: 3 failed retries with no email on file make a call-back alert,
@@ -556,6 +595,7 @@ async fn td_sec_27_email_webhooks_stored_once_in_event_order(pool: PgPool) {
         receive_email_event(&mut db, &bad, now).await,
         Err(EmailError::BadWebhook)
     );
+    not_email_events_never_reach_the_table(&mut db, secs, now).await;
     sqlx::query("ALTER TABLE messaging.email_event RENAME TO email_event_gone")
         .execute(&mut *db)
         .await
@@ -581,7 +621,7 @@ async fn td_sec_27_email_webhooks_stored_once_in_event_order(pool: PgPool) {
     );
     fill_day(&mut db, 3, now).await;
     let later = now + SignedDuration::from_hours(25);
-    fill_day_after(&mut db, later - SignedDuration::from_hours(1)).await;
+    fill_day_after(&mut db, ('e', later - SignedDuration::from_mins(10))).await;
     assert_eq!(
         check_webhook_silence(&mut db, now).await,
         Ok(false),
@@ -589,8 +629,15 @@ async fn td_sec_27_email_webhooks_stored_once_in_event_order(pool: PgPool) {
     );
     assert_eq!(
         check_webhook_silence(&mut db, later).await,
+        Ok(false),
+        "an email sent minutes ago has had no time for a webhook"
+    );
+    let lapsed = later - WEBHOOK_GRACE - SignedDuration::from_mins(1);
+    fill_day_after(&mut db, ('f', lapsed)).await;
+    assert_eq!(
+        check_webhook_silence(&mut db, later).await,
         Ok(true),
-        "sends, no webhook for 24 hours"
+        "sends with time for a webhook, none for 24 hours"
     );
     let silent: i64 = sqlx::query_scalar("SELECT count(*) FROM ops.alert WHERE kind = $1")
         .bind(WEBHOOKS_SILENT_ALERT)
@@ -600,15 +647,61 @@ async fn td_sec_27_email_webhooks_stored_once_in_event_order(pool: PgPool) {
     assert_eq!(silent, 1);
 }
 
-/// One more sent email at `at`, under a key `fill_day` does not use.
-async fn fill_day_after(db: &mut PgConnection, at: Timestamp) {
+/// SEC-051: a verified event outside `email.*` is acknowledged and stored nowhere, and an
+/// `email.*` event with an empty email ID or a malformed type is refused, both before any write
+/// (so the table's checks never roll back into a 500 the provider resends forever).
+async fn not_email_events_never_reach_the_table(db: &mut PgConnection, secs: i64, now: Timestamp) {
+    let before: i64 = sqlx::query_scalar(
+        "SELECT (SELECT count(*) FROM messaging.email_event) \
+         + (SELECT count(*) FROM messaging.webhook_event WHERE source = 'resend')",
+    )
+    .fetch_one(&mut *db)
+    .await
+    .expect("count");
+    let other =
+        r#"{"type":"contact.created","created_at":"2026-11-02T19:50:00Z","data":{"id":"c_1"}}"#;
+    let ignored = hook("msg_5", other, secs);
+    assert_eq!(
+        receive_email_event(db, &ignored, now).await,
+        Ok(EmailEvent::Ignored)
+    );
+    let no_id =
+        r#"{"type":"email.delivered","created_at":"2026-11-02T19:50:00Z","data":{"email_id":""}}"#;
+    let shapes = [
+        ("msg_6", no_id.to_owned()),
+        (
+            "msg_7",
+            event("email.Delivered-Now", "2026-11-02T19:50:00Z"),
+        ),
+    ];
+    for (id, body) in shapes {
+        let bad = hook(id, &body, secs);
+        assert_eq!(
+            receive_email_event(db, &bad, now).await,
+            Err(EmailError::BadWebhook),
+            "{id}"
+        );
+    }
+    let after: i64 = sqlx::query_scalar(
+        "SELECT (SELECT count(*) FROM messaging.email_event) \
+         + (SELECT count(*) FROM messaging.webhook_event WHERE source = 'resend')",
+    )
+    .fetch_one(&mut *db)
+    .await
+    .expect("count");
+    assert_eq!(after, before, "nothing stored");
+}
+
+/// One more sent email at `at`, under a key of 64 `key` letters that `fill_day` does not use.
+async fn fill_day_after(db: &mut PgConnection, (key, at): (char, Timestamp)) {
     sqlx::query(
         "INSERT INTO messaging.email_outbox (idempotency_key, template_id, recipient_id, \
          recipient_kind, subject_ids, class, status, not_before, provider_id, queued_at, sent_at) \
-         VALUES (repeat('f', 64), 'job_card', gen_random_uuid(), 'business', '{}', 'notice', \
-         'sent', $1, 're_later', $1, $1)",
+         VALUES (repeat($2, 64), 'job_card', gen_random_uuid(), 'business', '{}', 'notice', \
+         'sent', $1, 're_later_' || $2, $1, $1)",
     )
     .bind(jiff_sqlx::ToSqlx::to_sqlx(at))
+    .bind(key.to_string())
     .execute(db)
     .await
     .expect("sent");
