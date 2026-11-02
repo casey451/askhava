@@ -1,0 +1,30 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "WITH mine AS (SELECT kind, digest FROM payments.entity_key WHERE business_id = $1),\n              added AS (INSERT INTO payments.free_win_claim (kind, digest, business_id)\n                        SELECT kind, digest, $1 FROM mine ORDER BY kind, digest\n                        ON CONFLICT DO NOTHING RETURNING 1)\n         SELECT (SELECT count(*) FROM mine) AS \"keys!\", (SELECT count(*) FROM added) AS \"added!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "keys!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 1,
+        "name": "added!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null,
+      null
+    ]
+  },
+  "hash": "13886d7a3a2da40b80d1a3ce23e0a4f951f725f26be359b03d1c4495e2a33fa9"
+}

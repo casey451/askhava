@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT EXISTS (SELECT 1 FROM payments.ledger_entry\n           WHERE business_id = $1 AND job_id = ANY($2) AND job_id <> $3\n             AND kind IN ('charge', 'free-first-win', 'repeat-customer', 'fee-free-job-type'))",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "exists",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "UuidArray",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "3cbe98b64489ef794128f3950b9e43e5fb80a265c494ab4c8e9eb81ec8a34794"
+}

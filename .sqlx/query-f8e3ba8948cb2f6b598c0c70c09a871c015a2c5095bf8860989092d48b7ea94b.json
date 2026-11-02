@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO payments.free_win (business_id, job_id, ledger_entry_id, waived_cents)\n         VALUES ($1, $2, $3, $4) ON CONFLICT DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Uuid",
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "f8e3ba8948cb2f6b598c0c70c09a871c015a2c5095bf8860989092d48b7ea94b"
+}

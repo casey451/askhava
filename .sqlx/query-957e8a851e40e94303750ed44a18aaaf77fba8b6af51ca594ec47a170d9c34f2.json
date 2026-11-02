@@ -1,0 +1,53 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT e.id, e.kind, w.waived_cents AS \"waived_cents?\" FROM payments.ledger_entry e\n           LEFT JOIN payments.free_win w ON w.ledger_entry_id = e.id\n          WHERE e.business_id = $1 AND e.job_id = $2\n            AND e.kind IN ('charge', 'free-first-win', 'repeat-customer', 'fee-free-job-type')\n          ORDER BY e.seq LIMIT 1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "payments.ledger_entry",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "kind",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "payments.ledger_entry",
+            "name": "kind"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "waived_cents?",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "payments.free_win",
+            "name": "waived_cents"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "957e8a851e40e94303750ed44a18aaaf77fba8b6af51ca594ec47a170d9c34f2"
+}
