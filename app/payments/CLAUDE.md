@@ -22,6 +22,7 @@ The layer-3 crate through which all money moves (FEE-032, `docs/architecture.md`
 - No `UPDATE`, `DELETE` or `TRUNCATE` on `payments.ledger_entry` for `askhava_app`; a wrong entry is corrected by a new entry (D-092): `src/tests/ledger_append.rs` `the_app_role_cannot_change_a_row`.
 - `EntryKind::code` matches the migration's `kind` check exactly: `every_entry_type_appends`.
 - Amounts are unsigned whole cents; direction comes from the kind (D-1383). Do not store negative amounts.
+- `LedgerError` carries no database message (D-698, D-1384); do not add a `sqlx::Error` source.
 - `ledger_append` runs on the caller's connection, so the entry commits or rolls back with the caller's state change (rust brain R11); never call Stripe inside that transaction.
 
 ## How to change
@@ -32,5 +33,5 @@ The layer-3 crate through which all money moves (FEE-032, `docs/architecture.md`
 
 ## Tests that guard it
 
-- `src/tests/ledger_append.rs` (TD-FEE-16 ledger cases: every kind, the repeated key, the constructor's refusals, the app role's append-only grants): `cargo test -p askhava-payments tests::ledger_append`.
+- `src/tests/ledger_append.rs` (TD-FEE-16 ledger cases: every kind, the repeated key, the constructor's refusals, the table's own checks, the `Database` error branches, the app role's append-only grants with SQLSTATE 42501): `cargo test -p askhava-payments tests::ledger_append`.
 - TD-FEE-16's Stripe match and reconcile cases are T067's; its architecture case (only `payments` imports the payments adapter) is T175's.

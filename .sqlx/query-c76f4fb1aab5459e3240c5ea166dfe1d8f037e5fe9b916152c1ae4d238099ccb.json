@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "REVOKE SELECT ON payments.ledger_entry FROM askhava_app",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "c76f4fb1aab5459e3240c5ea166dfe1d8f037e5fe9b916152c1ae4d238099ccb"
+}

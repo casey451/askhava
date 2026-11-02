@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "GRANT SELECT (id, idempotency_key) ON payments.ledger_entry TO askhava_app",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "0c323bb8a14e39623c509a288704b2757be595aacc2b4f1280c7d3db3b5f1545"
+}
