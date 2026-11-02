@@ -2243,8 +2243,7 @@
     "app/ai/src/tests/schemas.rs",
     "app/ai/src/tests/no_tools.rs",
     "app/ai/src/tests/adapter_calls.rs",
-    "app/catalog/src/restricted_words.rs",
-    "app/catalog/src/tests/restricted_words.rs"
+    "app/catalog/src/restricted_words.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -2285,7 +2284,7 @@
    ],
    "cites": [],
    "budget": {
-    "files": 10,
+    "files": 9,
     "lines": 600,
     "context_pct": 19
    },
@@ -4289,8 +4288,7 @@
     "app/quotes/src/cards.rs",
     "app/quotes/src/gate.rs",
     "app/quotes/src/tests/prop_card_no_contact.rs",
-    "app/quotes/src/models.rs",
-    "migrations/0068_quotes_card_text.sql"
+    "app/quotes/src/models.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -4326,7 +4324,7 @@
    ],
    "cites": [],
    "budget": {
-    "files": 5,
+    "files": 4,
     "lines": 350,
     "context_pct": 17
    },
@@ -9939,7 +9937,6 @@
     "D-341",
     "D-344",
     "D-351",
-    "D-353",
     "D-348",
     "D-349",
     "D-359",
@@ -10473,9 +10470,9 @@
    "decisions": [
     "D-348",
     "D-349",
-    "D-353",
     "D-359",
     "D-384",
+    "D-491",
     "D-480",
     "D-492",
     "D-1215"
@@ -11366,7 +11363,6 @@
     "D-300",
     "D-316",
     "D-352",
-    "D-353",
     "D-359",
     "D-360",
     "D-368",
