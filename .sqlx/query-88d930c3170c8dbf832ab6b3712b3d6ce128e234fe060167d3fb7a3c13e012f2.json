@@ -1,0 +1,76 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "WITH old AS (SELECT id, body FROM messaging.outbox WHERE id = $1 AND status IN ('queued', 'sending') FOR UPDATE) UPDATE messaging.outbox o SET status = 'failed', body = NULL FROM old WHERE o.id = old.id RETURNING o.recipient_id, o.recipient_kind, o.template_id, o.subject_ids, old.body AS \"body!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "recipient_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "messaging.outbox",
+            "name": "recipient_id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "recipient_kind",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "messaging.outbox",
+            "name": "recipient_kind"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "template_id",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "messaging.outbox",
+            "name": "template_id"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "subject_ids",
+        "type_info": "UuidArray",
+        "origin": {
+          "Table": {
+            "table": "messaging.outbox",
+            "name": "subject_ids"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "body!",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "messaging.outbox",
+            "name": "body"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "88d930c3170c8dbf832ab6b3712b3d6ce128e234fe060167d3fb7a3c13e012f2"
+}

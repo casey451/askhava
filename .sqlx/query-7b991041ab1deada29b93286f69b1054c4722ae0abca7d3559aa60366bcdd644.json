@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE messaging.text_retry SET outcome = $2, call_back_due = $3, next_at = NULL WHERE outbox_id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "7b991041ab1deada29b93286f69b1054c4722ae0abca7d3559aa60366bcdd644"
+}

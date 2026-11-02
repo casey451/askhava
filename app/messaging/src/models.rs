@@ -454,3 +454,407 @@ fn split_digests(digests: &[(u16, [u8; 32])]) -> (Vec<i16>, Vec<Vec<u8>>) {
         .filter_map(|(v, d)| Some((i16::try_from(*v).ok()?, d.to_vec())))
         .unzip()
 }
+
+/// Why an email call failed. No variant carries an address or a body (PRIV-016).
+#[derive(Debug, Error, PartialEq, Eq)]
+pub enum EmailError {
+    /// The LLC postal address is empty or not a P.O. box or private mailbox (SEC-028).
+    #[error("the postal address is not a P.O. box or private mailbox")]
+    PostalAddress,
+    /// The daily limit is zero or its share is outside 1 to 100 (OPS-038).
+    #[error("the email limit setting is out of range")]
+    Limit,
+    /// The email layout did not render.
+    #[error("the email could not be rendered")]
+    Template,
+    /// No address is on file for the recipient, or the vault refused the read.
+    #[error("no email address on file")]
+    NoAddress,
+    /// The row was queued for the other kind of recipient; it is left as it was.
+    #[error("the email was queued for another kind of recipient")]
+    RecipientKind,
+    /// The provider refused the send or its outcome is unknown; a resend carries the same key.
+    #[error("the email provider did not confirm the send")]
+    Provider,
+    /// The email outbox has no row with this ID.
+    #[error("no such email")]
+    NotFound,
+    /// The webhook is not the email provider's, has no message ID, or its body does not parse;
+    /// nothing was stored.
+    #[error("the webhook is not a well-formed email-provider event")]
+    BadWebhook,
+    /// The database refused or dropped the statement.
+    #[error("the messaging database statement failed")]
+    Database,
+}
+
+/// One email's notice-log state (BIZ-045, OPS-038).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct EmailLog {
+    /// Whether OPS-038 may hold it.
+    pub bulk: bool,
+    /// When it was queued.
+    pub queued_at: Timestamp,
+    /// It is not sent before this time.
+    pub not_before: Timestamp,
+    /// What it waited for last, if anything: `daily_limit` or `provider_limit`.
+    pub waiting_for: Option<String>,
+    /// When the provider took it; a window counted from the send starts here (D-381).
+    pub sent_at: Option<Timestamp>,
+}
+
+/// A claimed email: its key's IDs and its rendered parts.
+pub(crate) struct ClaimedEmail {
+    pub(crate) template_id: String,
+    pub(crate) recipient: Uuid,
+    pub(crate) subject: Vec<Uuid>,
+    pub(crate) rendered: crate::email::Rendered,
+}
+
+/// Inserts one email under `key` unless it is already queued; returns its ID and whether it is new.
+pub(crate) async fn insert_email(
+    db: &mut PgConnection,
+    (key, (template, to, subject), kind, bulk): (&str, (&str, Uuid, &[Uuid]), &str, bool),
+    r: &crate::email::Rendered,
+    now: Timestamp,
+) -> Result<(Uuid, bool), EmailError> {
+    let row = sqlx::query!(
+        "WITH new AS (INSERT INTO messaging.email_outbox (idempotency_key, template_id, \
+         recipient_id, recipient_kind, subject_ids, class, subject, html, plain, not_before, \
+         queued_at) VALUES ($1, $2, $3, $4, $5, CASE WHEN $6 THEN 'bulk' ELSE 'notice' END, $7, \
+         $8, $9, $10, $10) ON CONFLICT (idempotency_key) DO NOTHING RETURNING id) \
+         SELECT id AS \"id!\", true AS \"new!\" FROM new UNION ALL SELECT id, false \
+         FROM messaging.email_outbox WHERE idempotency_key = $1 AND NOT EXISTS (SELECT 1 FROM new)",
+        key,
+        template,
+        to,
+        kind,
+        subject,
+        bulk,
+        r.subject,
+        r.html,
+        r.plain,
+        now.to_sqlx() as _
+    )
+    .fetch_one(db)
+    .await
+    .map_err(|_| EmailError::Database)?;
+    Ok((row.id, row.new))
+}
+
+/// How many emails were sent from `since` to `until`, both included (the day's count, OPS-038;
+/// the sends a webhook should have followed, SEC-051).
+pub(crate) async fn emails_sent_between(
+    db: &mut PgConnection,
+    (since, until): (Timestamp, Timestamp),
+) -> Result<i64, EmailError> {
+    sqlx::query_scalar!(
+        "SELECT count(*) AS \"n!\" FROM messaging.email_outbox \
+         WHERE status = 'sent' AND sent_at >= $1 AND sent_at <= $2",
+        since.to_sqlx() as _,
+        until.to_sqlx() as _
+    )
+    .fetch_one(db)
+    .await
+    .map_err(|_| EmailError::Database)
+}
+
+/// Claims unsent, due email `id` for one attempt if it was queued for `kind` and is not a bulk
+/// email held while `hold_bulk` (OPS-038).
+pub(crate) async fn claim_email(
+    db: &mut PgConnection,
+    id: Uuid,
+    (kind, hold_bulk): (&str, bool),
+    now: Timestamp,
+) -> Result<Option<ClaimedEmail>, EmailError> {
+    let row = sqlx::query!(
+        "UPDATE messaging.email_outbox SET status = 'sending', attempts = attempts + 1 \
+         WHERE id = $1 AND status IN ('queued', 'sending') AND recipient_kind = $2 \
+         AND not_before <= $3 AND NOT (class = 'bulk' AND $4) \
+         RETURNING template_id, recipient_id, subject_ids, subject, html, plain",
+        id,
+        kind,
+        now.to_sqlx() as _,
+        hold_bulk
+    )
+    .fetch_optional(db)
+    .await
+    .map_err(|_| EmailError::Database)?;
+    row.map(|r| {
+        let rendered = crate::email::Rendered {
+            subject: r.subject.ok_or(EmailError::Database)?,
+            html: r.html.ok_or(EmailError::Database)?,
+            plain: r.plain.ok_or(EmailError::Database)?,
+        };
+        Ok(ClaimedEmail {
+            template_id: r.template_id,
+            recipient: r.recipient_id,
+            subject: r.subject_ids,
+            rendered,
+        })
+    })
+    .transpose()
+}
+
+/// Marks email `id` sent at `now` with the provider's ID and clears its parts (SEC-037).
+pub(crate) async fn mark_email_sent(
+    db: &mut PgConnection,
+    id: Uuid,
+    provider_id: &str,
+    now: Timestamp,
+) -> Result<(), EmailError> {
+    sqlx::query!(
+        "UPDATE messaging.email_outbox SET status = 'sent', provider_id = $2, sent_at = $3, \
+         subject = NULL, html = NULL, plain = NULL WHERE id = $1 AND status = 'sending'",
+        id,
+        provider_id,
+        now.to_sqlx() as _
+    )
+    .execute(db)
+    .await
+    .map(|_| ())
+    .map_err(|_| EmailError::Database)
+}
+
+/// Puts unsent email `id` back in the queue until `until`, recording what it waits for (OPS-038).
+pub(crate) async fn hold_email(
+    db: &mut PgConnection,
+    id: Uuid,
+    until: Timestamp,
+    reason: &str,
+) -> Result<(), EmailError> {
+    sqlx::query!(
+        "UPDATE messaging.email_outbox SET status = 'queued', not_before = $2, waiting_for = $3 \
+         WHERE id = $1 AND status <> 'sent'",
+        id,
+        until.to_sqlx() as _,
+        reason
+    )
+    .execute(db)
+    .await
+    .map(|_| ())
+    .map_err(|_| EmailError::Database)
+}
+
+/// Email `id`'s notice-log state, if the row exists.
+pub(crate) async fn email_row(
+    db: &mut PgConnection,
+    id: Uuid,
+) -> Result<Option<EmailLog>, EmailError> {
+    let row = sqlx::query!(
+        "SELECT class, queued_at, not_before, waiting_for, sent_at \
+         FROM messaging.email_outbox WHERE id = $1",
+        id
+    )
+    .fetch_optional(db)
+    .await
+    .map_err(|_| EmailError::Database)?;
+    Ok(row.map(|r| EmailLog {
+        bulk: r.class == "bulk",
+        queued_at: r.queued_at.to_jiff(),
+        not_before: r.not_before.to_jiff(),
+        waiting_for: r.waiting_for,
+        sent_at: r.sent_at.map(|t| t.to_jiff()),
+    }))
+}
+
+/// Homeowner `contact`'s stored update channel, if she chose one (TXT-018).
+pub(crate) async fn update_channel(
+    db: &mut PgConnection,
+    contact: Uuid,
+) -> Result<Option<String>, EmailError> {
+    sqlx::query_scalar!(
+        "SELECT channel FROM messaging.update_channel WHERE recipient_id = $1",
+        contact
+    )
+    .fetch_optional(db)
+    .await
+    .map_err(|_| EmailError::Database)
+}
+
+/// Stores homeowner `contact`'s update channel at `now` (TXT-018).
+pub(crate) async fn put_update_channel(
+    db: &mut PgConnection,
+    contact: Uuid,
+    channel: &str,
+    now: Timestamp,
+) -> Result<(), EmailError> {
+    sqlx::query!(
+        "INSERT INTO messaging.update_channel (recipient_id, channel, updated_at) \
+         VALUES ($1, $2, $3) ON CONFLICT (recipient_id) \
+         DO UPDATE SET channel = EXCLUDED.channel, updated_at = EXCLUDED.updated_at",
+        contact,
+        channel,
+        now.to_sqlx() as _
+    )
+    .execute(db)
+    .await
+    .map(|_| ())
+    .map_err(|_| EmailError::Database)
+}
+
+/// One text given up after its retries: who it was for and what it said (TXT-014).
+pub(crate) struct FailedText {
+    pub(crate) recipient: Uuid,
+    pub(crate) kind: String,
+    pub(crate) template_id: String,
+    pub(crate) subject: Vec<Uuid>,
+    pub(crate) body: String,
+}
+
+/// Counts outbox text `id`'s failed send at `now` (its claims so far, so a repeat call counts
+/// nothing twice) unless its retries already ended; returns the failures and the first failure.
+pub(crate) async fn record_failure(
+    db: &mut PgConnection,
+    id: Uuid,
+    now: Timestamp,
+) -> Result<Option<(i32, Timestamp)>, OutboxError> {
+    let row = sqlx::query!(
+        "INSERT INTO messaging.text_retry (outbox_id, failures, first_failed_at) \
+         SELECT id, GREATEST(attempts, 1), $2 FROM messaging.outbox \
+         WHERE id = $1 AND status IN ('queued', 'sending') \
+         ON CONFLICT (outbox_id) DO UPDATE SET failures = GREATEST(EXCLUDED.failures, \
+         messaging.text_retry.failures) WHERE messaging.text_retry.outcome IS NULL \
+         RETURNING failures, first_failed_at",
+        id,
+        now.to_sqlx() as _
+    )
+    .fetch_optional(db)
+    .await
+    .map_err(|_| OutboxError::Database)?;
+    Ok(row.map(|r| (r.failures, r.first_failed_at.to_jiff())))
+}
+
+/// Records when text `id`'s next retry is due (TXT-015).
+pub(crate) async fn set_next_retry(
+    db: &mut PgConnection,
+    id: Uuid,
+    at: Timestamp,
+) -> Result<(), OutboxError> {
+    sqlx::query!(
+        "UPDATE messaging.text_retry SET next_at = $2 WHERE outbox_id = $1",
+        id,
+        at.to_sqlx() as _
+    )
+    .execute(db)
+    .await
+    .map(|_| ())
+    .map_err(|_| OutboxError::Database)
+}
+
+/// Marks unsent text `id` failed and clears its body, returning what it was (TXT-014, SEC-037);
+/// `None` when it was sent, blocked or already failed.
+pub(crate) async fn fail_text(
+    db: &mut PgConnection,
+    id: Uuid,
+) -> Result<Option<FailedText>, OutboxError> {
+    let row = sqlx::query!(
+        "WITH old AS (SELECT id, body FROM messaging.outbox \
+         WHERE id = $1 AND status IN ('queued', 'sending') FOR UPDATE) \
+         UPDATE messaging.outbox o SET status = 'failed', body = NULL FROM old WHERE o.id = old.id \
+         RETURNING o.recipient_id, o.recipient_kind, o.template_id, o.subject_ids, \
+         old.body AS \"body!\"",
+        id
+    )
+    .fetch_optional(db)
+    .await
+    .map_err(|_| OutboxError::Database)?;
+    Ok(row.map(|r| FailedText {
+        recipient: r.recipient_id,
+        kind: r.recipient_kind,
+        template_id: r.template_id,
+        subject: r.subject_ids,
+        body: r.body,
+    }))
+}
+
+/// Lists failed important text `id` for the recipient's portal at `now` (TXT-014).
+pub(crate) async fn insert_portal_notice(
+    db: &mut PgConnection,
+    id: Uuid,
+    text: &FailedText,
+    now: Timestamp,
+) -> Result<(), OutboxError> {
+    sqlx::query!(
+        "INSERT INTO messaging.portal_notice (outbox_id, recipient_id, template_id, subject_ids, \
+         created_at) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (outbox_id) DO NOTHING",
+        id,
+        text.recipient,
+        text.template_id,
+        &text.subject,
+        now.to_sqlx() as _
+    )
+    .execute(db)
+    .await
+    .map(|_| ())
+    .map_err(|_| OutboxError::Database)
+}
+
+/// Records how text `id`'s retries ended: `emailed`, `call_back` (due at `due`) or `failed`.
+pub(crate) async fn end_retry(
+    db: &mut PgConnection,
+    id: Uuid,
+    (outcome, due): (&str, Option<Timestamp>),
+) -> Result<(), OutboxError> {
+    sqlx::query!(
+        "UPDATE messaging.text_retry SET outcome = $2, call_back_due = $3, next_at = NULL \
+         WHERE outbox_id = $1",
+        id,
+        outcome,
+        due.map(|t| t.to_sqlx()) as _
+    )
+    .execute(db)
+    .await
+    .map(|_| ())
+    .map_err(|_| OutboxError::Database)
+}
+
+/// Stores one provider event `kind` of email `provider_id`, at `event_at` by the provider's clock
+/// and received at `now` (SEC-051); returns the outbox row it is about, if one is known.
+pub(crate) async fn insert_email_event(
+    db: &mut PgConnection,
+    (provider_id, kind): (&str, &str),
+    (event_at, now): (Timestamp, Timestamp),
+) -> Result<Option<Uuid>, EmailError> {
+    sqlx::query_scalar!(
+        "WITH e AS (INSERT INTO messaging.email_event (provider_id, kind, event_at, received_at) \
+         VALUES ($1, $2, $3, $4) RETURNING provider_id) \
+         SELECT o.id AS \"id?\" FROM e LEFT JOIN messaging.email_outbox o ON o.provider_id = e.provider_id",
+        provider_id,
+        kind,
+        event_at.to_sqlx() as _,
+        now.to_sqlx() as _
+    )
+    .fetch_one(db)
+    .await
+    .map_err(|_| EmailError::Database)
+}
+
+/// The latest event kind of email `provider_id` by event time (SEC-051).
+pub(crate) async fn latest_email_event(
+    db: &mut PgConnection,
+    provider_id: &str,
+) -> Result<Option<String>, EmailError> {
+    sqlx::query_scalar!(
+        "SELECT kind FROM messaging.email_event WHERE provider_id = $1 \
+         ORDER BY event_at DESC, id DESC LIMIT 1",
+        provider_id
+    )
+    .fetch_optional(db)
+    .await
+    .map_err(|_| EmailError::Database)
+}
+
+/// How many provider webhooks arrived since `since` (SEC-051).
+pub(crate) async fn email_events_since(
+    db: &mut PgConnection,
+    since: Timestamp,
+) -> Result<i64, EmailError> {
+    sqlx::query_scalar!(
+        "SELECT count(*) AS \"n!\" FROM messaging.email_event WHERE received_at >= $1",
+        since.to_sqlx() as _
+    )
+    .fetch_one(db)
+    .await
+    .map_err(|_| EmailError::Database)
+}

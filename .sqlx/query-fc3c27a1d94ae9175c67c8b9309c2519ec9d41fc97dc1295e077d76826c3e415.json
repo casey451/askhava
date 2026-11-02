@@ -1,0 +1,41 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO messaging.text_retry (outbox_id, failures, first_failed_at) SELECT id, GREATEST(attempts, 1), $2 FROM messaging.outbox WHERE id = $1 AND status IN ('queued', 'sending') ON CONFLICT (outbox_id) DO UPDATE SET failures = GREATEST(EXCLUDED.failures, messaging.text_retry.failures) WHERE messaging.text_retry.outcome IS NULL RETURNING failures, first_failed_at",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "failures",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "messaging.text_retry",
+            "name": "failures"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "first_failed_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "messaging.text_retry",
+            "name": "first_failed_at"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "fc3c27a1d94ae9175c67c8b9309c2519ec9d41fc97dc1295e077d76826c3e415"
+}

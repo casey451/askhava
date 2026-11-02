@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE messaging.email_outbox SET status = 'queued', not_before = $2, waiting_for = $3 WHERE id = $1 AND status <> 'sent'",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "f137070e32b5bebe661a48855a83cd9524b9ece74cf8c301aab626dc9d1a10e8"
+}

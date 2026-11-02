@@ -1,0 +1,76 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT class, queued_at, not_before, waiting_for, sent_at FROM messaging.email_outbox WHERE id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "class",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "messaging.email_outbox",
+            "name": "class"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "queued_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "messaging.email_outbox",
+            "name": "queued_at"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "not_before",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "messaging.email_outbox",
+            "name": "not_before"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "waiting_for",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "messaging.email_outbox",
+            "name": "waiting_for"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "sent_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "messaging.email_outbox",
+            "name": "sent_at"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      true
+    ]
+  },
+  "hash": "b7de4d614b3b348f721a92df59d961abd347787f13916d032f26d71e92d6e70e"
+}
