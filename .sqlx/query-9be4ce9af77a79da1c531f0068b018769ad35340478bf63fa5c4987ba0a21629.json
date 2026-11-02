@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT stripe_customer_id FROM payments.customer WHERE business_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "stripe_customer_id",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "payments.customer",
+            "name": "stripe_customer_id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "9be4ce9af77a79da1c531f0068b018769ad35340478bf63fa5c4987ba0a21629"
+}

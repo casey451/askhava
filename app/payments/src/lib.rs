@@ -7,10 +7,15 @@
 //!
 //! T058 added the introduction fee by job size of a chosen one-time quote, [`api::fee_for`]
 //! (FEE-001 to FEE-004, FEE-008, FEE-043, FEE-045, D-1399).
+//!
+//! T059 added Stripe customers made at sign-up with no card, saved cards with the FEE-015
+//! authorization, and cards only (FEE-009, FEE-014, FEE-015, FEE-036, FEE-048, D-1409).
 
 pub mod api;
 mod ledger;
+mod models;
 mod rules;
+mod service;
 
 #[cfg(test)]
 mod tests;
