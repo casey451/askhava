@@ -5,8 +5,8 @@
 //! card, once, and stores its ID (FEE-036). [`save_card`] records a card the business saved through
 //! Stripe Elements, with the FEE-015 authorization text, version and time, in one transaction; it
 //! charges nothing. Neither takes a homeowner, and nothing in this file creates a charge (FEE-009,
-//! FEE-014): charges are the Confirm-and-pay task's (T062). No transaction stays open across the
-//! Stripe call (R11).
+//! FEE-014): charges are the Confirm-and-pay task's (T062). No transaction, and no pooled
+//! connection, is held across the Stripe call (R11).
 
 use askhava_adapters::api::{IdempotencyKey, PaymentsAdapter};
 use jiff::Timestamp;
@@ -58,6 +58,8 @@ pub async fn ensure_customer(
     if let Some(found) = customer_of(&mut conn, business).await? {
         return Ok(found);
     }
+    // The pooled connection goes back before the Stripe call and is taken again after it (R11).
+    drop(conn);
     let id_text = business.0.to_string();
     let key = IdempotencyKey::derive(id_secret, CUSTOMER_ACTION, &[&id_text]);
     let created = stripe
@@ -65,6 +67,7 @@ pub async fn ensure_customer(
         .await
         .map_err(|_| CardError::Stripe)?;
     let customer = CustomerId::parse(&created)?;
+    let mut conn = pool.acquire().await.map_err(|_| CardError::Database)?;
     sqlx::query!(
         "INSERT INTO payments.customer (business_id, stripe_customer_id) VALUES ($1, $2)
          ON CONFLICT (business_id) DO NOTHING",

@@ -226,8 +226,8 @@ fn td_fee_32_saved_card_is_for_off_session_use() {
     assert!(form.contains(&("payment_method_types[]", "card")));
 }
 
-/// TD-FEE-10 (FEE-015, D-092): the app role can add an authorization but never change or remove
-/// one (SQLSTATE 42501).
+/// TD-FEE-10 (FEE-015, D-092, BIZ-051): the app role can add an authorization but never change or
+/// remove one, and may change a saved card's `removed_at` only (SQLSTATE 42501).
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_fee_10_authorizations_are_append_only(pool: PgPool) {
     for sql in [
@@ -235,6 +235,9 @@ async fn td_fee_10_authorizations_are_append_only(pool: PgPool) {
         "DELETE FROM payments.card_authorization",
         "TRUNCATE payments.card_authorization",
         "DELETE FROM payments.customer",
+        "UPDATE payments.payment_method SET brand = 'amex'",
+        "UPDATE payments.payment_method SET usage = 'on_session'",
+        "DELETE FROM payments.payment_method",
     ] {
         let mut tx = pool.begin().await.expect("transaction");
         sqlx::query("SET LOCAL ROLE askhava_app")
@@ -247,4 +250,32 @@ async fn td_fee_10_authorizations_are_append_only(pool: PgPool) {
             .and_then(|e| e.code().map(|c| c.into_owned()));
         assert_eq!(code.as_deref(), Some("42501"), "{sql}");
     }
+}
+
+/// TD-FEE-10 (FEE-014, BIZ-051): the app role may mark a saved card removed.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_fee_10_app_role_may_remove_a_card(pool: PgPool) {
+    let mut tx = pool.begin().await.expect("transaction");
+    sqlx::query("SET LOCAL ROLE askhava_app")
+        .execute(&mut *tx)
+        .await
+        .expect("role");
+    sqlx::query("UPDATE payments.payment_method SET removed_at = now()")
+        .execute(&mut *tx)
+        .await
+        .expect("removed_at is the app role's to set");
+}
+
+/// TD-FEE-10 (FEE-014): the longest ID the checked type takes, `pm_` and 200 characters, fits the
+/// table's check, so the type and the table agree.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_fee_10_longest_card_id_fits_the_table(pool: PgPool) {
+    ensure_customer(&pool, &FakeStripe::new(false), &secret(), BUSINESS)
+        .await
+        .expect("customer");
+    let longest = format!("pm_{}", "F".repeat(200));
+    assert!(SavedCard::new(&format!("{longest}F"), "card", "visa", "4242").is_err());
+    let mut db = pool.acquire().await.expect("connection");
+    let saved = save_card(&mut db, BUSINESS, &card(&longest), at(9)).await;
+    assert_eq!(saved, Ok(Saved::New));
 }

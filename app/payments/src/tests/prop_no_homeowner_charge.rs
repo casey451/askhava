@@ -84,3 +84,20 @@ fn td_fee_10_card_fields_are_checked() {
         );
     }
 }
+
+/// TD-FEE-10 (FEE-014): an ID's part after the prefix is at most 200 characters, as the table's
+/// checks (`cus_` or `pm_` and `{1,200}`) allow.
+#[test]
+fn td_fee_10_vendor_ids_match_the_table_length() {
+    let tail = "F".repeat(200);
+    assert!(SavedCard::new(&format!("pm_{tail}"), "card", "visa", "4242").is_ok());
+    assert_eq!(
+        SavedCard::new(&format!("pm_{tail}F"), "card", "visa", "4242"),
+        Err(CardError::BadField)
+    );
+    assert!(CustomerId::parse(&format!("cus_{tail}")).is_ok());
+    assert_eq!(
+        CustomerId::parse(&format!("cus_{tail}F")),
+        Err(CardError::BadField)
+    );
+}

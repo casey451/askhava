@@ -155,11 +155,15 @@ impl SetupIntentRequest {
     }
 }
 
+/// The most characters after a vendor ID's prefix, as the table checks allow
+/// (`'^cus_[A-Za-z0-9_]{1,200}$'`, `'^pm_[A-Za-z0-9_]{1,200}$'`).
+const VENDOR_TAIL_MAX: usize = 200;
+
 fn vendor_id(id: &str, prefix: &str) -> Result<String, CardError> {
-    let ok = id.len() <= 204
-        && id.strip_prefix(prefix).is_some_and(|tail| {
-            !tail.is_empty() && tail.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'_')
-        });
+    let ok = id.strip_prefix(prefix).is_some_and(|tail| {
+        (1..=VENDOR_TAIL_MAX).contains(&tail.len())
+            && tail.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'_')
+    });
     if ok {
         Ok(id.to_owned())
     } else {

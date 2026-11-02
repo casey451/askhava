@@ -5,7 +5,8 @@
 -- append-only: each acceptance of the authorization keeps its version, its exact text and the time
 -- (FEE-015). payments.payment_method is a saved card: only the Stripe PaymentMethod ID, brand and
 -- last four, never card data (FEE-014); `method_type` must be 'card' (cards only, D-073) and `usage`
--- 'off_session' (FEE-048); `removed_at` is set when the card is detached (BIZ-051). The business is
+-- 'off_session' (FEE-048); `removed_at` is set when the card is detached (BIZ-051), and it is the
+-- only column the app role may update. The business is
 -- in another schema, so no foreign key to it (architecture section 4 rule 3). All tables are new
 -- and empty.
 
@@ -42,5 +43,8 @@ GRANT SELECT, INSERT ON payments.customer TO askhava_app;
 REVOKE UPDATE, DELETE, TRUNCATE ON payments.customer FROM askhava_app;
 GRANT SELECT, INSERT ON payments.card_authorization TO askhava_app;
 REVOKE UPDATE, DELETE, TRUNCATE ON payments.card_authorization FROM askhava_app;
-GRANT SELECT, INSERT, UPDATE ON payments.payment_method TO askhava_app;
-REVOKE DELETE, TRUNCATE ON payments.payment_method FROM askhava_app;
+GRANT SELECT, INSERT ON payments.payment_method TO askhava_app;
+-- The schema's default privileges grant UPDATE on the whole table; revoke it (which also drops any
+-- column grant), then grant UPDATE on removed_at alone.
+REVOKE UPDATE, DELETE, TRUNCATE ON payments.payment_method FROM askhava_app;
+GRANT UPDATE (removed_at) ON payments.payment_method TO askhava_app;
