@@ -11964,12 +11964,12 @@
     "T061",
     "T094"
    ],
-   "status": "QUEUED",
+   "status": "IN_PROGRESS",
    "attempts": 1,
    "slug": "payments-charge",
    "type": "build",
    "stage": "3",
-   "attempt_started_at": "2026-11-02T11:39:58Z",
+   "attempt_started_at": "2026-11-03T12:19:56Z",
    "decision_ids": [
     1424,
     1425,
@@ -15693,7 +15693,7 @@
    "cache_read_input_tokens": 55835021,
    "output_tokens": 424273
   },
-  "source": "session_reading 2026-11-02T22:05:06Z (week)",
+  "source": "ledger; quota_probe: no token: CLAUDE_CODE_OAUTH_TOKEN unset and no credentials file",
   "by_task": {
    "FIX-MAIN": {
     "estimated_bytes": 1552047,
@@ -16614,7 +16614,7 @@
    }
   }
  },
- "updated_at": "2026-11-03T03:47:56Z",
+ "updated_at": "2026-11-03T12:27:46Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -16715,12 +16715,6 @@
  "runner_sha": "7515def2fdc97b7076c7a9e12e5df5da875f3781",
  "starter": "actions",
  "smoke_runs": [
-  {
-   "sha": "5c05ea2adcd7bd2ecf6fc4348d9143425e645a5d",
-   "ok": true,
-   "at": "2026-11-02T01:14:53Z",
-   "why": "start routine"
-  },
   {
    "sha": "230517c91cab566ec6f1b83604b644bb38fae860",
    "ok": true,
@@ -16838,14 +16832,20 @@
    "ok": true,
    "at": "2026-11-03T03:42:33Z",
    "why": "start routine"
+  },
+  {
+   "sha": "7515def2fdc97b7076c7a9e12e5df5da875f3781",
+   "ok": true,
+   "at": "2026-11-03T12:19:56Z",
+   "why": "start routine"
   }
  ],
  "main_red": null,
  "pacing": {
-  "last": "T062 estimated 2.1M tokens (calibrated); five-hour window has 29.1M left, week -4.0M (session_reading 2026-11-02T22:05:06Z (week)); waiting until 2026-11-05T17:00:00Z",
-  "at": "2026-11-03T03:42:33Z",
-  "decision": "wait",
-  "waiting_until": "2026-11-05T17:00:00Z",
+  "last": "T062 estimated 2.1M tokens (calibrated); five-hour window has 29.1M left, week 35.2M (ledger; quota_probe: no token: CLAUDE_CODE_OAUTH_TOKEN unset and no credentials file); claimed",
+  "at": "2026-11-03T12:19:56Z",
+  "decision": "claim",
+  "waiting_until": null,
   "standing": {
    "five_hour": {
     "used": 0,
@@ -16854,14 +16854,14 @@
     "resets_at": null
    },
    "week": {
-    "used": 198000000,
+    "used": 158785804,
     "budget": 194000000,
-    "left": -4000000,
-    "resets_at": "2026-11-05T17:00:00Z"
+    "left": 35214196,
+    "resets_at": "2026-11-05T18:38:52Z"
    }
   },
   "remaining_estimate": 341063319,
-  "projected_finish": "2026-11-15T11:03:47Z"
+  "projected_finish": "2026-11-15T19:41:10Z"
  },
  "main_red_history": [
   {
