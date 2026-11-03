@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-03T20:30:34Z by runner 0485a0bb51e2 (actions).
+Updated 2026-11-03T20:30:49Z by runner 0485a0bb51e2 (actions).
 
-**Building: T189 in progress since 19:51Z; 99 of 230 done; week 99% used, resets Thu 2026-11-05 17:00Z (10:00 am Phoenix).**
+**Idle since 20:30Z; 99 of 230 done; week 99% used, resets Thu 2026-11-05 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 99 of 230 build tasks (owner gates not counted)
 - **Stage:** stage 3; stage proofs recorded: 1, 2
-- **Lane:** lane 1: T189 claimed 19:51Z, lease until 22:51Z
+- **Lane:** idle since 20:30Z (no task in progress)
 - **Week:** 99% used, 34.3M tokens left; resets Thu 2026-11-05 17:00Z (10:00 am Phoenix)
 - **Last run:** 19:58Z, 32 min before this update
 - **Keeper:** last ran 13:34Z, next wake 19:14Z
@@ -17,6 +17,7 @@ Updated 2026-11-03T20:30:34Z by runner 0485a0bb51e2 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T189 | payments: Stripe Elements on the Confirm page, the card auth | MERGE_PENDING | 1 | 39 min | 20:30Z |  |
 | T062 | payments: Confirm-and-pay charge with a key per attempt, Str | done | 2 | 31 min | 12:51Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
 
 ### Plan and harness merges on main
@@ -68,7 +69,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T189 (lease until 2026-11-03T22:51:16Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T062", "at": "2026-11-03T12:51:18Z", "cache_read_input_tokens": 5869844, "cache_creation_input_tokens": 328590, "output_tokens": 47738, "input_tokens": 166}
+- {"task": "T189", "at": "2026-11-03T20:30:24Z", "output_tokens": 154972, "cache_creation_input_tokens": 610777, "cache_read_input_tokens": 19144357, "input_tokens": 389}
