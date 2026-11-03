@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT limit_cents FROM payments.fee_limit WHERE business_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "limit_cents",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "payments.fee_limit",
+            "name": "limit_cents"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "d57fb2aa9ef4418ef8f047de6b527b4c7b894c759a9f88737d67cafc192721b9"
+}

@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT due_at FROM payments.pay_timer\n         WHERE pick_id = $1 AND kind = 'card-fix' AND ended_at IS NULL",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "due_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "payments.pay_timer",
+            "name": "due_at"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "82764f7ac06df3414ece88ccf4c53654580440979da8511b8d726027b29501e8"
+}

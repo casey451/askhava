@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM payments.fee_limit WHERE business_id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "d2258565da6ffc3693cae3dacf61c1a9c2e57a1e3ec6a58f67f2677ccba37800"
+}

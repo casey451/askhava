@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT due_at FROM payments.pay_timer WHERE pick_id = $1 AND kind = $2",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "due_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "payments.pay_timer",
+            "name": "due_at"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "27c7e7631e7bb2079093e32e3e5d768f9527f1bedcb5314008bb4f020a7003ba"
+}

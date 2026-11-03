@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT t.due_at FROM payments.pay_timer t JOIN payments.pick_intent i USING (pick_id)\n         WHERE t.pick_id = $1 AND t.kind = 'card-fix' AND t.ended_at IS NULL\n           AND i.ended_at IS NULL AND NOT EXISTS (SELECT 1 FROM payments.charge_attempt a\n             WHERE a.pick_id = $1 AND a.status = 'succeeded')",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "due_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "payments.pay_timer",
+            "name": "due_at"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "a4a482f7edc18c97d7e99976523681e76215d96501f6fa85a707184acdc61701"
+}
