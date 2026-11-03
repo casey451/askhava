@@ -1,0 +1,76 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT pick_id, kind, business_clock, due_at, left_seconds FROM payments.pay_timer\n         WHERE ended_at IS NULL AND (due_at IS NULL) = $1 FOR UPDATE",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "pick_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "payments.pay_timer",
+            "name": "pick_id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "kind",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "payments.pay_timer",
+            "name": "kind"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "business_clock",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "payments.pay_timer",
+            "name": "business_clock"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "due_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "payments.pay_timer",
+            "name": "due_at"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "left_seconds",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "payments.pay_timer",
+            "name": "left_seconds"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Bool"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      true
+    ]
+  },
+  "hash": "9a81c2c16be7ebc07964a8954a7a8c1aad1a78fd5382d8f10eaeacc39ffde432"
+}

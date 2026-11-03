@@ -1,0 +1,32 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO payments.pay_timer (pick_id, kind, business_clock, due_at, left_seconds)\n         VALUES ($1, $2, $3, $4, $5)\n         ON CONFLICT (pick_id, kind) DO UPDATE SET due_at = EXCLUDED.due_at,\n           left_seconds = EXCLUDED.left_seconds, ended_at = NULL\n           WHERE payments.pay_timer.ended_at IS NOT NULL\n         RETURNING due_at",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "due_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "payments.pay_timer",
+            "name": "due_at"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Bool",
+        "Timestamptz",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "68ee76ff798286a33779a7290b9f8c175460a9323a280d6e408d3c52c1b1dd78"
+}

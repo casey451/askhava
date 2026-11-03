@@ -1,0 +1,24 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT coalesce(sum(i.amount_cents), 0)::bigint AS \"sum!\" FROM payments.charge_attempt a\n           JOIN payments.pick_intent i USING (pick_id)\n           WHERE i.business_id = $1 AND a.status = 'succeeded' AND a.decided_at >= $2",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "sum!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "ad8eee1353903a4d1a01ebdba74365f6726dc21eac5a55295caf69c05e5a3cc3"
+}

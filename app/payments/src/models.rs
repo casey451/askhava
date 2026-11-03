@@ -12,6 +12,10 @@
 //! T061 (FEE-010, FEE-011, D-151, D-152, D-195): [`EntityKey`] is a free-first-win entity key
 //! stored only as a keyed digest, [`JoinDates`] the dates the 90-day window is judged by, and
 //! [`FreeWinError`] why a free-win step failed.
+//!
+//! T062 (FEE-016, FEE-017, FEE-047, D-1425): [`Press`] is one "Confirm and pay" press with the
+//! caller's [`PickNow`] check, [`ChargeOutcome`] what it came to, [`ChargeError`] why it could not
+//! finish, and [`intent_label`] and [`attempt_label`] the labels the Stripe keys derive from.
 
 use askhava_adapters::api::IdempotencyKey;
 use jiff::Timestamp;
@@ -287,4 +291,94 @@ pub enum FreeWinError {
     /// The database refused or dropped the statement.
     #[error("the payments database statement failed")]
     Database,
+}
+
+/// What the caller read about the pick and its job just before the press: payable only while
+/// the job is still waiting for payment and the pick is still the current one (FEE-017, D-491).
+/// `payments` cannot read `picks` or `jobs`, so the Confirm page passes it; `payments` checks its
+/// own record of the pick as well.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PickNow {
+    /// The job is in Payment pending and this pick is current.
+    Payable,
+    /// The job or the pick moved on: nothing is charged.
+    MovedOn,
+}
+
+/// One "Confirm and pay" press (FEE-016): record IDs, the server's fee and the card, never card
+/// data (FEE-014). `press` is the Confirm form's one-time ID, so a repeated press, a reload or a
+/// duplicate callback is the same attempt with the same key.
+#[derive(Debug, Clone, Copy)]
+pub struct Press<'a> {
+    /// The pick being paid for.
+    pub pick: Uuid,
+    /// The business pressing.
+    pub business: BusinessId,
+    /// The pick's job.
+    pub job: Uuid,
+    /// The fee fixed at the pick, in cents (FEE-005); above 0, a $0 pick never charges.
+    pub amount_cents: u32,
+    /// The card chosen in Stripe Elements, `pm_…`.
+    pub payment_method: &'a str,
+    /// The press's one-time ID.
+    pub press: Uuid,
+    /// The job was chosen as an emergency: the card-fix window is 60 clock minutes (PICK-044).
+    pub emergency: bool,
+    /// The FEE-017 facts the caller read.
+    pub now: PickNow,
+}
+
+/// What a press came to; the Confirm page (T224) shows each.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ChargeOutcome {
+    /// Stripe says the PaymentIntent `pi_…` succeeded; the release waits on the verified event
+    /// (PICK-022, T189).
+    Succeeded(String),
+    /// Stripe has not decided; the page waits, and the app asks Stripe at 30 minutes (FEE-019).
+    Pending,
+    /// The card failed: try again or use another card by the time given (FEE-020).
+    Declined(Option<Timestamp>),
+    /// The bank must approve the card in the page by the time given (FEE-020).
+    NeedsApproval(Option<Timestamp>),
+    /// Stripe could not be reached; nothing was charged (FEE-018).
+    StripeDown,
+    /// Charges are paused by safe mode or the charging switch: "try again later" (OPS-024).
+    Paused,
+    /// The press would take the month's charges over the business's limit: not charged, and the
+    /// pick ended at once (FEE-041).
+    OverLimit,
+    /// The job or the pick moved on, or the pick already ended: nothing charged (FEE-017).
+    MovedOn,
+    /// The pick is already paid: nothing charged again (FEE-016, FEE-037).
+    AlreadyPaid,
+}
+
+/// Why a charge step could not finish. No variant carries a card detail, a vendor message or a
+/// database message (R5, D-698).
+#[derive(Debug, thiserror::Error, PartialEq, Eq)]
+pub enum ChargeError {
+    /// The amount is 0 or a Stripe ID has the wrong form.
+    #[error("a charge field has the wrong form")]
+    BadField,
+    /// The business has no Stripe customer.
+    #[error("the business has no Stripe customer")]
+    NoCustomer,
+    /// The PaymentIntent could not be created or read; nothing was charged.
+    #[error("the Stripe request failed")]
+    Stripe,
+    /// The database refused or dropped the statement.
+    #[error("the payments database statement failed")]
+    Database,
+}
+
+/// The label a pick's PaymentIntent key is derived from: `pick-<id>-intent` (FEE-047).
+#[must_use]
+pub fn intent_label(pick: Uuid) -> String {
+    format!("pick-{pick}-intent")
+}
+
+/// The label attempt `try_no` of a pick is keyed by: `pick-<id>-try<n>` (FEE-016).
+#[must_use]
+pub fn attempt_label(pick: Uuid, try_no: i32) -> String {
+    format!("pick-{pick}-try{try_no}")
 }
