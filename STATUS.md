@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-03T12:51:19Z by runner dd828e8b13ba (actions).
+Updated 2026-11-03T12:51:29Z by runner dd828e8b13ba (actions).
 
-**Building: T062 in progress since 12:19Z; 98 of 230 done; week 99% used, resets Thu 2026-11-05 17:00Z (10:00 am Phoenix).**
+**Idle since 12:51Z; 98 of 230 done; week 99% used, resets Thu 2026-11-05 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 98 of 230 build tasks (owner gates not counted)
 - **Stage:** stage 3; stage proofs recorded: 1, 2
-- **Lane:** lane 1: T062 claimed 12:19Z, lease until 15:19Z
+- **Lane:** idle since 12:51Z (no task in progress)
 - **Week:** 99% used, 35.2M tokens left; resets Thu 2026-11-05 17:00Z (10:00 am Phoenix)
 - **Last run:** 12:27Z, 23 min before this update
 - **Keeper:** last ran 03:47Z, next wake 09:27Z
@@ -15,7 +15,9 @@ Updated 2026-11-03T12:51:19Z by runner dd828e8b13ba (actions).
 - Strict plan check red: 3 problem(s) on tasks still to run (+1 on DONE tasks); first: T062: stored context_pct 9% but it measures 25%; regenerate
 
 ## Last 24 hours
-- no attempt ended in the last 24 hours
+| Task | Title | Result | Attempt | Took | Ended | Retry reason |
+|---|---|---|---|---|---|---|
+| T062 | payments: Confirm-and-pay charge with a key per attempt, Str | MERGE_PENDING | 2 | 31 min | 12:51Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
 
 ### Plan and harness merges on main
 - 13:17Z Harness: the runner wakes itself (keeper), smoke target clean (D-1451) (#264)
@@ -67,7 +69,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T062 (lease until 2026-11-03T15:19:56Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T062", "at": "2026-11-02T12:41:31Z", "input_tokens": 718, "cache_creation_input_tokens": 1075457, "cache_read_input_tokens": 55835021, "output_tokens": 424273}
+- {"task": "T062", "at": "2026-11-03T12:51:18Z", "cache_read_input_tokens": 5869844, "cache_creation_input_tokens": 328590, "output_tokens": 47738, "input_tokens": 166}
