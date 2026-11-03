@@ -1,15 +1,16 @@
 # Ask Hava build status
 
-Updated 2026-11-02T22:05:19Z by runner 7515def2fdc9 (actions).
+Updated 2026-11-03T03:47:36Z by runner 7515def2fdc9 (actions).
 
 **Waiting for tokens until 17:00Z; 98 of 230 done; week 99% used, resets Thu 2026-11-05 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 98 of 230 build tasks (owner gates not counted)
 - **Stage:** stage 3; stage proofs recorded: 1, 2
 - **Lane:** idle since 12:41Z (no task in progress)
-- **Week:** 99% used, 2.0M tokens left; resets Thu 2026-11-05 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:05Z, 0 min before this update
+- **Week:** 99% used, -4.0M tokens left; resets Thu 2026-11-05 17:00Z (10:00 am Phoenix)
+- **Last run:** 22:05Z, 5 h 42 min before this update
 - **Keeper:** last ran 22:05Z, next wake 03:45Z
+- **WARNING:** no runner cycle logged for over 90 minutes before this update
 
 ## Needs attention
 - nothing
@@ -27,13 +28,6 @@ Updated 2026-11-02T22:05:19Z by runner 7515def2fdc9 (actions).
 | T225 | payments: the append-only ledger table and `api::ledger_appe | check_failed | 1 | 39 min | 06:54Z |  |
 | T094 | messaging: 3 retries over 30 minutes, then email and portal, | done | 1 | 47 min | 06:06Z |  |
 | T057 | Stage 2 cleanup: dead code, duplicates, docs up to date | proof_missing | 1 | 23 min | 04:26Z |  |
-| T241 | server and intake: the Twilio inbound-text route and replies | done | 2 | 45 min | 03:38Z | no model evidence found; a run without evidence fails |
-| T241 | server and intake: the Twilio inbound-text route and replies | QUEUED | 1 | 47 min | 02:50Z |  |
-| T240 | intake: the homeowner's job texts when a request moves on by | done | 1 | 29 min | 01:44Z |  |
-| T213 | quotes: the business job page and the short homeowner update | done | 1 | 30 min | 00:57Z |  |
-| T056 | Named mutants: license filter, consent and opt-out, quiet ho | done | 1 | 50 min | 00:07Z |  |
-| T173 | Ally and end-to-end in CI: Playwright and axe in Ally, the e | done | 1 | 25 min | 22:55Z |  |
-| T208 | intake: the homeowner's card approval step, after matching a | done | 1 | 50 min | 22:13Z |  |
 
 ### Plan and harness merges on main
 - 13:17Z Harness: the runner wakes itself (keeper), smoke target clean (D-1451) (#264)
@@ -42,11 +36,6 @@ Updated 2026-11-02T22:05:19Z by runner 7515def2fdc9 (actions).
 - 07:35Z Harness: job-log download allows escape sequences (D-1398) (#254)
 - 04:21Z Plan: SEC-040's measured header is recorded by T135, not T089 (D-1377) (#250)
 - 03:51Z Plan: pre-war-games competitive & feature readiness review, T242 (D-1339) (#249)
-- 03:45Z Harness: plan-health check before a claim (D-1350) (#248)
-- 03:40Z Plan: remove two never-written owned files from T024/T045; drop superseded D-353 (D-1361) (#246)
-- 03:04Z Harness: --worker-agent accepts comma-joined agent IDs (D-1328) (#245)
-- 02:14Z Harness: worker context trims (D-1317) (#243)
-- 00:44Z Harness: pre-hand-in gate (D-1300) (#240)
 
 ## Progress (requirements verified)
 
@@ -79,7 +68,7 @@ Updated 2026-11-02T22:05:19Z by runner 7515def2fdc9 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-02T13:03:27Z (week)): five-hour: 13.3M used, 15.8M left, resets 2026-11-02T14:49:34Z; week: 192.0M used, 2.0M left, resets 2026-11-05T17:00:00Z; projected finish 2026-11-14T18:52:14Z; waiting until 2026-11-05T17:00:00Z.
+- Pacing (session_reading 2026-11-02T22:05:06Z (week)): five-hour: 0k used, 29.1M left, resets on first use; week: 198.0M used, -4.0M left, resets 2026-11-05T17:00:00Z; projected finish 2026-11-15T11:03:47Z; waiting until 2026-11-05T17:00:00Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
