@@ -12029,11 +12029,11 @@
      "result": "check_failed"
     }
    ],
-   "reviewed_sha": "1f2a5cfa06554f909b1060631f920d382067b145",
+   "reviewed_sha": "dd828e8b13ba3ec2e97891bc2c92f296949bdd8b",
    "review_lease": {
     "task": "T062",
-    "session": "actions-41438017700",
-    "expires": "2026-11-02T14:39:58Z"
+    "session": "actions-41634594136",
+    "expires": "2026-11-03T15:19:56Z"
    },
    "branch": "claude/task/T062-payments-charge",
    "auto_merge": {
@@ -12041,25 +12041,11 @@
     "why": "auto-merge on #261 (gh pr merge)",
     "head": "4daae1bcb53d736b30e463deab77a7283f8b9c03"
    },
-   "update_merges": [
-    {
-     "from": "4daae1bcb53d736b30e463deab77a7283f8b9c03",
-     "to": "1f2a5cfa06554f909b1060631f920d382067b145",
-     "main": "e9de8c790dd8ba8b22a1fb3fb140f06369a3e2b2",
-     "how": "runner",
-     "checks": {
-      "Twin": "success",
-      "Ally": "success"
-     },
-     "at": "2026-11-02T12:49:47Z"
-    }
-   ],
-   "update_waiting_since": null,
-   "update_push_failures": null,
    "last_failure": "Ci: failure; Coverage: failure\nCoverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered floor (D-694)\napp/messaging: 87.78135048231512\napp/ops: 94.44444444444444\napp/payments: 92.26190476190476\napp/picks: 91.02564102564102\napp/portals: 27.5\napp/privacy: 96.80365296803653\napp/quotes: 93.76693766937669\napp/server: 18.75\ntotal: 88.57844642308874 (floor 0.0)\napp/payments/: 92.26190476190476 (floor 95.0)\napp/catalog/src/rules.rs: None (floor 95.0)\napp/privacy/: 96.80365296803653 (floor 95.0)\napp/licensing/: 95.96412556053812 (floor 95.0)\nFAIL: app/payments/ 92.26 is below the floor 95.0\n##[error]Process completed with exit code 1.\nCi failed at step: All three jobs passed\nChecks: success, Coverage: failure, E2e: success\n##[error]Process completed with exit code 1.",
    "runner_closed_prs": [
     261
-   ]
+   ],
+   "head_check_since": null
   },
   {
    "id": "T189",
@@ -16617,7 +16603,7 @@
    }
   }
  },
- "updated_at": "2026-11-03T12:27:55Z",
+ "updated_at": "2026-11-03T12:51:19Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -16715,7 +16701,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "7515def2fdc97b7076c7a9e12e5df5da875f3781",
+ "runner_sha": "dd828e8b13ba3ec2e97891bc2c92f296949bdd8b",
  "starter": "actions",
  "smoke_runs": [
   {

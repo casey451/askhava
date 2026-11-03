@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-03T12:27:55Z by runner 7515def2fdc9 (actions).
+Updated 2026-11-03T12:51:19Z by runner dd828e8b13ba (actions).
 
 **Building: T062 in progress since 12:19Z; 98 of 230 done; week 99% used, resets Thu 2026-11-05 17:00Z (10:00 am Phoenix).**
 
@@ -8,22 +8,18 @@ Updated 2026-11-03T12:27:55Z by runner 7515def2fdc9 (actions).
 - **Stage:** stage 3; stage proofs recorded: 1, 2
 - **Lane:** lane 1: T062 claimed 12:19Z, lease until 15:19Z
 - **Week:** 99% used, 35.2M tokens left; resets Thu 2026-11-05 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:48Z, 8 h 39 min before this update
+- **Last run:** 12:27Z, 23 min before this update
 - **Keeper:** last ran 03:47Z, next wake 09:27Z
-- **WARNING:** no runner cycle logged for over 90 minutes before this update
 
 ## Needs attention
-- nothing
+- Strict plan check red: 3 problem(s) on tasks still to run (+1 on DONE tasks); first: T062: stored context_pct 9% but it measures 25%; regenerate
 
 ## Last 24 hours
-| Task | Title | Result | Attempt | Took | Ended | Retry reason |
-|---|---|---|---|---|---|---|
-| T062 | payments: Confirm-and-pay charge with a key per attempt, Str | check_failed | 1 | 61 min | 12:41Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
+- no attempt ended in the last 24 hours
 
 ### Plan and harness merges on main
 - 13:17Z Harness: the runner wakes itself (keeper), smoke target clean (D-1451) (#264)
 - 13:11Z Harness: the full pre-hand-in gate measures floored coverage; hand_in_by (D-1440) (#263)
-- 12:48Z Harness: STATUS.md dashboard for the owner (D-1462) (#262)
 
 ## Progress (requirements verified)
 
