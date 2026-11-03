@@ -450,3 +450,45 @@ def test_sync_graph_copies_changed_deps_onto_unfinished_entries() -> None:
     assert st.entry(out, "T004")["deps"] == ["T001"], "a finished entry keeps the deps it ran with"
     assert st.eligible(out, NOW) == []
     assert st.eligible(st.sync_graph(s, graph), NOW) == ["T002", "T003"], "unchanged deps change nothing"
+
+
+# ---- the war-games go gate (D-1339, D-1473)
+
+
+def real_gate(gid: str) -> dict[str, Any]:
+    tasks = json.loads((Path(__file__).resolve().parent.parent / "kit" / "tasks.json").read_text(encoding="utf-8"))["tasks"]
+    found: dict[str, Any] = next(t for t in tasks if t["id"] == gid)
+    return found
+
+
+def test_war_games_gate_clears_only_on_exactly_its_phrase_and_records_every_other_reply() -> None:
+    g = real_gate("T243")
+    assert outbox.resume_phrase(g) == "war games go"
+    for text in ("war games go", "War games go.", "  WAR GAMES GO!  ", "'war games go'", '"war games go"', "\u2018war games go\u2019", "'War games go.'"):
+        s = outbox.apply_owner_answer(st.new_state(), g, text, NOW)
+        assert st.status(s, "T243") == st.DONE, text
+    for text in ("build P0-1 and P0-3, then war games go", "war games go, thanks", "build P0-2", "not war games go yet", "go", "'war games' go now"):
+        s = outbox.apply_owner_answer(st.new_state(), g, text, NOW)
+        assert st.status(s, "T243") == st.QUEUED and st.entry(s, "T243")["answers"] == [text], text
+
+
+def test_war_games_gate_holds_t234_and_its_message_names_the_review_the_plan_and_the_p0_answer(tmp_path: Path) -> None:
+    from runner.github_env import GitHubEnv
+
+    g = real_gate("T243")
+    assert g["deps"] == ["T242"] and "T243" in real_gate("T234")["deps"] and "T242" not in real_gate("T234")["deps"]
+    graph = [task("T242"), {**g, "deps": ["T242"]}, task("T234", ["T243"])]
+    s = st.with_task(st.sync_graph(st.new_state(), graph), "T242", status=st.DONE)
+    opened = st.next_gate(s)
+    assert opened is not None and opened["id"] == "T243"
+    body = GitHubEnv(Path("."), [], tmp_path, repo="o/r", starter="manual", runner_sha="x").gate_body(g)
+    s = outbox.open_gate(s, g, body, tmp_path)
+    assert st.status(s, "T243") == st.WAITING_FOR_OWNER and st.eligible(s, NOW) == []
+    text = (tmp_path / "T243.md").read_text(encoding="utf-8")
+    for words in ("docs/reviews/pre-war-games-review.md", "docs/reviews/pre-war-games-plan.md", "P0", "'war games go'",
+                  "plan change", "title: War games go?"):
+        assert words in text, words
+    s = outbox.apply_owner_answer(s, g, "build P0-1", NOW)
+    assert st.eligible(s, NOW) == []
+    s = outbox.apply_owner_answer(s, g, "war games go", NOW)
+    assert st.eligible(s, NOW) == ["T234"]

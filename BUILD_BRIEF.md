@@ -193,7 +193,7 @@ The runner resumes when Casey comments "accounts done" in the issue (§7, "Owner
 4. Run the end-to-end journeys there.
 5. Test the real AI from there; this is the first time any real AI key is used.
 6. Run the ZAP baseline scan.
-7. Run the restore drill with the switchover. Then, after the pre-war-games competitive and feature readiness review (T242, D-1339) and Casey's decision on its P0 items, run the war games (D-1154): every kind of customer and business, pranks and AI-credit drains included, jobs completed with Stripe test-mode money shown in the owner portal, run as chaotically as possible until a full run finds nothing new, before anything goes live.
+7. Run the restore drill with the switchover. Then, after the pre-war-games competitive and feature readiness review (T242, D-1339) and Casey's decision on its P0 items (the `war-games-go` gate T243, D-1473), run the war games (D-1154): every kind of customer and business, pranks and AI-credit drains included, jobs completed with Stripe test-mode money shown in the owner portal, run as chaotically as possible until a full run finds nothing new, before anything goes live.
 8. Run a fresh Opus audit.
 
 Then the runner sends the **"Finished: ready for your review"** message (§16). **Gate B** is Casey's guided click-through plus his screen-reader check (§9), done whenever he's ready; nothing waits on it except Gate C.
@@ -549,7 +549,7 @@ All configuration comes from environment variables validated at startup. The app
 2. **The account checkpoint** (§6): Casey creates the accounts and puts in the keys. Claude never creates accounts or accepts terms.
 3. **Real texts to Casey's own phone** in Phase 2, only if Twilio's test credentials can't be used (§6).
 4. **The go for the askhava.com page** (Stage 0.5), which publishes something.
-5. **Gate C and the first live charge.**
+5. **Gate C and the first live charge.** 6. **The war-games go (T243):** Casey's decision on the pre-war-games review's P0 items, before the war games (added on his instruction, D-1339, D-1473).
 
 **Finished:** when Phase 2 is done (everything in §1 except Gate B and Gate C), the runner sends one outbox message titled **"Finished: ready for your review"**, linking the handover pack, `docs/for-casey-review.md` and the Gate B click-through script. It also sends one short message when Phase 1 ends, which is the account checkpoint itself.
 
