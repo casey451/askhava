@@ -1,15 +1,16 @@
 # Ask Hava build status
 
-Updated 2026-11-03T13:34:05Z by runner 2487c10b053a (actions).
+Updated 2026-11-03T19:57:23Z by runner 2487c10b053a (actions).
 
-**Waiting for tokens until 17:00Z; 99 of 230 done; week 99% used, resets Thu 2026-11-05 17:00Z (10:00 am Phoenix).**
+**Building: T189 in progress since 19:51Z; 99 of 230 done; week 99% used, resets Thu 2026-11-05 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 99 of 230 build tasks (owner gates not counted)
 - **Stage:** stage 3; stage proofs recorded: 1, 2
-- **Lane:** idle since 13:00Z (no task in progress)
-- **Week:** 99% used, -4.0M tokens left; resets Thu 2026-11-05 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:33Z, 0 min before this update
+- **Lane:** lane 1: T189 claimed 19:51Z, lease until 22:51Z
+- **Week:** 99% used, 34.3M tokens left; resets Thu 2026-11-05 17:00Z (10:00 am Phoenix)
+- **Last run:** 13:34Z, 6 h 23 min before this update
 - **Keeper:** last ran 13:34Z, next wake 19:14Z
+- **WARNING:** no runner cycle logged for over 90 minutes before this update
 
 ## Needs attention
 - Strict plan check red: 2 problem(s) on tasks still to run (+2 on DONE tasks); first: T189: stored context_pct 16% but it measures 22%; regenerate
@@ -24,7 +25,7 @@ Updated 2026-11-03T13:34:05Z by runner 2487c10b053a (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 175 of 726 (24.1%) · partial 195 · unstarted 356
+**Requirements verified:** 178 of 726 (24.5%) · partial 192 · unstarted 356
 **Tasks merged (throughput only):** 99 of 230
 
 | Area | Verified | Partial | Unstarted | Total |
@@ -34,7 +35,7 @@ Updated 2026-11-03T13:34:05Z by runner 2487c10b053a (actions).
 | businesses | 5 | 4 | 48 | 57 |
 | calls | 0 | 2 | 23 | 25 |
 | consent | 14 | 12 | 9 | 35 |
-| fees | 7 | 29 | 17 | 53 |
+| fees | 10 | 26 | 17 | 53 |
 | intake | 20 | 14 | 7 | 41 |
 | job-cards | 13 | 4 | 5 | 22 |
 | licensing | 31 | 16 | 1 | 48 |
@@ -53,7 +54,7 @@ Updated 2026-11-03T13:34:05Z by runner 2487c10b053a (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-03T13:16:59Z (week)): five-hour: 963k used, 28.1M left, resets 2026-11-03T17:51:18Z; week: 198.0M used, -4.0M left, resets 2026-11-05T17:00:00Z; projected finish 2026-11-15T23:58:16Z; waiting until 2026-11-05T17:00:00Z.
+- Pacing (ledger; quota_probe: no token: CLAUDE_CODE_OAUTH_TOKEN unset and no credentials file): five-hour: 0k used, 29.1M left, resets on first use; week: 159.7M used, 34.3M left, resets 2026-11-05T18:38:52Z; projected finish 2026-11-16T06:22:42Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -68,7 +69,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T189 (lease until 2026-11-03T22:51:16Z)
 
 ## Last usage reading
 - {"task": "T062", "at": "2026-11-03T12:51:18Z", "cache_read_input_tokens": 5869844, "cache_creation_input_tokens": 328590, "output_tokens": 47738, "input_tokens": 166}
