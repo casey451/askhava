@@ -19,9 +19,9 @@ use askhava_adapters::api::{
 use askhava_core::api::{Claimed, arizona};
 use askhava_ops::api::{Actor, Switch, set_switch};
 use askhava_payments::api::{
-    ATTEMPT_ACTION, BusinessId, ChargeOutcome, INTENT_ACTION, IntentStripe, PickNow, Press,
-    attempt_label, confirm_and_pay, intent_label, run_charge_check, run_pause_watch, run_pay_timer,
-    set_fee_limit, sync_pause,
+    ATTEMPT_ACTION, BusinessId, ChargeError, ChargeOutcome, INTENT_ACTION, IntentStripe, PickNow,
+    Press, attempt_label, confirm_and_pay, intent_label, open_intent, run_charge_check,
+    run_pause_watch, run_pay_timer, set_fee_limit, sync_pause,
 };
 use jiff::{SignedDuration, Timestamp};
 use secrecy::SecretString;
@@ -742,4 +742,206 @@ async fn td_fee_24_no_card_fix_notice_for_an_ended_pick_and_an_approval_notice(p
         .expect("notice");
     let (notice, _) = tasks(&pool, askhava_picks::api::BUSINESS_NOTICE_KIND).await[0].clone();
     assert_eq!(notice["template"], "card_approval_notice");
+}
+
+fn refused<T: std::fmt::Debug>(result: Result<T, ChargeError>) {
+    assert_eq!(result.err(), Some(ChargeError::BadField));
+}
+
+/// TD-FEE-11, TD-FEE-32 (FEE-016, FEE-041, FEE-047): a press with a card ID that is not `pm_…`
+/// or a $0 fee, a $0 intent, a Stripe answer that is not `pi_…` and a $0 limit are refused before
+/// anything is stored; a limit can be removed again.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_fee_11_bad_fields_are_refused_and_a_limit_is_removed(pool: PgPool) {
+    with_customer(&pool).await;
+    let mut odd = FakeStripe::new(vec![], vec![]);
+    odd.intent_id = "ch_FakeT062".to_owned();
+    let p = press(0x1070, 1, 2500);
+    let card = Press {
+        payment_method: "card_FakeT062",
+        ..p
+    };
+    refused(confirm_and_pay(&pool, &odd, &secret(), &card, az(3, 9, 0)).await);
+    let free = Press {
+        amount_cents: 0,
+        ..p
+    };
+    refused(confirm_and_pay(&pool, &odd, &secret(), &free, az(3, 9, 0)).await);
+    refused(open_intent(&pool, &odd, &secret(), &free, az(3, 9, 0)).await);
+    refused(open_intent(&pool, &odd, &secret(), &p, az(3, 9, 0)).await);
+    assert_eq!(count(&odd, "confirm"), 0);
+    let mut conn = pool.acquire().await.expect("conn");
+    refused(set_fee_limit(&mut conn, BUSINESS, Some(0)).await);
+    set_fee_limit(&mut conn, BUSINESS, Some(100))
+        .await
+        .expect("limit");
+    set_fee_limit(&mut conn, BUSINESS, None)
+        .await
+        .expect("removed");
+    let limits: i64 = sqlx::query_scalar("SELECT count(*) FROM payments.fee_limit")
+        .fetch_one(&pool)
+        .await
+        .expect("limits");
+    assert_eq!(limits, 0);
+}
+
+/// TD-FEE-36 (FEE-041): a press over the limit on a pick whose Confirm page already made the
+/// PaymentIntent ends that pick once and confirms nothing.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_fee_36_over_the_limit_after_the_page_made_the_intent(pool: PgPool) {
+    with_customer(&pool).await;
+    let stripe = FakeStripe::new(vec![], vec![]);
+    let p = press(0x1071, 1, 2500);
+    open_intent(&pool, &stripe, &secret(), &p, az(3, 9, 0))
+        .await
+        .expect("intent");
+    let mut conn = pool.acquire().await.expect("conn");
+    set_fee_limit(&mut conn, BUSINESS, Some(2000))
+        .await
+        .expect("limit");
+    assert_eq!(
+        pay(&pool, &stripe, &p, az(3, 9, 1)).await,
+        ChargeOutcome::OverLimit
+    );
+    assert_eq!(count(&stripe, "confirm"), 0);
+    let ended = tasks(&pool, askhava_payments::api::PICK_ENDED_KIND).await;
+    assert_eq!(ended.len(), 1);
+    assert_eq!(ended[0].0["reason"], "fee-limit");
+}
+
+/// TD-FEE-11 (FEE-016, FEE-018, FEE-019): a second unreachable press keeps the running 4-hour
+/// release (one timer); a repeated press of an undecided attempt asks Stripe and sends nothing.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_fee_11_a_second_unreachable_press_keeps_the_release_and_a_repeat_asks(pool: PgPool) {
+    with_customer(&pool).await;
+    let down = FakeStripe::new(
+        vec![Err(AdapterError::NotSent), Err(AdapterError::NotSent)],
+        vec![],
+    );
+    let pick = 0x1072;
+    for (n, minute) in [(1, 0), (2, 30)] {
+        let at = az(3, 9, minute);
+        let outcome = pay(&pool, &down, &press(pick, n, 2500), at).await;
+        assert_eq!(outcome, ChargeOutcome::StripeDown);
+    }
+    assert_eq!(
+        attempt_codes(&pool, pick).await,
+        ["unreachable", "unreachable"]
+    );
+    assert_eq!(
+        tasks(&pool, askhava_payments::api::TIMER_KIND).await.len(),
+        1
+    );
+    assert_eq!(
+        running_timer(&pool, pick, "stripe-down").await,
+        Some(az(3, 13, 0))
+    );
+
+    let mut slow = FakeStripe::new(
+        vec![Err(AdapterError::OutcomeUnknown)],
+        vec![intent("processing")],
+    );
+    slow.intent_id = "pi_FakeT062d".to_owned();
+    let first = press(0x1073, 1, 2500);
+    assert_eq!(
+        pay(&pool, &slow, &first, az(3, 9, 0)).await,
+        ChargeOutcome::Pending
+    );
+    assert_eq!(
+        pay(&pool, &slow, &first, az(3, 9, 5)).await,
+        ChargeOutcome::Pending
+    );
+    assert_eq!((count(&slow, "confirm"), count(&slow, "fetch")), (1, 1));
+    assert_eq!(attempt_codes(&pool, 0x1073).await, ["processing"]);
+}
+
+/// TD-FEE-11, TD-FEE-20 (FEE-018, FEE-019, FEE-020, FEE-037): at the 4-hour release Stripe gives
+/// an answer that decides nothing, and at a bank-approval window's end Stripe says processing:
+/// neither ends the pick, both ask again 5 minutes on; at a decline's window end Stripe's
+/// processing cannot undo the decline, so the pick ends.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_fee_20_timer_ends_wait_on_an_answer_that_decides_nothing(pool: PgPool) {
+    with_customer(&pool).await;
+    let stripe = FakeStripe::new(
+        vec![Err(AdapterError::NotSent)],
+        vec![intent("something_new")],
+    );
+    pay(&pool, &stripe, &press(0x1074, 1, 2500), az(3, 9, 0)).await;
+    let (payload, due) = tasks(&pool, askhava_payments::api::TIMER_KIND).await[0].clone();
+    run_pay_timer(&pool, &stripe, &payload, due)
+        .await
+        .expect("timer");
+    assert_eq!(
+        running_timer(&pool, 0x1074, "stripe-down").await,
+        Some(az(3, 13, 5))
+    );
+
+    let mut bank = FakeStripe::new(vec![intent("requires_action")], vec![intent("processing")]);
+    bank.intent_id = "pi_FakeT062e".to_owned();
+    pay(&pool, &bank, &press(0x1075, 1, 2500), az(3, 10, 0)).await;
+    let timers = tasks(&pool, askhava_payments::api::TIMER_KIND).await;
+    let (payload, due) = timers.last().expect("card-fix timer").clone();
+    run_pay_timer(&pool, &bank, &payload, due)
+        .await
+        .expect("timer");
+    assert_eq!(
+        running_timer(&pool, 0x1075, "card-fix").await,
+        Some(az(3, 11, 5))
+    );
+    assert_eq!(attempt_codes(&pool, 0x1075).await, ["processing"]);
+
+    let mut card = FakeStripe::new(
+        vec![intent("requires_payment_method")],
+        vec![intent("processing")],
+    );
+    card.intent_id = "pi_FakeT062f".to_owned();
+    pay(&pool, &card, &press(0x1076, 1, 2500), az(3, 10, 0)).await;
+    let timers = tasks(&pool, askhava_payments::api::TIMER_KIND).await;
+    let (payload, due) = timers.last().expect("card-fix timer").clone();
+    run_pay_timer(&pool, &card, &payload, due)
+        .await
+        .expect("timer");
+    assert_eq!(attempt_codes(&pool, 0x1076).await, ["declined"]);
+    let ended = tasks(&pool, askhava_payments::api::PICK_ENDED_KIND).await;
+    assert_eq!(ended.len(), 1);
+    assert_eq!(ended[0].0["reason"], "card-fix");
+}
+
+/// TD-FEE-20 (FEE-019, FEE-038, D-135): a timer task with no due time is refused; a check for an
+/// attempt that is no longer the latest asks nothing; a timer that fires while charges are paused
+/// stops with its time left; the pause watch with no open timer queues no next round.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_fee_20_stale_tasks_a_paused_timer_and_an_idle_watch(pool: PgPool) {
+    run_pause_watch(&pool, az(3, 8, 0)).await.expect("watch");
+    assert!(
+        tasks(&pool, askhava_payments::api::PAUSE_KIND)
+            .await
+            .is_empty()
+    );
+    with_customer(&pool).await;
+    let stripe = FakeStripe::new(vec![Err(AdapterError::OutcomeUnknown)], vec![]);
+    let pick = 0x1077;
+    pay(&pool, &stripe, &press(pick, 1, 2500), az(3, 9, 0)).await;
+    let id = Uuid::from_u128(pick).to_string();
+    let bad = serde_json::json!({"pick": id, "kind": "card-fix"});
+    assert!(
+        run_pay_timer(&pool, &stripe, &bad, az(3, 9, 1))
+            .await
+            .is_err()
+    );
+    let stale = serde_json::json!({"pick": id, "try": 9, "round": 0});
+    run_charge_check(&pool, &stripe, &stale, az(3, 9, 30))
+        .await
+        .expect("stale check");
+    let mut conn = pool.acquire().await.expect("conn");
+    let owner = Actor::Owner(Uuid::from_u128(0x0e));
+    set_switch(&mut conn, Switch::All, true, owner)
+        .await
+        .expect("safe mode");
+    let (payload, due) = tasks(&pool, askhava_payments::api::TIMER_KIND).await[0].clone();
+    run_pay_timer(&pool, &stripe, &payload, due)
+        .await
+        .expect("stopped");
+    assert_eq!(running_timer(&pool, pick, "stripe-down").await, None);
+    assert_eq!(count(&stripe, "fetch"), 0);
 }
