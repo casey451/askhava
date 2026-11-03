@@ -19,6 +19,10 @@
 //! its own key, the Stripe outage release, the card-fix window, the charging pause and the
 //! monthly fee limit, [`api::confirm_and_pay`] (FEE-016 to FEE-020, FEE-037, FEE-038, FEE-041,
 //! FEE-047).
+//!
+//! T189 added the release minter, [`api::Minter`]: a `ReleaseProof` only from a verified, re-fetched
+//! Stripe success or a recorded $0 decision, and the FEE-042 evidence record of each charge
+//! (PICK-022, SEC-030, SEC-039, FEE-042).
 
 pub mod api;
 mod charge;
@@ -26,6 +30,7 @@ mod free_wins;
 mod handlers;
 mod ledger;
 mod models;
+mod release_proof;
 mod rules;
 mod service;
 mod status;

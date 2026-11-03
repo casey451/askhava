@@ -382,3 +382,49 @@ pub fn intent_label(pick: Uuid) -> String {
 pub fn attempt_label(pick: Uuid, try_no: i32) -> String {
     format!("pick-{pick}-try{try_no}")
 }
+
+/// The account statement-descriptor prefix set once in the Stripe dashboard (FEE-049, D-490).
+pub const STATEMENT_PREFIX: &str = "ASKHAVA";
+/// The longest statement descriptor a card statement shows (FEE-049).
+pub const DESCRIPTOR_MAX: usize = 22;
+
+/// What a pick's PaymentIntent says on the receipt and the card statement: the description "Ask
+/// Hava introduction service, job <n>" and the suffix "JOB <n>" after [`STATEMENT_PREFIX`]
+/// (FEE-049, TD-FEE-38, D-491). The adapter form that sends them is T132's (D-1476).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct IntentText {
+    number: i64,
+}
+
+impl IntentText {
+    /// The text for job number `number` (JOB-024's `jobs.job_number`).
+    ///
+    /// # Errors
+    /// [`ChargeError::BadField`] for a number below 1, or one long enough to take the full
+    /// descriptor over [`DESCRIPTOR_MAX`] characters (FEE-049).
+    pub fn for_job(number: i64) -> Result<Self, ChargeError> {
+        let text = Self { number };
+        if number < 1 || text.statement_descriptor().len() > DESCRIPTOR_MAX {
+            return Err(ChargeError::BadField);
+        }
+        Ok(text)
+    }
+
+    /// "Ask Hava introduction service, job <n>" (D-491).
+    #[must_use]
+    pub fn description(&self) -> String {
+        format!("Ask Hava introduction service, job {}", self.number)
+    }
+
+    /// The statement-descriptor suffix "JOB <n>" (FEE-049).
+    #[must_use]
+    pub fn statement_suffix(&self) -> String {
+        format!("JOB {}", self.number)
+    }
+
+    /// The full descriptor as the card statement shows it, "ASKHAVA* JOB <n>" (FEE-049).
+    #[must_use]
+    pub fn statement_descriptor(&self) -> String {
+        format!("{STATEMENT_PREFIX}* {}", self.statement_suffix())
+    }
+}
