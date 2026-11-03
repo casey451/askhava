@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT EXISTS (SELECT 1 FROM payments.charge_evidence WHERE pick_id = $1) AS \"kept!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "kept!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "16ee610d19a891024460343105260ca2582da2a50caccd444b330e2e1a40822e"
+}

@@ -33,6 +33,12 @@
 //! [`sync_pause`] are the FEE-019 check, the FEE-018 and FEE-020 timers and the FEE-038 pause;
 //! [`run_pause_watch`] keeps the timers in line with the pause, and [`card_fix_window`] tells
 //! `picks` whether a card-fix notice is still due (FEE-020).
+//!
+//! T189: [`paid_release`] clears a pick only from a [`VerifiedStripeEvent`] whose re-fetched
+//! intent matches the [`StripeAccount`], fee and pick, and [`no_fee_release`] only from a recorded
+//! $0 decision; [`Minter`] holds the release mint `server` hands over and turns only a
+//! [`Releasable`] into a `ReleaseProof` (PICK-022, SEC-030, SEC-039, SEC-049); [`IntentText`] is the
+//! description and statement descriptor of a pick's PaymentIntent (FEE-049).
 
 pub use crate::charge::{
     ATTEMPT_ACTION, ATTEMPT_SUBJECT, IN_FLIGHT, INTENT_ACTION, IntentStripe, confirm_and_pay,
@@ -50,8 +56,13 @@ pub use crate::handlers::{
 pub use crate::ledger::{Appended, EntryKind, LedgerEntry, LedgerError, NewEntry, ledger_append};
 pub use crate::models::{
     AUTHORIZATION_TEXT, AUTHORIZATION_VERSION, BusinessId, CardError, ChargeError, ChargeOutcome,
-    CustomerId, ENTITY_KEY_ACTION, EntityKey, EntityKind, FreeWinError, JoinDates, PickNow, Press,
-    SavedCard, SetupIntentRequest, attempt_label, intent_label,
+    CustomerId, DESCRIPTOR_MAX, ENTITY_KEY_ACTION, EntityKey, EntityKind, FreeWinError, IntentText,
+    JoinDates, PickNow, Press, STATEMENT_PREFIX, SavedCard, SetupIntentRequest, attempt_label,
+    intent_label,
+};
+pub use crate::release_proof::{
+    Minter, Releasable, ReleaseError, SUCCEEDED_EVENT, StripeAccount, VerifiedStripeEvent,
+    no_fee_release, paid_release,
 };
 pub use crate::rules::{
     Fee, FeeError, FeeJob, FeeMode, FeeQuote, FeeTerms, LockDates, Period, PeriodJob, PickedFee,
