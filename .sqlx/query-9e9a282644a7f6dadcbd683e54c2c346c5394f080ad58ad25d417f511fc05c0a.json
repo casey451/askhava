@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT stripe_intent_id, amount_cents FROM payments.pick_intent WHERE pick_id = $1",
+  "query": "SELECT stripe_intent_id, amount_cents, ended_at IS NOT NULL AS \"ended!\"\n         FROM payments.pick_intent WHERE pick_id = $1",
   "describe": {
     "columns": [
       {
@@ -24,6 +24,12 @@
             "name": "amount_cents"
           }
         }
+      },
+      {
+        "ordinal": 2,
+        "name": "ended!",
+        "type_info": "Bool",
+        "origin": "Expression"
       }
     ],
     "parameters": {
@@ -33,8 +39,9 @@
     },
     "nullable": [
       false,
-      false
+      false,
+      null
     ]
   },
-  "hash": "7ff439f6b44fc1b9592a40a660263808d9aa42d34905e98dcad6f14ff3e58aca"
+  "hash": "9e9a282644a7f6dadcbd683e54c2c346c5394f080ad58ad25d417f511fc05c0a"
 }

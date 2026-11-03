@@ -31,8 +31,7 @@ use crate::handlers::{
     CHECK_AFTER, EndReason, announce_end, charges_paused, end_pick, queue_check, record,
 };
 use crate::models::{
-    AUTHORIZATION_VERSION, BusinessId, ChargeError, ChargeOutcome, PickNow, Press, attempt_label,
-    intent_label,
+    BusinessId, ChargeError, ChargeOutcome, PickNow, Press, attempt_label, intent_label,
 };
 use crate::service::customer_of;
 use crate::status::AttemptStatus;
@@ -522,26 +521,32 @@ pub(crate) async fn ask_stripe(
 }
 
 /// Writes the pick's one FEE-042 evidence record for its succeeded attempt `try_no`, on the
-/// caller's transaction, so it commits with the success (FEE-042, FEE-015, D-365, D-1474): IDs and
-/// timestamps only (the press, the attempt's key label `pick-<id>-try<n>`, the Stripe customer and
-/// PaymentIntent, the FEE-015 authorization version shown above the button, the press and
-/// success times), never card data (FEE-014) or a homeowner field (PRIV-027). A second success
-/// for the same pick writes nothing; the table is append-only for the app role.
+/// caller's transaction, so it commits with the success (FEE-042, FEE-015, D-365, D-1474,
+/// D-1478): IDs and timestamps only (the press, the attempt's key label `pick-<id>-try<n>`, the
+/// Stripe customer and PaymentIntent, the version of the business's latest FEE-015 acceptance at
+/// or before the press, or none when none is recorded, the press and success times), never card
+/// data (FEE-014) or a homeowner field (PRIV-027). A second success for the same pick writes
+/// nothing; the table is append-only for the app role.
 ///
 /// # Errors
-/// [`ChargeError::Database`].
+/// [`ChargeError::Database`], also when the pick, the attempt or the customer is missing and no
+/// record exists, so a success never goes unrecorded silently.
 pub(crate) async fn write_evidence(
     tx: &mut PgConnection,
     pick: Uuid,
     try_no: i32,
     at: Timestamp,
 ) -> Result<(), ChargeError> {
-    db(sqlx::query!(
+    let written = db(sqlx::query!(
         "INSERT INTO payments.charge_evidence (pick_id, business_id, job_id, press_id, try_no,
            idempotency_label, stripe_customer_id, stripe_intent_id, authorization_version,
            amount_cents, pressed_at, charged_at)
          SELECT i.pick_id, i.business_id, i.job_id, a.press_id, a.try_no, $3, c.stripe_customer_id,
-           i.stripe_intent_id, $4, i.amount_cents, a.started_at, $5
+           i.stripe_intent_id,
+           (SELECT z.version FROM payments.card_authorization z
+             WHERE z.business_id = i.business_id AND z.accepted_at <= a.started_at
+             ORDER BY z.accepted_at DESC, z.version DESC LIMIT 1),
+           i.amount_cents, a.started_at, $4
          FROM payments.pick_intent i
          JOIN payments.charge_attempt a ON a.pick_id = i.pick_id AND a.try_no = $2
          JOIN payments.customer c ON c.business_id = i.business_id
@@ -550,10 +555,22 @@ pub(crate) async fn write_evidence(
         pick,
         try_no,
         attempt_label(pick, try_no),
-        AUTHORIZATION_VERSION,
         at.to_sqlx() as _,
     )
     .execute(&mut *tx)
     .await)?;
-    Ok(())
+    if written.rows_affected() == 1 {
+        return Ok(());
+    }
+    let kept = db(sqlx::query_scalar!(
+        r#"SELECT EXISTS (SELECT 1 FROM payments.charge_evidence WHERE pick_id = $1) AS "kept!""#,
+        pick
+    )
+    .fetch_one(&mut *tx)
+    .await)?;
+    if kept {
+        Ok(())
+    } else {
+        Err(ChargeError::Database)
+    }
 }

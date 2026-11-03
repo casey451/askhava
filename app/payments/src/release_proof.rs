@@ -8,10 +8,12 @@
 //! (when the event names one) is the configured one, for the pick's own PaymentIntent; the
 //! intent is then re-fetched from Stripe and must say succeeded, in the same mode, for exactly
 //! the fee the server fixed, with metadata naming this pick (SEC-049). The success is stored on
-//! the latest attempt (with its FEE-042 evidence record) before the proof is made. A redirect to
+//! the latest attempt (with its FEE-042 evidence record) before the proof is made, and a pick that
+//! has ended, before or while the intent was fetched, is never cleared (D-1478). A redirect to
 //! a success page carries no verified event, so it can never make one (SEC-030).
 //! [`no_fee_release`] makes one from a recorded $0 decision only: a free first win, a
-//! repeat customer or a fee-free job type in the ledger (FEE-010, FEE-013, FEE-045). Releasing
+//! repeat customer or a fee-free job type in the ledger (FEE-010, FEE-013, FEE-045), never for a
+//! pick with a PaymentIntent (D-1478). Releasing
 //! once however often a proof arrives is the release's own record (PICK-022).
 
 use askhava_adapters::api::{PaymentIntent, PaymentsAdapter, VerifiedWebhook, WebhookVendor};
@@ -57,9 +59,14 @@ pub enum ReleaseError {
     /// Stripe could not be asked; the event is tried again later (SEC-049).
     #[error("Stripe could not be reached")]
     Stripe,
-    /// No $0 decision is recorded for this business and job (FEE-036).
+    /// No $0 decision is recorded for this business and job, or the pick has a fee to pay
+    /// (FEE-036).
     #[error("no fee-free decision is recorded")]
     NoFeeDecision,
+    /// The pick has ended (the 4-hour release, the card-fix window, the monthly fee limit or a
+    /// refund), so a later success clears nothing (FEE-018, FEE-020, FEE-041, D-1478).
+    #[error("the pick has ended")]
+    PickEnded,
     /// The database refused or dropped the statement.
     #[error("the payments database statement failed")]
     Database,
@@ -192,7 +199,7 @@ pub async fn paid_release(
     at: Timestamp,
 ) -> Result<Releasable, ReleaseError> {
     check_event(event, account)?;
-    let (stored, cents) = pick_intent(pool, pick).await?;
+    let (stored, cents) = open_intent(pool, pick).await?;
     if stored != event.intent {
         return Err(ReleaseError::WrongIntent);
     }
@@ -202,13 +209,16 @@ pub async fn paid_release(
         .map_err(|_| ReleaseError::Stripe)?;
     check_intent(&fetched, account, cents, pick)?;
     store_success(pool, pick, at).await?;
+    open_intent(pool, pick).await?;
     let basis = ReleaseBasis::PaidCharge;
     Ok(Releasable { pick, basis })
 }
 
 /// Clears pick `pick` with no fee due, only when the ledger holds the $0 decision for its business
 /// and job: a free first win, a repeat customer or a fee-free job type (FEE-010, FEE-013, FEE-036,
-/// FEE-045, PICK-022).
+/// FEE-045, PICK-022). A pick with a PaymentIntent has a fee to pay and is never cleared here.
+/// `payments` holds no record tying a $0 pick to its business and job, so the caller (`picks`,
+/// which owns the pick) passes its own; D-1478.
 ///
 /// # Errors
 /// [`ReleaseError::NoFeeDecision`]; [`ReleaseError::Database`].
@@ -218,11 +228,13 @@ pub async fn no_fee_release(
     (business, job): (Uuid, Uuid),
 ) -> Result<Releasable, ReleaseError> {
     let decided = sqlx::query_scalar!(
-        r#"SELECT EXISTS (SELECT 1 FROM payments.ledger_entry WHERE business_id = $1
+        r#"SELECT NOT EXISTS (SELECT 1 FROM payments.pick_intent WHERE pick_id = $3)
+             AND EXISTS (SELECT 1 FROM payments.ledger_entry WHERE business_id = $1
              AND job_id = $2 AND amount_cents = 0
              AND kind IN ('free-first-win', 'repeat-customer', 'fee-free-job-type')) AS "found!""#,
         business,
-        job
+        job,
+        pick
     )
     .fetch_one(conn)
     .await
@@ -277,17 +289,22 @@ fn check_intent(
     Ok(())
 }
 
-/// The pick's stored PaymentIntent and the fee it was made for.
-async fn pick_intent(pool: &PgPool, pick: Uuid) -> Result<(String, i64), ReleaseError> {
+/// The pick's stored PaymentIntent and the fee it was made for, while the pick has not ended
+/// (FEE-018, FEE-020, FEE-041, D-1478).
+async fn open_intent(pool: &PgPool, pick: Uuid) -> Result<(String, i64), ReleaseError> {
     let row = sqlx::query!(
-        "SELECT stripe_intent_id, amount_cents FROM payments.pick_intent WHERE pick_id = $1",
+        "SELECT stripe_intent_id, amount_cents, ended_at IS NOT NULL AS \"ended!\"
+         FROM payments.pick_intent WHERE pick_id = $1",
         pick
     )
     .fetch_optional(pool)
     .await
-    .map_err(|_| ReleaseError::Database)?;
-    row.map(|r| (r.stripe_intent_id, r.amount_cents))
-        .ok_or(ReleaseError::WrongIntent)
+    .map_err(|_| ReleaseError::Database)?
+    .ok_or(ReleaseError::WrongIntent)?;
+    if row.ended {
+        return Err(ReleaseError::PickEnded);
+    }
+    Ok((row.stripe_intent_id, row.amount_cents))
 }
 
 /// Stores the verified success on the pick's latest attempt, with its evidence record, when the

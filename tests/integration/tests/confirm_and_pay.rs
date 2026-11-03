@@ -19,9 +19,9 @@ use askhava_adapters::api::{
     WebhookVendor, verify_webhook,
 };
 use askhava_payments::api::{
-    AUTHORIZATION_VERSION, BusinessId, ChargeError, ChargeOutcome, DESCRIPTOR_MAX, EntryKind,
-    IntentStripe, IntentText, LedgerEntry, NewEntry, PickNow, Press, ReleaseError, StripeAccount,
-    VerifiedStripeEvent, confirm_and_pay, ledger_append, no_fee_release, paid_release,
+    BusinessId, ChargeError, ChargeOutcome, DESCRIPTOR_MAX, EntryKind, IntentStripe, IntentText,
+    LedgerEntry, NewEntry, PickNow, Press, ReleaseError, StripeAccount, VerifiedStripeEvent,
+    confirm_and_pay, ledger_append, no_fee_release, paid_release,
 };
 use askhava_privacy::api::ReleaseBasis;
 use hmac::{Hmac, KeyInit, Mac};
@@ -37,6 +37,8 @@ const JOB: Uuid = Uuid::from_u128(0x189_0142);
 const INTENT: &str = "pi_FakeT189";
 const WEBHOOK_SECRET: &str = "whsec_fake_t189_not_a_real_secret";
 const NOW: i64 = 1_793_700_000;
+/// The FEE-015 version the business accepted before the press; it accepts `ACCEPTED + 1` after.
+const ACCEPTED: i32 = 7;
 type Answer = Result<PaymentIntent, AdapterError>;
 
 /// A scripted Stripe: confirms answer `confirm`, fetches take the next scripted answer.
@@ -125,7 +127,8 @@ fn press(n: u128) -> Press<'static> {
     }
 }
 
-/// A customer, then one press Stripe answers with `confirm`.
+/// A customer who accepted FEE-015 version `ACCEPTED` before the press and the next one after,
+/// then one press Stripe answers with `confirm`.
 async fn pressed(pool: &PgPool, confirm: &'static str) -> Result<ChargeOutcome, ChargeError> {
     sqlx::query("INSERT INTO payments.customer (business_id, stripe_customer_id) VALUES ($1, $2)")
         .bind(BUSINESS.0)
@@ -133,6 +136,18 @@ async fn pressed(pool: &PgPool, confirm: &'static str) -> Result<ChargeOutcome, 
         .execute(pool)
         .await
         .expect("customer");
+    for (version, offset) in [(ACCEPTED, -60_i64), (ACCEPTED + 1, 30)] {
+        sqlx::query(
+            "INSERT INTO payments.card_authorization (business_id, version, text, accepted_at)
+             VALUES ($1, $2, 'Fake authorization text', to_timestamp($3))",
+        )
+        .bind(BUSINESS.0)
+        .bind(version)
+        .bind(NOW + offset)
+        .execute(pool)
+        .await
+        .expect("authorization");
+    }
     let secret = SecretString::from("fake-id-secret-t189".to_owned());
     let at = Timestamp::from_second(NOW).expect("time");
     confirm_and_pay(pool, &fake(confirm, vec![]), &secret, &press(1), at).await
@@ -194,8 +209,9 @@ async fn evidence(pool: &PgPool) -> Vec<(Uuid, Uuid, i32, String, String, String
     .expect("evidence")
 }
 
-/// TD-FEE-38 (FEE-042, FEE-015): a successful press writes one evidence record of IDs and
-/// timestamps at charge time; a verified success arriving later writes no second one.
+/// TD-FEE-38 (FEE-042, FEE-015, D-1478): a successful press writes one evidence record of IDs and
+/// timestamps at charge time, with the authorization version accepted before the press (not one
+/// accepted after); a verified success arriving later writes no second one.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_fee_38_a_success_writes_one_evidence_record(pool: PgPool) {
     let outcome = pressed(&pool, "succeeded").await.expect("press");
@@ -215,7 +231,7 @@ async fn td_fee_38_a_success_writes_one_evidence_record(pool: PgPool) {
         want.3,
         want.4,
         INTENT.to_owned(),
-        AUTHORIZATION_VERSION,
+        ACCEPTED,
         7500,
     );
     assert_eq!(evidence(&pool).await, vec![want.clone()]);
@@ -327,6 +343,59 @@ async fn td_sec_18_a_mismatched_event_clears_nothing(pool: PgPool) {
     }
     let own = event(ok, false, Some("acct_testfake"), INTENT);
     assert_eq!(clear(&pool, &own, paid()).await, Ok(PICK));
+}
+
+/// TD-FEE-25, TD-SEC-18 (FEE-018, FEE-020, FEE-041, JOB-014, D-1478): once the pick has ended, a
+/// verified success event for its own intent clears nothing and stores nothing.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_fee_25_an_ended_pick_is_never_cleared(pool: PgPool) {
+    pressed(&pool, "processing").await.expect("press");
+    sqlx::query("UPDATE payments.pick_intent SET ended_at = to_timestamp($2) WHERE pick_id = $1")
+        .bind(PICK)
+        .bind(NOW + 30)
+        .execute(&pool)
+        .await
+        .expect("end");
+    assert_eq!(
+        clear(&pool, &succeeded(), paid()).await,
+        Err(ReleaseError::PickEnded)
+    );
+    assert!(evidence(&pool).await.is_empty());
+    let status: String = sqlx::query_scalar("SELECT status FROM payments.charge_attempt")
+        .fetch_one(&pool)
+        .await
+        .expect("attempt");
+    assert_eq!(status, "processing");
+}
+
+/// TD-FEE-25 (FEE-036, PICK-022, D-1478): a pick with a PaymentIntent has a fee to pay, so a $0
+/// decision recorded for another job of its business never clears it; a pick with no intent
+/// passed the same parties is cleared.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_fee_25_a_paid_pick_is_never_cleared_as_no_fee(pool: PgPool) {
+    pressed(&pool, "processing").await.expect("press");
+    let other = Uuid::from_u128(0x189_0243);
+    let mut conn = pool.acquire().await.expect("connection");
+    let raw = NewEntry {
+        kind: EntryKind::FeeFreeJobType,
+        business: Some(BUSINESS.0),
+        job: Some(other),
+        amount_cents: 0,
+        stripe_id: None,
+        idempotency_key: "t189-free-other",
+    };
+    ledger_append(&mut conn, &LedgerEntry::new(raw).expect("entry"))
+        .await
+        .expect("append");
+    let paid_pick = no_fee_release(&mut conn, PICK, (BUSINESS.0, other))
+        .await
+        .map(|c| c.pick());
+    assert_eq!(paid_pick, Err(ReleaseError::NoFeeDecision));
+    let free_pick = Uuid::from_u128(0x189_0043);
+    let cleared = no_fee_release(&mut conn, free_pick, (BUSINESS.0, other))
+        .await
+        .map(|c| c.pick());
+    assert_eq!(cleared, Ok(free_pick));
 }
 
 /// TD-SEC-11 (SEC-030): only a signature-checked Stripe webhook becomes a `VerifiedStripeEvent`.
