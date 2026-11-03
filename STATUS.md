@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-03T13:09:50Z by runner 2487c10b053a (actions).
+Updated 2026-11-03T13:16:47Z by runner 2487c10b053a (actions).
 
 **Waiting for tokens until 17:00Z; 99 of 230 done; week 99% used, resets Thu 2026-11-05 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-03T13:09:50Z by runner 2487c10b053a (actions).
 - **Stage:** stage 3; stage proofs recorded: 1, 2
 - **Lane:** idle since 13:00Z (no task in progress)
 - **Week:** 99% used, -4.0M tokens left; resets Thu 2026-11-05 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:51Z, 17 min before this update
+- **Last run:** 13:09Z, 6 min before this update
 - **Keeper:** last ran 12:51Z, next wake 18:31Z
 
 ## Needs attention
@@ -21,7 +21,6 @@ Updated 2026-11-03T13:09:50Z by runner 2487c10b053a (actions).
 
 ### Plan and harness merges on main
 - 13:17Z Harness: the runner wakes itself (keeper), smoke target clean (D-1451) (#264)
-- 13:11Z Harness: the full pre-hand-in gate measures floored coverage; hand_in_by (D-1440) (#263)
 
 ## Progress (requirements verified)
 
@@ -54,7 +53,7 @@ Updated 2026-11-03T13:09:50Z by runner 2487c10b053a (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-03T12:51:44Z (week)): five-hour: 963k used, 28.1M left, resets 2026-11-03T17:51:18Z; week: 198.0M used, -4.0M left, resets 2026-11-05T17:00:00Z; projected finish 2026-11-15T23:33:24Z; waiting until 2026-11-05T17:00:00Z.
+- Pacing (session_reading 2026-11-03T12:51:44Z (week)): five-hour: 963k used, 28.1M left, resets 2026-11-03T17:51:18Z; week: 198.0M used, -4.0M left, resets 2026-11-05T17:00:00Z; projected finish 2026-11-15T23:41:25Z; waiting until 2026-11-05T17:00:00Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
