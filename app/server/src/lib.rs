@@ -7,13 +7,14 @@
 //! knows about HTTP status codes or process signals.
 
 use std::io;
-use std::sync::Arc;
+use std::sync::{Arc, OnceLock};
 
 use askhava_adapters::api::{StorageAdapter, TwilioConfig};
 use askhava_core::api::{
     Environment, IdSecret, LogGuard, Registry, Settings, SystemClock, init_logging, request_span,
 };
 use askhava_intake::api::JobTextKeys;
+use askhava_payments::api::Minter;
 use askhava_portals::api::{pick_flow_routes, quote_page_routes, security_headers};
 use askhava_privacy::api::Vault;
 use axum::Router;
@@ -211,7 +212,8 @@ where
 /// card-fix notice on `payments`' event (D-492); `payments` the pause watch that stops and resumes
 /// the payment timers with the charging pause (FEE-038, D-1427); and, with
 /// `texts` ([`job_text_keys`]), the homeowner job texts `jobs` queues (JOB-010 to JOB-012,
-/// TXT-042, D-1030 (A)).
+/// TXT-042, D-1030 (A)). It takes the release mint first, through [`release_minter`], so a second
+/// minter stops the start rather than a payment (SEC-030, D-488).
 #[must_use]
 pub fn register_handlers<S>(
     stream: Arc<offdb_stream::OffDbStream<S>>,
@@ -220,6 +222,7 @@ pub fn register_handlers<S>(
 where
     S: StorageAdapter + Send + Sync + 'static,
 {
+    release_minter();
     let mut registry = Registry::new();
     let secret = stream.id_secret.clone();
     registry.register(askhava_intake::api::NO_REPLY_KIND, move |pool, task| {
@@ -251,6 +254,14 @@ where
         });
     }
     registry
+}
+
+/// `payments`' release minter, made from `privacy`'s mint the first time it is asked for, so the
+/// mint is taken once per process however often the composition is built; the Stripe webhook route
+/// (T224) hands it verified events (SEC-030, D-488, D-1477).
+pub fn release_minter() -> &'static Minter {
+    static MINTER: OnceLock<Minter> = OnceLock::new();
+    MINTER.get_or_init(|| Minter::new(askhava_privacy::api::release_mint()))
 }
 
 /// Registers SIGINT and SIGTERM now and returns a future that finishes on the

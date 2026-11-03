@@ -10,9 +10,11 @@ publish.workspace = true
 askhava-adapters = { workspace = true }
 askhava-core = { workspace = true }
 askhava-ops = { workspace = true }
+askhava-privacy = { workspace = true }
 jiff = { workspace = true }
 jiff-sqlx = { workspace = true, features = ["postgres"] }
 secrecy = { workspace = true }
+serde = { workspace = true }
 serde_json = { workspace = true }
 sqlx = { workspace = true }
 thiserror = { workspace = true }
@@ -20,7 +22,6 @@ thiserror = { workspace = true }
 [dev-dependencies]
 askhava-catalog = { workspace = true }
 proptest = { workspace = true }
-serde = { workspace = true }
 serde-saphyr = { workspace = true }
 tokio = { workspace = true }
 
