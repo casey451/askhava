@@ -11964,7 +11964,7 @@
     "T061",
     "T094"
    ],
-   "status": "MERGE_PENDING",
+   "status": "DONE",
    "attempts": 1,
    "slug": "payments-charge",
    "type": "build",
@@ -12033,13 +12033,62 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 70,
      "head_sha": "dd828e8b13ba3ec2e97891bc2c92f296949bdd8b",
-     "pr": null,
-     "checks": null,
+     "pr": 267,
+     "checks": [
+      {
+       "name": "backup",
+       "conclusion": null
+      },
+      {
+       "name": "keeper",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "gate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-03T12:19:56Z",
      "ended_at": "2026-11-03T12:51:18Z",
-     "result": "MERGE_PENDING"
+     "result": "done"
     }
    ],
    "reviewed_sha": "dd828e8b13ba3ec2e97891bc2c92f296949bdd8b",
@@ -12057,6 +12106,60 @@
    "last_failure": "Ci: failure; Coverage: failure\nCoverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered floor (D-694)\napp/messaging: 87.78135048231512\napp/ops: 94.44444444444444\napp/payments: 92.26190476190476\napp/picks: 91.02564102564102\napp/portals: 27.5\napp/privacy: 96.80365296803653\napp/quotes: 93.76693766937669\napp/server: 18.75\ntotal: 88.57844642308874 (floor 0.0)\napp/payments/: 92.26190476190476 (floor 95.0)\napp/catalog/src/rules.rs: None (floor 95.0)\napp/privacy/: 96.80365296803653 (floor 95.0)\napp/licensing/: 95.96412556053812 (floor 95.0)\nFAIL: app/payments/ 92.26 is below the floor 95.0\n##[error]Process completed with exit code 1.\nCi failed at step: All three jobs passed\nChecks: success, Coverage: failure, E2e: success\n##[error]Process completed with exit code 1.",
    "runner_closed_prs": [
     261
+   ],
+   "merged_sha": "2487c10b053a8c37c3e9dfb6e4eef819c73244c2",
+   "merged_at": "2026-11-03T13:00:19Z",
+   "files": [
+    ".sqlx/query-042d9d35093057a89ed66d39ee6a5af4ff279d4fa961c4146289a3569fac5b1c.json",
+    ".sqlx/query-1ceeed46d39e414d9e8406f0e6d50328ba52b25e41d080962d2961dfc86facda.json",
+    ".sqlx/query-1efa29c0584e36e2ec04d886e374dccdb9daae9d8e997bac5fd73fc7da2b90f5.json",
+    ".sqlx/query-27c7e7631e7bb2079093e32e3e5d768f9527f1bedcb5314008bb4f020a7003ba.json",
+    ".sqlx/query-3204318ed5c84b2a118168f51b8c6e281606adb66d78ffb30e90f4b9e0df1ea8.json",
+    ".sqlx/query-3444afca0a3e679574b817ec5372ddb0ca21199f53d49285ee1753347643b810.json",
+    ".sqlx/query-3a2b9b0d43ace293ebbf4bcc11d109b9aa20216ba467e6908b83e13a6b8b9647.json",
+    ".sqlx/query-40d1bcb9c4a8de6e5781d3b9f0962e9300541b390aa5e0c2a157c013ef0c90b1.json",
+    ".sqlx/query-4279a2006a74abe17a109acd4bbb435bea14e9985fe86a741a22168b32ad7455.json",
+    ".sqlx/query-4c2d5743485a889f56ab79b64a8439d650c47b00e0a7e2ba15313652f57bbed3.json",
+    ".sqlx/query-68ee76ff798286a33779a7290b9f8c175460a9323a280d6e408d3c52c1b1dd78.json",
+    ".sqlx/query-75e7ec10c24dd51889637663bd6131fb005f01a25499a934e6728d8ee812e38c.json",
+    ".sqlx/query-82764f7ac06df3414ece88ccf4c53654580440979da8511b8d726027b29501e8.json",
+    ".sqlx/query-89ed4e800307309b65ac2fcd2f1eca996896fa76d95dce33cd588768445d2431.json",
+    ".sqlx/query-9061c858a086ea357dc4a68167ccb59bd749f68d07b7784b71ef36f0f17bad1e.json",
+    ".sqlx/query-9a81c2c16be7ebc07964a8954a7a8c1aad1a78fd5382d8f10eaeacc39ffde432.json",
+    ".sqlx/query-9dc29ffa0436247675e55864779c360f5eb90d5867f4e81ec6417569800aa4b3.json",
+    ".sqlx/query-a4a482f7edc18c97d7e99976523681e76215d96501f6fa85a707184acdc61701.json",
+    ".sqlx/query-ad8eee1353903a4d1a01ebdba74365f6726dc21eac5a55295caf69c05e5a3cc3.json",
+    ".sqlx/query-b0710b3e4322182f86c1e74e87fdf00d2e0e50cd88f55ec3901e49358a8a305d.json",
+    ".sqlx/query-d2258565da6ffc3693cae3dacf61c1a9c2e57a1e3ec6a58f67f2677ccba37800.json",
+    ".sqlx/query-d57fb2aa9ef4418ef8f047de6b527b4c7b894c759a9f88737d67cafc192721b9.json",
+    ".sqlx/query-d7dede0780f374ec8346ca906b57debb3b4b8a5bc781253d1b5b9fd77677577b.json",
+    ".sqlx/query-de047fcf9d39d770979c8de02a9701bdeb3d9f1e144656dc05cda7c6612c2323.json",
+    ".sqlx/query-f0889137d8de9c6812fb6bae7a13d92bbba7fa9b0a8dda3234bcbf241db97580.json",
+    "Cargo.lock",
+    "app/messaging/templates/en.json",
+    "app/messaging/templates/es.json",
+    "app/payments/CLAUDE.md",
+    "app/payments/Cargo.toml",
+    "app/payments/src/api.rs",
+    "app/payments/src/charge.rs",
+    "app/payments/src/handlers.rs",
+    "app/payments/src/lib.rs",
+    "app/payments/src/models.rs",
+    "app/payments/src/status.rs",
+    "app/payments/src/tests/charge.rs",
+    "app/payments/src/tests/mod.rs",
+    "app/picks/CLAUDE.md",
+    "app/picks/Cargo.toml",
+    "app/picks/src/api.rs",
+    "app/picks/src/lib.rs",
+    "app/picks/src/money_notices.rs",
+    "app/server/Cargo.toml",
+    "app/server/src/lib.rs",
+    "docs/architecture.md",
+    "docs/decisions.md",
+    "docs/for-casey-review.md",
+    "migrations/0096_payments_charge.sql",
+    "tests/integration/tests/charge_attempts.rs"
    ]
   },
   {
@@ -16615,7 +16718,7 @@
    }
   }
  },
- "updated_at": "2026-11-03T12:51:54Z",
+ "updated_at": "2026-11-03T13:02:01Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -16713,7 +16816,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "7515def2fdc97b7076c7a9e12e5df5da875f3781",
+ "runner_sha": "2487c10b053a8c37c3e9dfb6e4eef819c73244c2",
  "starter": "actions",
  "smoke_runs": [
   {
