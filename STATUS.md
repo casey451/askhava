@@ -1,19 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-04T08:04:28Z by runner db6e88fbfad3 (actions).
+Updated 2026-11-04T08:11:56Z by runner db6e88fbfad3 (actions).
 
-**Building: T224 in progress since 07:59Z; 100 of 230 done; week 99% used, resets Thu 2026-11-05 17:00Z (10:00 am Phoenix).**
+**Building: T224 in progress since 07:59Z; 100 of 230 done; week 100% used, resets Thu 2026-11-05 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 100 of 230 build tasks (owner gates not counted)
 - **Stage:** stage 3; stage proofs recorded: 1, 2
 - **Lane:** lane 1: T224 claimed 07:59Z, lease until 10:59Z
-- **Week:** 99% used, 31.6M tokens left; resets Thu 2026-11-05 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:01Z, 7 h 3 min before this update
+- **Week:** 100% used, 31.6M tokens left; resets Thu 2026-11-05 17:00Z (10:00 am Phoenix)
+- **Last run:** 08:04Z, 7 min before this update
 - **Keeper:** last ran 01:01Z, next wake 06:41Z
-- **WARNING:** no runner cycle logged for over 90 minutes before this update
 
 ## Needs attention
-- Strict plan check red: 2 problem(s) on tasks still to run (+4 on DONE tasks); first: T066: stored context_pct 9% but it measures 13%; regenerate
+- Strict plan check red: 3 problem(s) on tasks still to run (+4 on DONE tasks); first: T224: stored context_pct 15% but it measures 20%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
