@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-04T08:11:56Z by runner db6e88fbfad3 (actions).
+Updated 2026-11-04T08:12:03Z by runner db6e88fbfad3 (actions).
 
-**Building: T224 in progress since 07:59Z; 100 of 230 done; week 100% used, resets Thu 2026-11-05 17:00Z (10:00 am Phoenix).**
+**Idle since 08:12Z; 100 of 230 done; week 100% used, resets Thu 2026-11-05 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 100 of 230 build tasks (owner gates not counted)
 - **Stage:** stage 3; stage proofs recorded: 1, 2
-- **Lane:** lane 1: T224 claimed 07:59Z, lease until 10:59Z
+- **Lane:** idle since 08:12Z (no task in progress)
 - **Week:** 100% used, 31.6M tokens left; resets Thu 2026-11-05 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:04Z, 7 min before this update
+- **Last run:** 08:12Z, 0 min before this update
 - **Keeper:** last ran 01:01Z, next wake 06:41Z
 
 ## Needs attention
@@ -17,6 +17,7 @@ Updated 2026-11-04T08:11:56Z by runner db6e88fbfad3 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T224 | portals: the business Confirm-and-pay page with Stripe Eleme | QUEUED | 1 | 12 min | 08:12Z | session ended without handing in |
 | T189 | payments: Stripe Elements on the Confirm page, the card auth | done | 1 | 39 min | 20:30Z |  |
 | T062 | payments: Confirm-and-pay charge with a key per attempt, Str | done | 2 | 31 min | 12:51Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
 
@@ -69,7 +70,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T224 (lease until 2026-11-04T10:59:57Z)
+- nothing
 
 ## Last usage reading
 - {"task": "T189", "at": "2026-11-03T20:30:24Z", "output_tokens": 154972, "cache_creation_input_tokens": 610777, "cache_read_input_tokens": 19144357, "input_tokens": 389}
