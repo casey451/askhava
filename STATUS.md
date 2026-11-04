@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-03T21:06:06Z by runner db6e88fbfad3 (actions).
+Updated 2026-11-04T01:00:46Z by runner db6e88fbfad3 (actions).
 
 **Waiting for tokens until 17:00Z; 100 of 230 done; week 99% used, resets Thu 2026-11-05 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,9 @@ Updated 2026-11-03T21:06:06Z by runner db6e88fbfad3 (actions).
 - **Stage:** stage 3; stage proofs recorded: 1, 2
 - **Lane:** idle since 20:42Z (no task in progress)
 - **Week:** 99% used, -4.0M tokens left; resets Thu 2026-11-05 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:05Z, 0 min before this update
+- **Last run:** 21:06Z, 3 h 54 min before this update
 - **Keeper:** last ran 21:06Z, next wake 02:46Z
+- **WARNING:** no runner cycle logged for over 90 minutes before this update
 
 ## Needs attention
 - Strict plan check red: 2 problem(s) on tasks still to run (+4 on DONE tasks); first: T066: stored context_pct 9% but it measures 13%; regenerate
@@ -54,7 +55,7 @@ Updated 2026-11-03T21:06:06Z by runner db6e88fbfad3 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-03T20:31:07Z (week)): five-hour: 2.7M used, 26.4M left, resets 2026-11-04T01:30:24Z; week: 198.0M used, -4.0M left, resets 2026-11-05T17:00:00Z; projected finish 2026-11-16T07:56:25Z; waiting until 2026-11-05T17:00:00Z.
+- Pacing (session_reading 2026-11-03T21:05:46Z (week)): five-hour: 2.7M used, 26.4M left, resets 2026-11-04T01:30:24Z; week: 198.0M used, -4.0M left, resets 2026-11-05T17:00:00Z; projected finish 2026-11-16T12:05:28Z; waiting until 2026-11-05T17:00:00Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
