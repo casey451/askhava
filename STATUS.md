@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-04T16:35:07Z by runner db6e88fbfad3 (actions).
+Updated 2026-11-04T22:11:34Z by runner db6e88fbfad3 (actions).
 
 **Idle since 08:12Z; 100 of 230 done; week 100% used, resets Thu 2026-11-05 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,9 @@ Updated 2026-11-04T16:35:07Z by runner db6e88fbfad3 (actions).
 - **Stage:** stage 3; stage proofs recorded: 1, 2
 - **Lane:** idle since 08:12Z (no task in progress)
 - **Week:** 100% used, 31.6M tokens left; resets Thu 2026-11-05 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:34Z, 0 min before this update
+- **Last run:** 16:35Z, 5 h 36 min before this update
 - **Keeper:** last ran 16:35Z, next wake 22:15Z
+- **WARNING:** no runner cycle logged for over 90 minutes before this update
 
 ## Needs attention
 - Strict plan check red: 2 problem(s) on tasks still to run (+4 on DONE tasks); first: T066: stored context_pct 9% but it measures 13%; regenerate
@@ -18,7 +19,6 @@ Updated 2026-11-04T16:35:07Z by runner db6e88fbfad3 (actions).
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T224 | portals: the business Confirm-and-pay page with Stripe Eleme | QUEUED | 1 | 12 min | 08:12Z | session ended without handing in |
-| T189 | payments: Stripe Elements on the Confirm page, the card auth | done | 1 | 39 min | 20:30Z |  |
 
 ### Plan and harness merges on main
 - none
