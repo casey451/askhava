@@ -779,3 +779,4 @@
 - 2026-11-04T01:00:46Z runner db6e88fbfad3 (actions): {}; T224 estimated 2.4M tokens (calibrated); five-hour window has 26.4M left, week -4.0M (session_reading 2026-11-03T21:05:46Z (week)); waiting until 2026-11-05T17:00:00Z
 - 2026-11-04T01:00:56Z runner db6e88fbfad3 (actions): {}
 - 2026-11-04T01:01:07Z runner db6e88fbfad3 (actions): {}
+- 2026-11-04T08:04:28Z runner db6e88fbfad3 (actions): {"T224": "QUEUED -> IN_PROGRESS"}; T224 estimated 2.4M tokens (calibrated); five-hour window has 29.1M left, week 31.6M (ledger; quota_probe: no token: CLAUDE_CODE_OAUTH_TOKEN unset and no credentials file); claimed
