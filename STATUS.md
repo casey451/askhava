@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-05T17:59:09Z by runner 5402801b9b13 (actions).
+Updated 2026-11-05T17:59:20Z by runner 5402801b9b13 (actions).
 
-**Building: T224 in progress since 17:08Z; 100 of 230 done; week 100% used, resets Thu 2026-11-05 17:00Z (10:00 am Phoenix).**
+**Idle since 17:59Z; 100 of 230 done; week 100% used, resets Thu 2026-11-05 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 100 of 230 build tasks (owner gates not counted)
 - **Stage:** stage 3; stage proofs recorded: 1, 2
-- **Lane:** lane 1: T224 claimed 17:08Z, lease until 20:08Z
+- **Lane:** idle since 17:59Z (no task in progress)
 - **Week:** 100% used, 31.6M tokens left; resets Thu 2026-11-05 17:00Z (10:00 am Phoenix)
 - **Last run:** 17:17Z, 41 min before this update
 - **Keeper:** last ran 11:29Z, next wake 17:05Z
@@ -15,7 +15,9 @@ Updated 2026-11-05T17:59:09Z by runner 5402801b9b13 (actions).
 - Strict plan check red: 3 problem(s) on tasks still to run (+4 on DONE tasks); first: T224: stored context_pct 15% but it measures 22%; regenerate
 
 ## Last 24 hours
-- no attempt ended in the last 24 hours
+| Task | Title | Result | Attempt | Took | Ended | Retry reason |
+|---|---|---|---|---|---|---|
+| T224 | portals: the business Confirm-and-pay page with Stripe Eleme | MERGE_PENDING | 2 | 50 min | 17:59Z | session ended without handing in |
 
 ### Plan and harness merges on main
 - none
@@ -66,7 +68,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T224 (lease until 2026-11-05T20:08:39Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T189", "at": "2026-11-03T20:30:24Z", "output_tokens": 154972, "cache_creation_input_tokens": 610777, "cache_read_input_tokens": 19144357, "input_tokens": 389}
+- {"task": "T224", "at": "2026-11-05T17:59:09Z", "input_tokens": 496, "cache_read_input_tokens": 27225272, "cache_creation_input_tokens": 831151, "output_tokens": 196605}
