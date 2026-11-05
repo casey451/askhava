@@ -52,6 +52,9 @@
 //! charge (FEE-052); [`record_dispute`] alerts Casey and records a dispute once with the $15 fee,
 //! [`run_dispute_submit`] sends the [`EvidencePack`] 2 days before the due date when T191 called
 //! [`mark_auto_submit`] (FEE-027, FEE-042, FEE-050, PRIV-027).
+//!
+//! T064: [`late_success`] queues the refund of a payment that succeeded after its job moved on and
+//! alerts Casey, once per pick; [`run_late_refund`] sends it through [`request_refund`] (FEE-021).
 
 pub use crate::charge::{
     ATTEMPT_ACTION, ATTEMPT_SUBJECT, IN_FLIGHT, INTENT_ACTION, IntentStripe, confirm_and_pay,
@@ -70,6 +73,9 @@ pub use crate::handlers::{
     CARD_FIX_KIND, CARD_FIX_SECONDS, CHECK_AFTER, CHECK_KIND, CardFixWindow, EndReason,
     PAUSE_EVERY, PAUSE_KIND, PICK_ENDED_KIND, RECHECK_AFTER, STRIPE_DOWN_SECONDS, TIMER_KIND,
     card_fix_window, charges_paused, run_charge_check, run_pause_watch, run_pay_timer, sync_pause,
+};
+pub use crate::late::{
+    LATE_KIND, LATE_SUCCESS_ALERT, LATE_TRIGGER, LateSuccess, late_success, run_late_refund,
 };
 pub use crate::ledger::{Appended, EntryKind, LedgerEntry, LedgerError, NewEntry, ledger_append};
 pub use crate::models::{
