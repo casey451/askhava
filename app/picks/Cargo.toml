@@ -11,6 +11,7 @@ askhava-adapters = { workspace = true }
 askhava-businesses = { workspace = true }
 askhava-core = { workspace = true }
 askhava-jobs = { workspace = true }
+askhava-licensing = { workspace = true }
 askhava-messaging = { workspace = true }
 askhava-ops = { workspace = true }
 askhava-payments = { workspace = true }

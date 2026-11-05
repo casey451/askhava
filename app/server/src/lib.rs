@@ -243,6 +243,14 @@ where
         askhava_picks::api::run_card_fix_notice,
     );
     registry.register(
+        askhava_picks::api::PICK_MADE_KIND,
+        askhava_picks::api::run_pick_notice,
+    );
+    registry.register(
+        askhava_picks::api::CONFIRM_ENDS_KIND,
+        askhava_picks::api::run_confirm_ends,
+    );
+    registry.register(
         askhava_payments::api::PAUSE_KIND,
         |pool, _task| async move {
             askhava_payments::api::run_pause_watch(&pool, jiff::Timestamp::now()).await

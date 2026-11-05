@@ -318,5 +318,25 @@
     "audience": "business",
     "segments": 2,
     "text": "Ask Hava: Your bank wants you to approve the payment for job {job}. You haven't been charged yet. After {time}, the homeowner can pick another business's quote. Approve it here: {link}"
+  },
+  "pick_notice": {
+    "audience": "business",
+    "segments": 1,
+    "text": "Ask Hava: A homeowner picked your quote for job {job}. Accept by {time}."
+  },
+  "pick_notice_emergency": {
+    "audience": "business",
+    "segments": 1,
+    "text": "Ask Hava: EMERGENCY: a homeowner picked your quote for job {job}. Accept by {time}."
+  },
+  "pick_fee_reply": {
+    "audience": "business",
+    "segments": 1,
+    "text": "Ask Hava: {number}. Confirm and pay here: {link}."
+  },
+  "pick_expired": {
+    "audience": "business",
+    "segments": 1,
+    "text": "Ask Hava: Time ran out to accept job {job}, so the pick expired. You weren't charged. Your quote can't be picked again for this job."
   }
 }
