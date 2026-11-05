@@ -53,7 +53,7 @@ Businesses on Ask Hava are independent. Ask Hava never directs, controls, schedu
 - **Tax included.** Any tax Ask Hava owes on the fee is included in it. No tax is ever added on top.
 - Launch offer: your first win is free, on any job size, when you join in the first 90 days or within 90 days after your trade opens. One free first win per business.
 - Repeat picks from the same homeowner are free for 180 days after the job closes.
-- **Price lock:** a business that joined in the first 90 days after launch pays no more than the fee amounts in effect on its join date for 6 months. After that, fees follow the published schedule, and a change needs your OK first. A new fee never applies until you accept it.
+- **Fee changes:** fees follow the published schedule. A change needs your OK first. A new fee never applies until you accept it.
 - **Monthly fee limit:** you may set one. A Confirm that would go over it is not charged, and that pick ends.
 
 ## 6. Card and charge authorization
