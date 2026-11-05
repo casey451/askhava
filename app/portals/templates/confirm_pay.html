@@ -19,7 +19,7 @@
 <li id="terms-version">You're agreeing to business terms version {{ terms_version }}. <a href="/terms/business">Read the business terms</a></li>
 <li>Ask Hava is not a contractor and does not perform, bid on or supervise work.</li>
 </ul>
-<form method="post" action="/b/picks/{{ pick }}/confirm" id="confirm-form" data-stripe-key="{{ stripe_key }}" novalidate>
+<form method="post" action="/b/picks/{{ pick }}/confirm" id="confirm-form" data-stripe-key="{{ stripe_key }}" data-paid="{% if paid %}yes{% else %}no{% endif %}" novalidate>
 <input type="hidden" name="csrf" value="{{ csrf }}">
 <input type="hidden" name="press" value="{{ press }}">
 <input type="hidden" name="payment_method" value="">

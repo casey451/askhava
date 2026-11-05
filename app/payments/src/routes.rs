@@ -276,10 +276,21 @@ mod tests {
         body: String,
         signature: String,
     ) -> StatusCode {
-        let mut request = Request::post(STRIPE_WEBHOOK_PATH)
-            .header("stripe-signature", signature)
-            .body(Body::from(body))
-            .expect("a request");
+        post_with(hooks, from, &[], body, signature).await
+    }
+
+    async fn post_with(
+        hooks: Arc<StripeWebhook<StripePayments, Arc<Recorded>>>,
+        from: [u8; 4],
+        extra: &[(&str, String)],
+        body: String,
+        signature: String,
+    ) -> StatusCode {
+        let mut builder = Request::post(STRIPE_WEBHOOK_PATH).header("stripe-signature", signature);
+        for (name, value) in extra {
+            builder = builder.header(*name, value);
+        }
+        let mut request = builder.body(Body::from(body)).expect("a request");
         let peer = SocketAddr::from((from, 443));
         request.extensions_mut().insert(ConnectInfo(peer));
         let reply = stripe_webhook_routes(hooks)
@@ -331,6 +342,35 @@ mod tests {
         )
         .await;
         assert_eq!(status, StatusCode::FORBIDDEN);
+        assert!(sink.0.lock().expect("lock").is_empty());
+    }
+
+    #[tokio::test]
+    async fn td_sec_31_sandbox_reads_only_the_edge_header_never_a_forwarded_or_cloudflare_one() {
+        let sink = Arc::new(Recorded::default());
+        let hooks = hooks(AdapterMode::Sandbox, false, sink.clone());
+        let stripe_ip = askhava_adapters::api::webhook_source_list()
+            .first()
+            .expect("the committed Stripe list")
+            .to_string();
+        let body = event("charge.updated", false);
+        let sig = signed(&body, SECRET);
+        let off_list = [203, 0, 113, 7];
+        for name in ["x-forwarded-for", "cf-connecting-ip", "forwarded"] {
+            let forged = [(name, stripe_ip.clone())];
+            let status = post_with(hooks.clone(), off_list, &forged, body.clone(), sig.clone());
+            assert_eq!(status.await, StatusCode::FORBIDDEN, "{name} is never read");
+        }
+        let edge = [("x-real-ip", "203.0.113.8".to_owned())];
+        let status = post_with(hooks.clone(), off_list, &edge, body.clone(), sig.clone()).await;
+        assert_eq!(status, StatusCode::FORBIDDEN, "an off-list edge address");
+        let edge = [("x-real-ip", stripe_ip)];
+        let status = post_with(hooks, off_list, &edge, body, sig).await;
+        assert_eq!(
+            status,
+            StatusCode::OK,
+            "the edge header, which Railway overwrites"
+        );
         assert!(sink.0.lock().expect("lock").is_empty());
     }
 

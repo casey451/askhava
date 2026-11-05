@@ -10,13 +10,16 @@
 //! time" box with the FEE-015 authorization text beside it (FEE-014, FEE-015); a $0 Confirm
 //! carries the box with "Next time it's one tap." (D-465). Only this page loads Stripe.js, from
 //! `js.stripe.com` (TD-SEC-04); `static/confirm_pay.ts` mounts Elements, posts the `pm_…` with the
-//! form's one-time press ID and shows each [`PressReply`] at once. A job paused by the homeowner
+//! form's one-time press ID and shows each [`PressReply`] at once; the form's `data-paid="no"` on a
+//! $0 Confirm makes it post no card unless the save box is ticked. A job paused by the homeowner
 //! (CON-029) gets the refusal instead of the form: no button, so no charge and no release.
 //! The fee comes from the server (`payments::api::fee_at_pick`), never from the browser.
 //!
 //! [`press_reply`] turns `payments::api::confirm_and_pay`'s [`ChargeOutcome`] into what the page
 //! shows: a decline at once, with a new press ID so the next press is the next attempt key
-//! (`pick-<id>-try2`, FEE-016); a bank approval as the in-page 3-D Secure step; success as
+//! (`pick-<id>-try2`, FEE-016); a bank approval as the in-page 3-D Secure step, with the
+//! PaymentIntent's client secret the route passes in; an over-limit end with [`PORTAL_LINK`]
+//! (FEE-041); success as
 //! "waiting for Stripe's confirmation", because details are released only from the verified
 //! webhook (`payments::api::stripe_webhook_routes`, PICK-022), never from this answer.
 //! The route that reads the facts, opens the pick's one PaymentIntent on the first load
@@ -150,6 +153,9 @@ pub fn confirm_page(facts: &ConfirmFacts) -> Result<String, askama::Error> {
     .render()
 }
 
+/// Where the business changes its monthly fee limit: its portal (FEE-041).
+pub const PORTAL_LINK: &str = "/b";
+
 /// What one press answers to the page script (FEE-016, FEE-018, FEE-020, FEE-041, PICK-022).
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
 pub struct PressReply {
@@ -159,12 +165,18 @@ pub struct PressReply {
     pub message: &'static str,
     /// The press ID the next press must use: new after a decline, so it is the next attempt.
     pub next_press: Option<Uuid>,
+    /// The PaymentIntent's client secret for Stripe's in-page 3-D Secure step, only on `approve`
+    /// (FEE-014); it is Stripe's browser-side handle, not an API key.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub client_secret: Option<String>,
+    /// The portal link shown with an over-limit answer (FEE-041).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub link: Option<&'static str>,
 }
 
-/// The page's answer to `outcome`; `fresh` is a new press ID for the next attempt (FEE-016).
-#[must_use]
-pub fn press_reply(outcome: &ChargeOutcome, fresh: Uuid) -> PressReply {
-    let (state, message, next) = match outcome {
+/// The state, words and whether a new press ID goes back, for `outcome` (FEE-016, FEE-041).
+fn words(outcome: &ChargeOutcome) -> (&'static str, &'static str, bool) {
+    match outcome {
         ChargeOutcome::Succeeded(_) | ChargeOutcome::Pending => (
             "waiting",
             "Payment sent. You'll get the homeowner's details as soon as Stripe confirms it.",
@@ -196,11 +208,25 @@ pub fn press_reply(outcome: &ChargeOutcome, fresh: Uuid) -> PressReply {
             false,
         ),
         ChargeOutcome::AlreadyPaid => ("paid", "This pick is already paid.", false),
-    };
+    }
+}
+
+/// The page's answer to `outcome`; `fresh` is a new press ID for the next attempt (FEE-016);
+/// `client_secret` is the pick's PaymentIntent's, passed on only for a bank approval (FEE-014);
+/// an over-limit answer carries [`PORTAL_LINK`] (FEE-041).
+#[must_use]
+pub fn press_reply(
+    outcome: &ChargeOutcome,
+    fresh: Uuid,
+    client_secret: Option<String>,
+) -> PressReply {
+    let (state, message, next) = words(outcome);
     PressReply {
         state,
         message,
         next_press: next.then_some(fresh),
+        client_secret: client_secret.filter(|_| matches!(outcome, ChargeOutcome::NeedsApproval(_))),
+        link: matches!(outcome, ChargeOutcome::OverLimit).then_some(PORTAL_LINK),
     }
 }
 
@@ -248,6 +274,7 @@ mod tests {
         assert!(html.contains("You're agreeing to business terms version 3."));
         assert_eq!(html.matches("<button").count(), 1);
         assert!(html.contains(">Confirm and pay $75</button>"));
+        assert!(html.contains("data-paid=\"yes\""));
         assert!(html.contains("Go back"));
         assert!(html.contains("Can't take it"));
         assert!(!html.contains(FEE_FREE_LINE));
@@ -272,13 +299,17 @@ mod tests {
         assert!(!html.contains(">Confirm and pay"));
         assert!(html.contains("Next time it's one tap."));
         assert!(
+            html.contains("data-paid=\"no\""),
+            "the script posts no card unless saving"
+        );
+        assert!(
             !html
                 .split("id=\"save-card\"")
                 .nth(1)
-                .unwrap_or("")
+                .expect("a save box")
                 .split('>')
                 .next()
-                .unwrap_or("")
+                .expect("the tag")
                 .contains("checked")
         );
     }
@@ -329,12 +360,36 @@ mod tests {
     #[test]
     fn td_fee_25_a_decline_shows_at_once_and_the_next_press_is_a_new_attempt() {
         let fresh = Uuid::from_u128(11);
-        let declined = press_reply(&ChargeOutcome::Declined(None), fresh);
+        let declined = press_reply(&ChargeOutcome::Declined(None), fresh, None);
         assert_eq!(declined.state, "declined");
         assert!(declined.message.starts_with("Your card was declined."));
         assert_eq!(declined.next_press, Some(fresh));
-        let approve = press_reply(&ChargeOutcome::NeedsApproval(None), fresh);
+        let approve = press_reply(&ChargeOutcome::NeedsApproval(None), fresh, None);
         assert_eq!((approve.state, approve.next_press), ("approve", None));
+    }
+
+    #[test]
+    fn fee_014_a_bank_approval_carries_the_client_secret_and_nothing_else_does() {
+        let fresh = Uuid::from_u128(11);
+        let secret = || Some("pi_fake_secret_fake".to_owned());
+        let approve = press_reply(&ChargeOutcome::NeedsApproval(None), fresh, secret());
+        assert_eq!(
+            approve.client_secret.as_deref(),
+            Some("pi_fake_secret_fake")
+        );
+        let declined = press_reply(&ChargeOutcome::Declined(None), fresh, secret());
+        assert_eq!(declined.client_secret, None);
+        let waiting = press_reply(&ChargeOutcome::Pending, fresh, secret());
+        assert_eq!(waiting.client_secret, None);
+    }
+
+    #[test]
+    fn fee_041_an_over_limit_answer_carries_the_portal_link() {
+        let fresh = Uuid::from_u128(11);
+        let over = press_reply(&ChargeOutcome::OverLimit, fresh, None);
+        assert_eq!(over.link, Some(PORTAL_LINK));
+        assert!(over.message.contains("change the limit in your portal"));
+        assert_eq!(press_reply(&ChargeOutcome::MovedOn, fresh, None).link, None);
     }
 
     #[test]
@@ -344,7 +399,7 @@ mod tests {
             ChargeOutcome::Succeeded("pi_fake".to_owned()),
             ChargeOutcome::Pending,
         ] {
-            let reply = press_reply(&outcome, fresh);
+            let reply = press_reply(&outcome, fresh, None);
             assert_eq!(reply.state, "waiting");
             assert_eq!(reply.next_press, None);
         }
@@ -356,7 +411,7 @@ mod tests {
             ChargeOutcome::AlreadyPaid,
         ]
         .iter()
-        .map(|o| press_reply(o, fresh).state)
+        .map(|o| press_reply(o, fresh, None).state)
         .collect();
         assert_eq!(states, ["try_later", "try_later", "ended", "ended", "paid"]);
     }
