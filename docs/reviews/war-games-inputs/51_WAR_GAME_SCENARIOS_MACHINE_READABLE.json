@@ -1,0 +1,254 @@
+{
+  "schema": "askhava.wargame_supplement.v1",
+  "created_at": "2026-11-03",
+  "status": "PROPOSED_NOT_EXECUTED",
+  "source": "50_WAR_GAMES_MARKETPLACE_REALITY_EXTENSION.md",
+  "inherits": [
+    "13_War_Games_Items_to_Pressure_Test.md",
+    "30_CORE_TRANSACTION_TEST_MATRIX.md",
+    "38_FINAL_PRECODING_GAP_CONTRACTS.md",
+    "47_ADVERSARIAL_TESTS_FINAL_EXTENSION.md"
+  ],
+  "rules": [
+    "all synthetic",
+    "no real provider sends/charges",
+    "match live runner before implementing",
+    "do not change fee or refund policy",
+    "WG-03 Phoenix-metro plus Havasu lens",
+    "D-1154 $40 AI campaign cap"
+  ],
+  "cases": [
+    {
+      "id": "TX-086",
+      "priority": "P0",
+      "title": "Market liquidity: every invited contractor ignores a valid job",
+      "setup": "Five eligible invited businesses across two trades; delivered notices but no bids by the disclosed 24–48 business-hour response guidance.",
+      "expected_invariant": "No invented bid or ETA; truthful progress/check-in and no-response recovery follows the **existing approved** process; no recurring spam, unexpected charge or exposure of homeowner details. Escalate only when an approved operator workflow exists.",
+      "proposed_owner": "jobs/ops/messaging",
+      "runner_phase_historical": "T234,T237–T239",
+      "metrics": "bid_count; on-time customer updates; duplicate nudges; operator rescue minutes",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "TX-087",
+      "priority": "P0",
+      "title": "Artificial liquidity: lots of invites, only an incomparable diagnostic bid",
+      "setup": "Twelve invited businesses; eleven ignore; one submits diagnostic-only visit fee with major repair cost unknown.",
+      "expected_invariant": "Homeowner sees exactly one *diagnostic* offer, not twelve choices or an all-in bid; no claim that multiple quotes were returned. Comparison marks unknown future charges.",
+      "proposed_owner": "quotes/portals",
+      "runner_phase_historical": "T234,T237–T239",
+      "metrics": "invites vs genuine comparable quotes; abandoned requests",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "TX-088",
+      "priority": "P1",
+      "title": "Quote promised then never delivered",
+      "setup": "Business clicks will-quote, repeatedly postpones, and tries to remain listed after quote deadline.",
+      "expected_invariant": "Do not show nonexistent quote as received, falsely extend published deadline or preferentially reward business; enforce actual quote expiry and honest customer status.",
+      "proposed_owner": "jobs/quotes",
+      "runner_phase_historical": "T237–T239",
+      "metrics": "promised-vs-submitted rate; first valid quote latency",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "TX-089",
+      "priority": "P0",
+      "title": "Chosen business backs out before paying the introduction fee",
+      "setup": "Two valid quotes; homeowner selects firm A; A explicitly declines or confirmation window expires before any valid charge; homeowner attempts to select B.",
+      "expected_invariant": "No contact release to A and no charge for a declined introduction; original quote and selection audit preserved; B can be selected only through the currently approved reset/re-pick path and fresh authorization. If no such path exists, flag as a product gap—not an invented transition.",
+      "proposed_owner": "picks/payments/ops",
+      "runner_phase_historical": "T234,T235,T237–T239",
+      "metrics": "recovery success rate; stalled pick time; unauthorized release count",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "TX-090",
+      "priority": "P0",
+      "title": "Confirmed/paid business ghosts after receiving homeowner contact",
+      "setup": "Correct business paid/released, then never contacts homeowner or fails to appear at scheduled visit; homeowner requests a replacement.",
+      "expected_invariant": "Clear distinction between platform introduction and contractor performance; protect original payment/release history; apply **approved** cancellation/refund/exception rules only, never imply platform insurance, workmanship warranty or automatic refund.",
+      "proposed_owner": "ops/payments/picks",
+      "runner_phase_historical": "T235,T237–T239",
+      "metrics": "reopen/dispute rate; support minutes; repeat-business impact",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "TX-091",
+      "priority": "P1",
+      "title": "Homeowner cancels after contractor has already paid",
+      "setup": "Contractor paid and lawful contact access is released; homeowner changes mind before any contractor work occurs and requests that personal data be unshared.",
+      "expected_invariant": "Apply existing evidence and dispute policy; never falsely claim past PII disclosure is reversible; stop further access where possible, honor retention controls, and do not silently invent refund entitlements.",
+      "proposed_owner": "privacy/ops/payments",
+      "runner_phase_historical": "T235,T238–T239",
+      "metrics": "refund disputes; proof retained; inadvertent continued access",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "TX-092",
+      "priority": "P0",
+      "title": "Introduction-fee threshold gaming",
+      "setup": "Contractor submits repeated $1,499 quotes instead of $1,501 or alters stated range midpoint to sit at fee boundary; also test quotes with valid near-threshold values.",
+      "expected_invariant": "Preserve settled FEE-003 midpoint and published $25/$75/$199 tax-included amounts; charge only based on accepted supported quote and policies; record suspicious patterns for review without price-setting, automatically punishing honest discounts, or fabricating new anti-gaming fees.",
+      "proposed_owner": "payments/analytics/ops",
+      "runner_phase_historical": "T235,T238–T239",
+      "metrics": "quote amount histogram around $500/$1,500; false positive flags",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "TX-093",
+      "priority": "P1",
+      "title": "Job splitting and duplicate-request fee evasion",
+      "setup": "Same homeowner/business pair creates overlapping job requests for one $1,800 project or deliberately splits scope into three $600 jobs. Include genuine independent follow-up work as control.",
+      "expected_invariant": "Do not count duplicate intros as independent work automatically; maintain distinct immutable scopes and paid-introduction evidence, but do not combine jobs/change fees without approved written policy and founder gate.",
+      "proposed_owner": "jobs/quotes/payments",
+      "runner_phase_historical": "T235,T238–T239",
+      "metrics": "duplicate detection precision; unapproved fee modifications",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "TX-094",
+      "priority": "P1",
+      "title": "Contractor bait-and-switch after site visit",
+      "setup": "Firm quotes firm price, gains selection/contact, and later claims materials or permits are extra or changes to a diagnostic rate; valid latent-damage case as control.",
+      "expected_invariant": "Maintain time-stamped quote/terms/revision and scope-change history; homeowner can see what materially changed. No claim that Ask Hava approved price, guarantees original price or independently verifies work; do not silently relabel new price as accepted old quote.",
+      "proposed_owner": "quotes/ops/portals",
+      "runner_phase_historical": "T237–T239",
+      "metrics": "material change rate; dispute evidence completeness",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "TX-095",
+      "priority": "P1",
+      "title": "Benchmark anchoring and implied algorithmic price fixing (conditional future feature)",
+      "setup": "In a synthetic future-price-guide branch, identical bids converge around displayed model range; variant without benchmark and variant where only homeowner sees it.",
+      "expected_invariant": "Independent contractor pricing, no sharing of competitor bids or coordination; reject unsupported local benchmark claims and document observed dispersion. **Do not activate benchmark feature merely to pass simulation.**",
+      "proposed_owner": "quotes/product/legal",
+      "runner_phase_historical": "T237–T239",
+      "metrics": "bid spread; benchmark exposure; confidence and provenance",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "TX-096",
+      "priority": "P0",
+      "title": "Low-value jobs consume more money than introduction fees earn",
+      "setup": "High support/AI/SMS/media/failed-card costs on many under-$500 jobs at $25 tier; mix free-first-job branches WG-01 and legitimate $0 repeat picks.",
+      "expected_invariant": "Measure **net** per-introduction margin and cash runway including provider fees, support time, failed attempts and credits; stop simulation when D-1154 budget cap exceeded; do not quietly change pricing or promise every market is profitable.",
+      "proposed_owner": "ops/finance",
+      "runner_phase_historical": "T235,T237–T239",
+      "metrics": "gross vs net revenue; cost/job; free-intro payback",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "TX-097",
+      "priority": "P0",
+      "title": "Customer/provider collusion to farm free introductions",
+      "setup": "Synthetic homeowner and related businesses repeatedly fabricate jobs and self-select to use free-first-job grants/QR cards; control includes legitimate low-volume new businesses.",
+      "expected_invariant": "Detect abuse with evidence and entity/account boundaries, preserve fair appeal route, maintain correct money ledger; avoid profiling using protected characteristics or punishing honest new businesses by unreviewed signal.",
+      "proposed_owner": "fraud/businesses/payments",
+      "runner_phase_historical": "T234,T235,T238–T239",
+      "metrics": "abuse caught; false positives; giveaway leakage",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "TX-098",
+      "priority": "P1",
+      "title": "Trust signal manipulation and old review imports",
+      "setup": "Fictional provider profile accumulates coordinated 5-star feedback, deletes negatives, and shows an outdated or unlicensed identity badge; competitor research link is missing.",
+      "expected_invariant": "No fabricated review authenticity, suppression or current verification claims; clear source/time/limitations and customer corrections. Where reviews/integrations are not launched, record as **conditional** rather than a shipped deficit.",
+      "proposed_owner": "businesses/reviews/portals",
+      "runner_phase_historical": "T238–T239",
+      "metrics": "unverified endorsements; review disputes; stale badge rate",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "TX-099",
+      "priority": "P1",
+      "title": "Authorizing a job for a home the requester does not control",
+      "setup": "Tenant, realtor, spouse and out-of-state landlord file jobs for same address; one lacks authority for access or regulated work; differing contact-on-site identities.",
+      "expected_invariant": "Require actual policy-defined authority and contact-on-site consent before inappropriate disclosure/coordination; block or escalate unresolved role ambiguity; no unapproved access arrangement or sensitive data in anonymous cards.",
+      "proposed_owner": "intake/privacy/ops",
+      "runner_phase_historical": "T234,T237–T239",
+      "metrics": "invalid authorizations; privacy releases; abandonment after checks",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "TX-100",
+      "priority": "P0",
+      "title": "Peak demand plus correlated provider outage",
+      "setup": "Monsoon-style sudden demand spike simultaneously causes 10x requests, no contractor availability and email/SMS provider degradation across Phoenix-city pockets and Havasu.",
+      "expected_invariant": "System stays honest, bounded in cost and retries, preserves durable jobs and queued notices, accepts no fake quotes or fake ETA; missing delivery is observable and safe. No unapproved cold outreach fallback.",
+      "proposed_owner": "infra/jobs/messaging/ops",
+      "runner_phase_historical": "T234,T237–T239",
+      "metrics": "queue age; loss rate; spend cap; unique unsent alerts",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "TX-101",
+      "priority": "P1",
+      "title": "Accessibility and language cause biased completion",
+      "setup": "Equivalent English-first/Spanish-first homeowner cases, low digital literacy, old Android device, low bandwidth and keyboard/screenreader interactions; jobs matched for complexity.",
+      "expected_invariant": "No material fee/selection/consent differences from locale; comprehensible quote scope and honest translation; unsupported languages/assistive cases clearly flagged; distinguish service eligibility from UI accessibility.",
+      "proposed_owner": "portals/intake/copy",
+      "runner_phase_historical": "T237–T239",
+      "metrics": "task completion; wrong picks; translation scope errors",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "TX-102",
+      "priority": "P1",
+      "title": "New contractor starvation without paid ranking",
+      "setup": "Ten established businesses with reviews plus two newly verified businesses in same radius; vary quote response order, price and scope.",
+      "expected_invariant": "Distribute eligible job cards under approved neutral routing; avoid silently placing paying or reviewed businesses ahead of eligible newcomers; customer quote order remains transparent.",
+      "proposed_owner": "routing/portals/analytics",
+      "runner_phase_historical": "T237–T239",
+      "metrics": "invite eligibility by provider; opportunity share; relative quote acceptance",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "TX-103",
+      "priority": "P1",
+      "title": "Opt-in calendar double booking and revoked integration (FUTURE ONLY)",
+      "setup": "Only in future-coordination branch: two homeowners request overlapping times while business calendar sync stale; business revokes authorization mid-booking.",
+      "expected_invariant": "No false confirmed appointments. Booking requires explicit provider opt-in, live re-check/hold or approved fallback and homeowner-visible confirmation; no owner calendar access after revocation. **Not launch-blocking until scheduling is approved/built.**",
+      "proposed_owner": "future scheduling/product/privacy",
+      "runner_phase_historical": "T237–T239 after scheduling approval",
+      "metrics": "double bookings; stale tokens; failed confirmations",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "TX-104",
+      "priority": "P1",
+      "title": "Masked call misroutes to prior contractor after selection changes (CONDITIONAL)",
+      "setup": "Contact/phone relay keeps old mapping after a permitted pre-payment re-pick, or a business employee changes role; simulate rapid number reuse.",
+      "expected_invariant": "Calls/messages do not expose PII or reach stale, unqualified or wrong business; revocation/expiration takes effect. **Only run where masked relay actually exists; do not mandate new feature.**",
+      "proposed_owner": "future/active relay auth",
+      "runner_phase_historical": "T237–T239 when relevant",
+      "metrics": "wrong-recipient deliveries; stale forwarding records",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "TX-105",
+      "priority": "P0",
+      "title": "Simulation gives false confidence or agent hides an unresolved scenario",
+      "setup": "Synthetic agent invents successful bidder, realistic-looking but fabricated market statistics, or marks blocked/UNKNOWN test as passing under time/token pressure.",
+      "expected_invariant": "Every report shows fixture provenance, seeds, market pocket, budget used, observed vs simulated metrics, per-case pass/fail/blocked/untested, independent evaluator evidence and unresolved issue owner. A war game is not real market proof.",
+      "proposed_owner": "harness/audit/governance",
+      "runner_phase_historical": "T234,T237–T239,T242–T243",
+      "metrics": "false PASS count; source traceability; unresolved findings",
+      "execution_status": "NOT_RUN"
+    }
+  ],
+  "stop_policy_document": "52_WAR_GAME_EARLY_STOP_COST_CONTROL.md",
+  "known_failure_stop_policy": {
+    "status": "PROPOSED_RECONCILE_WITH_RUNNER",
+    "max_targeted_repro_attempts_default": 5,
+    "immediate_stop_on_hard_invariant_failure": true,
+    "known_duplicate_status": "KNOWN_FAILURE_SKIPPED",
+    "skipped_is_never_pass": true,
+    "continue_independent_tests": true,
+    "retest_on_fix": "canonical_plus_boundary_regressions",
+    "requires_issue_id_for_skipped_case": true,
+    "retain_all_mandatory_ci_and_security_gates": true
+  }
+}

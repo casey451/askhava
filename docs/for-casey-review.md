@@ -1,6 +1,6 @@
 # For Casey's review
 
-These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock, the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
+These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
 ## The runner now wakes itself up (D-1451, November 2)
 
@@ -452,7 +452,7 @@ You asked for research and the most ideal changes before the simulations run aga
 - Businesses:
   - the fee shows on the quote form for every quote;
   - "Several businesses quoted" replaces the count in small trades;
-  - waitlisted businesses get a notice when their trade opens, and their price lock starts then;
+  - waitlisted businesses get a notice when their trade opens (the price lock that started then was dropped, D-1494);
   - "Your numbers" adds picked → finished;
   - a 3-line fee summary sits on top of the box. (D-248, D-250, D-261, D-262, D-263)
 - Not adopted: see plan section 3 (D-269).
@@ -1131,7 +1131,7 @@ You said "do what you recommend". What changed:
 - **The scorecard counts what matters for the goal:** requests a week, where people came from, paid introductions against 15, 50 and 115 a month, what's left from each fee, where intake loses people, and your recruiting minutes. About 50 paid introductions a month is the $20,000 a year pace in Havasu; $50,000 needs Bullhead City and Kingman too.
 - **Faster and shorter for homeowners:** the town is asked right after the coverage line, the card goes out after 30 minutes instead of 2 hours, the "text, email or both" question is gone, and one text says when all the quotes are in.
 - **Better first days for businesses:** open jobs on the welcome screen, the sample pick test at their first real card, a reason asked when they leave.
-- **Fees:** amounts stay $25, $75 and $199 for now; the test asks whether $25 or $35 would have been worth it. Early joiners are locked for 6 months instead of 12. Ask Hava may refund any charge at its own choice.
+- **Fees:** amounts stay $25, $75 and $199 for now; the test asks whether $25 or $35 would have been worth it. Early joiners were locked for 6 months instead of 12 (since dropped: no price lock, D-1494). Ask Hava may refund any charge at its own choice.
 - **Proof:** homeowners can tick a box to let their words show on askhava.com; the home page shows real numbers once 20 requests have gone out.
 - **Cut:** the AI receptionist plan and the Ruby answering service. Fixed costs stay near $150 a month or less.
 
@@ -1659,3 +1659,12 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **When a pick is let go.** A declined card gives the business 1 business hour to fix it (60 minutes at any hour on an emergency job), and its money contacts get a notice. If Stripe can't be reached for 4 hours, the pick is let go too. Both clocks stop within a minute of your charging switch (or the pause-everything switch) going on, and pick up where they left off. A pick is never let go just because Stripe answered late: if Stripe answers, its answer counts, and a payment Stripe says went through always wins.
 - **Monthly limit.** A business can set a monthly fee limit. A press that would go over it charges nothing and ends that pick at once. Reaching the limit exactly is still charged.
 - **Not finished yet.** The notice's wording is in (English, Spanish draft), but the step that actually emails it, and the step that offers the homeowner the next quote, come in later tasks. Until then those requests are tried a few times and then set aside as failed (dead-lettered); the later tasks must replay them. Safe mode has no switch of its own yet; the pause-everything switch stands in for it.
+
+## No price lock, tighter payments permissions, and your November 3 package (plan change, D-1494 to D-1499, November 5)
+
+- **No price lock (your call on November 3).** Early joiners no longer get a 6-month price lock. Every business pays the published fee by job size in force when it confirms a pick. The rule (FEE-040) is withdrawn, the sign-up summary and business terms drop the lock sentence, and a new wording rule bans any page, text or document that says joining early locks in prices. The refund wording and the save-card box from the same earlier decision stay. A new task (T244) removes the lock code and keeps the 4-month rule for ongoing services and its $75 cap. No fee amount changes.
+- **Payments permissions.** The database let the app change or delete rows in any new payments table unless that table's setup said otherwise. Each table so far did say otherwise, by hand. A new task (T245) makes "add and read only" the default and adds a test that checks every money table's permissions, so a forgotten line fails the build. Every other part of the database has the same loose default; this change fixes payments only and records the rest.
+- **Your package.** I read all 86 files. Your decisions are recorded in `docs/reviews/2026-11-03-handoff-zip-review.md` with what happens to each item. The war-game scenario files and the 30% early-quote discount proposal are copied in as inputs for the pre-war-games review, not as tests to run. Certification (ISO 27001, ISO 27701, SOC 2) is listed as a post-launch risk, not a build gate.
+- **Parked or open.** Cold-email outreach (your item 9) is parked: no task, no code, and never from the account that sends job emails, whose provider bans cold email. Free first jobs (your item 3) stay as built until you pick a branch. The build keeps running while these changes land; nothing they touch has started.
+- **Coming next.** A second plan change adds the national-ready market settings and radius matching you asked for, with the launch market still open (Phoenix metro with a partner, otherwise Lake Havasu City).
+- **You can veto.** Any of these. To bring the price lock back, or to have the permissions fix wait, reply on an owner issue; the tasks have not run yet.

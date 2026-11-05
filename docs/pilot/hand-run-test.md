@@ -212,7 +212,7 @@ Ask these in the first 5 to 10 business conversations and note the answers (the 
 - **C2:** "Sent to 6 businesses": at what number would you stop quoting?
 - **C5 and C10:** How fast do you usually see an email? How many minutes does a quote like this take?
 - **C6:** Is $25 fair for a small job, and would $35 still be? For ongoing service, is $75 fair for a new client? (Their answers are opinions; the paid weeks are the evidence.)
-- **C13:** Does a 6-month price lock for early joiners matter to you?
+- **C13:** Withdrawn (D-1494): there is no price lock for early joiners, so don't offer or ask about one.
 - **C11:** Would hearing that the picked quote was lower make you quote again, or quit?
 - **Worth quoting?** For each active business, note quotes sent, jobs won and its rough minutes per quote. A business that wins 1 in 10 and spends 45 minutes a quote will leave, however few others quote.
 

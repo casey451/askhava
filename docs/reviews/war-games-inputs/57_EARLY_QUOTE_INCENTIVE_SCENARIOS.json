@@ -1,0 +1,147 @@
+{
+  "schema": "askhava.wargame_early_quote_incentive.v1",
+  "created_at": "2026-11-03",
+  "status": "PROPOSED_NOT_APPROVED_NOT_EXECUTED",
+  "source": "56_EARLY_QUOTE_INCENTIVE_WAR_GAME_PROPOSAL.md",
+  "inherits": [
+    "13_War_Games_Items_to_Pressure_Test.md",
+    "19_Financial_Controls_Slice_Fees_Charges_Refunds_Ledger.md",
+    "51_WAR_GAME_SCENARIOS_MACHINE_READABLE.json",
+    "52_WAR_GAME_EARLY_STOP_COST_CONTROL.md"
+  ],
+  "hypothesis": {
+    "discount_percent": 30,
+    "qualifying_window_hours": 4,
+    "base_fee_cents": [
+      2500,
+      7500,
+      19900
+    ],
+    "proposed_discounted_fee_cents": [
+      1750,
+      5250,
+      13930
+    ],
+    "applies_only_after_selected_and_payable": true,
+    "customer_job_price_discounted": false,
+    "timing_clock": "UNDECIDED_TEST_BOTH_WALL_AND_BUSINESS_HOURS"
+  },
+  "cases": [
+    {
+      "id": "TX-106",
+      "priority": "P1",
+      "title": "Controlled early-quote discount versus baseline",
+      "setup": "Paired synthetic contractor and job cohorts across markets; 30%/four-hour candidate versus current fees, optionally 10% and 20% when justified.",
+      "expected_invariant": "Only valid bid speed counts; no paid priority or secret quote reorder. Retain honest selected-paid qualification and no-premature-charge rules.",
+      "proposed_owner": "pricing/money/marketplace/war-game harness",
+      "runner_phase_historical": "T234,T235,T237–T239",
+      "metrics": "time-to-first-valid-quote; 24h coverage; homeowner picks; margin",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "TX-107",
+      "priority": "P0",
+      "title": "Four-hour cutoff and concurrent delivery timestamp race",
+      "setup": "Synthetic provider callbacks arrive late, duplicate, out of order or simultaneously with a quote at 03:59:59, 04:00:00 and 04:00:01.",
+      "expected_invariant": "Compute eligibility once using trusted event times; idempotent and auditable under concurrency; fail unknown delivery to safe human review rather than fabricated timing.",
+      "proposed_owner": "pricing/money/marketplace/war-game harness",
+      "runner_phase_historical": "T234,T235,T237–T239",
+      "metrics": "false discounts; duplicate discounts; timestamp source errors",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "TX-108",
+      "priority": "P1",
+      "title": "Undelivered messages and business-hours fairness",
+      "setup": "Friday night, overnight, holidays, no open confirmation, email bounce, delayed SMS/email and cross-timezone contractors.",
+      "expected_invariant": "Compare fixed elapsed-time and eligible business-hour rules without penalizing non-delivery; never infer a valid open from an email-open pixel.",
+      "proposed_owner": "pricing/money/marketplace/war-game harness",
+      "runner_phase_historical": "T234,T235,T237–T239",
+      "metrics": "excluded valid businesses; delayed delivery rate; unfair elapsed-time decisions",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "TX-109",
+      "priority": "P0",
+      "title": "Placeholder and bait early bids",
+      "setup": "Business submits empty quote, $1 bait, fast bot text or incomplete scope before four-hour deadline then demands upcharge.",
+      "expected_invariant": "Discount cannot be reserved by placeholder or materially deceptive offer; quote quality, homeowner neutrality, business verification stay intact.",
+      "proposed_owner": "pricing/money/marketplace/war-game harness",
+      "runner_phase_historical": "T234,T235,T237–T239",
+      "metrics": "invalid first bids; post-bid inflation; discounted deceptive bids",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "TX-110",
+      "priority": "P1",
+      "title": "Quote revision, cancellation and change-of-scope",
+      "setup": "Valid bid sent early, then corrected or repriced after cutoff, or homeowner asks for new work and selected contractor changes.",
+      "expected_invariant": "No silent retroactive change to fee; test logged policies for minor edits vs material changes and avoid penalizing homeowner-requested changes arbitrarily.",
+      "proposed_owner": "pricing/money/marketplace/war-game harness",
+      "runner_phase_historical": "T234,T235,T237–T239",
+      "metrics": "eligibility disputes; material repricing; canceled bids",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "TX-111",
+      "priority": "P0",
+      "title": "Early discount ledger and tier mathematics",
+      "setup": "Synthetic paid jobs at fee boundaries incl range midpoint, recurring services; first-free and repeat customers; Stripe webhook retries and refunds.",
+      "expected_invariant": "Base fee $25/$75/$199 remains tax-included and computed by standing rules; hypothetical discounted cents $17.50/$52.50/$139.30 only for eligible paid selects; free remains zero; no duplicate ledger entries.",
+      "proposed_owner": "pricing/money/marketplace/war-game harness",
+      "runner_phase_historical": "T234,T235,T237–T239",
+      "metrics": "fee cents delta; Stripe ledger discrepancies; $0 waiver errors",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "TX-112",
+      "priority": "P1",
+      "title": "Four-hour pressure on high-complexity and sparse trades",
+      "setup": "Emergency plumber vs difficult remodel requiring site visit; thin Phoenix pocket and Lake Havasu; contractors with different capacity.",
+      "expected_invariant": "Measure useful quotes and exclusion, not superficial speed; permit uncertainty/provisional ranges and avoid forcing fabricated firm bids.",
+      "proposed_owner": "pricing/money/marketplace/war-game harness",
+      "runner_phase_historical": "T234,T235,T237–T239",
+      "metrics": "quality decline; contractor churn; coverage by trade",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "TX-113",
+      "priority": "P1",
+      "title": "Fee-tier and scope manipulation under promotion",
+      "setup": "Contractor splits job or chooses range midpoint around $500 and $1500 boundary; manipulates quote to absorb/recover discount.",
+      "expected_invariant": "No altered ranking, hidden customer costs, fabricated quote details or tier bypass; flag suspicious pricing/splitting and preserve existing calculation rules.",
+      "proposed_owner": "pricing/money/marketplace/war-game harness",
+      "runner_phase_historical": "T234,T235,T237–T239",
+      "metrics": "tier gaming; scope churn; consumer price deltas",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "TX-114",
+      "priority": "P0",
+      "title": "Identity and notification fraud to harvest discounts",
+      "setup": "Related businesses, fresh accounts, collusive homeowners, forged event times, replayed notifications, self-selection attempts.",
+      "expected_invariant": "Discount must attach to authorized eligible business and canonical job with immutable audit history; payment and PII-release gates remain mandatory.",
+      "proposed_owner": "pricing/money/marketplace/war-game harness",
+      "runner_phase_historical": "T234,T235,T237–T239",
+      "metrics": "promo abuse; unauthorized discount; unauthorized release",
+      "execution_status": "NOT_RUN"
+    },
+    {
+      "id": "TX-115",
+      "priority": "P1",
+      "title": "Multi-cohort financial and trust regression",
+      "setup": "Simulated four-week cohorts across pockets and trades, with existing free-first proposals as separate labeled branches; introduce a repeated known failure.",
+      "expected_invariant": "Do not claim profitable growth on bid speed alone; compare incremental completed jobs, per-tier contribution margin, retention and operator load; skip duplicate known failures without PASS.",
+      "proposed_owner": "pricing/money/marketplace/war-game harness",
+      "runner_phase_historical": "T234,T235,T237–T239",
+      "metrics": "margin after support/refunds; retention; false PASS; tokens spent",
+      "execution_status": "NOT_RUN"
+    }
+  ],
+  "campaign_budget_usd_without_new_approval": 40,
+  "early_stop_policy": {
+    "refer_to": "52_WAR_GAME_EARLY_STOP_COST_CONTROL.md",
+    "skipped_is_never_pass": true,
+    "continue_orthogonal_cases": true
+  }
+}
