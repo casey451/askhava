@@ -12287,7 +12287,7 @@
     "T189",
     "T051"
    ],
-   "status": "MERGE_PENDING",
+   "status": "DONE",
    "attempts": 1,
    "slug": "portals-confirm-and-pay-page",
    "type": "build",
@@ -12320,13 +12320,62 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 228,
      "head_sha": "5402801b9b130aedeb6568294efbd6ba9dd1b89d",
-     "pr": null,
-     "checks": null,
+     "pr": 270,
+     "checks": [
+      {
+       "name": "backup",
+       "conclusion": null
+      },
+      {
+       "name": "keeper",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "gate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-05T17:08:39Z",
      "ended_at": "2026-11-05T17:59:09Z",
-     "result": "MERGE_PENDING"
+     "result": "done"
     }
    ],
    "reviewed_sha": "569905e4aa411a95b976ceac58b3ae0b382699a0",
@@ -12355,7 +12404,27 @@
     }
    ],
    "update_waiting_since": null,
-   "update_push_failures": null
+   "update_push_failures": null,
+   "merged_sha": "2391e30eee087b3346f34fa07f2222ecb67e4e38",
+   "merged_at": "2026-11-05T18:12:37Z",
+   "files": [
+    "Cargo.lock",
+    "app/payments/CLAUDE.md",
+    "app/payments/Cargo.toml",
+    "app/payments/src/api.rs",
+    "app/payments/src/lib.rs",
+    "app/payments/src/routes.rs",
+    "app/portals/CLAUDE.md",
+    "app/portals/Cargo.toml",
+    "app/portals/src/api.rs",
+    "app/portals/src/confirm_pay.rs",
+    "app/portals/src/lib.rs",
+    "app/portals/static/confirm_pay.ts",
+    "app/portals/templates/confirm_pay.html",
+    "docs/architecture.md",
+    "docs/decisions.md",
+    "tests/e2e/confirm_pay.spec.ts"
+   ]
   },
   {
    "id": "T063",
@@ -16935,7 +17004,7 @@
    }
   }
  },
- "updated_at": "2026-11-05T18:01:52Z",
+ "updated_at": "2026-11-05T18:14:11Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -17033,7 +17102,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "1ee4464cde25860f60798ba7ef8fe689a0cfa7e9",
+ "runner_sha": "2391e30eee087b3346f34fa07f2222ecb67e4e38",
  "starter": "actions",
  "smoke_runs": [
   {
