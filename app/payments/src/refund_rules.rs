@@ -7,7 +7,9 @@
 //! a machine answer never counts and the homeowner's own calls are never business attempts
 //! (CALL-007, D-141). Each pick is refunded at most once: a pick already refunded is never
 //! refunded again, and every refund of a pick carries the one [`refund_label`] (FEE-026). A
-//! no-show is never refunded (FEE-035, D-047); [`no_show`] only says whether one is recorded.
+//! no-show is never refunded (FEE-035, D-047); [`no_show`] only says whether one is recorded,
+//! and a business that talked to the homeowner is never a no-show (D-1531). FEE-026's retry and
+//! its block on a disputed charge are T066's (`refunds.rs`, `disputes.rs`), not modelled here.
 
 use askhava_core::api::is_business_hours;
 use jiff::{SignedDuration, Timestamp};
@@ -138,6 +140,8 @@ pub struct UnreachableFacts<'a> {
     pub contact: Contact,
     /// The reply to the 72-hour email question (JOB-027); read only for email contact.
     pub email_check: EmailCheck,
+    /// Something was charged for this pick; `false` ($0 or not yet charged) is `NothingCharged`.
+    pub charged: bool,
     /// FEE-026: the pick has already been refunded.
     pub refunded_before: bool,
 }
@@ -189,7 +193,9 @@ pub fn decide_unreachable(facts: &UnreachableFacts<'_>, now: Timestamp) -> Refun
         return RefundDecision::NotYet;
     }
     let attempts = counted_attempts(facts.calls, facts.released_at, facts.emergency);
-    let unmet = if facts.refunded_before {
+    let unmet = if !facts.charged {
+        Some(Unmet::NothingCharged)
+    } else if facts.refunded_before {
         Some(Unmet::AlreadyRefunded)
     } else if talked(facts.calls) {
         Some(Unmet::Talked)
@@ -261,9 +267,10 @@ pub enum NoShow {
     No,
 }
 
-/// FEE-035, D-047, D-143: call contact is a no-show when the business placed no call at all
-/// within 72 hours of the release; email contact only when the homeowner replies NO at the day-3
-/// check-in. A no-show is never refunded.
+/// FEE-035, D-047, D-143, D-1531: call contact is a no-show when the business placed no call at
+/// all within 72 hours of the release; email contact only when the homeowner replies NO at the
+/// day-3 check-in. Never when a call in either direction was answered by a person (CALL-007): the
+/// call log shows the business reached the homeowner. A no-show is never refunded.
 #[must_use]
 pub fn no_show(
     contact: Contact,
@@ -275,6 +282,9 @@ pub fn no_show(
     let end = released_at
         .saturating_add(ATTEMPT_WINDOW)
         .unwrap_or(Timestamp::MAX);
+    if talked(calls) {
+        return NoShow::No;
+    }
     match contact {
         Contact::Email if day3 == EmailCheck::No => NoShow::Recorded,
         Contact::Email => NoShow::No,

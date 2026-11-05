@@ -32,6 +32,7 @@ fn facts(calls: &[CallRecord]) -> UnreachableFacts<'_> {
         done_or_problem: false,
         contact: Contact::Call,
         email_check: EmailCheck::NoReply,
+        charged: true,
         refunded_before: false,
     }
 }
@@ -169,10 +170,11 @@ fn td_fee_13_replies_notice_and_once() {
     assert_eq!(refund_label(pick), format!("pick-{pick}-refund"));
 }
 
-/// TD-FEE-24 (FEE-022, D-286): a failed missed-call text still counts as attempted (the facts
-/// say attempted), and a business that never called is not refunded.
+/// TD-FEE-24 (FEE-022, D-049, D-286): the call log decides for an email-contact homeowner too,
+/// and a business that never called is not refunded. A failed missed-call text reaches this rule
+/// as `notice_attempted: true` (D-286), so `facts` already covers it.
 #[test]
-fn td_fee_24_failed_text_and_no_calls() {
+fn td_fee_24_email_contact_and_no_calls() {
     let calls = two(3 * 3600, Answer::NoAnswer);
     let email = UnreachableFacts {
         contact: Contact::Email,
@@ -242,6 +244,15 @@ fn td_fee_13_no_show() {
     let theirs = [call(at(5, 0), Caller::Customer, Answer::Person)];
     assert_eq!(
         ns(Contact::Call, &theirs, EmailCheck::NoReply, at(80, 0)),
+        NoShow::No
+    );
+    assert_eq!(
+        ns(Contact::Email, &theirs, EmailCheck::No, at(80, 0)),
+        NoShow::No
+    );
+    let missed = [call(at(5, 0), Caller::Customer, Answer::NoAnswer)];
+    assert_eq!(
+        ns(Contact::Call, &missed, EmailCheck::NoReply, at(80, 0)),
         NoShow::Recorded
     );
     assert_eq!(
@@ -256,4 +267,65 @@ fn td_fee_13_no_show() {
         decide(&facts(&none)),
         RefundDecision::NoRefund(Unmet::TooFewAttempts(0))
     );
+}
+
+/// TD-FEE-13 (FEE-022, D-1528): the edges. An attempt at exactly 72:00:00 counts and one at
+/// 72:00:01 does not, even on an emergency job; 7:59:59 p.m. counts and exactly 8:00 p.m. does
+/// not; an attempt before the release never counts.
+#[test]
+fn td_fee_13_edges() {
+    let edge = [
+        ok_first(),
+        call(at(72, 0), Caller::Business, Answer::NoAnswer),
+    ];
+    assert_eq!(decide(&facts(&edge)), UNREACHABLE);
+    let past = [
+        ok_first(),
+        call(at(72, 1), Caller::Business, Answer::NoAnswer),
+    ];
+    let urgent = UnreachableFacts {
+        emergency: true,
+        ..facts(&past)
+    };
+    assert_eq!(
+        decide(&urgent),
+        RefundDecision::NoRefund(Unmet::TooFewAttempts(1))
+    );
+    let last = [
+        ok_first(),
+        call(at(10, 3599), Caller::Business, Answer::NoAnswer),
+    ];
+    assert_eq!(decide(&facts(&last)), UNREACHABLE);
+    let eight = [
+        ok_first(),
+        call(at(11, 0), Caller::Business, Answer::NoAnswer),
+    ];
+    assert_eq!(
+        decide(&facts(&eight)),
+        RefundDecision::NoRefund(Unmet::TooFewAttempts(1))
+    );
+    let early = [
+        call(at(-1, 0), Caller::Business, Answer::NoAnswer),
+        call(at(5, 0), Caller::Business, Answer::NoAnswer),
+    ];
+    assert_eq!(
+        decide(&facts(&early)),
+        RefundDecision::NoRefund(Unmet::TooFewAttempts(1))
+    );
+}
+
+/// TD-FEE-13 (FEE-022, FEE-025, D-1531): nothing charged is never refunded, checked first.
+#[test]
+fn td_fee_13_nothing_charged() {
+    let calls = two(4 * 3600, Answer::NoAnswer);
+    let free = UnreachableFacts {
+        charged: false,
+        refunded_before: true,
+        ..facts(&calls)
+    };
+    assert_eq!(
+        decide(&free),
+        RefundDecision::NoRefund(Unmet::NothingCharged)
+    );
+    assert_eq!(decide_unreachable(&free, at(95, 0)), RefundDecision::NotYet);
 }
