@@ -7,10 +7,13 @@
 //! T052 built the homeowner's quote page (`quote_page`, PICK-008 to PICK-012, WORD-005, A11Y-033).
 //! T055 built the pick review step and the pick result page (`pick_flow`, PICK-016, PICK-017,
 //! PICK-045, PICK-054, A11Y-014); T187 its code-and-contact step (PICK-018, A11Y-010 to A11Y-016).
+//! T224 built the business's Confirm review step (`confirm_pay`, PICK-021, FEE-014, FEE-045,
+//! CON-029).
 //! Portal pages extend the shared layout `app/site/templates/base.html` through `askama.toml`.
 //! Other crates reach it only through [`api`].
 
 pub mod api;
+mod confirm_pay;
 mod pick_flow;
 mod quote_page;
 mod security;

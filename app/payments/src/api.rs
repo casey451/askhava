@@ -39,6 +39,9 @@
 //! $0 decision; [`Minter`] holds the release mint `server` hands over and turns only a
 //! [`Releasable`] into a `ReleaseProof` (PICK-022, SEC-030, SEC-039, SEC-049); [`IntentText`] is the
 //! description and statement descriptor of a pick's PaymentIntent (FEE-049).
+//!
+//! T224: [`stripe_webhook_routes`] is the Stripe webhook route ([`STRIPE_WEBHOOK_PATH`]): source
+//! rule, signature, then [`paid_release`] and the [`ReleaseSink`] that mints (SEC-039, SEC-049).
 
 pub use crate::charge::{
     ATTEMPT_ACTION, ATTEMPT_SUBJECT, IN_FLIGHT, INTENT_ACTION, IntentStripe, confirm_and_pay,
@@ -64,6 +67,7 @@ pub use crate::release_proof::{
     Minter, Releasable, ReleaseError, SUCCEEDED_EVENT, StripeAccount, VerifiedStripeEvent,
     no_fee_release, paid_release,
 };
+pub use crate::routes::{ReleaseSink, STRIPE_WEBHOOK_PATH, StripeWebhook, stripe_webhook_routes};
 pub use crate::rules::{
     Fee, FeeError, FeeJob, FeeMode, FeeQuote, FeeTerms, LockDates, Period, PeriodJob, PickedFee,
     RECURRING_MONTHS, RecurringCap, Service, Tier, VisitTier, fee_at_pick, fee_for, flat_tier,
