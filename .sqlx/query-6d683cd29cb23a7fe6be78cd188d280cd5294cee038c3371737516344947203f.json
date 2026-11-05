@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT p.ended_at IS NOT NULL AS \"ended!\"\n             FROM payments.charge_evidence e JOIN payments.pick_intent p ON p.pick_id = e.pick_id\n            WHERE e.pick_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "ended!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "6d683cd29cb23a7fe6be78cd188d280cd5294cee038c3371737516344947203f"
+}
