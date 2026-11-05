@@ -29,7 +29,7 @@ The layer-3 crate through which all money moves (FEE-032, `docs/architecture.md`
 
 ## Rules it enforces
 
-- FEE-028, D-092: `payments.ledger_entry` is append-only for the app role (grants in the migration); `LedgerEntry::new` and the table's checks agree: $0 kinds (free first win, repeat customer FEE-013, fee-free job type FEE-045) are exactly 0 with no Stripe ID, every other kind is above 0; payout has no business or job; every kind but payout and credit has a job.
+- FEE-028, D-092: `payments.ledger_entry` is append-only for the app role (grants in the migration); `LedgerEntry::new` and the table's checks agree: $0 kinds (free first win, repeat customer FEE-013, fee-free job type FEE-045) are exactly 0 with no Stripe ID, every other kind is above 0; payout has no business or job; every kind but payout and credit has a job. D-1495: a new `payments` table gives the app role SELECT and INSERT only (`migrations/0098_payments_default_privileges.sql`); any wider privilege is an explicit `GRANT ... TO askhava_app` in the table's own migration, or `tests/integration/tests/payments_grants.rs` (TD-SEC-33) fails.
 - FEE-028, FEE-050, FEE-051: the countering-fee, countering-fee-return and processing-fee kinds exist for the dispute and reconcile tasks.
 - FEE-032: `ledger_append` is the only code that writes the ledger; other crates reach it through `api`.
 - JOB-006, SEC-018: the caller's derived idempotency key (no personal data) makes a repeated task append once; a reused key with different content is `LedgerError::KeyReused`.
