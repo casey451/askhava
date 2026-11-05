@@ -1,16 +1,16 @@
-//! The 4-month rule, the recurring cap and the early joiner's price lock (TD-FEE-02, TD-FEE-03,
-//! TD-FEE-21, TD-FEE-24, TD-FEE-35; REC-001 to REC-006, REC-010, REC-011, FEE-039, FEE-040).
+//! The 4-month rule, the recurring cap and the absence of any early-joiner price lock (TD-FEE-02,
+//! TD-FEE-03, TD-FEE-21, TD-FEE-35, TD-FEE-41; REC-001 to REC-006, REC-010, REC-011, FEE-001,
+//! FEE-005, FEE-039).
 //! Every worked example with a period runs through `period_fee_for` to the cent. All data fake.
 
 use std::collections::BTreeMap;
 
-use jiff::{SignedDuration, Timestamp};
 use proptest::prelude::*;
 use serde::Deserialize;
 
 use crate::api::{
-    Fee, FeeError, FeeJob, FeeQuote, LockDates, Period, PeriodJob, RECURRING_MONTHS, RecurringCap,
-    Service, VisitTier, locked_cents, period_fee_for, price_lock_until,
+    Fee, FeeError, FeeJob, FeeQuote, Period, PeriodJob, RECURRING_MONTHS, RecurringCap, Service,
+    VisitTier, period_fee_for,
 };
 
 const CATEGORIES: &str = include_str!("../../../../docs/catalog/categories.yaml");
@@ -237,72 +237,39 @@ fn period_errors_and_fee_free() {
     );
 }
 
-fn at(text: &str) -> Timestamp {
-    text.parse().expect("timestamp")
-}
+const RULES_RS: &str = include_str!("../rules.rs");
+const API_RS: &str = include_str!("../api.rs");
 
-fn lock(
-    launch: Timestamp,
-    joined: Timestamp,
-    on: Timestamp,
-    act: Option<Timestamp>,
-) -> Option<Timestamp> {
-    price_lock_until(LockDates {
-        launch,
-        joined,
-        first_trade_on: on,
-        activated: act,
-    })
-}
-
-/// TD-FEE-21, TD-FEE-35 (FEE-040, D-197, D-261, D-288, D-465): joined 89 days 23:59
-/// after launch keeps its join-date amounts until exactly 6 months, joined at 90 days has no
-/// lock; a trade opened 100 days after launch moves the start. Every end is a literal instant.
+/// TD-FEE-41 (FEE-001, FEE-005, FEE-039, D-1494): there is no early-joiner price lock. The fee
+/// rules and the public surface name no lock type or function and no fee input is a date, so a
+/// business that joined 1 day after launch and one that joined 400 days after, picking the same
+/// quote, pay the same published tier: $25, $75, $199, or the $75 recurring cap.
 #[test]
-fn td_fee_21_the_early_joiner_price_lock() {
-    let launch = at("2027-01-04T15:00:00Z");
-    let day = SignedDuration::from_hours(24);
-    let joined = launch + day * 90 - SignedDuration::from_mins(1);
-    assert_eq!(joined, at("2027-04-04T14:59:00Z"));
-    let until = lock(launch, joined, joined, None).expect("locked");
-    assert_eq!(until, at("2027-10-04T14:59:00Z"));
-    let before = until - SignedDuration::from_secs(1);
-    assert_eq!(locked_cents(Some(until), before, 3_500, 2_500), 2_500);
-    assert_eq!(locked_cents(Some(until), until, 3_500, 2_500), 3_500);
-    assert_eq!(locked_cents(None, joined, 3_500, 2_500), 3_500);
-    assert_eq!(
-        lock(launch, launch + day * 90, launch + day * 90, None),
-        None
-    );
-    let opened = launch + day * 100;
-    let moved = lock(launch, launch, opened, None);
-    assert_eq!(moved, Some(at("2027-10-14T15:00:00Z")));
-}
-
-/// TD-FEE-24 (FEE-040, D-288, D-465): a business waiting on its city-list match, activated 3
-/// months after joining, has its price lock run 6 months from activation, not from joining.
-#[test]
-fn td_fee_24_activated_3_months_after_joining() {
-    let joined = at("2027-01-10T17:00:00Z");
-    let launch = at("2027-01-04T15:00:00Z");
-    let activated = at("2027-04-10T17:00:00Z");
-    let waited = lock(launch, joined, joined, Some(activated));
-    assert_eq!(waited, Some(at("2027-10-10T17:00:00Z")));
-    assert_eq!(
-        lock(launch, joined, joined, None),
-        Some(at("2027-07-10T17:00:00Z"))
-    );
-}
-
-/// FEE-040: a launch or a start so late that the window or the 6 months run past the last
-/// instant gives no lock instead of panicking.
-#[test]
-fn price_lock_past_the_last_instant_is_none() {
-    let last = Timestamp::MAX;
-    assert_eq!(lock(last, last, last, None), None);
-    let launch = last - SignedDuration::from_hours(100 * 24);
-    assert_eq!(lock(launch, launch, last, None), None);
-    assert_eq!(lock(launch, launch, launch, Some(last)), None);
+fn td_fee_41_no_early_joiner_price_lock() {
+    let gone =
+        "LockDates price_lock_until locked_cents LOCK_JOIN_WINDOW LOCK_MONTHS Timestamp joined";
+    for name in gone.split(' ') {
+        assert!(!RULES_RS.contains(name), "rules.rs names {name}");
+        assert!(!API_RS.contains(name), "api.rs names {name}");
+    }
+    let (one, recurring) = (Service::OneTimeJobType, Service::RecurringJobType);
+    let cases = [
+        (FeeQuote::Fixed(30_000), None, one, 2_500),
+        (FeeQuote::Fixed(100_000), None, one, 7_500),
+        (FeeQuote::Fixed(200_000), None, one, 19_900),
+        (
+            FeeQuote::Fixed(40_000),
+            Some(Period::Monthly),
+            recurring,
+            7_500,
+        ),
+    ];
+    for (quote, period, service, cents) in cases {
+        let one_day = priced(quote, period, service).expect("priced");
+        let four_hundred_days = priced(quote, period, service).expect("priced");
+        assert_eq!(one_day.1, cents);
+        assert_eq!(four_hundred_days, one_day);
+    }
 }
 
 proptest! {
