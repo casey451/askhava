@@ -14,6 +14,7 @@ The layer-6 crate that takes the homeowner's pick and carries it to the business
 - Templates in `app/messaging/templates/` (en, es): `text_pick_terms`, `text_pick_which` (both end with the Terms line and carry the share sentence), `text_pick_done`, `text_pick_no_quote`, `text_pick_confirmed`, `text_pick_waiting`, `text_pick_none`.
 - `src/money_notices.rs` (T062, D-1428): `run_card_fix_notice` (the handler on `payments::api::CARD_FIX_KIND`), `BUSINESS_NOTICE_KIND` (`messaging.business_notice`), `CARD_FIX_TEMPLATE`, `CARD_APPROVAL_TEMPLATE`. Templates `card_fix_notice` and `card_approval_notice` in `app/messaging/templates/` (en, es).
 - `src/confirm.rs` (T063, D-1500, D-1501, D-1503): `ConfirmSettings` (`from_pairs` reads `WINDOW_KEY`, `ASKHAVA_PICK_CONFIRM_WINDOW_MINUTES`), `confirm_by`, `LicenseAtPick`, `license_at_pick`, `check_at_pick`, `Refusal`, `StoredFacts`, `check_at_confirm`, `FeeBasis`, `fee_line`, `BusinessWord`, `read_business_word`, `ConfirmReply`, `business_reply`; template IDs `PICK_NOTICE_TEMPLATE`, `PICK_NOTICE_EMERGENCY_TEMPLATE`, `FEE_REPLY_TEMPLATE`, `EXPIRED_TEMPLATE` (keys `pick_notice`, `pick_notice_emergency`, `pick_fee_reply`, `pick_expired` in en and es).
+- `src/confirm.rs` (T190, D-1522 to D-1524): `WindowRules` (HOLD 120 business minutes, Away up to 240 ahead, emergency 60 and 30 clock minutes), `HoldAsk`, `TimeRefusal`, `hold_allowed`, `hold`, `away_until`, `away_for`, `window_start`, `NightLine`, `EmergencyPlan`, `emergency_plan`, `emergency_fix_by`, `TimeWord`, `read_time_word`. Pure; no caller yet.
 - `src/handlers.rs` (T063): `run_pick_notice` (on `PICK_MADE_KIND`, with the worker's `ConfirmSettings`), `notice_sent`, `CONFIRM_ENDS_KIND` (`picks.confirm_ends`) and `run_confirm_ends`; both handlers registered in `server::register_handlers`.
 - `src/api.rs`: the public surface; `api::rules` re-exports the pure rules.
 
@@ -33,6 +34,9 @@ The layer-6 crate that takes the homeowner's pick and carries it to the business
 - PICK-020, D-056: one live lookup at the pick (`check_at_pick`); a failed lookup uses a stored Active check under 24 hours old, else `Waits`; `check_at_confirm` never looks up and refuses an ended window, a non-Active account, a reached end or bond date, or a latest check not Active and fresh.
 - PICK-033, PICK-035, D-365: `business_reply` never confirms or charges; YES and CONFIRM from a linked phone get the fee and link, after the window the expired reply, any other phone nothing.
 - PICK-034, D-196, D-1503: `fee_line` shows the 4-month basis, or the cap when the cap set the fee, in English or Spanish; a zero fee has no line.
+- PICK-043, D-252, D-284: `hold` adds `hold_minutes` business minutes to the window's end once, only for the owner or a "Confirm and billing" member, never on an emergency job, a second time, a clock delayed by Away or after the end.
+- BIZ-034, D-285: `away_until`/`away_for` allow after now and at most `away_max_minutes` business minutes ahead, owner or "Confirm and billing" only; `window_start` delays only a non-emergency pick.
+- PICK-044, D-270, D-346: `emergency_plan` gives 60 clock minutes from the send at any hour, a reminder at 30; without the after-hours tick a night pick's notice waits for 8 a.m., and a day pick whose window runs past 8 p.m. warns and holds the reminder to 8 a.m.; `emergency_fix_by` is 60 clock minutes.
 - PICK-037, D-491: `run_pick_notice` sends one notice per pick to `notice_addresses(PicksAndRelease)` only.
 
 ## Never break
@@ -59,6 +63,7 @@ The layer-6 crate that takes the homeowner's pick and carries it to the business
 - `src/tests/pick_code_rules.rs` (TD-PICK-06, TD-PICK-07, TD-PICK-14, TD-PICK-40, TD-CON-12 pure cases): `cargo test -p askhava-picks tests::pick_code_rules`.
 - `tests/security/tests/pick_code.rs` (TD-PICK-06, PICK-055): `cargo test -p askhava-security --test pick_code`.
 - `tests/integration/tests/text_pick.rs` (TD-PICK-07, TD-PICK-14, TD-PICK-40, TD-TERMS-10, TD-CON-12): `cargo test -p askhava-integration --test text_pick`.
+- `src/tests/confirm_hold_away.rs` (TD-PICK-20, TD-PICK-21, TD-PICK-23 pure cases): `cargo test -p askhava-picks tests::confirm_hold_away`; `tests/integration/tests/confirm_hold_away.rs` (stored roles, `jobs`' emergency timers): `cargo test -p askhava-integration --test confirm_hold_away`.
 - `src/tests/confirm.rs` (TD-PICK-09, TD-PICK-15, TD-JOB-03, TD-PICK-33, TD-PICK-28 pure cases): `cargo test -p askhava-picks tests::confirm`.
 - `tests/integration/tests/confirm_window.rs` (TD-PICK-09, TD-PICK-15, TD-JOB-03): `cargo test -p askhava-integration --test confirm_window`.
 - `tests/integration/tests/charge_attempts.rs::td_fee_24_an_emergency_decline_at_22_00_has_60_clock_minutes` (FEE-020 notice): `cargo test -p askhava-integration --test charge_attempts`.

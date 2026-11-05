@@ -9,7 +9,8 @@
 //! (D-492). T063 added the Confirm window (4 business hours from the pick notice's send, a setting),
 //! the license checks at the pick and at Confirm, the recurring fee line, the business's YES and
 //! CONFIRM reply and the pick notice to the owner and every "Confirm and billing" member (PICK-019,
-//! PICK-020, PICK-033 to PICK-035, PICK-037). Other crates reach it only through [`api`].
+//! PICK-020, PICK-033 to PICK-035, PICK-037). T190 added the pure HOLD, Away and emergency-window
+//! rules (PICK-043, PICK-044, BIZ-034). Other crates reach it only through [`api`].
 
 pub mod api;
 mod confirm;
