@@ -72,7 +72,6 @@ struct ConfirmView<'a> {
     job_number: i64,
     paused: bool,
     fee_dollars: u64,
-    tier: &'static str,
     basis: String,
     no_fee_line: &'static str,
     button: String,
@@ -108,10 +107,10 @@ fn money(cents: u64) -> String {
 }
 
 /// How the basis was set, in the page's words (PICK-021, FEE-003, FEE-004).
-fn basis_line(basis: Option<u64>) -> String {
+fn basis_line(basis: Option<u64>, tier: &str) -> String {
     basis.map_or_else(
-        || "Set by the trade's visit fee size, since the price is decided on site.".to_owned(),
-        |cents| format!("Set from your quote's price of {}.", money(cents)),
+        || format!("The price gets set on site, so the fee goes by this trade's usual visit fee: the {tier}."),
+        |cents| format!("Your {} quote makes this a {tier}.", money(cents)),
     )
 }
 
@@ -137,8 +136,7 @@ pub fn confirm_page(facts: &ConfirmFacts) -> Result<String, askama::Error> {
         job_number: facts.job_number,
         paused: facts.paused,
         fee_dollars,
-        tier,
-        basis: basis_line(facts.fee.basis()),
+        basis: basis_line(facts.fee.basis(), tier),
         no_fee_line,
         button,
         paid,
@@ -169,22 +167,22 @@ pub fn press_reply(outcome: &ChargeOutcome, fresh: Uuid) -> PressReply {
     let (state, message, next) = match outcome {
         ChargeOutcome::Succeeded(_) | ChargeOutcome::Pending => (
             "waiting",
-            "Payment sent. We'll show the homeowner's details once Stripe confirms it.",
+            "Payment sent. You'll get the homeowner's details as soon as Stripe confirms it.",
             false,
         ),
         ChargeOutcome::Declined(_) => (
             "declined",
-            "Error: your card was declined. Nothing was charged. Try again or use another card.",
+            "Your card was declined. Nothing was charged. Try again or use another card.",
             true,
         ),
         ChargeOutcome::NeedsApproval(_) => (
             "approve",
-            "Your bank wants to approve this payment. Follow its steps in the window.",
+            "Your bank wants to check this payment. Follow the steps in the window it opens.",
             false,
         ),
         ChargeOutcome::StripeDown | ChargeOutcome::Paused => (
             "try_later",
-            "Payments can't go through right now. Nothing was charged. Try again in a few minutes.",
+            "We can't take payments right now. Nothing was charged. Try again in a few minutes.",
             true,
         ),
         ChargeOutcome::OverLimit => (
@@ -242,11 +240,12 @@ mod tests {
     #[test]
     fn td_fee_25_pick_021_the_page_shows_everything_before_one_pay_button() {
         let html = page(&facts(medium()));
-        assert!(html.contains("Confirm request 1042"));
-        assert!(html.contains("Introduction fee by job size: $75, the medium job fee."));
-        assert!(html.contains("Set from your quote&#39;s price of $1,000.00."));
+        assert!(html.contains("Confirm job 1042"));
+        assert!(html.contains(
+            "Introduction fee by job size: $75. Your $1,000.00 quote makes this a medium job."
+        ));
         assert!(html.contains(&REFUND_LINE.replace('\'', "&#39;")));
-        assert!(html.contains("Business terms version 3 applies."));
+        assert!(html.contains("You're agreeing to business terms version 3."));
         assert_eq!(html.matches("<button").count(), 1);
         assert!(html.contains(">Confirm and pay $75</button>"));
         assert!(html.contains("Go back"));
@@ -300,7 +299,7 @@ mod tests {
         let mut paused = facts(medium());
         paused.paused = true;
         let html = page(&paused);
-        assert!(html.contains("paused this request, so it can't be confirmed now"));
+        assert!(html.contains("paused this job, so it can't be confirmed now"));
         assert!(!html.contains("<form"));
         assert!(!html.contains("<button"));
         assert!(!html.contains("js.stripe.com"));
@@ -319,16 +318,12 @@ mod tests {
             basis: None,
             tier: Tier::Small,
         }));
-        assert!(html.contains("$25, the small job fee."));
-        assert!(html.contains("visit fee size"));
+        assert!(html.contains("$25. The price gets set on site, so the fee goes by this trade&#39;s usual visit fee: the small job."));
         let large = page(&facts(Fee::Charged {
             basis: Some(250_000),
             tier: Tier::Large,
         }));
-        assert!(
-            large
-                .contains("$199, the large job fee. Set from your quote&#39;s price of $2,500.00.")
-        );
+        assert!(large.contains("$199. Your $2,500.00 quote makes this a large job."));
     }
 
     #[test]
@@ -336,7 +331,7 @@ mod tests {
         let fresh = Uuid::from_u128(11);
         let declined = press_reply(&ChargeOutcome::Declined(None), fresh);
         assert_eq!(declined.state, "declined");
-        assert!(declined.message.starts_with("Error: "));
+        assert!(declined.message.starts_with("Your card was declined."));
         assert_eq!(declined.next_press, Some(fresh));
         let approve = press_reply(&ChargeOutcome::NeedsApproval(None), fresh);
         assert_eq!((approve.state, approve.next_press), ("approve", None));

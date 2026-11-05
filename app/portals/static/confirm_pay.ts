@@ -76,7 +76,7 @@ async function press(stripe: StripeClient, card: StripeCard, form: HTMLFormEleme
   const made = await stripe.createPaymentMethod({ type: "card", card });
   const method = field(form, "payment_method");
   if (made.paymentMethod === undefined || method === null) {
-    say("confirm-error", "Error: check the card details and press the button again.");
+    say("confirm-error", "Check the card number, expiry date and security code, then press the button again.");
     return;
   }
   method.value = made.paymentMethod.id;

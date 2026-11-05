@@ -20,8 +20,8 @@ import { test, expect } from "./fixtures";
 const ROOT = join(import.meta.dirname, "..", "..");
 const CONFIRM = "/b/picks/00000000-0000-0000-0000-000000000007/confirm";
 
-const PAGE = `<!doctype html><html lang="en"><head><title>Confirm request 1042 | Ask Hava</title></head><body><main>
-<h1>Confirm request 1042</h1>
+const PAGE = `<!doctype html><html lang="en"><head><title>Confirm job 1042 | Ask Hava</title></head><body><main>
+<h1>Confirm job 1042</h1>
 <form method="post" action="${CONFIRM}" id="confirm-form" data-stripe-key="pk_test_fake" novalidate>
 <input type="hidden" name="csrf" value="fake-csrf">
 <input type="hidden" name="press" value="press-1">
@@ -68,27 +68,27 @@ async function standIn(page: Page, replies: object[]): Promise<string[]> {
 
 test("TD-FEE-25 FEE-016: a decline shows at once and the next press uses the next attempt's press ID", async ({ page }) => {
   const posted = await standIn(page, [
-    { state: "declined", message: "Error: your card was declined. Nothing was charged. Try again or use another card.", next_press: "press-2" },
-    { state: "waiting", message: "Payment sent. We'll show the homeowner's details once Stripe confirms it.", next_press: null },
+    { state: "declined", message: "Your card was declined. Nothing was charged. Try again or use another card.", next_press: "press-2" },
+    { state: "waiting", message: "Payment sent. You'll get the homeowner's details as soon as Stripe confirms it.", next_press: null },
   ]);
   await expect(page.locator("#save-card")).not.toBeChecked();
   await page.getByRole("button", { name: "Confirm and pay $75" }).click();
-  await expect(page.locator("#confirm-error")).toHaveText(/^Error: your card was declined/);
+  await expect(page.locator("#confirm-error")).toHaveText(/^Your card was declined/);
   expect(posted[0]).toContain("press=press-1");
   expect(posted[0]).toContain("payment_method=pm_fake_card");
   expect(posted[0]).not.toMatch(/4242|cvc|card_number/i);
   await page.getByRole("button", { name: "Confirm and pay $75" }).click();
-  await expect(page.locator("#confirm-status")).toHaveText(/once Stripe confirms it/);
+  await expect(page.locator("#confirm-status")).toHaveText(/as soon as Stripe confirms it/);
   await expect(page.locator("#confirm-error")).toHaveText("");
   expect(posted[1]).toContain("press=press-2");
 });
 
 test("TD-FEE-25 FEE-014: a bank approval runs Stripe's 3-D Secure step in the page", async ({ page }) => {
   await standIn(page, [
-    { state: "approve", message: "Your bank wants to approve this payment. Follow its steps in the window.", next_press: null, client_secret: "pi_fake_secret_fake" },
+    { state: "approve", message: "Your bank wants to check this payment. Follow the steps in the window it opens.", next_press: null, client_secret: "pi_fake_secret_fake" },
   ]);
   await page.getByRole("button", { name: "Confirm and pay $75" }).click();
-  await expect(page.locator("#confirm-status")).toHaveText(/Your bank wants to approve/);
+  await expect(page.locator("#confirm-status")).toHaveText(/Your bank wants to check/);
   await expect.poll(() => page.evaluate(() => (window as unknown as { stripeCalls: string[] }).stripeCalls)).toContain("3ds pi_fake_secret_fake");
   await expect(page).toHaveURL(new RegExp(`${CONFIRM}$`));
 });
