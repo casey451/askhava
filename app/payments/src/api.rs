@@ -46,10 +46,21 @@
 //! T065: [`decide_unreachable`] and [`decide_cancel`] decide each automatic refund from the call
 //! log ([`CallRecord`]s) as a [`RefundDecision`], once per pick under [`refund_label`]; [`no_show`]
 //! says whether a no-show is recorded, never refunded (FEE-022 to FEE-026, FEE-035, CALL-007).
+//!
+//! T066: [`request_refund`] refunds a pick once, [`run_refund_retry`] retries a failed one hourly
+//! and a disputed charge is blocked (FEE-026); [`early_fraud_warning`] refunds an unreleased warned
+//! charge (FEE-052); [`record_dispute`] alerts Casey and records a dispute once with the $15 fee,
+//! [`run_dispute_submit`] sends the [`EvidencePack`] 2 days before the due date when T191 called
+//! [`mark_auto_submit`] (FEE-027, FEE-042, FEE-050, PRIV-027).
 
 pub use crate::charge::{
     ATTEMPT_ACTION, ATTEMPT_SUBJECT, IN_FLIGHT, INTENT_ACTION, IntentStripe, confirm_and_pay,
     open_intent, set_fee_limit,
+};
+pub use crate::disputes::{
+    DISPUTE_ACTION, DISPUTE_FEE_CENTS, DisputeStripe, EVIDENCE_ACTION, SUBMIT_BEFORE, SUBMIT_KIND,
+    evidence_pack, list_disputes, mark_auto_submit, record_dispute, record_owner_submission,
+    run_dispute_submit,
 };
 pub use crate::free_wins::{
     FREE_WIN_ACTION, FREE_WIN_WINDOW_DAYS, REPEAT_ACTION, Waiver, WinCheck, in_free_win_window,
@@ -63,14 +74,19 @@ pub use crate::handlers::{
 pub use crate::ledger::{Appended, EntryKind, LedgerEntry, LedgerError, NewEntry, ledger_append};
 pub use crate::models::{
     AUTHORIZATION_TEXT, AUTHORIZATION_VERSION, BusinessId, CardError, ChargeError, ChargeOutcome,
-    CustomerId, DESCRIPTOR_MAX, ENTITY_KEY_ACTION, EntityKey, EntityKind, FreeWinError, IntentText,
-    JoinDates, PickNow, Press, STATEMENT_PREFIX, SavedCard, SetupIntentRequest, attempt_label,
-    intent_label,
+    CustomerId, DESCRIPTOR_MAX, DisputeOpened, DisputeView, ENTITY_KEY_ACTION, EVIDENCE_PRODUCT,
+    EntityKey, EntityKind, EvidencePack, FreeWinError, IntentText, JoinDates, MoneyEventError,
+    PickNow, Press, RefundOutcome, RefundStep, RefundTrigger, STATEMENT_PREFIX, SavedCard,
+    SetupIntentRequest, attempt_label, intent_label,
 };
 pub use crate::refund_rules::{
     ATTEMPT_GAP, ATTEMPT_WINDOW, Answer, CallRecord, Caller, CancelFacts, Contact, DECIDE_AFTER,
     EmailCheck, NoShow, RefundDecision, RefundReason, Unmet, UnreachableFacts, counted_attempts,
     decide_cancel, decide_unreachable, no_show, refund_label, talked,
+};
+pub use crate::refunds::{
+    FRAUD_WARNING_ALERT, REFUND_ACTION, REFUND_BLOCKED_ALERT, REFUND_FAILED_ALERT, RETRY_EVERY,
+    RETRY_KIND, early_fraud_warning, refund_failed, request_refund, run_refund_retry,
 };
 pub use crate::release_proof::{
     Minter, Releasable, ReleaseError, SUCCEEDED_EVENT, StripeAccount, VerifiedStripeEvent,
@@ -87,4 +103,4 @@ pub use crate::service::{
     FEE_MODE_ID, FEE_MODE_SUBJECT_KIND, Saved, accept_authorization, customer_of, ensure_customer,
     may_confirm, record_fee_at_confirm, save_card, switch_fee_mode,
 };
-pub use crate::status::AttemptStatus;
+pub use crate::status::{AttemptStatus, RefundStatus};

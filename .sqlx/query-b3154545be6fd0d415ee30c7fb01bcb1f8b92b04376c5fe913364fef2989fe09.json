@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE payments.refund SET status = $2, tries = $3, stripe_refund_id = NULL\n          WHERE pick_id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "b3154545be6fd0d415ee30c7fb01bcb1f8b92b04376c5fe913364fef2989fe09"
+}

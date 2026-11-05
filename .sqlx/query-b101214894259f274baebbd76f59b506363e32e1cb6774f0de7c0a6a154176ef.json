@@ -1,0 +1,64 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT e.business_id AS business, e.job_id AS job, e.stripe_intent_id AS intent,\n                e.amount_cents AS amount\n           FROM payments.charge_evidence e JOIN payments.pick_intent p ON p.pick_id = e.pick_id\n          WHERE e.pick_id = $1 FOR UPDATE OF p",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "business",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "payments.charge_evidence",
+            "name": "business_id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "job",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "payments.charge_evidence",
+            "name": "job_id"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "intent",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "payments.charge_evidence",
+            "name": "stripe_intent_id"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "amount",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "payments.charge_evidence",
+            "name": "amount_cents"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "b101214894259f274baebbd76f59b506363e32e1cb6774f0de7c0a6a154176ef"
+}
