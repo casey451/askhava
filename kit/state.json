@@ -12777,7 +12777,9 @@
     "T065",
     "T094",
     "T224",
-    "T225"
+    "T225",
+    "T246",
+    "T247"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -12788,7 +12790,8 @@
   {
    "id": "T076",
    "deps": [
-    "T075"
+    "T075",
+    "T250"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -12847,7 +12850,8 @@
    "id": "T081",
    "deps": [
     "T075",
-    "T094"
+    "T094",
+    "T250"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -12859,7 +12863,8 @@
    "id": "T193",
    "deps": [
     "T075",
-    "T081"
+    "T081",
+    "T250"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -12870,7 +12875,8 @@
   {
    "id": "T082",
    "deps": [
-    "T193"
+    "T193",
+    "T250"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -12882,7 +12888,8 @@
    "id": "T083",
    "deps": [
     "T082",
-    "T094"
+    "T094",
+    "T250"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -12894,7 +12901,8 @@
    "id": "T084",
    "deps": [
     "T193",
-    "T094"
+    "T094",
+    "T250"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -12991,7 +12999,9 @@
   {
    "id": "T090",
    "deps": [
-    "T075"
+    "T075",
+    "T246",
+    "T250"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -13015,7 +13025,9 @@
    "deps": [
     "T091",
     "T083",
-    "T066"
+    "T066",
+    "T246",
+    "T250"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -13026,7 +13038,8 @@
   {
    "id": "T093",
    "deps": [
-    "T092"
+    "T092",
+    "T250"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -13040,7 +13053,8 @@
     "T094",
     "T075",
     "T208",
-    "T213"
+    "T213",
+    "T246"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -13136,7 +13150,8 @@
    "deps": [
     "T094",
     "T194",
-    "T082"
+    "T082",
+    "T250"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -13150,7 +13165,8 @@
     "T094",
     "T194",
     "T082",
-    "T147"
+    "T147",
+    "T250"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -13434,7 +13450,11 @@
     "T228",
     "T232",
     "T230",
-    "T231"
+    "T231",
+    "T248",
+    "T249",
+    "T250",
+    "T251"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -14718,7 +14738,8 @@
    "id": "T157",
    "deps": [
     "T197",
-    "T189"
+    "T189",
+    "T246"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -14746,7 +14767,8 @@
    "deps": [
     "T106",
     "T067",
-    "T103"
+    "T103",
+    "T249"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -14795,7 +14817,8 @@
    "deps": [
     "T208",
     "T091",
-    "T212"
+    "T212",
+    "T251"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -16177,6 +16200,103 @@
    "slug": "payments-default-privileges",
    "type": "build",
    "stage": "3"
+  },
+  {
+   "id": "T247",
+   "deps": [
+    "T046",
+    "T186",
+    "T033",
+    "T240",
+    "T224"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "jobs-first-quote-move",
+   "type": "build",
+   "stage": "3"
+  },
+  {
+   "id": "T246",
+   "deps": [
+    "T247",
+    "T055",
+    "T187",
+    "T094",
+    "T053",
+    "T054",
+    "T022",
+    "T224"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "page-pick-end-to-end",
+   "type": "harness",
+   "stage": "3"
+  },
+  {
+   "id": "T250",
+   "deps": [
+    "T245",
+    "T075"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "core-schema-default-privileges",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T248",
+   "deps": [
+    "T155",
+    "T165",
+    "T228",
+    "T250",
+    "T041",
+    "T044",
+    "T177"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "catalog-markets-service-radius",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T251",
+   "deps": [
+    "T248",
+    "T147",
+    "T208",
+    "T039",
+    "T043",
+    "T184",
+    "T045",
+    "T240",
+    "T247"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "intake-zip-and-cards-out",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T249",
+   "deps": [
+    "T248",
+    "T214",
+    "T212",
+    "T149",
+    "T164",
+    "T251"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "quotes-radius-matching",
+   "type": "build",
+   "stage": "4"
   }
  ],
  "owner_waits": [],
@@ -17168,7 +17288,7 @@
    }
   }
  },
- "updated_at": "2026-11-05T19:45:53Z",
+ "updated_at": "2026-11-05T19:48:51Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -17266,7 +17386,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "0bca34fa93d6b7803e8c849da8e0e916ca48f8ad",
+ "runner_sha": "837bf1cacb8780e7871ca5f933288ecf4533fc13",
  "starter": "actions",
  "smoke_runs": [
   {
