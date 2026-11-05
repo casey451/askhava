@@ -57,7 +57,7 @@ One pull request. Decisions D-455 to D-467. Source: the review doc "Ask Hava: Ho
 | Business first days: sample pick test moved to the first real card; open jobs on the done screen | BIZ-042, BIZ-031 (D-462) |
 | Why a business leaves or pauses | BIZ-054 (D-463) |
 | Crowding flag at 5 businesses and 4 quotes in a month | OPS-027 (D-464) |
-| Price lock 6 months; refunds at Ask Hava's choice; save-card box at the free win | FEE-040, TERMS-026, FEE-036, business terms (D-465) |
+| No price lock (D-1494 withdrew D-465's 6-month lock); refunds at Ask Hava's choice; save-card box at the free win | FEE-040 (withdrawn), TERMS-026, FEE-036, business terms (D-465, D-1494) |
 | Share-my-words box, real numbers on the home page, contact card and "Know someone" line | JOB-017, WEB-028, PICK-054 (D-466) |
 | AI receptionist "Pro" cut; Ruby declined; fixed costs capped near $150 a month; a "changing the live service" page in the handover; company setup starts when the test hits its quote line | D-467, `BUILD_BRIEF.md` section 15 |
 
@@ -190,7 +190,7 @@ Owner: **Claude**, **Casey**, or **automatic** (the build does it). Status: done
 | B5 | AI may read scrubbed text before a zero-retention agreement, once the provider's terms are recorded and the privacy policy says so; launch works without AI | Confirmed by Casey Oct 28 (D-418) |
 | B6 | Backup choice on; auto-confirm only after Stripe says yes; push web app built as an optional channel | Confirmed by Casey Oct 28 (D-418) |
 | B7 | Site-visit quotes pay $25, never more than $75 | Confirmed by Casey Oct 28 (D-418) |
-| B8 | Fees stay $25 / $75 / $199 for the test; the re-plan pass sets them from the "worth the fee" answers; early joiners locked 6 months | Recommended and applied (D-455, D-465) |
+| B8 | Fees stay $25 / $75 / $199 for the test; the re-plan pass sets them from the "worth the fee" answers; no early-joiner price lock (D-1494) | Recommended and applied (D-455, D-465, D-1494) |
 | B9 | No arbitration for homeowners in the pilot | Confirmed by Casey Oct 28 (D-418) |
 | B12 | No owner name online; LLC record link and city license number added once they exist | Confirmed by Casey Oct 28 (D-418) |
 | B14 | Losing businesses told whether the picked quote was lower, about the same or higher | Confirmed by Casey Oct 28 (D-418) |
@@ -215,7 +215,7 @@ Owner: **Claude**, **Casey**, or **automatic** (the build does it). Status: done
 | R2 | Post from your profile or the Ask Hava Page? | Your own profile, saying "I run Ask Hava", and the Page where a group allows Pages (D-456) |
 | R3 | Which trades get the marketing push? | One or two that fit the launch month (playbook section 6); all trades stay open (D-459) |
 | R4 | Visits only, or file the seller registration to allow calls? | Visits only for now; calls need A.R.S. 44-1272 and a new decision (D-374, D-456) |
-| R5 | Price lock for early joiners | 6 months (D-465) |
+| R5 | Price lock for early joiners | None: Casey dropped it on November 3 (D-1494, superseding D-465's 6 months) |
 | R6 | Is $50k for Havasu alone? | No: $20k a year is the Lake Havasu City target; $50k assumes Bullhead City and Kingman (D-467) |
 
 **Scope cut:** held for the re-plan pass after the test (D-455): postpone team members, the monthly fee limit, the live license lookup, the full restore replay and the features that launch switched off.

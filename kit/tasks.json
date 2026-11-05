@@ -2204,7 +2204,7 @@
    "budget": {
     "files": 9,
     "lines": 550,
-    "context_pct": 20
+    "context_pct": 24
    },
    "checks": [
     "Ci",
@@ -2572,7 +2572,7 @@
    "budget": {
     "files": 5,
     "lines": 350,
-    "context_pct": 15
+    "context_pct": 19
    },
    "checks": [
     "Ci",
@@ -6074,7 +6074,7 @@
    "id": "T188",
    "slug": "payments-four-month-rule",
    "title": "payments: the 4-month rule for recurring quotes and its $75 cap",
-   "goal": "A recurring quote in a recurring category is priced as 4 months of service (weekly ×52÷12, every two weeks ×26÷12, yearly ÷12) with the $75 recurring cap, one-time jobs in recurring categories at face value, and a period refused in a non-recurring category (REC-001 to REC-006, REC-010, REC-011, FEE-039, FEE-040).",
+   "goal": "A recurring quote in a recurring category is priced as 4 months of service (weekly ×52÷12, every two weeks ×26÷12, yearly ÷12) with the $75 recurring cap, one-time jobs in recurring categories at face value, and a period refused in a non-recurring category (REC-001 to REC-006, REC-010, REC-011, FEE-039; its early-joiner price lock, FEE-040, was withdrawn by D-1494 and is removed by T244).",
    "type": "build",
    "phase": 1,
    "stage": "3",
@@ -6111,13 +6111,11 @@
     "REC-006",
     "REC-010",
     "REC-011",
-    "FEE-039",
-    "FEE-040"
+    "FEE-039"
    ],
    "tests": [
     "TD-FEE-03",
     "TD-FEE-21",
-    "TD-FEE-24",
     "TD-FEE-35",
     "TD-FEE-02"
    ],
@@ -6425,7 +6423,7 @@
    "budget": {
     "files": 7,
     "lines": 350,
-    "context_pct": 9
+    "context_pct": 26
    },
    "checks": [
     "Ci",
@@ -6509,7 +6507,7 @@
    "budget": {
     "files": 6,
     "lines": 300,
-    "context_pct": 16
+    "context_pct": 27
    },
    "checks": [
     "Ci",
@@ -6973,14 +6971,15 @@
    "id": "T066",
    "slug": "payments-refunds-disputes",
    "title": "payments: one refund per trigger, retries, disputes with evidence",
-   "goal": "Each automatic refund happens exactly once, a failed refund is retried hourly with an alert and a refund on a disputed charge is blocked; a dispute alerts Casey and is recorded once with the $15 fee, its evidence pack built from the per-charge evidence record T189 writes and sent 2 days before the due date; and the receipt email is T068's. `payments` cannot read picks or calls, so whether a dispute's evidence is auto-submitted (a recorded release and a call attempt, FEE-050) and ending a fraud-refunded pick and returning its job to Quotes ready (FEE-052) are T191's, which call `payments::api` (D-491) (FEE-026, FEE-027, FEE-042, PRIV-027).",
+   "goal": "Each automatic refund happens exactly once, a failed refund is retried hourly with an alert and a refund on a disputed charge is blocked; a dispute alerts Casey and is recorded once with the $15 fee, its evidence pack built from the per-charge evidence record T189 writes and sent 2 days before the due date; and the receipt email is T068's. `payments` cannot read picks or calls, so whether a dispute's evidence is auto-submitted (a recorded release and a call attempt, FEE-050) and ending a fraud-refunded pick and returning its job to Quotes ready (FEE-052) are T191's, which call `payments::api` (D-491) (FEE-026, FEE-027, FEE-042, PRIV-027). A new `payments` table gets SELECT and INSERT only from the schema default (D-1495, T245): any wider privilege this task's code needs is an explicit `GRANT ... ON payments.<table> TO askhava_app` in its own migration, which T245's `tests/integration/tests/payments_grants.rs` reads and checks (TD-SEC-33).",
    "type": "build",
    "phase": 1,
    "stage": "3",
    "module": "payments",
    "deps": [
     "T065",
-    "T225"
+    "T225",
+    "T245"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -7026,13 +7025,14 @@
     "D-365",
     "D-368",
     "D-480",
-    "D-490"
+    "D-490",
+    "D-1495"
    ],
    "cites": [],
    "budget": {
     "files": 6,
     "lines": 500,
-    "context_pct": 9
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -7047,7 +7047,7 @@
    "id": "T067",
    "slug": "payments-ledger-reconcile",
    "title": "payments: nightly reconcile, auto-match or auto-refund, ledger-only statements",
-   "goal": "On the append-only ledger T225 built, a nightly reconcile auto-matches or auto-refunds every unknown Stripe charge, the money view and statements come only from the ledger and match Stripe to the cent, and only `payments` moves money (FEE-029, FEE-030, FEE-032, FEE-051).",
+   "goal": "On the append-only ledger T225 built, a nightly reconcile auto-matches or auto-refunds every unknown Stripe charge, the money view and statements come only from the ledger and match Stripe to the cent, and only `payments` moves money (FEE-029, FEE-030, FEE-032, FEE-051). A new `payments` table gets SELECT and INSERT only from the schema default (D-1495, T245): any wider privilege this task's code needs is an explicit `GRANT ... ON payments.<table> TO askhava_app` in its own migration, which T245's `tests/integration/tests/payments_grants.rs` reads and checks (TD-SEC-33).",
    "type": "build",
    "phase": 1,
    "stage": "3",
@@ -7093,13 +7093,14 @@
    ],
    "decisions": [
     "D-092",
-    "D-490"
+    "D-490",
+    "D-1495"
    ],
    "cites": [],
    "budget": {
     "files": 7,
     "lines": 600,
-    "context_pct": 8
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -14063,7 +14064,9 @@
     "docs/spec/fees.md",
     "docs/spec/licensing.md",
     "docs/brains/sms-compliance.md",
-    "docs/brains/contractor-lead-experience.md"
+    "docs/brains/contractor-lead-experience.md",
+    "docs/reviews/2026-11-03-handoff-zip-review.md",
+    "docs/reviews/war-games-inputs/"
    ],
    "requirements": [],
    "tests": [],
@@ -14082,7 +14085,7 @@
    "budget": {
     "files": 2,
     "lines": 800,
-    "context_pct": 9
+    "context_pct": 17
    },
    "checks": [
     "Ci",
@@ -15596,7 +15599,7 @@
    "id": "T210",
    "slug": "intake-report-money-view",
    "title": "ops and payments: the monthly intake accuracy report and the money view's sales-tax set-aside and expenses",
-   "goal": "The monthly report lists no-quote cards and \"need more info\" quotes by category and question set with the golden-set share; and the money view shows the 8.6% sales-tax set-aside and Casey's manual expenses beside the ledger totals, never entering the ledger (OPS-040, FEE-046). The manual expenses list is its own table `payments.expense` (this task's migration; architecture section 3 names it, D-491). The money view's page and the expense-entry POST are the portals route `app/portals/src/money_view.rs` rendering `money_view.html` from `payments::api` (`app/payments/src/money_view.rs` computes the figures); the intake report's words sit in `intake_report.html` (D-492). The golden-set share comes from the stored runs T156 makes (`intake::api`) (D-493).",
+   "goal": "The monthly report lists no-quote cards and \"need more info\" quotes by category and question set with the golden-set share; and the money view shows the 8.6% sales-tax set-aside and Casey's manual expenses beside the ledger totals, never entering the ledger (OPS-040, FEE-046). The manual expenses list is its own table `payments.expense` (this task's migration; architecture section 3 names it, D-491). The money view's page and the expense-entry POST are the portals route `app/portals/src/money_view.rs` rendering `money_view.html` from `payments::api` (`app/payments/src/money_view.rs` computes the figures); the intake report's words sit in `intake_report.html` (D-492). The golden-set share comes from the stored runs T156 makes (`intake::api`) (D-493). A new `payments` table gets SELECT and INSERT only from the schema default (D-1495, T245): any wider privilege this task's code needs is an explicit `GRANT ... ON payments.<table> TO askhava_app` in its own migration, which T245's `tests/integration/tests/payments_grants.rs` reads and checks (TD-SEC-33).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -15647,7 +15650,8 @@
     "D-395",
     "D-410",
     "D-444",
-    "D-492"
+    "D-492",
+    "D-1495"
    ],
    "cites": [],
    "budget": {
@@ -16784,7 +16788,7 @@
    "id": "T218",
    "slug": "brain-phrase-scans",
    "title": "Wording and template scans from the brains: sales phrases, non-transactional invitations and text segments",
-   "goal": "A docs test fails any business page, template or document that uses a lead-selling phrase (\"ready to hire\", \"serious homeowners\", \"qualified\", \"pre-qualified\", \"high-intent\", a promise of jobs) or a win rate not computed from the ledger; a template test fails any notice holding a recruiting, referral, discount, survey, new-feature or social-media invitation from the list in docs/ai_smell.yaml; and a docs test over the template files reports every template's encoding and segment count and fails when the English consent text needs UCS-2 or more than 2 segments, or when any template grows past the segment count recorded beside it (TXT-044) (WORD-030, TXT-046, TXT-044). Turning Spanish conversations on without the campaign note and sample recorded is refused in code (TXT-043's code half; the campaign document is T113's, TD-TXT-26) (D-493).",
+   "goal": "A docs test fails any business page, template or document that uses a lead-selling phrase (\"ready to hire\", \"serious homeowners\", \"qualified\", \"pre-qualified\", \"high-intent\", a promise of jobs) or a win rate not computed from the ledger; a template test fails any notice holding a recruiting, referral, discount, survey, new-feature or social-media invitation from the list in docs/ai_smell.yaml; and a docs test over the template files reports every template's encoding and segment count and fails when the English consent text needs UCS-2 or more than 2 segments, or when any template grows past the segment count recorded beside it (TXT-044) (WORD-030, TXT-046, TXT-044). The same phrase scan also fails, in any letter case, any text in `app/*/templates/`, `app/messaging/templates/*.json`, `docs/copy/` or the public `docs/legal/` drafts that says or implies joining early locks in prices (\"price lock\" or \"price-lock\", \"lock in your rate\", \"founding rate\", \"grandfathered pricing\", \"your rate never goes up\"); internal records such as `docs/decisions.md` are not scanned (WORD-032, D-1494). Turning Spanish conversations on without the campaign note and sample recorded is refused in code (TXT-043's code half; the campaign document is T113's, TD-TXT-26) (D-493).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -16819,16 +16823,19 @@
     "WORD-030",
     "TXT-046",
     "TXT-044",
-    "TXT-043"
+    "TXT-043",
+    "WORD-032"
    ],
    "tests": [
     "TD-WORD-30",
     "TD-TXT-27",
-    "TD-TXT-26"
+    "TD-TXT-26",
+    "TD-WORD-33"
    ],
    "decisions": [
     "D-490",
-    "D-1143"
+    "D-1143",
+    "D-1494"
    ],
    "cites": [],
    "budget": {
@@ -16843,6 +16850,127 @@
    ],
    "branch": "claude/task/T218-brain-phrase-scans",
    "prompt": "kit/prompts/T218.md"
+  },
+  {
+   "id": "T244",
+   "slug": "payments-remove-price-lock",
+   "title": "payments: remove the early-joiner price lock (FEE-040 withdrawn), keep the 4-month recurring rule and its $75 cap",
+   "goal": "Casey dropped the early-joiner price lock on November 3 (FEE-040 withdrawn by D-1494): delete `LockDates`, `price_lock_until`, `locked_cents`, the `LOCK_JOIN_WINDOW` and `LOCK_MONTHS` constants and every caller and re-export of them (in `app/payments/src/rules.rs` and the shared `app/payments/src/api.rs`), and delete their tests in `app/payments/src/tests/recurring.rs` (`td_fee_21_the_early_joiner_price_lock`, `td_fee_24_activated_3_months_after_joining`, the `lock` helper and `price_lock_past_the_last_instant_is_none`), so that no fee function takes a join, trade-opening or activation date and every business pays the published fee by job size in effect at the pick (FEE-001, FEE-005; TD-FEE-41). Keep the 4-month rule for recurring quotes and its $75 cap exactly as T188 built them (FEE-039, REC-001 to REC-011; TD-FEE-21 and TD-FEE-35 still pass unchanged apart from the withdrawn lock cases). No fee amount changes; D-1405's lock rule is retired. Update `app/payments/CLAUDE.md` (drop the FEE-040 rule line and the lock items) and the T188 paragraph of `docs/architecture.md` section 10 in the same PR. The free-first-win window (`JoinDates`, FEE-010 to FEE-012) is not the price lock and stays.",
+   "type": "build",
+   "phase": 1,
+   "stage": "3",
+   "module": "payments",
+   "deps": [
+    "T188",
+    "T062",
+    "T189",
+    "T224"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "money"
+   ],
+   "owns": [
+    "app/payments/src/rules.rs",
+    "app/payments/src/tests/recurring.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/fees.md",
+    "docs/spec/recurring.md",
+    "docs/catalog/worked_examples.yaml",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "FEE-001",
+    "FEE-005",
+    "FEE-039"
+   ],
+   "tests": [
+    "TD-FEE-41",
+    "TD-FEE-21",
+    "TD-FEE-35"
+   ],
+   "decisions": [
+    "D-1494",
+    "D-465",
+    "D-1405"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 300,
+    "context_pct": 22
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T244-payments-remove-price-lock",
+   "prompt": "kit/prompts/T244.md"
+  },
+  {
+   "id": "T245",
+   "slug": "payments-default-privileges",
+   "title": "payments: narrow the default privileges in schema payments to SELECT, INSERT and prove every money table's grants in a test",
+   "goal": "`migrations/0090_payments_ledger.sql` gives the app role SELECT, INSERT, UPDATE and DELETE on every future `payments` table by default, so a money table is append-only only when its own migration remembers to revoke (0090, 0093, 0095, 0096 and 0097 each do it by hand, D-1495). Add `migrations/0098_payments_default_privileges.sql` (first line `-- payments (T245): ...`) running `ALTER DEFAULT PRIVILEGES IN SCHEMA payments REVOKE UPDATE, DELETE ON TABLES FROM askhava_app;` and changing no existing table's grants (`fee_limit` keeps UPDATE and DELETE, `pick_intent`, `charge_attempt` and `pay_timer` keep UPDATE, `payment_method` keeps UPDATE of `removed_at`). Add `tests/integration/tests/payments_grants.rs` (a `sqlx::test` on the shared migrator) asserting, table by table against an explicit allow list, the app role's privileges on every `payments` table, the schema's default ACL from `pg_default_acl`, that no table grants TRUNCATE, REFERENCES or TRIGGER, that a table created after the migrations gets SELECT and INSERT only, and that a `payments` table outside the pinned list (one a later task adds, such as T066's, T067's or T210's) holds a subset of SELECT and INSERT plus what the explicit `GRANT ... TO askhava_app` statements in `migrations/` give it (the test parses those statements, including comma lists of tables, statements over several lines and column-level grants as 0093, 0095 and 0096 write them; it is never edited by a later build task, since only a harness task takes over another task's test), so a forgotten REVOKE or an unlisted extra privilege fails `Ci` (FEE-028, FEE-042; TD-SEC-33). Other schemas keep their defaults; that wider finding is recorded in D-1495, not fixed here.",
+   "type": "build",
+   "phase": 1,
+   "stage": "3",
+   "module": "payments",
+   "deps": [
+    "T189",
+    "T224",
+    "T244"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "money",
+    "security"
+   ],
+   "owns": [
+    "migrations/0098_payments_default_privileges.sql",
+    "tests/integration/tests/payments_grants.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/fees.md",
+    "docs/spec/security.md",
+    "docs/brains/postgres-operations.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "FEE-028",
+    "FEE-042"
+   ],
+   "tests": [
+    "TD-SEC-33"
+   ],
+   "decisions": [
+    "D-1495",
+    "D-092",
+    "D-491"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 300,
+    "context_pct": 9
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T245-payments-default-privileges",
+   "prompt": "kit/prompts/T245.md"
   }
  ]
 }
