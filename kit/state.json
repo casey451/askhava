@@ -12407,7 +12407,8 @@
    "id": "T066",
    "deps": [
     "T065",
-    "T225"
+    "T225",
+    "T245"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -15919,6 +15920,33 @@
    "slug": "war-games-go",
    "type": "gate",
    "stage": "6"
+  },
+  {
+   "id": "T244",
+   "deps": [
+    "T188",
+    "T062",
+    "T189",
+    "T224"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "payments-remove-price-lock",
+   "type": "build",
+   "stage": "3"
+  },
+  {
+   "id": "T245",
+   "deps": [
+    "T189",
+    "T224",
+    "T244"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "payments-default-privileges",
+   "type": "build",
+   "stage": "3"
   }
  ],
  "owner_waits": [],
@@ -16892,7 +16920,7 @@
    }
   }
  },
- "updated_at": "2026-11-05T17:59:47Z",
+ "updated_at": "2026-11-05T18:01:28Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -16990,7 +17018,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "db6e88fbfad33a3f9fd37ba7790d2eb5901e76a3",
+ "runner_sha": "1ee4464cde25860f60798ba7ef8fe689a0cfa7e9",
  "starter": "actions",
  "smoke_runs": [
   {
