@@ -5,6 +5,7 @@
 //! pick, status); `picks.code_attempt` one row per Verify code sent, by job and vault contact ID,
 //! never the number (PRIV-002); `picks.verify_cap_day` the days the global cap was hit (one High
 //! alert each); `picks.terms_line` each queued text that ends with the Terms line (PICK-016).
+//! T063 adds locking a waiting pick and expiring it at the Confirm window's end (PICK-019).
 
 use jiff::Timestamp;
 use jiff_sqlx::ToSqlx;
@@ -268,4 +269,37 @@ pub(crate) async fn cap_hit(
     .execute(tx)
     .await)?;
     Ok(done.rows_affected() == 1)
+}
+
+/// The waiting pick `id`, locked: job and business; none once it no longer waits (PICK-019).
+pub(crate) async fn lock_waiting(
+    tx: &mut PgConnection,
+    id: Uuid,
+) -> Result<Option<(Uuid, Uuid)>, PicksError> {
+    let row = db(sqlx::query!(
+        "SELECT job_id, business_id FROM picks.pick WHERE id = $1 AND status = $2 FOR UPDATE",
+        id,
+        PickStatus::AwaitingConfirm.code(),
+    )
+    .fetch_optional(tx)
+    .await)?;
+    Ok(row.map(|r| (r.job_id, r.business_id)))
+}
+
+/// Ends waiting pick `id` as expired at `at` (PICK-019, PICK-035).
+pub(crate) async fn expire_pick(
+    tx: &mut PgConnection,
+    id: Uuid,
+    at: Timestamp,
+) -> Result<(), PicksError> {
+    db(sqlx::query!(
+        "UPDATE picks.pick SET status = $2, ended_at = $3 WHERE id = $1 AND status = $4",
+        id,
+        PickStatus::Expired.code(),
+        at.to_sqlx() as _,
+        PickStatus::AwaitingConfirm.code(),
+    )
+    .execute(tx)
+    .await)?;
+    Ok(())
 }

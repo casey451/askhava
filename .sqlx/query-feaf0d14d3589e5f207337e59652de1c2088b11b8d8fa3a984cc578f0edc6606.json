@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE picks.pick SET status = $2, ended_at = $3 WHERE id = $1 AND status = $4",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Timestamptz",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "feaf0d14d3589e5f207337e59652de1c2088b11b8d8fa3a984cc578f0edc6606"
+}

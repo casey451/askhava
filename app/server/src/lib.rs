@@ -209,7 +209,9 @@ where
 /// stream writer and its nightly check (OPS-011, PRIV-029, D-734); `jobs` runs the job status
 /// timers (JOB-003, JOB-006); `quotes` the every-window-ended check (TXT-042, JOB-025); `intake` the
 /// no-reply reminder and close (INT-019), the card approval auto-send (INT-041); `picks` the FEE-020
-/// card-fix notice on `payments`' event (D-492); `payments` the pause watch that stops and resumes
+/// card-fix notice on `payments`' event (D-492), and with `confirm` (read once from
+/// `ASKHAVA_PICK_CONFIRM_WINDOW_MINUTES`) the pick notice (PICK-037, D-1503) and the Confirm
+/// window's end (PICK-019); `payments` the pause watch that stops and resumes
 /// the payment timers with the charging pause (FEE-038, D-1427); and, with
 /// `texts` ([`job_text_keys`]), the homeowner job texts `jobs` queues (JOB-010 to JOB-012,
 /// TXT-042, D-1030 (A)). It takes the release mint first, through [`release_minter`], so a second
@@ -218,6 +220,7 @@ where
 pub fn register_handlers<S>(
     stream: Arc<offdb_stream::OffDbStream<S>>,
     texts: Option<Arc<JobTextKeys>>,
+    confirm: askhava_picks::api::ConfirmSettings,
 ) -> Registry
 where
     S: StorageAdapter + Send + Sync + 'static,
@@ -241,6 +244,13 @@ where
     registry.register(
         askhava_payments::api::CARD_FIX_KIND,
         askhava_picks::api::run_card_fix_notice,
+    );
+    registry.register(askhava_picks::api::PICK_MADE_KIND, move |pool, task| {
+        askhava_picks::api::run_pick_notice(pool, confirm, task)
+    });
+    registry.register(
+        askhava_picks::api::CONFIRM_ENDS_KIND,
+        askhava_picks::api::run_confirm_ends,
     );
     registry.register(
         askhava_payments::api::PAUSE_KIND,
@@ -293,6 +303,7 @@ mod tests {
 
     use askhava_core::api::{Settings, SystemClock};
     use askhava_jobs::api::TEXT_KIND;
+    use askhava_picks::api::ConfirmSettings;
     use secrecy::SecretString;
 
     use crate::offdb_stream::OffDbStream;
@@ -422,8 +433,14 @@ mod tests {
         let texts = job_text_keys(&dev, &id_secret(), vault_pairs(true, true))
             .expect("keys")
             .map(Arc::new);
-        let with = format!("{:?}", register_handlers(stream(), texts));
-        let without = format!("{:?}", register_handlers(stream(), None));
+        let with = format!(
+            "{:?}",
+            register_handlers(stream(), texts, ConfirmSettings::default())
+        );
+        let without = format!(
+            "{:?}",
+            register_handlers(stream(), None, ConfirmSettings::default())
+        );
         assert!(with.contains(&format!("{TEXT_KIND:?}")), "{with}");
         assert!(!without.contains(&format!("{TEXT_KIND:?}")), "{without}");
     }

@@ -8,7 +8,20 @@
 //!
 //! T062: [`run_card_fix_notice`] turns `payments`' card-fix event into the business's notice
 //! (FEE-020, D-492).
+//!
+//! T063: [`run_pick_notice`] queues the pick notice (PICK-037); [`notice_sent`] starts the Confirm
+//! window from the notice's real send and [`run_confirm_ends`] ends it (PICK-019);
+//! [`check_at_pick`] and [`check_at_confirm`] are the license and account re-checks (PICK-020);
+//! [`fee_line`] the recurring fee line (PICK-034); [`read_business_word`] and [`business_reply`]
+//! the answer to a business's YES or CONFIRM text (PICK-033, PICK-035).
 
+pub use crate::confirm::{
+    BusinessWord, ConfirmReply, ConfirmSettings, EXPIRED_TEMPLATE, FEE_REPLY_TEMPLATE, FeeBasis,
+    LicenseAtPick, PICK_NOTICE_EMERGENCY_TEMPLATE, PICK_NOTICE_TEMPLATE, Refusal, StoredFacts,
+    WINDOW_KEY, business_reply, check_at_confirm, check_at_pick, confirm_by, fee_line,
+    license_at_pick, read_business_word,
+};
+pub use crate::handlers::{CONFIRM_ENDS_KIND, notice_sent, run_confirm_ends, run_pick_notice};
 pub use crate::models::PicksError;
 pub use crate::money_notices::{
     BUSINESS_NOTICE_KIND, CARD_APPROVAL_TEMPLATE, CARD_FIX_TEMPLATE, run_card_fix_notice,

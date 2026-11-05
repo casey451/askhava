@@ -390,5 +390,29 @@
     "draft": true,
     "segments": 3,
     "text": "Ask Hava: Su banco pide que apruebe el pago para el trabajo {job}. Todavía no se le cobró nada. Después de {time}, el propietario puede elegir la cotización de otro negocio. Apruébelo aquí: {link}"
+  },
+  "pick_notice": {
+    "audience": "business",
+    "draft": true,
+    "segments": 2,
+    "text": "Ask Hava: Un propietario eligió su cotización para el trabajo {job}. Acepte antes de {time}."
+  },
+  "pick_notice_emergency": {
+    "audience": "business",
+    "draft": true,
+    "segments": 2,
+    "text": "Ask Hava: EMERGENCIA: un propietario eligió su cotización para el trabajo {job}. Acepte antes de {time}."
+  },
+  "pick_fee_reply": {
+    "audience": "business",
+    "draft": true,
+    "segments": 1,
+    "text": "Ask Hava: {number}. Confirme y pague aquí: {link}."
+  },
+  "pick_expired": {
+    "audience": "business",
+    "draft": true,
+    "segments": 3,
+    "text": "Ask Hava: Se acabó el tiempo para aceptar el trabajo {job}, así que la elección venció. No se le cobró nada. Su cotización no se puede elegir otra vez para este trabajo."
   }
 }
