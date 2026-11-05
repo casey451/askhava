@@ -1,18 +1,17 @@
 //! Introduction fee by job size for a chosen quote (FEE-001 to FEE-008, FEE-039,
-//! FEE-040, FEE-043 to FEE-045, REC-001 to REC-006, REC-010, D-009, D-033, D-399, D-403).
+//! FEE-043 to FEE-045, REC-001 to REC-006, REC-010, D-009, D-033, D-399, D-403).
 //!
 //! Pure: a [`FeeQuote`] and its [`FeeJob`] in, a [`Fee`] out. The fee is always exactly one of
 //! the three tiers, $25, $75 or $199, never a percentage of the job and never with tax on top
 //! (FEE-002, FEE-008); a fee-free job type pays $0 (FEE-045). [`fee_for`] prices a one-time
 //! quote; [`period_fee_for`] (T188) adds the period: the 4-month rule and the recurring cap
 //! (REC-002, FEE-039). No input has a setup amount, so a setup charge never reaches a basis
-//! (FEE-044, D-1400). [`price_lock_until`] is the early joiner's price lock (FEE-040). T060:
-//! [`fee_at_pick`] fixes the fee at the pick from the chosen quote alone as a [`PickedFee`]
-//! (FEE-005), in the [`FeeMode`] of the owner's switch, whose [`FeeTerms`] name the card
-//! authorization a business must accept before a charge (FEE-007, D-072). Nothing here talks to
+//! (FEE-044, D-1400). No input is a join, trade-opening or activation date: every business
+//! pays the published fee in effect at the pick (TD-FEE-41, D-1494). T060: [`fee_at_pick`]
+//! fixes the fee at the pick from the chosen quote alone as a [`PickedFee`] (FEE-005), in the
+//! [`FeeMode`] of the owner's switch, whose [`FeeTerms`] name the card authorization a business
+//! must accept before a charge (FEE-007, D-072). Nothing here talks to
 //! Stripe or the database.
-
-use jiff::{SignedDuration, Timestamp, ToSpan};
 
 /// The edge of the $75 tier: a basis of $500.00 or more is at least $75 (FEE-001, D-009).
 const MEDIUM_FROM_CENTS: u64 = 50_000;
@@ -20,10 +19,6 @@ const MEDIUM_FROM_CENTS: u64 = 50_000;
 const MEDIUM_UP_TO_CENTS: u64 = 150_000;
 /// REC-002, REC-006: the one month multiplier for recurring services. Never another number.
 pub const RECURRING_MONTHS: u128 = 4;
-/// FEE-040, D-197: a business that joins before this long after launch gets the price lock.
-const LOCK_JOIN_WINDOW: SignedDuration = SignedDuration::from_hours(90 * 24);
-/// FEE-040, D-465: how long the price lock runs, in calendar months (Arizona time).
-const LOCK_MONTHS: i64 = 6;
 
 /// The three introduction fees by job size (FEE-001).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -285,19 +280,6 @@ pub struct PeriodJob {
     pub cap: RecurringCap,
 }
 
-/// What a business that joined early is charged at most (FEE-040, D-197, D-261, D-288, D-465).
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct LockDates {
-    /// When Ask Hava launched.
-    pub launch: Timestamp,
-    /// The business's join date (kept through a waitlist, D-175).
-    pub joined: Timestamp,
-    /// When its first trade was switched on.
-    pub first_trade_on: Timestamp,
-    /// For a business that waited on its city-list match, its activation; none otherwise.
-    pub activated: Option<Timestamp>,
-}
-
 /// FEE-003, D-033: the midpoint of `low` to `high`, a half cent rounded down; never overflows.
 const fn midpoint(low: u64, high: u64) -> u64 {
     low / 2 + high / 2 + (low % 2 + high % 2) / 2
@@ -402,38 +384,6 @@ pub fn period_fee_for(
         basis: Some(basis),
         tier,
     })
-}
-
-/// FEE-040, D-197, D-261, D-288, D-465: when the early joiner's price lock ends, or none for a
-/// business that joined 90 days or more after launch. The lock runs 6 calendar months (Arizona
-/// time) from the latest of the join date, the first trade's switch-on and any activation.
-#[must_use]
-pub fn price_lock_until(dates: LockDates) -> Option<Timestamp> {
-    let window_end = dates.launch.checked_add(LOCK_JOIN_WINDOW).ok()?;
-    if dates.joined >= window_end {
-        return None;
-    }
-    let start = dates
-        .joined
-        .max(dates.first_trade_on)
-        .max(dates.activated.unwrap_or(dates.joined));
-    let end = askhava_core::api::arizona_time(start).checked_add(LOCK_MONTHS.months());
-    end.ok().map(|at| at.timestamp())
-}
-
-/// FEE-040, D-465: the amount charged at `at` for a fee whose current amount is `current` and
-/// whose amount on the join date was `on_join`: never more than `on_join` while the lock runs.
-#[must_use]
-pub fn locked_cents(
-    lock_until: Option<Timestamp>,
-    at: Timestamp,
-    current: u64,
-    on_join: u64,
-) -> u64 {
-    match lock_until {
-        Some(until) if at < until => current.min(on_join),
-        Some(_) | None => current,
-    }
 }
 
 /// How the introduction fee is set, an owner-portal switch (FEE-007, D-072).
