@@ -8,8 +8,8 @@
 //! type (FEE-001 to FEE-004, FEE-008, FEE-043, FEE-045, D-1399).
 //!
 //! T188: [`period_fee_for`] adds the quote's [`Period`]: the 4-month rule and the
-//! [`RecurringCap`] (REC-002 to REC-006, REC-010, FEE-039, D-1404), and [`price_lock_until`] with
-//! [`locked_cents`] is the early joiner's price lock (FEE-040, D-1405).
+//! [`RecurringCap`] (REC-002 to REC-006, REC-010, FEE-039, D-1404). There is no early-joiner
+//! price lock: no fee function takes a join date (D-1494).
 //!
 //! T059: [`ensure_customer`] makes a business's Stripe customer with no card (FEE-036);
 //! [`save_card`] stores a [`SavedCard`] (cards only, FEE-014) with the FEE-015 authorization;
@@ -78,9 +78,9 @@ pub use crate::release_proof::{
 };
 pub use crate::routes::{ReleaseSink, STRIPE_WEBHOOK_PATH, StripeWebhook, stripe_webhook_routes};
 pub use crate::rules::{
-    Fee, FeeError, FeeJob, FeeMode, FeeQuote, FeeTerms, LockDates, Period, PeriodJob, PickedFee,
+    Fee, FeeError, FeeJob, FeeMode, FeeQuote, FeeTerms, Period, PeriodJob, PickedFee,
     RECURRING_MONTHS, RecurringCap, Service, Tier, VisitTier, fee_at_pick, fee_for, flat_tier,
-    locked_cents, period_fee_for, price_lock_until,
+    period_fee_for,
 };
 pub use crate::service::{
     Authorized, CONFIRM_FEE_ACTION, CUSTOMER_ACTION, ConfirmError, Confirmed, FEE_MODE_ACTION,
