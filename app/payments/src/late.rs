@@ -39,7 +39,8 @@ pub enum LateSuccess {
     Current,
     /// The pick moved on: its refund is queued and Casey alerted, both for the first time.
     Queued,
-    /// The pick moved on and its refund was queued already: nothing more is written.
+    /// The pick moved on and its refund was queued already, or the pick already has a refund or a
+    /// bank dispute (`request_refund` or `record_dispute` alerted it): nothing more is written.
     AlreadyQueued,
 }
 
@@ -51,17 +52,24 @@ fn db<T>(result: Result<T, sqlx::Error>) -> Result<T, MoneyEventError> {
 /// (or `payments` ended the pick itself) is queued for its refund and alerted, once per pick.
 /// Runs in the caller's transaction; calls no vendor.
 ///
+/// The success must be recorded first: on a pick `payments` ended, `paid_release` stops at
+/// `PickEnded` without storing it, and the `CHECK_KIND` round that records it later calls nothing
+/// here, so the caller (T191) calls again once that round has stored it (D-1547).
+///
 /// # Errors
 /// [`MoneyEventError::NothingCharged`] when the pick has no succeeded charge (no FEE-042 evidence
-/// record), else `Database`.
+/// record) yet, else `Database`.
 pub async fn late_success(
     conn: &mut PgConnection,
     pick: Uuid,
     pick_now: PickNow,
     now: Timestamp,
 ) -> Result<LateSuccess, MoneyEventError> {
-    let ended = db(sqlx::query_scalar!(
-        r#"SELECT p.ended_at IS NOT NULL AS "ended!"
+    let row = db(sqlx::query!(
+        r#"SELECT p.ended_at IS NOT NULL AS "ended!",
+                  (EXISTS (SELECT 1 FROM payments.refund r WHERE r.pick_id = e.pick_id)
+                   OR EXISTS (SELECT 1 FROM payments.dispute d WHERE d.pick_id = e.pick_id))
+                   AS "in_hand!"
              FROM payments.charge_evidence e JOIN payments.pick_intent p ON p.pick_id = e.pick_id
             WHERE e.pick_id = $1"#,
         pick,
@@ -69,8 +77,11 @@ pub async fn late_success(
     .fetch_optional(&mut *conn)
     .await)?
     .ok_or(MoneyEventError::NothingCharged)?;
-    if pick_now == PickNow::Payable && !ended {
+    if pick_now == PickNow::Payable && !row.ended {
         return Ok(LateSuccess::Current);
+    }
+    if row.in_hand {
+        return Ok(LateSuccess::AlreadyQueued);
     }
     let mut task = NewTask::new(LATE_KIND, json!({ "pick": pick }), now);
     task.dedupe_key = Some(format!("{LATE_KIND}.{pick}"));
@@ -93,7 +104,8 @@ pub async fn late_success(
 
 /// The [`LATE_KIND`] handler (FEE-021, FEE-026, JOB-006): refunds the pick in full through
 /// `request_refund`, so running it twice refunds once; a failed try is retried hourly by
-/// `request_refund`'s own task.
+/// `request_refund`'s own task. A pick with nothing charged has nothing to refund, so the task is
+/// done, not dead-lettered (JOB-006, D-1547); [`late_success`] queues it only after a success.
 ///
 /// # Errors
 /// A fixed sentence when the payload is malformed or the refund could not be recorded.
@@ -108,8 +120,8 @@ pub async fn run_late_refund(
         .as_str()
         .and_then(|p| Uuid::parse_str(p).ok())
         .ok_or(HandlerError("late success refund task is malformed"))?;
-    request_refund(pool, stripe, secret, (pick, LATE_TRIGGER), now)
-        .await
-        .map(drop)
-        .map_err(|_| HandlerError("late success refund could not be recorded"))
+    match request_refund(pool, stripe, secret, (pick, LATE_TRIGGER), now).await {
+        Ok(_) | Err(MoneyEventError::NothingCharged) => Ok(()),
+        Err(_) => Err(HandlerError("late success refund could not be recorded")),
+    }
 }
