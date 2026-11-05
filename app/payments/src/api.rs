@@ -42,6 +42,10 @@
 //!
 //! T224: [`stripe_webhook_routes`] is the Stripe webhook route ([`STRIPE_WEBHOOK_PATH`]): source
 //! rule, signature, then [`paid_release`] and the [`ReleaseSink`] that mints (SEC-039, SEC-049).
+//!
+//! T065: [`decide_unreachable`] and [`decide_cancel`] decide each automatic refund from the call
+//! log ([`CallRecord`]s) as a [`RefundDecision`], once per pick under [`refund_label`]; [`no_show`]
+//! says whether a no-show is recorded, never refunded (FEE-022 to FEE-026, FEE-035, CALL-007).
 
 pub use crate::charge::{
     ATTEMPT_ACTION, ATTEMPT_SUBJECT, IN_FLIGHT, INTENT_ACTION, IntentStripe, confirm_and_pay,
@@ -62,6 +66,11 @@ pub use crate::models::{
     CustomerId, DESCRIPTOR_MAX, ENTITY_KEY_ACTION, EntityKey, EntityKind, FreeWinError, IntentText,
     JoinDates, PickNow, Press, STATEMENT_PREFIX, SavedCard, SetupIntentRequest, attempt_label,
     intent_label,
+};
+pub use crate::refund_rules::{
+    ATTEMPT_GAP, ATTEMPT_WINDOW, Answer, CallRecord, Caller, CancelFacts, Contact, DECIDE_AFTER,
+    EmailCheck, NoShow, RefundDecision, RefundReason, Unmet, UnreachableFacts, counted_attempts,
+    decide_cancel, decide_unreachable, no_show, refund_label, talked,
 };
 pub use crate::release_proof::{
     Minter, Releasable, ReleaseError, SUCCEEDED_EVENT, StripeAccount, VerifiedStripeEvent,

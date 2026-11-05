@@ -33,6 +33,7 @@ mod free_wins;
 mod handlers;
 mod ledger;
 mod models;
+mod refund_rules;
 mod release_proof;
 mod routes;
 mod rules;
