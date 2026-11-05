@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT pick_id, business_id, job_id FROM payments.charge_evidence\n          WHERE stripe_intent_id = $1",
+  "query": "SELECT e.pick_id, e.business_id, e.job_id\n           FROM payments.charge_evidence e JOIN payments.pick_intent p ON p.pick_id = e.pick_id\n          WHERE e.stripe_intent_id = $1 FOR UPDATE OF p",
   "describe": {
     "columns": [
       {
@@ -48,5 +48,5 @@
       false
     ]
   },
-  "hash": "58a03cbee610e62b56eba676f70886d0698f8d9b83414abfd43f539387bfe2a1"
+  "hash": "dcc910d9c8cb35eb4e44d7ecebb945d80a434d2f4c47577159cfd4addf6f0348"
 }

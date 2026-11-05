@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT stripe_dispute_id, amount_cents, due_at, auto_submit, submitted_at\n           FROM payments.dispute WHERE opened_at >= $1 ORDER BY opened_at, stripe_dispute_id",
+  "query": "SELECT stripe_dispute_id, amount_cents, due_at, auto_submit, submitted_at\n           FROM payments.dispute\n          WHERE opened_at >= $1 OR (submitted_at IS NULL AND due_at >= $1)\n          ORDER BY opened_at, stripe_dispute_id",
   "describe": {
     "columns": [
       {
@@ -72,5 +72,5 @@
       true
     ]
   },
-  "hash": "aee7050fd3ad5c1b269b089052725238ccb6cc0a3e62c824d6954a3099ccf6e3"
+  "hash": "a7f29ed038c25e6a11d64bb0fa1fea40f77d2808ed616e69de2b1ce697f818e5"
 }

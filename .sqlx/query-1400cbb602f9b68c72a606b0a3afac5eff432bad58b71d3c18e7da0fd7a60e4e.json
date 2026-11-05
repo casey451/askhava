@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT status, tries FROM payments.refund WHERE pick_id = $1",
+  "query": "SELECT status, tries, stripe_refund_id FROM payments.refund WHERE pick_id = $1",
   "describe": {
     "columns": [
       {
@@ -24,6 +24,17 @@
             "name": "tries"
           }
         }
+      },
+      {
+        "ordinal": 2,
+        "name": "stripe_refund_id",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "payments.refund",
+            "name": "stripe_refund_id"
+          }
+        }
       }
     ],
     "parameters": {
@@ -33,8 +44,9 @@
     },
     "nullable": [
       false,
-      false
+      false,
+      true
     ]
   },
-  "hash": "f753c6e2dc8fbeaa531dec6d2e401c5669e968077a2200693762b0a11129ea9c"
+  "hash": "1400cbb602f9b68c72a606b0a3afac5eff432bad58b71d3c18e7da0fd7a60e4e"
 }

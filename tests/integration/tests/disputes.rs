@@ -11,7 +11,7 @@
 //! Stripe is a scripted fake; the receipt (TD-FEE-34), the FEE-050 condition and the pick and job
 //! moves (TD-FEE-39) are T068's and T191's. All IDs are fake.
 
-use std::collections::VecDeque;
+use std::collections::{HashMap, VecDeque};
 use std::sync::Mutex;
 
 use askhava_adapters::api::{AdapterError, Charge, IdempotencyKey, PaymentIntent, PaymentsAdapter};
@@ -312,7 +312,7 @@ async fn td_fee_23_marked_dispute_submits_two_days_before_due(pool: PgPool) {
         .await
         .expect("id");
     let mut conn = pool.acquire().await.expect("conn");
-    assert_eq!(mark_auto_submit(&mut conn, DISPUTE).await, Ok(true));
+    assert_eq!(mark_auto_submit(&mut conn, DISPUTE, at(0)).await, Ok(true));
     let fake = stripe(vec![]);
     for _ in 0..2 {
         let payload = json!({"dispute": id});
@@ -325,7 +325,7 @@ async fn td_fee_23_marked_dispute_submits_two_days_before_due(pool: PgPool) {
     let listed = list_disputes(&mut conn, at(-DAY)).await.expect("digest");
     assert_eq!(listed.len(), 1);
     assert_eq!(listed[0].submitted_at, Some(at(3 * DAY)));
-    assert_eq!(mark_auto_submit(&mut conn, DISPUTE).await, Ok(false));
+    assert_eq!(mark_auto_submit(&mut conn, DISPUTE, at(0)).await, Ok(false));
 }
 
 /// TD-FEE-23, TD-FEE-33 (FEE-050, D-229): an unmarked dispute is not submitted and waits for Casey
@@ -347,6 +347,14 @@ async fn td_fee_23_unmarked_or_owner_submitted_is_not_auto_submitted(pool: PgPoo
     let waiting = list_disputes(&mut conn, at(-DAY)).await.expect("portal");
     assert!(!waiting[0].auto_submit && waiting[0].submitted_at.is_none());
     assert_eq!(waiting[0].fee_at_stake_cents, 1500);
+    let next_week = list_disputes(&mut conn, at(DAY / 2)).await.expect("digest");
+    assert_eq!(
+        next_week.len(),
+        1,
+        "an open dispute from an earlier week is listed"
+    );
+    let after_due = list_disputes(&mut conn, at(6 * DAY)).await.expect("digest");
+    assert!(after_due.is_empty());
     assert_eq!(
         record_owner_submission(&mut conn, DISPUTE, at(DAY)).await,
         Ok(true)
@@ -355,12 +363,17 @@ async fn td_fee_23_unmarked_or_owner_submitted_is_not_auto_submitted(pool: PgPoo
         record_owner_submission(&mut conn, DISPUTE, at(DAY)).await,
         Ok(false)
     );
-    assert_eq!(mark_auto_submit(&mut conn, DISPUTE).await, Ok(false));
+    assert_eq!(mark_auto_submit(&mut conn, DISPUTE, at(0)).await, Ok(false));
     run_dispute_submit(&pool, &fake, &secret(), &payload, at(3 * DAY))
         .await
         .expect("done");
     assert!(fake.submitted.lock().expect("lock").is_empty());
     assert_eq!(ledger(&pool, "countering-fee").await, vec![1500]);
+    let answered = list_disputes(&mut conn, at(DAY / 2)).await.expect("digest");
+    assert!(
+        answered.is_empty(),
+        "a submitted dispute from an earlier week is not"
+    );
     let bad = json!({"dispute": 7});
     assert!(
         run_dispute_submit(&pool, &fake, &secret(), &bad, at(0))
@@ -402,7 +415,9 @@ async fn td_fee_26_evidence_pack_is_ids_and_timestamps(pool: PgPool) {
         text.contains(&at(-DAY).strftime("%Y-%m-%d %H:%M:%S UTC").to_string()),
         "evidence lacks the press time"
     );
-    mark_auto_submit(&mut conn, DISPUTE).await.expect("mark");
+    mark_auto_submit(&mut conn, DISPUTE, at(0))
+        .await
+        .expect("mark");
     let id: Uuid = sqlx::query_scalar("SELECT id FROM payments.dispute")
         .fetch_one(&pool)
         .await
@@ -443,4 +458,108 @@ async fn td_fee_33_fraud_warning_refunds_only_unreleased(pool: PgPool) {
     assert_eq!(alerts(&pool, FRAUD_WARNING_ALERT).await, 2);
     let trigger = "SELECT count(*) FROM payments.refund WHERE trigger = $1";
     assert_eq!(count(&pool, trigger, "fraud-warning").await, 1);
+}
+
+/// Stripe as its idempotency layer behaves: a key it has seen gets that request's own answer, a
+/// new key refunds the charge once and is refused after; the answer to the first request is lost.
+#[derive(Default)]
+struct KeyedStripe {
+    seen: Mutex<HashMap<String, Option<String>>>,
+    refunds: Mutex<u32>,
+}
+
+impl PaymentsAdapter for KeyedStripe {
+    async fn create_customer(&self, _: &IdempotencyKey, _: &str) -> Result<String, AdapterError> {
+        panic!("no customer is made here")
+    }
+
+    async fn create_payment_intent(
+        &self,
+        _: &IdempotencyKey,
+        _: Charge<'_>,
+    ) -> Result<PaymentIntent, AdapterError> {
+        panic!("nothing is charged here")
+    }
+
+    async fn fetch_payment_intent(&self, _: &str) -> Result<PaymentIntent, AdapterError> {
+        panic!("no intent is read here")
+    }
+
+    async fn create_refund(&self, key: &IdempotencyKey, _: &str) -> Result<String, AdapterError> {
+        let mut seen = self.seen.lock().expect("lock");
+        let first = seen.is_empty();
+        let answer = seen.entry(key.as_str().to_owned()).or_insert_with(|| {
+            let mut refunds = self.refunds.lock().expect("lock");
+            *refunds += 1;
+            (*refunds == 1).then(|| "re_FakeLost".to_owned())
+        });
+        let refused = AdapterError::Vendor {
+            status: 400,
+            code: None,
+        };
+        match answer.clone() {
+            _ if first => Err(AdapterError::OutcomeUnknown),
+            Some(refund) => Ok(refund),
+            None => Err(refused),
+        }
+    }
+}
+
+/// TD-FEE-14 (FEE-026, D-1545): a refund Stripe made on a try whose answer was lost is found by
+/// the hourly retry (it replays the lost try's key) and recorded once, not refused and retried
+/// for ever; Stripe refunded the charge once.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_fee_14_refund_with_a_lost_answer_is_recorded_on_retry(pool: PgPool) {
+    charged(&pool).await;
+    let fake = KeyedStripe::default();
+    let first = request_refund(&pool, &fake, &secret(), unreachable(), at(0)).await;
+    assert_eq!(first, Ok(RefundOutcome::Failed));
+    let retry = json!({"pick": PICK, "try": 1});
+    run_refund_retry(&pool, &fake, &secret(), &retry, at(3600))
+        .await
+        .expect("retry");
+    let status = "SELECT count(*) FROM payments.refund WHERE stripe_refund_id = $1";
+    assert_eq!(count(&pool, status, "re_FakeLost").await, 1);
+    assert_eq!(ledger(&pool, "refund").await, vec![7500]);
+    let again = request_refund(&pool, &fake, &secret(), unreachable(), at(7200)).await;
+    assert_eq!(again, Ok(RefundOutcome::Unchanged));
+    assert_eq!(*fake.refunds.lock().expect("lock"), 1);
+}
+
+/// TD-FEE-23 (FEE-027, FEE-050, D-1545): a dispute opened a day before its due date, so its first
+/// submit task is already past, and marked after that task ran, is still sent once, at the mark;
+/// one marked after its due date queues nothing.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_fee_23_late_mark_still_submits(pool: PgPool) {
+    charged(&pool).await;
+    dispute(&pool, 1).await.expect("dispute");
+    let id: Uuid = sqlx::query_scalar("SELECT id FROM payments.dispute")
+        .fetch_one(&pool)
+        .await
+        .expect("id");
+    let fake = stripe(vec![]);
+    let payload = json!({"dispute": id});
+    run_dispute_submit(&pool, &fake, &secret(), &payload, at(0))
+        .await
+        .expect("unmarked");
+    assert!(fake.submitted.lock().expect("lock").is_empty());
+    let mut conn = pool.acquire().await.expect("conn");
+    assert_eq!(mark_auto_submit(&mut conn, DISPUTE, at(60)).await, Ok(true));
+    assert_eq!(task_at(&pool, SUBMIT_KIND).await, vec![NOW - DAY, NOW + 60]);
+    run_dispute_submit(&pool, &fake, &secret(), &payload, at(60))
+        .await
+        .expect("submit");
+    assert_eq!(fake.submitted.lock().expect("lock").len(), 1);
+    let late = DisputeOpened {
+        dispute: "dp_FakeLate",
+        payment_intent: INTENT,
+        amount_cents: 7500,
+        due_at: at(DAY),
+    };
+    assert_eq!(record_dispute(&pool, &late, at(0)).await, Ok(true));
+    assert_eq!(
+        mark_auto_submit(&mut conn, "dp_FakeLate", at(2 * DAY)).await,
+        Ok(true)
+    );
+    assert_eq!(task_at(&pool, SUBMIT_KIND).await.len(), 3);
 }

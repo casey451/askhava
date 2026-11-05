@@ -64,7 +64,8 @@ fn vendor_id(id: &str, prefixes: &[&str]) -> bool {
 /// FEE-027: records a `charge.dispute.created` once. A new dispute writes one ledger `dispute`
 /// entry of the amount plus [`DISPUTE_FEE_CENTS`], an audit row, a High alert to Casey and the
 /// [`SUBMIT_KIND`] task at the due date less [`SUBMIT_BEFORE`]; a repeated event returns `false`
-/// and writes nothing. From then on the charge's refunds are blocked (FEE-026).
+/// and writes nothing. From then on the charge's refunds are blocked (FEE-026): the insert holds
+/// the pick's `pick_intent` row lock, as a refund claim does, so the two never interleave.
 ///
 /// # Errors
 /// [`MoneyEventError::UnknownCharge`] for a malformed ID, an amount of 0 or less, or a
@@ -81,8 +82,9 @@ pub async fn record_dispute(
     }
     let mut tx = db(pool.begin().await)?;
     let charge = db(sqlx::query!(
-        "SELECT pick_id, business_id, job_id FROM payments.charge_evidence
-          WHERE stripe_intent_id = $1",
+        "SELECT e.pick_id, e.business_id, e.job_id
+           FROM payments.charge_evidence e JOIN payments.pick_intent p ON p.pick_id = e.pick_id
+          WHERE e.stripe_intent_id = $1 FOR UPDATE OF p",
         opened.payment_intent,
     )
     .fetch_optional(&mut *tx)
@@ -112,17 +114,29 @@ pub async fn record_dispute(
         idempotency_key: &key,
     })?;
     ledger_append(&mut tx, &entry).await?;
-    announce(&mut tx, id, opened.due_at - SUBMIT_BEFORE).await?;
+    announce(&mut tx, id).await?;
+    queue_submit(&mut tx, id, opened.due_at - SUBMIT_BEFORE, "").await?;
     db(tx.commit().await)?;
     Ok(true)
 }
 
-/// The audit row (the alert's evidence), Casey's High alert and the submit task of dispute `id`.
-async fn announce(
+/// Queues the [`SUBMIT_KIND`] task of dispute `id` at `at`, once per `suffix`.
+async fn queue_submit(
     conn: &mut PgConnection,
     id: Uuid,
-    submit_at: Timestamp,
+    at: Timestamp,
+    suffix: &str,
 ) -> Result<(), MoneyEventError> {
+    let mut task = NewTask::new(SUBMIT_KIND, json!({"dispute": id}), at);
+    task.dedupe_key = Some(format!("{SUBMIT_KIND}.{id}{suffix}"));
+    enqueue(conn, &task)
+        .await
+        .map_err(|_| MoneyEventError::Database)?;
+    Ok(())
+}
+
+/// The audit row (the alert's evidence) and Casey's High alert of dispute `id`.
+async fn announce(conn: &mut PgConnection, id: Uuid) -> Result<(), MoneyEventError> {
     let entry = AuditEntry {
         actor: Actor::System,
         action: DISPUTE_ACTION,
@@ -141,31 +155,38 @@ async fn announce(
     raise_alert(conn, &alert)
         .await
         .map_err(|_| MoneyEventError::Database)?;
-    let mut task = NewTask::new(SUBMIT_KIND, json!({"dispute": id}), submit_at);
-    task.dedupe_key = Some(format!("{SUBMIT_KIND}.{id}"));
-    enqueue(conn, &task)
-        .await
-        .map_err(|_| MoneyEventError::Database)?;
     Ok(())
 }
 
 /// FEE-050: T191 marks `dispute` (`dp_…`) for auto-submit once the charge has a recorded release
-/// and a call attempt or a 3DS-authenticated payment. `false` when it is unknown or already in.
+/// and a call attempt or a 3DS-authenticated payment. A new mark queues its own [`SUBMIT_KIND`]
+/// task at the later of `now` and the due date less [`SUBMIT_BEFORE`] (none once due), so a
+/// dispute marked after its first task ran, or opened under 2 days before its due date, is still
+/// sent (FEE-027, D-1545). `false` when it is unknown, already marked or already in.
 ///
 /// # Errors
 /// [`MoneyEventError::Database`].
 pub async fn mark_auto_submit(
     conn: &mut PgConnection,
     dispute: &str,
+    now: Timestamp,
 ) -> Result<bool, MoneyEventError> {
     let marked = db(sqlx::query!(
         "UPDATE payments.dispute SET auto_submit = true
-          WHERE stripe_dispute_id = $1 AND submitted_at IS NULL",
+          WHERE stripe_dispute_id = $1 AND submitted_at IS NULL AND NOT auto_submit
+         RETURNING id, due_at",
         dispute,
     )
-    .execute(conn)
+    .fetch_optional(&mut *conn)
     .await)?;
-    Ok(marked.rows_affected() == 1)
+    let Some(row) = marked else {
+        return Ok(false);
+    };
+    let due = row.due_at.to_jiff();
+    if now < due {
+        queue_submit(conn, row.id, now.max(due - SUBMIT_BEFORE), ".marked").await?;
+    }
+    Ok(true)
 }
 
 /// D-229, FEE-050: Casey submitted `dispute`'s evidence himself; it is never auto-submitted after,
@@ -295,8 +316,9 @@ pub async fn run_dispute_submit(
     tx.commit().await.map_err(|_| failed)
 }
 
-/// FEE-027, FEE-050: every dispute opened at or after `since`, oldest first, for the weekly digest
-/// and the owner portal, each with the countering fee at stake.
+/// FEE-027, FEE-050: every dispute opened at or after `since`, and every earlier one still open
+/// (evidence not in, due date not passed before `since`), oldest first, for the weekly digest and
+/// the owner portal, each with the countering fee at stake (D-1545).
 ///
 /// # Errors
 /// [`MoneyEventError::Database`].
@@ -306,7 +328,9 @@ pub async fn list_disputes(
 ) -> Result<Vec<DisputeView>, MoneyEventError> {
     let rows = db(sqlx::query!(
         "SELECT stripe_dispute_id, amount_cents, due_at, auto_submit, submitted_at
-           FROM payments.dispute WHERE opened_at >= $1 ORDER BY opened_at, stripe_dispute_id",
+           FROM payments.dispute
+          WHERE opened_at >= $1 OR (submitted_at IS NULL AND due_at >= $1)
+          ORDER BY opened_at, stripe_dispute_id",
         since.to_sqlx() as _,
     )
     .fetch_all(conn)
