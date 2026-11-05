@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-05T20:38:05Z by runner 6123047d74ac (actions).
+Updated 2026-11-05T20:38:16Z by runner 6123047d74ac (actions).
 
-**Building: T065 in progress since 19:59Z; 103 of 238 done; week 6% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 20:38Z; 103 of 238 done; week 6% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 103 of 238 build tasks (owner gates not counted)
 - **Stage:** stage 3; stage proofs recorded: 1, 2
-- **Lane:** lane 1: T065 claimed 19:59Z, lease until 22:59Z
+- **Lane:** idle since 20:38Z (no task in progress)
 - **Week:** 6% used, 182.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 20:05Z, 32 min before this update
 - **Keeper:** last ran 19:49Z, next wake 20:09Z
@@ -17,6 +17,7 @@ Updated 2026-11-05T20:38:05Z by runner 6123047d74ac (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T065 | payments: refund rules for cancels and no-shows | MERGE_PENDING | 1 | 38 min | 20:38Z |  |
 | T190 | picks: Hold for 2 more hours, the emergency 60-minute window | done | 1 | 32 min | 19:45Z |  |
 | T063 | picks: Confirm within 4 business hours, license at pick and  | done | 1 | 47 min | 19:01Z |  |
 | T224 | portals: the business Confirm-and-pay page with Stripe Eleme | done | 2 | 50 min | 17:59Z | session ended without handing in |
@@ -71,7 +72,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T065 (lease until 2026-11-05T22:59:06Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T190", "at": "2026-11-05T19:45:15Z", "cache_read_input_tokens": 7117055, "cache_creation_input_tokens": 365178, "input_tokens": 233, "output_tokens": 92511}
+- {"task": "T065", "at": "2026-11-05T20:38:04Z", "cache_read_input_tokens": 7016223, "cache_creation_input_tokens": 336457, "output_tokens": 88415, "input_tokens": 268}
