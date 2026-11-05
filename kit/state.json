@@ -16366,7 +16366,15 @@
     1534,
     1535,
     1536
-   ]
+   ],
+   "reviewed_sha": "42bd528fceddeb389e2e1173e6ecd9108a954d52",
+   "review_lease": {
+    "task": "T244",
+    "session": "actions-42106662826",
+    "expires": "2026-11-06T00:01:06Z"
+   },
+   "branch": "claude/task/T244-payments-remove-price-lock",
+   "head_check_since": null
   },
   {
    "id": "T245",
@@ -17481,7 +17489,7 @@
    }
   }
  },
- "updated_at": "2026-11-05T21:07:07Z",
+ "updated_at": "2026-11-05T21:20:20Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -17579,7 +17587,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "b32bc9f7137c7c99af0ebe179a476b39fa872fd9",
+ "runner_sha": "42bd528fceddeb389e2e1173e6ecd9108a954d52",
  "starter": "actions",
  "smoke_runs": [
   {
