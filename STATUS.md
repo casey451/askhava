@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-05T21:20:53Z by runner b32bc9f7137c (actions).
+Updated 2026-11-05T21:35:21Z by runner 0340b5b80ca8 (actions).
 
-**Idle since 21:20Z; 104 of 238 done; week 6% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 21:33Z; 105 of 238 done; week 6% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 104 of 238 build tasks (owner gates not counted)
+- **Tasks done:** 105 of 238 build tasks (owner gates not counted)
 - **Stage:** stage 3; stage proofs recorded: 1, 2
-- **Lane:** idle since 21:20Z (no task in progress)
+- **Lane:** idle since 21:33Z (no task in progress)
 - **Week:** 6% used, 182.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:20Z, 0 min before this update
+- **Last run:** 21:20Z, 14 min before this update
 - **Keeper:** last ran 21:20Z, next wake 21:40Z
 
 ## Needs attention
@@ -17,7 +17,7 @@ Updated 2026-11-05T21:20:53Z by runner b32bc9f7137c (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T244 | payments: remove the early-joiner price lock (FEE-040 withdr | MERGE_PENDING | 1 | 19 min | 21:20Z |  |
+| T244 | payments: remove the early-joiner price lock (FEE-040 withdr | done | 1 | 19 min | 21:20Z |  |
 | T065 | payments: refund rules for cancels and no-shows | done | 1 | 38 min | 20:38Z |  |
 | T190 | picks: Hold for 2 more hours, the emergency 60-minute window | done | 1 | 32 min | 19:45Z |  |
 | T063 | picks: Confirm within 4 business hours, license at pick and  | done | 1 | 47 min | 19:01Z |  |
@@ -29,8 +29,8 @@ Updated 2026-11-05T21:20:53Z by runner b32bc9f7137c (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 168 of 731 (23.0%) · partial 217 · unstarted 346
-**Tasks merged (throughput only):** 104 of 238
+**Requirements verified:** 169 of 731 (23.1%) · partial 216 · unstarted 346
+**Tasks merged (throughput only):** 105 of 238
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -49,7 +49,7 @@ Updated 2026-11-05T21:20:53Z by runner b32bc9f7137c (actions).
 | privacy | 1 | 13 | 17 | 31 |
 | quiet-hours | 6 | 3 | 0 | 9 |
 | quotes-pick | 7 | 29 | 20 | 56 |
-| recurring | 5 | 3 | 3 | 11 |
+| recurring | 6 | 2 | 3 | 11 |
 | security | 9 | 23 | 22 | 54 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 0 | 28 | 28 |
@@ -64,7 +64,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 0.5: 0 of 1 done
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
-- stage 3: 13 of 29 done
+- stage 3: 14 of 29 done
 - stage 4: 0 of 54 done
 - stage 5: 0 of 42 done
 - stage 6: 0 of 26 done
