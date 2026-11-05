@@ -41,6 +41,7 @@ The first lines of every `.rs` file under `app/` and `tests/` are `//!` comments
 - A function that applies a business rule names the requirement IDs in its doc comment, so a search for `FEE-039` finds the code, the test and the spec line.
 - Comments say *why*. Names say *what*. No comment restates the code.
 - A number that comes from the spec (a fee, a timer, a limit) lives in the catalog or settings, never as a bare literal in logic, and its comment names the requirement.
+- Ask Hava is national-ready (D-1515): new code takes market-specific values (the towns, the licensing and identity sources, the quiet-hours and business-clock time zone, tax treatment, a launch date) from data (`docs/catalog/markets.yaml` and the catalog tables, or settings), never as a literal Lake Havasu City or Arizona value, except where a requirement line names one (for example JOB-007, LIC-011, QH-001, FEE-046), and such a literal's comment names that requirement.
 
 ## 5. Every requirement can be traced
 

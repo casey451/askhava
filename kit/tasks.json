@@ -6596,6 +6596,172 @@
    "copy": true
   },
   {
+   "id": "T247",
+   "slug": "jobs-first-quote-move",
+   "title": "jobs and quotes: the first-quote move to Quotes ready (JOB-009) and its text (TXT-016)",
+   "goal": "JOB-009 (an Open job moves to Quotes ready when its first quote arrives) and JOB-011's No quotes yet to Quotes ready are not built (D-1048, D-1517; `app/quotes/CLAUDE.md` lists \"the first-quote move\" as not here yet): nothing moves a job to `QuotesReady` on a quote, so a quoted job's Open wait (`JobStatus::wait`, 6 p.m. next day) moves it to No quotes yet with that text and then closes it, a \"2 YES\" text pick is refused (`app/picks/src/rules.rs` takes only Ready or Waiting, and Open is Collecting), and TXT-016's first-quote text (`quotes::api::first_quote_text`, template `first_quote`) has no sender. Build it: in `jobs` (the shared `app/jobs/src/api.rs` and `app/jobs/src/status.rs`) add `JobStatus::moves_on_first_quote` (Open, No quotes yet) and `jobs::api::first_quote(db, job, at)`, which, when the current status `moves_on_first_quote`, applies the move to Quotes ready with the homeowner-text template `first_quote` in the caller's transaction (on a lost race it re-reads, at most 3 times, then reports that nothing moved); any other status moves nothing and writes nothing. `quotes::intake::submit_quote` (`app/quotes/src/intake.rs`) calls it inside its transaction after the window, status and edit checks and before the quote row is written (the job lock before the quote row, the order D-1051 uses), for a quote confirmed at once (not `ai_read`); `confirm_quote` calls it when it confirms an AI-read quote. A second quote, an edit, and a quote in Quotes ready or Awaiting confirm move nothing and queue no text. The move bumps the version, so the old Open or No-quotes-yet wait applies nothing (JOB-006), and Quotes ready's 3-day wait counts from the move (JOB-012, JOB-025). `intake::job_texts` (`app/intake/src/job_texts.rs`) adds `first_quote` to `JOB_TEXT_TEMPLATES` and sends it by the existing steps (`text_due`, so a moved-on version drops it; the homeowner lookup; `may_text`; `send_window` for quiet hours and opt-out; the outbox), issuing a quote-page link for it as it does for `all_quotes_in` (SEC-037); no new template key (the English and Spanish `first_quote` templates exist, T047). No phone, name or amount is logged. `submit_quote` has no production caller yet (the business quote form is T148's), so the move must be right wherever a quote is stored. Tests in `tests/integration/tests/first_quote_move.rs` (TD-JOB-11): the move and its one text event in the quote's transaction (a failing quote insert rolls the move back), no second move or text, a No-quotes-yet job moving with its stale text dropped, the old wait applying nothing and the 3-day close from the move and after `restart_timer`, two first quotes at once (one move, one text, repeated runs), an AI-read quote moving only on confirm, and \"2 YES\" accepted after two quotes with no manual move (TD-PICK-40's path). Every existing test must still pass; if a done task's test breaks because a quote now moves its job, stop and report it (that is a plan change), never edit that test. Update `app/quotes/CLAUDE.md` (drop the \"Not here yet\" item), `app/jobs/CLAUDE.md` and `docs/architecture.md` section 10.",
+   "type": "build",
+   "phase": 1,
+   "stage": "3",
+   "module": "quotes",
+   "deps": [
+    "T046",
+    "T186",
+    "T033",
+    "T240",
+    "T224"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy"
+   ],
+   "owns": [
+    "app/quotes/src/intake.rs",
+    "app/intake/src/job_texts.rs",
+    "tests/integration/tests/first_quote_move.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/lifecycle.md",
+    "docs/spec/messaging.md",
+    "docs/spec/quotes-pick.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "JOB-009",
+    "JOB-011",
+    "JOB-012",
+    "JOB-025",
+    "JOB-006",
+    "TXT-016"
+   ],
+   "tests": [
+    "TD-JOB-11",
+    "TD-JOB-03",
+    "TD-PICK-40"
+   ],
+   "decisions": [
+    "D-1517",
+    "D-011",
+    "D-807",
+    "D-872",
+    "D-1048",
+    "D-1051",
+    "D-1234",
+    "D-1302"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 350,
+    "context_pct": 20
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T247-jobs-first-quote-move",
+   "prompt": "kit/prompts/T247.md"
+  },
+  {
+   "id": "T246",
+   "slug": "page-pick-end-to-end",
+   "title": "picks, portals and server: the page pick end to end (one pick rule, Verify code, stored pick)",
+   "goal": "No homeowner can pick on the quote page today: `portals::pick_flow::final_pick` re-renders the review step with `not_open` and stores nothing, the code step sends no code (D-1248, D-1264, D-1280), and `server` builds `pick_flow_routes(pool, clock)` with no Verify client, vault or secret. Build the page pick end to end (D-1516). (1) One pick rule: add `JobStatus::takes_pick` (Quotes ready, Awaiting confirm) to the shared `app/jobs/src/status.rs`, its doc naming PICK-012, PICK-032 and PICK-045; the quote page's Pick buttons (`app/portals/src/quote_page.rs`, today `takes_quote_edits`), `pick_flow::takes_pick` (today `takes_quotes`) and the final Pick all call it, and a unit test pins `picks`' text stage (Ready or Waiting) equal to it for all twelve statuses; `takes_quote_edits` stays for business quote edits. Open and No quotes yet drop out because T247's first-quote move puts a quoted job in Quotes ready. (2) The pick core in `picks` (`app/picks/src/service.rs`): pull the end-move-insert part of the private `pick_quote` into one function both channels use, and add `picks::api::page_pick(tx, job, quote, actor, at)` answering picked, same (the waiting pick is that quote) or taken (the job no longer `takes_pick`, a homeowner pause (CON-029), or an unavailable quote); a re-pick while one waits ends it as `replaced` with its withdrawal event (PICK-032) and does not restart the Confirm window; `insert_pick` with no inbox already writes channel `page`, so `app/picks/src/models.rs` (T063's and T069's) is not changed. Nothing irreversible happens before Confirm: no fee, free win or release. (3) The code without `portals` seeing the number: add `Purpose::PickCode` and the grant `(Reader::Picks, Purpose::PickCode, [Phone], \"vault_read.picks.pick_code\")` to `GRANTS` in `app/privacy/src/models.rs` and `privacy::api::read_for_pick_code` (audited and counted like every read; refusing a connection inside a transaction, as `read_for_release` does), as `docs/architecture.md` section 8 now records; `picks` adds `send_page_code` and `check_page_code`, which take the homeowner's contact ID, read the phone with it and call the existing `send_code` and `check_code` (caps, cooldown, PICK-055); the phone is never returned, logged or put in an error. Add `(\"read_for_pick_code\", &[\"picks\"])` to `READERS` in `tests/security/tests/vault_readers.rs` (T022's test, taken over here). `intake::api` gains the job's newest request's conversation, contact and language, built on `job_texts::homeowner_of` (`app/intake/src/job_texts.rs`). (4) The flow in `app/portals/src/pick_flow.rs`: the code step resolves the token and checks `takes_pick`; re-picking the waiting quote shows the result page and sends no code; a job paused by the homeowner (`intake::api::paused_by_homeowner`) or a number `messaging::api::send_window` says can't be texted gets no code and a plain line saying nothing was picked (ending a pause by a page pick is T095's email path, PICK-029); otherwise it sends the code and renders `templates/pick_code.html` with a code-sent line, or the cap or cooldown line; \"Finish my pick\" checks the code (`CodeCheck` shown as field errors, a malformed code counting no try) and on `Accepted` runs one transaction: `page_pick`, then `intake::api::record_terms_acceptance` with `TermsChannel::QuotePage` (TERMS-016, PICK-016), then the result page (PICK-045); taken from Payment pending on shows the confirmed line. The contact choice and email (PICK-018) stay checked and passed on unstored, as now (D-1264). (5) `server` (the shared `app/server/src/lib.rs`): `pick_flow_routes` takes optional pick-code keys (the Verify client from `adapters::api::twilio_clients`, the vault and the ID secret, built as `job_text_keys` builds them, D-1302); without the vault keys (dev, `Ci` and the end-to-end runs) the page keeps today's \"Nothing was picked\" lines word for word, so `tests/e2e/pick_flow.spec.ts` and `tests/a11y/pick_forms.spec.ts` stay true; the test and live projects refuse to start without them. (6) `tests/a11y/fixtures.ts` (T053's, taken over here): its \"after a pick\" quote-page state (Awaiting confirm) required no \"Pick #\", which locked in the gap D-1251 named; it now requires the Pick button on the other available quotes, and a new Payment pending state requires none (D-1516, BUILD_BRIEF.md:69). New words (code sent, can't text, already confirmed, same quote) are drafts for the copy panel, with Spanish drafts (WORD-028). Tests: `app/portals/src/tests/pick_flow.rs` (TD-PICK-45's status table, replacing T055's four-status case), `tests/integration/tests/page_pick.rs` (TD-PICK-45, TD-PICK-47, TD-PICK-30, TD-PICK-14 on the page, with the Verify stand-in by base URL, D-453) and `tests/security/tests/page_pick_privacy.rs` (TD-PICK-46). Update `app/picks/CLAUDE.md`, `app/portals/CLAUDE.md`, `app/privacy/CLAUDE.md`, `app/intake/CLAUDE.md` and `docs/architecture.md` sections 8 and 10.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "3",
+   "module": "picks",
+   "deps": [
+    "T247",
+    "T055",
+    "T187",
+    "T094",
+    "T053",
+    "T054",
+    "T022",
+    "T224"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "security",
+    "accessibility"
+   ],
+   "owns": [
+    "app/picks/src/service.rs",
+    "app/privacy/src/models.rs",
+    "app/intake/src/job_texts.rs",
+    "app/portals/src/pick_flow.rs",
+    "app/portals/src/quote_page.rs",
+    "app/portals/templates/pick_code.html",
+    "app/portals/src/tests/pick_flow.rs",
+    "tests/integration/tests/page_pick.rs",
+    "tests/security/tests/page_pick_privacy.rs",
+    "tests/security/tests/vault_readers.rs",
+    "tests/a11y/fixtures.ts"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/terms.md",
+    "docs/spec/privacy.md",
+    "docs/spec/consent.md",
+    "docs/spec/accessibility.md",
+    "docs/brains/rust-production.md",
+    "docs/brains/accessibility-forms.md"
+   ],
+   "requirements": [
+    "PICK-012",
+    "PICK-013",
+    "PICK-015",
+    "PICK-016",
+    "PICK-032",
+    "PICK-045",
+    "PICK-055",
+    "TERMS-016",
+    "PRIV-003"
+   ],
+   "tests": [
+    "TD-PICK-45",
+    "TD-PICK-46",
+    "TD-PICK-47",
+    "TD-PICK-30",
+    "TD-PICK-14"
+   ],
+   "decisions": [
+    "D-1516",
+    "D-015",
+    "D-093",
+    "D-1234",
+    "D-1248",
+    "D-1251",
+    "D-1264",
+    "D-1302"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 11,
+    "lines": 750,
+    "context_pct": 33
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T246-page-pick-end-to-end",
+   "prompt": "kit/prompts/T246.md",
+   "copy": true
+  },
+  {
    "id": "T063",
    "slug": "picks-confirm-window",
    "title": "picks: Confirm within 4 business hours, license at pick and at Confirm",
@@ -7658,7 +7824,9 @@
     "T065",
     "T094",
     "T224",
-    "T225"
+    "T225",
+    "T246",
+    "T247"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -7699,16 +7867,75 @@
    "prompt": "kit/prompts/T075.md"
   },
   {
+   "id": "T250",
+   "slug": "core-schema-default-privileges",
+   "title": "core: narrow the default privileges in every schema and prove each table's grants",
+   "goal": "Every schema but `payments` (T245) still gives `askhava_app` SELECT, INSERT, UPDATE and DELETE on every new table by default: `ALTER DEFAULT PRIVILEGES IN SCHEMA <schema> GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO askhava_app` in migrations 0019 (core), 0021 (ops), 0027 (catalog), 0031 (jobs), 0036 (privacy), 0040 (ai), 0042 (messaging), 0048 (licensing), 0053 (intake), 0055 (businesses), 0058 (portals), 0067 (quotes) and 0079 (picks) (D-1495, verified in D-1520), so an append-only table stays append-only only while its own migration remembers to REVOKE. Add `migrations/0110_schema_default_privileges.sql` (first line `-- core (T250): ...`) running `ALTER DEFAULT PRIVILEGES IN SCHEMA <schema> REVOKE UPDATE, DELETE ON TABLES FROM askhava_app;` for each of the 13 schemas; no existing table's grants change (a default applies only to tables created later). Add `tests/integration/tests/schema_grants.rs` (a `sqlx::test` on the shared migrator; T245's `payments_grants.rs` covers `payments` and is not edited) asserting: every schema's default ACL in `pg_default_acl` other than `payments` gives the app role exactly SELECT and INSERT, including a schema a later migration creates (so `calls`, T076, and `recovery`, T109, write theirs as SELECT, INSERT); each existing table's app-role privileges equal an explicit allow list built from the migrations as they stand, every UPDATE or DELETE named with the requirement or migration that needs it (for example the BIZ-010 edits of `businesses.town` and `businesses.job_type_choice`); no table grants TRUNCATE, REFERENCES or TRIGGER; the append-only tables the spec names (`ops.audit_log`, OPS-010; the consent and opt-out records, CON-022; `quotes.job_card`, D-1015) have no UPDATE or DELETE; a table created after the migrations gets SELECT and INSERT only; and a table outside the pinned list (one a later task adds) holds no more than SELECT, INSERT and what the explicit `GRANT ... TO askhava_app` statements in `migrations/` give it (parsed as T245's test parses them: comma lists, statements over several lines, column grants), so no later build task edits this test (TD-SEC-34). If a table the spec calls append-only has UPDATE or DELETE today, revoke it in this migration when no code updates or deletes its rows, and otherwise stop and report. Update `app/core/CLAUDE.md` and `docs/architecture.md` section 10.",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "core",
+   "deps": [
+    "T245",
+    "T075"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security"
+   ],
+   "owns": [
+    "migrations/0110_schema_default_privileges.sql",
+    "tests/integration/tests/schema_grants.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/ops-recovery.md",
+    "docs/spec/consent.md",
+    "docs/brains/postgres-operations.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "OPS-010",
+    "CON-022"
+   ],
+   "tests": [
+    "TD-SEC-34"
+   ],
+   "decisions": [
+    "D-1520",
+    "D-1495",
+    "D-092",
+    "D-1015"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 450,
+    "context_pct": 16
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T250-core-schema-default-privileges",
+   "prompt": "kit/prompts/T250.md"
+  },
+  {
    "id": "T076",
    "slug": "calls-pool",
    "title": "calls: masked numbers from a fixed pool, PIN sharing when exhausted",
-   "goal": "`calls` gives each connected job a masked number from the fixed pool in settings (never bought by the app), one no other active job of the same homeowner or business is using where possible, shared with PIN routing and an alert when the pool runs out, on standard programmable voice only, so neither side sees the other's number (CALL-001, CALL-002, CALL-017, CALL-021).",
+   "goal": "`calls` gives each connected job a masked number from the fixed pool in settings (never bought by the app), one no other active job of the same homeowner or business is using where possible, shared with PIN routing and an alert when the pool runs out, on standard programmable voice only, so neither side sees the other's number (CALL-001, CALL-002, CALL-017, CALL-021). The new `calls` schema's default privileges give `askhava_app` SELECT and INSERT only (`ALTER DEFAULT PRIVILEGES IN SCHEMA calls GRANT SELECT, INSERT ON TABLES TO askhava_app`), and a table that needs UPDATE or DELETE gets an explicit GRANT in this migration; T250's `schema_grants.rs` checks every schema's default (D-1520).",
    "type": "build",
    "phase": 1,
    "stage": "4",
    "module": "calls",
    "deps": [
-    "T075"
+    "T075",
+    "T250"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -7747,7 +7974,8 @@
     "D-077",
     "D-160",
     "D-296",
-    "D-366"
+    "D-366",
+    "D-1520"
    ],
    "cites": [],
    "budget": {
@@ -8968,7 +9196,8 @@
    "stage": "4",
    "module": "privacy",
    "deps": [
-    "T075"
+    "T075",
+    "T246"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -9096,7 +9325,8 @@
    "deps": [
     "T091",
     "T083",
-    "T066"
+    "T066",
+    "T246"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -9232,7 +9462,8 @@
     "T094",
     "T075",
     "T208",
-    "T213"
+    "T213",
+    "T246"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -10686,7 +10917,10 @@
     "T228",
     "T232",
     "T230",
-    "T231"
+    "T231",
+    "T248",
+    "T249",
+    "T250"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -11933,7 +12167,7 @@
    "id": "T109",
    "slug": "recovery-backup-export",
    "title": "recovery: backup checks and the nightly encrypted export",
-   "goal": "`recovery` makes the nightly encrypted export to separate storage under its own key, kept 30 days with versioning and object lock, runs the monthly test restore with a High alert on failure, and leaves the key inventory to T117; `recovery` records each backup and restore result through `ops::api` (a function added here), and `portals` reads them from `ops`: the restore result line in `digest_flags.rs` (T204's) and the last-backup figure in `health_page.rs` (T106's), both extended here (D-491, D-493) (OPS-013, PRIV-018, PRIV-024, PRIV-029). The export is `pg_dump -Fc`; every restore runs `scripts/bootstrap_roles.sql` first, then `pg_restore --single-transaction`, with the ownership and append-only grant check (OPS-051), and the storage provider is Backblaze B2 (PRIV-029) (D-492).",
+   "goal": "`recovery` makes the nightly encrypted export to separate storage under its own key, kept 30 days with versioning and object lock, runs the monthly test restore with a High alert on failure, and leaves the key inventory to T117; `recovery` records each backup and restore result through `ops::api` (a function added here), and `portals` reads them from `ops`: the restore result line in `digest_flags.rs` (T204's) and the last-backup figure in `health_page.rs` (T106's), both extended here (D-491, D-493) (OPS-013, PRIV-018, PRIV-024, PRIV-029). The export is `pg_dump -Fc`; every restore runs `scripts/bootstrap_roles.sql` first, then `pg_restore --single-transaction`, with the ownership and append-only grant check (OPS-051), and the storage provider is Backblaze B2 (PRIV-029) (D-492). The new `recovery` schema's default privileges give `askhava_app` SELECT and INSERT only, and a table that needs UPDATE or DELETE gets an explicit GRANT in its migration; T250's `schema_grants.rs` checks every schema's default (D-1520).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -11991,7 +12225,8 @@
     "D-094",
     "D-278",
     "D-480",
-    "D-492"
+    "D-492",
+    "D-1520"
    ],
    "cites": [],
    "budget": {
@@ -14039,7 +14274,7 @@
    "id": "T242",
    "slug": "pre-war-games-review",
    "title": "Pre-war-games competitive gap analysis and feature readiness review (Casey's mandatory milestone)",
-   "goal": "Casey's mandatory milestone (November 1, 2026, D-1339; his words are `docs/reviews/pre-war-games-review-brief.md`, read whole): after the approved build is complete and verified (the stage-6 chain through the restore drill, T139) and before any war game (T234 to T239), write `docs/reviews/pre-war-games-review.md`, titled \"ASK HAVA — PRE-WAR-GAMES COMPETITIVE & FEATURE READINESS REVIEW\", and `docs/reviews/pre-war-games-plan.md`, the recommended feature implementation plan and decision log. This task reviews and recommends; it builds no feature and changes no code, requirement, test or locked file. Ask Hava's current state is verified from the code on `main` and the spec, never assumed: for the matrix's current-state column this task may grep and read, without changing, `app/`, `migrations/`, `docs/spec/`, `docs/test-design.md` and `kit/state.json` beyond the files under Scope; Runhome (runhome.com) evidence comes from public sources only (its website, FAQ, terms, privacy policy and other legitimate public material; no unauthorized access to its systems, data or technology), each claim marked verified, marketing assertion or speculation, with its URL and the date read. Runhome capabilities to check (brief section 1) include finding businesses without the homeowner searching, preliminary AI estimates, contacting businesses and getting quotes, negotiating or coordinating parts of the repair, arranging appointments, support through the repair, a hands-off experience, urgent repairs, and a broader home-management relationship rather than a single transaction. Earlier notes Casey asked to keep (the benchmark price range, inspection-report upload, a one-tap approval summary, time-to-quote and win-rate measures, cold start, intake fatigue, pick rates by fee tier) are in `docs/handoff/2026-11-02-evening.md` lines 32 and 33; the review weighs them too. Investigate in detail (brief section 3): A. contractor discovery without prior sign-up in a market with no registered businesses (finding trades and service areas, licensing verification, inviting businesses that never registered to quote a real request, explaining the introduction fee before they take part, converting responders to opted-in participants; permitted directories, licensing databases, APIs and public websites; CAN-SPAM, TCPA, state solicitation rules, consent, opt-outs and carrier policies, with live calls, B2B email, automated texts and AI voice calls kept apart; cold AI calls and unsolicited automated texts are never assumed lawful; whether discovery is essential before launch or should be developed even earlier); B. preliminary AI repair estimates (localized ranges, labor and material ranges, why prices differ, factors that change the final cost, whether a quote looks unusual; data quality, hallucination risk, liability, operating cost, effect on trust; any estimate is labelled preliminary, never a business's offer); C. post-selection coordination, \"Hava Assist\" (\"I'll take it from here\" or \"Hava, help me handle the rest\": relaying appointment preferences, confirmations and reminders, arrival and delay updates, job status, follow-ups, satisfaction checks, completion, spotting a homeowner who needs help), which of these tasks are realistically automatable through the Rust backend services, AI agents, messaging infrastructure and existing integrations, separating administrative help from construction management, which Arizona law may regulate as contractor activity (describing Hava as an AI assistant does not remove those obligations); D. emergency and urgent requests (same-day availability, fast invitations, a first-acceptable-quote path that keeps the homeowner's choice, emergency categories, escalation when no one answers, realistic response times, safety warnings and emergency-service referral), or excluding emergencies at launch; never implying coverage the system cannot give; E. homeowner decision fatigue (standardized comparison, scope differences, availability, licence indicators, questions to ask, side by side, new-quote notices, choosing before every quote arrives) with neutrality kept; F. repeat engagement (repair history, past businesses, maintenance and seasonal reminders, rebooking, recurring requests, a homeowner dashboard), keeping only what earns retention; G. contractor economics and fee resistance (the $199 fee just above $1,500, whether businesses know what they buy, cancellations, invalid or duplicate requests, unreachable homeowners, jobs that do not go ahead, fee disputes and credits, willingness to quote again; recommend protections that preserve profitability without making businesses reluctant to quote again); H. conversion and operations metrics (requests, eligible businesses found, invitations delivered and accepted, quotes, time to first quote, picks, confirmations and payments, introductions, completed repairs where known, failed requests and reasons, revenue and variable cost per request, refunds, credits and disputes, repeat homeowners and businesses), recommending the smallest instrumentation that shows whether the business works. Look beyond Runhome (brief section 4) from six views: a homeowner wanting a repair done with least effort, a business deciding whether Ask Hava is worth paying for, a competitor, a founder running it without a support team, expansion into markets with no business network (Casey, November 1: \"We will run it small market first with the plan to expand.\" The build and spec stay Lake Havasu City only; expansion is a planning question here, and an answer that needs a scope change is a recommendation for a later plan change), and a security and compliance reviewer; more features is not a better product, so each addition needs evidence that it materially improves conversion, trust, reliability, retention or profitability. The report (brief section 5) holds a comparison matrix (capability, Ask Hava current state, Runhome evidence, competitive gap, recommendation Build, Improve, Defer or Reject, priority) covering at least contractor discovery, AI price estimates, repair coordination and emergency handling and every other meaningful issue found; for each proposed feature the problem, business benefit, evidence, reusable existing functionality, technical approach, dependencies, development effort and ongoing cost, security, privacy, legal and operational risks, acceptance criteria, how to measure it, and whether it belongs before the war games, after them or after launch; priorities P0 (required before the war games: a missing capability or defect that would invalidate testing the intended launch product), P1 (important, deferrable without invalidating the war games) and P2 (future); legally blocked or legal-review features listed apart from product priorities, never authorized because they rank P0, and every Arizona contractor-licensing question (Hava Assist above all) marked for professional legal review; and answers to the brief's eight questions (section 7): what Runhome offers that Ask Hava lacks; which differences would make homeowners or businesses prefer Runhome; which must be fixed before launch; whether Ask Hava can be as convenient without becoming a licensed construction manager; whether it can fill requests where no business has signed up; whether it can grow without substantial human work per job; which features improve measurable outcomes enough to justify their cost; and whether the product is ready for the war games. Constraints: preserve the business model and fee structure (introduction fee by job size, $25 under $500, $75 for $500 to $1,500, $199 above $1,500, ongoing services at 4 months of estimated value capped at the $75 tier; homeowners pay nothing; anonymous quotes from every qualified opted-in business; details released only on a confirmed, paid pick; masked calling) unless the evidence gives a substantial reason, stated as a recommendation for Casey; never turn Ask Hava into a general contractor, construction manager or repair company; never propose undisclosed paid rankings or anything that steers which quote wins; nothing live (no sign-ups, outreach, messages or accounts, BUILD_BRIEF.md:61); fake data only. The plan file lists each recommended feature as a proposed task (owner files, dependencies, tests, security controls, docs) and a decision log, every item marked awaiting Casey's approval: no feature is built without it. It also records the follow-up that the war games, once any approved enhancements are built and verified, must be updated by a plan change to test missing business networks, failed outreach, emergency demand, quote abandonment, cancellations, fee disputes and attempted abuse (D-1339). The war games hold for Casey's decision: this task's hand-in adds to `docs/for-casey-review.md` a section asking him which P0 items to build (or none). The hold is a real owner gate (D-1473): T243 (`war-games-go`) opens when this task merges, sends Casey the review, the plan and the P0 list, and T234 waits for it; Casey replies exactly 'war games go' to start the war games with nothing added, or names the P0 items to build, which a plan change adds as tasks T234 then depends on, built and verified before the war games.",
+   "goal": "Casey's mandatory milestone (November 1, 2026, D-1339; his words are `docs/reviews/pre-war-games-review-brief.md`, read whole): after the approved build is complete and verified (the stage-6 chain through the restore drill, T139) and before any war game (T234 to T239), write `docs/reviews/pre-war-games-review.md`, titled \"ASK HAVA — PRE-WAR-GAMES COMPETITIVE & FEATURE READINESS REVIEW\", and `docs/reviews/pre-war-games-plan.md`, the recommended feature implementation plan and decision log. This task reviews and recommends; it builds no feature and changes no code, requirement, test or locked file. Ask Hava's current state is verified from the code on `main` and the spec, never assumed: for the matrix's current-state column this task may grep and read, without changing, `app/`, `migrations/`, `docs/spec/`, `docs/test-design.md` and `kit/state.json` beyond the files under Scope; Runhome (runhome.com) evidence comes from public sources only (its website, FAQ, terms, privacy policy and other legitimate public material; no unauthorized access to its systems, data or technology), each claim marked verified, marketing assertion or speculation, with its URL and the date read. Runhome capabilities to check (brief section 1) include finding businesses without the homeowner searching, preliminary AI estimates, contacting businesses and getting quotes, negotiating or coordinating parts of the repair, arranging appointments, support through the repair, a hands-off experience, urgent repairs, and a broader home-management relationship rather than a single transaction. Earlier notes Casey asked to keep (the benchmark price range, inspection-report upload, a one-tap approval summary, time-to-quote and win-rate measures, cold start, intake fatigue, pick rates by fee tier) are in `docs/handoff/2026-11-02-evening.md` lines 32 and 33; the review weighs them too. Investigate in detail (brief section 3): A. contractor discovery without prior sign-up in a market with no registered businesses (finding trades and service areas, licensing verification, inviting businesses that never registered to quote a real request, explaining the introduction fee before they take part, converting responders to opted-in participants; permitted directories, licensing databases, APIs and public websites; CAN-SPAM, TCPA, state solicitation rules, consent, opt-outs and carrier policies, with live calls, B2B email, automated texts and AI voice calls kept apart; cold AI calls and unsolicited automated texts are never assumed lawful; whether discovery is essential before launch or should be developed even earlier); B. preliminary AI repair estimates (localized ranges, labor and material ranges, why prices differ, factors that change the final cost, whether a quote looks unusual; data quality, hallucination risk, liability, operating cost, effect on trust; any estimate is labelled preliminary, never a business's offer); C. post-selection coordination, \"Hava Assist\" (\"I'll take it from here\" or \"Hava, help me handle the rest\": relaying appointment preferences, confirmations and reminders, arrival and delay updates, job status, follow-ups, satisfaction checks, completion, spotting a homeowner who needs help), which of these tasks are realistically automatable through the Rust backend services, AI agents, messaging infrastructure and existing integrations, separating administrative help from construction management, which Arizona law may regulate as contractor activity (describing Hava as an AI assistant does not remove those obligations); D. emergency and urgent requests (same-day availability, fast invitations, a first-acceptable-quote path that keeps the homeowner's choice, emergency categories, escalation when no one answers, realistic response times, safety warnings and emergency-service referral), or excluding emergencies at launch; never implying coverage the system cannot give; E. homeowner decision fatigue (standardized comparison, scope differences, availability, licence indicators, questions to ask, side by side, new-quote notices, choosing before every quote arrives) with neutrality kept; F. repeat engagement (repair history, past businesses, maintenance and seasonal reminders, rebooking, recurring requests, a homeowner dashboard), keeping only what earns retention; G. contractor economics and fee resistance (the $199 fee just above $1,500, whether businesses know what they buy, cancellations, invalid or duplicate requests, unreachable homeowners, jobs that do not go ahead, fee disputes and credits, willingness to quote again; recommend protections that preserve profitability without making businesses reluctant to quote again); H. conversion and operations metrics (requests, eligible businesses found, invitations delivered and accepted, quotes, time to first quote, picks, confirmations and payments, introductions, completed repairs where known, failed requests and reasons, revenue and variable cost per request, refunds, credits and disputes, repeat homeowners and businesses), recommending the smallest instrumentation that shows whether the business works. Look beyond Runhome (brief section 4) from six views: a homeowner wanting a repair done with least effort, a business deciding whether Ask Hava is worth paying for, a competitor, a founder running it without a support team, expansion into markets with no business network (Casey, November 1: \"We will run it small market first with the plan to expand.\"; November 3 and 5: national-ready is a standing design goal, D-1515: the code must take every market value from data, the launch market is open (Phoenix metro with a business partner, Lake Havasu City otherwise), and the launch still starts in one market; T248 and T249 build markets as data, each business's service radius and radius matching, and anything further is a recommendation for a later plan change), and a security and compliance reviewer; more features is not a better product, so each addition needs evidence that it materially improves conversion, trust, reliability, retention or profitability. The report (brief section 5) holds a comparison matrix (capability, Ask Hava current state, Runhome evidence, competitive gap, recommendation Build, Improve, Defer or Reject, priority) covering at least contractor discovery, AI price estimates, repair coordination and emergency handling and every other meaningful issue found; for each proposed feature the problem, business benefit, evidence, reusable existing functionality, technical approach, dependencies, development effort and ongoing cost, security, privacy, legal and operational risks, acceptance criteria, how to measure it, and whether it belongs before the war games, after them or after launch; priorities P0 (required before the war games: a missing capability or defect that would invalidate testing the intended launch product), P1 (important, deferrable without invalidating the war games) and P2 (future); legally blocked or legal-review features listed apart from product priorities, never authorized because they rank P0, and every Arizona contractor-licensing question (Hava Assist above all) marked for professional legal review; and answers to the brief's eight questions (section 7): what Runhome offers that Ask Hava lacks; which differences would make homeowners or businesses prefer Runhome; which must be fixed before launch; whether Ask Hava can be as convenient without becoming a licensed construction manager; whether it can fill requests where no business has signed up; whether it can grow without substantial human work per job; which features improve measurable outcomes enough to justify their cost; and whether the product is ready for the war games. Constraints: preserve the business model and fee structure (introduction fee by job size, $25 under $500, $75 for $500 to $1,500, $199 above $1,500, ongoing services at 4 months of estimated value capped at the $75 tier; homeowners pay nothing; anonymous quotes from every qualified opted-in business; details released only on a confirmed, paid pick; masked calling) unless the evidence gives a substantial reason, stated as a recommendation for Casey; never turn Ask Hava into a general contractor, construction manager or repair company; never propose undisclosed paid rankings or anything that steers which quote wins; nothing live (no sign-ups, outreach, messages or accounts, BUILD_BRIEF.md:61); fake data only. The plan file lists each recommended feature as a proposed task (owner files, dependencies, tests, security controls, docs) and a decision log, every item marked awaiting Casey's approval: no feature is built without it. The plan file also holds the national-ready inventory (D-1515): every rule in the spec and the code that is Lake Havasu City or Arizona only (at least LIC-011's city license list, QH-001's Arizona quiet hours, JOB-007's Arizona business clock and the time zone, the ROC lookup and other licensing sources, FEE-046's sales-tax set-aside, INT-022's Arizona-only towns, the identity sources for no-license categories, and what the Phoenix metro fixture needs for the war games), each with how it becomes per-market data, its effort and whether it must come before the war games; these items are the candidates for the approved-enhancements step of D-1339's sequence and go to Casey with the P0 list under T243. The war games use Phoenix metro (many cities, jobs across city lines) as the stress market and Lake Havasu City as the comparison and fallback scenario, within D-1154's $40 AI cap. It also records the follow-up that the war games, once any approved enhancements are built and verified, must be updated by a plan change to test missing business networks, failed outreach, emergency demand, quote abandonment, cancellations, fee disputes and attempted abuse (D-1339). The war games hold for Casey's decision: this task's hand-in adds to `docs/for-casey-review.md` a section asking him which P0 items to build (or none). The hold is a real owner gate (D-1473): T243 (`war-games-go`) opens when this task merges, sends Casey the review, the plan and the P0 list, and T234 waits for it; Casey replies exactly 'war games go' to start the war games with nothing added, or names the P0 items to build, which a plan change adds as tasks T234 then depends on, built and verified before the war games.",
    "type": "audit",
    "phase": 2,
    "stage": "6",
@@ -14073,7 +14308,8 @@
    "decisions": [
     "D-1339",
     "D-1154",
-    "D-1473"
+    "D-1473",
+    "D-1515"
    ],
    "cites": [
     "docs/reviews/pre-war-games-review-brief.md:11",
@@ -14094,7 +14330,7 @@
    ],
    "branch": "claude/task/T242-pre-war-games-review",
    "prompt": "kit/prompts/T242.md",
-   "acceptance": "`docs/reviews/pre-war-games-review.md` exists on `main` with the brief's title, the comparison matrix covering at least the four named capabilities and areas A to H, every Runhome claim marked verified, marketing or speculation with its public source, a P0, P1 or P2 and a Build, Improve, Defer or Reject on every row, legally blocked or legal-review items listed apart, and numbered answers to the eight questions; `docs/reviews/pre-war-games-plan.md` lists every recommended feature with the brief's per-feature fields and its approval status (all awaiting Casey) and the war-games follow-up; `docs/for-casey-review.md` has a section asking Casey which P0 items to build before the war games; no file under `app/`, `migrations/`, `tests/`, `wargames/` or the locked blueprint changed."
+   "acceptance": "`docs/reviews/pre-war-games-review.md` exists on `main` with the brief's title, the comparison matrix covering at least the four named capabilities and areas A to H, every Runhome claim marked verified, marketing or speculation with its public source, a P0, P1 or P2 and a Build, Improve, Defer or Reject on every row, legally blocked or legal-review items listed apart, and numbered answers to the eight questions; `docs/reviews/pre-war-games-plan.md` lists every recommended feature with the brief's per-feature fields and its approval status (all awaiting Casey) the war-games follow-up and the national-ready inventory (every Lake Havasu City or Arizona-only rule with how it becomes per-market data); `docs/for-casey-review.md` has a section asking Casey which P0 items to build before the war games; no file under `app/`, `migrations/`, `tests/`, `wargames/` or the locked blueprint changed."
   },
   {
    "id": "T243",
@@ -15384,7 +15620,8 @@
    "module": "picks",
    "deps": [
     "T197",
-    "T189"
+    "T189",
+    "T246"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -15527,7 +15764,8 @@
    "deps": [
     "T106",
     "T067",
-    "T103"
+    "T103",
+    "T249"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -16529,6 +16767,164 @@
    ],
    "branch": "claude/task/T215-pest-identity-coverage-email",
    "prompt": "kit/prompts/T215.md",
+   "copy": true
+  },
+  {
+   "id": "T248",
+   "slug": "catalog-markets-service-radius",
+   "title": "catalog and businesses: markets as reviewed data, Arizona ZIP centroids, and each business's service radius",
+   "goal": "Casey's November 3 decisions (D-1515, D-1518): Ask Hava is national-ready, so market values are data, and each business types how far it will travel. Build the data layer; matching by radius and the portal edit are T249's. (1) Markets (INT-048): `docs/catalog/markets.yaml` (new, reviewed, owned here) with one market, `lake-havasu-city`: its name, state `AZ`, IANA time zone `America/Phoenix`, the identity source of its no-license categories (the city business-license list of LIC-011) and its towns (the town codes of the service-area setting, INT-022). `app/catalog/src/markets.rs` compiles it in and checks it as `loader.rs` checks `categories.yaml`, refusing a town in two markets, a duplicate ID, an unknown time zone, a market with no towns and a state other than AZ without a decision ID; the catalog sync writes `catalog.market` (ID, name, state, time zone, identity sources, `launched_at`, empty: nothing here sets it, a launch being a later owner action) and `catalog.market_town` from `migrations/0162_catalog_markets.sql`. A Phoenix metro market (several towns, `America/Phoenix`) is a fixture inside the tests, for the tests and the war games, never in the reviewed file and never launched; which market launches first is open, so no code names either market. (2) Job locations: `app/catalog/data/zcta_centroids_az.csv`, the Arizona rows of the US Census Bureau Gazetteer ZCTA file (public domain; the ZCTA and its internal-point latitude and longitude), at least every ZCTA of the Lake Havasu City market's towns and of the Phoenix metro fixture's towns, with the source URL, vintage and download date in its header, loaded into `catalog.zcta_centroid` (same migration). Copy the rows from the Census file; never type or estimate a coordinate; if the file can't be reached, stop and report BLOCKED. `catalog::api::zip_location(zip)` gives the centroid or none, and a pure `catalog::api::miles_between(a, b)` the great-circle distance; no geocoding service and no new crate. (3) The service radius (BIZ-058): `migrations/0163_businesses_service_area.sql` adds `businesses.service_area` (business ID, base ZIP as 5 digits, radius as whole miles from 1 to 100, both required; SELECT, INSERT and UPDATE granted to `askhava_app` explicitly, since T250 narrows the default to SELECT and INSERT); `app/businesses/src/service_area.rs` sets and reads it (the base ZIP checked against `catalog::api::zip_location`) with an audit row naming the fields only; sign-up (`app/portals/src/business_signup.rs`, `app/portals/templates/business_signup.html`) asks it beside towns served (BIZ-049): a base ZIP field and a radius field (\"How many miles will you travel for a job?\", draft wording for the copy panel, WORD-028, with a Spanish draft), with the accessible error pattern of A11Y-010 to A11Y-013 and every value kept, and sign-up cannot finish without both; the BIZ-030 summary reads them back. New code takes market values from this data, never a Lake Havasu City or Arizona literal (`docs/code-docs.md` section 4). Tests: `app/catalog/src/tests/markets.rs` (TD-INT-37) and `tests/integration/tests/service_area.rs` (TD-BIZ-37). Update `app/catalog/CLAUDE.md`, `app/businesses/CLAUDE.md`, `app/portals/CLAUDE.md` and `docs/architecture.md` section 10 (section 3 already lists the tables).",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "catalog",
+   "deps": [
+    "T155",
+    "T165",
+    "T228",
+    "T250",
+    "T041",
+    "T044",
+    "T177"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "security",
+    "accessibility"
+   ],
+   "owns": [
+    "docs/catalog/markets.yaml",
+    "app/catalog/src/markets.rs",
+    "app/catalog/data/zcta_centroids_az.csv",
+    "migrations/0162_catalog_markets.sql",
+    "app/catalog/src/tests/markets.rs",
+    "migrations/0163_businesses_service_area.sql",
+    "app/businesses/src/service_area.rs",
+    "app/portals/src/business_signup.rs",
+    "app/portals/templates/business_signup.html",
+    "tests/integration/tests/service_area.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/intake.md",
+    "docs/spec/businesses.md",
+    "docs/spec/licensing.md",
+    "docs/spec/accessibility.md",
+    "docs/brains/postgres-operations.md",
+    "docs/brains/rust-production.md",
+    "docs/brains/accessibility-forms.md"
+   ],
+   "requirements": [
+    "INT-048",
+    "BIZ-058",
+    "BIZ-049",
+    "INT-022"
+   ],
+   "tests": [
+    "TD-INT-37",
+    "TD-BIZ-37"
+   ],
+   "decisions": [
+    "D-1518",
+    "D-1515",
+    "D-1008",
+    "D-382",
+    "D-086"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 10,
+    "lines": 600,
+    "context_pct": 18
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T248-catalog-markets-service-radius",
+   "prompt": "kit/prompts/T248.md",
+   "copy": true
+  },
+  {
+   "id": "T249",
+   "slug": "quotes-radius-matching",
+   "title": "quotes and portals: radius matching by ZIP centroid, the coverage count by the same rule, and the radius in the business portal",
+   "goal": "Radius matching (CARD-024, D-1519): `quotes`' matching is pure and caller-filled (D-1013, D-1014). Add the job's location (`CardJob`: its ZIP centroid from `catalog::api::zip_location`, or none) and each business's reach (`CardBusiness`: its base ZIP centroid and radius from T248's `businesses.service_area`, or none) in `app/quotes/src/models.rs`, and change `rules::card_for`'s town test (`app/quotes/src/rules.rs`) to: serves an offered Arizona town (CARD-002, INT-022), or the job has a location, the business has a reach and `catalog::api::miles_between(base, job)` is at most the radius (inclusive). Every other CARD-001 test (active, verified, licensed for every candidate job type as the license map says for the job's place, a ticked job type, the BIZ-049 skips), \"jobs nobody else covers\" (CARD-004) and the owner pauses are unchanged, so a business serving the job's town keeps the card and a radius only adds reach; a base outside Arizona never matches. `coverage` (the count intake tells the homeowner, INT-017, INT-032, D-1022) uses the same test, so the count and the recipients agree, and `send_job_cards` and `send_late_cards` (`app/quotes/src/service.rs`) carry the new fields. No task yet owns the caller that builds `CardJob` from a request, nor the ZIP-and-area step that stores the homeowner's ZIP with her town in `intake.property` (PRIV-028 now allows the 5-digit ZIP; D-1519 records the gap); until they exist a job has no location and matches by towns only. The portal edit (BIZ-010, BIZ-058): the business portal's settings (`app/portals/src/business_actions.rs`, `app/portals/templates/business_actions.html`) let the owner change the base ZIP and radius with sign-up's checks and accessible errors, audited by field name only (draft wording through the copy panel, WORD-028). Tests: `app/quotes/src/tests/radius_matching.rs` (TD-CARD-13's pure cases with fixture centroids, including a Phoenix metro fixture of several towns: a card crossing a town line and one not, overlapping radii, the inclusive boundary, a business in reach without the license for a candidate job type, no location meaning towns only, the coverage count equal to the recipients) and `tests/integration/tests/radius_matching.rs` (`send_job_cards` sending to a business in reach in another town; TD-BIZ-38's portal edit). No geocoding service and no new crate. Update `app/quotes/CLAUDE.md`, `app/portals/CLAUDE.md` and `docs/architecture.md` section 10.",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "quotes",
+   "deps": [
+    "T248",
+    "T214",
+    "T212",
+    "T149",
+    "T164"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "accessibility",
+    "licensing"
+   ],
+   "owns": [
+    "app/quotes/src/rules.rs",
+    "app/quotes/src/models.rs",
+    "app/quotes/src/service.rs",
+    "app/quotes/src/tests/radius_matching.rs",
+    "app/portals/src/business_actions.rs",
+    "app/portals/templates/business_actions.html",
+    "tests/integration/tests/radius_matching.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/job-cards.md",
+    "docs/spec/businesses.md",
+    "docs/spec/intake.md",
+    "docs/spec/licensing.md",
+    "docs/brains/rust-production.md",
+    "docs/brains/accessibility-forms.md"
+   ],
+   "requirements": [
+    "CARD-024",
+    "CARD-001",
+    "CARD-002",
+    "BIZ-010",
+    "BIZ-058",
+    "INT-032"
+   ],
+   "tests": [
+    "TD-CARD-13",
+    "TD-BIZ-38"
+   ],
+   "decisions": [
+    "D-1519",
+    "D-1515",
+    "D-1013",
+    "D-1014",
+    "D-1022"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 7,
+    "lines": 550,
+    "context_pct": 22
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T249-quotes-radius-matching",
+   "prompt": "kit/prompts/T249.md",
    "copy": true
   },
   {
