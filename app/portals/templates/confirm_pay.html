@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{#- The business's Confirm review step (T224; PICK-021, FEE-014, FEE-015, FEE-045, CON-029,
+    TD-FEE-25, TD-FEE-37, TD-FEE-40, D-1479). Fee, tier, basis, refund line, terms version, "Go
+    back" and "Can't take it" are plain HTML around the one Stripe Elements iframe (accessibility
+    brain section 6). The save box is never ticked by default. Only this page loads Stripe.js
+    (TD-SEC-04). A paused job shows the refusal and no form. No homeowner name, phone or address. -#}
+{% block title %}Confirm request {{ job_number }}{% endblock %}
+{% block main %}
+<h1>Confirm request {{ job_number }}</h1>
+{% if paused %}
+<p id="confirm-paused" role="alert">The homeowner has paused this request, so it can't be confirmed now. Nothing was charged.</p>
+<p><a href="/b">Go back</a></p>
+{% else %}
+<h2>Before you confirm</h2>
+<ul>
+{% if paid %}<li id="fee-line">Introduction fee by job size: ${{ fee_dollars }}, the {{ tier }} fee. {{ basis }}</li>
+{% else %}<li id="fee-line">{{ no_fee_line }}</li>
+{% endif %}<li id="refund-line">{{ refund }}</li>
+<li id="terms-version">Business terms version {{ terms_version }} applies. <a href="/terms/business">Read the business terms</a></li>
+<li>Ask Hava is not a contractor and does not perform, bid on or supervise work.</li>
+</ul>
+<form method="post" action="/b/picks/{{ pick }}/confirm" id="confirm-form" data-stripe-key="{{ stripe_key }}" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<input type="hidden" name="press" value="{{ press }}">
+<input type="hidden" name="payment_method" value="">
+<h2>Card</h2>
+<p id="card-hint">{% if paid %}Enter a card. Card numbers go straight to Stripe, never to Ask Hava.{% else %}No card is needed. To save one for later, enter it here.{% endif %}</p>
+<div id="card-element" aria-describedby="card-hint"></div>
+<noscript><p>Turn on JavaScript to enter a card. Stripe's card form needs it.</p></noscript>
+<p><input type="checkbox" id="save-card" name="save_card" value="yes" aria-describedby="save-card-text">
+<label for="save-card">Save this card for next time</label></p>
+<p id="save-card-text">{% if !paid %}Next time it's one tap. {% endif %}{{ authorization }}</p>
+<div id="confirm-status" role="status"></div>
+<div id="confirm-error" role="alert"></div>
+<button type="submit" id="confirm-button">{{ button }}</button>
+</form>
+<p><a href="/b/picks/{{ pick }}/cant-take">Can't take it</a></p>
+<p><a href="/b">Go back</a></p>
+<script src="https://js.stripe.com/v3/"></script>
+<script type="module" src="/static/portals/confirm_pay.js"></script>
+{% endif %}
+{% endblock %}

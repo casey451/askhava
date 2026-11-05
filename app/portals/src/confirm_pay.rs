@@ -1,0 +1,374 @@
+//! The business's Confirm review step: what the page shows and what a press answers (PICK-021,
+//! FEE-014, FEE-015, FEE-016, FEE-045, FEE-047, CON-029; T224, D-1479 to D-1481).
+//!
+//! [`confirm_page`] renders `templates/confirm_pay.html` from the server's [`ConfirmFacts`]: the
+//! job number, the introduction fee by job size with its tier and how its basis was set, the
+//! refund line, the terms version, "Go back", "Can't take it" (PICK-050) and one button, "Confirm
+//! and pay $<fee>", or "Confirm" alone when no fee is due (a free first win, a repeat customer,
+//! or a fee-free job type, which also says "No introduction fee for this job.", FEE-045). A paid
+//! Confirm carries the Stripe Elements card field and the unticked "Save this card for next
+//! time" box with the FEE-015 authorization text beside it (FEE-014, FEE-015); a $0 Confirm
+//! carries the box with "Next time it's one tap." (D-465). Only this page loads Stripe.js, from
+//! `js.stripe.com` (TD-SEC-04); `static/confirm_pay.ts` mounts Elements, posts the `pm_…` with the
+//! form's one-time press ID and shows each [`PressReply`] at once. A job paused by the homeowner
+//! (CON-029) gets the refusal instead of the form: no button, so no charge and no release.
+//! The fee comes from the server (`payments::api::fee_at_pick`), never from the browser.
+//!
+//! [`press_reply`] turns `payments::api::confirm_and_pay`'s [`ChargeOutcome`] into what the page
+//! shows: a decline at once, with a new press ID so the next press is the next attempt key
+//! (`pick-<id>-try2`, FEE-016); a bank approval as the in-page 3-D Secure step; success as
+//! "waiting for Stripe's confirmation", because details are released only from the verified
+//! webhook (`payments::api::stripe_webhook_routes`, PICK-022), never from this answer.
+//! The route that reads the facts, opens the pick's one PaymentIntent on the first load
+//! (`open_intent`, FEE-047) and charges is wired once its readers exist (D-1480).
+
+use askama::Template;
+use askhava_payments::api::{AUTHORIZATION_TEXT, ChargeOutcome, Fee, Tier};
+use sqlx::types::Uuid;
+
+/// The one refund line every Confirm page shows (PICK-021).
+pub const REFUND_LINE: &str = "Refund if you can't reach them: 2 call attempts at least 3 hours \
+apart, inside their window, within 72 hours. They can be on different days.";
+
+/// The FEE-045 line of a fee-free job type's Confirm page.
+pub const FEE_FREE_LINE: &str = "No introduction fee for this job.";
+
+/// Why no fee is due on a $0 Confirm (PICK-021, FEE-010, FEE-013, FEE-045).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum NoFee {
+    /// The business's free first win (FEE-010).
+    FreeFirstWin,
+    /// The same homeowner hired this business before (FEE-013).
+    RepeatCustomer,
+}
+
+/// What the server knows about one pick when its Confirm page loads.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ConfirmFacts {
+    /// The pick.
+    pub pick: Uuid,
+    /// The job's request number.
+    pub job_number: i64,
+    /// The fee fixed at the pick (FEE-005).
+    pub fee: Fee,
+    /// A waiver already decided for this business and job, if any (FEE-010, FEE-013).
+    pub waived: Option<NoFee>,
+    /// The business terms version the business accepted (FEE-007, FEE-015).
+    pub terms_version: i32,
+    /// The job is paused by the homeowner (CON-029).
+    pub paused: bool,
+    /// The form's one-time press ID (FEE-016).
+    pub press: Uuid,
+    /// The form's CSRF token (SEC-042).
+    pub csrf: String,
+    /// Stripe's publishable key for this mode (`pk_test_…` or `pk_live_…`; public by design).
+    pub stripe_key: String,
+}
+
+#[derive(Template)]
+#[template(path = "confirm_pay.html")]
+struct ConfirmView<'a> {
+    pick: Uuid,
+    job_number: i64,
+    paused: bool,
+    fee_dollars: u64,
+    tier: &'static str,
+    basis: String,
+    no_fee_line: &'static str,
+    button: String,
+    paid: bool,
+    authorization: &'static str,
+    refund: &'static str,
+    terms_version: i32,
+    press: Uuid,
+    csrf: &'a str,
+    stripe_key: &'a str,
+}
+
+/// The page's name for the tier (FEE-001).
+const fn tier_name(tier: Tier) -> &'static str {
+    match tier {
+        Tier::Small => "small job",
+        Tier::Medium => "medium job",
+        Tier::Large => "large job",
+    }
+}
+
+/// `$1,234.56` for `cents`.
+fn money(cents: u64) -> String {
+    let dollars = (cents / 100).to_string();
+    let mut grouped = String::new();
+    for (i, digit) in dollars.chars().enumerate() {
+        if i > 0 && (dollars.len() - i).is_multiple_of(3) {
+            grouped.push(',');
+        }
+        grouped.push(digit);
+    }
+    format!("${grouped}.{:02}", cents % 100)
+}
+
+/// How the basis was set, in the page's words (PICK-021, FEE-003, FEE-004).
+fn basis_line(basis: Option<u64>) -> String {
+    basis.map_or_else(
+        || "Set by the trade's visit fee size, since the price is decided on site.".to_owned(),
+        |cents| format!("Set from your quote's price of {}.", money(cents)),
+    )
+}
+
+/// The page for `facts` (PICK-021, FEE-014, FEE-015, FEE-045, CON-029); see the module docs.
+///
+/// # Errors
+/// The template's render error.
+pub fn confirm_page(facts: &ConfirmFacts) -> Result<String, askama::Error> {
+    let (tier, no_fee_line) = match (facts.fee, facts.waived) {
+        (Fee::FeeFree { .. }, _) => ("", FEE_FREE_LINE),
+        (Fee::Charged { tier, .. }, None) => (tier_name(tier), ""),
+        (Fee::Charged { tier, .. }, Some(_)) => (tier_name(tier), "No fee is due for this job."),
+    };
+    let paid = no_fee_line.is_empty();
+    let fee_dollars = if paid { facts.fee.cents() / 100 } else { 0 };
+    let button = if paid {
+        format!("Confirm and pay ${fee_dollars}")
+    } else {
+        "Confirm".to_owned()
+    };
+    ConfirmView {
+        pick: facts.pick,
+        job_number: facts.job_number,
+        paused: facts.paused,
+        fee_dollars,
+        tier,
+        basis: basis_line(facts.fee.basis()),
+        no_fee_line,
+        button,
+        paid,
+        authorization: AUTHORIZATION_TEXT,
+        refund: REFUND_LINE,
+        terms_version: facts.terms_version,
+        press: facts.press,
+        csrf: &facts.csrf,
+        stripe_key: &facts.stripe_key,
+    }
+    .render()
+}
+
+/// What one press answers to the page script (FEE-016, FEE-018, FEE-020, FEE-041, PICK-022).
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
+pub struct PressReply {
+    /// `waiting`, `declined`, `approve`, `try_later`, `ended` or `paid`.
+    pub state: &'static str,
+    /// The words shown in the page's live region.
+    pub message: &'static str,
+    /// The press ID the next press must use: new after a decline, so it is the next attempt.
+    pub next_press: Option<Uuid>,
+}
+
+/// The page's answer to `outcome`; `fresh` is a new press ID for the next attempt (FEE-016).
+#[must_use]
+pub fn press_reply(outcome: &ChargeOutcome, fresh: Uuid) -> PressReply {
+    let (state, message, next) = match outcome {
+        ChargeOutcome::Succeeded(_) | ChargeOutcome::Pending => (
+            "waiting",
+            "Payment sent. We'll show the homeowner's details once Stripe confirms it.",
+            false,
+        ),
+        ChargeOutcome::Declined(_) => (
+            "declined",
+            "Error: your card was declined. Nothing was charged. Try again or use another card.",
+            true,
+        ),
+        ChargeOutcome::NeedsApproval(_) => (
+            "approve",
+            "Your bank wants to approve this payment. Follow its steps in the window.",
+            false,
+        ),
+        ChargeOutcome::StripeDown | ChargeOutcome::Paused => (
+            "try_later",
+            "Payments can't go through right now. Nothing was charged. Try again in a few minutes.",
+            true,
+        ),
+        ChargeOutcome::OverLimit => (
+            "ended",
+            "This would go over your monthly fee limit, so nothing was charged and the pick has ended. You can change the limit in your portal.",
+            false,
+        ),
+        ChargeOutcome::MovedOn => (
+            "ended",
+            "This pick can't be confirmed anymore. Nothing was charged.",
+            false,
+        ),
+        ChargeOutcome::AlreadyPaid => ("paid", "This pick is already paid.", false),
+    };
+    PressReply {
+        state,
+        message,
+        next_press: next.then_some(fresh),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    //! TD-FEE-25, TD-FEE-37, TD-FEE-40 and TD-PICK-08 page cases (fake data only).
+    use askhava_payments::api::{ChargeOutcome, Fee, Tier};
+    use sqlx::types::Uuid;
+
+    use super::*;
+
+    fn facts(fee: Fee) -> ConfirmFacts {
+        ConfirmFacts {
+            pick: Uuid::from_u128(7),
+            job_number: 1042,
+            fee,
+            waived: None,
+            terms_version: 3,
+            paused: false,
+            press: Uuid::from_u128(9),
+            csrf: "fake-csrf".to_owned(),
+            stripe_key: "pk_test_fake".to_owned(),
+        }
+    }
+
+    fn medium() -> Fee {
+        Fee::Charged {
+            basis: Some(100_000),
+            tier: Tier::Medium,
+        }
+    }
+
+    fn page(facts: &ConfirmFacts) -> String {
+        confirm_page(facts).expect("the page renders")
+    }
+
+    #[test]
+    fn td_fee_25_pick_021_the_page_shows_everything_before_one_pay_button() {
+        let html = page(&facts(medium()));
+        assert!(html.contains("Confirm request 1042"));
+        assert!(html.contains("Introduction fee by job size: $75, the medium job fee."));
+        assert!(html.contains("Set from your quote&#39;s price of $1,000.00."));
+        assert!(html.contains(&REFUND_LINE.replace('\'', "&#39;")));
+        assert!(html.contains("Business terms version 3 applies."));
+        assert_eq!(html.matches("<button").count(), 1);
+        assert!(html.contains(">Confirm and pay $75</button>"));
+        assert!(html.contains("Go back"));
+        assert!(html.contains("Can't take it"));
+        assert!(!html.contains(FEE_FREE_LINE));
+    }
+
+    #[test]
+    fn td_fee_40_the_save_box_is_unticked_with_its_authorization_text() {
+        let html = page(&facts(medium()));
+        let input = html.split("id=\"save-card\"").nth(1).expect("a save box");
+        let tag = input.split('>').next().expect("the tag");
+        assert!(!tag.contains("checked"));
+        assert!(html.contains("<label for=\"save-card\">Save this card for next time</label>"));
+        assert!(html.contains("I authorize Ask Hava LLC to save this card with Stripe"));
+    }
+
+    #[test]
+    fn td_fee_40_a_free_first_win_says_one_tap_and_confirms_without_a_fee() {
+        let mut free = facts(medium());
+        free.waived = Some(NoFee::FreeFirstWin);
+        let html = page(&free);
+        assert!(html.contains(">Confirm</button>"));
+        assert!(!html.contains(">Confirm and pay"));
+        assert!(html.contains("Next time it's one tap."));
+        assert!(
+            !html
+                .split("id=\"save-card\"")
+                .nth(1)
+                .unwrap_or("")
+                .split('>')
+                .next()
+                .unwrap_or("")
+                .contains("checked")
+        );
+    }
+
+    #[test]
+    fn td_fee_37_a_fee_free_job_type_says_no_introduction_fee() {
+        let html = page(&facts(Fee::FeeFree {
+            basis: Some(40_000),
+        }));
+        assert!(html.contains(FEE_FREE_LINE));
+        assert!(html.contains(">Confirm</button>"));
+        assert!(!html.contains(">Confirm and pay"));
+        assert!(!html.contains("$0"));
+    }
+
+    #[test]
+    fn td_fee_37_a_paused_job_refuses_confirm_with_no_form() {
+        let mut paused = facts(medium());
+        paused.paused = true;
+        let html = page(&paused);
+        assert!(html.contains("paused this request, so it can't be confirmed now"));
+        assert!(!html.contains("<form"));
+        assert!(!html.contains("<button"));
+        assert!(!html.contains("js.stripe.com"));
+    }
+
+    #[test]
+    fn td_sec_04_stripe_js_loads_from_stripe_only_on_this_page() {
+        let html = page(&facts(medium()));
+        assert!(html.contains("<script src=\"https://js.stripe.com/v3/\"></script>"));
+        assert!(html.contains("/static/portals/confirm_pay.js"));
+    }
+
+    #[test]
+    fn a_diagnostic_visit_names_the_visit_fee_size() {
+        let html = page(&facts(Fee::Charged {
+            basis: None,
+            tier: Tier::Small,
+        }));
+        assert!(html.contains("$25, the small job fee."));
+        assert!(html.contains("visit fee size"));
+        let large = page(&facts(Fee::Charged {
+            basis: Some(250_000),
+            tier: Tier::Large,
+        }));
+        assert!(
+            large
+                .contains("$199, the large job fee. Set from your quote&#39;s price of $2,500.00.")
+        );
+    }
+
+    #[test]
+    fn td_fee_25_a_decline_shows_at_once_and_the_next_press_is_a_new_attempt() {
+        let fresh = Uuid::from_u128(11);
+        let declined = press_reply(&ChargeOutcome::Declined(None), fresh);
+        assert_eq!(declined.state, "declined");
+        assert!(declined.message.starts_with("Error: "));
+        assert_eq!(declined.next_press, Some(fresh));
+        let approve = press_reply(&ChargeOutcome::NeedsApproval(None), fresh);
+        assert_eq!((approve.state, approve.next_press), ("approve", None));
+    }
+
+    #[test]
+    fn pick_022_a_success_answer_releases_nothing_by_itself() {
+        let fresh = Uuid::from_u128(11);
+        for outcome in [
+            ChargeOutcome::Succeeded("pi_fake".to_owned()),
+            ChargeOutcome::Pending,
+        ] {
+            let reply = press_reply(&outcome, fresh);
+            assert_eq!(reply.state, "waiting");
+            assert_eq!(reply.next_press, None);
+        }
+        let states: Vec<&str> = [
+            ChargeOutcome::StripeDown,
+            ChargeOutcome::Paused,
+            ChargeOutcome::OverLimit,
+            ChargeOutcome::MovedOn,
+            ChargeOutcome::AlreadyPaid,
+        ]
+        .iter()
+        .map(|o| press_reply(o, fresh).state)
+        .collect();
+        assert_eq!(states, ["try_later", "try_later", "ended", "ended", "paid"]);
+    }
+
+    #[test]
+    fn money_groups_thousands() {
+        assert_eq!(money(123_456_789), "$1,234,567.89");
+        assert_eq!(money(5), "$0.05");
+    }
+}

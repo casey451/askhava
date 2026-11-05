@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The layer-8 crate for the homeowner, business and owner portals (`docs/architecture.md` section 3). T051 built the shared web security every browser-facing page uses: sessions and their `__Host-` cookies, CSRF tokens, the cross-site refusal, the SEC-012 headers, `no-store` for contact and photo pages, the realm proofs for vault reads and the SEC-048 security events. T052 added the homeowner's quote page (D-1233 to D-1236); T055 the pick review step and the pick result page (D-1248 to D-1252). Not here yet: sign-in for any realm (later portals tasks), action links (T148), sending and checking the pick code and the stored page pick (D-1248, D-1264), the emergency switch on the review step (D-1249), the quote page's close button, STOP's still-open line, card facts and names, Spanish (D-1236).
+The layer-8 crate for the homeowner, business and owner portals (`docs/architecture.md` section 3). T051 built the shared web security every browser-facing page uses: sessions and their `__Host-` cookies, CSRF tokens, the cross-site refusal, the SEC-012 headers, `no-store` for contact and photo pages, the realm proofs for vault reads and the SEC-048 security events. T052 added the homeowner's quote page (D-1233 to D-1236); T055 the pick review step and the pick result page (D-1248 to D-1252); T224 the business Confirm review step's page and press answers (D-1479), whose served route waits on D-1480. Not here yet: sign-in for any realm (later portals tasks), action links (T148), sending and checking the pick code and the stored page pick (D-1248, D-1264), the emergency switch on the review step (D-1249), the quote page's close button, STOP's still-open line, card facts and names, Spanish (D-1236).
 
 ## What it owns
 
@@ -11,6 +11,7 @@ The layer-8 crate for the homeowner, business and owner portals (`docs/architect
 - `src/security.rs`: `security_headers`, `no_store`, `refuse_cross_site`, `is_cross_site`, `WebSecurity`, `CsrfField`, `ButtonForm`, `CsrfForm`, `SecurityEventKind`, `SecurityEvent`, `record_security_event`, `EVENTS_PER_HOUR_ALERT`, the header values `CONTENT_SECURITY_POLICY`, `STRICT_TRANSPORT_SECURITY`, `PERMISSIONS_POLICY`.
 - `src/quote_page.rs` (T052): `quote_page_routes` (`GET /q/{token}`, `QUOTE_PAGE_ROUTE`), `number_quotes`, `Numbered`, `token_expired`, `TOKEN_LIFE_AFTER_CLOSE`; crate-private `PageView` over `templates/quote_page.html`. `static/quote_page.ts`: the 30-second poll and the status line (D-1235).
 - `src/pick_flow.rs` (T055): `pick_flow_routes` (`POST /q/{token}` the review step, `POST /q/{token}/pick` the final Pick, `PICK_ROUTE`), `result_page`, `PageLanguage`; crate-private `ReviewView` over `templates/pick_review.html` (review and result); T187: `POST /q/{token}/code` (`CODE_ROUTE`), crate-private `CodeView` over `templates/pick_code.html` (the code-and-contact step).
+- `src/confirm_pay.rs` (T224): `REFUND_LINE`, `FEE_FREE_LINE`, `NoFee`, `ConfirmFacts`, `confirm_page` over `templates/confirm_pay.html`, `PressReply`, `press_reply`. `static/confirm_pay.ts`: mounts Stripe Elements, posts the `pm_…` with the press ID, shows each reply at once, runs `handleNextAction` for a bank approval.
 - `askama.toml`: template folders `templates/` then `../site/templates/`, so every portal page extends `base.html` (D-491).
 - `sqlx.toml`: `timestamptz` as jiff timestamps. `src/api.rs`: the public surface, plus a re-export of axum-extra's `CookieJar`.
 
@@ -34,6 +35,7 @@ The layer-8 crate for the homeowner, business and owner portals (`docs/architect
 - A11Y-014, PICK-045, PICK-054: `result_page`'s `h1#pick-result` has `tabindex="-1"` and `autofocus`; it carries the next steps, the acceptance end time when `accept_by` is given, the `data:` vCard "Add Ask Hava to your contacts" (askhava.com only, no texting-number claim) and the after-Done line, never a reward.
 - PICK-014, PICK-018, A11Y-010 to A11Y-013, A11Y-015, A11Y-016, A11Y-032, D-1264, D-1265: the code step offers a masked call or a shared email (no call window), one `autocomplete="one-time-code"` `inputmode="numeric"` code field read by `picks::api::rules::parse_code`, labels and hints before inputs; a failed "Finish my pick" gives an "Error: " title, a focused `role="alert"` summary of links, inline messages and kept values; "Send a new code" clears only the code; the 10-minute limit is plain text. It sends and stores nothing yet and says so (`#pick-not-open`).
 - A11Y-030, A11Y-031: forms post with `novalidate`, keep their submit button enabled and lean on the handler's idempotency key; a refused CSRF token is a bare 403.
+- PICK-021, FEE-014, FEE-015, FEE-045, CON-029, D-1479: the Confirm page shows the job number, fee with tier and basis, the refund line, the terms version, "Go back", "Can't take it" and one button ("Confirm and pay $<fee>", or "Confirm" when no fee is due); a fee-free job type says "No introduction fee for this job."; the save box is never ticked by default and carries `AUTHORIZATION_TEXT`; a paused job gets the refusal and no form; only this template loads `js.stripe.com`. `press_reply` gives a new press ID only after a decline or a refused try, so the next press is the next attempt (FEE-016); a success answer releases nothing (PICK-022).
 
 ## Never break
 
@@ -61,6 +63,8 @@ The layer-8 crate for the homeowner, business and owner portals (`docs/architect
 - Add a table or column: a new migration (`-- portals (T###)` first line), regenerate `.sqlx/` (online build with `SQLX_OFFLINE_DIR=.sqlx`).
 
 ## Tests that guard it
+
+- `src/confirm_pay.rs` `tests` (TD-FEE-25, TD-FEE-37, TD-FEE-40 page cases, TD-SEC-04): `cargo test -p askhava-portals confirm_pay`; `tests/e2e/confirm_pay.spec.ts` (the script: decline, next press ID, 3-D Secure, no Stripe.js elsewhere): `npx playwright test --config tests/e2e/playwright.config.ts tests/e2e/confirm_pay.spec.ts`.
 
 - `tests/security/tests/headers.rs` (TD-SEC-04): `cargo test -p askhava-security --test headers`.
 - `tests/security/tests/cookies_csrf.rs` (TD-SEC-04, TD-SEC-21, TD-SEC-26): `cargo test -p askhava-security --test cookies_csrf`.
