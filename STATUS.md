@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-05T19:45:16Z by runner bf4b419b9cf6 (actions).
+Updated 2026-11-05T19:45:28Z by runner bf4b419b9cf6 (actions).
 
-**Building: T190 in progress since 19:12Z; 102 of 232 done; week 5% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 19:45Z; 102 of 232 done; week 5% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 102 of 232 build tasks (owner gates not counted)
 - **Stage:** stage 3; stage proofs recorded: 1, 2
-- **Lane:** lane 1: T190 claimed 19:12Z, lease until 22:12Z
+- **Lane:** idle since 19:45Z (no task in progress)
 - **Week:** 5% used, 184.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:20Z, 24 min before this update
+- **Last run:** 19:20Z, 25 min before this update
 - **Keeper:** last ran 19:04Z, next wake 19:24Z
 
 ## Needs attention
@@ -17,6 +17,7 @@ Updated 2026-11-05T19:45:16Z by runner bf4b419b9cf6 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T190 | picks: Hold for 2 more hours, the emergency 60-minute window | MERGE_PENDING | 1 | 32 min | 19:45Z |  |
 | T063 | picks: Confirm within 4 business hours, license at pick and  | done | 1 | 47 min | 19:01Z |  |
 | T224 | portals: the business Confirm-and-pay page with Stripe Eleme | done | 2 | 50 min | 17:59Z | session ended without handing in |
 
@@ -70,7 +71,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T190 (lease until 2026-11-05T22:12:39Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T063", "at": "2026-11-05T19:01:47Z", "cache_read_input_tokens": 31431031, "output_tokens": 212399, "cache_creation_input_tokens": 697324, "input_tokens": 571}
+- {"task": "T190", "at": "2026-11-05T19:45:15Z", "cache_read_input_tokens": 7117055, "cache_creation_input_tokens": 365178, "input_tokens": 233, "output_tokens": 92511}
