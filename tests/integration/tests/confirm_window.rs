@@ -17,8 +17,8 @@ use askhava_jobs::api::{JobStatus, current, move_to};
 use askhava_ops::api::Actor;
 use askhava_picks::api::{
     BUSINESS_NOTICE_KIND, CONFIRM_ENDS_KIND, ConfirmSettings, LicenseAtPick, PICK_MADE_KIND,
-    Refusal, StoredFacts, check_at_confirm, check_at_pick, notice_sent, run_confirm_ends,
-    run_pick_notice,
+    PicksError, Refusal, StoredFacts, check_at_confirm, check_at_pick, notice_sent,
+    run_confirm_ends, run_pick_notice,
 };
 use jiff::Timestamp;
 use jiff::civil::date;
@@ -50,8 +50,17 @@ fn claimed(payload: Value) -> Claimed {
 
 /// A job picked at `at` and waiting in Awaiting confirm with one page pick of `business`.
 async fn picked(pool: &PgPool, business: Uuid, at: Timestamp) -> (Uuid, Uuid) {
+    picked_job(pool, (business, false), at).await
+}
+
+/// [`picked`], on a job chosen as an emergency when `emergency` (PICK-044).
+async fn picked_job(
+    pool: &PgPool,
+    (business, emergency): (Uuid, bool),
+    at: Timestamp,
+) -> (Uuid, Uuid) {
     let mut db = pool.acquire().await.expect("conn");
-    let job = askhava_jobs::api::create(&mut db, at, false, Actor::System)
+    let job = askhava_jobs::api::create(&mut db, at, emergency, Actor::System)
         .await
         .expect("job");
     for step in [
@@ -150,6 +159,58 @@ async fn td_pick_09_the_window_is_a_setting_and_stale_timers_do_nothing(pool: Pg
     assert_eq!(pick_status(&pool, pick).await, "awaiting_confirm");
 }
 
+/// PICK-019, D-807, D-1503: the sender telling the same send twice restarts `jobs`' backstop once
+/// and queues one window end, with the same deadline both times.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_pick_09_a_repeated_send_restarts_nothing(pool: PgPool) {
+    let (job, pick) = picked(&pool, Uuid::from_u128(0xb067), az(9, 9, 0)).await;
+    let mut db = pool.acquire().await.expect("conn");
+    let first = notice_sent(&mut db, pick, az(9, 10, 0), ConfirmSettings::default()).await;
+    let before = current(&mut db, job).await.expect("job");
+    let again = notice_sent(&mut db, pick, az(9, 10, 0), ConfirmSettings::default()).await;
+    let after = current(&mut db, job).await.expect("job");
+    assert_eq!(first, Ok(Some(az(9, 14, 0))));
+    assert_eq!(again, first);
+    assert_eq!(
+        after.timer_version, before.timer_version,
+        "no second restart"
+    );
+    assert_eq!(after.timer_from, before.timer_from);
+    assert_eq!(tasks(&pool, CONFIRM_ENDS_KIND).await.len(), 1);
+}
+
+/// PICK-019, PICK-035, PICK-044, D-1503: a notice held until after `jobs` returned the job to
+/// Quotes ready (its backstop, or an emergency's 60 minutes) starts no window, so no "Accept by"
+/// goes, and the dead pick is stored as expired; nothing is queued.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_pick_09_a_notice_held_past_the_backstop_expires_the_pick(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("conn");
+    for (business, emergency) in [(0xb068, false), (0xb069, true)] {
+        let (job, pick) =
+            picked_job(&pool, (Uuid::from_u128(business), emergency), az(9, 9, 0)).await;
+        let back = (JobStatus::AwaitingConfirm, JobStatus::QuotesReady);
+        let moved = move_to(&mut db, job, back, az(9, 13, 0), Actor::System).await;
+        assert!(matches!(moved, Ok(Guarded::Applied(()))), "the timer fired");
+        let late = notice_sent(&mut db, pick, az(9, 14, 0), ConfirmSettings::default()).await;
+        assert_eq!(late, Err(PicksError::MovedOn), "emergency {emergency}");
+        assert_eq!(pick_status(&pool, pick).await, "expired");
+        assert_eq!(job_status(&pool, job).await, "quotes_ready");
+    }
+    assert!(tasks(&pool, CONFIRM_ENDS_KIND).await.is_empty());
+}
+
+/// PICK-044: an emergency job still waiting keeps `jobs`' 60 clock minutes, so the send starts no
+/// business-hour window and the pick keeps waiting.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_pick_09_an_emergency_keeps_its_60_minutes(pool: PgPool) {
+    let (job, pick) = picked_job(&pool, (Uuid::from_u128(0xb06a), true), az(9, 9, 0)).await;
+    let mut db = pool.acquire().await.expect("conn");
+    let sent = notice_sent(&mut db, pick, az(9, 9, 5), ConfirmSettings::default()).await;
+    assert_eq!(sent, Ok(None));
+    assert_eq!(pick_status(&pool, pick).await, "awaiting_confirm");
+    assert_eq!(job_status(&pool, job).await, "awaiting_confirm");
+}
+
 /// TD-PICK-15 (PICK-037, D-191, D-492): the pick notice goes once to the owner and the "Confirm
 /// and billing" member, never to a "Cards and quotes" member, with the job number and the
 /// window's length; the emergency subject only on an emergency job.
@@ -179,9 +240,13 @@ async fn td_pick_15_the_notice_goes_to_the_owner_and_billing_members(pool: PgPoo
     let (job, pick) = picked(&pool, business, az(9, 10, 0)).await;
     let event = json!({"pick": pick, "job": job, "business": business});
     for _ in 0..2 {
-        run_pick_notice(pool.clone(), claimed(event.clone()))
-            .await
-            .expect("notice");
+        run_pick_notice(
+            pool.clone(),
+            ConfirmSettings::default(),
+            claimed(event.clone()),
+        )
+        .await
+        .expect("notice");
     }
     let notices = tasks(&pool, BUSINESS_NOTICE_KIND).await;
     assert_eq!(notices.len(), 1, "one notice per pick");

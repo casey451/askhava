@@ -1,5 +1,6 @@
 //! The pick statuses, the job stage a text pick reads and the Confirm window's status checks
-//! (SEC-031, PICK-019, PICK-020, PICK-031, PICK-032, PICK-036).
+//! (SEC-031, PICK-019, PICK-020, PICK-031, PICK-032, PICK-036), and `jobs`' Awaiting confirm
+//! backstop length.
 //!
 //! Every `match` on a [`PickStatus`] or on `jobs`' `JobStatus` in this crate lives here and names
 //! every variant (`docs/architecture.md` section 4 rule 5). The stored codes are the
@@ -12,6 +13,7 @@
 
 use askhava_businesses::api::AccountStatus;
 use askhava_jobs::api::JobStatus;
+use askhava_jobs::api::rules::Wait;
 
 use crate::rules::Stage;
 
@@ -94,5 +96,38 @@ pub const fn awaits_confirm(status: JobStatus) -> bool {
         | JobStatus::ClosedEarly
         | JobStatus::NotCovered
         | JobStatus::Cancelled => false,
+    }
+}
+
+/// Whether a waiting pick is dead because its job in `status` no longer waits for this pick's
+/// Confirm and no Confirm moved it on (PICK-019, PICK-044, D-1503): `jobs`' backstop or an
+/// emergency's 60 minutes returned it to Quotes ready, or it closed or was cancelled. Payment
+/// pending, Connected and Done follow a Confirm, so they are not a dead pick.
+#[must_use]
+pub const fn pick_lost(status: JobStatus) -> bool {
+    match status {
+        JobStatus::Intake
+        | JobStatus::Open
+        | JobStatus::NoQuotesYet
+        | JobStatus::QuotesReady
+        | JobStatus::Closed
+        | JobStatus::ClosedEarly
+        | JobStatus::NotCovered
+        | JobStatus::Cancelled => true,
+        JobStatus::AwaitingConfirm
+        | JobStatus::PaymentPending
+        | JobStatus::Connected
+        | JobStatus::Done => false,
+    }
+}
+
+/// `jobs`' Awaiting confirm backstop in business minutes, read from `jobs`' own wait (JOB-013,
+/// D-805, D-1503), so the Confirm window's restart follows any change there; zero if `jobs` ever
+/// stops counting it in business minutes (the restart then starts at the window's end).
+#[must_use]
+pub const fn confirm_backstop_minutes() -> u32 {
+    match JobStatus::AwaitingConfirm.wait() {
+        Some((Wait::BusinessMinutes(minutes), _)) => minutes,
+        Some((Wait::Hours(_) | Wait::Days(_) | Wait::NextDayAt(_), _)) | None => 0,
     }
 }

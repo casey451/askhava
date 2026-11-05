@@ -9,10 +9,12 @@
 
 use askhava_adapters::api::LicenseSource;
 use askhava_businesses::api::AccountStatus;
+use askhava_core::api::SettingsError;
 use askhava_core::api::add_business_minutes;
 use askhava_licensing::api::{
     Freshness, LookupOutcome, arizona_day, end_date_pauses, lookup_at_pick, roc_check_allows_card,
 };
+use askhava_messaging::api::Language;
 use jiff::civil::Date;
 use jiff::{SignedDuration, Timestamp};
 use sqlx::PgConnection;
@@ -31,6 +33,11 @@ pub const FEE_REPLY_TEMPLATE: &str = "pick_fee_reply";
 /// The reply to a business that answers after its window ended (PICK-035).
 pub const EXPIRED_TEMPLATE: &str = "pick_expired";
 
+/// The setting that sets [`ConfirmSettings::window_minutes`] (PICK-019, D-345, D-1503).
+pub const WINDOW_KEY: &str = "ASKHAVA_PICK_CONFIRM_WINDOW_MINUTES";
+/// The longest window the setting accepts: five Arizona business days of 12 hours.
+const WINDOW_MAX: u32 = 5 * 12 * 60;
+
 /// How long a daily license result stays usable when the pick lookup fails (D-056, LIC-008).
 const DAILY_FRESH: SignedDuration = SignedDuration::from_hours(24);
 
@@ -47,6 +54,35 @@ impl Default for ConfirmSettings {
         Self {
             window_minutes: 4 * 60,
         }
+    }
+}
+
+impl ConfirmSettings {
+    /// PICK-019, D-345, D-1503: reads [`WINDOW_KEY`] from the process's `ASKHAVA_*` pairs, so the
+    /// worker's pick notice and the window's real deadline use one value; absent or empty keeps
+    /// the default of 240. Every other key is ignored (`Settings::from_pairs` checks the names).
+    ///
+    /// # Errors
+    ///
+    /// [`SettingsError::Invalid`] naming the key, never the value, when it is not a whole number
+    /// from 1 to 3,600.
+    pub fn from_pairs<I>(pairs: I) -> Result<Self, SettingsError>
+    where
+        I: IntoIterator<Item = (String, String)>,
+    {
+        let mut settings = Self::default();
+        for (name, value) in pairs {
+            let value = value.trim();
+            if name != WINDOW_KEY || value.is_empty() {
+                continue;
+            }
+            settings.window_minutes = value
+                .parse::<u32>()
+                .ok()
+                .filter(|m| (1..=WINDOW_MAX).contains(m))
+                .ok_or(SettingsError::Invalid(WINDOW_KEY))?;
+        }
+        Ok(settings)
     }
 }
 
@@ -194,23 +230,33 @@ fn dollars(cents: i64) -> String {
     }
 }
 
-/// PICK-034, D-196: the fee line of the pick text and the Confirm review step, for example
-/// "Fee $75 (ongoing services count as 4 months: $125 x 4 = $500)" or "Fee $75 (ongoing services
-/// count as 4 months, capped at $75)"; a one-time job's is "Fee $75".
+/// PICK-034, D-196, D-1503: the fee line of the pick text and the Confirm review step in
+/// `language`, for example "Fee $75 (ongoing services count as 4 months: $125 x 4 = $500)" or
+/// "Fee $75 (ongoing services count as 4 months, capped at $75)"; a one-time job's is "Fee $75".
+/// No fee (zero or less) has no fee line.
 #[must_use]
-pub fn fee_line(fee_cents: i64, basis: Option<FeeBasis>) -> String {
+pub fn fee_line(fee_cents: i64, basis: Option<FeeBasis>, language: Language) -> Option<String> {
+    if fee_cents <= 0 {
+        return None;
+    }
     let fee = dollars(fee_cents);
-    match basis {
-        None => format!("Fee {fee}"),
-        Some(b) if b.capped => {
-            format!("Fee {fee} (ongoing services count as 4 months, capped at {fee})")
-        }
+    let (word, ongoing, cap) = match language {
+        Language::En => ("Fee", "ongoing services count as 4 months", "capped at"),
+        Language::Es => (
+            "Tarifa",
+            "los servicios continuos cuentan como 4 meses",
+            "con tope de",
+        ),
+    };
+    Some(match basis {
+        None => format!("{word} {fee}"),
+        Some(b) if b.capped => format!("{word} {fee} ({ongoing}, {cap} {fee})"),
         Some(b) => format!(
-            "Fee {fee} (ongoing services count as 4 months: {} x 4 = {})",
+            "{word} {fee} ({ongoing}: {} x 4 = {})",
             dollars(b.monthly_cents),
             dollars(b.basis_cents)
         ),
-    }
+    })
 }
 
 /// A business's answer word to a pick text (PICK-033, D-259).
@@ -223,10 +269,14 @@ pub enum BusinessWord {
 }
 
 /// PICK-033, D-259: reads "YES 1042", "SÍ 1042", "CONFIRM 1042" or "CONFIRMAR 1042" (any case),
-/// or the word alone; anything else is none.
+/// or the word alone, with any trailing periods or exclamation marks ("YES 1042."); anything else
+/// is none.
 #[must_use]
 pub fn read_business_word(words: &str) -> Option<(BusinessWord, Option<u32>)> {
-    let mut parts = words.split_whitespace();
+    let mut parts = words
+        .trim_end()
+        .trim_end_matches(['.', '!'])
+        .split_whitespace();
     let word = match parts.next()?.to_lowercase().as_str() {
         "yes" | "sí" | "si" => BusinessWord::Yes,
         "confirm" | "confirmar" => BusinessWord::Confirm,
