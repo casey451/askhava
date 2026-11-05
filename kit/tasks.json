@@ -6584,7 +6584,7 @@
    "budget": {
     "files": 5,
     "lines": 500,
-    "context_pct": 15
+    "context_pct": 23
    },
    "checks": [
     "Ci",
