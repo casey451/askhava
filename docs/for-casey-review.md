@@ -1669,6 +1669,14 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **Coming next.** A second plan change adds the national-ready market settings and radius matching you asked for, with the launch market still open (Phoenix metro with a partner, otherwise Lake Havasu City).
 - **You can veto.** Any of these. To bring the price lock back, or to have the permissions fix wait, reply on an owner issue; the tasks have not run yet.
 
+## How long a business has to accept a pick, and the license check at the pick (T063, D-1500 to D-1502, November 5)
+
+- **The window.** After a homeowner picks a quote, the business has 4 business hours (8 a.m. to 8 p.m. Arizona time) to accept, counted from when the pick email actually goes out, so an email held back by the daily sending limit doesn't eat into their time. A pick emailed at 7:41 p.m. has until 11:41 a.m. the next day. The 4 hours is a setting: changing it to 3 needs no code change. When time runs out, the pick ends and the homeowner can choose another quote.
+- **The license.** The business's license is looked up live once at the pick. If the state site is down, a daily check from the last 24 hours is used; otherwise the pick waits. At Confirm, the stored results are used again with no second lookup, and a paused account, an ended license or bond date, or no fresh Active check stops the Confirm.
+- **Texts from the business.** "YES 1042" or "CONFIRM 1042" never accepts or charges anything by text: both get the fee and the Confirm link. After the window ends they get: "Ask Hava: Time ran out to accept job 1042, so the pick expired. You weren't charged. Your quote can't be picked again for this job."
+- **Still to connect.** The pieces that call these checks (the Confirm page's handler, the email sender, the license-number lookup and the inbound business text route) are later tasks; they are listed in D-1502.
+- **You can veto.** The 4-hour default or the expired wording, by replying on an owner issue.
+
 ## National-ready, radius matching, the page pick, the first-quote move, sending the job cards and database permissions (plan change, D-1515 to D-1521, November 5)
 
 - **National-ready (your call, November 3, confirmed November 5).** The product is built so another market is a data change, not a rebuild. The launch market stays open: Phoenix metro if you secure a business partner, Lake Havasu City otherwise. Nothing in the plan names either one as settled. In the war games, Phoenix metro is the stress test (many cities, jobs across city lines) and Lake Havasu City the comparison. The $40 AI cap for the war games stays.

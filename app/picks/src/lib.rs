@@ -6,9 +6,14 @@
 //! ready, a second YES replacing a waiting pick, the status reply, and the CANCEL pause's
 //! withdrawal (PICK-013 to PICK-016, PICK-031, PICK-032, PICK-036, PICK-055, CON-029).
 //! T062 added the money notices: the FEE-020 card-fix notice to the business's money recipients
-//! (D-492). Other crates reach it only through [`api`].
+//! (D-492). T063 added the Confirm window (4 business hours from the pick notice's send, a setting),
+//! the license checks at the pick and at Confirm, the recurring fee line, the business's YES and
+//! CONFIRM reply and the pick notice to the owner and every "Confirm and billing" member (PICK-019,
+//! PICK-020, PICK-033 to PICK-035, PICK-037). Other crates reach it only through [`api`].
 
 pub mod api;
+mod confirm;
+mod handlers;
 mod models;
 mod money_notices;
 mod rules;
