@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-05T21:56:15Z by runner aa18f6a744ad (actions).
+Updated 2026-11-05T21:56:27Z by runner aa18f6a744ad (actions).
 
-**Building: T245 in progress since 21:35Z; 105 of 238 done; week 6% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 21:56Z; 105 of 238 done; week 6% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 105 of 238 build tasks (owner gates not counted)
 - **Stage:** stage 3; stage proofs recorded: 1, 2
-- **Lane:** lane 1: T245 claimed 21:35Z, lease until 00:35Z
+- **Lane:** idle since 21:56Z (no task in progress)
 - **Week:** 6% used, 182.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:41Z, 14 min before this update
+- **Last run:** 21:41Z, 15 min before this update
 - **Keeper:** last ran 21:20Z, next wake 21:40Z
 
 ## Needs attention
@@ -17,6 +17,7 @@ Updated 2026-11-05T21:56:15Z by runner aa18f6a744ad (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T245 | payments: narrow the default privileges in schema payments t | MERGE_PENDING | 1 | 21 min | 21:56Z |  |
 | T244 | payments: remove the early-joiner price lock (FEE-040 withdr | done | 1 | 19 min | 21:20Z |  |
 | T065 | payments: refund rules for cancels and no-shows | done | 1 | 38 min | 20:38Z |  |
 | T190 | picks: Hold for 2 more hours, the emergency 60-minute window | done | 1 | 32 min | 19:45Z |  |
@@ -73,7 +74,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T245 (lease until 2026-11-06T00:35:15Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T244", "at": "2026-11-05T21:20:20Z", "cache_read_input_tokens": 3093175, "cache_creation_input_tokens": 199187, "output_tokens": 35911, "input_tokens": 116}
+- {"task": "T245", "at": "2026-11-05T21:56:15Z", "input_tokens": 131, "output_tokens": 50578, "cache_read_input_tokens": 3047219, "cache_creation_input_tokens": 172957}
