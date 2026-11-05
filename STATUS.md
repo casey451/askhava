@@ -1,23 +1,23 @@
 # Ask Hava build status
 
-Updated 2026-11-05T22:00:25Z by runner 0340b5b80ca8 (actions).
+Updated 2026-11-05T22:08:11Z by runner 3824a2b95a26 (actions).
 
-**Idle since 21:56Z; 105 of 238 done; week 7% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 22:05Z; 106 of 238 done; week 7% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 105 of 238 build tasks (owner gates not counted)
+- **Tasks done:** 106 of 238 build tasks (owner gates not counted)
 - **Stage:** stage 3; stage proofs recorded: 1, 2
-- **Lane:** idle since 21:56Z (no task in progress)
+- **Lane:** idle since 22:05Z (no task in progress)
 - **Week:** 7% used, 182.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:00Z, 0 min before this update
+- **Last run:** 22:00Z, 7 min before this update
 - **Keeper:** last ran 22:00Z, next wake 22:20Z
 
 ## Needs attention
-- Strict plan check red: 3 problem(s) on tasks still to run (+3 on DONE tasks); first: T247: stored context_pct 20% but it measures 24%; regenerate
+- Strict plan check red: 6 problem(s) on tasks still to run (+3 on DONE tasks); first: T247: stored context_pct 20% but it measures 24%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T245 | payments: narrow the default privileges in schema payments t | MERGE_PENDING | 1 | 21 min | 21:56Z |  |
+| T245 | payments: narrow the default privileges in schema payments t | done | 1 | 21 min | 21:56Z |  |
 | T244 | payments: remove the early-joiner price lock (FEE-040 withdr | done | 1 | 19 min | 21:20Z |  |
 | T065 | payments: refund rules for cancels and no-shows | done | 1 | 38 min | 20:38Z |  |
 | T190 | picks: Hold for 2 more hours, the emergency 60-minute window | done | 1 | 32 min | 19:45Z |  |
@@ -31,7 +31,7 @@ Updated 2026-11-05T22:00:25Z by runner 0340b5b80ca8 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 169 of 731 (23.1%) · partial 216 · unstarted 346
-**Tasks merged (throughput only):** 105 of 238
+**Tasks merged (throughput only):** 106 of 238
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -65,7 +65,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 0.5: 0 of 1 done
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
-- stage 3: 14 of 29 done
+- stage 3: 15 of 29 done
 - stage 4: 0 of 54 done
 - stage 5: 0 of 42 done
 - stage 6: 0 of 26 done
