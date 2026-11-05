@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-05T23:08:45Z by runner f7d8a5b753b1 (actions).
+Updated 2026-11-05T23:13:28Z by runner f7d8a5b753b1 (actions).
 
-**Idle since 23:06Z; 107 of 238 done; week 7% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T064 in progress since 23:08Z; 107 of 238 done; week 7% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 107 of 238 build tasks (owner gates not counted)
 - **Stage:** stage 3; stage proofs recorded: 1, 2
-- **Lane:** idle since 23:06Z (no task in progress)
+- **Lane:** lane 1: T064 claimed 23:08Z, lease until 02:08Z
 - **Week:** 7% used, 180.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:57Z, 10 min before this update
+- **Last run:** 22:57Z, 15 min before this update
 - **Keeper:** last ran 22:57Z, next wake 23:17Z
 
 ## Needs attention
@@ -60,7 +60,7 @@ Updated 2026-11-05T23:08:45Z by runner f7d8a5b753b1 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-05T22:00:14Z (week)): five-hour: 11.2M used, 17.9M left, resets 2026-11-05T22:59:09Z; week: 14.0M used, 180.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-11-18T21:05:40Z.
+- Pacing (session_reading 2026-11-05T22:57:32Z (week)): five-hour: 0k used, 29.1M left, resets on first use; week: 14.0M used, 180.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-11-19T00:04:36Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -75,7 +75,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T064 (lease until 2026-11-06T02:08:42Z)
 
 ## Last usage reading
 - {"task": "T066", "at": "2026-11-05T22:54:24Z", "cache_read_input_tokens": 27520969, "output_tokens": 249395, "cache_creation_input_tokens": 760976, "input_tokens": 456}
