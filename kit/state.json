@@ -12812,7 +12812,7 @@
     "T225",
     "T245"
    ],
-   "status": "MERGE_PENDING",
+   "status": "DONE",
    "attempts": 0,
    "slug": "payments-refunds-disputes",
    "type": "build",
@@ -12831,13 +12831,62 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 215,
      "head_sha": "0986e8f5179357e25ad7c7aecbe25e1fa61b7be0",
-     "pr": null,
-     "checks": null,
+     "pr": 277,
+     "checks": [
+      {
+       "name": "backup",
+       "conclusion": null
+      },
+      {
+       "name": "keeper",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "gate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-05T22:08:07Z",
      "ended_at": "2026-11-05T22:54:24Z",
-     "result": "MERGE_PENDING"
+     "result": "done"
     }
    ],
    "reviewed_sha": "0986e8f5179357e25ad7c7aecbe25e1fa61b7be0",
@@ -12851,7 +12900,40 @@
     "enabled": true,
     "why": "auto-merge on #277 (gh pr merge)",
     "head": "0986e8f5179357e25ad7c7aecbe25e1fa61b7be0"
-   }
+   },
+   "merged_sha": "f7d8a5b753b1031b06f065b49c49bd3c510b9ce4",
+   "merged_at": "2026-11-05T23:06:26Z",
+   "files": [
+    ".sqlx/query-1400cbb602f9b68c72a606b0a3afac5eff432bad58b71d3c18e7da0fd7a60e4e.json",
+    ".sqlx/query-1635b5ca0c5d5c8db05c151bcb76d63ea1c82dffd04f9f05f8f0f974d67d19cd.json",
+    ".sqlx/query-20a83598c2104eba284dca4fec3ae45c6436a5da0567809038ea9c28cdb86167.json",
+    ".sqlx/query-3c7e9e2b278053e90a65220ff3871f9393e542fbe5a8894690131624655e984a.json",
+    ".sqlx/query-4e6d1786f9877b8d23d15e45198c99208e3b8df76d6ff931fd8a9a781e689e37.json",
+    ".sqlx/query-520887938559ec1af0c46a682935a847b30402a8236850fa79a0f5e98fabfe6f.json",
+    ".sqlx/query-59e6373e3cbdc4ebbdcd37dada051596de7f5b691520265abd11f381b4216bbb.json",
+    ".sqlx/query-9544e355bf395cc07cdfa820d895dfefe94648a23f94f36ea6a926069a126c31.json",
+    ".sqlx/query-955ce00f53573dc37ef66b1a76618e83967dbb7013ba4b8845b7a5db17f0ce02.json",
+    ".sqlx/query-a7f29ed038c25e6a11d64bb0fa1fea40f77d2808ed616e69de2b1ce697f818e5.json",
+    ".sqlx/query-a9c1dea4b8f6ce1f4f28f8399d07d6e523fa30af57649911ccb7f504246ea856.json",
+    ".sqlx/query-b101214894259f274baebbd76f59b506363e32e1cb6774f0de7c0a6a154176ef.json",
+    ".sqlx/query-b3154545be6fd0d415ee30c7fb01bcb1f8b92b04376c5fe913364fef2989fe09.json",
+    ".sqlx/query-dcc910d9c8cb35eb4e44d7ecebb945d80a434d2f4c47577159cfd4addf6f0348.json",
+    ".sqlx/query-f3b5d4282aaa22cc46e5b9761fb484ed75665e5f8ff95f35bba35975f98ccbf5.json",
+    "app/payments/CLAUDE.md",
+    "app/payments/src/api.rs",
+    "app/payments/src/disputes.rs",
+    "app/payments/src/lib.rs",
+    "app/payments/src/models.rs",
+    "app/payments/src/refunds.rs",
+    "app/payments/src/status.rs",
+    "app/payments/src/tests/mod.rs",
+    "app/payments/src/tests/prop_one_refund.rs",
+    "docs/architecture.md",
+    "docs/decisions.md",
+    "docs/for-casey-review.md",
+    "migrations/0102_payments_refunds_disputes.sql",
+    "tests/integration/tests/disputes.rs"
+   ]
   },
   {
    "id": "T067",
@@ -17718,7 +17800,7 @@
    }
   }
  },
- "updated_at": "2026-11-05T22:57:45Z",
+ "updated_at": "2026-11-05T23:08:45Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -17816,7 +17898,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "3824a2b95a260699d7ff5a04b3e1ddc7d8bce939",
+ "runner_sha": "f7d8a5b753b1031b06f065b49c49bd3c510b9ce4",
  "starter": "actions",
  "smoke_runs": [
   {
