@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-05T22:54:25Z by runner 0986e8f51793 (actions).
+Updated 2026-11-05T22:54:36Z by runner 0986e8f51793 (actions).
 
-**Building: T066 in progress since 22:08Z; 106 of 238 done; week 7% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 22:54Z; 106 of 238 done; week 7% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 106 of 238 build tasks (owner gates not counted)
 - **Stage:** stage 3; stage proofs recorded: 1, 2
-- **Lane:** lane 1: T066 claimed 22:08Z, lease until 01:08Z
+- **Lane:** idle since 22:54Z (no task in progress)
 - **Week:** 7% used, 180.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 22:13Z, 40 min before this update
 - **Keeper:** last ran 22:00Z, next wake 22:20Z
@@ -17,6 +17,7 @@ Updated 2026-11-05T22:54:25Z by runner 0986e8f51793 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T066 | payments: one refund per trigger, retries, disputes with evi | MERGE_PENDING | 1 | 46 min | 22:54Z |  |
 | T245 | payments: narrow the default privileges in schema payments t | done | 1 | 21 min | 21:56Z |  |
 | T244 | payments: remove the early-joiner price lock (FEE-040 withdr | done | 1 | 19 min | 21:20Z |  |
 | T065 | payments: refund rules for cancels and no-shows | done | 1 | 38 min | 20:38Z |  |
@@ -74,7 +75,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T066 (lease until 2026-11-06T01:08:07Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T245", "at": "2026-11-05T21:56:15Z", "input_tokens": 131, "output_tokens": 50578, "cache_read_input_tokens": 3047219, "cache_creation_input_tokens": 172957}
+- {"task": "T066", "at": "2026-11-05T22:54:24Z", "cache_read_input_tokens": 27520969, "output_tokens": 249395, "cache_creation_input_tokens": 760976, "input_tokens": 456}
