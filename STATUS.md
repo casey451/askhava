@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-05T19:20:13Z by runner 0bca34fa93d6 (actions).
+Updated 2026-11-05T19:45:16Z by runner bf4b419b9cf6 (actions).
 
 **Building: T190 in progress since 19:12Z; 102 of 232 done; week 5% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,11 @@ Updated 2026-11-05T19:20:13Z by runner 0bca34fa93d6 (actions).
 - **Stage:** stage 3; stage proofs recorded: 1, 2
 - **Lane:** lane 1: T190 claimed 19:12Z, lease until 22:12Z
 - **Week:** 5% used, 184.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:04Z, 15 min before this update
+- **Last run:** 19:20Z, 24 min before this update
 - **Keeper:** last ran 19:04Z, next wake 19:24Z
 
 ## Needs attention
-- Strict plan check red: 1 problem(s) on tasks still to run (+2 on DONE tasks); first: T126: stored context_pct 60% but it measures 64%; regenerate
+- Strict plan check red: 4 problem(s) on tasks still to run (+2 on DONE tasks); first: T190: stored context_pct 10% but it measures 15%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -21,6 +21,7 @@ Updated 2026-11-05T19:20:13Z by runner 0bca34fa93d6 (actions).
 | T224 | portals: the business Confirm-and-pay page with Stripe Eleme | done | 2 | 50 min | 17:59Z | session ended without handing in |
 
 ### Plan and harness merges on main
+- 19:30Z Plan: page pick end to end, first-quote move, markets and service radius, schema default privileges, card sender (D-1515–D-1521) (#272)
 - 17:59Z Plan: drop the early-joiner price lock, payments default privileges, Nov 3 handoff review (D-1494–D-1499) (#269)
 
 ## Progress (requirements verified)
