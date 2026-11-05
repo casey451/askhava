@@ -1,23 +1,23 @@
 # Ask Hava build status
 
-Updated 2026-11-05T23:39:12Z by runner f7d8a5b753b1 (actions).
+Updated 2026-11-05T23:49:30Z by runner 453e0aefe77c (actions).
 
-**Idle since 23:35Z; 107 of 238 done; week 8% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 23:47Z; 108 of 238 done; week 8% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 107 of 238 build tasks (owner gates not counted)
+- **Tasks done:** 108 of 238 build tasks (owner gates not counted)
 - **Stage:** stage 3; stage proofs recorded: 1, 2
-- **Lane:** idle since 23:35Z (no task in progress)
+- **Lane:** idle since 23:47Z (no task in progress)
 - **Week:** 8% used, 180.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:39Z, 0 min before this update
+- **Last run:** 23:39Z, 10 min before this update
 - **Keeper:** last ran 23:39Z, next wake 23:59Z
 
 ## Needs attention
-- Strict plan check red: 6 problem(s) on tasks still to run (+4 on DONE tasks); first: T247: stored context_pct 20% but it measures 24%; regenerate
+- Strict plan check red: 8 problem(s) on tasks still to run (+5 on DONE tasks); first: T247: stored context_pct 20% but it measures 24%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T064 | payments: success after the job moved on is refunded once an | MERGE_PENDING | 1 | 27 min | 23:35Z |  |
+| T064 | payments: success after the job moved on is refunded once an | done | 1 | 27 min | 23:35Z |  |
 | T066 | payments: one refund per trigger, retries, disputes with evi | done | 1 | 46 min | 22:54Z |  |
 | T245 | payments: narrow the default privileges in schema payments t | done | 1 | 21 min | 21:56Z |  |
 | T244 | payments: remove the early-joiner price lock (FEE-040 withdr | done | 1 | 19 min | 21:20Z |  |
@@ -33,7 +33,7 @@ Updated 2026-11-05T23:39:12Z by runner f7d8a5b753b1 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 169 of 731 (23.1%) · partial 221 · unstarted 341
-**Tasks merged (throughput only):** 107 of 238
+**Tasks merged (throughput only):** 108 of 238
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -67,7 +67,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 0.5: 0 of 1 done
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
-- stage 3: 16 of 29 done
+- stage 3: 17 of 29 done
 - stage 4: 0 of 54 done
 - stage 5: 0 of 42 done
 - stage 6: 0 of 26 done
