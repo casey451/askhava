@@ -1,23 +1,23 @@
 # Ask Hava build status
 
-Updated 2026-11-05T19:04:44Z by runner 2391e30eee08 (actions).
+Updated 2026-11-05T19:12:43Z by runner 0bca34fa93d6 (actions).
 
-**Idle since 19:01Z; 101 of 232 done; week 5% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 19:11Z; 102 of 232 done; week 5% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 101 of 232 build tasks (owner gates not counted)
+- **Tasks done:** 102 of 232 build tasks (owner gates not counted)
 - **Stage:** stage 3; stage proofs recorded: 1, 2
-- **Lane:** idle since 19:01Z (no task in progress)
+- **Lane:** idle since 19:11Z (no task in progress)
 - **Week:** 5% used, 188.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:04Z, 0 min before this update
+- **Last run:** 19:04Z, 7 min before this update
 - **Keeper:** last ran 19:04Z, next wake 19:24Z
 
 ## Needs attention
-- nothing
+- Strict plan check red: 1 problem(s) on tasks still to run (+2 on DONE tasks); first: T126: stored context_pct 60% but it measures 64%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T063 | picks: Confirm within 4 business hours, license at pick and  | MERGE_PENDING | 1 | 47 min | 19:01Z |  |
+| T063 | picks: Confirm within 4 business hours, license at pick and  | done | 1 | 47 min | 19:01Z |  |
 | T224 | portals: the business Confirm-and-pay page with Stripe Eleme | done | 2 | 50 min | 17:59Z | session ended without handing in |
 
 ### Plan and harness merges on main
@@ -25,8 +25,8 @@ Updated 2026-11-05T19:04:44Z by runner 2391e30eee08 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 176 of 726 (24.2%) · partial 198 · unstarted 352
-**Tasks merged (throughput only):** 101 of 232
+**Requirements verified:** 185 of 726 (25.5%) · partial 193 · unstarted 348
+**Tasks merged (throughput only):** 102 of 232
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -39,12 +39,12 @@ Updated 2026-11-05T19:04:44Z by runner 2391e30eee08 (actions).
 | intake | 20 | 14 | 7 | 41 |
 | job-cards | 13 | 4 | 5 | 22 |
 | licensing | 31 | 16 | 1 | 48 |
-| lifecycle | 9 | 16 | 3 | 28 |
-| messaging | 14 | 11 | 20 | 45 |
+| lifecycle | 17 | 8 | 3 | 28 |
+| messaging | 15 | 10 | 20 | 45 |
 | ops-recovery | 1 | 4 | 49 | 54 |
 | privacy | 2 | 12 | 17 | 31 |
 | quiet-hours | 6 | 3 | 0 | 9 |
-| quotes-pick | 11 | 20 | 25 | 56 |
+| quotes-pick | 11 | 24 | 21 | 56 |
 | recurring | 5 | 3 | 3 | 11 |
 | security | 9 | 23 | 22 | 54 |
 | terms | 0 | 3 | 32 | 35 |
@@ -60,7 +60,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 0.5: 0 of 1 done
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
-- stage 3: 10 of 27 done
+- stage 3: 11 of 27 done
 - stage 4: 0 of 50 done
 - stage 5: 0 of 42 done
 - stage 6: 0 of 26 done
