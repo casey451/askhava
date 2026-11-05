@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-05T21:20:20Z by runner 42bd528fcedd (actions).
+Updated 2026-11-05T21:20:31Z by runner 42bd528fcedd (actions).
 
-**Building: T244 in progress since 21:01Z; 104 of 238 done; week 6% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 21:20Z; 104 of 238 done; week 6% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 104 of 238 build tasks (owner gates not counted)
 - **Stage:** stage 3; stage proofs recorded: 1, 2
-- **Lane:** lane 1: T244 claimed 21:01Z, lease until 00:01Z
+- **Lane:** idle since 21:20Z (no task in progress)
 - **Week:** 6% used, 182.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 21:07Z, 13 min before this update
 - **Keeper:** last ran 20:59Z, next wake 21:19Z
@@ -17,6 +17,7 @@ Updated 2026-11-05T21:20:20Z by runner 42bd528fcedd (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T244 | payments: remove the early-joiner price lock (FEE-040 withdr | MERGE_PENDING | 1 | 19 min | 21:20Z |  |
 | T065 | payments: refund rules for cancels and no-shows | done | 1 | 38 min | 20:38Z |  |
 | T190 | picks: Hold for 2 more hours, the emergency 60-minute window | done | 1 | 32 min | 19:45Z |  |
 | T063 | picks: Confirm within 4 business hours, license at pick and  | done | 1 | 47 min | 19:01Z |  |
@@ -72,7 +73,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T244 (lease until 2026-11-06T00:01:06Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T065", "at": "2026-11-05T20:38:04Z", "cache_read_input_tokens": 7016223, "cache_creation_input_tokens": 336457, "output_tokens": 88415, "input_tokens": 268}
+- {"task": "T244", "at": "2026-11-05T21:20:20Z", "cache_read_input_tokens": 3093175, "cache_creation_input_tokens": 199187, "output_tokens": 35911, "input_tokens": 116}
