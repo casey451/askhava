@@ -1,23 +1,23 @@
 # Ask Hava build status
 
-Updated 2026-11-05T19:49:17Z by runner 837bf1cacb87 (actions).
+Updated 2026-11-05T19:59:10Z by runner 5de132b101d0 (actions).
 
-**Idle since 19:45Z; 102 of 238 done; week 6% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 19:56Z; 103 of 238 done; week 6% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 102 of 238 build tasks (owner gates not counted)
+- **Tasks done:** 103 of 238 build tasks (owner gates not counted)
 - **Stage:** stage 3; stage proofs recorded: 1, 2
-- **Lane:** idle since 19:45Z (no task in progress)
+- **Lane:** idle since 19:56Z (no task in progress)
 - **Week:** 6% used, 184.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:49Z, 0 min before this update
+- **Last run:** 19:49Z, 9 min before this update
 - **Keeper:** last ran 19:49Z, next wake 20:09Z
 
 ## Needs attention
-- nothing
+- Strict plan check red: 2 problem(s) on tasks still to run (+1 on DONE tasks); first: T197: stored context_pct 16% but it measures 20%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T190 | picks: Hold for 2 more hours, the emergency 60-minute window | MERGE_PENDING | 1 | 32 min | 19:45Z |  |
+| T190 | picks: Hold for 2 more hours, the emergency 60-minute window | done | 1 | 32 min | 19:45Z |  |
 | T063 | picks: Confirm within 4 business hours, license at pick and  | done | 1 | 47 min | 19:01Z |  |
 | T224 | portals: the business Confirm-and-pay page with Stripe Eleme | done | 2 | 50 min | 17:59Z | session ended without handing in |
 
@@ -27,14 +27,14 @@ Updated 2026-11-05T19:49:17Z by runner 837bf1cacb87 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 168 of 731 (23.0%) · partial 210 · unstarted 353
-**Tasks merged (throughput only):** 102 of 238
+**Requirements verified:** 168 of 731 (23.0%) · partial 212 · unstarted 351
+**Tasks merged (throughput only):** 103 of 238
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 14 | 10 | 11 | 35 |
 | ai | 12 | 10 | 6 | 28 |
-| businesses | 4 | 5 | 49 | 58 |
+| businesses | 4 | 6 | 48 | 58 |
 | calls | 0 | 2 | 23 | 25 |
 | consent | 14 | 12 | 9 | 35 |
 | fees | 8 | 29 | 15 | 52 |
@@ -46,7 +46,7 @@ Updated 2026-11-05T19:49:17Z by runner 837bf1cacb87 (actions).
 | ops-recovery | 1 | 4 | 49 | 54 |
 | privacy | 1 | 13 | 17 | 31 |
 | quiet-hours | 6 | 3 | 0 | 9 |
-| quotes-pick | 7 | 28 | 21 | 56 |
+| quotes-pick | 7 | 29 | 20 | 56 |
 | recurring | 5 | 3 | 3 | 11 |
 | security | 9 | 23 | 22 | 54 |
 | terms | 0 | 3 | 32 | 35 |
@@ -62,7 +62,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 0.5: 0 of 1 done
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
-- stage 3: 11 of 29 done
+- stage 3: 12 of 29 done
 - stage 4: 0 of 54 done
 - stage 5: 0 of 42 done
 - stage 6: 0 of 26 done
