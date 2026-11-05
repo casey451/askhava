@@ -12315,7 +12315,15 @@
      "ended_at": "2026-11-04T08:12:03Z",
      "result": "QUEUED"
     }
-   ]
+   ],
+   "reviewed_sha": "5402801b9b130aedeb6568294efbd6ba9dd1b89d",
+   "review_lease": {
+    "task": "T224",
+    "session": "actions-42071426074",
+    "expires": "2026-11-05T20:08:39Z"
+   },
+   "branch": "claude/task/T224-portals-confirm-and-pay-page",
+   "head_check_since": null
   },
   {
    "id": "T063",
@@ -16862,7 +16870,7 @@
    }
   }
  },
- "updated_at": "2026-11-05T17:17:40Z",
+ "updated_at": "2026-11-05T17:59:09Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -16960,7 +16968,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "db6e88fbfad33a3f9fd37ba7790d2eb5901e76a3",
+ "runner_sha": "5402801b9b130aedeb6568294efbd6ba9dd1b89d",
  "starter": "actions",
  "smoke_runs": [
   {
