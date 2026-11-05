@@ -5,11 +5,16 @@
 //! realm proofs for vault reads (SEC-046), and the security event log with its hourly alert.
 //! The homeowner's quote page router and its pure numbering and 30-day rules (PICK-008 to
 //! PICK-012, SEC-037, T052). The pick review step's router and the pick result page (PICK-016,
-//! PICK-017, PICK-054, A11Y-014, T055).
+//! PICK-017, PICK-054, A11Y-014, T055). The business's Confirm review step and its press answers
+//! (PICK-021, FEE-014, FEE-045, CON-029, T224).
 
 /// The cookie jar the session functions take and give back (axum-extra's).
 pub use axum_extra::extract::cookie::CookieJar;
 
+pub use crate::confirm_pay::{
+    ConfirmFacts, FEE_FREE_LINE, NoFee, PORTAL_LINK, PressReply, REFUND_LINE, confirm_page,
+    press_reply,
+};
 pub use crate::pick_flow::{CODE_ROUTE, PICK_ROUTE, PageLanguage, pick_flow_routes, result_page};
 pub use crate::quote_page::{
     Numbered, QUOTE_PAGE_ROUTE, TOKEN_LIFE_AFTER_CLOSE, number_quotes, quote_page_routes,

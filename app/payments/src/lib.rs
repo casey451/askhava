@@ -23,6 +23,9 @@
 //! T189 added the release minter, [`api::Minter`]: a `ReleaseProof` only from a verified, re-fetched
 //! Stripe success or a recorded $0 decision, and the FEE-042 evidence record of each charge
 //! (PICK-022, SEC-030, SEC-039, FEE-042).
+//!
+//! T224 added the signature-checked Stripe webhook route, [`api::stripe_webhook_routes`], which
+//! hands a verified success to T189's checks and minter (PICK-022, SEC-039, SEC-049).
 
 pub mod api;
 mod charge;
@@ -31,6 +34,7 @@ mod handlers;
 mod ledger;
 mod models;
 mod release_proof;
+mod routes;
 mod rules;
 mod service;
 mod status;
