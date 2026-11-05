@@ -1,0 +1,76 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT stripe_dispute_id, amount_cents, due_at, auto_submit, submitted_at\n           FROM payments.dispute WHERE opened_at >= $1 ORDER BY opened_at, stripe_dispute_id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "stripe_dispute_id",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "payments.dispute",
+            "name": "stripe_dispute_id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "amount_cents",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "payments.dispute",
+            "name": "amount_cents"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "due_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "payments.dispute",
+            "name": "due_at"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "auto_submit",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "payments.dispute",
+            "name": "auto_submit"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "submitted_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "payments.dispute",
+            "name": "submitted_at"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "aee7050fd3ad5c1b269b089052725238ccb6cc0a3e62c824d6954a3099ccf6e3"
+}

@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT stripe_dispute_id, pick_id FROM payments.dispute\n          WHERE id = $1 AND auto_submit AND submitted_at IS NULL",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "stripe_dispute_id",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "payments.dispute",
+            "name": "stripe_dispute_id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "pick_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "payments.dispute",
+            "name": "pick_id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "9544e355bf395cc07cdfa820d895dfefe94648a23f94f36ea6a926069a126c31"
+}

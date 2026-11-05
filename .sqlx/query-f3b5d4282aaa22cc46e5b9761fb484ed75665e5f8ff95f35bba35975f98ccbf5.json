@@ -1,0 +1,112 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT e.stripe_customer_id, e.stripe_intent_id, e.idempotency_label,\n                e.authorization_version, e.amount_cents, e.pressed_at, e.charged_at,\n                r.stripe_refund_id AS \"refund?\"\n           FROM payments.charge_evidence e LEFT JOIN payments.refund r ON r.pick_id = e.pick_id\n          WHERE e.pick_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "stripe_customer_id",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "payments.charge_evidence",
+            "name": "stripe_customer_id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "stripe_intent_id",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "payments.charge_evidence",
+            "name": "stripe_intent_id"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "idempotency_label",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "payments.charge_evidence",
+            "name": "idempotency_label"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "authorization_version",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "payments.charge_evidence",
+            "name": "authorization_version"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "amount_cents",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "payments.charge_evidence",
+            "name": "amount_cents"
+          }
+        }
+      },
+      {
+        "ordinal": 5,
+        "name": "pressed_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "payments.charge_evidence",
+            "name": "pressed_at"
+          }
+        }
+      },
+      {
+        "ordinal": 6,
+        "name": "charged_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "payments.charge_evidence",
+            "name": "charged_at"
+          }
+        }
+      },
+      {
+        "ordinal": 7,
+        "name": "refund?",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "payments.refund",
+            "name": "stripe_refund_id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "f3b5d4282aaa22cc46e5b9761fb484ed75665e5f8ff95f35bba35975f98ccbf5"
+}

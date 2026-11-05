@@ -10,7 +10,7 @@
 
 use jiff::Timestamp;
 
-use crate::models::ChargeOutcome;
+use crate::models::{ChargeOutcome, RefundStep};
 
 /// Where one charge attempt stands (FEE-016). Stored as [`AttemptStatus::code`].
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -197,6 +197,62 @@ impl AttemptStatus {
             | Self::Declined
             | Self::NeedsAction
             | Self::Unreachable => false,
+        }
+    }
+}
+
+/// Where a pick's one refund stands (FEE-026, D-1542). Stored as [`RefundStatus::code`] in
+/// `payments.refund.status` (`migrations/0102_payments_refunds_disputes.sql`).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RefundStatus {
+    /// Try `tries` went to Stripe and has no answer yet.
+    Sending,
+    /// Stripe refused it, could not be reached or sent `refund.failed`: the hourly retry sends again.
+    Failed,
+    /// Stripe took the refund; the ledger holds the pick's one refund entry.
+    Succeeded,
+    /// The charge is disputed, so nothing is refunded outside the dispute; Casey was alerted.
+    Blocked,
+}
+
+impl RefundStatus {
+    /// The stored code name.
+    #[must_use]
+    pub const fn code(self) -> &'static str {
+        match self {
+            Self::Sending => "sending",
+            Self::Failed => "failed",
+            Self::Succeeded => "succeeded",
+            Self::Blocked => "blocked",
+        }
+    }
+
+    /// The status of a stored code; `None` for any other text.
+    #[must_use]
+    pub fn from_code(code: &str) -> Option<Self> {
+        [Self::Sending, Self::Failed, Self::Succeeded, Self::Blocked]
+            .into_iter()
+            .find(|s| s.code() == code)
+    }
+
+    /// FEE-026: the next step for a pick whose refund stands at `current` (status and tries so
+    /// far, `None` before any), `disputed` when a dispute names its charge, and `retry_of` the try
+    /// an hourly retry task was queued for (`None` for a refund trigger). A succeeded refund is
+    /// never sent again; a disputed charge is blocked; a failed try is sent again by its own
+    /// retry or by a repeated trigger; a try with no answer is sent again only by its own retry.
+    #[must_use]
+    pub fn next(current: Option<(Self, i32)>, disputed: bool, retry_of: Option<i32>) -> RefundStep {
+        match current {
+            Some((Self::Succeeded, _)) => RefundStep::Nothing,
+            Some((Self::Blocked, _)) => RefundStep::Block(false),
+            Some((Self::Sending | Self::Failed, _)) | None if disputed => RefundStep::Block(true),
+            None if retry_of.is_none() => RefundStep::Send(1),
+            None => RefundStep::Nothing,
+            Some((Self::Failed, tries)) if retry_of.is_none_or(|t| t == tries) => {
+                RefundStep::Send(tries + 1)
+            }
+            Some((Self::Sending, tries)) if retry_of == Some(tries) => RefundStep::Send(tries + 1),
+            Some((Self::Sending | Self::Failed, _)) => RefundStep::Nothing,
         }
     }
 }
