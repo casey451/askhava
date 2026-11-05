@@ -1,15 +1,16 @@
 # Ask Hava build status
 
-Updated 2026-11-05T11:29:52Z by runner db6e88fbfad3 (actions).
+Updated 2026-11-05T17:17:40Z by runner db6e88fbfad3 (actions).
 
-**Idle since 08:12Z; 100 of 230 done; week 100% used, resets Thu 2026-11-05 17:00Z (10:00 am Phoenix).**
+**Building: T224 in progress since 17:08Z; 100 of 230 done; week 100% used, resets Thu 2026-11-05 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 100 of 230 build tasks (owner gates not counted)
 - **Stage:** stage 3; stage proofs recorded: 1, 2
-- **Lane:** idle since 08:12Z (no task in progress)
+- **Lane:** lane 1: T224 claimed 17:08Z, lease until 20:08Z
 - **Week:** 100% used, 31.6M tokens left; resets Thu 2026-11-05 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:29Z, 0 min before this update
+- **Last run:** 11:29Z, 5 h 47 min before this update
 - **Keeper:** last ran 11:29Z, next wake 17:05Z
+- **WARNING:** no runner cycle logged for over 90 minutes before this update
 
 ## Needs attention
 - Strict plan check red: 2 problem(s) on tasks still to run (+4 on DONE tasks); first: T066: stored context_pct 9% but it measures 13%; regenerate
@@ -51,7 +52,7 @@ Updated 2026-11-05T11:29:52Z by runner db6e88fbfad3 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (ledger; quota_probe: no token: CLAUDE_CODE_OAUTH_TOKEN unset and no credentials file): five-hour: 0k used, 29.1M left, resets on first use; week: 162.4M used, 31.6M left, resets 2026-11-05T18:38:52Z; projected finish 2026-11-16T19:11:48Z.
+- Pacing (ledger; quota_probe: no token: CLAUDE_CODE_OAUTH_TOKEN unset and no credentials file): five-hour: 0k used, 29.1M left, resets on first use; week: 162.4M used, 31.6M left, resets 2026-11-05T18:38:52Z; projected finish 2026-11-18T04:20:30Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -66,7 +67,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T224 (lease until 2026-11-05T20:08:39Z)
 
 ## Last usage reading
 - {"task": "T189", "at": "2026-11-03T20:30:24Z", "output_tokens": 154972, "cache_creation_input_tokens": 610777, "cache_read_input_tokens": 19144357, "input_tokens": 389}
