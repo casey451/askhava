@@ -6,11 +6,16 @@
 //! default, a setting) from the pick notice's send, so a notice held by the email limit counts
 //! from its real send ([`crate::handlers::notice_sent`]). The license is checked once live at the
 //! pick ([`check_at_pick`]) and from the stored results at Confirm ([`check_at_confirm`]).
+//!
+//! T190 added the rules that move the window (PICK-043, PICK-044, BIZ-034): [`hold`] adds 2
+//! business hours once on a non-emergency pick, [`away_until`] and [`away_for`] bound "Away
+//! until" to 4 business hours ahead and [`window_start`] starts a delayed clock when it ends, and
+//! [`emergency_plan`] and [`emergency_fix_by`] time an emergency job's 60 clock minutes.
 
 use askhava_adapters::api::LicenseSource;
-use askhava_businesses::api::AccountStatus;
+use askhava_businesses::api::{AccountStatus, Roles};
 use askhava_core::api::SettingsError;
-use askhava_core::api::add_business_minutes;
+use askhava_core::api::{add_business_minutes, is_business_hours};
 use askhava_licensing::api::{
     Freshness, LookupOutcome, arizona_day, end_date_pauses, lookup_at_pick, roc_check_allows_card,
 };
@@ -310,4 +315,269 @@ pub const fn business_reply(linked: bool, open: bool) -> ConfirmReply {
         (true, true) => ConfirmReply::FeeAndLink,
         (true, false) => ConfirmReply::Expired,
     }
+}
+
+/// The HOLD, Away and emergency lengths (PICK-043, PICK-044, BIZ-034): each a setting, so a test
+/// or a later caller passes other values with no code change.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct WindowRules {
+    /// Business minutes a HOLD adds to the Confirm window, once per pick (default 120).
+    pub hold_minutes: u32,
+    /// The most business minutes ahead "Away until" may be set (default 240).
+    pub away_max_minutes: u32,
+    /// Clock minutes of an emergency job's Confirm and card-fix windows (default 60).
+    pub emergency_minutes: i64,
+    /// Clock minutes after the emergency pick notice's send of its one reminder (default 30).
+    pub emergency_reminder_minutes: i64,
+}
+
+impl Default for WindowRules {
+    fn default() -> Self {
+        Self {
+            hold_minutes: 2 * 60,
+            away_max_minutes: 4 * 60,
+            emergency_minutes: 60,
+            emergency_reminder_minutes: 30,
+        }
+    }
+}
+
+/// A business's HOLD or AWAY text word (PICK-043, BIZ-034, D-285).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum TimeWord {
+    /// HOLD or ESPERA, with the job number.
+    Hold(u32),
+    /// AWAY or AUSENTE, with the hours.
+    Away(u32),
+}
+
+/// PICK-043, BIZ-034, D-285, D-309: reads "HOLD 1042", "ESPERA 1042", "AWAY 3" or "AUSENTE 3"
+/// (any case, trailing periods or exclamation marks dropped); the number is required. These are
+/// never opt-out words; anything else is none.
+#[must_use]
+pub fn read_time_word(words: &str) -> Option<TimeWord> {
+    let mut parts = words
+        .trim_end()
+        .trim_end_matches(['.', '!'])
+        .split_whitespace();
+    let word = parts.next()?.to_lowercase();
+    let number: u32 = parts.next()?.parse().ok()?;
+    if parts.next().is_some() {
+        return None;
+    }
+    match word.as_str() {
+        "hold" | "espera" => Some(TimeWord::Hold(number)),
+        "away" | "ausente" => Some(TimeWord::Away(number)),
+        _ => None,
+    }
+}
+
+/// The facts a HOLD is judged on (PICK-043).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct HoldAsk {
+    /// The asking person's roles; the owner holds both (BIZ-023).
+    pub by: Roles,
+    /// Whether the homeowner chose emergency at INT-006 (a "Today" answer alone is not).
+    pub emergency: bool,
+    /// Whether this pick was already HOLDed.
+    pub held: bool,
+    /// Whether the pick's Confirm clock started late because the business was away (BIZ-034).
+    pub away_delayed: bool,
+}
+
+/// Why a HOLD or an "Away until" is refused (PICK-043, BIZ-034).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum TimeRefusal {
+    /// The person is neither the owner nor a "Confirm and billing" member.
+    Role,
+    /// HOLD on a job the homeowner chose as an emergency.
+    Emergency,
+    /// A second HOLD on the same pick.
+    AlreadyHeld,
+    /// HOLD on a pick whose clock started late under BIZ-034.
+    AwayDelayed,
+    /// The Confirm window already ended (PICK-035).
+    Ended,
+    /// "Away until" not after now or more than the setting's business minutes ahead.
+    TooFar,
+}
+
+/// PICK-043, D-252, D-284, D-344: whether the "Hold for 2 more hours" link is offered and a HOLD
+/// text can extend the window; the reasons are checked in this order.
+///
+/// # Errors
+///
+/// The [`TimeRefusal`] the business is told: the window can't be extended.
+pub fn hold_allowed(ask: HoldAsk) -> Result<(), TimeRefusal> {
+    if !ask.by.confirm_and_billing() {
+        return Err(TimeRefusal::Role);
+    }
+    if ask.emergency {
+        return Err(TimeRefusal::Emergency);
+    }
+    if ask.held {
+        return Err(TimeRefusal::AlreadyHeld);
+    }
+    if ask.away_delayed {
+        return Err(TimeRefusal::AwayDelayed);
+    }
+    Ok(())
+}
+
+/// PICK-043, D-252, D-477: the Confirm window's new end when HOLD arrives at `now` on a window
+/// ending at `due`: [`WindowRules::hold_minutes`] business minutes past `due`. The business is
+/// told the new end; the homeowner gets no text (PICK-045), and she can still pick another quote.
+///
+/// # Errors
+///
+/// [`hold_allowed`]'s refusal, or [`TimeRefusal::Ended`] at or after `due`.
+pub fn hold(
+    ask: HoldAsk,
+    (now, due): (Timestamp, Timestamp),
+    rules: WindowRules,
+) -> Result<Timestamp, TimeRefusal> {
+    hold_allowed(ask)?;
+    if now >= due {
+        return Err(TimeRefusal::Ended);
+    }
+    Ok(add_business_minutes(due, rules.hold_minutes))
+}
+
+/// BIZ-034, D-285: "Away until `until`", set at `now` by a person with `by`'s roles, from the
+/// portal or the Away link; allowed after `now` and at most [`WindowRules::away_max_minutes`]
+/// business minutes ahead.
+///
+/// # Errors
+///
+/// [`TimeRefusal::Role`] for a "Cards and quotes"-only person, [`TimeRefusal::TooFar`] otherwise.
+pub fn away_until(
+    by: Roles,
+    (now, until): (Timestamp, Timestamp),
+    rules: WindowRules,
+) -> Result<Timestamp, TimeRefusal> {
+    if !by.confirm_and_billing() {
+        return Err(TimeRefusal::Role);
+    }
+    if until <= now || until > add_business_minutes(now, rules.away_max_minutes) {
+        return Err(TimeRefusal::TooFar);
+    }
+    Ok(until)
+}
+
+/// BIZ-034, D-285: AWAY <hours> (AUSENTE <hours>) at `now`: away until `hours` business hours
+/// ahead; AWAY 0 (at any hour, even at night when no business minute has passed yet) or more
+/// than the setting allows is refused.
+///
+/// # Errors
+///
+/// As [`away_until`]; [`TimeRefusal::TooFar`] for AWAY 0 once the role is allowed.
+pub fn away_for(
+    by: Roles,
+    now: Timestamp,
+    hours: u32,
+    rules: WindowRules,
+) -> Result<Timestamp, TimeRefusal> {
+    if !by.confirm_and_billing() {
+        return Err(TimeRefusal::Role);
+    }
+    if hours == 0 {
+        return Err(TimeRefusal::TooFar);
+    }
+    let minutes = hours.saturating_mul(60).min(rules.away_max_minutes + 1);
+    away_until(by, (now, add_business_minutes(now, minutes)), rules)
+}
+
+/// BIZ-034, PICK-019, D-285: where a pick's Confirm clock starts, and whether Away delayed it: a
+/// non-emergency pick whose notice goes at `sent` while the business is away until `away` starts
+/// at `away`, with no text to the homeowner; away never delays an emergency pick.
+#[must_use]
+pub fn window_start(
+    sent: Timestamp,
+    away: Option<Timestamp>,
+    emergency: bool,
+) -> (Timestamp, bool) {
+    match away {
+        Some(until) if !emergency && until > sent => (until, true),
+        _ => (sent, false),
+    }
+}
+
+/// What the homeowner is told about an emergency pick at night (PICK-044, D-346).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum NightLine {
+    /// Nothing about the night: the business ticked after-hours emergencies, or it's daytime.
+    None,
+    /// "doesn't get emergency requests at night and will see your pick at 8 a.m."
+    SeesAtEight,
+    /// "doesn't get emergency requests at night and may not see your pick after 8 p.m."
+    MayMissAfterEight,
+}
+
+/// An emergency pick's timings (PICK-044).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct EmergencyPlan {
+    /// When the pick notice goes; the window counts from here.
+    pub send_at: Timestamp,
+    /// The Confirm window's end: [`WindowRules::emergency_minutes`] clock minutes after the send.
+    pub confirm_by: Timestamp,
+    /// The one reminder email, held to 8 a.m. by quiet hours for a business without after-hours;
+    /// none when that held time is at or after `confirm_by` (the window would already be over).
+    pub reminder_at: Option<Timestamp>,
+    /// The homeowner's night line.
+    pub night: NightLine,
+}
+
+impl EmergencyPlan {
+    /// PICK-044: whether the Confirm window is open at `at`: from the send, strictly before
+    /// `confirm_by`.
+    #[must_use]
+    pub fn open_at(&self, at: Timestamp) -> bool {
+        self.send_at <= at && at < self.confirm_by
+    }
+}
+
+/// PICK-044, D-270, D-346: the emergency pick made at `picked` of a business that ticked
+/// after-hours emergencies (BIZ-007) when `after_hours`. Clock minutes at any hour; a business
+/// without the tick picked between 8 p.m. and 8 a.m. gets its notice at 8 a.m. and the window
+/// counts from then; picked before 8 p.m. with the window ending after it, its notice goes at once
+/// and its reminder waits for 8 a.m., or is dropped when 8 a.m. is past the window's end.
+#[must_use]
+pub fn emergency_plan(picked: Timestamp, after_hours: bool, rules: WindowRules) -> EmergencyPlan {
+    let night_held = !after_hours && !is_business_hours(picked);
+    let send_at = if night_held {
+        add_business_minutes(picked, 0)
+    } else {
+        picked
+    };
+    let confirm_by = clock_minutes(send_at, rules.emergency_minutes);
+    let reminder = clock_minutes(send_at, rules.emergency_reminder_minutes);
+    let last_second = confirm_by.saturating_sub(SignedDuration::from_secs(1));
+    let ends_at_night = !is_business_hours(last_second.unwrap_or(confirm_by));
+    let (night, reminder_at) = match (after_hours, night_held, ends_at_night) {
+        (true, _, _) => (NightLine::None, reminder),
+        (false, true, _) => (NightLine::SeesAtEight, reminder),
+        (false, false, true) => (
+            NightLine::MayMissAfterEight,
+            add_business_minutes(reminder, 0),
+        ),
+        (false, false, false) => (NightLine::None, reminder),
+    };
+    EmergencyPlan {
+        send_at,
+        confirm_by,
+        reminder_at: (reminder_at < confirm_by).then_some(reminder_at),
+        night,
+    }
+}
+
+/// PICK-044, JOB-014, FEE-020: the end of an emergency job's card-fix window for a card declined
+/// at `declined`: [`WindowRules::emergency_minutes`] clock minutes at any hour.
+#[must_use]
+pub fn emergency_fix_by(declined: Timestamp, rules: WindowRules) -> Timestamp {
+    clock_minutes(declined, rules.emergency_minutes)
+}
+
+fn clock_minutes(from: Timestamp, minutes: i64) -> Timestamp {
+    from.saturating_add(SignedDuration::from_mins(minutes))
+        .unwrap_or(Timestamp::MAX)
 }
