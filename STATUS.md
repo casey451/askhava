@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-05T23:35:48Z by runner 3e9b0b47b65c (actions).
+Updated 2026-11-05T23:35:58Z by runner 3e9b0b47b65c (actions).
 
-**Building: T064 in progress since 23:08Z; 107 of 238 done; week 7% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 23:35Z; 107 of 238 done; week 7% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 107 of 238 build tasks (owner gates not counted)
 - **Stage:** stage 3; stage proofs recorded: 1, 2
-- **Lane:** lane 1: T064 claimed 23:08Z, lease until 02:08Z
+- **Lane:** idle since 23:35Z (no task in progress)
 - **Week:** 7% used, 180.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 23:13Z, 22 min before this update
 - **Keeper:** last ran 22:57Z, next wake 23:17Z
@@ -17,6 +17,7 @@ Updated 2026-11-05T23:35:48Z by runner 3e9b0b47b65c (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T064 | payments: success after the job moved on is refunded once an | MERGE_PENDING | 1 | 27 min | 23:35Z |  |
 | T066 | payments: one refund per trigger, retries, disputes with evi | done | 1 | 46 min | 22:54Z |  |
 | T245 | payments: narrow the default privileges in schema payments t | done | 1 | 21 min | 21:56Z |  |
 | T244 | payments: remove the early-joiner price lock (FEE-040 withdr | done | 1 | 19 min | 21:20Z |  |
@@ -75,7 +76,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T064 (lease until 2026-11-06T02:08:42Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T066", "at": "2026-11-05T22:54:24Z", "cache_read_input_tokens": 27520969, "output_tokens": 249395, "cache_creation_input_tokens": 760976, "input_tokens": 456}
+- {"task": "T064", "at": "2026-11-05T23:35:47Z", "cache_read_input_tokens": 12008555, "cache_creation_input_tokens": 442552, "output_tokens": 105528, "input_tokens": 331}
