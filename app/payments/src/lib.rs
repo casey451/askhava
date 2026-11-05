@@ -30,12 +30,16 @@
 //! T066 added each automatic refund exactly once with its hourly retry and its block on a disputed
 //! charge, [`api::request_refund`], and bank disputes with their evidence pack,
 //! [`api::record_dispute`] (FEE-026, FEE-027, FEE-042, PRIV-027).
+//!
+//! T064 added the automatic refund, once, of a payment that succeeded after its job moved on, with
+//! one alert to Casey, [`api::late_success`] (FEE-021).
 
 pub mod api;
 mod charge;
 mod disputes;
 mod free_wins;
 mod handlers;
+mod late;
 mod ledger;
 mod models;
 mod refund_rules;
