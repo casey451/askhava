@@ -1668,3 +1668,11 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **Parked or open.** Cold-email outreach (your item 9) is parked: no task, no code, and never from the account that sends job emails, whose provider bans cold email. Free first jobs (your item 3) stay as built until you pick a branch. The build keeps running while these changes land; nothing they touch has started.
 - **Coming next.** A second plan change adds the national-ready market settings and radius matching you asked for, with the launch market still open (Phoenix metro with a partner, otherwise Lake Havasu City).
 - **You can veto.** Any of these. To bring the price lock back, or to have the permissions fix wait, reply on an owner issue; the tasks have not run yet.
+
+## How long a business has to accept a pick, and the license check at the pick (T063, D-1500 to D-1502, November 5)
+
+- **The window.** After a homeowner picks a quote, the business has 4 business hours (8 a.m. to 8 p.m. Arizona time) to accept, counted from when the pick email actually goes out, so an email held back by the daily sending limit doesn't eat into their time. A pick emailed at 7:41 p.m. has until 11:41 a.m. the next day. The 4 hours is a setting: changing it to 3 needs no code change. When time runs out, the pick ends and the homeowner can choose another quote.
+- **The license.** The business's license is looked up live once at the pick. If the state site is down, a daily check from the last 24 hours is used; otherwise the pick waits. At Confirm, the stored results are used again with no second lookup, and a paused account, an ended license or bond date, or no fresh Active check stops the Confirm.
+- **Texts from the business.** "YES 1042" or "CONFIRM 1042" never accepts or charges anything by text: both get the fee and the Confirm link. After the window ends they get: "Ask Hava: Time ran out to accept job 1042, so the pick expired. You weren't charged. Your quote can't be picked again for this job."
+- **Still to connect.** The pieces that call these checks (the Confirm page's handler, the email sender, the license-number lookup and the inbound business text route) are later tasks; they are listed in D-1502.
+- **You can veto.** The 4-hour default or the expired wording, by replying on an owner issue.
