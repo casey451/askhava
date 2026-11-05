@@ -3,7 +3,7 @@
 //! 2026.
 
 use askhava_businesses::api::Roles;
-use jiff::Timestamp;
+use jiff::{SignedDuration, Timestamp};
 
 use crate::confirm::{
     BusinessWord, ConfirmSettings, HoldAsk, NightLine, TimeRefusal, TimeWord, WindowRules,
@@ -122,8 +122,12 @@ fn td_pick_21_emergency_windows_are_60_clock_minutes() {
     let plan = emergency_plan(az(9, 23, 0), true, rules);
     assert_eq!(plan.send_at, az(9, 23, 0));
     assert_eq!(plan.confirm_by, az(10, 0, 0));
-    assert!(az(10, 0, 0).as_second() - 1 < plan.confirm_by.as_second());
-    assert_eq!(plan.reminder_at, az(9, 23, 30));
+    let last_second = az(10, 0, 0) - SignedDuration::from_secs(1);
+    assert!(plan.open_at(az(9, 23, 0)));
+    assert!(plan.open_at(last_second));
+    assert!(!plan.open_at(az(10, 0, 0)));
+    assert!(!plan.open_at(az(9, 22, 59)));
+    assert_eq!(plan.reminder_at, Some(az(9, 23, 30)));
     assert_eq!(plan.night, NightLine::None);
     assert_eq!(emergency_fix_by(az(9, 23, 10), rules), az(10, 0, 10));
     let day = emergency_plan(az(9, 10, 0), false, rules);
@@ -132,33 +136,33 @@ fn td_pick_21_emergency_windows_are_60_clock_minutes() {
 
 /// TD-PICK-21 (PICK-044, D-346): a business without the after-hours tick picked at 22:00 gets its
 /// notice at 08:00 and the window counts from then; picked at 19:30 its window ends after 8 p.m.,
-/// so the homeowner is warned and the 20:00 reminder waits for 08:00; a window ending exactly at
-/// 8 p.m. warns nothing. A non-emergency pick at 19:30 still counts business hours.
+/// so the homeowner is warned and the 20:00 reminder, held to 08:00 past the 20:30 end, is
+/// dropped; a window ending exactly at 8 p.m. warns nothing. A non-emergency pick at 19:30 still counts business hours.
 #[test]
 fn td_pick_21_night_picks_of_a_business_without_after_hours() {
     let rules = WindowRules::default();
     let night = emergency_plan(az(9, 22, 0), false, rules);
     assert_eq!(night.send_at, az(10, 8, 0));
     assert_eq!(night.confirm_by, az(10, 9, 0));
-    assert_eq!(night.reminder_at, az(10, 8, 30));
+    assert_eq!(night.reminder_at, Some(az(10, 8, 30)));
     assert_eq!(night.night, NightLine::SeesAtEight);
     let dusk = emergency_plan(az(9, 19, 30), false, rules);
     assert_eq!(dusk.send_at, az(9, 19, 30));
     assert_eq!(dusk.confirm_by, az(9, 20, 30));
-    assert_eq!(dusk.reminder_at, az(10, 8, 0));
+    assert_eq!(dusk.reminder_at, None);
     assert_eq!(dusk.night, NightLine::MayMissAfterEight);
     let edge = emergency_plan(az(9, 19, 0), false, rules);
     assert_eq!(
         (edge.reminder_at, edge.night),
-        (az(9, 19, 30), NightLine::None)
+        (Some(az(9, 19, 30)), NightLine::None)
     );
     let regular = confirm_by(az(9, 19, 30), ConfirmSettings::default());
     assert_eq!(regular, az(10, 11, 30));
 }
 
 /// TD-PICK-23 (BIZ-034, PICK-043, D-284, D-285): AWAY 3 at 10:00 ends at 13:00 and a pick sent at
-/// 11:00 starts its clock then, delayed, so its HOLD is refused; AWAY 5 and a "Cards and quotes"
-/// phone are refused; an emergency pick during away is not delayed; HOLD on a "Today" regular job
+/// 11:00 starts its clock then, delayed, so its HOLD is refused; AWAY 5, AWAY 0 by day or at
+/// 22:00 and a "Cards and quotes" phone are refused; an emergency pick during away is not delayed; HOLD on a "Today" regular job
 /// is accepted.
 #[test]
 fn td_pick_23_away_delays_the_clock_and_blocks_hold() {
@@ -192,6 +196,14 @@ fn td_pick_23_away_delays_the_clock_and_blocks_hold() {
     assert_eq!(
         away_for(Roles::BOTH, az(9, 10, 0), 0, rules),
         Err(TimeRefusal::TooFar)
+    );
+    assert_eq!(
+        away_for(Roles::BOTH, az(9, 22, 0), 0, rules),
+        Err(TimeRefusal::TooFar)
+    );
+    assert_eq!(
+        away_for(cards_only(), az(9, 22, 0), 0, rules),
+        Err(TimeRefusal::Role)
     );
     assert_eq!(
         away_for(cards_only(), az(9, 10, 0), 2, rules),

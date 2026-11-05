@@ -465,17 +465,24 @@ pub fn away_until(
 }
 
 /// BIZ-034, D-285: AWAY <hours> (AUSENTE <hours>) at `now`: away until `hours` business hours
-/// ahead; AWAY 0 or more than the setting allows is refused.
+/// ahead; AWAY 0 (at any hour, even at night when no business minute has passed yet) or more
+/// than the setting allows is refused.
 ///
 /// # Errors
 ///
-/// As [`away_until`].
+/// As [`away_until`]; [`TimeRefusal::TooFar`] for AWAY 0 once the role is allowed.
 pub fn away_for(
     by: Roles,
     now: Timestamp,
     hours: u32,
     rules: WindowRules,
 ) -> Result<Timestamp, TimeRefusal> {
+    if !by.confirm_and_billing() {
+        return Err(TimeRefusal::Role);
+    }
+    if hours == 0 {
+        return Err(TimeRefusal::TooFar);
+    }
     let minutes = hours.saturating_mul(60).min(rules.away_max_minutes + 1);
     away_until(by, (now, add_business_minutes(now, minutes)), rules)
 }
@@ -513,23 +520,34 @@ pub struct EmergencyPlan {
     pub send_at: Timestamp,
     /// The Confirm window's end: [`WindowRules::emergency_minutes`] clock minutes after the send.
     pub confirm_by: Timestamp,
-    /// The one reminder email, held to 8 a.m. by quiet hours for a business without after-hours.
-    pub reminder_at: Timestamp,
+    /// The one reminder email, held to 8 a.m. by quiet hours for a business without after-hours;
+    /// none when that held time is at or after `confirm_by` (the window would already be over).
+    pub reminder_at: Option<Timestamp>,
     /// The homeowner's night line.
     pub night: NightLine,
+}
+
+impl EmergencyPlan {
+    /// PICK-044: whether the Confirm window is open at `at`: from the send, strictly before
+    /// `confirm_by`.
+    #[must_use]
+    pub fn open_at(&self, at: Timestamp) -> bool {
+        self.send_at <= at && at < self.confirm_by
+    }
 }
 
 /// PICK-044, D-270, D-346: the emergency pick made at `picked` of a business that ticked
 /// after-hours emergencies (BIZ-007) when `after_hours`. Clock minutes at any hour; a business
 /// without the tick picked between 8 p.m. and 8 a.m. gets its notice at 8 a.m. and the window
 /// counts from then; picked before 8 p.m. with the window ending after it, its notice goes at once
-/// and its reminder waits for 8 a.m.
+/// and its reminder waits for 8 a.m., or is dropped when 8 a.m. is past the window's end.
 #[must_use]
 pub fn emergency_plan(picked: Timestamp, after_hours: bool, rules: WindowRules) -> EmergencyPlan {
     let night_held = !after_hours && !is_business_hours(picked);
-    let send_at = match night_held {
-        true => add_business_minutes(picked, 0),
-        false => picked,
+    let send_at = if night_held {
+        add_business_minutes(picked, 0)
+    } else {
+        picked
     };
     let confirm_by = clock_minutes(send_at, rules.emergency_minutes);
     let reminder = clock_minutes(send_at, rules.emergency_reminder_minutes);
@@ -547,7 +565,7 @@ pub fn emergency_plan(picked: Timestamp, after_hours: bool, rules: WindowRules) 
     EmergencyPlan {
         send_at,
         confirm_by,
-        reminder_at,
+        reminder_at: (reminder_at < confirm_by).then_some(reminder_at),
         night,
     }
 }
