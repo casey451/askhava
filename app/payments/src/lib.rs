@@ -26,14 +26,20 @@
 //!
 //! T224 added the signature-checked Stripe webhook route, [`api::stripe_webhook_routes`], which
 //! hands a verified success to T189's checks and minter (PICK-022, SEC-039, SEC-049).
+//!
+//! T066 added each automatic refund exactly once with its hourly retry and its block on a disputed
+//! charge, [`api::request_refund`], and bank disputes with their evidence pack,
+//! [`api::record_dispute`] (FEE-026, FEE-027, FEE-042, PRIV-027).
 
 pub mod api;
 mod charge;
+mod disputes;
 mod free_wins;
 mod handlers;
 mod ledger;
 mod models;
 mod refund_rules;
+mod refunds;
 mod release_proof;
 mod routes;
 mod rules;

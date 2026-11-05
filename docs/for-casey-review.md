@@ -1689,3 +1689,12 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **The first quote now moves the request forward (T247).** Today a request with quotes stays "open", so its timer could tell the homeowner "no quotes yet" and close it, "2 YES" by text was refused, and the "your first quote is in" text never went. T247 fixes all three.
 - **Database permissions in every other area (T250).** The same loose default fixed for payments (T245) exists in 13 other parts of the database. T250 makes "add and read only" the default there too and adds a test that checks every table.
 - **You can veto.** Any of these: the national-ready scope, storing the ZIP code, how unknown ZIP codes and out-of-state businesses are handled, the "pick until the business confirms" rule, or the permissions change. Reply on an owner issue; none of the tasks has run yet.
+
+## Refunds happen once, and bank disputes (T066, D-1542 to D-1544, November 5)
+
+- **One refund per pick.** However many times a refund is asked for, Stripe is asked once. If Stripe says no or can't be reached, you get one alert and it tries again every hour until it goes through.
+- **No refund on a disputed charge.** Once a business disputes a charge with its bank, no refund goes out on it; you get one alert instead.
+- **Disputes.** Each dispute alerts you and goes in the books once, as the disputed amount plus Stripe's $15 fee. Two days before Stripe's deadline, the evidence goes in on its own only when the business was given the details and tried to call (T191 checks that); every other dispute waits for you to fight it or accept it, showing the $15 extra it costs to fight. If you already sent the evidence yourself, it is never sent again.
+- **What the evidence holds.** Only record numbers and times from the charge (Stripe customer, payment, card-terms version, amount, when "Confirm and pay" was pressed and paid, any refund). Never the homeowner's name, phone, address, email or messages.
+- **Fraud warnings.** If Stripe warns a charge may be fraud and the details were not yet given out, it is refunded at once; if they were, it is listed for you to decide.
+- **You can veto** the "alert once, not every hour" choice for failed refunds. Reply on an owner issue.

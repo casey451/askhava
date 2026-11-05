@@ -1,0 +1,32 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE payments.refund SET status = $2, decided_at = $4\n          WHERE pick_id = $1 AND status = $5 AND ($3::int IS NULL OR tries = $3)\n         RETURNING tries",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "tries",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "payments.refund",
+            "name": "tries"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Int4",
+        "Timestamptz",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "3c7e9e2b278053e90a65220ff3871f9393e542fbe5a8894690131624655e984a"
+}

@@ -16,6 +16,12 @@
 //! T062 (FEE-016, FEE-017, FEE-047, D-1425): [`Press`] is one "Confirm and pay" press with the
 //! caller's [`PickNow`] check, [`ChargeOutcome`] what it came to, [`ChargeError`] why it could not
 //! finish, and [`intent_label`] and [`attempt_label`] the labels the Stripe keys derive from.
+//!
+//! T066 (FEE-026, FEE-027, FEE-042, PRIV-027, D-1542 to D-1544): [`RefundTrigger`] is why a pick
+//! is refunded, [`RefundStep`] what a request or retry does next, [`RefundOutcome`] and
+//! [`RefundError`] what it came to; [`DisputeOpened`] is a Stripe dispute as the webhook reports
+//! it, [`EvidencePack`] the IDs-and-timestamps evidence built from a charge's FEE-042 record, and
+//! [`DisputeView`] one dispute as the owner portal and the weekly digest list it.
 
 use askhava_adapters::api::IdempotencyKey;
 use jiff::Timestamp;
@@ -23,6 +29,7 @@ use secrecy::SecretString;
 use sqlx::types::Uuid;
 
 use crate::ledger::LedgerError;
+use crate::refund_rules::RefundReason;
 
 /// The FEE-015 card authorization, exactly as `docs/spec/fees.md` words it (D-195, D-196, D-365).
 /// A change of wording is a new [`AUTHORIZATION_VERSION`], accepted again before the next charge
@@ -427,4 +434,154 @@ impl IntentText {
     pub fn statement_descriptor(&self) -> String {
         format!("{STATEMENT_PREFIX}* {}", self.statement_suffix())
     }
+}
+
+/// Why a pick's charge is refunded (FEE-022 to FEE-025 through T065's rules, FEE-052's early fraud
+/// warning); stored as [`RefundTrigger::code`] in `payments.refund.trigger`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RefundTrigger {
+    /// A refund rule of `refund_rules` decided it.
+    Rule(RefundReason),
+    /// FEE-052: an early fraud warning on a charge whose details were not yet released.
+    FraudWarning,
+}
+
+impl RefundTrigger {
+    /// The stored code name.
+    #[must_use]
+    pub const fn code(self) -> &'static str {
+        match self {
+            Self::Rule(RefundReason::Unreachable) => "unreachable",
+            Self::Rule(RefundReason::CancelledBeforeTalk) => "cancelled-before-talk",
+            Self::Rule(RefundReason::ChargedAfterCancel) => "charged-after-cancel",
+            Self::FraudWarning => "fraud-warning",
+        }
+    }
+}
+
+/// What a refund request or an hourly retry does next (FEE-026), from `RefundStatus::next`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RefundStep {
+    /// Send try `n` to Stripe, keyed by the pick's refund label and `n`.
+    Send(i32),
+    /// Nothing: refunded already, a try still in flight, or a retry overtaken by a later try.
+    Nothing,
+    /// Record the block; `true` when it is new, so Casey is alerted once.
+    Block(bool),
+}
+
+/// What a refund request came to (FEE-026).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum RefundOutcome {
+    /// Stripe took the refund (`re_…`); the ledger holds the pick's one refund entry.
+    Refunded(String),
+    /// Nothing was sent: the pick was refunded already, or a try is still in flight.
+    Unchanged,
+    /// The charge is disputed: no refund, Casey is alerted (FEE-026).
+    Blocked,
+    /// Stripe refused or could not be reached: an alert is raised and the hourly retry is queued.
+    Failed,
+}
+
+/// Why a refund or dispute step could not finish. No variant carries a vendor or database message
+/// (R5, D-698).
+#[derive(Debug, thiserror::Error, PartialEq, Eq)]
+pub enum MoneyEventError {
+    /// The pick has no charge evidence record: nothing was charged, so nothing is refunded.
+    #[error("nothing was charged for this pick")]
+    NothingCharged,
+    /// A dispute names a PaymentIntent no pick was charged through, or has a malformed field.
+    #[error("the dispute does not match a charge")]
+    UnknownCharge,
+    /// Stripe refused the evidence or could not be reached; the task is run again.
+    #[error("the Stripe request failed")]
+    Stripe,
+    /// The ledger refused the entry.
+    #[error("the ledger refused the entry")]
+    Ledger(#[from] LedgerError),
+    /// The database refused or dropped the statement.
+    #[error("the payments database statement failed")]
+    Database,
+}
+
+/// A `charge.dispute.created` event's fields, after the webhook route checked its signature
+/// (FEE-027). IDs, an amount and Stripe's evidence due date only.
+#[derive(Debug, Clone, Copy)]
+pub struct DisputeOpened<'a> {
+    /// The dispute, `dp_…` (or `du_…`).
+    pub dispute: &'a str,
+    /// The disputed PaymentIntent, `pi_…`.
+    pub payment_intent: &'a str,
+    /// The disputed amount in cents.
+    pub amount_cents: i64,
+    /// `evidence_details.due_by`.
+    pub due_at: Timestamp,
+}
+
+/// The evidence sent to Stripe for a dispute, built only from the charge's FEE-042 record and its
+/// refund: IDs and timestamps, never a contact field or help-message text (PRIV-027, D-365).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct EvidencePack {
+    pub(crate) customer: String,
+    pub(crate) payment_intent: String,
+    pub(crate) attempt_label: String,
+    pub(crate) authorization_version: Option<i32>,
+    pub(crate) amount_cents: i64,
+    pub(crate) pressed_at: Timestamp,
+    pub(crate) charged_at: Timestamp,
+    pub(crate) refund: Option<String>,
+}
+
+/// What the evidence calls the product: the introduction fee by job size (TERMS-027, WORD-002).
+pub const EVIDENCE_PRODUCT: &str = "Introduction fee by job size. The business pressed Confirm \
+    and pay to be put in touch with a homeowner about one home-service job.";
+
+/// A time as the evidence shows it: `2026-11-04 10:00:00 UTC`.
+fn utc(at: Timestamp) -> String {
+    at.strftime("%Y-%m-%d %H:%M:%S UTC").to_string()
+}
+
+impl EvidencePack {
+    /// The Stripe form fields: the product line, the record lines and `submit=true`.
+    #[must_use]
+    pub fn form(&self) -> Vec<(&'static str, String)> {
+        let version = self
+            .authorization_version
+            .map_or_else(|| "none".to_owned(), |v| v.to_string());
+        let refund = self.refund.clone().unwrap_or_else(|| "none".to_owned());
+        let (dollars, cents) = (self.amount_cents / 100, self.amount_cents % 100);
+        let record = format!(
+            "Stripe customer: {}\nStripe payment ID: {}\nOur payment reference: {}\n\
+             Card payment terms version the business accepted: {version}\n\
+             Amount: ${dollars}.{cents:02}\nConfirm and pay pressed at: {}\n\
+             Payment went through at: {}\nRefund: {refund}",
+            self.customer,
+            self.payment_intent,
+            self.attempt_label,
+            utc(self.pressed_at),
+            utc(self.charged_at),
+        );
+        vec![
+            ("evidence[product_description]", EVIDENCE_PRODUCT.to_owned()),
+            ("evidence[uncategorized_text]", record),
+            ("submit", "true".to_owned()),
+        ]
+    }
+}
+
+/// One dispute as the owner portal and the weekly digest list it (FEE-027, FEE-050).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DisputeView {
+    /// `dp_…`.
+    pub dispute: String,
+    /// The disputed amount in cents.
+    pub amount_cents: i64,
+    /// Stripe's evidence due date.
+    pub due_at: Timestamp,
+    /// Marked by T191 for auto-submit (FEE-050's condition held).
+    pub auto_submit: bool,
+    /// When the evidence went in, if it has.
+    pub submitted_at: Option<Timestamp>,
+    /// The countering fee at stake if Casey counters (FEE-050): `DISPUTE_FEE_CENTS`.
+    pub fee_at_stake_cents: i64,
 }
