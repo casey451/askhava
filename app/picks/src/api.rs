@@ -14,12 +14,20 @@
 //! [`check_at_pick`] and [`check_at_confirm`] are the license and account re-checks (PICK-020);
 //! [`fee_line`] the recurring fee line (PICK-034); [`read_business_word`] and [`business_reply`]
 //! the answer to a business's YES or CONFIRM text (PICK-033, PICK-035).
+//!
+//! T190: [`hold`] and [`hold_allowed`] (PICK-043), [`away_until`], [`away_for`] and
+//! [`window_start`] (BIZ-034), [`emergency_plan`] and [`emergency_fix_by`] (PICK-044), and
+//! [`read_time_word`] for HOLD, ESPERA, AWAY and AUSENTE texts, with [`WindowRules`] lengths.
 
 pub use crate::confirm::{
     BusinessWord, ConfirmReply, ConfirmSettings, EXPIRED_TEMPLATE, FEE_REPLY_TEMPLATE, FeeBasis,
     LicenseAtPick, PICK_NOTICE_EMERGENCY_TEMPLATE, PICK_NOTICE_TEMPLATE, Refusal, StoredFacts,
     WINDOW_KEY, business_reply, check_at_confirm, check_at_pick, confirm_by, fee_line,
     license_at_pick, read_business_word,
+};
+pub use crate::confirm::{
+    EmergencyPlan, HoldAsk, NightLine, TimeRefusal, TimeWord, WindowRules, away_for, away_until,
+    emergency_fix_by, emergency_plan, hold, hold_allowed, read_time_word, window_start,
 };
 pub use crate::handlers::{CONFIRM_ENDS_KIND, notice_sent, run_confirm_ends, run_pick_notice};
 pub use crate::models::PicksError;
