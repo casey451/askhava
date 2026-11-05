@@ -14,7 +14,7 @@ A planning bundle Casey assembled from his November 3 voice calls and several ou
 4. **Rule 2 cold outreach parked** (his item 9 stayed open on the call; the overseer parks it, D-1496).
 5. **Free first jobs stay open** (his item 3): the built FEE-036 rule stays until he picks a branch (D-1497).
 
-The second plan PR (D-1515 to D-1520) adds the tasks for items 2 and 3: T248 (markets as data and each business's service radius) and T249 (radius matching), with T242's national-ready inventory; it also adds the page pick (T246), the first-quote move (T247) and the other schemas' default privileges (T250).
+The second plan PR (D-1515 to D-1521) adds the tasks for items 2 and 3: T248 (markets as data and each business's service radius) and T249 (radius matching), with T242's national-ready inventory; it also adds the page pick (T246), the first-quote move (T247), the other schemas' default privileges (T250) and the ZIP question and card sender (T251).
 
 ## Disposition
 
@@ -59,7 +59,7 @@ T242 lists this review and the folder under its reads, so the pre-war-games revi
 
 - Casey: item 3 (free first jobs), item 9 (Rule 2 outreach), the launch market, and the CPA's sales-tax answer.
 - The default-privileges pattern in the 13 other schemas (see D-1495): T250 (D-1520).
-- PR 2: national-ready market data and radius matching: T248, T249 and T242's inventory (D-1515, D-1518, D-1519).
+- PR 2 (D-1515 to D-1521): national-ready market data and radius matching: T248, T249 and T242's inventory (D-1515, D-1518, D-1519); the ZIP question and card sender: T251 (D-1521).
 
 ## Casey's confirmation, November 5
 

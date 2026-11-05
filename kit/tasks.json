@@ -6651,7 +6651,8 @@
     "D-1048",
     "D-1051",
     "D-1234",
-    "D-1302"
+    "D-1302",
+    "D-1516"
    ],
    "cites": [],
    "budget": {
@@ -8276,7 +8277,8 @@
    "module": "businesses",
    "deps": [
     "T075",
-    "T094"
+    "T094",
+    "T250"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -8345,7 +8347,8 @@
     "D-366",
     "D-457",
     "D-417",
-    "D-492"
+    "D-492",
+    "D-1520"
    ],
    "cites": [],
    "budget": {
@@ -8373,7 +8376,8 @@
    "module": "businesses",
    "deps": [
     "T075",
-    "T081"
+    "T081",
+    "T250"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -8438,7 +8442,8 @@
     "D-357",
     "D-380",
     "D-462",
-    "D-417"
+    "D-417",
+    "D-1520"
    ],
    "cites": [],
    "budget": {
@@ -8465,7 +8470,8 @@
    "stage": "4",
    "module": "businesses",
    "deps": [
-    "T193"
+    "T193",
+    "T250"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -8530,7 +8536,8 @@
     "D-385",
     "D-456",
     "D-492",
-    "D-1143"
+    "D-1143",
+    "D-1520"
    ],
    "cites": [],
    "budget": {
@@ -8558,7 +8565,8 @@
    "module": "businesses",
    "deps": [
     "T082",
-    "T094"
+    "T094",
+    "T250"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -8604,7 +8612,8 @@
     "D-287",
     "D-288",
     "D-311",
-    "D-1143"
+    "D-1143",
+    "D-1520"
    ],
    "cites": [],
    "budget": {
@@ -8632,7 +8641,8 @@
    "module": "portals",
    "deps": [
     "T193",
-    "T094"
+    "T094",
+    "T250"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -8680,7 +8690,8 @@
     "D-318",
     "D-333",
     "D-366",
-    "D-490"
+    "D-490",
+    "D-1520"
    ],
    "cites": [],
    "budget": {
@@ -9197,7 +9208,8 @@
    "module": "privacy",
    "deps": [
     "T075",
-    "T246"
+    "T246",
+    "T250"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -9236,7 +9248,8 @@
    "decisions": [
     "D-383",
     "D-454",
-    "D-480"
+    "D-480",
+    "D-1520"
    ],
    "cites": [],
    "budget": {
@@ -9326,7 +9339,8 @@
     "T091",
     "T083",
     "T066",
-    "T246"
+    "T246",
+    "T250"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -9372,7 +9386,8 @@
     "D-013",
     "D-079",
     "D-480",
-    "D-492"
+    "D-492",
+    "D-1520"
    ],
    "cites": [],
    "budget": {
@@ -9399,7 +9414,8 @@
    "stage": "4",
    "module": "messaging",
    "deps": [
-    "T092"
+    "T092",
+    "T250"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -9433,7 +9449,8 @@
     "TD-CON-25"
    ],
    "decisions": [
-    "D-093"
+    "D-093",
+    "D-1520"
    ],
    "cites": [],
    "budget": {
@@ -9911,7 +9928,8 @@
    "deps": [
     "T094",
     "T194",
-    "T082"
+    "T082",
+    "T250"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -9978,7 +9996,8 @@
     "D-344",
     "D-346",
     "D-356",
-    "D-490"
+    "D-490",
+    "D-1520"
    ],
    "cites": [],
    "budget": {
@@ -10008,7 +10027,8 @@
     "T094",
     "T194",
     "T082",
-    "T147"
+    "T147",
+    "T250"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -10066,7 +10086,8 @@
     "D-328",
     "D-344",
     "D-351",
-    "D-381"
+    "D-381",
+    "D-1520"
    ],
    "cites": [],
    "budget": {
@@ -16776,7 +16797,7 @@
    "id": "T248",
    "slug": "catalog-markets-service-radius",
    "title": "catalog and businesses: markets as reviewed data, Arizona ZIP centroids, and each business's service radius",
-   "goal": "Casey's November 3 decisions (D-1515, D-1518): Ask Hava is national-ready, so market values are data, and each business types how far it will travel. Build the data layer; matching by radius and the portal edit are T249's. (1) Markets (INT-048): `docs/catalog/markets.yaml` (new, reviewed, owned here) with one market, `lake-havasu-city`: its name, state `AZ`, IANA time zone `America/Phoenix`, the identity source of its no-license categories (the city business-license list of LIC-011) and its towns (the town codes of the service-area setting, INT-022), each town with its ZIP codes taken from the US Census ZCTA-to-place relationship file (never typed from memory), a ZIP under two towns being refused so the reviewer assigns it to one; `catalog::api::town_for_zip(zip)` gives the town or none (T251's ZIP step reads it, D-1521). `app/catalog/src/markets.rs` compiles it in and checks it as `loader.rs` checks `categories.yaml`, refusing a town in two markets, a duplicate ID, an unknown time zone, a market with no towns and a state other than AZ without a decision ID; the catalog sync writes `catalog.market` (ID, name, state, time zone, identity sources, `launched_at`, empty: nothing here sets it, a launch being a later owner action) and `catalog.market_town` from `migrations/0162_catalog_markets.sql`. A Phoenix metro market (several towns, `America/Phoenix`) is a fixture inside the tests, for the tests and the war games, never in the reviewed file and never launched; which market launches first is open, so no code names either market. (2) Job locations: `app/catalog/data/zcta_centroids_az.csv`, the Arizona rows of the US Census Bureau Gazetteer ZCTA file (public domain; the ZCTA and its internal-point latitude and longitude), at least every ZCTA of the Lake Havasu City market's towns and of the Phoenix metro fixture's towns, with the source URL, vintage and download date in its header, loaded into `catalog.zcta_centroid` (same migration). Copy the rows from the Census file; never type or estimate a coordinate; if the file can't be reached, stop and report BLOCKED. `catalog::api::zip_location(zip)` gives the centroid or none, and a pure `catalog::api::miles_between(a, b)` the great-circle distance; no geocoding service and no new crate. (3) The service radius (BIZ-058): `migrations/0163_businesses_service_area.sql` adds `businesses.service_area` (business ID, base ZIP as 5 digits, radius as whole miles from 1 to 100, both required; SELECT, INSERT and UPDATE granted to `askhava_app` explicitly, since T250 narrows the default to SELECT and INSERT); `app/businesses/src/service_area.rs` sets and reads it (the base ZIP checked against `catalog::api::zip_location`) with an audit row naming the fields only; sign-up (`app/portals/src/business_signup.rs`, `app/portals/templates/business_signup.html`) asks it beside towns served (BIZ-049): a base ZIP field and a radius field (\"How many miles will you travel for a job?\", draft wording for the copy panel, WORD-028, with a Spanish draft), with the accessible error pattern of A11Y-010 to A11Y-013 and every value kept, and sign-up cannot finish without both; the BIZ-030 summary reads them back. New code takes market values from this data, never a Lake Havasu City or Arizona literal (`docs/code-docs.md` section 4). Tests: `app/catalog/src/tests/markets.rs` (TD-INT-37) and `tests/integration/tests/service_area.rs` (TD-BIZ-37). Update `app/catalog/CLAUDE.md`, `app/businesses/CLAUDE.md`, `app/portals/CLAUDE.md` and `docs/architecture.md` section 10 (section 3 already lists the tables).",
+   "goal": "Casey's November 3 decisions (D-1515, D-1518): Ask Hava is national-ready, so market values are data, and each business types how far it will travel. Build the data layer; matching by radius and the portal edit are T249's. (1) Markets (INT-048): `docs/catalog/markets.yaml` (new, reviewed, owned here) with one market, `lake-havasu-city`: its name, state `AZ`, IANA time zone `America/Phoenix`, the identity source of its no-license categories (the city business-license list of LIC-011) and its towns (the town codes of the service-area setting, INT-022), each town with its ZIP codes taken from the US Census ZCTA-to-place relationship file (never typed from memory), plus reviewed extra ZIPs with no centroid (such as a PO-box-only ZIP), which give the town but no location, a ZIP under two towns being refused so the reviewer assigns it to one; the service-area towns INT-022 checks are read from this file (no separate towns setting exists), and a test asserts every market town passes `routing::check_towns`; `catalog::api::town_for_zip(zip)` gives the town or none (T251's ZIP step reads it, D-1521). `app/catalog/src/markets.rs` compiles it in and checks it as `loader.rs` checks `categories.yaml`, refusing a town in two markets, a duplicate ID, an unknown time zone, a market with no towns and a state other than AZ without a decision ID; the catalog sync writes `catalog.market` (ID, name, state, time zone, identity sources, `launched_at`, empty: nothing here sets it, a launch being a later owner action) and `catalog.market_town` from `migrations/0162_catalog_markets.sql`, with no foreign key to or from another schema's tables. A Phoenix metro market (several towns, `America/Phoenix`) is a fixture inside the tests, for the tests and the war games, never in the reviewed file and never launched; which market launches first is open, so no code names either market. (2) Job locations: `app/catalog/data/zcta_centroids_az.csv`, the Arizona rows of the US Census Bureau Gazetteer ZCTA file (public domain; the ZCTA and its internal-point latitude and longitude), at least every ZCTA of the Lake Havasu City market's towns and of the Phoenix metro fixture's towns, with the source URL, vintage and download date in its header, loaded into `catalog.zcta_centroid` (same migration). Copy the rows from the Census file; never type or estimate a coordinate; if the file can't be reached, stop and report BLOCKED. `catalog::api::zip_location(zip)` gives the centroid or none, and a pure `catalog::api::miles_between(a, b)` the great-circle distance; no geocoding service and no new crate. (3) The service radius (BIZ-058): `migrations/0163_businesses_service_area.sql` adds `businesses.service_area` (business ID, base ZIP as 5 digits, radius as whole miles from 1 to 100, both required; SELECT, INSERT and UPDATE granted to `askhava_app` explicitly, since T250 narrows the default to SELECT and INSERT); `app/businesses/src/service_area.rs` sets and reads it (any well-formed 5-digit base ZIP is accepted; one with no centroid, such as an out-of-state base, is stored with no location, its radius then unused and its towns served alone deciding its cards, BIZ-058) with an audit row naming the fields only; sign-up (`app/portals/src/business_signup.rs`, `app/portals/templates/business_signup.html`) asks it beside towns served (BIZ-049): a base ZIP field and a radius field (\"How many miles will you travel for a job?\", draft wording for the copy panel, WORD-028, with a Spanish draft), with the accessible error pattern of A11Y-010 to A11Y-013 and every value kept, and sign-up cannot finish without both; the BIZ-030 summary reads them back. New code takes market values from this data, never a Lake Havasu City or Arizona literal (`docs/code-docs.md` section 4). Tests: `app/catalog/src/tests/markets.rs` (TD-INT-37) and `tests/integration/tests/service_area.rs` (TD-BIZ-37). Update `app/catalog/CLAUDE.md`, `app/businesses/CLAUDE.md`, `app/portals/CLAUDE.md` and `docs/architecture.md` section 10 (section 3 already lists the tables). Budget note: the CSV's data rows do not count toward the 600-line budget; its header and the code do.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -16858,7 +16879,7 @@
    "id": "T251",
    "slug": "intake-zip-and-cards-out",
    "title": "intake and quotes: the ZIP question, the job location, and the card-sending caller (every window-opened card goes out once, idempotent, quiet hours honoured)",
-   "goal": "Job cards never go out in production today (D-1521): nothing outside `quotes` calls `quotes::api::send_job_cards`, no code builds the `CardJob` and the business `Pool` it takes (both caller-filled, D-1013, D-1014), the `intake.cards_approved` event T208's approval step enqueues has no handler (D-1274, D-1277), nor has the `intake.emergency_released` event of INT-029, and no code asks the homeowner's ZIP or writes `intake.property` (only tests insert rows). Build the missing pieces. (1) The ZIP question (INT-049): `app/intake/src/zip_step.rs` asks the 5-digit ZIP of the home the job is at (new `zip_question` and `zip_again` templates in the shared English and Spanish template files, drafts for the copy panel, WORD-028), reads one 5-digit ZIP from the reply, maps it to its service-area town with `catalog::api::town_for_zip` (T248's market data, INT-048), and stores the property with the ZIP and the town (`app/intake/src/models.rs`; `migrations/0164_intake_property_zip.sql` adds `intake.property.zip`, 5 digits, nullable for rows written before, PRIV-028); a ZIP of no service-area town goes to `routing`'s out-of-area close (INT-022); any other reply asks once more, and a second unusable reply is out of area. The ZIP goes into no AI call, card, log line or audit value. T162's intake order calls this step at step 4; this task adds the step and its tests, not the order. (2) The card pool (`app/quotes/src/card_pool.rs`, exported through the shared `app/quotes/src/api.rs`): build `Pool` for a job's towns and candidate trades from `businesses::api` (status, towns, ticked job types, the overflow switch), `licensing::api` (each business's classes and other licenses, and CARD-015's latest check for `verified`) and `ops::api::is_paused` (the owner pauses), never naming another module's tables. (3) The card sender (`app/intake/src/cards_out.rs`, its handlers registered in the shared `app/server/src/lib.rs`): on `intake.cards_approved` it sends only when T208's `approved_card` holds for the payload's digest, so the card the businesses get is the card she approved (TD-INT-23); on `intake.emergency_released` it sends at once (INT-029). It builds the `CardJob` from the request (the job's own town, the remaining candidate job types and the scrubbed text; neighbouring towns stay the caller's later choice, D-1014), calls `send_job_cards` in one transaction (idempotent: `ON CONFLICT DO NOTHING`, so a repeat or a retry records no second card), enqueues each new card's notice through T147's `app/quotes/src/card_notices.rs` (held whole by quiet hours, QH-005; each card's 24 hours start at the actual send, D-042, D-1021), and queues the homeowner's TXT-032 cards-out text through the homeowner-text steps T240 uses (`may_text`, `send_window` for quiet hours and opt-out, the outbox). Late cards (CARD-018, `send_late_cards`) keep their trigger with the tasks that make a business newly eligible. Tests: `app/intake/src/tests/zip_step.rs` (TD-INT-38) and `tests/integration/tests/cards_out.rs` (TD-CARD-14: approval and the end of the wait send once, a changed card is refused, a rerun sends nothing new, the emergency path, paused businesses skipped, night notices held, one TXT-032 text). Every existing test must still pass; if a done task's test breaks, stop and report. Update `app/intake/CLAUDE.md`, `app/quotes/CLAUDE.md` and `docs/architecture.md` section 10.",
+   "goal": "Job cards never go out in production today (D-1521): nothing outside `quotes` calls `quotes::api::send_job_cards`, no code builds the `CardJob` and the business `Pool` it takes (both caller-filled, D-1013, D-1014), the `intake.cards_approved` event T208's approval step enqueues has no handler (D-1274, D-1277), nor has the `intake.emergency_released` event of INT-029, and no code asks the homeowner's ZIP or writes `intake.property` (only tests insert rows). Build the missing pieces. (1) The ZIP question (INT-049): `app/intake/src/zip_step.rs` asks the 5-digit ZIP of the home the job is at (new `zip_question` and `zip_again` templates in the shared English and Spanish template files, drafts for the copy panel, WORD-028), reads one 5-digit ZIP from the reply, maps it to its service-area town with `catalog::api::town_for_zip` (T248's market data, INT-048, including reviewed extra ZIPs with no centroid, which give no location), and stores the property with the ZIP and the town (`app/intake/src/models.rs`; `migrations/0164_intake_property_zip.sql` adds `intake.property.zip`, 5 digits, nullable for rows written before, PRIV-028); a ZIP in the Arizona centroid table but in no service-area town goes to `routing`'s out-of-area close (INT-022); any other reply (no ZIP, two ZIPs, or a well-formed ZIP Ask Hava does not know) asks once more (the twin's re-ask, `twin/app.py:521`, is the draft) and then waits for a usable reply without closing the request (INT-019's no-reply wait still applies). Its integration test asserts `intake.property` holds exactly the contact ID, the town and the ZIP, never an address (TD-PRIV-13's schema case). The ZIP goes into no AI call, card, log line or audit value. T162's intake order calls this step at step 4; this task adds the step and its tests, not the order. (2) The card pool (`app/quotes/src/card_pool.rs`, exported through the shared `app/quotes/src/api.rs`): build `Pool` for a job's towns and candidate trades from `businesses::api` (status, towns, ticked job types, the overflow switch), `licensing::api` (each business's classes and other licenses, and CARD-015's latest check for `verified`) and `ops::api::is_paused` (the owner pauses), never naming another module's tables. (3) The card sender (`app/intake/src/cards_out.rs`, its handlers registered in the shared `app/server/src/lib.rs`): on `intake.cards_approved` it sends only when T208's `approved_card` holds for the payload's digest, so the card the businesses get is the card she approved (TD-INT-23); on `intake.emergency_released` it sends at once (INT-029). It builds the `CardJob` from the request (the job's own town, the remaining candidate job types and the scrubbed text; neighbouring towns stay the caller's later choice, D-1014), calls `send_job_cards` in one transaction (idempotent: `ON CONFLICT DO NOTHING`, so a repeat or a retry records no second card), enqueues each new card's notice through T147's `app/quotes/src/card_notices.rs` (held whole by quiet hours, QH-005; each card's 24 hours start at the actual send, D-042, D-1021), and queues the homeowner's TXT-032 cards-out text through the homeowner-text steps T240 uses (`may_text`, `send_window` for quiet hours and opt-out, the outbox). Late cards (CARD-018, `send_late_cards`) keep their trigger with the tasks that make a business newly eligible. Tests: `app/intake/src/tests/zip_step.rs` (TD-INT-38) and `tests/integration/tests/cards_out.rs` (TD-CARD-14: approval and the end of the wait send once, a changed card is refused, a rerun sends nothing new, the emergency path, paused businesses skipped, night notices held, one TXT-032 text). Every existing test must still pass; if a done task's test breaks, stop and report. Update `app/intake/CLAUDE.md`, `app/quotes/CLAUDE.md` and `docs/architecture.md` section 10.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -16913,7 +16934,8 @@
    ],
    "tests": [
     "TD-INT-38",
-    "TD-CARD-14"
+    "TD-CARD-14",
+    "TD-PRIV-13"
    ],
    "decisions": [
     "D-1521",
@@ -16943,7 +16965,7 @@
    "id": "T249",
    "slug": "quotes-radius-matching",
    "title": "quotes and portals: radius matching by ZIP centroid, the coverage count by the same rule, and the radius in the business portal",
-   "goal": "Radius matching (CARD-024, D-1519): `quotes`' matching is pure and caller-filled (D-1013, D-1014). Add the job's location (`CardJob`: its ZIP centroid from `catalog::api::zip_location`, or none) and each business's reach (`CardBusiness`: its base ZIP centroid and radius from T248's `businesses.service_area`, or none) in `app/quotes/src/models.rs`, and change `rules::card_for`'s town test (`app/quotes/src/rules.rs`) to: serves an offered Arizona town (CARD-002, INT-022), or the job has a location, the business has a reach and `catalog::api::miles_between(base, job)` is at most the radius (inclusive). Every other CARD-001 test (active, verified, licensed for every candidate job type as the license map says for the job's place, a ticked job type, the BIZ-049 skips), \"jobs nobody else covers\" (CARD-004) and the owner pauses are unchanged, so a business serving the job's town keeps the card and a radius only adds reach; a base outside Arizona never matches. `coverage` (the count intake tells the homeowner, INT-017, INT-032, D-1022) uses the same test, so the count and the recipients agree, and `send_job_cards` and `send_late_cards` (`app/quotes/src/service.rs`) carry the new fields. T251's card sender (`app/intake/src/cards_out.rs`) and card pool (`app/quotes/src/card_pool.rs`) build `CardJob` and `Pool`; this task fills the job's location there from the ZIP T251 stores on `intake.property` and each business's reach from `businesses.service_area` (D-1521); a job with no stored ZIP matches by towns only. The portal edit (BIZ-010, BIZ-058): the business portal's settings (`app/portals/src/business_actions.rs`, `app/portals/templates/business_actions.html`) let the owner change the base ZIP and radius with sign-up's checks and accessible errors, audited by field name only (draft wording through the copy panel, WORD-028). Tests: `app/quotes/src/tests/radius_matching.rs` (TD-CARD-13's pure cases with fixture centroids, including a Phoenix metro fixture of several towns: a card crossing a town line and one not, overlapping radii, the inclusive boundary, a business in reach without the license for a candidate job type, no location meaning towns only, the coverage count equal to the recipients) and `tests/integration/tests/radius_matching.rs` (`send_job_cards` sending to a business in reach in another town; TD-BIZ-38's portal edit). No geocoding service and no new crate. Update `app/quotes/CLAUDE.md`, `app/portals/CLAUDE.md` and `docs/architecture.md` section 10.",
+   "goal": "Radius matching (CARD-024, D-1519): `quotes`' matching is pure and caller-filled (D-1013, D-1014). Add the job's location (`CardJob`: its ZIP centroid from `catalog::api::zip_location`, or none) and each business's reach (`CardBusiness`: its base ZIP centroid and radius from T248's `businesses.service_area`, or none) in `app/quotes/src/models.rs`, and change `rules::card_for`'s town test (`app/quotes/src/rules.rs`) to: serves an offered Arizona town (CARD-002, INT-022), or the job has a location, the business has a reach and `catalog::api::miles_between(base, job)` is at most the radius (inclusive). Every other CARD-001 test (active, verified, licensed for every candidate job type as the license map says for the job's place, a ticked job type, the BIZ-049 skips), \"jobs nobody else covers\" (CARD-004) and the owner pauses are unchanged, so a business serving the job's town keeps the card and a radius only adds reach; a business whose base ZIP has no location matches by its towns served alone, and only Arizona towns match (INT-022). `coverage` (the count intake tells the homeowner, INT-017, INT-032, D-1022) uses the same test, so the count and the recipients agree, and `send_job_cards` and `send_late_cards` (`app/quotes/src/service.rs`) carry the new fields. T251's card sender (`app/intake/src/cards_out.rs`) and card pool (`app/quotes/src/card_pool.rs`) build `CardJob` and `Pool`; this task fills the job's location there from the ZIP T251 stores on `intake.property` and each business's reach from `businesses.service_area` (D-1521); a job with no stored ZIP matches by towns only. The portal edit (BIZ-010, BIZ-058): the business portal's settings (`app/portals/src/business_actions.rs`, `app/portals/templates/business_actions.html`) let the owner change the base ZIP and radius with sign-up's checks and accessible errors, audited by field name only (draft wording through the copy panel, WORD-028). Tests: `app/quotes/src/tests/radius_matching.rs` (TD-CARD-13's pure cases with fixture centroids, including a Phoenix metro fixture of several towns: a card crossing a town line and one not, overlapping radii, the inclusive boundary, a business in reach without the license for a candidate job type, no location meaning towns only, the coverage count equal to the recipients) and `tests/integration/tests/radius_matching.rs` (`send_job_cards` sending to a business in reach in another town; TD-BIZ-38's portal edit). No geocoding service and no new crate. Update `app/quotes/CLAUDE.md`, `app/portals/CLAUDE.md` and `docs/architecture.md` section 10.",
    "type": "build",
    "phase": 1,
    "stage": "4",
