@@ -26,7 +26,7 @@ jobs:
       SQLX_OFFLINE: "true"
       ASKHAVA_RULES_BRIDGE: target/debug/rules_bridge
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: Rust toolchain (the pinned release from rust-toolchain.toml)
