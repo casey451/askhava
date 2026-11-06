@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-06T22:52:01Z by runner 408f4037d4b8 (actions).
+Updated 2026-11-06T22:52:14Z by runner 408f4037d4b8 (actions).
 
-**Building: T080 in progress since 22:02Z; 127 of 239 done; week 25% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 22:52Z; 127 of 239 done; week 25% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 127 of 239 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T080 claimed 22:02Z, lease until 01:02Z
+- **Lane:** idle since 22:52Z (no task in progress)
 - **Week:** 25% used, 144.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 22:11Z, 40 min before this update
 - **Keeper:** last ran 21:47Z, next wake 22:07Z
@@ -17,6 +17,7 @@ Updated 2026-11-06T22:52:01Z by runner 408f4037d4b8 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T080 | calls: relay-friendly bridging, identity call, code call | MERGE_PENDING | 1 | 49 min | 22:52Z |  |
 | T081 | businesses: sign-up, identity chain from public records, act | done | 1 | 37 min | 21:42Z |  |
 | T079 | calls: line closing, staff phones and LINK, email-preferred  | done | 1 | 43 min | 20:51Z |  |
 | T078 | calls: never recorded, 45-second connection rule, call logs | done | 1 | 46 min | 19:53Z |  |
@@ -95,7 +96,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T080 (lease until 2026-11-07T01:02:49Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T081", "at": "2026-11-06T21:42:02Z", "cache_creation_input_tokens": 578804, "input_tokens": 446, "cache_read_input_tokens": 22063683, "output_tokens": 168694}
+- {"task": "T080", "at": "2026-11-06T22:52:01Z", "cache_creation_input_tokens": 863832, "output_tokens": 252095, "input_tokens": 563, "cache_read_input_tokens": 37408556}
