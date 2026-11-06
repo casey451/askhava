@@ -340,14 +340,20 @@ dependencies = [
 name = "askhava-businesses"
 version = "0.1.0"
 dependencies = [
+ "askhava-adapters",
+ "askhava-catalog",
  "askhava-core",
+ "askhava-licensing",
  "askhava-messaging",
  "askhava-ops",
+ "askhava-payments",
  "jiff",
  "jiff-sqlx",
  "secrecy",
  "serde_json",
+ "sha2 0.11.1",
  "sqlx",
+ "subtle",
  "thiserror",
  "tokio",
 ]
