@@ -256,7 +256,7 @@ async fn td_pick_13_two_yes_from_an_opted_out_phone_still_picks(pool: PgPool) {
     assert!(matches!(second.expect("yes"), Some(OptedOutYes::Picked(_))));
     assert_eq!(picks(&mut db, job).await, 1);
     let status = current(&mut db, job).await.expect("job").status;
-    assert_eq!(status.code(), JobStatus::AwaitingConfirm.code());
+    assert_eq!(status.code(), "awaiting_confirm");
     assert_eq!(outbox(&mut db).await, before);
     let repeat = opted_out_yes(&mut db, "2 YES", &[(job, false)], by).await;
     assert!(matches!(repeat.expect("yes"), Some(OptedOutYes::Same(_))));
