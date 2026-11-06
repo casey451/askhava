@@ -1,12 +1,13 @@
 //! Taking in a business's quote: the 24-hour window, the checks a quote passes and the stored
-//! record (PICK-001, PICK-002, PICK-007, FEE-043, FEE-044; D-1048 to D-1051).
+//! record (PICK-001, PICK-002, PICK-007, FEE-043, FEE-044; D-1048 to D-1051), and the first
+//! confirmed quote's move of the job to Quotes ready (JOB-009, JOB-011, TXT-016, D-1517).
 //!
 //! [`parse_quote`] is pure: it turns the form's [`QuoteForm`] into a checked [`Quote`] or a
 //! [`Bounce`] for the business. It never computes a fee: the fee preview is `payments`' (T148,
 //! D-491). [`submit_quote`] checks the business's own window and the job's status, stores the
 //! quote and schedules the every-window-ended check (`crate::handlers`).
 
-use askhava_core::api::Guarded;
+use askhava_core::api::{Clock, Guarded, SystemClock};
 use askhava_licensing::api::{LicenseKind, QuotePrice, QuoteRefusal, QuoteSubmission, check_quote};
 use jiff::civil::Date;
 use jiff::{SignedDuration, Timestamp};
@@ -15,6 +16,15 @@ use sqlx::{Connection, PgConnection};
 
 use crate::gate::final_gate;
 use crate::models::{self, QuotesError};
+
+/// JOB-009, JOB-011, TXT-016: moves an Open or No quotes yet job to Quotes ready with the
+/// first-quote text, inside the caller's transaction; any other status moves nothing.
+async fn first_quote(db: &mut PgConnection, job: Uuid, now: Timestamp) -> Result<(), QuotesError> {
+    askhava_jobs::api::first_quote(db, job, now)
+        .await
+        .map(|_| ())
+        .map_err(|_| QuotesError::Job)
+}
 
 /// How long each business may quote after its own card was sent, every day of the week (PICK-001).
 pub const QUOTE_WINDOW: SignedDuration = SignedDuration::from_hours(24);
@@ -461,6 +471,10 @@ pub enum Submitted {
 /// PICK-051), confirmed unless the AI read it
 /// (PICK-006, D-149), and schedules the every-window-ended check (TXT-042, JOB-025). One
 /// transaction; a Confirm committed after the status read orders as just after this quote (D-1051).
+/// A quote confirmed at once first calls `jobs::api::first_quote` (after the checks, before the
+/// quote row, so the job lock comes first, D-1051): an Open or No quotes yet job moves to Quotes
+/// ready with the one first-quote text, rolled back with the quote on any error; in any other
+/// status nothing moves (JOB-009, JOB-011, TXT-016, D-1517).
 ///
 /// # Errors
 ///
@@ -488,6 +502,9 @@ pub async fn submit_quote(
     if edit && (picked || !status.status.takes_quote_edits()) {
         return Ok(Submitted::EditClosed);
     }
+    if !quote.form.ai_read {
+        first_quote(&mut tx, job, now).await?;
+    }
     models::upsert_quote(&mut tx, (job, business), quote, now).await?;
     crate::handlers::schedule(&mut tx, job).await?;
     tx.commit().await.map_err(|_| QuotesError::Database)?;
@@ -496,7 +513,9 @@ pub async fn submit_quote(
 
 /// PICK-006, D-149: the business confirmed its AI-read quote on the read-back screen (T148), so
 /// the homeowner may now see it. Moved on when there is no such quote, it is withdrawn, or the
-/// job no longer takes quotes (`JobStatus::takes_quotes`, D-043, D-1049).
+/// job no longer takes quotes (`JobStatus::takes_quotes`, D-043, D-1049). Confirmed at the system
+/// clock's now ([`confirm_quote_at`] takes the instant), it is a first quote: an Open or No quotes yet job moves to Quotes ready with the first-quote text
+/// in this transaction (JOB-009, JOB-011, TXT-016, D-1517).
 ///
 /// # Errors
 ///
@@ -506,6 +525,20 @@ pub async fn confirm_quote(
     job: Uuid,
     business: Uuid,
 ) -> Result<Guarded<()>, QuotesError> {
+    confirm_quote_at(db, (job, business), SystemClock.now()).await
+}
+
+/// [`confirm_quote`] at `now`, the instant a first quote's move and Quotes ready's 3-day wait
+/// count from (JOB-009, JOB-011, JOB-012, TXT-016, PICK-006, D-1517).
+///
+/// # Errors
+///
+/// [`QuotesError::Job`] or [`QuotesError::Database`].
+pub async fn confirm_quote_at(
+    db: &mut PgConnection,
+    (job, business): (Uuid, Uuid),
+    now: Timestamp,
+) -> Result<Guarded<()>, QuotesError> {
     let mut tx = db.begin().await.map_err(|_| QuotesError::Database)?;
     let status = askhava_jobs::api::current(&mut tx, job)
         .await
@@ -514,6 +547,9 @@ pub async fn confirm_quote(
         return Ok(Guarded::MovedOn);
     }
     let done = models::confirm_quote(&mut tx, job, business).await?;
+    if done == Guarded::Applied(()) {
+        first_quote(&mut tx, job, now).await?;
+    }
     tx.commit().await.map_err(|_| QuotesError::Database)?;
     Ok(done)
 }

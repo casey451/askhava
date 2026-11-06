@@ -13,6 +13,8 @@
 //! T046: [`parse_quote`] checks a [`QuoteForm`] into a [`Quote`] or a [`Bounce`] (PICK-002,
 //! PICK-007, FEE-043, FEE-044); [`submit_quote`] stores it inside the business's own 24 hours
 //! ([`window_open`], PICK-001); [`confirm_quote`] is the read-back's confirm (PICK-006);
+//! T247: a quote confirmed at once by [`submit_quote`], or by [`confirm_quote`] or
+//! [`confirm_quote_at`], moves an Open or No quotes yet job to Quotes ready (JOB-009, D-1517);
 //! [`shown_quotes`] lists the confirmed ones the homeowner's page may show; [`run_windows_end`]
 //! is the [`WINDOWS_KIND`] handler that calls `jobs::api::all_windows_ended` (TXT-042, JOB-025);
 //! [`mark_unavailable`] is `picks`' mark on a failed pick's quote (JOB-025, PICK-051).
@@ -36,7 +38,8 @@ pub use crate::gate::final_gate;
 pub use crate::handlers::{WINDOWS_KIND, WindowsCheck, run_windows_end, windows_ended};
 pub use crate::intake::{
     Bounce, DayPart, Format, Period, Price, QUOTE_WINDOW, Quote, QuoteForm, QuoteRules, Submitted,
-    confirm_quote, mark_unavailable, parse_quote, shown_quotes, submit_quote, window_open,
+    confirm_quote, confirm_quote_at, mark_unavailable, parse_quote, shown_quotes, submit_quote,
+    window_open,
 };
 pub use crate::job_page::{JobPage, PageParts, job_page};
 pub use crate::models::{
