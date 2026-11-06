@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-06T05:09:34Z by runner 84faf64b6205 (actions).
+Updated 2026-11-06T05:09:45Z by runner 84faf64b6205 (actions).
 
-**Building: T071 in progress since 04:32Z; 113 of 238 done; week 10% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 05:09Z; 113 of 238 done; week 10% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 113 of 238 build tasks (owner gates not counted)
 - **Stage:** stage 3; stage proofs recorded: 1, 2
-- **Lane:** lane 1: T071 claimed 04:32Z, lease until 07:32Z
+- **Lane:** idle since 05:09Z (no task in progress)
 - **Week:** 10% used, 174.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 04:41Z, 28 min before this update
 - **Keeper:** last ran 04:21Z, next wake 04:41Z
@@ -17,6 +17,7 @@ Updated 2026-11-06T05:09:34Z by runner 84faf64b6205 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T071 | Stage 3 check: the ledger matches the Stripe mock on 1,000 s | MERGE_PENDING | 1 | 37 min | 05:09Z |  |
 | T070 | picks: 'no longer active' once, Confirm link replies | done | 1 | 45 min | 04:18Z |  |
 | T192 | picks: compile-fail proofs that no crate but payments can bu | done | 1 | 26 min | 03:17Z |  |
 | T069 | picks: release only on paid or free; never the homeowner's p | done | 1 | 48 min | 02:36Z |  |
@@ -81,7 +82,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T071 (lease until 2026-11-06T07:32:21Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T070", "at": "2026-11-06T04:18:03Z", "output_tokens": 196355, "cache_creation_input_tokens": 690696, "cache_read_input_tokens": 29191742, "input_tokens": 545}
+- {"task": "T071", "at": "2026-11-06T05:09:34Z", "input_tokens": 203, "cache_creation_input_tokens": 338495, "cache_read_input_tokens": 5569784, "output_tokens": 72115}
