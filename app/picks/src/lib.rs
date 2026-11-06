@@ -12,8 +12,11 @@
 //! PICK-020, PICK-033 to PICK-035, PICK-037). T190 added the pure HOLD, Away and emergency-window
 //! rules (PICK-043, PICK-044, BIZ-034). T069 added the release: details to the signed-in portal
 //! only on a `ReleaseProof`, never the phone (PICK-022 to PICK-024, PRIV-005, PRIV-020, BIZ-014).
+//! T070 added the aftermath: the loss notice with its price comparison, "This job is no longer
+//! active." once and the live-pick reply (PICK-026, PICK-027, PICK-038).
 //! Other crates reach it only through [`api`].
 
+mod aftermath;
 pub mod api;
 mod confirm;
 mod handlers;

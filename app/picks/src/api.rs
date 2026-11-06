@@ -23,7 +23,19 @@
 //! T069: [`release`] shows a proven pick's details in the portal once and queues the
 //! [`release_notice`] (PICK-022 to PICK-024, PRIV-005, BIZ-014); [`plan_release`] is its pure rule
 //! (INT-029).
+//!
+//! T070: [`lost_notices`] queues the loss notice to every other quoter once the pick is paid or
+//! free, worded by [`compare`] and [`loss_template`] (PICK-026, PICK-038); [`no_longer_active`]
+//! and [`refused_after_confirm`] send "This job is no longer active." once; [`live_pick_reply`]
+//! answers a business asking about its live pick (PICK-027).
 
+pub use crate::aftermath::{
+    Comparison, INACTIVE_TEMPLATE, LIVE_PICK_TEMPLATE, LOST_HIGHER_TEMPLATE, LOST_LOWER_TEMPLATE,
+    LOST_OTHER_TYPE_TEMPLATE, LOST_SAME_TEMPLATE, LOST_SEVERAL_HIGHER_TEMPLATE,
+    LOST_SEVERAL_LOWER_TEMPLATE, LOST_SEVERAL_SAME_TEMPLATE, LOST_TEMPLATE, LiveReply,
+    LossSettings, compare, live_pick_reply, loss_template, lost_notices, no_longer_active,
+    refused_after_confirm,
+};
 pub use crate::confirm::{
     BusinessWord, ConfirmReply, ConfirmSettings, EXPIRED_TEMPLATE, FEE_REPLY_TEMPLATE, FeeBasis,
     LicenseAtPick, PICK_NOTICE_EMERGENCY_TEMPLATE, PICK_NOTICE_TEMPLATE, Refusal, StoredFacts,
