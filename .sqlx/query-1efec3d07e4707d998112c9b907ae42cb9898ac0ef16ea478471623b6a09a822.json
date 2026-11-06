@@ -1,0 +1,20 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO calls.call_log (line_id, call_sid, caller, answered_by, length_seconds, reached_45s, ended_at) VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (call_sid) DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Text",
+        "Int8",
+        "Bool",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "1efec3d07e4707d998112c9b907ae42cb9898ac0ef16ea478471623b6a09a822"
+}

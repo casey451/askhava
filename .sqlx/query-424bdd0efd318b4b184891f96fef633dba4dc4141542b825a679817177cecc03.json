@@ -1,0 +1,76 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT caller, answered_by, length_seconds, reached_45s, ended_at FROM calls.call_log WHERE line_id = $1 ORDER BY ended_at, id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "caller",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "calls.call_log",
+            "name": "caller"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "answered_by",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "calls.call_log",
+            "name": "answered_by"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "length_seconds",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "calls.call_log",
+            "name": "length_seconds"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "reached_45s",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "calls.call_log",
+            "name": "reached_45s"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "ended_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "calls.call_log",
+            "name": "ended_at"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "424bdd0efd318b4b184891f96fef633dba4dc4141542b825a679817177cecc03"
+}
