@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-06T03:17:38Z by runner 90d504759146 (actions).
+Updated 2026-11-06T03:17:48Z by runner 90d504759146 (actions).
 
-**Building: T192 in progress since 02:50Z; 111 of 238 done; week 10% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 03:17Z; 111 of 238 done; week 10% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 111 of 238 build tasks (owner gates not counted)
 - **Stage:** stage 3; stage proofs recorded: 1, 2
-- **Lane:** lane 1: T192 claimed 02:50Z, lease until 05:50Z
+- **Lane:** idle since 03:17Z (no task in progress)
 - **Week:** 10% used, 174.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 02:59Z, 17 min before this update
 - **Keeper:** last ran 02:39Z, next wake 02:59Z
@@ -17,6 +17,7 @@ Updated 2026-11-06T03:17:38Z by runner 90d504759146 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T192 | picks: compile-fail proofs that no crate but payments can bu | MERGE_PENDING | 1 | 26 min | 03:17Z |  |
 | T069 | picks: release only on paid or free; never the homeowner's p | done | 1 | 48 min | 02:36Z |  |
 | T068 | payments: receipt emails, charge description, just-under-a-t | done | 1 | 42 min | 01:35Z |  |
 | T067 | payments: nightly reconcile, auto-match or auto-refund, ledg | done | 1 | 49 min | 00:38Z |  |
@@ -79,7 +80,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T192 (lease until 2026-11-06T05:50:49Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T069", "at": "2026-11-06T02:36:17Z", "output_tokens": 191452, "cache_read_input_tokens": 35025369, "cache_creation_input_tokens": 686811, "input_tokens": 570}
+- {"task": "T192", "at": "2026-11-06T03:17:37Z", "cache_creation_input_tokens": 129997, "output_tokens": 21128, "cache_read_input_tokens": 1651790, "input_tokens": 91}
