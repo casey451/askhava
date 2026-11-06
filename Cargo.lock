@@ -357,14 +357,12 @@ name = "askhava-calls"
 version = "0.1.0"
 dependencies = [
  "askhava-adapters",
- "askhava-core",
  "askhava-messaging",
  "askhava-ops",
  "askhava-privacy",
  "jiff",
  "jiff-sqlx",
  "secrecy",
- "serde_json",
  "sqlx",
  "thiserror",
 ]
@@ -707,7 +705,6 @@ version = "0.1.0"
 dependencies = [
  "askhava-adapters",
  "askhava-businesses",
- "askhava-calls",
  "askhava-catalog",
  "askhava-core",
  "askhava-intake",

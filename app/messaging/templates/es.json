@@ -486,17 +486,5 @@
     "draft": true,
     "segments": 4,
     "text": "Ask Hava: El propietario eligió su cotización para el trabajo {job}. Confirme aquí: {link} Luego verá el nombre y la dirección del cliente en su portal."
-  },
-  "whos_calling": {
-    "audience": "homeowner",
-    "draft": true,
-    "segments": 4,
-    "text": "Ask Hava: {business} aceptó la solicitud {job}. Podría llamarle desde el {number}. Si pierde la llamada, devuélvasela a ese número; sirve 30 días. Pida el precio y cualquier cambio por escrito antes de que empiece el trabajo. No pague todo por adelantado."
-  },
-  "whos_calling_email": {
-    "audience": "homeowner",
-    "draft": true,
-    "segments": 4,
-    "text": "Ask Hava: {business} aceptó la solicitud {job}. Le enviará un correo electrónico a la dirección que eligió. Pida el precio y cualquier cambio por escrito antes de que empiece el trabajo. No pague todo por adelantado."
   }
 }

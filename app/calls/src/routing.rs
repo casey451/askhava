@@ -1,6 +1,5 @@
-//! PIN routing on a masked line, the paid-business read-back, and the who's-calling text
-//! (CALL-003, CALL-004, CALL-005, CALL-025, TXT-027, QH-004; D-026, D-480, D-491, D-1684 to
-//! D-1688).
+//! PIN routing on a masked line and the paid-business read-back (CALL-003, CALL-004, CALL-005,
+//! CALL-025; D-026, D-480, D-1684 to D-1686).
 //!
 //! [`route`] is the pure rule for one turn of an incoming call to a pool number. A caller whose
 //! linked business, or whose own vault number, holds exactly one open line on that number is
@@ -14,27 +13,13 @@
 //! street, but only on an A-attested call, and is connected only when it confirms (CALL-005,
 //! D-026); lines open only at the release of a paid or $0 pick, so that business is the paid one
 //! (D-1686). [`answer_call`] reads the caller, the lines and, for a read-back, the vault.
-//!
-//! [`send_whos_calling`] queues the TXT-027 text once the line is open: at once on an emergency job
-//! (QH-004), otherwise when `messaging::api::send_window` allows it, else a [`WHOS_CALLING_KIND`]
-//! task at 08:00 that [`run_whos_calling`] runs (D-1687).
 
-use std::sync::Arc;
-
-use askhava_core::api::{
-    Claimed, Clock, HandlerError, NewTask, SystemClock, enqueue as enqueue_task,
-};
-use askhava_messaging::api::{
-    Language, NewText, OutboxError, Relation, SendWindow, enqueue, render, send_window,
-    sender_business,
-};
+use askhava_messaging::api::{OutboxError, sender_business};
 use askhava_ops::api::{NewAlert, Severity, raise_alert};
 use askhava_privacy::api::{Readback, Vault, find_by_phone, read_for_readback};
-use jiff::Timestamp;
 use secrecy::{ExposeSecret, SecretString};
-use serde_json::{Value, json};
+use sqlx::PgConnection;
 use sqlx::types::Uuid;
-use sqlx::{PgConnection, PgPool};
 
 use crate::models::CallsError;
 
@@ -46,12 +31,6 @@ pub const TRIES_PER_DAY: u8 = 6;
 pub const READBACK_AFTER: u8 = 2;
 /// The High alert raised when a call is hung up for too many PIN tries (CALL-025).
 pub const PIN_ALERT: &str = "calls.pin_tries_exceeded";
-/// The who's-calling text (TXT-027).
-pub const WHOS_CALLING_TEMPLATE: &str = "whos_calling";
-/// The who's-calling text when she chose email contact (TXT-027, PICK-018).
-pub const WHOS_CALLING_EMAIL_TEMPLATE: &str = "whos_calling_email";
-/// The task that sends a held who's-calling text at the window's start (QH-006, D-1687).
-pub const WHOS_CALLING_KIND: &str = "calls.whos_calling";
 
 /// The STIR/SHAKEN attestation the carrier gave the call (CALL-025).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -293,147 +272,4 @@ async fn lines_on(db: &mut PgConnection, number: &str) -> Result<Vec<RoutedLine>
             business: r.business_id,
         })
         .collect())
-}
-
-/// The who's-calling text of one open line (TXT-027). `business` is the business's public name.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct WhosCalling {
-    /// The line's masked number.
-    pub number: String,
-    /// The job.
-    pub job: Uuid,
-    /// The request number she knows.
-    pub job_number: i64,
-    /// Her vault contact ID.
-    pub contact: Uuid,
-    /// The picked business's name.
-    pub business: String,
-    /// She chose emergency (QH-004).
-    pub emergency: bool,
-    /// She chose email contact at the pick (PICK-018).
-    pub email_chosen: bool,
-    /// Her language, and whether Spanish conversations are on (TXT-039).
-    pub language: (Language, bool),
-}
-
-/// What [`send_whos_calling`] did.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum WhosCallingSent {
-    /// Queued in the outbox (or already there).
-    Queued,
-    /// Held to this instant by a [`WHOS_CALLING_KIND`] task (QH-006).
-    Held(Timestamp),
-    /// Opted out or not textable: no text (CON-013, QH-003).
-    Skipped,
-}
-
-/// Queues the who's-calling text (TXT-027, QH-004, D-1687): at once on an emergency job, else
-/// inside the window `messaging::api::send_window` gives, else held to its start. Always a text,
-/// whatever her update channel; the email-contact wording when she chose email (PICK-018). One
-/// outbox row per template, contact and line. Call it outside a transaction.
-///
-/// # Errors
-///
-/// [`CallsError::Messaging`] or [`CallsError::Database`].
-pub async fn send_whos_calling(
-    db: &mut PgConnection,
-    (vault, outbox): (&Vault, &SecretString),
-    text: &WhosCalling,
-    now: Timestamp,
-) -> Result<WhosCallingSent, CallsError> {
-    if !text.emergency {
-        let window = send_window(db, vault, text.contact, now).await;
-        match window.map_err(|_| CallsError::Messaging)? {
-            SendWindow::Now => {}
-            SendWindow::Hold { until } => return hold(db, text, until).await,
-            SendWindow::OptedOut | SendWindow::NotTextable => return Ok(WhosCallingSent::Skipped),
-        }
-    }
-    let id = if text.email_chosen {
-        WHOS_CALLING_EMAIL_TEMPLATE
-    } else {
-        WHOS_CALLING_TEMPLATE
-    };
-    let job = text.job_number.to_string();
-    let values = [
-        ("business", text.business.as_str()),
-        ("job", &job),
-        ("number", &text.number),
-    ];
-    let body =
-        render(id, text.language.0, text.language.1, &values).map_err(|_| CallsError::Messaging)?;
-    let new = NewText {
-        template_id: id,
-        subject: &[text.job],
-        recipient: text.contact,
-        relation: Relation::OpenRequest,
-        body: &body.body,
-    };
-    enqueue(db, outbox, &new)
-        .await
-        .map_err(|_| CallsError::Messaging)?;
-    Ok(WhosCallingSent::Queued)
-}
-
-/// Queues the held text as a task due at `until`, once per job and instant (QH-006).
-async fn hold(
-    db: &mut PgConnection,
-    text: &WhosCalling,
-    until: Timestamp,
-) -> Result<WhosCallingSent, CallsError> {
-    let spanish = text.language.0 == Language::Es;
-    let payload = json!({"number": text.number, "job": text.job, "job_number": text.job_number,
-        "contact": text.contact, "business": text.business, "email_chosen": text.email_chosen,
-        "spanish": spanish, "spanish_on": text.language.1});
-    let mut task = NewTask::new(WHOS_CALLING_KIND, payload, until);
-    let at = until.as_microsecond();
-    task.dedupe_key = Some(format!("{WHOS_CALLING_KIND}.{}.{at}", text.job));
-    enqueue_task(db, &task)
-        .await
-        .map_err(|_| CallsError::Database)?;
-    Ok(WhosCallingSent::Held(until))
-}
-
-/// The held text from a [`WHOS_CALLING_KIND`] payload, or `None` when malformed.
-#[must_use]
-pub fn parse_whos_calling(payload: &Value) -> Option<WhosCalling> {
-    let id = |k: &str| payload.get(k)?.as_str()?.parse::<Uuid>().ok();
-    let flag = |k: &str| payload.get(k)?.as_bool();
-    let language = if flag("spanish")? {
-        Language::Es
-    } else {
-        Language::En
-    };
-    Some(WhosCalling {
-        number: payload.get("number")?.as_str()?.to_owned(),
-        job: id("job")?,
-        job_number: payload.get("job_number")?.as_i64()?,
-        contact: id("contact")?,
-        business: payload.get("business")?.as_str()?.to_owned(),
-        emergency: false,
-        email_chosen: flag("email_chosen")?,
-        language: (language, flag("spanish_on")?),
-    })
-}
-
-/// The [`WHOS_CALLING_KIND`] handler: sends the held text at the window's start (QH-006); `keys`
-/// are the vault and the outbox key secret.
-///
-/// # Errors
-///
-/// A fixed sentence for a malformed payload or a failed step; the queue tries again.
-pub async fn run_whos_calling(
-    pool: PgPool,
-    keys: Arc<(Vault, SecretString)>,
-    task: Claimed,
-) -> Result<(), HandlerError> {
-    let text = parse_whos_calling(&task.payload).ok_or(HandlerError("bad who's-calling task"))?;
-    let mut db = pool
-        .acquire()
-        .await
-        .map_err(|_| HandlerError("no connection"))?;
-    send_whos_calling(&mut db, (&keys.0, &keys.1), &text, SystemClock.now())
-        .await
-        .map(|_| ())
-        .map_err(|_| HandlerError("who's-calling text failed"))
 }

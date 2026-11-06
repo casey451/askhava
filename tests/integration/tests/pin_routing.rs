@@ -1,16 +1,15 @@
-//! PIN routing, the paid-business read-back and the who's-calling text on a fresh database
-//! (TD-CALL-02: CALL-003, CALL-004, CALL-005; TD-CALL-11: CALL-025; TD-TXT-29: TXT-027; TD-QH-04:
-//! QH-004, TXT-027; TD-CALL-12: INT-029, CALL-001; D-026, D-480, D-491, D-1684 to D-1688).
-//! Fake numbers (555-01xx and the 500-555 test range), fake names and IDs only.
+//! PIN routing and the paid-business read-back on a fresh database (TD-CALL-02: CALL-003,
+//! CALL-004, CALL-005; TD-CALL-11: CALL-025; TD-CALL-12: INT-029, CALL-001; D-026, D-480, D-491,
+//! D-1684 to D-1688). TD-TXT-29 and TD-QH-04 (TXT-027) wait for the who's-calling template
+//! (D-1687). Fake numbers (555-01xx and the 500-555 test range), fake names and IDs only.
 
 use askhava_adapters::api::{MaskedPool, TwilioConfig};
 use askhava_calls::api::{
     Answer, Attestation, CallTurn, Connected, IncomingCall, JobPin, Line, PIN_ALERT, Party,
-    RoutedLine, Step, WHOS_CALLING_KIND, WhosCalling, WhosCallingSent, answer_call, assign_number,
-    job_pin, route, send_whos_calling,
+    RoutedLine, Step, answer_call, assign_number, job_pin, route,
 };
 use askhava_core::api::Settings;
-use askhava_messaging::api::{Language, sender_add};
+use askhava_messaging::api::sender_add;
 use askhava_picks::api::{ReleaseFacts, ReleaseStep, plan_release};
 use askhava_privacy::api::{NewContact, Vault, store_contact};
 use base64::Engine as _;
@@ -25,9 +24,6 @@ const BUSINESS_PHONE: &str = "+19285550162";
 const STRANGER_PHONE: &str = "+19285550163";
 /// 10:00 Arizona.
 const DAY: &str = "2026-11-02T17:00:00Z";
-/// 23:10 Arizona, and 08:00 Arizona the next morning.
-const NIGHT: &str = "2026-11-03T06:10:00Z";
-const MORNING: &str = "2026-11-03T15:00:00Z";
 
 fn ts(at: &str) -> Timestamp {
     at.parse().expect("instant")
@@ -64,10 +60,6 @@ fn vault() -> Vault {
     let key = |b: u8| SecretString::from(format!("1:{}", STANDARD.encode([b; 32])));
     let url = SecretString::from("postgres://askhava_app@db.invalid/askhava".to_owned());
     Vault::new(&key(0x57), &key(0x67), &url).expect("vault")
-}
-
-fn secret() -> SecretString {
-    SecretString::from("fake-outbox-secret-0123456789abcdef".to_owned())
 }
 
 /// Her fake contact: name, phone and address.
@@ -303,80 +295,6 @@ async fn td_call_11_a_hang_up_raises_one_alert(db: PgPool) {
     assert!(matches!(heard, Ok(Answer::Step(Step::HangUp))));
     let alerts = "SELECT count(*) FROM ops.alert WHERE kind = $1";
     assert_eq!(count(&mut db, alerts, PIN_ALERT).await, 1);
-}
-
-fn text(contact: Uuid, emergency: bool, email_chosen: bool) -> WhosCalling {
-    WhosCalling {
-        number: "+15005550100".to_owned(),
-        job: Uuid::new_v4(),
-        job_number: 1042,
-        contact,
-        business: "Test Plumbing".to_owned(),
-        emergency,
-        email_chosen,
-        language: (Language::En, false),
-    }
-}
-
-async fn body(db: &mut PgConnection, template: &str) -> String {
-    sqlx::query_scalar("SELECT body FROM messaging.outbox WHERE template_id = $1")
-        .bind(template)
-        .fetch_one(db)
-        .await
-        .expect("outbox row")
-}
-
-/// TD-QH-04, TD-TXT-29 (QH-004, TXT-027): at 23:10 on an emergency job the who's-calling text goes
-/// at once, naming the business and the masked number with the call-back and "in writing" lines
-/// and no call window; the same text on a regular job is held to 08:00:00.
-#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
-async fn td_qh_04_the_whos_calling_text_goes_at_night_only_on_an_emergency(db: PgPool) {
-    let mut db = db.acquire().await.expect("connection");
-    let (vault, secret) = (vault(), secret());
-    let contact = her(&mut db).await;
-    let urgent = text(contact, true, false);
-    let sent = send_whos_calling(&mut db, (&vault, &secret), &urgent, ts(NIGHT)).await;
-    assert_eq!(sent, Ok(WhosCallingSent::Queued));
-    let words = body(&mut db, "whos_calling").await;
-    for part in [
-        "Test Plumbing",
-        "+15005550100",
-        "request 1042",
-        "If you miss it, call them back on this number. It works for 30 days.",
-        "Ask for the price and any changes in writing before work starts. Don't pay in full up front.",
-    ] {
-        assert!(words.contains(part), "missing {part}");
-    }
-    assert!(!words.contains(" a.m.") && !words.contains(" p.m."));
-    let regular = text(contact, false, false);
-    let held = send_whos_calling(&mut db, (&vault, &secret), &regular, ts(NIGHT)).await;
-    assert_eq!(held, Ok(WhosCallingSent::Held(ts(MORNING))));
-    let due: Timestamp = sqlx::query_scalar("SELECT run_at FROM core.task WHERE kind = $1")
-        .bind(WHOS_CALLING_KIND)
-        .fetch_one(&mut *db)
-        .await
-        .map(|t: jiff_sqlx::Timestamp| t.to_jiff())
-        .expect("held task");
-    assert_eq!(due, ts(MORNING));
-}
-
-/// TD-TXT-29 (TXT-027, PICK-018): an email-contact homeowner still gets a text, which says
-/// "They'll email you at the address you chose." and never "call".
-#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
-async fn td_txt_29_an_email_contact_homeowner_gets_the_email_wording(db: PgPool) {
-    let mut db = db.acquire().await.expect("connection");
-    let (vault, secret) = (vault(), secret());
-    let chose_email = text(her(&mut db).await, false, true);
-    let sent = send_whos_calling(&mut db, (&vault, &secret), &chose_email, ts(DAY)).await;
-    assert_eq!(sent, Ok(WhosCallingSent::Queued));
-    let words = body(&mut db, "whos_calling_email").await;
-    assert_eq!(
-        words,
-        "Ask Hava: Test Plumbing accepted request 1042. They'll email you at the address you \
-         chose. Ask for the price and any changes in writing before work starts. Don't pay in \
-         full up front."
-    );
-    assert!(!words.to_lowercase().contains("call"));
 }
 
 /// TD-CALL-12 (INT-029, CALL-001): an emergency job with no address is not released, so no masked

@@ -3,14 +3,13 @@
 //! The masked-number pool (CALL-001, CALL-002, CALL-017): [`assign_number`] gives a connected
 //! job its [`Line`] from the fixed pool in settings, built on standard programmable voice only
 //! (CALL-021); and [`automated_call_gate`], the suppression-list check before an automated call
-//! (CON-035, CALL-014).
+//! (CON-035, CALL-014). T077: [`route`] and [`answer_call`], PIN routing and the paid-business
+//! read-back (CALL-003 to CALL-005, CALL-025).
 
 pub use crate::models::CallsError;
 pub use crate::routing::{
     Answer, Attestation, CallTurn, IncomingCall, JobPin, PIN_ALERT, Party, READBACK_AFTER,
-    RoutedLine, Step, TRIES_PER_CALL, TRIES_PER_DAY, WHOS_CALLING_EMAIL_TEMPLATE,
-    WHOS_CALLING_KIND, WHOS_CALLING_TEMPLATE, WhosCalling, WhosCallingSent, answer_call, job_pin,
-    parse_whos_calling, route, run_whos_calling, send_whos_calling,
+    RoutedLine, Step, TRIES_PER_CALL, TRIES_PER_DAY, answer_call, job_pin, route,
 };
 pub use crate::service::{
     ASSIGNED_ACTION, AutomatedCall, CallGate, Connected, Line, POOL_ALERT,

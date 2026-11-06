@@ -1760,8 +1760,9 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **Safety calls to numbers we can't text.** The safety call checks the same list texting uses. A US number whose area code is not in our time-zone table is never texted, so the safety call skips it too. Instead of skipping quietly it now raises a High alert to you, and your emergency alert still fires. Whether the call should dial such a number anyway is your call; until then it does not (the safety call switch is off at launch).
 - **Nothing needs you now.**
 
-## Masked calls: PINs and the who's-calling text (T077, D-1684 to D-1688, November 6)
+## Masked calls: PINs (T077, D-1684 to D-1688, November 6)
 
-- **Who's-calling text.** Once a business is released, the homeowner gets "Ask Hava: <Business> accepted request <n> and may call you from <number>. If you miss it, call them back on this number. It works for 30 days. ..." At night it waits for 8 a.m. unless she chose emergency.
-- **Daily PIN limit not stored yet.** The rule (3 tries a call, 6 a day per number) is built, but the daily count needs a table a later calls task adds; until masked calls go live this changes nothing.
+- **PINs.** Each connected job gets a 4-digit PIN. A caller whose phone we don't know must enter it; 3 tries a call, then the call ends and you get one alert. After 2 wrong tries, a phone linked to the business that paid for that job hears the homeowner's first name and street and must confirm before it connects; nobody else hears anything.
+- **Daily PIN limit not stored yet.** The 6-tries-a-day rule is built, but the count needs a table a later calls task adds. Nothing is live, so this changes nothing yet.
+- **"Who's calling" text waits.** The text telling the homeowner which number the business will call from is written and tested, but adding it touches two files another task owns, so it lands with that task.
 - **Nothing needs you now.**

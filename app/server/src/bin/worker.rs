@@ -36,8 +36,6 @@ async fn main() -> io::Result<()> {
         .map_err(io::Error::other)?;
     let texts = askhava_server::job_text_keys(&settings, &stream.id_secret, std::env::vars())?
         .map(Arc::new);
-    let calls = askhava_server::whos_calling_keys(&settings, &stream.id_secret, std::env::vars())?
-        .map(Arc::new);
     let confirm = askhava_picks::api::ConfirmSettings::from_pairs(std::env::vars())
         .map_err(io::Error::other)?;
     let mut conn = pool.acquire().await.map_err(io::Error::other)?;
@@ -54,7 +52,6 @@ async fn main() -> io::Result<()> {
             Arc::new(stream),
             texts,
             confirm,
-            calls,
         )),
         clock,
         owner,
