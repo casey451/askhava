@@ -31,9 +31,6 @@ pub enum CallsError {
     /// The job's open line uses a number no longer in the settings' pool.
     #[error("the job's open line uses a number no longer in the pool")]
     NumberRetired,
-    /// The voice provider refused or failed to place a call (T080).
-    #[error("the voice provider could not place the call")]
-    Voice,
 }
 
 /// One open line as the assignment rule sees it: its number, homeowner and business.

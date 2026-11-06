@@ -38,6 +38,6 @@ pub use crate::service::{
 pub use crate::voice::{
     Approval, Conditions, SAFETY_CALL_ACTION, SAFETY_CALL_KIND, SAFETY_SCRIPT_VERSION,
     SAFETY_STOP_ACTION, SAFETY_WITHIN, SafetyCall, SafetyDialer, SafetyOutcome, SafetySwitch,
-    code_call_twiml, may_code_call, owner_bridge_twiml, place_safety_call, ring_owner,
+    VoiceError, code_call_twiml, may_code_call, owner_bridge_twiml, place_safety_call, ring_owner,
     safety_call_answered, safety_call_key, safety_script, safety_twiml,
 };

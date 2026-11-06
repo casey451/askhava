@@ -14,8 +14,8 @@ The layer-5 crate for masked calls between a homeowner and the business she conn
 - `src/handlers.rs` (T078): `dial_twiml`, `finished_call` (`FinishedCall`), `log_finished_call`, `call_log` (`LoggedCall`); its own queries.
 - `src/lifecycle.rs` (T079): `close_line` (`CloseReason`), `close_expired`, `expired`, `LINE_DAYS`; the pure `phone_works` and `gate` (`PhoneStanding`); `request_link`, `last4`; `greeting_twiml`, `GREETING_EN`, `GREETING_ES`; `BUSINESS_NOTICE_KIND` (`messaging.business_notice`), `CANCELLED_TEMPLATE`, `LINK_TEMPLATE`, `LINK_TEXT_TO` (`main_phone`); its own queries. Templates `line_closed_cancelled` and `link_this_phone` (en, es) in `app/messaging/templates/`.
 - `src/routing.rs` (T080): `PinWait` (`PIN_WAIT_KEY`, `ASKHAVA_PIN_WAIT_SECONDS`, `PIN_WAIT_MIN`), `pin_prompt_twiml`, `pin_heard` (`PinHeard`), `PIN_PROMPT`, `PIN_GOODBYE`.
-- `src/voice.rs` (T080): `may_code_call`, `code_call_twiml`; `Approval`, `Conditions`, `SafetySwitch`, `safety_script`, `safety_twiml`, `SafetyCall` (`from_payload`), `SafetyDialer`, `SafetyOutcome`, `place_safety_call` (the `SAFETY_CALL_KIND` handler), `safety_call_key`, `safety_call_answered`, `ring_owner`, `owner_bridge_twiml`; `SAFETY_WITHIN`, `SAFETY_SCRIPT_VERSION`, `SAFETY_CALL_ACTION`, `SAFETY_STOP_ACTION`.
-- `src/models.rs`: `CallsError` (T080 adds `Voice`) and the crate-private queries.
+- `src/voice.rs` (T080): `may_code_call`, `code_call_twiml`; `Approval`, `Conditions`, `SafetySwitch`, `safety_script`, `safety_twiml`, `SafetyCall` (`from_payload`), `SafetyDialer`, `SafetyOutcome`, `place_safety_call` (the `SAFETY_CALL_KIND` handler), `safety_call_key`, `safety_call_answered`, `ring_owner`, `owner_bridge_twiml`; `SAFETY_WITHIN`, `SAFETY_SCRIPT_VERSION`, `SAFETY_CALL_ACTION`, `SAFETY_STOP_ACTION`, `VoiceError` (a `CallsError` or the provider).
+- `src/models.rs`: `CallsError` and the crate-private queries.
 - `src/api.rs`: the only public surface. `sqlx.toml`: `timestamptz` as jiff timestamps.
 
 ## Rules it enforces

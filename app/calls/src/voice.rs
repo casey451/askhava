@@ -45,6 +45,17 @@ pub const SAFETY_CALL_ACTION: &str = "calls.safety_call_placed";
 /// The audit action of a "press 9" on a safety call (CALL-022, CON-035).
 pub const SAFETY_STOP_ACTION: &str = "calls.safety_call_press_9";
 
+/// Why placing a call failed: a `calls` step, or the voice provider.
+#[derive(Debug, PartialEq, Eq, thiserror::Error)]
+pub enum VoiceError {
+    /// A lookup, the list check or the audit row failed.
+    #[error(transparent)]
+    Calls(#[from] CallsError),
+    /// The voice provider refused or failed to place the call.
+    #[error("the voice provider could not place the call")]
+    Provider,
+}
+
 /// CALL-014, BIZ-046, D-366: a code call goes only when she tapped for it, and only to a homeowner.
 #[must_use]
 pub fn may_code_call(tapped: bool, to: Party) -> bool {
@@ -281,15 +292,15 @@ fn precheck(switch: SafetySwitch, from_main: bool, age: SignedDuration) -> Optio
 ///
 /// # Errors
 ///
-/// [`CallsError::Messaging`] when the list or phone cannot be read, [`CallsError::Voice`] when the
-/// provider refuses, [`CallsError::Ops`] when the audit row cannot be written.
+/// [`VoiceError::Calls`] when the list or phone cannot be read or the audit row cannot be written,
+/// [`VoiceError::Provider`] when the provider refuses.
 pub async fn place_safety_call<V: VoiceAdapter>(
     db: &mut PgConnection,
     vault: &Vault,
     dialer: &SafetyDialer<'_, V>,
     call: &SafetyCall,
     now: Timestamp,
-) -> Result<SafetyOutcome, CallsError> {
+) -> Result<SafetyOutcome, VoiceError> {
     let from_main = dialer.from.as_str() == dialer.main;
     if let Some(stop) = precheck(
         dialer.switch,
@@ -309,7 +320,7 @@ pub async fn place_safety_call<V: VoiceAdapter>(
         .voice
         .open_call(&key, phone.expose_secret(), dialer.from)
         .await
-        .map_err(|_| CallsError::Voice)?;
+        .map_err(|_| VoiceError::Provider)?;
     log(db, SAFETY_CALL_ACTION, call.message).await?;
     Ok(SafetyOutcome::Placed(state.sid))
 }
@@ -391,19 +402,19 @@ pub async fn safety_call_answered(
 ///
 /// # Errors
 ///
-/// [`CallsError::Voice`].
+/// [`VoiceError::Provider`].
 pub async fn ring_owner<V: VoiceAdapter>(
     voice: &V,
     secret: &SecretString,
     (owner_phone, from): (&SecretString, &PoolNumber),
     (alert, press): (Uuid, Uuid),
-) -> Result<String, CallsError> {
+) -> Result<String, VoiceError> {
     let ids = [alert.to_string(), press.to_string()];
     let key = IdempotencyKey::derive(secret, "calls.owner_bridge", &[&ids[0], &ids[1]]);
     let state = voice
         .open_call(&key, owner_phone.expose_secret(), from)
         .await
-        .map_err(|_| CallsError::Voice)?;
+        .map_err(|_| VoiceError::Provider)?;
     Ok(state.sid)
 }
 
