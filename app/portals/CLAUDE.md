@@ -13,6 +13,7 @@ The layer-8 crate for the homeowner, business and owner portals (`docs/architect
 - `src/pick_flow.rs` (T055): `pick_flow_routes` (`POST /q/{token}` the review step, `POST /q/{token}/pick` the final Pick, `PICK_ROUTE`), `result_page`, `PageLanguage`; crate-private `ReviewView` over `templates/pick_review.html` (review and result); T187: `POST /q/{token}/code` (`CODE_ROUTE`), crate-private `CodeView` over `templates/pick_code.html` (the code-and-contact step). T246: `PickCodeKeys<V>` (`new`, `with_threshold`), `VERIFY_DAILY_THRESHOLD`; `pick_flow_routes(pool, clock, Option<PickCodeKeys<V>>)` is generic over the Verify adapter.
 - `src/confirm_pay.rs` (T224): `REFUND_LINE`, `FEE_FREE_LINE`, `NoFee`, `ConfirmFacts`, `confirm_page` over `templates/confirm_pay.html`, `PORTAL_LINK`, `PressReply` (with `client_secret` on `approve` and `link` on an over-limit end), `press_reply`. `static/confirm_pay.ts`: mounts Stripe Elements, posts the `pm_…` with the press ID (no card on a `data-paid="no"` form unless the save box is ticked), shows each reply at once (a failed post shows a try-again line in `#confirm-error`), runs `handleNextAction` for a bank approval, shows the portal link on an over-limit end.
 - `src/receipts_page.rs` (T068, D-1560): `WHY_CHARGED_ROUTE`, `WhyCharged`, `Basis` (`OnSite`, `Quote`, `FourMonths`), `why_charged_page` over `templates/why_charged.html`; the route waits on business sign-in.
+- `src/business_signup.rs` (T193): `SIGNUP_ROUTE`, `Screen` (`Form`, `Contact`, `NumberOld`, `Letter`, `Done`), `Parts`, `signup_page` over `templates/business_signup.html`, `notice_line` with `NOTICE_OFF` and `NOTICE_ON` (WEB-024, en and es), `PEST_ATTESTATION` (LIC-047), `fee_numbers`, `DoneFacts`, `DoneError`, `done_facts` (through `businesses::api::trade_count` and `quotes::api::open_card_jobs`), `done_lines`. The routes wait on the business portal (D-1709).
 - `askama.toml`: template folders `templates/` then `../site/templates/`, so every portal page extends `base.html` (D-491).
 - `sqlx.toml`: `timestamptz` as jiff timestamps. `src/api.rs`: the public surface, plus a re-export of axum-extra's `CookieJar`.
 
@@ -39,6 +40,8 @@ The layer-8 crate for the homeowner, business and owner portals (`docs/architect
 - A11Y-030, A11Y-031: forms post with `novalidate`, keep their submit button enabled and lean on the handler's idempotency key; a refused CSRF token is a bare 403.
 - PICK-021, FEE-014, FEE-015, FEE-045, CON-029, D-1479: the Confirm page shows the job number, fee with tier and basis, the refund line, the terms version, "Go back", "Can't take it" and one button ("Confirm and pay $<fee>", or "Confirm" when no fee is due); a fee-free job type says "No introduction fee for this job."; the save box is never ticked by default and carries `AUTHORIZATION_TEXT`; a paused job gets the refusal and no form; only this template loads `js.stripe.com`. `press_reply` gives a new press ID only after a decline or a refused try, so the next press is the next attempt (FEE-016); a success answer releases nothing (PICK-022); only an `approve` answer carries the client secret (FEE-014) and only an over-limit one the portal link (FEE-041, D-1482).
 - FEE-031, FEE-053, D-1560: the "Why was I charged?" page shows the job number, the charge line with "Tax included.", the quote, the tier, how the basis set it, the one-pick line and `REFUND_LINE`; D-1561: the basis's tier range is checked against the tier charged, so a capped or flat fee says the fee is set at that tier, never that the basis made it, and a fee that is no tier's names no tier.
+
+- BIZ-024, BIZ-026, BIZ-030, BIZ-031, WEB-024: every sign-up screen shows the notice line and the "Someone else filling this in?" line; the contact screen shows only `MaskedContact` values; the fee box sits above the Terms link and comes from `fee_numbers`; the done screen leads with the open jobs once active.
 
 ## Never break
 
@@ -68,6 +71,7 @@ The layer-8 crate for the homeowner, business and owner portals (`docs/architect
 ## Tests that guard it
 
 - `src/confirm_pay.rs` `tests` (TD-FEE-25, TD-FEE-37, TD-FEE-40 page cases, TD-SEC-04): `cargo test -p askhava-portals confirm_pay`; `tests/e2e/confirm_pay.spec.ts` (the script against a hand copy of the template's markup: decline, next press ID, 3-D Secure, a $0 Confirm with no card and a failed post, the over-limit link; and no Stripe.js on a seeded quote page, needs DATABASE_URL): `npx playwright test --config tests/e2e/playwright.config.ts tests/e2e/confirm_pay.spec.ts`.
+- `tests/integration/tests/signup_screens.rs` (TD-BIZ-07, TD-BIZ-10, TD-BIZ-27): `cargo test -p askhava-integration --test signup_screens`.
 - `tests/integration/tests/receipts.rs` (TD-FEE-34 page case): `cargo test -p askhava-integration --test receipts`.
 
 - `tests/security/tests/headers.rs` (TD-SEC-04): `cargo test -p askhava-security --test headers`.

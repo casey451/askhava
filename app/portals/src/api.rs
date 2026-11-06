@@ -7,11 +7,16 @@
 //! PICK-012, SEC-037, T052). The pick review step's router and the pick result page (PICK-016,
 //! PICK-017, PICK-054, A11Y-014, T055). The business's Confirm review step and its press answers
 //! (PICK-021, FEE-014, FEE-045, CON-029, T224). The "Why was I charged?" page of a charge (FEE-031,
-//! T068).
+//! T068). The business sign-up screens, their WEB-024 notice line, fee numbers and done-screen
+//! facts (BIZ-024, BIZ-026, BIZ-030, BIZ-031, LIC-047, T193).
 
 /// The cookie jar the session functions take and give back (axum-extra's).
 pub use axum_extra::extract::cookie::CookieJar;
 
+pub use crate::business_signup::{
+    DoneError, DoneFacts, NOTICE_OFF, NOTICE_ON, PEST_ATTESTATION, Parts, SIGNUP_ROUTE, Screen,
+    done_facts, done_lines, fee_numbers, notice_line, signup_page,
+};
 pub use crate::confirm_pay::{
     ConfirmFacts, FEE_FREE_LINE, NoFee, PORTAL_LINK, PressReply, REFUND_LINE, confirm_page,
     press_reply,

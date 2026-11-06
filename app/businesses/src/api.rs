@@ -7,7 +7,10 @@
 //! members with their roles, the main and staff phones kept in `messaging`'s sender directory, and
 //! `notice_addresses` (BIZ-023, CALL-012, D-491, D-492); sign-up, the identity chain and activation,
 //! the About us screen and the business terms acceptance (BIZ-001 to BIZ-003, BIZ-016, BIZ-019 to
-//! BIZ-022, BIZ-053, FEE-011, TERMS-016, TERMS-033; T081).
+//! BIZ-022, BIZ-053, FEE-011, TERMS-016, TERMS-033; T081); the sign-up screens' records: the
+//! masked record contact, the "That number is old" wait and resume, the review target, the fee
+//! summary, the trade count and the launch notice's sent-once claim (BIZ-024, BIZ-026, BIZ-027,
+//! BIZ-030, BIZ-031; T193).
 
 use sqlx::PgConnection;
 use sqlx::types::Uuid;
@@ -27,8 +30,13 @@ pub use crate::service::{
     set_job_types, set_own_hours, set_ticks, set_towns,
 };
 pub use crate::signup::{
-    EntityValues, HeardFrom, SignUpForm, SignedUp, SignupError, TermsShown, WAITLIST_LINE,
-    accept_terms, category_list, hand_entity_keys, review_due, review_told, sign_up, waitlisted,
+    BUSINESS_STATEMENT, ContactKind, EntityValues, FeeNumbers, HeardFrom, LIST_DELAY_KEY,
+    MaskedContact, NUMBER_OLD_BUTTON, RECORD_UPDATED_TEMPLATE, REPEAT_FREE_DAYS, REVIEW_TARGET_KEY,
+    SOMEONE_ELSE_LINE, STOP_FIX_BUTTON, SignUpForm, SignedUp, SignupError, SignupSettings,
+    TermsShown, WAITLIST_LINE, accept_terms, category_list, claim_launch_notice, fee_summary,
+    fix_record_lines, hand_entity_keys, number_is_old, resume_on_new_record, review_due,
+    review_target, review_target_line, review_told, sign_up, trade_count, waiting_on_record,
+    waitlisted,
 };
 pub use crate::status::{AccountStatus, PauseReason, Refused};
 pub use crate::team::{
