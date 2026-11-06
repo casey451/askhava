@@ -938,3 +938,4 @@
 - 2026-11-06T08:08:02Z runner 73df21078ef5 (actions): {}
 - 2026-11-06T08:08:14Z runner 73df21078ef5 (actions): {}
 - 2026-11-06T08:18:09Z runner e292a7f6043d (actions): {"T074": "MERGE_PENDING -> DONE"}
+- 2026-11-06T08:25:23Z runner e292a7f6043d (actions): {"T247": "QUEUED -> IN_PROGRESS"}; T247 estimated 2.1M tokens (calibrated); five-hour window has 22.5M left, week 168.0M (session_reading 2026-11-06T08:08:02Z (week)); claimed
