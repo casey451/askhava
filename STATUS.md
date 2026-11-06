@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-06T06:41:21Z by runner 5a7d7ae2b6c2 (actions).
+Updated 2026-11-06T07:02:50Z by runner 73df21078ef5 (actions).
 
-**Idle since 06:37Z; 115 of 238 done; week 12% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 07:00Z; 116 of 238 done; week 12% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 115 of 238 build tasks (owner gates not counted)
+- **Tasks done:** 116 of 238 build tasks (owner gates not counted)
 - **Stage:** stage 3; stage proofs recorded: 1, 2
-- **Lane:** idle since 06:37Z (no task in progress)
+- **Lane:** idle since 07:00Z (no task in progress)
 - **Week:** 12% used, 172.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:41Z, 0 min before this update
+- **Last run:** 06:41Z, 21 min before this update
 - **Keeper:** last ran 06:41Z, next wake 07:01Z
 
 ## Needs attention
@@ -17,7 +17,7 @@ Updated 2026-11-06T06:41:21Z by runner 5a7d7ae2b6c2 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T073 | Named mutants: the 4-month rule, the fee tiers and the card  | MERGE_PENDING | 1 | 30 min | 06:37Z |  |
+| T073 | Named mutants: the 4-month rule, the fee tiers and the card  | done | 1 | 30 min | 06:37Z |  |
 | T072 | Metamorphic prompt-injection tests over routing, fees and di | done | 1 | 30 min | 05:55Z |  |
 | T071 | Stage 3 check: the ledger matches the Stripe mock on 1,000 s | done | 1 | 37 min | 05:09Z |  |
 | T070 | picks: 'no longer active' once, Confirm link replies | done | 1 | 45 min | 04:18Z |  |
@@ -41,7 +41,7 @@ Updated 2026-11-06T06:41:21Z by runner 5a7d7ae2b6c2 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 174 of 731 (23.8%) · partial 229 · unstarted 328
-**Tasks merged (throughput only):** 115 of 238
+**Tasks merged (throughput only):** 116 of 238
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -75,7 +75,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 0.5: 0 of 1 done
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
-- stage 3: 24 of 29 done
+- stage 3: 25 of 29 done
 - stage 4: 0 of 54 done
 - stage 5: 0 of 42 done
 - stage 6: 0 of 26 done
