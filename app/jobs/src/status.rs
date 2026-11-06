@@ -196,6 +196,15 @@ impl JobStatus {
         matches!(self, Self::Open | Self::NoQuotesYet | Self::QuotesReady)
     }
 
+    /// True for Quotes ready and Awaiting confirm, the statuses in which the homeowner may pick or
+    /// re-pick a quote, on the page or by text, until the picked business taps Confirm (PICK-012,
+    /// PICK-032, PICK-045, D-1516). The quote page's Pick buttons, the review step and the final
+    /// Pick all read it; `picks`' text stage (Ready or Waiting) equals it.
+    #[must_use]
+    pub const fn takes_pick(self) -> bool {
+        matches!(self, Self::QuotesReady | Self::AwaitingConfirm)
+    }
+
     /// True for the five final statuses, which wait for nothing (JOB-001, JOB-003).
     #[must_use]
     pub const fn is_final(self) -> bool {

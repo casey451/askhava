@@ -33,7 +33,7 @@ use serde_json::{Value, json};
 use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection, PgPool};
 
-use crate::models::IntakeError;
+use crate::models::{self, IntakeError};
 use crate::rules::language_from_code;
 use crate::service::{Queued, may_text};
 
@@ -213,6 +213,63 @@ async fn homeowner_of(
     .await
     .map(|r| r.map(|r| (r.contact_id, r.language)))
     .map_err(|_| IntakeError::Database)
+}
+
+/// The homeowner of a job as the page pick needs her: the request, her vault contact ID (never
+/// her number) and the request's language (D-993, D-1516).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct JobHomeowner {
+    /// The open request (conversation) that opened the job.
+    pub conversation: Uuid,
+    /// Her vault contact ID.
+    pub contact: Uuid,
+    /// The request's language.
+    pub language: Language,
+}
+
+/// The homeowner of live job `job`: the open request that opened it (her newest, since a
+/// homeowner has one open request), her vault contact ID and the request's language, found as
+/// [`homeowner_of`] finds a job's request; `None` when no open request opened it (PICK-013,
+/// PICK-016, TERMS-016, D-1516). The page pick sends its code to this contact and stores the
+/// terms acceptance on this request.
+///
+/// # Errors
+///
+/// [`IntakeError::Database`].
+pub async fn job_homeowner(
+    db: &mut PgConnection,
+    job: Uuid,
+) -> Result<Option<JobHomeowner>, IntakeError> {
+    let Some((conversation, _)) = models::request_of_job(db, job).await? else {
+        return Ok(None);
+    };
+    Ok(models::recipient(db, conversation)
+        .await?
+        .map(|(contact, code)| JobHomeowner {
+            conversation,
+            contact,
+            language: language_from_code(&code),
+        }))
+}
+
+/// Takes the homeowner lock of request `conversation` in the caller's transaction (the lock
+/// [`crate::api::on_opt_out`] and [`crate::api::answer_text_pick`] take), then says whether job
+/// `job` is paused by her (CON-029, D-1605): a CANCEL committing meanwhile is waited for and seen,
+/// so a page pick stored in the same transaction never lands on a paused job.
+///
+/// # Errors
+///
+/// [`IntakeError::UnknownRequest`] or [`IntakeError::Database`].
+pub async fn paused_under_lock(
+    tx: &mut PgConnection,
+    conversation: Uuid,
+    job: Uuid,
+) -> Result<bool, IntakeError> {
+    let (homeowner, _) = models::conversation_state(tx, conversation)
+        .await?
+        .ok_or(IntakeError::UnknownRequest)?;
+    models::lock_homeowner(tx, homeowner).await?;
+    models::is_paused(tx, job).await
 }
 
 /// Queues the same event again for `until`, the next instant both zones are open (QH-006); the

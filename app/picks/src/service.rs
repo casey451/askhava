@@ -7,7 +7,10 @@
 //! own session; only her vault contact ID is stored. [`text_pick`] runs inside `intake`'s
 //! transaction under the homeowner lock: it plans with [`plan_text_pick`] and then picks, replaces
 //! the waiting pick, sends the Terms line first, asks which request, or gives the status reply.
-//! [`withdraw_paused`] is `intake`'s call on a CANCEL pause (CON-029). Events for the business
+//! [`withdraw_paused`] is `intake`'s call on a CANCEL pause (CON-029). T246 (D-1516): the page
+//! pick, [`page_pick`], shares the text pick's end-move-insert core ([`place`]), and
+//! [`send_page_code`] and [`check_page_code`] read the homeowner's phone themselves through
+//! `privacy::api::read_for_pick_code`, so `portals` never sees the number. Events for the business
 //! (the pick notice, the withdrawal notice) are `core.task` rows with IDs only; their emails are
 //! other tasks' (D-491).
 
@@ -16,6 +19,7 @@ use askhava_core::api::{Guarded, NewTask, enqueue as enqueue_task};
 use askhava_jobs::api::{current, job_number, move_to};
 use askhava_messaging::api::{Language, NewText, Relation, enqueue, render};
 use askhava_ops::api::{Actor, AuditEntry, Change, NewAlert, Severity, audit, raise_alert};
+use askhava_privacy::api::{Vault, read_for_pick_code};
 use askhava_quotes::api::page_quotes;
 use jiff::Timestamp;
 use jiff::tz::{TimeZone, offset};
@@ -280,11 +284,9 @@ async fn terms_first(
 }
 
 /// Picks quote `quote` of `job` by text (PICK-015, PICK-031, PICK-032): the same quote again only
-/// repeats the reply; another quote cancels the waiting pick and enqueues the business's
-/// withdrawal notice; from Quotes ready the job moves to Awaiting confirm. The new pick is logged
-/// with the channel `text` and its inbound text, and the pick notice is enqueued at once. A waiting
-/// pick that is no longer waiting when it is ended (the business confirmed it meanwhile) is
-/// [`PicksError::MovedOn`]: the caller rolls back and no second pick is made.
+/// repeats the reply; another quote is [`place`]d. A waiting pick that is no longer waiting when
+/// it is ended (the business confirmed it meanwhile) is [`PicksError::MovedOn`]: the caller rolls
+/// back and no second pick is made.
 async fn pick_quote(
     tx: &mut PgConnection,
     out: &mut Out<'_, '_>,
@@ -296,19 +298,8 @@ async fn pick_quote(
     let pick = match waiting {
         Some((id, q, _)) if usize::try_from(q).ok() == Some(quote) => id,
         _ => {
-            if let Some((old, _, business)) = waiting {
-                let by = (input.actor, input.at);
-                if !end(tx, (job.job, old, business), "replaced", by).await? {
-                    return Err(PicksError::MovedOn);
-                }
-            }
-            if let Some(arrow) = pick_move(job.stage) {
-                let moved = move_to(tx, job.job, arrow, input.at, input.actor).await;
-                if !matches!(moved, Ok(Guarded::Applied(()))) {
-                    return Err(moved.map_or(PicksError::Job, |_| PicksError::MovedOn));
-                }
-            }
-            new_pick(tx, job.job, quote, input).await?
+            let by = (input.actor, input.at);
+            place(tx, (job, waiting), quote, by, Some(input.inbox)).await?
         }
     };
     let values = [
@@ -319,22 +310,111 @@ async fn pick_quote(
     Ok(pick)
 }
 
-/// Stores the text pick, its audit row and the pick-notice event.
+/// The pick core both channels use (PICK-015, PICK-032, PICK-045, D-1516): ends the `waiting`
+/// pick of `job` as `replaced` with its business's withdrawal notice, moves the job from Quotes
+/// ready to Awaiting confirm (a job already there stays, so the Confirm window does not restart),
+/// and stores the new pick of `quote` with its audit row and pick notice; `inbox` is the text
+/// pick's inbound text, `None` on the page (channel `page`). No fee, free win or release here.
+async fn place(
+    tx: &mut PgConnection,
+    (job, waiting): (&JobView, Option<(Uuid, i32, Uuid)>),
+    quote: usize,
+    (actor, at): (Actor, Timestamp),
+    inbox: Option<Uuid>,
+) -> Result<Uuid, PicksError> {
+    if let Some((old, _, business)) = waiting
+        && !end(tx, (job.job, old, business), "replaced", (actor, at)).await?
+    {
+        return Err(PicksError::MovedOn);
+    }
+    if let Some(arrow) = pick_move(job.stage) {
+        let moved = move_to(tx, job.job, arrow, at, actor).await;
+        if !matches!(moved, Ok(Guarded::Applied(()))) {
+            return Err(moved.map_or(PicksError::Job, |_| PicksError::MovedOn));
+        }
+    }
+    new_pick(tx, (job.job, quote, inbox), (actor, at)).await
+}
+
+/// Stores the pick, its audit row and the pick-notice event.
 async fn new_pick(
     tx: &mut PgConnection,
-    job: Uuid,
-    quote: usize,
-    input: &TextPickIn<'_>,
+    (job, quote, inbox): (Uuid, usize, Option<Uuid>),
+    (actor, at): (Actor, Timestamp),
 ) -> Result<Uuid, PicksError> {
     let quotes = page_quotes(tx, job).await.map_err(|_| PicksError::Quotes)?;
     let business = quotes.get(quote - 1).ok_or(PicksError::Quotes)?.business;
     let number = i32::try_from(quote).map_err(|_| PicksError::Quotes)?;
-    let row = (job, business, number, Some(input.inbox));
-    let pick = models::insert_pick(tx, row, input.at).await?;
-    pick_audit(tx, input.actor, "picks.picked", pick).await?;
+    let row = (job, business, number, inbox);
+    let pick = models::insert_pick(tx, row, at).await?;
+    pick_audit(tx, actor, "picks.picked", pick).await?;
     let payload = serde_json::json!({ "pick": pick, "job": job, "business": business });
-    event(tx, PICK_MADE_KIND, pick, payload, input.at).await?;
+    event(tx, PICK_MADE_KIND, pick, payload, at).await?;
     Ok(pick)
+}
+
+/// The quote number of the pick on `job` waiting for Confirm, if any: the page checks it before
+/// sending a code, so picking that quote again sends none (PICK-032, D-1516).
+///
+/// # Errors
+///
+/// [`PicksError::Database`].
+pub async fn waiting_quote(db: &mut PgConnection, job: Uuid) -> Result<Option<usize>, PicksError> {
+    Ok(models::waiting_pick(db, job)
+        .await?
+        .and_then(|(_, quote, _)| usize::try_from(quote).ok()))
+}
+
+/// What [`page_pick`] did.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PagePick {
+    /// The new pick, now waiting for Confirm (PICK-045).
+    Picked(Uuid),
+    /// That quote already is the waiting pick: nothing new was stored.
+    Same(Uuid),
+    /// No pick can be taken: the job no longer takes one (from Payment pending on, or before
+    /// Quotes ready), the homeowner paused it (CON-029), or the quote is not on the page or no
+    /// longer available.
+    Taken,
+}
+
+/// The page pick of quote `quote` on `job` (its homeowner pause passed by the caller), inside the
+/// caller's transaction (PICK-012, PICK-032, PICK-045, CON-029, D-1516): picked, the same quote
+/// again, or taken, as [`PagePick`] says. A re-pick while one waits ends it as `replaced` with
+/// its withdrawal notice and does not restart the Confirm window. The pick is stored with
+/// channel `page` and no inbound text; nothing irreversible happens before Confirm.
+///
+/// # Errors
+///
+/// [`PicksError::MovedOn`] when the job or the waiting pick moved under it (roll back), else
+/// [`PicksError::Job`], [`PicksError::Quotes`], [`PicksError::Audit`] or
+/// [`PicksError::Database`].
+pub async fn page_pick(
+    tx: &mut PgConnection,
+    (job, paused): (Uuid, bool),
+    quote: usize,
+    actor: Actor,
+    at: Timestamp,
+) -> Result<PagePick, PicksError> {
+    let status = current(tx, job).await.map_err(|_| PicksError::Job)?.status;
+    let view = view(tx, job, paused).await?;
+    let open = quote
+        .checked_sub(1)
+        .and_then(|i| view.quotes.get(i))
+        .copied()
+        .unwrap_or(false);
+    if paused || !open || !status.takes_pick() {
+        return Ok(PagePick::Taken);
+    }
+    let waiting = models::waiting_pick(tx, job).await?;
+    if let Some((id, q, _)) = waiting
+        && usize::try_from(q).ok() == Some(quote)
+    {
+        return Ok(PagePick::Same(id));
+    }
+    place(tx, (&view, waiting), quote, (actor, at), None)
+        .await
+        .map(PagePick::Picked)
 }
 
 /// Cancels a waiting pick with `reason` and enqueues the business's withdrawal notice; after this
@@ -624,4 +704,80 @@ pub async fn check_code<V: VerifyAdapter>(
     } else {
         CodeCheck::CoolingDown(at + COOLDOWN)
     })
+}
+
+/// The page code's keys: the Verify client, the vault the phone is read from and the secret its
+/// idempotency keys are derived under (PICK-013, SEC-018, D-1516).
+pub struct PageCodeKeys<'a, V> {
+    /// The Verify client (stand-in, sandbox or live by its base URL, D-453).
+    pub verify: &'a V,
+    /// The vault; only `picks` reads the phone, through `read_for_pick_code`.
+    pub vault: &'a Vault,
+    /// The `ID_SECRET`, for the send's idempotency key.
+    pub secret: &'a SecretString,
+}
+
+/// Her phone from the vault under `picks`' pick-code grant (one audited, counted read; PRIV-003).
+/// Any failure is [`PicksError::Database`], with no value in it (PRIV-016).
+async fn phone_of(
+    db: &mut PgConnection,
+    vault: &Vault,
+    contact: Uuid,
+) -> Result<SecretString, PicksError> {
+    read_for_pick_code(db, vault, contact)
+        .await
+        .ok()
+        .and_then(|details| details.phone)
+        .ok_or(PicksError::Database)
+}
+
+/// Sends the page pick's code to the vaulted phone of the job's homeowner `contact` (PICK-013,
+/// PICK-055, PRIV-003, D-1516): reads the phone with [`read_for_pick_code`] on a connection
+/// outside any transaction, then runs [`send_code`] (cooldown, caps, the High alert). The phone is
+/// never returned, logged or put in an error.
+///
+/// # Errors
+///
+/// As [`send_code`]; a failed vault read is [`PicksError::Database`].
+pub async fn send_page_code<V: VerifyAdapter>(
+    db: &mut PgConnection,
+    keys: &PageCodeKeys<'_, V>,
+    (job, contact): (Uuid, Uuid),
+    ask: SendAsk,
+    when: (Timestamp, i64),
+) -> Result<CodeSent, PicksError> {
+    let phone = phone_of(db, keys.vault, contact).await?;
+    let to = CodeTo {
+        job,
+        contact,
+        to: &phone,
+    };
+    send_code(db, (keys.verify, keys.secret), &to, ask, when).await
+}
+
+/// Checks the page pick's code typed for job `job` against the phone of `contact` (PICK-013,
+/// PICK-014, D-1516): a malformed code is [`CodeCheck::Malformed`] at once, with no vault read
+/// and no try counted; otherwise the phone is read with [`read_for_pick_code`] and [`check_code`]
+/// runs. The phone is never returned, logged or put in an error.
+///
+/// # Errors
+///
+/// As [`check_code`]; a failed vault read is [`PicksError::Database`].
+pub async fn check_page_code<V: VerifyAdapter>(
+    db: &mut PgConnection,
+    keys: &PageCodeKeys<'_, V>,
+    (job, contact): (Uuid, Uuid),
+    input: &str,
+    at: Timestamp,
+) -> Result<CodeCheck, PicksError> {
+    if parse_code(input).is_none() {
+        return Ok(CodeCheck::Malformed);
+    }
+    let phone = phone_of(db, keys.vault, contact).await?;
+    let to = CodeTo {
+        job,
+        contact,
+        to: &phone,
+    };
+    check_code(db, keys.verify, &to, input, at).await
 }

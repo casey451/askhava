@@ -130,7 +130,10 @@ export const PAGE_STATES: readonly PageState[] = [
   ["no quotes yet", "No quotes yet.", "Quote #1", quotePage("open", 0)],
   ["three quotes, #2 gone", "Pick #3", "Pick #2", quotePage("quotes_ready", 3)],
   ["paused by CANCEL", "is still open.", "No quotes yet.", quotePage("open", 1, PAUSED)],
-  ["after a pick", "Quote #3", "Pick #", quotePage("awaiting_confirm", 3)],
+  // D-1516: while the pick waits for Confirm the other available quotes keep their Pick buttons
+  // (PICK-032, TD-PICK-45); once the business confirmed (Payment pending) none shows.
+  ["after a pick", "Pick #1", "Pick #2", quotePage("awaiting_confirm", 3)],
+  ["after the business confirmed", "Quote #3", "Pick #", quotePage("payment_pending", 3)],
   ["closed", "Quote #2 (no longer available)", "Pick #", quotePage("closed", 3)],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: QUOTE_ROUTE, name, shows, hides, sql, statusRegions: ["quote-status"] }));
 
