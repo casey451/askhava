@@ -14710,7 +14710,15 @@
     1701,
     1702,
     1703
-   ]
+   ],
+   "reviewed_sha": "fccb3b0181214b3e2572d97a3f7a370ce3f00cf5",
+   "review_lease": {
+    "task": "T081",
+    "session": "actions-42293342199",
+    "expires": "2026-11-07T00:04:42Z"
+   },
+   "branch": "claude/task/T081-businesses-signup-identity",
+   "head_check_since": null
   },
   {
    "id": "T193",
@@ -20118,7 +20126,7 @@
    }
   }
  },
- "updated_at": "2026-11-06T21:12:09Z",
+ "updated_at": "2026-11-06T21:42:03Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -20216,7 +20224,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "bdd291aafb114221b8c308b386bb9bcb94bd7e47",
+ "runner_sha": "fccb3b0181214b3e2572d97a3f7a370ce3f00cf5",
  "starter": "actions",
  "smoke_runs": [
   {

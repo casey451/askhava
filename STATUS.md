@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-06T21:12:09Z by runner bdd291aafb11 (actions).
+Updated 2026-11-06T21:42:03Z by runner fccb3b018121 (actions).
 
 **Building: T081 in progress since 21:04Z; 126 of 239 done; week 24% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,12 +8,12 @@ Updated 2026-11-06T21:12:09Z by runner bdd291aafb11 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T081 claimed 21:04Z, lease until 00:04Z
 - **Week:** 24% used, 146.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:55Z, 16 min before this update
+- **Last run:** 21:12Z, 29 min before this update
 - **Keeper:** last ran 20:55Z, next wake 21:15Z
 
 ## Needs attention
 - PLAN GAP T080 (since 2026-11-06T21:04:42Z, no attempt used; a plan change fixes it): T080: dependency T079 is DONE but its owned file app/calls/src/lifecycle.rs is not on main; T080: dependency T079 is DONE but its owned file tests/integration/tests/line_lifecycle.rs is not on main
-- Strict plan check red: 1 problem(s) on tasks still to run (+10 on DONE tasks); first: T249: stored context_pct 22% but it measures 26%; regenerate
+- Strict plan check red: 4 problem(s) on tasks still to run (+11 on DONE tasks); first: T081: stored context_pct 13% but it measures 22%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -43,7 +43,6 @@ Updated 2026-11-06T21:12:09Z by runner bdd291aafb11 (actions).
 | T064 | payments: success after the job moved on is refunded once an | done | 1 | 27 min | 23:35Z |  |
 | T066 | payments: one refund per trigger, retries, disputes with evi | done | 1 | 46 min | 22:54Z |  |
 | T245 | payments: narrow the default privileges in schema payments t | done | 1 | 21 min | 21:56Z |  |
-| T244 | payments: remove the early-joiner price lock (FEE-040 withdr | done | 1 | 19 min | 21:20Z |  |
 
 ### Plan and harness merges on main
 - 16:15Z Plan: dynamic SQL in migrations is a TD-SEC-10 finding (T252), T126 context budget, stored budgets refreshed (D-1677, D-1678) (#298)
