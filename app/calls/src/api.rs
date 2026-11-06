@@ -8,7 +8,11 @@
 //! [`finished_call`], [`log_finished_call`] and [`call_log`], the call log, and the pure
 //! [`talked`] and [`business_attempt`] rules (CALL-007, CALL-008). T079: [`close_line`] and
 //! [`close_expired`] (CALL-009, CALL-010), [`gate`] and [`phone_works`] (CALL-012),
-//! [`request_link`] (CALL-011) and [`greeting_twiml`] (CALL-020).
+//! [`request_link`] (CALL-011) and [`greeting_twiml`] (CALL-020). T080: [`PinWait`],
+//! [`pin_prompt_twiml`] and [`pin_heard`] (CALL-013, CALL-023); [`may_code_call`] and
+//! [`code_call_twiml`] (CALL-014, CALL-015); [`SafetySwitch`], [`place_safety_call`],
+//! [`safety_call_key`] and [`safety_call_answered`] (CALL-019, CALL-022, OPS-028); [`ring_owner`]
+//! and [`owner_bridge_twiml`] (OPS-028).
 
 pub use crate::handlers::{
     FinishedCall, LoggedCall, call_log, dial_twiml, finished_call, log_finished_call,
@@ -20,8 +24,9 @@ pub use crate::lifecycle::{
 };
 pub use crate::models::CallsError;
 pub use crate::routing::{
-    Answer, Attestation, CallTurn, IncomingCall, JobPin, PIN_ALERT, Party, READBACK_AFTER,
-    RoutedLine, Step, TRIES_PER_CALL, TRIES_PER_DAY, answer_call, job_pin, route,
+    Answer, Attestation, CallTurn, IncomingCall, JobPin, PIN_ALERT, PIN_GOODBYE, PIN_PROMPT,
+    PIN_WAIT_KEY, PIN_WAIT_MIN, Party, PinHeard, PinWait, READBACK_AFTER, RoutedLine, Step,
+    TRIES_PER_CALL, TRIES_PER_DAY, answer_call, job_pin, pin_heard, pin_prompt_twiml, route,
 };
 pub use crate::rules::{
     AnsweredBy, Caller, REPORT_MARK, answered_by, business_attempt, reached_report_mark, talked,
@@ -29,4 +34,11 @@ pub use crate::rules::{
 pub use crate::service::{
     ASSIGNED_ACTION, AutomatedCall, CallGate, Connected, Line, POOL_ALERT,
     SAFETY_NOT_DIALABLE_ALERT, assign_number, automated_call_gate,
+};
+pub use crate::voice::{
+    Approval, Conditions, SAFETY_CALL_ACTION, SAFETY_CALL_KIND, SAFETY_CLAIM_ACTION,
+    SAFETY_FAILED_ACTION, SAFETY_KEY_ACTION, SAFETY_RESULT_ACTION, SAFETY_SCRIPT_VERSION,
+    SAFETY_STOP_ACTION, SAFETY_WITHIN, SafetyCall, SafetyDialer, SafetyOutcome, SafetySwitch,
+    VoiceError, code_call_twiml, may_code_call, owner_bridge_twiml, place_safety_call, ring_owner,
+    safety_call_answered, safety_call_key, safety_script, safety_twiml,
 };

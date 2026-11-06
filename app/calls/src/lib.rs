@@ -10,7 +10,9 @@
 //! called, who answered and its length; a person answering is talking, a machine never is
 //! (CALL-006 to CALL-008). T079: lines close on cancel, no-show, complaint or after 30 days, the
 //! staff-phone approval gate, the LINK request and the Ask Hava number's greeting (CALL-009 to
-//! CALL-012, CALL-018, CALL-020). Other crates reach it only through [`api`].
+//! CALL-012, CALL-018, CALL-020). T080: relay-friendly PIN prompts, the homeowner's code call, the
+//! safety voice call behind its switch and Casey's bridge to a homeowner (CALL-013 to CALL-016,
+//! CALL-019, CALL-022, CALL-023, OPS-028). Other crates reach it only through [`api`].
 
 pub mod api;
 mod handlers;
@@ -21,3 +23,4 @@ mod rules;
 mod service;
 #[cfg(test)]
 mod tests;
+mod voice;
