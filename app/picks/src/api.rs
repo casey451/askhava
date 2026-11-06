@@ -32,6 +32,10 @@
 //! free, worded by [`compare`] and [`loss_template`] (PICK-026, PICK-038); [`no_longer_active`]
 //! and [`refused_after_confirm`] send "This job is no longer active." once; [`live_pick_reply`]
 //! answers a business asking about its live pick (PICK-027).
+//!
+//! T095: [`code_route`] and [`send_email_code`]/[`check_email_code`] send and check the pick code
+//! by email to a [`ConversationEmail`] when texting is off (PICK-029); [`opted_out_yes`] takes an
+//! opted-out homeowner's "<number> YES" with no text back (PICK-030).
 
 pub use crate::aftermath::{
     Comparison, INACTIVE_TEMPLATE, LIVE_PICK_TEMPLATE, LOST_HIGHER_TEMPLATE, LOST_LOWER_TEMPLATE,
@@ -49,6 +53,10 @@ pub use crate::confirm::{
 pub use crate::confirm::{
     EmergencyPlan, HoldAsk, NightLine, TimeRefusal, TimeWord, WindowRules, away_for, away_until,
     emergency_fix_by, emergency_plan, hold, hold_allowed, read_time_word, window_start,
+};
+pub use crate::email_code::{
+    CodeRoute, ConversationEmail, EmailFrom, OptedOutYes, Texting, check_email_code, code_route,
+    opted_out_yes, send_email_code,
 };
 pub use crate::handlers::{CONFIRM_ENDS_KIND, notice_sent, run_confirm_ends, run_pick_notice};
 pub use crate::models::PicksError;
