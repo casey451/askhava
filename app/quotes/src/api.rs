@@ -24,6 +24,7 @@
 //! TXT-031 to TXT-033, WORD-011).
 //! T052: [`page_quotes`] lists a job's shown quotes in arrival order, unavailable ones included,
 //! for the homeowner's quote page (PICK-008, D-1233).
+//! T070: [`quoted_prices`] reads each quote's price for `picks`' PICK-026 loss text (PICK-038).
 //! T213: [`job_page`] reads a job's business [`JobPage`] from [`PageParts`] (CARD-019, CARD-023,
 //! D-434); [`check`] and [`scan`] hold the homeowner update texts in [`UPDATE_TEXTS`] to TXT-040's
 //! [`SHORT`] and [`LIMIT`] words a sentence, her page link and no quote details.
@@ -97,6 +98,94 @@ pub async fn page_quotes(
             unavailable: r.unavailable,
             original: r.original,
         })
+        .collect())
+}
+
+/// One stored quote's price columns, as [`quoted_prices`] reads them.
+struct StoredPrice {
+    business_id: Uuid,
+    format: String,
+    amount_cents: Option<i64>,
+    low_cents: Option<i64>,
+    high_cents: Option<i64>,
+    tier_names: Option<Vec<String>>,
+    tier_cents: Option<Vec<i64>>,
+    period: Option<String>,
+    setup_cents: Option<i64>,
+    hourly_rate_cents: Option<i64>,
+    hours_low: Option<i32>,
+    hours_high: Option<i32>,
+    confirm_on_site: bool,
+}
+
+fn cents(v: Option<i64>) -> Option<u64> {
+    v.and_then(|v| u64::try_from(v).ok())
+}
+
+impl StoredPrice {
+    /// The price as the business entered it (PICK-002), or none for a row that does not read back.
+    fn price(self) -> Option<Price> {
+        let hours = |v: Option<i32>| v.and_then(|v| u32::try_from(v).ok());
+        if let Some(rate) = cents(self.hourly_rate_cents) {
+            let hours = hours(self.hours_low).zip(hours(self.hours_high));
+            return Some(Price::Hourly { rate, hours });
+        }
+        let periods = [
+            Period::Visit,
+            Period::Week,
+            Period::Month,
+            Period::Quarter,
+            Period::Year,
+        ];
+        Some(match Format::from_code(&self.format)? {
+            Format::Firm => Price::Firm(cents(self.amount_cents)?),
+            Format::DiagnosticVisit => Price::VisitFee(cents(self.amount_cents)?),
+            Format::Range => Price::Range {
+                low: cents(self.low_cents)?,
+                high: cents(self.high_cents)?,
+                on_site: self.confirm_on_site,
+            },
+            Format::Monthly => Price::Monthly {
+                cents: cents(self.amount_cents)?,
+                period: periods
+                    .into_iter()
+                    .find(|p| Some(p.code()) == self.period.as_deref())?,
+                setup: cents(self.setup_cents),
+            },
+            Format::Tiers => {
+                let prices = self.tier_cents?.into_iter().map(|v| cents(Some(v)));
+                let tiers = self.tier_names?.into_iter().zip(prices);
+                Price::Tiers(tiers.map(|(n, v)| Some((n, v?))).collect::<Option<_>>()?)
+            }
+        })
+    }
+}
+
+/// PICK-026, PICK-038 (T070, D-1572): every business with a confirmed, unwithdrawn quote on
+/// `job`, unavailable ones included, with its price as entered, in arrival order. A row whose
+/// stored price does not read back is left out; no amount ever reaches `picks`' loss text.
+///
+/// # Errors
+///
+/// [`QuotesError::Database`].
+pub async fn quoted_prices(
+    db: &mut sqlx::PgConnection,
+    job: Uuid,
+) -> Result<Vec<(Uuid, Price)>, QuotesError> {
+    let rows = sqlx::query_as!(
+        StoredPrice,
+        "SELECT business_id, format, amount_cents, low_cents, high_cents, tier_names, tier_cents, \
+         period, setup_cents, hourly_rate_cents, hours_low, hours_high, confirm_on_site \
+         FROM quotes.quote WHERE job_id = $1 AND confirmed AND withdrawn_at IS NULL \
+         ORDER BY received_at, business_id",
+        job
+    )
+    .fetch_all(db)
+    .await
+    .map_err(|_| QuotesError::Database)?;
+    Ok(rows
+        .into_iter()
+        .filter_map(|r| Some((r.business_id, r.price()?)))
         .collect())
 }
 

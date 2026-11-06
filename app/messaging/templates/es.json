@@ -426,5 +426,65 @@
     "draft": true,
     "segments": 2,
     "text": "Ask Hava: El trabajo {job} ya está confirmado. Los datos están en askhava.com/business."
+  },
+  "pick_lost": {
+    "audience": "business",
+    "draft": true,
+    "segments": 1,
+    "text": "Ask Hava: El trabajo {job} fue para otro negocio esta vez."
+  },
+  "pick_lost_lower": {
+    "audience": "business",
+    "draft": true,
+    "segments": 3,
+    "text": "Ask Hava: El trabajo {job} fue para otro negocio esta vez. {count} negocios cotizaron; la cotización elegida fue más baja que la suya. No tiene que hacer nada. Gracias por cotizar."
+  },
+  "pick_lost_same": {
+    "audience": "business",
+    "draft": true,
+    "segments": 3,
+    "text": "Ask Hava: El trabajo {job} fue para otro negocio esta vez. {count} negocios cotizaron; la cotización elegida fue más o menos igual a la suya. No tiene que hacer nada. Gracias por cotizar."
+  },
+  "pick_lost_higher": {
+    "audience": "business",
+    "draft": true,
+    "segments": 3,
+    "text": "Ask Hava: El trabajo {job} fue para otro negocio esta vez. {count} negocios cotizaron; la cotización elegida fue más alta que la suya. No tiene que hacer nada. Gracias por cotizar."
+  },
+  "pick_lost_several_lower": {
+    "audience": "business",
+    "draft": true,
+    "segments": 3,
+    "text": "Ask Hava: El trabajo {job} fue para otro negocio esta vez. Varios negocios cotizaron; la cotización elegida fue más baja que la suya. No tiene que hacer nada. Gracias por cotizar."
+  },
+  "pick_lost_several_same": {
+    "audience": "business",
+    "draft": true,
+    "segments": 3,
+    "text": "Ask Hava: El trabajo {job} fue para otro negocio esta vez. Varios negocios cotizaron; la cotización elegida fue más o menos igual a la suya. No tiene que hacer nada. Gracias por cotizar."
+  },
+  "pick_lost_several_higher": {
+    "audience": "business",
+    "draft": true,
+    "segments": 3,
+    "text": "Ask Hava: El trabajo {job} fue para otro negocio esta vez. Varios negocios cotizaron; la cotización elegida fue más alta que la suya. No tiene que hacer nada. Gracias por cotizar."
+  },
+  "pick_lost_other_type": {
+    "audience": "business",
+    "draft": true,
+    "segments": 3,
+    "text": "Ask Hava: El trabajo {job} fue para otro negocio esta vez. La cotización elegida era de un tipo distinto a la suya. No tiene que hacer nada. Gracias por cotizar."
+  },
+  "job_no_longer_active": {
+    "audience": "business",
+    "draft": true,
+    "segments": 1,
+    "text": "Ask Hava: Trabajo {job}. Este trabajo ya no está activo."
+  },
+  "pick_live_reply": {
+    "audience": "business",
+    "draft": true,
+    "segments": 3,
+    "text": "Ask Hava: El propietario eligió su cotización para el trabajo {job}. Confirme y pague aquí: {link} Luego verá el nombre y la dirección del cliente en su portal."
   }
 }
