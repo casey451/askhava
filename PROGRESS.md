@@ -954,3 +954,4 @@
 - 2026-11-06T10:08:05Z runner bb5f32fa491a (actions): {}
 - 2026-11-06T10:08:16Z runner bb5f32fa491a (actions): {}
 - 2026-11-06T10:21:13Z runner 4c3306a01f78 (actions): {"T246": "MERGE_PENDING -> DONE"}
+- 2026-11-06T10:29:10Z runner 4c3306a01f78 (actions): {"T075": "QUEUED -> IN_PROGRESS"}; T075 estimated 15.9M tokens (calibrated); five-hour window has 29.1M left, week 166.0M (session_reading 2026-11-06T10:08:05Z (week)); claimed
