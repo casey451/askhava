@@ -4,8 +4,9 @@
 //!
 //! [`code_route`] says where a code goes: by text while texting is open, else by email only to an
 //! address from her own text or web-chat conversation, never one typed on the quote page (TXT-018).
-//! [`ConversationEmail`] can only be built from such an address, so [`send_email_code`] and
-//! [`check_email_code`] cannot reach a quote-page address. The email code keeps PICK-013's limits
+//! [`ConversationEmail::new`] refuses an address labelled [`EmailFrom::QuotePage`], but the label
+//! is the caller's: until `privacy` stores a source flag for each address (D-1612), the caller
+//! must say truthfully where the address came from. The email code keeps PICK-013's limits
 //! (6 digits, 10 minutes, 5 tries, 15-minute cooldown) and PICK-055's caps on the same
 //! `picks.code_attempt` rows, counted by vault contact, never the address. [`opted_out_yes`]
 //! picks with no text back, only once the PICK-016 Terms line was sent for that request.
@@ -77,7 +78,9 @@ pub fn code_route(texting: Texting, email: Option<EmailFrom>) -> CodeRoute {
 pub struct ConversationEmail(SecretString);
 
 impl ConversationEmail {
-    /// `address` when it came from her own conversation; `None` for a quote-page address (D-050).
+    /// `address` when the caller says it came from her own conversation; `None` for a quote-page
+    /// address (D-050). The source is the caller's rule, not checked here, until `privacy` stores a
+    /// source flag (D-1612).
     #[must_use]
     pub fn new(address: SecretString, from: EmailFrom) -> Option<Self> {
         (from == EmailFrom::Conversation).then_some(Self(address))
@@ -178,12 +181,14 @@ pub async fn check_email_code<V: VerifyAdapter>(
 /// CON-013).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum OptedOutYes {
-    /// The pick is stored and waits for Confirm; its confirmation goes by email and on the page.
+    /// The pick is stored and waits for Confirm; the caller must send its confirmation by email and
+    /// show it on the page (no sender exists yet, D-1612).
     Picked(Uuid),
     /// That quote already waits for Confirm: nothing new.
     Same(Uuid),
-    /// No Terms line was sent for this request: the Terms line and a one-time Pick button go to
-    /// her quote page and conversation email; nothing is picked (D-478).
+    /// No Terms line was sent for this request: nothing is picked; the caller must put the Terms
+    /// line and a one-time Pick button on her quote page and in her conversation email (D-478; no
+    /// sender exists yet, D-1612).
     TermsFirst(Uuid),
     /// Nothing to pick: more than one request, a paused one, no such quote, or none takes a pick.
     Nothing,
@@ -206,9 +211,11 @@ async fn job_view(tx: &mut PgConnection, job: Uuid, paused: bool) -> Result<JobV
 }
 
 /// PICK-030, D-050, D-478: a "<number> YES" from an opted-out homeowner's own phone, inside the
-/// caller's transaction, over her live `jobs` (each with its CON-029 pause). The text-pick rule
-/// chooses the job; a pick goes through the page pick's core (no text queued; stored with channel
-/// `page`, D-1614). `None` when the words are not a text pick.
+/// caller's transaction, over her live `jobs` (each with its CON-029 pause, which the caller must
+/// read in the same transaction with `intake::api::paused_under_lock`, under the homeowner lock,
+/// D-1605). The text-pick rule chooses the job; a pick goes through the page pick's core with that
+/// job's own pause (no text queued; stored with channel `page`, D-1614). `None` when the words are
+/// not a text pick.
 ///
 /// # Errors
 ///
@@ -230,7 +237,8 @@ pub async fn opted_out_yes(
     let done = match plan_text_pick(read, &views) {
         Plan::Terms(job) => OptedOutYes::TermsFirst(job),
         Plan::Pick(job) | Plan::Replace(job) | Plan::Same(job) => {
-            match page_pick(tx, (job, false), read.quote, actor, at).await? {
+            let paused = jobs.iter().any(|&(j, p)| j == job && p);
+            match page_pick(tx, (job, paused), read.quote, actor, at).await? {
                 PagePick::Picked(pick) => OptedOutYes::Picked(pick),
                 PagePick::Same(pick) => OptedOutYes::Same(pick),
                 PagePick::Taken => OptedOutYes::Nothing,

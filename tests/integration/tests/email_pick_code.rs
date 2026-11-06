@@ -19,7 +19,7 @@ use askhava_picks::api::rules::SendRefused;
 use askhava_picks::api::{
     CodeCheck, CodeRoute, CodeSent, ConversationEmail, EmailFrom, OptedOutYes, Texting,
     check_email_code, code_route, opted_out_yes, record_terms_line, send_email_code,
-    terms_line_sent,
+    terms_line_sent, waiting_quote,
 };
 use askhava_privacy::api::{NewContact, Vault, store_contact};
 use base64::Engine as _;
@@ -255,6 +255,7 @@ async fn td_pick_13_two_yes_from_an_opted_out_phone_still_picks(pool: PgPool) {
     let second = opted_out_yes(&mut db, "2 yes", &[(job, false)], by).await;
     assert!(matches!(second.expect("yes"), Some(OptedOutYes::Picked(_))));
     assert_eq!(picks(&mut db, job).await, 1);
+    assert_eq!(waiting_quote(&mut db, job).await.expect("waiting"), Some(2));
     let status = current(&mut db, job).await.expect("job").status;
     assert_eq!(status.code(), "awaiting_confirm");
     assert_eq!(outbox(&mut db).await, before);
