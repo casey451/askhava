@@ -980,3 +980,4 @@
 - 2026-11-06T13:18:28Z runner b0e3a7d9b936 (actions): {}
 - 2026-11-06T13:18:40Z runner 25de4f795882 (actions): {}
 - 2026-11-06T13:29:39Z runner 25de4f795882 (actions): {"T250": "QUEUED -> IN_PROGRESS"}; T250 estimated 1.8M tokens (calibrated); five-hour window has 24.1M left, week 162.0M (session_reading 2026-11-06T13:18:27Z (week)); claimed
+- 2026-11-06T13:31:00Z runner 25de4f795882 (actions): {"T250": "IN_PROGRESS -> QUEUED"}

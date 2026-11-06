@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-06T13:29:39Z by runner 25de4f795882 (actions).
+Updated 2026-11-06T13:31:00Z by runner 25de4f795882 (actions).
 
-**Building: T250 in progress since 13:21Z; 121 of 238 done; week 16% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 13:30Z; 121 of 238 done; week 16% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 121 of 238 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T250 claimed 13:21Z, lease until 16:21Z
+- **Lane:** idle since 13:30Z (no task in progress)
 - **Week:** 16% used, 162.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:18Z, 10 min before this update
+- **Last run:** 13:29Z, 1 min before this update
 - **Keeper:** last ran 13:18Z, next wake 13:38Z
 
 ## Needs attention
@@ -17,7 +17,8 @@ Updated 2026-11-06T13:29:39Z by runner 25de4f795882 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T250 | core: narrow the default privileges in every schema and prov | QUEUED | 1 | 26 min | 13:18Z | T250: smoke red. TD-SEC-10 (architecture_migrations.rs) rejects migrations/0110 because a core-headed migration names 12 |
+| T250 | core: narrow the default privileges in every schema and prov | QUEUED | 2 | 9 min | 13:30Z | T250 blocked: migration 0110 names 12 other modules' schemas; TD-SEC-10 (architecture_migrations.rs, protected) rejects  |
+| T250 | core: narrow the default privileges in every schema and prov | QUEUED | 1 | 26 min | 13:18Z |  |
 | T095 | picks: pick code by email when texting is off; '2 YES' from  | done | 1 | 36 min | 12:39Z |  |
 | T075 | Stage 3 cleanup: dead code, duplicates, docs up to date | proof_missing | 1 | 45 min | 11:07Z |  |
 | T246 | picks, portals and server: the page pick end to end (one pic | done | 1 | 66 min | 10:04Z |  |
@@ -90,7 +91,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T250 (lease until 2026-11-06T16:21:22Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T250", "at": "2026-11-06T13:18:12Z", "cache_creation_input_tokens": 292714, "cache_read_input_tokens": 10789642, "input_tokens": 279, "output_tokens": 106084}
+- {"task": "T250", "at": "2026-11-06T13:30:59Z", "input_tokens": 28, "cache_creation_input_tokens": 58794, "output_tokens": 8662, "cache_read_input_tokens": 387175}
