@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-06T21:47:43Z by runner 14dd8e5c35ec (actions).
+Updated 2026-11-06T21:47:55Z by runner 14dd8e5c35ec (actions).
 
 **Idle since 21:42Z; 126 of 239 done; week 25% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-06T21:47:43Z by runner 14dd8e5c35ec (actions).
 - **Lane:** idle since 21:42Z (no task in progress)
 - **Week:** 25% used, 146.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 21:47Z, 0 min before this update
-- **Keeper:** last ran 21:42Z, next wake 22:02Z
+- **Keeper:** last ran 21:47Z, next wake 22:07Z
 
 ## Needs attention
 - PLAN GAP T080 (since 2026-11-06T21:04:42Z, no attempt used; a plan change fixes it): T080: dependency T079 is DONE but its owned file app/calls/src/lifecycle.rs is not on main; T080: dependency T079 is DONE but its owned file tests/integration/tests/line_lifecycle.rs is not on main
