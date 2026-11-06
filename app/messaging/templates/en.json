@@ -398,5 +398,15 @@
     "audience": "business",
     "segments": 2,
     "text": "Ask Hava: The homeowner picked your quote for job {job}. Confirm here: {link} Then you'll see their first name and address in your portal."
+  },
+  "whos_calling": {
+    "audience": "homeowner",
+    "segments": 2,
+    "text": "Ask Hava: {business} accepted request {job}. They may call you from {number}. If you miss it, call them back on this number. It works for 30 days. Ask for the price and any changes in writing before work starts. Don't pay in full up front."
+  },
+  "whos_calling_email": {
+    "audience": "homeowner",
+    "segments": 2,
+    "text": "Ask Hava: {business} accepted request {job}. They'll email you at the address you chose. Ask for the price and any changes in writing before work starts. Don't pay in full up front."
   }
 }

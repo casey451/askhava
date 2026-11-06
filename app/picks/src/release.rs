@@ -19,10 +19,19 @@
 //! ([`release_notice`]), or one High [`RELEASE_NO_RECIPIENT_ALERT`] when the business has none; no
 //! homeowner detail and no call window goes in any notice. The [`ReleaseView`] goes back to the
 //! caller once and is stored nowhere; how the portal shows it later is not built (D-1564).
+//!
+//! T077: once shown, [`release`] asks `calls::api::assign_number` for the job's masked line and
+//! queues the who's-calling text through `calls::api::send_whos_calling`, at once on an emergency
+//! job and inside the quiet-hours window otherwise (CALL-001, PICK-022, TXT-027, QH-004, D-491).
+//! An emergency job with no address is never shown, so no line opens before the address is in
+//! (TD-CALL-12); a released-before pick opens nothing again (D-1688).
 
+use askhava_adapters::api::MaskedPool;
 use askhava_businesses::api::{NoticePurpose, notice_addresses};
+use askhava_calls::api::{Connected, WhosCalling, assign_number, send_whos_calling};
 use askhava_core::api::{NewTask, enqueue};
 use askhava_jobs::api::{current, job_number};
+use askhava_messaging::api::Language;
 use askhava_ops::api::{NewAlert, Severity, raise_alert};
 use askhava_privacy::api::{
     ContactDetails, Field, ReleaseBasis, ReleaseProof, Vault, read_for_release,
@@ -173,6 +182,78 @@ pub fn release_notice(business: Uuid, pick: Uuid, to: &[Uuid], job: i64) -> Valu
 /// already audited or alerted) or [`PicksError::Job`]. A regular job's vault read fails after its
 /// claim committed, so the release stands and a later proof gets [`Released::Already`].
 pub async fn release(
+    pool: &PgPool,
+    keys: &ReleaseKeys<'_>,
+    (proof, email_chosen): (ReleaseProof, bool),
+    at: Timestamp,
+) -> Result<Released, PicksError> {
+    let (pick, contact, basis) = (proof.pick_id(), proof.contact_id(), proof.basis());
+    let released = show(pool, keys.vault, (proof, email_chosen), at).await?;
+    if let Released::Shown(_) = released {
+        let mut conn = pool.acquire().await.map_err(|_| PicksError::Database)?;
+        let target = models::release_target(&mut conn, pick, release_status(basis)).await?;
+        let target = target.ok_or(PicksError::Database)?;
+        connect(&mut conn, keys, (&target, contact, email_chosen), at).await?;
+    }
+    Ok(released)
+}
+
+/// The vault and keys [`release`] needs: the vault, the masked-number pool, the outbox key secret
+/// (`ID_SECRET`), and for the who's-calling text the business's name and her language with the
+/// Spanish setting (TXT-027, TXT-039).
+pub struct ReleaseKeys<'a> {
+    /// The contact vault.
+    pub vault: &'a Vault,
+    /// The masked-number pool from settings (CALL-017).
+    pub masked: &'a MaskedPool,
+    /// The outbox key secret.
+    pub outbox: &'a SecretString,
+    /// The picked business's name, as the who's-calling text names it.
+    pub business_name: &'a str,
+    /// Her language and whether Spanish conversations are on.
+    pub language: (Language, bool),
+}
+
+/// Opens the released pick's masked line and queues the who's-calling text (CALL-001, TXT-027,
+/// D-491, D-1688): outside any transaction, since the text's window reads her number.
+async fn connect(
+    conn: &mut PgConnection,
+    keys: &ReleaseKeys<'_>,
+    (target, contact, email_chosen): (&ReleaseTarget, Uuid, bool),
+    at: Timestamp,
+) -> Result<(), PicksError> {
+    let row = current(conn, target.job)
+        .await
+        .map_err(|_| PicksError::Job)?;
+    let number = job_number(conn, target.job)
+        .await
+        .map_err(|_| PicksError::Job)?;
+    let job = Connected {
+        job: target.job,
+        homeowner: contact,
+        business: target.business,
+    };
+    let line = assign_number(conn, keys.masked, job, at)
+        .await
+        .map_err(|_| PicksError::Database)?;
+    let text = WhosCalling {
+        number: line.number().as_str().to_owned(),
+        job: target.job,
+        job_number: number,
+        contact,
+        business: keys.business_name.to_owned(),
+        emergency: row.emergency,
+        email_chosen,
+        language: keys.language,
+    };
+    send_whos_calling(conn, (keys.vault, keys.outbox), &text, at)
+        .await
+        .map(|_| ())
+        .map_err(|_| PicksError::Database)
+}
+
+/// The T069 release: the checks, the claim, the vault read and the view (see the module docs).
+async fn show(
     pool: &PgPool,
     vault: &Vault,
     (proof, email_chosen): (ReleaseProof, bool),

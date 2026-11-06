@@ -1759,3 +1759,9 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **The "ran out of numbers" alert.** When every masked number is in use, you get one High alert and jobs start sharing numbers with a PIN. If you mark that alert resolved but have not bought more numbers, you will not get another one while the shortage lasts; the next alert comes only after a job gets a free number again and a later job has to share. So treat "resolved" as "I bought more numbers", not "I saw it".
 - **Safety calls to numbers we can't text.** The safety call checks the same list texting uses. A US number whose area code is not in our time-zone table is never texted, so the safety call skips it too. Instead of skipping quietly it now raises a High alert to you, and your emergency alert still fires. Whether the call should dial such a number anyway is your call; until then it does not (the safety call switch is off at launch).
 - **Nothing needs you now.**
+
+## Masked calls: PINs and the who's-calling text (T077, D-1684 to D-1688, November 6)
+
+- **Who's-calling text.** Once a business is released, the homeowner gets "Ask Hava: <Business> accepted request <n> and may call you from <number>. If you miss it, call them back on this number. It works for 30 days. ..." At night it waits for 8 a.m. unless she chose emergency.
+- **Daily PIN limit not stored yet.** The rule (3 tries a call, 6 a day per number) is built, but the daily count needs a table a later calls task adds; until masked calls go live this changes nothing.
+- **Nothing needs you now.**

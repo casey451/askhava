@@ -126,6 +126,23 @@ where
     Ok(Some(JobTextKeys::new(link, id_secret.clone(), vault)))
 }
 
+/// The held who's-calling text's keys (TXT-027, D-1687): the vault, built as [`job_text_keys`]
+/// builds it, and the outbox key secret `ASKHAVA_ID_SECRET`; `None` without vault keys.
+///
+/// # Errors
+///
+/// As [`job_text_keys`].
+pub fn whos_calling_keys<I>(
+    settings: &Settings,
+    id_secret: &SecretString,
+    pairs: I,
+) -> io::Result<Option<(Vault, SecretString)>>
+where
+    I: IntoIterator<Item = (String, String)>,
+{
+    Ok(vault_from(settings, pairs)?.map(|vault| (vault, id_secret.clone())))
+}
+
 /// The published homeowner Terms a page pick accepts: the exact text of
 /// `docs/legal/homeowner-terms.md`, compiled in, whose second line names its version (TERMS-016).
 const HOMEOWNER_TERMS: &str = include_str!("../../../docs/legal/homeowner-terms.md");
@@ -279,13 +296,15 @@ where
 /// window's end (PICK-019); `payments` the pause watch that stops and resumes
 /// the payment timers with the charging pause (FEE-038, D-1427); and, with
 /// `texts` ([`job_text_keys`]), the homeowner job texts `jobs` queues (JOB-010 to JOB-012,
-/// TXT-042, D-1030 (A)). It takes the release mint first, through [`release_minter`], so a second
+/// TXT-042, D-1030 (A)); and, with `calls` ([`whos_calling_keys`]), the held who's-calling
+/// text (TXT-027, D-1687). It takes the release mint first, through [`release_minter`], so a second
 /// minter stops the start rather than a payment (SEC-030, D-488).
 #[must_use]
 pub fn register_handlers<S>(
     stream: Arc<offdb_stream::OffDbStream<S>>,
     texts: Option<Arc<JobTextKeys>>,
     confirm: askhava_picks::api::ConfirmSettings,
+    calls: Option<Arc<(Vault, SecretString)>>,
 ) -> Registry
 where
     S: StorageAdapter + Send + Sync + 'static,
@@ -327,6 +346,11 @@ where
             askhava_payments::api::run_pause_watch(&pool, jiff::Timestamp::now()).await
         },
     );
+    if let Some(keys) = calls {
+        registry.register(askhava_calls::api::WHOS_CALLING_KIND, move |pool, task| {
+            askhava_calls::api::run_whos_calling(pool, Arc::clone(&keys), task)
+        });
+    }
     if let Some(keys) = texts {
         registry.register(askhava_jobs::api::TEXT_KIND, move |pool, task| {
             askhava_intake::api::run_job_text(pool, Arc::clone(&keys), task)
@@ -504,11 +528,11 @@ mod tests {
             .map(Arc::new);
         let with = format!(
             "{:?}",
-            register_handlers(stream(), texts, ConfirmSettings::default())
+            register_handlers(stream(), texts, ConfirmSettings::default(), None)
         );
         let without = format!(
             "{:?}",
-            register_handlers(stream(), None, ConfirmSettings::default())
+            register_handlers(stream(), None, ConfirmSettings::default(), None)
         );
         assert!(with.contains(&format!("{TEXT_KIND:?}")), "{with}");
         assert!(!without.contains(&format!("{TEXT_KIND:?}")), "{without}");

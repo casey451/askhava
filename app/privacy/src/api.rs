@@ -23,6 +23,7 @@ pub use crate::models::{
     ContactDetails, Field, GRANTS, Grant, IndexPurpose, NewContact, OwnerPurpose, Purpose, Reader,
     VaultError, grant_for, normalize_phone,
 };
+pub use crate::readback_reader::{Readback, read_for_readback};
 pub use crate::reader::{
     EmailAuth, EmailContext, Flags, Inbound, InboundEmail, InboundError, InboundWords, SenderIndex,
     SignedDelivery, Standing, WEBHOOK_TOLERANCE_SECS, email_index, read_inbound,

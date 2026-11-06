@@ -10,4 +10,5 @@
 
 pub mod api;
 mod models;
+mod routing;
 mod service;

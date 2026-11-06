@@ -9,6 +9,7 @@ publish.workspace = true
 [dependencies]
 askhava-adapters = { workspace = true }
 askhava-businesses = { workspace = true }
+askhava-calls = { workspace = true }
 askhava-core = { workspace = true }
 askhava-jobs = { workspace = true }
 askhava-licensing = { workspace = true }
