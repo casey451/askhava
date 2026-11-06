@@ -1,14 +1,15 @@
 //! TD-FEE-16 (the Stage 3 run: 1,000 simulated jobs; FEE-028, FEE-029, FEE-030, FEE-032;
-//! `sources/02_build_plan/Build_Plan.md:234`, D-1410): on a fresh database, 1,000 paid jobs over 20
+//! `sources/02_build_plan/Build_Plan.md:234`, D-1577): on a fresh database, 1,000 paid jobs over 20
 //! businesses get a seeded random mix of $25 / $75 / $199 introduction fees by job size, a charge
 //! recorded at Confirm or left unknown, then a refund, a dispute (and a refund it blocks) or a
 //! closed job. Every money step goes through `payments::api`; two nightly reconciles later the
 //! ledger matches Stripe to the cent, every unknown charge is auto-matched or (on a closed job)
 //! auto-refunded once, and the money view and statements are folds of the ledger rows alone.
 //!
-//! Stripe is a stateful fake in stripe-mock's shapes that replays a repeated idempotency key;
-//! the stripe-mock round trip is T132's (D-1410), the append-only case `ledger_append_only.rs`
-//! and the only-`payments`-imports-the-adapter case `architecture.rs`. Fake IDs only.
+//! Stripe is a stateful fake in stripe-mock's shapes that replays a repeated idempotency key
+//! (D-1577); the stripe-mock round trip for refunds and the reconcile charge list is T132's, the
+//! append-only case `ledger_append_only.rs` and the only-`payments`-imports-the-adapter case
+//! `architecture.rs`. Fake IDs only.
 
 use std::collections::HashMap;
 use std::sync::Mutex;
@@ -223,15 +224,19 @@ async fn ledger_rows(pool: &PgPool) -> Vec<(String, i64)> {
     sqlx::query_as(sql).fetch_all(pool).await.expect("ledger")
 }
 
-fn total(jobs: &[Job], fates: &[Fate]) -> i64 {
-    jobs.iter()
+const ALL: [Fate; 4] = [Fate::Kept, Fate::Refunded, Fate::Disputed, Fate::Closed];
+
+/// The cents of the jobs whose fate is one of `fates`.
+fn total<'a>(jobs: impl IntoIterator<Item = &'a Job>, fates: &[Fate]) -> i64 {
+    jobs.into_iter()
         .filter(|j| fates.contains(&j.fate))
         .map(|j| j.cents)
         .sum()
 }
 
 /// FEE-030: the money view is the fold of the ledger rows alone and equals Stripe's gross to the
-/// cent with every processing fee; the 20 statements together hold every ledger line once.
+/// cent with every processing fee; each of the 20 statements has its own jobs' charges, refunds,
+/// disputes and processing fees, and together they hold every ledger line once.
 async fn check_views(pool: &PgPool, jobs: &[Job], expected: MoneyTotals) {
     let rows = ledger_rows(pool).await;
     let kind = |c: &str| {
@@ -257,12 +262,16 @@ async fn check_views(pool: &PgPool, jobs: &[Job], expected: MoneyTotals) {
         let statement = business_statement(pool, id, window)
             .await
             .expect("statement");
-        let own = jobs.iter().filter(|j| j.business == id);
-        assert_eq!(
-            statement.totals.charges,
-            own.map(|j| j.cents).sum::<i64>(),
-            "business {b}"
+        let own: Vec<&Job> = jobs.iter().filter(|j| j.business == id).collect();
+        let t = statement.totals;
+        let want = (
+            total(own.iter().copied(), &ALL),
+            total(own.iter().copied(), &[Fate::Refunded, Fate::Closed]),
+            total(own.iter().copied(), &[Fate::Disputed]),
+            own.iter().map(|j| j.fee_cents).sum::<i64>(),
         );
+        let got = (t.charges, t.refunds, t.disputes, t.processing_fees);
+        assert_eq!(got, want, "business {b}: charges, refunds, disputes, fees");
         lines += statement.lines.len();
     }
     assert_eq!(lines, rows.len(), "every ledger line is on one statement");
@@ -303,10 +312,7 @@ async fn td_fee_16_ledger_matches_stripe_on_1000_jobs(pool: PgPool) {
     );
     assert_eq!((second.auto_matched, second.refunded), (0, 0));
     let expected = MoneyTotals {
-        charged: total(
-            &jobs,
-            &[Fate::Kept, Fate::Refunded, Fate::Disputed, Fate::Closed],
-        ),
+        charged: total(&jobs, &ALL),
         refunded: total(&jobs, &[Fate::Refunded, Fate::Closed]),
         disputed: total(&jobs, &[Fate::Disputed]),
     };
