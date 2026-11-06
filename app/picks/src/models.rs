@@ -6,6 +6,7 @@
 //! never the number (PRIV-002); `picks.verify_cap_day` the days the global cap was hit (one High
 //! alert each); `picks.terms_line` each queued text that ends with the Terms line (PICK-016).
 //! T063 adds locking a waiting pick and expiring it at the Confirm window's end (PICK-019).
+//! T069 adds `picks.release` and `picks.address_wait` (PICK-022, INT-029).
 
 use jiff::Timestamp;
 use jiff_sqlx::ToSqlx;
@@ -298,6 +299,60 @@ pub(crate) async fn expire_pick(
         PickStatus::Expired.code(),
         at.to_sqlx() as _,
         PickStatus::AwaitingConfirm.code(),
+    )
+    .execute(tx)
+    .await)?;
+    Ok(())
+}
+
+/// Pick `id` for a release: job, business, whether it ended and whether it was released (PICK-022).
+pub(crate) async fn release_target(
+    db_conn: &mut PgConnection,
+    id: Uuid,
+) -> Result<Option<(Uuid, Uuid, bool, bool)>, PicksError> {
+    let row = db(sqlx::query!(
+        r#"SELECT p.job_id, p.business_id, p.ended_at IS NOT NULL AS "ended!",
+             EXISTS (SELECT 1 FROM picks.release r WHERE r.pick_id = p.id) AS "released!"
+           FROM picks.pick p WHERE p.id = $1"#,
+        id,
+    )
+    .fetch_optional(db_conn)
+    .await)?;
+    Ok(row.map(|r| (r.job_id, r.business_id, r.ended, r.released)))
+}
+
+/// Records pick `id`'s one release; false when another call already did (PICK-022, D-365).
+pub(crate) async fn insert_release(
+    tx: &mut PgConnection,
+    (id, job, business): (Uuid, Uuid, Uuid),
+    basis: &str,
+    at: Timestamp,
+) -> Result<bool, PicksError> {
+    let done = db(sqlx::query!(
+        "INSERT INTO picks.release (pick_id, job_id, business_id, basis, released_at) \
+         VALUES ($1, $2, $3, $4, $5) ON CONFLICT (pick_id) DO NOTHING",
+        id,
+        job,
+        business,
+        basis,
+        at.to_sqlx() as _,
+    )
+    .execute(tx)
+    .await)?;
+    Ok(done.rows_affected() == 1)
+}
+
+/// Records an emergency acceptance that came before the address (INT-029, TD-INT-34).
+pub(crate) async fn insert_address_wait(
+    tx: &mut PgConnection,
+    (id, job): (Uuid, Uuid),
+    at: Timestamp,
+) -> Result<(), PicksError> {
+    db(sqlx::query!(
+        "INSERT INTO picks.address_wait (pick_id, job_id, asked_at) VALUES ($1, $2, $3)",
+        id,
+        job,
+        at.to_sqlx() as _,
     )
     .execute(tx)
     .await)?;

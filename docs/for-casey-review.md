@@ -1707,3 +1707,11 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **Just-under-a-tier flag (FEE-033).** The rule is built: at least 3 of a business's last 10 quotes within 5% under $500 or $1,500 flags it for your monthly review, with no automatic action and nothing sent to the business. It is not connected yet: the fee basis of each pick isn't stored, and the owner-portal line, its two settings and the step that runs it are a later task's. Until then nothing is flagged.
 - **Not tested here.** That Stripe's own receipt also goes out is a Stripe Dashboard setting, so this build checks only that our receipt says it comes; the Stripe test is a later task's (T132).
 - **You can veto** the "one alert, no email" choice for a business with no billing contact. Reply on an owner issue.
+
+## Sharing the homeowner's details after a paid or free pick (T069, D-1562, D-1563, November 6)
+
+- **What a business gets.** Only after the payment clears, or a $0 fee is recorded (free first win, repeat customer, fee-free job type), the business sees the homeowner's first name and job address in its signed-in portal, plus her email only if she chose email contact. It happens once, however many times the payment news arrives. Her phone number is never read for this and never shown.
+- **The email and text.** The email says only "Ask Hava: Job <n> is confirmed. Sign in to see the homeowner's details." with a sign-in link. A business that chose text gets "Ask Hava: Job <n> is confirmed. The details are at askhava.com/business." No name, address or email is in either.
+- **Emergency jobs without an address.** If the business accepts before she has sent her address, nothing is shared and the system asks her for it again.
+- **Not connected yet (later tasks).** Nothing calls the release yet (the payment webhook wiring), the "ask her again" text has no sender yet (intake), and sharing once her address arrives needs the payment check run again. The release email waits for the business email sender.
+- **Testing limit.** The safety rules are tested, but no test here can run the full release against the database, because tests are not allowed to make the payment proof. A later setup task has to decide how to test it.

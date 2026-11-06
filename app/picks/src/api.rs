@@ -19,6 +19,10 @@
 //! T190: [`hold`] and [`hold_allowed`] (PICK-043), [`away_until`], [`away_for`] and
 //! [`window_start`] (BIZ-034), [`emergency_plan`] and [`emergency_fix_by`] (PICK-044), and
 //! [`read_time_word`] for HOLD, ESPERA, AWAY and AUSENTE texts, with [`WindowRules`] lengths.
+//!
+//! T069: [`release`] shows a proven pick's details in the portal once and queues the
+//! [`release_notice`] (PICK-022 to PICK-024, PRIV-005, BIZ-014); [`plan_release`] is its pure rule
+//! (INT-029).
 
 pub use crate::confirm::{
     BusinessWord, ConfirmReply, ConfirmSettings, EXPIRED_TEMPLATE, FEE_REPLY_TEMPLATE, FeeBasis,
@@ -35,6 +39,11 @@ pub use crate::models::PicksError;
 pub use crate::money_notices::{
     BUSINESS_NOTICE_KIND, CARD_APPROVAL_TEMPLATE, CARD_FIX_TEMPLATE, RECEIPT_NO_RECIPIENT_ALERT,
     run_card_fix_notice, run_receipt_notice,
+};
+pub use crate::release::{
+    ADDRESS_NEEDED_KIND, EMAIL_CHOSEN_FIELDS, RELEASE_FIELDS, RELEASE_TEMPLATE,
+    RELEASE_TEXT_TEMPLATE, ReleaseFacts, ReleaseStep, ReleaseView, Released, plan_release, release,
+    release_notice,
 };
 pub use crate::service::{
     CONFIRMED_TEMPLATE, CodeCheck, CodeSent, CodeTo, DONE_TEMPLATE, NO_QUOTE_TEMPLATE,

@@ -10,13 +10,16 @@
 //! the license checks at the pick and at Confirm, the recurring fee line, the business's YES and
 //! CONFIRM reply and the pick notice to the owner and every "Confirm and billing" member (PICK-019,
 //! PICK-020, PICK-033 to PICK-035, PICK-037). T190 added the pure HOLD, Away and emergency-window
-//! rules (PICK-043, PICK-044, BIZ-034). Other crates reach it only through [`api`].
+//! rules (PICK-043, PICK-044, BIZ-034). T069 added the release: details to the signed-in portal
+//! only on a `ReleaseProof`, never the phone (PICK-022 to PICK-024, PRIV-005, PRIV-020, BIZ-014).
+//! Other crates reach it only through [`api`].
 
 pub mod api;
 mod confirm;
 mod handlers;
 mod models;
 mod money_notices;
+mod release;
 mod rules;
 mod service;
 mod status;

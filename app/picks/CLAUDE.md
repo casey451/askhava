@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The layer-6 crate that takes the homeowner's pick and carries it to the business's Confirm, the charge and the release (`docs/architecture.md` section 3). T054 built the first part: the page pick's 6-digit Twilio Verify code (10 minutes, 5 tries, a 15-minute cooldown, the PICK-055 send caps) and the "<number> YES" text pick, with the Terms line first, the which-request question, a second YES replacing a waiting pick, the status reply and the CANCEL pause's withdrawal (D-1243 to D-1247). T063 added the Confirm window, the license checks at the pick and at Confirm, the recurring fee line, the YES and CONFIRM reply and the pick notice (D-1500 to D-1504). Not here yet: the page pick itself and the review step (T055), the callers of `check_at_pick`, `check_at_confirm` and `notice_sent` (D-1502, D-1503), expiring a pick when `jobs`' backstop fires with no later send, `all_windows_ended` after an expiry and the PICK-046 notice (D-1503), payments hand-off and release.
+The layer-6 crate that takes the homeowner's pick and carries it to the business's Confirm, the charge and the release (`docs/architecture.md` section 3). T054 built the first part: the page pick's 6-digit Twilio Verify code (10 minutes, 5 tries, a 15-minute cooldown, the PICK-055 send caps) and the "<number> YES" text pick, with the Terms line first, the which-request question, a second YES replacing a waiting pick, the status reply and the CANCEL pause's withdrawal (D-1243 to D-1247). T063 added the Confirm window, the license checks at the pick and at Confirm, the recurring fee line, the YES and CONFIRM reply and the pick notice (D-1500 to D-1504). Not here yet: the page pick itself and the review step (T055), the callers of `check_at_pick`, `check_at_confirm` and `notice_sent` (D-1502, D-1503), expiring a pick when `jobs`' backstop fires with no later send, `all_windows_ended` after an expiry and the PICK-046 notice (D-1503), payments hand-off and the release's callers. T069 added the release itself (D-1562).
 
 ## What it owns
 
@@ -16,6 +16,7 @@ The layer-6 crate that takes the homeowner's pick and carries it to the business
 - `src/confirm.rs` (T063, D-1500, D-1501, D-1503): `ConfirmSettings` (`from_pairs` reads `WINDOW_KEY`, `ASKHAVA_PICK_CONFIRM_WINDOW_MINUTES`), `confirm_by`, `LicenseAtPick`, `license_at_pick`, `check_at_pick`, `Refusal`, `StoredFacts`, `check_at_confirm`, `FeeBasis`, `fee_line`, `BusinessWord`, `read_business_word`, `ConfirmReply`, `business_reply`; template IDs `PICK_NOTICE_TEMPLATE`, `PICK_NOTICE_EMERGENCY_TEMPLATE`, `FEE_REPLY_TEMPLATE`, `EXPIRED_TEMPLATE` (keys `pick_notice`, `pick_notice_emergency`, `pick_fee_reply`, `pick_expired` in en and es).
 - `src/confirm.rs` (T190, D-1522 to D-1526): `WindowRules` (HOLD 120 business minutes, Away up to 240 ahead, emergency 60 and 30 clock minutes), `HoldAsk`, `TimeRefusal`, `hold_allowed`, `hold`, `away_until`, `away_for`, `window_start`, `NightLine`, `EmergencyPlan` (`open_at`), `emergency_plan`, `emergency_fix_by`, `TimeWord`, `read_time_word`. Pure; no caller yet.
 - `src/handlers.rs` (T063): `run_pick_notice` (on `PICK_MADE_KIND`, with the worker's `ConfirmSettings`), `notice_sent`, `CONFIRM_ENDS_KIND` (`picks.confirm_ends`) and `run_confirm_ends`; both handlers registered in `server::register_handlers`.
+- `src/release.rs` (T069, D-1562): `release` (`Released`: `Shown(ReleaseView)`, `Already`, `WaitingForAddress`, `MovedOn`), the pure `plan_release` (`ReleaseFacts`, `ReleaseStep`), `ReleaseView` (`from_details`, `first_name`, `address`, `email`; no phone), `release_notice`, `RELEASE_FIELDS`, `EMAIL_CHOSEN_FIELDS`, `RELEASE_TEMPLATE`, `RELEASE_TEXT_TEMPLATE`, `ADDRESS_NEEDED_KIND` (`picks.address_needed`). Migration `0106_picks_release.sql`: `picks.release`, `picks.address_wait` (append-only). Templates `release_notice`, `release_text` (en, es).
 - `src/api.rs`: the public surface; `api::rules` re-exports the pure rules.
 
 ## Rules it enforces
@@ -39,6 +40,7 @@ The layer-6 crate that takes the homeowner's pick and carries it to the business
 - BIZ-034, D-285: `away_until`/`away_for` allow after now and at most `away_max_minutes` business minutes ahead (AWAY 0 refused at any hour, D-1526), owner or "Confirm and billing" only; `window_start` delays only a non-emergency pick.
 - PICK-044, D-270, D-346: `emergency_plan` gives 60 clock minutes from the send at any hour, a reminder at 30; without the after-hours tick a night pick's notice waits for 8 a.m., and a day pick whose window runs past 8 p.m. warns and holds the reminder to 8 a.m., or drops it (`reminder_at: None`) when 8 a.m. is at or after `confirm_by`; `EmergencyPlan::open_at` is open from the send, strictly before `confirm_by`; `emergency_fix_by` is 60 clock minutes.
 - PICK-037, D-491: `run_pick_notice` sends one notice per pick to `notice_addresses(PicksAndRelease)` only.
+- PICK-022 to PICK-024, PRIV-005, PRIV-020, BIZ-014, INT-029, D-1562: `release` runs only on a `ReleaseProof` (a verified paid charge or a $0 fee decision, minted by `payments`), once per pick (`picks.release` primary key); an ended pick releases nothing; it opens name and address, the email only when the homeowner chose email contact, never the phone; an emergency job with no address releases nothing, stores a `picks.address_wait` row and raises `picks.address_needed` once per pick; the notice to `notice_addresses(PicksAndRelease)` carries the job number and templates only, no homeowner detail and no call window.
 
 ## Never break
 
@@ -50,6 +52,8 @@ The layer-6 crate that takes the homeowner's pick and carries it to the business
 - CANCEL withdraws the waiting pick, keeps the status, blocks new picks: `text_pick.rs::td_con_12_*`.
 
 - The window, its stale-timer fence, a repeated send restarting nothing, a held notice expiring a dead pick and the license checks: `tests/integration/tests/confirm_window.rs::td_pick_09_*`; the notice's recipients: `td_pick_15_*`; pure cases and the spec templates: `src/tests/confirm.rs`.
+
+- Details only on a proof, once, never the phone, no detail in the notice: `src/tests/prop_release_only_paid.rs`, `tests/security/tests/no_phone_released.rs`. Never add `Field::Phone` to a release field list or a phone field to `ReleaseView`.
 
 ## How to change
 
@@ -69,3 +73,4 @@ The layer-6 crate that takes the homeowner's pick and carries it to the business
 - `tests/integration/tests/confirm_window.rs` (TD-PICK-09, TD-PICK-15, TD-JOB-03): `cargo test -p askhava-integration --test confirm_window`.
 - `tests/integration/tests/charge_attempts.rs::td_fee_24_an_emergency_decline_at_22_00_has_60_clock_minutes` (FEE-020 notice): `cargo test -p askhava-integration --test charge_attempts`.
 - `tests/integration/tests/receipts.rs` (TD-FEE-17, TD-FEE-34): `cargo test -p askhava-integration --test receipts`.
+- `src/tests/prop_release_only_paid.rs` (TD-PICK-10, TD-INT-34 pure cases): `cargo test -p askhava-picks tests::prop_release_only_paid`; `tests/security/tests/no_phone_released.rs` (TD-PICK-10 grant, code, template and append-only cases): `cargo test -p askhava-security --test no_phone_released`. The database path with a real proof is untested (no test crate may mint one, D-1563).
