@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-05T23:57:01Z by runner 453e0aefe77c (actions).
+Updated 2026-11-06T00:38:40Z by runner 75410f1f4bc6 (actions).
 
 **Building: T067 in progress since 23:49Z; 108 of 238 done; week 8% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,11 @@ Updated 2026-11-05T23:57:01Z by runner 453e0aefe77c (actions).
 - **Stage:** stage 3; stage proofs recorded: 1, 2
 - **Lane:** lane 1: T067 claimed 23:49Z, lease until 02:49Z
 - **Week:** 8% used, 178.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:39Z, 17 min before this update
+- **Last run:** 23:57Z, 41 min before this update
 - **Keeper:** last ran 23:39Z, next wake 23:59Z
 
 ## Needs attention
-- Strict plan check red: 8 problem(s) on tasks still to run (+5 on DONE tasks); first: T247: stored context_pct 20% but it measures 24%; regenerate
+- Strict plan check red: 9 problem(s) on tasks still to run (+8 on DONE tasks); first: T247: stored context_pct 20% but it measures 25%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
