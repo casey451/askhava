@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-06T17:32:53Z by runner ea638f8421bb (actions).
+Updated 2026-11-06T17:33:07Z by runner ea638f8421bb (actions).
 
-**Building: T076 in progress since 16:51Z; 122 of 239 done; week 22% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 17:32Z; 122 of 239 done; week 22% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 122 of 239 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T076 claimed 16:51Z, lease until 19:51Z
+- **Lane:** idle since 17:32Z (no task in progress)
 - **Week:** 22% used, 150.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 17:00Z, 32 min before this update
 - **Keeper:** last ran 16:39Z, next wake 16:59Z
@@ -17,6 +17,7 @@ Updated 2026-11-06T17:32:53Z by runner ea638f8421bb (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T076 | calls: masked numbers from a fixed pool, PIN sharing when ex | MERGE_PENDING | 1 | 41 min | 17:32Z |  |
 | T250 | core: narrow the default privileges in every schema and prov | done | 5 | 19 min | 16:38Z | T250 blocked: migration 0110 names 12 other modules' schemas; TD-SEC-10 (architecture_migrations.rs, protected) rejects  |
 | T250 | core: narrow the default privileges in every schema and prov | check_failed | 4 | 24 min | 15:37Z |  |
 | T250 | core: narrow the default privileges in every schema and prov | check_failed | 3 | 26 min | 14:20Z |  |
@@ -98,7 +99,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T076 (lease until 2026-11-06T19:51:05Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T250", "at": "2026-11-06T16:38:35Z", "output_tokens": 30502, "cache_creation_input_tokens": 161141, "cache_read_input_tokens": 2215592, "input_tokens": 97}
+- {"task": "T076", "at": "2026-11-06T17:32:53Z", "cache_creation_input_tokens": 499042, "output_tokens": 136410, "input_tokens": 398, "cache_read_input_tokens": 16620609}
