@@ -10,7 +10,7 @@
 use askama::Template;
 use askhava_payments::api::{ChargeReceipt, IntentText, Tier};
 
-use crate::confirm_pay::REFUND_LINE;
+use crate::confirm_pay::{REFUND_LINE, money};
 
 /// The page's route; the receipt email's link is this path on askhava.com (FEE-031).
 pub const WHY_CHARGED_ROUTE: &str = "/b/charges/{pick}";
@@ -50,19 +50,6 @@ struct WhyView<'a> {
     tier_line: String,
     basis: String,
     refund: &'static str,
-}
-
-/// `$1,234.56` for `cents`.
-fn money(cents: u64) -> String {
-    let dollars = (cents / 100).to_string();
-    let mut grouped = String::new();
-    for (i, digit) in dollars.chars().enumerate() {
-        if i > 0 && (dollars.len() - i).is_multiple_of(3) {
-            grouped.push(',');
-        }
-        grouped.push(digit);
-    }
-    format!("${grouped}.{:02}", cents % 100)
 }
 
 /// The tier's name and the basis range it covers (FEE-001).
