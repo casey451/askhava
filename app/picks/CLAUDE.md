@@ -18,6 +18,7 @@ The layer-6 crate that takes the homeowner's pick and carries it to the business
 - `src/handlers.rs` (T063): `run_pick_notice` (on `PICK_MADE_KIND`, with the worker's `ConfirmSettings`), `notice_sent`, `CONFIRM_ENDS_KIND` (`picks.confirm_ends`) and `run_confirm_ends`; both handlers registered in `server::register_handlers`.
 - `src/release.rs` (T069, D-1562, D-1564): `release` (`Released`: `Shown(ReleaseView)`, `Already`, `WaitingForAddress`, `MovedOn`), the pure `plan_release` (`ReleaseFacts`, `ReleaseStep`), `RELEASE_NO_RECIPIENT_ALERT` (`picks.release_no_recipient`), `status::release_status`, `ReleaseView` (`from_details`, `first_name`, `address`, `email`; no phone), `release_notice`, `RELEASE_FIELDS`, `EMAIL_CHOSEN_FIELDS`, `RELEASE_TEMPLATE`, `RELEASE_TEXT_TEMPLATE`, `ADDRESS_NEEDED_KIND` (`picks.address_needed`). Migration `0106_picks_release.sql`: `picks.release`, `picks.address_wait` (append-only). Templates `release_notice`, `release_text` (en, es).
 - `src/aftermath.rs` (T070, D-1572 to D-1576): `LossSettings` (3 quotes, 4 businesses, 10%), `Comparison`, the pure `compare` and `loss_template`, `lost_notices`, `no_longer_active`, `refused_after_confirm`, `LiveReply`, `live_pick_reply`; template IDs `LOST_TEMPLATE` and the seven `LOST_*_TEMPLATE`s, `INACTIVE_TEMPLATE`, `LIVE_PICK_TEMPLATE` (keys `pick_lost`, `pick_lost_lower`, `pick_lost_same`, `pick_lost_higher`, `pick_lost_several_lower`, `pick_lost_several_same`, `pick_lost_several_higher`, `pick_lost_other_type`, `job_no_longer_active`, `pick_live_reply` in en and es). No caller yet (D-1575).
+- `src/email_code.rs` (T095, D-1612 to D-1614): `Texting`, `EmailFrom`, `CodeRoute`, `code_route`, `ConversationEmail` (`new` refuses an address the caller labels `EmailFrom::QuotePage`, a caller rule until `privacy` stores a source flag, D-1612; `Debug` hides it), `send_email_code`, `check_email_code`, `OptedOutYes`, `opted_out_yes`.
 - `src/api.rs`: the public surface; `api::rules` re-exports the pure rules and `status::stage` (for TD-PICK-45's equality with `JobStatus::takes_pick`).
 
 ## Rules it enforces
@@ -47,6 +48,9 @@ The layer-6 crate that takes the homeowner's pick and carries it to the business
 
 - PICK-026, PICK-038, D-150, D-193, D-263, D-1572 to D-1574: `lost_notices` runs only for a `paid` or `free` pick and queues one `messaging.business_notice` per other confirmed, unwithdrawn quoter (unavailable ones included; one whose price does not read back still counts) to `notice_addresses(Cards)`, deduped per pick and business, with the job number and quote count only (never an amount or a name), the first sentence only when the picked quote or the receiver's own does not read back (D-1576); `compare` (one-time prices with each other, a recurring figure with the same period, a visit fee with a visit fee, within 10% both edges in is about the same) and `loss_template` (first sentence only under 3 quotes, "Several" when the card went to 4 or fewer); `no_longer_active` only at a final job status (withdrawn quoters included) and `refused_after_confirm` share one key per job and business and both skip a business whose pick is `paid` or `free` now; a no-show or fraud-refunded pick is not connected (D-1576); `live_pick_reply` (PICK-027) answers only the business whose pick waits.
 
+- PICK-029, D-050, D-1613: a code goes by email only when texting is not open and only to a `ConversationEmail` (the caller vouches for the address's source until `privacy` stores a source flag, D-1612); it uses Verify's email channel with the same 10 minutes, 5 tries, cooldown and caps, its row stored with channel `sms` (non-voice).
+- PICK-030, CON-013, D-1605, D-1614: `opted_out_yes` queues no text; it picks (through `page_pick` with the chosen job's own pause, channel `page`) only when `plan_text_pick` gives a pick, so never before the Terms line was sent (`TermsFirst`); the caller reads each pause with `intake::api::paused_under_lock` in its transaction and must send the confirmation or the Terms line and Pick button itself.
+
 ## Never break
 
 - Refused at exactly 10:00, cooldown after the fifth wrong try, paste reads: `src/tests/pick_code_rules.rs`, `tests/security/tests/pick_code.rs::td_pick_06_*`.
@@ -63,15 +67,20 @@ The layer-6 crate that takes the homeowner's pick and carries it to the business
 
 - Details only on a proof, once, never the phone, no detail in the notice: `src/tests/prop_release_only_paid.rs`, `tests/security/tests/no_phone_released.rs`. Never add `Field::Phone` to a release field list or a phone field to `ReleaseView`.
 
+- An emailed code keeps the limits, a quote-page address never gets one, an opted-out YES queues no text and picks only after the Terms line: `tests/integration/tests/email_pick_code.rs`.
+
 ## How to change
 
 - A cap or a timer: the spec line first (PICK-013, PICK-055), then the constant in `rules.rs` and both test files.
 - A reply's words: the `text_pick_*` keys in both `en.json` and `es.json` with `segments`; any text offering a text pick must keep the share sentence and end with the Terms line; run `cargo test -p askhava-messaging tests::template_registry` and the text-pick test.
 - A new pick status: a `PickStatus` variant and its code (already allowed by the table's check), arms in `status.rs` only. `Paid` and `Free` are the only statuses `release_status` releases from (D-1564).
 - The Confirm window's length: set `ASKHAVA_PICK_CONFIRM_WINDOW_MINUTES` (or pass another `ConfirmSettings` in a test); the backstop follows (D-1500, D-1503).
+- The page or text code's send: `email_code.rs`'s `send_email_code` mirrors `service.rs`'s `send_code` (cooldown, caps, the one alert a day, Verify after the commit); change both together and run `email_pick_code` and `pick_code`.
 - A query: `sqlx migrate run`, then `cargo sqlx prepare --workspace -- --all-targets --all-features`.
 
 ## Tests that guard it
+
+- `tests/integration/tests/email_pick_code.rs` (TD-PICK-13): `cargo test -p askhava-integration --test email_pick_code`.
 
 - `src/tests/pick_code_rules.rs` (TD-PICK-06, TD-PICK-07, TD-PICK-14, TD-PICK-40, TD-CON-12 pure cases): `cargo test -p askhava-picks tests::pick_code_rules`.
 - `tests/security/tests/pick_code.rs` (TD-PICK-06, PICK-055): `cargo test -p askhava-security --test pick_code`.
