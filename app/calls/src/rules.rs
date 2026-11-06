@@ -36,8 +36,8 @@ pub enum AnsweredBy {
 /// result is a machine; `unknown` or no result on a completed call is a person, since nothing
 /// detected a machine on a call that connected.
 #[must_use]
-pub fn answered_by(status: &str, detected: Option<&str>) -> AnsweredBy {
-    if status != "completed" {
+pub fn answered_by(call_state: &str, detected: Option<&str>) -> AnsweredBy {
+    if call_state != "completed" {
         return AnsweredBy::Nobody;
     }
     match detected {

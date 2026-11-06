@@ -18,10 +18,10 @@ fn ended() -> Timestamp {
     "2026-11-02T17:00:00Z".parse().expect("instant")
 }
 
-fn callback(status: &str, seconds: &str, detected: Option<&str>) -> Vec<(String, String)> {
+fn callback(call_state: &str, seconds: &str, detected: Option<&str>) -> Vec<(String, String)> {
     let mut params = vec![
         ("CallSid".to_owned(), SID.to_owned()),
-        ("CallStatus".to_owned(), status.to_owned()),
+        ("CallStatus".to_owned(), call_state.to_owned()),
         ("CallDuration".to_owned(), seconds.to_owned()),
     ];
     if let Some(d) = detected {
