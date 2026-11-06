@@ -252,6 +252,26 @@ pub async fn job_homeowner(
         }))
 }
 
+/// Takes the homeowner lock of request `conversation` in the caller's transaction (the lock
+/// [`crate::api::on_opt_out`] and [`crate::api::answer_text_pick`] take), then says whether job
+/// `job` is paused by her (CON-029, D-1605): a CANCEL committing meanwhile is waited for and seen,
+/// so a page pick stored in the same transaction never lands on a paused job.
+///
+/// # Errors
+///
+/// [`IntakeError::UnknownRequest`] or [`IntakeError::Database`].
+pub async fn paused_under_lock(
+    tx: &mut PgConnection,
+    conversation: Uuid,
+    job: Uuid,
+) -> Result<bool, IntakeError> {
+    let (homeowner, _) = models::conversation_state(tx, conversation)
+        .await?
+        .ok_or(IntakeError::UnknownRequest)?;
+    models::lock_homeowner(tx, homeowner).await?;
+    models::is_paused(tx, job).await
+}
+
 /// Queues the same event again for `until`, the next instant both zones are open (QH-006); the
 /// dedupe key names that instant, so a second run queues it once.
 async fn hold(

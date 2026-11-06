@@ -46,7 +46,8 @@ pub use crate::handlers::{
 };
 pub use crate::job_texts::{
     ALL_QUOTES_IN_TEMPLATE, JOB_TEXT_TEMPLATES, JobHomeowner, JobText, JobTextKeys, JobTextSkip,
-    JobTextStep, job_homeowner, job_text_body, job_text_step, parse_job_text, run_job_text,
+    JobTextStep, job_homeowner, job_text_body, job_text_step, parse_job_text, paused_under_lock,
+    run_job_text,
 };
 pub use crate::matching::{
     Candidates, FitStep, KeywordReading, Opinion, Reading, TradeAnswer, TradeQuestion, TradeStep,
@@ -81,9 +82,9 @@ pub use crate::service::{
     NEEDED_BY_TEMPLATE, OPTED_OUT_LIVE_KIND, OptOutJobs, PublishedTerms, Queued, Screened,
     TermsAcceptance, TermsChannel, TextIn, Trade, answer_choice, answer_how_soon, answer_text_pick,
     ask_how_soon, card_allowed, consent_records, conversation, disclosure, emergency_events,
-    how_soon, may_text, offer_emergency_choice, on_opt_out, paused_by_homeowner, paused_under_lock,
-    receive_answer, receive_text, record_terms_acceptance, release_emergency, safe_hold,
-    sole_cancel, terms_acceptances,
+    how_soon, may_text, offer_emergency_choice, on_opt_out, paused_by_homeowner, receive_answer,
+    receive_text, record_terms_acceptance, release_emergency, safe_hold, sole_cancel,
+    terms_acceptances,
 };
 pub use crate::summary_step::{
     APPROVED_ACTION, AUTO_SEND_AFTER, AUTO_SENT_ACTION, CARD_EDIT_TEMPLATE, CARD_LINK_TEMPLATE,

@@ -1009,26 +1009,6 @@ pub async fn paused_by_homeowner(db: &mut PgConnection, job: Uuid) -> Result<boo
     models::is_paused(db, job).await
 }
 
-/// Takes the homeowner lock of request `conversation` in the caller's transaction (the lock
-/// [`on_opt_out`] and [`answer_text_pick`] take), then says whether job `job` is paused by her
-/// (CON-029, D-1602): a CANCEL committing meanwhile is waited for and seen, so a page pick stored
-/// in the same transaction never lands on a paused job.
-///
-/// # Errors
-///
-/// [`IntakeError::UnknownRequest`] or [`IntakeError::Database`].
-pub async fn paused_under_lock(
-    tx: &mut PgConnection,
-    conversation: Uuid,
-    job: Uuid,
-) -> Result<bool, IntakeError> {
-    let (homeowner, _) = models::conversation_state(tx, conversation)
-        .await?
-        .ok_or(IntakeError::UnknownRequest)?;
-    models::lock_homeowner(tx, homeowner).await?;
-    models::is_paused(tx, job).await
-}
-
 /// The published homeowner Terms a text pick accepts: its version and exact text (TERMS-016).
 #[derive(Debug, Clone, Copy)]
 pub struct PublishedTerms<'a> {
