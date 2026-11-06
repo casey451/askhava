@@ -116,6 +116,18 @@ struct StoredPrice {
     hours_low: Option<i32>,
     hours_high: Option<i32>,
     confirm_on_site: bool,
+    withdrawn: bool,
+}
+
+/// One business's confirmed quote on a job, as [`quoted_prices`] returns it (T070, D-1572, D-1576).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct QuotedPrice {
+    /// The business that quoted.
+    pub business: Uuid,
+    /// Its price as entered; none for a row whose stored price does not read back.
+    pub price: Option<Price>,
+    /// Whether the business withdrew the quote (PICK-051).
+    pub withdrawn: bool,
 }
 
 fn cents(v: Option<i64>) -> Option<u64> {
@@ -161,9 +173,10 @@ impl StoredPrice {
     }
 }
 
-/// PICK-026, PICK-038 (T070, D-1572): every business with a confirmed, unwithdrawn quote on
-/// `job`, unavailable ones included, with its price as entered, in arrival order. A row whose
-/// stored price does not read back is left out; no amount ever reaches `picks`' loss text.
+/// PICK-026, PICK-038 (T070, D-1572, D-1576): every business with a confirmed quote on `job`,
+/// withdrawn and unavailable ones included, with its price as entered (none when the stored price
+/// does not read back) and whether it was withdrawn, in arrival order; no amount ever reaches
+/// `picks`' loss text.
 ///
 /// # Errors
 ///
@@ -171,13 +184,14 @@ impl StoredPrice {
 pub async fn quoted_prices(
     db: &mut sqlx::PgConnection,
     job: Uuid,
-) -> Result<Vec<(Uuid, Price)>, QuotesError> {
+) -> Result<Vec<QuotedPrice>, QuotesError> {
     let rows = sqlx::query_as!(
         StoredPrice,
-        "SELECT business_id, format, amount_cents, low_cents, high_cents, tier_names, tier_cents, \
-         period, setup_cents, hourly_rate_cents, hours_low, hours_high, confirm_on_site \
-         FROM quotes.quote WHERE job_id = $1 AND confirmed AND withdrawn_at IS NULL \
-         ORDER BY received_at, business_id",
+        r#"SELECT business_id, format, amount_cents, low_cents, high_cents, tier_names, tier_cents,
+         period, setup_cents, hourly_rate_cents, hours_low, hours_high, confirm_on_site,
+         withdrawn_at IS NOT NULL AS "withdrawn!"
+         FROM quotes.quote WHERE job_id = $1 AND confirmed
+         ORDER BY received_at, business_id"#,
         job
     )
     .fetch_all(db)
@@ -185,7 +199,11 @@ pub async fn quoted_prices(
     .map_err(|_| QuotesError::Database)?;
     Ok(rows
         .into_iter()
-        .filter_map(|r| Some((r.business_id, r.price()?)))
+        .map(|r| QuotedPrice {
+            business: r.business_id,
+            withdrawn: r.withdrawn,
+            price: r.price(),
+        })
         .collect())
 }
 

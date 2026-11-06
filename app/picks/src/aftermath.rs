@@ -10,14 +10,16 @@
 //! quotes, else the lower / about the same / higher line, "Several businesses quoted" when the card
 //! went to [`LossSettings::several_at_most`] businesses or fewer, or the different-type line. The
 //! payload holds the job number and the quote count only: never an amount or a business name.
-//! [`no_longer_active`] runs when the job reaches a final status and [`refused_after_confirm`] when
-//! a quote is refused after Confirm (D-043); both share one dedupe key per job and business, so
-//! each quoter but the connected one hears it once. [`live_pick_reply`] answers PICK-027.
+//! When the picked quote or the receiving business's own does not read back, the text is the first
+//! sentence only. [`no_longer_active`] runs when the job reaches a final status and
+//! [`refused_after_confirm`] when a quote is refused after Confirm (D-043); both share one dedupe
+//! key per job and business and skip a business whose pick is `paid` or `free`, so each quoter but
+//! the connected one hears it once (D-1576). [`live_pick_reply`] answers PICK-027.
 
 use askhava_businesses::api::{NoticePurpose, notice_addresses};
 use askhava_core::api::{NewTask, enqueue};
 use askhava_jobs::api::{current, job_number};
-use askhava_quotes::api::{Period, Price, card_holders, quoted_prices};
+use askhava_quotes::api::{Period, Price, QuotedPrice, card_holders, quoted_prices};
 use jiff::Timestamp;
 use serde_json::{Value, json};
 use sqlx::PgConnection;
@@ -177,6 +179,24 @@ pub const fn loss_template(
     }
 }
 
+/// PICK-026, PICK-038, D-1576: the template for `yours` against the `picked` price; the first
+/// sentence only when either does not read back (no comparison is made up).
+fn template_for(
+    (picked, tier): (Option<&Price>, Option<usize>),
+    yours: Option<&Price>,
+    counts: (usize, usize),
+    settings: LossSettings,
+) -> &'static str {
+    match (picked, yours) {
+        (Some(p), Some(y)) => loss_template(
+            counts,
+            compare(p, tier, y, settings.about_same_pct),
+            settings,
+        ),
+        _ => LOST_TEMPLATE,
+    }
+}
+
 /// BIZ-019, BIZ-037, D-308: queues one notice to `business`'s "Cards and quotes" recipients under
 /// `key`; false when it was queued before or the business has no recipient.
 async fn queue_notice(
@@ -202,10 +222,11 @@ async fn queue_notice(
     Ok(queued.is_some())
 }
 
-/// PICK-026, PICK-038, D-150, D-193: once the pick's payment or $0 fee decision is recorded (status
-/// `paid` or `free`), queues the loss notice to every other business with a quote on the job, once
-/// per pick and business; `tier` is the tier the homeowner picked of a tiers quote. Returns how many
-/// were queued now; a pick in any other status queues none.
+/// PICK-026, PICK-038, D-150, D-193, D-1576: once the pick's payment or $0 fee decision is
+/// recorded (status `paid` or `free`), queues the loss notice to every other business with an
+/// unwithdrawn quote on the job, once per pick and business; `tier` is the tier the homeowner
+/// picked of a tiers quote. Every unwithdrawn quote counts, one whose price does not read back
+/// included. Returns how many were queued now; a pick in any other status queues none.
 ///
 /// # Errors
 ///
@@ -228,9 +249,12 @@ pub async fn lost_notices(
     else {
         return Ok(0);
     };
-    let quotes = quoted_prices(conn, row.job_id)
+    let quotes: Vec<QuotedPrice> = quoted_prices(conn, row.job_id)
         .await
-        .map_err(|_| PicksError::Quotes)?;
+        .map_err(|_| PicksError::Quotes)?
+        .into_iter()
+        .filter(|q| !q.withdrawn)
+        .collect();
     let sent = card_holders(conn, row.job_id)
         .await
         .map_err(|_| PicksError::Quotes)?
@@ -240,20 +264,32 @@ pub async fn lost_notices(
         .map_err(|_| PicksError::Job)?;
     let picked = quotes
         .iter()
-        .find(|(b, _)| *b == row.business_id)
-        .map(|(_, p)| p);
+        .find(|q| q.business == row.business_id)
+        .and_then(|q| q.price.as_ref());
+    let counts = (quotes.len(), sent);
     let mut queued = 0;
-    for (business, yours) in quotes.iter().filter(|(b, _)| *b != row.business_id) {
-        let compared = picked.map_or(Comparison::OtherType, |p| {
-            compare(p, tier, yours, settings.about_same_pct)
-        });
-        let template = loss_template((quotes.len(), sent), compared, settings);
+    for q in quotes.iter().filter(|q| q.business != row.business_id) {
+        let template = template_for((picked, tier), q.price.as_ref(), counts, settings);
         let values = json!({"job": number, "count": quotes.len()});
-        let key = format!("{LOST_TEMPLATE}.{pick}.{business}");
-        let target = (template, *business, row.job_id);
+        let key = format!("{LOST_TEMPLATE}.{pick}.{}", q.business);
+        let target = (template, q.business, row.job_id);
         queued += usize::from(queue_notice(conn, target, values, key).await?);
     }
     Ok(queued)
+}
+
+/// D-150, D-1576: the businesses whose pick on `job` is `paid` or `free` now (connected); a pick
+/// moved on to no-show or fraud-refunded is not.
+async fn connected(conn: &mut PgConnection, job: Uuid) -> Result<Vec<Uuid>, PicksError> {
+    let decided = [PickStatus::Paid.code(), PickStatus::Free.code()];
+    sqlx::query_scalar!(
+        "SELECT business_id FROM picks.pick WHERE job_id = $1 AND status = ANY($2)",
+        job,
+        &decided as &[&str],
+    )
+    .fetch_all(&mut *conn)
+    .await
+    .map_err(|_| PicksError::Database)
 }
 
 /// PICK-026, D-044, D-150: "This job is no longer active." to `business`, once per job.
@@ -272,10 +308,10 @@ async fn inactive_to(
     .await
 }
 
-/// PICK-026, D-044, D-150: when `job` is in a final status (Done, Closed, Cancelled and the other
-/// final ones), queues "This job is no longer active." once to every business with a quote on it,
-/// one sent after the pick included, except a business whose pick was connected (paid or free).
-/// Returns how many were queued now; a job not yet final queues none.
+/// PICK-026, D-044, D-150, D-1576: when `job` is in a final status (Done, Closed, Cancelled and the
+/// other final ones), queues "This job is no longer active." once to every business that quoted on
+/// it, one sent after the pick and one withdrawn since included, except a business whose pick is
+/// connected (`paid` or `free`). Returns how many were queued now; a job not yet final queues none.
 ///
 /// # Errors
 ///
@@ -285,29 +321,21 @@ pub async fn no_longer_active(conn: &mut PgConnection, job: Uuid) -> Result<usiz
     if !row.status.is_final() {
         return Ok(0);
     }
-    let decided = [PickStatus::Paid.code(), PickStatus::Free.code()];
-    let connected = sqlx::query_scalar!(
-        "SELECT business_id FROM picks.pick WHERE job_id = $1 AND status = ANY($2)",
-        job,
-        &decided as &[&str],
-    )
-    .fetch_all(&mut *conn)
-    .await
-    .map_err(|_| PicksError::Database)?;
+    let connected = connected(conn, job).await?;
     let quotes = quoted_prices(conn, job)
         .await
         .map_err(|_| PicksError::Quotes)?;
     let number = job_number(conn, job).await.map_err(|_| PicksError::Job)?;
     let mut queued = 0;
-    for (business, _) in quotes.iter().filter(|(b, _)| !connected.contains(b)) {
-        queued += usize::from(inactive_to(conn, (job, number), *business).await?);
+    for q in quotes.iter().filter(|q| !connected.contains(&q.business)) {
+        queued += usize::from(inactive_to(conn, (job, number), q.business).await?);
     }
     Ok(queued)
 }
 
-/// PICK-026, D-043, D-044: a business whose quote is refused after Confirm gets "This job is no
-/// longer active." at once; under the same key as [`no_longer_active`], so never twice. False when
-/// it already had it.
+/// PICK-026, D-043, D-044, D-1576: a business whose quote is refused after Confirm gets "This job is
+/// no longer active." at once; under the same key as [`no_longer_active`], so never twice. False
+/// when it already had it, or when its pick on the job is connected (`paid` or `free`).
 ///
 /// # Errors
 ///
@@ -317,6 +345,9 @@ pub async fn refused_after_confirm(
     job: Uuid,
     business: Uuid,
 ) -> Result<bool, PicksError> {
+    if connected(conn, job).await?.contains(&business) {
+        return Ok(false);
+    }
     let number = job_number(conn, job).await.map_err(|_| PicksError::Job)?;
     inactive_to(conn, (job, number), business).await
 }

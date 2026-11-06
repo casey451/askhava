@@ -396,7 +396,7 @@
   },
   "pick_live_reply": {
     "audience": "business",
-    "segments": 1,
-    "text": "Ask Hava: The homeowner picked your quote for job {job}. Confirm and pay here: {link} Then you'll see their first name and address in your portal."
+    "segments": 2,
+    "text": "Ask Hava: The homeowner picked your quote for job {job}. Confirm here: {link} Then you'll see their first name and address in your portal."
   }
 }

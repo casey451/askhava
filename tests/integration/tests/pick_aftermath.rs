@@ -209,6 +209,38 @@ async fn td_pick_20_several_businesses_on_a_card_sent_to_four(pool: PgPool) {
     );
 }
 
+/// TD-PICK-17 (PICK-026, D-1576): when the picked business's quote is not among the readable ones
+/// (here withdrawn), the others get the first sentence only, never the different-type line.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_pick_17_no_picked_quote_gives_the_first_sentence_only(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("conn");
+    let (job, b) = job(&mut db, 5, &TO_AWAITING).await;
+    for (minute, business) in [(3, b[0]), (4, b[1]), (5, b[2]), (6, b[3])] {
+        quote(&mut db, (job, business), firm(10_000), minute).await;
+    }
+    sqlx::query("UPDATE quotes.quote SET withdrawn_at = $2 WHERE business_id = $1")
+        .bind(b[0])
+        .bind(at(7).to_sqlx())
+        .execute(&mut *db)
+        .await
+        .expect("withdrawn");
+    let paid = pick(&mut db, (job, b[0]), "paid").await;
+    assert_eq!(
+        lost_notices(&mut db, paid, None, LossSettings::default()).await,
+        Ok(3)
+    );
+    let sent = notices(&pool).await;
+    let got: Vec<(Uuid, &str)> = sent.iter().map(|(b, t, _)| (*b, t.as_str())).collect();
+    assert_eq!(
+        got,
+        [
+            (b[1], "pick_lost"),
+            (b[2], "pick_lost"),
+            (b[3], "pick_lost")
+        ]
+    );
+}
+
 /// TD-PICK-17 (PICK-038, D-193): a range compares on its midpoint, a tiers quote on the tier
 /// picked, a firm quote against a diagnostic visit is a different type, in the database.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
@@ -309,24 +341,32 @@ fn td_pick_17_the_comparison_edges() {
     }
 }
 
-/// TD-PICK-11 (PICK-026, D-044, D-150): at a final status every quoter but the connected business
-/// gets "This job is no longer active." once, one that quoted after the pick included; a quote
-/// refused after Confirm got it at once and not again; a job not yet final sends none.
+/// TD-PICK-11 (PICK-026, D-044, D-150, D-1576): at a final status every quoter but the connected
+/// business gets "This job is no longer active." once, one that quoted after the pick and one that
+/// withdrew included; a quote refused after Confirm got it at once and not again; the connected
+/// business is never told, even through the refusal path; a job not yet final sends none.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_pick_11_no_longer_active_once_except_the_connected_business(pool: PgPool) {
     let mut db = pool.acquire().await.expect("conn");
-    let (job, b) = job(&mut db, 4, &TO_AWAITING).await;
-    for business in &b[..3] {
-        quote(&mut db, (job, *business), firm(10_000), 3).await;
+    let (job, b) = job(&mut db, 5, &TO_AWAITING).await;
+    for (minute, business) in [(3, b[0]), (4, b[1]), (5, b[2]), (6, b[4])] {
+        quote(&mut db, (job, business), firm(10_000), minute).await;
     }
+    sqlx::query("UPDATE quotes.quote SET withdrawn_at = $2 WHERE business_id = $1")
+        .bind(b[4])
+        .bind(at(7).to_sqlx())
+        .execute(&mut *db)
+        .await
+        .expect("withdrawn");
     pick(&mut db, (job, b[0]), "paid").await;
     quote(&mut db, (job, b[3]), firm(10_000), 20).await;
     assert_eq!(no_longer_active(&mut db, job).await, Ok(0), "not final yet");
+    assert_eq!(refused_after_confirm(&mut db, job, b[0]).await, Ok(false));
     assert_eq!(refused_after_confirm(&mut db, job, b[1]).await, Ok(true));
     let cancel = (JobStatus::AwaitingConfirm, JobStatus::Cancelled);
     let moved = move_to(&mut db, job, cancel, at(30), Actor::System).await;
     assert!(matches!(moved, Ok(Guarded::Applied(()))), "cancel");
-    assert_eq!(no_longer_active(&mut db, job).await, Ok(2));
+    assert_eq!(no_longer_active(&mut db, job).await, Ok(3));
     assert_eq!(no_longer_active(&mut db, job).await, Ok(0));
     let got: Vec<(Uuid, String)> = notices(&pool)
         .await
@@ -339,6 +379,7 @@ async fn td_pick_11_no_longer_active_once_except_the_connected_business(pool: Pg
         [
             (b[1], inactive.clone()),
             (b[2], inactive.clone()),
+            (b[4], inactive.clone()),
             (b[3], inactive)
         ]
     );
@@ -408,6 +449,17 @@ fn td_pick_33_the_loss_texts_equal_the_spec() {
         let es = render(id, Language::Es, true, &values).expect(id);
         assert!(es.draft && !es.body.contains('$'), "{id}");
     }
+}
+
+/// TD-PICK-33 (PICK-027, D-1576): the live-pick reply carries the Confirm link, never "pay" (a $0
+/// fee decision also follows Confirm) or an amount, in English and Spanish.
+#[test]
+fn td_pick_33_the_live_pick_reply_has_the_confirm_link() {
+    let values = [("job", "1042"), ("link", "https://askhava.com/b/x")];
     let live = render(LIVE_PICK_TEMPLATE, Language::En, false, &values).expect("live");
-    assert!(live.body.contains("https://askhava.com/b/x") && !live.body.contains('$'));
+    assert!(live.body.contains("Confirm here: https://askhava.com/b/x"));
+    assert!(!live.body.contains("pay") && !live.body.contains('$'));
+    let es = render(LIVE_PICK_TEMPLATE, Language::Es, true, &values).expect("es");
+    assert!(es.body.contains("Confirme aquí: https://askhava.com/b/x"));
+    assert!(!es.body.contains("pague") && !es.body.contains('$'));
 }

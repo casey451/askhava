@@ -484,7 +484,7 @@
   "pick_live_reply": {
     "audience": "business",
     "draft": true,
-    "segments": 3,
-    "text": "Ask Hava: El propietario eligió su cotización para el trabajo {job}. Confirme y pague aquí: {link} Luego verá el nombre y la dirección del cliente en su portal."
+    "segments": 4,
+    "text": "Ask Hava: El propietario eligió su cotización para el trabajo {job}. Confirme aquí: {link} Luego verá el nombre y la dirección del cliente en su portal."
   }
 }

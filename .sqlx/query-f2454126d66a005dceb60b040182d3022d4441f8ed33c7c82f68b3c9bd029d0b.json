@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT business_id, format, amount_cents, low_cents, high_cents, tier_names, tier_cents, period, setup_cents, hourly_rate_cents, hours_low, hours_high, confirm_on_site FROM quotes.quote WHERE job_id = $1 AND confirmed AND withdrawn_at IS NULL ORDER BY received_at, business_id",
+  "query": "SELECT business_id, format, amount_cents, low_cents, high_cents, tier_names, tier_cents,\n         period, setup_cents, hourly_rate_cents, hours_low, hours_high, confirm_on_site,\n         withdrawn_at IS NOT NULL AS \"withdrawn!\"\n         FROM quotes.quote WHERE job_id = $1 AND confirmed\n         ORDER BY received_at, business_id",
   "describe": {
     "columns": [
       {
@@ -145,6 +145,12 @@
             "name": "confirm_on_site"
           }
         }
+      },
+      {
+        "ordinal": 13,
+        "name": "withdrawn!",
+        "type_info": "Bool",
+        "origin": "Expression"
       }
     ],
     "parameters": {
@@ -165,8 +171,9 @@
       true,
       true,
       true,
-      false
+      false,
+      null
     ]
   },
-  "hash": "ee3452c7c2cb40c0ce363a190f72a9ff9d0040bd8080507dae8f78dfe908ca27"
+  "hash": "f2454126d66a005dceb60b040182d3022d4441f8ed33c7c82f68b3c9bd029d0b"
 }
