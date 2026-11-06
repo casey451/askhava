@@ -1,23 +1,24 @@
 # Ask Hava build status
 
-Updated 2026-11-06T11:11:28Z by runner 4c3306a01f78 (actions).
+Updated 2026-11-06T11:23:34Z by runner ea22387162b9 (actions).
 
-**Idle since 11:07Z; 119 of 238 done; week 15% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 11:21Z; 119 of 238 done; week 15% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 119 of 238 build tasks (owner gates not counted)
 - **Stage:** stage 3; stage proofs recorded: 1, 2
-- **Lane:** idle since 11:07Z (no task in progress)
+- **Lane:** idle since 11:21Z (no task in progress)
 - **Week:** 15% used, 166.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:11Z, 0 min before this update
+- **Last run:** 11:11Z, 12 min before this update
 - **Keeper:** last ran 11:11Z, next wake 11:31Z
 
 ## Needs attention
-- Strict plan check red: 8 problem(s) on tasks still to run (+22 on DONE tasks); first: T191: stored context_pct 10% but it measures 14%; regenerate
+- BLOCKED T075: stage proof missing
+- Strict plan check red: 10 problem(s) on tasks still to run (+23 on DONE tasks); first: T191: stored context_pct 10% but it measures 14%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T075 | Stage 3 cleanup: dead code, duplicates, docs up to date | MERGE_PENDING | 1 | 45 min | 11:07Z |  |
+| T075 | Stage 3 cleanup: dead code, duplicates, docs up to date | proof_missing | 1 | 45 min | 11:07Z |  |
 | T246 | picks, portals and server: the page pick end to end (one pic | done | 1 | 66 min | 10:04Z |  |
 | T247 | jobs and quotes: the first-quote move to Quotes ready (JOB-0 | done | 1 | 24 min | 08:42Z |  |
 | T074 | Twin: run the gate against the app's rules modules | done | 1 | 51 min | 08:05Z |  |
