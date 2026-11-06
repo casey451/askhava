@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-06T08:42:25Z by runner 03e6bd65f524 (actions).
+Updated 2026-11-06T08:42:36Z by runner 03e6bd65f524 (actions).
 
-**Building: T247 in progress since 08:18Z; 117 of 238 done; week 13% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 08:42Z; 117 of 238 done; week 13% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 117 of 238 build tasks (owner gates not counted)
 - **Stage:** stage 3; stage proofs recorded: 1, 2
-- **Lane:** lane 1: T247 claimed 08:18Z, lease until 11:18Z
+- **Lane:** idle since 08:42Z (no task in progress)
 - **Week:** 13% used, 168.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:25Z, 16 min before this update
+- **Last run:** 08:25Z, 17 min before this update
 - **Keeper:** last ran 08:08Z, next wake 08:28Z
 
 ## Needs attention
@@ -17,6 +17,7 @@ Updated 2026-11-06T08:42:25Z by runner 03e6bd65f524 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T247 | jobs and quotes: the first-quote move to Quotes ready (JOB-0 | MERGE_PENDING | 1 | 24 min | 08:42Z |  |
 | T074 | Twin: run the gate against the app's rules modules | done | 1 | 51 min | 08:05Z |  |
 | T073 | Named mutants: the 4-month rule, the fee tiers and the card  | done | 1 | 30 min | 06:37Z |  |
 | T072 | Metamorphic prompt-injection tests over routing, fees and di | done | 1 | 30 min | 05:55Z |  |
@@ -85,7 +86,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T247 (lease until 2026-11-06T11:18:06Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T074", "at": "2026-11-06T08:05:20Z", "input_tokens": 394, "output_tokens": 183452, "cache_read_input_tokens": 27279085, "cache_creation_input_tokens": 542985}
+- {"task": "T247", "at": "2026-11-06T08:42:24Z", "cache_creation_input_tokens": 377917, "cache_read_input_tokens": 9571548, "output_tokens": 91557, "input_tokens": 217}
