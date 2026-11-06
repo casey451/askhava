@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The layer-5 crate for masked calls between a homeowner and the business she connected with (`docs/architecture.md` section 3). T076 built the masked-number pool: each connected job gets a number from the fixed pool in settings, never bought by the app, preferring one no other open line of the same homeowner or business uses, otherwise sharing one with PIN routing and one alert to Casey (D-077, D-160, D-231, D-1679 to D-1682). It also holds the suppression-list check every automated call to a homeowner passes first. T077 added PIN routing and the paid-business read-back (D-1684 to D-1688). T078 added the call log and the never-recorded TwiML (D-1689 to D-1691). T079 added closing lines, the staff-phone approval gate, the LINK request and the Ask Hava number's greeting (D-1694 to D-1698). Not here yet: storing the per-day PIN count (D-1685), the who's-calling text (TXT-027, D-1687), the callers of `close_line` and the daily `close_expired` sweep, stored phone approvals (T148, D-1695), the 45-minute LINK follow-up (D-1696), bridging, the inbound-voice route and the identity and code calls (T080).
+The layer-5 crate for masked calls between a homeowner and the business she connected with (`docs/architecture.md` section 3). T076 built the masked-number pool: each connected job gets a number from the fixed pool in settings, never bought by the app, preferring one no other open line of the same homeowner or business uses, otherwise sharing one with PIN routing and one alert to Casey (D-077, D-160, D-231, D-1679 to D-1682). It also holds the suppression-list check every automated call to a homeowner passes first. T077 added PIN routing and the paid-business read-back (D-1684 to D-1688). T078 added the call log and the never-recorded TwiML (D-1689 to D-1691). T079 added closing lines, the staff-phone approval gate, the LINK request and the Ask Hava number's greeting (D-1694 to D-1698). Not here yet: storing the per-day PIN count (D-1685), the who's-calling text (TXT-027, D-1687), the callers of `close_line` and the daily `close_expired` sweep, stored phone approvals (T148, D-1695), the 45-minute LINK follow-up (D-1696). T080 added relay-friendly PIN prompts, the homeowner's code call, the safety voice call behind its switch and Casey's bridge (D-1704 to D-1708). Not here yet: the inbound-voice route that serves the TwiML, the voice adapter's TwiML URL, the stored safety switch and the handler's registration (T096, T108; D-1708).
 
 ## What it owns
 
@@ -13,7 +13,9 @@ The layer-5 crate for masked calls between a homeowner and the business she conn
 - `src/rules.rs` (T078): the pure `talked`, `business_attempt`, `answered_by`, `reached_report_mark`, `REPORT_MARK` (`Caller`, `AnsweredBy`).
 - `src/handlers.rs` (T078): `dial_twiml`, `finished_call` (`FinishedCall`), `log_finished_call`, `call_log` (`LoggedCall`); its own queries.
 - `src/lifecycle.rs` (T079): `close_line` (`CloseReason`), `close_expired`, `expired`, `LINE_DAYS`; the pure `phone_works` and `gate` (`PhoneStanding`); `request_link`, `last4`; `greeting_twiml`, `GREETING_EN`, `GREETING_ES`; `BUSINESS_NOTICE_KIND` (`messaging.business_notice`), `CANCELLED_TEMPLATE`, `LINK_TEMPLATE`, `LINK_TEXT_TO` (`main_phone`); its own queries. Templates `line_closed_cancelled` and `link_this_phone` (en, es) in `app/messaging/templates/`.
-- `src/models.rs`: `CallsError` and the crate-private queries.
+- `src/routing.rs` (T080): `PinWait` (`PIN_WAIT_KEY`, `ASKHAVA_PIN_WAIT_SECONDS`, `PIN_WAIT_MIN`), `pin_prompt_twiml`, `pin_heard` (`PinHeard`), `PIN_PROMPT`, `PIN_GOODBYE`.
+- `src/voice.rs` (T080): `may_code_call`, `code_call_twiml`; `Approval`, `Conditions`, `SafetySwitch`, `safety_script`, `safety_twiml`, `SafetyCall` (`from_payload`), `SafetyDialer`, `SafetyOutcome`, `place_safety_call` (the `SAFETY_CALL_KIND` handler), `safety_call_key`, `safety_call_answered`, `ring_owner`, `owner_bridge_twiml`; `SAFETY_WITHIN`, `SAFETY_SCRIPT_VERSION`, `SAFETY_CALL_ACTION`, `SAFETY_STOP_ACTION`.
+- `src/models.rs`: `CallsError` (T080 adds `Voice`) and the crate-private queries.
 - `src/api.rs`: the only public surface. `sqlx.toml`: `timestamptz` as jiff timestamps.
 
 ## Rules it enforces
@@ -37,6 +39,11 @@ The layer-5 crate for masked calls between a homeowner and the business she conn
 - CALL-020, D-227, D-1697: `greeting_twiml` says the greeting in English, then Spanish, then hangs up; no record, dial, gather or voicemail verb.
 - CALL-018: `assign_number` never reads the homeowner's contact channel.
 
+- CALL-013, CALL-023, D-1704: every PIN prompt is spoken words (no `Play`) in a `Gather` waiting `PinWait` (at least 10 seconds), said once more, then a goodbye and hang-up; the prompt and read-back answer only the calling leg; `dial_twiml` has no whisper `url`.
+- CALL-014, CALL-015, D-366: `may_code_call` only on her tap and only to a homeowner; `code_call_twiml` opens "This is Ask Hava LLC", slow prosody, the code twice, the main number as callback (`None` when it equals the calling number), "Press 1 to hear it again".
+- CALL-019, CALL-022, D-384, D-1705: `SafetySwitch` is off unless `turn_on` gets an approval with a reference and every `Conditions` item; `place_safety_call` checks switch, 30 minutes, calling number not main, then the suppression list, dials once (key on the alert) and audits `calls.safety_call_placed` with `safety_script_v1`; "9" lists the number (`safety_call_key`).
+- OPS-028, D-1706, D-1707: `safety_call_answered` acknowledges the critical alert through `ops::api::acknowledge_alert` only for a person; `ring_owner` rings Casey from a pool number and `owner_bridge_twiml` reads him the INT-004 words, then dials her with the Ask Hava number shown, never recorded.
+
 ## Never break
 
 - Each job gets a pool number neither side's own, once: `tests/integration/tests/number_pool.rs::td_call_01_each_connected_job_gets_a_pool_number_neither_sides_own`.
@@ -55,12 +62,15 @@ The layer-5 crate for masked calls between a homeowner and the business she conn
 
 - Lines close on cancel, no-show, complaint and at 30 days, a cancel tells the business once and no strike is written; a blocked phone hears the PIN prompt and LINK names its last 4 digits; an email-preferred homeowner gets a line; a removed member's phones hear the PIN prompt; the greeting never records or forwards; an unapproved member-linked phone does not connect: `tests/integration/tests/line_lifecycle.rs` (`td_call_05_*`, `td_call_07_*`, `td_call_08_*`).
 
+- PIN prompts, code call, safety switch and call, Casey's bridge: `tests/integration/tests/voice_calls.rs` (`td_call_06_*`, `td_call_09_*`, `td_txt_09_*`, `ops_028_*`). Never add a `url` to `dial_twiml`'s `Number` or a `Play` to a prompt.
+
 ## How to change
 
 - Pool size: set `ASKHAVA_MASKED_POOL_SIZE` and `ASKHAVA_MASKED_NUMBERS` (Casey buys the numbers); the default is `adapters`' `DEFAULT_POOL_SIZE` (CALL-017, D-160).
 - How a number is chosen: CALL-017 first, then `service::choose` and the `td_call_01_*` cases.
 - Close a line (T079): `UPDATE calls.number_pool SET closed_at` only; nothing else is granted.
 - A new close reason: a `CloseReason` variant with its `action` and, if it tells the business, `tells_business` and a template in both languages.
+- The PIN wait: set `ASKHAVA_PIN_WAIT_SECONDS` (10 to 60). The safety script: CALL-022 first, then `safety_script` and a new `SAFETY_SCRIPT_VERSION`.
 - A new automated call kind: add an `AutomatedCall` variant; it passes the list check unless the spec names an exception.
 - A query: `sqlx migrate run`, then `cargo sqlx prepare --workspace -- --all-targets --all-features`.
 
@@ -72,3 +82,4 @@ The layer-5 crate for masked calls between a homeowner and the business she conn
 - `tests/integration/tests/no_recording.rs` (TD-CALL-03, TD-CALL-04's log): `cargo test -p askhava-integration --test no_recording`.
 - `tests/integration/tests/line_lifecycle.rs` (TD-CALL-05, TD-CALL-07, TD-CALL-08's gate, TD-BIZ-34's removal case): `cargo test -p askhava-integration --test line_lifecycle`.
 - `tests/integration/tests/schema_grants.rs` (TD-SEC-34): the `calls` default ACL and grants.
+- `tests/integration/tests/voice_calls.rs` (TD-CALL-06, TD-CALL-09, TD-TXT-09's T080 cases, OPS-028): `cargo test -p askhava-integration --test voice_calls`.

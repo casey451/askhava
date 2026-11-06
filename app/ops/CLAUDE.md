@@ -7,7 +7,7 @@ The layer-1 crate that keeps Ask Hava's operating records: the append-only audit
 ## What it owns
 
 - `src/lib.rs`: the crate root; one `mod` line per file.
-- `src/api.rs`: the only public surface; also holds the off-database stream entry points (T017, D-734): `StreamEvent` (`Audit`, `Request`, `AiReading`), `stream_event` (enqueues an `ops.offdb_stream` `core.task`, `STREAM_KIND`), and the `audit` and `set_switch` wrappers over `service` that enqueue the audit row's copy in the same transaction, and `previous_audit_id` (the `max(id) < n` lookup the chain writer links to, D-735).
+- `src/api.rs`: the only public surface; also holds the off-database stream entry points (T017, D-734): `StreamEvent` (`Audit`, `Request`, `AiReading`), `stream_event` (enqueues an `ops.offdb_stream` `core.task`, `STREAM_KIND`), and the `audit` and `set_switch` wrappers over `service` that enqueue the audit row's copy in the same transaction, and `previous_audit_id` (the `max(id) < n` lookup the chain writer links to, D-735); `acknowledge_alert` and `ALERT_ACKNOWLEDGED_ACTION` (T080, OPS-028, D-1706).
 - `src/models.rs`: `AuditEntry` (`status_change`, `check`), `Change`, `Actor`, `AuditRow` (`to_json`), `NewAlert`, `Severity`, `Switch`, `OpsError`, `is_code_name`.
 - `src/service.rs`: `audit`, `export_audit` (cursor, `EXPORT_PAGE_MAX`), `raise_alert`, `is_paused`, `set_switch`.
 - Migration `0021_ops_audit.sql`: the `ops` schema and its grants, `ops.audit_log` (append-only), `ops.alert`, `ops.pause_switch`, `ops.switch_history` (append-only).
@@ -21,6 +21,8 @@ The layer-1 crate that keeps Ask Hava's operating records: the append-only audit
 - PRIV-029: a stream event holds IDs, code names, a route template, a status code and a time only; an AI reading's fields must each be a code name and value (`api::code_fields`), so no AI-written text enters the stream.
 - PRIV-028: actors and subjects are UUIDs; every name is a `&'static str` written in code and checked by `models::is_code_name` and the table's `CHECK`s, so no phone, email or street address fits; a field edit logs the field name only (`Change::Field`).
 - OPS-003, SEC-006: `service::set_switch` changes a switch only if it differs and, in one transaction, logs the change with its actor in the append-only `ops.switch_history` and as an `ops.audit_log` row (`switch_on`/`switch_off`, subject `ops.pause_switch` by its UUID); `service::is_paused` (a switch never set is off).
+
+- OPS-028, D-1706: `acknowledge_alert` resolves only an open critical alert, with one `ops.alert_acknowledged` system audit row, in one transaction; a repeat writes nothing (`tests/integration/tests/voice_calls.rs::ops_028_*`).
 
 ## Never break
 

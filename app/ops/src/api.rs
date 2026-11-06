@@ -125,6 +125,49 @@ pub async fn audit(db: &mut PgConnection, entry: &AuditEntry) -> Result<i64, Ops
     Ok(id)
 }
 
+/// The audit action of a critical alert acknowledged automatically; the weekly digest lists these
+/// rows (OPS-028, D-1706).
+pub const ALERT_ACKNOWLEDGED_ACTION: &str = "ops.alert_acknowledged";
+
+/// Acknowledges the open critical alert `alert` at `at` when the safety voice call for it was
+/// answered by a person (OPS-028, CALL-019, D-1706): sets its `resolved_at` and writes one
+/// [`ALERT_ACKNOWLEDGED_ACTION`] audit row by the system, in one transaction. Returns false,
+/// writing nothing, for an alert already resolved, not critical, or unknown, so a repeat is safe.
+///
+/// # Errors
+///
+/// [`OpsError::Database`].
+pub async fn acknowledge_alert(
+    db: &mut PgConnection,
+    alert: Uuid,
+    at: Timestamp,
+) -> Result<bool, OpsError> {
+    use jiff_sqlx::ToSqlx;
+    let mut tx = db.begin().await.map_err(|_| OpsError::Database)?;
+    let done = sqlx::query_scalar!(
+        "UPDATE ops.alert SET resolved_at = $2 \
+         WHERE id = $1 AND severity = 'critical' AND resolved_at IS NULL RETURNING id",
+        alert,
+        at.to_sqlx() as _,
+    )
+    .fetch_optional(&mut *tx)
+    .await
+    .map_err(|_| OpsError::Database)?;
+    if done.is_none() {
+        return Ok(false);
+    }
+    let entry = AuditEntry {
+        actor: Actor::System,
+        action: ALERT_ACKNOWLEDGED_ACTION,
+        subject_kind: "ops.alert",
+        subject_id: alert,
+        change: Change::Action,
+    };
+    audit(&mut tx, &entry).await?;
+    tx.commit().await.map_err(|_| OpsError::Database)?;
+    Ok(true)
+}
+
 /// The ID of the newest audit row below `id`, the row the off-database chain links `id` to
 /// (PRIV-029, D-735); none when `id` is the first. One indexed lookup, however far below it is.
 ///

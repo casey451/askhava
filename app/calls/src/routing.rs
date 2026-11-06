@@ -13,7 +13,14 @@
 //! street, but only on an A-attested call, and is connected only when it confirms (CALL-005,
 //! D-026); lines open only at the release of a paid or $0 pick, so that business is the paid one
 //! (D-1686). [`answer_call`] reads the caller, the lines and, for a read-back, the vault.
+//!
+//! T080 (CALL-013, CALL-023, D-485, D-1704): every PIN prompt is spoken words in a `Gather` that
+//! waits [`PinWait`] (the `ASKHAVA_PIN_WAIT_SECONDS` setting, at least and by default 10 seconds)
+//! and is said once more before the call ends ([`pin_prompt_twiml`], [`pin_heard`]), so a 711 relay
+//! operator can enter the digits; a relay call is routed like any other. The prompt and the
+//! read-back answer the calling side's own webhook, never the dialed leg (D-385).
 
+use askhava_core::api::SettingsError;
 use askhava_messaging::api::{OutboxError, sender_business};
 use askhava_ops::api::{NewAlert, Severity, raise_alert};
 use askhava_privacy::api::{Readback, Vault, find_by_phone, read_for_readback};
@@ -180,6 +187,99 @@ pub fn route(party: Party, lines: &[RoutedLine], turn: CallTurn) -> Step {
         }
         _ => Step::WrongPin,
     }
+}
+
+/// The setting for how long each PIN prompt waits for digits, in seconds (CALL-013).
+pub const PIN_WAIT_KEY: &str = "ASKHAVA_PIN_WAIT_SECONDS";
+/// The shortest wait CALL-013 allows and the default: a 711 relay operator needs the time.
+pub const PIN_WAIT_MIN: u32 = 10;
+/// The longest wait the setting accepts, Twilio's longest `Gather` timeout.
+const PIN_WAIT_MAX: u32 = 60;
+/// The spoken PIN prompt: words only, never a tone, for 711 relay (CALL-013).
+pub const PIN_PROMPT: &str = "Please enter the 4 digit PIN you were given. Take your time.";
+/// Said before the call ends when no digits came after the repeat (CALL-013).
+pub const PIN_GOODBYE: &str =
+    "We didn't get a PIN, so we'll hang up now. You can call back to try again. Goodbye.";
+
+/// How long each PIN prompt waits for digits (CALL-013): [`PIN_WAIT_KEY`], at least 10 seconds.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct PinWait(u32);
+
+impl Default for PinWait {
+    fn default() -> Self {
+        Self(PIN_WAIT_MIN)
+    }
+}
+
+impl PinWait {
+    /// CALL-013: reads [`PIN_WAIT_KEY`] from the process's `ASKHAVA_*` pairs; absent or empty keeps
+    /// 10. Every other key is ignored (`Settings::from_pairs` checks the names).
+    ///
+    /// # Errors
+    ///
+    /// [`SettingsError::Invalid`] naming the key, never the value, outside 10 to 60 seconds.
+    pub fn from_pairs<I>(pairs: I) -> Result<Self, SettingsError>
+    where
+        I: IntoIterator<Item = (String, String)>,
+    {
+        let mut wait = Self::default();
+        for (name, value) in pairs {
+            let value = value.trim();
+            if name == PIN_WAIT_KEY && !value.is_empty() {
+                wait.0 = value
+                    .parse::<u32>()
+                    .ok()
+                    .filter(|s| (PIN_WAIT_MIN..=PIN_WAIT_MAX).contains(s))
+                    .ok_or(SettingsError::Invalid(PIN_WAIT_KEY))?;
+            }
+        }
+        Ok(wait)
+    }
+
+    /// The wait in seconds.
+    #[must_use]
+    pub fn seconds(self) -> u32 {
+        self.0
+    }
+}
+
+/// What a PIN prompt hears, by when the first digit came (CALL-013).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PinHeard {
+    /// Digits came within the wait of a prompt: route them.
+    Digits,
+    /// None came by the end of the wait, after the repeat too: say goodbye and end the call.
+    Ended,
+}
+
+/// CALL-013, D-485: digits are taken when they start within the wait of the first prompt or of its
+/// one repeat (`first` and `second` are the seconds after each prompt when a digit came, if one
+/// did); no digits after the repeat ends the call.
+#[must_use]
+pub fn pin_heard(wait: PinWait, first: Option<u32>, second: Option<u32>) -> PinHeard {
+    let within = |at: Option<u32>| at.is_some_and(|s| s < wait.seconds());
+    if within(first) || within(second) {
+        PinHeard::Digits
+    } else {
+        PinHeard::Ended
+    }
+}
+
+/// CALL-013, CALL-023, D-385: the PIN prompt's TwiML, the reply to the calling side's own webhook
+/// only, so nothing plays to the other party: the spoken prompt inside a `Gather` that waits
+/// `wait` seconds for 4 digits, the same prompt once more, then [`PIN_GOODBYE`] and a hang-up.
+/// `action` is the app's own path that receives the digits. No `Play`, so no tone-only prompt.
+#[must_use]
+pub fn pin_prompt_twiml(wait: PinWait, action: &str) -> String {
+    let gather = format!(
+        "<Gather input=\"dtmf\" numDigits=\"4\" timeout=\"{}\" action=\"{action}\">\
+         <Say>{PIN_PROMPT}</Say></Gather>",
+        wait.seconds()
+    );
+    format!(
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response>{gather}{gather}\
+         <Say>{PIN_GOODBYE}</Say><Hangup/></Response>"
+    )
 }
 
 /// An incoming call: the pool number called and the caller's number (never logged).

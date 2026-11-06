@@ -12,6 +12,18 @@
 //!
 //! [`is_safe_reply`], [`urgency`], [`choice`] and [`beep_is_alarm`] read the homeowner's answers
 //! to the SAFE request, "How soon?", the emergency-or-regular choice and the INT-037 question.
+//!
+//! T080 (CALL-019, CALL-022, D-384, D-491, D-1705): [`safety_call_trigger`] is the narrower
+//! voice-call trigger, and [`enqueue_safety_call`] queues the one `core.task` event `calls`
+//! handles to place the safety voice call, since intake may not call `calls`.
+
+use askhava_core::api::{NewTask, enqueue};
+use jiff::Timestamp;
+use serde_json::json;
+use sqlx::PgConnection;
+use sqlx::types::Uuid;
+
+use crate::models::IntakeError;
 
 /// One entry of the 911 list (INT-002); [`Hazard::code`] is stored in `intake.emergency_event`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -539,4 +551,83 @@ pub fn choice(words: &str) -> Option<Choice> {
 pub fn beep_is_alarm(words: &str) -> bool {
     let text = Folded::new(words);
     text.any_word(&["2"]) || text.any_phrase(&["keeps going", "going off", "alarm"])
+}
+
+/// The `core.task` kind `calls` handles to place the safety voice call (CALL-019, D-491); equal
+/// to `calls::api::SAFETY_CALL_KIND`, which intake may not name (`tests/integration/tests/voice_calls.rs`).
+pub const SAFETY_CALL_KIND: &str = "calls.safety_call";
+/// CALL-022's own words beyond the 911 list's gas, smoke, fire and electrical matches: spark,
+/// burning and electrical-shock stems, English and Spanish.
+const CALL_STEMS: &[&str] = &[
+    "spark",
+    "chispa",
+    "shock",
+    "electrocut",
+    "descarga",
+    "quema",
+];
+/// Phrases that name none of them.
+const NOT_CALL: &[&str] = &["spark plug", "shock absorber", "shocks"];
+/// The CO words a going-off alarm needs before it calls (CALL-022: never a bare alarm).
+const CO_WORDS: &[&str] = &["carbon monoxide", "monoxido", "smoke", "humo", "fire alarm"];
+
+/// CALL-022, D-384: whether `words` may trigger the safety voice call: a gas phrase (INT-004), a
+/// CO, smoke or fire alarm or detector going off, smoke, fire, burning, spark or electrical-shock
+/// words, English or Spanish; never a bare smell, odor, buzz, hot, alarm, flood, dizzy or a
+/// heat-only message, and never a street name (D-165).
+#[must_use]
+pub fn safety_call_trigger(words: &str) -> bool {
+    let text = Folded::new(&strip_addresses(words));
+    let co = |t: &Folded| t.any_word(&["co"]) || t.any_phrase(CO_WORDS);
+    let own = Folded::new(&text.without(NOT_CALL));
+    match hazard(&text) {
+        Some(Hazard::Gas | Hazard::SmokeFire | Hazard::Electrical) => true,
+        Some(Hazard::CoAlarm) if co(&text) => true,
+        Some(Hazard::CoAlarm | Hazard::PowerLine) | None => {
+            own.any_stem(CALL_STEMS) || own.any_word(BURNING)
+        }
+    }
+}
+
+/// One safety voice call to ask `calls` for: IDs and the message's arrival time only (PRIV-002).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct SafetyCallAsk {
+    /// The homeowner's vault contact ID, the only number the call may go to.
+    pub contact: Uuid,
+    /// The triggering message's `messaging.inbox` ID.
+    pub message: Uuid,
+    /// When it arrived; the call goes only within 30 minutes of it (CALL-022).
+    pub arrived_at: Timestamp,
+    /// Casey's critical alert about it, acknowledged when a person answers (OPS-028).
+    pub alert: Uuid,
+}
+
+/// CALL-019, CALL-022, D-491, D-1705: enqueues one [`SAFETY_CALL_KIND`] task in the caller's
+/// transaction when the safety voice call is on (`switch_on`) and `words` pass
+/// [`safety_call_trigger`]; deduped on the critical alert, so a second message about the same
+/// emergency queues no second call. Returns whether a task was queued. The caller (T096's
+/// suspension path, TXT-024) decides that texting cannot reach her.
+///
+/// # Errors
+///
+/// [`IntakeError::Database`].
+pub async fn enqueue_safety_call(
+    tx: &mut PgConnection,
+    words: &str,
+    ask: SafetyCallAsk,
+    switch_on: bool,
+) -> Result<bool, IntakeError> {
+    if !switch_on || !safety_call_trigger(words) {
+        return Ok(false);
+    }
+    let payload = json!({
+        "contact": ask.contact, "message": ask.message,
+        "arrived_at": ask.arrived_at.to_string(), "alert": ask.alert,
+    });
+    let mut task = NewTask::new(SAFETY_CALL_KIND, payload, ask.arrived_at);
+    task.dedupe_key = Some(format!("{SAFETY_CALL_KIND}.{}", ask.alert));
+    let queued = enqueue(tx, &task)
+        .await
+        .map_err(|_| IntakeError::Database)?;
+    Ok(queued.is_some())
 }
