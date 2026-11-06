@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-06T20:51:20Z by runner 7ba6bcbf51c6 (actions).
+Updated 2026-11-06T20:51:31Z by runner 7ba6bcbf51c6 (actions).
 
-**Building: T079 in progress since 20:07Z; 125 of 239 done; week 24% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 20:51Z; 125 of 239 done; week 24% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 125 of 239 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T079 claimed 20:07Z, lease until 23:07Z
+- **Lane:** idle since 20:51Z (no task in progress)
 - **Week:** 24% used, 146.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 20:16Z, 35 min before this update
 - **Keeper:** last ran 19:57Z, next wake 20:17Z
@@ -17,6 +17,7 @@ Updated 2026-11-06T20:51:20Z by runner 7ba6bcbf51c6 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T079 | calls: line closing, staff phones and LINK, email-preferred  | MERGE_PENDING | 1 | 43 min | 20:51Z |  |
 | T078 | calls: never recorded, 45-second connection rule, call logs | done | 1 | 46 min | 19:53Z |  |
 | T077 | calls: PIN routing and the paid-business read-back | done | 1 | 60 min | 18:52Z |  |
 | T076 | calls: masked numbers from a fixed pool, PIN sharing when ex | done | 1 | 41 min | 17:32Z |  |
@@ -95,7 +96,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T079 (lease until 2026-11-06T23:07:34Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T078", "at": "2026-11-06T19:53:01Z", "cache_read_input_tokens": 10800516, "input_tokens": 334, "cache_creation_input_tokens": 348128, "output_tokens": 106223}
+- {"task": "T079", "at": "2026-11-06T20:51:19Z", "output_tokens": 155791, "cache_creation_input_tokens": 548612, "input_tokens": 392, "cache_read_input_tokens": 19005194}
