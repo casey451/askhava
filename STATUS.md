@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-06T11:07:06Z by runner b0ef1445a6c0 (actions).
+Updated 2026-11-06T11:07:18Z by runner b0ef1445a6c0 (actions).
 
-**Building: T075 in progress since 10:21Z; 119 of 238 done; week 14% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 11:07Z; 119 of 238 done; week 14% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 119 of 238 build tasks (owner gates not counted)
 - **Stage:** stage 3; stage proofs recorded: 1, 2
-- **Lane:** lane 1: T075 claimed 10:21Z, lease until 13:21Z
+- **Lane:** idle since 11:07Z (no task in progress)
 - **Week:** 14% used, 166.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:29Z, 37 min before this update
+- **Last run:** 10:29Z, 38 min before this update
 - **Keeper:** last ran 10:08Z, next wake 10:28Z
 
 ## Needs attention
@@ -17,6 +17,7 @@ Updated 2026-11-06T11:07:06Z by runner b0ef1445a6c0 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T075 | Stage 3 cleanup: dead code, duplicates, docs up to date | MERGE_PENDING | 1 | 45 min | 11:07Z |  |
 | T246 | picks, portals and server: the page pick end to end (one pic | done | 1 | 66 min | 10:04Z |  |
 | T247 | jobs and quotes: the first-quote move to Quotes ready (JOB-0 | done | 1 | 24 min | 08:42Z |  |
 | T074 | Twin: run the gate against the app's rules modules | done | 1 | 51 min | 08:05Z |  |
@@ -87,7 +88,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T075 (lease until 2026-11-06T13:21:10Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T246", "at": "2026-11-06T10:04:01Z", "cache_creation_input_tokens": 1002722, "output_tokens": 263195, "cache_read_input_tokens": 55174929, "input_tokens": 656}
+- {"task": "T075", "at": "2026-11-06T11:07:06Z", "cache_read_input_tokens": 13773071, "output_tokens": 86468, "cache_creation_input_tokens": 401509, "input_tokens": 356}
