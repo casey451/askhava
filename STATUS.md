@@ -1,24 +1,24 @@
 # Ask Hava build status
 
-Updated 2026-11-06T21:47:55Z by runner 14dd8e5c35ec (actions).
+Updated 2026-11-06T22:02:52Z by runner 1d94b20ee738 (actions).
 
-**Idle since 21:42Z; 126 of 239 done; week 25% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 22:00Z; 127 of 239 done; week 25% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 126 of 239 build tasks (owner gates not counted)
+- **Tasks done:** 127 of 239 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 21:42Z (no task in progress)
+- **Lane:** idle since 22:00Z (no task in progress)
 - **Week:** 25% used, 146.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:47Z, 0 min before this update
+- **Last run:** 21:48Z, 14 min before this update
 - **Keeper:** last ran 21:47Z, next wake 22:07Z
 
 ## Needs attention
 - PLAN GAP T080 (since 2026-11-06T21:04:42Z, no attempt used; a plan change fixes it): T080: dependency T079 is DONE but its owned file app/calls/src/lifecycle.rs is not on main; T080: dependency T079 is DONE but its owned file tests/integration/tests/line_lifecycle.rs is not on main
-- Strict plan check red: 1 problem(s) on tasks still to run (+11 on DONE tasks); first: T249: stored context_pct 22% but it measures 26%; regenerate
+- Strict plan check red: 3 problem(s) on tasks still to run (+12 on DONE tasks); first: T196: stored context_pct 17% but it measures 21%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T081 | businesses: sign-up, identity chain from public records, act | MERGE_PENDING | 1 | 37 min | 21:42Z |  |
+| T081 | businesses: sign-up, identity chain from public records, act | done | 1 | 37 min | 21:42Z |  |
 | T079 | calls: line closing, staff phones and LINK, email-preferred  | done | 1 | 43 min | 20:51Z |  |
 | T078 | calls: never recorded, 45-second connection rule, call logs | done | 1 | 46 min | 19:53Z |  |
 | T077 | calls: PIN routing and the paid-business read-back | done | 1 | 60 min | 18:52Z |  |
@@ -43,7 +43,6 @@ Updated 2026-11-06T21:47:55Z by runner 14dd8e5c35ec (actions).
 | T067 | payments: nightly reconcile, auto-match or auto-refund, ledg | done | 1 | 49 min | 00:38Z |  |
 | T064 | payments: success after the job moved on is refunded once an | done | 1 | 27 min | 23:35Z |  |
 | T066 | payments: one refund per trigger, retries, disputes with evi | done | 1 | 46 min | 22:54Z |  |
-| T245 | payments: narrow the default privileges in schema payments t | done | 1 | 21 min | 21:56Z |  |
 
 ### Plan and harness merges on main
 - 16:15Z Plan: dynamic SQL in migrations is a TD-SEC-10 finding (T252), T126 context budget, stored budgets refreshed (D-1677, D-1678) (#298)
@@ -53,20 +52,20 @@ Updated 2026-11-06T21:47:55Z by runner 14dd8e5c35ec (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 213 of 731 (29.1%) · partial 210 · unstarted 308
-**Tasks merged (throughput only):** 126 of 239
+**Requirements verified:** 215 of 731 (29.4%) · partial 217 · unstarted 299
+**Tasks merged (throughput only):** 127 of 239
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 14 | 10 | 11 | 35 |
 | ai | 14 | 9 | 5 | 28 |
-| businesses | 5 | 6 | 47 | 58 |
+| businesses | 5 | 15 | 38 | 58 |
 | calls | 0 | 17 | 8 | 25 |
 | consent | 15 | 12 | 8 | 35 |
-| fees | 23 | 28 | 1 | 52 |
+| fees | 24 | 27 | 1 | 52 |
 | intake | 19 | 15 | 9 | 43 |
 | job-cards | 12 | 5 | 7 | 24 |
-| licensing | 31 | 16 | 1 | 48 |
+| licensing | 32 | 15 | 1 | 48 |
 | lifecycle | 19 | 6 | 3 | 28 |
 | messaging | 16 | 11 | 18 | 45 |
 | ops-recovery | 1 | 4 | 49 | 54 |
@@ -89,7 +88,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 6 of 55 done
+- stage 4: 7 of 55 done
 - stage 5: 0 of 42 done
 - stage 6: 0 of 26 done
 - stage 7: 0 of 2 done
