@@ -96,8 +96,9 @@ const fn tier_name(tier: Tier) -> &'static str {
     }
 }
 
-/// `$1,234.56` for `cents`.
-fn money(cents: u64) -> String {
+/// `$1,234.56` for `cents`; the one formatter of the portals' money pages (the receipt's "Why
+/// was I charged?" page uses it too).
+pub(crate) fn money(cents: u64) -> String {
     let dollars = (cents / 100).to_string();
     let mut grouped = String::new();
     for (i, digit) in dollars.chars().enumerate() {
