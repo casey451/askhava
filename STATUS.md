@@ -1,23 +1,23 @@
 # Ask Hava build status
 
-Updated 2026-11-06T08:46:04Z by runner e292a7f6043d (actions).
+Updated 2026-11-06T08:57:15Z by runner bb5f32fa491a (actions).
 
-**Idle since 08:42Z; 117 of 238 done; week 13% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 08:55Z; 118 of 238 done; week 13% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 117 of 238 build tasks (owner gates not counted)
+- **Tasks done:** 118 of 238 build tasks (owner gates not counted)
 - **Stage:** stage 3; stage proofs recorded: 1, 2
-- **Lane:** idle since 08:42Z (no task in progress)
+- **Lane:** idle since 08:55Z (no task in progress)
 - **Week:** 13% used, 168.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:45Z, 0 min before this update
+- **Last run:** 08:46Z, 11 min before this update
 - **Keeper:** last ran 08:46Z, next wake 09:06Z
 
 ## Needs attention
-- Strict plan check red: 7 problem(s) on tasks still to run (+19 on DONE tasks); first: T247: stored context_pct 20% but it measures 25%; regenerate
+- Strict plan check red: 6 problem(s) on tasks still to run (+20 on DONE tasks); first: T075: stored context_pct 23% but it measures 28%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T247 | jobs and quotes: the first-quote move to Quotes ready (JOB-0 | MERGE_PENDING | 1 | 24 min | 08:42Z |  |
+| T247 | jobs and quotes: the first-quote move to Quotes ready (JOB-0 | done | 1 | 24 min | 08:42Z |  |
 | T074 | Twin: run the gate against the app's rules modules | done | 1 | 51 min | 08:05Z |  |
 | T073 | Named mutants: the 4-month rule, the fee tiers and the card  | done | 1 | 30 min | 06:37Z |  |
 | T072 | Metamorphic prompt-injection tests over routing, fees and di | done | 1 | 30 min | 05:55Z |  |
@@ -42,8 +42,8 @@ Updated 2026-11-06T08:46:04Z by runner e292a7f6043d (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 174 of 731 (23.8%) · partial 229 · unstarted 328
-**Tasks merged (throughput only):** 117 of 238
+**Requirements verified:** 180 of 731 (24.6%) · partial 223 · unstarted 328
+**Tasks merged (throughput only):** 118 of 238
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -56,8 +56,8 @@ Updated 2026-11-06T08:46:04Z by runner e292a7f6043d (actions).
 | intake | 19 | 15 | 9 | 43 |
 | job-cards | 12 | 5 | 7 | 24 |
 | licensing | 31 | 16 | 1 | 48 |
-| lifecycle | 9 | 16 | 3 | 28 |
-| messaging | 14 | 11 | 20 | 45 |
+| lifecycle | 14 | 11 | 3 | 28 |
+| messaging | 15 | 10 | 20 | 45 |
 | ops-recovery | 1 | 4 | 49 | 54 |
 | privacy | 1 | 15 | 15 | 31 |
 | quiet-hours | 6 | 3 | 0 | 9 |
@@ -77,7 +77,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 0.5: 0 of 1 done
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
-- stage 3: 26 of 29 done
+- stage 3: 27 of 29 done
 - stage 4: 0 of 54 done
 - stage 5: 0 of 42 done
 - stage 6: 0 of 26 done
