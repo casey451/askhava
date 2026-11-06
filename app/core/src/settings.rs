@@ -66,6 +66,8 @@ const KEYS: &[&str] = &[
     "ASKHAVA_AI_DAILY_CAP",
     // Parsed by `askhava_picks::api::ConfirmSettings::from_pairs` (T063, PICK-019, D-1503).
     "ASKHAVA_PICK_CONFIRM_WINDOW_MINUTES",
+    // Parsed by `askhava_calls::api::PinWait::from_pairs` (T080, CALL-013).
+    "ASKHAVA_PIN_WAIT_SECONDS",
 ];
 
 /// Key prefixes that only a live vendor account issues (SEC-002).

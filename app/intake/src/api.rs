@@ -30,6 +30,7 @@ pub use crate::conversation::{
     Answer, JobStart, Opened, Recorded, Taken, ask_name_address, begin_job, hear, joining_job,
     record_answer, stop_if_under_18, take_name_address,
 };
+pub use crate::emergency::{SAFETY_CALL_KIND, SafetyCallAsk, enqueue_safety_call};
 pub use crate::emergency_count::{
     CHOICE_TEMPLATE, NIGHT_MANY_TEMPLATE, NIGHT_NONE_TEMPLATE, NIGHT_ONE_TEMPLATE, Offer, count,
     is_night, offer,
@@ -96,7 +97,8 @@ pub use crate::summary_step::{
 /// The pure first-reply rules, for the rules bridge and other crates' property tests.
 pub mod rules {
     pub use crate::emergency::{
-        Check, Choice, Hazard, Urgency, beep_is_alarm, check, choice, is_safe_reply, urgency,
+        Check, Choice, Hazard, Urgency, beep_is_alarm, check, choice, is_safe_reply,
+        safety_call_trigger, urgency,
     };
     pub use crate::rules::{
         AgeStop, CONSENT_CALL_TEMPLATE, CONSENT_TEMPLATE, CloseReading, CloseTarget,
