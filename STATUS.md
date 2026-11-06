@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-06T05:55:34Z by runner 3d873cc454b8 (actions).
+Updated 2026-11-06T05:55:50Z by runner 3d873cc454b8 (actions).
 
-**Building: T072 in progress since 05:25Z; 114 of 238 done; week 11% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 05:55Z; 114 of 238 done; week 11% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 114 of 238 build tasks (owner gates not counted)
 - **Stage:** stage 3; stage proofs recorded: 1, 2
-- **Lane:** lane 1: T072 claimed 05:25Z, lease until 08:25Z
+- **Lane:** idle since 05:55Z (no task in progress)
 - **Week:** 11% used, 172.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:31Z, 23 min before this update
+- **Last run:** 05:31Z, 24 min before this update
 - **Keeper:** last ran 05:17Z, next wake 05:37Z
 
 ## Needs attention
@@ -17,6 +17,7 @@ Updated 2026-11-06T05:55:34Z by runner 3d873cc454b8 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T072 | Metamorphic prompt-injection tests over routing, fees and di | MERGE_PENDING | 1 | 30 min | 05:55Z |  |
 | T071 | Stage 3 check: the ledger matches the Stripe mock on 1,000 s | done | 1 | 37 min | 05:09Z |  |
 | T070 | picks: 'no longer active' once, Confirm link replies | done | 1 | 45 min | 04:18Z |  |
 | T192 | picks: compile-fail proofs that no crate but payments can bu | done | 1 | 26 min | 03:17Z |  |
@@ -82,7 +83,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T072 (lease until 2026-11-06T08:25:06Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T071", "at": "2026-11-06T05:09:34Z", "input_tokens": 203, "cache_creation_input_tokens": 338495, "cache_read_input_tokens": 5569784, "output_tokens": 72115}
+- {"task": "T072", "at": "2026-11-06T05:55:34Z", "input_tokens": 266, "output_tokens": 104385, "cache_read_input_tokens": 8420515, "cache_creation_input_tokens": 399444}
