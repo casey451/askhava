@@ -18141,7 +18141,7 @@
     "T245",
     "T075"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 4,
    "slug": "core-schema-default-privileges",
    "type": "build",
@@ -18154,7 +18154,7 @@
     1620,
     1621
    ],
-   "last_failure": "T250 blocked: migration 0110 names 12 other modules' schemas; TD-SEC-10 (architecture_migrations.rs, protected) rejects it. Needs a harness exception for a core migration of only ALTER DEFAULT PRIVILEGES ... REVOKE statements, or a plan change to 13 per-schema migrations 0110-0122. Nothing committed; D-1619.\nre-queued after plan fix D-1632: T250 now a harness task owning architecture_migrations.rs with a REVOKE-only core-migration exception (TD-SEC-35); attempts 1-2 failed on the TD-SEC-10 plan gap, attempt 3 on the unrelated RUSTSEC-2026-0446 audit failure fixed by D-1643",
+   "last_failure": "T250 blocked: migration 0110 names 12 other modules' schemas; TD-SEC-10 (architecture_migrations.rs, protected) rejects it. Needs a harness exception for a core migration of only ALTER DEFAULT PRIVILEGES ... REVOKE statements, or a plan change to 13 per-schema migrations 0110-0122. Nothing committed; D-1619.\nre-queued after plan fix D-1632: T250 now a harness task owning architecture_migrations.rs with a REVOKE-only core-migration exception (TD-SEC-35); attempts 1-2 failed on the TD-SEC-10 plan gap, attempt 3 on the unrelated RUSTSEC-2026-0446 audit failure fixed by D-1643\nre-queued after plan fix D-1666: Ci cargo-audit RUSTSEC-2026-0455 on #296 (attempt 4); lock bump merged in #297 (D-1666) after the attempt started, listed on T250 in #298",
    "history": [
     {
      "attempt": 1,
@@ -18295,7 +18295,7 @@
     "why": "auto-merge on #296 (gh pr merge)",
     "head": "6c19ef83e6d7f7467b0d0da0f4e25ab5cdf9904e"
    },
-   "reason": "Ci: failure; Checks: failure\nChecks failed at step: Rust dependency audit (cargo-audit, cargo-deny)\nVersion:   3.20.2\nwarning: 1 allowed warning found\nTitle:     Large-window Brotli bodies bypass decompression memory limits\nDate:      2026-11-06\nID:        RUSTSEC-2026-0455\nURL:       https://rustsec.org/advisories/RUSTSEC-2026-0455\nSolution:  Upgrade to >=3.20.3\nCrate:     basic-toml\nVersion:   0.1.10\nWarning:   unmaintained\nTitle:     `basic-toml` is unmaintained\nDate:      2026-09-26\nID:        RUSTSEC-2026-0374\nURL:       https://rustsec.org/advisories/RUSTSEC-2026-0374\n##[error]Process completed with exit code 1.\nCi failed at step: All three jobs passed\nChecks: failure, Coverage: success, E2e: success\n##[error]Process completed with exit code 1.",
+   "reason": null,
    "requeues": [
     {
      "at": "2026-11-06T15:11:44Z",
@@ -18309,6 +18309,19 @@
      "plan_head": "68d31e685befbe02213ae9d89025cab4df9f8eb6",
      "plan_then": "8767f13ca89a5e4aa4a3bed149916589a180774b7e8316e51b618f3e5145b5fe",
      "plan_now": "8d32b7904cc3e7376801ec9969e80630b7d7c668851e7add3acbcf18af158387"
+    },
+    {
+     "at": "2026-11-06T16:16:11Z",
+     "reason": "Ci cargo-audit RUSTSEC-2026-0455 on #296 (attempt 4); lock bump merged in #297 (D-1666) after the attempt started, listed on T250 in #298",
+     "by": "manual-77da0f5ac001",
+     "was": "Ci: failure; Checks: failure\nChecks failed at step: Rust dependency audit (cargo-audit, cargo-deny)\nVersion:   3.20.2\nwarning: 1 allowed warning found\nTitle:     Large-window Brotli bodies bypass decompression memory limits\nDate:      2026-11-06\nID:        RUSTSEC-2026-0455\nURL:       https://rustsec.org/advisories/RUSTSEC-2026-0455\nSolution:  Upgrade to >=3.20.3\nCrate:     basic-toml\nVersion:   0.1.10\nWarning:   unmaintained\nTitle:     `basic-toml` is unmaintained\nDate:      2026-09-26\nID:        RUSTSEC-2026-0374\nURL:       https://rustsec.org/advisories/RUSTSEC-2026-0374\n##[error]Process completed with exit code 1.\nCi failed at step: All three jobs passed\nChecks: failure, Coverage: success, E2e: success\n##[error]Process completed with exit code 1.",
+     "attempts": 4,
+     "plan_fix": "D-1666",
+     "plan_since": "2026-11-06T15:13:14Z",
+     "plan_base": "68d31e685befbe02213ae9d89025cab4df9f8eb6",
+     "plan_head": "428a704c4d3904f69ac7ff282d306a9d35ad380e",
+     "plan_then": "8d32b7904cc3e7376801ec9969e80630b7d7c668851e7add3acbcf18af158387",
+     "plan_now": "e01b7895cddb459d05a805d3dfe11925c342bd6fa5e57a69e0217346de17f9ab"
     }
    ],
    "runner_closed_prs": [
@@ -19528,7 +19541,7 @@
    }
   }
  },
- "updated_at": "2026-11-06T16:09:09Z",
+ "updated_at": "2026-11-06T16:16:11Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -19626,8 +19639,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "55d8cb077488f729d518dab86102b4cc7d87b885",
- "starter": "actions",
+ "runner_sha": "ea22387162b93e90d7a353e6474e7f8998b11b49",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "3824a2b95a260699d7ff5a04b3e1ddc7d8bce939",
