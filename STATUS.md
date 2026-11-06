@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-06T13:31:25Z by runner 25de4f795882 (actions).
+Updated 2026-11-06T14:01:14Z by runner 25de4f795882 (actions).
 
-**Idle since 13:30Z; 121 of 238 done; week 16% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T250 in progress since 13:53Z; 121 of 238 done; week 16% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 121 of 238 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 13:30Z (no task in progress)
+- **Lane:** lane 1: T250 claimed 13:53Z, lease until 16:53Z
 - **Week:** 16% used, 162.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:31Z, 0 min before this update
+- **Last run:** 13:31Z, 29 min before this update
 - **Keeper:** last ran 13:31Z, next wake 13:51Z
 
 ## Needs attention
@@ -76,7 +76,7 @@ Updated 2026-11-06T13:31:25Z by runner 25de4f795882 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-06T13:18:27Z (week)): five-hour: 5.0M used, 24.1M left, resets 2026-11-06T16:07:06Z; week: 32.0M used, 162.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-11-18T21:14:44Z.
+- Pacing (session_reading 2026-11-06T13:31:12Z (week)): five-hour: 5.1M used, 24.0M left, resets 2026-11-06T16:07:06Z; week: 32.0M used, 162.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-11-18T21:47:20Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -91,7 +91,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T250 (lease until 2026-11-06T16:53:58Z)
 
 ## Last usage reading
 - {"task": "T250", "at": "2026-11-06T13:30:59Z", "input_tokens": 28, "cache_creation_input_tokens": 58794, "output_tokens": 8662, "cache_read_input_tokens": 387175}
