@@ -30,6 +30,7 @@ base64 = { workspace = true }
 hmac = { workspace = true }
 jiff = { workspace = true }
 jiff-sqlx = { workspace = true, features = ["postgres"] }
+proptest = { workspace = true }
 secrecy = { workspace = true }
 sha1 = { workspace = true }
 sha2 = { workspace = true }
