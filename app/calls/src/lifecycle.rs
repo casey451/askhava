@@ -13,9 +13,11 @@
 //! once the owner approved it; [`gate`] turns such a caller into [`Party::Unlinked`], so it hears
 //! the PIN prompt like any unlinked phone (CALL-012). The approval itself is recorded by T148's
 //! YES and Approve paths (D-492); the caller passes it in. [`request_link`] queues, after a
-//! blocked call from an unlinked phone, one "Link this phone" notice to the owner and every
-//! "Confirm and billing" member, by the business's chosen channels, naming only the last 4 digits
-//! of the blocked number and the line's PIN for "Reply LINK <PIN>" (CALL-011, D-078).
+//! blocked call from an unlinked phone, one LINK notice: by email to the owner and every
+//! "Confirm and billing" member, and by text ("Reply LINK <PIN>") only to the business's
+//! signed-up main phone and only when the business chose text ([`LINK_TEXT_TO`]), naming only the
+//! last 4 digits of the blocked number and the line's PIN, once per line (CALL-011, D-078,
+//! D-1696).
 //!
 //! The pool never looks at how the homeowner chose to be reached, so an email-preferred homeowner
 //! gets a line like anyone (CALL-018). [`greeting_twiml`] is all a call to the Ask Hava number
@@ -50,6 +52,9 @@ pub const GREETING_EN: &str = "This is Ask Hava LLC. We work by text. To start a
 pub const GREETING_ES: &str = "Habla Ask Hava LLC. Trabajamos por mensaje de texto. Para hacer \
      una solicitud, mande un texto a este número. Para ayuda, mande AYUDA. Si es una emergencia, \
      cuelgue y llame al 911.";
+/// CALL-011, D-078, D-1696: the LINK notice's `text_to`: its text goes only to the business's
+/// signed-up main phone, and only when the business chose text; `to` is the email list.
+pub const LINK_TEXT_TO: &str = "main_phone";
 const LINE_KIND: &str = "calls.number_pool";
 
 /// Why a line closes (CALL-009).
@@ -110,27 +115,31 @@ async fn audit_close(
         .map_err(|_| CallsError::Ops)
 }
 
-/// Queues one business notice of `template` with `values` about `line`, once per `once` (a
-/// dedupe key holding no personal data), to the owner and every "Confirm and billing" member
-/// (BIZ-019, D-492).
+/// Queues one business notice of `template` with `values` about `line`, once per line and
+/// template (the dedupe key holds only IDs, no personal data, R13), emailed to the owner and every
+/// "Confirm and billing" member (BIZ-019, D-492); `fields` adds payload fields such as
+/// `text_to`. Returns whether it was queued (`false`: already queued for this line).
 async fn notify(
     tx: &mut PgConnection,
     (business, line): (Uuid, Uuid),
     (template, values): (&'static str, serde_json::Value),
-    once: String,
+    fields: serde_json::Map<String, serde_json::Value>,
     now: Timestamp,
-) -> Result<(), CallsError> {
+) -> Result<bool, CallsError> {
     let to = notice_addresses(tx, business, NoticePurpose::PicksAndRelease)
         .await
         .map_err(|_| CallsError::Database)?;
-    let payload = json!({
+    let mut payload = json!({
         "template": template, "business": business, "line": line, "to": to, "values": values,
     });
+    if let Some(map) = payload.as_object_mut() {
+        map.extend(fields);
+    }
     let mut task = NewTask::new(BUSINESS_NOTICE_KIND, payload, now);
-    task.dedupe_key = Some(once);
+    task.dedupe_key = Some(format!("{BUSINESS_NOTICE_KIND}.{template}.{line}"));
     enqueue(tx, &task)
         .await
-        .map(|_| ())
+        .map(|id| id.is_some())
         .map_err(|_| CallsError::Database)
 }
 
@@ -164,23 +173,30 @@ pub async fn close_line(
     audit_close(&mut tx, row.id, reason).await?;
     if reason.tells_business() {
         let notice = (CANCELLED_TEMPLATE, json!({ "job": number }));
-        let once = format!("{BUSINESS_NOTICE_KIND}.{CANCELLED_TEMPLATE}.{}", row.id);
-        notify(&mut tx, (row.business_id, row.id), notice, once, now).await?;
+        notify(
+            &mut tx,
+            (row.business_id, row.id),
+            notice,
+            serde_json::Map::new(),
+            now,
+        )
+        .await?;
     }
     tx.commit().await.map_err(|_| CallsError::Database)?;
     Ok(Some(row.id))
 }
 
 /// Closes every open line that reached its [`LINE_DAYS`] at `now`, each with its audit row, in one
-/// transaction; returns how many closed (CALL-009). Safe to run twice.
+/// transaction; returns how many closed (CALL-009). Safe to run twice. A `now` so early that 30
+/// days before it is out of range closes nothing, since no line can be that old.
 ///
 /// # Errors
 ///
 /// [`CallsError::Database`] or [`CallsError::Ops`].
 pub async fn close_expired(db: &mut PgConnection, now: Timestamp) -> Result<usize, CallsError> {
-    let cutoff = now
-        .checked_sub(SignedDuration::from_hours(LINE_DAYS * 24))
-        .map_err(|_| CallsError::Database)?;
+    let Ok(cutoff) = now.checked_sub(SignedDuration::from_hours(LINE_DAYS * 24)) else {
+        return Ok(0);
+    };
     let mut tx = db.begin().await.map_err(|_| CallsError::Database)?;
     let lines = sqlx::query_scalar!(
         "UPDATE calls.number_pool SET closed_at = $2 \
@@ -235,11 +251,14 @@ pub fn last4(phone: &SecretString) -> Option<String> {
     digits.get(start..).map(|d| d.iter().collect())
 }
 
-/// Queues the "Link this phone" notice for a blocked call from the unlinked phone `blocked` on
-/// line `line` at `now`: to the owner and every "Confirm and billing" member, naming the last 4
-/// digits and the line's PIN for "Reply LINK <PIN>", once per line and last 4 digits (CALL-011, D-078, D-311).
-/// The full number is never stored or sent. Returns whether a notice was queued: `false` when the
-/// line is not open or the number has fewer than 4 digits.
+/// Queues the LINK notice for a blocked call from the unlinked phone `blocked` on line `line` at
+/// `now`: emailed to the owner and every "Confirm and billing" member, and texted ("Reply LINK
+/// <PIN>") only to the business's signed-up main phone when the business chose text
+/// ([`LINK_TEXT_TO`]); it names the last 4 digits and the line's PIN (CALL-011, D-078, D-311,
+/// D-1696). Once per line: a later blocked call on the same line, from any phone, queues nothing,
+/// as the business already holds the line's PIN. The full number is never stored or sent.
+/// Returns whether a notice was queued now: `false` when the line is not open, the number has
+/// fewer than 4 digits, or the line's notice was already queued.
 ///
 /// # Errors
 ///
@@ -264,14 +283,15 @@ pub async fn request_link(
     let Some(business) = business else {
         return Ok(false);
     };
-    let once = format!("{BUSINESS_NOTICE_KIND}.{LINK_TEMPLATE}.{line}.{last4}");
     let notice = (
         LINK_TEMPLATE,
         json!({ "number": last4, "job": job_pin(line).digits() }),
     );
-    notify(&mut tx, (business, line), notice, once, now).await?;
+    let mut fields = serde_json::Map::new();
+    fields.insert("text_to".to_owned(), json!(LINK_TEXT_TO));
+    let queued = notify(&mut tx, (business, line), notice, fields, now).await?;
     tx.commit().await.map_err(|_| CallsError::Database)?;
-    Ok(true)
+    Ok(queued)
 }
 
 /// CALL-020, D-227: the whole answer to a call to the Ask Hava number: the greeting in English,

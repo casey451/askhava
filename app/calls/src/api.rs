@@ -15,8 +15,8 @@ pub use crate::handlers::{
 };
 pub use crate::lifecycle::{
     BUSINESS_NOTICE_KIND, CANCELLED_TEMPLATE, CloseReason, GREETING_EN, GREETING_ES, LINE_DAYS,
-    LINK_TEMPLATE, PhoneStanding, close_expired, close_line, expired, gate, greeting_twiml, last4,
-    phone_works, request_link,
+    LINK_TEMPLATE, LINK_TEXT_TO, PhoneStanding, close_expired, close_line, expired, gate,
+    greeting_twiml, last4, phone_works, request_link,
 };
 pub use crate::models::CallsError;
 pub use crate::routing::{

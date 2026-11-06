@@ -12,7 +12,7 @@ The layer-5 crate for masked calls between a homeowner and the business she conn
 - Migration `0116_calls_call_log.sql` (T078): `calls.call_log` (append-only: line, call SID unique, `caller` business or homeowner, `answered_by` person, machine, nobody or unknown, `length_seconds` (bigint), `reached_45s`, `ended_at`).
 - `src/rules.rs` (T078): the pure `talked`, `business_attempt`, `answered_by`, `reached_report_mark`, `REPORT_MARK` (`Caller`, `AnsweredBy`).
 - `src/handlers.rs` (T078): `dial_twiml`, `finished_call` (`FinishedCall`), `log_finished_call`, `call_log` (`LoggedCall`); its own queries.
-- `src/lifecycle.rs` (T079): `close_line` (`CloseReason`), `close_expired`, `expired`, `LINE_DAYS`; the pure `phone_works` and `gate` (`PhoneStanding`); `request_link`, `last4`; `greeting_twiml`, `GREETING_EN`, `GREETING_ES`; `BUSINESS_NOTICE_KIND` (`messaging.business_notice`), `CANCELLED_TEMPLATE`, `LINK_TEMPLATE`; its own queries. Templates `line_closed_cancelled` and `link_this_phone` (en, es) in `app/messaging/templates/`.
+- `src/lifecycle.rs` (T079): `close_line` (`CloseReason`), `close_expired`, `expired`, `LINE_DAYS`; the pure `phone_works` and `gate` (`PhoneStanding`); `request_link`, `last4`; `greeting_twiml`, `GREETING_EN`, `GREETING_ES`; `BUSINESS_NOTICE_KIND` (`messaging.business_notice`), `CANCELLED_TEMPLATE`, `LINK_TEMPLATE`, `LINK_TEXT_TO` (`main_phone`); its own queries. Templates `line_closed_cancelled` and `link_this_phone` (en, es) in `app/messaging/templates/`.
 - `src/models.rs`: `CallsError` and the crate-private queries.
 - `src/api.rs`: the only public surface. `sqlx.toml`: `timestamptz` as jiff timestamps.
 
@@ -33,7 +33,7 @@ The layer-5 crate for masked calls between a homeowner and the business she conn
 
 - CALL-009, CALL-010, D-1694: `close_line` sets only `closed_at` on the job's open line, with one audit row naming the reason (`calls.line_closed_*`), in one transaction; a repeat returns `None`; only `Cancelled` queues the business notice (owner and "Confirm and billing" members, deduped per line); no close records a strike. `close_expired` closes lines open 30 days or more.
 - CALL-012, BIZ-033, D-1695: `gate` makes a business phone that a non-owner linked and the owner has not approved `Party::Unlinked`, so it hears the PIN prompt; the voice handler must call it before `route`.
-- CALL-011, D-078, D-1696: `request_link` names only the last 4 digits and the line's PIN, to the owner and "Confirm and billing" members, once per line and last 4 digits; never the full number; the template's `{number}` is the last 4 digits and `{job}` the PIN.
+- CALL-011, D-078, D-1696: `request_link` names only the last 4 digits and the line's PIN, emailed (`to`) to the owner and "Confirm and billing" members and texted only to the main phone when the business chose text (`text_to: LINK_TEXT_TO`); once per line, with an ID-only dedupe key, a repeat returning `false`; never the full number; the template's `{number}` is the last 4 digits and `{job}` the PIN.
 - CALL-020, D-227, D-1697: `greeting_twiml` says the greeting in English, then Spanish, then hangs up; no record, dial, gather or voicemail verb.
 - CALL-018: `assign_number` never reads the homeowner's contact channel.
 

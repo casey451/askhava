@@ -11,8 +11,9 @@ use askhava_businesses::api::{
 };
 use askhava_calls::api::{
     Answer, Attestation, CallTurn, CloseReason, Connected, GREETING_EN, GREETING_ES, IncomingCall,
-    Party, PhoneStanding, RoutedLine, Step, answer_call, assign_number, close_expired, close_line,
-    expired, gate, greeting_twiml, job_pin, last4, phone_works, request_link, route,
+    LINK_TEXT_TO, Party, PhoneStanding, RoutedLine, Step, answer_call, assign_number,
+    close_expired, close_line, expired, gate, greeting_twiml, job_pin, last4, phone_works,
+    request_link, route,
 };
 use askhava_core::api::Settings;
 use askhava_messaging::api::{OutboxError, UpdateChannel, sender_add, set_update_channel};
@@ -153,6 +154,19 @@ async fn count(db: &mut PgConnection, sql: &'static str, bind: &str) -> i64 {
         .expect("count")
 }
 
+/// Every audit action and task kind written so far, in order: a close may add only its own.
+async fn written(db: &mut PgConnection) -> (Vec<String>, Vec<String>) {
+    let actions = sqlx::query_scalar("SELECT action FROM ops.audit_log ORDER BY id")
+        .fetch_all(&mut *db)
+        .await
+        .expect("audit");
+    let kinds = sqlx::query_scalar("SELECT kind FROM core.task ORDER BY id")
+        .fetch_all(&mut *db)
+        .await
+        .expect("tasks");
+    (actions, kinds)
+}
+
 async fn notices(db: &mut PgConnection, line: Uuid) -> Vec<Value> {
     sqlx::query_scalar(
         "SELECT payload FROM core.task WHERE kind = 'messaging.business_notice' \
@@ -188,6 +202,8 @@ async fn call(db: &mut PgConnection, caller: &str) -> Step {
 
 const LINE_AUDIT: &str = "SELECT count(*) FROM ops.audit_log WHERE subject_id::text = $1 \
      AND action LIKE 'calls.line_closed_%'";
+const KEYED: &str = "SELECT count(*) FROM core.task WHERE dedupe_key = $1";
+const PHONES: &str = "SELECT count(*) FROM businesses.staff_phone WHERE business_id::text = $1";
 const OPEN: &str = "SELECT count(*) FROM calls.number_pool WHERE id::text = $1 \
      AND closed_at IS NULL";
 
@@ -205,10 +221,21 @@ async fn td_call_05_a_line_closes_on_cancel_no_show_or_complaint(pool: PgPool) {
         CloseReason::Complaint,
     ] {
         let (job, id) = line(&mut db, (h, b)).await;
+        let (mut actions, mut kinds) = written(&mut db).await;
         let closed = close_line(&mut db, (job, 1042), reason, ts(DAY))
             .await
             .expect("close");
         assert_eq!(closed, Some(id));
+        actions.push(reason.action().to_owned());
+        kinds.push("ops.offdb_stream".to_owned());
+        if reason == CloseReason::Cancelled {
+            kinds.push("messaging.business_notice".to_owned());
+        }
+        assert_eq!(
+            written(&mut db).await,
+            (actions, kinds),
+            "a close writes only its audit row (and its off-database copy) and a cancel's notice: no strike, no other task"
+        );
         assert_eq!(count(&mut db, OPEN, &id.to_string()).await, 0);
         assert_eq!(count(&mut db, LINE_AUDIT, &id.to_string()).await, 1);
         assert_eq!(
@@ -226,12 +253,6 @@ async fn td_call_05_a_line_closes_on_cancel_no_show_or_complaint(pool: PgPool) {
             assert!(sent.is_empty(), "{reason:?} queues no cancel notice");
         }
     }
-    let strikes = "SELECT count(*) FROM ops.audit_log WHERE action LIKE $1";
-    assert_eq!(
-        count(&mut db, strikes, "%strike%").await,
-        0,
-        "no strike is recorded"
-    );
 }
 
 /// TD-CALL-05 (CALL-009): a line closes 30 days after it opened, not a second before; the sweep
@@ -254,8 +275,9 @@ async fn td_call_05_a_line_closes_after_30_days(pool: PgPool) {
 }
 
 /// TD-CALL-05 (CALL-011, D-078): a blocked call from an unlinked staff phone hears the PIN prompt;
-/// the LINK notice goes to the owner and the billing member, never the cards-only member, with
-/// the last 4 digits and the line's PIN, never the full number; once per line and number.
+/// the LINK notice is emailed to the owner and the billing member, never the cards-only member,
+/// and texted only to the main phone, with the last 4 digits and the line's PIN, never the full
+/// number; once per line, with no digits in its dedupe key.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_call_05_a_blocked_staff_phone_hears_the_pin_prompt_and_link_names_its_last_4(
     pool: PgPool,
@@ -267,9 +289,21 @@ async fn td_call_05_a_blocked_staff_phone_hears_the_pin_prompt_and_link_names_it
     assert_eq!(call(&mut db, BLOCKED).await, Step::AskPin);
     let blocked = SecretString::from(BLOCKED.to_owned());
     assert_eq!(request_link(&mut db, id, &blocked, ts(DAY)).await, Ok(true));
-    assert_eq!(request_link(&mut db, id, &blocked, ts(DAY)).await, Ok(true));
+    assert_eq!(
+        request_link(&mut db, id, &blocked, ts(DAY)).await,
+        Ok(false)
+    );
+    let other = SecretString::from(STAFF_A.to_owned());
+    assert_eq!(request_link(&mut db, id, &other, ts(DAY)).await, Ok(false));
     let sent = notices(&mut db, id).await;
-    assert_eq!(sent.len(), 1, "one LINK notice per line and number");
+    assert_eq!(sent.len(), 1, "one LINK notice per line");
+    assert_eq!(sent[0]["text_to"], LINK_TEXT_TO);
+    let key = format!("messaging.business_notice.link_this_phone.{id}");
+    assert_eq!(
+        count(&mut db, KEYED, &key).await,
+        1,
+        "the key holds IDs only"
+    );
     assert_eq!(sent[0]["template"], "link_this_phone");
     assert_eq!(sent[0]["values"]["number"], "0177");
     assert_eq!(sent[0]["values"]["job"], job_pin(id).digits());
@@ -282,9 +316,10 @@ async fn td_call_05_a_blocked_staff_phone_hears_the_pin_prompt_and_link_names_it
     assert_eq!(last4(&SecretString::from("+123".to_owned())), None);
     let short = SecretString::from("123".to_owned());
     assert_eq!(request_link(&mut db, id, &short, ts(DAY)).await, Ok(false));
-    close_line(&mut db, (Uuid::nil(), 1), CloseReason::Complaint, ts(DAY))
-        .await
-        .expect("none");
+    assert_eq!(
+        close_line(&mut db, (Uuid::nil(), 1), CloseReason::Complaint, ts(DAY)).await,
+        Ok(None)
+    );
     assert_eq!(
         close_expired(&mut db, ts(DAY) + SignedDuration::from_hours(720)).await,
         Ok(1)
@@ -310,7 +345,9 @@ async fn td_call_05_an_email_preferred_homeowner_still_gets_a_line(pool: PgPool)
 }
 
 /// TD-CALL-07 and TD-BIZ-34 (CALL-012, D-260): removing a member who linked two phones unlinks
-/// both, and a later call from either hears the PIN prompt instead of connecting.
+/// both, and a later call from either hears the PIN prompt. Whether a member-linked phone
+/// connects before that needs the owner's approval (BIZ-033, `gate`), which is TD-CALL-08's case,
+/// so this checks only that both were linked and then unlinked.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_call_07_a_removed_members_phones_hear_the_pin_prompt(pool: PgPool) {
     let mut db = pool.acquire().await.expect("connection");
@@ -323,13 +360,12 @@ async fn td_call_07_a_removed_members_phones_hear_the_pin_prompt(pool: PgPool) {
             .expect("link");
     }
     let h = her(&mut db).await;
-    let (_, id) = line(&mut db, (h, b)).await;
-    for phone in [STAFF_A, STAFF_B] {
-        assert_eq!(call(&mut db, phone).await, Step::Connect(id));
-    }
+    line(&mut db, (h, b)).await;
+    assert_eq!(count(&mut db, PHONES, &b.to_string()).await, 2);
     remove_member(&mut db, owner, member.member, ts(DAY))
         .await
         .expect("remove");
+    assert_eq!(count(&mut db, PHONES, &b.to_string()).await, 0);
     for phone in [STAFF_A, STAFF_B] {
         assert_eq!(call(&mut db, phone).await, Step::AskPin);
     }
