@@ -362,6 +362,7 @@ dependencies = [
  "askhava-privacy",
  "jiff",
  "jiff-sqlx",
+ "proptest",
  "secrecy",
  "sqlx",
  "thiserror",
