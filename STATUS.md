@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-06T08:57:15Z by runner bb5f32fa491a (actions).
+Updated 2026-11-06T09:04:38Z by runner bb5f32fa491a (actions).
 
-**Idle since 08:55Z; 118 of 238 done; week 13% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T246 in progress since 08:57Z; 118 of 238 done; week 13% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 118 of 238 build tasks (owner gates not counted)
 - **Stage:** stage 3; stage proofs recorded: 1, 2
-- **Lane:** idle since 08:55Z (no task in progress)
+- **Lane:** lane 1: T246 claimed 08:57Z, lease until 11:57Z
 - **Week:** 13% used, 168.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:46Z, 11 min before this update
+- **Last run:** 08:46Z, 18 min before this update
 - **Keeper:** last ran 08:46Z, next wake 09:06Z
 
 ## Needs attention
@@ -71,7 +71,7 @@ Updated 2026-11-06T08:57:15Z by runner bb5f32fa491a (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-06T08:08:02Z (week)): five-hour: 6.6M used, 22.5M left, resets 2026-11-06T10:09:34Z; week: 26.0M used, 168.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-11-19T12:05:44Z.
+- Pacing (session_reading 2026-11-06T08:45:52Z (week)): five-hour: 8.0M used, 21.1M left, resets 2026-11-06T10:09:34Z; week: 26.0M used, 168.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-11-19T05:28:12Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -86,7 +86,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T246 (lease until 2026-11-06T11:57:12Z)
 
 ## Last usage reading
 - {"task": "T247", "at": "2026-11-06T08:42:24Z", "cache_creation_input_tokens": 377917, "cache_read_input_tokens": 9571548, "output_tokens": 91557, "input_tokens": 217}
