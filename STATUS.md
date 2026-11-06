@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-06T00:38:40Z by runner 75410f1f4bc6 (actions).
+Updated 2026-11-06T00:38:52Z by runner 75410f1f4bc6 (actions).
 
-**Building: T067 in progress since 23:49Z; 108 of 238 done; week 8% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 00:38Z; 108 of 238 done; week 8% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 108 of 238 build tasks (owner gates not counted)
 - **Stage:** stage 3; stage proofs recorded: 1, 2
-- **Lane:** lane 1: T067 claimed 23:49Z, lease until 02:49Z
+- **Lane:** idle since 00:38Z (no task in progress)
 - **Week:** 8% used, 178.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 23:57Z, 41 min before this update
 - **Keeper:** last ran 23:39Z, next wake 23:59Z
@@ -17,6 +17,7 @@ Updated 2026-11-06T00:38:40Z by runner 75410f1f4bc6 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T067 | payments: nightly reconcile, auto-match or auto-refund, ledg | MERGE_PENDING | 1 | 49 min | 00:38Z |  |
 | T064 | payments: success after the job moved on is refunded once an | done | 1 | 27 min | 23:35Z |  |
 | T066 | payments: one refund per trigger, retries, disputes with evi | done | 1 | 46 min | 22:54Z |  |
 | T245 | payments: narrow the default privileges in schema payments t | done | 1 | 21 min | 21:56Z |  |
@@ -76,7 +77,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T067 (lease until 2026-11-06T02:49:26Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T064", "at": "2026-11-05T23:35:47Z", "cache_read_input_tokens": 12008555, "cache_creation_input_tokens": 442552, "output_tokens": 105528, "input_tokens": 331}
+- {"task": "T067", "at": "2026-11-06T00:38:39Z", "cache_read_input_tokens": 19011422, "output_tokens": 197412, "input_tokens": 392, "cache_creation_input_tokens": 596297}
