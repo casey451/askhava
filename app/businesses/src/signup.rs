@@ -88,7 +88,7 @@ impl HeardFrom {
 
 /// BIZ-021, LIC-046, D-176: the sign-up category list, in the order given, each with its "Open
 /// now" or "Coming later" label; switched-off categories are left out. Pest control is a plain
-/// item like any other (LIC-012 limits who may tick it later).
+/// item like any other (LIC-012 limits who may tick it later). A repeated code is listed once.
 #[must_use]
 pub fn category_list(map: &ClassMap, codes: &[&str]) -> Vec<(String, &'static str)> {
     let label = |o: Opening| match o {
@@ -96,7 +96,12 @@ pub fn category_list(map: &ClassMap, codes: &[&str]) -> Vec<(String, &'static st
         Opening::ComingLater => Some("Coming later"),
         Opening::Off => None,
     };
-    let labelled = codes.iter().map(|c| (*c, label(map.opening(c))));
+    let mut seen: Vec<&str> = Vec::new();
+    let labelled = codes.iter().filter_map(|c| {
+        let first = !seen.contains(c);
+        seen.push(c);
+        first.then(|| (*c, label(map.opening(c))))
+    });
     labelled
         .filter_map(|(c, l)| Some((c.to_owned(), l?)))
         .collect()
@@ -133,7 +138,9 @@ pub fn waitlisted(map: &ClassMap, form: &SignUpForm) -> Result<bool, SignupError
     if !form.g_code.as_ref().is_none_or(g_ok) {
         return Err(SignupError::BadSourceCode);
     }
-    let codes: Vec<&str> = form.categories.iter().map(String::as_str).collect();
+    let mut codes: Vec<&str> = form.categories.iter().map(String::as_str).collect();
+    codes.sort_unstable();
+    codes.dedup();
     let listed = category_list(map, &codes);
     if listed.is_empty() || listed.len() != codes.len() {
         return Err(SignupError::BadCategories);

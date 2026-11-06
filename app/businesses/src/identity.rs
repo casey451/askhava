@@ -15,6 +15,7 @@ use jiff::Timestamp;
 use secrecy::{ExposeSecret, SecretString};
 use sqlx::PgConnection;
 use sqlx::types::Uuid;
+use subtle::ConstantTimeEq;
 
 use crate::models::{self, BusinessesError};
 use crate::rules::{Checks, Event};
@@ -120,10 +121,12 @@ pub fn letter_code(secret: &SecretString, business: Uuid) -> String {
 /// BIZ-002: sends the next code of the chain after the step already tried and records the step.
 /// A letter step is recorded for the Lob mailing, which prints [`letter_code`]. With no record
 /// contact at all the sign-up is flagged `NoRecordContact` and waits in needs review; after the
-/// last step nothing more is sent. Returns the step taken.
+/// last step nothing more is sent. Returns the step taken. Only a waiting sign-up (pending or
+/// needs review) gets a code (D-1703).
 ///
 /// # Errors
-/// [`SignupError::Verify`] when Verify refuses; [`SignupError::Businesses`] otherwise.
+/// [`SignupError::Verify`] when Verify refuses; [`BusinessesError::Refused`] (in
+/// [`SignupError::Businesses`]) for any other status; [`SignupError::Businesses`] otherwise.
 pub async fn send_code(
     db: &mut PgConnection,
     (verify, secret): (&impl VerifyAdapter, &SecretString),
@@ -131,6 +134,7 @@ pub async fn send_code(
     record: &RecordContacts,
     now: Timestamp,
 ) -> Result<Option<Step>, SignupError> {
+    waiting(db, business).await?;
     let tried = models::signup_state(db, business)
         .await?
         .step
@@ -160,10 +164,14 @@ pub async fn send_code(
 }
 
 /// BIZ-002, BIZ-016: checks the code entered for the step reached and, when right, marks the code
-/// done and settles the status. Returns whether the code was right.
+/// done and settles the status. Returns whether the code was right. Only a waiting sign-up is
+/// checked; the letter code is compared in constant time. This function keeps no attempt count:
+/// the sign-up route that calls it MUST limit code attempts per business (D-1703).
 ///
 /// # Errors
-/// [`SignupError::Verify`] when Verify fails; [`SignupError::Businesses`] otherwise.
+/// [`SignupError::Verify`] when Verify fails; [`BusinessesError::Refused`] (in
+/// [`SignupError::Businesses`]) for a status that is not waiting; [`SignupError::Businesses`]
+/// otherwise.
 pub async fn check_code(
     db: &mut PgConnection,
     (verify, secret): (&impl VerifyAdapter, &SecretString),
@@ -171,11 +179,15 @@ pub async fn check_code(
     record: &RecordContacts,
     (code, now): (&str, Timestamp),
 ) -> Result<bool, SignupError> {
+    waiting(db, business).await?;
     let state = models::signup_state(db, business).await?;
     let right = match state.step.as_deref().and_then(Step::from_code) {
         Some(Step::Text) => check(verify, record.texting_phone.as_ref(), code).await?,
         Some(Step::Email) => check(verify, record.email.as_ref(), code).await?,
-        Some(Step::Letter) => letter_code(secret, business) == code,
+        Some(Step::Letter) => {
+            let want = letter_code(secret, business);
+            bool::from(want.as_bytes().ct_eq(code.as_bytes()))
+        }
         None => false,
     };
     if right {
@@ -183,6 +195,19 @@ pub async fn check_code(
         settle(db, business, now).await?;
     }
     Ok(right)
+}
+
+/// D-1703: refuses a code send or check unless the sign-up is still waiting.
+async fn waiting(db: &mut PgConnection, business: Uuid) -> Result<(), SignupError> {
+    if models::read(db, business)
+        .await?
+        .status
+        .takes_identity_code()
+    {
+        Ok(())
+    } else {
+        Err(BusinessesError::Refused.into())
+    }
 }
 
 async fn check(

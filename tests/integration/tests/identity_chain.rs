@@ -10,9 +10,9 @@ use askhava_adapters::api::{
     VerifyAdapter,
 };
 use askhava_businesses::api::{
-    AboutUsRefusal, EntityValues, Flag, HeardFrom, RecordContacts, SignUpForm, SignupError, Step,
-    TermsShown, WAITLIST_LINE, accept_terms, approve, business, category_list, check_code,
-    hand_entity_keys, letter_code, next_step, record_match, review_due, review_told,
+    AboutUsRefusal, BusinessesError, EntityValues, Flag, HeardFrom, RecordContacts, SignUpForm,
+    SignupError, Step, TermsShown, WAITLIST_LINE, accept_terms, approve, business, category_list,
+    check_code, hand_entity_keys, letter_code, next_step, record_match, review_due, review_told,
     screen_about_us, screen_public_name, send_code, set_about_us, sign_up,
 };
 use askhava_licensing::api::ClassMap;
@@ -183,6 +183,11 @@ async fn td_biz_01_code_and_match_activate_without_approval(pool: PgPool) {
         .await
         .expect("match");
     assert_eq!(done.code(), "active");
+    let refused = Some(SignupError::Businesses(BusinessesError::Refused));
+    let again = send_code(&mut db, (&v, &s), id, &rec, at(2)).await;
+    assert_eq!(again.err(), refused, "no code once active (D-1703)");
+    let again = check_code(&mut db, (&v, &s), id, &rec, (CODE, at(2))).await;
+    assert_eq!(again.err(), refused, "no check once active (D-1703)");
 }
 
 /// TD-BIZ-01 (LIC-011): a no-license business waiting for its city-list match activates with its
@@ -284,6 +289,11 @@ async fn td_biz_12_letter_code_activates_with_no_flag(pool: PgPool) {
         .expect("match");
     let code = letter_code(&sec, id);
     assert_eq!(code.len(), 6);
+    let wrong = if code == "000000" { "000001" } else { "000000" };
+    for bad in [wrong, "", &code[..5]] {
+        let r = check_code(&mut db, (&v, &sec), id, &rec, (bad, at(5))).await;
+        assert!(!r.expect("checked"), "wrong letter code {bad:?}");
+    }
     assert!(
         check_code(&mut db, (&v, &sec), id, &rec, (&code, at(5)))
             .await
@@ -305,6 +315,17 @@ async fn td_biz_05_category_list_waitlist_and_email(pool: PgPool) {
     ];
     let want: Vec<_> = want.iter().map(|(c, l)| ((*c).to_owned(), *l)).collect();
     assert_eq!(listed, want);
+    let twice = category_list(&m, &["plumbing_repair", "plumbing_repair"]);
+    assert_eq!(twice.len(), 1, "a repeated category is listed once");
+    let r = sign_up(
+        &pool,
+        (&FakeStripe::default(), &secret()),
+        &m,
+        &form(&["plumbing_repair", "plumbing_repair"]),
+        at(0),
+    )
+    .await;
+    assert!(!r.expect("repeat accepted").waitlist);
     let shipped = ClassMap::shipped().expect("shipped");
     let pest = category_list(shipped, &["pest_control"]);
     assert_eq!(pest, vec![("pest_control".to_owned(), "Open now")]);
@@ -342,8 +363,18 @@ async fn td_biz_12_about_us_line_is_screened(pool: PgPool) {
     let refused = [
         ("Find us on Google", AboutUsRefusal::Channel),
         ("Call 928 555 0142 any time", AboutUsRefusal::Contact),
+        (
+            "Ring nine two eight five five five",
+            AboutUsRefusal::Contact,
+        ),
+        ("Ring 928 five five five 0142", AboutUsRefusal::Contact),
+        ("See example.us today", AboutUsRefusal::Contact),
         ("See www.example.test", AboutUsRefusal::Contact),
         ("Best plumber in town", AboutUsRefusal::Claim),
+        ("Known as the best in town", AboutUsRefusal::Claim),
+        ("Top plumber here", AboutUsRefusal::Claim),
+        ("El mejor servicio", AboutUsRefusal::Claim),
+        ("Equipo verificado", AboutUsRefusal::Claim),
         ("We are #1 here", AboutUsRefusal::Claim),
         ("Vetted crew", AboutUsRefusal::Claim),
         ("Licensed and careful", AboutUsRefusal::Licensed),
@@ -353,6 +384,15 @@ async fn td_biz_12_about_us_line_is_screened(pool: PgPool) {
         assert!(!why.reason().is_empty());
     }
     assert_eq!(screen_about_us("Licensed and careful", false), Ok(()));
+    let whole_words = [
+        "Asbestos-safe demolition",
+        "We research every leak",
+        "Open since 1998.Usually same week",
+        "One or two crews, seven days",
+    ];
+    for line in whole_words {
+        assert_eq!(screen_about_us(line, true), Ok(()), "{line}");
+    }
     assert_eq!(
         screen_public_name("Desert Pipes 9285550142"),
         Err(AboutUsRefusal::Contact)

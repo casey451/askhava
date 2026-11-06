@@ -33,9 +33,9 @@ The layer-4 crate that holds each business account (`docs/architecture.md` secti
 - D-491, D-963: every phone add or change goes through `SenderLink` (the composition's `messaging::api::sender_add` with the vault) and every unlink through `messaging::api::sender_remove`, in the phone change's transaction.
 - D-492, D-964: `team::notice_addresses` (owner first; cards to "Cards and quotes", picks and release and money to "Confirm and billing", account to the owner alone).
 - BIZ-001, BIZ-019, BIZ-021, BIZ-053: `signup::sign_up` refuses a form with no email, no category, a switched-off category or a malformed `g` code; only coming-later choices waitlist.
-- BIZ-002, BIZ-003, BIZ-016, D-059, D-281: `identity::next_step`, `send_code`, `check_code`, `record_match`, `settle`, `approve`; no record contact at all flags `no_record_contact` (needs review).
+- BIZ-002, BIZ-003, BIZ-016, D-059, D-281: `identity::next_step`, `send_code`, `check_code`, `record_match`, `settle`, `approve`; no record contact at all flags `no_record_contact` (needs review). `send_code` and `check_code` refuse any status but pending and needs review (`AccountStatus::takes_identity_code`); the letter code is compared in constant time (`subtle`, D-1703).
 - BIZ-020: `signup::review_due` (never told, or told 7 days ago or more).
-- BIZ-022: `about_us::screen` and `screen_public_name`.
+- BIZ-022: `about_us::screen` and `screen_public_name`; word lists match whole words, `@`, `.com` and `#1` anywhere; spelled-out numbers count as a phone number (D-1703).
 - FEE-011: `signup::hand_entity_keys`. TERMS-016, TERMS-033: `signup::accept_terms`.
 
 ## Never break
@@ -64,6 +64,7 @@ The layer-4 crate that holds each business account (`docs/architecture.md` secti
 ## How to change
 
 - Send the BIZ-020 status email: a worker task reads `api::review_due`, queues the email through `messaging` to the record contact and the sign-up mailbox, then calls `review_told` (D-1701).
+- Build the sign-up route's code entry: the route MUST limit code attempts per business before calling `identity::check_code`, which keeps no attempt count; the six-digit letter code never changes (D-1703).
 - Mail the identity letter: on a `Step::Letter`, the composition sends a Lob letter to the record address printing `letter_code` (D-1699).
 
 - Add a status or a move: `AccountStatus` and `next` in `src/status.rs`, the migration check in a new migration, the oracle in `src/tests/account_status.rs`, BIZ-009 and D-953.
