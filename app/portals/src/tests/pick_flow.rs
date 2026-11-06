@@ -1,10 +1,12 @@
 //! The pick review step and the pick result as rendered (TD-PICK-08, TD-PICK-28, TD-PICK-30,
-//! TD-PICK-24, TD-A11Y-02; PICK-016, PICK-017, PICK-045, PICK-054, A11Y-014, A11Y-031). Fake
+//! TD-PICK-24, TD-PICK-45, TD-A11Y-02; PICK-016, PICK-017, PICK-045, PICK-054, A11Y-014, A11Y-031). Fake
 //! request numbers and a fake 64-hex token only.
 
 use askama::Template;
 
 use askhava_jobs::api::JobStatus;
+
+use askhava_picks::api::rules::{Stage, stage};
 
 use crate::pick_flow::{PageLanguage, ReviewView, result_page, takes_pick};
 
@@ -97,27 +99,38 @@ fn td_a11y_02_final_pick_before_the_code_step_says_nothing_was_picked() {
     assert!(!review(PageLanguage::En).contains("Nothing was picked"));
 }
 
+/// TD-PICK-45 (PICK-012, PICK-032, D-1516): one pick rule. `takes_pick` is true for Quotes
+/// ready and Awaiting confirm only, checked for every status by its stored code; the review step,
+/// the final Pick and the quote page's Pick buttons read it, and `picks`' text stage (Ready or
+/// Waiting) equals it for every status.
 #[test]
-fn pick_012_pick_032_a_pick_is_taken_until_the_business_confirms() {
-    assert!(
-        takes_pick(JobStatus::Open),
-        "PICK-012: from the first quote"
-    );
-    assert!(takes_pick(JobStatus::NoQuotesYet));
-    assert!(takes_pick(JobStatus::QuotesReady));
-    assert!(
-        takes_pick(JobStatus::AwaitingConfirm),
-        "PICK-032: replaces the waiting pick"
-    );
-    for status in [
-        JobStatus::Intake,
-        JobStatus::PaymentPending,
-        JobStatus::Connected,
-    ] {
-        assert!(!takes_pick(status), "{status:?}");
-    }
-    for status in JobStatus::ALL.into_iter().filter(|s| s.is_final()) {
-        assert!(!takes_pick(status), "{status:?}");
+fn td_pick_45_one_pick_rule_for_every_status() {
+    let table = [
+        ("intake", false),
+        ("open", false),
+        ("no_quotes_yet", false),
+        ("quotes_ready", true),
+        ("awaiting_confirm", true),
+        ("payment_pending", false),
+        ("connected", false),
+        ("done", false),
+        ("closed", false),
+        ("closed_early", false),
+        ("not_covered", false),
+        ("cancelled", false),
+    ];
+    let all = JobStatus::ALL;
+    assert_eq!(all.len(), table.len(), "every status is in the table");
+    for status in all {
+        let want = table
+            .iter()
+            .find(|(code, _)| *code == status.code())
+            .map(|(_, takes)| *takes)
+            .expect("status in the table");
+        assert_eq!(takes_pick(status), want, "{status:?}");
+        assert_eq!(status.takes_pick(), want, "{status:?}");
+        let text = matches!(stage(status), Stage::Ready | Stage::Waiting);
+        assert_eq!(text, want, "text stage of {status:?}");
     }
 }
 

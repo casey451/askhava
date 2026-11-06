@@ -208,6 +208,29 @@ pub async fn read_for_release(
     }
 }
 
+/// Reads only the phone of contact `id`, the job's homeowner, for `picks` to send or check the
+/// page pick's Verify code (PICK-013, PRIV-003, D-1516): audited and counted as
+/// `vault_read.picks.pick_code` like every read, and refused on a connection inside a transaction.
+/// Only `picks` may call it (the vault reader scan, `tests/security/tests/vault_readers.rs`).
+///
+/// # Errors
+///
+/// [`VaultError::InTransaction`], [`VaultError::NotFound`], [`VaultError::Sealed`],
+/// [`VaultError::Audit`] or [`VaultError::Database`].
+pub async fn read_for_pick_code(
+    db: &mut PgConnection,
+    vault: &Vault,
+    id: Uuid,
+) -> Result<ContactDetails, VaultError> {
+    let access = (Reader::Picks, Purpose::PickCode);
+    match grant_for(access.0, access.1, &[Field::Phone]) {
+        Some(grant) => {
+            vault::read(db, vault, (grant, Actor::System, None), id, &[Field::Phone]).await
+        }
+        None => vault::refuse(db, access, id).await,
+    }
+}
+
 /// Reads `fields` of the signed-in homeowner's own contact, the only one the proof names (PRIV-021,
 /// SEC-046).
 ///
