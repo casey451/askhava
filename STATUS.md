@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-06T01:35:27Z by runner 2f6feb645e77 (actions).
+Updated 2026-11-06T01:35:37Z by runner 2f6feb645e77 (actions).
 
-**Building: T068 in progress since 00:52Z; 109 of 238 done; week 8% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 01:35Z; 109 of 238 done; week 8% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 109 of 238 build tasks (owner gates not counted)
 - **Stage:** stage 3; stage proofs recorded: 1, 2
-- **Lane:** lane 1: T068 claimed 00:52Z, lease until 03:52Z
+- **Lane:** idle since 01:35Z (no task in progress)
 - **Week:** 8% used, 178.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 00:57Z, 37 min before this update
 - **Keeper:** last ran 00:42Z, next wake 01:02Z
@@ -17,6 +17,7 @@ Updated 2026-11-06T01:35:27Z by runner 2f6feb645e77 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T068 | payments: receipt emails, charge description, just-under-a-t | MERGE_PENDING | 1 | 42 min | 01:35Z |  |
 | T067 | payments: nightly reconcile, auto-match or auto-refund, ledg | done | 1 | 49 min | 00:38Z |  |
 | T064 | payments: success after the job moved on is refunded once an | done | 1 | 27 min | 23:35Z |  |
 | T066 | payments: one refund per trigger, retries, disputes with evi | done | 1 | 46 min | 22:54Z |  |
@@ -77,7 +78,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T068 (lease until 2026-11-06T03:52:36Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T067", "at": "2026-11-06T00:38:39Z", "cache_read_input_tokens": 19011422, "output_tokens": 197412, "input_tokens": 392, "cache_creation_input_tokens": 596297}
+- {"task": "T068", "at": "2026-11-06T01:35:26Z", "output_tokens": 184834, "cache_read_input_tokens": 26310680, "input_tokens": 495, "cache_creation_input_tokens": 727565}
