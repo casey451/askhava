@@ -1,19 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-06T12:00:21Z by runner ea22387162b9 (manual).
+Updated 2026-11-06T12:02:55Z by runner ea22387162b9 (actions).
 
-**Idle since 11:21Z; 119 of 238 done; week 15% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 11:21Z; 120 of 238 done; week 15% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 119 of 238 build tasks (owner gates not counted)
-- **Stage:** stage 3; stage proofs recorded: 1, 2, 3
+- **Tasks done:** 120 of 238 build tasks (owner gates not counted)
+- **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 11:21Z (no task in progress)
 - **Week:** 15% used, 166.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:27Z, 33 min before this update
+- **Last run:** 12:00Z, 2 min before this update
 - **Keeper:** last ran 11:27Z, next wake 17:07Z
 
 ## Needs attention
-- BLOCKED T075: stage proof missing (the proof waits for: stage 3's proof is recorded by hand (`python3 -m runner --record-proof 3 --evidence TEXT`) (its cargo-mutants clause: nightly-main's cargo-mutants job is report only until tests/mutation/equivalent.toml holds reviewed reasons (D-1286), kit/nightly.json records no result for it, and app/catalog/ has no rules.rs to mutate))
-- Strict plan check red: 10 problem(s) on tasks still to run (+23 on DONE tasks); first: T191: stored context_pct 10% but it measures 14%; regenerate
+- Strict plan check red: 9 problem(s) on tasks still to run (+24 on DONE tasks); first: T191: stored context_pct 10% but it measures 14%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -46,7 +45,7 @@ Updated 2026-11-06T12:00:21Z by runner ea22387162b9 (manual).
 ## Progress (requirements verified)
 
 **Requirements verified:** 209 of 731 (28.6%) · partial 194 · unstarted 328
-**Tasks merged (throughput only):** 119 of 238
+**Tasks merged (throughput only):** 120 of 238
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -80,7 +79,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 0.5: 0 of 1 done
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
-- stage 3: 28 of 29 done
+- stage 3: 29 of 29 done
 - stage 4: 0 of 54 done
 - stage 5: 0 of 42 done
 - stage 6: 0 of 26 done
