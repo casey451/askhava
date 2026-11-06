@@ -14,11 +14,14 @@
 //! only on a `ReleaseProof`, never the phone (PICK-022 to PICK-024, PRIV-005, PRIV-020, BIZ-014).
 //! T070 added the aftermath: the loss notice with its price comparison, "This job is no longer
 //! active." once and the live-pick reply (PICK-026, PICK-027, PICK-038).
+//! T095 added the pick code by email when texting is off and the opted-out "<number> YES" pick
+//! (PICK-029, PICK-030).
 //! Other crates reach it only through [`api`].
 
 mod aftermath;
 pub mod api;
 mod confirm;
+mod email_code;
 mod handlers;
 mod models;
 mod money_notices;
