@@ -1,18 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-06T15:11:44Z by runner ea22387162b9 (manual).
+Updated 2026-11-06T15:21:38Z by runner 68d31e685bef (actions).
 
-**Idle since 14:20Z; 121 of 238 done; week 19% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T250 in progress since 15:13Z; 121 of 238 done; week 19% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 121 of 238 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 14:20Z (no task in progress)
-- **Week:** 19% used, 162.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:54Z, 17 min before this update
+- **Lane:** lane 1: T250 claimed 15:13Z, lease until 18:13Z
+- **Week:** 19% used, 156.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Last run:** 15:11Z, 9 min before this update
 - **Keeper:** last ran 14:54Z, next wake 20:34Z
 
 ## Needs attention
-- Strict plan check red: 9 problem(s) on tasks still to run (+24 on DONE tasks); first: T191: stored context_pct 10% but it measures 14%; regenerate
+- Strict plan check red: 10 problem(s) on tasks still to run (+27 on DONE tasks); first: T191: stored context_pct 10% but it measures 14%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -45,10 +45,12 @@ Updated 2026-11-06T15:11:44Z by runner ea22387162b9 (manual).
 ### Plan and harness merges on main
 - 15:10Z Plan: bump actix-http 3.20.0 -> 3.20.2 for RUSTSEC-2026-0446 (D-1643) (#295)
 - 14:27Z Plan: T250 becomes a harness task with a narrow TD-SEC-10 exception for default-privilege REVOKE migrations (D-1632) (#294)
+- 19:30Z Plan: page pick end to end, first-quote move, markets and service radius, schema default privileges, card sender (D-1515–D-1521) (#272)
+- 17:59Z Plan: drop the early-joiner price lock, payments default privileges, Nov 3 handoff review (D-1494–D-1499) (#269)
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 210 of 731 (28.7%) · partial 196 · unstarted 325
+**Requirements verified:** 209 of 731 (28.6%) · partial 197 · unstarted 325
 **Tasks merged (throughput only):** 121 of 238
 
 | Area | Verified | Partial | Unstarted | Total |
@@ -69,7 +71,7 @@ Updated 2026-11-06T15:11:44Z by runner ea22387162b9 (manual).
 | quiet-hours | 7 | 2 | 0 | 9 |
 | quotes-pick | 15 | 28 | 13 | 56 |
 | recurring | 7 | 1 | 3 | 11 |
-| security | 11 | 21 | 22 | 54 |
+| security | 10 | 22 | 22 | 54 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 0 | 28 | 28 |
 | wording | 2 | 2 | 28 | 32 |
@@ -77,7 +79,7 @@ Updated 2026-11-06T15:11:44Z by runner ea22387162b9 (manual).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-06T13:31:12Z (week)): five-hour: 5.1M used, 24.0M left, resets 2026-11-06T16:07:06Z; week: 32.0M used, 162.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-11-18T21:47:20Z.
+- Pacing (session_reading 2026-11-06T14:54:07Z (week)): five-hour: 5.9M used, 23.2M left, resets 2026-11-06T16:07:06Z; week: 38.0M used, 156.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-11-18T23:30:20Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -92,7 +94,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T250 (lease until 2026-11-06T18:13:14Z)
 
 ## Last usage reading
 - {"task": "T250", "at": "2026-11-06T14:20:23Z", "cache_creation_input_tokens": 263240, "cache_read_input_tokens": 5478285, "output_tokens": 72829, "input_tokens": 178}
