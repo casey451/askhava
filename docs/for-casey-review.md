@@ -1698,3 +1698,12 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **What the evidence holds.** Only record numbers and times from the charge (Stripe customer, payment, card-terms version, amount, when "Confirm and pay" was pressed and paid, any refund). Never the homeowner's name, phone, address, email or messages.
 - **Fraud warnings.** If Stripe warns a charge may be fraud and the details were not yet given out, it is refunded at once; if they were, it is listed for you to decide.
 - **You can veto** the "alert once, not every hour" choice for failed refunds. Reply on an owner issue.
+
+## Receipts, the "Why was I charged?" page and the just-under-a-tier flag (T068, D-1557 to D-1561, November 6)
+
+- **Receipts.** Every charge gets an Ask Hava receipt email: "Ask Hava introduction service, job 1042: $25.00.", "Tax included.", a line saying Stripe also emails its own receipt, and a "Why was I charged?" link. It goes to the business owner and every "Confirm and billing" member. If a business has nobody to send it to, you get one alert instead of a lost receipt.
+- **The page.** It shows the job number, the quote, the fee and its job size, how the fee basis was set and the refund rules. For a repeating job it says the basis is 4 months of the regular price, and when the $75 cap set the fee it says so instead of claiming the bigger job size.
+- **Not connected yet (later tasks).** The parts are built and tested, but nothing sends a receipt yet: the step that queues it after a successful charge belongs in the payments charge code (T132 or T191), and the email step needs Ask Hava LLC's postal-address setting before it can be switched on. Until then no receipt goes. The page also waits on business sign-in.
+- **Just-under-a-tier flag (FEE-033).** The rule is built: at least 3 of a business's last 10 quotes within 5% under $500 or $1,500 flags it for your monthly review, with no automatic action and nothing sent to the business. It is not connected yet: the fee basis of each pick isn't stored, and the owner-portal line, its two settings and the step that runs it are a later task's. Until then nothing is flagged.
+- **Not tested here.** That Stripe's own receipt also goes out is a Stripe Dashboard setting, so this build checks only that our receipt says it comes; the Stripe test is a later task's (T132).
+- **You can veto** the "one alert, no email" choice for a business with no billing contact. Reply on an owner issue.

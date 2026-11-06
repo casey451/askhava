@@ -3,9 +3,9 @@
 //! [`why_charged_page`] renders `templates/why_charged.html` from [`WhyCharged`]: the charge as
 //! `payments::api::receipt_for` read it (job, fee, tier), the charge description "Ask Hava
 //! introduction service, job <n>", the quote the business sent, how the fee basis was set (the
-//! basis `payments` fixed at the pick, FEE-005) and the refund rules. Every receipt email links
-//! it at [`WHY_CHARGED_ROUTE`]. The route that reads the facts behind the business's sign-in is
-//! wired with the business portal's sign-in (D-1560).
+//! [`Basis`] `payments` fixed at the pick, FEE-005, checked against the tier charged, D-1561) and
+//! the refund rules. Every receipt email links it at [`WHY_CHARGED_ROUTE`]. The route that reads
+//! the facts behind the business's sign-in is wired with the business portal's sign-in (D-1560).
 
 use askama::Template;
 use askhava_payments::api::{ChargeReceipt, IntentText, Tier};
@@ -24,8 +24,20 @@ pub struct WhyCharged {
     pub job_number: i64,
     /// The chosen quote as the business sent it, for example "$480.00, fixed price".
     pub quote: String,
-    /// The fee basis fixed at the pick, or `None` when the price is set on site (FEE-004).
-    pub basis_cents: Option<u64>,
+    /// How the fee basis was set at the pick (FEE-003, FEE-004, FEE-044).
+    pub basis: Basis,
+}
+
+/// How `payments` set the fee basis at the pick, as the route passes it (FEE-003, FEE-004,
+/// FEE-044, D-1561).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Basis {
+    /// The price is set on site, so the category's usual visit fee was used (FEE-004).
+    OnSite,
+    /// A one-time quote's basis in cents: its price, or a range's midpoint (FEE-003).
+    Quote(u64),
+    /// A repeating job's basis in cents: 4 months of the regular price (FEE-044, REC-002).
+    FourMonths(u64),
 }
 
 #[derive(Template)]
@@ -35,7 +47,7 @@ struct WhyView<'a> {
     line: String,
     fee: String,
     quote: &'a str,
-    tier: &'static str,
+    tier_line: String,
     basis: String,
     refund: &'static str,
 }
@@ -62,6 +74,40 @@ const fn tier_words(tier: Tier) -> (&'static str, &'static str) {
     }
 }
 
+/// FEE-031, FEE-039, D-1561: how the basis was set, and its tier range checked against the tier
+/// charged: when they differ (a recurring cap, FEE-039, or a flat fee, FEE-007) the page says the
+/// fee for this kind of job is set at the charged tier's fee instead of claiming the basis set it.
+fn basis_line(charged: Option<Tier>, basis: Basis) -> String {
+    let cents = match basis {
+        Basis::OnSite => {
+            let lead = "Your price is set on site, so Ask Hava used the usual visit fee for this kind of work.";
+            return charged.map_or_else(
+                || lead.to_owned(),
+                |tier| format!("{lead} That makes it a {}.", tier_words(tier).0),
+            );
+        }
+        Basis::Quote(cents) | Basis::FourMonths(cents) => cents,
+    };
+    let lead = match basis {
+        Basis::FourMonths(_) => format!(
+            "This job repeats, so the fee basis is 4 months of your regular price: {}.",
+            money(cents)
+        ),
+        _ => format!("The fee basis from your quote is {}.", money(cents)),
+    };
+    let (name, range) = tier_words(Tier::for_basis(cents));
+    match charged {
+        Some(tier) if tier == Tier::for_basis(cents) => {
+            format!("{lead} That is {range}, so this is a {name}.")
+        }
+        Some(tier) => format!(
+            "{lead} That is {range}, but the fee for this kind of job is set at the {} fee.",
+            tier_words(tier).0
+        ),
+        None => format!("{lead} That is {range}."),
+    }
+}
+
 /// FEE-031, FEE-053, D-225: the page for `facts`; see the module docs.
 ///
 /// # Errors
@@ -70,18 +116,23 @@ pub fn why_charged_page(facts: &WhyCharged) -> Result<String, askama::Error> {
     let line = IntentText::for_job(facts.job_number)
         .map_err(|e| askama::Error::Custom(Box::new(e)))?
         .description();
-    let (tier, range) = tier_words(facts.receipt.tier);
-    let basis = facts.basis_cents.map_or_else(
-        || format!("Your price is set on site, so Ask Hava used the usual visit fee for this kind of work. That makes it a {tier}."),
-        |cents| format!("Your {} quote is {range}, so this is a {tier}.", money(cents)),
+    let fee = money(facts.receipt.fee_cents);
+    let tier_line = facts.receipt.tier.map_or_else(
+        || format!("Introduction fee by job size: {fee}."),
+        |tier| {
+            format!(
+                "Introduction fee by job size: {fee} ({}).",
+                tier_words(tier).0
+            )
+        },
     );
     WhyView {
         job_number: facts.job_number,
         line,
-        fee: money(facts.receipt.fee_cents),
+        fee,
         quote: &facts.quote,
-        tier,
-        basis,
+        tier_line,
+        basis: basis_line(facts.receipt.tier, facts.basis),
         refund: REFUND_LINE,
     }
     .render()

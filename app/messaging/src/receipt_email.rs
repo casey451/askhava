@@ -181,7 +181,9 @@ fn parse(payload: &serde_json::Value) -> Option<(ReceiptFacts, Vec<Uuid>)> {
 /// notices are in English until the recipient's language is passed (BIZ-018, D-1559).
 ///
 /// # Errors
-/// A fixed sentence for a malformed event or a failed render or statement; the queue tries again.
+/// A fixed sentence for a malformed event, an event with no recipient (`picks` alerts and queues
+/// none, so one reaching here is a fault and is dead-lettered, never a silent success, D-1561), or
+/// a failed render or statement; the queue tries again.
 pub async fn run_receipt_email(
     pool: PgPool,
     sender: Arc<ReceiptSender>,
@@ -189,6 +191,9 @@ pub async fn run_receipt_email(
 ) -> Result<(), HandlerError> {
     const FAILED: HandlerError = HandlerError("receipt email could not be stored");
     let (facts, to) = parse(&task.payload).ok_or(HandlerError("receipt event is malformed"))?;
+    if to.is_empty() {
+        return Err(HandlerError("receipt event has no recipient"));
+    }
     let rendered = render_receipt(&sender, Language::En, &facts).map_err(|_| FAILED)?;
     let mut tx = pool.begin().await.map_err(|_| FAILED)?;
     for address in to {

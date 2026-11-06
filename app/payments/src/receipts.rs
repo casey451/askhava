@@ -30,13 +30,16 @@ pub struct ChargeReceipt {
     pub job: Uuid,
     /// The introduction fee by job size charged, in cents, tax included (FEE-008).
     pub fee_cents: u64,
-    /// The tier of that fee (FEE-001).
-    pub tier: Tier,
+    /// The tier whose fee was charged (FEE-001), or `None` when the amount is no tier's fee (a
+    /// tier price changed after the charge): the receipt still goes, naming no tier (D-1561).
+    pub tier: Option<Tier>,
     /// When Stripe took the charge.
     pub charged_at: Timestamp,
 }
 
-/// The tier whose fee is exactly `cents`; any other amount is no tier (FEE-001).
+/// The tier whose fee is exactly `cents`; any other amount is no tier (FEE-001). The charged tier
+/// is the fee's: a recurring job capped by FEE-039 (always a tier, `RecurringCap`) or a flat-mode
+/// fee (FEE-007) is the capped or set tier, not the basis's, so no stored basis is needed here.
 #[must_use]
 pub fn tier_of_fee(cents: u64) -> Option<Tier> {
     [Tier::Small, Tier::Medium, Tier::Large]
@@ -76,8 +79,8 @@ pub async fn queue_receipt(
 /// charged for it (a page asked for another business's pick shows nothing).
 ///
 /// # Errors
-/// [`MoneyEventError::Database`]; a stored amount that is no tier is
-/// [`MoneyEventError::UnknownCharge`].
+/// [`MoneyEventError::Database`]; a stored amount below 0 is [`MoneyEventError::UnknownCharge`]
+/// (the table allows none). An amount that is no tier's fee is a receipt with no tier (D-1561).
 pub async fn receipt_for(
     conn: &mut PgConnection,
     pick: Uuid,
@@ -94,7 +97,7 @@ pub async fn receipt_for(
     .map_err(|_| MoneyEventError::Database)?;
     let Some(row) = row else { return Ok(None) };
     let fee_cents = u64::try_from(row.amount_cents).map_err(|_| MoneyEventError::UnknownCharge)?;
-    let tier = tier_of_fee(fee_cents).ok_or(MoneyEventError::UnknownCharge)?;
+    let tier = tier_of_fee(fee_cents);
     Ok(Some(ChargeReceipt {
         pick,
         business,
