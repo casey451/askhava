@@ -10,6 +10,7 @@
 
 pub mod api;
 mod models;
+mod readback_reader;
 mod reader;
 mod scrub;
 mod vault;

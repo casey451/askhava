@@ -362,6 +362,7 @@ dependencies = [
  "askhava-privacy",
  "jiff",
  "jiff-sqlx",
+ "secrecy",
  "sqlx",
  "thiserror",
 ]
@@ -568,6 +569,7 @@ version = "0.1.0"
 dependencies = [
  "askhava-adapters",
  "askhava-businesses",
+ "askhava-calls",
  "askhava-core",
  "askhava-jobs",
  "askhava-licensing",
