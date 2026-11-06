@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-06T22:52:38Z by runner 1d94b20ee738 (actions).
+Updated 2026-11-06T22:55:40Z by runner 1d94b20ee738 (actions).
 
-**Idle since 22:52Z; 127 of 239 done; week 25% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 22:52Z; 127 of 239 done; week 26% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 127 of 239 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 22:52Z (no task in progress)
-- **Week:** 25% used, 144.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:52Z, 0 min before this update
+- **Week:** 26% used, 144.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Last run:** 22:55Z, 0 min before this update
 - **Keeper:** last ran 22:52Z, next wake 23:12Z
 
 ## Needs attention
@@ -42,7 +42,6 @@ Updated 2026-11-06T22:52:38Z by runner 1d94b20ee738 (actions).
 | T068 | payments: receipt emails, charge description, just-under-a-t | done | 1 | 42 min | 01:35Z |  |
 | T067 | payments: nightly reconcile, auto-match or auto-refund, ledg | done | 1 | 49 min | 00:38Z |  |
 | T064 | payments: success after the job moved on is refunded once an | done | 1 | 27 min | 23:35Z |  |
-| T066 | payments: one refund per trigger, retries, disputes with evi | done | 1 | 46 min | 22:54Z |  |
 
 ### Plan and harness merges on main
 - 16:15Z Plan: dynamic SQL in migrations is a TD-SEC-10 finding (T252), T126 context budget, stored budgets refreshed (D-1677, D-1678) (#298)
