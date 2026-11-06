@@ -2,13 +2,16 @@
 
 ## Purpose
 
-The layer-5 crate for masked calls between a homeowner and the business she connected with (`docs/architecture.md` section 3). T076 built the masked-number pool: each connected job gets a number from the fixed pool in settings, never bought by the app, preferring one no other open line of the same homeowner or business uses, otherwise sharing one with PIN routing and one alert to Casey (D-077, D-160, D-231, D-1679 to D-1682). It also holds the suppression-list check every automated call to a homeowner passes first. T077 added PIN routing and the paid-business read-back (D-1684 to D-1688). Not here yet: storing the per-day PIN count (D-1685), the who's-calling text (TXT-027, D-1687), call logs (T078), closing lines, staff phones and LINK (T079), bridging and the identity and code calls (T080).
+The layer-5 crate for masked calls between a homeowner and the business she connected with (`docs/architecture.md` section 3). T076 built the masked-number pool: each connected job gets a number from the fixed pool in settings, never bought by the app, preferring one no other open line of the same homeowner or business uses, otherwise sharing one with PIN routing and one alert to Casey (D-077, D-160, D-231, D-1679 to D-1682). It also holds the suppression-list check every automated call to a homeowner passes first. T077 added PIN routing and the paid-business read-back (D-1684 to D-1688). T078 added the call log and the never-recorded TwiML (D-1689 to D-1691). Not here yet: storing the per-day PIN count (D-1685), the who's-calling text (TXT-027, D-1687), closing lines, staff phones and LINK (T079), bridging and the identity and code calls (T080).
 
 ## What it owns
 
 - Migration `0114_calls_pool.sql`: the `calls` schema (default privileges SELECT, INSERT only, D-1520); `calls.number_pool` (one row per line: job, homeowner, business by ID, `pool_number`, `shared`, `assigned_at`, `closed_at`; `seq` orders assignments; one open line per job; the app role may UPDATE `closed_at` only, for T079); `calls.pool_alert` (append-only: the `ops.alert` ID and the `seq` of the line that raised it).
 - `src/service.rs`: `assign_number` (`Connected`, `Line`: `id`, `number`, `shared`), the pure `choose`, `automated_call_gate` (`AutomatedCall`, `CallGate`), `POOL_ALERT` (`calls.pool_exhausted`), `SAFETY_NOT_DIALABLE_ALERT` (`calls.safety_call_not_dialable`), `ASSIGNED_ACTION` (`calls.number_assigned`).
 - `src/routing.rs` (T077): the pure `route` (`Party`, `RoutedLine`, `CallTurn`, `Step`, `Attestation`), `job_pin`, `JobPin`, `answer_call` (`IncomingCall`, `Answer`), `TRIES_PER_CALL`, `TRIES_PER_DAY`, `READBACK_AFTER`, `PIN_ALERT` (`calls.pin_tries_exceeded`); its own query `lines_on`.
+- Migration `0116_calls_call_log.sql` (T078): `calls.call_log` (append-only: line, call SID unique, `caller` business or homeowner, `answered_by` person, machine or nobody, `length_seconds`, `reached_45s`, `ended_at`).
+- `src/rules.rs` (T078): the pure `talked`, `business_attempt`, `answered_by`, `reached_report_mark`, `REPORT_MARK` (`Caller`, `AnsweredBy`).
+- `src/handlers.rs` (T078): `dial_twiml`, `finished_call` (`FinishedCall`), `log_finished_call`, `call_log` (`LoggedCall`); its own queries.
 - `src/models.rs`: `CallsError` and the crate-private queries.
 - `src/api.rs`: the only public surface. `sqlx.toml`: `timestamptz` as jiff timestamps.
 
@@ -24,6 +27,9 @@ The layer-5 crate for masked calls between a homeowner and the business she conn
 - CALL-025, D-1685: 3 tries a call, 6 a day per number and pool number (`CallTurn::tries_today` comes from the caller); the last try hangs up with one High `calls.pin_tries_exceeded` alert; a used-up number is `Refuse`d before the prompt.
 - CALL-005, D-026, D-1686: after the second wrong try, only a phone linked to a business holding a line on the number, on an A-attested call, gets `ReadBack` of its newest line; the words come from `privacy::api::read_for_readback` (first name and street only); the voice handler connects only on the caller's confirm.
 
+- CALL-006, D-1691: calls are never recorded: `dial_twiml` says `record="do-not-record"` and holds the phone as a `SecretString`; no source names a recording verb or callback.
+- CALL-007, CALL-008, D-141, D-1689, D-1690: a person answering, either way and any length, is `talked`; a machine or nobody never is; only the business's calls are `business_attempt`s; the 45-second mark is stored (`reached_45s`) for reports only. Each finished call is logged once per SID with who called (role only), who answered and its length.
+
 ## Never break
 
 - Each job gets a pool number neither side's own, once: `tests/integration/tests/number_pool.rs::td_call_01_each_connected_job_gets_a_pool_number_neither_sides_own`.
@@ -37,6 +43,9 @@ The layer-5 crate for masked calls between a homeowner and the business she conn
 
 - A wrong PIN never connects; two jobs route only by PIN; the read-back only for the paid business on attestation A; 10 wrong PINs never connect: `tests/integration/tests/pin_routing.rs` (`td_call_02_*`, `td_call_11_*`).
 
+- Never recorded; one log row per call; the log is append-only: `tests/integration/tests/no_recording.rs` (`td_call_03_*`, `td_call_04_each_finished_call_is_logged_once`).
+- Talking is a person answering, never a machine, never the length: `app/calls/src/tests/connection.rs` (`td_call_04_*`).
+
 ## How to change
 
 - Pool size: set `ASKHAVA_MASKED_POOL_SIZE` and `ASKHAVA_MASKED_NUMBERS` (Casey buys the numbers); the default is `adapters`' `DEFAULT_POOL_SIZE` (CALL-017, D-160).
@@ -49,4 +58,6 @@ The layer-5 crate for masked calls between a homeowner and the business she conn
 
 - `tests/integration/tests/number_pool.rs` (TD-CALL-01, TD-CON-28's T076 case): `cargo test -p askhava-integration --test number_pool`.
 - `tests/integration/tests/pin_routing.rs` (TD-CALL-02, TD-CALL-11, TD-CALL-12): `cargo test -p askhava-integration --test pin_routing`.
+- `app/calls/src/tests/connection.rs` (TD-CALL-04, TD-FEE-13's CALL-007 cases): `cargo test -p askhava-calls tests::connection`.
+- `tests/integration/tests/no_recording.rs` (TD-CALL-03, TD-CALL-04's log): `cargo test -p askhava-integration --test no_recording`.
 - `tests/integration/tests/schema_grants.rs` (TD-SEC-34): the `calls` default ACL and grants.
