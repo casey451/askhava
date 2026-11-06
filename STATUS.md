@@ -1,18 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-06T16:16:11Z by runner ea22387162b9 (manual).
+Updated 2026-11-06T16:19:04Z by runner 428a704c4d39 (actions).
 
-**Idle since 15:37Z; 121 of 238 done; week 21% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 15:37Z; 121 of 239 done; week 21% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 121 of 238 build tasks (owner gates not counted)
+- **Tasks done:** 121 of 239 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 15:37Z (no task in progress)
 - **Week:** 21% used, 156.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:09Z, 6 min before this update
+- **Last run:** 16:16Z, 2 min before this update
 - **Keeper:** last ran 16:09Z, next wake 21:49Z
 
 ## Needs attention
-- Strict plan check red: 9 problem(s) on tasks still to run (+24 on DONE tasks); first: T191: stored context_pct 10% but it measures 14%; regenerate
+- nothing
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -47,11 +47,14 @@ Updated 2026-11-06T16:16:11Z by runner ea22387162b9 (manual).
 - 16:15Z Plan: dynamic SQL in migrations is a TD-SEC-10 finding (T252), T126 context budget, stored budgets refreshed (D-1677, D-1678) (#298)
 - 16:05Z Plan: bump actix-http 3.20.2 -> 3.20.3 for RUSTSEC-2026-0455 (D-1666) (#297)
 - 15:10Z Plan: bump actix-http 3.20.0 -> 3.20.2 for RUSTSEC-2026-0446 (D-1643) (#295)
+- 14:27Z Plan: T250 becomes a harness task with a narrow TD-SEC-10 exception for default-privilege REVOKE migrations (D-1632) (#294)
+- 19:30Z Plan: page pick end to end, first-quote move, markets and service radius, schema default privileges, card sender (D-1515–D-1521) (#272)
+- 17:59Z Plan: drop the early-joiner price lock, payments default privileges, Nov 3 handoff review (D-1494–D-1499) (#269)
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 210 of 731 (28.7%) · partial 196 · unstarted 325
-**Tasks merged (throughput only):** 121 of 238
+**Requirements verified:** 209 of 731 (28.6%) · partial 197 · unstarted 325
+**Tasks merged (throughput only):** 121 of 239
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -71,7 +74,7 @@ Updated 2026-11-06T16:16:11Z by runner ea22387162b9 (manual).
 | quiet-hours | 7 | 2 | 0 | 9 |
 | quotes-pick | 15 | 28 | 13 | 56 |
 | recurring | 7 | 1 | 3 | 11 |
-| security | 11 | 21 | 22 | 54 |
+| security | 10 | 22 | 22 | 54 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 0 | 28 | 28 |
 | wording | 2 | 2 | 28 | 32 |
@@ -86,7 +89,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 1 of 54 done
+- stage 4: 1 of 55 done
 - stage 5: 0 of 42 done
 - stage 6: 0 of 26 done
 - stage 7: 0 of 2 done
