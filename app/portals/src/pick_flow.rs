@@ -23,16 +23,39 @@
 //! Labels and hints come before each input (A11Y-010); a failed submit gets an "Error: " title, a
 //! focused summary linking each field and kept values (A11Y-011, A11Y-012); the code's 10-minute
 //! limit is said up front in plain words, with "Send a new code" in the same form keeping her
-//! choices (A11Y-015, A11Y-016). Until Verify and the stored page pick are wired (D-1248), the
-//! page says no code was sent and nothing is picked (D-1264).
+//! choices (A11Y-015, A11Y-016). Without [`PickCodeKeys`] (dev, `Ci` and the end-to-end runs) the
+//! page says no code was sent and nothing is picked, word for word as before (D-1248, D-1264).
+//!
+//! T246 (D-1516) builds the page pick with the keys: the final Pick is the code step. It
+//! re-checks the link and [`JobStatus::takes_pick`]; picking the quote that already waits shows
+//! the result and sends no code; a job paused by the homeowner (CON-029) or a number
+//! `messaging::api::send_window` says can't be texted gets no code and a line saying nothing was
+//! picked; otherwise `picks::api::send_page_code` texts the code to her vaulted phone, which
+//! `portals` never sees (PICK-013, PRIV-003). "Finish my pick" checks the fields, then the code
+//! (`picks::api::check_page_code`; a malformed code counts no try), and on a passed code runs one
+//! transaction: `picks::api::page_pick` and the terms acceptance with channel `quote_page`
+//! (PICK-016, TERMS-016), then the result page (PICK-045). From Payment pending on the page shows
+//! the confirmed line and stores nothing. The contact choice and email are checked and passed on
+//! unstored (PICK-018, D-1264).
 
 use std::sync::Arc;
 
 use askama::Template;
+use askhava_adapters::api::VerifyAdapter;
 use askhava_core::api::{Clock, LinkToken};
+use askhava_intake::api::{
+    TermsAcceptance, TermsChannel, job_homeowner, paused_by_homeowner, record_terms_acceptance,
+};
 use askhava_jobs::api::quote_token::resolve;
 use askhava_jobs::api::{JobStatus, current, job_number};
-use askhava_picks::api::rules::parse_code;
+use askhava_messaging::api::{Language, SendWindow, send_window};
+use askhava_ops::api::Actor;
+use askhava_picks::api::rules::{CodeVia, SendAsk, SendRefused, Stage, parse_code, stage};
+use askhava_picks::api::{
+    CodeCheck, CodeSent, PageCodeKeys, PagePick, check_page_code, page_pick, send_page_code,
+    waiting_quote,
+};
+use askhava_privacy::api::Vault;
 use askhava_quotes::api::page_quotes;
 use axum::Router;
 use axum::extract::{FromRef, Path, State};
@@ -41,7 +64,9 @@ use axum::middleware::{from_fn, from_fn_with_state};
 use axum::response::{Html, IntoResponse, Redirect, Response};
 use axum::routing::post;
 use axum_extra::extract::cookie::CookieJar;
+use secrecy::SecretString;
 use sqlx::PgPool;
+use sqlx::types::Uuid;
 
 use crate::quote_page::{QUOTE_PAGE_ROUTE, number_quotes, token_expired};
 use crate::security::{CsrfField, CsrfForm, WebSecurity, no_store, refuse_cross_site};
@@ -158,34 +183,107 @@ pub fn result_page(
     view.render()
 }
 
-/// The routes' state: the pool, the clock the 30-day rule reads and the refusals' state.
-#[derive(Clone)]
-struct PickFlow {
+/// The global daily Verify count at which page codes stop and the High alert goes (PICK-055,
+/// D-1244); [`PickCodeKeys::new`] uses it until a setting names another (D-1603).
+pub const VERIFY_DAILY_THRESHOLD: i64 = 500;
+
+/// What the page pick needs beyond the pool (D-1516): the Verify client, the vault `picks` reads
+/// the phone from, the `ID_SECRET` for the send's idempotency key, the published homeowner Terms
+/// a pick accepts (version and exact text, TERMS-016) and the global daily Verify threshold.
+/// `server` builds it as it builds the job-text keys (D-1302); no `Debug`, it holds keys.
+pub struct PickCodeKeys<V> {
+    verify: V,
+    vault: Vault,
+    secret: SecretString,
+    terms: (String, &'static str),
+    threshold: i64,
+}
+
+impl<V> PickCodeKeys<V> {
+    /// The keys over `verify`, `vault` and `secret`, accepting the Terms `terms` (version, exact
+    /// published text), with [`VERIFY_DAILY_THRESHOLD`].
+    #[must_use]
+    pub fn new(
+        verify: V,
+        vault: Vault,
+        secret: SecretString,
+        terms: (String, &'static str),
+    ) -> Self {
+        Self {
+            verify,
+            vault,
+            secret,
+            terms,
+            threshold: VERIFY_DAILY_THRESHOLD,
+        }
+    }
+
+    /// The same keys with another global daily Verify threshold (PICK-055).
+    #[must_use]
+    pub fn with_threshold(mut self, threshold: i64) -> Self {
+        self.threshold = threshold;
+        self
+    }
+
+    fn code_keys(&self) -> PageCodeKeys<'_, V> {
+        PageCodeKeys {
+            verify: &self.verify,
+            vault: &self.vault,
+            secret: &self.secret,
+        }
+    }
+}
+
+/// The routes' state: the pool, the clock the 30-day rule reads, the refusals' state and the
+/// page pick's keys (`None` in dev, `Ci` and the end-to-end runs).
+struct PickFlow<V> {
     pool: PgPool,
     clock: Arc<dyn Clock>,
     security: WebSecurity,
+    keys: Option<Arc<PickCodeKeys<V>>>,
 }
 
-impl FromRef<PickFlow> for WebSecurity {
-    fn from_ref(flow: &PickFlow) -> Self {
+impl<V> Clone for PickFlow<V> {
+    fn clone(&self) -> Self {
+        Self {
+            pool: self.pool.clone(),
+            clock: Arc::clone(&self.clock),
+            security: self.security.clone(),
+            keys: self.keys.clone(),
+        }
+    }
+}
+
+impl<V> FromRef<PickFlow<V>> for WebSecurity {
+    fn from_ref(flow: &PickFlow<V>) -> Self {
         flow.security.clone()
     }
 }
 
-/// The pick flow's router over `pool`, timed by `clock` (PICK-016, PICK-017): `POST /q/{token}`
-/// (the review step) and `POST` [`PICK_ROUTE`], behind the cross-site refusal and `no-store`.
+/// The pick flow's router over `pool`, timed by `clock` (PICK-013, PICK-016, PICK-017, D-1516):
+/// `POST /q/{token}` (the review step), `POST` [`PICK_ROUTE`] and `POST` [`CODE_ROUTE`], behind
+/// the cross-site refusal and `no-store`. With `keys` the final Pick sends the code and "Finish my
+/// pick" stores the pick; without them nothing is sent or stored and the page says so.
 /// `server::build_router` merges it beside the quote page's `GET`.
-pub fn pick_flow_routes(pool: PgPool, clock: Arc<dyn Clock>) -> Router {
+pub fn pick_flow_routes<V>(
+    pool: PgPool,
+    clock: Arc<dyn Clock>,
+    keys: Option<PickCodeKeys<V>>,
+) -> Router
+where
+    V: VerifyAdapter + Send + Sync + 'static,
+{
     let security = WebSecurity::new(pool.clone(), Arc::clone(&clock));
     let state = PickFlow {
         pool,
         clock,
         security: security.clone(),
+        keys: keys.map(Arc::new),
     };
     Router::new()
-        .route(QUOTE_PAGE_ROUTE, post(review))
-        .route(PICK_ROUTE, post(final_pick))
-        .route(CODE_ROUTE, post(code_step))
+        .route(QUOTE_PAGE_ROUTE, post(review::<V>))
+        .route(PICK_ROUTE, post(final_pick::<V>))
+        .route(CODE_ROUTE, post(code_step::<V>))
         .with_state(state)
         .layer(from_fn(no_store))
         .layer(from_fn_with_state(security, refuse_cross_site))
@@ -193,39 +291,156 @@ pub fn pick_flow_routes(pool: PgPool, clock: Arc<dyn Clock>) -> Router {
 
 /// `POST /q/{token}`: the review step for a quote that can still be picked (PICK-017); a bad link
 /// is a bare 404 (SEC-037), a quote that can't be picked goes back to the quote page.
-async fn review(
-    State(flow): State<PickFlow>,
+async fn review<V>(
+    State(flow): State<PickFlow<V>>,
     Path(raw): Path<String>,
     jar: CookieJar,
     CsrfForm(form): CsrfForm<PickForm>,
 ) -> Response {
     let request = match pickable(&flow, &raw, form.quote).await {
-        Ok(Some(request)) => request,
-        Ok(None) => return back(&raw, form.quote),
+        Ok(Pickable::Open { request, .. }) => request,
+        Ok(Pickable::Confirmed { .. } | Pickable::No) => return back(&raw, form.quote),
         Err(status) => return status.into_response(),
     };
     let csrf = csrf_token(&jar).unwrap_or_default();
     render(ReviewView::review(request, form.quote, raw, csrf))
 }
 
-/// `POST /q/{token}/pick`: the final Pick. It re-checks the link and the quote; the code step and
-/// the stored pick are T187's, so for now it shows the review again under "Nothing was picked"
-/// (D-1248, D-1251); a quote that can't be picked goes back to the quote page.
-async fn final_pick(
-    State(flow): State<PickFlow>,
+/// `POST /q/{token}/pick`: the final Pick, the code step (PICK-013, D-1516). It re-checks the link
+/// and the quote; without keys it shows the review again under "Nothing was picked" (D-1248,
+/// D-1251); with them [`start_code`] decides; from Payment pending on it shows the confirmed line.
+async fn final_pick<V>(
+    State(flow): State<PickFlow<V>>,
     Path(raw): Path<String>,
     jar: CookieJar,
     CsrfForm(form): CsrfForm<PickForm>,
-) -> Response {
-    let request = match pickable(&flow, &raw, form.quote).await {
-        Ok(Some(request)) => request,
-        Ok(None) => return back(&raw, form.quote),
+) -> Response
+where
+    V: VerifyAdapter + Send + Sync,
+{
+    let csrf = csrf_token(&jar).unwrap_or_default();
+    let found = pickable(&flow, &raw, form.quote).await;
+    let Some(keys) = flow.keys.clone() else {
+        return match found {
+            Ok(Pickable::Open { request, .. }) => {
+                let mut view = ReviewView::review(request, form.quote, raw, csrf);
+                view.not_open = true;
+                render(view)
+            }
+            Ok(Pickable::Confirmed { .. } | Pickable::No) => back(&raw, form.quote),
+            Err(status) => status.into_response(),
+        };
+    };
+    let (job, request) = match found {
+        Ok(Pickable::Open { job, request }) => (job, request),
+        Ok(Pickable::Confirmed { request }) => {
+            return render(CodeView::line_only(request, form.quote, raw, CONFIRMED));
+        }
+        Ok(Pickable::No) => return back(&raw, form.quote),
         Err(status) => return status.into_response(),
     };
-    let csrf = csrf_token(&jar).unwrap_or_default();
-    let mut view = ReviewView::review(request, form.quote, raw, csrf);
-    view.not_open = true;
-    render(view)
+    let view = CodeView::arrival(request, form.quote, raw, csrf);
+    started(&flow, &keys, (job, form.quote), view).await
+}
+
+/// Starts the code for `quote` of `job` and renders what happened in `view`: the result page for
+/// the quote already waiting, else the code step with its line.
+async fn started<V>(
+    flow: &PickFlow<V>,
+    keys: &PickCodeKeys<V>,
+    (job, quote): (Uuid, usize),
+    mut view: CodeView,
+) -> Response
+where
+    V: VerifyAdapter + Send + Sync,
+{
+    match start_code(flow, keys, job, quote).await {
+        Ok(Start::Same) => done(view.request, quote, view.token),
+        Ok(Start::Line(line, form)) => {
+            view.line = Some(line);
+            view.form = form;
+            render(view)
+        }
+        Err(status) => status.into_response(),
+    }
+}
+
+/// What the code step's start found.
+enum Start {
+    /// The quote is already the waiting pick: no code (TD-PICK-47).
+    Same,
+    /// The line to show, and whether the form shows under it.
+    Line(PageLine, bool),
+}
+
+/// Sends the page code for `quote` of `job`, unless that quote already waits (no code), the
+/// homeowner paused the job (CON-029) or her number can't be texted (`send_window`): then a
+/// line saying nothing was picked and no form (PICK-013, PICK-055, D-1516). Failures are a bare
+/// 500, logged once with no value.
+async fn start_code<V>(
+    flow: &PickFlow<V>,
+    keys: &PickCodeKeys<V>,
+    job: Uuid,
+    quote: usize,
+) -> Result<Start, StatusCode>
+where
+    V: VerifyAdapter + Send + Sync,
+{
+    let mut db = flow.pool.acquire().await.map_err(|_| failed("pool"))?;
+    if waiting_quote(&mut db, job)
+        .await
+        .map_err(|_| failed("pick"))?
+        == Some(quote)
+    {
+        return Ok(Start::Same);
+    }
+    let paused = paused_by_homeowner(&mut db, job)
+        .await
+        .map_err(|_| failed("pause"))?;
+    let owner = job_homeowner(&mut db, job)
+        .await
+        .map_err(|_| failed("homeowner"))?;
+    let Some(owner) = owner.filter(|_| !paused) else {
+        return Ok(Start::Line(CANT_TEXT, false));
+    };
+    let now = flow.clock.now();
+    let window = send_window(&mut db, &keys.vault, owner.contact, now)
+        .await
+        .map_err(|_| failed("window"))?;
+    if matches!(window, SendWindow::OptedOut | SendWindow::NotTextable) {
+        return Ok(Start::Line(CANT_TEXT, false));
+    }
+    let ask = SendAsk {
+        via: CodeVia::Text,
+        own_session: false,
+        local_hour: 0,
+    };
+    let ids = (job, owner.contact);
+    let when = (now, keys.threshold);
+    let sent = send_page_code(&mut db, &keys.code_keys(), ids, ask, when).await;
+    Ok(match sent {
+        Ok(CodeSent::Sent) => Start::Line(CODE_SENT, true),
+        Ok(CodeSent::Refused(SendRefused::CoolingDown(_))) => Start::Line(COOLING_DOWN, true),
+        Ok(CodeSent::Refused(_)) => Start::Line(CAPPED, true),
+        Err(_) => {
+            tracing::warn!("pick code send failed");
+            Start::Line(NOT_SENT, true)
+        }
+    })
+}
+
+/// A bare 500 for a failed `step`, logged once with the step's name only (R5, PRIV-016).
+fn failed(step: &'static str) -> StatusCode {
+    tracing::warn!(step, "pick flow step failed");
+    StatusCode::INTERNAL_SERVER_ERROR
+}
+
+/// The result page for quote `quote` of request `request` (PICK-045).
+fn done(request: i64, quote: usize, token: String) -> Response {
+    match result_page(request, quote, token, None) {
+        Ok(html) => page(html),
+        Err(_) => failed("result").into_response(),
+    }
 }
 
 /// `view` as a `noindex` page, or a bare 500 (logged once) when the template fails.
@@ -239,46 +454,68 @@ fn render(view: impl Template) -> Response {
     }
 }
 
-/// True while the job takes a page pick: from the first quote (PICK-012: Open, No quotes yet,
-/// Quotes ready) and in Awaiting confirm, where the new pick replaces the waiting one until the
-/// business confirms (PICK-032, PICK-045 "You can still pick another quote", D-1251). The same
-/// four statuses as [`JobStatus::takes_quotes`], read through it so the status module stays the
-/// only place that names a variant (SEC-031).
+/// True while the job takes a page pick: [`JobStatus::takes_pick`], Quotes ready and Awaiting
+/// confirm, where a new pick replaces the waiting one until the business confirms (PICK-012,
+/// PICK-032, PICK-045, D-1516).
 pub(crate) const fn takes_pick(status: JobStatus) -> bool {
-    status.takes_quotes()
+    status.takes_pick()
 }
 
-/// The request number when quote `quote` behind token `raw` can be picked now: the link opens
-/// (SEC-037, PICK-011), the job takes a pick ([`takes_pick`]: PICK-012, PICK-032) and the quote is
-/// on the page and available (PICK-008). `Ok(None)` when it can't; `Err(404)` for a bad link,
-/// `Err(500)` on a failed read (logged once, with no value).
-async fn pickable(flow: &PickFlow, raw: &str, quote: usize) -> Result<Option<i64>, StatusCode> {
+/// What a quote behind a token is to the pick flow.
+enum Pickable {
+    /// The job takes a pick and the quote is on the page and available.
+    Open {
+        /// The job.
+        job: Uuid,
+        /// Its request number.
+        request: i64,
+    },
+    /// The business already confirmed a pick (Payment pending on, before a final status).
+    Confirmed {
+        /// The request number.
+        request: i64,
+    },
+    /// Nothing to pick: back to the card.
+    No,
+}
+
+/// Whether quote `quote` behind token `raw` can be picked now: the link opens (SEC-037,
+/// PICK-011), the job takes a pick ([`takes_pick`]: PICK-012, PICK-032) and the quote is on the
+/// page and available (PICK-008); a confirmed job is [`Pickable::Confirmed`]. `Err(404)` for a
+/// bad link, `Err(500)` on a failed read (logged once, with no value).
+async fn pickable<V>(flow: &PickFlow<V>, raw: &str, quote: usize) -> Result<Pickable, StatusCode> {
     let token = LinkToken::parse(raw).map_err(|_| StatusCode::NOT_FOUND)?;
-    let read = |()| {
-        tracing::warn!("pick flow read failed");
-        StatusCode::INTERNAL_SERVER_ERROR
-    };
-    let mut db = flow.pool.acquire().await.map_err(|_| read(()))?;
-    let job = resolve(&mut db, &token).await.map_err(|_| read(()))?;
+    let mut db = flow.pool.acquire().await.map_err(|_| failed("pool"))?;
+    let job = resolve(&mut db, &token)
+        .await
+        .map_err(|_| failed("token"))?;
     let job = job.ok_or(StatusCode::NOT_FOUND)?;
-    let row = current(&mut db, job).await.map_err(|_| read(()))?;
+    let row = current(&mut db, job).await.map_err(|_| failed("job"))?;
     if token_expired(row.status.is_final(), row.status_at, flow.clock.now()) {
         return Err(StatusCode::NOT_FOUND);
     }
-    if !takes_pick(row.status) {
-        return Ok(None);
+    if matches!(stage(row.status), Stage::Accepted) {
+        let request = job_number(&mut db, job)
+            .await
+            .map_err(|_| failed("number"))?;
+        return Ok(Pickable::Confirmed { request });
     }
-    let quotes = page_quotes(&mut db, job).await.map_err(|_| read(()))?;
+    if !takes_pick(row.status) {
+        return Ok(Pickable::No);
+    }
+    let quotes = page_quotes(&mut db, job)
+        .await
+        .map_err(|_| failed("quotes"))?;
     let open = number_quotes(quotes)
         .iter()
         .any(|q| q.number == quote && !q.quote.unavailable);
     if !open {
-        return Ok(None);
+        return Ok(Pickable::No);
     }
-    job_number(&mut db, job)
+    let request = job_number(&mut db, job)
         .await
-        .map(Some)
-        .map_err(|_| read(()))
+        .map_err(|_| failed("number"))?;
+    Ok(Pickable::Open { job, request })
 }
 
 /// Back to quote `quote`'s card on the quote page (a 303, so a reload never re-posts).
@@ -316,6 +553,51 @@ impl CsrfField for CodeForm {
     }
 }
 
+/// A line at the top of the code step: its element ID and its words (drafts for the copy panel,
+/// D-1604).
+type PageLine = (&'static str, &'static str);
+
+/// Without keys: today's words, unchanged (D-1264).
+const NOT_OPEN: PageLine = (
+    "pick-not-open",
+    "Nothing was picked, and no code was sent. Picking on this page isn't open yet.",
+);
+/// The code went (PICK-013).
+const CODE_SENT: PageLine = (
+    "code-sent",
+    "We texted a 6-digit code to your phone. Type it below to finish your pick.",
+);
+/// A paused job or a number that can't be texted (CON-029, QH-003).
+const CANT_TEXT: PageLine = (
+    "pick-not-open",
+    "We can't text your phone right now, so no code was sent and nothing was picked.",
+);
+/// The business already accepted (PICK-032).
+const CONFIRMED: PageLine = (
+    "pick-not-open",
+    "You already have a pick, and that business has accepted it. Your pick stays as it is.",
+);
+/// Five wrong tries: the cooldown (D-015).
+const COOLING_DOWN: PageLine = (
+    "pick-not-open",
+    "That code didn't match 5 times, so new codes are paused for 15 minutes. After that, press \"Send a new code\".",
+);
+/// A daily cap (PICK-055).
+const CAPPED: PageLine = (
+    "pick-not-open",
+    "We've sent as many codes as we can today. Please try again tomorrow.",
+);
+/// Verify failed.
+const NOT_SENT: PageLine = (
+    "pick-not-open",
+    "We couldn't send the code. Press \"Send a new code\" to try again.",
+);
+/// The pick was taken another way while she typed the code.
+const TAKEN: PageLine = (
+    "pick-not-open",
+    "This quote can't be picked right now, so your pick didn't go through. Go back to your quotes to see where things stand.",
+);
+
 /// The code-and-contact step (`templates/pick_code.html`): what she entered, kept, and the
 /// message for each field that failed (A11Y-011, A11Y-012).
 #[derive(Template)]
@@ -336,16 +618,41 @@ struct CodeView {
     /// The email she typed, kept after an error.
     email: String,
     /// The code field's message.
-    code_error: Option<&'static str>,
+    code_error: Option<String>,
     /// The contact choice's message.
     reach_error: Option<&'static str>,
     /// The email field's message.
     email_error: Option<&'static str>,
     /// `true` when any field failed: the title starts "Error: " and the summary shows.
     failed: bool,
+    /// The line at the top when no field failed.
+    line: Option<PageLine>,
+    /// Whether the form shows (not after a line saying no code can come).
+    form: bool,
 }
 
 impl CodeView {
+    /// The step on arrival from the final Pick: no check, no line yet.
+    fn arrival(request: i64, quote: usize, token: String, csrf: String) -> Self {
+        let form = CodeForm {
+            csrf: String::new(),
+            quote,
+            code: String::new(),
+            reach: String::new(),
+            email: String::new(),
+            send: String::new(),
+        };
+        Self::checked(request, token, csrf, form)
+    }
+
+    /// Only `line`, no form: nothing can be picked here now.
+    fn line_only(request: i64, quote: usize, token: String, line: PageLine) -> Self {
+        let mut view = Self::arrival(request, quote, token, String::new());
+        view.line = Some(line);
+        view.form = false;
+        view
+    }
+
     /// The step for `form` (PICK-013, PICK-018, A11Y-010 to A11Y-012, A11Y-015): on arrival no
     /// check; "Send a new code" clears only the code; "Finish my pick" checks every field.
     fn checked(request: i64, token: String, csrf: String, form: CodeForm) -> Self {
@@ -361,11 +668,13 @@ impl CodeView {
             reach_error: None,
             email_error: None,
             failed: false,
+            line: None,
+            form: true,
         };
         match form.send.as_str() {
             "new" => view.code.clear(),
             "pick" => {
-                view.code_error = code_problem(&view.code);
+                view.code_error = code_problem(&view.code).map(str::to_owned);
                 view.reach_error = reach_problem(&view.reach);
                 view.email_error = (view.reach == "email")
                     .then(|| email_problem(&view.email))
@@ -377,6 +686,13 @@ impl CodeView {
             _ => {}
         }
         view
+    }
+
+    /// The code field failed with `message` after Verify's answer (A11Y-011).
+    fn code_failed(mut self, message: String) -> Self {
+        self.code_error = Some(message);
+        self.failed = true;
+        self
     }
 }
 
@@ -410,22 +726,151 @@ fn email_problem(email: &str) -> Option<&'static str> {
     (!shaped).then_some("Enter your email address, like name@example.com.")
 }
 
+/// The code field's message for Verify's answer (PICK-013, D-015), `None` for a passed code.
+fn check_message(check: CodeCheck) -> Option<String> {
+    match check {
+        CodeCheck::Accepted => None,
+        CodeCheck::Wrong { left: 1 } => {
+            Some("That code didn't match. You have 1 try left.".to_owned())
+        }
+        CodeCheck::Wrong { left } => Some(format!(
+            "That code didn't match. You have {left} tries left."
+        )),
+        CodeCheck::Expired => {
+            Some("That code has expired. Codes work for 10 minutes. Press \"Send a new code\" to get another one.".to_owned())
+        }
+        CodeCheck::CoolingDown(_) => Some(
+            "That code didn't match 5 times, so new codes are paused for 15 minutes. After that, press \"Send a new code\"."
+                .to_owned(),
+        ),
+        CodeCheck::Malformed => code_problem("x").map(str::to_owned),
+        CodeCheck::NoCode => {
+            Some("We haven't sent a code for this pick yet. Press \"Send a new code\" to get one.".to_owned())
+        }
+    }
+}
+
 /// `POST /q/{token}/code`: the code-and-contact step for a quote that can still be picked
 /// (PICK-013, PICK-018); a bad link is a bare 404, a quote that can't be picked goes back to its
-/// card. It sends and checks nothing yet and stores no pick (D-1248, D-1264).
-async fn code_step(
-    State(flow): State<PickFlow>,
+/// card. Without keys it sends and stores nothing and says so (D-1264); with them "Send a new
+/// code" sends one and "Finish my pick" checks the fields, then the code, then stores the pick.
+async fn code_step<V>(
+    State(flow): State<PickFlow<V>>,
     Path(raw): Path<String>,
     jar: CookieJar,
     CsrfForm(form): CsrfForm<CodeForm>,
-) -> Response {
-    let request = match pickable(&flow, &raw, form.quote).await {
-        Ok(Some(request)) => request,
-        Ok(None) => return back(&raw, form.quote),
-        Err(status) => return status.into_response(),
-    };
+) -> Response
+where
+    V: VerifyAdapter + Send + Sync,
+{
     let csrf = csrf_token(&jar).unwrap_or_default();
-    render(CodeView::checked(request, raw, csrf, form))
+    let quote = form.quote;
+    let (job, request) = match (pickable(&flow, &raw, quote).await, flow.keys.is_some()) {
+        (Ok(Pickable::Open { job, request }), _) => (job, request),
+        (Ok(Pickable::Confirmed { request }), true) => {
+            return render(CodeView::line_only(request, quote, raw, CONFIRMED));
+        }
+        (Ok(_), _) => return back(&raw, quote),
+        (Err(status), _) => return status.into_response(),
+    };
+    let send = form.send.clone();
+    let mut view = CodeView::checked(request, raw, csrf, form);
+    let Some(keys) = flow.keys.clone() else {
+        if !view.failed {
+            view.line = Some(NOT_OPEN);
+        }
+        return render(view);
+    };
+    match send.as_str() {
+        "new" => started(&flow, &keys, (job, quote), view).await,
+        "pick" if !view.failed => finish(&flow, &keys, job, view).await,
+        _ => render(view),
+    }
+}
+
+/// "Finish my pick" with every field shaped: checks the code against her vaulted phone, then
+/// stores the pick and the terms acceptance in one transaction (PICK-013, PICK-016, TERMS-016,
+/// D-1516). The contact choice and email are not stored (PICK-018, D-1264).
+async fn finish<V>(
+    flow: &PickFlow<V>,
+    keys: &PickCodeKeys<V>,
+    job: Uuid,
+    view: CodeView,
+) -> Response
+where
+    V: VerifyAdapter + Send + Sync,
+{
+    let Ok(mut db) = flow.pool.acquire().await else {
+        return failed("pool").into_response();
+    };
+    let owner = match job_homeowner(&mut db, job).await {
+        Ok(Some(owner)) => owner,
+        Ok(None) => {
+            return render(CodeView::line_only(
+                view.request,
+                view.quote,
+                view.token,
+                CANT_TEXT,
+            ));
+        }
+        Err(_) => return failed("homeowner").into_response(),
+    };
+    let now = flow.clock.now();
+    let ids = (job, owner.contact);
+    let check = check_page_code(&mut db, &keys.code_keys(), ids, &view.code, now).await;
+    match check.map(check_message) {
+        Ok(None) => {}
+        Ok(Some(message)) => return render(view.code_failed(message)),
+        Err(_) => return failed("check").into_response(),
+    }
+    let (request, quote) = (view.request, view.quote);
+    match store(flow, keys, (job, quote), owner).await {
+        Ok(true) => done(request, quote, view.token),
+        Ok(false) => render(CodeView::line_only(request, quote, view.token, TAKEN)),
+        Err(status) => status.into_response(),
+    }
+}
+
+/// One transaction: the page pick, then the terms acceptance with channel `quote_page`, the
+/// English line shown beside the final Pick and the published Terms (PICK-016, TERMS-016,
+/// D-1516). `false` when nothing could be picked (rolled back: the job moved, was paused or the
+/// quote went); a failed acceptance insert rolls the pick back too.
+async fn store<V>(
+    flow: &PickFlow<V>,
+    keys: &PickCodeKeys<V>,
+    (job, quote): (Uuid, usize),
+    owner: askhava_intake::api::JobHomeowner,
+) -> Result<bool, StatusCode> {
+    let now = flow.clock.now();
+    let mut tx = flow.pool.begin().await.map_err(|_| failed("begin"))?;
+    let paused = paused_by_homeowner(&mut tx, job)
+        .await
+        .map_err(|_| failed("pause"))?;
+    let actor = Actor::Homeowner(owner.contact);
+    let pick = match page_pick(&mut tx, (job, paused), quote, actor, now).await {
+        Ok(PagePick::Picked(pick)) => pick,
+        Ok(PagePick::Same(_)) => return Ok(true),
+        Ok(PagePick::Taken) | Err(askhava_picks::api::PicksError::MovedOn) => return Ok(false),
+        Err(_) => return Err(failed("pick")),
+    };
+    let (_, lead, link) = PageLanguage::En.terms();
+    let assent = format!("{lead} {link}");
+    let acceptance = TermsAcceptance {
+        conversation: owner.conversation,
+        pick,
+        document: "homeowner_terms",
+        version: &keys.terms.0,
+        published_text: keys.terms.1,
+        language: Language::En,
+        channel: TermsChannel::QuotePage,
+        assent_line: &assent,
+        accepted_at: now,
+    };
+    record_terms_acceptance(&mut tx, &acceptance)
+        .await
+        .map_err(|_| failed("terms"))?;
+    tx.commit().await.map_err(|_| failed("commit"))?;
+    Ok(true)
 }
 
 #[cfg(test)]

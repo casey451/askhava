@@ -154,8 +154,9 @@ async fn show(State(page): State<QuotePage>, Path(raw): Path<String>, jar: Cooki
 }
 
 /// Reads the page for `token`, or `None` when the token opens nothing now (SEC-037, PICK-011).
-/// Pick buttons show while the job has had no pick (`takes_quote_edits`: Open, No quotes yet,
-/// Quotes ready; D-1234); the CON-028 line while a live job is paused by the homeowner.
+/// Pick buttons show while the job takes a pick (`JobStatus::takes_pick`: Quotes ready and
+/// Awaiting confirm, where a new pick replaces the waiting one; PICK-012, PICK-032, D-1516); the
+/// CON-028 line while a live job is paused by the homeowner.
 async fn load(
     page: &QuotePage,
     token: &LinkToken,
@@ -187,7 +188,7 @@ async fn load(
         request,
         still_open,
         live: !is_final,
-        pick_open: row.status.takes_quote_edits(),
+        pick_open: row.status.takes_pick(),
         csrf,
         quotes: number_quotes(quotes),
     }))

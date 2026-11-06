@@ -24,6 +24,10 @@
 //! [`release_notice`] (PICK-022 to PICK-024, PRIV-005, BIZ-014); [`plan_release`] is its pure rule
 //! (INT-029).
 //!
+//! T246: [`page_pick`] stores the quote page's pick on the text pick's core (PICK-012, PICK-032,
+//! PICK-045); [`send_page_code`] and [`check_page_code`] send and check its Verify code to the
+//! homeowner's vaulted phone, which they read themselves (PICK-013, PRIV-003, D-1516).
+//!
 //! T070: [`lost_notices`] queues the loss notice to every other quoter once the pick is paid or
 //! free, worded by [`compare`] and [`loss_template`] (PICK-026, PICK-038); [`no_longer_active`]
 //! and [`refused_after_confirm`] send "This job is no longer active." once; [`live_pick_reply`]
@@ -59,9 +63,10 @@ pub use crate::release::{
 };
 pub use crate::service::{
     CONFIRMED_TEMPLATE, CodeCheck, CodeSent, CodeTo, DONE_TEMPLATE, NO_QUOTE_TEMPLATE,
-    NONE_TEMPLATE, PICK_MADE_KIND, PICK_WITHDRAWN_KIND, TERMS_TEMPLATE, TextPickDone, TextPickIn,
-    VERIFY_CAP_ALERT, WAITING_TEMPLATE, WHICH_TEMPLATE, check_code, record_terms_line, send_code,
-    terms_line, terms_line_sent, text_pick, withdraw_paused,
+    NONE_TEMPLATE, PICK_MADE_KIND, PICK_WITHDRAWN_KIND, PageCodeKeys, PagePick, TERMS_TEMPLATE,
+    TextPickDone, TextPickIn, VERIFY_CAP_ALERT, WAITING_TEMPLATE, WHICH_TEMPLATE, check_code,
+    check_page_code, page_pick, record_terms_line, send_code, send_page_code, terms_line,
+    terms_line_sent, text_pick, waiting_quote, withdraw_paused,
 };
 
 /// The pure pick rules, for other crates and property tests.
@@ -72,4 +77,7 @@ pub mod rules {
         SendAsk, SendCounts, SendRefused, Stage, TextPick, code_state, parse_code, plan_text_pick,
         read_text_pick, send_allowed,
     };
+    /// A job status's text-pick stage; its Ready and Waiting equal `JobStatus::takes_pick`
+    /// (TD-PICK-45, D-1516).
+    pub use crate::status::stage;
 }

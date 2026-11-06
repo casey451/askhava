@@ -4,7 +4,7 @@
 //! starts the JSON log, builds the router over the app pool (with the test-control routes only in a
 //! `test-control` build, SEC-035) (each request queues its request-log
 //! line, OPS-011; Twilio's inbound-text and status webhooks once `ASKHAVA_PUBLIC_BASE_URL` is
-//! set, SEC-016, T241) and serves it on
+//! set, SEC-016, T241; the page pick's code keys once the vault keys are set, D-1516) and serves it on
 //! `0.0.0.0:$PORT` (the host sets `PORT`) until SIGINT or SIGTERM, then
 //! finishes the requests in flight and exits 0. `server migrate` instead
 //! applies the pending migrations as the migration role and exits: the
@@ -29,9 +29,10 @@ async fn main() -> io::Result<()> {
     let control =
         TestControl::from_settings(&settings, std::env::vars()).map_err(io::Error::other)?;
     let webhooks = askhava_server::webhooks(&settings, pool.clone(), std::env::vars())?;
+    let pick_keys = askhava_server::pick_code_keys(&settings, std::env::vars())?;
     axum::serve(
         listener,
-        askhava_server::build_router(pool, control.router(), webhooks),
+        askhava_server::build_router(pool, control.router(), (webhooks, pick_keys)),
     )
     .with_graceful_shutdown(askhava_server::shutdown_signal()?)
     .await

@@ -45,8 +45,8 @@ pub use crate::handlers::{
     run_no_reply, texting_window,
 };
 pub use crate::job_texts::{
-    ALL_QUOTES_IN_TEMPLATE, JOB_TEXT_TEMPLATES, JobText, JobTextKeys, JobTextSkip, JobTextStep,
-    job_text_body, job_text_step, parse_job_text, run_job_text,
+    ALL_QUOTES_IN_TEMPLATE, JOB_TEXT_TEMPLATES, JobHomeowner, JobText, JobTextKeys, JobTextSkip,
+    JobTextStep, job_homeowner, job_text_body, job_text_step, parse_job_text, run_job_text,
 };
 pub use crate::matching::{
     Candidates, FitStep, KeywordReading, Opinion, Reading, TradeAnswer, TradeQuestion, TradeStep,

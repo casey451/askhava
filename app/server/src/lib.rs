@@ -9,13 +9,13 @@
 use std::io;
 use std::sync::{Arc, OnceLock};
 
-use askhava_adapters::api::{StorageAdapter, TwilioConfig};
+use askhava_adapters::api::{StorageAdapter, TwilioConfig, TwilioVerify, twilio_clients};
 use askhava_core::api::{
     Environment, IdSecret, LogGuard, Registry, Settings, SystemClock, init_logging, request_span,
 };
 use askhava_intake::api::JobTextKeys;
 use askhava_payments::api::Minter;
-use askhava_portals::api::{pick_flow_routes, quote_page_routes, security_headers};
+use askhava_portals::api::{PickCodeKeys, pick_flow_routes, quote_page_routes, security_headers};
 use askhava_privacy::api::Vault;
 use axum::Router;
 use axum::body::Body;
@@ -66,14 +66,19 @@ pub fn start_up() -> io::Result<(Settings, LogGuard)> {
 /// headers on every response, a 404 included (T051). The homeowner's quote page is `portals`'
 /// (`/q/{token}`, T052); its pick review step posts to the same path (`pick_flow`, T055).
 /// `webhooks` ([`webhooks`]) adds Twilio's signature-checked inbound-text and status routes
-/// (`inbound_text`, SEC-016, SEC-039, T241); `None` adds none.
+/// (`inbound_text`, SEC-016, SEC-039, T241); `None` adds none. `pick_keys` ([`pick_code_keys`])
+/// let the page pick send its code and store the pick (T246, D-1516); `None` keeps the page's
+/// "Nothing was picked" lines.
 pub fn build_router(
     pool: PgPool,
     test_control: Router,
-    webhooks: Option<Arc<inbound_text::Webhooks>>,
+    (webhooks, pick_keys): (
+        Option<Arc<inbound_text::Webhooks>>,
+        Option<PickCodeKeys<TwilioVerify>>,
+    ),
 ) -> Router {
     let quote_page = quote_page_routes(pool.clone(), Arc::new(SystemClock));
-    let pick_flow = pick_flow_routes(pool.clone(), Arc::new(SystemClock));
+    let pick_flow = pick_flow_routes(pool.clone(), Arc::new(SystemClock), pick_keys);
     let twilio = webhooks.map_or_else(Router::new, inbound_text::routes);
     let (log, _writer) = offdb_stream::RequestLog::spawn(pool);
     Router::new()
@@ -114,6 +119,66 @@ pub fn job_text_keys<I>(
 where
     I: IntoIterator<Item = (String, String)>,
 {
+    let Some(vault) = vault_from(settings, pairs)? else {
+        return Ok(None);
+    };
+    let link = IdSecret::new(1, id_secret.clone()).map_err(io::Error::other)?;
+    Ok(Some(JobTextKeys::new(link, id_secret.clone(), vault)))
+}
+
+/// The published homeowner Terms a page pick accepts: the exact text of
+/// `docs/legal/homeowner-terms.md`, compiled in, whose second line names its version (TERMS-016).
+const HOMEOWNER_TERMS: &str = include_str!("../../../docs/legal/homeowner-terms.md");
+
+/// The version `HOMEOWNER_TERMS` names on its "Version <v>" line, or `unversioned`.
+fn terms_version() -> String {
+    HOMEOWNER_TERMS
+        .lines()
+        .find_map(|l| l.strip_prefix("Version "))
+        .and_then(|rest| rest.split_whitespace().next())
+        .unwrap_or("unversioned")
+        .to_owned()
+}
+
+/// The page pick's keys (T246, D-1516), built from `settings` and `pairs` as [`job_text_keys`]
+/// builds the sender's (D-1302): with both vault keys, the Verify client from
+/// `adapters::api::twilio_clients`, the vault, a strong `ASKHAVA_ID_SECRET` and the compiled-in
+/// homeowner Terms; with neither, `None` in dev and CI (the page sends nothing and says so) and an
+/// error in the test and live projects; one key without the other is an error everywhere.
+///
+/// # Errors
+///
+/// A missing or bad key, named, never its value.
+pub fn pick_code_keys<I>(
+    settings: &Settings,
+    pairs: I,
+) -> io::Result<Option<PickCodeKeys<TwilioVerify>>>
+where
+    I: IntoIterator<Item = (String, String)>,
+{
+    let pairs: Vec<(String, String)> = pairs.into_iter().collect();
+    let Some(vault) = vault_from(settings, pairs.clone())? else {
+        return Ok(None);
+    };
+    let id_secret = pairs
+        .iter()
+        .find(|(k, v)| k == ID_SECRET && !v.trim().is_empty())
+        .map(|(_, v)| SecretString::from(v.trim().to_owned()))
+        .ok_or_else(|| io::Error::other("missing ASKHAVA_ID_SECRET"))?;
+    IdSecret::new(1, id_secret.clone()).map_err(io::Error::other)?;
+    let twilio = TwilioConfig::from_settings(settings, pairs).map_err(io::Error::other)?;
+    let (_, _, verify) = twilio_clients(&twilio).map_err(io::Error::other)?;
+    let terms = (terms_version(), HOMEOWNER_TERMS);
+    Ok(Some(PickCodeKeys::new(verify, vault, id_secret, terms)))
+}
+
+/// The vault from `VAULT_KEY` and `VAULT_INDEX_KEY` in `pairs` (D-1302, D-1306): with neither,
+/// `None` in dev and CI and an error in the test and live projects; one without the other is an
+/// error everywhere.
+fn vault_from<I>(settings: &Settings, pairs: I) -> io::Result<Option<Vault>>
+where
+    I: IntoIterator<Item = (String, String)>,
+{
     let (seal, index) = match vault_keys(pairs) {
         (Some(seal), Some(index)) => (seal, index),
         (None, None) => {
@@ -127,9 +192,9 @@ where
         (Some(_), None) => return Err(io::Error::other("VAULT_KEY set without VAULT_INDEX_KEY")),
         (None, Some(_)) => return Err(io::Error::other("VAULT_INDEX_KEY set without VAULT_KEY")),
     };
-    let vault = Vault::new(&seal, &index, settings.database_url()).map_err(io::Error::other)?;
-    let link = IdSecret::new(1, id_secret.clone()).map_err(io::Error::other)?;
-    Ok(Some(JobTextKeys::new(link, id_secret.clone(), vault)))
+    Vault::new(&seal, &index, settings.database_url())
+        .map(Some)
+        .map_err(io::Error::other)
 }
 
 /// The `ID_SECRET` setting, read here for the webhook routes' outbox keys (SEC-018).
@@ -311,7 +376,7 @@ mod tests {
     use secrecy::SecretString;
 
     use crate::offdb_stream::OffDbStream;
-    use crate::{job_text_keys, register_handlers, webhooks};
+    use crate::{job_text_keys, pick_code_keys, register_handlers, webhooks};
 
     const TEST_LIST: &str =
         "twilio:ACtestfake01,stripe:acct_testfake,resend:test.example.com,bucket:askhava-test";
@@ -546,5 +611,45 @@ mod tests {
         for (vault, message) in cases {
             assert_eq!(hooks_error("dev", &full, vault), message);
         }
+    }
+
+    /// `pick_code_keys` over `env`'s fake pairs plus `extra` and the vault keys chosen.
+    fn picks(env: &str, extra: &[(&str, &str)], vault: (bool, bool)) -> std::io::Result<bool> {
+        let lists = settings_pairs(env);
+        let all: Vec<(String, String)> = pairs(env, &[lists.as_slice(), extra].concat())
+            .into_iter()
+            .chain(vault_pairs(vault.0, vault.1))
+            .collect();
+        let settings = Settings::from_pairs(all.clone()).expect("settings");
+        pick_code_keys(&settings, all).map(|k| k.is_some())
+    }
+
+    /// T246 (D-1516, D-1302): without vault keys dev and CI build no page-pick keys (the page keeps
+    /// its "Nothing was picked" lines) and the test and live projects refuse to start; with them
+    /// the Twilio keys and a strong `ID_SECRET` are required, each error naming the key; the
+    /// compiled-in Terms name their version.
+    #[test]
+    fn page_pick_keys_need_the_vault_the_id_secret_and_twilio() {
+        let twilio = [TWILIO.as_slice(), &[TOKEN]].concat();
+        let full = [&[ID], twilio.as_slice()].concat();
+        for env in ["dev", "ci"] {
+            assert!(
+                !picks(env, &full, (false, false)).expect("no keys"),
+                "{env}"
+            );
+        }
+        for env in ["test", "live"] {
+            let refused = picks(env, &[ID], (false, false)).expect_err("refused");
+            assert_eq!(refused.to_string(), "missing VAULT_KEY and VAULT_INDEX_KEY");
+        }
+        assert!(picks("dev", &full, (true, true)).expect("keys"));
+        let no_id = picks("dev", &twilio, (true, true)).expect_err("refused");
+        assert_eq!(no_id.to_string(), "missing ASKHAVA_ID_SECRET");
+        let no_token = picks("dev", &[&[ID], TWILIO.as_slice()].concat(), (true, true));
+        let message = no_token.expect_err("refused").to_string();
+        assert!(message.contains("ASKHAVA_TWILIO_AUTH_TOKEN"), "{message}");
+        let half = picks("dev", &full, (true, false)).expect_err("refused");
+        assert_eq!(half.to_string(), "VAULT_KEY set without VAULT_INDEX_KEY");
+        assert_ne!(crate::terms_version(), "unversioned");
     }
 }

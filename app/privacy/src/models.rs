@@ -147,11 +147,13 @@ pub enum Purpose {
     HelpRequest,
     /// Re-seal under a new key version (PRIV-024).
     Rotation,
+    /// Send and check the page pick's Verify code to the job's homeowner (PICK-013, D-1516).
+    PickCode,
 }
 
 impl Purpose {
     /// Every purpose.
-    pub const ALL: [Self; 9] = [
+    pub const ALL: [Self; 10] = [
         Self::Send,
         Self::Inbound,
         Self::BridgeCall,
@@ -161,6 +163,7 @@ impl Purpose {
         Self::CallbackAlert,
         Self::HelpRequest,
         Self::Rotation,
+        Self::PickCode,
     ];
 
     /// The purpose's code name, as in its grants' actions.
@@ -176,6 +179,7 @@ impl Purpose {
             Self::CallbackAlert => "callback_alert",
             Self::HelpRequest => "help_request",
             Self::Rotation => "rotation",
+            Self::PickCode => "pick_code",
         }
     }
 }
@@ -213,8 +217,9 @@ pub struct Grant {
 
 /// Every allowed plaintext read (`docs/architecture.md` section 8, D-093, D-491): the phone is
 /// never released (PICK-023), the call read-back is first name and street only (CALL-005), and
-/// `quotes` reads no contact field at all (PRIV-004).
-pub const GRANTS: [Grant; 9] = {
+/// `quotes` reads no contact field at all (PRIV-004); the page pick's code reads only the phone,
+/// for `picks` alone (PICK-013, D-1516).
+pub const GRANTS: [Grant; 10] = {
     use Field::{Address, Email, Name, OnsiteContact, Phone};
     const ALL: &[Field] = &[Name, Phone, Email, Address, OnsiteContact];
     const CONTACT: &[Field] = &[Name, Phone, Email];
@@ -248,6 +253,12 @@ pub const GRANTS: [Grant; 9] = {
             Purpose::Release,
             &[Name, Email, Address, OnsiteContact],
             "vault_read.picks.release",
+        ),
+        grant(
+            Reader::Picks,
+            Purpose::PickCode,
+            &[Phone],
+            "vault_read.picks.pick_code",
         ),
         grant(
             Reader::PortalsHomeowner,

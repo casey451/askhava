@@ -3,7 +3,7 @@
 //! Scans every Rust file under `app/` (comments and string literals removed) for the `privacy::api`
 //! plaintext read functions and fails when one is named outside the crates D-093 lets read:
 //! `read_contact` by `messaging` and `calls`, `read_for_release` by `picks` (with a `ReleaseProof`,
-//! SEC-030), `read_own_contact` and `read_for_owner` by `portals` (with a session proof, SEC-046),
+//! SEC-030), `read_for_pick_code` by `picks` alone (the page pick's code, TD-PICK-46, D-1516), `read_own_contact` and `read_for_owner` by `portals` (with a session proof, SEC-046),
 //! and no business-realm file of `portals` (its path or a session type naming `business`) naming
 //! any of them. `quotes` names none: it reads card
 //! photos only (PRIV-004). The compile-fail proof that business code cannot build a session proof
@@ -14,9 +14,10 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 /// Each read function and the crates that may name it besides `privacy` (D-093, D-491).
-const READERS: [(&str, &[&str]); 4] = [
+const READERS: [(&str, &[&str]); 5] = [
     ("read_contact", &["messaging", "calls"]),
     ("read_for_release", &["picks"]),
+    ("read_for_pick_code", &["picks"]),
     ("read_own_contact", &["portals"]),
     ("read_for_owner", &["portals"]),
 ];
@@ -229,6 +230,21 @@ fn the_reader_scan_catches_each_planted_violation() {
     ];
     for (krate, rel, src, want) in cases {
         assert_eq!(check_file(krate, rel, src).len(), want, "{rel}: {src}");
+    }
+}
+
+/// TD-PICK-46 (PICK-013, PRIV-003, D-1516): only `picks` may name `read_for_pick_code`; the quote
+/// page's flow in `portals`, which must never see the number, is caught.
+#[test]
+fn td_pick_46_only_picks_reads_the_phone_for_the_page_code() {
+    let call = "read_for_pick_code(db, v, id)";
+    let cases = [
+        ("picks", "app/picks/src/service.rs", 0),
+        ("portals", "app/portals/src/pick_flow.rs", 1),
+        ("messaging", "app/messaging/src/send_window.rs", 1),
+    ];
+    for (krate, rel, want) in cases {
+        assert_eq!(check_file(krate, rel, call).len(), want, "{rel}");
     }
 }
 

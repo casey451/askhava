@@ -7,7 +7,9 @@
     The code's limit is plain text, never a countdown. "Send a new code" sits in the same form,
     so her choices stay. The contact choice is a call through the masked number or an email
     she shares (the accepted-quote copy goes to that email, PICK-042); no call window is
-    asked (D-440). Until Verify is wired the page says no code was sent (D-1248, D-1264). -#}
+    asked (D-440). One line sits first when no field failed: today's "Nothing was picked" line
+    without the code keys (D-1264), or what the code step did (D-1516: sent, can't text,
+    confirmed, a cap or the cooldown); after a line saying no code can come there is no form. -#}
 {% block title %}{% if failed %}Error: {% endif %}Finish your pick for request {{ request }}{% endblock %}
 {% block main %}
 <h1>Finish your pick for request {{ request }}</h1>
@@ -18,8 +20,8 @@
 {% endif %}{% if let Some(message) = email_error %}<p><a href="#email">{{ message }}</a></p>
 {% endif %}{% if let Some(message) = code_error %}<p><a href="#code">{{ message }}</a></p>
 {% endif %}</div>
-{% else %}<p id="pick-not-open" tabindex="-1" autofocus>Nothing was picked, and no code was sent. Picking on this page isn't open yet.</p>
-{% endif %}<form method="post" action="/q/{{ token }}/code" novalidate>
+{% else %}{% if let Some(line) = line %}<p id="{{ line.0 }}" tabindex="-1" autofocus>{{ line.1 }}</p>
+{% endif %}{% endif %}{% if form %}<form method="post" action="/q/{{ token }}/code" novalidate>
 <input type="hidden" name="csrf" value="{{ csrf }}">
 <input type="hidden" name="quote" value="{{ quote }}">
 <fieldset aria-describedby="reach-hint{% if reach_error.is_some() %} reach-error{% endif %}">
@@ -42,5 +44,5 @@
 <p><button type="submit" name="send" value="pick" id="finish-pick">Finish my pick</button></p>
 <p><button type="submit" name="send" value="new" id="new-code">Send a new code</button></p>
 </form>
-<p><a href="/q/{{ token }}?#quote-{{ quote }}">Back to your quotes</a></p>
+{% endif %}<p><a href="/q/{{ token }}?#quote-{{ quote }}">Back to your quotes</a></p>
 {% endblock %}
