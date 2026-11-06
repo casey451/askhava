@@ -93,11 +93,18 @@ fn turn(attestation: Attestation, tries: (u8, u8), entered: Option<JobPin>) -> C
     }
 }
 
+/// A PIN that is none of `lines`' PINs, whatever their digits (0000 included).
+fn wrong_for(lines: &[Uuid]) -> Option<JobPin> {
+    let rights: Vec<String> = lines.iter().map(|l| job_pin(*l).digits()).collect();
+    let other = (0..10_000_u16)
+        .map(|n| format!("{n:04}"))
+        .find(|p| !rights.contains(p))?;
+    JobPin::parse(&other)
+}
+
 /// A PIN that is not `line`'s.
 fn wrong(line: Uuid) -> Option<JobPin> {
-    let right = job_pin(line).digits();
-    let other = if right == "0000" { "0001" } else { "0000" };
-    JobPin::parse(other)
+    wrong_for(&[line])
 }
 
 fn routed(line: u128, homeowner: Uuid, business: Uuid) -> RoutedLine {
@@ -221,7 +228,7 @@ fn td_call_11_only_attestation_a_gets_the_read_back() {
 
 /// TD-CALL-02 (CALL-005, CALL-002, D-026): on the database, the paid business's linked phone hears
 /// her first name and street only (never the town or surname), audited; an unlinked phone hears
-/// nothing; the line's number is never her phone.
+/// nothing; both lines share the pool's one masked number.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_call_02_the_read_back_goes_only_to_the_paid_business(db: PgPool) {
     let mut db = db.acquire().await.expect("connection");
@@ -229,11 +236,13 @@ async fn td_call_02_the_read_back_goes_only_to_the_paid_business(db: PgPool) {
     let (contact, business) = (her(&mut db).await, Uuid::new_v4());
     let first = line(&mut db, &pool, (contact, business)).await;
     let second = line(&mut db, &pool, (contact, business)).await;
-    assert_ne!(second.number().as_str(), HER_PHONE);
+    assert_eq!(first.number().as_str(), "+15005550100");
+    assert_eq!(second.number().as_str(), first.number().as_str());
     sender_add(&mut db, &vault, (business, Uuid::new_v4()), BUSINESS_PHONE)
         .await
         .expect("link");
-    let bad = wrong(first.id()).filter(|p| *p != job_pin(second.id()));
+    let bad = wrong_for(&[first.id(), second.id()]);
+    assert!(bad.is_some());
     let ask = |phone: &'static str| (SecretString::from(phone.to_owned()), bad);
     let (phone, pin) = ask(BUSINESS_PHONE);
     let call = IncomingCall {
