@@ -36,7 +36,8 @@ pub use crate::service::{
     SAFETY_NOT_DIALABLE_ALERT, assign_number, automated_call_gate,
 };
 pub use crate::voice::{
-    Approval, Conditions, SAFETY_CALL_ACTION, SAFETY_CALL_KIND, SAFETY_SCRIPT_VERSION,
+    Approval, Conditions, SAFETY_CALL_ACTION, SAFETY_CALL_KIND, SAFETY_CLAIM_ACTION,
+    SAFETY_FAILED_ACTION, SAFETY_KEY_ACTION, SAFETY_RESULT_ACTION, SAFETY_SCRIPT_VERSION,
     SAFETY_STOP_ACTION, SAFETY_WITHIN, SafetyCall, SafetyDialer, SafetyOutcome, SafetySwitch,
     VoiceError, code_call_twiml, may_code_call, owner_bridge_twiml, place_safety_call, ring_owner,
     safety_call_answered, safety_call_key, safety_script, safety_twiml,

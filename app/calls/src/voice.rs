@@ -15,12 +15,13 @@
 //! [`safety_script`]; each placed call is audited with its message, script version and time.
 //! [`safety_call_key`] lists the number on "press 9"; [`safety_call_answered`] acknowledges Casey's
 //! critical alert through `ops` when a person answered (OPS-028). [`ring_owner`] and
-//! [`owner_bridge_twiml`] ring Casey's phone and bridge him to the homeowner, the Ask Hava number
-//! shown, never his own (OPS-028); the owner-portal button is T108's.
+//! [`owner_bridge_twiml`] ring Casey's phone and bridge him to the homeowner, an Ask Hava pool
+//! number shown (not the main number, D-1707), never his own (OPS-028); the owner-portal button is
+//! T108's.
 
 use askhava_adapters::api::{IdempotencyKey, PoolNumber, VoiceAdapter};
 use askhava_messaging::api::{RevokeChannel, suppress};
-use askhava_ops::api::{Actor, AuditEntry, Change, acknowledge_alert, audit};
+use askhava_ops::api::{Actor, AuditEntry, Change, acknowledge_alert, audit, audit_once};
 use askhava_privacy::api::{Field, Purpose, Reader, Vault, read_contact};
 use jiff::civil::Date;
 use jiff::{SignedDuration, Timestamp};
@@ -44,6 +45,17 @@ pub const SAFETY_SCRIPT_VERSION: &str = "safety_script_v1";
 pub const SAFETY_CALL_ACTION: &str = "calls.safety_call_placed";
 /// The audit action of a "press 9" on a safety call (CALL-022, CON-035).
 pub const SAFETY_STOP_ACTION: &str = "calls.safety_call_press_9";
+/// The claim committed before a safety call is dialled; subject Casey's critical alert, so one
+/// emergency gets at most one call however often the task runs (CALL-019, JOB-006, D-1705).
+pub const SAFETY_CLAIM_ACTION: &str = "calls.safety_call_dialing";
+/// The audit action when the provider refused a claimed safety call; it is not dialled again.
+pub const SAFETY_FAILED_ACTION: &str = "calls.safety_call_failed";
+/// The audit action of a safety call's result: `to_status` is `person`, `machine`, `unknown` or
+/// `nobody` (CALL-022).
+pub const SAFETY_RESULT_ACTION: &str = "calls.safety_call_result";
+/// The audit action of a key other than 9 pressed on a safety call; `field` names the key
+/// (`key_0` to `key_8`, `key_star`, `key_hash`, `key_other`) (CALL-022).
+pub const SAFETY_KEY_ACTION: &str = "calls.safety_call_key";
 
 /// Why placing a call failed: a `calls` step, or the voice provider.
 #[derive(Debug, PartialEq, Eq, thiserror::Error)]
@@ -101,7 +113,8 @@ pub fn code_call_twiml(
     again: &str,
 ) -> Option<SecretString> {
     let code = code.expose_secret();
-    let said = spoken(code).filter(|_| (4..=8).contains(&code.len()))?;
+    let digits_only = (4..=8).contains(&code.len()) && code.bytes().all(|b| b.is_ascii_digit());
+    let said = spoken(code).filter(|_| digits_only)?;
     let back = callback(main, from)?;
     let words = format!(
         "This is Ask Hava LLC. Your code is {said}. Again, your code is {said}. \
@@ -147,7 +160,8 @@ pub struct Conditions {
 }
 
 impl Conditions {
-    /// Every item met.
+    /// Every item met. `logged` may be set only once the voice route records every answer through
+    /// [`safety_call_answered`] and every key through [`safety_call_key`] (T096, D-1705).
     #[must_use]
     pub fn all_met(&self) -> bool {
         let c = self;
@@ -256,6 +270,8 @@ pub enum SafetyOutcome {
     Refused(CallGate),
     /// Placed: the provider's call SID.
     Placed(String),
+    /// A call for this alert was already claimed: nothing dialled (CALL-019, JOB-006).
+    AlreadyPlaced,
 }
 
 /// What dials a safety call: the voice adapter, the pool number to call from, the main number, the
@@ -286,8 +302,11 @@ fn precheck(switch: SafetySwitch, from_main: bool, age: SignedDuration) -> Optio
 
 /// The handler of [`SAFETY_CALL_KIND`] (CALL-019, CALL-022, D-491, D-1705): checks the switch, the
 /// 30 minutes and the calling number, then the suppression list (`automated_call_gate`), reads her
-/// phone under the bridge-call grant and dials once (key derived from the alert, so a re-run never
-/// dials twice), and audits the placed call with the message, [`SAFETY_SCRIPT_VERSION`] and time.
+/// phone under the bridge-call grant, commits the [`SAFETY_CLAIM_ACTION`] claim on the alert
+/// (`ops::api::audit_once`; a claim already there is [`SafetyOutcome::AlreadyPlaced`], so a retried
+/// or doubled task never dials twice), dials (key derived from the alert) and audits the placed
+/// call with the message, [`SAFETY_SCRIPT_VERSION`] and time, or a refused one with
+/// [`SAFETY_FAILED_ACTION`] (it is not retried: at most one call per emergency).
 /// Call it outside a transaction: the vault refuses a read inside one.
 ///
 /// # Errors
@@ -314,15 +333,38 @@ pub async fn place_safety_call<V: VoiceAdapter>(
         return Ok(SafetyOutcome::Refused(gate));
     }
     let phone = phone_of(db, vault, call.contact).await?;
+    if !claim(db, call.alert).await? {
+        return Ok(SafetyOutcome::AlreadyPlaced);
+    }
     let alert = call.alert.to_string();
     let key = IdempotencyKey::derive(dialer.secret, SAFETY_CALL_KIND, &[&alert]);
-    let state = dialer
+    let Ok(state) = dialer
         .voice
         .open_call(&key, phone.expose_secret(), dialer.from)
         .await
-        .map_err(|_| VoiceError::Provider)?;
-    log(db, SAFETY_CALL_ACTION, call.message).await?;
+    else {
+        log(db, SAFETY_FAILED_ACTION, call.message, script_field()).await?;
+        return Err(VoiceError::Provider);
+    };
+    log(db, SAFETY_CALL_ACTION, call.message, script_field()).await?;
     Ok(SafetyOutcome::Placed(state.sid))
+}
+
+/// The claim on `alert`, committed before dialling; false when one is already there.
+async fn claim(db: &mut PgConnection, alert: Uuid) -> Result<bool, CallsError> {
+    let entry = AuditEntry {
+        actor: Actor::System,
+        action: SAFETY_CLAIM_ACTION,
+        subject_kind: "ops.alert",
+        subject_id: alert,
+        change: script_field(),
+    };
+    audit_once(db, &entry).await.map_err(|_| CallsError::Ops)
+}
+
+/// The script version as the audit row's field (CALL-022).
+fn script_field() -> Change {
+    Change::Field(SAFETY_SCRIPT_VERSION)
 }
 
 /// Her phone, read under `(Calls, BridgeCall)` (PRIV-003).
@@ -338,21 +380,27 @@ async fn phone_of(
     details.phone.ok_or(CallsError::Messaging)
 }
 
-/// One system audit row about the triggering message, naming the script version (CALL-022).
-async fn log(db: &mut PgConnection, action: &'static str, message: Uuid) -> Result<(), CallsError> {
+/// One system audit row about the triggering message (CALL-022): its time is the row's.
+async fn log(
+    db: &mut PgConnection,
+    action: &'static str,
+    message: Uuid,
+    change: Change,
+) -> Result<(), CallsError> {
     let entry = AuditEntry {
         actor: Actor::System,
         action,
         subject_kind: "messaging.inbox",
         subject_id: message,
-        change: Change::Field(SAFETY_SCRIPT_VERSION),
+        change,
     };
     audit(db, &entry).await.map_err(|_| CallsError::Ops)?;
     Ok(())
 }
 
-/// CALL-022, CON-035: a "9" pressed on a safety call lists her number on the one suppression list
-/// and is audited; any other key does nothing. Returns whether she was listed now.
+/// CALL-022, CON-035: every key pressed on a safety call is audited about the message; a "9" lists
+/// her number on the one suppression list ([`SAFETY_STOP_ACTION`]), any other key is only logged
+/// ([`SAFETY_KEY_ACTION`], the key in `field`). Returns whether she was listed now.
 ///
 /// # Errors
 ///
@@ -364,7 +412,15 @@ pub async fn safety_call_key(
     digits: &str,
     now: Timestamp,
 ) -> Result<bool, CallsError> {
-    if digits.trim() != "9" {
+    let pressed = digits.trim();
+    if pressed != "9" {
+        log(
+            db,
+            SAFETY_KEY_ACTION,
+            call.message,
+            Change::Field(key_name(pressed)),
+        )
+        .await?;
         return Ok(false);
     }
     let phone = phone_of(db, vault, call.contact).await?;
@@ -372,13 +428,32 @@ pub async fn safety_call_key(
     let listed = suppress(db, vault, phone.expose_secret(), how, now)
         .await
         .map_err(|_| CallsError::Messaging)?;
-    log(db, SAFETY_STOP_ACTION, call.message).await?;
+    log(db, SAFETY_STOP_ACTION, call.message, Change::Field("key_9")).await?;
     Ok(listed)
 }
 
-/// OPS-028, D-1706: a safety call a person answered acknowledges Casey's critical alert through
-/// `ops` (audited, listed in the weekly digest); any other answer leaves it pushing. Returns
-/// whether it was acknowledged now.
+/// The code name of a pressed key other than 9 (never the raw input, PRIV-028).
+fn key_name(pressed: &str) -> &'static str {
+    match pressed {
+        "0" => "key_0",
+        "1" => "key_1",
+        "2" => "key_2",
+        "3" => "key_3",
+        "4" => "key_4",
+        "5" => "key_5",
+        "6" => "key_6",
+        "7" => "key_7",
+        "8" => "key_8",
+        "*" => "key_star",
+        "#" => "key_hash",
+        _ => "key_other",
+    }
+}
+
+/// CALL-022, OPS-028, D-1706: logs the call's result ([`SAFETY_RESULT_ACTION`], `to_status`
+/// `person`, `machine`, `unknown` or `nobody`) about the message; a person answering also
+/// acknowledges Casey's critical alert through `ops` (audited, listed in the weekly digest); any
+/// other answer leaves it pushing. Returns whether it was acknowledged now.
 ///
 /// # Errors
 ///
@@ -389,6 +464,14 @@ pub async fn safety_call_answered(
     answered: AnsweredBy,
     now: Timestamp,
 ) -> Result<bool, CallsError> {
+    let to = match answered {
+        AnsweredBy::Person => "person",
+        AnsweredBy::Machine => "machine",
+        AnsweredBy::Unknown => "unknown",
+        AnsweredBy::Nobody => "nobody",
+    };
+    let result = Change::Status { from: "placed", to };
+    log(db, SAFETY_RESULT_ACTION, call.message, result).await?;
     if answered != AnsweredBy::Person {
         return Ok(false);
     }
@@ -419,8 +502,8 @@ pub async fn ring_owner<V: VoiceAdapter>(
 }
 
 /// OPS-028, CALL-006: Casey's leg's TwiML: reads `safety_words` (the INT-004 text, no job detail)
-/// to him, then dials the homeowner with the Ask Hava number `from` shown, never his own, never
-/// recorded and with nothing played to her. `None` when her number is not E.164.
+/// to him, then dials the homeowner with the pool number `from` shown (not the main number,
+/// D-1707), never his own, never recorded and with nothing played to her. `None` when her number is not E.164.
 #[must_use]
 pub fn owner_bridge_twiml(
     from: &PoolNumber,

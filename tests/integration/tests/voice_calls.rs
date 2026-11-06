@@ -11,10 +11,11 @@ use askhava_adapters::api::{
 };
 use askhava_calls::api::{
     AnsweredBy, Approval, CallGate, Conditions, PIN_PROMPT, Party, PinHeard, PinWait,
-    SAFETY_CALL_ACTION, SAFETY_CALL_KIND, SafetyCall, SafetyDialer, SafetyOutcome, SafetySwitch,
-    code_call_twiml, dial_twiml, may_code_call, owner_bridge_twiml, pin_heard, pin_prompt_twiml,
-    place_safety_call, ring_owner, safety_call_answered, safety_call_key, safety_script,
-    safety_twiml,
+    SAFETY_CALL_ACTION, SAFETY_CALL_KIND, SAFETY_CLAIM_ACTION, SAFETY_FAILED_ACTION,
+    SAFETY_KEY_ACTION, SAFETY_RESULT_ACTION, SAFETY_STOP_ACTION, SafetyCall, SafetyDialer,
+    SafetyOutcome, SafetySwitch, VoiceError, code_call_twiml, dial_twiml, may_code_call,
+    owner_bridge_twiml, pin_heard, pin_prompt_twiml, place_safety_call, ring_owner,
+    safety_call_answered, safety_call_key, safety_script, safety_twiml,
 };
 use askhava_core::api::Settings;
 use askhava_intake::api::rules::safety_call_trigger;
@@ -110,6 +111,30 @@ impl VoiceAdapter for FakeVoice {
     }
 }
 
+/// A voice adapter that counts each attempt and refuses it, as a provider outage would.
+#[derive(Default)]
+struct RefusingVoice(Mutex<usize>);
+
+impl VoiceAdapter for RefusingVoice {
+    async fn open_call(
+        &self,
+        _key: &IdempotencyKey,
+        _to: &str,
+        _caller_id: &PoolNumber,
+    ) -> Result<CallState, AdapterError> {
+        *self.0.lock().expect("tries") += 1;
+        Err(AdapterError::InvalidId)
+    }
+
+    async fn end_call(
+        &self,
+        _key: &IdempotencyKey,
+        _call_sid: &str,
+    ) -> Result<CallState, AdapterError> {
+        Err(AdapterError::InvalidId)
+    }
+}
+
 /// Every CALL-022 item met.
 fn all_met() -> Conditions {
     Conditions {
@@ -173,8 +198,13 @@ fn td_call_06_the_code_call_opens_with_ask_hava_llc_and_says_the_code_twice() {
     );
     assert!(twiml.contains("Press 1 to hear it again.") && twiml.contains("action=\"/again\""));
     assert!(code_call_twiml(&from, from.as_str(), &code, "/again").is_none());
-    let short = SecretString::from("12".to_owned());
-    assert!(code_call_twiml(&from, MAIN, &short, "/again").is_none());
+    for bad in ["12", "+1234", "+123456", "12 34", "12-34"] {
+        let code = SecretString::from(bad.to_owned());
+        assert!(
+            code_call_twiml(&from, MAIN, &code, "/again").is_none(),
+            "{bad}"
+        );
+    }
 }
 
 /// TD-CALL-09 (CALL-014, BIZ-046): the code call only on her tap, never to a business.
@@ -247,9 +277,11 @@ fn td_call_09_the_safety_switch_stays_off_while_any_condition_is_unmet() {
     assert!(switched_on().is_on());
 }
 
-/// TD-CALL-09 (CALL-022, D-384): the voice trigger: gas, CO, smoke, fire, burning, spark and shock
-/// words in English and Spanish; never a drain smell or a bare smell, odor, buzz, hot, alarm,
-/// flood, dizzy or heat.
+/// TD-CALL-09 (CALL-022, D-384, D-1705): the voice trigger: gas, CO, smoke, fire, burning, spark
+/// and shock words in English and Spanish, only on a 911-list match; never a drain smell or a bare
+/// smell, odor, buzz, hot, alarm, flood, dizzy or heat; never a word that only starts like one
+/// ("sparkling", "quemador") or a shock or "descarga" with no electric word; and never a shock
+/// with no 911-list match, since then no INT-004 text and no critical alert exist (D-1705).
 #[test]
 fn td_call_09_only_danger_words_trigger_the_safety_call() {
     for yes in [
@@ -260,9 +292,11 @@ fn td_call_09_only_danger_words_trigger_the_safety_call() {
         "there is a fire",
         "the outlet is burning",
         "sparks from the plug",
-        "I got a shock from the switch",
-        "me dio una descarga",
         "the smoke alarm is going off",
+        "the power line is down and I got a shock from the wire",
+        "power line sparking by the fence",
+        "the breaker is sparking",
+        "el enchufe se quema",
     ] {
         assert!(safety_call_trigger(yes), "{yes}");
     }
@@ -278,6 +312,15 @@ fn td_call_09_only_danger_words_trigger_the_safety_call() {
         "no heat at all",
         "replace the spark plug",
         "100 Smoketree Test Ave",
+        "sparkling clean windows please",
+        "I was shocked by the price of the last quote",
+        "el quemador de la estufa no prende",
+        "me hice una quemadura con la plancha",
+        "la descarga del inodoro no funciona",
+        "new shocks for the trailer",
+        "the power line is down",
+        "I got a shock from the switch",
+        "me dio una descarga el enchufe",
     ] {
         assert!(!safety_call_trigger(no), "{no}");
     }
@@ -471,6 +514,10 @@ async fn td_call_09_one_safety_call_from_a_non_main_number_and_press_9_stops_cal
     );
     let audit_sql = "SELECT count(*) FROM ops.audit_log WHERE action = $1";
     assert_eq!(count(&mut db, audit_sql, SAFETY_CALL_ACTION).await, 1);
+    let retried = place_safety_call(&mut db, &vault(), &dialer, &call, now).await;
+    assert_eq!(retried, Ok(SafetyOutcome::AlreadyPlaced), "a retried task");
+    assert_eq!(voice.calls().len(), 1);
+    assert_eq!(count(&mut db, audit_sql, SAFETY_CLAIM_ACTION).await, 1);
 
     assert_eq!(
         safety_call_key(&mut db, &vault(), &call, "1", now).await,
@@ -522,4 +569,94 @@ async fn ops_028_a_person_answering_acknowledges_the_critical_alert(db: PgPool) 
         count(&mut db, open, "messaging.opted_out_emergency").await,
         0
     );
+}
+
+/// TD-CALL-09 (CALL-019, CALL-022, JOB-006, D-1705): a shock with no 911-list match queues no
+/// call; a provider refusal is logged against the message and the retried task dials nothing
+/// more (one call per emergency); every key and every result is logged, never only "9" or a
+/// person.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_call_09_each_safety_call_is_claimed_once_and_every_key_and_result_is_logged(
+    db: PgPool,
+) {
+    let mut db = db.acquire().await.expect("connection");
+    let contact = her(&mut db).await;
+    let alert = critical(&mut db, contact).await;
+    let message = Uuid::new_v4();
+    let call_ask = SafetyCallAsk {
+        contact,
+        message,
+        arrived_at: ts(),
+        alert,
+    };
+    assert!(!ask(&mut db, "I got a shock from the switch", call_ask, true).await);
+    assert!(!ask(&mut db, "me dio una descarga", call_ask, true).await);
+
+    let (voice, from, key) = (RefusingVoice::default(), pool_number(), secret());
+    let dialer = SafetyDialer {
+        voice: &voice,
+        from: &from,
+        main: MAIN,
+        switch: switched_on(),
+        secret: &key,
+    };
+    let call = SafetyCall {
+        contact,
+        message,
+        arrived_at: ts(),
+        alert,
+    };
+    let now = ts() + SignedDuration::from_mins(2);
+    let refused = place_safety_call(&mut db, &vault(), &dialer, &call, now).await;
+    assert_eq!(refused, Err(VoiceError::Provider));
+    let retried = place_safety_call(&mut db, &vault(), &dialer, &call, now).await;
+    assert_eq!(retried, Ok(SafetyOutcome::AlreadyPlaced));
+    assert_eq!(*voice.0.lock().expect("tries"), 1, "dialled once");
+    let audit_sql = "SELECT count(*) FROM ops.audit_log WHERE action = $1";
+    assert_eq!(count(&mut db, audit_sql, SAFETY_FAILED_ACTION).await, 1);
+    assert_eq!(count(&mut db, audit_sql, SAFETY_CALL_ACTION).await, 0);
+
+    for (digits, field) in [
+        ("1", "key_1"),
+        ("#", "key_hash"),
+        ("12", "key_other"),
+        ("9", "key_9"),
+    ] {
+        safety_call_key(&mut db, &vault(), &call, digits, now)
+            .await
+            .expect("key");
+        let row: (String, Option<String>) = sqlx::query_as(
+            "SELECT action, field FROM ops.audit_log WHERE subject_id = $1 ORDER BY id DESC LIMIT 1",
+        )
+        .bind(message)
+        .fetch_one(&mut *db)
+        .await
+        .expect("key row");
+        let action = if digits == "9" {
+            SAFETY_STOP_ACTION
+        } else {
+            SAFETY_KEY_ACTION
+        };
+        assert_eq!(row, (action.to_owned(), Some(field.to_owned())), "{digits}");
+    }
+
+    for answered in [
+        AnsweredBy::Machine,
+        AnsweredBy::Nobody,
+        AnsweredBy::Unknown,
+        AnsweredBy::Person,
+    ] {
+        safety_call_answered(&mut db, &call, answered, now)
+            .await
+            .expect("answered");
+    }
+    let results: Vec<String> = sqlx::query_scalar(
+        "SELECT to_status FROM ops.audit_log WHERE action = $1 AND subject_id = $2 ORDER BY id",
+    )
+    .bind(SAFETY_RESULT_ACTION)
+    .bind(message)
+    .fetch_all(&mut *db)
+    .await
+    .expect("results");
+    assert_eq!(results, ["machine", "nobody", "unknown", "person"]);
 }

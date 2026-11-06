@@ -556,36 +556,57 @@ pub fn beep_is_alarm(words: &str) -> bool {
 /// The `core.task` kind `calls` handles to place the safety voice call (CALL-019, D-491); equal
 /// to `calls::api::SAFETY_CALL_KIND`, which intake may not name (`tests/integration/tests/voice_calls.rs`).
 pub const SAFETY_CALL_KIND: &str = "calls.safety_call";
-/// CALL-022's own words beyond the 911 list's gas, smoke, fire and electrical matches: spark,
-/// burning and electrical-shock stems, English and Spanish.
-const CALL_STEMS: &[&str] = &[
+/// CALL-022's spark, burning and electrocution words beyond the 911 list's own matches, English
+/// and Spanish, as whole words only ("sparkling", "quemador" and "quemadura" never count).
+const CALL_WORDS: &[&str] = &[
     "spark",
+    "sparks",
+    "sparked",
+    "sparking",
     "chispa",
-    "shock",
-    "electrocut",
-    "descarga",
+    "chispas",
+    "chispea",
+    "chispean",
+    "chispeando",
+    "electrocuted",
+    "electrocution",
+    "electrocutado",
+    "electrocutada",
     "quema",
+    "quemando",
+    "quemado",
+    "quemada",
 ];
+/// CALL-022's electrical-shock words: they count only beside an electric word or part, so
+/// "shocked by the price" or "la descarga del inodoro" never call.
+const SHOCK_WORDS: &[&str] = &["shock", "shocks", "shocked", "descarga", "descargas"];
+/// The electric words a shock word needs (the 911 list's parts plus these).
+const ELECTRIC_WORDS: &[&str] = &["electric", "electrica", "electrico", "corriente", "wire"];
 /// Phrases that name none of them.
-const NOT_CALL: &[&str] = &["spark plug", "shock absorber", "shocks"];
+const NOT_CALL: &[&str] = &["spark plug", "shock absorber"];
 /// The CO words a going-off alarm needs before it calls (CALL-022: never a bare alarm).
 const CO_WORDS: &[&str] = &["carbon monoxide", "monoxido", "smoke", "humo", "fire alarm"];
 
-/// CALL-022, D-384: whether `words` may trigger the safety voice call: a gas phrase (INT-004), a
-/// CO, smoke or fire alarm or detector going off, smoke, fire, burning, spark or electrical-shock
-/// words, English or Spanish; never a bare smell, odor, buzz, hot, alarm, flood, dizzy or a
-/// heat-only message, and never a street name (D-165).
+/// CALL-022, D-384, D-1705: whether `words` may trigger the safety voice call. Only a 911-list
+/// match ([`check`] gives `Match`, so the INT-004 text and Casey's critical alert exist) may call,
+/// and then only for a gas phrase (INT-004), smoke, fire or electrical match, a CO, smoke or fire
+/// alarm or detector going off, or whole spark, burning, electrocution or electrical-shock words,
+/// English or Spanish; never a bare smell, odor, buzz, hot, alarm, flood, dizzy or heat-only
+/// message, and never a street name (D-165).
 #[must_use]
 pub fn safety_call_trigger(words: &str) -> bool {
     let text = Folded::new(&strip_addresses(words));
     let co = |t: &Folded| t.any_word(&["co"]) || t.any_phrase(CO_WORDS);
     let own = Folded::new(&text.without(NOT_CALL));
+    let shock =
+        own.any_word(SHOCK_WORDS) && (own.any_stem(ELECTRIC_PARTS) || own.any_stem(ELECTRIC_WORDS));
     match hazard(&text) {
         Some(Hazard::Gas | Hazard::SmokeFire | Hazard::Electrical) => true,
         Some(Hazard::CoAlarm) if co(&text) => true,
-        Some(Hazard::CoAlarm | Hazard::PowerLine) | None => {
-            own.any_stem(CALL_STEMS) || own.any_word(BURNING)
+        Some(Hazard::CoAlarm | Hazard::PowerLine) => {
+            shock || own.any_word(CALL_WORDS) || own.any_word(BURNING)
         }
+        None => false,
     }
 }
 
