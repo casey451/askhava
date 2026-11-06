@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-06T06:07:15Z by runner a52814db8f11 (actions).
+Updated 2026-11-06T06:15:21Z by runner a52814db8f11 (actions).
 
-**Idle since 06:05Z; 115 of 238 done; week 11% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T073 in progress since 06:07Z; 115 of 238 done; week 11% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 115 of 238 build tasks (owner gates not counted)
 - **Stage:** stage 3; stage proofs recorded: 1, 2
-- **Lane:** idle since 06:05Z (no task in progress)
+- **Lane:** lane 1: T073 claimed 06:07Z, lease until 09:07Z
 - **Week:** 11% used, 172.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:59Z, 8 min before this update
+- **Last run:** 05:59Z, 16 min before this update
 - **Keeper:** last ran 05:59Z, next wake 06:19Z
 
 ## Needs attention
@@ -68,7 +68,7 @@ Updated 2026-11-06T06:07:15Z by runner a52814db8f11 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-06T05:17:42Z (week)): five-hour: 968k used, 28.1M left, resets 2026-11-06T10:09:34Z; week: 22.0M used, 172.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-11-19T18:56:08Z.
+- Pacing (session_reading 2026-11-06T05:58:50Z (week)): five-hour: 2.3M used, 26.8M left, resets 2026-11-06T10:09:34Z; week: 22.0M used, 172.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-11-19T11:42:04Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -83,7 +83,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T073 (lease until 2026-11-06T09:07:12Z)
 
 ## Last usage reading
 - {"task": "T072", "at": "2026-11-06T05:55:34Z", "input_tokens": 266, "output_tokens": 104385, "cache_read_input_tokens": 8420515, "cache_creation_input_tokens": 399444}
