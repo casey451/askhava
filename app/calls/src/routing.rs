@@ -164,7 +164,10 @@ pub fn route(party: Party, lines: &[RoutedLine], turn: CallTurn) -> Step {
     if let [hit] = hits.as_slice() {
         return Step::Connect(hit.line);
     }
-    let (call, day) = (turn.tries_call + 1, turn.tries_today + 1);
+    let (call, day) = (
+        turn.tries_call.saturating_add(1),
+        turn.tries_today.saturating_add(1),
+    );
     if call >= TRIES_PER_CALL || day >= TRIES_PER_DAY {
         return Step::HangUp;
     }
