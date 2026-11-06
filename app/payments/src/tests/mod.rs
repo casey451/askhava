@@ -10,4 +10,5 @@ mod prop_no_homeowner_charge;
 mod prop_one_refund;
 mod recurring;
 mod refund_rules;
+mod tier_edge_flag;
 mod worked_examples;

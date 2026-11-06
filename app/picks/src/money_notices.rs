@@ -13,11 +13,19 @@
 //! through T094's pipeline. A declined card uses [`CARD_FIX_TEMPLATE`], a card waiting on the
 //! bank [`CARD_APPROVAL_TEMPLATE`]. It is safe to run twice (JOB-006): the queued notice has a
 //! dedupe key per pick and attempt.
+//!
+//! T068 (FEE-031, FEE-053, D-492): [`run_receipt_notice`] handles `payments::api::RECEIPT_KIND`.
+//! It reads the charge through `payments::api::receipt_for` (none for a pick that business was
+//! not charged for), resolves the same money recipients and queues one
+//! `messaging::api::RECEIPT_EMAIL_KIND` task with their address IDs, the job number, the fee and
+//! the charge description "Ask Hava introduction service, job <n>", once per pick.
 
 use askhava_businesses::api::{NoticePurpose, notice_addresses};
 use askhava_core::api::{Claimed, HandlerError, NewTask, enqueue};
 use askhava_jobs::api::job_number;
-use askhava_payments::api::{CardFixWindow, card_fix_window};
+use askhava_messaging::api::RECEIPT_EMAIL_KIND;
+use askhava_ops::api::{NewAlert, Severity, raise_alert};
+use askhava_payments::api::{CardFixWindow, IntentText, card_fix_window, receipt_for};
 use jiff::Timestamp;
 use serde_json::{Value, json};
 use sqlx::PgPool;
@@ -31,12 +39,14 @@ pub const CARD_FIX_TEMPLATE: &str = "card_fix_notice";
 pub const CARD_APPROVAL_TEMPLATE: &str = "card_approval_notice";
 
 const DB_FAILED: HandlerError = HandlerError("money notice database statement failed");
+/// The High alert raised when a charge's business has no money recipient for its receipt (D-1561).
+pub const RECEIPT_NO_RECIPIENT_ALERT: &str = "picks.receipt_no_recipient";
 
 fn id(payload: &Value, name: &str) -> Result<Uuid, HandlerError> {
     payload[name]
         .as_str()
         .and_then(|v| Uuid::parse_str(v).ok())
-        .ok_or(HandlerError("card-fix event is missing an ID"))
+        .ok_or(HandlerError("money event is missing an ID"))
 }
 
 /// The `payments.card_needs_fix` handler (FEE-020, D-492): while the pick still needs a fix,
@@ -78,5 +88,57 @@ pub async fn run_card_fix_notice(pool: PgPool, task: Claimed) -> Result<(), Hand
     let mut notice = NewTask::new(BUSINESS_NOTICE_KIND, payload, Timestamp::now());
     notice.dedupe_key = Some(format!("{BUSINESS_NOTICE_KIND}.{template}.{pick}.{try_no}"));
     enqueue(&mut tx, &notice).await.map_err(|_| DB_FAILED)?;
+    tx.commit().await.map_err(|_| DB_FAILED)
+}
+
+/// FEE-031, D-1561: a charge whose business has no money recipient raises one High
+/// [`RECEIPT_NO_RECIPIENT_ALERT`] about the pick and queues no email, so no receipt is lost quietly.
+async fn no_recipient(
+    mut tx: sqlx::Transaction<'_, sqlx::Postgres>,
+    pick: Uuid,
+) -> Result<(), HandlerError> {
+    let alert = NewAlert {
+        kind: RECEIPT_NO_RECIPIENT_ALERT,
+        severity: Severity::High,
+        subject: Some(("pick", pick)),
+    };
+    raise_alert(&mut tx, &alert).await.map_err(|_| DB_FAILED)?;
+    tx.commit().await.map_err(|_| DB_FAILED)
+}
+
+/// The `payments.receipt` handler (FEE-031, FEE-053, D-492): queues the receipt email of the
+/// pick's one charge to the business's money recipients, once per pick; a pick with no charge for
+/// that business gets nothing, and a business with no money recipient an alert (D-1561).
+///
+/// # Errors
+/// A fixed sentence for a malformed event or a failed statement; the queue tries again.
+pub async fn run_receipt_notice(pool: PgPool, task: Claimed) -> Result<(), HandlerError> {
+    let (pick, business) = (id(&task.payload, "pick")?, id(&task.payload, "business")?);
+    let mut tx = pool.begin().await.map_err(|_| DB_FAILED)?;
+    let Some(charge) = receipt_for(&mut tx, pick, business)
+        .await
+        .map_err(|_| DB_FAILED)?
+    else {
+        return Ok(());
+    };
+    let to = notice_addresses(&mut tx, business, NoticePurpose::Money)
+        .await
+        .map_err(|_| DB_FAILED)?;
+    if to.is_empty() {
+        return no_recipient(tx, pick).await;
+    }
+    let number = job_number(&mut tx, charge.job)
+        .await
+        .map_err(|_| DB_FAILED)?;
+    let line = IntentText::for_job(number)
+        .map_err(|_| HandlerError("job number does not fit the charge description"))?
+        .description();
+    let payload = json!({
+        "business": business, "pick": pick, "to": to,
+        "values": {"job": number, "fee_cents": charge.fee_cents, "line": line},
+    });
+    let mut email = NewTask::new(RECEIPT_EMAIL_KIND, payload, Timestamp::now());
+    email.dedupe_key = Some(format!("{RECEIPT_EMAIL_KIND}.{pick}"));
+    enqueue(&mut tx, &email).await.map_err(|_| DB_FAILED)?;
     tx.commit().await.map_err(|_| DB_FAILED)
 }
