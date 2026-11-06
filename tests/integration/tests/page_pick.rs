@@ -371,6 +371,57 @@ async fn td_pick_47_same_quote_wrong_and_malformed_codes(pool: PgPool) {
     assert_eq!(picks(&mut db, job).await.len(), 1, "nothing new stored");
 }
 
+/// CON-029, D-1602: a CANCEL pause committing while "Finish my pick" stores is waited for under
+/// the homeowner lock and seen, so no pick lands on the paused job. The CANCEL's transaction is
+/// played by hand: it holds the homeowner row and writes the pause, and commits only after the
+/// finish has started.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn con_029_a_cancel_committing_during_the_store_blocks_the_pick(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("db");
+    let (conversation, job, token) = ready(&mut db, 2).await;
+    let page = Arc::new(Page::new(&pool, token));
+    page.pick("1").await;
+    let mut cancel = pool.begin().await.expect("cancel tx");
+    sqlx::query(
+        "SELECT h.id FROM intake.homeowner h JOIN intake.conversation c \
+         ON c.homeowner_id = h.id WHERE c.id = $1 FOR UPDATE OF h",
+    )
+    .bind(conversation)
+    .fetch_one(&mut *cancel)
+    .await
+    .expect("homeowner lock");
+    sqlx::query(
+        "INSERT INTO intake.homeowner_pause (conversation_id, job_id, inbox_id, paused_at) \
+         VALUES ($1, $2, $3, $4)",
+    )
+    .bind(conversation)
+    .bind(job)
+    .bind(Uuid::new_v4())
+    .bind(ts(DAY).to_sqlx())
+    .execute(&mut *cancel)
+    .await
+    .expect("pause");
+    let finishing = Arc::clone(&page);
+    let finish = tokio::spawn(async move { finishing.finish("1", CODE).await });
+    tokio::time::sleep(std::time::Duration::from_millis(500)).await;
+    assert!(
+        !finish.is_finished(),
+        "the store waits for the homeowner lock"
+    );
+    cancel.commit().await.expect("cancel commit");
+    let (code, body) = finish.await.expect("finish");
+    assert_eq!(code, StatusCode::OK);
+    assert!(
+        body.contains("so your pick didn&#39;t go through"),
+        "{body}"
+    );
+    assert!(
+        picks(&mut db, job).await.is_empty(),
+        "no pick on a paused job"
+    );
+    assert_eq!(status(&mut db, job).await, "quotes_ready");
+}
+
 /// TD-PICK-30, TD-PICK-47 (PICK-016, TERMS-016): the right code stores one pick and one terms
 /// acceptance (channel `quote_page`, the published version and the request) together; a failed
 /// acceptance insert leaves no pick.

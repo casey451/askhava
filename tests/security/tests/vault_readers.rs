@@ -3,10 +3,10 @@
 //! Scans every Rust file under `app/` (comments and string literals removed) for the `privacy::api`
 //! plaintext read functions and fails when one is named outside the crates D-093 lets read:
 //! `read_contact` by `messaging` and `calls`, `read_for_release` by `picks` (with a `ReleaseProof`,
-//! SEC-030), `read_for_pick_code` by `picks` alone (the page pick's code, TD-PICK-46, D-1516), `read_own_contact` and `read_for_owner` by `portals` (with a session proof, SEC-046),
-//! and no business-realm file of `portals` (its path or a session type naming `business`) naming
-//! any of them. `quotes` names none: it reads card
-//! photos only (PRIV-004). The compile-fail proof that business code cannot build a session proof
+//! SEC-030), `read_for_pick_code` by `picks` alone (the page pick's code, TD-PICK-46, D-1516),
+//! `read_own_contact` and `read_for_owner` by `portals` (with a session proof, SEC-046), and no
+//! business-realm file of `portals` (its path or a session type naming `business`) naming any of
+//! them. `quotes` names none: it reads card photos only (PRIV-004). The compile-fail proof that business code cannot build a session proof
 //! is T223's trybuild case; a homeowner session reading only its own record is the in-crate test
 //! in `app/privacy/src/api.rs`. Each rule is proved on a planted source.
 

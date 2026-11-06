@@ -44,7 +44,8 @@ use askama::Template;
 use askhava_adapters::api::VerifyAdapter;
 use askhava_core::api::{Clock, LinkToken};
 use askhava_intake::api::{
-    TermsAcceptance, TermsChannel, job_homeowner, paused_by_homeowner, record_terms_acceptance,
+    JobHomeowner, TermsAcceptance, TermsChannel, job_homeowner, paused_by_homeowner,
+    paused_under_lock, record_terms_acceptance,
 };
 use askhava_jobs::api::quote_token::resolve;
 use askhava_jobs::api::{JobStatus, current, job_number};
@@ -696,12 +697,15 @@ impl CodeView {
     }
 }
 
+/// The code field's message for a code that is not six digits (PICK-014).
+const MALFORMED_CODE: &str = "The code must be 6 numbers, like 123456.";
+
 /// The code field's message, if any (PICK-014: spaces and dashes are allowed, as when pasted).
 fn code_problem(code: &str) -> Option<&'static str> {
     if code.trim().is_empty() {
         Some("Enter the 6-digit code from our text.")
     } else if parse_code(code).is_none() {
-        Some("The code must be 6 numbers, like 123456.")
+        Some(MALFORMED_CODE)
     } else {
         None
     }
@@ -739,11 +743,8 @@ fn check_message(check: CodeCheck) -> Option<String> {
         CodeCheck::Expired => {
             Some("That code has expired. Codes work for 10 minutes. Press \"Send a new code\" to get another one.".to_owned())
         }
-        CodeCheck::CoolingDown(_) => Some(
-            "That code didn't match 5 times, so new codes are paused for 15 minutes. After that, press \"Send a new code\"."
-                .to_owned(),
-        ),
-        CodeCheck::Malformed => code_problem("x").map(str::to_owned),
+        CodeCheck::CoolingDown(_) => Some(COOLING_DOWN.1.to_owned()),
+        CodeCheck::Malformed => Some(MALFORMED_CODE.to_owned()),
         CodeCheck::NoCode => {
             Some("We haven't sent a code for this pick yet. Press \"Send a new code\" to get one.".to_owned())
         }
@@ -831,19 +832,20 @@ where
     }
 }
 
-/// One transaction: the page pick, then the terms acceptance with channel `quote_page`, the
-/// English line shown beside the final Pick and the published Terms (PICK-016, TERMS-016,
-/// D-1516). `false` when nothing could be picked (rolled back: the job moved, was paused or the
-/// quote went); a failed acceptance insert rolls the pick back too.
+/// One transaction under the homeowner lock (the text pick's, so a CANCEL committing meanwhile is
+/// seen: CON-029, D-1602): the pause re-checked, the page pick, then the terms acceptance with
+/// channel `quote_page`, the line shown beside the final Pick and the published Terms (PICK-016,
+/// TERMS-016, D-1516). `false` when nothing could be picked (rolled back: the job moved, was
+/// paused or the quote went); a failed acceptance insert rolls the pick back too.
 async fn store<V>(
     flow: &PickFlow<V>,
     keys: &PickCodeKeys<V>,
     (job, quote): (Uuid, usize),
-    owner: askhava_intake::api::JobHomeowner,
+    owner: JobHomeowner,
 ) -> Result<bool, StatusCode> {
     let now = flow.clock.now();
     let mut tx = flow.pool.begin().await.map_err(|_| failed("begin"))?;
-    let paused = paused_by_homeowner(&mut tx, job)
+    let paused = paused_under_lock(&mut tx, owner.conversation, job)
         .await
         .map_err(|_| failed("pause"))?;
     let actor = Actor::Homeowner(owner.contact);
@@ -853,6 +855,8 @@ async fn store<V>(
         Ok(PagePick::Taken) | Err(askhava_picks::api::PicksError::MovedOn) => return Ok(false),
         Err(_) => return Err(failed("pick")),
     };
+    // The review step is shown in English only until the page reads the request's language
+    // (D-1249), so the acceptance stores the English line it showed, not `owner.language`.
     let (_, lead, link) = PageLanguage::En.terms();
     let assent = format!("{lead} {link}");
     let acceptance = TermsAcceptance {

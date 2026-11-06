@@ -81,9 +81,9 @@ pub use crate::service::{
     NEEDED_BY_TEMPLATE, OPTED_OUT_LIVE_KIND, OptOutJobs, PublishedTerms, Queued, Screened,
     TermsAcceptance, TermsChannel, TextIn, Trade, answer_choice, answer_how_soon, answer_text_pick,
     ask_how_soon, card_allowed, consent_records, conversation, disclosure, emergency_events,
-    how_soon, may_text, offer_emergency_choice, on_opt_out, paused_by_homeowner, receive_answer,
-    receive_text, record_terms_acceptance, release_emergency, safe_hold, sole_cancel,
-    terms_acceptances,
+    how_soon, may_text, offer_emergency_choice, on_opt_out, paused_by_homeowner, paused_under_lock,
+    receive_answer, receive_text, record_terms_acceptance, release_emergency, safe_hold,
+    sole_cancel, terms_acceptances,
 };
 pub use crate::summary_step::{
     APPROVED_ACTION, AUTO_SEND_AFTER, AUTO_SENT_ACTION, CARD_EDIT_TEMPLATE, CARD_LINK_TEMPLATE,
