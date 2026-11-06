@@ -1,16 +1,20 @@
 //! The nightly reconcile and the ledger-only money view and statements (FEE-029, FEE-030,
-//! FEE-032, FEE-051, D-153, D-1552 to D-1554).
+//! FEE-032, FEE-051, D-153, D-1552 to D-1555).
 //!
 //! [`reconcile`] reads Stripe's succeeded charges of the last [`LOOKBACK`] through
 //! [`ReconcileStripe`] and, charge by charge, appends what [`plan_charge`] decides in one short
 //! transaction: a missing `charge` entry (auto-match to the pick its PaymentIntent or metadata
 //! names), the balance transaction's `processing-fee` and a refund Stripe already made. A charge on
 //! a closed job, a second kept charge for a pick and a charge naming no pick are refunded after
-//! the commit (R11), keyed by the charge, so a rerun refunds once; each unknown charge is written
-//! once to `payments.reconcile_charge` with one [`UNKNOWN_CHARGE_ALERT`]. Last it compares gross
-//! charges, refunds and disputes in the ledger with Stripe's to the cent and raises
-//! [`MISMATCH_ALERT`] when they differ. [`money_view`] and [`business_statement`] read only
-//! `payments.ledger_entry`.
+//! the commit (R11): a charge with T066's evidence record through `request_refund` (its refund
+//! row, row lock, hourly retry and alert), any other keyed by the charge and the night, so a rerun
+//! the same night refunds once and a refused refund is a new try the next night, with
+//! [`REFUND_FAILED_ALERT`] (D-1555). Each unknown charge is written once to
+//! `payments.reconcile_charge` with one [`UNKNOWN_CHARGE_ALERT`]; a charge whose writes fail is
+//! skipped with [`CHARGE_FAILED_ALERT`] and the run goes on. Last it compares gross charges,
+//! refunds and disputes in the ledger with Stripe's to the cent and raises [`MISMATCH_ALERT`] when
+//! they differ or Stripe listed a malformed charge. [`money_view`] and [`business_statement`]
+//! read only `payments.ledger_entry`.
 
 use std::future::Future;
 
@@ -24,12 +28,13 @@ use serde_json::{Value, json};
 use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
 
+use crate::late::LATE_TRIGGER;
 use crate::ledger::{EntryKind, LedgerEntry, NewEntry, ledger_append};
 use crate::models::{
-    MoneyEventError, MoneyTotals, MoneyView, PickFacts, RefundWhy, StripeCharge, plan_charge,
+    MoneyEventError, MoneyTotals, MoneyView, PickFacts, RefundOutcome, RefundWhy, StripeCharge,
+    plan_charge,
 };
-use crate::refund_rules::refund_label;
-use crate::refunds::REFUND_ACTION;
+use crate::refunds::{REFUND_FAILED_ALERT, request_refund};
 use crate::service::CONFIRM_FEE_ACTION;
 
 /// The nightly task kind `server` registers with [`run_reconcile`].
@@ -38,8 +43,10 @@ pub const RECONCILE_KIND: &str = "payments.reconcile";
 pub const RECONCILE_ACTION: &str = "payments.reconcile";
 /// Raised once per unknown charge (FEE-029: the alert is kept).
 pub const UNKNOWN_CHARGE_ALERT: &str = "payments.unknown_charge";
-/// Raised when the ledger and Stripe differ by a cent (FEE-030).
+/// Raised when the ledger and Stripe differ by a cent or Stripe listed a malformed charge (FEE-030).
 pub const MISMATCH_ALERT: &str = "payments.ledger_mismatch";
+/// Raised once per run for each charge whose writes failed; the run goes on (D-1555).
+pub const CHARGE_FAILED_ALERT: &str = "payments.reconcile_charge_failed";
 /// How far back each run reads: inside Stripe's 30-day event list, past its 3-day retries.
 pub const LOOKBACK: SignedDuration = SignedDuration::from_hours(7 * 24);
 /// The gap between nightly runs.
@@ -64,8 +71,15 @@ pub struct ReconcileReport {
     pub auto_matched: usize,
     /// Refunds Stripe took this run.
     pub refunded: usize,
-    /// Refunds Stripe refused or did not answer; the next run sends them again.
+    /// Refunds Stripe refused or did not answer, each alerted: T066 retries its own hourly, the
+    /// reconcile's own go again the next night under that night's key.
     pub refund_failed: usize,
+    /// Charges Stripe listed that are not well formed; left out of the match, they raise
+    /// [`MISMATCH_ALERT`].
+    pub malformed: usize,
+    /// Charges whose database writes failed (for example a reused ledger key), each alerted with
+    /// [`CHARGE_FAILED_ALERT`] and left out of the match.
+    pub failed: usize,
     /// Stripe's totals over the charges that name a known pick.
     pub stripe: MoneyTotals,
     /// The ledger's totals over the same charges.
@@ -73,10 +87,10 @@ pub struct ReconcileReport {
 }
 
 impl ReconcileReport {
-    /// FEE-030: the ledger matches Stripe to the cent.
+    /// FEE-030: the ledger matches Stripe to the cent and every listed charge was well formed.
     #[must_use]
     pub fn matched(&self) -> bool {
-        self.stripe == self.ledger
+        self.stripe == self.ledger && self.malformed == 0
     }
 }
 
@@ -101,11 +115,13 @@ async fn alert(
         .map_err(|_| MoneyEventError::Database)
 }
 
-/// FEE-029, FEE-030, FEE-051: one reconcile run (see the module comment). Malformed charges are
-/// skipped and leave the match short, so they surface as [`MISMATCH_ALERT`].
+/// FEE-029, FEE-030, FEE-051: one reconcile run (see the module comment). A malformed charge is
+/// counted and raises [`MISMATCH_ALERT`]; a charge whose writes fail raises
+/// [`CHARGE_FAILED_ALERT`] and the run goes on to the next (D-1555).
 ///
 /// # Errors
-/// [`MoneyEventError::Stripe`] when the list cannot be read, else `Ledger` or `Database`.
+/// [`MoneyEventError::Stripe`] when the list cannot be read, else `Database` when an alert or the
+/// match cannot be read or written.
 pub async fn reconcile(
     pool: &PgPool,
     stripe: &impl ReconcileStripe,
@@ -118,14 +134,18 @@ pub async fn reconcile(
         .map_err(|_| MoneyEventError::Stripe)?;
     let mut report = ReconcileReport {
         seen: charges.len(),
+        malformed: charges.iter().filter(|c| !c.is_well_formed()).count(),
         ..ReconcileReport::default()
     };
     let mut known = Vec::new();
     for charge in charges.iter().filter(|c| c.is_well_formed()) {
-        if let Some(now_held) =
-            one_charge(pool, stripe, id_secret, charge, &mut report, now).await?
-        {
-            known.push(now_held);
+        match one_charge(pool, stripe, id_secret, charge, &mut report, now).await {
+            Ok(Some(now_held)) => known.push(now_held),
+            Ok(None) => {}
+            Err(_) => {
+                report.failed += 1;
+                alert(&mut *db(pool.acquire().await)?, CHARGE_FAILED_ALERT, None).await?;
+            }
         }
     }
     report.stripe = MoneyTotals::of_stripe(&known);
@@ -162,7 +182,7 @@ async fn one_charge(
     db(tx.commit().await)?;
     let mut held = charge.clone();
     if let Some(why) = plan.refund
-        && refund(pool, stripe, id_secret, charge, (pick, why), report).await?
+        && refund(pool, stripe, id_secret, (charge, now), (pick, why), report).await?
     {
         held.refunded_cents = held.amount_cents;
     }
@@ -288,30 +308,63 @@ async fn first_seen(
     Ok(done.rows_affected() == 1)
 }
 
-/// FEE-029, FEE-026, D-153: refunds the charge in full once. The pick's own intent uses T066's
-/// first-try key, any other charge a key from its `ch_…`, so a rerun gets Stripe's first answer.
-/// The ledger `refund` entry follows Stripe's success; a failure waits for the next run. True when
-/// Stripe took the refund.
+/// FEE-029, FEE-026, D-153, D-1555: refunds the charge in full once. A charge on the pick's own
+/// intent goes through T066's `request_refund` (its refund row under the pick's lock, so T064's
+/// late-success refund and this one are one refund, with T066's try keys, hourly retry and alert)
+/// when T066 has the pick's evidence record; otherwise [`own_refund`] sends it. True when Stripe
+/// took the refund.
 async fn refund(
     pool: &PgPool,
     stripe: &impl ReconcileStripe,
     id_secret: &SecretString,
-    charge: &StripeCharge,
+    (charge, now): (&StripeCharge, Timestamp),
     (pick, why): (Option<PickFacts>, RefundWhy),
     report: &mut ReconcileReport,
 ) -> Result<bool, MoneyEventError> {
-    let key = match pick {
-        Some(facts) if facts.own_intent => {
-            IdempotencyKey::derive(id_secret, REFUND_ACTION, &[&refund_label(facts.pick), "1"])
+    if let Some(facts) = pick.filter(|f| f.own_intent) {
+        match request_refund(pool, stripe, id_secret, (facts.pick, LATE_TRIGGER), now).await {
+            Err(MoneyEventError::NothingCharged) => {}
+            Ok(RefundOutcome::Refunded(_)) => {
+                report.refunded += 1;
+                return Ok(true);
+            }
+            Ok(RefundOutcome::Failed) => {
+                report.refund_failed += 1;
+                return Ok(false);
+            }
+            other => return other.map(|_| false),
         }
-        _ => IdempotencyKey::derive(id_secret, RECONCILE_ACTION, &[&charge.id, why.code()]),
-    };
+    }
+    own_refund(pool, stripe, id_secret, (charge, now), (pick, why), report).await
+}
+
+/// The reconcile's own refund of a charge T066 has no record of. The Stripe key names the charge,
+/// the reason and the night, so a rerun the same night gets Stripe's first answer and a refused
+/// refund (which Stripe would replay for the same key) is a new try the next night; a refund made
+/// on a lost answer shows as refunded in the next list and is not sent again. A failure raises
+/// [`REFUND_FAILED_ALERT`]; the ledger `refund` entry follows Stripe's success (D-1555).
+async fn own_refund(
+    pool: &PgPool,
+    stripe: &impl ReconcileStripe,
+    id_secret: &SecretString,
+    (charge, now): (&StripeCharge, Timestamp),
+    (pick, why): (Option<PickFacts>, RefundWhy),
+    report: &mut ReconcileReport,
+) -> Result<bool, MoneyEventError> {
+    let night = now.as_second().div_euclid(86_400).to_string();
+    let key = IdempotencyKey::derive(
+        id_secret,
+        RECONCILE_ACTION,
+        &[&charge.id, why.code(), &night],
+    );
     if stripe
         .create_refund(&key, &charge.payment_intent)
         .await
         .is_err()
     {
         report.refund_failed += 1;
+        let mut conn = db(pool.acquire().await)?;
+        alert(&mut conn, REFUND_FAILED_ALERT, pick.map(|p| p.pick)).await?;
         return Ok(false);
     }
     report.refunded += 1;
@@ -362,11 +415,12 @@ fn kind_of(code: &str) -> Option<EntryKind> {
     EntryKind::ALL.into_iter().find(|k| k.code() == code)
 }
 
-/// The [`RECONCILE_KIND`] handler: one run, then the next night's task (JOB-006: the dedupe key
-/// names the next run's day, so a rerun queues it once).
+/// The [`RECONCILE_KIND`] handler: queues the next night's task first, then runs, so a failed run
+/// (a Stripe outage) never ends the nightly chain (D-1555; JOB-006: the dedupe key names the next
+/// run's day, so a rerun or a task retry queues it once).
 ///
 /// # Errors
-/// A fixed sentence when the run or the queueing fails.
+/// A fixed sentence when the queueing or the run fails; the task's own retries rerun it.
 pub async fn run_reconcile(
     pool: &PgPool,
     stripe: &impl ReconcileStripe,
@@ -375,15 +429,16 @@ pub async fn run_reconcile(
     now: Timestamp,
 ) -> Result<(), HandlerError> {
     let failed = HandlerError("reconcile could not finish");
-    reconcile(pool, stripe, id_secret, now)
-        .await
-        .map_err(|_| failed)?;
     let next = now + RECONCILE_EVERY;
     let mut task = NewTask::new(RECONCILE_KIND, json!({}), next);
     let day = next.as_second().div_euclid(86_400);
     task.dedupe_key = Some(format!("{RECONCILE_KIND}.{day}"));
     let mut conn = pool.acquire().await.map_err(|_| failed)?;
     enqueue(&mut conn, &task).await.map_err(|_| failed)?;
+    drop(conn);
+    reconcile(pool, stripe, id_secret, now)
+        .await
+        .map_err(|_| failed)?;
     Ok(())
 }
 

@@ -1,21 +1,24 @@
 //! TD-FEE-16 (reconcile and Stripe-match cases), TD-FEE-20 (the second kept charge) and TD-FEE-33
 //! (the processing fee and its money-view line) (FEE-029, FEE-030, FEE-032, FEE-051; D-153, D-490,
-//! D-1552 to D-1554): on a fresh database, the nightly reconcile auto-matches an unknown charge on
+//! D-1552 to D-1555): on a fresh database, the nightly reconcile auto-matches an unknown charge on
 //! an open pick, refunds one on a closed job, a second kept charge for a pick and one naming no
 //! pick, each once with one alert however often it runs; never refunds a disputed charge; records
 //! each balance transaction's fee; alerts when the ledger and Stripe differ; and the money view and
 //! statements come only from the ledger and match Stripe to the cent.
 //!
-//! Stripe is a scripted fake whose list reflects the refunds it took; the stripe-mock round trip
+//! Stripe is a scripted fake whose list reflects the refunds it took and which, as Stripe does,
+//! answers a repeated idempotency key with its stored first answer; the stripe-mock round trip
 //! is T132's and the architecture case (only `payments` holds the adapter) T175's. Fake IDs only.
 
+use std::collections::HashMap;
 use std::sync::Mutex;
 
 use askhava_adapters::api::{AdapterError, Charge, IdempotencyKey, PaymentIntent, PaymentsAdapter};
 use askhava_payments::api::{
-    EntryKind, LedgerEntry, MISMATCH_ALERT, MoneyEventError, NewEntry, RECONCILE_KIND,
-    ReconcileStripe, StripeCharge, UNKNOWN_CHARGE_ALERT, business_statement, ledger_append,
-    money_view, reconcile, run_reconcile,
+    CHARGE_FAILED_ALERT, EntryKind, LATE_TRIGGER, LedgerEntry, MISMATCH_ALERT, MoneyEventError,
+    NewEntry, RECONCILE_EVERY, RECONCILE_KIND, REFUND_FAILED_ALERT, ReconcileStripe, RefundOutcome,
+    StripeCharge, UNKNOWN_CHARGE_ALERT, business_statement, ledger_append, money_view, reconcile,
+    request_refund, run_reconcile,
 };
 use jiff::{SignedDuration, Timestamp};
 use secrecy::SecretString;
@@ -28,11 +31,13 @@ const PICK: Uuid = Uuid::from_u128(0x067_0042);
 const JOB: Uuid = Uuid::from_u128(0x067_0142);
 const NOW: i64 = 1_793_900_000;
 
-/// Stripe's charges; a refund marks its intent's charge refunded, unless `fail` is set.
+/// Stripe's charges; a refund marks its intent's charge refunded, unless `fail` is set, when
+/// Stripe refuses it. Every answer is stored under its key and replayed for that key.
 #[derive(Default)]
 struct FakeStripe {
     charges: Mutex<Vec<StripeCharge>>,
     refunds: Mutex<Vec<String>>,
+    answers: Mutex<HashMap<String, Option<String>>>,
     fail: Mutex<bool>,
     down: bool,
 }
@@ -47,6 +52,20 @@ impl FakeStripe {
 
     fn refunds(&self) -> Vec<String> {
         self.refunds.lock().expect("lock").clone()
+    }
+
+    /// Takes the refund now: `Some(re_…)`, or `None` when Stripe refuses it.
+    fn refund_now(&self, intent: &str) -> Option<String> {
+        if *self.fail.lock().expect("lock") {
+            return None;
+        }
+        self.refunds.lock().expect("lock").push(intent.to_owned());
+        for c in self.charges.lock().expect("lock").iter_mut() {
+            if c.payment_intent == intent {
+                c.refunded_cents = c.amount_cents;
+            }
+        }
+        Some(format!("re_{}", &intent[3..]))
     }
 }
 
@@ -69,19 +88,18 @@ impl PaymentsAdapter for FakeStripe {
 
     async fn create_refund(
         &self,
-        _: &IdempotencyKey,
+        key: &IdempotencyKey,
         intent: &str,
     ) -> Result<String, AdapterError> {
-        if *self.fail.lock().expect("lock") {
-            return Err(AdapterError::NotSent);
-        }
-        self.refunds.lock().expect("lock").push(intent.to_owned());
-        for c in self.charges.lock().expect("lock").iter_mut() {
-            if c.payment_intent == intent {
-                c.refunded_cents = c.amount_cents;
-            }
-        }
-        Ok(format!("re_{}", &intent[3..]))
+        let mut answers = self.answers.lock().expect("lock");
+        let answer = answers
+            .entry(key.as_str().to_owned())
+            .or_insert_with(|| self.refund_now(intent))
+            .clone();
+        answer.ok_or(AdapterError::Vendor {
+            status: 400,
+            code: None,
+        })
     }
 }
 
@@ -278,8 +296,9 @@ async fn td_fee_16_a_disputed_charge_is_matched_never_refunded(pool: PgPool) {
     assert!(stripe.refunds().is_empty());
 }
 
-/// TD-FEE-16 (FEE-029): a refused refund leaves no ledger refund and goes again next run; a list
-/// Stripe cannot give is `Stripe`.
+/// TD-FEE-16 (FEE-029, D-1555): a refused refund leaves no ledger refund and is alerted; a rerun
+/// the same night gets Stripe's stored refusal for its key, and the next night's run is a new try
+/// that refunds; a list Stripe cannot give is `Stripe`.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_fee_16_a_failed_refund_is_sent_again_next_run(pool: PgPool) {
     pick(&pool, true).await;
@@ -289,20 +308,23 @@ async fn td_fee_16_a_failed_refund_is_sent_again_next_run(pool: PgPool) {
         .await
         .expect("run");
     assert_eq!((report.refunded, report.refund_failed), (0, 1));
-    assert_eq!(
-        count(
-            &pool,
-            "SELECT count(*) FROM payments.ledger_entry WHERE kind = 'refund'"
-        )
-        .await,
-        0
-    );
+    let refunds = "SELECT count(*) FROM payments.ledger_entry WHERE kind = 'refund'";
+    assert_eq!(count(&pool, refunds).await, 0);
+    assert_eq!(alerts(&pool, REFUND_FAILED_ALERT).await, 1);
     *stripe.fail.lock().expect("lock") = false;
     let report = reconcile(&pool, &stripe, &secret(), at(1))
         .await
         .expect("run");
+    assert_eq!((report.refunded, report.refund_failed), (0, 1));
+    assert!(stripe.refunds().is_empty());
+    let next_night = at(RECONCILE_EVERY.as_secs());
+    let report = reconcile(&pool, &stripe, &secret(), next_night)
+        .await
+        .expect("run");
     assert_eq!((report.refunded, report.refund_failed), (1, 0));
     assert!(report.matched(), "{report:?}");
+    assert_eq!(stripe.refunds(), ["pi_FakeT067"]);
+    assert_eq!(count(&pool, refunds).await, 1);
     let down = FakeStripe {
         down: true,
         ..FakeStripe::default()
@@ -365,9 +387,121 @@ async fn the_nightly_task_queues_the_next_run_once(pool: PgPool) {
         down: true,
         ..FakeStripe::default()
     };
+    let next_night = at(RECONCILE_EVERY.as_secs());
     assert!(
-        run_reconcile(&pool, &down, &secret(), &json!({}), at(0))
+        run_reconcile(&pool, &down, &secret(), &json!({}), next_night)
             .await
             .is_err()
     );
+    let queued = sqlx::query_scalar::<_, i64>("SELECT count(*) FROM core.task WHERE kind = $1")
+        .bind(RECONCILE_KIND)
+        .fetch_one(&pool)
+        .await
+        .expect("tasks");
+    assert_eq!(
+        queued, 2,
+        "a failed run still queues the next night (D-1555)"
+    );
+}
+
+/// FEE-029, FEE-030, D-1555: a charge whose ledger write fails (a reused key) is alerted and
+/// skipped while the run goes on to refund the next; a malformed charge raises the mismatch alert.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn a_failing_or_malformed_charge_never_stops_the_run(pool: PgPool) {
+    pick(&pool, false).await;
+    let entry = LedgerEntry::new(NewEntry {
+        kind: EntryKind::ProcessingFee,
+        business: Some(BUSINESS),
+        job: Some(JOB),
+        amount_cents: 1,
+        stripe_id: Some("txn_FakeT067n1"),
+        idempotency_key: "reconcile.fee.txn_FakeT067n1",
+    })
+    .expect("entry");
+    let mut conn = pool.acquire().await.expect("conn");
+    ledger_append(&mut conn, &entry).await.expect("append");
+    drop(conn);
+    let mut malformed = charge(4, "pi_FakeT067bad", None);
+    malformed.id = "ch_".to_owned();
+    let charges = vec![
+        charge(1, "pi_FakeT067", None),
+        charge(3, "pi_FakeT067orphan", None),
+        malformed,
+    ];
+    let stripe = FakeStripe::with(charges);
+    let report = reconcile(&pool, &stripe, &secret(), at(0))
+        .await
+        .expect("run");
+    assert_eq!(
+        (report.failed, report.malformed, report.refunded),
+        (1, 1, 1)
+    );
+    assert!(!report.matched());
+    assert_eq!(stripe.refunds(), ["pi_FakeT067orphan"]);
+    assert_eq!(alerts(&pool, CHARGE_FAILED_ALERT).await, 1);
+    assert_eq!(alerts(&pool, MISMATCH_ALERT).await, 1);
+}
+
+/// One $75 succeeded charge on the closed pick with T066's evidence record.
+async fn evidence(pool: &PgPool) {
+    pick(pool, true).await;
+    for sql in [
+        "INSERT INTO payments.charge_attempt (pick_id, try_no, press_id, status, started_at,
+           decided_at) VALUES ($1, 1, $2, 'succeeded', now(), now())",
+        "INSERT INTO payments.charge_evidence (pick_id, business_id, job_id, press_id, try_no,
+           idempotency_label, stripe_customer_id, stripe_intent_id, authorization_version,
+           amount_cents, pressed_at, charged_at) VALUES ($1, $2, $3, $2, 1,
+           'pick-' || $1::text || '-try1', 'cus_FakeT067', 'pi_FakeT067', 1, 7500, now(), now())",
+    ] {
+        let seeded = sqlx::query(sql).bind(PICK).bind(BUSINESS).bind(JOB);
+        seeded.execute(pool).await.expect("seed charge");
+    }
+}
+
+/// FEE-026, FEE-029, D-1555: a closed job's charge with T066's evidence record is refunded through
+/// `request_refund`: a refusal is T066's failed try with its alert, the next run T066's next try,
+/// and its refund row is the one T064's late-success refund meets: one refund, one ledger entry.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn a_closed_job_charge_with_evidence_is_refunded_through_t066(pool: PgPool) {
+    evidence(&pool).await;
+    let stripe = FakeStripe::with(vec![charge(1, "pi_FakeT067", Some(PICK))]);
+    *stripe.fail.lock().expect("lock") = true;
+    let report = reconcile(&pool, &stripe, &secret(), at(0))
+        .await
+        .expect("run");
+    assert_eq!((report.refunded, report.refund_failed), (0, 1));
+    assert_eq!(alerts(&pool, REFUND_FAILED_ALERT).await, 1);
+    *stripe.fail.lock().expect("lock") = false;
+    let report = reconcile(&pool, &stripe, &secret(), at(1))
+        .await
+        .expect("run");
+    assert_eq!((report.refunded, report.refund_failed), (1, 0));
+    assert!(report.matched(), "{report:?}");
+    let late = request_refund(&pool, &stripe, &secret(), (PICK, LATE_TRIGGER), at(2)).await;
+    assert_eq!(late, Ok(RefundOutcome::Unchanged));
+    assert_eq!(stripe.refunds(), ["pi_FakeT067"]);
+    let rows = "SELECT count(*) FROM payments.refund WHERE status = 'succeeded'";
+    assert_eq!(count(&pool, rows).await, 1);
+    let refunds = "SELECT count(*) FROM payments.ledger_entry WHERE kind = 'refund'";
+    assert_eq!(count(&pool, refunds).await, 1);
+}
+
+/// FEE-026, D-1555: a charge T066 holds a dispute for is blocked there, never refunded here.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn a_charge_t066_holds_a_dispute_for_is_not_refunded(pool: PgPool) {
+    evidence(&pool).await;
+    sqlx::query(
+        "INSERT INTO payments.dispute (stripe_dispute_id, pick_id, amount_cents, due_at, opened_at)
+         VALUES ('dp_FakeT067held', $1, 7500, now(), now())",
+    )
+    .bind(PICK)
+    .execute(&pool)
+    .await
+    .expect("seed dispute");
+    let stripe = FakeStripe::with(vec![charge(1, "pi_FakeT067", Some(PICK))]);
+    let report = reconcile(&pool, &stripe, &secret(), at(0))
+        .await
+        .expect("run");
+    assert_eq!((report.refunded, report.refund_failed), (0, 0));
+    assert!(stripe.refunds().is_empty());
 }

@@ -93,9 +93,9 @@ pub use crate::models::{
     attempt_label, intent_label, plan_charge,
 };
 pub use crate::reconcile::{
-    LOOKBACK, MISMATCH_ALERT, RECONCILE_ACTION, RECONCILE_EVERY, RECONCILE_KIND, ReconcileReport,
-    ReconcileStripe, Statement, StatementLine, UNKNOWN_CHARGE_ALERT, business_statement,
-    money_view, reconcile, run_reconcile,
+    CHARGE_FAILED_ALERT, LOOKBACK, MISMATCH_ALERT, RECONCILE_ACTION, RECONCILE_EVERY,
+    RECONCILE_KIND, ReconcileReport, ReconcileStripe, Statement, StatementLine,
+    UNKNOWN_CHARGE_ALERT, business_statement, money_view, reconcile, run_reconcile,
 };
 pub use crate::refund_rules::{
     ATTEMPT_GAP, ATTEMPT_WINDOW, Answer, CallRecord, Caller, CancelFacts, Contact, DECIDE_AFTER,
