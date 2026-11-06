@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE businesses.signup SET code_done = true WHERE business_id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "6b6fe0e6e00a82b98fb541c9edce161616f6c1a25a511735058ac123469f6251"
+}

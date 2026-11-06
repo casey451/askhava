@@ -70,6 +70,15 @@ impl AccountStatus {
             }
         }
     }
+    /// Whether an identity code may be sent or checked in this status (BIZ-002, D-1703): only a
+    /// sign-up still waiting, `Pending` or `NeedsReview` (Casey's approval needs the code too).
+    #[must_use]
+    pub const fn takes_identity_code(self) -> bool {
+        match self {
+            Self::Pending | Self::NeedsReview => true,
+            Self::Active | Self::Paused | Self::Waitlist | Self::Removed => false,
+        }
+    }
 }
 
 /// Why a business is paused (BIZ-009); stored in `businesses.business.pause_reason`.

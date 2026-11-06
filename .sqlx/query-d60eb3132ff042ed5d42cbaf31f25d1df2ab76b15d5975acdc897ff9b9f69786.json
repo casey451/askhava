@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE businesses.signup SET review_told_at = $2 WHERE business_id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "d60eb3132ff042ed5d42cbaf31f25d1df2ab76b15d5975acdc897ff9b9f69786"
+}
