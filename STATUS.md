@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-06T19:06:16Z by runner 775decc0b7f9 (actions).
+Updated 2026-11-06T19:13:49Z by runner 775decc0b7f9 (actions).
 
-**Idle since 19:03Z; 124 of 239 done; week 23% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T078 in progress since 19:06Z; 124 of 239 done; week 23% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 124 of 239 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 19:03Z (no task in progress)
+- **Lane:** lane 1: T078 claimed 19:06Z, lease until 22:06Z
 - **Week:** 23% used, 148.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:57Z, 8 min before this update
+- **Last run:** 18:57Z, 16 min before this update
 - **Keeper:** last ran 18:57Z, next wake 19:17Z
 
 ## Needs attention
@@ -82,7 +82,7 @@ Updated 2026-11-06T19:06:16Z by runner 775decc0b7f9 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-06T17:37:10Z (week)): five-hour: 2.7M used, 26.4M left, resets 2026-11-06T21:38:35Z; week: 46.0M used, 148.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-11-19T09:39:42Z.
+- Pacing (session_reading 2026-11-06T18:57:17Z (week)): five-hour: 7.1M used, 22.0M left, resets 2026-11-06T21:38:35Z; week: 46.0M used, 148.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-11-19T16:34:39Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -97,7 +97,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T078 (lease until 2026-11-06T22:06:13Z)
 
 ## Last usage reading
 - {"task": "T077", "at": "2026-11-06T18:52:00Z", "input_tokens": 497, "output_tokens": 211427, "cache_read_input_tokens": 34809152, "cache_creation_input_tokens": 710223}
