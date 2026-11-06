@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-06T10:04:02Z by runner e2a7ae11b387 (actions).
+Updated 2026-11-06T10:04:13Z by runner e2a7ae11b387 (actions).
 
-**Building: T246 in progress since 08:57Z; 118 of 238 done; week 13% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 10:04Z; 118 of 238 done; week 13% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 118 of 238 build tasks (owner gates not counted)
 - **Stage:** stage 3; stage proofs recorded: 1, 2
-- **Lane:** lane 1: T246 claimed 08:57Z, lease until 11:57Z
+- **Lane:** idle since 10:04Z (no task in progress)
 - **Week:** 13% used, 168.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 09:04Z, 59 min before this update
 - **Keeper:** last ran 08:46Z, next wake 09:06Z
@@ -17,6 +17,7 @@ Updated 2026-11-06T10:04:02Z by runner e2a7ae11b387 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T246 | picks, portals and server: the page pick end to end (one pic | MERGE_PENDING | 1 | 66 min | 10:04Z |  |
 | T247 | jobs and quotes: the first-quote move to Quotes ready (JOB-0 | done | 1 | 24 min | 08:42Z |  |
 | T074 | Twin: run the gate against the app's rules modules | done | 1 | 51 min | 08:05Z |  |
 | T073 | Named mutants: the 4-month rule, the fee tiers and the card  | done | 1 | 30 min | 06:37Z |  |
@@ -86,7 +87,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T246 (lease until 2026-11-06T11:57:12Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T247", "at": "2026-11-06T08:42:24Z", "cache_creation_input_tokens": 377917, "cache_read_input_tokens": 9571548, "output_tokens": 91557, "input_tokens": 217}
+- {"task": "T246", "at": "2026-11-06T10:04:01Z", "cache_creation_input_tokens": 1002722, "output_tokens": 263195, "cache_read_input_tokens": 55174929, "input_tokens": 656}
