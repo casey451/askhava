@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-06T20:16:11Z by runner bdd291aafb11 (actions).
+Updated 2026-11-06T20:51:20Z by runner 7ba6bcbf51c6 (actions).
 
 **Building: T079 in progress since 20:07Z; 125 of 239 done; week 24% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,11 @@ Updated 2026-11-06T20:16:11Z by runner bdd291aafb11 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T079 claimed 20:07Z, lease until 23:07Z
 - **Week:** 24% used, 146.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:57Z, 18 min before this update
+- **Last run:** 20:16Z, 35 min before this update
 - **Keeper:** last ran 19:57Z, next wake 20:17Z
 
 ## Needs attention
-- Strict plan check red: 1 problem(s) on tasks still to run (+10 on DONE tasks); first: T249: stored context_pct 22% but it measures 26%; regenerate
+- Strict plan check red: 2 problem(s) on tasks still to run (+10 on DONE tasks); first: T079: stored context_pct 12% but it measures 16%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -42,7 +42,6 @@ Updated 2026-11-06T20:16:11Z by runner bdd291aafb11 (actions).
 | T066 | payments: one refund per trigger, retries, disputes with evi | done | 1 | 46 min | 22:54Z |  |
 | T245 | payments: narrow the default privileges in schema payments t | done | 1 | 21 min | 21:56Z |  |
 | T244 | payments: remove the early-joiner price lock (FEE-040 withdr | done | 1 | 19 min | 21:20Z |  |
-| T065 | payments: refund rules for cancels and no-shows | done | 1 | 38 min | 20:38Z |  |
 
 ### Plan and harness merges on main
 - 16:15Z Plan: dynamic SQL in migrations is a TD-SEC-10 finding (T252), T126 context budget, stored budgets refreshed (D-1677, D-1678) (#298)
