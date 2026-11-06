@@ -14,8 +14,9 @@
 # branch floors on app/licensing/ and app/privacy/ (PRIV-022).
 #
 # cargo-mutants (nightly-main) runs on these files with the in-crate tests (test-design line 60).
-# app/payments/src/rules.rs joins when T073 writes it; app/catalog/ has no rules.rs (D-1286).
+# app/catalog/ has no rules.rs (D-1286); T073 added app/payments/src/rules.rs.
 cargo_mutants_files = [
+  "app/payments/src/rules.rs",
   "app/licensing/src/rules.rs",
   "app/quotes/src/rules.rs",
   "app/messaging/src/rules.rs",
@@ -82,6 +83,96 @@ package = "askhava-intake"
 tests = ["tests::twin_warnings_regression", "tests::prop_keyword_boundary"]
 mutants = [
   { name = "plain-keyword job types dropped after a trade answer (twin C1, D-102)", find = "for (t, j) in read.chain(named_jobs) {", replace = "for (t, j) in read.chain(named_jobs.filter(|_| false)) {" },
+]
+
+[[group]]
+rule = "License filter"
+file = "app/picks/src/confirm.rs"
+package = "askhava-picks"
+tests = ["tests::confirm::td_pick_09_license_at_the_pick"]
+mutants = [
+  { name = "license check at pick skipped: an inactive license confirms (TD-PICK-09, D-479)", find = "LookupOutcome::Inactive => LicenseAtPick::Ineligible,", replace = "LookupOutcome::Inactive => LicenseAtPick::Eligible," },
+  { name = "license check at pick skipped: the live lookup's answer ignored (TD-PICK-09, D-479)", find = "    Ok(license_at_pick(lookup, daily))", replace = "    let _ = (lookup, daily);\n    Ok(LicenseAtPick::Eligible)", package = "askhava-integration", target = "--test confirm_window", tests = ["td_pick_09_license_at_the_pick_and_at_confirm"] },
+]
+
+# ---------------------------------------------------------------------------------------------
+# 4-month rule: TD-FEE-01, TD-FEE-03, TD-FEE-21 (W11 to W20, W30, W32, W33; REC-003's
+# $150 -> $600 -> $75). FEE-034: the K2b worked examples are the unit tests that kill them.
+
+[[group]]
+rule = "4-month rule"
+file = "app/payments/src/rules.rs"
+package = "askhava-payments"
+tests = ["tests::recurring", "tests::worked_examples", "tests::fee_at_pick"]
+mutants = [
+  { name = "multiplier 4 -> 3", find = "pub const RECURRING_MONTHS: u128 = 4;", replace = "pub const RECURRING_MONTHS: u128 = 3;" },
+  { name = "multiplier 4 -> 5", find = "pub const RECURRING_MONTHS: u128 = 4;", replace = "pub const RECURRING_MONTHS: u128 = 5;" },
+  { name = "multiplier 4 -> 2 (the superseded rule)", find = "pub const RECURRING_MONTHS: u128 = 4;", replace = "pub const RECURRING_MONTHS: u128 = 2;" },
+  { name = "recurring quote charged at face value", find = "let basis = four_months(quote, period)?;", replace = "let _ = period;\n    let basis = basis_of(quote, job.job)?.unwrap_or(0);" },
+  { name = "weekly converted x4 instead of x52/12", find = "Self::Weekly => (52, 12),", replace = "Self::Weekly => (4, 1)," },
+  { name = "every-two-weeks x2 instead of x26/12", find = "Self::EveryTwoWeeks => (26, 12),", replace = "Self::EveryTwoWeeks => (2, 1)," },
+  { name = "yearly /4 instead of /12", find = "Self::Yearly => (1, 12),", replace = "Self::Yearly => (1, 4)," },
+  { name = "a one-time job in a recurring category charged at 4 months (D-037)", find = "            return Err(FeeError::NeedsPeriod);\n        }\n", replace = "            return Err(FeeError::NeedsPeriod);\n        }\n        if job.service == Service::OneTimeJobType {\n            return period_fee_for(quote, Some(Period::Monthly), job);\n        }\n" },
+  { name = "a period accepted in a non-recurring category", find = "if job.service == Service::NotRecurring {", replace = "if false && job.service == Service::NotRecurring {" },
+  { name = "the $75 recurring cap removed (D-196)", find = "    let tier = Tier::for_basis(basis);\n    let tier = if job.service == Service::RecurringJobType {\n        tier.min(job.cap.0)", replace = "    let tier = Tier::for_basis(basis);\n    let tier = if job.service == Service::RecurringJobType {\n        tier" },
+  { name = "the $75 recurring cap applied to a one-time job (D-196)", find = "    let tier = Tier::for_basis(basis);\n    let tier = if job.service == Service::RecurringJobType {", replace = "    let tier = Tier::for_basis(basis);\n    let tier = if job.service != Service::NotRecurring {" },
+  { name = "the recurring cap removed in flat mode (D-196)", find = "            let tier = flat_tier(job.job.visit_tier, flat_edit);\n            let tier = if job.service == Service::RecurringJobType {\n                tier.min(job.cap.0)", replace = "            let tier = flat_tier(job.job.visit_tier, flat_edit);\n            let tier = if job.service == Service::RecurringJobType {\n                tier" },
+]
+
+# ---------------------------------------------------------------------------------------------
+# Fee tiers ($25 / $75 / $199): TD-FEE-01, TD-FEE-02, TD-FEE-04, TD-FEE-08, TD-FEE-09, TD-FEE-28
+# (W02 to W05, W08, W21 to W24, W30, W31; FEE-034). The AI "major" flag raising the tier has no
+# text to mutate: no fee function takes an AI flag (FEE-005, D-1415, D-1587); TD-FEE-04 guards it.
+
+[[group]]
+rule = "Fee tiers"
+file = "app/payments/src/rules.rs"
+package = "askhava-payments"
+tests = ["tests::fee_tiers", "tests::worked_examples", "tests::prop_fee_props", "tests::recurring", "tests::fee_at_pick"]
+mutants = [
+  { name = "< 500 -> <= 500", find = "if basis_cents < MEDIUM_FROM_CENTS {", replace = "if basis_cents <= MEDIUM_FROM_CENTS {" },
+  { name = "<= 1500 -> < 1500", find = "} else if basis_cents <= MEDIUM_UP_TO_CENTS {", replace = "} else if basis_cents < MEDIUM_UP_TO_CENTS {" },
+  { name = "$25 tier changed to the superseded $45", find = "Self::Small => 2_500,", replace = "Self::Small => 4_500," },
+  { name = "$75 tier changed to the superseded $59", find = "Self::Medium => 7_500,", replace = "Self::Medium => 5_900," },
+  { name = "$199 tier changed to the superseded $149", find = "Self::Large => 19_900,", replace = "Self::Large => 14_900," },
+  { name = "$75 tier changed by a cent", find = "Self::Medium => 7_500,", replace = "Self::Medium => 7_501," },
+  { name = "range midpoint rounding down -> half up (D-033)", find = "low / 2 + high / 2 + (low % 2 + high % 2) / 2", replace = "low / 2 + high / 2 + (low % 2 + high % 2 + 1) / 2" },
+  { name = "4-month basis rounding down -> half up (D-033)", find = "sum * times * RECURRING_MONTHS / (per * halves)", replace = "(sum * times * RECURRING_MONTHS + per * halves / 2) / (per * halves)" },
+  { name = "range basis from the high end", find = "Ok(Some(midpoint(low, high)))", replace = "Ok(Some(high))" },
+  { name = "range basis from the low end", find = "Ok(Some(midpoint(low, high)))", replace = "Ok(Some(low))" },
+  { name = "recurring range basis from the high end", find = "(u128::from(low) + u128::from(high), 2)", replace = "(u128::from(high), 1)" },
+  { name = "trip-fee quote priced from its amount instead of the set tier (FEE-004)", find = "FeeQuote::Hourly { hours: None, .. } | FeeQuote::DiagnosticVisit { .. } => Ok(None),", replace = "FeeQuote::Hourly { hours: None, .. } => Ok(None),\n        FeeQuote::DiagnosticVisit { visit_fee } => Ok(Some(visit_fee))," },
+  { name = "a fee-free job type charged (TD-FEE-28, FEE-045, D-493)", find = "if job.fee_free {", replace = "if false && job.fee_free {", tests = ["tests::fee_tiers::td_fee_28_fee_free_job_types_pay_nothing", "tests::prop_fee_props::td_fee_28_fee_free_is_always_zero"] },
+  { name = "a fee-free job type with a period charged (FEE-045)", find = "if job.job.fee_free {", replace = "if false && job.job.fee_free {" },
+]
+
+[[group]]
+rule = "Fee tiers"
+file = "app/payments/src/free_wins.rs"
+package = "askhava-integration"
+mutants = [
+  { name = "a repeat customer charged (TD-FEE-09)", find = "if is_repeat(conn, &check).await? {", replace = "if false && is_repeat(conn, &check).await? {", target = "--test repeat_customer", tests = ["td_fee_09_"] },
+  { name = "a second free first win for the same entity key (TD-FEE-08)", find = "|| win_blocked(conn, check.business).await? {", replace = "|| (false && win_blocked(conn, check.business).await?) {", target = "--test free_wins", tests = ["td_fee_08_one_win_per_entity_key"] },
+]
+
+# ---------------------------------------------------------------------------------------------
+# Card and summary gates (D-493): TD-AI-17 (T208), TD-PICK-29 (T186).
+
+[[group]]
+rule = "Card and summary gates"
+file = "app/intake/src/summary_step.rs"
+mutants = [
+  { name = "a card sent that the homeowner wasn't shown (TD-AI-17)", find = "Ok(now == Some(format!(\"sent.{}\", card_digest(card.text()))))", replace = "Ok(now.is_some_and(|n| n.starts_with(\"sent.\")))", package = "askhava-integration", target = "--test summary_step", tests = ["td_int_23_send_ok_or_yes_sends_the_card_she_was_shown"] },
+  { name = "a changed card digests as the shown one (TD-AI-17)", find = "sha256_hex(card)[..32].to_owned()", replace = "sha256_hex(card.trim_end())[..32].to_owned()", package = "askhava-intake", tests = ["tests::summary_step::td_ai_17_one_changed_character_is_another_card"] },
+]
+
+[[group]]
+rule = "Card and summary gates"
+file = "app/quotes/src/quote_card.rs"
+package = "askhava-quotes"
+tests = ["tests::quote_card::td_pick_29_summary_off_by_default_and_never_adds_a_claim"]
+mutants = [
+  { name = "an AI summary shown with the setting off (TD-PICK-29)", find = "if setting == SummarySetting::Off || summary.trim().is_empty() {", replace = "if summary.trim().is_empty() {" },
 ]
 
 # ---------------------------------------------------------------------------------------------
