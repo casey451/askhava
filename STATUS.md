@@ -1,18 +1,17 @@
 # Ask Hava build status
 
-Updated 2026-11-06T22:02:52Z by runner 1d94b20ee738 (actions).
+Updated 2026-11-06T22:11:36Z by runner 1d94b20ee738 (actions).
 
-**Idle since 22:00Z; 127 of 239 done; week 25% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T080 in progress since 22:02Z; 127 of 239 done; week 25% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 127 of 239 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 22:00Z (no task in progress)
-- **Week:** 25% used, 146.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:48Z, 14 min before this update
+- **Lane:** lane 1: T080 claimed 22:02Z, lease until 01:02Z
+- **Week:** 25% used, 144.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Last run:** 21:48Z, 23 min before this update
 - **Keeper:** last ran 21:47Z, next wake 22:07Z
 
 ## Needs attention
-- PLAN GAP T080 (since 2026-11-06T21:04:42Z, no attempt used; a plan change fixes it): T080: dependency T079 is DONE but its owned file app/calls/src/lifecycle.rs is not on main; T080: dependency T079 is DONE but its owned file tests/integration/tests/line_lifecycle.rs is not on main
 - Strict plan check red: 3 problem(s) on tasks still to run (+12 on DONE tasks); first: T196: stored context_pct 17% but it measures 21%; regenerate
 
 ## Last 24 hours
@@ -81,7 +80,7 @@ Updated 2026-11-06T22:02:52Z by runner 1d94b20ee738 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-06T20:55:17Z (week)): five-hour: 11.3M used, 17.8M left, resets 2026-11-06T21:38:35Z; week: 48.0M used, 146.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-11-19T16:44:07Z.
+- Pacing (session_reading 2026-11-06T21:47:42Z (week)): five-hour: 3.0M used, 26.1M left, resets 2026-11-07T02:42:02Z; week: 50.0M used, 144.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-11-19T19:39:43Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -96,7 +95,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T080 (lease until 2026-11-07T01:02:49Z)
 
 ## Last usage reading
 - {"task": "T081", "at": "2026-11-06T21:42:02Z", "cache_creation_input_tokens": 578804, "input_tokens": 446, "cache_read_input_tokens": 22063683, "output_tokens": 168694}
