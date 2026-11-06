@@ -1012,3 +1012,4 @@
 - 2026-11-06T16:09:09Z runner 55d8cb077488 (actions): {}
 - 2026-11-06T16:16:11Z runner ea22387162b9 (manual): {"T250": "BLOCKED -> QUEUED"}
 - 2026-11-06T16:19:04Z runner 428a704c4d39 (actions): {"T252": "None -> QUEUED"}
+- 2026-11-06T16:26:57Z runner 428a704c4d39 (actions): {"T250": "QUEUED -> IN_PROGRESS"}; T250 estimated 2.1M tokens (calibrated); five-hour window has 29.1M left, week 152.0M (session_reading 2026-11-06T16:08:55Z (week)); claimed
