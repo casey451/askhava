@@ -1759,3 +1759,12 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **The "ran out of numbers" alert.** When every masked number is in use, you get one High alert and jobs start sharing numbers with a PIN. If you mark that alert resolved but have not bought more numbers, you will not get another one while the shortage lasts; the next alert comes only after a job gets a free number again and a later job has to share. So treat "resolved" as "I bought more numbers", not "I saw it".
 - **Safety calls to numbers we can't text.** The safety call checks the same list texting uses. A US number whose area code is not in our time-zone table is never texted, so the safety call skips it too. Instead of skipping quietly it now raises a High alert to you, and your emergency alert still fires. Whether the call should dial such a number anyway is your call; until then it does not (the safety call switch is off at launch).
 - **Nothing needs you now.**
+
+## Masked calls: PINs (T077, D-1684 to D-1688, November 6)
+
+- **PINs.** Each connected job gets a 4-digit PIN. A caller whose phone we don't know must enter it; 3 tries a call, then the call ends and you get one alert. After 2 wrong tries, a phone linked to the business that paid for that job hears the homeowner's first name and street and must confirm before it connects; nobody else hears anything.
+- **Daily PIN limit not stored yet.** The 6-tries-a-day rule is built, but the count needs a table a later calls task adds. Nothing is live, so this changes nothing yet.
+- **"Who's calling" text waits.** The text telling the homeowner which number the business will call from is written and tested, but adding it touches two files another task owns, so it lands with that task.
+- **If a call line fails to open after a business pays,** the business still gets the homeowner's details, and you get a High alert to sort the line out. Nothing reopens the line by itself yet; a later task adds that.
+- **Gaps passed to later tasks.** The PIN is worked out from an internal line ID, which isn't secret, so a later calls task must store a random PIN instead. Only the business that paid hears the name-and-street read-back, which holds as long as lines close when a pick ends (the line-closing task, T079). The phone company's caller check comes in a form the voice task (T080) must translate. A security test list needs one new entry for the read-back. The "who's calling" text has no task that owns it now; one needs adding.
+- **Nothing needs you now.**

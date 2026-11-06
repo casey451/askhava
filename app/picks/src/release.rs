@@ -19,8 +19,17 @@
 //! ([`release_notice`]), or one High [`RELEASE_NO_RECIPIENT_ALERT`] when the business has none; no
 //! homeowner detail and no call window goes in any notice. The [`ReleaseView`] goes back to the
 //! caller once and is stored nowhere; how the portal shows it later is not built (D-1564).
+//!
+//! T077: once shown, [`release`] asks `calls::api::assign_number` for the job's masked line, the
+//! homeowner side being the proof's contact (CALL-001, PICK-022, D-491). An emergency job with no
+//! address is never shown, so no line opens before the address is in (TD-CALL-12); a
+//! released-before pick opens nothing again; a line that fails to open never hides the view and
+//! raises one High [`RELEASE_LINE_FAILED_ALERT`] instead (D-1688). The who's-calling text (TXT-027) is not
+//! sent here yet (D-1687).
 
+use askhava_adapters::api::MaskedPool;
 use askhava_businesses::api::{NoticePurpose, notice_addresses};
+use askhava_calls::api::{Connected, assign_number};
 use askhava_core::api::{NewTask, enqueue};
 use askhava_jobs::api::{current, job_number};
 use askhava_ops::api::{NewAlert, Severity, raise_alert};
@@ -46,6 +55,9 @@ pub const ADDRESS_NEEDED_KIND: &str = "picks.address_needed";
 /// The High alert raised when a released pick's business has no pick-and-release recipient
 /// (PICK-024, D-1561, D-1564).
 pub const RELEASE_NO_RECIPIENT_ALERT: &str = "picks.release_no_recipient";
+/// The High alert raised when a shown release's masked line fails to open; the view still goes
+/// back, and a retry is for a later task (CALL-001, D-1688).
+pub const RELEASE_LINE_FAILED_ALERT: &str = "picks.release_line_failed";
 /// The vault fields a release opens; never the phone (PICK-023, PRIV-020).
 pub const RELEASE_FIELDS: [Field; 2] = [Field::Name, Field::Address];
 /// The fields when the homeowner chose email contact at the pick (PICK-018); never the phone.
@@ -164,15 +176,71 @@ pub fn release_notice(business: Uuid, pick: Uuid, to: &[Uuid], job: i64) -> Valu
 }
 
 /// Releases the pick `proof` names (PICK-022 to PICK-024, PRIV-005, BIZ-014, INT-029, D-1564);
-/// see the module docs. `email_chosen` is the homeowner's PICK-018 choice of email contact, the
+/// see the module docs; once shown, the job's masked line opens from `masked` (CALL-001,
+/// D-1688). `email_chosen` is the homeowner's PICK-018 choice of email contact, the
 /// only case the email is opened. The vault is read on a bare connection, outside any transaction
 /// (D-753).
 ///
 /// # Errors
 /// [`PicksError::Database`] (also for a refused or failed vault read, which `privacy` has
 /// already audited or alerted) or [`PicksError::Job`]. A regular job's vault read fails after its
-/// claim committed, so the release stands and a later proof gets [`Released::Already`].
+/// claim committed, so the release stands and a later proof gets [`Released::Already`]. A line
+/// that fails to open is no error: the view still comes back and one High
+/// [`RELEASE_LINE_FAILED_ALERT`] is raised (D-1688).
 pub async fn release(
+    pool: &PgPool,
+    (vault, masked): (&Vault, &MaskedPool),
+    (proof, email_chosen): (ReleaseProof, bool),
+    at: Timestamp,
+) -> Result<Released, PicksError> {
+    let (pick, contact, basis) = (proof.pick_id(), proof.contact_id(), proof.basis());
+    let released = show(pool, vault, (proof, email_chosen), at).await?;
+    if let Released::Shown(_) = released
+        && open_line(pool, masked, (pick, contact, basis), at)
+            .await
+            .is_err()
+    {
+        line_failed(pool, pick).await;
+    }
+    Ok(released)
+}
+
+/// Opens the released job's masked line, the homeowner side being the proof's contact (CALL-001).
+async fn open_line(
+    pool: &PgPool,
+    masked: &MaskedPool,
+    (pick, contact, basis): (Uuid, Uuid, ReleaseBasis),
+    at: Timestamp,
+) -> Result<(), PicksError> {
+    let mut conn = pool.acquire().await.map_err(|_| PicksError::Database)?;
+    let target = models::release_target(&mut conn, pick, release_status(basis)).await?;
+    let target = target.ok_or(PicksError::Database)?;
+    let job = Connected {
+        job: target.job,
+        homeowner: contact,
+        business: target.business,
+    };
+    assign_number(&mut conn, masked, job, at)
+        .await
+        .map_err(|_| PicksError::Database)?;
+    Ok(())
+}
+
+/// Raises one High [`RELEASE_LINE_FAILED_ALERT`] for the pick; the release already stands and its
+/// view goes back regardless, so a failed alert write is dropped here (D-1688).
+async fn line_failed(pool: &PgPool, pick: Uuid) {
+    let alert = NewAlert {
+        kind: RELEASE_LINE_FAILED_ALERT,
+        severity: Severity::High,
+        subject: Some(("pick", pick)),
+    };
+    if let Ok(mut conn) = pool.acquire().await {
+        raise_alert(&mut conn, &alert).await.ok();
+    }
+}
+
+/// The T069 release: the checks, the claim, the vault read and the view (see the module docs).
+async fn show(
     pool: &PgPool,
     vault: &Vault,
     (proof, email_chosen): (ReleaseProof, bool),
