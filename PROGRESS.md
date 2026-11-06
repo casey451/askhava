@@ -1000,3 +1000,4 @@
 - 2026-11-06T15:21:38Z runner 68d31e685bef (actions): {"T250": "QUEUED -> IN_PROGRESS"}; T250 estimated 2.1M tokens (calibrated); five-hour window has 23.2M left, week 156.0M (session_reading 2026-11-06T14:54:07Z (week)); claimed
 - 2026-11-06T15:21:50Z runner 68d31e685bef (actions): {}
 - 2026-11-06T15:37:15Z runner 6c19ef83e6d7 (actions): {}
+- 2026-11-06T15:37:28Z runner 6c19ef83e6d7 (actions): {"T250": "IN_PROGRESS -> MERGE_PENDING"}

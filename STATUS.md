@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-06T15:37:15Z by runner 6c19ef83e6d7 (actions).
+Updated 2026-11-06T15:37:28Z by runner 6c19ef83e6d7 (actions).
 
-**Building: T250 in progress since 15:13Z; 121 of 238 done; week 19% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 15:37Z; 121 of 238 done; week 19% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 121 of 238 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T250 claimed 15:13Z, lease until 18:13Z
+- **Lane:** idle since 15:37Z (no task in progress)
 - **Week:** 19% used, 156.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 15:21Z, 15 min before this update
 - **Keeper:** last ran 14:54Z, next wake 20:34Z
@@ -17,7 +17,8 @@ Updated 2026-11-06T15:37:15Z by runner 6c19ef83e6d7 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T250 | core: narrow the default privileges in every schema and prov | check_failed | 3 | 26 min | 14:20Z | T250 blocked: migration 0110 names 12 other modules' schemas; TD-SEC-10 (architecture_migrations.rs, protected) rejects  |
+| T250 | core: narrow the default privileges in every schema and prov | MERGE_PENDING | 4 | 24 min | 15:37Z | T250 blocked: migration 0110 names 12 other modules' schemas; TD-SEC-10 (architecture_migrations.rs, protected) rejects  |
+| T250 | core: narrow the default privileges in every schema and prov | check_failed | 3 | 26 min | 14:20Z |  |
 | T250 | core: narrow the default privileges in every schema and prov | QUEUED | 2 | 9 min | 13:30Z |  |
 | T250 | core: narrow the default privileges in every schema and prov | QUEUED | 1 | 26 min | 13:18Z |  |
 | T095 | picks: pick code by email when texting is off; '2 YES' from  | done | 1 | 36 min | 12:39Z |  |
@@ -94,7 +95,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T250 (lease until 2026-11-06T18:13:14Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T250", "at": "2026-11-06T14:20:23Z", "cache_creation_input_tokens": 263240, "cache_read_input_tokens": 5478285, "output_tokens": 72829, "input_tokens": 178}
+- {"task": "T250", "at": "2026-11-06T15:37:15Z", "output_tokens": 73985, "cache_read_input_tokens": 5057660, "cache_creation_input_tokens": 295327, "input_tokens": 169}
