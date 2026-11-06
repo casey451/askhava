@@ -13037,7 +13037,7 @@
     "T066",
     "T225"
    ],
-   "status": "MERGE_PENDING",
+   "status": "DONE",
    "attempts": 0,
    "slug": "payments-ledger-reconcile",
    "type": "build",
@@ -13056,13 +13056,62 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 177,
      "head_sha": "75410f1f4bc6c971e04918b8cbd1b9e46be5185a",
-     "pr": null,
-     "checks": null,
+     "pr": 279,
+     "checks": [
+      {
+       "name": "backup",
+       "conclusion": null
+      },
+      {
+       "name": "keeper",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "gate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-05T23:49:26Z",
      "ended_at": "2026-11-06T00:38:39Z",
-     "result": "MERGE_PENDING"
+     "result": "done"
     }
    ],
    "reviewed_sha": "75410f1f4bc6c971e04918b8cbd1b9e46be5185a",
@@ -13076,7 +13125,29 @@
     "enabled": true,
     "why": "auto-merge on #279 (gh pr merge)",
     "head": "75410f1f4bc6c971e04918b8cbd1b9e46be5185a"
-   }
+   },
+   "merged_sha": "2174ba1d054ed5804646f3bc96afe2dad91f2147",
+   "merged_at": "2026-11-06T00:50:24Z",
+   "files": [
+    ".sqlx/query-486bcabce1bdb4b4b04ce9150433b490cd01bb17857a1a526a027afaa1cfe3d3.json",
+    ".sqlx/query-55ac1fa6b5e2996fd7918440646a99f8496ce99a716b38f89bf26878462099b0.json",
+    ".sqlx/query-6dd672202e2b94fc444f8289b0e9201c269ada5560057e5b1e56a19c1d60007b.json",
+    ".sqlx/query-7ca8bde142719f95e76fc9afed961c156a7b0cc8c757bf45c1c0e7a0d231f55a.json",
+    ".sqlx/query-91fe3cf3bb4f9498a2dfac001cf6e952c5b2bf17bc72efe428920183655b946f.json",
+    ".sqlx/query-9996a06e185cef8c253009525035bd708d7b7d62d482f891f0bc2687b1883940.json",
+    "app/payments/CLAUDE.md",
+    "app/payments/src/api.rs",
+    "app/payments/src/lib.rs",
+    "app/payments/src/models.rs",
+    "app/payments/src/reconcile.rs",
+    "app/payments/src/tests/mod.rs",
+    "app/payments/src/tests/prop_ledger_matches_stripe.rs",
+    "docs/architecture.md",
+    "docs/decisions.md",
+    "migrations/0104_payments_reconcile.sql",
+    "tests/integration/tests/ledger_append_only.rs",
+    "tests/integration/tests/reconcile.rs"
+   ]
   },
   {
    "id": "T068",
@@ -17949,7 +18020,7 @@
    }
   }
  },
- "updated_at": "2026-11-06T00:42:35Z",
+ "updated_at": "2026-11-06T00:52:40Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -18047,7 +18118,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "453e0aefe77c0e5fd530289261c89485c564a454",
+ "runner_sha": "2174ba1d054ed5804646f3bc96afe2dad91f2147",
  "starter": "actions",
  "smoke_runs": [
   {
