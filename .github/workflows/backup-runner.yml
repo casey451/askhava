@@ -238,7 +238,7 @@ jobs:
         run: |
           echo "JOB_START=$(date -u +%Y-%m-%dT%H:%M:%S)" >> "$GITHUB_ENV"
           git worktree add -q --detach "$RUNNER_TEMP/keeper" HEAD
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       - name: Rust build cache (D-514)
