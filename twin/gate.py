@@ -13,6 +13,14 @@ Exit 2: PYTHONHASHSEED is not 0, a required check is missing from the twin, or a
         stale pinned entry).
 
 Usage: PYTHONHASHSEED=0 python3 twin/gate.py [--seeds N] [--no-pinned] [--scenarios a,b] [--report PATH]
+                                             [--bridge target/debug/rules_bridge]
+
+The app's rules (T074, D-453, D-491): with --bridge the twin's fee, quiet hours, status arrows and card matching
+are the app's own (`twin/rules_bridge.py` over the `rules_bridge` binary), so the gate checks app/; twin.yml
+always passes it, and a missing binary exits 2. The fee probe then compares the app's fee with the oracle's for
+FEE_PROBE (tier edges, a range, a visit quote and monthly prices around the 4-month rule's edges); any
+difference exits 1, so a wrong tier or a 2-month rule in `payments::rules` turns the gate red even where no
+scenario quotes a monthly price.
 
 The license oracle (D-107, D-541): the twin's matching checks read `twin/oracle/license_scope.json`, generated
 from the catalog by `twin/oracle/gen_license_scope.py`. Before any run the gate exits 2 if the oracle is stale
@@ -104,6 +112,13 @@ REQUIRED_CHECKS = frozenset(
         "texter_never_answered",
         "unreached_homeowner_no_refund",
     ]
+)
+# FEE-001, FEE-003, FEE-004, REC-002: the probe's quotes (dollars, as the twin quotes them).
+FEE_PROBE = (
+    [{"type": "firm", "amount": a} for a in (100, 499.99, 500, 1500, 1500.01, 9000)]
+    + [{"type": "range", "amount": 400, "high": 700}, {"type": "range", "amount": 1400, "high": 1700}]
+    + [{"type": "trip", "amount": 95}]
+    + [{"type": "firm", "amount": a, "period": "month"} for a in (100, 124.99, 125, 150, 300, 375, 375.01, 500)]
 )
 DECLARED = re.compile(r"""(?:\bbad|violations_inline\.append)\(\(?["']([a-z0-9_]+)["']""")
 
@@ -400,6 +415,26 @@ def check_oracle(root: Path = HERE.parent) -> None:
         raise GateError("license oracle: " + "; ".join(problems))
 
 
+def fee_probe(twin: object) -> list[str]:
+    """Each probe quote whose app fee differs from the oracle's (T074)."""
+    import app  # the twin's app module, loaded by load_twin; with the bridge on its fee is payments::rules
+
+    return [
+        f"FEE PROBE {q}: app ${app.fee_by_job_size(q)}, oracle ${twin.fee_by_job_size(q)}"  # type: ignore[attr-defined]
+        for q in FEE_PROBE
+        if app.fee_by_job_size(q) != twin.fee_by_job_size(q)  # type: ignore[attr-defined]
+    ]
+
+
+def use_bridge(path: str) -> None:
+    """Points the twin at the rules_bridge binary (twin/rules_bridge.py reads ASKHAVA_RULES_BRIDGE)."""
+    if not path:
+        return
+    if not Path(path).is_file():
+        raise GateError(f"no rules_bridge binary at {path} (cargo build -p askhava-server --bin rules_bridge --locked)")
+    os.environ["ASKHAVA_RULES_BRIDGE"] = str(Path(path).resolve())
+
+
 def load_twin() -> object:
     sys.path.insert(0, str(HERE))
     import twin
@@ -411,6 +446,7 @@ def setup(args: argparse.Namespace) -> tuple[list[str], dict]:
     """Checks that come before any run; each failure is a GateError (exit 2)."""
     if os.environ.get("PYTHONHASHSEED") != "0":
         raise GateError("PYTHONHASHSEED must be 0 (run: PYTHONHASHSEED=0 python3 twin/gate.py)")
+    use_bridge(args.bridge)
     missing = sorted(REQUIRED_CHECKS - declared_checks(HERE))
     if missing:
         raise GateError(f"required checks missing from the twin: {missing}")
@@ -436,6 +472,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--no-pinned", action="store_true", help="ignore pinned waivers (stage 1 done check)")
     parser.add_argument("--scenarios", default="", help="comma-separated subset of the gate scenarios")
     parser.add_argument("--report", default=str(Path(tempfile.gettempdir()) / "twin-report.json"))
+    parser.add_argument("--bridge", default="", help="the rules_bridge binary: run the app's own rules (T074)")
     args = parser.parse_args(argv)
     try:
         names, waivers = setup(args)
@@ -448,10 +485,14 @@ def main(argv: list[str] | None = None) -> int:
     result = apply_waivers(instances, waivers, ran, args.no_pinned)
     missing_control = control_missing(twin)
     print_report(instances, result, missing_control)
+    probe = fee_probe(twin)
+    print("\n".join(probe) or f"rules: {'the app (rules_bridge)' if args.bridge else 'the twin'}; fee probe agrees")
     code = verdict(result, missing_control)
+    code = 1 if probe and code == 0 else code
     for i in instances:
         i["evidence"] = sorted(i["evidence"])
-    Path(args.report).write_text(json.dumps(dict(exit=code, instances=instances, **result), indent=1, default=sorted))
+    report = dict(exit=code, instances=instances, fee_probe=probe, **result)
+    Path(args.report).write_text(json.dumps(report, indent=1, default=sorted))
     print(
         f"twin gate: exit {code} ({len(instances)} instances, {len(result['unwaived'])} unwaived, report {args.report})"
     )

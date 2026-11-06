@@ -682,9 +682,12 @@ name = "askhava-server"
 version = "0.1.0"
 dependencies = [
  "askhava-adapters",
+ "askhava-businesses",
+ "askhava-catalog",
  "askhava-core",
  "askhava-intake",
  "askhava-jobs",
+ "askhava-licensing",
  "askhava-messaging",
  "askhava-ops",
  "askhava-payments",

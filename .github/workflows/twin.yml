@@ -1,6 +1,8 @@
 # Required check "Twin" (ruleset protect-main). Job name must stay exactly "Twin".
 # Runs the hard-failing twin gate (D-107, docs/twin-warnings.md section 6): every *_fixed scenario,
-# seeds 1-5, fails on any instance not waived by twin/waivers.json. Standard library only.
+# seeds 1-5, fails on any instance not waived by twin/waivers.json. The twin's fee, quiet hours, status
+# arrows and card matching are the app's own: rules_bridge is built from this commit first and the gate
+# runs through it, so Twin checks app/ (T074, D-453, D-481, D-491).
 name: twin
 on:
   # Push only, no pull_request trigger (D-1087): exactly one run per head commit. A second,
@@ -18,12 +20,34 @@ jobs:
   twin:
     name: "Twin"
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      # The bridge compiles every crate and its query macros; no database here (D-491).
+      SQLX_OFFLINE: "true"
+      ASKHAVA_RULES_BRIDGE: target/debug/rules_bridge
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - name: Twin gate
-        run: PYTHONHASHSEED=0 python3 twin/gate.py --report "$RUNNER_TEMP/twin-report.json"
+      - name: Rust toolchain (the pinned release from rust-toolchain.toml)
+        run: |
+          rustup toolchain install "$(sed -n 's/^channel *= *"\(.*\)"/\1/p' rust-toolchain.toml)" --profile minimal
+      - name: Rust build cache (registry, git deps and target/, D-693)
+        # Its own key: this job builds one binary. Cargo's fingerprints decide what rebuilds.
+        uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          shared-key: twin
+      - name: Build rules_bridge from this commit (T074)
+        run: cargo build -p askhava-server --bin rules_bridge --locked
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.12"
+      - name: Bridge contract, Python side (app/server/rules_bridge.schema.json, D-481)
+        run: |
+          python3 -m pip install --quiet pytest==9.1.1 PyYAML==6.0.1
+          python3 -m pytest tests/contract/test_rules_bridge.py -q -p no:cacheprovider
+      - name: Twin gate through the app's rules
+        run: PYTHONHASHSEED=0 python3 twin/gate.py --bridge "$ASKHAVA_RULES_BRIDGE" --report "$RUNNER_TEMP/twin-report.json"
       - name: Upload the gate report
         if: always()
         uses: actions/upload-artifact@v4
