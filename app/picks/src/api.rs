@@ -41,9 +41,9 @@ pub use crate::money_notices::{
     run_card_fix_notice, run_receipt_notice,
 };
 pub use crate::release::{
-    ADDRESS_NEEDED_KIND, EMAIL_CHOSEN_FIELDS, RELEASE_FIELDS, RELEASE_TEMPLATE,
-    RELEASE_TEXT_TEMPLATE, ReleaseFacts, ReleaseStep, ReleaseView, Released, plan_release, release,
-    release_notice,
+    ADDRESS_NEEDED_KIND, EMAIL_CHOSEN_FIELDS, RELEASE_FIELDS, RELEASE_NO_RECIPIENT_ALERT,
+    RELEASE_TEMPLATE, RELEASE_TEXT_TEMPLATE, ReleaseFacts, ReleaseStep, ReleaseView, Released,
+    plan_release, release, release_notice,
 };
 pub use crate::service::{
     CONFIRMED_TEMPLATE, CodeCheck, CodeSent, CodeTo, DONE_TEMPLATE, NO_QUOTE_TEMPLATE,

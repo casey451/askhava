@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO picks.address_wait (pick_id, job_id, asked_at) VALUES ($1, $2, $3) ON CONFLICT (pick_id) DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "247238d1117c83937e3e9c17d28bdbb98415ef50f64314d63fe65ca0c45033eb"
+}

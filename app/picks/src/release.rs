@@ -1,25 +1,29 @@
-//! The release: the homeowner's first name, job address and shared email, shown only in the
-//! signed-in business portal, only for a `ReleaseProof`, once (PICK-022 to PICK-024, PRIV-005,
-//! PRIV-020, BIZ-014, D-454, D-491, D-492).
+//! The release: the homeowner's first name, job address and shared email, for the signed-in
+//! business portal, only for a `ReleaseProof`, once (PICK-022 to PICK-024, PRIV-005, PRIV-020,
+//! BIZ-014, D-454, D-491, D-492).
 //!
 //! `payments` alone turns a verified succeeded charge or a recorded $0 fee decision into a
 //! `privacy::api::ReleaseProof` (SEC-030); [`release`] takes it by value and gives it to
 //! `privacy::api::read_for_release` with [`RELEASE_FIELDS`], plus the email only when she chose
 //! email contact at the pick ([`EMAIL_CHOSEN_FIELDS`], PICK-018); neither includes the phone
 //! (PICK-023); [`ReleaseView`] has no phone field. The pure [`plan_release`] decides: a pick
-//! already released gives nothing again, an ended pick nothing, and on an emergency job whose
-//! street address is not in yet nothing is released: the acceptance is stored in
+//! already released gives nothing again, and an ended pick or one whose status is not paid (for a
+//! paid proof) or free (for a $0 proof) gives nothing, as a backstop to the proof (D-1564). A
+//! regular job claims its one `picks.release` row before the vault is opened, so a racing second
+//! proof opens nothing. On an emergency job the vault must be read to learn whether the street
+//! address is in; with none, nothing is released: the first such acceptance is stored in
 //! `picks.address_wait` and one [`ADDRESS_NEEDED_KIND`] event asks `intake` to ask the homeowner
-//! again at once (INT-029, TD-INT-34). A release stores its one `picks.release` row and, in the
+//! again at once, once per pick (INT-029, TD-INT-34). The claim stores the release row and, in the
 //! same transaction, one [`BUSINESS_NOTICE_KIND`] task to the business's pick-and-release
-//! recipients (`businesses::api::notice_addresses`, opaque address IDs) with the job number only:
-//! the email says "Job <n> is confirmed. Sign in to see the homeowner's details." and a text
-//! "The details are at askhava.com/business." ([`release_notice`]); no homeowner detail and no
-//! call window goes in any notice.
+//! recipients (`businesses::api::notice_addresses`, opaque address IDs) with the job number only
+//! ([`release_notice`]), or one High [`RELEASE_NO_RECIPIENT_ALERT`] when the business has none; no
+//! homeowner detail and no call window goes in any notice. The [`ReleaseView`] goes back to the
+//! caller once and is stored nowhere; how the portal shows it later is not built (D-1564).
 
 use askhava_businesses::api::{NoticePurpose, notice_addresses};
 use askhava_core::api::{NewTask, enqueue};
 use askhava_jobs::api::{current, job_number};
+use askhava_ops::api::{NewAlert, Severity, raise_alert};
 use askhava_privacy::api::{
     ContactDetails, Field, ReleaseBasis, ReleaseProof, Vault, read_for_release,
 };
@@ -29,8 +33,9 @@ use serde_json::{Value, json};
 use sqlx::types::Uuid;
 use sqlx::{Acquire, PgConnection, PgPool};
 
-use crate::models::{self, PicksError};
+use crate::models::{self, PicksError, ReleaseTarget};
 use crate::money_notices::BUSINESS_NOTICE_KIND;
+use crate::status::release_status;
 
 /// The release email's template (PICK-024, D-454): job number and sign-in link only.
 pub const RELEASE_TEMPLATE: &str = "release_notice";
@@ -38,6 +43,9 @@ pub const RELEASE_TEMPLATE: &str = "release_notice";
 pub const RELEASE_TEXT_TEMPLATE: &str = "release_text";
 /// The event asking `intake` to ask the homeowner for her address again (INT-029, D-492).
 pub const ADDRESS_NEEDED_KIND: &str = "picks.address_needed";
+/// The High alert raised when a released pick's business has no pick-and-release recipient
+/// (PICK-024, D-1561, D-1564).
+pub const RELEASE_NO_RECIPIENT_ALERT: &str = "picks.release_no_recipient";
 /// The vault fields a release opens; never the phone (PICK-023, PRIV-020).
 pub const RELEASE_FIELDS: [Field; 2] = [Field::Name, Field::Address];
 /// The fields when the homeowner chose email contact at the pick (PICK-018); never the phone.
@@ -50,6 +58,8 @@ pub struct ReleaseFacts {
     pub released: bool,
     /// The pick ended (expired, replaced, withdrawn).
     pub ended: bool,
+    /// The pick's status is paid for a paid proof or free for a $0 proof (PICK-022, D-1564).
+    pub confirmed: bool,
     /// The homeowner chose emergency (INT-029).
     pub emergency: bool,
     /// Whether the vault holds a street address; `None` before the vault is read.
@@ -61,29 +71,29 @@ pub struct ReleaseFacts {
 pub enum ReleaseStep {
     /// Released before: nothing again (PICK-022 "exactly once").
     Already,
-    /// The pick ended: nothing is released.
+    /// The pick ended or is not paid or free: nothing is released.
     MovedOn,
-    /// Read the release fields from the vault, then plan again.
+    /// An emergency job: read the release fields from the vault, then plan again.
     Read,
     /// An emergency job with no address yet: release nothing, ask again (TD-INT-34).
     WaitForAddress,
-    /// Release to the portal and queue the notice.
+    /// Claim the release, queue the notice, then read the vault for the view.
     Release,
 }
 
-/// The pure release rule (PICK-022, INT-029, D-492); see the module docs.
+/// The pure release rule (PICK-022, INT-029, D-492, D-1564); see the module docs.
 #[must_use]
 pub const fn plan_release(facts: ReleaseFacts) -> ReleaseStep {
     if facts.released {
         return ReleaseStep::Already;
     }
-    if facts.ended {
+    if facts.ended || !facts.confirmed {
         return ReleaseStep::MovedOn;
     }
-    match facts.address_in {
-        None => ReleaseStep::Read,
-        Some(false) if facts.emergency => ReleaseStep::WaitForAddress,
-        Some(_) => ReleaseStep::Release,
+    match (facts.emergency, facts.address_in) {
+        (true, None) => ReleaseStep::Read,
+        (true, Some(false)) => ReleaseStep::WaitForAddress,
+        (false, _) | (true, Some(true)) => ReleaseStep::Release,
     }
 }
 
@@ -133,13 +143,13 @@ impl ReleaseView {
 /// What [`release`] did.
 #[derive(Debug)]
 pub enum Released {
-    /// Released now: the portal shows this view once.
+    /// Released now: the view, given to the caller this once and stored nowhere (D-1564).
     Shown(ReleaseView),
     /// Released before; nothing again.
     Already,
     /// An emergency job's address is not in; nothing released, the homeowner asked again.
     WaitingForAddress,
-    /// The pick is unknown or ended; nothing released.
+    /// The pick is unknown, ended, or not paid or free; nothing released.
     MovedOn,
 }
 
@@ -153,13 +163,15 @@ pub fn release_notice(business: Uuid, pick: Uuid, to: &[Uuid], job: i64) -> Valu
     })
 }
 
-/// Releases the pick `proof` names (PICK-022 to PICK-024, PRIV-005, BIZ-014, INT-029); see the
-/// module docs. `email_chosen` is the homeowner's PICK-018 choice of email contact, the only case
-/// the email is opened. The vault is read on a bare connection, outside any transaction (D-753).
+/// Releases the pick `proof` names (PICK-022 to PICK-024, PRIV-005, BIZ-014, INT-029, D-1564);
+/// see the module docs. `email_chosen` is the homeowner's PICK-018 choice of email contact, the
+/// only case the email is opened. The vault is read on a bare connection, outside any transaction
+/// (D-753).
 ///
 /// # Errors
 /// [`PicksError::Database`] (also for a refused or failed vault read, which `privacy` has
-/// already audited or alerted) or [`PicksError::Job`]; nothing is released.
+/// already audited or alerted) or [`PicksError::Job`]. A regular job's vault read fails after its
+/// claim committed, so the release stands and a later proof gets [`Released::Already`].
 pub async fn release(
     pool: &PgPool,
     vault: &Vault,
@@ -168,65 +180,111 @@ pub async fn release(
 ) -> Result<Released, PicksError> {
     let pick = proof.pick_id();
     let mut conn = pool.acquire().await.map_err(|_| PicksError::Database)?;
-    let Some((job, business, ended, released)) = models::release_target(&mut conn, pick).await?
+    let Some(target) =
+        models::release_target(&mut conn, pick, release_status(proof.basis())).await?
     else {
         return Ok(Released::MovedOn);
     };
-    let row = current(&mut conn, job).await.map_err(|_| PicksError::Job)?;
-    let mut facts = ReleaseFacts {
-        released,
-        ended,
+    let row = current(&mut conn, target.job)
+        .await
+        .map_err(|_| PicksError::Job)?;
+    let facts = ReleaseFacts {
+        released: target.released,
+        ended: target.ended,
+        confirmed: target.confirmed,
         emergency: row.emergency,
         address_in: None,
     };
+    let read = (proof, email_chosen);
     match plan_release(facts) {
-        ReleaseStep::Already => return Ok(Released::Already),
-        ReleaseStep::MovedOn => return Ok(Released::MovedOn),
-        ReleaseStep::Read | ReleaseStep::WaitForAddress | ReleaseStep::Release => {}
+        ReleaseStep::Already => Ok(Released::Already),
+        ReleaseStep::MovedOn => Ok(Released::MovedOn),
+        ReleaseStep::Release => claim_then_read(&mut conn, vault, read, (pick, &target), at).await,
+        ReleaseStep::Read | ReleaseStep::WaitForAddress => {
+            read_then_claim(&mut conn, vault, read, (facts, pick, &target), at).await
+        }
     }
+}
+
+/// A regular job: the release row and notice commit first, then the vault is read (D-1564).
+async fn claim_then_read(
+    conn: &mut PgConnection,
+    vault: &Vault,
+    (proof, email_chosen): (ReleaseProof, bool),
+    (pick, target): (Uuid, &ReleaseTarget),
+    at: Timestamp,
+) -> Result<Released, PicksError> {
+    if !record(conn, (pick, target), proof.basis(), at).await? {
+        return Ok(Released::Already);
+    }
+    let details = open(conn, vault, proof, email_chosen).await?;
+    Ok(Released::Shown(ReleaseView::from_details(details)))
+}
+
+/// An emergency job: the vault is read to learn whether the address is in; without it nothing is
+/// released and she is asked again, else the release is claimed (INT-029, TD-INT-34). Two racing
+/// proofs may both read; only the one whose claim wins is shown (D-1564).
+async fn read_then_claim(
+    conn: &mut PgConnection,
+    vault: &Vault,
+    (proof, email_chosen): (ReleaseProof, bool),
+    (mut facts, pick, target): (ReleaseFacts, Uuid, &ReleaseTarget),
+    at: Timestamp,
+) -> Result<Released, PicksError> {
     let basis = proof.basis();
-    let fields: &[Field] = if email_chosen {
-        &EMAIL_CHOSEN_FIELDS
-    } else {
-        &RELEASE_FIELDS
-    };
-    let details = read_for_release(&mut conn, vault, proof, fields)
-        .await
-        .map_err(|_| PicksError::Database)?;
+    let details = open(conn, vault, proof, email_chosen).await?;
     facts.address_in = Some(details.address.is_some());
     if plan_release(facts) == ReleaseStep::WaitForAddress {
-        ask_again(&mut conn, (pick, job), at).await?;
+        ask_again(conn, (pick, target.job), at).await?;
         return Ok(Released::WaitingForAddress);
     }
-    let new = record(&mut conn, (pick, job, business), basis, at).await?;
-    Ok(if new {
+    Ok(if record(conn, (pick, target), basis, at).await? {
         Released::Shown(ReleaseView::from_details(details))
     } else {
         Released::Already
     })
 }
 
-/// Stores the wait and queues the ask-again event, once per pick (INT-029, TD-INT-34).
+/// Reads the release fields, with the email only when she chose email contact (PICK-018, PICK-023).
+async fn open(
+    conn: &mut PgConnection,
+    vault: &Vault,
+    proof: ReleaseProof,
+    email_chosen: bool,
+) -> Result<ContactDetails, PicksError> {
+    let fields: &[Field] = if email_chosen {
+        &EMAIL_CHOSEN_FIELDS
+    } else {
+        &RELEASE_FIELDS
+    };
+    read_for_release(conn, vault, proof, fields)
+        .await
+        .map_err(|_| PicksError::Database)
+}
+
+/// Stores the wait and queues the ask-again event, once per pick (INT-029, TD-INT-34, D-1564).
 async fn ask_again(
     conn: &mut PgConnection,
     (pick, job): (Uuid, Uuid),
     at: Timestamp,
 ) -> Result<(), PicksError> {
     let mut tx = conn.begin().await.map_err(|_| PicksError::Database)?;
-    models::insert_address_wait(&mut tx, (pick, job), at).await?;
-    let mut task = NewTask::new(ADDRESS_NEEDED_KIND, json!({"job": job, "pick": pick}), at);
-    task.dedupe_key = Some(format!("{ADDRESS_NEEDED_KIND}.{pick}"));
-    enqueue(&mut tx, &task)
-        .await
-        .map_err(|_| PicksError::Database)?;
+    if models::insert_address_wait(&mut tx, (pick, job), at).await? {
+        let mut task = NewTask::new(ADDRESS_NEEDED_KIND, json!({"job": job, "pick": pick}), at);
+        task.dedupe_key = Some(format!("{ADDRESS_NEEDED_KIND}.{pick}"));
+        enqueue(&mut tx, &task)
+            .await
+            .map_err(|_| PicksError::Database)?;
+    }
     tx.commit().await.map_err(|_| PicksError::Database)
 }
 
-/// Stores the one release row and queues the notice in one transaction; false when another call
-/// released first (PICK-022, PICK-024, R11).
+/// Stores the one release row and queues the notice in one transaction, or one High
+/// [`RELEASE_NO_RECIPIENT_ALERT`] when the business has no recipient; false when another call
+/// released first (PICK-022, PICK-024, R11, D-1561).
 async fn record(
     conn: &mut PgConnection,
-    (pick, job, business): (Uuid, Uuid, Uuid),
+    (pick, target): (Uuid, &ReleaseTarget),
     basis: ReleaseBasis,
     at: Timestamp,
 ) -> Result<bool, PicksError> {
@@ -234,6 +292,7 @@ async fn record(
         ReleaseBasis::PaidCharge => "paid",
         ReleaseBasis::NoFeeDue => "no_fee",
     };
+    let (job, business) = (target.job, target.business);
     let mut tx = conn.begin().await.map_err(|_| PicksError::Database)?;
     if !models::insert_release(&mut tx, (pick, job, business), code, at).await? {
         return Ok(false);
@@ -241,15 +300,29 @@ async fn record(
     let to = notice_addresses(&mut tx, business, NoticePurpose::PicksAndRelease)
         .await
         .map_err(|_| PicksError::Database)?;
-    let number = job_number(&mut tx, job)
-        .await
-        .map_err(|_| PicksError::Job)?;
-    let payload = release_notice(business, pick, &to, number);
-    let mut notice = NewTask::new(BUSINESS_NOTICE_KIND, payload, at);
-    notice.dedupe_key = Some(format!("{BUSINESS_NOTICE_KIND}.{RELEASE_TEMPLATE}.{pick}"));
-    enqueue(&mut tx, &notice)
-        .await
-        .map_err(|_| PicksError::Database)?;
+    if to.is_empty() {
+        let alert = NewAlert {
+            kind: RELEASE_NO_RECIPIENT_ALERT,
+            severity: Severity::High,
+            subject: Some(("pick", pick)),
+        };
+        raise_alert(&mut tx, &alert)
+            .await
+            .map_err(|_| PicksError::Database)?;
+    } else {
+        let number = job_number(&mut tx, job)
+            .await
+            .map_err(|_| PicksError::Job)?;
+        let mut notice = NewTask::new(
+            BUSINESS_NOTICE_KIND,
+            release_notice(business, pick, &to, number),
+            at,
+        );
+        notice.dedupe_key = Some(format!("{BUSINESS_NOTICE_KIND}.{RELEASE_TEMPLATE}.{pick}"));
+        enqueue(&mut tx, &notice)
+            .await
+            .map_err(|_| PicksError::Database)?;
+    }
     tx.commit().await.map_err(|_| PicksError::Database)?;
     Ok(true)
 }

@@ -5,7 +5,7 @@
 //! Every `match` on a [`PickStatus`] or on `jobs`' `JobStatus` in this crate lives here and names
 //! every variant (`docs/architecture.md` section 4 rule 5). The stored codes are the
 //! `picks.pick.status` check of `migrations/0079_picks_code.sql`; later tasks add the variants for
-//! needs card, charging, paid and the rest with their arms.
+//! needs card, charging and the rest with their arms (T069 added paid and free for the release).
 #![deny(
     clippy::wildcard_enum_match_arm,
     clippy::match_wildcard_for_single_variants
@@ -14,6 +14,7 @@
 use askhava_businesses::api::AccountStatus;
 use askhava_jobs::api::JobStatus;
 use askhava_jobs::api::rules::Wait;
+use askhava_privacy::api::ReleaseBasis;
 
 use crate::rules::Stage;
 
@@ -27,6 +28,10 @@ pub enum PickStatus {
     /// Ended before a Confirm: replaced by another pick (PICK-032) or withdrawn by a pause
     /// (CON-029).
     Cancelled,
+    /// The charge succeeded; the details may be released (PICK-022).
+    Paid,
+    /// A $0 fee decision was recorded; the details may be released (PICK-022, D-477).
+    Free,
 }
 
 impl PickStatus {
@@ -37,7 +42,19 @@ impl PickStatus {
             Self::AwaitingConfirm => "awaiting_confirm",
             Self::Expired => "expired",
             Self::Cancelled => "cancelled",
+            Self::Paid => "paid",
+            Self::Free => "free",
         }
+    }
+}
+
+/// The only pick status a release proof of `basis` may release from: paid for a paid charge, free
+/// for a $0 fee decision (PICK-022, PRIV-005, D-1564); every other status releases nothing.
+#[must_use]
+pub const fn release_status(basis: ReleaseBasis) -> PickStatus {
+    match basis {
+        ReleaseBasis::PaidCharge => PickStatus::Paid,
+        ReleaseBasis::NoFeeDue => PickStatus::Free,
     }
 }
 

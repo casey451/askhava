@@ -2,7 +2,7 @@
 //! BIZ-014, INT-029): a stateful property over random event orders; the view and the notice never
 //! carry the phone or any homeowner detail. Fake data only.
 
-use askhava_privacy::api::{ContactDetails, Field};
+use askhava_privacy::api::{ContactDetails, Field, ReleaseBasis};
 use proptest::prelude::*;
 use secrecy::{ExposeSecret, SecretString};
 use sqlx::types::Uuid;
@@ -11,6 +11,7 @@ use crate::api::{
     EMAIL_CHOSEN_FIELDS, RELEASE_FIELDS, ReleaseFacts, ReleaseStep, ReleaseView, plan_release,
 };
 use crate::api::{RELEASE_TEMPLATE, RELEASE_TEXT_TEMPLATE, release_notice};
+use crate::status::release_status;
 
 const NAME: &str = "Testy McFake";
 const PHONE: &str = "+19285550142";
@@ -25,6 +26,9 @@ enum Event {
     ProofArrives,
     AddressArrives,
     Ends,
+    /// The pick's status leaves paid or free (fraud-refunded, no-show) while a proof may still
+    /// arrive late.
+    StatusLeaves,
 }
 
 /// The model: what is true of the pick, and what the business was shown.
@@ -33,16 +37,20 @@ struct World {
     paid: bool,
     free: bool,
     ended: bool,
+    status_left: bool,
     emergency: bool,
     address_in: bool,
     released: bool,
     shown: u32,
+    waited: bool,
     asked_again: u32,
 }
 
 impl World {
     /// A proof exists only for a verified success or a recorded $0 decision (SEC-030); with one,
-    /// the release runs [`plan_release`] as `release` does.
+    /// the release runs [`plan_release`] as `release` does: a regular job is claimed at once, an
+    /// emergency job is read first. The ask-again is stored once per pick (`picks.address_wait`
+    /// keyed by pick, D-1564).
     fn attempt(&mut self) {
         if !(self.paid || self.free) {
             return;
@@ -50,23 +58,34 @@ impl World {
         let mut facts = ReleaseFacts {
             released: self.released,
             ended: self.ended,
+            confirmed: !self.status_left,
             emergency: self.emergency,
             address_in: None,
         };
-        if plan_release(facts) != ReleaseStep::Read {
-            return;
+        let mut step = plan_release(facts);
+        if step == ReleaseStep::Read {
+            assert!(
+                self.emergency,
+                "only an emergency job reads before its claim"
+            );
+            facts.address_in = Some(self.address_in);
+            step = plan_release(facts);
         }
-        facts.address_in = Some(self.address_in);
-        match plan_release(facts) {
+        match step {
             ReleaseStep::Release => {
                 assert!(!self.emergency || self.address_in, "TD-INT-34");
+                assert!(!self.status_left && !self.ended, "D-1564");
                 self.released = true;
                 self.shown += 1;
             }
-            ReleaseStep::WaitForAddress => self.asked_again += 1,
-            ReleaseStep::Already | ReleaseStep::MovedOn | ReleaseStep::Read => {
-                panic!("a read pick plans only a release or a wait")
+            ReleaseStep::WaitForAddress => {
+                if !self.waited {
+                    self.waited = true;
+                    self.asked_again += 1;
+                }
             }
+            ReleaseStep::Already | ReleaseStep::MovedOn => {}
+            ReleaseStep::Read => panic!("a read pick plans only a release or a wait"),
         }
     }
 
@@ -76,9 +95,14 @@ impl World {
             Event::NoFeeDecision => self.free = true,
             Event::AddressArrives => self.address_in = true,
             Event::Ends => self.ended = true,
+            Event::StatusLeaves => self.status_left = true,
             Event::Redirect | Event::ProofArrives => {}
         }
-        if !matches!(event, Event::Redirect | Event::Ends | Event::AddressArrives) {
+        let quiet = matches!(
+            event,
+            Event::Redirect | Event::Ends | Event::AddressArrives | Event::StatusLeaves
+        );
+        if !quiet {
             self.attempt();
         }
     }
@@ -92,14 +116,16 @@ fn event() -> impl Strategy<Value = Event> {
         Just(Event::ProofArrives),
         Just(Event::AddressArrives),
         Just(Event::Ends),
+        Just(Event::StatusLeaves),
     ]
 }
 
 proptest! {
     /// TD-PICK-10: in every reachable state the business has seen the details at most once, and
     /// only on a paid pick or a recorded $0 decision, never after the pick ended; a redirect alone
-    /// shows nothing (PICK-022, PRIV-005, BIZ-014). TD-INT-34: an emergency job shows nothing
-    /// before its address is in, and each such acceptance asks again (INT-029).
+    /// shows nothing, and nothing shows once the pick's status left paid or free (PICK-022,
+    /// PRIV-005, BIZ-014, D-1564). TD-INT-34: an emergency job shows nothing before its address
+    /// is in, and its first such acceptance asks again, once per pick (INT-029).
     #[test]
     fn td_pick_10_details_only_once_and_only_when_paid_or_free(
         emergency in any::<bool>(),
@@ -108,12 +134,13 @@ proptest! {
     ) {
         let mut world = World { emergency, address_in: address, ..World::default() };
         for e in events {
-            let was_ended = world.ended;
+            let was_out = world.ended || world.status_left;
             let before = world.shown;
             world.apply(e);
             prop_assert!(world.shown <= 1);
             prop_assert!(world.shown == 0 || world.paid || world.free);
-            prop_assert!(!was_ended || world.shown == before);
+            prop_assert!(!was_out || world.shown == before);
+            prop_assert!(world.asked_again == u32::from(world.waited));
             if matches!(e, Event::Redirect) {
                 prop_assert_eq!(world.shown, before);
             }
@@ -129,6 +156,7 @@ fn td_int_34_an_emergency_acceptance_before_the_address_waits() {
     let facts = |emergency, address_in| ReleaseFacts {
         released: false,
         ended: false,
+        confirmed: true,
         emergency,
         address_in,
     };
@@ -142,6 +170,38 @@ fn td_int_34_an_emergency_acceptance_before_the_address_waits() {
         plan_release(facts(false, Some(false))),
         ReleaseStep::Release
     );
+    assert_eq!(plan_release(facts(false, None)), ReleaseStep::Release);
+}
+
+/// TD-PICK-10 (PICK-022, D-1564): a proof releases only from the matching paid or free status;
+/// any other status, an ended pick or an earlier release gives nothing, before any vault read.
+#[test]
+fn td_pick_10_only_a_paid_or_free_status_releases() {
+    assert_eq!(release_status(ReleaseBasis::PaidCharge).code(), "paid");
+    assert_eq!(release_status(ReleaseBasis::NoFeeDue).code(), "free");
+    let base = ReleaseFacts {
+        released: false,
+        ended: false,
+        confirmed: true,
+        emergency: true,
+        address_in: None,
+    };
+    let unconfirmed = ReleaseFacts {
+        confirmed: false,
+        ..base
+    };
+    assert_eq!(plan_release(unconfirmed), ReleaseStep::MovedOn);
+    let ended = ReleaseFacts {
+        ended: true,
+        ..base
+    };
+    assert_eq!(plan_release(ended), ReleaseStep::MovedOn);
+    let released = ReleaseFacts {
+        released: true,
+        confirmed: false,
+        ..base
+    };
+    assert_eq!(plan_release(released), ReleaseStep::Already);
 }
 
 fn secret(s: &str) -> Option<SecretString> {

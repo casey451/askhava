@@ -305,20 +305,44 @@ pub(crate) async fn expire_pick(
     Ok(())
 }
 
-/// Pick `id` for a release: job, business, whether it ended and whether it was released (PICK-022).
+/// What [`release_target`] reads of a pick for a release (PICK-022).
+pub(crate) struct ReleaseTarget {
+    /// The pick's job.
+    pub job: Uuid,
+    /// The picked business.
+    pub business: Uuid,
+    /// The pick ended (`ended_at` set).
+    pub ended: bool,
+    /// The pick's status is the one the proof may release from (`status::release_status`).
+    pub confirmed: bool,
+    /// The pick already has its `picks.release` row.
+    pub released: bool,
+}
+
+/// Pick `id` for a release: job, business, ended, whether its status is `want` and whether it
+/// was released (PICK-022, D-1564).
 pub(crate) async fn release_target(
     db_conn: &mut PgConnection,
     id: Uuid,
-) -> Result<Option<(Uuid, Uuid, bool, bool)>, PicksError> {
+    want: PickStatus,
+) -> Result<Option<ReleaseTarget>, PicksError> {
     let row = db(sqlx::query!(
         r#"SELECT p.job_id, p.business_id, p.ended_at IS NOT NULL AS "ended!",
+             p.status = $2 AS "confirmed!",
              EXISTS (SELECT 1 FROM picks.release r WHERE r.pick_id = p.id) AS "released!"
            FROM picks.pick p WHERE p.id = $1"#,
         id,
+        want.code(),
     )
     .fetch_optional(db_conn)
     .await)?;
-    Ok(row.map(|r| (r.job_id, r.business_id, r.ended, r.released)))
+    Ok(row.map(|r| ReleaseTarget {
+        job: r.job_id,
+        business: r.business_id,
+        ended: r.ended,
+        confirmed: r.confirmed,
+        released: r.released,
+    }))
 }
 
 /// Records pick `id`'s one release; false when another call already did (PICK-022, D-365).
@@ -342,19 +366,21 @@ pub(crate) async fn insert_release(
     Ok(done.rows_affected() == 1)
 }
 
-/// Records an emergency acceptance that came before the address (INT-029, TD-INT-34).
+/// Records an emergency acceptance that came before the address, once per pick; false when one
+/// was recorded before (INT-029, TD-INT-34, D-1564).
 pub(crate) async fn insert_address_wait(
     tx: &mut PgConnection,
     (id, job): (Uuid, Uuid),
     at: Timestamp,
-) -> Result<(), PicksError> {
-    db(sqlx::query!(
-        "INSERT INTO picks.address_wait (pick_id, job_id, asked_at) VALUES ($1, $2, $3)",
+) -> Result<bool, PicksError> {
+    let done = db(sqlx::query!(
+        "INSERT INTO picks.address_wait (pick_id, job_id, asked_at) VALUES ($1, $2, $3) \
+         ON CONFLICT (pick_id) DO NOTHING",
         id,
         job,
         at.to_sqlx() as _,
     )
     .execute(tx)
     .await)?;
-    Ok(())
+    Ok(done.rows_affected() == 1)
 }
