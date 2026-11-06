@@ -170,6 +170,13 @@ impl JobStatus {
         matches!(self, Self::Open | Self::NoQuotesYet)
     }
 
+    /// True for Open and No quotes yet, the statuses the first confirmed quote moves to Quotes
+    /// ready (JOB-009, JOB-011, D-1517); a quote in any other status moves nothing.
+    #[must_use]
+    pub const fn moves_on_first_quote(self) -> bool {
+        matches!(self, Self::Open | Self::NoQuotesYet)
+    }
+
     /// True for Open, No quotes yet, Quotes ready and Awaiting confirm, the statuses in which a
     /// business may still quote inside its own 24 hours; once the picked business taps Confirm the
     /// job has left them (PICK-001, D-043).
