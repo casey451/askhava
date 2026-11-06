@@ -1,7 +1,7 @@
 {
  "schema": 1,
  "phase": "kit",
- "current": "T079",
+ "current": "T081",
  "backup_runner": "on",
  "ruleset_verified": true,
  "lease": null,
@@ -14682,7 +14682,14 @@
    "attempts": 0,
    "slug": "calls-voice",
    "type": "build",
-   "stage": "4"
+   "stage": "4",
+   "plan_gap": {
+    "at": "2026-11-06T21:04:42Z",
+    "problems": [
+     "T080: dependency T079 is DONE but its owned file app/calls/src/lifecycle.rs is not on main",
+     "T080: dependency T079 is DONE but its owned file tests/integration/tests/line_lifecycle.rs is not on main"
+    ]
+   }
   },
   {
    "id": "T081",
@@ -14691,11 +14698,19 @@
     "T094",
     "T250"
    ],
-   "status": "QUEUED",
+   "status": "IN_PROGRESS",
    "attempts": 0,
    "slug": "businesses-signup-identity",
    "type": "build",
-   "stage": "4"
+   "stage": "4",
+   "attempt_started_at": "2026-11-06T21:04:42Z",
+   "decision_ids": [
+    1699,
+    1700,
+    1701,
+    1702,
+    1703
+   ]
   },
   {
    "id": "T193",
@@ -18935,7 +18950,7 @@
    "input_tokens": 392,
    "cache_read_input_tokens": 19005194
   },
-  "source": "session_reading 2026-11-06T19:57:26Z (week)",
+  "source": "session_reading 2026-11-06T20:55:17Z (week)",
   "by_task": {
    "FIX-MAIN": {
     "estimated_bytes": 1552047,
@@ -20079,6 +20094,10 @@
     "input_tokens": 392,
     "cache_read_input_tokens": 19005194,
     "last_model": "claude-opus-5-5"
+   },
+   "T081": {
+    "estimated_bytes": 477681,
+    "estimated_tokens": 2427697
    }
   },
   "windows": {
@@ -20099,7 +20118,7 @@
    }
   }
  },
- "updated_at": "2026-11-06T21:04:47Z",
+ "updated_at": "2026-11-06T21:12:09Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -20200,12 +20219,6 @@
  "runner_sha": "bdd291aafb114221b8c308b386bb9bcb94bd7e47",
  "starter": "actions",
  "smoke_runs": [
-  {
-   "sha": "020373d0e8c7d56c5222daf9d50bcda6b403195c",
-   "ok": true,
-   "at": "2026-11-06T02:50:49Z",
-   "why": "start routine"
-  },
   {
    "sha": "28c8996db2477c8b61b9669a10da32496492dd48",
    "ok": true,
@@ -20320,19 +20333,25 @@
    "ok": true,
    "at": "2026-11-06T20:07:34Z",
    "why": "start routine"
+  },
+  {
+   "sha": "14dd8e5c35ec771dd9d1ec3e94616fd8d855aa04",
+   "ok": true,
+   "at": "2026-11-06T21:04:42Z",
+   "why": "start routine"
   }
  ],
  "main_red": null,
  "pacing": {
-  "last": "T079 estimated 1.8M tokens (calibrated); five-hour window has 20.5M left, week 146.0M (session_reading 2026-11-06T19:57:26Z (week)); claimed",
-  "at": "2026-11-06T20:07:34Z",
+  "last": "T081 estimated 2.4M tokens (calibrated); five-hour window has 17.8M left, week 146.0M (session_reading 2026-11-06T20:55:17Z (week)); claimed",
+  "at": "2026-11-06T21:04:42Z",
   "decision": "claim",
   "waiting_until": null,
   "standing": {
    "five_hour": {
-    "used": 8649007,
+    "used": 11254321,
     "budget": 29100000,
-    "left": 20450993,
+    "left": 17845679,
     "resets_at": "2026-11-06T21:38:35Z"
    },
    "week": {
@@ -20342,8 +20361,8 @@
     "resets_at": "2026-11-12T17:00:00Z"
    }
   },
-  "remaining_estimate": 349898307,
-  "projected_finish": "2026-11-19T11:07:51Z"
+  "remaining_estimate": 355270650,
+  "projected_finish": "2026-11-19T16:44:07Z"
  },
  "main_red_history": [
   {
@@ -20415,7 +20434,7 @@
    "why": "smoke red while Ci, Twin and Ally were green on the head"
   }
  ],
- "next_decision": 1699,
+ "next_decision": 1704,
  "stage_proofs": {
   "1": {
    "evidence": "Recorded by the runner (D-551): nightly-main green (Ci, Twin, Ally) on main 5d45d8ef0bee8d8e290462e58aa81c580bf57c1e, which contains every stage-1 merge (T002 739f29a31cec, T003 7161be09784c, T004 36b13e66ddf4, T172 189cfe54c716, T005 f55fa02095c0, T006 1e9c2dbb261b, T007 d57693ea8e79, T008 d57693ea8e79, T170 1cdbd960f712, T154 b4f7265f01d2, T167 5d45d8ef0bee); the exit row's tests ran in it (tests/twin/test_gate.py, tests/test_check_catalog.py, tests/test_matching_examples.py, tests/contract/test_stand_in_server.py); every requirement owned only by tasks of stage 1 or earlier is verified (OPS-053).",

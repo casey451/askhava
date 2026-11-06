@@ -1,17 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-06T21:04:47Z by runner bdd291aafb11 (actions).
+Updated 2026-11-06T21:12:09Z by runner bdd291aafb11 (actions).
 
-**Idle since 21:03Z; 126 of 239 done; week 24% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T081 in progress since 21:04Z; 126 of 239 done; week 24% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 126 of 239 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 21:03Z (no task in progress)
+- **Lane:** lane 1: T081 claimed 21:04Z, lease until 00:04Z
 - **Week:** 24% used, 146.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:55Z, 9 min before this update
+- **Last run:** 20:55Z, 16 min before this update
 - **Keeper:** last ran 20:55Z, next wake 21:15Z
 
 ## Needs attention
+- PLAN GAP T080 (since 2026-11-06T21:04:42Z, no attempt used; a plan change fixes it): T080: dependency T079 is DONE but its owned file app/calls/src/lifecycle.rs is not on main; T080: dependency T079 is DONE but its owned file tests/integration/tests/line_lifecycle.rs is not on main
 - Strict plan check red: 1 problem(s) on tasks still to run (+10 on DONE tasks); first: T249: stored context_pct 22% but it measures 26%; regenerate
 
 ## Last 24 hours
@@ -81,7 +82,7 @@ Updated 2026-11-06T21:04:47Z by runner bdd291aafb11 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-06T19:57:26Z (week)): five-hour: 8.6M used, 20.5M left, resets 2026-11-06T21:38:35Z; week: 48.0M used, 146.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-11-19T11:07:51Z.
+- Pacing (session_reading 2026-11-06T20:55:17Z (week)): five-hour: 11.3M used, 17.8M left, resets 2026-11-06T21:38:35Z; week: 48.0M used, 146.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-11-19T16:44:07Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -96,7 +97,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T081 (lease until 2026-11-07T00:04:42Z)
 
 ## Last usage reading
 - {"task": "T079", "at": "2026-11-06T20:51:19Z", "output_tokens": 155791, "cache_creation_input_tokens": 548612, "input_tokens": 392, "cache_read_input_tokens": 19005194}

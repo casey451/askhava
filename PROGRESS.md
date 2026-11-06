@@ -1052,3 +1052,4 @@
 - 2026-11-06T20:55:17Z runner bdd291aafb11 (actions): {}
 - 2026-11-06T20:55:28Z runner bdd291aafb11 (actions): {}
 - 2026-11-06T21:04:47Z runner bdd291aafb11 (actions): {"T079": "MERGE_PENDING -> DONE"}
+- 2026-11-06T21:12:09Z runner bdd291aafb11 (actions): {"T081": "QUEUED -> IN_PROGRESS"}; T081 estimated 2.4M tokens (calibrated); five-hour window has 17.8M left, week 146.0M (session_reading 2026-11-06T20:55:17Z (week)); claimed
