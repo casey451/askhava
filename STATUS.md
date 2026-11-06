@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-06T04:18:03Z by runner 10cff2b7ea47 (actions).
+Updated 2026-11-06T04:18:14Z by runner 10cff2b7ea47 (actions).
 
-**Building: T070 in progress since 03:32Z; 112 of 238 done; week 10% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 04:18Z; 112 of 238 done; week 10% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 112 of 238 build tasks (owner gates not counted)
 - **Stage:** stage 3; stage proofs recorded: 1, 2
-- **Lane:** lane 1: T070 claimed 03:32Z, lease until 06:32Z
+- **Lane:** idle since 04:18Z (no task in progress)
 - **Week:** 10% used, 174.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 03:40Z, 37 min before this update
 - **Keeper:** last ran 03:21Z, next wake 03:41Z
@@ -17,6 +17,7 @@ Updated 2026-11-06T04:18:03Z by runner 10cff2b7ea47 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T070 | picks: 'no longer active' once, Confirm link replies | MERGE_PENDING | 1 | 45 min | 04:18Z |  |
 | T192 | picks: compile-fail proofs that no crate but payments can bu | done | 1 | 26 min | 03:17Z |  |
 | T069 | picks: release only on paid or free; never the homeowner's p | done | 1 | 48 min | 02:36Z |  |
 | T068 | payments: receipt emails, charge description, just-under-a-t | done | 1 | 42 min | 01:35Z |  |
@@ -80,7 +81,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T070 (lease until 2026-11-06T06:32:42Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T192", "at": "2026-11-06T03:17:37Z", "cache_creation_input_tokens": 129997, "output_tokens": 21128, "cache_read_input_tokens": 1651790, "input_tokens": 91}
+- {"task": "T070", "at": "2026-11-06T04:18:03Z", "output_tokens": 196355, "cache_creation_input_tokens": 690696, "cache_read_input_tokens": 29191742, "input_tokens": 545}
