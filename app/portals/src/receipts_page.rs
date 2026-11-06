@@ -80,7 +80,7 @@ const fn tier_words(tier: Tier) -> (&'static str, &'static str) {
 fn basis_line(charged: Option<Tier>, basis: Basis) -> String {
     let cents = match basis {
         Basis::OnSite => {
-            let lead = "Your price is set on site, so Ask Hava used the usual visit fee for this kind of work.";
+            let lead = "You set your price after seeing the job, so Ask Hava used the usual visit fee for this kind of work.";
             return charged.map_or_else(
                 || lead.to_owned(),
                 |tier| format!("{lead} That makes it a {}.", tier_words(tier).0),
@@ -90,7 +90,7 @@ fn basis_line(charged: Option<Tier>, basis: Basis) -> String {
     };
     let lead = match basis {
         Basis::FourMonths(_) => format!(
-            "This job repeats, so the fee basis is 4 months of your regular price: {}.",
+            "This is a repeat job, so the fee basis is 4 months at your regular price: {}.",
             money(cents)
         ),
         _ => format!("The fee basis from your quote is {}.", money(cents)),
@@ -101,7 +101,7 @@ fn basis_line(charged: Option<Tier>, basis: Basis) -> String {
             format!("{lead} That is {range}, so this is a {name}.")
         }
         Some(tier) => format!(
-            "{lead} That is {range}, but the fee for this kind of job is set at the {} fee.",
+            "{lead} That is {range}, which would usually be a {name}, but this kind of job pays the {} fee.",
             tier_words(tier).0
         ),
         None => format!("{lead} That is {range}."),

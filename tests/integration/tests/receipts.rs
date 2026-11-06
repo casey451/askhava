@@ -330,7 +330,7 @@ async fn td_fee_34_the_why_page_shows_job_quote_tier_basis_and_refunds(pool: PgP
         "Your quote: $480.00, fixed price",
         "Introduction fee by job size: $25.00 (small job).",
         "The fee basis from your quote is $480.00. That is under $500.00, so this is a small job.",
-        "This charge is for this one pick only.",
+        "This charge is only for the homeowner picking your quote on this job.",
         "2 call attempts at least 3 hours apart",
     ] {
         assert!(page.contains(words), "missing: {words}");
@@ -347,7 +347,7 @@ async fn td_fee_34_the_why_page_shows_job_quote_tier_basis_and_refunds(pool: PgP
     assert!(line(&facts).contains("is $1,500.01. That is over $1,500.00, so this is a large job."));
     (facts.receipt.tier, facts.basis) = (Some(Tier::Medium), Basis::FourMonths(240_000));
     let capped = line(&facts);
-    assert!(capped.contains("4 months of your regular price: $2,400.00. That is over $1,500.00, but the fee for this kind of job is set at the medium job fee."));
+    assert!(capped.contains("4 months at your regular price: $2,400.00. That is over $1,500.00, which would usually be a large job, but this kind of job pays the medium job fee."));
     assert!(
         !capped.contains("so this is a"),
         "a capped basis never claims its own tier"
