@@ -6,7 +6,13 @@
 //! `kit/tasks.json`; or whose higher number belongs to an ancestor of a lower-numbered file's task
 //! (two tasks that may run in either order never fail, D-491). Fails on a `<module>.`, `SCHEMA x` or
 //! `search_path` naming another module's schema, with a separate message for `REFERENCES` (`core`
-//! may name `public`), in a migration or in a query macro's SQL under `app/`; and on SQL outside the
+//! may name `public`), in a migration or in a query macro's SQL under `app/`, with one exception
+//! (TD-SEC-35, D-1632): a migration headed `core` whose every statement is exactly `ALTER DEFAULT
+//! PRIVILEGES IN SCHEMA <schema>[, …] REVOKE <privilege>[, …] ON TABLES FROM askhava_app` (schemas
+//! from `kit/layers.json`, table privileges only) may name other modules' schemas, as
+//! `migrations/0110_schema_default_privileges.sql` does; any other statement in the file (a GRANT,
+//! DDL, data, a `DO` block, `GRANT OPTION FOR`, `FOR ROLE`, another object kind or grantee) voids
+//! it, and the file gets every finding it would without it. Fails on SQL outside the
 //! query macros in `app/` (the function forms, `AssertSqlSafe`, `QueryBuilder`, `Executor`,
 //! `query_unchecked!`, `copy_in_raw`/`copy_out_raw`, a glob or alias of `sqlx`, `self as`
 //! included), found by a lexer scan; and on `migrate!` in `app/` with no root `migrations/` (D-600).
@@ -31,6 +37,10 @@ const ALWAYS_FORBIDDEN: [&str; 5] = ["AssertSqlSafe", "QueryBuilder", "raw_sql",
 /// The query macros whose SQL is scanned for other modules' schemas; `query_file*` read the file.
 #[rustfmt::skip]
 const QUERY_MACROS: [&str; 6] = ["query", "query_as", "query_scalar", "query_file", "query_file_as", "query_file_scalar"];
+
+/// The table privileges a `core` default-privilege REVOKE may name (PostgreSQL `GRANT`; TD-SEC-35).
+#[rustfmt::skip]
+const TABLE_PRIVILEGES: [&str; 8] = ["select", "insert", "update", "delete", "truncate", "references", "trigger", "maintain"];
 
 /// The module schemas (`kit/layers.json`) and the task graph (`kit/tasks.json`).
 struct Plan {
@@ -353,12 +363,60 @@ fn check_order(plan: &Plan, files: &[Migration], out: &mut Vec<String>) {
     }
 }
 
+/// `t` without its leading `want` words, if it starts with exactly them.
+fn after_words<'a>(t: &'a [String], want: &[&str]) -> Option<&'a [String]> {
+    let head = t.get(..want.len())?;
+    let same = head.iter().zip(want).all(|(have, w)| have == w);
+    same.then(|| &t[want.len()..])
+}
+
+/// `t` without its leading `item[, item…]` list, if the list is non-empty and every item is `ok`.
+fn after_list(t: &[String], ok: impl Fn(&str) -> bool) -> Option<&[String]> {
+    let mut k = 0;
+    loop {
+        if !ok(t.get(k)?) {
+            return None;
+        }
+        if t.get(k + 1).map(String::as_str) != Some(",") {
+            return Some(&t[k + 1..]);
+        }
+        k += 2;
+    }
+}
+
+/// One statement that is exactly `ALTER DEFAULT PRIVILEGES IN SCHEMA <schema>[, …] REVOKE
+/// <privilege>[, …] ON TABLES FROM askhava_app`, each schema in `kit/layers.json` and each
+/// privilege a table privilege; no `GRANT OPTION FOR`, `FOR ROLE`, other object kind or grantee
+/// fits (TD-SEC-35, SEC-029, D-1632).
+fn default_revoke(plan: &Plan, s: &[String]) -> bool {
+    let rest = after_words(s, &["alter", "default", "privileges", "in", "schema"])
+        .and_then(|r| after_list(r, |n| plan.schemas.contains(n)))
+        .and_then(|r| after_words(r, &["revoke"]))
+        .and_then(|r| after_list(r, |p| TABLE_PRIVILEGES.contains(&p)))
+        .and_then(|r| after_words(r, &["on", "tables", "from", "askhava_app"]));
+    rest.is_some_and(<[String]>::is_empty)
+}
+
+/// The one exception to Arch 4 rule 3 for migrations: a `core` file whose every statement (tokens
+/// split on `;`) is a default-privilege REVOKE may name other modules' schemas, since it can only
+/// take a default away; any other statement anywhere voids it for the whole file (TD-SEC-35,
+/// D-1632).
+fn core_revoke_only(plan: &Plan, own: &str, t: &[String]) -> bool {
+    own == "core"
+        && t.split(|s| s == ";")
+            .filter(|s| !s.is_empty())
+            .all(|s| default_revoke(plan, s))
+}
+
 fn check_migrations(plan: &Plan, root: &Path, out: &mut Vec<String>) {
     let files = load_migrations(root, plan);
     check_files(plan, &files, out);
     check_order(plan, &files, out);
     for m in &files {
         if let Some((own, _)) = &m.header {
+            if core_revoke_only(plan, own, &m.tokens) {
+                continue;
+            }
             let at = format!("migrations/{}", m.name);
             out.extend(schema_refs(plan, own, &at, &m.tokens));
         }
@@ -591,15 +649,21 @@ fn td_sec_10_migrations_and_sql_obey_the_rules() {
     assert_eq!(check_repo(&root), Vec::<String>::new());
 }
 
-const TASKS: &str = r#"{"tasks": [{"id": "T001", "deps": []}, {"id": "T002", "deps": ["T001"]}, {"id": "T003", "deps": []}]}"#;
+const TASKS: &str = r#"{"tasks": [{"id": "T001", "deps": []}, {"id": "T002", "deps": ["T001"]}, {"id": "T003", "deps": []}, {"id": "T004", "deps": ["T001"]}]}"#;
 const NEXT: &str = "migrations/0005_jobs_next.sql";
 const JOBS_SRC: &str = "app/jobs/src/lib.rs";
+/// T004's REVOKE-only `core` file (TD-SEC-35); last in number, and no other file's task needs T004.
+const REVOKE_FILE: &str = "migrations/0006_core_defaults.sql";
+/// The one finding a voided REVOKE-only file gives: its `picks` schema (TD-SEC-35, D-1632).
+const REVOKE_FINDING: &str =
+    "migrations/0006_core_defaults.sql: `schema picks` names another module's schema";
 
 /// The clean scratch tree. `core` names `public`; T003 (`picks`) may run in either order with the
 /// others; the words in comments, strings and a quoted column must not count; a dollar-quoted body
-/// names only its own schema; the macros name only `jobs` (D-491, D-492).
+/// names only its own schema; the macros name only `jobs`; T004's `core` file names `picks` in
+/// default-privilege REVOKEs only (D-491, D-492, TD-SEC-35).
 #[rustfmt::skip]
-const BASE: [(&str, &str); 7] = [
+const BASE: [(&str, &str); 8] = [
     ("kit/tasks.json", TASKS),
     ("migrations/0001_core_base.sql", "-- core (T001): lock down public\nREVOKE CREATE ON SCHEMA public FROM PUBLIC;\nCREATE SCHEMA IF NOT EXISTS core;\nCREATE TABLE core.task (id bigint);\n"),
     ("migrations/0002_jobs_job.sql", "-- no-transaction\n-- jobs (T002): jobs\nCREATE SCHEMA jobs;\nGRANT USAGE ON SCHEMA jobs TO askhava_app;\n-- picks.pick in a comment /* public.x */\nCREATE TABLE jobs.job (id bigint, note text DEFAULT 'picks.pick', \"quotes\" text, rate numeric DEFAULT 1.5);\nCREATE FUNCTION jobs.touch() RETURNS trigger AS $fn$ BEGIN RETURN NEW; END $fn$ LANGUAGE plpgsql SET search_path = jobs, pg_temp;\nSELECT E'it\\'s picks.x', $1;\n"),
@@ -607,6 +671,26 @@ const BASE: [(&str, &str); 7] = [
     (JOBS_SRC, "//! raw_sql and picks.pick in a comment\nfn f(p: &sqlx::PgPool) -> sqlx::Result<()> {\n    let a = sqlx::query!(\"SELECT id FROM jobs.job WHERE note = 'picks.x'\");\n    let b = sqlx::query_as!(Job, r#\"SELECT \"id\" FROM jobs.job -- picks.pick\"#);\n    let c = sqlx::query_file!(\"queries/job.sql\");\n    let d = sqlx::query_file_as!(Job, \"queries/as.sql\");\n    let m = sqlx::migrate!(\"../../migrations\");\n    let s = \"sqlx::query(QueryBuilder)\";\n}\n"),
     ("app/jobs/queries/job.sql", "SELECT id FROM jobs.job\n"),
     ("app/jobs/queries/as.sql", "SELECT id FROM jobs.job\n"),
+    (REVOKE_FILE, "-- core (T004): narrow defaults\nALTER DEFAULT PRIVILEGES IN SCHEMA core, picks REVOKE UPDATE, DELETE ON TABLES FROM askhava_app;\n-- a comment naming jobs.job\nalter default privileges in schema \"picks\"\n  revoke truncate on tables from askhava_app;\n"),
+];
+
+/// TD-SEC-35 (D-1632): T004's file rewritten with one thing that voids the exception (an added
+/// GRANT, table DDL, data statement or `DO` block; another grantee, `GRANT OPTION FOR`, `FOR ROLE`,
+/// another object kind, a schema not in `kit/layers.json`, a header other than `core`), so each
+/// gives exactly [`REVOKE_FINDING`].
+#[rustfmt::skip]
+const REVOKE_CASES: [(&str, &str); 11] = [
+    ("revoke_and_grant", "-- core (T004)\nALTER DEFAULT PRIVILEGES IN SCHEMA picks REVOKE UPDATE ON TABLES FROM askhava_app;\nGRANT SELECT ON core.task TO askhava_app;\n"),
+    ("revoke_and_create_table", "-- core (T004)\nALTER DEFAULT PRIVILEGES IN SCHEMA picks REVOKE UPDATE ON TABLES FROM askhava_app;\nCREATE TABLE core.extra (id bigint);\n"),
+    ("revoke_and_data", "-- core (T004)\nALTER DEFAULT PRIVILEGES IN SCHEMA picks REVOKE UPDATE ON TABLES FROM askhava_app;\nINSERT INTO core.task VALUES (1);\n"),
+    ("revoke_and_do_block", "-- core (T004)\nALTER DEFAULT PRIVILEGES IN SCHEMA picks REVOKE UPDATE ON TABLES FROM askhava_app;\nDO $d$ BEGIN NULL; END $d$;\n"),
+    ("revoke_inside_do", "-- core (T004)\nDO $d$ BEGIN ALTER DEFAULT PRIVILEGES IN SCHEMA picks REVOKE UPDATE ON TABLES FROM askhava_app; END $d$;\n"),
+    ("revoke_other_role", "-- core (T004)\nALTER DEFAULT PRIVILEGES IN SCHEMA picks REVOKE UPDATE ON TABLES FROM askhava_migrate;\n"),
+    ("revoke_grant_option", "-- core (T004)\nALTER DEFAULT PRIVILEGES IN SCHEMA picks REVOKE GRANT OPTION FOR UPDATE ON TABLES FROM askhava_app;\n"),
+    ("revoke_for_role", "-- core (T004)\nALTER DEFAULT PRIVILEGES FOR ROLE askhava_migrate IN SCHEMA picks REVOKE UPDATE ON TABLES FROM askhava_app;\n"),
+    ("revoke_sequences", "-- core (T004)\nALTER DEFAULT PRIVILEGES IN SCHEMA picks REVOKE USAGE ON SEQUENCES FROM askhava_app;\n"),
+    ("revoke_unlisted_schema", "-- core (T004)\nALTER DEFAULT PRIVILEGES IN SCHEMA picks, scratch REVOKE UPDATE ON TABLES FROM askhava_app;\n"),
+    ("revoke_other_module", "-- jobs (T004)\nALTER DEFAULT PRIVILEGES IN SCHEMA picks REVOKE UPDATE ON TABLES FROM askhava_app;\n"),
 ];
 
 /// Planted violations: case, the file written over the clean tree, its text, and the one finding
@@ -696,6 +780,23 @@ fn td_sec_10_planted_violations_fail() {
             findings[0].contains(want),
             "{case}: no {want:?} in {findings:?}"
         );
+    }
+}
+
+/// TD-SEC-35 (SEC-029, D-1632): the real `core` file 0110 is REVOKE-only, and each planted way of
+/// voiding the exception gives exactly the REVOKE's own cross-schema finding.
+#[test]
+fn td_sec_35_core_default_revoke_exception_is_narrow() {
+    let root = repo_root();
+    let real = sql_tokens(&read(
+        &root.join("migrations/0110_schema_default_privileges.sql"),
+    ));
+    assert!(core_revoke_only(&load_plan(&root), "core", &real));
+    for (case, content) in REVOKE_CASES {
+        let root = plant(case);
+        write(&root, REVOKE_FILE, content);
+        let findings = check_repo(&root);
+        assert_eq!(findings, vec![REVOKE_FINDING.to_string()], "{case}");
     }
 }
 
