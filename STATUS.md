@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-06T21:42:30Z by runner fccb3b018121 (actions).
+Updated 2026-11-06T21:42:43Z by runner bdd291aafb11 (actions).
 
 **Idle since 21:42Z; 126 of 239 done; week 25% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -9,11 +9,11 @@ Updated 2026-11-06T21:42:30Z by runner fccb3b018121 (actions).
 - **Lane:** idle since 21:42Z (no task in progress)
 - **Week:** 25% used, 146.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 21:42Z, 0 min before this update
-- **Keeper:** last ran 20:55Z, next wake 21:15Z
+- **Keeper:** last ran 21:42Z, next wake 22:02Z
 
 ## Needs attention
 - PLAN GAP T080 (since 2026-11-06T21:04:42Z, no attempt used; a plan change fixes it): T080: dependency T079 is DONE but its owned file app/calls/src/lifecycle.rs is not on main; T080: dependency T079 is DONE but its owned file tests/integration/tests/line_lifecycle.rs is not on main
-- Strict plan check red: 4 problem(s) on tasks still to run (+11 on DONE tasks); first: T081: stored context_pct 13% but it measures 22%; regenerate
+- Strict plan check red: 1 problem(s) on tasks still to run (+10 on DONE tasks); first: T249: stored context_pct 22% but it measures 26%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
