@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-06T15:41:05Z by runner 68d31e685bef (actions).
+Updated 2026-11-06T15:48:56Z by runner 68d31e685bef (actions).
 
 **Idle since 15:37Z; 121 of 238 done; week 20% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,16 +8,36 @@ Updated 2026-11-06T15:41:05Z by runner 68d31e685bef (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 15:37Z (no task in progress)
 - **Week:** 20% used, 156.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:40Z, 0 min before this update
+- **Last run:** 15:41Z, 7 min before this update
 - **Keeper:** last ran 15:41Z, next wake 16:01Z
 
 ## Needs attention
+- BLOCKED T250: Ci: failure; Checks: failure
+Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny)
+Version:   3.20.2
+warning: 1 allowed warning found
+Title:     Large-window Brotli bodies bypass decompression memory limits
+Date:      2026-11-06
+ID:        RUSTSEC-2026-0455
+URL:       https://rustsec.org/advisories/RUSTSEC-2026-0455
+Solution:  Upgrade to >=3.20.3
+Crate:     basic-toml
+Version:   0.1.10
+Warning:   unmaintained
+Title:     `basic-toml` is unmaintained
+Date:      2026-09-26
+ID:        RUSTSEC-2026-0374
+URL:       https://rustsec.org/advisories/RUSTSEC-2026-0374
+##[error]Process completed with exit code 1.
+Ci failed at step: All three jobs passed
+Checks: failure, Coverage: success, E2e: success
+##[error]Process completed with exit code 1.
 - Strict plan check red: 10 problem(s) on tasks still to run (+27 on DONE tasks); first: T191: stored context_pct 10% but it measures 14%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T250 | core: narrow the default privileges in every schema and prov | MERGE_PENDING | 4 | 24 min | 15:37Z | T250 blocked: migration 0110 names 12 other modules' schemas; TD-SEC-10 (architecture_migrations.rs, protected) rejects  |
+| T250 | core: narrow the default privileges in every schema and prov | check_failed | 4 | 24 min | 15:37Z | T250 blocked: migration 0110 names 12 other modules' schemas; TD-SEC-10 (architecture_migrations.rs, protected) rejects  |
 | T250 | core: narrow the default privileges in every schema and prov | check_failed | 3 | 26 min | 14:20Z |  |
 | T250 | core: narrow the default privileges in every schema and prov | QUEUED | 2 | 9 min | 13:30Z |  |
 | T250 | core: narrow the default privileges in every schema and prov | QUEUED | 1 | 26 min | 13:18Z |  |
