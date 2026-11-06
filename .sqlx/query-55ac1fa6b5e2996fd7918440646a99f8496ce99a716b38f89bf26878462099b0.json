@@ -1,0 +1,72 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT pick_id, business_id, job_id, stripe_intent_id, ended_at IS NOT NULL AS \"ended!\"\n           FROM payments.pick_intent\n          WHERE stripe_intent_id = $1 OR pick_id = $2\n          ORDER BY (stripe_intent_id = $1) DESC LIMIT 1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "pick_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "payments.pick_intent",
+            "name": "pick_id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "business_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "payments.pick_intent",
+            "name": "business_id"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "job_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "payments.pick_intent",
+            "name": "job_id"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "stripe_intent_id",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "payments.pick_intent",
+            "name": "stripe_intent_id"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "ended!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      null
+    ]
+  },
+  "hash": "55ac1fa6b5e2996fd7918440646a99f8496ce99a716b38f89bf26878462099b0"
+}

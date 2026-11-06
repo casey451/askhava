@@ -33,6 +33,11 @@
 //!
 //! T064 added the automatic refund, once, of a payment that succeeded after its job moved on, with
 //! one alert to Casey, [`api::late_success`] (FEE-021).
+//!
+//! T067 added the nightly reconcile, [`api::reconcile`]: every unknown Stripe charge auto-matched
+//! to its pick's job or auto-refunded, Stripe's processing fees in the ledger, and the owner money
+//! view and business statements built only from the ledger, matching Stripe to the cent (FEE-029,
+//! FEE-030, FEE-032, FEE-051).
 
 pub mod api;
 mod charge;
@@ -42,6 +47,7 @@ mod handlers;
 mod late;
 mod ledger;
 mod models;
+mod reconcile;
 mod refund_rules;
 mod refunds;
 mod release_proof;

@@ -55,6 +55,12 @@
 //!
 //! T064: [`late_success`] queues the refund of a payment that succeeded after its job moved on and
 //! alerts Casey, once per pick; [`run_late_refund`] sends it through [`request_refund`] (FEE-021).
+//!
+//! T067: [`reconcile`] (the [`RECONCILE_KIND`] task, [`run_reconcile`]) reads Stripe's charges
+//! through [`ReconcileStripe`] and auto-matches or auto-refunds each unknown one by
+//! [`plan_charge`], records processing fees and checks the ledger against Stripe to the cent
+//! ([`ReconcileReport`]); [`money_view`] and [`business_statement`] read only the ledger (FEE-029,
+//! FEE-030, FEE-032, FEE-051).
 
 pub use crate::charge::{
     ATTEMPT_ACTION, ATTEMPT_SUBJECT, IN_FLIGHT, INTENT_ACTION, IntentStripe, confirm_and_pay,
@@ -80,10 +86,16 @@ pub use crate::late::{
 pub use crate::ledger::{Appended, EntryKind, LedgerEntry, LedgerError, NewEntry, ledger_append};
 pub use crate::models::{
     AUTHORIZATION_TEXT, AUTHORIZATION_VERSION, BusinessId, CardError, ChargeError, ChargeOutcome,
-    CustomerId, DESCRIPTOR_MAX, DisputeOpened, DisputeView, ENTITY_KEY_ACTION, EVIDENCE_PRODUCT,
-    EntityKey, EntityKind, EvidencePack, FreeWinError, IntentText, JoinDates, MoneyEventError,
-    PickNow, Press, RefundOutcome, RefundStep, RefundTrigger, STATEMENT_PREFIX, SavedCard,
-    SetupIntentRequest, attempt_label, intent_label,
+    ChargePlan, CustomerId, DESCRIPTOR_MAX, DisputeOpened, DisputeView, ENTITY_KEY_ACTION,
+    EVIDENCE_PRODUCT, EntityKey, EntityKind, EvidencePack, FreeWinError, IntentText, JoinDates,
+    MoneyEventError, MoneyTotals, MoneyView, PickFacts, PickNow, Press, RefundOutcome, RefundStep,
+    RefundTrigger, RefundWhy, STATEMENT_PREFIX, SavedCard, SetupIntentRequest, StripeCharge,
+    attempt_label, intent_label, plan_charge,
+};
+pub use crate::reconcile::{
+    CHARGE_FAILED_ALERT, LOOKBACK, MISMATCH_ALERT, RECONCILE_ACTION, RECONCILE_EVERY,
+    RECONCILE_KIND, ReconcileReport, ReconcileStripe, Statement, StatementLine,
+    UNKNOWN_CHARGE_ALERT, business_statement, money_view, reconcile, run_reconcile,
 };
 pub use crate::refund_rules::{
     ATTEMPT_GAP, ATTEMPT_WINDOW, Answer, CallRecord, Caller, CancelFacts, Contact, DECIDE_AFTER,
