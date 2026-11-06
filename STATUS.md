@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-06T21:42:03Z by runner fccb3b018121 (actions).
+Updated 2026-11-06T21:42:16Z by runner fccb3b018121 (actions).
 
-**Building: T081 in progress since 21:04Z; 126 of 239 done; week 24% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 21:42Z; 126 of 239 done; week 24% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 126 of 239 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T081 claimed 21:04Z, lease until 00:04Z
+- **Lane:** idle since 21:42Z (no task in progress)
 - **Week:** 24% used, 146.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:12Z, 29 min before this update
+- **Last run:** 21:12Z, 30 min before this update
 - **Keeper:** last ran 20:55Z, next wake 21:15Z
 
 ## Needs attention
@@ -18,6 +18,7 @@ Updated 2026-11-06T21:42:03Z by runner fccb3b018121 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T081 | businesses: sign-up, identity chain from public records, act | MERGE_PENDING | 1 | 37 min | 21:42Z |  |
 | T079 | calls: line closing, staff phones and LINK, email-preferred  | done | 1 | 43 min | 20:51Z |  |
 | T078 | calls: never recorded, 45-second connection rule, call logs | done | 1 | 46 min | 19:53Z |  |
 | T077 | calls: PIN routing and the paid-business read-back | done | 1 | 60 min | 18:52Z |  |
@@ -96,7 +97,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T081 (lease until 2026-11-07T00:04:42Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T079", "at": "2026-11-06T20:51:19Z", "output_tokens": 155791, "cache_creation_input_tokens": 548612, "input_tokens": 392, "cache_read_input_tokens": 19005194}
+- {"task": "T081", "at": "2026-11-06T21:42:02Z", "cache_creation_input_tokens": 578804, "input_tokens": 446, "cache_read_input_tokens": 22063683, "output_tokens": 168694}
