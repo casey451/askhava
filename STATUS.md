@@ -1,23 +1,23 @@
 # Ask Hava build status
 
-Updated 2026-11-06T12:39:54Z by runner ea22387162b9 (actions).
+Updated 2026-11-06T12:51:47Z by runner 25de4f795882 (actions).
 
-**Idle since 12:39Z; 120 of 238 done; week 16% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 12:49Z; 121 of 238 done; week 16% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 120 of 238 build tasks (owner gates not counted)
+- **Tasks done:** 121 of 238 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 12:39Z (no task in progress)
+- **Lane:** idle since 12:49Z (no task in progress)
 - **Week:** 16% used, 164.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:39Z, 0 min before this update
+- **Last run:** 12:40Z, 11 min before this update
 - **Keeper:** last ran 12:39Z, next wake 12:59Z
 
 ## Needs attention
-- Strict plan check red: 9 problem(s) on tasks still to run (+24 on DONE tasks); first: T191: stored context_pct 10% but it measures 14%; regenerate
+- Strict plan check red: 10 problem(s) on tasks still to run (+27 on DONE tasks); first: T191: stored context_pct 10% but it measures 14%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T095 | picks: pick code by email when texting is off; '2 YES' from  | MERGE_PENDING | 1 | 36 min | 12:39Z |  |
+| T095 | picks: pick code by email when texting is off; '2 YES' from  | done | 1 | 36 min | 12:39Z |  |
 | T075 | Stage 3 cleanup: dead code, duplicates, docs up to date | proof_missing | 1 | 45 min | 11:07Z |  |
 | T246 | picks, portals and server: the page pick end to end (one pic | done | 1 | 66 min | 10:04Z |  |
 | T247 | jobs and quotes: the first-quote move to Quotes ready (JOB-0 | done | 1 | 24 min | 08:42Z |  |
@@ -45,8 +45,8 @@ Updated 2026-11-06T12:39:54Z by runner ea22387162b9 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 209 of 731 (28.6%) · partial 194 · unstarted 328
-**Tasks merged (throughput only):** 120 of 238
+**Requirements verified:** 210 of 731 (28.7%) · partial 196 · unstarted 325
+**Tasks merged (throughput only):** 121 of 238
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -60,13 +60,13 @@ Updated 2026-11-06T12:39:54Z by runner ea22387162b9 (actions).
 | job-cards | 12 | 5 | 7 | 24 |
 | licensing | 31 | 16 | 1 | 48 |
 | lifecycle | 19 | 6 | 3 | 28 |
-| messaging | 15 | 10 | 20 | 45 |
+| messaging | 15 | 11 | 19 | 45 |
 | ops-recovery | 1 | 4 | 49 | 54 |
 | privacy | 2 | 14 | 15 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
-| quotes-pick | 15 | 26 | 15 | 56 |
+| quotes-pick | 15 | 28 | 13 | 56 |
 | recurring | 7 | 1 | 3 | 11 |
-| security | 10 | 22 | 22 | 54 |
+| security | 11 | 21 | 22 | 54 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 0 | 28 | 28 |
 | wording | 2 | 2 | 28 | 32 |
@@ -81,7 +81,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 0 of 54 done
+- stage 4: 1 of 54 done
 - stage 5: 0 of 42 done
 - stage 6: 0 of 26 done
 - stage 7: 0 of 2 done
