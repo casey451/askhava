@@ -1,0 +1,76 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id, pool_number, homeowner_id, business_id, shared FROM calls.number_pool WHERE job_id = $1 AND closed_at IS NULL",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "calls.number_pool",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "pool_number",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "calls.number_pool",
+            "name": "pool_number"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "homeowner_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "calls.number_pool",
+            "name": "homeowner_id"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "business_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "calls.number_pool",
+            "name": "business_id"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "shared",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "calls.number_pool",
+            "name": "shared"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "3a13b5b7be93cf77c312bd8cc12dcde462df73da36e93363ce84370abefa1d5a"
+}

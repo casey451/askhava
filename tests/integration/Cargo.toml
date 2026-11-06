@@ -11,6 +11,7 @@ sqlx = { workspace = true }
 
 [dev-dependencies]
 askhava-ai = { workspace = true }
+askhava-calls = { workspace = true }
 askhava-core = { workspace = true }
 askhava-ops = { workspace = true }
 askhava-picks = { workspace = true }
