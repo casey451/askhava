@@ -1,23 +1,23 @@
 # Ask Hava build status
 
-Updated 2026-11-06T18:57:28Z by runner c826ef282bc4 (actions).
+Updated 2026-11-06T19:06:16Z by runner 775decc0b7f9 (actions).
 
-**Idle since 18:52Z; 123 of 239 done; week 23% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 19:03Z; 124 of 239 done; week 23% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 123 of 239 build tasks (owner gates not counted)
+- **Tasks done:** 124 of 239 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 18:52Z (no task in progress)
+- **Lane:** idle since 19:03Z (no task in progress)
 - **Week:** 23% used, 148.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:57Z, 0 min before this update
+- **Last run:** 18:57Z, 8 min before this update
 - **Keeper:** last ran 18:57Z, next wake 19:17Z
 
 ## Needs attention
-- Strict plan check red: 1 problem(s) on tasks still to run (+8 on DONE tasks); first: T249: stored context_pct 22% but it measures 26%; regenerate
+- Strict plan check red: 1 problem(s) on tasks still to run (+9 on DONE tasks); first: T249: stored context_pct 22% but it measures 26%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T077 | calls: PIN routing and the paid-business read-back | MERGE_PENDING | 1 | 60 min | 18:52Z |  |
+| T077 | calls: PIN routing and the paid-business read-back | done | 1 | 60 min | 18:52Z |  |
 | T076 | calls: masked numbers from a fixed pool, PIN sharing when ex | done | 1 | 41 min | 17:32Z |  |
 | T250 | core: narrow the default privileges in every schema and prov | done | 5 | 19 min | 16:38Z | T250 blocked: migration 0110 names 12 other modules' schemas; TD-SEC-10 (architecture_migrations.rs, protected) rejects  |
 | T250 | core: narrow the default privileges in every schema and prov | check_failed | 4 | 24 min | 15:37Z |  |
@@ -43,7 +43,6 @@ Updated 2026-11-06T18:57:28Z by runner c826ef282bc4 (actions).
 | T244 | payments: remove the early-joiner price lock (FEE-040 withdr | done | 1 | 19 min | 21:20Z |  |
 | T065 | payments: refund rules for cancels and no-shows | done | 1 | 38 min | 20:38Z |  |
 | T190 | picks: Hold for 2 more hours, the emergency 60-minute window | done | 1 | 32 min | 19:45Z |  |
-| T063 | picks: Confirm within 4 business hours, license at pick and  | done | 1 | 47 min | 19:01Z |  |
 
 ### Plan and harness merges on main
 - 16:15Z Plan: dynamic SQL in migrations is a TD-SEC-10 finding (T252), T126 context budget, stored budgets refreshed (D-1677, D-1678) (#298)
@@ -54,22 +53,22 @@ Updated 2026-11-06T18:57:28Z by runner c826ef282bc4 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 211 of 731 (28.9%) · partial 199 · unstarted 321
-**Tasks merged (throughput only):** 123 of 239
+**Requirements verified:** 211 of 731 (28.9%) · partial 204 · unstarted 316
+**Tasks merged (throughput only):** 124 of 239
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 14 | 10 | 11 | 35 |
 | ai | 14 | 9 | 5 | 28 |
 | businesses | 5 | 6 | 47 | 58 |
-| calls | 0 | 5 | 20 | 25 |
+| calls | 0 | 9 | 16 | 25 |
 | consent | 15 | 12 | 8 | 35 |
 | fees | 21 | 30 | 1 | 52 |
 | intake | 19 | 15 | 9 | 43 |
 | job-cards | 12 | 5 | 7 | 24 |
 | licensing | 31 | 16 | 1 | 48 |
 | lifecycle | 19 | 6 | 3 | 28 |
-| messaging | 16 | 10 | 19 | 45 |
+| messaging | 16 | 11 | 18 | 45 |
 | ops-recovery | 1 | 4 | 49 | 54 |
 | privacy | 2 | 14 | 15 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
@@ -90,7 +89,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 3 of 55 done
+- stage 4: 4 of 55 done
 - stage 5: 0 of 42 done
 - stage 6: 0 of 26 done
 - stage 7: 0 of 2 done
