@@ -38,15 +38,21 @@
 //! to its pick's job or auto-refunded, Stripe's processing fees in the ledger, and the owner money
 //! view and business statements built only from the ledger, matching Stripe to the cent (FEE-029,
 //! FEE-030, FEE-032, FEE-051).
+//!
+//! T068 added the IDs-only receipt event of each charge and the charge facts its "Why was I
+//! charged?" page reads, [`api::queue_receipt`], and the pure just-under-a-tier flag,
+//! [`api::tier_edge_flag`] (FEE-031, FEE-033, FEE-053).
 
 pub mod api;
 mod charge;
 mod disputes;
+mod flags;
 mod free_wins;
 mod handlers;
 mod late;
 mod ledger;
 mod models;
+mod receipts;
 mod reconcile;
 mod refund_rules;
 mod refunds;

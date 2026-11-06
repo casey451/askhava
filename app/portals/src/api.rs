@@ -6,7 +6,8 @@
 //! The homeowner's quote page router and its pure numbering and 30-day rules (PICK-008 to
 //! PICK-012, SEC-037, T052). The pick review step's router and the pick result page (PICK-016,
 //! PICK-017, PICK-054, A11Y-014, T055). The business's Confirm review step and its press answers
-//! (PICK-021, FEE-014, FEE-045, CON-029, T224).
+//! (PICK-021, FEE-014, FEE-045, CON-029, T224). The "Why was I charged?" page of a charge (FEE-031,
+//! T068).
 
 /// The cookie jar the session functions take and give back (axum-extra's).
 pub use axum_extra::extract::cookie::CookieJar;
@@ -20,6 +21,7 @@ pub use crate::quote_page::{
     Numbered, QUOTE_PAGE_ROUTE, TOKEN_LIFE_AFTER_CLOSE, number_quotes, quote_page_routes,
     token_expired,
 };
+pub use crate::receipts_page::{Basis, WHY_CHARGED_ROUTE, WhyCharged, why_charged_page};
 pub use crate::security::{
     ButtonForm, CONTENT_SECURITY_POLICY, CsrfField, CsrfForm, EVENTS_PER_HOUR_ALERT,
     PERMISSIONS_POLICY, STRICT_TRANSPORT_SECURITY, SecurityEvent, SecurityEventKind, WebSecurity,

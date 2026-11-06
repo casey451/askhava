@@ -245,6 +245,10 @@ where
         askhava_payments::api::CARD_FIX_KIND,
         askhava_picks::api::run_card_fix_notice,
     );
+    registry.register(
+        askhava_payments::api::RECEIPT_KIND,
+        askhava_picks::api::run_receipt_notice,
+    );
     registry.register(askhava_picks::api::PICK_MADE_KIND, move |pool, task| {
         askhava_picks::api::run_pick_notice(pool, confirm, task)
     });
