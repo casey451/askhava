@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-06T20:55:28Z by runner bdd291aafb11 (actions).
+Updated 2026-11-06T21:04:47Z by runner bdd291aafb11 (actions).
 
-**Idle since 20:51Z; 125 of 239 done; week 24% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 21:03Z; 126 of 239 done; week 24% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 125 of 239 build tasks (owner gates not counted)
+- **Tasks done:** 126 of 239 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 20:51Z (no task in progress)
+- **Lane:** idle since 21:03Z (no task in progress)
 - **Week:** 24% used, 146.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:55Z, 0 min before this update
+- **Last run:** 20:55Z, 9 min before this update
 - **Keeper:** last ran 20:55Z, next wake 21:15Z
 
 ## Needs attention
@@ -17,7 +17,7 @@ Updated 2026-11-06T20:55:28Z by runner bdd291aafb11 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T079 | calls: line closing, staff phones and LINK, email-preferred  | MERGE_PENDING | 1 | 43 min | 20:51Z |  |
+| T079 | calls: line closing, staff phones and LINK, email-preferred  | done | 1 | 43 min | 20:51Z |  |
 | T078 | calls: never recorded, 45-second connection rule, call logs | done | 1 | 46 min | 19:53Z |  |
 | T077 | calls: PIN routing and the paid-business read-back | done | 1 | 60 min | 18:52Z |  |
 | T076 | calls: masked numbers from a fixed pool, PIN sharing when ex | done | 1 | 41 min | 17:32Z |  |
@@ -52,15 +52,15 @@ Updated 2026-11-06T20:55:28Z by runner bdd291aafb11 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 213 of 731 (29.1%) · partial 205 · unstarted 313
-**Tasks merged (throughput only):** 125 of 239
+**Requirements verified:** 213 of 731 (29.1%) · partial 210 · unstarted 308
+**Tasks merged (throughput only):** 126 of 239
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 14 | 10 | 11 | 35 |
 | ai | 14 | 9 | 5 | 28 |
 | businesses | 5 | 6 | 47 | 58 |
-| calls | 0 | 12 | 13 | 25 |
+| calls | 0 | 17 | 8 | 25 |
 | consent | 15 | 12 | 8 | 35 |
 | fees | 23 | 28 | 1 | 52 |
 | intake | 19 | 15 | 9 | 43 |
@@ -88,7 +88,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 5 of 55 done
+- stage 4: 6 of 55 done
 - stage 5: 0 of 42 done
 - stage 6: 0 of 26 done
 - stage 7: 0 of 2 done
