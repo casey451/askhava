@@ -1768,3 +1768,11 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **If a call line fails to open after a business pays,** the business still gets the homeowner's details, and you get a High alert to sort the line out. Nothing reopens the line by itself yet; a later task adds that.
 - **Gaps passed to later tasks.** The PIN is worked out from an internal line ID, which isn't secret, so a later calls task must store a random PIN instead. Only the business that paid hears the name-and-street read-back, which holds as long as lines close when a pick ends (the line-closing task, T079). The phone company's caller check comes in a form the voice task (T080) must translate. A security test list needs one new entry for the read-back. The "who's calling" text has no task that owns it now; one needs adding.
 - **Nothing needs you now.**
+
+## Masked calls: closing lines, staff phones, the main-number greeting (T079, D-1694 to D-1698, November 6)
+
+- **Closing lines.** A job's call number now stops working when the homeowner cancels, the business doesn't show, a complaint comes in, or 30 days after it opened. On a cancel the business gets a short note that it doesn't count against them. Nothing calls these yet; the cancel, no-show and complaint steps and a daily sweep come with later tasks.
+- **Calls to the Ask Hava number** hear the greeting in English, then Spanish, then the call ends. Nothing is recorded, there's no voicemail and nothing rings through to you. The Spanish wording (with its English back-translation) is in D-1697 for your check.
+- **A gap in the plan (D-1695).** A phone linked by a team member other than the owner should work only after the owner approves it. The rule is built and tested, but no task stores the owner's approval yet, and the call answering doesn't apply the rule yet. I've named T148 (store the approval) and T080 (apply it on every call) to close it. Nothing is live, so this changes nothing yet.
+- **Unknown staff phones.** When an unlinked phone calls a job line, the owner and billing members get a "phone ending in 1234" note with a reply-LINK code. The 45-minute "call from your main phone" nudge isn't built yet (it needs the call answering, T080).
+- **Nothing needs you now.**

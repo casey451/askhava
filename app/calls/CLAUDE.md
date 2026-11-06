@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The layer-5 crate for masked calls between a homeowner and the business she connected with (`docs/architecture.md` section 3). T076 built the masked-number pool: each connected job gets a number from the fixed pool in settings, never bought by the app, preferring one no other open line of the same homeowner or business uses, otherwise sharing one with PIN routing and one alert to Casey (D-077, D-160, D-231, D-1679 to D-1682). It also holds the suppression-list check every automated call to a homeowner passes first. T077 added PIN routing and the paid-business read-back (D-1684 to D-1688). T078 added the call log and the never-recorded TwiML (D-1689 to D-1691). Not here yet: storing the per-day PIN count (D-1685), the who's-calling text (TXT-027, D-1687), closing lines, staff phones and LINK (T079), bridging and the identity and code calls (T080).
+The layer-5 crate for masked calls between a homeowner and the business she connected with (`docs/architecture.md` section 3). T076 built the masked-number pool: each connected job gets a number from the fixed pool in settings, never bought by the app, preferring one no other open line of the same homeowner or business uses, otherwise sharing one with PIN routing and one alert to Casey (D-077, D-160, D-231, D-1679 to D-1682). It also holds the suppression-list check every automated call to a homeowner passes first. T077 added PIN routing and the paid-business read-back (D-1684 to D-1688). T078 added the call log and the never-recorded TwiML (D-1689 to D-1691). T079 added closing lines, the staff-phone approval gate, the LINK request and the Ask Hava number's greeting (D-1694 to D-1698). Not here yet: storing the per-day PIN count (D-1685), the who's-calling text (TXT-027, D-1687), the callers of `close_line` and the daily `close_expired` sweep, stored phone approvals (T148, D-1695), the 45-minute LINK follow-up (D-1696), bridging, the inbound-voice route and the identity and code calls (T080).
 
 ## What it owns
 
@@ -12,6 +12,7 @@ The layer-5 crate for masked calls between a homeowner and the business she conn
 - Migration `0116_calls_call_log.sql` (T078): `calls.call_log` (append-only: line, call SID unique, `caller` business or homeowner, `answered_by` person, machine, nobody or unknown, `length_seconds` (bigint), `reached_45s`, `ended_at`).
 - `src/rules.rs` (T078): the pure `talked`, `business_attempt`, `answered_by`, `reached_report_mark`, `REPORT_MARK` (`Caller`, `AnsweredBy`).
 - `src/handlers.rs` (T078): `dial_twiml`, `finished_call` (`FinishedCall`), `log_finished_call`, `call_log` (`LoggedCall`); its own queries.
+- `src/lifecycle.rs` (T079): `close_line` (`CloseReason`), `close_expired`, `expired`, `LINE_DAYS`; the pure `phone_works` and `gate` (`PhoneStanding`); `request_link`, `last4`; `greeting_twiml`, `GREETING_EN`, `GREETING_ES`; `BUSINESS_NOTICE_KIND` (`messaging.business_notice`), `CANCELLED_TEMPLATE`, `LINK_TEMPLATE`; its own queries. Templates `line_closed_cancelled` and `link_this_phone` (en, es) in `app/messaging/templates/`.
 - `src/models.rs`: `CallsError` and the crate-private queries.
 - `src/api.rs`: the only public surface. `sqlx.toml`: `timestamptz` as jiff timestamps.
 
@@ -30,6 +31,12 @@ The layer-5 crate for masked calls between a homeowner and the business she conn
 - CALL-006, D-1691: calls are never recorded: `dial_twiml` says `record="do-not-record"` and holds the phone as a `SecretString`; no source names a recording verb or callback.
 - CALL-007, CALL-008, D-141, D-1689, D-1690: a person answering, either way and any length, is `talked`; a machine, nobody or an unknown answerer (no `human` detection, D-1690) never is; only the business's calls are `business_attempt`s; the 45-second mark is stored (`reached_45s`) for reports only. Each finished call is logged once per SID with who called (role only), who answered and its length.
 
+- CALL-009, CALL-010, D-1694: `close_line` sets only `closed_at` on the job's open line, with one audit row naming the reason (`calls.line_closed_*`), in one transaction; a repeat returns `None`; only `Cancelled` queues the business notice (owner and "Confirm and billing" members, deduped per line); no close records a strike. `close_expired` closes lines open 30 days or more.
+- CALL-012, BIZ-033, D-1695: `gate` makes a business phone that a non-owner linked and the owner has not approved `Party::Unlinked`, so it hears the PIN prompt; the voice handler must call it before `route`.
+- CALL-011, D-078, D-1696: `request_link` names only the last 4 digits and the line's PIN, to the owner and "Confirm and billing" members, once per line and last 4 digits; never the full number; the template's `{number}` is the last 4 digits and `{job}` the PIN.
+- CALL-020, D-227, D-1697: `greeting_twiml` says the greeting in English, then Spanish, then hangs up; no record, dial, gather or voicemail verb.
+- CALL-018: `assign_number` never reads the homeowner's contact channel.
+
 ## Never break
 
 - Each job gets a pool number neither side's own, once: `tests/integration/tests/number_pool.rs::td_call_01_each_connected_job_gets_a_pool_number_neither_sides_own`.
@@ -46,11 +53,14 @@ The layer-5 crate for masked calls between a homeowner and the business she conn
 - Never recorded; one log row per call; the log is append-only: `tests/integration/tests/no_recording.rs` (`td_call_03_*`, `td_call_04_each_finished_call_is_logged_once`).
 - Talking is a person answering, never a machine, never the length: `app/calls/src/tests/connection.rs` (`td_call_04_*`).
 
+- Lines close on cancel, no-show, complaint and at 30 days, a cancel tells the business once and no strike is written; a blocked phone hears the PIN prompt and LINK names its last 4 digits; an email-preferred homeowner gets a line; a removed member's phones hear the PIN prompt; the greeting never records or forwards; an unapproved member-linked phone does not connect: `tests/integration/tests/line_lifecycle.rs` (`td_call_05_*`, `td_call_07_*`, `td_call_08_*`).
+
 ## How to change
 
 - Pool size: set `ASKHAVA_MASKED_POOL_SIZE` and `ASKHAVA_MASKED_NUMBERS` (Casey buys the numbers); the default is `adapters`' `DEFAULT_POOL_SIZE` (CALL-017, D-160).
 - How a number is chosen: CALL-017 first, then `service::choose` and the `td_call_01_*` cases.
 - Close a line (T079): `UPDATE calls.number_pool SET closed_at` only; nothing else is granted.
+- A new close reason: a `CloseReason` variant with its `action` and, if it tells the business, `tells_business` and a template in both languages.
 - A new automated call kind: add an `AutomatedCall` variant; it passes the list check unless the spec names an exception.
 - A query: `sqlx migrate run`, then `cargo sqlx prepare --workspace -- --all-targets --all-features`.
 
@@ -60,4 +70,5 @@ The layer-5 crate for masked calls between a homeowner and the business she conn
 - `tests/integration/tests/pin_routing.rs` (TD-CALL-02, TD-CALL-11, TD-CALL-12): `cargo test -p askhava-integration --test pin_routing`.
 - `app/calls/src/tests/connection.rs` (TD-CALL-04, TD-FEE-13's CALL-007 cases): `cargo test -p askhava-calls tests::connection`.
 - `tests/integration/tests/no_recording.rs` (TD-CALL-03, TD-CALL-04's log): `cargo test -p askhava-integration --test no_recording`.
+- `tests/integration/tests/line_lifecycle.rs` (TD-CALL-05, TD-CALL-07, TD-CALL-08's gate, TD-BIZ-34's removal case): `cargo test -p askhava-integration --test line_lifecycle`.
 - `tests/integration/tests/schema_grants.rs` (TD-SEC-34): the `calls` default ACL and grants.
