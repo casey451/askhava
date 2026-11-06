@@ -1,0 +1,18 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO payments.reconcile_charge\n           (stripe_charge_id, stripe_intent_id, pick_id, refund_reason, seen_at)\n         VALUES ($1, $2, $3, $4, $5) ON CONFLICT (stripe_charge_id) DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Uuid",
+        "Text",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "7ca8bde142719f95e76fc9afed961c156a7b0cc8c757bf45c1c0e7a0d231f55a"
+}

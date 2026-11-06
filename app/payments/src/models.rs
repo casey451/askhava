@@ -22,13 +22,19 @@
 //! [`RefundError`] what it came to; [`DisputeOpened`] is a Stripe dispute as the webhook reports
 //! it, [`EvidencePack`] the IDs-and-timestamps evidence built from a charge's FEE-042 record, and
 //! [`DisputeView`] one dispute as the owner portal and the weekly digest list it.
+//!
+//! T067 (FEE-029, FEE-030, FEE-051, D-1552): [`StripeCharge`] is one charge from Stripe's list,
+//! [`plan_charge`] decides from it and its [`PickFacts`] what the nightly reconcile appends and
+//! whether it refunds ([`RefundWhy`]), and [`MoneyView`] and [`MoneyTotals`] are the owner money
+//! view and the FEE-030 match, built only from ledger entries.
 
 use askhava_adapters::api::IdempotencyKey;
 use jiff::Timestamp;
 use secrecy::SecretString;
 use sqlx::types::Uuid;
 
-use crate::ledger::LedgerError;
+use crate::disputes::DISPUTE_FEE_CENTS;
+use crate::ledger::{EntryKind, LedgerError};
 use crate::refund_rules::RefundReason;
 
 /// The FEE-015 card authorization, exactly as `docs/spec/fees.md` words it (D-195, D-196, D-365).
@@ -584,4 +590,233 @@ pub struct DisputeView {
     pub submitted_at: Option<Timestamp>,
     /// The countering fee at stake if Casey counters (FEE-050): `DISPUTE_FEE_CENTS`.
     pub fee_at_stake_cents: i64,
+}
+
+/// One succeeded Stripe charge as the nightly reconcile reads it from Stripe's list, with its
+/// balance transaction's processing fee (FEE-029, FEE-051). IDs and cents only.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct StripeCharge {
+    /// `ch_…`.
+    pub id: String,
+    /// The PaymentIntent it belongs to, `pi_…`.
+    pub payment_intent: String,
+    /// The pick its metadata names, if any.
+    pub pick: Option<Uuid>,
+    /// The gross amount in cents.
+    pub amount_cents: i64,
+    /// What Stripe has refunded of it so far, in cents.
+    pub refunded_cents: i64,
+    /// Its dispute, `dp_…`, with the disputed amount in cents.
+    pub dispute: Option<(String, i64)>,
+    /// Its balance transaction, `txn_…`.
+    pub balance_transaction: String,
+    /// The balance transaction's processing fee in cents (FEE-051).
+    pub fee_cents: i64,
+}
+
+impl StripeCharge {
+    /// True when every ID has its Stripe prefix and the amounts fit (`0 <= refunded <= amount`).
+    #[must_use]
+    pub fn is_well_formed(&self) -> bool {
+        let id = |v: &str, p: &str| {
+            v.strip_prefix(p).is_some_and(|rest| {
+                (1..=200).contains(&rest.len()) && rest.bytes().all(|b| b.is_ascii_alphanumeric())
+            })
+        };
+        id(&self.id, "ch_")
+            && id(&self.payment_intent, "pi_")
+            && id(&self.balance_transaction, "txn_")
+            && self
+                .dispute
+                .as_ref()
+                .is_none_or(|(d, a)| id(d, "dp_") && *a > 0)
+            && self.amount_cents > 0
+            && (0..=self.amount_cents).contains(&self.refunded_cents)
+            && self.fee_cents >= 0
+    }
+}
+
+/// The pick a Stripe charge names, from `payments.pick_intent` (FEE-029).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct PickFacts {
+    /// The pick.
+    pub pick: Uuid,
+    /// Its business.
+    pub business: Uuid,
+    /// Its job.
+    pub job: Uuid,
+    /// The charge is on the pick's one PaymentIntent (else it is a second charge, D-153).
+    pub own_intent: bool,
+    /// `payments` ended the pick, so its job is closed to charging.
+    pub ended: bool,
+}
+
+/// Why the reconcile refunds a charge (FEE-029, D-153); the code is stored in
+/// `payments.reconcile_charge.refund_reason`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RefundWhy {
+    /// The charge names no pick Ask Hava knows.
+    NoPick,
+    /// The charge is on a pick whose job is closed (always refunded).
+    ClosedJob,
+    /// A second kept charge for a pick that has its own PaymentIntent.
+    SecondCharge,
+}
+
+impl RefundWhy {
+    /// The stored code.
+    #[must_use]
+    pub const fn code(self) -> &'static str {
+        match self {
+            Self::NoPick => "no-pick",
+            Self::ClosedJob => "closed-job",
+            Self::SecondCharge => "second-charge",
+        }
+    }
+}
+
+/// What the reconcile does with one charge: the ledger lines it appends now, the refund it sends,
+/// and whether the charge was unknown (no ledger `charge` entry yet, alerted once).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ChargePlan {
+    /// Entries to append now, as kind and cents.
+    pub lines: Vec<(EntryKind, i64)>,
+    /// The refund to send, if any; its ledger entry follows Stripe's answer.
+    pub refund: Option<RefundWhy>,
+    /// No ledger `charge` entry named this charge before.
+    pub unknown: bool,
+}
+
+/// FEE-029, FEE-026, FEE-051, D-153: auto-matches or auto-refunds one Stripe charge. A charge on a
+/// known pick gets its missing `charge` entry, its processing fee and any refund Stripe already
+/// made; it is refunded when the job is closed or it is a second charge, and never when it is
+/// disputed or already refunded. A charge naming no pick is refunded and never enters the ledger.
+#[must_use]
+pub fn plan_charge(
+    charge: &StripeCharge,
+    pick: Option<PickFacts>,
+    (has_charge, has_refund): (bool, bool),
+) -> ChargePlan {
+    let untouched = charge.refunded_cents == 0 && charge.dispute.is_none();
+    let Some(pick) = pick else {
+        let refund = untouched.then_some(RefundWhy::NoPick);
+        return ChargePlan {
+            lines: Vec::new(),
+            refund,
+            unknown: true,
+        };
+    };
+    let mut lines = Vec::new();
+    if !has_charge {
+        lines.push((EntryKind::Charge, charge.amount_cents));
+    }
+    if charge.fee_cents > 0 {
+        lines.push((EntryKind::ProcessingFee, charge.fee_cents));
+    }
+    if charge.refunded_cents > 0 && !has_refund {
+        lines.push((EntryKind::Refund, charge.refunded_cents));
+    }
+    let why = if pick.own_intent {
+        RefundWhy::ClosedJob
+    } else {
+        RefundWhy::SecondCharge
+    };
+    let refund = (untouched && (pick.ended || !pick.own_intent)).then_some(why);
+    ChargePlan {
+        lines,
+        refund,
+        unknown: !has_charge,
+    }
+}
+
+/// The FEE-030 match: gross charges, refunds and disputes in cents (FEE-051).
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct MoneyTotals {
+    /// Gross charges.
+    pub charged: i64,
+    /// Refunds.
+    pub refunded: i64,
+    /// Disputed amounts, without the dispute fee.
+    pub disputed: i64,
+}
+
+impl MoneyTotals {
+    /// Stripe's side of the match, over the charges given (FEE-030).
+    #[must_use]
+    pub fn of_stripe<'a>(charges: impl IntoIterator<Item = &'a StripeCharge>) -> Self {
+        charges.into_iter().fold(Self::default(), |t, c| Self {
+            charged: t.charged + c.amount_cents,
+            refunded: t.refunded + c.refunded_cents,
+            disputed: t.disputed + c.dispute.as_ref().map_or(0, |(_, a)| *a),
+        })
+    }
+}
+
+/// The owner money view and a statement's totals, in cents, folded from ledger entries only
+/// (FEE-030, FEE-046, FEE-051). A `dispute` entry holds the amount plus `DISPUTE_FEE_CENTS`
+/// (T066), so its fee is split out to `dispute_fees` with the countering fees.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct MoneyView {
+    /// Introduction fees charged.
+    pub charges: i64,
+    /// Refunds.
+    pub refunds: i64,
+    /// Credits given.
+    pub credits: i64,
+    /// Disputed amounts, without fees.
+    pub disputes: i64,
+    /// Stripe dispute fees and countering fees, less countering fees returned.
+    pub dispute_fees: i64,
+    /// Stripe processing fees (FEE-051).
+    pub processing_fees: i64,
+    /// Payouts to the bank.
+    pub payouts: i64,
+}
+
+impl MoneyView {
+    /// Folds ledger entries (kind and cents) into the view; $0 kinds add nothing.
+    #[must_use]
+    pub fn from_entries(entries: impl IntoIterator<Item = (EntryKind, i64)>) -> Self {
+        let mut v = Self::default();
+        for (kind, cents) in entries {
+            match kind {
+                EntryKind::Charge => v.charges += cents,
+                EntryKind::Refund => v.refunds += cents,
+                EntryKind::Credit => v.credits += cents,
+                EntryKind::Dispute => {
+                    let fee = cents.min(DISPUTE_FEE_CENTS);
+                    v.disputes += cents - fee;
+                    v.dispute_fees += fee;
+                }
+                EntryKind::CounteringFee => v.dispute_fees += cents,
+                EntryKind::CounteringFeeReturn => v.dispute_fees -= cents,
+                EntryKind::ProcessingFee => v.processing_fees += cents,
+                EntryKind::Payout => v.payouts += cents,
+                EntryKind::FreeFirstWin | EntryKind::RepeatCustomer | EntryKind::FeeFreeJobType => {
+                }
+            }
+        }
+        v
+    }
+
+    /// The ledger's side of the FEE-030 match.
+    #[must_use]
+    pub const fn gross(&self) -> MoneyTotals {
+        MoneyTotals {
+            charged: self.charges,
+            refunded: self.refunds,
+            disputed: self.disputes,
+        }
+    }
+
+    /// What Ask Hava kept: charges less refunds, credits, disputes and every Stripe fee.
+    #[must_use]
+    pub const fn net(&self) -> i64 {
+        self.charges
+            - self.refunds
+            - self.credits
+            - self.disputes
+            - self.dispute_fees
+            - self.processing_fees
+    }
 }

@@ -1,0 +1,31 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT bool_or(kind = 'charge' AND stripe_id = $1) AS has_charge,\n                bool_or(kind = 'refund' AND stripe_id = $2) AS has_refund\n           FROM payments.ledger_entry WHERE stripe_id IN ($1, $2)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "has_charge",
+        "type_info": "Bool",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 1,
+        "name": "has_refund",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      null,
+      null
+    ]
+  },
+  "hash": "486bcabce1bdb4b4b04ce9150433b490cd01bb17857a1a526a027afaa1cfe3d3"
+}

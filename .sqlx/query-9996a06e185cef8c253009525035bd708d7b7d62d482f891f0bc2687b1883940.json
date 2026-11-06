@@ -1,0 +1,66 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT kind, job_id, amount_cents, recorded_at FROM payments.ledger_entry\n          WHERE business_id = $1 AND recorded_at >= $2 AND recorded_at < $3 ORDER BY seq",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "kind",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "payments.ledger_entry",
+            "name": "kind"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "job_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "payments.ledger_entry",
+            "name": "job_id"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "amount_cents",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "payments.ledger_entry",
+            "name": "amount_cents"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "recorded_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "payments.ledger_entry",
+            "name": "recorded_at"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false,
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "9996a06e185cef8c253009525035bd708d7b7d62d482f891f0bc2687b1883940"
+}
