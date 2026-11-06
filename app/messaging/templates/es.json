@@ -486,5 +486,17 @@
     "draft": true,
     "segments": 4,
     "text": "Ask Hava: El propietario eligió su cotización para el trabajo {job}. Confirme aquí: {link} Luego verá el nombre y la dirección del cliente en su portal."
+  },
+  "line_closed_cancelled": {
+    "audience": "business",
+    "draft": true,
+    "segments": 3,
+    "text": "Ask Hava: El propietario canceló el trabajo {job}, así que el número de llamadas de ese trabajo ya no funciona. Esto no cuenta en su contra. No tiene que hacer nada."
+  },
+  "link_this_phone": {
+    "audience": "business",
+    "draft": true,
+    "segments": 3,
+    "text": "Ask Hava: Un teléfono que termina en {number} llamó a su línea de Ask Hava. Todavía no está en su cuenta. Si es suyo, responda LINK {job}. Si no, ignore este mensaje."
   }
 }
