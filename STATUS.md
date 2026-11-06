@@ -1,23 +1,23 @@
 # Ask Hava build status
 
-Updated 2026-11-06T17:37:25Z by runner 48d8e99c20f7 (actions).
+Updated 2026-11-06T17:51:13Z by runner c826ef282bc4 (actions).
 
-**Idle since 17:32Z; 122 of 239 done; week 23% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 17:48Z; 123 of 239 done; week 23% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 122 of 239 build tasks (owner gates not counted)
+- **Tasks done:** 123 of 239 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 17:32Z (no task in progress)
+- **Lane:** idle since 17:48Z (no task in progress)
 - **Week:** 23% used, 150.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:37Z, 0 min before this update
+- **Last run:** 17:37Z, 13 min before this update
 - **Keeper:** last ran 17:37Z, next wake 17:57Z
 
 ## Needs attention
-- Strict plan check red: 1 problem(s) on tasks still to run (+6 on DONE tasks); first: T249: stored context_pct 22% but it measures 26%; regenerate
+- Strict plan check red: 1 problem(s) on tasks still to run (+8 on DONE tasks); first: T249: stored context_pct 22% but it measures 26%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T076 | calls: masked numbers from a fixed pool, PIN sharing when ex | MERGE_PENDING | 1 | 41 min | 17:32Z |  |
+| T076 | calls: masked numbers from a fixed pool, PIN sharing when ex | done | 1 | 41 min | 17:32Z |  |
 | T250 | core: narrow the default privileges in every schema and prov | done | 5 | 19 min | 16:38Z | T250 blocked: migration 0110 names 12 other modules' schemas; TD-SEC-10 (architecture_migrations.rs, protected) rejects  |
 | T250 | core: narrow the default privileges in every schema and prov | check_failed | 4 | 24 min | 15:37Z |  |
 | T250 | core: narrow the default privileges in every schema and prov | check_failed | 3 | 26 min | 14:20Z |  |
@@ -55,15 +55,15 @@ Updated 2026-11-06T17:37:25Z by runner 48d8e99c20f7 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 211 of 731 (28.9%) · partial 196 · unstarted 324
-**Tasks merged (throughput only):** 122 of 239
+**Requirements verified:** 211 of 731 (28.9%) · partial 199 · unstarted 321
+**Tasks merged (throughput only):** 123 of 239
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 14 | 10 | 11 | 35 |
 | ai | 14 | 9 | 5 | 28 |
 | businesses | 5 | 6 | 47 | 58 |
-| calls | 0 | 2 | 23 | 25 |
+| calls | 0 | 5 | 20 | 25 |
 | consent | 15 | 12 | 8 | 35 |
 | fees | 21 | 30 | 1 | 52 |
 | intake | 19 | 15 | 9 | 43 |
@@ -91,7 +91,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 2 of 55 done
+- stage 4: 3 of 55 done
 - stage 5: 0 of 42 done
 - stage 6: 0 of 26 done
 - stage 7: 0 of 2 done
