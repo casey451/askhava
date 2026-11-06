@@ -25,8 +25,8 @@ use crate::models::{self, BusinessesError, db};
 use crate::status::AccountStatus;
 
 /// The waitlist line shown when only coming-later categories were chosen (BIZ-021, D-175, D-288).
-pub const WAITLIST_LINE: &str = "The trades you picked open on Ask Hava later, so you're on the \
-waitlist for now. Your join date is kept. No priority; everyone waiting is told at once.";
+pub const WAITLIST_LINE: &str = "The trades you picked aren't open on Ask Hava yet, so you're on the \
+waitlist. Your join date is kept. No priority; everyone waiting is told at once.";
 
 /// Why a sign-up step failed. No variant carries a value (rust brain R5, R6).
 #[derive(Debug, thiserror::Error, PartialEq, Eq)]

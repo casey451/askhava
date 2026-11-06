@@ -66,17 +66,17 @@ impl AboutUsRefusal {
     #[must_use]
     pub const fn reason(self) -> &'static str {
         match self {
-            Self::Length => "Keep it between 1 and 140 characters.",
+            Self::Length => "Write a short line about your business, up to 140 characters.",
             Self::Contact => {
                 "Leave out phone numbers, emails, links and \"call me\". Homeowners reach you through Ask Hava."
             }
             Self::Channel => {
-                "Leave out other places to find you, like Google, Facebook, Yelp or \"search for us\"."
+                "Leave out other ways to find you, like Google, Facebook, Yelp or \"search for us\". Homeowners reach you through Ask Hava."
             }
             Self::Claim => {
-                "Leave out words like \"best\", \"#1\" or \"vetted\". Say what you do instead."
+                "Leave out rankings and praise, like \"#1\" or \"top\". Say what you do instead."
             }
-            Self::Licensed => "Your card has no state license, so leave out \"licensed\".",
+            Self::Licensed => "Your card shows no state license, so leave out \"licensed\".",
         }
     }
 }
