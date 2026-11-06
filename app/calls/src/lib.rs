@@ -8,10 +8,13 @@
 //! call (CON-035, CALL-014). Calls are built on standard programmable voice only, never Twilio
 //! Proxy (CALL-021). T078: calls are never recorded, and each finished call is logged with who
 //! called, who answered and its length; a person answering is talking, a machine never is
-//! (CALL-006 to CALL-008). Other crates reach it only through [`api`].
+//! (CALL-006 to CALL-008). T079: lines close on cancel, no-show, complaint or after 30 days, the
+//! staff-phone approval gate, the LINK request and the Ask Hava number's greeting (CALL-009 to
+//! CALL-012, CALL-018, CALL-020). Other crates reach it only through [`api`].
 
 pub mod api;
 mod handlers;
+mod lifecycle;
 mod models;
 mod routing;
 mod rules;
