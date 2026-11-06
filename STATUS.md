@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-06T08:05:21Z by runner 21896c43149a (actions).
+Updated 2026-11-06T08:05:32Z by runner 21896c43149a (actions).
 
-**Building: T074 in progress since 07:14Z; 116 of 238 done; week 12% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 08:05Z; 116 of 238 done; week 12% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 116 of 238 build tasks (owner gates not counted)
 - **Stage:** stage 3; stage proofs recorded: 1, 2
-- **Lane:** lane 1: T074 claimed 07:14Z, lease until 10:14Z
+- **Lane:** idle since 08:05Z (no task in progress)
 - **Week:** 12% used, 170.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:22Z, 42 min before this update
+- **Last run:** 07:22Z, 43 min before this update
 - **Keeper:** last ran 07:12Z, next wake 07:32Z
 
 ## Needs attention
@@ -17,6 +17,7 @@ Updated 2026-11-06T08:05:21Z by runner 21896c43149a (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T074 | Twin: run the gate against the app's rules modules | MERGE_PENDING | 1 | 51 min | 08:05Z |  |
 | T073 | Named mutants: the 4-month rule, the fee tiers and the card  | done | 1 | 30 min | 06:37Z |  |
 | T072 | Metamorphic prompt-injection tests over routing, fees and di | done | 1 | 30 min | 05:55Z |  |
 | T071 | Stage 3 check: the ledger matches the Stripe mock on 1,000 s | done | 1 | 37 min | 05:09Z |  |
@@ -84,7 +85,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T074 (lease until 2026-11-06T10:14:20Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T073", "at": "2026-11-06T06:37:47Z", "output_tokens": 50318, "cache_read_input_tokens": 4883330, "input_tokens": 160, "cache_creation_input_tokens": 265414}
+- {"task": "T074", "at": "2026-11-06T08:05:20Z", "input_tokens": 394, "output_tokens": 183452, "cache_read_input_tokens": 27279085, "cache_creation_input_tokens": 542985}
