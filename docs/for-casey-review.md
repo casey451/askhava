@@ -1753,3 +1753,9 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **What changed.** New task T252 (an Opus worker with an Opus reviewer, after T250) teaches the check to refuse any setup file that builds its commands while it runs, unless the file is on a short list in the check, each with a one-line reason. One file is on it at the start: an early one that only stops with an error if the app's database login is missing. Until T252 merges, the reviewer and every task that writes a setup file are told to watch for this (risk R-24).
 - **Also tidied.** The stage-5 clean-up task (T126) was set to read the whole simulator folder, which made it too big for one session. It now reads just the three simulator files its check uses. Each task's stored "how much it reads" estimate was refreshed so that check is clean again; for finished tasks only that number moved.
 - **Nothing needs you.**
+
+## Masked numbers: two loose ends (T076, D-1680 to D-1682, November 6)
+
+- **The "ran out of numbers" alert.** When every masked number is in use, you get one High alert and jobs start sharing numbers with a PIN. If you mark that alert resolved but have not bought more numbers, you will not get another one while the shortage lasts; the next alert comes only after a job gets a free number again and a later job has to share. So treat "resolved" as "I bought more numbers", not "I saw it".
+- **Safety calls to numbers we can't text.** The safety call checks the same list texting uses. A US number whose area code is not in our time-zone table is never texted, so the safety call skips it too. Instead of skipping quietly it now raises a High alert to you, and your emergency alert still fires. Whether the call should dial such a number anyway is your call; until then it does not (the safety call switch is off at launch).
+- **Nothing needs you now.**

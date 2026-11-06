@@ -22,9 +22,12 @@ pub enum CallsError {
     /// `messaging` could not check the suppression list.
     #[error("the suppression list could not be checked")]
     Messaging,
-    /// The job already has an open line with another business.
-    #[error("the job already has an open line with another business")]
+    /// The job already has an open line with another business or homeowner.
+    #[error("the job already has an open line with another business or homeowner")]
     LineOpen,
+    /// The pool holds no number; settings refuse an empty pool, so this means a broken build.
+    #[error("the masked-number pool holds no number")]
+    PoolEmpty,
     /// The job's open line uses a number no longer in the settings' pool.
     #[error("the job's open line uses a number no longer in the pool")]
     NumberRetired,
@@ -36,6 +39,16 @@ pub(crate) struct OpenLine {
     pub(crate) number: String,
     pub(crate) homeowner: Uuid,
     pub(crate) business: Uuid,
+}
+
+/// A job's open line as stored: what a repeat assignment checks and returns.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct JobLine {
+    pub(crate) id: Uuid,
+    pub(crate) number: String,
+    pub(crate) homeowner: Uuid,
+    pub(crate) business: Uuid,
+    pub(crate) shared: bool,
 }
 
 /// A stored line: its ID and its place in assignment order.
@@ -61,19 +74,25 @@ pub(crate) async fn lock_pool(tx: &mut PgConnection) -> Result<(), CallsError> {
     Ok(())
 }
 
-/// The job's open line, if any: its ID, number, business and whether it is shared.
+/// The job's open line, if any.
 pub(crate) async fn open_line_of(
     tx: &mut PgConnection,
     job: Uuid,
-) -> Result<Option<(Uuid, String, Uuid, bool)>, CallsError> {
+) -> Result<Option<JobLine>, CallsError> {
     let row = db(sqlx::query!(
-        "SELECT id, pool_number, business_id, shared FROM calls.number_pool \
+        "SELECT id, pool_number, homeowner_id, business_id, shared FROM calls.number_pool \
          WHERE job_id = $1 AND closed_at IS NULL",
         job
     )
     .fetch_optional(tx)
     .await)?;
-    Ok(row.map(|r| (r.id, r.pool_number, r.business_id, r.shared)))
+    Ok(row.map(|r| JobLine {
+        id: r.id,
+        number: r.pool_number,
+        homeowner: r.homeowner_id,
+        business: r.business_id,
+        shared: r.shared,
+    }))
 }
 
 /// Every open line, read under the pool lock: the rule needs those of the same homeowner or

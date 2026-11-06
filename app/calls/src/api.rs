@@ -7,6 +7,6 @@
 
 pub use crate::models::CallsError;
 pub use crate::service::{
-    ASSIGNED_ACTION, AutomatedCall, CallGate, Connected, Line, POOL_ALERT, assign_number,
-    automated_call_gate,
+    ASSIGNED_ACTION, AutomatedCall, CallGate, Connected, Line, POOL_ALERT,
+    SAFETY_NOT_DIALABLE_ALERT, assign_number, automated_call_gate,
 };

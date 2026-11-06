@@ -9,7 +9,7 @@
 use askhava_adapters::api::{DEFAULT_POOL_SIZE, MaskedPool, TwilioConfig};
 use askhava_calls::api::{
     ASSIGNED_ACTION, AutomatedCall, CallGate, CallsError, Connected, Line, POOL_ALERT,
-    assign_number, automated_call_gate,
+    SAFETY_NOT_DIALABLE_ALERT, assign_number, automated_call_gate,
 };
 use askhava_core::api::Settings;
 use askhava_messaging::api::{RevokeChannel, suppress};
@@ -24,6 +24,8 @@ use sqlx::{PgConnection, PgPool};
 /// The homeowner's and the business's own fake phones: never a pool number.
 const HER_PHONE: &str = "+19285550141";
 const BUSINESS_PHONE: &str = "+19285550142";
+/// A fake `+1` phone whose area code (999) is not in the quiet-hours table, so never texted.
+const UNTABLED_PHONE: &str = "+19995550143";
 /// 10:00 Arizona.
 const DAY: &str = "2026-11-02T17:00:00Z";
 
@@ -86,6 +88,18 @@ fn vault() -> Vault {
     Vault::new(&key(0x54), &key(0x64), &url).expect("vault")
 }
 
+/// A vault contact holding only the fake `phone`.
+async fn contact(db: &mut PgConnection, phone: &str) -> Uuid {
+    let new = NewContact {
+        name: None,
+        phone: Some(SecretString::from(phone.to_owned())),
+        email: None,
+        address: None,
+        onsite_contact: None,
+    };
+    store_contact(db, &vault(), &new).await.expect("contact")
+}
+
 fn job(homeowner: Uuid, business: Uuid) -> Connected {
     Connected {
         job: Uuid::new_v4(),
@@ -99,8 +113,12 @@ async fn give(db: &mut PgConnection, pool: &MaskedPool, job: Connected) -> Line 
 }
 
 async fn pool_alerts(db: &mut PgConnection) -> i64 {
+    alerts(db, POOL_ALERT).await
+}
+
+async fn alerts(db: &mut PgConnection, kind: &str) -> i64 {
     sqlx::query_scalar("SELECT count(*) FROM ops.alert WHERE kind = $1")
-        .bind(POOL_ALERT)
+        .bind(kind)
         .fetch_one(db)
         .await
         .expect("alerts")
@@ -149,7 +167,8 @@ fn td_call_01_the_voice_adapter_has_no_buy_number_method() {
 }
 
 /// TD-CALL-01 (CALL-001, CALL-002): a connected job gets a pool number that is neither side's own
-/// phone, the same line again on a repeat call, and one audit row.
+/// phone, the same line again on a repeat call, and one audit row; a repeat call naming another
+/// business or another homeowner is refused, never handed the open line.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_call_01_each_connected_job_gets_a_pool_number_neither_sides_own(db: PgPool) {
     let mut db = db.acquire().await.expect("connection");
@@ -176,6 +195,12 @@ async fn td_call_01_each_connected_job_gets_a_pool_number_neither_sides_own(db: 
         ..connected
     };
     let refused = assign_number(&mut db, &pool, other, ts()).await;
+    assert_eq!(refused, Err(CallsError::LineOpen));
+    let stranger = Connected {
+        homeowner: Uuid::new_v4(),
+        ..connected
+    };
+    let refused = assign_number(&mut db, &pool, stranger, ts()).await;
     assert_eq!(refused, Err(CallsError::LineOpen));
 }
 
@@ -289,16 +314,7 @@ async fn td_call_01_lines_keep_their_number_and_alerts_are_append_only(db: PgPoo
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_con_28_no_automated_call_after_an_opt_out(db: PgPool) {
     let mut db = db.acquire().await.expect("connection");
-    let new = NewContact {
-        name: None,
-        phone: Some(SecretString::from(HER_PHONE.to_owned())),
-        email: None,
-        address: None,
-        onsite_contact: None,
-    };
-    let her = store_contact(&mut db, &vault(), &new)
-        .await
-        .expect("contact");
+    let her = contact(&mut db, HER_PHONE).await;
     let not_asked = AutomatedCall::Code {
         asked_on_screen: false,
     };
@@ -324,4 +340,32 @@ async fn td_con_28_no_automated_call_after_an_opt_out(db: PgPool) {
     }
     let gate = automated_call_gate(&mut db, &vault(), (her, asked), ts()).await;
     assert_eq!(gate, Ok(CallGate::Dial));
+}
+
+/// D-1681, D-1682 (CALL-019, QH-003): a `+1` number whose area code is not in the quiet-hours
+/// table is one `messaging` never texts, so no automated call dials it; a safety call answered
+/// `NotDialable` raises one High alert about the contact instead of failing silently, a code call
+/// raises none.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_con_28_an_untextable_number_is_not_dialled_and_a_safety_call_alerts(db: PgPool) {
+    let mut db = db.acquire().await.expect("connection");
+    let her = contact(&mut db, UNTABLED_PHONE).await;
+    let not_asked = AutomatedCall::Code {
+        asked_on_screen: false,
+    };
+    let gate = automated_call_gate(&mut db, &vault(), (her, not_asked), ts()).await;
+    assert_eq!(gate, Ok(CallGate::NotDialable));
+    assert_eq!(alerts(&mut db, SAFETY_NOT_DIALABLE_ALERT).await, 0);
+    let gate = automated_call_gate(&mut db, &vault(), (her, AutomatedCall::Safety), ts()).await;
+    assert_eq!(gate, Ok(CallGate::NotDialable));
+    let subject: (String, Uuid, String) =
+        sqlx::query_as("SELECT subject_kind, subject_id, severity FROM ops.alert WHERE kind = $1")
+            .bind(SAFETY_NOT_DIALABLE_ALERT)
+            .fetch_one(&mut *db)
+            .await
+            .expect("one alert");
+    assert_eq!(
+        subject,
+        ("privacy.contact".to_owned(), her, "high".to_owned())
+    );
 }

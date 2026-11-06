@@ -23,6 +23,10 @@ use crate::models::{self, CallsError, OpenLine};
 pub const POOL_ALERT: &str = "calls.pool_exhausted";
 /// The audit action of a number given to a job (JOB-005).
 pub const ASSIGNED_ACTION: &str = "calls.number_assigned";
+/// The `ops.alert` kind raised when a safety call cannot dial her number (CALL-019, D-1682).
+pub const SAFETY_NOT_DIALABLE_ALERT: &str = "calls.safety_call_not_dialable";
+/// The alert subject kind of a homeowner's vault contact.
+const CONTACT_KIND: &str = "privacy.contact";
 /// The audit and alert subject kind of a line.
 const LINE_KIND: &str = "calls.number_pool";
 
@@ -37,7 +41,8 @@ pub struct Connected {
     pub business: Uuid,
 }
 
-/// A job's masked line: the pool number both sides see, and whether it is shared (CALL-002).
+/// A job's masked line: the pool number both sides see, and whether it was shared when assigned
+/// (CALL-002).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Line {
     id: Uuid,
@@ -58,8 +63,10 @@ impl Line {
         &self.number
     }
 
-    /// True when another open line of the same homeowner or business uses the number, so calls
-    /// on it route by PIN (CALL-004, CALL-017).
+    /// True when, at assignment, another open line of the same homeowner or business already used
+    /// the number (CALL-017). Stored once and never updated: a line assigned unshared becomes
+    /// shared in fact when a later line takes its number, so PIN routing (CALL-004, T077) must
+    /// derive sharing from the open lines on the number, never from this flag (D-1680).
     #[must_use]
     pub fn shared(&self) -> bool {
         self.shared
@@ -95,7 +102,8 @@ pub(crate) fn choose(
 ///
 /// # Errors
 ///
-/// [`CallsError::LineOpen`] when the job's open line is another business's,
+/// [`CallsError::LineOpen`] when the job's open line is another business's or homeowner's,
+/// [`CallsError::PoolEmpty`] when the pool holds no number (settings refuse one),
 /// [`CallsError::NumberRetired`] when its open line's number left the pool,
 /// [`CallsError::Ops`] or [`CallsError::Database`].
 pub async fn assign_number(
@@ -106,18 +114,22 @@ pub async fn assign_number(
 ) -> Result<Line, CallsError> {
     let mut tx = db.begin().await.map_err(|_| CallsError::Database)?;
     models::lock_pool(&mut tx).await?;
-    if let Some((id, number, business, shared)) = models::open_line_of(&mut tx, job.job).await? {
-        if business != job.business {
+    if let Some(line) = models::open_line_of(&mut tx, job.job).await? {
+        if line.business != job.business || line.homeowner != job.homeowner {
             return Err(CallsError::LineOpen);
         }
-        let number = in_pool(pool, &number).ok_or(CallsError::NumberRetired)?;
-        return Ok(Line { id, number, shared });
+        let number = in_pool(pool, &line.number).ok_or(CallsError::NumberRetired)?;
+        return Ok(Line {
+            id: line.id,
+            number,
+            shared: line.shared,
+        });
     }
     let open = models::open_lines(&mut tx).await?;
     let numbers = pool.numbers();
     let (index, shared) =
-        choose(numbers, &open, (job.homeowner, job.business)).ok_or(CallsError::Database)?;
-    let number = numbers.get(index).cloned().ok_or(CallsError::Database)?;
+        choose(numbers, &open, (job.homeowner, job.business)).ok_or(CallsError::PoolEmpty)?;
+    let number = numbers.get(index).cloned().ok_or(CallsError::PoolEmpty)?;
     let ids = (job.job, job.homeowner, job.business);
     let stored = models::insert_line(&mut tx, ids, (number.as_str(), shared), now).await?;
     let entry = AuditEntry {
@@ -182,18 +194,24 @@ pub enum CallGate {
     Dial,
     /// The number is on the suppression list: no call (CON-035).
     OptedOut,
-    /// The number cannot be read as a US number: no call.
+    /// `messaging` would not text the number: not a `+1` number, or its area code is not in the
+    /// quiet-hours table (QH-003). No call; a safety call answered this raises
+    /// [`SAFETY_NOT_DIALABLE_ALERT`] (D-1681, D-1682).
     NotDialable,
 }
 
 /// Whether `call` may dial the homeowner with vault contact `contact` at `now`: the one
 /// suppression list is checked first, through `messaging`, whatever the call, except a code call
-/// she just asked for on screen (CON-035, CALL-014, CALL-022; D-1681). Call it outside a
-/// transaction: the vault refuses a read inside one.
+/// she just asked for on screen (CON-035, CALL-014, CALL-022; D-1681). The check reuses
+/// `messaging`'s text-send window, so the vault audits the phone read as a `Send` read, and a
+/// number `messaging` would not text answers [`CallGate::NotDialable`]; for a safety call that
+/// also raises one High [`SAFETY_NOT_DIALABLE_ALERT`] about the contact, so it is never silent
+/// (D-1682). Call it outside a transaction: the vault refuses a read inside one.
 ///
 /// # Errors
 ///
-/// [`CallsError::Messaging`] when the phone or the list cannot be read.
+/// [`CallsError::Messaging`] when the phone or the list cannot be read, [`CallsError::Ops`] when
+/// the alert cannot be written.
 pub async fn automated_call_gate(
     db: &mut PgConnection,
     vault: &Vault,
@@ -209,9 +227,18 @@ pub async fn automated_call_gate(
     let window = send_window(db, vault, contact, now)
         .await
         .map_err(|_| CallsError::Messaging)?;
-    Ok(match window {
+    let gate = match window {
         SendWindow::OptedOut => CallGate::OptedOut,
         SendWindow::NotTextable => CallGate::NotDialable,
         SendWindow::Now | SendWindow::Hold { .. } => CallGate::Dial,
-    })
+    };
+    if gate == CallGate::NotDialable && call == AutomatedCall::Safety {
+        let alert = NewAlert {
+            kind: SAFETY_NOT_DIALABLE_ALERT,
+            severity: Severity::High,
+            subject: Some((CONTACT_KIND, contact)),
+        };
+        raise_alert(db, &alert).await.map_err(|_| CallsError::Ops)?;
+    }
+    Ok(gate)
 }
