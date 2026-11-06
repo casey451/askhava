@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-06T19:13:49Z by runner 775decc0b7f9 (actions).
+Updated 2026-11-06T19:53:01Z by runner 35376c5ebacd (actions).
 
 **Building: T078 in progress since 19:06Z; 124 of 239 done; week 23% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,11 @@ Updated 2026-11-06T19:13:49Z by runner 775decc0b7f9 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T078 claimed 19:06Z, lease until 22:06Z
 - **Week:** 23% used, 148.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:57Z, 16 min before this update
+- **Last run:** 19:13Z, 39 min before this update
 - **Keeper:** last ran 18:57Z, next wake 19:17Z
 
 ## Needs attention
-- Strict plan check red: 1 problem(s) on tasks still to run (+9 on DONE tasks); first: T249: stored context_pct 22% but it measures 26%; regenerate
+- Strict plan check red: 2 problem(s) on tasks still to run (+9 on DONE tasks); first: T078: stored context_pct 7% but it measures 12%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -42,14 +42,12 @@ Updated 2026-11-06T19:13:49Z by runner 775decc0b7f9 (actions).
 | T245 | payments: narrow the default privileges in schema payments t | done | 1 | 21 min | 21:56Z |  |
 | T244 | payments: remove the early-joiner price lock (FEE-040 withdr | done | 1 | 19 min | 21:20Z |  |
 | T065 | payments: refund rules for cancels and no-shows | done | 1 | 38 min | 20:38Z |  |
-| T190 | picks: Hold for 2 more hours, the emergency 60-minute window | done | 1 | 32 min | 19:45Z |  |
 
 ### Plan and harness merges on main
 - 16:15Z Plan: dynamic SQL in migrations is a TD-SEC-10 finding (T252), T126 context budget, stored budgets refreshed (D-1677, D-1678) (#298)
 - 16:05Z Plan: bump actix-http 3.20.2 -> 3.20.3 for RUSTSEC-2026-0455 (D-1666) (#297)
 - 15:10Z Plan: bump actix-http 3.20.0 -> 3.20.2 for RUSTSEC-2026-0446 (D-1643) (#295)
 - 14:27Z Plan: T250 becomes a harness task with a narrow TD-SEC-10 exception for default-privilege REVOKE migrations (D-1632) (#294)
-- 19:30Z Plan: page pick end to end, first-quote move, markets and service radius, schema default privileges, card sender (D-1515–D-1521) (#272)
 
 ## Progress (requirements verified)
 
