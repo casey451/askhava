@@ -18141,7 +18141,7 @@
     "T245",
     "T075"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 3,
    "slug": "core-schema-default-privileges",
    "type": "build",
@@ -18154,7 +18154,7 @@
     1620,
     1621
    ],
-   "last_failure": "T250 blocked: migration 0110 names 12 other modules' schemas; TD-SEC-10 (architecture_migrations.rs, protected) rejects it. Needs a harness exception for a core migration of only ALTER DEFAULT PRIVILEGES ... REVOKE statements, or a plan change to 13 per-schema migrations 0110-0122. Nothing committed; D-1619.",
+   "last_failure": "T250 blocked: migration 0110 names 12 other modules' schemas; TD-SEC-10 (architecture_migrations.rs, protected) rejects it. Needs a harness exception for a core migration of only ALTER DEFAULT PRIVILEGES ... REVOKE statements, or a plan change to 13 per-schema migrations 0110-0122. Nothing committed; D-1619.\nre-queued after plan fix D-1632: T250 now a harness task owning architecture_migrations.rs with a REVOKE-only core-migration exception (TD-SEC-35); attempts 1-2 failed on the TD-SEC-10 plan gap, attempt 3 on the unrelated RUSTSEC-2026-0446 audit failure fixed by D-1643",
    "history": [
     {
      "attempt": 1,
@@ -18260,7 +18260,22 @@
    ],
    "update_waiting_since": null,
    "update_push_failures": null,
-   "reason": "Ci: failure; Checks: failure\nChecks failed at step: Rust dependency audit (cargo-audit, cargo-deny)\nwarning: 1 allowed warning found\nVersion:   3.20.0\nTitle:     Request smuggling through malformed chunked request trailers\nDate:      2026-11-06\nID:        RUSTSEC-2026-0446\nURL:       https://rustsec.org/advisories/RUSTSEC-2026-0446\nSolution:  Upgrade to >=3.20.2\nCrate:     basic-toml\nVersion:   0.1.10\nWarning:   unmaintained\nTitle:     `basic-toml` is unmaintained\nDate:      2026-09-26\nID:        RUSTSEC-2026-0374\nURL:       https://rustsec.org/advisories/RUSTSEC-2026-0374\n##[error]Process completed with exit code 1.\nCi failed at step: All three jobs passed\nChecks: failure, Coverage: success, E2e: success\n##[error]Process completed with exit code 1."
+   "reason": null,
+   "requeues": [
+    {
+     "at": "2026-11-06T15:11:44Z",
+     "reason": "T250 now a harness task owning architecture_migrations.rs with a REVOKE-only core-migration exception (TD-SEC-35); attempts 1-2 failed on the TD-SEC-10 plan gap, attempt 3 on the unrelated RUSTSEC-2026-0446 audit failure fixed by D-1643",
+     "by": "manual-95e73fa347ef",
+     "was": "Ci: failure; Checks: failure\nChecks failed at step: Rust dependency audit (cargo-audit, cargo-deny)\nwarning: 1 allowed warning found\nVersion:   3.20.0\nTitle:     Request smuggling through malformed chunked request trailers\nDate:      2026-11-06\nID:        RUSTSEC-2026-0446\nURL:       https://rustsec.org/advisories/RUSTSEC-2026-0446\nSolution:  Upgrade to >=3.20.2\nCrate:     basic-toml\nVersion:   0.1.10\nWarning:   unmaintained\nTitle:     `basic-toml` is unmaintained\nDate:      2026-09-26\nID:        RUSTSEC-2026-0374\nURL:       https://rustsec.org/advisories/RUSTSEC-2026-0374\n##[error]Process completed with exit code 1.\nCi failed at step: All three jobs passed\nChecks: failure, Coverage: success, E2e: success\n##[error]Process completed with exit code 1.",
+     "attempts": 3,
+     "plan_fix": "D-1632",
+     "plan_since": "2026-11-06T13:53:58Z",
+     "plan_base": "25de4f795882f473cb1376562fd80fdbc9eca4fe",
+     "plan_head": "68d31e685befbe02213ae9d89025cab4df9f8eb6",
+     "plan_then": "8767f13ca89a5e4aa4a3bed149916589a180774b7e8316e51b618f3e5145b5fe",
+     "plan_now": "8d32b7904cc3e7376801ec9969e80630b7d7c668851e7add3acbcf18af158387"
+    }
+   ]
   },
   {
    "id": "T248",
@@ -19475,7 +19490,7 @@
    }
   }
  },
- "updated_at": "2026-11-06T14:54:21Z",
+ "updated_at": "2026-11-06T15:11:44Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -19573,8 +19588,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "b5453051e22c077d109974ff1875919f61433383",
- "starter": "actions",
+ "runner_sha": "ea22387162b93e90d7a353e6474e7f8998b11b49",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "0340b5b80ca8ef419f799782a2e56ed59693de1d",
