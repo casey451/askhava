@@ -338,5 +338,15 @@
     "audience": "business",
     "segments": 1,
     "text": "Ask Hava: Time ran out to accept job {job}, so the pick expired. You weren't charged. Your quote can't be picked again for this job."
+  },
+  "release_notice": {
+    "audience": "business",
+    "segments": 1,
+    "text": "Ask Hava: Job {job} is confirmed. Sign in to see the homeowner's details. {link}"
+  },
+  "release_text": {
+    "audience": "business",
+    "segments": 1,
+    "text": "Ask Hava: Job {job} is confirmed. The details are at askhava.com/business."
   }
 }

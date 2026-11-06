@@ -6,6 +6,7 @@
 //! never the number (PRIV-002); `picks.verify_cap_day` the days the global cap was hit (one High
 //! alert each); `picks.terms_line` each queued text that ends with the Terms line (PICK-016).
 //! T063 adds locking a waiting pick and expiring it at the Confirm window's end (PICK-019).
+//! T069 adds `picks.release` and `picks.address_wait` (PICK-022, INT-029).
 
 use jiff::Timestamp;
 use jiff_sqlx::ToSqlx;
@@ -302,4 +303,84 @@ pub(crate) async fn expire_pick(
     .execute(tx)
     .await)?;
     Ok(())
+}
+
+/// What [`release_target`] reads of a pick for a release (PICK-022).
+pub(crate) struct ReleaseTarget {
+    /// The pick's job.
+    pub job: Uuid,
+    /// The picked business.
+    pub business: Uuid,
+    /// The pick ended (`ended_at` set).
+    pub ended: bool,
+    /// The pick's status is the one the proof may release from (`status::release_status`).
+    pub confirmed: bool,
+    /// The pick already has its `picks.release` row.
+    pub released: bool,
+}
+
+/// Pick `id` for a release: job, business, ended, whether its status is `want` and whether it
+/// was released (PICK-022, D-1564).
+pub(crate) async fn release_target(
+    db_conn: &mut PgConnection,
+    id: Uuid,
+    want: PickStatus,
+) -> Result<Option<ReleaseTarget>, PicksError> {
+    let row = db(sqlx::query!(
+        r#"SELECT p.job_id, p.business_id, p.ended_at IS NOT NULL AS "ended!",
+             p.status = $2 AS "confirmed!",
+             EXISTS (SELECT 1 FROM picks.release r WHERE r.pick_id = p.id) AS "released!"
+           FROM picks.pick p WHERE p.id = $1"#,
+        id,
+        want.code(),
+    )
+    .fetch_optional(db_conn)
+    .await)?;
+    Ok(row.map(|r| ReleaseTarget {
+        job: r.job_id,
+        business: r.business_id,
+        ended: r.ended,
+        confirmed: r.confirmed,
+        released: r.released,
+    }))
+}
+
+/// Records pick `id`'s one release; false when another call already did (PICK-022, D-365).
+pub(crate) async fn insert_release(
+    tx: &mut PgConnection,
+    (id, job, business): (Uuid, Uuid, Uuid),
+    basis: &str,
+    at: Timestamp,
+) -> Result<bool, PicksError> {
+    let done = db(sqlx::query!(
+        "INSERT INTO picks.release (pick_id, job_id, business_id, basis, released_at) \
+         VALUES ($1, $2, $3, $4, $5) ON CONFLICT (pick_id) DO NOTHING",
+        id,
+        job,
+        business,
+        basis,
+        at.to_sqlx() as _,
+    )
+    .execute(tx)
+    .await)?;
+    Ok(done.rows_affected() == 1)
+}
+
+/// Records an emergency acceptance that came before the address, once per pick; false when one
+/// was recorded before (INT-029, TD-INT-34, D-1564).
+pub(crate) async fn insert_address_wait(
+    tx: &mut PgConnection,
+    (id, job): (Uuid, Uuid),
+    at: Timestamp,
+) -> Result<bool, PicksError> {
+    let done = db(sqlx::query!(
+        "INSERT INTO picks.address_wait (pick_id, job_id, asked_at) VALUES ($1, $2, $3) \
+         ON CONFLICT (pick_id) DO NOTHING",
+        id,
+        job,
+        at.to_sqlx() as _,
+    )
+    .execute(tx)
+    .await)?;
+    Ok(done.rows_affected() == 1)
 }

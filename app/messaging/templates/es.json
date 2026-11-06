@@ -414,5 +414,17 @@
     "draft": true,
     "segments": 3,
     "text": "Ask Hava: Se acabó el tiempo para aceptar el trabajo {job}, así que la elección venció. No se le cobró nada. Su cotización no se puede elegir otra vez para este trabajo."
+  },
+  "release_notice": {
+    "audience": "business",
+    "draft": true,
+    "segments": 2,
+    "text": "Ask Hava: El trabajo {job} ya está confirmado. Inicie sesión para ver los datos del dueño de la casa. {link}"
+  },
+  "release_text": {
+    "audience": "business",
+    "draft": true,
+    "segments": 2,
+    "text": "Ask Hava: El trabajo {job} ya está confirmado. Los datos están en askhava.com/business."
   }
 }

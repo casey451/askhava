@@ -1,0 +1,62 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT p.job_id, p.business_id, p.ended_at IS NOT NULL AS \"ended!\",\n             p.status = $2 AS \"confirmed!\",\n             EXISTS (SELECT 1 FROM picks.release r WHERE r.pick_id = p.id) AS \"released!\"\n           FROM picks.pick p WHERE p.id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "job_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "picks.pick",
+            "name": "job_id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "business_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "picks.pick",
+            "name": "business_id"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "ended!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 3,
+        "name": "confirmed!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 4,
+        "name": "released!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "037efa17175552d8ec131336358b57f3692c9fcdac6651ca935e5b1460caa8d9"
+}
