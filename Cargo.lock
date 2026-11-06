@@ -443,6 +443,7 @@ dependencies = [
  "hmac",
  "jiff",
  "jiff-sqlx",
+ "proptest",
  "secrecy",
  "serde_json",
  "sha1",
