@@ -496,7 +496,7 @@
    "budget": {
     "files": 4,
     "lines": 400,
-    "context_pct": 49
+    "context_pct": 53
    },
    "checks": [
     "Ci",
@@ -579,7 +579,7 @@
    "budget": {
     "files": 5,
     "lines": 400,
-    "context_pct": 50
+    "context_pct": 54
    },
    "checks": [
     "Ci",
@@ -651,7 +651,7 @@
    "budget": {
     "files": 9,
     "lines": 500,
-    "context_pct": 55
+    "context_pct": 59
    },
    "checks": [
     "Ci",
@@ -820,7 +820,7 @@
    "budget": {
     "files": 10,
     "lines": 200,
-    "context_pct": 13
+    "context_pct": 17
    },
    "checks": [
     "Ci",
@@ -2009,7 +2009,7 @@
    "budget": {
     "files": 8,
     "lines": 550,
-    "context_pct": 23
+    "context_pct": 27
    },
    "checks": [
     "Ci",
@@ -2712,7 +2712,7 @@
    "budget": {
     "files": 7,
     "lines": 500,
-    "context_pct": 22
+    "context_pct": 26
    },
    "checks": [
     "Ci",
@@ -5289,7 +5289,7 @@
    "budget": {
     "files": 9,
     "lines": 600,
-    "context_pct": 26
+    "context_pct": 30
    },
    "checks": [
     "Ci",
@@ -5840,7 +5840,7 @@
    "budget": {
     "files": 2,
     "lines": 400,
-    "context_pct": 23
+    "context_pct": 29
    },
    "checks": [
     "Ci",
@@ -6203,7 +6203,7 @@
    "budget": {
     "files": 6,
     "lines": 550,
-    "context_pct": 16
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -6337,7 +6337,7 @@
    "budget": {
     "files": 6,
     "lines": 450,
-    "context_pct": 16
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -6423,7 +6423,7 @@
    "budget": {
     "files": 7,
     "lines": 350,
-    "context_pct": 26
+    "context_pct": 30
    },
    "checks": [
     "Ci",
@@ -6507,7 +6507,7 @@
    "budget": {
     "files": 6,
     "lines": 300,
-    "context_pct": 27
+    "context_pct": 31
    },
    "checks": [
     "Ci",
@@ -6658,7 +6658,7 @@
    "budget": {
     "files": 3,
     "lines": 350,
-    "context_pct": 20
+    "context_pct": 29
    },
    "checks": [
     "Ci",
@@ -6751,7 +6751,7 @@
    "budget": {
     "files": 11,
     "lines": 750,
-    "context_pct": 33
+    "context_pct": 43
    },
    "checks": [
     "Ci",
@@ -6918,7 +6918,7 @@
    "budget": {
     "files": 3,
     "lines": 350,
-    "context_pct": 10
+    "context_pct": 17
    },
    "checks": [
     "Ci",
@@ -6970,7 +6970,7 @@
    "budget": {
     "files": 2,
     "lines": 300,
-    "context_pct": 7
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -7042,7 +7042,7 @@
    "budget": {
     "files": 2,
     "lines": 350,
-    "context_pct": 9
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -7123,7 +7123,7 @@
    "budget": {
     "files": 3,
     "lines": 350,
-    "context_pct": 10
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -7199,7 +7199,7 @@
    "budget": {
     "files": 6,
     "lines": 500,
-    "context_pct": 13
+    "context_pct": 24
    },
    "checks": [
     "Ci",
@@ -7267,7 +7267,7 @@
    "budget": {
     "files": 7,
     "lines": 600,
-    "context_pct": 12
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -7340,7 +7340,7 @@
    "budget": {
     "files": 8,
     "lines": 450,
-    "context_pct": 8
+    "context_pct": 18
    },
    "checks": [
     "Ci",
@@ -7415,7 +7415,7 @@
    "budget": {
     "files": 6,
     "lines": 300,
-    "context_pct": 11
+    "context_pct": 18
    },
    "checks": [
     "Ci",
@@ -7482,7 +7482,7 @@
    "budget": {
     "files": 8,
     "lines": 200,
-    "context_pct": 10
+    "context_pct": 16
    },
    "checks": [
     "Ci",
@@ -7546,7 +7546,7 @@
    "budget": {
     "files": 2,
     "lines": 450,
-    "context_pct": 9
+    "context_pct": 16
    },
    "checks": [
     "Ci",
@@ -7602,7 +7602,7 @@
    "budget": {
     "files": 1,
     "lines": 250,
-    "context_pct": 7
+    "context_pct": 12
    },
    "checks": [
     "Ci",
@@ -7784,7 +7784,7 @@
    "budget": {
     "files": 10,
     "lines": 450,
-    "context_pct": 27
+    "context_pct": 35
    },
    "checks": [
     "Ci",
@@ -7857,7 +7857,7 @@
    "budget": {
     "files": 2,
     "lines": 400,
-    "context_pct": 23
+    "context_pct": 29
    },
    "checks": [
     "Ci",
@@ -9461,7 +9461,7 @@
    "budget": {
     "files": 5,
     "lines": 300,
-    "context_pct": 13
+    "context_pct": 17
    },
    "checks": [
     "Ci",
@@ -9531,7 +9531,7 @@
    "budget": {
     "files": 4,
     "lines": 300,
-    "context_pct": 10
+    "context_pct": 16
    },
    "checks": [
     "Ci",
@@ -10299,7 +10299,7 @@
    "budget": {
     "files": 4,
     "lines": 350,
-    "context_pct": 16
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -10978,7 +10978,7 @@
    "budget": {
     "files": 3,
     "lines": 400,
-    "context_pct": 23
+    "context_pct": 29
    },
    "checks": [
     "Ci",
@@ -13481,7 +13481,8 @@
     "T218",
     "T219",
     "T222",
-    "T229"
+    "T229",
+    "T252"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -13501,12 +13502,16 @@
     "docs/architecture.md",
     "docs/build-readiness.md",
     "docs/code-docs.md",
-    "twin/",
+    "twin/__main__.py",
+    "twin/chaos_baseline.json",
+    "twin/gate.py",
     "docs/brains/postgres-operations.md"
    ],
    "requirements": [],
    "tests": [],
-   "decisions": [],
+   "decisions": [
+    "D-1678"
+   ],
    "cites": [
     "BUILD_BRIEF.md:488",
     "sources/02_build_plan/Build_Plan.md:236"
@@ -13514,7 +13519,7 @@
    "budget": {
     "files": 3,
     "lines": 400,
-    "context_pct": 64
+    "context_pct": 35
    },
    "checks": [
     "Ci",
@@ -15047,7 +15052,7 @@
    "budget": {
     "files": 2,
     "lines": 400,
-    "context_pct": 23
+    "context_pct": 29
    },
    "checks": [
     "Ci",
@@ -15693,7 +15698,7 @@
    "budget": {
     "files": 7,
     "lines": 300,
-    "context_pct": 16
+    "context_pct": 24
    },
    "checks": [
     "Ci",
@@ -16505,7 +16510,7 @@
    "budget": {
     "files": 9,
     "lines": 350,
-    "context_pct": 16
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -16869,7 +16874,7 @@
    "budget": {
     "files": 10,
     "lines": 600,
-    "context_pct": 18
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -16955,7 +16960,7 @@
    "budget": {
     "files": 7,
     "lines": 600,
-    "context_pct": 21
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -16965,6 +16970,61 @@
    "branch": "claude/task/T251-intake-zip-and-cards-out",
    "prompt": "kit/prompts/T251.md",
    "copy": true
+  },
+  {
+   "id": "T252",
+   "slug": "architecture-test-dynamic-sql",
+   "title": "architecture test: dynamic SQL in a migration is a TD-SEC-10 finding unless allow-listed with a reason",
+   "goal": "Dynamic SQL hides schema references from TD-SEC-10 (D-1677): `schema_refs` in `tests/integration/tests/architecture_migrations.rs` lexes dollar-quoted bodies as SQL but cannot see a schema name built while a migration runs, so a migration such as `DO $x$ BEGIN EXECUTE format('ALTER DEFAULT PRIVILEGES IN SCHEMA %I REVOKE ...', nsp); END $x$;` names no schema literally and passes (seen in T250's third attempt, PR #293, not merged). In that test (T226's, then T250's, taken over here after T250 merges) add a dynamic-SQL rule over each migration's lexed tokens (the tokens `schema_refs` reads, so comments and `'...'` strings never count). A file gives one finding, `migrations/<file>: dynamic SQL (`<construct>`) hides schema references from this check`, naming the first construct found, when it holds: a `DO` statement (the token `do` first in a statement, at the start of the file or after `;`, so `ON CONFLICT DO NOTHING` and a rule's `DO INSTEAD` never count); an `execute` token not followed by `function`, `procedure`, `on` or `,` (the PL/pgSQL dynamic statement, including inside a `CREATE FUNCTION` or `CREATE PROCEDURE` body, `RETURN QUERY EXECUTE` and a cursor's `FOR EXECUTE`; a trigger's `EXECUTE FUNCTION` and `GRANT`/`REVOKE EXECUTE ON FUNCTION` are not dynamic); or a call of `format`, `quote_ident`, `quote_literal` or `quote_nullable` (the name followed by `(`). The SQL of each query macro and `query_file*` file under `app/` gets the same finding for `DO` and `execute` (a `format(` there only formats a value). A file is exempt only when its path is in a new constant `DYNAMIC_SQL_ALLOWED: [(&str, &str); N]` (path, one-line reason); it starts with one entry, `migrations/0019_core_db_migrations.sql`, whose `DO $guard$` block only raises an error when the role `askhava_app` is missing and builds no SQL (T012). An entry whose file is missing or no longer holds dynamic SQL is itself one finding, so the list cannot go stale. The checks take the allow list as a parameter: `td_sec_10_migrations_and_sql_obey_the_rules` passes the constant and each plant passes its own, so a planted path never enters the real list. Planted cases giving exactly one finding each: a `DO` block, an `EXECUTE` in a `CREATE FUNCTION ... LANGUAGE plpgsql` body, a `format()`-built statement, a query macro holding `EXECUTE`, and a stale allow-list entry; planted cases giving none: an allow-listed file holding a `DO` block, an `INSERT ... ON CONFLICT DO NOTHING`, a `CREATE TRIGGER ... EXECUTE FUNCTION` and a `GRANT EXECUTE ON FUNCTION`. Every earlier case, T250's included, still gives exactly its one finding: a T250 case whose plant holds a `DO` block (the one proving a `DO` block voids the REVOKE exception) runs with that planted file on its own allow list, so it still proves only its own rule. If another migration on `main` holds dynamic SQL when this task starts, list it only when it builds no schema name at run time, with its reason; otherwise stop and report. Update the test's `//!` header to name the rule, and `docs/architecture.md` section 10 where it lists the test's rules (section 4 rule 3 already states it, D-1677).",
+   "type": "harness",
+   "phase": 1,
+   "stage": "4",
+   "module": null,
+   "deps": [
+    "T250"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security"
+   ],
+   "owns": [
+    "tests/integration/tests/architecture_migrations.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/security.md",
+    "migrations/0019_core_db_migrations.sql",
+    "docs/brains/postgres-operations.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "SEC-029"
+   ],
+   "tests": [
+    "TD-SEC-36"
+   ],
+   "decisions": [
+    "D-1677",
+    "D-1632",
+    "D-491",
+    "D-600"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 1,
+    "lines": 400,
+    "context_pct": 23
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T252-architecture-test-dynamic-sql",
+   "prompt": "kit/prompts/T252.md"
   },
   {
    "id": "T249",
@@ -17478,7 +17538,7 @@
    "budget": {
     "files": 2,
     "lines": 300,
-    "context_pct": 9
+    "context_pct": 13
    },
    "checks": [
     "Ci",
