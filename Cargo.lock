@@ -353,6 +353,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "askhava-calls"
+version = "0.1.0"
+dependencies = [
+ "askhava-adapters",
+ "askhava-messaging",
+ "askhava-ops",
+ "askhava-privacy",
+ "jiff",
+ "jiff-sqlx",
+ "sqlx",
+ "thiserror",
+]
+
+[[package]]
 name = "askhava-catalog"
 version = "0.1.0"
 dependencies = [
@@ -426,6 +440,7 @@ dependencies = [
  "askhava-adapters",
  "askhava-ai",
  "askhava-businesses",
+ "askhava-calls",
  "askhava-catalog",
  "askhava-core",
  "askhava-intake",
