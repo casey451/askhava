@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT s.business_id FROM businesses.signup s JOIN businesses.business b ON b.id = s.business_id WHERE b.status = 'needs_review' AND s.review_since IS NOT NULL AND (s.review_told_at IS NULL OR s.review_told_at <= $1::timestamptz - interval '7 days') ORDER BY s.review_since",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "business_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "businesses.signup",
+            "name": "business_id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "039358f9cf7124ed7ae1efb769ca8d313c715633a78d411b40b9bf378677678e"
+}

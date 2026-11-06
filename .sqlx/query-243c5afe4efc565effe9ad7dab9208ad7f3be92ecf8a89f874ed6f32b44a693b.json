@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE businesses.signup s SET review_since = $2 FROM businesses.business b WHERE s.business_id = $1 AND b.id = s.business_id AND b.status = 'needs_review' AND s.review_since IS NULL",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "243c5afe4efc565effe9ad7dab9208ad7f3be92ecf8a89f874ed6f32b44a693b"
+}

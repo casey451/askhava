@@ -1,0 +1,35 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO businesses.terms_acceptance (business_id, person_id, document, version, text_sha256, language, channel, assent_line, accepted_at) VALUES ($1, $2, $3, $4, $5, $6, 'business_signup', $7, $8) RETURNING id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "businesses.terms_acceptance",
+            "name": "id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "2b48a47d10d42adb123338f94dadf5fd465ca2375fd98217d57f68371f08cd4e"
+}

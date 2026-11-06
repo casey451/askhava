@@ -9,7 +9,7 @@ use jiff_sqlx::ToSqlx;
 use sqlx::PgConnection;
 use sqlx::types::Uuid;
 
-use crate::rules::JobTypeChoice;
+use crate::rules::{Checks, JobTypeChoice};
 use crate::status::{AccountStatus, PauseReason};
 
 /// Why a businesses call failed. No variant carries a value (rust brain R5, R6).
@@ -260,6 +260,186 @@ pub(crate) async fn night_count(
                      WHERE c.business_id = b.id AND c.category = $1)",
         category,
         town
+    );
+    self::db(q.fetch_one(db).await)
+}
+
+/// One sign-up's identity progress as stored in `businesses.signup` (BIZ-002, BIZ-016).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct SignupState {
+    pub(crate) step: Option<String>,
+    pub(crate) code_done: bool,
+    pub(crate) match_passed: bool,
+    pub(crate) flagged: bool,
+}
+
+impl SignupState {
+    /// What sign-up has proved, for [`crate::status::next`] (BIZ-003, BIZ-016).
+    pub(crate) const fn checks(&self) -> Checks {
+        Checks {
+            code_done: self.code_done,
+            match_passed: self.match_passed,
+            flagged: self.flagged,
+        }
+    }
+}
+
+/// The sign-up row's values: mailbox, source answer, g code, submit time (BIZ-019, BIZ-053).
+pub(crate) type NewSignup<'a> = (Uuid, Option<&'a str>, Option<&'a str>, Timestamp);
+
+pub(crate) async fn insert_signup(
+    db: &mut PgConnection,
+    business: Uuid,
+    (mailbox, heard, g_code, at): NewSignup<'_>,
+) -> Result<(), BusinessesError> {
+    let q = sqlx::query!(
+        "INSERT INTO businesses.signup (business_id, mailbox_id, heard_from, g_code, submitted_at) \
+         VALUES ($1, $2, $3, $4, $5)",
+        business,
+        mailbox,
+        heard,
+        g_code,
+        at.to_sqlx() as _
+    );
+    self::db(q.execute(db).await).map(|_| ())
+}
+
+pub(crate) async fn signup_state(
+    db: &mut PgConnection,
+    business: Uuid,
+) -> Result<SignupState, BusinessesError> {
+    let q = sqlx::query!(
+        "SELECT identity_step, code_done, match_passed, flag IS NOT NULL AS \"flagged!\" \
+         FROM businesses.signup WHERE business_id = $1",
+        business
+    );
+    let row = self::db(q.fetch_optional(db).await)?.ok_or(BusinessesError::UnknownBusiness)?;
+    Ok(SignupState {
+        step: row.identity_step,
+        code_done: row.code_done,
+        match_passed: row.match_passed,
+        flagged: row.flagged,
+    })
+}
+
+pub(crate) async fn set_step(
+    db: &mut PgConnection,
+    business: Uuid,
+    step: &str,
+) -> Result<(), BusinessesError> {
+    let q = sqlx::query!(
+        "UPDATE businesses.signup SET identity_step = $2 WHERE business_id = $1",
+        business,
+        step
+    );
+    self::db(q.execute(db).await).map(|_| ())
+}
+
+pub(crate) async fn set_code_done(
+    db: &mut PgConnection,
+    business: Uuid,
+) -> Result<(), BusinessesError> {
+    let q = sqlx::query!(
+        "UPDATE businesses.signup SET code_done = true WHERE business_id = $1",
+        business
+    );
+    self::db(q.execute(db).await).map(|_| ())
+}
+
+/// Sets the match when `passed` is given and keeps the first flag (BIZ-016).
+pub(crate) async fn set_match(
+    db: &mut PgConnection,
+    business: Uuid,
+    passed: Option<bool>,
+    flag: Option<&str>,
+) -> Result<(), BusinessesError> {
+    let q = sqlx::query!(
+        "UPDATE businesses.signup SET match_passed = coalesce($2, match_passed), \
+         flag = coalesce(flag, $3) WHERE business_id = $1",
+        business,
+        passed,
+        flag
+    );
+    self::db(q.execute(db).await).map(|_| ())
+}
+
+/// Stamps when a needs-review sign-up began waiting, once (BIZ-020).
+pub(crate) async fn start_review(
+    db: &mut PgConnection,
+    business: Uuid,
+    now: Timestamp,
+) -> Result<(), BusinessesError> {
+    let q = sqlx::query!(
+        "UPDATE businesses.signup s SET review_since = $2 FROM businesses.business b \
+         WHERE s.business_id = $1 AND b.id = s.business_id AND b.status = 'needs_review' \
+         AND s.review_since IS NULL",
+        business,
+        now.to_sqlx() as _
+    );
+    self::db(q.execute(db).await).map(|_| ())
+}
+
+/// Needs-review sign-ups never told their status, or last told 7 days or more before `now`
+/// (BIZ-020).
+pub(crate) async fn review_due(
+    db: &mut PgConnection,
+    now: Timestamp,
+) -> Result<Vec<Uuid>, BusinessesError> {
+    let q = sqlx::query_scalar!(
+        "SELECT s.business_id FROM businesses.signup s JOIN businesses.business b \
+         ON b.id = s.business_id WHERE b.status = 'needs_review' AND s.review_since IS NOT NULL \
+         AND (s.review_told_at IS NULL OR s.review_told_at <= $1::timestamptz - interval '7 days') \
+         ORDER BY s.review_since",
+        now.to_sqlx() as _
+    );
+    self::db(q.fetch_all(db).await)
+}
+
+pub(crate) async fn set_review_told(
+    db: &mut PgConnection,
+    business: Uuid,
+    now: Timestamp,
+) -> Result<(), BusinessesError> {
+    let q = sqlx::query!(
+        "UPDATE businesses.signup SET review_told_at = $2 WHERE business_id = $1",
+        business,
+        now.to_sqlx() as _
+    );
+    self::db(q.execute(db).await).map(|_| ())
+}
+
+pub(crate) async fn set_about_us(
+    db: &mut PgConnection,
+    business: Uuid,
+    line: Option<&str>,
+) -> Result<bool, BusinessesError> {
+    let q = sqlx::query!(
+        "UPDATE businesses.signup SET about_us = $2 WHERE business_id = $1",
+        business,
+        line
+    );
+    self::db(q.execute(db).await).map(|r| r.rows_affected() == 1)
+}
+
+/// One TERMS-033 row: business, person, document, version, text hash, language, assent line, time.
+pub(crate) type TermsRow<'a> = (Uuid, Uuid, [&'a str; 5], Timestamp);
+
+pub(crate) async fn insert_terms(
+    db: &mut PgConnection,
+    (business, person, [doc, version, sha, lang, line], at): TermsRow<'_>,
+) -> Result<Uuid, BusinessesError> {
+    let q = sqlx::query_scalar!(
+        "INSERT INTO businesses.terms_acceptance (business_id, person_id, document, version, \
+         text_sha256, language, channel, assent_line, accepted_at) \
+         VALUES ($1, $2, $3, $4, $5, $6, 'business_signup', $7, $8) RETURNING id",
+        business,
+        person,
+        doc,
+        version,
+        sha,
+        lang,
+        line,
+        at.to_sqlx() as _
     );
     self::db(q.fetch_one(db).await)
 }

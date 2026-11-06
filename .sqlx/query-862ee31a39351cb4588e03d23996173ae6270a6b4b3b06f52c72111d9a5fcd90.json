@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE businesses.signup SET match_passed = coalesce($2, match_passed), flag = coalesce(flag, $3) WHERE business_id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Bool",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "862ee31a39351cb4588e03d23996173ae6270a6b4b3b06f52c72111d9a5fcd90"
+}
