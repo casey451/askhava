@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-06T14:21:00Z by runner 25de4f795882 (actions).
+Updated 2026-11-06T14:29:33Z by runner b5453051e22c (actions).
 
 **Idle since 14:20Z; 121 of 238 done; week 18% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-06T14:21:00Z by runner 25de4f795882 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 14:20Z (no task in progress)
 - **Week:** 18% used, 162.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:20Z, 0 min before this update
+- **Last run:** 14:21Z, 8 min before this update
 - **Keeper:** last ran 14:21Z, next wake 14:41Z
 
 ## Needs attention
@@ -43,12 +43,13 @@ Updated 2026-11-06T14:21:00Z by runner 25de4f795882 (actions).
 | T224 | portals: the business Confirm-and-pay page with Stripe Eleme | done | 2 | 50 min | 17:59Z | session ended without handing in |
 
 ### Plan and harness merges on main
+- 14:27Z Plan: T250 becomes a harness task with a narrow TD-SEC-10 exception for default-privilege REVOKE migrations (D-1632) (#294)
 - 19:30Z Plan: page pick end to end, first-quote move, markets and service radius, schema default privileges, card sender (D-1515–D-1521) (#272)
 - 17:59Z Plan: drop the early-joiner price lock, payments default privileges, Nov 3 handoff review (D-1494–D-1499) (#269)
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 210 of 731 (28.7%) · partial 196 · unstarted 325
+**Requirements verified:** 209 of 731 (28.6%) · partial 197 · unstarted 325
 **Tasks merged (throughput only):** 121 of 238
 
 | Area | Verified | Partial | Unstarted | Total |
@@ -69,7 +70,7 @@ Updated 2026-11-06T14:21:00Z by runner 25de4f795882 (actions).
 | quiet-hours | 7 | 2 | 0 | 9 |
 | quotes-pick | 15 | 28 | 13 | 56 |
 | recurring | 7 | 1 | 3 | 11 |
-| security | 11 | 21 | 22 | 54 |
+| security | 10 | 22 | 22 | 54 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 0 | 28 | 28 |
 | wording | 2 | 2 | 28 | 32 |
