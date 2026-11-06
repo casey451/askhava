@@ -14183,6 +14183,9 @@
     "app/portals/src/receipts_page.rs",
     "docs/architecture.md",
     "docs/decisions.md"
+   ],
+   "proof_waits_for": [
+    "stage 3's proof is recorded by hand (`python3 -m runner --record-proof 3 --evidence TEXT`) (its cargo-mutants clause: nightly-main's cargo-mutants job is report only until tests/mutation/equivalent.toml holds reviewed reasons (D-1286), kit/nightly.json records no result for it, and app/catalog/ has no rules.rs to mutate)"
    ]
   },
   {
@@ -19243,7 +19246,7 @@
    }
   }
  },
- "updated_at": "2026-11-06T11:23:56Z",
+ "updated_at": "2026-11-06T11:26:46Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",

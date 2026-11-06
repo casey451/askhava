@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-06T11:23:56Z by runner ea22387162b9 (actions).
+Updated 2026-11-06T11:26:46Z by runner ea22387162b9 (actions).
 
 **Idle since 11:21Z; 119 of 238 done; week 15% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,11 @@ Updated 2026-11-06T11:23:56Z by runner ea22387162b9 (actions).
 - **Stage:** stage 3; stage proofs recorded: 1, 2
 - **Lane:** idle since 11:21Z (no task in progress)
 - **Week:** 15% used, 166.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:23Z, 0 min before this update
+- **Last run:** 11:24Z, 2 min before this update
 - **Keeper:** last ran 11:23Z, next wake 17:03Z
 
 ## Needs attention
-- BLOCKED T075: stage proof missing
+- BLOCKED T075: stage proof missing (the proof waits for: stage 3's proof is recorded by hand (`python3 -m runner --record-proof 3 --evidence TEXT`) (its cargo-mutants clause: nightly-main's cargo-mutants job is report only until tests/mutation/equivalent.toml holds reviewed reasons (D-1286), kit/nightly.json records no result for it, and app/catalog/ has no rules.rs to mutate))
 - Strict plan check red: 10 problem(s) on tasks still to run (+23 on DONE tasks); first: T191: stored context_pct 10% but it measures 14%; regenerate
 
 ## Last 24 hours
