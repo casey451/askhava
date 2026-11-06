@@ -7871,8 +7871,8 @@
    "id": "T250",
    "slug": "core-schema-default-privileges",
    "title": "core: narrow the default privileges in every schema and prove each table's grants",
-   "goal": "Every schema but `payments` (T245) still gives `askhava_app` SELECT, INSERT, UPDATE and DELETE on every new table by default: `ALTER DEFAULT PRIVILEGES IN SCHEMA <schema> GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO askhava_app` in migrations 0019 (core), 0021 (ops), 0027 (catalog), 0031 (jobs), 0036 (privacy), 0040 (ai), 0042 (messaging), 0048 (licensing), 0053 (intake), 0055 (businesses), 0058 (portals), 0067 (quotes) and 0079 (picks) (D-1495, verified in D-1520), so an append-only table stays append-only only while its own migration remembers to REVOKE. Add `migrations/0110_schema_default_privileges.sql` (first line `-- core (T250): ...`) running `ALTER DEFAULT PRIVILEGES IN SCHEMA <schema> REVOKE UPDATE, DELETE ON TABLES FROM askhava_app;` for each of the 13 schemas; no existing table's grants change (a default applies only to tables created later). Add `tests/integration/tests/schema_grants.rs` (a `sqlx::test` on the shared migrator; T245's `payments_grants.rs` covers `payments` and is not edited) asserting: every schema's default ACL in `pg_default_acl` other than `payments` gives the app role exactly SELECT and INSERT, including a schema a later migration creates (so `calls`, T076, and `recovery`, T109, write theirs as SELECT, INSERT); each existing table's app-role privileges equal an explicit allow list built from the migrations as they stand, every UPDATE or DELETE named with the requirement or migration that needs it (for example the BIZ-010 edits of `businesses.town` and `businesses.job_type_choice`); no table grants TRUNCATE, REFERENCES or TRIGGER; the append-only tables the spec names (`ops.audit_log`, OPS-010; the consent and opt-out records, CON-022; `quotes.job_card`, D-1015) have no UPDATE or DELETE; a table created after the migrations gets SELECT and INSERT only; and a table outside the pinned list (one a later task adds) holds no more than SELECT, INSERT and what the explicit `GRANT ... TO askhava_app` statements in `migrations/` give it (parsed as T245's test parses them: comma lists, statements over several lines, column grants), so no later build task edits this test (TD-SEC-34). If a table the spec calls append-only has UPDATE or DELETE today, revoke it in this migration when no code updates or deletes its rows, and otherwise stop and report. Update `app/core/CLAUDE.md` and `docs/architecture.md` section 10.",
-   "type": "build",
+   "goal": "Every schema but `payments` (T245) still gives `askhava_app` SELECT, INSERT, UPDATE and DELETE on every new table by default: `ALTER DEFAULT PRIVILEGES IN SCHEMA <schema> GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO askhava_app` in migrations 0019 (core), 0021 (ops), 0027 (catalog), 0031 (jobs), 0036 (privacy), 0040 (ai), 0042 (messaging), 0048 (licensing), 0053 (intake), 0055 (businesses), 0058 (portals), 0067 (quotes) and 0079 (picks) (D-1495, verified in D-1520), so an append-only table stays append-only only while its own migration remembers to REVOKE. Add `migrations/0110_schema_default_privileges.sql` (first line `-- core (T250): ...`) running `ALTER DEFAULT PRIVILEGES IN SCHEMA <schema> REVOKE UPDATE, DELETE ON TABLES FROM askhava_app;` for each of the 13 schemas; no existing table's grants change (a default applies only to tables created later). Add `tests/integration/tests/schema_grants.rs` (a `sqlx::test` on the shared migrator; T245's `payments_grants.rs` covers `payments` and is not edited) asserting: every schema's default ACL in `pg_default_acl` other than `payments` gives the app role exactly SELECT and INSERT, including a schema a later migration creates (so `calls`, T076, and `recovery`, T109, write theirs as SELECT, INSERT); each existing table's app-role privileges equal an explicit allow list built from the migrations as they stand, every UPDATE or DELETE named with the requirement or migration that needs it (for example the BIZ-010 edits of `businesses.town` and `businesses.job_type_choice`); no table grants TRUNCATE, REFERENCES or TRIGGER; the append-only tables the spec names (`ops.audit_log`, OPS-010; the consent and opt-out records, CON-022; `quotes.job_card`, D-1015) have no UPDATE or DELETE; a table created after the migrations gets SELECT and INSERT only; and a table outside the pinned list (one a later task adds) holds no more than SELECT, INSERT and what the explicit `GRANT ... TO askhava_app` statements in `migrations/` give it (parsed as T245's test parses them: comma lists, statements over several lines, column grants), so no later build task edits this test (TD-SEC-34). If a table the spec calls append-only has UPDATE or DELETE today, revoke it in this migration when no code updates or deletes its rows, and otherwise stop and report. Harness part (D-1632; BUILD_BRIEF.md:70, Opus review): migration 0110 names the 12 other modules' schemas, which TD-SEC-10's `tests/integration/tests/architecture_migrations.rs` (T226's, protected, taken over here) rejects as a cross-schema reference, so the first two attempts could not pass. Add one narrow, named exception to that test, as `docs/architecture.md` section 4 rule 3 now states: in `check_migrations`, a migration whose header module is `core` may name other modules' schemas only when every statement in it (the lexed tokens split on `;`) is exactly `ALTER DEFAULT PRIVILEGES IN SCHEMA <schema>[, <schema>…] REVOKE <privilege>[, <privilege>…] ON TABLES FROM askhava_app`, each schema one in `kit/layers.json` and each privilege a table privilege; `GRANT OPTION FOR`, `FOR ROLE`, any other object kind, any other grantee, a GRANT, table DDL, a data statement or a `DO` block anywhere in the file voids the exception for the whole file, which then gets every finding it gets today. Keep every existing rule, case and message as it is; do not widen `foreign` or any other check. Prove it (TD-SEC-35): add a REVOKE-only `core` file naming another module's schema to the clean plant (owned and numbered so it gives no order finding), and planted cases, each giving exactly one finding, for that REVOKE with an added GRANT, an added `CREATE TABLE`, an added data statement, revoked from another role, and headed by a module other than `core`; the real tree, with 0110, has no finding. Update the test's `//!` header to name the exception, `app/core/CLAUDE.md` and `docs/architecture.md` section 10.",
+   "type": "harness",
    "phase": 1,
    "stage": "4",
    "module": "core",
@@ -7881,31 +7881,36 @@
     "T075"
    ],
    "model": "claude-opus-5-5",
-   "effort": "medium",
+   "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
     "security"
    ],
    "owns": [
     "migrations/0110_schema_default_privileges.sql",
-    "tests/integration/tests/schema_grants.rs"
+    "tests/integration/tests/schema_grants.rs",
+    "tests/integration/tests/architecture_migrations.rs"
    ],
    "reads": [
     "docs/architecture.md",
     "docs/code-docs.md",
     "docs/spec/ops-recovery.md",
+    "docs/spec/security.md",
     "docs/spec/consent.md",
     "docs/brains/postgres-operations.md",
     "docs/brains/rust-production.md"
    ],
    "requirements": [
     "OPS-010",
-    "CON-022"
+    "CON-022",
+    "SEC-029"
    ],
    "tests": [
-    "TD-SEC-34"
+    "TD-SEC-34",
+    "TD-SEC-35"
    ],
    "decisions": [
+    "D-1632",
     "D-1520",
     "D-1495",
     "D-092",
@@ -7913,9 +7918,9 @@
    ],
    "cites": [],
    "budget": {
-    "files": 2,
-    "lines": 450,
-    "context_pct": 16
+    "files": 3,
+    "lines": 650,
+    "context_pct": 24
    },
    "checks": [
     "Ci",
