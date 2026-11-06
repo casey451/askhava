@@ -72,7 +72,7 @@ pub fn why_charged_page(facts: &WhyCharged) -> Result<String, askama::Error> {
         .description();
     let (tier, range) = tier_words(facts.receipt.tier);
     let basis = facts.basis_cents.map_or_else(
-        || format!("The price gets set on site, so the fee went by this trade's usual visit fee: the {tier} fee."),
+        || format!("Your price is set on site, so Ask Hava used the usual visit fee for this kind of work. That makes it a {tier}."),
         |cents| format!("Your {} quote is {range}, so this is a {tier}.", money(cents)),
     );
     WhyView {

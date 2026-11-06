@@ -95,7 +95,7 @@ fn words(language: Language, job: i64) -> (String, [&'static str; 5]) {
             format!("Ask Hava: Receipt for job {job}"),
             [
                 "Tax included.",
-                "This charge is for one confirmed pick. Stripe sends you its own receipt too.",
+                "You're charged because a homeowner picked you and you confirmed. Stripe also emails its own receipt for this same charge.",
                 "Why was I charged?",
                 "You get these emails because your business signed up for job requests from Ask Hava.",
                 "Manage email notices",
@@ -105,7 +105,7 @@ fn words(language: Language, job: i64) -> (String, [&'static str; 5]) {
             format!("Ask Hava: Recibo del trabajo {job}"),
             [
                 "Impuestos incluidos.",
-                "Este cargo es por una selección confirmada. Stripe también le envía su propio recibo.",
+                "Se le cobra porque un cliente lo eligió y usted confirmó. Stripe también le envía por correo su propio recibo de este mismo cargo.",
                 "¿Por qué se me cobró?",
                 "Recibe estos correos porque su negocio se inscribió para recibir solicitudes de trabajo de Ask Hava.",
                 "Administrar avisos por correo",

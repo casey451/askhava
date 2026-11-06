@@ -202,7 +202,7 @@ async fn td_fee_34_the_receipt_says_tax_included_and_links_why(pool: PgPool) {
         assert!(part.contains("Tax included."));
         assert!(part.contains("Why was I charged?"));
         assert!(part.contains(&link));
-        assert!(part.contains("Stripe sends you its own receipt too."));
+        assert!(part.contains("Stripe also emails its own receipt for this same charge."));
         assert_eq!(part.matches("Ask Hava introduction service").count(), 1);
     }
     let to = Recipient {
@@ -225,7 +225,7 @@ async fn td_fee_34_the_receipt_says_tax_included_and_links_why(pool: PgPool) {
     assert_eq!(tail(&spanish.plain), tail(&es_footer.plain));
     let bad = ReceiptSender::new(
         SecretString::from("x".to_owned()),
-        "12 Main St",
+        "no mailbox",
         MailboxKind::PoBox,
     );
     assert!(bad.is_err());
@@ -252,7 +252,7 @@ async fn td_fee_34_the_why_page_shows_job_quote_tier_basis_and_refunds(pool: PgP
         "Why was I charged for job 1001?",
         "Ask Hava introduction service, job 1001: $25.00. Tax included.",
         "Your quote: $480.00, fixed price",
-        "Introduction fee by job size: $25.00, the small job fee.",
+        "Introduction fee by job size: $25.00 (small job).",
         "Your $480.00 quote is under $500.00, so this is a small job.",
         "2 call attempts at least 3 hours apart",
     ] {
@@ -260,7 +260,7 @@ async fn td_fee_34_the_why_page_shows_job_quote_tier_basis_and_refunds(pool: PgP
     }
     facts.basis_cents = None;
     let visit = why_charged_page(&facts).expect("visit page");
-    assert!(visit.contains("usual visit fee: the small job fee."));
+    assert!(visit.contains("That makes it a small job."));
     facts.receipt.tier = Tier::Medium;
     facts.basis_cents = Some(142_500);
     assert!(
