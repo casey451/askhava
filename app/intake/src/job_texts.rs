@@ -1,6 +1,6 @@
 //! The sender of the homeowner texts a job event asks for: the `jobs.homeowner_text` handler
-//! (JOB-010, JOB-011, JOB-012, JOB-025, TXT-042, TXT-040, QH-001, QH-006, QH-007, SEC-037, CON-021,
-//! CON-028; D-871, D-872, D-1030 (A), D-1215, D-1301 to D-1303).
+//! (JOB-009, JOB-010, JOB-011, JOB-012, JOB-025, TXT-016, TXT-042, TXT-040, QH-001, QH-006,
+//! QH-007, SEC-037, CON-021, CON-028; D-871, D-872, D-1030 (A), D-1215, D-1301 to D-1303).
 //!
 //! `jobs` holds no homeowner contact, so a move that texts the homeowner queues a `core.task` of
 //! kind `jobs::api::TEXT_KIND` with the job ID, the job's version, the template ID and the numbers
@@ -14,7 +14,8 @@
 //! area-code table nothing (QH-003), and outside 8 a.m. to 8 p.m. in Arizona or her area-code
 //! zone the same event is queued again for the next instant both are open (QH-001, QH-006). Intake
 //! never sees her number (D-1196). Inside the window it renders the template in her language with
-//! the request number and, for TXT-042, `quoted`, `count` and her quote-page link, whose token
+//! the request number and, for TXT-042, `quoted` and `count`, and for TXT-042 and TXT-016
+//! (`first_quote`, sent with the first-quote move, D-1517) her quote-page link, whose token
 //! `jobs::api::quote_token::issue` makes at send time (SEC-037; never in a payload or a log), and
 //! queues one outbox row keyed on template, contact and job, in one transaction with the token:
 //! a second run finds the row and rolls its new token back, so the queued link stays live.
@@ -38,15 +39,20 @@ use crate::service::{Queued, may_text};
 
 /// The TXT-042 template, the one that carries the quote-page link and the counts.
 pub const ALL_QUOTES_IN_TEMPLATE: &str = "all_quotes_in";
+/// The TXT-016 template, sent with the first-quote move to Quotes ready; it carries the link too.
+const FIRST_QUOTE_TEMPLATE: &str = "first_quote";
 /// Every template a `jobs.homeowner_text` event may name: JOB-010, JOB-011, JOB-012, JOB-025's
-/// closing note and TXT-042 (`jobs`' `timeout_text` and `handlers`).
-pub const JOB_TEXT_TEMPLATES: [&str; 5] = [
+/// closing note, TXT-042 and TXT-016 (`jobs`' `timeout_text`, `handlers` and `first_quote`).
+pub const JOB_TEXT_TEMPLATES: [&str; 6] = [
     "no_quotes_yet",
     "closed_no_quotes",
     "closed_no_pick",
     "closed_no_quote_left",
     ALL_QUOTES_IN_TEMPLATE,
+    FIRST_QUOTE_TEMPLATE,
 ];
+/// The templates whose text carries her quote-page link (TXT-016, TXT-042, SEC-037).
+const LINKED_TEMPLATES: [&str; 2] = [ALL_QUOTES_IN_TEMPLATE, FIRST_QUOTE_TEMPLATE];
 /// Her private quote page (PICK-010, `/q/{token}`, served by `portals`).
 const QUOTE_PAGE: &str = "https://askhava.com/q/";
 const BAD_PAYLOAD: &str = "bad jobs homeowner-text payload";
@@ -227,7 +233,8 @@ async fn hold(
     Ok(JobTextStep::Held(until))
 }
 
-/// Renders and queues the text in one transaction with its quote-page token (TXT-042, SEC-037),
+/// Renders and queues the text in one transaction with its quote-page token (TXT-016, TXT-042,
+/// SEC-037),
 /// re-checking the version inside it; an outbox row already there rolls the new token back.
 async fn queue(
     db: &mut PgConnection,
@@ -240,7 +247,7 @@ async fn queue(
     if !due(&mut tx, text).await? {
         return Ok(JobTextStep::Skipped(JobTextSkip::MovedOn));
     }
-    let link = if text.template == ALL_QUOTES_IN_TEMPLATE {
+    let link = if LINKED_TEMPLATES.contains(&text.template) {
         let token = issue(&mut tx, &keys.link, text.job, now)
             .await
             .map_err(|_| IntakeError::Job)?;
