@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-06T15:49:20Z by runner 68d31e685bef (actions).
+Updated 2026-11-06T16:08:56Z by runner 55d8cb077488 (actions).
 
 **Idle since 15:37Z; 121 of 238 done; week 21% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-06T15:49:20Z by runner 68d31e685bef (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 15:37Z (no task in progress)
 - **Week:** 21% used, 156.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:49Z, 0 min before this update
+- **Last run:** 16:08Z, 0 min before this update
 - **Keeper:** last ran 15:49Z, next wake 21:29Z
 
 ## Needs attention
@@ -64,6 +64,7 @@ Checks: failure, Coverage: success, E2e: success
 | T224 | portals: the business Confirm-and-pay page with Stripe Eleme | done | 2 | 50 min | 17:59Z | session ended without handing in |
 
 ### Plan and harness merges on main
+- 16:05Z Plan: bump actix-http 3.20.2 -> 3.20.3 for RUSTSEC-2026-0455 (D-1666) (#297)
 - 15:10Z Plan: bump actix-http 3.20.0 -> 3.20.2 for RUSTSEC-2026-0446 (D-1643) (#295)
 - 14:27Z Plan: T250 becomes a harness task with a narrow TD-SEC-10 exception for default-privilege REVOKE migrations (D-1632) (#294)
 - 19:30Z Plan: page pick end to end, first-quote move, markets and service radius, schema default privileges, card sender (D-1515–D-1521) (#272)
