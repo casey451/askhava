@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-06T11:27:08Z by runner ea22387162b9 (actions).
+Updated 2026-11-06T12:00:21Z by runner ea22387162b9 (manual).
 
 **Idle since 11:21Z; 119 of 238 done; week 15% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 119 of 238 build tasks (owner gates not counted)
-- **Stage:** stage 3; stage proofs recorded: 1, 2
+- **Stage:** stage 3; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 11:21Z (no task in progress)
 - **Week:** 15% used, 166.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:27Z, 0 min before this update
+- **Last run:** 11:27Z, 33 min before this update
 - **Keeper:** last ran 11:27Z, next wake 17:07Z
 
 ## Needs attention
@@ -45,28 +45,28 @@ Updated 2026-11-06T11:27:08Z by runner ea22387162b9 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 181 of 731 (24.8%) · partial 222 · unstarted 328
+**Requirements verified:** 209 of 731 (28.6%) · partial 194 · unstarted 328
 **Tasks merged (throughput only):** 119 of 238
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 14 | 10 | 11 | 35 |
 | ai | 14 | 9 | 5 | 28 |
-| businesses | 4 | 7 | 47 | 58 |
+| businesses | 5 | 6 | 47 | 58 |
 | calls | 0 | 2 | 23 | 25 |
-| consent | 14 | 12 | 9 | 35 |
-| fees | 11 | 40 | 1 | 52 |
+| consent | 15 | 11 | 9 | 35 |
+| fees | 21 | 30 | 1 | 52 |
 | intake | 19 | 15 | 9 | 43 |
 | job-cards | 12 | 5 | 7 | 24 |
 | licensing | 31 | 16 | 1 | 48 |
-| lifecycle | 14 | 11 | 3 | 28 |
+| lifecycle | 19 | 6 | 3 | 28 |
 | messaging | 15 | 10 | 20 | 45 |
 | ops-recovery | 1 | 4 | 49 | 54 |
-| privacy | 1 | 15 | 15 | 31 |
-| quiet-hours | 6 | 3 | 0 | 9 |
-| quotes-pick | 8 | 33 | 15 | 56 |
-| recurring | 6 | 2 | 3 | 11 |
-| security | 9 | 23 | 22 | 54 |
+| privacy | 2 | 14 | 15 | 31 |
+| quiet-hours | 7 | 2 | 0 | 9 |
+| quotes-pick | 15 | 26 | 15 | 56 |
+| recurring | 7 | 1 | 3 | 11 |
+| security | 10 | 22 | 22 | 54 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 0 | 28 | 28 |
 | wording | 2 | 2 | 28 | 32 |

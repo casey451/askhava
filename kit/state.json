@@ -19246,7 +19246,7 @@
    }
   }
  },
- "updated_at": "2026-11-06T11:27:08Z",
+ "updated_at": "2026-11-06T12:00:21Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -19345,7 +19345,7 @@
   ]
  },
  "runner_sha": "ea22387162b93e90d7a353e6474e7f8998b11b49",
- "starter": "actions",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "0bca34fa93d6b7803e8c849da8e0e916ca48f8ad",
@@ -19575,6 +19575,11 @@
    "evidence": "Recorded by the overseer session (Fable 5.1) from tool runs on main: nightly-main run 41390741157 (workflow_dispatch 04:51Z, recorded in kit/nightly.json at 05:04Z) green on main 2ed9f1f259de, the commit of the stage-2 cleanup merge (T057, #251, D-1362): Ci green (Checks; Coverage with tests/coverage_floor.json floors active; the trybuild compile-fail cases of tests/security incl. T223's planted cross-layer import; migrations applied from empty in number order by the Coverage and E2e jobs; jiff-sqlx timestamptz values written and read back in tests/integration/tests/quote_window.rs, text_pick.rs, intake_timeouts.rs); E2e green (tests/e2e/j1_reduced.spec.ts, the reduced J1 of T173 against stand-ins); Ally green (axe at 320, 768 and 1280 px on every page state, tests/a11y/axe_all_pages.spec.ts); Twin green; named-mutants job green (every tests/mutation/mutants.toml entry, incl. the license filter, consent and opt-out, and quiet hours groups, killed). scripts/progress.py with that nightly: all 161 requirements owned only by stage <=2 tasks (owning tasks and test-design rows) verified; stage_exit.py clauses 1-2 held once T057 is released. T057's scans zero (D-1362).",
    "main_sha": "2ed9f1f259de3b6ff12dcffc349bdbe2b1fd7a7a",
    "at": "2026-11-02T05:16:31Z"
+  },
+  "3": {
+   "evidence": "nightly-main run 42212161276 (workflow_dispatch 2026-11-06T11:42Z) on main ea22387162b93e90d7a353e6474e7f8998b11b49, which contains every stage-3 merge (T058-T075, T094, T188-T190, T192, T224, T225; T075 #291 ea22387): Ci, Checks, Coverage, E2e, Twin, Ally and named-mutants all green. Stage-3 clauses: T192 trybuild ReleaseProof proofs (#285), T071 ledger reconciles 1,000 simulated jobs with zero drift (#284), T074 Twin against the app's rules through rules_bridge (#288), fee worked examples as unit tests (check_catalog/Ci); the cargo-mutants clause is report-only until tests/mutation/equivalent.toml holds reviewed reasons and app/catalog/src/rules.rs exists (D-1286, D-1473), so stage 3 is HAND_RECORDED. Recorded by the overseer session 2026-11-06T12:00Z under Casey's Nov 5 final-say delegation.",
+   "main_sha": "ea22387162b93e90d7a353e6474e7f8998b11b49",
+   "at": "2026-11-06T12:00:21Z"
   }
  },
  "lane_strikes": {
