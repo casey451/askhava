@@ -1,0 +1,147 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://askhava.com/schemas/rules_bridge.schema.json",
+  "title": "rules_bridge JSON lines (D-481, D-491, T074)",
+  "description": "Hand-written. One request per stdin line, one answer per stdout line. Both contract tests validate with the same subset: $ref, type, enum, required, properties, additionalProperties false, items, minimum, minItems, maxItems. $defs.calls names each call's args and result.",
+  "$defs": {
+    "request": {
+      "type": "object",
+      "required": ["id", "call", "args"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "integer", "minimum": 0},
+        "call": {"enum": ["fee", "quiet_hours", "transition", "card", "job_types"]},
+        "args": {"type": "object"}
+      }
+    },
+    "ok": {
+      "type": "object",
+      "required": ["ok"],
+      "additionalProperties": false,
+      "properties": {
+        "ok": {
+          "type": "object",
+          "required": ["id", "result"],
+          "additionalProperties": false,
+          "properties": {
+            "id": {"type": "integer", "minimum": 0},
+            "result": {"type": "object"}
+          }
+        }
+      }
+    },
+    "error": {
+      "type": "object",
+      "required": ["error"],
+      "additionalProperties": false,
+      "properties": {
+        "error": {
+          "type": "object",
+          "required": ["id", "code"],
+          "additionalProperties": false,
+          "properties": {
+            "id": {"type": ["integer", "null"], "minimum": 0},
+            "code": {"enum": ["bad_json", "bad_request", "unknown_call", "bad_args", "refused"]}
+          }
+        }
+      }
+    },
+    "cents": {"type": "integer", "minimum": 0},
+    "status": {
+      "enum": ["intake", "open", "no_quotes_yet", "quotes_ready", "awaiting_confirm", "payment_pending", "connected", "done", "closed", "closed_early", "not_covered", "cancelled"]
+    },
+    "pair": {
+      "type": "object",
+      "required": ["category", "job_type"],
+      "additionalProperties": false,
+      "properties": {"category": {"type": "string"}, "job_type": {"type": "string"}}
+    },
+    "calls": {
+      "fee": {
+        "args": {
+          "type": "object",
+          "required": ["format", "amount", "high", "period", "service"],
+          "additionalProperties": false,
+          "properties": {
+            "format": {"enum": ["fixed", "range", "visit"]},
+            "amount": {"$ref": "#/$defs/cents"},
+            "high": {"$ref": "#/$defs/cents"},
+            "period": {"enum": ["none", "weekly", "every_two_weeks", "monthly", "quarterly", "yearly"]},
+            "service": {"enum": ["not_recurring", "one_time", "recurring"]}
+          }
+        },
+        "result": {
+          "type": "object",
+          "required": ["cents", "basis"],
+          "additionalProperties": false,
+          "properties": {
+            "cents": {"enum": [0, 2500, 7500, 19900]},
+            "basis": {"type": ["integer", "null"], "minimum": 0}
+          }
+        }
+      },
+      "quiet_hours": {
+        "args": {
+          "type": "object",
+          "required": ["phone", "at"],
+          "additionalProperties": false,
+          "properties": {"phone": {"type": "string"}, "at": {"type": "string"}}
+        },
+        "result": {
+          "type": "object",
+          "required": ["send", "until"],
+          "additionalProperties": false,
+          "properties": {"send": {"type": "boolean"}, "until": {"type": ["string", "null"]}}
+        }
+      },
+      "transition": {
+        "args": {
+          "type": "object",
+          "required": ["from", "to"],
+          "additionalProperties": false,
+          "properties": {"from": {"$ref": "#/$defs/status"}, "to": {"$ref": "#/$defs/status"}}
+        },
+        "result": {
+          "type": "object",
+          "required": ["allowed"],
+          "additionalProperties": false,
+          "properties": {"allowed": {"type": "boolean"}}
+        }
+      },
+      "card": {
+        "args": {
+          "type": "object",
+          "required": ["classes", "handyman", "ticked", "candidates", "text"],
+          "additionalProperties": false,
+          "properties": {
+            "classes": {"type": "array", "items": {"type": "string"}},
+            "handyman": {"type": "boolean"},
+            "ticked": {"type": "array", "items": {"$ref": "#/$defs/pair"}},
+            "candidates": {"type": "array", "items": {"$ref": "#/$defs/pair"}},
+            "text": {"type": "string"}
+          }
+        },
+        "result": {
+          "type": "object",
+          "required": ["card", "handyman"],
+          "additionalProperties": false,
+          "properties": {"card": {"type": "boolean"}, "handyman": {"type": "boolean"}}
+        }
+      },
+      "job_types": {
+        "args": {
+          "type": "object",
+          "required": ["category"],
+          "additionalProperties": false,
+          "properties": {"category": {"type": "string"}}
+        },
+        "result": {
+          "type": "object",
+          "required": ["job_types"],
+          "additionalProperties": false,
+          "properties": {"job_types": {"type": "array", "minItems": 1, "items": {"type": "string"}}}
+        }
+      }
+    }
+  }
+}
