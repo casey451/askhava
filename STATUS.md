@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-06T06:37:47Z by runner cfd69609792a (actions).
+Updated 2026-11-06T06:37:58Z by runner cfd69609792a (actions).
 
-**Building: T073 in progress since 06:07Z; 115 of 238 done; week 11% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 06:37Z; 115 of 238 done; week 11% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 115 of 238 build tasks (owner gates not counted)
 - **Stage:** stage 3; stage proofs recorded: 1, 2
-- **Lane:** lane 1: T073 claimed 06:07Z, lease until 09:07Z
+- **Lane:** idle since 06:37Z (no task in progress)
 - **Week:** 11% used, 172.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 06:15Z, 22 min before this update
 - **Keeper:** last ran 05:59Z, next wake 06:19Z
@@ -17,6 +17,7 @@ Updated 2026-11-06T06:37:47Z by runner cfd69609792a (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T073 | Named mutants: the 4-month rule, the fee tiers and the card  | MERGE_PENDING | 1 | 30 min | 06:37Z |  |
 | T072 | Metamorphic prompt-injection tests over routing, fees and di | done | 1 | 30 min | 05:55Z |  |
 | T071 | Stage 3 check: the ledger matches the Stripe mock on 1,000 s | done | 1 | 37 min | 05:09Z |  |
 | T070 | picks: 'no longer active' once, Confirm link replies | done | 1 | 45 min | 04:18Z |  |
@@ -83,7 +84,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T073 (lease until 2026-11-06T09:07:12Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T072", "at": "2026-11-06T05:55:34Z", "input_tokens": 266, "output_tokens": 104385, "cache_read_input_tokens": 8420515, "cache_creation_input_tokens": 399444}
+- {"task": "T073", "at": "2026-11-06T06:37:47Z", "output_tokens": 50318, "cache_read_input_tokens": 4883330, "input_tokens": 160, "cache_creation_input_tokens": 265414}
