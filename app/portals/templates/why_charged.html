@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{#- The "Why was I charged?" page of one charge (T068; FEE-031, FEE-053, D-225, TD-FEE-34): the
+    job number, the quote, the tier, how the fee basis was set and the refund rules, one charge for
+    one pick. No homeowner name, phone or address. -#}
+{% block title %}Why was I charged for job {{ job_number }}?{% endblock %}
+{% block main %}
+<h1>Why was I charged for job {{ job_number }}?</h1>
+<ul>
+<li id="charge-line">{{ line }}: {{ fee }}. Tax included.</li>
+<li id="quote-line">Your quote: {{ quote }}</li>
+<li id="tier-line">Introduction fee by job size: {{ fee }}, the {{ tier }} fee.</li>
+<li id="basis-line">{{ basis }}</li>
+<li id="refund-line">{{ refund }}</li>
+<li>This charge is for one confirmed pick. Stripe sends you its own receipt too.</li>
+<li>Ask Hava is not a contractor and does not perform, bid on or supervise work.</li>
+</ul>
+<p><a href="/terms/business">Read the business terms</a></p>
+<p><a href="/b">Go back</a></p>
+{% endblock %}

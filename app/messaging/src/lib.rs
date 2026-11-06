@@ -12,7 +12,8 @@
 //! The HELP, INFO and AYUDA reply (`keywords`, CON-018) is queued for any number, listed or not.
 //! Failed texts are retried and then emailed, shown in the portal or turned into a call-back
 //! (`retries`, TXT-014, TXT-015); every email goes once through the email outbox inside the
-//! SEC-028 layout, and bulk email waits above the daily limit's share (`email`, OPS-038).
+//! SEC-028 layout, and bulk email waits above the daily limit's share (`email`, OPS-038). Every charge's receipt email (`receipt_email`, FEE-031) goes through
+//! that same outbox.
 
 pub mod api;
 mod email;
@@ -20,6 +21,7 @@ mod handlers;
 mod keywords;
 mod models;
 mod optout;
+mod receipt_email;
 mod retries;
 mod rules;
 mod send_window;

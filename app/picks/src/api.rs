@@ -7,7 +7,8 @@
 //! line record; [`terms_line`] is the assent line a text pick accepts.
 //!
 //! T062: [`run_card_fix_notice`] turns `payments`' card-fix event into the business's notice
-//! (FEE-020, D-492).
+//! (FEE-020, D-492); T068: [`run_receipt_notice`] turns its receipt event into the receipt email
+//! request (FEE-031).
 //!
 //! T063: [`run_pick_notice`] queues the pick notice (PICK-037); [`notice_sent`] starts the Confirm
 //! window from the notice's real send and [`run_confirm_ends`] ends it (PICK-019);
@@ -33,6 +34,7 @@ pub use crate::handlers::{CONFIRM_ENDS_KIND, notice_sent, run_confirm_ends, run_
 pub use crate::models::PicksError;
 pub use crate::money_notices::{
     BUSINESS_NOTICE_KIND, CARD_APPROVAL_TEMPLATE, CARD_FIX_TEMPLATE, run_card_fix_notice,
+    run_receipt_notice,
 };
 pub use crate::service::{
     CONFIRMED_TEMPLATE, CodeCheck, CodeSent, CodeTo, DONE_TEMPLATE, NO_QUOTE_TEMPLATE,

@@ -61,6 +61,10 @@
 //! [`plan_charge`], records processing fees and checks the ledger against Stripe to the cent
 //! ([`ReconcileReport`]); [`money_view`] and [`business_statement`] read only the ledger (FEE-029,
 //! FEE-030, FEE-032, FEE-051).
+//!
+//! T068: [`queue_receipt`] raises a charge's [`RECEIPT_KIND`] event (IDs only) and [`receipt_for`]
+//! reads its [`ChargeReceipt`] for the "Why was I charged?" page (FEE-031, FEE-053);
+//! [`tier_edge_flag`] applies the [`TierEdgeRule`] to a business's latest fee bases (FEE-033).
 
 pub use crate::charge::{
     ATTEMPT_ACTION, ATTEMPT_SUBJECT, IN_FLIGHT, INTENT_ACTION, IntentStripe, confirm_and_pay,
@@ -70,6 +74,9 @@ pub use crate::disputes::{
     DISPUTE_ACTION, DISPUTE_FEE_CENTS, DisputeStripe, EVIDENCE_ACTION, SUBMIT_BEFORE, SUBMIT_KIND,
     evidence_pack, list_disputes, mark_auto_submit, record_dispute, record_owner_submission,
     run_dispute_submit,
+};
+pub use crate::flags::{
+    FlagError, LAST_BASES, TIER_EDGES, TierEdgeFlag, TierEdgeRule, tier_edge_flag,
 };
 pub use crate::free_wins::{
     FREE_WIN_ACTION, FREE_WIN_WINDOW_DAYS, REPEAT_ACTION, Waiver, WinCheck, in_free_win_window,
@@ -92,6 +99,7 @@ pub use crate::models::{
     RefundTrigger, RefundWhy, STATEMENT_PREFIX, SavedCard, SetupIntentRequest, StripeCharge,
     attempt_label, intent_label, plan_charge,
 };
+pub use crate::receipts::{ChargeReceipt, RECEIPT_KIND, queue_receipt, receipt_for, tier_of_fee};
 pub use crate::reconcile::{
     CHARGE_FAILED_ALERT, LOOKBACK, MISMATCH_ALERT, RECONCILE_ACTION, RECONCILE_EVERY,
     RECONCILE_KIND, ReconcileReport, ReconcileStripe, Statement, StatementLine,

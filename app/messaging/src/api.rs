@@ -26,6 +26,10 @@ pub use crate::models::{EmailError, EmailLog, InboxError, OutboxError};
 pub use crate::optout::{
     InboundText, Outcome, RevokeChannel, on_inbound_text, send_checked, suppress,
 };
+pub use crate::receipt_email::{
+    RECEIPT_EMAIL_KIND, RECEIPT_TEMPLATE, ReceiptFacts, ReceiptSender, WHY_CHARGED_PREFIX,
+    render_receipt, run_receipt_email,
+};
 pub use crate::retries::{
     CALL_BACK_ALERT, GaveUp, IMPORTANT_TEMPLATES, NO_RUSH_CALL_BACK, RETRY_AFTER, Reach, Step,
     TEXT_FAILED_EMAIL, Urgency, call_back_due, give_up, next_step, record_failure,

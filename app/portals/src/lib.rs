@@ -9,6 +9,7 @@
 //! PICK-045, PICK-054, A11Y-014); T187 its code-and-contact step (PICK-018, A11Y-010 to A11Y-016).
 //! T224 built the business's Confirm review step (`confirm_pay`, PICK-021, FEE-014, FEE-045,
 //! CON-029).
+//! T068 built the business's "Why was I charged?" page (`receipts_page`, FEE-031, FEE-053).
 //! Portal pages extend the shared layout `app/site/templates/base.html` through `askama.toml`.
 //! Other crates reach it only through [`api`].
 
@@ -16,6 +17,7 @@ pub mod api;
 mod confirm_pay;
 mod pick_flow;
 mod quote_page;
+mod receipts_page;
 mod security;
 mod session;
 #[cfg(test)]
