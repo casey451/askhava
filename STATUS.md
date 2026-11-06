@@ -1,23 +1,23 @@
 # Ask Hava build status
 
-Updated 2026-11-06T10:08:16Z by runner bb5f32fa491a (actions).
+Updated 2026-11-06T10:21:13Z by runner 4c3306a01f78 (actions).
 
-**Idle since 10:04Z; 118 of 238 done; week 14% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 10:18Z; 119 of 238 done; week 14% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 118 of 238 build tasks (owner gates not counted)
+- **Tasks done:** 119 of 238 build tasks (owner gates not counted)
 - **Stage:** stage 3; stage proofs recorded: 1, 2
-- **Lane:** idle since 10:04Z (no task in progress)
+- **Lane:** idle since 10:18Z (no task in progress)
 - **Week:** 14% used, 168.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:08Z, 0 min before this update
+- **Last run:** 10:08Z, 12 min before this update
 - **Keeper:** last ran 10:08Z, next wake 10:28Z
 
 ## Needs attention
-- Strict plan check red: 6 problem(s) on tasks still to run (+20 on DONE tasks); first: T075: stored context_pct 23% but it measures 28%; regenerate
+- Strict plan check red: 8 problem(s) on tasks still to run (+22 on DONE tasks); first: T191: stored context_pct 10% but it measures 14%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T246 | picks, portals and server: the page pick end to end (one pic | MERGE_PENDING | 1 | 66 min | 10:04Z |  |
+| T246 | picks, portals and server: the page pick end to end (one pic | done | 1 | 66 min | 10:04Z |  |
 | T247 | jobs and quotes: the first-quote move to Quotes ready (JOB-0 | done | 1 | 24 min | 08:42Z |  |
 | T074 | Twin: run the gate against the app's rules modules | done | 1 | 51 min | 08:05Z |  |
 | T073 | Named mutants: the 4-month rule, the fee tiers and the card  | done | 1 | 30 min | 06:37Z |  |
@@ -43,8 +43,8 @@ Updated 2026-11-06T10:08:16Z by runner bb5f32fa491a (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 180 of 731 (24.6%) · partial 223 · unstarted 328
-**Tasks merged (throughput only):** 118 of 238
+**Requirements verified:** 181 of 731 (24.8%) · partial 222 · unstarted 328
+**Tasks merged (throughput only):** 119 of 238
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -62,7 +62,7 @@ Updated 2026-11-06T10:08:16Z by runner bb5f32fa491a (actions).
 | ops-recovery | 1 | 4 | 49 | 54 |
 | privacy | 1 | 15 | 15 | 31 |
 | quiet-hours | 6 | 3 | 0 | 9 |
-| quotes-pick | 7 | 34 | 15 | 56 |
+| quotes-pick | 8 | 33 | 15 | 56 |
 | recurring | 6 | 2 | 3 | 11 |
 | security | 9 | 23 | 22 | 54 |
 | terms | 0 | 3 | 32 | 35 |
@@ -78,7 +78,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 0.5: 0 of 1 done
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
-- stage 3: 27 of 29 done
+- stage 3: 28 of 29 done
 - stage 4: 0 of 54 done
 - stage 5: 0 of 42 done
 - stage 6: 0 of 26 done
