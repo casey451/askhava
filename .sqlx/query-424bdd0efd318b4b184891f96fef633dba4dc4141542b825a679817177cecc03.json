@@ -28,7 +28,7 @@
       {
         "ordinal": 2,
         "name": "length_seconds",
-        "type_info": "Int4",
+        "type_info": "Int8",
         "origin": {
           "Table": {
             "table": "calls.call_log",

@@ -9,7 +9,7 @@ The layer-5 crate for masked calls between a homeowner and the business she conn
 - Migration `0114_calls_pool.sql`: the `calls` schema (default privileges SELECT, INSERT only, D-1520); `calls.number_pool` (one row per line: job, homeowner, business by ID, `pool_number`, `shared`, `assigned_at`, `closed_at`; `seq` orders assignments; one open line per job; the app role may UPDATE `closed_at` only, for T079); `calls.pool_alert` (append-only: the `ops.alert` ID and the `seq` of the line that raised it).
 - `src/service.rs`: `assign_number` (`Connected`, `Line`: `id`, `number`, `shared`), the pure `choose`, `automated_call_gate` (`AutomatedCall`, `CallGate`), `POOL_ALERT` (`calls.pool_exhausted`), `SAFETY_NOT_DIALABLE_ALERT` (`calls.safety_call_not_dialable`), `ASSIGNED_ACTION` (`calls.number_assigned`).
 - `src/routing.rs` (T077): the pure `route` (`Party`, `RoutedLine`, `CallTurn`, `Step`, `Attestation`), `job_pin`, `JobPin`, `answer_call` (`IncomingCall`, `Answer`), `TRIES_PER_CALL`, `TRIES_PER_DAY`, `READBACK_AFTER`, `PIN_ALERT` (`calls.pin_tries_exceeded`); its own query `lines_on`.
-- Migration `0116_calls_call_log.sql` (T078): `calls.call_log` (append-only: line, call SID unique, `caller` business or homeowner, `answered_by` person, machine or nobody, `length_seconds`, `reached_45s`, `ended_at`).
+- Migration `0116_calls_call_log.sql` (T078): `calls.call_log` (append-only: line, call SID unique, `caller` business or homeowner, `answered_by` person, machine, nobody or unknown, `length_seconds` (bigint), `reached_45s`, `ended_at`).
 - `src/rules.rs` (T078): the pure `talked`, `business_attempt`, `answered_by`, `reached_report_mark`, `REPORT_MARK` (`Caller`, `AnsweredBy`).
 - `src/handlers.rs` (T078): `dial_twiml`, `finished_call` (`FinishedCall`), `log_finished_call`, `call_log` (`LoggedCall`); its own queries.
 - `src/models.rs`: `CallsError` and the crate-private queries.
@@ -28,7 +28,7 @@ The layer-5 crate for masked calls between a homeowner and the business she conn
 - CALL-005, D-026, D-1686: after the second wrong try, only a phone linked to a business holding a line on the number, on an A-attested call, gets `ReadBack` of its newest line; the words come from `privacy::api::read_for_readback` (first name and street only); the voice handler connects only on the caller's confirm.
 
 - CALL-006, D-1691: calls are never recorded: `dial_twiml` says `record="do-not-record"` and holds the phone as a `SecretString`; no source names a recording verb or callback.
-- CALL-007, CALL-008, D-141, D-1689, D-1690: a person answering, either way and any length, is `talked`; a machine or nobody never is; only the business's calls are `business_attempt`s; the 45-second mark is stored (`reached_45s`) for reports only. Each finished call is logged once per SID with who called (role only), who answered and its length.
+- CALL-007, CALL-008, D-141, D-1689, D-1690: a person answering, either way and any length, is `talked`; a machine, nobody or an unknown answerer (no `human` detection, D-1690) never is; only the business's calls are `business_attempt`s; the 45-second mark is stored (`reached_45s`) for reports only. Each finished call is logged once per SID with who called (role only), who answered and its length.
 
 ## Never break
 

@@ -17,7 +17,8 @@ use crate::models::CallsError;
 use crate::rules::{AnsweredBy, Caller, answered_by, reached_report_mark};
 
 /// CALL-006, CALL-008: the TwiML that dials `to` from the pool number `caller_id`, never recorded,
-/// with the provider's machine detection so the log can say who answered. `None` when `to` is not
+/// with the provider's machine detection so the log can say who answered. T080 adds the dialed
+/// leg's final status callback, which carries that result (D-1690). `None` when `to` is not
 /// E.164, so nothing but digits reaches the XML. The result holds a phone number: send it only as
 /// the webhook's reply, never log it (PRIV-016).
 #[must_use]
@@ -46,15 +47,25 @@ pub struct FinishedCall {
     pub caller: Caller,
     /// Who answered it.
     pub answered: AnsweredBy,
-    /// How long it lasted, whole seconds.
-    pub length: SignedDuration,
+    /// How long it lasted, in whole seconds; unsigned, so it always fits the log's `bigint`.
+    pub length_seconds: u32,
     /// When it ended.
     pub ended_at: Timestamp,
 }
 
+impl FinishedCall {
+    /// How long it lasted (CALL-008).
+    #[must_use]
+    pub fn length(&self) -> SignedDuration {
+        SignedDuration::from_secs(i64::from(self.length_seconds))
+    }
+}
+
 /// CALL-008, D-1690: the finished call in a verified status callback's `params`, on `line`, placed
-/// by `caller` (the voice handler knows the party). `None` unless it carries a `CA…` SID, a final
-/// status and a whole-second `CallDuration` (missing on an unanswered call: 0).
+/// by `caller` (the voice handler knows the party). `params` must be the dialed leg's own final
+/// callback (its SID, status, length and `AnsweredBy`), never the first leg's. `None` unless it
+/// carries a `CA…` SID, a final status and a whole-second `CallDuration` (missing on an unanswered
+/// call: 0).
 #[must_use]
 pub fn finished_call(
     line: Uuid,
@@ -84,7 +95,7 @@ pub fn finished_call(
         call_sid: sid.to_owned(),
         caller,
         answered: answered_by(status, get("AnsweredBy")),
-        length: SignedDuration::from_secs(i64::from(seconds)),
+        length_seconds: seconds,
         ended_at,
     })
 }
@@ -94,12 +105,11 @@ pub fn finished_call(
 ///
 /// # Errors
 ///
-/// [`CallsError::Database`] when the insert fails, the line included.
+/// [`CallsError::Database`] when the insert fails, an unknown line included.
 pub async fn log_finished_call(
     db: &mut PgConnection,
     call: &FinishedCall,
 ) -> Result<bool, CallsError> {
-    let seconds = i32::try_from(call.length.as_secs()).map_err(|_| CallsError::Database)?;
     let done = sqlx::query!(
         "INSERT INTO calls.call_log (line_id, call_sid, caller, answered_by, length_seconds, \
          reached_45s, ended_at) VALUES ($1, $2, $3, $4, $5, $6, $7) \
@@ -108,8 +118,8 @@ pub async fn log_finished_call(
         call.call_sid,
         caller_word(call.caller),
         answered_word(call.answered),
-        seconds,
-        reached_report_mark(call.length),
+        i64::from(call.length_seconds),
+        reached_report_mark(call.length()),
         call.ended_at.to_sqlx()
     )
     .execute(db)
@@ -152,7 +162,7 @@ pub async fn call_log(db: &mut PgConnection, line: Uuid) -> Result<Vec<LoggedCal
             Ok(LoggedCall {
                 caller: parse_caller(&r.caller).ok_or(CallsError::Database)?,
                 answered: parse_answered(&r.answered_by).ok_or(CallsError::Database)?,
-                length: SignedDuration::from_secs(i64::from(r.length_seconds)),
+                length: SignedDuration::from_secs(r.length_seconds),
                 reached_45s: r.reached_45s,
                 ended_at: r.ended_at.to_jiff(),
             })
@@ -174,6 +184,7 @@ fn answered_word(answered: AnsweredBy) -> &'static str {
         AnsweredBy::Person => "person",
         AnsweredBy::Machine => "machine",
         AnsweredBy::Nobody => "nobody",
+        AnsweredBy::Unknown => "unknown",
     }
 }
 
@@ -186,7 +197,12 @@ fn parse_caller(word: &str) -> Option<Caller> {
 
 /// Who answered, from its stored word.
 fn parse_answered(word: &str) -> Option<AnsweredBy> {
-    [AnsweredBy::Person, AnsweredBy::Machine, AnsweredBy::Nobody]
-        .into_iter()
-        .find(|a| answered_word(*a) == word)
+    [
+        AnsweredBy::Person,
+        AnsweredBy::Machine,
+        AnsweredBy::Nobody,
+        AnsweredBy::Unknown,
+    ]
+    .into_iter()
+    .find(|a| answered_word(*a) == word)
 }

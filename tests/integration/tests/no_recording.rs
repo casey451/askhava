@@ -155,14 +155,14 @@ fn call(
     line: Uuid,
     sid: &str,
     (caller, answered): (Caller, AnsweredBy),
-    secs: i64,
+    secs: u32,
 ) -> FinishedCall {
     FinishedCall {
         line,
         call_sid: sid.to_owned(),
         caller,
         answered,
-        length: SignedDuration::from_secs(secs),
+        length_seconds: secs,
         ended_at: Timestamp::from_second(1_793_000_000 + i64::from(sid.as_bytes()[33]) * 60)
             .expect("instant"),
     }
@@ -213,21 +213,27 @@ async fn td_call_04_each_finished_call_is_logged_once(db: PgPool) {
             (Caller::Business, AnsweredBy::Nobody),
             0,
         ),
+        call(
+            line.id(),
+            "CA00000000000000000000000000000006",
+            (Caller::Business, AnsweredBy::Unknown),
+            u32::MAX,
+        ),
     ];
     for c in &calls {
         assert!(log_finished_call(&mut db, c).await.expect("log"));
     }
     assert!(!log_finished_call(&mut db, &calls[0]).await.expect("repeat"));
     let log = call_log(&mut db, line.id()).await.expect("read");
-    assert_eq!(log.len(), 4);
+    assert_eq!(log.len(), 5);
     for (got, want) in log.iter().zip(&calls) {
         assert_eq!(
             (got.caller, got.answered, got.length),
-            (want.caller, want.answered, want.length)
+            (want.caller, want.answered, want.length())
         );
         assert_eq!(
             got.reached_45s,
-            want.length >= SignedDuration::from_secs(45)
+            want.length() >= SignedDuration::from_secs(45)
         );
         assert_eq!(got.ended_at, want.ended_at);
     }

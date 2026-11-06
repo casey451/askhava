@@ -41,11 +41,11 @@ fn td_call_04_a_person_answering_for_5_seconds_is_talked() {
     let call = finished(Caller::Business, &callback("completed", "5", Some("human"))).unwrap();
     assert_eq!(call.answered, AnsweredBy::Person);
     assert_eq!(call.caller, Caller::Business);
-    assert_eq!(call.length, SignedDuration::from_secs(5));
+    assert_eq!(call.length(), SignedDuration::from_secs(5));
     assert_eq!(call.call_sid, SID);
     assert!(talked(call.answered));
     assert!(business_attempt(call.caller));
-    assert!(!reached_report_mark(call.length));
+    assert!(!reached_report_mark(call.length()));
 }
 
 /// TD-CALL-04, TD-FEE-13 (CALL-007, D-141): a machine answering for 90 seconds is never talking,
@@ -65,7 +65,7 @@ fn td_call_04_a_machine_for_90_seconds_is_not_talked() {
         let call = call.unwrap();
         assert_eq!(call.answered, AnsweredBy::Machine, "{detected}");
         assert!(!talked(call.answered));
-        assert!(reached_report_mark(call.length));
+        assert!(reached_report_mark(call.length()));
     }
 }
 
@@ -73,7 +73,11 @@ fn td_call_04_a_machine_for_90_seconds_is_not_talked() {
 /// is talking, and never a business call attempt.
 #[test]
 fn td_call_04_a_homeowner_call_the_business_answers_is_talked_not_an_attempt() {
-    let call = finished(Caller::Homeowner, &callback("completed", "20", None)).unwrap();
+    let call = finished(
+        Caller::Homeowner,
+        &callback("completed", "20", Some("human")),
+    )
+    .unwrap();
     assert_eq!(call.answered, AnsweredBy::Person);
     assert!(talked(call.answered));
     assert!(!business_attempt(call.caller));
@@ -95,7 +99,7 @@ fn td_call_04_the_45_second_mark_is_for_reports_only() {
 }
 
 /// TD-CALL-04 (CALL-008, D-1690): an unanswered call is logged as nobody, 0 seconds when the
-/// provider sends no length; `unknown` on a completed call is a person.
+/// provider sends no length.
 #[test]
 fn td_call_04_unanswered_calls_log_nobody() {
     for status in ["busy", "no-answer", "failed", "canceled"] {
@@ -106,11 +110,21 @@ fn td_call_04_unanswered_calls_log_nobody() {
     let mut params = callback("no-answer", "0", None);
     params.retain(|(k, _)| k != "CallDuration");
     let call = finished(Caller::Business, &params).unwrap();
-    assert_eq!(call.length, SignedDuration::ZERO);
-    assert_eq!(
-        answered_by("completed", Some("unknown")),
-        AnsweredBy::Person
-    );
+    assert_eq!(call.length(), SignedDuration::ZERO);
+}
+
+/// TD-CALL-04, TD-FEE-13 (CALL-007, D-141, D-1690): a connected call with no machine-detection
+/// result, `unknown` or any other word is logged as unknown and never counts as talking, so a
+/// voicemail the detector missed cannot deny the unreachable refund.
+#[test]
+fn td_call_04_an_answerer_nothing_detected_is_unknown_not_a_person() {
+    for detected in [None, Some("unknown"), Some("Human"), Some("")] {
+        let call = finished(Caller::Business, &callback("completed", "30", detected)).unwrap();
+        assert_eq!(call.answered, AnsweredBy::Unknown, "{detected:?}");
+        assert!(!talked(call.answered));
+        assert!(business_attempt(call.caller));
+    }
+    assert_eq!(answered_by("busy", Some("human")), AnsweredBy::Nobody);
 }
 
 /// TD-CALL-04 (CALL-008): a callback that is not a finished call, or names no valid SID or
@@ -139,7 +153,8 @@ fn td_call_04_a_callback_that_is_not_a_finished_call_is_refused() {
 
 proptest! {
     /// TD-CALL-04 (CALL-007, D-141): whatever the length and direction, a person answering is
-    /// talking and a machine or nobody never is; only the business's calls are attempts.
+    /// talking and a machine, an unknown answerer or nobody never is; only the business's calls
+    /// are attempts.
     #[test]
     fn td_call_04_talking_depends_only_on_who_answered(
         seconds in 0u32..100_000,
@@ -150,9 +165,8 @@ proptest! {
         let detected = (detected != "none").then_some(detected);
         let params = callback("completed", &seconds.to_string(), detected);
         let call = finished(caller, &params).unwrap();
-        let machine = detected.is_some_and(|d| d.starts_with("machine") || d == "fax");
-        prop_assert_eq!(talked(call.answered), !machine);
+        prop_assert_eq!(talked(call.answered), detected == Some("human"));
         prop_assert_eq!(business_attempt(call.caller), !homeowner);
-        prop_assert_eq!(reached_report_mark(call.length), seconds >= 45);
+        prop_assert_eq!(reached_report_mark(call.length()), seconds >= 45);
     }
 }

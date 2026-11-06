@@ -27,27 +27,31 @@ pub enum AnsweredBy {
     Person,
     /// Voicemail, a fax or another machine answered.
     Machine,
+    /// The call connected but nothing showed who answered: the provider's machine detection said
+    /// `unknown` or sent no result (D-1690). Never counted as a person.
+    Unknown,
     /// Nobody answered: busy, no answer, failed or cancelled.
     Nobody,
 }
 
 /// CALL-008, D-1690: who answered, from the voice provider's call status and answering-machine
-/// result. Only a `completed` call was answered; `human` is a person; any `machine_…` or `fax`
-/// result is a machine; `unknown` or no result on a completed call is a person, since nothing
-/// detected a machine on a call that connected.
+/// result. Only a `completed` call was answered; only `human` is a person; any `machine_…` or
+/// `fax` result is a machine; `unknown`, any other word or no result is [`AnsweredBy::Unknown`],
+/// since only a detected person shows the business talked to the homeowner (CALL-007).
 #[must_use]
 pub fn answered_by(call_state: &str, detected: Option<&str>) -> AnsweredBy {
     if call_state != "completed" {
         return AnsweredBy::Nobody;
     }
     match detected {
+        Some("human") => AnsweredBy::Person,
         Some(d) if d.starts_with("machine") || d == "fax" => AnsweredBy::Machine,
-        _ => AnsweredBy::Person,
+        _ => AnsweredBy::Unknown,
     }
 }
 
 /// CALL-007, D-141: a call answered by a person, either way and whatever its length, means the
-/// business has talked to the homeowner; a machine or no answer never does.
+/// business has talked to the homeowner; a machine, an unknown answerer or no answer never does.
 #[must_use]
 pub fn talked(answered: AnsweredBy) -> bool {
     answered == AnsweredBy::Person
