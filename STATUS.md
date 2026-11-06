@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-06T03:40:14Z by runner 28c8996db247 (actions).
+Updated 2026-11-06T04:18:03Z by runner 10cff2b7ea47 (actions).
 
 **Building: T070 in progress since 03:32Z; 112 of 238 done; week 10% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,11 @@ Updated 2026-11-06T03:40:14Z by runner 28c8996db247 (actions).
 - **Stage:** stage 3; stage proofs recorded: 1, 2
 - **Lane:** lane 1: T070 claimed 03:32Z, lease until 06:32Z
 - **Week:** 10% used, 174.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:22Z, 18 min before this update
+- **Last run:** 03:40Z, 37 min before this update
 - **Keeper:** last ran 03:21Z, next wake 03:41Z
 
 ## Needs attention
-- Strict plan check red: 7 problem(s) on tasks still to run (+13 on DONE tasks); first: T247: stored context_pct 20% but it measures 25%; regenerate
+- Strict plan check red: 9 problem(s) on tasks still to run (+13 on DONE tasks); first: T247: stored context_pct 20% but it measures 25%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
