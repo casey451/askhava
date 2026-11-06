@@ -1,23 +1,23 @@
 # Ask Hava build status
 
-Updated 2026-11-06T03:21:58Z by runner 020373d0e8c7 (actions).
+Updated 2026-11-06T03:32:45Z by runner 28c8996db247 (actions).
 
-**Idle since 03:17Z; 111 of 238 done; week 10% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 03:30Z; 112 of 238 done; week 10% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 111 of 238 build tasks (owner gates not counted)
+- **Tasks done:** 112 of 238 build tasks (owner gates not counted)
 - **Stage:** stage 3; stage proofs recorded: 1, 2
-- **Lane:** idle since 03:17Z (no task in progress)
+- **Lane:** idle since 03:30Z (no task in progress)
 - **Week:** 10% used, 174.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:21Z, 0 min before this update
+- **Last run:** 03:22Z, 10 min before this update
 - **Keeper:** last ran 03:21Z, next wake 03:41Z
 
 ## Needs attention
-- Strict plan check red: 8 problem(s) on tasks still to run (+12 on DONE tasks); first: T247: stored context_pct 20% but it measures 25%; regenerate
+- Strict plan check red: 7 problem(s) on tasks still to run (+13 on DONE tasks); first: T247: stored context_pct 20% but it measures 25%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T192 | picks: compile-fail proofs that no crate but payments can bu | MERGE_PENDING | 1 | 26 min | 03:17Z |  |
+| T192 | picks: compile-fail proofs that no crate but payments can bu | done | 1 | 26 min | 03:17Z |  |
 | T069 | picks: release only on paid or free; never the homeowner's p | done | 1 | 48 min | 02:36Z |  |
 | T068 | payments: receipt emails, charge description, just-under-a-t | done | 1 | 42 min | 01:35Z |  |
 | T067 | payments: nightly reconcile, auto-match or auto-refund, ledg | done | 1 | 49 min | 00:38Z |  |
@@ -37,7 +37,7 @@ Updated 2026-11-06T03:21:58Z by runner 020373d0e8c7 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 172 of 731 (23.5%) · partial 227 · unstarted 332
-**Tasks merged (throughput only):** 111 of 238
+**Tasks merged (throughput only):** 112 of 238
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -71,7 +71,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 0.5: 0 of 1 done
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
-- stage 3: 20 of 29 done
+- stage 3: 21 of 29 done
 - stage 4: 0 of 54 done
 - stage 5: 0 of 42 done
 - stage 6: 0 of 26 done
