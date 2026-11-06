@@ -4,6 +4,7 @@ It talks to the outside world ONLY through the vendor objects (sim.sms, sim.ai_i
 exactly as the real app would talk to Twilio, Stripe, the AI provider and the ROC site.
 """
 import re, math, json, os
+import rules_bridge as RB   # T074: the app's own rules when ASKHAVA_RULES_BRIDGE names the binary (D-491)
 
 # homeowner texts that have an approved Spanish version (drafts in templates_es.json, for native-speaker review)
 SPANISH_KINDS = {k for k in json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates_es.json"))) if not k.startswith("_")}
@@ -21,6 +22,7 @@ class CoRecord(dict):
 
 DAY = 1440
 OPEN_H, CLOSE_H = 8, 21
+QH_CLOSE_H = 20        # QH-001: the app's texting window ends at 8 p.m.; the twin's texts still go until CLOSE_H (D-1593)
 
 ZIP_TOWN = {"86403": "Lake Havasu City", "86404": "Lake Havasu City", "86405": "Lake Havasu City", "86406": "Lake Havasu City",
             "86429": "Bullhead City", "86442": "Bullhead City", "86426": "Fort Mohave", "86401": "Kingman", "86409": "Kingman"}
@@ -32,7 +34,11 @@ RECURRING_MONTHS = 4   # REC-002: a monthly quote's fee basis is 4 months of its
 def fee_by_job_size(q):
     """FEE-001 to FEE-005, REC-002, REC-003: the introduction fee by job size, set from the chosen quote alone: $25 under a
     $500.00 fee basis, $75 from $500.00 to $1,500.00, $199 over; never a percentage (FEE-002). The basis is a firm price,
-    a range's midpoint (FEE-003) or 4 months of a monthly price (a $150-a-month pool account: $600, so $75)."""
+    a range's midpoint (FEE-003) or 4 months of a monthly price (a $150-a-month pool account: $600, so $75).
+    With the bridge on, the app's `payments::rules` decides (T074)."""
+    bridge = RB.active()
+    if bridge:
+        return RB.fee(bridge, q)
     if q.get("type") == "trip":
         return TRIP_FEE
     cents = round(100 * (q.get("amount") or 0))
@@ -238,7 +244,22 @@ class App:
         return (t % DAY) / 60
 
     def in_business(self, t=None):
-        return OPEN_H <= self.hour(t) < CLOSE_H
+        """Inside the twin's window. With the bridge on, the app's quiet hours (QH-001) are asked too, and any
+        difference but the known one is a violation: the app holds 8 to 9 p.m., where the twin still sends (T074)."""
+        mine = OPEN_H <= self.hour(t) < CLOSE_H
+        bridge = RB.active()
+        if bridge:
+            at = self.sim.now if t is None else t
+            theirs = RB.quiet(bridge, at)[0]
+            if theirs != mine and not (mine and QH_CLOSE_H <= self.hour(at) < CLOSE_H):
+                self.violations_inline.append(("text_in_quiet_hours", f"the app's quiet hours {'send' if theirs else 'hold'} at {self.hour(at):.2f} h"))
+        return mine
+
+    def quiet_until(self, t):
+        """When a held text may go: the app's next window start with the bridge on (QH-006), else 8 a.m."""
+        bridge = RB.active()
+        held = RB.quiet(bridge, t) if bridge else (True, t)
+        return self.next_open(t) if held[0] else held[1]
 
     def next_open(self, t):
         h = (t % DAY) / 60; d0 = t - t % DAY
@@ -261,7 +282,8 @@ class App:
 
     def set_status(self, r, new):
         old = r["status"]
-        if old in TERMINAL or new not in EDGES.get(old, set()):
+        bridge = RB.active()
+        if old in TERMINAL or new not in EDGES.get(old, set()) or (bridge and not RB.move_allowed(bridge, old, new)):
             self.violations_inline.append(("illegal_status_change", f"request {r['id']}: {old} -> {new}"))
             return False
         r["status"] = new
@@ -306,7 +328,7 @@ class App:
             return None
         if kind not in ("safety", "stop_confirm", "pick_code") and not conversational and not self.in_business():
             # quiet hours: hold until 8 a.m.
-            self.schedule_at(self.next_open(self.sim.now) + self.sim.rng.uniform(0, 10), "text", phone, body, kind, ref, False, media, tries)
+            self.schedule_at(self.quiet_until(self.sim.now) + self.sim.rng.uniform(0, 10), "text", phone, body, kind, ref, False, media, tries)
             return None
         lang = "en"
         hid = self.phone_to_ho.get(phone)
@@ -861,6 +883,9 @@ class App:
     def matches(self, c, r):
         """v9.3: the license class allows at least one candidate job type, and the business opted in to it."""
         types = r.get("job_types") or []
+        bridge = RB.active()
+        if bridge:
+            return bool(types) and RB.card(bridge, c, types)      # T074: the app's CARD-001 over its license map
         allowed = CLASS_ALLOWS.get(c.get("license_class") or "", set())
         # the license must cover EVERY job type the AI thinks it could be; the business must want at least one of them
         return bool(types) and all(jt in allowed for jt in types) and any(jt in c["checklist"] for jt in types)
@@ -1243,6 +1268,8 @@ class App:
             self.set_status(r, "QUOTES_READY")
             self.text(self.phone_of(r), f"{self.contractors[p['co']]['business']} couldn't take request {r['id']}. You can choose another quote: askhava.example/q/{r['token']}", "reoffer", r["id"])
         else:
+            if r["status"] in ("AWAITING_CONFIRM", "PAYMENT_PENDING"):
+                self.set_status(r, "QUOTES_READY")        # JOB-002, JOB-025: the app's arrows close a failed pick from Quotes ready
             self.set_status(r, "CLOSED_NONE")
             self.text(self.phone_of(r), f"Sorry, the contractor couldn't take request {r['id']} and there are no other quotes. Text us anytime to try again.", "reoffer_none", r["id"])
 
