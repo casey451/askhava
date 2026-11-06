@@ -18141,8 +18141,8 @@
     "T245",
     "T075"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "QUEUED",
+   "attempts": 1,
    "slug": "core-schema-default-privileges",
    "type": "build",
    "stage": "4",
@@ -18153,6 +18153,22 @@
     1619,
     1620,
     1621
+   ],
+   "last_failure": "T250: smoke red. TD-SEC-10 (architecture_migrations.rs) rejects migrations/0110 because a core-headed migration names 12 other modules' schemas; needs a harness change (D-1619). schema_grants.rs 7/7 pass; prehandin green; reviewer confirmed the migration and test are correct.",
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 115,
+     "head_sha": "b0e3a7d9b9364b09985427a3528978c77982ee44",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-06T12:51:42Z",
+     "ended_at": "2026-11-06T13:18:12Z",
+     "result": "QUEUED"
+    }
    ]
   },
   {
@@ -18233,12 +18249,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T095",
-   "at": "2026-11-06T12:39:16Z",
-   "cache_read_input_tokens": 10715390,
-   "cache_creation_input_tokens": 439445,
-   "output_tokens": 100841,
-   "input_tokens": 274
+   "task": "T250",
+   "at": "2026-11-06T13:18:12Z",
+   "cache_creation_input_tokens": 292714,
+   "cache_read_input_tokens": 10789642,
+   "input_tokens": 279,
+   "output_tokens": 106084
   },
   "source": "session_reading 2026-11-06T12:39:42Z (week)",
   "by_task": {
@@ -19342,17 +19358,22 @@
    },
    "T250": {
     "estimated_bytes": 370541,
-    "estimated_tokens": 1802610
+    "estimated_tokens": 1802610,
+    "cache_creation_input_tokens": 292714,
+    "cache_read_input_tokens": 10789642,
+    "input_tokens": 279,
+    "output_tokens": 106084,
+    "last_model": "claude-opus-5-5"
    }
   },
   "windows": {
    "five_hour": {
     "start": "2026-11-06T11:07:06Z",
-    "tokens": 3477739
+    "tokens": 4955780
    },
    "week": {
     "start": "2026-11-05T19:01:47Z",
-    "tokens": 45940182
+    "tokens": 47418223
    }
   },
   "session_reading": {
@@ -19363,7 +19384,7 @@
    }
   }
  },
- "updated_at": "2026-11-06T12:59:17Z",
+ "updated_at": "2026-11-06T13:18:13Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -19461,7 +19482,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "25de4f795882f473cb1376562fd80fdbc9eca4fe",
+ "runner_sha": "b0e3a7d9b9364b09985427a3528978c77982ee44",
  "starter": "actions",
  "smoke_runs": [
   {

@@ -1,22 +1,23 @@
 # Ask Hava build status
 
-Updated 2026-11-06T12:59:17Z by runner 25de4f795882 (actions).
+Updated 2026-11-06T13:18:13Z by runner b0e3a7d9b936 (actions).
 
-**Building: T250 in progress since 12:51Z; 121 of 238 done; week 16% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 13:18Z; 121 of 238 done; week 16% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 121 of 238 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T250 claimed 12:51Z, lease until 15:51Z
+- **Lane:** idle since 13:18Z (no task in progress)
 - **Week:** 16% used, 162.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:40Z, 19 min before this update
+- **Last run:** 12:59Z, 18 min before this update
 - **Keeper:** last ran 12:39Z, next wake 12:59Z
 
 ## Needs attention
-- Strict plan check red: 10 problem(s) on tasks still to run (+27 on DONE tasks); first: T191: stored context_pct 10% but it measures 14%; regenerate
+- Strict plan check red: 12 problem(s) on tasks still to run (+31 on DONE tasks); first: T191: stored context_pct 10% but it measures 14%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T250 | core: narrow the default privileges in every schema and prov | QUEUED | 1 | 26 min | 13:18Z | T250: smoke red. TD-SEC-10 (architecture_migrations.rs) rejects migrations/0110 because a core-headed migration names 12 |
 | T095 | picks: pick code by email when texting is off; '2 YES' from  | done | 1 | 36 min | 12:39Z |  |
 | T075 | Stage 3 cleanup: dead code, duplicates, docs up to date | proof_missing | 1 | 45 min | 11:07Z |  |
 | T246 | picks, portals and server: the page pick end to end (one pic | done | 1 | 66 min | 10:04Z |  |
@@ -89,7 +90,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T250 (lease until 2026-11-06T15:51:42Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T095", "at": "2026-11-06T12:39:16Z", "cache_read_input_tokens": 10715390, "cache_creation_input_tokens": 439445, "output_tokens": 100841, "input_tokens": 274}
+- {"task": "T250", "at": "2026-11-06T13:18:12Z", "cache_creation_input_tokens": 292714, "cache_read_input_tokens": 10789642, "input_tokens": 279, "output_tokens": 106084}
