@@ -17000,7 +17000,10 @@
    ],
    "update_waiting_since": null,
    "update_push_failures": null,
-   "last_failure": "Ci: failure; Checks: failure\nChecks failed at step: Rust build (the one boundary build) and tests\ntest tests::transitions::a_timer_survives_a_restart_and_moves_a_waiting_job ... ok\ntest tests::transitions::every_move_writes_one_history_and_one_audit_row ... ok\ntest tests::transitions::the_app_role_cannot_rewrite_the_history ... ok\nfailures:\n---- tests::transitions::a_refused_or_stale_move_changes_nothing stdout ----\nthread 'tests::transitions::a_refused_or_stale_move_changes_nothing' (29772) panicked at app/jobs/src/tests/transitions.rs:115:5:\nassertion `left == right` failed: logged once as a bug\n  left: 0\n right: 1\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\n    tests::transitions::a_refused_or_stale_move_changes_nothing\ntest result: FAILED. 17 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.64s\nerror: test failed, to rerun pass `-p askhava-jobs --lib`\n##[error]Process completed with exit code 101.\nCi failed at step: All three jobs passed\nChecks: failure, Coverage: success, E2e: success\n##[error]Process completed with exit code 1."
+   "last_failure": "Ci: failure; Checks: failure\nChecks failed at step: Rust build (the one boundary build) and tests\ntest tests::transitions::a_timer_survives_a_restart_and_moves_a_waiting_job ... ok\ntest tests::transitions::every_move_writes_one_history_and_one_audit_row ... ok\ntest tests::transitions::the_app_role_cannot_rewrite_the_history ... ok\nfailures:\n---- tests::transitions::a_refused_or_stale_move_changes_nothing stdout ----\nthread 'tests::transitions::a_refused_or_stale_move_changes_nothing' (29772) panicked at app/jobs/src/tests/transitions.rs:115:5:\nassertion `left == right` failed: logged once as a bug\n  left: 0\n right: 1\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\n    tests::transitions::a_refused_or_stale_move_changes_nothing\ntest result: FAILED. 17 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.64s\nerror: test failed, to rerun pass `-p askhava-jobs --lib`\n##[error]Process completed with exit code 101.\nCi failed at step: All three jobs passed\nChecks: failure, Coverage: success, E2e: success\n##[error]Process completed with exit code 1.",
+   "runner_closed_prs": [
+    329
+   ]
   },
   {
    "id": "T148",
@@ -22571,7 +22574,7 @@
    }
   }
  },
- "updated_at": "2026-11-07T18:09:48Z",
+ "updated_at": "2026-11-07T18:09:58Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
