@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE businesses.mailbox_check SET open = false WHERE business_id = $1 AND change_for = $2 AND open AND mailbox_id <> $3",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "348ae6baed28867877e12a99834831be2fb4afd0261fc8a4f235e8561bc6a7a1"
+}
