@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO privacy.photo_link (token_hash, photo_id, issued_at, expires_at) SELECT $1, id, $3, $4 FROM privacy.photo WHERE id = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Bytea",
+        "Uuid",
+        "Timestamptz",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "04a46aa439a51fc7bc6890f024eee24104e8a26fc674bce9ecbb24328fe26832"
+}
