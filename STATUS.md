@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-07T04:39:31Z by runner ec41a5869889 (actions).
+Updated 2026-11-07T05:12:46Z by runner 5eca923941aa (actions).
 
 **Building: T194 in progress since 04:30Z; 132 of 242 done; week 32% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,11 @@ Updated 2026-11-07T04:39:31Z by runner ec41a5869889 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T194 claimed 04:30Z, lease until 07:30Z
 - **Week:** 32% used, 130.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:19Z, 20 min before this update
+- **Last run:** 04:39Z, 33 min before this update
 - **Keeper:** last ran 04:19Z, next wake 04:39Z
 
 ## Needs attention
-- Strict plan check red: 2 problem(s) on tasks still to run (+1 on DONE tasks); first: T253: stored context_pct 30% but it measures 34%; regenerate
+- Strict plan check red: 3 problem(s) on tasks still to run (+1 on DONE tasks); first: T194: stored context_pct 11% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -40,9 +40,9 @@ Updated 2026-11-07T04:39:31Z by runner ec41a5869889 (actions).
 | T074 | Twin: run the gate against the app's rules modules | done | 1 | 51 min | 08:05Z |  |
 | T073 | Named mutants: the 4-month rule, the fee tiers and the card  | done | 1 | 30 min | 06:37Z |  |
 | T072 | Metamorphic prompt-injection tests over routing, fees and di | done | 1 | 30 min | 05:55Z |  |
-| T071 | Stage 3 check: the ledger matches the Stripe mock on 1,000 s | done | 1 | 37 min | 05:09Z |  |
 
 ### Plan and harness merges on main
+- 05:10Z Plan: repo audit findings — owners and acceptance for A01–A06, A08–A12 (D-1751–D-1761, D-1788) (#316)
 - 03:59Z Plan: tests/a11y/fixtures.ts is a shared page-state registry (D-1772) (#314)
 - 03:48Z Plan: business-session read of released picks, release recovery tests, production release wiring (D-1739, D-1740) (#313)
 - 16:15Z Plan: dynamic SQL in migrations is a TD-SEC-10 finding (T252), T126 context budget, stored budgets refreshed (D-1677, D-1678) (#298)
