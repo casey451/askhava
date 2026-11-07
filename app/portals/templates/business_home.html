@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{#- The business portal home (T085; BIZ-025 "Your numbers", CARD-022 open-cards email times).
+    The numbers come from the composition; the times are the signed-in person's own. No homeowner
+    detail. More than two times shows the A11Y-030 error summary, focused. -#}
+{% block title %}{% if too_many %}Error: {% endif %}Your business account{% endblock %}
+{% block main %}
+<h1>Your business account</h1>
+{% if too_many %}<div role="alert" tabindex="-1" autofocus id="error-summary">
+<h2>There is a problem</h2>
+<p><a href="#time-8am">Pick two times at most.</a></p>
+</div>
+{% endif %}<h2>Your numbers this month</h2>
+<dl>
+{% for l in lines %}<dt>{{ l.label }}</dt><dd>{{ l.value }}</dd>
+{% endfor %}</dl>
+<h3>Typical quotes per job in your trades</h3>
+{% if typical.is_empty() %}<p>None yet.</p>
+{% else %}<ul>{% for (trade, n) in typical %}<li>{{ trade }}: {{ n }}</li>{% endfor %}</ul>
+{% endif %}<h2>Emails about job requests you haven't quoted</h2>
+<form method="post" action="/b/open-cards" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<fieldset><legend>When should we email you the job requests you haven't quoted?</legend>
+<p id="times-hint">Pick up to two times (Arizona time). Leave all unticked to stop these emails.</p>
+{% if too_many %}<p id="times-error">Error: Pick two times at most.</p>
+{% endif %}{% for b in boxes %}<p><input type="checkbox" id="time-{{ b.code }}" name="time" value="{{ b.code }}"{% if b.checked %} checked{% endif %} aria-describedby="times-hint{% if too_many %} times-error{% endif %}"> <label for="time-{{ b.code }}">{{ b.label }}</label></p>
+{% endfor %}</fieldset>
+<button type="submit">Save times</button>
+</form>
+{% endblock %}
