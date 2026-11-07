@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-07T12:07:08Z by runner ccb3a6eaa000 (actions).
+Updated 2026-11-07T12:07:19Z by runner ccb3a6eaa000 (actions).
 
-**Building: T191 in progress since 11:10Z; 138 of 256 done; week 36% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 12:07Z; 138 of 256 done; week 36% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 138 of 256 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T191 claimed 11:10Z, lease until 14:10Z
+- **Lane:** idle since 12:07Z (no task in progress)
 - **Week:** 36% used, 122.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 11:16Z, 50 min before this update
 - **Keeper:** last ran 11:00Z, next wake 11:20Z
@@ -19,6 +19,7 @@ Updated 2026-11-07T12:07:08Z by runner ccb3a6eaa000 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T191 | payments: the unreachable-homeowner refund at 96 hours and i | MERGE_PENDING | 1 | 56 min | 12:07Z |  |
 | T097 | jobs: day-3 and day-14 check-ins, PROBLEM flags, private fee | done | 1 | 51 min | 10:55Z |  |
 | T096 | messaging: web-and-email mode, number suspension, one config | done | 1 | 43 min | 09:49Z |  |
 | T092 | privacy: 180-day contact purge, holds, photo and message del | done | 1 | 54 min | 08:38Z |  |
@@ -98,7 +99,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T191 (lease until 2026-11-07T14:10:15Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T097", "at": "2026-11-07T10:55:58Z", "output_tokens": 166088, "cache_read_input_tokens": 21165121, "input_tokens": 440, "cache_creation_input_tokens": 612779}
+- {"task": "T191", "at": "2026-11-07T12:07:07Z", "input_tokens": 542, "output_tokens": 206205, "cache_creation_input_tokens": 889900, "cache_read_input_tokens": 38576873}
