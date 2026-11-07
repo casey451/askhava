@@ -1,23 +1,23 @@
 # Ask Hava build status
 
-Updated 2026-11-07T06:31:25Z by runner 609e0ed0c74f (actions).
+Updated 2026-11-07T06:44:43Z by runner f3f3c206b44e (actions).
 
-**Idle since 06:25Z; 133 of 256 done; week 35% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 06:41Z; 134 of 256 done; week 35% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 133 of 256 build tasks (owner gates not counted)
+- **Tasks done:** 134 of 256 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 06:25Z (no task in progress)
+- **Lane:** idle since 06:41Z (no task in progress)
 - **Week:** 35% used, 126.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:31Z, 0 min before this update
+- **Last run:** 06:31Z, 13 min before this update
 - **Keeper:** last ran 06:31Z, next wake 06:51Z
 
 ## Needs attention
-- Strict plan check red: 1 problem(s) on tasks still to run (+1 on DONE tasks); first: T269: stored context_pct 10% but it measures 14%; regenerate
+- Strict plan check red: 1 problem(s) on tasks still to run (+3 on DONE tasks); first: T269: stored context_pct 10% but it measures 14%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T090 | privacy: photo checks by bytes, re-encode without EXIF or GP | MERGE_PENDING | 1 | 52 min | 06:25Z |  |
+| T090 | privacy: photo checks by bytes, re-encode without EXIF or GP | done | 1 | 52 min | 06:25Z |  |
 | T194 | portals: the new-device code by text or email and team sign- | done | 1 | 42 min | 05:12Z |  |
 | T084 | portals: business one-time sign-in link and 30-day sessions | done | 2 | 24 min | 04:14Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T084 | portals: business one-time sign-in link and 30-day sessions | check_failed | 1 | 29 min | 03:36Z |  |
@@ -40,7 +40,6 @@ Updated 2026-11-07T06:31:25Z by runner 609e0ed0c74f (actions).
 | T246 | picks, portals and server: the page pick end to end (one pic | done | 1 | 66 min | 10:04Z |  |
 | T247 | jobs and quotes: the first-quote move to Quotes ready (JOB-0 | done | 1 | 24 min | 08:42Z |  |
 | T074 | Twin: run the gate against the app's rules modules | done | 1 | 51 min | 08:05Z |  |
-| T073 | Named mutants: the 4-month rule, the fee tiers and the card  | done | 1 | 30 min | 06:37Z |  |
 
 ### Plan and harness merges on main
 - 05:10Z Plan: repo audit findings — owners and acceptance for A01–A06, A08–A12 (D-1751–D-1761, D-1788) (#316)
@@ -53,8 +52,8 @@ Updated 2026-11-07T06:31:25Z by runner 609e0ed0c74f (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 202 of 731 (27.6%) · partial 259 · unstarted 270
-**Tasks merged (throughput only):** 133 of 256
+**Requirements verified:** 202 of 731 (27.6%) · partial 263 · unstarted 266
+**Tasks merged (throughput only):** 134 of 256
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -70,7 +69,7 @@ Updated 2026-11-07T06:31:25Z by runner 609e0ed0c74f (actions).
 | lifecycle | 19 | 6 | 3 | 28 |
 | messaging | 16 | 12 | 17 | 45 |
 | ops-recovery | 1 | 5 | 48 | 54 |
-| privacy | 0 | 16 | 15 | 31 |
+| privacy | 0 | 20 | 11 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
 | quotes-pick | 17 | 26 | 13 | 56 |
 | recurring | 7 | 1 | 3 | 11 |
@@ -89,7 +88,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 13 of 72 done
+- stage 4: 14 of 72 done
 - stage 5: 0 of 42 done
 - stage 6: 0 of 26 done
 - stage 7: 0 of 2 done
