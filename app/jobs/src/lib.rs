@@ -6,6 +6,7 @@
 //! transaction. Other crates reach it only through [`api`].
 
 pub mod api;
+mod followups;
 mod handlers;
 mod models;
 mod purge_events;
