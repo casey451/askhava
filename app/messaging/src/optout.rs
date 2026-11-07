@@ -3,7 +3,8 @@
 //!
 //! [`on_inbound_text`] runs the rules' detector on an inbound text (its scrubbed words) with the
 //! provider's `OptOutType`: an opt-out puts the number on `messaging.suppression` at once and logs
-//! the event with its channel, how it was detected and when (a repeat is logged too); the app
+//! the event with its channel, how it was detected, the inbox row that carried it (kept after the
+//! body is cut, CON-036) and when (a repeat is logged too); the app
 //! queues the one CON-009 confirmation only for words the provider did not answer, only on the
 //! first opt-out, and never
 //! while texting is paused (the caller emails it instead, CON-030). The provider's START or UNSTOP
@@ -148,8 +149,13 @@ pub async fn on_inbound_text(
             by_provider,
         } => {
             let how = detected.map_or_else(|| "provider".to_owned(), rules::Detected::label);
-            let (event, added) =
-                record(&mut tx, &digests, (RevokeChannel::Text, &how), now).await?;
+            let (event, added) = record(
+                &mut tx,
+                &digests,
+                (RevokeChannel::Text, &how, Some(msg.inbox_id)),
+                now,
+            )
+            .await?;
             let spanish = detected.is_some_and(rules::Detected::spanish);
             let answered = by_provider || listed || !added;
             let (confirmation, email) =
@@ -165,6 +171,7 @@ pub async fn on_inbound_text(
                 action: "start",
                 channel: RevokeChannel::Text.as_str(),
                 detected: "start",
+                inbox: Some(msg.inbox_id),
                 digest: digests[0],
                 at: now,
             };
@@ -261,12 +268,13 @@ pub async fn suppress(
     let digests = digests(vault, phone)?;
     let mut tx = db.begin().await.map_err(|_| OutboxError::Database)?;
     let listed = models::listing(&mut tx, &digests).await?.is_some();
-    let (_, added) = record(&mut tx, &digests, (channel, how), now).await?;
+    let (_, added) = record(&mut tx, &digests, (channel, how, None), now).await?;
     tx.commit().await.map_err(|_| OutboxError::Database)?;
     Ok(added && !listed)
 }
 
-/// Logs an opt-out by `channel` and lists the number from `now` (a listed number keeps its
+/// Logs an opt-out by `channel`, detected as `how`, with the inbound text `inbox` that carried it
+/// (texts only, CON-036, D-1853), and lists the number from `now` (a listed number keeps its
 /// earlier time, the repeat being logged only); returns the event's ID and whether it added a
 /// suppression row. The insert waits on a concurrent opt-out's uncommitted rows, so of two at once
 /// only the first adds any: that, not an earlier read, decides "newly listed" (CON-009, CON-022,
@@ -274,13 +282,14 @@ pub async fn suppress(
 async fn record(
     db: &mut PgConnection,
     digests: &[(u16, [u8; 32])],
-    (channel, how): (RevokeChannel, &str),
+    (channel, how, inbox): (RevokeChannel, &str, Option<Uuid>),
     now: Timestamp,
 ) -> Result<(Uuid, bool), OutboxError> {
     let event = OptOutEvent {
         action: "opt_out",
         channel: channel.as_str(),
         detected: how,
+        inbox,
         digest: *digests.first().ok_or(OutboxError::Database)?,
         at: now,
     };
@@ -331,7 +340,7 @@ pub async fn send_checked(
         record(
             &mut tx,
             &digests,
-            (RevokeChannel::Carrier, "carrier:21610"),
+            (RevokeChannel::Carrier, "carrier:21610", None),
             now,
         )
         .await?;

@@ -1,7 +1,8 @@
 //! The outbox, sender-directory, inbox, delivery-event, opt-out event and suppression rows and
 //! their queries, all in the `messaging` schema (TXT-011, TXT-012, TXT-013, D-492, CON-014,
 //! CON-035). No query holds a phone number, only opaque IDs, keys, Twilio message SIDs and
-//! blind-index digests (PRIV-002).
+//! blind-index digests (PRIV-002). The outbox row is the message log entry (TXT-019) and the
+//! opt-out event keeps its inbound message (CON-036).
 
 use askhava_core::api::Dedupe;
 use jiff::Timestamp;
@@ -10,6 +11,7 @@ use sqlx::PgConnection;
 use sqlx::types::Uuid;
 use thiserror::Error;
 
+use crate::retention;
 use crate::rules::Listing;
 use crate::status::DeliveryStatus;
 
@@ -162,7 +164,9 @@ pub(crate) struct Claim {
 }
 
 /// Inserts a queued text for a recipient of `kind` (`homeowner` or `business`) unless its key is
-/// taken; returns the row's ID either way and whether it is new (TXT-011, D-849).
+/// taken; returns the row's ID either way and whether it is new (TXT-011, D-849). The row is the
+/// message log entry: the vault reference, never the number, and the body's language, read from
+/// the body against the template (`retention::language_of`, TXT-019, D-1851).
 pub(crate) async fn insert_text(
     db: &mut PgConnection,
     key: &str,
@@ -170,16 +174,19 @@ pub(crate) async fn insert_text(
     kind: &str,
     body: &str,
 ) -> Result<(Uuid, bool), OutboxError> {
+    let language = retention::language_of(template_id, body);
     let new = sqlx::query_scalar!(
         "INSERT INTO messaging.outbox \
-         (idempotency_key, template_id, recipient_id, recipient_kind, subject_ids, body) \
-         VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT (idempotency_key) DO NOTHING RETURNING id",
+         (idempotency_key, template_id, recipient_id, recipient_kind, subject_ids, body, language) \
+         VALUES ($1, $2, $3, $4, $5, $6, $7) \
+         ON CONFLICT (idempotency_key) DO NOTHING RETURNING id",
         key,
         template_id,
         recipient,
         kind,
         subject,
-        body
+        body,
+        language
     )
     .fetch_optional(&mut *db)
     .await
@@ -319,11 +326,13 @@ pub(crate) async fn find_sender(
 
 /// One opt-out or START to log (CON-022, CON-035, CON-036): `action` is `opt_out` or `start`,
 /// `channel` the stored channel name, `detected` how it was detected, `digest` the number's active
-/// blind-index digest and `at` the instant suppression took effect.
+/// blind-index digest, `inbox` the inbound text that carried a texted opt-out (kept with the
+/// event after its body is cut, CON-036, D-1853) and `at` the instant suppression took effect.
 pub(crate) struct OptOutEvent<'a> {
     pub(crate) action: &'static str,
     pub(crate) channel: &'static str,
     pub(crate) detected: &'a str,
+    pub(crate) inbox: Option<Uuid>,
     pub(crate) digest: (u16, [u8; 32]),
     pub(crate) at: Timestamp,
 }
@@ -336,14 +345,15 @@ pub(crate) async fn insert_optout_event(
     let (version, digest) = event.digest;
     sqlx::query_scalar!(
         "INSERT INTO messaging.optout_event \
-         (action, channel, detected, index_version, digest, effective_at) \
-         VALUES ($1, $2, $3, $4, $5, $6) RETURNING id",
+         (action, channel, detected, index_version, digest, effective_at, inbox_id) \
+         VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id",
         event.action,
         event.channel,
         event.detected,
         i16::try_from(version).map_err(|_| OutboxError::Database)?,
         &digest[..],
-        event.at.to_sqlx() as _
+        event.at.to_sqlx() as _,
+        event.inbox
     )
     .fetch_one(db)
     .await
