@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT EXISTS (SELECT 1 FROM businesses.mailbox_check c JOIN businesses.signup s ON s.business_id = c.business_id AND s.mailbox_id = c.mailbox_id WHERE c.business_id = $1 AND c.member_id IS NULL AND c.verified_at IS NULL) AS \"w!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "w!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "0be603a2ee0be3124c7149121e2f451a77465d37e795210137ea841e1cce0efc"
+}

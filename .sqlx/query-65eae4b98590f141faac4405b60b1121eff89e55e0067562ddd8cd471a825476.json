@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE businesses.mailbox_check SET open = false, verified_at = CASE WHEN $2 THEN $3::timestamptz ELSE verified_at END, returned_at = CASE WHEN $2 THEN NULL ELSE returned_at END, soft_at = CASE WHEN $2 THEN NULL ELSE soft_at END WHERE id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Bool",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "65eae4b98590f141faac4405b60b1121eff89e55e0067562ddd8cd471a825476"
+}

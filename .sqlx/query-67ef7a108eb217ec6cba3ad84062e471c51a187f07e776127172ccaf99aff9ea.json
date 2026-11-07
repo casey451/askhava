@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE businesses.signup SET code_tries = code_tries - 1 WHERE business_id = $1 AND code_tries > 0",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "67ef7a108eb217ec6cba3ad84062e471c51a187f07e776127172ccaf99aff9ea"
+}
