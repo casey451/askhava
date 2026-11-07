@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-07T19:16:59Z by runner 03d112b0be45 (actions).
+Updated 2026-11-07T19:27:04Z by runner c4468d670aef (actions).
 
 **Idle since 19:16Z; 143 of 269 done; week 43% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,11 @@ Updated 2026-11-07T19:16:59Z by runner 03d112b0be45 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 19:16Z (no task in progress)
 - **Week:** 43% used, 108.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:16Z, 0 min before this update
+- **Last run:** 19:17Z, 10 min before this update
 - **Keeper:** last ran 19:16Z, next wake 19:36Z
 
 ## Needs attention
-- Strict plan check red: 6 problem(s) on tasks still to run (+4 on DONE tasks); first: T149: stored context_pct 16% but it measures 20%; regenerate
+- Strict plan check red: 6 problem(s) on tasks still to run (+5 on DONE tasks); first: T149: stored context_pct 16% but it measures 20%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -41,6 +41,7 @@ Updated 2026-11-07T19:16:59Z by runner 03d112b0be45 (actions).
 | T078 | calls: never recorded, 45-second connection rule, call logs | done | 1 | 46 min | 19:53Z |  |
 
 ### Plan and harness merges on main
+- 19:25Z Harness: incremental runner smoke build (stable tree, own target dir, mtime pinning) (D-1890) (#333)
 - 15:37Z Plan: second code audit — owners and acceptance for B01–B08 and known gaps (D-1835–D-1845) (#326)
 - 05:10Z Plan: repo audit findings — owners and acceptance for A01–A06, A08–A12 (D-1751–D-1761, D-1788) (#316)
 - 03:59Z Plan: tests/a11y/fixtures.ts is a shared page-state registry (D-1772) (#314)
