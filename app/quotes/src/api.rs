@@ -38,7 +38,7 @@
 use sqlx::types::Uuid;
 
 pub use crate::card_notices::{
-    CardNotice, JOB_PAGE_PREFIX, card_payload, queue_card_notice, sent_count,
+    CardNotice, JOB_PAGE_PREFIX, QUOTE_HOURS, card_payload, queue_card_notice, sent_count,
 };
 pub use crate::cards::{CardParts, DEFAULT_MIN_WORDS, Danger, JobCard, Place, Timing, build_card};
 pub use crate::gate::final_gate;

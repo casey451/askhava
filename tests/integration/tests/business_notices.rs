@@ -17,8 +17,8 @@ use askhava_businesses::api::{
 };
 use askhava_core::api::IdSecret;
 use askhava_messaging::api::{
-    LINK_LIFE, Line, Lines, MailboxKind, NoticeOutcome, NoticeSender, NumberState, SendingNumber,
-    TextGate, business_notice, held_until, sign_in_link,
+    LINK_LIFE, Line, Lines, MailboxKind, NoticeOutcome, NoticeSender, NumberState, SendChecks,
+    SendingNumber, business_notice, held_until, sign_in_link,
 };
 use askhava_ops::api::Actor;
 use askhava_quotes::api::{CardNotice, queue_card_notice, sent_count};
@@ -78,12 +78,22 @@ async fn send(
     business_notice(db, (&sender(), &Gate, &lines(texting)), (id, payload), now).await
 }
 
-/// The composition's gate: `businesses::api::may_text`, read when the notice is sent (D-1760).
+/// The pick whose notice still waits (its "Accept by" is [`ACCEPT_BY`]); any other moved on.
+const WAITING_PICK: u128 = 0x501;
+/// 4 p.m. Arizona time on the test day.
+const ACCEPT_BY: &str = "2026-11-10T23:00:00Z";
+
+/// The composition's checks: `businesses::api::may_text`, read when the notice is sent (D-1760),
+/// and a stand-in for `picks::api::notice_sent` (D-1503).
 struct Gate;
 
-impl TextGate for Gate {
+impl SendChecks for Gate {
     async fn may_text(&self, conn: &mut PgConnection, business: Uuid, phone: Uuid) -> bool {
         may_text(conn, business, phone).await.unwrap_or(false)
+    }
+
+    async fn accept_by(&self, _: &mut PgConnection, pick: Uuid, _: Timestamp) -> Option<Timestamp> {
+        (pick == Uuid::from_u128(WAITING_PICK)).then(|| at(ACCEPT_BY))
     }
 }
 
@@ -137,7 +147,6 @@ fn card<'a>() -> CardNotice<'a> {
         number: 1042,
         category: "plumbing",
         town: "Lake Havasu City",
-        quote_by: at("2026-11-11T19:00:00Z"),
         card: "Kitchen sink drips under the cabinet. How soon: this week. Sent to 3 businesses.",
     }
 }
@@ -266,7 +275,7 @@ async fn td_txt_17_text_only_to_a_consented_phone_read_at_send(pool: PgPool) {
 }
 
 /// TD-BIZ-14 (QH-005, CARD-020): a card notice due at 21:30 is held as a whole (no email, no text)
-/// and queued again for 08:00 Arizona time.
+/// and queued again for 08:00 Arizona time, and its 24-hour window counts from 08:00 (D-1828).
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_biz_14_notice_at_2130_held_whole_to_0800(pool: PgPool) {
     let mut db = pool.acquire().await.expect("connection");
@@ -289,6 +298,13 @@ async fn td_biz_14_notice_at_2130_held_whole_to_0800(pool: PgPool) {
     .await
     .expect("held task");
     assert_eq!(due, 1);
+    let morning = send(&mut db, (&payload, 9), false, eight).await;
+    assert!(matches!(morning, Ok(NoticeOutcome::Sent { emails: 2, .. })));
+    let subject = emailed(&mut db, b).await.remove(0).1;
+    assert!(
+        subject.ends_with("Quote by 8 a.m. Arizona time."),
+        "{subject}"
+    );
     assert_eq!(held_until(at("2026-11-10T15:00:00Z")), None);
     assert_eq!(held_until(at("2026-11-11T02:59:59Z")), None);
     assert_eq!(held_until(at("2026-11-11T03:00:00Z")), Some(eight));
@@ -434,4 +450,111 @@ async fn td_txt_22_sent_count_leaves_out_a_hard_bounced_business(pool: PgPool) {
     .await
     .expect("bounce");
     assert_eq!(sent_count(&mut db, job).await.expect("count"), 2);
+}
+
+/// TD-BIZ-14 (BIZ-019, CON-019, D-1760): "both" sends the consented phone a text and its person
+/// the email too; a text box no longer ticked when the notice runs (its row gone, as no revoke
+/// path exists yet) sends the email instead.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_biz_14_both_sends_email_and_text_and_an_unticked_box_gets_email(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("connection");
+    let (b, [owner, _, _]) = business(&mut db, 0x230).await;
+    let p0 = phone(&mut db, b, owner).await;
+    let text = [ConsentChannel::Text];
+    record_consent(&mut db, (b, owner, Some(p0)), &text, true, at(NOON))
+        .await
+        .expect("box");
+    set_notice_channel(&mut db, b, (NoticeChannel::Both, true), at(NOON))
+        .await
+        .expect("both");
+    let payload = queued_card(&mut db, Uuid::from_u128(0x111), b, true).await;
+    let run = send(&mut db, (&payload, 10), true, at(NOON)).await;
+    assert_eq!(
+        run.expect("sent"),
+        NoticeOutcome::Sent {
+            emails: 2,
+            texts: 1
+        }
+    );
+    assert_eq!(texted(&mut db, p0).await, 1);
+    let to: Vec<Uuid> = emailed(&mut db, b).await.into_iter().map(|e| e.0).collect();
+    assert_eq!(to, vec![Uuid::from_u128(0x230), Uuid::from_u128(0x231)]);
+    set_notice_channel(&mut db, b, (NoticeChannel::Text, true), at(NOON))
+        .await
+        .expect("text");
+    let job = Uuid::from_u128(0x112);
+    let queue = queue_card_notice(&mut db, (job, b), &card(), (true, at(NOON))).await;
+    assert!(queue.expect("queued"));
+    let payload: Value = sqlx::query_scalar(
+        "SELECT payload FROM core.task WHERE kind = 'messaging.business_notice' \
+         AND payload->>'job' = $1::text",
+    )
+    .bind(job)
+    .fetch_one(&mut *db)
+    .await
+    .expect("task");
+    assert_eq!(payload["to"], json!([Uuid::from_u128(0x231)]));
+    sqlx::query("DELETE FROM businesses.esign_consent WHERE line_id = $1")
+        .bind(p0)
+        .execute(&mut *db)
+        .await
+        .expect("unticked");
+    let run = send(&mut db, (&payload, 11), true, at(NOON)).await;
+    assert_eq!(
+        run.expect("sent"),
+        NoticeOutcome::Sent {
+            emails: 2,
+            texts: 0
+        }
+    );
+    assert_eq!(texted(&mut db, p0).await, 1, "no second text");
+}
+
+/// TD-BIZ-14, TD-TXT-18 (PICK-019, FEE-020, FEE-038, D-1503, D-1761, D-1828): a pick notice's
+/// "Accept by" is set at the send, and a pick that moved on gets nothing; a card-fix notice whose
+/// window is stopped sends its untimed words; a `{link}` notice with no job number fails rather
+/// than send the shared portal address.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_biz_14_times_are_set_at_send_and_a_link_is_never_unsigned(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("connection");
+    let (b, _) = business(&mut db, 0x240).await;
+    let to = [Uuid::from_u128(0x240)];
+    let notice = |template: &str, pick: u128, values: Value| {
+        json!({"template": template, "business": b, "pick": Uuid::from_u128(pick), "to": to,
+               "values": values})
+    };
+    let moved = notice("pick_notice", 0x502, json!({"job": 1042, "window": 240}));
+    let run = send(&mut db, (&moved, 12), false, at(NOON)).await;
+    assert_eq!(run.expect("dropped"), NoticeOutcome::Dropped);
+    assert!(emailed(&mut db, b).await.is_empty());
+    let pick = notice(
+        "pick_notice",
+        WAITING_PICK,
+        json!({"job": 1042, "window": 240}),
+    );
+    send(&mut db, (&pick, 13), false, at(NOON))
+        .await
+        .expect("pick");
+    let fix = notice("card_fix_notice", 0x503, json!({"job": 1042, "time": null}));
+    send(&mut db, (&fix, 14), false, at(NOON))
+        .await
+        .expect("fix");
+    let plains: Vec<String> = emailed(&mut db, b).await.into_iter().map(|e| e.3).collect();
+    let line =
+        "Ask Hava: A homeowner picked your quote for job 1042. Accept by 4 p.m. Arizona time.";
+    assert!(plains.iter().any(|p| p.starts_with(line)), "{plains:?}");
+    let untimed = plains
+        .iter()
+        .find(|p| p.contains("didn't go through"))
+        .expect("fix");
+    assert!(
+        untimed.contains("Try again") && !untimed.contains("After"),
+        "{untimed}"
+    );
+    let no_job = notice("card_fix_notice", 0x504, json!({"time": 1_794_340_800}));
+    let run = send(&mut db, (&no_job, 15), false, at(NOON)).await;
+    assert!(matches!(
+        run,
+        Err(askhava_messaging::api::EmailError::Template)
+    ));
 }

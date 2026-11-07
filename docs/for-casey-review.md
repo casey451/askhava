@@ -1873,11 +1873,11 @@ An outside review (ChatGPT) of the whole repository found twelve issues. Each wa
 - Not built yet: the text that sends the link, the askhava.com section that shows the feedback, and your owner-portal buttons to remove one or mark who wrote it. Also not yet: the words a homeowner types are kept as typed, so they may hold her own contact details, and neither the 3-year purge nor "Delete my data" removes them yet; a later task adds that. The runner has the list.
 - **Nothing needs you now.**
 
-## Business notices by email or text (T147, D-1825 to D-1827, November 7)
+## Business notices by email or text (T147, D-1825 to D-1829, November 7)
 
 - Business notices now go by email unless texting is set up.
 - Texts start only after you turn on business texting. Even then, a text goes only to phones with the text box ticked. Everyone else gets the email.
-- Notices due overnight wait until 8 a.m. Arizona time. The email and the text then go out together.
+- Notices due overnight wait until 8 a.m. Arizona time. The email and the text then go out together, and a job card's 24 hours to quote start at 8 a.m.
 - The "job is confirmed" and "card didn't go through" emails carry a sign-in link made for that one person, good for 7 days. No homeowner details are in any email or text to a business.
 - Job card emails have no photos, just a link to the job page in the business portal.
 - The "Sent to N businesses" count leaves out any business whose card email bounced.

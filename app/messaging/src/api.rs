@@ -14,7 +14,7 @@
 
 pub use crate::business_notices::{
     BUSINESS_NOTICE_KIND, JOB_CARD_TEMPLATE, LINK_LIFE, NoticeOutcome, NoticeSender, SIGN_IN_URL,
-    TextGate, business_notice, card_notice_accepted, held_until, sign_in_link,
+    SendChecks, business_notice, card_notice_accepted, held_until, sign_in_link,
 };
 pub use crate::email::{
     COMPLAINT_ALERT, DailyLimit, EMAIL_ACTION, EmailClass, EmailEvent, EmailSent, EmailTo, FROM,

@@ -8,6 +8,7 @@
 //! their opaque IDs, the card text (no homeowner detail, CARD-005), the WORD-002 business
 //! statement and the signed-in job page's link; never an image or a photo link (PRIV-027).
 //! `messaging` sends it by email, and by text only to phones that may get one at send time.
+//! The "Quote by" time is set when the notice is sent ([`QUOTE_HOURS`] on), never when queued.
 //! [`sent_count`] is CARD-019's N: the card holders whose card notice the email or texting
 //! provider accepted and that did not all hard-bounce (`messaging::api::card_notice_accepted`).
 
@@ -26,6 +27,10 @@ use crate::models::{self, QuotesError};
 /// The signed-in job page a card email links to; the job number follows (PRIV-027, D-493).
 pub const JOB_PAGE_PREFIX: &str = "https://askhava.com/b/jobs/";
 
+/// PICK-001, CARD-020, D-1828: the quote window's length; `messaging` writes "Quote by" as the
+/// send time plus this, so a card held to 8 a.m. (QH-005) counts from 8 a.m.
+pub const QUOTE_HOURS: i64 = 24;
+
 /// What one card notice says (CARD-020): no homeowner name, address, contact or photo.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CardNotice<'a> {
@@ -35,8 +40,6 @@ pub struct CardNotice<'a> {
     pub category: &'a str,
     /// The town.
     pub town: &'a str,
-    /// When the 24-hour quote window ends (PICK-001).
-    pub quote_by: Timestamp,
     /// The stored card text sent to this business (`JobCard::text_for`).
     pub card: &'a str,
 }
@@ -52,7 +55,7 @@ pub fn card_payload(
         "template": JOB_CARD_TEMPLATE,
         "business": business, "job": job, "to": to, "texts": texts,
         "values": {"trade": notice.category, "town": notice.town, "job": notice.number,
-                   "time": notice.quote_by.as_second()},
+                   "quote_hours": QUOTE_HOURS},
         "card": notice.card, "statement": BUSINESS_STATEMENT,
         "page": format!("{JOB_PAGE_PREFIX}{}", notice.number),
     })
