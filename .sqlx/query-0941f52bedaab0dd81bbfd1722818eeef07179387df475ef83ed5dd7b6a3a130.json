@@ -1,0 +1,31 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO jobs.feedback (job_id, body, share, received_at) SELECT id, $2, $3, $4 FROM jobs.job WHERE id = $1 AND status = 'done' ON CONFLICT (job_id) DO NOTHING RETURNING id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "jobs.feedback",
+            "name": "id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Bool",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "0941f52bedaab0dd81bbfd1722818eeef07179387df475ef83ed5dd7b6a3a130"
+}

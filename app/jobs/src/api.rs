@@ -89,3 +89,229 @@ pub async fn first_quote(
     }
     Ok(Guarded::MovedOn)
 }
+
+/// The homeowner's private feedback after Done, its share tick, removals and author marks
+/// (JOB-017, T230, D-083, D-466, D-493). Table `jobs.feedback` (migration 0139): one row per job,
+/// the words and tick as sent and never changed; there is no rating or tone column, so
+/// [`feedback::shown`] cannot leave feedback out for being negative.
+pub mod feedback {
+    use askhava_ops::api::{Actor, AuditEntry, Change, audit};
+    use jiff::Timestamp;
+    use jiff_sqlx::ToSqlx;
+    use sqlx::types::Uuid;
+    use sqlx::{Connection, PgConnection};
+
+    use crate::models::JobsError;
+
+    /// The longest feedback the page takes, in characters (the table's `CHECK`).
+    pub const MAX_CHARS: usize = 2000;
+
+    /// The only four reasons ticked feedback is left off askhava.com (JOB-017).
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    pub enum Removal {
+        /// It gives another person's personal details.
+        PersonalDetails,
+        /// It is abusive or discriminatory.
+        Abusive,
+        /// It is believed fake.
+        Fake,
+        /// It is unrelated to the service.
+        Unrelated,
+    }
+
+    impl Removal {
+        /// The code stored in `jobs.feedback.removed_reason`.
+        #[must_use]
+        pub const fn code(self) -> &'static str {
+            match self {
+                Self::PersonalDetails => "personal_details",
+                Self::Abusive => "abusive",
+                Self::Fake => "fake",
+                Self::Unrelated => "unrelated",
+            }
+        }
+    }
+
+    /// A writer whose feedback is never shown, whatever the tick (JOB-017).
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    pub enum Author {
+        /// The Ask Hava owner.
+        Owner,
+        /// A relative of the owner.
+        OwnerRelative,
+        /// A business.
+        Business,
+    }
+
+    impl Author {
+        /// The code stored in `jobs.feedback.author_kind`.
+        #[must_use]
+        pub const fn code(self) -> &'static str {
+            match self {
+                Self::Owner => "owner",
+                Self::OwnerRelative => "owner_relative",
+                Self::Business => "business",
+            }
+        }
+    }
+
+    /// One feedback that may appear on askhava.com (JOB-017).
+    #[derive(Debug, Clone, PartialEq, Eq)]
+    pub struct Shown {
+        /// The feedback's ID.
+        pub id: Uuid,
+        /// The job it is about; the page reads the first name and town through it.
+        pub job: Uuid,
+        /// The words exactly as written.
+        pub body: String,
+    }
+
+    /// JOB-017: stores job `job`'s feedback `body` with the share tick as sent, at `at`, only
+    /// while the job is Done and has no feedback yet; its ID, or `None` when nothing was stored
+    /// (a second send, or a job not Done).
+    ///
+    /// # Errors
+    /// [`JobsError::Database`], an empty or too long `body` included.
+    pub async fn store(
+        db: &mut PgConnection,
+        job: Uuid,
+        (body, share): (&str, bool),
+        at: Timestamp,
+    ) -> Result<Option<Uuid>, JobsError> {
+        sqlx::query_scalar!(
+            "INSERT INTO jobs.feedback (job_id, body, share, received_at) \
+             SELECT id, $2, $3, $4 FROM jobs.job WHERE id = $1 AND status = 'done' \
+             ON CONFLICT (job_id) DO NOTHING RETURNING id",
+            job,
+            body,
+            share,
+            at.to_sqlx() as _,
+        )
+        .fetch_optional(db)
+        .await
+        .map_err(|_| JobsError::Database)
+    }
+
+    /// Whether job `job` already has feedback (JOB-017: one per job).
+    ///
+    /// # Errors
+    /// [`JobsError::Database`].
+    pub async fn given(db: &mut PgConnection, job: Uuid) -> Result<bool, JobsError> {
+        sqlx::query_scalar!(
+            r#"SELECT EXISTS (SELECT 1 FROM jobs.feedback WHERE job_id = $1) AS "given!""#,
+            job
+        )
+        .fetch_one(db)
+        .await
+        .map_err(|_| JobsError::Database)
+    }
+
+    /// JOB-017: leaves ticked feedback `id` off askhava.com for `reason`, once, at `at`, logged
+    /// with an audit row by `actor` in the same transaction; `false` changed nothing (unticked,
+    /// already removed or unknown).
+    ///
+    /// # Errors
+    /// [`JobsError::Database`].
+    pub async fn remove(
+        db: &mut PgConnection,
+        id: Uuid,
+        reason: Removal,
+        (actor, at): (Actor, Timestamp),
+    ) -> Result<bool, JobsError> {
+        let mut tx = db.begin().await.map_err(|_| JobsError::Database)?;
+        let done = sqlx::query!(
+            "UPDATE jobs.feedback SET removed_reason = $2, removed_at = GREATEST($3, received_at) \
+             WHERE id = $1 AND share AND removed_reason IS NULL",
+            id,
+            reason.code(),
+            at.to_sqlx() as _,
+        )
+        .execute(&mut *tx)
+        .await
+        .map_err(|_| JobsError::Database)?;
+        if done.rows_affected() == 0 {
+            return Ok(false);
+        }
+        let action = match reason {
+            Removal::PersonalDetails => "feedback_removed_personal_details",
+            Removal::Abusive => "feedback_removed_abusive",
+            Removal::Fake => "feedback_removed_fake",
+            Removal::Unrelated => "feedback_removed_unrelated",
+        };
+        logged(&mut tx, actor, id, action).await?;
+        tx.commit().await.map_err(|_| JobsError::Database)?;
+        Ok(true)
+    }
+
+    /// JOB-017: marks feedback `id` as written by `author`, so it is never shown; audited by
+    /// `actor` in the same transaction. `false` changed nothing (unknown feedback).
+    ///
+    /// # Errors
+    /// [`JobsError::Database`].
+    pub async fn mark_author(
+        db: &mut PgConnection,
+        id: Uuid,
+        author: Author,
+        actor: Actor,
+    ) -> Result<bool, JobsError> {
+        let mut tx = db.begin().await.map_err(|_| JobsError::Database)?;
+        let done = sqlx::query!(
+            "UPDATE jobs.feedback SET author_kind = $2 WHERE id = $1",
+            id,
+            author.code(),
+        )
+        .execute(&mut *tx)
+        .await
+        .map_err(|_| JobsError::Database)?;
+        if done.rows_affected() == 0 {
+            return Ok(false);
+        }
+        logged(&mut tx, actor, id, "feedback_author_marked").await?;
+        tx.commit().await.map_err(|_| JobsError::Database)?;
+        Ok(true)
+    }
+
+    /// JOB-017: every feedback that may appear on askhava.com, newest first: ticked, not removed
+    /// and not from the owner, a relative of the owner or a business. Nothing else filters it.
+    ///
+    /// # Errors
+    /// [`JobsError::Database`].
+    pub async fn shown(db: &mut PgConnection) -> Result<Vec<Shown>, JobsError> {
+        let rows = sqlx::query!(
+            "SELECT id, job_id, body FROM jobs.feedback \
+             WHERE share AND removed_reason IS NULL AND author_kind IS NULL \
+             ORDER BY received_at DESC, id"
+        )
+        .fetch_all(db)
+        .await
+        .map_err(|_| JobsError::Database)?;
+        Ok(rows
+            .into_iter()
+            .map(|r| Shown {
+                id: r.id,
+                job: r.job_id,
+                body: r.body,
+            })
+            .collect())
+    }
+
+    /// The audit row for a change to feedback `id` (its words are never logged, PRIV-028).
+    async fn logged(
+        db: &mut PgConnection,
+        actor: Actor,
+        id: Uuid,
+        action: &'static str,
+    ) -> Result<(), JobsError> {
+        let entry = AuditEntry {
+            actor,
+            action,
+            subject_kind: "jobs.feedback",
+            subject_id: id,
+            change: Change::Action,
+        };
+        audit(db, &entry)
+            .await
+            .map(|_| ())
+            .map_err(|_| JobsError::Database)
+    }
+}

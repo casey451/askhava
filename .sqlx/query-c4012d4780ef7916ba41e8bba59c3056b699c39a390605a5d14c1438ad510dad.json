@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE jobs.feedback SET removed_reason = $2, removed_at = GREATEST($3, received_at) WHERE id = $1 AND share AND removed_reason IS NULL",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "c4012d4780ef7916ba41e8bba59c3056b699c39a390605a5d14c1438ad510dad"
+}

@@ -10,7 +10,8 @@
 //! T068). The business sign-up screens, their WEB-024 notice line, fee numbers and done-screen
 //! facts (BIZ-024, BIZ-026, BIZ-030, BIZ-031, LIC-047, T193). Business sign-in by emailed link,
 //! the 30-day session and the business principal with Confirm's scope (SEC-004, SEC-019, PICK-033,
-//! T084); the new-device code by Verify text or email (SEC-004, TXT-038, T194).
+//! T084); the new-device code by Verify text or email (SEC-004, TXT-038, T194). The private
+//! feedback page's router after Done (JOB-017, T230).
 
 /// The cookie jar the session functions take and give back (axum-extra's).
 pub use axum_extra::extract::cookie::CookieJar;
@@ -29,6 +30,7 @@ pub use crate::confirm_pay::{
     ConfirmFacts, FEE_FREE_LINE, NoFee, PORTAL_LINK, PressReply, REFUND_LINE, confirm_page,
     may_confirm, press_reply,
 };
+pub use crate::feedback::{FEEDBACK_ROUTE, SHARE_LABEL, feedback_routes};
 pub use crate::pick_flow::{
     CODE_ROUTE, PICK_ROUTE, PageLanguage, PickCodeKeys, VERIFY_DAILY_THRESHOLD, pick_flow_routes,
     result_page,

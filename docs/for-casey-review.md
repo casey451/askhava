@@ -1866,6 +1866,12 @@ An outside review (ChatGPT) of the whole repository found twelve issues. Each wa
 - Not working end to end yet: the worker tasks that call these steps at 24, 48, 72 and 96 hours, and the dispute and fraud-warning webhooks, still need wiring. The runner has the list.
 - **Nothing needs you now.**
 
+## The private feedback page (T230, D-1820 to D-1823, November 7)
+
+- After a job is Done, the homeowner can open a private feedback page from her link. She writes to Ask Hava in one box. One box, unticked, asks: "Ask Hava may show what I wrote on askhava.com with my first name and town". Everyone gets the same page and no reward.
+- Only ticked feedback can ever go on askhava.com, and a bad review is shown like a good one. A ticked one comes off only for another person's personal details, abuse or discrimination, being believed fake, or being off topic, and each removal is logged with its reason. Feedback from you, a relative of yours or a business is never shown.
+- Not built yet: the text that sends the link, the askhava.com section that shows the feedback, and your owner-portal buttons to remove one or mark who wrote it. Also not yet: the words a homeowner types are kept as typed, so they may hold her own contact details, and neither the 3-year purge nor "Delete my data" removes them yet; a later task adds that. The runner has the list.
+
 ## The second outside code audit: what was confirmed and who fixes it (plan change, D-1835 to D-1845, November 7)
 
 A second outside review of the whole repository found eight issues and listed some known gaps. Each was checked against today's code (with the unreachable-refund work, T191, now merged) before anything was planned; all eight hold and none was rejected. Thirteen new tasks (T270 to T282) now own them. Full list with evidence: `docs/reviews/2026-11-07-second-audit-dispositions.md`.

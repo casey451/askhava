@@ -14,6 +14,7 @@
 //! BIZ-031, LIC-047, WEB-024).
 //! T084 built business sign-in by a single-use 15-minute emailed link, the 30-day business session
 //! and the signed-in business principal routes are scoped by (`business_auth`, SEC-004, SEC-019).
+//! T230 built the homeowner's private feedback page after Done (`feedback`, JOB-017).
 //! Portal pages extend the shared layout `app/site/templates/base.html` through `askama.toml`.
 //! Other crates reach it only through [`api`].
 
@@ -21,6 +22,7 @@ pub mod api;
 mod business_auth;
 mod business_signup;
 mod confirm_pay;
+mod feedback;
 mod models;
 mod pick_flow;
 mod quote_page;
