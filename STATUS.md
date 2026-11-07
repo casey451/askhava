@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-07T21:43:12Z by runner 5ed14d085421 (actions).
+Updated 2026-11-07T21:43:23Z by runner 5ed14d085421 (actions).
 
-**Building: T085 in progress since 21:09Z; 145 of 277 done; week 44% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 21:43Z; 145 of 277 done; week 44% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 145 of 277 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T085 claimed 21:09Z, lease until 00:09Z
+- **Lane:** idle since 21:43Z (no task in progress)
 - **Week:** 44% used, 106.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 21:16Z, 26 min before this update
 - **Keeper:** last ran 20:52Z, next wake 21:12Z
@@ -17,6 +17,7 @@ Updated 2026-11-07T21:43:12Z by runner 5ed14d085421 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T085 | portals: business portal home (contact choice, your numbers, | MERGE_PENDING | 1 | 33 min | 21:43Z |  |
 | T253 | privacy, picks and portals: the signed-in business reads a r | done | 1 | 54 min | 20:44Z |  |
 | T252 | architecture test: dynamic SQL in a migration is a TD-SEC-10 | done | 1 | 19 min | 19:16Z |  |
 | T196 | businesses: verified notice email, sender rules and the addr | done | 2 | 32 min | 18:33Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests / test tests::transi |
@@ -92,7 +93,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T085 (lease until 2026-11-08T00:09:28Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T253", "at": "2026-11-07T20:44:26Z", "output_tokens": 191276, "input_tokens": 544, "cache_read_input_tokens": 42320033, "cache_creation_input_tokens": 629489}
+- {"task": "T085", "at": "2026-11-07T21:43:11Z", "cache_creation_input_tokens": 529619, "cache_read_input_tokens": 17695986, "output_tokens": 145506, "input_tokens": 365}
