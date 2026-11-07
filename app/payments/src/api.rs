@@ -99,6 +99,7 @@ pub use crate::models::{
     RefundTrigger, RefundWhy, STATEMENT_PREFIX, SavedCard, SetupIntentRequest, StripeCharge,
     attempt_label, intent_label, plan_charge,
 };
+pub use crate::purge::{DISPUTE_OPEN_AFTER_DUE, place_dispute_holds, run_dispute_holds};
 pub use crate::receipts::{ChargeReceipt, RECEIPT_KIND, queue_receipt, receipt_for, tier_of_fee};
 pub use crate::reconcile::{
     CHARGE_FAILED_ALERT, LOOKBACK, MISMATCH_ALERT, RECONCILE_ACTION, RECONCILE_EVERY,

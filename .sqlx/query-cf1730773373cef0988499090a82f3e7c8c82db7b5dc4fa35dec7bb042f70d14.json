@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE privacy.contact SET name = NULL, email = NULL, address = NULL, onsite_contact = NULL WHERE id = $1 AND (name IS NOT NULL OR email IS NOT NULL OR address IS NOT NULL OR onsite_contact IS NOT NULL)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "cf1730773373cef0988499090a82f3e7c8c82db7b5dc4fa35dec7bb042f70d14"
+}

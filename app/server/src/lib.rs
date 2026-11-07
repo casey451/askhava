@@ -328,6 +328,7 @@ where
         },
     );
     register_business_handlers(&mut registry);
+    register_purge_handlers(&mut registry);
     if let Some(keys) = texts {
         registry.register(askhava_jobs::api::TEXT_KIND, move |pool, task| {
             askhava_intake::api::run_job_text(pool, Arc::clone(&keys), task)
@@ -347,6 +348,88 @@ fn register_business_handlers(registry: &mut Registry) {
         askhava_businesses::api::MEMBER_REMOVED_KIND,
         askhava_portals::api::run_member_removed,
     );
+}
+
+/// The retention purge (PRIV-007 to PRIV-009, D-491): `jobs`' daily sweep and stage tasks, with
+/// `intake`'s sweep of requests that never got a job on the same daily task; on a stage task or
+/// `privacy`'s re-check, `businesses` queues its complaint hold events and `payments` places its
+/// dispute holds before `privacy` decides (a re-check that queued new events waits for them,
+/// D-1799); `privacy` applies the complaint events and hands the contact and text stages to
+/// `intake`. Each purge task's last failed attempt raises an alert ([`alert_if_last`]).
+fn register_purge_handlers(registry: &mut Registry) {
+    registry.register(askhava_jobs::api::SWEEP_KIND, |pool, task| async move {
+        askhava_jobs::api::run_sweep(pool.clone(), task.clone()).await?;
+        askhava_intake::api::run_request_sweep(pool, task).await
+    });
+    for kind in [
+        askhava_jobs::api::PURGE_DUE_KIND,
+        askhava_privacy::api::RECHECK_KIND,
+    ] {
+        registry.register(kind, |pool, task| async move {
+            let outcome = async {
+                let queued =
+                    askhava_businesses::api::run_complaint_holds(pool.clone(), task.clone())
+                        .await?;
+                askhava_payments::api::run_dispute_holds(pool.clone(), task.clone()).await?;
+                askhava_privacy::api::run_purge_due_after(pool.clone(), task.clone(), queued).await
+            };
+            alert_if_last(&pool, &task, outcome.await).await
+        });
+    }
+    registry.register(
+        askhava_businesses::api::COMPLAINT_HOLD_KIND,
+        askhava_privacy::api::run_complaint_hold,
+    );
+    registry.register(askhava_privacy::api::PURGE_KIND, |pool, task| async move {
+        let outcome = askhava_intake::api::run_purge(pool.clone(), task.clone()).await;
+        alert_if_last(&pool, &task, outcome).await
+    });
+    registry.register(
+        askhava_intake::api::REQUEST_PURGE_KIND,
+        |pool, task| async move {
+            let outcome = askhava_intake::api::run_request_purge(pool.clone(), task.clone()).await;
+            alert_if_last(&pool, &task, outcome).await
+        },
+    );
+}
+
+/// PRIV-007, OPS-001, D-1799: a purge task that failed on its last attempt is dead-lettered and
+/// never queued again (its dedupe key stays), so it also raises one High `privacy.purge_failed`
+/// alert naming the job or request by ID; `outcome` is returned unchanged.
+///
+/// # Errors
+/// `outcome`'s own error, unchanged; a failure to store the alert is logged, never returned.
+pub async fn alert_if_last(
+    pool: &PgPool,
+    task: &askhava_core::api::Claimed,
+    outcome: Result<(), askhava_core::api::HandlerError>,
+) -> Result<(), askhava_core::api::HandlerError> {
+    if outcome.is_ok() || task.attempts < askhava_core::api::DEFAULT_MAX_ATTEMPTS {
+        return outcome;
+    }
+    let id = |key: &str| {
+        task.payload[key]
+            .as_str()
+            .and_then(|s| sqlx::types::Uuid::parse_str(s).ok())
+    };
+    let subject = id("job")
+        .map(|job| ("jobs.job", job))
+        .or_else(|| id("conversation").map(|c| ("intake.conversation", c)));
+    let alert = askhava_ops::api::NewAlert {
+        kind: "privacy.purge_failed",
+        severity: askhava_ops::api::Severity::High,
+        subject,
+    };
+    let raised = match pool.acquire().await {
+        Ok(mut conn) => askhava_ops::api::raise_alert(&mut conn, &alert)
+            .await
+            .is_ok(),
+        Err(_) => false,
+    };
+    if !raised {
+        tracing::error!("purge failure alert could not be stored");
+    }
+    outcome
 }
 
 /// `payments`' release minter, made from `privacy`'s mint the first time it is asked for, so the
