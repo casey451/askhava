@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-07T19:16:25Z by runner 49d6fbafca64 (actions).
+Updated 2026-11-07T19:16:37Z by runner 49d6fbafca64 (actions).
 
-**Building: T252 in progress since 18:56Z; 143 of 269 done; week 43% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 19:16Z; 143 of 269 done; week 43% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 143 of 269 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T252 claimed 18:56Z, lease until 21:56Z
+- **Lane:** idle since 19:16Z (no task in progress)
 - **Week:** 43% used, 108.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:03Z, 12 min before this update
+- **Last run:** 19:03Z, 13 min before this update
 - **Keeper:** last ran 18:54Z, next wake 19:14Z
 
 ## Needs attention
@@ -17,6 +17,7 @@ Updated 2026-11-07T19:16:25Z by runner 49d6fbafca64 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T252 | architecture test: dynamic SQL in a migration is a TD-SEC-10 | MERGE_PENDING | 1 | 19 min | 19:16Z |  |
 | T196 | businesses: verified notice email, sender rules and the addr | done | 2 | 32 min | 18:33Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests / test tests::transi |
 | T093 | messaging: vault references in the log, bodies cut at 30 day | done | 1 | 45 min | 17:05Z |  |
 | T196 | businesses: verified notice email, sender rules and the addr | check_failed | 1 | 49 min | 15:54Z |  |
@@ -91,7 +92,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T252 (lease until 2026-11-07T21:56:56Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T196", "at": "2026-11-07T18:33:49Z", "output_tokens": 66062, "cache_read_input_tokens": 3996080, "input_tokens": 159, "cache_creation_input_tokens": 260644}
+- {"task": "T252", "at": "2026-11-07T19:16:25Z", "output_tokens": 60130, "cache_read_input_tokens": 3931333, "cache_creation_input_tokens": 219751, "input_tokens": 136}
