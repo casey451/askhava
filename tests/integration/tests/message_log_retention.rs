@@ -14,8 +14,8 @@ use std::sync::{Arc, Mutex};
 use askhava_adapters::api::{AdapterError, IdempotencyKey, SentText, SmsAdapter};
 use askhava_integration::{is_permission_denied, set_app_role};
 use askhava_messaging::api::{
-    DeliveryStatus, InboundText, Language, NewText, ProviderKeyword, Relation, To, cut_bodies,
-    enqueue, message_log, on_inbound_text, render, send,
+    InboundText, Language, NewText, ProviderKeyword, Relation, To, cut_bodies, enqueue,
+    message_log, on_inbound_text, render, send,
 };
 use askhava_privacy::api::{NewContact, Vault, store_contact};
 use base64::Engine as _;
@@ -129,7 +129,7 @@ async fn td_txt_07_the_log_holds_a_vault_reference_never_a_number(pool: PgPool) 
     assert_eq!(entry.language, Some(Language::Es));
     assert_eq!(entry.subject, [REQUEST]);
     assert!(entry.sent_at.is_some());
-    assert_eq!(entry.status, DeliveryStatus::Sent);
+    assert_eq!(entry.status.as_str(), "sent");
     assert_eq!(entry.attempts, 1);
     assert!(!entry.body_kept);
     let english = render("first_quote", Language::En, true, &values).expect("render");
