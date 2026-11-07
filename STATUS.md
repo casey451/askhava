@@ -1,25 +1,25 @@
 # Ask Hava build status
 
-Updated 2026-11-07T13:30:40Z by runner 2e7439c5fa94 (actions).
+Updated 2026-11-07T13:39:30Z by runner be5f1f860ff8 (actions).
 
-**Idle since 13:25Z; 139 of 256 done; week 39% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 13:36Z; 140 of 256 done; week 39% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 139 of 256 build tasks (owner gates not counted)
+- **Tasks done:** 140 of 256 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 13:25Z (no task in progress)
+- **Lane:** idle since 13:36Z (no task in progress)
 - **Week:** 39% used, 122.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:30Z, 0 min before this update
+- **Last run:** 13:30Z, 8 min before this update
 - **Keeper:** last ran 13:30Z, next wake 13:50Z
 
 ## Needs attention
 - PLAN GAP T093 (since 2026-11-07T08:52:58Z, no attempt used; a plan change fixes it): T093: dependency T092 is DONE but its owned file app/messaging/src/purge.rs is not on main
 - PLAN GAP T253 (since 2026-11-07T08:52:58Z, no attempt used; a plan change fixes it): T253: dependency T092 is DONE but its owned file app/messaging/src/purge.rs is not on main
-- Strict plan check red: 8 problem(s) on tasks still to run (+12 on DONE tasks); first: T253: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 8 problem(s) on tasks still to run (+15 on DONE tasks); first: T253: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T230 | portals: the private feedback page and its storage | MERGE_PENDING | 1 | 61 min | 13:25Z |  |
+| T230 | portals: the private feedback page and its storage | done | 1 | 61 min | 13:25Z |  |
 | T191 | payments: the unreachable-homeowner refund at 96 hours and i | done | 1 | 56 min | 12:07Z |  |
 | T097 | jobs: day-3 and day-14 check-ins, PROBLEM flags, private fee | done | 1 | 51 min | 10:55Z |  |
 | T096 | messaging: web-and-email mode, number suspension, one config | done | 1 | 43 min | 09:49Z |  |
@@ -41,7 +41,6 @@ Updated 2026-11-07T13:30:40Z by runner 2e7439c5fa94 (actions).
 | T250 | core: narrow the default privileges in every schema and prov | done | 5 | 19 min | 16:38Z | T250 blocked: migration 0110 names 12 other modules' schemas; TD-SEC-10 (architecture_migrations.rs, protected) rejects  |
 | T250 | core: narrow the default privileges in every schema and prov | check_failed | 4 | 24 min | 15:37Z |  |
 | T250 | core: narrow the default privileges in every schema and prov | check_failed | 3 | 26 min | 14:20Z |  |
-| T250 | core: narrow the default privileges in every schema and prov | QUEUED | 2 | 9 min | 13:30Z |  |
 
 ### Plan and harness merges on main
 - 05:10Z Plan: repo audit findings — owners and acceptance for A01–A06, A08–A12 (D-1751–D-1761, D-1788) (#316)
@@ -54,8 +53,8 @@ Updated 2026-11-07T13:30:40Z by runner 2e7439c5fa94 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 204 of 731 (27.9%) · partial 279 · unstarted 248
-**Tasks merged (throughput only):** 139 of 256
+**Requirements verified:** 204 of 731 (27.9%) · partial 280 · unstarted 247
+**Tasks merged (throughput only):** 140 of 256
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -68,7 +67,7 @@ Updated 2026-11-07T13:30:40Z by runner 2e7439c5fa94 (actions).
 | intake | 19 | 15 | 9 | 43 |
 | job-cards | 12 | 7 | 5 | 24 |
 | licensing | 31 | 16 | 1 | 48 |
-| lifecycle | 21 | 6 | 1 | 28 |
+| lifecycle | 21 | 7 | 0 | 28 |
 | messaging | 16 | 19 | 10 | 45 |
 | ops-recovery | 1 | 5 | 48 | 54 |
 | privacy | 0 | 25 | 6 | 31 |
@@ -90,7 +89,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 19 of 72 done
+- stage 4: 20 of 72 done
 - stage 5: 0 of 42 done
 - stage 6: 0 of 26 done
 - stage 7: 0 of 2 done
