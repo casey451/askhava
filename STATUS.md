@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-07T05:39:04Z by runner 609e0ed0c74f (actions).
+Updated 2026-11-07T06:25:30Z by runner b4d2084bd2b1 (actions).
 
 **Building: T090 in progress since 05:32Z; 133 of 256 done; week 34% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,11 @@ Updated 2026-11-07T05:39:04Z by runner 609e0ed0c74f (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T090 claimed 05:32Z, lease until 08:32Z
 - **Week:** 34% used, 126.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:17Z, 21 min before this update
+- **Last run:** 05:39Z, 46 min before this update
 - **Keeper:** last ran 05:17Z, next wake 05:37Z
 
 ## Needs attention
-- Strict plan check red: 1 problem(s) on tasks still to run (+1 on DONE tasks); first: T269: stored context_pct 10% but it measures 14%; regenerate
+- Strict plan check red: 2 problem(s) on tasks still to run (+2 on DONE tasks); first: T090: stored context_pct 10% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -40,7 +40,6 @@ Updated 2026-11-07T05:39:04Z by runner 609e0ed0c74f (actions).
 | T247 | jobs and quotes: the first-quote move to Quotes ready (JOB-0 | done | 1 | 24 min | 08:42Z |  |
 | T074 | Twin: run the gate against the app's rules modules | done | 1 | 51 min | 08:05Z |  |
 | T073 | Named mutants: the 4-month rule, the fee tiers and the card  | done | 1 | 30 min | 06:37Z |  |
-| T072 | Metamorphic prompt-injection tests over routing, fees and di | done | 1 | 30 min | 05:55Z |  |
 
 ### Plan and harness merges on main
 - 05:10Z Plan: repo audit findings — owners and acceptance for A01–A06, A08–A12 (D-1751–D-1761, D-1788) (#316)
