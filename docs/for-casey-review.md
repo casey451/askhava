@@ -1845,3 +1845,13 @@ An outside review (ChatGPT) of the whole repository found twelve issues. Each wa
 - The toll-free backup can be set up only after a refused homeowner campaign is recorded and you give the go; it is refused while the number is suspended and never carries business messages.
 - Not done yet, and no task is planned for it: saving these switches and the suspension in the database with their owner-portal buttons, the safety email itself, turning the site banner on, and the wiring that runs this on each incoming message. The runner should add a task.
 - **Nothing needs you now.**
+
+## Check-ins after a job connects, problem reports and the feedback request (T097, D-1809 to D-1811, November 7)
+
+- After a business is connected, the homeowner is asked how it went 3 days after the business gets her details (or 3 days after the earliest visit date, if that is later) and again at 14 days. She can answer DONE, NO, PROBLEM, LATER, ONGOING or OTHER, in English or Spanish.
+- LATER waits for the 14-day check-in. ONGOING (a regular service has started) and DONE finish the job, and only then is she sent one request for private feedback. OTHER (she hired someone else) closes the job without counting it against the business.
+- A PROBLEM reply closes the job and gets the "the Ask Hava owner reads every problem report, usually within 7 days" text. It goes on your weekly list with her message, or on your 9 a.m. / 3 p.m. push if it has a safety word like "stole", "unsafe" or "threat". No fee changes because of it.
+- If a job goes back to quotes (she said the business never reached her) and she picks again, the new business gets its own 3- and 14-day check-ins; the old ones are dropped. ONGOING counts the same as DONE, and a PROBLEM at 14 days is listed for you just like one at 3 days.
+- Not working end to end yet: the check-in and feedback texts still need their wording added by a later task, the problem reply text exists but the sending code doesn't list it yet, so she won't get it until a later task adds it, and the release and the incoming-text route still need to call this code. The runner has the list.
+- **Nothing needs you now.**
+
