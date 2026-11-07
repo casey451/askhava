@@ -327,16 +327,26 @@ where
             askhava_payments::api::run_pause_watch(&pool, jiff::Timestamp::now()).await
         },
     );
-    registry.register(
-        askhava_businesses::api::BOX_CLOSED_KIND,
-        askhava_businesses::api::run_box_closed,
-    );
+    register_business_handlers(&mut registry);
     if let Some(keys) = texts {
         registry.register(askhava_jobs::api::TEXT_KIND, move |pool, task| {
             askhava_intake::api::run_job_text(pool, Arc::clone(&keys), task)
         });
     }
     registry
+}
+
+/// The business-account handlers: the complaint box's close (BIZ-029, T083) and a removed
+/// member's sessions and links ended (SEC-004, SEC-024, T084).
+fn register_business_handlers(registry: &mut Registry) {
+    registry.register(
+        askhava_businesses::api::BOX_CLOSED_KIND,
+        askhava_businesses::api::run_box_closed,
+    );
+    registry.register(
+        askhava_businesses::api::MEMBER_REMOVED_KIND,
+        askhava_portals::api::run_member_removed,
+    );
 }
 
 /// `payments`' release minter, made from `privacy`'s mint the first time it is asked for, so the

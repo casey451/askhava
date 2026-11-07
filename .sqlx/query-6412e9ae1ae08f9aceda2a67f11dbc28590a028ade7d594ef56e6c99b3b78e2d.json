@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE portals.login_link SET used_at = $2 WHERE member_id = $1 AND used_at IS NULL",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "6412e9ae1ae08f9aceda2a67f11dbc28590a028ade7d594ef56e6c99b3b78e2d"
+}
