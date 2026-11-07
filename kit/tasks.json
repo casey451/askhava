@@ -9158,7 +9158,7 @@
    "id": "T259",
    "slug": "stripe-webhook-dispatch",
    "title": "payments: the Stripe webhook dispatches refund, dispute and early-fraud events once each by event ID",
-   "goal": "`app/payments/src/routes.rs` acts only on `payment_intent.succeeded`; every other verified event answers 200 and does nothing, so `refunds::refund_failed`, `disputes::record_dispute` and `refunds::early_fraud_warning` are never reached from Stripe, and no event is recorded by ID (D-1543, D-1545; SEC-017; external audit A08, D-1754). (1) Record each event in `payments.webhook_event` (created by T258's migration), written in the same transaction as the event's effect, so a repeat answers 200 and changes nothing (architecture section 7's per-module `webhook_event`). (2) Dispatch: `refund.updated` and `charge.refund.updated` by the refund's status to T258's `refund_succeeded`, `refund_failed` or `refund_canceled`; `refund.failed` to `refund_failed`; `charge.dispute.created` to `record_dispute`; `charge.dispute.closed` records an audit row and one High alert for Casey (no money moves, D-1545); `radar.early_fraud_warning.created` to `early_fraud_warning` (FEE-052); `payment_intent.succeeded` as now through the `ReleaseSink`. An out-of-order event (a `refund.updated` succeeded after failed) leaves the row in the state Stripe now reports, by refetching the refund through the adapter when the order is ambiguous. A database error answers 500 so Stripe resends; an event for an unknown object answers 200 with nothing changed. The production `ReleaseSink` and the router merge are T254's (D-1739). Update the `payments` `CLAUDE.md` and `docs/decisions.md`.",
+   "goal": "`app/payments/src/routes.rs` acts only on `payment_intent.succeeded`; every other verified event answers 200 and does nothing, so `refunds::refund_failed`, `disputes::record_dispute` and `refunds::early_fraud_warning` are never reached from Stripe, and no event is recorded by ID (D-1543, D-1545; SEC-017; external audit A08, D-1754). (1) Record each event in `payments.webhook_event` (created by T258's migration), written in the same transaction as the event's effect, so a repeat answers 200 and changes nothing (architecture section 7's per-module `webhook_event`). (2) Dispatch: `refund.updated` and `charge.refund.updated` by the refund's status to T258's `refund_succeeded`, `refund_failed` or `refund_canceled`; `refund.failed` to `refund_failed`; `charge.dispute.created` to `record_dispute`; `charge.dispute.closed` records an audit row and one High alert for Casey (no money moves, D-1545); `radar.early_fraud_warning.created` enqueues, in the event's transaction, a `picks.fraud_warning` task for the charge's pick, which T281's handler runs through `picks::api::fraud_warning` (it calls `early_fraud_warning`, so the alert, the refund of an unreleased charge and the job's return happen together, FEE-052, D-1845); `payment_intent.succeeded` as now through the `ReleaseSink`. An out-of-order event (a `refund.updated` succeeded after failed) leaves the row in the state Stripe now reports, by refetching the refund through the adapter when the order is ambiguous. A database error answers 500 so Stripe resends; an event for an unknown object answers 200 with nothing changed. The production `ReleaseSink` and the router merge are T254's (D-1739). Update the `payments` `CLAUDE.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -9201,7 +9201,8 @@
     "D-1754",
     "D-1543",
     "D-1545",
-    "D-1480"
+    "D-1480",
+    "D-1845"
    ],
    "cites": [],
    "budget": {
@@ -9482,7 +9483,7 @@
    "id": "T089",
    "slug": "security-rate-limits",
    "title": "Rate limits per phone, IP and business; brute-force stops",
-   "goal": "Rate limits per phone, IP and business cover intake, code sends, sign-in links and quote submissions (5 new requests per phone per hour, 50 sign-ups a day, Verify caps), a burst of 100 fake requests in an hour is blocked and alerted, the client IP is trusted only from Cloudflare or the host proxy, and brute-force tests run in the `Ci` security step (SEC-014, SEC-015, SEC-020, SEC-040, PICK-055). The per-phone request limit of SEC-014 is `intake`'s (`app/intake/src/limits.rs`); portals keeps the sign-in and code limits (D-491). The client IP comes from the host-edge header named by the `ASKHAVA_CLIENT_IP_HEADER` setting (its measured value is recorded in the deploy settings table by T135, OPS-050, not here) while hostnames are DNS-only, `CF-Connecting-IP` only on a proxied hostname from Cloudflare's ranges (SEC-040, D-492). The per-member sign-in link cap (D-1725) and the per-link code-try cap (D-1777) are T272's atomic admissions in `app/portals/src/business_auth.rs`; this task's per-IP and per-business sign-in and code limits sit in front of them and never re-count links or code tries (D-1832).",
+   "goal": "Rate limits per phone, IP and business cover intake, code sends, sign-in links and quote submissions (5 new requests per phone per hour, 50 sign-ups a day, Verify caps), a burst of 100 fake requests in an hour is blocked and alerted, the client IP is trusted only from Cloudflare or the host proxy, and brute-force tests run in the `Ci` security step (SEC-014, SEC-015, SEC-020, SEC-040, PICK-055). The per-phone request limit of SEC-014 is `intake`'s (`app/intake/src/limits.rs`); portals keeps the sign-in and code limits (D-491). The client IP comes from the host-edge header named by the `ASKHAVA_CLIENT_IP_HEADER` setting (its measured value is recorded in the deploy settings table by T135, OPS-050, not here) while hostnames are DNS-only, `CF-Connecting-IP` only on a proxied hostname from Cloudflare's ranges (SEC-040, D-492). The per-member sign-in link cap (D-1725) and the per-link code-try cap (D-1777) are T272's atomic admissions in `app/portals/src/business_auth.rs`; this task's per-IP and per-business sign-in and code limits sit in front of them and never re-count links or code tries (D-1837).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -9525,7 +9526,7 @@
    "decisions": [
     "D-480",
     "D-492",
-    "D-1832"
+    "D-1837"
    ],
    "cites": [],
    "budget": {
@@ -11613,7 +11614,8 @@
     "T278",
     "T279",
     "T280",
-    "T281"
+    "T281",
+    "T282"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -11660,7 +11662,7 @@
    "id": "T101",
    "slug": "site-base",
    "title": "site: base layout in the design spec's look, works without JavaScript, help in one place",
-   "goal": "The site's base layout (`app/site/templates/base.html`, the shared template T051 created, restyled here, plus the stylesheet and routes; this task extends the minimal `app/site/Cargo.toml` and `src/lib.rs` T051 created, D-492) renders every page server-side without JavaScript in the design spec's plaster-and-brass look, with one `h1`, landmarks, a skip link, `lang` on page and passages and help in the same place on every page (A11Y-003, A11Y-004, A11Y-017, WEB-001, A11Y-026, A11Y-029, A11Y-030). The base layout carries the WEB-007 status banner, hidden by default, so every page has it (TD-WEB-01's banner case) (D-493). The banner's on or off state is read from T279's `ops::api` status banner (D-1838).",
+   "goal": "The site's base layout (`app/site/templates/base.html`, the shared template T051 created, restyled here, plus the stylesheet and routes; this task extends the minimal `app/site/Cargo.toml` and `src/lib.rs` T051 created, D-492) renders every page server-side without JavaScript in the design spec's plaster-and-brass look, with one `h1`, landmarks, a skip link, `lang` on page and passages and help in the same place on every page (A11Y-003, A11Y-004, A11Y-017, WEB-001, A11Y-026, A11Y-029, A11Y-030). The base layout carries the WEB-007 status banner, hidden by default, so every page has it (TD-WEB-01's banner case) (D-493). The banner's on or off state is read from T279's `ops::api` status banner (D-1843).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -11713,7 +11715,7 @@
     "D-384",
     "D-490",
     "D-1143",
-    "D-1838"
+    "D-1843"
    ],
    "cites": [],
    "budget": {
@@ -12495,7 +12497,7 @@
    "id": "T204",
    "slug": "ops-pushes-digest-security-alerts",
    "title": "ops: phone pushes by alert email, the weekly digest, owner flags, the away setting and security-event alerts",
-   "goal": "Only the listed alerts push to Casey's phone, as alert emails, with the 9 a.m. and 3 p.m. call-back pushes; the weekly digest and the owner-portal flags carry counts and numbers only; the away setting changes what businesses (on the portal home's review and dispute lines, `business_portal.rs` and `business_home.html`) and HELP replies (`keywords.rs`) are told, all extended here; security events are logged and a vault read count over three times its baseline alerts (OPS-026, OPS-027, OPS-029 to OPS-035, SEC-047, SEC-048). `ops` decides and records alerts; the sending is `messaging`'s handler (`alert_emails.rs`) and the digest's cross-module counts are read by `portals` (`digest_flags.rs`) through each module's `api` (architecture section 3, D-491). The away date, the digest's last-opened time, the done marks and the once-a-day push record are `ops` tables this task's migration adds; the digest also rolls up the not-covered requests by trade (OPS-041) and the BIZ-054 leaving answers (TD-OPS-09); the health-page figures are T106's and the failed-restore and HELP digest cases T109's and T151's (TD-OPS-22) (D-491). A daily worker check raises a Low alert above 70% of the database volume and a High alert, listed in the next OPS-032 daytime push, above 85%, neither starting safe mode (OPS-052); OPS-033's restart relies on OPS-049's self-exit, not the host's health check (D-492). The portal home also lets the business edit its Google and Yelp links through `businesses::api` (T165's storage; BIZ-052's portal half, D-492). A PROBLEM reply's words in the digest come from T277's owner-only `privacy::api::problem_words` by the alert's inbox row, never from `messaging.inbox` (D-1835).",
+   "goal": "Only the listed alerts push to Casey's phone, as alert emails, with the 9 a.m. and 3 p.m. call-back pushes; the weekly digest and the owner-portal flags carry counts and numbers only; the away setting changes what businesses (on the portal home's review and dispute lines, `business_portal.rs` and `business_home.html`) and HELP replies (`keywords.rs`) are told, all extended here; security events are logged and a vault read count over three times its baseline alerts (OPS-026, OPS-027, OPS-029 to OPS-035, SEC-047, SEC-048). `ops` decides and records alerts; the sending is `messaging`'s handler (`alert_emails.rs`) and the digest's cross-module counts are read by `portals` (`digest_flags.rs`) through each module's `api` (architecture section 3, D-491). The away date, the digest's last-opened time, the done marks and the once-a-day push record are `ops` tables this task's migration adds; the digest also rolls up the not-covered requests by trade (OPS-041) and the BIZ-054 leaving answers (TD-OPS-09); the health-page figures are T106's and the failed-restore and HELP digest cases T109's and T151's (TD-OPS-22) (D-491). A daily worker check raises a Low alert above 70% of the database volume and a High alert, listed in the next OPS-032 daytime push, above 85%, neither starting safe mode (OPS-052); OPS-033's restart relies on OPS-049's self-exit, not the host's health check (D-492). The portal home also lets the business edit its Google and Yelp links through `businesses::api` (T165's storage; BIZ-052's portal half, D-492). A PROBLEM reply's words in the digest come from T277's owner-only `privacy::api::problem_words` by the alert's inbox row, never from `messaging.inbox` (D-1840).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -12579,7 +12581,7 @@
     "D-468",
     "D-480",
     "D-492",
-    "D-1835"
+    "D-1840"
    ],
    "cites": [],
    "budget": {
@@ -12725,7 +12727,7 @@
    "id": "T108",
    "slug": "owner-portal-tools",
    "title": "portals: owner tools for pauses, fee mode, categories and settings",
-   "goal": "The owner portal's pause switches, fee mode and category switches change behavior with no code change and each change is logged; sessions end after 30 minutes idle and sensitive changes need a fresh passkey or TOTP; and pushed alerts are listed (FEE-007, LIC-002, OPS-003, OPS-035, SEC-043); the owner home also shows each week's opt-out rate by audience from T107's counts (CON-024), offers \"Call from the Ask Hava number\" for a pushed critical safety alert through T080's `calls::api` bridge (OPS-028), records Stripe's written answer for the PICK-048 auto-confirm box (date, reference, answer) as the `catalog` setting T209 reads through `catalog::api`, and shows each needs-review sign-up with its 4-day decision target (BIZ-027, TD-BIZ-07) (D-491). The owner home also holds the homeowner-texting switch, the launch channel and the record of a Twilio number suspension and its restore, through T279's `messaging::api` store, and the status banner's off switch through `ops::api` (D-1838).",
+   "goal": "The owner portal's pause switches, fee mode and category switches change behavior with no code change and each change is logged; sessions end after 30 minutes idle and sensitive changes need a fresh passkey or TOTP; and pushed alerts are listed (FEE-007, LIC-002, OPS-003, OPS-035, SEC-043); the owner home also shows each week's opt-out rate by audience from T107's counts (CON-024), offers \"Call from the Ask Hava number\" for a pushed critical safety alert through T080's `calls::api` bridge (OPS-028), records Stripe's written answer for the PICK-048 auto-confirm box (date, reference, answer) as the `catalog` setting T209 reads through `catalog::api`, and shows each needs-review sign-up with its 4-day decision target (BIZ-027, TD-BIZ-07) (D-491). The owner home also holds the homeowner-texting switch, the launch channel and the record of a Twilio number suspension and its restore, through T279's `messaging::api` store, and the status banner's off switch through `ops::api` (D-1843).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -12785,7 +12787,7 @@
     "D-314",
     "D-348",
     "D-480",
-    "D-1838"
+    "D-1843"
    ],
    "cites": [],
    "budget": {
@@ -14296,7 +14298,7 @@
    "id": "T129",
    "slug": "sandbox-twilio-sms",
    "title": "Twilio messaging sandbox behind the adapter; contract tests against it",
-   "goal": "Phase 2 step 1-2: Twilio test credentials and magic numbers; any difference fixed in the adapter and stand-in together. This harness task also gives `tests/contract/` a sandbox mode (`CONTRACT_BASE_URL`, credentials from the environment, never printed) that the later sandbox tasks use (D-491). The sandbox check covers T275's `SmsBodyDelete` (D-1836).",
+   "goal": "Phase 2 step 1-2: Twilio test credentials and magic numbers; any difference fixed in the adapter and stand-in together. This harness task also gives `tests/contract/` a sandbox mode (`CONTRACT_BASE_URL`, credentials from the environment, never printed) that the later sandbox tasks use (D-491). The sandbox check covers T275's `SmsBodyDelete` (D-1841).",
    "type": "harness",
    "phase": 2,
    "stage": "6",
@@ -14342,7 +14344,7 @@
     "TD-TXT-04"
    ],
    "decisions": [
-    "D-1836"
+    "D-1841"
    ],
    "cites": [
     "BUILD_BRIEF.md:189",
@@ -14450,7 +14452,7 @@
    ],
    "decisions": [
     "D-160",
-    "D-1836"
+    "D-1841"
    ],
    "cites": [
     "BUILD_BRIEF.md:191"
@@ -14629,7 +14631,7 @@
    "id": "T134",
    "slug": "sandbox-license-storage",
    "title": "License sources and object storage behind the adapters",
-   "goal": "The real license-source and object-storage clients sit behind their adapters: daily lists and the throttled lookup work against the real sources for verification only, and the audit stream and exports land in the bucket through a write-only, prefix-scoped token (CARD-015, LIC-006, LIC-007, LIC-010, LIC-027, OPS-010, OPS-011, PRIV-029). The real store also implements T275's `StorageDelete` (D-1836).",
+   "goal": "The real license-source and object-storage clients sit behind their adapters: daily lists and the throttled lookup work against the real sources for verification only, and the audit stream and exports land in the bucket through a write-only, prefix-scoped token (CARD-015, LIC-006, LIC-007, LIC-010, LIC-027, OPS-010, OPS-011, PRIV-029). The real store also implements T275's `StorageDelete` (D-1841). The `photos/` prefix uses its own key with read, list and delete; PRIV-029's write-only, prefix-scoped token, versioning and object lock stay in force for the audit-stream and export (backup) prefixes (D-1841).",
    "type": "harness",
    "phase": 2,
    "stage": "6",
@@ -14685,7 +14687,7 @@
     "D-480",
     "D-492",
     "D-1143",
-    "D-1836"
+    "D-1841"
    ],
    "cites": [],
    "budget": {
@@ -16114,7 +16116,7 @@
    "id": "T262",
    "slug": "call-pins-and-tries",
    "title": "calls and server: a random stored PIN per line, unique on its number, durable PIN-try counts, and the inbound voice route",
-   "goal": "A line's PIN is its ID modulo 10,000 (`calls::api::job_pin`, D-1684), and line IDs are not secret; the 6-a-day count is the caller's input with no storage (D-1685); and no inbound-voice route serves the TwiML (D-1708). D-1684 and D-1685 named T078 or T080, both DONE without it (external audit A09, D-1755). (1) `migrations/0151_calls_pins_attempts.sql`: a `pin` column on `calls.number_pool` (four digits, drawn from the OS random source, unique among open lines of one pool number by a partial unique index) and `calls.pin_try` (a digest of the calling number, never the number: HMAC-SHA-256 under the ID secret with the domain label `pin-try|v1` over the normalized E.164 number, derived with `core`'s ID-secret derivation as `IdempotencyKey::derive` is, listed under `ID_SECRET` in the PRIV-024 key inventory and re-derived when that secret rotates; pool number; Arizona day; count; queries in `app/calls/src/models.rs`), app role SELECT, INSERT, UPDATE of the count only. (2) `app/calls/src/pins.rs`: allocation in `assign_number`'s transaction (`app/calls/src/service.rs`) retries a collision a bounded number of times, then raises the existing pool alert and refuses the line; `job_pin` and every read of the PIN come from the stored column (`routing.rs`), never the line ID; the try count is one atomic `INSERT ... ON CONFLICT DO UPDATE ... RETURNING` per wrong try, so concurrent wrong tries cannot pass 6 a day, and a repeated Twilio callback (same CallSid and digits) is not another try (recorded per CallSid). (3) `app/server/src/inbound_voice.rs`: the signature-checked Twilio voice webhook (SEC-016) for the pool numbers, recorded by CallSid (SEC-017), finding the party, lines, stored counts and STIR/SHAKEN attestation and serving `calls::api` TwiML (prompt, PIN, read-back on A attestation only, dial), merged in the shared `lib.rs`. No line ID reaches a homeowner or business. Update `docs/architecture.md` section 10, the `calls` and `server` `CLAUDE.md` files and `docs/decisions.md`.",
+   "goal": "A line's PIN is its ID modulo 10,000 (`calls::api::job_pin`, D-1684), and line IDs are not secret; the 6-a-day count is the caller's input with no storage (D-1685); and no inbound-voice route serves the TwiML (D-1708). D-1684 and D-1685 named T078 or T080, both DONE without it (external audit A09, D-1755). (1) `migrations/0151_calls_pins_attempts.sql`: a `pin` column on `calls.number_pool` (four digits, drawn from the OS random source, unique among open lines of one pool number by a partial unique index) and `calls.pin_try` (a digest of the calling number, never the number: HMAC-SHA-256 under the ID secret with the domain label `pin-try|v1` over the normalized E.164 number, derived with `core`'s ID-secret derivation as `IdempotencyKey::derive` is, listed under `ID_SECRET` in the PRIV-024 key inventory and re-derived when that secret rotates; pool number; Arizona day; count; queries in `app/calls/src/models.rs`), app role SELECT, INSERT, UPDATE of the count only. (2) `app/calls/src/pins.rs`: allocation in `assign_number`'s transaction (`app/calls/src/service.rs`) retries a collision a bounded number of times, then raises the existing pool alert and refuses the line; `job_pin` and every read of the PIN come from the stored column (`routing.rs`), never the line ID; the try count is one atomic `INSERT ... ON CONFLICT DO UPDATE ... RETURNING` per wrong try, so concurrent wrong tries cannot pass 6 a day, and a repeated Twilio callback (same CallSid and digits) is not another try (recorded per CallSid). (3) `app/server/src/inbound_voice.rs`: the signature-checked Twilio voice webhook (SEC-016) for the pool numbers, recorded by CallSid (SEC-017), finding the party, lines, stored counts and STIR/SHAKEN attestation and serving `calls::api` TwiML (prompt, PIN, read-back on A attestation only, dial), merged in the shared `lib.rs`; the same migration creates `calls.call_start` (the parent CallSid unique, the line, the start time, the dialed leg's SID filled later by T271; app role SELECT, INSERT and UPDATE of the dialed SID only), and the webhook stores the call's start there, once per parent CallSid, at the moment it answers with the dial, so FEE-022 judges each call by when it started (D-1836). No line ID reaches a homeowner or business. Update `docs/architecture.md` section 10, the `calls` and `server` `CLAUDE.md` files and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -16170,7 +16172,8 @@
     "D-1684",
     "D-1685",
     "D-1686",
-    "D-1708"
+    "D-1708",
+    "D-1836"
    ],
    "cites": [],
    "budget": {
@@ -18326,18 +18329,17 @@
    "copy": true
   },
   {
-   "id": "T270",
-   "slug": "unreachable-refund-states",
-   "title": "picks, payments and calls: the unreachable refund judges call start times, closes only on a succeeded refund, and ends a free pick as a no-show too",
-   "goal": "Three defects in T191's `app/picks/src/unreachable_refund.rs` (merged in #323), found by the second external audit (B06 to B08, D-1831). (1) Start time (B06): `call_record` puts `LoggedCall::ended_at` into `payments`' `CallRecord::at`, which means when the call started (`app/payments/src/refund_rules.rs:49`), so FEE-022's 8 a.m. to 8 p.m. hours, its 72 hours and its 3-hour spacing are judged on end times; the call log stores only the end and the talk length (`app/calls/src/handlers.rs:133`), and talk length does not include ringing, so subtracting it is not a start time. `migrations/0166_calls_call_start.sql` adds `calls.call_start` (the dialed leg's `CA…` SID unique, the line, the start time; app role SELECT and INSERT only, append-only like `calls.call_log`). `app/calls/src/handlers.rs` gains `call_started(line, params, at)`, which reads a verified `initiated` status callback of the dialed leg, and `log_call_start` (one row per SID: a repeated or late callback changes nothing); `dial_twiml` asks for the dialed leg's `initiated` and final status callbacks at the route T271 serves; `call_log` returns each call's `started_at` from that row (`LoggedCall` gains `started_at: Option<Timestamp>`). `call_record` uses the start; a call with no recorded start (a lost callback) still cancels a TXT-026 reminder and still counts as a business attempt for the no-show rule, but is never one of FEE-022's two qualifying attempts, because no time can be proven for it (D-1831; `payments`' rules are not changed). (2) Refund outcome (B07): `refund_waiting` treats `RefundOutcome::Unchanged` like `Refunded`, but `Unchanged` also means a try still in flight (`RefundStatus::next` answers `Nothing` for a `sending` or `failed` row with no matching retry, `app/payments/src/status.rs`, and `refunds::finish` turns that into `Unchanged`), so a second run while the first Stripe request is open closes the job and emails \"your fee is refunded\" before Stripe has answered (D-1819 (1)). New `app/payments/src/refund_state.rs`, exported through `payments`' shared `api.rs`: `refund_state(conn, pick) -> RefundState::{NoRefund, InFlight, Succeeded, Failed, Blocked}`, read from the authoritative `payments.refund` rows as T258 leaves them (`sending` and `pending` are in flight; only Stripe's `succeeded` is `Succeeded`; `failed` and `canceled` are `Failed`; a disputed charge is `Blocked`). `decide_at_96_hours` and `fraud_warning` close the job, move it, end the pick or queue the success email only when that read answers `Succeeded`, whatever `request_refund` or `early_fraud_warning` returned; `InFlight` gives `AtNinetySix::RefundWaiting` with a new in-flight marker (and `fraud_warning` `false`), so the caller runs the step again and the close and email still happen once (the per-pick dedupe stays). `RefundOutcome` and the refund state machine are T258's and are not changed here. (3) Fee-free no-show (B08): `end_pick` updates only a `paid` pick and drops the row count, so `no_call_at_72_hours` returns a fee-free introduction's job to Quotes ready and closes its line while the pick stays `free` (`aftermath.rs` counts `paid` and `free` as connected). The no-show ends a `paid` or `free` pick as `no_show` with its ended time in the same transaction as the job move and the line close; when no pick matches either status, the whole transaction rolls back and the function returns an explicit result, never a silent success. `fraud_warning` still ends only a `paid` pick (FEE-052 never applies to a fee-free pick). This is a harness task because it takes over T191's `tests/integration/tests/unreachable_refund.rs`: its `call` helper sets `started_at` to the time it already passes, and no expected value changes. New cases in `tests/integration/tests/unreachable_refund_states.rs`. Money code: the `app/payments/` 95% floor holds and every branch of `refund_state` is covered. Update `docs/architecture.md` section 7 (as built), the `picks`, `calls` and `payments` `CLAUDE.md` files and `docs/decisions.md`.",
+   "id": "T282",
+   "slug": "call-start-times",
+   "title": "calls and picks: each call's start time reaches the unreachable refund rule",
+   "goal": "`call_record` (`app/picks/src/unreachable_refund.rs:69`, T191's, merged in #323) puts `LoggedCall::ended_at` into `payments`' `CallRecord::at`, which means when the call started (`app/payments/src/refund_rules.rs:49`), so FEE-022's 8 a.m. to 8 p.m. hours, its 72 hours and its 3-hour spacing are judged on end times; the call log stores only the end and the talk length (`app/calls/src/handlers.rs:133`), and talk length does not include ringing, so subtracting it is not a start time (second external audit B06, D-1836). The start is recorded where the app must already be reached: T262's inbound voice webhook stores it in `calls.call_start` (T262's migration 0151) keyed by the parent CallSid when it answers, and T271's route records the dialed leg's `initiated` callback against that row by `ParentCallSid`. In `app/calls/src/handlers.rs`: `dial_twiml` asks for the dialed leg's `initiated` and final status callbacks at T271's route; `call_start_confirmed(db, parent, dialed, at)` records the dialed leg's SID on the parent's row, or creates the row at `at` when the webhook's write was lost (a repeat or late callback never moves a start); `call_log` joins each logged call to its start by the dialed SID and returns `LoggedCall::started_at: Option<Timestamp>`. `call_record` uses `started_at`; a call whose start was still not recorded uses its end time for every FEE-022 check and counts as a qualifying attempt, because a lost callback is Ask Hava's fault and the business must not lose its refund for it (D-1836; `payments`' rules are not changed). This is a harness task because it takes over T191's `tests/integration/tests/unreachable_refund.rs`: its `call` helper sets `started_at` to the time it already passes, and no expected value changes. New cases in `tests/integration/tests/call_start.rs`. Update the `calls` and `picks` `CLAUDE.md` files and `docs/decisions.md`.",
    "type": "harness",
    "phase": 1,
    "stage": "4",
-   "module": "picks",
+   "module": "calls",
    "deps": [
     "T191",
-    "T258",
-    "T078"
+    "T262"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -18345,24 +18347,82 @@
    "review_areas": [
     "harness",
     "money",
-    "security",
     "privacy"
    ],
    "owns": [
-    "app/picks/src/unreachable_refund.rs",
-    "app/payments/src/refund_state.rs",
     "app/calls/src/handlers.rs",
-    "migrations/0166_calls_call_start.sql",
+    "app/picks/src/unreachable_refund.rs",
     "tests/integration/tests/unreachable_refund.rs",
-    "tests/integration/tests/unreachable_refund_states.rs"
+    "tests/integration/tests/call_start.rs"
    ],
    "reads": [
     "docs/architecture.md",
     "docs/code-docs.md",
     "docs/spec/fees.md",
     "docs/spec/calls.md",
-    "docs/spec/lifecycle.md",
     "docs/spec/messaging.md",
+    "docs/brains/postgres-operations.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "FEE-022",
+    "CALL-007",
+    "CALL-008",
+    "TXT-026"
+   ],
+   "tests": [
+    "TD-CALL-15"
+   ],
+   "decisions": [
+    "D-1836",
+    "D-1814"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 400,
+    "context_pct": 15
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T282-call-start-times",
+   "prompt": "kit/prompts/T282.md",
+   "acceptance": "TD-CALL-15 passes against PostgreSQL; every TD-JOB-07, TD-FEE-22, TD-TXT-10, TD-TXT-13, TD-TXT-30 and TD-FEE-39 case in `tests/integration/tests/unreachable_refund.rs` passes with only its `call` helper given `started_at`, and no expected value changes; every TD-CALL-04 case still passes."
+  },
+  {
+   "id": "T270",
+   "slug": "unreachable-refund-states",
+   "title": "picks and payments: the unreachable refund and the fraud warning close only on a succeeded refund, and a free pick ends as a no-show too",
+   "goal": "Two defects in T191's `app/picks/src/unreachable_refund.rs` (merged in #323), found by the second external audit (B07, B08, D-1836); B06's start time is T282's. (1) Refund outcome (B07): `refund_waiting` treats `RefundOutcome::Unchanged` like `Refunded`, but `Unchanged` also means a try still in flight (`RefundStatus::next` answers `Nothing` for a `sending` or `failed` row with no matching retry, `app/payments/src/status.rs`, and `refunds::finish` turns that into `Unchanged`), so a second run while the first Stripe request is open closes the job and emails \"your fee is refunded\" before Stripe has answered (D-1819 (1)). New `app/payments/src/refund_state.rs`, exported through `payments`' shared `api.rs`: `refund_state(conn, pick) -> RefundState::{NoRefund, InFlight, Succeeded, Failed, Blocked}`, read from the authoritative `payments.refund` rows as T258 leaves them (`sending` and `pending` are in flight; only Stripe's `succeeded` is `Succeeded`; `failed` and `canceled` are `Failed`; a disputed charge is `Blocked`). `decide_at_96_hours` and `fraud_warning` close the job, move it, end the pick or queue the success email only when that read answers `Succeeded`, whatever `request_refund` or `early_fraud_warning` returned; `InFlight` gives `AtNinetySix::RefundWaiting` with a new in-flight marker (and `fraud_warning` `false`), so the caller (T281) runs the step again and the close and email still happen once (the per-pick dedupe stays). `RefundOutcome` and the refund state machine are T258's and are not changed here. (2) Fee-free no-show (B08): `end_pick` updates only a `paid` pick and drops the row count, so `no_call_at_72_hours` returns a fee-free introduction's job to Quotes ready and closes its line while the pick stays `free` (`aftermath.rs` counts `paid` and `free` as connected). The no-show ends a `paid` or `free` pick as `no_show` with its ended time in the same transaction as the job move and the line close; when no pick matches either status, the whole transaction rolls back and the function returns an explicit result, never a silent success. `fraud_warning` still ends only a `paid` pick (FEE-052 never applies to a fee-free pick). New cases in `tests/integration/tests/unreachable_refund_states.rs`; T191's test file stays as T282 leaves it. Money code: the `app/payments/` 95% floor holds and every branch of `refund_state` is covered. Update `docs/architecture.md` section 7 (as built), the `picks` and `payments` `CLAUDE.md` files and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "picks",
+   "deps": [
+    "T282",
+    "T258"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "money",
+    "security",
+    "privacy"
+   ],
+   "owns": [
+    "app/picks/src/unreachable_refund.rs",
+    "app/payments/src/refund_state.rs",
+    "tests/integration/tests/unreachable_refund_states.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/fees.md",
+    "docs/spec/lifecycle.md",
     "docs/brains/payments-stripe.md",
     "docs/brains/postgres-operations.md",
     "docs/brains/rust-production.md"
@@ -18373,25 +18433,20 @@
     "FEE-035",
     "FEE-052",
     "JOB-013",
-    "JOB-027",
-    "CALL-007",
-    "CALL-008",
-    "TXT-026"
+    "JOB-027"
    ],
    "tests": [
-    "TD-FEE-47",
-    "TD-CALL-15"
+    "TD-FEE-47"
    ],
    "decisions": [
-    "D-1831",
+    "D-1836",
     "D-1819",
-    "D-1814",
     "D-1753"
    ],
    "cites": [],
    "budget": {
-    "files": 6,
-    "lines": 650,
+    "files": 3,
+    "lines": 500,
     "context_pct": 20
    },
    "checks": [
@@ -18401,19 +18456,19 @@
    ],
    "branch": "claude/task/T270-unreachable-refund-states",
    "prompt": "kit/prompts/T270.md",
-   "acceptance": "TD-FEE-47 and TD-CALL-15 pass against PostgreSQL; every TD-JOB-07, TD-FEE-22, TD-TXT-10, TD-TXT-13, TD-TXT-30 and TD-FEE-39 case in `tests/integration/tests/unreachable_refund.rs` passes with only its `call` helper given `started_at`, and no expected value changes; the `app/payments/` 95% floor holds."
+   "acceptance": "TD-FEE-47 passes against PostgreSQL; every case in `tests/integration/tests/unreachable_refund.rs` still passes unchanged; the `app/payments/` 95% floor holds."
   },
   {
    "id": "T271",
    "slug": "call-status-route",
    "title": "server and calls: the dialed leg's status callbacks are served, so each call's start and finish are logged once",
-   "goal": "No route serves the dialed leg's status callbacks, so nothing in production calls `calls::api::log_finished_call` or T270's `log_call_start`, and no call log exists for the refund rules, the TXT-026 reminders, the no-show, or the business portal's call log (D-1814's caller \"not wired yet\"; second external audit B06, D-1831). `app/server/src/call_status.rs`: the status-callback route that T270's `dial_twiml` names, checked with `X-Twilio-Signature` (SEC-016) and merged in the shared `app/server/src/lib.rs`: an `initiated` event records the start through `log_call_start`; a final event logs the call through `finished_call` and `log_finished_call`, the party taken from the line as T262's voice route resolves it; each is applied once per CallSid and event (SEC-017), a repeated or out-of-order callback changing nothing; after a business call is logged the route enqueues T281's `picks.unreachable_step` check for the line's pick (deduped per call). A forged signature gets 403 and changes nothing; no phone number is stored or logged (PRIV-016), and the request log shows the route template only. Tests in `app/server/tests/call_status.rs` through the real route with signed fake Twilio requests. Update `docs/architecture.md` section 10, the `server` and `calls` `CLAUDE.md` files and `docs/decisions.md`.",
+   "goal": "No route serves the dialed leg's status callbacks, so nothing in production calls `calls::api::log_finished_call` or T282's `call_start_confirmed`, and no call log exists for the refund rules, the TXT-026 reminders, the no-show, or the business portal's call log (D-1814's caller \"not wired yet\"; second external audit B06, D-1836). `app/server/src/call_status.rs`: the status-callback route that T282's `dial_twiml` names, checked with `X-Twilio-Signature` (SEC-016) and merged in the shared `app/server/src/lib.rs`: an `initiated` event records the dialed leg against the start T262's webhook stored, by `ParentCallSid`, through `call_start_confirmed` (creating the start at the callback's time when the webhook's write was lost); a final event logs the call through `finished_call` and `log_finished_call`, its start joined by the dialed SID, the party taken from the line as T262's voice route resolves it; each is applied once per CallSid and event (SEC-017), a repeated or out-of-order callback changing nothing; after a business call is logged the route enqueues T281's `picks.unreachable_step` check for the line's pick (deduped per call). A forged signature gets 403 and changes nothing; no phone number is stored or logged (PRIV-016), and the request log shows the route template only. Tests in `app/server/tests/call_status.rs` through the real route with signed fake Twilio requests. Update `docs/architecture.md` section 10, the `server` and `calls` `CLAUDE.md` files and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
    "module": "server",
    "deps": [
-    "T270",
+    "T282",
     "T262",
     "T281"
    ],
@@ -18447,7 +18502,7 @@
     "TD-CALL-16"
    ],
    "decisions": [
-    "D-1831",
+    "D-1836",
     "D-1814",
     "D-1690"
    ],
@@ -18470,7 +18525,7 @@
    "id": "T272",
    "slug": "signin-admission",
    "title": "portals: the sign-in link cap and the code-try cap are atomic admissions, so concurrent requests cannot pass them",
-   "goal": "D-1725 allows at most 5 sign-in links per member in 15 minutes and D-1777 at most 5 failed code checks per link, but both are check-then-act: `send_one` counts links (`models::links_since`, `app/portals/src/models.rs`) and then inserts and sends, and `check_once` counts `auth_failed` events, calls Verify and records the failure afterwards (`app/portals/src/business_auth.rs:444`, `:652`), so simultaneous requests that all see 4 all go through (second external audit B01, D-1832). (1) Links: the count and the insert of the new `portals.login_link` row happen in one short transaction under a per-member transaction-scoped lock (`pg_advisory_xact_lock` on the member's ID under a `portals` key namespace), committed before the email is sent; no transaction is held across the mail call. (2) Code tries: `migrations/0167_portals_code_tries.sql` adds `portals.code_try` (link ID, try number 1 to 5 unique per link, reserved time, outcome `pending`, `right`, `wrong` or `abandoned`; app role SELECT, INSERT and UPDATE of the outcome only); a check first reserves the next try number in its own short transaction (the unique key and the check constraint refuse a sixth), then calls Verify with no transaction open, then records the outcome; a reservation left `pending` (a crash or a Verify timeout) counts as a used try, so a restart never gives a try back; the fifth used try uses the link up and shows the \"stopped working\" screen as today; a right code consumes the link once (the existing guarded `UPDATE`), and a concurrent right code and wrong code never both sign in. Each wrong or failed check still writes its `auth_failed` security event (SEC-048). T089's per-IP and per-business limits sit in front of these and never re-count links or tries (D-1832). Tests in `tests/security/tests/signin_admission.rs` with 20 simultaneous requests over several pooled connections. Update the `portals` `CLAUDE.md`, `docs/architecture.md` section 10 and `docs/decisions.md`.",
+   "goal": "D-1725 allows at most 5 sign-in links per member in 15 minutes and D-1777 at most 5 failed code checks per link, but both are check-then-act: `send_one` counts links (`models::links_since`, `app/portals/src/models.rs`) and then inserts and sends, and `check_once` counts `auth_failed` events, calls Verify and records the failure afterwards (`app/portals/src/business_auth.rs:444`, `:652`), so simultaneous requests that all see 4 all go through (second external audit B01, D-1837). (1) Links: the count and the insert of the new `portals.login_link` row happen in one short transaction under a per-member transaction-scoped lock (`pg_advisory_xact_lock` on the member's ID under a `portals` key namespace), committed before the email is sent; no transaction is held across the mail call. (2) Code tries: `migrations/0167_portals_code_tries.sql` adds `portals.code_try` (link ID, try number 1 to 5 unique per link, reserved time, outcome `pending`, `right`, `wrong` or `abandoned`; app role SELECT, INSERT and UPDATE of the outcome only); a check first reserves the next try number in its own short transaction (the unique key and the check constraint refuse a sixth), then calls Verify with no transaction open, then records the outcome; a reservation left `pending` (a crash or a Verify timeout) counts as a used try, so a restart never gives a try back; the fifth used try uses the link up and shows the \"stopped working\" screen as today; a right code consumes the link once (the existing guarded `UPDATE`), and a concurrent right code and wrong code never both sign in. Each wrong or failed check still writes its `auth_failed` security event (SEC-048). T089's per-IP and per-business limits sit in front of these and never re-count links or tries (D-1837). Tests in `tests/security/tests/signin_admission.rs` with 20 simultaneous requests over several pooled connections. Update the `portals` `CLAUDE.md`, `docs/architecture.md` section 10 and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -18509,7 +18564,7 @@
     "TD-SEC-38"
    ],
    "decisions": [
-    "D-1832",
+    "D-1837",
     "D-1725",
     "D-1777"
    ],
@@ -18532,7 +18587,7 @@
    "id": "T273",
    "slug": "photo-open-audit",
    "title": "privacy: a photo's plaintext is returned only after its open audit has committed on its own",
-   "goal": "`privacy::api::open_link` (`app/privacy/src/photos.rs:427`) decrypts the photo, writes its `privacy.photo_opened` audit row on the caller's connection and returns the bytes, so a caller inside a transaction (an SQLx transaction or a raw `BEGIN`) can hold the plaintext and roll the audit back (second external audit B02, D-1833). The contact vault already refuses this with `ensure_bare` (`app/privacy/src/vault.rs:411`, D-753). `open_link` refuses a connection inside a transaction with the same probe (moved to a `pub(crate)` helper both files use, so there is one copy) and a new `PhotoError::InTransaction`, and returns plaintext only after the audit row has committed by itself; an audit-write failure returns no bytes. Link expiry, AES-GCM under the vault key, `no_store` and the `LinkDead` 404 stay as they are; no route is added (D-1791 leaves the photo route to the first task that shows a photo). Tests in `tests/integration/tests/photo_open_audit.rs`. Update the `privacy` `CLAUDE.md` and `docs/decisions.md`.",
+   "goal": "`privacy::api::open_link` (`app/privacy/src/photos.rs:427`) decrypts the photo, writes its `privacy.photo_opened` audit row on the caller's connection and returns the bytes, so a caller inside a transaction (an SQLx transaction or a raw `BEGIN`) can hold the plaintext and roll the audit back (second external audit B02, D-1838). The contact vault already refuses this with `ensure_bare` (`app/privacy/src/vault.rs:411`, D-753). `open_link` refuses a connection inside a transaction with the same probe (moved to a `pub(crate)` helper both files use, so there is one copy) and a new `PhotoError::InTransaction`, and returns plaintext only after the audit row has committed by itself; an audit-write failure returns no bytes. Link expiry, AES-GCM under the vault key, `no_store` and the `LinkDead` 404 stay as they are; no route is added (D-1791 leaves the photo route to the first task that shows a photo). Tests in `tests/integration/tests/photo_open_audit.rs`. Update the `privacy` `CLAUDE.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -18570,7 +18625,7 @@
     "TD-PRIV-17"
    ],
    "decisions": [
-    "D-1833",
+    "D-1838",
     "D-753",
     "D-1791"
    ],
@@ -18593,7 +18648,7 @@
    "id": "T274",
    "slug": "purge-serialized",
    "title": "intake and privacy: the 180-day contact purge decides and clears under one lock order shared with new requests and holds",
-   "goal": "The contact purge reads whether another request is live and whether any job is held (`free_contact`, `app/intake/src/purge.rs:93`), returns the contact, and only then `purge_contact` (`app/privacy/src/purge.rs:113`) clears it in a transaction of its own, so a request opened or a hold placed between the read and the clear loses its details (second external audit B03, D-1834). One lock order for everything that decides retention, documented in `docs/architecture.md` section 8: (1) a transaction-scoped retention advisory key, exclusive for a purge's decide-and-clear transaction and shared for each hold placement and release in `privacy`; (2) the homeowner row (`lock_homeowner`, which every request-opening writer already takes); (3) the vault contact row. The contact stage and the jobless-request stage (`run_purge`, `run_request_purge`) each take (1) and (2), re-read eligibility after the locks are held in one statement snapshot, and clear the contact in the same transaction (`purge_contact` runs inside it as a savepoint), so a request that commits first is seen and one that commits later waits. The hold authority is durable at the decision: a hold-producing `core.task` (`payments`' dispute hold and `businesses`' complaint hold events for any of her jobs) that is pending or failed counts as a hold, so the purge never relies on the hour between stages. No transaction is held across an outside call. PostgreSQL barrier tests in `tests/integration/tests/retention_purge_races.rs`. Update the `intake` and `privacy` `CLAUDE.md` files and `docs/decisions.md`.",
+   "goal": "The contact purge reads whether another request is live and whether any job is held (`free_contact`, `app/intake/src/purge.rs:93`), returns the contact, and only then `purge_contact` (`app/privacy/src/purge.rs:113`) clears it in a transaction of its own, so a request opened or a hold placed between the read and the clear loses its details (second external audit B03, D-1839). One lock order for everything that decides retention, documented in `docs/architecture.md` section 8: (1) a transaction-scoped retention advisory key, exclusive for a purge's decide-and-clear transaction and shared for each hold placement and release in `privacy`; (2) the homeowner row (`lock_homeowner`, which every request-opening writer already takes); (3) the vault contact row. The contact stage and the jobless-request stage (`run_purge`, `run_request_purge`) each take (1) and (2), re-read eligibility after the locks are held in one statement snapshot, and clear the contact in the same transaction (`purge_contact` runs inside it as a savepoint), so a request that commits first is seen and one that commits later waits. The hold authority is durable at the decision: a hold-producing `core.task` (`payments`' dispute hold and `businesses`' complaint hold events for any of her jobs) that is pending or failed counts as a hold, read through one new `core` function, `core::api::unfinished(conn, kind, key_prefix) -> bool` in `app/core/src/task_queries.rs` (exported through `core`'s shared `api.rs`; `intake` may call `core`), so the purge never relies on the hour between stages. No transaction is held across an outside call. PostgreSQL barrier tests in `tests/integration/tests/retention_purge_races.rs`. Update the `intake` and `privacy` `CLAUDE.md` files and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -18606,12 +18661,14 @@
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
-    "privacy"
+    "privacy",
+    "security"
    ],
    "owns": [
     "app/intake/src/purge.rs",
     "app/privacy/src/purge.rs",
-    "tests/integration/tests/retention_purge_races.rs"
+    "tests/integration/tests/retention_purge_races.rs",
+    "app/core/src/task_queries.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -18630,14 +18687,14 @@
     "TD-PRIV-18"
    ],
    "decisions": [
-    "D-1834",
+    "D-1839",
     "D-1799",
     "D-1801"
    ],
    "cites": [],
    "budget": {
-    "files": 3,
-    "lines": 450,
+    "files": 4,
+    "lines": 500,
     "context_pct": 14
    },
    "checks": [
@@ -18653,7 +18710,7 @@
    "id": "T275",
    "slug": "storage-and-body-delete-adapters",
    "title": "adapters and stand-ins: local write-once storage that a racing writer cannot alter, object delete and list, and the Twilio message-body delete",
-   "goal": "(1) B05 (second external audit, D-1836): `write_once` (`app/adapters/src/storage.rs:72`) writes every attempt to the same deterministic `<name>.<key>.part` with `std::fs::write`, which truncates and rewrites one shared file, then hard-links it into place, so a racing retry can empty or change an object already published. Each attempt now creates its own temporary file exclusively (`create_new`, a random suffix from the OS source), writes it fully, `sync_all`s and closes it, and publishes with `hard_link` (which never replaces an existing object); it compares bytes with an existing object only once that object's publication is complete, and removes only its own temporary file. Directory-fsync crash durability is decided and recorded in the decision entry. (2) D-1803's missing capabilities, additive so no existing fake changes (the `RefundStripe` pattern, D-1753): `StorageDelete: StorageAdapter` with `delete_object(name)` (an absent object is success) and `list_objects(prefix)`, implemented for `LocalStorage`; `SmsBodyDelete: SmsAdapter` with `delete_message_body(sid)` for Twilio's documented message delete (or body redaction, whichever the vendor documents for removing a body; the choice recorded), implemented for `TwilioSms` in `app/adapters/src/sms.rs`. The Twilio stand-in (`stand_ins/twilio.py`, its route in `stand_ins/server.py`) answers that call and afterwards returns no body for the message, and a repeat answers as Twilio does. The real B2 store (T134) and the Twilio sandbox (T129, T131) implement or check the same traits later. Tests: the competing-writer cases in `app/adapters/src/tests/storage.rs`; the stand-in in `tests/contract/test_twilio_body_delete.py`. Update the `adapters` `CLAUDE.md`, `docs/architecture.md` section 7 and `docs/decisions.md`.",
+   "goal": "(1) B05 (second external audit, D-1841): `write_once` (`app/adapters/src/storage.rs:72`) writes every attempt to the same deterministic `<name>.<key>.part` with `std::fs::write`, which truncates and rewrites one shared file, then hard-links it into place, so a racing retry can empty or change an object already published. Each attempt now creates its own temporary file exclusively (`create_new`, a random suffix from the OS source), writes it fully, `sync_all`s and closes it, and publishes with `hard_link` (which never replaces an existing object); it compares bytes with an existing object only once that object's publication is complete, and removes only its own temporary file. Directory-fsync crash durability is decided and recorded in the decision entry. (2) D-1803's missing capabilities, additive so no existing fake changes (the `RefundStripe` pattern, D-1753): `StorageDelete: StorageAdapter` with `delete_object(name)` (an absent object is success) and `list_objects(prefix)`, implemented for `LocalStorage`; `SmsBodyDelete: SmsAdapter` with `delete_message_body(sid)` for Twilio's documented message delete (or body redaction, whichever the vendor documents for removing a body; the choice recorded), implemented for `TwilioSms` in `app/adapters/src/sms.rs`. The Twilio stand-in (`stand_ins/twilio.py`, its route in `stand_ins/server.py`) answers that call and afterwards returns no body for the message, and a repeat answers as Twilio does. The real B2 store (T134) and the Twilio sandbox (T129, T131) implement or check the same traits later. The `photos/` prefix uses its own key with read, list and delete; PRIV-029's write-only, prefix-scoped token, versioning and object lock stay in force for the audit-stream and export (backup) prefixes (D-1841). Tests: the competing-writer cases in `app/adapters/src/tests/storage.rs`; the stand-in in `tests/contract/test_twilio_body_delete.py`. Update the `adapters` `CLAUDE.md`, `docs/architecture.md` section 7 and `docs/decisions.md`.",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -18690,14 +18747,15 @@
     "SEC-018",
     "PRIV-009",
     "PRIV-027",
-    "TXT-020"
+    "TXT-020",
+    "PRIV-029"
    ],
    "tests": [
     "TD-SEC-39",
     "TD-PRIV-19"
    ],
    "decisions": [
-    "D-1836",
+    "D-1841",
     "D-1803",
     "D-728"
    ],
@@ -18720,7 +18778,7 @@
    "id": "T276",
    "slug": "retention-deletes",
    "title": "privacy and messaging: purged photos' sealed objects and orphans are deleted, and message bodies are deleted at Twilio on day 31",
-   "goal": "D-1803 left the sealed photo objects, the orphan `photos/` objects (D-1793) and TD-PRIV-12's day-31 Twilio body delete with no owner; T092's owned `app/messaging/src/purge.rs` was never created because nothing could act yet (D-1801), and this task now owns it (D-1836). (1) `purge_photos` (`app/privacy/src/purge.rs`) deletes each purged photo's sealed object through T275's `StorageDelete` after its rows' delete commits (a failed delete is retried by the task, never blocking the row delete), and a daily orphan sweep lists `photos/` and deletes every object with no `privacy.photo` row that is more than a day old (`store_photo` writes the object before the row, D-1791). (2) `app/messaging/src/purge.rs` registers, in the shared worker, the day-31 handler: every inbound and outbound message whose provider SID is 31 or more days old has its body deleted at the provider once through `SmsBodyDelete` (each SID recorded as done, so a rerun sends nothing twice; a provider error retries); the 30-day local cut stays T093's (TXT-020). This is a harness task because it also takes over T092's `tests/integration/tests/retention_purge.rs` only to replace its \"pending, no owning task yet\" module note with a pointer to this task's cases; no test in it changes. New cases in `tests/integration/tests/retention_deletes.rs`. Update the `privacy` and `messaging` `CLAUDE.md` files and `docs/decisions.md`.",
+   "goal": "D-1803 left the sealed photo objects, the orphan `photos/` objects (D-1793) and TD-PRIV-12's day-31 Twilio body delete with no owner; T092's owned `app/messaging/src/purge.rs` was never created because nothing could act yet (D-1801), and this task now owns it (D-1841). (1) `purge_photos` (`app/privacy/src/purge.rs`) deletes each purged photo's sealed object through T275's `StorageDelete` after its rows' delete commits (a failed delete is retried by the task, never blocking the row delete), and a daily orphan sweep lists `photos/` and deletes every object with no `privacy.photo` row that is more than a day old (`store_photo` writes the object before the row, D-1791). (2) `app/messaging/src/purge.rs` registers, in the shared worker, the day-31 handler: every inbound and outbound message whose provider SID is 31 or more days old has its body deleted at the provider once through `SmsBodyDelete` (each SID recorded as done, so a rerun sends nothing twice; a provider error retries); the 30-day local cut stays T093's (TXT-020). This is a harness task because it also takes over T092's `tests/integration/tests/retention_purge.rs` only to replace its \"pending, no owning task yet\" module note with a pointer to this task's cases; no test in it changes. New cases in `tests/integration/tests/retention_deletes.rs`. Update the `privacy` and `messaging` `CLAUDE.md` files and `docs/decisions.md`.",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -18761,7 +18819,7 @@
     "TD-PRIV-20"
    ],
    "decisions": [
-    "D-1836",
+    "D-1841",
     "D-1803",
     "D-1801",
     "D-1793"
@@ -18785,7 +18843,7 @@
    "id": "T277",
    "slug": "check-in-replies",
    "title": "intake and privacy: a check-in reply reaches its job, and a PROBLEM's scrubbed words are stored before the text is acknowledged",
-   "goal": "D-1810 says the owner digest reads a PROBLEM reply's scrubbed words from `messaging.inbox`, but that table holds only the Twilio SID and time (D-1801); `jobs::followups::Inbound` carries the inbox ID and the safety flag, and nothing calls `answer_check_in` (D-1811 (3)), so a PROBLEM's words would be acknowledged and lost (second external audit B04, D-1835). (1) `migrations/0168_privacy_message_body.sql` builds `privacy.message_body`, the table `docs/architecture.md` section 3 already names (D-801): one row per inbound text kept for a reason (here a check-in PROBLEM), the `messaging.inbox` row ID unique, the job ID, the scrubbed words only (never raw text, never a contact field), the safety flag and the created time; app role SELECT, INSERT and DELETE. (2) `app/privacy/src/message_body.rs`: `keep_problem_words(conn, inbox, job, &ScrubbedText, safety)` (it takes only a `ScrubbedText`, which only the scrubber makes, so raw words cannot be stored) and `problem_words(conn, &OwnerSessionProof, inbox)`, the owner-only read that the weekly digest (T204) and the owner portal use; no business or homeowner read exists; rows are deleted 30 days after they are made by a daily step registered in the shared worker (TXT-020) and with the job's PRIV-008 text stage. (3) `app/intake/src/check_in_replies.rs`, called from `receive_reply` (`app/intake/src/replies.rs`) inside its transaction for a reply on a Connected job with a check-in due: `jobs::api::parse_answer`, `businesses::api::has_safety_word`, then for a PROBLEM `keep_problem_words` before `answer_check_in`, all in the delivery's transaction, so the route answers Twilio only after the words are stored; a day-3 NO under email contact records the no-show through `picks::api::no_call_at_72_hours` (FEE-035, T270's form). The alert's subject stays the inbox row (D-1810), and the digest finds the words through it. `jobs`' `Inbound` and T097's tests are unchanged. Tests in `tests/integration/tests/check_in_replies.rs` through the real inbound route with fictional texts. Update the `intake` and `privacy` `CLAUDE.md` files and `docs/decisions.md`.",
+   "goal": "D-1810 says the owner digest reads a PROBLEM reply's scrubbed words from `messaging.inbox`, but that table holds only the Twilio SID and time (D-1801); `jobs::followups::Inbound` carries the inbox ID and the safety flag, and nothing calls `answer_check_in` (D-1811 (3)), so a PROBLEM's words would be acknowledged and lost (second external audit B04, D-1840). (1) `migrations/0171_privacy_message_body.sql` builds `privacy.message_body`, the table `docs/architecture.md` section 3 already names (D-801): one row per inbound text kept for a reason (here a check-in PROBLEM), the `messaging.inbox` row ID unique, the job ID, the scrubbed words only (never raw text, never a contact field), the safety flag and the created time; app role SELECT, INSERT and DELETE. (2) `app/privacy/src/message_body.rs`: `keep_problem_words(conn, inbox, job, &ScrubbedText, safety)` (it takes only a `ScrubbedText`, which only the scrubber makes, so raw words cannot be stored) and `problem_words(conn, &OwnerSessionProof, inbox)`, the owner-only read that the weekly digest (T204) and the owner portal use; no business or homeowner read exists; rows are deleted 30 days after they are made by a daily step registered in the shared worker (TXT-020) and with the job's PRIV-008 text stage. (3) `app/intake/src/check_in_replies.rs`, called from `receive_reply` (`app/intake/src/replies.rs`) inside its transaction for a reply on a Connected job with a check-in due: `jobs::api::parse_answer`, `businesses::api::has_safety_word`, then for a PROBLEM `keep_problem_words` before `answer_check_in`, all in the delivery's transaction, so the route answers Twilio only after the words are stored; a day-3 NO under email contact enqueues T281's `picks.unreachable_step` for the pick, due now and deduped per pick and answer, in the same transaction (`intake` may not call `calls`, whose call log the no-show needs, `kit/layers.json`), and T281's step records the no-show (FEE-035). The alert's subject stays the inbox row (D-1810), and the digest finds the words through it. `jobs`' `Inbound` and T097's tests are unchanged. Tests in `tests/integration/tests/check_in_replies.rs` through the real inbound route with fictional texts. Update the `intake` and `privacy` `CLAUDE.md` files and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -18793,7 +18851,8 @@
    "deps": [
     "T097",
     "T270",
-    "T241"
+    "T241",
+    "T281"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -18803,7 +18862,7 @@
     "security"
    ],
    "owns": [
-    "migrations/0168_privacy_message_body.sql",
+    "migrations/0171_privacy_message_body.sql",
     "app/privacy/src/message_body.rs",
     "app/intake/src/replies.rs",
     "app/intake/src/check_in_replies.rs",
@@ -18831,7 +18890,7 @@
     "TD-JOB-12"
    ],
    "decisions": [
-    "D-1835",
+    "D-1840",
     "D-1810",
     "D-1811",
     "D-1801",
@@ -18856,7 +18915,7 @@
    "id": "T278",
    "slug": "check-in-and-unreachable-texts",
    "title": "quotes, intake and picks: the check-in, feedback and unreachable homeowner texts are listed and sent, and check-ins are scheduled when a job connects",
-   "goal": "D-1811 (1) and (2) and D-1818 leave homeowner texts unsendable and check-ins unscheduled (D-1837). (1) `check_in_day3`, `check_in_day14` and `feedback_request` (English and Spanish, with JOB-015's first line, MORE's full list and T230's feedback link) join the shared templates, and those three plus `problem_reply` are listed in `quotes`' `UPDATE_TEXTS` or `NOT_UPDATE_TEXTS` (`app/quotes/src/update_texts.rs`) and in `intake`'s `JOB_TEXT_TEMPLATES` (`app/intake/src/job_texts.rs`), so the sender sends them. (2) `unreachable_closed` and `emailed_question` (English and Spanish, `Shape::Capped`, JOB-027's words with D-1817's \"Text back YES or NO\") are added and listed the same way, and `close_unreachable` queues `unreachable_closed` in its own transaction (`app/picks/src/unreachable_refund.rs`, after T270); the 72-hour sending of `emailed_question` is T281's. (3) The release (`app/picks/src/release.rs`) calls `jobs::api::schedule_check_ins` in its transaction when the job connects, with the picked quote's earliest visit (JOB-015). Every new template passes TD-TXT-25's scan and TD-CON-24's guard unchanged; the copy goes through the cold read and copy panel (WORD-028, WORD-029). Tests in `tests/integration/tests/check_in_texts.rs`. Update the `quotes`, `intake` and `picks` `CLAUDE.md` files and `docs/decisions.md`.",
+   "goal": "D-1811 (1) and (2) and D-1818 leave homeowner texts unsendable and check-ins unscheduled (D-1842). (1) `check_in_day3`, `check_in_day14` and `feedback_request` (English and Spanish, with JOB-015's first line, MORE's full list and T230's feedback link) join the shared templates, and those three plus `problem_reply` are listed in `quotes`' `UPDATE_TEXTS` or `NOT_UPDATE_TEXTS` (`app/quotes/src/update_texts.rs`) and in `intake`'s `JOB_TEXT_TEMPLATES` (`app/intake/src/job_texts.rs`), so the sender sends them. (2) `unreachable_closed` and `emailed_question` (English and Spanish, `Shape::Capped`, JOB-027's words with D-1817's \"Text back YES or NO\") are added and listed the same way, and `close_unreachable` queues `unreachable_closed` in its own transaction (`app/picks/src/unreachable_refund.rs`, after T270); the 72-hour sending of `emailed_question` is T281's. (3) The release (`app/picks/src/release.rs`) calls `jobs::api::schedule_check_ins` in its transaction when the job connects, with the picked quote's earliest visit (JOB-015). Every new template passes TD-TXT-25's scan and TD-CON-24's guard unchanged; the copy goes through the cold read and copy panel (WORD-028, WORD-029). Tests in `tests/integration/tests/check_in_texts.rs`. Update the `quotes`, `intake` and `picks` `CLAUDE.md` files and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -18901,7 +18960,7 @@
     "TD-JOB-13"
    ],
    "decisions": [
-    "D-1837",
+    "D-1842",
     "D-1811",
     "D-1817",
     "D-1818"
@@ -18925,7 +18984,7 @@
    "id": "T279",
    "slug": "suspension-mode-composition",
    "title": "messaging, ops and server: the texting switch and a number suspension are stored, an emergency while texting is off is handled, and the site banner turns on",
-   "goal": "T096 built `app/messaging/src/mode.rs` as pure inputs: the stored homeowner switch, the suspension state and the launch-channel setting, the suspension and restore inputs feeding `NumberState`, the INT-004 email notice, the automatic status-banner write (no `ops.status_banner` table exists) and the composition that runs `emergency_plan` on an inbound message have no owner (D-1807; second external audit known gaps, D-1838). (1) `migrations/0169_messaging_mode_state.sql` stores the homeowner-texting switch, each number's `NumberState` with its times and the launch channel, with history (append-only rows, app role SELECT and INSERT); `app/messaging/src/mode_state.rs` loads `Lines` from them and records `switch_on`/`switch_off`, `record_suspension` and `record_restore` through `messaging::api` for T108's owner-portal controls (Twilio announces a suspension by email and console, not by webhook, so Casey records it; automatic detection from send refusals is not built and is recorded in the decision). (2) `migrations/0170_ops_status_banner.sql` and `app/ops/src/status_banner.rs`: the WEB-007 banner state with who or what turned it on, set on automatically by an emergency while texting is off or suspended and cleared only by Casey; T101's base layout reads it through `ops::api`. (3) `app/server/src/inbound_text.rs` (after T256 and T257): while texting is off or suspended, an inbound message runs `emergency_plan`; a match raises the critical alert, turns the banner on, queues the INT-004 email (a new English and Spanish template through the copy panel) when she has an email, puts her on Casey's call list otherwise (TXT-023), and still queues intake's event; nothing is texted. Tests in `tests/integration/tests/suspension_mode.rs`. Update `docs/architecture.md` section 10, the `messaging`, `ops` and `server` `CLAUDE.md` files and `docs/decisions.md`.",
+   "goal": "T096 built `app/messaging/src/mode.rs` as pure inputs: the stored homeowner switch, the suspension state and the launch-channel setting, the suspension and restore inputs feeding `NumberState`, the INT-004 email notice, the automatic status-banner write (no `ops.status_banner` table exists) and the composition that runs `emergency_plan` on an inbound message have no owner (D-1807; second external audit known gaps, D-1843). (1) `migrations/0169_messaging_mode_state.sql` (`messaging.mode_state`, architecture section 3) stores the homeowner-texting switch, each number's `NumberState` with its times and the launch channel, with history (append-only rows, app role SELECT and INSERT); `app/messaging/src/mode_state.rs` loads `Lines` from them and records `switch_on`/`switch_off`, `record_suspension` and `record_restore` through `messaging::api` for T108's owner-portal controls (Twilio announces a suspension by email and console, not by webhook, so Casey records it; automatic detection from send refusals is not built and is recorded in the decision). (2) `migrations/0170_ops_status_banner.sql` and `app/ops/src/status_banner.rs`: the WEB-007 banner state with who or what turned it on, set on automatically by an emergency while texting is off or suspended and cleared only by Casey; T101's base layout reads it through `ops::api`. (3) `app/server/src/inbound_text.rs` (after T256 and T257): while texting is off or suspended, an inbound message runs `emergency_plan`; a match raises the critical alert, turns the banner on, queues the INT-004 email (a new English and Spanish template through the copy panel) when she has an email, puts her on Casey's call list otherwise (TXT-023), and still queues intake's event; nothing is texted. Tests in `tests/integration/tests/suspension_mode.rs`. Update `docs/architecture.md` section 10, the `messaging`, `ops` and `server` `CLAUDE.md` files and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -18971,7 +19030,7 @@
     "TD-TXT-33"
    ],
    "decisions": [
-    "D-1838",
+    "D-1843",
     "D-1807",
     "D-1804",
     "D-1805",
@@ -18996,7 +19055,7 @@
    "id": "T280",
    "slug": "business-signin-served",
    "title": "server and messaging: the business sign-in pages are served, and the served route always asks for the new-device code",
-   "goal": "No task serves the business sign-in pages (D-1728 left the two `.route` lines and their page states to \"the task that serves the pages\", and none was named), and `SignIn::new` signs in on the link alone unless `with_device_codes` is called, kept on purpose for T084's component tests (D-1777 (2); second external audit known gaps, D-1839). (1) `app/server/src/business_signin.rs` builds the served sign-in state only through a constructor that requires `DeviceCodes` (the Verify adapter, the code-address lookup and the key); with no code configuration the server refuses to start rather than serve link-only sign-in, and it merges `SIGNIN_ROUTE` and `SIGNIN_LINK_ROUTE` in the shared `app/server/src/lib.rs`. `SignInMail` is composed there from `businesses`' members and the `privacy` business-address blind index (`addresses`), and `send_link` queues the link email through `app/messaging/src/signin_mail.rs` (a `business_signin_link` template in the shared templates, the link never logged). (2) The pages' `PAGE_STATES` entries go in the shared `tests/a11y/page_states.ts` (D-1239, D-1788). Tests in `app/server/tests/business_signin_route.rs` against the assembled router: a missing code configuration refuses to start; a valid link without the code never signs in; a right code does; T272's caps hold through the served route. Update `docs/architecture.md` section 10, the `server`, `portals` and `messaging` `CLAUDE.md` files and `docs/decisions.md`.",
+   "goal": "No task serves the business sign-in pages (D-1728 left the two `.route` lines and their page states to \"the task that serves the pages\", and none was named), and `SignIn::new` signs in on the link alone unless `with_device_codes` is called, kept on purpose for T084's component tests (D-1777 (2); second external audit known gaps, D-1844). (1) `app/server/src/business_signin.rs` builds the served sign-in state only through a constructor that requires `DeviceCodes` (the Verify adapter, the code-address lookup and the key); with no code configuration the server refuses to start rather than serve link-only sign-in, and it merges `SIGNIN_ROUTE` and `SIGNIN_LINK_ROUTE` in the shared `app/server/src/lib.rs`. `SignInMail` is composed there from `businesses`' members and the `privacy` business-address blind index (`addresses`), and `send_link` queues the link email through `app/messaging/src/signin_mail.rs` (a `business_signin_link` template in the shared templates, the link never logged). (2) The pages' `PAGE_STATES` entries go in the shared `tests/a11y/page_states.ts` (D-1239, D-1788). Tests in `app/server/tests/business_signin_route.rs` against the assembled router: a missing code configuration refuses to start; a valid link without the code never signs in; a right code does; T272's caps hold through the served route. Update `docs/architecture.md` section 10, the `server`, `portals` and `messaging` `CLAUDE.md` files and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -19034,7 +19093,7 @@
     "TD-SEC-40"
    ],
    "decisions": [
-    "D-1839",
+    "D-1844",
     "D-1777",
     "D-1728",
     "D-1724"
@@ -19058,14 +19117,15 @@
    "id": "T281",
    "slug": "unreachable-steps-run",
    "title": "picks: the unreachable-homeowner steps run at 24, 48, 72 and 96 hours and after each logged business call",
-   "goal": "T191 built the unreachable-homeowner steps but nothing runs them (D-1814: \"the caller (the worker, not wired yet)\"), the missed-call text has no send time (D-1819), a number that can't be texted gets no TXT-030 email copy (D-1819), and the 72-hour emailed question is not sent (D-1818) (D-1840). `app/picks/src/unreachable_steps.rs` registers a `picks.unreachable_step` `core.task` handler in the shared worker, enqueued by the release (`app/picks/src/release.rs`, in the release's transaction, deduped per pick and step) at release + 24, + 48, + 72 and + 96 hours, and by T271's route after a logged business call. Each run gathers the facts (`calls::api::call_log` through T270's `call_record`, `messaging::api::send_window`, the pick's contact choice from T266, the day-3 answer, the charge) and calls `queue_reminders`, `missed_call_text`, `no_call_at_72_hours` and `decide_at_96_hours` as due; `RefundWaiting` enqueues the step again an hour later. The missed-call text is queued only at its send time (8 a.m. Arizona time unless the job is an emergency) by enqueuing the step for that time, never early; a number that can't be texted gets TXT-030's email copy through `messaging`'s email queue with the postal address and manage link; at + 72 hours on an email-contact job the step sends T278's `emailed_question`. Tests in `tests/integration/tests/unreachable_steps.rs` with the clock advanced (no sleeps). Update the `picks` `CLAUDE.md` and `docs/decisions.md`.",
+   "goal": "T191 built the unreachable-homeowner steps but nothing runs them (D-1814: \"the caller (the worker, not wired yet)\"), the missed-call text has no send time (D-1819), a number that can't be texted gets no TXT-030 email copy (D-1819), and the 72-hour emailed question is not sent (D-1818) (D-1845). `app/picks/src/unreachable_steps.rs` registers a `picks.unreachable_step` `core.task` handler in the shared worker, enqueued by the release (`app/picks/src/release.rs`, in the release's transaction, deduped per pick and step) at release + 24, + 48, + 72 and + 96 hours, by T271's route after a logged business call, and by T277 on an email-contact day-3 NO. Each run gathers the facts (`calls::api::call_log` through T270's `call_record`, `messaging::api::send_window`, the pick's contact choice from T266, the day-3 answer, the charge) and calls `queue_reminders`, `missed_call_text`, `no_call_at_72_hours` and `decide_at_96_hours` as due; `RefundWaiting` enqueues the step again an hour later. The missed-call text is queued only at its send time (8 a.m. Arizona time unless the job is an emergency) by enqueuing the step for that time, never early; a number that can't be texted gets TXT-030's email copy through `messaging`'s email queue with the postal address and manage link; at + 72 hours on an email-contact job the step sends T278's `emailed_question`. A second handler, `picks.fraud_warning`, enqueued by T259's Stripe dispatch for `radar.early_fraud_warning.created` in the event's transaction, runs `picks::api::fraud_warning` for the warned charge's pick (which calls `payments::api::early_fraud_warning`) and runs again an hour later while T270's `refund_state` answers in flight (FEE-052). Tests in `tests/integration/tests/unreachable_steps.rs` with the clock advanced (no sleeps). Update the `picks` `CLAUDE.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
    "module": "picks",
    "deps": [
     "T278",
-    "T266"
+    "T266",
+    "T270"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -19094,16 +19154,18 @@
     "JOB-013",
     "JOB-027",
     "TXT-026",
-    "TXT-030"
+    "TXT-030",
+    "FEE-052"
    ],
    "tests": [
     "TD-JOB-14"
    ],
    "decisions": [
-    "D-1840",
+    "D-1845",
     "D-1814",
     "D-1818",
-    "D-1819"
+    "D-1819",
+    "D-1836"
    ],
    "cites": [],
    "budget": {
