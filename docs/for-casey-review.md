@@ -1798,3 +1798,7 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **Emergency jobs (new task T255).** If the business pays before she has sent her address, she is asked again at once, and the details go out once the address arrives, without charging again.
 - **Still without an owner (D-1740).** The business's Confirm-and-pay page isn't switched on yet, and the homeowner's "contact me by email" choice isn't saved yet, so until a task does that every release uses the masked call line. Both need a later plan change.
 - **Nothing needs you now.**
+
+## Every new page adds its own accessibility check entry (plan change, D-1772, November 6)
+
+- The accessibility check fails any page that has no test entry, but only the task that first wrote that test list was allowed to edit it, so the business sign-in task (T084) couldn't add its page and failed. Now any task that adds a page adds its own entry (fake data only) and may not remove or loosen anyone else's. T084's next try picks this up.
