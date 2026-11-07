@@ -171,8 +171,10 @@ def _redact_gate_row(row: str) -> str:
 
 
 def _smoke_env() -> dict[str, str]:
-    """The smoke test's environment: CARGO_TARGET_DIR is the smoke's own target dir (`smoke_target_dir`)."""
-    return {**os.environ, "CARGO_TARGET_DIR": str(smoke_target_dir())}
+    """The smoke test's environment: CARGO_TARGET_DIR is the smoke's own target dir (`smoke_target_dir`), and
+    CARGO_INCREMENTAL is 0 as in `Ci`, since the cache keeps that dir and rustc's incremental data was about a
+    third of it (4.7 of 15 GB measured, D-1884)."""
+    return {**os.environ, "CARGO_TARGET_DIR": str(smoke_target_dir()), "CARGO_INCREMENTAL": "0"}
 
 
 def smoke_target_dir() -> Path:

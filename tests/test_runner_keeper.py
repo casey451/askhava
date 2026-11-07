@@ -190,6 +190,7 @@ def test_the_smoke_builds_into_its_own_folder_of_the_cached_target(monkeypatch: 
     ge.run_command(["bash", "scripts/smoke.sh"], None, Path("."))
     ge.run_command(["cargo", "build"], None, Path("."))
     assert seen[0] is not None and seen[0]["CARGO_TARGET_DIR"] == "/work/fake/target/smoke"
+    assert seen[0]["CARGO_INCREMENTAL"] == "0", "as in Ci: no incremental data in the cached smoke target"
     assert seen[1] is None or "CARGO_TARGET_DIR" not in seen[1], "the worker's cargo keeps the checkout's own target"
     assert not hasattr(ge, "CARGO_CLEAN_MEMBERS"), "no clean of the worker's target after a smoke (D-1884)"
 
