@@ -212,6 +212,13 @@ impl JobStatus {
         matches!(self, Self::Connected)
     }
 
+    /// True for Done, the only status whose feedback page takes private feedback: the request is
+    /// sent only after Done (JOB-017, T230).
+    #[must_use]
+    pub const fn takes_feedback(self) -> bool {
+        matches!(self, Self::Done)
+    }
+
     /// True for the five final statuses, which wait for nothing (JOB-001, JOB-003).
     #[must_use]
     pub const fn is_final(self) -> bool {
