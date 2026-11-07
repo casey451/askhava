@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT id, member_id, replaces, sent_at, tries FROM businesses.mailbox_check WHERE business_id = $1 AND mailbox_id = $2 AND verified_at IS NULL FOR UPDATE",
+  "query": "SELECT id, member_id, change_for, replaces, requested_by, sent_at, tries FROM businesses.mailbox_check WHERE business_id = $1 AND mailbox_id = $2 AND open FOR UPDATE",
   "describe": {
     "columns": [
       {
@@ -27,6 +27,17 @@
       },
       {
         "ordinal": 2,
+        "name": "change_for",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "businesses.mailbox_check",
+            "name": "change_for"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
         "name": "replaces",
         "type_info": "Uuid",
         "origin": {
@@ -37,7 +48,18 @@
         }
       },
       {
-        "ordinal": 3,
+        "ordinal": 4,
+        "name": "requested_by",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "businesses.mailbox_check",
+            "name": "requested_by"
+          }
+        }
+      },
+      {
+        "ordinal": 5,
         "name": "sent_at",
         "type_info": "Timestamptz",
         "origin": {
@@ -48,7 +70,7 @@
         }
       },
       {
-        "ordinal": 4,
+        "ordinal": 6,
         "name": "tries",
         "type_info": "Int4",
         "origin": {
@@ -69,9 +91,11 @@
       false,
       true,
       true,
+      true,
+      true,
       false,
       false
     ]
   },
-  "hash": "a1ca1f28cfe52b2d1c7643509359291b0a4130706067c28b16a76f1ab034687b"
+  "hash": "2ffdeced27b569443bebfd6df8c1053f705ad24db78d2fe5f51779c0a122e87d"
 }

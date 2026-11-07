@@ -38,6 +38,8 @@ pub const SOFT_SPAN_DAYS: i32 = 14;
 pub const CHANGED_KIND: &str = "businesses.notice_address_changed";
 /// The task that tells the owner's other verified addresses and the digest (BIZ-040).
 pub const RETURNED_KIND: &str = "businesses.notice_address_returned";
+/// The audit row naming the member who made a notice-address or channel change (SEC-024, D-1850).
+pub const ACTED_BY_ACTION: &str = "businesses.notice_change_by";
 const CODE_ACTION: &str = "businesses.mailbox_code";
 
 /// Why a notice-address call failed. No variant carries a value (rust brain R5, R6).
@@ -80,30 +82,52 @@ fn code_of(secret: &SecretString, id: Uuid, sent: Timestamp) -> String {
     format!("{:06}", n % 1_000_000)
 }
 
-/// Opens (or resends) the check of `mailbox` and returns the code to email; `None` when it is
-/// already verified. A resend makes the earlier code stop working.
+/// One opening of a mailbox check (D-1850): the member whose address changes (`None` for the
+/// sign-up email), the mailbox it replaces (`None` re-verifies the member's own mailbox, BIZ-040
+/// "fix") and the member who asked.
+#[derive(Debug, Clone, Copy)]
+struct Opening {
+    business: Uuid,
+    mailbox: Uuid,
+    change_for: Option<Uuid>,
+    replaces: Option<Uuid>,
+    requested_by: Option<Uuid>,
+}
+
+/// Opens (or resends) the check of the mailbox and returns the code to email; `None` when it is
+/// verified, not returned and no change asks for it. A resend makes the earlier code stop working
+/// but keeps the wrong-code count within [`CODE_LIFE`] of the window's first send (D-1850).
 async fn open_check(
     db_: &mut PgConnection,
     secret: &SecretString,
-    (business, member, mailbox, replaces): (Uuid, Option<Uuid>, Uuid, Option<Uuid>),
+    o: Opening,
     now: Timestamp,
 ) -> Result<Option<String>, EmailCheckError> {
+    let window = now
+        .checked_sub(CODE_LIFE)
+        .map_err(|_| EmailCheckError::Database)?;
     let q = sqlx::query_scalar!(
-        "INSERT INTO businesses.mailbox_check (business_id, member_id, mailbox_id, replaces, sent_at) \
-         VALUES ($1, $2, $3, $4, $5) ON CONFLICT (business_id, mailbox_id) DO UPDATE \
-         SET sent_at = $5, tries = 0, member_id = $2, replaces = $4 \
-         WHERE businesses.mailbox_check.verified_at IS NULL RETURNING id AS \"id!\"",
-        business,
-        member,
-        mailbox,
-        replaces,
-        now.to_sqlx() as _
+        "INSERT INTO businesses.mailbox_check AS c (business_id, mailbox_id, change_for, replaces, \
+         requested_by, sent_at, window_at) VALUES ($1, $2, $3, $4, $5, $6, $6) \
+         ON CONFLICT (business_id, mailbox_id) DO UPDATE SET \
+         tries = CASE WHEN c.open AND c.window_at > $7 THEN c.tries ELSE 0 END, \
+         window_at = CASE WHEN c.open AND c.window_at > $7 THEN c.window_at ELSE $6 END, \
+         sent_at = $6, open = true, change_for = $3, replaces = $4, requested_by = $5 \
+         WHERE c.verified_at IS NULL OR c.returned_at IS NOT NULL OR $4::uuid IS NOT NULL \
+         RETURNING id AS \"id!\"",
+        o.business,
+        o.mailbox,
+        o.change_for,
+        o.replaces,
+        o.requested_by,
+        now.to_sqlx() as _,
+        window.to_sqlx() as _
     );
     Ok(db(q.fetch_optional(db_).await)?.map(|id| code_of(secret, id, now)))
 }
 
 /// BIZ-040: opens the sign-up email's check and returns the code to email to it; activation
-/// waits until [`confirm`] takes it. `None` when already verified.
+/// waits until [`confirm`] takes it. `None` when already verified and not returned.
 ///
 /// # Errors
 /// [`EmailCheckError::Database`], also for an unknown sign-up.
@@ -118,7 +142,14 @@ pub async fn start_signup_check(
         business
     );
     let mailbox = db(q.fetch_one(&mut *conn).await)?;
-    open_check(conn, secret, (business, None, mailbox, None), now).await
+    let o = Opening {
+        business,
+        mailbox,
+        change_for: None,
+        replaces: None,
+        requested_by: None,
+    };
+    open_check(conn, secret, o, now).await
 }
 
 /// BIZ-040: whether the sign-up email has an unverified check, which holds activation.
@@ -151,8 +182,9 @@ pub async fn verified_by_link(
     at: Timestamp,
 ) -> Result<(), EmailCheckError> {
     let q = sqlx::query!(
-        "INSERT INTO businesses.mailbox_check (business_id, member_id, mailbox_id, sent_at, \
-         verified_at) VALUES ($1, $2, $3, $4, $4) ON CONFLICT (business_id, mailbox_id) DO NOTHING",
+        "INSERT INTO businesses.mailbox_check (business_id, member_id, mailbox_id, open, sent_at, \
+         window_at, verified_at) VALUES ($1, $2, $3, false, $4, $4, $4) \
+         ON CONFLICT (business_id, mailbox_id) DO NOTHING",
         by.business,
         by.member,
         mailbox,
@@ -179,26 +211,49 @@ pub async fn record_step_up(
     db(q.execute(conn).await).map(|_| ())
 }
 
+/// SEC-024 (D-1850): writes the event's row on the member whose address changes (field
+/// `mailbox_id`, no value) and one [`ACTED_BY_ACTION`] row on the member who acted, so every
+/// notice change names both. `(by, member)` are team member IDs of `business`.
+///
+/// # Errors
+/// [`EmailCheckError::Database`].
+pub async fn log_notice_change(
+    conn: &mut PgConnection,
+    business: Uuid,
+    (by, member): (Uuid, Uuid),
+    (action, field): (&'static str, &'static str),
+) -> Result<(), EmailCheckError> {
+    let rows = [
+        (action, member, Change::Field(field)),
+        (ACTED_BY_ACTION, by, Change::Action),
+    ];
+    for (action, subject_id, change) in rows {
+        let entry = AuditEntry {
+            actor: Actor::Business(business),
+            action,
+            subject_kind: "businesses.team_member",
+            subject_id,
+            change,
+        };
+        audit(&mut *conn, &entry)
+            .await
+            .map_err(|_| EmailCheckError::Database)?;
+    }
+    Ok(())
+}
+
 async fn log(
     conn: &mut PgConnection,
-    by: Acting,
+    business: Uuid,
+    who: (Uuid, Uuid),
     action: &'static str,
 ) -> Result<(), EmailCheckError> {
-    let entry = AuditEntry {
-        actor: Actor::Business(by.business),
-        action,
-        subject_kind: "businesses.team_member",
-        subject_id: by.member,
-        change: Change::Field("mailbox_id"),
-    };
-    audit(conn, &entry)
-        .await
-        .map(|_| ())
-        .map_err(|_| EmailCheckError::Database)
+    log_notice_change(conn, business, who, (action, "mailbox_id")).await
 }
 
 /// SEC-024, SEC-038: whether `by` may change `member`'s notice address now: the owner, or the
-/// member for their own address, with a Verify code no older than [`STEP_UP_LIFE`].
+/// member for their own address, with a Verify code no older than [`STEP_UP_LIFE`] and not from
+/// the future.
 async fn may_change(
     conn: &mut PgConnection,
     by: Acting,
@@ -216,16 +271,33 @@ async fn may_change(
         return Err(EmailCheckError::NotAllowed);
     }
     let fresh = me.step_up_at.map(|t| t.to_jiff());
-    if fresh.is_none_or(|at| now.duration_since(at) > STEP_UP_LIFE) {
+    if fresh.is_none_or(|at| at > now || now.duration_since(at) > STEP_UP_LIFE) {
         return Err(EmailCheckError::NoFreshCode);
     }
     Ok(())
 }
 
+/// Closes every other open change for `member`, so only the newest request's code works (D-1850).
+async fn cancel_older(
+    tx: &mut PgConnection,
+    (business, member, mailbox): (Uuid, Uuid, Uuid),
+) -> Result<(), EmailCheckError> {
+    let q = sqlx::query!(
+        "UPDATE businesses.mailbox_check SET open = false \
+         WHERE business_id = $1 AND change_for = $2 AND open AND mailbox_id <> $3",
+        business,
+        member,
+        mailbox
+    );
+    db(q.execute(tx).await).map(|_| ())
+}
+
 /// SEC-024, SEC-038, BIZ-040: asks to move `member`'s notice address to `mailbox` and returns the
-/// code to email to the new address; the old one keeps every notice until [`confirm`]. A refusal
-/// is audit-logged as `businesses.notice_change_refused`, a request as
-/// `businesses.notice_change_requested`.
+/// code to email to the new address; the old one keeps every notice until [`confirm`], and any
+/// older pending change for the member stops working. `mailbox` equal to the member's own
+/// re-verifies it (a returned address is fixed this way); `None` when it is verified and not
+/// returned, which logs nothing. A refusal is audit-logged as `businesses.notice_change_refused`,
+/// a request as `businesses.notice_change_requested`, each with the acting member (D-1850).
 ///
 /// # Errors
 /// [`EmailCheckError::NotAllowed`], [`EmailCheckError::NoFreshCode`],
@@ -237,27 +309,54 @@ pub async fn request_change(
     (member, mailbox): (Uuid, Uuid),
     now: Timestamp,
 ) -> Result<Option<String>, EmailCheckError> {
-    if let Err(e) = may_change(conn, by, member, now).await {
-        log(conn, by, "businesses.notice_change_refused").await?;
+    let mut tx = db(conn.begin().await)?;
+    let who = (by.member, member);
+    if let Err(e) = may_change(&mut tx, by, member, now).await {
+        log(
+            &mut tx,
+            by.business,
+            who,
+            "businesses.notice_change_refused",
+        )
+        .await?;
+        db(tx.commit().await)?;
         return Err(e);
     }
     let q = sqlx::query_scalar!(
         "SELECT mailbox_id FROM businesses.team_member \
-         WHERE id = $1 AND business_id = $2 AND removed_at IS NULL",
+         WHERE id = $1 AND business_id = $2 AND removed_at IS NULL FOR UPDATE",
         member,
         by.business
     );
-    let old = db(q.fetch_optional(&mut *conn).await)?.ok_or(EmailCheckError::UnknownMember)?;
-    let ids = (by.business, Some(member), mailbox, Some(old));
-    let code = open_check(conn, secret, ids, now).await?;
-    log(conn, by, "businesses.notice_change_requested").await?;
+    let old = db(q.fetch_optional(&mut *tx).await)?.ok_or(EmailCheckError::UnknownMember)?;
+    cancel_older(&mut tx, (by.business, member, mailbox)).await?;
+    let o = Opening {
+        business: by.business,
+        mailbox,
+        change_for: Some(member),
+        replaces: (old != mailbox).then_some(old),
+        requested_by: Some(by.member),
+    };
+    let code = open_check(&mut tx, secret, o, now).await?;
+    if code.is_some() {
+        log(
+            &mut tx,
+            by.business,
+            who,
+            "businesses.notice_change_requested",
+        )
+        .await?;
+    }
+    db(tx.commit().await)?;
     Ok(code)
 }
 
 /// BIZ-040, SEC-024: takes the code emailed to `mailbox`. Right, within [`CODE_LIFE`] and
-/// [`CHECK_TRIES`]: the mailbox is verified; for a change the member's address moves, the change is
-/// audit-logged and one [`CHANGED_KIND`] task tells the old address, in one transaction; for the
-/// sign-up email the sign-up settles (activation). Returns whether the code was right.
+/// [`CHECK_TRIES`], for an open check: the mailbox is verified and any returned mark cleared; for
+/// a change the member's address moves (only while the member is current and still has the old
+/// mailbox, else the check closes unverified and this returns false), the change is audit-logged
+/// and one [`CHANGED_KIND`] task tells the old address, in one transaction; for the sign-up email
+/// the sign-up settles (activation). Returns whether the code was taken.
 ///
 /// # Errors
 /// [`EmailCheckError::Database`].
@@ -269,9 +368,11 @@ pub async fn confirm(
     now: Timestamp,
 ) -> Result<bool, EmailCheckError> {
     let mut tx = db(conn.begin().await)?;
-    let q = sqlx::query!(
-        "SELECT id, member_id, replaces, sent_at, tries FROM businesses.mailbox_check \
-         WHERE business_id = $1 AND mailbox_id = $2 AND verified_at IS NULL FOR UPDATE",
+    let q = sqlx::query_as!(
+        Pending,
+        "SELECT id, member_id, change_for, replaces, requested_by, sent_at, tries \
+         FROM businesses.mailbox_check \
+         WHERE business_id = $1 AND mailbox_id = $2 AND open FOR UPDATE",
         business,
         mailbox
     );
@@ -280,55 +381,94 @@ pub async fn confirm(
     };
     let sent = row.sent_at.to_jiff();
     let live = row.tries < CHECK_TRIES && now.duration_since(sent) <= CODE_LIFE;
-    let right = live
-        && bool::from(
-            code_of(secret, row.id, sent)
-                .as_bytes()
-                .ct_eq(code.as_bytes()),
+    let want = code_of(secret, row.id, sent);
+    if !(live && bool::from(want.as_bytes().ct_eq(code.as_bytes()))) {
+        let q = sqlx::query!(
+            "UPDATE businesses.mailbox_check SET tries = tries + 1 WHERE id = $1",
+            row.id
         );
-    let q = sqlx::query!(
-        "UPDATE businesses.mailbox_check SET tries = tries + (NOT $2)::int, \
-         verified_at = CASE WHEN $2 THEN $3::timestamptz END WHERE id = $1",
-        row.id,
-        right,
-        now.to_sqlx() as _
-    );
-    db(q.execute(&mut *tx).await)?;
-    if let (true, Some(member), Some(old)) = (right, row.member_id, row.replaces) {
-        moved(&mut tx, Acting { business, member }, (old, mailbox), now).await?;
+        db(q.execute(&mut *tx).await)?;
+        db(tx.commit().await)?;
+        return Ok(false);
     }
+    let taken = match row.change_for {
+        Some(member) => moved(&mut tx, (business, member, mailbox), &row, now).await?,
+        None => true,
+    };
+    close(&mut tx, row.id, taken, now).await?;
     db(tx.commit().await)?;
-    if right && row.member_id.is_none() {
+    if taken && row.member_id.is_none() && row.change_for.is_none() {
         crate::identity::settle(conn, business, now)
             .await
             .map_err(|_| EmailCheckError::Database)?;
     }
-    Ok(right)
+    Ok(taken)
 }
 
-/// SEC-024: moves the member's address and queues the old address's notice, with its audit row.
-async fn moved(
+/// The open check `confirm` reads, locked.
+struct Pending {
+    id: Uuid,
+    member_id: Option<Uuid>,
+    change_for: Option<Uuid>,
+    replaces: Option<Uuid>,
+    requested_by: Option<Uuid>,
+    sent_at: jiff_sqlx::Timestamp,
+    tries: i32,
+}
+
+/// Closes a check; `verified` sets it verified and clears any returned mark (BIZ-040 "fix").
+async fn close(
     tx: &mut PgConnection,
-    who: Acting,
-    (old, new): (Uuid, Uuid),
+    id: Uuid,
+    verified: bool,
     now: Timestamp,
 ) -> Result<(), EmailCheckError> {
     let q = sqlx::query!(
+        "UPDATE businesses.mailbox_check SET open = false, \
+         verified_at = CASE WHEN $2 THEN $3::timestamptz ELSE verified_at END, \
+         returned_at = CASE WHEN $2 THEN NULL ELSE returned_at END, \
+         soft_at = CASE WHEN $2 THEN NULL ELSE soft_at END WHERE id = $1",
+        id,
+        verified,
+        now.to_sqlx() as _
+    );
+    db(q.execute(tx).await).map(|_| ())
+}
+
+/// SEC-024: moves the member's address (or, for a re-verify, checks it is still theirs) only while
+/// the member is current; then queues the old address's notice and writes the audit rows. Returns
+/// false, writing nothing, when no member row matched.
+async fn moved(
+    tx: &mut PgConnection,
+    (business, member, new): (Uuid, Uuid, Uuid),
+    row: &Pending,
+    now: Timestamp,
+) -> Result<bool, EmailCheckError> {
+    let old = row.replaces.unwrap_or(new);
+    let q = sqlx::query!(
         "UPDATE businesses.team_member SET mailbox_id = $4 \
-         WHERE id = $2 AND business_id = $1 AND mailbox_id = $3",
-        who.business,
-        who.member,
+         WHERE id = $2 AND business_id = $1 AND mailbox_id = $3 AND removed_at IS NULL",
+        business,
+        member,
         old,
         new
     );
-    db(q.execute(&mut *tx).await)?;
-    let payload = json!({"business": who.business, "member": who.member, "old": old});
+    if db(q.execute(&mut *tx).await)?.rows_affected() == 0 {
+        return Ok(false);
+    }
+    let who = (row.requested_by.unwrap_or(member), member);
+    if row.replaces.is_none() {
+        log(tx, business, who, "businesses.notice_address_reverified").await?;
+        return Ok(true);
+    }
+    let payload = json!({"business": business, "member": member, "old": old});
     let mut task = NewTask::new(CHANGED_KIND, payload, now);
-    task.dedupe_key = Some(format!("{CHANGED_KIND}.{old}.{new}"));
+    task.dedupe_key = Some(format!("{CHANGED_KIND}.{old}.{new}.{}", now.as_second()));
     enqueue(&mut *tx, &task)
         .await
         .map_err(|_| EmailCheckError::Database)?;
-    log(tx, who, "businesses.notice_address_changed").await
+    log(tx, business, who, "businesses.notice_address_changed").await?;
+    Ok(true)
 }
 
 /// BIZ-040: whether `mailbox` may get notices: verified and not returned.

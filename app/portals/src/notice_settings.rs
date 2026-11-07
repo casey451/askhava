@@ -4,15 +4,18 @@
 //! [`notice_settings_page`] lists the verified notice addresses and those still waiting for their
 //! code, shows the BIZ-040 banner line for each returned address, offers only email while business
 //! texting is off (text and both only while it is on) and shows the change form to the owner
-//! alone. [`change_channel`] stores a choice only for the signed-in owner (SEC-024). The addresses
+//! alone. [`change_channel`] stores a choice only for the signed-in owner (SEC-024), audit-logged
+//! with the acting member in the same transaction, a refusal too (D-1850). The addresses
 //! are read from the vault by the composition and handed in; this module reads no contact. The
 //! route [`NOTICE_SETTINGS_ROUTE`] is served with the business portal (D-1728, D-1848); address
 //! changes go through `businesses::api::request_notice_change` (SEC-038's fresh code).
 
 use askama::Template;
-use askhava_businesses::api::{ChannelError, NoticeChannel, returned_line, set_notice_channel};
+use askhava_businesses::api::{
+    ChannelError, NoticeChannel, log_notice_change, returned_line, set_notice_channel,
+};
 use jiff::Timestamp;
-use sqlx::PgConnection;
+use sqlx::{Connection, PgConnection};
 
 use crate::business_auth::BusinessPrincipal;
 
@@ -139,8 +142,9 @@ pub enum ChannelChangeError {
     Database,
 }
 
-/// BIZ-036, SEC-024: stores `channel` for the signed-in owner's business; any other person is
-/// refused.
+/// BIZ-036, SEC-024: stores `channel` for the signed-in owner's business with its audit rows
+/// (`businesses.notice_channel_changed` and the acting member, D-1850) in one transaction; any
+/// other person is refused and the refusal logged as `businesses.notice_channel_refused`.
 ///
 /// # Errors
 /// [`ChannelChangeError`].
@@ -150,13 +154,30 @@ pub async fn change_channel(
     facts: ChannelFacts,
     now: Timestamp,
 ) -> Result<(), ChannelChangeError> {
-    if !principal.owner {
-        return Err(ChannelChangeError::NotOwner);
+    let fail = |_| ChannelChangeError::Database;
+    let mut tx = db.begin().await.map_err(fail)?;
+    let (business, member) = (principal.business, principal.member);
+    let owner = principal.owner;
+    let action = if owner {
+        "businesses.notice_channel_changed"
+    } else {
+        "businesses.notice_channel_refused"
+    };
+    if owner {
+        let set = (facts.channel, facts.texting_on);
+        match set_notice_channel(&mut tx, business, set, now).await {
+            Ok(()) => {}
+            Err(ChannelError::TextingOff) => return Err(ChannelChangeError::TextingOff),
+            Err(ChannelError::Database) => return Err(ChannelChangeError::Database),
+        }
     }
-    let set = (facts.channel, facts.texting_on);
-    match set_notice_channel(db, principal.business, set, now).await {
-        Ok(()) => Ok(()),
-        Err(ChannelError::TextingOff) => Err(ChannelChangeError::TextingOff),
-        Err(ChannelError::Database) => Err(ChannelChangeError::Database),
+    log_notice_change(&mut tx, business, (member, member), (action, "channel"))
+        .await
+        .map_err(|_| ChannelChangeError::Database)?;
+    tx.commit().await.map_err(fail)?;
+    if owner {
+        Ok(())
+    } else {
+        Err(ChannelChangeError::NotOwner)
     }
 }

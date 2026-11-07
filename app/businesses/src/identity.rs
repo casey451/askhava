@@ -265,37 +265,46 @@ pub async fn check_code(
 ) -> Result<bool, SignupError> {
     waiting(db, business).await?;
     let state = models::signup_state(db, business).await?;
-    let q = sqlx::query!(
-        "SELECT identity_attempt, code_tries FROM businesses.signup WHERE business_id = $1",
-        business
-    );
-    let ep = q
-        .fetch_one(&mut *db)
-        .await
-        .map_err(|_| BusinessesError::Database)?;
-    if ep.code_tries >= IDENTITY_CODE_TRIES {
+    let Some(attempt) = take_try(db, business).await? else {
         return Ok(false);
-    }
+    };
     let right = match state.step.as_deref().and_then(Step::from_code) {
         Some(Step::Text) => check(verify, record.texting_phone.as_ref(), code).await?,
         Some(Step::Email) => check(verify, record.email.as_ref(), code).await?,
         Some(Step::Letter) => {
-            let want = episode_letter_code(secret, business, ep.identity_attempt);
+            let want = episode_letter_code(secret, business, attempt);
             bool::from(want.as_bytes().ct_eq(code.as_bytes()))
         }
         None => false,
     };
     if right {
-        models::set_code_done(db, business).await?;
-        settle(db, business, now).await?;
-    } else {
         let q = sqlx::query!(
-            "UPDATE businesses.signup SET code_tries = code_tries + 1 WHERE business_id = $1",
+            "UPDATE businesses.signup SET code_tries = code_tries - 1 \
+             WHERE business_id = $1 AND code_tries > 0",
             business
         );
-        q.execute(db).await.map_err(|_| BusinessesError::Database)?;
+        q.execute(&mut *db)
+            .await
+            .map_err(|_| BusinessesError::Database)?;
+        models::set_code_done(db, business).await?;
+        settle(db, business, now).await?;
     }
     Ok(right)
+}
+
+/// D-1703, D-1756: takes one of the episode's [`IDENTITY_CODE_TRIES`] in one guarded `UPDATE`
+/// before the code is checked, so parallel guesses cannot pass the cap; a right code gives it back.
+/// Returns the episode, or `None` when no try is left.
+async fn take_try(db: &mut PgConnection, business: Uuid) -> Result<Option<i32>, BusinessesError> {
+    let q = sqlx::query_scalar!(
+        "UPDATE businesses.signup SET code_tries = code_tries + 1 \
+         WHERE business_id = $1 AND code_tries < $2 RETURNING identity_attempt",
+        business,
+        IDENTITY_CODE_TRIES
+    );
+    q.fetch_optional(db)
+        .await
+        .map_err(|_| BusinessesError::Database)
 }
 
 /// D-1703: refuses a code send or check unless the sign-up is still waiting.

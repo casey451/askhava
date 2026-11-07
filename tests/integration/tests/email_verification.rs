@@ -374,3 +374,80 @@ async fn td_biz_13_bounces_mark_the_address_returned(pool: PgPool) {
     .expect("tasks");
     assert_eq!(tasks, 2);
 }
+
+/// BIZ-040, D-1850: a returned sign-up address is fixed by verifying it again, which clears the
+/// returned mark; wrong codes carry over a resend within 30 minutes, then start afresh.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_biz_13_a_returned_address_is_fixed_and_tries_carry_over_resends(pool: PgPool) {
+    let (s, mut db) = (secret(), pool.acquire().await.expect("db"));
+    let id = signed_up(&mut db).await;
+    let mins = |m| at(0) + SignedDuration::from_mins(m);
+    let code = start_signup_check(&mut db, &s, id, mins(0))
+        .await
+        .expect("c")
+        .expect("code");
+    let wrong = if code == "000000" { "000001" } else { "000000" };
+    for _ in 0..5 {
+        let r = confirm_mailbox(&mut db, &s, (id, MAILBOX), wrong, mins(1)).await;
+        assert!(!r.expect("ok"));
+    }
+    let resent = start_signup_check(&mut db, &s, id, mins(2)).await;
+    let resent = resent.expect("c").expect("code");
+    let r = confirm_mailbox(&mut db, &s, (id, MAILBOX), &resent, mins(2)).await;
+    assert!(!r.expect("ok"), "a resend in the window gives no new tries");
+    let later = start_signup_check(&mut db, &s, id, mins(31)).await;
+    let later = later.expect("c").expect("code");
+    let r = confirm_mailbox(&mut db, &s, (id, MAILBOX), &later, mins(31)).await;
+    assert!(r.expect("ok"), "a new window starts afresh");
+    assert!(
+        mark_returned(&mut db, (id, MAILBOX), Returned::Hard, at(1))
+            .await
+            .expect("hard")
+    );
+    assert!(!may_get_notices(&mut db, id, MAILBOX).await.expect("read"));
+    let fix = start_signup_check(&mut db, &s, id, at(2)).await;
+    let fix = fix
+        .expect("c")
+        .expect("a returned address can be verified again");
+    let r = confirm_mailbox(&mut db, &s, (id, MAILBOX), &fix, at(2)).await;
+    assert!(r.expect("ok"));
+    assert!(may_get_notices(&mut db, id, MAILBOX).await.expect("read"));
+    let none = start_signup_check(&mut db, &s, id, at(3)).await;
+    assert_eq!(none.expect("c"), None, "verified and not returned");
+}
+
+/// D-1703, D-1756: parallel wrong guesses never pass the episode's try cap.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_biz_40_parallel_guesses_keep_the_try_cap(pool: PgPool) {
+    let (v, s) = (FakeVerify::default(), secret());
+    let mut db = pool.acquire().await.expect("db");
+    let id = signed_up(&mut db).await;
+    let rec = record(None, EMAIL);
+    send_code(&mut db, (&v, &s), id, &rec, at(0))
+        .await
+        .expect("sent");
+    let guess = || async {
+        let mut c = pool.acquire().await.expect("db");
+        let r = check_code(&mut c, (&v, &s), id, &rec, ("999999", at(0))).await;
+        assert!(!r.expect("checked"));
+    };
+    tokio::join!(
+        guess(),
+        guess(),
+        guess(),
+        guess(),
+        guess(),
+        guess(),
+        guess(),
+        guess()
+    );
+    let tries: i32 =
+        sqlx::query_scalar("SELECT code_tries FROM businesses.signup WHERE business_id = $1")
+            .bind(id)
+            .fetch_one(&mut *db)
+            .await
+            .expect("tries");
+    assert_eq!(tries, IDENTITY_CODE_TRIES);
+    let right = check_code(&mut db, (&v, &s), id, &rec, (CODE, at(0))).await;
+    assert!(!right.expect("checked"), "no try is left");
+}

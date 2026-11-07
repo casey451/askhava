@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT mailbox_id FROM businesses.team_member WHERE id = $1 AND business_id = $2 AND removed_at IS NULL",
+  "query": "SELECT mailbox_id FROM businesses.team_member WHERE id = $1 AND business_id = $2 AND removed_at IS NULL FOR UPDATE",
   "describe": {
     "columns": [
       {
@@ -25,5 +25,5 @@
       false
     ]
   },
-  "hash": "373330c37723634ce6370447672c633787fa227880a4d64c1806ab64f2445956"
+  "hash": "965b9c68a6bdc050c02061da911b58b0e16a45193cc51471c6156b36033e9120"
 }

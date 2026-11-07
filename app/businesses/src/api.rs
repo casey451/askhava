@@ -43,10 +43,10 @@ pub use crate::consent::{
     welcome_lines, welcome_sent,
 };
 pub use crate::email_verification::{
-    CHANGED_KIND, CHECK_TRIES, CODE_LIFE, EmailCheckError, RETURNED_KIND, Returned, SOFT_SPAN_DAYS,
-    STEP_UP_LIFE, confirm as confirm_mailbox, mark_returned, may_get_notices, record_step_up,
-    request_change as request_notice_change, returned_line, returned_mailboxes, start_signup_check,
-    verified_by_link,
+    ACTED_BY_ACTION, CHANGED_KIND, CHECK_TRIES, CODE_LIFE, EmailCheckError, RETURNED_KIND,
+    Returned, SOFT_SPAN_DAYS, STEP_UP_LIFE, confirm as confirm_mailbox, log_notice_change,
+    mark_returned, may_get_notices, record_step_up, request_change as request_notice_change,
+    returned_line, returned_mailboxes, start_signup_check, verified_by_link,
 };
 pub use crate::identity::{
     Flag, IDENTITY_CODE_TRIES, RecordContacts, Step, approve, check_code, episode_letter_code,
