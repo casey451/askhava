@@ -1836,3 +1836,12 @@ An outside review (ChatGPT) of the whole repository found twelve issues. Each wa
 - A choice for you to know about: a complaint pauses the 180-day erase only while its 5-day reply box is open. We don't record whether a complaint was resolved, so one still unresolved after the box closes no longer pauses it.
 - A person's details belong to her, not to one request: a pause on any of her requests keeps them, and a request that never became a job (turned away or abandoned) is erased 180 days after it ended. If a purge keeps failing, you get an alert.
 - **Nothing needs you now.**
+
+## Texting switched off or a suspended number (T096, D-1804 to D-1807, November 7)
+
+- When homeowner texting is off or the texting number is suspended, homeowner updates go by email and the quote page; anyone with no email goes on your call list, whether you switched texting off or the number was suspended. A business with no email only sees the portal; Ask Hava never calls a business.
+- No second number is ever used. After Twilio says the number is back, texting stays off until you switch it on, and you can't switch it on before then.
+- An emergency message while texting is off or suspended always raises a critical alert. The safety voice call goes only during a real suspension, only while you have turned that setting on, only for her own message sent after the suspension began, and never to a number that opted out.
+- The toll-free backup can be set up only after a refused homeowner campaign is recorded and you give the go; it is refused while the number is suspended and never carries business messages.
+- Not done yet, and no task is planned for it: saving these switches and the suspension in the database with their owner-portal buttons, the safety email itself, turning the site banner on, and the wiring that runs this on each incoming message. The runner should add a task.
+- **Nothing needs you now.**

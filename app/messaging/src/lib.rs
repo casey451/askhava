@@ -19,6 +19,7 @@ pub mod api;
 mod email;
 mod handlers;
 mod keywords;
+mod mode;
 mod models;
 mod optout;
 mod receipt_email;
