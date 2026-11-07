@@ -24,6 +24,7 @@ mod business_signup;
 mod confirm_pay;
 mod feedback;
 mod models;
+mod notice_settings;
 mod pick_flow;
 mod quote_page;
 mod receipts_page;

@@ -1,0 +1,32 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO businesses.mailbox_check (business_id, member_id, mailbox_id, replaces, sent_at) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (business_id, mailbox_id) DO UPDATE SET sent_at = $5, tries = 0, member_id = $2, replaces = $4 WHERE businesses.mailbox_check.verified_at IS NULL RETURNING id AS \"id!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id!",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "businesses.mailbox_check",
+            "name": "id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Uuid",
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "c47485165766771b66faecc4c115642920e51ddbec7724f959bb72c91b455c8f"
+}

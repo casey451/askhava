@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE businesses.mailbox_check SET tries = tries + (NOT $2)::int, verified_at = CASE WHEN $2 THEN $3::timestamptz END WHERE id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Bool",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "b11f22ed430fc0b8c98ac8ccf0326e37c64150c83bda85111bfe5a7298740b63"
+}

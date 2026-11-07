@@ -7,7 +7,13 @@
 //! gets texts, then a Verify email to the record email, then a mailed letter, and never a voice
 //! call; with no usable record contact the sign-up waits in needs review. [`settle`] activates
 //! only when the code and the license or city-list match pass with no flag; the letter path is
-//! not a flag by itself (D-281). T196 adds the verified-email check before activation (BIZ-040).
+//! not a flag by itself (D-281). Activation also waits while the sign-up email has an
+//! unverified [`crate::email_verification`] check (BIZ-040, T196).
+//!
+//! The identity episode (D-1712, D-1756): each step stores a keyed digest of the destination it
+//! last went to; a send to a changed destination raises `identity_attempt`, which joins the
+//! Verify idempotency key and the letter code and resets the wrong-code count, so an identical
+//! retry keeps its key and a new record phone, email or address gets a new one.
 
 use askhava_adapters::api::{CodeChannel, IdempotencyKey, VerifyAdapter};
 use askhava_ops::api::Actor;
@@ -17,16 +23,21 @@ use sqlx::PgConnection;
 use sqlx::types::Uuid;
 use subtle::ConstantTimeEq;
 
+use crate::email_verification::signup_email_waits;
 use crate::models::{self, BusinessesError};
 use crate::rules::{Checks, Event};
 use crate::service::apply;
-use crate::signup::SignupError;
+use crate::signup::{RecordSeen, SignupError};
 use crate::status::AccountStatus;
 
 /// The idempotency action of an identity code send (SEC-018).
 const SEND_ACTION: &str = "businesses.identity_code";
 /// The keyed action the identity letter's six-digit code is derived under.
 const LETTER_ACTION: &str = "businesses.identity_letter";
+/// The keyed action of a step's destination digest (D-1756).
+const DEST_ACTION: &str = "businesses.identity_dest";
+/// Wrong identity codes allowed per episode before every check fails (D-1703, D-1756).
+pub const IDENTITY_CODE_TRIES: i32 = 5;
 
 /// The record contacts read from the public record (BIZ-002, D-059); never typed by the business.
 #[derive(Debug, Default)]
@@ -109,51 +120,88 @@ pub fn next_step(record: &RecordContacts, after: Option<Step>) -> Option<Step> {
         .map(|(s, _)| s)
 }
 
-/// The six-digit code printed on the identity letter, derived from the business ID under the ID
-/// secret, so no code is stored (BIZ-002).
+/// The six-digit code printed on the first episode's identity letter, derived from the business ID
+/// under the ID secret, so no code is stored (BIZ-002).
 #[must_use]
 pub fn letter_code(secret: &SecretString, business: Uuid) -> String {
-    let key = IdempotencyKey::derive(secret, LETTER_ACTION, &[&business.to_string()]);
+    episode_letter_code(secret, business, 0)
+}
+
+/// The letter code of identity episode `attempt` (BIZ-002, D-1756): a new record address gets a
+/// new code; episode 0 is [`letter_code`].
+#[must_use]
+pub fn episode_letter_code(secret: &SecretString, business: Uuid, attempt: i32) -> String {
+    let (id, n) = (business.to_string(), attempt.to_string());
+    let parts: &[&str] = if attempt == 0 { &[&id] } else { &[&id, &n] };
+    let key = IdempotencyKey::derive(secret, LETTER_ACTION, parts);
     let n = u64::from_str_radix(&key.as_str()[..12], 16).unwrap_or_default();
     format!("{:06}", n % 1_000_000)
 }
 
-/// BIZ-002: sends the next code of the chain after the step already tried and records the step.
-/// A letter step is recorded for the Lob mailing, which prints [`letter_code`]. With no record
-/// contact at all the sign-up is flagged `NoRecordContact` and waits in needs review; after the
-/// last step nothing more is sent. Returns the step taken. Only a waiting sign-up (pending or
-/// needs review) gets a code (D-1703).
+/// BIZ-002: sends the next code of the chain after the step already tried and records the step,
+/// as [`send_code_seen`] with no record address (the letter's episode then never changes).
 ///
 /// # Errors
-/// [`SignupError::Verify`] when Verify refuses; [`BusinessesError::Refused`] (in
-/// [`SignupError::Businesses`]) for any other status; [`SignupError::Businesses`] otherwise.
+/// As [`send_code_seen`].
 pub async fn send_code(
     db: &mut PgConnection,
-    (verify, secret): (&impl VerifyAdapter, &SecretString),
+    keys: (&impl VerifyAdapter, &SecretString),
     business: Uuid,
     record: &RecordContacts,
     now: Timestamp,
 ) -> Result<Option<Step>, SignupError> {
+    let seen = RecordSeen {
+        contacts: record,
+        address: None,
+    };
+    send_code_seen(db, keys, business, seen, now).await
+}
+
+/// BIZ-002, D-1756: sends the next code of the chain after the step already tried and records the
+/// step. A letter step is recorded for the Lob mailing, which prints [`episode_letter_code`].
+/// With no record contact at all the sign-up is flagged `NoRecordContact`; after the last step
+/// nothing more is sent. The Verify key carries the episode, raised only when this step's
+/// destination changed. Only a waiting sign-up gets a code (D-1703).
+///
+/// # Errors
+/// [`SignupError::Verify`] when Verify refuses; [`BusinessesError::Refused`] (in
+/// [`SignupError::Businesses`]) for any other status; [`SignupError::Businesses`] otherwise.
+pub async fn send_code_seen(
+    db: &mut PgConnection,
+    (verify, secret): (&impl VerifyAdapter, &SecretString),
+    business: Uuid,
+    seen: RecordSeen<'_>,
+    now: Timestamp,
+) -> Result<Option<Step>, SignupError> {
     waiting(db, business).await?;
-    let tried = models::signup_state(db, business)
-        .await?
-        .step
-        .as_deref()
-        .and_then(Step::from_code);
-    let Some(step) = next_step(record, tried) else {
+    let tried = models::signup_state(db, business).await?.step;
+    let tried = tried.as_deref().and_then(Step::from_code);
+    let Some(step) = next_step(seen.contacts, tried) else {
         if tried.is_none() {
             record_match(db, business, None, Some(Flag::NoRecordContact), now).await?;
         }
         return Ok(None);
     };
+    let record = seen.contacts;
     let to = match step {
-        Step::Text => record.texting_phone.as_ref().map(|p| (p, CodeChannel::Sms)),
-        Step::Email => record.email.as_ref().map(|e| (e, CodeChannel::Email)),
-        Step::Letter => None,
+        Step::Text => record
+            .texting_phone
+            .as_ref()
+            .map(|p| (p, Some(CodeChannel::Sms))),
+        Step::Email => record.email.as_ref().map(|e| (e, Some(CodeChannel::Email))),
+        Step::Letter => seen.address.map(|a| (a, None)),
     };
-    if let Some((contact, channel)) = to {
-        let id = business.to_string();
-        let key = IdempotencyKey::derive(secret, SEND_ACTION, &[&id, step.code()]);
+    let id = business.to_string();
+    let dest = to.map(|(v, _)| dest_key(secret, &id, step, v));
+    let attempt = episode(db, business, step, dest.as_deref()).await?;
+    if let Some((contact, Some(channel))) = to {
+        let n = attempt.to_string();
+        let parts: &[&str] = if attempt == 0 {
+            &[&id, step.code()]
+        } else {
+            &[&id, step.code(), &n]
+        };
+        let key = IdempotencyKey::derive(secret, SEND_ACTION, parts);
         let sent = verify
             .send_code(&key, contact.expose_secret(), channel)
             .await;
@@ -163,10 +211,46 @@ pub async fn send_code(
     Ok(Some(step))
 }
 
+fn dest_key(secret: &SecretString, id: &str, step: Step, to: &SecretString) -> String {
+    let parts = [id, step.code(), to.expose_secret()];
+    IdempotencyKey::derive(secret, DEST_ACTION, &parts)
+        .as_str()
+        .to_owned()
+}
+
+/// D-1756: stores the step's destination digest and returns the episode, raised (and the
+/// wrong-code count reset) only when the step last went to a different destination. One guarded
+/// `UPDATE`, so two concurrent sends to one destination raise it once.
+async fn episode(
+    db: &mut PgConnection,
+    business: Uuid,
+    step: Step,
+    dest: Option<&str>,
+) -> Result<i32, BusinessesError> {
+    let q = sqlx::query_scalar!(
+        "UPDATE businesses.signup SET \
+         identity_attempt = identity_attempt + CASE WHEN COALESCE(CASE $2 WHEN 'text' THEN \
+           sent_text_key WHEN 'email' THEN sent_mail_key ELSE sent_letter_key END <> $3, false) \
+           THEN 1 ELSE 0 END, \
+         code_tries = CASE WHEN COALESCE(CASE $2 WHEN 'text' THEN sent_text_key WHEN 'email' \
+           THEN sent_mail_key ELSE sent_letter_key END <> $3, false) THEN 0 ELSE code_tries END, \
+         sent_text_key = CASE WHEN $2 = 'text' THEN COALESCE($3, sent_text_key) ELSE sent_text_key END, \
+         sent_mail_key = CASE WHEN $2 = 'email' THEN COALESCE($3, sent_mail_key) ELSE sent_mail_key END, \
+         sent_letter_key = CASE WHEN $2 = 'letter' THEN COALESCE($3, sent_letter_key) \
+           ELSE sent_letter_key END \
+         WHERE business_id = $1 RETURNING identity_attempt",
+        business,
+        step.code(),
+        dest
+    );
+    q.fetch_one(db).await.map_err(|_| BusinessesError::Database)
+}
+
 /// BIZ-002, BIZ-016: checks the code entered for the step reached and, when right, marks the code
 /// done and settles the status. Returns whether the code was right. Only a waiting sign-up is
-/// checked; the letter code is compared in constant time. This function keeps no attempt count:
-/// the sign-up route that calls it MUST limit code attempts per business (D-1703).
+/// checked; the letter code is the episode's, compared in constant time. After
+/// [`IDENTITY_CODE_TRIES`] wrong codes in one episode every check is false until a send to a new
+/// destination starts the next episode (D-1703, D-1756).
 ///
 /// # Errors
 /// [`SignupError::Verify`] when Verify fails; [`BusinessesError::Refused`] (in
@@ -181,11 +265,22 @@ pub async fn check_code(
 ) -> Result<bool, SignupError> {
     waiting(db, business).await?;
     let state = models::signup_state(db, business).await?;
+    let q = sqlx::query!(
+        "SELECT identity_attempt, code_tries FROM businesses.signup WHERE business_id = $1",
+        business
+    );
+    let ep = q
+        .fetch_one(&mut *db)
+        .await
+        .map_err(|_| BusinessesError::Database)?;
+    if ep.code_tries >= IDENTITY_CODE_TRIES {
+        return Ok(false);
+    }
     let right = match state.step.as_deref().and_then(Step::from_code) {
         Some(Step::Text) => check(verify, record.texting_phone.as_ref(), code).await?,
         Some(Step::Email) => check(verify, record.email.as_ref(), code).await?,
         Some(Step::Letter) => {
-            let want = letter_code(secret, business);
+            let want = episode_letter_code(secret, business, ep.identity_attempt);
             bool::from(want.as_bytes().ct_eq(code.as_bytes()))
         }
         None => false,
@@ -193,6 +288,12 @@ pub async fn check_code(
     if right {
         models::set_code_done(db, business).await?;
         settle(db, business, now).await?;
+    } else {
+        let q = sqlx::query!(
+            "UPDATE businesses.signup SET code_tries = code_tries + 1 WHERE business_id = $1",
+            business
+        );
+        q.execute(db).await.map_err(|_| BusinessesError::Database)?;
     }
     Ok(right)
 }
@@ -237,8 +338,9 @@ pub async fn record_match(
     settle(db, business, now).await
 }
 
-/// BIZ-003, BIZ-016: moves a pending sign-up by its checks (active with the code and the match
-/// and no flag, needs review on a flag) and stamps when it began waiting (BIZ-020).
+/// BIZ-003, BIZ-016, BIZ-040: moves a pending sign-up by its checks (active with the code and the
+/// match and no flag, needs review on a flag) and stamps when it began waiting (BIZ-020). While
+/// the sign-up email's check is unverified nothing activates; a flag still moves it to review.
 ///
 /// # Errors
 /// [`SignupError::Businesses`].
@@ -248,7 +350,13 @@ pub async fn settle(
     now: Timestamp,
 ) -> Result<AccountStatus, SignupError> {
     let checks = models::signup_state(db, business).await?.checks();
-    let status = match apply(db, business, Event::Checked(checks), Actor::System, now).await {
+    let held = !checks.flagged && signup_email_waits(db, business).await?;
+    let moved = if held {
+        Err(BusinessesError::Refused)
+    } else {
+        apply(db, business, Event::Checked(checks), Actor::System, now).await
+    };
+    let status = match moved {
         Err(BusinessesError::Refused) => models::read(db, business).await?.status,
         moved => moved?,
     };
@@ -258,13 +366,18 @@ pub async fn settle(
 
 /// BIZ-003: Casey approves a needs-review sign-up; it activates only with the code and the match.
 ///
+/// The sign-up email must be verified first (BIZ-040).
+///
 /// # Errors
-/// [`BusinessesError::Refused`] when the code or the match is missing.
+/// [`BusinessesError::Refused`] when the code or the match is missing or the email is unverified.
 pub async fn approve(
     db: &mut PgConnection,
     business: Uuid,
     (owner, now): (Uuid, Timestamp),
 ) -> Result<AccountStatus, SignupError> {
+    if signup_email_waits(db, business).await? {
+        return Err(BusinessesError::Refused.into());
+    }
     let checks: Checks = models::signup_state(db, business).await?.checks();
     let event = Event::OwnerApproved(checks);
     Ok(apply(db, business, event, Actor::Owner(owner), now).await?)

@@ -42,9 +42,15 @@ pub use crate::consent::{
     record_consent, recruiting_email, request_welcome, stop_recruiting, stopped_email_line,
     welcome_lines, welcome_sent,
 };
+pub use crate::email_verification::{
+    CHANGED_KIND, CHECK_TRIES, CODE_LIFE, EmailCheckError, RETURNED_KIND, Returned, SOFT_SPAN_DAYS,
+    STEP_UP_LIFE, confirm as confirm_mailbox, mark_returned, may_get_notices, record_step_up,
+    request_change as request_notice_change, returned_line, returned_mailboxes, start_signup_check,
+    verified_by_link,
+};
 pub use crate::identity::{
-    Flag, RecordContacts, Step, approve, check_code, letter_code, next_step, record_match,
-    send_code, settle,
+    Flag, IDENTITY_CODE_TRIES, RecordContacts, Step, approve, check_code, episode_letter_code,
+    letter_code, next_step, record_match, send_code, send_code_seen, settle,
 };
 pub use crate::models::{Business, BusinessesError, Insurance};
 pub use crate::rules::JobTypeChoice;

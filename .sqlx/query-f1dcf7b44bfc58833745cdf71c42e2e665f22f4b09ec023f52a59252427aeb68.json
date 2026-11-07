@@ -1,0 +1,30 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE businesses.signup SET identity_attempt = identity_attempt + CASE WHEN COALESCE(CASE $2 WHEN 'text' THEN sent_text_key WHEN 'email' THEN sent_mail_key ELSE sent_letter_key END <> $3, false) THEN 1 ELSE 0 END, code_tries = CASE WHEN COALESCE(CASE $2 WHEN 'text' THEN sent_text_key WHEN 'email' THEN sent_mail_key ELSE sent_letter_key END <> $3, false) THEN 0 ELSE code_tries END, sent_text_key = CASE WHEN $2 = 'text' THEN COALESCE($3, sent_text_key) ELSE sent_text_key END, sent_mail_key = CASE WHEN $2 = 'email' THEN COALESCE($3, sent_mail_key) ELSE sent_mail_key END, sent_letter_key = CASE WHEN $2 = 'letter' THEN COALESCE($3, sent_letter_key) ELSE sent_letter_key END WHERE business_id = $1 RETURNING identity_attempt",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "identity_attempt",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "businesses.signup",
+            "name": "identity_attempt"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "f1dcf7b44bfc58833745cdf71c42e2e665f22f4b09ec023f52a59252427aeb68"
+}

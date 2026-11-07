@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE businesses.team_member SET mailbox_id = $4 WHERE id = $2 AND business_id = $1 AND mailbox_id = $3",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "1e6482d79d55520a32e0131323ad3f8583360146e74dae623b7dcd72a8c40359"
+}
