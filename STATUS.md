@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-07T22:23:56Z by runner 00daffc8c325 (actions).
+Updated 2026-11-07T22:47:29Z by runner d3d384547e6d (actions).
 
-**Idle since 21:55Z; 146 of 277 done; week 44% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T195 in progress since 22:40Z; 146 of 277 done; week 44% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 146 of 277 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 21:55Z (no task in progress)
+- **Lane:** lane 1: T195 claimed 22:40Z, lease until 01:40Z
 - **Week:** 44% used, 106.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:23Z, 0 min before this update
+- **Last run:** 22:24Z, 23 min before this update
 - **Keeper:** last ran 22:23Z, next wake 22:43Z
 
 ## Needs attention
@@ -40,6 +40,7 @@ Updated 2026-11-07T22:23:56Z by runner 00daffc8c325 (actions).
 | T080 | calls: relay-friendly bridging, identity call, code call | done | 1 | 49 min | 22:52Z |  |
 
 ### Plan and harness merges on main
+- 22:37Z Harness: keep the smoke incremental across tasks that add queries; save its cache only from a smoking job (D-1911) (#338)
 - 19:48Z Plan: third audit — CI filters, close-time owned-file check, request timeout, confirm money invariants, reconcile retry (D-1866–D-1873) (#331)
 - 19:25Z Harness: incremental runner smoke build (stable tree, own target dir, mtime pinning) (D-1890) (#333)
 - 15:37Z Plan: second code audit — owners and acceptance for B01–B08 and known gaps (D-1835–D-1845) (#326)
@@ -78,7 +79,7 @@ Updated 2026-11-07T22:23:56Z by runner 00daffc8c325 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-07T20:52:03Z (week)): five-hour: 5.1M used, 24.0M left, resets 2026-11-08T01:44:26Z; week: 88.0M used, 106.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-11-24T19:17:26Z.
+- Pacing (session_reading 2026-11-07T22:23:43Z (week)): five-hour: 7.5M used, 21.6M left, resets 2026-11-08T01:44:26Z; week: 88.0M used, 106.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-11-24T19:38:01Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -93,7 +94,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T195 (lease until 2026-11-08T01:40:11Z)
 
 ## Last usage reading
 - {"task": "T085", "at": "2026-11-07T21:43:11Z", "cache_creation_input_tokens": 529619, "cache_read_input_tokens": 17695986, "output_tokens": 145506, "input_tokens": 365}
