@@ -3,9 +3,10 @@
 //! PRIV-023, PRIV-025, PRIV-028; D-383, D-454, D-480).
 //!
 //! The one way in is [`clean`]: [`sniff`] reads the type and size from the bytes (never the name)
-//! and refuses HEIC before any decoder runs; the decode runs behind a two-permit semaphore in a
-//! timed `spawn_blocking` under [`MAX_SIDE`], [`MAX_PIXELS`] and [`MAX_ALLOC`]; only the primary
-//! frame is kept, the orientation is applied, and the pixels are written out as a fresh JPEG, so
+//! and refuses HEIC (by the `ftyp` box's major or compatible brands) before any decoder runs; the
+//! wait for one of two decode permits and the decode in `spawn_blocking` share one time limit, and
+//! the header must pass [`MAX_SIDE`], [`MAX_PIXELS`] and the [`MAX_ALLOC`] budget for the pixel
+//! buffers this module allocates before any pixel is read; only the primary frame is kept, the orientation is applied, and the pixels are written out as a fresh JPEG, so
 //! EXIF, GPS, XMP, IPTC, maker notes and anything appended after the image are gone. Only a
 //! [`CleanPhoto`] is screened, stored, sent to AI or put on a card. [`store_photo`] seals it under
 //! `VAULT_KEY` with associated data naming its job and photo ID before the `storage` adapter writes
@@ -24,6 +25,7 @@ use askhava_ops::api::{Actor, AuditEntry, Change, audit};
 use base64::Engine as _;
 use base64::engine::general_purpose::STANDARD;
 use image::codecs::jpeg::JpegEncoder;
+use image::metadata::Orientation;
 use image::{DynamicImage, ImageDecoder, ImageFormat, ImageReader, Limits};
 use jiff::{SignedDuration, Timestamp};
 use jiff_sqlx::ToSqlx;
@@ -41,11 +43,17 @@ pub const MAX_PHOTO_BYTES: usize = 15 * 1024 * 1024;
 pub const MAX_SIDE: u32 = 8_000;
 /// The most pixels a photo may have: 40 megapixels (PRIV-025).
 pub const MAX_PIXELS: u64 = 40_000_000;
-/// The most memory one decode may allocate: 256 MiB (PRIV-025).
+/// The most memory one decode's pixel buffers may take: 256 MiB (PRIV-025). It is checked from the
+/// header before any pixel is decoded, against the decoded frame plus the rotated copy (when the
+/// orientation needs one) or the RGB8 copy for the encoder, whichever is larger ([`peak_bytes`]).
+/// The decoders' own scratch memory, bounded by the same `image::Limits`, and the output JPEG are
+/// not counted.
 pub const MAX_ALLOC: u64 = 256 * 1024 * 1024;
-/// How many decodes run at once; with [`MAX_ALLOC`] it caps decode memory at 512 MiB (PRIV-025).
+/// How many decodes run at once; with [`MAX_ALLOC`] it caps decode pixel buffers at 512 MiB
+/// (PRIV-025).
 pub const DECODE_PERMITS: usize = 2;
-/// How long a decode and re-encode may take before the upload is refused (PRIV-025).
+/// How long the wait for a decode permit plus the decode and re-encode may take before the upload is
+/// refused as [`PhotoError::Busy`] (PRIV-025).
 pub const DECODE_TIMEOUT: Duration = Duration::from_secs(20);
 /// How long a photo link works after it is issued, in seconds (PRIV-014, D-454).
 pub const LINK_TTL_SECS: i64 = 600;
@@ -57,7 +65,7 @@ const HEIC_BRANDS: [&[u8; 4]; 8] = [
     b"heic", b"heix", b"hevc", b"hevx", b"heim", b"heis", b"mif1", b"msf1",
 ];
 
-static DECODES: Semaphore = Semaphore::const_new(DECODE_PERMITS);
+pub(crate) static DECODES: Semaphore = Semaphore::const_new(DECODE_PERMITS);
 
 /// A photo type the app decodes, as read from the file's first bytes (PRIV-013).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -118,21 +126,45 @@ pub fn sniff(bytes: &[u8]) -> Result<PhotoKind, PhotoError> {
         Ok(PhotoKind::Png)
     } else if head(0..4) == b"RIFF" && head(8..12) == b"WEBP" {
         Ok(PhotoKind::WebP)
-    } else if head(4..8) == b"ftyp" && HEIC_BRANDS.iter().any(|b| head(8..12) == b.as_slice()) {
+    } else if is_heif(bytes) {
         Err(PhotoError::Heic)
     } else {
         Err(PhotoError::NotAPhoto)
     }
 }
 
-/// Checks, decodes and re-encodes an upload off the runtime, at most [`DECODE_PERMITS`] at once
-/// and within [`DECODE_TIMEOUT`]; the result is the only form any later step sees (PRIV-013,
+/// Whether `bytes` start with an ISO-BMFF `ftyp` box naming a HEIC/HEIF brand as its major brand
+/// or any compatible brand, read up to the box's declared size (PRIV-025).
+fn is_heif(bytes: &[u8]) -> bool {
+    if bytes.get(4..8) != Some(b"ftyp".as_slice()) {
+        return false;
+    }
+    let declared = bytes
+        .get(0..4)
+        .and_then(|b| <[u8; 4]>::try_from(b).ok())
+        .map_or(0, u32::from_be_bytes);
+    let end = usize::try_from(declared)
+        .ok()
+        .filter(|&n| n >= 16)
+        .unwrap_or(bytes.len())
+        .min(bytes.len());
+    let major = bytes.get(8..12).and_then(|b| <&[u8; 4]>::try_from(b).ok());
+    let (compatible, _) = bytes.get(16..end).unwrap_or_default().as_chunks::<4>();
+    major
+        .into_iter()
+        .chain(compatible)
+        .any(|brand| HEIC_BRANDS.contains(&brand))
+}
+
+/// Checks, decodes and re-encodes an upload off the runtime, at most [`DECODE_PERMITS`] at once;
+/// the wait for a permit and the decode share [`DECODE_TIMEOUT`], so a stuck decode turns later
+/// uploads away as busy instead of queueing them; the result is the only form any later step sees (PRIV-013,
 /// PRIV-014, PRIV-025). The uploaded bytes are dropped here and never stored.
 ///
 /// # Errors
 ///
 /// [`sniff`]'s errors, then [`PhotoError::TooManyPixels`], [`PhotoError::Undecodable`] or
-/// [`PhotoError::Busy`] when the decode ran out of time.
+/// [`PhotoError::Busy`] when the permit wait and decode ran out of time.
 pub async fn clean(upload: Vec<u8>) -> Result<CleanPhoto, PhotoError> {
     clean_within(upload, DECODE_TIMEOUT).await
 }
@@ -143,15 +175,19 @@ pub(crate) async fn clean_within(
     within: Duration,
 ) -> Result<CleanPhoto, PhotoError> {
     let kind = sniff(&upload)?;
-    let permit = DECODES.acquire().await.map_err(|_| PhotoError::Busy)?;
-    let work = tokio::task::spawn_blocking(move || {
-        let _held = permit;
-        reencode(&upload, kind)
-    });
-    let joined = tokio::time::timeout(within, work)
+    let gated = async move {
+        let permit = DECODES.acquire().await.map_err(|_| PhotoError::Busy)?;
+        tokio::task::spawn_blocking(move || {
+            let _held = permit;
+            reencode(&upload, kind)
+        })
         .await
-        .map_err(|_| PhotoError::Busy)?;
-    joined.map_err(|_| PhotoError::Undecodable)?.map(CleanPhoto)
+        .map_err(|_| PhotoError::Undecodable)?
+    };
+    tokio::time::timeout(within, gated)
+        .await
+        .map_err(|_| PhotoError::Busy)?
+        .map(CleanPhoto)
 }
 
 /// The decode limits of PRIV-025.
@@ -164,8 +200,9 @@ fn limits() -> Limits {
 }
 
 /// Decodes the primary frame of `bytes` as `kind` under [`limits`], refusing more than
-/// [`MAX_PIXELS`] from the header before any pixel is allocated, applies the orientation, and
-/// writes the pixels as a new JPEG with no metadata (PRIV-014, PRIV-025).
+/// [`MAX_PIXELS`] or a [`peak_bytes`] over [`MAX_ALLOC`] from the header before any pixel is
+/// allocated, applies the orientation, and writes the pixels as a new JPEG with no metadata
+/// (PRIV-014, PRIV-025).
 pub(crate) fn reencode(bytes: &[u8], kind: PhotoKind) -> Result<Vec<u8>, PhotoError> {
     let mut reader = ImageReader::with_format(Cursor::new(bytes), kind.format());
     reader.limits(limits());
@@ -175,6 +212,9 @@ pub(crate) fn reencode(bytes: &[u8], kind: PhotoKind) -> Result<Vec<u8>, PhotoEr
         return Err(PhotoError::TooManyPixels);
     }
     let orientation = decoder.orientation().map_err(|_| PhotoError::Undecodable)?;
+    if peak_bytes(decoder.total_bytes(), width, height, orientation) > MAX_ALLOC {
+        return Err(PhotoError::TooManyPixels);
+    }
     let mut image = DynamicImage::from_decoder(decoder).map_err(too_big_or_bad)?;
     image.apply_orientation(orientation);
     let mut out = Vec::new();
@@ -182,6 +222,21 @@ pub(crate) fn reencode(bytes: &[u8], kind: PhotoKind) -> Result<Vec<u8>, PhotoEr
         .encode_image(&image.to_rgb8())
         .map_err(|_| PhotoError::Undecodable)?;
     Ok(out)
+}
+
+/// The most pixel-buffer memory [`reencode`] holds at once for a `width` by `height` frame of
+/// `frame` decoded bytes: the frame plus a second frame-sized buffer while a quarter-turn
+/// orientation is applied, or plus the RGB8 copy the encoder takes, whichever is larger (PRIV-025).
+pub(crate) fn peak_bytes(frame: u64, width: u32, height: u32, orientation: Orientation) -> u64 {
+    let rgb8 = (u64::from(width) * u64::from(height)).saturating_mul(3);
+    let turned = match orientation {
+        Orientation::Rotate90
+        | Orientation::Rotate270
+        | Orientation::Rotate90FlipH
+        | Orientation::Rotate270FlipH => frame,
+        _ => 0,
+    };
+    frame.saturating_add(turned.max(rgb8))
 }
 
 /// A decoder error as a photo error: a limit hit is [`PhotoError::TooManyPixels`].
@@ -200,7 +255,9 @@ pub struct PhotoSeal {
 
 impl PhotoSeal {
     /// Builds the cipher from `VAULT_KEY` (`<version>:<base64 of 32 bytes>`, comma-separated), the
-    /// same value [`crate::api::Vault::new`] reads (PRIV-023, D-454).
+    /// same value [`crate::api::Vault::new`] reads (PRIV-023, D-454). It does not repeat
+    /// `Vault::new`'s key-separation checks (D-752), so build it only from the `VAULT_KEY` value a
+    /// `Vault` has already accepted.
     ///
     /// # Errors
     ///
@@ -272,6 +329,9 @@ fn associated_data(job: Uuid, photo: Uuid, version: u16) -> String {
 /// Seals `photo` for `job` under a new random photo ID, writes it through `storage` as
 /// `photos/<id>`, then records the job, key version and storage name in `privacy.photo` with an
 /// audit row, and returns the ID. The bucket never holds a readable photo (PRIV-014, PRIV-023).
+/// The object is written before the row, so a failed insert leaves an orphan `photos/<id>`
+/// ciphertext with no `privacy.photo` row; the photo purge (PRIV-007) must sweep objects by
+/// listing the bucket, not only by the table (D-1793).
 ///
 /// # Errors
 ///

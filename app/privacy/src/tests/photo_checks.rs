@@ -10,16 +10,17 @@ use base64::Engine as _;
 use base64::engine::general_purpose::STANDARD;
 use image::codecs::jpeg::{JpegDecoder, JpegEncoder};
 use image::codecs::webp::WebPEncoder;
+use image::metadata::Orientation;
 use image::{ImageDecoder, Rgb, RgbImage};
 use proptest::prelude::*;
 use secrecy::SecretString;
 use sqlx::types::Uuid;
 
 use crate::api::{
-    CleanPhoto, DECODE_PERMITS, MAX_ALLOC, MAX_PHOTO_BYTES, PhotoError, PhotoKind, PhotoSeal,
-    clean, sniff,
+    CleanPhoto, DECODE_PERMITS, MAX_ALLOC, MAX_PHOTO_BYTES, MAX_PIXELS, PhotoError, PhotoKind,
+    PhotoSeal, clean, sniff,
 };
-use crate::photos::clean_within;
+use crate::photos::{DECODES, clean_within, peak_bytes};
 
 const GPS: &[u8] = b"FAKE-GPS-34.4839N-114.3225W";
 const XMP: &[u8] = b"http://ns.adobe.com/xap/1.0/\0<x:xmpmeta>FAKE-XMP</x:xmpmeta>";
@@ -70,12 +71,17 @@ fn chunk(kind: &[u8; 4], data: &[u8]) -> Vec<u8> {
     [&len[..], kind, data, &(!crc).to_be_bytes()].concat()
 }
 
-/// A PNG whose header claims `width` by `height` pixels, with an empty data chunk.
+/// A PNG whose header claims `width` by `height` 8-bit RGB pixels, with an empty data chunk.
 fn png_header(width: u32, height: u32) -> Vec<u8> {
+    png_header_as(width, height, 8, 2)
+}
+
+/// A PNG header of `width` by `height` at bit `depth` and PNG `colour` type, with no pixel data.
+fn png_header_as(width: u32, height: u32, depth: u8, colour: u8) -> Vec<u8> {
     let ihdr = [
         &width.to_be_bytes()[..],
         &height.to_be_bytes(),
-        &[8, 2, 0, 0, 0],
+        &[depth, colour, 0, 0, 0],
     ]
     .concat();
     [
@@ -136,6 +142,20 @@ fn a_heic_upload_is_refused_without_decoding() {
     let heic = b"\0\0\0\x18ftypheic\0\0\0\0mif1heic".to_vec();
     assert_eq!(sniff(&heic), Err(PhotoError::Heic));
     assert_eq!(run(clean(heic)), Err(PhotoError::Heic));
+}
+
+/// TD-PRIV-10, PRIV-025: a HEIC file whose major brand is generic is found by its compatible
+/// brands, and a brand past the `ftyp` box's size does not count.
+#[test]
+fn a_heic_compatible_brand_is_refused() {
+    let compatible = b"\0\0\0\x1cftypisom\0\0\0\0isommp41heic".to_vec();
+    assert_eq!(sniff(&compatible), Err(PhotoError::Heic));
+    assert_eq!(run(clean(compatible)), Err(PhotoError::Heic));
+    let unsized_box = b"\0\0\0\0ftypmp42\0\0\0\0isommif1".to_vec();
+    assert_eq!(sniff(&unsized_box), Err(PhotoError::Heic));
+    let past_box = b"\0\0\0\x14ftypmp42\0\0\0\0isomheic".to_vec();
+    assert_eq!(sniff(&past_box), Err(PhotoError::NotAPhoto));
+    assert_eq!(sniff(b"\0\0\0\x14ftypmp42"), Err(PhotoError::NotAPhoto));
 }
 
 /// TD-PRIV-10, PRIV-025: headers claiming 100,000 px a side or 50 megapixels are refused before
@@ -236,8 +256,41 @@ fn an_animated_webp_keeps_its_first_frame() {
     assert!(decoded.get_pixel(0, 0)[0] > 200 && decoded.get_pixel(0, 0)[2] < 50);
 }
 
-/// TD-PRIV-10, PRIV-025: ten uploads at once all finish through the decode gate, whose permits
-/// cap decode memory at 512 MiB.
+/// TD-PRIV-10, PRIV-025: a 40-megapixel 16-bit RGBA PNG passes the pixel count but its 320 MB
+/// frame is over the decode budget, so it is refused from the header; the same size in 8-bit RGB
+/// is within the budget and gets as far as its (missing) pixel data.
+#[test]
+fn a_frame_over_the_decode_budget_is_refused() {
+    let (width, height) = (8_000, 5_000);
+    assert_eq!(u64::from(width) * u64::from(height), MAX_PIXELS);
+    let deep = png_header_as(width, height, 16, 6);
+    assert_eq!(run(clean(deep)), Err(PhotoError::TooManyPixels));
+    let frame = MAX_PIXELS * 8;
+    assert!(frame > MAX_ALLOC);
+    assert!(peak_bytes(frame, width, height, Orientation::NoTransforms) > MAX_ALLOC);
+    let plain = MAX_PIXELS * 3;
+    assert!(peak_bytes(plain, width, height, Orientation::Rotate90) <= MAX_ALLOC);
+    assert_eq!(
+        run(clean(png_header(width, height))),
+        Err(PhotoError::Undecodable)
+    );
+}
+
+/// PRIV-025: a quarter-turn counts a second frame; a flip or no turn counts the RGB8 copy.
+#[test]
+fn the_decode_budget_counts_the_largest_copy() {
+    let rgba = 4 * 100;
+    assert_eq!(peak_bytes(rgba, 10, 10, Orientation::Rotate270FlipH), 800);
+    assert_eq!(peak_bytes(rgba, 10, 10, Orientation::FlipVertical), 700);
+    assert_eq!(
+        peak_bytes(u64::MAX, 10, 10, Orientation::Rotate90),
+        u64::MAX
+    );
+}
+
+/// TD-PRIV-10, PRIV-025: decode memory is bounded by arithmetic, not measured: every decode's
+/// pixel buffers are checked against `MAX_ALLOC` before allocation, and the permits allow two at
+/// once, so the bound is 512 MiB; ten uploads at once all finish through that gate.
 #[test]
 fn ten_concurrent_uploads_stay_under_the_memory_cap() {
     assert!(u64::try_from(DECODE_PERMITS).unwrap() * MAX_ALLOC <= 512 * 1024 * 1024);
@@ -257,6 +310,23 @@ fn ten_concurrent_uploads_stay_under_the_memory_cap() {
 fn a_decode_past_its_time_limit_is_refused() {
     let upload = jpeg(2_000, 2_000, [3, 3, 3]);
     let outcome = run(clean_within(upload, std::time::Duration::ZERO));
+    assert_eq!(outcome, Err(PhotoError::Busy));
+}
+
+/// PRIV-025: while every decode permit is held, an upload waits only within its time limit and is
+/// then refused as busy, so a stuck decode does not queue uploads forever.
+#[test]
+fn an_upload_waiting_for_a_permit_is_refused_in_time() {
+    let outcome = run(async {
+        let held = DECODES
+            .acquire_many(u32::try_from(DECODE_PERMITS).unwrap())
+            .await
+            .unwrap();
+        let upload = clean_within(jpeg(2, 2, [4, 4, 4]), std::time::Duration::from_millis(50));
+        let outcome = upload.await;
+        drop(held);
+        outcome
+    });
     assert_eq!(outcome, Err(PhotoError::Busy));
 }
 
