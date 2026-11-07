@@ -26,9 +26,9 @@ pub use crate::about_us::{
 };
 pub use crate::complaints::{
     BOX_CLOSED_KIND, CaseyView, Complaint, ComplaintError, DIGEST_ALERT, NewComplaint, PAUSE_COUNT,
-    PAUSE_WINDOW_DAYS, PHONE_LINKED_KIND, REPLY_BOX, REPLY_MAX, REPLY_TEMPLATE, Recorded,
-    ReplyFacts, SAFETY_ALERT, complaints, for_casey, has_safety_word, list_closed,
-    phone_linked_line, record_complaint, reply, run_box_closed,
+    PAUSE_WINDOW_DAYS, PHONE_LINKED_KIND, REPLY_BOX, REPLY_MAX, Recorded, ReplyFacts, SAFETY_ALERT,
+    complaints, for_casey, has_safety_word, list_closed, phone_linked_line, record_complaint,
+    reply, run_box_closed,
 };
 pub use crate::consent::{
     ADVERTISEMENT_LINE, AUTO_REPLY_TEMPLATE, CONSENT_VERSION, ConsentBox, ConsentChannel,

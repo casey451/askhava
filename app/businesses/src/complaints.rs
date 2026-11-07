@@ -5,7 +5,7 @@
 //! words or contact (PRIV-001); a safety word raises [`SAFETY_ALERT`] at once (OPS-005), the
 //! [`BOX_CLOSED_KIND`] task is due when the 5-day reply box closes, and the third complaint within
 //! 90 days pauses the business through `service::pause_for_rule` (BIZ-012). The homeowner's reply
-//! is the [`REPLY_TEMPLATE`] text, filled from [`ReplyFacts`] (BIZ-011). The business reads its
+//! is [`ReplyFacts::text`] (BIZ-011). The business reads its
 //! complaints with [`complaints`] (kind and dates, no homeowner detail) and answers once with
 //! [`reply`] before the box closes (BIZ-029); [`run_box_closed`] then lists the complaint for
 //! Casey's digest as one [`DIGEST_ALERT`] row and [`for_casey`] shows it with the reply.
@@ -25,8 +25,6 @@ use crate::service::pause_for_rule;
 use crate::status::PauseReason;
 use crate::team::Acting;
 
-/// BIZ-011: the homeowner's reply to a complaint (English and Spanish, `messaging`'s templates).
-pub const REPLY_TEMPLATE: &str = "complaint_reply";
 /// BIZ-029: the reply box stays open this long after the complaint.
 pub const REPLY_BOX: SignedDuration = SignedDuration::from_hours(5 * 24);
 /// BIZ-029: the longest reply a business may write, in characters.
@@ -128,16 +126,27 @@ pub struct ReplyFacts<'a> {
     pub trade: &'a str,
 }
 
-impl<'a> ReplyFacts<'a> {
-    /// BIZ-011: the values for [`REPLY_TEMPLATE`]; the ROC link and the apology are in the text.
+impl ReplyFacts<'_> {
+    /// BIZ-011, TXT-007, D-1720: the homeowner's reply: the apology, the not-a-contractor line, the
+    /// business's own phone, the job and the ROC link through askhava.com; Spanish when `spanish`
+    /// (a draft for native review, TXT-003). At most 3 GSM-7 segments with usual values.
     #[must_use]
-    pub fn values(&self) -> [(&'static str, &'a str); 4] {
-        [
-            ("business", self.business),
-            ("number", self.number),
-            ("job", self.job),
-            ("trade", self.trade),
-        ]
+    pub fn text(&self, spanish: bool) -> String {
+        let Self {
+            business,
+            number,
+            job,
+            trade,
+        } = *self;
+        if spanish {
+            format!(
+                "Ask Hava: Lamentamos el problema con {business} en la solicitud {job} ({trade}). Ask Hava no es contratista y no realiza, cotiza ni supervisa trabajos; {business} es un negocio independiente. Puede llamarlos al {number}. El dueño de Ask Hava lee cada queja. Si el trabajo necesitaba licencia de contratista, también puede quejarse ante el estado: askhava.com/help/roc-complaint"
+            )
+        } else {
+            format!(
+                "Ask Hava: Sorry about the trouble with {business} on request {job} ({trade}). Ask Hava is not a contractor and does not perform, bid on or supervise work; {business} is an independent business. You can call them at {number}. The owner of Ask Hava reads every complaint. If the job needed a state contractor license, you can also file with the state here: askhava.com/help/roc-complaint"
+            )
+        }
     }
 }
 

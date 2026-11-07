@@ -12,13 +12,12 @@
 
 use askhava_businesses::api::{
     Acting, BOX_CLOSED_KIND, Checks, ComplaintError, DIGEST_ALERT, Event, NewComplaint,
-    PHONE_LINKED_KIND, REPLY_BOX, REPLY_TEMPLATE, ReplyFacts, Roles, SAFETY_ALERT, SenderLink,
-    TeamError, add_member, add_owner, apply, business, complaints, create, for_casey,
-    has_safety_word, link_phone, list_closed, phone_linked_line, record_complaint, reply,
-    run_box_closed,
+    PHONE_LINKED_KIND, REPLY_BOX, ReplyFacts, Roles, SAFETY_ALERT, SenderLink, TeamError,
+    add_member, add_owner, apply, business, complaints, create, for_casey, has_safety_word,
+    link_phone, list_closed, phone_linked_line, record_complaint, reply, run_box_closed,
 };
 use askhava_core::api::Claimed;
-use askhava_messaging::api::{Language, count_segments, render};
+use askhava_messaging::api::count_segments;
 use askhava_ops::api::Actor;
 use jiff::{SignedDuration, Timestamp};
 use proptest::prelude::*;
@@ -96,18 +95,22 @@ fn td_biz_03_complaint_reply_content() {
         job: "1042",
         trade: "plumbing",
     };
-    for lang in [Language::En, Language::Es] {
-        let text = render(REPLY_TEMPLATE, lang, true, &facts.values()).expect("render");
+    for spanish in [false, true] {
+        let text = facts.text(spanish);
+        assert!(text.starts_with("Ask Hava: "));
         for part in ["Desert Pipe Co", "(928) 555-0142", "1042", "plumbing"] {
-            assert!(text.body.contains(part), "{part}");
+            assert!(text.contains(part), "{part}");
         }
-        assert!(text.body.contains("askhava.com/help/roc-complaint"));
-        assert!(count_segments(&text.body).segments <= 3);
+        assert!(text.ends_with("askhava.com/help/roc-complaint"));
+        assert!(count_segments(&text).segments <= 3);
     }
-    let en = render(REPLY_TEMPLATE, Language::En, true, &facts.values()).expect("en");
-    assert!(en.body.contains("Sorry"));
-    assert!(en.body.contains("is not a contractor"));
-    assert!(en.body.contains("is an independent business"));
+    let en = facts.text(false);
+    assert!(en.contains("Sorry"));
+    assert!(
+        en.contains("Ask Hava is not a contractor and does not perform, bid on or supervise work")
+    );
+    assert!(en.contains("is an independent business"));
+    assert!(facts.text(true).contains("Ask Hava no es contratista"));
 }
 
 /// TD-BIZ-03, TD-BIZ-11 (BIZ-012, D-016): the third complaint within 90 days pauses the business;

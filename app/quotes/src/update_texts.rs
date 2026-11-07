@@ -89,10 +89,9 @@ pub const UPDATE_TEXTS: [(&str, Shape); 16] = [
 /// opt-out, HELP and safety texts (fixed carrier or safety wording),
 /// the intake questions and replies before her request goes out (TXT-040 covers texts after
 /// intake), the card review texts (INT-041), and the command replies that are not updates
-/// (CLOSE, LIST-which, the other `text_pick_*` replies, the missed-call note, the BIZ-011
-/// complaint reply). A template is
+/// (CLOSE, LIST-which, the other `text_pick_*` replies, the missed-call note). A template is
 /// in this list or in [`UPDATE_TEXTS`], never both (`src/tests/update_texts.rs`).
-pub const NOT_UPDATE_TEXTS: [&str; 44] = [
+pub const NOT_UPDATE_TEXTS: [&str; 43] = [
     "consent",
     "consent_safety_call",
     "who_is_this",
@@ -107,7 +106,6 @@ pub const NOT_UPDATE_TEXTS: [&str; 44] = [
     "under_18",
     "caller_missed",
     "problem_reply",
-    "complaint_reply",
     "close_howto",
     "cost_answer",
     "beep_question",
