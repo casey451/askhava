@@ -1,20 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-07T15:54:56Z by runner e03c786a5d8e (actions).
+Updated 2026-11-07T15:57:46Z by runner 9a710c0416a0 (actions).
 
-**Idle since 15:54Z; 141 of 256 done; week 41% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 15:54Z; 141 of 269 done; week 41% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 141 of 256 build tasks (owner gates not counted)
+- **Tasks done:** 141 of 269 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 15:54Z (no task in progress)
 - **Week:** 41% used, 114.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:54Z, 0 min before this update
+- **Last run:** 15:55Z, 2 min before this update
 - **Keeper:** last ran 15:54Z, next wake 16:14Z
 
 ## Needs attention
 - PLAN GAP T093 (since 2026-11-07T08:52:58Z, no attempt used; a plan change fixes it): T093: dependency T092 is DONE but its owned file app/messaging/src/purge.rs is not on main
 - PLAN GAP T253 (since 2026-11-07T08:52:58Z, no attempt used; a plan change fixes it): T253: dependency T092 is DONE but its owned file app/messaging/src/purge.rs is not on main
-- Strict plan check red: 8 problem(s) on tasks still to run (+16 on DONE tasks); first: T253: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -52,24 +51,24 @@ Updated 2026-11-07T15:54:56Z by runner e03c786a5d8e (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 205 of 731 (28.0%) · partial 286 · unstarted 240
-**Tasks merged (throughput only):** 141 of 256
+**Requirements verified:** 222 of 731 (30.4%) · partial 269 · unstarted 240
+**Tasks merged (throughput only):** 141 of 269
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 13 | 11 | 11 | 35 |
-| ai | 12 | 12 | 4 | 28 |
-| businesses | 4 | 30 | 24 | 58 |
-| calls | 0 | 24 | 1 | 25 |
+| ai | 13 | 11 | 4 | 28 |
+| businesses | 8 | 26 | 24 | 58 |
+| calls | 9 | 15 | 1 | 25 |
 | consent | 13 | 17 | 5 | 35 |
-| fees | 21 | 30 | 1 | 52 |
+| fees | 20 | 31 | 1 | 52 |
 | intake | 19 | 15 | 9 | 43 |
 | job-cards | 12 | 8 | 4 | 24 |
 | licensing | 31 | 16 | 1 | 48 |
 | lifecycle | 21 | 7 | 0 | 28 |
-| messaging | 16 | 23 | 6 | 45 |
+| messaging | 18 | 21 | 6 | 45 |
 | ops-recovery | 1 | 5 | 48 | 54 |
-| privacy | 0 | 25 | 6 | 31 |
+| privacy | 2 | 23 | 6 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
 | quotes-pick | 17 | 26 | 13 | 56 |
 | recurring | 7 | 1 | 3 | 11 |
@@ -88,7 +87,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 21 of 72 done
+- stage 4: 21 of 85 done
 - stage 5: 0 of 42 done
 - stage 6: 0 of 26 done
 - stage 7: 0 of 2 done

@@ -17144,7 +17144,20 @@
     "T266",
     "T267",
     "T268",
-    "T269"
+    "T269",
+    "T270",
+    "T271",
+    "T272",
+    "T273",
+    "T274",
+    "T275",
+    "T276",
+    "T277",
+    "T278",
+    "T279",
+    "T280",
+    "T281",
+    "T282"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -17155,7 +17168,8 @@
   {
    "id": "T101",
    "deps": [
-    "T100"
+    "T100",
+    "T279"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -17284,7 +17298,8 @@
    "id": "T204",
    "deps": [
     "T100",
-    "T105"
+    "T105",
+    "T277"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -17319,7 +17334,8 @@
    "id": "T108",
    "deps": [
     "T106",
-    "T107"
+    "T107",
+    "T279"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -17636,7 +17652,8 @@
   {
    "id": "T129",
    "deps": [
-    "T127"
+    "T127",
+    "T275"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -17658,7 +17675,8 @@
   {
    "id": "T131",
    "deps": [
-    "T130"
+    "T130",
+    "T275"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -17693,7 +17711,8 @@
    "id": "T134",
    "deps": [
     "T133",
-    "T260"
+    "T260",
+    "T275"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -20890,6 +20909,170 @@
    "slug": "a11y-page-states-split",
    "type": "harness",
    "stage": "4"
+  },
+  {
+   "id": "T282",
+   "deps": [
+    "T191",
+    "T262"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "call-start-times",
+   "type": "harness",
+   "stage": "4"
+  },
+  {
+   "id": "T270",
+   "deps": [
+    "T282",
+    "T258"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "unreachable-refund-states",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T271",
+   "deps": [
+    "T282",
+    "T262",
+    "T281"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "call-status-route",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T272",
+   "deps": [
+    "T253",
+    "T269",
+    "T086"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "signin-admission",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T273",
+   "deps": [
+    "T090",
+    "T266"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "photo-open-audit",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T274",
+   "deps": [
+    "T092",
+    "T257"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "purge-serialized",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T275",
+   "deps": [
+    "T260",
+    "T176"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "storage-and-body-delete-adapters",
+   "type": "harness",
+   "stage": "4"
+  },
+  {
+   "id": "T276",
+   "deps": [
+    "T275",
+    "T274",
+    "T093"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "retention-deletes",
+   "type": "harness",
+   "stage": "4"
+  },
+  {
+   "id": "T277",
+   "deps": [
+    "T097",
+    "T270",
+    "T241",
+    "T281"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "check-in-replies",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T278",
+   "deps": [
+    "T270",
+    "T254",
+    "T230",
+    "T097"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "check-in-and-unreachable-texts",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T279",
+   "deps": [
+    "T096",
+    "T257"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "suspension-mode-composition",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T280",
+   "deps": [
+    "T272",
+    "T267"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "business-signin-served",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T281",
+   "deps": [
+    "T278",
+    "T266",
+    "T270"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "unreachable-steps-run",
+   "type": "build",
+   "stage": "4"
   }
  ],
  "owner_waits": [],
@@ -22232,7 +22415,7 @@
    }
   }
  },
- "updated_at": "2026-11-07T15:54:56Z",
+ "updated_at": "2026-11-07T15:57:46Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -22330,7 +22513,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "e03c786a5d8e999c80975e232d3f802231056963",
+ "runner_sha": "9a710c0416a0ecd6591b361ce8dd14c5ecfb77b7",
  "starter": "actions",
  "smoke_runs": [
   {
