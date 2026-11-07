@@ -272,6 +272,11 @@ async fn seeded(pool: &PgPool, status: JobStatus, intent: &str) -> ReleasedPick<
     }
 }
 
+/// The job's stored status code.
+async fn status(db: &mut sqlx::PgConnection, job: Uuid) -> &'static str {
+    current(db, job).await.expect("job").status.code()
+}
+
 async fn count(pool: &PgPool, sql: &'static str, id: Uuid) -> i64 {
     sqlx::query_scalar(sql)
         .bind(id)
@@ -309,10 +314,7 @@ async fn td_job_07_the_unreachable_refund_closes_the_job_once(pool: PgPool) {
     .await;
     assert_eq!(early, Ok(RefundDecision::NotYet));
     let mut db = pool.acquire().await.expect("conn");
-    assert_eq!(
-        current(&mut db, case.job).await.expect("job").status,
-        JobStatus::Connected
-    );
+    assert_eq!(status(&mut db, case.job).await, "connected");
     for _ in 0..2 {
         let done = decide_at_96_hours(
             &pool,
@@ -325,7 +327,7 @@ async fn td_job_07_the_unreachable_refund_closes_the_job_once(pool: PgPool) {
         assert_eq!(done, Ok(RefundDecision::Refund(RefundReason::Unreachable)));
     }
     let job = current(&mut db, case.job).await.expect("job").status;
-    assert_eq!(job, JobStatus::Closed);
+    assert_eq!(job.code(), "closed");
     assert!(!job.takes_check_ins());
     let told = "SELECT count(*) FROM messaging.outbox WHERE template_id = 'unreachable_closed' AND $1 = ANY(subject_ids)";
     assert_eq!(count(&pool, told, case.job).await, 1);
@@ -349,17 +351,11 @@ async fn td_job_07_no_call_in_72_hours_by_contact(pool: PgPool) {
     let soon =
         no_call_at_72_hours(&mut db, &case, (Contact::Call, released, &[]), az(5, 8, 59)).await;
     assert_eq!(soon, Ok(false));
-    assert_eq!(
-        current(&mut db, case.job).await.expect("job").status,
-        JobStatus::Connected
-    );
+    assert_eq!(status(&mut db, case.job).await, "connected");
     let back =
         no_call_at_72_hours(&mut db, &case, (Contact::Call, released, &[]), az(5, 9, 0)).await;
     assert_eq!(back, Ok(true));
-    assert_eq!(
-        current(&mut db, case.job).await.expect("job").status,
-        JobStatus::QuotesReady
-    );
+    assert_eq!(status(&mut db, case.job).await, "quotes_ready");
     let shows = "SELECT count(*) FROM picks.pick WHERE id = $1 AND status = 'no_show'";
     assert_eq!(count(&pool, shows, case.pick).await, 1);
 }
@@ -397,10 +393,7 @@ async fn td_fee_39_auto_submit_and_the_fraud_warning(pool: PgPool) {
     assert_eq!(released, Ok(false));
     let moved = fraud_warning(&pool, stripe, (fresh.pick, fresh.job, false), az(5, 9, 0)).await;
     assert_eq!(moved, Ok(true));
-    assert_eq!(
-        current(&mut db, fresh.job).await.expect("job").status,
-        JobStatus::QuotesReady
-    );
+    assert_eq!(status(&mut db, fresh.job).await, "quotes_ready");
     let ended = "SELECT count(*) FROM picks.pick WHERE id = $1 AND status = 'fraud_refunded'";
     assert_eq!(count(&pool, ended, fresh.pick).await, 1);
 }
