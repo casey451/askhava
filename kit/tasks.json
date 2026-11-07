@@ -11622,7 +11622,8 @@
     "T286",
     "T287",
     "T288",
-    "T289"
+    "T289",
+    "T290"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -12734,7 +12735,7 @@
    "id": "T108",
    "slug": "owner-portal-tools",
    "title": "portals: owner tools for pauses, fee mode, categories and settings",
-   "goal": "The owner portal's pause switches, fee mode and category switches change behavior with no code change and each change is logged; sessions end after 30 minutes idle and sensitive changes need a fresh passkey or TOTP; and pushed alerts are listed (FEE-007, LIC-002, OPS-003, OPS-035, SEC-043); the owner home also shows each week's opt-out rate by audience from T107's counts (CON-024), offers \"Call from the Ask Hava number\" for a pushed critical safety alert through T080's `calls::api` bridge (OPS-028), records Stripe's written answer for the PICK-048 auto-confirm box (date, reference, answer) as the `catalog` setting T209 reads through `catalog::api`, and shows each needs-review sign-up with its 4-day decision target (BIZ-027, TD-BIZ-07) (D-491). The owner home also holds the homeowner-texting switch, the launch channel and the record of a Twilio number suspension and its restore, through T279's `messaging::api` store, and the status banner's off switch through `ops::api` (D-1843).",
+   "goal": "The owner portal's pause switches, fee mode and category switches change behavior with no code change and each change is logged; sessions end after 30 minutes idle and sensitive changes need a fresh passkey or TOTP; and pushed alerts are listed (FEE-007, LIC-002, OPS-003, OPS-035, SEC-043); the owner home also shows each week's opt-out rate by audience from T107's counts (CON-024), offers \"Call from the Ask Hava number\" for a pushed critical safety alert through T080's `calls::api` bridge (OPS-028), records Stripe's written answer for the PICK-048 auto-confirm box (date, reference, answer) as the `catalog` setting T209 reads through `catalog::api`, and shows each needs-review sign-up with its 4-day decision target (BIZ-027, TD-BIZ-07) (D-491). The owner home also holds the homeowner-texting switch, the launch channel and the record of a Twilio number suspension and its restore, through T279's `messaging::api` store, and the status banner's off switch through `ops::api` (D-1843). The fee-mode switch calls `payments::api::switch_fee_mode`, which stores the terms in force in `payments.fee_terms` (T287, D-1871); the owner portal keeps no copy of its own.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -12742,7 +12743,8 @@
    "deps": [
     "T106",
     "T107",
-    "T279"
+    "T279",
+    "T287"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -12794,7 +12796,8 @@
     "D-314",
     "D-348",
     "D-480",
-    "D-1843"
+    "D-1843",
+    "D-1871"
    ],
    "cites": [],
    "budget": {
@@ -16489,6 +16492,80 @@
    "copy": true
   },
   {
+   "id": "T287",
+   "slug": "fee-fixed-at-pick",
+   "title": "payments and picks: the fee fixed at the pick is stored by payments, a press must match it, and a fee-mode switch after the pick is refused before any charge",
+   "goal": "No code stores the fee fixed at the pick: `picks`' `new_pick` (`app/picks/src/service.rs:340`) says \"No fee ... here\", `payments`' `fee_at_pick` (`app/payments/src/rules.rs:496`) is a pure function nothing outside tests calls, and `open_intent` and `confirm_and_pay` (`app/payments/src/charge.rs:91`, `:146`) charge whatever `Press::amount_cents` the caller passes (`app/payments/src/models.rs:325`), checking only that it is not 0 (third external audit, D-1871). And the fee-mode check runs only after Stripe has charged: `record_fee_at_confirm` (`app/payments/src/service.rs:344`) refuses with `ConfirmError::Mismatch` when the mode changed, so a switch between the pick and Confirm leaves money moved with no ledger entry until the reconcile; and nothing stores the fee terms in force: `switch_fee_mode` (`app/payments/src/service.rs:207`) only returns them and every caller passes its own `FeeTerms`. (1) `migrations/0155_payments_fee_terms_pick_fee.sql`: `payments.fee_terms`, one row (mode and authorization version), seeded with `tiers` and `AUTHORIZATION_VERSION`, the app role SELECT and UPDATE only; and `payments.pick_fee` (`pick_id` primary key, `business_id`, `job_id`, `mode` `tiers` or `flat`, `kind` `charged` or `fee_free`, `amount_cents` at or above 0 and above 0 only for `charged`, `terms_version`, `fixed_at`), the app role SELECT and INSERT only. `switch_fee_mode` writes the new terms to `payments.fee_terms` in its own transaction with its audit row (T108's owner switch calls it and stores nothing else), and `payments::api::fee_terms_in_force(conn)` reads them; `picks` and T261 read the terms only through it. (2) `app/payments/src/pick_fee.rs`: `payments::api::fix_fee_at_pick(tx, pick, business, job, &PickedFee, at)` writes it once (a repeat with the same values is a no-op, different values an error) and `pick_fee(conn, pick)` reads it. (3) `new_pick` computes the fee with `fee_at_pick` from the chosen quote (its amounts and period), the job's category and job type facts and `fee_terms_in_force`, through the modules' `api`s (FEE-005's inputs only, D-1415), and calls `fix_fee_at_pick` in the pick's own transaction; a pick whose fee can't be fixed is not stored. (4) `open_intent` and `confirm_and_pay` read `pick_fee` before anything else: no row, a different business or job, a $0 fee, or `amount_cents` other than the stored one is the new `ChargeError::FeeMismatch`, and Stripe is not called; an existing `pick_intent` whose amount differs from the stored fee is the same refusal. (5) The mode check moves before the charge: `may_confirm` takes the pick, reads `fee_terms_in_force` itself and refuses with the new `ConfirmError::FeeModeChanged` when the stored `mode` differs from them, before any PaymentIntent is opened or confirmed; `record_fee_at_confirm` takes the pick and writes the stored fee, comparing the gate's `Authorized` (whose mode matched the pick's at the gate) with the stored mode, so a switch that commits after the gate changes nothing for this pick and the post-charge write can no longer fail for a mode switch. D-072 still applies to every pick made after a switch. Tests in `tests/integration/tests/fee_fixed_at_pick.rs`. This is a harness task because it changes tests of DONE tasks (T060's `fee_mode_switch.rs` and `fee_at_pick.rs`, T062's `charge_attempts.rs`, T189's `confirm_and_pay.rs`) and T263's `fee_limit_race.rs`: each fixture only gains the stored fee terms and the stored pick fee its presses now need (and `may_confirm` the pick), and no expected value changes. Update the `payments` and `picks` `CLAUDE.md` files and `docs/decisions.md` (`docs/architecture.md` section 3 already lists the new table, D-1871).",
+   "type": "harness",
+   "phase": 1,
+   "stage": "4",
+   "module": "payments",
+   "deps": [
+    "T263",
+    "T258"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness",
+    "money",
+    "privacy",
+    "security"
+   ],
+   "owns": [
+    "migrations/0155_payments_fee_terms_pick_fee.sql",
+    "app/payments/src/pick_fee.rs",
+    "app/payments/src/charge.rs",
+    "app/payments/src/service.rs",
+    "app/picks/src/service.rs",
+    "tests/integration/tests/fee_fixed_at_pick.rs",
+    "tests/integration/tests/fee_mode_switch.rs",
+    "tests/integration/tests/fee_at_pick.rs",
+    "tests/integration/tests/charge_attempts.rs",
+    "tests/integration/tests/confirm_and_pay.rs",
+    "tests/integration/tests/fee_limit_race.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/fees.md",
+    "docs/spec/quotes-pick.md",
+    "docs/brains/payments-stripe.md",
+    "docs/brains/postgres-operations.md"
+   ],
+   "requirements": [
+    "FEE-005",
+    "FEE-007",
+    "FEE-016",
+    "FEE-047"
+   ],
+   "tests": [
+    "TD-FEE-48"
+   ],
+   "decisions": [
+    "D-1871",
+    "D-1415",
+    "D-1417",
+    "D-072",
+    "D-1758"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 11,
+    "lines": 800,
+    "context_pct": 31
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T287-fee-fixed-at-pick",
+   "prompt": "kit/prompts/T287.md",
+   "acceptance": "TD-FEE-48 passes against PostgreSQL with a fake `IntentStripe` that records every call; every case in `fee_mode_switch.rs`, `fee_at_pick.rs`, `charge_attempts.rs`, `confirm_and_pay.rs` and `fee_limit_race.rs` passes with its fixture given only the stored fee terms and pick fee, and no expected value changes."
+  },
+  {
    "id": "T209",
    "slug": "picks-auto-confirm",
    "title": "picks and payments: the optional auto-confirm-and-pay box with one off-session charge",
@@ -16503,7 +16580,8 @@
     "T157",
     "T199",
     "T155",
-    "T263"
+    "T263",
+    "T287"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -16518,7 +16596,7 @@
     "tests/integration/tests/auto_confirm.rs",
     "app/picks/src/tests/prop_no_other_off_session_charge.rs",
     "app/payments/src/off_session.rs",
-    "migrations/0154_quotes_auto_confirm.sql",
+    "migrations/0156_quotes_auto_confirm.sql",
     "app/portals/templates/business_actions.html",
     "app/quotes/src/auto_confirm_box.rs",
     "app/portals/src/business_actions.rs"
@@ -19195,7 +19273,7 @@
    "id": "T283",
    "slug": "ci-compiled-in-paths",
    "title": "Ci: a change to a document the app compiles in runs the Rust, coverage and end-to-end jobs",
-   "goal": "`Ci` decides whether to build and test Rust from three path rules in `.github/workflows/ci.yml` (the Checks step at `:127`, Coverage at `:299`, E2e at `:404`) and the copy in `scripts/prehandin.sh:62` (`RUST_PATHS`, kept equal by `tests/test_prehandin.py`). None matches `docs/` or `schemas/`, yet the app compiles in `docs/legal/homeowner-terms.md` (`app/server/src/lib.rs:136`), seven `docs/catalog/*.yaml` files (`app/catalog/src/loader.rs`, `app/licensing/src/class_map.rs`, `app/intake/src/golden_run.rs` and others) and `schemas/intake_reading.json` (`app/ai/src/schemas.rs`), so a change to the Terms or a catalog file alone merges with Checks, Coverage and E2e green having run no Rust (third external audit, D-1867). `a11y.yml` and `twin.yml` have no path rule (they run on every push) and stay as they are. (1) Add exactly `docs/legal/`, `docs/catalog/`, `schemas/` and `docs/architecture\\.md` (T284's route table, which its route test compiles in, D-1868) to the three rules and to `RUST_PATHS`; never all of `docs/`. (2) A new guard, `scripts/check_include_paths.py`, run in `Ci`'s Checks job on every push (not behind the path rule) and in `scripts/prehandin.sh --quick`: it finds every `include_str!` and `include_bytes!` string path in `app/**/*.rs` and `tests/{integration,security,recovery,fixtures}/**/*.rs`, resolves each against its source file, and fails, naming the source line and the resolved file, when a resolved path inside the repository is matched by any of the three rules in `ci.yml` (read from the workflow file itself, so the rules have one source) or by `RUST_PATHS`; a path that does not exist fails too. Tests in `tests/test_check_include_paths.py`: a temporary tree with an included file under a covered folder passes; one under an uncovered folder (`docs/other/x.md`) fails naming the line; a `../` path that resolves outside a covered folder fails; a missing file fails; the real repository passes. `tests/test_prehandin.py` keeps `RUST_PATHS` equal to the Checks rule. Update `docs/decisions.md`.",
+   "goal": "`Ci` decides whether to build and test Rust from three path rules in `.github/workflows/ci.yml` (the Checks step at `:127`, Coverage at `:299`, E2e at `:404`) and the copy in `scripts/prehandin.sh:62` (`RUST_PATHS`, kept equal by `tests/test_prehandin.py`). None matches `docs/` or `schemas/`, yet the app compiles in `docs/legal/homeowner-terms.md` (`app/server/src/lib.rs:136`), seven `docs/catalog/*.yaml` files (`app/catalog/src/loader.rs`, `app/licensing/src/class_map.rs`, `app/intake/src/golden_run.rs` and others) and `schemas/intake_reading.json` (`app/ai/src/schemas.rs`), so a change to the Terms or a catalog file alone merges with Checks, Coverage and E2e green having run no Rust (third external audit, D-1867). `a11y.yml` and `twin.yml` have no path rule (they run on every push) and stay as they are. (1) Add exactly `docs/legal/`, `docs/catalog/`, `schemas/` and `docs/architecture\\.md` (T284's route table, which its route test compiles in, D-1868) to the three rules and to `RUST_PATHS`; never all of `docs/`. (2) A new guard, `scripts/check_include_paths.py`, run in `Ci`'s Checks job on every push (not behind the path rule) and in `scripts/prehandin.sh --quick`: it finds every `include_str!`, `include_bytes!` and `include!` string path, and every `concat!(env!(\"CARGO_MANIFEST_DIR\"), ...)` path, in `app/**/*.rs` and `tests/{integration,security,recovery,fixtures}/**/*.rs`, resolves each (against its source file, or against its crate's folder for `CARGO_MANIFEST_DIR`), and fails, naming the source line and the resolved file, when a resolved path inside the repository is NOT matched by the Checks rule and by the Coverage rule in `ci.yml` (both read from the workflow file itself, so the rules have one source) and by `RUST_PATHS`; a path that does not exist fails too; a form it cannot resolve (a path built at run time) fails naming the line, so nothing is skipped silently. Tests in `tests/test_check_include_paths.py`: a temporary tree with an included file under a covered folder passes; one under an uncovered folder (`docs/other/x.md`) fails naming the line; a `../` path that resolves outside a covered folder fails; a file covered by the Checks rule but not the Coverage rule fails; `include!` and `concat!(env!(\"CARGO_MANIFEST_DIR\"), ...)` forms are found; a missing file fails; the real repository passes. `tests/test_prehandin.py` keeps `RUST_PATHS` equal to the Checks rule. Update `docs/decisions.md`.",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -19356,7 +19434,7 @@
    "id": "T286",
    "slug": "request-timeout",
    "title": "server: every request has a whole-request time limit, answered 503 with the security headers",
-   "goal": "`tower-http`'s `timeout` feature is enabled (`Cargo.toml:38`) but `build_router` (`app/server/src/lib.rs:75`) applies no time limit, so a request whose body trickles in, or a handler that hangs, holds its connection and task without end (third external audit, D-1870; threat model D13). (1) `app/server/src/request_timeout.rs`: the limit is a setting, `ASKHAVA_REQUEST_TIMEOUT_SECS`, read from the process environment at start-up like `job_text_keys` reads its pairs (default 60 seconds, allowed 10 to 300; any other value, or one that is not a whole number, stops start-up with a message naming the key, never the value). 60 seconds is longer than the longest chain of bounded vendor calls one handler makes today (a Confirm press makes at most three Stripe calls at the adapters' 15-second limit, `app/adapters/src/base.rs:211`), so the limit stops only a stalled request, never a slow vendor call the adapters already bound. (2) `build_router` takes the limit and applies it to every route, inside the `security_headers` layer, so a timed-out request is answered `503 Service Unavailable` with `Retry-After: 5`, the SEC-012 headers and `Cache-Control: no-store`, and its handler future is dropped (every write a handler makes is in a transaction or keyed, so a dropped request commits nothing half-done; a webhook sender retries a 503, SEC-017). The worker has no HTTP routes and is unchanged. (3) `app/server/tests/request_timeout.rs`, with `tokio::time::pause`: a route that never answers is cut at the limit with 503, `Retry-After`, the security headers and the request ID; a route that answers just inside it is untouched; a body that stops arriving is cut the same way; each bad setting value stops start-up. Update the `server` `CLAUDE.md`, `docs/architecture.md` section 2 (the layer order) and `docs/decisions.md`.",
+   "goal": "`tower-http`'s `timeout` feature is enabled (`Cargo.toml:38`) but `build_router` (`app/server/src/lib.rs:75`) applies no time limit, so a request whose body trickles in, or a handler that hangs, holds its connection and task without end (third external audit, D-1870; threat model D13). (1) `app/server/src/request_timeout.rs`: the limit is a setting, `ASKHAVA_REQUEST_TIMEOUT_SECS`, added to the typed settings in the shared `app/core/src/settings.rs` (D-493) and read from them at start-up (default 60 seconds, allowed 10 to 300; any other value, or one that is not a whole number, stops start-up with a message naming the key, never the value). 60 seconds is longer than the longest chain of bounded vendor calls one handler makes today (a Confirm press makes at most three Stripe calls at the adapters' 15-second limit, `app/adapters/src/base.rs:211`), so the limit stops only a stalled request, never a slow vendor call the adapters already bound. (2) `build_router` takes the limit and applies it to every route, inside the `security_headers` layer, so a timed-out request is answered `503 Service Unavailable` with `Retry-After: 5`, the SEC-012 headers and `Cache-Control: no-store`, and its handler future is dropped (every write a handler makes is in a transaction or keyed, so a dropped request commits nothing half-done; a webhook sender retries a 503, SEC-017). A Confirm press dropped in the middle of a Stripe call leaves its attempt `sent`; it is never retried until Stripe, asked directly, says it failed (FEE-037's sent-then-fetch path in `confirm_and_pay` and `repeat_press`), so the limit can never cause a second charge. The worker has no HTTP routes and is unchanged. (3) `app/server/tests/request_timeout.rs`, with `tokio::time::pause`: a route that never answers is cut at the limit with 503, `Retry-After`, the security headers and the request ID; a route that answers just inside it is untouched; a body that stops arriving is cut the same way; each bad setting value stops start-up. Update the `server` `CLAUDE.md`, `docs/architecture.md` section 2 (the layer order) and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -19368,7 +19446,8 @@
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
-    "security"
+    "security",
+    "money"
    ],
    "owns": [
     "app/server/src/request_timeout.rs",
@@ -19379,9 +19458,12 @@
     "docs/code-docs.md",
     "docs/threat-model.md",
     "docs/spec/security.md",
-    "docs/brains/rust-production.md"
+    "docs/brains/rust-production.md",
+    "docs/spec/fees.md"
    ],
-   "requirements": [],
+   "requirements": [
+    "FEE-037"
+   ],
    "tests": [
     "TD-SEC-42"
    ],
@@ -19405,78 +19487,10 @@
    "acceptance": "TD-SEC-42 passes; every existing `app/server/tests/` case passes unchanged."
   },
   {
-   "id": "T287",
-   "slug": "fee-fixed-at-pick",
-   "title": "payments and picks: the fee fixed at the pick is stored by payments, a press must match it, and a fee-mode switch after the pick is refused before any charge",
-   "goal": "No code stores the fee fixed at the pick: `picks`' `new_pick` (`app/picks/src/service.rs:340`) says \"No fee ... here\", `payments`' `fee_at_pick` (`app/payments/src/rules.rs:496`) is a pure function nothing outside tests calls, and `open_intent` and `confirm_and_pay` (`app/payments/src/charge.rs:91`, `:146`) charge whatever `Press::amount_cents` the caller passes (`app/payments/src/models.rs:325`), checking only that it is not 0 (third external audit, D-1871). And the fee-mode check runs only after Stripe has charged: `record_fee_at_confirm` (`app/payments/src/service.rs:344`) refuses with `ConfirmError::Mismatch` when the mode changed, so a switch between the pick and Confirm leaves money moved with no ledger entry until the reconcile. (1) `migrations/0172_payments_pick_fee.sql`: `payments.pick_fee` (`pick_id` primary key, `business_id`, `job_id`, `mode` `tiers` or `flat`, `kind` `charged` or `fee_free`, `amount_cents` at or above 0 and above 0 only for `charged`, `terms_version`, `fixed_at`), the app role SELECT and INSERT only. (2) `app/payments/src/pick_fee.rs`: `payments::api::fix_fee_at_pick(tx, pick, business, job, &PickedFee, terms, at)` writes it once (a repeat with the same values is a no-op, different values an error) and `pick_fee(conn, pick)` reads it. (3) `new_pick` computes the fee with `fee_at_pick` from the chosen quote (its amounts and period), the job's category and job type facts and the fee terms in force, through the modules' `api`s (FEE-005's inputs only, D-1415), and calls `fix_fee_at_pick` in the pick's own transaction; a pick whose fee can't be fixed is not stored. (4) `open_intent` and `confirm_and_pay` read `pick_fee` before anything else: no row, a different business or job, a $0 fee, or `amount_cents` other than the stored one is the new `ChargeError::FeeMismatch`, and Stripe is not called; an existing `pick_intent` whose amount differs from the stored fee is the same refusal. (5) The mode check moves before the charge: `may_confirm` takes the pick and refuses with the new `ConfirmError::FeeModeChanged` when the stored `mode` differs from the terms in force, before any PaymentIntent is opened or confirmed; `record_fee_at_confirm` takes the pick and writes the stored fee, comparing the gate's `Authorized` (whose mode matched the pick's at the gate) with the stored mode, so a switch that commits after the gate changes nothing for this pick and the post-charge write can no longer fail for a mode switch (the fee terms in force are still the caller's argument, as `switch_fee_mode` leaves storing them to the owner portal's setting). D-072 still applies to every pick made after a switch. Tests in `tests/integration/tests/fee_fixed_at_pick.rs`. Update the `payments` and `picks` `CLAUDE.md` files and `docs/decisions.md` (`docs/architecture.md` section 3 already lists the new table, D-1871).",
-   "type": "build",
-   "phase": 1,
-   "stage": "4",
-   "module": "payments",
-   "deps": [
-    "T263",
-    "T258"
-   ],
-   "model": "claude-opus-5-5",
-   "effort": "high",
-   "reviewer_model": "claude-opus-5-5",
-   "review_areas": [
-    "money",
-    "privacy",
-    "security"
-   ],
-   "owns": [
-    "migrations/0172_payments_pick_fee.sql",
-    "app/payments/src/pick_fee.rs",
-    "app/payments/src/charge.rs",
-    "app/payments/src/service.rs",
-    "app/picks/src/service.rs",
-    "tests/integration/tests/fee_fixed_at_pick.rs"
-   ],
-   "reads": [
-    "docs/architecture.md",
-    "docs/code-docs.md",
-    "docs/spec/fees.md",
-    "docs/spec/quotes-pick.md",
-    "docs/brains/payments-stripe.md",
-    "docs/brains/postgres-operations.md"
-   ],
-   "requirements": [
-    "FEE-005",
-    "FEE-007",
-    "FEE-016",
-    "FEE-047"
-   ],
-   "tests": [
-    "TD-FEE-48"
-   ],
-   "decisions": [
-    "D-1871",
-    "D-1415",
-    "D-1417",
-    "D-072",
-    "D-1758"
-   ],
-   "cites": [],
-   "budget": {
-    "files": 6,
-    "lines": 600,
-    "context_pct": 22
-   },
-   "checks": [
-    "Ci",
-    "Twin",
-    "Ally"
-   ],
-   "branch": "claude/task/T287-fee-fixed-at-pick",
-   "prompt": "kit/prompts/T287.md",
-   "acceptance": "TD-FEE-48 passes against PostgreSQL with a fake `IntentStripe` that records every call; every TD-FEE-04, TD-FEE-05, TD-FEE-06 and `confirm_and_pay` case passes, a case's fixture gaining only the stored pick fee it now needs and no expected value changing."
-  },
-  {
    "id": "T288",
    "slug": "reconcile-open-charges",
    "title": "payments: a Stripe charge the nightly reconcile cannot settle is kept and retried until it is, with an alert",
-   "goal": "The nightly reconcile reads only charges created in the last seven days (`LOOKBACK`, `app/payments/src/reconcile.rs:51`), so a charge whose ledger write failed, or whose auto-match or refund did not finish, and was not settled within those seven nights is never looked at again, and the difference stops being visible (third external audit, D-1872). (1) `migrations/0173_payments_reconcile_open.sql`: `payments.reconcile_open`, one row per Stripe charge the run could not settle (charge ID, its PaymentIntent and the pick its metadata names, the amounts the run read, `first_seen`, `last_tried`, `tries`, the last refusal's code name, `settled_at`), no homeowner or business contact detail, the app role SELECT, INSERT and UPDATE of the try and settle columns only. (2) Each run records every charge it read but could not settle (an append that failed, an auto-match with no pick, a refund that did not succeed, a mismatch) and retries every unsettled row, whatever its age, from its stored facts with the same ledger and refund keys the live writers use (so a retry never appends or refunds twice, TD-FEE-16), setting `settled_at` when it settles. (3) A row still unsettled 7 days after `first_seen` raises one High alert (an `ops` alert with the row's ID only, OPS-029's ledger-difference push), and the run's report counts open rows. `LOOKBACK` stays 7 days. Tests in `tests/integration/tests/reconcile_open.rs`. Update the `payments` `CLAUDE.md` and `docs/decisions.md` (`docs/architecture.md` section 3 already lists the new table, D-1872).",
+   "goal": "The nightly reconcile reads only charges created in the last seven days (`LOOKBACK`, `app/payments/src/reconcile.rs:51`), so a charge whose ledger write failed, or whose auto-match or refund did not finish, and was not settled within those seven nights is never looked at again, and the difference stops being visible (third external audit, D-1872). (1) `migrations/0173_payments_reconcile_open.sql`: `payments.reconcile_open`, one row per Stripe charge the run could not settle (charge ID, its PaymentIntent and the pick its metadata names, the amounts the run read, `first_seen`, `last_tried`, `tries`, the last refusal's code name, `alerted_at`, `settled_at`), no homeowner or business contact detail, the app role SELECT, INSERT and UPDATE of the try, alert and settle columns only. (2) Each run records every charge it read but could not settle (an append that failed, an auto-match with no pick, a refund that did not succeed, a mismatch) and retries every unsettled row, whatever its age, from its stored facts after reading the charge's current refund and dispute state again (a charge refunded or disputed since it was stored is settled by that state, never refunded twice), with the same ledger and refund keys the live writers use (so a retry never appends or refunds twice, TD-FEE-16), setting `settled_at` when it settles. (3) A row still unsettled 7 days after `first_seen` raises one High alert (an `ops` alert with the row's ID only, OPS-029's ledger-difference push), set once with `alerted_at` in the same transaction so a later run never raises it again, and the run's report counts open rows. `LOOKBACK` stays 7 days. Tests in `tests/integration/tests/reconcile_open.rs`. Update the `payments` `CLAUDE.md` and `docs/decisions.md` (`docs/architecture.md` section 3 already lists the new table, D-1872).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -19579,6 +19593,61 @@
    "branch": "claude/task/T289-jobs-error-count-test",
    "prompt": "kit/prompts/T289.md",
    "acceptance": "TD-JOB-15 passes: the assertion still requires exactly 1, and `cargo test -p askhava-jobs a_refused_or_stale_move_changes_nothing` passes 200 runs in a row run together with the crate's other tests (the loop and its count shown in the hand-in)."
+  },
+  {
+   "id": "T290",
+   "slug": "recurring-range-examples",
+   "title": "worked examples: pin D-033 for one-cent-wide recurring ranges at the $500 and $1,500 edges",
+   "goal": "D-033 says the fee basis is computed exactly and rounded down to the whole cent once, before the tier is chosen; `four_months` (`app/payments/src/rules.rs:290`) does exactly that for a recurring range, from the sum of its two ends, and no worked example has a recurring range whose midpoint is a half cent, so nothing pins it (third external audit, which read the rule as \"floor the midpoint first\"; that reading was rejected, D-1874). This is not a fee change. Add rows to `docs/catalog/worked_examples.yaml` after W40 (W41 onward): for each recurring period (weekly, every two weeks, monthly, quarterly, yearly), a one-cent-wide range whose exact 4-month basis lands a cent below, at and a cent above the $500.00 edge, and the same at the $1,500.00 edge, wherever whole-cent quote amounts can reach those bases; each row's `fee_basis` and `fee` are worked from D-033 (exact sum of the ends times the period's monthly factor times 4, divided once, rounded down to the cent), with the recurring cap of $75 applying above $1,500 (FEE-039). Example: every two weeks, $57.69 to $57.70: (5,769 + 5,770) × 26 × 4 ÷ (12 × 2) = 50,002.33 cents, basis $500.02, fee $75 (flooring the midpoint first would give $499.98 and $25). Rows a period cannot reach are listed in the decision with the nearest reachable amounts instead. `scripts/check_catalog.py` and `app/payments/src/tests/worked_examples.rs` (`tests::worked_examples`) must pass with their logic unchanged; neither is edited. This is a harness task because the worked examples are a locked catalog file no queued task owns. Update `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "4",
+   "module": "payments",
+   "deps": [
+    "T060",
+    "T075"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness",
+    "money"
+   ],
+   "owns": [
+    "docs/catalog/worked_examples.yaml"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "docs/spec/fees.md",
+    "docs/spec/recurring.md",
+    "docs/brains/payments-stripe.md"
+   ],
+   "requirements": [
+    "FEE-034"
+   ],
+   "tests": [
+    "TD-FEE-50"
+   ],
+   "decisions": [
+    "D-1874",
+    "D-033",
+    "D-196"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 1,
+    "lines": 250,
+    "context_pct": 5
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T290-recurring-range-examples",
+   "prompt": "kit/prompts/T290.md",
+   "acceptance": "TD-FEE-50 passes: `python3 scripts/check_catalog.py` and `cargo test -p askhava-payments worked_examples` pass with every new row and no change to either's logic; the plan lock is rewritten with the decision entry."
   },
   {
    "id": "T166",

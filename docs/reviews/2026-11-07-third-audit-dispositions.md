@@ -21,7 +21,7 @@ Verdicts: **confirmed** (the code on `main` shows it), **already owned** (a queu
 
 ## Declined
 
-- **The recurring-range rounding "bug" (the audit's T283):** declined. `four_months` (`app/payments/src/rules.rs:290`) computes the 4-month figure exactly and rounds the fee basis down once, which is D-033's rule ("compute exactly, then round the fee basis down to the whole cent before choosing the tier"); flooring the midpoint first would change D-033.
+- **The recurring-range rounding "bug" (the audit's T283):** declined as a fix. `four_months` (`app/payments/src/rules.rs:290`) computes the 4-month figure exactly and rounds the fee basis down once, which is D-033's rule ("compute exactly, then round the fee basis down to the whole cent before choosing the tier"); flooring the midpoint first would change D-033. **D-033 restated for recurring ranges (D-1874):** the basis is the exact sum of the range's ends times the period's monthly factor times 4, divided once and rounded down to the whole cent, then the tier is chosen (every two weeks, $57.69 to $57.70: basis $500.02, fee $75). T290 (harness) pins this with new worked examples at the $500 and $1,500 edges for each period; no code changes.
 - **Unit tests inside `ops`:** declined. The pause switches and the audit log are exercised by `tests/integration/tests/charge_attempts.rs` and `tests/integration/tests/audit_log.rs`.
 - **A cross-crate duplication scan:** declined. Each stage's cleanup task already looks for duplicates.
 - **Reworking the deny list in `.claude/settings.json`:** declined. Governance section 2 already names the ruleset, not the deny list, as what enforces `main`.
@@ -29,7 +29,8 @@ Verdicts: **confirmed** (the code on `main` shows it), **already owned** (a queu
 
 ## Plan fixes made on the way
 
-- T103, T105, T204 and T151 (QUEUED, nothing written) move their migrations from 0172 to 0175 up to 0174 to 0177, so T287's 0172 and T288's 0173 rise in the runner's serial order (V9).
-- T100 (the stage-4 cleanup) depends on T283 to T289.
+- T103, T105, T204 and T151 (QUEUED, nothing written) move their migrations from 0172 to 0175 up to 0174 to 0177, so T288's 0173 rises in the runner's serial order (V9).
+- Review fix round: T287 becomes a harness task owning the fee and charge tests whose fixtures gain the stored fee, adds the stored fee terms (`payments.fee_terms`), and sits just before T209 (which now depends on it) with migration 0155; T209's migration moves from 0154 to 0156 (QUEUED, nothing written). T108 depends on T287. T288 marks its one alert with `alerted_at` and re-reads refund and dispute state on each retry. T283's guard fails when an include path is not covered (it was written inverted) and also finds `include!` and `CARGO_MANIFEST_DIR` paths. T286's setting goes through `app/core/src/settings.rs`.
+- T100 (the stage-4 cleanup) depends on T283 to T290.
 - `docs/architecture.md` section 3 lists `payments.pick_fee` and `payments.reconcile_open`; the threat model gains row D13; register rows IC-50 to IC-52 and risk R-31 are added.
 - No task IN_PROGRESS or MERGE_PENDING was edited.
