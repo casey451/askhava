@@ -10,7 +10,7 @@
 //! security event (SEC-048). The routes ([`BUSINESS_HOME_ROUTE`], [`OPEN_CARDS_ROUTE`]) are served
 //! with the business portal (D-1728).
 //!
-//! T195 (BIZ-015, BIZ-029, SEC-038; D-491, D-492, D-1912 to D-1914): [`billing_page`] and
+//! T195 (BIZ-015, BIZ-029, SEC-038; D-491, D-492, D-1912 to D-1916): [`billing_page`] and
 //! [`statement_csv`] show a `payments::api::Statement` (the ledger only; CSV, no PDF);
 //! [`change_fee_limit`] and [`change_saved_card`] pass the role check and [`require_step_up`]
 //! first; [`complaints_page`] and [`reply_to_complaint`] read and write through
@@ -258,6 +258,8 @@ pub const BILLING_ROUTE: &str = "/b/billing";
 pub const STATEMENT_ROUTE: &str = "/b/billing/statement.csv";
 /// The complaints page's path (BIZ-029; not served yet, D-1728).
 pub const COMPLAINTS_ROUTE: &str = "/b/complaints";
+/// The reply form's path; `{complaint}` is the complaint ID (BIZ-029; not served yet, D-1728).
+pub const COMPLAINT_REPLY_ROUTE: &str = "/b/complaints/{complaint}/reply";
 
 /// A saved payment method as the billing page shows it: brand and last four only (FEE-014).
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -268,17 +270,18 @@ pub struct PaymentMethod {
     pub last4: String,
 }
 
-/// BIZ-015, D-1912: a ledger entry in the business's words; `None` for Ask Hava's own Stripe
-/// costs (processing fees, countering fees, payouts), which are not the business's money.
-fn entry_label(kind: EntryKind) -> Option<&'static str> {
+/// BIZ-015, D-1912, D-1915: a ledger entry in the business's words and its direction (1 for money
+/// the business paid, -1 for money back to it: refunds, credits, disputes); `None` for Ask Hava's
+/// own Stripe costs (processing fees, countering fees, payouts), which are not the business's money.
+fn entry_label(kind: EntryKind) -> Option<(&'static str, i64)> {
     match kind {
-        EntryKind::Charge => Some("Introduction fee by job size"),
-        EntryKind::Refund => Some("Refund"),
-        EntryKind::Credit => Some("Credit"),
-        EntryKind::FreeFirstWin => Some("Free first win"),
-        EntryKind::RepeatCustomer => Some("Repeat customer: no fee"),
-        EntryKind::FeeFreeJobType => Some("No fee for this job type"),
-        EntryKind::Dispute => Some("You disputed this charge with your bank"),
+        EntryKind::Charge => Some(("Introduction fee by job size", 1)),
+        EntryKind::Refund => Some(("Refund", -1)),
+        EntryKind::Credit => Some(("Credit", -1)),
+        EntryKind::FreeFirstWin => Some(("Free first win", 1)),
+        EntryKind::RepeatCustomer => Some(("Repeat customer: no fee", 1)),
+        EntryKind::FeeFreeJobType => Some(("No fee for this job type", 1)),
+        EntryKind::Dispute => Some(("You disputed this charge with your bank", -1)),
         EntryKind::CounteringFee
         | EntryKind::CounteringFeeReturn
         | EntryKind::ProcessingFee
@@ -286,8 +289,8 @@ fn entry_label(kind: EntryKind) -> Option<&'static str> {
     }
 }
 
-/// One statement row the business sees: Arizona date, words, job and cents as the ledger holds
-/// them (a dispute without Stripe's dispute fee, as `MoneyView` splits it).
+/// One statement row the business sees: Arizona date, words, job and signed cents (negative for
+/// money back to the business; a dispute without Stripe's dispute fee, as `MoneyView` splits it).
 struct Row {
     date: String,
     what: &'static str,
@@ -308,11 +311,12 @@ fn statement_rows(statement: &Statement) -> Vec<Row> {
             } else {
                 0
             };
+            let (what, sign) = entry_label(l.kind)?;
             Some(Row {
                 date: date(l.recorded_at),
-                what: entry_label(l.kind)?,
+                what,
                 job: l.job.map(|j| j.to_string()).unwrap_or_default(),
-                cents: l.amount_cents - fee,
+                cents: sign * (l.amount_cents - fee),
             })
         })
         .collect()
@@ -324,8 +328,9 @@ fn signed_money(cents: i64) -> String {
     format!("{sign}{}", money(cents.unsigned_abs()))
 }
 
-/// BIZ-015, D-491: the statement as CSV (date, entry, job, amount in dollars), one line per
-/// business row of the ledger; the only statement format in V1.
+/// BIZ-015, D-491, D-1915: the statement as CSV (date, entry, job, amount in dollars, negative
+/// for money back to the business), one line per business row of the ledger; the only statement
+/// format in V1.
 #[must_use]
 pub fn statement_csv(statement: &Statement) -> String {
     let mut csv = String::from("date,entry,job,amount\n");
@@ -341,6 +346,7 @@ pub fn statement_csv(statement: &Statement) -> String {
 #[derive(Template)]
 #[template(path = "business_billing.html")]
 struct BillingView<'a> {
+    statement_route: &'static str,
     totals: [(&'static str, String); 4],
     rows: Vec<(String, &'static str, String)>,
     methods: Vec<(String, &'a str)>,
@@ -357,17 +363,17 @@ pub fn billing_page(
     methods: &[PaymentMethod],
     limit: Option<u32>,
 ) -> Result<String, askama::Error> {
-    let free = statement_rows(statement)
-        .iter()
-        .filter(|r| r.what == "Free first win")
+    let free = (statement.lines.iter())
+        .filter(|l| l.kind == EntryKind::FreeFirstWin)
         .count();
     let t = &statement.totals;
     let view = BillingView {
+        statement_route: STATEMENT_ROUTE,
         totals: [
             ("Introduction fees charged", signed_money(t.charges)),
             ("Free first win", free.to_string()),
-            ("Refunds", signed_money(t.refunds)),
-            ("Credits", signed_money(t.credits)),
+            ("Refunds to you", signed_money(t.refunds)),
+            ("Credits to you", signed_money(t.credits)),
         ],
         rows: (statement_rows(statement).into_iter())
             .map(|r| (r.date, r.what, signed_money(r.cents)))
@@ -444,7 +450,8 @@ pub async fn change_saved_card(
         .map_err(|_| BillingChangeError::Payments)
 }
 
-/// One complaint as the page shows it: no homeowner detail and no job (BIZ-029).
+/// One complaint as the page shows it: no homeowner detail and no job (BIZ-029). `error` and
+/// `kept` are the inline message and the typed words of a refused reply (A11Y-030).
 struct ComplaintRow {
     id: String,
     kind: String,
@@ -452,47 +459,97 @@ struct ComplaintRow {
     until: String,
     reply: Option<String>,
     open: bool,
+    action: String,
+    error: Option<&'static str>,
+    kept: String,
 }
 
 #[derive(Template)]
 #[template(path = "business_complaints.html")]
 struct ComplaintsView<'a> {
     rows: Vec<ComplaintRow>,
-    refused: Option<String>,
+    summary: Option<&'static str>,
+    summary_link: Option<String>,
     csrf: &'a str,
 }
 
-/// BIZ-029, D-200: the complaints page: each complaint's kind and date, the reply if written, and
-/// the reply box while it is open (before exactly 5 days); `refused` names a reply that was not
-/// saved, shown as the A11Y-030 error summary.
-///
-/// # Errors
-/// [`askama::Error`] when the template fails.
-pub fn complaints_page(
-    list: &[Complaint],
-    (now, refused): (Timestamp, Option<Uuid>),
-    csrf: &str,
-) -> Result<String, askama::Error> {
+/// A reply the business sent that `businesses::api::reply` refused: which complaint, why, and
+/// the words as typed, so the page can keep them (BIZ-029, A11Y-030).
+#[derive(Debug, Clone, Copy)]
+pub struct RefusedReply<'a> {
+    /// The complaint the reply was for.
+    pub complaint: Uuid,
+    /// Why it was refused.
+    pub error: ComplaintError,
+    /// The words the business typed.
+    pub words: &'a str,
+}
+
+/// BIZ-029, A11Y-030, D-1916: what to tell the business about a refused reply. Only empty or
+/// over-long words are the field's fault; a closed or used box, or a lost complaint, is not.
+const fn refusal_words(error: ComplaintError) -> &'static str {
+    match error {
+        ComplaintError::BadReply => "Write a reply of up to 1,000 characters, then send it.",
+        ComplaintError::Closed | ComplaintError::BoxOpen | ComplaintError::Unknown => {
+            "Your reply was not sent because the reply box for this complaint is closed."
+        }
+        ComplaintError::Database | ComplaintError::Audit | ComplaintError::BadKind => {
+            "Your reply was not sent. Please send it again."
+        }
+    }
+}
+
+/// BIZ-029: one complaint's row at `now`, with the refused reply's message and words when it is
+/// this complaint's and its box still shows.
+fn complaint_row(
+    c: &Complaint,
+    now: Timestamp,
+    refused: Option<&RefusedReply<'_>>,
+) -> ComplaintRow {
     let at = |t: Timestamp| {
         t.in_tz("America/Phoenix").map_or_else(
             |_| String::new(),
             |z| z.strftime("%b %-d, %Y, %-I:%M %p").to_string(),
         )
     };
-    let rows = (list.iter())
-        .map(|c| ComplaintRow {
-            id: c.id.to_string(),
-            kind: kind_words(&c.kind),
-            date: at(c.received_at),
-            until: at(c.reply_until),
-            reply: c.reply.clone(),
-            open: c.reply.is_none() && c.received_at <= now && now < c.reply_until,
-        })
+    let open = c.reply.is_none() && c.received_at <= now && now < c.reply_until;
+    let mine = refused.filter(|r| open && r.complaint == c.id);
+    let id = c.id.to_string();
+    ComplaintRow {
+        action: COMPLAINT_REPLY_ROUTE.replace("{complaint}", &id),
+        id,
+        kind: kind_words(&c.kind),
+        date: at(c.received_at),
+        until: at(c.reply_until),
+        reply: c.reply.clone(),
+        open,
+        error: mine.map(|r| refusal_words(r.error)),
+        kept: mine.map_or_else(String::new, |r| r.words.to_owned()),
+    }
+}
+
+/// BIZ-029, D-200, D-1916: the complaints page: each complaint's kind and date, the reply if
+/// written, and the reply box while it is open (before exactly 5 days). A `refused` reply gives the
+/// A11Y-030 error summary with that refusal's own words, a link to the reply box only while the
+/// box shows, the same words by the box and the typed words kept in it.
+///
+/// # Errors
+/// [`askama::Error`] when the template fails.
+pub fn complaints_page(
+    list: &[Complaint],
+    (now, refused): (Timestamp, Option<RefusedReply<'_>>),
+    csrf: &str,
+) -> Result<String, askama::Error> {
+    let rows: Vec<ComplaintRow> = (list.iter())
+        .map(|c| complaint_row(c, now, refused.as_ref()))
         .collect();
-    let refused = refused.map(|id| id.to_string());
+    let summary_link = (rows.iter())
+        .find(|r| r.error.is_some())
+        .map(|r| format!("#reply-{}", r.id));
     ComplaintsView {
         rows,
-        refused,
+        summary: refused.map(|r| refusal_words(r.error)),
+        summary_link,
         csrf,
     }
     .render()
@@ -608,12 +665,12 @@ mod tests {
         Timestamp::from_second(1_790_000_000 + secs).expect("time")
     }
 
-    /// TD-BIZ-04 page case (BIZ-015, D-491, D-1912): the totals, rows and CSV equal the ledger's
-    /// business lines (a dispute without the dispute fee), Ask Hava's own costs are left out, the
-    /// cards show brand and last four, and no PDF statement is offered.
-    #[test]
-    fn td_biz_04_billing_and_csv_equal_the_ledger() {
-        let job = Uuid::from_u128(0x10b);
+    const LEDGER_JOB: Uuid = Uuid::from_u128(0x10b);
+
+    /// A fake ledger: a free first win, a $75 fee refunded, a $25 credit, a $199 fee disputed (with
+    /// the dispute fee on the dispute line) and one of Ask Hava's own processing fees.
+    fn ledger() -> Statement {
+        let job = LEDGER_JOB;
         let entries = [
             (EntryKind::FreeFirstWin, 0),
             (EntryKind::Charge, 7_500),
@@ -634,7 +691,15 @@ mod tests {
             )
             .collect();
         let totals = MoneyView::from_entries(entries);
-        let statement = Statement { lines, totals };
+        Statement { lines, totals }
+    }
+
+    /// TD-BIZ-04 page case (BIZ-015, D-491, D-1912, D-1915): the totals and rows equal the
+    /// ledger's business lines (a dispute without the dispute fee; money back shown negative), Ask
+    /// Hava's own costs are left out, the cards show brand and last four, and no PDF is offered.
+    #[test]
+    fn td_biz_04_billing_page_equals_the_ledger() {
+        let statement = ledger();
         let visa = PaymentMethod {
             brand: "visa".to_owned(),
             last4: "4242".to_owned(),
@@ -651,6 +716,15 @@ mod tests {
         assert!(page.contains("Visa card ending in 4242") && page.contains("$500.00"));
         assert!(page.contains(STATEMENT_ROUTE) && !page.to_lowercase().contains("pdf"));
         assert!(!page.contains("$2.48") && page.contains("<td>$199.00</td>"));
+        assert!(page.contains("<td>-$75.00</td>") && page.contains("<td>-$25.00</td>"));
+        assert!(page.contains("<td>-$199.00</td>") && page.contains("minus sign"));
+    }
+
+    /// TD-BIZ-04 CSV case (BIZ-015, D-491, D-1915): one line per business row, money back to the
+    /// business negative, so the amount column sums to what the business paid net.
+    #[test]
+    fn td_biz_04_csv_equals_the_ledger() {
+        let (statement, job) = (ledger(), LEDGER_JOB);
         let csv = statement_csv(&statement);
         let rows: Vec<&str> = csv.lines().collect();
         assert_eq!(rows.len(), 7, "header and six business lines");
@@ -659,7 +733,21 @@ mod tests {
             rows[2],
             format!("2026-09-21,Introduction fee by job size,{job},75.00")
         );
-        assert!(rows[6].ends_with(",199.00") && rows.iter().all(|r| r.split(',').count() == 4));
+        assert!(rows[3].starts_with("2026-09-21,Refund,") && rows[3].ends_with(",-75.00"));
+        assert!(rows[4].ends_with(",-25.00") && rows[5].ends_with(",199.00"));
+        assert!(rows[6].ends_with(",-199.00") && rows.iter().all(|r| r.split(',').count() == 4));
+        let sum: f64 = (rows[1..].iter())
+            .map(|r| {
+                r.rsplit(',')
+                    .next()
+                    .and_then(|a| a.parse().ok())
+                    .unwrap_or(f64::NAN)
+            })
+            .sum();
+        assert!(
+            (sum + 25.0).abs() < 0.001,
+            "75 - 75 - 25 + 199 - 199 = -25, got {sum}"
+        );
     }
 
     /// TD-BIZ-04 empty case (BIZ-015): an empty ledger shows no card, no limit and a header-only
@@ -676,26 +764,17 @@ mod tests {
         assert_eq!(signed_money(-150), "-$1.50");
     }
 
-    /// TD-BIZ-09 page case (BIZ-029, D-200): kind and date only, no job; the box is open at
-    /// 4 days 23:59 and closed at exactly 5 days; a written reply shows; a refusal is summarized.
+    /// TD-BIZ-09 page case (BIZ-029, D-200, D-1916): kind and date only, no job; the box is open at
+    /// 4 days 23:59 and closed at exactly 5 days; a written reply shows; a refusal is summarized in
+    /// its own words, linked and repeated by the box with the words kept only while the box shows.
     #[test]
     fn td_biz_09_complaint_shows_kind_and_date_and_a_five_day_box() {
         let job = Uuid::from_u128(0x10c);
-        let c = Complaint {
-            id: Uuid::from_u128(0xc1),
-            kind: "no_show".to_owned(),
-            received_at: t(0),
-            reply_until: t(0) + askhava_businesses::api::REPLY_BOX,
-            reply: None,
-        };
+        let c = complaint();
         let open_at = t(5 * 86_400 - 60);
         let open = complaints_page(std::slice::from_ref(&c), (open_at, None), "t").expect("page");
         assert!(open.contains("No show, Sep 21, 2026") && open.contains("<textarea"));
         assert!(!open.contains(&job.to_string()) && !open.contains("role=\"alert\""));
-        let shut = complaints_page(std::slice::from_ref(&c), (t(5 * 86_400), Some(c.id)), "t");
-        let shut = shut.expect("page");
-        assert!(!shut.contains("<textarea") && shut.contains("reply box closed"));
-        assert!(shut.contains("<title>Error: ") && shut.contains("href=\"#reply-"));
         let replied = Complaint {
             reply: Some("We came on Tuesday.".to_owned()),
             ..c
@@ -705,6 +784,66 @@ mod tests {
         let none = complaints_page(&[], (open_at, None), "t").expect("page");
         assert!(none.contains("No complaints."));
         assert_eq!(kind_words(""), "");
+    }
+
+    /// A fake no-show complaint received at `t(0)`, not replied to.
+    fn complaint() -> Complaint {
+        Complaint {
+            id: Uuid::from_u128(0xc1),
+            kind: "no_show".to_owned(),
+            received_at: t(0),
+            reply_until: t(0) + askhava_businesses::api::REPLY_BOX,
+            reply: None,
+        }
+    }
+
+    /// TD-BIZ-09 refusal case (BIZ-029, A11Y-030, D-1916): a closed box gets the closed message,
+    /// no link and no field; too-long words get the field message, linked, repeated by the box,
+    /// with the words kept; a failed save asks to send again.
+    #[test]
+    fn td_biz_09_a_refused_reply_says_why() {
+        let (c, open_at) = (complaint(), t(5 * 86_400 - 60));
+        let refused = |error, words| RefusedReply {
+            complaint: c.id,
+            error,
+            words,
+        };
+        let closed = Some(refused(ComplaintError::Closed, "We came."));
+        let shut = complaints_page(std::slice::from_ref(&c), (t(5 * 86_400), closed), "t");
+        let shut = shut.expect("page");
+        assert!(!shut.contains("<textarea") && shut.contains("reply box closed"));
+        assert!(shut.contains("<title>Error: ") && !shut.contains("href=\"#reply-"));
+        assert!(shut.contains("box for this complaint is closed") && !shut.contains("1,000 char"));
+        assert!(!shut.contains("We came.") && !shut.contains("-error\""));
+        let long = "x".repeat(1_001);
+        let words = Some(refused(ComplaintError::BadReply, long.as_str()));
+        let bad = complaints_page(std::slice::from_ref(&c), (open_at, words), "t").expect("page");
+        let field = format!("reply-{}", c.id);
+        assert!(bad.contains(&format!(
+            "<a href=\"#{field}\">Write a reply of up to 1,000"
+        )));
+        assert!(bad.contains(&format!("<p id=\"{field}-error\">Error: Write a reply")));
+        assert!(bad.contains(&format!("hint-{} {field}-error\" aria-invalid", c.id)));
+        assert!(bad.contains(&format!(">{long}</textarea>")));
+        assert!(bad.contains(&format!("action=\"/b/complaints/{}/reply\"", c.id)));
+        let lost = Some(refused(ComplaintError::Database, "We came."));
+        let again = complaints_page(std::slice::from_ref(&c), (open_at, lost), "t");
+        assert!(again.expect("page").contains("Please send it again."));
+        let other = RefusedReply {
+            complaint: Uuid::from_u128(0xc2),
+            ..refused(ComplaintError::Unknown, "We came.")
+        };
+        let gone = complaints_page(std::slice::from_ref(&c), (open_at, Some(other)), "t");
+        let gone = gone.expect("page");
+        assert!(gone.contains("<p>Your reply was not sent because") && !gone.contains("We came."));
+        assert_eq!(
+            refusal_words(ComplaintError::BoxOpen),
+            refusal_words(ComplaintError::Closed)
+        );
+        assert_eq!(
+            refusal_words(ComplaintError::Audit),
+            refusal_words(ComplaintError::BadKind)
+        );
     }
 
     async fn owner(db: &mut Db) -> (Acting, BusinessPrincipal) {

@@ -1,7 +1,8 @@
 {% extends "base.html" %}
 {#- The business billing page (T195; BIZ-015, D-491, SEC-038). Every amount comes from the ledger
     through payments::api::Statement; the statement downloads as CSV only, no PDF in V1. Cards show
-    brand and last four only (FEE-014). No homeowner detail. -#}
+    brand and last four only (FEE-014). No homeowner detail. Refunds, credits and disputes
+    show negative in the rows (D-1915). -#}
 {% block title %}Billing{% endblock %}
 {% block main %}
 <h1>Billing</h1>
@@ -9,11 +10,11 @@
 <dl>
 {% for (label, value) in totals %}<dt>{{ label }}</dt><dd>{{ value }}</dd>
 {% endfor %}</dl>
-<p><a href="/b/billing/statement.csv">Download this statement as a spreadsheet (CSV file)</a></p>
+<p><a href="{{ statement_route }}">Download this statement as a spreadsheet (CSV file)</a></p>
 <h2>Charges, refunds and credits</h2>
 {% if rows.is_empty() %}<p>Nothing on this statement yet.</p>
 {% else %}<table>
-<caption>Oldest first. Dates are Arizona time.</caption>
+<caption>Oldest first. Dates are Arizona time. A minus sign means money back to you.</caption>
 <thead><tr><th scope="col">Date</th><th scope="col">What</th><th scope="col">Amount</th></tr></thead>
 <tbody>
 {% for (date, what, amount) in rows %}<tr><td>{{ date }}</td><td>{{ what }}</td><td>{{ amount }}</td></tr>
