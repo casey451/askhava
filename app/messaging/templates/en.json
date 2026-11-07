@@ -408,5 +408,10 @@
     "audience": "business",
     "segments": 1,
     "text": "Ask Hava: A phone ending in {number} called your Ask Hava line. It isn't on your account yet. If it's yours, reply LINK {job}. If not, ignore this text."
+  },
+  "signup_record_updated": {
+    "audience": "business",
+    "segments": 1,
+    "text": "Ask Hava: We see your updated record. Tap to finish sign-up: {link}."
   }
 }

@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT job_id FROM quotes.job_card WHERE business_id = $1 ORDER BY sent_at, job_id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "job_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "quotes.job_card",
+            "name": "job_id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "086f8cf769911371d508fee9752896993cfe5a4568b411682179c7b2a1dfd1d4"
+}

@@ -10,10 +10,13 @@
 //! T224 built the business's Confirm review step (`confirm_pay`, PICK-021, FEE-014, FEE-045,
 //! CON-029).
 //! T068 built the business's "Why was I charged?" page (`receipts_page`, FEE-031, FEE-053).
+//! T193 built the business sign-up screens (`business_signup`, BIZ-024, BIZ-026, BIZ-030,
+//! BIZ-031, LIC-047, WEB-024).
 //! Portal pages extend the shared layout `app/site/templates/base.html` through `askama.toml`.
 //! Other crates reach it only through [`api`].
 
 pub mod api;
+mod business_signup;
 mod confirm_pay;
 mod pick_flow;
 mod quote_page;

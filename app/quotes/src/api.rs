@@ -30,6 +30,7 @@
 //! T213: [`job_page`] reads a job's business [`JobPage`] from [`PageParts`] (CARD-019, CARD-023,
 //! D-434); [`check`] and [`scan`] hold the homeowner update texts in [`UPDATE_TEXTS`] to TXT-040's
 //! [`SHORT`] and [`LIMIT`] words a sentence, her page link and no quote details.
+//! T193: [`open_card_jobs`] lists a business's carded jobs still waiting for quotes (BIZ-031).
 
 use sqlx::types::Uuid;
 
@@ -208,6 +209,34 @@ pub async fn quoted_prices(
             price: r.price(),
         })
         .collect())
+}
+
+/// BIZ-031, CARD-018, D-462 (T193): the jobs `business` holds a card for that are still waiting for
+/// quotes (Open or No quotes yet, `JobStatus::takes_late_cards`), oldest card first, for the
+/// sign-up done screen's "<k> open <trade> jobs you can quote now".
+///
+/// # Errors
+///
+/// [`QuotesError::Database`], or [`QuotesError::Job`] when a job cannot be read.
+pub async fn open_card_jobs(
+    db: &mut sqlx::PgConnection,
+    business: Uuid,
+) -> Result<Vec<Uuid>, QuotesError> {
+    let jobs = sqlx::query_scalar!(
+        "SELECT job_id FROM quotes.job_card WHERE business_id = $1 ORDER BY sent_at, job_id",
+        business
+    )
+    .fetch_all(&mut *db)
+    .await
+    .map_err(|_| QuotesError::Database)?;
+    let mut open = Vec::new();
+    for job in jobs {
+        let row = askhava_jobs::api::current(db, job).await;
+        if row.map_err(|_| QuotesError::Job)?.status.takes_late_cards() {
+            open.push(job);
+        }
+    }
+    Ok(open)
 }
 
 /// The pure matching rules, for the rules bridge and other crates' property tests.

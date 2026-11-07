@@ -7,7 +7,7 @@ The layer-4 crate that holds each business account (`docs/architecture.md` secti
 ## What it owns
 
 - `src/api.rs`: the only public surface: `create`, `apply`, `pause_for_rule`, `pause_self`, `resume_self`, `set_ticks`, `set_towns`, `set_job_types`, `set_own_hours`, `own_hours`, `night_count`, `business`, `towns`, `job_types`, the types below, and `api::rules` (`next`, `checklist`, `towns`, `may_notify`, `may_resume_itself`, `APP_OPEN_MINUTE`, `APP_CLOSE_MINUTE`); from `team`: `Acting`, `add_owner`, `add_member`, `set_roles`, `remove_member`, `link_phone`, `change_phone`, `unlink_phone`, `members`, `notice_addresses`, `Roles`, `NoticePurpose`, `TeamMember`, `TeamError`, `SenderLink`, `MEMBER_REMOVED_KIND`.
-- `src/signup.rs` (T081): `sign_up` (business, sign-up row and audit row in one transaction, then `payments::api::ensure_customer` outside it, BIZ-001), `waitlisted`, `category_list` ("Open now" or "Coming later" from `licensing`'s `ClassMap::opening`, BIZ-021), `WAITLIST_LINE`, `HeardFrom` and the `g` code (BIZ-053), `hand_entity_keys` (FEE-011 digests to `payments`), `accept_terms` (TERMS-033), `review_due` and `review_told` (BIZ-020), `SignupError`.
+- `src/signup.rs` (T081): `sign_up` (business, sign-up row and audit row in one transaction, then `payments::api::ensure_customer` outside it, BIZ-001), `waitlisted`, `category_list` ("Open now" or "Coming later" from `licensing`'s `ClassMap::opening`, BIZ-021), `WAITLIST_LINE`, `HeardFrom` and the `g` code (BIZ-053), `hand_entity_keys` (FEE-011 digests to `payments`), `accept_terms` (TERMS-033), `review_due` and `review_told` (BIZ-020), `SignupError`. T193: `SOMEONE_ELSE_LINE` (BIZ-024); `MaskedContact` (kind and masked value only, `for_step` from `RecordContacts`, `phone` for a landline), `fix_record_lines`, `NUMBER_OLD_BUTTON`, `STOP_FIX_BUTTON`, `RecordSeen` (record contacts plus the full record address), `number_is_old`, `resume_on_new_record`, `waiting_on_record`, `RECORD_UPDATED_TEMPLATE` (BIZ-026); `SignupSettings` with `REVIEW_TARGET_KEY` and `LIST_DELAY_KEY`, `review_target`, `review_target_line` (BIZ-027); `FeeNumbers`, `fee_summary`, `BUSINESS_STATEMENT`, `REPEAT_FREE_DAYS` (BIZ-030); `trade_count`, `claim_launch_notice` (BIZ-031).
 - `src/identity.rs` (T081): `RecordContacts`, `Step`, `next_step` (text, email, letter; no voice), `send_code` and `check_code` through `VerifyAdapter`, `letter_code` (keyed, never stored), `Flag`, `record_match`, `settle`, `approve` (BIZ-002, BIZ-003, BIZ-016).
 - `src/about_us.rs` (T081): `screen`, `screen_public_name`, `set_about_us`, `AboutUsRefusal` with its shown reason (BIZ-022, PICK-007, PICK-041, WORD-003); its own word lists, since `businesses` cannot call `quotes` or `ai`.
 - `src/status.rs`: `AccountStatus` (six statuses, `code`, `from_code`, `receives_cards`: only `Active`, read by `quotes` for CARD-001 and CARD-016, T044), `PauseReason`, `Refused`, `next`, `replaces_self_pause` (every match on a status lives here, SEC-031).
@@ -18,6 +18,7 @@ The layer-4 crate that holds each business account (`docs/architecture.md` secti
 - Migration `0055_businesses_records.sql`: the `businesses` schema, `businesses.business` (no `DELETE` for `askhava_app`), `businesses.town`, `businesses.job_type_choice`. No name, phone, email or address column.
 - Migration `0056_businesses_team_members.sql`: `businesses.team_member` (owner row with `is_owner`, `mailbox_id` opaque email ID, role ticks, `removed_at`; no `DELETE` for `askhava_app`) and `businesses.staff_phone` (line ID, linking member, main mark; no number).
 - Migration `0057_businesses_own_hours.sql`: `own_open_minute`, `own_close_minute` on `businesses.business` (Arizona minutes, both or neither, inside 480 to 1200 by a check).
+- Migration `0120_businesses_signup_resume.sql` (T193): `waiting_on_record_since` with `old_text_key`, `old_mail_key`, `old_letter_key` (all or none), `trades` (sign-up category codes) and `launch_notice_sent_at` on `businesses.signup`.
 - Migration `0119_businesses_signup_identity.sql`: `businesses.signup` (one row per business: `mailbox_id`, source answer, `g` code, identity step, code and match ticks, flag, `review_since`, `review_told_at`, `about_us`; no `DELETE`) and `businesses.terms_acceptance` (append-only TERMS-033 rows, channel `business_signup`).
 
 ## Rules it enforces
@@ -36,6 +37,8 @@ The layer-4 crate that holds each business account (`docs/architecture.md` secti
 - BIZ-002, BIZ-003, BIZ-016, D-059, D-281: `identity::next_step`, `send_code`, `check_code`, `record_match`, `settle`, `approve`; no record contact at all flags `no_record_contact` (needs review). `send_code` and `check_code` refuse any status but pending and needs review (`AccountStatus::takes_identity_code`); the letter code is compared in constant time (`subtle`, D-1703).
 - BIZ-020: `signup::review_due` (never told, or told 7 days ago or more).
 - BIZ-022: `about_us::screen` and `screen_public_name`; word lists match whole words, `@`, `.com` and `#1` anywhere; spelled-out numbers count as a phone number (D-1703).
+- BIZ-026, D-178: `number_is_old` stores only keyed SHA256 digests of the record phone, email and address; `resume_on_new_record` ends the wait only when a present record contact differs and sets `identity_step` to the step before the first changed one, so the next `send_code` goes to the changed contact, never the old one (D-1712). Known gap: `send_code`'s idempotency key is the business and step only, so a resumed send on a step already used reuses its key (D-1712).
+- BIZ-027: `review_target` is calendar days (default 4) and gates nothing. BIZ-030: `fee_summary` takes every number from `FeeNumbers` (the Confirm window in minutes, shown as hours and any leftover minutes). BIZ-031: `trade_count` counts active businesses with a job type in the trade (waitlisted ones by `signup.trades`) plus the business itself; `claim_launch_notice` is true once (D-1709).
 - FEE-011: `signup::hand_entity_keys`. TERMS-016, TERMS-033: `signup::accept_terms`.
 
 ## Never break
@@ -65,6 +68,7 @@ The layer-4 crate that holds each business account (`docs/architecture.md` secti
 
 - Send the BIZ-020 status email: a worker task reads `api::review_due`, queues the email through `messaging` to the record contact and the sign-up mailbox, then calls `review_told` (D-1701).
 - Build the sign-up route's code entry: the route MUST limit code attempts per business before calling `identity::check_code`, which keeps no attempt count; the six-digit letter code never changes (D-1703).
+- Resume a waiting sign-up: on each daily list, for each `waiting_on_record` sign-up call `resume_on_new_record` with the new list's `RecordSeen` (its `RecordContacts` and the full record address); on `true` send `RECORD_UPDATED_TEMPLATE` to the sign-up email (and the new record email), never the code (D-1709).
 - Mail the identity letter: on a `Step::Letter`, the composition sends a Lob letter to the record address printing `letter_code` (D-1699).
 
 - Add a status or a move: `AccountStatus` and `next` in `src/status.rs`, the migration check in a new migration, the oracle in `src/tests/account_status.rs`, BIZ-009 and D-953.
@@ -77,6 +81,7 @@ The layer-4 crate that holds each business account (`docs/architecture.md` secti
 
 ## Tests that guard it
 
+- `tests/integration/tests/signup_screens.rs`: TD-BIZ-07, TD-BIZ-10, TD-BIZ-27 and the sign-up-screen cases of TD-BIZ-11, TD-BIZ-12, TD-PICK-33; run `cargo test -p askhava-integration --test signup_screens`.
 - `tests/integration/tests/identity_chain.rs`: TD-BIZ-01, TD-BIZ-05, TD-BIZ-12 (About us, letter, public name), TD-TERMS-08, the sign-up parts of TD-LIC-17 and TD-LIC-21, and FEE-011's hand-over; run `cargo test -p askhava-integration --test identity_chain`.
 
 - `src/tests/account_status.rs`: TD-BIZ-02 (statuses, approval, checklist, towns, ticks, insurance, pause reason) and the BIZ-007 night count; run `cargo test -p askhava-businesses tests::account_status` with `DATABASE_URL` set.

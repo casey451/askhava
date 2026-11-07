@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT count(*) AS \"n!\" FROM businesses.business b WHERE b.id = $1 OR (NOT $3 AND b.status = 'active' AND EXISTS (SELECT 1 FROM businesses.job_type_choice c WHERE c.business_id = b.id AND c.category = $2)) OR ($3 AND b.status = 'waitlist' AND EXISTS (SELECT 1 FROM businesses.signup s WHERE s.business_id = b.id AND $2 = ANY (s.trades)))",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "n!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Bool"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "b2fdfd3fafa980ec3e9e0ee4872aa790ae14c2c8e5119acec24b046f05185ec8"
+}

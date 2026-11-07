@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE businesses.signup SET waiting_on_record_since = NULL, old_text_key = NULL, old_mail_key = NULL, old_letter_key = NULL, identity_step = $3 WHERE business_id = $1 AND old_text_key = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "8e199c1c8a08322e6ffd2aa852606b88844d41e1f17a3de25422bd7f56c245a4"
+}
