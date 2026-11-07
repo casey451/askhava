@@ -7,8 +7,12 @@
 -- it has no removal and no author mark: a removal is one of the four JOB-017 reasons, with its time,
 -- logged in ops.audit_log by the code that sets it; an author mark says the writer is the owner, a
 -- relative of the owner or a business, none of whose feedback is shown. Unticked feedback is never
--- shown, so it takes no removal. No name, phone or address is stored here: the first name and town
--- are read from the vault when a page shows the feedback (PRIV-001). The table is new and empty.
+-- shown, so it takes no removal. No column holds a name, phone or address: the first name and town
+-- are read from the vault when a page shows the feedback (PRIV-001). The body is the homeowner's
+-- own free text, unscrubbed, so it may hold whatever they typed, contact details included; it is
+-- not yet purged at three years (PRIV-009) or by "Delete my data" (PRIV-011) (D-1821, D-1823).
+-- A trigger keeps a removal and an author mark once set, so no update can quietly put feedback
+-- back on askhava.com without an audit row. The table is new and empty.
 
 CREATE TABLE jobs.feedback (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -28,3 +32,22 @@ CREATE TABLE jobs.feedback (
 -- and tick never change; only a removal (set once) and an author mark are written later.
 REVOKE UPDATE, DELETE, TRUNCATE ON jobs.feedback FROM askhava_app;
 GRANT UPDATE (removed_reason, removed_at, author_kind) ON jobs.feedback TO askhava_app;
+
+-- A removal, once set, never changes or clears; an author mark may be corrected to another kind
+-- (audited by the caller) but never cleared (JOB-017, D-1823).
+CREATE FUNCTION jobs.feedback_marks_stay() RETURNS trigger
+  LANGUAGE plpgsql AS $$
+BEGIN
+  IF OLD.removed_reason IS NOT NULL AND (NEW.removed_reason IS DISTINCT FROM OLD.removed_reason
+      OR NEW.removed_at IS DISTINCT FROM OLD.removed_at) THEN
+    RAISE EXCEPTION 'a feedback removal is never changed or cleared';
+  END IF;
+  IF OLD.author_kind IS NOT NULL AND NEW.author_kind IS NULL THEN
+    RAISE EXCEPTION 'a feedback author mark is never cleared';
+  END IF;
+  RETURN NEW;
+END
+$$;
+
+CREATE TRIGGER feedback_marks_stay BEFORE UPDATE ON jobs.feedback
+  FOR EACH ROW EXECUTE FUNCTION jobs.feedback_marks_stay();

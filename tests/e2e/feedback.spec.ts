@@ -23,12 +23,19 @@ function psql(sql: string): string {
   return done.stdout.trim();
 }
 
-/** Seeds a job in `status` with a live link token; returns the token's hash and the page path. */
-function seedJob(status: string): { hash: string; path: string } {
+/** A new random link token and its SHA256 hash. */
+function newToken(): { token: string; hash: string } {
   const token = randomBytes(32).toString("hex");
-  const hash = createHash("sha256").update(token).digest("hex");
+  return { token, hash: createHash("sha256").update(token).digest("hex") };
+}
+
+/** Seeds a job that entered `status` `since` ago (a Postgres interval) with a live link token;
+ * returns the token's hash and the page path. */
+function seedJob(status: string, since = "0 minutes"): { hash: string; path: string } {
+  const { token, hash } = newToken();
   psql(`WITH j AS (INSERT INTO jobs.job (status, emergency, created_at, status_at, timer_from)
-      VALUES ('${status}', false, now(), now(), now()) RETURNING id),
+      VALUES ('${status}', false, now() - interval '${since}', now() - interval '${since}',
+        now() - interval '${since}') RETURNING id),
     n AS (UPDATE jobs.job_number_next SET next = next + 1 RETURNING next - 1 AS n),
     num AS (INSERT INTO jobs.job_number (number, job_id, issued_at) SELECT n.n, j.id, now() FROM n, j)
     INSERT INTO jobs.quote_token (job_id, salt, key_version, token_hash, issued_at)
@@ -108,6 +115,36 @@ test("TD-JOB-10 JOB-017: the page opens only after Done; any other status or a b
     expect((await page.goto(path))?.status(), status).toBe(404);
   }
   expect((await page.goto(`/f/${"0".repeat(64)}`))?.status()).toBe(404);
+});
+
+test("TD-JOB-10 JOB-017, PICK-011: the page closes 30 days after Done; a revoked or re-issued link is a 404", async ({ page }) => {
+  expect((await page.goto(seedJob("done", "29 days 23 hours").path))?.status()).toBe(200);
+  expect((await page.goto(seedJob("done", "30 days 1 minute").path))?.status()).toBe(404);
+  const revoked = seedJob("done");
+  psql(`UPDATE jobs.quote_token SET revoked_at = now() WHERE token_hash = decode('${revoked.hash}', 'hex')`);
+  expect((await page.goto(revoked.path))?.status()).toBe(404);
+  const old = seedJob("done");
+  const fresh = newToken();
+  psql(`WITH r AS (UPDATE jobs.quote_token SET revoked_at = now()
+      WHERE token_hash = decode('${old.hash}', 'hex') RETURNING job_id)
+    INSERT INTO jobs.quote_token (job_id, salt, key_version, token_hash, issued_at)
+      SELECT job_id, decode(md5(random()::text), 'hex'), 1, decode('${fresh.hash}', 'hex'), now() FROM r`);
+  expect((await page.goto(old.path))?.status(), "re-issued").toBe(404);
+  expect((await page.goto(`/f/${fresh.token}`))?.status(), "new link").toBe(200);
+});
+
+test("TD-JOB-10 JOB-017: a removal is never changed or cleared, and an author mark is never cleared", async () => {
+  const { hash } = seedJob("done");
+  const id = psql(`INSERT INTO jobs.feedback (job_id, body, share, received_at)
+    SELECT job_id, 'Sample words', true, now() FROM jobs.quote_token
+    WHERE token_hash = decode('${hash}', 'hex') RETURNING id`).split("\n")[0];
+  const set = (columns: string): string => psql(`UPDATE jobs.feedback SET ${columns} WHERE id = '${id}'`);
+  set("removed_reason = 'fake', removed_at = now(), author_kind = 'owner'");
+  expect(() => set("removed_reason = NULL, removed_at = NULL")).toThrow(/never changed or cleared/);
+  expect(() => set("removed_reason = 'abusive'")).toThrow(/never changed or cleared/);
+  set("author_kind = 'business'");
+  expect(() => set("author_kind = NULL")).toThrow(/never cleared/);
+  expect(psql(`SELECT removed_reason || '|' || author_kind FROM jobs.feedback WHERE id = '${id}'`)).toBe("fake|business");
 });
 
 test("TD-JOB-10 (axe part): the feedback form, its error and the thanks have no axe violation at 320, 768 and 1280 px", async ({ page }) => {

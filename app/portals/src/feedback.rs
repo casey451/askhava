@@ -7,7 +7,8 @@
 //! Ask Hava in one box and sees one share box, "Ask Hava may show what I wrote on askhava.com with
 //! my first name and town", unticked, asked of everyone, with no reward offered. `POST` stores the
 //! words and the tick exactly as sent through `jobs::api::feedback::store` (one per job; a second
-//! send shows the thanks and stores nothing). What may appear on askhava.com is
+//! send shows the thanks and stores nothing; a job that left Done after the page opened is a 404
+//! and stores nothing). What may appear on askhava.com is
 //! `jobs::api::feedback::shown`: ticked, not removed for one of the four JOB-017 reasons, not from
 //! the owner, a relative of the owner or a business. This page never shows other feedback and no
 //! page says shown feedback is all the feedback received. No name, phone or address is read. The
@@ -28,8 +29,9 @@ use axum::middleware::{Next, from_fn, from_fn_with_state};
 use axum::response::{Html, IntoResponse, Response};
 use axum::routing::get;
 use axum_extra::extract::cookie::CookieJar;
-use sqlx::PgPool;
+use jiff::Timestamp;
 use sqlx::types::Uuid;
+use sqlx::{PgConnection, PgPool};
 
 use crate::quote_page::token_expired;
 use crate::security::{CsrfField, CsrfForm, WebSecurity, no_store, refuse_cross_site};
@@ -251,8 +253,44 @@ async fn show(
     page_response(jar, &view)
 }
 
-/// `POST /f/{token}`: stores the words and the tick as sent, then shows the thanks; an empty or
-/// too long send shows the form again with what was typed and the problem (JOB-017, A11Y-018).
+/// What a send that passed [`check`] came to (JOB-017).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Kept {
+    /// The words and the tick are stored now.
+    Stored,
+    /// The job already had feedback (a repeat send); nothing new is stored.
+    Already,
+    /// The job left Done after the page opened, so nothing is stored and the page is gone.
+    NotOpen,
+}
+
+/// JOB-017: stores job `job`'s `feedback` at `at` and says which [`Kept`] case happened, so a
+/// repeat send shows the thanks while a job that left Done in between does not.
+async fn keep(
+    db: &mut PgConnection,
+    job: Uuid,
+    feedback: (&str, bool),
+    at: Timestamp,
+) -> Result<Kept, StatusCode> {
+    if store(db, job, feedback, at)
+        .await
+        .map_err(|_| FAILED)?
+        .is_some()
+    {
+        return Ok(Kept::Stored);
+    }
+    let already = given(db, job).await.map_err(|_| FAILED)?;
+    Ok(if already {
+        Kept::Already
+    } else {
+        Kept::NotOpen
+    })
+}
+
+/// `POST /f/{token}`: stores the words and the tick as sent, then shows the thanks (also for a
+/// repeat send, which stores nothing); a job that left Done after the page opened is a bare 404
+/// with nothing stored; an empty or too long send shows the form again with what was typed and the
+/// problem (JOB-017, A11Y-018).
 async fn send(
     State(page): State<FeedbackPage>,
     Path(raw): Path<String>,
@@ -278,13 +316,13 @@ async fn send(
     let Ok(mut db) = page.pool.acquire().await else {
         return StatusCode::INTERNAL_SERVER_ERROR.into_response();
     };
-    let at = page.clock.now();
-    if store(&mut db, job, (form.body.trim(), share), at)
-        .await
-        .is_err()
-    {
-        tracing::warn!("feedback not stored");
-        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
+    match keep(&mut db, job, (form.body.trim(), share), page.clock.now()).await {
+        Ok(Kept::Stored | Kept::Already) => {}
+        Ok(Kept::NotOpen) => return StatusCode::NOT_FOUND.into_response(),
+        Err(status) => {
+            tracing::warn!("feedback not stored");
+            return status.into_response();
+        }
     }
     let view = FeedbackView {
         sent: true,
@@ -307,7 +345,7 @@ mod tests {
     use sqlx::PgConnection;
     use sqlx::types::Uuid;
 
-    use super::{FeedbackView, MAX_CHARS, Problem, SHARE_LABEL, check};
+    use super::{FeedbackView, Kept, MAX_CHARS, Problem, SHARE_LABEL, check, keep};
 
     type Db = sqlx::pool::PoolConnection<sqlx::Postgres>;
 
@@ -492,5 +530,18 @@ mod tests {
         }
         let unknown = mark_author(&mut db, Uuid::nil(), Author::Owner, owner).await;
         assert!(!unknown.unwrap());
+    }
+
+    #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+    async fn td_job_10_a_repeat_send_is_thanked_but_a_job_gone_from_done_is_not(mut db: Db) {
+        let done = job(&mut db, &TO_DONE).await;
+        let first = keep(&mut db, done, ("Sample words", true), at(10)).await;
+        assert_eq!(first.expect("kept"), Kept::Stored);
+        let again = keep(&mut db, done, ("Sample again", false), at(11)).await;
+        assert_eq!(again.expect("kept"), Kept::Already);
+        let open = job(&mut db, &TO_DONE[..2]).await;
+        let gone = keep(&mut db, open, ("Sample words", true), at(12)).await;
+        assert_eq!(gone.expect("kept"), Kept::NotOpen);
+        assert!(shown(&mut db).await.unwrap().iter().all(|r| r.job == done));
     }
 }
