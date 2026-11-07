@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "INSERT INTO messaging.outbox (idempotency_key, template_id, recipient_id, recipient_kind, subject_ids, body) VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT (idempotency_key) DO NOTHING RETURNING id",
+  "query": "INSERT INTO messaging.outbox (idempotency_key, template_id, recipient_id, recipient_kind, subject_ids, body, language) VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (idempotency_key) DO NOTHING RETURNING id",
   "describe": {
     "columns": [
       {
@@ -22,6 +22,7 @@
         "Uuid",
         "Text",
         "UuidArray",
+        "Text",
         "Text"
       ]
     },
@@ -29,5 +30,5 @@
       false
     ]
   },
-  "hash": "b2668a18b1530c57fe6e6d3ca62dc8e880be0f588dfece52b3ce6e00d5cf2594"
+  "hash": "6a606494aa3ab4313864f0cefc05b38c2f1444fc9c2154d410742d9d026c845e"
 }

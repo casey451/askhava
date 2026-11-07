@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE messaging.outbox SET status = 'failed', body = NULL WHERE body IS NOT NULL AND status IN ('queued', 'sending') AND created_at <= $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "696bf7ca1e3fbfbd4b08d93ed89e5b21eb0d9ec3967e9a6b541c3e651fbe70c2"
+}
