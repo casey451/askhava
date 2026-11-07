@@ -14,6 +14,7 @@ use askhava_quotes::api::{
     CardPhotoOutcome, HomeownerAnswer, LeftOff, PhotoAiGate, PhotoScreener, ScreenCheck,
     ScreenFailed, ScreenVerdict, card_photo,
 };
+use jiff::civil::{Date, date};
 
 const PNG_HEX: &str = "89504e470d0a1a0a0000000d4948445200000002000000020802000000fdd49a73000000137445\
                        58744750530046414b452d4750532d33342e34384ea7dc82a60000001049444154789c6338a1\
@@ -89,8 +90,10 @@ async fn photo() -> CleanPhoto {
     clean(upload).await.expect("the fixture cleans")
 }
 
+const TODAY: Date = date(2026, 3, 10);
+
 fn after_zero_retention() -> PhotoAiGate {
-    PhotoAiGate::from_records(true, true)
+    PhotoAiGate::from_records(Some(TODAY), TODAY, true)
 }
 
 const FACE: ScreenVerdict = ScreenVerdict {
@@ -162,11 +165,19 @@ async fn td_card_04_unconfirmed_or_removed_photos_stay_off_with_no_ai_call() {
 }
 
 /// TD-AI-11, AI-016, CARD-013: AI screening turns on only with the zero-retention agreement
-/// signed and the AI-018 photo sentence live; either alone keeps the screen uncalled.
+/// signed on or before today and the AI-018 photo sentence live; either alone, or a signed date
+/// still in the future, keeps the screen uncalled.
 #[tokio::test]
 async fn td_ai_11_no_ai_call_until_zero_retention_and_the_photo_sentence() {
-    for (signed, sentence) in [(false, false), (false, true), (true, false)] {
-        let gate = PhotoAiGate::from_records(signed, sentence);
+    let tomorrow = date(2026, 3, 11);
+    let cases = [
+        (None, false),
+        (None, true),
+        (Some(TODAY), false),
+        (Some(tomorrow), true),
+    ];
+    for (signed_on, sentence) in cases {
+        let gate = PhotoAiGate::from_records(signed_on, TODAY, sentence);
         assert!(!gate.ai_screening());
         let screen = StandIn::new(Reply::Flag(TEXT), Reply::Flag(TEXT));
         let outcome = card_photo(photo().await, HomeownerAnswer::Confirmed, gate, &screen).await;
@@ -174,6 +185,8 @@ async fn td_ai_11_no_ai_call_until_zero_retention_and_the_photo_sentence() {
         assert!(screen.calls().is_empty(), "no call before zero retention");
     }
     assert!(after_zero_retention().ai_screening());
+    let signed_earlier = PhotoAiGate::from_records(Some(date(2026, 1, 2)), TODAY, true);
+    assert!(signed_earlier.ai_screening());
 }
 
 /// TD-AI-11, TD-PRIV-08, AI-016, CARD-014, PRIV-014: after zero retention a passing photo goes

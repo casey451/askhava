@@ -14,6 +14,7 @@
 use std::future::Future;
 
 use askhava_privacy::api::CleanPhoto;
+use jiff::civil::Date;
 
 /// Whether AI photo screening may run (AI-016, CARD-013). Private field: only
 /// [`PhotoAiGate::from_records`] makes one.
@@ -26,13 +27,21 @@ impl PhotoAiGate {
     /// The on-server checks only, with no AI call: the state before zero retention (AI-016).
     pub const ON_SERVER_ONLY: Self = Self { ai: false };
 
-    /// AI screening is on only when the zero-retention agreement is signed (on or before today)
-    /// and the AI-018 photo sentence is live; either missing keeps every photo off the AI, in
-    /// every environment (AI-016, CARD-013, D-1795).
+    /// AI screening is on only when the zero-retention agreement has a signed date on or before
+    /// `today` (Arizona) and the AI-018 photo sentence is live; either missing keeps every photo
+    /// off the AI, in every environment (AI-016, CARD-013, D-1795). The caller passes the
+    /// recorded zero-retention signed date itself, never the AI switch's `live_ok` or any
+    /// AI-008 scrubbed-text switch state: that switch lets text AI run without zero retention,
+    /// and photos must not.
     #[must_use]
-    pub fn from_records(zero_retention_signed: bool, photo_sentence_live: bool) -> Self {
+    pub fn from_records(
+        zero_retention_signed_on: Option<Date>,
+        today: Date,
+        photo_sentence_live: bool,
+    ) -> Self {
+        let signed = zero_retention_signed_on.is_some_and(|on| on <= today);
         Self {
-            ai: zero_retention_signed && photo_sentence_live,
+            ai: signed && photo_sentence_live,
         }
     }
 
