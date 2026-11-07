@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO businesses.recruit_stop (mailbox_key, stopped_at) VALUES ($1, $2) ON CONFLICT (mailbox_key) DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "9e7ce5eafbd78a9e05eab3c85ad8ba33f949aa54e99de2cb2fa2e3c1bf779ab6"
+}

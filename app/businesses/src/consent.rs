@@ -412,8 +412,8 @@ pub async fn stop_recruiting(
 ) -> Result<(), ConsentError> {
     check_key(key)?;
     let q = sqlx::query!(
-        "INSERT INTO businesses.recruit_stop (address_key, stopped_at) VALUES ($1, $2) \
-         ON CONFLICT (address_key) DO NOTHING",
+        "INSERT INTO businesses.recruit_stop (mailbox_key, stopped_at) VALUES ($1, $2) \
+         ON CONFLICT (mailbox_key) DO NOTHING",
         key,
         now.to_sqlx() as _
     );
@@ -427,7 +427,7 @@ pub async fn stop_recruiting(
 pub async fn may_recruit(conn: &mut PgConnection, key: &str) -> Result<bool, ConsentError> {
     check_key(key)?;
     let q = sqlx::query_scalar!(
-        "SELECT NOT EXISTS (SELECT 1 FROM businesses.recruit_stop WHERE address_key = $1) \
+        "SELECT NOT EXISTS (SELECT 1 FROM businesses.recruit_stop WHERE mailbox_key = $1) \
          AS \"yes!\"",
         key
     );

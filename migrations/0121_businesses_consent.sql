@@ -28,7 +28,7 @@ CREATE TABLE businesses.welcome (
 );
 
 CREATE TABLE businesses.recruit_stop (
-  address_key text PRIMARY KEY CHECK (address_key ~ '^[0-9a-f]{64}$'),
+  mailbox_key text PRIMARY KEY CHECK (mailbox_key ~ '^[0-9a-f]{64}$'),
   stopped_at timestamptz NOT NULL
 );
 
