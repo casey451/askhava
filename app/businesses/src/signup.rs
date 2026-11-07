@@ -1,5 +1,5 @@
-//! Business sign-up (BIZ-001, BIZ-019, BIZ-020, BIZ-021, BIZ-053, FEE-011, TERMS-016, TERMS-033;
-//! D-145, D-175, D-176, D-457, D-492).
+//! Business sign-up (BIZ-001, BIZ-019, BIZ-020, BIZ-021, BIZ-024, BIZ-026, BIZ-027, BIZ-030,
+//! BIZ-031, BIZ-053, FEE-011, TERMS-016, TERMS-033; D-145, D-175, D-176, D-457, D-492, D-493).
 //!
 //! Sign-up starts from the category list, each "Open now" or "Coming later" by `licensing`'s
 //! `launch_open` map (LIC-046), before any license number; only coming-later choices put the
@@ -7,20 +7,29 @@
 //! source question, stores the business and its sign-up row with an audit row in one transaction,
 //! and then, outside it, creates the Stripe customer with no card (R11). The identity chain and
 //! activation are in `identity`.
+//!
+//! T193 adds what the sign-up screens need from the records: the masked record contact and its
+//! kind ([`MaskedContact`], BIZ-026), the "That number is old" wait that the next daily list with
+//! a new record contact ends ([`number_is_old`], [`resume_on_new_record`]), the 4-day review
+//! target ([`review_target`], BIZ-027), the plain-words fee summary ([`fee_summary`], BIZ-030),
+//! the trade count of the done screen ([`trade_count`]) and the one launch notice's sent-once
+//! claim ([`claim_launch_notice`], BIZ-031). The screens themselves are `portals`'.
 
 use askhava_adapters::api::PaymentsAdapter;
+use askhava_core::api::SettingsError;
 use askhava_licensing::api::{ClassMap, Opening};
 use askhava_ops::api::{Actor, AuditEntry, Change, audit};
 use askhava_payments::api::{
     BusinessId, EntityKey, EntityKind, ensure_customer, record_entity_keys,
 };
-use jiff::Timestamp;
-use secrecy::SecretString;
+use jiff::{SignedDuration, Timestamp, tz};
+use secrecy::{ExposeSecret, SecretString};
 use sha2::{Digest, Sha256};
 use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection, PgPool};
 
 use crate::about_us::AboutUsRefusal;
+use crate::identity::{RecordContacts, Step};
 use crate::models::{self, BusinessesError, db};
 use crate::status::AccountStatus;
 
@@ -184,6 +193,7 @@ pub async fn sign_up(
     let heard = form.heard_from.map(HeardFrom::code);
     let row = (mailbox, heard, form.g_code.as_deref(), now);
     models::insert_signup(&mut tx, business, row).await?;
+    set_trades(&mut tx, business, &form.categories).await?;
     let entry = AuditEntry {
         actor: Actor::Business(business),
         action: "businesses.signed_up",
@@ -306,4 +316,489 @@ pub async fn review_told(
     now: Timestamp,
 ) -> Result<(), BusinessesError> {
     models::set_review_told(db, business, now).await
+}
+
+/// BIZ-021, BIZ-031: stores the sign-up's chosen category codes, sorted and once each, for the
+/// waitlist done screen's count.
+async fn set_trades(
+    conn: &mut PgConnection,
+    business: Uuid,
+    categories: &[String],
+) -> Result<(), BusinessesError> {
+    let mut trades = categories.to_vec();
+    trades.sort_unstable();
+    trades.dedup();
+    let q = sqlx::query!(
+        "UPDATE businesses.signup SET trades = $2 WHERE business_id = $1",
+        business,
+        &trades
+    );
+    db(q.execute(conn).await).map(|_| ())
+}
+
+/// BIZ-024, D-179, D-288: the line every sign-up screen shows; the code still goes only to the
+/// record contact.
+pub const SOMEONE_ELSE_LINE: &str = "Someone else filling this in? Ask the owner to read you the \
+6 digits, or forward the text.";
+
+/// BIZ-026: the button that saves the sign-up until the record shows a new contact.
+pub const NUMBER_OLD_BUTTON: &str = "That number is old";
+
+/// BIZ-026, D-254: the button before a letter that saves the sign-up instead of mailing.
+pub const STOP_FIX_BUTTON: &str = "Stop, I'll fix my record first";
+
+/// BIZ-026, D-254: the `messaging` template sent when a daily list shows a new record contact.
+pub const RECORD_UPDATED_TEMPLATE: &str = "signup_record_updated";
+
+/// BIZ-030, WORD-002, D-356: the business statement of the plain-words box.
+pub const BUSINESS_STATEMENT: &str = "Ask Hava is not a contractor. It passes along this request \
+and the homeowner's choice. If the homeowner picks you, they hire you directly; Ask Hava doesn't \
+direct, schedule, supervise or pay for the work.";
+
+/// BIZ-030, FEE-013: days after a job closes that repeat picks from the same homeowner are free.
+pub const REPEAT_FREE_DAYS: u32 = 180;
+
+/// The kind of record contact a code would go to (BIZ-026).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ContactKind {
+    /// A record phone that gets texts.
+    Mobile,
+    /// A record phone that is a landline: never called (BIZ-046, D-366).
+    Landline,
+    /// The record email.
+    Email,
+    /// The record mailing address.
+    MailingAddress,
+}
+
+impl ContactKind {
+    /// The words the screen uses for the kind.
+    #[must_use]
+    pub const fn word(self) -> &'static str {
+        match self {
+            Self::Mobile => "mobile phone",
+            Self::Landline => "landline",
+            Self::Email => "email",
+            Self::MailingAddress => "mailing address",
+        }
+    }
+}
+
+/// A record contact as sign-up shows it before any code (BIZ-026): its kind and a masked value.
+/// It holds no full contact: a phone shows its last 4 digits, an email its first letter and
+/// domain, an address its town and ZIP.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct MaskedContact {
+    kind: ContactKind,
+    shown: String,
+}
+
+impl MaskedContact {
+    /// BIZ-026: the record contact the chain's `step` sends to; `place` is the record address's
+    /// town and ZIP. `None` when the record has no contact for the step.
+    #[must_use]
+    pub fn for_step(record: &RecordContacts, step: Step, place: (&str, &str)) -> Option<Self> {
+        match step {
+            Step::Text => record.texting_phone.as_ref().map(|p| Self::phone(p, false)),
+            Step::Email => record.email.as_ref().map(Self::email),
+            Step::Letter => record.has_address.then(|| Self {
+                kind: ContactKind::MailingAddress,
+                shown: format!("{} {}", place.0, place.1),
+            }),
+        }
+    }
+
+    /// BIZ-026, BIZ-046: a record phone, masked; `landline` marks one that is never texted or called.
+    #[must_use]
+    pub fn phone(value: &SecretString, landline: bool) -> Self {
+        let digits: Vec<char> = value
+            .expose_secret()
+            .chars()
+            .filter(char::is_ascii_digit)
+            .collect();
+        let last: String = digits[digits.len().saturating_sub(4)..].iter().collect();
+        let kind = if landline {
+            ContactKind::Landline
+        } else {
+            ContactKind::Mobile
+        };
+        Self {
+            kind,
+            shown: format!("(•••) •••-{last}"),
+        }
+    }
+
+    fn email(value: &SecretString) -> Self {
+        let v = value.expose_secret();
+        let shown = match (v.chars().next(), v.rsplit_once('@')) {
+            (Some(first), Some((_, domain))) => format!("{first}•••@{domain}"),
+            _ => "•••".to_owned(),
+        };
+        Self {
+            kind: ContactKind::Email,
+            shown,
+        }
+    }
+
+    /// The contact's kind.
+    #[must_use]
+    pub const fn kind(&self) -> ContactKind {
+        self.kind
+    }
+
+    /// The masked value.
+    #[must_use]
+    pub fn shown(&self) -> &str {
+        &self.shown
+    }
+
+    /// BIZ-026, D-366: the line shown before a code; a landline is never called, so its line
+    /// points to the email or letter step instead.
+    #[must_use]
+    pub fn line(&self) -> String {
+        match self.kind {
+            ContactKind::Landline => format!(
+                "The phone on your record, {}, is a landline, so we can't text it, and we never \
+call. Your code goes to the email on your record, or by letter if there's no email.",
+                self.shown
+            ),
+            ContactKind::MailingAddress => format!(
+                "We'll mail a letter with your 6-digit code to the address on your record in {}.",
+                self.shown
+            ),
+            ContactKind::Mobile => format!(
+                "We'll text your 6-digit code to the mobile phone on your ROC or city license \
+record: {}.",
+                self.shown
+            ),
+            ContactKind::Email => format!(
+                "We'll email your 6-digit code to the address on your ROC or city license record: \
+{}.",
+                self.shown
+            ),
+        }
+    }
+}
+
+/// BIZ-026, D-288: the "That number is old" and "Stop, I'll fix my record first" explanation,
+/// with the typical delay (a setting) before the daily list shows a change.
+#[must_use]
+pub fn fix_record_lines(delay_days: u32) -> [String; 3] {
+    [
+        "To change it, update your contact details with the Arizona Registrar of Contractors \
+(ROC). If you only have a city business license, update it with the city."
+            .to_owned(),
+        format!("Changes usually reach us about {delay_days} days after you make them."),
+        "Once we see the change, we'll email you a link to finish. Your code will go to your new \
+number or email."
+            .to_owned(),
+    ]
+}
+
+/// The record contacts a daily list shows, with the record's mailing address, so a change to any
+/// of the three is seen (BIZ-026). `address` is the full record address as `licensing` reads it.
+#[derive(Debug, Clone, Copy)]
+pub struct RecordSeen<'a> {
+    /// The texting phone and email from the record.
+    pub contacts: &'a RecordContacts,
+    /// The record's mailing address, if any.
+    pub address: Option<&'a SecretString>,
+}
+
+/// The keyed digests of the record's phone, email and address, in chain order, so a change is
+/// seen with no contact stored (PRIV-001). A missing contact digests as empty.
+fn contact_keys(secret: &SecretString, business: Uuid, seen: RecordSeen<'_>) -> [String; 3] {
+    let c = seen.contacts;
+    let id = business.to_string();
+    let values = [
+        ("phone", c.texting_phone.as_ref()),
+        ("email", c.email.as_ref()),
+        ("address", seen.address),
+    ];
+    values.map(|(kind, value)| {
+        let value = value.map(ExposeSecret::expose_secret).unwrap_or_default();
+        let parts = [
+            secret.expose_secret(),
+            "businesses.record_contacts",
+            &id,
+            kind,
+            value,
+        ];
+        let mut hash = Sha256::new();
+        for part in parts {
+            hash.update((part.len() as u64).to_be_bytes());
+            hash.update(part.as_bytes());
+        }
+        hash.finalize().iter().map(|b| format!("{b:02x}")).collect()
+    })
+}
+
+/// BIZ-026, D-178: "That number is old": saves the sign-up as waiting on its record, keyed to the
+/// record contacts it said were old. Only a sign-up whose code is not yet done waits.
+///
+/// # Errors
+/// [`BusinessesError::Refused`] for no such waiting sign-up; [`BusinessesError::Database`].
+pub async fn number_is_old(
+    conn: &mut PgConnection,
+    secret: &SecretString,
+    (business, seen): (Uuid, RecordSeen<'_>),
+    now: Timestamp,
+) -> Result<(), BusinessesError> {
+    let [phone, email, address] = contact_keys(secret, business, seen);
+    let q = sqlx::query!(
+        "UPDATE businesses.signup SET waiting_on_record_since = $2, old_text_key = $3, \
+         old_mail_key = $4, old_letter_key = $5 WHERE business_id = $1 AND NOT code_done",
+        business,
+        jiff_sqlx::ToSqlx::to_sqlx(now) as _,
+        phone,
+        email,
+        address
+    );
+    let done = db(q.execute(conn).await)?;
+    if done.rows_affected() == 1 {
+        Ok(())
+    } else {
+        Err(BusinessesError::Refused)
+    }
+}
+
+/// BIZ-026, D-1712: the first chain step whose record contact is present and differs from the one
+/// the business said was old, or `None` when no present contact changed.
+fn first_changed(seen: RecordSeen<'_>, old: &[String; 3], new: &[String; 3]) -> Option<Step> {
+    let present = [
+        (Step::Text, seen.contacts.texting_phone.is_some()),
+        (Step::Email, seen.contacts.email.is_some()),
+        (Step::Letter, seen.address.is_some()),
+    ];
+    present
+        .into_iter()
+        .zip(old.iter().zip(new))
+        .find(|((_, there), (o, n))| *there && o != n)
+        .map(|((step, _), _)| step)
+}
+
+/// BIZ-026, D-178, D-254, D-1712: run for a waiting sign-up when a daily list is read. When a
+/// present record contact differs from the one it said was old, the wait ends and the identity
+/// chain restarts at the first changed contact (an email-only change resumes at the email step,
+/// an address-only change at the letter), so the next `send_code` goes to the new record contact,
+/// never to the old one or a typed one; the caller then sends [`RECORD_UPDATED_TEMPLATE`].
+/// Returns whether it resumed.
+///
+/// # Errors
+/// [`BusinessesError::Database`].
+pub async fn resume_on_new_record(
+    conn: &mut PgConnection,
+    secret: &SecretString,
+    (business, seen): (Uuid, RecordSeen<'_>),
+) -> Result<bool, BusinessesError> {
+    let q = sqlx::query!(
+        "SELECT old_text_key AS \"p!\", old_mail_key AS \"e!\", old_letter_key AS \"a!\" \
+         FROM businesses.signup WHERE business_id = $1 AND waiting_on_record_since IS NOT NULL",
+        business
+    );
+    let Some(row) = db(q.fetch_optional(&mut *conn).await)? else {
+        return Ok(false);
+    };
+    let old = [row.p, row.e, row.a];
+    let Some(step) = first_changed(seen, &old, &contact_keys(secret, business, seen)) else {
+        return Ok(false);
+    };
+    let before = match step {
+        Step::Text => None,
+        Step::Email => Some(Step::Text.code()),
+        Step::Letter => Some(Step::Email.code()),
+    };
+    let q = sqlx::query!(
+        "UPDATE businesses.signup SET waiting_on_record_since = NULL, old_text_key = NULL, \
+         old_mail_key = NULL, old_letter_key = NULL, identity_step = $3 \
+         WHERE business_id = $1 AND old_text_key = $2",
+        business,
+        old[0],
+        before
+    );
+    Ok(db(q.execute(conn).await)?.rows_affected() == 1)
+}
+
+/// BIZ-026: whether the sign-up is waiting on its record.
+///
+/// # Errors
+/// [`BusinessesError::Database`].
+pub async fn waiting_on_record(
+    conn: &mut PgConnection,
+    business: Uuid,
+) -> Result<bool, BusinessesError> {
+    let q = sqlx::query_scalar!(
+        "SELECT waiting_on_record_since IS NOT NULL AS \"w!\" FROM businesses.signup \
+         WHERE business_id = $1",
+        business
+    );
+    Ok(db(q.fetch_optional(conn).await)?.unwrap_or(false))
+}
+
+/// The setting for [`SignupSettings::review_target_days`] (BIZ-027).
+pub const REVIEW_TARGET_KEY: &str = "ASKHAVA_BIZ_REVIEW_TARGET_DAYS";
+/// The setting for [`SignupSettings::list_delay_days`] (BIZ-026).
+pub const LIST_DELAY_KEY: &str = "ASKHAVA_BIZ_LIST_DELAY_DAYS";
+
+/// The sign-up screens' settings (BIZ-026, BIZ-027, D-223).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct SignupSettings {
+    /// Calendar days for Casey's needs-review decision, a target that blocks nothing (default 4).
+    pub review_target_days: u32,
+    /// The typical days until the daily list shows a record change (default 3).
+    pub list_delay_days: u32,
+}
+
+impl Default for SignupSettings {
+    fn default() -> Self {
+        Self {
+            review_target_days: 4,
+            list_delay_days: 3,
+        }
+    }
+}
+
+impl SignupSettings {
+    /// BIZ-026, BIZ-027: reads [`REVIEW_TARGET_KEY`] and [`LIST_DELAY_KEY`]; absent or empty keeps
+    /// the default. Every other key is ignored (`Settings::from_pairs` checks the names).
+    ///
+    /// # Errors
+    /// [`SettingsError::Invalid`] naming the key when a value is not a whole number from 1 to 30.
+    pub fn from_pairs<I>(pairs: I) -> Result<Self, SettingsError>
+    where
+        I: IntoIterator<Item = (String, String)>,
+    {
+        let mut s = Self::default();
+        for (name, value) in pairs {
+            let (key, slot) = match name.as_str() {
+                REVIEW_TARGET_KEY => (REVIEW_TARGET_KEY, &mut s.review_target_days),
+                LIST_DELAY_KEY => (LIST_DELAY_KEY, &mut s.list_delay_days),
+                _ => continue,
+            };
+            if value.trim().is_empty() {
+                continue;
+            }
+            *slot = value
+                .trim()
+                .parse::<u32>()
+                .ok()
+                .filter(|d| (1..=30).contains(d))
+                .ok_or(SettingsError::Invalid(key))?;
+        }
+        Ok(s)
+    }
+}
+
+/// BIZ-027, D-204, D-223: the decision target of a sign-up in needs review since `since`, in
+/// calendar days; it blocks nothing.
+#[must_use]
+pub fn review_target(since: Timestamp, days: u32) -> Timestamp {
+    since + SignedDuration::from_hours(i64::from(days) * 24)
+}
+
+/// BIZ-027: the owner portal's service-target line, the date in Arizona time (UTC-7, no DST).
+#[must_use]
+pub fn review_target_line(since: Timestamp, days: u32) -> String {
+    let due = review_target(since, days).to_zoned(tz::TimeZone::fixed(tz::offset(-7)));
+    format!(
+        "Decide by {}, {days} calendar days after this came in. Nothing is held up in the meantime.",
+        due.strftime("%B %-d")
+    )
+}
+
+/// The numbers of the plain-words fee box, read from the fee settings (BIZ-030, D-173).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct FeeNumbers {
+    /// The three introduction fees by job size, in cents (`payments::api::Tier::cents`).
+    pub tier_cents: [u64; 3],
+    /// Business-hour minutes to confirm a pick (the Confirm window setting, PICK-019).
+    pub confirm_minutes: u32,
+    /// Minutes to confirm an emergency pick (PICK-044).
+    pub emergency_minutes: i64,
+}
+
+/// The Confirm window in words: whole business hours, with any leftover minutes (D-1709).
+fn business_hours(minutes: u32) -> String {
+    let (h, m) = (minutes / 60, minutes % 60);
+    match (h, m) {
+        (_, 0) => format!("{h} business hours"),
+        (0, _) => format!("{m} business minutes"),
+        _ => format!("{h} business hours and {m} minutes"),
+    }
+}
+
+/// Whole dollars, or dollars and cents.
+fn dollars(cents: u64) -> String {
+    if cents.is_multiple_of(100) {
+        format!("${}", cents / 100)
+    } else {
+        format!("${}.{:02}", cents / 100, cents % 100)
+    }
+}
+
+/// BIZ-030, D-173, D-205, D-248, D-349, D-357, D-380, D-406, D-1494: the plain-words summary of
+/// fees, refunds and card use, every number from `n`, in the spec's order.
+#[must_use]
+pub fn fee_summary(n: &FeeNumbers) -> Vec<String> {
+    let [s, m, l] = n.tier_cents.map(dollars);
+    vec![
+        format!("Free to join. Pay only when you confirm a pick: {s} / {m} / {l} by job size. Refund if you can't reach them."),
+        format!("Picks must be confirmed within {} (8 a.m. to 8 p.m., every day), or within {} minutes for an emergency job. If you check email only once or twice a day, add a backup address for someone who checks more often.", business_hours(n.confirm_minutes), n.emergency_minutes),
+        "It's an introduction fee for a homeowner who chose you.".to_owned(),
+        format!("You pay one fixed fee when you confirm a pick: {s}, {m} or {l} by job size. It's not a share of the job. If you call twice inside the homeowner's window and can't reach them, the refund rule gives the fee back without you asking."),
+        "It's a fixed introduction fee, never a share of the job, and it doesn't depend on the work being done or paid for.".to_owned(),
+        BUSINESS_STATEMENT.to_owned(),
+        "The homeowner sees every quote and picks one business: you. It isn't shared with anyone else.".to_owned(),
+        "A new fee never applies until you accept it.".to_owned(),
+        format!("Repeat picks from the same homeowner are free for {REPEAT_FREE_DAYS} days after the job closes."),
+        "Fees follow the published schedule, and a change needs your OK first.".to_owned(),
+        "Statements download as CSV.".to_owned(),
+        "If many picks in your trade end without a hire, the Ask Hava owner reviews it and may add a credit.".to_owned(),
+    ]
+}
+
+/// BIZ-031, CARD-019, D-187: the done screen's <n> for `category`: the active businesses with a
+/// job type in it (the businesses a card in that trade goes to), or with `waitlist` the waitlisted
+/// businesses that chose it at sign-up, always counting `business` itself.
+///
+/// # Errors
+/// [`BusinessesError::Database`].
+pub async fn trade_count(
+    conn: &mut PgConnection,
+    business: Uuid,
+    category: &str,
+    waitlist: bool,
+) -> Result<u32, BusinessesError> {
+    let q = sqlx::query_scalar!(
+        "SELECT count(*) AS \"n!\" FROM businesses.business b WHERE b.id = $1 \
+         OR (NOT $3 AND b.status = 'active' AND EXISTS (SELECT 1 FROM businesses.job_type_choice c \
+             WHERE c.business_id = b.id AND c.category = $2)) \
+         OR ($3 AND b.status = 'waitlist' AND EXISTS (SELECT 1 FROM businesses.signup s \
+             WHERE s.business_id = b.id AND $2 = ANY (s.trades)))",
+        business,
+        category,
+        waitlist
+    );
+    let n = db(q.fetch_one(conn).await)?;
+    u32::try_from(n).map_err(|_| BusinessesError::Database)
+}
+
+/// BIZ-031, CON-019, D-187, D-312: claims the one launch notice email ("requests in your trade
+/// start", or the waitlist's "it opens"), an account notice; `true` only the first time, so the
+/// caller sends it once.
+///
+/// # Errors
+/// [`BusinessesError::Database`].
+pub async fn claim_launch_notice(
+    conn: &mut PgConnection,
+    business: Uuid,
+    now: Timestamp,
+) -> Result<bool, BusinessesError> {
+    let q = sqlx::query!(
+        "UPDATE businesses.signup SET launch_notice_sent_at = $2 \
+         WHERE business_id = $1 AND launch_notice_sent_at IS NULL",
+        business,
+        jiff_sqlx::ToSqlx::to_sqlx(now) as _
+    );
+    Ok(db(q.execute(conn).await)?.rows_affected() == 1)
 }

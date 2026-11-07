@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE businesses.signup SET launch_notice_sent_at = $2 WHERE business_id = $1 AND launch_notice_sent_at IS NULL",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "4c5c9300970d827f393cbe860ddb17a0c6d9b1f0e65a2dfd3501d5ceaaf852e2"
+}

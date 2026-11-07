@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{#- The business sign-up screens (T193; BIZ-024, BIZ-026, BIZ-030, BIZ-031, LIC-047, WEB-024,
+    TD-BIZ-07, TD-BIZ-10, TD-BIZ-12, TD-BIZ-27). Every screen: the WEB-024 notice line and the
+    "Someone else filling this in?" line. The form: categories, the pest attestation, the
+    plain-words fee box, then the Terms link. No full record contact is ever shown. The pest
+    fields are not `required`: the server checks them only for a business that ticks pest
+    control (LIC-047). -#}
+{% block title %}{{ title }}{% endblock %}
+{% block main %}
+<h1>{{ title }}</h1>
+<p id="notice-line"{% if notice_lang != "en" %} lang="{{ notice_lang }}"{% endif %}>{{ notice }}</p>
+<p id="someone-else">{{ someone_else }}</p>
+{% for line in lines %}<p class="signup-line">{{ line }}</p>
+{% endfor %}
+{% if !links.is_empty() %}<ul id="signup-links">
+{% for (href, label) in links %}<li><a href="{{ href }}">{{ label }}</a></li>
+{% endfor %}</ul>
+{% endif %}
+{% if !categories.is_empty() %}
+<form method="post" action="/b/signup/start" id="signup-form" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<p><label for="email">Email for job requests and picks</label>
+<input type="email" id="email" name="email" autocomplete="email"></p>
+<fieldset id="categories"><legend>What work do you do?</legend>
+{% for (code, name, label) in categories %}<p><input type="checkbox" id="cat-{{ code }}" name="category" value="{{ code }}">
+<label for="cat-{{ code }}">{{ name }} ({{ label }})</label></p>
+{% endfor %}</fieldset>
+{% if pest %}<fieldset id="pest-attestation"><legend>Pest control license</legend>
+<p><input type="checkbox" id="pest-license" name="pest_license" value="yes">
+<label for="pest-license">{{ pest_attestation }}</label></p>
+<p><label for="pest-number">License number</label>
+<input type="text" id="pest-number" name="pest_number"></p>
+<p><input type="checkbox" id="pest-wdo" name="pest_category" value="wood_destroying">
+<label for="pest-wdo">My license includes the wood-destroying organism (termite) category</label></p>
+<p><input type="checkbox" id="pest-weed" name="pest_category" value="weed_control">
+<label for="pest-weed">My license includes the weed control category</label></p>
+</fieldset>
+{% endif %}
+<section id="fee-summary" aria-labelledby="fee-summary-title">
+<h2 id="fee-summary-title">How you're charged</h2>
+<ul>
+{% for line in fee_lines %}<li>{{ line }}</li>
+{% endfor %}</ul>
+</section>
+<p id="terms-link"><a href="/terms/business">Read the business terms</a></p>
+<button type="submit">Next: get your code</button>
+</form>
+{% endif %}
+{% for (action, label) in buttons %}
+<form method="post" action="/b/signup/{{ action }}" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<button type="submit" id="button-{{ action }}">{{ label }}</button>
+</form>
+{% endfor %}
+{% endblock %}
