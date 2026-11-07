@@ -43,12 +43,14 @@ from __future__ import annotations
 
 import dataclasses
 import glob
+import hashlib
 import importlib.util
 import json
 import os
 import random
 import re
 import shlex
+import shutil
 import subprocess
 import tempfile
 import time
@@ -72,7 +74,9 @@ DECISIONS_FILE = "docs/decisions.md"  # read from main to reserve decision numbe
 TASKS_FILE = "kit/tasks.json"  # read from main for a plan-fix re-queue (D-677)
 PUSH_RETRIES = 3
 SMOKE_TIMEOUT = 540  # seconds for scripts/smoke.sh, under the session's 600-second Bash call so the runner answers first (D-1178)
-CARGO_CLEAN_MEMBERS = ("cargo", "clean", "--workspace")  # after a smoke run, in the smoke's target dir (D-1451)
+SMOKE_TARGET = "smoke"  # the smoke's own CARGO_TARGET_DIR, a folder of the cached `target` (D-1890)
+SMOKE_TREE = "askhava-smoke"  # the smoke worktree's fixed folder under RUNNER_TEMP, the same every run (D-1890)
+SMOKE_MTIMES = "smoke-mtimes.json"  # in the smoke's target dir: each tracked file's blob and the mtime it gets (D-1890)
 PREHANDIN = "scripts/prehandin.sh"  # the pre-hand-in gate; main's copy runs on a submitted head at --after (D-1300)
 PREHANDIN_TIMEOUT = 240  # seconds for its --quick part (about 20 s measured), well inside --after's 600-second Bash call
 PREHANDIN_RED = "pre-hand-in gate red"  # how a gate failure's log starts; runner/__main__.py `after` holds on it (D-1300)
@@ -127,7 +131,7 @@ def run_command(args: list[str], stdin: str | None, cwd: Path) -> tuple[int, str
         done = _run(long_args, stdin, cwd, _long_token_env(long_args))
         if done.returncode == 0:
             return done.returncode, done.stdout, done.stderr
-    smoke = args[:2] == ["bash", "scripts/smoke.sh"] or tuple(args) == CARGO_CLEAN_MEMBERS
+    smoke = args[:2] == ["bash", "scripts/smoke.sh"]
     done = _run(args, stdin, cwd, _smoke_env() if smoke else _env_for(args), _timeout_for(args))
     return done.returncode, done.stdout, done.stderr
 
@@ -167,12 +171,154 @@ def _redact_gate_row(row: str) -> str:
 
 
 def _smoke_env() -> dict[str, str]:
-    """The smoke test's environment: the checkout's `target` as CARGO_TARGET_DIR, so a smoke run in a
-    detached worktree reuses the job's cached build instead of compiling the workspace from cold in a
-    temporary directory (D-1178); an explicit CARGO_TARGET_DIR is kept."""
-    env = dict(os.environ)
-    env.setdefault("CARGO_TARGET_DIR", str(Path(os.environ.get("GITHUB_WORKSPACE") or Path.cwd()) / "target"))
-    return env
+    """The smoke test's environment: CARGO_TARGET_DIR is the smoke's own target dir (`smoke_target_dir`), and
+    CARGO_INCREMENTAL is 0 as in `Ci`, since the cache keeps that dir and rustc's incremental data was about a
+    third of it (4.7 of 15 GB measured, D-1890)."""
+    return {**os.environ, "CARGO_TARGET_DIR": str(smoke_target_dir()), "CARGO_INCREMENTAL": "0"}
+
+
+def smoke_target_dir() -> Path:
+    """The smoke's own target dir, `smoke` inside the checkout's `target` (or inside an explicit
+    CARGO_TARGET_DIR), so the job's Rust cache keeps it (D-1178) but the worker's builds never share it
+    (D-1890): a member artifact built in the smoke worktree has that worktree's path compiled in through
+    `env!("CARGO_MANIFEST_DIR")`, which is why D-1451 cleaned the members after every smoke."""
+    base = os.environ.get("CARGO_TARGET_DIR") or str(Path(os.environ.get("GITHUB_WORKSPACE") or Path.cwd()) / "target")
+    return Path(base) / SMOKE_TARGET
+
+
+def smoke_tree_dir() -> Path:
+    """The smoke worktree's path: SMOKE_TREE under RUNNER_TEMP (the system temp dir outside Actions). It is
+    the same every run, so the paths compiled into the smoke's cached artifacts stay true (D-1890)."""
+    return Path(os.environ.get("RUNNER_TEMP") or tempfile.gettempdir()) / SMOKE_TREE
+
+
+def pin_smoke_mtimes(tree: Path, index: str, manifest: Path, now_ns: int) -> int:
+    """Give every tracked file of the smoke worktree, and every folder holding one, a modification time Cargo
+    can trust (D-1890); returns how many got the run's time.
+
+    Cargo calls a workspace member's artifact fresh when no source file (nor any entry of a folder a build
+    script watches, such as `askhava-core`'s `migrations`) is newer than its last build, and a fresh checkout
+    makes everything new, so every smoke rebuilt every member. `manifest` keeps, per path, what it last held
+    (a file's blob; a folder's `/`-suffixed key, the hash of its entry names) and the time it was given: an
+    unchanged one keeps that time, which predates every build that read it; a new or changed one gets the
+    run's time, later than `now_ns` and every recorded time, so after every build so far even with a clock
+    that stepped back. A change under `.sqlx/` (the offline query data, which no dep-info lists) gives every
+    path the run's time. The manifest is deleted before the first change and written back only when every
+    path is pinned, so a failure part-way (see `stamp_tree_now`) or a red or timed-out run never leaves a
+    record the tree does not match; an unreadable one makes everything new (a full rebuild). `index` is
+    `git ls-files -s -z`."""
+    old = _read_mtimes(manifest)
+    manifest.unlink(missing_ok=True)
+    held = _smoke_entries(tree, index)
+    run_ns = max([now_ns, *(v[1] + 1 for v in old.values())])
+    changed = {k for k, v in held.items() if old.get(k, [None])[0] != v} | (set(old) - set(held))
+    query_data = any(".sqlx" in k.split("/") for k in changed)
+    new = {}
+    for path, what in held.items():
+        stamp = run_ns if query_data or path in changed else old[path][1]
+        os.utime(tree / path.rstrip("/") if path != "/" else tree, ns=(stamp, stamp))
+        new[path] = [what, stamp]
+    manifest.parent.mkdir(parents=True, exist_ok=True)
+    part = manifest.with_suffix(".part")
+    part.write_text(json.dumps(new), encoding="utf-8")
+    part.replace(manifest)
+    return sum(1 for v in new.values() if v[1] == run_ns)
+
+
+def stamp_tree_now(tree: Path, manifest: Path) -> None:
+    """After a failed pin (D-1890): no manifest, and every file and folder of the tree at the current time, so
+    nothing a half-done pin set back in time can make an old artifact look fresh (a full rebuild)."""
+    manifest.unlink(missing_ok=True)
+    stamp = time.time_ns()
+    for top, dirs, files in os.walk(tree):
+        for name in [*files, *dirs]:
+            if not os.path.islink(os.path.join(top, name)):
+                os.utime(os.path.join(top, name), ns=(stamp, stamp))
+    os.utime(tree, ns=(stamp, stamp))
+
+
+ARTIFACT = re.compile(r"^(.+?)-[0-9a-f]{16}(\..*)?$")  # a target-dir entry: a unit's name, its hash, an extension
+SEED_DIRS = ("deps", "build", ".fingerprint")  # the folders of `debug` that hold dependency artifacts
+SEED_MARGIN = 5 * 1024**3  # bytes of disk left free beyond the copy, or the smoke target is not seeded
+
+
+def seed_files(debug: Path, members: set[str]) -> list[Path]:
+    """The worker build's dependency artifacts under `debug` (its `debug` folder): every entry of SEED_DIRS
+    whose unit name is not a workspace package or target (`members`, with `-` and `_` spellings; `lib`
+    prefixes stripped). Member artifacts and anything unrecognised stay out: they only rebuild (D-1890)."""
+    names = members | {m.replace("-", "_") for m in members}
+    out: list[Path] = []
+    for folder in SEED_DIRS:
+        for entry in sorted((debug / folder).glob("*")) if (debug / folder).is_dir() else []:
+            match = ARTIFACT.match(entry.name)
+            unit = match.group(1) if match else ""
+            if unit and unit not in names and not (unit.startswith("lib") and unit[3:] in names):
+                out.append(entry)
+    return out
+
+
+def copy_seed(debug: Path, into: Path, entries: list[Path]) -> None:
+    """Copy `entries` (real copies, never hard links: Cargo rewrites fingerprint and dep-info files in place,
+    and a shared one would let the smoke's writes reach the worker's build, the T057 failure, D-1451)."""
+    for entry in entries:
+        dest = into / entry.relative_to(debug)
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        if entry.is_dir():
+            shutil.copytree(entry, dest, symlinks=True, dirs_exist_ok=True)
+        else:
+            shutil.copy2(entry, dest)
+
+
+def _tree_size(entries: list[Path]) -> int:
+    """The bytes under `entries` (files and folders, links not followed)."""
+    total = 0
+    for entry in entries:
+        if entry.is_file():
+            total += entry.stat().st_size
+            continue
+        for top, _, files in os.walk(entry):
+            total += sum(os.lstat(os.path.join(top, f)).st_size for f in files)
+    return total
+
+
+def _smoke_entries(tree: Path, index: str) -> dict[str, str]:
+    """What each tracked regular file holds (its blob) and, under its path plus `/` (the root as `/`), what
+    each folder above one holds (a hash of its tracked entry names), files first and the deepest folder
+    first. Submodules and links are left out: Cargo reads the file a link points at."""
+    files: dict[str, str] = {}
+    folders: dict[str, set[str]] = {}
+    for row in filter(None, index.split("\0")):
+        meta, _, path = row.partition("\t")
+        mode, blob = (meta.split() + ["", ""])[:2]
+        if mode == "160000" or (tree / path).is_symlink() or not (tree / path).is_file():
+            continue
+        files[path] = blob
+        parts = path.split("/")
+        for depth in range(len(parts)):
+            folders.setdefault("/".join(parts[:depth]) + "/", set()).add(parts[depth])
+    held = {k: hashlib.sha256("\n".join(sorted(v)).encode()).hexdigest() for k, v in folders.items()}
+    ordered = sorted(held, key=lambda k: -k.count("/"))
+    return {**files, **{k: held[k] for k in ordered}}
+
+
+def _member_names(metadata: dict[str, Any]) -> set[str]:
+    """Every workspace package's name and each of its targets' names, from `cargo metadata --no-deps`."""
+    names: set[str] = set()
+    for package in metadata["packages"]:
+        names.add(package["name"])
+        names.update(target["name"] for target in package["targets"])
+    return names
+
+
+def _read_mtimes(manifest: Path) -> dict[str, list[Any]]:
+    """The smoke's mtime manifest, or {} when it is missing or unreadable (every file then counts as new)."""
+    try:
+        data = json.loads(manifest.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    if not isinstance(data, dict):
+        return {}
+    return {k: v for k, v in data.items() if isinstance(v, list) and len(v) == 2 and isinstance(v[1], int)}
 
 
 def _run(args: list[str], stdin: str | None, cwd: Path, env: dict[str, str] | None, timeout: int = 600) -> subprocess.CompletedProcess[str]:
@@ -831,40 +977,72 @@ class GitHubEnv:
                 "decisions": sorted(set(st.decision_numbers(self._show(commit, DECISIONS_FILE) or "")))}
 
     def smoke_main(self) -> tuple[bool, str]:
-        """bash scripts/smoke.sh in a detached worktree of main's head (the runner's own tool run)."""
+        """bash scripts/smoke.sh in a detached worktree of main's head (the runner's own tool run), at the
+        fixed `smoke_tree_dir` and building into `smoke_target_dir` with pinned mtimes (D-1890)."""
         head = self.main_head()
         if self.dry_run:
             self.log.append(f"dry-run: smoke test not run on {head[:12]}")
             return True, head
         self.smoke_timed_out = False
-        with tempfile.TemporaryDirectory() as tmp:
-            tree = Path(tmp) / "main"
-            self.git("worktree", "add", "--detach", str(tree), head)
-            try:
-                code, out, err = self._run(["bash", "scripts/smoke.sh"], None, tree)
-            except subprocess.TimeoutExpired:
-                # A smoke test that outruns the budget is not a crash and not a verdict on main: the
-                # cycle notes it (never a D-498 strike) and the next run tries again (D-1178).
-                code, out, err = 124, "", f"smoke timed out after {SMOKE_TIMEOUT} seconds"
-                self.smoke_timed_out = True
-            finally:
-                self.git("worktree", "remove", "--force", str(tree), check=False)
-                self._forget_smoke_build()
+        tree = smoke_tree_dir()
+        self._drop_smoke_tree(tree)
+        self.git("worktree", "add", "--detach", str(tree), head)
+        try:
+            self._seed_smoke_target(tree)
+            self._pin_smoke_tree(tree)
+            code, out, err = self._run(["bash", "scripts/smoke.sh"], None, tree)
+        except subprocess.TimeoutExpired:
+            # A smoke test that outruns the budget is not a crash and not a verdict on main: the
+            # cycle notes it (never a D-498 strike) and the next run tries again (D-1178).
+            code, out, err = 124, "", f"smoke timed out after {SMOKE_TIMEOUT} seconds"
+            self.smoke_timed_out = True
+        finally:
+            self._drop_smoke_tree(tree)
         tail = (out + err).strip().splitlines()
         self.log.append(f"smoke on {head[:12]}: exit {code}; {tail[-1] if tail else ''}")
         return code == 0, head
 
-    def _forget_smoke_build(self) -> None:
-        """`cargo clean --workspace` after a smoke run (D-1451): the smoke built the workspace's own crates
-        from a fresh temporary worktree into the shared target, and those artifacts (with that worktree's
-        paths compiled in through `env!("CARGO_MANIFEST_DIR")`) are newer than the checkout's sources, so
-        Cargo served them to the worker as fresh: T057's `fake_data` read `/tmp/tmp…/main/scripts/pii_scan.py`.
-        Dependencies stay built; only the workspace members rebuild. Skipped without a Cargo.toml."""
-        if not (self.root / "Cargo.toml").exists():
+    def _drop_smoke_tree(self, tree: Path) -> None:
+        """Remove the smoke worktree, and anything a crashed run left at its fixed path, so `worktree add` works."""
+        self.git("worktree", "remove", "--force", str(tree), check=False)
+        shutil.rmtree(tree, ignore_errors=True)
+        self.git("worktree", "prune", check=False)
+
+    def _pin_smoke_tree(self, tree: Path) -> None:
+        """`pin_smoke_mtimes` on the smoke worktree; on any failure `stamp_tree_now` (no manifest, a full build)."""
+        manifest = smoke_target_dir() / SMOKE_MTIMES
+        code, index, err = self._run(["git", "ls-files", "-s", "-z"], None, tree)
+        try:
+            if code != 0:
+                raise OSError(err.strip()[-200:] or f"git ls-files exit {code}")
+            fresh = pin_smoke_mtimes(tree, index, manifest, time.time_ns())
+        except (OSError, ValueError) as exc:
+            self.log.append(f"smoke mtimes not pinned, all new: {exc}")
+            try:
+                stamp_tree_now(tree, manifest)
+            except OSError as again:
+                self.log.append(f"smoke tree not stamped: {again}")
             return
-        code, _, err = self._run(list(CARGO_CLEAN_MEMBERS), None, self.root)
-        if code != 0:
-            self.log.append(f"cargo clean --workspace after the smoke failed: {err.strip()[-200:]}")
+        self.log.append(f"smoke mtimes: {fresh} new or changed paths")
+
+    def _seed_smoke_target(self, tree: Path) -> None:
+        """When the smoke target has no dependency builds yet (the first smoke after D-1890, or a cache entry
+        without it), copy the worker build's dependency artifacts into it, so the smoke compiles only the
+        members and fits SMOKE_TIMEOUT. Skipped, and logged, when the disk is short; never fails the smoke."""
+        smoke, debug = smoke_target_dir(), smoke_target_dir().parent / "debug"
+        if any((smoke / "debug" / "deps").glob("*")) or not (debug / "deps").is_dir():
+            return
+        code, out, _ = self._run(["cargo", "metadata", "--no-deps", "--format-version", "1", "--offline"], None, tree)
+        try:
+            members = _member_names(json.loads(out)) if code == 0 else set()
+            entries = seed_files(debug, members) if members else []
+            need, free = _tree_size(entries), shutil.disk_usage(smoke.parent).free
+            self.log.append(f"smoke target seed: {len(entries)} entries, {need >> 20} MB, {free >> 20} MB free")
+            if entries and free > need + SEED_MARGIN:
+                (smoke / SMOKE_MTIMES).unlink(missing_ok=True)
+                copy_seed(debug, smoke / "debug", entries)
+        except (OSError, ValueError, KeyError, TypeError) as exc:
+            self.log.append(f"smoke target not seeded: {exc}")
 
     def main_checks_green(self, head: str) -> bool | None:
         """True when `Ci`, `Twin` and `Ally` all concluded success for that commit of main; False when
