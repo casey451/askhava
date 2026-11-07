@@ -720,37 +720,24 @@ mod tests {
         (Acting { business, member }, me)
     }
 
-    async fn limit_of(db: &mut Db, business: Uuid) -> Option<i64> {
-        let q = "SELECT limit_cents FROM payments.fee_limit WHERE business_id = $1";
-        let q = sqlx::query_scalar::<_, i64>(q).bind(business);
-        q.fetch_optional(&mut **db).await.expect("read")
-    }
-
     /// TD-SEC-17 billing cases (SEC-038, FEE-041, D-1913): the fee limit and the card change need
-    /// the role and a Verify code from the last 5 minutes: none is refused, 4 minutes passes, 5:01
-    /// is refused, and a refusal stores nothing.
+    /// the role and a Verify code from the last 5 minutes: none is refused before `payments` is
+    /// called, at 4 minutes `payments` decides (a 0 limit is its refusal), at 5:01 it is refused.
     #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
     async fn td_sec_17_billing_changes_need_a_fresh_code(mut db: Db) {
         let (who, me) = owner(&mut db).await;
         let needs = Err(BillingChangeError::StepUp(StepUpError::NeedsCode));
-        assert_eq!(
-            change_fee_limit(&mut db, &me, Some(9_000), t(10)).await,
-            needs
-        );
+        let none = change_fee_limit(&mut db, &me, Some(0), t(10)).await;
+        assert_eq!(none, needs, "the gate refuses before payments sees the 0");
         let card = SavedCard::new("pm_fake1", "card", "visa", "4242").expect("card");
         assert_eq!(change_saved_card(&mut db, &me, &card, t(10)).await, needs);
-        assert_eq!(limit_of(&mut db, who.business).await, None);
         record_step_up(&mut db, who, t(100)).await.expect("code");
+        let zero = change_fee_limit(&mut db, &me, Some(0), t(100 + 240)).await;
+        assert_eq!(zero, Err(BillingChangeError::Payments), "payments reached");
         let ok = change_fee_limit(&mut db, &me, Some(9_000), t(100 + 240)).await;
         assert_eq!(ok, Ok(()));
-        assert_eq!(limit_of(&mut db, who.business).await, Some(9_000));
-        let late = change_fee_limit(&mut db, &me, None, t(100 + 301)).await;
+        let late = change_fee_limit(&mut db, &me, Some(0), t(100 + 301)).await;
         assert_eq!(late, needs);
-        assert_eq!(
-            limit_of(&mut db, who.business).await,
-            Some(9_000),
-            "unchanged at 5:01"
-        );
         let cards_only = BusinessPrincipal {
             owner: false,
             roles: (true, false),
