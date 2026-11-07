@@ -28,6 +28,7 @@ mod channel_preference;
 mod complaint_holds;
 mod complaints;
 mod consent;
+mod email_verification;
 mod identity;
 mod models;
 mod rules;

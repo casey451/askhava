@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE businesses.mailbox_check SET tries = tries + 1 WHERE id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "b355cdce41236af99ada837b1c64b483ca4c12c7dd1dccc04fcdddb7ff26d569"
+}

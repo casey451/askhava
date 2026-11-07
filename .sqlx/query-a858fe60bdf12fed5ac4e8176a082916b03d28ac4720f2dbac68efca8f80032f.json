@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT mailbox_id FROM businesses.mailbox_check WHERE business_id = $1 AND returned_at IS NOT NULL ORDER BY returned_at",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "mailbox_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "businesses.mailbox_check",
+            "name": "mailbox_id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "a858fe60bdf12fed5ac4e8176a082916b03d28ac4720f2dbac68efca8f80032f"
+}
