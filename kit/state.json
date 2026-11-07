@@ -15288,7 +15288,7 @@
     "T094",
     "T250"
    ],
-   "status": "MERGE_PENDING",
+   "status": "DONE",
    "attempts": 1,
    "slug": "portals-business-signin",
    "type": "build",
@@ -15349,13 +15349,62 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 69,
      "head_sha": "1506f9fc127eba9f4bdffa60d71957e3fec46d2d",
-     "pr": null,
-     "checks": null,
+     "pr": 315,
+     "checks": [
+      {
+       "name": "backup",
+       "conclusion": "cancelled"
+      },
+      {
+       "name": "keeper",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "gate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-07T03:50:32Z",
      "ended_at": "2026-11-07T04:14:33Z",
-     "result": "MERGE_PENDING"
+     "result": "done"
     }
    ],
    "reviewed_sha": "2e0dd835fbb801b5c620a7e213f0c2aa48bfa8b2",
@@ -15388,7 +15437,33 @@
     }
    ],
    "update_waiting_since": null,
-   "update_push_failures": null
+   "update_push_failures": null,
+   "merged_sha": "ec41a5869889d71c55b2c9c189861c5a4c8a86e4",
+   "merged_at": "2026-11-07T04:28:13Z",
+   "files": [
+    ".sqlx/query-06b18123b220507c81085b5aa76bbd12760e77c13aba381506513520ecaa61ba.json",
+    ".sqlx/query-084fb24360f4e099b6ce1d3b626857b759cabb8f2c849bae3285d006687850d8.json",
+    ".sqlx/query-08a0a3ec078822cbba7b3cea63e335af1cbb2311193eb05aac52aa6ae001ab15.json",
+    ".sqlx/query-52099a764078e9b975059e187eb4c0cdc873c6b499b3ca451c7fe94bd803ca56.json",
+    ".sqlx/query-6412e9ae1ae08f9aceda2a67f11dbc28590a028ade7d594ef56e6c99b3b78e2d.json",
+    ".sqlx/query-6aa3319e989954691e34bf5ea1d7cec3c4dbfa45dffcfb59ac529cb47b8df801.json",
+    ".sqlx/query-b71e285db85b4bbb43f2c886ea38d1369c77ad299903827f2f1106fe3dcde79a.json",
+    ".sqlx/query-cd220c14ca3e169de61a257bf1d22d19c752efccc23412f6f0b3c3f274703071.json",
+    "Cargo.lock",
+    "app/portals/CLAUDE.md",
+    "app/portals/src/api.rs",
+    "app/portals/src/business_auth.rs",
+    "app/portals/src/confirm_pay.rs",
+    "app/portals/src/lib.rs",
+    "app/portals/src/models.rs",
+    "app/portals/templates/business_signin.html",
+    "app/server/src/lib.rs",
+    "docs/architecture.md",
+    "docs/decisions.md",
+    "migrations/0123_portals_business_signin.sql",
+    "tests/security/Cargo.toml",
+    "tests/security/tests/business_signin.rs"
+   ]
   },
   {
    "id": "T194",
@@ -20840,7 +20915,7 @@
    }
   }
  },
- "updated_at": "2026-11-07T04:19:10Z",
+ "updated_at": "2026-11-07T04:30:21Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -20938,7 +21013,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "9a2a36bff4ecf9c5b0a3efb186df501535e48f9c",
+ "runner_sha": "ec41a5869889d71c55b2c9c189861c5a4c8a86e4",
  "starter": "actions",
  "smoke_runs": [
   {

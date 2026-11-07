@@ -1,23 +1,23 @@
 # Ask Hava build status
 
-Updated 2026-11-07T04:19:10Z by runner 9a2a36bff4ec (actions).
+Updated 2026-11-07T04:30:21Z by runner ec41a5869889 (actions).
 
-**Idle since 04:14Z; 131 of 242 done; week 32% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 04:28Z; 132 of 242 done; week 32% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 131 of 242 build tasks (owner gates not counted)
+- **Tasks done:** 132 of 242 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 04:14Z (no task in progress)
+- **Lane:** idle since 04:28Z (no task in progress)
 - **Week:** 32% used, 136.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:19Z, 0 min before this update
+- **Last run:** 04:19Z, 11 min before this update
 - **Keeper:** last ran 04:19Z, next wake 04:39Z
 
 ## Needs attention
-- nothing
+- Strict plan check red: 2 problem(s) on tasks still to run (+1 on DONE tasks); first: T253: stored context_pct 30% but it measures 34%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T084 | portals: business one-time sign-in link and 30-day sessions | MERGE_PENDING | 2 | 24 min | 04:14Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
+| T084 | portals: business one-time sign-in link and 30-day sessions | done | 2 | 24 min | 04:14Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T084 | portals: business one-time sign-in link and 30-day sessions | check_failed | 1 | 29 min | 03:36Z |  |
 | T083 | businesses: complaint replies, 3 in 90 days pause, alerts | done | 1 | 76 min | 02:49Z |  |
 | T082 | businesses: E-SIGN consent box, welcome text, business STOP | done | 1 | 53 min | 01:13Z |  |
@@ -52,8 +52,8 @@ Updated 2026-11-07T04:19:10Z by runner 9a2a36bff4ec (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 213 of 731 (29.1%) · partial 242 · unstarted 276
-**Tasks merged (throughput only):** 131 of 242
+**Requirements verified:** 213 of 731 (29.1%) · partial 247 · unstarted 271
+**Tasks merged (throughput only):** 132 of 242
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -73,7 +73,7 @@ Updated 2026-11-07T04:19:10Z by runner 9a2a36bff4ec (actions).
 | quiet-hours | 7 | 2 | 0 | 9 |
 | quotes-pick | 16 | 27 | 13 | 56 |
 | recurring | 7 | 1 | 3 | 11 |
-| security | 10 | 22 | 22 | 54 |
+| security | 10 | 27 | 17 | 54 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 1 | 27 | 28 |
 | wording | 2 | 2 | 28 | 32 |
@@ -88,7 +88,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 11 of 58 done
+- stage 4: 12 of 58 done
 - stage 5: 0 of 42 done
 - stage 6: 0 of 26 done
 - stage 7: 0 of 2 done
