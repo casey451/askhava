@@ -564,5 +564,23 @@
     "draft": true,
     "segments": 4,
     "text": "Ask Hava: Trabajo {job}: no hay reembolso de su tarifa de presentación. El cliente nos dijo que usted le escribió por correo y acordaron una hora. ¿Preguntas? Use el formulario Preguntar por un cargo en su página de facturación en https://askhava.com/b."
+  },
+  "job_card_notice": {
+    "audience": "business",
+    "draft": true,
+    "segments": 1,
+    "text": "Ask Hava: Nuevo trabajo {job} de {trade}. Cotice hasta las {time}. Véalo en askhava.com/business."
+  },
+  "card_fix_notice_untimed": {
+    "audience": "business",
+    "draft": true,
+    "segments": 2,
+    "text": "Ask Hava: Su tarjeta no pasó para el trabajo {job}. No se le cobró nada. Intente de nuevo o use otra tarjeta: {link}"
+  },
+  "card_approval_notice_untimed": {
+    "audience": "business",
+    "draft": true,
+    "segments": 2,
+    "text": "Ask Hava: Su banco pide que apruebe el pago para el trabajo {job}. Todavía no se le cobró nada. Apruébelo aquí: {link}"
   }
 }

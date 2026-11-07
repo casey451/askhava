@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT (EXISTS (SELECT 1 FROM messaging.email_outbox o WHERE o.template_id = $1 AND o.subject_ids @> ARRAY[$2, $3]::uuid[] AND o.status = 'sent' AND NOT EXISTS (SELECT 1 FROM messaging.email_event e WHERE e.provider_id = o.provider_id AND e.kind = 'email.bounced')) OR EXISTS (SELECT 1 FROM messaging.outbox t WHERE t.template_id = $1 AND t.subject_ids @> ARRAY[$2, $3]::uuid[] AND t.status = 'sent')) AS \"yes!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "yes!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "99ea5b4c1aa88d946d01b20b68fc9f9ad0ca9a76bee616e8acfe9f39d9e494fb"
+}

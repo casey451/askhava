@@ -24,6 +24,7 @@
 
 mod about_us;
 pub mod api;
+mod channel_preference;
 mod complaint_holds;
 mod complaints;
 mod consent;

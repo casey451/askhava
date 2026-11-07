@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT channel FROM businesses.notice_channel WHERE business_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "channel",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "businesses.notice_channel",
+            "name": "channel"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "57b390689cd3620d30c91101e1ce230fe34f153d9373238c0172b4a2aadd1ef1"
+}

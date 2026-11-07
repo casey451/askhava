@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO businesses.notice_channel (business_id, channel, changed_at) VALUES ($1, $2, $3) ON CONFLICT (business_id) DO UPDATE SET channel = EXCLUDED.channel, changed_at = EXCLUDED.changed_at",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "3e5d7d14b3ea6d211f80714eeea48bd85819ac694b56d514800e0c594f80bba0"
+}
