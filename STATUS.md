@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-07T05:12:46Z by runner 5eca923941aa (actions).
+Updated 2026-11-07T05:12:58Z by runner 5eca923941aa (actions).
 
-**Building: T194 in progress since 04:30Z; 132 of 242 done; week 32% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 05:12Z; 132 of 242 done; week 32% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 132 of 242 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T194 claimed 04:30Z, lease until 07:30Z
+- **Lane:** idle since 05:12Z (no task in progress)
 - **Week:** 32% used, 130.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 04:39Z, 33 min before this update
 - **Keeper:** last ran 04:19Z, next wake 04:39Z
@@ -17,6 +17,7 @@ Updated 2026-11-07T05:12:46Z by runner 5eca923941aa (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T194 | portals: the new-device code by text or email and team sign- | MERGE_PENDING | 1 | 42 min | 05:12Z |  |
 | T084 | portals: business one-time sign-in link and 30-day sessions | done | 2 | 24 min | 04:14Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T084 | portals: business one-time sign-in link and 30-day sessions | check_failed | 1 | 29 min | 03:36Z |  |
 | T083 | businesses: complaint replies, 3 in 90 days pause, alerts | done | 1 | 76 min | 02:49Z |  |
@@ -96,7 +97,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T194 (lease until 2026-11-07T07:30:17Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T084", "at": "2026-11-07T04:14:33Z", "output_tokens": 50012, "input_tokens": 195, "cache_read_input_tokens": 6142311, "cache_creation_input_tokens": 308568}
+- {"task": "T194", "at": "2026-11-07T05:12:46Z", "output_tokens": 149072, "cache_read_input_tokens": 11488863, "cache_creation_input_tokens": 475274, "input_tokens": 316}
