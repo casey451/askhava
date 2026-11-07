@@ -198,7 +198,8 @@
   "app/site/askama.toml",
   "app/server/askama.toml",
   "app/server/src/bin/worker.rs",
-  "app/core/src/settings.rs"
+  "app/core/src/settings.rs",
+  "tests/a11y/fixtures.ts"
  ],
  "kit_outputs": [
   "kit/prompts/",
@@ -8697,7 +8698,8 @@
     "D-333",
     "D-366",
     "D-490",
-    "D-1520"
+    "D-1520",
+    "D-1772"
    ],
    "cites": [],
    "budget": {
