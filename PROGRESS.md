@@ -1129,3 +1129,4 @@
 - 2026-11-07T06:31:15Z runner 609e0ed0c74f (actions): {}
 - 2026-11-07T06:31:25Z runner 609e0ed0c74f (actions): {}
 - 2026-11-07T06:44:43Z runner f3f3c206b44e (actions): {"T090": "MERGE_PENDING -> DONE"}
+- 2026-11-07T06:53:01Z runner f3f3c206b44e (actions): {"T091": "QUEUED -> IN_PROGRESS"}; T091 estimated 2.2M tokens (calibrated); five-hour window has 17.9M left, week 124.0M (session_reading 2026-11-07T06:31:14Z (week)); claimed
