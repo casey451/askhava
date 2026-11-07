@@ -39,17 +39,11 @@ pub const MISSED_CALL_TEMPLATE: &str = "caller_missed";
 pub const REMINDER_TEMPLATE: &str = "business_no_call_reminder";
 /// TXT-026: the reminder when the homeowner chose email, with the email line.
 pub const REMINDER_EMAIL_TEMPLATE: &str = "business_no_call_reminder_email";
-/// JOB-027: the homeowner's text when the unreachable refund closes the job.
-pub const UNREACHABLE_CLOSED_TEMPLATE: &str = "unreachable_closed";
-/// JOB-027, D-286: the 72-hour question to a homeowner who chose email.
-pub const EMAIL_QUESTION_TEMPLATE: &str = "emailed_question";
 /// TXT-026: the reminders go this long after the release while no call attempt was made.
 pub const REMINDERS_AFTER: [SignedDuration; 2] = [
     SignedDuration::from_hours(24),
     SignedDuration::from_hours(48),
 ];
-/// JOB-027: the email question goes this long after the release.
-pub const EMAIL_QUESTION_AFTER: SignedDuration = SignedDuration::from_hours(72);
 
 /// A released pick as these steps see it (IDs, the job number and the public business name).
 #[derive(Debug, Clone, Copy)]
@@ -190,11 +184,14 @@ async fn tell_homeowner(
     conn: &mut PgConnection,
     secret: &SecretString,
     case: &ReleasedPick<'_>,
-    (template, number): (&str, Option<&str>),
+    (template, number): (&str, &str),
 ) -> Result<(), PicksError> {
     let job = case.job_number.to_string();
-    let mut values = vec![("business", case.business_name), ("job", job.as_str())];
-    values.extend(number.map(|n| ("number", n)));
+    let values = [
+        ("business", case.business_name),
+        ("job", job.as_str()),
+        ("number", number),
+    ];
     let body = render_text(template, case.language, &values)?;
     let subject = [case.job, case.pick];
     let text = NewText {
@@ -225,25 +222,7 @@ pub async fn missed_call_text(
     if missed_call_at(released_at, calls).is_none() {
         return Ok(false);
     }
-    tell_homeowner(conn, secret, case, (MISSED_CALL_TEMPLATE, Some(number))).await?;
-    Ok(true)
-}
-
-/// JOB-027, D-243: the 72-hour "Did <business> email you and agree a time?" question, only when
-/// the homeowner chose email.
-///
-/// # Errors
-/// `Template`, `Outbox`.
-pub async fn email_question(
-    conn: &mut PgConnection,
-    secret: &SecretString,
-    case: &ReleasedPick<'_>,
-    contact: Contact,
-) -> Result<bool, PicksError> {
-    if contact == Contact::Call {
-        return Ok(false);
-    }
-    tell_homeowner(conn, secret, case, (EMAIL_QUESTION_TEMPLATE, None)).await?;
+    tell_homeowner(conn, secret, case, (MISSED_CALL_TEMPLATE, number)).await?;
     Ok(true)
 }
 
@@ -290,8 +269,9 @@ pub async fn queue_reminders(
 
 /// FEE-022, JOB-027, D-142, D-336: the 96-hour decision. A refund goes through
 /// `payments::api::request_refund`, then the job moves Connected to Closed (stopping the
-/// check-ins), the call line closes and the homeowner is told once; every decision emails the
-/// business the condition met or missed. `NotYet` does nothing.
+/// check-ins) and the call line closes, once; every decision emails the business the condition
+/// met or missed. `NotYet` does nothing. JOB-027's homeowner text and 72-hour question wait for
+/// their templates (D-1818).
 ///
 /// # Errors
 /// `Database` (a refund or move failure too), `Template`, `Outbox`.
@@ -316,7 +296,7 @@ pub async fn decide_at_96_hours(
         )
         .await
         .map_err(|_| PicksError::Database)?;
-        close_unreachable(pool, secret, case, now).await?;
+        close_unreachable(pool, case, now).await?;
     }
     let mut conn = pool.acquire().await.map_err(|_| PicksError::Database)?;
     if let Some(template) = decision_template(decision) {
@@ -326,11 +306,10 @@ pub async fn decide_at_96_hours(
     Ok(decision)
 }
 
-/// JOB-027, D-142: Connected to Closed, the line closed and the homeowner told, in one
-/// transaction; a job already moved on changes and sends nothing.
+/// JOB-027, D-142: Connected to Closed and the line closed, in one transaction; a job already
+/// moved on changes nothing. The homeowner's close text waits for its template (D-1818).
 async fn close_unreachable(
     pool: &PgPool,
-    secret: &SecretString,
     case: &ReleasedPick<'_>,
     now: Timestamp,
 ) -> Result<(), PicksError> {
@@ -349,7 +328,6 @@ async fn close_unreachable(
     )
     .await
     .map_err(|_| PicksError::Database)?;
-    tell_homeowner(&mut tx, secret, case, (UNREACHABLE_CLOSED_TEMPLATE, None)).await?;
     tx.commit().await.map_err(|_| PicksError::Database)
 }
 

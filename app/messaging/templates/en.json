@@ -424,16 +424,6 @@
     "segments": 2,
     "text": "Ask Hava: Job {job}: no call yet. Call within 72 hours of the release, or the fee can't be refunded. Call between 8 a.m. and 8 p.m. Arizona time (any hour on an emergency job). Your 2 attempts can be on different days. The homeowner chose email; your 2 call attempts still count for the refund."
   },
-  "unreachable_closed": {
-    "audience": "homeowner",
-    "segments": 1,
-    "text": "Ask Hava: {business} couldn't reach you. Text us any time to start again."
-  },
-  "emailed_question": {
-    "audience": "homeowner",
-    "segments": 1,
-    "text": "Ask Hava: Did {business} email you and agree a time? Text back YES or NO."
-  },
   "unreachable_refunded": {
     "audience": "business",
     "segments": 2,

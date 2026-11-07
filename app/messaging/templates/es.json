@@ -517,18 +517,6 @@
     "segments": 6,
     "text": "Ask Hava: Trabajo {job}: aún no hay llamada. Llame dentro de 72 horas de la entrega, o la tarifa no se puede reembolsar. Llame entre las 8 a.m. y las 8 p.m., hora de Arizona (a cualquier hora en un trabajo de emergencia). Sus 2 intentos pueden ser en días distintos. El cliente eligió correo electrónico; sus 2 intentos de llamada siguen contando para el reembolso."
   },
-  "unreachable_closed": {
-    "audience": "homeowner",
-    "draft": true,
-    "segments": 2,
-    "text": "Ask Hava: {business} no pudo comunicarse con usted. Escríbanos cuando quiera para empezar de nuevo."
-  },
-  "emailed_question": {
-    "audience": "homeowner",
-    "draft": true,
-    "segments": 2,
-    "text": "Ask Hava: ¿{business} le envió un correo y acordaron una hora? Responda SÍ o NO."
-  },
   "unreachable_refunded": {
     "audience": "business",
     "draft": true,

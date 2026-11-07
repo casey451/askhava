@@ -38,9 +38,9 @@
 //! opted-out homeowner's "<number> YES" with no text back (PICK-030).
 //!
 //! T191: [`decide_at_96_hours`] refunds through `payments` and closes the job (FEE-022, JOB-027);
-//! [`missed_call_text`], [`queue_reminders`] and [`email_question`] send TXT-030, TXT-026 and the
-//! 72-hour question; [`no_call_at_72_hours`] returns a call-contact job (JOB-013);
-//! [`dispute_auto_submit`] (FEE-050) and [`fraud_warning`] (FEE-052).
+//! [`missed_call_text`] and [`queue_reminders`] send TXT-030 and TXT-026; [`no_call_at_72_hours`]
+//! returns a call-contact job (JOB-013); [`dispute_auto_submit`] (FEE-050) and [`fraud_warning`]
+//! (FEE-052).
 
 pub use crate::aftermath::{
     Comparison, INACTIVE_TEMPLATE, LIVE_PICK_TEMPLATE, LOST_HIGHER_TEMPLATE, LOST_LOWER_TEMPLATE,
@@ -82,11 +82,10 @@ pub use crate::service::{
     terms_line_sent, text_pick, waiting_quote, withdraw_paused,
 };
 pub use crate::unreachable_refund::{
-    EMAIL_QUESTION_AFTER, EMAIL_QUESTION_TEMPLATE, MISSED_CALL_TEMPLATE, REMINDER_EMAIL_TEMPLATE,
-    REMINDER_TEMPLATE, REMINDERS_AFTER, ReleasedPick, UNREACHABLE_CLOSED_TEMPLATE, auto_submits,
-    call_record, decide_at_96_hours, decision_template, dispute_auto_submit, email_question,
-    fraud_warning, missed_call_at, missed_call_text, no_call_at_72_hours, queue_reminders,
-    reminder_template, reminder_times, send_at,
+    MISSED_CALL_TEMPLATE, REMINDER_EMAIL_TEMPLATE, REMINDER_TEMPLATE, REMINDERS_AFTER,
+    ReleasedPick, auto_submits, call_record, decide_at_96_hours, decision_template,
+    dispute_auto_submit, fraud_warning, missed_call_at, missed_call_text, no_call_at_72_hours,
+    queue_reminders, reminder_template, reminder_times, send_at,
 };
 
 /// The pure pick rules, for other crates and property tests.

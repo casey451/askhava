@@ -285,8 +285,8 @@ async fn count(pool: &PgPool, sql: &'static str, id: Uuid) -> i64 {
         .expect("count")
 }
 
-/// TD-JOB-07: the 96-hour refund closes the job (no check-in after), closes the line and tells
-/// the homeowner once; the email YES stops refund and close; a job before 96 hours is untouched.
+/// TD-JOB-07: the 96-hour refund closes the job (no check-in after), closes the line and emails
+/// the business once; the email YES stops refund and close; a job before 96 hours is untouched.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_job_07_the_unreachable_refund_closes_the_job_once(pool: PgPool) {
     let case = seeded(&pool, JobStatus::Connected, INTENT).await;
@@ -329,8 +329,8 @@ async fn td_job_07_the_unreachable_refund_closes_the_job_once(pool: PgPool) {
     let job = current(&mut db, case.job).await.expect("job").status;
     assert_eq!(job.code(), "closed");
     assert!(!job.takes_check_ins());
-    let told = "SELECT count(*) FROM messaging.outbox WHERE template_id = 'unreachable_closed' AND $1 = ANY(subject_ids)";
-    assert_eq!(count(&pool, told, case.job).await, 1);
+    let emailed = "SELECT count(*) FROM core.task WHERE dedupe_key LIKE '%.unreachable_refunded.' || $1::text";
+    assert_eq!(count(&pool, emailed, case.pick).await, 1);
     let open = "SELECT count(*) FROM calls.number_pool WHERE job_id = $1 AND closed_at IS NULL";
     assert_eq!(count(&pool, open, case.job).await, 0);
     let refunds =
