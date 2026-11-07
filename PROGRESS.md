@@ -1162,3 +1162,4 @@
 - 2026-11-07T11:00:41Z runner 719236a962a8 (actions): {}
 - 2026-11-07T11:00:52Z runner 719236a962a8 (actions): {}
 - 2026-11-07T11:10:20Z runner 0172b97606b9 (actions): {"T097": "MERGE_PENDING -> DONE"}
+- 2026-11-07T11:16:50Z runner 0172b97606b9 (actions): {"T191": "QUEUED -> IN_PROGRESS"}; T191 estimated 2.5M tokens (calibrated); five-hour window has 19.7M left, week 122.0M (session_reading 2026-11-07T11:00:41Z (week)); claimed
