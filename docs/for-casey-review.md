@@ -1797,6 +1797,24 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **Connecting the payment (new task T254).** Nothing yet turned a successful payment into the release. T254 does it: payment clears, the pick is marked paid (or free), then the release runs once. It also retries the masked call line if it failed to open, and tests the failure cases above against the real database.
 - **Emergency jobs (new task T255).** If the business pays before she has sent her address, she is asked again at once, and the details go out once the address arrives, without charging again.
 - **Still without an owner (D-1740).** The business's Confirm-and-pay page isn't switched on yet, and the homeowner's "contact me by email" choice isn't saved yet, so until a task does that every release uses the masked call line. Both need a later plan change.
+
+## The outside code audit of November 6: what was confirmed and who fixes it (D-1751 to D-1761 and D-1788, November 6)
+
+An outside review (ChatGPT) of the whole repository found twelve issues. Each was checked against today's code before anything was planned; all twelve hold. Thirteen new tasks (nine build tasks, T256 to T259, T261 to T263, T266 and T268, and four harness tasks: T260 for the Stripe test stand-in, T264 for the coverage checker, T265 for the new stage check and T267 for the accessibility test split), plus small additions to four planned tasks (T196, T236, T251, T147), now own them. The release and portal items (A07 and the release part of A08) are in a separate plan change (D-1739). Full list with evidence: `docs/reviews/2026-11-06-repo-audit-dispositions.md`.
+
+- **A product change you should know about: the monthly fee limit is now a hard cap (D-1758).** Before, two "Confirm and pay" presses at the same moment on two different jobs could both get through and take a business past the limit it set (D-1427 accepted that). Now the app holds the business's remaining room for the month while a charge is in progress, so a limit is never passed; a charge that fails frees the room again. Nothing changes in the wording a business sees. If you'd rather keep it a soft guard, the portal and terms would need to say that two simultaneous Confirms can go over.
+- **Two first texts at once from a new homeowner** could lose one of them. T256 fixes it.
+- **The name scrubber forgot names between texts.** A name she gave in one text could reach the AI in her next one. T257 makes the scrubber remember, with the names kept encrypted in the vault and deleted with her data.
+- **Refunds were recorded as done when Stripe had only accepted them.** T258 records what Stripe actually reports (pending, done, failed, canceled); if a finished refund later fails, the ledger adds a correcting line rather than changing history (FEE-028 gains that one entry type).
+- **Stripe's refund, dispute and fraud-warning notices reached no code**, and **no page served the Confirm step** (and the site's strict security header would have blocked Stripe's card form). T259 to T261 build these, with the Stripe allowance only on the Confirm page.
+- **Masked-call PINs** were worked out from an internal ID and the 6-tries-a-day limit was kept nowhere. T262 gives each line a random PIN and stores the tries.
+- **A business whose public-record phone changed** could get its new code request treated as a repeat of the old one. T196 now covers it.
+- **The daily AI-call cap** could be passed by simultaneous calls. T236 now reserves each call first.
+- **The coverage check passed when a measurement was missing**, and the overall floor was still zero. T264 fixes the checker and sets the floor from a real measurement.
+- **A register of every hand-off between parts of the system** (`docs/integration-closure.md`) now lists 36 of them, and T265 makes a stage unable to finish while a security, money or privacy hand-off has no live owner.
+- **The sign-up consent box and welcome emails (D-1715)** now have an owner, T268: a business can no longer be activated without its written consent recorded. **The accessibility test file** that every page task may now edit (D-1772) is split by T267, so page tasks edit only a data file and never the checks.
+- **Still without an owner (not security, money or privacy):** wiring the AI writer into intake (D-990, D-1198). They are open rows in the register for the next plan change.
+- **The homeowner's "email me" choice at the pick was never saved (D-1761).** So a business could only ever reach her by masked call. T266 saves the choice, and her email only in the encrypted vault. The "job confirmed" email to a business now carries a signed link that opens sign-in for that person (T147, T269).
 - **Nothing needs you now.**
 
 ## Every new page adds its own accessibility check entry (plan change, D-1772, November 6)
