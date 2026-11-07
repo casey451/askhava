@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE businesses.welcome SET sent_at = $2 WHERE business_id = $1 AND sent_at IS NULL",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "48a84b1abf1283c5be9626c8b52f1fe858bb2773bb1298ec6352d8bad01bb3ae"
+}

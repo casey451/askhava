@@ -413,5 +413,10 @@
     "audience": "business",
     "segments": 1,
     "text": "Ask Hava: We see your updated record. Tap to finish sign-up: {link}."
+  },
+  "business_auto_reply": {
+    "audience": "business",
+    "segments": 1,
+    "text": "Ask Hava: We couldn't read that as a quote or a reply word. To quote, confirm or change settings, use your portal: https://askhava.com/b. Text HELP for help."
   }
 }

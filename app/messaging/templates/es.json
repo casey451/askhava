@@ -504,5 +504,11 @@
     "draft": true,
     "segments": 1,
     "text": "Ask Hava: Vemos su registro actualizado. Toque para terminar el registro: {link}."
+  },
+  "business_auto_reply": {
+    "audience": "business",
+    "draft": true,
+    "segments": 1,
+    "text": "Ask Hava: No pudimos leer ese mensaje. Para cotizar, confirmar o cambiar ajustes, use su portal: https://askhava.com/b. Escriba AYUDA para recibir ayuda."
   }
 }

@@ -1,0 +1,24 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT EXISTS (SELECT 1 FROM businesses.esign_consent c JOIN businesses.team_member m ON m.id = c.member_id AND m.business_id = c.business_id WHERE c.business_id = $1 AND c.member_id = $2 AND c.channel = 'text' AND m.removed_at IS NULL) AS \"yes!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "yes!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "7df6daa2010f3098fa17d79123b227aead7eb1e1764c071841d04c778d430af3"
+}
