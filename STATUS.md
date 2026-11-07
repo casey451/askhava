@@ -1,23 +1,23 @@
 # Ask Hava build status
 
-Updated 2026-11-07T08:43:42Z by runner 619c8cdb7c9d (actions).
+Updated 2026-11-07T08:53:04Z by runner 85147737a711 (actions).
 
-**Idle since 08:38Z; 135 of 256 done; week 35% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 08:50Z; 136 of 256 done; week 35% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 135 of 256 build tasks (owner gates not counted)
+- **Tasks done:** 136 of 256 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 08:38Z (no task in progress)
+- **Lane:** idle since 08:50Z (no task in progress)
 - **Week:** 35% used, 124.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:43Z, 0 min before this update
+- **Last run:** 08:43Z, 9 min before this update
 - **Keeper:** last ran 08:43Z, next wake 09:03Z
 
 ## Needs attention
-- Strict plan check red: 3 problem(s) on tasks still to run (+5 on DONE tasks); first: T100: stored context_pct 29% but it measures 33%; regenerate
+- Strict plan check red: 4 problem(s) on tasks still to run (+8 on DONE tasks); first: T100: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T092 | privacy: 180-day contact purge, holds, photo and message del | MERGE_PENDING | 1 | 54 min | 08:38Z |  |
+| T092 | privacy: 180-day contact purge, holds, photo and message del | done | 1 | 54 min | 08:38Z |  |
 | T091 | quotes: photos on cards only after zero retention and all th | done | 1 | 40 min | 07:24Z |  |
 | T090 | privacy: photo checks by bytes, re-encode without EXIF or GP | done | 1 | 52 min | 06:25Z |  |
 | T194 | portals: the new-device code by text or email and team sign- | done | 1 | 42 min | 05:12Z |  |
@@ -52,8 +52,8 @@ Updated 2026-11-07T08:43:42Z by runner 619c8cdb7c9d (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 202 of 731 (27.6%) · partial 266 · unstarted 263
-**Tasks merged (throughput only):** 135 of 256
+**Requirements verified:** 202 of 731 (27.6%) · partial 271 · unstarted 258
+**Tasks merged (throughput only):** 136 of 256
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -69,7 +69,7 @@ Updated 2026-11-07T08:43:42Z by runner 619c8cdb7c9d (actions).
 | lifecycle | 19 | 6 | 3 | 28 |
 | messaging | 16 | 12 | 17 | 45 |
 | ops-recovery | 1 | 5 | 48 | 54 |
-| privacy | 0 | 20 | 11 | 31 |
+| privacy | 0 | 25 | 6 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
 | quotes-pick | 17 | 26 | 13 | 56 |
 | recurring | 7 | 1 | 3 | 11 |
@@ -88,7 +88,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 15 of 72 done
+- stage 4: 16 of 72 done
 - stage 5: 0 of 42 done
 - stage 6: 0 of 26 done
 - stage 7: 0 of 2 done
