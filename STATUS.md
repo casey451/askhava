@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-07T02:49:31Z by runner 59dfb3cadf85 (actions).
+Updated 2026-11-07T02:49:43Z by runner 59dfb3cadf85 (actions).
 
-**Building: T083 in progress since 01:32Z; 130 of 239 done; week 27% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 02:49Z; 130 of 239 done; week 27% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 130 of 239 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T083 claimed 01:32Z, lease until 04:32Z
+- **Lane:** idle since 02:49Z (no task in progress)
 - **Week:** 27% used, 140.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:41Z, 67 min before this update
+- **Last run:** 01:41Z, 68 min before this update
 - **Keeper:** last ran 01:16Z, next wake 01:36Z
 
 ## Needs attention
@@ -17,6 +17,7 @@ Updated 2026-11-07T02:49:31Z by runner 59dfb3cadf85 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T083 | businesses: complaint replies, 3 in 90 days pause, alerts | MERGE_PENDING | 1 | 76 min | 02:49Z |  |
 | T082 | businesses: E-SIGN consent box, welcome text, business STOP | done | 1 | 53 min | 01:13Z |  |
 | T193 | businesses: sign-up screens for someone else filling in, the | done | 1 | 55 min | 00:02Z |  |
 | T080 | calls: relay-friendly bridging, identity call, code call | done | 1 | 49 min | 22:52Z |  |
@@ -93,7 +94,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T083 (lease until 2026-11-07T04:32:32Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T082", "at": "2026-11-07T01:13:07Z", "cache_creation_input_tokens": 609487, "cache_read_input_tokens": 18816672, "input_tokens": 406, "output_tokens": 158907}
+- {"task": "T083", "at": "2026-11-07T02:49:30Z", "output_tokens": 149835, "cache_read_input_tokens": 23236579, "cache_creation_input_tokens": 524622, "input_tokens": 412}
