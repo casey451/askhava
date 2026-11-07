@@ -1,25 +1,25 @@
 # Ask Hava build status
 
-Updated 2026-11-07T09:49:54Z by runner 85147737a711 (actions).
+Updated 2026-11-07T10:04:15Z by runner 719236a962a8 (actions).
 
-**Idle since 09:49Z; 136 of 256 done; week 36% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 10:00Z; 137 of 256 done; week 36% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 136 of 256 build tasks (owner gates not counted)
+- **Tasks done:** 137 of 256 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 09:49Z (no task in progress)
+- **Lane:** idle since 10:00Z (no task in progress)
 - **Week:** 36% used, 124.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:49Z, 0 min before this update
+- **Last run:** 09:49Z, 14 min before this update
 - **Keeper:** last ran 09:49Z, next wake 10:09Z
 
 ## Needs attention
 - PLAN GAP T093 (since 2026-11-07T08:52:58Z, no attempt used; a plan change fixes it): T093: dependency T092 is DONE but its owned file app/messaging/src/purge.rs is not on main
 - PLAN GAP T253 (since 2026-11-07T08:52:58Z, no attempt used; a plan change fixes it): T253: dependency T092 is DONE but its owned file app/messaging/src/purge.rs is not on main
-- Strict plan check red: 4 problem(s) on tasks still to run (+8 on DONE tasks); first: T100: stored context_pct 29% but it measures 33%; regenerate
+- Strict plan check red: 6 problem(s) on tasks still to run (+9 on DONE tasks); first: T151: stored context_pct 20% but it measures 24%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T096 | messaging: web-and-email mode, number suspension, one config | MERGE_PENDING | 1 | 43 min | 09:49Z |  |
+| T096 | messaging: web-and-email mode, number suspension, one config | done | 1 | 43 min | 09:49Z |  |
 | T092 | privacy: 180-day contact purge, holds, photo and message del | done | 1 | 54 min | 08:38Z |  |
 | T091 | quotes: photos on cards only after zero retention and all th | done | 1 | 40 min | 07:24Z |  |
 | T090 | privacy: photo checks by bytes, re-encode without EXIF or GP | done | 1 | 52 min | 06:25Z |  |
@@ -42,7 +42,6 @@ Updated 2026-11-07T09:49:54Z by runner 85147737a711 (actions).
 | T250 | core: narrow the default privileges in every schema and prov | QUEUED | 1 | 26 min | 13:18Z |  |
 | T095 | picks: pick code by email when texting is off; '2 YES' from  | done | 1 | 36 min | 12:39Z |  |
 | T075 | Stage 3 cleanup: dead code, duplicates, docs up to date | proof_missing | 1 | 45 min | 11:07Z |  |
-| T246 | picks, portals and server: the page pick end to end (one pic | done | 1 | 66 min | 10:04Z |  |
 
 ### Plan and harness merges on main
 - 05:10Z Plan: repo audit findings — owners and acceptance for A01–A06, A08–A12 (D-1751–D-1761, D-1788) (#316)
@@ -55,8 +54,8 @@ Updated 2026-11-07T09:49:54Z by runner 85147737a711 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 202 of 731 (27.6%) · partial 271 · unstarted 258
-**Tasks merged (throughput only):** 136 of 256
+**Requirements verified:** 202 of 731 (27.6%) · partial 276 · unstarted 253
+**Tasks merged (throughput only):** 137 of 256
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -64,13 +63,13 @@ Updated 2026-11-07T09:49:54Z by runner 85147737a711 (actions).
 | ai | 12 | 12 | 4 | 28 |
 | businesses | 4 | 28 | 26 | 58 |
 | calls | 0 | 24 | 1 | 25 |
-| consent | 13 | 16 | 6 | 35 |
+| consent | 13 | 17 | 5 | 35 |
 | fees | 20 | 31 | 1 | 52 |
 | intake | 19 | 15 | 9 | 43 |
 | job-cards | 12 | 7 | 5 | 24 |
 | licensing | 31 | 16 | 1 | 48 |
 | lifecycle | 19 | 6 | 3 | 28 |
-| messaging | 16 | 12 | 17 | 45 |
+| messaging | 16 | 16 | 13 | 45 |
 | ops-recovery | 1 | 5 | 48 | 54 |
 | privacy | 0 | 25 | 6 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
@@ -91,7 +90,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 16 of 72 done
+- stage 4: 17 of 72 done
 - stage 5: 0 of 42 done
 - stage 6: 0 of 26 done
 - stage 7: 0 of 2 done
