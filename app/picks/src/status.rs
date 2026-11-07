@@ -32,6 +32,10 @@ pub enum PickStatus {
     Paid,
     /// A $0 fee decision was recorded; the details may be released (PICK-022, D-477).
     Free,
+    /// JOB-013, FEE-035: the business placed no call within 72 hours of the release (T191).
+    NoShow,
+    /// FEE-052: an early fraud warning refunded the charge before the release (T191).
+    FraudRefunded,
 }
 
 impl PickStatus {
@@ -44,6 +48,8 @@ impl PickStatus {
             Self::Cancelled => "cancelled",
             Self::Paid => "paid",
             Self::Free => "free",
+            Self::NoShow => "no_show",
+            Self::FraudRefunded => "fraud_refunded",
         }
     }
 }

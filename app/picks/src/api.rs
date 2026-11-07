@@ -36,6 +36,11 @@
 //! T095: [`code_route`] and [`send_email_code`]/[`check_email_code`] send and check the pick code
 //! by email to a [`ConversationEmail`] when texting is off (PICK-029); [`opted_out_yes`] takes an
 //! opted-out homeowner's "<number> YES" with no text back (PICK-030).
+//!
+//! T191: [`decide_at_96_hours`] refunds through `payments` and closes the job (FEE-022, JOB-027);
+//! [`missed_call_text`] and [`queue_reminders`] send TXT-030 and TXT-026; [`no_call_at_72_hours`]
+//! returns a call-contact job (JOB-013); [`dispute_auto_submit`] (FEE-050) and [`fraud_warning`]
+//! (FEE-052).
 
 pub use crate::aftermath::{
     Comparison, INACTIVE_TEMPLATE, LIVE_PICK_TEMPLATE, LOST_HIGHER_TEMPLATE, LOST_LOWER_TEMPLATE,
@@ -75,6 +80,12 @@ pub use crate::service::{
     TextPickDone, TextPickIn, VERIFY_CAP_ALERT, WAITING_TEMPLATE, WHICH_TEMPLATE, check_code,
     check_page_code, page_pick, record_terms_line, send_code, send_page_code, terms_line,
     terms_line_sent, text_pick, waiting_quote, withdraw_paused,
+};
+pub use crate::unreachable_refund::{
+    AtNinetySix, MISSED_CALL_TEMPLATE, REMINDER_EMAIL_TEMPLATE, REMINDER_TEMPLATE, REMINDERS_AFTER,
+    ReleasedPick, auto_submits, call_record, decide_at_96_hours, decision_template,
+    dispute_auto_submit, fraud_warning, missed_call_at, missed_call_text, no_call_at_72_hours,
+    queue_reminders, reminder_template, reminder_times, send_at,
 };
 
 /// The pure pick rules, for other crates and property tests.
