@@ -28,10 +28,12 @@ export const WCAG_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"
 export const REVIEWED_INCOMPLETE: readonly string[] = [];
 
 /**
- * Routing calls that serve no page, as `[entry, reason]`: none yet. An entry is a GET route's path
+ * Routing calls that serve no page, as `[entry, reason]`. An entry is a GET route's path
  * or a `kind(argument)` text from `otherRoutingCalls`; anything not listed here fails A11Y-002.
  */
-const NOT_PAGES: readonly (readonly [string, string])[] = [];
+const NOT_PAGES: readonly (readonly [string, string])[] = [
+  ["/static/portals/feedback.css", "the feedback page's stylesheet, checked through /f/{token} (T230)"],
+];
 const notAPage = (entry: string): boolean => NOT_PAGES.some(([listed]) => listed === entry);
 
 const REPO_ROOT = join(import.meta.dirname, "..", "..");
@@ -125,6 +127,27 @@ const PAUSED = `,
 
 const QUOTE_ROUTE = "/q/{token}";
 
+/** A Done job with a live link token and, when `feedback` is set, its feedback stored (T230, JOB-017). */
+function feedbackPage(feedback: boolean): string {
+  const stored = feedback
+    ? `,
+    f AS (INSERT INTO jobs.feedback (job_id, body, share, received_at)
+      SELECT id, 'Sample feedback words', false, now() FROM j)`
+    : "";
+  return `WITH j AS (INSERT INTO jobs.job (status, emergency, created_at, status_at, timer_from)
+      VALUES ('done', false, now(), now(), now()) RETURNING id),
+    n AS (UPDATE jobs.job_number_next SET next = next + 1 RETURNING next - 1 AS n),
+    num AS (INSERT INTO jobs.job_number (number, job_id, issued_at) SELECT n.n, j.id, now() FROM n, j)${stored}
+    INSERT INTO jobs.quote_token (job_id, salt, key_version, token_hash, issued_at)
+      SELECT id, decode(md5(random()::text), 'hex'), 1, decode(':hash', 'hex'), now() FROM j`;
+}
+
+/** The private feedback page's states: the form, and the thanks once feedback is stored (T230). */
+const FEEDBACK_STATES: readonly PageState[] = [
+  ["feedback form", "with my first name and town", "Thanks.", feedbackPage(false)],
+  ["feedback sent", "Thanks.", "Send feedback", feedbackPage(true)],
+].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: "/f/{token}", name, shows, hides, sql, statusRegions: [] }));
+
 /** Every state of every page (docs/test-design.md section 6: empty, filled, after pick, ...). */
 export const PAGE_STATES: readonly PageState[] = [
   ["no quotes yet", "No quotes yet.", "Quote #1", quotePage("open", 0)],
@@ -135,7 +158,7 @@ export const PAGE_STATES: readonly PageState[] = [
   ["after a pick", "Pick #1", "Pick #2", quotePage("awaiting_confirm", 3)],
   ["after the business confirmed", "Quote #3", "Pick #", quotePage("payment_pending", 3)],
   ["closed", "Quote #2 (no longer available)", "Pick #", quotePage("closed", 3)],
-].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: QUOTE_ROUTE, name, shows, hides, sql, statusRegions: ["quote-status"] }));
+].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: QUOTE_ROUTE, name, shows, hides, sql, statusRegions: ["quote-status"] })).concat(FEEDBACK_STATES);
 
 /** The `(route, state)` pairs to run: every state of every route in the route table. */
 export const STATES_TO_CHECK = PAGE_STATES.filter((state) => ROUTES.includes(state.route));

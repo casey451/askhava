@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{#- The private feedback page (T230; JOB-017, D-083, D-466, D-493). One box for the words and one
+    share box with JOB-017's label word for word, unticked on first view and asked of everyone, with
+    no reward. A failed send gives an "Error: " title, a focused role="alert" summary linking to the
+    box, the message beside it and the words and tick kept (A11Y-010 to A11Y-013). The thanks never
+    says what other people wrote, and no line says shown feedback is all the feedback received. No
+    name, phone or address. -#}
+{% block title %}{% if error.is_some() %}Error: {% endif %}{% if sent %}Thanks for your feedback on request {{ request }}{% else %}Feedback on request {{ request }}{% endif %}{% endblock %}
+{% block main %}
+<link rel="stylesheet" href="/static/portals/feedback.css">
+{% if sent %}
+<h1 id="feedback-sent" tabindex="-1" autofocus>Thanks. We got your feedback on request {{ request }}.</h1>
+<p>If you ticked the box, we may put your words on askhava.com with your first name and town. You can close this page now.</p>
+{% else %}
+<h1>How did request {{ request }} go?</h1>
+<p>Tell us how it went. It comes to Ask Hava, not the business. It's never shown on quote cards and never changes the order of anyone's quotes.</p>
+{% if let Some(error) = error %}<div id="feedback-error" role="alert" tabindex="-1" autofocus>
+<p>Your feedback wasn't sent:</p>
+<ul><li><a href="#feedback-body">{{ error }}</a></li></ul>
+</div>
+{% endif %}<form method="post" action="/f/{{ token }}" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<p><label for="feedback-body">Your feedback</label></p>
+<p id="feedback-hint">Up to 2,000 characters.</p>
+{% if let Some(error) = error %}<p id="feedback-body-error">Error: {{ error }}</p>
+{% endif %}<textarea id="feedback-body" name="body" rows="8" aria-describedby="feedback-hint{% if error.is_some() %} feedback-body-error{% endif %}"{% if error.is_some() %} aria-invalid="true"{% endif %}>{{ body }}</textarea>
+<p><input type="checkbox" id="feedback-share" name="share" value="yes"{% if share %} checked{% endif %}> <label for="feedback-share">{{ label }}</label></p>
+<p>Leave it unticked to keep your words private. Either way, you get nothing extra and nothing else changes.</p>
+<button type="submit">Send feedback</button>
+</form>
+{% endif %}
+{% endblock %}
