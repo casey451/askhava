@@ -399,3 +399,47 @@ pub fn normalize_phone(raw: &str) -> Result<String, VaultError> {
     }
     Ok(format!("+1{ten}"))
 }
+
+/// Why a photo step failed. No variant carries photo bytes, a key, a token or the database's
+/// message (PRIV-016). The caller answers [`PhotoError::Heic`] with the `photo_heic_reply`
+/// template and a dead link with 404 (PRIV-013, PRIV-025).
+#[derive(Debug, Error, PartialEq, Eq)]
+pub enum PhotoError {
+    /// The bytes are no JPEG, PNG or WebP, whatever the file's name says (PRIV-013).
+    #[error("the upload is not a JPEG, PNG or WebP photo")]
+    NotAPhoto,
+    /// The upload is over the size limit (PRIV-013).
+    #[error("the upload is over the photo size limit")]
+    TooLarge,
+    /// A HEIC upload, refused without decoding (PRIV-025).
+    #[error("HEIC photos are not decoded")]
+    Heic,
+    /// Wider or taller than 8,000 px, over 40 megapixels or over the decode memory limit, found
+    /// from the header before the pixels were allocated (PRIV-025).
+    #[error("the photo is over the decode limits")]
+    TooManyPixels,
+    /// The photo did not decode or re-encode.
+    #[error("the photo could not be decoded")]
+    Undecodable,
+    /// The decode did not finish in time (PRIV-025).
+    #[error("the photo decode ran out of time")]
+    Busy,
+    /// `VAULT_KEY` is missing or malformed (PRIV-023).
+    #[error("the photo key is not set as required")]
+    Keys,
+    /// A sealed photo did not open (wrong job, photo or key, or tampered), or no random source.
+    #[error("a sealed photo failed to seal or open")]
+    Sealed,
+    /// The storage adapter refused or failed the write or read.
+    #[error("the photo storage call failed")]
+    Storage,
+    /// No photo has this ID.
+    #[error("no such photo")]
+    NotFound,
+    /// The link token is unknown or expired (PRIV-014).
+    #[error("the photo link is not live")]
+    LinkDead,
+    /// The database refused the statement or the audit row.
+    #[error("the photo database statement failed")]
+    Database,
+}
