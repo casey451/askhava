@@ -500,4 +500,59 @@ mod realm_tests {
             "a second mint"
         );
     }
+
+    /// TD-PICK-48 (PICK-023, PRIV-003, PRIV-007, SEC-046, D-1739, D-1893): a business session reads a
+    /// released contact's name, address and email, never the phone, audited per field with the
+    /// person as actor plus one row naming the pick; inside a transaction it is refused; after the
+    /// purge it opens and audits nothing.
+    #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+    async fn a_business_session_reads_a_released_contact(pool: PgPool) {
+        let (vault, mut db) = (vault(), pool.acquire().await.expect("connection"));
+        let id = store_contact(&mut db, &vault, &contact("928-555-0117"))
+            .await
+            .expect("store");
+        let (person, pick) = (Uuid::from_u128(0x0253_0b01), Uuid::from_u128(0x0253_0b02));
+        let proof = BusinessSessionProof {
+            person,
+            business: Uuid::from_u128(0x0253_0b03),
+        };
+        let fields = [Field::Name, Field::Address];
+        let read = read_released(&mut db, &vault, &proof, (pick, id), &fields).await;
+        let read = read.expect("read").expect("not purged");
+        assert_eq!(
+            read.name.map(|n| n.expose_secret().to_owned()).as_deref(),
+            Some("Ada Example")
+        );
+        assert!(read.phone.is_none());
+        let phone = read_released(&mut db, &vault, &proof, (pick, id), &[Field::Phone]).await;
+        assert_eq!(phone.err(), Some(VaultError::UnregisteredPurpose));
+        let rows = export_audit(&mut db, 0, 100).await.expect("export");
+        let reads: Vec<_> = rows
+            .iter()
+            .filter(|r| r.action == "vault_read.picks.released_view")
+            .map(|r| (r.actor_id, r.subject_id, r.field.as_deref()))
+            .collect();
+        let who = Some(person);
+        assert_eq!(
+            reads,
+            [
+                (who, id, Some("name")),
+                (who, id, Some("address")),
+                (who, pick, None)
+            ]
+        );
+        let mut tx = sqlx::Acquire::begin(&mut *db).await.expect("begin");
+        let inside = read_released(&mut tx, &vault, &proof, (pick, id), &fields).await;
+        assert_eq!(inside.err(), Some(VaultError::InTransaction));
+        tx.rollback().await.expect("rollback");
+        purge_contact(&mut db, id).await.expect("purge");
+        let gone = read_released(&mut db, &vault, &proof, (pick, id), &fields).await;
+        assert!(gone.expect("read").is_none(), "nothing left to open");
+        let after = export_audit(&mut db, 0, 100).await.expect("export");
+        let reads = after
+            .iter()
+            .filter(|r| r.action == "vault_read.picks.released_view")
+            .count();
+        assert_eq!(reads, 3, "a purged contact writes no read row");
+    }
 }

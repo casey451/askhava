@@ -40,7 +40,7 @@ Builds the two processes from one crate: `server` (the `web` process, Axum) and 
 
 ## Tests that guard it
 
-- `tests/released_view.rs` (T253, TD-PICK-48): `picks::api::released_view` against the database with proofs from `session_minter()`: `cargo test -p askhava-server --test released_view`.
+- `tests/released_view.rs` (T253, TD-PICK-48, D-1895): `session_minter()` is one mint per process, and `picks::api::released_view` with its proof answers an unknown pick not-found and opens nothing (this crate may seed no module's schema, TD-SEC-10): `cargo test -p askhava-server --test released_view`.
 - `tests/rules_bridge_contract.rs` (T074, D-481): every request and answer on the schema, the fee tiers and the 4-month rule, the quiet-hours edges, an arrow and a card, the envelope errors and the 1 ms budget: `cargo test -p askhava-server --test rules_bridge_contract`. The twin gate runs through the binary in `twin.yml` (`PYTHONHASHSEED=0 python3 twin/gate.py --bridge target/debug/rules_bridge`).
 - `tests/integration/tests/inbound_text_route.rs` (TD-TXT-04, TD-TXT-11, TD-INT-08, TD-CON-05 route cases, T241): `cargo test -p askhava-integration --test inbound_text_route`.
 - `tests/integration/tests/offdb_stream.rs` (TD-OPS-03, TD-OPS-19): the stream writer, the chain check and the purge.

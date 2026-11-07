@@ -19,8 +19,8 @@
 
 use askhava_businesses::api::members;
 use askhava_privacy::api::{BusinessSessionProof, Field, Vault, VaultError, read_released};
-use sqlx::PgPool;
 use sqlx::types::Uuid;
+use sqlx::{PgConnection, PgPool};
 
 use crate::models::{self, PicksError, ReleaseBinding};
 use crate::release::{EMAIL_CHOSEN_FIELDS, RELEASE_FIELDS, ReleaseView};
@@ -95,13 +95,28 @@ pub async fn released_view(
     pick: Uuid,
 ) -> Result<ViewAnswer, PicksError> {
     let mut conn = pool.acquire().await.map_err(|_| PicksError::Database)?;
+    let who = (proof.person(), proof.business());
+    match viewable(&mut conn, who, pick).await? {
+        Some(bound) => open(&mut conn, vault, proof, (pick, &bound)).await,
+        None => Ok(ViewAnswer::NotFound),
+    }
+}
+
+/// The release binding of `pick` when [`may_view`] lets `person` of `business` see it, else
+/// `None`; reads `picks` and `businesses::api` only, never the vault (PICK-024, BIZ-037, BIZ-043,
+/// D-1739).
+pub(crate) async fn viewable(
+    conn: &mut PgConnection,
+    (person, business): (Uuid, Uuid),
+    pick: Uuid,
+) -> Result<Option<ReleaseBinding>, PicksError> {
     let codes = release_shown_codes();
-    let Some(bound) = models::release_binding(&mut conn, pick, &codes).await? else {
-        return Ok(ViewAnswer::NotFound);
+    let Some(bound) = models::release_binding(conn, pick, &codes).await? else {
+        return Ok(None);
     };
-    let same_business = bound.business == proof.business();
+    let same_business = bound.business == business;
     let seat = if same_business {
-        seat_of(&mut conn, bound.business, proof.person()).await?
+        seat_of(conn, bound.business, person).await?
     } else {
         Seat::Absent
     };
@@ -111,15 +126,12 @@ pub async fn released_view(
         shown_status: bound.shown_status,
         seat,
     };
-    if !may_view(facts) {
-        return Ok(ViewAnswer::NotFound);
-    }
-    open(&mut conn, vault, proof, (pick, &bound)).await
+    Ok(may_view(facts).then_some(bound))
 }
 
 /// `person`'s seat in `business` now, through `businesses::api` (BIZ-023, BIZ-037).
 async fn seat_of(
-    conn: &mut sqlx::PgConnection,
+    conn: &mut PgConnection,
     business: Uuid,
     person: Uuid,
 ) -> Result<Seat, PicksError> {
@@ -143,7 +155,7 @@ async fn seat_of(
 /// Opens the bound contact's name and address, and the email only when she chose email contact
 /// (PICK-018, PICK-023); a cleared contact is [`ViewAnswer::Removed`].
 async fn open(
-    conn: &mut sqlx::PgConnection,
+    conn: &mut PgConnection,
     vault: &Vault,
     proof: &BusinessSessionProof,
     (pick, bound): (Uuid, &ReleaseBinding),
