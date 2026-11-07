@@ -1,23 +1,23 @@
 # Ask Hava build status
 
-Updated 2026-11-07T01:16:55Z by runner 4e0a2e680710 (actions).
+Updated 2026-11-07T01:32:36Z by runner bb6d771b6d33 (actions).
 
-**Idle since 01:13Z; 129 of 239 done; week 27% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 01:30Z; 130 of 239 done; week 27% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 129 of 239 build tasks (owner gates not counted)
+- **Tasks done:** 130 of 239 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 01:13Z (no task in progress)
+- **Lane:** idle since 01:30Z (no task in progress)
 - **Week:** 27% used, 142.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:16Z, 0 min before this update
+- **Last run:** 01:17Z, 15 min before this update
 - **Keeper:** last ran 01:16Z, next wake 01:36Z
 
 ## Needs attention
-- Strict plan check red: 7 problem(s) on tasks still to run (+15 on DONE tasks); first: T084: stored context_pct 11% but it measures 15%; regenerate
+- Strict plan check red: 8 problem(s) on tasks still to run (+16 on DONE tasks); first: T084: stored context_pct 11% but it measures 15%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T082 | businesses: E-SIGN consent box, welcome text, business STOP | MERGE_PENDING | 1 | 53 min | 01:13Z |  |
+| T082 | businesses: E-SIGN consent box, welcome text, business STOP | done | 1 | 53 min | 01:13Z |  |
 | T193 | businesses: sign-up screens for someone else filling in, the | done | 1 | 55 min | 00:02Z |  |
 | T080 | calls: relay-friendly bridging, identity call, code call | done | 1 | 49 min | 22:52Z |  |
 | T081 | businesses: sign-up, identity chain from public records, act | done | 1 | 37 min | 21:42Z |  |
@@ -51,16 +51,16 @@ Updated 2026-11-07T01:16:55Z by runner 4e0a2e680710 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 215 of 731 (29.4%) · partial 231 · unstarted 285
-**Tasks merged (throughput only):** 129 of 239
+**Requirements verified:** 215 of 731 (29.4%) · partial 236 · unstarted 280
+**Tasks merged (throughput only):** 130 of 239
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 14 | 10 | 11 | 35 |
 | ai | 14 | 9 | 5 | 28 |
-| businesses | 5 | 20 | 33 | 58 |
+| businesses | 5 | 23 | 30 | 58 |
 | calls | 0 | 24 | 1 | 25 |
-| consent | 15 | 12 | 8 | 35 |
+| consent | 15 | 14 | 6 | 35 |
 | fees | 24 | 27 | 1 | 52 |
 | intake | 19 | 15 | 9 | 43 |
 | job-cards | 12 | 5 | 7 | 24 |
@@ -87,7 +87,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 9 of 55 done
+- stage 4: 10 of 55 done
 - stage 5: 0 of 42 done
 - stage 6: 0 of 26 done
 - stage 7: 0 of 2 done
