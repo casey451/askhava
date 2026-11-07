@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-07T19:45:30Z by runner 7225ed306641 (actions).
+Updated 2026-11-07T19:56:26Z by runner 7225ed306641 (actions).
 
-**Idle since 19:34Z; 144 of 269 done; week 44% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T253 in progress since 19:49Z; 144 of 269 done; week 44% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 144 of 269 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 19:34Z (no task in progress)
-- **Week:** 44% used, 108.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:45Z, 0 min before this update
+- **Lane:** lane 1: T253 claimed 19:49Z, lease until 22:49Z
+- **Week:** 44% used, 106.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Last run:** 19:45Z, 10 min before this update
 - **Keeper:** last ran 19:45Z, next wake 20:05Z
 
 ## Needs attention
@@ -38,9 +38,9 @@ Updated 2026-11-07T19:45:30Z by runner 7225ed306641 (actions).
 | T080 | calls: relay-friendly bridging, identity call, code call | done | 1 | 49 min | 22:52Z |  |
 | T081 | businesses: sign-up, identity chain from public records, act | done | 1 | 37 min | 21:42Z |  |
 | T079 | calls: line closing, staff phones and LINK, email-preferred  | done | 1 | 43 min | 20:51Z |  |
-| T078 | calls: never recorded, 45-second connection rule, call logs | done | 1 | 46 min | 19:53Z |  |
 
 ### Plan and harness merges on main
+- 19:48Z Plan: third audit — CI filters, close-time owned-file check, request timeout, confirm money invariants, reconcile retry (D-1866–D-1873) (#331)
 - 19:25Z Harness: incremental runner smoke build (stable tree, own target dir, mtime pinning) (D-1890) (#333)
 - 15:37Z Plan: second code audit — owners and acceptance for B01–B08 and known gaps (D-1835–D-1845) (#326)
 - 05:10Z Plan: repo audit findings — owners and acceptance for A01–A06, A08–A12 (D-1751–D-1761, D-1788) (#316)
@@ -78,7 +78,7 @@ Updated 2026-11-07T19:45:30Z by runner 7225ed306641 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-07T18:53:50Z (week)): five-hour: 10.1M used, 19.0M left, resets 2026-11-07T19:31:51Z; week: 86.0M used, 108.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-11-24T04:31:44Z.
+- Pacing (session_reading 2026-11-07T19:45:18Z (week)): five-hour: 0k used, 29.1M left, resets on first use; week: 88.0M used, 106.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-11-24T02:58:13Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -93,7 +93,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T253 (lease until 2026-11-07T22:49:57Z)
 
 ## Last usage reading
 - {"task": "T252", "at": "2026-11-07T19:16:25Z", "output_tokens": 60130, "cache_read_input_tokens": 3931333, "cache_creation_input_tokens": 219751, "input_tokens": 136}
