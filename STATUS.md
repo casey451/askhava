@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-07T13:25:57Z by runner a93abcaba825 (actions).
+Updated 2026-11-07T13:26:07Z by runner a93abcaba825 (actions).
 
-**Building: T230 in progress since 12:24Z; 139 of 256 done; week 36% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 13:25Z; 139 of 256 done; week 36% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 139 of 256 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T230 claimed 12:24Z, lease until 15:24Z
+- **Lane:** idle since 13:25Z (no task in progress)
 - **Week:** 36% used, 122.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 12:33Z, 52 min before this update
 - **Keeper:** last ran 12:10Z, next wake 12:30Z
@@ -19,6 +19,7 @@ Updated 2026-11-07T13:25:57Z by runner a93abcaba825 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T230 | portals: the private feedback page and its storage | MERGE_PENDING | 1 | 61 min | 13:25Z |  |
 | T191 | payments: the unreachable-homeowner refund at 96 hours and i | done | 1 | 56 min | 12:07Z |  |
 | T097 | jobs: day-3 and day-14 check-ins, PROBLEM flags, private fee | done | 1 | 51 min | 10:55Z |  |
 | T096 | messaging: web-and-email mode, number suspension, one config | done | 1 | 43 min | 09:49Z |  |
@@ -97,7 +98,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T230 (lease until 2026-11-07T15:24:10Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T191", "at": "2026-11-07T12:07:07Z", "input_tokens": 542, "output_tokens": 206205, "cache_creation_input_tokens": 889900, "cache_read_input_tokens": 38576873}
+- {"task": "T230", "at": "2026-11-07T13:25:57Z", "input_tokens": 491, "output_tokens": 173712, "cache_creation_input_tokens": 601283, "cache_read_input_tokens": 23199567}
