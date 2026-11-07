@@ -15379,7 +15379,8 @@
     "T194",
     "T083",
     "T078",
-    "T191"
+    "T191",
+    "T253"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -15665,7 +15666,8 @@
     "T088",
     "T224",
     "T240",
-    "T241"
+    "T241",
+    "T254"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -15682,7 +15684,9 @@
     "T197",
     "T198",
     "T199",
-    "T155"
+    "T155",
+    "T254",
+    "T085"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -15999,7 +16003,8 @@
     "T248",
     "T249",
     "T250",
-    "T251"
+    "T251",
+    "T255"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -16069,7 +16074,8 @@
   {
    "id": "T103",
    "deps": [
-    "T202"
+    "T202",
+    "T255"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19512,6 +19518,45 @@
    "slug": "architecture-test-dynamic-sql",
    "type": "harness",
    "stage": "4"
+  },
+  {
+   "id": "T253",
+   "deps": [
+    "T194",
+    "T069",
+    "T077",
+    "T090",
+    "T092"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "picks-released-view",
+   "type": "harness",
+   "stage": "4"
+  },
+  {
+   "id": "T254",
+   "deps": [
+    "T253",
+    "T224"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "server-release-composition",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T255",
+   "deps": [
+    "T254",
+    "T162"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "emergency-address-rerelease",
+   "type": "build",
+   "stage": "4"
   }
  ],
  "owner_waits": [],
@@ -20764,7 +20809,7 @@
    }
   }
  },
- "updated_at": "2026-11-07T03:40:59Z",
+ "updated_at": "2026-11-07T03:50:35Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -20862,7 +20907,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "5aac33d8a77ec4383268de5748812fe15f2a109e",
+ "runner_sha": "59952f28928acd77a7b4640d257eef7f82d4df13",
  "starter": "actions",
  "smoke_runs": [
   {

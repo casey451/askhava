@@ -1,18 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-07T03:40:59Z by runner 5aac33d8a77e (actions).
+Updated 2026-11-07T03:50:35Z by runner 59952f28928a (actions).
 
-**Idle since 03:36Z; 131 of 239 done; week 29% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 03:36Z; 131 of 242 done; week 29% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 131 of 239 build tasks (owner gates not counted)
+- **Tasks done:** 131 of 242 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 03:36Z (no task in progress)
 - **Week:** 29% used, 138.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:40Z, 0 min before this update
+- **Last run:** 03:41Z, 9 min before this update
 - **Keeper:** last ran 03:40Z, next wake 04:00Z
 
 ## Needs attention
-- Strict plan check red: 10 problem(s) on tasks still to run (+17 on DONE tasks); first: T084: stored context_pct 11% but it measures 15%; regenerate
+- nothing
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -43,6 +43,7 @@ Updated 2026-11-07T03:40:59Z by runner 5aac33d8a77e (actions).
 | T070 | picks: 'no longer active' once, Confirm link replies | done | 1 | 45 min | 04:18Z |  |
 
 ### Plan and harness merges on main
+- 03:48Z Plan: business-session read of released picks, release recovery tests, production release wiring (D-1739, D-1740) (#313)
 - 16:15Z Plan: dynamic SQL in migrations is a TD-SEC-10 finding (T252), T126 context budget, stored budgets refreshed (D-1677, D-1678) (#298)
 - 16:05Z Plan: bump actix-http 3.20.2 -> 3.20.3 for RUSTSEC-2026-0455 (D-1666) (#297)
 - 15:10Z Plan: bump actix-http 3.20.0 -> 3.20.2 for RUSTSEC-2026-0446 (D-1643) (#295)
@@ -50,14 +51,14 @@ Updated 2026-11-07T03:40:59Z by runner 5aac33d8a77e (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 215 of 731 (29.4%) · partial 240 · unstarted 276
-**Tasks merged (throughput only):** 131 of 239
+**Requirements verified:** 213 of 731 (29.1%) · partial 242 · unstarted 276
+**Tasks merged (throughput only):** 131 of 242
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 14 | 10 | 11 | 35 |
 | ai | 14 | 9 | 5 | 28 |
-| businesses | 5 | 27 | 26 | 58 |
+| businesses | 4 | 28 | 26 | 58 |
 | calls | 0 | 24 | 1 | 25 |
 | consent | 15 | 14 | 6 | 35 |
 | fees | 24 | 27 | 1 | 52 |
@@ -67,7 +68,7 @@ Updated 2026-11-07T03:40:59Z by runner 5aac33d8a77e (actions).
 | lifecycle | 19 | 6 | 3 | 28 |
 | messaging | 16 | 11 | 18 | 45 |
 | ops-recovery | 1 | 5 | 48 | 54 |
-| privacy | 2 | 14 | 15 | 31 |
+| privacy | 1 | 15 | 15 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
 | quotes-pick | 16 | 27 | 13 | 56 |
 | recurring | 7 | 1 | 3 | 11 |
@@ -86,7 +87,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 11 of 55 done
+- stage 4: 11 of 58 done
 - stage 5: 0 of 42 done
 - stage 6: 0 of 26 done
 - stage 7: 0 of 2 done
