@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT EXISTS (SELECT 1 FROM jobs.feedback WHERE job_id = $1) AS \"given!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "given!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "aba753e66a82806c7d4557db896d307a84878663a4fa3e23fca4b4d0d05205bf"
+}

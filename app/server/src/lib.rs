@@ -15,7 +15,9 @@ use askhava_core::api::{
 };
 use askhava_intake::api::JobTextKeys;
 use askhava_payments::api::Minter;
-use askhava_portals::api::{PickCodeKeys, pick_flow_routes, quote_page_routes, security_headers};
+use askhava_portals::api::{
+    PickCodeKeys, feedback_routes, pick_flow_routes, quote_page_routes, security_headers,
+};
 use askhava_privacy::api::Vault;
 use axum::Router;
 use axum::body::Body;
@@ -64,7 +66,8 @@ pub fn start_up() -> io::Result<(Settings, LogGuard)> {
 /// they apply to them. `test_control` is `askhava_core::api::TestControl::router()`, which has no
 /// routes in the release build (SEC-035, D-739). The outermost layer sets the SEC-012 security
 /// headers on every response, a 404 included (T051). The homeowner's quote page is `portals`'
-/// (`/q/{token}`, T052); its pick review step posts to the same path (`pick_flow`, T055).
+/// (`/q/{token}`, T052); its pick review step posts to the same path (`pick_flow`, T055); the
+/// private feedback page after Done is `/f/{token}` (`feedback`, T230).
 /// `webhooks` ([`webhooks`]) adds Twilio's signature-checked inbound-text and status routes
 /// (`inbound_text`, SEC-016, SEC-039, T241); `None` adds none. `pick_keys` ([`pick_code_keys`])
 /// let the page pick send its code and store the pick (T246, D-1516); `None` keeps the page's
@@ -79,12 +82,14 @@ pub fn build_router(
 ) -> Router {
     let quote_page = quote_page_routes(pool.clone(), Arc::new(SystemClock));
     let pick_flow = pick_flow_routes(pool.clone(), Arc::new(SystemClock), pick_keys);
+    let feedback = feedback_routes(pool.clone(), Arc::new(SystemClock));
     let twilio = webhooks.map_or_else(Router::new, inbound_text::routes);
     let (log, _writer) = offdb_stream::RequestLog::spawn(pool);
     Router::new()
         .merge(test_control)
         .merge(quote_page)
         .merge(pick_flow)
+        .merge(feedback)
         .merge(twilio)
         .layer(axum::middleware::from_fn_with_state(
             log,

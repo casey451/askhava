@@ -1865,3 +1865,10 @@ An outside review (ChatGPT) of the whole repository found twelve issues. Each wa
 - Not built yet: her text "<business> couldn't reach you. Text us any time to start again." and the 72-hour "Did <business> email you and agree a time?" question. Adding a new homeowner text also means listing it in a file this task could not touch, so a follow-up task does both. That question will say "Text back YES or NO" instead of the spec's "Reply YES or NO", because a safety check stops any homeowner text that looks like a consent reply. Only the verb changes.
 - Not working end to end yet: the worker tasks that call these steps at 24, 48, 72 and 96 hours, and the dispute and fraud-warning webhooks, still need wiring. The runner has the list.
 - **Nothing needs you now.**
+
+## The private feedback page (T230, D-1820 to D-1822, November 7)
+
+- After a job is Done, the homeowner can open a private feedback page from her link. She writes to Ask Hava in one box. One box, unticked, asks: "Ask Hava may show what I wrote on askhava.com with my first name and town". Everyone gets the same page and no reward.
+- Only ticked feedback can ever go on askhava.com, and a bad review is shown like a good one. A ticked one comes off only for another person's personal details, abuse or discrimination, being believed fake, or being off topic, and each removal is logged with its reason. Feedback from you, a relative of yours or a business is never shown.
+- Not built yet: the text that sends the link, the askhava.com section that shows the feedback, and your owner-portal buttons to remove one or mark who wrote it. The runner has the list.
+- **Nothing needs you now.**
