@@ -401,8 +401,8 @@ pub fn normalize_phone(raw: &str) -> Result<String, VaultError> {
 }
 
 /// Why a photo step failed. No variant carries photo bytes, a key, a token or the database's
-/// message (PRIV-016). The caller answers [`PhotoError::Heic`] with the `photo_heic_reply`
-/// template and a dead link with 404 (PRIV-013, PRIV-025).
+/// message (PRIV-016). The caller answers [`PhotoError::Heic`] with the PRIV-025 reply asking for
+/// a JPEG or PNG (T212's template, D-1792) and a dead link with 404 (PRIV-013, PRIV-025).
 #[derive(Debug, Error, PartialEq, Eq)]
 pub enum PhotoError {
     /// The bytes are no JPEG, PNG or WebP, whatever the file's name says (PRIV-013).

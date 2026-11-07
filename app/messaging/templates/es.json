@@ -510,11 +510,5 @@
     "draft": true,
     "segments": 1,
     "text": "Ask Hava: No pudimos leer ese mensaje. Para cotizar, confirmar o cambiar ajustes, use su portal: https://askhava.com/b. Escriba AYUDA para recibir ayuda."
-  },
-  "photo_heic_reply": {
-    "audience": "homeowner",
-    "draft": true,
-    "segments": 1,
-    "text": "Ask Hava: No pudimos abrir esa foto. Por favor, vuelva a mandarla como JPEG o PNG. Una captura de pantalla de la foto también sirve."
   }
 }

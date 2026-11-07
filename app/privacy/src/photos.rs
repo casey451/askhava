@@ -49,8 +49,6 @@ pub const DECODE_PERMITS: usize = 2;
 pub const DECODE_TIMEOUT: Duration = Duration::from_secs(20);
 /// How long a photo link works after it is issued, in seconds (PRIV-014, D-454).
 pub const LINK_TTL_SECS: i64 = 600;
-/// The messaging template a HEIC upload is answered with: send a JPEG or PNG (PRIV-025).
-pub const HEIC_REPLY_TEMPLATE: &str = "photo_heic_reply";
 
 const JPEG_QUALITY: u8 = 85;
 const VERSION_LEN: usize = 2;
