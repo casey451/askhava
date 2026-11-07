@@ -16667,7 +16667,7 @@
     "T082",
     "T250"
    ],
-   "status": "MERGE_PENDING",
+   "status": "DONE",
    "attempts": 0,
    "slug": "business-notices-email",
    "type": "build",
@@ -16686,13 +16686,62 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 200,
      "head_sha": "f5ad1c4047a6189cd79acc8948f766fd28fe1e9e",
-     "pr": null,
-     "checks": null,
+     "pr": 327,
+     "checks": [
+      {
+       "name": "backup",
+       "conclusion": null
+      },
+      {
+       "name": "keeper",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "gate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-07T13:52:27Z",
      "ended_at": "2026-11-07T14:31:51Z",
-     "result": "MERGE_PENDING"
+     "result": "done"
     }
    ],
    "reviewed_sha": "210427c938542081147cc4f5414ed547de697156",
@@ -16721,7 +16770,34 @@
     }
    ],
    "update_waiting_since": null,
-   "update_push_failures": null
+   "update_push_failures": null,
+   "merged_sha": "e03c786a5d8e999c80975e232d3f802231056963",
+   "merged_at": "2026-11-07T14:50:21Z",
+   "files": [
+    ".sqlx/query-3e5d7d14b3ea6d211f80714eeea48bd85819ac694b56d514800e0c594f80bba0.json",
+    ".sqlx/query-57b390689cd3620d30c91101e1ce230fe34f153d9373238c0172b4a2aadd1ef1.json",
+    ".sqlx/query-99ea5b4c1aa88d946d01b20b68fc9f9ad0ca9a76bee616e8acfe9f39d9e494fb.json",
+    ".sqlx/query-ce1bca5b884ad5832d82145528f37888b5a232ad39354d2f20b17607cc714af6.json",
+    "app/businesses/CLAUDE.md",
+    "app/businesses/src/api.rs",
+    "app/businesses/src/channel_preference.rs",
+    "app/businesses/src/lib.rs",
+    "app/messaging/CLAUDE.md",
+    "app/messaging/src/api.rs",
+    "app/messaging/src/business_notices.rs",
+    "app/messaging/src/lib.rs",
+    "app/messaging/templates/en.json",
+    "app/messaging/templates/es.json",
+    "app/quotes/CLAUDE.md",
+    "app/quotes/src/api.rs",
+    "app/quotes/src/card_notices.rs",
+    "app/quotes/src/lib.rs",
+    "docs/architecture.md",
+    "docs/decisions.md",
+    "docs/for-casey-review.md",
+    "migrations/0141_business_notices.sql",
+    "tests/integration/tests/business_notices.rs"
+   ]
   },
   {
    "id": "T196",
@@ -22112,7 +22188,7 @@
    }
   }
  },
- "updated_at": "2026-11-07T14:36:36Z",
+ "updated_at": "2026-11-07T14:52:51Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -22210,7 +22286,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "3a4dfa4ce8d44bef36c8fa934d1f8cdb2d49b473",
+ "runner_sha": "e03c786a5d8e999c80975e232d3f802231056963",
  "starter": "actions",
  "smoke_runs": [
   {
