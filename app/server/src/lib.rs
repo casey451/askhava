@@ -327,6 +327,10 @@ where
             askhava_payments::api::run_pause_watch(&pool, jiff::Timestamp::now()).await
         },
     );
+    registry.register(
+        askhava_businesses::api::BOX_CLOSED_KIND,
+        askhava_businesses::api::run_box_closed,
+    );
     if let Some(keys) = texts {
         registry.register(askhava_jobs::api::TEXT_KIND, move |pool, task| {
             askhava_intake::api::run_job_text(pool, Arc::clone(&keys), task)

@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT is_owner FROM businesses.team_member WHERE id = $1 AND business_id = $2",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "is_owner",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "businesses.team_member",
+            "name": "is_owner"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "257d9df73cbaf674f555943630ad68175b687968335bb1714a9bcd885ac5847d"
+}

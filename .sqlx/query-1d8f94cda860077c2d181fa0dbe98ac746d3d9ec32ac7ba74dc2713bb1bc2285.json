@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT count(*) AS \"n!\" FROM businesses.complaint WHERE business_id = $1 AND received_at <= $2 AND received_at >= $2 - make_interval(days => $3)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "n!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz",
+        "Int4"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "1d8f94cda860077c2d181fa0dbe98ac746d3d9ec32ac7ba74dc2713bb1bc2285"
+}
