@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-07T14:31:52Z by runner f5ad1c4047a6 (actions).
+Updated 2026-11-07T14:32:02Z by runner f5ad1c4047a6 (actions).
 
-**Building: T147 in progress since 13:52Z; 140 of 256 done; week 39% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 14:31Z; 140 of 256 done; week 39% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 140 of 256 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T147 claimed 13:52Z, lease until 16:52Z
+- **Lane:** idle since 14:31Z (no task in progress)
 - **Week:** 39% used, 116.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 13:59Z, 32 min before this update
 - **Keeper:** last ran 13:48Z, next wake 14:08Z
@@ -19,6 +19,7 @@ Updated 2026-11-07T14:31:52Z by runner f5ad1c4047a6 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T147 | messaging and businesses: business notices by chosen channel | MERGE_PENDING | 1 | 39 min | 14:31Z |  |
 | T230 | portals: the private feedback page and its storage | done | 1 | 61 min | 13:25Z |  |
 | T191 | payments: the unreachable-homeowner refund at 96 hours and i | done | 1 | 56 min | 12:07Z |  |
 | T097 | jobs: day-3 and day-14 check-ins, PROBLEM flags, private fee | done | 1 | 51 min | 10:55Z |  |
@@ -95,7 +96,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T147 (lease until 2026-11-07T16:52:27Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T230", "at": "2026-11-07T13:25:57Z", "input_tokens": 491, "output_tokens": 173712, "cache_creation_input_tokens": 601283, "cache_read_input_tokens": 23199567}
+- {"task": "T147", "at": "2026-11-07T14:31:51Z", "input_tokens": 477, "cache_creation_input_tokens": 785120, "cache_read_input_tokens": 27435211, "output_tokens": 210277}
