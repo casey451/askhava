@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-07T15:13:29Z by runner e03c786a5d8e (actions).
+Updated 2026-11-07T15:54:18Z by runner 95b28e7caad0 (actions).
 
 **Building: T196 in progress since 15:04Z; 141 of 256 done; week 40% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,13 +8,13 @@ Updated 2026-11-07T15:13:29Z by runner e03c786a5d8e (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T196 claimed 15:04Z, lease until 18:04Z
 - **Week:** 40% used, 114.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:02Z, 10 min before this update
+- **Last run:** 15:13Z, 40 min before this update
 - **Keeper:** last ran 15:02Z, next wake 15:22Z
 
 ## Needs attention
 - PLAN GAP T093 (since 2026-11-07T08:52:58Z, no attempt used; a plan change fixes it): T093: dependency T092 is DONE but its owned file app/messaging/src/purge.rs is not on main
 - PLAN GAP T253 (since 2026-11-07T08:52:58Z, no attempt used; a plan change fixes it): T253: dependency T092 is DONE but its owned file app/messaging/src/purge.rs is not on main
-- Strict plan check red: 8 problem(s) on tasks still to run (+16 on DONE tasks); first: T253: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 12 problem(s) on tasks still to run (+17 on DONE tasks); first: T253: stored context_pct 34% but it measures 39%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -40,9 +40,9 @@ Updated 2026-11-07T15:13:29Z by runner e03c786a5d8e (actions).
 | T077 | calls: PIN routing and the paid-business read-back | done | 1 | 60 min | 18:52Z |  |
 | T076 | calls: masked numbers from a fixed pool, PIN sharing when ex | done | 1 | 41 min | 17:32Z |  |
 | T250 | core: narrow the default privileges in every schema and prov | done | 5 | 19 min | 16:38Z | T250 blocked: migration 0110 names 12 other modules' schemas; TD-SEC-10 (architecture_migrations.rs, protected) rejects  |
-| T250 | core: narrow the default privileges in every schema and prov | check_failed | 4 | 24 min | 15:37Z |  |
 
 ### Plan and harness merges on main
+- 15:37Z Plan: second code audit — owners and acceptance for B01–B08 and known gaps (D-1835–D-1845) (#326)
 - 05:10Z Plan: repo audit findings — owners and acceptance for A01–A06, A08–A12 (D-1751–D-1761, D-1788) (#316)
 - 03:59Z Plan: tests/a11y/fixtures.ts is a shared page-state registry (D-1772) (#314)
 - 03:48Z Plan: business-session read of released picks, release recovery tests, production release wiring (D-1739, D-1740) (#313)
