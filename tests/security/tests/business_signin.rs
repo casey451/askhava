@@ -161,6 +161,8 @@ impl Browser {
             .body(Body::from(form.to_owned()))
             .expect("request");
         let response = app.clone().oneshot(request).await.expect("response");
+        let store = response.headers().get(header::CACHE_CONTROL);
+        assert_eq!(store.and_then(|v| v.to_str().ok()), Some("no-store"));
         let cookies: Vec<String> = response
             .headers()
             .get_all(header::SET_COOKIE)

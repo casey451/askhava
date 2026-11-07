@@ -27,7 +27,7 @@ use askhava_core::api::{Claimed, Clock, HandlerError};
 use axum::Router;
 use axum::extract::{FromRef, Path, State};
 use axum::http::StatusCode;
-use axum::middleware::from_fn_with_state;
+use axum::middleware::{from_fn, from_fn_with_state};
 use axum::response::{Html, IntoResponse, Response};
 use axum::routing::get;
 use axum_extra::extract::cookie::CookieJar;
@@ -38,7 +38,7 @@ use sqlx::{PgConnection, PgPool};
 
 use crate::models;
 use crate::security::{
-    ButtonForm, CsrfField, CsrfForm, SecurityEvent, SecurityEventKind, WebSecurity,
+    ButtonForm, CsrfField, CsrfForm, SecurityEvent, SecurityEventKind, WebSecurity, no_store,
     record_security_event, refuse_cross_site,
 };
 use crate::session::{
@@ -214,7 +214,7 @@ impl<M> FromRef<SignIn<M>> for WebSecurity {
 
 /// The business sign-in router over `pool`, timed by `clock`, emailing through `mail` (SEC-004):
 /// [`SIGNIN_ROUTE`] and [`SIGNIN_LINK_ROUTE`], each `GET` and `POST`, behind the cross-site
-/// refusal. The composition merges it once its [`SignInMail`] exists (D-1724).
+/// refusal and `no-store` (a link page holds its token). The composition merges it once its [`SignInMail`] exists (D-1724).
 pub fn business_signin_routes<M: SignInMail>(
     pool: PgPool,
     clock: Arc<dyn Clock>,
@@ -231,6 +231,7 @@ pub fn business_signin_routes<M: SignInMail>(
         .route(SIGNIN_ROUTE, get(form).post(request::<M>))
         .route(SIGNIN_LINK_ROUTE, get(open::<M>).post(sign_in::<M>))
         .with_state(state)
+        .layer(from_fn(no_store))
         .layer(from_fn_with_state(security, refuse_cross_site))
 }
 
