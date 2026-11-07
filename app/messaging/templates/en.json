@@ -432,7 +432,7 @@
   "emailed_question": {
     "audience": "homeowner",
     "segments": 1,
-    "text": "Ask Hava: Did {business} email you and agree a time? Reply YES or NO."
+    "text": "Ask Hava: Did {business} email you and agree a time? Text back YES or NO."
   },
   "unreachable_refunded": {
     "audience": "business",
