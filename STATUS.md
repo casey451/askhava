@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-07T00:27:23Z by runner 4e0a2e680710 (actions).
+Updated 2026-11-07T01:13:07Z by runner 5b1bb441d998 (actions).
 
 **Building: T082 in progress since 00:19Z; 129 of 239 done; week 26% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,11 @@ Updated 2026-11-07T00:27:23Z by runner 4e0a2e680710 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T082 claimed 00:19Z, lease until 03:19Z
 - **Week:** 26% used, 142.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:06Z, 21 min before this update
+- **Last run:** 00:27Z, 45 min before this update
 - **Keeper:** last ran 00:06Z, next wake 00:26Z
 
 ## Needs attention
-- Strict plan check red: 7 problem(s) on tasks still to run (+15 on DONE tasks); first: T084: stored context_pct 11% but it measures 15%; regenerate
+- Strict plan check red: 9 problem(s) on tasks still to run (+15 on DONE tasks); first: T082: stored context_pct 12% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -41,7 +41,6 @@ Updated 2026-11-07T00:27:23Z by runner 4e0a2e680710 (actions).
 | T192 | picks: compile-fail proofs that no crate but payments can bu | done | 1 | 26 min | 03:17Z |  |
 | T069 | picks: release only on paid or free; never the homeowner's p | done | 1 | 48 min | 02:36Z |  |
 | T068 | payments: receipt emails, charge description, just-under-a-t | done | 1 | 42 min | 01:35Z |  |
-| T067 | payments: nightly reconcile, auto-match or auto-refund, ledg | done | 1 | 49 min | 00:38Z |  |
 
 ### Plan and harness merges on main
 - 16:15Z Plan: dynamic SQL in migrations is a TD-SEC-10 finding (T252), T126 context budget, stored budgets refreshed (D-1677, D-1678) (#298)
