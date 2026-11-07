@@ -77,6 +77,7 @@ SMOKE_TIMEOUT = 540  # seconds for scripts/smoke.sh, under the session's 600-sec
 SMOKE_TARGET = "smoke"  # the smoke's own CARGO_TARGET_DIR, a folder of the cached `target` (D-1890)
 SMOKE_TREE = "askhava-smoke"  # the smoke worktree's fixed folder under RUNNER_TEMP, the same every run (D-1890)
 SMOKE_MTIMES = "smoke-mtimes.json"  # in the smoke's target dir: each tracked file's blob and the mtime it gets (D-1890)
+SMOKE_RAN = "smoke-ran"  # beside the smoke's target dir: this job ran the smoke, so backup-runner.yml saves its cache (D-1911)
 PREHANDIN = "scripts/prehandin.sh"  # the pre-hand-in gate; main's copy runs on a submitted head at --after (D-1300)
 PREHANDIN_TIMEOUT = 240  # seconds for its --quick part (about 20 s measured), well inside --after's 600-second Bash call
 PREHANDIN_RED = "pre-hand-in gate red"  # how a gate failure's log starts; runner/__main__.py `after` holds on it (D-1300)
@@ -202,8 +203,9 @@ def pin_smoke_mtimes(tree: Path, index: str, manifest: Path, now_ns: int) -> int
     (a file's blob; a folder's `/`-suffixed key, the hash of its entry names) and the time it was given: an
     unchanged one keeps that time, which predates every build that read it; a new or changed one gets the
     run's time, later than `now_ns` and every recorded time, so after every build so far even with a clock
-    that stepped back. A change under `.sqlx/` (the offline query data, which no dep-info lists) gives every
-    path the run's time. The manifest is deleted before the first change and written back only when every
+    that stepped back. A changed existing file under `.sqlx/` (offline query data no dep-info lists) gives
+    every path the run's time; an added or removed one does not (D-1911): a new query file comes with the
+    source change that names it, which rebuilds that crate, and a removed one is read by no build. The manifest is deleted before the first change and written back only when every
     path is pinned, so a failure part-way (see `stamp_tree_now`) or a red or timed-out run never leaves a
     record the tree does not match; an unreadable one makes everything new (a full rebuild). `index` is
     `git ls-files -s -z`."""
@@ -212,7 +214,7 @@ def pin_smoke_mtimes(tree: Path, index: str, manifest: Path, now_ns: int) -> int
     held = _smoke_entries(tree, index)
     run_ns = max([now_ns, *(v[1] + 1 for v in old.values())])
     changed = {k for k, v in held.items() if old.get(k, [None])[0] != v} | (set(old) - set(held))
-    query_data = any(".sqlx" in k.split("/") for k in changed)
+    query_data = any(".sqlx" in k.split("/") and not k.endswith("/") and k in old and k in held for k in changed)
     new = {}
     for path, what in held.items():
         stamp = run_ns if query_data or path in changed else old[path][1]
@@ -223,6 +225,15 @@ def pin_smoke_mtimes(tree: Path, index: str, manifest: Path, now_ns: int) -> int
     part.write_text(json.dumps(new), encoding="utf-8")
     part.replace(manifest)
     return sum(1 for v in new.values() if v[1] == run_ns)
+
+
+def _mark_smoke_ran() -> None:
+    """Leave SMOKE_RAN beside the smoke's target dir (outside every cache entry), so backup-runner.yml saves
+    the smoke cache only from a job that ran the smoke (D-1911); best effort."""
+    try:
+        (smoke_target_dir().parent / SMOKE_RAN).write_text(time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), encoding="utf-8")
+    except OSError:
+        return
 
 
 def stamp_tree_now(tree: Path, manifest: Path) -> None:
@@ -998,6 +1009,7 @@ class GitHubEnv:
             self.smoke_timed_out = True
         finally:
             self._drop_smoke_tree(tree)
+            _mark_smoke_ran()
         tail = (out + err).strip().splitlines()
         self.log.append(f"smoke on {head[:12]}: exit {code}; {tail[-1] if tail else ''}")
         return code == 0, head
@@ -1011,6 +1023,7 @@ class GitHubEnv:
     def _pin_smoke_tree(self, tree: Path) -> None:
         """`pin_smoke_mtimes` on the smoke worktree; on any failure `stamp_tree_now` (no manifest, a full build)."""
         manifest = smoke_target_dir() / SMOKE_MTIMES
+        self.log.append(f"smoke mtimes: manifest {manifest}, {len(_read_mtimes(manifest))} entries loaded")
         code, index, err = self._run(["git", "ls-files", "-s", "-z"], None, tree)
         try:
             if code != 0:

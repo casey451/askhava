@@ -266,6 +266,8 @@ def test_smoke_main_uses_the_fixed_tree_and_pins_before_the_smoke(monkeypatch: A
     assert calls[cmds.index(["bash", "scripts/smoke.sh"])][1] == tree
     assert (tmp_path / "target" / "smoke" / ge.SMOKE_MTIMES).exists() and not tree.exists()
     assert env.log[-2] == "smoke mtimes: 2 new or changed paths"
+    assert env.log[-3] == f"smoke mtimes: manifest {tmp_path / 'target' / 'smoke' / ge.SMOKE_MTIMES}, 0 entries loaded"
+    assert (tmp_path / "target" / ge.SMOKE_RAN).exists(), "the marker the workflow's save step looks for (D-1911)"
 
 
 def _pin_env(tmp_path: Path, index: list[str], code: list[int]) -> Any:
@@ -292,11 +294,11 @@ def test_a_failed_pin_then_a_revert_never_reuses_the_old_time(monkeypatch: Any, 
     env._pin_smoke_tree(tree)
     first = (tree / "a.rs").stat().st_mtime_ns
     index[0] = _index(tree, {"a.rs": "a2", "b.rs": "b2"})
-    real, calls = os.utime, [0]
+    real, calls, armed = os.utime, [0], [True]
 
     def flaky(path: Any, *args: Any, **kw: Any) -> None:
         calls[0] += 1
-        if calls[0] == 2 and not env.log[-1:]:
+        if calls[0] == 2 and armed[0]:
             raise OSError("disk went away")
         real(path, *args, **kw)
 
@@ -328,18 +330,25 @@ def test_a_failed_index_read_deletes_the_record_and_stamps_the_tree(monkeypatch:
 
 
 def test_a_query_data_change_makes_everything_new_and_times_only_move_forward(tmp_path: Path) -> None:
+    """D-1890, narrowed by D-1911: only a changed existing `.sqlx/` file makes every path new. Every task that
+    added a query made the whole tree new under D-1890's rule, so every smoke rebuilt every member."""
     from runner import github_env as ge
 
     tree, manifest = tmp_path / "tree", tmp_path / "m.json"
     tree.mkdir()
     ge.pin_smoke_mtimes(tree, _index(tree, {"a.rs": "a1", ".sqlx/q1.json": "q1"}), manifest, 1_000)
-    assert ge.pin_smoke_mtimes(tree, _index(tree, {"a.rs": "a1", ".sqlx/q1.json": "q2"}), manifest, 2_000) == 4
-    assert (tree / "a.rs").stat().st_mtime_ns == 2_000, "no dep-info lists `.sqlx/`, so everything rebuilds"
-    (tree / ".sqlx/q1.json").unlink()
-    assert ge.pin_smoke_mtimes(tree, _index(tree, {"a.rs": "a1"}), manifest, 3_000) == 2, "a removed query file too"
+    assert ge.pin_smoke_mtimes(tree, _index(tree, {"a.rs": "a1", ".sqlx/q1.json": "q1", ".sqlx/q2.json": "q2"}),
+                               manifest, 2_000) == 2, "an added query file: itself and its folder"
+    assert (tree / "a.rs").stat().st_mtime_ns == 1_000, "the source naming a new query rebuilds its own crate"
+    assert ge.pin_smoke_mtimes(tree, _index(tree, {"a.rs": "a1", ".sqlx/q1.json": "q9", ".sqlx/q2.json": "q2"}),
+                               manifest, 3_000) == 5, "a changed query file: everything"
+    assert (tree / "a.rs").stat().st_mtime_ns == 3_000, "no dep-info lists `.sqlx/`, so everything rebuilds"
+    (tree / ".sqlx/q2.json").unlink()
+    assert ge.pin_smoke_mtimes(tree, _index(tree, {"a.rs": "a1", ".sqlx/q1.json": "q9"}), manifest, 4_000) == 1, \
+        "a removed query file: only its folder"
     assert (tree / "a.rs").stat().st_mtime_ns == 3_000
-    assert ge.pin_smoke_mtimes(tree, _index(tree, {"a.rs": "a2"}), manifest, 10) == 1
-    assert (tree / "a.rs").stat().st_mtime_ns == 3_001, "a clock that stepped back still moves forward"
+    assert ge.pin_smoke_mtimes(tree, _index(tree, {"a.rs": "a2", ".sqlx/q1.json": "q9"}), manifest, 10) == 1
+    assert (tree / "a.rs").stat().st_mtime_ns == 4_001, "a clock that stepped back still moves forward"
 
 
 def _debug(root: Path) -> Path:
@@ -396,13 +405,24 @@ def test_the_smoke_target_is_seeded_once_and_only_with_room(monkeypatch: Any, tm
 
 
 def test_the_smoke_build_has_its_own_cache_entry() -> None:
-    """D-1890: `target/smoke` is its own per-commit cache entry and left out of the worker's, so neither carries both."""
+    """D-1890, D-1911: `target/smoke` is its own cache entry; the worker's lists `target/debug` only (an exclusion
+    does not reach inside a listed folder); the smoke entry is saved only by a job that ran the smoke, under a
+    key with the run id, and restored newest-first from the same commit, then the same lock."""
     steps = {step.get("name"): step for step in _flow()["jobs"]["backup"]["steps"]}
-    rust, smoke = steps["Rust build cache (D-514)"]["with"], steps["Smoke build cache (D-1890)"]["with"]
-    assert "target" in rust["path"].split() and "!target/smoke" in rust["path"].split()
-    assert smoke["path"] == "target/smoke" and smoke["key"].startswith("rust-smoke-") and smoke["key"].endswith("${{ github.sha }}")
+    rust = steps["Rust build cache (D-514)"]["with"]
+    restore = steps["Smoke build cache, restore (D-1890, D-1911)"]
+    save = steps["Smoke build cache, save (D-1911)"]
+    assert "target/debug" in rust["path"].split() and "target" not in rust["path"].split()
+    assert restore["uses"] == "actions/cache/restore@v4" and save["uses"] == "actions/cache/save@v4"
+    assert restore["with"]["path"] == save["with"]["path"] == "target/smoke"
+    assert restore["with"]["key"].endswith("-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}")
+    assert save["with"]["key"] == "${{ steps.%s.outputs.cache-primary-key }}" % restore["id"]
+    assert "hashFiles('target/smoke-ran')" in save["if"] and save["if"].startswith("always()")
+    keys = restore["with"]["restore-keys"].splitlines()
+    assert keys[0].endswith("-${{ github.sha }}-") and all(k.startswith("rust-smoke-") for k in keys)
     assert rust["key"].startswith("rust-${{ runner.os }}-"), "so the worker's restore keys never pick a smoke entry"
-    assert all(line.startswith("rust-smoke-") for line in smoke["restore-keys"].splitlines())
+    order = [step.get("name") or step.get("uses") for step in _flow()["jobs"]["backup"]["steps"]]
+    assert order.index("Smoke build cache, save (D-1911)") > order.index("anthropics/claude-code-action@v1"), "after the session"
 
 
 def test_actions_minutes_states_the_public_repository() -> None:
