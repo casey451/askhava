@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-07T15:02:29Z by runner e03c786a5d8e (actions).
+Updated 2026-11-07T15:13:29Z by runner e03c786a5d8e (actions).
 
-**Idle since 14:50Z; 141 of 256 done; week 40% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T196 in progress since 15:04Z; 141 of 256 done; week 40% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 141 of 256 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 14:50Z (no task in progress)
-- **Week:** 40% used, 116.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:02Z, 0 min before this update
+- **Lane:** lane 1: T196 claimed 15:04Z, lease until 18:04Z
+- **Week:** 40% used, 114.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Last run:** 15:02Z, 10 min before this update
 - **Keeper:** last ran 15:02Z, next wake 15:22Z
 
 ## Needs attention
@@ -48,7 +48,6 @@ Updated 2026-11-07T15:02:29Z by runner e03c786a5d8e (actions).
 - 03:48Z Plan: business-session read of released picks, release recovery tests, production release wiring (D-1739, D-1740) (#313)
 - 16:15Z Plan: dynamic SQL in migrations is a TD-SEC-10 finding (T252), T126 context budget, stored budgets refreshed (D-1677, D-1678) (#298)
 - 16:05Z Plan: bump actix-http 3.20.2 -> 3.20.3 for RUSTSEC-2026-0455 (D-1666) (#297)
-- 15:10Z Plan: bump actix-http 3.20.0 -> 3.20.2 for RUSTSEC-2026-0446 (D-1643) (#295)
 
 ## Progress (requirements verified)
 
@@ -81,7 +80,7 @@ Updated 2026-11-07T15:02:29Z by runner e03c786a5d8e (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-07T13:48:46Z (week)): five-hour: 0k used, 29.1M left, resets on first use; week: 78.0M used, 116.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-11-22T21:52:32Z.
+- Pacing (session_reading 2026-11-07T15:02:15Z (week)): five-hour: 3.7M used, 25.4M left, resets 2026-11-07T19:31:51Z; week: 80.0M used, 114.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-11-22T23:14:49Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -96,7 +95,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T196 (lease until 2026-11-07T18:04:53Z)
 
 ## Last usage reading
 - {"task": "T147", "at": "2026-11-07T14:31:51Z", "input_tokens": 477, "cache_creation_input_tokens": 785120, "cache_read_input_tokens": 27435211, "output_tokens": 210277}
