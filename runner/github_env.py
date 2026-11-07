@@ -74,9 +74,9 @@ DECISIONS_FILE = "docs/decisions.md"  # read from main to reserve decision numbe
 TASKS_FILE = "kit/tasks.json"  # read from main for a plan-fix re-queue (D-677)
 PUSH_RETRIES = 3
 SMOKE_TIMEOUT = 540  # seconds for scripts/smoke.sh, under the session's 600-second Bash call so the runner answers first (D-1178)
-SMOKE_TARGET = "smoke"  # the smoke's own CARGO_TARGET_DIR, a folder of the cached `target` (D-1884)
-SMOKE_TREE = "askhava-smoke"  # the smoke worktree's fixed folder under RUNNER_TEMP, the same every run (D-1884)
-SMOKE_MTIMES = "smoke-mtimes.json"  # in the smoke's target dir: each tracked file's blob and the mtime it gets (D-1884)
+SMOKE_TARGET = "smoke"  # the smoke's own CARGO_TARGET_DIR, a folder of the cached `target` (D-1890)
+SMOKE_TREE = "askhava-smoke"  # the smoke worktree's fixed folder under RUNNER_TEMP, the same every run (D-1890)
+SMOKE_MTIMES = "smoke-mtimes.json"  # in the smoke's target dir: each tracked file's blob and the mtime it gets (D-1890)
 PREHANDIN = "scripts/prehandin.sh"  # the pre-hand-in gate; main's copy runs on a submitted head at --after (D-1300)
 PREHANDIN_TIMEOUT = 240  # seconds for its --quick part (about 20 s measured), well inside --after's 600-second Bash call
 PREHANDIN_RED = "pre-hand-in gate red"  # how a gate failure's log starts; runner/__main__.py `after` holds on it (D-1300)
@@ -173,14 +173,14 @@ def _redact_gate_row(row: str) -> str:
 def _smoke_env() -> dict[str, str]:
     """The smoke test's environment: CARGO_TARGET_DIR is the smoke's own target dir (`smoke_target_dir`), and
     CARGO_INCREMENTAL is 0 as in `Ci`, since the cache keeps that dir and rustc's incremental data was about a
-    third of it (4.7 of 15 GB measured, D-1884)."""
+    third of it (4.7 of 15 GB measured, D-1890)."""
     return {**os.environ, "CARGO_TARGET_DIR": str(smoke_target_dir()), "CARGO_INCREMENTAL": "0"}
 
 
 def smoke_target_dir() -> Path:
     """The smoke's own target dir, `smoke` inside the checkout's `target` (or inside an explicit
     CARGO_TARGET_DIR), so the job's Rust cache keeps it (D-1178) but the worker's builds never share it
-    (D-1884): a member artifact built in the smoke worktree has that worktree's path compiled in through
+    (D-1890): a member artifact built in the smoke worktree has that worktree's path compiled in through
     `env!("CARGO_MANIFEST_DIR")`, which is why D-1451 cleaned the members after every smoke."""
     base = os.environ.get("CARGO_TARGET_DIR") or str(Path(os.environ.get("GITHUB_WORKSPACE") or Path.cwd()) / "target")
     return Path(base) / SMOKE_TARGET
@@ -188,13 +188,13 @@ def smoke_target_dir() -> Path:
 
 def smoke_tree_dir() -> Path:
     """The smoke worktree's path: SMOKE_TREE under RUNNER_TEMP (the system temp dir outside Actions). It is
-    the same every run, so the paths compiled into the smoke's cached artifacts stay true (D-1884)."""
+    the same every run, so the paths compiled into the smoke's cached artifacts stay true (D-1890)."""
     return Path(os.environ.get("RUNNER_TEMP") or tempfile.gettempdir()) / SMOKE_TREE
 
 
 def pin_smoke_mtimes(tree: Path, index: str, manifest: Path, now_ns: int) -> int:
     """Give every tracked file of the smoke worktree, and every folder holding one, a modification time Cargo
-    can trust (D-1884); returns how many got the run's time.
+    can trust (D-1890); returns how many got the run's time.
 
     Cargo calls a workspace member's artifact fresh when no source file (nor any entry of a folder a build
     script watches, such as `askhava-core`'s `migrations`) is newer than its last build, and a fresh checkout
@@ -226,7 +226,7 @@ def pin_smoke_mtimes(tree: Path, index: str, manifest: Path, now_ns: int) -> int
 
 
 def stamp_tree_now(tree: Path, manifest: Path) -> None:
-    """After a failed pin (D-1884): no manifest, and every file and folder of the tree at the current time, so
+    """After a failed pin (D-1890): no manifest, and every file and folder of the tree at the current time, so
     nothing a half-done pin set back in time can make an old artifact look fresh (a full rebuild)."""
     manifest.unlink(missing_ok=True)
     stamp = time.time_ns()
@@ -245,7 +245,7 @@ SEED_MARGIN = 5 * 1024**3  # bytes of disk left free beyond the copy, or the smo
 def seed_files(debug: Path, members: set[str]) -> list[Path]:
     """The worker build's dependency artifacts under `debug` (its `debug` folder): every entry of SEED_DIRS
     whose unit name is not a workspace package or target (`members`, with `-` and `_` spellings; `lib`
-    prefixes stripped). Member artifacts and anything unrecognised stay out: they only rebuild (D-1884)."""
+    prefixes stripped). Member artifacts and anything unrecognised stay out: they only rebuild (D-1890)."""
     names = members | {m.replace("-", "_") for m in members}
     out: list[Path] = []
     for folder in SEED_DIRS:
@@ -978,7 +978,7 @@ class GitHubEnv:
 
     def smoke_main(self) -> tuple[bool, str]:
         """bash scripts/smoke.sh in a detached worktree of main's head (the runner's own tool run), at the
-        fixed `smoke_tree_dir` and building into `smoke_target_dir` with pinned mtimes (D-1884)."""
+        fixed `smoke_tree_dir` and building into `smoke_target_dir` with pinned mtimes (D-1890)."""
         head = self.main_head()
         if self.dry_run:
             self.log.append(f"dry-run: smoke test not run on {head[:12]}")
@@ -1026,7 +1026,7 @@ class GitHubEnv:
         self.log.append(f"smoke mtimes: {fresh} new or changed paths")
 
     def _seed_smoke_target(self, tree: Path) -> None:
-        """When the smoke target has no dependency builds yet (the first smoke after D-1884, or a cache entry
+        """When the smoke target has no dependency builds yet (the first smoke after D-1890, or a cache entry
         without it), copy the worker build's dependency artifacts into it, so the smoke compiles only the
         members and fits SMOKE_TIMEOUT. Skipped, and logged, when the disk is short; never fails the smoke."""
         smoke, debug = smoke_target_dir(), smoke_target_dir().parent / "debug"

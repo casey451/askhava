@@ -1,6 +1,6 @@
 """The keeper (D-1451): runner/keeper.py decides how long the next keeper sleeps and what it does when it
 wakes; backup-runner.yml calls it. Also the smoke run's own target dir, fixed worktree and pinned mtimes
-(D-1884, which replaced D-1451's `cargo clean --workspace` after the T057 stale build) and kit/pacing.json's public-repository `actions_minutes`. Fake data only."""
+(D-1890, which replaced D-1451's `cargo clean --workspace` after the T057 stale build) and kit/pacing.json's public-repository `actions_minutes`. Fake data only."""
 
 from __future__ import annotations
 
@@ -166,7 +166,7 @@ def test_the_workflow_arms_one_keeper_and_keeps_every_lock() -> None:
     assert 'go) gh workflow run backup-runner.yml --ref main --repo "$GITHUB_REPOSITORY" ;;' in wake
 
 
-# ---- the smoke's own target dir (T057, D-1884) and the Actions minutes note
+# ---- the smoke's own target dir (T057, D-1890) and the Actions minutes note
 
 
 def _index(tree: Path, files: dict[str, str]) -> str:
@@ -194,7 +194,7 @@ def test_the_smoke_builds_into_its_own_folder_of_the_cached_target(monkeypatch: 
     assert seen[0] is not None and seen[0]["CARGO_TARGET_DIR"] == "/work/fake/target/smoke"
     assert seen[0]["CARGO_INCREMENTAL"] == "0", "as in Ci: no incremental data in the cached smoke target"
     assert seen[1] is None or "CARGO_TARGET_DIR" not in seen[1], "the worker's cargo keeps the checkout's own target"
-    assert not hasattr(ge, "CARGO_CLEAN_MEMBERS"), "no clean of the worker's target after a smoke (D-1884)"
+    assert not hasattr(ge, "CARGO_CLEAN_MEMBERS"), "no clean of the worker's target after a smoke (D-1890)"
 
 
 def test_unchanged_files_keep_their_pinned_mtime_and_changed_ones_get_now(tmp_path: Path) -> None:
@@ -279,7 +279,7 @@ def _pin_env(tmp_path: Path, index: list[str], code: list[int]) -> Any:
 
 
 def test_a_failed_pin_then_a_revert_never_reuses_the_old_time(monkeypatch: Any, tmp_path: Path) -> None:
-    """Review of D-1884: a pin that fails part-way must not leave the earlier record, or content reverted to
+    """Review of D-1890: a pin that fails part-way must not leave the earlier record, or content reverted to
     what it held then would get that old time back and an artifact built from the failed run's content
     would count as fresh."""
     from runner import github_env as ge
@@ -396,9 +396,9 @@ def test_the_smoke_target_is_seeded_once_and_only_with_room(monkeypatch: Any, tm
 
 
 def test_the_smoke_build_has_its_own_cache_entry() -> None:
-    """D-1884: `target/smoke` is its own per-commit cache entry and left out of the worker's, so neither carries both."""
+    """D-1890: `target/smoke` is its own per-commit cache entry and left out of the worker's, so neither carries both."""
     steps = {step.get("name"): step for step in _flow()["jobs"]["backup"]["steps"]}
-    rust, smoke = steps["Rust build cache (D-514)"]["with"], steps["Smoke build cache (D-1884)"]["with"]
+    rust, smoke = steps["Rust build cache (D-514)"]["with"], steps["Smoke build cache (D-1890)"]["with"]
     assert "target" in rust["path"].split() and "!target/smoke" in rust["path"].split()
     assert smoke["path"] == "target/smoke" and smoke["key"].startswith("rust-smoke-") and smoke["key"].endswith("${{ github.sha }}")
     assert rust["key"].startswith("rust-${{ runner.os }}-"), "so the worker's restore keys never pick a smoke entry"

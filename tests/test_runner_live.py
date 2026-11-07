@@ -1490,7 +1490,7 @@ def test_a_smoke_test_that_outruns_its_budget_is_a_red_smoke_not_a_crash(repo: d
 
     from runner import github_env
 
-    monkeypatch.setenv("RUNNER_TEMP", str(tmp_path / "temp"))  # the fixed smoke tree and target stay in this test (D-1884)
+    monkeypatch.setenv("RUNNER_TEMP", str(tmp_path / "temp"))  # the fixed smoke tree and target stay in this test (D-1890)
     monkeypatch.setenv("CARGO_TARGET_DIR", str(tmp_path / "target"))
 
     def slow(args: list[str], stdin: str | None, cwd: Path) -> tuple[int, str, str]:
@@ -1524,7 +1524,7 @@ def test_run_command_gives_the_smoke_its_own_timeout(monkeypatch: pytest.MonkeyP
     github_env.run_command(["bash", "scripts/smoke.sh"], None, Path("."))
     github_env.run_command(["git", "status"], None, Path("."))
     assert seen == [github_env.SMOKE_TIMEOUT, 600]
-    assert github_env._smoke_env()["CARGO_TARGET_DIR"] == "/work/askhava/target/smoke", "the smoke's own folder of the cached target (D-1884)"
+    assert github_env._smoke_env()["CARGO_TARGET_DIR"] == "/work/askhava/target/smoke", "the smoke's own folder of the cached target (D-1890)"
     monkeypatch.setenv("CARGO_TARGET_DIR", "/elsewhere")
     assert github_env._smoke_env()["CARGO_TARGET_DIR"] == "/elsewhere/smoke", "never the worker's target dir itself"
 
