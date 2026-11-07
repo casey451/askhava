@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-07T17:05:44Z by runner 943aee0eb1fa (actions).
+Updated 2026-11-07T17:05:55Z by runner 943aee0eb1fa (actions).
 
-**Building: T093 in progress since 16:20Z; 141 of 269 done; week 41% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 17:05Z; 141 of 269 done; week 41% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 141 of 269 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T093 claimed 16:20Z, lease until 19:20Z
+- **Lane:** idle since 17:05Z (no task in progress)
 - **Week:** 41% used, 112.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 16:29Z, 36 min before this update
 - **Keeper:** last ran 16:09Z, next wake 16:29Z
@@ -17,6 +17,7 @@ Updated 2026-11-07T17:05:44Z by runner 943aee0eb1fa (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T093 | messaging: vault references in the log, bodies cut at 30 day | MERGE_PENDING | 1 | 45 min | 17:05Z |  |
 | T196 | businesses: verified notice email, sender rules and the addr | check_failed | 1 | 49 min | 15:54Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests / test tests::transi |
 | T147 | messaging and businesses: business notices by chosen channel | done | 1 | 39 min | 14:31Z |  |
 | T230 | portals: the private feedback page and its storage | done | 1 | 61 min | 13:25Z |  |
@@ -91,7 +92,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T093 (lease until 2026-11-07T19:20:06Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T196", "at": "2026-11-07T15:54:17Z", "output_tokens": 224467, "cache_creation_input_tokens": 668214, "input_tokens": 447, "cache_read_input_tokens": 23389758}
+- {"task": "T093", "at": "2026-11-07T17:05:43Z", "cache_read_input_tokens": 18212437, "cache_creation_input_tokens": 455060, "output_tokens": 128641, "input_tokens": 442}
