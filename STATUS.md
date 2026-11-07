@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-07T00:02:06Z by runner b1e07c947d61 (actions).
+Updated 2026-11-07T00:02:17Z by runner b1e07c947d61 (actions).
 
-**Building: T193 in progress since 23:06Z; 128 of 239 done; week 26% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 00:02Z; 128 of 239 done; week 26% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 128 of 239 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T193 claimed 23:06Z, lease until 02:06Z
+- **Lane:** idle since 00:02Z (no task in progress)
 - **Week:** 26% used, 142.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 23:15Z, 47 min before this update
 - **Keeper:** last ran 22:55Z, next wake 23:15Z
@@ -17,6 +17,7 @@ Updated 2026-11-07T00:02:06Z by runner b1e07c947d61 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T193 | businesses: sign-up screens for someone else filling in, the | MERGE_PENDING | 1 | 55 min | 00:02Z |  |
 | T080 | calls: relay-friendly bridging, identity call, code call | done | 1 | 49 min | 22:52Z |  |
 | T081 | businesses: sign-up, identity chain from public records, act | done | 1 | 37 min | 21:42Z |  |
 | T079 | calls: line closing, staff phones and LINK, email-preferred  | done | 1 | 43 min | 20:51Z |  |
@@ -94,7 +95,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T193 (lease until 2026-11-07T02:06:14Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T080", "at": "2026-11-06T22:52:01Z", "cache_creation_input_tokens": 863832, "output_tokens": 252095, "input_tokens": 563, "cache_read_input_tokens": 37408556}
+- {"task": "T193", "at": "2026-11-07T00:02:05Z", "cache_read_input_tokens": 29146725, "output_tokens": 198906, "input_tokens": 529, "cache_creation_input_tokens": 711031}
