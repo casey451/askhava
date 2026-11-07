@@ -10,13 +10,14 @@
 //! T068). The business sign-up screens, their WEB-024 notice line, fee numbers and done-screen
 //! facts (BIZ-024, BIZ-026, BIZ-030, BIZ-031, LIC-047, T193). Business sign-in by emailed link,
 //! the 30-day session and the business principal with Confirm's scope (SEC-004, SEC-019, PICK-033,
-//! T084).
+//! T084); the new-device code by Verify text or email (SEC-004, TXT-038, T194).
 
 /// The cookie jar the session functions take and give back (axum-extra's).
 pub use axum_extra::extract::cookie::CookieJar;
 
 pub use crate::business_auth::{
-    AddressForm, BUSINESS_SESSION_LIFE, BusinessPrincipal, LINK_LIFE, LINKS_PER_LIFE, Need,
+    AddressForm, BUSINESS_SESSION_LIFE, BusinessPrincipal, CodeAddress, CodeForm, CodeFuture,
+    CodeTo, DEVICE_COOKIE, DEVICE_LIFE, DeviceCodes, LINK_LIFE, LINKS_PER_LIFE, Need,
     SIGNIN_LINK_ROUTE, SIGNIN_ROUTE, SignIn, SignInAddress, SignInMail, business_principal,
     run_member_removed, signin_form, signin_open, signin_post, signin_request,
 };

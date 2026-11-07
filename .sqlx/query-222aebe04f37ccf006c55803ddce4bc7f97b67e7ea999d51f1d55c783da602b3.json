@@ -1,0 +1,41 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id, member_id FROM portals.login_link WHERE token_sha256 = $1 AND used_at IS NULL AND expires_at > $2",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "portals.login_link",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "member_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "portals.login_link",
+            "name": "member_id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Bytea",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "222aebe04f37ccf006c55803ddce4bc7f97b67e7ea999d51f1d55c783da602b3"
+}
