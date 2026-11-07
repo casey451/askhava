@@ -133,11 +133,11 @@ test("TD-JOB-10 JOB-017, PICK-011: the page closes 30 days after Done; a revoked
   expect((await page.goto(`/f/${fresh.token}`))?.status(), "new link").toBe(200);
 });
 
-test("TD-JOB-10 JOB-017: a removal is never changed or cleared, and an author mark is never cleared", async () => {
+test("TD-JOB-10 JOB-017: a removal is never changed or cleared, and an author mark is never cleared", () => {
   const { hash } = seedJob("done");
   const id = psql(`INSERT INTO jobs.feedback (job_id, body, share, received_at)
     SELECT job_id, 'Sample words', true, now() FROM jobs.quote_token
-    WHERE token_hash = decode('${hash}', 'hex') RETURNING id`).split("\n")[0];
+    WHERE token_hash = decode('${hash}', 'hex') RETURNING id`).split("\n")[0] ?? "";
   const set = (columns: string): string => psql(`UPDATE jobs.feedback SET ${columns} WHERE id = '${id}'`);
   set("removed_reason = 'fake', removed_at = now(), author_kind = 'owner'");
   expect(() => set("removed_reason = NULL, removed_at = NULL")).toThrow(/never changed or cleared/);
