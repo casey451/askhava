@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-07T15:54:18Z by runner 95b28e7caad0 (actions).
+Updated 2026-11-07T15:54:29Z by runner 95b28e7caad0 (actions).
 
-**Building: T196 in progress since 15:04Z; 141 of 256 done; week 40% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 15:54Z; 141 of 256 done; week 40% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 141 of 256 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T196 claimed 15:04Z, lease until 18:04Z
+- **Lane:** idle since 15:54Z (no task in progress)
 - **Week:** 40% used, 114.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 15:13Z, 40 min before this update
 - **Keeper:** last ran 15:02Z, next wake 15:22Z
@@ -19,6 +19,7 @@ Updated 2026-11-07T15:54:18Z by runner 95b28e7caad0 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T196 | businesses: verified notice email, sender rules and the addr | MERGE_PENDING | 1 | 49 min | 15:54Z |  |
 | T147 | messaging and businesses: business notices by chosen channel | done | 1 | 39 min | 14:31Z |  |
 | T230 | portals: the private feedback page and its storage | done | 1 | 61 min | 13:25Z |  |
 | T191 | payments: the unreachable-homeowner refund at 96 hours and i | done | 1 | 56 min | 12:07Z |  |
@@ -95,7 +96,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T196 (lease until 2026-11-07T18:04:53Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T147", "at": "2026-11-07T14:31:51Z", "input_tokens": 477, "cache_creation_input_tokens": 785120, "cache_read_input_tokens": 27435211, "output_tokens": 210277}
+- {"task": "T196", "at": "2026-11-07T15:54:17Z", "output_tokens": 224467, "cache_creation_input_tokens": 668214, "input_tokens": 447, "cache_read_input_tokens": 23389758}
