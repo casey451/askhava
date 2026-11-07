@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{#- The business complaints page (T195; BIZ-029, D-200, D-492). Each complaint shows its kind and
+    date only: no homeowner name, phone or address, and no job. The reply box is open until 5 days
+    after the complaint; Casey reads the reply with the complaint. A refused reply shows the
+    A11Y-030 error summary, focused. -#}
+{% block title %}{% if refused.is_some() %}Error: {% endif %}Complaints{% endblock %}
+{% block main %}
+<h1>Complaints</h1>
+{% if let Some(id) = refused %}<div role="alert" tabindex="-1" autofocus id="error-summary">
+<h2>There is a problem</h2>
+<p><a href="#reply-{{ id }}">Your reply was not sent. Write up to 1,000 characters and send it before the reply box closes.</a></p>
+</div>
+{% endif %}<p>We read your reply along with the complaint.</p>
+{% if rows.is_empty() %}<p>No complaints.</p>
+{% endif %}{% for c in rows %}<section aria-labelledby="c-{{ c.id }}">
+<h2 id="c-{{ c.id }}">{{ c.kind }}, {{ c.date }} (Arizona time)</h2>
+{% if let Some(r) = c.reply %}<p>Your reply: {{ r }}</p>
+{% else if c.open %}<form method="post" action="/b/complaints/{{ c.id }}/reply" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<label for="reply-{{ c.id }}">Your reply</label>
+<p id="hint-{{ c.id }}">You can reply once, until {{ c.until }} (Arizona time). Up to 1,000 characters.</p>
+<textarea id="reply-{{ c.id }}" name="reply" rows="5" aria-describedby="hint-{{ c.id }}"></textarea>
+<button type="submit">Send reply</button>
+</form>
+{% else %}<p>The reply box closed on {{ c.until }} (Arizona time).</p>
+{% endif %}</section>
+{% endfor %}{% endblock %}

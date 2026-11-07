@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{#- The business billing page (T195; BIZ-015, D-491, SEC-038). Every amount comes from the ledger
+    through payments::api::Statement; the statement downloads as CSV only, no PDF in V1. Cards show
+    brand and last four only (FEE-014). No homeowner detail. -#}
+{% block title %}Billing{% endblock %}
+{% block main %}
+<h1>Billing</h1>
+<h2>Totals for this statement</h2>
+<dl>
+{% for (label, value) in totals %}<dt>{{ label }}</dt><dd>{{ value }}</dd>
+{% endfor %}</dl>
+<p><a href="/b/billing/statement.csv">Download this statement as a spreadsheet (CSV file)</a></p>
+<h2>Charges, refunds and credits</h2>
+{% if rows.is_empty() %}<p>Nothing on this statement yet.</p>
+{% else %}<table>
+<caption>Oldest first. Dates are Arizona time.</caption>
+<thead><tr><th scope="col">Date</th><th scope="col">What</th><th scope="col">Amount</th></tr></thead>
+<tbody>
+{% for (date, what, amount) in rows %}<tr><td>{{ date }}</td><td>{{ what }}</td><td>{{ amount }}</td></tr>
+{% endfor %}</tbody>
+</table>
+{% endif %}<h2>Payment methods</h2>
+{% if methods.is_empty() %}<p>No card saved.</p>
+{% else %}<ul>{% for m in methods %}<li>{{ m.0 }} card ending in {{ m.1 }}</li>{% endfor %}</ul>
+{% endif %}<h2>Monthly limit on introduction fees</h2>
+{% if let Some(l) = limit %}<p>Your monthly limit is {{ l }}.</p>
+{% else %}<p>You haven't set a monthly limit.</p>
+{% endif %}<p>To change your card or monthly limit, you need a code from us first. We send it by text, or by email if you get no texts. It works for 5 minutes.</p>
+{% endblock %}
