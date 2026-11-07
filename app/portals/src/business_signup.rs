@@ -28,6 +28,8 @@ use crate::pick_flow::PageLanguage;
 pub const SIGNUP_ROUTE: &str = "/b/signup";
 
 /// WEB-024, D-307, D-344: the notice line while business texting is off, English and Spanish.
+/// Both Spanish lines here are drafts until a native speaker reviews them, as the Spanish text
+/// templates are (`messaging/templates/es.json`, `"draft": true`; D-1709).
 pub const NOTICE_OFF: [&str; 2] = [
     "Job requests and picks come by email. We don't text or call businesses.",
     "Las solicitudes de trabajo y las selecciones llegan por correo electrónico. No enviamos \
@@ -45,14 +47,25 @@ ambos. Ask Hava nunca le llama con una grabación.",
 pub const PEST_ATTESTATION: &str =
     "I hold an active Arizona Department of Agriculture pest-management business license";
 
-/// WEB-024, TXT-035, D-493: the notice line for the business-texting switch, in `language`.
+/// WEB-024, TXT-035, D-493: the notice line for the business-texting switch, in `language`, with
+/// its `lang` code: the sign-up page is English, so a Spanish line is marked `lang="es"` (A11Y).
 #[must_use]
-pub const fn notice_line(texting_on: bool, language: PageLanguage) -> &'static str {
+pub const fn notice_line(texting_on: bool, language: PageLanguage) -> (&'static str, &'static str) {
     let lines = if texting_on { NOTICE_ON } else { NOTICE_OFF };
     match language {
-        PageLanguage::En => lines[0],
-        PageLanguage::Es => lines[1],
+        PageLanguage::En => (lines[0], "en"),
+        PageLanguage::Es => (lines[1], "es"),
     }
+}
+
+/// A category code as the form shows it: "plumbing_repair" reads "Plumbing repair". The catalog
+/// has no display names, so the code is the name (D-1709).
+fn category_name(code: &str) -> String {
+    let words = code.replace('_', " ");
+    let mut chars = words.chars();
+    chars.next().map_or_else(String::new, |first| {
+        first.to_uppercase().chain(chars).collect()
+    })
 }
 
 /// BIZ-030, D-173: the fee box's numbers from the fee settings: the three tiers
@@ -61,7 +74,7 @@ pub const fn notice_line(texting_on: bool, language: PageLanguage) -> &'static s
 pub fn fee_numbers(confirm: ConfirmSettings, rules: WindowRules) -> FeeNumbers {
     FeeNumbers {
         tier_cents: [Tier::Small, Tier::Medium, Tier::Large].map(Tier::cents),
-        confirm_hours: confirm.window_minutes / 60,
+        confirm_minutes: confirm.window_minutes,
         emergency_minutes: rules.emergency_minutes,
     }
 }
@@ -180,6 +193,7 @@ pub struct Parts<'a> {
 struct SignupView<'a> {
     title: &'static str,
     notice: &'static str,
+    notice_lang: &'static str,
     someone_else: &'static str,
     lines: Vec<String>,
     categories: Vec<(String, String, &'static str)>,
@@ -197,8 +211,10 @@ struct SignupView<'a> {
 /// # Errors
 /// The template's render error.
 pub fn signup_page(screen: Screen<'_>, parts: &Parts<'_>) -> Result<String, askama::Error> {
+    let (notice, notice_lang) = notice_line(parts.texting_on, parts.language);
     let mut v = SignupView {
-        notice: notice_line(parts.texting_on, parts.language),
+        notice,
+        notice_lang,
         someone_else: SOMEONE_ELSE_LINE,
         pest_attestation: PEST_ATTESTATION,
         csrf: parts.csrf,
@@ -209,7 +225,7 @@ pub fn signup_page(screen: Screen<'_>, parts: &Parts<'_>) -> Result<String, aska
             v.title = "Sign up your business";
             v.categories = categories
                 .iter()
-                .map(|(c, l)| (c.clone(), c.replace('_', " "), *l))
+                .map(|(c, l)| (c.clone(), category_name(c), *l))
                 .collect();
             v.pest = categories.iter().any(|(c, _)| c == "pest_control");
             v.fee_lines = fee_summary(&parts.fees);

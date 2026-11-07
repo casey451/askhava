@@ -495,29 +495,42 @@ number or email."
     ]
 }
 
-/// The keyed digest of the record contacts, so a change is seen with no contact stored (PRIV-001).
-fn contacts_key(secret: &SecretString, business: Uuid, record: &RecordContacts) -> String {
-    let phone = record
-        .texting_phone
-        .as_ref()
-        .map(ExposeSecret::expose_secret);
-    let email = record.email.as_ref().map(ExposeSecret::expose_secret);
-    let address = if record.has_address { "1" } else { "0" };
+/// The record contacts a daily list shows, with the record's mailing address, so a change to any
+/// of the three is seen (BIZ-026). `address` is the full record address as `licensing` reads it.
+#[derive(Debug, Clone, Copy)]
+pub struct RecordSeen<'a> {
+    /// The texting phone and email from the record.
+    pub contacts: &'a RecordContacts,
+    /// The record's mailing address, if any.
+    pub address: Option<&'a SecretString>,
+}
+
+/// The keyed digests of the record's phone, email and address, in chain order, so a change is
+/// seen with no contact stored (PRIV-001). A missing contact digests as empty.
+fn contact_keys(secret: &SecretString, business: Uuid, seen: RecordSeen<'_>) -> [String; 3] {
+    let c = seen.contacts;
     let id = business.to_string();
-    let parts = [
-        secret.expose_secret(),
-        "businesses.record_contacts",
-        &id,
-        phone.unwrap_or_default(),
-        email.unwrap_or_default(),
-        address,
+    let values = [
+        ("phone", c.texting_phone.as_ref()),
+        ("email", c.email.as_ref()),
+        ("address", seen.address),
     ];
-    let mut hash = Sha256::new();
-    for part in parts {
-        hash.update((part.len() as u64).to_be_bytes());
-        hash.update(part.as_bytes());
-    }
-    hash.finalize().iter().map(|b| format!("{b:02x}")).collect()
+    values.map(|(kind, value)| {
+        let value = value.map(ExposeSecret::expose_secret).unwrap_or_default();
+        let parts = [
+            secret.expose_secret(),
+            "businesses.record_contacts",
+            &id,
+            kind,
+            value,
+        ];
+        let mut hash = Sha256::new();
+        for part in parts {
+            hash.update((part.len() as u64).to_be_bytes());
+            hash.update(part.as_bytes());
+        }
+        hash.finalize().iter().map(|b| format!("{b:02x}")).collect()
+    })
 }
 
 /// BIZ-026, D-178: "That number is old": saves the sign-up as waiting on its record, keyed to the
@@ -528,16 +541,18 @@ fn contacts_key(secret: &SecretString, business: Uuid, record: &RecordContacts) 
 pub async fn number_is_old(
     conn: &mut PgConnection,
     secret: &SecretString,
-    (business, record): (Uuid, &RecordContacts),
+    (business, seen): (Uuid, RecordSeen<'_>),
     now: Timestamp,
 ) -> Result<(), BusinessesError> {
-    let key = contacts_key(secret, business, record);
+    let [phone, email, address] = contact_keys(secret, business, seen);
     let q = sqlx::query!(
-        "UPDATE businesses.signup SET waiting_on_record_since = $2, old_contact_key = $3 \
-         WHERE business_id = $1 AND NOT code_done",
+        "UPDATE businesses.signup SET waiting_on_record_since = $2, old_text_key = $3, \
+         old_mail_key = $4, old_letter_key = $5 WHERE business_id = $1 AND NOT code_done",
         business,
         jiff_sqlx::ToSqlx::to_sqlx(now) as _,
-        key
+        phone,
+        email,
+        address
     );
     let done = db(q.execute(conn).await)?;
     if done.rows_affected() == 1 {
@@ -547,24 +562,59 @@ pub async fn number_is_old(
     }
 }
 
-/// BIZ-026, D-178, D-254: run for a waiting sign-up when a daily list is read. When the record
-/// contacts differ from the ones it said were old, the wait ends and the identity chain starts
-/// over, so the next `send_code` goes to the new record contact (never a typed one); the caller
-/// then sends [`RECORD_UPDATED_TEMPLATE`]. Returns whether it resumed.
+/// BIZ-026, D-1712: the first chain step whose record contact is present and differs from the one
+/// the business said was old, or `None` when no present contact changed.
+fn first_changed(seen: RecordSeen<'_>, old: &[String; 3], new: &[String; 3]) -> Option<Step> {
+    let present = [
+        (Step::Text, seen.contacts.texting_phone.is_some()),
+        (Step::Email, seen.contacts.email.is_some()),
+        (Step::Letter, seen.address.is_some()),
+    ];
+    present
+        .into_iter()
+        .zip(old.iter().zip(new))
+        .find(|((_, there), (o, n))| *there && o != n)
+        .map(|((step, _), _)| step)
+}
+
+/// BIZ-026, D-178, D-254, D-1712: run for a waiting sign-up when a daily list is read. When a
+/// present record contact differs from the one it said was old, the wait ends and the identity
+/// chain restarts at the first changed contact (an email-only change resumes at the email step,
+/// an address-only change at the letter), so the next `send_code` goes to the new record contact,
+/// never to the old one or a typed one; the caller then sends [`RECORD_UPDATED_TEMPLATE`].
+/// Returns whether it resumed.
 ///
 /// # Errors
 /// [`BusinessesError::Database`].
 pub async fn resume_on_new_record(
     conn: &mut PgConnection,
     secret: &SecretString,
-    (business, record): (Uuid, &RecordContacts),
+    (business, seen): (Uuid, RecordSeen<'_>),
 ) -> Result<bool, BusinessesError> {
-    let key = contacts_key(secret, business, record);
     let q = sqlx::query!(
-        "UPDATE businesses.signup SET waiting_on_record_since = NULL, old_contact_key = NULL, \
-         identity_step = NULL WHERE business_id = $1 AND old_contact_key <> $2",
+        "SELECT old_text_key AS \"p!\", old_mail_key AS \"e!\", old_letter_key AS \"a!\" \
+         FROM businesses.signup WHERE business_id = $1 AND waiting_on_record_since IS NOT NULL",
+        business
+    );
+    let Some(row) = db(q.fetch_optional(&mut *conn).await)? else {
+        return Ok(false);
+    };
+    let old = [row.p, row.e, row.a];
+    let Some(step) = first_changed(seen, &old, &contact_keys(secret, business, seen)) else {
+        return Ok(false);
+    };
+    let before = match step {
+        Step::Text => None,
+        Step::Email => Some(Step::Text.code()),
+        Step::Letter => Some(Step::Email.code()),
+    };
+    let q = sqlx::query!(
+        "UPDATE businesses.signup SET waiting_on_record_since = NULL, old_text_key = NULL, \
+         old_mail_key = NULL, old_letter_key = NULL, identity_step = $3 \
+         WHERE business_id = $1 AND old_text_key = $2",
         business,
-        key
+        old[0],
+        before
     );
     Ok(db(q.execute(conn).await)?.rows_affected() == 1)
 }
@@ -661,10 +711,20 @@ pub fn review_target_line(since: Timestamp, days: u32) -> String {
 pub struct FeeNumbers {
     /// The three introduction fees by job size, in cents (`payments::api::Tier::cents`).
     pub tier_cents: [u64; 3],
-    /// Business hours to confirm a pick (the Confirm window setting, PICK-019).
-    pub confirm_hours: u32,
+    /// Business-hour minutes to confirm a pick (the Confirm window setting, PICK-019).
+    pub confirm_minutes: u32,
     /// Minutes to confirm an emergency pick (PICK-044).
     pub emergency_minutes: i64,
+}
+
+/// The Confirm window in words: whole business hours, with any leftover minutes (D-1709).
+fn business_hours(minutes: u32) -> String {
+    let (h, m) = (minutes / 60, minutes % 60);
+    match (h, m) {
+        (_, 0) => format!("{h} business hours"),
+        (0, _) => format!("{m} business minutes"),
+        _ => format!("{h} business hours and {m} minutes"),
+    }
 }
 
 /// Whole dollars, or dollars and cents.
@@ -683,7 +743,7 @@ pub fn fee_summary(n: &FeeNumbers) -> Vec<String> {
     let [s, m, l] = n.tier_cents.map(dollars);
     vec![
         format!("Free to join. Pay only when you confirm a pick: {s} / {m} / {l} by job size. Refund if you can't reach them."),
-        format!("Picks must be confirmed within {} business hours (8 a.m. to 8 p.m., every day), or within {} minutes for an emergency job. If you check email only once or twice a day, add a backup address for someone who checks more often.", n.confirm_hours, n.emergency_minutes),
+        format!("Picks must be confirmed within {} (8 a.m. to 8 p.m., every day), or within {} minutes for an emergency job. If you check email only once or twice a day, add a backup address for someone who checks more often.", business_hours(n.confirm_minutes), n.emergency_minutes),
         "It's an introduction fee for a homeowner who chose you.".to_owned(),
         format!("You pay one fixed fee when you confirm a pick: {s}, {m} or {l} by job size. It's not a share of the job. If you call twice inside the homeowner's window and can't reach them, the refund rule gives the fee back without you asking."),
         "It's a fixed introduction fee, never a share of the job, and it doesn't depend on the work being done or paid for.".to_owned(),

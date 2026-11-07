@@ -2,11 +2,13 @@
 {#- The business sign-up screens (T193; BIZ-024, BIZ-026, BIZ-030, BIZ-031, LIC-047, WEB-024,
     TD-BIZ-07, TD-BIZ-10, TD-BIZ-12, TD-BIZ-27). Every screen: the WEB-024 notice line and the
     "Someone else filling this in?" line. The form: categories, the pest attestation, the
-    plain-words fee box, then the Terms link. No full record contact is ever shown. -#}
+    plain-words fee box, then the Terms link. No full record contact is ever shown. The pest
+    fields are not `required`: the server checks them only for a business that ticks pest
+    control (LIC-047). -#}
 {% block title %}{{ title }}{% endblock %}
 {% block main %}
 <h1>{{ title }}</h1>
-<p id="notice-line">{{ notice }}</p>
+<p id="notice-line"{% if notice_lang != "en" %} lang="{{ notice_lang }}"{% endif %}>{{ notice }}</p>
 <p id="someone-else">{{ someone_else }}</p>
 {% for line in lines %}<p class="signup-line">{{ line }}</p>
 {% endfor %}
@@ -24,10 +26,10 @@
 <label for="cat-{{ code }}">{{ name }} ({{ label }})</label></p>
 {% endfor %}</fieldset>
 {% if pest %}<fieldset id="pest-attestation"><legend>Pest control license</legend>
-<p><input type="checkbox" id="pest-license" name="pest_license" value="yes" required>
+<p><input type="checkbox" id="pest-license" name="pest_license" value="yes">
 <label for="pest-license">{{ pest_attestation }}</label></p>
 <p><label for="pest-number">License number</label>
-<input type="text" id="pest-number" name="pest_number" required></p>
+<input type="text" id="pest-number" name="pest_number"></p>
 <p><input type="checkbox" id="pest-wdo" name="pest_category" value="wood_destroying">
 <label for="pest-wdo">My license includes the wood-destroying organism (termite) category</label></p>
 <p><input type="checkbox" id="pest-weed" name="pest_category" value="weed_control">

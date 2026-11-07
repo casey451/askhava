@@ -9,7 +9,7 @@ use askhava_adapters::api::{
     VerifyAdapter,
 };
 use askhava_businesses::api::{
-    ContactKind, HeardFrom, MaskedContact, RECORD_UPDATED_TEMPLATE, RecordContacts,
+    ContactKind, HeardFrom, MaskedContact, RECORD_UPDATED_TEMPLATE, RecordContacts, RecordSeen,
     SOMEONE_ELSE_LINE, SignUpForm, SignupSettings, Step, claim_launch_notice, fee_summary,
     number_is_old, resume_on_new_record, review_target, review_target_line, send_code, sign_up,
     waiting_on_record,
@@ -31,6 +31,9 @@ use sqlx::{PgConnection, PgPool};
 const PHONE: &str = "+15555550142";
 const NEW_PHONE: &str = "+15555550199";
 const EMAIL: &str = "owner@example.test";
+const NEW_EMAIL: &str = "office@example.test";
+const ADDRESS: &str = "100 Fake St, Lake Havasu City, AZ 86403";
+const NEW_ADDRESS: &str = "200 Test Ave, Lake Havasu City, AZ 86404";
 const CATS: &str = "categories:
   - {id: plumbing_repair, enabled: true, launch_open: true, job_types: [leak repair]}
   - {id: pool_cleaning, enabled: true, launch_open: false, job_types: [weekly pool service]}
@@ -92,6 +95,17 @@ fn record(phone: &str) -> RecordContacts {
         email: Some(SecretString::from(EMAIL.to_owned())),
         has_address: true,
     }
+}
+
+fn seen<'a>(contacts: &'a RecordContacts, address: &'a SecretString) -> RecordSeen<'a> {
+    RecordSeen {
+        contacts,
+        address: Some(address),
+    }
+}
+
+fn fake(value: &str) -> SecretString {
+    SecretString::from(value.to_owned())
 }
 
 fn parts(texting_on: bool, language: PageLanguage) -> Parts<'static> {
@@ -187,21 +201,21 @@ async fn td_biz_07_number_old_waits_and_a_new_record_resumes(pool: PgPool) {
     let id = signed_up(&pool, "plumbing_repair").await;
     let mut db = pool.acquire().await.expect("conn");
     let (v, s) = (FakeVerify::default(), secret());
-    let old = record(PHONE);
+    let (old, addr) = (record(PHONE), fake(ADDRESS));
     let sent = send_code(&mut db, (&v, &s), id, &old, at(0)).await;
     assert_eq!(sent.expect("sent"), Some(Step::Text));
-    number_is_old(&mut db, &s, (id, &old), at(0))
+    number_is_old(&mut db, &s, (id, seen(&old, &addr)), at(0))
         .await
         .expect("saved");
     assert!(waiting_on_record(&mut db, id).await.expect("read"));
-    let same = resume_on_new_record(&mut db, &s, (id, &old)).await;
+    let same = resume_on_new_record(&mut db, &s, (id, seen(&old, &addr))).await;
     assert!(
         !same.expect("same list"),
         "an unchanged record keeps waiting"
     );
     let new = record(NEW_PHONE);
     assert!(
-        resume_on_new_record(&mut db, &s, (id, &new))
+        resume_on_new_record(&mut db, &s, (id, seen(&new, &addr)))
             .await
             .expect("resumed")
     );
@@ -222,6 +236,66 @@ async fn td_biz_07_number_old_waits_and_a_new_record_resumes(pool: PgPool) {
         registry
             .template(RECORD_UPDATED_TEMPLATE, Language::Es)
             .is_some()
+    );
+}
+
+/// TD-BIZ-07, TD-BIZ-10 (BIZ-026, D-1712): a record whose only change is its email resumes at the
+/// email step, so the code goes to the new email and never again to the old phone.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_biz_10_an_email_only_change_resumes_at_the_email(pool: PgPool) {
+    let id = signed_up(&pool, "plumbing_repair").await;
+    let mut db = pool.acquire().await.expect("conn");
+    let (v, s, addr) = (FakeVerify::default(), secret(), fake(ADDRESS));
+    let old = record(PHONE);
+    let sent = send_code(&mut db, (&v, &s), id, &old, at(0)).await;
+    assert_eq!(sent.expect("sent"), Some(Step::Text));
+    let saved = number_is_old(&mut db, &s, (id, seen(&old, &addr)), at(0)).await;
+    saved.expect("saved");
+    let new = RecordContacts {
+        email: Some(fake(NEW_EMAIL)),
+        ..record(PHONE)
+    };
+    let resumed = resume_on_new_record(&mut db, &s, (id, seen(&new, &addr))).await;
+    assert!(resumed.expect("resumed"));
+    let again = send_code(&mut db, (&v, &s), id, &new, at(1)).await;
+    assert_eq!(again.expect("sent"), Some(Step::Email));
+    let to = v.0.lock().expect("lock").clone();
+    assert_eq!(to, vec![PHONE.to_owned(), NEW_EMAIL.to_owned()]);
+}
+
+/// TD-BIZ-10, TD-BIZ-12 (BIZ-026, D-254, D-1712): a business that fixes only its mailing address on
+/// the letter screen resumes at the letter step; a list with no present changed contact (a phone
+/// dropped from the record) keeps it waiting.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_biz_10_an_address_only_change_resumes_at_the_letter(pool: PgPool) {
+    let id = signed_up(&pool, "plumbing_repair").await;
+    let mut db = pool.acquire().await.expect("conn");
+    let (v, s) = (FakeVerify::default(), secret());
+    let old = RecordContacts {
+        has_address: true,
+        ..RecordContacts::default()
+    };
+    let (addr, new_addr) = (fake(ADDRESS), fake(NEW_ADDRESS));
+    let sent = send_code(&mut db, (&v, &s), id, &old, at(0)).await;
+    assert_eq!(sent.expect("letter"), Some(Step::Letter));
+    let saved = number_is_old(&mut db, &s, (id, seen(&old, &addr)), at(0)).await;
+    saved.expect("saved");
+    let none = RecordSeen {
+        contacts: &old,
+        address: None,
+    };
+    let gone = resume_on_new_record(&mut db, &s, (id, none)).await;
+    assert!(!gone.expect("read"), "a dropped address is not a new one");
+    let same = resume_on_new_record(&mut db, &s, (id, seen(&old, &addr))).await;
+    assert!(!same.expect("read"), "the same address keeps waiting");
+    let moved = resume_on_new_record(&mut db, &s, (id, seen(&old, &new_addr))).await;
+    assert!(moved.expect("resumed"));
+    assert!(!waiting_on_record(&mut db, id).await.expect("read"));
+    let again = send_code(&mut db, (&v, &s), id, &old, at(1)).await;
+    assert_eq!(again.expect("letter"), Some(Step::Letter));
+    assert!(
+        v.0.lock().expect("lock").is_empty(),
+        "no text or email went out"
     );
 }
 
@@ -292,7 +366,13 @@ fn td_biz_27_fee_box_lines_and_numbers_follow_the_settings() {
         window_minutes: 300,
     };
     let moved = fee_summary(&fee_numbers(longer, WindowRules::default()));
-    assert!(moved[1].starts_with("Picks must be confirmed within 5 business hours"));
+    assert!(moved[1].starts_with("Picks must be confirmed within 5 business hours ("));
+}
+
+/// TD-BIZ-27, TD-PICK-33 (BIZ-030, LIC-047, D-1713): the fee box sits above the Terms link; the
+/// pest fields show for pest control and carry no `required`; categories read in sentence case.
+#[test]
+fn td_biz_27_fee_box_above_terms_and_pest_fields() {
     let cats = vec![
         ("plumbing_repair".to_owned(), "Open now"),
         ("pest_control".to_owned(), "Open now"),
@@ -307,6 +387,25 @@ fn td_biz_27_fee_box_lines_and_numbers_follow_the_settings() {
         "I hold an active Arizona Department of Agriculture pest-management business license"
     ));
     assert!(page.contains("id=\"pest-number\"") && page.contains("weed control"));
+    assert!(
+        !page.contains("required"),
+        "the server checks the pest fields (LIC-047)"
+    );
+    assert!(page.contains("Plumbing repair (Open now)"));
+}
+
+/// TD-BIZ-27 (BIZ-030, D-1713): a Confirm window that is not whole hours is never cut down: it
+/// shows as hours and minutes, or minutes alone under an hour.
+#[test]
+fn td_biz_27_fee_box_keeps_leftover_minutes() {
+    let odd = ConfirmSettings {
+        window_minutes: 270,
+    };
+    let odd = fee_summary(&fee_numbers(odd, WindowRules::default()));
+    assert!(odd[1].starts_with("Picks must be confirmed within 4 business hours and 30 minutes ("));
+    let short = ConfirmSettings { window_minutes: 45 };
+    let short = fee_summary(&fee_numbers(short, WindowRules::default()));
+    assert!(short[1].starts_with("Picks must be confirmed within 45 business minutes ("));
 }
 
 /// TD-BIZ-10 (WEB-024, D-307, D-493): the switch-off line by default and the switch-on line when
@@ -339,6 +438,12 @@ fn td_biz_10_notice_line_follows_the_texting_switch() {
         let page = signup_page(Screen::NumberOld(3), &parts(on, language)).expect("page");
         let plain = page.replace("&#x27;", "&#39;");
         assert!(plain.contains(want), "{on} {want}");
+        let es = plain.contains("<p id=\"notice-line\" lang=\"es\">");
+        assert_eq!(
+            es,
+            language == PageLanguage::Es,
+            "the Spanish line is marked lang=es"
+        );
     }
 }
 

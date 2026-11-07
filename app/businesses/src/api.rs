@@ -32,11 +32,11 @@ pub use crate::service::{
 pub use crate::signup::{
     BUSINESS_STATEMENT, ContactKind, EntityValues, FeeNumbers, HeardFrom, LIST_DELAY_KEY,
     MaskedContact, NUMBER_OLD_BUTTON, RECORD_UPDATED_TEMPLATE, REPEAT_FREE_DAYS, REVIEW_TARGET_KEY,
-    SOMEONE_ELSE_LINE, STOP_FIX_BUTTON, SignUpForm, SignedUp, SignupError, SignupSettings,
-    TermsShown, WAITLIST_LINE, accept_terms, category_list, claim_launch_notice, fee_summary,
-    fix_record_lines, hand_entity_keys, number_is_old, resume_on_new_record, review_due,
-    review_target, review_target_line, review_told, sign_up, trade_count, waiting_on_record,
-    waitlisted,
+    RecordSeen, SOMEONE_ELSE_LINE, STOP_FIX_BUTTON, SignUpForm, SignedUp, SignupError,
+    SignupSettings, TermsShown, WAITLIST_LINE, accept_terms, category_list, claim_launch_notice,
+    fee_summary, fix_record_lines, hand_entity_keys, number_is_old, resume_on_new_record,
+    review_due, review_target, review_target_line, review_told, sign_up, trade_count,
+    waiting_on_record, waitlisted,
 };
 pub use crate::status::{AccountStatus, PauseReason, Refused};
 pub use crate::team::{
