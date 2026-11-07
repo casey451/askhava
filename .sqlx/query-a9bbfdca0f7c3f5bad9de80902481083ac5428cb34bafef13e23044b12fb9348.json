@@ -1,0 +1,52 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT at_8am, at_noon, at_5pm FROM businesses.open_cards_time WHERE member_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "at_8am",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "businesses.open_cards_time",
+            "name": "at_8am"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "at_noon",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "businesses.open_cards_time",
+            "name": "at_noon"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "at_5pm",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "businesses.open_cards_time",
+            "name": "at_5pm"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "a9bbfdca0f7c3f5bad9de80902481083ac5428cb34bafef13e23044b12fb9348"
+}

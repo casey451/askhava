@@ -1,0 +1,19 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO businesses.open_cards_time (member_id, at_8am, at_noon, at_5pm, changed_at) SELECT id, $3, $4, $5, $6 FROM businesses.team_member WHERE id = $1 AND business_id = $2 AND removed_at IS NULL ON CONFLICT (member_id) DO UPDATE SET at_8am = $3, at_noon = $4, at_5pm = $5, changed_at = $6",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Bool",
+        "Bool",
+        "Bool",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "a1c8621fdc59285d859db21c1e1bfd1dc8a3d7a0361aa494eb19aa3a8aca7849"
+}
