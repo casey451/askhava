@@ -201,7 +201,7 @@ async fn insert_consent(
 ) -> Result<u64, ConsentError> {
     let q = sqlx::query!(
         "INSERT INTO businesses.esign_consent \
-         (business_id, member_id, channel, phone_id, wording_version, consented_at) \
+         (business_id, member_id, channel, line_id, wording_version, consented_at) \
          VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT DO NOTHING",
         business,
         member,
@@ -228,8 +228,8 @@ pub async fn may_text(
     let q = sqlx::query_scalar!(
         "SELECT EXISTS (SELECT 1 FROM businesses.esign_consent c \
          JOIN businesses.team_member m ON m.id = c.member_id AND m.business_id = c.business_id \
-         JOIN businesses.staff_phone p ON p.id = c.phone_id AND p.business_id = c.business_id \
-         WHERE c.business_id = $1 AND c.phone_id = $2 AND c.channel = 'text' \
+         JOIN businesses.staff_phone p ON p.id = c.line_id AND p.business_id = c.business_id \
+         WHERE c.business_id = $1 AND c.line_id = $2 AND c.channel = 'text' \
          AND m.removed_at IS NULL) AS \"yes!\"",
         business,
         phone
