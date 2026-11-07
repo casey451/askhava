@@ -4,6 +4,7 @@
 //! plaintext read functions and fails when one is named outside the crates D-093 lets read:
 //! `read_contact` by `messaging` and `calls`, `read_for_release` by `picks` (with a `ReleaseProof`,
 //! SEC-030), `read_for_pick_code` by `picks` alone (the page pick's code, TD-PICK-46, D-1516),
+//! `read_released` by `picks` alone (the business portal's released view, TD-PICK-48, D-1739),
 //! `read_own_contact` and `read_for_owner` by `portals` (with a session proof, SEC-046), and no
 //! business-realm file of `portals` (its path or a session type naming `business`) naming any of
 //! them. `quotes` names none: it reads card photos only (PRIV-004). The compile-fail proof that business code cannot build a session proof
@@ -14,10 +15,11 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 /// Each read function and the crates that may name it besides `privacy` (D-093, D-491).
-const READERS: [(&str, &[&str]); 5] = [
+const READERS: [(&str, &[&str]); 6] = [
     ("read_contact", &["messaging", "calls"]),
     ("read_for_release", &["picks"]),
     ("read_for_pick_code", &["picks"]),
+    ("read_released", &["picks"]),
     ("read_own_contact", &["portals"]),
     ("read_for_owner", &["portals"]),
 ];
@@ -242,6 +244,24 @@ fn td_pick_46_only_picks_reads_the_phone_for_the_page_code() {
         ("picks", "app/picks/src/service.rs", 0),
         ("portals", "app/portals/src/pick_flow.rs", 1),
         ("messaging", "app/messaging/src/send_window.rs", 1),
+    ];
+    for (krate, rel, want) in cases {
+        assert_eq!(check_file(krate, rel, call).len(), want, "{rel}");
+    }
+}
+
+/// TD-PICK-48 (PICK-024, PRIV-004, SEC-046, D-1739): only `picks` may name `read_released`; the
+/// business portal asks `picks::api::released_view` and never names it, nor does any other crate.
+#[test]
+fn td_pick_48_only_picks_names_the_released_view_read() {
+    let call = "read_released(db, v, &proof, (pick, contact), &[])";
+    let cases = [
+        ("picks", "app/picks/src/released_view.rs", 0),
+        ("portals", "app/portals/src/job_release.rs", 1),
+        ("portals", "app/portals/src/business_auth.rs", 1),
+        ("businesses", "app/businesses/src/team.rs", 1),
+        ("messaging", "app/messaging/src/service.rs", 1),
+        ("privacy", "app/privacy/src/api.rs", 0),
     ];
     for (krate, rel, want) in cases {
         assert_eq!(check_file(krate, rel, call).len(), want, "{rel}");

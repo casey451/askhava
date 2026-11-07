@@ -3,7 +3,8 @@
 //! Plaintext leaves the vault only through the read functions here, each audit-logged with its
 //! reader and purpose (PRIV-003, PRIV-004). `messaging` and `calls` read with [`read_contact`]
 //! under a registered grant; the release needs a [`ReleaseProof`] (SEC-030), the homeowner realm a
-//! [`HomeownerSessionProof`] and the owner realm an [`OwnerSessionProof`] with a purpose (SEC-046).
+//! [`HomeownerSessionProof`] and the owner realm an [`OwnerSessionProof`] with a purpose (SEC-046);
+//! `picks`' released view reads with [`read_released`] for a [`BusinessSessionProof`] (D-1739).
 //! The proofs have private fields and no `Clone` or `Default`, so no other crate can build one;
 //! each is made only by its mint, and each mint can be taken once per process: [`release_mint`]
 //! by `server` for `payments` (T189), [`session_mint`] by `server` for `portals`' session
@@ -41,6 +42,7 @@ pub use crate::reader::{
     SignedDelivery, Standing, WEBHOOK_TOLERANCE_SECS, email_index, read_inbound,
     read_inbound_email,
 };
+pub use crate::released_reader::read_released;
 pub use crate::scrub::{
     CommonWords, DEFAULT_COMMON_WORDS, Known, NameMemory, REMOVED, ScrubbedText, is_format, scrub,
 };
@@ -140,6 +142,30 @@ pub struct OwnerSessionProof {
     owner_id: Uuid,
 }
 
+/// A signed-in business person's session: the team member and the business signed in to; only
+/// [`SessionMint::business`] makes one, in `portals`' business session extractor, for a member
+/// still on the team (SEC-046, D-1739). It opens nothing by itself: only `picks`' released view
+/// passes it to [`read_released`], after its own business and role checks.
+#[derive(Debug)]
+pub struct BusinessSessionProof {
+    person: Uuid,
+    business: Uuid,
+}
+
+impl BusinessSessionProof {
+    /// The team member signed in (BIZ-023).
+    #[must_use]
+    pub fn person(&self) -> Uuid {
+        self.person
+    }
+
+    /// The business the session is signed in to (SEC-019).
+    #[must_use]
+    pub fn business(&self) -> Uuid {
+        self.business
+    }
+}
+
 /// The one maker of session proofs, not `Clone`; `server` takes it once and hands it to `portals`
 /// (SEC-046, D-488).
 #[derive(Debug)]
@@ -158,6 +184,13 @@ impl SessionMint {
     #[must_use]
     pub fn owner(&self, owner_id: Uuid) -> OwnerSessionProof {
         OwnerSessionProof { owner_id }
+    }
+
+    /// The proof for a verified business session of team member `person` of `business` (SEC-046,
+    /// D-1739).
+    #[must_use]
+    pub fn business(&self, person: Uuid, business: Uuid) -> BusinessSessionProof {
+        BusinessSessionProof { person, business }
     }
 }
 

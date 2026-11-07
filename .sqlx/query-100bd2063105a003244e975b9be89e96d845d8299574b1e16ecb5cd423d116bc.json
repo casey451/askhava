@@ -1,0 +1,20 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO picks.release (pick_id, job_id, business_id, basis, released_at, contact_id, email_chosen) VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (pick_id) DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Uuid",
+        "Text",
+        "Timestamptz",
+        "Uuid",
+        "Bool"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "100bd2063105a003244e975b9be89e96d845d8299574b1e16ecb5cd423d116bc"
+}

@@ -29,7 +29,10 @@
 //! session whose member is still a current member of its business; owner and homeowner sessions
 //! are never one, so the owner realm (its own 12-hour sign-in, SEC-005, T086) and the homeowner
 //! realm (phone and code, SEC-008) stay separate (SEC-006). [`BusinessPrincipal::may`] scopes
-//! each route to that business and role (SEC-019, D-492).
+//! each route to that business and role (SEC-019, D-492). [`BusinessPrincipal::session_proof`]
+//! is the business session extractor's one use of the `privacy` session mint: it makes the
+//! [`BusinessSessionProof`] that `picks::api::released_view` takes, for a member still on the team
+//! (SEC-046, D-1739); this file names no vault read.
 
 use std::future::Future;
 use std::pin::Pin;
@@ -39,6 +42,7 @@ use askama::Template;
 use askhava_adapters::api::{CodeChannel, IdempotencyKey, VerifyAdapter};
 use askhava_businesses::api::members;
 use askhava_core::api::{Claimed, Clock, HandlerError};
+use askhava_privacy::api::{BusinessSessionProof, SessionMint};
 use axum::Router;
 use axum::extract::{FromRef, Path, State};
 use axum::http::StatusCode;
@@ -232,6 +236,14 @@ impl BusinessPrincipal {
             Need::ConfirmAndBilling => self.roles.1,
         };
         self.business == business && (self.owner || role)
+    }
+
+    /// The `privacy` proof of this verified business session, naming the member and the business
+    /// (SEC-046, D-1739); `picks` still checks the pick's business and the member's role at each
+    /// use.
+    #[must_use]
+    pub fn session_proof(&self, mint: &SessionMint) -> BusinessSessionProof {
+        mint.business(self.member, self.business)
     }
 }
 

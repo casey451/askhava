@@ -15,6 +15,7 @@ mod photos;
 mod purge;
 mod readback_reader;
 mod reader;
+mod released_reader;
 mod scrub;
 mod vault;
 

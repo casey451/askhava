@@ -30,6 +30,7 @@ mod handlers;
 mod models;
 mod money_notices;
 mod release;
+mod released_view;
 mod rules;
 mod service;
 mod status;

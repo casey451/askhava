@@ -6,7 +6,8 @@
 //! never the number (PRIV-002); `picks.verify_cap_day` the days the global cap was hit (one High
 //! alert each); `picks.terms_line` each queued text that ends with the Terms line (PICK-016).
 //! T063 adds locking a waiting pick and expiring it at the Confirm window's end (PICK-019).
-//! T069 adds `picks.release` and `picks.address_wait` (PICK-022, INT-029).
+//! T069 adds `picks.release` and `picks.address_wait` (PICK-022, INT-029). T253 binds each release
+//! to its contact ID and email choice and reads that binding back for the released view (D-1739).
 
 use jiff::Timestamp;
 use jiff_sqlx::ToSqlx;
@@ -345,25 +346,65 @@ pub(crate) async fn release_target(
     }))
 }
 
-/// Records pick `id`'s one release; false when another call already did (PICK-022, D-365).
+/// Records pick `id`'s one release, bound to the contact the proof named and her PICK-018 email
+/// choice (an ID and a flag, never a value, PRIV-002, D-1739); false when another call already did
+/// (PICK-022, D-365).
 pub(crate) async fn insert_release(
     tx: &mut PgConnection,
     (id, job, business): (Uuid, Uuid, Uuid),
-    basis: &str,
+    (basis, contact, email_chosen): (&str, Uuid, bool),
     at: Timestamp,
 ) -> Result<bool, PicksError> {
     let done = db(sqlx::query!(
-        "INSERT INTO picks.release (pick_id, job_id, business_id, basis, released_at) \
-         VALUES ($1, $2, $3, $4, $5) ON CONFLICT (pick_id) DO NOTHING",
+        "INSERT INTO picks.release (pick_id, job_id, business_id, basis, released_at, \
+         contact_id, email_chosen) VALUES ($1, $2, $3, $4, $5, $6, $7) \
+         ON CONFLICT (pick_id) DO NOTHING",
         id,
         job,
         business,
         basis,
         at.to_sqlx() as _,
+        contact,
+        email_chosen,
     )
     .execute(tx)
     .await)?;
     Ok(done.rows_affected() == 1)
+}
+
+/// What [`release_binding`] reads of a released pick for the released view (D-1739).
+pub(crate) struct ReleaseBinding {
+    /// The picked business.
+    pub business: Uuid,
+    /// The pick's status is one [`crate::status::shows_release`] allows (paid or free).
+    pub shown_status: bool,
+    /// The homeowner contact the release proof named, an ID only.
+    pub contact: Uuid,
+    /// Her PICK-018 choice of email contact at the release.
+    pub email_chosen: bool,
+}
+
+/// Pick `id`'s release binding, or `None` when the pick has no `picks.release` row; `shown` are
+/// the status codes the view may show from (PICK-022, D-1739). Reads nothing in the vault.
+pub(crate) async fn release_binding(
+    db_conn: &mut PgConnection,
+    id: Uuid,
+    shown: &[String],
+) -> Result<Option<ReleaseBinding>, PicksError> {
+    let row = db(sqlx::query!(
+        r#"SELECT p.business_id, p.status = ANY($2) AS "shown!", r.contact_id, r.email_chosen
+           FROM picks.pick p JOIN picks.release r ON r.pick_id = p.id WHERE p.id = $1"#,
+        id,
+        shown,
+    )
+    .fetch_optional(db_conn)
+    .await)?;
+    Ok(row.map(|r| ReleaseBinding {
+        business: r.business_id,
+        shown_status: r.shown,
+        contact: r.contact_id,
+        email_chosen: r.email_chosen,
+    }))
 }
 
 /// Records an emergency acceptance that came before the address, once per pick; false when one
