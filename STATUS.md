@@ -1,18 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-07T05:13:23Z by runner ec41a5869889 (actions).
+Updated 2026-11-07T05:17:13Z by runner 123675bfac63 (actions).
 
-**Idle since 05:12Z; 132 of 242 done; week 34% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 05:12Z; 132 of 256 done; week 34% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 132 of 242 build tasks (owner gates not counted)
+- **Tasks done:** 132 of 256 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 05:12Z (no task in progress)
 - **Week:** 34% used, 130.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:13Z, 0 min before this update
+- **Last run:** 05:13Z, 3 min before this update
 - **Keeper:** last ran 05:13Z, next wake 05:33Z
 
 ## Needs attention
-- Strict plan check red: 2 problem(s) on tasks still to run (+1 on DONE tasks); first: T253: stored context_pct 30% but it measures 34%; regenerate
+- nothing
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -53,28 +53,28 @@ Updated 2026-11-07T05:13:23Z by runner ec41a5869889 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 213 of 731 (29.1%) · partial 247 · unstarted 271
-**Tasks merged (throughput only):** 132 of 242
+**Requirements verified:** 201 of 731 (27.5%) · partial 259 · unstarted 271
+**Tasks merged (throughput only):** 132 of 256
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 14 | 10 | 11 | 35 |
-| ai | 14 | 9 | 5 | 28 |
+| accessibility | 13 | 11 | 11 | 35 |
+| ai | 12 | 11 | 5 | 28 |
 | businesses | 4 | 28 | 26 | 58 |
 | calls | 0 | 24 | 1 | 25 |
-| consent | 15 | 14 | 6 | 35 |
-| fees | 24 | 27 | 1 | 52 |
+| consent | 13 | 16 | 6 | 35 |
+| fees | 20 | 31 | 1 | 52 |
 | intake | 19 | 15 | 9 | 43 |
 | job-cards | 12 | 5 | 7 | 24 |
-| licensing | 32 | 15 | 1 | 48 |
+| licensing | 31 | 16 | 1 | 48 |
 | lifecycle | 19 | 6 | 3 | 28 |
 | messaging | 16 | 11 | 18 | 45 |
 | ops-recovery | 1 | 5 | 48 | 54 |
-| privacy | 1 | 15 | 15 | 31 |
+| privacy | 0 | 16 | 15 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
 | quotes-pick | 16 | 27 | 13 | 56 |
 | recurring | 7 | 1 | 3 | 11 |
-| security | 10 | 27 | 17 | 54 |
+| security | 9 | 28 | 17 | 54 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 1 | 27 | 28 |
 | wording | 2 | 2 | 28 | 32 |
@@ -89,7 +89,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 12 of 58 done
+- stage 4: 12 of 72 done
 - stage 5: 0 of 42 done
 - stage 6: 0 of 26 done
 - stage 7: 0 of 2 done

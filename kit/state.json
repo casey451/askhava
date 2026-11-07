@@ -15827,7 +15827,8 @@
     "T199",
     "T155",
     "T254",
-    "T085"
+    "T085",
+    "T261"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -16145,7 +16146,21 @@
     "T249",
     "T250",
     "T251",
-    "T255"
+    "T255",
+    "T256",
+    "T257",
+    "T258",
+    "T259",
+    "T260",
+    "T261",
+    "T262",
+    "T263",
+    "T264",
+    "T265",
+    "T266",
+    "T267",
+    "T268",
+    "T269"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -16670,7 +16685,8 @@
   {
    "id": "T132",
    "deps": [
-    "T131"
+    "T131",
+    "T260"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -16692,7 +16708,8 @@
   {
    "id": "T134",
    "deps": [
-    "T133"
+    "T133",
+    "T260"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -17447,7 +17464,8 @@
     "T189",
     "T157",
     "T199",
-    "T155"
+    "T155",
+    "T263"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19698,6 +19716,190 @@
    "slug": "emergency-address-rerelease",
    "type": "build",
    "stage": "4"
+  },
+  {
+   "id": "T256",
+   "deps": [
+    "T241",
+    "T082"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "inbound-first-contact-race",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T258",
+   "deps": [
+    "T066",
+    "T067",
+    "T176",
+    "T075",
+    "T064",
+    "T071"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "refund-lifecycle",
+   "type": "harness",
+   "stage": "4"
+  },
+  {
+   "id": "T259",
+   "deps": [
+    "T258",
+    "T224",
+    "T075"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "stripe-webhook-dispatch",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T260",
+   "deps": [
+    "T258",
+    "T167",
+    "T075"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "stripe-confirm-client",
+   "type": "harness",
+   "stage": "4"
+  },
+  {
+   "id": "T263",
+   "deps": [
+    "T062",
+    "T189",
+    "T075"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "fee-limit-hard-cap",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T257",
+   "deps": [
+    "T256",
+    "T092",
+    "T093"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "conversation-aware-scrub",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T262",
+   "deps": [
+    "T080",
+    "T079",
+    "T078",
+    "T076"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "call-pins-and-tries",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T266",
+   "deps": [
+    "T214",
+    "T257",
+    "T254",
+    "T255"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "pick-contact-choice",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T268",
+   "deps": [
+    "T196",
+    "T199",
+    "T248",
+    "T155",
+    "T165",
+    "T147"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "business-consent-wiring",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T269",
+   "deps": [
+    "T253",
+    "T147"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "notice-signin-link",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T261",
+   "deps": [
+    "T260",
+    "T084",
+    "T232",
+    "T254"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "served-confirm-route",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T264",
+   "deps": [
+    "T073",
+    "T169"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "coverage-floor-strict",
+   "type": "harness",
+   "stage": "4"
+  },
+  {
+   "id": "T265",
+   "deps": [
+    "T252"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "closure-register-check",
+   "type": "harness",
+   "stage": "4"
+  },
+  {
+   "id": "T267",
+   "deps": [
+    "T084"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "a11y-page-states-split",
+   "type": "harness",
+   "stage": "4"
   }
  ],
  "owner_waits": [],
@@ -20959,7 +21161,7 @@
    }
   }
  },
- "updated_at": "2026-11-07T05:13:23Z",
+ "updated_at": "2026-11-07T05:17:13Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -21057,7 +21259,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "ec41a5869889d71c55b2c9c189861c5a4c8a86e4",
+ "runner_sha": "123675bfac63e2ce0c13738d37ca9e931d4c2657",
  "starter": "actions",
  "smoke_runs": [
   {
