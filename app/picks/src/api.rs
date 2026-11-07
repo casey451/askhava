@@ -24,6 +24,10 @@
 //! [`release_notice`] (PICK-022 to PICK-024, PRIV-005, BIZ-014); [`plan_release`] is its pure rule
 //! (INT-029).
 //!
+//! T253: [`released_view`] shows a released pick's details again to its signed-in business owner
+//! or "Confirm and billing" member, read from the vault at each view and stored nowhere; [`may_view`]
+//! is its pure rule (PICK-024, PRIV-005, D-1739).
+//!
 //! T246: [`page_pick`] stores the quote page's pick on the text pick's core (PICK-012, PICK-032,
 //! PICK-045); [`send_page_code`] and [`check_page_code`] send and check its Verify code to the
 //! homeowner's vaulted phone, which they read themselves (PICK-013, PRIV-003, D-1516).
@@ -74,6 +78,7 @@ pub use crate::release::{
     RELEASE_NO_RECIPIENT_ALERT, RELEASE_TEMPLATE, RELEASE_TEXT_TEMPLATE, ReleaseFacts, ReleaseStep,
     ReleaseView, Released, plan_release, release, release_notice,
 };
+pub use crate::released_view::{Seat, ViewAnswer, ViewFacts, may_view, released_view};
 pub use crate::service::{
     CONFIRMED_TEMPLATE, CodeCheck, CodeSent, CodeTo, DONE_TEMPLATE, NO_QUOTE_TEMPLATE,
     NONE_TEMPLATE, PICK_MADE_KIND, PICK_WITHDRAWN_KIND, PageCodeKeys, PagePick, TERMS_TEMPLATE,
@@ -96,6 +101,10 @@ pub mod rules {
         SendAsk, SendCounts, SendRefused, Stage, TextPick, code_state, parse_code, plan_text_pick,
         read_text_pick, send_allowed,
     };
+    /// Every pick status.
+    pub use crate::status::PickStatus;
+    /// Whether a released pick's status still shows its details (D-1739).
+    pub use crate::status::shows_release;
     /// A job status's text-pick stage; its Ready and Waiting equal `JobStatus::takes_pick`
     /// (TD-PICK-45, D-1516).
     pub use crate::status::stage;

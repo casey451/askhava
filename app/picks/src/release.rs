@@ -18,7 +18,9 @@
 //! recipients (`businesses::api::notice_addresses`, opaque address IDs) with the job number only
 //! ([`release_notice`]), or one High [`RELEASE_NO_RECIPIENT_ALERT`] when the business has none; no
 //! homeowner detail and no call window goes in any notice. The [`ReleaseView`] goes back to the
-//! caller once and is stored nowhere; how the portal shows it later is not built (D-1564).
+//! caller once and is stored nowhere (D-1564). The claim binds the release row to the proof's
+//! contact ID and her email choice (`contact_id`, `mail_chosen`, both paths), so the business
+//! portal's later read, `released_view`, reopens that contact and those fields (D-1739).
 //!
 //! T077: once shown, [`release`] asks `calls::api::assign_number` for the job's masked line, the
 //! homeowner side being the proof's contact (CALL-001, PICK-022, D-491). An emergency job with no
@@ -282,7 +284,8 @@ async fn claim_then_read(
     (pick, target): (Uuid, &ReleaseTarget),
     at: Timestamp,
 ) -> Result<Released, PicksError> {
-    if !record(conn, (pick, target), proof.basis(), at).await? {
+    let binding = (proof.basis(), proof.contact_id(), email_chosen);
+    if !record(conn, (pick, target), binding, at).await? {
         return Ok(Released::Already);
     }
     let details = open(conn, vault, proof, email_chosen).await?;
@@ -299,14 +302,14 @@ async fn read_then_claim(
     (mut facts, pick, target): (ReleaseFacts, Uuid, &ReleaseTarget),
     at: Timestamp,
 ) -> Result<Released, PicksError> {
-    let basis = proof.basis();
+    let binding = (proof.basis(), proof.contact_id(), email_chosen);
     let details = open(conn, vault, proof, email_chosen).await?;
     facts.address_in = Some(details.address.is_some());
     if plan_release(facts) == ReleaseStep::WaitForAddress {
         ask_again(conn, (pick, target.job), at).await?;
         return Ok(Released::WaitingForAddress);
     }
-    Ok(if record(conn, (pick, target), basis, at).await? {
+    Ok(if record(conn, (pick, target), binding, at).await? {
         Released::Shown(ReleaseView::from_details(details))
     } else {
         Released::Already
@@ -347,13 +350,14 @@ async fn ask_again(
     tx.commit().await.map_err(|_| PicksError::Database)
 }
 
-/// Stores the one release row and queues the notice in one transaction, or one High
-/// [`RELEASE_NO_RECIPIENT_ALERT`] when the business has no recipient; false when another call
-/// released first (PICK-022, PICK-024, R11, D-1561).
+/// Stores the one release row, bound to the proof's contact and her email choice (D-1739), and
+/// queues the notice in one transaction, or one High [`RELEASE_NO_RECIPIENT_ALERT`] when the
+/// business has no recipient; false when another call released first (PICK-022, PICK-024, R11,
+/// D-1561).
 async fn record(
     conn: &mut PgConnection,
     (pick, target): (Uuid, &ReleaseTarget),
-    basis: ReleaseBasis,
+    (basis, contact, email_chosen): (ReleaseBasis, Uuid, bool),
     at: Timestamp,
 ) -> Result<bool, PicksError> {
     let code = match basis {
@@ -362,7 +366,8 @@ async fn record(
     };
     let (job, business) = (target.job, target.business);
     let mut tx = conn.begin().await.map_err(|_| PicksError::Database)?;
-    if !models::insert_release(&mut tx, (pick, job, business), code, at).await? {
+    let bound = (code, contact, email_chosen);
+    if !models::insert_release(&mut tx, (pick, job, business), bound, at).await? {
         return Ok(false);
     }
     let to = notice_addresses(&mut tx, business, NoticePurpose::PicksAndRelease)

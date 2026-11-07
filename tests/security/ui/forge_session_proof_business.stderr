@@ -1,0 +1,17 @@
+error[E0599]: no method named `clone` found for struct `BusinessSessionProof` in the current scope
+ --> ui/forge_session_proof_business.rs:6:12
+  |
+6 |     (proof.clone(), proof)
+  |            ^^^^^ method not found in `BusinessSessionProof`
+
+error: cannot construct `BusinessSessionProof` with struct literal syntax due to private fields
+  --> ui/forge_session_proof_business.rs:10:20
+   |
+10 |     let _literal = BusinessSessionProof {};
+   |                    ^^^^^^^^^^^^^^^^^^^^
+
+error[E0277]: the trait bound `BusinessSessionProof: Default` is not satisfied
+  --> ui/forge_session_proof_business.rs:11:42
+   |
+11 |     let _default: BusinessSessionProof = Default::default();
+   |                                          ^^^^^^^^^^^^^^^^^^ the trait `Default` is not implemented for `BusinessSessionProof`

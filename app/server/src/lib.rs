@@ -18,7 +18,7 @@ use askhava_payments::api::Minter;
 use askhava_portals::api::{
     PickCodeKeys, feedback_routes, pick_flow_routes, quote_page_routes, security_headers,
 };
-use askhava_privacy::api::Vault;
+use askhava_privacy::api::{SessionMint, Vault};
 use axum::Router;
 use axum::body::Body;
 use secrecy::SecretString;
@@ -452,6 +452,15 @@ pub async fn alert_if_last(
 pub fn release_minter() -> &'static Minter {
     static MINTER: OnceLock<Minter> = OnceLock::new();
     MINTER.get_or_init(|| Minter::new(askhava_privacy::api::release_mint()))
+}
+
+/// `privacy`'s session mint, taken the first time it is asked for, so it is taken once per process
+/// however often the composition is built and every server test file shares it; the business
+/// session extractor makes its `BusinessSessionProof` with it for `picks`' released view (SEC-046,
+/// D-488, D-1739).
+pub fn session_minter() -> &'static SessionMint {
+    static MINT: OnceLock<SessionMint> = OnceLock::new();
+    MINT.get_or_init(askhava_privacy::api::session_mint)
 }
 
 /// Registers SIGINT and SIGTERM now and returns a future that finishes on the

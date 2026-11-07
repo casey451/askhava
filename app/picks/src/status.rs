@@ -39,6 +39,17 @@ pub enum PickStatus {
 }
 
 impl PickStatus {
+    /// Every status, in the order of the enum.
+    pub const ALL: [Self; 7] = [
+        Self::AwaitingConfirm,
+        Self::Expired,
+        Self::Cancelled,
+        Self::Paid,
+        Self::Free,
+        Self::NoShow,
+        Self::FraudRefunded,
+    ];
+
     /// The stored code name.
     #[must_use]
     pub const fn code(self) -> &'static str {
@@ -62,6 +73,31 @@ pub const fn release_status(basis: ReleaseBasis) -> PickStatus {
         ReleaseBasis::PaidCharge => PickStatus::Paid,
         ReleaseBasis::NoFeeDue => PickStatus::Free,
     }
+}
+
+/// Whether the business portal may show a released pick's details again at `status`: only while
+/// it stays paid or free (PICK-022, PRIV-005, D-1739); a no-show, fraud-refunded or any other
+/// status shows nothing.
+#[must_use]
+pub const fn shows_release(status: PickStatus) -> bool {
+    match status {
+        PickStatus::Paid | PickStatus::Free => true,
+        PickStatus::AwaitingConfirm
+        | PickStatus::Expired
+        | PickStatus::Cancelled
+        | PickStatus::NoShow
+        | PickStatus::FraudRefunded => false,
+    }
+}
+
+/// The stored codes of every status [`shows_release`] allows (D-1739).
+#[must_use]
+pub fn release_shown_codes() -> Vec<String> {
+    PickStatus::ALL
+        .into_iter()
+        .filter(|s| shows_release(*s))
+        .map(|s| s.code().to_owned())
+        .collect()
 }
 
 /// The text-pick stage of a job status (PICK-031, PICK-032, PICK-036).
