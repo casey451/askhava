@@ -463,5 +463,20 @@
     "audience": "business",
     "segments": 2,
     "text": "Ask Hava: Job {job}: no refund of your introduction fee. The homeowner told us you emailed and set up a time. Questions? Use the Ask about a charge form on your billing page at https://askhava.com/b."
+  },
+  "job_card_notice": {
+    "audience": "business",
+    "segments": 1,
+    "text": "Ask Hava: New {trade} job {job}. Quote by {time}. See it at askhava.com/business."
+  },
+  "card_fix_notice_untimed": {
+    "audience": "business",
+    "segments": 1,
+    "text": "Ask Hava: Your card didn't go through for job {job}. You haven't been charged. Try again or use another card: {link}"
+  },
+  "card_approval_notice_untimed": {
+    "audience": "business",
+    "segments": 1,
+    "text": "Ask Hava: Your bank wants you to approve the payment for job {job}. You haven't been charged yet. Approve it here: {link}"
   }
 }

@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id, linked_by FROM businesses.staff_phone WHERE business_id = $1 ORDER BY linked_at, id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "businesses.staff_phone",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "linked_by",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "businesses.staff_phone",
+            "name": "linked_by"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "ce1bca5b884ad5832d82145528f37888b5a232ad39354d2f20b17607cc714af6"
+}
