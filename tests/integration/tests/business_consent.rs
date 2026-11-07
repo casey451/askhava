@@ -4,8 +4,8 @@
 //! CON-019, CON-020, BIZ-017, BIZ-032, BIZ-048; D-191, D-312, D-344, D-491, D-492).
 //!
 //! Proves on a fresh database that the E-SIGN box starts unticked and is stored with its wording
-//! version and time, that no call consent can exist, that a member's phone may be texted only
-//! after its own text box, that the welcome is requested once and gates the first card, that a
+//! version and time, once per box, that no call consent can exist, that a phone may be texted
+//! only after a current member ticked the text box for that phone, that the welcome is requested once and gates the first card, that a
 //! business STOP leaves the account active and queues one owner email, which texts get the
 //! automatic reply, and that a recruiting email opens with the advertisement line and its stop is
 //! honored at once. All IDs and addresses are fake.
@@ -55,6 +55,19 @@ async fn activate(db: &mut PgConnection, b: Uuid) {
     assert_eq!(to.expect("activate").code(), "active");
 }
 
+/// A linked phone of `b`, linked by `by` (the number lives in `messaging`, never here).
+async fn phone(db: &mut PgConnection, b: Uuid, by: Uuid) -> Uuid {
+    sqlx::query_scalar(
+        "INSERT INTO businesses.staff_phone (business_id, linked_by, linked_at) \
+         VALUES ($1, $2, now()) RETURNING id",
+    )
+    .bind(b)
+    .bind(by)
+    .fetch_one(db)
+    .await
+    .expect("phone")
+}
+
 const CONSENTS: &str = "SELECT count(*) FROM businesses.esign_consent WHERE business_id = $1";
 
 /// TD-CON-08, TD-BIZ-17 (CON-019, D-312, D-344): the box starts unticked; its wording names email,
@@ -81,16 +94,25 @@ fn td_con_08_box_starts_unticked_and_names_each_channel() {
 async fn td_con_08_consent_is_stored_with_version_and_time(pool: PgPool) {
     let mut db = pool.acquire().await.expect("connection");
     let (b, owner) = business_with_owner(&mut db).await;
-    let no = record_consent(&mut db, (b, owner), &[Email], false, at(2)).await;
+    let no = record_consent(&mut db, (b, owner, None), &[Email], false, at(2)).await;
     assert_eq!(no, Err(ConsentError::NotTicked));
-    let none = record_consent(&mut db, (b, owner), &[], true, at(2)).await;
+    let none = record_consent(&mut db, (b, owner, None), &[], true, at(2)).await;
     assert_eq!(none, Err(ConsentError::NotTicked));
     assert_eq!(count(&mut db, CONSENTS, b).await, 0);
-    let stranger = record_consent(&mut db, (b, Uuid::from_u128(9)), &[Email], true, at(2)).await;
+    let stranger = record_consent(
+        &mut db,
+        (b, Uuid::from_u128(9), None),
+        &[Email],
+        true,
+        at(2),
+    )
+    .await;
     assert_eq!(stranger, Err(ConsentError::UnknownMember));
-    record_consent(&mut db, (b, owner), &[Email], true, at(2))
-        .await
-        .expect("consent");
+    for _ in 0..2 {
+        record_consent(&mut db, (b, owner, None), &[Email, Email], true, at(2))
+            .await
+            .expect("consent");
+    }
     let row: (String, String, i64) = sqlx::query_as(
         "SELECT channel, wording_version, extract(epoch FROM consented_at)::bigint FROM businesses.esign_consent \
          WHERE business_id = $1",
@@ -104,6 +126,9 @@ async fn td_con_08_consent_is_stored_with_version_and_time(pool: PgPool) {
     let audit = "SELECT count(*) FROM ops.audit_log WHERE action = 'businesses.consent_recorded' \
                  AND actor_id = $1";
     assert_eq!(count(&mut db, audit, b).await, 1);
+    let kind = "SELECT count(*) FROM ops.audit_log WHERE action = 'businesses.consent_recorded' \
+                AND subject_kind = 'businesses.team_member' AND subject_id = $1";
+    assert_eq!(count(&mut db, kind, owner).await, 1);
     let call = sqlx::query(
         "INSERT INTO businesses.esign_consent (business_id, member_id, channel, wording_version, \
          consented_at) VALUES ($1, $2, 'call', 'con019-v1', now())",
@@ -115,9 +140,9 @@ async fn td_con_08_consent_is_stored_with_version_and_time(pool: PgPool) {
     assert!(call.is_err(), "no automated-call consent can be stored");
 }
 
-/// TD-CON-08, TD-BIZ-35 (CON-019, BIZ-048, D-191): no text goes to a phone whose member has not
-/// ticked its own text box; the owner's email box never covers a member's phone, and a removed
-/// member's box no longer counts.
+/// TD-CON-08, TD-BIZ-35 (CON-019, BIZ-048, D-191): no text goes to a phone without a text box
+/// ticked for that phone; the owner's boxes never cover another phone, a text box needs a linked
+/// phone of the same business, and a removed member's box no longer counts.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_con_08_each_member_phone_needs_its_own_text_box(pool: PgPool) {
     let mut db = pool.acquire().await.expect("connection");
@@ -129,26 +154,40 @@ async fn td_con_08_each_member_phone_needs_its_own_text_box(pool: PgPool) {
     let roles = Roles::new(true, false).expect("roles");
     let member = add_member(&mut db, by, Uuid::from_u128(0xd1), roles, at(1)).await;
     let member = member.expect("member");
-    record_consent(&mut db, (b, owner), &[Email], true, at(2))
+    let (main, staff) = (
+        phone(&mut db, b, owner).await,
+        phone(&mut db, b, owner).await,
+    );
+    record_consent(&mut db, (b, owner, None), &[Email], true, at(2))
         .await
         .expect("owner email");
-    assert!(!may_text(&mut db, b, owner).await.expect("owner"));
-    assert!(!may_text(&mut db, b, member).await.expect("member"));
-    record_consent(&mut db, (b, owner), &[Text], true, at(3))
+    assert!(!may_text(&mut db, b, main).await.expect("main"));
+    let none = record_consent(&mut db, (b, owner, None), &[Text], true, at(3)).await;
+    assert_eq!(none, Err(ConsentError::UnknownPhone));
+    record_consent(&mut db, (b, owner, Some(main)), &[Text], true, at(3))
         .await
         .expect("owner text");
-    assert!(may_text(&mut db, b, owner).await.expect("owner"));
-    assert!(!may_text(&mut db, b, member).await.expect("member"));
-    record_consent(&mut db, (b, member), &[Text], true, at(4))
+    assert!(may_text(&mut db, b, main).await.expect("main"));
+    assert!(!may_text(&mut db, b, staff).await.expect("staff"));
+    record_consent(&mut db, (b, member, Some(staff)), &[Text], true, at(4))
         .await
         .expect("member text");
-    assert!(may_text(&mut db, b, member).await.expect("member"));
-    let other = create(&mut db, false, at(0)).await.expect("other");
-    assert!(!may_text(&mut db, other, member).await.expect("cross"));
+    assert!(may_text(&mut db, b, staff).await.expect("staff"));
+    let (other, other_owner) = business_with_owner(&mut db).await;
+    assert!(!may_text(&mut db, other, staff).await.expect("cross"));
+    let theirs = record_consent(
+        &mut db,
+        (other, other_owner, Some(staff)),
+        &[Text],
+        true,
+        at(4),
+    );
+    assert_eq!(theirs.await, Err(ConsentError::UnknownPhone));
     remove_member(&mut db, by, member, at(5))
         .await
         .expect("remove");
-    assert!(!may_text(&mut db, b, member).await.expect("removed"));
+    assert!(!may_text(&mut db, b, staff).await.expect("removed"));
+    assert!(may_text(&mut db, b, main).await.expect("owner keeps"));
 }
 
 /// TD-CON-08 (CON-020, D-312): the welcome is requested once, only for an active business, and no
@@ -186,11 +225,17 @@ fn td_con_08_welcome_email_says_what_con_020_requires() {
         "Ask Hava never calls you.",
         "\"Ask Hava\" <jobs@notify.askhava.com>",
         "in Gmail, tap Not spam",
+        "\"Never send it to Spam\"",
+        "In any other email app, add us to your contacts.",
         "\"Ask Hava homeowner calls\"",
         "Ask Hava emails come only from addresses ending in askhava.com, never ask for your card or a code, and every button goes to askhava.com.",
     ] {
         assert!(all.contains(needed), "missing: {needed}");
     }
+    assert!(
+        !all.contains("come to this email"),
+        "BIZ-036: cards may come by text"
+    );
 }
 
 /// TD-CON-08 (BIZ-017, D-311, D-344): a STOP from a business phone leaves the account active and
@@ -202,6 +247,9 @@ async fn td_con_08_business_stop_stops_texts_only(pool: PgPool) {
     activate(&mut db, b).await;
     let inbox = Uuid::from_u128(0x5709);
     phone_stopped(&mut db, b, inbox, at(2)).await.expect("stop");
+    let kind = "SELECT count(*) FROM ops.audit_log WHERE action = 'businesses.phone_stopped' \
+                AND subject_kind = 'messaging.inbox' AND subject_id = $1";
+    assert_eq!(count(&mut db, kind, inbox).await, 1);
     phone_stopped(&mut db, b, inbox, at(2))
         .await
         .expect("repeat");
@@ -230,11 +278,27 @@ fn td_txt_13_only_unexpected_business_texts_get_the_auto_reply() {
         "why was I charged?",
         "cargo incorrecto",
         "what is this $25 for",
+        "Yes, why was I charged?",
+        "Hold on, what is this $75?",
+        "confirm 1042 but why so much",
+        "",
+        "  ",
     ] {
         assert!(auto_reply_due(t, false), "{t}");
     }
     for t in [
-        "CONFIRM", "YES 1042", "HOLD", "PAUSE", "resume", "BUSY 5", "HELP", "STOP", "cancel",
+        "CONFIRM",
+        "YES 1042",
+        "sí 1042.",
+        "HOLD",
+        "hold 1042!",
+        "PAUSE",
+        "resume",
+        "BUSY 5",
+        "AWAY 3",
+        "HELP",
+        "STOP",
+        "cancel",
     ] {
         assert!(!auto_reply_due(t, false), "{t}");
     }

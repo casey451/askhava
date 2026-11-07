@@ -3,8 +3,9 @@
 //!
 //! [`consent_box`] is the unticked E-SIGN box: its wording names each channel it covers and says
 //! Ask Hava never places recorded or automated calls; [`record_consent`] stores one row per
-//! channel with the wording version and time, and refuses an unticked box. A member's phone gets
-//! texts only after that member's own text box ([`may_text`]); no call consent exists. On
+//! channel with the wording version and time (a text row also names the phone), and refuses an
+//! unticked box. A phone gets texts only after a current member ticked the text box for that
+//! phone ([`may_text`]); no call consent exists. On
 //! activation [`request_welcome`] queues the welcome email once; [`welcome_sent`] marks it gone and
 //! [`may_get_cards`] stays false until then. [`phone_stopped`] handles an opt-out from a business
 //! phone: the account keeps its status and the owner is emailed [`stopped_email_line`].
@@ -35,6 +36,8 @@ pub const AUTO_REPLY_TEMPLATE: &str = "business_auto_reply";
 /// BIZ-048: the first line of every recruiting email.
 pub const ADVERTISEMENT_LINE: &str = "This email is an advertisement for Ask Hava.";
 const BUSINESS: &str = "businesses.business";
+const MEMBER: &str = "businesses.team_member";
+const INBOX: &str = "messaging.inbox";
 const SITE: &str = "https://askhava.com/";
 
 /// A channel a consent box covers. There is no call channel (BIZ-039, D-344).
@@ -42,7 +45,7 @@ const SITE: &str = "https://askhava.com/";
 pub enum ConsentChannel {
     /// Job and account notices by email.
     Email,
-    /// Job-card texts to the ticking member's phones (BIZ-036).
+    /// Job-card texts to the one phone the box was ticked for (BIZ-036, D-191).
     Text,
 }
 
@@ -75,6 +78,9 @@ pub enum ConsentError {
     /// The member is not a current member of that business.
     #[error("unknown team member")]
     UnknownMember,
+    /// A text box names no phone, or a phone not linked to that business.
+    #[error("unknown phone")]
+    UnknownPhone,
     /// A recruiting email's subject is empty or looks like a reply or a notice.
     #[error("the recruiting subject is not honest")]
     Subject,
@@ -123,13 +129,16 @@ pub fn consent_box(channels: &[ConsentChannel]) -> ConsentBox {
 }
 
 /// CON-019, D-191: stores the ticked box of `member` of `business`, one row per channel with
-/// [`CONSENT_VERSION`] and `now`, and its audit row, in one transaction.
+/// [`CONSENT_VERSION`] and `now` (the text row naming `phone`, a linked `businesses.staff_phone` of
+/// that business), and one audit row, in one transaction. A box already stored for the same
+/// member, channel, phone and version adds no row.
 ///
 /// # Errors
-/// [`ConsentError::NotTicked`] (also for no channel), `UnknownMember`, `Database` or `Audit`.
+/// [`ConsentError::NotTicked`] (also for no channel), `UnknownMember`, `UnknownPhone` (a text box
+/// with no phone or another business's phone), `Database` or `Audit`.
 pub async fn record_consent(
     conn: &mut PgConnection,
-    (business, member): (Uuid, Uuid),
+    (business, member, phone): (Uuid, Uuid, Option<Uuid>),
     channels: &[ConsentChannel],
     ticked: bool,
     now: Timestamp,
@@ -145,55 +154,99 @@ pub async fn record_consent(
         business
     );
     db(current.fetch_optional(&mut *tx).await)?.ok_or(ConsentError::UnknownMember)?;
-    for c in channels {
-        let q = sqlx::query!(
-            "INSERT INTO businesses.esign_consent \
-             (business_id, member_id, channel, wording_version, consented_at) \
-             VALUES ($1, $2, $3, $4, $5)",
-            business,
-            member,
-            c.as_str(),
-            CONSENT_VERSION,
-            now.to_sqlx() as _
-        );
-        db(q.execute(&mut *tx).await)?;
+    let text_phone = if channels.contains(&ConsentChannel::Text) {
+        Some(linked_phone(&mut tx, business, phone).await?)
+    } else {
+        None
+    };
+    let mut added = 0;
+    for c in [ConsentChannel::Email, ConsentChannel::Text] {
+        if channels.contains(&c) {
+            let row_phone = text_phone.filter(|_| c == ConsentChannel::Text);
+            added += insert_consent(&mut tx, (business, member, row_phone), c, now).await?;
+        }
     }
-    log(&mut tx, business, "businesses.consent_recorded", member).await?;
+    if added > 0 {
+        log(
+            &mut tx,
+            (business, MEMBER),
+            "businesses.consent_recorded",
+            member,
+        )
+        .await?;
+    }
     db(tx.commit().await)
 }
 
-/// CON-019, BIZ-048, D-191: whether `member` of `business` ticked its own text box and is still a
-/// member; no text of any kind goes to a business phone without it. The suppression list still
-/// applies after a STOP (CON-013).
+async fn linked_phone(
+    tx: &mut PgConnection,
+    business: Uuid,
+    phone: Option<Uuid>,
+) -> Result<Uuid, ConsentError> {
+    let phone = phone.ok_or(ConsentError::UnknownPhone)?;
+    let q = sqlx::query_scalar!(
+        "SELECT 1 AS \"one!\" FROM businesses.staff_phone WHERE id = $1 AND business_id = $2",
+        phone,
+        business
+    );
+    db(q.fetch_optional(tx).await)?.ok_or(ConsentError::UnknownPhone)?;
+    Ok(phone)
+}
+
+async fn insert_consent(
+    tx: &mut PgConnection,
+    (business, member, phone): (Uuid, Uuid, Option<Uuid>),
+    channel: ConsentChannel,
+    now: Timestamp,
+) -> Result<u64, ConsentError> {
+    let q = sqlx::query!(
+        "INSERT INTO businesses.esign_consent \
+         (business_id, member_id, channel, phone_id, wording_version, consented_at) \
+         VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT DO NOTHING",
+        business,
+        member,
+        channel.as_str(),
+        phone,
+        CONSENT_VERSION,
+        now.to_sqlx() as _
+    );
+    Ok(db(q.execute(tx).await)?.rows_affected())
+}
+
+/// CON-019, BIZ-048, D-191: whether `phone`, a linked phone of `business`, has a text box ticked
+/// for it by a current member; no text of any kind goes to a business phone without it, and a
+/// relinked phone (a new ID) needs a new box. The suppression list still applies after a STOP
+/// (CON-013).
 ///
 /// # Errors
 /// [`ConsentError::Database`].
 pub async fn may_text(
     conn: &mut PgConnection,
     business: Uuid,
-    member: Uuid,
+    phone: Uuid,
 ) -> Result<bool, ConsentError> {
     let q = sqlx::query_scalar!(
         "SELECT EXISTS (SELECT 1 FROM businesses.esign_consent c \
          JOIN businesses.team_member m ON m.id = c.member_id AND m.business_id = c.business_id \
-         WHERE c.business_id = $1 AND c.member_id = $2 AND c.channel = 'text' \
+         JOIN businesses.staff_phone p ON p.id = c.phone_id AND p.business_id = c.business_id \
+         WHERE c.business_id = $1 AND c.phone_id = $2 AND c.channel = 'text' \
          AND m.removed_at IS NULL) AS \"yes!\"",
         business,
-        member
+        phone
     );
     db(q.fetch_one(conn).await)
 }
 
 async fn log(
     tx: &mut PgConnection,
-    business: Uuid,
+    (business, subject_kind): (Uuid, &'static str),
     action: &'static str,
     subject: Uuid,
 ) -> Result<(), ConsentError> {
     let entry = AuditEntry {
         actor: Actor::Business(business),
         action,
-        subject_kind: BUSINESS,
+        subject_kind,
         subject_id: subject,
         change: Change::Action,
     };
@@ -241,7 +294,13 @@ pub async fn request_welcome(
     let payload = json!({"business": business});
     let key = format!("{WELCOME_KIND}.{business}");
     queue(&mut tx, WELCOME_KIND, (payload, key), now).await?;
-    log(&mut tx, business, "businesses.welcome_requested", business).await?;
+    log(
+        &mut tx,
+        (business, BUSINESS),
+        "businesses.welcome_requested",
+        business,
+    )
+    .await?;
     db(tx.commit().await)?;
     Ok(true)
 }
@@ -276,13 +335,14 @@ pub async fn may_get_cards(conn: &mut PgConnection, business: Uuid) -> Result<bo
     db(q.fetch_one(conn).await)
 }
 
-/// CON-020, SEC-025, BIZ-042, BIZ-046, D-344: the welcome email's lines, in order.
+/// CON-020, SEC-025, BIZ-042, BIZ-046, D-344: the welcome email's lines, in order. They hold for
+/// every channel choice, so they never say cards come only by email (BIZ-036).
 #[must_use]
 pub fn welcome_lines() -> Vec<String> {
     vec![
-        "Welcome to Ask Hava. Your business is active, and job cards will come to this email.".to_owned(),
+        "Welcome to Ask Hava. Your business is active and can now get job cards.".to_owned(),
         format!("Our emails come from {FROM}. Add it to your contacts so job cards reach your inbox."),
-        "If we land in spam or junk: in Gmail, tap Not spam, add us to contacts and move us to Primary. In Outlook, tap Not junk, then add us to Safe senders. In Yahoo, tap Not spam. In iPhone Mail, add us to VIP.".to_owned(),
+        "If we land in spam or junk: in Gmail, tap Not spam, add us to contacts, make a filter for our address with \"Never send it to Spam\" and move us to Primary. In Outlook, tap Not junk, then add us to Safe senders. In Yahoo, tap Not spam. In iPhone Mail, add us to VIP. In any other email app, add us to your contacts.".to_owned(),
         "Save the attached contact card, \"Ask Hava homeowner calls\". Calls from these numbers are homeowners who chose your quote, calling on an Ask Hava masked number. Ask Hava never calls you.".to_owned(),
         format!("To change how you get notices, sign in at {SITE}b."),
         "If you choose texts, text STOP from a phone to stop texts to that phone.".to_owned(),
@@ -307,7 +367,13 @@ pub async fn phone_stopped(
     let payload = json!({"business": business, "inbox": inbox});
     let key = format!("{PHONE_STOPPED_KIND}.{inbox}");
     queue(&mut tx, PHONE_STOPPED_KIND, (payload, key), now).await?;
-    log(&mut tx, business, "businesses.phone_stopped", inbox).await?;
+    log(
+        &mut tx,
+        (business, INBOX),
+        "businesses.phone_stopped",
+        inbox,
+    )
+    .await?;
     db(tx.commit().await)
 }
 
@@ -319,8 +385,9 @@ pub fn stopped_email_line(last4: &str) -> String {
     )
 }
 
-/// Business words the app reads elsewhere (PICK-033, BIZ-028, BIZ-038, CON-015, CALL-011).
-const COMMAND_WORDS: [&str; 16] = [
+/// Business words the app reads elsewhere (PICK-033, PICK-043, BIZ-028, BIZ-034, BIZ-038, CON-015,
+/// CALL-011), each alone or with one number, as `picks`' parsers accept them.
+const COMMAND_WORDS: [&str; 18] = [
     "confirm",
     "confirmar",
     "yes",
@@ -328,6 +395,8 @@ const COMMAND_WORDS: [&str; 16] = [
     "sí",
     "hold",
     "espera",
+    "away",
+    "ausente",
     "pause",
     "pausa",
     "resume",
@@ -339,19 +408,31 @@ const COMMAND_WORDS: [&str; 16] = [
     "link",
 ];
 
+/// Whether the whole of `words` is a command: a command word alone or followed by one whole
+/// number ("YES 1042.", "BUSY 5"), trailing periods and exclamation marks dropped, any case.
+fn is_command(words: &str) -> bool {
+    let mut parts = words
+        .trim_end()
+        .trim_end_matches(['.', '!'])
+        .split_whitespace();
+    let Some(word) = parts.next() else {
+        return false;
+    };
+    let number_ok = parts.next().is_none_or(|n| n.parse::<u32>().is_ok());
+    number_ok && parts.next().is_none() && COMMAND_WORDS.contains(&word.to_lowercase().as_str())
+}
+
 /// BIZ-032, D-228, D-491: whether a business text gets [`AUTO_REPLY_TEMPLATE`]: not when the
 /// caller `expected` it (a quote or a reply the app asked for), and never for HELP, an opt-out or
-/// a command word; anything else, a question or a charge word included, gets it.
+/// a text that is wholly a command; anything else gets it, a question or a charge word included,
+/// even when it starts with a command word ("Yes, why was I charged?"). An empty text (a photo
+/// alone) is not expected either, so it gets the reply pointing to the portal (D-1717).
 #[must_use]
 pub fn auto_reply_due(words: &str, expected: bool) -> bool {
     if expected || keyword(words).is_some() || detect_opt_out(words).is_some() {
         return false;
     }
-    let first = words.split_whitespace().next().unwrap_or_default();
-    let first = first
-        .trim_matches(|c: char| !c.is_alphanumeric())
-        .to_lowercase();
-    !COMMAND_WORDS.contains(&first.as_str())
+    !is_command(words)
 }
 
 /// A recruiting email's subject and lines (BIZ-048, SEC-028).
