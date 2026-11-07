@@ -145,6 +145,7 @@ ALLOWED_SHARED = frozenset(
         "package-lock.json",
         "kit/plan.lock",  # the blueprint fingerprint, rewritten by any PR that changes a locked file (D-479)
         "app/core/src/settings.rs",  # typed settings: T011 creates it, each later task adds its own keys (D-493)
+        "tests/a11y/fixtures.ts",  # the Ally page-state registry: a task adding a GET route appends its PAGE_STATES entry (D-1772)
     }
     | {f"app/{m}/Cargo.toml" for m in CRATE_MODULES}
     | {f"app/{m}/CLAUDE.md" for m in CRATE_MODULES}  # crate docs any task updates (D-473)

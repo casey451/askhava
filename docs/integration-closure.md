@@ -4,7 +4,7 @@
 
 One row per cross-module handoff: a piece of work one task or decision passed to another module or a later task. This is not a second task graph. Owners are task ids from `kit/tasks.json`; a row is closed only by a plan change that names the merged commit or pull request and the test that proves it. A decision note naming a future task is not closure.
 
-**Rule (T265, D-1760).** A row whose area is `security`, `money` or `privacy` and whose status is not `closed` fails the stage exit when it names no owner task, names a task id missing from `kit/tasks.json`, or names only tasks that are DONE or SKIPPED. A `closed` row with no evidence fails too. Rows of other areas are printed and never fail. When an owner task merges, the overseer's next plan change either closes the row with its evidence or names a new owner.
+**Rule (T265, D-1760).** A row whose area is `security`, `money` or `privacy` and whose status is not `closed` is judged at stage N only when every owner task it names has a `stage` at or below N in `kit/tasks.json` (the runner re-runs every earlier stage's exit on each claim, so a row may only hold the stage its owners belong to). A judged row fails when it names a task id missing from `kit/tasks.json` or only tasks that are DONE or SKIPPED. A row with no owner (`none`) fails at every stage. A `closed` row with no evidence fails too. Rows of other areas are printed and never fail. When an owner task merges, the overseer's next plan change either closes the row with its evidence or names a new owner.
 
 Columns: **Owner** is one or more task ids separated by commas, or `none`. **Status** is `open`, `tracked` (a non-gating improvement watched by its owner) or `closed`. **Evidence** is `-` until closed.
 
@@ -32,7 +32,7 @@ Rows IC-06 to IC-09 and IC-33 name T253, T254 and T255, added by the release pla
 | IC-18 | This register to the stage exit | A12, D-1760 | docs/integration-closure.md | scripts/stage_exit.py | security | T265 | TD-OPS-31 | open | - |
 | IC-19 | Card sender checks business consent (`may_get_cards`) at send time | D-1715, D-1760 | businesses consent | quotes card pool | privacy | T251 | TD-BIZ-41 | open | - |
 | IC-20 | Business texts check `may_text` per receiving phone at send time | D-1715, D-1760 | businesses consent | messaging business notices | privacy | T147 | TD-TXT-17 | open | - |
-| IC-21 | Sign-up form consent box, welcome request after activation, welcome and phone-stopped emails | D-1715, D-1709, D-1380 | businesses consent | portals sign-up, messaging email | compliance | none | - | open | - |
+| IC-21 | Sign-up form consent box, welcome request after activation, welcome and phone-stopped emails | D-1715, D-1709, D-1380, D-1783 | businesses consent | portals sign-up, businesses identity, messaging email | privacy | T268 | TD-CON-29 | open | - |
 | IC-22 | Homeowner's PICK-018 contact choice and shared email stored and passed to the release | D-1740 (2), D-1264, D-1761 | portals pick flow | picks release, server release sink, privacy vault | privacy | T266 | TD-PICK-52 | open | - |
 | IC-23 | AI writing calls (questions, card) and `ai::api` wired into intake | D-990, D-1198 | ai | intake | ai | none | - | open | - |
 | IC-24 | Owner switches and safe mode checked at action time | audit A12 table, D-1427 | ops switches | payments, messaging, intake | security | T105 | TD-OPS-01 | open | - |
@@ -45,3 +45,6 @@ Rows IC-06 to IC-09 and IC-33 name T253, T254 and T255, added by the release pla
 | IC-31 | Stale module guides ("not here yet" lines) repaired as work closes | audit improvement 5 | every task | next sessions | docs | T100, T126, T142 | - | tracked | - |
 | IC-32 | Release and card-fix emails carry a per-recipient signed link that opens sign-in | D-1565 (2), D-1761, PICK-024 | messaging business notices | portals sign-in | security | T147, T194 | TD-TXT-18, TD-PICK-51 | open | - |
 | IC-33 | Confirm route's $0 path to the production release sink (merge order) | D-1761 (3), D-1739 | portals Confirm (T261) | server release sink (T254) | money | T261, T254 | TD-FEE-45, TD-PICK-49 | open | - |
+| IC-34 | Ally page-state registry split from the Ally check machinery; `fixtures.ts` back to owner-only | D-1772, D-1783 | page-adding tasks | tests/a11y checks | security | T267 | TD-A11Y-03 | open | - |
+| IC-35 | Lock this register in `kit/plan.lock` (step 1: `LOCKED_FILES` in `scripts/check_plan_lock.py` on `main`; step 2: rewrite the lock) | D-1760 (2), D-1783 | plan changes | Governance check | governance | none | - | tracked | - |
+| IC-36 | After T267 merges: drop `tests/a11y/fixtures.ts` from `shared_paths` and `ALLOWED_SHARED` in one plan change | D-1783 | T267 | kit/tasks.json, scripts/validate_tasks.py | governance | none | - | tracked | - |

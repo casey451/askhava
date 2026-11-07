@@ -198,7 +198,8 @@
   "app/site/askama.toml",
   "app/server/askama.toml",
   "app/server/src/bin/worker.rs",
-  "app/core/src/settings.rs"
+  "app/core/src/settings.rs",
+  "tests/a11y/fixtures.ts"
  ],
  "kit_outputs": [
   "kit/prompts/",
@@ -8697,7 +8698,8 @@
     "D-333",
     "D-366",
     "D-490",
-    "D-1520"
+    "D-1520",
+    "D-1772"
    ],
    "cites": [],
    "budget": {
@@ -8718,7 +8720,7 @@
    "id": "T194",
    "slug": "portals-new-device-code",
    "title": "portals: the new-device code by text or email and team sign-in",
-   "goal": "A sign-in from a new device needs a Verify code by text, or an emailed code for a person with no phone that gets texts and never a voice code, and each team member signs in as their own person (BIZ-023, TXT-038, SEC-004). Sign-in also accepts the signed link a business notice carries (PICK-024, D-1565 (2), D-1761): a `core` `LinkToken` over the person's ID, the job number and an expiry 7 days on, made with the ID secret; a valid one opens sign-in for that person with the job page as the next page, and a tampered, expired or other person's link opens plain sign-in; the link alone never signs anyone in.",
+   "goal": "A sign-in from a new device needs a Verify code by text, or an emailed code for a person with no phone that gets texts and never a voice code, and each team member signs in as their own person (BIZ-023, TXT-038, SEC-004). Sign-in also accepts the signed link a business notice carries (PICK-024, D-1565 (2), D-1761): `core`'s `link_token(secret, LinkKind::Action, person, LinkSalt::from_bytes(job number as 8 big-endian bytes ‖ expiry as 8 big-endian Unix seconds))` with the person ID, job number and expiry (7 days on) in the URL, recomputed and compared in constant time; a valid one opens sign-in for that person with the job page as the next page, and a tampered, expired or other person's link opens plain sign-in; the link alone never signs anyone in.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -9078,84 +9080,10 @@
    "acceptance": "TD-TXT-32 and TD-BIZ-39 pass in `tests/integration/tests/inbound_first_contact.rs` against PostgreSQL, with two signed deliveries held at the absent-contact lookup by two connections (a barrier, not a sleep); every case in T241's `tests/integration/tests/inbound_text_route.rs` still passes unchanged."
   },
   {
-   "id": "T257",
-   "slug": "conversation-aware-scrub",
-   "title": "privacy and server: the scrubber remembers names across a homeowner's texts and knows her vault name",
-   "goal": "The served SMS route scrubs each text with `vault_name: None` and a fresh `NameMemory` (`read` in `app/server/src/inbound_text.rs`), so a name she stated in an earlier text, and her name in the vault, are not removed from a later one (AI-003, AI-020; external audit A02, D-1752). Build the privacy-owned, contact-aware read. (1) `migrations/0136_privacy_stated_names.sql`: `privacy.stated_name` (contact ID with a foreign key to the vault contact `ON DELETE CASCADE`, the name sealed like a vault field with its key version, created time; unique per contact and blind-indexed value so a repeat is one row); the app role gets SELECT, INSERT and DELETE only. (2) `app/privacy/src/scrub_context.rs`: `privacy::api::read_inbound_for(conn, vault, contact, raw, words)` opens the contact's vault name under the existing `(Messaging, Inbound)` grant and her stated names, scrubs with both (`Known::vault_name` and `NameMemory::mark_known` per stored name), stores any name the scrub newly marks as stated, and returns only the `Inbound` (flags and `ScrubbedText`): no plaintext leaves `privacy`. Because no plaintext leaves, this read may run inside the delivery's transaction (D-1752 narrows D-752's in-transaction refusal to functions that return plaintext); its audit rows commit or roll back with the delivery and a resent delivery is read and audited again. (3) The route resolves the sender (blind index only) before reading, then calls `read_inbound_for`; a business sender's text is scrubbed with an empty context as now. (4) Purge and rotation: the PRIV-007 purge and \"Delete my data\" (`app/privacy/src/purge.rs`, T092's) delete her stated names with her name; `rotate_batch` in `app/privacy/src/vault.rs` re-seals them under the new key. No raw name, message history or digest of a name goes to any intake row, log, task payload or alert. Update `docs/architecture.md` section 8, the `privacy` and `server` `CLAUDE.md` files and `docs/decisions.md`.",
-   "type": "build",
-   "phase": 1,
-   "stage": "4",
-   "module": "privacy",
-   "deps": [
-    "T256",
-    "T092",
-    "T093",
-    "T086"
-   ],
-   "model": "claude-opus-5-5",
-   "effort": "high",
-   "reviewer_model": "claude-opus-5-5",
-   "review_areas": [
-    "privacy",
-    "security"
-   ],
-   "owns": [
-    "app/privacy/src/scrub_context.rs",
-    "app/privacy/src/tests/scrub_context.rs",
-    "app/privacy/src/vault.rs",
-    "app/privacy/src/purge.rs",
-    "migrations/0136_privacy_stated_names.sql",
-    "app/server/src/inbound_text.rs",
-    "tests/integration/tests/inbound_scrub_context.rs"
-   ],
-   "reads": [
-    "docs/architecture.md",
-    "docs/code-docs.md",
-    "docs/spec/ai.md",
-    "docs/spec/privacy.md",
-    "docs/spec/messaging.md",
-    "docs/brains/ai-intake.md",
-    "docs/brains/postgres-operations.md",
-    "docs/brains/rust-production.md"
-   ],
-   "requirements": [
-    "AI-003",
-    "AI-020",
-    "PRIV-001",
-    "PRIV-002",
-    "PRIV-003",
-    "PRIV-007",
-    "PRIV-024",
-    "TXT-012"
-   ],
-   "tests": [
-    "TD-AI-19"
-   ],
-   "decisions": [
-    "D-1752",
-    "D-752",
-    "D-1751"
-   ],
-   "cites": [],
-   "budget": {
-    "files": 7,
-    "lines": 550,
-    "context_pct": 17
-   },
-   "checks": [
-    "Ci",
-    "Twin",
-    "Ally"
-   ],
-   "branch": "claude/task/T257-conversation-aware-scrub",
-   "prompt": "kit/prompts/T257.md",
-   "acceptance": "TD-AI-19 passes through the real inbound route against PostgreSQL and the stand-in AI's recording transport; the `app/privacy/` 95% coverage floor holds; `tests/security/tests/vault_readers.rs` passes unchanged (no new reader or grant)."
-  },
-  {
    "id": "T258",
    "slug": "refund-lifecycle",
    "title": "adapters and payments: a refund is recorded as Stripe reports it (pending, succeeded, failed, canceled), never as done on a 200",
-   "goal": "`PaymentsAdapter::create_refund` returns only the `re_…` ID (`app/adapters/src/payments.rs`), so `refunds::finish` treats any answer as `Refunded`, sets the row `succeeded` and appends the ledger `refund` entry, and `reconcile::own_refund` counts any answer as refunded, even when Stripe answered `pending`, `requires_action`, `failed` or `canceled` (external audit A03, D-1753; D-1545 (2) already recorded the ledger side). (1) The adapter returns a typed `Refund { id, status, amount_cents, currency, payment_intent }` with `RefundState::{Pending, RequiresAction, Succeeded, Failed, Canceled}`; an unknown status string is an adapter error, not a success; the refund must name the PaymentIntent asked for. (2) `migrations/0124_payments_refunds_and_events.sql`: the refund row's status gains `pending` and `canceled`, the ledger kind check gains `refund-reversal` (FEE-028 as changed by D-1753), and `payments.webhook_event` (Stripe event ID unique, type, received time; app role SELECT and INSERT) is created here for T259's dispatch, so T259 needs no migration of its own. (3) `refunds.rs`: a `succeeded` answer records the refund and appends the `refund` entry as now; `pending` or `requires_action` stores the `re_…` with status `pending`, appends nothing, and the 30-minute check asks Stripe again; `failed` or `canceled` is the FEE-026 failure path (alert, hourly retry). `refund_succeeded(pool, re, now)`, `refund_failed` and `refund_canceled` (the webhook's, T259) move a `pending` row on; a `failed` or `canceled` after `succeeded` appends one `refund-reversal` entry of the same amount keyed by the `re_…`, append-only (no ledger row is updated or deleted), and the FEE-026 retry's next success appends a new `refund` entry keyed by its own `re_…`, so the ledger always nets to what Stripe holds. (4) `reconcile::own_refund` records by the same rule. Every customer-facing \"refunded\" text or notice goes out only on `succeeded`. Update `docs/architecture.md` section 7 (the refund call's answer), the `payments` and `adapters` `CLAUDE.md` files, `docs/brains/payments-stripe.md` is read only, and `docs/decisions.md`.",
+   "goal": "`PaymentsAdapter::create_refund` returns only the `re_…` ID (`app/adapters/src/payments.rs`), so `refunds::finish` treats any answer as `Refunded`, sets the row `succeeded` and appends the ledger `refund` entry, and `reconcile::own_refund` counts any answer as refunded, even when Stripe answered `pending`, `requires_action`, `failed` or `canceled` (external audit A03, D-1753; D-1545 (2) already recorded the ledger side). (1) The typed refund is additive, so no fake adapter in another task's test changes: `app/payments/src/refund_stripe.rs` defines a payments-owned trait `RefundStripe: PaymentsAdapter` (the `IntentStripe` and `ReconcileStripe` pattern) with `refund(idempotency, payment_intent) -> Refund` and `fetch_refund(id) -> Refund`, where `Refund { id, state, amount_cents, currency, payment_intent }` and `RefundState::{Pending, RequiresAction, Succeeded, Failed, Canceled}`; an unknown state string is an error, never a success, and the refund must name the PaymentIntent asked for. It is implemented for `StripeHttp` there, over two new inherent HTTP calls on `StripeHttp` in `app/adapters/src/payments.rs` (the `PaymentsAdapter` trait and its `create_refund` stay unchanged until T132 retires `create_refund`). `refunds::finish`, the retry and `reconcile::own_refund` take `&impl RefundStripe`. (2) `migrations/0124_payments_refunds_and_events.sql`: the refund row's status gains `pending` and `canceled`, the ledger kind check gains `refund-reversal` (FEE-028 as changed by D-1753), and `payments.webhook_event` (Stripe event ID unique, type, received time; app role SELECT and INSERT) is created here for T259's dispatch, so T259 needs no migration of its own; `EntryKind::RefundReversal` joins `app/payments/src/models.rs` and every exhaustive match on it. (3) `refunds.rs`: a `succeeded` answer records the refund and appends the `refund` entry as now; `pending` or `requires_action` stores the `re_…` with status `pending`, appends nothing, and the 30-minute check asks Stripe again through `fetch_refund`; `failed` or `canceled` is the FEE-026 failure path (alert, hourly retry). `refund_succeeded(pool, re, now)`, `refund_failed` and `refund_canceled` (the webhook's, T259) move a `pending` row on; a `failed` or `canceled` after `succeeded` appends one `refund-reversal` entry of the same amount keyed by the `re_…`, append-only (no ledger row is updated or deleted), and the FEE-026 retry's next success appends a new `refund` entry keyed by its own `re_…`, so the ledger always nets to what Stripe holds. (4) `reconcile::own_refund` records by the same rule. Every customer-facing \"refunded\" text or notice goes out only on `succeeded`. Update `docs/architecture.md` section 7, the `payments` and `adapters` `CLAUDE.md` files and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -9175,9 +9103,11 @@
    ],
    "owns": [
     "app/adapters/src/payments.rs",
+    "app/payments/src/refund_stripe.rs",
     "app/payments/src/refunds.rs",
     "app/payments/src/reconcile.rs",
     "app/payments/src/ledger.rs",
+    "app/payments/src/models.rs",
     "migrations/0124_payments_refunds_and_events.sql",
     "tests/integration/tests/refund_lifecycle.rs"
    ],
@@ -9205,9 +9135,9 @@
    ],
    "cites": [],
    "budget": {
-    "files": 6,
+    "files": 8,
     "lines": 550,
-    "context_pct": 22
+    "context_pct": 26
    },
    "checks": [
     "Ci",
@@ -9216,7 +9146,7 @@
    ],
    "branch": "claude/task/T258-refund-lifecycle",
    "prompt": "kit/prompts/T258.md",
-   "acceptance": "TD-FEE-42 passes against PostgreSQL with a fake adapter answering each Stripe refund state; every existing TD-FEE-14, TD-FEE-15 and reconcile case still passes; the `app/payments/` 95% floor holds."
+   "acceptance": "TD-FEE-42 passes against PostgreSQL with a fake `RefundStripe` answering each Stripe refund state; every existing TD-FEE-14, TD-FEE-15 and reconcile case still passes, and no test file outside this task's owns changes (the `PaymentsAdapter` trait is unchanged); the `app/payments/` 95% floor holds."
   },
   {
    "id": "T259",
@@ -10086,6 +10016,82 @@
    "prompt": "kit/prompts/T255.md"
   },
   {
+   "id": "T257",
+   "slug": "conversation-aware-scrub",
+   "title": "privacy and server: the scrubber remembers names across a homeowner's texts and knows her vault name",
+   "goal": "The served SMS route scrubs each text with `vault_name: None` and a fresh `NameMemory` (`read` in `app/server/src/inbound_text.rs`), so a name she stated in an earlier text, and her name in the vault, are not removed from a later one (AI-003, AI-020; external audit A02, D-1752). Build the privacy-owned, contact-aware read. (1) `migrations/0130_privacy_stated_names.sql`: `privacy.stated_name` (contact ID with a foreign key to the vault contact `ON DELETE CASCADE`, the name sealed like a vault field with its key version, created time; unique per contact and blind-indexed value so a repeat is one row); the app role gets SELECT, INSERT and DELETE only. (2) `app/privacy/src/scrub_context.rs`: `privacy::api::read_inbound_for(conn, vault, contact, raw, words)` opens the contact's vault name under the existing `(Messaging, Inbound)` grant and her stated names, scrubs with both (`Known::vault_name` and `NameMemory::mark_known` per stored name), stores any name the scrub newly marks as stated, and returns only the `Inbound` (flags and `ScrubbedText`): no plaintext leaves `privacy`. Because no plaintext leaves, this read may run inside the delivery's transaction (D-1752 narrows D-752's in-transaction refusal to functions that return plaintext); its audit rows commit or roll back with the delivery and a resent delivery is read and audited again. SEC-047's hourly rate check stays on for this read: it is counted under the `(Messaging, Inbound)` grant's own action, once per text, against its 14-day baseline with D-750's floor of one read an hour, so the alarm tracks inbound text volume (a flood of texts is a signal Casey should see); no exclusion and no new threshold, tested with a steady hour (no alert) and a burst over three times the baseline (one alert). (3) The route resolves the sender (blind index only) before reading, then calls `read_inbound_for`; a business sender's text is scrubbed with an empty context as now. (4) Purge and rotation: the PRIV-007 purge and \"Delete my data\" (`app/privacy/src/purge.rs`, T092's) delete her stated names with her name; `rotate_batch` in `app/privacy/src/vault.rs` re-seals them under the new key. No raw name, message history or digest of a name goes to any intake row, log, task payload or alert. Update `docs/architecture.md` section 8, the `privacy` and `server` `CLAUDE.md` files and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "privacy",
+   "deps": [
+    "T256",
+    "T092",
+    "T093"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "security"
+   ],
+   "owns": [
+    "app/privacy/src/scrub_context.rs",
+    "app/privacy/src/tests/scrub_context.rs",
+    "app/privacy/src/vault.rs",
+    "app/privacy/src/purge.rs",
+    "migrations/0130_privacy_stated_names.sql",
+    "app/server/src/inbound_text.rs",
+    "tests/integration/tests/inbound_scrub_context.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/ai.md",
+    "docs/spec/privacy.md",
+    "docs/spec/messaging.md",
+    "docs/brains/ai-intake.md",
+    "docs/brains/postgres-operations.md",
+    "docs/brains/rust-production.md",
+    "docs/spec/security.md"
+   ],
+   "requirements": [
+    "AI-003",
+    "AI-020",
+    "PRIV-001",
+    "PRIV-002",
+    "PRIV-003",
+    "PRIV-007",
+    "PRIV-024",
+    "TXT-012",
+    "SEC-047"
+   ],
+   "tests": [
+    "TD-AI-19"
+   ],
+   "decisions": [
+    "D-1752",
+    "D-752",
+    "D-1751",
+    "D-750"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 7,
+    "lines": 550,
+    "context_pct": 17
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T257-conversation-aware-scrub",
+   "prompt": "kit/prompts/T257.md",
+   "acceptance": "TD-AI-19 passes through the real inbound route against PostgreSQL and the stand-in AI's recording transport; the `app/privacy/` 95% coverage floor holds; `tests/security/tests/vault_readers.rs` passes unchanged (no new reader or grant)."
+  },
+  {
    "id": "T095",
    "slug": "picks-email-code",
    "title": "picks: pick code by email when texting is off; '2 YES' from an opted-out phone",
@@ -10546,7 +10552,7 @@
    "id": "T147",
    "slug": "business-notices-email",
    "title": "messaging and businesses: business notices by chosen channel and the business-texting switch",
-   "goal": "Every business notice goes by the business's chosen channels, email by default and text only while the business-texting switch is on, never carrying homeowner details by text; job cards go to the owner and every \"Cards and quotes\" member; texts that fail fall back to email and the portal; and quiet hours hold each business notice as a whole, email and any text together (TXT-014, TXT-035 to TXT-037, BIZ-019, BIZ-036, BIZ-037, CARD-020, QH-005); `messaging` never calls `businesses`: the enqueuing module (`quotes` for cards, in `app/quotes/src/card_notices.rs` owned here; `picks` for pick and release notices; `businesses` for account notices; `picks`' `money_notices.rs` for the payments notices, T062 and T068) resolves the recipients and channels through `businesses::api::notice_addresses` and puts them in the event payload as opaque address IDs, and `messaging` sends to what it is given (T220 created that lookup; this task extends it with each person's channel choice, and T149 extends it with the backup addresses, D-491, D-492). The card notices' provider acceptance feeds `quotes`' sent count through `card_notices.rs`, so the cards-out text's N and the job page count leave out a business whose every notice hard-bounces (TD-TXT-22, D-491). Card emails carry no image bytes, only a link to the signed-in job page (PRIV-027's card-email clause, TD-PRIV-12) (D-493). Every business text send checks `businesses::api::may_text` for the receiving member's phone at send time, before `send_checked`, so a revoked or unticked text box gets email instead (D-1715, D-1760). The `release_notice` and `card_fix_notice` emails' `{link}` is filled per recipient with that signed sign-in link (the format T194 checks), never an unsigned or shared one, and the email still holds no homeowner detail (PICK-024, D-1565 (2), D-1761).",
+   "goal": "Every business notice goes by the business's chosen channels, email by default and text only while the business-texting switch is on, never carrying homeowner details by text; job cards go to the owner and every \"Cards and quotes\" member; texts that fail fall back to email and the portal; and quiet hours hold each business notice as a whole, email and any text together (TXT-014, TXT-035 to TXT-037, BIZ-019, BIZ-036, BIZ-037, CARD-020, QH-005); `messaging` never calls `businesses`: the enqueuing module (`quotes` for cards, in `app/quotes/src/card_notices.rs` owned here; `picks` for pick and release notices; `businesses` for account notices; `picks`' `money_notices.rs` for the payments notices, T062 and T068) resolves the recipients and channels through `businesses::api::notice_addresses` and puts them in the event payload as opaque address IDs, and `messaging` sends to what it is given (T220 created that lookup; this task extends it with each person's channel choice, and T149 extends it with the backup addresses, D-491, D-492). The card notices' provider acceptance feeds `quotes`' sent count through `card_notices.rs`, so the cards-out text's N and the job page count leave out a business whose every notice hard-bounces (TD-TXT-22, D-491). Card emails carry no image bytes, only a link to the signed-in job page (PRIV-027's card-email clause, TD-PRIV-12) (D-493). Every business text send checks `businesses::api::may_text` for the receiving member's phone at send time, before `send_checked`, so a revoked or unticked text box gets email instead (D-1715, D-1760). The `release_notice` and `card_fix_notice` emails' `{link}` is filled per recipient with a signed sign-in link: `core`'s `link_token(secret, LinkKind::Action, person, LinkSalt::from_bytes(job number as 8 big-endian bytes ‖ expiry as 8 big-endian Unix seconds))`, the person ID, job number and expiry (7 days on) in the URL beside the token (the format T194 checks; no `core` change), never an unsigned or shared one, and the email still holds no homeowner detail (PICK-024, D-1565 (2), D-1761).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -11587,7 +11593,9 @@
     "T263",
     "T264",
     "T265",
-    "T266"
+    "T266",
+    "T267",
+    "T268"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -16074,7 +16082,7 @@
    "id": "T262",
    "slug": "call-pins-and-tries",
    "title": "calls and server: a random stored PIN per line, unique on its number, durable PIN-try counts, and the inbound voice route",
-   "goal": "A line's PIN is its ID modulo 10,000 (`calls::api::job_pin`, D-1684), and line IDs are not secret; the 6-a-day count is the caller's input with no storage (D-1685); and no inbound-voice route serves the TwiML (D-1708). D-1684 and D-1685 named T078 or T080, both DONE without it (external audit A09, D-1755). (1) `migrations/0151_calls_pins_attempts.sql`: a `pin` column on `calls.number_pool` (four digits, drawn from the OS random source, unique among open lines of one pool number by a partial unique index) and `calls.pin_try` (blind index of the calling number, never the number; pool number; Arizona day; count), app role SELECT, INSERT, UPDATE of the count only. (2) `app/calls/src/pins.rs`: allocation in `assign_number`'s transaction (`app/calls/src/service.rs`) retries a collision a bounded number of times, then raises the existing pool alert and refuses the line; `job_pin` and every read of the PIN come from the stored column (`routing.rs`), never the line ID; the try count is one atomic `INSERT ... ON CONFLICT DO UPDATE ... RETURNING` per wrong try, so concurrent wrong tries cannot pass 6 a day, and a repeated Twilio callback (same CallSid and digits) is not another try (recorded per CallSid). (3) `app/server/src/inbound_voice.rs`: the signature-checked Twilio voice webhook (SEC-016) for the pool numbers, recorded by CallSid (SEC-017), finding the party, lines, stored counts and STIR/SHAKEN attestation and serving `calls::api` TwiML (prompt, PIN, read-back on A attestation only, dial), merged in the shared `lib.rs`. No line ID reaches a homeowner or business. Update `docs/architecture.md` section 10, the `calls` and `server` `CLAUDE.md` files and `docs/decisions.md`.",
+   "goal": "A line's PIN is its ID modulo 10,000 (`calls::api::job_pin`, D-1684), and line IDs are not secret; the 6-a-day count is the caller's input with no storage (D-1685); and no inbound-voice route serves the TwiML (D-1708). D-1684 and D-1685 named T078 or T080, both DONE without it (external audit A09, D-1755). (1) `migrations/0151_calls_pins_attempts.sql`: a `pin` column on `calls.number_pool` (four digits, drawn from the OS random source, unique among open lines of one pool number by a partial unique index) and `calls.pin_try` (a digest of the calling number, never the number: HMAC-SHA-256 under the ID secret with the domain label `pin-try|v1` over the normalized E.164 number, derived with `core`'s ID-secret derivation as `IdempotencyKey::derive` is, listed under `ID_SECRET` in the PRIV-024 key inventory and re-derived when that secret rotates; pool number; Arizona day; count; queries in `app/calls/src/models.rs`), app role SELECT, INSERT, UPDATE of the count only. (2) `app/calls/src/pins.rs`: allocation in `assign_number`'s transaction (`app/calls/src/service.rs`) retries a collision a bounded number of times, then raises the existing pool alert and refuses the line; `job_pin` and every read of the PIN come from the stored column (`routing.rs`), never the line ID; the try count is one atomic `INSERT ... ON CONFLICT DO UPDATE ... RETURNING` per wrong try, so concurrent wrong tries cannot pass 6 a day, and a repeated Twilio callback (same CallSid and digits) is not another try (recorded per CallSid). (3) `app/server/src/inbound_voice.rs`: the signature-checked Twilio voice webhook (SEC-016) for the pool numbers, recorded by CallSid (SEC-017), finding the party, lines, stored counts and STIR/SHAKEN attestation and serving `calls::api` TwiML (prompt, PIN, read-back on A attestation only, dial), merged in the shared `lib.rs`. No line ID reaches a homeowner or business. Update `docs/architecture.md` section 10, the `calls` and `server` `CLAUDE.md` files and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -16096,6 +16104,7 @@
     "migrations/0151_calls_pins_attempts.sql",
     "app/calls/src/pins.rs",
     "app/calls/src/routing.rs",
+    "app/calls/src/models.rs",
     "app/calls/src/service.rs",
     "app/server/src/inbound_voice.rs",
     "tests/integration/tests/call_pins.rs",
@@ -16107,7 +16116,8 @@
     "docs/spec/calls.md",
     "docs/spec/security.md",
     "docs/brains/postgres-operations.md",
-    "docs/brains/rust-production.md"
+    "docs/brains/rust-production.md",
+    "docs/spec/privacy.md"
    ],
    "requirements": [
     "CALL-002",
@@ -16116,7 +16126,8 @@
     "CALL-005",
     "CALL-025",
     "SEC-016",
-    "SEC-017"
+    "SEC-017",
+    "PRIV-024"
    ],
    "tests": [
     "TD-CALL-13",
@@ -16131,7 +16142,7 @@
    ],
    "cites": [],
    "budget": {
-    "files": 7,
+    "files": 8,
     "lines": 600,
     "context_pct": 25
    },
@@ -17319,6 +17330,76 @@
    "acceptance": "TD-PICK-52 passes against PostgreSQL: the page-pick cases in `tests/integration/tests/pick_contact_choice.rs` and the release cases in `app/server/tests/release_contact_choice.rs` (only `server` may mint, D-1563 (4)); every existing pick-flow, TD-PICK-49 and TD-INT-39 case still passes; the `app/privacy/` 95% floor holds."
   },
   {
+   "id": "T268",
+   "slug": "business-consent-wiring",
+   "title": "portals, businesses and messaging: the sign-up consent box, the welcome request and the welcome and phone-stopped emails",
+   "goal": "T082 built the business consent record and its gates, but D-1715 left their callers unowned: the sign-up form never shows `consent_box` or posts to `record_consent`, activation never calls `request_welcome`, and no handler sends the `businesses.welcome` or `businesses.phone_stopped` email, so a business can be activated with no written E-SIGN consent recorded and never gets the CON-020 welcome (D-1783). (1) `app/portals/templates/business_signup.html` and `app/portals/src/business_signup.rs`: the form shows `businesses::api::consent_box` for the chosen channels, unticked (CON-019, PICK-049's no-pre-ticked rule), and posts it to `record_consent` in the sign-up's transaction; a sign-up without the tick is not submitted and says why. (2) `app/businesses/src/identity.rs` (after T196): activation (`settle`, `approve`) calls `request_welcome` in the same transaction. (3) `app/messaging/src/business_account_emails.rs`: the `businesses.welcome` handler sends `welcome_lines` with the contact-card file and calls `welcome_sent` after the provider accepts; the `businesses.phone_stopped` handler sends `stopped_email_line` with the last 4 digits read from the vault to the owner's account address; both registered in the shared `app/server/src/bin/worker.rs`, deduped per business and kind. Update the `businesses`, `messaging` and `portals` `CLAUDE.md` files and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "businesses",
+   "deps": [
+    "T196",
+    "T199",
+    "T248",
+    "T155",
+    "T165",
+    "T147"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "compliance",
+    "security",
+    "privacy"
+   ],
+   "owns": [
+    "app/portals/templates/business_signup.html",
+    "app/portals/src/business_signup.rs",
+    "app/businesses/src/identity.rs",
+    "app/messaging/src/business_account_emails.rs",
+    "tests/integration/tests/business_consent_wiring.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/consent.md",
+    "docs/spec/businesses.md",
+    "docs/spec/quotes-pick.md",
+    "docs/brains/sms-compliance.md",
+    "docs/brains/email-deliverability.md"
+   ],
+   "requirements": [
+    "CON-019",
+    "CON-020",
+    "BIZ-016",
+    "PICK-049"
+   ],
+   "tests": [
+    "TD-CON-29"
+   ],
+   "decisions": [
+    "D-1783",
+    "D-1715",
+    "D-1380"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 5,
+    "lines": 450,
+    "context_pct": 14
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T268-business-consent-wiring",
+   "prompt": "kit/prompts/T268.md",
+   "acceptance": "TD-CON-29 passes against PostgreSQL and the stand-ins; every existing sign-up, consent and identity case still passes; `Ally` is green on the sign-up page with the box."
+  },
+  {
    "id": "T232",
    "slug": "confirm-step-terms-accepted-quote",
    "title": "portals and messaging: the Confirm step's 'Can't take it' link and terms record, and the accepted-quote email",
@@ -17907,7 +17988,7 @@
    "id": "T264",
    "slug": "coverage-floor-strict",
    "title": "coverage checker: a missing measurement fails, and the total floor is set from a real Ci measurement",
-   "goal": "`scripts/coverage_floor.py` `judge` checks a floor only when the report measured it, so a built crate missing from the report, a wrong path prefix or an empty report passes; and `tests/coverage_floor.json` keeps the total at 0.0, D-694's skeleton value that the first covered code was to raise (external audit A05 and A06, D-1759). (1) A floor whose path exists on disk and is absent, or measured with zero lines, in a full report fails; a report with no files or zero total lines fails; a `--only` run fails when a selected prefix is absent; a path not on disk passes only when it is listed in a new `future` list in the floor file with a reason, shown in the output. (2) Remove the `app/catalog/src/rules.rs` key: the fee rules are `app/payments/src/rules.rs`, inside the `app/payments/` 95 floor (D-694, D-1286, D-1440). (3) Set `total` from `Ci`'s Coverage job on `main` (a named run ID and its printed total, recorded in the decision; never a number worked out from line counts), rounded down to a whole percent less 2 points, and make `lowered` also refuse a `future` entry added for a path that exists. Tests in `tests/test_coverage_floor.py`: absent built crate, wrong prefix, empty report, an intentional future path, a zero-branch part measured by lines, a `--only` run, and the measured floor itself.",
+   "goal": "`scripts/coverage_floor.py` `judge` checks a floor only when the report measured it, so a built crate missing from the report, a wrong path prefix or an empty report passes; and `tests/coverage_floor.json` keeps the total at 0.0, D-694's skeleton value that the first covered code was to raise (external audit A05 and A06, D-1759). (1) A floor whose path exists on disk and is absent, or measured with zero lines, in a full report fails; a report with no files or zero total lines fails; a `--only` run fails when a selected prefix is absent; a path not on disk passes only when it is listed in a new `future` list in the floor file with a reason, shown in the output. (2) Remove the `app/catalog/src/rules.rs` key: the fee rules are `app/payments/src/rules.rs`, inside the `app/payments/` 95 floor (D-694, D-1286, D-1440). (3) Set `total` from `Ci`'s Coverage job on `main` (a named run ID and its printed total, recorded in the decision; never a number worked out from line counts), rounded down to a whole percent less 2 points, and make `lowered` also refuse a `future` entry added for a path that exists. Tests in `tests/test_coverage_floor.py`: absent built crate, wrong prefix, empty report, an intentional future path, a zero-branch part measured by lines, a `--only` run, and the measured floor itself. The task's own decision entry names the raised and the removed key with the words \"coverage floor\", which `lowered` requires for any lowered or removed floor (`scripts/coverage_floor.py:104`, D-694).",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -17969,7 +18050,7 @@
    "id": "T265",
    "slug": "closure-register-check",
    "title": "stage exit: a security, money or privacy handoff in the integration-closure register may not be left with no live owner",
-   "goal": "Decisions hand work to later tasks that are already DONE or do not own the files (D-1684, D-1685, D-1688, D-1712, D-1715 and others), and no check notices (external audit A12, D-1760). `docs/integration-closure.md` is the one register of cross-module handoffs. Add to `scripts/stage_exit.py` a fifth condition: read the register's table; a row whose area is `security`, `money` or `privacy` and whose status is not `closed` fails the stage exit when it names no owner task, names a task id missing from `kit/tasks.json`, or names only tasks DONE or SKIPPED in the state; a `closed` row must carry evidence (a merged commit SHA or PR number and a test name) or it fails too; rows of other areas are printed, never failing. The reasons print one per line as the other conditions do. Tests in `tests/test_stage_exit.py` (new cases only; every existing case passes unchanged): an open gating row with a queued owner passes, with only DONE owners fails, with no owner fails, with an unknown task fails, a closed row without evidence fails, a non-gating unowned row passes with a printed line, and a missing register file fails.",
+   "goal": "Decisions hand work to later tasks that are already DONE or do not own the files (D-1684, D-1685, D-1688, D-1712, D-1715 and others), and no check notices (external audit A12, D-1760). `docs/integration-closure.md` is the one register of cross-module handoffs. Add to `scripts/stage_exit.py` a fifth condition: read the register's table; a row whose area is `security`, `money` or `privacy` and whose status is not `closed` is judged at stage N only when every owner it names has a `stage` at or below N in `kit/tasks.json` (a row with a later-stage owner, or none of whose owners exists yet, is printed and not failed at N, because the runner re-runs `stage_exit.evaluate()` for every earlier stage on every claim, `runner/state.py:403`, and an earlier stage must not close again behind it); a judged row fails when it names no owner task, a task id missing from `kit/tasks.json`, or only tasks DONE or SKIPPED in the state; a row with no owner at all fails at every stage; a `closed` row must carry evidence (a merged commit SHA or PR number and a test name) or it fails too; rows of other areas are printed, never failing. The reasons print one per line as the other conditions do. Tests in `tests/test_stage_exit.py` (new cases only; every existing case passes unchanged): an open gating row with a queued owner passes; an open row whose owners are DONE but one owner sits in a later stage passes at the earlier stage and fails at that later stage; with only DONE owners fails, with no owner fails, with an unknown task fails, a closed row without evidence fails, a non-gating unowned row passes with a printed line, and a missing register file fails.",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -18017,7 +18098,65 @@
    ],
    "branch": "claude/task/T265-closure-register-check",
    "prompt": "kit/prompts/T265.md",
-   "acceptance": "TD-OPS-31 passes (`python3 -m pytest tests/test_stage_exit.py`), and `python3 scripts/stage_exit.py --stage 3` on the current state still passes."
+   "acceptance": "TD-OPS-31 passes (`python3 -m pytest tests/test_stage_exit.py`), and `python3 scripts/stage_exit.py --stage N` for every stage already passed on the current state (1, 2, 3) still passes with the register on `main`."
+  },
+  {
+   "id": "T267",
+   "slug": "a11y-page-states-split",
+   "title": "Ally harness: page states move to a shared data file; the check machinery returns to owner-only",
+   "goal": "D-1772 made `tests/a11y/fixtures.ts` a shared path so a page-adding task can add its `PAGE_STATES` entry, but the same file holds the Ally check machinery (`WCAG_TAGS` at `tests/a11y/fixtures.ts:25`, `REVIEWED_INCOMPLETE` at `:28`, `NOT_PAGES`, `readRouteTable` at `:73`, `axeScan` at `:180`), so a shared-path edit could weaken the checks, and only a reviewer notices (D-1783). Split it. (1) New `tests/a11y/page_states.ts` holds only data: the `PageState` type, `PAGE_STATES`, and per-route seed helpers, so each route's states carry their own seeding (today `PAGE_STATES` is one `.map()` over `QUOTE_ROUTE`, `fixtures.ts:129`–`:137`, and `seed()` assumes a quote token, `:144`–`:153`): each entry names its route, its states and a seed function returning the path to open, with the quote-page states moved unchanged. (2) `tests/a11y/fixtures.ts` imports them and keeps `ROUTES`, `STATES_TO_CHECK` (the filter against the route table is check logic, so the shared file can never narrow what is checked), `NOT_PAGES`, `WCAG_TAGS`, `REVIEWED_INCOMPLETE`, `readRouteTable`, `axeScan` and the test fixture, and re-exports `PAGE_STATES`, so no importing spec changes. (3) `scripts/validate_tasks.py` `ALLOWED_SHARED` gains `tests/a11y/page_states.ts` with the D-1772 comment moved to it; `fixtures.ts` stays in the list until the plan change after this task drops it from `shared_paths` and `ALLOWED_SHARED` together (a task branch cannot change `kit/tasks.json`). (4) `kit/prompts/TEMPLATE.md`'s shared-path sentence names `tests/a11y/page_states.ts` instead of `fixtures.ts` (regenerate the prompts). Every page-state entry on `main` when this task starts (T084's sign-in page included) moves across unchanged.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "4",
+   "module": null,
+   "deps": [
+    "T084"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness",
+    "accessibility",
+    "security"
+   ],
+   "owns": [
+    "tests/a11y/fixtures.ts",
+    "tests/a11y/page_states.ts",
+    "scripts/validate_tasks.py",
+    "kit/prompts/TEMPLATE.md"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "docs/spec/accessibility.md",
+    "docs/governance.md",
+    "docs/test-design.md"
+   ],
+   "requirements": [
+    "A11Y-002"
+   ],
+   "tests": [
+    "TD-A11Y-03"
+   ],
+   "decisions": [
+    "D-1783",
+    "D-1772",
+    "D-1239"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 300,
+    "context_pct": 14
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T267-a11y-page-states-split",
+   "prompt": "kit/prompts/T267.md",
+   "acceptance": "TD-A11Y-03 passes; `Ally` is green on the task's head with the same (route, state) pairs as `main`; `WCAG_TAGS`, `REVIEWED_INCOMPLETE`, `NOT_PAGES`, `readRouteTable` and `axeScan` are byte-identical to `main`; `python3 scripts/validate_tasks.py` and `python3 -m pytest tests/test_validate_tasks.py` pass."
   },
   {
    "id": "T249",
