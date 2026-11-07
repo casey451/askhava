@@ -1,4 +1,4 @@
-//! Module-boundary architecture test, part 2: migrations and SQL (SEC-029; TD-SEC-10, D-491, D-492).
+//! Module-boundary architecture test, part 2: migrations and SQL (SEC-029; TD-SEC-10, TD-SEC-35, TD-SEC-36, D-491, D-492).
 //!
 //! Fails on a migration whose name is not `0NNN_<slug>.sql` or whose number is used twice (numbers
 //! rise, gaps allowed); whose first line (second after `-- no-transaction`) does not read
@@ -16,6 +16,13 @@
 //! query macros in `app/` (the function forms, `AssertSqlSafe`, `QueryBuilder`, `Executor`,
 //! `query_unchecked!`, `copy_in_raw`/`copy_out_raw`, a glob or alias of `sqlx`, `self as`
 //! included), found by a lexer scan; and on `migrate!` in `app/` with no root `migrations/` (D-600).
+//! Fails on dynamic SQL, which builds a schema name at run time where no rule can see it
+//! (TD-SEC-36, D-1677): a migration holding a `DO` statement (`do` first in a statement, so `ON
+//! CONFLICT DO NOTHING` never counts), an `EXECUTE` not followed by `FUNCTION`, `PROCEDURE`, `ON`
+//! or `,` (a trigger and the EXECUTE privilege are static), or a `format`/`quote_ident`/
+//! `quote_literal`/`quote_nullable` call; or a query macro's SQL under `app/` holding `DO` or
+//! `EXECUTE`. One finding per file, unless its path is in [`DYNAMIC_SQL_ALLOWED`] with a reason;
+//! an entry whose file is gone or holds no dynamic SQL is itself a finding.
 //!
 //! SQL is lexed with comments and `'…'` strings removed; unquoted names fold to lower case, quoted
 //! names keep their case, and dollar-quoted bodies are scanned as SQL so a function body cannot hide
@@ -41,6 +48,21 @@ const QUERY_MACROS: [&str; 6] = ["query", "query_as", "query_scalar", "query_fil
 /// The table privileges a `core` default-privilege REVOKE may name (PostgreSQL `GRANT`; TD-SEC-35).
 #[rustfmt::skip]
 const TABLE_PRIVILEGES: [&str; 8] = ["select", "insert", "update", "delete", "truncate", "references", "trigger", "maintain"];
+
+/// Functions whose call builds SQL text while a migration runs (TD-SEC-36, D-1677).
+#[rustfmt::skip]
+const SQL_BUILDERS: [&str; 4] = ["format", "quote_ident", "quote_literal", "quote_nullable"];
+
+/// Tokens after `execute` that make it static: a trigger's `EXECUTE FUNCTION`/`PROCEDURE` and the
+/// EXECUTE privilege in `GRANT`/`REVOKE` (TD-SEC-36, D-1677).
+const STATIC_EXECUTE: [&str; 4] = ["function", "procedure", "on", ","];
+
+/// The only files that may hold dynamic SQL, each with a one-line reason; an entry whose file is
+/// gone or holds no dynamic SQL is itself a finding (TD-SEC-36, SEC-029, D-1677).
+#[rustfmt::skip]
+const DYNAMIC_SQL_ALLOWED: [(&str, &str); 1] = [
+    ("migrations/0019_core_db_migrations.sql", "its `DO $guard$` block only raises an error when role askhava_app is missing and builds no SQL (T012)"),
+];
 
 /// The module schemas (`kit/layers.json`) and the task graph (`kit/tasks.json`).
 struct Plan {
@@ -408,11 +430,57 @@ fn core_revoke_only(plan: &Plan, own: &str, t: &[String]) -> bool {
             .all(|s| default_revoke(plan, s))
 }
 
-fn check_migrations(plan: &Plan, root: &Path, out: &mut Vec<String>) {
+/// Paths that hold dynamic SQL, each with the first construct found in it.
+type Dynamic = BTreeMap<String, String>;
+
+/// The first dynamic-SQL construct in `t`: a `DO` statement (first token of a statement), an
+/// `EXECUTE` that runs a string, or (`builders`, migrations only) a `format`/`quote_*` call; a
+/// schema name built at run time is invisible to [`schema_refs`] (TD-SEC-36, SEC-029, D-1677).
+fn dynamic_sql(t: &[String], builders: bool) -> Option<String> {
+    t.iter().enumerate().find_map(|(k, s)| {
+        let next = t.get(k + 1).map_or("", String::as_str);
+        match s.as_str() {
+            "do" if k == 0 || t[k - 1] == ";" => Some("DO".to_string()),
+            "execute" if !STATIC_EXECUTE.contains(&next) => Some("EXECUTE".to_string()),
+            w if builders && next == "(" && SQL_BUILDERS.contains(&w) => Some(format!("{w}()")),
+            _ => None,
+        }
+    })
+}
+
+/// Records the first dynamic-SQL construct of the file `at`, if any (TD-SEC-36, D-1677).
+fn note_dynamic(dynamic: &mut Dynamic, at: &str, t: &[String], builders: bool) {
+    if let Some(construct) = dynamic_sql(t, builders) {
+        dynamic.entry(at.to_string()).or_insert(construct);
+    }
+}
+
+/// One finding per file holding dynamic SQL that is not in `allowed`, and one per `allowed` entry
+/// whose file is gone or holds no dynamic SQL, so the list cannot go stale (TD-SEC-36, D-1677).
+fn check_dynamic(dynamic: &Dynamic, allowed: &[(&str, &str)], out: &mut Vec<String>) {
+    for (at, construct) in dynamic {
+        if !allowed.iter().any(|(path, _)| path == at) {
+            out.push(format!(
+                "{at}: dynamic SQL (`{construct}`) hides schema references from this check"
+            ));
+        }
+    }
+    for (path, _) in allowed
+        .iter()
+        .filter(|(path, _)| !dynamic.contains_key(*path))
+    {
+        out.push(format!(
+            "{path}: listed in DYNAMIC_SQL_ALLOWED but the file is missing or holds no dynamic SQL"
+        ));
+    }
+}
+
+fn check_migrations(plan: &Plan, root: &Path, dynamic: &mut Dynamic, out: &mut Vec<String>) {
     let files = load_migrations(root, plan);
     check_files(plan, &files, out);
     check_order(plan, &files, out);
     for m in &files {
+        note_dynamic(dynamic, &format!("migrations/{}", m.name), &m.tokens, true);
         if let Some((own, _)) = &m.header {
             if core_revoke_only(plan, own, &m.tokens) {
                 continue;
@@ -556,8 +624,16 @@ fn check_sql_forms(rel: &str, t: &[String], out: &mut Vec<String>) {
     }
 }
 
-/// The SQL of each query macro names only the crate's own schema (Arch 4 rule 3, SEC-029).
-fn check_query_schemas(plan: &Plan, dir: &Path, rel: &str, t: &[String], out: &mut Vec<String>) {
+/// The SQL of each query macro names only the crate's own schema (Arch 4 rule 3, SEC-029) and
+/// holds no `DO` or `EXECUTE` (TD-SEC-36, D-1677; a `format(` there only formats a value).
+fn check_query_schemas(
+    plan: &Plan,
+    dir: &Path,
+    rel: &str,
+    t: &[String],
+    dynamic: &mut Dynamic,
+    out: &mut Vec<String>,
+) {
     let module = dir.file_name().unwrap_or_default().to_string_lossy();
     for k in 0..t.len().saturating_sub(2) {
         if !(QUERY_MACROS.contains(&t[k].as_str()) && t[k + 1] == "!")
@@ -575,7 +651,9 @@ fn check_query_schemas(plan: &Plan, dir: &Path, rel: &str, t: &[String], out: &m
         } else {
             (rel.to_string(), body.to_string())
         };
-        out.extend(schema_refs(plan, &module, &at, &sql_tokens(&sql)));
+        let tokens = sql_tokens(&sql);
+        note_dynamic(dynamic, &at, &tokens, false);
+        out.extend(schema_refs(plan, &module, &at, &tokens));
     }
 }
 
@@ -602,7 +680,7 @@ fn check_migrator(rel: &str, t: &[String], out: &mut Vec<String>) {
     }
 }
 
-fn check_app(plan: &Plan, root: &Path, out: &mut Vec<String>) {
+fn check_app(plan: &Plan, root: &Path, dynamic: &mut Dynamic, out: &mut Vec<String>) {
     let no_migrations = !root.join("migrations").is_dir();
     let Ok(entries) = fs::read_dir(root.join("app")) else {
         return;
@@ -617,7 +695,7 @@ fn check_app(plan: &Plan, root: &Path, out: &mut Vec<String>) {
             let rel = path.strip_prefix(root).unwrap_or(&path).to_string_lossy();
             let t = rust_tokens(&read(&path));
             check_sql_forms(&rel, &t, out);
-            check_query_schemas(plan, dir, &rel, &t, out);
+            check_query_schemas(plan, dir, &rel, &t, dynamic, out);
             if no_migrations {
                 check_migrator(&rel, &t, out);
             }
@@ -625,12 +703,15 @@ fn check_app(plan: &Plan, root: &Path, out: &mut Vec<String>) {
     }
 }
 
-/// Every migration and SQL finding for the repository at `root` (SEC-029, D-491).
-fn check_repo(root: &Path) -> Vec<String> {
+/// Every migration and SQL finding for the repository at `root`, with `allowed` the files that
+/// may hold dynamic SQL (SEC-029, D-491, TD-SEC-36).
+fn check_repo(root: &Path, allowed: &[(&str, &str)]) -> Vec<String> {
     let plan = load_plan(root);
     let mut out = Vec::new();
-    check_migrations(&plan, root, &mut out);
-    check_app(&plan, root, &mut out);
+    let mut dynamic = Dynamic::new();
+    check_migrations(&plan, root, &mut dynamic, &mut out);
+    check_app(&plan, root, &mut dynamic, &mut out);
+    check_dynamic(&dynamic, allowed, &mut out);
     out
 }
 
@@ -646,7 +727,11 @@ fn repo_root() -> PathBuf {
 fn td_sec_10_migrations_and_sql_obey_the_rules() {
     let root = repo_root();
     assert!(load_plan(&root).deps.contains_key("T226"));
-    assert_eq!(check_repo(&root), Vec::<String>::new());
+    assert!(DYNAMIC_SQL_ALLOWED.iter().all(|(_, why)| !why.is_empty()));
+    assert_eq!(
+        check_repo(&root, &DYNAMIC_SQL_ALLOWED),
+        Vec::<String>::new()
+    );
 }
 
 const TASKS: &str = r#"{"tasks": [{"id": "T001", "deps": []}, {"id": "T002", "deps": ["T001"]}, {"id": "T003", "deps": []}, {"id": "T004", "deps": ["T001"]}]}"#;
@@ -657,6 +742,8 @@ const REVOKE_FILE: &str = "migrations/0006_core_defaults.sql";
 /// The one finding a voided REVOKE-only file gives: its `picks` schema (TD-SEC-35, D-1632).
 const REVOKE_FINDING: &str =
     "migrations/0006_core_defaults.sql: `schema picks` names another module's schema";
+/// The allow list of a REVOKE case that holds a `DO` block (TD-SEC-36, D-1677).
+const REVOKE_ALLOWED: [(&str, &str); 1] = [(REVOKE_FILE, "planted DO block (TD-SEC-35)")];
 
 /// The clean scratch tree. `core` names `public`; T003 (`picks`) may run in either order with the
 /// others; the words in comments, strings and a quoted column must not count; a dollar-quoted body
@@ -677,20 +764,21 @@ const BASE: [(&str, &str); 8] = [
 /// TD-SEC-35 (D-1632): T004's file rewritten with one thing that voids the exception (an added
 /// GRANT, table DDL, data statement or `DO` block; another grantee, `GRANT OPTION FOR`, `FOR ROLE`,
 /// another object kind, a schema not in `kit/layers.json`, a header other than `core`), so each
-/// gives exactly [`REVOKE_FINDING`].
+/// gives exactly [`REVOKE_FINDING`]. A case marked `true` holds a `DO` block and runs with its file
+/// on its own allow list, so it proves only the exception (TD-SEC-36, D-1677).
 #[rustfmt::skip]
-const REVOKE_CASES: [(&str, &str); 11] = [
-    ("revoke_and_grant", "-- core (T004)\nALTER DEFAULT PRIVILEGES IN SCHEMA picks REVOKE UPDATE ON TABLES FROM askhava_app;\nGRANT SELECT ON core.task TO askhava_app;\n"),
-    ("revoke_and_create_table", "-- core (T004)\nALTER DEFAULT PRIVILEGES IN SCHEMA picks REVOKE UPDATE ON TABLES FROM askhava_app;\nCREATE TABLE core.extra (id bigint);\n"),
-    ("revoke_and_data", "-- core (T004)\nALTER DEFAULT PRIVILEGES IN SCHEMA picks REVOKE UPDATE ON TABLES FROM askhava_app;\nINSERT INTO core.task VALUES (1);\n"),
-    ("revoke_and_do_block", "-- core (T004)\nALTER DEFAULT PRIVILEGES IN SCHEMA picks REVOKE UPDATE ON TABLES FROM askhava_app;\nDO $d$ BEGIN NULL; END $d$;\n"),
-    ("revoke_inside_do", "-- core (T004)\nDO $d$ BEGIN ALTER DEFAULT PRIVILEGES IN SCHEMA picks REVOKE UPDATE ON TABLES FROM askhava_app; END $d$;\n"),
-    ("revoke_other_role", "-- core (T004)\nALTER DEFAULT PRIVILEGES IN SCHEMA picks REVOKE UPDATE ON TABLES FROM askhava_migrate;\n"),
-    ("revoke_grant_option", "-- core (T004)\nALTER DEFAULT PRIVILEGES IN SCHEMA picks REVOKE GRANT OPTION FOR UPDATE ON TABLES FROM askhava_app;\n"),
-    ("revoke_for_role", "-- core (T004)\nALTER DEFAULT PRIVILEGES FOR ROLE askhava_migrate IN SCHEMA picks REVOKE UPDATE ON TABLES FROM askhava_app;\n"),
-    ("revoke_sequences", "-- core (T004)\nALTER DEFAULT PRIVILEGES IN SCHEMA picks REVOKE USAGE ON SEQUENCES FROM askhava_app;\n"),
-    ("revoke_unlisted_schema", "-- core (T004)\nALTER DEFAULT PRIVILEGES IN SCHEMA picks, scratch REVOKE UPDATE ON TABLES FROM askhava_app;\n"),
-    ("revoke_other_module", "-- jobs (T004)\nALTER DEFAULT PRIVILEGES IN SCHEMA picks REVOKE UPDATE ON TABLES FROM askhava_app;\n"),
+const REVOKE_CASES: [(&str, bool, &str); 11] = [
+    ("revoke_and_grant", false, "-- core (T004)\nALTER DEFAULT PRIVILEGES IN SCHEMA picks REVOKE UPDATE ON TABLES FROM askhava_app;\nGRANT SELECT ON core.task TO askhava_app;\n"),
+    ("revoke_and_create_table", false, "-- core (T004)\nALTER DEFAULT PRIVILEGES IN SCHEMA picks REVOKE UPDATE ON TABLES FROM askhava_app;\nCREATE TABLE core.extra (id bigint);\n"),
+    ("revoke_and_data", false, "-- core (T004)\nALTER DEFAULT PRIVILEGES IN SCHEMA picks REVOKE UPDATE ON TABLES FROM askhava_app;\nINSERT INTO core.task VALUES (1);\n"),
+    ("revoke_and_do_block", true, "-- core (T004)\nALTER DEFAULT PRIVILEGES IN SCHEMA picks REVOKE UPDATE ON TABLES FROM askhava_app;\nDO $d$ BEGIN NULL; END $d$;\n"),
+    ("revoke_inside_do", true, "-- core (T004)\nDO $d$ BEGIN ALTER DEFAULT PRIVILEGES IN SCHEMA picks REVOKE UPDATE ON TABLES FROM askhava_app; END $d$;\n"),
+    ("revoke_other_role", false, "-- core (T004)\nALTER DEFAULT PRIVILEGES IN SCHEMA picks REVOKE UPDATE ON TABLES FROM askhava_migrate;\n"),
+    ("revoke_grant_option", false, "-- core (T004)\nALTER DEFAULT PRIVILEGES IN SCHEMA picks REVOKE GRANT OPTION FOR UPDATE ON TABLES FROM askhava_app;\n"),
+    ("revoke_for_role", false, "-- core (T004)\nALTER DEFAULT PRIVILEGES FOR ROLE askhava_migrate IN SCHEMA picks REVOKE UPDATE ON TABLES FROM askhava_app;\n"),
+    ("revoke_sequences", false, "-- core (T004)\nALTER DEFAULT PRIVILEGES IN SCHEMA picks REVOKE USAGE ON SEQUENCES FROM askhava_app;\n"),
+    ("revoke_unlisted_schema", false, "-- core (T004)\nALTER DEFAULT PRIVILEGES IN SCHEMA picks, scratch REVOKE UPDATE ON TABLES FROM askhava_app;\n"),
+    ("revoke_other_module", false, "-- jobs (T004)\nALTER DEFAULT PRIVILEGES IN SCHEMA picks REVOKE UPDATE ON TABLES FROM askhava_app;\n"),
 ];
 
 /// Planted violations: case, the file written over the clean tree, its text, and the one finding
@@ -765,7 +853,7 @@ fn plant(case: &str) -> PathBuf {
 /// TD-SEC-10: the clean planted tree has no finding, so each case shows only its own.
 #[test]
 fn td_sec_10_clean_plant_passes() {
-    assert_eq!(check_repo(&plant("clean")), Vec::<String>::new());
+    assert_eq!(check_repo(&plant("clean"), &[]), Vec::<String>::new());
 }
 
 /// TD-SEC-10 (SEC-029, D-491): each planted violation gives exactly one finding, its own.
@@ -774,7 +862,7 @@ fn td_sec_10_planted_violations_fail() {
     for (case, rel, content, want) in CASES {
         let root = plant(case);
         write(&root, rel, content);
-        let findings = check_repo(&root);
+        let findings = check_repo(&root, &[]);
         assert_eq!(findings.len(), 1, "{case}: one finding, got {findings:?}");
         assert!(
             findings[0].contains(want),
@@ -792,10 +880,11 @@ fn td_sec_35_core_default_revoke_exception_is_narrow() {
         &root.join("migrations/0110_schema_default_privileges.sql"),
     ));
     assert!(core_revoke_only(&load_plan(&root), "core", &real));
-    for (case, content) in REVOKE_CASES {
+    for (case, do_block, content) in REVOKE_CASES {
         let root = plant(case);
         write(&root, REVOKE_FILE, content);
-        let findings = check_repo(&root);
+        let allowed: &[(&str, &str)] = if do_block { &REVOKE_ALLOWED } else { &[] };
+        let findings = check_repo(&root, allowed);
         assert_eq!(findings, vec![REVOKE_FINDING.to_string()], "{case}");
     }
 }
@@ -805,10 +894,70 @@ fn td_sec_35_core_default_revoke_exception_is_narrow() {
 fn td_sec_10_missing_migrations_folder_fails() {
     let root = plant("no_migrations");
     fs::remove_dir_all(root.join("migrations")).expect("remove the planted migrations");
-    let findings = check_repo(&root);
+    let findings = check_repo(&root, &[]);
     assert_eq!(findings.len(), 1, "one finding, got {findings:?}");
     assert!(
         findings[0]
             .contains("app/jobs/src/lib.rs: `migrate!` is used but there is no migrations/ folder")
     );
+}
+
+/// An allow list naming the planted [`NEXT`] file (TD-SEC-36).
+const NEXT_ALLOWED: [(&str, &str); 1] = [(NEXT, "planted (TD-SEC-36)")];
+/// An allow list naming a migration that is not there (TD-SEC-36).
+const GONE_ALLOWED: [(&str, &str); 1] = [("migrations/0009_jobs_gone.sql", "planted (TD-SEC-36)")];
+/// The `DO` block that hid a schema from TD-SEC-10 in T250's third attempt (D-1677).
+const DO_BLOCK: &str = "-- jobs (T002)\nDO $x$ BEGIN EXECUTE format('ALTER DEFAULT PRIVILEGES IN SCHEMA %I REVOKE UPDATE ON TABLES FROM askhava_app', 'picks'); END $x$;\n";
+
+/// A plant's own dynamic-SQL allow list: (path, reason) pairs (TD-SEC-36).
+type Allowed = &'static [(&'static str, &'static str)];
+
+/// TD-SEC-36 plants that give exactly one finding: case, file, text, allow list, the finding.
+#[rustfmt::skip]
+const DYNAMIC_CASES: [(&str, &str, &str, Allowed, &str); 6] = [
+    ("do_block", NEXT, DO_BLOCK, &[], "migrations/0005_jobs_next.sql: dynamic SQL (`DO`) hides schema references from this check"),
+    ("function_execute", NEXT, "-- jobs (T002)\nCREATE FUNCTION jobs.f(nsp text) RETURNS void AS $fn$ BEGIN EXECUTE 'GRANT USAGE ON SCHEMA ' || nsp || ' TO askhava_app'; END $fn$ LANGUAGE plpgsql;\n", &[], "migrations/0005_jobs_next.sql: dynamic SQL (`EXECUTE`) hides"),
+    ("format_built", NEXT, "-- jobs (T002)\nSELECT format('GRANT USAGE ON SCHEMA %I TO askhava_app', 'picks');\n", &[], "migrations/0005_jobs_next.sql: dynamic SQL (`format()`) hides"),
+    ("macro_execute", JOBS_SRC, "fn f() { let r = sqlx::query!(\"EXECUTE jobs_plan(1)\"); }\n", &[], "app/jobs/src/lib.rs: dynamic SQL (`EXECUTE`) hides"),
+    ("stale_entry", NEXT, "-- jobs (T002)\nCREATE TABLE jobs.next (id bigint);\n", &NEXT_ALLOWED, "migrations/0005_jobs_next.sql: listed in DYNAMIC_SQL_ALLOWED but the file is missing or holds no dynamic SQL"),
+    ("missing_entry", NEXT, "-- jobs (T002)\n", &GONE_ALLOWED, "migrations/0009_jobs_gone.sql: listed in DYNAMIC_SQL_ALLOWED but"),
+];
+
+/// TD-SEC-36 plants that give no finding: an allow-listed `DO` block, `ON CONFLICT DO NOTHING`, a
+/// trigger's `EXECUTE FUNCTION`, the EXECUTE privilege, the words in a comment or string, and a
+/// `format(` in a query macro.
+#[rustfmt::skip]
+const STATIC_CASES: [(&str, &str, &str, Allowed); 7] = [
+    ("allowed_do", NEXT, DO_BLOCK, &NEXT_ALLOWED),
+    ("on_conflict", NEXT, "-- jobs (T002)\nINSERT INTO jobs.job (id) VALUES (1) ON CONFLICT DO NOTHING;\n", &[]),
+    ("trigger", NEXT, "-- jobs (T002)\nCREATE TRIGGER t AFTER INSERT ON jobs.job FOR EACH ROW EXECUTE FUNCTION jobs.touch();\n", &[]),
+    ("grant_execute", NEXT, "-- jobs (T002)\nGRANT EXECUTE ON FUNCTION jobs.touch() TO askhava_app;\nREVOKE SELECT, EXECUTE ON FUNCTION jobs.touch() FROM PUBLIC;\n", &[]),
+    ("words_hidden", NEXT, "-- jobs (T002)\n-- DO $x$ EXECUTE format(\nSELECT 'EXECUTE format(x)', \"note\" FROM jobs.job;\n", &[]),
+    ("macro_on_conflict", JOBS_SRC, "fn f() { let r = sqlx::query!(\"INSERT INTO jobs.job (id) VALUES (1) ON CONFLICT (id) DO NOTHING\"); }\n", &[]),
+    ("macro_format", JOBS_SRC, "fn f() { let r = sqlx::query!(\"SELECT format('%s', id) FROM jobs.job\"); }\n", &[]),
+];
+
+/// TD-SEC-36 (SEC-029, D-1677): each dynamic-SQL plant gives exactly its one finding, the real
+/// allow list holds 0019, and each static plant gives none.
+#[test]
+fn td_sec_36_dynamic_sql_is_a_finding_unless_allow_listed() {
+    assert_eq!(
+        DYNAMIC_SQL_ALLOWED[0].0,
+        "migrations/0019_core_db_migrations.sql"
+    );
+    for (case, rel, content, allowed, want) in DYNAMIC_CASES {
+        let root = plant(case);
+        write(&root, rel, content);
+        let findings = check_repo(&root, allowed);
+        assert_eq!(findings.len(), 1, "{case}: one finding, got {findings:?}");
+        assert!(
+            findings[0].contains(want),
+            "{case}: no {want:?} in {findings:?}"
+        );
+    }
+    for (case, rel, content, allowed) in STATIC_CASES {
+        let root = plant(case);
+        write(&root, rel, content);
+        assert_eq!(check_repo(&root, allowed), Vec::<String>::new(), "{case}");
+    }
 }
