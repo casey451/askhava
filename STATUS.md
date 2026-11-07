@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-07T13:58:57Z by runner be5f1f860ff8 (actions).
+Updated 2026-11-07T14:31:52Z by runner f5ad1c4047a6 (actions).
 
 **Building: T147 in progress since 13:52Z; 140 of 256 done; week 39% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,13 +8,13 @@ Updated 2026-11-07T13:58:57Z by runner be5f1f860ff8 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T147 claimed 13:52Z, lease until 16:52Z
 - **Week:** 39% used, 116.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:49Z, 9 min before this update
+- **Last run:** 13:59Z, 32 min before this update
 - **Keeper:** last ran 13:48Z, next wake 14:08Z
 
 ## Needs attention
 - PLAN GAP T093 (since 2026-11-07T08:52:58Z, no attempt used; a plan change fixes it): T093: dependency T092 is DONE but its owned file app/messaging/src/purge.rs is not on main
 - PLAN GAP T253 (since 2026-11-07T08:52:58Z, no attempt used; a plan change fixes it): T253: dependency T092 is DONE but its owned file app/messaging/src/purge.rs is not on main
-- Strict plan check red: 8 problem(s) on tasks still to run (+15 on DONE tasks); first: T253: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 9 problem(s) on tasks still to run (+15 on DONE tasks); first: T253: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -40,7 +40,6 @@ Updated 2026-11-07T13:58:57Z by runner be5f1f860ff8 (actions).
 | T076 | calls: masked numbers from a fixed pool, PIN sharing when ex | done | 1 | 41 min | 17:32Z |  |
 | T250 | core: narrow the default privileges in every schema and prov | done | 5 | 19 min | 16:38Z | T250 blocked: migration 0110 names 12 other modules' schemas; TD-SEC-10 (architecture_migrations.rs, protected) rejects  |
 | T250 | core: narrow the default privileges in every schema and prov | check_failed | 4 | 24 min | 15:37Z |  |
-| T250 | core: narrow the default privileges in every schema and prov | check_failed | 3 | 26 min | 14:20Z |  |
 
 ### Plan and harness merges on main
 - 05:10Z Plan: repo audit findings — owners and acceptance for A01–A06, A08–A12 (D-1751–D-1761, D-1788) (#316)
@@ -49,7 +48,6 @@ Updated 2026-11-07T13:58:57Z by runner be5f1f860ff8 (actions).
 - 16:15Z Plan: dynamic SQL in migrations is a TD-SEC-10 finding (T252), T126 context budget, stored budgets refreshed (D-1677, D-1678) (#298)
 - 16:05Z Plan: bump actix-http 3.20.2 -> 3.20.3 for RUSTSEC-2026-0455 (D-1666) (#297)
 - 15:10Z Plan: bump actix-http 3.20.0 -> 3.20.2 for RUSTSEC-2026-0446 (D-1643) (#295)
-- 14:27Z Plan: T250 becomes a harness task with a narrow TD-SEC-10 exception for default-privilege REVOKE migrations (D-1632) (#294)
 
 ## Progress (requirements verified)
 
