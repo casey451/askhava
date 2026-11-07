@@ -1,23 +1,23 @@
 # Ask Hava build status
 
-Updated 2026-11-07T17:06:25Z by runner 9a710c0416a0 (actions).
+Updated 2026-11-07T17:18:01Z by runner 6ea04a3a8964 (actions).
 
-**Idle since 17:05Z; 141 of 269 done; week 41% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 17:16Z; 142 of 269 done; week 41% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 141 of 269 build tasks (owner gates not counted)
+- **Tasks done:** 142 of 269 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 17:05Z (no task in progress)
+- **Lane:** idle since 17:16Z (no task in progress)
 - **Week:** 41% used, 112.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:06Z, 0 min before this update
+- **Last run:** 17:06Z, 11 min before this update
 - **Keeper:** last ran 17:06Z, next wake 17:26Z
 
 ## Needs attention
-- nothing
+- Strict plan check red: 4 problem(s) on tasks still to run (+1 on DONE tasks); first: T149: stored context_pct 16% but it measures 20%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T093 | messaging: vault references in the log, bodies cut at 30 day | MERGE_PENDING | 1 | 45 min | 17:05Z |  |
+| T093 | messaging: vault references in the log, bodies cut at 30 day | done | 1 | 45 min | 17:05Z |  |
 | T196 | businesses: verified notice email, sender rules and the addr | check_failed | 1 | 49 min | 15:54Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests / test tests::transi |
 | T147 | messaging and businesses: business notices by chosen channel | done | 1 | 39 min | 14:31Z |  |
 | T230 | portals: the private feedback page and its storage | done | 1 | 61 min | 13:25Z |  |
@@ -48,8 +48,8 @@ Updated 2026-11-07T17:06:25Z by runner 9a710c0416a0 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 222 of 731 (30.4%) · partial 269 · unstarted 240
-**Tasks merged (throughput only):** 141 of 269
+**Requirements verified:** 222 of 731 (30.4%) · partial 272 · unstarted 237
+**Tasks merged (throughput only):** 142 of 269
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -57,13 +57,13 @@ Updated 2026-11-07T17:06:25Z by runner 9a710c0416a0 (actions).
 | ai | 13 | 11 | 4 | 28 |
 | businesses | 8 | 26 | 24 | 58 |
 | calls | 9 | 15 | 1 | 25 |
-| consent | 13 | 17 | 5 | 35 |
+| consent | 13 | 18 | 4 | 35 |
 | fees | 20 | 31 | 1 | 52 |
 | intake | 19 | 15 | 9 | 43 |
 | job-cards | 12 | 8 | 4 | 24 |
 | licensing | 31 | 16 | 1 | 48 |
 | lifecycle | 21 | 7 | 0 | 28 |
-| messaging | 18 | 21 | 6 | 45 |
+| messaging | 18 | 23 | 4 | 45 |
 | ops-recovery | 1 | 5 | 48 | 54 |
 | privacy | 2 | 23 | 6 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
@@ -84,7 +84,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 21 of 85 done
+- stage 4: 22 of 85 done
 - stage 5: 0 of 42 done
 - stage 6: 0 of 26 done
 - stage 7: 0 of 2 done
