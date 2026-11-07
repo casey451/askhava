@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-07T22:47:29Z by runner d3d384547e6d (actions).
+Updated 2026-11-07T23:28:58Z by runner 50ba549ddf50 (actions).
 
 **Building: T195 in progress since 22:40Z; 146 of 277 done; week 44% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,11 @@ Updated 2026-11-07T22:47:29Z by runner d3d384547e6d (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T195 claimed 22:40Z, lease until 01:40Z
 - **Week:** 44% used, 106.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:24Z, 23 min before this update
+- **Last run:** 22:47Z, 41 min before this update
 - **Keeper:** last ran 22:23Z, next wake 22:43Z
 
 ## Needs attention
-- Strict plan check red: 5 problem(s) on tasks still to run (+4 on DONE tasks); first: T195: stored context_pct 10% but it measures 14%; regenerate
+- Strict plan check red: 10 problem(s) on tasks still to run (+5 on DONE tasks); first: T195: stored context_pct 10% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -37,7 +37,6 @@ Updated 2026-11-07T22:47:29Z by runner d3d384547e6d (actions).
 | T083 | businesses: complaint replies, 3 in 90 days pause, alerts | done | 1 | 76 min | 02:49Z |  |
 | T082 | businesses: E-SIGN consent box, welcome text, business STOP | done | 1 | 53 min | 01:13Z |  |
 | T193 | businesses: sign-up screens for someone else filling in, the | done | 1 | 55 min | 00:02Z |  |
-| T080 | calls: relay-friendly bridging, identity call, code call | done | 1 | 49 min | 22:52Z |  |
 
 ### Plan and harness merges on main
 - 22:37Z Harness: keep the smoke incremental across tasks that add queries; save its cache only from a smoking job (D-1911) (#338)

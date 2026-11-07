@@ -15836,7 +15836,15 @@
     1914,
     1915,
     1916
-   ]
+   ],
+   "reviewed_sha": "50ba549ddf50e7225b3679c7bea8b52b3f10bd8d",
+   "review_lease": {
+    "task": "T195",
+    "session": "actions-42421454260",
+    "expires": "2026-11-08T01:40:11Z"
+   },
+   "branch": "claude/task/T195-portals-business-billing",
+   "head_check_since": null
   },
   {
    "id": "T086",
@@ -23154,7 +23162,7 @@
    }
   }
  },
- "updated_at": "2026-11-07T22:47:29Z",
+ "updated_at": "2026-11-07T23:28:58Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -23252,7 +23260,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "d3d384547e6d69ef2fd45b23ec5ab22620f52c9f",
+ "runner_sha": "50ba549ddf50e7225b3679c7bea8b52b3f10bd8d",
  "starter": "actions",
  "smoke_runs": [
   {
