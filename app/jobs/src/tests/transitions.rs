@@ -5,8 +5,8 @@
 //! row that a fresh worker claims and runs, and a timer for a job that moved on, or whose wait was
 //! restarted, does nothing (D-807); the app role cannot rewrite the history (postgres brain P5).
 
-use std::sync::Arc;
-use std::sync::atomic::{AtomicUsize, Ordering};
+use std::cell::Cell;
+use std::sync::Once;
 
 use askhava_core::api::{Claimed, Guarded, WorkerId, claim};
 use askhava_ops::api::{Actor, export_audit};
@@ -85,15 +85,36 @@ async fn every_move_writes_one_history_and_one_audit_row(pool: PgPool) {
     assert_eq!(audited_moves(&mut db, id).await, codes);
 }
 
-/// Counts the error-level events logged while it is the default subscriber.
-struct Errors(Arc<AtomicUsize>);
+thread_local! {
+    /// Error-level events counted on this test thread; `None` while no test thread listens.
+    static ERRORS: Cell<Option<usize>> = const { Cell::new(None) };
+}
+
+/// Counts error-level events into the listening thread's [`ERRORS`].
+struct Errors;
 
 impl<S: tracing::Subscriber> tracing_subscriber::Layer<S> for Errors {
     fn on_event(&self, event: &tracing::Event<'_>, _: Context<'_, S>) {
         if *event.metadata().level() == tracing::Level::ERROR {
-            self.0.fetch_add(1, Ordering::SeqCst);
+            ERRORS.with(|n| n.set(n.get().map(|n| n + 1)));
         }
     }
+}
+
+/// Runs `run` and returns the error-level events it logged on this thread. One global subscriber
+/// is installed once, so the refusal's log callsite is always enabled: a scoped subscriber left
+/// tracing-core with one dispatcher, and another test thread registering the same callsite in that
+/// window cached it as never enabled, so the refusal went unlogged (D-1850, as D-1034).
+async fn errors_logged<F: Future>(run: F) -> (F::Output, usize) {
+    static INSTALL: Once = Once::new();
+    INSTALL.call_once(|| {
+        let subscriber = tracing_subscriber::registry().with(Errors);
+        tracing::subscriber::set_global_default(subscriber).expect("one global subscriber");
+        tracing::callsite::rebuild_interest_cache();
+    });
+    ERRORS.set(Some(0));
+    let output = run.await;
+    (output, ERRORS.take().unwrap_or_default())
 }
 
 /// TD-JOB-01: a move with no arrow is refused, logged once as a bug and writes nothing; a move from a status the job has
@@ -104,15 +125,10 @@ async fn a_refused_or_stale_move_changes_nothing(pool: PgPool) {
     let id = create(&mut db, start(), false, Actor::System)
         .await
         .expect("job");
-    let errors = Arc::new(AtomicUsize::new(0));
-    let guard = tracing::subscriber::set_default(
-        tracing_subscriber::registry().with(Errors(Arc::clone(&errors))),
-    );
     let skip = (JobStatus::Intake, JobStatus::Connected);
-    let refused = move_to(&mut db, id, skip, start(), Actor::System).await;
-    drop(guard);
+    let (refused, errors) = errors_logged(move_to(&mut db, id, skip, start(), Actor::System)).await;
     assert_eq!(refused, Err(JobsError::RefusedMove("intake", "connected")));
-    assert_eq!(errors.load(Ordering::SeqCst), 1, "logged once as a bug");
+    assert_eq!(errors, 1, "logged once as a bug");
     let stale = (JobStatus::Open, JobStatus::QuotesReady);
     let moved_on = move_to(&mut db, id, stale, start(), Actor::System).await;
     assert_eq!(moved_on, Ok(Guarded::MovedOn));
