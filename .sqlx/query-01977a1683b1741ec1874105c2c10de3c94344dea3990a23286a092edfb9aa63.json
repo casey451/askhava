@@ -1,0 +1,41 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT is_owner, step_up_at FROM businesses.team_member WHERE id = $1 AND business_id = $2 AND removed_at IS NULL",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "is_owner",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "businesses.team_member",
+            "name": "is_owner"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "step_up_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "businesses.team_member",
+            "name": "step_up_at"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      true
+    ]
+  },
+  "hash": "01977a1683b1741ec1874105c2c10de3c94344dea3990a23286a092edfb9aa63"
+}

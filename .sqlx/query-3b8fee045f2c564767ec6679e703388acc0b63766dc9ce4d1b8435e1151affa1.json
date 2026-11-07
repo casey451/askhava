@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE businesses.signup SET code_tries = code_tries + 1 WHERE business_id = $1 AND code_tries < $2 RETURNING identity_attempt",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "identity_attempt",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "businesses.signup",
+            "name": "identity_attempt"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Int4"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "3b8fee045f2c564767ec6679e703388acc0b63766dc9ce4d1b8435e1151affa1"
+}

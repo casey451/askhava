@@ -31,6 +31,10 @@ pub use crate::confirm_pay::{
     may_confirm, press_reply,
 };
 pub use crate::feedback::{FEEDBACK_ROUTE, SHARE_LABEL, feedback_routes};
+pub use crate::notice_settings::{
+    ChannelChangeError, ChannelFacts, NOTICE_SETTINGS_ROUTE, NoticeAddress, change_channel,
+    channel_choices, notice_settings_page,
+};
 pub use crate::pick_flow::{
     CODE_ROUTE, PICK_ROUTE, PageLanguage, PickCodeKeys, VERIFY_DAILY_THRESHOLD, pick_flow_routes,
     result_page,

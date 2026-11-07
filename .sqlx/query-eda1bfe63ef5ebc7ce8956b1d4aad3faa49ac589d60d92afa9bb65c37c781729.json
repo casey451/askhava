@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO businesses.mailbox_check (business_id, member_id, mailbox_id, open, sent_at, window_at, verified_at) VALUES ($1, $2, $3, false, $4, $4, $4) ON CONFLICT (business_id, mailbox_id) DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "eda1bfe63ef5ebc7ce8956b1d4aad3faa49ac589d60d92afa9bb65c37c781729"
+}
