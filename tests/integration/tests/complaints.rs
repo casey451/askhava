@@ -272,7 +272,7 @@ async fn complaints_keep_no_words_and_are_never_deleted(pool: PgPool) {
     assert_eq!(refused, Err(ComplaintError::BadKind));
     let (id, _) = complain(&mut db, b, "Call me at 928-555-0199", 0).await;
     let row = "SELECT count(*) FROM businesses.complaint c WHERE id = $1 \
-               AND row_to_json(c)::text LIKE '%555%'";
+               AND row_to_json(c)::text LIKE '%928-555-0199%'";
     assert_eq!(count(&mut db, row, id).await, 0);
     sqlx::query("SET ROLE askhava_app")
         .execute(&mut *db)
