@@ -15288,7 +15288,7 @@
     "T094",
     "T250"
    ],
-   "status": "IN_PROGRESS",
+   "status": "MERGE_PENDING",
    "attempts": 1,
    "slug": "portals-business-signin",
    "type": "build",
@@ -15343,6 +15343,19 @@
      "started_at": "2026-11-07T03:07:49Z",
      "ended_at": "2026-11-07T03:36:53Z",
      "result": "check_failed"
+    },
+    {
+     "attempt": 2,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 69,
+     "head_sha": "1506f9fc127eba9f4bdffa60d71957e3fec46d2d",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": true,
+     "started_at": "2026-11-07T03:50:32Z",
+     "ended_at": "2026-11-07T04:14:33Z",
+     "result": "MERGE_PENDING"
     }
    ],
    "reviewed_sha": "1506f9fc127eba9f4bdffa60d71957e3fec46d2d",
@@ -15354,14 +15367,13 @@
    "branch": "claude/task/T084-portals-business-signin",
    "auto_merge": {
     "enabled": true,
-    "why": "auto-merge on #312 (gh pr merge)",
-    "head": "7975954d13947720f65775c6f96266c6cad6ce79"
+    "why": "auto-merge on #315 (gh pr merge)",
+    "head": "1506f9fc127eba9f4bdffa60d71957e3fec46d2d"
    },
    "last_failure": "Ally: failure\nAlly failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing)\n    +   \"/b/sign-in/{token}\",\n    + ]\n      13 |   expect(ROUTES.length).toBeGreaterThan(0);\n      14 |   const missing = ROUTES.filter((route) => !PAGE_STATES.some((state) => state.route === route));\n    > 15 |   expect(missing, \"routes with no entry in PAGE_STATES\").toEqual([]);\n         |                                                          ^\n      16 | });\n      17 |\n      18 | for (const state of STATES_TO_CHECK) {\n        at /home/runner/work/askhava/askhava/tests/a11y/axe_all_pages.spec.ts:15:58\n    Error Context: test-results/a11y/axe_all_pages-A11Y-002-eve-0bf54-route-table-has-page-states/error-context.md\n  1 failed\n    tests/a11y/axe_all_pages.spec.ts:12:1 \u203a A11Y-002: every GET route in the route table has page states \n  106 passed (31.4s)\n##[error]Process completed with exit code 1.",
    "runner_closed_prs": [
     312
-   ],
-   "head_check_since": null
+   ]
   },
   {
    "id": "T194",
@@ -19589,11 +19601,11 @@
  "usage": {
   "last_reading": {
    "task": "T084",
-   "at": "2026-11-07T03:36:53Z",
-   "cache_creation_input_tokens": 440781,
-   "output_tokens": 126165,
-   "input_tokens": 326,
-   "cache_read_input_tokens": 19327620
+   "at": "2026-11-07T04:14:33Z",
+   "output_tokens": 50012,
+   "input_tokens": 195,
+   "cache_read_input_tokens": 6142311,
+   "cache_creation_input_tokens": 308568
   },
   "source": "session_reading 2026-11-07T03:40:46Z (week)",
   "by_task": {
@@ -20788,21 +20800,21 @@
    "T084": {
     "estimated_bytes": 512454,
     "estimated_tokens": 2651944,
-    "cache_creation_input_tokens": 440781,
-    "output_tokens": 126165,
-    "input_tokens": 326,
-    "cache_read_input_tokens": 19327620,
+    "cache_creation_input_tokens": 749349,
+    "output_tokens": 176177,
+    "input_tokens": 521,
+    "cache_read_input_tokens": 25469931,
     "last_model": "claude-opus-5-5"
    }
   },
   "windows": {
    "five_hour": {
     "start": "2026-11-07T02:49:30Z",
-    "tokens": 5498560
+    "tokens": 6471566
    },
    "week": {
     "start": "2026-11-05T19:01:47Z",
-    "tokens": 80323889
+    "tokens": 81296895
    }
   },
   "session_reading": {
@@ -20813,7 +20825,7 @@
    }
   }
  },
- "updated_at": "2026-11-07T04:14:34Z",
+ "updated_at": "2026-11-07T04:14:46Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
