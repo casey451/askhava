@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-07T08:38:33Z by runner ef0d55bed77e (actions).
+Updated 2026-11-07T08:38:45Z by runner ef0d55bed77e (actions).
 
-**Building: T092 in progress since 07:43Z; 135 of 256 done; week 35% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 08:38Z; 135 of 256 done; week 35% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 135 of 256 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T092 claimed 07:43Z, lease until 10:43Z
+- **Lane:** idle since 08:38Z (no task in progress)
 - **Week:** 35% used, 124.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 07:52Z, 46 min before this update
 - **Keeper:** last ran 07:29Z, next wake 07:49Z
@@ -17,6 +17,7 @@ Updated 2026-11-07T08:38:33Z by runner ef0d55bed77e (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T092 | privacy: 180-day contact purge, holds, photo and message del | MERGE_PENDING | 1 | 54 min | 08:38Z |  |
 | T091 | quotes: photos on cards only after zero retention and all th | done | 1 | 40 min | 07:24Z |  |
 | T090 | privacy: photo checks by bytes, re-encode without EXIF or GP | done | 1 | 52 min | 06:25Z |  |
 | T194 | portals: the new-device code by text or email and team sign- | done | 1 | 42 min | 05:12Z |  |
@@ -96,7 +97,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T092 (lease until 2026-11-07T10:43:51Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T091", "at": "2026-11-07T07:24:51Z", "cache_read_input_tokens": 4108759, "input_tokens": 165, "output_tokens": 50528, "cache_creation_input_tokens": 212312}
+- {"task": "T092", "at": "2026-11-07T08:38:32Z", "input_tokens": 562, "cache_read_input_tokens": 28326239, "cache_creation_input_tokens": 784427, "output_tokens": 235036}
