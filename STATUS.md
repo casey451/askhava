@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-07T11:00:41Z by runner 719236a962a8 (actions).
+Updated 2026-11-07T11:00:52Z by runner 719236a962a8 (actions).
 
 **Idle since 10:55Z; 137 of 256 done; week 36% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-07T11:00:41Z by runner 719236a962a8 (actions).
 - **Lane:** idle since 10:55Z (no task in progress)
 - **Week:** 36% used, 122.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 11:00Z, 0 min before this update
-- **Keeper:** last ran 10:56Z, next wake 11:16Z
+- **Keeper:** last ran 11:00Z, next wake 11:20Z
 
 ## Needs attention
 - PLAN GAP T093 (since 2026-11-07T08:52:58Z, no attempt used; a plan change fixes it): T093: dependency T092 is DONE but its owned file app/messaging/src/purge.rs is not on main
