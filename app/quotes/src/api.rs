@@ -30,6 +30,9 @@
 //! T213: [`job_page`] reads a job's business [`JobPage`] from [`PageParts`] (CARD-019, CARD-023,
 //! D-434); [`check`] and [`scan`] hold the homeowner update texts in [`UPDATE_TEXTS`] to TXT-040's
 //! [`SHORT`] and [`LIMIT`] words a sentence, her page link and no quote details.
+//! T091: [`card_photo`] makes a [`CardPhoto`] from a cleaned photo only after the homeowner's
+//! [`HomeownerAnswer::Confirmed`] and, when [`PhotoAiGate`] allows AI after zero retention, both
+//! [`ScreenCheck`]s through a [`PhotoScreener`] (AI-016, CARD-013, CARD-014).
 //! T193: [`open_card_jobs`] lists a business's carded jobs still waiting for quotes (BIZ-031).
 
 use sqlx::types::Uuid;
@@ -51,6 +54,10 @@ pub use crate::notify::{
     CardsOut, Counts, LIST_PAGE, Listed, Notice, Reader, SLOW_AT_MOST, Sent, UPDATE_GAP,
     arizona_time, cards_out_text, first_quote_text, list_texts, list_texts_from, notice,
     notice_for, update_text, which_job_text,
+};
+pub use crate::photos::{
+    CardPhoto, CardPhotoOutcome, HomeownerAnswer, LeftOff, PhotoAiGate, PhotoScreener, ScreenCheck,
+    ScreenFailed, ScreenVerdict, card_photo,
 };
 pub use crate::quote_card::{
     CardSource, POLICY_SUMMARY_SENTENCE, Parts, Permit, QuoteCard, QuoteFacts, Spanish, Summary,
