@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-07T07:52:18Z by runner 619c8cdb7c9d (actions).
+Updated 2026-11-07T08:38:33Z by runner ef0d55bed77e (actions).
 
 **Building: T092 in progress since 07:43Z; 135 of 256 done; week 35% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,11 @@ Updated 2026-11-07T07:52:18Z by runner 619c8cdb7c9d (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T092 claimed 07:43Z, lease until 10:43Z
 - **Week:** 35% used, 124.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:29Z, 23 min before this update
+- **Last run:** 07:52Z, 46 min before this update
 - **Keeper:** last ran 07:29Z, next wake 07:49Z
 
 ## Needs attention
-- Strict plan check red: 3 problem(s) on tasks still to run (+5 on DONE tasks); first: T100: stored context_pct 29% but it measures 33%; regenerate
+- Strict plan check red: 5 problem(s) on tasks still to run (+7 on DONE tasks); first: T092: stored context_pct 11% but it measures 20%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -40,7 +40,6 @@ Updated 2026-11-07T07:52:18Z by runner 619c8cdb7c9d (actions).
 | T075 | Stage 3 cleanup: dead code, duplicates, docs up to date | proof_missing | 1 | 45 min | 11:07Z |  |
 | T246 | picks, portals and server: the page pick end to end (one pic | done | 1 | 66 min | 10:04Z |  |
 | T247 | jobs and quotes: the first-quote move to Quotes ready (JOB-0 | done | 1 | 24 min | 08:42Z |  |
-| T074 | Twin: run the gate against the app's rules modules | done | 1 | 51 min | 08:05Z |  |
 
 ### Plan and harness merges on main
 - 05:10Z Plan: repo audit findings — owners and acceptance for A01–A06, A08–A12 (D-1751–D-1761, D-1788) (#316)
