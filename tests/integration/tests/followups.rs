@@ -7,9 +7,6 @@
 
 use askhava_businesses::api::has_safety_word;
 use askhava_core::api::{Claimed, Guarded, WorkerId, claim, finish};
-use askhava_jobs::api::JobStatus::{
-    AwaitingConfirm, Connected, Intake, Open, PaymentPending, QuotesReady,
-};
 use askhava_jobs::api::rules::{CheckIn, Contact};
 use askhava_jobs::api::{
     Answer, CHECK_IN_DAY3, CHECK_IN_DAY14, CHECK_IN_KIND, FEEDBACK_REQUEST, Inbound, JobStatus,
@@ -30,7 +27,12 @@ fn days(d: i64) -> Timestamp {
 }
 
 /// The moves from Quotes ready to Connected.
-const TO_CONNECTED: [JobStatus; 4] = [QuotesReady, AwaitingConfirm, PaymentPending, Connected];
+const TO_CONNECTED: [JobStatus; 4] = [
+    JobStatus::QuotesReady,
+    JobStatus::AwaitingConfirm,
+    JobStatus::PaymentPending,
+    JobStatus::Connected,
+];
 
 /// Walks job `id` along `path` at day `d`.
 async fn walk(db: &mut PgConnection, id: Uuid, path: &[JobStatus], d: i64) {
@@ -44,7 +46,8 @@ async fn walk(db: &mut PgConnection, id: Uuid, path: &[JobStatus], d: i64) {
 async fn connected(db: &mut PgConnection) -> Uuid {
     let id = create(db, days(0), false, Actor::System).await;
     let id = id.expect("job");
-    walk(db, id, &[Intake, Open, QuotesReady], 0).await;
+    let open = [JobStatus::Intake, JobStatus::Open, JobStatus::QuotesReady];
+    walk(db, id, &open, 0).await;
     walk(db, id, &TO_CONNECTED, 0).await;
     for _ in 0..2 {
         let scheduled = schedule_check_ins(db, id, days(0), None).await;
@@ -198,7 +201,8 @@ async fn td_job_08_other_closes_and_a_second_connection_is_checked_again(pool: P
     let no = connected(&mut db).await;
     assert_eq!(fire(&pool, 3).await, [CHECK_IN_DAY3; 2]);
     let other = answer(&mut db, id, "otro", CheckIn::Day3).await;
-    assert_eq!(other, Guarded::Applied(Next::Move(JobStatus::Closed, None)));
+    let closed = Next::Move(JobStatus::Closed, None);
+    assert_eq!(other, Guarded::Applied(closed));
     assert_eq!(status(&mut db, id).await, "closed");
     let no_show = answer(&mut db, no, "NO", CheckIn::Day3).await;
     assert!(no_show.applied().is_some());
