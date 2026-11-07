@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-07T01:32:36Z by runner bb6d771b6d33 (actions).
+Updated 2026-11-07T01:41:38Z by runner bb6d771b6d33 (actions).
 
-**Idle since 01:30Z; 130 of 239 done; week 27% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T083 in progress since 01:32Z; 130 of 239 done; week 27% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 130 of 239 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 01:30Z (no task in progress)
-- **Week:** 27% used, 142.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:17Z, 15 min before this update
+- **Lane:** lane 1: T083 claimed 01:32Z, lease until 04:32Z
+- **Week:** 27% used, 140.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Last run:** 01:17Z, 24 min before this update
 - **Keeper:** last ran 01:16Z, next wake 01:36Z
 
 ## Needs attention
@@ -41,7 +41,6 @@ Updated 2026-11-07T01:32:36Z by runner bb6d771b6d33 (actions).
 | T070 | picks: 'no longer active' once, Confirm link replies | done | 1 | 45 min | 04:18Z |  |
 | T192 | picks: compile-fail proofs that no crate but payments can bu | done | 1 | 26 min | 03:17Z |  |
 | T069 | picks: release only on paid or free; never the homeowner's p | done | 1 | 48 min | 02:36Z |  |
-| T068 | payments: receipt emails, charge description, just-under-a-t | done | 1 | 42 min | 01:35Z |  |
 
 ### Plan and harness merges on main
 - 16:15Z Plan: dynamic SQL in migrations is a TD-SEC-10 finding (T252), T126 context budget, stored budgets refreshed (D-1677, D-1678) (#298)
@@ -80,7 +79,7 @@ Updated 2026-11-07T01:32:36Z by runner bb6d771b6d33 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-07T00:06:03Z (week)): five-hour: 11.6M used, 17.5M left, resets 2026-11-07T02:42:02Z; week: 52.0M used, 142.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-11-20T04:16:06Z.
+- Pacing (session_reading 2026-11-07T01:16:43Z (week)): five-hour: 14.3M used, 14.8M left, resets 2026-11-07T02:42:02Z; week: 54.0M used, 140.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-11-19T23:32:09Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -95,7 +94,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T083 (lease until 2026-11-07T04:32:32Z)
 
 ## Last usage reading
 - {"task": "T082", "at": "2026-11-07T01:13:07Z", "cache_creation_input_tokens": 609487, "cache_read_input_tokens": 18816672, "input_tokens": 406, "output_tokens": 158907}
