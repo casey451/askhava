@@ -1,0 +1,24 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT EXISTS (SELECT 1 FROM businesses.mailbox_check WHERE business_id = $1 AND mailbox_id = $2 AND verified_at IS NOT NULL AND returned_at IS NULL) AS \"ok!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "ok!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "dd9c085d92f67f02c84fbddb77118dd0ab492a0df8d94460b9fb53d0728268f2"
+}

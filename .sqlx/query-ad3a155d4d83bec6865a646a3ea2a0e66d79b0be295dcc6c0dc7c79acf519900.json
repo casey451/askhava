@@ -1,0 +1,27 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE businesses.mailbox_check SET returned_at = CASE WHEN $3 OR (soft_at IS NOT NULL AND $4 >= soft_at + make_interval(days => $5)) THEN $4 END, soft_at = COALESCE(soft_at, $4) WHERE business_id = $1 AND mailbox_id = $2 AND returned_at IS NULL RETURNING returned_at IS NOT NULL AS \"r!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "r!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Bool",
+        "Timestamptz",
+        "Int4"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "ad3a155d4d83bec6865a646a3ea2a0e66d79b0be295dcc6c0dc7c79acf519900"
+}
