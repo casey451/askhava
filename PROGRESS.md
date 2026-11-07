@@ -1220,3 +1220,4 @@
 - 2026-11-07T18:09:48Z runner 6ea04a3a8964 (actions): {"T196": "QUEUED -> IN_PROGRESS"}; T196 estimated 3.5M tokens (calibrated); five-hour window has 19.7M left, week 112.0M (session_reading 2026-11-07T17:38:39Z (week)); claimed
 - 2026-11-07T18:09:58Z runner 6ea04a3a8964 (actions): {}
 - 2026-11-07T18:33:49Z runner 8457d57bbe2d (actions): {}
+- 2026-11-07T18:34:00Z runner 8457d57bbe2d (actions): {"T196": "IN_PROGRESS -> MERGE_PENDING"}

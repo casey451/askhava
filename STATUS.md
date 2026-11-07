@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-07T18:33:49Z by runner 8457d57bbe2d (actions).
+Updated 2026-11-07T18:34:00Z by runner 8457d57bbe2d (actions).
 
-**Building: T196 in progress since 18:01Z; 142 of 269 done; week 41% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 18:33Z; 142 of 269 done; week 41% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 142 of 269 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T196 claimed 18:01Z, lease until 21:01Z
+- **Lane:** idle since 18:33Z (no task in progress)
 - **Week:** 41% used, 112.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:09Z, 23 min before this update
+- **Last run:** 18:09Z, 24 min before this update
 - **Keeper:** last ran 17:38Z, next wake 17:58Z
 
 ## Needs attention
@@ -17,8 +17,9 @@ Updated 2026-11-07T18:33:49Z by runner 8457d57bbe2d (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T196 | businesses: verified notice email, sender rules and the addr | MERGE_PENDING | 2 | 32 min | 18:33Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests / test tests::transi |
 | T093 | messaging: vault references in the log, bodies cut at 30 day | done | 1 | 45 min | 17:05Z |  |
-| T196 | businesses: verified notice email, sender rules and the addr | check_failed | 1 | 49 min | 15:54Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests / test tests::transi |
+| T196 | businesses: verified notice email, sender rules and the addr | check_failed | 1 | 49 min | 15:54Z |  |
 | T147 | messaging and businesses: business notices by chosen channel | done | 1 | 39 min | 14:31Z |  |
 | T230 | portals: the private feedback page and its storage | done | 1 | 61 min | 13:25Z |  |
 | T191 | payments: the unreachable-homeowner refund at 96 hours and i | done | 1 | 56 min | 12:07Z |  |
@@ -91,7 +92,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T196 (lease until 2026-11-07T21:01:33Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T093", "at": "2026-11-07T17:05:43Z", "cache_read_input_tokens": 18212437, "cache_creation_input_tokens": 455060, "output_tokens": 128641, "input_tokens": 442}
+- {"task": "T196", "at": "2026-11-07T18:33:49Z", "output_tokens": 66062, "cache_read_input_tokens": 3996080, "input_tokens": 159, "cache_creation_input_tokens": 260644}
