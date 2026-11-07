@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-07T08:39:11Z by runner 619c8cdb7c9d (actions).
+Updated 2026-11-07T08:43:29Z by runner 619c8cdb7c9d (actions).
 
 **Idle since 08:38Z; 135 of 256 done; week 35% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-07T08:39:11Z by runner 619c8cdb7c9d (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 08:38Z (no task in progress)
 - **Week:** 35% used, 124.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:39Z, 0 min before this update
+- **Last run:** 08:43Z, 0 min before this update
 - **Keeper:** last ran 08:39Z, next wake 08:59Z
 
 ## Needs attention
@@ -40,7 +40,6 @@ Updated 2026-11-07T08:39:11Z by runner 619c8cdb7c9d (actions).
 | T095 | picks: pick code by email when texting is off; '2 YES' from  | done | 1 | 36 min | 12:39Z |  |
 | T075 | Stage 3 cleanup: dead code, duplicates, docs up to date | proof_missing | 1 | 45 min | 11:07Z |  |
 | T246 | picks, portals and server: the page pick end to end (one pic | done | 1 | 66 min | 10:04Z |  |
-| T247 | jobs and quotes: the first-quote move to Quotes ready (JOB-0 | done | 1 | 24 min | 08:42Z |  |
 
 ### Plan and harness merges on main
 - 05:10Z Plan: repo audit findings — owners and acceptance for A01–A06, A08–A12 (D-1751–D-1761, D-1788) (#316)
