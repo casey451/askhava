@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The layer-3 crate that sends and receives messages (`docs/architecture.md` section 3). T026 built the template registry (every text is a fixed English or Spanish template chosen by ID and language); T027 built quiet hours; T028 the outbox and the sender directory; T178 inbox dedupe and delivery statuses; T029 opt-outs and the one suppression list. T030 the HELP, INFO and AYUDA reply. T094 text retries, the email pipeline, email-provider webhooks and the update channel. T096 web-and-email mode, number suspension and the one configured number (`mode`, D-1804 to D-1808). Not here yet: letters, the email-sending worker handler and the `core.task` email request for modules above (D-1380).
+The layer-3 crate that sends and receives messages (`docs/architecture.md` section 3). T026 built the template registry (every text is a fixed English or Spanish template chosen by ID and language); T027 built quiet hours; T028 the outbox and the sender directory; T178 inbox dedupe and delivery statuses; T029 opt-outs and the one suppression list. T030 the HELP, INFO and AYUDA reply. T094 text retries, the email pipeline, email-provider webhooks and the update channel. T096 web-and-email mode, number suspension and the one configured number (`mode`, D-1804 to D-1808). T093 the message log's read and the 30-day body cut (`retention`, D-1851 to D-1854). Not here yet: letters, the email-sending worker handler and the `core.task` email request for modules above (D-1380).
 
 ## What it owns
 
@@ -26,6 +26,7 @@ The layer-3 crate that sends and receives messages (`docs/architecture.md` secti
 - `src/business_notices.rs` (T147, D-1825 to D-1829): `BUSINESS_NOTICE_KIND`, `JOB_CARD_TEMPLATE` (`job_card_notice`, en, es; and `card_fix_notice_untimed`, `card_approval_notice_untimed`), `SIGN_IN_URL`, `LINK_LIFE`, `SendChecks`, `NoticeSender` (`new`), `NoticeOutcome`, `business_notice`, `held_until`, `sign_in_link`, `card_notice_accepted`. Not registered in the worker yet (D-1826).
 - `templates/email_layout.html`: the one email layout (`lang`, message, SEC-028 footer); every email template extends it (`{% block content %}`).
 - Migration `0089_messaging_retries_email.sql`: outbox status `failed`, `messaging.text_retry`, `messaging.email_outbox` (unique key, `class` notice/bulk, `not_before`, `waiting_for`, parts NULL once sent), `messaging.portal_notice`, `messaging.update_channel`, `messaging.email_event`, `webhook_event` source `resend`.
+- `src/retention.rs` (T093, D-1851 to D-1854): `BODY_KEPT_FOR` (30 days), `CUT_KIND`, `LogEntry`, `message_log`, `cut_bodies`, `schedule_cut`, `run_cut` (registered in `app/server/src/lib.rs`, first queued by the worker), and the crate-private `language_of` that `models::insert_text` uses. Migration `0128_messaging_optout_evidence.sql`: `messaging.outbox.language` (`en`/`es`, NULL when unknown) and `messaging.optout_event.inbox_id` (the texted opt-out's or START's inbox row; an ID, not a foreign key).
 - `src/api.rs`: the only public surface: `render`, `template_ids`, the quiet-hours functions, the outbox and sender-directory functions and the re-exported types.
 
 ## Rules it enforces
@@ -54,6 +55,7 @@ The layer-3 crate that sends and receives messages (`docs/architecture.md` secti
 - CON-014: a 21610 refusal (watched by a wrapper around the carrier) lists the number (channel `carrier`) and marks the row `blocked`; `models::claim` claims only `queued` or `sending`, so it is never retried.
 - CON-015, CON-016, CON-017: only the provider's `OptOutType=START` (its START or UNSTOP match) lifts the listing (`Outcome::Resubscribed`: a new request from the consent text), so the app's list and the provider's block agree; "Start.", a START without `OptOutType`, "yes" and any other message from a listed number give `Outcome::Suppressed` (the caller emails or lists it in the digest) (D-870). An emergency flag raises a critical `messaging.opted_out_emergency` alert on the inbox row, on `Suppressed` and on an opt-out alike (`Outcome::OptedOut { alert }`).
 - CON-022, CON-035, CON-036: every opt-out and START is logged in `messaging.optout_event` with channel, `word:<word>` / `phrase:<id>` / `provider` / `carrier:21610`, and time; `optout::suppress` is the entry for the email, form, portal and owner channels (confirmed by email or on screen, never by text).
+- TXT-019, TXT-020, CON-036 (T093): the outbox row is the message log (vault reference, template ID, recipient kind, `language` read from the body at enqueue, request among `subject_ids`, `sent_at`, `attempts`, status via `provider_sid`); `cut_bodies` ends any row still unsent 30 days after queuing as `failed` with no body and never deletes a row; `messaging.inbox` stores no words; `on_inbound_text` stores the inbox row with the opt-out or START event.
 - CON-018, D-131, D-066: `keywords::reply_to_help` queues the HELP reply for a text that is only HELP, INFO or AYUDA ("I need help with my sink" is not), once per inbound message, under template ID `help_reply` whatever the variant so `may_send_to` lets it reach an opted-out number; no quiet-hours check applies. Reply times, the away sentence (OPS-026) and the Canadian roaming line come from `HelpSettings` and the number; no personal name, no voice number (D-887 to D-890). START is the provider's `OptOutType` (CON-015).
 - TXT-014, TXT-015, INT-023 (D-1378): 3 retries at 10, 20, 30 minutes from the first failure; `record_failure` counts from the row's claims (safe to repeat); `give_up` marks the text `failed` and in one transaction lists an important one for the portal and emails it when an address is on file, or records a call-back (24 hours urgent, 4 days otherwise, High alert when urgent) for a homeowner with none. A `Reach` or email `Recipient.audience` of a kind other than the text's is `RecipientKind`, changing nothing. The vault read happens before the transaction (the vault refuses one inside).
 - SEC-028, A11Y-034: every email is rendered in `email_layout.html` with `lang`, content first, the audience's why-line, "Manage email notices" and the checked `PostalAddress` (box or PMB only); a plain-text part carries the same lines.
@@ -77,18 +79,15 @@ The layer-3 crate that sends and receives messages (`docs/architecture.md` secti
 - No plaintext phone in the sender directory: `the_sender_directory_matches_linked_phones_only`.
 - A homeowner is re-checked at send, texted at her vault number, and a sent row keeps no body: `td_txt_03_a_homeowner_is_rechecked_and_texted_at_her_vault_number`.
 - A row goes only to its recipient kind; subject order does not change the key: `a_row_goes_only_to_its_recipient_kind_and_subject_order_is_one_text`.
-
 - The same inbound MessageSid three times is one inbox row: `tests/integration/tests/inbox.rs::td_txt_04_the_same_inbound_message_id_three_times_is_handled_once`.
 - Each status is recorded once and never moves a text back: `td_txt_04_delivery_statuses_are_recorded`.
-
 - The app's word lists equal the provider's settings file: `tests::optout_words::td_con_20_word_lists_equal_the_provider_settings`.
 - "can stop by at 3", "stop sign is down", "please cancel my request" are not opt-outs: `tests::optout_words::td_con_04_a_word_in_another_sense_is_not_an_opt_out`.
 - Nothing but the confirmation within 5 minutes and HELP reaches a listed number: `tests::prop_optout_props::nothing_but_confirmation_and_help_until_start`, `tests/integration/tests/optout_flow.rs`.
 - A 21610 refusal is never retried: `optout_flow.rs::td_con_05_a_21610_refusal_is_never_retried`.
 - Two opt-outs at once queue one confirmation, and an earlier listing's confirmation never goes: `optout_flow.rs::td_con_05_two_opt_outs_at_once_queue_one_confirmation`, `td_con_05_only_the_current_listings_confirmation_goes`.
-
 - No outbound text from any number but the audience's configured one; one audience never changes the other: `web_email_mode.rs::td_txt_08_every_outbound_text_uses_the_configured_number`, `td_txt_17_*`. No second emergency call and no repeated alert for one message: `web_email_mode.rs::td_txt_09_suspended_smell_gas_alerts_and_calls_once`. Retries, give-up, email and webhooks: `tests/integration/tests/text_retries.rs` (`td_txt_05_*`, `td_ops_14_*`, `td_sec_27_*`, `td_con_28_*`); footers and limits: `src/tests/retries.rs` (`td_biz_26_*`, `td_a11y_02_*`).
-
+- No number in the message log, no body left at 30 days, log rows kept, opt-out evidence kept: `tests/integration/tests/message_log_retention.rs` (`td_txt_07_*`, `td_con_25_*`).
 - The HELP reply holds the help email, askhava.com/help, the LIST line and the settings' times, and only the roaming line differs for Canada: `tests/integration/tests/help_start.rs`.
 
 ## How to change
@@ -116,5 +115,6 @@ The layer-3 crate that sends and receives messages (`docs/architecture.md` secti
 - `src/tests/optout_words.rs` (TD-CON-04, TD-CON-20 word lists): `cargo test -p askhava-messaging tests::optout_words`.
 - `src/tests/prop_optout_props.rs` (TD-CON-04, TD-CON-05 properties): `cargo test -p askhava-messaging tests::prop_optout_props`.
 - `tests/integration/tests/optout_flow.rs` (TD-CON-05, TD-CON-13, TD-CON-20): `cargo test -p askhava-integration --test optout_flow`.
+- `tests/integration/tests/message_log_retention.rs` (TD-TXT-07, TD-CON-25): `cargo test -p askhava-integration --test message_log_retention`.
 - `src/tests/retries.rs` (TD-TXT-05, TD-OPS-14, TD-BIZ-26, TD-A11Y-02 unit cases): `cargo test -p askhava-messaging tests::retries`.
 - `tests/integration/tests/text_retries.rs` (TD-TXT-05, TD-OPS-14, TD-SEC-27 storage cases, TD-CON-28 email case): `cargo test -p askhava-integration --test text_retries`.

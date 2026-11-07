@@ -359,13 +359,18 @@ fn register_business_handlers(registry: &mut Registry) {
     );
 }
 
-/// The retention purge (PRIV-007 to PRIV-009, D-491): `jobs`' daily sweep and stage tasks, with
-/// `intake`'s sweep of requests that never got a job on the same daily task; on a stage task or
+/// The retention purge (PRIV-007 to PRIV-009, D-491): `messaging`'s daily body cut (TXT-020,
+/// D-1854); `jobs`' daily sweep and stage tasks, with `intake`'s sweep of requests that never got
+/// a job on the same daily task; on a stage task or
 /// `privacy`'s re-check, `businesses` queues its complaint hold events and `payments` places its
 /// dispute holds before `privacy` decides (a re-check that queued new events waits for them,
 /// D-1799); `privacy` applies the complaint events and hands the contact and text stages to
 /// `intake`. Each purge task's last failed attempt raises an alert ([`alert_if_last`]).
 fn register_purge_handlers(registry: &mut Registry) {
+    registry.register(
+        askhava_messaging::api::CUT_KIND,
+        askhava_messaging::api::run_cut,
+    );
     registry.register(askhava_jobs::api::SWEEP_KIND, |pool, task| async move {
         askhava_jobs::api::run_sweep(pool.clone(), task.clone()).await?;
         askhava_intake::api::run_request_sweep(pool, task).await
