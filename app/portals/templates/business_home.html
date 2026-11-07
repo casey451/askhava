@@ -22,7 +22,7 @@
 <fieldset><legend>When should we email you the job requests you haven't quoted?</legend>
 <p id="times-hint">Pick up to two times (Arizona time). Leave all unticked to stop these emails.</p>
 {% if too_many %}<p id="times-error">Error: Pick two times at most.</p>
-{% endif %}{% for b in boxes %}<p><input type="checkbox" id="time-{{ b.code }}" name="time" value="{{ b.code }}"{% if b.checked %} checked{% endif %} aria-describedby="times-hint"> <label for="time-{{ b.code }}">{{ b.label }}</label></p>
+{% endif %}{% for b in boxes %}<p><input type="checkbox" id="time-{{ b.code }}" name="time" value="{{ b.code }}"{% if b.checked %} checked{% endif %} aria-describedby="times-hint{% if too_many %} times-error{% endif %}"> <label for="time-{{ b.code }}">{{ b.label }}</label></p>
 {% endfor %}</fieldset>
 <button type="submit">Save times</button>
 </form>

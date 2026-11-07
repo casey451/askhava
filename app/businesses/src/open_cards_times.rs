@@ -85,6 +85,12 @@ impl OpenCardsTimes {
 
 /// CARD-022: `member`'s open-cards times, [`OpenCardsTimes::DEFAULT`] when none is stored.
 ///
+/// This reads the times only; it does not decide who gets the email. It answers for any ID,
+/// including a removed member or one with no seat at all ([`OpenCardsTimes::DEFAULT`]), and a
+/// removed member's row stays. The composer (T198) must first pick the recipients itself, active
+/// team members only (`removed_at IS NULL`) who get job cards (BIZ-037), and only then read their
+/// times here.
+///
 /// # Errors
 /// [`BusinessesError::Database`].
 pub async fn open_cards_times(
@@ -105,7 +111,9 @@ pub async fn open_cards_times(
 }
 
 /// CARD-022, D-492: stores `times` for the acting person themselves, only while they are a
-/// current member of the business they act for.
+/// current member of the business they act for. A stored row says only when; whether the person
+/// still gets the email is the composer's active-team and gets-job-cards check (BIZ-037), see
+/// [`open_cards_times`].
 ///
 /// # Errors
 /// [`BusinessesError::UnknownBusiness`] when `by` is not a current member of `by.business`;

@@ -76,6 +76,10 @@ pub enum StepUpError {
 /// minutes before `now`; else one `authz_denied` event for `route` with the member as actor, and
 /// one log line naming `change` (no value).
 ///
+/// The refusal's event is written on `db`, so call this on a connection whose work is kept, never
+/// inside a transaction the caller rolls back when this refuses: the rollback would drop the
+/// `authz_denied` event SEC-048 requires. Check first, then open the change's transaction.
+///
 /// # Errors
 /// [`StepUpError`].
 pub async fn require_step_up(
@@ -149,7 +153,7 @@ fn number_lines(n: &YourNumbers) -> Vec<Line> {
         ("Picks you confirmed", n.confirms.to_string()),
         ("Introduction fees charged", money(n.fees_cents)),
         (
-            "Average fee per job you won",
+            "Average introduction fee per confirmed pick",
             per_win.unwrap_or_else(|| "None yet".to_owned()),
         ),
         ("Picks not confirmed in time", n.lapsed_picks.to_string()),
@@ -239,7 +243,12 @@ pub async fn save_open_cards_times(
 
 #[cfg(test)]
 mod tests {
+    use askhava_businesses::api::{BusinessesError, add_owner, create, open_cards_times};
+    use sqlx::types::Uuid;
+
     use super::*;
+
+    type Db = sqlx::pool::PoolConnection<sqlx::Postgres>;
 
     /// TD-PICK-17 and TD-BIZ-11 page cases (BIZ-025): every panel number shows as given, fee per
     /// win is fees over confirms, and the typical quotes per trade show.
@@ -276,5 +285,39 @@ mod tests {
         );
         let none = none.expect("page");
         assert!(none.contains("None yet") && none.contains("<title>Error: "));
+        assert!(none.contains(r#"aria-describedby="times-hint times-error""#));
+        assert!(!page.contains("times-error"));
+    }
+
+    /// CARD-022, D-492: the person's own times are stored; more than two times or an unknown
+    /// value stores nothing; a person not on the business's team is refused.
+    #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+    async fn card_022_save_open_cards_times_for_the_person_only(mut db: Db) {
+        let at = Timestamp::from_second(1_790_000_000).expect("time");
+        let business = create(&mut db, false, at).await.expect("business");
+        let member = add_owner(&mut db, business, Uuid::from_u128(0xd1), at).await;
+        let me = BusinessPrincipal {
+            member: member.expect("owner"),
+            business,
+            owner: true,
+            roles: (true, true),
+        };
+        let codes = |c: &[&str]| c.iter().map(|s| (*s).to_owned()).collect::<Vec<_>>();
+        for bad in [codes(&["8am", "noon", "5pm"]), codes(&["9am"])] {
+            let none = save_open_cards_times(&mut db, &me, &bad, at).await;
+            assert_eq!(none.expect("ok"), None, "{bad:?}");
+        }
+        let unchanged = open_cards_times(&mut db, me.member).await.expect("read");
+        assert_eq!(unchanged, OpenCardsTimes::DEFAULT, "nothing stored");
+        let saved = save_open_cards_times(&mut db, &me, &codes(&["noon"]), at).await;
+        let noon = OpenCardsTimes::new(&[OpenCardsTime::Noon]).expect("one");
+        assert_eq!(saved.expect("ok"), Some(noon));
+        assert_eq!(open_cards_times(&mut db, me.member).await.expect("r"), noon);
+        let stranger = BusinessPrincipal {
+            member: Uuid::from_u128(0xd2),
+            ..me
+        };
+        let refused = save_open_cards_times(&mut db, &stranger, &codes(&["8am"]), at).await;
+        assert_eq!(refused, Err(BusinessesError::UnknownBusiness));
     }
 }

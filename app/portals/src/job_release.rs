@@ -70,11 +70,62 @@ struct Row {
     text: &'static str,
 }
 
-/// The released details as the page shows them; never a phone.
+/// Stands in for a release whose first name is missing, so the details line still reads.
+pub const NO_NAME: &str = "The homeowner";
+
+/// The released details as the page shows them; never a phone. A missing address is `None`, and
+/// the details line then leaves out its address sentence.
 pub(crate) struct Shown<'a> {
     pub(crate) first_name: &'a str,
-    pub(crate) address: &'a str,
+    pub(crate) address: Option<&'a str>,
     pub(crate) email: Option<&'a str>,
+}
+
+/// The released view's answer as plain text, so the page's mapping is tested without a session
+/// proof (D-1739): the view's fields are exposed here and dropped once the page is rendered.
+pub(crate) enum Answer {
+    /// Every refusal: a bare 404.
+    NotFound,
+    /// The purge's answer (PRIV-007).
+    Removed,
+    /// The details: first name, address, and the email only on an email-contact release.
+    Shown([Option<String>; 3]),
+}
+
+impl From<ViewAnswer> for Answer {
+    fn from(answer: ViewAnswer) -> Self {
+        let text = |s: Option<&secrecy::SecretString>| s.map(|s| s.expose_secret().to_owned());
+        match answer {
+            ViewAnswer::NotFound => Self::NotFound,
+            ViewAnswer::Removed => Self::Removed,
+            ViewAnswer::Shown(v) => {
+                Self::Shown([text(v.first_name()), text(v.address()), text(v.email())])
+            }
+        }
+    }
+}
+
+/// The text, or `None` when it is missing or blank.
+fn present(text: &Option<String>) -> Option<&str> {
+    text.as_deref().filter(|t| !t.trim().is_empty())
+}
+
+/// PICK-024, BIZ-013, D-1739: the page for `answer`; `None` for a refusal. A missing first name
+/// reads [`NO_NAME`]; a missing or blank address or email is left out.
+pub(crate) fn page_for(
+    facts: JobFacts<'_>,
+    answer: &Answer,
+) -> Result<Option<String>, askama::Error> {
+    let shown = match answer {
+        Answer::NotFound => return Ok(None),
+        Answer::Removed => None,
+        Answer::Shown([name, address, email]) => Some(Shown {
+            first_name: present(name).unwrap_or(NO_NAME),
+            address: present(address),
+            email: present(email),
+        }),
+    };
+    render(facts, shown).map(Some)
 }
 
 #[derive(Template)]
@@ -143,22 +194,8 @@ pub async fn job_release_page(
 ) -> Result<Option<String>, JobReleaseError> {
     let proof = principal.session_proof(mint);
     let answer = released_view(pool, vault, &proof, facts.pick).await;
-    let page = match answer.map_err(|_: PicksError| JobReleaseError::Database)? {
-        ViewAnswer::NotFound => return Ok(None),
-        ViewAnswer::Removed => render(facts, None),
-        ViewAnswer::Shown(v) => {
-            let text = |s: Option<&secrecy::SecretString>| s.map(|s| s.expose_secret().to_owned());
-            let (name, address) = (text(v.first_name()), text(v.address()));
-            let email = text(v.email());
-            let shown = Shown {
-                first_name: name.as_deref().unwrap_or("The homeowner"),
-                address: address.as_deref().unwrap_or_default(),
-                email: email.as_deref(),
-            };
-            render(facts, Some(shown))
-        }
-    };
-    page.map(Some).map_err(|_| JobReleaseError::Render)
+    let answer = Answer::from(answer.map_err(|_: PicksError| JobReleaseError::Database)?);
+    page_for(facts, &answer).map_err(|_| JobReleaseError::Render)
 }
 
 #[cfg(test)]
@@ -179,7 +216,7 @@ mod tests {
     fn td_pick_39_first_name_once_with_the_tip_and_the_email_line() {
         let call = Shown {
             first_name: "Testa",
-            address: "100 Fake St, Lake Havasu City",
+            address: Some("100 Fake St, Lake Havasu City"),
             email: None,
         };
         let mail = Shown {
@@ -189,6 +226,7 @@ mod tests {
         let page = render(facts(&[]), Some(call)).expect("page");
         assert_eq!(page.matches("Testa").count(), 1);
         assert!(page.contains(&format!("Lake Havasu City. {TIP_LINE}</p>")));
+        assert!(page.contains("Testa picked you. The job is at 100 Fake St"));
         assert!(!page.contains(EMAIL_CHOSEN_LINE) && page.contains("Homeowner chose calls."));
         assert!(!page.contains("928") && !page.contains("tel:"));
         let page = render(facts(&[]), Some(mail)).expect("page");
@@ -232,5 +270,46 @@ mod tests {
             assert!(page.contains(want), "{want}");
         }
         assert!(page.contains("<td>Sep 21, 7:13 AM</td>"), "{page}");
+    }
+
+    fn shown(name: Option<&str>, address: Option<&str>) -> Answer {
+        Answer::Shown([name.map(str::to_owned), address.map(str::to_owned), None])
+    }
+
+    /// D-1739: a refusal is no page (the route's bare 404); the purge's answer is the removed
+    /// line with no tip; a shown release prints its details.
+    #[test]
+    fn d_1739_the_view_answer_maps_to_the_page() {
+        assert_eq!(page_for(facts(&[]), &Answer::NotFound).expect("ok"), None);
+        let gone = page_for(facts(&[]), &Answer::Removed)
+            .expect("ok")
+            .expect("page");
+        assert!(gone.contains("We removed") && !gone.contains(TIP_LINE));
+        let page = page_for(facts(&[]), &shown(Some("Testa"), Some("100 Fake St")));
+        let page = page.expect("ok").expect("page");
+        assert!(page.contains(&format!(
+            "Testa picked you. The job is at 100 Fake St. {TIP_LINE}"
+        )));
+        assert!(!page.contains(NO_NAME) && !page.contains("We removed"));
+    }
+
+    /// PICK-024: a missing first name reads "The homeowner"; a missing or blank address leaves
+    /// the address sentence out (never "The job is at . "), and the tip still ends the line.
+    #[test]
+    fn pick_024_a_missing_name_or_address_still_reads() {
+        for address in [None, Some(""), Some("  ")] {
+            let page = page_for(facts(&[]), &shown(None, address));
+            let page = page.expect("ok").expect("page");
+            assert!(
+                page.contains(&format!("{NO_NAME} picked you. {TIP_LINE}</p>")),
+                "{page}"
+            );
+            assert!(!page.contains("The job is at"));
+        }
+        let blank_mail = Answer::Shown([None, None, Some(" ".to_owned())]);
+        let page = page_for(facts(&[]), &blank_mail)
+            .expect("ok")
+            .expect("page");
+        assert!(page.contains("Homeowner chose calls.") && !page.contains("mailto:"));
     }
 }

@@ -5,7 +5,7 @@
 {% block title %}Job {{ job_number }}{% endblock %}
 {% block main %}
 <h1>Job {{ job_number }}</h1>
-{% match shown %}{% when Some with (s) %}<p id="release-details">{{ s.first_name }} picked you. The job is at {{ s.address }}. {{ tip }}</p>
+{% match shown %}{% when Some with (s) %}<p id="release-details">{{ s.first_name }} picked you.{% match s.address %}{% when Some with (a) %} The job is at {{ a }}.{% when None %}{% endmatch %} {{ tip }}</p>
 {% match s.email %}{% when Some with (mail) %}<p id="contact-choice">{{ email_line }}</p>
 <p>Email: <a href="mailto:{{ mail }}">{{ mail }}</a></p>
 {% when None %}<p id="contact-choice">Homeowner chose calls.</p>
