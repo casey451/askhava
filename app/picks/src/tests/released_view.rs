@@ -33,7 +33,7 @@ fn td_pick_48_only_the_owner_or_billing_member_of_a_released_paid_or_free_pick_s
                 shown_status: shows_release(status),
                 seat,
             };
-            let paid_or_free = matches!(status, PickStatus::Paid | PickStatus::Free);
+            let paid_or_free = ["paid", "free"].contains(&status.code());
             let seated = matches!(
                 seat,
                 Seat::Owner
@@ -69,9 +69,10 @@ fn td_pick_48_cards_only_removed_and_other_business_are_refused() {
 /// PRIV-005, D-1739: a pick shows only while paid or free; a no-show or fraud refund shows nothing.
 #[test]
 fn td_pick_48_only_paid_and_free_show() {
-    let shown: Vec<PickStatus> = PickStatus::ALL
+    let shown: Vec<&str> = PickStatus::ALL
         .into_iter()
         .filter(|s| shows_release(*s))
+        .map(PickStatus::code)
         .collect();
-    assert_eq!(shown, [PickStatus::Paid, PickStatus::Free]);
+    assert_eq!(shown, ["paid", "free"]);
 }
