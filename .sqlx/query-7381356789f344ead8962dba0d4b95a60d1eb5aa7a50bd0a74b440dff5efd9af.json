@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO businesses.welcome (business_id, requested_at) SELECT id, $2 FROM businesses.business WHERE id = $1 AND status = 'active' ON CONFLICT (business_id) DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "7381356789f344ead8962dba0d4b95a60d1eb5aa7a50bd0a74b440dff5efd9af"
+}

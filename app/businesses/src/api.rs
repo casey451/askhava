@@ -10,13 +10,22 @@
 //! BIZ-022, BIZ-053, FEE-011, TERMS-016, TERMS-033; T081); the sign-up screens' records: the
 //! masked record contact, the "That number is old" wait and resume, the review target, the fee
 //! summary, the trade count and the launch notice's sent-once claim (BIZ-024, BIZ-026, BIZ-027,
-//! BIZ-030, BIZ-031; T193).
+//! BIZ-030, BIZ-031; T193); the E-SIGN consent box and records, the welcome request and gate, the
+//! business STOP email request, the auto-reply rule and the recruiting-email rules (CON-019,
+//! CON-020, BIZ-017, BIZ-032, BIZ-048; T082).
 
 use sqlx::PgConnection;
 use sqlx::types::Uuid;
 
 pub use crate::about_us::{
     ABOUT_US_MAX, AboutUsRefusal, screen as screen_about_us, screen_public_name, set_about_us,
+};
+pub use crate::consent::{
+    ADVERTISEMENT_LINE, AUTO_REPLY_TEMPLATE, CONSENT_VERSION, ConsentBox, ConsentChannel,
+    ConsentError, NO_CALLS_LINE, PHONE_STOPPED_KIND, RecruitingEmail, WELCOME_KIND, auto_reply_due,
+    consent_box, consent_wording, may_get_cards, may_recruit, may_text, phone_stopped,
+    record_consent, recruiting_email, request_welcome, stop_recruiting, stopped_email_line,
+    welcome_lines, welcome_sent,
 };
 pub use crate::identity::{
     Flag, RecordContacts, Step, approve, check_code, letter_code, next_step, record_match,

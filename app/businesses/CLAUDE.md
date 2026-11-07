@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The layer-4 crate that holds each business account (`docs/architecture.md` section 3). T041 built the account status and its moves, the towns, the job-type checklist within the license, the overflow switch, the Spanish tick, the business-reported insurance answer and the after-hours tick with the night count (D-112). T220 added team members with their roles, the main and staff phones kept in `messaging`'s sender directory, and `notice_addresses`. T182 added the self-pause and the business's own quiet times. T081 added sign-up, the identity chain with automatic activation, the About us screen and the business terms acceptance. The after-hours conditions (T150) and the verified-email check before activation (BIZ-040, T196) come later.
+The layer-4 crate that holds each business account (`docs/architecture.md` section 3). T041 built the account status and its moves, the towns, the job-type checklist within the license, the overflow switch, the Spanish tick, the business-reported insurance answer and the after-hours tick with the night count (D-112). T220 added team members with their roles, the main and staff phones kept in `messaging`'s sender directory, and `notice_addresses`. T182 added the self-pause and the business's own quiet times. T081 added sign-up, the identity chain with automatic activation, the About us screen and the business terms acceptance. T082 added the E-SIGN consent records, the welcome request and gate, the business STOP email request, the auto-reply rule and the recruiting-email rules. The after-hours conditions (T150) and the verified-email check before activation (BIZ-040, T196) come later.
 
 ## What it owns
 
@@ -11,6 +11,7 @@ The layer-4 crate that holds each business account (`docs/architecture.md` secti
 - `src/identity.rs` (T081): `RecordContacts`, `Step`, `next_step` (text, email, letter; no voice), `send_code` and `check_code` through `VerifyAdapter`, `letter_code` (keyed, never stored), `Flag`, `record_match`, `settle`, `approve` (BIZ-002, BIZ-003, BIZ-016).
 - `src/about_us.rs` (T081): `screen`, `screen_public_name`, `set_about_us`, `AboutUsRefusal` with its shown reason (BIZ-022, PICK-007, PICK-041, WORD-003); its own word lists, since `businesses` cannot call `quotes` or `ai`.
 - `src/status.rs`: `AccountStatus` (six statuses, `code`, `from_code`, `receives_cards`: only `Active`, read by `quotes` for CARD-001 and CARD-016, T044), `PauseReason`, `Refused`, `next`, `replaces_self_pause` (every match on a status lives here, SEC-031).
+- `src/consent.rs` (T082): `CONSENT_VERSION`, `NO_CALLS_LINE`, `ConsentChannel` (email, text; no call), `ConsentBox`, `consent_wording`, `consent_box`, `record_consent`, `may_text` (CON-019); `WELCOME_KIND`, `request_welcome`, `welcome_sent`, `may_get_cards`, `welcome_lines` (CON-020); `PHONE_STOPPED_KIND`, `phone_stopped`, `stopped_email_line` (BIZ-017); `AUTO_REPLY_TEMPLATE`, `auto_reply_due` (BIZ-032); `ADVERTISEMENT_LINE`, `RecruitingEmail`, `recruiting_email`, `stop_recruiting`, `may_recruit` (BIZ-048); `ConsentError`.
 - `src/rules.rs` (pure): `Event`, `Checks`, `JobTypeChoice`, `checklist`, `towns`, `OwnHours`, `Widens`, `may_notify`, `may_resume_itself`.
 - `src/models.rs`: `Business`, `Insurance`, `BusinessesError` and every query.
 - `src/service.rs`: the transactions with their audit rows; `Ticks`; the own-hours and self-resume queries (T182).
@@ -19,6 +20,7 @@ The layer-4 crate that holds each business account (`docs/architecture.md` secti
 - Migration `0056_businesses_team_members.sql`: `businesses.team_member` (owner row with `is_owner`, `mailbox_id` opaque email ID, role ticks, `removed_at`; no `DELETE` for `askhava_app`) and `businesses.staff_phone` (line ID, linking member, main mark; no number).
 - Migration `0057_businesses_own_hours.sql`: `own_open_minute`, `own_close_minute` on `businesses.business` (Arizona minutes, both or neither, inside 480 to 1200 by a check).
 - Migration `0120_businesses_signup_resume.sql` (T193): `waiting_on_record_since` with `old_text_key`, `old_mail_key`, `old_letter_key` (all or none), `trades` (sign-up category codes) and `launch_notice_sent_at` on `businesses.signup`.
+- Migration `0121_businesses_consent.sql` (T082): `businesses.esign_consent` (append-only; member, channel `email` or `text` only, `line_id` on text rows only, wording version, time; unique per member, channel, phone and version), `businesses.welcome` (requested and sent times; only `sent_at` is updatable), `businesses.recruit_stop` (keyed address digest, append-only).
 - Migration `0119_businesses_signup_identity.sql`: `businesses.signup` (one row per business: `mailbox_id`, source answer, `g` code, identity step, code and match ticks, flag, `review_since`, `review_told_at`, `about_us`; no `DELETE`) and `businesses.terms_acceptance` (append-only TERMS-033 rows, channel `business_signup`).
 
 ## Rules it enforces
@@ -39,6 +41,7 @@ The layer-4 crate that holds each business account (`docs/architecture.md` secti
 - BIZ-022: `about_us::screen` and `screen_public_name`; word lists match whole words, `@`, `.com` and `#1` anywhere; spelled-out numbers count as a phone number (D-1703).
 - BIZ-026, D-178: `number_is_old` stores only keyed SHA256 digests of the record phone, email and address; `resume_on_new_record` ends the wait only when a present record contact differs and sets `identity_step` to the step before the first changed one, so the next `send_code` goes to the changed contact, never the old one (D-1712). Known gap: `send_code`'s idempotency key is the business and step only, so a resumed send on a step already used reuses its key (D-1712).
 - BIZ-027: `review_target` is calendar days (default 4) and gates nothing. BIZ-030: `fee_summary` takes every number from `FeeNumbers` (the Confirm window in minutes, shown as hours and any leftover minutes). BIZ-031: `trade_count` counts active businesses with a job type in the trade (waitlisted ones by `signup.trades`) plus the business itself; `claim_launch_notice` is true once (D-1709).
+- CON-019, D-191, D-344: `consent::record_consent` refuses an unticked box; one row per channel with version and time (a repeat adds none); a text box needs a linked phone of the business; no call consent exists; `may_text(business, phone)` only after a current member ticked the text box for that phone (D-1717). CON-020: `request_welcome` once, active only; `may_get_cards` false until `welcome_sent`. BIZ-017: `phone_stopped` never changes the status. BIZ-032: `auto_reply_due` (not for expected texts, HELP, opt-outs or a text that is wholly a command word with at most one number; "Yes, why was I charged?" and an empty text get it, D-1717). BIZ-048: no recruiting text or call path; `recruiting_email` opens with `ADVERTISEMENT_LINE`; `may_recruit` honors a stop at once (D-1714).
 - FEE-011: `signup::hand_entity_keys`. TERMS-016, TERMS-033: `signup::accept_terms`.
 
 ## Never break
@@ -63,12 +66,16 @@ The layer-4 crate that holds each business account (`docs/architecture.md` secti
 - Known gaps (D-963): a non-owner's phone works before the owner approves it (T148); a member who loses "Confirm and billing" keeps the phones it linked; audit rows name the business, not the acting member; no task sends BIZ-023's owner email yet.
 - A team member row is never deleted by the app: `src/tests/team.rs::the_app_role_cannot_delete_a_team_member`.
 - No contact value in any table, audit row or error (PRIV-001, PRIV-028); contacts live in `privacy`.
+- The consent box is never pre-ticked and no call consent can be stored: `tests/integration/tests/business_consent.rs::td_con_08_box_starts_unticked_and_names_each_channel`, `td_con_08_consent_is_stored_with_version_and_time`.
+- A business STOP never pauses the account: `td_con_08_business_stop_stops_texts_only`.
+- Known gaps (D-1715): the card sender does not yet check `may_get_cards`, business text sends do not yet check `may_text`, and the welcome and STOP email handlers are not built.
 
 ## How to change
 
 - Send the BIZ-020 status email: a worker task reads `api::review_due`, queues the email through `messaging` to the record contact and the sign-up mailbox, then calls `review_told` (D-1701).
 - Build the sign-up route's code entry: the route MUST limit code attempts per business before calling `identity::check_code`, which keeps no attempt count; the six-digit letter code never changes (D-1703).
 - Resume a waiting sign-up: on each daily list, for each `waiting_on_record` sign-up call `resume_on_new_record` with the new list's `RecordSeen` (its `RecordContacts` and the full record address); on `true` send `RECORD_UPDATED_TEMPLATE` to the sign-up email (and the new record email), never the code (D-1709).
+- Wire T082 (D-1715): the form shows `consent_box` and posts to `record_consent`; call `request_welcome` after activation; the card sender checks `may_get_cards`; every business text checks `may_text` for the phone's `staff_phone` ID; the inbound route calls `phone_stopped` after an opt-out from a `sender_business` number and sends `AUTO_REPLY_TEMPLATE` when `auto_reply_due`; handle `WELCOME_KIND` and `PHONE_STOPPED_KIND` once the email request exists (D-1380). Change the consent wording: bump `CONSENT_VERSION`.
 - Mail the identity letter: on a `Step::Letter`, the composition sends a Lob letter to the record address printing `letter_code` (D-1699).
 
 - Add a status or a move: `AccountStatus` and `next` in `src/status.rs`, the migration check in a new migration, the oracle in `src/tests/account_status.rs`, BIZ-009 and D-953.
@@ -82,6 +89,7 @@ The layer-4 crate that holds each business account (`docs/architecture.md` secti
 ## Tests that guard it
 
 - `tests/integration/tests/signup_screens.rs`: TD-BIZ-07, TD-BIZ-10, TD-BIZ-27 and the sign-up-screen cases of TD-BIZ-11, TD-BIZ-12, TD-PICK-33; run `cargo test -p askhava-integration --test signup_screens`.
+- `tests/integration/tests/business_consent.rs`: TD-CON-08, TD-BIZ-17, TD-TXT-13, TD-BIZ-35 and BIZ-032's case of TD-BIZ-12; run `cargo test -p askhava-integration --test business_consent`.
 - `tests/integration/tests/identity_chain.rs`: TD-BIZ-01, TD-BIZ-05, TD-BIZ-12 (About us, letter, public name), TD-TERMS-08, the sign-up parts of TD-LIC-17 and TD-LIC-21, and FEE-011's hand-over; run `cargo test -p askhava-integration --test identity_chain`.
 
 - `src/tests/account_status.rs`: TD-BIZ-02 (statuses, approval, checklist, towns, ticks, insurance, pause reason) and the BIZ-007 night count; run `cargo test -p askhava-businesses tests::account_status` with `DATABASE_URL` set.
