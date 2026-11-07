@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-07T03:16:16Z by runner 5aac33d8a77e (actions).
+Updated 2026-11-07T03:36:53Z by runner 7975954d1394 (actions).
 
 **Building: T084 in progress since 03:07Z; 131 of 239 done; week 28% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,11 @@ Updated 2026-11-07T03:16:16Z by runner 5aac33d8a77e (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T084 claimed 03:07Z, lease until 06:07Z
 - **Week:** 28% used, 138.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:54Z, 22 min before this update
+- **Last run:** 03:16Z, 20 min before this update
 - **Keeper:** last ran 02:53Z, next wake 03:13Z
 
 ## Needs attention
-- Strict plan check red: 10 problem(s) on tasks still to run (+17 on DONE tasks); first: T084: stored context_pct 11% but it measures 15%; regenerate
+- Strict plan check red: 11 problem(s) on tasks still to run (+17 on DONE tasks); first: T084: stored context_pct 11% but it measures 20%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -40,7 +40,6 @@ Updated 2026-11-07T03:16:16Z by runner 5aac33d8a77e (actions).
 | T072 | Metamorphic prompt-injection tests over routing, fees and di | done | 1 | 30 min | 05:55Z |  |
 | T071 | Stage 3 check: the ledger matches the Stripe mock on 1,000 s | done | 1 | 37 min | 05:09Z |  |
 | T070 | picks: 'no longer active' once, Confirm link replies | done | 1 | 45 min | 04:18Z |  |
-| T192 | picks: compile-fail proofs that no crate but payments can bu | done | 1 | 26 min | 03:17Z |  |
 
 ### Plan and harness merges on main
 - 16:15Z Plan: dynamic SQL in migrations is a TD-SEC-10 finding (T252), T126 context budget, stored budgets refreshed (D-1677, D-1678) (#298)
