@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-07T03:37:28Z by runner 5aac33d8a77e (actions).
+Updated 2026-11-07T03:40:34Z by runner 5aac33d8a77e (actions).
 
 **Idle since 03:36Z; 131 of 239 done; week 29% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-07T03:37:28Z by runner 5aac33d8a77e (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 03:36Z (no task in progress)
 - **Week:** 29% used, 138.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:37Z, 0 min before this update
+- **Last run:** 03:37Z, 3 min before this update
 - **Keeper:** last ran 03:37Z, next wake 03:57Z
 
 ## Needs attention
@@ -17,7 +17,7 @@ Updated 2026-11-07T03:37:28Z by runner 5aac33d8a77e (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T084 | portals: business one-time sign-in link and 30-day sessions | MERGE_PENDING | 1 | 29 min | 03:36Z |  |
+| T084 | portals: business one-time sign-in link and 30-day sessions | check_failed | 1 | 29 min | 03:36Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T083 | businesses: complaint replies, 3 in 90 days pause, alerts | done | 1 | 76 min | 02:49Z |  |
 | T082 | businesses: E-SIGN consent box, welcome text, business STOP | done | 1 | 53 min | 01:13Z |  |
 | T193 | businesses: sign-up screens for someone else filling in, the | done | 1 | 55 min | 00:02Z |  |
