@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-07T23:28:58Z by runner 50ba549ddf50 (actions).
+Updated 2026-11-07T23:29:10Z by runner 50ba549ddf50 (actions).
 
-**Building: T195 in progress since 22:40Z; 146 of 277 done; week 44% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 23:28Z; 146 of 277 done; week 44% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 146 of 277 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T195 claimed 22:40Z, lease until 01:40Z
+- **Lane:** idle since 23:28Z (no task in progress)
 - **Week:** 44% used, 106.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 22:47Z, 41 min before this update
 - **Keeper:** last ran 22:23Z, next wake 22:43Z
@@ -17,6 +17,7 @@ Updated 2026-11-07T23:28:58Z by runner 50ba549ddf50 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T195 | portals: business billing and statements from the ledger | MERGE_PENDING | 1 | 48 min | 23:28Z |  |
 | T085 | portals: business portal home (contact choice, your numbers, | done | 1 | 33 min | 21:43Z |  |
 | T253 | privacy, picks and portals: the signed-in business reads a r | done | 1 | 54 min | 20:44Z |  |
 | T252 | architecture test: dynamic SQL in a migration is a TD-SEC-10 | done | 1 | 19 min | 19:16Z |  |
@@ -93,7 +94,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T195 (lease until 2026-11-08T01:40:11Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T085", "at": "2026-11-07T21:43:11Z", "cache_creation_input_tokens": 529619, "cache_read_input_tokens": 17695986, "output_tokens": 145506, "input_tokens": 365}
+- {"task": "T195", "at": "2026-11-07T23:28:57Z", "cache_creation_input_tokens": 546189, "cache_read_input_tokens": 15243110, "output_tokens": 148057, "input_tokens": 352}
