@@ -172,6 +172,9 @@ async fn td_biz_11_safety_alert_at_once_and_digest_after_the_box_closes(pool: Pg
     assert_eq!(unknown, Err(ComplaintError::Unknown));
     let view = for_casey(&mut db, unsafe_one).await.expect("view");
     assert!(view.safety && view.listed_at.is_none());
+    let by_system = "SELECT count(*) FROM ops.audit_log WHERE subject_id = $1 \
+                     AND action = 'businesses.complaint_recorded' AND actor_kind = 'system'";
+    assert_eq!(count(&mut db, by_system, plain).await, 1);
 }
 
 fn claimed(payload: serde_json::Value) -> Claimed {
@@ -331,8 +334,8 @@ async fn td_biz_11_member_phone_link_emails_the_owner(pool: PgPool) {
     let refused = link_phone(&mut db, &AnyNumber, (stranger, false), &n, at(4)).await;
     assert!(refused.is_err());
     for spanish in [false, true] {
-        let line = phone_linked_line("0170", spanish);
-        assert!(line.starts_with("Ask Hava: ") && line.contains("0170"));
+        let line = phone_linked_line("Test Member", "0170", spanish);
+        assert!(line.starts_with("Ask Hava: Test Member, ") && line.contains("0170"));
         assert!(line.contains("askhava.com/b"));
     }
 }
@@ -346,10 +349,27 @@ fn ops_005_safety_words() {
         "llamé a la policía",
         "fire!",
         "Hurt.",
+        "kept THREATENING me",
+        "he will steal it",
+        "caught stealing",
+        "two injuries",
+        "fires",
+        "llamé a la policia",
+        "me amenazo",
+        "un robo",
+        "fuego",
+        "amenazas",
     ] {
         assert!(has_safety_word(words), "{words}");
     }
-    for words in ["fired up", "late again", "threaten", ""] {
+    for words in [
+        "fired up",
+        "late again",
+        "threaten",
+        "robot",
+        "fuegos artificiales",
+        "",
+    ] {
         assert!(!has_safety_word(words), "{words}");
     }
 }

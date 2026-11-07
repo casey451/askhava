@@ -47,31 +47,41 @@ const COMPLAINT: &str = "businesses.complaint";
 const PHONE: &str = "businesses.staff_phone";
 
 /// OPS-005, D-222: the safety words, English and Spanish, matched as whole words in any case.
-const SAFETY_WORDS: [&str; 24] = [
+const SAFETY_WORDS: [&str; 34] = [
     "unsafe",
     "threat",
     "threats",
     "threatened",
+    "threatening",
+    "steal",
+    "stealing",
     "stole",
     "stolen",
     "hurt",
     "injured",
     "injury",
+    "injuries",
     "police",
     "fire",
+    "fires",
     "inseguro",
     "insegura",
     "peligroso",
     "amenaza",
+    "amenazas",
     "amenazó",
+    "amenazo",
     "robó",
+    "robo",
     "robaron",
     "herido",
     "herida",
     "lastimado",
     "lastimada",
     "policía",
+    "policia",
     "incendio",
+    "fuego",
 ];
 
 /// Why a complaint call failed. No variant carries a value (rust brain R5, R6).
@@ -219,7 +229,7 @@ pub async fn record_complaint(
         .map_err(|_| sqlx::Error::PoolClosed))?;
     log(
         &mut tx,
-        c.business,
+        Actor::System,
         "businesses.complaint_recorded",
         (COMPLAINT, id),
     )
@@ -230,12 +240,20 @@ pub async fn record_complaint(
 }
 
 /// BIZ-012, D-016: pauses `business` for complaints when it has [`PAUSE_COUNT`] or more within
-/// [`PAUSE_WINDOW_DAYS`] up to `now`; true only when this call paused it.
+/// [`PAUSE_WINDOW_DAYS`] up to `now`; true only when this call paused it. The business row is
+/// locked before the count, so two complaints recorded at once cannot both miss the third (D-1719);
+/// a business that moved on meanwhile stays as it is and the complaint stays recorded.
 async fn pause_on_count(
     tx: &mut PgConnection,
     business: Uuid,
     now: Timestamp,
 ) -> Result<bool, ComplaintError> {
+    db(sqlx::query_scalar!(
+        "SELECT id FROM businesses.business WHERE id = $1 FOR UPDATE",
+        business
+    )
+    .fetch_optional(&mut *tx)
+    .await)?;
     let count = db(sqlx::query_scalar!(
         "SELECT count(*) AS \"n!\" FROM businesses.complaint WHERE business_id = $1 \
          AND received_at <= $2 AND received_at >= $2 - make_interval(days => $3)",
@@ -250,7 +268,7 @@ async fn pause_on_count(
     }
     match pause_for_rule(tx, business, PauseReason::Complaints, Actor::System, now).await {
         Ok(_) => Ok(true),
-        Err(BusinessesError::Refused) => Ok(false),
+        Err(BusinessesError::Refused | BusinessesError::MovedOn) => Ok(false),
         Err(BusinessesError::Audit) => Err(ComplaintError::Audit),
         Err(_) => Err(ComplaintError::Database),
     }
@@ -270,12 +288,12 @@ async fn alert(tx: &mut PgConnection, kind: &'static str, id: Uuid) -> Result<()
 
 async fn log(
     tx: &mut PgConnection,
-    business: Uuid,
+    actor: Actor,
     action: &'static str,
     (subject_kind, subject_id): (&'static str, Uuid),
 ) -> Result<(), ComplaintError> {
     let entry = AuditEntry {
-        actor: Actor::Business(business),
+        actor,
         action,
         subject_kind,
         subject_id,
@@ -361,7 +379,7 @@ pub async fn reply(
     }
     log(
         &mut tx,
-        business,
+        Actor::Business(business),
         "businesses.complaint_replied",
         (COMPLAINT, complaint),
     )
@@ -503,7 +521,7 @@ pub async fn phone_link_notice(
         .map_err(|_| sqlx::Error::PoolClosed))?;
     log(
         tx,
-        by.business,
+        Actor::Business(by.business),
         "businesses.phone_link_notice",
         (PHONE, line),
     )
@@ -511,17 +529,17 @@ pub async fn phone_link_notice(
     Ok(true)
 }
 
-/// BIZ-033, BIZ-018: the owner email's line after a member linked the phone ending `last4`, in
-/// Spanish when `spanish`.
+/// BIZ-033, BIZ-018, TD-BIZ-11: the owner email's line after team member `member` (the name the
+/// sender reads from the vault) linked the phone ending `last4`, in Spanish when `spanish`.
 #[must_use]
-pub fn phone_linked_line(last4: &str, spanish: bool) -> String {
+pub fn phone_linked_line(member: &str, last4: &str, spanish: bool) -> String {
     if spanish {
         format!(
-            "Ask Hava: Un miembro de su equipo vinculó el número que termina en {last4} a su cuenta. Si no lo reconoce, entre en askhava.com/b y quítelo."
+            "Ask Hava: {member}, de su equipo, vinculó el número que termina en {last4} a su cuenta. Si no lo reconoce, entre en askhava.com/b y quítelo."
         )
     } else {
         format!(
-            "Ask Hava: Someone on your team linked the phone number ending in {last4} to your account. If you don't recognize it, sign in at askhava.com/b and remove it."
+            "Ask Hava: {member}, on your team, linked the phone number ending in {last4} to your account. If you don't recognize it, sign in at askhava.com/b and remove it."
         )
     }
 }
