@@ -1,10 +1,12 @@
 """The keeper (D-1451): runner/keeper.py decides how long the next keeper sleeps and what it does when it
-wakes; backup-runner.yml calls it. Also the smoke run's `cargo clean --workspace` (the T057 stale build)
-and kit/pacing.json's public-repository `actions_minutes`. Fake data only."""
+wakes; backup-runner.yml calls it. Also the smoke run's own target dir, fixed worktree and pinned mtimes
+(D-1890, which replaced D-1451's `cargo clean --workspace` after the T057 stale build) and kit/pacing.json's public-repository `actions_minutes`. Fake data only."""
 
 from __future__ import annotations
 
 import json
+import os
+import shutil
 import subprocess
 import sys
 from datetime import datetime, timedelta, timezone
@@ -164,32 +166,243 @@ def test_the_workflow_arms_one_keeper_and_keeps_every_lock() -> None:
     assert 'go) gh workflow run backup-runner.yml --ref main --repo "$GITHUB_REPOSITORY" ;;' in wake
 
 
-# ---- the smoke's shared target (T057) and the Actions minutes note
+# ---- the smoke's own target dir (T057, D-1890) and the Actions minutes note
 
 
-def test_the_smoke_run_cleans_the_workspace_members_from_the_shared_target(tmp_path: Path) -> None:
+def _index(tree: Path, files: dict[str, str]) -> str:
+    """A `git ls-files -s -z` listing for fake files written under `tree` (the blob is the content's stand-in)."""
+    rows = []
+    for name, text in files.items():
+        (tree / name).parent.mkdir(parents=True, exist_ok=True)
+        (tree / name).write_text(text)
+        rows.append(f"100644 {text:0<40} 0\t{name}")
+    return "\0".join(rows) + "\0"
+
+
+def test_the_smoke_builds_into_its_own_folder_of_the_cached_target(monkeypatch: Any, tmp_path: Path) -> None:
     from runner import github_env as ge
 
-    calls: list[list[str]] = []
-    env = ge.GitHubEnv(tmp_path, [], tmp_path, repo="o/r", starter="actions", runner_sha="x",
-                       run=lambda a, i, c: (calls.append(list(a)), (0, "", ""))[1])
-    env._forget_smoke_build()
-    assert calls == []  # no Cargo.toml: nothing to clean
-    (tmp_path / "Cargo.toml").write_text("[workspace]\n")
-    env._forget_smoke_build()
-    assert calls == [["cargo", "clean", "--workspace"]]
-    assert "--workspace" in ge.CARGO_CLEAN_MEMBERS and "-p" not in ge.CARGO_CLEAN_MEMBERS
-
-
-def test_the_clean_runs_with_the_smokes_target_dir(monkeypatch: Any) -> None:
-    from runner import github_env as ge
-
+    monkeypatch.setenv("GITHUB_WORKSPACE", "/work/fake")
+    monkeypatch.setenv("RUNNER_TEMP", "/work/_temp")
+    monkeypatch.delenv("CARGO_TARGET_DIR", raising=False)
+    assert ge.smoke_target_dir() == Path("/work/fake/target/smoke"), "inside `target`, which the Rust cache saves"
+    assert ge.smoke_tree_dir() == Path("/work/_temp/askhava-smoke"), "the same path every run"
     seen: list[dict[str, str] | None] = []
     monkeypatch.setattr(ge, "_run", lambda a, i, c, e, timeout=600: (seen.append(e), subprocess.CompletedProcess(a, 0, "", ""))[1])
-    monkeypatch.setenv("GITHUB_WORKSPACE", "/work/fake")
-    monkeypatch.delenv("CARGO_TARGET_DIR", raising=False)
-    ge.run_command(list(ge.CARGO_CLEAN_MEMBERS), None, Path("."))
-    assert seen[0] is not None and seen[0]["CARGO_TARGET_DIR"] == "/work/fake/target"
+    ge.run_command(["bash", "scripts/smoke.sh"], None, Path("."))
+    ge.run_command(["cargo", "build"], None, Path("."))
+    assert seen[0] is not None and seen[0]["CARGO_TARGET_DIR"] == "/work/fake/target/smoke"
+    assert seen[0]["CARGO_INCREMENTAL"] == "0", "as in Ci: no incremental data in the cached smoke target"
+    assert seen[1] is None or "CARGO_TARGET_DIR" not in seen[1], "the worker's cargo keeps the checkout's own target"
+    assert not hasattr(ge, "CARGO_CLEAN_MEMBERS"), "no clean of the worker's target after a smoke (D-1890)"
+
+
+def test_unchanged_files_keep_their_pinned_mtime_and_changed_ones_get_now(tmp_path: Path) -> None:
+    from runner import github_env as ge
+
+    tree, manifest = tmp_path / "tree", tmp_path / "target" / "smoke" / ge.SMOKE_MTIMES
+    tree.mkdir()
+    index = _index(tree, {"a/src/lib.rs": "a1", "b/src/lib.rs": "b1"})
+    assert ge.pin_smoke_mtimes(tree, index, manifest, 1_000) == 7, "no manifest: 2 files and 5 folders are new"
+    assert (tree / "a/src/lib.rs").stat().st_mtime_ns == 1_000
+    for name in ("a/src/lib.rs", "b/src/lib.rs"):
+        (tree / name).unlink()  # a fresh worktree: new files, new mtimes
+    index = _index(tree, {"a/src/lib.rs": "a1", "b/src/lib.rs": "b2", "c/src/lib.rs": "c1"})
+    assert ge.pin_smoke_mtimes(tree, index, manifest, 2_000) == 5, "b's file, c's file, c's 2 folders and the root"
+    assert (tree / "a/src/lib.rs").stat().st_mtime_ns == 1_000, "unchanged content keeps the time before every build of it"
+    assert (tree / "b/src/lib.rs").stat().st_mtime_ns == 2_000, "changed content is newer than every earlier build"
+    assert (tree / "c/src/lib.rs").stat().st_mtime_ns == 2_000
+    assert tree.stat().st_mtime_ns == 2_000, "a folder with a new entry is new (a build script may watch it)"
+    assert (tree / "a/src").stat().st_mtime_ns == 1_000, "a folder with the same entries keeps its time"
+    index = _index(tree, {"a/src/lib.rs": "a1", "b/src/lib.rs": "b1"})
+    ge.pin_smoke_mtimes(tree, index, manifest, 3_000)
+    assert (tree / "b/src/lib.rs").stat().st_mtime_ns == 3_000, "content changed back is still newer than the last build"
+    assert tree.stat().st_mtime_ns == 3_000, "a folder that lost an entry is new"
+    assert set(json.loads(manifest.read_text())) == {"a/src/lib.rs", "b/src/lib.rs", "/", "a/", "a/src/", "b/", "b/src/"}
+
+
+def test_an_unreadable_manifest_makes_every_file_new(tmp_path: Path) -> None:
+    from runner import github_env as ge
+
+    tree, manifest = tmp_path / "tree", tmp_path / "m.json"
+    tree.mkdir()
+    for junk in ("not json", "[1, 2]", json.dumps({"x.rs": ["blob", "late"]})):
+        manifest.write_text(junk)
+        assert ge.pin_smoke_mtimes(tree, _index(tree, {"x.rs": "x1"}), manifest, 5_000) == 2, "the file and the root"
+    manifest.unlink()
+    (tree / "link.rs").symlink_to(tree / "x.rs")
+    index = _index(tree, {"x.rs": "x1"}) + "120000 " + "l" * 40 + " 0\tlink.rs\0160000 " + "s" * 40 + " 0\tsub\0"
+    assert ge.pin_smoke_mtimes(tree, index, manifest, 6_000) == 2, "links and submodules are skipped"
+    assert json.loads(manifest.read_text())["/"][0] == ge.hashlib.sha256(b"x.rs").hexdigest()
+
+
+def test_smoke_main_uses_the_fixed_tree_and_pins_before_the_smoke(monkeypatch: Any, tmp_path: Path) -> None:
+    from runner import github_env as ge
+
+    monkeypatch.setenv("RUNNER_TEMP", str(tmp_path / "temp"))
+    monkeypatch.setenv("CARGO_TARGET_DIR", str(tmp_path / "target"))
+    tree = ge.smoke_tree_dir()
+    calls: list[tuple[list[str], Path]] = []
+
+    def run(a: list[str], i: str | None, c: Path) -> tuple[int, str, str]:
+        calls.append((list(a), c))
+        if a[:3] == ["git", "worktree", "add"]:
+            _index(tree, {"Cargo.toml": "w1"})
+        if a[:2] == ["git", "ls-files"]:
+            return 0, "100644 " + "w" * 40 + " 0\tCargo.toml\0", ""
+        if a[:2] == ["git", "rev-parse"]:
+            return 0, "f" * 40 + "\n", ""
+        return 0, "ok", ""
+
+    tree.mkdir(parents=True)
+    (tree / "left-over").write_text("a crashed run")
+    env = ge.GitHubEnv(tmp_path, [], tmp_path, repo="o/r", starter="actions", runner_sha="x", run=run)
+    env.main_head = lambda: "f" * 40  # type: ignore[method-assign]  # reason: no remote in this test
+    assert env.smoke_main() == (True, "f" * 40)
+    cmds = [a for a, _ in calls]
+    add = cmds.index(["git", "worktree", "add", "--detach", str(tree), "f" * 40])
+    assert cmds.index(["git", "worktree", "remove", "--force", str(tree)]) < add, "a left-over tree goes first"
+    assert cmds.index(["git", "ls-files", "-s", "-z"]) < cmds.index(["bash", "scripts/smoke.sh"])
+    assert calls[cmds.index(["bash", "scripts/smoke.sh"])][1] == tree
+    assert (tmp_path / "target" / "smoke" / ge.SMOKE_MTIMES).exists() and not tree.exists()
+    assert env.log[-2] == "smoke mtimes: 2 new or changed paths"
+
+
+def _pin_env(tmp_path: Path, index: list[str], code: list[int]) -> Any:
+    """A GitHubEnv whose `git ls-files` answers `index[0]` with exit `code[0]` (both changeable by the test)."""
+    from runner import github_env as ge
+
+    def run(a: list[str], i: str | None, c: Path) -> tuple[int, str, str]:
+        return (code[0], index[0], "index locked") if a[:2] == ["git", "ls-files"] else (0, "", "")
+
+    return ge.GitHubEnv(tmp_path, [], tmp_path, repo="o/r", starter="actions", runner_sha="x", run=run)
+
+
+def test_a_failed_pin_then_a_revert_never_reuses_the_old_time(monkeypatch: Any, tmp_path: Path) -> None:
+    """Review of D-1890: a pin that fails part-way must not leave the earlier record, or content reverted to
+    what it held then would get that old time back and an artifact built from the failed run's content
+    would count as fresh."""
+    from runner import github_env as ge
+
+    monkeypatch.setenv("CARGO_TARGET_DIR", str(tmp_path / "target"))
+    tree, manifest = tmp_path / "tree", tmp_path / "target" / "smoke" / ge.SMOKE_MTIMES
+    tree.mkdir()
+    index, code = [_index(tree, {"a.rs": "a1", "b.rs": "b1"})], [0]
+    env = _pin_env(tmp_path, index, code)
+    env._pin_smoke_tree(tree)
+    first = (tree / "a.rs").stat().st_mtime_ns
+    index[0] = _index(tree, {"a.rs": "a2", "b.rs": "b2"})
+    real, calls = os.utime, [0]
+
+    def flaky(path: Any, *args: Any, **kw: Any) -> None:
+        calls[0] += 1
+        if calls[0] == 2 and not env.log[-1:]:
+            raise OSError("disk went away")
+        real(path, *args, **kw)
+
+    env.log.clear()
+    monkeypatch.setattr(ge.os, "utime", flaky)
+    env._pin_smoke_tree(tree)
+    monkeypatch.setattr(ge.os, "utime", real)
+    assert env.log[-1].startswith("smoke mtimes not pinned, all new") and not manifest.exists()
+    assert (tree / "b.rs").stat().st_mtime_ns > first, "the whole tree is new after a failed pin"
+    index[0] = _index(tree, {"a.rs": "a1", "b.rs": "b1"})  # main reverted to the first content
+    env._pin_smoke_tree(tree)
+    assert (tree / "a.rs").stat().st_mtime_ns > first, "no record survived, so the reverted file is new"
+
+
+def test_a_failed_index_read_deletes_the_record_and_stamps_the_tree(monkeypatch: Any, tmp_path: Path) -> None:
+    from runner import github_env as ge
+
+    monkeypatch.setenv("CARGO_TARGET_DIR", str(tmp_path / "target"))
+    tree, manifest = tmp_path / "tree", tmp_path / "target" / "smoke" / ge.SMOKE_MTIMES
+    tree.mkdir()
+    index, code = [_index(tree, {"a.rs": "a1"})], [0]
+    env = _pin_env(tmp_path, index, code)
+    env._pin_smoke_tree(tree)
+    os.utime(tree / "a.rs", ns=(5, 5))
+    code[0] = 128
+    env._pin_smoke_tree(tree)
+    assert not manifest.exists() and (tree / "a.rs").stat().st_mtime_ns > 5
+    assert env.log[-1] == "smoke mtimes not pinned, all new: index locked"
+
+
+def test_a_query_data_change_makes_everything_new_and_times_only_move_forward(tmp_path: Path) -> None:
+    from runner import github_env as ge
+
+    tree, manifest = tmp_path / "tree", tmp_path / "m.json"
+    tree.mkdir()
+    ge.pin_smoke_mtimes(tree, _index(tree, {"a.rs": "a1", ".sqlx/q1.json": "q1"}), manifest, 1_000)
+    assert ge.pin_smoke_mtimes(tree, _index(tree, {"a.rs": "a1", ".sqlx/q1.json": "q2"}), manifest, 2_000) == 4
+    assert (tree / "a.rs").stat().st_mtime_ns == 2_000, "no dep-info lists `.sqlx/`, so everything rebuilds"
+    (tree / ".sqlx/q1.json").unlink()
+    assert ge.pin_smoke_mtimes(tree, _index(tree, {"a.rs": "a1"}), manifest, 3_000) == 2, "a removed query file too"
+    assert (tree / "a.rs").stat().st_mtime_ns == 3_000
+    assert ge.pin_smoke_mtimes(tree, _index(tree, {"a.rs": "a2"}), manifest, 10) == 1
+    assert (tree / "a.rs").stat().st_mtime_ns == 3_001, "a clock that stepped back still moves forward"
+
+
+def _debug(root: Path) -> Path:
+    """A fake worker `target/debug`: one dependency and one member in each seeded folder."""
+    debug = root / "target" / "debug"
+    for name in ("deps/libserde-0123456789abcdef.rlib", "deps/askhava_core-0123456789abcdef.d",
+                 "deps/libaskhava_core-0123456789abcdef.rlib", "deps/message_log-0123456789abcdef",
+                 "build/serde-0123456789abcdef/output", ".fingerprint/askhava-core-0123456789abcdef/lib",
+                 ".fingerprint/serde-fedcba9876543210/lib", "incremental/serde-0123456789abcdef/x", "server"):
+        (debug / name).parent.mkdir(parents=True, exist_ok=True)
+        (debug / name).write_text(name)
+    return debug
+
+
+def test_the_seed_copies_only_dependency_artifacts_as_real_copies(tmp_path: Path) -> None:
+    from runner import github_env as ge
+
+    debug = _debug(tmp_path)
+    entries = ge.seed_files(debug, {"askhava-core", "message_log"})
+    assert [e.relative_to(debug).as_posix() for e in entries] == [
+        "deps/libserde-0123456789abcdef.rlib", "build/serde-0123456789abcdef", ".fingerprint/serde-fedcba9876543210"]
+    into = tmp_path / "smoke" / "debug"
+    ge.copy_seed(debug, into, entries)
+    copied = into / ".fingerprint/serde-fedcba9876543210/lib"
+    assert copied.read_text() == ".fingerprint/serde-fedcba9876543210/lib"
+    assert copied.stat().st_ino != (debug / ".fingerprint/serde-fedcba9876543210/lib").stat().st_ino, "never a hard link"
+    assert ge._tree_size(entries) == sum(len(e) for e in ("deps/libserde-0123456789abcdef.rlib",
+                                                          "build/serde-0123456789abcdef/output",
+                                                          ".fingerprint/serde-fedcba9876543210/lib"))
+
+
+def test_the_smoke_target_is_seeded_once_and_only_with_room(monkeypatch: Any, tmp_path: Path) -> None:
+    from runner import github_env as ge
+
+    monkeypatch.setenv("CARGO_TARGET_DIR", str(tmp_path / "target"))
+    _debug(tmp_path)
+    meta = json.dumps({"packages": [{"name": "askhava-core", "targets": [{"name": "askhava_core"}, {"name": "message_log"}]}]})
+    env = ge.GitHubEnv(tmp_path, [], tmp_path, repo="o/r", starter="actions", runner_sha="x",
+                       run=lambda a, i, c: (0, meta, "") if a[:2] == ["cargo", "metadata"] else (0, "", ""))
+    usage = shutil.disk_usage(tmp_path)
+    monkeypatch.setattr(ge.shutil, "disk_usage", lambda p: usage._replace(free=ge.SEED_MARGIN))
+    env._seed_smoke_target(tmp_path)
+    smoke = tmp_path / "target" / "smoke" / "debug"
+    assert not smoke.exists() and env.log[-1].startswith("smoke target seed: 3 entries"), "short of disk: logged, not seeded"
+    monkeypatch.setattr(ge.shutil, "disk_usage", lambda p: usage._replace(free=ge.SEED_MARGIN * 4))
+    (tmp_path / "target" / "smoke").mkdir(parents=True)
+    (tmp_path / "target" / "smoke" / ge.SMOKE_MTIMES).write_text("{}")
+    env._seed_smoke_target(tmp_path)
+    assert sorted(p.name for p in (smoke / "deps").iterdir()) == ["libserde-0123456789abcdef.rlib"]
+    assert not (tmp_path / "target" / "smoke" / ge.SMOKE_MTIMES).exists(), "a seeded target starts with every file new"
+    (tmp_path / "target" / "debug" / "deps" / "libtokio-0123456789abcdef.rlib").write_text("x")
+    env._seed_smoke_target(tmp_path)
+    assert not (smoke / "deps" / "libtokio-0123456789abcdef.rlib").exists(), "a target with dependencies is left alone"
+
+
+def test_the_smoke_build_has_its_own_cache_entry() -> None:
+    """D-1890: `target/smoke` is its own per-commit cache entry and left out of the worker's, so neither carries both."""
+    steps = {step.get("name"): step for step in _flow()["jobs"]["backup"]["steps"]}
+    rust, smoke = steps["Rust build cache (D-514)"]["with"], steps["Smoke build cache (D-1890)"]["with"]
+    assert "target" in rust["path"].split() and "!target/smoke" in rust["path"].split()
+    assert smoke["path"] == "target/smoke" and smoke["key"].startswith("rust-smoke-") and smoke["key"].endswith("${{ github.sha }}")
+    assert rust["key"].startswith("rust-${{ runner.os }}-"), "so the worker's restore keys never pick a smoke entry"
+    assert all(line.startswith("rust-smoke-") for line in smoke["restore-keys"].splitlines())
 
 
 def test_actions_minutes_states_the_public_repository() -> None:
