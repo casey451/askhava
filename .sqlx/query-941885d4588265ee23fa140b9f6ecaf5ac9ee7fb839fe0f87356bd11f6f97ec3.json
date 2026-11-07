@@ -1,0 +1,35 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id, ended AS \"ended!: jiff_sqlx::Timestamp\" FROM (SELECT c.id, c.closed_at,\n             COALESCE(c.closed_at, GREATEST(c.opened_at, (SELECT max(a.answered_at)\n               FROM intake.intake_answer a WHERE a.conversation_id = c.id))) AS ended\n           FROM intake.conversation c WHERE c.job_id IS NULL) r\n           WHERE closed_at IS NOT NULL OR ended <= $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "intake.conversation",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "ended!: jiff_sqlx::Timestamp",
+        "type_info": "Timestamptz",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false,
+      null
+    ]
+  },
+  "hash": "941885d4588265ee23fa140b9f6ecaf5ac9ee7fb839fe0f87356bd11f6f97ec3"
+}

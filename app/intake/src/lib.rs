@@ -31,6 +31,7 @@ mod handlers;
 mod job_texts;
 mod matching;
 mod models;
+mod purge;
 mod question_bank;
 mod replies;
 mod routing;

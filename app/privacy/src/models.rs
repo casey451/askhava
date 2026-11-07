@@ -443,3 +443,69 @@ pub enum PhotoError {
     #[error("the photo database statement failed")]
     Database,
 }
+
+/// What keeps a closed job's contact details past 180 days: an open bank dispute (`payments`,
+/// T066) or an open complaint (`businesses`, T083) (PRIV-007, D-491).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum HoldSource {
+    /// A `payments.dispute` row with no outcome yet.
+    Dispute,
+    /// A `businesses.complaint` whose reply box has not closed.
+    Complaint,
+}
+
+impl HoldSource {
+    /// The `privacy.retention_hold.source` code.
+    #[must_use]
+    pub fn code(self) -> &'static str {
+        match self {
+            Self::Dispute => "dispute",
+            Self::Complaint => "complaint",
+        }
+    }
+}
+
+/// One step of a closed job's retention, each a `core.task` due at its own age (PRIV-007 to
+/// PRIV-009, D-013): photos at 30 days, contact details at 180, the scrubbed job text at 3 years.
+/// Ledger, audit and terms records have no step: nothing here deletes them (PRIV-010).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PurgeStage {
+    /// 30 days after close: the job's photos (PRIV-009).
+    Photos,
+    /// 180 days after close: name, email, address and on-site contact; the phone stays (PRIV-007).
+    Contact,
+    /// 3 years after close: the scrubbed job text (PRIV-008).
+    Text,
+}
+
+impl PurgeStage {
+    /// Every stage, in the order they come due.
+    pub const ALL: [Self; 3] = [Self::Photos, Self::Contact, Self::Text];
+
+    /// The stage's payload code.
+    #[must_use]
+    pub fn code(self) -> &'static str {
+        match self {
+            Self::Photos => "photos",
+            Self::Contact => "contact",
+            Self::Text => "text",
+        }
+    }
+
+    /// The stage named by `code`, if any.
+    #[must_use]
+    pub fn parse(code: &str) -> Option<Self> {
+        Self::ALL.into_iter().find(|stage| stage.code() == code)
+    }
+
+    /// Days after close the stage comes due: 30, 180 and 1,096 (three years, never short by a leap
+    /// day; PRIV-007 to PRIV-009).
+    #[must_use]
+    pub fn days(self) -> i64 {
+        match self {
+            Self::Photos => 30,
+            Self::Contact => 180,
+            Self::Text => 3 * 365 + 1,
+        }
+    }
+}

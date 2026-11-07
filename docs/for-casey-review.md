@@ -1826,3 +1826,13 @@ An outside review (ChatGPT) of the whole repository found twelve issues. Each wa
 - A photo goes on a job card only after our own server checks it, strips its hidden data, re-saves it, and the homeowner confirms it shows no person and no house number. No photo goes to the AI until the zero-retention agreement is signed and the privacy policy says the AI looks at photos.
 - After that, two separate AI checks look for faces, plates and readable text. If either one flags anything, the photo stays off the card (we don't blur it in this version). A request with no photo goes out the same way.
 - **Nothing needs you now.**
+
+## Deleting old homeowner details (T092, D-1799 to D-1803, November 7)
+
+- Every day the system looks for finished requests. 30 days after one closes, its photos are deleted. At 180 days the homeowner's name, email and address are erased; her phone number stays locked, only as proof of her texting permission and opt-out. At 3 years the request's answers are deleted. Money and audit records are never touched by this.
+- An open bank dispute or an open complaint pauses the 180-day erase; it is checked again each day. Because we don't record how a dispute ends yet, a dispute counts as open until 90 days after its evidence was due.
+- "Delete my data" erases the same details and the photos at once and tells the person we keep the phone number, locked, for 5 years.
+- Not done yet, and no task is planned for it: deleting the scrambled photo files from storage and asking Twilio to delete message bodies after 31 days. Both need new connections to those services that no task in the plan builds yet; the runner should add one. Until then the photo files stay in storage, scrambled, with no link that can open them.
+- A choice for you to know about: a complaint pauses the 180-day erase only while its 5-day reply box is open. We don't record whether a complaint was resolved, so one still unresolved after the box closes no longer pauses it.
+- A person's details belong to her, not to one request: a pause on any of her requests keeps them, and a request that never became a job (turned away or abandoned) is erased 180 days after it ended. If a purge keeps failing, you get an alert.
+- **Nothing needs you now.**

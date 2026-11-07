@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO privacy.retention_hold (source, source_id, job_id, placed_at, released_at) VALUES ($1, $2, $3, $4, $4) ON CONFLICT (source, source_id) DO UPDATE SET released_at = COALESCE(privacy.retention_hold.released_at, EXCLUDED.released_at)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Uuid",
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "90da57acbc749439c4359da3997d18692f000b95de72b4dcd57fc1e7f266bc95"
+}

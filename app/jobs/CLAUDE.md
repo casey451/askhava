@@ -18,6 +18,7 @@ The layer-4 crate that owns every job's one status and the only code that change
 - Migration `0034_jobs_numbers.sql` (T179, D-851): `jobs.job_number` (number from 1001 as primary key, `job_id` unique, append-only for the app role) and the one-row counter `jobs.job_number_next`.
 - Migration `0031_jobs_state_machine.sql`: the `jobs` schema and grants, `jobs.job` (status `CHECK` of the twelve codes, `version`, `emergency`, `status_at`, `timer_from`, `timer_version`), `jobs.status_history` (append-only).
 - `sqlx.toml`: `'TIMESTAMPTZ'` reads as `jiff_sqlx::Timestamp`.
+- `src/purge_events.rs` (T092, D-1799): `PURGE_DUE_KIND`, `SWEEP_KIND`, `PURGE_STAGES`, `enqueue_purge`, `sweep_closed`, `schedule_sweep`, `run_sweep`: the daily sweep queues each final job's photo, contact and text purge stages for `privacy` at `status_at` plus 30, 180 and 1,096 days for every final job (no look-back limit), deduped by job and stage (PRIV-007 to PRIV-009; `tests/integration/tests/retention_purge.rs`).
 
 ## Rules it enforces
 
