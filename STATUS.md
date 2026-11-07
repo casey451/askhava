@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-07T01:41:38Z by runner bb6d771b6d33 (actions).
+Updated 2026-11-07T02:49:31Z by runner 59dfb3cadf85 (actions).
 
 **Building: T083 in progress since 01:32Z; 130 of 239 done; week 27% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,11 @@ Updated 2026-11-07T01:41:38Z by runner bb6d771b6d33 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T083 claimed 01:32Z, lease until 04:32Z
 - **Week:** 27% used, 140.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:17Z, 24 min before this update
+- **Last run:** 01:41Z, 67 min before this update
 - **Keeper:** last ran 01:16Z, next wake 01:36Z
 
 ## Needs attention
-- Strict plan check red: 8 problem(s) on tasks still to run (+16 on DONE tasks); first: T084: stored context_pct 11% but it measures 15%; regenerate
+- Strict plan check red: 11 problem(s) on tasks still to run (+16 on DONE tasks); first: T083: stored context_pct 11% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -40,7 +40,6 @@ Updated 2026-11-07T01:41:38Z by runner bb6d771b6d33 (actions).
 | T071 | Stage 3 check: the ledger matches the Stripe mock on 1,000 s | done | 1 | 37 min | 05:09Z |  |
 | T070 | picks: 'no longer active' once, Confirm link replies | done | 1 | 45 min | 04:18Z |  |
 | T192 | picks: compile-fail proofs that no crate but payments can bu | done | 1 | 26 min | 03:17Z |  |
-| T069 | picks: release only on paid or free; never the homeowner's p | done | 1 | 48 min | 02:36Z |  |
 
 ### Plan and harness merges on main
 - 16:15Z Plan: dynamic SQL in migrations is a TD-SEC-10 finding (T252), T126 context budget, stored budgets refreshed (D-1677, D-1678) (#298)
