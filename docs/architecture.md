@@ -287,7 +287,7 @@ Timers that are not job statuses but still bound every wait: each job card's 24-
 
 ## 7. Adapters and stand-ins
 
-One trait per vendor in `adapters`, implemented by an HTTP client (reqwest with rustls) whose base URL points at the stand-in server, the vendor's sandbox or the live API; the stand-ins in `stand_ins/` are served over HTTP (SEC-032) (`BUILD_BRIEF.md:158`–`BUILD_BRIEF.md:165`). The setting `ADAPTER_MODE_<VENDOR>` picks `stand_in`, `sandbox` or `live`; `live` is accepted only when `APP_ENV=live`, and `stand_in` never in live (SEC-002). Every inbound webhook is signature-checked in the adapter before any module sees it, and recorded by event ID in the owning module's `webhook_event` table (SEC-016, SEC-017).
+One trait per vendor in `adapters`, implemented by an HTTP client (reqwest with rustls) whose base URL points at the stand-in server, the vendor's sandbox or the live API; the stand-ins in `stand_ins/` are served over HTTP (SEC-032) (`BUILD_BRIEF.md:158`–`BUILD_BRIEF.md:165`). The setting `ADAPTER_MODE_<VENDOR>` picks `stand_in`, `sandbox` or `live`; `live` is accepted only when `APP_ENV=live`, and `stand_in` never in live (SEC-002). Every inbound webhook is signature-checked in the adapter before any module sees it, and recorded by event ID in the owning module's `webhook_event` table (SEC-016, SEC-017). The payments adapter's refund call answers a typed refund (ID, state `pending`, `requires_action`, `succeeded`, `failed` or `canceled`, amount, currency, PaymentIntent), never a bare ID, and `payments` records a refund as done only on `succeeded` (D-1753).
 
 | Adapter | Outbound calls | Inbound (owner module) | Phase 1 stand-in | Phase 2 |
 |---|---|---|---|---|
@@ -332,7 +332,7 @@ Each stand-in has contract tests written from the vendor's published API documen
 - `calls`: to bridge a masked call; the number goes straight to the voice adapter; and, for the CALL-005 read-back to a phone linked to the paid business after 2 bad PINs on an A-attested call, the homeowner's first name and street only, read under the same audited-read rule (PRIV-003, D-491);
 - `portals`, homeowner realm: a signed-in homeowner's own record (PRIV-021);
 - `portals`, owner realm: the contact on a call-back alert (INT-023, CON-016, TXT-015, TXT-023), and a help request's own conversation on that request's page (OPS-036, D-348, D-478). Alerts in `ops.alert` carry the contact ID, never the number (PRIV-006); Casey's view reads the number at the moment he opens the alert;
-- `privacy` itself: the inbound reader, scrubbing, purges.
+- `privacy` itself: the inbound reader, scrubbing, purges; `read_inbound_for` opens a homeowner's vault name (under the `(Messaging, Inbound)` grant) and her sealed stated names (`privacy.stated_name`) only to scrub her text and returns no plaintext, so unlike the plaintext reads it may run inside the caller's transaction (D-1752, T257).
 
 - `quotes`: card photos only (CARD-013, CARD-014), the screened copies, for the card email and the business job page; never a contact field (PRIV-004, D-477). Nobody else.
 
