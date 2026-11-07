@@ -38,12 +38,12 @@
   "docs/spec/terms.md": "278c5ef379f528d56958317ae9e0c72cfbe374272dbf13f9f380ae49d7f8cbd7",
   "docs/spec/website.md": "63fde654845c3e32305f866387359b564c9c47afa3dc2d9a08b801cc9bb62830",
   "docs/spec/wording.md": "39b6d4e094008481a54d0e9525218e1c8a43b9468357b49a8d531c7575f8f2ff",
-  "docs/test-design.md": "464ea412090db152e9dcc31dc164235b9fee09f3d9e47c7d27855e0e3d9292d0",
+  "docs/test-design.md": "c12f556ef65b39f03fcc31f179ff90a75871458e0dd7202753d2301c8e48e9f1",
   "docs/threat-model.md": "853948540b59ca11cf9824d6491d030a3a29c0fc45264546f1ba56432dd5a7e3",
-  "kit/prompts/TEMPLATE.md": "63283ef3c69874b46667d54e507de0271b4989d0828bea1ef1392c1ecab86f40",
+  "kit/prompts/TEMPLATE.md": "5d48ab13b0317aa40435e186632d3f6dca563ce32feb5357c88cfd3fc87b09f8",
   "kit/runner.json": "f103cf4d5d2506af897b04fedba964abeedc30f1a63458766e0f8646ccc53a19",
   "kit/sources.sha256": "853b7f37d6e04259ad9d7b64e16e6cb0111ee4499e37af46aeb3183748c7f335",
-  "kit/tasks.json": "3ed0eb416daa7f2f12295d85919e513ff1703c899d80beedc7a700a6cb5ac086",
+  "kit/tasks.json": "4b4e53264fceb2b4308e991784a32b230187ed93d96cb3a71089f1404929641a",
   "scripts/check_ai_smell.py": "85dabd31a4def57084ccca15c6c8efee89cc3f5a9e376a9ed07f4f6a98a2885a",
   "scripts/check_catalog.py": "169f9b00e9630a8d5240fe9b319082cf9ef97aba7034f2170b7bc1a6ecab3d4c",
   "scripts/check_code_docs.py": "cb5df5710797e221ae5d5a5b2daa9d6c3612e9bca1ccd24f07ea07b34e470fbd",
@@ -66,7 +66,7 @@
   "scripts/smoke.sh": "1c976e493c877c2006b18f27aae5624c9f987ca1c1f4234561bde72a235c5a00",
   "scripts/stage_exit.py": "bef22183aa42f9a646ef6853fb922b3d9053852b97dd73ca9feebb430f0b0d0f",
   "scripts/trace_spec.py": "9956b2ffaa7f6e205e6f27338f65cddf7f573afa3c53de697f959adc96923439",
-  "scripts/validate_tasks.py": "250b1262cc777733839d065bd1a7ea68cacab7a84f87d32cc3eb4140448dc791"
+  "scripts/validate_tasks.py": "d6d51500c3fd2c68a9ceb512e657dadfa45520a0bb0bf087c7c832b891789a07"
  },
  "note": "Fingerprints of the approved blueprint; see scripts/check_plan_lock.py and docs/governance.md.",
  "schema": 1

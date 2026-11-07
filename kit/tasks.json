@@ -199,7 +199,8 @@
   "app/server/askama.toml",
   "app/server/src/bin/worker.rs",
   "app/core/src/settings.rs",
-  "tests/a11y/fixtures.ts"
+  "tests/a11y/fixtures.ts",
+  "tests/a11y/page_states.ts"
  ],
  "kit_outputs": [
   "kit/prompts/",
@@ -9083,8 +9084,8 @@
    "id": "T258",
    "slug": "refund-lifecycle",
    "title": "adapters and payments: a refund is recorded as Stripe reports it (pending, succeeded, failed, canceled), never as done on a 200",
-   "goal": "`PaymentsAdapter::create_refund` returns only the `re_…` ID (`app/adapters/src/payments.rs`), so `refunds::finish` treats any answer as `Refunded`, sets the row `succeeded` and appends the ledger `refund` entry, and `reconcile::own_refund` counts any answer as refunded, even when Stripe answered `pending`, `requires_action`, `failed` or `canceled` (external audit A03, D-1753; D-1545 (2) already recorded the ledger side). (1) The typed refund is additive, so no fake adapter in another task's test changes: `app/payments/src/refund_stripe.rs` defines a payments-owned trait `RefundStripe: PaymentsAdapter` (the `IntentStripe` and `ReconcileStripe` pattern) with `refund(idempotency, payment_intent) -> Refund` and `fetch_refund(id) -> Refund`, where `Refund { id, state, amount_cents, currency, payment_intent }` and `RefundState::{Pending, RequiresAction, Succeeded, Failed, Canceled}`; an unknown state string is an error, never a success, and the refund must name the PaymentIntent asked for. It is implemented for `StripeHttp` there, over two new inherent HTTP calls on `StripeHttp` in `app/adapters/src/payments.rs` (the `PaymentsAdapter` trait and its `create_refund` stay unchanged until T132 retires `create_refund`). `refunds::finish`, the retry and `reconcile::own_refund` take `&impl RefundStripe`. (2) `migrations/0124_payments_refunds_and_events.sql`: the refund row's status gains `pending` and `canceled`, the ledger kind check gains `refund-reversal` (FEE-028 as changed by D-1753), and `payments.webhook_event` (Stripe event ID unique, type, received time; app role SELECT and INSERT) is created here for T259's dispatch, so T259 needs no migration of its own; `EntryKind::RefundReversal` joins `app/payments/src/models.rs` and every exhaustive match on it. (3) `refunds.rs`: a `succeeded` answer records the refund and appends the `refund` entry as now; `pending` or `requires_action` stores the `re_…` with status `pending`, appends nothing, and the 30-minute check asks Stripe again through `fetch_refund`; `failed` or `canceled` is the FEE-026 failure path (alert, hourly retry). `refund_succeeded(pool, re, now)`, `refund_failed` and `refund_canceled` (the webhook's, T259) move a `pending` row on; a `failed` or `canceled` after `succeeded` appends one `refund-reversal` entry of the same amount keyed by the `re_…`, append-only (no ledger row is updated or deleted), and the FEE-026 retry's next success appends a new `refund` entry keyed by its own `re_…`, so the ledger always nets to what Stripe holds. (4) `reconcile::own_refund` records by the same rule. Every customer-facing \"refunded\" text or notice goes out only on `succeeded`. Update `docs/architecture.md` section 7, the `payments` and `adapters` `CLAUDE.md` files and `docs/decisions.md`.",
-   "type": "build",
+   "goal": "`PaymentsAdapter::create_refund` returns only the `re_…` ID (`app/adapters/src/payments.rs`), so `refunds::finish` treats any answer as `Refunded`, sets the row `succeeded` and appends the ledger `refund` entry, and `reconcile::own_refund` counts any answer as refunded, even when Stripe answered `pending`, `requires_action`, `failed` or `canceled` (external audit A03, D-1753; D-1545 (2) already recorded the ledger side). (1) The typed refund is additive for production callers (this task is a `harness` task because four DONE tasks' test fakes gain one trait impl each): `app/payments/src/refund_stripe.rs` defines a payments-owned trait `RefundStripe: PaymentsAdapter` (the `IntentStripe` and `ReconcileStripe` pattern) with `refund(idempotency, payment_intent) -> Refund` and `fetch_refund(id) -> Refund`, where `Refund { id, state, amount_cents, currency, payment_intent }` and `RefundState::{Pending, RequiresAction, Succeeded, Failed, Canceled}`; an unknown state string is an error, never a success, and the refund must name the PaymentIntent asked for. It is implemented for `StripeHttp` there, over two new inherent HTTP calls on `StripeHttp` in `app/adapters/src/payments.rs` (the `PaymentsAdapter` trait and its `create_refund` stay unchanged until T132 retires `create_refund`). `refunds::finish`, the retry and `reconcile::own_refund` take `&impl RefundStripe`, and so do the public functions that reach them: `request_refund`, `run_refund_retry` and `early_fraud_warning` (`app/payments/src/refunds.rs:78`–`:135`), `reconcile` and `run_reconcile` (`app/payments/src/reconcile.rs:125`, `:424`) and T064's `run_late_refund` (`app/payments/src/late.rs:112`). The fakes in `tests/integration/tests/disputes.rs`, `late_success.rs`, `reconcile.rs` and `ledger_1000_jobs.rs` each gain one `impl RefundStripe` whose `refund` answers `Succeeded` with the ID their `create_refund` already returns and whose `fetch_refund` answers the same; nothing else in those files changes (no blanket impl over `PaymentsAdapter`, which would conflict with the `StripeHttp` impl). (2) `migrations/0124_payments_refunds_and_events.sql`: the refund row's status gains `pending` and `canceled`, the ledger kind check gains `refund-reversal` (FEE-028 as changed by D-1753), and `payments.webhook_event` (Stripe event ID unique, type, received time; app role SELECT and INSERT) is created here for T259's dispatch, so T259 needs no migration of its own; `EntryKind::RefundReversal` joins the enum in `app/payments/src/ledger.rs:14` and the exhaustive match in `app/payments/src/models.rs:782`–`:795` (the money totals). (3) `refunds.rs`: a `succeeded` answer records the refund and appends the `refund` entry as now; `pending` or `requires_action` stores the `re_…` with status `pending`, appends nothing, and the 30-minute check asks Stripe again through `fetch_refund`; `failed` or `canceled` is the FEE-026 failure path (alert, hourly retry). `refund_succeeded(pool, re, now)`, `refund_failed` and `refund_canceled` (the webhook's, T259) move a `pending` row on; a `failed` or `canceled` after `succeeded` appends one `refund-reversal` entry of the same amount keyed by the `re_…`, append-only (no ledger row is updated or deleted), and the FEE-026 retry's next success appends a new `refund` entry keyed by its own `re_…`, so the ledger always nets to what Stripe holds. (4) `reconcile::own_refund` records by the same rule. Every customer-facing \"refunded\" text or notice goes out only on `succeeded`. Update `docs/architecture.md` section 7, the `payments` and `adapters` `CLAUDE.md` files and `docs/decisions.md`.",
+   "type": "harness",
    "phase": 1,
    "stage": "4",
    "module": "payments",
@@ -9092,12 +9093,15 @@
     "T066",
     "T067",
     "T176",
-    "T075"
+    "T075",
+    "T064",
+    "T071"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
+    "harness",
     "money",
     "security"
    ],
@@ -9109,7 +9113,12 @@
     "app/payments/src/ledger.rs",
     "app/payments/src/models.rs",
     "migrations/0124_payments_refunds_and_events.sql",
-    "tests/integration/tests/refund_lifecycle.rs"
+    "tests/integration/tests/refund_lifecycle.rs",
+    "app/payments/src/late.rs",
+    "tests/integration/tests/disputes.rs",
+    "tests/integration/tests/late_success.rs",
+    "tests/integration/tests/reconcile.rs",
+    "tests/integration/tests/ledger_1000_jobs.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -9135,9 +9144,9 @@
    ],
    "cites": [],
    "budget": {
-    "files": 8,
+    "files": 13,
     "lines": 550,
-    "context_pct": 26
+    "context_pct": 35
    },
    "checks": [
     "Ci",
@@ -9146,7 +9155,7 @@
    ],
    "branch": "claude/task/T258-refund-lifecycle",
    "prompt": "kit/prompts/T258.md",
-   "acceptance": "TD-FEE-42 passes against PostgreSQL with a fake `RefundStripe` answering each Stripe refund state; every existing TD-FEE-14, TD-FEE-15 and reconcile case still passes, and no test file outside this task's owns changes (the `PaymentsAdapter` trait is unchanged); the `app/payments/` 95% floor holds."
+   "acceptance": "TD-FEE-42 passes against PostgreSQL with a fake `RefundStripe` answering each Stripe refund state; every existing TD-FEE-14, TD-FEE-15, dispute, late-success, reconcile and 1,000-job case passes with only the trait impl added to its fake, and no case's expected value changes; the five other test files with a `PaymentsAdapter` fake are untouched; the `app/payments/` 95% floor holds."
   },
   {
    "id": "T259",
@@ -14443,7 +14452,7 @@
    "id": "T132",
    "slug": "sandbox-stripe",
    "title": "Stripe test mode behind the adapter; contract and webhook tests against it",
-   "goal": "The Stripe test-mode client sits behind the payments adapter, and the contract and webhook tests pass against it: cards only through Elements and the authorization stored, signed webhooks processed once, idempotency keys on every call, and the ledger reconciling to Stripe test mode (FEE-014, FEE-015, FEE-028 to FEE-030, FEE-032, FEE-036, SEC-016 to SEC-018).",
+   "goal": "The Stripe test-mode client sits behind the payments adapter, and the contract and webhook tests pass against it: cards only through Elements and the authorization stored, signed webhooks processed once, idempotency keys on every call, and the ledger reconciling to Stripe test mode (FEE-014, FEE-015, FEE-028 to FEE-030, FEE-032, FEE-036, SEC-016 to SEC-018). This task also retires `PaymentsAdapter::create_refund` (ID only), moving its remaining callers to T258's typed `RefundStripe` read, once the Stripe test-mode refund shapes are checked (D-1753).",
    "type": "harness",
    "phase": 2,
    "stage": "6",
@@ -14494,7 +14503,8 @@
    ],
    "decisions": [
     "D-365",
-    "D-401"
+    "D-401",
+    "D-1753"
    ],
    "cites": [
     "BUILD_BRIEF.md:191"
@@ -17333,7 +17343,7 @@
    "id": "T268",
    "slug": "business-consent-wiring",
    "title": "portals, businesses and messaging: the sign-up consent box, the welcome request and the welcome and phone-stopped emails",
-   "goal": "T082 built the business consent record and its gates, but D-1715 left their callers unowned: the sign-up form never shows `consent_box` or posts to `record_consent`, activation never calls `request_welcome`, and no handler sends the `businesses.welcome` or `businesses.phone_stopped` email, so a business can be activated with no written E-SIGN consent recorded and never gets the CON-020 welcome (D-1783). (1) `app/portals/templates/business_signup.html` and `app/portals/src/business_signup.rs`: the form shows `businesses::api::consent_box` for the chosen channels, unticked (CON-019, PICK-049's no-pre-ticked rule), and posts it to `record_consent` in the sign-up's transaction; a sign-up without the tick is not submitted and says why. (2) `app/businesses/src/identity.rs` (after T196): activation (`settle`, `approve`) calls `request_welcome` in the same transaction. (3) `app/messaging/src/business_account_emails.rs`: the `businesses.welcome` handler sends `welcome_lines` with the contact-card file and calls `welcome_sent` after the provider accepts; the `businesses.phone_stopped` handler sends `stopped_email_line` with the last 4 digits read from the vault to the owner's account address; both registered in the shared `app/server/src/bin/worker.rs`, deduped per business and kind. Update the `businesses`, `messaging` and `portals` `CLAUDE.md` files and `docs/decisions.md`.",
+   "goal": "T082 built the business consent record and its gates, but D-1715 left their callers unowned: the sign-up form never shows `consent_box` or posts to `record_consent`, activation never calls `request_welcome`, and no handler sends the `businesses.welcome` or `businesses.phone_stopped` email, so a business can be activated with no written E-SIGN consent recorded and never gets the CON-020 welcome (D-1783). (1) `app/portals/templates/business_signup.html` and `app/portals/src/business_signup.rs`: the form shows `businesses::api::consent_box` for the chosen channels, unticked (CON-019, PICK-049's no-pre-ticked rule), and posts it to `record_consent` in the sign-up's transaction; a sign-up without the tick is not submitted and says why. (2) `app/businesses/src/identity.rs` (after T196): activation (`settle`, `approve`) calls `request_welcome` in the same transaction. (3) `app/messaging/src/business_account_emails.rs`: the `businesses.welcome` handler sends the CON-020 welcome as an email whose body is `businesses::api::welcome_lines` (`app/businesses/src/consent.rs:341`, T082's, with T199's card link) in the shared email layout (`app/messaging/templates/email_layout.html`), never a text, so it goes out while the business-texting switch is off (TXT-035), with the contact-card file and calls `welcome_sent` after the provider accepts; the `businesses.phone_stopped` handler sends `stopped_email_line` with the last 4 digits read from the vault to the owner's account address; both registered in the shared `app/server/src/bin/worker.rs`, deduped per business and kind. Update the `businesses`, `messaging` and `portals` `CLAUDE.md` files and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -18050,7 +18060,7 @@
    "id": "T265",
    "slug": "closure-register-check",
    "title": "stage exit: a security, money or privacy handoff in the integration-closure register may not be left with no live owner",
-   "goal": "Decisions hand work to later tasks that are already DONE or do not own the files (D-1684, D-1685, D-1688, D-1712, D-1715 and others), and no check notices (external audit A12, D-1760). `docs/integration-closure.md` is the one register of cross-module handoffs. Add to `scripts/stage_exit.py` a fifth condition: read the register's table; a row whose area is `security`, `money` or `privacy` and whose status is not `closed` is judged at stage N only when every owner it names has a `stage` at or below N in `kit/tasks.json` (a row with a later-stage owner, or none of whose owners exists yet, is printed and not failed at N, because the runner re-runs `stage_exit.evaluate()` for every earlier stage on every claim, `runner/state.py:403`, and an earlier stage must not close again behind it); a judged row fails when it names no owner task, a task id missing from `kit/tasks.json`, or only tasks DONE or SKIPPED in the state; a row with no owner at all fails at every stage; a `closed` row must carry evidence (a merged commit SHA or PR number and a test name) or it fails too; rows of other areas are printed, never failing. The reasons print one per line as the other conditions do. Tests in `tests/test_stage_exit.py` (new cases only; every existing case passes unchanged): an open gating row with a queued owner passes; an open row whose owners are DONE but one owner sits in a later stage passes at the earlier stage and fails at that later stage; with only DONE owners fails, with no owner fails, with an unknown task fails, a closed row without evidence fails, a non-gating unowned row passes with a printed line, and a missing register file fails.",
+   "goal": "Decisions hand work to later tasks that are already DONE or do not own the files (D-1684, D-1685, D-1688, D-1712, D-1715 and others), and no check notices (external audit A12, D-1760). `docs/integration-closure.md` is the one register of cross-module handoffs. Add to `scripts/stage_exit.py` a fifth condition: read the register's table; a row whose area is `security`, `money` or `privacy` and whose status is not `closed` is judged at stage N only when every owner it names has a `stage` at or below N in `kit/tasks.json` (a row with a later-stage owner is printed and not failed at N, because the runner re-runs `stage_exit.evaluate()` for every earlier stage on every claim, `runner/state.py:403`, and an earlier stage must not close again behind it); a judged row fails when it names only tasks DONE or SKIPPED in the state; a row with no owner at all, or naming a task id missing from `kit/tasks.json`, fails at every stage; a `closed` row must carry evidence (a merged commit SHA or PR number and a test name) or it fails too; rows of other areas are printed, never failing. The reasons print one per line as the other conditions do. Tests in `tests/test_stage_exit.py` (new cases only; every existing case passes unchanged): an open gating row with a queued owner passes; an open row whose owners are DONE but one owner sits in a later stage passes at the earlier stage and fails at that later stage; with only DONE owners fails, with no owner fails, with an unknown task fails, a closed row without evidence fails, a non-gating unowned row passes with a printed line, and a missing register file fails.",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -18104,7 +18114,7 @@
    "id": "T267",
    "slug": "a11y-page-states-split",
    "title": "Ally harness: page states move to a shared data file; the check machinery returns to owner-only",
-   "goal": "D-1772 made `tests/a11y/fixtures.ts` a shared path so a page-adding task can add its `PAGE_STATES` entry, but the same file holds the Ally check machinery (`WCAG_TAGS` at `tests/a11y/fixtures.ts:25`, `REVIEWED_INCOMPLETE` at `:28`, `NOT_PAGES`, `readRouteTable` at `:73`, `axeScan` at `:180`), so a shared-path edit could weaken the checks, and only a reviewer notices (D-1783). Split it. (1) New `tests/a11y/page_states.ts` holds only data: the `PageState` type, `PAGE_STATES`, and per-route seed helpers, so each route's states carry their own seeding (today `PAGE_STATES` is one `.map()` over `QUOTE_ROUTE`, `fixtures.ts:129`–`:137`, and `seed()` assumes a quote token, `:144`–`:153`): each entry names its route, its states and a seed function returning the path to open, with the quote-page states moved unchanged. (2) `tests/a11y/fixtures.ts` imports them and keeps `ROUTES`, `STATES_TO_CHECK` (the filter against the route table is check logic, so the shared file can never narrow what is checked), `NOT_PAGES`, `WCAG_TAGS`, `REVIEWED_INCOMPLETE`, `readRouteTable`, `axeScan` and the test fixture, and re-exports `PAGE_STATES`, so no importing spec changes. (3) `scripts/validate_tasks.py` `ALLOWED_SHARED` gains `tests/a11y/page_states.ts` with the D-1772 comment moved to it; `fixtures.ts` stays in the list until the plan change after this task drops it from `shared_paths` and `ALLOWED_SHARED` together (a task branch cannot change `kit/tasks.json`). (4) `kit/prompts/TEMPLATE.md`'s shared-path sentence names `tests/a11y/page_states.ts` instead of `fixtures.ts` (regenerate the prompts). Every page-state entry on `main` when this task starts (T084's sign-in page included) moves across unchanged.",
+   "goal": "D-1772 made `tests/a11y/fixtures.ts` a shared path so a page-adding task can add its `PAGE_STATES` entry, but the same file holds the Ally check machinery (`WCAG_TAGS` at `tests/a11y/fixtures.ts:25`, `REVIEWED_INCOMPLETE` at `:28`, `NOT_PAGES`, `readRouteTable` at `:73`, `axeScan` at `:180`), so a shared-path edit could weaken the checks, and only a reviewer notices (D-1783). Split it. (1) New `tests/a11y/page_states.ts` holds only data: the `PageState` type, `PAGE_STATES`, and per-route seed helpers, so each route's states carry their own seeding (today `PAGE_STATES` is one `.map()` over `QUOTE_ROUTE`, `fixtures.ts:129`–`:137`, and `seed()` assumes a quote token, `:144`–`:153`): each entry names its route, its states and a seed function returning the path to open, with the quote-page states moved unchanged. (2) `tests/a11y/fixtures.ts` imports them and keeps `ROUTES`, `STATES_TO_CHECK` (the filter against the route table is check logic, so the shared file can never narrow what is checked), `NOT_PAGES`, `WCAG_TAGS`, `REVIEWED_INCOMPLETE`, `readRouteTable`, `axeScan` and the test fixture, and re-exports `PAGE_STATES`, so no importing spec changes. (3) `tests/a11y/page_states.ts` is already a shared path (`shared_paths`, `ALLOWED_SHARED` and the template's sentence, D-1783), so every later page-adding task adds its entry there; `fixtures.ts` stays shared until the plan change after this task drops it from both lists (register row IC-36). Every page-state entry on `main` when this task starts (T084's sign-in page included) moves across unchanged.",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -18122,9 +18132,7 @@
    ],
    "owns": [
     "tests/a11y/fixtures.ts",
-    "tests/a11y/page_states.ts",
-    "scripts/validate_tasks.py",
-    "kit/prompts/TEMPLATE.md"
+    "tests/a11y/page_states.ts"
    ],
    "reads": [
     "docs/code-docs.md",
@@ -18145,9 +18153,9 @@
    ],
    "cites": [],
    "budget": {
-    "files": 4,
+    "files": 2,
     "lines": 300,
-    "context_pct": 14
+    "context_pct": 7
    },
    "checks": [
     "Ci",
@@ -18156,7 +18164,7 @@
    ],
    "branch": "claude/task/T267-a11y-page-states-split",
    "prompt": "kit/prompts/T267.md",
-   "acceptance": "TD-A11Y-03 passes; `Ally` is green on the task's head with the same (route, state) pairs as `main`; `WCAG_TAGS`, `REVIEWED_INCOMPLETE`, `NOT_PAGES`, `readRouteTable` and `axeScan` are byte-identical to `main`; `python3 scripts/validate_tasks.py` and `python3 -m pytest tests/test_validate_tasks.py` pass."
+   "acceptance": "TD-A11Y-03 passes; `Ally` is green on the task's head with the same (route, state) pairs as `main`; `WCAG_TAGS`, `REVIEWED_INCOMPLETE`, `NOT_PAGES`, `readRouteTable` and `axeScan` are byte-identical to `main`."
   },
   {
    "id": "T249",

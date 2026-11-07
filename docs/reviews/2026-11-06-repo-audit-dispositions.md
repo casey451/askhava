@@ -17,7 +17,7 @@ Verdicts: **confirmed** (the code shows it on current `main`), **owned** (alread
 | A08 (rest) Served Confirm route, Confirm-only CSP, `handleNextAction`, webhook dispatch, substitute-only e2e | Confirmed | No `/b/picks/{pick}/confirm` route in `app/server/src/lib.rs` (D-1740 (1) left it unowned); `app/portals/src/security.rs:67` overwrites every CSP; `app/portals/templates/confirm_pay.html:39` loads Stripe.js; `app/portals/static/confirm_pay.ts:95` ignores `handleNextAction`'s result; `app/payments/src/routes.rs:124` handles only `payment_intent.succeeded`, no event-ID record (SEC-017); no `IntentStripe` outside `tests/integration/tests/confirm_and_pay.rs`; the stand-in has no confirm endpoint. T084 (retrying after its first attempt failed `Ally`, D-1772) owns session scoping only and is not changed; T132 is stage 6 | T259, T260 (harness), T261 (new; T261 depends on T084 and T232); T099 now depends on T261 | TD-FEE-43, TD-FEE-44, TD-FEE-45, TD-SEC-37 | D-1754 |
 | A09 Call PIN = line ID mod 10,000; no durable try counts | Confirmed | `app/calls/src/routing.rs:90`; `tries_today` is caller input (`routing.rs:123`, `:163`); D-1684/D-1685 named T078/T080, both DONE; no inbound-voice route (`app/calls/CLAUDE.md`, D-1708) | T262 (new) | TD-CALL-13, TD-CALL-14 | D-1755 |
 | A10 Identity send key reused after a record contact change | Confirmed | `app/businesses/src/identity.rs:156` keys on business and step only; D-1712 | T196 (extended; it already owns `identity.rs`) | TD-BIZ-40 | D-1756 |
-| A11 Monthly fee limit is a soft cap; `set_fee_limit` not atomic | Confirmed; product decision taken (hard cap) | `app/payments/src/charge.rs:413`–`:443` (check outside any lock), `:394` (delete then insert); D-1427's last sentence accepts overshoot | T263 (new); T209 now depends on it | TD-FEE-46 | D-1758 (replaces D-1427's soft-guard choice; the rest of D-1427 stands) |
+| A11 Monthly fee limit is a soft cap; `set_fee_limit` not atomic | Confirmed; product decision taken (hard cap) | `app/payments/src/charge.rs:413`–`:443` (check outside any lock), `:394` (delete then insert); D-1427's last sentence accepts overshoot | T263 (new); T209 now depends on it | TD-FEE-46 | D-1758 (sets aside D-1427's last sentence, its soft-guard choice; the rest of D-1427 stands) |
 | A12 Integration-closure register | Confirmed (no mechanical check) | Handoffs to DONE tasks: D-1684, D-1685 (T078/T080), D-1688 (T079), D-1712 (T193's note), D-1715 (no owner for its wiring), D-990 (no owner after T156/T208) | `docs/integration-closure.md`; T265 (new, harness) | TD-OPS-31; D-1715 gates TD-BIZ-41 (T251), TD-TXT-17 extended (T147) | D-1760 |
 
 ## Follow-ups the overseer added after the release plan change (D-1761)
@@ -44,6 +44,18 @@ Verdicts: **confirmed** (the code shows it on current `main`), **owned** (alread
 | S8 counts and states | Register count, T084's state, reviews recorded in D-1752 and D-1753 |
 | S1 lock the register | Two-step follow-up, register row IC-35 (D-1760 (2)) |
 | Overseer: `fixtures.ts` shared path also holds the checks | New harness task T267, register row IC-34, governance section 2 reader row (D-1783) |
+
+## Second fix round after the Fable re-review of 2943cc9 (request changes)
+
+| Item | What changed |
+|---|---|
+| B1 still open: the public refund functions and T064's `run_late_refund` must take `RefundStripe`, breaking four DONE tasks' fakes | T258 is a harness task owning `app/payments/src/late.rs` and `tests/integration/tests/{disputes,late_success,reconcile,ledger_1000_jobs}.rs`; each fake gains one `impl RefundStripe`, no expected value changes (D-1753) |
+| B4 no task could edit `tests/a11y/page_states.ts` after T267 | Added now to `shared_paths` and `ALLOWED_SHARED`; the template names `fixtures.ts` until T267, then `page_states.ts`; T267 owns only the two test files (D-1783) |
+| S-a D-1758 marked all of D-1427 superseded | Reworded ("sets aside only D-1427's last sentence"); `superseded_map` no longer lists D-1427 |
+| S-b T265 rule inconsistency | An unknown task id, like no owner, fails at every stage (T265, TD-OPS-31, D-1760) |
+| S-c T132 retires `create_refund` | Stated in T132's goal; D-1753 listed |
+| S-d where `EntryKind` lives | `ledger.rs:14`, match in `models.rs:782` (T258, D-1753) |
+| S-e where CON-020's welcome lands | An email built from `welcome_lines` in the shared email layout, never a text, so it is not held by TXT-035 (T268) |
 
 ## Improvements list (audit section "Improvements justified by the code")
 
