@@ -4,7 +4,7 @@
 -- opened her email. The business portal's released view (picks::api::released_view) reopens
 -- exactly this contact and these fields, never one looked up again. Both are NOT NULL with no
 -- default: no picks.release row exists before Gate C, so the table is empty when this runs.
--- picks.release stays append-only for askhava_app (0106's REVOKE is unchanged).
+-- picks.release stays append-only for the app role (0106's REVOKE is unchanged).
 
 ALTER TABLE picks.release
   ADD COLUMN contact_id uuid NOT NULL,
