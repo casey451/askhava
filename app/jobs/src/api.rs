@@ -7,7 +7,8 @@
 //! a restore (JOB-024); the homeowner-text event and its due check, the every-window-ended entry
 //! point and the Connected check-in reply (JOB-010 to JOB-015, JOB-025, JOB-026, TXT-042); the
 //! first-quote move to Quotes ready that `quotes` calls in the quote's transaction (JOB-009,
-//! JOB-011, TXT-016, D-1517).
+//! JOB-011, TXT-016, D-1517); the day-3 and day-14 check-ins, their answers, the PROBLEM listing
+//! and the feedback request after Done (JOB-015, JOB-016, JOB-028, TXT-029, T097).
 
 use askhava_core::api::Guarded;
 use askhava_ops::api::Actor;
@@ -15,6 +16,11 @@ use jiff::Timestamp;
 use sqlx::PgConnection;
 use sqlx::types::Uuid;
 
+pub use crate::followups::{
+    Answer, CHECK_IN_DAY3, CHECK_IN_DAY14, CHECK_IN_KIND, FEEDBACK_REQUEST, Inbound, Next,
+    PROBLEM_ALERT, PROBLEM_REPLY, PROBLEM_SAFETY_ALERT, after_answer, answer_check_in,
+    check_in_times, parse_answer, run_check_in, schedule_check_ins,
+};
 pub use crate::handlers::{TEXT_KIND, all_windows_ended, connected_reply, text_due};
 pub use crate::models::{JobRow, JobsError};
 pub use crate::purge_events::{

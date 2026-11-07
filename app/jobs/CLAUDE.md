@@ -2,13 +2,13 @@
 
 ## Purpose
 
-The layer-4 crate that owns every job's one status and the only code that changes it (`docs/architecture.md` section 6). A job moves only along the section 6 arrows; each move writes a history row and an audit row and queues the new status's timer in one transaction. T031 built the statuses, arrows, history and timers; T179 job numbers, T014 quote-page tokens; T032 the timeout texts, the every-window-ended entry point and the Connected reply; T247 the first-quote move (`first_quote`); T230 adds feedback.
+The layer-4 crate that owns every job's one status and the only code that changes it (`docs/architecture.md` section 6). A job moves only along the section 6 arrows; each move writes a history row and an audit row and queues the new status's timer in one transaction. T031 built the statuses, arrows, history and timers; T179 job numbers, T014 quote-page tokens; T032 the timeout texts, the every-window-ended entry point and the Connected reply; T247 the first-quote move (`first_quote`); T097 the check-ins, their answers, the PROBLEM listing and the feedback request (`followups`); T230 adds the feedback page.
 
 ## What it owns
 
 - `src/lib.rs`: the crate root; one `mod` line per file.
-- `src/api.rs`: the only public surface: `JobStatus`, `JobRow`, `JobsError`, `create`, `move_to`, `restart_timer`, `current`, `job_number`, `raise_number_floor`, `run_timer`, `TIMER_KIND`, `TEXT_KIND`, `text_due`, `all_windows_ended`, `connected_reply`, `first_quote` (written in `api.rs`, T247), `api::quote_token` (`issue`, `revoke`, `resolve`, `TokenError`: `NoRandom`, `Busy`, `Database`), and `api::rules` (`check_move`, `timeout`, `Timeout`, `Wait`, `Refused`, `connected_move`, `Reply`, `CheckIn`, `Contact`, `after_windows`, `Windows`, `WindowsEnd`).
-- `src/status.rs`: `JobStatus` (the twelve, `ALL`, `code`, `from_code`, `targets` = the arrows, `can_move_to`, `wait` = each status's timeout and target, `timeout_text` = the text its timeout sends, `awaits_pick`, `takes_late_cards` = Open or No quotes yet for CARD-018, `moves_on_first_quote` = Open or No quotes yet for JOB-009 and JOB-011, `takes_quotes` = Open to Awaiting confirm for PICK-001 and D-043, `takes_quote_edits` = Open to Quotes ready for PICK-051, `takes_pick` = Quotes ready and Awaiting confirm for PICK-012, PICK-032 and PICK-045 (T246, D-1516), `is_final`). Every `match` on a status lives here.
+- `src/api.rs`: the only public surface: `JobStatus`, `JobRow`, `JobsError`, `create`, `move_to`, `restart_timer`, `current`, `job_number`, `raise_number_floor`, `run_timer`, `TIMER_KIND`, `TEXT_KIND`, `text_due`, `all_windows_ended`, `connected_reply`, `first_quote` (written in `api.rs`, T247), from `followups` (T097): `CHECK_IN_KIND`, `CHECK_IN_DAY3`, `CHECK_IN_DAY14`, `FEEDBACK_REQUEST`, `PROBLEM_REPLY`, `PROBLEM_ALERT`, `PROBLEM_SAFETY_ALERT`, `Answer`, `Next`, `Inbound`, `parse_answer`, `after_answer`, `check_in_times`, `schedule_check_ins`, `run_check_in`, `answer_check_in`, `api::quote_token` (`issue`, `revoke`, `resolve`, `TokenError`: `NoRandom`, `Busy`, `Database`), and `api::rules` (`check_move`, `timeout`, `Timeout`, `Wait`, `Refused`, `connected_move`, `Reply`, `CheckIn`, `Contact`, `after_windows`, `Windows`, `WindowsEnd`).
+- `src/status.rs`: `JobStatus` (the twelve, `ALL`, `code`, `from_code`, `targets` = the arrows, `can_move_to`, `wait` = each status's timeout and target, `timeout_text` = the text its timeout sends, `awaits_pick`, `takes_late_cards` = Open or No quotes yet for CARD-018, `moves_on_first_quote` = Open or No quotes yet for JOB-009 and JOB-011, `takes_quotes` = Open to Awaiting confirm for PICK-001 and D-043, `takes_quote_edits` = Open to Quotes ready for PICK-051, `takes_pick` = Quotes ready and Awaiting confirm for PICK-012, PICK-032 and PICK-045 (T246, D-1516), `takes_check_ins` = Connected for JOB-015 and JOB-028 (T097), `is_final`). Every `match` on a status lives here.
 - `src/rules.rs`: pure rules, no I/O: `check_move`, `timeout` (backstop timer per waiting status, business or emergency clock) and the timer constants, `connected_move` (JOB-015) and `after_windows` (JOB-025).
 - `src/handlers.rs` (T032, D-871, D-872): the `jobs.homeowner_text` event (`queue_text`, `TEXT_KIND`, `text_due`), `all_windows_ended` (called by `quotes`, T046) and `connected_reply`.
 - `src/models.rs`: `JobsError`, `JobRow` and the queries (`insert_job`, `load`, `guarded_move`, `restart_wait`, `insert_history`).
@@ -19,6 +19,7 @@ The layer-4 crate that owns every job's one status and the only code that change
 - Migration `0031_jobs_state_machine.sql`: the `jobs` schema and grants, `jobs.job` (status `CHECK` of the twelve codes, `version`, `emergency`, `status_at`, `timer_from`, `timer_version`), `jobs.status_history` (append-only).
 - `sqlx.toml`: `'TIMESTAMPTZ'` reads as `jiff_sqlx::Timestamp`.
 - `src/purge_events.rs` (T092, D-1799): `PURGE_DUE_KIND`, `SWEEP_KIND`, `PURGE_STAGES`, `enqueue_purge`, `sweep_closed`, `schedule_sweep`, `run_sweep`: the daily sweep queues each final job's photo, contact and text purge stages for `privacy` at `status_at` plus 30, 180 and 1,096 days for every final job (no look-back limit), deduped by job and stage (PRIV-007 to PRIV-009; `tests/integration/tests/retention_purge.rs`).
+- `src/followups.rs` (T097, D-1809 to D-1811): the `jobs.check_in` tasks (`schedule_check_ins`, `check_in_times`, `run_check_in`), the answer reader `parse_answer`, the pure `after_answer` and `answer_check_in` (the move with its text, and for PROBLEM the `ops.alert` naming the inbox row).
 
 ## Rules it enforces
 
@@ -38,6 +39,9 @@ The layer-4 crate that owns every job's one status and the only code that change
 - SEC-031: every `match` on `JobStatus` lives in `status.rs`, which denies `clippy::wildcard_enum_match_arm`; `scripts/check_rust_rules.py` fails anything else, and `tests/security/tests/status_enums.rs` proves the scan catches each planted shape (D-852).
 - SEC-037, PICK-028: `quote_token` stores only the token's SHA256 and its salt; a re-issued or revoked token resolves to nothing. The salt's copy to the off-database stream waits on an `ops` stream event (D-817).
 
+- JOB-015, JOB-028 (D-1809): `followups::schedule_check_ins` queues day 3 (later of release and visit) and day 14 (release); `run_check_in` texts only while Connected; DONE or LISTO and ONGOING or CONTINUO go to Done with the one `feedback_request`, OTHER or OTRO closes with no no-show, LATER or MÁS TARDE moves nothing.
+- JOB-016, TXT-029, D-071, D-222 (D-1810): `answer_check_in` closes a PROBLEM with `problem_reply` and raises `jobs.problem_report` (digest) or `jobs.problem_report_safety` (OPS-032 push, the caller's `has_safety_word`) naming the `messaging.inbox` row, in the move's transaction; no fee changes. Known gaps (D-1811): the check-in and feedback templates, and the callers of `schedule_check_ins` and `answer_check_in`.
+
 ## Never break
 
 - The arrows equal the hand-written oracle of section 6: `src/tests/prop_job_machine.rs::the_arrows_are_the_architectures`.
@@ -54,6 +58,8 @@ The layer-4 crate that owns every job's one status and the only code that change
 - A job number is never reused, a restore included: `tests/integration/tests/job_numbers.rs::td_job_06_a_texted_number_is_not_reused_after_a_restore`.
 - A token is never stored, logged or audited; only its hash and salt: `tests/integration/tests/webhook_dedupe.rs::td_sec_16_reissue_and_revoke_and_replay`.
 - `JobsError` never carries a value or the database's message (PRIV-016).
+
+- A check-in or feedback text never goes after the job left Connected, a PROBLEM is listed once, and OTHER never records a no-show: `tests/integration/tests/followups.rs`.
 
 ## How to change
 
@@ -72,5 +78,6 @@ The layer-4 crate that owns every job's one status and the only code that change
 - `tests/integration/tests/first_quote_move.rs` (TD-JOB-11: the move and its one text in the quote's transaction, rolled back with a failed quote, no second move, No quotes yet with its stale text dropped, the old wait, the 3-day close from the move and after a restart, two first quotes at once, AI-read on confirm, "2 YES" after two quotes; JOB-009, JOB-011, TXT-016): `cargo test -p askhava-integration --test first_quote_move`.
 - `tests/integration/tests/job_numbers.rs` (TD-JOB-06: numbers from 1001 kept after cancel, concurrent creates, the app role cannot rewrite or re-issue one, a simulated restore and the raised floor; JOB-024).
 - `tests/integration/tests/job_races.rs` (TD-JOB-02: a cancel and a Confirm, a Stripe notice and the payment deadline, a pick and the 3-day close, two picks, each staged in both orders behind a held row lock, plus unstaged races; JOB-004): `cargo test -p askhava-integration --test job_races`.
+- `tests/integration/tests/followups.rs` (TD-JOB-04, TD-JOB-08, TD-JOB-09, TD-TXT-13: reply words in both languages, the check-in times, LATER, ONGOING, OTHER, PROBLEM digest and safety alerts, the TXT-029 text; JOB-015, JOB-016, JOB-028, TXT-029): `cargo test -p askhava-integration --test followups`.
 - `tests/security/tests/status_enums.rs` (TD-SEC-12: the scan is clean, fails on each planted shape, every `status.rs` denies wildcard arms; SEC-031).
 - `tests/integration/tests/webhook_dedupe.rs` (TD-SEC-16: re-issue, revoke, replay from the stored salt, one audit row each, a revoke stamped before the issue, the concurrent-issue race; SEC-037).

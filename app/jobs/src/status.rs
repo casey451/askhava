@@ -205,6 +205,13 @@ impl JobStatus {
         matches!(self, Self::QuotesReady | Self::AwaitingConfirm)
     }
 
+    /// True for Connected, the only status that gets the day-3 and day-14 check-ins and takes
+    /// their replies (JOB-015, JOB-028, T097).
+    #[must_use]
+    pub const fn takes_check_ins(self) -> bool {
+        matches!(self, Self::Connected)
+    }
+
     /// True for the five final statuses, which wait for nothing (JOB-001, JOB-003).
     #[must_use]
     pub const fn is_final(self) -> bool {

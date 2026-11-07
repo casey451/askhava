@@ -303,6 +303,10 @@ where
     offdb_stream::register(&mut registry, stream);
     registry.register(askhava_jobs::api::TIMER_KIND, askhava_jobs::api::run_timer);
     registry.register(
+        askhava_jobs::api::CHECK_IN_KIND,
+        askhava_jobs::api::run_check_in,
+    );
+    registry.register(
         askhava_quotes::api::WINDOWS_KIND,
         askhava_quotes::api::run_windows_end,
     );
