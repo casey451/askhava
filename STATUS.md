@@ -1,19 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-07T16:09:52Z by runner 9a710c0416a0 (actions).
+Updated 2026-11-07T16:29:04Z by runner 9a710c0416a0 (actions).
 
-**Idle since 15:54Z; 141 of 269 done; week 41% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T093 in progress since 16:20Z; 141 of 269 done; week 41% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 141 of 269 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 15:54Z (no task in progress)
-- **Week:** 41% used, 114.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:09Z, 0 min before this update
+- **Lane:** lane 1: T093 claimed 16:20Z, lease until 19:20Z
+- **Week:** 41% used, 112.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Last run:** 16:09Z, 19 min before this update
 - **Keeper:** last ran 16:09Z, next wake 16:29Z
 
 ## Needs attention
-- PLAN GAP T093 (since 2026-11-07T08:52:58Z, no attempt used; a plan change fixes it): T093: dependency T092 is DONE but its owned file app/messaging/src/purge.rs is not on main
-- PLAN GAP T253 (since 2026-11-07T08:52:58Z, no attempt used; a plan change fixes it): T253: dependency T092 is DONE but its owned file app/messaging/src/purge.rs is not on main
+- nothing
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -46,7 +45,6 @@ Updated 2026-11-07T16:09:52Z by runner 9a710c0416a0 (actions).
 - 05:10Z Plan: repo audit findings — owners and acceptance for A01–A06, A08–A12 (D-1751–D-1761, D-1788) (#316)
 - 03:59Z Plan: tests/a11y/fixtures.ts is a shared page-state registry (D-1772) (#314)
 - 03:48Z Plan: business-session read of released picks, release recovery tests, production release wiring (D-1739, D-1740) (#313)
-- 16:15Z Plan: dynamic SQL in migrations is a TD-SEC-10 finding (T252), T126 context budget, stored budgets refreshed (D-1677, D-1678) (#298)
 
 ## Progress (requirements verified)
 
@@ -79,7 +77,7 @@ Updated 2026-11-07T16:09:52Z by runner 9a710c0416a0 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-07T15:02:15Z (week)): five-hour: 3.7M used, 25.4M left, resets 2026-11-07T19:31:51Z; week: 80.0M used, 114.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-11-22T23:14:49Z.
+- Pacing (session_reading 2026-11-07T16:09:38Z (week)): five-hour: 7.0M used, 22.1M left, resets 2026-11-07T19:31:51Z; week: 82.0M used, 112.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-11-24T03:16:45Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -94,7 +92,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T093 (lease until 2026-11-07T19:20:06Z)
 
 ## Last usage reading
 - {"task": "T196", "at": "2026-11-07T15:54:17Z", "output_tokens": 224467, "cache_creation_input_tokens": 668214, "input_tokens": 447, "cache_read_input_tokens": 23389758}
