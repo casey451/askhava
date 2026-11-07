@@ -1482,12 +1482,16 @@ def test_claims_reserve_above_the_decisions_of_open_plan_pull_requests(repo: dic
     assert env.decision_numbers() == {1, 40}, "an unreadable pull-request list leaves main's numbers"
 
 
-def test_a_smoke_test_that_outruns_its_budget_is_a_red_smoke_not_a_crash(repo: dict[str, Path], tmp_path: Path) -> None:
+def test_a_smoke_test_that_outruns_its_budget_is_a_red_smoke_not_a_crash(repo: dict[str, Path], tmp_path: Path,
+                                                                          monkeypatch: pytest.MonkeyPatch) -> None:
     """D-1178: scripts/smoke.sh gets SMOKE_TIMEOUT seconds; past them the cycle records a red smoke with
     the reason instead of dying on TimeoutExpired, so the row is written and the next run tries again."""
     import subprocess
 
     from runner import github_env
+
+    monkeypatch.setenv("RUNNER_TEMP", str(tmp_path / "temp"))  # the fixed smoke tree and target stay in this test (D-1890)
+    monkeypatch.setenv("CARGO_TARGET_DIR", str(tmp_path / "target"))
 
     def slow(args: list[str], stdin: str | None, cwd: Path) -> tuple[int, str, str]:
         if args[:2] == ["bash", "scripts/smoke.sh"]:
@@ -1499,6 +1503,8 @@ def test_a_smoke_test_that_outruns_its_budget_is_a_red_smoke_not_a_crash(repo: d
     assert ok is False and head == env.main_head()
     assert env.log[-1] == f"smoke on {head[:12]}: exit 124; smoke timed out after {github_env.SMOKE_TIMEOUT} seconds"
     assert github_env.SMOKE_TIMEOUT < 600, "the session's Bash call is 600 seconds; the runner must answer first"
+    assert not github_env.smoke_tree_dir().exists(), "the fixed smoke tree is removed after a timed-out run too"
+    assert json.loads((tmp_path / "target" / "smoke" / github_env.SMOKE_MTIMES).read_text()), "pinned before the run"
 
 
 def test_run_command_gives_the_smoke_its_own_timeout(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -1518,9 +1524,9 @@ def test_run_command_gives_the_smoke_its_own_timeout(monkeypatch: pytest.MonkeyP
     github_env.run_command(["bash", "scripts/smoke.sh"], None, Path("."))
     github_env.run_command(["git", "status"], None, Path("."))
     assert seen == [github_env.SMOKE_TIMEOUT, 600]
-    assert github_env._smoke_env()["CARGO_TARGET_DIR"] == "/work/askhava/target", "the smoke reuses the job's cached build"
+    assert github_env._smoke_env()["CARGO_TARGET_DIR"] == "/work/askhava/target/smoke", "the smoke's own folder of the cached target (D-1890)"
     monkeypatch.setenv("CARGO_TARGET_DIR", "/elsewhere")
-    assert github_env._smoke_env()["CARGO_TARGET_DIR"] == "/elsewhere"
+    assert github_env._smoke_env()["CARGO_TARGET_DIR"] == "/elsewhere/smoke", "never the worker's target dir itself"
 
 
 def test_the_handoff_says_when_the_worker_must_hand_in() -> None:
