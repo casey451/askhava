@@ -510,5 +510,71 @@
     "draft": true,
     "segments": 1,
     "text": "Ask Hava: No pudimos leer ese mensaje. Para cotizar, confirmar o cambiar ajustes, use su portal: https://askhava.com/b. Escriba AYUDA para recibir ayuda."
+  },
+  "business_no_call_reminder_email": {
+    "audience": "business",
+    "draft": true,
+    "segments": 6,
+    "text": "Ask Hava: Trabajo {job}: aún no hay llamada. Llame dentro de 72 horas de la entrega, o la tarifa no se puede reembolsar. Llame entre las 8 a.m. y las 8 p.m., hora de Arizona (a cualquier hora en un trabajo de emergencia). Sus 2 intentos pueden ser en días distintos. El cliente eligió correo electrónico; sus 2 intentos de llamada siguen contando para el reembolso."
+  },
+  "unreachable_closed": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 2,
+    "text": "Ask Hava: {business} no pudo comunicarse con usted. Escríbanos cuando quiera para empezar de nuevo."
+  },
+  "emailed_question": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 2,
+    "text": "Ask Hava: ¿{business} le envió un correo y acordaron una hora? Responda SÍ o NO."
+  },
+  "unreachable_refunded": {
+    "audience": "business",
+    "draft": true,
+    "segments": 6,
+    "text": "Ask Hava: Trabajo {job}: su tarifa de presentación se reembolsa. Llamó 2 veces, con al menos 3 horas de diferencia, dentro de 72 horas de la entrega y en el horario de llamadas. Nadie contestó y le avisamos al cliente que usted llamó. ¿Preguntas? Use el formulario Preguntar por un cargo en su página de facturación en https://askhava.com/b."
+  },
+  "unreachable_no_talked": {
+    "audience": "business",
+    "draft": true,
+    "segments": 4,
+    "text": "Ask Hava: Trabajo {job}: no hay reembolso de su tarifa de presentación. Una persona contestó una de las llamadas entre usted y el cliente. ¿Preguntas? Use el formulario Preguntar por un cargo en su página de facturación en https://askhava.com/b."
+  },
+  "unreachable_no_attempts": {
+    "audience": "business",
+    "draft": true,
+    "segments": 6,
+    "text": "Ask Hava: Trabajo {job}: no hay reembolso de su tarifa de presentación. No encontramos ninguna llamada suya dentro de 72 horas de la entrega, de 8 a.m. a 8 p.m., hora de Arizona (a cualquier hora en un trabajo de emergencia). El reembolso necesita 2. ¿Preguntas? Use el formulario Preguntar por un cargo en su página de facturación en https://askhava.com/b."
+  },
+  "unreachable_no_one_attempt": {
+    "audience": "business",
+    "draft": true,
+    "segments": 6,
+    "text": "Ask Hava: Trabajo {job}: no hay reembolso de su tarifa de presentación. Solo 1 de sus llamadas fue dentro de 72 horas de la entrega, de 8 a.m. a 8 p.m., hora de Arizona (a cualquier hora en un trabajo de emergencia). El reembolso necesita 2. ¿Preguntas? Use el formulario Preguntar por un cargo en su página de facturación en https://askhava.com/b."
+  },
+  "unreachable_no_too_close": {
+    "audience": "business",
+    "draft": true,
+    "segments": 5,
+    "text": "Ask Hava: Trabajo {job}: no hay reembolso de su tarifa de presentación. Sus 2 llamadas tuvieron menos de 3 horas de diferencia. El reembolso las necesita con al menos 3 horas de diferencia. ¿Preguntas? Use el formulario Preguntar por un cargo en su página de facturación en https://askhava.com/b."
+  },
+  "unreachable_no_notice": {
+    "audience": "business",
+    "draft": true,
+    "segments": 5,
+    "text": "Ask Hava: Trabajo {job}: no hay reembolso de su tarifa de presentación. No tuvimos forma de enviarle al cliente el mensaje de que usted llamó, y el reembolso necesita que ese mensaje salga. ¿Preguntas? Use el formulario Preguntar por un cargo en su página de facturación en https://askhava.com/b."
+  },
+  "unreachable_no_reply": {
+    "audience": "business",
+    "draft": true,
+    "segments": 4,
+    "text": "Ask Hava: Trabajo {job}: no hay reembolso de su tarifa de presentación. El cliente respondió a nuestra consulta con LISTO o PROBLEMA. ¿Preguntas? Use el formulario Preguntar por un cargo en su página de facturación en https://askhava.com/b."
+  },
+  "unreachable_no_emailed": {
+    "audience": "business",
+    "draft": true,
+    "segments": 4,
+    "text": "Ask Hava: Trabajo {job}: no hay reembolso de su tarifa de presentación. El cliente nos dijo que usted le escribió por correo y acordaron una hora. ¿Preguntas? Use el formulario Preguntar por un cargo en su página de facturación en https://askhava.com/b."
   }
 }
