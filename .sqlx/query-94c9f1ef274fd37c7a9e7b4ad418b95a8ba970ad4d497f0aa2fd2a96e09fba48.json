@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO portals.login_link (token_sha256, member_id, business_id, created_at, expires_at, used_at) SELECT $1, member_id, business_id, created_at - interval '15 minutes', expires_at, created_at - interval '15 minutes' FROM portals.login_link WHERE id = $2 ON CONFLICT (token_sha256) DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Bytea",
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "94c9f1ef274fd37c7a9e7b4ad418b95a8ba970ad4d497f0aa2fd2a96e09fba48"
+}
