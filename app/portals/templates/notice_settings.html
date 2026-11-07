@@ -10,18 +10,20 @@
 {% endfor %}<h2>Email addresses that get notices</h2>
 {% if verified.is_empty() %}<p>None yet.</p>
 {% else %}<ul>{% for a in verified %}<li>{{ a }}</li>{% endfor %}</ul>
-{% endif %}{% if !waiting.is_empty() %}<h2>Waiting for you to enter the code we emailed</h2>
-<p>These get nothing from us until you enter the code.</p>
+{% endif %}{% if !waiting.is_empty() %}<h2>Not confirmed yet</h2>
+<p>We won't send notices here until you enter the code we emailed to each one.</p>
 <ul>{% for a in waiting %}<li>{{ a }}</li>{% endfor %}</ul>
-{% endif %}<h2>How we send job cards, picks and reminders</h2>
+{% endif %}<h2>How we tell you about new jobs, picks and reminders</h2>
 {% if owner %}<form method="post" action="/b/notices" novalidate>
 <input type="hidden" name="csrf" value="{{ csrf }}">
-<fieldset><legend>Send them by</legend>
+<fieldset><legend>Send new jobs, picks and reminders by</legend>
 {% for c in choices %}<p><input type="radio" id="channel-{{ c.code }}" name="channel" value="{{ c.code }}"{% if c.checked %} checked{% endif %}> <label for="channel-{{ c.code }}">{{ c.label }}</label></p>
 {% endfor %}</fieldset>
+{% if !texting_on %}<p>Texting isn't available yet, so email is the only choice for now.</p>
+{% endif %}
 <button type="submit">Save</button>
 </form>
-{% else %}<p>Only the account owner can change this.</p>
-<ul>{% for c in choices %}{% if c.checked %}<li>{{ c.label }}</li>{% endif %}{% endfor %}</ul>
+{% else %}<p>Only the account owner can change this. Ask them if it needs to change.</p>
+{% for c in choices %}{% if c.checked %}<p>Now: {{ c.label }}</p>{% endif %}{% endfor %}
 {% endif %}<p>Ask Hava never places recorded or automated calls to you.</p>
 {% endblock %}

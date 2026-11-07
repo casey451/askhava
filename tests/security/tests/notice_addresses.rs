@@ -190,7 +190,7 @@ async fn td_biz_13_the_notice_page_and_owner_only_channel(pool: PgPool) {
         texting_on: false,
     };
     let html = notice_settings_page(&boss, &list, off, "tok").expect("page");
-    assert!(html.contains("owner@example.test") && html.contains("Waiting for you"));
+    assert!(html.contains("owner@example.test") && html.contains("Not confirmed yet"));
     assert!(
         html.contains("Ask Hava emails to old@example.test are being returned or marked as spam")
     );
@@ -202,7 +202,11 @@ async fn td_biz_13_the_notice_page_and_owner_only_channel(pool: PgPool) {
     let html = notice_settings_page(&boss, &list, on, "tok").expect("page");
     assert!(html.contains("value=\"both\"") && html.contains("value=\"text\" checked"));
     let html = notice_settings_page(&staff, &list, on, "tok").expect("page");
-    assert!(!html.contains("<form") && html.contains("Only the account owner"));
+    assert!(
+        !html.contains("<form")
+            && html.contains("Only the account owner")
+            && html.contains("Now: Text")
+    );
     assert!(
         !html.contains("serviceWorker") && !html.contains("Notification"),
         "no push"

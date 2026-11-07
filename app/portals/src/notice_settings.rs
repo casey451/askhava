@@ -54,6 +54,7 @@ struct NoticeSettingsView<'a> {
     banners: Vec<String>,
     choices: Vec<Choice>,
     owner: bool,
+    texting_on: bool,
     csrf: &'a str,
 }
 
@@ -118,6 +119,7 @@ pub fn notice_settings_page(
             .map(|c| choice(c, current))
             .collect(),
         owner: principal.owner,
+        texting_on: facts.texting_on,
         csrf,
     };
     view.render()
