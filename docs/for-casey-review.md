@@ -1798,7 +1798,7 @@ One thing for you: the test branch, `claude/spike-rust-ci`, couldn't be deleted 
 - **Emergency jobs (new task T255).** If the business pays before she has sent her address, she is asked again at once, and the details go out once the address arrives, without charging again.
 - **Still without an owner (D-1740).** The business's Confirm-and-pay page isn't switched on yet, and the homeowner's "contact me by email" choice isn't saved yet, so until a task does that every release uses the masked call line. Both need a later plan change.
 
-## The outside code audit of November 6: what was confirmed and who fixes it (D-1751 to D-1761 and D-1783, November 6)
+## The outside code audit of November 6: what was confirmed and who fixes it (D-1751 to D-1761 and D-1788, November 6)
 
 An outside review (ChatGPT) of the whole repository found twelve issues. Each was checked against today's code before anything was planned; all twelve hold. Thirteen new tasks (nine build tasks, T256 to T259, T261 to T263, T266 and T268, and four harness tasks: T260 for the Stripe test stand-in, T264 for the coverage checker, T265 for the new stage check and T267 for the accessibility test split), plus small additions to four planned tasks (T196, T236, T251, T147), now own them. The release and portal items (A07 and the release part of A08) are in a separate plan change (D-1739). Full list with evidence: `docs/reviews/2026-11-06-repo-audit-dispositions.md`.
 
@@ -1814,7 +1814,7 @@ An outside review (ChatGPT) of the whole repository found twelve issues. Each wa
 - **A register of every hand-off between parts of the system** (`docs/integration-closure.md`) now lists 36 of them, and T265 makes a stage unable to finish while a security, money or privacy hand-off has no live owner.
 - **The sign-up consent box and welcome emails (D-1715)** now have an owner, T268: a business can no longer be activated without its written consent recorded. **The accessibility test file** that every page task may now edit (D-1772) is split by T267, so page tasks edit only a data file and never the checks.
 - **Still without an owner (not security, money or privacy):** wiring the AI writer into intake (D-990, D-1198). They are open rows in the register for the next plan change.
-- **The homeowner's "email me" choice at the pick was never saved (D-1761).** So a business could only ever reach her by masked call. T266 saves the choice, and her email only in the encrypted vault. The "job confirmed" email to a business now carries a signed link that opens sign-in for that person (T147, T194).
+- **The homeowner's "email me" choice at the pick was never saved (D-1761).** So a business could only ever reach her by masked call. T266 saves the choice, and her email only in the encrypted vault. The "job confirmed" email to a business now carries a signed link that opens sign-in for that person (T147, T269).
 - **Nothing needs you now.**
 
 ## Every new page adds its own accessibility check entry (plan change, D-1772, November 6)

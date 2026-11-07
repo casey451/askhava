@@ -1,6 +1,6 @@
 # Repository audit of November 6, 2026: dispositions
 
-**Input:** an external repository-wide code audit (ChatGPT), pinned to `main` at `bb6d771` with build state `38e9ea0`, received as an attachment. Treated as untrusted input: every finding was checked against `main` at `5aac33d` (T083 merged) before anything was planned. **Plan change:** D-1751 to D-1761 and D-1783, branch `claude/plan-audit-findings`. A07 and the release composition of A08 are dispositioned by the separate release plan change (D-1739, D-1740; tasks T253 to T255) and are not repeated here.
+**Input:** an external repository-wide code audit (ChatGPT), pinned to `main` at `bb6d771` with build state `38e9ea0`, received as an attachment. Treated as untrusted input: every finding was checked against `main` at `5aac33d` (T083 merged) before anything was planned. **Plan change:** D-1751 to D-1761 and D-1788, branch `claude/plan-audit-findings`. A07 and the release composition of A08 are dispositioned by the separate release plan change (D-1739, D-1740; tasks T253 to T255) and are not repeated here.
 
 Verdicts: **confirmed** (the code shows it on current `main`), **owned** (already in a queued task's goal and files), **not reproducible**, **product decision**.
 
@@ -25,7 +25,7 @@ Verdicts: **confirmed** (the code shows it on current `main`), **owned** (alread
 | Item | Verdict | Evidence | Owner | Test-design rows |
 |---|---|---|---|---|
 | PICK-018 contact choice and shared email never stored (D-1740 (2)) | Confirmed | `app/portals/src/pick_flow.rs:38` ("checked and passed on unstored", D-1264); `picks::api::page_pick` takes no choice (`app/picks/src/service.rs:392`) | T266 (new) | TD-PICK-52 |
-| Release email `{link}` not filled (D-1565 (2)) | Confirmed | D-1565 (2); no queued task's goal filled or checked the link | T147 (fills), T194 (checks) | TD-TXT-18 (extended), TD-PICK-51 |
+| Release email `{link}` not filled (D-1565 (2)) | Confirmed | D-1565 (2); no queued task's goal filled or checked the link | T147 (fills), T269 (checks; new, since T194 was already running) | TD-TXT-18 (extended), TD-PICK-51 |
 | Cross-links with D-1739 (#313, merged first) | Applied after merging `main` | T254 now on `main` | T261 depends on T254; T266 depends on T254 and T255 and owns `app/server/src/release_sink.rs` and `app/server/tests/release_contact_choice.rs` | TD-PICK-52 (release cases) |
 
 ## Fix round after the Fable review of 04637b9 (request changes)
@@ -35,27 +35,28 @@ Verdicts: **confirmed** (the code shows it on current `main`), **owned** (alread
 | B1 T258 would break nine test files it does not own and missed `app/payments/src/models.rs` | The typed refund is additive: payments-owned `RefundStripe` trait in `app/payments/src/refund_stripe.rs`; `PaymentsAdapter::create_refund` unchanged until T132; T258 owns `models.rs` (D-1753) |
 | B2 T265's rule would stall the runner (`runner/state.py:403` re-runs every earlier stage's exit) | A row is judged at stage N only when every owner's stage is at or below N; a row with no owner fails everywhere (D-1760 (2), TD-OPS-31, register Rule) |
 | B3 FEE-028 cited the wrong decision | `docs/spec/fees.md:32` now cites D-1753 |
-| S2 release-email link format | `link_token(secret, LinkKind::Action, person, LinkSalt(job ‖ expiry))`, no `core` change (T147, T194, D-1761) |
+| S2 release-email link format | `link_token(secret, LinkKind::Action, person, LinkSalt(job ‖ expiry))`, no `core` change (T147, T269, D-1761; T194 left as on `main` because it was already running) |
 | S3 PIN-try digest | `pin-try|v1` HMAC under `ID_SECRET` (PRIV-024); T262 owns `app/calls/src/models.rs` (D-1755) |
 | S4 T257's artificial T086 dependency | Dropped; T257 placed after T255, migration 0130 (D-1752) |
 | S5 SEC-047 on the new per-text read | Kept on, counted once per text under the existing grant, D-750's floor; tested (D-1752) |
-| S6 IC-21 had no owner | New task T268 (D-1783) |
+| S6 IC-21 had no owner | New task T268 (D-1788) |
 | S7 T264's decision must say "coverage floor" | In T264's goal (`scripts/coverage_floor.py:104`) |
 | S8 counts and states | Register count, T084's state, reviews recorded in D-1752 and D-1753 |
 | S1 lock the register | Two-step follow-up, register row IC-35 (D-1760 (2)) |
-| Overseer: `fixtures.ts` shared path also holds the checks | New harness task T267, register row IC-34, governance section 2 reader row (D-1783) |
+| Overseer: `fixtures.ts` shared path also holds the checks | New harness task T267, register row IC-34, governance section 2 reader row (D-1788) |
 
 ## Second fix round after the Fable re-review of 2943cc9 (request changes)
 
 | Item | What changed |
 |---|---|
 | B1 still open: the public refund functions and T064's `run_late_refund` must take `RefundStripe`, breaking four DONE tasks' fakes | T258 is a harness task owning `app/payments/src/late.rs` and `tests/integration/tests/{disputes,late_success,reconcile,ledger_1000_jobs}.rs`; each fake gains one `impl RefundStripe`, no expected value changes (D-1753) |
-| B4 no task could edit `tests/a11y/page_states.ts` after T267 | Added now to `shared_paths` and `ALLOWED_SHARED`; the template names `fixtures.ts` until T267, then `page_states.ts`; T267 owns only the two test files (D-1783) |
+| B4 no task could edit `tests/a11y/page_states.ts` after T267 | Added now to `shared_paths` and `ALLOWED_SHARED`; the template names `fixtures.ts` until T267, then `page_states.ts`; T267 owns only the two test files (D-1788) |
 | S-a D-1758 marked all of D-1427 superseded | Reworded ("sets aside only D-1427's last sentence"); `superseded_map` no longer lists D-1427 |
 | S-b T265 rule inconsistency | An unknown task id, like no owner, fails at every stage (T265, TD-OPS-31, D-1760) |
 | S-c T132 retires `create_refund` | Stated in T132's goal; D-1753 listed |
 | S-d where `EntryKind` lives | `ledger.rs:14`, match in `models.rs:782` (T258, D-1753) |
 | S-e where CON-020's welcome lands | An email built from `welcome_lines` in the shared email layout, never a text, so it is not held by TXT-035 (T268) |
+| Overseer: T194 started (IN_PROGRESS) before this change merged | T194 is left exactly as on `main`; the sign-in check of the notice link moves to new task T269 (after T253 and T147); every other task this change edits is still QUEUED on `claude/kit-state` |
 
 ## Improvements list (audit section "Improvements justified by the code")
 

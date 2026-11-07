@@ -8706,7 +8706,7 @@
    "budget": {
     "files": 6,
     "lines": 400,
-    "context_pct": 15
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -8721,7 +8721,7 @@
    "id": "T194",
    "slug": "portals-new-device-code",
    "title": "portals: the new-device code by text or email and team sign-in",
-   "goal": "A sign-in from a new device needs a Verify code by text, or an emailed code for a person with no phone that gets texts and never a voice code, and each team member signs in as their own person (BIZ-023, TXT-038, SEC-004). Sign-in also accepts the signed link a business notice carries (PICK-024, D-1565 (2), D-1761): `core`'s `link_token(secret, LinkKind::Action, person, LinkSalt::from_bytes(job number as 8 big-endian bytes ‖ expiry as 8 big-endian Unix seconds))` with the person ID, job number and expiry (7 days on) in the URL, recomputed and compared in constant time; a valid one opens sign-in for that person with the job page as the next page, and a tampered, expired or other person's link opens plain sign-in; the link alone never signs anyone in.",
+   "goal": "A sign-in from a new device needs a Verify code by text, or an emailed code for a person with no phone that gets texts and never a voice code, and each team member signs in as their own person (BIZ-023, TXT-038, SEC-004).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -8761,8 +8761,7 @@
    ],
    "tests": [
     "TD-BIZ-06",
-    "TD-TXT-19",
-    "TD-PICK-51"
+    "TD-TXT-19"
    ],
    "decisions": [
     "D-014",
@@ -8771,9 +8770,7 @@
     "D-313",
     "D-318",
     "D-333",
-    "D-366",
-    "D-1565",
-    "D-1761"
+    "D-366"
    ],
    "cites": [],
    "budget": {
@@ -9880,7 +9877,7 @@
    "budget": {
     "files": 12,
     "lines": 650,
-    "context_pct": 30
+    "context_pct": 34
    },
    "checks": [
     "Ci",
@@ -10561,7 +10558,7 @@
    "id": "T147",
    "slug": "business-notices-email",
    "title": "messaging and businesses: business notices by chosen channel and the business-texting switch",
-   "goal": "Every business notice goes by the business's chosen channels, email by default and text only while the business-texting switch is on, never carrying homeowner details by text; job cards go to the owner and every \"Cards and quotes\" member; texts that fail fall back to email and the portal; and quiet hours hold each business notice as a whole, email and any text together (TXT-014, TXT-035 to TXT-037, BIZ-019, BIZ-036, BIZ-037, CARD-020, QH-005); `messaging` never calls `businesses`: the enqueuing module (`quotes` for cards, in `app/quotes/src/card_notices.rs` owned here; `picks` for pick and release notices; `businesses` for account notices; `picks`' `money_notices.rs` for the payments notices, T062 and T068) resolves the recipients and channels through `businesses::api::notice_addresses` and puts them in the event payload as opaque address IDs, and `messaging` sends to what it is given (T220 created that lookup; this task extends it with each person's channel choice, and T149 extends it with the backup addresses, D-491, D-492). The card notices' provider acceptance feeds `quotes`' sent count through `card_notices.rs`, so the cards-out text's N and the job page count leave out a business whose every notice hard-bounces (TD-TXT-22, D-491). Card emails carry no image bytes, only a link to the signed-in job page (PRIV-027's card-email clause, TD-PRIV-12) (D-493). Every business text send checks `businesses::api::may_text` for the receiving member's phone at send time, before `send_checked`, so a revoked or unticked text box gets email instead (D-1715, D-1760). The `release_notice` and `card_fix_notice` emails' `{link}` is filled per recipient with a signed sign-in link: `core`'s `link_token(secret, LinkKind::Action, person, LinkSalt::from_bytes(job number as 8 big-endian bytes ‖ expiry as 8 big-endian Unix seconds))`, the person ID, job number and expiry (7 days on) in the URL beside the token (the format T194 checks; no `core` change), never an unsigned or shared one, and the email still holds no homeowner detail (PICK-024, D-1565 (2), D-1761).",
+   "goal": "Every business notice goes by the business's chosen channels, email by default and text only while the business-texting switch is on, never carrying homeowner details by text; job cards go to the owner and every \"Cards and quotes\" member; texts that fail fall back to email and the portal; and quiet hours hold each business notice as a whole, email and any text together (TXT-014, TXT-035 to TXT-037, BIZ-019, BIZ-036, BIZ-037, CARD-020, QH-005); `messaging` never calls `businesses`: the enqueuing module (`quotes` for cards, in `app/quotes/src/card_notices.rs` owned here; `picks` for pick and release notices; `businesses` for account notices; `picks`' `money_notices.rs` for the payments notices, T062 and T068) resolves the recipients and channels through `businesses::api::notice_addresses` and puts them in the event payload as opaque address IDs, and `messaging` sends to what it is given (T220 created that lookup; this task extends it with each person's channel choice, and T149 extends it with the backup addresses, D-491, D-492). The card notices' provider acceptance feeds `quotes`' sent count through `card_notices.rs`, so the cards-out text's N and the job page count leave out a business whose every notice hard-bounces (TD-TXT-22, D-491). Card emails carry no image bytes, only a link to the signed-in job page (PRIV-027's card-email clause, TD-PRIV-12) (D-493). Every business text send checks `businesses::api::may_text` for the receiving member's phone at send time, before `send_checked`, so a revoked or unticked text box gets email instead (D-1715, D-1760). The `release_notice` and `card_fix_notice` emails' `{link}` is filled per recipient with a signed sign-in link: `core`'s `link_token(secret, LinkKind::Action, person, LinkSalt::from_bytes(job number as 8 big-endian bytes ‖ expiry as 8 big-endian Unix seconds))`, the person ID, job number and expiry (7 days on) in the URL beside the token (the format T269 checks at sign-in; no `core` change), never an unsigned or shared one, and the email still holds no homeowner detail (PICK-024, D-1565 (2), D-1761).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -10648,7 +10645,7 @@
    "budget": {
     "files": 5,
     "lines": 400,
-    "context_pct": 17
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -11604,7 +11601,8 @@
     "T265",
     "T266",
     "T267",
-    "T268"
+    "T268",
+    "T269"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -17343,7 +17341,7 @@
    "id": "T268",
    "slug": "business-consent-wiring",
    "title": "portals, businesses and messaging: the sign-up consent box, the welcome request and the welcome and phone-stopped emails",
-   "goal": "T082 built the business consent record and its gates, but D-1715 left their callers unowned: the sign-up form never shows `consent_box` or posts to `record_consent`, activation never calls `request_welcome`, and no handler sends the `businesses.welcome` or `businesses.phone_stopped` email, so a business can be activated with no written E-SIGN consent recorded and never gets the CON-020 welcome (D-1783). (1) `app/portals/templates/business_signup.html` and `app/portals/src/business_signup.rs`: the form shows `businesses::api::consent_box` for the chosen channels, unticked (CON-019, PICK-049's no-pre-ticked rule), and posts it to `record_consent` in the sign-up's transaction; a sign-up without the tick is not submitted and says why. (2) `app/businesses/src/identity.rs` (after T196): activation (`settle`, `approve`) calls `request_welcome` in the same transaction. (3) `app/messaging/src/business_account_emails.rs`: the `businesses.welcome` handler sends the CON-020 welcome as an email whose body is `businesses::api::welcome_lines` (`app/businesses/src/consent.rs:341`, T082's, with T199's card link) in the shared email layout (`app/messaging/templates/email_layout.html`), never a text, so it goes out while the business-texting switch is off (TXT-035), with the contact-card file and calls `welcome_sent` after the provider accepts; the `businesses.phone_stopped` handler sends `stopped_email_line` with the last 4 digits read from the vault to the owner's account address; both registered in the shared `app/server/src/bin/worker.rs`, deduped per business and kind. Update the `businesses`, `messaging` and `portals` `CLAUDE.md` files and `docs/decisions.md`.",
+   "goal": "T082 built the business consent record and its gates, but D-1715 left their callers unowned: the sign-up form never shows `consent_box` or posts to `record_consent`, activation never calls `request_welcome`, and no handler sends the `businesses.welcome` or `businesses.phone_stopped` email, so a business can be activated with no written E-SIGN consent recorded and never gets the CON-020 welcome (D-1788). (1) `app/portals/templates/business_signup.html` and `app/portals/src/business_signup.rs`: the form shows `businesses::api::consent_box` for the chosen channels, unticked (CON-019, PICK-049's no-pre-ticked rule), and posts it to `record_consent` in the sign-up's transaction; a sign-up without the tick is not submitted and says why. (2) `app/businesses/src/identity.rs` (after T196): activation (`settle`, `approve`) calls `request_welcome` in the same transaction. (3) `app/messaging/src/business_account_emails.rs`: the `businesses.welcome` handler sends the CON-020 welcome as an email whose body is `businesses::api::welcome_lines` (`app/businesses/src/consent.rs:341`, T082's, with T199's card link) in the shared email layout (`app/messaging/templates/email_layout.html`), never a text, so it goes out while the business-texting switch is off (TXT-035), with the contact-card file and calls `welcome_sent` after the provider accepts; the `businesses.phone_stopped` handler sends `stopped_email_line` with the last 4 digits read from the vault to the owner's account address; both registered in the shared `app/server/src/bin/worker.rs`, deduped per business and kind. Update the `businesses`, `messaging` and `portals` `CLAUDE.md` files and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -17390,7 +17388,7 @@
     "TD-CON-29"
    ],
    "decisions": [
-    "D-1783",
+    "D-1788",
     "D-1715",
     "D-1380"
    ],
@@ -17408,6 +17406,62 @@
    "branch": "claude/task/T268-business-consent-wiring",
    "prompt": "kit/prompts/T268.md",
    "acceptance": "TD-CON-29 passes against PostgreSQL and the stand-ins; every existing sign-up, consent and identity case still passes; `Ally` is green on the sign-up page with the box."
+  },
+  {
+   "id": "T269",
+   "slug": "notice-signin-link",
+   "title": "portals: a business notice's signed link opens sign-in for that person with the job page next",
+   "goal": "PICK-024's release email carries \"a signed link that opens sign-in\"; T147 fills each recipient's `{link}` (D-1565 (2), D-1761), but nothing on the sign-in side checks it, and T194, which owns sign-in now, is already running (D-1761). In `app/portals/src/business_auth.rs` (after T194 and T253, its other queued owners), the business sign-in page accepts the link `core`'s `link_token(secret, LinkKind::Action, person, LinkSalt::from_bytes(job number as 8 big-endian bytes ‖ expiry as 8 big-endian Unix seconds))` with the person ID, job number and expiry in the URL: it recomputes the token and compares in constant time; a valid, unexpired link opens sign-in for that person (the one-time link or code flow of T084 and T194, unchanged) with the job page as the next page after sign-in; a tampered, expired or other person's link opens plain sign-in; the link alone never signs anyone in or shows any job detail. Tests in `tests/integration/tests/notice_signin_link.rs`. Update the `portals` `CLAUDE.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "portals",
+   "deps": [
+    "T253",
+    "T147"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security"
+   ],
+   "owns": [
+    "app/portals/src/business_auth.rs",
+    "tests/integration/tests/notice_signin_link.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/security.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "PICK-024",
+    "SEC-004"
+   ],
+   "tests": [
+    "TD-PICK-51"
+   ],
+   "decisions": [
+    "D-1761",
+    "D-1565"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 250,
+    "context_pct": 10
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T269-notice-signin-link",
+   "prompt": "kit/prompts/T269.md",
+   "acceptance": "TD-PICK-51 passes against PostgreSQL; every T084, T194 and T253 sign-in case still passes unchanged."
   },
   {
    "id": "T232",
@@ -17469,7 +17523,7 @@
    "budget": {
     "files": 6,
     "lines": 400,
-    "context_pct": 9
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -18114,7 +18168,7 @@
    "id": "T267",
    "slug": "a11y-page-states-split",
    "title": "Ally harness: page states move to a shared data file; the check machinery returns to owner-only",
-   "goal": "D-1772 made `tests/a11y/fixtures.ts` a shared path so a page-adding task can add its `PAGE_STATES` entry, but the same file holds the Ally check machinery (`WCAG_TAGS` at `tests/a11y/fixtures.ts:25`, `REVIEWED_INCOMPLETE` at `:28`, `NOT_PAGES`, `readRouteTable` at `:73`, `axeScan` at `:180`), so a shared-path edit could weaken the checks, and only a reviewer notices (D-1783). Split it. (1) New `tests/a11y/page_states.ts` holds only data: the `PageState` type, `PAGE_STATES`, and per-route seed helpers, so each route's states carry their own seeding (today `PAGE_STATES` is one `.map()` over `QUOTE_ROUTE`, `fixtures.ts:129`–`:137`, and `seed()` assumes a quote token, `:144`–`:153`): each entry names its route, its states and a seed function returning the path to open, with the quote-page states moved unchanged. (2) `tests/a11y/fixtures.ts` imports them and keeps `ROUTES`, `STATES_TO_CHECK` (the filter against the route table is check logic, so the shared file can never narrow what is checked), `NOT_PAGES`, `WCAG_TAGS`, `REVIEWED_INCOMPLETE`, `readRouteTable`, `axeScan` and the test fixture, and re-exports `PAGE_STATES`, so no importing spec changes. (3) `tests/a11y/page_states.ts` is already a shared path (`shared_paths`, `ALLOWED_SHARED` and the template's sentence, D-1783), so every later page-adding task adds its entry there; `fixtures.ts` stays shared until the plan change after this task drops it from both lists (register row IC-36). Every page-state entry on `main` when this task starts (T084's sign-in page included) moves across unchanged.",
+   "goal": "D-1772 made `tests/a11y/fixtures.ts` a shared path so a page-adding task can add its `PAGE_STATES` entry, but the same file holds the Ally check machinery (`WCAG_TAGS` at `tests/a11y/fixtures.ts:25`, `REVIEWED_INCOMPLETE` at `:28`, `NOT_PAGES`, `readRouteTable` at `:73`, `axeScan` at `:180`), so a shared-path edit could weaken the checks, and only a reviewer notices (D-1788). Split it. (1) New `tests/a11y/page_states.ts` holds only data: the `PageState` type, `PAGE_STATES`, and per-route seed helpers, so each route's states carry their own seeding (today `PAGE_STATES` is one `.map()` over `QUOTE_ROUTE`, `fixtures.ts:129`–`:137`, and `seed()` assumes a quote token, `:144`–`:153`): each entry names its route, its states and a seed function returning the path to open, with the quote-page states moved unchanged. (2) `tests/a11y/fixtures.ts` imports them and keeps `ROUTES`, `STATES_TO_CHECK` (the filter against the route table is check logic, so the shared file can never narrow what is checked), `NOT_PAGES`, `WCAG_TAGS`, `REVIEWED_INCOMPLETE`, `readRouteTable`, `axeScan` and the test fixture, and re-exports `PAGE_STATES`, so no importing spec changes. (3) `tests/a11y/page_states.ts` is already a shared path (`shared_paths`, `ALLOWED_SHARED` and the template's sentence, D-1788), so every later page-adding task adds its entry there; `fixtures.ts` stays shared until the plan change after this task drops it from both lists (register row IC-36). Every page-state entry on `main` when this task starts (T084's sign-in page included) moves across unchanged.",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -18147,7 +18201,7 @@
     "TD-A11Y-03"
    ],
    "decisions": [
-    "D-1783",
+    "D-1788",
     "D-1772",
     "D-1239"
    ],

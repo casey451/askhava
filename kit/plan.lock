@@ -15,7 +15,7 @@
   "docs/catalog/worked_examples.yaml": "81ad240453551a0fdfaa76b40df74346ebe327983ed9341911646dd9b48df5e4",
   "docs/code-docs.md": "550dd9871eb6c4d94a26398055d18115152b21cabd9ddc605a1e15c8b1ae9307",
   "docs/constitution.md": "fec7c6339346668c9bf505f92e4acbdb2557d7001eb87f410b13b7995f979105",
-  "docs/governance.md": "fe211284da332c5ea2d9aa7c08aaaa61748f46d815edd9a80bc914c12f22a567",
+  "docs/governance.md": "006d9f39218358b94bf116737d24dcff28a3741a73fe2ce50d5d750140f9d2dc",
   "docs/sources.md": "b2f42c566a97b33d85ec2310ca04a405dc85db921b1b4ad081797df837563ff0",
   "docs/spec/accessibility.md": "6c79d880396f086eff6319c505390b23c5f33749806b8244364da19a92b62d50",
   "docs/spec/ai.md": "5d63ebfed44af4d0e5bcfbf7bcb64b9065ea08c6f2888502dd75c27e9e5b3d2e",
@@ -38,12 +38,12 @@
   "docs/spec/terms.md": "278c5ef379f528d56958317ae9e0c72cfbe374272dbf13f9f380ae49d7f8cbd7",
   "docs/spec/website.md": "63fde654845c3e32305f866387359b564c9c47afa3dc2d9a08b801cc9bb62830",
   "docs/spec/wording.md": "39b6d4e094008481a54d0e9525218e1c8a43b9468357b49a8d531c7575f8f2ff",
-  "docs/test-design.md": "c12f556ef65b39f03fcc31f179ff90a75871458e0dd7202753d2301c8e48e9f1",
+  "docs/test-design.md": "8807c48c323d77796d364a34910a5b603c87e52d3c38e28faedae0a11df16c70",
   "docs/threat-model.md": "853948540b59ca11cf9824d6491d030a3a29c0fc45264546f1ba56432dd5a7e3",
-  "kit/prompts/TEMPLATE.md": "5d48ab13b0317aa40435e186632d3f6dca563ce32feb5357c88cfd3fc87b09f8",
+  "kit/prompts/TEMPLATE.md": "8ebfc5e06fc315adf2a9ded1352b334f912b13c68319387306083c88232fe4ae",
   "kit/runner.json": "f103cf4d5d2506af897b04fedba964abeedc30f1a63458766e0f8646ccc53a19",
   "kit/sources.sha256": "853b7f37d6e04259ad9d7b64e16e6cb0111ee4499e37af46aeb3183748c7f335",
-  "kit/tasks.json": "4b4e53264fceb2b4308e991784a32b230187ed93d96cb3a71089f1404929641a",
+  "kit/tasks.json": "0ac0a4d6e3cb1a26c576b129645da880e6344e3fc960f1b18feff670deb8b1f7",
   "scripts/check_ai_smell.py": "85dabd31a4def57084ccca15c6c8efee89cc3f5a9e376a9ed07f4f6a98a2885a",
   "scripts/check_catalog.py": "169f9b00e9630a8d5240fe9b319082cf9ef97aba7034f2170b7bc1a6ecab3d4c",
   "scripts/check_code_docs.py": "cb5df5710797e221ae5d5a5b2daa9d6c3612e9bca1ccd24f07ea07b34e470fbd",
@@ -66,7 +66,7 @@
   "scripts/smoke.sh": "1c976e493c877c2006b18f27aae5624c9f987ca1c1f4234561bde72a235c5a00",
   "scripts/stage_exit.py": "bef22183aa42f9a646ef6853fb922b3d9053852b97dd73ca9feebb430f0b0d0f",
   "scripts/trace_spec.py": "9956b2ffaa7f6e205e6f27338f65cddf7f573afa3c53de697f959adc96923439",
-  "scripts/validate_tasks.py": "d6d51500c3fd2c68a9ceb512e657dadfa45520a0bb0bf087c7c832b891789a07"
+  "scripts/validate_tasks.py": "1876f49687346a7409063750106966fdf06f2d94720766aef929db526541f18e"
  },
  "note": "Fingerprints of the approved blueprint; see scripts/check_plan_lock.py and docs/governance.md.",
  "schema": 1
