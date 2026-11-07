@@ -1,23 +1,23 @@
 # Ask Hava build status
 
-Updated 2026-11-07T21:51:44Z by runner bd7921a49c2b (actions).
+Updated 2026-11-07T21:59:13Z by runner 00daffc8c325 (actions).
 
-**Idle since 21:43Z; 145 of 277 done; week 44% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 21:55Z; 146 of 277 done; week 44% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 145 of 277 build tasks (owner gates not counted)
+- **Tasks done:** 146 of 277 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 21:43Z (no task in progress)
+- **Lane:** idle since 21:55Z (no task in progress)
 - **Week:** 44% used, 106.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:51Z, 0 min before this update
+- **Last run:** 21:51Z, 7 min before this update
 - **Keeper:** last ran 21:51Z, next wake 22:11Z
 
 ## Needs attention
-- Strict plan check red: 2 problem(s) on tasks still to run (+2 on DONE tasks); first: T088: stored context_pct 10% but it measures 14%; regenerate
+- Strict plan check red: 5 problem(s) on tasks still to run (+4 on DONE tasks); first: T195: stored context_pct 10% but it measures 14%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T085 | portals: business portal home (contact choice, your numbers, | MERGE_PENDING | 1 | 33 min | 21:43Z |  |
+| T085 | portals: business portal home (contact choice, your numbers, | done | 1 | 33 min | 21:43Z |  |
 | T253 | privacy, picks and portals: the signed-in business reads a r | done | 1 | 54 min | 20:44Z |  |
 | T252 | architecture test: dynamic SQL in a migration is a TD-SEC-10 | done | 1 | 19 min | 19:16Z |  |
 | T196 | businesses: verified notice email, sender rules and the addr | done | 2 | 32 min | 18:33Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests / test tests::transi |
@@ -49,15 +49,15 @@ Updated 2026-11-07T21:51:44Z by runner bd7921a49c2b (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 221 of 731 (30.2%) · partial 278 · unstarted 232
-**Tasks merged (throughput only):** 145 of 277
+**Requirements verified:** 226 of 731 (30.9%) · partial 276 · unstarted 229
+**Tasks merged (throughput only):** 146 of 277
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 13 | 11 | 11 | 35 |
 | ai | 13 | 11 | 4 | 28 |
-| businesses | 8 | 28 | 22 | 58 |
-| calls | 9 | 15 | 1 | 25 |
+| businesses | 10 | 29 | 19 | 58 |
+| calls | 10 | 14 | 1 | 25 |
 | consent | 13 | 18 | 4 | 35 |
 | fees | 18 | 33 | 1 | 52 |
 | intake | 19 | 15 | 9 | 43 |
@@ -66,9 +66,9 @@ Updated 2026-11-07T21:51:44Z by runner bd7921a49c2b (actions).
 | lifecycle | 20 | 8 | 0 | 28 |
 | messaging | 18 | 23 | 4 | 45 |
 | ops-recovery | 2 | 4 | 48 | 54 |
-| privacy | 2 | 23 | 6 | 31 |
+| privacy | 3 | 22 | 6 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
-| quotes-pick | 18 | 25 | 13 | 56 |
+| quotes-pick | 19 | 24 | 13 | 56 |
 | recurring | 7 | 1 | 3 | 11 |
 | security | 9 | 31 | 14 | 54 |
 | terms | 0 | 3 | 32 | 35 |
@@ -85,7 +85,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 25 of 93 done
+- stage 4: 26 of 93 done
 - stage 5: 0 of 42 done
 - stage 6: 0 of 26 done
 - stage 7: 0 of 2 done
