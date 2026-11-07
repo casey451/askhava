@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-07T15:58:15Z by runner 9a710c0416a0 (actions).
+Updated 2026-11-07T16:09:26Z by runner 9a710c0416a0 (actions).
 
 **Idle since 15:54Z; 141 of 269 done; week 41% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-07T15:58:15Z by runner 9a710c0416a0 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 15:54Z (no task in progress)
 - **Week:** 41% used, 114.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:58Z, 0 min before this update
+- **Last run:** 15:58Z, 11 min before this update
 - **Keeper:** last ran 15:58Z, next wake 16:18Z
 
 ## Needs attention
@@ -18,7 +18,7 @@ Updated 2026-11-07T15:58:15Z by runner 9a710c0416a0 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T196 | businesses: verified notice email, sender rules and the addr | MERGE_PENDING | 1 | 49 min | 15:54Z |  |
+| T196 | businesses: verified notice email, sender rules and the addr | check_failed | 1 | 49 min | 15:54Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests / test tests::transi |
 | T147 | messaging and businesses: business notices by chosen channel | done | 1 | 39 min | 14:31Z |  |
 | T230 | portals: the private feedback page and its storage | done | 1 | 61 min | 13:25Z |  |
 | T191 | payments: the unreachable-homeowner refund at 96 hours and i | done | 1 | 56 min | 12:07Z |  |
@@ -47,7 +47,6 @@ Updated 2026-11-07T15:58:15Z by runner 9a710c0416a0 (actions).
 - 03:59Z Plan: tests/a11y/fixtures.ts is a shared page-state registry (D-1772) (#314)
 - 03:48Z Plan: business-session read of released picks, release recovery tests, production release wiring (D-1739, D-1740) (#313)
 - 16:15Z Plan: dynamic SQL in migrations is a TD-SEC-10 finding (T252), T126 context budget, stored budgets refreshed (D-1677, D-1678) (#298)
-- 16:05Z Plan: bump actix-http 3.20.2 -> 3.20.3 for RUSTSEC-2026-0455 (D-1666) (#297)
 
 ## Progress (requirements verified)
 
