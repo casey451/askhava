@@ -11,11 +11,11 @@
 //! honored at once. All IDs and addresses are fake.
 
 use askhava_businesses::api::{
-    ADVERTISEMENT_LINE, AUTO_REPLY_TEMPLATE, AccountStatus, Acting, CONSENT_VERSION, Checks,
-    ConsentChannel, ConsentError, Event, NO_CALLS_LINE, PHONE_STOPPED_KIND, Roles, WELCOME_KIND,
-    add_member, add_owner, apply, auto_reply_due, business, consent_box, create, may_get_cards,
-    may_recruit, may_text, phone_stopped, record_consent, recruiting_email, remove_member,
-    request_welcome, stop_recruiting, stopped_email_line, welcome_lines, welcome_sent,
+    ADVERTISEMENT_LINE, AUTO_REPLY_TEMPLATE, Acting, CONSENT_VERSION, Checks, ConsentChannel,
+    ConsentError, Event, NO_CALLS_LINE, PHONE_STOPPED_KIND, Roles, WELCOME_KIND, add_member,
+    add_owner, apply, auto_reply_due, business, consent_box, create, may_get_cards, may_recruit,
+    may_text, phone_stopped, record_consent, recruiting_email, remove_member, request_welcome,
+    stop_recruiting, stopped_email_line, welcome_lines, welcome_sent,
 };
 use askhava_messaging::api::{Language, MailboxKind, count_segments, render, template_ids};
 use askhava_ops::api::Actor;
@@ -52,7 +52,7 @@ async fn activate(db: &mut PgConnection, b: Uuid) {
         flagged: false,
     };
     let to = apply(db, b, Event::Checked(done), Actor::System, at(1)).await;
-    assert_eq!(to.expect("activate"), AccountStatus::Active);
+    assert_eq!(to.expect("activate").code(), "active");
 }
 
 const CONSENTS: &str = "SELECT count(*) FROM businesses.esign_consent WHERE business_id = $1";
@@ -206,7 +206,7 @@ async fn td_con_08_business_stop_stops_texts_only(pool: PgPool) {
         .await
         .expect("repeat");
     let status = business(&mut db, b).await.expect("read").status;
-    assert_eq!(status, AccountStatus::Active);
+    assert_eq!(status.code(), "active");
     let tasks = "SELECT count(*) FROM core.task WHERE kind = $2 AND payload->>'inbox' = $1";
     let n: i64 = sqlx::query_scalar(tasks)
         .bind(inbox.to_string())
