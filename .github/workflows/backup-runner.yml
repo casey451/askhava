@@ -242,8 +242,9 @@ jobs:
         with:
           python-version: "3.12"
       - name: Rust build cache (D-514)
-        # The worker's own cargo runs reuse the build; Cargo's fingerprints decide what rebuilds. The smoke's
-        # own build (`target/smoke`, D-1890) is the next step's entry, so neither entry carries both builds.
+        # The worker's own cargo runs reuse the build; Cargo's fingerprints decide what rebuilds. Only `target/debug`:
+        # the smoke's own build (`target/smoke`, D-1890) is the next step's entry, and an exclusion such as
+        # `!target/smoke` does not reach inside a listed folder, so this entry carried both builds (D-1911).
         if: hashFiles('Cargo.lock') != ''
         uses: actions/cache@v4
         with:
@@ -252,8 +253,7 @@ jobs:
             ~/.cargo/registry/cache
             ~/.cargo/git/db
             ~/.cargo/bin
-            target
-            !target/smoke
+            target/debug
           # One entry per commit of main (D-1178): actions/cache never updates an existing key, so a key
           # by Cargo.lock alone froze the target directory at the last dependency change and every cycle
           # rebuilt everything since, until the smoke test outran the runner's timeout. The restore keys
@@ -262,16 +262,19 @@ jobs:
           restore-keys: |
             rust-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}-
             rust-${{ runner.os }}-
-      - name: Smoke build cache (D-1890)
+      - name: Smoke build cache, restore (D-1890, D-1911)
         # The runner's smoke builds main into `target/smoke` with mtimes pinned by content, so a restored copy
-        # rebuilds only the members a commit changed; keyed per commit like the entry above (D-1178). With no
-        # entry yet, the runner seeds it from the worker's dependency build (`_seed_smoke_target`).
+        # rebuilds only the members a commit changed. With no entry yet, the runner seeds it from the worker's
+        # dependency build (`_seed_smoke_target`). Saved only by the step "Smoke build cache, save", under a key
+        # with the run id, so a job that never ran the smoke cannot take the commit's key first (D-1911).
+        id: smoke-cache
         if: hashFiles('Cargo.lock') != ''
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: target/smoke
-          key: rust-smoke-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}-${{ github.sha }}
+          key: rust-smoke-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: |
+            rust-smoke-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}-${{ github.sha }}-
             rust-smoke-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}-
             rust-smoke-${{ runner.os }}-
       - name: Smoke-test prerequisites (what Ci installs for itself)
@@ -359,6 +362,15 @@ jobs:
             8. Report the runner's output lines and stop.
 
             Never break section 2. Never claim a test passed unless you ran it here.
+      - name: Smoke build cache, save (D-1911)
+        # Only when this job's runner ran the smoke (`target/smoke-ran`, written by `smoke_main`, outside both
+        # entries), whatever the session's outcome: the manifest is written before Cargo runs, so even a red or
+        # timed-out smoke leaves a target dir that matches it.
+        if: always() && hashFiles('target/smoke-ran') != '' && steps.smoke-cache.outputs.cache-primary-key != ''
+        uses: actions/cache/save@v4
+        with:
+          path: target/smoke
+          key: ${{ steps.smoke-cache.outputs.cache-primary-key }}
       - name: Keep the plan usage the session reported, for pacing (D-1155)
         if: always()
         env:
