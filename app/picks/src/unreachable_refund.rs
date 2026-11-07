@@ -14,13 +14,13 @@ use askhava_core::api::{Guarded, NewTask, enqueue as enqueue_task};
 use askhava_jobs::api::{JobStatus, move_to};
 use askhava_messaging::api::{
     AreaCodes, Channel, Decision, Kind, Language, NewText, Outgoing, QuietHoursError, Relation,
-    decide, enqueue, render,
+    SendWindow, decide, enqueue, render,
 };
 use askhava_ops::api::Actor;
 use askhava_payments::api::{
-    Answer, CallRecord, Caller, Contact, EmailCheck, NoShow, RefundDecision, RefundTrigger, Unmet,
-    UnreachableFacts, decide_unreachable, early_fraud_warning, mark_auto_submit, no_show,
-    request_refund,
+    Answer, CallRecord, Caller, Contact, EmailCheck, NoShow, RefundDecision, RefundOutcome,
+    RefundTrigger, Unmet, UnreachableFacts, decide_unreachable, early_fraud_warning,
+    mark_auto_submit, no_show, request_refund,
 };
 use jiff::{SignedDuration, Timestamp};
 use jiff_sqlx::ToSqlx;
@@ -207,19 +207,28 @@ async fn tell_homeowner(
         .map(drop)
 }
 
-/// TXT-030, D-236, D-286: queues the one missed-call text, naming the masked pool `number`, when
-/// the first business attempt went unanswered. `true` when the text is owed (queued now or
-/// before), the fact FEE-022's `notice_attempted` needs; a failed delivery still counts.
+/// TXT-030, D-236, D-286, D-1819: queues the one missed-call text, naming the masked pool
+/// `number`, when the first business attempt went unanswered and her number may be texted.
+/// `reach` is `messaging::api::send_window`'s answer for her vault contact (`picks` never reads
+/// her phone): an opted-out or untextable number gets no text and the answer is `false`, so
+/// FEE-022's `notice_attempted` is not met (the email copy is not built, D-1819). `true` when the
+/// text is owed and queued (now or before); a failed delivery still counts, and the outbox's
+/// TXT-014 retries email it as an important text. The outbox row carries no due time: the sender
+/// holds it by [`send_at`] (D-1819).
 ///
 /// # Errors
 /// `Template`, `Outbox`.
 pub async fn missed_call_text(
     conn: &mut PgConnection,
     secret: &SecretString,
-    (case, number): (&ReleasedPick<'_>, &str),
+    (case, number, reach): (&ReleasedPick<'_>, &str, SendWindow),
     (released_at, calls): (Timestamp, &[CallRecord]),
 ) -> Result<bool, PicksError> {
-    if missed_call_at(released_at, calls).is_none() {
+    let textable = match reach {
+        SendWindow::Now | SendWindow::Hold { .. } => true,
+        SendWindow::OptedOut | SendWindow::NotTextable => false,
+    };
+    if !textable || missed_call_at(released_at, calls).is_none() {
         return Ok(false);
     }
     tell_homeowner(conn, secret, case, (MISSED_CALL_TEMPLATE, number)).await?;
@@ -267,11 +276,37 @@ pub async fn queue_reminders(
     Ok(queued)
 }
 
-/// FEE-022, JOB-027, D-142, D-336: the 96-hour decision. A refund goes through
-/// `payments::api::request_refund`, then the job moves Connected to Closed (stopping the
-/// check-ins) and the call line closes, once; every decision emails the business the condition
-/// met or missed. `NotYet` does nothing. JOB-027's homeowner text and 72-hour question wait for
-/// their templates (D-1818).
+/// What the 96-hour step did (FEE-022, JOB-027, D-1819).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum AtNinetySix {
+    /// The decision was carried out (`NotYet`: nothing to do yet).
+    Decided(RefundDecision),
+    /// The refund rule was met but `payments` blocked the refund (`blocked`, a dispute, Casey is
+    /// alerted) or Stripe failed it (its hourly retry is queued): nothing was closed or emailed,
+    /// so the step runs again later.
+    RefundWaiting {
+        /// `true` for a disputed charge, `false` for a failed send.
+        blocked: bool,
+    },
+}
+
+/// `None` when the pick's fee is refunded or a try is in flight (`payments` finishes it);
+/// `Some(blocked)` when the refund did not go (D-1819).
+const fn refund_waiting(outcome: &RefundOutcome) -> Option<bool> {
+    match outcome {
+        RefundOutcome::Refunded(_) | RefundOutcome::Unchanged => None,
+        RefundOutcome::Blocked => Some(true),
+        RefundOutcome::Failed => Some(false),
+    }
+}
+
+/// FEE-022, JOB-027, D-142, D-336, D-1819: the 96-hour decision. A refund goes through
+/// `payments::api::request_refund`; only once it is refunded (or already was) the job moves
+/// Connected to Closed (stopping the check-ins), the call line closes and the business gets the
+/// decision email, each once. A blocked or failed refund changes nothing ([`AtNinetySix::RefundWaiting`]).
+/// A pick refunded before is judged as if it were not, so a run that refunded but stopped before
+/// the close finishes on the next run (`request_refund` sends nothing twice). `NotYet` does
+/// nothing. JOB-027's homeowner text and 72-hour question wait for their templates (D-1818).
 ///
 /// # Errors
 /// `Database` (a refund or move failure too), `Template`, `Outbox`.
@@ -281,21 +316,26 @@ pub async fn decide_at_96_hours(
     case: &ReleasedPick<'_>,
     facts: &UnreachableFacts<'_>,
     now: Timestamp,
-) -> Result<RefundDecision, PicksError> {
-    let decision = decide_unreachable(facts, now);
+) -> Result<AtNinetySix, PicksError> {
+    let fresh = UnreachableFacts {
+        refunded_before: false,
+        ..*facts
+    };
+    let decision = match decide_unreachable(&fresh, now) {
+        rule @ RefundDecision::Refund(_) => rule,
+        _ => decide_unreachable(facts, now),
+    };
     if decision == RefundDecision::NotYet {
-        return Ok(decision);
+        return Ok(AtNinetySix::Decided(decision));
     }
     if let RefundDecision::Refund(reason) = decision {
-        request_refund(
-            pool,
-            stripe,
-            secret,
-            (case.pick, RefundTrigger::Rule(reason)),
-            now,
-        )
-        .await
-        .map_err(|_| PicksError::Database)?;
+        let trigger = (case.pick, RefundTrigger::Rule(reason));
+        let outcome = request_refund(pool, stripe, secret, trigger, now)
+            .await
+            .map_err(|_| PicksError::Database)?;
+        if let Some(blocked) = refund_waiting(&outcome) {
+            return Ok(AtNinetySix::RefundWaiting { blocked });
+        }
         close_unreachable(pool, case, now).await?;
     }
     let mut conn = pool.acquire().await.map_err(|_| PicksError::Database)?;
@@ -303,7 +343,7 @@ pub async fn decide_at_96_hours(
         let key = format!("{template}.{}", case.pick);
         tell_business(&mut conn, case, (template, key), now).await?;
     }
-    Ok(decision)
+    Ok(AtNinetySix::Decided(decision))
 }
 
 /// JOB-027, D-142: Connected to Closed and the line closed, in one transaction; a job already
@@ -331,21 +371,20 @@ async fn close_unreachable(
     tx.commit().await.map_err(|_| PicksError::Database)
 }
 
-/// JOB-013, D-143: 72 hours after the release a call-contact job whose business placed no call
-/// returns to Quotes ready with its line closed and its pick a no-show (never refunded, FEE-035);
-/// an email-contact job stays Connected until the day-3 reply (`jobs`' check-in answer).
+/// JOB-013, JOB-027, D-143, D-1819: returns a no-show job to Quotes ready with its line closed and
+/// its pick a no-show (never refunded, FEE-035): a call-contact job whose business placed no call
+/// within 72 hours of the release, or an email-contact job whose homeowner answered NO to the
+/// day-3 question (`day3`, from `jobs`' check-in answer). `true` when moved.
 ///
 /// # Errors
 /// `Database`, `Job`.
 pub async fn no_call_at_72_hours(
     conn: &mut PgConnection,
     case: &ReleasedPick<'_>,
-    (contact, released_at, calls): (Contact, Timestamp, &[CallRecord]),
+    (contact, day3, released_at, calls): (Contact, EmailCheck, Timestamp, &[CallRecord]),
     now: Timestamp,
 ) -> Result<bool, PicksError> {
-    if contact == Contact::Email
-        || no_show(contact, released_at, calls, EmailCheck::NoReply, now) != NoShow::Recorded
-    {
+    if no_show(contact, released_at, calls, day3, now) != NoShow::Recorded {
         return Ok(false);
     }
     let mut tx = conn.begin().await.map_err(|_| PicksError::Database)?;
@@ -406,9 +445,11 @@ pub async fn dispute_auto_submit(
         .map_err(|_| PicksError::Database)
 }
 
-/// FEE-052, JOB-014, D-491: an early fraud warning goes to `payments::api::early_fraud_warning`
-/// (the alert, and the refund of an unreleased charge); an unreleased pick then ends as
-/// fraud-refunded and its job returns from Payment pending to Quotes ready. `true` when moved.
+/// FEE-052, JOB-014, D-491, D-1819: an early fraud warning goes to
+/// `payments::api::early_fraud_warning` (the alert, and the refund of an unreleased charge); once
+/// an unreleased pick's fee is refunded (or already was) its job returns from Payment pending to
+/// Quotes ready and the pick ends as fraud-refunded, together; a blocked or failed refund, or a
+/// job no longer in Payment pending, changes nothing. `true` when moved.
 ///
 /// # Errors
 /// `Database`, `Job`.
@@ -418,18 +459,20 @@ pub async fn fraud_warning(
     (pick, job, released): (Uuid, Uuid, bool),
     now: Timestamp,
 ) -> Result<bool, PicksError> {
-    early_fraud_warning(pool, stripe, secret, (pick, released), now)
+    let outcome = early_fraud_warning(pool, stripe, secret, (pick, released), now)
         .await
         .map_err(|_| PicksError::Database)?;
-    if released {
+    if released || refund_waiting(&outcome).is_some() {
         return Ok(false);
     }
     let mut conn = pool.acquire().await.map_err(|_| PicksError::Database)?;
     let mut tx = conn.begin().await.map_err(|_| PicksError::Database)?;
-    end_pick(&mut tx, pick, PickStatus::FraudRefunded, now).await?;
     let arrow = (JobStatus::PaymentPending, JobStatus::QuotesReady);
     let moved = move_to(&mut tx, job, arrow, now, Actor::System).await;
-    let moved = moved.map_err(|_| PicksError::Job)? == Guarded::Applied(());
+    if moved.map_err(|_| PicksError::Job)? == Guarded::MovedOn {
+        return Ok(false);
+    }
+    end_pick(&mut tx, pick, PickStatus::FraudRefunded, now).await?;
     tx.commit().await.map_err(|_| PicksError::Database)?;
-    Ok(moved)
+    Ok(true)
 }

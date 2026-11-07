@@ -82,7 +82,7 @@ pub use crate::service::{
     terms_line_sent, text_pick, waiting_quote, withdraw_paused,
 };
 pub use crate::unreachable_refund::{
-    MISSED_CALL_TEMPLATE, REMINDER_EMAIL_TEMPLATE, REMINDER_TEMPLATE, REMINDERS_AFTER,
+    AtNinetySix, MISSED_CALL_TEMPLATE, REMINDER_EMAIL_TEMPLATE, REMINDER_TEMPLATE, REMINDERS_AFTER,
     ReleasedPick, auto_submits, call_record, decide_at_96_hours, decision_template,
     dispute_auto_submit, fraud_warning, missed_call_at, missed_call_text, no_call_at_72_hours,
     queue_reminders, reminder_template, reminder_times, send_at,

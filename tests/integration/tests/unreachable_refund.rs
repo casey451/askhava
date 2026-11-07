@@ -9,16 +9,19 @@ use askhava_adapters::api::{AdapterError, Charge, IdempotencyKey, PaymentIntent,
 use askhava_calls::api::{AnsweredBy, Caller as CallCaller, LoggedCall};
 use askhava_core::api::Guarded;
 use askhava_jobs::api::{JobStatus, current, move_to};
-use askhava_messaging::api::{AreaCodes, IMPORTANT_TEMPLATES, Kind, Language, keyword, render};
+use askhava_messaging::api::{
+    AreaCodes, IMPORTANT_TEMPLATES, Kind, Language, SendWindow, keyword, render,
+};
 use askhava_ops::api::Actor;
 use askhava_payments::api::{
-    CallRecord, Contact, DisputeOpened, EmailCheck, RefundDecision, RefundReason, Unmet,
-    UnreachableFacts, record_dispute,
+    CallRecord, Contact, DisputeOpened, EmailCheck, RefundDecision, RefundReason, RefundTrigger,
+    Unmet, UnreachableFacts, record_dispute, request_refund,
 };
 use askhava_picks::api::{
-    MISSED_CALL_TEMPLATE, REMINDER_EMAIL_TEMPLATE, REMINDER_TEMPLATE, ReleasedPick, call_record,
-    decide_at_96_hours, decision_template, dispute_auto_submit, fraud_warning, missed_call_at,
-    no_call_at_72_hours, reminder_template, reminder_times, send_at,
+    AtNinetySix, MISSED_CALL_TEMPLATE, REMINDER_EMAIL_TEMPLATE, REMINDER_TEMPLATE, ReleasedPick,
+    call_record, decide_at_96_hours, decision_template, dispute_auto_submit, fraud_warning,
+    missed_call_at, missed_call_text, no_call_at_72_hours, queue_reminders, reminder_template,
+    reminder_times, send_at,
 };
 use jiff::civil::date;
 use jiff::{SignedDuration, Timestamp};
@@ -31,9 +34,10 @@ const BUSINESS: Uuid = Uuid::from_u128(0xb191_0001);
 const HOMEOWNER: Uuid = Uuid::from_u128(0xc191_0001);
 const INTENT: &str = "pi_FakeT191";
 const PHONE: &str = "+19285550100";
+const SECRET: &str = "fake-id-secret-t191";
 
-/// Refunds always succeed; nothing else is called.
-struct FakeStripe;
+/// Refunds succeed when `.0`, else the request is never sent; nothing else is called.
+struct FakeStripe(bool);
 
 impl PaymentsAdapter for FakeStripe {
     async fn create_customer(&self, _: &IdempotencyKey, _: &str) -> Result<String, AdapterError> {
@@ -50,7 +54,11 @@ impl PaymentsAdapter for FakeStripe {
         panic!("no intent is read here")
     }
     async fn create_refund(&self, _: &IdempotencyKey, _: &str) -> Result<String, AdapterError> {
-        Ok("re_FakeT191".to_owned())
+        if self.0 {
+            Ok("re_FakeT191".to_owned())
+        } else {
+            Err(AdapterError::NotSent)
+        }
     }
 }
 
@@ -285,86 +293,155 @@ async fn count(pool: &PgPool, sql: &'static str, id: Uuid) -> i64 {
         .expect("count")
 }
 
-/// TD-JOB-07: the 96-hour refund closes the job (no check-in after), closes the line and emails
-/// the business once; the email YES stops refund and close; a job before 96 hours is untouched.
+fn unanswered() -> [CallRecord; 2] {
+    [
+        call(az(2, 10, 0), AnsweredBy::Nobody),
+        call(az(2, 14, 0), AnsweredBy::Nobody),
+    ]
+}
+
+const EMAILED: &str =
+    "SELECT count(*) FROM core.task WHERE dedupe_key LIKE '%.unreachable_refunded.' || $1::text";
+const OPEN_LINE: &str =
+    "SELECT count(*) FROM calls.number_pool WHERE job_id = $1 AND closed_at IS NULL";
+
+/// TD-JOB-07: a failed refund closes nothing and emails nothing; the next run refunds, closes the
+/// job (no check-in after), closes the line and emails the business once; the email YES stops
+/// refund and close; a job before 96 hours is untouched.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_job_07_the_unreachable_refund_closes_the_job_once(pool: PgPool) {
     let case = seeded(&pool, JobStatus::Connected, INTENT).await;
-    let calls = [
-        call(az(2, 10, 0), AnsweredBy::Nobody),
-        call(az(2, 14, 0), AnsweredBy::Nobody),
-    ];
-    let stripe = (
-        &FakeStripe,
-        &SecretString::from("fake-id-secret-t191".to_owned()),
-    );
+    let calls = unanswered();
+    let secret = SecretString::from(SECRET.to_owned());
     let yes = UnreachableFacts {
         email_check: EmailCheck::Yes,
         ..facts(&calls, false, Contact::Email)
     };
+    let stripe = (&FakeStripe(true), &secret);
     let kept = decide_at_96_hours(&pool, stripe, &case, &yes, az(9, 9, 0)).await;
-    assert_eq!(kept, Ok(RefundDecision::NoRefund(Unmet::EmailedAndAgreed)));
-    let early = decide_at_96_hours(
-        &pool,
-        stripe,
-        &case,
-        &facts(&calls, false, Contact::Call),
-        az(5, 8, 59),
-    )
-    .await;
-    assert_eq!(early, Ok(RefundDecision::NotYet));
+    let agreed = RefundDecision::NoRefund(Unmet::EmailedAndAgreed);
+    assert_eq!(kept, Ok(AtNinetySix::Decided(agreed)));
+    let by_call = facts(&calls, false, Contact::Call);
+    let early = decide_at_96_hours(&pool, stripe, &case, &by_call, az(5, 8, 59)).await;
+    assert_eq!(early, Ok(AtNinetySix::Decided(RefundDecision::NotYet)));
+    let down = (&FakeStripe(false), &secret);
+    let failed = decide_at_96_hours(&pool, down, &case, &by_call, az(9, 9, 0)).await;
+    assert_eq!(failed, Ok(AtNinetySix::RefundWaiting { blocked: false }));
     let mut db = pool.acquire().await.expect("conn");
     assert_eq!(status(&mut db, case.job).await, "connected");
+    assert_eq!(count(&pool, EMAILED, case.pick).await, 0);
+    assert_eq!(count(&pool, OPEN_LINE, case.job).await, 1);
+    let paid = AtNinetySix::Decided(RefundDecision::Refund(RefundReason::Unreachable));
     for _ in 0..2 {
-        let done = decide_at_96_hours(
-            &pool,
-            stripe,
-            &case,
-            &facts(&calls, false, Contact::Call),
-            az(9, 9, 0),
-        )
-        .await;
-        assert_eq!(done, Ok(RefundDecision::Refund(RefundReason::Unreachable)));
+        let done = decide_at_96_hours(&pool, stripe, &case, &by_call, az(9, 9, 0)).await;
+        assert_eq!(done, Ok(paid));
     }
     let job = current(&mut db, case.job).await.expect("job").status;
     assert_eq!(job.code(), "closed");
     assert!(!job.takes_check_ins());
-    let emailed = "SELECT count(*) FROM core.task WHERE dedupe_key LIKE '%.unreachable_refunded.' || $1::text";
-    assert_eq!(count(&pool, emailed, case.pick).await, 1);
-    let open = "SELECT count(*) FROM calls.number_pool WHERE job_id = $1 AND closed_at IS NULL";
-    assert_eq!(count(&pool, open, case.job).await, 0);
+    assert_eq!(count(&pool, EMAILED, case.pick).await, 1);
+    assert_eq!(count(&pool, OPEN_LINE, case.job).await, 0);
     let refunds =
         "SELECT count(*) FROM payments.refund WHERE pick_id = $1 AND trigger = 'unreachable'";
     assert_eq!(count(&pool, refunds, case.pick).await, 1);
 }
 
+/// TD-JOB-07: a run that refunded but stopped before the close finishes on the next run (the pick
+/// now reads as refunded before): the job closes and the business is emailed once.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_job_07_a_half_finished_run_closes_and_emails_once(pool: PgPool) {
+    let case = seeded(&pool, JobStatus::Connected, INTENT).await;
+    let secret = SecretString::from(SECRET.to_owned());
+    let trigger = RefundTrigger::Rule(RefundReason::Unreachable);
+    let refunded = request_refund(
+        &pool,
+        &FakeStripe(true),
+        &secret,
+        (case.pick, trigger),
+        az(9, 9, 0),
+    )
+    .await;
+    assert!(refunded.is_ok());
+    let calls = unanswered();
+    let again = UnreachableFacts {
+        refunded_before: true,
+        ..facts(&calls, false, Contact::Call)
+    };
+    let paid = AtNinetySix::Decided(RefundDecision::Refund(RefundReason::Unreachable));
+    for _ in 0..2 {
+        let stripe = (&FakeStripe(false), &secret);
+        let done = decide_at_96_hours(&pool, stripe, &case, &again, az(9, 10, 0)).await;
+        assert_eq!(done, Ok(paid));
+    }
+    let mut db = pool.acquire().await.expect("conn");
+    assert_eq!(status(&mut db, case.job).await, "closed");
+    assert_eq!(count(&pool, EMAILED, case.pick).await, 1);
+    assert_eq!(count(&pool, OPEN_LINE, case.job).await, 0);
+}
+
 /// TD-JOB-07: call contact with no call in 72 hours returns to Quotes ready (pick a no-show);
-/// email contact stays Connected for the day-3 reply.
+/// email contact stays Connected until the day-3 NO, which returns it with the no-show recorded.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_job_07_no_call_in_72_hours_by_contact(pool: PgPool) {
     let case = seeded(&pool, JobStatus::Connected, INTENT).await;
     let mut db = pool.acquire().await.expect("conn");
     let released = az(2, 9, 0);
-    let email =
-        no_call_at_72_hours(&mut db, &case, (Contact::Email, released, &[]), az(5, 9, 0)).await;
-    assert_eq!(email, Ok(false));
-    let soon =
-        no_call_at_72_hours(&mut db, &case, (Contact::Call, released, &[]), az(5, 8, 59)).await;
+    let email = (Contact::Email, EmailCheck::NoReply, released, &[][..]);
+    let kept = no_call_at_72_hours(&mut db, &case, email, az(5, 9, 0)).await;
+    assert_eq!(kept, Ok(false));
+    let call = (Contact::Call, EmailCheck::NoReply, released, &[][..]);
+    let soon = no_call_at_72_hours(&mut db, &case, call, az(5, 8, 59)).await;
     assert_eq!(soon, Ok(false));
     assert_eq!(status(&mut db, case.job).await, "connected");
-    let back =
-        no_call_at_72_hours(&mut db, &case, (Contact::Call, released, &[]), az(5, 9, 0)).await;
+    let back = no_call_at_72_hours(&mut db, &case, call, az(5, 9, 0)).await;
     assert_eq!(back, Ok(true));
     assert_eq!(status(&mut db, case.job).await, "quotes_ready");
     let shows = "SELECT count(*) FROM picks.pick WHERE id = $1 AND status = 'no_show'";
     assert_eq!(count(&pool, shows, case.pick).await, 1);
+    let mailed = seeded(&pool, JobStatus::Connected, "pi_FakeT191c").await;
+    let no = (Contact::Email, EmailCheck::No, released, &[][..]);
+    let returned = no_call_at_72_hours(&mut db, &mailed, no, az(5, 10, 0)).await;
+    assert_eq!(returned, Ok(true));
+    assert_eq!(status(&mut db, mailed.job).await, "quotes_ready");
+    assert_eq!(count(&pool, shows, mailed.pick).await, 1);
+    assert_eq!(count(&pool, OPEN_LINE, mailed.job).await, 0);
 }
 
-/// TD-FEE-39: a dispute is marked for auto-submit only with a release and a call attempt or 3DS;
-/// an early fraud warning on an unreleased charge refunds it, ends the pick as fraud-refunded and
-/// returns the job to Quotes ready.
+/// TD-TXT-30, TD-TXT-10: the missed-call text is queued once, only when owed and her number may
+/// be texted (an opted-out number is "never sent"); the two reminders are queued once each.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
-async fn td_fee_39_auto_submit_and_the_fraud_warning(pool: PgPool) {
+async fn td_txt_30_the_missed_call_text_and_reminders_are_queued_once(pool: PgPool) {
+    let case = seeded(&pool, JobStatus::Connected, INTENT).await;
+    let mut db = pool.acquire().await.expect("conn");
+    let secret = SecretString::from(SECRET.to_owned());
+    let released = az(2, 9, 0);
+    let missed = [call(az(2, 10, 0), AnsweredBy::Machine)];
+    let number = "+19285550199";
+    let opted = (&case, number, SendWindow::OptedOut);
+    let none = missed_call_text(&mut db, &secret, opted, (released, &missed)).await;
+    assert_eq!(none, Ok(false));
+    let picked_up = [call(az(2, 10, 0), AnsweredBy::Person)];
+    let open = (&case, number, SendWindow::Now);
+    let talked = missed_call_text(&mut db, &secret, open, (released, &picked_up)).await;
+    assert_eq!(talked, Ok(false));
+    let texts = "SELECT count(*) FROM messaging.outbox WHERE template_id = 'caller_missed' AND recipient_id = $1";
+    assert_eq!(count(&pool, texts, HOMEOWNER).await, 0);
+    for _ in 0..2 {
+        let sent = missed_call_text(&mut db, &secret, open, (released, &missed)).await;
+        assert_eq!(sent, Ok(true));
+    }
+    assert_eq!(count(&pool, texts, HOMEOWNER).await, 1);
+    let first = queue_reminders(&mut db, &case, (released, Contact::Call, &[])).await;
+    assert_eq!(first, Ok(2));
+    let again = queue_reminders(&mut db, &case, (released, Contact::Call, &[])).await;
+    assert_eq!(again, Ok(0));
+    let reminders = "SELECT count(*) FROM core.task WHERE dedupe_key LIKE '%no_call_reminder.' || $1::text || '.%'";
+    assert_eq!(count(&pool, reminders, case.pick).await, 2);
+}
+
+/// TD-FEE-39: a dispute is marked for auto-submit only with a release and a call attempt or 3DS.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_fee_39_auto_submit(pool: PgPool) {
     seeded(&pool, JobStatus::PaymentPending, INTENT).await;
     let opened = DisputeOpened {
         dispute: "dp_FakeT191",
@@ -384,16 +461,46 @@ async fn td_fee_39_auto_submit_and_the_fraud_warning(pool: PgPool) {
         dispute_auto_submit(&mut db, "dp_FakeT191", (true, 1, false), az(5, 9, 0)).await,
         Ok(true)
     );
-    let fresh = seeded(&pool, JobStatus::PaymentPending, "pi_FakeT191b").await;
-    let stripe = (
-        &FakeStripe,
-        &SecretString::from("fake-id-secret-t191".to_owned()),
-    );
-    let released = fraud_warning(&pool, stripe, (fresh.pick, fresh.job, true), az(5, 9, 0)).await;
-    assert_eq!(released, Ok(false));
-    let moved = fraud_warning(&pool, stripe, (fresh.pick, fresh.job, false), az(5, 9, 0)).await;
-    assert_eq!(moved, Ok(true));
-    assert_eq!(status(&mut db, fresh.job).await, "quotes_ready");
+}
+
+/// TD-FEE-39: an early fraud warning on an unreleased charge refunds it once (a `fraud-warning`
+/// refund row), ends the pick as fraud-refunded and returns the job to Quotes ready; a released
+/// pick, a disputed (blocked) or failed refund and a job past Payment pending change nothing.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_fee_39_the_fraud_warning(pool: PgPool) {
+    let secret = SecretString::from(SECRET.to_owned());
+    let (up, down) = ((&FakeStripe(true), &secret), (&FakeStripe(false), &secret));
+    let disputed = seeded(&pool, JobStatus::PaymentPending, INTENT).await;
+    let opened = DisputeOpened {
+        dispute: "dp_FakeT191",
+        payment_intent: INTENT,
+        amount_cents: 7500,
+        due_at: az(20, 9, 0),
+    };
+    assert_eq!(record_dispute(&pool, &opened, az(5, 9, 0)).await, Ok(true));
+    let ids = (disputed.pick, disputed.job, false);
+    assert_eq!(fraud_warning(&pool, up, ids, az(5, 9, 0)).await, Ok(false));
     let ended = "SELECT count(*) FROM picks.pick WHERE id = $1 AND status = 'fraud_refunded'";
+    assert_eq!(count(&pool, ended, disputed.pick).await, 0);
+    let fresh = seeded(&pool, JobStatus::PaymentPending, "pi_FakeT191b").await;
+    let released = fraud_warning(&pool, up, (fresh.pick, fresh.job, true), az(5, 9, 0)).await;
+    assert_eq!(released, Ok(false));
+    let ids = (fresh.pick, fresh.job, false);
+    assert_eq!(
+        fraud_warning(&pool, down, ids, az(5, 9, 0)).await,
+        Ok(false)
+    );
+    let mut db = pool.acquire().await.expect("conn");
+    assert_eq!(status(&mut db, fresh.job).await, "payment_pending");
+    assert_eq!(count(&pool, ended, fresh.pick).await, 0);
+    assert_eq!(fraud_warning(&pool, up, ids, az(5, 10, 0)).await, Ok(true));
+    assert_eq!(status(&mut db, fresh.job).await, "quotes_ready");
     assert_eq!(count(&pool, ended, fresh.pick).await, 1);
+    let refunds = "SELECT count(*) FROM payments.refund WHERE pick_id = $1 AND trigger = 'fraud-warning' AND status = 'succeeded'";
+    assert_eq!(count(&pool, refunds, fresh.pick).await, 1);
+    let connected = seeded(&pool, JobStatus::Connected, "pi_FakeT191d").await;
+    let ids = (connected.pick, connected.job, false);
+    assert_eq!(fraud_warning(&pool, up, ids, az(5, 9, 0)).await, Ok(false));
+    assert_eq!(status(&mut db, connected.job).await, "connected");
+    assert_eq!(count(&pool, ended, connected.pick).await, 0);
 }
