@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT p.business_id, p.status = ANY($2) AS \"shown!\", r.contact_id, r.email_chosen\n           FROM picks.pick p JOIN picks.release r ON r.pick_id = p.id WHERE p.id = $1",
+  "query": "SELECT p.business_id, p.status = ANY($2) AS \"shown!\", r.contact_id, r.mail_chosen\n           FROM picks.pick p JOIN picks.release r ON r.pick_id = p.id WHERE p.id = $1",
   "describe": {
     "columns": [
       {
@@ -33,12 +33,12 @@
       },
       {
         "ordinal": 3,
-        "name": "email_chosen",
+        "name": "mail_chosen",
         "type_info": "Bool",
         "origin": {
           "Table": {
             "table": "picks.release",
-            "name": "email_chosen"
+            "name": "mail_chosen"
           }
         }
       }
@@ -56,5 +56,5 @@
       false
     ]
   },
-  "hash": "eb2d69b395904139a1fac129c68588f1bf228d86adebde4ea7d2741537f0a464"
+  "hash": "95b9d381f1dce345c9168b35aec7c14ccf19ccce6f10bc14d9c6c34584ef950f"
 }

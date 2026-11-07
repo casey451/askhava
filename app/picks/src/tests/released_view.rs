@@ -134,7 +134,7 @@ async fn pick(
     if let Some((contact, email_chosen)) = bound {
         sqlx::query!(
             "INSERT INTO picks.release (pick_id, job_id, business_id, basis, released_at, \
-             contact_id, email_chosen) VALUES ($1, $2, $3, 'paid', now(), $4, $5)",
+             contact_id, mail_chosen) VALUES ($1, $2, $3, 'paid', now(), $4, $5)",
             id,
             job,
             business,

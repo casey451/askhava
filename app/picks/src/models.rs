@@ -357,7 +357,7 @@ pub(crate) async fn insert_release(
 ) -> Result<bool, PicksError> {
     let done = db(sqlx::query!(
         "INSERT INTO picks.release (pick_id, job_id, business_id, basis, released_at, \
-         contact_id, email_chosen) VALUES ($1, $2, $3, $4, $5, $6, $7) \
+         contact_id, mail_chosen) VALUES ($1, $2, $3, $4, $5, $6, $7) \
          ON CONFLICT (pick_id) DO NOTHING",
         id,
         job,
@@ -392,7 +392,7 @@ pub(crate) async fn release_binding(
     shown: &[String],
 ) -> Result<Option<ReleaseBinding>, PicksError> {
     let row = db(sqlx::query!(
-        r#"SELECT p.business_id, p.status = ANY($2) AS "shown!", r.contact_id, r.email_chosen
+        r#"SELECT p.business_id, p.status = ANY($2) AS "shown!", r.contact_id, r.mail_chosen
            FROM picks.pick p JOIN picks.release r ON r.pick_id = p.id WHERE p.id = $1"#,
         id,
         shown,
@@ -403,7 +403,7 @@ pub(crate) async fn release_binding(
         business: r.business_id,
         shown_status: r.shown,
         contact: r.contact_id,
-        email_chosen: r.email_chosen,
+        email_chosen: r.mail_chosen,
     }))
 }
 

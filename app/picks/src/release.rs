@@ -19,7 +19,7 @@
 //! ([`release_notice`]), or one High [`RELEASE_NO_RECIPIENT_ALERT`] when the business has none; no
 //! homeowner detail and no call window goes in any notice. The [`ReleaseView`] goes back to the
 //! caller once and is stored nowhere (D-1564). The claim binds the release row to the proof's
-//! contact ID and her email choice (`contact_id`, `email_chosen`, both paths), so the business
+//! contact ID and her email choice (`contact_id`, `mail_chosen`, both paths), so the business
 //! portal's later read, `released_view`, reopens that contact and those fields (D-1739).
 //!
 //! T077: once shown, [`release`] asks `calls::api::assign_number` for the job's masked line, the
