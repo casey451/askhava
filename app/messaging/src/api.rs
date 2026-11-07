@@ -9,7 +9,8 @@
 //! text may go without handing it her number (`send_window`, QH-001, QH-006, D-1301); retry a
 //! failed text and then email it or raise a call-back (TXT-014, TXT-015); queue and send every
 //! email once in the SEC-028 layout, holding bulk email above the daily limit's share (OPS-038);
-//! and keep a homeowner's update channel (TXT-018).
+//! keep a homeowner's update channel (TXT-018); and decide web-and-email mode, a suspended
+//! number's routes and the one configured number per audience (`mode`, TXT-021 to TXT-024, CON-033).
 
 pub use crate::email::{
     COMPLAINT_ALERT, DailyLimit, EMAIL_ACTION, EmailClass, EmailEvent, EmailSent, EmailTo, FROM,
@@ -21,6 +22,11 @@ pub use crate::email::{
 pub use crate::handlers::{Callback, receive_inbound, receive_status};
 pub use crate::keywords::{
     HelpSettings, HelpSettingsError, Keyword, help_text, keyword, reply_to_help,
+};
+pub use crate::mode::{
+    EmergencyFacts, EmergencyPlan, LaunchChannel, Line, LineSendError, Lines, ModeError,
+    NumberState, PAUSED_EMERGENCY_ALERT, Raised, Refusal, SendingNumber, TollFree, UpdateRoute,
+    emergency_plan, raise_emergency, send_on_line, update_route,
 };
 pub use crate::models::{EmailError, EmailLog, InboxError, OutboxError};
 pub use crate::optout::{
