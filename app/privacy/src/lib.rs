@@ -9,8 +9,10 @@
 //! type `ai` accepts (AI-004, D-093).
 
 pub mod api;
+mod handlers;
 mod models;
 mod photos;
+mod purge;
 mod readback_reader;
 mod reader;
 mod scrub;

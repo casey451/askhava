@@ -17,6 +17,10 @@ use sqlx::types::Uuid;
 
 pub use crate::handlers::{TEXT_KIND, all_windows_ended, connected_reply, text_due};
 pub use crate::models::{JobRow, JobsError};
+pub use crate::purge_events::{
+    PURGE_DUE_KIND, PURGE_STAGES, SWEEP_KIND, enqueue_purge, run_sweep, schedule_sweep,
+    sweep_closed,
+};
 pub use crate::service::{
     TIMER_KIND, create, job_number, move_to, raise_number_floor, restart_timer, run_timer,
 };

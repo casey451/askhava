@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO privacy.retention_hold (source, source_id, job_id, placed_at) VALUES ($1, $2, $3, $4) ON CONFLICT (source, source_id) DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Uuid",
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "9e7bb01d143e5d0ca196ff762a55980fdb07563112f043f46b92cdee671ea0a3"
+}

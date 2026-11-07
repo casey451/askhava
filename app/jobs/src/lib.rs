@@ -8,6 +8,7 @@
 pub mod api;
 mod handlers;
 mod models;
+mod purge_events;
 mod quote_token;
 mod rules;
 mod service;

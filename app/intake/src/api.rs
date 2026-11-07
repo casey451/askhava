@@ -59,6 +59,7 @@ pub use crate::models::{
     ConsentRecordRow, ConversationRow, EmergencyEventRow, GoldenResultRow, HomeownerRow,
     IntakeAnswerRow, IntakeError, PropertyRow, RecruitingDemandRow, TermsAcceptanceRow,
 };
+pub use crate::purge::{contact_to_purge, purge_answers, run_purge};
 pub use crate::question_bank::{
     AiTurn, BankRun, BankSettings, Given, Heard, MAX_ASKED, NOT_SURE, Next, Prompt, SMELL_EN,
     SMELL_ES, asks_smell_kind, keyword_answer, starts_now,

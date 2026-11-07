@@ -328,6 +328,7 @@ where
         },
     );
     register_business_handlers(&mut registry);
+    register_purge_handlers(&mut registry);
     if let Some(keys) = texts {
         registry.register(askhava_jobs::api::TEXT_KIND, move |pool, task| {
             askhava_intake::api::run_job_text(pool, Arc::clone(&keys), task)
@@ -346,6 +347,32 @@ fn register_business_handlers(registry: &mut Registry) {
     registry.register(
         askhava_businesses::api::MEMBER_REMOVED_KIND,
         askhava_portals::api::run_member_removed,
+    );
+}
+
+/// The retention purge (PRIV-007 to PRIV-009, D-491): `jobs`' daily sweep and stage tasks; on a
+/// stage task or `privacy`'s re-check, `businesses` queues its complaint hold events and `payments`
+/// places its dispute holds before `privacy` decides; `privacy` applies the complaint events and
+/// hands the contact and text stages to `intake`.
+fn register_purge_handlers(registry: &mut Registry) {
+    registry.register(askhava_jobs::api::SWEEP_KIND, askhava_jobs::api::run_sweep);
+    for kind in [
+        askhava_jobs::api::PURGE_DUE_KIND,
+        askhava_privacy::api::RECHECK_KIND,
+    ] {
+        registry.register(kind, |pool, task| async move {
+            askhava_businesses::api::run_complaint_holds(pool.clone(), task.clone()).await?;
+            askhava_payments::api::run_dispute_holds(pool.clone(), task.clone()).await?;
+            askhava_privacy::api::run_purge_due(pool, task).await
+        });
+    }
+    registry.register(
+        askhava_businesses::api::COMPLAINT_HOLD_KIND,
+        askhava_privacy::api::run_complaint_hold,
+    );
+    registry.register(
+        askhava_privacy::api::PURGE_KIND,
+        askhava_intake::api::run_purge,
     );
 }
 

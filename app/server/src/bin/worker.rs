@@ -8,7 +8,7 @@
 //! LOCKED`, the drain, `release_leases`) lives in `app/core/src/tasks.rs`, so the integration
 //! tests drive the same code (rust brain R14). It also builds the off-database stream writer from
 //! `ASKHAVA_STORAGE_BASE_URL` and `ASKHAVA_ID_SECRET` and queues the nightly chain check (OPS-011,
-//! PRIV-029, D-734). At start-up it runs the intake golden set once for the compiled-in catalog
+//! PRIV-029, D-734) and the daily retention purge sweep (PRIV-007, D-491). At start-up it runs the intake golden set once for the compiled-in catalog
 //! version (OPS-040, D-493). With `VAULT_KEY` and `VAULT_INDEX_KEY` set (required in the test and
 //! live projects) it registers `intake`'s homeowner job-text sender (D-1302).
 
@@ -40,6 +40,9 @@ async fn main() -> io::Result<()> {
         .map_err(io::Error::other)?;
     let mut conn = pool.acquire().await.map_err(io::Error::other)?;
     schedule_verify(&mut conn, clock.now())
+        .await
+        .map_err(io::Error::other)?;
+    askhava_jobs::api::schedule_sweep(&mut conn, clock.now())
         .await
         .map_err(io::Error::other)?;
     askhava_intake::api::run_golden(&mut conn, clock.now())

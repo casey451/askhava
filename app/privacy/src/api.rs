@@ -19,14 +19,21 @@ use sqlx::types::Uuid;
 
 use crate::vault;
 
+pub use crate::handlers::{
+    PURGE_KIND, RECHECK_KIND, purge_target, run_complaint_hold, run_purge_due,
+};
 pub use crate::models::{
-    ContactDetails, Field, GRANTS, Grant, IndexPurpose, NewContact, OwnerPurpose, PhotoError,
-    Purpose, Reader, VaultError, grant_for, normalize_phone,
+    ContactDetails, Field, GRANTS, Grant, HoldSource, IndexPurpose, NewContact, OwnerPurpose,
+    PhotoError, PurgeStage, Purpose, Reader, VaultError, grant_for, normalize_phone,
 };
 pub use crate::photos::{
     CleanPhoto, DECODE_PERMITS, DECODE_TIMEOUT, LINK_TTL_SECS, MAX_ALLOC, MAX_PHOTO_BYTES,
     MAX_PIXELS, MAX_SIDE, PhotoKind, PhotoSeal, clean, issue_link, open_link, photo_path, sniff,
     store_photo,
+};
+pub use crate::purge::{
+    DELETE_CONFIRMATION, delete_my_data, is_held, place_hold, purge_contact, purge_photos,
+    release_hold,
 };
 pub use crate::readback_reader::{Readback, read_for_readback};
 pub use crate::reader::{
