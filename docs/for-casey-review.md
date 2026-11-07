@@ -1875,9 +1875,11 @@ An outside review (ChatGPT) of the whole repository found twelve issues. Each wa
 
 ## Business notices by email or text (T147, D-1825 to D-1827, November 7)
 
-- Every business notice now goes by email by default. Text is offered only once the business-texting switch is on, and then only to a phone whose text box is ticked when the notice goes; otherwise that person gets the email.
-- A notice due at night waits, email and text together, until 8 a.m. Arizona time.
+- Business notices now go by email unless texting is set up.
+- Texts start only after you turn on business texting. Even then, a text goes only to phones with the text box ticked. Everyone else gets the email.
+- Notices due overnight wait until 8 a.m. Arizona time. The email and the text then go out together.
 - The "job is confirmed" and "card didn't go through" emails carry a sign-in link made for that one person, good for 7 days. No homeowner details are in any email or text to a business.
-- Job card emails have no pictures, only a link to the job page in the business portal. The "Sent to N businesses" count leaves out a business whose card email bounced.
+- Job card emails have no photos, just a link to the job page in the business portal.
+- The "Sent to N businesses" count leaves out any business whose card email bounced.
 - Not built yet: the worker doesn't run these notices yet, the unsubscribe link in card emails, and Spanish business emails.
 - **Nothing needs you now.**

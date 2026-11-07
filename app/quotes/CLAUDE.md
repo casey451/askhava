@@ -79,7 +79,6 @@ The layer-5 crate that decides who receives each job card, and later holds the c
 - No photo reaches the screen before zero retention or without her confirmation; any flag keeps it off: `tests/integration/tests/card_photos.rs`.
 - A job page opens only for that job's card holder, shows no contact she typed and keeps her other words: `tests/integration/tests/job_page.rs`.
 - Every quote-update template passes the TXT-040 scan; a 21-word sentence fails: `src/tests/update_texts.rs`.
-
 - Amounts and periods in the LIST text are the stored ones, no other period or figure: `src/tests/prop_quote_texts.rs`, `tests/integration/tests/quote_texts.rs::td_txt_21_amounts_are_stored_words_until_the_business_edits`.
 - Updates held to 2:59:59, sent at 3:00:00: `src/tests/prop_quote_texts.rs`, `quote_texts.rs::td_txt_06_first_quote_then_updates_at_most_every_three_hours`.
 

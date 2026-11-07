@@ -569,6 +569,6 @@
     "audience": "business",
     "draft": true,
     "segments": 1,
-    "text": "Ask Hava: Nuevo trabajo {job} de {trade}. Cotice antes de las {time}. Véalo en askhava.com/business."
+    "text": "Ask Hava: Nuevo trabajo {job} de {trade}. Cotice a más tardar a las {time}. Véalo en askhava.com/business."
   }
 }
