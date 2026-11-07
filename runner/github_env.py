@@ -43,12 +43,14 @@ from __future__ import annotations
 
 import dataclasses
 import glob
+import hashlib
 import importlib.util
 import json
 import os
 import random
 import re
 import shlex
+import shutil
 import subprocess
 import tempfile
 import time
@@ -72,7 +74,9 @@ DECISIONS_FILE = "docs/decisions.md"  # read from main to reserve decision numbe
 TASKS_FILE = "kit/tasks.json"  # read from main for a plan-fix re-queue (D-677)
 PUSH_RETRIES = 3
 SMOKE_TIMEOUT = 540  # seconds for scripts/smoke.sh, under the session's 600-second Bash call so the runner answers first (D-1178)
-CARGO_CLEAN_MEMBERS = ("cargo", "clean", "--workspace")  # after a smoke run, in the smoke's target dir (D-1451)
+SMOKE_TARGET = "smoke"  # the smoke's own CARGO_TARGET_DIR, a folder of the cached `target` (D-1884)
+SMOKE_TREE = "askhava-smoke"  # the smoke worktree's fixed folder under RUNNER_TEMP, the same every run (D-1884)
+SMOKE_MTIMES = "smoke-mtimes.json"  # in the smoke's target dir: each tracked file's blob and the mtime it gets (D-1884)
 PREHANDIN = "scripts/prehandin.sh"  # the pre-hand-in gate; main's copy runs on a submitted head at --after (D-1300)
 PREHANDIN_TIMEOUT = 240  # seconds for its --quick part (about 20 s measured), well inside --after's 600-second Bash call
 PREHANDIN_RED = "pre-hand-in gate red"  # how a gate failure's log starts; runner/__main__.py `after` holds on it (D-1300)
@@ -127,7 +131,7 @@ def run_command(args: list[str], stdin: str | None, cwd: Path) -> tuple[int, str
         done = _run(long_args, stdin, cwd, _long_token_env(long_args))
         if done.returncode == 0:
             return done.returncode, done.stdout, done.stderr
-    smoke = args[:2] == ["bash", "scripts/smoke.sh"] or tuple(args) == CARGO_CLEAN_MEMBERS
+    smoke = args[:2] == ["bash", "scripts/smoke.sh"]
     done = _run(args, stdin, cwd, _smoke_env() if smoke else _env_for(args), _timeout_for(args))
     return done.returncode, done.stdout, done.stderr
 
@@ -167,12 +171,79 @@ def _redact_gate_row(row: str) -> str:
 
 
 def _smoke_env() -> dict[str, str]:
-    """The smoke test's environment: the checkout's `target` as CARGO_TARGET_DIR, so a smoke run in a
-    detached worktree reuses the job's cached build instead of compiling the workspace from cold in a
-    temporary directory (D-1178); an explicit CARGO_TARGET_DIR is kept."""
-    env = dict(os.environ)
-    env.setdefault("CARGO_TARGET_DIR", str(Path(os.environ.get("GITHUB_WORKSPACE") or Path.cwd()) / "target"))
-    return env
+    """The smoke test's environment: CARGO_TARGET_DIR is the smoke's own target dir (`smoke_target_dir`)."""
+    return {**os.environ, "CARGO_TARGET_DIR": str(smoke_target_dir())}
+
+
+def smoke_target_dir() -> Path:
+    """The smoke's own target dir, `smoke` inside the checkout's `target` (or inside an explicit
+    CARGO_TARGET_DIR), so the job's Rust cache keeps it (D-1178) but the worker's builds never share it
+    (D-1884): a member artifact built in the smoke worktree has that worktree's path compiled in through
+    `env!("CARGO_MANIFEST_DIR")`, which is why D-1451 cleaned the members after every smoke."""
+    base = os.environ.get("CARGO_TARGET_DIR") or str(Path(os.environ.get("GITHUB_WORKSPACE") or Path.cwd()) / "target")
+    return Path(base) / SMOKE_TARGET
+
+
+def smoke_tree_dir() -> Path:
+    """The smoke worktree's path: SMOKE_TREE under RUNNER_TEMP (the system temp dir outside Actions). It is
+    the same every run, so the paths compiled into the smoke's cached artifacts stay true (D-1884)."""
+    return Path(os.environ.get("RUNNER_TEMP") or tempfile.gettempdir()) / SMOKE_TREE
+
+
+def pin_smoke_mtimes(tree: Path, index: str, manifest: Path, now_ns: int) -> int:
+    """Give every tracked file of the smoke worktree, and every folder holding one, a modification time Cargo
+    can trust (D-1884); returns how many got `now_ns`.
+
+    Cargo calls a workspace member's artifact fresh when no source file (nor any entry of a folder a build
+    script watches, such as `askhava-core`'s `migrations`) is newer than its last build, and a fresh checkout
+    makes everything new, so every smoke rebuilt every member. `manifest` keeps, per path, what it last held
+    (a file's blob; a folder's `/`-suffixed key, the hash of its entry names) and the time it was given: an
+    unchanged one keeps that time, which predates every build that read it; a new or changed one gets
+    `now_ns`, after every build so far. The manifest is written before Cargo runs, so a timed-out or red run
+    cannot leave a wrong one, and an unreadable manifest only makes everything new (a full rebuild). `index`
+    is `git ls-files -s -z`."""
+    old, new = _read_mtimes(manifest), {}
+    for path, held in _smoke_entries(tree, index).items():
+        kept = old.get(path)
+        stamp = kept[1] if kept and kept[0] == held else now_ns
+        os.utime(tree / path.rstrip("/") if path != "/" else tree, ns=(stamp, stamp))
+        new[path] = [held, stamp]
+    manifest.parent.mkdir(parents=True, exist_ok=True)
+    part = manifest.with_suffix(".part")
+    part.write_text(json.dumps(new), encoding="utf-8")
+    part.replace(manifest)
+    return sum(1 for v in new.values() if v[1] == now_ns)
+
+
+def _smoke_entries(tree: Path, index: str) -> dict[str, str]:
+    """What each tracked regular file holds (its blob) and, under its path plus `/` (the root as `/`), what
+    each folder above one holds (a hash of its tracked entry names), files first and the deepest folder
+    first. Submodules and links are left out: Cargo reads the file a link points at."""
+    files: dict[str, str] = {}
+    folders: dict[str, set[str]] = {}
+    for row in filter(None, index.split("\0")):
+        meta, _, path = row.partition("\t")
+        mode, blob = (meta.split() + ["", ""])[:2]
+        if mode == "160000" or (tree / path).is_symlink() or not (tree / path).is_file():
+            continue
+        files[path] = blob
+        parts = path.split("/")
+        for depth in range(len(parts)):
+            folders.setdefault("/".join(parts[:depth]) + "/", set()).add(parts[depth])
+    held = {k: hashlib.sha256("\n".join(sorted(v)).encode()).hexdigest() for k, v in folders.items()}
+    ordered = sorted(held, key=lambda k: -k.count("/"))
+    return {**files, **{k: held[k] for k in ordered}}
+
+
+def _read_mtimes(manifest: Path) -> dict[str, list[Any]]:
+    """The smoke's mtime manifest, or {} when it is missing or unreadable (every file then counts as new)."""
+    try:
+        data = json.loads(manifest.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    if not isinstance(data, dict):
+        return {}
+    return {k: v for k, v in data.items() if isinstance(v, list) and len(v) == 2 and isinstance(v[1], int)}
 
 
 def _run(args: list[str], stdin: str | None, cwd: Path, env: dict[str, str] | None, timeout: int = 600) -> subprocess.CompletedProcess[str]:
@@ -831,40 +902,48 @@ class GitHubEnv:
                 "decisions": sorted(set(st.decision_numbers(self._show(commit, DECISIONS_FILE) or "")))}
 
     def smoke_main(self) -> tuple[bool, str]:
-        """bash scripts/smoke.sh in a detached worktree of main's head (the runner's own tool run)."""
+        """bash scripts/smoke.sh in a detached worktree of main's head (the runner's own tool run), at the
+        fixed `smoke_tree_dir` and building into `smoke_target_dir` with pinned mtimes (D-1884)."""
         head = self.main_head()
         if self.dry_run:
             self.log.append(f"dry-run: smoke test not run on {head[:12]}")
             return True, head
         self.smoke_timed_out = False
-        with tempfile.TemporaryDirectory() as tmp:
-            tree = Path(tmp) / "main"
-            self.git("worktree", "add", "--detach", str(tree), head)
-            try:
-                code, out, err = self._run(["bash", "scripts/smoke.sh"], None, tree)
-            except subprocess.TimeoutExpired:
-                # A smoke test that outruns the budget is not a crash and not a verdict on main: the
-                # cycle notes it (never a D-498 strike) and the next run tries again (D-1178).
-                code, out, err = 124, "", f"smoke timed out after {SMOKE_TIMEOUT} seconds"
-                self.smoke_timed_out = True
-            finally:
-                self.git("worktree", "remove", "--force", str(tree), check=False)
-                self._forget_smoke_build()
+        tree = smoke_tree_dir()
+        self._drop_smoke_tree(tree)
+        self.git("worktree", "add", "--detach", str(tree), head)
+        try:
+            self._pin_smoke_tree(tree)
+            code, out, err = self._run(["bash", "scripts/smoke.sh"], None, tree)
+        except subprocess.TimeoutExpired:
+            # A smoke test that outruns the budget is not a crash and not a verdict on main: the
+            # cycle notes it (never a D-498 strike) and the next run tries again (D-1178).
+            code, out, err = 124, "", f"smoke timed out after {SMOKE_TIMEOUT} seconds"
+            self.smoke_timed_out = True
+        finally:
+            self._drop_smoke_tree(tree)
         tail = (out + err).strip().splitlines()
         self.log.append(f"smoke on {head[:12]}: exit {code}; {tail[-1] if tail else ''}")
         return code == 0, head
 
-    def _forget_smoke_build(self) -> None:
-        """`cargo clean --workspace` after a smoke run (D-1451): the smoke built the workspace's own crates
-        from a fresh temporary worktree into the shared target, and those artifacts (with that worktree's
-        paths compiled in through `env!("CARGO_MANIFEST_DIR")`) are newer than the checkout's sources, so
-        Cargo served them to the worker as fresh: T057's `fake_data` read `/tmp/tmp…/main/scripts/pii_scan.py`.
-        Dependencies stay built; only the workspace members rebuild. Skipped without a Cargo.toml."""
-        if not (self.root / "Cargo.toml").exists():
-            return
-        code, _, err = self._run(list(CARGO_CLEAN_MEMBERS), None, self.root)
+    def _drop_smoke_tree(self, tree: Path) -> None:
+        """Remove the smoke worktree, and anything a crashed run left at its fixed path, so `worktree add` works."""
+        self.git("worktree", "remove", "--force", str(tree), check=False)
+        shutil.rmtree(tree, ignore_errors=True)
+        self.git("worktree", "prune", check=False)
+
+    def _pin_smoke_tree(self, tree: Path) -> None:
+        """`pin_smoke_mtimes` on the smoke worktree; a failure is logged and leaves the fresh mtimes (a full build)."""
+        code, index, err = self._run(["git", "ls-files", "-s", "-z"], None, tree)
         if code != 0:
-            self.log.append(f"cargo clean --workspace after the smoke failed: {err.strip()[-200:]}")
+            self.log.append(f"smoke mtimes not pinned: {err.strip()[-200:]}")
+            return
+        try:
+            fresh = pin_smoke_mtimes(tree, index, smoke_target_dir() / SMOKE_MTIMES, time.time_ns())
+        except OSError as exc:
+            self.log.append(f"smoke mtimes not pinned: {exc}")
+            return
+        self.log.append(f"smoke mtimes: {fresh} new or changed paths")
 
     def main_checks_green(self, head: str) -> bool | None:
         """True when `Ci`, `Twin` and `Ally` all concluded success for that commit of main; False when
