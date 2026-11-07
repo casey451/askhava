@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-07T21:16:22Z by runner bd7921a49c2b (actions).
+Updated 2026-11-07T21:43:12Z by runner 5ed14d085421 (actions).
 
 **Building: T085 in progress since 21:09Z; 145 of 277 done; week 44% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,11 @@ Updated 2026-11-07T21:16:22Z by runner bd7921a49c2b (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T085 claimed 21:09Z, lease until 00:09Z
 - **Week:** 44% used, 106.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:52Z, 23 min before this update
+- **Last run:** 21:16Z, 26 min before this update
 - **Keeper:** last ran 20:52Z, next wake 21:12Z
 
 ## Needs attention
-- Strict plan check red: 2 problem(s) on tasks still to run (+2 on DONE tasks); first: T088: stored context_pct 10% but it measures 14%; regenerate
+- Strict plan check red: 6 problem(s) on tasks still to run (+3 on DONE tasks); first: T085: stored context_pct 11% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -37,7 +37,6 @@ Updated 2026-11-07T21:16:22Z by runner bd7921a49c2b (actions).
 | T082 | businesses: E-SIGN consent box, welcome text, business STOP | done | 1 | 53 min | 01:13Z |  |
 | T193 | businesses: sign-up screens for someone else filling in, the | done | 1 | 55 min | 00:02Z |  |
 | T080 | calls: relay-friendly bridging, identity call, code call | done | 1 | 49 min | 22:52Z |  |
-| T081 | businesses: sign-up, identity chain from public records, act | done | 1 | 37 min | 21:42Z |  |
 
 ### Plan and harness merges on main
 - 19:48Z Plan: third audit — CI filters, close-time owned-file check, request timeout, confirm money invariants, reconcile retry (D-1866–D-1873) (#331)
