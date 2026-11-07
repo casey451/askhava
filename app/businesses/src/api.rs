@@ -53,6 +53,9 @@ pub use crate::identity::{
     letter_code, next_step, record_match, send_code, send_code_seen, settle,
 };
 pub use crate::models::{Business, BusinessesError, Insurance};
+pub use crate::open_cards_times::{
+    OpenCardsTime, OpenCardsTimes, open_cards_times, set_open_cards_times,
+};
 pub use crate::rules::JobTypeChoice;
 pub use crate::rules::{Checks, Event, OwnHours, Widens};
 pub use crate::service::{
@@ -74,6 +77,33 @@ pub use crate::team::{
     add_member, add_owner, change_phone, members, notice_addresses, remove_member, set_roles,
     unlink_phone,
 };
+
+/// SEC-038, D-480: whether `by`, a current member of `by.business`, passed a Verify code (to their
+/// verified phone, or email without a texting phone) no more than [`STEP_UP_LIFE`] before `now`;
+/// a time after `now` is not fresh (T085, D-1850).
+///
+/// # Errors
+///
+/// [`BusinessesError::Database`].
+pub async fn has_fresh_step_up(
+    conn: &mut PgConnection,
+    by: Acting,
+    now: Timestamp,
+) -> Result<bool, BusinessesError> {
+    let q = sqlx::query_scalar!(
+        "SELECT step_up_at FROM businesses.team_member \
+         WHERE id = $1 AND business_id = $2 AND removed_at IS NULL",
+        by.member,
+        by.business
+    );
+    let at = q
+        .fetch_optional(conn)
+        .await
+        .map_err(|_| BusinessesError::Database)?
+        .flatten()
+        .map(|t| t.to_jiff());
+    Ok(at.is_some_and(|at| at <= now && now.duration_since(at) <= STEP_UP_LIFE))
+}
 
 /// The pure status and checklist rules, for the rules bridge and other crates' property tests.
 pub mod rules {

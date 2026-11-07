@@ -11,7 +11,9 @@
 //! facts (BIZ-024, BIZ-026, BIZ-030, BIZ-031, LIC-047, T193). Business sign-in by emailed link,
 //! the 30-day session and the business principal with Confirm's scope (SEC-004, SEC-019, PICK-033,
 //! T084); the new-device code by Verify text or email (SEC-004, TXT-038, T194). The private
-//! feedback page's router after Done (JOB-017, T230).
+//! feedback page's router after Done (JOB-017, T230). The business portal home with "Your numbers",
+//! the open-cards times and the SEC-038 step-up gate, and the released job's page with its call
+//! log (BIZ-013, BIZ-025, BIZ-035, CARD-022, PICK-024, SEC-038, T085).
 
 /// The cookie jar the session functions take and give back (axum-extra's).
 pub use axum_extra::extract::cookie::CookieJar;
@@ -22,6 +24,10 @@ pub use crate::business_auth::{
     SIGNIN_LINK_ROUTE, SIGNIN_ROUTE, SignIn, SignInAddress, SignInMail, business_principal,
     run_member_removed, signin_form, signin_open, signin_post, signin_request,
 };
+pub use crate::business_portal::{
+    BUSINESS_HOME_ROUTE, OPEN_CARDS_ROUTE, SensitiveChange, StepUpError, YourNumbers,
+    business_home_page, require_step_up, save_open_cards_times,
+};
 pub use crate::business_signup::{
     DoneError, DoneFacts, NOTICE_OFF, NOTICE_ON, PEST_ATTESTATION, Parts, SIGNUP_ROUTE, Screen,
     done_facts, done_lines, fee_numbers, notice_line, signup_page,
@@ -31,6 +37,10 @@ pub use crate::confirm_pay::{
     may_confirm, press_reply,
 };
 pub use crate::feedback::{FEEDBACK_ROUTE, SHARE_LABEL, feedback_routes};
+pub use crate::job_release::{
+    CallAttempt, EMAIL_CHOSEN_LINE, JOB_RELEASE_ROUTE, JobFacts, JobReleaseError, MissedText,
+    TIP_LINE, job_release_page,
+};
 pub use crate::notice_settings::{
     ChannelChangeError, ChannelFacts, NOTICE_SETTINGS_ROUTE, NoticeAddress, change_channel,
     channel_choices, notice_settings_page,

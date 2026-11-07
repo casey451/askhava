@@ -31,6 +31,7 @@ mod consent;
 mod email_verification;
 mod identity;
 mod models;
+mod open_cards_times;
 mod rules;
 mod service;
 mod signup;
