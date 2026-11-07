@@ -24,10 +24,16 @@
 //! webhook (`payments::api::stripe_webhook_routes`, PICK-022), never from this answer.
 //! The route that reads the facts, opens the pick's one PaymentIntent on the first load
 //! (`open_intent`, FEE-047) and charges is wired once its readers exist (D-1480).
+//!
+//! [`may_confirm`] scopes that route to the signed-in principal: only the owner or a "Confirm and
+//! billing" member of the picked business may see the page or press (PICK-033, SEC-019, D-492,
+//! T084); the route calls it before reading any fact, and anyone else gets the denial.
 
 use askama::Template;
 use askhava_payments::api::{AUTHORIZATION_TEXT, ChargeOutcome, Fee, Tier};
 use sqlx::types::Uuid;
+
+use crate::business_auth::{BusinessPrincipal, Need};
 
 /// The one refund line every Confirm page shows (PICK-021).
 pub const REFUND_LINE: &str = "Refund if you can't reach them: 2 call attempts at least 3 hours \
@@ -231,6 +237,14 @@ pub fn press_reply(
     }
 }
 
+/// Whether `principal` may open or press the Confirm of a pick of `picked_business`: a signed-in
+/// owner or "Confirm and billing" member of that business only; no session, another business or
+/// a "Cards and quotes" member alone may not (PICK-033, SEC-019, D-492).
+#[must_use]
+pub fn may_confirm(principal: Option<&BusinessPrincipal>, picked_business: Uuid) -> bool {
+    principal.is_some_and(|p| p.may(picked_business, Need::ConfirmAndBilling))
+}
+
 #[cfg(test)]
 mod tests {
     //! TD-FEE-25, TD-FEE-37, TD-FEE-40 and TD-PICK-08 page cases (fake data only).
@@ -421,5 +435,35 @@ mod tests {
     fn money_groups_thousands() {
         assert_eq!(money(123_456_789), "$1,234,567.89");
         assert_eq!(money(5), "$0.05");
+    }
+
+    fn person(business: u128, owner: bool, roles: (bool, bool)) -> BusinessPrincipal {
+        BusinessPrincipal {
+            member: Uuid::from_u128(0xb0),
+            business: Uuid::from_u128(business),
+            owner,
+            roles,
+        }
+    }
+
+    /// TD-SEC-01, PICK-033: only the owner or a "Confirm and billing" member of the picked
+    /// business may Confirm; a "Cards and quotes" member, another business or no session may not.
+    #[test]
+    fn only_owner_or_confirm_and_billing_of_the_picked_business_confirms() {
+        let picked = Uuid::from_u128(0xb1);
+        assert!(may_confirm(Some(&person(0xb1, true, (true, true))), picked));
+        assert!(may_confirm(
+            Some(&person(0xb1, false, (false, true))),
+            picked
+        ));
+        assert!(!may_confirm(
+            Some(&person(0xb1, false, (true, false))),
+            picked
+        ));
+        assert!(!may_confirm(
+            Some(&person(0xb2, true, (true, true))),
+            picked
+        ));
+        assert!(!may_confirm(None, picked));
     }
 }

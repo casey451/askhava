@@ -8,18 +8,25 @@
 //! PICK-017, PICK-054, A11Y-014, T055). The business's Confirm review step and its press answers
 //! (PICK-021, FEE-014, FEE-045, CON-029, T224). The "Why was I charged?" page of a charge (FEE-031,
 //! T068). The business sign-up screens, their WEB-024 notice line, fee numbers and done-screen
-//! facts (BIZ-024, BIZ-026, BIZ-030, BIZ-031, LIC-047, T193).
+//! facts (BIZ-024, BIZ-026, BIZ-030, BIZ-031, LIC-047, T193). Business sign-in by emailed link,
+//! the 30-day session and the business principal with Confirm's scope (SEC-004, SEC-019, PICK-033,
+//! T084).
 
 /// The cookie jar the session functions take and give back (axum-extra's).
 pub use axum_extra::extract::cookie::CookieJar;
 
+pub use crate::business_auth::{
+    AddressForm, BUSINESS_SESSION_LIFE, BusinessPrincipal, LINK_LIFE, LINKS_PER_LIFE, Need,
+    SIGNIN_LINK_ROUTE, SIGNIN_ROUTE, SignIn, SignInAddress, SignInMail, business_principal,
+    run_member_removed, signin_form, signin_open, signin_post, signin_request,
+};
 pub use crate::business_signup::{
     DoneError, DoneFacts, NOTICE_OFF, NOTICE_ON, PEST_ATTESTATION, Parts, SIGNUP_ROUTE, Screen,
     done_facts, done_lines, fee_numbers, notice_line, signup_page,
 };
 pub use crate::confirm_pay::{
     ConfirmFacts, FEE_FREE_LINE, NoFee, PORTAL_LINK, PressReply, REFUND_LINE, confirm_page,
-    press_reply,
+    may_confirm, press_reply,
 };
 pub use crate::pick_flow::{
     CODE_ROUTE, PICK_ROUTE, PageLanguage, PickCodeKeys, VERIFY_DAILY_THRESHOLD, pick_flow_routes,

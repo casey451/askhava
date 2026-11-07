@@ -8,6 +8,7 @@ publish.workspace = true
 
 [dev-dependencies]
 askhava-adapters = { workspace = true }
+askhava-businesses = { workspace = true }
 askhava-core = { workspace = true }
 askhava-fixtures = { workspace = true }
 askhava-intake = { workspace = true }

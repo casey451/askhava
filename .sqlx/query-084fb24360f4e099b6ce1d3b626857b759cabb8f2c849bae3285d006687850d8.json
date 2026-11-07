@@ -1,0 +1,41 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE portals.login_link SET used_at = $2 WHERE token_sha256 = $1 AND used_at IS NULL AND expires_at > $2 RETURNING member_id, business_id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "member_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "portals.login_link",
+            "name": "member_id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "business_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "portals.login_link",
+            "name": "business_id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Bytea",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "084fb24360f4e099b6ce1d3b626857b759cabb8f2c849bae3285d006687850d8"
+}
