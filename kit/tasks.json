@@ -8791,7 +8791,7 @@
    "id": "T085",
    "slug": "portals-business-portal",
    "title": "portals: business portal home (contact choice, your numbers, call log, step-up changes)",
-   "goal": "The business portal shows how the homeowner chose to be contacted, the \"Your numbers\" panel, the released job's call log, and asks for a fresh Verify code before any sensitive change (BIZ-013, BIZ-025, BIZ-035, SEC-038). The released job's portal view (`job_release.rs`, `job_release.html`) prints the homeowner's first name once with the PICK-024 tip, never her number, and an email-contact release's line (TD-PICK-39, D-491). Each person chooses their open-cards email times in a section of the portal home (`business_portal.rs`, `business_home.html`; CARD-022's setting, D-491, D-492), stored per person in `businesses.open_cards_time` through `app/businesses/src/open_cards_times.rs`; T198's composer reads them through `businesses::api` (D-491). The step-up checks are tested in `tests/security/tests/step_up.rs` and the per-person times table in `app/businesses/src/tests/open_cards_times.rs` (D-492).",
+   "goal": "The business portal shows how the homeowner chose to be contacted, the \"Your numbers\" panel, the released job's call log, and asks for a fresh Verify code before any sensitive change (BIZ-013, BIZ-025, BIZ-035, SEC-038). The released job's portal view (`job_release.rs`, `job_release.html`) prints the homeowner's first name once with the PICK-024 tip, never her number, and an email-contact release's line (TD-PICK-39, D-491). Each person chooses their open-cards email times in a section of the portal home (`business_portal.rs`, `business_home.html`; CARD-022's setting, D-491, D-492), stored per person in `businesses.open_cards_time` through `app/businesses/src/open_cards_times.rs`; T198's composer reads them through `businesses::api` (D-491). The step-up checks are tested in `tests/security/tests/step_up.rs` and the per-person times table in `app/businesses/src/tests/open_cards_times.rs` (D-492). `job_release.rs` reads the released details only through T253's `picks::api::released_view` with the session's `BusinessSessionProof`, on every load (nothing kept), and shows its removed-details answer as such (D-1739).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -8800,7 +8800,8 @@
     "T194",
     "T083",
     "T078",
-    "T191"
+    "T191",
+    "T253"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -8853,7 +8854,8 @@
     "D-286",
     "D-331",
     "D-380",
-    "D-480"
+    "D-480",
+    "D-1739"
    ],
    "cites": [],
    "budget": {
@@ -9872,6 +9874,218 @@
    "prompt": "kit/prompts/T093.md"
   },
   {
+   "id": "T253",
+   "slug": "picks-released-view",
+   "title": "privacy, picks and portals: the signed-in business reads a released pick's details again",
+   "goal": "Today a business sees a released pick's details only in the one answer `picks::api::release` gives its caller, and nothing stores them (D-1565): if the vault read fails after the claim commits, the response is lost or the page reloads, nothing shows them again (D-1564). Build the business portal's own read, through `picks` (architecture section 8: the business portal asks `picks.api`, never `privacy`), with no stored copy (PRIV-002) (D-1739). (1) Bind the release: `migrations/0129_picks_release_binding.sql` adds to `picks.release` the homeowner contact ID the proof named (`contact_id`, an ID only) and her PICK-018 choice of email contact (`email_chosen`), both `NOT NULL` since no row exists before Gate C, the table's append-only REVOKE unchanged; `release` writes both in its claim (`app/picks/src/models.rs`, `app/picks/src/release.rs`), on the emergency path too. (2) The proof: `privacy` adds `BusinessSessionProof` (private fields: the person and the business), made only by a new `SessionMint::business`, which T084's business session extractor in `app/portals/src/business_auth.rs` calls for a verified session, as the homeowner and owner realms do (SEC-046); business code still names no vault read. A new compile-fail case, `tests/security/ui/forge_session_proof_business.rs` with its `.stderr`, proves code outside `privacy` cannot build a `BusinessSessionProof` by struct literal, `Default` or `Clone`; T223's `tests/security/tests/session_proof_compile_fail.rs` already compiles every `ui/forge_session_proof_*.rs`, so it and T223's three cases stay as they are (SEC-046, TD-SEC-25). `server` takes the session mint once per process through a `server::session_minter()` held in a `OnceLock`, beside `release_minter()` (`app/server/src/lib.rs:345`), so the composition and each server test file share one mint. (3) The grant and the read: `Purpose::ReleasedView` and the grant `(Reader::Picks, Purpose::ReleasedView, [Name, Address, Email], \"vault_read.picks.released_view\")` in `GRANTS` (`app/privacy/src/models.rs`; no phone), and `privacy::api::read_released` (`app/privacy/src/released_reader.rs`) taking `&BusinessSessionProof`, the pick and the bound contact, audited per field with the person as actor and the pick as subject (PRIV-003), refused on a connection inside a transaction; add `(\"read_released\", &[\"picks\"])` to `READERS` in `tests/security/tests/vault_readers.rs` (T022's and T246's test, taken over here). (4) The rule, `picks::api::released_view(pool, vault, &BusinessSessionProof, pick)` (`app/picks/src/released_view.rs`): the proof's business is the pick's business; the person is now its owner or a \"Confirm and billing\" member, read through `businesses::api` at each view (PICK-024 and BIZ-043 send the release only to them; a member removed or demoted after the release is refused); the pick has a `picks.release` row and status `paid` or `free`; then it reads the bound contact's name and address, and the email only when `email_chosen`, and returns the first word of the name as `ReleaseView` does. Every refusal is one not-found answer that reads nothing and names nothing about the pick. Viewing is not an introduction: it writes no release row, notice, charge, fee or masked line, and may repeat while the pick stays paid or free and the vault holds the fields; after the PRIV-007 purge or \"Delete my data\" (T092) it answers that the details were removed. T085's `job_release.rs` renders it. Tests: `app/picks/src/tests/released_view.rs` (the pure refusal rule over every status, role and business pairing) and `app/server/tests/released_view.rs` (TD-PICK-48 against the database; `server` is the one test home allowed the session mint, `tests/integration/tests/architecture.rs:30`). Update `docs/architecture.md` sections 8 and 10, `app/privacy/CLAUDE.md` and `app/picks/CLAUDE.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "4",
+   "module": "picks",
+   "deps": [
+    "T194",
+    "T069",
+    "T077",
+    "T090",
+    "T092"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "security"
+   ],
+   "owns": [
+    "app/privacy/src/models.rs",
+    "app/privacy/src/released_reader.rs",
+    "app/picks/src/released_view.rs",
+    "app/picks/src/models.rs",
+    "app/picks/src/release.rs",
+    "migrations/0129_picks_release_binding.sql",
+    "app/portals/src/business_auth.rs",
+    "tests/security/tests/vault_readers.rs",
+    "app/server/tests/released_view.rs",
+    "app/picks/src/tests/released_view.rs",
+    "tests/security/ui/forge_session_proof_business.rs",
+    "tests/security/ui/forge_session_proof_business.stderr"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/privacy.md",
+    "docs/spec/security.md",
+    "docs/spec/businesses.md",
+    "docs/brains/rust-production.md",
+    "docs/brains/postgres-operations.md"
+   ],
+   "requirements": [
+    "PICK-023",
+    "PICK-024",
+    "PRIV-004",
+    "PRIV-005",
+    "SEC-046"
+   ],
+   "tests": [
+    "TD-PICK-48"
+   ],
+   "decisions": [
+    "D-1563",
+    "D-1564",
+    "D-1565",
+    "D-1739",
+    "D-1740"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 12,
+    "lines": 650,
+    "context_pct": 30
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T253-picks-released-view",
+   "prompt": "kit/prompts/T253.md"
+  },
+  {
+   "id": "T254",
+   "slug": "server-release-composition",
+   "title": "server and picks: the production release (paid or free, mint, release), the masked-line retry and the recovery tests",
+   "goal": "Nothing calls `picks::api::release` in production (D-1563): `server` builds no `payments` `ReleaseSink` and does not merge `stripe_webhook_routes` (D-1480), and nothing moves a pick to `paid` or `free`, so every release would be `MovedOn` (D-1564); a masked line that fails to open is never tried again (D-1688). Compose it (D-1739). (1) `app/picks/src/settle.rs`: `picks::api::settle(tx, &Releasable)` takes `payments`' cleared `Releasable` (private fields, no `Clone`, `app/payments/src/release_proof.rs:147`), never a bare basis, so no crate can mark a pick paid or free without `payments`' clearance; it moves an `awaiting_confirm` pick to `paid` (a paid charge) or `free` (a $0 decision) and leaves any other status alone, saying whether it moved. (2) `app/server/src/release_sink.rs`: the `ReleaseSink`. For a `Releasable` it settles the pick and calls `release` whenever the pick is now `paid` or `free` for the proof's basis, whether this call moved it or an earlier one did (a restart between the settle's commit and the claim then releases on the retry, exactly once); finds the job's homeowner contact through `intake::api` (the one T246's page pick uses), mints with `release_minter()` and calls `release` with the vault and the masked pool; `email_chosen` is the stored PICK-018 choice when one exists and otherwise false, a masked call (D-1740); `Already`, `MovedOn` and `WaitingForAddress` are success to the route, a database error its 500 so Stripe sends the event again. The same sink takes `payments::api::no_fee_release`'s `Releasable` for a $0 decision. `server::build_router` (the shared `app/server/src/lib.rs`) merges `stripe_webhook_routes` with the Stripe client and webhook secret from settings, served with connect info (SEC-040); a setting it needs that does not exist yet goes in the shared `app/core/src/settings.rs` (D-493). (3) The masked-line retry (D-1688): `line_failed` in `release.rs` also queues one `picks.line_retry` core task with the pick; its handler, `picks::api::retry_line` in `settle.rs`, registered in the shared `app/server/src/bin/worker.rs`, opens the line from the release row's bound contact (T253) only if the job never had one, so a line closed after 30 days is never reopened; the worker's retries and dead letter apply and the High alert stays. (4) Tests in `app/server/tests/release_recovery.rs` (TD-PICK-49, TD-PICK-50), through the sink with real proofs, since only `server` may mint (`tests/integration/tests/architecture.rs:30`): `no_fee_release` with a seeded $0 decision, the webhook route with a signed fake event and a fake Stripe client, a vault that cannot read and then can, and a new pool, vault and sink for the restart case. No test-only route and no public proof constructor: production authorization stays as it is. Update `docs/architecture.md` section 10 and `app/server/CLAUDE.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "picks",
+   "deps": [
+    "T253",
+    "T224"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "money",
+    "privacy",
+    "security"
+   ],
+   "owns": [
+    "app/server/src/release_sink.rs",
+    "app/picks/src/settle.rs",
+    "app/picks/src/release.rs",
+    "app/server/tests/release_recovery.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/fees.md",
+    "docs/spec/calls.md",
+    "docs/spec/privacy.md",
+    "docs/spec/businesses.md",
+    "docs/brains/payments-stripe.md",
+    "docs/brains/postgres-operations.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "PICK-022",
+    "PRIV-005",
+    "BIZ-014"
+   ],
+   "tests": [
+    "TD-PICK-49",
+    "TD-PICK-50"
+   ],
+   "decisions": [
+    "D-1480",
+    "D-1563",
+    "D-1564",
+    "D-1688",
+    "D-1739",
+    "D-1740"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 550,
+    "context_pct": 26
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T254-server-release-composition",
+   "prompt": "kit/prompts/T254.md"
+  },
+  {
+   "id": "T255",
+   "slug": "emergency-address-rerelease",
+   "title": "intake, payments and server: ask again for an emergency address and release once it arrives",
+   "goal": "On an emergency job a release that comes before the address stores one `picks.address_wait` row and queues one `picks.address_needed` event (T069, TD-INT-34), but nothing handles the event, and nothing releases once the address arrives: the proof was consumed and `paid_release` needs a new Stripe event (D-1563). Build both (D-1739). (1) `app/intake/src/address_wait.rs`: the `picks.address_needed` handler, registered in the shared `app/server/src/bin/worker.rs`, asks the homeowner the name-and-address question again at once through `intake::api::ask_name_address` (INT-027, INT-029), once per pick; and `address_arrived`, which `conversation.rs` (T040's, extended by T162) calls after `take_name_address` stores an address for a job with a waiting pick, queueing one `intake.address_in` event. (2) `app/payments/src/reclear.rs`: `payments::api::reclear_release(conn, pick)` returns a `Releasable` only from the pick's stored charge success (the succeeded PaymentIntent T189's `paid_release` checked) or its recorded $0 decision (`no_fee_release`'s rule), never from a redirect, the homeowner's message or a new event (SEC-030). (3) The `intake.address_in` handler in `app/server/src/release_sink.rs` (T254's) re-clears, settles and releases through the same sink, so the masked line opens then (TD-CALL-12's database path); a pick that left paid or free before the address arrived releases nothing, and a second address message releases nothing again. Tests in `app/server/tests/address_rerelease.rs` (TD-INT-39; only `server` may mint). Update `docs/architecture.md` section 10 and the `intake`, `payments` and `server` `CLAUDE.md` files.",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "intake",
+   "deps": [
+    "T254",
+    "T162"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "money",
+    "privacy",
+    "compliance"
+   ],
+   "owns": [
+    "app/intake/src/address_wait.rs",
+    "app/intake/src/conversation.rs",
+    "app/payments/src/reclear.rs",
+    "app/server/src/release_sink.rs",
+    "app/server/tests/address_rerelease.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/intake.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/fees.md",
+    "docs/brains/payments-stripe.md",
+    "docs/brains/sms-compliance.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "INT-029",
+    "PICK-022"
+   ],
+   "tests": [
+    "TD-INT-39"
+   ],
+   "decisions": [
+    "D-1563",
+    "D-1564",
+    "D-1739"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 5,
+    "lines": 500,
+    "context_pct": 25
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T255-emergency-address-rerelease",
+   "prompt": "kit/prompts/T255.md"
+  },
+  {
    "id": "T095",
    "slug": "picks-email-code",
    "title": "picks: pick code by email when texting is off; '2 YES' from an opted-out phone",
@@ -10205,7 +10419,7 @@
    "id": "T098",
    "slug": "e2e-j1-homeowner",
    "title": "Journey J1 (homeowner) and its variants, keyboard-only, with closing checks",
-   "goal": "Journey J1 runs end to end in Playwright against the app and the stand-ins, with its variants, again keyboard-only with axe at three widths, and ends with the closing checks: no duplicate message or charge, the ledger reconciled, an audit row per status change and no sentinel detail outside the vault (A11Y-005, A11Y-021). This is the stage-4 slice of J1: the steps whose features exist by now. The web-chat variant and the steps that need INT-043's order, INT-039, the INT-044 photo check, INT-041/TXT-018, PICK-053 and PICK-049, BIZ-052's review links and the T230 feedback page are T222's (D-491, D-493).",
+   "goal": "Journey J1 runs end to end in Playwright against the app and the stand-ins, with its variants, again keyboard-only with axe at three widths, and ends with the closing checks: no duplicate message or charge, the ledger reconciled, an audit row per status change and no sentinel detail outside the vault (A11Y-005, A11Y-021). This is the stage-4 slice of J1: the steps whose features exist by now. The web-chat variant and the steps that need INT-043's order, INT-039, the INT-044 photo check, INT-041/TXT-018, PICK-053 and PICK-049, BIZ-052's review links and the T230 feedback page are T222's (D-491, D-493). Its closing checks cover the composed release: after the stand-in payment succeeds the pick is paid, one `picks.release` row and one release notice exist, and no homeowner phone appears in any business-facing page, email or text (D-1739).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -10216,7 +10430,8 @@
     "T088",
     "T224",
     "T240",
-    "T241"
+    "T241",
+    "T254"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -10244,7 +10459,8 @@
    ],
    "decisions": [
     "D-1143",
-    "D-1215"
+    "D-1215",
+    "D-1739"
    ],
    "cites": [],
    "budget": {
@@ -10264,7 +10480,7 @@
    "id": "T099",
    "slug": "e2e-j2-business",
    "title": "Journey J2 (business) and its variants, keyboard-only, with closing checks",
-   "goal": "Journey J2 (business sign-up through Confirm, charge and statement) and its variants run end to end in Playwright against the stand-ins, again keyboard-only with axe at three widths, ending with the closing checks (A11Y-005, A11Y-021). Across J2 the fake voice provider records no call to a business phone except masked calls a person placed (the J2 half of TD-BIZ-22's and TD-BIZ-25's sweeps; the J1 half is T222's, D-491, D-492). This is the stage-4 slice of J2; the steps that need BIZ-052's links, PICK-053's formats, PICK-052's job note and PICK-050's 'Can't take it' are T222's (D-491, D-493).",
+   "goal": "Journey J2 (business sign-up through Confirm, charge and statement) and its variants run end to end in Playwright against the stand-ins, again keyboard-only with axe at three widths, ending with the closing checks (A11Y-005, A11Y-021). Across J2 the fake voice provider records no call to a business phone except masked calls a person placed (the J2 half of TD-BIZ-22's and TD-BIZ-25's sweeps; the J1 half is T222's, D-491, D-492). This is the stage-4 slice of J2; the steps that need BIZ-052's links, PICK-053's formats, PICK-052's job note and PICK-050's 'Can't take it' are T222's (D-491, D-493). Its closing checks cover payment, release and the portal view: after the stand-in Stripe success the business's portal shows the released details (T253's read, T085's page), again after a reload, with one release row, one notice, one masked line and no second fee (D-1739); reaching Confirm needs the served Confirm route, which D-1740 records as unowned.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -10277,6 +10493,8 @@
     "T198",
     "T199",
     "T155",
+    "T254",
+    "T085",
     "T261"
    ],
    "model": "claude-opus-5-5",
@@ -10307,6 +10525,7 @@
    ],
    "decisions": [
     "D-1143",
+    "D-1739",
     "D-1754"
    ],
    "cites": [],
@@ -11357,6 +11576,7 @@
     "T249",
     "T250",
     "T251",
+    "T255",
     "T256",
     "T257",
     "T258",
@@ -11391,7 +11611,9 @@
    ],
    "requirements": [],
    "tests": [],
-   "decisions": [],
+   "decisions": [
+    "D-1739"
+   ],
    "cites": [
     "BUILD_BRIEF.md:488"
    ],
@@ -11830,7 +12052,8 @@
    "stage": "5",
    "module": "site",
    "deps": [
-    "T202"
+    "T202",
+    "T255"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -11891,7 +12114,8 @@
     "D-470",
     "D-480",
     "D-490",
-    "D-492"
+    "D-492",
+    "D-1739"
    ],
    "cites": [],
    "budget": {
@@ -17029,14 +17253,16 @@
    "id": "T266",
    "slug": "pick-contact-choice",
    "title": "portals, picks and privacy: the homeowner's contact choice and shared email are stored for the release",
-   "goal": "At the page pick the homeowner chooses a masked call or an email she shares (PICK-018), but `app/portals/src/pick_flow.rs` checks the choice and the email and passes them on unstored (`pick_flow.rs:38`, D-1264), so the release can only ever be a masked call (`email_chosen` false, D-1740 (2)) and PICK-042's accepted-quote email has no address (D-1761). (1) `migrations/0159_picks_contact_choice.sql`: `picks.contact_choice` (pick ID, `call` or `email`, decided time; one row per pick, app role SELECT and INSERT). (2) `app/privacy/src/vault.rs`: `privacy::api::store_shared_email(conn, vault, contact, email)` seals the email into the contact's vault `email` field (field-bound encryption, a new version, one audit row naming the actor and purpose `shared_at_pick`; no plaintext returned), so the email is stored only in the vault (PRIV-001, PRIV-002). (3) `app/picks/src/contact_choice.rs`: `picks::api::record_contact_choice` (in the page pick's transaction, after `page_pick`) and `picks::api::contact_choice(conn, pick)` for the release's caller. (4) `pick_flow.rs` stores both in the transaction that records the pick; an error keeps her choices on the page as now; a text pick (no page) stays a masked call. The release's caller passes `contact_choice` as `email_chosen` (D-1739's sink; see D-1761 for the merge order). No email reaches a log, task payload or business page. Update the `picks`, `privacy` and `portals` `CLAUDE.md` files, `docs/architecture.md` section 10 and `docs/decisions.md`.",
+   "goal": "At the page pick the homeowner chooses a masked call or an email she shares (PICK-018), but `app/portals/src/pick_flow.rs` checks the choice and the email and passes them on unstored (`pick_flow.rs:38`, D-1264), so the release can only ever be a masked call (`email_chosen` false, D-1740 (2)) and PICK-042's accepted-quote email has no address (D-1761). (1) `migrations/0165_picks_contact_choice.sql`: `picks.contact_choice` (pick ID, `call` or `email`, decided time; one row per pick, app role SELECT and INSERT). (2) `app/privacy/src/vault.rs`: `privacy::api::store_shared_email(conn, vault, contact, email)` seals the email into the contact's vault `email` field (field-bound encryption, a new version, one audit row naming the actor and purpose `shared_at_pick`; no plaintext returned), so the email is stored only in the vault (PRIV-001, PRIV-002). (3) `app/picks/src/contact_choice.rs`: `picks::api::record_contact_choice` (in the page pick's transaction, after `page_pick`) and `picks::api::contact_choice(conn, pick)` for the release's caller. (4) `pick_flow.rs` stores both in the transaction that records the pick; an error keeps her choices on the page as now; a text pick (no page) stays a masked call. (5) `app/server/src/release_sink.rs` (T254's sink, extended by T255) passes `picks::api::contact_choice` as `email_chosen` instead of D-1740 (2)'s masked-call default, on the first release and on T255's re-release (D-1761). No email reaches a log, task payload or business page. Update the `picks`, `privacy` and `portals` `CLAUDE.md` files, `docs/architecture.md` section 10 and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
    "module": "picks",
    "deps": [
     "T214",
-    "T257"
+    "T257",
+    "T254",
+    "T255"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -17048,9 +17274,11 @@
    "owns": [
     "app/portals/src/pick_flow.rs",
     "app/picks/src/contact_choice.rs",
-    "migrations/0159_picks_contact_choice.sql",
+    "migrations/0165_picks_contact_choice.sql",
     "app/privacy/src/vault.rs",
-    "tests/integration/tests/pick_contact_choice.rs"
+    "tests/integration/tests/pick_contact_choice.rs",
+    "app/server/src/release_sink.rs",
+    "app/server/tests/release_contact_choice.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -17065,7 +17293,8 @@
     "PICK-042",
     "PRIV-001",
     "PRIV-002",
-    "PRIV-003"
+    "PRIV-003",
+    "PICK-022"
    ],
    "tests": [
     "TD-PICK-52"
@@ -17076,7 +17305,7 @@
    ],
    "cites": [],
    "budget": {
-    "files": 5,
+    "files": 7,
     "lines": 400,
     "context_pct": 30
    },
@@ -17087,7 +17316,7 @@
    ],
    "branch": "claude/task/T266-pick-contact-choice",
    "prompt": "kit/prompts/T266.md",
-   "acceptance": "TD-PICK-52 passes against PostgreSQL through the served page pick; every existing pick-flow case still passes; the `app/privacy/` 95% floor holds."
+   "acceptance": "TD-PICK-52 passes against PostgreSQL: the page-pick cases in `tests/integration/tests/pick_contact_choice.rs` and the release cases in `app/server/tests/release_contact_choice.rs` (only `server` may mint, D-1563 (4)); every existing pick-flow, TD-PICK-49 and TD-INT-39 case still passes; the `app/privacy/` 95% floor holds."
   },
   {
    "id": "T232",
@@ -17609,7 +17838,8 @@
    "deps": [
     "T260",
     "T084",
-    "T232"
+    "T232",
+    "T254"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",

@@ -8,7 +8,7 @@ One row per cross-module handoff: a piece of work one task or decision passed to
 
 Columns: **Owner** is one or more task ids separated by commas, or `none`. **Status** is `open`, `tracked` (a non-gating improvement watched by its owner) or `closed`. **Evidence** is `-` until closed.
 
-Rows IC-06 to IC-09 and IC-33 name T253, T254 and T255, added by the release plan change (`claude/plan-release-portal-read`, D-1739); until that change merges those ids are missing from `kit/tasks.json` and the stage exit says so, which is the intended signal.
+Rows IC-06 to IC-09 and IC-33 name T253, T254 and T255, added by the release plan change (D-1739, #313).
 
 | ID | Handoff | Decision or finding | Producer | Consumer | Area | Owner | Test | Status | Evidence |
 |---|---|---|---|---|---|---|---|---|---|
@@ -33,7 +33,7 @@ Rows IC-06 to IC-09 and IC-33 name T253, T254 and T255, added by the release pla
 | IC-19 | Card sender checks business consent (`may_get_cards`) at send time | D-1715, D-1760 | businesses consent | quotes card pool | privacy | T251 | TD-BIZ-41 | open | - |
 | IC-20 | Business texts check `may_text` per receiving phone at send time | D-1715, D-1760 | businesses consent | messaging business notices | privacy | T147 | TD-TXT-17 | open | - |
 | IC-21 | Sign-up form consent box, welcome request after activation, welcome and phone-stopped emails | D-1715, D-1709, D-1380 | businesses consent | portals sign-up, messaging email | compliance | none | - | open | - |
-| IC-22 | Homeowner's PICK-018 contact choice and shared email stored for the release | D-1740 (2), D-1264, D-1761 | portals pick flow | picks release, privacy vault | privacy | T266 | TD-PICK-52 | open | - |
+| IC-22 | Homeowner's PICK-018 contact choice and shared email stored and passed to the release | D-1740 (2), D-1264, D-1761 | portals pick flow | picks release, server release sink, privacy vault | privacy | T266 | TD-PICK-52 | open | - |
 | IC-23 | AI writing calls (questions, card) and `ai::api` wired into intake | D-990, D-1198 | ai | intake | ai | none | - | open | - |
 | IC-24 | Owner switches and safe mode checked at action time | audit A12 table, D-1427 | ops switches | payments, messaging, intake | security | T105 | TD-OPS-01 | open | - |
 | IC-25 | Call logs to refund decisions (person, voicemail, side, windows) | audit A12 table, D-1527 | calls log | payments refund rules, picks | money | T191 | TD-FEE-22 | open | - |

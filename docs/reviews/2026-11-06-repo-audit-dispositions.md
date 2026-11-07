@@ -26,7 +26,7 @@ Verdicts: **confirmed** (the code shows it on current `main`), **owned** (alread
 |---|---|---|---|---|
 | PICK-018 contact choice and shared email never stored (D-1740 (2)) | Confirmed | `app/portals/src/pick_flow.rs:38` ("checked and passed on unstored", D-1264); `picks::api::page_pick` takes no choice (`app/picks/src/service.rs:392`) | T266 (new) | TD-PICK-52 |
 | Release email `{link}` not filled (D-1565 (2)) | Confirmed | D-1565 (2); no queued task's goal filled or checked the link | T147 (fills), T194 (checks) | TD-TXT-18 (extended), TD-PICK-51 |
-| Merge order with D-1739 | Plan note | T254 is not on `main`, so this change cannot name it | the second plan change to merge: T254 into T261's deps; T254, T255 into T266's deps and `release_sink.rs` into T266's owns | - |
+| Cross-links with D-1739 (#313, merged first) | Applied after merging `main` | T254 now on `main` | T261 depends on T254; T266 depends on T254 and T255 and owns `app/server/src/release_sink.rs` and `app/server/tests/release_contact_choice.rs` | TD-PICK-52 (release cases) |
 
 ## Improvements list (audit section "Improvements justified by the code")
 
