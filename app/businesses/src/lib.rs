@@ -13,10 +13,15 @@
 //! identity chain and activation in `identity` (BIZ-002, BIZ-003, BIZ-016) and the About us screen
 //! in `about_us` (BIZ-022).
 //!
+//! T082 added the E-SIGN consent records, the welcome request, the business STOP email request,
+//! the auto-reply rule and the recruiting-email rules in `consent` (CON-019, CON-020, BIZ-017,
+//! BIZ-032, BIZ-048).
+//!
 //! Other crates reach it only through [`api`].
 
 mod about_us;
 pub mod api;
+mod consent;
 mod identity;
 mod models;
 mod rules;
