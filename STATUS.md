@@ -1,23 +1,23 @@
 # Ask Hava build status
 
-Updated 2026-11-07T18:34:23Z by runner 6ea04a3a8964 (actions).
+Updated 2026-11-07T18:44:34Z by runner 03d112b0be45 (actions).
 
-**Idle since 18:33Z; 142 of 269 done; week 42% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 18:42Z; 143 of 269 done; week 42% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 142 of 269 build tasks (owner gates not counted)
+- **Tasks done:** 143 of 269 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 18:33Z (no task in progress)
+- **Lane:** idle since 18:42Z (no task in progress)
 - **Week:** 42% used, 112.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:34Z, 0 min before this update
+- **Last run:** 18:34Z, 10 min before this update
 - **Keeper:** last ran 18:34Z, next wake 18:54Z
 
 ## Needs attention
-- Strict plan check red: 4 problem(s) on tasks still to run (+1 on DONE tasks); first: T149: stored context_pct 16% but it measures 20%; regenerate
+- Strict plan check red: 6 problem(s) on tasks still to run (+4 on DONE tasks); first: T149: stored context_pct 16% but it measures 20%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T196 | businesses: verified notice email, sender rules and the addr | MERGE_PENDING | 2 | 32 min | 18:33Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests / test tests::transi |
+| T196 | businesses: verified notice email, sender rules and the addr | done | 2 | 32 min | 18:33Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests / test tests::transi |
 | T093 | messaging: vault references in the log, bodies cut at 30 day | done | 1 | 45 min | 17:05Z |  |
 | T196 | businesses: verified notice email, sender rules and the addr | check_failed | 1 | 49 min | 15:54Z |  |
 | T147 | messaging and businesses: business notices by chosen channel | done | 1 | 39 min | 14:31Z |  |
@@ -48,14 +48,14 @@ Updated 2026-11-07T18:34:23Z by runner 6ea04a3a8964 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 222 of 731 (30.4%) · partial 272 · unstarted 237
-**Tasks merged (throughput only):** 142 of 269
+**Requirements verified:** 224 of 731 (30.6%) · partial 275 · unstarted 232
+**Tasks merged (throughput only):** 143 of 269
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 13 | 11 | 11 | 35 |
 | ai | 13 | 11 | 4 | 28 |
-| businesses | 8 | 26 | 24 | 58 |
+| businesses | 8 | 28 | 22 | 58 |
 | calls | 9 | 15 | 1 | 25 |
 | consent | 13 | 18 | 4 | 35 |
 | fees | 20 | 31 | 1 | 52 |
@@ -64,12 +64,12 @@ Updated 2026-11-07T18:34:23Z by runner 6ea04a3a8964 (actions).
 | licensing | 31 | 16 | 1 | 48 |
 | lifecycle | 21 | 7 | 0 | 28 |
 | messaging | 18 | 23 | 4 | 45 |
-| ops-recovery | 1 | 5 | 48 | 54 |
+| ops-recovery | 2 | 4 | 48 | 54 |
 | privacy | 2 | 23 | 6 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
-| quotes-pick | 17 | 26 | 13 | 56 |
+| quotes-pick | 18 | 25 | 13 | 56 |
 | recurring | 7 | 1 | 3 | 11 |
-| security | 9 | 28 | 17 | 54 |
+| security | 9 | 31 | 14 | 54 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 1 | 27 | 28 |
 | wording | 2 | 2 | 28 | 32 |
@@ -84,7 +84,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 22 of 85 done
+- stage 4: 23 of 85 done
 - stage 5: 0 of 42 done
 - stage 6: 0 of 26 done
 - stage 7: 0 of 2 done
