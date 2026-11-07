@@ -1,25 +1,25 @@
 # Ask Hava build status
 
-Updated 2026-11-07T12:10:56Z by runner 0172b97606b9 (actions).
+Updated 2026-11-07T12:24:13Z by runner 2e7439c5fa94 (actions).
 
-**Idle since 12:07Z; 138 of 256 done; week 36% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 12:21Z; 139 of 256 done; week 36% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 138 of 256 build tasks (owner gates not counted)
+- **Tasks done:** 139 of 256 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 12:07Z (no task in progress)
+- **Lane:** idle since 12:21Z (no task in progress)
 - **Week:** 36% used, 122.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:10Z, 0 min before this update
+- **Last run:** 12:11Z, 13 min before this update
 - **Keeper:** last ran 12:10Z, next wake 12:30Z
 
 ## Needs attention
 - PLAN GAP T093 (since 2026-11-07T08:52:58Z, no attempt used; a plan change fixes it): T093: dependency T092 is DONE but its owned file app/messaging/src/purge.rs is not on main
 - PLAN GAP T253 (since 2026-11-07T08:52:58Z, no attempt used; a plan change fixes it): T253: dependency T092 is DONE but its owned file app/messaging/src/purge.rs is not on main
-- Strict plan check red: 7 problem(s) on tasks still to run (+10 on DONE tasks); first: T253: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 8 problem(s) on tasks still to run (+12 on DONE tasks); first: T253: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T191 | payments: the unreachable-homeowner refund at 96 hours and i | MERGE_PENDING | 1 | 56 min | 12:07Z |  |
+| T191 | payments: the unreachable-homeowner refund at 96 hours and i | done | 1 | 56 min | 12:07Z |  |
 | T097 | jobs: day-3 and day-14 check-ins, PROBLEM flags, private fee | done | 1 | 51 min | 10:55Z |  |
 | T096 | messaging: web-and-email mode, number suspension, one config | done | 1 | 43 min | 09:49Z |  |
 | T092 | privacy: 180-day contact purge, holds, photo and message del | done | 1 | 54 min | 08:38Z |  |
@@ -55,8 +55,8 @@ Updated 2026-11-07T12:10:56Z by runner 0172b97606b9 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 204 of 731 (27.9%) · partial 276 · unstarted 251
-**Tasks merged (throughput only):** 138 of 256
+**Requirements verified:** 204 of 731 (27.9%) · partial 279 · unstarted 248
+**Tasks merged (throughput only):** 139 of 256
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -69,8 +69,8 @@ Updated 2026-11-07T12:10:56Z by runner 0172b97606b9 (actions).
 | intake | 19 | 15 | 9 | 43 |
 | job-cards | 12 | 7 | 5 | 24 |
 | licensing | 31 | 16 | 1 | 48 |
-| lifecycle | 21 | 5 | 2 | 28 |
-| messaging | 16 | 17 | 12 | 45 |
+| lifecycle | 21 | 6 | 1 | 28 |
+| messaging | 16 | 19 | 10 | 45 |
 | ops-recovery | 1 | 5 | 48 | 54 |
 | privacy | 0 | 25 | 6 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
@@ -91,7 +91,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 18 of 72 done
+- stage 4: 19 of 72 done
 - stage 5: 0 of 42 done
 - stage 6: 0 of 26 done
 - stage 7: 0 of 2 done
