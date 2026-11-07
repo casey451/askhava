@@ -24,9 +24,9 @@ pub use crate::keywords::{
     HelpSettings, HelpSettingsError, Keyword, help_text, keyword, reply_to_help,
 };
 pub use crate::mode::{
-    EmergencyFacts, EmergencyPlan, LaunchChannel, Line, Lines, ModeError, NumberState,
-    PAUSED_EMERGENCY_ALERT, Refusal, SendingNumber, TollFree, UpdateRoute, emergency_plan,
-    raise_emergency_alert, update_route,
+    EmergencyFacts, EmergencyPlan, LaunchChannel, Line, LineSendError, Lines, ModeError,
+    NumberState, PAUSED_EMERGENCY_ALERT, Raised, Refusal, SendingNumber, TollFree, UpdateRoute,
+    emergency_plan, raise_emergency, send_on_line, update_route,
 };
 pub use crate::models::{EmailError, EmailLog, InboxError, OutboxError};
 pub use crate::optout::{

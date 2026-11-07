@@ -1,31 +1,46 @@
 //! Web-and-email mode, number suspension and the one configured number per audience (TXT-021 to
 //! TXT-024, TXT-034, TXT-035, CON-033; D-144, D-206, D-210, D-275, D-297, D-303, D-315, D-1804 to
-//! D-1807).
+//! D-1808).
 //!
 //! Each audience (homeowners, businesses) has its own [`Line`]: its texting switch, its one
 //! configured [`SendingNumber`] and the provider's [`NumberState`]. A text goes only from that
-//! number while the switch is on and the number works ([`Line::sender`]); there is no list of
-//! numbers to fall back on, so no second number is ever used to get around a suspension
+//! number while the switch is on and the number works ([`Line::sender`]), and [`send_on_line`] is
+//! the send that takes its `From` from there and refuses while the owner's `texting` or `all`
+//! pause is on; there is no list of numbers to fall back on, so no second number is ever used
 //! (TXT-022). One audience's switch or suspension never changes the other's line (TXT-035).
 //! While texting is paused an update goes by email and the quote page or portal, or, for a
 //! homeowner with no email, onto Casey's call list ([`update_route`], TXT-023). An emergency
-//! message while paused gets the plan of [`emergency_plan`] (TXT-024), whose `voice_call` is the
-//! `switch_on` intake's `enqueue_safety_call` takes, so the `core.task` event T080's `calls`
-//! handler places is queued only during a suspension (D-491). [`TollFree`] is CON-033's code
-//! rule. Pure except [`raise_emergency_alert`]; the caller reads the stored switches and passes
-//! them in.
+//! message while paused gets the plan of [`emergency_plan`] (TXT-024); [`raise_emergency`] raises
+//! its alert once per inbox message and keeps its `voice_call` for one message per homeowner and
+//! suspension, and that is the `switch_on` intake's `enqueue_safety_call` takes (D-491).
+//! [`TollFree`] is CON-033's code rule.
 
-use askhava_ops::api::{NewAlert, OpsError, Severity, raise_alert};
+use askhava_adapters::api::{SentText, SmsAdapter};
+use askhava_ops::api::{
+    Actor, AuditEntry, Change, NewAlert, OpsError, Severity, Switch, audit_once, is_paused,
+    raise_alert,
+};
+use askhava_privacy::api::Vault;
 use jiff::Timestamp;
 use jiff::civil::Date;
+use secrecy::SecretString;
 use sqlx::PgConnection;
 use sqlx::types::Uuid;
 use thiserror::Error;
 
+use crate::models::OutboxError;
+use crate::optout::send_checked;
+use crate::service::To;
 use crate::templates::Audience;
 
 /// The critical alert kind raised for an emergency message while texting is paused (TXT-024).
 pub const PAUSED_EMERGENCY_ALERT: &str = "messaging.paused_emergency";
+
+/// The `ops.audit_log` action claiming one inbox message's emergency handling (D-1808).
+const HANDLED_ACTION: &str = "messaging.paused_emergency_handled";
+
+/// The `ops.audit_log` action claiming the one safety call per homeowner and suspension (D-1808).
+const CALL_ACTION: &str = "messaging.paused_safety_call";
 
 /// Why a mode change or a toll-free configuration was refused (TXT-022, TXT-024, CON-033).
 #[derive(Debug, Error, Clone, Copy, PartialEq, Eq)]
@@ -188,6 +203,49 @@ impl Lines {
     }
 }
 
+/// Why [`send_on_line`] sent nothing.
+#[derive(Debug, Error, PartialEq, Eq)]
+pub enum LineSendError {
+    /// The recipient's line has no open sender, or the owner paused texting (OPS-003, TXT-021).
+    #[error("texting on this line is paused")]
+    Paused,
+    /// The send itself failed (`optout::send_checked`).
+    #[error(transparent)]
+    Outbox(#[from] OutboxError),
+}
+
+/// TXT-021, TXT-022, TXT-035, OPS-003, D-1808: sends outbox row `id` through
+/// `optout::send_checked` from the line of `to`'s audience ([`Line::sender`]), never another
+/// number; [`LineSendError::Paused`] with nothing sent while that line is closed or the owner's
+/// `texting` or `all` pause switch is on (both audiences).
+///
+/// # Errors
+///
+/// [`LineSendError::Paused`], or any error of `send_checked` as [`LineSendError::Outbox`].
+pub async fn send_on_line(
+    db: &mut PgConnection,
+    (secret, carrier, vault): (&SecretString, &(impl SmsAdapter + Sync), &Vault),
+    lines: &Lines,
+    (id, to): (Uuid, To<'_>),
+    now: Timestamp,
+) -> Result<Option<SentText>, LineSendError> {
+    let audience = match to {
+        To::Homeowner { .. } => Audience::Homeowner,
+        To::Business(_) => Audience::Business,
+    };
+    let from = lines.line(audience).sender().ok_or(LineSendError::Paused)?;
+    for switch in [Switch::Texting, Switch::All] {
+        if is_paused(db, switch)
+            .await
+            .map_err(|_| OutboxError::Database)?
+        {
+            return Err(LineSendError::Paused);
+        }
+    }
+    let from = from.as_str();
+    Ok(send_checked(db, (secret, carrier, vault), id, (to, from), now).await?)
+}
+
 /// How one update reaches a person (TXT-021, TXT-022, TXT-023, TXT-034).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum UpdateRoute {
@@ -235,59 +293,108 @@ pub struct EmergencyFacts {
 /// What an emergency message gets while homeowner texting is paused (TXT-024).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct EmergencyPlan {
-    /// A critical alert to Casey, always (also for an opted-out number, CON-017).
+    /// The critical [`PAUSED_EMERGENCY_ALERT`]; false for an opted-out number, whose critical
+    /// alert `optout::on_inbound_text` raises on the same inbox row (CON-017, D-1808).
     pub critical_alert: bool,
     /// The INT-004 text by email.
     pub safety_by_email: bool,
     /// The INT-004 text in the web chat.
     pub safety_in_web_chat: bool,
-    /// The site status banner turns on without Casey (D-144).
+    /// The site status banner turns on without Casey, texting off or suspended (D-144, D-1808).
     pub banner_on: bool,
-    /// One safety voice call, passed as `switch_on` to intake's `enqueue_safety_call`.
+    /// A safety voice call is asked for; [`raise_emergency`] keeps one per homeowner and suspension.
     pub voice_call: bool,
 }
 
-/// TXT-024, CALL-019, CALL-022, D-144, D-206, D-210, D-275, D-1805: `None` while the homeowner
-/// line is open (the INT-004 text goes as usual) or for a message with no 911-list match. Paused:
-/// a critical alert, the INT-004 text in the web chat and by email when on file; the banner when
-/// the number is suspended; and the voice call only while it is `Suspended`, for her own message
-/// sent after it began, with the switch on, intake's call trigger, and her number not opted out.
+/// TXT-024, CALL-019, CALL-022, D-144, D-206, D-210, D-275, D-1808: `None` while the homeowner
+/// line is open (the INT-004 text goes as usual) or for a message with no 911-list match. Paused
+/// (switched off or suspended): the INT-004 text in the web chat and by email when on file, the
+/// banner, the critical alert unless optout's covers it; and the voice call only for her own
+/// message sent since a suspension began (`Suspended`, or `Restored` and still waiting for
+/// Casey), with the switch on, intake's call trigger, and her number not opted out.
 #[must_use]
 pub fn emergency_plan(line: &Line, facts: &EmergencyFacts) -> Option<EmergencyPlan> {
     if line.sender().is_some() || !facts.matched {
         return None;
     }
-    let during =
-        matches!(line.state, NumberState::Suspended { since } if facts.arrived_at >= since);
+    let during = suspended_since(line).is_some_and(|since| facts.arrived_at >= since);
     Some(EmergencyPlan {
-        critical_alert: true,
+        critical_alert: !facts.opted_out,
         safety_by_email: facts.has_email,
         safety_in_web_chat: true,
-        banner_on: line.state.paused(),
+        banner_on: true,
         voice_call: during && facts.safety_switch_on && facts.call_trigger && !facts.opted_out,
     })
 }
 
-/// TXT-024: raises the critical [`PAUSED_EMERGENCY_ALERT`] about inbox row `message` when `plan`
-/// asks for one, in the caller's transaction; its ID is the `alert` of intake's safety-call ask.
+/// When the line's running suspension began; a restored number waiting for Casey is still in it
+/// (D-144, D-1806, D-1808).
+fn suspended_since(line: &Line) -> Option<Timestamp> {
+    match line.state {
+        NumberState::Suspended { since } | NumberState::Restored { since } => Some(since),
+        NumberState::Working => None,
+    }
+}
+
+/// What [`raise_emergency`] did for one inbox message.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Raised {
+    /// The [`PAUSED_EMERGENCY_ALERT`] raised, the `alert` of intake's safety-call ask.
+    pub alert: Option<Uuid>,
+    /// The `switch_on` for intake's `enqueue_safety_call`: true for the first message per
+    /// homeowner and suspension whose plan asked for a call (then `alert` is set).
+    pub voice_call: bool,
+}
+
+/// TXT-024, CALL-019, D-1808: in the caller's transaction, claims inbox row `message` once
+/// (`ops::audit_once`; `None` on a retry: the first run's commit holds its alert and call), raises
+/// the plan's critical alert, and keeps the plan's voice call only when no earlier message from
+/// contact `her` in this suspension claimed one, so a second emergency message queues no second
+/// call. Both claims hold the ops advisory lock to the end of the caller's transaction.
 ///
 /// # Errors
 ///
 /// [`OpsError::Database`].
-pub async fn raise_emergency_alert(
+pub async fn raise_emergency(
     db: &mut PgConnection,
-    plan: &EmergencyPlan,
-    message: Uuid,
-) -> Result<Option<Uuid>, OpsError> {
-    if !plan.critical_alert {
+    (plan, line): (&EmergencyPlan, &Line),
+    (her, message): (Uuid, Uuid),
+) -> Result<Option<Raised>, OpsError> {
+    if !audit_once(db, &claim(HANDLED_ACTION, "messaging.inbox", message)).await? {
         return Ok(None);
     }
-    let alert = NewAlert {
-        kind: PAUSED_EMERGENCY_ALERT,
-        severity: Severity::Critical,
-        subject: Some(("messaging.inbox", message)),
+    let alert = if plan.critical_alert {
+        let new = NewAlert {
+            kind: PAUSED_EMERGENCY_ALERT,
+            severity: Severity::Critical,
+            subject: Some(("messaging.inbox", message)),
+        };
+        Some(raise_alert(db, &new).await?)
+    } else {
+        None
     };
-    raise_alert(db, &alert).await.map(Some)
+    let voice_call = match suspended_since(line) {
+        Some(since) if plan.voice_call && alert.is_some() => {
+            // Her contact ID XOR the suspension's start: one key per homeowner and suspension;
+            // random v4 contact IDs make a clash between two homeowners practically impossible.
+            let key =
+                Uuid::from_u128(her.as_u128() ^ u128::from(since.as_millisecond().cast_unsigned()));
+            audit_once(db, &claim(CALL_ACTION, "messaging.contact_suspension", key)).await?
+        }
+        _ => false,
+    };
+    Ok(Some(Raised { alert, voice_call }))
+}
+
+/// A system audit row claiming `(kind, id)` for `action`.
+fn claim(action: &'static str, kind: &'static str, id: Uuid) -> AuditEntry {
+    AuditEntry {
+        actor: Actor::System,
+        action,
+        subject_kind: kind,
+        subject_id: id,
+        change: Change::Action,
+    }
 }
 
 /// A recorded refusal of the homeowner 10DLC campaign (CON-033): its date and the provider's
