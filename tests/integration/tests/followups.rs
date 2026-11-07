@@ -172,7 +172,16 @@ async fn td_job_08_ongoing_is_done_with_no_more_check_ins(pool: PgPool) {
     assert_eq!(fire(&pool, days(15)).await, [FEEDBACK_REQUEST]);
     let repeat = answer(&mut db, id, "DONE", CheckIn::Day3).await;
     assert_eq!(repeat, Guarded::MovedOn);
+    let late = answer(&mut db, id, "LATER", CheckIn::Day3).await;
+    assert_eq!(late, Guarded::MovedOn);
     assert!(fire(&pool, days(16)).await.is_empty());
+    let bad = Claimed {
+        id: 0,
+        kind: CHECK_IN_KIND.to_owned(),
+        payload: serde_json::json!({"job": id.to_string(), "template": "other"}),
+        attempts: 1,
+    };
+    assert!(run_check_in(pool.clone(), bad).await.is_err());
     let other = connected(&mut db).await;
     assert!(
         answer(&mut db, other, "LISTO", CheckIn::Day14)
