@@ -1,0 +1,100 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT business_id, job_id, kind, safety, received_at, reply, listed_at FROM businesses.complaint WHERE id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "business_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "businesses.complaint",
+            "name": "business_id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "job_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "businesses.complaint",
+            "name": "job_id"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "kind",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "businesses.complaint",
+            "name": "kind"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "safety",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "businesses.complaint",
+            "name": "safety"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "received_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "businesses.complaint",
+            "name": "received_at"
+          }
+        }
+      },
+      {
+        "ordinal": 5,
+        "name": "reply",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "businesses.complaint",
+            "name": "reply"
+          }
+        }
+      },
+      {
+        "ordinal": 6,
+        "name": "listed_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "businesses.complaint",
+            "name": "listed_at"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      true
+    ]
+  },
+  "hash": "c7d91291d5f270b76a43fa74b6c871d0d09fa9220f6a81279662d3e98b153565"
+}
