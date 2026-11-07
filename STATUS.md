@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-07T16:29:04Z by runner 9a710c0416a0 (actions).
+Updated 2026-11-07T17:05:44Z by runner 943aee0eb1fa (actions).
 
 **Building: T093 in progress since 16:20Z; 141 of 269 done; week 41% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,11 @@ Updated 2026-11-07T16:29:04Z by runner 9a710c0416a0 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T093 claimed 16:20Z, lease until 19:20Z
 - **Week:** 41% used, 112.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:09Z, 19 min before this update
+- **Last run:** 16:29Z, 36 min before this update
 - **Keeper:** last ran 16:09Z, next wake 16:29Z
 
 ## Needs attention
-- nothing
+- Strict plan check red: 5 problem(s) on tasks still to run; first: T093: stored context_pct 17% but it measures 21%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -38,7 +38,6 @@ Updated 2026-11-07T16:29:04Z by runner 9a710c0416a0 (actions).
 | T078 | calls: never recorded, 45-second connection rule, call logs | done | 1 | 46 min | 19:53Z |  |
 | T077 | calls: PIN routing and the paid-business read-back | done | 1 | 60 min | 18:52Z |  |
 | T076 | calls: masked numbers from a fixed pool, PIN sharing when ex | done | 1 | 41 min | 17:32Z |  |
-| T250 | core: narrow the default privileges in every schema and prov | done | 5 | 19 min | 16:38Z | T250 blocked: migration 0110 names 12 other modules' schemas; TD-SEC-10 (architecture_migrations.rs, protected) rejects  |
 
 ### Plan and harness merges on main
 - 15:37Z Plan: second code audit — owners and acceptance for B01–B08 and known gaps (D-1835–D-1845) (#326)
