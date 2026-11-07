@@ -12,12 +12,16 @@
 //! T068 built the business's "Why was I charged?" page (`receipts_page`, FEE-031, FEE-053).
 //! T193 built the business sign-up screens (`business_signup`, BIZ-024, BIZ-026, BIZ-030,
 //! BIZ-031, LIC-047, WEB-024).
+//! T084 built business sign-in by a single-use 15-minute emailed link, the 30-day business session
+//! and the signed-in business principal routes are scoped by (`business_auth`, SEC-004, SEC-019).
 //! Portal pages extend the shared layout `app/site/templates/base.html` through `askama.toml`.
 //! Other crates reach it only through [`api`].
 
 pub mod api;
+mod business_auth;
 mod business_signup;
 mod confirm_pay;
+mod models;
 mod pick_flow;
 mod quote_page;
 mod receipts_page;

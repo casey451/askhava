@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{#- Business sign-in (T084; SEC-004, SEC-026, A11Y-030, A11Y-031; D-1724 to D-1726). Five screens:
+    "form" asks for the sign-in email (a failed submit puts "Error: " in the title, a focused
+    summary first with a link to the field, and keeps the value); "sent" says the same thing
+    whether or not the address is on file; "open" is the emailed link's page, whose one button
+    signs in (opening the link changes nothing); "ended" is a used, expired or unknown link;
+    "done" is a finished sign-in. Forms post with novalidate and never disable their button. -#}
+{% block title %}{% if failed %}Error: {% endif %}{% if screen == "sent" %}Check your email{% else if screen == "ended" %}This sign-in link has stopped working{% else if screen == "done" %}You're signed in{% else %}Sign in to your business account{% endif %}{% endblock %}
+{% block main %}
+{% if screen == "sent" %}<h1 id="signin-sent" tabindex="-1" autofocus>Check your email</h1>
+<p>If that email belongs to a business account, we've just sent a sign-in link to it.</p>
+<p>You can use the link once, and it runs out after 15 minutes. If it doesn't come, check your spam folder or <a href="/b/sign-in">ask for a new one</a>.</p>
+{% else if screen == "open" %}<h1>Sign in to your business account</h1>
+<p>Press the button to finish signing in.</p>
+<form method="post" action="/b/sign-in/{{ token }}" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<p><button type="submit" id="signin-button">Sign in</button></p>
+</form>
+{% else if screen == "ended" %}<h1>This sign-in link has stopped working</h1>
+<p>You can use each link once, and it runs out after 15 minutes. <a href="/b/sign-in">Get a new sign-in link</a>.</p>
+{% else if screen == "done" %}<h1 id="signin-done" tabindex="-1" autofocus>You're signed in</h1>
+<p>You'll stay signed in on this device for 30 days.</p>
+{% else %}<h1>Sign in to your business account</h1>
+{% if failed %}<div id="error-summary" role="alert" tabindex="-1" autofocus>
+<h2>Check the email address</h2>
+<p><a href="#email">Enter the email address you sign in with, like name@example.com</a></p>
+</div>
+{% endif %}<form method="post" action="/b/sign-in" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<p><label for="email">Email address</label></p>
+<p id="email-hint">Use the email address you were set up with on your business account. We'll send you a link that signs you in.</p>
+{% if failed %}<p id="email-error">Error: Enter the email address you sign in with, like name@example.com</p>
+{% endif %}<p><input type="email" id="email" name="email" value="{{ email }}" autocomplete="email" spellcheck="false" aria-describedby="email-hint{% if failed %} email-error{% endif %}"{% if failed %} aria-invalid="true"{% endif %}></p>
+<p><button type="submit" id="send-link">Email me a sign-in link</button></p>
+</form>
+{% endif %}{% endblock %}

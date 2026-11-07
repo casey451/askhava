@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM portals.session WHERE realm = 'business' AND actor_id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "b71e285db85b4bbb43f2c886ea38d1369c77ad299903827f2f1106fe3dcde79a"
+}
