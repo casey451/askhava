@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-07T09:49:19Z by runner ab686ae43b24 (actions).
+Updated 2026-11-07T09:49:30Z by runner ab686ae43b24 (actions).
 
-**Building: T096 in progress since 09:05Z; 136 of 256 done; week 35% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 09:49Z; 136 of 256 done; week 35% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 136 of 256 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T096 claimed 09:05Z, lease until 12:05Z
+- **Lane:** idle since 09:49Z (no task in progress)
 - **Week:** 35% used, 124.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 09:14Z, 35 min before this update
 - **Keeper:** last ran 09:02Z, next wake 09:22Z
@@ -19,6 +19,7 @@ Updated 2026-11-07T09:49:19Z by runner ab686ae43b24 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T096 | messaging: web-and-email mode, number suspension, one config | MERGE_PENDING | 1 | 43 min | 09:49Z |  |
 | T092 | privacy: 180-day contact purge, holds, photo and message del | done | 1 | 54 min | 08:38Z |  |
 | T091 | quotes: photos on cards only after zero retention and all th | done | 1 | 40 min | 07:24Z |  |
 | T090 | privacy: photo checks by bytes, re-encode without EXIF or GP | done | 1 | 52 min | 06:25Z |  |
@@ -98,7 +99,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T096 (lease until 2026-11-07T12:05:46Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T092", "at": "2026-11-07T08:38:32Z", "input_tokens": 562, "cache_read_input_tokens": 28326239, "cache_creation_input_tokens": 784427, "output_tokens": 235036}
+- {"task": "T096", "at": "2026-11-07T09:49:19Z", "cache_creation_input_tokens": 567989, "output_tokens": 182035, "input_tokens": 411, "cache_read_input_tokens": 18980016}
