@@ -15358,7 +15358,7 @@
      "result": "MERGE_PENDING"
     }
    ],
-   "reviewed_sha": "1506f9fc127eba9f4bdffa60d71957e3fec46d2d",
+   "reviewed_sha": "2e0dd835fbb801b5c620a7e213f0c2aa48bfa8b2",
    "review_lease": {
     "task": "T084",
     "session": "actions-42335642061",
@@ -15373,7 +15373,22 @@
    "last_failure": "Ally: failure\nAlly failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing)\n    +   \"/b/sign-in/{token}\",\n    + ]\n      13 |   expect(ROUTES.length).toBeGreaterThan(0);\n      14 |   const missing = ROUTES.filter((route) => !PAGE_STATES.some((state) => state.route === route));\n    > 15 |   expect(missing, \"routes with no entry in PAGE_STATES\").toEqual([]);\n         |                                                          ^\n      16 | });\n      17 |\n      18 | for (const state of STATES_TO_CHECK) {\n        at /home/runner/work/askhava/askhava/tests/a11y/axe_all_pages.spec.ts:15:58\n    Error Context: test-results/a11y/axe_all_pages-A11Y-002-eve-0bf54-route-table-has-page-states/error-context.md\n  1 failed\n    tests/a11y/axe_all_pages.spec.ts:12:1 \u203a A11Y-002: every GET route in the route table has page states \n  106 passed (31.4s)\n##[error]Process completed with exit code 1.",
    "runner_closed_prs": [
     312
-   ]
+   ],
+   "update_merges": [
+    {
+     "from": "1506f9fc127eba9f4bdffa60d71957e3fec46d2d",
+     "to": "2e0dd835fbb801b5c620a7e213f0c2aa48bfa8b2",
+     "main": "9a2a36bff4ecf9c5b0a3efb186df501535e48f9c",
+     "how": "runner",
+     "checks": {
+      "Ally": "success",
+      "Twin": "success"
+     },
+     "at": "2026-11-07T04:18:39Z"
+    }
+   ],
+   "update_waiting_since": null,
+   "update_push_failures": null
   },
   {
    "id": "T194",
@@ -20825,7 +20840,7 @@
    }
   }
  },
- "updated_at": "2026-11-07T04:15:12Z",
+ "updated_at": "2026-11-07T04:18:45Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -20923,7 +20938,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "59952f28928acd77a7b4640d257eef7f82d4df13",
+ "runner_sha": "9a2a36bff4ecf9c5b0a3efb186df501535e48f9c",
  "starter": "actions",
  "smoke_runs": [
   {
