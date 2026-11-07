@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-07T07:24:51Z by runner 3db37abc1824 (actions).
+Updated 2026-11-07T07:25:05Z by runner 3db37abc1824 (actions).
 
-**Building: T091 in progress since 06:44Z; 134 of 256 done; week 35% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 07:24Z; 134 of 256 done; week 35% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 134 of 256 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T091 claimed 06:44Z, lease until 09:44Z
+- **Lane:** idle since 07:24Z (no task in progress)
 - **Week:** 35% used, 124.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 06:53Z, 31 min before this update
 - **Keeper:** last ran 06:31Z, next wake 06:51Z
@@ -17,6 +17,7 @@ Updated 2026-11-07T07:24:51Z by runner 3db37abc1824 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T091 | quotes: photos on cards only after zero retention and all th | MERGE_PENDING | 1 | 40 min | 07:24Z |  |
 | T090 | privacy: photo checks by bytes, re-encode without EXIF or GP | done | 1 | 52 min | 06:25Z |  |
 | T194 | portals: the new-device code by text or email and team sign- | done | 1 | 42 min | 05:12Z |  |
 | T084 | portals: business one-time sign-in link and 30-day sessions | done | 2 | 24 min | 04:14Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
@@ -96,7 +97,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T091 (lease until 2026-11-07T09:44:39Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T090", "at": "2026-11-07T06:25:29Z", "cache_read_input_tokens": 22282214, "cache_creation_input_tokens": 566621, "output_tokens": 192604, "input_tokens": 444}
+- {"task": "T091", "at": "2026-11-07T07:24:51Z", "cache_read_input_tokens": 4108759, "input_tokens": 165, "output_tokens": 50528, "cache_creation_input_tokens": 212312}
