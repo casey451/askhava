@@ -13,9 +13,9 @@ use askhava_adapters::api::{AdapterError, CodeChannel, IdempotencyKey, VerifyAda
 use askhava_businesses::api::{Acting, Roles, add_member, add_owner, create, remove_member};
 use askhava_core::api::ManualClock;
 use askhava_portals::api::{
-    CodeAddress, CodeFuture, CodeTo, CookieJar, DEVICE_COOKIE, DeviceCodes, PortalsError,
-    SIGNIN_LINK_ROUTE, SIGNIN_ROUTE, SignIn, SignInAddress, SignInMail, business_principal,
-    signin_form, signin_open, signin_post, signin_request,
+    CODE_TRIES, CodeAddress, CodeFuture, CodeTo, CookieJar, DEVICE_COOKIE, DeviceCodes,
+    PortalsError, SIGNIN_LINK_ROUTE, SIGNIN_ROUTE, SignIn, SignInAddress, SignInMail,
+    business_principal, signin_form, signin_open, signin_post, signin_request,
 };
 use axum::Router;
 use axum::body::{Body, to_bytes};
@@ -33,7 +33,8 @@ const OWNER_PHONE: &str = "+15005550101";
 
 type Sends = Arc<Mutex<Vec<(String, CodeChannel)>>>;
 
-/// A fake Verify: records each send; [`CODE`] is right for any contact.
+/// A fake Verify: records each send and, like Twilio, ignores the idempotency key, so a second
+/// send with the same key is a second code (D-1776); [`CODE`] is right for any contact.
 struct FakeVerify(Sends);
 
 impl VerifyAdapter for FakeVerify {
@@ -328,6 +329,11 @@ async fn td_txt_19_owner_code_by_text_and_devices_are_per_person(pool: PgPool) {
             .contains("We texted")
     );
     let sent = sends(&w);
+    assert_eq!(
+        sent.len(),
+        2,
+        "one code per link, however many browsers press"
+    );
     assert_eq!(sent[1], (OWNER_PHONE.to_owned(), CodeChannel::Sms));
     assert!(
         sent.iter().all(|(_, c)| *c != CodeChannel::Call),
@@ -340,4 +346,48 @@ async fn td_txt_19_owner_code_by_text_and_devices_are_per_person(pool: PgPool) {
         .await
         .expect("read");
     assert_eq!(me.map(|p| p.member()), Some(w.owner));
+}
+
+/// D-1776, D-1777: pressing again never sends a second code; each wrong code is an
+/// `auth_failed` event naming the link; after `CODE_TRIES` wrong codes even the right code is
+/// refused, the link has stopped working and no one is signed in.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn one_code_per_link_and_wrong_codes_are_capped(pool: PgPool) {
+    let w = world(&pool).await;
+    let link = link_for(&w, "crew@x.example").await;
+    let mut phone = Browser::default();
+    phone.press(&w.app, &link, &link, "").await;
+    let again = phone.press(&w.app, &link, &link, "").await;
+    assert!(again.contains("We emailed"), "the code field again");
+    assert_eq!(sends(&w).len(), 1, "pressing again sends no second code");
+    for _ in 0..CODE_TRIES {
+        let wrong = phone
+            .press(&w.app, SIGNIN_ROUTE, &link, "&code=111111")
+            .await;
+        assert!(wrong.contains("Error: That code didn't work"));
+    }
+    let mut db = pool.acquire().await.expect("db");
+    let named: i64 = sqlx::query_scalar(
+        "SELECT count(*) FROM portals.security_event e JOIN portals.login_link l \
+         ON l.id = e.actor_ref WHERE e.kind = 'auth_failed' AND l.member_id = $1",
+    )
+    .bind(w.crew)
+    .fetch_one(&mut *db)
+    .await
+    .expect("events");
+    assert_eq!(
+        named, CODE_TRIES,
+        "each wrong code is an event naming the link"
+    );
+    let late = phone
+        .press(&w.app, SIGNIN_ROUTE, &link, &format!("&code={CODE}"))
+        .await;
+    assert!(late.contains("This sign-in link has stopped working"));
+    assert!(!phone.0.contains_key(DEVICE_COOKIE), "no device remembered");
+    let me = business_principal(&mut db, &phone.jar(), start())
+        .await
+        .expect("read");
+    assert!(me.is_none(), "the capped link signs no one in");
+    let reopened = Browser::default().send(&w.app, "GET", &link, "").await;
+    assert!(reopened.contains("This sign-in link has stopped working"));
 }

@@ -17,8 +17,13 @@
 //! member sends one Twilio Verify code, by text to the member's own phone that gets texts, else by
 //! email to the member's own sign-in address, never by a call, and shows the code field; only a
 //! correct code uses the link and signs in, and marks the browser a known device for
-//! [`DEVICE_LIFE`] ([`DEVICE_COOKIE`]). Each person signs in as themself (BIZ-023): the link, the
-//! code and the session all name one team member.
+//! [`DEVICE_LIFE`] ([`DEVICE_COOKIE`]). Twilio ignores idempotency keys, so a link's one code is
+//! recorded server-side before it goes (a born-used marker row, D-1776): pressing again never
+//! sends a second. Each wrong code or failed check is an `auth_failed` event naming the link, and
+//! after [`CODE_TRIES`] of them the link is used up (D-1777). Each person signs in as themself
+//! (BIZ-023): the link, the code and the session all name one team member. Without
+//! [`DeviceCodes`] the link alone signs in (T084's behaviour), so the composition must never serve
+//! the routes without [`SignIn::with_device_codes`] (D-1777).
 //!
 //! [`business_principal`] is the only way a business route learns who is signed in: a business
 //! session whose member is still a current member of its business; owner and homeowner sessions
@@ -72,6 +77,8 @@ pub const DEVICE_COOKIE: &str = "__Host-askhava-device";
 pub const DEVICE_LIFE: SignedDuration = SignedDuration::from_hours(180 * 24);
 /// The site the emailed link points at (SEC-025: askhava.com only).
 const SITE: &str = "https://askhava.com";
+/// Wrong codes (or failed checks) one link takes; the next try uses the link up (D-1777).
+pub const CODE_TRIES: i64 = 5;
 
 /// One team member's sign-in address on file: the business and the address's opaque mailbox ID.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -324,7 +331,8 @@ impl<M: SignInMail> SignIn<M> {
     }
 
     /// Asks for the new-device code before a link signs a new device in (SEC-004, TXT-038). The
-    /// composition sets it when it serves the routes; without it the link alone signs in (T084).
+    /// composition must set it whenever it serves the routes: without it the link alone signs in
+    /// on any device (T084's behaviour, kept for T084's tests, D-1777).
     #[must_use]
     pub fn with_device_codes(mut self, codes: DeviceCodes) -> Self {
         self.codes = Some(Arc::new(codes));
@@ -534,36 +542,33 @@ pub async fn signin_post<M: SignInMail>(
     let signed = match step {
         Ok(Step::SignIn { remember }) => start(&mut db, jar.clone(), &token, now, remember).await,
         Ok(Step::Refused) => Ok(None),
-        Ok(Step::Code { phone, failed }) => {
-            if failed && !auth_failed(&mut db, now).await {
-                return failure("security event");
-            }
-            return code_page(jar, &token, phone, failed);
-        }
+        Ok(Step::Code { phone, failed }) => return code_page(jar, &token, phone, failed),
         Err(what) => return failure(what),
     };
     match signed {
         Ok(Some(jar)) => page(jar, "done", ("", ""), false),
-        Ok(None) if auth_failed(&mut db, now).await => page(jar, "ended", ("", ""), false),
+        Ok(None) if auth_failed(&mut db, None, now).await => page(jar, "ended", ("", ""), false),
         Ok(None) => failure("security event"),
         Err(_) => failure("sign-in"),
     }
 }
 
-/// Records one `auth_failed` event on the link route; `false` when that failed (SEC-048).
-async fn auth_failed(db: &mut PgConnection, now: Timestamp) -> bool {
+/// Records one `auth_failed` event on the link route, naming the link's row ID when known (an
+/// opaque record ID, never the token); `false` when that failed (SEC-048, D-1777).
+async fn auth_failed(db: &mut PgConnection, link: Option<Uuid>, now: Timestamp) -> bool {
     let event = SecurityEvent {
         kind: SecurityEventKind::AuthFailed,
         route: SIGNIN_LINK_ROUTE,
         request_id: None,
-        actor_ref: None,
+        actor_ref: link,
     };
     record_security_event(db, &event, now).await.is_ok()
 }
 
 /// The new-device step for an open link: a known device signs in; otherwise an empty `code`
-/// sends one Verify code (one per link, its key) and a correct one signs in and is remembered
-/// (SEC-004, TXT-038, D-1773, D-1774). The error names what failed.
+/// sends the link's one Verify code ([`send_once`]) and a correct one signs in and is remembered;
+/// past [`CODE_TRIES`] the link is refused (SEC-004, TXT-038, D-1773, D-1774, D-1776, D-1777).
+/// The error names what failed.
 async fn device_step(
     codes: &DeviceCodes,
     db: &mut PgConnection,
@@ -588,25 +593,99 @@ async fn device_step(
     let phone = to.channel() == CodeChannel::Sms;
     let code = code.trim();
     if code.is_empty() {
-        let key = IdempotencyKey::derive(&codes.key, "verify.signin_code", &[&link.to_string()]);
-        let sent = codes.verify.send(&key, &to).await;
-        return sent
-            .then_some(Step::Code {
-                phone,
-                failed: false,
-            })
-            .ok_or("code not sent");
+        send_once(codes, db, link, &to).await?;
+        return Ok(Step::Code {
+            phone,
+            failed: false,
+        });
     }
-    let six = code.len() == 6 && code.bytes().all(|b| b.is_ascii_digit());
-    let right = six && codes.verify.check(&to, code).await.ok_or("code check")?;
-    Ok(if right {
-        Step::SignIn { remember: true }
-    } else {
-        Step::Code {
+    Ok(match check_once(codes, db, (link, &to), code, now).await? {
+        None => Step::Refused,
+        Some(true) => Step::SignIn { remember: true },
+        Some(false) => Step::Code {
             phone,
             failed: true,
-        }
+        },
     })
+}
+
+/// Sends `link`'s one code. Twilio ignores the idempotency key (`app/adapters/CLAUDE.md`), so the
+/// send is recorded first, in a transaction held across the call: a born-used `login_link` marker
+/// row whose hash is of `code-sent:<link ID>` (unique, so a second press or a racing one inserts
+/// nothing and sends nothing). It is backdated by [`LINK_LIFE`] so it never counts toward
+/// [`LINKS_PER_LIFE`], and lives under a day so it is never a known device. A failed send rolls the
+/// marker back, so the next press tries again (SEC-004, SEC-018, D-1776).
+async fn send_once(
+    codes: &DeviceCodes,
+    db: &mut PgConnection,
+    link: Uuid,
+    to: &CodeTo,
+) -> Result<(), &'static str> {
+    let mut tx = sqlx::Connection::begin(&mut *db)
+        .await
+        .map_err(|_| "database")?;
+    let marked = sqlx::query!(
+        "INSERT INTO portals.login_link \
+         (token_sha256, member_id, business_id, created_at, expires_at, used_at) \
+         SELECT $1, member_id, business_id, created_at - interval '15 minutes', expires_at, \
+         created_at - interval '15 minutes' FROM portals.login_link WHERE id = $2 \
+         ON CONFLICT (token_sha256) DO NOTHING",
+        digest(&format!("code-sent:{link}")),
+        link,
+    )
+    .execute(&mut *tx)
+    .await
+    .map_err(|_| "code record")?;
+    if marked.rows_affected() == 0 {
+        return Ok(());
+    }
+    let key = IdempotencyKey::derive(&codes.key, "verify.signin_code", &[&link.to_string()]);
+    if !codes.verify.send(&key, to).await {
+        return Err("code not sent");
+    }
+    tx.commit().await.map_err(|_| "database")
+}
+
+/// Checks `code` for `link`: `None` (and the link used up) once [`CODE_TRIES`] wrong codes or
+/// failed checks are on record; a wrong code or a failed check is an `auth_failed` event naming
+/// the link, then `Some(false)` or the error (SEC-004, SEC-048, D-1777).
+async fn check_once(
+    codes: &DeviceCodes,
+    db: &mut PgConnection,
+    (link, to): (Uuid, &CodeTo),
+    code: &str,
+    now: Timestamp,
+) -> Result<Option<bool>, &'static str> {
+    let tries = sqlx::query_scalar!(
+        "SELECT count(*) FROM portals.security_event \
+         WHERE kind = 'auth_failed' AND route = $1 AND actor_ref = $2",
+        SIGNIN_LINK_ROUTE,
+        link,
+    )
+    .fetch_one(&mut *db)
+    .await
+    .map_err(|_| "tries read")?;
+    if tries.unwrap_or(0) >= CODE_TRIES {
+        sqlx::query!(
+            "UPDATE portals.login_link SET used_at = $2 WHERE id = $1 AND used_at IS NULL",
+            link,
+            now.to_sqlx(),
+        )
+        .execute(&mut *db)
+        .await
+        .map_err(|_| "link use")?;
+        return Ok(None);
+    }
+    let six = code.len() == 6 && code.bytes().all(|b| b.is_ascii_digit());
+    let checked = if six {
+        codes.verify.check(to, code).await
+    } else {
+        Some(false)
+    };
+    if checked != Some(true) && !auth_failed(db, Some(link), now).await {
+        return Err("security event");
+    }
+    checked.map(Some).ok_or("code check")
 }
 
 fn digest(token: &str) -> Vec<u8> {
@@ -681,7 +760,9 @@ async fn remember_device(
     let age = DEVICE_LIFE.as_secs();
     let line =
         format!("{DEVICE_COOKIE}={token}; Path=/; Secure; HttpOnly; SameSite=Lax; Max-Age={age}");
-    let cookie = Cookie::parse(line).map_err(|_| PortalsError::NoRandom)?;
+    // The hex token and fixed attributes always parse; the one computed part is the device
+    // life's Max-Age, so a refusal is reported as a bad lifetime (D-1777).
+    let cookie = Cookie::parse(line).map_err(|_| PortalsError::BadLifetime)?;
     Ok(jar.add(cookie))
 }
 
