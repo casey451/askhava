@@ -1872,3 +1872,12 @@ An outside review (ChatGPT) of the whole repository found twelve issues. Each wa
 - Only ticked feedback can ever go on askhava.com, and a bad review is shown like a good one. A ticked one comes off only for another person's personal details, abuse or discrimination, being believed fake, or being off topic, and each removal is logged with its reason. Feedback from you, a relative of yours or a business is never shown.
 - Not built yet: the text that sends the link, the askhava.com section that shows the feedback, and your owner-portal buttons to remove one or mark who wrote it. Also not yet: the words a homeowner types are kept as typed, so they may hold her own contact details, and neither the 3-year purge nor "Delete my data" removes them yet; a later task adds that. The runner has the list.
 - **Nothing needs you now.**
+
+## Business notices by email or text (T147, D-1825 to D-1827, November 7)
+
+- Every business notice now goes by email by default. Text is offered only once the business-texting switch is on, and then only to a phone whose text box is ticked when the notice goes; otherwise that person gets the email.
+- A notice due at night waits, email and text together, until 8 a.m. Arizona time.
+- The "job is confirmed" and "card didn't go through" emails carry a sign-in link made for that one person, good for 7 days. No homeowner details are in any email or text to a business.
+- Job card emails have no pictures, only a link to the job page in the business portal. The "Sent to N businesses" count leaves out a business whose card email bounced.
+- Not built yet: the worker doesn't run these notices yet, the unsubscribe link in card emails, and Spanish business emails.
+- **Nothing needs you now.**

@@ -13,9 +13,11 @@
 //! Failed texts are retried and then emailed, shown in the portal or turned into a call-back
 //! (`retries`, TXT-014, TXT-015); every email goes once through the email outbox inside the
 //! SEC-028 layout, and bulk email waits above the daily limit's share (`email`, OPS-038). Every charge's receipt email (`receipt_email`, FEE-031) goes through
-//! that same outbox.
+//! that same outbox. Every business notice goes by the business's chosen channels
+//! (`business_notices`, BIZ-019, TXT-035 to TXT-037, QH-005).
 
 pub mod api;
+mod business_notices;
 mod email;
 mod handlers;
 mod keywords;

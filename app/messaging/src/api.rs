@@ -12,6 +12,10 @@
 //! keep a homeowner's update channel (TXT-018); and decide web-and-email mode, a suspended
 //! number's routes and the one configured number per audience (`mode`, TXT-021 to TXT-024, CON-033).
 
+pub use crate::business_notices::{
+    BUSINESS_NOTICE_KIND, JOB_CARD_TEMPLATE, LINK_LIFE, NoticeOutcome, NoticeSender, SIGN_IN_URL,
+    TextGate, business_notice, card_notice_accepted, held_until, sign_in_link,
+};
 pub use crate::email::{
     COMPLAINT_ALERT, DailyLimit, EMAIL_ACTION, EmailClass, EmailEvent, EmailSent, EmailTo, FROM,
     MailboxKind, NewEmail, Notice, PostalAddress, REPLY_TO, Recipient, Rendered, UpdateChannel,
