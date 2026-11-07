@@ -1,23 +1,23 @@
 # Ask Hava build status
 
-Updated 2026-11-07T05:17:38Z by runner 123675bfac63 (actions).
+Updated 2026-11-07T05:32:57Z by runner 609e0ed0c74f (actions).
 
-**Idle since 05:12Z; 132 of 256 done; week 34% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 05:30Z; 133 of 256 done; week 34% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 132 of 256 build tasks (owner gates not counted)
+- **Tasks done:** 133 of 256 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 05:12Z (no task in progress)
+- **Lane:** idle since 05:30Z (no task in progress)
 - **Week:** 34% used, 130.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:17Z, 0 min before this update
+- **Last run:** 05:17Z, 15 min before this update
 - **Keeper:** last ran 05:17Z, next wake 05:37Z
 
 ## Needs attention
-- nothing
+- Strict plan check red: 1 problem(s) on tasks still to run (+1 on DONE tasks); first: T269: stored context_pct 10% but it measures 14%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T194 | portals: the new-device code by text or email and team sign- | MERGE_PENDING | 1 | 42 min | 05:12Z |  |
+| T194 | portals: the new-device code by text or email and team sign- | done | 1 | 42 min | 05:12Z |  |
 | T084 | portals: business one-time sign-in link and 30-day sessions | done | 2 | 24 min | 04:14Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T084 | portals: business one-time sign-in link and 30-day sessions | check_failed | 1 | 29 min | 03:36Z |  |
 | T083 | businesses: complaint replies, 3 in 90 days pause, alerts | done | 1 | 76 min | 02:49Z |  |
@@ -53,8 +53,8 @@ Updated 2026-11-07T05:17:38Z by runner 123675bfac63 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 201 of 731 (27.5%) · partial 259 · unstarted 271
-**Tasks merged (throughput only):** 132 of 256
+**Requirements verified:** 202 of 731 (27.6%) · partial 259 · unstarted 270
+**Tasks merged (throughput only):** 133 of 256
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -68,11 +68,11 @@ Updated 2026-11-07T05:17:38Z by runner 123675bfac63 (actions).
 | job-cards | 12 | 5 | 7 | 24 |
 | licensing | 31 | 16 | 1 | 48 |
 | lifecycle | 19 | 6 | 3 | 28 |
-| messaging | 16 | 11 | 18 | 45 |
+| messaging | 16 | 12 | 17 | 45 |
 | ops-recovery | 1 | 5 | 48 | 54 |
 | privacy | 0 | 16 | 15 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
-| quotes-pick | 16 | 27 | 13 | 56 |
+| quotes-pick | 17 | 26 | 13 | 56 |
 | recurring | 7 | 1 | 3 | 11 |
 | security | 9 | 28 | 17 | 54 |
 | terms | 0 | 3 | 32 | 35 |
@@ -89,7 +89,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 12 of 72 done
+- stage 4: 13 of 72 done
 - stage 5: 0 of 42 done
 - stage 6: 0 of 26 done
 - stage 7: 0 of 2 done
