@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-07T17:27:31Z by runner 6ea04a3a8964 (actions).
+Updated 2026-11-07T17:38:25Z by runner 6ea04a3a8964 (actions).
 
 **Idle since 17:16Z; 142 of 269 done; week 41% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-07T17:27:31Z by runner 6ea04a3a8964 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 17:16Z (no task in progress)
 - **Week:** 41% used, 112.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:27Z, 0 min before this update
+- **Last run:** 17:27Z, 10 min before this update
 - **Keeper:** last ran 17:27Z, next wake 17:47Z
 
 ## Needs attention
@@ -38,7 +38,6 @@ Updated 2026-11-07T17:27:31Z by runner 6ea04a3a8964 (actions).
 | T079 | calls: line closing, staff phones and LINK, email-preferred  | done | 1 | 43 min | 20:51Z |  |
 | T078 | calls: never recorded, 45-second connection rule, call logs | done | 1 | 46 min | 19:53Z |  |
 | T077 | calls: PIN routing and the paid-business read-back | done | 1 | 60 min | 18:52Z |  |
-| T076 | calls: masked numbers from a fixed pool, PIN sharing when ex | done | 1 | 41 min | 17:32Z |  |
 
 ### Plan and harness merges on main
 - 15:37Z Plan: second code audit — owners and acceptance for B01–B08 and known gaps (D-1835–D-1845) (#326)
