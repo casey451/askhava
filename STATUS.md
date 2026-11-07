@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-07T10:55:59Z by runner e082b580ba0a (actions).
+Updated 2026-11-07T10:56:10Z by runner e082b580ba0a (actions).
 
-**Building: T097 in progress since 10:04Z; 137 of 256 done; week 36% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 10:55Z; 137 of 256 done; week 36% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 137 of 256 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T097 claimed 10:04Z, lease until 13:04Z
+- **Lane:** idle since 10:55Z (no task in progress)
 - **Week:** 36% used, 122.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 10:13Z, 42 min before this update
 - **Keeper:** last ran 09:49Z, next wake 10:09Z
@@ -19,6 +19,7 @@ Updated 2026-11-07T10:55:59Z by runner e082b580ba0a (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T097 | jobs: day-3 and day-14 check-ins, PROBLEM flags, private fee | MERGE_PENDING | 1 | 51 min | 10:55Z |  |
 | T096 | messaging: web-and-email mode, number suspension, one config | done | 1 | 43 min | 09:49Z |  |
 | T092 | privacy: 180-day contact purge, holds, photo and message del | done | 1 | 54 min | 08:38Z |  |
 | T091 | quotes: photos on cards only after zero retention and all th | done | 1 | 40 min | 07:24Z |  |
@@ -98,7 +99,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T097 (lease until 2026-11-07T13:04:12Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T096", "at": "2026-11-07T09:49:19Z", "cache_creation_input_tokens": 567989, "output_tokens": 182035, "input_tokens": 411, "cache_read_input_tokens": 18980016}
+- {"task": "T097", "at": "2026-11-07T10:55:58Z", "output_tokens": 166088, "cache_read_input_tokens": 21165121, "input_tokens": 440, "cache_creation_input_tokens": 612779}
