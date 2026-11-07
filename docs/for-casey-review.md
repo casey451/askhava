@@ -1820,3 +1820,9 @@ An outside review (ChatGPT) of the whole repository found twelve issues. Each wa
 ## Every new page adds its own accessibility check entry (plan change, D-1772, November 6)
 
 - The accessibility check fails any page that has no test entry, but only the task that first wrote that test list was allowed to edit it, so the business sign-in task (T084) couldn't add its page and failed. Now any task that adds a page adds its own entry (fake data only) and may not remove or loosen anyone else's. T084's next try picks this up.
+
+## Photos on job cards (T091, D-1794, D-1795, November 7)
+
+- A photo goes on a job card only after our own server checks it, strips its hidden data, re-saves it, and the homeowner confirms it shows no person and no house number. No photo goes to the AI until the zero-retention agreement is signed and the privacy policy says the AI looks at photos.
+- After that, two separate AI checks look for faces, plates and readable text. If either one flags anything, the photo stays off the card (we don't blur it in this version). A request with no photo goes out the same way.
+- **Nothing needs you now.**

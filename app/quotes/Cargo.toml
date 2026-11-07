@@ -13,6 +13,7 @@ askhava-catalog = { workspace = true }
 askhava-jobs = { workspace = true }
 askhava-licensing = { workspace = true }
 askhava-messaging = { workspace = true }
+askhava-privacy = { workspace = true }
 jiff = { workspace = true }
 jiff-sqlx = { workspace = true, features = ["postgres"] }
 serde_json = { workspace = true }

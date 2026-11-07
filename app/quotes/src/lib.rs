@@ -24,6 +24,9 @@
 //! details, the sent and quote counts, CARD-023) and the TXT-040 short-text check on the homeowner
 //! update templates in `update_texts`.
 //!
+//! T091 added card photos in `photos`: a card photo is a screened copy of a cleaned photo the
+//! homeowner confirmed, AI-screened twice only after zero retention (AI-016, CARD-013, CARD-014).
+//!
 //! Other crates reach it only through [`api`].
 
 pub mod api;
@@ -34,6 +37,7 @@ mod intake;
 mod job_page;
 mod models;
 mod notify;
+mod photos;
 mod quote_card;
 mod rules;
 mod service;
