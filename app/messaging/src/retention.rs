@@ -21,6 +21,7 @@ use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
 
 use crate::models::OutboxError;
+use crate::rules::HELP_TEMPLATE;
 use crate::service;
 use crate::status::DeliveryStatus;
 use crate::templates::{Language, Registry};
@@ -56,16 +57,34 @@ pub struct LogEntry {
     pub body_kept: bool,
 }
 
+/// The templates a HELP reply's body may be rendered from: `keywords::help_text` picks one of
+/// them and the row is stored under the first, `help_reply` (CON-018, D-887, D-1851).
+const HELP_VARIANTS: [&str; 4] = [
+    HELP_TEMPLATE,
+    "help_reply_ca",
+    "help_reply_away",
+    "help_reply_away_ca",
+];
+
 /// The language whose template `template_id` the rendered `body` fits, or `None` when it fits
-/// neither or both (TXT-019, D-1851). Each placeholder may stand for any text; the fixed parts must
-/// appear in order, the first at the start and the last at the end.
+/// neither or both (TXT-019, D-1851); a `help_reply` row is checked against all four HELP
+/// variants. Each placeholder may stand for any text; the fixed parts must appear in order, the
+/// first at the start and the last at the end.
 #[must_use]
 pub(crate) fn language_of(template_id: &str, body: &str) -> Option<&'static str> {
     let registry = Registry::embedded().ok()?;
+    let single = [template_id];
+    let candidates: &[&str] = if template_id == HELP_TEMPLATE {
+        &HELP_VARIANTS
+    } else {
+        &single
+    };
     let fits = |language| {
-        registry
-            .template(template_id, language)
-            .is_some_and(|(text, _)| fits_template(text, body))
+        candidates.iter().any(|id| {
+            registry
+                .template(id, language)
+                .is_some_and(|(text, _)| fits_template(text, body))
+        })
     };
     match (fits(Language::En), fits(Language::Es)) {
         (true, false) => Some("en"),
@@ -97,7 +116,8 @@ fn fits_template(template: &str, body: &str) -> bool {
 
 /// Cuts the body of every text still unsent [`BODY_KEPT_FOR`] after it was queued, as of `now`,
 /// ending it as `failed`; the row and its template ID stay (TXT-020, CON-022). Returns how many
-/// rows it cut. Safe to run twice: a cut row has no body left.
+/// rows it cut. Safe to run twice: a cut row has no body left. It does not go through
+/// `retries::give_up`, so a row it ends gets no portal listing, email or call-back (D-1855).
 ///
 /// # Errors
 ///

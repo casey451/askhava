@@ -160,6 +160,40 @@ async fn queue_other(db: &mut PgConnection, her: Uuid, body: &str) -> Uuid {
     enqueue(db, &secret(), &new).await.expect("queued").0
 }
 
+/// TD-TXT-07: every HELP reply variant, in English and Spanish, is logged under `help_reply` with
+/// its language (D-1851).
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_txt_07_every_help_reply_variant_logs_its_language(pool: PgPool) {
+    let vault = vault();
+    let mut db = pool.acquire().await.expect("connection");
+    let her = homeowner(&mut db, &vault, "928-555-0194").await;
+    set_app_role(&mut db).await.expect("app role");
+    let values = [("reply_time", "2 hours"), ("time", "Monday")];
+    let variants = [
+        "help_reply",
+        "help_reply_ca",
+        "help_reply_away",
+        "help_reply_away_ca",
+    ];
+    for variant in variants {
+        for language in [Language::En, Language::Es] {
+            let body = render(variant, language, true, &values)
+                .expect("render")
+                .body;
+            let new = NewText {
+                template_id: "help_reply",
+                subject: &[REQUEST, Uuid::new_v4()],
+                recipient: her,
+                relation: Relation::OpenRequest,
+                body: &body,
+            };
+            let id = enqueue(&mut db, &secret(), &new).await.expect("queued").0;
+            let entry = message_log(&mut db, id).await.expect("log");
+            assert_eq!(entry.language, Some(language), "{variant}");
+        }
+    }
+}
+
 /// TD-TXT-07: at 30 days no outbound body is left, the log rows stay with their template IDs, and
 /// the inbound log holds no words at all.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
