@@ -14,7 +14,8 @@
 //! (`retries`, TXT-014, TXT-015); every email goes once through the email outbox inside the
 //! SEC-028 layout, and bulk email waits above the daily limit's share (`email`, OPS-038). Every charge's receipt email (`receipt_email`, FEE-031) goes through
 //! that same outbox. Every business notice goes by the business's chosen channels
-//! (`business_notices`, BIZ-019, TXT-035 to TXT-037, QH-005).
+//! (`business_notices`, BIZ-019, TXT-035 to TXT-037, QH-005). The outbox is the message log, and a
+//! daily task cuts any body still kept 30 days on (`retention`, TXT-019, TXT-020).
 
 pub mod api;
 mod business_notices;
@@ -25,6 +26,7 @@ mod mode;
 mod models;
 mod optout;
 mod receipt_email;
+mod retention;
 mod retries;
 mod rules;
 mod send_window;

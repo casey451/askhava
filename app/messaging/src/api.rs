@@ -10,7 +10,8 @@
 //! failed text and then email it or raise a call-back (TXT-014, TXT-015); queue and send every
 //! email once in the SEC-028 layout, holding bulk email above the daily limit's share (OPS-038);
 //! keep a homeowner's update channel (TXT-018); and decide web-and-email mode, a suspended
-//! number's routes and the one configured number per audience (`mode`, TXT-021 to TXT-024, CON-033).
+//! number's routes and the one configured number per audience (`mode`, TXT-021 to TXT-024, CON-033);
+//! read a message log entry and cut bodies kept 30 days (`retention`, TXT-019, TXT-020).
 
 pub use crate::business_notices::{
     BUSINESS_NOTICE_KIND, JOB_CARD_TEMPLATE, LINK_LIFE, NoticeOutcome, NoticeSender, SIGN_IN_URL,
@@ -39,6 +40,9 @@ pub use crate::optout::{
 pub use crate::receipt_email::{
     RECEIPT_EMAIL_KIND, RECEIPT_TEMPLATE, ReceiptFacts, ReceiptSender, WHY_CHARGED_PREFIX,
     render_receipt, run_receipt_email,
+};
+pub use crate::retention::{
+    BODY_KEPT_FOR, CUT_KIND, LogEntry, cut_bodies, message_log, run_cut, schedule_cut,
 };
 pub use crate::retries::{
     CALL_BACK_ALERT, GaveUp, IMPORTANT_TEMPLATES, NO_RUSH_CALL_BACK, RETRY_AFTER, Reach, Step,
