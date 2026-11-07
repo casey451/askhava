@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT (name IS NULL AND email IS NULL AND address IS NULL) AS \"cleared!\"\n           FROM privacy.contact WHERE id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "cleared!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "e5364e8445f4168452ea22aacb1c8b7af7c4d644219147ec3b09071c17345606"
+}
