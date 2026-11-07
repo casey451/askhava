@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-07T12:33:05Z by runner 2e7439c5fa94 (actions).
+Updated 2026-11-07T13:25:57Z by runner a93abcaba825 (actions).
 
 **Building: T230 in progress since 12:24Z; 139 of 256 done; week 36% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,13 +8,13 @@ Updated 2026-11-07T12:33:05Z by runner 2e7439c5fa94 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T230 claimed 12:24Z, lease until 15:24Z
 - **Week:** 36% used, 122.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:11Z, 22 min before this update
+- **Last run:** 12:33Z, 52 min before this update
 - **Keeper:** last ran 12:10Z, next wake 12:30Z
 
 ## Needs attention
 - PLAN GAP T093 (since 2026-11-07T08:52:58Z, no attempt used; a plan change fixes it): T093: dependency T092 is DONE but its owned file app/messaging/src/purge.rs is not on main
 - PLAN GAP T253 (since 2026-11-07T08:52:58Z, no attempt used; a plan change fixes it): T253: dependency T092 is DONE but its owned file app/messaging/src/purge.rs is not on main
-- Strict plan check red: 8 problem(s) on tasks still to run (+12 on DONE tasks); first: T253: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 9 problem(s) on tasks still to run (+14 on DONE tasks); first: T253: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -41,8 +41,6 @@ Updated 2026-11-07T12:33:05Z by runner 2e7439c5fa94 (actions).
 | T250 | core: narrow the default privileges in every schema and prov | check_failed | 4 | 24 min | 15:37Z |  |
 | T250 | core: narrow the default privileges in every schema and prov | check_failed | 3 | 26 min | 14:20Z |  |
 | T250 | core: narrow the default privileges in every schema and prov | QUEUED | 2 | 9 min | 13:30Z |  |
-| T250 | core: narrow the default privileges in every schema and prov | QUEUED | 1 | 26 min | 13:18Z |  |
-| T095 | picks: pick code by email when texting is off; '2 YES' from  | done | 1 | 36 min | 12:39Z |  |
 
 ### Plan and harness merges on main
 - 05:10Z Plan: repo audit findings — owners and acceptance for A01–A06, A08–A12 (D-1751–D-1761, D-1788) (#316)
