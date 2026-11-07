@@ -17397,7 +17397,15 @@
     "T279",
     "T280",
     "T281",
-    "T282"
+    "T282",
+    "T283",
+    "T284",
+    "T285",
+    "T286",
+    "T287",
+    "T288",
+    "T289",
+    "T290"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -17575,7 +17583,8 @@
    "deps": [
     "T106",
     "T107",
-    "T279"
+    "T279",
+    "T287"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -18708,7 +18717,8 @@
     "T157",
     "T199",
     "T155",
-    "T263"
+    "T263",
+    "T287"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -21243,7 +21253,8 @@
     "T260",
     "T084",
     "T232",
-    "T254"
+    "T254",
+    "T287"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -21447,6 +21458,102 @@
    "attempts": 0,
    "slug": "unreachable-steps-run",
    "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T287",
+   "deps": [
+    "T263",
+    "T258"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "fee-fixed-at-pick",
+   "type": "harness",
+   "stage": "4"
+  },
+  {
+   "id": "T283",
+   "deps": [
+    "T169",
+    "T173",
+    "T056",
+    "T075"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "ci-compiled-in-paths",
+   "type": "harness",
+   "stage": "4"
+  },
+  {
+   "id": "T284",
+   "deps": [
+    "T283"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "route-wiring-check",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T285",
+   "deps": [
+    "T284",
+    "T170"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "owned-files-at-close",
+   "type": "harness",
+   "stage": "4"
+  },
+  {
+   "id": "T286",
+   "deps": [
+    "T284"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "request-timeout",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T288",
+   "deps": [
+    "T258",
+    "T287"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "reconcile-open-charges",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T289",
+   "deps": [
+    "T031",
+    "T075"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "jobs-error-count-test",
+   "type": "harness",
+   "stage": "4"
+  },
+  {
+   "id": "T290",
+   "deps": [
+    "T060",
+    "T075"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "recurring-range-examples",
+   "type": "harness",
    "stage": "4"
   }
  ],
@@ -22817,7 +22924,7 @@
    }
   }
  },
- "updated_at": "2026-11-07T20:45:00Z",
+ "updated_at": "2026-11-07T20:51:47Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -22915,7 +23022,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "7225ed306641b8a51b1fa6754f462f1527ef4f0d",
+ "runner_sha": "64086bb6399c5564863d7f7ade35b5842e2a722f",
  "starter": "actions",
  "smoke_runs": [
   {
