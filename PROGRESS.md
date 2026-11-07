@@ -1249,3 +1249,4 @@
 - 2026-11-07T20:52:03Z runner 64086bb6399c (actions): {}
 - 2026-11-07T20:52:16Z runner 64086bb6399c (actions): {}
 - 2026-11-07T21:09:32Z runner bd7921a49c2b (actions): {"T253": "MERGE_PENDING -> DONE"}
+- 2026-11-07T21:16:22Z runner bd7921a49c2b (actions): {"T085": "QUEUED -> IN_PROGRESS"}; T085 estimated 3.0M tokens (calibrated); five-hour window has 24.0M left, week 106.0M (session_reading 2026-11-07T20:52:03Z (week)); claimed

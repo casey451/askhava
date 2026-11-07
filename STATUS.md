@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-07T21:09:32Z by runner bd7921a49c2b (actions).
+Updated 2026-11-07T21:16:22Z by runner bd7921a49c2b (actions).
 
-**Idle since 21:03Z; 145 of 277 done; week 44% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T085 in progress since 21:09Z; 145 of 277 done; week 44% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 145 of 277 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 21:03Z (no task in progress)
+- **Lane:** lane 1: T085 claimed 21:09Z, lease until 00:09Z
 - **Week:** 44% used, 106.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:52Z, 17 min before this update
+- **Last run:** 20:52Z, 23 min before this update
 - **Keeper:** last ran 20:52Z, next wake 21:12Z
 
 ## Needs attention
@@ -78,7 +78,7 @@ Updated 2026-11-07T21:09:32Z by runner bd7921a49c2b (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-07T19:45:18Z (week)): five-hour: 0k used, 29.1M left, resets on first use; week: 88.0M used, 106.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-11-24T02:58:13Z.
+- Pacing (session_reading 2026-11-07T20:52:03Z (week)): five-hour: 5.1M used, 24.0M left, resets 2026-11-08T01:44:26Z; week: 88.0M used, 106.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-11-24T19:17:26Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -93,7 +93,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T085 (lease until 2026-11-08T00:09:28Z)
 
 ## Last usage reading
 - {"task": "T253", "at": "2026-11-07T20:44:26Z", "output_tokens": 191276, "input_tokens": 544, "cache_read_input_tokens": 42320033, "cache_creation_input_tokens": 629489}
