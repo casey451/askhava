@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-07T09:13:55Z by runner 85147737a711 (actions).
+Updated 2026-11-07T09:49:19Z by runner ab686ae43b24 (actions).
 
 **Building: T096 in progress since 09:05Z; 136 of 256 done; week 35% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,13 +8,13 @@ Updated 2026-11-07T09:13:55Z by runner 85147737a711 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T096 claimed 09:05Z, lease until 12:05Z
 - **Week:** 35% used, 124.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:02Z, 11 min before this update
+- **Last run:** 09:14Z, 35 min before this update
 - **Keeper:** last ran 09:02Z, next wake 09:22Z
 
 ## Needs attention
 - PLAN GAP T093 (since 2026-11-07T08:52:58Z, no attempt used; a plan change fixes it): T093: dependency T092 is DONE but its owned file app/messaging/src/purge.rs is not on main
 - PLAN GAP T253 (since 2026-11-07T08:52:58Z, no attempt used; a plan change fixes it): T253: dependency T092 is DONE but its owned file app/messaging/src/purge.rs is not on main
-- Strict plan check red: 4 problem(s) on tasks still to run (+8 on DONE tasks); first: T100: stored context_pct 29% but it measures 33%; regenerate
+- Strict plan check red: 7 problem(s) on tasks still to run (+8 on DONE tasks); first: T096: stored context_pct 11% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
