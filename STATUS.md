@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-07T03:58:47Z by runner 59952f28928a (actions).
+Updated 2026-11-07T04:14:34Z by runner 1506f9fc127e (actions).
 
 **Building: T084 in progress since 03:50Z; 131 of 242 done; week 29% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,11 @@ Updated 2026-11-07T03:58:47Z by runner 59952f28928a (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T084 claimed 03:50Z, lease until 06:50Z
 - **Week:** 29% used, 136.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:41Z, 17 min before this update
+- **Last run:** 03:58Z, 15 min before this update
 - **Keeper:** last ran 03:40Z, next wake 04:00Z
 
 ## Needs attention
-- nothing
+- Strict plan check red: 3 problem(s) on tasks still to run; first: T084: stored context_pct 15% but it measures 20%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -43,6 +43,7 @@ Updated 2026-11-07T03:58:47Z by runner 59952f28928a (actions).
 | T070 | picks: 'no longer active' once, Confirm link replies | done | 1 | 45 min | 04:18Z |  |
 
 ### Plan and harness merges on main
+- 03:59Z Plan: tests/a11y/fixtures.ts is a shared page-state registry (D-1772) (#314)
 - 03:48Z Plan: business-session read of released picks, release recovery tests, production release wiring (D-1739, D-1740) (#313)
 - 16:15Z Plan: dynamic SQL in migrations is a TD-SEC-10 finding (T252), T126 context budget, stored budgets refreshed (D-1677, D-1678) (#298)
 - 16:05Z Plan: bump actix-http 3.20.2 -> 3.20.3 for RUSTSEC-2026-0455 (D-1666) (#297)
