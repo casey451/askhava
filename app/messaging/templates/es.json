@@ -510,5 +510,11 @@
     "draft": true,
     "segments": 1,
     "text": "Ask Hava: No pudimos leer ese mensaje. Para cotizar, confirmar o cambiar ajustes, use su portal: https://askhava.com/b. Escriba AYUDA para recibir ayuda."
+  },
+  "complaint_reply": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 3,
+    "text": "Ask Hava: Lamentamos el problema con {business} en la solicitud {job} ({trade}). Ask Hava no es contratista y no realiza, cotiza ni supervisa trabajos; {business} es un negocio independiente. Puede llamarlos al {number}. El dueño de Ask Hava lee cada queja. Si el trabajo necesitaba licencia de contratista, también puede quejarse ante el estado: askhava.com/help/roc-complaint"
   }
 }

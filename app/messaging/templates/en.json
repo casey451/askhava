@@ -418,5 +418,10 @@
     "audience": "business",
     "segments": 1,
     "text": "Ask Hava: We couldn't read that as a quote or a reply word. To quote, confirm or change settings, use your portal: https://askhava.com/b. Text HELP for help."
+  },
+  "complaint_reply": {
+    "audience": "homeowner",
+    "segments": 3,
+    "text": "Ask Hava: Sorry about the trouble with {business} on request {job} ({trade}). Ask Hava is not a contractor and does not perform, bid on or supervise work; {business} is an independent business. You can call them at {number}. The owner of Ask Hava reads every complaint. If the job needed a state contractor license, you can also file with the state here: askhava.com/help/roc-complaint"
   }
 }

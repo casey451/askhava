@@ -12,13 +12,23 @@
 //! summary, the trade count and the launch notice's sent-once claim (BIZ-024, BIZ-026, BIZ-027,
 //! BIZ-030, BIZ-031; T193); the E-SIGN consent box and records, the welcome request and gate, the
 //! business STOP email request, the auto-reply rule and the recruiting-email rules (CON-019,
-//! CON-020, BIZ-017, BIZ-032, BIZ-048; T082).
+//! CON-020, BIZ-017, BIZ-032, BIZ-048; T082); complaints with the homeowner's reply, the business's
+//! 5-day reply box, the 3-in-90-days pause and the digest listing, and the owner's email request
+//! when another member links a phone (BIZ-011, BIZ-012, BIZ-029, BIZ-033; T083).
 
-use sqlx::PgConnection;
+use jiff::Timestamp;
+use secrecy::SecretString;
 use sqlx::types::Uuid;
+use sqlx::{Connection, PgConnection};
 
 pub use crate::about_us::{
     ABOUT_US_MAX, AboutUsRefusal, screen as screen_about_us, screen_public_name, set_about_us,
+};
+pub use crate::complaints::{
+    BOX_CLOSED_KIND, CaseyView, Complaint, ComplaintError, DIGEST_ALERT, NewComplaint, PAUSE_COUNT,
+    PAUSE_WINDOW_DAYS, PHONE_LINKED_KIND, REPLY_BOX, REPLY_MAX, REPLY_TEMPLATE, Recorded,
+    ReplyFacts, SAFETY_ALERT, complaints, for_casey, has_safety_word, list_closed,
+    phone_linked_line, record_complaint, reply, run_box_closed,
 };
 pub use crate::consent::{
     ADVERTISEMENT_LINE, AUTO_REPLY_TEMPLATE, CONSENT_VERSION, ConsentBox, ConsentChannel,
@@ -50,8 +60,8 @@ pub use crate::signup::{
 pub use crate::status::{AccountStatus, PauseReason, Refused};
 pub use crate::team::{
     Acting, MEMBER_REMOVED_KIND, NoticePurpose, Roles, SenderLink, TeamError, TeamMember,
-    add_member, add_owner, change_phone, link_phone, members, notice_addresses, remove_member,
-    set_roles, unlink_phone,
+    add_member, add_owner, change_phone, members, notice_addresses, remove_member, set_roles,
+    unlink_phone,
 };
 
 /// The pure status and checklist rules, for the rules bridge and other crates' property tests.
@@ -90,4 +100,30 @@ pub async fn job_types(
     id: Uuid,
 ) -> Result<Vec<JobTypeChoice>, BusinessesError> {
     crate::models::job_types(db, id).await
+}
+
+/// Links a phone as `team::link_phone` does (CALL-012) and, in the same transaction, queues the
+/// owner's [`PHONE_LINKED_KIND`] email when the linking member is not the owner (BIZ-033, D-258,
+/// D-311). The Approve gate and the owner text are T148's (D-493).
+///
+/// # Errors
+///
+/// As `team::link_phone`; [`TeamError::Database`] or `Audit` when the email request fails.
+pub async fn link_phone(
+    conn: &mut PgConnection,
+    dir: &impl SenderLink,
+    (by, main): (Acting, bool),
+    number: &SecretString,
+    now: Timestamp,
+) -> Result<Uuid, TeamError> {
+    let mut tx = conn.begin().await.map_err(|_| TeamError::Database)?;
+    let line = crate::team::link_phone(&mut tx, dir, (by, main), number, now).await?;
+    crate::complaints::phone_link_notice(&mut tx, by, line, now)
+        .await
+        .map_err(|e| match e {
+            ComplaintError::Audit => TeamError::Audit,
+            _ => TeamError::Database,
+        })?;
+    tx.commit().await.map_err(|_| TeamError::Database)?;
+    Ok(line)
 }

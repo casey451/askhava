@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE businesses.complaint SET reply = $3, replied_at = $4 WHERE id = $1 AND business_id = $2 AND reply IS NULL AND $4 >= received_at AND $4 < received_at + interval '120 hours'",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Text",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "118135b0f2ecb024fab19e07610ff2c8fd38322af0804a37916bb9e649610f07"
+}

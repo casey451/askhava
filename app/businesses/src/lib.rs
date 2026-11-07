@@ -17,10 +17,14 @@
 //! the auto-reply rule and the recruiting-email rules in `consent` (CON-019, CON-020, BIZ-017,
 //! BIZ-032, BIZ-048).
 //!
+//! T083 added the complaints (the BIZ-011 reply, the BIZ-029 reply box, the BIZ-012 pause and
+//! the digest listing) and the owner's phone-link email request in `complaints` (BIZ-033).
+//!
 //! Other crates reach it only through [`api`].
 
 mod about_us;
 pub mod api;
+mod complaints;
 mod consent;
 mod identity;
 mod models;
