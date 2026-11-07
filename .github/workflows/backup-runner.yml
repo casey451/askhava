@@ -242,7 +242,8 @@ jobs:
         with:
           python-version: "3.12"
       - name: Rust build cache (D-514)
-        # The smoke and the worker's own cargo runs reuse the build; Cargo's fingerprints decide what rebuilds.
+        # The worker's own cargo runs reuse the build; Cargo's fingerprints decide what rebuilds. The smoke's
+        # own build (`target/smoke`, D-1884) is the next step's entry, so neither entry carries both builds.
         if: hashFiles('Cargo.lock') != ''
         uses: actions/cache@v4
         with:
@@ -252,6 +253,7 @@ jobs:
             ~/.cargo/git/db
             ~/.cargo/bin
             target
+            !target/smoke
           # One entry per commit of main (D-1178): actions/cache never updates an existing key, so a key
           # by Cargo.lock alone froze the target directory at the last dependency change and every cycle
           # rebuilt everything since, until the smoke test outran the runner's timeout. The restore keys
@@ -260,6 +262,18 @@ jobs:
           restore-keys: |
             rust-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}-
             rust-${{ runner.os }}-
+      - name: Smoke build cache (D-1884)
+        # The runner's smoke builds main into `target/smoke` with mtimes pinned by content, so a restored copy
+        # rebuilds only the members a commit changed; keyed per commit like the entry above (D-1178). With no
+        # entry yet, the runner seeds it from the worker's dependency build (`_seed_smoke_target`).
+        if: hashFiles('Cargo.lock') != ''
+        uses: actions/cache@v4
+        with:
+          path: target/smoke
+          key: rust-smoke-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}-${{ github.sha }}
+          restore-keys: |
+            rust-smoke-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}-
+            rust-smoke-${{ runner.os }}-
       - name: Smoke-test prerequisites (what Ci installs for itself)
         run: |
           python3 -m pip install --quiet pytest==9.1.1 PyYAML==6.0.1

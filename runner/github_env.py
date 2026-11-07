@@ -194,27 +194,91 @@ def smoke_tree_dir() -> Path:
 
 def pin_smoke_mtimes(tree: Path, index: str, manifest: Path, now_ns: int) -> int:
     """Give every tracked file of the smoke worktree, and every folder holding one, a modification time Cargo
-    can trust (D-1884); returns how many got `now_ns`.
+    can trust (D-1884); returns how many got the run's time.
 
     Cargo calls a workspace member's artifact fresh when no source file (nor any entry of a folder a build
     script watches, such as `askhava-core`'s `migrations`) is newer than its last build, and a fresh checkout
     makes everything new, so every smoke rebuilt every member. `manifest` keeps, per path, what it last held
     (a file's blob; a folder's `/`-suffixed key, the hash of its entry names) and the time it was given: an
-    unchanged one keeps that time, which predates every build that read it; a new or changed one gets
-    `now_ns`, after every build so far. The manifest is written before Cargo runs, so a timed-out or red run
-    cannot leave a wrong one, and an unreadable manifest only makes everything new (a full rebuild). `index`
-    is `git ls-files -s -z`."""
-    old, new = _read_mtimes(manifest), {}
-    for path, held in _smoke_entries(tree, index).items():
-        kept = old.get(path)
-        stamp = kept[1] if kept and kept[0] == held else now_ns
+    unchanged one keeps that time, which predates every build that read it; a new or changed one gets the
+    run's time, later than `now_ns` and every recorded time, so after every build so far even with a clock
+    that stepped back. A change under `.sqlx/` (the offline query data, which no dep-info lists) gives every
+    path the run's time. The manifest is deleted before the first change and written back only when every
+    path is pinned, so a failure part-way (see `stamp_tree_now`) or a red or timed-out run never leaves a
+    record the tree does not match; an unreadable one makes everything new (a full rebuild). `index` is
+    `git ls-files -s -z`."""
+    old = _read_mtimes(manifest)
+    manifest.unlink(missing_ok=True)
+    held = _smoke_entries(tree, index)
+    run_ns = max([now_ns, *(v[1] + 1 for v in old.values())])
+    changed = {k for k, v in held.items() if old.get(k, [None])[0] != v} | (set(old) - set(held))
+    query_data = any(".sqlx" in k.split("/") for k in changed)
+    new = {}
+    for path, what in held.items():
+        stamp = run_ns if query_data or path in changed else old[path][1]
         os.utime(tree / path.rstrip("/") if path != "/" else tree, ns=(stamp, stamp))
-        new[path] = [held, stamp]
+        new[path] = [what, stamp]
     manifest.parent.mkdir(parents=True, exist_ok=True)
     part = manifest.with_suffix(".part")
     part.write_text(json.dumps(new), encoding="utf-8")
     part.replace(manifest)
-    return sum(1 for v in new.values() if v[1] == now_ns)
+    return sum(1 for v in new.values() if v[1] == run_ns)
+
+
+def stamp_tree_now(tree: Path, manifest: Path) -> None:
+    """After a failed pin (D-1884): no manifest, and every file and folder of the tree at the current time, so
+    nothing a half-done pin set back in time can make an old artifact look fresh (a full rebuild)."""
+    manifest.unlink(missing_ok=True)
+    stamp = time.time_ns()
+    for top, dirs, files in os.walk(tree):
+        for name in [*files, *dirs]:
+            if not os.path.islink(os.path.join(top, name)):
+                os.utime(os.path.join(top, name), ns=(stamp, stamp))
+    os.utime(tree, ns=(stamp, stamp))
+
+
+ARTIFACT = re.compile(r"^(.+?)-[0-9a-f]{16}(\..*)?$")  # a target-dir entry: a unit's name, its hash, an extension
+SEED_DIRS = ("deps", "build", ".fingerprint")  # the folders of `debug` that hold dependency artifacts
+SEED_MARGIN = 5 * 1024**3  # bytes of disk left free beyond the copy, or the smoke target is not seeded
+
+
+def seed_files(debug: Path, members: set[str]) -> list[Path]:
+    """The worker build's dependency artifacts under `debug` (its `debug` folder): every entry of SEED_DIRS
+    whose unit name is not a workspace package or target (`members`, with `-` and `_` spellings; `lib`
+    prefixes stripped). Member artifacts and anything unrecognised stay out: they only rebuild (D-1884)."""
+    names = members | {m.replace("-", "_") for m in members}
+    out: list[Path] = []
+    for folder in SEED_DIRS:
+        for entry in sorted((debug / folder).glob("*")) if (debug / folder).is_dir() else []:
+            match = ARTIFACT.match(entry.name)
+            unit = match.group(1) if match else ""
+            if unit and unit not in names and not (unit.startswith("lib") and unit[3:] in names):
+                out.append(entry)
+    return out
+
+
+def copy_seed(debug: Path, into: Path, entries: list[Path]) -> None:
+    """Copy `entries` (real copies, never hard links: Cargo rewrites fingerprint and dep-info files in place,
+    and a shared one would let the smoke's writes reach the worker's build, the T057 failure, D-1451)."""
+    for entry in entries:
+        dest = into / entry.relative_to(debug)
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        if entry.is_dir():
+            shutil.copytree(entry, dest, symlinks=True, dirs_exist_ok=True)
+        else:
+            shutil.copy2(entry, dest)
+
+
+def _tree_size(entries: list[Path]) -> int:
+    """The bytes under `entries` (files and folders, links not followed)."""
+    total = 0
+    for entry in entries:
+        if entry.is_file():
+            total += entry.stat().st_size
+            continue
+        for top, _, files in os.walk(entry):
+            total += sum(os.lstat(os.path.join(top, f)).st_size for f in files)
+    return total
 
 
 def _smoke_entries(tree: Path, index: str) -> dict[str, str]:
@@ -235,6 +299,15 @@ def _smoke_entries(tree: Path, index: str) -> dict[str, str]:
     held = {k: hashlib.sha256("\n".join(sorted(v)).encode()).hexdigest() for k, v in folders.items()}
     ordered = sorted(held, key=lambda k: -k.count("/"))
     return {**files, **{k: held[k] for k in ordered}}
+
+
+def _member_names(metadata: dict[str, Any]) -> set[str]:
+    """Every workspace package's name and each of its targets' names, from `cargo metadata --no-deps`."""
+    names: set[str] = set()
+    for package in metadata["packages"]:
+        names.add(package["name"])
+        names.update(target["name"] for target in package["targets"])
+    return names
 
 
 def _read_mtimes(manifest: Path) -> dict[str, list[Any]]:
@@ -915,6 +988,7 @@ class GitHubEnv:
         self._drop_smoke_tree(tree)
         self.git("worktree", "add", "--detach", str(tree), head)
         try:
+            self._seed_smoke_target(tree)
             self._pin_smoke_tree(tree)
             code, out, err = self._run(["bash", "scripts/smoke.sh"], None, tree)
         except subprocess.TimeoutExpired:
@@ -935,17 +1009,40 @@ class GitHubEnv:
         self.git("worktree", "prune", check=False)
 
     def _pin_smoke_tree(self, tree: Path) -> None:
-        """`pin_smoke_mtimes` on the smoke worktree; a failure is logged and leaves the fresh mtimes (a full build)."""
+        """`pin_smoke_mtimes` on the smoke worktree; on any failure `stamp_tree_now` (no manifest, a full build)."""
+        manifest = smoke_target_dir() / SMOKE_MTIMES
         code, index, err = self._run(["git", "ls-files", "-s", "-z"], None, tree)
-        if code != 0:
-            self.log.append(f"smoke mtimes not pinned: {err.strip()[-200:]}")
-            return
         try:
-            fresh = pin_smoke_mtimes(tree, index, smoke_target_dir() / SMOKE_MTIMES, time.time_ns())
-        except OSError as exc:
-            self.log.append(f"smoke mtimes not pinned: {exc}")
+            if code != 0:
+                raise OSError(err.strip()[-200:] or f"git ls-files exit {code}")
+            fresh = pin_smoke_mtimes(tree, index, manifest, time.time_ns())
+        except (OSError, ValueError) as exc:
+            self.log.append(f"smoke mtimes not pinned, all new: {exc}")
+            try:
+                stamp_tree_now(tree, manifest)
+            except OSError as again:
+                self.log.append(f"smoke tree not stamped: {again}")
             return
         self.log.append(f"smoke mtimes: {fresh} new or changed paths")
+
+    def _seed_smoke_target(self, tree: Path) -> None:
+        """When the smoke target has no dependency builds yet (the first smoke after D-1884, or a cache entry
+        without it), copy the worker build's dependency artifacts into it, so the smoke compiles only the
+        members and fits SMOKE_TIMEOUT. Skipped, and logged, when the disk is short; never fails the smoke."""
+        smoke, debug = smoke_target_dir(), smoke_target_dir().parent / "debug"
+        if any((smoke / "debug" / "deps").glob("*")) or not (debug / "deps").is_dir():
+            return
+        code, out, _ = self._run(["cargo", "metadata", "--no-deps", "--format-version", "1", "--offline"], None, tree)
+        try:
+            members = _member_names(json.loads(out)) if code == 0 else set()
+            entries = seed_files(debug, members) if members else []
+            need, free = _tree_size(entries), shutil.disk_usage(smoke.parent).free
+            self.log.append(f"smoke target seed: {len(entries)} entries, {need >> 20} MB, {free >> 20} MB free")
+            if entries and free > need + SEED_MARGIN:
+                (smoke / SMOKE_MTIMES).unlink(missing_ok=True)
+                copy_seed(debug, smoke / "debug", entries)
+        except (OSError, ValueError, KeyError, TypeError) as exc:
+            self.log.append(f"smoke target not seeded: {exc}")
 
     def main_checks_green(self, head: str) -> bool | None:
         """True when `Ci`, `Twin` and `Ally` all concluded success for that commit of main; False when
