@@ -1895,3 +1895,14 @@ A second outside review of the whole repository found eight issues and listed so
 - The "Sent to N businesses" count leaves out any business whose card email bounced.
 - Not built yet: the worker doesn't run these notices yet, the unsubscribe link in card emails, and Spanish business emails.
 - **Nothing needs you now.**
+
+## The third outside code audit: what was taken, what was declined (plan change, D-1866 to D-1873, November 7)
+
+A third outside review of the whole repository was checked finding by finding against today's code. Seven new tasks (T283 to T289) own what holds. Full list with evidence: `docs/reviews/2026-11-07-third-audit-dispositions.md`.
+
+- **Worth your look: a fee-mode switch after a pick (D-1871).** If you switch between size tiers and a flat fee while a pick waits for the business to confirm, that pick can't be confirmed: nothing is charged, the business sees that the fee terms changed after the pick, and the pick ends with no fee and doesn't count against the business, so the homeowner gets her other quotes. The fee fixed at the pick is never re-priced. The rules never covered this window, so I decided it; say if you'd rather, for example, block the switch while any pick is waiting.
+- **The amount charged** now has to match the fee stored at the moment of the pick, checked inside the payments code itself before Stripe is called (T287).
+- **Build checks:** a change to the Terms or the fee and catalog files now runs the full tests before it can merge (T283); a test proves every listed page and webhook is actually connected (T284); and when a task finishes without a file it was supposed to create, it shows up on the status page in the same cycle (T285).
+- **Smaller fixes:** every request now has a 60-second limit (T286); a Stripe charge the nightly check can't match is kept and retried until it is, with an alert after a week (T288); one test that failed once at random is made reliable without loosening it (T289).
+- **Declined:** the audit's "rounding bug" on recurring price ranges. The code already rounds exactly the way your rule D-033 says, once at the end; changing it would change the rule.
+- **Nothing needs you now.**

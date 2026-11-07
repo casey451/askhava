@@ -8,7 +8,7 @@ One row per cross-module handoff: a piece of work one task or decision passed to
 
 Columns: **Owner** is one or more task ids separated by commas, or `none`. **Status** is `open`, `tracked` (a non-gating improvement watched by its owner) or `closed`. **Evidence** is `-` until closed.
 
-Rows IC-06 to IC-09 and IC-33 name T253, T254 and T255, added by the release plan change (D-1739, #313). Rows IC-37 to IC-49 come from the second external audit (D-1835 to D-1845, `docs/reviews/2026-11-07-second-audit-dispositions.md`).
+Rows IC-06 to IC-09 and IC-33 name T253, T254 and T255, added by the release plan change (D-1739, #313). Rows IC-37 to IC-49 come from the second external audit (D-1835 to D-1845, `docs/reviews/2026-11-07-second-audit-dispositions.md`). Rows IC-50 to IC-52 come from the third external audit (D-1866 to D-1873, `docs/reviews/2026-11-07-third-audit-dispositions.md`).
 
 | ID | Handoff | Decision or finding | Producer | Consumer | Area | Owner | Test | Status | Evidence |
 |---|---|---|---|---|---|---|---|---|---|
@@ -61,3 +61,6 @@ Rows IC-06 to IC-09 and IC-33 name T253, T254 and T255, added by the release pla
 | IC-47 | Sealed photo objects, orphans and day-31 provider bodies deleted | D-1803, D-1841 | privacy and messaging purge | adapters, Twilio | privacy | T276 | TD-PRIV-20 | open | - |
 | IC-48 | Texting switch, suspension and banner stored; emergency composition while texting is off | D-1807, D-1843 | messaging mode, ops banner | server inbound route, owner portal (T108), site layout (T101) | privacy | T279 | TD-TXT-33 | open | - |
 | IC-49 | Check-in and unreachable homeowner texts listed and sent; check-ins scheduled at connect | D-1811 (1) (2), D-1818, D-1842 | templates, picks release | quotes and intake sender lists, jobs check-ins | privacy | T278 | TD-JOB-13 | open | - |
+| IC-50 | The fee fixed at the pick: stored by `payments` in the pick's transaction, read by the Confirm route, every press checked against it; the fee-mode gate before any charge and the ended pick on a switch | D-1871, third audit | picks pick store | payments charge, portals Confirm route | money | T287, T261 | TD-FEE-48, TD-FEE-45 | open | - |
+| IC-51 | A charge the nightly reconcile cannot settle kept and retried until settled, with a High alert after 7 days | D-1872, third audit | payments reconcile | ops alerts | money | T288 | TD-FEE-49 | open | - |
+| IC-52 | The route table in `docs/architecture.md` section 13: the router test proves it, the runner's close check reads it | D-1868, D-1869, third audit | server router | runner close check, every route-wiring task | security | T284, T285 | TD-SEC-41, TD-OPS-33 | open | - |

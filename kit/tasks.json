@@ -9799,7 +9799,7 @@
    "budget": {
     "files": 5,
     "lines": 300,
-    "context_pct": 17
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -11022,7 +11022,7 @@
    "budget": {
     "files": 9,
     "lines": 400,
-    "context_pct": 16
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -11329,7 +11329,7 @@
    "owns": [
     "app/messaging/src/help_requests.rs",
     "app/messaging/src/help_answers.rs",
-    "migrations/0175_help_requests.sql",
+    "migrations/0177_help_requests.sql",
     "tests/integration/tests/help_requests.rs",
     "app/ops/src/help_requests.rs",
     "app/portals/src/digest_flags.rs",
@@ -11615,7 +11615,14 @@
     "T279",
     "T280",
     "T281",
-    "T282"
+    "T282",
+    "T283",
+    "T284",
+    "T285",
+    "T286",
+    "T287",
+    "T288",
+    "T289"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -12100,7 +12107,7 @@
     "app/intake/src/web_chat.rs",
     "app/intake/src/conversation.rs",
     "tests/integration/tests/web_chat.rs",
-    "migrations/0172_intake_request_source.sql"
+    "migrations/0174_intake_request_source.sql"
    ],
    "reads": [
     "docs/architecture.md",
@@ -12425,7 +12432,7 @@
     "app/ops/src/alerts.rs",
     "app/ops/src/safe_mode.rs",
     "app/ops/src/models.rs",
-    "migrations/0173_ops_alerts_safe_mode.sql",
+    "migrations/0175_ops_alerts_safe_mode.sql",
     "tests/integration/tests/safe_mode.rs",
     "app/payments/src/safe_mode_check.rs",
     "app/picks/src/safe_mode_check.rs",
@@ -12519,7 +12526,7 @@
     "app/messaging/src/alert_emails.rs",
     "tests/integration/tests/alert_routing.rs",
     "app/portals/src/digest_flags.rs",
-    "migrations/0174_ops_owner_digest.sql",
+    "migrations/0176_ops_owner_digest.sql",
     "app/messaging/src/keywords.rs",
     "app/portals/src/business_portal.rs",
     "app/portals/templates/business_home.html"
@@ -12587,7 +12594,7 @@
    "budget": {
     "files": 8,
     "lines": 400,
-    "context_pct": 15
+    "context_pct": 19
    },
    "checks": [
     "Ci",
@@ -13471,7 +13478,7 @@
    "budget": {
     "files": 2,
     "lines": 300,
-    "context_pct": 10
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -16628,7 +16635,7 @@
    "budget": {
     "files": 10,
     "lines": 400,
-    "context_pct": 11
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -18002,7 +18009,7 @@
    "id": "T261",
    "slug": "served-confirm-route",
    "title": "portals and server: the served Confirm page under the real middleware, the payment page's own Stripe CSP, and truthful bank-approval handling",
-   "goal": "The Confirm view, form and script exist (T224) but no route serves them (D-1480 (a), D-1740 (1)), the global `security_headers` layer replaces every response's CSP with the self-only policy so Stripe.js could never load (D-1480 (c)), the script ignores `handleNextAction`'s result, and the only browser test is a hand-written substitute page (external audit A08, D-1754). (1) Serve `GET` and `POST /b/picks/{pick}/confirm` from `app/portals/src/confirm_pay.rs` (T084's session and principal scoping, T232's terms record), merged in the shared `app/server/src/lib.rs` with T260's `StripeHttp` as the `IntentStripe`: only a signed-in owner or \"Confirm and billing\" member of the pick's business reaches it (any other answers the one not-found page); `intake::api::paused_by_homeowner` and the pick's status are checked again on every load and press (CON-029); the fee, currency and job type come from the server's stored facts, never the form; `open_intent` on the first load, `waive_at_confirm` for a $0 pick, `may_confirm` and `confirm_and_pay` per press, `press_reply` as JSON with the client secret only for a bank approval. (2) CSP: `app/portals/src/security.rs` keeps the self-only policy for every page and lets the Confirm route alone add `https://js.stripe.com` to `script-src` and `frame-src` (and Stripe's documented `connect-src`), by a response marker the layer reads rather than by trusting any handler header; a test proves every other page still gets the strict policy (SEC-012). (3) `app/portals/static/confirm_pay.ts`: `handleNextAction`'s error or cancel shows the try-again line and never a success, success shows \"Checking with your bank\" until the server's answer, and the page then asks the server for the attempt's state rather than trusting the browser. (4) Tests: `app/server/tests/confirm_route.rs` (the served route with the real middleware) and `tests/e2e/confirm_served.spec.ts` against the app and the stand-ins; T224's `tests/e2e/confirm_pay.spec.ts` stays as it is and counts as a component test of the script only, never as journey evidence (D-1754). Update `docs/architecture.md` section 10, the `portals` and `server` `CLAUDE.md` files and `docs/decisions.md`.",
+   "goal": "The Confirm view, form and script exist (T224) but no route serves them (D-1480 (a), D-1740 (1)), the global `security_headers` layer replaces every response's CSP with the self-only policy so Stripe.js could never load (D-1480 (c)), the script ignores `handleNextAction`'s result, and the only browser test is a hand-written substitute page (external audit A08, D-1754). (1) Serve `GET` and `POST /b/picks/{pick}/confirm` from `app/portals/src/confirm_pay.rs` (T084's session and principal scoping, T232's terms record), merged in the shared `app/server/src/lib.rs` with T260's `StripeHttp` as the `IntentStripe`: only a signed-in owner or \"Confirm and billing\" member of the pick's business reaches it (any other answers the one not-found page); `intake::api::paused_by_homeowner` and the pick's status are checked again on every load and press (CON-029); the fee, currency and job type come from the server's stored facts, never the form: the fee is `payments::api::pick_fee`, the fee T287 fixed at the pick, and every `Press` carries exactly that amount (D-1871); `open_intent` on the first load, `waive_at_confirm` for a $0 pick, `may_confirm` and `confirm_and_pay` per press, `press_reply` as JSON with the client secret only for a bank approval. When `may_confirm` answers `ConfirmError::FeeModeChanged` (the owner switched the fee mode after the pick), nothing is charged, the page says the fee terms changed after this pick so it can't be confirmed, and the pick ends at once with no fee through the same `picks` call as T232's \"Can't take it\" with its own reason, never counted against the business (PICK-050, OPS-034, D-1871). (2) CSP: `app/portals/src/security.rs` keeps the self-only policy for every page and lets the Confirm route alone add `https://js.stripe.com` to `script-src` and `frame-src` (and Stripe's documented `connect-src`), by a response marker the layer reads rather than by trusting any handler header; a test proves every other page still gets the strict policy (SEC-012). (3) `app/portals/static/confirm_pay.ts`: `handleNextAction`'s error or cancel shows the try-again line and never a success, success shows \"Checking with your bank\" until the server's answer, and the page then asks the server for the attempt's state rather than trusting the browser. (4) Tests: `app/server/tests/confirm_route.rs` (the served route with the real middleware) and `tests/e2e/confirm_served.spec.ts` against the app and the stand-ins; T224's `tests/e2e/confirm_pay.spec.ts` stays as it is and counts as a component test of the script only, never as journey evidence (D-1754). Update `docs/architecture.md` section 10, the `portals` and `server` `CLAUDE.md` files and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -18011,7 +18018,8 @@
     "T260",
     "T084",
     "T232",
-    "T254"
+    "T254",
+    "T287"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -18058,7 +18066,8 @@
     "D-1754",
     "D-1480",
     "D-1482",
-    "D-946"
+    "D-946",
+    "D-1871"
    ],
    "cites": [],
    "budget": {
@@ -18073,7 +18082,7 @@
    ],
    "branch": "claude/task/T261-served-confirm-route",
    "prompt": "kit/prompts/T261.md",
-   "acceptance": "TD-FEE-45 and TD-SEC-37 pass (`app/server/tests/confirm_route.rs` against PostgreSQL, `tests/e2e/confirm_served.spec.ts` in Playwright with axe); `tests/e2e/confirm_pay.spec.ts` passes unchanged."
+   "acceptance": "TD-FEE-45 (with its D-1871 cases) and TD-SEC-37 pass (`app/server/tests/confirm_route.rs` against PostgreSQL, `tests/e2e/confirm_served.spec.ts` in Playwright with axe); `tests/e2e/confirm_pay.spec.ts` passes unchanged."
   },
   {
    "id": "T264",
@@ -19181,6 +19190,395 @@
    "branch": "claude/task/T281-unreachable-steps-run",
    "prompt": "kit/prompts/T281.md",
    "acceptance": "TD-JOB-14 passes against PostgreSQL with the clock advanced; every T191, T270 and T278 case still passes."
+  },
+  {
+   "id": "T283",
+   "slug": "ci-compiled-in-paths",
+   "title": "Ci: a change to a document the app compiles in runs the Rust, coverage and end-to-end jobs",
+   "goal": "`Ci` decides whether to build and test Rust from three path rules in `.github/workflows/ci.yml` (the Checks step at `:127`, Coverage at `:299`, E2e at `:404`) and the copy in `scripts/prehandin.sh:62` (`RUST_PATHS`, kept equal by `tests/test_prehandin.py`). None matches `docs/` or `schemas/`, yet the app compiles in `docs/legal/homeowner-terms.md` (`app/server/src/lib.rs:136`), seven `docs/catalog/*.yaml` files (`app/catalog/src/loader.rs`, `app/licensing/src/class_map.rs`, `app/intake/src/golden_run.rs` and others) and `schemas/intake_reading.json` (`app/ai/src/schemas.rs`), so a change to the Terms or a catalog file alone merges with Checks, Coverage and E2e green having run no Rust (third external audit, D-1867). `a11y.yml` and `twin.yml` have no path rule (they run on every push) and stay as they are. (1) Add exactly `docs/legal/`, `docs/catalog/`, `schemas/` and `docs/architecture\\.md` (T284's route table, which its route test compiles in, D-1868) to the three rules and to `RUST_PATHS`; never all of `docs/`. (2) A new guard, `scripts/check_include_paths.py`, run in `Ci`'s Checks job on every push (not behind the path rule) and in `scripts/prehandin.sh --quick`: it finds every `include_str!` and `include_bytes!` string path in `app/**/*.rs` and `tests/{integration,security,recovery,fixtures}/**/*.rs`, resolves each against its source file, and fails, naming the source line and the resolved file, when a resolved path inside the repository is matched by any of the three rules in `ci.yml` (read from the workflow file itself, so the rules have one source) or by `RUST_PATHS`; a path that does not exist fails too. Tests in `tests/test_check_include_paths.py`: a temporary tree with an included file under a covered folder passes; one under an uncovered folder (`docs/other/x.md`) fails naming the line; a `../` path that resolves outside a covered folder fails; a missing file fails; the real repository passes. `tests/test_prehandin.py` keeps `RUST_PATHS` equal to the Checks rule. Update `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "4",
+   "module": null,
+   "deps": [
+    "T169",
+    "T173",
+    "T056",
+    "T075"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness",
+    "security"
+   ],
+   "owns": [
+    ".github/workflows/ci.yml",
+    "scripts/prehandin.sh",
+    "tests/test_prehandin.py",
+    "scripts/check_include_paths.py",
+    "tests/test_check_include_paths.py"
+   ],
+   "reads": [
+    "docs/governance.md",
+    "docs/code-docs.md",
+    "docs/architecture.md"
+   ],
+   "requirements": [],
+   "tests": [
+    "TD-OPS-32"
+   ],
+   "decisions": [
+    "D-1867",
+    "D-489",
+    "D-1300"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 5,
+    "lines": 300,
+    "context_pct": 17
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T283-ci-compiled-in-paths",
+   "prompt": "kit/prompts/T283.md",
+   "acceptance": "TD-OPS-32 passes (`python3 -m pytest tests/test_check_include_paths.py tests/test_prehandin.py`); on the task's branch, a commit that changes only `docs/legal/homeowner-terms.md` makes the Checks step print `rust=true` (the run named in the hand-in)."
+  },
+  {
+   "id": "T284",
+   "slug": "route-wiring-check",
+   "title": "server: every route the architecture lists is wired in the router, and every route still to come names the task that wires it",
+   "goal": "Nothing checks that a documented page or webhook is actually served: a route that was never merged into `server::build_router` has no route to test, so its authorization test passes by being absent (third external audit, D-1868). Today the routes are described only in prose across `docs/architecture.md` (sections 2 and 10) and the task goals. (1) Add section 13, \"Routes\", to `docs/architecture.md` (outside the locked sections 3 to 6): one table row per route, `| Method | Path | Module | Wired |`, where Wired is `yes` for a route `build_router` serves on `main` today and the id of the queued task that will wire it otherwise (for example `T261` for `GET` and `POST /b/picks/{pick}/confirm`); list every route served today (the `/q/{token}` family, `/f/{token}`, the Twilio and Stripe webhooks, `/healthz` and any other `build_router` serves) and every route a queued task's goal says it serves. (2) `app/server/tests/route_wiring.rs` compiles the table in with `include_str!` (T283 adds `docs/architecture.md` to `Ci`'s Rust path rules) and builds the router with `build_router` and every optional part configured with fake values (`PgPool::connect_lazy`, no database needed): each `yes` row must reach a route (a probe that tells a matched route from the router's fallback, for example a method the route does not take, which a matched path answers 405 and the fallback 404, or the route's own documented refusal), and each row naming a task must not, so the task that wires a route must also mark its row `yes`; a malformed row, a duplicate row or a task id not in `kit/tasks.json` fails with the row quoted. T285's runner check reads the same table at each task's close. Update the `server` `CLAUDE.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "server",
+   "deps": [
+    "T283"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security"
+   ],
+   "owns": [
+    "app/server/tests/route_wiring.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/security.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [],
+   "tests": [
+    "TD-SEC-41"
+   ],
+   "decisions": [
+    "D-1868",
+    "D-481"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 1,
+    "lines": 300,
+    "context_pct": 10
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T284-route-wiring-check",
+   "prompt": "kit/prompts/T284.md",
+   "acceptance": "TD-SEC-41 passes; removing any one `.merge(...)` from `build_router` makes it fail naming that route (shown in the hand-in, not committed)."
+  },
+  {
+   "id": "T285",
+   "slug": "owned-files-at-close",
+   "title": "runner: a task closes with a visible mark when a file it owns, or a route it was to wire, is missing on main",
+   "goal": "The runner marks a task DONE from its pull request's evidence (checks green on the head, the squash tree equal to the tested tree; `runner/cycle.py` `_merged` and `_mark_done`, `:595`–`:625`), which proves the diff was tested but not that each path the task owns in `kit/tasks.json` exists on `main`: T092 closed without `app/messaging/src/purge.rs`, and the gap surfaced only when T093 and T253 were held by the plan-health check hours later (D-1801, D-1835; third external audit, D-1869). (1) In `_mark_done`, before DONE: every path in the task's `owns` (read from `kit/tasks.json` at the merged commit; a path ending in `/` must be a non-empty folder) must exist at `merged_sha`, and every row of `docs/architecture.md` section 13 (T284's route table) whose Wired cell names the task must read `yes` there. An empty hand-in (`empty_handin`) and FIX-MAIN are not checked. (2) A miss never wedges the lane and never un-merges anything: the task becomes DONE as now and gets an `owned_gap` mark (`{at, problems}`, at most `PLAN_GAP_PROBLEMS_KEPT` lines, each naming the task and the path or route), written once per close with one outbox item (kind `blocked`, title `T###: owned file missing at close`) so the overseer sees it in the same cycle; STATUS.md's Needs attention lists it even though the task is DONE (`runner/github_env.py` `_attention`, beside `_plan_gap_line`). (3) Each cycle re-checks every DONE task with a mark against `main`'s head and `main`'s `kit/tasks.json`: the mark clears by itself once the path exists or a plan change has moved it to another task, or the route row reads `yes` or names another task; a git error leaves the mark as it is (D-1350's rule: an error is no evidence). The plan-health check (D-1350) and the plan-gap hold are unchanged; no second repair path is built. Unit tests in `tests/test_runner_owned_gap.py` with the fake `Env`: all present (DONE, no mark, no outbox); one missing file (DONE, mark, one outbox item, lane free for the next claim); a missing folder; an unwired route row; an empty hand-in and FIX-MAIN skipped; the mark cleared by the file arriving, by a plan change moving it, and kept on a git error; STATUS.md shows the line. Update `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "4",
+   "module": null,
+   "deps": [
+    "T284",
+    "T170"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness"
+   ],
+   "owns": [
+    "runner/cycle.py",
+    "runner/github_env.py",
+    "tests/test_runner_owned_gap.py"
+   ],
+   "reads": [
+    "docs/governance.md",
+    "docs/code-docs.md",
+    "docs/architecture.md"
+   ],
+   "requirements": [],
+   "tests": [
+    "TD-OPS-33"
+   ],
+   "decisions": [
+    "D-1869",
+    "D-1801",
+    "D-551"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 400,
+    "context_pct": 36
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T285-owned-files-at-close",
+   "prompt": "kit/prompts/T285.md",
+   "acceptance": "TD-OPS-33 passes (`python3 -m pytest tests/test_runner_owned_gap.py`) and every existing runner test (`tests/test_runner_*.py`, `tests/test_failure_drills.py`, `tests/test_status.py`) passes unchanged."
+  },
+  {
+   "id": "T286",
+   "slug": "request-timeout",
+   "title": "server: every request has a whole-request time limit, answered 503 with the security headers",
+   "goal": "`tower-http`'s `timeout` feature is enabled (`Cargo.toml:38`) but `build_router` (`app/server/src/lib.rs:75`) applies no time limit, so a request whose body trickles in, or a handler that hangs, holds its connection and task without end (third external audit, D-1870; threat model D13). (1) `app/server/src/request_timeout.rs`: the limit is a setting, `ASKHAVA_REQUEST_TIMEOUT_SECS`, read from the process environment at start-up like `job_text_keys` reads its pairs (default 60 seconds, allowed 10 to 300; any other value, or one that is not a whole number, stops start-up with a message naming the key, never the value). 60 seconds is longer than the longest chain of bounded vendor calls one handler makes today (a Confirm press makes at most three Stripe calls at the adapters' 15-second limit, `app/adapters/src/base.rs:211`), so the limit stops only a stalled request, never a slow vendor call the adapters already bound. (2) `build_router` takes the limit and applies it to every route, inside the `security_headers` layer, so a timed-out request is answered `503 Service Unavailable` with `Retry-After: 5`, the SEC-012 headers and `Cache-Control: no-store`, and its handler future is dropped (every write a handler makes is in a transaction or keyed, so a dropped request commits nothing half-done; a webhook sender retries a 503, SEC-017). The worker has no HTTP routes and is unchanged. (3) `app/server/tests/request_timeout.rs`, with `tokio::time::pause`: a route that never answers is cut at the limit with 503, `Retry-After`, the security headers and the request ID; a route that answers just inside it is untouched; a body that stops arriving is cut the same way; each bad setting value stops start-up. Update the `server` `CLAUDE.md`, `docs/architecture.md` section 2 (the layer order) and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "server",
+   "deps": [
+    "T284"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security"
+   ],
+   "owns": [
+    "app/server/src/request_timeout.rs",
+    "app/server/tests/request_timeout.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/threat-model.md",
+    "docs/spec/security.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [],
+   "tests": [
+    "TD-SEC-42"
+   ],
+   "decisions": [
+    "D-1870",
+    "D-481"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 300,
+    "context_pct": 16
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T286-request-timeout",
+   "prompt": "kit/prompts/T286.md",
+   "acceptance": "TD-SEC-42 passes; every existing `app/server/tests/` case passes unchanged."
+  },
+  {
+   "id": "T287",
+   "slug": "fee-fixed-at-pick",
+   "title": "payments and picks: the fee fixed at the pick is stored by payments, a press must match it, and a fee-mode switch after the pick is refused before any charge",
+   "goal": "No code stores the fee fixed at the pick: `picks`' `new_pick` (`app/picks/src/service.rs:340`) says \"No fee ... here\", `payments`' `fee_at_pick` (`app/payments/src/rules.rs:496`) is a pure function nothing outside tests calls, and `open_intent` and `confirm_and_pay` (`app/payments/src/charge.rs:91`, `:146`) charge whatever `Press::amount_cents` the caller passes (`app/payments/src/models.rs:325`), checking only that it is not 0 (third external audit, D-1871). And the fee-mode check runs only after Stripe has charged: `record_fee_at_confirm` (`app/payments/src/service.rs:344`) refuses with `ConfirmError::Mismatch` when the mode changed, so a switch between the pick and Confirm leaves money moved with no ledger entry until the reconcile. (1) `migrations/0172_payments_pick_fee.sql`: `payments.pick_fee` (`pick_id` primary key, `business_id`, `job_id`, `mode` `tiers` or `flat`, `kind` `charged` or `fee_free`, `amount_cents` at or above 0 and above 0 only for `charged`, `terms_version`, `fixed_at`), the app role SELECT and INSERT only. (2) `app/payments/src/pick_fee.rs`: `payments::api::fix_fee_at_pick(tx, pick, business, job, &PickedFee, terms, at)` writes it once (a repeat with the same values is a no-op, different values an error) and `pick_fee(conn, pick)` reads it. (3) `new_pick` computes the fee with `fee_at_pick` from the chosen quote (its amounts and period), the job's category and job type facts and the fee terms in force, through the modules' `api`s (FEE-005's inputs only, D-1415), and calls `fix_fee_at_pick` in the pick's own transaction; a pick whose fee can't be fixed is not stored. (4) `open_intent` and `confirm_and_pay` read `pick_fee` before anything else: no row, a different business or job, a $0 fee, or `amount_cents` other than the stored one is the new `ChargeError::FeeMismatch`, and Stripe is not called; an existing `pick_intent` whose amount differs from the stored fee is the same refusal. (5) The mode check moves before the charge: `may_confirm` takes the pick and refuses with the new `ConfirmError::FeeModeChanged` when the stored `mode` differs from the terms in force, before any PaymentIntent is opened or confirmed; `record_fee_at_confirm` takes the pick and writes the stored fee, comparing the gate's `Authorized` (whose mode matched the pick's at the gate) with the stored mode, so a switch that commits after the gate changes nothing for this pick and the post-charge write can no longer fail for a mode switch (the fee terms in force are still the caller's argument, as `switch_fee_mode` leaves storing them to the owner portal's setting). D-072 still applies to every pick made after a switch. Tests in `tests/integration/tests/fee_fixed_at_pick.rs`. Update the `payments` and `picks` `CLAUDE.md` files and `docs/decisions.md` (`docs/architecture.md` section 3 already lists the new table, D-1871).",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "payments",
+   "deps": [
+    "T263",
+    "T258"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "money",
+    "privacy",
+    "security"
+   ],
+   "owns": [
+    "migrations/0172_payments_pick_fee.sql",
+    "app/payments/src/pick_fee.rs",
+    "app/payments/src/charge.rs",
+    "app/payments/src/service.rs",
+    "app/picks/src/service.rs",
+    "tests/integration/tests/fee_fixed_at_pick.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/fees.md",
+    "docs/spec/quotes-pick.md",
+    "docs/brains/payments-stripe.md",
+    "docs/brains/postgres-operations.md"
+   ],
+   "requirements": [
+    "FEE-005",
+    "FEE-007",
+    "FEE-016",
+    "FEE-047"
+   ],
+   "tests": [
+    "TD-FEE-48"
+   ],
+   "decisions": [
+    "D-1871",
+    "D-1415",
+    "D-1417",
+    "D-072",
+    "D-1758"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 6,
+    "lines": 600,
+    "context_pct": 22
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T287-fee-fixed-at-pick",
+   "prompt": "kit/prompts/T287.md",
+   "acceptance": "TD-FEE-48 passes against PostgreSQL with a fake `IntentStripe` that records every call; every TD-FEE-04, TD-FEE-05, TD-FEE-06 and `confirm_and_pay` case passes, a case's fixture gaining only the stored pick fee it now needs and no expected value changing."
+  },
+  {
+   "id": "T288",
+   "slug": "reconcile-open-charges",
+   "title": "payments: a Stripe charge the nightly reconcile cannot settle is kept and retried until it is, with an alert",
+   "goal": "The nightly reconcile reads only charges created in the last seven days (`LOOKBACK`, `app/payments/src/reconcile.rs:51`), so a charge whose ledger write failed, or whose auto-match or refund did not finish, and was not settled within those seven nights is never looked at again, and the difference stops being visible (third external audit, D-1872). (1) `migrations/0173_payments_reconcile_open.sql`: `payments.reconcile_open`, one row per Stripe charge the run could not settle (charge ID, its PaymentIntent and the pick its metadata names, the amounts the run read, `first_seen`, `last_tried`, `tries`, the last refusal's code name, `settled_at`), no homeowner or business contact detail, the app role SELECT, INSERT and UPDATE of the try and settle columns only. (2) Each run records every charge it read but could not settle (an append that failed, an auto-match with no pick, a refund that did not succeed, a mismatch) and retries every unsettled row, whatever its age, from its stored facts with the same ledger and refund keys the live writers use (so a retry never appends or refunds twice, TD-FEE-16), setting `settled_at` when it settles. (3) A row still unsettled 7 days after `first_seen` raises one High alert (an `ops` alert with the row's ID only, OPS-029's ledger-difference push), and the run's report counts open rows. `LOOKBACK` stays 7 days. Tests in `tests/integration/tests/reconcile_open.rs`. Update the `payments` `CLAUDE.md` and `docs/decisions.md` (`docs/architecture.md` section 3 already lists the new table, D-1872).",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "payments",
+   "deps": [
+    "T258",
+    "T287"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "money"
+   ],
+   "owns": [
+    "migrations/0173_payments_reconcile_open.sql",
+    "app/payments/src/reconcile.rs",
+    "tests/integration/tests/reconcile_open.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/fees.md",
+    "docs/spec/ops-recovery.md",
+    "docs/brains/payments-stripe.md",
+    "docs/brains/postgres-operations.md"
+   ],
+   "requirements": [
+    "FEE-029",
+    "FEE-051"
+   ],
+   "tests": [
+    "TD-FEE-49"
+   ],
+   "decisions": [
+    "D-1872"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 450,
+    "context_pct": 15
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T288-reconcile-open-charges",
+   "prompt": "kit/prompts/T288.md",
+   "acceptance": "TD-FEE-49 passes against PostgreSQL with a fake `ReconcileStripe`; every TD-FEE-16 and `tests/integration/tests/reconcile.rs` case passes unchanged."
+  },
+  {
+   "id": "T289",
+   "slug": "jobs-error-count-test",
+   "title": "jobs tests: the refused-move test counts its one bug log the same way however the tests are scheduled",
+   "goal": "`a_refused_or_stale_move_changes_nothing` (`app/jobs/src/tests/transitions.rs:102`, T031's, DONE) counts ERROR events through a thread-local `tracing::subscriber::set_default` layer and once saw 0 instead of 1 in `Ci` (T196 attempt 1), with no change to the code it tests: tracing caches each call site's interest globally, so a call site first registered while another test's thread had no subscriber can stay disabled for this one (third external audit, D-1873). Make the count independent of other tests without weakening it: after installing the counting subscriber, call `tracing::callsite::rebuild_interest_cache()` (or install it with the same pattern `app/core/src/tests/logging.rs` uses, if that is shown to cover the cached-interest case), and keep `assert_eq!(errors.load(..), 1, ...)` and every other assertion exactly as they are. This is a harness task because the test belongs to a DONE task. Update `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "4",
+   "module": "jobs",
+   "deps": [
+    "T031",
+    "T075"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness"
+   ],
+   "owns": [
+    "app/jobs/src/tests/transitions.rs"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "docs/spec/lifecycle.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "JOB-002"
+   ],
+   "tests": [
+    "TD-JOB-15"
+   ],
+   "decisions": [
+    "D-1873"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 1,
+    "lines": 60,
+    "context_pct": 4
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T289-jobs-error-count-test",
+   "prompt": "kit/prompts/T289.md",
+   "acceptance": "TD-JOB-15 passes: the assertion still requires exactly 1, and `cargo test -p askhava-jobs a_refused_or_stale_move_changes_nothing` passes 200 runs in a row run together with the crate's other tests (the loop and its count shown in the hand-in)."
   },
   {
    "id": "T166",
