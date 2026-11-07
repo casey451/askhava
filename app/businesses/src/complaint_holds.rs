@@ -3,7 +3,8 @@
 //! `privacy::api::run_complaint_hold` applies (PRIV-007, D-491).
 //!
 //! A complaint (T083) is open until its 5-day reply box closes and it is listed for Casey's digest
-//! (`listed_at`). The composition runs [`run_complaint_holds`] on `jobs`' contact-stage purge task
+//! (`listed_at`): a product choice (D-1800, in `docs/for-casey-review.md`), since T083 records no
+//! resolution, so a complaint still unresolved after its box closes no longer holds the purge. The composition runs [`run_complaint_holds`] on `jobs`' contact-stage purge task
 //! and `privacy`'s re-checks, before `privacy` decides, so a complaint opened before the contact
 //! purge holds it and a closed one lets it go. Each event's dedupe key is the complaint and its
 //! state, so a complaint is held once and released once.
@@ -46,13 +47,14 @@ pub async fn queue_complaint_holds(
 }
 
 /// The composition's step on a contact-stage purge task (payload `{"job", "stage"}`): runs
-/// [`queue_complaint_holds`] at the wall clock; any other stage is left alone.
+/// [`queue_complaint_holds`] at the wall clock and returns how many events were new, so `privacy`
+/// waits for them before it decides (D-1799); any other stage is left alone (0).
 ///
 /// # Errors
 /// A fixed [`HandlerError`] for a bad payload or a database failure.
-pub async fn run_complaint_holds(pool: PgPool, task: Claimed) -> Result<(), HandlerError> {
+pub async fn run_complaint_holds(pool: PgPool, task: Claimed) -> Result<usize, HandlerError> {
     if task.payload["stage"].as_str() != Some("contact") {
-        return Ok(());
+        return Ok(0);
     }
     let job = task.payload["job"]
         .as_str()
@@ -62,6 +64,5 @@ pub async fn run_complaint_holds(pool: PgPool, task: Claimed) -> Result<(), Hand
     let mut conn = pool.acquire().await.map_err(|_| failed)?;
     queue_complaint_holds(&mut conn, job, Timestamp::now())
         .await
-        .map_err(|_| failed)?;
-    Ok(())
+        .map_err(|_| failed)
 }

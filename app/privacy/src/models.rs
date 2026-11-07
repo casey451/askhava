@@ -498,13 +498,14 @@ impl PurgeStage {
         Self::ALL.into_iter().find(|stage| stage.code() == code)
     }
 
-    /// Days after close the stage comes due: 30, 180 and 1,095 (PRIV-007 to PRIV-009).
+    /// Days after close the stage comes due: 30, 180 and 1,096 (three years, never short by a leap
+    /// day; PRIV-007 to PRIV-009).
     #[must_use]
     pub fn days(self) -> i64 {
         match self {
             Self::Photos => 30,
             Self::Contact => 180,
-            Self::Text => 3 * 365,
+            Self::Text => 3 * 365 + 1,
         }
     }
 }

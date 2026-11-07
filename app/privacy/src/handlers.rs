@@ -5,7 +5,10 @@
 //! `payments`' hold steps and then [`run_purge_due`]. Photos go at once. The contact stage first
 //! waits an hour ([`RECHECK_KIND`]) so the complaint hold events just queued are applied, then,
 //! while a hold is open, checks again daily; once free it queues [`PURGE_KIND`], which `intake`
-//! answers by clearing the contact (`purge_contact`). The text stage queues [`PURGE_KIND`] too.
+//! answers by clearing the contact (`purge_contact`). A re-check on which the composition's
+//! complaint step queued new hold events waits another hour ([`run_purge_due_after`]), so a
+//! complaint filed after the first hour is applied before the decision. The text stage queues
+//! [`PURGE_KIND`] too.
 //! [`run_complaint_hold`] applies `businesses`' hold and release events.
 
 use askhava_core::api::{Claimed, HandlerError, NewTask, enqueue};
@@ -63,6 +66,28 @@ pub async fn run_purge_due(pool: PgPool, task: Claimed) -> Result<(), HandlerErr
         }
     }
     .map_err(|_| DB_FAILED)
+}
+
+/// PRIV-007, D-1799: [`run_purge_due`] after the composition's complaint step, which reports how
+/// many hold events it just queued. A contact re-check that queued any does not decide yet: those
+/// events are not applied, so it comes back in an hour (a complaint state queues its event once,
+/// so this ends). Any other task goes on to [`run_purge_due`].
+///
+/// # Errors
+/// As [`run_purge_due`].
+pub async fn run_purge_due_after(
+    pool: PgPool,
+    task: Claimed,
+    events_queued: usize,
+) -> Result<(), HandlerError> {
+    let (job, stage) = purge_target(&task)?;
+    if events_queued == 0 || stage != PurgeStage::Contact || task.kind != RECHECK_KIND {
+        return run_purge_due(pool, task).await;
+    }
+    let mut conn = pool.acquire().await.map_err(|_| DB_FAILED)?;
+    let now = Timestamp::now();
+    let round = format!("events-{}", now.as_second());
+    recheck(&mut conn, job, now + FIRST_WAIT, &round).await
 }
 
 async fn recheck(

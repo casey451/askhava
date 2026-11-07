@@ -148,7 +148,7 @@ pub async fn purge_contact(db: &mut PgConnection, id: Uuid) -> Result<bool, Vaul
 /// PRIV-011, D-214: "Delete my data" for contact `id` and the jobs the caller found for it: the
 /// vault entry is cleared as in [`purge_contact`] (the phone kept, locked, for the consent records,
 /// D-079) and every photo of those jobs deleted; returns [`DELETE_CONFIRMATION`]. Ledger rows hold
-/// IDs only, so they stay as they are (PRIV-010).
+/// IDs only, so they stay as they are (PRIV-010). One transaction: all of it happens or none.
 ///
 /// # Errors
 /// [`VaultError::Database`], [`VaultError::Audit`].
@@ -157,9 +157,11 @@ pub async fn delete_my_data(
     id: Uuid,
     jobs: &[Uuid],
 ) -> Result<&'static str, VaultError> {
-    purge_contact(db, id).await?;
+    let mut tx = sqlx::Acquire::begin(db).await.map_err(db_err)?;
+    purge_contact(&mut tx, id).await?;
     for job in jobs {
-        purge_photos(db, *job).await?;
+        purge_photos(&mut tx, *job).await?;
     }
+    tx.commit().await.map_err(db_err)?;
     Ok(DELETE_CONFIRMATION)
 }

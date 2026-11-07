@@ -2,11 +2,13 @@
 //! events (PRIV-007 to PRIV-009, D-013, D-491).
 //!
 //! `privacy` may not read `jobs`, so this file queues one [`PURGE_DUE_KIND`] task per stage, due
-//! at the close plus 30 days (photos), 180 days (contact details) and 1,095 days (scrubbed job
-//! text), payload `{"job", "stage"}`; the composition runs `privacy::api::run_purge_due` on them.
-//! The close date is the job's `status_at` once it reaches a final status. A daily sweep
-//! ([`SWEEP_KIND`]) queues them for every job that reached one in the last week; each task's dedupe
-//! key is its job and stage, so a job is queued once however often it is swept.
+//! at the close plus 30 days (photos), 180 days (contact details) and 1,096 days (scrubbed job
+//! text: three years, never short by a leap day), payload `{"job", "stage"}`; the composition runs
+//! `privacy::api::run_purge_due` on them. The close date is the job's `status_at` once it reaches a
+//! final status. A daily sweep ([`SWEEP_KIND`]) queues them for every job in a final status, with
+//! no look-back limit, so a worker outage of any length is caught on the next sweep; each task's
+//! dedupe key is its job and stage and `core.task` keeps the key, so a job is queued once however
+//! often it is swept (D-1799).
 
 use askhava_core::api::{Claimed, HandlerError, NewTask, TaskError, enqueue};
 use jiff::{SignedDuration, Timestamp};
@@ -21,9 +23,10 @@ use crate::status::JobStatus;
 pub const PURGE_DUE_KIND: &str = "jobs.purge_due";
 /// The daily sweep that queues [`PURGE_DUE_KIND`] for newly closed jobs.
 pub const SWEEP_KIND: &str = "jobs.purge_sweep";
-/// The stages and their days after close (PRIV-009, PRIV-007, PRIV-008; D-013).
-pub const PURGE_STAGES: [(&str, i64); 3] = [("photos", 30), ("contact", 180), ("text", 3 * 365)];
-const LOOK_BACK: SignedDuration = SignedDuration::from_hours(7 * 24);
+/// The stages and their days after close (PRIV-009, PRIV-007, PRIV-008; D-013); three years is
+/// 1,096 days so a leap year never makes it short (D-1801).
+pub const PURGE_STAGES: [(&str, i64); 3] =
+    [("photos", 30), ("contact", 180), ("text", 3 * 365 + 1)];
 const DAY: SignedDuration = SignedDuration::from_hours(24);
 
 /// PRIV-007 to PRIV-009: queues job `job`'s three purge stages from its close at `closed_at`;
@@ -46,8 +49,9 @@ pub async fn enqueue_purge(
     Ok(queued)
 }
 
-/// PRIV-007: queues the purge stages of every job that reached a final status in the week before
-/// `now`; returns how many stage tasks were new.
+/// PRIV-007: queues the purge stages of every job that reached a final status at or before `now`,
+/// however long ago (a stage already queued is skipped by its dedupe key); returns how many stage
+/// tasks were new.
 ///
 /// # Errors
 /// [`TaskError::Db`].
@@ -59,9 +63,8 @@ pub async fn sweep_closed(db: &mut PgConnection, now: Timestamp) -> Result<usize
         .collect();
     let rows = sqlx::query!(
         r#"SELECT id, status_at AS "status_at: jiff_sqlx::Timestamp" FROM jobs.job
-           WHERE status = ANY($1) AND status_at >= $2 AND status_at <= $3"#,
+           WHERE status = ANY($1) AND status_at <= $2"#,
         &finals,
-        (now - LOOK_BACK).to_sqlx() as _,
         now.to_sqlx() as _,
     )
     .fetch_all(&mut *db)
