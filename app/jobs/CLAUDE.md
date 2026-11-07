@@ -19,7 +19,7 @@ The layer-4 crate that owns every job's one status and the only code that change
 - Migration `0031_jobs_state_machine.sql`: the `jobs` schema and grants, `jobs.job` (status `CHECK` of the twelve codes, `version`, `emergency`, `status_at`, `timer_from`, `timer_version`), `jobs.status_history` (append-only).
 - `sqlx.toml`: `'TIMESTAMPTZ'` reads as `jiff_sqlx::Timestamp`.
 - `src/purge_events.rs` (T092, D-1799): `PURGE_DUE_KIND`, `SWEEP_KIND`, `PURGE_STAGES`, `enqueue_purge`, `sweep_closed`, `schedule_sweep`, `run_sweep`: the daily sweep queues each final job's photo, contact and text purge stages for `privacy` at `status_at` plus 30, 180 and 1,096 days for every final job (no look-back limit), deduped by job and stage (PRIV-007 to PRIV-009; `tests/integration/tests/retention_purge.rs`).
-- `src/followups.rs` (T097, D-1809 to D-1811): the `jobs.check_in` tasks (`schedule_check_ins`, `check_in_times`, `run_check_in`), the answer reader `parse_answer`, the pure `after_answer` and `answer_check_in` (the move with its text, and for PROBLEM the `ops.alert` naming the inbox row).
+- `src/followups.rs` (T097, D-1809 to D-1812): the `jobs.check_in` tasks (payload and dedupe key carry the job version) (`schedule_check_ins`, `check_in_times`, `run_check_in`), the answer reader `parse_answer`, the pure `after_answer` and `answer_check_in` (the move with its text, and for PROBLEM the `ops.alert` naming the inbox row).
 
 ## Rules it enforces
 
@@ -39,8 +39,8 @@ The layer-4 crate that owns every job's one status and the only code that change
 - SEC-031: every `match` on `JobStatus` lives in `status.rs`, which denies `clippy::wildcard_enum_match_arm`; `scripts/check_rust_rules.py` fails anything else, and `tests/security/tests/status_enums.rs` proves the scan catches each planted shape (D-852).
 - SEC-037, PICK-028: `quote_token` stores only the token's SHA256 and its salt; a re-issued or revoked token resolves to nothing. The salt's copy to the off-database stream waits on an `ops` stream event (D-817).
 
-- JOB-015, JOB-028 (D-1809): `followups::schedule_check_ins` queues day 3 (later of release and visit) and day 14 (release); `run_check_in` texts only while Connected; DONE or LISTO and ONGOING or CONTINUO go to Done with the one `feedback_request`, OTHER or OTRO closes with no no-show, LATER or MÁS TARDE moves nothing.
-- JOB-016, TXT-029, D-071, D-222 (D-1810): `answer_check_in` closes a PROBLEM with `problem_reply` and raises `jobs.problem_report` (digest) or `jobs.problem_report_safety` (OPS-032 push, the caller's `has_safety_word`) naming the `messaging.inbox` row, in the move's transaction; no fee changes. Known gaps (D-1811): the check-in and feedback templates, and the callers of `schedule_check_ins` and `answer_check_in`.
+- JOB-015, JOB-028 (D-1809, D-1812): `followups::schedule_check_ins` queues day 3 (later of release and visit) and day 14 (release) tagged with the job version; `run_check_in` texts only while Connected at that version (a second connection gets its own check-ins; a gone job does nothing); LATER restarts no timer; DONE or LISTO and ONGOING or CONTINUO go to Done with the one `feedback_request`, OTHER or OTRO closes with no no-show, LATER or MÁS TARDE moves nothing.
+- JOB-016, TXT-029, D-071, D-222 (D-1810): `answer_check_in` closes a PROBLEM with `problem_reply` and raises `jobs.problem_report` (digest) or `jobs.problem_report_safety` (OPS-032 push, the caller's `has_safety_word`) naming the `messaging.inbox` row, in the move's transaction; no fee changes. Known gaps (D-1811): the check-in and feedback templates, `problem_reply` missing from `intake`'s `JOB_TEXT_TEMPLATES` (the TXT-029 reply is queued, not sent), and the callers of `schedule_check_ins` and `answer_check_in`.
 
 ## Never break
 
@@ -59,7 +59,7 @@ The layer-4 crate that owns every job's one status and the only code that change
 - A token is never stored, logged or audited; only its hash and salt: `tests/integration/tests/webhook_dedupe.rs::td_sec_16_reissue_and_revoke_and_replay`.
 - `JobsError` never carries a value or the database's message (PRIV-016).
 
-- A check-in or feedback text never goes after the job left Connected, a PROBLEM is listed once, and OTHER never records a no-show: `tests/integration/tests/followups.rs`.
+- A check-in or feedback text never goes after the job left Connected or for an earlier connection, a PROBLEM is listed once, and OTHER never records a no-show: `tests/integration/tests/followups.rs`.
 
 ## How to change
 

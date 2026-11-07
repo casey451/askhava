@@ -1,16 +1,10 @@
-//! A Connected job's follow-ups (T097, D-1809 to D-1811): the day-3 and day-14 check-ins, the
-//! homeowner's answer to them (DONE or LISTO, NO, PROBLEM, LATER or MÁS TARDE, ONGOING or
-//! CONTINUO, OTHER or OTRO), the PROBLEM listing for Casey and the one private feedback request
-//! after Done (JOB-015, JOB-016, JOB-017's request, JOB-028, TXT-029; D-071, D-083, D-222, D-240).
+//! A Connected job's follow-ups (T097, D-1809 to D-1812): the day-3 and day-14 check-ins, the
+//! homeowner's answers (JOB-015, JOB-028), the PROBLEM listing for Casey and the TXT-029 reply
+//! (JOB-016, D-071, D-222) and the one private feedback request after Done (JOB-017, D-083).
 //!
-//! [`schedule_check_ins`] queues one [`CHECK_IN_KIND`] task per check-in when the job connects;
-//! [`run_check_in`] queues the check-in's homeowner text only while the job is still Connected, so
-//! ONGOING, OTHER, DONE or a close stops every later check-in. [`answer_check_in`] applies an
-//! answer: a move sends its text in the move's transaction (the feedback request with Done, the
-//! TXT-029 reply with a PROBLEM close), and a PROBLEM also raises one `ops.alert` naming the
-//! inbound message, never its words: [`PROBLEM_ALERT`] for the weekly digest, or
-//! [`PROBLEM_SAFETY_ALERT`] for the OPS-032 push when it held a safety word (OPS-005). Nothing here
-//! touches a fee or the ledger (D-071). The feedback page and its storage are T230's (D-493).
+//! Each check-in task and its text carry the job's version at the connection, so a check-in of an
+//! earlier connection, or of a job that moved on, does nothing (D-1812). A PROBLEM raises one
+//! `ops.alert` naming the inbound row, never its words; nothing here touches a fee (D-071).
 
 use askhava_core::api::{Claimed, Guarded, HandlerError, NewTask, enqueue};
 use askhava_ops::api::{Actor, NewAlert, Severity, raise_alert};
@@ -19,7 +13,7 @@ use serde_json::json;
 use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection, PgPool};
 
-use crate::handlers::queue_text;
+use crate::handlers::TEXT_KIND;
 use crate::models::{self, JobsError};
 use crate::rules::{CheckIn, Contact, Reply, connected_move};
 use crate::service::{apply, job_number};
@@ -135,33 +129,34 @@ pub fn check_in_times(
     (day3, day14)
 }
 
-/// JOB-015: queues job `id`'s check-ins ([`check_in_times`]) in the caller's transaction, once
-/// each (dedupe key `jobs.check_in.<job>.<day>`). The release calls it when the job connects.
+/// JOB-015: queues job `id`'s check-ins ([`check_in_times`]) in the caller's transaction, tagged
+/// with the job's current version; dedupe key `jobs.check_in.<job>.<version>.<day>` (D-1812).
 ///
 /// # Errors
 ///
-/// [`JobsError::Database`].
+/// [`JobsError::NotFound`] or [`JobsError::Database`].
 pub async fn schedule_check_ins(
     db: &mut PgConnection,
     id: Uuid,
     released: Timestamp,
     visit: Option<Timestamp>,
 ) -> Result<(), JobsError> {
+    let version = models::load(db, id).await?.version;
     let (day3, day14) = check_in_times(released, visit);
-    let checks = [(CHECK_IN_DAY3, day3), (CHECK_IN_DAY14, Some(day14))];
-    for (template, at) in checks {
+    for (template, at) in [(CHECK_IN_DAY3, day3), (CHECK_IN_DAY14, Some(day14))] {
         let Some(at) = at else { continue };
-        let payload = json!({"job": id, "template": template, "at": at.to_string()});
+        let payload =
+            json!({"job": id, "version": version, "template": template, "at": at.to_string()});
         let mut task = NewTask::new(CHECK_IN_KIND, payload, at);
-        task.dedupe_key = Some(format!("{CHECK_IN_KIND}.{id}.{template}"));
+        task.dedupe_key = Some(format!("{CHECK_IN_KIND}.{id}.{version}.{template}"));
         enqueue(db, &task).await.map_err(|_| JobsError::Database)?;
     }
     Ok(())
 }
 
-/// The [`CHECK_IN_KIND`] handler (JOB-015, JOB-028): queues the check-in text, at the check-in's
-/// time, only while the job is still Connected; after ONGOING, OTHER, any move or a close it
-/// does nothing. Safe to run twice: the text is queued once per job and template.
+/// The [`CHECK_IN_KIND`] handler (JOB-015, JOB-028, D-1812): queues the check-in text at its time
+/// only while the job is Connected at the task's version; a gone job, a move or a later
+/// connection makes it do nothing. The text's dedupe key holds the version too.
 ///
 /// # Errors
 ///
@@ -169,27 +164,33 @@ pub async fn schedule_check_ins(
 pub async fn run_check_in(pool: PgPool, task: Claimed) -> Result<(), HandlerError> {
     let p = &task.payload;
     let id = p["job"].as_str().and_then(|s| Uuid::parse_str(s).ok());
+    let version = p["version"].as_i64().and_then(|v| i32::try_from(v).ok());
     let at = p["at"].as_str().and_then(|s| s.parse::<Timestamp>().ok());
     let template = [CHECK_IN_DAY3, CHECK_IN_DAY14]
         .into_iter()
         .find(|t| p["template"].as_str() == Some(*t));
-    let (Some(id), Some(at), Some(template)) = (id, at, template) else {
+    let (Some(id), Some(version), Some(at), Some(template)) = (id, version, at, template) else {
         return Err(HandlerError(BAD_PAYLOAD));
     };
-    let mut db = pool.acquire().await.map_err(|_| HandlerError(DB))?;
-    let job = models::load(&mut db, id)
-        .await
-        .map_err(|_| HandlerError(DB))?;
-    if !job.status.takes_check_ins() {
+    let mut db = pool.acquire().await.map_err(db_err)?;
+    let job = match models::load(&mut db, id).await {
+        Err(JobsError::NotFound) => return Ok(()),
+        loaded => loaded.map_err(db_err)?,
+    };
+    if job.version != version || !job.status.takes_check_ins() {
         return Ok(());
     }
-    let number = job_number(&mut db, id)
-        .await
-        .map_err(|_| HandlerError(DB))?;
-    let values = json!({ "job": number });
-    queue_text(&mut db, id, (template, job.version), values, at)
-        .await
-        .map_err(|_| HandlerError(DB))
+    let number = job_number(&mut db, id).await.map_err(db_err)?;
+    let payload = json!({"job": id, "version": version, "template": template,
+        "values": {"job": number}});
+    let mut text = NewTask::new(TEXT_KIND, payload, at);
+    text.dedupe_key = Some(format!("{TEXT_KIND}.{id}.{template}.{version}"));
+    enqueue(&mut db, &text).await.map_err(db_err).map(drop)
+}
+
+/// The handler's one fixed database-failure sentence, whatever the error (PRIV-016).
+fn db_err<E>(_: E) -> HandlerError {
+    HandlerError(DB)
 }
 
 /// JOB-015, JOB-016, JOB-028, TXT-029, D-071: applies `answer` to check-in `check` on job `id`,
@@ -219,11 +220,8 @@ pub async fn answer_check_in(
     };
     let mut tx = db.begin().await.map_err(|_| JobsError::Database)?;
     let step = (JobStatus::Connected, None, to);
-    if apply(&mut tx, id, step, (at, actor), text)
-        .await?
-        .applied()
-        .is_none()
-    {
+    let moved = apply(&mut tx, id, step, (at, actor), text).await?;
+    if moved.applied().is_none() {
         return Ok(Guarded::MovedOn);
     }
     if answer == Answer::Problem {
@@ -236,13 +234,8 @@ pub async fn answer_check_in(
 /// JOB-016, OPS-005, D-222: one alert naming the PROBLEM text's inbox row: the digest kind, or
 /// the safety kind for the OPS-032 push. Severity Normal either way, as for complaints (D-1810).
 async fn flag_problem(tx: &mut PgConnection, inbound: Inbound) -> Result<(), JobsError> {
-    let kind = if inbound.safety {
-        PROBLEM_SAFETY_ALERT
-    } else {
-        PROBLEM_ALERT
-    };
     let alert = NewAlert {
-        kind,
+        kind: [PROBLEM_ALERT, PROBLEM_SAFETY_ALERT][usize::from(inbound.safety)],
         severity: Severity::Normal,
         subject: Some((INBOX, inbound.inbox)),
     };
