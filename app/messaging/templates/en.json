@@ -418,5 +418,50 @@
     "audience": "business",
     "segments": 1,
     "text": "Ask Hava: We couldn't read that as a quote or a reply word. To quote, confirm or change settings, use your portal: https://askhava.com/b. Text HELP for help."
+  },
+  "business_no_call_reminder_email": {
+    "audience": "business",
+    "segments": 2,
+    "text": "Ask Hava: Job {job}: no call yet. Call within 72 hours of the release, or the fee can't be refunded. Call between 8 a.m. and 8 p.m. Arizona time (any hour on an emergency job). Your 2 attempts can be on different days. The homeowner chose email; your 2 call attempts still count for the refund."
+  },
+  "unreachable_refunded": {
+    "audience": "business",
+    "segments": 2,
+    "text": "Ask Hava: Job {job}: your introduction fee is refunded. You called twice, at least 3 hours apart, within 72 hours of the release and in the calling hours. Nobody picked up, and we told the homeowner you'd tried. Questions? Use the Ask about a charge form on your billing page at https://askhava.com/b."
+  },
+  "unreachable_no_talked": {
+    "audience": "business",
+    "segments": 2,
+    "text": "Ask Hava: Job {job}: no refund of your introduction fee. A person picked up one of the calls between you and the homeowner. Questions? Use the Ask about a charge form on your billing page at https://askhava.com/b."
+  },
+  "unreachable_no_attempts": {
+    "audience": "business",
+    "segments": 2,
+    "text": "Ask Hava: Job {job}: no refund of your introduction fee. We found no call from you within 72 hours of the release, from 8 a.m. to 8 p.m. Arizona time (any hour on an emergency job). The refund needs 2. Questions? Use the Ask about a charge form on your billing page at https://askhava.com/b."
+  },
+  "unreachable_no_one_attempt": {
+    "audience": "business",
+    "segments": 2,
+    "text": "Ask Hava: Job {job}: no refund of your introduction fee. Only 1 of your calls came within 72 hours of the release, from 8 a.m. to 8 p.m. Arizona time (any hour on an emergency job). The refund needs 2. Questions? Use the Ask about a charge form on your billing page at https://askhava.com/b."
+  },
+  "unreachable_no_too_close": {
+    "audience": "business",
+    "segments": 2,
+    "text": "Ask Hava: Job {job}: no refund of your introduction fee. Your 2 calls were less than 3 hours apart. The refund needs them at least 3 hours apart. Questions? Use the Ask about a charge form on your billing page at https://askhava.com/b."
+  },
+  "unreachable_no_notice": {
+    "audience": "business",
+    "segments": 2,
+    "text": "Ask Hava: Job {job}: no refund of your introduction fee. We had no way to send the homeowner the message that you called, and the refund needs that message to go out. Questions? Use the Ask about a charge form on your billing page at https://askhava.com/b."
+  },
+  "unreachable_no_reply": {
+    "audience": "business",
+    "segments": 2,
+    "text": "Ask Hava: Job {job}: no refund of your introduction fee. The homeowner answered our check-in with DONE or PROBLEM. Questions? Use the Ask about a charge form on your billing page at https://askhava.com/b."
+  },
+  "unreachable_no_emailed": {
+    "audience": "business",
+    "segments": 2,
+    "text": "Ask Hava: Job {job}: no refund of your introduction fee. The homeowner told us you emailed and set up a time. Questions? Use the Ask about a charge form on your billing page at https://askhava.com/b."
   }
 }
