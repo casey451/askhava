@@ -29,7 +29,6 @@ use axum::extract::{FromRef, Path, State};
 use axum::http::StatusCode;
 use axum::middleware::{from_fn, from_fn_with_state};
 use axum::response::{Html, IntoResponse, Response};
-use axum::routing::get;
 use axum_extra::extract::cookie::CookieJar;
 use jiff::{SignedDuration, Timestamp};
 use secrecy::SecretString;
@@ -187,8 +186,8 @@ pub async fn run_member_removed(pool: PgPool, task: Claimed) -> Result<(), Handl
         .map_err(|_| HandlerError("portals.member_removed: database"))
 }
 
-/// The sign-in pages' state.
-struct SignIn<M> {
+/// The sign-in pages' state: the pool, clock, mail and web security every handler reads.
+pub struct SignIn<M> {
     pool: PgPool,
     clock: Arc<dyn Clock>,
     mail: Arc<M>,
@@ -212,27 +211,29 @@ impl<M> FromRef<SignIn<M>> for WebSecurity {
     }
 }
 
-/// The business sign-in router over `pool`, timed by `clock`, emailing through `mail` (SEC-004):
-/// [`SIGNIN_ROUTE`] and [`SIGNIN_LINK_ROUTE`], each `GET` and `POST`, behind the cross-site
-/// refusal and `no-store` (a link page holds its token). The composition merges it once its [`SignInMail`] exists (D-1724).
-pub fn business_signin_routes<M: SignInMail>(
-    pool: PgPool,
-    clock: Arc<dyn Clock>,
-    mail: Arc<M>,
-) -> Router {
-    let security = WebSecurity::new(pool.clone(), Arc::clone(&clock));
-    let state = SignIn {
-        pool,
-        clock,
-        mail,
-        security: security.clone(),
-    };
-    Router::new()
-        .route(SIGNIN_ROUTE, get(form).post(request::<M>))
-        .route(SIGNIN_LINK_ROUTE, get(open::<M>).post(sign_in::<M>))
-        .with_state(state)
-        .layer(from_fn(no_store))
-        .layer(from_fn_with_state(security, refuse_cross_site))
+impl<M: SignInMail> SignIn<M> {
+    /// The sign-in pages' state over `pool`, timed by `clock`, emailing through `mail` (SEC-004).
+    pub fn new(pool: PgPool, clock: Arc<dyn Clock>, mail: Arc<M>) -> Self {
+        let security = WebSecurity::new(pool.clone(), Arc::clone(&clock));
+        Self {
+            pool,
+            clock,
+            mail,
+            security,
+        }
+    }
+
+    /// `routes` (the handlers below on [`SIGNIN_ROUTE`] and [`SIGNIN_LINK_ROUTE`]) with this state,
+    /// `no-store` (a link page holds its token) and the cross-site refusal (SEC-004, SEC-042). The
+    /// composition writes the two `.route` lines and calls this once its [`SignInMail`] exists;
+    /// until then no page is served, so the Ally route table lists none (D-1724, D-1728).
+    pub fn into_router(self, routes: Router<Self>) -> Router {
+        let security = self.security.clone();
+        routes
+            .with_state(self)
+            .layer(from_fn(no_store))
+            .layer(from_fn_with_state(security, refuse_cross_site))
+    }
 }
 
 /// `templates/business_signin.html`: one of the five screens.
@@ -270,13 +271,13 @@ fn failure(what: &'static str) -> Response {
 }
 
 /// `GET` [`SIGNIN_ROUTE`]: the email form.
-async fn form(jar: CookieJar) -> Response {
+pub async fn signin_form(jar: CookieJar) -> Response {
     page(jar, "form", ("", ""), false)
 }
 
 /// The sign-in form's fields.
 #[derive(serde::Deserialize)]
-struct AddressForm {
+pub struct AddressForm {
     #[serde(default)]
     csrf: String,
     #[serde(default)]
@@ -298,7 +299,7 @@ fn plausible(email: &str) -> bool {
 
 /// `POST` [`SIGNIN_ROUTE`]: emails a link to every member the address is on file for, then shows
 /// the same "check your email" screen either way (SEC-004).
-async fn request<M: SignInMail>(
+pub async fn signin_request<M: SignInMail>(
     State(state): State<SignIn<M>>,
     jar: CookieJar,
     CsrfForm(form): CsrfForm<AddressForm>,
@@ -361,7 +362,7 @@ fn well_formed(token: &str) -> bool {
 
 /// `GET` [`SIGNIN_LINK_ROUTE`]: the "Sign in" button for a usable link, or the "ended" screen.
 /// Uses nothing up (SEC-026).
-async fn open<M: SignInMail>(
+pub async fn signin_open<M: SignInMail>(
     State(state): State<SignIn<M>>,
     Path(token): Path<String>,
     jar: CookieJar,
@@ -381,7 +382,7 @@ async fn open<M: SignInMail>(
 
 /// `POST` [`SIGNIN_LINK_ROUTE`]: uses the link and signs its member in for 30 days, or shows the
 /// "ended" screen and logs an `auth_failed` event (SEC-004, SEC-048).
-async fn sign_in<M: SignInMail>(
+pub async fn signin_post<M: SignInMail>(
     State(state): State<SignIn<M>>,
     Path(token): Path<String>,
     jar: CookieJar,

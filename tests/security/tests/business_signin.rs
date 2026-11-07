@@ -2,7 +2,8 @@
 //! principal routes are scoped by (TD-SEC-01 business cases, TD-A11Y-02 sign-in form case,
 //! TD-CALL-07 sessions case; SEC-004, SEC-006, SEC-019, SEC-024, SEC-026, A11Y-032, PICK-033).
 //!
-//! Drives `business_signin_routes` over a fake `SignInMail` that keeps the links it was handed.
+//! Drives the sign-in routes, composed here as the composition will (`SignIn::into_router`, D-1728),
+//! over a fake `SignInMail` that keeps the links it was handed.
 //! The sign-in page has no code field (the new-device code is T194's), so A11Y-032 has no case
 //! here. Every address, ID and token is fake.
 
@@ -13,12 +14,14 @@ use askhava_businesses::api::{Acting, Roles, add_member, add_owner, create, remo
 use askhava_core::api::{Claimed, ManualClock};
 use askhava_portals::api::{
     BUSINESS_SESSION_LIFE, CookieJar, LINK_LIFE, LINKS_PER_LIFE, Need, PortalsError, Realm,
-    SignInAddress, SignInMail, business_principal, business_signin_routes, may_confirm,
-    run_member_removed, start_session,
+    SIGNIN_LINK_ROUTE, SIGNIN_ROUTE, SignIn, SignInAddress, SignInMail, business_principal,
+    may_confirm, run_member_removed, signin_form, signin_open, signin_post, signin_request,
+    start_session,
 };
 use axum::Router;
 use axum::body::{Body, to_bytes};
 use axum::http::{HeaderMap, HeaderValue, Request, header};
+use axum::routing::get;
 use jiff::{SignedDuration, Timestamp};
 use secrecy::{ExposeSecret, SecretString};
 use sqlx::types::Uuid;
@@ -26,6 +29,20 @@ use sqlx::{PgConnection, PgPool};
 use tower::ServiceExt;
 
 const HOST: &str = "askhava.test";
+
+/// The two sign-in routes over `state`, as the composition merges them (D-1724, D-1728).
+fn signin_app(state: SignIn<FakeMail>) -> Router {
+    let routes = Router::new()
+        .route(
+            SIGNIN_ROUTE,
+            get(signin_form).post(signin_request::<FakeMail>),
+        )
+        .route(
+            SIGNIN_LINK_ROUTE,
+            get(signin_open::<FakeMail>).post(signin_post::<FakeMail>),
+        );
+    state.into_router(routes)
+}
 
 /// The fake address book and the links "emailed".
 #[derive(Default)]
@@ -114,7 +131,7 @@ async fn world(pool: &PgPool) -> World {
         sent: Mutex::default(),
     });
     let clock = Arc::new(ManualClock::new(start()));
-    let app = business_signin_routes(pool.clone(), clock.clone(), Arc::clone(&mail));
+    let app = signin_app(SignIn::new(pool.clone(), clock.clone(), Arc::clone(&mail)));
     World {
         x,
         y,
