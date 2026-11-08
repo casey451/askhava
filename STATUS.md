@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-08T03:47:53Z by runner a2f57c33619e (actions).
+Updated 2026-11-08T04:25:33Z by runner 7d83447754f6 (actions).
 
 **Building: T088 in progress since 03:40Z; 150 of 282 done; week 48% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,11 @@ Updated 2026-11-08T03:47:53Z by runner a2f57c33619e (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T088 claimed 03:40Z, lease until 06:40Z
 - **Week:** 48% used, 98.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:24Z, 23 min before this update
+- **Last run:** 03:47Z, 37 min before this update
 - **Keeper:** last ran 03:24Z, next wake 03:44Z
 
 ## Needs attention
-- Strict plan check red: 6 problem(s) on tasks still to run (+4 on DONE tasks); first: T089: stored context_pct 9% but it measures 13%; regenerate
+- Strict plan check red: 7 problem(s) on tasks still to run (+4 on DONE tasks); first: T088: stored context_pct 14% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -36,7 +36,6 @@ Updated 2026-11-08T03:47:53Z by runner a2f57c33619e (actions).
 | T091 | quotes: photos on cards only after zero retention and all th | done | 1 | 40 min | 07:24Z |  |
 | T090 | privacy: photo checks by bytes, re-encode without EXIF or GP | done | 1 | 52 min | 06:25Z |  |
 | T194 | portals: the new-device code by text or email and team sign- | done | 1 | 42 min | 05:12Z |  |
-| T084 | portals: business one-time sign-in link and 30-day sessions | done | 2 | 24 min | 04:14Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 
 ### Plan and harness merges on main
 - 01:33Z Plan: brand as configuration (T291–T295, D-1932–D-1933) (#342)
@@ -45,8 +44,6 @@ Updated 2026-11-08T03:47:53Z by runner a2f57c33619e (actions).
 - 19:25Z Harness: incremental runner smoke build (stable tree, own target dir, mtime pinning) (D-1890) (#333)
 - 15:37Z Plan: second code audit — owners and acceptance for B01–B08 and known gaps (D-1835–D-1845) (#326)
 - 05:10Z Plan: repo audit findings — owners and acceptance for A01–A06, A08–A12 (D-1751–D-1761, D-1788) (#316)
-- 03:59Z Plan: tests/a11y/fixtures.ts is a shared page-state registry (D-1772) (#314)
-- 03:48Z Plan: business-session read of released picks, release recovery tests, production release wiring (D-1739, D-1740) (#313)
 
 ## Progress (requirements verified)
 
