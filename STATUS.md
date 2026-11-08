@@ -1,23 +1,23 @@
 # Ask Hava build status
 
-Updated 2026-11-08T05:33:32Z by runner bf568037d279 (actions).
+Updated 2026-11-08T05:45:53Z by runner 9f6ba1044425 (actions).
 
-**Idle since 05:26Z; 151 of 282 done; week 48% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 05:42Z; 152 of 282 done; week 48% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 151 of 282 build tasks (owner gates not counted)
+- **Tasks done:** 152 of 282 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 05:26Z (no task in progress)
+- **Lane:** idle since 05:42Z (no task in progress)
 - **Week:** 48% used, 98.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:33Z, 0 min before this update
+- **Last run:** 05:33Z, 12 min before this update
 - **Keeper:** last ran 05:33Z, next wake 05:53Z
 
 ## Needs attention
-- Strict plan check red: 6 problem(s) on tasks still to run (+5 on DONE tasks); first: T089: stored context_pct 9% but it measures 13%; regenerate
+- Strict plan check red: 6 problem(s) on tasks still to run (+7 on DONE tasks); first: T255: stored context_pct 25% but it measures 29%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T089 | Rate limits per phone, IP and business; brute-force stops | MERGE_PENDING | 1 | 44 min | 05:26Z |  |
+| T089 | Rate limits per phone, IP and business; brute-force stops | done | 1 | 44 min | 05:26Z |  |
 | T088 | Authorization matrix over every route and actor; token isola | done | 1 | 45 min | 04:25Z |  |
 | T291 | core and checks: one brand file the app and the build's chec | done | 1 | 44 min | 03:16Z |  |
 | T087 | portals: homeowner portal (phone and code), own data, no for | done | 1 | 46 min | 02:04Z |  |
@@ -47,8 +47,8 @@ Updated 2026-11-08T05:33:32Z by runner bf568037d279 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 223 of 731 (30.5%) · partial 289 · unstarted 219
-**Tasks merged (throughput only):** 151 of 282
+**Requirements verified:** 223 of 731 (30.5%) · partial 292 · unstarted 216
+**Tasks merged (throughput only):** 152 of 282
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -68,7 +68,7 @@ Updated 2026-11-08T05:33:32Z by runner bf568037d279 (actions).
 | quiet-hours | 7 | 2 | 0 | 9 |
 | quotes-pick | 19 | 24 | 13 | 56 |
 | recurring | 7 | 1 | 3 | 11 |
-| security | 9 | 34 | 11 | 54 |
+| security | 9 | 37 | 8 | 54 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 1 | 27 | 28 |
 | wording | 1 | 5 | 26 | 32 |
@@ -83,7 +83,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 31 of 98 done
+- stage 4: 32 of 98 done
 - stage 5: 0 of 42 done
 - stage 6: 0 of 26 done
 - stage 7: 0 of 2 done
