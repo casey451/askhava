@@ -1,0 +1,31 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO portals.owner_challenge (purpose, state, expires_at) SELECT 'sign_in', $1, $2 WHERE (SELECT count(*) FROM portals.owner_challenge WHERE purpose = 'sign_in' AND expires_at > $3) < $4 RETURNING id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "portals.owner_challenge",
+            "name": "id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Jsonb",
+        "Timestamptz",
+        "Timestamptz",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "cc3e7ecff4e87a9929838ac8ffeebfbfd5c021dcf4559771fda9d2512ba7d6b0"
+}

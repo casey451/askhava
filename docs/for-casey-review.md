@@ -1909,6 +1909,18 @@ A third outside review of the whole repository was checked finding by finding ag
 - **Nothing needs you now.**
 - **A business can see a released homeowner's details again** (T253): the owner or a "Confirm and billing" member of the picked business can reopen the first name, address and (if she chose email) email of a paid or free pick, read fresh from the vault each time and never stored; anyone else gets the same "not found", and after her data is purged the page says the details were removed. The page itself comes with T085 (D-1739, D-1891 to D-1895; the end-to-end test waits on a paid-release API, D-1895).
 
+## Your owner sign-in (T086, D-1917 to D-1921, November 8)
+
+- **How you'll sign in:** your password (at least 15 characters, checked against a list of passwords known from breaches) plus a code from an authenticator app or a passkey. You stay signed in for at most 12 hours, and 30 minutes without using the page signs you out. Refunds, the AI switch, fee mode, settings, the Stripe-answer record, data export and the safety-call switch each ask for a fresh code or passkey if your last one is more than 5 minutes old. There is no "reset by email".
+- **Paper recovery codes:** the first setup gives you 10 one-time codes to write on paper and keep away from your password manager. A code works in place of your app only after you have added a second authenticator or passkey, so set up a second one soon after the first sign-in.
+- **Worth your look: the first setup (D-1918).** The rule says the setup runs in the release step, but that step can't take your password and its logs would keep your codes. So you run `server bootstrap-owner` once yourself, in your own terminal, with the one-time token set as a host variable, and delete that variable right after. It refuses to run a second time.
+- **Worth your look: the authenticator secret is stored as is (D-1917).** Anyone who could read that database table could make your codes. Encrypting it with the vault key is a later change.
+- **Not built yet:** the owner pages aren't served yet; the page that adds a passkey comes with your settings page.
+- **Worth your look: no lockout on wrong passwords yet (D-1917, D-1921).** The limit on repeated tries belongs to the rate-limit task (T089), so the owner sign-in page must not go live before that task covers it.
+- **Worth your look: the setup token is only a check that one is set (D-1918).** It isn't compared with anything; what really protects the setup is that only the migration database login can create you, and only once. Delete the token variable by hand after the setup; nothing checks that for you. When you type your password into the setup in a terminal, it isn't shown.
+- **After a recovery code:** signing in with a paper code works, but refunds and settings still ask for your app code or passkey (D-1917). Changing your password signs out your other devices.
+- **Nothing needs you now.**
+
 ## The name becomes a setting, so a rename is one file (plan change, D-1932 and D-1933, November 8)
 
 You said the name may change from Ask Hava (likely to Laftly) before launch. Nothing is renamed now: every text, page and email still says Ask Hava.

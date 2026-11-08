@@ -5000,7 +5000,7 @@
    "budget": {
     "files": 6,
     "lines": 500,
-    "context_pct": 15
+    "context_pct": 19
    },
    "checks": [
     "Ci",
@@ -9001,7 +9001,7 @@
    "budget": {
     "files": 7,
     "lines": 550,
-    "context_pct": 11
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -9360,8 +9360,7 @@
    "stage": "4",
    "module": "portals",
    "deps": [
-    "T086",
-    "T291"
+    "T086"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -9405,14 +9404,13 @@
    "decisions": [
     "D-480",
     "D-490",
-    "D-492",
-    "D-1933"
+    "D-492"
    ],
    "cites": [],
    "budget": {
     "files": 4,
     "lines": 500,
-    "context_pct": 14
+    "context_pct": 10
    },
    "checks": [
     "Ci",
@@ -16460,7 +16458,7 @@
    "budget": {
     "files": 14,
     "lines": 500,
-    "context_pct": 23
+    "context_pct": 27
    },
    "checks": [
     "Ci",
@@ -18367,7 +18365,7 @@
    "budget": {
     "files": 10,
     "lines": 600,
-    "context_pct": 26
+    "context_pct": 30
    },
    "checks": [
     "Ci",
@@ -19106,7 +19104,7 @@
    "budget": {
     "files": 4,
     "lines": 450,
-    "context_pct": 29
+    "context_pct": 33
    },
    "checks": [
     "Ci",

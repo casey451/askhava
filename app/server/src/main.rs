@@ -8,7 +8,10 @@
 //! `0.0.0.0:$PORT` (the host sets `PORT`) until SIGINT or SIGTERM, then
 //! finishes the requests in flight and exits 0. `server migrate` instead
 //! applies the pending migrations as the migration role and exits: the
-//! release step of the `migrate` service (D-092, SEC-052).
+//! release step of the `migrate` service (D-092, SEC-052). `server bootstrap-owner` creates the
+//! one owner once, as the migration role, from the token in `ASKHAVA_OWNER_BOOTSTRAP_TOKEN` and
+//! a password read from standard input, and prints the first authenticator's secret and the
+//! recovery codes once to the operator's own terminal (SEC-044, SEC-007, D-1918).
 
 use std::io;
 use std::net::Ipv4Addr;
@@ -22,6 +25,9 @@ async fn main() -> io::Result<()> {
     let (settings, _log_guard) = askhava_server::start_up()?;
     if std::env::args().nth(1).as_deref() == Some("migrate") {
         return run_migrations(&settings).await;
+    }
+    if std::env::args().nth(1).as_deref() == Some("bootstrap-owner") {
+        return bootstrap_owner(&settings).await;
     }
     let port = port_from_env()?;
     let listener = TcpListener::bind((Ipv4Addr::UNSPECIFIED, port)).await?;
@@ -47,6 +53,68 @@ async fn run_migrations(settings: &askhava_core::api::Settings) -> io::Result<()
     askhava_core::api::migrate(url)
         .await
         .map_err(io::Error::other)
+}
+
+/// Creates the one owner (SEC-044, D-1918): the token from the host variable, the password as one
+/// line on standard input (not echoed on a terminal), over the migration role's URL (the app role
+/// cannot insert an owner). A second run fails. The enrolment secrets go to standard output once, for Casey's own
+/// terminal; errors name no value.
+async fn bootstrap_owner(settings: &askhava_core::api::Settings) -> io::Result<()> {
+    use askhava_portals::api::{BOOTSTRAP_TOKEN_VAR, bootstrap_owner};
+    use secrecy::ExposeSecret;
+    use sqlx::Connection;
+    let token = std::env::var(BOOTSTRAP_TOKEN_VAR).ok();
+    let password = read_password()?;
+    let url = settings
+        .migration_database_url()
+        .map_err(io::Error::other)?;
+    let mut db = sqlx::PgConnection::connect(url.expose_secret())
+        .await
+        .map_err(|_| io::Error::other("the migration database is unreachable"))?;
+    let password = password.trim_end_matches(['\r', '\n']);
+    let now = jiff::Timestamp::now();
+    let enrolment = bootstrap_owner(&mut db, token.as_deref(), password, now)
+        .await
+        .map_err(io::Error::other)?;
+    let mut out = format!(
+        "Owner created. Authenticator secret: {}\nRecovery codes (write them on paper):\n",
+        enrolment.totp_secret.expose_secret()
+    );
+    for code in &enrolment.recovery_codes {
+        out.push_str(code.expose_secret());
+        out.push('\n');
+    }
+    io::Write::write_all(&mut io::stdout(), out.as_bytes())
+}
+
+/// Reads one line of standard input. On a terminal the typing is not echoed: `stty -echo` before
+/// the read and `stty echo` after, with std alone (no new crate, D-1918); a pipe is read as is.
+fn read_password() -> io::Result<String> {
+    use std::io::IsTerminal;
+    let terminal = io::stdin().is_terminal();
+    if terminal {
+        io::Write::write_all(&mut io::stderr(), b"Owner password (not shown): ")?;
+        set_echo(false)?;
+    }
+    let mut password = String::new();
+    let read = io::stdin().read_line(&mut password);
+    if terminal {
+        set_echo(true)?;
+        io::Write::write_all(&mut io::stderr(), b"\n")?;
+    }
+    read.map(|_| password)
+}
+
+fn set_echo(on: bool) -> io::Result<()> {
+    let status = std::process::Command::new("stty")
+        .arg(if on { "echo" } else { "-echo" })
+        .stdin(std::process::Stdio::inherit())
+        .status()?;
+    if status.success() {
+        Ok(())
+    } else {
+        Err(io::Error::other("could not turn terminal echo off"))
+    }
 }
 
 /// Reads the listening port from `PORT`. The error never echoes the value.
