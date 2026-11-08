@@ -618,3 +618,87 @@ def test_the_prebuilt_tools_install_runs_under_actions_bash_e(tmp_path: Path, ca
             assert f"cargo install --locked --root {tmp_path}/tools --version ={version} {name}" in calls
     assert ("cargo " in calls) == (source == "crates.io") and ("tar " in calls) == (source == "release")
     assert (tmp_path / "path").read_text() == f"{tmp_path}/tools/bin\n"
+
+
+MEASURING_STEP = "Measuring toolchain and cargo-llvm-cov 0.9.1 (pinned nightly, pinned musl tarball)"
+
+
+def _coverage_job() -> dict[str, Any]:
+    return yaml.safe_load((ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8"))["jobs"]["coverage"]
+
+
+def _measuring_step() -> str:
+    return next(str(s["run"]) for s in _coverage_job()["steps"] if s.get("name") == MEASURING_STEP)
+
+
+def test_cargo_llvm_cov_falls_back_to_crates_io_and_coverage_stays_strict() -> None:
+    """D-1986: Ci's Coverage job failed on a cargo-llvm-cov release 504. Its tarball stays retried, SHA-256 checked
+    and extracted only after the check; on a failed download or check the same version comes from crates.io
+    (`cargo install --locked`, exact version) into `$RUNNER_TEMP/tools`, never the cached ~/.cargo/bin, and the
+    binary must report LLVM_COV_VERSION, which matches the URL. Nothing can mask both sources failing."""
+    env = _coverage_job()["env"]
+    assert str(env["LLVM_COV_VERSION"]) == "0.9.1" and f"/v{env['LLVM_COV_VERSION']}/" in env["LLVM_COV_URL"]
+    block = _measuring_step()
+    assert f'{RETRY}"$RUNNER_TEMP/llvm-cov.tgz" "$LLVM_COV_URL" \\\n' in block
+    assert '&& echo "${LLVM_COV_SHA256}  $RUNNER_TEMP/llvm-cov.tgz" | sha256sum -c - \\\n' in block
+    assert block.index("sha256sum -c -") < block.index('&& tar -xzf "$RUNNER_TEMP/llvm-cov.tgz"'), "checked, then extracted"
+    fallback = block.split("else\n", 1)[1]
+    assert 'cargo install --locked --root "$RUNNER_TEMP/tools" --version "=${LLVM_COV_VERSION}" cargo-llvm-cov' in fallback
+    assert 'reported="$("$RUNNER_TEMP/tools/bin/cargo-llvm-cov" llvm-cov --version)"' in block
+    assert '*" ${LLVM_COV_VERSION}")' in block
+    assert block.rstrip().endswith('echo "$RUNNER_TEMP/tools/bin" >> "$GITHUB_PATH"')
+    for banned in ("||", "--no-verify", "--offline", "--frozen", "--registry", "--git", "--path", "--index",
+                   "~/.cargo/bin/", "$HOME/.cargo"):
+        assert banned not in block, banned
+
+
+def _llvm_cov_stubs(bin_dir: Path, case: str) -> None:
+    """rustup, curl, sha256sum, tar and cargo stand-ins that log their calls; tar and `cargo install` leave a stub
+    cargo-llvm-cov printing `cargo-llvm-cov <FAKE_REPORTS or the version it was built at>`."""
+    fake = 'printf \'#!/bin/sh\\necho "cargo-llvm-cov ${FAKE_REPORTS:-%s}"\\n\' '
+    tools = {
+        "rustup": ":",
+        "curl": "exit 22" if case in ("curl", "both") else ":",
+        "sha256sum": "cat >/dev/null; exit 1" if case == "sha" else "cat >/dev/null",
+        "tar": f'{fake}0.9.1 > "$RUNNER_TEMP/tools/bin/cargo-llvm-cov"; chmod +x "$RUNNER_TEMP/tools/bin/cargo-llvm-cov"',
+        "cargo": ("exit 101; " if case == "both" else "")
+                 + f'{fake}"${{6#=}}" > "$4/bin/$7"; chmod +x "$4/bin/$7"',
+    }
+    for tool, body in tools.items():
+        (bin_dir / tool).write_text(f'#!/bin/sh\necho "{tool} $*" >> "$RUNNER_TEMP/calls"\n{body}\n')
+        (bin_dir / tool).chmod(0o755)
+
+
+@pytest.mark.parametrize(("case", "env", "source"), [
+    ("", {}, "release"), ("curl", {}, "crates.io"), ("sha", {}, "crates.io"), ("both", {}, None),
+    ("", {"FAKE_REPORTS": "0.9.10"}, None), ("curl", {"FAKE_REPORTS": "0.9.0"}, None)])
+def test_the_measuring_tool_install_runs_under_actions_bash_e(tmp_path: Path, case: str, env: dict[str, str],
+                                                              source: str | None) -> None:
+    """Coverage's measuring step under `bash -e`, as Actions runs it, with stub tools: a good release is used as is;
+    a failed download or SHA-256 check falls back to `cargo install` (never extracting that tarball); both sources
+    failing, or a tool reporting another version, fails the step."""
+    stubs = tmp_path / "bin"
+    stubs.mkdir()
+    _llvm_cov_stubs(stubs, case)
+    script = tmp_path / "step.sh"
+    script.write_text(_measuring_step())
+    job_env = _coverage_job()["env"]
+    run_env = {"PATH": f"{stubs}:/usr/bin:/bin", "RUNNER_TEMP": str(tmp_path), "GITHUB_PATH": str(tmp_path / "path"),
+               "NIGHTLY": str(job_env["NIGHTLY"]), "LLVM_COV_URL": "https://example.invalid/x.tgz",
+               "LLVM_COV_SHA256": "0" * 64, "LLVM_COV_VERSION": str(job_env["LLVM_COV_VERSION"]), **env}
+    done = subprocess.run(["bash", "-e", str(script)], cwd=tmp_path, env=run_env, capture_output=True, text=True,
+                          check=False)
+    calls = (tmp_path / "calls").read_text()
+    if source is None:
+        assert done.returncode != 0, done.stdout
+        assert not (tmp_path / "path").exists(), "nothing goes on the path"
+        return
+    assert done.returncode == 0, done.stdout + done.stderr
+    assert "cargo-llvm-cov reports version cargo-llvm-cov 0.9.1" in done.stdout
+    if source == "release":
+        assert "cargo-llvm-cov source: the 0.9.1 release tarball (SHA-256 verified)" in done.stdout
+    else:
+        assert "cargo-llvm-cov source: crates.io 0.9.1 (index checksum verified, built --locked)" in done.stdout
+        assert f"cargo install --locked --root {tmp_path}/tools --version =0.9.1 cargo-llvm-cov" in calls
+    assert ("cargo " in calls) == (source == "crates.io") and ("tar " in calls) == (source == "release")
+    assert (tmp_path / "path").read_text() == f"{tmp_path}/tools/bin\n"

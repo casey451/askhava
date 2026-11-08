@@ -327,6 +327,7 @@ jobs:
       # Branch mode needs a nightly. It is used to measure only, pinned by date; builds and tests use the
       # stable release in rust-toolchain.toml (D-453, D-694). Moving the date is a decision.
       NIGHTLY: nightly-2026-10-15
+      LLVM_COV_VERSION: 0.9.1
       LLVM_COV_URL: https://github.com/taiki-e/cargo-llvm-cov/releases/download/v0.9.1/cargo-llvm-cov-x86_64-unknown-linux-musl.tar.gz
       LLVM_COV_SHA256: 3fca950394a3c49457657c158b1619cec8dfd2647ae5b48746734c0ab969a522
     steps:
@@ -381,11 +382,32 @@ jobs:
       - name: Measuring toolchain and cargo-llvm-cov 0.9.1 (pinned nightly, pinned musl tarball)
         if: steps.changes.outputs.rust == 'true'
         run: |
+          # The pinned musl release tarball, retried, checked against LLVM_COV_SHA256 and extracted only once that
+          # check passes. When the download or the check fails (GitHub's release CDN gave minutes of 504s, D-1986),
+          # the same version from crates.io (the index checksum verifies the crate; --locked builds with its own
+          # Cargo.lock, on the pinned stable from rust-toolchain.toml) into the same bin, never ~/.cargo/bin, which
+          # rust-cache restores. Either way it must report LLVM_COV_VERSION; with neither source, the step fails.
+          # Actions runs this with `bash -e` (no pipefail).
           rustup toolchain install "$NIGHTLY" --profile minimal -c llvm-tools-preview
-          curl -sSfL --retry 5 --retry-all-errors --retry-delay 15 --connect-timeout 20 -o "$RUNNER_TEMP/llvm-cov.tgz" "$LLVM_COV_URL"
-          echo "${LLVM_COV_SHA256}  $RUNNER_TEMP/llvm-cov.tgz" | sha256sum -c -
           mkdir -p "$RUNNER_TEMP/tools/bin"
-          tar -xzf "$RUNNER_TEMP/llvm-cov.tgz" -C "$RUNNER_TEMP/tools/bin" cargo-llvm-cov
+          llvm_cov_release() {
+            rm -f "$RUNNER_TEMP/llvm-cov.tgz"
+            curl -sSfL --retry 5 --retry-all-errors --retry-delay 15 --connect-timeout 20 -o "$RUNNER_TEMP/llvm-cov.tgz" "$LLVM_COV_URL" \
+              && echo "${LLVM_COV_SHA256}  $RUNNER_TEMP/llvm-cov.tgz" | sha256sum -c - \
+              && tar -xzf "$RUNNER_TEMP/llvm-cov.tgz" -C "$RUNNER_TEMP/tools/bin" cargo-llvm-cov
+          }
+          if llvm_cov_release; then
+            echo "cargo-llvm-cov source: the ${LLVM_COV_VERSION} release tarball (SHA-256 verified)"
+          else
+            echo "::warning::cargo-llvm-cov release download or SHA-256 check failed; building ${LLVM_COV_VERSION} from crates.io (D-1986)"
+            cargo install --locked --root "$RUNNER_TEMP/tools" --version "=${LLVM_COV_VERSION}" cargo-llvm-cov
+            echo "cargo-llvm-cov source: crates.io ${LLVM_COV_VERSION} (index checksum verified, built --locked)"
+          fi
+          reported="$("$RUNNER_TEMP/tools/bin/cargo-llvm-cov" llvm-cov --version)"
+          case "$reported" in
+            *" ${LLVM_COV_VERSION}") echo "cargo-llvm-cov reports version ${reported}" ;;
+            *) echo "::error::cargo-llvm-cov reports '${reported}', not ${LLVM_COV_VERSION}"; exit 1 ;;
+          esac
           echo "$RUNNER_TEMP/tools/bin" >> "$GITHUB_PATH"
 
       - name: Branch coverage (cargo llvm-cov on the pinned nightly)
