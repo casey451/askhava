@@ -1,23 +1,23 @@
 # Ask Hava build status
 
-Updated 2026-11-08T21:06:43Z by runner 195ecd29697f (actions).
+Updated 2026-11-08T21:23:06Z by runner ed86bb479716 (actions).
 
-**Idle since 20:51Z; 158 of 283 done; week 56% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 21:10Z; 159 of 283 done; week 56% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 158 of 283 build tasks (owner gates not counted)
+- **Tasks done:** 159 of 283 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 20:51Z (no task in progress)
+- **Lane:** idle since 21:10Z (no task in progress)
 - **Week:** 56% used, 86.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:06Z, 0 min before this update
+- **Last run:** 21:06Z, 16 min before this update
 - **Keeper:** last ran 21:06Z, next wake 21:26Z
 
 ## Needs attention
-- Strict plan check red: 24 problem(s) on tasks still to run (+20 on DONE tasks); first: T255: stored context_pct 25% but it measures 32%; regenerate
+- Strict plan check red: 24 problem(s) on tasks still to run (+21 on DONE tasks); first: T255: stored context_pct 25% but it measures 32%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T098 | Journey J1 (homeowner) and its variants, keyboard-only, with | MERGE_PENDING | 1 | 50 min | 20:51Z |  |
+| T098 | Journey J1 (homeowner) and its variants, keyboard-only, with | done | 1 | 50 min | 20:51Z |  |
 | T254 | server and picks: the production release (paid or free, mint | done | 1 | 84 min | 19:24Z |  |
 | T150 | picks and quotes: EMERGENCY card and pick emails with the em | done | 1 | 54 min | 16:04Z |  |
 | T198 | messaging and portals: daily open-cards email, missed-card a | done | 1 | 71 min | 14:02Z |  |
@@ -43,12 +43,12 @@ Updated 2026-11-08T21:06:43Z by runner 195ecd29697f (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 273 of 732 (37.3%) · partial 257 · unstarted 202
-**Tasks merged (throughput only):** 158 of 283
+**Requirements verified:** 273 of 732 (37.3%) · partial 259 · unstarted 200
+**Tasks merged (throughput only):** 159 of 283
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 13 | 13 | 9 | 35 |
+| accessibility | 13 | 15 | 7 | 35 |
 | ai | 12 | 12 | 5 | 29 |
 | businesses | 25 | 23 | 10 | 58 |
 | calls | 12 | 12 | 1 | 25 |
@@ -79,7 +79,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 38 of 98 done
+- stage 4: 39 of 98 done
 - stage 5: 0 of 42 done
 - stage 6: 0 of 27 done
 - stage 7: 0 of 2 done
