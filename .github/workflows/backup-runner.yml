@@ -210,6 +210,8 @@ jobs:
       # The same pinned gitleaks as ci.yml, so scripts/smoke.sh runs Ci's secret scan here (D-582).
       GITLEAKS_VERSION: "8.28.0"
       GITLEAKS_SHA256: "a65b5253807a68ac0cafa4414031fd740aeb55f54fb7e55f386acb52e6a840eb"
+      # The module hash sum.golang.org records for that version, for the Go proxy fallback (D-1986).
+      GITLEAKS_MOD_H1: "h1:XXeibrt4XbdrYm3FnzXR3uUPs9HbgGduroICjBl6PMw="
       # ci.yml's Coverage pins, for the gate's per-crate coverage (D-1440).
       NIGHTLY: nightly-2026-10-15
       LLVM_COV_URL: https://github.com/taiki-e/cargo-llvm-cov/releases/download/v0.9.1/cargo-llvm-cov-x86_64-unknown-linux-musl.tar.gz
@@ -285,20 +287,56 @@ jobs:
               || psql "$DATABASE_URL" -qc "CREATE ROLE ${role} NOLOGIN"
             psql "$DATABASE_URL" -qc "GRANT ${role} TO askhava_ci" >/dev/null
           done
-          curl -sSfL -o "$RUNNER_TEMP/gitleaks.tgz" \
-            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
-          echo "${GITLEAKS_SHA256}  $RUNNER_TEMP/gitleaks.tgz" | sha256sum -c -
+          # gitleaks stays required (D-1986): the pinned release tarball, retried and checked against GITLEAKS_SHA256,
+          # extracted only once that check passes; when the download or the check fails (GitHub's release CDN gave
+          # hours of 504s), the same version built from the Go module proxy, its go.sum lines checked by the Go
+          # checksum database and the module's own hash by GITLEAKS_MOD_H1. Either way the binary must report the
+          # pinned version; with neither, the step fails. Actions runs this with `bash -e` (no pipefail).
           mkdir -p "$RUNNER_TEMP/gitleaks"
-          tar -xzf "$RUNNER_TEMP/gitleaks.tgz" -C "$RUNNER_TEMP/gitleaks"
+          gitleaks_release() {
+            rm -f "$RUNNER_TEMP/gitleaks.tgz"
+            curl -sSfL --retry 5 --retry-all-errors --retry-delay 15 --connect-timeout 20 -o "$RUNNER_TEMP/gitleaks.tgz" \
+              "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
+              && echo "${GITLEAKS_SHA256}  $RUNNER_TEMP/gitleaks.tgz" | sha256sum -c - \
+              && tar -xzf "$RUNNER_TEMP/gitleaks.tgz" -C "$RUNNER_TEMP/gitleaks"
+          }
+          if gitleaks_release; then
+            echo "gitleaks source: the v${GITLEAKS_VERSION} release tarball (SHA-256 verified)"
+          else
+            echo "::warning::gitleaks release download or SHA-256 check failed; building v${GITLEAKS_VERSION} from proxy.golang.org (D-1986)"
+            GOBIN="$RUNNER_TEMP/gitleaks" GOFLAGS=-mod=readonly GOTOOLCHAIN=local \
+              GOPROXY=https://proxy.golang.org GOSUMDB=sum.golang.org \
+              go install -ldflags "-X=github.com/zricethezav/gitleaks/v8/cmd.Version=${GITLEAKS_VERSION}" \
+              "github.com/zricethezav/gitleaks/v8@v${GITLEAKS_VERSION}"
+            built="$(go version -m "$RUNNER_TEMP/gitleaks/gitleaks" | awk '$1 == "mod" {print $2 "@" $3 " " $4}')"
+            if [ "$built" != "github.com/zricethezav/gitleaks/v8@v${GITLEAKS_VERSION} ${GITLEAKS_MOD_H1}" ]; then
+              echo "::error::the Go build is '${built}', not github.com/zricethezav/gitleaks/v8@v${GITLEAKS_VERSION} ${GITLEAKS_MOD_H1}"
+              exit 1
+            fi
+            echo "gitleaks source: ${built} built from proxy.golang.org (checked by sum.golang.org and GITLEAKS_MOD_H1)"
+          fi
+          reported="$("$RUNNER_TEMP/gitleaks/gitleaks" version)"
+          case "$reported" in
+            *"${GITLEAKS_VERSION}"*) echo "gitleaks reports version ${reported}" ;;
+            *) echo "::error::gitleaks reports '${reported}', not ${GITLEAKS_VERSION}"; exit 1 ;;
+          esac
           echo "$RUNNER_TEMP/gitleaks" >> "$GITHUB_PATH"
           # Ci's measuring toolchain, so the worker's scripts/prehandin.sh measures the floored crates its
           # change touches as Ci's Coverage job does (D-1440); the same pins as ci.yml (tests/test_prehandin.py).
+          # Best effort (D-1986): without them the gate's coverage says "skipped" (scripts/prehandin.sh
+          # `coverage`) and Ci's Coverage job, which stays strict, measures it; gitleaks above stays required.
           if [ -f tests/coverage_floor.json ]; then
-            rustup toolchain install "$NIGHTLY" --profile minimal -c llvm-tools-preview
-            curl -sSfL -o "$RUNNER_TEMP/llvm-cov.tgz" "$LLVM_COV_URL"
-            echo "${LLVM_COV_SHA256}  $RUNNER_TEMP/llvm-cov.tgz" | sha256sum -c -
-            mkdir -p "$RUNNER_TEMP/llvm-cov"
-            tar -xzf "$RUNNER_TEMP/llvm-cov.tgz" -C "$RUNNER_TEMP/llvm-cov" cargo-llvm-cov
+            covwhy=""
+            rustup toolchain install "$NIGHTLY" --profile minimal -c llvm-tools-preview || covwhy="the ${NIGHTLY} toolchain did not install"
+            [ -n "$covwhy" ] || curl -sSfL --retry 5 --retry-all-errors --retry-delay 15 --connect-timeout 20 -o "$RUNNER_TEMP/llvm-cov.tgz" "$LLVM_COV_URL" \
+              || covwhy="the download failed after retries"
+            [ -n "$covwhy" ] || echo "${LLVM_COV_SHA256}  $RUNNER_TEMP/llvm-cov.tgz" | sha256sum -c - || covwhy="the SHA-256 check failed"
+            [ -n "$covwhy" ] || { mkdir -p "$RUNNER_TEMP/llvm-cov" \
+              && tar -xzf "$RUNNER_TEMP/llvm-cov.tgz" -C "$RUNNER_TEMP/llvm-cov" cargo-llvm-cov; } || covwhy="the extract failed"
+          fi
+          if [ -f tests/coverage_floor.json ] && [ -n "$covwhy" ]; then
+            echo "cargo-llvm-cov not installed: ${covwhy}; prehandin coverage will report skipped (D-1986)"
+          elif [ -f tests/coverage_floor.json ]; then
             echo "$RUNNER_TEMP/llvm-cov" >> "$GITHUB_PATH"
             # Its instrumented build (about 6 GB for the workspace) stays out of `target`, which the Rust build
             # cache saves, so the cache does not double. It goes on /mnt (a separate disk on GitHub's runners)
