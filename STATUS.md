@@ -1,18 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-08T14:50:51Z by runner 030777a33a7e (actions).
+Updated 2026-11-08T15:17:32Z by runner fb13c6faf315 (actions).
 
-**Idle since 14:21Z; 156 of 282 done; week 52% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T150 in progress since 15:09Z; 156 of 282 done; week 52% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 156 of 282 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 14:21Z (no task in progress)
-- **Week:** 52% used, 92.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:50Z, 0 min before this update
+- **Lane:** lane 1: T150 claimed 15:09Z, lease until 18:09Z
+- **Week:** 52% used, 90.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Last run:** 14:50Z, 26 min before this update
 - **Keeper:** last ran 14:50Z, next wake 15:10Z
 
 ## Needs attention
-- Strict plan check red: 19 problem(s) on tasks still to run (+16 on DONE tasks); first: T255: stored context_pct 25% but it measures 30%; regenerate
+- Strict plan check red: 20 problem(s) on tasks still to run (+17 on DONE tasks); first: T255: stored context_pct 25% but it measures 30%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -35,6 +35,7 @@ Updated 2026-11-08T14:50:51Z by runner 030777a33a7e (actions).
 | T196 | businesses: verified notice email, sender rules and the addr | check_failed | 1 | 49 min | 15:54Z |  |
 
 ### Plan and harness merges on main
+- 15:06Z Harness: warm the smoke build before the session (D-2007) (#356)
 - 10:55Z Harness: retry release downloads; backup job's coverage tools best-effort (D-1986) (#352)
 - 07:39Z harness: chain the next cycle at once after the first smoke timeout on a head (D-1970) (#349)
 - 01:33Z Plan: brand as configuration (T291–T295, D-1932–D-1933) (#342)
@@ -74,7 +75,7 @@ Updated 2026-11-08T14:50:51Z by runner 030777a33a7e (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-08T12:45:49Z (week)): five-hour: 6.8M used, 22.3M left, resets 2026-11-08T13:17:02Z; week: 102.0M used, 92.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-11-25T14:13:53Z.
+- Pacing (session_reading 2026-11-08T14:50:37Z (week)): five-hour: 4.0M used, 25.1M left, resets 2026-11-08T19:02:56Z; week: 104.0M used, 90.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-11-25T22:09:11Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -89,7 +90,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T150 (lease until 2026-11-08T18:09:35Z)
 
 ## Last usage reading
 - {"task": "T198", "at": "2026-11-08T14:02:56Z", "input_tokens": 527, "cache_read_input_tokens": 31576171, "output_tokens": 177534, "cache_creation_input_tokens": 677277}
