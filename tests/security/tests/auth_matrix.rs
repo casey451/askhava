@@ -10,8 +10,8 @@
 //! homeowners A and B, businesses X and Y, the owner) try every route: a link route (`/q`, `/f`)
 //! over HTTP through the portals routers merged as `server::build_router` merges them, a webhook
 //! through the adapter's signature check, a homeowner or business route through the realm guard
-//! its handler must call first (`homeowner_proof`, `business_principal` with `may`), since those
-//! routes are not served yet. Sign-in routes are open to everyone by design; their rules are
+//! its handler must call first (the homeowner realm, the only one `homeowner_proof` mints for;
+//! `business_principal` with `may`), since those routes are not served yet. Sign-in routes are open to everyone by design; their rules are
 //! `business_signin.rs`', `owner_auth.rs`' and `homeowner_portal::tests`'; only the owner has
 //! pause, refund and release (`owner_auth.rs`). Every refusal of a served route is one
 //! `csrf_rejected` security event with the route template, request ID and the actor's session ID.
@@ -19,7 +19,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::path::{Path, PathBuf};
-use std::sync::{Arc, OnceLock};
+use std::sync::Arc;
 
 use askhava_adapters::api::{Delivery, TwilioVerify, WebhookVendor, verify_webhook};
 use askhava_businesses::api::{add_owner, create as create_business};
@@ -31,7 +31,6 @@ use askhava_portals::api::{
     CookieJar, Need, Realm, business_principal, channel_choices, csrf_token, current_session,
     ensure_pre_session, feedback_routes, pick_flow_routes, quote_page_routes, start_session,
 };
-use askhava_privacy::api::{SessionMint, session_mint};
 use axum::Router;
 use axum::body::{Body, to_bytes};
 use axum::http::{Request, header};
@@ -259,11 +258,6 @@ fn now() -> Timestamp {
     "2026-11-02T18:00:00Z".parse().expect("time")
 }
 
-fn mint() -> &'static SessionMint {
-    static MINT: OnceLock<SessionMint> = OnceLock::new();
-    MINT.get_or_init(session_mint)
-}
-
 /// A job walked to Done an hour ago, with its link token and number.
 async fn done_job(db: &mut PgConnection) -> (String, i64) {
     let at = |m: i64| now() - SignedDuration::from_mins(60 - m);
@@ -487,12 +481,12 @@ async fn probe_realm(pool: &PgPool, w: &World, door: Door, who: &Who) {
         .expect("read");
     let case = format!("{door:?} as {:?}", who.actor);
     assert_eq!(session.as_ref().map(|s| s.id()), who.session, "{case}");
-    let proof = session.and_then(|s| s.homeowner_proof(mint()));
+    let homeowner = session.is_some_and(|s| s.realm() == Realm::Homeowner);
     let principal = business_principal(&mut db, &who.jar, now())
         .await
         .expect("read");
     let passed = if door == Door::Homeowner {
-        proof.is_some()
+        homeowner
     } else {
         principal.is_some()
     };
