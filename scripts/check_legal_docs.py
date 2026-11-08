@@ -7,10 +7,17 @@ Fails (exit 1) unless:
 - no document uses banned wording: the WORD-022/WORD-023 list from
   scripts/trace_spec.py, "vetted", "best", "#1", "top-rated", "lead(s)",
   "exclusive", "pre-vetted", "concierge", pest control, a personal name or
-  "Hava" alone (WORD-021); spec phrases quoted to ban them are allowed;
+  a forbidden_alone word of the brand outside its display name ("Hava" alone, WORD-021);
+  spec phrases quoted to ban them are allowed;
 - business documents never frame the fee as a license or data access (TERMS-027);
 - homeowner documents never ask for a reply of OK or YES to agree (D-419);
 - any arbitration text sits under a heading marked OPTIONAL and OFF.
+
+Every phrase that names the brand is a template over scripts/brand.py's tokens ({brand},
+{brand_legal}, {domain}): the document must hold it filled from app/core/data/brand.json, the spec
+(which keeps the name) filled from SPEC_TOKENS (D-1932, D-1940). The drafts stay plain text naming
+the brand (versioned legal records, TERMS-016), so after a brand change this check fails until
+they are re-issued under the new name.
 
 Usage: python3 scripts/check_legal_docs.py [--root REPO_ROOT]
 """
@@ -22,9 +29,11 @@ import re
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+import brand  # sibling script: the brand file app/core/data/brand.json (D-1932)
 import trace_spec  # sibling script, imported after its folder is on the path
 
 DOCS_DIR = Path("docs/legal")
@@ -45,21 +54,29 @@ DOCUMENTS = (
     "incident-response-plan.md",
 )
 BUSINESS_DOCUMENTS = frozenset({"business-terms.md", "business-email-notices.md"})
+# The names the spec's own wording uses; the spec keeps them whatever the brand file says (D-1940).
+SPEC_TOKENS = {
+    "brand": "Ask Hava",
+    "brand_business": "Ask Hava for Business",
+    "brand_short": "Ask Hava",
+    "brand_legal": "Ask Hava LLC",
+    "domain": "askhava.com",
+}
 
 HONEST = (
     "WORD-023",
-    "a quote-request service; the business the homeowner chooses pays Ask Hava a set "
+    "a quote-request service; the business the homeowner chooses pays {brand} a set "
     "introduction fee",
 )
 LONG_STATEMENT = (
     "WORD-002",
-    "Ask Hava is not a contractor and does not perform, bid on or supervise work. We pass "
+    "{brand} is not a contractor and does not perform, bid on or supervise work. We pass "
     "along your request and show you quotes from independent local businesses, as they wrote "
     "them. You choose, and you hire the business directly.",
 )
 NO_PHONE = (
     "TERMS-025",
-    "Ask Hava never gives your phone number to any business, and never sells or shares phone "
+    "{brand} never gives your phone number to any business, and never sells or shares phone "
     "numbers or texting permission for marketing.",
 )
 TWILIO_LINE = (
@@ -67,13 +84,13 @@ TWILIO_LINE = (
     "No mobile information will be shared with third parties or affiliates for marketing or "
     "promotional purposes.",
 )
-NO_EMERGENCY_RELIANCE = ("WEB-022", "Don't rely on Ask Hava in an emergency: call 911.")
+NO_EMERGENCY_RELIANCE = ("WEB-022", "Don't rely on {brand} in an emergency: call 911.")
 USUALLY = (
     "CON-018",
-    "The Ask Hava owner gets HELP messages right away and usually replies within 2 days, or "
+    "The {brand} owner gets HELP messages right away and usually replies within 2 days, or "
     "within 24 hours if your job is urgent.",
 )
-NO_CALLS = ("CON-019", "Ask Hava never places recorded or automated calls to you.")
+NO_CALLS = ("CON-019", "{brand} never places recorded or automated calls to you.")
 SEVERABILITY = ("TERMS-035", "If any part of these terms can't be enforced, the rest still applies.")  # (D-492)
 
 REQUIRED: dict[str, tuple[tuple[str, str], ...]] = {
@@ -82,28 +99,28 @@ REQUIRED: dict[str, tuple[tuple[str, str], ...]] = {
         LONG_STATEMENT,
         (
             "TERMS-004",
-            "You and the business make your own agreement; Ask Hava is not part of it and "
+            "You and the business make your own agreement; {brand} is not part of it and "
             "doesn't guarantee the work.",
         ),
         (
             "TERMS-004",
-            "To the extent the law allows, Ask Hava's total liability to you for any claim about "
+            "To the extent the law allows, {brand}'s total liability to you for any claim about "
             "the service is limited to $100. This limit does not apply to gross negligence, "
             "intentional misconduct, or anything the law does not allow us to limit.",
         ),
         (
             "WEB-026",
-            "The business you choose pays Ask Hava a set introduction fee ($25, $75 or $199, by "
-            "quote size). You pay Ask Hava nothing.",
+            "The business you choose pays {brand} a set introduction fee ($25, $75 or $199, by "
+            "quote size). You pay {brand} nothing.",
         ),
         ("PICK-016", "By picking, you agree to the Terms"),
         ("TERMS-004", "Limit of liability"),
         ("TERMS-001", "A.R.S. 44-7007"),
-        ("TERMS-003", "Ask Hava is not an emergency service"),
+        ("TERMS-003", "{brand} is not an emergency service"),
         NO_EMERGENCY_RELIANCE,
         (
             "WORD-018",
-            "Ask Hava never gives your number to any business. If a business asks for it on the "
+            "{brand} never gives your number to any business. If a business asks for it on the "
             "call, that's your choice.",
         ),
         ("LIC-026", "showed Active on the ROC website when we checked on <date>. Check it yourself."),
@@ -114,26 +131,26 @@ REQUIRED: dict[str, tuple[tuple[str, str], ...]] = {
         HONEST,
         (
             "WORD-002",
-            "Ask Hava is not a contractor. It passes along this request and the homeowner's "
-            "choice. If the homeowner picks you, they hire you directly; Ask Hava doesn't direct, "
+            "{brand} is not a contractor. It passes along this request and the homeowner's "
+            "choice. If the homeowner picks you, they hire you directly; {brand} doesn't direct, "
             "schedule, supervise or pay for the work.",
         ),
         (
             "TERMS-026",
-            "Businesses on Ask Hava are independent. Ask Hava never directs, controls, schedules, "
+            "Businesses on {brand} are independent. {brand} never directs, controls, schedules, "
             "supervises, inspects, warrants or pays for your work, never sets or changes your "
             "prices, and never negotiates for you or the homeowner. There is no subcontract, "
-            "employment, agency, partnership or joint venture between you and Ask Hava. You and "
-            "the homeowner make your own agreement, and Ask Hava is not part of it. The "
+            "employment, agency, partnership or joint venture between you and {brand}. You and "
+            "the homeowner make your own agreement, and {brand} is not part of it. The "
             "introduction fee pays only for the introduction service: a fixed amount by job size "
             "($25, $75 or $199), never a percentage or share of the job's price, and it doesn't "
             "depend on whether the work is done, finished or paid for. The refunds are the ones "
-            "these terms list, and Ask Hava may also refund any charge at its own choice. No "
+            "these terms list, and {brand} may also refund any charge at its own choice. No "
             "refund is owed because the work wasn't done or paid for.",
         ),
         (
             "TERMS-024",
-            "As part of the introduction, Ask Hava gives you the homeowner's first name and the "
+            "As part of the introduction, {brand} gives you the homeowner's first name and the "
             "job address so you can contact them about this job. Use them only for this job and "
             "follow-up about it. No marketing lists, no resale.",
         ),
@@ -145,7 +162,7 @@ REQUIRED: dict[str, tuple[tuple[str, str], ...]] = {
         ),
         (
             "FEE-015",
-            "I authorize Ask Hava LLC to save this card with Stripe for introduction fees. I'm "
+            "I authorize {brand_legal} to save this card with Stripe for introduction fees. I'm "
             "charged only when I press Confirm and pay for a homeowner's choice of my quote, or "
             "when a homeowner picks a quote I set to auto-confirm, and the fee is shown before I "
             "press it or set it: $25, $75 or $199 by job size, ongoing services "
@@ -164,21 +181,21 @@ REQUIRED: dict[str, tuple[tuple[str, str], ...]] = {
         ),
         NO_CALLS,
         SEVERABILITY,  # (D-492)
-        ("TERMS-036", "Ask Hava doesn't promise any number of job cards, quotes, picks or jobs."),  # (D-492)
+        ("TERMS-036", "{brand} doesn't promise any number of job cards, quotes, picks or jobs."),  # (D-492)
     ),
     "privacy-policy.md": (
         HONEST,
         LONG_STATEMENT,
         (
             "TERMS-025",
-            "When you send a request, Ask Hava sends a description of the job, with your name, "
+            "When you send a request, {brand} sends a description of the job, with your name, "
             "phone number, email and street address removed, to local businesses that do that kind "
             "of work. If you send photos, those businesses also see them, with location data "
             "removed; we ask you to send only photos that show no person or house number, and once "
             "our AI photo screening is on, any faces, house numbers, license plates or readable text "
             "are blurred as well. Only "
             "after you pick a business, and it confirms (and pays its introduction fee, when one "
-            "is due), does Ask Hava give that one business your first name and the job address, "
+            "is due), does {brand} give that one business your first name and the job address, "
             "plus your email if you chose to share it and your photos at full size, with location "
             "data removed.",
         ),
@@ -221,25 +238,25 @@ REQUIRED: dict[str, tuple[tuple[str, str], ...]] = {
         HONEST,
         (
             "CON-005",
-            "Texting Ask Hava, or giving us your mobile number in the chat on askhava.com and "
+            "Texting {brand}, or giving us your mobile number in the chat on {domain} and "
             "typing the code we send to it, is your OK to get automated texts about your own "
             "request.",
         ),
         ("PICK-016", "By picking, you agree to the Terms"),
-        ("CON-003", "Free for you; the business you choose pays Ask Hava a set fee of $25 to $199, by quote size."),
+        ("CON-003", "Free for you; the business you choose pays {brand} a set fee of $25 to $199, by quote size."),
         (
             "CON-031",
-            "Ask Hava: Got it. Next, a few quick questions. Ask Hava is not a contractor; you "
+            "{brand}: Got it. Next, a few quick questions. {brand} is not a contractor; you "
             "hire the business you pick directly.",
         ),
         (
             "CON-009",
-            "Ask Hava: You're unsubscribed. You won't get more texts or automated calls from Ask "
-            "Hava at this number. To use Ask Hava again, text START.",
+            "{brand}: You're unsubscribed. You won't get more texts or automated calls from {brand} "
+            "at this number. To use {brand} again, text START.",
         ),
         (
             "CON-030",
-            "Ask Hava: You can text us again. Send your request to start. Msg & data rates may "
+            "{brand}: You can text us again. Send your request to start. Msg & data rates may "
             "apply. Reply HELP for help, STOP to opt out.",
         ),
         ("CON-018", "This number is text-only. If anyone is in danger, call 911."),
@@ -256,21 +273,21 @@ REQUIRED: dict[str, tuple[tuple[str, str], ...]] = {
         ("WEB-024", "Job requests and picks come by email. We don't text or call businesses."),
         (
             "SEC-028",
-            "You get these emails because your business signed up for job requests from Ask Hava.",
+            "You get these emails because your business signed up for job requests from {brand}.",
         ),
         (
             "CON-020",
-            "Ask Hava emails come only from addresses ending in askhava.com, never ask for your "
-            "card or a code, and every button goes to askhava.com.",
+            "{brand} emails come only from addresses ending in {domain}, never ask for your "
+            "card or a code, and every button goes to {domain}.",
         ),
-        ("BIZ-048", "Ask Hava never texts or calls a business to recruit it."),
+        ("BIZ-048", "{brand} never texts or calls a business to recruit it."),
         (
             "BIZ-042",
             "Skip this and you may miss picks. A pick you don't confirm in 4 business hours may "
             "go to another business.",
         ),
         ("BIZ-045", "Delivered means your mail server accepted it; it may still be in Spam."),
-        ("BIZ-048", "says in its first line that it is an advertisement for Ask Hava"),  # (D-492)
+        ("BIZ-048", "says in its first line that it is an advertisement for {brand}"),  # (D-492)
     ),
     "accessibility-statement.md": (
         ("A11Y-020", "If you use a relay service, you can reach us by text or email."),
@@ -296,7 +313,6 @@ BANNED: tuple[tuple[re.Pattern[str], str], ...] = (
     (re.compile(r"\bconcierge\b", re.IGNORECASE), "banned word"),
     (re.compile(r"\bpests?\b", re.IGNORECASE), "pest control is never advertised (WEB-010)"),
     (re.compile(r"\bCasey\b"), "personal name (WORD-021)"),
-    (re.compile(r"(?<!Ask )\bHava\b"), "'Hava' alone (WORD-021)"),
 )
 BUSINESS_BANNED: tuple[tuple[re.Pattern[str], str], ...] = tuple(
     (re.compile(p, re.IGNORECASE), "fee framed as a license or data access (TERMS-027)")
@@ -350,17 +366,43 @@ def check_header(name: str, lines: list[str]) -> list[str]:
     return errors
 
 
-def check_phrases(name: str, body: str, specs: dict[str, str]) -> tuple[list[str], str]:
+def alone_patterns(data: dict[str, Any]) -> tuple[tuple[re.Pattern[str], str], ...]:
+    """WORD-021: each forbidden_alone word, allowed only inside the display name ("Ask Hava").
+
+    A use is inside the display name when the display name's text before the word precedes it
+    and the text after the word follows it; the word may start or end the display name ("Hava
+    Home"). A word that is the whole display name is never alone, so it gets no pattern.
+    """
+    display = str(data["display_name"])
+    patterns = []
+    for word in map(str, data["forbidden_alone"]):
+        bare = rf"\b{re.escape(word)}\b"
+        at = display.find(word)
+        before, after = (display[:at], display[at + len(word) :]) if at >= 0 else ("", "")
+        alternatives = [rf"(?<!{re.escape(before)}){bare}"] if before else []
+        alternatives += [rf"{bare}(?!{re.escape(after)})"] if after else []
+        if at < 0:
+            alternatives = [bare]
+        if alternatives:
+            patterns.append((re.compile("|".join(alternatives)), f"'{word}' alone (WORD-021)"))
+    return tuple(patterns)
+
+
+def check_phrases(
+    name: str, body: str, specs: dict[str, str], data: dict[str, Any]
+) -> tuple[list[str], str]:
     """Each required phrase is in its spec requirement and in the document.
 
-    Returns the errors and the document text with the verified phrases removed, so the
-    banned-word scan doesn't fail on the spec's own quoted wording (D-360).
+    The phrase's brand tokens are filled from SPEC_TOKENS for the spec and from the brand file
+    for the document (D-1932). Returns the errors and the document text with the verified phrases
+    removed, so the banned-word scan doesn't fail on the spec's own quoted wording (D-360).
     """
     errors: list[str] = []
     rest = body
-    for req_id, phrase in REQUIRED.get(name, ()):
+    for req_id, template in REQUIRED.get(name, ()):
+        phrase = brand.fill(template, data=data)
         want = normalize(phrase)
-        if want not in specs.get(req_id, ""):
+        if normalize(brand.fill_tokens(template, SPEC_TOKENS)) not in specs.get(req_id, ""):
             errors.append(f"{name}: phrase not in {req_id}'s spec text: {phrase[:60]!r}")
         if want not in body:
             errors.append(f"{name}: missing {req_id} wording: {phrase[:60]!r}")
@@ -368,9 +410,10 @@ def check_phrases(name: str, body: str, specs: dict[str, str]) -> tuple[list[str
     return errors, rest
 
 
-def check_banned(name: str, text: str) -> list[str]:
+def check_banned(name: str, text: str, alone: tuple[tuple[re.Pattern[str], str], ...] = ()) -> list[str]:
     patterns = (
         BANNED
+        + alone
         + (BUSINESS_BANNED if name in BUSINESS_DOCUMENTS else ())
         + (HOMEOWNER_BANNED if name in HOMEOWNER_DOCUMENTS else ())
     )
@@ -394,10 +437,13 @@ def check_arbitration(name: str, lines: list[str]) -> list[str]:
     return []
 
 
-def run(root: Path) -> Report:
+def run(root: Path, brand_file: Path = brand.BRAND_FILE) -> Report:
+    """Checks every draft under root against the spec and the brand file (D-1932)."""
     report = Report()
     docs = root / DOCS_DIR
     specs = spec_texts(root)
+    data = brand.load(brand_file)
+    alone = alone_patterns(data)
     for name in DOCUMENTS:
         path = docs / name
         if not path.is_file():
@@ -406,9 +452,9 @@ def run(root: Path) -> Report:
         lines = path.read_text(encoding="utf-8").splitlines()
         body = normalize("\n".join(lines))
         report.errors += check_header(name, lines)
-        phrase_errors, rest = check_phrases(name, body, specs)
+        phrase_errors, rest = check_phrases(name, body, specs, data)
         report.errors += phrase_errors
-        report.errors += check_banned(name, rest)
+        report.errors += check_banned(name, rest, alone)
         report.errors += check_arbitration(name, lines)
         report.checked += 1
     extra = sorted(p.name for p in docs.glob("*.md") if p.name not in DOCUMENTS)
