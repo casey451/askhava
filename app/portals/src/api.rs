@@ -86,6 +86,7 @@ pub use crate::limits::{
     admit_code_try, admit_owner_password, admit_quote, admit_sign_in_link, admit_sign_up,
     verify_all,
 };
+pub use crate::notice_log::{NoticeLogPage, notice_log_page};
 pub use crate::notice_settings::{
     ChannelChangeError, ChannelFacts, NOTICE_SETTINGS_ROUTE, NoticeAddress, change_channel,
     channel_choices, notice_settings_page,

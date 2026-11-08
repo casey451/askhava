@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE messaging.notice_log SET sent_at = $2 WHERE id = $1 AND sent_at IS NULL",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "b4c829586a9d98e23620165f05989a45cc5d1efbe647e29b5e25fc39383f1d2f"
+}

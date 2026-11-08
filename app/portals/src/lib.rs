@@ -45,6 +45,7 @@ mod homeowner_portal;
 mod job_release;
 mod limits;
 mod models;
+mod notice_log;
 mod notice_settings;
 mod owner_auth;
 mod pick_flow;
