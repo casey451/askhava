@@ -19,6 +19,8 @@
 //! T240 added the sender of `jobs`' homeowner job texts (JOB-010 to JOB-012, TXT-042, `job_texts`).
 //! T241 added the dispatcher of a reply inside an open request: LIST, then `hear` and
 //! `receive_text` (`replies`, D-999).
+//! T089 added the rate limits on new requests and the shared limit check (`limits`, SEC-014,
+//! SEC-015, SEC-040).
 //! Other crates reach it only through [`api`].
 
 pub mod api;
@@ -29,6 +31,7 @@ mod emergency_count;
 mod golden_run;
 mod handlers;
 mod job_texts;
+mod limits;
 mod matching;
 mod models;
 mod purge;

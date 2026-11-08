@@ -21,6 +21,8 @@
 //! T087 built the homeowner portal: sign-in by phone and texted code, her own record through her
 //! session proof, the texts-off switch and "Download my data" with the code-checked delete or copy
 //! request (`homeowner_portal`, `data_download`, SEC-008, PRIV-012, PRIV-021, PRIV-031).
+//! T089 added the rate limits on sign-in links, code sends and tries, owner password tries,
+//! sign-ups and quotes (`limits`, SEC-014, SEC-020, SEC-040, PICK-055).
 //! Portal pages extend the shared layout `app/site/templates/base.html` through `askama.toml`.
 //! Other crates reach it only through [`api`].
 
@@ -33,6 +35,7 @@ mod data_download;
 mod feedback;
 mod homeowner_portal;
 mod job_release;
+mod limits;
 mod models;
 mod notice_settings;
 mod owner_auth;
