@@ -51,6 +51,7 @@ import random
 import re
 import shlex
 import shutil
+import signal
 import subprocess
 import tempfile
 import time
@@ -78,6 +79,16 @@ SMOKE_TARGET = "smoke"  # the smoke's own CARGO_TARGET_DIR, a folder of the cach
 SMOKE_TREE = "askhava-smoke"  # the smoke worktree's fixed folder under RUNNER_TEMP, the same every run (D-1890)
 SMOKE_MTIMES = "smoke-mtimes.json"  # in the smoke's target dir: each tracked file's blob and the mtime it gets (D-1890)
 SMOKE_RAN = "smoke-ran"  # beside the smoke's target dir: this job ran the smoke, so backup-runner.yml saves its cache (D-1911)
+WARM_TIMEOUT = 1200  # seconds for `--warm-smoke`, a workflow step before the session with no 600-second Bash call (D-2007)
+# The Rust compile steps of scripts/smoke.sh word for word, `cargo test` with `--no-run`: the same flags and
+# environment build the same artifacts, so the session's smoke finds them fresh (D-2007; the keeper tests hold
+# each one to smoke.sh's text). `cargo sqlx prepare --check` is left out: it forces its own rebuild every run.
+WARM_COMMANDS = (
+    ("cargo", "clippy", "--workspace", "--all-targets", "--locked", "--", "-D", "warnings", "-F", "clippy::allow_attributes_without_reason"),
+    ("cargo", "build", "-p", "askhava-server", "--locked"),
+    ("cargo", "test", "--workspace", "--locked", "--no-run"),
+)
+TOOLCHAIN = re.compile(r'^channel *= *"(.*)"', re.MULTILINE)  # smoke.sh's `sed` over rust-toolchain.toml
 PREHANDIN = "scripts/prehandin.sh"  # the pre-hand-in gate; main's copy runs on a submitted head at --after (D-1300)
 PREHANDIN_TIMEOUT = 240  # seconds for its --quick part (about 20 s measured), well inside --after's 600-second Bash call
 PREHANDIN_RED = "pre-hand-in gate red"  # how a gate failure's log starts; runner/__main__.py `after` holds on it (D-1300)
@@ -234,6 +245,33 @@ def _mark_smoke_ran() -> None:
         (smoke_target_dir().parent / SMOKE_RAN).write_text(time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), encoding="utf-8")
     except OSError:
         return
+
+
+def run_warm(args: list[str], cwd: Path, timeout: float) -> int:
+    """One `--warm-smoke` command (D-2007) in the smoke's environment (`_smoke_env`) plus smoke.sh's
+    `SQLX_OFFLINE=true`, its output going to the job log. Past `timeout` its whole process group is killed, so no
+    rustc is left writing into the smoke target while the session's smoke builds there, and TimeoutExpired is
+    raised; returns the exit code."""
+    proc = subprocess.Popen(args, cwd=cwd, env={**_smoke_env(), "SQLX_OFFLINE": "true"}, start_new_session=True)
+    try:
+        return proc.wait(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        os.killpg(proc.pid, signal.SIGKILL)
+        proc.wait()
+        raise
+
+
+def warm_commands(tree: Path) -> list[list[str]]:
+    """What `--warm-smoke` runs in the smoke tree (D-2007): smoke.sh's toolchain install for the channel in
+    `rust-toolchain.toml` (when it names one), then WARM_COMMANDS; nothing without a `Cargo.toml`."""
+    if not (tree / "Cargo.toml").is_file():
+        return []
+    try:
+        found = TOOLCHAIN.search((tree / "rust-toolchain.toml").read_text(encoding="utf-8"))
+    except OSError:
+        found = None
+    install = [["rustup", "toolchain", "install", found.group(1), "--profile", "minimal", "-c", "clippy", "-c", "rustfmt"]] if found else []
+    return [*install, *(list(cmd) for cmd in WARM_COMMANDS)]
 
 
 def stamp_tree_now(tree: Path, manifest: Path) -> None:
@@ -638,6 +676,7 @@ class GitHubEnv:
         self.prepared: dict[str, Any] = {}  # what prepare_branch made for this attempt, for the hand-off (D-583)
         self.last_rejection = ""  # the last rejected branch push's git output (push_rejection, D-583)
         self.updates = UpdateMerge(self._run, self.root, self._identity)  # stage C's update merge (D-620)
+        self.warm_run: Callable[[list[str], Path, float], int] = run_warm  # `--warm-smoke`'s cargo runs; tests replace it (D-2007)
 
     # ---- git plumbing
 
@@ -1013,6 +1052,43 @@ class GitHubEnv:
         tail = (out + err).strip().splitlines()
         self.log.append(f"smoke on {head[:12]}: exit {code}; {tail[-1] if tail else ''}")
         return code == 0, head
+
+    def warm_smoke(self) -> str:
+        """`python3 -m runner --warm-smoke` (D-2007): the smoke's own preparation (the fixed `smoke_tree_dir` at
+        main's head, `_seed_smoke_target`, `_pin_smoke_tree` with its manifest) and then only the smoke's
+        compile steps (`warm_commands`), within WARM_TIMEOUT, so the session's smoke, which pins the same
+        content to the same times, finds the artifacts fresh. main's head is the checkout's `origin/main`
+        (no fetch: the step has no token). Leaves SMOKE_RAN so the cache is saved; writes no state, lease or
+        log on claude/kit-state; returns the line to print."""
+        head = self.git("rev-parse", "--verify", "--quiet", "origin/main^{commit}", check=False) or self.git("rev-parse", "HEAD", check=False)
+        if self.dry_run or not head:
+            return f"dry-run: smoke warm-up not run on {head[:12]}" if self.dry_run else "smoke warm-up skipped: no main head"
+        tree, start = smoke_tree_dir(), time.monotonic()
+        self._drop_smoke_tree(tree)
+        self.git("worktree", "add", "--detach", str(tree), head)
+        try:
+            self._seed_smoke_target(tree)
+            self._pin_smoke_tree(tree)
+            done = self._warm_build(tree, start + WARM_TIMEOUT)
+        finally:
+            self._drop_smoke_tree(tree)
+            _mark_smoke_ran()
+        return f"smoke warm-up on {head[:12]}: {done or 'nothing to build'}; {round(time.monotonic() - start)} s"
+
+    def _warm_build(self, tree: Path, deadline: float) -> str:
+        """Each of `warm_commands` in turn, a red one not stopping the next (a clippy warning must not keep
+        the test build cold); the first to outrun `deadline` ends the warm-up. Returns `<step> <exit>` items."""
+        done: list[str] = []
+        for cmd in warm_commands(tree):
+            left = deadline - time.monotonic()
+            try:
+                if left <= 0:
+                    raise subprocess.TimeoutExpired(cmd, 0)
+                done.append(f"{cmd[1]} exit {self.warm_run(cmd, tree, left)}")
+            except subprocess.TimeoutExpired:
+                done.append(f"{cmd[1]} timed out (budget {WARM_TIMEOUT} s)")
+                break
+        return ", ".join(done)
 
     def _drop_smoke_tree(self, tree: Path) -> None:
         """Remove the smoke worktree, and anything a crashed run left at its fixed path, so `worktree add` works."""
