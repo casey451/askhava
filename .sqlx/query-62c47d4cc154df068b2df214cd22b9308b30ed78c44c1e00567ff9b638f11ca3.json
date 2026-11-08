@@ -1,0 +1,24 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE businesses.business b SET after_hours_suspended_at = $2 WHERE b.id = $1 AND b.after_hours AND b.after_hours_suspended_at IS NULL RETURNING (SELECT id FROM businesses.team_member WHERE business_id = b.id AND is_owner)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "62c47d4cc154df068b2df214cd22b9308b30ed78c44c1e00567ff9b638f11ca3"
+}

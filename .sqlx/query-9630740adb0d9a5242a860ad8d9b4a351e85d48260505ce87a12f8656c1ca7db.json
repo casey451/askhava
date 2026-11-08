@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE businesses.business b SET after_hours = false WHERE b.id = $1 AND b.after_hours AND NOT EXISTS (SELECT 1 FROM businesses.emergency_switch s JOIN businesses.team_member m ON m.id = s.member_id AND m.business_id = s.business_id WHERE s.business_id = b.id AND s.switch_on AND s.yes_at IS NOT NULL AND m.removed_at IS NULL AND m.confirm_and_billing) RETURNING (SELECT id FROM businesses.team_member WHERE business_id = b.id AND is_owner)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "9630740adb0d9a5242a860ad8d9b4a351e85d48260505ce87a12f8656c1ca7db"
+}

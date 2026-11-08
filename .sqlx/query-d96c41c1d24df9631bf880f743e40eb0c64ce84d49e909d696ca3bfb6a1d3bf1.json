@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT count(*) AS \"n!\" FROM businesses.business b WHERE b.status = 'active' AND b.after_hours AND b.after_hours_suspended_at IS NULL AND EXISTS (SELECT 1 FROM businesses.town t WHERE t.business_id = b.id AND t.town = $2) AND EXISTS (SELECT 1 FROM businesses.job_type_choice c WHERE c.business_id = b.id AND c.category = $1) AND EXISTS (SELECT 1 FROM businesses.emergency_switch s JOIN businesses.team_member m ON m.id = s.member_id AND m.business_id = s.business_id WHERE s.business_id = b.id AND s.switch_on AND m.removed_at IS NULL AND m.confirm_and_billing AND s.yes_at > $3)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "n!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "d96c41c1d24df9631bf880f743e40eb0c64ce84d49e909d696ca3bfb6a1d3bf1"
+}

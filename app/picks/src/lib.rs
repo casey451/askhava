@@ -30,6 +30,7 @@ pub mod api;
 mod confirm;
 mod confirm_reminders;
 mod email_code;
+mod emergency_emails;
 mod handlers;
 mod models;
 mod money_notices;

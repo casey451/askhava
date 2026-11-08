@@ -40,6 +40,7 @@ mod business_signup;
 mod confirm_pay;
 mod data_download;
 mod email_check;
+mod emergency_switch_page;
 mod feedback;
 mod homeowner_portal;
 mod job_release;

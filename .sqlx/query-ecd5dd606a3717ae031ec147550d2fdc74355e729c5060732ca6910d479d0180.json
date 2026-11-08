@@ -1,0 +1,24 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT b.after_hours AND NOT EXISTS (SELECT 1 FROM businesses.emergency_switch s JOIN businesses.team_member m ON m.id = s.member_id AND m.business_id = s.business_id WHERE s.business_id = b.id AND s.member_id <> $2 AND s.switch_on AND s.yes_at IS NOT NULL AND m.removed_at IS NULL AND m.confirm_and_billing) AS \"w!\" FROM businesses.business b WHERE b.id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "w!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "ecd5dd606a3717ae031ec147550d2fdc74355e729c5060732ca6910d479d0180"
+}

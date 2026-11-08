@@ -1962,3 +1962,11 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **Not switched on yet (D-1993, D-1994).** Nothing sends these two emails yet. The email system can only send its fixed set of messages, so a later task adds one that can carry a list. The owner's off switch for the missed-cards email isn't stored yet either.
 - **A test-plan fix (D-1993).** The test plan's example lists a request ending at 5:30 p.m. in the 5 p.m. email, but the rule needs an hour left. The test uses 6:30 p.m.; the plan's example should change.
 - **Nothing needs you.**
+
+## Emergency emails at any hour (T150, D-2008 to D-2012, November 8)
+
+- **What was built.** EMERGENCY job cards and picks by email with an "EMERGENCY" subject and first line; each person's "Emergency emails at any hour" switch with a test emergency email and the question "Did your phone alert you with Do Not Disturb or Sleep on?"; the after-hours tick only while the owner or a "Confirm and billing" person has the switch on and a Yes under 90 days; the tick removed (owner emailed) when the last such person turns it off, answers No or is removed; suspended after two unvisited night cards until a new Yes.
+- **Review fixes (D-2012).** Turning the switch off and on again needs a new test before a Yes counts. Only the owner's or a "Confirm and billing" person's Yes ends a suspension. The owner's email says whether the tick was removed or suspended.
+- **Passes only at function level (D-2010, D-2011).** The tests for EMERGENCY cards (TD-CARD-09) and "after-hours cards go as soon as the ZIP is in" (TD-INT-31) check the functions, not the whole path: the email sender still holds every notice at night, the homeowner's night count still uses the old count, and nothing yet turns a released emergency job into cards. Later tasks wire these.
+- **Known gap.** At night, emergency cards and picks go only to each switched-on person's sign-in email, not to the backup address they verified (PICK-037, BIZ-043). The task that wires the email sender should add the backups.
+- **Nothing needs you.**

@@ -24,6 +24,8 @@
 //! [`claim_reminder`] with [`reminder_lines`]; [`bounce_grace`] and [`extend_once`] extend a window
 //! once (PICK-019, PICK-037, PICK-043); [`lapse_plan`] and [`lapse_text`] are the PICK-046 text;
 //! [`owner_told`] and [`member_confirmed_line`] the BIZ-033 email; [`window_open`] the Confirm edge.
+//! T150: [`emergency_pick_plan`] sends an emergency pick at night only to people with "Emergency
+//! emails at any hour" on, under [`emergency_pick_subject`] (PICK-044, BIZ-037, CARD-021).
 //!
 //! T069: [`release`] shows a proven pick's details in the portal once and queues the
 //! [`release_notice`] (PICK-022 to PICK-024, PRIV-005, BIZ-014); [`plan_release`] is its pure rule
@@ -77,6 +79,7 @@ pub use crate::email_code::{
     CodeRoute, ConversationEmail, EmailFrom, OptedOutYes, Texting, check_email_code, code_route,
     opted_out_yes, send_email_code,
 };
+pub use crate::emergency_emails::{EmergencyPick, emergency_pick_plan, emergency_pick_subject};
 pub use crate::handlers::{CONFIRM_ENDS_KIND, notice_sent, run_confirm_ends, run_pick_notice};
 pub use crate::models::PicksError;
 pub use crate::money_notices::{

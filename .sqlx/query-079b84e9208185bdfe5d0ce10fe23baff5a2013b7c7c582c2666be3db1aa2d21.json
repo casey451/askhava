@@ -1,0 +1,24 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT EXISTS (SELECT 1 FROM businesses.emergency_switch s JOIN businesses.team_member m ON m.id = s.member_id AND m.business_id = s.business_id WHERE s.business_id = $1 AND s.switch_on AND m.removed_at IS NULL AND m.confirm_and_billing AND s.yes_at > $2) AS \"c!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "c!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "079b84e9208185bdfe5d0ce10fe23baff5a2013b7c7c582c2666be3db1aa2d21"
+}
