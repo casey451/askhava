@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-08T22:15:01Z by runner 6f5f6cbefb4e (actions).
+Updated 2026-11-08T22:32:35Z by runner ecc86e13228c (actions).
 
-**Idle since 22:00Z; 159 of 284 done; week 57% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 22:00Z; 159 of 286 done; week 57% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 159 of 284 build tasks (owner gates not counted)
+- **Tasks done:** 159 of 286 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 22:00Z (no task in progress)
 - **Week:** 57% used, 82.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:14Z, 0 min before this update
+- **Last run:** 22:15Z, 17 min before this update
 - **Keeper:** last ran 22:15Z, next wake 22:35Z
 
 ## Needs attention
@@ -33,6 +33,7 @@ Updated 2026-11-08T22:15:01Z by runner 6f5f6cbefb4e (actions).
 | T195 | portals: business billing and statements from the ledger | done | 1 | 48 min | 23:28Z |  |
 
 ### Plan and harness merges on main
+- 22:20Z Plan: wire the real AI into the app — T298 endpoint client, T299 intake wiring (D-2065) (#367)
 - 21:52Z Plan: vendor-call connection audit, war-games overload scenario (T297) (D-2054) (#365)
 - 20:26Z Plan: 3-second AI reply budget, AI waits hold no DB connection, war-games latency (D-2038) (#362)
 - 18:33Z Harness: run the start-routine smoke before the session (D-2028) (#359)
@@ -44,18 +45,18 @@ Updated 2026-11-08T22:15:01Z by runner 6f5f6cbefb4e (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 273 of 732 (37.3%) · partial 259 · unstarted 200
-**Tasks merged (throughput only):** 159 of 284
+**Requirements verified:** 268 of 732 (36.6%) · partial 264 · unstarted 200
+**Tasks merged (throughput only):** 159 of 286
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 13 | 15 | 7 | 35 |
-| ai | 12 | 12 | 5 | 29 |
+| ai | 9 | 15 | 5 | 29 |
 | businesses | 25 | 23 | 10 | 58 |
 | calls | 12 | 12 | 1 | 25 |
 | consent | 15 | 16 | 4 | 35 |
 | fees | 17 | 34 | 1 | 52 |
-| intake | 23 | 11 | 9 | 43 |
+| intake | 22 | 12 | 9 | 43 |
 | job-cards | 14 | 8 | 2 | 24 |
 | licensing | 33 | 14 | 1 | 48 |
 | lifecycle | 20 | 8 | 0 | 28 |
@@ -65,7 +66,7 @@ Updated 2026-11-08T22:15:01Z by runner 6f5f6cbefb4e (actions).
 | quiet-hours | 8 | 1 | 0 | 9 |
 | quotes-pick | 33 | 13 | 10 | 56 |
 | recurring | 7 | 1 | 3 | 11 |
-| security | 14 | 32 | 8 | 54 |
+| security | 13 | 33 | 8 | 54 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 1 | 27 | 28 |
 | wording | 1 | 5 | 26 | 32 |
@@ -82,7 +83,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 3: 29 of 29 done
 - stage 4: 39 of 98 done
 - stage 5: 0 of 42 done
-- stage 6: 0 of 28 done
+- stage 6: 0 of 30 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
 - stage kit: 14 of 15 done
