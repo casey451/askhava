@@ -23,6 +23,8 @@
 //! T197 added Confirm by email alone: the hourly reminders with the Hold line, the bounce grace,
 //! the lapse text and the BIZ-033 owner email (PICK-019, PICK-037, PICK-046, BIZ-033).
 //! T198 added the open-cards email's words and the missed-cards line (CARD-022, BIZ-044).
+//! T254 added the settle to paid or free on `payments`' clearance and the masked-line retry
+//! (PICK-022, CALL-001, D-1688, D-1739).
 //! Other crates reach it only through [`api`].
 
 mod aftermath;
@@ -39,6 +41,7 @@ mod release;
 mod released_view;
 mod rules;
 mod service;
+mod settle;
 mod status;
 mod unreachable_refund;
 

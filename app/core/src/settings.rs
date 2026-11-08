@@ -60,6 +60,10 @@ const KEYS: &[&str] = &[
     // Parsed by `test_control::TestControl::from_settings`, only under `test-control` (T020, SEC-035).
     "ASKHAVA_TEST_CONTROL_SECRET",
     "ASKHAVA_TEST_CONTROL_CLOCK_FILE",
+    // Parsed by `askhava_server::release_sink::stripe_webhook` (T254, SEC-039, SEC-049, D-1480).
+    "ASKHAVA_STRIPE_WEBHOOK_SECRET",
+    "ASKHAVA_ADAPTER_MODE_STRIPE",
+    "ASKHAVA_STRIPE_BASE_URL",
     // Parsed by `askhava_ai::api::AiConfig::from_pairs` (T024, AI-021, AI-023, AI-024).
     "ASKHAVA_AI_MODEL",
     "ASKHAVA_AI_TIMEOUT_SECONDS",

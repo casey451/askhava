@@ -26,8 +26,10 @@
 //! homeowner side being the proof's contact (CALL-001, PICK-022, D-491). An emergency job with no
 //! address is never shown, so no line opens before the address is in (TD-CALL-12); a
 //! released-before pick opens nothing again; a line that fails to open never hides the view and
-//! raises one High [`RELEASE_LINE_FAILED_ALERT`] instead (D-1688). The who's-calling text (TXT-027) is not
-//! sent here yet (D-1687).
+//! raises one High [`RELEASE_LINE_FAILED_ALERT`] instead, with one [`LINE_RETRY_KIND`] task that
+//! `settle::retry_line` runs (T254, D-1688); a failed release queues that task only once its
+//! claim stands (D-2017). The who's-calling text (TXT-027) is not sent here
+//! yet (D-1687).
 
 use askhava_adapters::api::MaskedPool;
 use askhava_businesses::api::{NoticePurpose, notice_addresses};
@@ -46,6 +48,7 @@ use sqlx::{Acquire, PgConnection, PgPool};
 
 use crate::models::{self, PicksError, ReleaseTarget};
 use crate::money_notices::BUSINESS_NOTICE_KIND;
+use crate::settle::LINE_RETRY_KIND;
 use crate::status::release_status;
 
 /// The release email's template (PICK-024, D-454): job number and sign-in link only.
@@ -58,7 +61,7 @@ pub const ADDRESS_NEEDED_KIND: &str = "picks.address_needed";
 /// (PICK-024, D-1561, D-1564).
 pub const RELEASE_NO_RECIPIENT_ALERT: &str = "picks.release_no_recipient";
 /// The High alert raised when a shown release's masked line fails to open; the view still goes
-/// back, and a retry is for a later task (CALL-001, D-1688).
+/// back, and one `picks.line_retry` task opens the line later (CALL-001, D-1688).
 pub const RELEASE_LINE_FAILED_ALERT: &str = "picks.release_line_failed";
 /// The vault fields a release opens; never the phone (PICK-023, PRIV-020).
 pub const RELEASE_FIELDS: [Field; 2] = [Field::Name, Field::Address];
@@ -186,9 +189,11 @@ pub fn release_notice(business: Uuid, pick: Uuid, to: &[Uuid], job: i64) -> Valu
 /// # Errors
 /// [`PicksError::Database`] (also for a refused or failed vault read, which `privacy` has
 /// already audited or alerted) or [`PicksError::Job`]. A regular job's vault read fails after its
-/// claim committed, so the release stands and a later proof gets [`Released::Already`]. A line
-/// that fails to open is no error: the view still comes back and one High
-/// [`RELEASE_LINE_FAILED_ALERT`] is raised (D-1688).
+/// claim committed, so the release stands and a later proof gets [`Released::Already`]; an
+/// error after the claim also queues the [`LINE_RETRY_KIND`] task, so that release's line still
+/// opens, and one before the claim queues nothing (D-1739, D-2017). A line
+/// that fails to open is no error: the view still comes back, one High
+/// [`RELEASE_LINE_FAILED_ALERT`] is raised and one [`LINE_RETRY_KIND`] task queued (D-1688).
 pub async fn release(
     pool: &PgPool,
     (vault, masked): (&Vault, &MaskedPool),
@@ -196,13 +201,19 @@ pub async fn release(
     at: Timestamp,
 ) -> Result<Released, PicksError> {
     let (pick, contact, basis) = (proof.pick_id(), proof.contact_id(), proof.basis());
-    let released = show(pool, vault, (proof, email_chosen), at).await?;
+    let released = match show(pool, vault, (proof, email_chosen), at).await {
+        Ok(released) => released,
+        Err(error) => {
+            line_later(pool, pick, at, false).await;
+            return Err(error);
+        }
+    };
     if let Released::Shown(_) = released
         && open_line(pool, masked, (pick, contact, basis), at)
             .await
             .is_err()
     {
-        line_failed(pool, pick).await;
+        line_later(pool, pick, at, true).await;
     }
     Ok(released)
 }
@@ -228,17 +239,43 @@ async fn open_line(
     Ok(())
 }
 
-/// Raises one High [`RELEASE_LINE_FAILED_ALERT`] for the pick; the release already stands and its
-/// view goes back regardless, so a failed alert write is dropped here (D-1688).
-async fn line_failed(pool: &PgPool, pick: Uuid) {
+/// Queues one [`LINE_RETRY_KIND`] task for the pick (deduped per pick, once ever) and, when
+/// `failed` (a shown release whose line did not open), raises one High
+/// [`RELEASE_LINE_FAILED_ALERT`] with it, in one transaction. A release that failed after its
+/// claim (the vault read) also queues the retry, so its line still opens; one that failed before
+/// the claim (no `picks.release` row yet) queues nothing, so the one dedupe key is never spent on
+/// a retry with nothing to open (D-2017). The release stands or fails regardless, so a failed
+/// write is dropped here (CALL-001, D-1688, D-1739).
+async fn line_later(pool: &PgPool, pick: Uuid, at: Timestamp, failed: bool) {
     let alert = NewAlert {
         kind: RELEASE_LINE_FAILED_ALERT,
         severity: Severity::High,
         subject: Some(("pick", pick)),
     };
-    if let Ok(mut conn) = pool.acquire().await {
-        raise_alert(&mut conn, &alert).await.ok();
+    let mut retry = NewTask::new(LINE_RETRY_KIND, json!({"pick": pick}), at);
+    retry.dedupe_key = Some(format!("{LINE_RETRY_KIND}.{pick}"));
+    let Ok(mut tx) = pool.begin().await else {
+        return;
+    };
+    if !matches!(claimed(&mut tx, pick).await, Ok(true)) {
+        return;
     }
+    if failed && raise_alert(&mut tx, &alert).await.is_err() {
+        return;
+    }
+    if enqueue(&mut tx, &retry).await.is_ok() {
+        tx.commit().await.ok();
+    }
+}
+
+/// Whether pick `pick` has its `picks.release` row, the claim (PICK-022, D-2017).
+async fn claimed(conn: &mut PgConnection, pick: Uuid) -> Result<bool, sqlx::Error> {
+    sqlx::query_scalar!(
+        r#"SELECT EXISTS (SELECT 1 FROM picks.release WHERE pick_id = $1) AS "claimed!""#,
+        pick
+    )
+    .fetch_one(conn)
+    .await
 }
 
 /// The T069 release: the checks, the claim, the vault read and the view (see the module docs).
