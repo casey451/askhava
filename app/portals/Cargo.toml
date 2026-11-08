@@ -19,18 +19,22 @@ askhava-picks = { workspace = true }
 askhava-privacy = { workspace = true }
 askhava-quotes = { workspace = true }
 askama = { workspace = true }
+argon2 = { workspace = true }
 axum = { workspace = true }
 axum-extra = { workspace = true }
 jiff = { workspace = true }
 jiff-sqlx = { workspace = true, features = ["postgres"] }
 rand = { workspace = true }
 serde = { workspace = true }
+serde_json = { workspace = true }
 secrecy = { workspace = true }
 sha2 = { workspace = true }
 sqlx = { workspace = true }
 subtle = { workspace = true }
 thiserror = { workspace = true }
+totp-rs = { workspace = true }
 tracing = { workspace = true }
+webauthn-rs = { workspace = true, features = ["danger-allow-state-serialisation"] }
 
 [dev-dependencies]
 proptest = { workspace = true }

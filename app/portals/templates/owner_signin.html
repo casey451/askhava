@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{#- Owner sign-in (T086; SEC-005, SEC-007, A11Y-013, A11Y-030, A11Y-031; D-1921). One form: the
+    password, then a 6-digit code from an authenticator app or one recovery code. When a passkey
+    is registered, "Use a passkey" (static/passkey.ts) runs the WebAuthn ceremony and posts the
+    same form with its answer instead of a code. Paste and password managers work; there is no
+    email field and no email path. A failed submit says only that the details did not match. -#}
+{% block title %}{% if failed %}Error: {% endif %}Owner sign-in{% endblock %}
+{% block main %}<h1>Owner sign-in</h1>
+{% if failed %}<div id="error-summary" role="alert" tabindex="-1" autofocus>
+<h2>That didn't work</h2>
+<p><a href="#password">Check your password and code, then try again</a></p>
+</div>
+{% endif %}<form method="post" action="/owner/sign-in" id="owner-signin" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<input type="hidden" name="challenge" value="{{ challenge }}">
+<input type="hidden" name="passkey" id="passkey-answer" value="">
+<p><label for="password">Password</label></p>
+<p><input type="password" id="password" name="password" autocomplete="current-password"{% if failed %} aria-invalid="true"{% endif %}></p>
+<p><label for="code">Code</label></p>
+<p id="code-hint">The 6-digit code from your authenticator app, or one of your paper recovery codes.</p>
+<p><input type="text" id="code" name="code" autocomplete="one-time-code" spellcheck="false" aria-describedby="code-hint"></p>
+<p><button type="submit" id="signin-button">Sign in</button></p>
+{% if !options.is_empty() %}<p><button type="button" id="passkey-button" data-options="{{ options }}">Use a passkey instead of a code</button></p>
+<p id="passkey-status" role="status" data-failed="The passkey didn't work. Type the code from your app, or a paper recovery code."></p>
+{% endif %}</form>
+{% if !options.is_empty() %}<script type="module" src="/static/portals/passkey.js"></script>
+{% endif %}{% endblock %}

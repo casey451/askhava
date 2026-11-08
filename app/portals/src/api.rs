@@ -13,7 +13,10 @@
 //! T084); the new-device code by Verify text or email (SEC-004, TXT-038, T194). The private
 //! feedback page's router after Done (JOB-017, T230). The business portal home with "Your numbers",
 //! the open-cards times and the SEC-038 step-up gate, and the released job's page with its call
-//! log (BIZ-013, BIZ-025, BIZ-035, CARD-022, PICK-024, SEC-038, T085).
+//! log (BIZ-013, BIZ-025, BIZ-035, CARD-022, PICK-024, SEC-038, T085). Owner sign-in: the
+//! argon2id password plus a passkey, TOTP or recovery code, the 12-hour session ending after 30
+//! minutes idle, the 5-minute step-up, logout and "Sign out everywhere", the one-time bootstrap
+//! and the owner-only pause, refund and release gate (SEC-005 to SEC-007, SEC-043, SEC-044, T086).
 
 /// The cookie jar the session functions take and give back (axum-extra's).
 pub use axum_extra::extract::cookie::CookieJar;
@@ -47,6 +50,15 @@ pub use crate::job_release::{
 pub use crate::notice_settings::{
     ChannelChangeError, ChannelFacts, NOTICE_SETTINGS_ROUTE, NoticeAddress, change_channel,
     channel_choices, notice_settings_page,
+};
+pub use crate::owner_auth::{
+    BOOTSTRAP_TOKEN_VAR, MIN_OWNER_FACTORS, MIN_OWNER_PASSWORD_CHARS, OWNER_IDLE_LIMIT,
+    OWNER_SESSION_LIFE, OWNER_SIGNIN_ROUTE, OWNER_STEP_UP_WINDOW, OwnerAction, OwnerAuth,
+    OwnerAuthError, OwnerEnrolment, OwnerPower, OwnerPrincipal, PasswordProblem,
+    RECOVERY_CODE_COUNT, SecondFactor, add_owner_totp, bootstrap_owner, change_owner_password,
+    factor_fresh, finish_passkey_registration, idle_ended, owner_power, owner_principal,
+    owner_sign_in, owner_sign_out, owner_signin_page, owner_step_up, passkey_registration_options,
+    passkey_sign_in_options, password_problem, require_owner_step_up, sign_out_everywhere,
 };
 pub use crate::pick_flow::{
     CODE_ROUTE, PICK_ROUTE, PageLanguage, PickCodeKeys, VERIFY_DAILY_THRESHOLD, pick_flow_routes,

@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE portals.owner_session SET last_seen_at = $2 WHERE session_id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "98420717fd6669b3b69c586135b27ab94785d1ac34813b0502731773611b5575"
+}
