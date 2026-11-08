@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-08T07:19:14Z by runner 95d2435b65ac (actions).
+Updated 2026-11-08T07:28:22Z by runner 95d2435b65ac (actions).
 
 **Idle since 07:14Z; 153 of 282 done; week 49% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-08T07:19:14Z by runner 95d2435b65ac (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 07:14Z (no task in progress)
 - **Week:** 49% used, 98.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:59Z, 19 min before this update
+- **Last run:** 06:59Z, 28 min before this update
 - **Keeper:** last ran 06:59Z, next wake 07:19Z
 
 ## Needs attention
@@ -36,7 +36,6 @@ Updated 2026-11-08T07:19:14Z by runner 95d2435b65ac (actions).
 | T097 | jobs: day-3 and day-14 check-ins, PROBLEM flags, private fee | done | 1 | 51 min | 10:55Z |  |
 | T096 | messaging: web-and-email mode, number suspension, one config | done | 1 | 43 min | 09:49Z |  |
 | T092 | privacy: 180-day contact purge, holds, photo and message del | done | 1 | 54 min | 08:38Z |  |
-| T091 | quotes: photos on cards only after zero retention and all th | done | 1 | 40 min | 07:24Z |  |
 
 ### Plan and harness merges on main
 - 01:33Z Plan: brand as configuration (T291–T295, D-1932–D-1933) (#342)
