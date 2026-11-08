@@ -285,7 +285,7 @@ jobs:
               || psql "$DATABASE_URL" -qc "CREATE ROLE ${role} NOLOGIN"
             psql "$DATABASE_URL" -qc "GRANT ${role} TO askhava_ci" >/dev/null
           done
-          curl -sSfL -o "$RUNNER_TEMP/gitleaks.tgz" \
+          curl -sSfL --retry 5 --retry-all-errors --retry-delay 15 --connect-timeout 20 -o "$RUNNER_TEMP/gitleaks.tgz" \
             "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
           echo "${GITLEAKS_SHA256}  $RUNNER_TEMP/gitleaks.tgz" | sha256sum -c -
           mkdir -p "$RUNNER_TEMP/gitleaks"
@@ -293,12 +293,20 @@ jobs:
           echo "$RUNNER_TEMP/gitleaks" >> "$GITHUB_PATH"
           # Ci's measuring toolchain, so the worker's scripts/prehandin.sh measures the floored crates its
           # change touches as Ci's Coverage job does (D-1440); the same pins as ci.yml (tests/test_prehandin.py).
+          # Best effort (D-1986): without them the gate's coverage says "skipped" (scripts/prehandin.sh
+          # `coverage`) and Ci's Coverage job, which stays strict, measures it; gitleaks above stays required.
           if [ -f tests/coverage_floor.json ]; then
-            rustup toolchain install "$NIGHTLY" --profile minimal -c llvm-tools-preview
-            curl -sSfL -o "$RUNNER_TEMP/llvm-cov.tgz" "$LLVM_COV_URL"
-            echo "${LLVM_COV_SHA256}  $RUNNER_TEMP/llvm-cov.tgz" | sha256sum -c -
-            mkdir -p "$RUNNER_TEMP/llvm-cov"
-            tar -xzf "$RUNNER_TEMP/llvm-cov.tgz" -C "$RUNNER_TEMP/llvm-cov" cargo-llvm-cov
+            covwhy=""
+            rustup toolchain install "$NIGHTLY" --profile minimal -c llvm-tools-preview || covwhy="the ${NIGHTLY} toolchain did not install"
+            [ -n "$covwhy" ] || curl -sSfL --retry 5 --retry-all-errors --retry-delay 15 --connect-timeout 20 -o "$RUNNER_TEMP/llvm-cov.tgz" "$LLVM_COV_URL" \
+              || covwhy="the download failed after retries"
+            [ -n "$covwhy" ] || echo "${LLVM_COV_SHA256}  $RUNNER_TEMP/llvm-cov.tgz" | sha256sum -c - || covwhy="the SHA-256 check failed"
+            [ -n "$covwhy" ] || { mkdir -p "$RUNNER_TEMP/llvm-cov" \
+              && tar -xzf "$RUNNER_TEMP/llvm-cov.tgz" -C "$RUNNER_TEMP/llvm-cov" cargo-llvm-cov; } || covwhy="the extract failed"
+          fi
+          if [ -f tests/coverage_floor.json ] && [ -n "$covwhy" ]; then
+            echo "cargo-llvm-cov not installed: ${covwhy}; prehandin coverage will report skipped (D-1986)"
+          elif [ -f tests/coverage_floor.json ]; then
             echo "$RUNNER_TEMP/llvm-cov" >> "$GITHUB_PATH"
             # Its instrumented build (about 6 GB for the workspace) stays out of `target`, which the Rust build
             # cache saves, so the cache does not double. It goes on /mnt (a separate disk on GitHub's runners)

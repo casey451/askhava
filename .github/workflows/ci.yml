@@ -70,7 +70,7 @@ jobs:
 
       - name: Secret scan (gitleaks, working tree)
         run: |
-          curl -sSfL -o "$RUNNER_TEMP/gitleaks.tgz" \
+          curl -sSfL --retry 5 --retry-all-errors --retry-delay 15 --connect-timeout 20 -o "$RUNNER_TEMP/gitleaks.tgz" \
             "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
           echo "${GITLEAKS_SHA256}  $RUNNER_TEMP/gitleaks.tgz" | sha256sum -c -
           mkdir -p "$RUNNER_TEMP/gitleaks"
@@ -170,7 +170,7 @@ jobs:
           bin="$RUNNER_TEMP/tools/bin"; mkdir -p "$bin"
           for tool in AUDIT DENY; do
             url="${tool}_URL"; sum="${tool}_SHA256"; name="cargo-${tool,,}"
-            curl -sSfL -o "$RUNNER_TEMP/$tool.tgz" "${!url}"
+            curl -sSfL --retry 5 --retry-all-errors --retry-delay 15 --connect-timeout 20 -o "$RUNNER_TEMP/$tool.tgz" "${!url}"
             echo "${!sum}  $RUNNER_TEMP/$tool.tgz" | sha256sum -c -
             # Only this tool's binary: GNU tar exits 2 when a named pattern matches nothing.
             tar -xzf "$RUNNER_TEMP/$tool.tgz" -C "$bin" --strip-components=1 --wildcards "*/$name"
@@ -330,7 +330,7 @@ jobs:
         if: steps.changes.outputs.rust == 'true'
         run: |
           rustup toolchain install "$NIGHTLY" --profile minimal -c llvm-tools-preview
-          curl -sSfL -o "$RUNNER_TEMP/llvm-cov.tgz" "$LLVM_COV_URL"
+          curl -sSfL --retry 5 --retry-all-errors --retry-delay 15 --connect-timeout 20 -o "$RUNNER_TEMP/llvm-cov.tgz" "$LLVM_COV_URL"
           echo "${LLVM_COV_SHA256}  $RUNNER_TEMP/llvm-cov.tgz" | sha256sum -c -
           mkdir -p "$RUNNER_TEMP/tools/bin"
           tar -xzf "$RUNNER_TEMP/llvm-cov.tgz" -C "$RUNNER_TEMP/tools/bin" cargo-llvm-cov

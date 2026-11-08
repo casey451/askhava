@@ -374,3 +374,57 @@ def test_the_gate_skips_coverage_it_cannot_measure_and_never_calls_that_red(tmp_
         env={"PATH": "/usr/bin:/bin", "PREHANDIN_ROOT": str(work), "HOME": str(tmp_path)}, check=False)
     assert "branch coverage of app/pay/" in done.stdout and "skipped: needs cargo-llvm-cov" in done.stdout, done.stdout
     assert "reached-end" in done.stdout and done.returncode == 0
+
+
+RETRY = "curl -sSfL --retry 5 --retry-all-errors --retry-delay 15 --connect-timeout 20 -o "
+
+
+def _workflow_runs(name: str) -> dict[str, str]:
+    jobs = yaml.safe_load((ROOT / ".github/workflows" / name).read_text(encoding="utf-8"))["jobs"]
+    return {f"{job}: {s.get('name', '')}": str(s.get("run", "")) for job, body in jobs.items() for s in body["steps"]}
+
+
+def test_every_release_download_retries_and_only_the_gates_coverage_tools_are_best_effort() -> None:
+    """D-1986: a release-CDN 504 on one curl stopped every backup run for over an hour. Each release download in
+    ci.yml and backup-runner.yml retries; the backup job's cargo-llvm-cov and nightly are best effort (the gate
+    then says it skipped), while gitleaks there and every Ci download stay required."""
+    runs = {**_workflow_runs("ci.yml"), **_workflow_runs("backup-runner.yml")}
+    curls = [line.strip() for run in runs.values() for line in run.splitlines() if "curl -sSfL" in line]
+    release = [c for c in curls if "gitleaks.tgz" in c or "llvm-cov.tgz" in c or "$tool.tgz" in c]
+    assert len(release) == 5, release
+    assert all(c.startswith(RETRY) or f"|| {RETRY}" in c for c in release), release
+    prereq = runs["backup: Smoke-test prerequisites (what Ci installs for itself)"]
+    gitleaks = prereq.split("done\n", 1)[1].split("# Ci's measuring", 1)[0]
+    assert "gitleaks.tgz" in gitleaks and "sha256sum -c -" in gitleaks and "||" not in gitleaks, "gitleaks stays required"
+    assert "prehandin coverage will report skipped (D-1986)" in prereq
+    strict = [s for s, run in runs.items() if s.startswith(("checks:", "coverage:")) and ".tgz" in run]
+    assert len(strict) == 3 and all("||" not in runs[s] for s in strict), "Ci's downloads stay strict"
+
+
+@pytest.mark.parametrize("fail", ["curl", "sha256sum", ""])
+def test_the_backup_jobs_coverage_install_is_skipped_not_fatal(tmp_path: Path, fail: str) -> None:
+    """The prerequisites step's coverage part under Actions' `bash -e`, with stub tools: a failed download or
+    checksum prints why, leaves cargo-llvm-cov off GITHUB_PATH and exits 0; a good one puts it there."""
+    prereq = _workflow_runs("backup-runner.yml")["backup: Smoke-test prerequisites (what Ci installs for itself)"]
+    part = "# Ci's measuring" + prereq.split("# Ci's measuring", 1)[1]
+    stubs = tmp_path / "bin"
+    stubs.mkdir()
+    for tool in ("rustup", "curl", "sha256sum", "tar", "sudo", "df"):
+        (stubs / tool).write_text(f"#!/bin/sh\n{'exit 22' if tool == fail else 'exit 0'}\n")
+        (stubs / tool).chmod(0o755)
+    (tmp_path / "tests").mkdir()
+    (tmp_path / "tests" / "coverage_floor.json").write_text("{}\n")
+    script = tmp_path / "step.sh"
+    script.write_text(part)
+    env = {"PATH": f"{stubs}:/usr/bin:/bin", "RUNNER_TEMP": str(tmp_path), "NIGHTLY": "nightly-2026-01-01",
+           "LLVM_COV_URL": "https://example.invalid/x.tgz", "LLVM_COV_SHA256": "0" * 64,
+           "GITHUB_PATH": str(tmp_path / "path"), "GITHUB_ENV": str(tmp_path / "env")}
+    done = subprocess.run(["bash", "-e", str(script)], cwd=tmp_path, env=env, capture_output=True, text=True,
+                          check=False)
+    assert done.returncode == 0, done.stderr
+    on_path = (tmp_path / "path").read_text() if (tmp_path / "path").exists() else ""
+    if fail:
+        assert "cargo-llvm-cov not installed: " in done.stdout and "prehandin coverage will report skipped" in done.stdout
+        assert "llvm-cov" not in on_path
+    else:
+        assert "not installed" not in done.stdout and f"{tmp_path}/llvm-cov" in on_path
