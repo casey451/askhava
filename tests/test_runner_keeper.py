@@ -9,6 +9,7 @@ import os
 import shutil
 import subprocess
 import sys
+import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
@@ -489,3 +490,166 @@ def test_the_keeper_runs_from_a_worktree_of_the_repository(tmp_path: Path) -> No
         assert "--keeper-armed" in helped.stdout
     finally:
         subprocess.run(["git", "worktree", "remove", "--force", str(tree)], cwd=ROOT, check=False)
+
+
+def _warm_env(tmp_path: Path, monkeypatch: Any, fail_at: str = "", red: tuple[str, ...] = ("clippy",)) -> tuple[Any, list[list[str]], list[tuple[list[str], Path, float]]]:
+    """A GitHubEnv for `--warm-smoke` (D-2007): a fake git whose worktree add writes a Cargo.toml and a
+    rust-toolchain.toml, and a fake `warm_run` that records each cargo call (raising TimeoutExpired at the
+    command whose second word is `fail_at`). No real cargo or network."""
+    from runner import github_env as ge
+
+    monkeypatch.setenv("RUNNER_TEMP", str(tmp_path / "temp"))
+    monkeypatch.setenv("CARGO_TARGET_DIR", str(tmp_path / "target"))
+    tree = ge.smoke_tree_dir()
+    calls: list[list[str]] = []
+    built: list[tuple[list[str], Path, float]] = []
+
+    def run(a: list[str], i: str | None, c: Path) -> tuple[int, str, str]:
+        calls.append(list(a))
+        if a[:3] == ["git", "worktree", "add"]:
+            _index(tree, {"Cargo.toml": "w1"})
+            (tree / "rust-toolchain.toml").write_text('[toolchain]\nchannel = "1.99.0"\n')
+        if a[:2] == ["git", "ls-files"]:
+            return 0, "100644 " + "w" * 40 + " 0\tCargo.toml\0", ""
+        if a[:2] == ["git", "rev-parse"]:
+            return 0, "e" * 40 + "\n", ""
+        return 0, "", ""
+
+    def warm(cmd: list[str], cwd: Path, left: float) -> int:
+        built.append((cmd, cwd, left))
+        if cmd[1] == fail_at:
+            raise subprocess.TimeoutExpired(cmd, left)
+        return 1 if cmd[1] in red else 0
+
+    env = ge.GitHubEnv(tmp_path, [], tmp_path, repo="o/r", starter="actions", runner_sha="x", run=run)
+    env.warm_run = warm
+    return env, calls, built
+
+
+def test_the_warm_up_prepares_the_smoke_tree_as_the_smoke_does_and_only_compiles(monkeypatch: Any, tmp_path: Path) -> None:
+    """D-2007: `--warm-smoke` uses smoke_main's own tree, seed and pin (so the manifest the session's smoke
+    reads is the one it writes), then runs only the compile steps; a red clippy does not stop the build."""
+    from runner import github_env as ge
+
+    env, calls, built = _warm_env(tmp_path, monkeypatch)
+    tree = ge.smoke_tree_dir()
+    assert env.warm_smoke().endswith(", nothing new to cache"), "an instant build (a head already built) is not saved"
+    assert not (tmp_path / "target" / ge.SMOKE_RAN).exists(), "no fresh multi-GB entry from an idle job (D-2007 review)"
+    calls.clear(), built.clear(), env.log.clear()
+    monkeypatch.setattr(ge, "WARM_SAVE_SECONDS", 0)
+    line = env.warm_smoke()
+    assert line.endswith(", cache marked for saving")
+    assert line.startswith(f"smoke warm-up on {'e' * 12}: toolchain exit 0, clippy exit 1, build exit 0, test exit 0; ")
+    add = calls.index(["git", "worktree", "add", "--detach", str(tree), "e" * 40])
+    assert calls.index(["git", "worktree", "remove", "--force", str(tree)]) < add < calls.index(["git", "ls-files", "-s", "-z"])
+    assert [b[0] for b in built] == [["rustup", "toolchain", "install", "1.99.0", "--profile", "minimal", "-c", "clippy", "-c", "rustfmt"],
+                                     *(list(c) for c in ge.WARM_COMMANDS)]
+    assert all(cwd == tree and 0 < left <= ge.WARM_TIMEOUT for _, cwd, left in built)
+    assert ["bash", "scripts/smoke.sh"] not in calls, "the warm-up never runs the smoke itself"
+    assert not [c for c in calls if c[:2] in (["git", "push"], ["git", "fetch"]) or c[:1] == ["gh"]], "no state, lease or network"
+    assert (tmp_path / "target" / "smoke" / ge.SMOKE_MTIMES).exists() and not tree.exists()
+    assert (tmp_path / "target" / ge.SMOKE_RAN).exists(), "the save step keeps a warm build even if the session dies"
+    assert "smoke mtimes: 0 new or changed paths" in env.log, "the second run re-pins to the times the first recorded"
+
+
+def test_a_warm_up_whose_cargo_commands_all_fail_leaves_no_marker(monkeypatch: Any, tmp_path: Path) -> None:
+    from runner import github_env as ge
+
+    env, _, built = _warm_env(tmp_path, monkeypatch, red=("clippy", "build", "test"))
+    monkeypatch.setattr(ge, "WARM_SAVE_SECONDS", 0)
+    assert env.warm_smoke().endswith(", nothing new to cache") and len(built) == 4
+    assert not (tmp_path / "target" / ge.SMOKE_RAN).exists()
+
+
+def test_a_warm_up_that_outruns_its_budget_stops_and_still_cleans_up(monkeypatch: Any, tmp_path: Path) -> None:
+    from runner import github_env as ge
+
+    env, _, built = _warm_env(tmp_path, monkeypatch, fail_at="build", red=("clippy", "test"))
+    monkeypatch.setattr(ge, "WARM_SAVE_SECONDS", 0)
+    line = env.warm_smoke()
+    assert f"clippy exit 1, build timed out (budget {ge.WARM_TIMEOUT} s);" in line
+    assert [b[0][1] for b in built] == ["toolchain", "clippy", "build"], "no command after the one that timed out"
+    assert not ge.smoke_tree_dir().exists() and (tmp_path / "target" / ge.SMOKE_RAN).exists(), "a timeout that compiled is kept"
+
+
+def test_a_dry_run_warm_up_builds_nothing(monkeypatch: Any, tmp_path: Path) -> None:
+    env, calls, built = _warm_env(tmp_path, monkeypatch)
+    env.dry_run = True
+    assert env.warm_smoke() == f"dry-run: smoke warm-up not run on {'e' * 12}"
+    assert built == [] and not [c for c in calls if c[:2] == ["git", "worktree"]]
+
+
+def test_the_warm_up_compiles_exactly_what_smoke_sh_compiles() -> None:
+    """D-2007: the warm-up is wasted unless its flags and environment are the smoke's, so each command is held to
+    scripts/smoke.sh's own line (`cargo test` there without `--no-run`), with its SQLX_OFFLINE and toolchain install."""
+    from runner import github_env as ge
+
+    smoke = {line.strip() for line in (ROOT / "scripts" / "smoke.sh").read_text(encoding="utf-8").splitlines()}
+    warm = {" ".join(c for c in cmd if c != "--no-run") for cmd in ge.WARM_COMMANDS}
+    for cmd in warm:
+        assert cmd in smoke, cmd
+    compiles = {line for line in smoke if line.split()[:2] in (["cargo", "clippy"], ["cargo", "build"], ["cargo", "test"])}
+    assert compiles == warm, "every clippy, build and test line of smoke.sh is warmed, and only those"
+    assert ge.WARM_COMMANDS[-1][-1] == "--no-run" and sum("--no-run" in c for c in ge.WARM_COMMANDS) == 1
+    assert any(line.startswith("export SQLX_OFFLINE=true") for line in smoke)
+    assert 'rustup toolchain install "${toolchain}" --profile minimal -c clippy -c rustfmt >/dev/null 2>&1' in smoke
+    assert ge.warm_commands(ROOT)[0][:3] == ["rustup", "toolchain", "install"]
+    assert ge.WARM_TIMEOUT > ge.SMOKE_TIMEOUT
+
+
+def test_run_warm_uses_the_smoke_environment_and_kills_the_whole_group(monkeypatch: Any, tmp_path: Path) -> None:
+    from runner import github_env as ge
+
+    monkeypatch.setenv("CARGO_TARGET_DIR", str(tmp_path / "target"))
+    monkeypatch.delenv("SQLX_OFFLINE", raising=False)
+    out = tmp_path / "env.txt"
+    script = f'echo "$CARGO_TARGET_DIR $CARGO_INCREMENTAL $SQLX_OFFLINE" > {out}'
+    assert ge.run_warm(["sh", "-c", script], tmp_path, 30) == 0
+    assert out.read_text().split() == [str(tmp_path / "target" / "smoke"), "0", "true"]
+    pid_file = tmp_path / "child.pid"
+    try:
+        ge.run_warm(["sh", "-c", f"sleep 30 & echo $! > {pid_file}; wait"], tmp_path, 1)
+        raise AssertionError("no timeout")
+    except subprocess.TimeoutExpired:
+        pass
+    child = int(pid_file.read_text())
+    for _ in range(50):  # SIGKILL is delivered asynchronously: give the kernel up to 5 s to finish the child
+        try:
+            state = Path(f"/proc/{child}/stat").read_text().split(")")[-1].split()[0]
+        except OSError:
+            state = "gone"
+        if state in ("gone", "Z"):
+            break
+        time.sleep(0.1)
+    assert state in ("gone", "Z"), "a background child (rustc) is killed with the group"
+
+
+def test_warm_smoke_cli_never_reads_state_and_always_exits_zero(monkeypatch: Any, capsys: Any) -> None:
+    from runner import __main__ as entry, github_env as ge
+
+    assert entry.parse_args(["--warm-smoke"]).warm_smoke is True
+    monkeypatch.setattr(entry, "build", lambda *a: (_ for _ in ()).throw(AssertionError("no cycle")))
+    monkeypatch.setattr(ge.GitHubEnv, "warm_smoke", lambda self: (_ for _ in ()).throw(RuntimeError("git worktree add failed")))
+    assert entry.main(["--warm-smoke"]) == 0
+    assert capsys.readouterr().out.strip().endswith("runner: smoke warm-up failed: git worktree add failed")
+    monkeypatch.undo()
+    monkeypatch.setattr(entry, "build", lambda *a: (_ for _ in ()).throw(AssertionError("no cycle")))
+    assert entry.main(["--warm-smoke", "--dry-run"]) == 0
+    assert "runner: dry-run: smoke warm-up not run on " in capsys.readouterr().out
+
+
+def test_the_warm_up_step_runs_after_the_cache_restore_and_before_the_session() -> None:
+    """D-2007: in the backup job, after the smoke cache is restored and the prerequisites are installed, before the
+    session; it can never fail the job, has its own time cap above WARM_TIMEOUT and gets no secret."""
+    from runner import github_env as ge
+
+    steps = _flow()["jobs"]["backup"]["steps"]
+    order = [step.get("name") or step.get("uses") for step in steps]
+    name = "Warm the smoke build before the session (D-2007)"
+    warm = steps[order.index(name)]
+    assert order.index("Smoke build cache, restore (D-1890, D-1911)") < order.index(name)
+    assert order.index("Smoke-test prerequisites (what Ci installs for itself)") < order.index(name)
+    assert order.index(name) < order.index("anthropics/claude-code-action@v1") < order.index("Smoke build cache, save (D-1911)")
+    assert warm["continue-on-error"] is True and warm["run"].strip() == "python3 -m runner --warm-smoke"
+    assert ge.WARM_TIMEOUT / 60 < warm["timeout-minutes"] <= 30
+    assert warm["if"] == "hashFiles('Cargo.lock') != ''" and "secrets." not in json.dumps(warm)

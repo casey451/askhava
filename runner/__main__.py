@@ -37,6 +37,10 @@ line of JSON with what changed.
                                     number, kept in `plan_reservations` with `next_decision` moved past
                                     it, and printed as `reserved D-####` (D-1058)
   python3 -m runner --restore-lanes end a fall back to one lane (`lanes_fallback`, D-620)
+  python3 -m runner --warm-smoke    compile the smoke's Rust build of main into its cached target before the
+                                    session (backup-runner.yml, no 600-second Bash call): the smoke's own
+                                    tree, seed and pinned mtimes, then only its cargo compile steps; no
+                                    state, lease or log written; always exit 0 (D-2007)
   python3 -m runner --usage-reading FILE
                                     keep the plan usage the action reported about itself (the last
                                     `rate_limit_event` in its execution file) as usage.session_reading,
@@ -117,6 +121,7 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
     ap.add_argument("--reserve-decision", action="store_true")
     ap.add_argument("--usage-reading", type=Path)
     ap.add_argument("--keeper-armed", type=int, help="minutes until the keeper just dispatched wakes (D-1451)")
+    ap.add_argument("--warm-smoke", action="store_true", help="build the smoke's cargo artifacts before the session (D-2007)")
     return ap.parse_args(argv)
 
 
@@ -544,8 +549,26 @@ def start_refill(lanes: list[str], env: GitHubEnv) -> list[str]:
     return started
 
 
+def warm_smoke(args: argparse.Namespace) -> int:
+    """`--warm-smoke` (D-2007): GitHubEnv.warm_smoke, before any state is read and with no cycle, its log
+    lines and result printed; any failure is printed too and the exit is always 0, so the workflow step
+    never fails the job (the session's own smoke then simply builds what is missing)."""
+    env = GitHubEnv(ROOT, [], Path(tempfile.gettempdir()), repo=repo_name(), starter=starter_name(),
+                    runner_sha=git_out("rev-parse", "HEAD"), dry_run=args.dry_run)
+    try:
+        line = env.warm_smoke()
+    except Exception as exc:  # noqa: BLE001  # reason: a failed warm-up only leaves the smoke cold, never fails the job (D-2007)
+        line = f"smoke warm-up failed: {str(exc)[:300]}"
+    for row in env.log:
+        print(f"runner: {row}")
+    print(f"runner: {line}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
+    if args.warm_smoke:
+        return warm_smoke(args)
     with tempfile.TemporaryDirectory() as outbox:
         cfg, env = build(args, Path(outbox))
         result = run(args, cfg, env)

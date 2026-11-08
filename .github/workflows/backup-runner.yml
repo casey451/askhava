@@ -351,6 +351,18 @@ jobs:
             echo "CARGO_LLVM_COV_TARGET_DIR=$covdir" >> "$GITHUB_ENV"
             df -h "$covdir" /tmp | sed 's/^/disk: /'
           fi
+      - name: Warm the smoke build before the session (D-2007)
+        # The start routine's smoke runs inside the session's 600-second Bash call (SMOKE_TIMEOUT 540, D-1178), and
+        # after nearly every merge its first run timed out compiling and only the chained retry passed (D-1970): about
+        # 10 minutes lost per merge. Here, with no such cap, the runner prepares the smoke's own tree exactly as the
+        # smoke does (fixed path, seed, mtimes pinned by content) and runs only smoke.sh's cargo compile steps into
+        # `target/smoke`, so the session's smoke finds them fresh. It writes no state; when it really compiled, it leaves
+        # `target/smoke-ran`, so "Smoke build cache, save" keeps the build even if the session dies; a failure only
+        # leaves the smoke cold.
+        if: hashFiles('Cargo.lock') != ''
+        continue-on-error: true
+        timeout-minutes: 25
+        run: python3 -m runner --warm-smoke
       - uses: anthropics/claude-code-action@v1
         id: claude
         env:
