@@ -1,23 +1,23 @@
 # Ask Hava build status
 
-Updated 2026-11-08T04:33:52Z by runner a2f57c33619e (actions).
+Updated 2026-11-08T04:41:50Z by runner bf568037d279 (actions).
 
-**Idle since 04:25Z; 150 of 282 done; week 48% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 04:38Z; 151 of 282 done; week 48% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 150 of 282 build tasks (owner gates not counted)
+- **Tasks done:** 151 of 282 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 04:25Z (no task in progress)
+- **Lane:** idle since 04:38Z (no task in progress)
 - **Week:** 48% used, 98.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:33Z, 0 min before this update
+- **Last run:** 04:33Z, 7 min before this update
 - **Keeper:** last ran 04:33Z, next wake 04:53Z
 
 ## Needs attention
-- Strict plan check red: 6 problem(s) on tasks still to run (+4 on DONE tasks); first: T089: stored context_pct 9% but it measures 13%; regenerate
+- Strict plan check red: 6 problem(s) on tasks still to run (+5 on DONE tasks); first: T089: stored context_pct 9% but it measures 13%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T088 | Authorization matrix over every route and actor; token isola | MERGE_PENDING | 1 | 45 min | 04:25Z |  |
+| T088 | Authorization matrix over every route and actor; token isola | done | 1 | 45 min | 04:25Z |  |
 | T291 | core and checks: one brand file the app and the build's chec | done | 1 | 44 min | 03:16Z |  |
 | T087 | portals: homeowner portal (phone and code), own data, no for | done | 1 | 46 min | 02:04Z |  |
 | T086 | portals: owner password, passkey or TOTP, recovery codes, 12 | done | 1 | 54 min | 00:56Z |  |
@@ -48,14 +48,14 @@ Updated 2026-11-08T04:33:52Z by runner a2f57c33619e (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 223 of 731 (30.5%) · partial 288 · unstarted 220
-**Tasks merged (throughput only):** 150 of 282
+**Requirements verified:** 223 of 731 (30.5%) · partial 289 · unstarted 219
+**Tasks merged (throughput only):** 151 of 282
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 13 | 11 | 11 | 35 |
 | ai | 13 | 11 | 4 | 28 |
-| businesses | 10 | 30 | 18 | 58 |
+| businesses | 10 | 31 | 17 | 58 |
 | calls | 10 | 14 | 1 | 25 |
 | consent | 14 | 17 | 4 | 35 |
 | fees | 17 | 34 | 1 | 52 |
@@ -84,7 +84,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 30 of 98 done
+- stage 4: 31 of 98 done
 - stage 5: 0 of 42 done
 - stage 6: 0 of 26 done
 - stage 7: 0 of 2 done
