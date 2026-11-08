@@ -13,7 +13,7 @@ CREATE TABLE messaging.notice_log (
   kind text NOT NULL
     CHECK (kind IN ('card', 'open_cards', 'pick', 'reminder', 'card_fix', 'release', 'account')),
   mailbox_id uuid NOT NULL,
-  email_id uuid REFERENCES messaging.email_outbox (id),
+  outbox_id uuid REFERENCES messaging.email_outbox (id),
   sent_at timestamptz,
   held_until timestamptz,
   first_opened_at timestamptz,
