@@ -1,23 +1,23 @@
 # Ask Hava build status
 
-Updated 2026-11-08T10:48:30Z by runner d0bc6fc268e2 (actions).
+Updated 2026-11-08T10:59:25Z by runner b452cd26f0b3 (actions).
 
-**Idle since 08:17Z; 153 of 282 done; week 49% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 08:40Z; 154 of 282 done; week 49% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 153 of 282 build tasks (owner gates not counted)
+- **Tasks done:** 154 of 282 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 08:17Z (no task in progress)
+- **Lane:** idle since 08:40Z (no task in progress)
 - **Week:** 49% used, 96.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:26Z, 21 min before this update
+- **Last run:** 10:48Z, 10 min before this update
 - **Keeper:** last ran 10:48Z, next wake 11:08Z
 
 ## Needs attention
-- Strict plan check red: 16 problem(s) on tasks still to run (+11 on DONE tasks); first: T255: stored context_pct 25% but it measures 30%; regenerate
+- Strict plan check red: 15 problem(s) on tasks still to run (+12 on DONE tasks); first: T255: stored context_pct 25% but it measures 30%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T197 | picks: Confirm by email alone with the 4-business-hour windo | MERGE_PENDING | 1 | 41 min | 08:17Z |  |
+| T197 | picks: Confirm by email alone with the 4-business-hour windo | done | 1 | 41 min | 08:17Z |  |
 | T148 | portals: secure email action links for every former text key | done | 1 | 56 min | 06:57Z |  |
 | T089 | Rate limits per phone, IP and business; brute-force stops | done | 1 | 44 min | 05:26Z |  |
 | T088 | Authorization matrix over every route and actor; token isola | done | 1 | 45 min | 04:25Z |  |
@@ -34,21 +34,26 @@ Updated 2026-11-08T10:48:30Z by runner d0bc6fc268e2 (actions).
 | T147 | messaging and businesses: business notices by chosen channel | done | 1 | 39 min | 14:31Z |  |
 | T230 | portals: the private feedback page and its storage | done | 1 | 61 min | 13:25Z |  |
 | T191 | payments: the unreachable-homeowner refund at 96 hours and i | done | 1 | 56 min | 12:07Z |  |
-| T097 | jobs: day-3 and day-14 check-ins, PROBLEM flags, private fee | done | 1 | 51 min | 10:55Z |  |
 
 ### Plan and harness merges on main
-- none
+- 10:55Z Harness: retry release downloads; backup job's coverage tools best-effort (D-1986) (#352)
+- 07:39Z harness: chain the next cycle at once after the first smoke timeout on a head (D-1970) (#349)
+- 01:33Z Plan: brand as configuration (T291–T295, D-1932–D-1933) (#342)
+- 22:37Z Harness: keep the smoke incremental across tasks that add queries; save its cache only from a smoking job (D-1911) (#338)
+- 19:48Z Plan: third audit — CI filters, close-time owned-file check, request timeout, confirm money invariants, reconcile retry (D-1866–D-1873) (#331)
+- 19:25Z Harness: incremental runner smoke build (stable tree, own target dir, mtime pinning) (D-1890) (#333)
+- 15:37Z Plan: second code audit — owners and acceptance for B01–B08 and known gaps (D-1835–D-1845) (#326)
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 231 of 731 (31.6%) · partial 290 · unstarted 210
-**Tasks merged (throughput only):** 153 of 282
+**Requirements verified:** 234 of 731 (32.0%) · partial 289 · unstarted 208
+**Tasks merged (throughput only):** 154 of 282
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 13 | 13 | 9 | 35 |
 | ai | 14 | 10 | 4 | 28 |
-| businesses | 13 | 30 | 15 | 58 |
+| businesses | 13 | 31 | 14 | 58 |
 | calls | 11 | 13 | 1 | 25 |
 | consent | 14 | 17 | 4 | 35 |
 | fees | 17 | 34 | 1 | 52 |
@@ -60,7 +65,7 @@ Updated 2026-11-08T10:48:30Z by runner d0bc6fc268e2 (actions).
 | ops-recovery | 2 | 4 | 48 | 54 |
 | privacy | 3 | 25 | 3 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
-| quotes-pick | 20 | 25 | 11 | 56 |
+| quotes-pick | 23 | 23 | 10 | 56 |
 | recurring | 7 | 1 | 3 | 11 |
 | security | 9 | 37 | 8 | 54 |
 | terms | 0 | 3 | 32 | 35 |
@@ -77,7 +82,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 33 of 98 done
+- stage 4: 34 of 98 done
 - stage 5: 0 of 42 done
 - stage 6: 0 of 26 done
 - stage 7: 0 of 2 done
