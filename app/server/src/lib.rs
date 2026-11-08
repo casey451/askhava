@@ -11,7 +11,8 @@ use std::sync::{Arc, OnceLock};
 
 use askhava_adapters::api::{StorageAdapter, TwilioConfig, TwilioVerify, twilio_clients};
 use askhava_core::api::{
-    Environment, IdSecret, LogGuard, Registry, Settings, SystemClock, init_logging, request_span,
+    Brand, Environment, IdSecret, LogGuard, Registry, Settings, SystemClock, init_logging,
+    install_brand, request_span,
 };
 use askhava_intake::api::JobTextKeys;
 use askhava_payments::api::Minter;
@@ -43,15 +44,19 @@ pub fn install_crypto_provider() -> io::Result<()> {
         .map_err(|_| io::Error::other("a rustls crypto provider is already installed"))
 }
 
-/// Reads the settings from the process environment and starts the JSON log
+/// Checks and installs the compiled-in brand file before anything renders (WORD-001, D-1932),
+/// then reads the settings from the process environment and starts the JSON log
 /// and Sentry, so a bad configuration stops the process before it serves or
 /// claims anything (SEC-002, SEC-036, PRIV-016, PRIV-017). Hold the guard
 /// for the life of `main`.
 ///
 /// # Errors
 ///
-/// Any settings or logging error; its message names a key, never a value.
+/// A bad brand field (the error names the field), or any settings or logging error; its message
+/// names a key, never a value.
 pub fn start_up() -> io::Result<(Settings, LogGuard)> {
+    let brand = Brand::embedded().map_err(io::Error::other)?;
+    install_brand(brand).map_err(io::Error::other)?;
     let settings = Settings::from_pairs(std::env::vars()).map_err(io::Error::other)?;
     let guard = init_logging(&settings).map_err(io::Error::other)?;
     Ok((settings, guard))

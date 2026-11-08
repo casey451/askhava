@@ -1,8 +1,10 @@
 """Scan of every text template (TD-TXT-02; TXT-005 to TXT-008, TXT-010, WORD-008).
 
-Reads app/messaging/templates/en.json and es.json and fails on: an emoji code point, a link that is
-not askhava.com, a link shortener, a ROC link other than askhava.com/help/roc-complaint, promotion or
-"save this number" wording, "reply CANCEL", or a text that does not begin "Ask Hava:". Fake data only.
+Reads app/messaging/templates/en.json and es.json, fills each template's brand tokens from
+app/core/data/brand.json (scripts/brand.py, D-1932), and fails on: an emoji code point, a link that is
+not on the brand's domain, a link shortener, a ROC link other than <domain>/help/roc-complaint,
+promotion or "save this number" wording, "reply CANCEL", or a text that does not begin
+"<short_name>:" (WORD-008, TXT-006). Fake data only.
 
 Run: python3 -m pytest tests/docs/test_template_scan.py -q -p no:cacheprovider
 """
@@ -13,10 +15,13 @@ import json
 import re
 from pathlib import Path
 
+import brand
 import pytest
 
 DIR = Path(__file__).resolve().parents[2] / "app" / "messaging" / "templates"
-ROC_LINK = "askhava.com/help/roc-complaint"
+BRAND = brand.load()
+DOMAIN = BRAND["domain"]
+ROC_LINK = f"{DOMAIN}/help/roc-complaint"
 SHORTENERS = {
     "bit.ly", "t.co", "tinyurl.com", "goo.gl", "ow.ly", "is.gd", "buff.ly", "rebrand.ly", "cutt.ly",
     "tiny.cc", "shorturl.at", "rb.gy", "lnkd.in", "t.ly", "s.id",
@@ -49,7 +54,12 @@ def load(name: str) -> dict:
 
 
 def all_templates():
-    return [(f"{lang}:{key}", entry["text"]) for lang in ("en", "es") for key, entry in load(lang).items()]
+    """Every template, its brand tokens filled in its own language (D-1932)."""
+    return [
+        (f"{lang}:{key}", brand.fill(entry["text"], lang == "es", BRAND))
+        for lang in ("en", "es")
+        for key, entry in load(lang).items()
+    ]
 
 
 def links(text: str) -> list[str]:
@@ -60,11 +70,12 @@ def emoji_in(text: str) -> list[str]:
     return [c for c in text if EMOJI.match(c) and c not in PLAIN]
 
 
-def problems(text: str) -> list[str]:
-    """Every rule the text breaks, as short messages."""
+def problems(text: str, spanish: bool = False) -> list[str]:
+    """Every rule the filled text breaks, as short messages; a Spanish text opens with es.short_name."""
     found = []
-    if not text.startswith("Ask Hava:"):
-        found.append('does not begin "Ask Hava:" (WORD-008)')
+    start = f"{brand.tokens(BRAND, spanish)['brand_short']}:"
+    if not text.startswith(start):
+        found.append(f'does not begin "{start}" (WORD-008)')
     if emoji_in(text):
         found.append("has an emoji (TXT-005)")
     for link in links(text):
@@ -72,8 +83,8 @@ def problems(text: str) -> list[str]:
         host = bare.split("/")[0].lower()
         if host in SHORTENERS:
             found.append(f"uses a link shortener {host} (TXT-006)")
-        elif host != "askhava.com":
-            found.append(f"links off askhava.com: {link} (TXT-006)")
+        elif host != DOMAIN:
+            found.append(f"links off {DOMAIN}: {link} (TXT-006)")
         elif re.search(r"/roc\b", bare, re.IGNORECASE) and bare.lower() != ROC_LINK:
             found.append(f"ROC link must be {ROC_LINK} (TXT-007)")
     if re.search(r"\broc\b", text, re.IGNORECASE) and ROC_LINK not in text:
@@ -90,7 +101,7 @@ def problems(text: str) -> list[str]:
 @pytest.mark.parametrize(("name", "text"), all_templates())
 def test_every_template_passes_the_scan(name: str, text: str) -> None:
     """TD-TXT-02: each real template breaks no rule."""
-    assert problems(text) == [], name
+    assert problems(text, name.startswith("es:")) == [], name
 
 
 def test_both_files_hold_the_same_kinds_and_spanish_is_draft() -> None:
