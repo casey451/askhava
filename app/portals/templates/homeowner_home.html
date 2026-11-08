@@ -55,7 +55,7 @@
 {% else %}<p>{{ texts_off_line }}</p>
 {% endif %}<h2>Your data</h2>
 <p><a href="/h/my-data">Download my data</a>: a copy of your requests, quotes, messages and text settings we still have.</p>
-<p>To delete your data, press the button. We'll text you a code to check it's you.</p>
+<p>To delete your data, tap the button. We'll text you a code first to make sure it's you.</p>
 <form method="post" action="/h/my-data/request" novalidate>
 <input type="hidden" name="csrf" value="{{ csrf }}">
 <input type="hidden" name="kind" value="delete">
