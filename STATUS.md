@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-08T12:00:22Z by runner 0893cb8c3043 (actions).
+Updated 2026-11-08T12:00:33Z by runner 0893cb8c3043 (actions).
 
-**Building: T149 in progress since 11:17Z; 154 of 282 done; week 50% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 12:00Z; 154 of 282 done; week 50% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 154 of 282 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T149 claimed 11:17Z, lease until 14:17Z
+- **Lane:** idle since 12:00Z (no task in progress)
 - **Week:** 50% used, 94.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 11:24Z, 36 min before this update
 - **Keeper:** last ran 11:09Z, next wake 11:29Z
@@ -17,6 +17,7 @@ Updated 2026-11-08T12:00:22Z by runner 0893cb8c3043 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T149 | businesses: sign-up deliverability check with a sample card, | MERGE_PENDING | 1 | 43 min | 12:00Z |  |
 | T197 | picks: Confirm by email alone with the 4-business-hour windo | done | 1 | 41 min | 08:17Z |  |
 | T148 | portals: secure email action links for every former text key | done | 1 | 56 min | 06:57Z |  |
 | T089 | Rate limits per phone, IP and business; brute-force stops | done | 1 | 44 min | 05:26Z |  |
@@ -90,7 +91,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T149 (lease until 2026-11-08T14:17:05Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T197", "at": "2026-11-08T08:17:02Z", "cache_read_input_tokens": 13160195, "output_tokens": 127895, "input_tokens": 334, "cache_creation_input_tokens": 485530}
+- {"task": "T149", "at": "2026-11-08T12:00:21Z", "input_tokens": 618, "cache_creation_input_tokens": 770063, "cache_read_input_tokens": 38803131, "output_tokens": 216622}
