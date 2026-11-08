@@ -16,7 +16,7 @@ The layer-5 crate for masked calls between a homeowner and the business she conn
 - `src/routing.rs` (T080): `PinWait` (`PIN_WAIT_KEY`, `ASKHAVA_PIN_WAIT_SECONDS`, `PIN_WAIT_MIN`), `pin_prompt_twiml`, `pin_heard` (`PinHeard`), `PIN_PROMPT`, `PIN_GOODBYE`.
 - `src/voice.rs` (T080): `may_code_call`, `code_call_twiml`; `Approval`, `Conditions`, `SafetySwitch`, `safety_script`, `safety_twiml`, `SafetyCall` (`from_payload`), `SafetyDialer`, `SafetyOutcome`, `place_safety_call` (the `SAFETY_CALL_KIND` handler), `safety_call_key`, `safety_call_answered`, `ring_owner`, `owner_bridge_twiml`; `SAFETY_WITHIN`, `SAFETY_SCRIPT_VERSION`, `SAFETY_CALL_ACTION`, `SAFETY_STOP_ACTION`, `SAFETY_CLAIM_ACTION`, `SAFETY_FAILED_ACTION`, `SAFETY_KEY_ACTION`, `SAFETY_RESULT_ACTION`, `VoiceError` (a `CallsError` or the provider).
 - `src/models.rs`: `CallsError` and the crate-private queries.
-- `src/api.rs`: the only public surface. `sqlx.toml`: `timestamptz` as jiff timestamps.
+- `src/api.rs`: the only public surface; T254 adds `job_had_line(db, job)` (any line of the job, open or closed), which `picks`' line retry reads so a closed line is never reopened (D-1688). `sqlx.toml`: `timestamptz` as jiff timestamps.
 
 ## Rules it enforces
 

@@ -102,6 +102,7 @@ pub use crate::service::{
     check_page_code, page_pick, record_terms_line, send_code, send_page_code, terms_line,
     terms_line_sent, text_pick, waiting_quote, withdraw_paused,
 };
+pub use crate::settle::{LINE_RETRY_KIND, Settled, retry_line, settle};
 pub use crate::unreachable_refund::{
     AtNinetySix, MISSED_CALL_TEMPLATE, REMINDER_EMAIL_TEMPLATE, REMINDER_TEMPLATE, REMINDERS_AFTER,
     ReleasedPick, auto_submits, call_record, decide_at_96_hours, decision_template,
