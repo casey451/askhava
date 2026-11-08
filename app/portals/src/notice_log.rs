@@ -32,7 +32,7 @@ struct Row {
     what: &'static str,
     when: String,
     to: String,
-    status: &'static str,
+    server_said: &'static str,
     opened: Option<String>,
     acted: Option<String>,
 }
@@ -81,7 +81,7 @@ fn row(e: &NoticeEntry, addresses: &[(Uuid, String)]) -> Row {
             Sending::Held(until) => format!("Held by quiet hours until {}", when(until)),
         },
         to: to.map_or_else(|| "an address you removed".to_owned(), |(_, a)| a.clone()),
-        status: e
+        server_said: e
             .status
             .map_or("No word from your mail server yet", ProviderStatus::line),
         opened: e

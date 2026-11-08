@@ -12,7 +12,7 @@
 {% for r in rows %}<li>
 <h2>{{ r.what }}</h2>
 <p>{{ r.when }}, to {{ r.to }}</p>
-<p>{{ r.status }}</p>
+<p>{{ r.server_said }}</p>
 {% if let Some(o) = r.opened %}<p>{{ o }}</p>
 {% endif %}{% if let Some(a) = r.acted %}<p>{{ a }}</p>
 {% endif %}</li>
