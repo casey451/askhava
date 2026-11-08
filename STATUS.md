@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-08T11:08:32Z by runner b452cd26f0b3 (actions).
+Updated 2026-11-08T11:09:39Z by runner b452cd26f0b3 (actions).
 
-**Idle since 08:40Z; 154 of 282 done; week 49% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 08:40Z; 154 of 282 done; week 50% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 154 of 282 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 08:40Z (no task in progress)
-- **Week:** 49% used, 96.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:48Z, 19 min before this update
+- **Week:** 50% used, 96.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Last run:** 11:08Z, 1 min before this update
 - **Keeper:** last ran 10:48Z, next wake 11:08Z
 
 ## Needs attention
