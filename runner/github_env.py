@@ -88,6 +88,10 @@ WARM_COMMANDS = (
     ("cargo", "build", "-p", "askhava-server", "--locked"),
     ("cargo", "test", "--workspace", "--locked", "--no-run"),
 )
+# Seconds of cargo compile time below which a warm-up counts as having built nothing (a head already built):
+# it then leaves no SMOKE_RAN, so an idle or paced job saves no new multi-GB smoke entry that would evict the
+# `rust-*` entry under GitHub's 10 GB cache limit (D-2007 review).
+WARM_SAVE_SECONDS = 60
 TOOLCHAIN = re.compile(r'^channel *= *"(.*)"', re.MULTILINE)  # smoke.sh's `sed` over rust-toolchain.toml
 PREHANDIN = "scripts/prehandin.sh"  # the pre-hand-in gate; main's copy runs on a submitted head at --after (D-1300)
 PREHANDIN_TIMEOUT = 240  # seconds for its --quick part (about 20 s measured), well inside --after's 600-second Bash call
@@ -1058,37 +1062,47 @@ class GitHubEnv:
         main's head, `_seed_smoke_target`, `_pin_smoke_tree` with its manifest) and then only the smoke's
         compile steps (`warm_commands`), within WARM_TIMEOUT, so the session's smoke, which pins the same
         content to the same times, finds the artifacts fresh. main's head is the checkout's `origin/main`
-        (no fetch: the step has no token). Leaves SMOKE_RAN so the cache is saved; writes no state, lease or
-        log on claude/kit-state; returns the line to print."""
+        (no fetch: the step has no token). Leaves SMOKE_RAN, so the cache is saved, only when the compile
+        made progress (`_warm_build`); writes no state, lease or log on claude/kit-state; returns the line to print."""
         head = self.git("rev-parse", "--verify", "--quiet", "origin/main^{commit}", check=False) or self.git("rev-parse", "HEAD", check=False)
         if self.dry_run or not head:
             return f"dry-run: smoke warm-up not run on {head[:12]}" if self.dry_run else "smoke warm-up skipped: no main head"
-        tree, start = smoke_tree_dir(), time.monotonic()
+        tree, start, built = smoke_tree_dir(), time.monotonic(), False
         self._drop_smoke_tree(tree)
         self.git("worktree", "add", "--detach", str(tree), head)
         try:
             self._seed_smoke_target(tree)
             self._pin_smoke_tree(tree)
-            done = self._warm_build(tree, start + WARM_TIMEOUT)
+            done, built = self._warm_build(tree, start + WARM_TIMEOUT)
         finally:
             self._drop_smoke_tree(tree)
-            _mark_smoke_ran()
-        return f"smoke warm-up on {head[:12]}: {done or 'nothing to build'}; {round(time.monotonic() - start)} s"
+            if built:
+                _mark_smoke_ran()
+        saved = "cache marked for saving" if built else "nothing new to cache"
+        return f"smoke warm-up on {head[:12]}: {done or 'nothing to build'}; {round(time.monotonic() - start)} s, {saved}"
 
-    def _warm_build(self, tree: Path, deadline: float) -> str:
+    def _warm_build(self, tree: Path, deadline: float) -> tuple[str, bool]:
         """Each of `warm_commands` in turn, a red one not stopping the next (a clippy warning must not keep
-        the test build cold); the first to outrun `deadline` ends the warm-up. Returns `<step> <exit>` items."""
+        the test build cold); the first to outrun `deadline` ends the warm-up. Returns the `<step> <exit>`
+        items and whether the build is worth saving: the cargo commands took at least WARM_SAVE_SECONDS and
+        one of them exited 0 or ran out of time (a timeout that compiled for that long made progress)."""
         done: list[str] = []
+        cargo_s, progress = 0.0, False
         for cmd in warm_commands(tree):
-            left = deadline - time.monotonic()
+            left, began = deadline - time.monotonic(), time.monotonic()
             try:
                 if left <= 0:
                     raise subprocess.TimeoutExpired(cmd, 0)
-                done.append(f"{cmd[1]} exit {self.warm_run(cmd, tree, left)}")
+                code = self.warm_run(cmd, tree, left)
+                done.append(f"{cmd[1]} exit {code}")
+                progress = progress or (cmd[0] == "cargo" and code == 0)
             except subprocess.TimeoutExpired:
                 done.append(f"{cmd[1]} timed out (budget {WARM_TIMEOUT} s)")
+                progress = progress or cmd[0] == "cargo"
                 break
-        return ", ".join(done)
+            finally:
+                cargo_s += time.monotonic() - began if cmd[0] == "cargo" else 0.0
+        return ", ".join(done), progress and cargo_s >= WARM_SAVE_SECONDS
 
     def _drop_smoke_tree(self, tree: Path) -> None:
         """Remove the smoke worktree, and anything a crashed run left at its fixed path, so `worktree add` works."""

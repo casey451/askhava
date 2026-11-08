@@ -9,6 +9,7 @@ import os
 import shutil
 import subprocess
 import sys
+import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
@@ -491,7 +492,7 @@ def test_the_keeper_runs_from_a_worktree_of_the_repository(tmp_path: Path) -> No
         subprocess.run(["git", "worktree", "remove", "--force", str(tree)], cwd=ROOT, check=False)
 
 
-def _warm_env(tmp_path: Path, monkeypatch: Any, fail_at: str = "") -> tuple[Any, list[list[str]], list[tuple[list[str], Path, float]]]:
+def _warm_env(tmp_path: Path, monkeypatch: Any, fail_at: str = "", red: tuple[str, ...] = ("clippy",)) -> tuple[Any, list[list[str]], list[tuple[list[str], Path, float]]]:
     """A GitHubEnv for `--warm-smoke` (D-2007): a fake git whose worktree add writes a Cargo.toml and a
     rust-toolchain.toml, and a fake `warm_run` that records each cargo call (raising TimeoutExpired at the
     command whose second word is `fail_at`). No real cargo or network."""
@@ -518,7 +519,7 @@ def _warm_env(tmp_path: Path, monkeypatch: Any, fail_at: str = "") -> tuple[Any,
         built.append((cmd, cwd, left))
         if cmd[1] == fail_at:
             raise subprocess.TimeoutExpired(cmd, left)
-        return 1 if cmd[1] == "clippy" else 0
+        return 1 if cmd[1] in red else 0
 
     env = ge.GitHubEnv(tmp_path, [], tmp_path, repo="o/r", starter="actions", runner_sha="x", run=run)
     env.warm_run = warm
@@ -532,7 +533,12 @@ def test_the_warm_up_prepares_the_smoke_tree_as_the_smoke_does_and_only_compiles
 
     env, calls, built = _warm_env(tmp_path, monkeypatch)
     tree = ge.smoke_tree_dir()
+    assert env.warm_smoke().endswith(", nothing new to cache"), "an instant build (a head already built) is not saved"
+    assert not (tmp_path / "target" / ge.SMOKE_RAN).exists(), "no fresh multi-GB entry from an idle job (D-2007 review)"
+    calls.clear(), built.clear(), env.log.clear()
+    monkeypatch.setattr(ge, "WARM_SAVE_SECONDS", 0)
     line = env.warm_smoke()
+    assert line.endswith(", cache marked for saving")
     assert line.startswith(f"smoke warm-up on {'e' * 12}: toolchain exit 0, clippy exit 1, build exit 0, test exit 0; ")
     add = calls.index(["git", "worktree", "add", "--detach", str(tree), "e" * 40])
     assert calls.index(["git", "worktree", "remove", "--force", str(tree)]) < add < calls.index(["git", "ls-files", "-s", "-z"])
@@ -543,17 +549,27 @@ def test_the_warm_up_prepares_the_smoke_tree_as_the_smoke_does_and_only_compiles
     assert not [c for c in calls if c[:2] in (["git", "push"], ["git", "fetch"]) or c[:1] == ["gh"]], "no state, lease or network"
     assert (tmp_path / "target" / "smoke" / ge.SMOKE_MTIMES).exists() and not tree.exists()
     assert (tmp_path / "target" / ge.SMOKE_RAN).exists(), "the save step keeps a warm build even if the session dies"
-    assert "smoke mtimes: 2 new or changed paths" in env.log
+    assert "smoke mtimes: 0 new or changed paths" in env.log, "the second run re-pins to the times the first recorded"
+
+
+def test_a_warm_up_whose_cargo_commands_all_fail_leaves_no_marker(monkeypatch: Any, tmp_path: Path) -> None:
+    from runner import github_env as ge
+
+    env, _, built = _warm_env(tmp_path, monkeypatch, red=("clippy", "build", "test"))
+    monkeypatch.setattr(ge, "WARM_SAVE_SECONDS", 0)
+    assert env.warm_smoke().endswith(", nothing new to cache") and len(built) == 4
+    assert not (tmp_path / "target" / ge.SMOKE_RAN).exists()
 
 
 def test_a_warm_up_that_outruns_its_budget_stops_and_still_cleans_up(monkeypatch: Any, tmp_path: Path) -> None:
     from runner import github_env as ge
 
-    env, _, built = _warm_env(tmp_path, monkeypatch, fail_at="build")
+    env, _, built = _warm_env(tmp_path, monkeypatch, fail_at="build", red=("clippy", "test"))
+    monkeypatch.setattr(ge, "WARM_SAVE_SECONDS", 0)
     line = env.warm_smoke()
     assert f"clippy exit 1, build timed out (budget {ge.WARM_TIMEOUT} s);" in line
     assert [b[0][1] for b in built] == ["toolchain", "clippy", "build"], "no command after the one that timed out"
-    assert not ge.smoke_tree_dir().exists() and (tmp_path / "target" / ge.SMOKE_RAN).exists()
+    assert not ge.smoke_tree_dir().exists() and (tmp_path / "target" / ge.SMOKE_RAN).exists(), "a timeout that compiled is kept"
 
 
 def test_a_dry_run_warm_up_builds_nothing(monkeypatch: Any, tmp_path: Path) -> None:
@@ -569,8 +585,11 @@ def test_the_warm_up_compiles_exactly_what_smoke_sh_compiles() -> None:
     from runner import github_env as ge
 
     smoke = {line.strip() for line in (ROOT / "scripts" / "smoke.sh").read_text(encoding="utf-8").splitlines()}
-    for cmd in ge.WARM_COMMANDS:
-        assert " ".join(c for c in cmd if c != "--no-run") in smoke, cmd
+    warm = {" ".join(c for c in cmd if c != "--no-run") for cmd in ge.WARM_COMMANDS}
+    for cmd in warm:
+        assert cmd in smoke, cmd
+    compiles = {line for line in smoke if line.split()[:2] in (["cargo", "clippy"], ["cargo", "build"], ["cargo", "test"])}
+    assert compiles == warm, "every clippy, build and test line of smoke.sh is warmed, and only those"
     assert ge.WARM_COMMANDS[-1][-1] == "--no-run" and sum("--no-run" in c for c in ge.WARM_COMMANDS) == 1
     assert any(line.startswith("export SQLX_OFFLINE=true") for line in smoke)
     assert 'rustup toolchain install "${toolchain}" --profile minimal -c clippy -c rustfmt >/dev/null 2>&1' in smoke
@@ -582,6 +601,7 @@ def test_run_warm_uses_the_smoke_environment_and_kills_the_whole_group(monkeypat
     from runner import github_env as ge
 
     monkeypatch.setenv("CARGO_TARGET_DIR", str(tmp_path / "target"))
+    monkeypatch.delenv("SQLX_OFFLINE", raising=False)
     out = tmp_path / "env.txt"
     script = f'echo "$CARGO_TARGET_DIR $CARGO_INCREMENTAL $SQLX_OFFLINE" > {out}'
     assert ge.run_warm(["sh", "-c", script], tmp_path, 30) == 0
@@ -593,10 +613,14 @@ def test_run_warm_uses_the_smoke_environment_and_kills_the_whole_group(monkeypat
     except subprocess.TimeoutExpired:
         pass
     child = int(pid_file.read_text())
-    try:
-        state = Path(f"/proc/{child}/stat").read_text().split(")")[-1].split()[0]
-    except OSError:
-        state = "gone"
+    for _ in range(50):  # SIGKILL is delivered asynchronously: give the kernel up to 5 s to finish the child
+        try:
+            state = Path(f"/proc/{child}/stat").read_text().split(")")[-1].split()[0]
+        except OSError:
+            state = "gone"
+        if state in ("gone", "Z"):
+            break
+        time.sleep(0.1)
     assert state in ("gone", "Z"), "a background child (rustc) is killed with the group"
 
 
