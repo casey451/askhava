@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT s.id, s.actor_id, o.last_seen_at, o.factor_at FROM portals.session s JOIN portals.owner_session o ON o.session_id = s.id WHERE s.token_sha256 = $1 AND s.realm = 'owner' AND s.expires_at > $2",
+  "query": "SELECT s.id, s.actor_id, s.created_at, o.last_seen_at, o.factor_at FROM portals.session s JOIN portals.owner_session o ON o.session_id = s.id WHERE s.token_sha256 = $1 AND s.realm = 'owner' AND s.expires_at > $2",
   "describe": {
     "columns": [
       {
@@ -27,6 +27,17 @@
       },
       {
         "ordinal": 2,
+        "name": "created_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "portals.session",
+            "name": "created_at"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
         "name": "last_seen_at",
         "type_info": "Timestamptz",
         "origin": {
@@ -37,7 +48,7 @@
         }
       },
       {
-        "ordinal": 3,
+        "ordinal": 4,
         "name": "factor_at",
         "type_info": "Timestamptz",
         "origin": {
@@ -58,8 +69,9 @@
       false,
       false,
       false,
+      false,
       false
     ]
   },
-  "hash": "4452a9319f6ac942c041289e886e9ed395fbb135bcf9fa91ed7d928e5a72516c"
+  "hash": "35477c07f14b13fc381a377d6fe6b3f7c9d74193f31a3814bd977ae0ef639ffb"
 }

@@ -224,10 +224,10 @@ async fn td_sec_22_thirty_minutes_idle_ends_the_session(pool: PgPool) {
     let life = SignedDuration::from_hours(12);
     let login = (Realm::Owner, Uuid::from_u128(0xd1));
     let bare = start_session(&mut db, CookieJar::new(), login, life, at(5000)).await;
-    let read = current_session(&mut db, &bare.expect("session"), at(5001)).await;
+    let read = owner_principal(&mut db, &bare.expect("session"), at(5001)).await;
     assert!(
         read.expect("read").is_none(),
-        "only owner_sign_in makes an owner session"
+        "only owner_sign_in makes an owner principal"
     );
 }
 

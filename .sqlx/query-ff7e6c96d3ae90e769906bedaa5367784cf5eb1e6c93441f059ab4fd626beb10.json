@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT s.id, s.realm, s.actor_id FROM portals.session s LEFT JOIN portals.owner_session o ON o.session_id = s.id WHERE s.token_sha256 = $1 AND s.expires_at > $2 AND (s.realm <> 'owner' OR o.last_seen_at >= $2 - interval '30 minutes')",
+  "query": "SELECT id, realm, actor_id FROM portals.session WHERE token_sha256 = $1 AND expires_at > $2",
   "describe": {
     "columns": [
       {
@@ -49,5 +49,5 @@
       false
     ]
   },
-  "hash": "37cb169e2890fab7ec4ec9919f5b5c373da134efdebac67991e4e30ac9f2b6b3"
+  "hash": "ff7e6c96d3ae90e769906bedaa5367784cf5eb1e6c93441f059ab4fd626beb10"
 }

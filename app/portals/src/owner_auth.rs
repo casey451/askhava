@@ -245,6 +245,15 @@ pub fn factor_fresh(factor_at: Timestamp, now: Timestamp) -> bool {
     !age.is_negative() && age <= OWNER_STEP_UP_WINDOW
 }
 
+/// When an owner session signed in at `created` and last used at `now` ends: 30 minutes idle
+/// (plus one microsecond, the database's resolution, so `expires_at > now` keeps 30:00 live as
+/// [`idle_ended`] does), never past 12 hours. Stored as `portals.session.expires_at`, so
+/// `current_session` and `Session::owner_proof` refuse an idle owner session too (D-1917).
+fn owner_session_end(created: Timestamp, now: Timestamp) -> Timestamp {
+    let idle_end = now + OWNER_IDLE_LIMIT + SignedDuration::from_micros(1);
+    idle_end.min(created + OWNER_SESSION_LIFE)
+}
+
 fn random<const N: usize>() -> Result<[u8; N], OwnerAuthError> {
     let mut bytes = [0u8; N];
     SysRng
@@ -488,6 +497,8 @@ pub async fn owner_sign_in(
     };
     let times = (now, factor_at);
     let session = db(m::insert_owner_session(&mut tx, &sha256(&token), times).await)?;
+    let ends = (now, owner_session_end(now, now));
+    db(m::touch_owner_session(&mut tx, session, ends).await)?;
     let entry = owner_entry(
         owner,
         "portals.owner_signed_in",
@@ -499,8 +510,8 @@ pub async fn owner_sign_in(
 }
 
 /// The signed-in owner, or `None` for no cookie, a non-owner or expired session, or one idle for
-/// more than 30 minutes, which is deleted; a live one's idle clock restarts at `now` (SEC-005,
-/// SEC-043). A business or homeowner session is never an owner principal (SEC-006, SEC-019).
+/// more than 30 minutes, which is deleted; a live one's idle clock restarts at `now` and its
+/// session row's end moves to `owner_session_end` (SEC-005, SEC-043). A business or homeowner session is never an owner principal (SEC-006, SEC-019).
 ///
 /// # Errors
 ///
@@ -521,7 +532,8 @@ pub async fn owner_principal(
         db(m::end_session(conn, row.session).await)?;
         return Ok(None);
     }
-    db(m::touch_owner_session(conn, row.session, now).await)?;
+    let ends = (now, owner_session_end(row.created_at, now));
+    db(m::touch_owner_session(conn, row.session, ends).await)?;
     Ok(Some(OwnerPrincipal {
         owner: row.owner,
         session: row.session,

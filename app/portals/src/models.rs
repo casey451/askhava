@@ -175,6 +175,8 @@ pub(crate) struct OwnerSessionRow {
     pub(crate) last_seen_at: Timestamp,
     /// The last second factor.
     pub(crate) factor_at: Timestamp,
+    /// The sign-in time (the 12-hour clock starts here).
+    pub(crate) created_at: Timestamp,
 }
 
 /// Inserts the one owner with password hash `hash`; `None` when an owner exists (SEC-044).
@@ -391,7 +393,8 @@ pub(crate) async fn owner_session(
     now: Timestamp,
 ) -> Result<Option<OwnerSessionRow>, sqlx::Error> {
     let row = sqlx::query!(
-        "SELECT s.id, s.actor_id, o.last_seen_at, o.factor_at FROM portals.session s \
+        "SELECT s.id, s.actor_id, s.created_at, o.last_seen_at, o.factor_at \
+         FROM portals.session s \
          JOIN portals.owner_session o ON o.session_id = s.id \
          WHERE s.token_sha256 = $1 AND s.realm = 'owner' AND s.expires_at > $2",
         digest,
@@ -404,19 +407,23 @@ pub(crate) async fn owner_session(
         owner: r.actor_id,
         last_seen_at: r.last_seen_at.to_jiff(),
         factor_at: r.factor_at.to_jiff(),
+        created_at: r.created_at.to_jiff(),
     }))
 }
 
-/// Restarts session `session`'s idle clock at `now`.
+/// Restarts session `session`'s idle clock at `now` and moves its `portals.session` end to
+/// `expires`, so every reader of the session row (`current_session` too) sees the idle end.
 pub(crate) async fn touch_owner_session(
     conn: &mut PgConnection,
     session: Uuid,
-    now: Timestamp,
+    (now, expires): (Timestamp, Timestamp),
 ) -> Result<(), sqlx::Error> {
     sqlx::query!(
-        "UPDATE portals.owner_session SET last_seen_at = $2 WHERE session_id = $1",
+        "WITH ends AS (UPDATE portals.session SET expires_at = $3 WHERE id = $1) \
+         UPDATE portals.owner_session SET last_seen_at = $2 WHERE session_id = $1",
         session,
         now.to_sqlx(),
+        expires.to_sqlx(),
     )
     .execute(conn)
     .await
