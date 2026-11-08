@@ -1283,3 +1283,4 @@
 - 2026-11-08T01:01:00Z runner ca7080908e1c (actions): {}
 - 2026-11-08T01:01:11Z runner ca7080908e1c (actions): {}
 - 2026-11-08T01:18:45Z runner a6b09fa0a4bc (actions): {"T086": "MERGE_PENDING -> DONE"}
+- 2026-11-08T01:26:04Z runner a6b09fa0a4bc (actions): {"T087": "QUEUED -> IN_PROGRESS"}; T087 estimated 2.8M tokens (calibrated); five-hour window has 15.0M left, week 102.0M (session_reading 2026-11-08T01:01:00Z (week)); claimed
