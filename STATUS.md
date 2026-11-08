@@ -1,23 +1,23 @@
 # Ask Hava build status
 
-Updated 2026-11-08T14:05:26Z by runner 624c0b6013e2 (actions).
+Updated 2026-11-08T14:25:29Z by runner 030777a33a7e (actions).
 
-**Idle since 14:02Z; 155 of 282 done; week 52% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 14:21Z; 156 of 282 done; week 52% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 155 of 282 build tasks (owner gates not counted)
+- **Tasks done:** 156 of 282 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 14:02Z (no task in progress)
+- **Lane:** idle since 14:21Z (no task in progress)
 - **Week:** 52% used, 92.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:05Z, 0 min before this update
+- **Last run:** 14:05Z, 19 min before this update
 - **Keeper:** last ran 14:05Z, next wake 14:25Z
 
 ## Needs attention
-- Strict plan check red: 15 problem(s) on tasks still to run (+13 on DONE tasks); first: T255: stored context_pct 25% but it measures 30%; regenerate
+- Strict plan check red: 19 problem(s) on tasks still to run (+16 on DONE tasks); first: T255: stored context_pct 25% but it measures 30%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T198 | messaging and portals: daily open-cards email, missed-card a | MERGE_PENDING | 1 | 71 min | 14:02Z |  |
+| T198 | messaging and portals: daily open-cards email, missed-card a | done | 1 | 71 min | 14:02Z |  |
 | T149 | businesses: sign-up deliverability check with a sample card, | done | 1 | 43 min | 12:00Z |  |
 | T197 | picks: Confirm by email alone with the 4-business-hour windo | done | 1 | 41 min | 08:17Z |  |
 | T148 | portals: secure email action links for every former text key | done | 1 | 56 min | 06:57Z |  |
@@ -46,26 +46,26 @@ Updated 2026-11-08T14:05:26Z by runner 624c0b6013e2 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 234 of 731 (32.0%) · partial 291 · unstarted 206
-**Tasks merged (throughput only):** 155 of 282
+**Requirements verified:** 236 of 731 (32.3%) · partial 293 · unstarted 202
+**Tasks merged (throughput only):** 156 of 282
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 13 | 13 | 9 | 35 |
 | ai | 14 | 10 | 4 | 28 |
-| businesses | 13 | 33 | 12 | 58 |
+| businesses | 13 | 35 | 10 | 58 |
 | calls | 11 | 13 | 1 | 25 |
 | consent | 14 | 17 | 4 | 35 |
 | fees | 17 | 34 | 1 | 52 |
-| intake | 19 | 15 | 9 | 43 |
-| job-cards | 12 | 8 | 4 | 24 |
+| intake | 20 | 14 | 9 | 43 |
+| job-cards | 12 | 9 | 3 | 24 |
 | licensing | 33 | 14 | 1 | 48 |
 | lifecycle | 20 | 8 | 0 | 28 |
 | messaging | 16 | 25 | 4 | 45 |
-| ops-recovery | 2 | 4 | 48 | 54 |
+| ops-recovery | 2 | 5 | 47 | 54 |
 | privacy | 3 | 25 | 3 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
-| quotes-pick | 23 | 23 | 10 | 56 |
+| quotes-pick | 24 | 22 | 10 | 56 |
 | recurring | 7 | 1 | 3 | 11 |
 | security | 9 | 37 | 8 | 54 |
 | terms | 0 | 3 | 32 | 35 |
@@ -82,7 +82,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 35 of 98 done
+- stage 4: 36 of 98 done
 - stage 5: 0 of 42 done
 - stage 6: 0 of 26 done
 - stage 7: 0 of 2 done
