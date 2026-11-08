@@ -10,6 +10,8 @@ import json
 import re
 import subprocess
 from pathlib import Path
+from typing import Any
+
 import pytest
 import yaml
 
@@ -529,3 +531,90 @@ def test_the_gitleaks_install_runs_under_actions_bash_e(tmp_path: Path, workflow
         assert "tar " not in calls, "a tarball that failed its download or check is never extracted"
     if workflow == "backup-runner.yml":
         assert (tmp_path / "path").read_text() == f"{tmp_path}/gitleaks\n"
+
+
+PREBUILT_STEP = "checks: Prebuilt tools (cargo-audit, cargo-deny) from pinned musl release tarballs (D-693)"
+PREBUILT_PINS = {"AUDIT": "0.22.2", "DENY": "0.20.2"}
+
+
+def _prebuilt_step() -> dict[str, Any]:
+    ci = yaml.safe_load((ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8"))
+    return next(s for s in ci["jobs"]["checks"]["steps"] if f"checks: {s.get('name', '')}" == PREBUILT_STEP)
+
+
+def test_cargo_audit_and_deny_fall_back_to_crates_io_and_stay_required() -> None:
+    """D-1986: after gitleaks, the cargo-audit and cargo-deny release assets gave 504s too. Each tool's release
+    tarball stays retried, SHA-256 checked and extracted only after the check; on a failed download or check the same
+    version comes from crates.io (`cargo install --locked`, exact version) into the same bin, and the binary must
+    report the pinned version. The pins match the release URLs, and nothing can mask both sources failing."""
+    step = _prebuilt_step()
+    for tool, version in PREBUILT_PINS.items():
+        assert str(step["env"][f"{tool}_VERSION"]) == version and version in step["env"][f"{tool}_URL"], tool
+    block = step["run"]
+    assert f'{RETRY}"$RUNNER_TEMP/$tool.tgz" "${{!url}}" \\\n' in block
+    assert '&& echo "${!sum}  $RUNNER_TEMP/$tool.tgz" | sha256sum -c - \\\n' in block
+    assert block.index("sha256sum -c -") < block.index('&& tar -xzf "$RUNNER_TEMP/$tool.tgz"'), "checked, then extracted"
+    fallback = block.split("else\n", 1)[1]
+    assert 'cargo install --locked --root "$RUNNER_TEMP/tools" --version "=${!version}" "$name"' in fallback
+    assert 'reported="$("$bin/$name" --version)"' in block and '*" ${!version}")' in block
+    assert block.rstrip().endswith('echo "$bin" >> "$GITHUB_PATH"')
+    for banned in ("||", "--no-verify", "--offline", "--frozen", "--registry", "--git", "--path", "--index"):
+        assert banned not in block, banned
+
+
+def _prebuilt_stubs(bin_dir: Path, case: str) -> None:
+    """curl, sha256sum, tar and cargo stand-ins that log their calls; tar and `cargo install` leave stub tools that
+    print `<name> <FAKE_REPORTS or the version they were built at>`."""
+    def fake(name: str, version: str) -> str:
+        return f"printf '#!/bin/sh\\necho \"%s ${{FAKE_REPORTS:-%s}}\"\\n' {name} {version}"
+    tar = "; ".join(f'{fake(f"cargo-{t.lower()}", v)} > "$RUNNER_TEMP/tools/bin/cargo-{t.lower()}"'
+                    for t, v in PREBUILT_PINS.items())
+    tools = {
+        "curl": "exit 22" if case in ("curl", "both") else ":",
+        "sha256sum": "cat >/dev/null; exit 1" if case == "sha" else "cat >/dev/null",
+        "tar": f'{tar}; chmod +x "$RUNNER_TEMP"/tools/bin/*',
+        "cargo": ("exit 101; " if case == "both" else "")
+                 + 'name="$7"; v="${6#=}"; printf \'#!/bin/sh\\necho "%s ${FAKE_REPORTS:-%s}"\\n\' "$name" "$v" '
+                 + '> "$4/bin/$name"; chmod +x "$4/bin/$name"',
+    }
+    for tool, body in tools.items():
+        (bin_dir / tool).write_text(f'#!/bin/sh\necho "{tool} $*" >> "$RUNNER_TEMP/calls"\n{body}\n')
+        (bin_dir / tool).chmod(0o755)
+
+
+@pytest.mark.parametrize(("case", "env", "source"), [
+    ("", {}, "release"), ("curl", {}, "crates.io"), ("sha", {}, "crates.io"), ("both", {}, None),
+    ("", {"FAKE_REPORTS": "0.20.20"}, None), ("curl", {"FAKE_REPORTS": "0.1.0"}, None)])
+def test_the_prebuilt_tools_install_runs_under_actions_bash_e(tmp_path: Path, case: str, env: dict[str, str],
+                                                              source: str | None) -> None:
+    """The Prebuilt tools step under `bash -e`, as Actions runs it, with stub tools: good releases are used as is; a
+    failed download or SHA-256 check falls back to `cargo install` (never extracting that tarball); both sources
+    failing, or a tool reporting another version, fails the step."""
+    stubs = tmp_path / "bin"
+    stubs.mkdir()
+    _prebuilt_stubs(stubs, case)
+    step = _prebuilt_step()
+    script = tmp_path / "step.sh"
+    script.write_text(step["run"])
+    run_env = {"PATH": f"{stubs}:/usr/bin:/bin", "RUNNER_TEMP": str(tmp_path), "GITHUB_PATH": str(tmp_path / "path"),
+               **{k: str(v) for k, v in step["env"].items()}, **env}
+    for tool in PREBUILT_PINS:
+        run_env[f"{tool}_SHA256"] = "0" * 64
+    done = subprocess.run(["bash", "-e", str(script)], cwd=tmp_path, env=run_env, capture_output=True, text=True,
+                          check=False)
+    calls = (tmp_path / "calls").read_text()
+    if source is None:
+        assert done.returncode != 0, done.stdout
+        assert not (tmp_path / "path").exists(), "nothing goes on the path"
+        return
+    assert done.returncode == 0, done.stdout + done.stderr
+    for tool, version in PREBUILT_PINS.items():
+        name = f"cargo-{tool.lower()}"
+        assert f"{name} reports version {name} {version}" in done.stdout
+        if source == "release":
+            assert f"{name} source: the {version} release tarball (SHA-256 verified)" in done.stdout
+        else:
+            assert f"{name} source: crates.io {version} (index checksum verified, built --locked)" in done.stdout
+            assert f"cargo install --locked --root {tmp_path}/tools --version ={version} {name}" in calls
+    assert ("cargo " in calls) == (source == "crates.io") and ("tar " in calls) == (source == "release")
+    assert (tmp_path / "path").read_text() == f"{tmp_path}/tools/bin\n"

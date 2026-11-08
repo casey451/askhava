@@ -192,18 +192,40 @@ jobs:
       - name: Prebuilt tools (cargo-audit, cargo-deny) from pinned musl release tarballs (D-693)
         if: steps.changes.outputs.rust == 'true'
         env:
+          AUDIT_VERSION: 0.22.2
           AUDIT_URL: https://github.com/rustsec/rustsec/releases/download/cargo-audit/v0.22.2/cargo-audit-x86_64-unknown-linux-musl-v0.22.2.tgz
           AUDIT_SHA256: 7fb9497f8594b389e5fce5ef9b92db08432996895b2e0c5a0167a69ed445c428
+          DENY_VERSION: 0.20.2
           DENY_URL: https://github.com/EmbarkStudios/cargo-deny/releases/download/0.20.2/cargo-deny-0.20.2-x86_64-unknown-linux-musl.tar.gz
           DENY_SHA256: 9f12ed4c49936e09b48bf862b595cde2fe64fcbd9d74dfacac6131ca824c8d5f
         run: |
+          # Each tool: the pinned musl release tarball, retried, checked against its SHA-256 and extracted only once
+          # that check passes. When the download or the check fails (GitHub's release CDN gave minutes of 504s,
+          # D-1986), the same version from crates.io (the index checksum verifies the crate; --locked builds with the
+          # crate's own Cargo.lock) into the same bin. Either way the binary must report the pinned version; with
+          # neither source, the step fails. Actions runs this with `bash -e` (no pipefail).
           bin="$RUNNER_TEMP/tools/bin"; mkdir -p "$bin"
-          for tool in AUDIT DENY; do
-            url="${tool}_URL"; sum="${tool}_SHA256"; name="cargo-${tool,,}"
-            curl -sSfL --retry 5 --retry-all-errors --retry-delay 15 --connect-timeout 20 -o "$RUNNER_TEMP/$tool.tgz" "${!url}"
-            echo "${!sum}  $RUNNER_TEMP/$tool.tgz" | sha256sum -c -
+          tool_release() {
             # Only this tool's binary: GNU tar exits 2 when a named pattern matches nothing.
-            tar -xzf "$RUNNER_TEMP/$tool.tgz" -C "$bin" --strip-components=1 --wildcards "*/$name"
+            rm -f "$RUNNER_TEMP/$tool.tgz"
+            curl -sSfL --retry 5 --retry-all-errors --retry-delay 15 --connect-timeout 20 -o "$RUNNER_TEMP/$tool.tgz" "${!url}" \
+              && echo "${!sum}  $RUNNER_TEMP/$tool.tgz" | sha256sum -c - \
+              && tar -xzf "$RUNNER_TEMP/$tool.tgz" -C "$bin" --strip-components=1 --wildcards "*/$name"
+          }
+          for tool in AUDIT DENY; do
+            url="${tool}_URL"; sum="${tool}_SHA256"; version="${tool}_VERSION"; name="cargo-${tool,,}"
+            if tool_release; then
+              echo "${name} source: the ${!version} release tarball (SHA-256 verified)"
+            else
+              echo "::warning::${name} release download or SHA-256 check failed; building ${!version} from crates.io (D-1986)"
+              cargo install --locked --root "$RUNNER_TEMP/tools" --version "=${!version}" "$name"
+              echo "${name} source: crates.io ${!version} (index checksum verified, built --locked)"
+            fi
+            reported="$("$bin/$name" --version)"
+            case "$reported" in
+              *" ${!version}") echo "${name} reports version ${reported}" ;;
+              *) echo "::error::${name} reports '${reported}', not ${!version}"; exit 1 ;;
+            esac
           done
           echo "$bin" >> "$GITHUB_PATH"
 
