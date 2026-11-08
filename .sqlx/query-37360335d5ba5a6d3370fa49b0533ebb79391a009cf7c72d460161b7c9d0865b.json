@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE quotes.quote SET quote_minutes = $3 WHERE job_id = $1 AND business_id = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "37360335d5ba5a6d3370fa49b0533ebb79391a009cf7c72d460161b7c9d0865b"
+}
