@@ -1,6 +1,6 @@
 //! The authorization matrix over the route table (TD-SEC-01 matrix cases, TD-BIZ-31 and
 //! TD-BIZ-13's push case; SEC-004, SEC-005, SEC-006, SEC-008, SEC-019, SEC-048, BIZ-041, D-1945
-//! to D-1947). Every name, ID and token is fake.
+//! to D-1948). Every name, ID and token is fake.
 //!
 //! The route table is generated, not typed: every `.route(` call in `app/*/src` (constants
 //! resolved, `#[cfg(test)]` parts and `src/tests/` left out, the `/__test/` control routes left to
@@ -11,10 +11,13 @@
 //! over HTTP through the portals routers merged as `server::build_router` merges them, a webhook
 //! through the adapter's signature check, a homeowner or business route through the realm guard
 //! its handler must call first (the homeowner realm, the only one `homeowner_proof` mints for;
-//! `business_principal` with `may`), since those routes are not served yet. Sign-in routes are open to everyone by design; their rules are
-//! `business_signin.rs`', `owner_auth.rs`' and `homeowner_portal::tests`'; only the owner has
-//! pause, refund and release (`owner_auth.rs`). Every refusal of a served route is one
-//! `csrf_rejected` security event with the route template, request ID and the actor's session ID.
+//! `business_principal` with `may`), since those routes are not served yet; one served fails the
+//! run until the matrix probes it over HTTP. Homeowner A versus B isolation is proven for the `/q`
+//! and `/f` tokens only, not yet for `/h` (D-1945). Sign-in routes are open to everyone; their
+//! rules are `business_signin.rs`', `owner_auth.rs`' and `homeowner_portal::tests`'; only the
+//! owner has pause, refund and release (`owner_auth.rs`). Every refusal of a served route is one
+//! `csrf_rejected` event with route template, request ID and session ID; webhook signature
+//! failures and realm-guard refusals are not events yet, so SEC-048 is only partly met (D-1948).
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
@@ -502,7 +505,8 @@ async fn probe_realm(pool: &PgPool, w: &World, door: Door, who: &Who) {
 }
 
 /// TD-SEC-01, TD-BIZ-31 (SEC-019, BIZ-041): the table is read from the source, holds the served
-/// quote, pick and feedback routes, gives every path a door, and has no push route.
+/// quote, pick and feedback routes, gives every path a door, and has no push route. A served
+/// homeowner or business route fails here: the realm probe does not reach its handler (D-1945).
 #[test]
 fn td_sec_01_route_table_is_generated_and_every_path_has_a_door() {
     let table = route_table();
@@ -521,8 +525,12 @@ fn td_sec_01_route_table_is_generated_and_every_path_has_a_door() {
         table.contains_key("/h") && table.contains_key("/b"),
         "declared routes read"
     );
-    for path in table.keys() {
-        let _ = door(path);
+    for (path, methods) in &table {
+        let realm = matches!(door(path), Door::Homeowner | Door::Business);
+        assert!(
+            !realm || methods.is_empty(),
+            "{path} is served: extend the matrix (D-1945)"
+        );
         let lower = path.to_lowercase();
         assert!(!PUSH_WORDS.iter().any(|w| lower.contains(w)), "{path}");
     }
