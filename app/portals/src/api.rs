@@ -17,6 +17,9 @@
 //! argon2id password plus a passkey, TOTP or recovery code, the 12-hour session ending after 30
 //! minutes idle, the 5-minute step-up, logout and "Sign out everywhere", the one-time bootstrap
 //! and the owner-only pause, refund and release gate (SEC-005 to SEC-007, SEC-043, SEC-044, T086).
+//! The homeowner portal: sign-in by phone and texted code, her own record through her session
+//! proof, the texts-off switch, "Download my data" and the code-checked delete or copy request
+//! (SEC-008, PRIV-012, PRIV-021, PRIV-031, CON-035, T087).
 
 /// The cookie jar the session functions take and give back (axum-extra's).
 pub use axum_extra::extract::cookie::CookieJar;
@@ -42,7 +45,16 @@ pub use crate::confirm_pay::{
     ConfirmFacts, FEE_FREE_LINE, NoFee, PORTAL_LINK, PressReply, REFUND_LINE, confirm_page,
     may_confirm, press_reply,
 };
+pub use crate::data_download::{
+    ANSWER_WITHIN, Acted, DATA_REQUEST_ROUTE, DOWNLOAD_ROUTE, DataRequest, DataRequestKind,
+    HeldItem, RequestError, Section, confirm_request, download_file, open_request,
+};
 pub use crate::feedback::{FEEDBACK_ROUTE, SHARE_LABEL, feedback_routes};
+pub use crate::homeowner_portal::{
+    HOMEOWNER_HOME_ROUTE, HOMEOWNER_SESSION_LIFE, HOMEOWNER_SIGNIN_ROUTE, HomeFacts,
+    HomeownerError, OnFile, PortalScreen, TEXTS_OFF_LINE, TEXTS_OFF_ROUTE, finish_sign_in,
+    homeowner_page, send_sign_in_code, turn_texts_off,
+};
 pub use crate::job_release::{
     CallAttempt, EMAIL_CHOSEN_LINE, JOB_RELEASE_ROUTE, JobFacts, JobReleaseError, MissedText,
     TIP_LINE, job_release_page,
