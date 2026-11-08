@@ -128,7 +128,7 @@ async fn restarted(pool: &PgPool) -> PgPool {
 
 /// The homeowner's contact in the vault and her request naming each of `jobs`, through
 /// `privacy` and `intake`; returns the contact.
-async fn homeowner(pool: &PgPool, jobs: &[Uuid]) -> Uuid {
+async fn her_request(pool: &PgPool, jobs: &[Uuid]) -> Uuid {
     let mut db = pool.acquire().await.expect("db");
     let new = NewContact {
         name: Some(SecretString::from(NAME)),
@@ -346,7 +346,7 @@ async fn deliver(hooks: Arc<StripeWebhook<FakeStripe, PickReleaser>>) -> StatusC
 #[sqlx::test(migrator = "MIGRATOR", fixtures("release_recovery"))]
 async fn td_pick_50_a_verified_success_settles_paid_and_releases_once(pool: PgPool) {
     let person = owner(&pool).await;
-    homeowner(&pool, &[PAID_JOB]).await;
+    her_request(&pool, &[PAID_JOB]).await;
     let hooks = hooks(&pool, vault());
     assert_eq!(deliver(Arc::clone(&hooks)).await, StatusCode::OK);
     assert_eq!(deliver(Arc::clone(&hooks)).await, StatusCode::OK);
@@ -372,7 +372,7 @@ async fn td_pick_50_a_verified_success_settles_paid_and_releases_once(pool: PgPo
 #[sqlx::test(migrator = "MIGRATOR", fixtures("release_recovery"))]
 async fn td_pick_50_a_zero_fee_releases_free_and_a_cancelled_pick_nothing(pool: PgPool) {
     let person = owner(&pool).await;
-    homeowner(&pool, &[FREE_JOB, GONE_JOB]).await;
+    her_request(&pool, &[FREE_JOB, GONE_JOB]).await;
     zero_fee(&pool, FREE_JOB).await;
     zero_fee(&pool, GONE_JOB).await;
     let sink = sink(&pool, vault());
@@ -397,7 +397,7 @@ async fn td_pick_50_a_zero_fee_releases_free_and_a_cancelled_pick_nothing(pool: 
 #[sqlx::test(migrator = "MIGRATOR", fixtures("release_recovery"))]
 async fn td_pick_50_a_restart_after_the_settle_releases_once_on_the_retry(pool: PgPool) {
     let person = owner(&pool).await;
-    homeowner(&pool, &[FREE_JOB]).await;
+    her_request(&pool, &[FREE_JOB]).await;
     zero_fee(&pool, FREE_JOB).await;
     {
         // The settle commits, then the process stops before the claim: the clearing is lost.
@@ -427,7 +427,7 @@ async fn td_pick_50_a_restart_after_the_settle_releases_once_on_the_retry(pool: 
 #[sqlx::test(migrator = "MIGRATOR", fixtures("release_recovery"))]
 async fn td_pick_50_a_failed_line_opens_on_the_retry_and_never_reopens(pool: PgPool) {
     owner(&pool).await;
-    homeowner(&pool, &[LINE_JOB]).await;
+    her_request(&pool, &[LINE_JOB]).await;
     zero_fee(&pool, LINE_JOB).await;
     let options = pool.connect_options().as_ref().clone();
     let impatient = PgPoolOptions::new()
@@ -484,7 +484,7 @@ async fn td_pick_50_a_failed_line_opens_on_the_retry_and_never_reopens(pool: PgP
 #[sqlx::test(migrator = "MIGRATOR", fixtures("release_recovery"))]
 async fn td_pick_49_a_failed_vault_read_recovers_and_shows_once(pool: PgPool) {
     let person = owner(&pool).await;
-    homeowner(&pool, &[PAID_JOB]).await;
+    her_request(&pool, &[PAID_JOB]).await;
     let failing = hooks(&pool, broken_vault());
     assert_eq!(deliver(failing).await, StatusCode::INTERNAL_SERVER_ERROR);
     let after = restarted(&pool).await;

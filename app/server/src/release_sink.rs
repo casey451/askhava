@@ -98,7 +98,7 @@ impl PickReleaser {
             Settled::Left => return Ok(Released::MovedOn),
             Settled::Moved(job) | Settled::Was(job) => job,
         };
-        let Some(contact) = self.homeowner(cleared.pick(), job).await? else {
+        let Some(contact) = self.contact_of(cleared.pick(), job).await? else {
             return Ok(Released::MovedOn);
         };
         let proof = release_minter().mint(cleared, contact);
@@ -109,7 +109,7 @@ impl PickReleaser {
 
     /// The job's homeowner contact through `intake` (D-1602); with none, one High
     /// [`NO_CONTACT_ALERT`] about the pick and `None`.
-    async fn homeowner(&self, pick: Uuid, job: Uuid) -> Result<Option<Uuid>, ReleaseError> {
+    async fn contact_of(&self, pick: Uuid, job: Uuid) -> Result<Option<Uuid>, ReleaseError> {
         let mut conn = self
             .pool
             .acquire()
