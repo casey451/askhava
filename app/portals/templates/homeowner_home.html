@@ -3,42 +3,43 @@
     A11Y-032). One template, four screens: sign-in by phone, the texted code, the home with her own
     record, and the code step of a delete or copy request. It asks for none of the identity numbers
     or images PRIV-012 bans, and has no file field. Each code field is one input that takes a pasted
-    code (A11Y-032). A failed submit puts "Error: " in the title and a focused summary first. -#}
+    code (A11Y-032). A failed submit puts "Error: " in the title, a focused summary right after the h1 (before
+    any form), the same words by the field with aria-invalid, and keeps the typed number. The code
+    screen carries the typed number to /h/sign-in/code; a request's code screen carries its ID to
+    /h/my-data/code. -#}
 {% block title %}{% if failed %}Error: {% endif %}{% if screen == "home" %}Your Ask Hava page{% else if screen == "request" %}Check it's you{% else %}Sign in{% endif %}{% endblock %}
 {% block main %}
+{% if screen == "signin" %}<h1>Sign in</h1>
 {% if failed %}<div role="alert" tabindex="-1" autofocus id="error-summary">
-{% if screen == "signin" %}<h2>We couldn't sign you in</h2>
-<p><a href="#phone">Check your mobile number and try again</a>.</p>
-{% else %}<h2>That code didn't work</h2>
-<p><a href="#code">Type the 6-digit code from the text we just sent</a>.</p>
-{% endif %}
+<h2>We couldn't sign you in</h2>
+<p><a href="#phone">Check your mobile number and try again</a></p>
 </div>
-{% endif %}{% if screen == "signin" %}<h1>Sign in</h1>
-<form method="post" action="/h/sign-in" novalidate>
+{% endif %}<form method="post" action="/h/sign-in" novalidate>
 <input type="hidden" name="csrf" value="{{ csrf }}">
 <label for="phone">Your mobile number</label>
 <p id="phone-hint">The number you text Ask Hava from. We'll text you a 6-digit code.</p>
-<input type="tel" id="phone" name="phone" autocomplete="tel" aria-describedby="phone-hint">
+{% if failed %}<p id="phone-error">Error: Check your mobile number and try again</p>
+{% endif %}<input type="tel" id="phone" name="phone" value="{{ phone }}" autocomplete="tel" aria-describedby="phone-hint{% if failed %} phone-error{% endif %}"{% if failed %} aria-invalid="true"{% endif %}>
 <button type="submit">Text me a code</button>
 </form>
-{% else if screen == "code" %}<h1>Enter your code</h1>
-<p>If we have that number, we just texted it a 6-digit code.</p>
-<form method="post" action="/h/sign-in" novalidate>
-<input type="hidden" name="csrf" value="{{ csrf }}">
+{% else if screen == "code" || screen == "request" %}{% if screen == "code" %}<h1>Enter your code</h1>
+{% else %}<h1>Check it's you</h1>
+{% endif %}{% if failed %}<div role="alert" tabindex="-1" autofocus id="error-summary">
+<h2>That code didn't work</h2>
+<p><a href="#code">Type the 6-digit code from the text we just sent</a></p>
+</div>
+{% endif %}{% if screen == "code" %}<p>If we have that number, we just texted it a 6-digit code.</p>
+<form method="post" action="/h/sign-in/code" novalidate>
+<input type="hidden" name="phone" value="{{ phone }}">
+{% else %}<p>We just texted a 6-digit code to your mobile number. {% if delete %}Type it here and we'll delete your data right away.{% else %}Type it here to download your copy.{% endif %}</p>
+<form method="post" action="/h/my-data/code" novalidate>
+<input type="hidden" name="request" value="{{ request }}">
+{% endif %}<input type="hidden" name="csrf" value="{{ csrf }}">
 <label for="code">6-digit code</label>
 <p id="code-hint">You can paste it.</p>
-<input type="text" id="code" name="code" autocomplete="one-time-code" inputmode="numeric" aria-describedby="code-hint"{% if failed %} aria-invalid="true"{% endif %}>
-<button type="submit">Sign in</button>
-</form>
-{% else if screen == "request" %}<h1>Check it's you</h1>
-<p>We just texted a 6-digit code to your mobile number. {% if delete %}Type it here and we'll delete your data within 30 days.{% else %}Type it here to get your copy.{% endif %}</p>
-<form method="post" action="/h/my-data/request" novalidate>
-<input type="hidden" name="csrf" value="{{ csrf }}">
-<input type="hidden" name="kind" value="{% if delete %}delete{% else %}copy{% endif %}">
-<label for="code">6-digit code</label>
-<p id="code-hint">You can paste it.</p>
-<input type="text" id="code" name="code" autocomplete="one-time-code" inputmode="numeric" aria-describedby="code-hint"{% if failed %} aria-invalid="true"{% endif %}>
-<button type="submit">{% if delete %}Delete my data{% else %}Send my copy{% endif %}</button>
+{% if failed %}<p id="code-error">Error: Type the 6-digit code from the text we just sent</p>
+{% endif %}<input type="text" id="code" name="code" autocomplete="one-time-code" inputmode="numeric" aria-describedby="code-hint{% if failed %} code-error{% endif %}"{% if failed %} aria-invalid="true"{% endif %}>
+<button type="submit">{% if screen == "code" %}Sign in{% else if delete %}Delete my data{% else %}Download my copy{% endif %}</button>
 </form>
 {% else %}{% if let Some(f) = facts %}<h1>Your Ask Hava page</h1>
 <h2>Your details</h2>
@@ -54,6 +55,7 @@
 {% else %}<p>{{ texts_off_line }}</p>
 {% endif %}<h2>Your data</h2>
 <p><a href="/h/my-data">Download my data</a>: a copy of your requests, quotes, messages and text settings we still have.</p>
+<p>To delete your data, press the button. We'll text you a code to check it's you.</p>
 <form method="post" action="/h/my-data/request" novalidate>
 <input type="hidden" name="csrf" value="{{ csrf }}">
 <input type="hidden" name="kind" value="delete">

@@ -113,3 +113,24 @@ pub mod rules {
         plan, reads_spanish, shares_words, split_name_address, wanted_language,
     };
 }
+
+/// PRIV-011, PRIV-031: the jobs opened by requests of the homeowner whose vault contact is
+/// `contact`, so a delete in her portal clears only her own jobs' photos (T087, D-1939).
+///
+/// # Errors
+///
+/// [`IntakeError::Database`].
+pub async fn jobs_of_contact(
+    db: &mut sqlx::PgConnection,
+    contact: sqlx::types::Uuid,
+) -> Result<Vec<sqlx::types::Uuid>, IntakeError> {
+    sqlx::query_scalar!(
+        r#"SELECT DISTINCT c.job_id AS "job!" FROM intake.conversation c
+           JOIN intake.homeowner h ON h.id = c.homeowner_id
+           WHERE h.contact_id = $1 AND c.job_id IS NOT NULL"#,
+        contact,
+    )
+    .fetch_all(db)
+    .await
+    .map_err(|_| IntakeError::Database)
+}

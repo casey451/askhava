@@ -1,9 +1,10 @@
 //! The homeowner portal: sign-in by phone and texted code, her own record, the texts-off switch
 //! and the forms of "Download my data" (SEC-008, PRIV-012, PRIV-021, PRIV-031, SEC-046, CON-035,
-//! A11Y-032; T087, D-1934 to D-1938).
+//! A11Y-032; T087, D-1934 to D-1939).
 //!
 //! [`send_sign_in_code`] texts a Verify code only to a number on file and answers the same either
-//! way; [`finish_sign_in`] starts the 30-day homeowner session only after Verify says the code is
+//! way (a failed vault read is logged and is an error, never "not on file"); the code page carries
+//! the typed number back to [`HOMEOWNER_CODE_ROUTE`], where [`finish_sign_in`] starts the 30-day homeowner session only after Verify says the code is
 //! right (a wrong code is an `auth_failed` event). Her record is read only through [`OnFile::read`],
 //! which takes her session's `HomeownerSessionProof` and opens her own contact alone (SEC-046).
 //! [`turn_texts_off`] puts her number on the one suppression list at once, logged with channel
@@ -13,11 +14,15 @@
 //! T089's (PICK-055, D-493), so no route here is served yet (D-1934); address and language changes
 //! wait on a vault update and a stored language (D-1935).
 
+use std::fmt;
+
 use askama::Template;
 use askhava_adapters::api::{CodeChannel, IdempotencyKey, VerifyAdapter};
 use askhava_messaging::api::{RevokeChannel, suppress};
 use askhava_picks::api::rules::parse_code;
-use askhava_privacy::api::{Field, HomeownerSessionProof, Vault, find_by_phone, read_own_contact};
+use askhava_privacy::api::{
+    Field, HomeownerSessionProof, Vault, VaultError, find_by_phone, read_own_contact,
+};
 use axum_extra::extract::cookie::CookieJar;
 use jiff::{SignedDuration, Timestamp};
 use secrecy::{ExposeSecret, SecretString};
@@ -34,11 +39,19 @@ pub const HOMEOWNER_HOME_ROUTE: &str = "/h";
 /// The sign-in page's path (not served yet, D-1934).
 pub const HOMEOWNER_SIGNIN_ROUTE: &str = "/h/sign-in";
 
+/// The sign-in code step's path: the code page posts the code and the typed number here (not
+/// served yet, D-1934).
+pub const HOMEOWNER_CODE_ROUTE: &str = "/h/sign-in/code";
+
 /// The texts-off switch's path (not served yet, D-1934).
 pub const TEXTS_OFF_ROUTE: &str = "/h/texts-off";
 
 /// A homeowner session lasts 30 days on its device (SEC-008).
 pub const HOMEOWNER_SESSION_LIFE: SignedDuration = SignedDuration::from_hours(30 * 24);
+
+/// One Verify send key per contact and ten minutes (the code's life), so a double submit reuses
+/// the key (R13).
+const SEND_WINDOW_SECONDS: i64 = 600;
 
 /// The on-screen confirmation of the texts-off switch (CON-035: never by text).
 pub const TEXTS_OFF_LINE: &str = "Texts are off. We won't text you again unless you text START.";
@@ -100,8 +113,26 @@ pub enum HomeownerError {
     Database,
 }
 
+/// The contact holding `phone`: `None` when none does or it is not a US number; a failed read is
+/// logged once, without the number, and is [`HomeownerError::Database`] (R5).
+async fn contact_of(
+    db: &mut PgConnection,
+    vault: &Vault,
+    phone: &str,
+) -> Result<Option<Uuid>, HomeownerError> {
+    match find_by_phone(db, vault, phone).await {
+        Ok(contact) => Ok(contact),
+        Err(VaultError::BadPhone) => Ok(None),
+        Err(error) => {
+            tracing::error!(%error, "homeowner sign-in vault lookup failed");
+            Err(HomeownerError::Database)
+        }
+    }
+}
+
 /// SEC-008: texts a Verify code to `phone` when it is a homeowner number on file; a number not on
-/// file gets nothing and the same answer, so the page never says whether it is on file.
+/// file gets nothing and the same answer, so the page never says whether it is on file. The send
+/// key is the contact and the ten-minute window of `now`.
 ///
 /// # Errors
 /// [`HomeownerError::Verify`] or [`HomeownerError::Database`].
@@ -111,10 +142,11 @@ pub async fn send_sign_in_code<V: VerifyAdapter>(
     phone: &str,
     now: Timestamp,
 ) -> Result<(), HomeownerError> {
-    let Ok(Some(contact)) = find_by_phone(db, vault, phone).await else {
+    let Some(contact) = contact_of(db, vault, phone).await? else {
         return Ok(());
     };
-    let ids = [contact.to_string(), now.to_string()];
+    let window = now.as_second().div_euclid(SEND_WINDOW_SECONDS).to_string();
+    let ids = [contact.to_string(), window];
     let idem = IdempotencyKey::derive(key, "verify.homeowner_signin", &[&ids[0], &ids[1]]);
     verify
         .send_code(&idem, phone, CodeChannel::Sms)
@@ -135,7 +167,7 @@ pub async fn finish_sign_in<V: VerifyAdapter>(
     (jar, phone, code): (CookieJar, &str, &str),
     now: Timestamp,
 ) -> Result<CookieJar, HomeownerError> {
-    let Ok(Some(contact)) = find_by_phone(db, vault, phone).await else {
+    let Some(contact) = contact_of(db, vault, phone).await? else {
         return Err(HomeownerError::Refused);
     };
     let right = match parse_code(code) {
@@ -184,8 +216,9 @@ pub async fn turn_texts_off(
         .map_err(|_| HomeownerError::Database)
 }
 
-/// What the portal home shows of her own record (PRIV-021).
-#[derive(Debug, Clone, PartialEq, Eq)]
+/// What the portal home shows of her own record (PRIV-021). `Debug` prints no contact value
+/// (PRIV-016).
+#[derive(Clone, PartialEq, Eq)]
 pub struct HomeFacts {
     /// The last four digits of the number on file.
     pub phone_last4: String,
@@ -197,26 +230,43 @@ pub struct HomeFacts {
     pub texts_on: bool,
 }
 
-/// One screen of the homeowner portal.
-#[derive(Debug, Clone, PartialEq, Eq)]
+impl fmt::Debug for HomeFacts {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("HomeFacts")
+            .field("phone_last4", &"[redacted]")
+            .field("address", &self.address.as_ref().map(|_| "[redacted]"))
+            .field("spanish", &self.spanish)
+            .field("texts_on", &self.texts_on)
+            .finish()
+    }
+}
+
+/// One screen of the homeowner portal. `Debug` prints no number (the phone is a [`SecretString`]).
+#[derive(Debug)]
 pub enum PortalScreen {
-    /// The phone field; `failed` after a refused code.
+    /// The phone field; `failed` after a refused number, which is shown again as typed (A11Y-030).
     SignIn {
-        /// Show the error summary.
+        /// The number as typed, kept on a failed submit (empty at first).
+        phone: SecretString,
+        /// Show the error summary and the field's message.
         failed: bool,
     },
-    /// The code field after a send (A11Y-032).
+    /// The code field after a send (A11Y-032), carrying the typed number to the code step.
     Code {
-        /// Show the error summary.
+        /// The number the code was sent to, as typed.
+        phone: SecretString,
+        /// Show the error summary and the field's message.
         failed: bool,
     },
     /// The home with her record and switches.
     Home(HomeFacts),
-    /// The code step of a delete or copy request (PRIV-031).
+    /// The code step of an open delete or copy request (PRIV-031).
     Request {
         /// Copy or delete.
         kind: DataRequestKind,
-        /// Show the error summary.
+        /// The request's ID ([`crate::data_download::DataRequest::id`]).
+        request: i64,
+        /// Show the error summary and the field's message.
         failed: bool,
     },
 }
@@ -227,28 +277,36 @@ struct HomeView<'a> {
     screen: &'a str,
     failed: bool,
     facts: Option<&'a HomeFacts>,
+    phone: &'a str,
+    request: i64,
     delete: bool,
     texts_off_line: &'a str,
     csrf: &'a str,
 }
 
-/// PRIV-012, PRIV-021, PRIV-031, A11Y-030, A11Y-032: renders `screen` with the CSRF token `csrf`.
+/// PRIV-012, PRIV-021, PRIV-031, A11Y-030, A11Y-032: renders `screen` with the CSRF token `csrf`;
+/// the sign-in and code screens print the typed number back into the form only (a `no_store`
+/// page, SEC-034).
 ///
 /// # Errors
 /// [`askama::Error`] when the template fails.
 pub fn homeowner_page(screen: &PortalScreen, csrf: &str) -> Result<String, askama::Error> {
-    let (name, failed, facts, delete) = match screen {
-        PortalScreen::SignIn { failed } => ("signin", *failed, None, false),
-        PortalScreen::Code { failed } => ("code", *failed, None, false),
-        PortalScreen::Home(facts) => ("home", false, Some(facts), false),
-        PortalScreen::Request { kind, failed } => {
-            ("request", *failed, None, *kind == DataRequestKind::Delete)
-        }
+    let (name, failed, facts, phone) = match screen {
+        PortalScreen::SignIn { phone, failed } => ("signin", *failed, None, Some(phone)),
+        PortalScreen::Code { phone, failed } => ("code", *failed, None, Some(phone)),
+        PortalScreen::Home(facts) => ("home", false, Some(facts), None),
+        PortalScreen::Request { failed, .. } => ("request", *failed, None, None),
+    };
+    let (request, delete) = match screen {
+        PortalScreen::Request { kind, request, .. } => (*request, *kind == DataRequestKind::Delete),
+        _ => (0, false),
     };
     let view = HomeView {
         screen: name,
         failed,
         facts,
+        phone: phone.map_or("", |p| p.expose_secret()),
+        request,
         delete,
         texts_off_line: TEXTS_OFF_LINE,
         csrf,
@@ -332,15 +390,61 @@ mod tests {
     fn code_fields_take_a_pasted_code_and_errors_lead() {
         let request = PortalScreen::Request {
             kind: DataRequestKind::Delete,
+            request: 41,
             failed: true,
         };
-        for screen in [PortalScreen::Code { failed: true }, request] {
+        for screen in [code_screen(true), request] {
             let page = homeowner_page(&screen, "t").expect("page");
             assert_eq!(page.matches("autocomplete=\"one-time-code\"").count(), 1);
             assert!(page.contains("inputmode=\"numeric\""));
             assert!(page.contains("<title>Error: ") && page.contains("role=\"alert\""));
             assert!(!page.contains("disabled") && !page.contains("maxlength"));
+            assert!(page.find("<h1>") < page.find("role=\"alert\""));
+            assert!(page.find("role=\"alert\"") < page.find("<form"));
+            assert!(page.contains("id=\"code-error\">Error: Type the 6-digit code"));
+            assert!(page.contains("code-hint code-error\" aria-invalid=\"true\""));
         }
+    }
+
+    fn code_screen(failed: bool) -> PortalScreen {
+        let phone = SecretString::from(PHONE.to_owned());
+        PortalScreen::Code { phone, failed }
+    }
+
+    /// TD-A11Y-02 (A11Y-030): a refused number is shown again as typed, marked invalid, with the
+    /// summary's words by the field; `Debug` of the screen prints no number.
+    #[test]
+    fn a_failed_sign_in_keeps_the_number_and_marks_the_field() {
+        let phone = SecretString::from("928 555 01".to_owned());
+        let screen = PortalScreen::SignIn {
+            phone,
+            failed: true,
+        };
+        let page = homeowner_page(&screen, "t").expect("page");
+        assert!(page.contains("value=\"928 555 01\"") && page.contains("aria-invalid=\"true\""));
+        assert!(page.contains("id=\"phone-error\">Error: Check your mobile number and try again"));
+        assert!(page.find("<h1>") < page.find("role=\"alert\""));
+        assert!(!format!("{screen:?}").contains("555"));
+    }
+
+    /// SEC-008, PRIV-031: the code page carries the typed number to the code step, and a
+    /// request's code page carries its ID to its own route; the delete page promises no wait.
+    #[test]
+    fn each_code_page_posts_what_its_step_needs() {
+        let code = homeowner_page(&code_screen(false), "t").expect("page");
+        assert!(code.contains("action=\"/h/sign-in/code\""));
+        assert!(code.contains(&format!("name=\"phone\" value=\"{PHONE}\"")));
+        let screen = |kind| PortalScreen::Request {
+            kind,
+            request: 41,
+            failed: false,
+        };
+        let delete = homeowner_page(&screen(DataRequestKind::Delete), "t").expect("page");
+        assert!(delete.contains("action=\"/h/my-data/code\""));
+        assert!(delete.contains("name=\"request\" value=\"41\""));
+        assert!(delete.contains("right away") && !delete.contains("30 days"));
+        let copy = homeowner_page(&screen(DataRequestKind::Copy), "t").expect("page");
+        assert!(copy.contains("Download my copy") && !copy.contains("Send"));
     }
 
     /// TD-PRIV-05 (PRIV-021, PRIV-031): the home shows her record, the switch while texts are on
@@ -352,6 +456,8 @@ mod tests {
         assert!(on.contains("action=\"/h/texts-off\"") && on.contains("Download my data"));
         let off = homeowner_page(&PortalScreen::Home(facts(false)), "t").expect("page");
         assert!(!off.contains("action=\"/h/texts-off\"") && off.contains("START"));
+        let debug = format!("{:?}", facts(true));
+        assert!(!debug.contains("0100") && !debug.contains("Example Way"));
     }
 
     /// TD-CON-28 (CON-035): the switch lists her number at once, once.
