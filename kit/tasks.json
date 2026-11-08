@@ -15472,7 +15472,8 @@
    ],
    "tests": [],
    "decisions": [
-    "D-1154"
+    "D-1154",
+    "D-2038"
    ],
    "cites": [
     "BUILD_BRIEF.md:196",
@@ -15490,7 +15491,7 @@
    ],
    "branch": "claude/task/T237-wargames-round-1",
    "prompt": "kit/prompts/T237.md",
-   "acceptance": "`docs/phase2/war-games.md` records round 1: start and end times, the simulated business days and their wall-clock spans, completed jobs and how many were paid in Stripe test mode, conversations by persona class (every class of `wargames/personas.py` at least 3 times, abusers at least 40 conversations), every finding with its IDs and status, and the AI calls made per abusive conversation against the AI-028 budgets (from the `ai.call_stat` counts on the owner pages); at least 5 simulated business days and 100 completed jobs (40 paid); `python3 -m wargames reconcile` is green over every job of the campaign so far."
+   "acceptance": "`docs/phase2/war-games.md` records round 1: start and end times, the simulated business days and their wall-clock spans, completed jobs and how many were paid in Stripe test mode, conversations by persona class (every class of `wargames/personas.py` at least 3 times, abusers at least 40 conversations), every finding with its IDs and status, and the AI calls made per abusive conversation against the AI-028 budgets (from the `ai.call_stat` counts on the owner pages); T234's latency table for the round, p50 and p95 per scenario and the count of turns that fell back on the AI-023 reply budget (D-2038); at least 5 simulated business days and 100 completed jobs (40 paid); `python3 -m wargames reconcile` is green over every job of the campaign so far."
   },
   {
    "id": "T238",
@@ -15546,7 +15547,8 @@
    ],
    "tests": [],
    "decisions": [
-    "D-1154"
+    "D-1154",
+    "D-2038"
    ],
    "cites": [
     "BUILD_BRIEF.md:196",
@@ -15564,7 +15566,7 @@
    ],
    "branch": "claude/task/T238-wargames-round-2",
    "prompt": "kit/prompts/T238.md",
-   "acceptance": "`docs/phase2/war-games.md` records round 2: start and end times, the simulated business days and their wall-clock spans, completed jobs and how many were paid in Stripe test mode, conversations by persona class (every class of `wargames/personas.py` at least 3 times, abusers at least 40 conversations), every finding with its IDs and status, and the AI calls made per abusive conversation against the AI-028 budgets (from the `ai.call_stat` counts on the owner pages); at least 5 simulated business days and 100 completed jobs (40 paid); no round-1 finding is still open unless it waits on a plan change named in `docs/for-casey-review.md`; `python3 -m wargames reconcile` is green over every job of the campaign so far."
+   "acceptance": "`docs/phase2/war-games.md` records round 2: start and end times, the simulated business days and their wall-clock spans, completed jobs and how many were paid in Stripe test mode, conversations by persona class (every class of `wargames/personas.py` at least 3 times, abusers at least 40 conversations), every finding with its IDs and status, and the AI calls made per abusive conversation against the AI-028 budgets (from the `ai.call_stat` counts on the owner pages); T234's latency table for the round, p50 and p95 per scenario and the count of turns that fell back on the AI-023 reply budget (D-2038); at least 5 simulated business days and 100 completed jobs (40 paid); no round-1 finding is still open unless it waits on a plan change named in `docs/for-casey-review.md`; `python3 -m wargames reconcile` is green over every job of the campaign so far."
   },
   {
    "id": "T239",
@@ -15620,7 +15622,8 @@
    ],
    "tests": [],
    "decisions": [
-    "D-1154"
+    "D-1154",
+    "D-2038"
    ],
    "cites": [
     "BUILD_BRIEF.md:196",
@@ -15638,7 +15641,7 @@
    ],
    "branch": "claude/task/T239-wargames-final-round",
    "prompt": "kit/prompts/T239.md",
-   "acceptance": "`docs/phase2/war-games.md` records round 3: start and end times, the simulated business days and their wall-clock spans, completed jobs and how many were paid in Stripe test mode, conversations by persona class (every class of `wargames/personas.py` at least 3 times, abusers at least 40 conversations), every finding with its IDs and status, and the AI calls made per abusive conversation against the AI-028 budgets (from the `ai.call_stat` counts on the owner pages); at least 5 simulated business days and 100 completed jobs (40 paid) in this round, and at least 15 days and 300 jobs (120 paid) over the three rounds; the round finds no new finding of any severity, or the report says plainly that it did and which; the report has the cast, runs, findings, fixes and final-run sections; `python3 -m wargames reconcile` is green over every job of the campaign so far."
+   "acceptance": "`docs/phase2/war-games.md` records round 3: start and end times, the simulated business days and their wall-clock spans, completed jobs and how many were paid in Stripe test mode, conversations by persona class (every class of `wargames/personas.py` at least 3 times, abusers at least 40 conversations), every finding with its IDs and status, and the AI calls made per abusive conversation against the AI-028 budgets (from the `ai.call_stat` counts on the owner pages); T234's latency table for the round, p50 and p95 per scenario and the count of turns that fell back on the AI-023 reply budget (D-2038); at least 5 simulated business days and 100 completed jobs (40 paid) in this round, and at least 15 days and 300 jobs (120 paid) over the three rounds; the round finds no new finding of any severity, or the report says plainly that it did and which; the report has the cast, runs, findings, fixes and final-run sections; the final report states whether the AI-023 reply budget (the value T242 recommended and Casey approved at T243, 3 seconds unless changed) was met, from that table and the fallback counts over the three rounds; `python3 -m wargames reconcile` is green over every job of the campaign so far."
   },
   {
    "id": "T140",
