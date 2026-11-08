@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-08T12:59:30Z by runner 624c0b6013e2 (actions).
+Updated 2026-11-08T14:02:56Z by runner aa2f6c6c5dc8 (actions).
 
 **Building: T198 in progress since 12:51Z; 155 of 282 done; week 51% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,11 @@ Updated 2026-11-08T12:59:30Z by runner 624c0b6013e2 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T198 claimed 12:51Z, lease until 15:51Z
 - **Week:** 51% used, 92.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:46Z, 13 min before this update
+- **Last run:** 12:59Z, 63 min before this update
 - **Keeper:** last ran 12:46Z, next wake 13:06Z
 
 ## Needs attention
-- Strict plan check red: 15 problem(s) on tasks still to run (+13 on DONE tasks); first: T255: stored context_pct 25% but it measures 30%; regenerate
+- Strict plan check red: 20 problem(s) on tasks still to run (+15 on DONE tasks); first: T255: stored context_pct 25% but it measures 30%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -33,7 +33,6 @@ Updated 2026-11-08T12:59:30Z by runner 624c0b6013e2 (actions).
 | T093 | messaging: vault references in the log, bodies cut at 30 day | done | 1 | 45 min | 17:05Z |  |
 | T196 | businesses: verified notice email, sender rules and the addr | check_failed | 1 | 49 min | 15:54Z |  |
 | T147 | messaging and businesses: business notices by chosen channel | done | 1 | 39 min | 14:31Z |  |
-| T230 | portals: the private feedback page and its storage | done | 1 | 61 min | 13:25Z |  |
 
 ### Plan and harness merges on main
 - 10:55Z Harness: retry release downloads; backup job's coverage tools best-effort (D-1986) (#352)
