@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{#- The "Emergency emails at any hour" switch and its test emergency email (T150; BIZ-007, BIZ-037,
+    BIZ-042, D-346, D-362). The Do Not Disturb steps come from docs/copy/mail-app-steps.md through
+    emergency_switch_page::dnd_steps. No homeowner detail. -#}
+{% block title %}{{ self.line("switch") }}{% endblock %}
+{% block main %}
+<h1>{{ self.line("switch") }}</h1>
+<p>We email you a job card marked EMERGENCY for each emergency job, day or night.</p>
+{% if warns %}<p id="off-warning">{{ self.line("warn") }}</p>{% endif %}
+<form method="post" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+{% if state.on %}<button type="submit" name="step" value="off">Turn off emergency emails at any hour</button>
+{% else %}<button type="submit" name="step" value="on">Turn on emergency emails at any hour</button>
+{% endif %}</form>
+{% if state.on %}
+<h2>Check your phone wakes you for an emergency job</h2>
+<p id="dnd-line">{{ self.line("dnd") }}</p>
+<form method="post" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<button type="submit" name="step" value="send_test">{{ self.line("test") }}</button>
+</form>
+{% if state.test_sent %}<form method="post" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<fieldset><legend>{{ self.line("question") }}</legend>
+<button type="submit" name="step" value="yes">Yes</button>
+<button type="submit" name="step" value="no">No</button>
+</fieldset>
+</form>
+{% endif %}{% if state.yes_current %}<p id="alert-yes" role="status">Your phone alerted you, so you'll see emergency jobs at night. We'll ask you to test again in 90 days.</p>{% endif %}
+{% if !help.is_empty() %}<h2>Let our emails through at night</h2>
+<ol>{% for (phone, s) in help %}<li>{{ phone }}: {{ s.text }}{% if !s.help_page.is_empty() %} <a href="{{ s.help_page }}">{{ phone }} help page</a>{% endif %}</li>
+{% endfor %}</ol>
+<form method="post" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<button type="submit" name="step" value="send_test">Send the test again</button>
+</form>{% endif %}
+{% endif %}
+<p><a href="/b">Back to your account</a></p>
+{% endblock %}

@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE businesses.emergency_switch s SET test_sent_at = $3 FROM businesses.team_member m WHERE s.member_id = $1 AND s.business_id = $2 AND s.switch_on AND m.id = s.member_id AND m.removed_at IS NULL",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "aed5a7f7a7108d369e6f37ac6876c4f7f95a115f6952f53241d4850e1482f845"
+}

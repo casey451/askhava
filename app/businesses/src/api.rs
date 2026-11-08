@@ -16,7 +16,9 @@
 //! 5-day reply box, the 3-in-90-days pause and the digest listing, and the owner's email request
 //! when another member links a phone (BIZ-011, BIZ-012, BIZ-029, BIZ-033; T083); the sign-up inbox check,
 //! the sample card and sample pick, and each person's backup notice address, which
-//! `notice_addresses` adds (BIZ-042, BIZ-043; T149).
+//! `notice_addresses` adds (BIZ-042, BIZ-043; T149); the "Emergency emails at any hour" switch,
+//! its test emergency email, the after-hours tick's conditions and the covered night count
+//! (BIZ-007, BIZ-037, BIZ-042, INT-033; T150).
 
 use jiff::Timestamp;
 use secrecy::SecretString;
@@ -58,6 +60,13 @@ pub use crate::email_verification::{
     Returned, SOFT_SPAN_DAYS, STEP_UP_LIFE, confirm as confirm_mailbox, log_notice_change,
     mark_returned, may_get_notices, record_step_up, request_change as request_notice_change,
     returned_line, returned_mailboxes, start_signup_check, verified_by_link,
+};
+pub use crate::emergency_switch::{
+    AFTER_HOURS_OFF_KIND, EMERGENCY_TEST_KIND, EMERGENCY_YES_LIFE, MISSED_IN_A_ROW, NightPerson,
+    SwitchError, SwitchState, VISIT_WITHIN, covered, emergency_test_words, missed_in_a_row,
+    night_count as covered_night_count, night_people, queue_emergency_retests, recheck_after_hours,
+    record_alert_answer, send_emergency_test, set_after_hours, set_emergency_emails,
+    suspend_after_hours, switch_off_warns, switch_state, yes_current,
 };
 pub use crate::identity::{
     Flag, IDENTITY_CODE_TRIES, RecordContacts, Step, approve, check_code, episode_letter_code,

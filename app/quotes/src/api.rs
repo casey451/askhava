@@ -10,6 +10,8 @@
 //! T185: the gate also removes `catalog`'s carrier-restricted phrases (CARD-010), and
 //! [`JobCard::text_for`] adds the Spanish, fee-free and "Sent to <N> businesses." lines from
 //! [`CardLines`] (CARD-012, CARD-019, FEE-045).
+//! T150: [`queue_emergency_card`] sends the EMERGENCY card by email, at night at once only to
+//! people with "Emergency emails at any hour" on, the rest at 8 a.m. ([`split`], CARD-021).
 //! T046: [`parse_quote`] checks a [`QuoteForm`] into a [`Quote`] or a [`Bounce`] (PICK-002,
 //! PICK-007, FEE-043, FEE-044); [`submit_quote`] stores it inside the business's own 24 hours
 //! ([`window_open`], PICK-001); [`confirm_quote`] is the read-back's confirm (PICK-006);
@@ -42,6 +44,9 @@ pub use crate::card_notices::{
     CardNotice, JOB_PAGE_PREFIX, QUOTE_HOURS, card_payload, queue_card_notice, sent_count,
 };
 pub use crate::cards::{CardParts, DEFAULT_MIN_WORDS, Danger, JobCard, Place, Timing, build_card};
+pub use crate::emergency_card_notice::{
+    CardTiming, EMERGENCY_FIRST_LINE, emergency_card_subject, queue_emergency_card, split,
+};
 pub use crate::gate::final_gate;
 pub use crate::handlers::{WINDOWS_KIND, WindowsCheck, run_windows_end, windows_ended};
 pub use crate::intake::{
