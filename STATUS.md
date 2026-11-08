@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-08T09:36:25Z by runner d0bc6fc268e2 (actions).
+Updated 2026-11-08T10:01:23Z by runner d0bc6fc268e2 (actions).
 
 **Idle since 08:17Z; 153 of 282 done; week 49% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-08T09:36:25Z by runner d0bc6fc268e2 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 08:17Z (no task in progress)
 - **Week:** 49% used, 96.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:12Z, 23 min before this update
-- **Keeper:** last ran 09:36Z, next wake 09:56Z
+- **Last run:** 09:36Z, 24 min before this update
+- **Keeper:** last ran 10:01Z, next wake 10:21Z
 
 ## Needs attention
 - Strict plan check red: 16 problem(s) on tasks still to run (+11 on DONE tasks); first: T255: stored context_pct 25% but it measures 30%; regenerate
@@ -35,7 +35,6 @@ Updated 2026-11-08T09:36:25Z by runner d0bc6fc268e2 (actions).
 | T230 | portals: the private feedback page and its storage | done | 1 | 61 min | 13:25Z |  |
 | T191 | payments: the unreachable-homeowner refund at 96 hours and i | done | 1 | 56 min | 12:07Z |  |
 | T097 | jobs: day-3 and day-14 check-ins, PROBLEM flags, private fee | done | 1 | 51 min | 10:55Z |  |
-| T096 | messaging: web-and-email mode, number suspension, one config | done | 1 | 43 min | 09:49Z |  |
 
 ### Plan and harness merges on main
 - none
