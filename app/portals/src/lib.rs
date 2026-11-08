@@ -18,6 +18,9 @@
 //! T086 built owner sign-in: argon2id password plus a passkey, TOTP or recovery code, 12-hour
 //! sessions ending after 30 minutes idle, the 5-minute step-up, the one-time bootstrap and the
 //! owner-only powers (`owner_auth`, SEC-005 to SEC-007, SEC-043, SEC-044).
+//! T087 built the homeowner portal: sign-in by phone and texted code, her own record through her
+//! session proof, the texts-off switch and "Download my data" with the code-checked delete or copy
+//! request (`homeowner_portal`, `data_download`, SEC-008, PRIV-012, PRIV-021, PRIV-031).
 //! Portal pages extend the shared layout `app/site/templates/base.html` through `askama.toml`.
 //! Other crates reach it only through [`api`].
 
@@ -26,7 +29,9 @@ mod business_auth;
 mod business_portal;
 mod business_signup;
 mod confirm_pay;
+mod data_download;
 mod feedback;
+mod homeowner_portal;
 mod job_release;
 mod models;
 mod notice_settings;

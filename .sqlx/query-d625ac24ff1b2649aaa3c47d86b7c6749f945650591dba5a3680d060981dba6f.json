@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO intake.conversation (homeowner_id, job_id, language, first_inbox_id, consent_template, consent_sent_at, opened_at) VALUES ($1, $2, 'en', gen_random_uuid(), 'consent_first', now(), now())",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "d625ac24ff1b2649aaa3c47d86b7c6749f945650591dba5a3680d060981dba6f"
+}
