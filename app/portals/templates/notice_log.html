@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{#- The notice log on a portal job page (T198; BIZ-045, OPS-037, TD-BIZ-21). Every notice sent
+    to this business about this job, oldest first: send time or quiet-hours hold, address,
+    the provider's latest status, the first opening of the notice's own page and the quote or
+    Confirm time. No homeowner detail, no call outcome, no tracking pixel or redirect. -#}
+{% block title %}What we sent you about job {{ job }}{% endblock %}
+{% block main %}
+<h1>What we sent you about job {{ job }}</h1>
+<p>Delivered means your mail server accepted it; it may still be in Spam.</p>
+{% if rows.is_empty() %}<p>We haven't sent you anything about job {{ job }} yet.</p>
+{% else %}<ol>
+{% for r in rows %}<li>
+<h2>{{ r.what }}</h2>
+<p>{{ r.when }}, to {{ r.to }}</p>
+<p>{{ r.status }}</p>
+{% if let Some(o) = r.opened %}<p>{{ o }}</p>
+{% endif %}{% if let Some(a) = r.acted %}<p>{{ a }}</p>
+{% endif %}</li>
+{% endfor %}</ol>
+{% endif %}{% endblock %}

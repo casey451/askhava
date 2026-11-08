@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE messaging.notice_log SET first_opened_at = $2 WHERE id = $1 AND first_opened_at IS NULL",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "e78ad28eec1c93327c78b958c390730bc2318279f8395605088c5b7f88c5cd58"
+}

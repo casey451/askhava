@@ -11,7 +11,9 @@
 //! email once in the SEC-028 layout, holding bulk email above the daily limit's share (OPS-038);
 //! keep a homeowner's update channel (TXT-018); and decide web-and-email mode, a suspended
 //! number's routes and the one configured number per audience (`mode`, TXT-021 to TXT-024, CON-033);
-//! read a message log entry and cut bodies kept 30 days (`retention`, TXT-019, TXT-020).
+//! read a message log entry and cut bodies kept 30 days (`retention`, TXT-019, TXT-020); keep each
+//! job's notice log (`email_timing`, BIZ-045, OPS-037) and decide the open-cards and missed-cards
+//! emails (`open_cards_digest`, CARD-022; `missed_cards`, BIZ-044).
 
 pub use crate::business_notices::{
     BUSINESS_NOTICE_KIND, JOB_CARD_TEMPLATE, LINK_LIFE, NoticeOutcome, NoticeSender, SIGN_IN_URL,
@@ -24,16 +26,22 @@ pub use crate::email::{
     next_reset, queue_email, receive_email_event, render as render_email, send_email,
     set_update_channel, update_channel,
 };
+pub use crate::email_timing::{
+    NewNoticeLog, NoticeEntry, NoticeKind, ProviderStatus, Sending, mark_sent, notice_log,
+    record_acted, record_first_open, record_notice,
+};
 pub use crate::handlers::{Callback, receive_inbound, receive_status};
 pub use crate::keywords::{
     HelpSettings, HelpSettingsError, Keyword, help_text, keyword, reply_to_help,
 };
+pub use crate::missed_cards::{MissedSettings, MonthCards, first_of_month, missed_email_due};
 pub use crate::mode::{
     EmergencyFacts, EmergencyPlan, LaunchChannel, Line, LineSendError, Lines, ModeError,
     NumberState, PAUSED_EMERGENCY_ALERT, Raised, Refusal, SendingNumber, TollFree, UpdateRoute,
     emergency_plan, raise_emergency, send_on_line, update_route,
 };
 pub use crate::models::{EmailError, EmailLog, InboxError, OutboxError};
+pub use crate::open_cards_digest::{DigestFacts, MIN_LEFT, digest_goes, listable, slot_due};
 pub use crate::optout::{
     InboundText, Outcome, RevokeChannel, on_inbound_text, send_checked, suppress,
 };

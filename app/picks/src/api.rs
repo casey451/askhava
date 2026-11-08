@@ -83,6 +83,9 @@ pub use crate::money_notices::{
     BUSINESS_NOTICE_KIND, CARD_APPROVAL_TEMPLATE, CARD_FIX_TEMPLATE, RECEIPT_NO_RECIPIENT_ALERT,
     run_card_fix_notice, run_receipt_notice,
 };
+pub use crate::open_cards_email::{
+    ComposedEmail, OpenCard, WaitingPick, chosen_minutes, missed_cards_line, open_cards_email,
+};
 pub use crate::release::{
     ADDRESS_NEEDED_KIND, EMAIL_CHOSEN_FIELDS, RELEASE_FIELDS, RELEASE_LINE_FAILED_ALERT,
     RELEASE_NO_RECIPIENT_ALERT, RELEASE_TEMPLATE, RELEASE_TEXT_TEMPLATE, ReleaseFacts, ReleaseStep,
