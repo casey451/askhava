@@ -16,7 +16,12 @@
 //! `messaging::api::reply_to_help` (HELP, INFO, AYUDA: the reply is queued, also to a listed
 //! number, and nothing else runs; any other text from a listed number stops here, CON-016),
 //! then, for a number that is not a linked business phone, `intake::api::receive_reply`
-//! (TXT-031, INT-019, D-999). A business phone's text is recorded and goes to no homeowner path. A status
+//! (TXT-031, INT-019, D-999). A business phone's text goes to no homeowner path: its opt-out also
+//! calls `businesses::api::phone_stopped`, and any other text for which
+//! `businesses::api::auto_reply_due` holds queues `business_auto_reply` (BIZ-017, BIZ-032, D-1715).
+//! A first text whose new vault contact loses the unique phone index to a concurrent first text
+//! from the same phone continues with the winner's contact; if none is found the whole delivery
+//! rolls back, inbox row included, so Twilio sends it again (PRIV-001, TXT-012, D-1751). A status
 //! callback runs `messaging::api::receive_status`, once per (MessageSid, MessageStatus).
 //! Nothing here logs a phone, a body or a URL (PRIV-016). This file is also compiled into
 //! `tests/integration/tests/inbound_text_route.rs` with `#[path]`, so it names no `crate::` item.
@@ -24,13 +29,15 @@
 use std::sync::Arc;
 
 use askhava_adapters::api::{Delivery, VerifiedWebhook, WebhookVendor, refuse, verify_webhook};
+use askhava_businesses::api::{AUTO_REPLY_TEMPLATE, ConsentError, auto_reply_due, phone_stopped};
 use askhava_core::api::Clock;
 use askhava_intake::api::rules::{Check, Inbound, Settings as IntakeSettings, check};
 use askhava_intake::api::{IntakeError, TextIn, receive_reply};
 use askhava_messaging::api::{
-    APP_OPT_OUT_WORDS, HelpSettings, InboundText, InboxError, OutboxError, Outcome,
-    PROVIDER_OPT_OUT_WORDS, ProviderKeyword, RESUBSCRIBE_WORDS, Relation, keyword, on_inbound_text,
-    receive_inbound, receive_status, reply_to_help, sender_business,
+    APP_OPT_OUT_WORDS, HelpSettings, InboundText, InboxError, Language, NewText, OutboxError,
+    Outcome, PROVIDER_OPT_OUT_WORDS, ProviderKeyword, RESUBSCRIBE_WORDS, Relation, enqueue,
+    keyword, on_inbound_text, receive_inbound, receive_status, render, reply_to_help,
+    sender_business,
 };
 use askhava_privacy::api::{
     CommonWords, InboundWords, Known, NameMemory, NewContact, Vault, VaultError, find_by_phone,
@@ -219,7 +226,7 @@ async fn text(
     };
     screen(h, db, &msg, (to, now)).await?;
     if relation == Relation::Business {
-        return Err(Halt::Ends("business"));
+        return auto_reply(h, db, &msg).await;
     }
     let inbound = Inbound {
         words,
@@ -257,7 +264,14 @@ async fn screen(
         .await
         .map_err(outbox_halt)?
     {
-        Outcome::OptedOut { .. } => return Err(Halt::Ends("opted_out")),
+        Outcome::OptedOut { .. } => {
+            if msg.relation == Relation::Business {
+                phone_stopped(db, msg.contact, msg.inbox_id, now)
+                    .await
+                    .map_err(consent_halt)?;
+            }
+            return Err(Halt::Ends("opted_out"));
+        }
         Outcome::Suppressed { .. } => true,
         Outcome::Resubscribed | Outcome::Open => false,
     };
@@ -311,7 +325,34 @@ async fn sender(db: &mut PgConnection, vault: &Vault, from: &str) -> Step<(Uuid,
     }
 }
 
+/// BIZ-032, D-1715: the reply to a business phone's text that `auto_reply_due` says needs one,
+/// queued once per inbound text to the business through the outbox (the send path checks the
+/// suppression list and `may_text`). The route expects no business text yet, so `expected` is
+/// false; HELP and opt-outs already ended in [`screen`] (D-2039).
+async fn auto_reply(h: &Webhooks, db: &mut PgConnection, msg: &InboundText<'_>) -> Step<()> {
+    if !auto_reply_due(msg.text, false) {
+        return Err(Halt::Ends("business"));
+    }
+    let body = render(AUTO_REPLY_TEMPLATE, Language::En, false, &[])
+        .map_err(|e| Halt::Failed("auto_reply", variant(&e)))?;
+    let text = NewText {
+        template_id: AUTO_REPLY_TEMPLATE,
+        subject: &[msg.inbox_id],
+        recipient: msg.contact,
+        relation: Relation::Business,
+        body: &body.body,
+    };
+    enqueue(db, &h.id_secret, &text)
+        .await
+        .map_err(outbox_halt)?;
+    Err(Halt::Ends("business_auto_reply"))
+}
+
 /// The vault contact of homeowner phone `from`, stored (phone only) on her first text (PRIV-001).
+/// Two first texts from one new phone race here (D-1751): the loser's `store_contact` answers
+/// `PhoneTaken` after its savepoint rolled back, so the winner's contact is looked up again in
+/// this transaction and used; none found is `Halt::Database`, so the delivery, inbox row
+/// included, rolls back and Twilio resends it (TXT-012). The unique phone index stays.
 async fn homeowner(db: &mut PgConnection, vault: &Vault, from: &str) -> Step<Uuid> {
     if let Some(id) = find_by_phone(db, vault, from).await.map_err(vault_halt)? {
         return Ok(id);
@@ -323,7 +364,13 @@ async fn homeowner(db: &mut PgConnection, vault: &Vault, from: &str) -> Step<Uui
         address: None,
         onsite_contact: None,
     };
-    store_contact(db, vault, &new).await.map_err(vault_halt)
+    match store_contact(db, vault, &new).await {
+        Err(VaultError::PhoneTaken) => find_by_phone(db, vault, from)
+            .await
+            .map_err(vault_halt)?
+            .ok_or(Halt::Database),
+        stored => stored.map_err(vault_halt),
+    }
 }
 
 /// The value of form field `name`, if present and not blank.
@@ -354,6 +401,16 @@ fn vault_halt(e: VaultError) -> Halt {
         Halt::Database
     } else {
         Halt::Failed("vault", variant(&e))
+    }
+}
+
+/// A database or audit-row failure in `businesses` is a database error (500, Twilio resends), so
+/// a business STOP is never lost before its owner email is queued (BIZ-017, D-2039).
+fn consent_halt(e: ConsentError) -> Halt {
+    if matches!(e, ConsentError::Database | ConsentError::Audit) {
+        Halt::Database
+    } else {
+        Halt::Failed("businesses", variant(&e))
     }
 }
 
