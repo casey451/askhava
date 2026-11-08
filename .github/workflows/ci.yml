@@ -70,11 +70,37 @@ jobs:
 
       - name: Secret scan (gitleaks, working tree)
         run: |
-          curl -sSfL --retry 5 --retry-all-errors --retry-delay 15 --connect-timeout 20 -o "$RUNNER_TEMP/gitleaks.tgz" \
-            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
-          echo "${GITLEAKS_SHA256}  $RUNNER_TEMP/gitleaks.tgz" | sha256sum -c -
+          # gitleaks stays required (D-1986): the pinned release tarball, retried and checked against GITLEAKS_SHA256,
+          # extracted only once that check passes; when the download or the check fails (GitHub's release CDN gave
+          # hours of 504s), the same version built from the Go module proxy, its go.sum lines checked by the Go
+          # checksum database. Either way the binary must report the pinned version; with neither, the step fails.
           mkdir -p "$RUNNER_TEMP/gitleaks"
-          tar -xzf "$RUNNER_TEMP/gitleaks.tgz" -C "$RUNNER_TEMP/gitleaks"
+          gitleaks_release() {
+            rm -f "$RUNNER_TEMP/gitleaks.tgz"
+            curl -sSfL --retry 5 --retry-all-errors --retry-delay 15 --connect-timeout 20 -o "$RUNNER_TEMP/gitleaks.tgz" \
+              "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
+              && echo "${GITLEAKS_SHA256}  $RUNNER_TEMP/gitleaks.tgz" | sha256sum -c - \
+              && tar -xzf "$RUNNER_TEMP/gitleaks.tgz" -C "$RUNNER_TEMP/gitleaks"
+          }
+          if gitleaks_release; then
+            echo "gitleaks source: the v${GITLEAKS_VERSION} release tarball (SHA-256 verified)"
+          else
+            echo "::warning::gitleaks release download or SHA-256 check failed; building v${GITLEAKS_VERSION} from proxy.golang.org (D-1986)"
+            GOBIN="$RUNNER_TEMP/gitleaks" GOFLAGS=-mod=mod GOPROXY=https://proxy.golang.org GOSUMDB=sum.golang.org \
+              go install -ldflags "-X=github.com/zricethezav/gitleaks/v8/cmd.Version=${GITLEAKS_VERSION}" \
+              "github.com/zricethezav/gitleaks/v8@v${GITLEAKS_VERSION}"
+            built="$(go version -m "$RUNNER_TEMP/gitleaks/gitleaks" | awk '$1 == "mod" {print $2 "@" $3}')"
+            if [ "$built" != "github.com/zricethezav/gitleaks/v8@v${GITLEAKS_VERSION}" ]; then
+              echo "::error::the Go build is '${built}', not github.com/zricethezav/gitleaks/v8@v${GITLEAKS_VERSION}"
+              exit 1
+            fi
+            echo "gitleaks source: ${built} built from proxy.golang.org (checked by sum.golang.org)"
+          fi
+          reported="$("$RUNNER_TEMP/gitleaks/gitleaks" version)"
+          case "$reported" in
+            *"${GITLEAKS_VERSION}"*) echo "gitleaks reports version ${reported}" ;;
+            *) echo "::error::gitleaks reports '${reported}', not ${GITLEAKS_VERSION}"; exit 1 ;;
+          esac
           # --verbose prints each finding's rule, file and line; --redact still hides the value (D-582).
           "$RUNNER_TEMP/gitleaks/gitleaks" dir . --no-banner --redact --verbose --exit-code 1
 
