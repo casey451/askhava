@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-08T20:51:03Z by runner 78179b78af64 (actions).
+Updated 2026-11-08T20:51:16Z by runner 78179b78af64 (actions).
 
-**Building: T098 in progress since 20:00Z; 158 of 282 done; week 54% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 20:51Z; 158 of 282 done; week 54% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 158 of 282 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T098 claimed 20:00Z, lease until 23:00Z
+- **Lane:** idle since 20:51Z (no task in progress)
 - **Week:** 54% used, 86.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 20:00Z, 50 min before this update
 - **Keeper:** last ran 19:36Z, next wake 19:56Z
@@ -17,6 +17,7 @@ Updated 2026-11-08T20:51:03Z by runner 78179b78af64 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T098 | Journey J1 (homeowner) and its variants, keyboard-only, with | MERGE_PENDING | 1 | 50 min | 20:51Z |  |
 | T254 | server and picks: the production release (paid or free, mint | done | 1 | 84 min | 19:24Z |  |
 | T150 | picks and quotes: EMERGENCY card and pick emails with the em | done | 1 | 54 min | 16:04Z |  |
 | T198 | messaging and portals: daily open-cards email, missed-card a | done | 1 | 71 min | 14:02Z |  |
@@ -86,7 +87,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T098 (lease until 2026-11-08T23:00:13Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T254", "at": "2026-11-08T19:24:45Z", "output_tokens": 299148, "cache_creation_input_tokens": 1075541, "input_tokens": 821, "cache_read_input_tokens": 83337270}
+- {"task": "T098", "at": "2026-11-08T20:51:03Z", "cache_creation_input_tokens": 532995, "cache_read_input_tokens": 27890778, "input_tokens": 503, "output_tokens": 168512}
