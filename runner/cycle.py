@@ -120,7 +120,8 @@ class Env(Protocol):
         ...
 
     def smoke_main(self) -> tuple[bool, str]:
-        """Run scripts/smoke.sh on main's head with the runner's own tool run: (green, head SHA)."""
+        """Run scripts/smoke.sh on main's head with the runner's own tool run: (green, head SHA). The real Env
+        also sets `smoke_timed_out` (D-1178), `smoke_source` and `smoke_seconds` (D-2028), read with getattr."""
         ...
 
     def main_checks_green(self, head: str) -> bool | None:
@@ -794,9 +795,15 @@ def offending_merge(state: State) -> tuple[str, str, list[str]]:
 
 def _smoke(state: State, env: Env, now: datetime, why: str) -> tuple[State, bool, str]:
     """Run the smoke test on main and record the run in state (the 'verified' of governance 5.3).
-    A run that outran its budget is recorded with `timed_out` (D-1178)."""
+    A run that outran its budget is recorded with `timed_out` (D-1178). A result this job's step before the
+    session produced for the same head (the real Env's `smoke_source`) has it in `why`, e.g. "start routine
+    (pre-session)", and `seconds` is how long smoke.sh ran when the env says (D-2028)."""
     ok, head = env.smoke_main()
-    run = {"sha": head, "ok": ok, "at": st.iso(now), "why": why}
+    source = str(getattr(env, "smoke_source", "") or "")
+    run: dict[str, Any] = {"sha": head, "ok": ok, "at": st.iso(now), "why": f"{why} ({source})" if source else why}
+    seconds = getattr(env, "smoke_seconds", None)
+    if isinstance(seconds, int) and not isinstance(seconds, bool):
+        run["seconds"] = seconds
     if _smoke_timed_out(env):
         run["timed_out"] = True
     out = dict(state, smoke_runs=[*state.get("smoke_runs", [])[-19:], run])

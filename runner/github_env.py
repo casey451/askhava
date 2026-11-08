@@ -80,6 +80,10 @@ SMOKE_TREE = "askhava-smoke"  # the smoke worktree's fixed folder under RUNNER_T
 SMOKE_MTIMES = "smoke-mtimes.json"  # in the smoke's target dir: each tracked file's blob and the mtime it gets (D-1890)
 SMOKE_RAN = "smoke-ran"  # beside the smoke's target dir: this job ran the smoke, so backup-runner.yml saves its cache (D-1911)
 WARM_TIMEOUT = 1200  # seconds for `--warm-smoke`, a workflow step before the session with no 600-second Bash call (D-2007)
+PRE_SMOKE_TIMEOUT = 1500  # seconds for `--pre-smoke`'s scripts/smoke.sh, the start-routine smoke run before the session (D-2028)
+SMOKE_PRE = "smoke-pre.json"  # beside the smoke's target dir: the pre-session smoke's result for `smoke_main` (D-2028)
+SMOKE_PRE_LOG = "smoke-pre.log"  # beside it too: that smoke's output, printed to the step's job log (D-2028)
+PRE_SESSION = "pre-session"  # `smoke_source` when smoke_main used the pre-session result; added to the run's `why` (D-2028)
 # The Rust compile steps of scripts/smoke.sh word for word, `cargo test` with `--no-run`: the same flags and
 # environment build the same artifacts, so the session's smoke finds them fresh (D-2007; the keeper tests hold
 # each one to smoke.sh's text). `cargo sqlx prepare --check` is left out: it forces its own rebuild every run.
@@ -263,6 +267,38 @@ def run_warm(args: list[str], cwd: Path, timeout: float) -> int:
         os.killpg(proc.pid, signal.SIGKILL)
         proc.wait()
         raise
+
+
+def run_pre_smoke(args: list[str], cwd: Path, timeout: float, out: Path) -> int:
+    """`--pre-smoke`'s scripts/smoke.sh (D-2028) in the smoke's environment (`_smoke_env`, as `run_command` gives
+    the in-session smoke), its output going to the file `out` (no pipe a left-over child could hold open). Past
+    `timeout` its whole process group is killed, as `run_warm`'s, and TimeoutExpired is raised; returns the exit code."""
+    out.parent.mkdir(parents=True, exist_ok=True)
+    with out.open("wb") as sink:
+        proc = subprocess.Popen(args, cwd=cwd, env=_smoke_env(), stdin=subprocess.DEVNULL, stdout=sink,
+                                stderr=subprocess.STDOUT, start_new_session=True)
+        try:
+            return proc.wait(timeout=timeout)
+        except subprocess.TimeoutExpired:
+            os.killpg(proc.pid, signal.SIGKILL)
+            proc.wait()
+            raise
+
+
+def job_id() -> str:
+    """This Actions job's run, `<GITHUB_RUN_ID>-<GITHUB_RUN_ATTEMPT>`, or "" outside Actions: the pre-session
+    smoke's result is used only by the job that wrote it (D-2028; one `backup` job per run)."""
+    run = os.environ.get("GITHUB_RUN_ID", "")
+    return f"{run}-{os.environ.get('GITHUB_RUN_ATTEMPT', '')}" if run else ""
+
+
+def write_pre_smoke(result: dict[str, Any]) -> None:
+    """Write SMOKE_PRE beside the smoke's target dir (outside every cache entry) whole or not at all (D-2028)."""
+    path = smoke_target_dir().parent / SMOKE_PRE
+    part = path.with_name(SMOKE_PRE + ".part")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    part.write_text(json.dumps(result), encoding="utf-8")
+    part.replace(path)
 
 
 def warm_commands(tree: Path) -> list[list[str]]:
@@ -681,6 +717,10 @@ class GitHubEnv:
         self.last_rejection = ""  # the last rejected branch push's git output (push_rejection, D-583)
         self.updates = UpdateMerge(self._run, self.root, self._identity)  # stage C's update merge (D-620)
         self.warm_run: Callable[[list[str], Path, float], int] = run_warm  # `--warm-smoke`'s cargo runs; tests replace it (D-2007)
+        self.pre_run: Callable[[list[str], Path, float, Path], int] = run_pre_smoke  # `--pre-smoke`'s smoke.sh; tests replace it (D-2028)
+        self.smoke_timed_out = False  # the last smoke_main outran its budget (D-1178)
+        self.smoke_source = ""  # PRE_SESSION when the last smoke_main used the pre-session result, else "" (D-2028)
+        self.smoke_seconds: int | None = None  # how long the last smoke_main's smoke.sh ran, wherever it ran (D-2028)
 
     # ---- git plumbing
 
@@ -1032,18 +1072,23 @@ class GitHubEnv:
 
     def smoke_main(self) -> tuple[bool, str]:
         """bash scripts/smoke.sh in a detached worktree of main's head (the runner's own tool run), at the
-        fixed `smoke_tree_dir` and building into `smoke_target_dir` with pinned mtimes (D-1890)."""
+        fixed `smoke_tree_dir` and building into `smoke_target_dir` with pinned mtimes (D-1890). When this job's
+        `--pre-smoke` step already ran it on this very head, its result is the smoke's instead (D-2028)."""
         head = self.main_head()
         if self.dry_run:
             self.log.append(f"dry-run: smoke test not run on {head[:12]}")
             return True, head
-        self.smoke_timed_out = False
+        self.smoke_timed_out, self.smoke_source, self.smoke_seconds = False, "", None
+        pre = self._pre_smoke_for(head)
+        if pre is not None:
+            return self._use_pre_smoke(pre, head)
         tree = smoke_tree_dir()
         self._drop_smoke_tree(tree)
         self.git("worktree", "add", "--detach", str(tree), head)
         try:
             self._seed_smoke_target(tree)
             self._pin_smoke_tree(tree)
+            began = time.monotonic()
             code, out, err = self._run(["bash", "scripts/smoke.sh"], None, tree)
         except subprocess.TimeoutExpired:
             # A smoke test that outruns the budget is not a crash and not a verdict on main: the
@@ -1053,9 +1098,92 @@ class GitHubEnv:
         finally:
             self._drop_smoke_tree(tree)
             _mark_smoke_ran()
+        self.smoke_seconds = round(time.monotonic() - began)
         tail = (out + err).strip().splitlines()
         self.log.append(f"smoke on {head[:12]}: exit {code}; {tail[-1] if tail else ''}")
         return code == 0, head
+
+    def _pre_smoke_for(self, head: str) -> dict[str, Any] | None:
+        """The pre-session smoke's result (SMOKE_PRE, D-2028) when it is for `head` and was written by this very
+        job (`job_id`, never "" here), else None and, inside Actions, a log line saying why the smoke runs here."""
+        job = job_id()
+        try:
+            pre = json.loads((smoke_target_dir().parent / SMOKE_PRE).read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            pre = None
+        if not isinstance(pre, dict) or not isinstance(pre.get("exit"), int) or isinstance(pre.get("exit"), bool):
+            why = "no pre-session smoke result"
+        elif not job or pre.get("job") != job:
+            why = "the pre-session smoke result is from another job"
+        elif pre.get("sha") != head:
+            why = f"the pre-session smoke ran on {str(pre.get('sha'))[:12]}, main is now {head[:12]}"
+        else:
+            return pre
+        if job:
+            self.log.append(f"{why}: the smoke runs here")
+        return None
+
+    def _use_pre_smoke(self, pre: dict[str, Any], head: str) -> tuple[bool, str]:
+        """smoke_main's verdict from the pre-session result (D-2028): green only on exit 0; a timeout at its
+        PRE_SMOKE_TIMEOUT sets `smoke_timed_out` as an in-session one does (D-1178, D-1970)."""
+        code, timed_out, seconds = int(pre["exit"]), pre.get("timed_out") is True, pre.get("seconds")
+        self.smoke_timed_out, self.smoke_source = timed_out, PRE_SESSION
+        self.smoke_seconds = seconds if isinstance(seconds, int) and not isinstance(seconds, bool) else None
+        self.log.append(f"smoke on {head[:12]}: exit {code}; {str(pre.get('last') or '')[:300]} "
+                        f"({PRE_SESSION}, {self.smoke_seconds} s, this job's --pre-smoke step)")
+        return code == 0 and not timed_out, head
+
+    def pre_smoke(self) -> str:
+        """`python3 -m runner --pre-smoke` (D-2028): the start routine's smoke itself, before the session where no
+        600-second Bash call caps it: `_drop_smoke_tree`, the fixed `smoke_tree_dir` at main's head (the checkout's
+        `origin/main`, as `warm_smoke`), `_seed_smoke_target`, `_pin_smoke_tree`, then `bash scripts/smoke.sh`
+        through `pre_run` within PRE_SMOKE_TIMEOUT. Any old result is removed first; the new one (`write_pre_smoke`:
+        sha, ok, timed_out, exit, seconds, at, job, last) is what `smoke_main` uses for the same head and job.
+        Its output goes to SMOKE_PRE_LOG. Leaves SMOKE_RAN only on a timeout (the warm-up step before it judges
+        a finished build, D-2007); writes no state, lease or log on claude/kit-state; returns the line to print."""
+        head = self._checkout_main()
+        if self.dry_run or not head or not job_id():
+            why = "dry-run" if self.dry_run else "no main head" if not head else "no Actions job to tie it to"
+            return f"pre-session smoke not run on {head[:12]}: {why}"
+        tree, out = smoke_tree_dir(), smoke_target_dir().parent / SMOKE_PRE_LOG
+        for old in (smoke_target_dir().parent / SMOKE_PRE, out):
+            old.unlink(missing_ok=True)
+        self._drop_smoke_tree(tree)
+        self.git("worktree", "add", "--detach", str(tree), head)
+        try:
+            self._seed_smoke_target(tree)
+            self._pin_smoke_tree(tree)
+            code, timed_out, seconds = self._pre_smoke_run(tree, out)
+        finally:
+            self._drop_smoke_tree(tree)
+        return self._record_pre_smoke(head, code, timed_out, seconds, out)
+
+    def _pre_smoke_run(self, tree: Path, out: Path) -> tuple[int, bool, int]:
+        """smoke.sh through `pre_run` in `tree`: (exit, timed out, seconds); a timeout is exit 124 as in-session."""
+        began = time.monotonic()
+        try:
+            code, timed_out = self.pre_run(["bash", "scripts/smoke.sh"], tree, PRE_SMOKE_TIMEOUT, out), False
+        except subprocess.TimeoutExpired:
+            code, timed_out = 124, True
+            _mark_smoke_ran()  # it may have been compiling: keep it, as D-2007 keeps a warm-up that timed out
+        return code, timed_out, round(time.monotonic() - began)
+
+    def _record_pre_smoke(self, head: str, code: int, timed_out: bool, seconds: int, out: Path) -> str:
+        """Write the pre-session result (D-2028) with the output's last line and return the line to print."""
+        try:
+            rows = out.read_text(encoding="utf-8", errors="replace").strip().splitlines()
+        except OSError:
+            rows = []
+        last = f"smoke timed out after {PRE_SMOKE_TIMEOUT} seconds" if timed_out else (rows[-1] if rows else "")
+        write_pre_smoke({"sha": head, "ok": code == 0 and not timed_out, "timed_out": timed_out, "exit": code,
+                         "seconds": seconds, "at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                         "job": job_id(), "last": last[:300]})
+        return f"pre-session smoke on {head[:12]}: exit {code}; {last[:300]}; {seconds} s"
+
+    def _checkout_main(self) -> str:
+        """main's head as the checkout has it (`origin/main`, else HEAD), with no fetch: the steps before the
+        session have no token (D-2007, D-2028)."""
+        return self.git("rev-parse", "--verify", "--quiet", "origin/main^{commit}", check=False) or self.git("rev-parse", "HEAD", check=False)
 
     def warm_smoke(self) -> str:
         """`python3 -m runner --warm-smoke` (D-2007): the smoke's own preparation (the fixed `smoke_tree_dir` at
@@ -1064,7 +1192,7 @@ class GitHubEnv:
         content to the same times, finds the artifacts fresh. main's head is the checkout's `origin/main`
         (no fetch: the step has no token). Leaves SMOKE_RAN, so the cache is saved, only when the compile
         made progress (`_warm_build`); writes no state, lease or log on claude/kit-state; returns the line to print."""
-        head = self.git("rev-parse", "--verify", "--quiet", "origin/main^{commit}", check=False) or self.git("rev-parse", "HEAD", check=False)
+        head = self._checkout_main()
         if self.dry_run or not head:
             return f"dry-run: smoke warm-up not run on {head[:12]}" if self.dry_run else "smoke warm-up skipped: no main head"
         tree, start, built = smoke_tree_dir(), time.monotonic(), False

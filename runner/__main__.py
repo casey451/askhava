@@ -41,6 +41,11 @@ line of JSON with what changed.
                                     session (backup-runner.yml, no 600-second Bash call): the smoke's own
                                     tree, seed and pinned mtimes, then only its cargo compile steps; no
                                     state, lease or log written; always exit 0 (D-2007)
+  python3 -m runner --pre-smoke     run the start routine's smoke (scripts/smoke.sh) on main's head before the
+                                    session (backup-runner.yml, no 600-second Bash call, PRE_SMOKE_TIMEOUT):
+                                    the smoke's own tree, seed and pinned mtimes; its result beside the
+                                    smoke target is the start routine's smoke for that head in this job
+                                    only; no state, lease or log written; always exit 0 (D-2028)
   python3 -m runner --usage-reading FILE
                                     keep the plan usage the action reported about itself (the last
                                     `rate_limit_event` in its execution file) as usage.session_reading,
@@ -78,7 +83,7 @@ from pathlib import Path, PurePosixPath
 from typing import Any
 
 from runner import cycle, lanes as lane_policy, proof, state as st
-from runner.github_env import PREHANDIN_RED, GitHubEnv, find_transcripts, state_diff
+from runner.github_env import PREHANDIN_RED, SMOKE_PRE_LOG, GitHubEnv, find_transcripts, smoke_target_dir, state_diff
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
@@ -122,6 +127,7 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
     ap.add_argument("--usage-reading", type=Path)
     ap.add_argument("--keeper-armed", type=int, help="minutes until the keeper just dispatched wakes (D-1451)")
     ap.add_argument("--warm-smoke", action="store_true", help="build the smoke's cargo artifacts before the session (D-2007)")
+    ap.add_argument("--pre-smoke", action="store_true", help="run the start routine's smoke before the session (D-2028)")
     return ap.parse_args(argv)
 
 
@@ -565,10 +571,32 @@ def warm_smoke(args: argparse.Namespace) -> int:
     return 0
 
 
+def pre_smoke(args: argparse.Namespace) -> int:
+    """`--pre-smoke` (D-2028): GitHubEnv.pre_smoke, before any state is read and with no cycle; the smoke's
+    output (SMOKE_PRE_LOG), its log lines and result are printed, and any failure too. The exit is always 0, so
+    the workflow step never fails the job: without a result the session's start routine runs the smoke itself."""
+    env = GitHubEnv(ROOT, [], Path(tempfile.gettempdir()), repo=repo_name(), starter=starter_name(),
+                    runner_sha=git_out("rev-parse", "HEAD"), dry_run=args.dry_run)
+    try:
+        line = env.pre_smoke()
+    except Exception as exc:  # noqa: BLE001  # reason: a failed pre-session smoke only leaves the smoke to the session (D-2028)
+        line = f"pre-session smoke failed: {str(exc)[:300]}"
+    try:
+        print((smoke_target_dir().parent / SMOKE_PRE_LOG).read_text(encoding="utf-8", errors="replace"), end="")
+    except OSError:
+        pass
+    for row in env.log:
+        print(f"runner: {row}")
+    print(f"runner: {line}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     if args.warm_smoke:
         return warm_smoke(args)
+    if args.pre_smoke:
+        return pre_smoke(args)
     with tempfile.TemporaryDirectory() as outbox:
         cfg, env = build(args, Path(outbox))
         result = run(args, cfg, env)

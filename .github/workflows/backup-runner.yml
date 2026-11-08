@@ -363,6 +363,21 @@ jobs:
         continue-on-error: true
         timeout-minutes: 25
         run: python3 -m runner --warm-smoke
+      - name: Run the start-routine smoke before the session (D-2028)
+        # Even with the build warm, smoke.sh's checks and tests took 366 to 551 s on heads with nothing to compile,
+        # against the session's 540-second cap (D-1178), so heads timed out again and again. Here, with no 600-second
+        # Bash call, the runner runs the start routine's smoke itself: smoke.sh on the checkout's origin/main in the
+        # smoke's own tree, seed, pinned mtimes and environment, within PRE_SMOKE_TIMEOUT (1,500 s, its process group
+        # killed past it). It writes `target/smoke-pre.json` ({sha, ok, timed_out, exit, seconds, at, job, last}),
+        # which the session's start routine takes as its smoke when main's head is still that SHA and the result is
+        # this job's (`GITHUB_RUN_ID`, `GITHUB_RUN_ATTEMPT`); otherwise the session runs the smoke as before. A red
+        # or timed-out result counts exactly as one run in the session. It writes no state; a failure here only
+        # leaves the smoke to the session. After the warm-up, which already judged whether the build is worth
+        # saving (D-2007); it leaves `target/smoke-ran` itself only on a timeout.
+        if: hashFiles('Cargo.lock') != ''
+        continue-on-error: true
+        timeout-minutes: 32
+        run: python3 -m runner --pre-smoke
       - uses: anthropics/claude-code-action@v1
         id: claude
         env:
@@ -413,7 +428,8 @@ jobs:
 
             Never break section 2. Never claim a test passed unless you ran it here.
       - name: Smoke build cache, save (D-1911)
-        # Only when this job's runner ran the smoke (`target/smoke-ran`, written by `smoke_main`, outside both
+        # Only when this job's runner ran the smoke (`target/smoke-ran`, written by `smoke_main`, by the warm-up when it
+        # compiled and by the pre-session smoke when it timed out, D-2007, D-2028; outside both
         # entries), whatever the session's outcome: the manifest is written before Cargo runs, so even a red or
         # timed-out smoke leaves a target dir that matches it.
         if: always() && hashFiles('target/smoke-ran') != '' && steps.smoke-cache.outputs.cache-primary-key != ''
