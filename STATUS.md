@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-08T03:16:05Z by runner 3102765398fc (actions).
+Updated 2026-11-08T03:16:18Z by runner 3102765398fc (actions).
 
-**Building: T291 in progress since 02:31Z; 149 of 282 done; week 47% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 03:16Z; 149 of 282 done; week 47% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 149 of 282 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T291 claimed 02:31Z, lease until 05:31Z
+- **Lane:** idle since 03:16Z (no task in progress)
 - **Week:** 47% used, 100.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 02:38Z, 37 min before this update
 - **Keeper:** last ran 02:12Z, next wake 02:32Z
@@ -17,6 +17,7 @@ Updated 2026-11-08T03:16:05Z by runner 3102765398fc (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T291 | core and checks: one brand file the app and the build's chec | MERGE_PENDING | 1 | 44 min | 03:16Z |  |
 | T087 | portals: homeowner portal (phone and code), own data, no for | done | 1 | 46 min | 02:04Z |  |
 | T086 | portals: owner password, passkey or TOTP, recovery codes, 12 | done | 1 | 54 min | 00:56Z |  |
 | T195 | portals: business billing and statements from the ledger | done | 1 | 48 min | 23:28Z |  |
@@ -94,7 +95,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T291 (lease until 2026-11-08T05:31:39Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T087", "at": "2026-11-08T02:04:58Z", "input_tokens": 502, "cache_creation_input_tokens": 765297, "output_tokens": 208269, "cache_read_input_tokens": 28321756}
+- {"task": "T291", "at": "2026-11-08T03:16:05Z", "input_tokens": 436, "output_tokens": 191023, "cache_creation_input_tokens": 599545, "cache_read_input_tokens": 17772540}
