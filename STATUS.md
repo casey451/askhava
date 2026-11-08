@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-08T22:33:09Z by runner ecc86e13228c (actions).
+Updated 2026-11-08T22:44:05Z by runner a4959c2c479e (actions).
 
 **Idle since 22:00Z; 159 of 286 done; week 57% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-08T22:33:09Z by runner ecc86e13228c (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 22:00Z (no task in progress)
 - **Week:** 57% used, 82.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:33Z, 0 min before this update
+- **Last run:** 22:44Z, 0 min before this update
 - **Keeper:** last ran 22:33Z, next wake 22:53Z
 
 ## Needs attention
@@ -41,7 +41,6 @@ Updated 2026-11-08T22:33:09Z by runner ecc86e13228c (actions).
 - 10:55Z Harness: retry release downloads; backup job's coverage tools best-effort (D-1986) (#352)
 - 07:39Z harness: chain the next cycle at once after the first smoke timeout on a head (D-1970) (#349)
 - 01:33Z Plan: brand as configuration (T291–T295, D-1932–D-1933) (#342)
-- 22:37Z Harness: keep the smoke incremental across tasks that add queries; save its cache only from a smoking job (D-1911) (#338)
 
 ## Progress (requirements verified)
 
