@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-08T05:26:27Z by runner ba4e0109c199 (actions).
+Updated 2026-11-08T05:26:40Z by runner ba4e0109c199 (actions).
 
-**Building: T089 in progress since 04:41Z; 151 of 282 done; week 48% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 05:26Z; 151 of 282 done; week 48% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 151 of 282 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T089 claimed 04:41Z, lease until 07:41Z
+- **Lane:** idle since 05:26Z (no task in progress)
 - **Week:** 48% used, 98.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 04:50Z, 35 min before this update
 - **Keeper:** last ran 04:33Z, next wake 04:53Z
@@ -17,6 +17,7 @@ Updated 2026-11-08T05:26:27Z by runner ba4e0109c199 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T089 | Rate limits per phone, IP and business; brute-force stops | MERGE_PENDING | 1 | 44 min | 05:26Z |  |
 | T088 | Authorization matrix over every route and actor; token isola | done | 1 | 45 min | 04:25Z |  |
 | T291 | core and checks: one brand file the app and the build's chec | done | 1 | 44 min | 03:16Z |  |
 | T087 | portals: homeowner portal (phone and code), own data, no for | done | 1 | 46 min | 02:04Z |  |
@@ -90,7 +91,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T089 (lease until 2026-11-08T07:41:46Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T088", "at": "2026-11-08T04:25:32Z", "cache_creation_input_tokens": 430107, "output_tokens": 155621, "input_tokens": 401, "cache_read_input_tokens": 18155970}
+- {"task": "T089", "at": "2026-11-08T05:26:27Z", "cache_read_input_tokens": 16633853, "input_tokens": 353, "cache_creation_input_tokens": 633986, "output_tokens": 155807}
