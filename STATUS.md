@@ -1,23 +1,23 @@
 # Ask Hava build status
 
-Updated 2026-11-08T03:24:29Z by runner 327f29be8e81 (actions).
+Updated 2026-11-08T03:40:04Z by runner a2f57c33619e (actions).
 
-**Idle since 03:16Z; 149 of 282 done; week 48% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 03:34Z; 150 of 282 done; week 48% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 149 of 282 build tasks (owner gates not counted)
+- **Tasks done:** 150 of 282 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 03:16Z (no task in progress)
+- **Lane:** idle since 03:34Z (no task in progress)
 - **Week:** 48% used, 100.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:24Z, 0 min before this update
+- **Last run:** 03:24Z, 15 min before this update
 - **Keeper:** last ran 03:24Z, next wake 03:44Z
 
 ## Needs attention
-- Strict plan check red: 6 problem(s) on tasks still to run (+2 on DONE tasks); first: T089: stored context_pct 9% but it measures 13%; regenerate
+- Strict plan check red: 6 problem(s) on tasks still to run (+4 on DONE tasks); first: T089: stored context_pct 9% but it measures 13%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T291 | core and checks: one brand file the app and the build's chec | MERGE_PENDING | 1 | 44 min | 03:16Z |  |
+| T291 | core and checks: one brand file the app and the build's chec | done | 1 | 44 min | 03:16Z |  |
 | T087 | portals: homeowner portal (phone and code), own data, no for | done | 1 | 46 min | 02:04Z |  |
 | T086 | portals: owner password, passkey or TOTP, recovery codes, 12 | done | 1 | 54 min | 00:56Z |  |
 | T195 | portals: business billing and statements from the ledger | done | 1 | 48 min | 23:28Z |  |
@@ -37,7 +37,6 @@ Updated 2026-11-08T03:24:29Z by runner 327f29be8e81 (actions).
 | T090 | privacy: photo checks by bytes, re-encode without EXIF or GP | done | 1 | 52 min | 06:25Z |  |
 | T194 | portals: the new-device code by text or email and team sign- | done | 1 | 42 min | 05:12Z |  |
 | T084 | portals: business one-time sign-in link and 30-day sessions | done | 2 | 24 min | 04:14Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
-| T084 | portals: business one-time sign-in link and 30-day sessions | check_failed | 1 | 29 min | 03:36Z |  |
 
 ### Plan and harness merges on main
 - 01:33Z Plan: brand as configuration (T291–T295, D-1932–D-1933) (#342)
@@ -51,8 +50,8 @@ Updated 2026-11-08T03:24:29Z by runner 327f29be8e81 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 223 of 731 (30.5%) · partial 286 · unstarted 222
-**Tasks merged (throughput only):** 149 of 282
+**Requirements verified:** 223 of 731 (30.5%) · partial 288 · unstarted 220
+**Tasks merged (throughput only):** 150 of 282
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -75,7 +74,7 @@ Updated 2026-11-08T03:24:29Z by runner 327f29be8e81 (actions).
 | security | 9 | 34 | 11 | 54 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 1 | 27 | 28 |
-| wording | 1 | 3 | 28 | 32 |
+| wording | 1 | 5 | 26 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
@@ -87,7 +86,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 29 of 98 done
+- stage 4: 30 of 98 done
 - stage 5: 0 of 42 done
 - stage 6: 0 of 26 done
 - stage 7: 0 of 2 done
