@@ -1,23 +1,23 @@
 # Ask Hava build status
 
-Updated 2026-11-08T06:59:17Z by runner 9f6ba1044425 (actions).
+Updated 2026-11-08T07:19:14Z by runner 95d2435b65ac (actions).
 
-**Idle since 06:57Z; 152 of 282 done; week 49% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 07:14Z; 153 of 282 done; week 49% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 152 of 282 build tasks (owner gates not counted)
+- **Tasks done:** 153 of 282 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 06:57Z (no task in progress)
+- **Lane:** idle since 07:14Z (no task in progress)
 - **Week:** 49% used, 98.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:59Z, 0 min before this update
+- **Last run:** 06:59Z, 19 min before this update
 - **Keeper:** last ran 06:59Z, next wake 07:19Z
 
 ## Needs attention
-- Strict plan check red: 6 problem(s) on tasks still to run (+7 on DONE tasks); first: T255: stored context_pct 25% but it measures 29%; regenerate
+- Strict plan check red: 14 problem(s) on tasks still to run (+8 on DONE tasks); first: T255: stored context_pct 25% but it measures 29%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T148 | portals: secure email action links for every former text key | MERGE_PENDING | 1 | 56 min | 06:57Z |  |
+| T148 | portals: secure email action links for every former text key | done | 1 | 56 min | 06:57Z |  |
 | T089 | Rate limits per phone, IP and business; brute-force stops | done | 1 | 44 min | 05:26Z |  |
 | T088 | Authorization matrix over every route and actor; token isola | done | 1 | 45 min | 04:25Z |  |
 | T291 | core and checks: one brand file the app and the build's chec | done | 1 | 44 min | 03:16Z |  |
@@ -47,26 +47,26 @@ Updated 2026-11-08T06:59:17Z by runner 9f6ba1044425 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 223 of 731 (30.5%) · partial 292 · unstarted 216
-**Tasks merged (throughput only):** 152 of 282
+**Requirements verified:** 231 of 731 (31.6%) · partial 290 · unstarted 210
+**Tasks merged (throughput only):** 153 of 282
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 13 | 11 | 11 | 35 |
-| ai | 13 | 11 | 4 | 28 |
-| businesses | 10 | 31 | 17 | 58 |
-| calls | 10 | 14 | 1 | 25 |
+| accessibility | 13 | 13 | 9 | 35 |
+| ai | 14 | 10 | 4 | 28 |
+| businesses | 13 | 30 | 15 | 58 |
+| calls | 11 | 13 | 1 | 25 |
 | consent | 14 | 17 | 4 | 35 |
 | fees | 17 | 34 | 1 | 52 |
 | intake | 19 | 15 | 9 | 43 |
 | job-cards | 12 | 8 | 4 | 24 |
-| licensing | 31 | 16 | 1 | 48 |
+| licensing | 33 | 14 | 1 | 48 |
 | lifecycle | 20 | 8 | 0 | 28 |
 | messaging | 16 | 25 | 4 | 45 |
 | ops-recovery | 2 | 4 | 48 | 54 |
 | privacy | 3 | 25 | 3 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
-| quotes-pick | 19 | 24 | 13 | 56 |
+| quotes-pick | 20 | 25 | 11 | 56 |
 | recurring | 7 | 1 | 3 | 11 |
 | security | 9 | 37 | 8 | 54 |
 | terms | 0 | 3 | 32 | 35 |
@@ -83,7 +83,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 32 of 98 done
+- stage 4: 33 of 98 done
 - stage 5: 0 of 42 done
 - stage 6: 0 of 26 done
 - stage 7: 0 of 2 done
