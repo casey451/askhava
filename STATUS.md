@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-08T19:24:59Z by runner 6017dff3be20 (actions).
+Updated 2026-11-08T19:26:17Z by runner 6017dff3be20 (actions).
 
-**Idle since 19:24Z; 157 of 282 done; week 53% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 19:24Z; 157 of 282 done; week 54% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 157 of 282 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 19:24Z (no task in progress)
-- **Week:** 53% used, 88.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:07Z, 77 min before this update
+- **Week:** 54% used, 88.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Last run:** 19:25Z, 1 min before this update
 - **Keeper:** last ran 17:56Z, next wake 18:16Z
 
 ## Needs attention
@@ -40,7 +40,6 @@ Updated 2026-11-08T19:24:59Z by runner 6017dff3be20 (actions).
 - 01:33Z Plan: brand as configuration (T291–T295, D-1932–D-1933) (#342)
 - 22:37Z Harness: keep the smoke incremental across tasks that add queries; save its cache only from a smoking job (D-1911) (#338)
 - 19:48Z Plan: third audit — CI filters, close-time owned-file check, request timeout, confirm money invariants, reconcile retry (D-1866–D-1873) (#331)
-- 19:25Z Harness: incremental runner smoke build (stable tree, own target dir, mtime pinning) (D-1890) (#333)
 
 ## Progress (requirements verified)
 
