@@ -1,23 +1,23 @@
 # Ask Hava build status
 
-Updated 2026-11-08T01:01:11Z by runner ca7080908e1c (actions).
+Updated 2026-11-08T01:18:45Z by runner a6b09fa0a4bc (actions).
 
-**Idle since 00:56Z; 147 of 277 done; week 46% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 01:16Z; 148 of 277 done; week 46% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 147 of 277 build tasks (owner gates not counted)
+- **Tasks done:** 148 of 277 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 00:56Z (no task in progress)
+- **Lane:** idle since 01:16Z (no task in progress)
 - **Week:** 46% used, 104.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:01Z, 0 min before this update
+- **Last run:** 01:01Z, 17 min before this update
 - **Keeper:** last ran 01:01Z, next wake 01:21Z
 
 ## Needs attention
-- Strict plan check red: 9 problem(s) on tasks still to run (+6 on DONE tasks); first: T086: stored context_pct 11% but it measures 15%; regenerate
+- Strict plan check red: 9 problem(s) on tasks still to run (+7 on DONE tasks); first: T256: stored context_pct 24% but it measures 28%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T086 | portals: owner password, passkey or TOTP, recovery codes, 12 | MERGE_PENDING | 1 | 54 min | 00:56Z |  |
+| T086 | portals: owner password, passkey or TOTP, recovery codes, 12 | done | 1 | 54 min | 00:56Z |  |
 | T195 | portals: business billing and statements from the ledger | done | 1 | 48 min | 23:28Z |  |
 | T085 | portals: business portal home (contact choice, your numbers, | done | 1 | 33 min | 21:43Z |  |
 | T253 | privacy, picks and portals: the signed-in business reads a r | done | 1 | 54 min | 20:44Z |  |
@@ -37,7 +37,6 @@ Updated 2026-11-08T01:01:11Z by runner ca7080908e1c (actions).
 | T084 | portals: business one-time sign-in link and 30-day sessions | done | 2 | 24 min | 04:14Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T084 | portals: business one-time sign-in link and 30-day sessions | check_failed | 1 | 29 min | 03:36Z |  |
 | T083 | businesses: complaint replies, 3 in 90 days pause, alerts | done | 1 | 76 min | 02:49Z |  |
-| T082 | businesses: E-SIGN consent box, welcome text, business STOP | done | 1 | 53 min | 01:13Z |  |
 
 ### Plan and harness merges on main
 - 22:37Z Harness: keep the smoke incremental across tasks that add queries; save its cache only from a smoking job (D-1911) (#338)
@@ -50,8 +49,8 @@ Updated 2026-11-08T01:01:11Z by runner ca7080908e1c (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 226 of 731 (30.9%) · partial 277 · unstarted 228
-**Tasks merged (throughput only):** 147 of 277
+**Requirements verified:** 226 of 731 (30.9%) · partial 280 · unstarted 225
+**Tasks merged (throughput only):** 148 of 277
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -71,7 +70,7 @@ Updated 2026-11-08T01:01:11Z by runner ca7080908e1c (actions).
 | quiet-hours | 7 | 2 | 0 | 9 |
 | quotes-pick | 19 | 24 | 13 | 56 |
 | recurring | 7 | 1 | 3 | 11 |
-| security | 9 | 31 | 14 | 54 |
+| security | 9 | 34 | 11 | 54 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 1 | 27 | 28 |
 | wording | 2 | 2 | 28 | 32 |
@@ -86,7 +85,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 27 of 93 done
+- stage 4: 28 of 93 done
 - stage 5: 0 of 42 done
 - stage 6: 0 of 26 done
 - stage 7: 0 of 2 done
