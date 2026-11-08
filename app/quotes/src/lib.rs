@@ -32,6 +32,7 @@
 pub mod api;
 mod card_notices;
 mod cards;
+mod emergency_card_notice;
 mod gate;
 mod handlers;
 mod intake;

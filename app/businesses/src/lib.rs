@@ -35,6 +35,7 @@ mod complaints;
 mod consent;
 mod deliverability_check;
 mod email_verification;
+mod emergency_switch;
 mod identity;
 mod models;
 mod open_cards_times;

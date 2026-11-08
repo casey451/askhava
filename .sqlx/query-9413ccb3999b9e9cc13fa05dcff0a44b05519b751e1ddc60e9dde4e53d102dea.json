@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE businesses.business b SET after_hours_suspended_at = NULL WHERE b.id = $1 AND b.after_hours_suspended_at IS NOT NULL AND EXISTS (SELECT 1 FROM businesses.team_member m WHERE m.id = $2 AND m.business_id = b.id AND m.removed_at IS NULL AND (m.is_owner OR m.confirm_and_billing))",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "9413ccb3999b9e9cc13fa05dcff0a44b05519b751e1ddc60e9dde4e53d102dea"
+}

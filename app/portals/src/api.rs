@@ -69,6 +69,10 @@ pub use crate::email_check::{
     PICK_SKIP_LINE, REPLY_RECEIVED, SAMPLE_PICK_TITLE, Step, StepList, email_check_page,
     sample_pick_page, steps,
 };
+pub use crate::emergency_switch_page::{
+    ALERT_QUESTION, DND_LINE, EMERGENCY_SWITCH_ROUTE, OFF_WARNING, SWITCH_LABEL, SwitchStep,
+    TEST_BUTTON, dnd_steps, emergency_switch_page, post_step,
+};
 pub use crate::feedback::{FEEDBACK_ROUTE, SHARE_LABEL, feedback_routes};
 pub use crate::homeowner_portal::{
     HOMEOWNER_CODE_ROUTE, HOMEOWNER_HOME_ROUTE, HOMEOWNER_SESSION_LIFE, HOMEOWNER_SIGNIN_ROUTE,

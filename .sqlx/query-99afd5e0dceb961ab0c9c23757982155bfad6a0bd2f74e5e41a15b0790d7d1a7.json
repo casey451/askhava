@@ -1,0 +1,64 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT m.id, m.mailbox_id, m.cards_and_quotes, m.confirm_and_billing FROM businesses.emergency_switch s JOIN businesses.team_member m ON m.id = s.member_id AND m.business_id = s.business_id JOIN businesses.business b ON b.id = s.business_id WHERE s.business_id = $1 AND s.switch_on AND m.removed_at IS NULL AND b.after_hours AND b.after_hours_suspended_at IS NULL ORDER BY m.is_owner DESC, m.id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "businesses.team_member",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "mailbox_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "businesses.team_member",
+            "name": "mailbox_id"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "cards_and_quotes",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "businesses.team_member",
+            "name": "cards_and_quotes"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "confirm_and_billing",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "businesses.team_member",
+            "name": "confirm_and_billing"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "99afd5e0dceb961ab0c9c23757982155bfad6a0bd2f74e5e41a15b0790d7d1a7"
+}
