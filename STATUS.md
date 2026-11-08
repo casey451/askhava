@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-08T06:57:33Z by runner 09e142d45216 (actions).
+Updated 2026-11-08T06:57:45Z by runner 09e142d45216 (actions).
 
-**Building: T148 in progress since 06:00Z; 152 of 282 done; week 48% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 06:57Z; 152 of 282 done; week 48% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 152 of 282 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T148 claimed 06:00Z, lease until 09:00Z
+- **Lane:** idle since 06:57Z (no task in progress)
 - **Week:** 48% used, 98.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:08Z, 48 min before this update
+- **Last run:** 06:08Z, 49 min before this update
 - **Keeper:** last ran 05:56Z, next wake 06:16Z
 
 ## Needs attention
@@ -17,6 +17,7 @@ Updated 2026-11-08T06:57:33Z by runner 09e142d45216 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T148 | portals: secure email action links for every former text key | MERGE_PENDING | 1 | 56 min | 06:57Z |  |
 | T089 | Rate limits per phone, IP and business; brute-force stops | done | 1 | 44 min | 05:26Z |  |
 | T088 | Authorization matrix over every route and actor; token isola | done | 1 | 45 min | 04:25Z |  |
 | T291 | core and checks: one brand file the app and the build's chec | done | 1 | 44 min | 03:16Z |  |
@@ -90,7 +91,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T148 (lease until 2026-11-08T09:00:54Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T089", "at": "2026-11-08T05:26:27Z", "cache_read_input_tokens": 16633853, "input_tokens": 353, "cache_creation_input_tokens": 633986, "output_tokens": 155807}
+- {"task": "T148", "at": "2026-11-08T06:57:33Z", "output_tokens": 223969, "cache_read_input_tokens": 33721277, "cache_creation_input_tokens": 803151, "input_tokens": 536}
