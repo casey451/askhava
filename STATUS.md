@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-08T04:25:33Z by runner 7d83447754f6 (actions).
+Updated 2026-11-08T04:25:44Z by runner 7d83447754f6 (actions).
 
-**Building: T088 in progress since 03:40Z; 150 of 282 done; week 48% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 04:25Z; 150 of 282 done; week 48% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 150 of 282 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T088 claimed 03:40Z, lease until 06:40Z
+- **Lane:** idle since 04:25Z (no task in progress)
 - **Week:** 48% used, 98.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 03:47Z, 37 min before this update
 - **Keeper:** last ran 03:24Z, next wake 03:44Z
@@ -17,6 +17,7 @@ Updated 2026-11-08T04:25:33Z by runner 7d83447754f6 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T088 | Authorization matrix over every route and actor; token isola | MERGE_PENDING | 1 | 45 min | 04:25Z |  |
 | T291 | core and checks: one brand file the app and the build's chec | done | 1 | 44 min | 03:16Z |  |
 | T087 | portals: homeowner portal (phone and code), own data, no for | done | 1 | 46 min | 02:04Z |  |
 | T086 | portals: owner password, passkey or TOTP, recovery codes, 12 | done | 1 | 54 min | 00:56Z |  |
@@ -91,7 +92,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T088 (lease until 2026-11-08T06:40:01Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T291", "at": "2026-11-08T03:16:05Z", "input_tokens": 436, "output_tokens": 191023, "cache_creation_input_tokens": 599545, "cache_read_input_tokens": 17772540}
+- {"task": "T088", "at": "2026-11-08T04:25:32Z", "cache_creation_input_tokens": 430107, "output_tokens": 155621, "input_tokens": 401, "cache_read_input_tokens": 18155970}
