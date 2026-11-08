@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-08T14:02:56Z by runner aa2f6c6c5dc8 (actions).
+Updated 2026-11-08T14:03:09Z by runner aa2f6c6c5dc8 (actions).
 
-**Building: T198 in progress since 12:51Z; 155 of 282 done; week 51% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 14:02Z; 155 of 282 done; week 51% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 155 of 282 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T198 claimed 12:51Z, lease until 15:51Z
+- **Lane:** idle since 14:02Z (no task in progress)
 - **Week:** 51% used, 92.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 12:59Z, 63 min before this update
 - **Keeper:** last ran 12:46Z, next wake 13:06Z
@@ -17,6 +17,7 @@ Updated 2026-11-08T14:02:56Z by runner aa2f6c6c5dc8 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T198 | messaging and portals: daily open-cards email, missed-card a | MERGE_PENDING | 1 | 71 min | 14:02Z |  |
 | T149 | businesses: sign-up deliverability check with a sample card, | done | 1 | 43 min | 12:00Z |  |
 | T197 | picks: Confirm by email alone with the 4-business-hour windo | done | 1 | 41 min | 08:17Z |  |
 | T148 | portals: secure email action links for every former text key | done | 1 | 56 min | 06:57Z |  |
@@ -89,7 +90,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T198 (lease until 2026-11-08T15:51:02Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T149", "at": "2026-11-08T12:00:21Z", "input_tokens": 618, "cache_creation_input_tokens": 770063, "cache_read_input_tokens": 38803131, "output_tokens": 216622}
+- {"task": "T198", "at": "2026-11-08T14:02:56Z", "input_tokens": 527, "cache_read_input_tokens": 31576171, "output_tokens": 177534, "cache_creation_input_tokens": 677277}
