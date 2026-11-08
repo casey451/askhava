@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT n.id, n.kind, n.mailbox_id, n.sent_at, n.held_until, n.first_opened_at, n.acted_at, (SELECT e.kind FROM messaging.email_outbox o JOIN messaging.email_event e ON e.provider_id = o.provider_id WHERE o.id = n.outbox_id ORDER BY e.event_at DESC, e.id DESC LIMIT 1) AS \"event?\" FROM messaging.notice_log n WHERE n.business_id = $1 AND n.job_id = $2 ORDER BY COALESCE(n.sent_at, n.held_until), n.id",
+  "query": "SELECT n.id, n.kind, n.mailbox_id, n.sent_at, n.held_until, n.first_opened_at, n.acted_at, (SELECT e.kind FROM messaging.email_outbox o JOIN messaging.email_event e ON e.provider_id = o.provider_id WHERE o.id = n.outbox_id AND e.kind IN ('email.delivered', 'email.delivery_delayed', 'email.bounced', 'email.complained') ORDER BY e.event_at DESC, e.id DESC LIMIT 1) AS \"event?\" FROM messaging.notice_log n WHERE n.business_id = $1 AND n.job_id = $2 ORDER BY COALESCE(n.sent_at, n.held_until), n.id",
   "describe": {
     "columns": [
       {
@@ -104,5 +104,5 @@
       null
     ]
   },
-  "hash": "4dbfed7bee3521f5a8a8060a3e0d33c55dd0f8a3d7d1d022f2d393a5d308f0c0"
+  "hash": "aa9c121b79c681b323caf037c1a65eb1c6cd9782c01a764422d32b13e90c60b9"
 }

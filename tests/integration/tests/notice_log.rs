@@ -10,9 +10,13 @@ use askhava_messaging::api::{
     record_notice,
 };
 use askhava_portals::api::{NoticeLogPage, notice_log_page};
+use askhava_privacy::api::{NewContact, Vault, store_contact};
+use base64::Engine as _;
+use base64::engine::general_purpose::STANDARD;
 use jiff::Timestamp;
 use jiff::civil::date;
 use jiff_sqlx::ToSqlx;
+use secrecy::SecretString;
 use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
 
@@ -51,12 +55,58 @@ async fn email(db: &mut PgConnection, n: u8, event: &str) -> Uuid {
     id
 }
 
+/// The fake homeowner on `job`: name, phone and street in the vault, a homeowner row and her
+/// conversation on the job, so the page's never-list below can fail.
+async fn homeowner_on(db: &mut PgConnection, job: Uuid) {
+    let key = |b: u8| SecretString::from(format!("1:{}", STANDARD.encode([b; 32])));
+    let url = SecretString::from("postgres://askhava_app@db.invalid/askhava".to_owned());
+    let vault = Vault::new(&key(0x19), &key(0x29), &url).expect("vault");
+    let new = NewContact {
+        name: Some(SecretString::from("Zelda Fakename".to_owned())),
+        phone: Some(SecretString::from("(928) 555-0198".to_owned())),
+        email: None,
+        address: Some(SecretString::from("12 Sentinel Street".to_owned())),
+        onsite_contact: None,
+    };
+    let contact = store_contact(db, &vault, &new).await.expect("contact");
+    sqlx::query(
+        "INSERT INTO jobs.job (id, status, created_at, status_at, timer_from) \
+         VALUES ($1, 'open', $2, $2, $2)",
+    )
+    .bind(job)
+    .bind(az(8, 0).to_sqlx())
+    .execute(&mut *db)
+    .await
+    .expect("job");
+    let homeowner: Uuid = sqlx::query_scalar(
+        "INSERT INTO intake.homeowner (id, contact_id, created_at) \
+         VALUES (gen_random_uuid(), $1, $2) RETURNING id",
+    )
+    .bind(contact)
+    .bind(az(8, 0).to_sqlx())
+    .fetch_one(&mut *db)
+    .await
+    .expect("homeowner");
+    sqlx::query(
+        "INSERT INTO intake.conversation (homeowner_id, job_id, language, first_inbox_id, \
+         consent_template, consent_sent_at, opened_at) \
+         VALUES ($1, $2, 'en', gen_random_uuid(), 'consent_first', $3, $3)",
+    )
+    .bind(homeowner)
+    .bind(job)
+    .bind(az(8, 0).to_sqlx())
+    .execute(&mut *db)
+    .await
+    .expect("conversation");
+}
+
 /// TD-BIZ-21 (BIZ-045, OPS-037): the log's lines, kinds, statuses and times.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_biz_21_the_job_page_notice_log(pool: PgPool) {
     let mut db = pool.acquire().await.expect("conn");
     let (business, other, job) = (Uuid::new_v4(), Uuid::new_v4(), Uuid::new_v4());
     let (main, backup) = (Uuid::new_v4(), Uuid::new_v4());
+    homeowner_on(&mut db, job).await;
     for b in [business, other] {
         sqlx::query("INSERT INTO quotes.job_card (job_id, business_id, handyman, sent_at) VALUES ($1, $2, false, $3)")
             .bind(job).bind(b).bind(az(9, 0).to_sqlx()).execute(&mut *db).await.expect("card");
@@ -94,6 +144,15 @@ async fn td_biz_21_the_job_page_notice_log(pool: PgPool) {
                 .expect("log"),
         );
     }
+    // A later non-status event (an open) never hides the delivered row's status.
+    sqlx::query(
+        "INSERT INTO messaging.email_event (provider_id, kind, event_at, received_at) \
+         VALUES ('re_log_0', 'email.opened', $1, $1)",
+    )
+    .bind(az(9, 40).to_sqlx())
+    .execute(&mut *db)
+    .await
+    .expect("opened");
     let held = record_notice(
         &mut db,
         &log(NoticeKind::Card, backup, None),
@@ -161,13 +220,7 @@ async fn td_biz_21_the_job_page_notice_log(pool: PgPool) {
         assert!(page.contains(line), "missing {line}");
     }
     for never in [
-        "<img",
-        "call",
-        "Call",
-        "Zelda",
-        "555",
-        "Fakename Street",
-        "redirect",
+        "<img", "call", "Call", "Zelda", "555", "Fakename", "Sentinel", "0198", "redirect",
     ] {
         assert!(!page.contains(never), "page holds {never}");
     }

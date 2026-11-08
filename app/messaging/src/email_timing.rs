@@ -255,7 +255,8 @@ pub async fn notice_log(
         "SELECT n.id, n.kind, n.mailbox_id, n.sent_at, n.held_until, n.first_opened_at, \
          n.acted_at, (SELECT e.kind FROM messaging.email_outbox o JOIN messaging.email_event e \
          ON e.provider_id = o.provider_id WHERE o.id = n.outbox_id \
-         ORDER BY e.event_at DESC, e.id DESC LIMIT 1) AS \"event?\" \
+         AND e.kind IN ('email.delivered', 'email.delivery_delayed', 'email.bounced', \
+         'email.complained') ORDER BY e.event_at DESC, e.id DESC LIMIT 1) AS \"event?\" \
          FROM messaging.notice_log n WHERE n.business_id = $1 AND n.job_id = $2 \
          ORDER BY COALESCE(n.sent_at, n.held_until), n.id",
         business,
