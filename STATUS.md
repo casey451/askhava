@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-08T12:02:20Z by runner b452cd26f0b3 (actions).
+Updated 2026-11-08T12:11:22Z by runner 18a3a77ca32b (actions).
 
 **Idle since 12:00Z; 154 of 282 done; week 51% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-08T12:02:20Z by runner b452cd26f0b3 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 12:00Z (no task in progress)
 - **Week:** 51% used, 94.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:02Z, 0 min before this update
+- **Last run:** 12:02Z, 8 min before this update
 - **Keeper:** last ran 12:02Z, next wake 12:22Z
 
 ## Needs attention
@@ -34,7 +34,6 @@ Updated 2026-11-08T12:02:20Z by runner b452cd26f0b3 (actions).
 | T196 | businesses: verified notice email, sender rules and the addr | check_failed | 1 | 49 min | 15:54Z |  |
 | T147 | messaging and businesses: business notices by chosen channel | done | 1 | 39 min | 14:31Z |  |
 | T230 | portals: the private feedback page and its storage | done | 1 | 61 min | 13:25Z |  |
-| T191 | payments: the unreachable-homeowner refund at 96 hours and i | done | 1 | 56 min | 12:07Z |  |
 
 ### Plan and harness merges on main
 - 10:55Z Harness: retry release downloads; backup job's coverage tools best-effort (D-1986) (#352)
