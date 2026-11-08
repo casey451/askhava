@@ -25,8 +25,13 @@ use crate::team::Acting;
 
 /// The task whose sender emails the test emergency email ([`emergency_test_words`]) (BIZ-042).
 pub const EMERGENCY_TEST_KIND: &str = "businesses.emergency_test";
-/// The owner's email when the after-hours tick is removed or suspended (BIZ-007).
+/// The owner's email when the after-hours tick is removed or suspended (BIZ-007); its payload's
+/// `reason` is [`OFF_REMOVED`] or [`OFF_SUSPENDED`] (the sender adds the re-test link to the latter).
 pub const AFTER_HOURS_OFF_KIND: &str = "businesses.after_hours_off";
+/// [`AFTER_HOURS_OFF_KIND`]'s `reason` when the tick was removed ([`recheck_after_hours`]).
+pub const OFF_REMOVED: &str = "removed";
+/// [`AFTER_HOURS_OFF_KIND`]'s `reason` when the tick was suspended ([`suspend_after_hours`]).
+pub const OFF_SUSPENDED: &str = "suspended";
 /// How long a Yes after the test emergency email counts (BIZ-042, D-362; a setting's default).
 pub const EMERGENCY_YES_LIFE: SignedDuration = SignedDuration::from_hours(90 * 24);
 /// How long after a night EMERGENCY card a visit to its own link pages still counts (BIZ-007).
@@ -114,9 +119,13 @@ async fn log(
 async fn queue(
     tx: &mut PgConnection,
     (kind, business, member): (&'static str, Uuid, Uuid),
+    reason: Option<&'static str>,
     now: Timestamp,
 ) -> Result<(), SwitchError> {
-    let payload = json!({"business": business, "member": member});
+    let mut payload = json!({"business": business, "member": member});
+    if let Some(reason) = reason {
+        payload["reason"] = json!(reason);
+    }
     let mut task = NewTask::new(kind, payload, now);
     task.dedupe_key = Some(format!("{kind}.{member}.{}", now.as_second()));
     enqueue(tx, &task)
@@ -198,7 +207,8 @@ pub async fn recheck_after_hours(
     };
     log(&mut tx, business, "businesses.after_hours_removed").await?;
     let owner = owner.ok_or(SwitchError::UnknownMember)?;
-    queue(&mut tx, (AFTER_HOURS_OFF_KIND, business, owner), now).await?;
+    let off = (AFTER_HOURS_OFF_KIND, business, owner);
+    queue(&mut tx, off, Some(OFF_REMOVED), now).await?;
     db(tx.commit().await)?;
     Ok(true)
 }
@@ -221,7 +231,8 @@ pub async fn switch_off_warns(conn: &mut PgConnection, by: Acting) -> Result<boo
 }
 
 /// BIZ-037, BIZ-007: turns `by`'s "Emergency emails at any hour" on or off; off clears the Yes
-/// (a new test is needed) and may remove the tick ([`recheck_after_hours`]).
+/// and the test sent (so turning it back on needs a new test and a new Yes, D-2012) and may
+/// remove the tick ([`recheck_after_hours`]).
 ///
 /// # Errors
 /// [`SwitchError::UnknownMember`] or `Database`.
@@ -236,7 +247,8 @@ pub async fn set_emergency_emails(
          SELECT id, business_id, $3 FROM businesses.team_member \
          WHERE id = $1 AND business_id = $2 AND removed_at IS NULL \
          ON CONFLICT (member_id) DO UPDATE SET switch_on = $3, \
-         yes_at = CASE WHEN $3 THEN businesses.emergency_switch.yes_at END",
+         yes_at = CASE WHEN $3 THEN businesses.emergency_switch.yes_at END, \
+         test_sent_at = CASE WHEN $3 THEN businesses.emergency_switch.test_sent_at END",
         by.member,
         by.business,
         on
@@ -271,12 +283,15 @@ pub async fn send_emergency_test(
     if db(q.execute(&mut *tx).await)?.rows_affected() == 0 {
         return Err(SwitchError::UnknownMember);
     }
-    queue(&mut tx, (EMERGENCY_TEST_KIND, by.business, by.member), now).await?;
+    let test = (EMERGENCY_TEST_KIND, by.business, by.member);
+    queue(&mut tx, test, None, now).await?;
     db(tx.commit().await)
 }
 
 /// BIZ-042, D-362: stores the answer to "Did your phone alert you with Do Not Disturb or Sleep
-/// on?". A Yes needs a test sent and clears a suspension; a No clears the Yes and may remove the tick.
+/// on?". A Yes needs a test sent since the switch went on; a Yes from the owner or a "Confirm and
+/// billing" person clears a suspension (a "Cards and quotes" person's never does, D-2012); a No
+/// clears the Yes and may remove the tick.
 ///
 /// # Errors
 /// [`SwitchError::NoTest`] or `Database`.
@@ -301,14 +316,18 @@ pub async fn record_alert_answer(
         return Ok(());
     }
     let q = sqlx::query!(
-        "UPDATE businesses.business SET after_hours_suspended_at = NULL WHERE id = $1",
-        by.business
+        "UPDATE businesses.business b SET after_hours_suspended_at = NULL WHERE b.id = $1 \
+         AND b.after_hours_suspended_at IS NOT NULL AND EXISTS (SELECT 1 FROM \
+         businesses.team_member m WHERE m.id = $2 AND m.business_id = b.id \
+         AND m.removed_at IS NULL AND (m.is_owner OR m.confirm_and_billing))",
+        by.business,
+        by.member
     );
     db(q.execute(conn).await).map(|_| ())
 }
 
-/// BIZ-042, D-362: clears every Yes older than `life` and queues the re-test email; the business
-/// stops counting until a new Yes, its tick waiting. Returns how many; safe to run twice.
+/// BIZ-042, D-362: clears every Yes older than `life`, queues the re-test email and records it as
+/// the test sent; the business stops counting until a new Yes, its tick waiting. Returns how many; safe to run twice.
 ///
 /// # Errors
 /// [`SwitchError::Database`].
@@ -320,15 +339,17 @@ pub async fn queue_emergency_retests(
     let before = now.checked_sub(life).map_err(|_| SwitchError::Database)?;
     let mut tx = db(conn.begin().await)?;
     let q = sqlx::query!(
-        "UPDATE businesses.emergency_switch SET yes_at = NULL WHERE switch_on AND yes_at <= $1 \
-         RETURNING member_id, business_id",
-        before.to_sqlx() as _
+        "UPDATE businesses.emergency_switch SET yes_at = NULL, test_sent_at = $2 \
+         WHERE switch_on AND yes_at <= $1 RETURNING member_id, business_id",
+        before.to_sqlx() as _,
+        now.to_sqlx() as _
     );
     let due = db(q.fetch_all(&mut *tx).await)?;
     for r in &due {
         queue(
             &mut tx,
             (EMERGENCY_TEST_KIND, r.business_id, r.member_id),
+            None,
             now,
         )
         .await?;
@@ -360,7 +381,8 @@ pub async fn suspend_after_hours(
     };
     log(&mut tx, business, "businesses.after_hours_suspended").await?;
     let owner = owner.ok_or(SwitchError::UnknownMember)?;
-    queue(&mut tx, (AFTER_HOURS_OFF_KIND, business, owner), now).await?;
+    let off = (AFTER_HOURS_OFF_KIND, business, owner);
+    queue(&mut tx, off, Some(OFF_SUSPENDED), now).await?;
     db(tx.commit().await)?;
     Ok(true)
 }

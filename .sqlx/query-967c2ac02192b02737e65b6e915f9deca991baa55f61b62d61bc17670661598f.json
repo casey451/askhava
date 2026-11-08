@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO businesses.emergency_switch (member_id, business_id, switch_on) SELECT id, business_id, $3 FROM businesses.team_member WHERE id = $1 AND business_id = $2 AND removed_at IS NULL ON CONFLICT (member_id) DO UPDATE SET switch_on = $3, yes_at = CASE WHEN $3 THEN businesses.emergency_switch.yes_at END, test_sent_at = CASE WHEN $3 THEN businesses.emergency_switch.test_sent_at END",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Bool"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "967c2ac02192b02737e65b6e915f9deca991baa55f61b62d61bc17670661598f"
+}

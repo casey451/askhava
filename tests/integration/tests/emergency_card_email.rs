@@ -7,11 +7,11 @@ use std::collections::BTreeSet;
 
 use askhava_businesses::api::{
     AFTER_HOURS_OFF_KIND, Acting, Checks, EMERGENCY_TEST_KIND, EMERGENCY_YES_LIFE, Event,
-    JobTypeChoice, Roles, SwitchError, VISIT_WITHIN, add_member, add_owner, apply, covered,
-    covered_night_count, create, emergency_test_words, missed_in_a_row, queue_emergency_retests,
-    recheck_after_hours, record_alert_answer, remove_member, request_welcome, send_emergency_test,
-    set_after_hours, set_emergency_emails, set_job_types, set_towns, suspend_after_hours,
-    switch_off_warns, switch_state, welcome_sent,
+    JobTypeChoice, OFF_REMOVED, OFF_SUSPENDED, Roles, SwitchError, VISIT_WITHIN, add_member,
+    add_owner, apply, covered, covered_night_count, create, emergency_test_words, missed_in_a_row,
+    queue_emergency_retests, recheck_after_hours, record_alert_answer, remove_member,
+    request_welcome, send_emergency_test, set_after_hours, set_emergency_emails, set_job_types,
+    set_towns, suspend_after_hours, switch_off_warns, switch_state, welcome_sent,
 };
 use askhava_ops::api::Actor;
 use askhava_picks::api::{WindowRules, emergency_pick_plan, emergency_pick_subject};
@@ -277,7 +277,9 @@ async fn td_biz_24_removal_of_the_last_such_person_unticks(pool: PgPool) {
             .expect("recheck")
     );
     assert!(!ticked(&mut db, b).await);
-    assert_eq!(tasks(&mut db, AFTER_HOURS_OFF_KIND).await.len(), 1);
+    let emails = tasks(&mut db, AFTER_HOURS_OFF_KIND).await;
+    assert_eq!(emails.len(), 1);
+    assert_eq!(emails[0].0["reason"], OFF_REMOVED);
 }
 
 /// TD-BIZ-24 (BIZ-042, BIZ-007, INT-033, D-362): a Yes on day 0 counts at day 89 23:59:59 and not
@@ -348,7 +350,9 @@ async fn td_biz_24_two_unvisited_night_cards_suspend_until_a_new_yes(pool: PgPoo
             .expect("once")
     );
     assert_eq!(night(&mut db, az("23:30:00")).await, 0);
-    assert_eq!(tasks(&mut db, AFTER_HOURS_OFF_KIND).await.len(), 1);
+    let emails = tasks(&mut db, AFTER_HOURS_OFF_KIND).await;
+    assert_eq!(emails.len(), 1);
+    assert_eq!(emails[0].0["reason"], OFF_SUSPENDED);
     send_emergency_test(&mut db, owner, az("23:40:00"))
         .await
         .expect("re-test");
@@ -356,6 +360,59 @@ async fn td_biz_24_two_unvisited_night_cards_suspend_until_a_new_yes(pool: PgPoo
         .await
         .expect("yes");
     assert_eq!(night(&mut db, az("23:42:00")).await, 1);
+}
+
+/// TD-BIZ-24 (BIZ-042, D-2012): turning the switch off clears the test as well as the Yes, so after
+/// turning it back on a Yes is refused until a new test emergency email is sent.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_biz_24_switch_off_then_on_needs_a_new_test(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("conn");
+    let [owner, ..] = after_hours(&mut db, 0x170).await;
+    set_emergency_emails(&mut db, owner, false, az("11:00:00"))
+        .await
+        .expect("off");
+    set_emergency_emails(&mut db, owner, true, az("11:01:00"))
+        .await
+        .expect("on");
+    let state = switch_state(&mut db, owner, (az("11:01:00"), EMERGENCY_YES_LIFE)).await;
+    assert!(!state.expect("state").test_sent);
+    let refused = record_alert_answer(&mut db, owner, true, az("11:02:00")).await;
+    assert_eq!(refused, Err(SwitchError::NoTest));
+    send_emergency_test(&mut db, owner, az("11:03:00"))
+        .await
+        .expect("test");
+    record_alert_answer(&mut db, owner, true, az("11:04:00"))
+        .await
+        .expect("yes");
+}
+
+/// TD-BIZ-24 (BIZ-007, D-2012): a "Cards and quotes" person's Yes never ends a suspension; the
+/// owner's does.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_biz_24_only_a_confirming_yes_ends_a_suspension(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("conn");
+    let [owner, cards, _] = after_hours(&mut db, 0x180).await;
+    covers(&mut db, cards, az("10:30:00")).await;
+    let b = owner.business;
+    assert!(
+        suspend_after_hours(&mut db, b, az("23:30:00"))
+            .await
+            .expect("suspend")
+    );
+    send_emergency_test(&mut db, cards, az("23:40:00"))
+        .await
+        .expect("cards test");
+    record_alert_answer(&mut db, cards, true, az("23:41:00"))
+        .await
+        .expect("cards yes");
+    assert_eq!(night(&mut db, az("23:42:00")).await, 0, "still suspended");
+    send_emergency_test(&mut db, owner, az("23:43:00"))
+        .await
+        .expect("owner test");
+    record_alert_answer(&mut db, owner, true, az("23:44:00"))
+        .await
+        .expect("owner yes");
+    assert_eq!(night(&mut db, az("23:45:00")).await, 1);
 }
 
 /// TD-BIZ-24 (INT-033, D-346): a business ticked after-hours with no person who can confirm with

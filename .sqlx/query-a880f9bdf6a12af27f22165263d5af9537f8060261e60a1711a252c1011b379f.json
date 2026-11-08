@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "UPDATE businesses.emergency_switch SET yes_at = NULL WHERE switch_on AND yes_at <= $1 RETURNING member_id, business_id",
+  "query": "UPDATE businesses.emergency_switch SET yes_at = NULL, test_sent_at = $2 WHERE switch_on AND yes_at <= $1 RETURNING member_id, business_id",
   "describe": {
     "columns": [
       {
@@ -28,6 +28,7 @@
     ],
     "parameters": {
       "Left": [
+        "Timestamptz",
         "Timestamptz"
       ]
     },
@@ -36,5 +37,5 @@
       false
     ]
   },
-  "hash": "bb9fd9a6ce9211c23860f417a7c21cd524732e62040d4cd15a515e10e025ac00"
+  "hash": "a880f9bdf6a12af27f22165263d5af9537f8060261e60a1711a252c1011b379f"
 }
