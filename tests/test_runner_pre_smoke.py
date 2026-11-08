@@ -265,3 +265,49 @@ def test_the_pre_smoke_step_runs_after_the_warm_up_and_before_the_session() -> N
     assert ge.PRE_SMOKE_TIMEOUT / 60 + 5 <= pre["timeout-minutes"] <= 40
     assert pre["if"] == "hashFiles('Cargo.lock') != ''" and "secrets." not in json.dumps(pre)
     assert ge.PRE_SMOKE_TIMEOUT > ge.SMOKE_TIMEOUT
+
+
+def test_a_seed_or_pin_timeout_in_the_session_is_still_a_recorded_timeout(job: Path, tmp_path: Path) -> None:
+    """D-1178's crash mode: a TimeoutExpired before smoke.sh starts must give exit 124 and a duration, not a crash."""
+    env, calls = _env(tmp_path)
+    base = env._run
+
+    def run(a: list[str], i: str | None, c: Path) -> tuple[int, str, str]:
+        if a[:2] == ["git", "ls-files"]:
+            raise subprocess.TimeoutExpired(a, 600)
+        return base(a, i, c)
+
+    env._run = run
+    assert env.smoke_main() == (False, HEAD) and env.smoke_timed_out is True
+    assert isinstance(env.smoke_seconds, int) and ["bash", "scripts/smoke.sh"] not in calls
+    assert env.log[-1] == f"smoke on {HEAD[:12]}: exit 124; smoke timed out after {ge.SMOKE_TIMEOUT} seconds"
+    assert not ge.smoke_tree_dir().exists()
+
+
+def test_a_stale_result_of_this_job_is_gone_when_the_pre_smoke_fails(job: Path, tmp_path: Path) -> None:
+    """The old result is removed before the run, so a step that dies leaves nothing the session could take."""
+    env, calls = _env(tmp_path, smoke=(1, "in-session red"))
+    job.mkdir(parents=True, exist_ok=True)
+    (job / ge.SMOKE_PRE).write_text(json.dumps({"sha": HEAD, "job": "77-1", "exit": 0, "last": "old green"}))
+
+    def broken(args: list[str], cwd: Path, budget: float, out: Path) -> int:
+        raise OSError("disk full")
+
+    env.pre_run = broken
+    with pytest.raises(OSError):
+        env.pre_smoke()
+    assert not (job / ge.SMOKE_PRE).exists() and not ge.smoke_tree_dir().exists()
+    assert env.smoke_main() == (False, HEAD) and ["bash", "scripts/smoke.sh"] in calls, "judged by a fresh smoke"
+
+
+def test_the_result_is_written_whole_and_its_last_line_redacted(job: Path, tmp_path: Path) -> None:
+    token = "gh" + "p_" + "A" * 30  # built at run time: a fake token shape, never a real one
+    env, _ = _env(tmp_path)
+    _pre(env, code=1, lines=f"error: auth with {token} refused\n")
+    env.pre_smoke()
+    assert sorted(p.name for p in job.glob("smoke-pre*")) == sorted([ge.SMOKE_PRE, ge.SMOKE_PRE_LOG]), "no .part file left"
+    assert _result(job)["last"] == "error: auth with [redacted] refused"
+    raw = json.loads((job / ge.SMOKE_PRE).read_text())
+    (job / ge.SMOKE_PRE).write_text(json.dumps(dict(raw, last=f"leak {token}")))
+    env.smoke_main()
+    assert token not in "\n".join(env.log) and "leak [redacted]" in env.log[-1]

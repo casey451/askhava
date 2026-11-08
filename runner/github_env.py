@@ -1082,13 +1082,12 @@ class GitHubEnv:
         pre = self._pre_smoke_for(head)
         if pre is not None:
             return self._use_pre_smoke(pre, head)
-        tree = smoke_tree_dir()
+        tree, began = smoke_tree_dir(), time.monotonic()  # before the try: a seed or pin timeout still has a start
         self._drop_smoke_tree(tree)
         self.git("worktree", "add", "--detach", str(tree), head)
         try:
             self._seed_smoke_target(tree)
             self._pin_smoke_tree(tree)
-            began = time.monotonic()
             code, out, err = self._run(["bash", "scripts/smoke.sh"], None, tree)
         except subprocess.TimeoutExpired:
             # A smoke test that outruns the budget is not a crash and not a verdict on main: the
@@ -1125,11 +1124,12 @@ class GitHubEnv:
 
     def _use_pre_smoke(self, pre: dict[str, Any], head: str) -> tuple[bool, str]:
         """smoke_main's verdict from the pre-session result (D-2028): green only on exit 0; a timeout at its
-        PRE_SMOKE_TIMEOUT sets `smoke_timed_out` as an in-session one does (D-1178, D-1970)."""
+        PRE_SMOKE_TIMEOUT sets `smoke_timed_out` as an in-session one does (D-1178, D-1970). Its `last` line is
+        redacted again (`_redact_gate_row`) before it reaches the log."""
         code, timed_out, seconds = int(pre["exit"]), pre.get("timed_out") is True, pre.get("seconds")
         self.smoke_timed_out, self.smoke_source = timed_out, PRE_SESSION
         self.smoke_seconds = seconds if isinstance(seconds, int) and not isinstance(seconds, bool) else None
-        self.log.append(f"smoke on {head[:12]}: exit {code}; {str(pre.get('last') or '')[:300]} "
+        self.log.append(f"smoke on {head[:12]}: exit {code}; {_redact_gate_row(str(pre.get('last') or ''))[:300]} "
                         f"({PRE_SESSION}, {self.smoke_seconds} s, this job's --pre-smoke step)")
         return code == 0 and not timed_out, head
 
@@ -1169,12 +1169,13 @@ class GitHubEnv:
         return code, timed_out, round(time.monotonic() - began)
 
     def _record_pre_smoke(self, head: str, code: int, timed_out: bool, seconds: int, out: Path) -> str:
-        """Write the pre-session result (D-2028) with the output's last line and return the line to print."""
+        """Write the pre-session result (D-2028) with the output's last line, redacted as a gate row is
+        (`_redact_gate_row`, since it reaches the runner log), and return the line to print."""
         try:
             rows = out.read_text(encoding="utf-8", errors="replace").strip().splitlines()
         except OSError:
             rows = []
-        last = f"smoke timed out after {PRE_SMOKE_TIMEOUT} seconds" if timed_out else (rows[-1] if rows else "")
+        last = f"smoke timed out after {PRE_SMOKE_TIMEOUT} seconds" if timed_out else _redact_gate_row(rows[-1] if rows else "")
         write_pre_smoke({"sha": head, "ok": code == 0 and not timed_out, "timed_out": timed_out, "exit": code,
                          "seconds": seconds, "at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
                          "job": job_id(), "last": last[:300]})
