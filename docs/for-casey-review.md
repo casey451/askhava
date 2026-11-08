@@ -1930,3 +1930,10 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **Kept from coming back.** A new check fails the build if any later task writes "Ask Hava" into customer-facing code instead of using the setting.
 - **Timing.** The first of the five tasks is the next one the build starts, so the check is in place before anything else is written; a few queued tasks that edit the same files wait for the later four. Changing the name itself later needs a reviewed plan change with its own logged decision.
 - **Nothing needs you now.** Tell me when you pick the name; the copy rewritten for it comes after the build.
+
+## The authorization check over every page and actor (T088, D-1945 to D-1948, November 8)
+
+- **What it proves.** A test reads every web address from the code and tries each one as six made-up people (no one signed in, two homeowners, two businesses, you). Each gets exactly the yes or no it should; one homeowner's quote or feedback link never opens another's job; no push-alert app is built.
+- **Only partly met: "every refusal is logged".** Refused form posts are logged as security events. Two kinds are not yet: a forged webhook (Twilio or Stripe) is only a plain log line, and a person refused at the homeowner or business door leaves no record. Named to fix them: T256 (Twilio), T259 (Stripe), the tasks that open the homeowner and business pages, and T204 (security alerts) checks it all before it is done.
+- **Known limit.** Homeowner-to-homeowner separation is proven for the quote and feedback links only; the homeowner portal's own pages are not open yet and get the same check when they are.
+- **Nothing needs you.**
