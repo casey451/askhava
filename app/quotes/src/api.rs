@@ -34,6 +34,7 @@
 //! [`HomeownerAnswer::Confirmed`] and, when [`PhotoAiGate`] allows AI after zero retention, both
 //! [`ScreenCheck`]s through a [`PhotoScreener`] (AI-016, CARD-013, CARD-014).
 //! T193: [`open_card_jobs`] lists a business's carded jobs still waiting for quotes (BIZ-031).
+//! T148: [`record_quote_minutes`] stores the optional "minutes this quote took" (PICK-040, OPS-047).
 
 use sqlx::types::Uuid;
 
@@ -219,6 +220,30 @@ pub async fn quoted_prices(
             price: r.price(),
         })
         .collect())
+}
+
+/// PICK-040, OPS-047, D-492 (T148): stores the optional "minutes this quote took" on `business`'s
+/// quote for `job`, for the pilot scorecard only (never on a quote card); `false` when there is
+/// no such quote. Call it in the submitting transaction.
+///
+/// # Errors
+///
+/// [`QuotesError::Database`], also for minutes outside 1 to 600 (the column's check).
+pub async fn record_quote_minutes(
+    db: &mut sqlx::PgConnection,
+    (job, business): (Uuid, Uuid),
+    minutes: i32,
+) -> Result<bool, QuotesError> {
+    let done = sqlx::query!(
+        "UPDATE quotes.quote SET quote_minutes = $3 WHERE job_id = $1 AND business_id = $2",
+        job,
+        business,
+        minutes
+    )
+    .execute(db)
+    .await
+    .map_err(|_| QuotesError::Database)?;
+    Ok(done.rows_affected() == 1)
 }
 
 /// BIZ-031, CARD-018, D-462 (T193): the jobs `business` holds a card for that are still waiting for
