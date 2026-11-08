@@ -108,7 +108,8 @@ impl PickReleaser {
     }
 
     /// The job's homeowner contact through `intake` (D-1602); with none, one High
-    /// [`NO_CONTACT_ALERT`] about the pick and `None`.
+    /// [`NO_CONTACT_ALERT`] about the pick and `None` (the release is `MovedOn` and nothing
+    /// retries it; a person acts on the alert, D-2017).
     async fn contact_of(&self, pick: Uuid, job: Uuid) -> Result<Option<Uuid>, ReleaseError> {
         let mut conn = self
             .pool

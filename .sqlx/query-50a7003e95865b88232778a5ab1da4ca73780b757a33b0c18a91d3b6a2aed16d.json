@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT job_id, business_id, contact_id FROM picks.release WHERE pick_id = $1",
+  "query": "SELECT r.job_id, r.business_id, r.contact_id, p.status = ANY($2) AS \"shown!\"\n           FROM picks.release r JOIN picks.pick p ON p.id = r.pick_id WHERE r.pick_id = $1",
   "describe": {
     "columns": [
       {
@@ -35,18 +35,26 @@
             "name": "contact_id"
           }
         }
+      },
+      {
+        "ordinal": 3,
+        "name": "shown!",
+        "type_info": "Bool",
+        "origin": "Expression"
       }
     ],
     "parameters": {
       "Left": [
-        "Uuid"
+        "Uuid",
+        "TextArray"
       ]
     },
     "nullable": [
       false,
       false,
-      false
+      false,
+      null
     ]
   },
-  "hash": "273bb7d54ca0672826053d47b9bc0c2517aa796fa21159eeb94cbec6a2a697d0"
+  "hash": "50a7003e95865b88232778a5ab1da4ca73780b757a33b0c18a91d3b6a2aed16d"
 }

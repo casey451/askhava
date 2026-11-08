@@ -247,8 +247,13 @@ fn quote() -> Quote {
 
 /// A job, opened, carded to `quoters` and quoted by each in turn, so it is in Quotes ready.
 async fn quoted_job(pool: &PgPool, quoters: &[Uuid]) -> Uuid {
+    quoted_job_of(pool, quoters, false).await
+}
+
+/// [`quoted_job`], an emergency job when `emergency` (INT-029).
+async fn quoted_job_of(pool: &PgPool, quoters: &[Uuid], emergency: bool) -> Uuid {
     let mut db = pool.acquire().await.expect("db");
-    let job = create(&mut db, now(), false, Actor::System)
+    let job = create(&mut db, now(), emergency, Actor::System)
         .await
         .expect("job");
     let open = (JobStatus::Intake, JobStatus::Open);
@@ -358,7 +363,7 @@ async fn seen(
     }
 }
 
-/// Every task due by 2030, claimed once (so call it once per test, at the end).
+/// Every unclaimed task due by 2030, claimed once (a later call gets only tasks queued since).
 async fn tasks(pool: &PgPool) -> Vec<Claimed> {
     let owner = WorkerId::new(pool).await.expect("worker");
     let later = Timestamp::from_second(1_900_000_000).expect("time");
@@ -608,20 +613,7 @@ async fn td_pick_50_a_restart_after_the_settle_releases_once_on_the_retry(pool: 
 async fn td_pick_50_a_failed_line_opens_on_the_retry_and_never_reopens(pool: PgPool) {
     let (business, _, job, pick) = picked(&pool).await;
     zero_fee(&pool, (business, job)).await;
-    let options = pool.connect_options().as_ref().clone();
-    let impatient = PgPoolOptions::new()
-        .connect_with(options.options([("lock_timeout", "300ms")]))
-        .await
-        .expect("pool");
-    let mut holder = pool.begin().await.expect("tx");
-    let other = Connected {
-        job: Uuid::new_v4(),
-        homeowner: Uuid::new_v4(),
-        business: Uuid::new_v4(),
-    };
-    assign_number(&mut holder, &masked(), other, now())
-        .await
-        .expect("held");
+    let (holder, impatient) = held_masked(&pool).await;
     let cleared = cleared_free(&impatient, pick, (business, job)).await;
     let shown = sink(&impatient, vault()).settle_and_release(cleared).await;
     assert!(matches!(shown.expect("release"), Released::Shown(_)));
@@ -653,6 +645,59 @@ async fn td_pick_50_a_failed_line_opens_on_the_retry_and_never_reopens(pool: PgP
         reopened.expect("close").is_none(),
         "a closed line is never reopened"
     );
+}
+
+/// A transaction holding the one masked number, and a pool whose lock waits give up after
+/// 300 ms, so a line opened through it fails while the holder lives.
+async fn held_masked(pool: &PgPool) -> (sqlx::Transaction<'static, sqlx::Postgres>, PgPool) {
+    let options = pool.connect_options().as_ref().clone();
+    let impatient = PgPoolOptions::new()
+        .connect_with(options.options([("lock_timeout", "300ms")]))
+        .await
+        .expect("pool");
+    let mut holder = pool.begin().await.expect("tx");
+    let other = Connected {
+        job: Uuid::new_v4(),
+        homeowner: Uuid::new_v4(),
+        business: Uuid::new_v4(),
+    };
+    assign_number(&mut holder, &masked(), other, now())
+        .await
+        .expect("held");
+    (holder, impatient)
+}
+
+/// TD-PICK-50 (CALL-001, D-1688, D-2017): an emergency release that fails before its claim (the
+/// vault cannot read) queues no line retry, so the one per-pick retry is not spent; the release
+/// that follows, whose line fails to open, still queues it and the retry opens the line.
+#[sqlx::test(migrator = "MIGRATOR")]
+async fn td_pick_50_an_error_before_the_claim_leaves_the_line_retry_unspent(pool: PgPool) {
+    let business = new_business(&pool).await;
+    let job = quoted_job_of(&pool, &[business], true).await;
+    her_request(&pool, &[job]).await;
+    let pick = page_picked(&pool, job, 1).await;
+    zero_fee(&pool, (business, job)).await;
+    let cleared = cleared_free(&pool, pick, (business, job)).await;
+    let failed = sink(&pool, broken_vault())
+        .settle_and_release(cleared)
+        .await;
+    assert!(failed.is_err(), "the vault read before the claim fails");
+    assert_eq!(count(&tasks(&pool).await, LINE_RETRY_KIND, pick), 0);
+    let (holder, impatient) = held_masked(&pool).await;
+    let cleared = cleared_free(&impatient, pick, (business, job)).await;
+    let shown = sink(&impatient, vault()).settle_and_release(cleared).await;
+    assert!(matches!(shown.expect("release"), Released::Shown(_)));
+    assert!(!had_line(&pool, job).await);
+    holder.rollback().await.expect("pool recovers");
+    let retry = tasks(&pool)
+        .await
+        .into_iter()
+        .find(|t| t.kind == LINE_RETRY_KIND)
+        .expect("the retry is queued");
+    retry_line(pool.clone(), masked(), retry, now())
+        .await
+        .expect("opened");
+    assert!(had_line(&pool, job).await);
 }
 
 /// TD-PICK-49 (PICK-022, PICK-024, PRIV-005, BIZ-014, D-1565): a regular job's release claims its
