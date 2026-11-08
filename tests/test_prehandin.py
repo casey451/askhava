@@ -431,6 +431,8 @@ def test_the_backup_jobs_coverage_install_is_skipped_not_fatal(tmp_path: Path, f
 
 
 GITLEAKS_MODULE = "github.com/zricethezav/gitleaks/v8"
+# The h1 hash sum.golang.org records for gitleaks v8.28.0 (and `go version -m` of a real build shows).
+GITLEAKS_H1 = "h1:XXeibrt4XbdrYm3FnzXR3uUPs9HbgGduroICjBl6PMw="
 GITLEAKS_STEPS = {"ci.yml": "checks: Secret scan (gitleaks, working tree)",
                   "backup-runner.yml": "backup: Smoke-test prerequisites (what Ci installs for itself)"}
 
@@ -447,8 +449,11 @@ def _gitleaks_block(workflow: str) -> str:
 def test_gitleaks_falls_back_to_the_go_module_proxy_and_stays_required(workflow: str) -> None:
     """D-1986: the gitleaks release asset gave 504s for hours, so Ci and the backup job build the same pinned version
     from proxy.golang.org (go.sum checked by sum.golang.org) when the release download or its SHA-256 check fails.
-    The checksum database is never switched off, the binary must report the pinned version, and the block is the
-    same in both workflows."""
+    The checksum database is never switched off, the build must carry the pinned module hash (GITLEAKS_MOD_H1, the
+    h1 sum.golang.org records), the binary must report the pinned version, and the block is the same in both
+    workflows."""
+    for text in (ROOT / ".github/workflows" / name for name in GITLEAKS_STEPS):
+        assert f'GITLEAKS_MOD_H1: "{GITLEAKS_H1}"' in text.read_text(encoding="utf-8"), text.name
     block = _gitleaks_block(workflow)
     on_path = 'echo "$RUNNER_TEMP/gitleaks" >> "$GITHUB_PATH"\n'
     assert block.removesuffix(on_path) == _gitleaks_block("ci.yml"), "one install block in both workflows"
@@ -456,13 +461,15 @@ def test_gitleaks_falls_back_to_the_go_module_proxy_and_stays_required(workflow:
     assert '&& echo "${GITLEAKS_SHA256}  $RUNNER_TEMP/gitleaks.tgz" | sha256sum -c - \\\n' in block
     assert block.index("sha256sum -c -") < block.index("&& tar -xzf \"$RUNNER_TEMP/gitleaks.tgz\""), "checked, then extracted"
     go = block.split("else\n", 1)[1]
-    for needed in ('GOBIN="$RUNNER_TEMP/gitleaks"', "GOPROXY=https://proxy.golang.org", "GOSUMDB=sum.golang.org",
+    for needed in ('GOBIN="$RUNNER_TEMP/gitleaks"', "GOFLAGS=-mod=readonly", "GOTOOLCHAIN=local",
+                   "GOPROXY=https://proxy.golang.org GOSUMDB=sum.golang.org",
+                   """awk '$1 == "mod" {print $2 "@" $3 " " $4}'""",
                    f'go install -ldflags "-X={GITLEAKS_MODULE}/cmd.Version=${{GITLEAKS_VERSION}}"',
                    f'"{GITLEAKS_MODULE}@v${{GITLEAKS_VERSION}}"', 'go version -m "$RUNNER_TEMP/gitleaks/gitleaks"',
-                   f'[ "$built" != "{GITLEAKS_MODULE}@v${{GITLEAKS_VERSION}}" ]'):
+                   f'[ "$built" != "{GITLEAKS_MODULE}@v${{GITLEAKS_VERSION}} ${{GITLEAKS_MOD_H1}}" ]'):
         assert needed in go, needed
     for banned in ("GONOSUMDB", "GONOSUMCHECK", "GOINSECURE", "GOPRIVATE", "GOSUMDB=off", "-insecure", "GOFLAGS=-insecure",
-                   "|| true", "||"):
+                   "-mod=mod", "|| true", "||"):
         assert banned not in block, banned
     assert '"$RUNNER_TEMP/gitleaks/gitleaks" version' in block and '*"${GITLEAKS_VERSION}"*)' in block
     assert "gitleaks source: the v${GITLEAKS_VERSION} release tarball" in block and "built from proxy.golang.org" in block
@@ -479,8 +486,8 @@ def _gitleaks_stubs(bin_dir: Path, case: str) -> None:
         "go": ('if [ "$1" = install ]; then echo "GOPROXY=$GOPROXY GOSUMDB=$GOSUMDB GOBIN=$GOBIN" >> "$RUNNER_TEMP/calls"; '
                + ("exit 1; " if case == "both" else "")
                + f"printf '%s' '{fake_gitleaks}' > \"$GOBIN/gitleaks\"; chmod +x \"$GOBIN/gitleaks\"; exit 0; fi\n"
-               + 'printf "\\tpath\\t%s\\n\\tmod\\t%s\\tv%s\\th1:fake=\\n" '
-               + f'{GITLEAKS_MODULE} {GITLEAKS_MODULE} "${{FAKE_BUILT:-8.28.0}}"'),
+               + 'printf "\\tpath\\t%s\\n\\tmod\\t%s\\tv%s\\t%s\\n" '
+               + f'{GITLEAKS_MODULE} {GITLEAKS_MODULE} "${{FAKE_BUILT:-8.28.0}}" "${{FAKE_H1:-{GITLEAKS_H1}}}"'),
     }
     for tool, body in tools.items():
         (bin_dir / tool).write_text(f'#!/bin/sh\necho "{tool} $*" >> "$RUNNER_TEMP/calls"\n{body}\n')
@@ -490,20 +497,22 @@ def _gitleaks_stubs(bin_dir: Path, case: str) -> None:
 @pytest.mark.parametrize("workflow", sorted(GITLEAKS_STEPS))
 @pytest.mark.parametrize(("case", "env", "source"), [
     ("", {}, "release"), ("curl", {}, "go"), ("sha", {}, "go"), ("both", {}, None),
-    ("", {"FAKE_REPORTS": "8.27.9"}, None), ("curl", {"FAKE_BUILT": "8.27.9"}, None)])
-def test_the_gitleaks_install_runs_under_actions_bash(tmp_path: Path, workflow: str, case: str,
+    ("", {"FAKE_REPORTS": "8.27.9"}, None), ("curl", {"FAKE_BUILT": "8.27.9"}, None),
+    ("curl", {"FAKE_H1": "h1:" + "A" * 43 + "="}, None)])
+def test_the_gitleaks_install_runs_under_actions_bash_e(tmp_path: Path, workflow: str, case: str,
                                                       env: dict[str, str], source: str | None) -> None:
-    """The install block under `bash -eo pipefail` with stub tools: a good release is used as is; a failed download or
-    SHA-256 check falls back to `go install` (and never extracts the tarball); both sources failing, or a binary
-    that is not the pinned version, fails the step."""
+    """The install block under `bash -e`, as Actions runs a `run:` step with no `shell:` (no pipefail), with stub
+    tools: a good release is used as is; a failed download or SHA-256 check falls back to `go install` (and never
+    extracts the tarball); both sources failing, a binary that is not the pinned version, or a build whose module
+    hash is not GITLEAKS_MOD_H1, fails the step."""
     stubs = tmp_path / "bin"
     stubs.mkdir()
     _gitleaks_stubs(stubs, case)
     script = tmp_path / "step.sh"
     script.write_text(_gitleaks_block(workflow))
     run_env = {"PATH": f"{stubs}:/usr/bin:/bin", "RUNNER_TEMP": str(tmp_path), "GITLEAKS_VERSION": "8.28.0",
-               "GITLEAKS_SHA256": "0" * 64, "GITHUB_PATH": str(tmp_path / "path"), **env}
-    done = subprocess.run(["bash", "-eo", "pipefail", str(script)], cwd=tmp_path, env=run_env, capture_output=True,
+               "GITLEAKS_SHA256": "0" * 64, "GITLEAKS_MOD_H1": GITLEAKS_H1, "GITHUB_PATH": str(tmp_path / "path"), **env}
+    done = subprocess.run(["bash", "-e", str(script)], cwd=tmp_path, env=run_env, capture_output=True,
                           text=True, check=False)
     calls = (tmp_path / "calls").read_text()
     if source is None:
@@ -515,7 +524,7 @@ def test_the_gitleaks_install_runs_under_actions_bash(tmp_path: Path, workflow: 
     if source == "release":
         assert "release tarball (SHA-256 verified)" in done.stdout and "go " not in calls
     else:
-        assert f"{GITLEAKS_MODULE}@v8.28.0 built from proxy.golang.org" in done.stdout
+        assert f"{GITLEAKS_MODULE}@v8.28.0 {GITLEAKS_H1} built from proxy.golang.org" in done.stdout
         assert f"GOPROXY=https://proxy.golang.org GOSUMDB=sum.golang.org GOBIN={tmp_path}/gitleaks" in calls
         assert "tar " not in calls, "a tarball that failed its download or check is never extracted"
     if workflow == "backup-runner.yml":

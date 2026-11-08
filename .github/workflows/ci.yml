@@ -45,6 +45,8 @@ jobs:
       SQLX_OFFLINE: "true"
       GITLEAKS_VERSION: "8.28.0"
       GITLEAKS_SHA256: "a65b5253807a68ac0cafa4414031fd740aeb55f54fb7e55f386acb52e6a840eb"
+      # The module hash sum.golang.org records for that version, for the Go proxy fallback (D-1986).
+      GITLEAKS_MOD_H1: "h1:XXeibrt4XbdrYm3FnzXR3uUPs9HbgGduroICjBl6PMw="
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
@@ -73,7 +75,8 @@ jobs:
           # gitleaks stays required (D-1986): the pinned release tarball, retried and checked against GITLEAKS_SHA256,
           # extracted only once that check passes; when the download or the check fails (GitHub's release CDN gave
           # hours of 504s), the same version built from the Go module proxy, its go.sum lines checked by the Go
-          # checksum database. Either way the binary must report the pinned version; with neither, the step fails.
+          # checksum database and the module's own hash by GITLEAKS_MOD_H1. Either way the binary must report the
+          # pinned version; with neither, the step fails. Actions runs this with `bash -e` (no pipefail).
           mkdir -p "$RUNNER_TEMP/gitleaks"
           gitleaks_release() {
             rm -f "$RUNNER_TEMP/gitleaks.tgz"
@@ -86,15 +89,16 @@ jobs:
             echo "gitleaks source: the v${GITLEAKS_VERSION} release tarball (SHA-256 verified)"
           else
             echo "::warning::gitleaks release download or SHA-256 check failed; building v${GITLEAKS_VERSION} from proxy.golang.org (D-1986)"
-            GOBIN="$RUNNER_TEMP/gitleaks" GOFLAGS=-mod=mod GOPROXY=https://proxy.golang.org GOSUMDB=sum.golang.org \
+            GOBIN="$RUNNER_TEMP/gitleaks" GOFLAGS=-mod=readonly GOTOOLCHAIN=local \
+              GOPROXY=https://proxy.golang.org GOSUMDB=sum.golang.org \
               go install -ldflags "-X=github.com/zricethezav/gitleaks/v8/cmd.Version=${GITLEAKS_VERSION}" \
               "github.com/zricethezav/gitleaks/v8@v${GITLEAKS_VERSION}"
-            built="$(go version -m "$RUNNER_TEMP/gitleaks/gitleaks" | awk '$1 == "mod" {print $2 "@" $3}')"
-            if [ "$built" != "github.com/zricethezav/gitleaks/v8@v${GITLEAKS_VERSION}" ]; then
-              echo "::error::the Go build is '${built}', not github.com/zricethezav/gitleaks/v8@v${GITLEAKS_VERSION}"
+            built="$(go version -m "$RUNNER_TEMP/gitleaks/gitleaks" | awk '$1 == "mod" {print $2 "@" $3 " " $4}')"
+            if [ "$built" != "github.com/zricethezav/gitleaks/v8@v${GITLEAKS_VERSION} ${GITLEAKS_MOD_H1}" ]; then
+              echo "::error::the Go build is '${built}', not github.com/zricethezav/gitleaks/v8@v${GITLEAKS_VERSION} ${GITLEAKS_MOD_H1}"
               exit 1
             fi
-            echo "gitleaks source: ${built} built from proxy.golang.org (checked by sum.golang.org)"
+            echo "gitleaks source: ${built} built from proxy.golang.org (checked by sum.golang.org and GITLEAKS_MOD_H1)"
           fi
           reported="$("$RUNNER_TEMP/gitleaks/gitleaks" version)"
           case "$reported" in
