@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE businesses.backup_address SET removed_at = $3 WHERE business_id = $1 AND member_id = $2 AND removed_at IS NULL RETURNING verified_at IS NOT NULL AS \"v!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "v!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "38bbed91c57d39d128c7fa0fc4f04dcb24849764ac901df1b23d73fa15e53579"
+}

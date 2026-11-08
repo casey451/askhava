@@ -26,6 +26,8 @@
 //! T148 added the email action links for every former text keyword (`action_links`, BIZ-038,
 //! SEC-025, SEC-026) and the action pages and quote form they open (`business_actions`, BIZ-028,
 //! BIZ-032, PICK-006, PICK-039, PICK-040, A11Y-023).
+//! T149 added the sign-up inbox check and the sample pick step screens (`email_check`, BIZ-042),
+//! the steps read from `docs/copy/mail-app-steps.md`, and `business_actions::sample_pick_on_open`.
 //! Portal pages extend the shared layout `app/site/templates/base.html` through `askama.toml`.
 //! Other crates reach it only through [`api`].
 
@@ -37,6 +39,7 @@ mod business_portal;
 mod business_signup;
 mod confirm_pay;
 mod data_download;
+mod email_check;
 mod feedback;
 mod homeowner_portal;
 mod job_release;

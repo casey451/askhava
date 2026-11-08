@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE businesses.backup_address SET removed_at = $3 WHERE business_id = $1 AND member_id = $2 AND verified_at IS NULL AND removed_at IS NULL",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "bd0335dac2c6afa04e9fc26aa0c4ba9bacd16447d9a6d078e442eb76ad4e424a"
+}
