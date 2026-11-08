@@ -1329,3 +1329,4 @@
 - 2026-11-08T07:28:22Z runner 95d2435b65ac (actions): {}
 - 2026-11-08T07:29:30Z runner 95d2435b65ac (actions): {}
 - 2026-11-08T07:29:43Z runner 95d2435b65ac (actions): {}
+- 2026-11-08T07:44:45Z runner 95d2435b65ac (actions): {"T197": "QUEUED -> IN_PROGRESS"}; T197 estimated 3.7M tokens (calibrated); five-hour window has 29.1M left, week 96.0M (session_reading 2026-11-08T07:29:29Z (week)); claimed
