@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-08T14:25:29Z by runner 030777a33a7e (actions).
+Updated 2026-11-08T14:34:36Z by runner 030777a33a7e (actions).
 
 **Idle since 14:21Z; 156 of 282 done; week 52% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-08T14:25:29Z by runner 030777a33a7e (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 14:21Z (no task in progress)
 - **Week:** 52% used, 92.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:05Z, 19 min before this update
+- **Last run:** 14:05Z, 29 min before this update
 - **Keeper:** last ran 14:05Z, next wake 14:25Z
 
 ## Needs attention
@@ -33,7 +33,6 @@ Updated 2026-11-08T14:25:29Z by runner 030777a33a7e (actions).
 | T196 | businesses: verified notice email, sender rules and the addr | done | 2 | 32 min | 18:33Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests / test tests::transi |
 | T093 | messaging: vault references in the log, bodies cut at 30 day | done | 1 | 45 min | 17:05Z |  |
 | T196 | businesses: verified notice email, sender rules and the addr | check_failed | 1 | 49 min | 15:54Z |  |
-| T147 | messaging and businesses: business notices by chosen channel | done | 1 | 39 min | 14:31Z |  |
 
 ### Plan and harness merges on main
 - 10:55Z Harness: retry release downloads; backup job's coverage tools best-effort (D-1986) (#352)
