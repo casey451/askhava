@@ -20,11 +20,14 @@
 //! the TXT-030 missed-call text, the 96-hour unreachable refund and close, the 72-hour no-call
 //! return, the dispute auto-submit mark and the fraud-warning end (FEE-022, FEE-050, FEE-052,
 //! JOB-013, JOB-027).
+//! T197 added Confirm by email alone: the hourly reminders with the Hold line, the bounce grace,
+//! the lapse text and the BIZ-033 owner email (PICK-019, PICK-037, PICK-046, BIZ-033).
 //! Other crates reach it only through [`api`].
 
 mod aftermath;
 pub mod api;
 mod confirm;
+mod confirm_reminders;
 mod email_code;
 mod handlers;
 mod models;

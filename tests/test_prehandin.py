@@ -10,6 +10,8 @@ import json
 import re
 import subprocess
 from pathlib import Path
+from typing import Any
+
 import pytest
 import yaml
 
@@ -374,3 +376,329 @@ def test_the_gate_skips_coverage_it_cannot_measure_and_never_calls_that_red(tmp_
         env={"PATH": "/usr/bin:/bin", "PREHANDIN_ROOT": str(work), "HOME": str(tmp_path)}, check=False)
     assert "branch coverage of app/pay/" in done.stdout and "skipped: needs cargo-llvm-cov" in done.stdout, done.stdout
     assert "reached-end" in done.stdout and done.returncode == 0
+
+
+RETRY = "curl -sSfL --retry 5 --retry-all-errors --retry-delay 15 --connect-timeout 20 -o "
+
+
+def _workflow_runs(name: str) -> dict[str, str]:
+    jobs = yaml.safe_load((ROOT / ".github/workflows" / name).read_text(encoding="utf-8"))["jobs"]
+    return {f"{job}: {s.get('name', '')}": str(s.get("run", "")) for job, body in jobs.items() for s in body["steps"]}
+
+
+def test_every_release_download_retries_and_only_the_gates_coverage_tools_are_best_effort() -> None:
+    """D-1986: a release-CDN 504 on one curl stopped every backup run for over an hour. Each release download in
+    ci.yml and backup-runner.yml retries; the backup job's cargo-llvm-cov and nightly are best effort (the gate
+    then says it skipped), while gitleaks there and every Ci download stay required."""
+    runs = {**_workflow_runs("ci.yml"), **_workflow_runs("backup-runner.yml")}
+    curls = [line.strip() for run in runs.values() for line in run.splitlines() if "curl -sSfL" in line]
+    release = [c for c in curls if "gitleaks.tgz" in c or "llvm-cov.tgz" in c or "$tool.tgz" in c]
+    assert len(release) == 5, release
+    assert all(c.startswith(RETRY) or f"|| {RETRY}" in c for c in release), release
+    prereq = runs["backup: Smoke-test prerequisites (what Ci installs for itself)"]
+    gitleaks = prereq.split("done\n", 1)[1].split("# Ci's measuring", 1)[0]
+    assert "gitleaks.tgz" in gitleaks and "sha256sum -c -" in gitleaks and "||" not in gitleaks, "gitleaks stays required"
+    assert "prehandin coverage will report skipped (D-1986)" in prereq
+    strict = [s for s, run in runs.items() if s.startswith(("checks:", "coverage:")) and ".tgz" in run]
+    assert len(strict) == 3 and all("||" not in runs[s] for s in strict), "Ci's downloads stay strict"
+
+
+@pytest.mark.parametrize("fail", ["curl", "sha256sum", ""])
+def test_the_backup_jobs_coverage_install_is_skipped_not_fatal(tmp_path: Path, fail: str) -> None:
+    """The prerequisites step's coverage part under Actions' `bash -e`, with stub tools: a failed download or
+    checksum prints why, leaves cargo-llvm-cov off GITHUB_PATH and exits 0; a good one puts it there."""
+    prereq = _workflow_runs("backup-runner.yml")["backup: Smoke-test prerequisites (what Ci installs for itself)"]
+    part = "# Ci's measuring" + prereq.split("# Ci's measuring", 1)[1]
+    stubs = tmp_path / "bin"
+    stubs.mkdir()
+    for tool in ("rustup", "curl", "sha256sum", "tar", "sudo", "df"):
+        (stubs / tool).write_text(f"#!/bin/sh\n{'exit 22' if tool == fail else 'exit 0'}\n")
+        (stubs / tool).chmod(0o755)
+    (tmp_path / "tests").mkdir()
+    (tmp_path / "tests" / "coverage_floor.json").write_text("{}\n")
+    script = tmp_path / "step.sh"
+    script.write_text(part)
+    env = {"PATH": f"{stubs}:/usr/bin:/bin", "RUNNER_TEMP": str(tmp_path), "NIGHTLY": "nightly-2026-01-01",
+           "LLVM_COV_URL": "https://example.invalid/x.tgz", "LLVM_COV_SHA256": "0" * 64,
+           "GITHUB_PATH": str(tmp_path / "path"), "GITHUB_ENV": str(tmp_path / "env")}
+    done = subprocess.run(["bash", "-e", str(script)], cwd=tmp_path, env=env, capture_output=True, text=True,
+                          check=False)
+    assert done.returncode == 0, done.stderr
+    on_path = (tmp_path / "path").read_text() if (tmp_path / "path").exists() else ""
+    if fail:
+        assert "cargo-llvm-cov not installed: " in done.stdout and "prehandin coverage will report skipped" in done.stdout
+        assert "llvm-cov" not in on_path
+    else:
+        assert "not installed" not in done.stdout and f"{tmp_path}/llvm-cov" in on_path
+
+
+GITLEAKS_MODULE = "github.com/zricethezav/gitleaks/v8"
+# The h1 hash sum.golang.org records for gitleaks v8.28.0 (and `go version -m` of a real build shows).
+GITLEAKS_H1 = "h1:XXeibrt4XbdrYm3FnzXR3uUPs9HbgGduroICjBl6PMw="
+GITLEAKS_STEPS = {"ci.yml": "checks: Secret scan (gitleaks, working tree)",
+                  "backup-runner.yml": "backup: Smoke-test prerequisites (what Ci installs for itself)"}
+
+
+def _gitleaks_block(workflow: str) -> str:
+    """The part of the workflow step that installs gitleaks, up to (not including) what runs after it."""
+    run = _workflow_runs(workflow)[GITLEAKS_STEPS[workflow]]
+    if workflow == "backup-runner.yml":
+        return run.split("done\n", 1)[1].split("# Ci's measuring", 1)[0]
+    return run.split("# --verbose", 1)[0]
+
+
+@pytest.mark.parametrize("workflow", sorted(GITLEAKS_STEPS))
+def test_gitleaks_falls_back_to_the_go_module_proxy_and_stays_required(workflow: str) -> None:
+    """D-1986: the gitleaks release asset gave 504s for hours, so Ci and the backup job build the same pinned version
+    from proxy.golang.org (go.sum checked by sum.golang.org) when the release download or its SHA-256 check fails.
+    The checksum database is never switched off, the build must carry the pinned module hash (GITLEAKS_MOD_H1, the
+    h1 sum.golang.org records), the binary must report the pinned version, and the block is the same in both
+    workflows."""
+    for text in (ROOT / ".github/workflows" / name for name in GITLEAKS_STEPS):
+        assert f'GITLEAKS_MOD_H1: "{GITLEAKS_H1}"' in text.read_text(encoding="utf-8"), text.name
+    block = _gitleaks_block(workflow)
+    on_path = 'echo "$RUNNER_TEMP/gitleaks" >> "$GITHUB_PATH"\n'
+    assert block.removesuffix(on_path) == _gitleaks_block("ci.yml"), "one install block in both workflows"
+    assert f"{RETRY}\"$RUNNER_TEMP/gitleaks.tgz\"" in block
+    assert '&& echo "${GITLEAKS_SHA256}  $RUNNER_TEMP/gitleaks.tgz" | sha256sum -c - \\\n' in block
+    assert block.index("sha256sum -c -") < block.index("&& tar -xzf \"$RUNNER_TEMP/gitleaks.tgz\""), "checked, then extracted"
+    go = block.split("else\n", 1)[1]
+    for needed in ('GOBIN="$RUNNER_TEMP/gitleaks"', "GOFLAGS=-mod=readonly", "GOTOOLCHAIN=local",
+                   "GOPROXY=https://proxy.golang.org GOSUMDB=sum.golang.org",
+                   """awk '$1 == "mod" {print $2 "@" $3 " " $4}'""",
+                   f'go install -ldflags "-X={GITLEAKS_MODULE}/cmd.Version=${{GITLEAKS_VERSION}}"',
+                   f'"{GITLEAKS_MODULE}@v${{GITLEAKS_VERSION}}"', 'go version -m "$RUNNER_TEMP/gitleaks/gitleaks"',
+                   f'[ "$built" != "{GITLEAKS_MODULE}@v${{GITLEAKS_VERSION}} ${{GITLEAKS_MOD_H1}}" ]'):
+        assert needed in go, needed
+    for banned in ("GONOSUMDB", "GONOSUMCHECK", "GOINSECURE", "GOPRIVATE", "GOSUMDB=off", "-insecure", "GOFLAGS=-insecure",
+                   "-mod=mod", "|| true", "||"):
+        assert banned not in block, banned
+    assert '"$RUNNER_TEMP/gitleaks/gitleaks" version' in block and '*"${GITLEAKS_VERSION}"*)' in block
+    assert "gitleaks source: the v${GITLEAKS_VERSION} release tarball" in block and "built from proxy.golang.org" in block
+
+
+def _gitleaks_stubs(bin_dir: Path, case: str) -> None:
+    """curl, sha256sum, tar and go stand-ins that log their calls; tar and `go install` leave a stub gitleaks."""
+    fake_gitleaks = "#!/bin/sh\necho \"${FAKE_REPORTS:-8.28.0}\"\n"
+    tools = {
+        "curl": "exit 22" if case in ("curl", "both") else 'printf partial > "$RUNNER_TEMP/gitleaks.tgz"',
+        "sha256sum": "cat >/dev/null; exit 1" if case == "sha" else "cat >/dev/null",
+        "tar": f"printf '%s' '{fake_gitleaks}' > \"$RUNNER_TEMP/gitleaks/gitleaks\"; "
+               "chmod +x \"$RUNNER_TEMP/gitleaks/gitleaks\"",
+        "go": ('if [ "$1" = install ]; then echo "GOPROXY=$GOPROXY GOSUMDB=$GOSUMDB GOBIN=$GOBIN" >> "$RUNNER_TEMP/calls"; '
+               + ("exit 1; " if case == "both" else "")
+               + f"printf '%s' '{fake_gitleaks}' > \"$GOBIN/gitleaks\"; chmod +x \"$GOBIN/gitleaks\"; exit 0; fi\n"
+               + 'printf "\\tpath\\t%s\\n\\tmod\\t%s\\tv%s\\t%s\\n" '
+               + f'{GITLEAKS_MODULE} {GITLEAKS_MODULE} "${{FAKE_BUILT:-8.28.0}}" "${{FAKE_H1:-{GITLEAKS_H1}}}"'),
+    }
+    for tool, body in tools.items():
+        (bin_dir / tool).write_text(f'#!/bin/sh\necho "{tool} $*" >> "$RUNNER_TEMP/calls"\n{body}\n')
+        (bin_dir / tool).chmod(0o755)
+
+
+@pytest.mark.parametrize("workflow", sorted(GITLEAKS_STEPS))
+@pytest.mark.parametrize(("case", "env", "source"), [
+    ("", {}, "release"), ("curl", {}, "go"), ("sha", {}, "go"), ("both", {}, None),
+    ("", {"FAKE_REPORTS": "8.27.9"}, None), ("curl", {"FAKE_BUILT": "8.27.9"}, None),
+    ("curl", {"FAKE_H1": "h1:" + "A" * 43 + "="}, None)])
+def test_the_gitleaks_install_runs_under_actions_bash_e(tmp_path: Path, workflow: str, case: str,
+                                                      env: dict[str, str], source: str | None) -> None:
+    """The install block under `bash -e`, as Actions runs a `run:` step with no `shell:` (no pipefail), with stub
+    tools: a good release is used as is; a failed download or SHA-256 check falls back to `go install` (and never
+    extracts the tarball); both sources failing, a binary that is not the pinned version, or a build whose module
+    hash is not GITLEAKS_MOD_H1, fails the step."""
+    stubs = tmp_path / "bin"
+    stubs.mkdir()
+    _gitleaks_stubs(stubs, case)
+    script = tmp_path / "step.sh"
+    script.write_text(_gitleaks_block(workflow))
+    run_env = {"PATH": f"{stubs}:/usr/bin:/bin", "RUNNER_TEMP": str(tmp_path), "GITLEAKS_VERSION": "8.28.0",
+               "GITLEAKS_SHA256": "0" * 64, "GITLEAKS_MOD_H1": GITLEAKS_H1, "GITHUB_PATH": str(tmp_path / "path"), **env}
+    done = subprocess.run(["bash", "-e", str(script)], cwd=tmp_path, env=run_env, capture_output=True,
+                          text=True, check=False)
+    calls = (tmp_path / "calls").read_text()
+    if source is None:
+        assert done.returncode != 0, done.stdout
+        assert "gitleaks reports version" not in done.stdout
+        return
+    assert done.returncode == 0, done.stdout + done.stderr
+    assert "gitleaks reports version 8.28.0" in done.stdout
+    if source == "release":
+        assert "release tarball (SHA-256 verified)" in done.stdout and "go " not in calls
+    else:
+        assert f"{GITLEAKS_MODULE}@v8.28.0 {GITLEAKS_H1} built from proxy.golang.org" in done.stdout
+        assert f"GOPROXY=https://proxy.golang.org GOSUMDB=sum.golang.org GOBIN={tmp_path}/gitleaks" in calls
+        assert "tar " not in calls, "a tarball that failed its download or check is never extracted"
+    if workflow == "backup-runner.yml":
+        assert (tmp_path / "path").read_text() == f"{tmp_path}/gitleaks\n"
+
+
+PREBUILT_STEP = "checks: Prebuilt tools (cargo-audit, cargo-deny) from pinned musl release tarballs (D-693)"
+PREBUILT_PINS = {"AUDIT": "0.22.2", "DENY": "0.20.2"}
+
+
+def _prebuilt_step() -> dict[str, Any]:
+    ci = yaml.safe_load((ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8"))
+    return next(s for s in ci["jobs"]["checks"]["steps"] if f"checks: {s.get('name', '')}" == PREBUILT_STEP)
+
+
+def test_cargo_audit_and_deny_fall_back_to_crates_io_and_stay_required() -> None:
+    """D-1986: after gitleaks, the cargo-audit and cargo-deny release assets gave 504s too. Each tool's release
+    tarball stays retried, SHA-256 checked and extracted only after the check; on a failed download or check the same
+    version comes from crates.io (`cargo install --locked`, exact version) into the same bin, and the binary must
+    report the pinned version. The pins match the release URLs, and nothing can mask both sources failing."""
+    step = _prebuilt_step()
+    for tool, version in PREBUILT_PINS.items():
+        assert str(step["env"][f"{tool}_VERSION"]) == version and version in step["env"][f"{tool}_URL"], tool
+    block = step["run"]
+    assert f'{RETRY}"$RUNNER_TEMP/$tool.tgz" "${{!url}}" \\\n' in block
+    assert '&& echo "${!sum}  $RUNNER_TEMP/$tool.tgz" | sha256sum -c - \\\n' in block
+    assert block.index("sha256sum -c -") < block.index('&& tar -xzf "$RUNNER_TEMP/$tool.tgz"'), "checked, then extracted"
+    fallback = block.split("else\n", 1)[1]
+    assert 'cargo install --locked --root "$RUNNER_TEMP/tools" --version "=${!version}" "$name"' in fallback
+    assert 'reported="$("$bin/$name" --version)"' in block and '*" ${!version}")' in block
+    assert block.rstrip().endswith('echo "$bin" >> "$GITHUB_PATH"')
+    for banned in ("||", "--no-verify", "--offline", "--frozen", "--registry", "--git", "--path", "--index"):
+        assert banned not in block, banned
+
+
+def _prebuilt_stubs(bin_dir: Path, case: str) -> None:
+    """curl, sha256sum, tar and cargo stand-ins that log their calls; tar and `cargo install` leave stub tools that
+    print `<name> <FAKE_REPORTS or the version they were built at>`."""
+    def fake(name: str, version: str) -> str:
+        return f"printf '#!/bin/sh\\necho \"%s ${{FAKE_REPORTS:-%s}}\"\\n' {name} {version}"
+    tar = "; ".join(f'{fake(f"cargo-{t.lower()}", v)} > "$RUNNER_TEMP/tools/bin/cargo-{t.lower()}"'
+                    for t, v in PREBUILT_PINS.items())
+    tools = {
+        "curl": "exit 22" if case in ("curl", "both") else ":",
+        "sha256sum": "cat >/dev/null; exit 1" if case == "sha" else "cat >/dev/null",
+        "tar": f'{tar}; chmod +x "$RUNNER_TEMP"/tools/bin/*',
+        "cargo": ("exit 101; " if case == "both" else "")
+                 + 'name="$7"; v="${6#=}"; printf \'#!/bin/sh\\necho "%s ${FAKE_REPORTS:-%s}"\\n\' "$name" "$v" '
+                 + '> "$4/bin/$name"; chmod +x "$4/bin/$name"',
+    }
+    for tool, body in tools.items():
+        (bin_dir / tool).write_text(f'#!/bin/sh\necho "{tool} $*" >> "$RUNNER_TEMP/calls"\n{body}\n')
+        (bin_dir / tool).chmod(0o755)
+
+
+@pytest.mark.parametrize(("case", "env", "source"), [
+    ("", {}, "release"), ("curl", {}, "crates.io"), ("sha", {}, "crates.io"), ("both", {}, None),
+    ("", {"FAKE_REPORTS": "0.20.20"}, None), ("curl", {"FAKE_REPORTS": "0.1.0"}, None)])
+def test_the_prebuilt_tools_install_runs_under_actions_bash_e(tmp_path: Path, case: str, env: dict[str, str],
+                                                              source: str | None) -> None:
+    """The Prebuilt tools step under `bash -e`, as Actions runs it, with stub tools: good releases are used as is; a
+    failed download or SHA-256 check falls back to `cargo install` (never extracting that tarball); both sources
+    failing, or a tool reporting another version, fails the step."""
+    stubs = tmp_path / "bin"
+    stubs.mkdir()
+    _prebuilt_stubs(stubs, case)
+    step = _prebuilt_step()
+    script = tmp_path / "step.sh"
+    script.write_text(step["run"])
+    run_env = {"PATH": f"{stubs}:/usr/bin:/bin", "RUNNER_TEMP": str(tmp_path), "GITHUB_PATH": str(tmp_path / "path"),
+               **{k: str(v) for k, v in step["env"].items()}, **env}
+    for tool in PREBUILT_PINS:
+        run_env[f"{tool}_SHA256"] = "0" * 64
+    done = subprocess.run(["bash", "-e", str(script)], cwd=tmp_path, env=run_env, capture_output=True, text=True,
+                          check=False)
+    calls = (tmp_path / "calls").read_text()
+    if source is None:
+        assert done.returncode != 0, done.stdout
+        assert not (tmp_path / "path").exists(), "nothing goes on the path"
+        return
+    assert done.returncode == 0, done.stdout + done.stderr
+    for tool, version in PREBUILT_PINS.items():
+        name = f"cargo-{tool.lower()}"
+        assert f"{name} reports version {name} {version}" in done.stdout
+        if source == "release":
+            assert f"{name} source: the {version} release tarball (SHA-256 verified)" in done.stdout
+        else:
+            assert f"{name} source: crates.io {version} (index checksum verified, built --locked)" in done.stdout
+            assert f"cargo install --locked --root {tmp_path}/tools --version ={version} {name}" in calls
+    assert ("cargo " in calls) == (source == "crates.io") and ("tar " in calls) == (source == "release")
+    assert (tmp_path / "path").read_text() == f"{tmp_path}/tools/bin\n"
+
+
+MEASURING_STEP = "Measuring toolchain and cargo-llvm-cov 0.9.1 (pinned nightly, pinned musl tarball)"
+
+
+def _coverage_job() -> dict[str, Any]:
+    return yaml.safe_load((ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8"))["jobs"]["coverage"]
+
+
+def _measuring_step() -> str:
+    return next(str(s["run"]) for s in _coverage_job()["steps"] if s.get("name") == MEASURING_STEP)
+
+
+def test_cargo_llvm_cov_falls_back_to_crates_io_and_coverage_stays_strict() -> None:
+    """D-1986: Ci's Coverage job failed on a cargo-llvm-cov release 504. Its tarball stays retried, SHA-256 checked
+    and extracted only after the check; on a failed download or check the same version comes from crates.io
+    (`cargo install --locked`, exact version) into `$RUNNER_TEMP/tools`, never the cached ~/.cargo/bin, and the
+    binary must report LLVM_COV_VERSION, which matches the URL. Nothing can mask both sources failing."""
+    env = _coverage_job()["env"]
+    assert str(env["LLVM_COV_VERSION"]) == "0.9.1" and f"/v{env['LLVM_COV_VERSION']}/" in env["LLVM_COV_URL"]
+    block = _measuring_step()
+    assert f'{RETRY}"$RUNNER_TEMP/llvm-cov.tgz" "$LLVM_COV_URL" \\\n' in block
+    assert '&& echo "${LLVM_COV_SHA256}  $RUNNER_TEMP/llvm-cov.tgz" | sha256sum -c - \\\n' in block
+    assert block.index("sha256sum -c -") < block.index('&& tar -xzf "$RUNNER_TEMP/llvm-cov.tgz"'), "checked, then extracted"
+    fallback = block.split("else\n", 1)[1]
+    assert 'cargo install --locked --root "$RUNNER_TEMP/tools" --version "=${LLVM_COV_VERSION}" cargo-llvm-cov' in fallback
+    assert 'reported="$("$RUNNER_TEMP/tools/bin/cargo-llvm-cov" llvm-cov --version)"' in block
+    assert '*" ${LLVM_COV_VERSION}")' in block
+    assert block.rstrip().endswith('echo "$RUNNER_TEMP/tools/bin" >> "$GITHUB_PATH"')
+    for banned in ("||", "--no-verify", "--offline", "--frozen", "--registry", "--git", "--path", "--index",
+                   "~/.cargo/bin/", "$HOME/.cargo"):
+        assert banned not in block, banned
+
+
+def _llvm_cov_stubs(bin_dir: Path, case: str) -> None:
+    """rustup, curl, sha256sum, tar and cargo stand-ins that log their calls; tar and `cargo install` leave a stub
+    cargo-llvm-cov printing `cargo-llvm-cov <FAKE_REPORTS or the version it was built at>`."""
+    fake = 'printf \'#!/bin/sh\\necho "cargo-llvm-cov ${FAKE_REPORTS:-%s}"\\n\' '
+    tools = {
+        "rustup": ":",
+        "curl": "exit 22" if case in ("curl", "both") else ":",
+        "sha256sum": "cat >/dev/null; exit 1" if case == "sha" else "cat >/dev/null",
+        "tar": f'{fake}0.9.1 > "$RUNNER_TEMP/tools/bin/cargo-llvm-cov"; chmod +x "$RUNNER_TEMP/tools/bin/cargo-llvm-cov"',
+        "cargo": ("exit 101; " if case == "both" else "")
+                 + f'{fake}"${{6#=}}" > "$4/bin/$7"; chmod +x "$4/bin/$7"',
+    }
+    for tool, body in tools.items():
+        (bin_dir / tool).write_text(f'#!/bin/sh\necho "{tool} $*" >> "$RUNNER_TEMP/calls"\n{body}\n')
+        (bin_dir / tool).chmod(0o755)
+
+
+@pytest.mark.parametrize(("case", "env", "source"), [
+    ("", {}, "release"), ("curl", {}, "crates.io"), ("sha", {}, "crates.io"), ("both", {}, None),
+    ("", {"FAKE_REPORTS": "0.9.10"}, None), ("curl", {"FAKE_REPORTS": "0.9.0"}, None)])
+def test_the_measuring_tool_install_runs_under_actions_bash_e(tmp_path: Path, case: str, env: dict[str, str],
+                                                              source: str | None) -> None:
+    """Coverage's measuring step under `bash -e`, as Actions runs it, with stub tools: a good release is used as is;
+    a failed download or SHA-256 check falls back to `cargo install` (never extracting that tarball); both sources
+    failing, or a tool reporting another version, fails the step."""
+    stubs = tmp_path / "bin"
+    stubs.mkdir()
+    _llvm_cov_stubs(stubs, case)
+    script = tmp_path / "step.sh"
+    script.write_text(_measuring_step())
+    job_env = _coverage_job()["env"]
+    run_env = {"PATH": f"{stubs}:/usr/bin:/bin", "RUNNER_TEMP": str(tmp_path), "GITHUB_PATH": str(tmp_path / "path"),
+               "NIGHTLY": str(job_env["NIGHTLY"]), "LLVM_COV_URL": "https://example.invalid/x.tgz",
+               "LLVM_COV_SHA256": "0" * 64, "LLVM_COV_VERSION": str(job_env["LLVM_COV_VERSION"]), **env}
+    done = subprocess.run(["bash", "-e", str(script)], cwd=tmp_path, env=run_env, capture_output=True, text=True,
+                          check=False)
+    calls = (tmp_path / "calls").read_text()
+    if source is None:
+        assert done.returncode != 0, done.stdout
+        assert not (tmp_path / "path").exists(), "nothing goes on the path"
+        return
+    assert done.returncode == 0, done.stdout + done.stderr
+    assert "cargo-llvm-cov reports version cargo-llvm-cov 0.9.1" in done.stdout
+    if source == "release":
+        assert "cargo-llvm-cov source: the 0.9.1 release tarball (SHA-256 verified)" in done.stdout
+    else:
+        assert "cargo-llvm-cov source: crates.io 0.9.1 (index checksum verified, built --locked)" in done.stdout
+        assert f"cargo install --locked --root {tmp_path}/tools --version =0.9.1 cargo-llvm-cov" in calls
+    assert ("cargo " in calls) == (source == "crates.io") and ("tar " in calls) == (source == "release")
+    assert (tmp_path / "path").read_text() == f"{tmp_path}/tools/bin\n"

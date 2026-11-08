@@ -45,6 +45,8 @@ jobs:
       SQLX_OFFLINE: "true"
       GITLEAKS_VERSION: "8.28.0"
       GITLEAKS_SHA256: "a65b5253807a68ac0cafa4414031fd740aeb55f54fb7e55f386acb52e6a840eb"
+      # The module hash sum.golang.org records for that version, for the Go proxy fallback (D-1986).
+      GITLEAKS_MOD_H1: "h1:XXeibrt4XbdrYm3FnzXR3uUPs9HbgGduroICjBl6PMw="
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
@@ -70,11 +72,39 @@ jobs:
 
       - name: Secret scan (gitleaks, working tree)
         run: |
-          curl -sSfL -o "$RUNNER_TEMP/gitleaks.tgz" \
-            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
-          echo "${GITLEAKS_SHA256}  $RUNNER_TEMP/gitleaks.tgz" | sha256sum -c -
+          # gitleaks stays required (D-1986): the pinned release tarball, retried and checked against GITLEAKS_SHA256,
+          # extracted only once that check passes; when the download or the check fails (GitHub's release CDN gave
+          # hours of 504s), the same version built from the Go module proxy, its go.sum lines checked by the Go
+          # checksum database and the module's own hash by GITLEAKS_MOD_H1. Either way the binary must report the
+          # pinned version; with neither, the step fails. Actions runs this with `bash -e` (no pipefail).
           mkdir -p "$RUNNER_TEMP/gitleaks"
-          tar -xzf "$RUNNER_TEMP/gitleaks.tgz" -C "$RUNNER_TEMP/gitleaks"
+          gitleaks_release() {
+            rm -f "$RUNNER_TEMP/gitleaks.tgz"
+            curl -sSfL --retry 5 --retry-all-errors --retry-delay 15 --connect-timeout 20 -o "$RUNNER_TEMP/gitleaks.tgz" \
+              "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
+              && echo "${GITLEAKS_SHA256}  $RUNNER_TEMP/gitleaks.tgz" | sha256sum -c - \
+              && tar -xzf "$RUNNER_TEMP/gitleaks.tgz" -C "$RUNNER_TEMP/gitleaks"
+          }
+          if gitleaks_release; then
+            echo "gitleaks source: the v${GITLEAKS_VERSION} release tarball (SHA-256 verified)"
+          else
+            echo "::warning::gitleaks release download or SHA-256 check failed; building v${GITLEAKS_VERSION} from proxy.golang.org (D-1986)"
+            GOBIN="$RUNNER_TEMP/gitleaks" GOFLAGS=-mod=readonly GOTOOLCHAIN=local \
+              GOPROXY=https://proxy.golang.org GOSUMDB=sum.golang.org \
+              go install -ldflags "-X=github.com/zricethezav/gitleaks/v8/cmd.Version=${GITLEAKS_VERSION}" \
+              "github.com/zricethezav/gitleaks/v8@v${GITLEAKS_VERSION}"
+            built="$(go version -m "$RUNNER_TEMP/gitleaks/gitleaks" | awk '$1 == "mod" {print $2 "@" $3 " " $4}')"
+            if [ "$built" != "github.com/zricethezav/gitleaks/v8@v${GITLEAKS_VERSION} ${GITLEAKS_MOD_H1}" ]; then
+              echo "::error::the Go build is '${built}', not github.com/zricethezav/gitleaks/v8@v${GITLEAKS_VERSION} ${GITLEAKS_MOD_H1}"
+              exit 1
+            fi
+            echo "gitleaks source: ${built} built from proxy.golang.org (checked by sum.golang.org and GITLEAKS_MOD_H1)"
+          fi
+          reported="$("$RUNNER_TEMP/gitleaks/gitleaks" version)"
+          case "$reported" in
+            *"${GITLEAKS_VERSION}"*) echo "gitleaks reports version ${reported}" ;;
+            *) echo "::error::gitleaks reports '${reported}', not ${GITLEAKS_VERSION}"; exit 1 ;;
+          esac
           # --verbose prints each finding's rule, file and line; --redact still hides the value (D-582).
           "$RUNNER_TEMP/gitleaks/gitleaks" dir . --no-banner --redact --verbose --exit-code 1
 
@@ -162,18 +192,40 @@ jobs:
       - name: Prebuilt tools (cargo-audit, cargo-deny) from pinned musl release tarballs (D-693)
         if: steps.changes.outputs.rust == 'true'
         env:
+          AUDIT_VERSION: 0.22.2
           AUDIT_URL: https://github.com/rustsec/rustsec/releases/download/cargo-audit/v0.22.2/cargo-audit-x86_64-unknown-linux-musl-v0.22.2.tgz
           AUDIT_SHA256: 7fb9497f8594b389e5fce5ef9b92db08432996895b2e0c5a0167a69ed445c428
+          DENY_VERSION: 0.20.2
           DENY_URL: https://github.com/EmbarkStudios/cargo-deny/releases/download/0.20.2/cargo-deny-0.20.2-x86_64-unknown-linux-musl.tar.gz
           DENY_SHA256: 9f12ed4c49936e09b48bf862b595cde2fe64fcbd9d74dfacac6131ca824c8d5f
         run: |
+          # Each tool: the pinned musl release tarball, retried, checked against its SHA-256 and extracted only once
+          # that check passes. When the download or the check fails (GitHub's release CDN gave minutes of 504s,
+          # D-1986), the same version from crates.io (the index checksum verifies the crate; --locked builds with the
+          # crate's own Cargo.lock) into the same bin. Either way the binary must report the pinned version; with
+          # neither source, the step fails. Actions runs this with `bash -e` (no pipefail).
           bin="$RUNNER_TEMP/tools/bin"; mkdir -p "$bin"
-          for tool in AUDIT DENY; do
-            url="${tool}_URL"; sum="${tool}_SHA256"; name="cargo-${tool,,}"
-            curl -sSfL -o "$RUNNER_TEMP/$tool.tgz" "${!url}"
-            echo "${!sum}  $RUNNER_TEMP/$tool.tgz" | sha256sum -c -
+          tool_release() {
             # Only this tool's binary: GNU tar exits 2 when a named pattern matches nothing.
-            tar -xzf "$RUNNER_TEMP/$tool.tgz" -C "$bin" --strip-components=1 --wildcards "*/$name"
+            rm -f "$RUNNER_TEMP/$tool.tgz"
+            curl -sSfL --retry 5 --retry-all-errors --retry-delay 15 --connect-timeout 20 -o "$RUNNER_TEMP/$tool.tgz" "${!url}" \
+              && echo "${!sum}  $RUNNER_TEMP/$tool.tgz" | sha256sum -c - \
+              && tar -xzf "$RUNNER_TEMP/$tool.tgz" -C "$bin" --strip-components=1 --wildcards "*/$name"
+          }
+          for tool in AUDIT DENY; do
+            url="${tool}_URL"; sum="${tool}_SHA256"; version="${tool}_VERSION"; name="cargo-${tool,,}"
+            if tool_release; then
+              echo "${name} source: the ${!version} release tarball (SHA-256 verified)"
+            else
+              echo "::warning::${name} release download or SHA-256 check failed; building ${!version} from crates.io (D-1986)"
+              cargo install --locked --root "$RUNNER_TEMP/tools" --version "=${!version}" "$name"
+              echo "${name} source: crates.io ${!version} (index checksum verified, built --locked)"
+            fi
+            reported="$("$bin/$name" --version)"
+            case "$reported" in
+              *" ${!version}") echo "${name} reports version ${reported}" ;;
+              *) echo "::error::${name} reports '${reported}', not ${!version}"; exit 1 ;;
+            esac
           done
           echo "$bin" >> "$GITHUB_PATH"
 
@@ -275,6 +327,7 @@ jobs:
       # Branch mode needs a nightly. It is used to measure only, pinned by date; builds and tests use the
       # stable release in rust-toolchain.toml (D-453, D-694). Moving the date is a decision.
       NIGHTLY: nightly-2026-10-15
+      LLVM_COV_VERSION: 0.9.1
       LLVM_COV_URL: https://github.com/taiki-e/cargo-llvm-cov/releases/download/v0.9.1/cargo-llvm-cov-x86_64-unknown-linux-musl.tar.gz
       LLVM_COV_SHA256: 3fca950394a3c49457657c158b1619cec8dfd2647ae5b48746734c0ab969a522
     steps:
@@ -329,11 +382,32 @@ jobs:
       - name: Measuring toolchain and cargo-llvm-cov 0.9.1 (pinned nightly, pinned musl tarball)
         if: steps.changes.outputs.rust == 'true'
         run: |
+          # The pinned musl release tarball, retried, checked against LLVM_COV_SHA256 and extracted only once that
+          # check passes. When the download or the check fails (GitHub's release CDN gave minutes of 504s, D-1986),
+          # the same version from crates.io (the index checksum verifies the crate; --locked builds with its own
+          # Cargo.lock, on the pinned stable from rust-toolchain.toml) into the same bin, never ~/.cargo/bin, which
+          # rust-cache restores. Either way it must report LLVM_COV_VERSION; with neither source, the step fails.
+          # Actions runs this with `bash -e` (no pipefail).
           rustup toolchain install "$NIGHTLY" --profile minimal -c llvm-tools-preview
-          curl -sSfL -o "$RUNNER_TEMP/llvm-cov.tgz" "$LLVM_COV_URL"
-          echo "${LLVM_COV_SHA256}  $RUNNER_TEMP/llvm-cov.tgz" | sha256sum -c -
           mkdir -p "$RUNNER_TEMP/tools/bin"
-          tar -xzf "$RUNNER_TEMP/llvm-cov.tgz" -C "$RUNNER_TEMP/tools/bin" cargo-llvm-cov
+          llvm_cov_release() {
+            rm -f "$RUNNER_TEMP/llvm-cov.tgz"
+            curl -sSfL --retry 5 --retry-all-errors --retry-delay 15 --connect-timeout 20 -o "$RUNNER_TEMP/llvm-cov.tgz" "$LLVM_COV_URL" \
+              && echo "${LLVM_COV_SHA256}  $RUNNER_TEMP/llvm-cov.tgz" | sha256sum -c - \
+              && tar -xzf "$RUNNER_TEMP/llvm-cov.tgz" -C "$RUNNER_TEMP/tools/bin" cargo-llvm-cov
+          }
+          if llvm_cov_release; then
+            echo "cargo-llvm-cov source: the ${LLVM_COV_VERSION} release tarball (SHA-256 verified)"
+          else
+            echo "::warning::cargo-llvm-cov release download or SHA-256 check failed; building ${LLVM_COV_VERSION} from crates.io (D-1986)"
+            cargo install --locked --root "$RUNNER_TEMP/tools" --version "=${LLVM_COV_VERSION}" cargo-llvm-cov
+            echo "cargo-llvm-cov source: crates.io ${LLVM_COV_VERSION} (index checksum verified, built --locked)"
+          fi
+          reported="$("$RUNNER_TEMP/tools/bin/cargo-llvm-cov" llvm-cov --version)"
+          case "$reported" in
+            *" ${LLVM_COV_VERSION}") echo "cargo-llvm-cov reports version ${reported}" ;;
+            *) echo "::error::cargo-llvm-cov reports '${reported}', not ${LLVM_COV_VERSION}"; exit 1 ;;
+          esac
           echo "$RUNNER_TEMP/tools/bin" >> "$GITHUB_PATH"
 
       - name: Branch coverage (cargo llvm-cov on the pinned nightly)

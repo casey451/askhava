@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO picks.window_extension (pick_id, kind, new_due, granted_at) VALUES ($1, $2, $3, $4) ON CONFLICT (pick_id, kind) DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Timestamptz",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "17dce46df1b50b596d1c214bf2c53407fdd1b1960866d82a022a8a5a3e3f8eca"
+}
