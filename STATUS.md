@@ -1,23 +1,23 @@
 # Ask Hava build status
 
-Updated 2026-11-08T02:12:14Z by runner e6dc5e5cc528 (actions).
+Updated 2026-11-08T02:31:43Z by runner 327f29be8e81 (actions).
 
-**Idle since 02:04Z; 148 of 282 done; week 47% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 02:26Z; 149 of 282 done; week 47% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 148 of 282 build tasks (owner gates not counted)
+- **Tasks done:** 149 of 282 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 02:04Z (no task in progress)
+- **Lane:** idle since 02:26Z (no task in progress)
 - **Week:** 47% used, 102.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:12Z, 0 min before this update
+- **Last run:** 02:12Z, 19 min before this update
 - **Keeper:** last ran 02:12Z, next wake 02:32Z
 
 ## Needs attention
-- Strict plan check red: 1 problem(s) on tasks still to run (+1 on DONE tasks); first: T087: stored context_pct 10% but it measures 14%; regenerate
+- Strict plan check red: 6 problem(s) on tasks still to run (+2 on DONE tasks); first: T089: stored context_pct 9% but it measures 13%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T087 | portals: homeowner portal (phone and code), own data, no for | MERGE_PENDING | 1 | 46 min | 02:04Z |  |
+| T087 | portals: homeowner portal (phone and code), own data, no for | done | 1 | 46 min | 02:04Z |  |
 | T086 | portals: owner password, passkey or TOTP, recovery codes, 12 | done | 1 | 54 min | 00:56Z |  |
 | T195 | portals: business billing and statements from the ledger | done | 1 | 48 min | 23:28Z |  |
 | T085 | portals: business portal home (contact choice, your numbers, | done | 1 | 33 min | 21:43Z |  |
@@ -51,8 +51,8 @@ Updated 2026-11-08T02:12:14Z by runner e6dc5e5cc528 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 222 of 731 (30.4%) · partial 284 · unstarted 225
-**Tasks merged (throughput only):** 148 of 282
+**Requirements verified:** 223 of 731 (30.5%) · partial 286 · unstarted 222
+**Tasks merged (throughput only):** 149 of 282
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -60,7 +60,7 @@ Updated 2026-11-08T02:12:14Z by runner e6dc5e5cc528 (actions).
 | ai | 13 | 11 | 4 | 28 |
 | businesses | 10 | 30 | 18 | 58 |
 | calls | 10 | 14 | 1 | 25 |
-| consent | 13 | 18 | 4 | 35 |
+| consent | 14 | 17 | 4 | 35 |
 | fees | 17 | 34 | 1 | 52 |
 | intake | 19 | 15 | 9 | 43 |
 | job-cards | 12 | 8 | 4 | 24 |
@@ -68,7 +68,7 @@ Updated 2026-11-08T02:12:14Z by runner e6dc5e5cc528 (actions).
 | lifecycle | 20 | 8 | 0 | 28 |
 | messaging | 16 | 25 | 4 | 45 |
 | ops-recovery | 2 | 4 | 48 | 54 |
-| privacy | 3 | 22 | 6 | 31 |
+| privacy | 3 | 25 | 3 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
 | quotes-pick | 19 | 24 | 13 | 56 |
 | recurring | 7 | 1 | 3 | 11 |
@@ -87,7 +87,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 28 of 98 done
+- stage 4: 29 of 98 done
 - stage 5: 0 of 42 done
 - stage 6: 0 of 26 done
 - stage 7: 0 of 2 done

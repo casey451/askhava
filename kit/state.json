@@ -16085,7 +16085,7 @@
    "deps": [
     "T086"
    ],
-   "status": "MERGE_PENDING",
+   "status": "DONE",
    "attempts": 0,
    "slug": "portals-homeowner-portal",
    "type": "build",
@@ -16104,13 +16104,62 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 244,
      "head_sha": "da71436a3692dcf78378236808015066e50f5a3c",
-     "pr": null,
-     "checks": null,
+     "pr": 344,
+     "checks": [
+      {
+       "name": "backup",
+       "conclusion": "cancelled"
+      },
+      {
+       "name": "keeper",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "gate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-08T01:18:40Z",
      "ended_at": "2026-11-08T02:04:58Z",
-     "result": "MERGE_PENDING"
+     "result": "done"
     }
    ],
    "reviewed_sha": "af6e3e20b199dc1593ff5f99faf99831971c913e",
@@ -16139,7 +16188,25 @@
     }
    ],
    "update_waiting_since": null,
-   "update_push_failures": null
+   "update_push_failures": null,
+   "merged_sha": "327f29be8e818bc12689a7f17bf41a29b1e61016",
+   "merged_at": "2026-11-08T02:26:34Z",
+   "files": [
+    ".sqlx/query-4430ace4744a9487a00169300119e64dde45085519c911872116445a6028b41c.json",
+    ".sqlx/query-559768200df453b15358ca209ae818fa85816d3d09a68fae01e6e0c25e3f78ae.json",
+    ".sqlx/query-d625ac24ff1b2649aaa3c47d86b7c6749f945650591dba5a3680d060981dba6f.json",
+    "app/intake/CLAUDE.md",
+    "app/intake/src/api.rs",
+    "app/portals/CLAUDE.md",
+    "app/portals/src/api.rs",
+    "app/portals/src/data_download.rs",
+    "app/portals/src/homeowner_portal.rs",
+    "app/portals/src/lib.rs",
+    "app/portals/templates/homeowner_home.html",
+    "docs/architecture.md",
+    "docs/decisions.md",
+    "tests/e2e/homeowner_portal.spec.ts"
+   ]
   },
   {
    "id": "T088",
@@ -23591,7 +23658,7 @@
    }
   }
  },
- "updated_at": "2026-11-08T02:12:14Z",
+ "updated_at": "2026-11-08T02:31:43Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -23689,7 +23756,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "e6dc5e5cc528c283e8d6d7a38937315bf3222026",
+ "runner_sha": "327f29be8e818bc12689a7f17bf41a29b1e61016",
  "starter": "actions",
  "smoke_runs": [
   {
