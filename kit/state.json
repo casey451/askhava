@@ -1,7 +1,7 @@
 {
  "schema": 1,
  "phase": "kit",
- "current": "T150",
+ "current": "T254",
  "backup_runner": "on",
  "ruleset_verified": true,
  "lease": null,
@@ -22478,11 +22478,19 @@
     "T224",
     "T291"
    ],
-   "status": "QUEUED",
+   "status": "IN_PROGRESS",
    "attempts": 0,
    "slug": "server-release-composition",
    "type": "build",
-   "stage": "4"
+   "stage": "4",
+   "attempt_started_at": "2026-11-08T17:59:54Z",
+   "decision_ids": [
+    2013,
+    2014,
+    2015,
+    2016,
+    2017
+   ]
   },
   {
    "id": "T255",
@@ -23195,7 +23203,7 @@
    "cache_creation_input_tokens": 751710,
    "input_tokens": 463
   },
-  "source": "session_reading 2026-11-08T14:50:37Z (week)",
+  "source": "session_reading 2026-11-08T17:56:17Z (week)",
   "by_task": {
    "FIX-MAIN": {
     "estimated_bytes": 1552047,
@@ -24618,6 +24626,10 @@
     "cache_creation_input_tokens": 751710,
     "input_tokens": 463,
     "last_model": "claude-opus-5-5"
+   },
+   "T254": {
+    "estimated_bytes": 590611,
+    "estimated_tokens": 3183594
    }
   },
   "windows": {
@@ -24638,7 +24650,7 @@
    }
   }
  },
- "updated_at": "2026-11-08T17:56:32Z",
+ "updated_at": "2026-11-08T18:07:22Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -24739,13 +24751,6 @@
  "runner_sha": "7b64fb31242f71f2c57312c82e5391dc50515293",
  "starter": "actions",
  "smoke_runs": [
-  {
-   "sha": "00daffc8c325a938ef3b411ce8b68d0b61399250",
-   "ok": false,
-   "at": "2026-11-07T22:14:29Z",
-   "why": "start routine",
-   "timed_out": true
-  },
   {
    "sha": "d3d384547e6d69ef2fd45b23ec5ab22620f52c9f",
    "ok": true,
@@ -24867,30 +24872,36 @@
    "at": "2026-11-08T17:46:06Z",
    "why": "start routine",
    "timed_out": true
+  },
+  {
+   "sha": "7b64fb31242f71f2c57312c82e5391dc50515293",
+   "ok": true,
+   "at": "2026-11-08T17:59:54Z",
+   "why": "start routine"
   }
  ],
  "main_red": null,
  "pacing": {
-  "last": "T150 estimated 4.2M tokens (calibrated); five-hour window has 25.1M left, week 90.0M (session_reading 2026-11-08T14:50:37Z (week)); claimed",
-  "at": "2026-11-08T15:09:35Z",
+  "last": "T254 estimated 3.2M tokens (calibrated); five-hour window has 21.1M left, week 88.0M (session_reading 2026-11-08T17:56:17Z (week)); claimed",
+  "at": "2026-11-08T17:59:54Z",
   "decision": "claim",
   "waiting_until": null,
   "standing": {
    "five_hour": {
-    "used": 4012955,
+    "used": 7951645,
     "budget": 29100000,
-    "left": 25087045,
+    "left": 21148355,
     "resets_at": "2026-11-08T19:02:56Z"
    },
    "week": {
-    "used": 104000000,
+    "used": 106000000,
     "budget": 194000000,
-    "left": 90000000,
+    "left": 88000000,
     "resets_at": "2026-11-12T17:00:00Z"
    }
   },
-  "remaining_estimate": 479218383,
-  "projected_finish": "2026-11-25T22:09:11Z"
+  "remaining_estimate": 470794903,
+  "projected_finish": "2026-11-25T17:41:49Z"
  },
  "main_red_history": [
   {
@@ -24962,7 +24973,7 @@
    "why": "smoke red while Ci, Twin and Ally were green on the head"
   }
  ],
- "next_decision": 2013,
+ "next_decision": 2018,
  "stage_proofs": {
   "1": {
    "evidence": "Recorded by the runner (D-551): nightly-main green (Ci, Twin, Ally) on main 5d45d8ef0bee8d8e290462e58aa81c580bf57c1e, which contains every stage-1 merge (T002 739f29a31cec, T003 7161be09784c, T004 36b13e66ddf4, T172 189cfe54c716, T005 f55fa02095c0, T006 1e9c2dbb261b, T007 d57693ea8e79, T008 d57693ea8e79, T170 1cdbd960f712, T154 b4f7265f01d2, T167 5d45d8ef0bee); the exit row's tests ran in it (tests/twin/test_gate.py, tests/test_check_catalog.py, tests/test_matching_examples.py, tests/contract/test_stand_in_server.py); every requirement owned only by tasks of stage 1 or earlier is verified (OPS-053).",
