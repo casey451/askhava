@@ -2,18 +2,27 @@
 {#- The business action pages an email link opens and the quote form (T148; BIZ-038, SEC-026,
     A11Y-023, PICK-006, PICK-039, PICK-040). Every page works without JavaScript and says what it
     will do before its one button acts; the Confirm window shows as an end time, never a countdown.
-    The quote form shows the fee lines before submit and every quote fact as a required choice. -#}
+    The quote form shows the fee lines before submit and every quote fact as a required choice. A
+    failed submit gives an "Error: " title, a focused summary and the same message by each field
+    (A11Y-030). -#}
 {% macro radio(name, value, label, current) %}<div><input type="radio" id="{{ name }}-{{ value }}" name="{{ name }}" value="{{ value }}"{% if current == value %} checked{% endif %}> <label for="{{ name }}-{{ value }}">{{ label }}</label></div>{% endmacro %}
-{% block title %}{% if let Some(a) = action %}{{ a.title }}{% else if let Some(f) = form %}{% if !f.problems.is_empty() %}Error: {% endif %}Quote job {{ f.job_number }}{% endif %}{% endblock %}
+{% macro err(f, name) %}{% if let Some(m) = f.error_for(name) %}<p id="{{ name }}-error" class="field-error">Error: {{ m }}</p>{% endif %}{% endmacro %}
+{% macro errby(f, name) %}{% if f.error_for(name).is_some() %} aria-describedby="{{ name }}-error"{% endif %}{% endmacro %}
+{% block title %}{% if let Some(a) = action %}{% if a.days_error.is_some() %}Error: {% endif %}{{ a.title }}{% else if let Some(f) = form %}{% if !f.problems.is_empty() %}Error: {% endif %}Quote job {{ f.job_number }}{% endif %}{% endblock %}
 {% block main %}
 {% if let Some(a) = action %}
 <h1>{{ a.title }}</h1>
+{% if let Some(m) = a.days_error %}<div id="error-summary" role="alert" tabindex="-1" autofocus>
+<h2>Fix this to continue</h2>
+<ul><li><a href="#days">{{ m }}</a></li></ul>
+</div>{% endif %}
 <p id="action-does">{{ a.does }}</p>
 {% if let Some(end) = a.ends_at %}<p id="action-ends">Ends at {{ end }}, Arizona time.</p>{% endif %}
 <form method="post" novalidate>
 <input type="hidden" name="csrf" value="{{ csrf }}">
 {% if a.busy %}<label for="days">Number of days (1 to {{ a.max_days }})</label>
-<input type="text" id="days" name="days" inputmode="numeric">
+{% if let Some(m) = a.days_error %}<p id="days-error" class="field-error">Error: {{ m }}</p>
+{% endif %}<input type="text" id="days" name="days" inputmode="numeric" value="{{ a.days }}"{% if a.days_error.is_some() %} aria-describedby="days-error" aria-invalid="true"{% endif %}>
 {% endif %}<button type="submit">{{ a.title }}</button>
 </form>
 {% else if let Some(f) = form %}
@@ -26,37 +35,44 @@
 {% if let Some(price) = f.read_back %}<p id="read-back">We read {{ price }} from your text. Check the price and the answers below. The homeowner won't see anything until you send it.</p>{% endif %}
 <form method="post" novalidate>
 <input type="hidden" name="csrf" value="{{ csrf }}">
-<fieldset id="trip_fee"><legend>Trip fee counts toward the repair</legend>
+<fieldset id="trip_fee"{% call errby(f, "trip_fee") %}{% endcall %}><legend>Trip fee counts toward the repair</legend>
+{% call err(f, "trip_fee") %}{% endcall %}
 {% call radio("trip_fee", "counts", "Yes", f.values.trip_fee.as_str()) %}{% endcall %}
 {% call radio("trip_fee", "does_not_count", "No", f.values.trip_fee.as_str()) %}{% endcall %}
 {% call radio("trip_fee", "none", "No trip fee", f.values.trip_fee.as_str()) %}{% endcall %}
 </fieldset>
-<fieldset id="parts"><legend>Parts and materials</legend>
+<fieldset id="parts"{% call errby(f, "parts") %}{% endcall %}><legend>Parts and materials</legend>
+{% call err(f, "parts") %}{% endcall %}
 {% call radio("parts", "included", "Included", f.values.parts.as_str()) %}{% endcall %}
 {% call radio("parts", "extra", "Extra", f.values.parts.as_str()) %}{% endcall %}
 {% call radio("parts", "on_site", "Estimated on site", f.values.parts.as_str()) %}{% endcall %}
 </fieldset>
-<fieldset id="permit"><legend>Permit</legend>
+<fieldset id="permit"{% call errby(f, "permit") %}{% endcall %}><legend>Permit</legend>
+{% call err(f, "permit") %}{% endcall %}
 {% call radio("permit", "included", "Included", f.values.permit.as_str()) %}{% endcall %}
 {% call radio("permit", "not_included", "Not included", f.values.permit.as_str()) %}{% endcall %}
 {% call radio("permit", "not_needed", "Not needed", f.values.permit.as_str()) %}{% endcall %}
 </fieldset>
-<fieldset id="may_change"><legend>Price may change after seeing the job</legend>
+<fieldset id="may_change"{% call errby(f, "may_change") %}{% endcall %}><legend>Price may change after seeing the job</legend>
+{% call err(f, "may_change") %}{% endcall %}
 {% call radio("may_change", "yes", "Yes", f.values.may_change.as_str()) %}{% endcall %}
 {% call radio("may_change", "no", "No", f.values.may_change.as_str()) %}{% endcall %}
 </fieldset>
 <fieldset id="visit"><legend>Earliest visit</legend>
 <label for="visit_date">Date</label>
 <p id="visit_date-hint">For example, 2026-11-12 for November 12.</p>
-<input type="text" id="visit_date" name="visit_date" aria-describedby="visit_date-hint" value="{{ f.values.visit_date }}">
-<fieldset id="visit_part"><legend>Part of the day</legend>
+{% call err(f, "visit_date") %}{% endcall %}
+<input type="text" id="visit_date" name="visit_date" aria-describedby="visit_date-hint{% if f.error_for("visit_date").is_some() %} visit_date-error{% endif %}" value="{{ f.values.visit_date }}">
+<fieldset id="visit_part"{% call errby(f, "visit_part") %}{% endcall %}><legend>Part of the day</legend>
+{% call err(f, "visit_part") %}{% endcall %}
 {% call radio("visit_part", "morning", "Morning", f.values.visit_part.as_str()) %}{% endcall %}
 {% call radio("visit_part", "afternoon", "Afternoon", f.values.visit_part.as_str()) %}{% endcall %}
 {% call radio("visit_part", "evening", "Evening", f.values.visit_part.as_str()) %}{% endcall %}
 {% call radio("visit_part", "tonight", "Tonight", f.values.visit_part.as_str()) %}{% endcall %}
 </fieldset>
 </fieldset>
-<fieldset id="spanish"><legend>Speaks Spanish</legend>
+<fieldset id="spanish"{% call errby(f, "spanish") %}{% endcall %}><legend>Speaks Spanish</legend>
+{% call err(f, "spanish") %}{% endcall %}
 {% call radio("spanish", "phone", "On the phone", f.values.spanish.as_str()) %}{% endcall %}
 {% call radio("spanish", "on_site", "On site", f.values.spanish.as_str()) %}{% endcall %}
 {% call radio("spanish", "both", "Both", f.values.spanish.as_str()) %}{% endcall %}
@@ -64,7 +80,8 @@
 </fieldset>
 <label for="minutes">Minutes this quote took (optional)</label>
 <p id="minutes-hint">A rough guess is fine. The homeowner never sees it.</p>
-<input type="text" id="minutes" name="minutes" inputmode="numeric" aria-describedby="minutes-hint" value="{{ f.values.minutes }}">
+{% call err(f, "minutes") %}{% endcall %}
+<input type="text" id="minutes" name="minutes" inputmode="numeric" aria-describedby="minutes-hint{% if f.error_for("minutes").is_some() %} minutes-error{% endif %}" value="{{ f.values.minutes }}">
 <h2>Your fee if picked</h2>
 <ul id="fee-lines">{% for line in f.fee_lines %}<li>{{ line }}</li>{% endfor %}</ul>
 {% if f.same_as_last %}<button type="submit" name="same" value="yes">Same as last time</button>

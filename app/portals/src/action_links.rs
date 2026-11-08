@@ -161,16 +161,27 @@ pub struct ActionTarget {
     pub business: Uuid,
 }
 
-/// The person a usable link was made for (SEC-025).
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+/// The person a usable link was made for (SEC-025). Only [`use_action_link`] makes one, and it is
+/// neither `Clone` nor `Copy`, so one used link gives one grant (rust-production R7).
+#[derive(Debug, PartialEq, Eq)]
 pub struct ActionGrant {
-    /// The team member the link was emailed to.
-    pub member: Uuid,
-    /// Their business.
-    pub business: Uuid,
+    member: Uuid,
+    business: Uuid,
 }
 
 impl ActionGrant {
+    /// The team member the link was emailed to.
+    #[must_use]
+    pub const fn member(&self) -> Uuid {
+        self.member
+    }
+
+    /// Their business.
+    #[must_use]
+    pub const fn business(&self) -> Uuid {
+        self.business
+    }
+
     /// SEC-025: a signed-in person may act through a link only when it was emailed to them.
     #[must_use]
     pub fn same_person(&self, principal: &BusinessPrincipal) -> bool {
@@ -184,7 +195,8 @@ pub enum ActionLinkError {
     /// The person is not a current member, or their role doesn't allow the action.
     #[error("the person may not take this action")]
     NotAllowed,
-    /// A Hold on an emergency job, an already-held pick or an Away-delayed one (PICK-043).
+    /// A Hold on an emergency job, an already-held pick or an Away-delayed one (PICK-043), at
+    /// minting or at use.
     #[error("this pick can't be held")]
     NoHold,
     /// The link is unknown, used, voided, for another action or object, or past its end.
@@ -193,6 +205,16 @@ pub enum ActionLinkError {
     /// No token could be made or stored.
     #[error("the link store failed")]
     Store(#[from] PortalsError),
+}
+
+/// PICK-043, D-1956: a Hold needs the pick's current facts and `hold_allowed` to pass with
+/// `roles`; every other action passes.
+fn hold_ok(kind: ActionKind, hold: Option<HoldAsk>, roles: Roles) -> Result<(), ActionLinkError> {
+    if kind != ActionKind::Hold {
+        return Ok(());
+    }
+    let ask = hold.ok_or(ActionLinkError::NoHold)?;
+    hold_allowed(HoldAsk { by: roles, ..ask }).map_err(|_| ActionLinkError::NoHold)
 }
 
 fn binding(kind: ActionKind, object: Uuid, token: &str) -> String {
@@ -234,10 +256,7 @@ pub async fn mint_action_link(
     if !target.kind.allowed(owner, roles) {
         return Err(ActionLinkError::NotAllowed);
     }
-    if target.kind == ActionKind::Hold {
-        let ask = hold.ok_or(ActionLinkError::NoHold)?;
-        hold_allowed(HoldAsk { by: roles, ..ask }).map_err(|_| ActionLinkError::NoHold)?;
-    }
+    hold_ok(target.kind, hold, roles)?;
     if ends <= now {
         return Err(ActionLinkError::Ended);
     }
@@ -274,22 +293,27 @@ pub async fn open_action_link(
     }
 }
 
-/// SEC-025, SEC-026: uses the `kind` link `token` for `object` at `now` (the page's button): one
-/// guarded update, so of two presses only one gets the grant, then the member's current roles
-/// are checked. Run it in the transaction that performs the action and roll back on any error,
-/// so a refused or failed action leaves the link unused (a Quote link is used up only by the
+/// SEC-025, SEC-026, PICK-043: uses the `kind` link `token` for `object` at `now` (the page's
+/// button): for a Hold, `hold` (the pick's facts read now, in this transaction) must still pass
+/// `hold_allowed` before the link is touched, so a pick held, made an emergency or Away-delayed
+/// since the email never gets a second hold and the link stays unused (D-1956); then one guarded
+/// update, so of two presses only one gets the grant, then the member's current roles are
+/// checked. Run it in the transaction that performs the action and roll back on any error, so a
+/// refused or failed action leaves the link unused (a Quote link is used up only by the
 /// submitted quote).
 ///
 /// # Errors
 ///
-/// [`ActionLinkError::Ended`], [`ActionLinkError::NotAllowed`] (the member was removed or lost
-/// the role) or [`ActionLinkError::Store`].
+/// [`ActionLinkError::NoHold`], [`ActionLinkError::Ended`], [`ActionLinkError::NotAllowed`] (the
+/// member was removed or lost the role) or [`ActionLinkError::Store`].
 pub async fn use_action_link(
     db: &mut PgConnection,
     (kind, object): (ActionKind, Uuid),
     token: &str,
+    hold: Option<HoldAsk>,
     now: Timestamp,
 ) -> Result<ActionGrant, ActionLinkError> {
+    hold_ok(kind, hold, Roles::BOTH)?;
     let used = models::use_link(db, &binding(kind, object, token), now).await?;
     let Some((member, business)) = used else {
         return Err(ActionLinkError::Ended);

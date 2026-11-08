@@ -63,11 +63,17 @@ pub fn busy_until_line(today: Date, days: u32) -> String {
     format!("Busy until {}.", until.strftime("%A, %B %-d"))
 }
 
-/// SEC-026, A11Y-023: what the page for `kind` says it will do, before its button.
+/// BIZ-028: what to do when the "Busy for <n> days" value is not a whole number from 1 to 60.
+pub const BUSY_DAYS_ERROR: &str = "Enter a number of days from 1 to 60.";
+
+/// SEC-026, A11Y-023: what the page for `kind` says it will do, before its button. SEC-004: a
+/// Confirm link opened with no live session asks for a Verify code; a `signed_in` person goes
+/// straight to the review step, so their page promises no code.
 #[must_use]
-pub const fn does_line(kind: ActionKind) -> &'static str {
+pub const fn does_line(kind: ActionKind, signed_in: bool) -> &'static str {
     match kind {
         ActionKind::Quote => "Send your quote for this job. The homeowner sees it after you send.",
+        ActionKind::Confirm if signed_in => "You'll see the job and the fee before you confirm.",
         ActionKind::Confirm => {
             "We'll send you a code. Then you'll see the job and the fee before you confirm."
         }
@@ -90,8 +96,8 @@ pub const fn does_line(kind: ActionKind) -> &'static str {
     }
 }
 
-/// The facts an action page shows (A11Y-023): the job, the Confirm window's end time and the
-/// form's CSRF token.
+/// The facts an action page shows (A11Y-023): the job, the Confirm window's end time, whether
+/// the person is signed in, a refused Busy value and the form's CSRF token.
 #[derive(Debug, Clone, Copy)]
 pub struct ActionFacts<'a> {
     /// The action.
@@ -100,6 +106,11 @@ pub struct ActionFacts<'a> {
     pub job_number: &'a str,
     /// The end time (Arizona), never a countdown, when a window applies.
     pub ends_at: Option<&'a str>,
+    /// Whether the person has a live business session (SEC-004: no code step then).
+    pub signed_in: bool,
+    /// The "days" value of a refused Busy submit, kept and shown with its error (A11Y-030);
+    /// `None` at first render.
+    pub days: Option<&'a str>,
     /// The form's CSRF token.
     pub csrf: &'a str,
 }
@@ -118,6 +129,8 @@ struct ActionView<'a> {
     ends_at: Option<&'a str>,
     busy: bool,
     max_days: u32,
+    days: &'a str,
+    days_error: Option<&'static str>,
 }
 
 /// BIZ-038, SEC-026, A11Y-023: the page an action link opens, with one button that acts.
@@ -125,12 +138,18 @@ struct ActionView<'a> {
 /// # Errors
 /// The template's render error.
 pub fn action_page(facts: &ActionFacts<'_>) -> Result<String, askama::Error> {
+    let busy = facts.kind == ActionKind::Busy;
+    let days = facts.days.filter(|_| busy);
     let action = ActionView {
         title: facts.kind.link_text(facts.job_number),
-        does: does_line(facts.kind),
+        does: does_line(facts.kind, facts.signed_in),
         ends_at: facts.ends_at,
-        busy: facts.kind == ActionKind::Busy,
+        busy,
         max_days: BUSY_DAYS_MAX,
+        days: days.unwrap_or_default(),
+        days_error: days
+            .filter(|d| busy_days(d).is_none())
+            .map(|_| BUSY_DAYS_ERROR),
     };
     ActionsView {
         action: Some(action),
@@ -140,12 +159,17 @@ pub fn action_page(facts: &ActionFacts<'_>) -> Result<String, askama::Error> {
     .render()
 }
 
-const fn fee_period(period: Period) -> FeePeriod {
+/// REC-004, REC-010, D-1407, D-1957: a per-visit price has no visit schedule on the form, and
+/// `payments` takes a per-visit price only as `Weekly` with weekly visits or converted to a
+/// monthly amount by the caller, so it gets no fee line (`NeedsPeriod`) rather than a guessed
+/// weekly one.
+const fn fee_period(period: Period) -> Result<FeePeriod, FeeError> {
     match period {
-        Period::Visit | Period::Week => FeePeriod::Weekly,
-        Period::Month => FeePeriod::Monthly,
-        Period::Quarter => FeePeriod::Quarterly,
-        Period::Year => FeePeriod::Yearly,
+        Period::Visit => Err(FeeError::NeedsPeriod),
+        Period::Week => Ok(FeePeriod::Weekly),
+        Period::Month => Ok(FeePeriod::Monthly),
+        Period::Quarter => Ok(FeePeriod::Quarterly),
+        Period::Year => Ok(FeePeriod::Yearly),
     }
 }
 
@@ -180,7 +204,8 @@ fn fee_line(fee: Fee, how: &str) -> String {
 ///
 /// # Errors
 /// [`FeeError`] when the quote can't carry a fee yet (an hourly quote with no hours outside a
-/// diagnostic-visit category, a missing period); the form shows the field's error instead.
+/// diagnostic-visit category, a missing period, a per-visit price); the form shows the field's
+/// error instead.
 pub fn fee_lines(price: &Price, job: PeriodJob) -> Result<Vec<String>, FeeError> {
     let one = |quote, how: &str| fee_for(quote, job.job).map(|f| vec![fee_line(f, how)]);
     match price {
@@ -202,7 +227,7 @@ pub fn fee_lines(price: &Price, job: PeriodJob) -> Result<Vec<String>, FeeError>
         Price::VisitFee(v) => one(FeeQuote::DiagnosticVisit { visit_fee: *v }, "price"),
         Price::Monthly { cents, period, .. } => {
             let quote = FeeQuote::Fixed(*cents);
-            let fee = period_fee_for(quote, Some(fee_period(*period)), job)?;
+            let fee = period_fee_for(quote, Some(fee_period(*period)?), job)?;
             Ok(vec![fee_line(fee, "4 months of the price")])
         }
         Price::Tiers(tiers) => tiers
@@ -479,6 +504,15 @@ impl QuoteFormFacts {
         self.problems.contains(problem)
     }
 
+    /// A11Y-030: the summary's message for the form element `field`, shown by that field too.
+    #[must_use]
+    pub fn error_for(&self, field: &str) -> Option<&'static str> {
+        self.problems
+            .iter()
+            .find(|p| p.field() == field)
+            .map(|p| p.message())
+    }
+
     /// The "Sent to <n> businesses. <q> quotes so far." line (CARD-019).
     #[must_use]
     pub fn status_line(&self) -> String {
@@ -534,8 +568,9 @@ pub struct ChargeAsked {
 }
 
 /// BIZ-032, OPS-036, D-492: "Ask about a charge": enqueues [`HELP_REQUEST_KIND`] with the
-/// business, charge and job IDs only (never the message, which T151's handler reads), in the
-/// caller's transaction.
+/// business, charge and job IDs only, in the caller's transaction. The business's own words are
+/// not carried: no task stores them yet, so the help request has the charge but not the
+/// question (a plan gap, D-1958).
 ///
 /// # Errors
 /// [`PortalsError::Database`].

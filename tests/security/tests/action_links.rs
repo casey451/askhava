@@ -1,6 +1,8 @@
 //! Email action links: single use, bound to one person and one object, expiring, voided with
-//! the member, opened without acting, and a cross-site POST refused (TD-SEC-09 action-link cases,
-//! TD-BIZ-15 Hold and binding cases; SEC-025, SEC-026, BIZ-038, PICK-043, A11Y-023).
+//! the member, opened without acting, and a Hold re-checked when used (TD-SEC-09 action-link
+//! cases, TD-BIZ-15 Hold and binding cases; SEC-025, SEC-026, BIZ-038, PICK-043, A11Y-023). The
+//! cross-site POST to a served action route waits on serving `ACTION_ROUTE` (D-1958); here only
+//! the header check it will use is pinned.
 //!
 //! Every ID, address and time is fake.
 
@@ -60,6 +62,10 @@ async fn team(db: &mut PgConnection) -> Team {
     }
 }
 
+fn ok_hold() -> Option<HoldAsk> {
+    Some(hold_ask(false))
+}
+
 fn hold_ask(emergency: bool) -> HoldAsk {
     HoldAsk {
         by: Roles::BOTH,
@@ -109,19 +115,26 @@ async fn td_sec_09_a_hold_link_works_once_for_its_pick_and_until_the_window_ends
             .await
             .expect("opening only shows the page and never uses the link");
     }
-    let refused = use_action_link(&mut db, (kind, other_pick), &token, later(1)).await;
+    let refused = use_action_link(&mut db, (kind, other_pick), &token, ok_hold(), later(1)).await;
     assert_eq!(refused, Err(ActionLinkError::Ended), "another pick");
-    let refused = use_action_link(&mut db, (ActionKind::Confirm, pick), &token, later(1)).await;
+    let refused = use_action_link(
+        &mut db,
+        (ActionKind::Confirm, pick),
+        &token,
+        ok_hold(),
+        later(1),
+    )
+    .await;
     assert_eq!(refused, Err(ActionLinkError::Ended), "another action");
-    let grant = use_action_link(&mut db, (kind, pick), &token, later(1))
+    let grant = use_action_link(&mut db, (kind, pick), &token, ok_hold(), later(1))
         .await
         .expect("first press acts");
-    assert_eq!((grant.member, grant.business), (t.billing, t.business));
-    let again = use_action_link(&mut db, (kind, pick), &token, later(2)).await;
+    assert_eq!((grant.member(), grant.business()), (t.billing, t.business));
+    let again = use_action_link(&mut db, (kind, pick), &token, ok_hold(), later(2)).await;
     assert_eq!(again, Err(ActionLinkError::Ended), "used once");
     let late = hold_link(&mut db, &t, pick, t.owner).await;
     let (_, _, late_token) = parts(&late);
-    let ended = use_action_link(&mut db, (kind, pick), &late_token, later(120)).await;
+    let ended = use_action_link(&mut db, (kind, pick), &late_token, ok_hold(), later(120)).await;
     assert_eq!(ended, Err(ActionLinkError::Ended), "the window ended");
 }
 
@@ -192,7 +205,7 @@ async fn td_sec_09_removing_a_member_voids_their_action_links(pool: PgPool) {
     remove_member(&mut db, by, t.billing, start())
         .await
         .expect("removed");
-    let refused = use_action_link(&mut db, (kind, pick), &token, later(1)).await;
+    let refused = use_action_link(&mut db, (kind, pick), &token, ok_hold(), later(1)).await;
     assert_eq!(
         refused,
         Err(ActionLinkError::NotAllowed),
@@ -214,12 +227,12 @@ async fn td_sec_09_removing_a_member_voids_their_action_links(pool: PgPool) {
         Err(ActionLinkError::Ended),
         "voided with the member"
     );
-    let owner = use_action_link(&mut db, (kind, pick), &kept, later(1)).await;
+    let owner = use_action_link(&mut db, (kind, pick), &kept, ok_hold(), later(1)).await;
     assert!(owner.is_ok(), "another person's link still works");
 }
 
 #[test]
-fn td_sec_09_a_cross_site_post_to_an_action_page_is_refused() {
+fn is_cross_site_flags_a_cross_site_header_set_and_passes_a_same_origin_one() {
     let mut cross = HeaderMap::new();
     cross.insert("sec-fetch-site", HeaderValue::from_static("cross-site"));
     assert!(is_cross_site(&cross, Some("askhava.com")));
@@ -227,6 +240,25 @@ fn td_sec_09_a_cross_site_post_to_an_action_page_is_refused() {
     same.insert("sec-fetch-site", HeaderValue::from_static("same-origin"));
     same.insert("origin", HeaderValue::from_static("https://askhava.com"));
     assert!(!is_cross_site(&same, Some("askhava.com")));
+}
+
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_biz_15_a_hold_link_is_refused_at_use_once_the_pick_is_held(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("db");
+    let t = team(&mut db).await;
+    let pick = Uuid::from_u128(0x1042);
+    let (kind, _, token) = parts(&hold_link(&mut db, &t, pick, t.billing).await);
+    let held = HoldAsk {
+        held: true,
+        ..hold_ask(false)
+    };
+    let refused = use_action_link(&mut db, (kind, pick), &token, Some(held), later(1)).await;
+    assert_eq!(refused, Err(ActionLinkError::NoHold), "a second hold");
+    let refused = use_action_link(&mut db, (kind, pick), &token, None, later(1)).await;
+    assert_eq!(refused, Err(ActionLinkError::NoHold), "no pick facts");
+    open_action_link(&mut db, (kind, pick), &token, later(1))
+        .await
+        .expect("a refused hold leaves the link unused");
 }
 
 #[test]

@@ -108,6 +108,16 @@ fn td_pick_37_tiers_monthly_and_fee_free_quotes_show_their_fees_before_submit() 
         fee_lines(&monthly(60_000), recurring).expect("capped"),
         ["If picked, this quote's fee is $75 (4 months of the price $2,400, capped at $75)."]
     );
+    let per_visit = Price::Monthly {
+        cents: 5_000,
+        period: Period::Visit,
+        setup: None,
+    };
+    assert_eq!(
+        fee_lines(&per_visit, recurring),
+        Err(FeeError::NeedsPeriod),
+        "a per-visit price has no visit schedule, so no guessed weekly fee (D-1957)"
+    );
     let free = PeriodJob {
         job: FeeJob {
             fee_free: true,
@@ -292,6 +302,18 @@ fn td_pick_37_a_failed_submit_names_each_missing_fact_and_keeps_values() {
     let page = quote_form_page(&facts, "csrf-fake").expect("page");
     assert!(page.contains("<title>Error: Quote job 1042"));
     assert!(page.contains(r##"href="#visit_part""##));
+    let message = FactProblem::VisitPart.message();
+    assert!(
+        page.contains(&format!(
+            r#"<p id="visit_part-error" class="field-error">Error: {message}</p>"#
+        )),
+        "the summary's message also by the field (A11Y-030)"
+    );
+    assert!(page.contains(r#"aria-describedby="visit_part-error""#));
+    assert!(
+        !page.contains(r#"id="trip_fee-error""#),
+        "only the fields with a problem"
+    );
     assert!(page.contains(r#"value="2026-11-12""#), "values kept");
 }
 
@@ -302,6 +324,8 @@ fn td_biz_15_every_action_page_shows_what_it_does_before_its_button() {
             kind,
             job_number: "1042",
             ends_at: Some("3:15 p.m."),
+            signed_in: false,
+            days: None,
             csrf: "csrf-fake",
         };
         let page = action_page(&facts).expect("page");
@@ -323,11 +347,59 @@ fn td_biz_15_every_action_page_shows_what_it_does_before_its_button() {
         kind: ActionKind::Hold,
         job_number: "1042",
         ends_at: None,
+        signed_in: false,
+        days: None,
         csrf: "csrf-fake",
     };
     let page = action_page(&hold).expect("page");
     assert!(page.contains("<h1>Hold job 1042 for 2 more business hours</h1>"));
     assert!(!page.contains("Ends at"));
+}
+
+#[test]
+fn td_biz_15_a_confirm_link_promises_a_code_only_without_a_session() {
+    let confirm = |signed_in| ActionFacts {
+        kind: ActionKind::Confirm,
+        job_number: "1042",
+        ends_at: None,
+        signed_in,
+        days: None,
+        csrf: "csrf-fake",
+    };
+    let page = action_page(&confirm(false)).expect("page");
+    assert!(
+        page.contains("We&#39;ll send you a code."),
+        "SEC-004: no session"
+    );
+    let page = action_page(&confirm(true)).expect("page");
+    assert!(
+        !page.contains("send you a code"),
+        "SEC-004: signed in, no code step"
+    );
+    assert!(page.contains("You&#39;ll see the job and the fee before you confirm."));
+}
+
+#[test]
+fn td_biz_08_a_refused_busy_value_is_kept_with_its_error() {
+    let busy = |days| ActionFacts {
+        kind: ActionKind::Busy,
+        job_number: "",
+        ends_at: None,
+        signed_in: true,
+        days,
+        csrf: "csrf-fake",
+    };
+    for bad in ["0", "61"] {
+        let page = action_page(&busy(Some(bad))).expect("page");
+        assert!(page.contains("<title>Error: "), "{bad}");
+        assert!(page.contains(r##"<a href="#days">Enter a number of days from 1 to 60.</a>"##));
+        assert!(page.contains(r#"id="days-error""#), "inline by the field");
+        assert!(page.contains(&format!(r#"value="{bad}""#)), "value kept");
+    }
+    for fine in [None, Some("60")] {
+        let page = action_page(&busy(fine)).expect("page");
+        assert!(!page.contains("Error"), "{fine:?}");
+    }
 }
 
 #[test]
