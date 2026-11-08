@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-08T06:08:38Z by runner 9f6ba1044425 (actions).
+Updated 2026-11-08T06:57:33Z by runner 09e142d45216 (actions).
 
 **Building: T148 in progress since 06:00Z; 152 of 282 done; week 48% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,11 @@ Updated 2026-11-08T06:08:38Z by runner 9f6ba1044425 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T148 claimed 06:00Z, lease until 09:00Z
 - **Week:** 48% used, 98.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:56Z, 12 min before this update
+- **Last run:** 06:08Z, 48 min before this update
 - **Keeper:** last ran 05:56Z, next wake 06:16Z
 
 ## Needs attention
-- Strict plan check red: 6 problem(s) on tasks still to run (+7 on DONE tasks); first: T255: stored context_pct 25% but it measures 29%; regenerate
+- Strict plan check red: 15 problem(s) on tasks still to run (+7 on DONE tasks); first: T255: stored context_pct 25% but it measures 29%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -36,7 +36,6 @@ Updated 2026-11-08T06:08:38Z by runner 9f6ba1044425 (actions).
 | T096 | messaging: web-and-email mode, number suspension, one config | done | 1 | 43 min | 09:49Z |  |
 | T092 | privacy: 180-day contact purge, holds, photo and message del | done | 1 | 54 min | 08:38Z |  |
 | T091 | quotes: photos on cards only after zero retention and all th | done | 1 | 40 min | 07:24Z |  |
-| T090 | privacy: photo checks by bytes, re-encode without EXIF or GP | done | 1 | 52 min | 06:25Z |  |
 
 ### Plan and harness merges on main
 - 01:33Z Plan: brand as configuration (T291–T295, D-1932–D-1933) (#342)
