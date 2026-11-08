@@ -11,6 +11,10 @@
 //! business hours once on a non-emergency pick, [`away_until`] and [`away_for`] bound "Away
 //! until" to 4 business hours ahead and [`window_start`] starts a delayed clock when it ends, and
 //! [`emergency_plan`] and [`emergency_fix_by`] time an emergency job's 60 clock minutes.
+//!
+//! T197 added the bounce grace (PICK-019, D-345): [`bounce_grace`] adds 1 business hour, once, to
+//! a non-emergency pick whose notice emails all bounced or failed ([`EmailOutcome`]); a delivery
+//! to a spam folder counts as sent. The reminders live in `confirm_reminders`.
 
 use askhava_adapters::api::LicenseSource;
 use askhava_businesses::api::{AccountStatus, Roles};
@@ -220,7 +224,7 @@ pub struct FeeBasis {
 }
 
 /// Whole dollars as `$1,234`, otherwise `$1,234.56`.
-fn dollars(cents: i64) -> String {
+pub(crate) fn dollars(cents: i64) -> String {
     let whole = (cents / 100).to_string();
     let mut grouped = String::new();
     for (i, digit) in whole.chars().enumerate() {
@@ -329,6 +333,10 @@ pub struct WindowRules {
     pub emergency_minutes: i64,
     /// Clock minutes after the emergency pick notice's send of its one reminder (default 30).
     pub emergency_reminder_minutes: i64,
+    /// Business minutes between a non-emergency pick's reminders (PICK-037, default 60).
+    pub reminder_minutes: u32,
+    /// Business minutes the all-bounced grace adds, once (PICK-019, default 60).
+    pub bounce_grace_minutes: u32,
 }
 
 impl Default for WindowRules {
@@ -338,6 +346,8 @@ impl Default for WindowRules {
             away_max_minutes: 4 * 60,
             emergency_minutes: 60,
             emergency_reminder_minutes: 30,
+            reminder_minutes: 60,
+            bounce_grace_minutes: 60,
         }
     }
 }
@@ -580,4 +590,39 @@ pub fn emergency_fix_by(declined: Timestamp, rules: WindowRules) -> Timestamp {
 fn clock_minutes(from: Timestamp, minutes: i64) -> Timestamp {
     from.saturating_add(SignedDuration::from_mins(minutes))
         .unwrap_or(Timestamp::MAX)
+}
+
+/// What the email provider reported for one email of a pick notice, to one address (PICK-019).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum EmailOutcome {
+    /// No final word yet.
+    Waiting,
+    /// The receiving mail server accepted it.
+    Delivered,
+    /// Delivered to a spam folder: counts as sent (D-332).
+    Spam,
+    /// Bounced.
+    Bounced,
+    /// The provider could not send it.
+    Failed,
+}
+
+/// PICK-019, D-345, D-477: the window's new end when the pick notice of a window ending at `due`
+/// had `outcomes`, one per email and address: [`WindowRules::bounce_grace_minutes`] business
+/// minutes more when every one bounced or failed, the job is not an emergency and the grace was
+/// not `granted` before; none otherwise (a spam delivery or a wait counts as sent). The homeowner
+/// gets no text about it (PICK-045).
+#[must_use]
+pub fn bounce_grace(
+    outcomes: &[EmailOutcome],
+    (emergency, granted): (bool, bool),
+    due: Timestamp,
+    rules: WindowRules,
+) -> Option<Timestamp> {
+    let all_bounced = !outcomes.is_empty()
+        && outcomes
+            .iter()
+            .all(|o| matches!(o, EmailOutcome::Bounced | EmailOutcome::Failed));
+    (all_bounced && !emergency && !granted)
+        .then(|| add_business_minutes(due, rules.bounce_grace_minutes))
 }

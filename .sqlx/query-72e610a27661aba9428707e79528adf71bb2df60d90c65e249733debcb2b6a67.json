@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO picks.confirm_reminder (pick_id, remind_at, last, claimed_at) VALUES ($1, $2, $3, $4) ON CONFLICT (pick_id, remind_at) DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz",
+        "Bool",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "72e610a27661aba9428707e79528adf71bb2df60d90c65e249733debcb2b6a67"
+}
