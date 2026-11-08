@@ -1,23 +1,23 @@
 # Ask Hava build status
 
-Updated 2026-11-08T19:36:40Z by runner 38234f140513 (actions).
+Updated 2026-11-08T20:00:17Z by runner b3283662cec9 (actions).
 
-**Idle since 19:24Z; 157 of 282 done; week 54% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 19:47Z; 158 of 282 done; week 54% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 157 of 282 build tasks (owner gates not counted)
+- **Tasks done:** 158 of 282 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 19:24Z (no task in progress)
+- **Lane:** idle since 19:47Z (no task in progress)
 - **Week:** 54% used, 88.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:36Z, 0 min before this update
+- **Last run:** 19:36Z, 23 min before this update
 - **Keeper:** last ran 19:36Z, next wake 19:56Z
 
 ## Needs attention
-- Strict plan check red: 21 problem(s) on tasks still to run (+18 on DONE tasks); first: T255: stored context_pct 25% but it measures 30%; regenerate
+- Strict plan check red: 24 problem(s) on tasks still to run (+20 on DONE tasks); first: T255: stored context_pct 25% but it measures 32%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T254 | server and picks: the production release (paid or free, mint | MERGE_PENDING | 1 | 84 min | 19:24Z |  |
+| T254 | server and picks: the production release (paid or free, mint | done | 1 | 84 min | 19:24Z |  |
 | T150 | picks and quotes: EMERGENCY card and pick emails with the em | done | 1 | 54 min | 16:04Z |  |
 | T198 | messaging and portals: daily open-cards email, missed-card a | done | 1 | 71 min | 14:02Z |  |
 | T149 | businesses: sign-up deliverability check with a sample card, | done | 1 | 43 min | 12:00Z |  |
@@ -39,12 +39,11 @@ Updated 2026-11-08T19:36:40Z by runner 38234f140513 (actions).
 - 07:39Z harness: chain the next cycle at once after the first smoke timeout on a head (D-1970) (#349)
 - 01:33Z Plan: brand as configuration (T291–T295, D-1932–D-1933) (#342)
 - 22:37Z Harness: keep the smoke incremental across tasks that add queries; save its cache only from a smoking job (D-1911) (#338)
-- 19:48Z Plan: third audit — CI filters, close-time owned-file check, request timeout, confirm money invariants, reconcile retry (D-1866–D-1873) (#331)
 
 ## Progress (requirements verified)
 
 **Requirements verified:** 275 of 731 (37.6%) · partial 255 · unstarted 201
-**Tasks merged (throughput only):** 157 of 282
+**Tasks merged (throughput only):** 158 of 282
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -79,7 +78,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 37 of 98 done
+- stage 4: 38 of 98 done
 - stage 5: 0 of 42 done
 - stage 6: 0 of 26 done
 - stage 7: 0 of 2 done
