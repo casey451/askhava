@@ -31,8 +31,8 @@ pub enum RefundState {
 impl RefundState {
     /// The state of Stripe's status string; `None` for any other text (never a success).
     #[must_use]
-    pub fn parse(status: &str) -> Option<Self> {
-        match status {
+    pub fn parse(code: &str) -> Option<Self> {
+        match code {
             "pending" => Some(Self::Pending),
             "requires_action" => Some(Self::RequiresAction),
             "succeeded" => Some(Self::Succeeded),
