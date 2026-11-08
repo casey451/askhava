@@ -1,23 +1,23 @@
 # Ask Hava build status
 
-Updated 2026-11-08T22:44:17Z by runner a4959c2c479e (actions).
+Updated 2026-11-08T22:56:25Z by runner 3b88271ddf7d (actions).
 
-**Idle since 22:00Z; 159 of 286 done; week 57% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 22:44Z; 160 of 286 done; week 57% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 159 of 286 build tasks (owner gates not counted)
+- **Tasks done:** 160 of 286 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 22:00Z (no task in progress)
+- **Lane:** idle since 22:44Z (no task in progress)
 - **Week:** 57% used, 82.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:44Z, 0 min before this update
+- **Last run:** 22:44Z, 12 min before this update
 - **Keeper:** last ran 22:44Z, next wake 23:04Z
 
 ## Needs attention
-- Strict plan check red: 24 problem(s) on tasks still to run (+21 on DONE tasks); first: T255: stored context_pct 25% but it measures 32%; regenerate
+- Strict plan check red: 25 problem(s) on tasks still to run (+25 on DONE tasks); first: T255: stored context_pct 25% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T256 | server: two first texts from one new phone both reach intake | MERGE_PENDING | 1 | 37 min | 22:00Z |  |
+| T256 | server: two first texts from one new phone both reach intake | done | 1 | 37 min | 22:00Z |  |
 | T098 | Journey J1 (homeowner) and its variants, keyboard-only, with | done | 1 | 50 min | 20:51Z |  |
 | T254 | server and picks: the production release (paid or free, mint | done | 1 | 84 min | 19:24Z |  |
 | T150 | picks and quotes: EMERGENCY card and pick emails with the em | done | 1 | 54 min | 16:04Z |  |
@@ -45,7 +45,7 @@ Updated 2026-11-08T22:44:17Z by runner a4959c2c479e (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 268 of 732 (36.6%) · partial 264 · unstarted 200
-**Tasks merged (throughput only):** 159 of 286
+**Tasks merged (throughput only):** 160 of 286
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -80,7 +80,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 39 of 98 done
+- stage 4: 40 of 98 done
 - stage 5: 0 of 42 done
 - stage 6: 0 of 30 done
 - stage 7: 0 of 2 done
