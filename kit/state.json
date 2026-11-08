@@ -18297,7 +18297,15 @@
     2010,
     2011,
     2012
-   ]
+   ],
+   "reviewed_sha": "18c61c43257973cf095b7a75f672588e3ed7f6e6",
+   "review_lease": {
+    "task": "T150",
+    "session": "actions-42493101586",
+    "expires": "2026-11-08T18:09:35Z"
+   },
+   "branch": "claude/task/T150-business-calls-link-hardening",
+   "head_check_since": null
   },
   {
    "id": "T199",
@@ -24502,7 +24510,7 @@
    }
   }
  },
- "updated_at": "2026-11-08T15:17:32Z",
+ "updated_at": "2026-11-08T16:04:08Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -24600,7 +24608,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "fb13c6faf315bb10219515f25f83f47fbc86c5f8",
+ "runner_sha": "18c61c43257973cf095b7a75f672588e3ed7f6e6",
  "starter": "actions",
  "smoke_runs": [
   {

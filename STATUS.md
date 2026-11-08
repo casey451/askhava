@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-08T15:17:32Z by runner fb13c6faf315 (actions).
+Updated 2026-11-08T16:04:08Z by runner 18c61c432579 (actions).
 
 **Building: T150 in progress since 15:09Z; 156 of 282 done; week 52% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,11 @@ Updated 2026-11-08T15:17:32Z by runner fb13c6faf315 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T150 claimed 15:09Z, lease until 18:09Z
 - **Week:** 52% used, 90.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:50Z, 26 min before this update
+- **Last run:** 15:17Z, 46 min before this update
 - **Keeper:** last ran 14:50Z, next wake 15:10Z
 
 ## Needs attention
-- Strict plan check red: 20 problem(s) on tasks still to run (+17 on DONE tasks); first: T255: stored context_pct 25% but it measures 30%; regenerate
+- Strict plan check red: 22 problem(s) on tasks still to run (+17 on DONE tasks); first: T255: stored context_pct 25% but it measures 30%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -32,7 +32,6 @@ Updated 2026-11-08T15:17:32Z by runner fb13c6faf315 (actions).
 | T252 | architecture test: dynamic SQL in a migration is a TD-SEC-10 | done | 1 | 19 min | 19:16Z |  |
 | T196 | businesses: verified notice email, sender rules and the addr | done | 2 | 32 min | 18:33Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests / test tests::transi |
 | T093 | messaging: vault references in the log, bodies cut at 30 day | done | 1 | 45 min | 17:05Z |  |
-| T196 | businesses: verified notice email, sender rules and the addr | check_failed | 1 | 49 min | 15:54Z |  |
 
 ### Plan and harness merges on main
 - 15:06Z Harness: warm the smoke build before the session (D-2007) (#356)
@@ -42,7 +41,6 @@ Updated 2026-11-08T15:17:32Z by runner fb13c6faf315 (actions).
 - 22:37Z Harness: keep the smoke incremental across tasks that add queries; save its cache only from a smoking job (D-1911) (#338)
 - 19:48Z Plan: third audit — CI filters, close-time owned-file check, request timeout, confirm money invariants, reconcile retry (D-1866–D-1873) (#331)
 - 19:25Z Harness: incremental runner smoke build (stable tree, own target dir, mtime pinning) (D-1890) (#333)
-- 15:37Z Plan: second code audit — owners and acceptance for B01–B08 and known gaps (D-1835–D-1845) (#326)
 
 ## Progress (requirements verified)
 
