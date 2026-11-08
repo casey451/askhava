@@ -20,7 +20,8 @@
 //! the card shown by text or link, EDIT or SEND, the auto-send and the approved-card check
 //! (INT-041, CARD-007, T208); the sender of `jobs`' homeowner job texts with the two-zone send
 //! window (JOB-010 to JOB-012, TXT-042, QH-001, QH-006, QH-007, T240); the dispatcher of a reply
-//! inside an open request, [`receive_reply`] (TXT-031, INT-019, D-999, T241).
+//! inside an open request, [`receive_reply`] (TXT-031, INT-019, D-999, T241); the rate limits:
+//! [`admit_new_request`] and the shared [`admit`] (SEC-014, SEC-015, SEC-040, T089).
 
 pub use crate::closing::{
     CLOSE_MENTION_TEMPLATE, CLOSE_WHICH_TEMPLATE, Closing, JOB_CLOSED_TEMPLATE,
@@ -49,6 +50,10 @@ pub use crate::job_texts::{
     ALL_QUOTES_IN_TEMPLATE, JOB_TEXT_TEMPLATES, JobHomeowner, JobText, JobTextKeys, JobTextSkip,
     JobTextStep, job_homeowner, job_text_body, job_text_step, parse_job_text, paused_under_lock,
     run_job_text,
+};
+pub use crate::limits::{
+    ALERT_TRIES, Admission, Key, Limit, LimitError, REQUESTS_ALL, REQUESTS_PER_IP,
+    REQUESTS_PER_PHONE, Window, admit, admit_new_request,
 };
 pub use crate::matching::{
     Candidates, FitStep, KeywordReading, Opinion, Reading, TradeAnswer, TradeQuestion, TradeStep,
