@@ -19,7 +19,8 @@
 //! and the owner-only pause, refund and release gate (SEC-005 to SEC-007, SEC-043, SEC-044, T086).
 //! The homeowner portal: sign-in by phone and texted code, her own record through her session
 //! proof, the texts-off switch, "Download my data" and the code-checked delete or copy request
-//! (SEC-008, PRIV-012, PRIV-021, PRIV-031, CON-035, T087).
+//! (SEC-008, PRIV-012, PRIV-021, PRIV-031, CON-035, T087). The rate limits in front of sign-in,
+//! codes, sign-ups and quotes (SEC-014, SEC-020, SEC-040, PICK-055, T089).
 
 /// The cookie jar the session functions take and give back (axum-extra's).
 pub use axum_extra::extract::cookie::CookieJar;
@@ -58,6 +59,12 @@ pub use crate::homeowner_portal::{
 pub use crate::job_release::{
     CallAttempt, EMAIL_CHOSEN_LINE, JOB_RELEASE_ROUTE, JobFacts, JobReleaseError, MissedText,
     TIP_LINE, job_release_page,
+};
+pub use crate::limits::{
+    CODE_SENDS_PER_IP, CODE_SENDS_PER_NUMBER, CODE_TRIES_PER_BUSINESS, CODE_TRIES_PER_IP,
+    LINKS_PER_BUSINESS, LINKS_PER_IP, OWNER_TRIES_ALL, OWNER_TRIES_PER_IP, QUOTES_PER_BUSINESS,
+    QUOTES_PER_IP, SIGNUPS_ALL, SIGNUPS_PER_IP, admit_code_send, admit_code_try,
+    admit_owner_password, admit_quote, admit_sign_in_link, admit_sign_up, verify_all,
 };
 pub use crate::notice_settings::{
     ChannelChangeError, ChannelFacts, NOTICE_SETTINGS_ROUTE, NoticeAddress, change_channel,

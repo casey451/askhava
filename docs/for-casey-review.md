@@ -1937,3 +1937,10 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **Only partly met: "every refusal is logged".** Refused form posts are logged as security events. Two kinds are not yet: a forged webhook (Twilio or Stripe) is only a plain log line, and a person refused at the homeowner or business door leaves no record. Named to fix them: T256 (Twilio), T259 (Stripe), the tasks that open the homeowner and business pages, and T204 (security alerts) checks it all before it is done.
 - **Known limit.** Homeowner-to-homeowner separation is proven for the quote and feedback links only; the homeowner portal's own pages are not open yet and get the same check when they are.
 - **Nothing needs you.**
+
+## Rate limits (T089, D-1950 to D-1952, November 8)
+
+- **What was built.** Limits on how often one phone, one visitor address, one business or everyone together can do something: 5 new requests per phone per hour, 40 new requests an hour in all (a burst of 100 fake requests is mostly refused and sends you one High alert, not 100), and limits on sign-in links, code tries, code texts, your owner password tries, business sign-ups (50 a day) and quote submissions. Your passkey sign-in is never limited, so you can't be locked out by someone guessing your password.
+- **Not switched on everywhere yet.** The limits are ready, but the pages and the text line that use them belong to other tasks. The text line that takes homeowner requests is already live in testing and does not apply the per-phone limit yet; T256 adds it. The portal pages are not open yet and must apply theirs when they open.
+- **Small gap.** Code texts sent from the portal and code texts sent for a pick each have their own daily total, so the "too many code texts today" alarm watches two counts, not one combined count.
+- **Nothing needs you.**
