@@ -15,7 +15,7 @@ use askhava_core::api::{
     install_brand, request_span,
 };
 use askhava_intake::api::JobTextKeys;
-use askhava_payments::api::Minter;
+use askhava_payments::api::{Minter, stripe_webhook_routes};
 use askhava_portals::api::{
     PickCodeKeys, feedback_routes, pick_flow_routes, quote_page_routes, security_headers,
 };
@@ -30,6 +30,7 @@ use tower_http::trace::TraceLayer;
 
 pub mod inbound_text;
 pub mod offdb_stream;
+pub mod release_sink;
 
 /// Installs rustls' aws-lc-rs provider as the process default, so sqlx and
 /// reqwest share one TLS provider (D-481, D-488). Call it first in `main`.
@@ -76,19 +77,24 @@ pub fn start_up() -> io::Result<(Settings, LogGuard)> {
 /// `webhooks` ([`webhooks`]) adds Twilio's signature-checked inbound-text and status routes
 /// (`inbound_text`, SEC-016, SEC-039, T241); `None` adds none. `pick_keys` ([`pick_code_keys`])
 /// let the page pick send its code and store the pick (T246, D-1516); `None` keeps the page's
-/// "Nothing was picked" lines.
+/// "Nothing was picked" lines. `stripe` ([`release_sink::stripe_webhook`]) adds `payments`' Stripe
+/// webhook route, whose cleared picks [`release_sink::PickReleaser`] settles, mints and releases
+/// (PICK-022, SEC-039, D-1480, D-1739); serve with connect info, so the socket peer is known
+/// (SEC-040). `None` adds none.
 pub fn build_router(
     pool: PgPool,
     test_control: Router,
-    (webhooks, pick_keys): (
+    (webhooks, pick_keys, stripe): (
         Option<Arc<inbound_text::Webhooks>>,
         Option<PickCodeKeys<TwilioVerify>>,
+        Option<release_sink::StripeHooks>,
     ),
 ) -> Router {
     let quote_page = quote_page_routes(pool.clone(), Arc::new(SystemClock));
     let pick_flow = pick_flow_routes(pool.clone(), Arc::new(SystemClock), pick_keys);
     let feedback = feedback_routes(pool.clone(), Arc::new(SystemClock));
     let twilio = webhooks.map_or_else(Router::new, inbound_text::routes);
+    let stripe = stripe.map_or_else(Router::new, stripe_webhook_routes);
     let (log, _writer) = offdb_stream::RequestLog::spawn(pool);
     Router::new()
         .merge(test_control)
@@ -96,6 +102,7 @@ pub fn build_router(
         .merge(pick_flow)
         .merge(feedback)
         .merge(twilio)
+        .merge(stripe)
         .layer(axum::middleware::from_fn_with_state(
             log,
             offdb_stream::log_request,
@@ -185,7 +192,7 @@ where
 /// The vault from `VAULT_KEY` and `VAULT_INDEX_KEY` in `pairs` (D-1302, D-1306): with neither,
 /// `None` in dev and CI and an error in the test and live projects; one without the other is an
 /// error everywhere.
-fn vault_from<I>(settings: &Settings, pairs: I) -> io::Result<Option<Vault>>
+pub(crate) fn vault_from<I>(settings: &Settings, pairs: I) -> io::Result<Option<Vault>>
 where
     I: IntoIterator<Item = (String, String)>,
 {

@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT EXISTS (SELECT 1 FROM calls.number_pool WHERE job_id = $1) AS \"had!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "had!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "d691a6fceaa88155d701d29d76e0529b0a56f353257119652527336b5fe0ab4d"
+}

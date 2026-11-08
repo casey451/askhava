@@ -1,0 +1,60 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT r.job_id, r.business_id, r.contact_id, p.status = ANY($2) AS \"shown!\"\n           FROM picks.release r JOIN picks.pick p ON p.id = r.pick_id WHERE r.pick_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "job_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "picks.release",
+            "name": "job_id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "business_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "picks.release",
+            "name": "business_id"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "contact_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "picks.release",
+            "name": "contact_id"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "shown!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "TextArray"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      null
+    ]
+  },
+  "hash": "50a7003e95865b88232778a5ab1da4ca73780b757a33b0c18a91d3b6a2aed16d"
+}

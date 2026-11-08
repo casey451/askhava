@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT EXISTS (SELECT 1 FROM picks.release WHERE pick_id = $1) AS \"claimed!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "claimed!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "f104f4bdb2f1b86a4af51fdb5236a999ccbbb068690dcc74d49ab11950dd43ce"
+}

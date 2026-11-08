@@ -11,7 +11,9 @@
 //! PRIV-029, D-734), the daily retention purge sweep (PRIV-007, D-491) and the daily message body
 //! cut (TXT-020, D-1854). At start-up it runs the intake golden set once for the compiled-in catalog
 //! version (OPS-040, D-493). With `VAULT_KEY` and `VAULT_INDEX_KEY` set (required in the test and
-//! live projects) it registers `intake`'s homeowner job-text sender (D-1302).
+//! live projects) it registers `intake`'s homeowner job-text sender (D-1302). With the Twilio
+//! settings (required in the test and live projects) it registers `picks`' masked-line retry,
+//! `picks.line_retry`, over the masked pool (CALL-001, D-1688, T254).
 
 use std::io;
 use std::sync::Arc;
@@ -53,13 +55,16 @@ async fn main() -> io::Result<()> {
         .await
         .map_err(io::Error::other)?;
     drop(conn);
+    let mut registry = askhava_server::register_handlers(Arc::new(stream), texts, confirm);
+    if let Some(masked) = masked_pool(&settings)? {
+        let line_clock = Arc::clone(&clock);
+        registry.register(askhava_picks::api::LINE_RETRY_KIND, move |pool, task| {
+            askhava_picks::api::retry_line(pool, masked.clone(), task, line_clock.now())
+        });
+    }
     let worker = Worker {
         pool,
-        registry: Arc::new(askhava_server::register_handlers(
-            Arc::new(stream),
-            texts,
-            confirm,
-        )),
+        registry: Arc::new(registry),
         clock,
         owner,
     };
@@ -68,4 +73,20 @@ async fn main() -> io::Result<()> {
         .await
         .map_err(io::Error::other)?;
     Ok(())
+}
+
+/// The masked pool the release's line retry opens lines from (CALL-001, CALL-017, D-1688): from
+/// the Twilio settings; without them `None` in dev and CI (no retry handler, so a retry task waits)
+/// and an error in the test and live projects.
+fn masked_pool(
+    settings: &askhava_core::api::Settings,
+) -> io::Result<Option<askhava_adapters::api::MaskedPool>> {
+    use askhava_core::api::Environment;
+    match askhava_adapters::api::TwilioConfig::from_settings(settings, std::env::vars()) {
+        Ok(config) => Ok(Some(config.pool().clone())),
+        Err(error) => match settings.environment() {
+            Environment::Dev | Environment::Ci => Ok(None),
+            Environment::Test | Environment::Live => Err(io::Error::other(error)),
+        },
+    }
 }
