@@ -1920,3 +1920,13 @@ A third outside review of the whole repository was checked finding by finding ag
 - **Worth your look: the setup token is only a check that one is set (D-1918).** It isn't compared with anything; what really protects the setup is that only the migration database login can create you, and only once. Delete the token variable by hand after the setup; nothing checks that for you. When you type your password into the setup in a terminal, it isn't shown.
 - **After a recovery code:** signing in with a paper code works, but refunds and settings still ask for your app code or passkey (D-1917). Changing your password signs out your other devices.
 - **Nothing needs you now.**
+
+## The name becomes a setting, so a rename is one file (plan change, D-1932 and D-1933, November 8)
+
+You said the name may change from Ask Hava (likely to Laftly) before launch. Nothing is renamed now: every text, page and email still says Ask Hava.
+
+- **What changes.** Five new tasks (T291 to T295) put the name, the short name texts start with, the company name, the web address, the email sender and the card-statement name in one file. Every text, email, page and call reads them from there, and so do the build's own checks. A test sets the name to a made-up one and proves it shows up everywhere and "Ask Hava" shows up nowhere.
+- **What a rename will still need by hand.** The legal documents (Terms, privacy policy, the card authorization) keep naming Ask Hava in plain words: a new company name means a new version a lawyer should read, so the build fails on purpose after a switch until they are rewritten. Outside the code: the domain, the email sending domain, the name Stripe prints on card statements, and the texting registration.
+- **Kept from coming back.** A new check fails the build if any later task writes "Ask Hava" into customer-facing code instead of using the setting.
+- **Timing.** The first of the five tasks is the next one the build starts, so the check is in place before anything else is written; a few queued tasks that edit the same files wait for the later four. Changing the name itself later needs a reviewed plan change with its own logged decision.
+- **Nothing needs you now.** Tell me when you pick the name; the copy rewritten for it comes after the build.
