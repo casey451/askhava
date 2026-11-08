@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-08T08:24:05Z by runner b2ff97e83535 (actions).
+Updated 2026-11-08T08:44:09Z by runner d0bc6fc268e2 (actions).
 
 **Idle since 08:17Z; 153 of 282 done; week 49% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,11 @@ Updated 2026-11-08T08:24:05Z by runner b2ff97e83535 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 08:17Z (no task in progress)
 - **Week:** 49% used, 96.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:24Z, 0 min before this update
-- **Keeper:** last ran 08:24Z, next wake 08:44Z
+- **Last run:** 08:24Z, 19 min before this update
+- **Keeper:** last ran 08:44Z, next wake 09:04Z
 
 ## Needs attention
-- Strict plan check red: 14 problem(s) on tasks still to run (+8 on DONE tasks); first: T255: stored context_pct 25% but it measures 29%; regenerate
+- Strict plan check red: 16 problem(s) on tasks still to run (+11 on DONE tasks); first: T255: stored context_pct 25% but it measures 30%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -36,15 +36,9 @@ Updated 2026-11-08T08:24:05Z by runner b2ff97e83535 (actions).
 | T191 | payments: the unreachable-homeowner refund at 96 hours and i | done | 1 | 56 min | 12:07Z |  |
 | T097 | jobs: day-3 and day-14 check-ins, PROBLEM flags, private fee | done | 1 | 51 min | 10:55Z |  |
 | T096 | messaging: web-and-email mode, number suspension, one config | done | 1 | 43 min | 09:49Z |  |
-| T092 | privacy: 180-day contact purge, holds, photo and message del | done | 1 | 54 min | 08:38Z |  |
 
 ### Plan and harness merges on main
-- 07:39Z harness: chain the next cycle at once after the first smoke timeout on a head (D-1970) (#349)
-- 01:33Z Plan: brand as configuration (T291–T295, D-1932–D-1933) (#342)
-- 22:37Z Harness: keep the smoke incremental across tasks that add queries; save its cache only from a smoking job (D-1911) (#338)
-- 19:48Z Plan: third audit — CI filters, close-time owned-file check, request timeout, confirm money invariants, reconcile retry (D-1866–D-1873) (#331)
-- 19:25Z Harness: incremental runner smoke build (stable tree, own target dir, mtime pinning) (D-1890) (#333)
-- 15:37Z Plan: second code audit — owners and acceptance for B01–B08 and known gaps (D-1835–D-1845) (#326)
+- none
 
 ## Progress (requirements verified)
 
