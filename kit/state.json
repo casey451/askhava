@@ -16130,7 +16130,8 @@
    "id": "T088",
    "deps": [
     "T087",
-    "T195"
+    "T195",
+    "T291"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -17482,7 +17483,8 @@
     "T083",
     "T195",
     "T058",
-    "T189"
+    "T189",
+    "T291"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -17550,7 +17552,8 @@
     "T197",
     "T198",
     "T150",
-    "T089"
+    "T089",
+    "T293"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -17582,7 +17585,8 @@
     "T030",
     "T151",
     "T108",
-    "T201"
+    "T201",
+    "T294"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -17788,7 +17792,12 @@
     "T287",
     "T288",
     "T289",
-    "T290"
+    "T290",
+    "T291",
+    "T292",
+    "T293",
+    "T294",
+    "T295"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -17800,7 +17809,8 @@
    "id": "T101",
    "deps": [
     "T100",
-    "T279"
+    "T279",
+    "T294"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -18331,7 +18341,8 @@
   {
    "id": "T133",
    "deps": [
-    "T132"
+    "T132",
+    "T293"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -18755,7 +18766,8 @@
    "deps": [
     "T193",
     "T153",
-    "T199"
+    "T199",
+    "T294"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19084,7 +19096,8 @@
    "deps": [
     "T197",
     "T189",
-    "T246"
+    "T246",
+    "T294"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19454,7 +19467,9 @@
     "T190",
     "T186",
     "T212",
-    "T095"
+    "T095",
+    "T293",
+    "T294"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19486,7 +19501,8 @@
     "T224",
     "T181",
     "T094",
-    "T198"
+    "T198",
+    "T294"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -20169,7 +20185,8 @@
   {
    "id": "T236",
    "deps": [
-    "T235"
+    "T235",
+    "T295"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -21574,7 +21591,8 @@
    "id": "T254",
    "deps": [
     "T253",
-    "T224"
+    "T224",
+    "T291"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -21598,7 +21616,8 @@
    "id": "T256",
    "deps": [
     "T241",
-    "T082"
+    "T082",
+    "T291"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -21614,7 +21633,8 @@
     "T176",
     "T075",
     "T064",
-    "T071"
+    "T071",
+    "T291"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -21653,7 +21673,8 @@
    "deps": [
     "T062",
     "T189",
-    "T075"
+    "T075",
+    "T291"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -21680,7 +21701,8 @@
     "T080",
     "T079",
     "T078",
-    "T076"
+    "T076",
+    "T291"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -21722,7 +21744,9 @@
    "id": "T269",
    "deps": [
     "T253",
-    "T147"
+    "T147",
+    "T294",
+    "T291"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -21749,7 +21773,8 @@
    "id": "T264",
    "deps": [
     "T073",
-    "T169"
+    "T169",
+    "T291"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -21760,7 +21785,8 @@
   {
    "id": "T265",
    "deps": [
-    "T252"
+    "T252",
+    "T291"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -21771,7 +21797,8 @@
   {
    "id": "T267",
    "deps": [
-    "T084"
+    "T084",
+    "T291"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -21821,7 +21848,8 @@
    "deps": [
     "T253",
     "T269",
-    "T086"
+    "T086",
+    "T294"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -21898,7 +21926,9 @@
     "T270",
     "T254",
     "T230",
-    "T097"
+    "T097",
+    "T293",
+    "T295"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -21961,7 +21991,8 @@
     "T169",
     "T173",
     "T056",
-    "T075"
+    "T075",
+    "T291"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -22019,7 +22050,8 @@
    "id": "T289",
    "deps": [
     "T031",
-    "T075"
+    "T075",
+    "T291"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -22031,11 +22063,112 @@
    "id": "T290",
    "deps": [
     "T060",
-    "T075"
+    "T075",
+    "T291"
    ],
    "status": "QUEUED",
    "attempts": 0,
    "slug": "recurring-range-examples",
+   "type": "harness",
+   "stage": "4"
+  },
+  {
+   "id": "T291",
+   "deps": [
+    "T011",
+    "T026",
+    "T172",
+    "T233",
+    "T057",
+    "T075"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "brand-source",
+   "type": "harness",
+   "stage": "4"
+  },
+  {
+   "id": "T292",
+   "deps": [
+    "T291",
+    "T026",
+    "T068",
+    "T079",
+    "T080",
+    "T094",
+    "T147",
+    "T196"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "brand-texts-emails-calls",
+   "type": "harness",
+   "stage": "4"
+  },
+  {
+   "id": "T293",
+   "deps": [
+    "T291",
+    "T046",
+    "T047",
+    "T081",
+    "T082",
+    "T083",
+    "T186",
+    "T193",
+    "T196",
+    "T213",
+    "T247",
+    "T292"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "brand-business-quote-copy",
+   "type": "harness",
+   "stage": "4"
+  },
+  {
+   "id": "T294",
+   "deps": [
+    "T291",
+    "T051",
+    "T052",
+    "T055",
+    "T068",
+    "T187",
+    "T193",
+    "T196",
+    "T224",
+    "T230",
+    "T246",
+    "T095",
+    "T253",
+    "T086",
+    "T293"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "brand-pages",
+   "type": "harness",
+   "stage": "4"
+  },
+  {
+   "id": "T295",
+   "deps": [
+    "T292",
+    "T293",
+    "T294",
+    "T258",
+    "T287",
+    "T024",
+    "T156",
+    "T163",
+    "T240"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "brand-switch-proof",
    "type": "harness",
    "stage": "4"
   }
@@ -23443,7 +23576,7 @@
    }
   }
  },
- "updated_at": "2026-11-08T02:07:03Z",
+ "updated_at": "2026-11-08T02:11:42Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -23541,7 +23674,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "a6b09fa0a4bc1130dcc92232a14a5d402afa909c",
+ "runner_sha": "e6dc5e5cc528c283e8d6d7a38937315bf3222026",
  "starter": "actions",
  "smoke_runs": [
   {
