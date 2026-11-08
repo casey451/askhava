@@ -1908,3 +1908,13 @@ A third outside review of the whole repository was checked finding by finding ag
 - **The fee setting is now stored in one place** (T287): when you switch between tiers and a flat fee, the payments code records it, and everything else reads it from there.
 - **Nothing needs you now.**
 - **A business can see a released homeowner's details again** (T253): the owner or a "Confirm and billing" member of the picked business can reopen the first name, address and (if she chose email) email of a paid or free pick, read fresh from the vault each time and never stored; anyone else gets the same "not found", and after her data is purged the page says the details were removed. The page itself comes with T085 (D-1739, D-1891 to D-1895; the end-to-end test waits on a paid-release API, D-1895).
+
+## The name becomes a setting, so a rename is one file (plan change, D-1932 and D-1933, November 8)
+
+You said the name may change from Ask Hava (likely to Laftly) before launch. Nothing is renamed now: every text, page and email still says Ask Hava.
+
+- **What changes.** Five new tasks (T291 to T295) put the name, the short name texts start with, the company name, the web address, the email sender and the card-statement name in one file. Every text, email, page and call reads them from there, and so do the build's own checks. A test sets the name to a made-up one and proves it shows up everywhere and "Ask Hava" shows up nowhere.
+- **What a rename will still need by hand.** The legal documents (Terms, privacy policy, the card authorization) keep naming Ask Hava in plain words: a new company name means a new version a lawyer should read, so the build fails on purpose after a switch until they are rewritten. Outside the code: the domain, the email sending domain, the name Stripe prints on card statements, and the texting registration.
+- **Kept from coming back.** A new check fails the build if any later task writes "Ask Hava" into customer-facing code instead of using the setting.
+- **Timing.** The first of the five tasks joins the queue behind the tasks already waiting; a few queued tasks that edit the same files now wait for them.
+- **Nothing needs you now.** Tell me when you pick the name; the copy rewritten for it comes after the build.
