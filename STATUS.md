@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-08T01:26:04Z by runner a6b09fa0a4bc (actions).
+Updated 2026-11-08T02:04:58Z by runner da71436a3692 (actions).
 
 **Building: T087 in progress since 01:18Z; 148 of 277 done; week 46% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,11 @@ Updated 2026-11-08T01:26:04Z by runner a6b09fa0a4bc (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T087 claimed 01:18Z, lease until 04:18Z
 - **Week:** 46% used, 102.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:01Z, 24 min before this update
+- **Last run:** 01:26Z, 38 min before this update
 - **Keeper:** last ran 01:01Z, next wake 01:21Z
 
 ## Needs attention
-- Strict plan check red: 9 problem(s) on tasks still to run (+7 on DONE tasks); first: T256: stored context_pct 24% but it measures 28%; regenerate
+- Strict plan check red: 16 problem(s) on tasks still to run (+8 on DONE tasks); first: T256: stored context_pct 24% but it measures 28%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -39,6 +39,7 @@ Updated 2026-11-08T01:26:04Z by runner a6b09fa0a4bc (actions).
 | T083 | businesses: complaint replies, 3 in 90 days pause, alerts | done | 1 | 76 min | 02:49Z |  |
 
 ### Plan and harness merges on main
+- 01:33Z Plan: brand as configuration (T291–T295, D-1932–D-1933) (#342)
 - 22:37Z Harness: keep the smoke incremental across tasks that add queries; save its cache only from a smoking job (D-1911) (#338)
 - 19:48Z Plan: third audit — CI filters, close-time owned-file check, request timeout, confirm money invariants, reconcile retry (D-1866–D-1873) (#331)
 - 19:25Z Harness: incremental runner smoke build (stable tree, own target dir, mtime pinning) (D-1890) (#333)
