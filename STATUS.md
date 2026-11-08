@@ -1,23 +1,23 @@
 # Ask Hava build status
 
-Updated 2026-11-08T16:21:54Z by runner fcdaabd675b8 (actions).
+Updated 2026-11-08T16:40:19Z by runner 7b64fb31242f (actions).
 
-**Idle since 16:04Z; 156 of 282 done; week 52% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 16:34Z; 157 of 282 done; week 52% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 156 of 282 build tasks (owner gates not counted)
+- **Tasks done:** 157 of 282 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 16:04Z (no task in progress)
+- **Lane:** idle since 16:34Z (no task in progress)
 - **Week:** 52% used, 90.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:21Z, 0 min before this update
+- **Last run:** 16:21Z, 18 min before this update
 - **Keeper:** last ran 16:21Z, next wake 16:41Z
 
 ## Needs attention
-- Strict plan check red: 20 problem(s) on tasks still to run (+17 on DONE tasks); first: T255: stored context_pct 25% but it measures 30%; regenerate
+- Strict plan check red: 21 problem(s) on tasks still to run (+18 on DONE tasks); first: T255: stored context_pct 25% but it measures 30%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T150 | picks and quotes: EMERGENCY card and pick emails with the em | MERGE_PENDING | 1 | 54 min | 16:04Z |  |
+| T150 | picks and quotes: EMERGENCY card and pick emails with the em | done | 1 | 54 min | 16:04Z |  |
 | T198 | messaging and portals: daily open-cards email, missed-card a | done | 1 | 71 min | 14:02Z |  |
 | T149 | businesses: sign-up deliverability check with a sample card, | done | 1 | 43 min | 12:00Z |  |
 | T197 | picks: Confirm by email alone with the 4-business-hour windo | done | 1 | 41 min | 08:17Z |  |
@@ -45,8 +45,8 @@ Updated 2026-11-08T16:21:54Z by runner fcdaabd675b8 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 0 of 731 (0.0%) · partial 529 · unstarted 202
-**Tasks merged (throughput only):** 156 of 282
+**Requirements verified:** 0 of 731 (0.0%) · partial 530 · unstarted 201
+**Tasks merged (throughput only):** 157 of 282
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -57,7 +57,7 @@ Updated 2026-11-08T16:21:54Z by runner fcdaabd675b8 (actions).
 | consent | 0 | 31 | 4 | 35 |
 | fees | 0 | 51 | 1 | 52 |
 | intake | 0 | 34 | 9 | 43 |
-| job-cards | 0 | 21 | 3 | 24 |
+| job-cards | 0 | 22 | 2 | 24 |
 | licensing | 0 | 47 | 1 | 48 |
 | lifecycle | 0 | 28 | 0 | 28 |
 | messaging | 0 | 41 | 4 | 45 |
@@ -81,7 +81,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 36 of 98 done
+- stage 4: 37 of 98 done
 - stage 5: 0 of 42 done
 - stage 6: 0 of 26 done
 - stage 7: 0 of 2 done
