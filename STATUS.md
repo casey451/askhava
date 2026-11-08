@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-08T02:38:21Z by runner 327f29be8e81 (actions).
+Updated 2026-11-08T03:16:05Z by runner 3102765398fc (actions).
 
 **Building: T291 in progress since 02:31Z; 149 of 282 done; week 47% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,11 @@ Updated 2026-11-08T02:38:21Z by runner 327f29be8e81 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T291 claimed 02:31Z, lease until 05:31Z
 - **Week:** 47% used, 100.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:12Z, 26 min before this update
+- **Last run:** 02:38Z, 37 min before this update
 - **Keeper:** last ran 02:12Z, next wake 02:32Z
 
 ## Needs attention
-- Strict plan check red: 6 problem(s) on tasks still to run (+2 on DONE tasks); first: T089: stored context_pct 9% but it measures 13%; regenerate
+- Strict plan check red: 7 problem(s) on tasks still to run (+3 on DONE tasks); first: T089: stored context_pct 9% but it measures 13%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -37,7 +37,6 @@ Updated 2026-11-08T02:38:21Z by runner 327f29be8e81 (actions).
 | T194 | portals: the new-device code by text or email and team sign- | done | 1 | 42 min | 05:12Z |  |
 | T084 | portals: business one-time sign-in link and 30-day sessions | done | 2 | 24 min | 04:14Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T084 | portals: business one-time sign-in link and 30-day sessions | check_failed | 1 | 29 min | 03:36Z |  |
-| T083 | businesses: complaint replies, 3 in 90 days pause, alerts | done | 1 | 76 min | 02:49Z |  |
 
 ### Plan and harness merges on main
 - 01:33Z Plan: brand as configuration (T291–T295, D-1932–D-1933) (#342)

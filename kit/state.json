@@ -22176,7 +22176,15 @@
     1942,
     1943,
     1944
-   ]
+   ],
+   "reviewed_sha": "3102765398fc0f1731330a567aed4c403bafe09c",
+   "review_lease": {
+    "task": "T291",
+    "session": "actions-42438534658",
+    "expires": "2026-11-08T05:31:39Z"
+   },
+   "branch": "claude/task/T291-brand-source",
+   "head_check_since": null
   },
   {
    "id": "T292",
@@ -23670,7 +23678,7 @@
    }
   }
  },
- "updated_at": "2026-11-08T02:38:21Z",
+ "updated_at": "2026-11-08T03:16:05Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -23768,7 +23776,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "327f29be8e818bc12689a7f17bf41a29b1e61016",
+ "runner_sha": "3102765398fc0f1731330a567aed4c403bafe09c",
  "starter": "actions",
  "smoke_runs": [
   {
