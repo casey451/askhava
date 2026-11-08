@@ -1274,3 +1274,4 @@
 - 2026-11-07T23:58:58Z runner ba0b00db898b (actions): {}
 - 2026-11-07T23:59:37Z runner ba0b00db898b (actions): {}
 - 2026-11-07T23:59:49Z runner ba0b00db898b (actions): {}
+- 2026-11-08T00:08:31Z runner ba0b00db898b (actions): {"T086": "QUEUED -> IN_PROGRESS"}; T086 estimated 2.5M tokens (calibrated); five-hour window has 19.4M left, week 104.0M (session_reading 2026-11-07T23:59:36Z (week)); claimed

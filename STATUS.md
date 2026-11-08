@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-07T23:59:49Z by runner ba0b00db898b (actions).
+Updated 2026-11-08T00:08:31Z by runner ba0b00db898b (actions).
 
-**Idle since 23:47Z; 147 of 277 done; week 45% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T086 in progress since 00:02Z; 147 of 277 done; week 45% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 147 of 277 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 23:47Z (no task in progress)
-- **Week:** 45% used, 106.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:59Z, 0 min before this update
+- **Lane:** lane 1: T086 claimed 00:02Z, lease until 03:02Z
+- **Week:** 45% used, 104.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Last run:** 23:59Z, 8 min before this update
 - **Keeper:** last ran 23:59Z, next wake 00:19Z
 
 ## Needs attention
@@ -37,7 +37,6 @@ Updated 2026-11-07T23:59:49Z by runner ba0b00db898b (actions).
 | T084 | portals: business one-time sign-in link and 30-day sessions | check_failed | 1 | 29 min | 03:36Z |  |
 | T083 | businesses: complaint replies, 3 in 90 days pause, alerts | done | 1 | 76 min | 02:49Z |  |
 | T082 | businesses: E-SIGN consent box, welcome text, business STOP | done | 1 | 53 min | 01:13Z |  |
-| T193 | businesses: sign-up screens for someone else filling in, the | done | 1 | 55 min | 00:02Z |  |
 
 ### Plan and harness merges on main
 - 22:37Z Harness: keep the smoke incremental across tasks that add queries; save its cache only from a smoking job (D-1911) (#338)
@@ -79,7 +78,7 @@ Updated 2026-11-07T23:59:49Z by runner ba0b00db898b (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-07T22:23:43Z (week)): five-hour: 7.5M used, 21.6M left, resets 2026-11-08T01:44:26Z; week: 88.0M used, 106.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-11-24T19:38:01Z.
+- Pacing (session_reading 2026-11-07T23:59:36Z (week)): five-hour: 9.7M used, 19.4M left, resets 2026-11-08T01:44:26Z; week: 90.0M used, 104.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-11-24T14:00:18Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -94,7 +93,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T086 (lease until 2026-11-08T03:02:31Z)
 
 ## Last usage reading
 - {"task": "T195", "at": "2026-11-07T23:28:57Z", "cache_creation_input_tokens": 546189, "cache_read_input_tokens": 15243110, "output_tokens": 148057, "input_tokens": 352}
