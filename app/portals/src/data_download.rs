@@ -523,36 +523,4 @@ mod tests {
         let copy = confirm_request(&mut db, &FakeVerify, &her(), (request.id, CODE, now)).await;
         assert_eq!(copy, Ok(Acted::Copy));
     }
-
-    async fn request_with_job(db: &mut PgConnection, contact: Uuid, job: Uuid) {
-        let homeowner = sqlx::query_scalar!(
-            "INSERT INTO intake.homeowner (contact_id, created_at) VALUES ($1, now()) RETURNING id",
-            contact,
-        )
-        .fetch_one(&mut *db)
-        .await
-        .expect("homeowner");
-        sqlx::query!(
-            "INSERT INTO intake.conversation (homeowner_id, job_id, language, first_inbox_id, \
-             consent_template, consent_sent_at, opened_at) VALUES ($1, $2, 'en', \
-             gen_random_uuid(), 'consent_first', now(), now())",
-            homeowner,
-            job,
-        )
-        .execute(&mut *db)
-        .await
-        .expect("conversation");
-    }
-
-    /// TD-PRIV-15 (PRIV-011): a delete clears the photos of her own jobs only, never a job the
-    /// browser names, so another homeowner's job is not hers to clear.
-    #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
-    async fn a_delete_reaches_only_her_own_jobs(pool: PgPool) {
-        let mut db = pool.acquire().await.expect("db");
-        let (mine, theirs) = (Uuid::from_u128(0x71), Uuid::from_u128(0x81));
-        request_with_job(&mut db, her().contact(), mine).await;
-        request_with_job(&mut db, Uuid::from_u128(8), theirs).await;
-        let jobs = askhava_intake::api::jobs_of_contact(&mut db, her().contact()).await;
-        assert_eq!(jobs.expect("jobs"), [mine]);
-    }
 }

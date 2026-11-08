@@ -134,3 +134,47 @@ pub async fn jobs_of_contact(
     .await
     .map_err(|_| IntakeError::Database)
 }
+
+#[cfg(test)]
+mod tests {
+    //! PRIV-011, PRIV-031 (TD-PRIV-15, D-1939): `jobs_of_contact` names only her own jobs. Fake
+    //! data only.
+
+    use sqlx::types::Uuid;
+    use sqlx::{PgConnection, PgPool};
+
+    use super::jobs_of_contact;
+
+    async fn request_with_job(db: &mut PgConnection, contact: Uuid, job: Uuid) {
+        let homeowner = sqlx::query_scalar!(
+            "INSERT INTO intake.homeowner (contact_id, created_at) VALUES ($1, now()) RETURNING id",
+            contact,
+        )
+        .fetch_one(&mut *db)
+        .await
+        .expect("homeowner");
+        sqlx::query!(
+            "INSERT INTO intake.conversation (homeowner_id, job_id, language, first_inbox_id, \
+             consent_template, consent_sent_at, opened_at) VALUES ($1, $2, 'en', \
+             gen_random_uuid(), 'consent_first', now(), now())",
+            homeowner,
+            job,
+        )
+        .execute(&mut *db)
+        .await
+        .expect("conversation");
+    }
+
+    /// TD-PRIV-15 (PRIV-011): a delete in her portal reaches her own jobs only, never another
+    /// homeowner's.
+    #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+    async fn only_her_own_jobs_are_named(pool: PgPool) {
+        let mut db = pool.acquire().await.expect("db");
+        let (her, other) = (Uuid::from_u128(7), Uuid::from_u128(8));
+        let (mine, theirs) = (Uuid::from_u128(0x71), Uuid::from_u128(0x81));
+        request_with_job(&mut db, her, mine).await;
+        request_with_job(&mut db, other, theirs).await;
+        let jobs = jobs_of_contact(&mut db, her).await.expect("jobs");
+        assert_eq!(jobs, [mine]);
+    }
+}
