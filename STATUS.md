@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-08T22:00:46Z by runner 7e178284da68 (actions).
+Updated 2026-11-08T22:00:58Z by runner 7e178284da68 (actions).
 
-**Building: T256 in progress since 21:23Z; 159 of 283 done; week 56% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 22:00Z; 159 of 283 done; week 56% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 159 of 283 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T256 claimed 21:23Z, lease until 00:23Z
+- **Lane:** idle since 22:00Z (no task in progress)
 - **Week:** 56% used, 82.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 21:23Z, 37 min before this update
 - **Keeper:** last ran 21:06Z, next wake 21:26Z
@@ -17,6 +17,7 @@ Updated 2026-11-08T22:00:46Z by runner 7e178284da68 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T256 | server: two first texts from one new phone both reach intake | MERGE_PENDING | 1 | 37 min | 22:00Z |  |
 | T098 | Journey J1 (homeowner) and its variants, keyboard-only, with | done | 1 | 50 min | 20:51Z |  |
 | T254 | server and picks: the production release (paid or free, mint | done | 1 | 84 min | 19:24Z |  |
 | T150 | picks and quotes: EMERGENCY card and pick emails with the em | done | 1 | 54 min | 16:04Z |  |
@@ -87,7 +88,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T256 (lease until 2026-11-09T00:23:03Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T098", "at": "2026-11-08T20:51:03Z", "cache_creation_input_tokens": 532995, "cache_read_input_tokens": 27890778, "input_tokens": 503, "output_tokens": 168512}
+- {"task": "T256", "at": "2026-11-08T22:00:46Z", "cache_creation_input_tokens": 558851, "output_tokens": 101119, "input_tokens": 329, "cache_read_input_tokens": 14033331}
