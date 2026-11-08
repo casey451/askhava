@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-08T20:52:24Z by runner b3283662cec9 (actions).
+Updated 2026-11-08T21:05:29Z by runner 195ecd29697f (actions).
 
-**Idle since 20:51Z; 158 of 282 done; week 55% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 20:51Z; 158 of 283 done; week 55% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 158 of 282 build tasks (owner gates not counted)
+- **Tasks done:** 158 of 283 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 20:51Z (no task in progress)
 - **Week:** 55% used, 86.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:52Z, 0 min before this update
+- **Last run:** 20:52Z, 12 min before this update
 - **Keeper:** last ran 20:52Z, next wake 21:12Z
 
 ## Needs attention
@@ -43,13 +43,13 @@ Updated 2026-11-08T20:52:24Z by runner b3283662cec9 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 275 of 731 (37.6%) · partial 255 · unstarted 201
-**Tasks merged (throughput only):** 158 of 282
+**Requirements verified:** 273 of 732 (37.3%) · partial 257 · unstarted 202
+**Tasks merged (throughput only):** 158 of 283
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 13 | 13 | 9 | 35 |
-| ai | 14 | 10 | 4 | 28 |
+| ai | 12 | 12 | 5 | 29 |
 | businesses | 25 | 23 | 10 | 58 |
 | calls | 12 | 12 | 1 | 25 |
 | consent | 15 | 16 | 4 | 35 |
@@ -81,7 +81,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 3: 29 of 29 done
 - stage 4: 38 of 98 done
 - stage 5: 0 of 42 done
-- stage 6: 0 of 26 done
+- stage 6: 0 of 27 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
 - stage kit: 14 of 15 done
