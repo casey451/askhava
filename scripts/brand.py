@@ -35,8 +35,11 @@ SHORT_NAME_MAX = 20  # WORD-008: every text opens "<short_name>:"
 STATEMENT_MAX = 22  # FEE-049: the card statement's descriptor limit
 STATEMENT_JOINER = "* JOB "
 JOB_NUMBER_DIGITS = 7
-LABEL = re.compile(r"^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$")
-PREFIX = re.compile(r"^(?=.*[A-Z])[A-Z0-9]{5,10}$")
+# Used with fullmatch, never match: "$" would let a trailing newline through, which Rust refuses.
+LABEL = re.compile(r"[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?")
+PREFIX = re.compile(r"(?=.*[A-Z])[A-Z0-9]{5,10}")
+# A token is "{", then no brace, then "}", the leftmost first; Brand::fill in app/core/src/brand.rs
+# reads the same way, so "{{brand}}" fills to "{<name>}" and "{ {brand_x}" is an unknown token.
 TOKEN = re.compile(r"\{([^{}]*)\}")
 
 
@@ -47,7 +50,7 @@ class BrandError(ValueError):
 def is_host_name(host: str) -> bool:
     """TXT-006: a lower-case host name of two or more labels."""
     labels = host.split(".")
-    return len(host) <= 253 and len(labels) >= 2 and all(LABEL.match(label) for label in labels)
+    return len(host) <= 253 and len(labels) >= 2 and all(LABEL.fullmatch(label) for label in labels)
 
 
 def sender_on_domain(address: str, domain: str) -> bool:
@@ -60,7 +63,7 @@ def sender_on_domain(address: str, domain: str) -> bool:
 
 def statement_prefix_fits(prefix: str) -> bool:
     """FEE-049: 5 to 10 upper-case letters or digits, one letter, and room for '* JOB 1234567'."""
-    return bool(PREFIX.match(prefix)) and len(prefix) + len(STATEMENT_JOINER) + JOB_NUMBER_DIGITS <= STATEMENT_MAX
+    return bool(PREFIX.fullmatch(prefix)) and len(prefix) + len(STATEMENT_JOINER) + JOB_NUMBER_DIGITS <= STATEMENT_MAX
 
 
 def _shape(data: Any) -> None:

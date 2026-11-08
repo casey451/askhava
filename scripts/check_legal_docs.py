@@ -367,14 +367,24 @@ def check_header(name: str, lines: list[str]) -> list[str]:
 
 
 def alone_patterns(data: dict[str, Any]) -> tuple[tuple[re.Pattern[str], str], ...]:
-    """WORD-021: each forbidden_alone word, allowed only inside the display name ("Ask Hava")."""
+    """WORD-021: each forbidden_alone word, allowed only inside the display name ("Ask Hava").
+
+    A use is inside the display name when the display name's text before the word precedes it
+    and the text after the word follows it; the word may start or end the display name ("Hava
+    Home"). A word that is the whole display name is never alone, so it gets no pattern.
+    """
     display = str(data["display_name"])
     patterns = []
-    for word in data["forbidden_alone"]:
-        word = str(word)
-        before = display[: display.index(word)] if word in display else ""
-        guard = f"(?<!{re.escape(before)})" if before else ""
-        patterns.append((re.compile(rf"{guard}\b{re.escape(word)}\b"), f"'{word}' alone (WORD-021)"))
+    for word in map(str, data["forbidden_alone"]):
+        bare = rf"\b{re.escape(word)}\b"
+        at = display.find(word)
+        before, after = (display[:at], display[at + len(word) :]) if at >= 0 else ("", "")
+        alternatives = [rf"(?<!{re.escape(before)}){bare}"] if before else []
+        alternatives += [rf"{bare}(?!{re.escape(after)})"] if after else []
+        if at < 0:
+            alternatives = [bare]
+        if alternatives:
+            patterns.append((re.compile("|".join(alternatives)), f"'{word}' alone (WORD-021)"))
     return tuple(patterns)
 
 

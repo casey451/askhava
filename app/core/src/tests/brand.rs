@@ -167,3 +167,60 @@ fn td_word_34_fill_refuses_an_unknown_brand_token_and_keeps_other_braces() {
     assert_eq!(fake.fill("plain", true).unwrap(), "plain");
     assert_eq!(fake.statement_prefix(), "FAKECO");
 }
+
+/// The fill cases `tests/docs/test_brand_literals.py` reads from this raw string and runs through
+/// `scripts/brand.py`, so the
+/// two read nested and stray braces the same way: each gives `filled`, or `unknown` names the
+/// refused `{brand...}` token.
+const FILL_CASES: &str = r#"
+[
+  {"text": "{{brand}}", "spanish": false, "filled": "{Fakeco}"},
+  {"text": "{ {brand}", "spanish": false, "filled": "{ Fakeco"},
+  {"text": "{brand{brand}}", "spanish": false, "filled": "{brandFakeco}"},
+  {"text": "} {brand} {", "spanish": false, "filled": "} Fakeco {"},
+  {"text": "{brand}{domain}", "spanish": false, "filled": "Fakecofakeco.test"},
+  {"text": "{brand_short}: {job}", "spanish": true, "filled": "FakecoES: {job}"},
+  {"text": "{brand", "spanish": false, "filled": "{brand"},
+  {"text": "a { b", "spanish": false, "filled": "a { b"},
+  {"text": "{{job}} {}", "spanish": false, "filled": "{{job}} {}"},
+  {"text": "{ {brand_x}", "spanish": false, "unknown": "brand_x"},
+  {"text": "{{brand_x}}", "spanish": false, "unknown": "brand_x"},
+  {"text": "{brand }", "spanish": true, "unknown": "brand "}
+]
+"#;
+
+#[test]
+fn td_word_34_fill_reads_nested_and_stray_braces_like_brand_py() {
+    let fake = parse(&fake()).unwrap();
+    let cases: Vec<Value> = serde_json::from_str(FILL_CASES).unwrap();
+    assert!(cases.len() >= 10);
+    for case in cases {
+        let text = case["text"].as_str().unwrap();
+        let got = fake.fill(text, case["spanish"].as_bool().unwrap());
+        let want = match case["unknown"].as_str() {
+            Some(name) => Err(BrandError::UnknownToken(name.to_owned())),
+            None => Ok(case["filled"].as_str().unwrap().to_owned()),
+        };
+        assert_eq!(got, want, "{text}");
+    }
+}
+
+#[test]
+fn td_word_34_a_trailing_newline_is_refused() {
+    let cases: [(&[&str], &str, &str); 3] = [
+        (&["domain"], "fakeco.test\n", "domain"),
+        (&["statement_prefix"], "FAKECO\n", "statement_prefix"),
+        (
+            &["email_from_address"],
+            "jobs@fakeco.test\n",
+            "email_from_address",
+        ),
+    ];
+    for (path, value, field) in cases {
+        assert_eq!(
+            with(path, json!(value)),
+            Err(BrandError::Field(field)),
+            "{field}"
+        );
+    }
+}

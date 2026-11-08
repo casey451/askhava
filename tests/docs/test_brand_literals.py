@@ -10,8 +10,8 @@ whole word.
 Scanned: every file under app/; a file that is not UTF-8 text fails unless its extension is in
 BINARY_EXTENSIONS. Skipped: Rust under src/tests/ or a tests/ folder and #[cfg(test)] items; comment
 lines (//, {# #}, <!-- -->); CLAUDE.md, Cargo.toml and the brand file itself; internal identifiers
-(askhava_ and askhava- crate, role and schema names, ASKHAVA_* keys, a dotted setting or cookie
-name, a JSON schema's $id). Exempt by name, each with its reason, in EXEMPT_FILES and EXEMPT_CONSTS.
+(the lower-case askhava_ and askhava- crate, role and schema names, ASKHAVA_* keys, an askhava.<x>
+setting or cookie name, a JSON schema's $id), never a brand word joined by a hyphen ("Hava-approved"). Exempt by name, each with its reason, in EXEMPT_FILES and EXEMPT_CONSTS.
 
 Until T292 to T295 finish, tests/brand_literal_baseline.json (file to count of lines) lets a listed
 file keep at most its count; every other file must have none. The baseline only shrinks: an entry
@@ -23,9 +23,11 @@ Run: python3 -m pytest tests/docs/test_brand_literals.py -q -p no:cacheprovider
 
 from __future__ import annotations
 
+import importlib.util
 import json
 import re
 import subprocess
+import sys
 from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
@@ -48,6 +50,7 @@ EXEMPT_CONSTS = {
     ("app/payments/", "AUTHORIZATION_TEXT"): "a legal record stored under AUTHORIZATION_VERSION (FEE-015)",
 }
 COMMENT_BLOCKS = (("{#", "#}"), ("<!--", "-->"))
+CFG_TEST = "#[cfg(test)]"
 
 
 def brand_pattern(data: dict[str, Any]) -> re.Pattern[str]:
@@ -65,13 +68,23 @@ def brand_pattern(data: dict[str, Any]) -> re.Pattern[str]:
     return re.compile(rf"(?<!\w)(?:{alternatives})(?!\w)", re.IGNORECASE)
 
 
+# The fixed internal name of crates, roles, schemas, settings and cookies; it stays when the brand
+# changes, so it is a literal here, not read from the brand file.
+INTERNAL = "askhava"
+# askhava-core, askhava_app, askhava.vault_probe: the lower-case internal name, then '-', '_' or
+# '.', then a lower-case letter. ASKHAVA_ID_SECRET never matches the brand pattern ('_' is a word
+# character), so it needs no rule.
+INTERNAL_AFTER = re.compile(r"[-_.][a-z]")
+# X-Askhava-Message-Key: an internal HTTP header between the app and its stand-ins.
+HEADER = re.compile(r"(?<![\w-])X-Askhava-[A-Z]")
+
+
 def is_identifier(line: str, match: re.Match[str]) -> bool:
-    """askhava-core, askhava.vault_probe and the like: one bare token joined by '-' or '.x'."""
-    if re.search(r"[\s.]", match.group(0)):
-        return False
-    before = line[match.start() - 1 : match.start()]
-    after = line[match.end() : match.end() + 2]
-    return before == "-" or after[:1] == "-" or (after[:1] == "." and after[1:2].islower())
+    """askhava-core, askhava_app, askhava.vault_probe and an X-Askhava- header: only the internal
+    name, exactly in that case, never another brand word."""
+    if match.group(0) == INTERNAL:
+        return bool(INTERNAL_AFTER.match(line, match.end()))
+    return match.group(0) == INTERNAL.capitalize() and bool(HEADER.match(line, max(match.start() - 2, 0)))
 
 
 def is_rust_test_file(rel: str) -> bool:
@@ -106,8 +119,9 @@ def visible_lines(rel: str, text: str) -> Iterator[tuple[int, str]]:
             continue
         elif ender := next((c for o, c in COMMENT_BLOCKS if stripped.startswith(o)), ""):
             close = "" if ender in stripped[2:] else ender
-        elif rel.endswith(".rs") and stripped.startswith("#[cfg(test)]"):
-            index = skip_item(lines, index)
+        elif rel.endswith(".rs") and stripped.startswith(CFG_TEST):
+            # The item is on the attribute's line ("#[cfg(test)] mod tests;") or starts below it.
+            index = skip_item(lines, index - 1 if stripped[len(CFG_TEST) :].strip() else index)
         elif exempt_const(rel, stripped):
             index = skip_item(lines, index - 1)
         else:
@@ -221,6 +235,12 @@ def plant(root: Path, files: dict[str, str | bytes], baseline: dict[str, int] | 
         'let l = "Ask Hava LLC";',
         "say Ask Hava L L C",
         'let d = "Ask Hava-branded";',
+        "<p>Hava-approved pros</p>",
+        "<p>pro-Hava</p>",
+        "<p>Askhava-branded and askhava.com</p>",
+        "<p>ASKHAVA-x</p>",
+        "<p>Hava.approved</p>",
+        'let h = "Y-Askhava-Key";',
     ],
 )
 def test_td_word_34_a_new_file_with_a_brand_word_fails(tmp_path: Path, line: str) -> None:
@@ -242,6 +262,8 @@ HTML = "app/fake/templates/page.html"
         (RS, '#[cfg(test)]\nconst T: &str =\n    "Ask Hava";\n'),
         (RS, "use askhava_core::api::brand;\nlet k = \"ASKHAVA_ID_SECRET\";\nlet r = \"askhava_app\";\n"),
         (RS, 'let c = "askhava-core";\nlet p = "askhava.vault_probe";\nlet c = "askhava.csrf.session";\n'),
+        (RS, '.header("X-Askhava-Message-Key", key);\n'),
+        (RS, '#[cfg(test)] fn f() {\n    let s = "Ask Hava";\n}\n'),
         ("app/fake/x.schema.json", '{\n  "$id": "https://askhava.com/schemas/x.json",\n}\n'),
         (HTML, "Lake Havasu City and Havasupai\n"),
     ],
@@ -249,6 +271,12 @@ HTML = "app/fake/templates/page.html"
 def test_td_word_34_comments_test_modules_and_identifiers_pass(tmp_path: Path, rel: str, body: str) -> None:
     root = plant(tmp_path, {rel: body})
     assert guard(root, brand.load(), None) == []
+
+
+def test_td_word_34_a_one_line_cfg_test_item_does_not_hide_the_next_line(tmp_path: Path) -> None:
+    body = '#[cfg(test)] mod tests;\nlet s = "Ask Hava";\n#[cfg(test)]\nmod more;\nlet t = "Hava";\n'
+    problems = guard(plant(tmp_path, {RS: body}), brand.load(), None)
+    assert [p.split(" ", 1)[0] for p in problems] == [f"{RS}:2:", f"{RS}:5:"], problems
 
 
 def test_td_word_34_test_folders_skipped_files_and_exemptions_pass(tmp_path: Path) -> None:
@@ -334,9 +362,37 @@ def test_td_word_34_brand_py_fills_like_the_app() -> None:
     assert brand.fill("{brand}") == brand.load()["display_name"]
 
 
+RUST_BRAND_TESTS = ROOT / "app" / "core" / "src" / "tests" / "brand.rs"
+
+
+def fill_cases() -> list[dict[str, Any]]:
+    """The JSON table in brand.rs's FILL_CASES raw string, the one table both languages run."""
+    text = RUST_BRAND_TESTS.read_text(encoding="utf-8")
+    found = re.search(r'const FILL_CASES: &str = r#"(.*?)"#;', text, re.DOTALL)
+    assert found, "FILL_CASES not found in app/core/src/tests/brand.rs"
+    cases: list[dict[str, Any]] = json.loads(found.group(1))
+    return cases
+
+
+def test_td_word_34_brand_py_reads_nested_and_stray_braces_like_the_app() -> None:
+    """The same cases as app/core/src/tests/brand.rs: each fills alike or names the same token."""
+    data = brand.check(fake_brand())
+    cases = fill_cases()
+    assert len(cases) >= 10
+    for case in cases:
+        if "unknown" in case:
+            with pytest.raises(brand.BrandError, match=re.escape(f"{{{case['unknown']}}}")):
+                brand.fill(case["text"], case["spanish"], data)
+        else:
+            assert brand.fill(case["text"], case["spanish"], data) == case["filled"], case
+
+
 @pytest.mark.parametrize(
     ("path", "value", "field"),
     [
+        (("domain",), "fakeco.test\n", "domain"),
+        (("statement_prefix",), "FAKECO\n", "statement_prefix"),
+        (("email_from_address",), "jobs@fakeco.test\n", "email_from_address"),
         (("display_name",), "", "display_name"),
         (("es", "short_name"), " ", "es.short_name"),
         (("forbidden_alone",), [], "forbidden_alone"),
@@ -393,11 +449,44 @@ def test_td_word_34_the_legal_check_builds_word_021_from_the_brand() -> None:
     assert other.search("Zed") and not other.search("Zedd")
 
 
+@pytest.mark.parametrize(
+    ("display", "fine", "alone"),
+    [
+        ("Hava Home", "Hava Home helps", "Hava helps"),
+        ("Go Hava Now", "Go Hava Now helps", "Go Hava helps"),
+        ("Ask Hava", "Ask Hava helps", "Hava helps"),
+    ],
+)
+def test_td_word_34_word_021_allows_the_word_only_inside_the_display_name(display: str, fine: str, alone: str) -> None:
+    (pattern, _), = check_legal_docs.alone_patterns({"display_name": display, "forbidden_alone": ["Hava"]})
+    assert not pattern.search(fine) and pattern.search(alone) and pattern.search(f"{fine}. Hava says")
+    assert check_legal_docs.alone_patterns({"display_name": "Hava", "forbidden_alone": ["Hava"]}) == ()
+
+
+def test_td_word_34_a_bad_brand_file_makes_pii_scan_stricter_not_a_crash(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The runner loads scripts/pii_scan.py by path and catches only load errors (runner/github_env.py)."""
+    scripts = str(ROOT / "scripts")
+
+    def broken(*_: Any) -> dict[str, Any]:
+        raise brand.BrandError("the brand field domain is not valid")
+
+    monkeypatch.setattr(brand, "load", broken)
+    monkeypatch.setattr(sys, "path", [p for p in sys.path if p != scripts])
+    spec = importlib.util.spec_from_file_location("pii_scan_fake_brand", ROOT / "scripts" / "pii_scan.py")
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    assert module.OWN_DOMAINS == ()
+    assert scripts not in sys.path
+    monkeypatch.undo()
+    assert module.own_domains() == (brand.load()["domain"],)
+
+
 def test_td_word_34_a_safety_prompt_must_open_with_the_short_name() -> None:
     short = brand.load()["short_name"]
     good = {"id": "p1", "en": "{brand_short}: Stay safe.", "es": f"{short}: Cuídese."}
-    assert check_catalog.check_safety_prompt_brand(good) == []
+    assert check_catalog.check_safety_prompt_brand(good, brand.load()) == []
     for bad in ({**good, "en": "Stay safe."}, {**good, "es": "{brand_x}: hola"}):
-        assert check_catalog.check_safety_prompt_brand(bad) == [
+        assert check_catalog.check_safety_prompt_brand(bad, brand.load()) == [
             f"question bank: safety prompt p1 must start '{short}:'"
         ]

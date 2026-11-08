@@ -816,16 +816,17 @@ def check_question_bank(
     for cat in cats.values():
         if cat.get("enabled") is True and str(cat["id"]) not in sets:
             errors.append(f"question bank: enabled category {cat['id']} has no question set")
+    brand_data = brand.load() if data.get("safety_prompts") else {}
     for prompt in data.get("safety_prompts", []):
-        errors.extend(check_safety_prompt_brand(prompt))
+        errors.extend(check_safety_prompt_brand(prompt, brand_data))
         for set_id in prompt.get("sets", []):
             if set_id not in sets:
                 errors.append(f"question bank: safety prompt {prompt.get('id')} names {set_id}")
     return errors
 
-def check_safety_prompt_brand(prompt: dict[str, Any]) -> list[str]:
-    """WORD-008, D-1932: each safety prompt, its brand tokens filled, starts '<short_name>:'."""
-    data = brand.load()
+def check_safety_prompt_brand(prompt: dict[str, Any], data: dict[str, Any]) -> list[str]:
+    """WORD-008, D-1932: each safety prompt, its brand tokens filled from data (brand.load(), read
+    once by the caller), starts '<short_name>:'."""
     for lang in ("en", "es"):
         spanish = lang == "es"
         start = f"{brand.tokens(data, spanish)['brand_short']}:"

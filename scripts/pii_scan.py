@@ -34,11 +34,6 @@ import sys
 from collections.abc import Iterable, Iterator
 from pathlib import Path
 
-# The runner loads this file by path (runner/github_env.py), so its folder goes on the path first.
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-
-import brand  # noqa: E402  # sibling script: the brand file app/core/data/brand.json (D-1932)
-
 SKIP_PREFIXES = ("sources/", ".git/")
 SKIP_FILES = ("kit/sources.sha256", "uv.lock")
 MAX_BYTES = 4_000_000
@@ -87,7 +82,29 @@ KEY_PATTERNS = {
 EMAIL = re.compile(r"(?<![\w.+-])([A-Za-z0-9._%+-]+)@((?:[A-Za-z0-9-]+\.)+[A-Za-z]{2,})(?![\w-])")
 EXAMPLE_DOMAINS = ("example.com", "example.org")
 RESERVED_TLDS = ("test", "example", "invalid")
-OWN_DOMAINS = (brand.load()["domain"],)  # the brand file's domain: role addresses such as help@ and jobs@notify. (SEC-025, D-1932)
+
+
+def own_domains() -> tuple[str, ...]:
+    """The brand file's domain (scripts/brand.py; D-1932), whose role addresses such as help@ and
+    jobs@notify. are allowed (SEC-025); () when the brand file or brand.py cannot be read or fails
+    its check, so a bad brand file makes the scan stricter, never a crash (the runner loads this
+    file by path and catches only load errors). scripts/ is on sys.path only for the import."""
+    here = str(Path(__file__).resolve().parent)
+    added = here not in sys.path
+    if added:
+        sys.path.insert(0, here)
+    try:
+        import brand  # noqa: PLC0415  # sibling script, imported here so a bad brand file is caught
+
+        return (str(brand.load()["domain"]),)
+    except (ImportError, ValueError, KeyError, TypeError):
+        return ()
+    finally:
+        if added:
+            sys.path.remove(here)
+
+
+OWN_DOMAINS = own_domains()
 SERVICE_DOMAINS = ("users.noreply.github.com",)  # GitHub's no-reply commit identities, never a person's inbox
 VENDOR_TEST_SINKS = frozenset({"delivered@resend.dev", "bounced@resend.dev", "complained@resend.dev"})
 PLACEHOLDER_EMAILS = frozenset({"askhava.quotes@gmail.com"})  # docs/pilot/hand-run-test.md: "for example"

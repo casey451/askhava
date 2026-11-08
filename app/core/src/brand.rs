@@ -51,9 +51,9 @@ pub enum BrandError {
     UnknownToken(String),
 }
 
-/// The brand's Spanish names (WORD-001, D-1932); today the same words as the English ones.
-#[derive(Debug, Clone, Default, PartialEq, Eq, Deserialize)]
-#[serde(deny_unknown_fields)]
+/// The brand's Spanish names (WORD-001, D-1932); today the same words as the English ones. Only a
+/// checked [`Brand`] holds one.
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BrandEs {
     display_name: String,
     business_name: String,
@@ -62,9 +62,9 @@ pub struct BrandEs {
 }
 
 /// The brand: names, domain, sender, card-statement prefix and the words never used alone
-/// (D-1932). Built only by [`Brand::parse`] or [`Brand::embedded`], so every value passed its check.
-#[derive(Debug, Clone, Default, PartialEq, Eq, Deserialize)]
-#[serde(deny_unknown_fields)]
+/// (D-1932). Built only by [`Brand::parse`] or [`Brand::embedded`], so every value passed its
+/// check: it has no `Default` and no public `Deserialize` (the file is read into [`RawBrand`]).
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Brand {
     display_name: String,
     business_name: String,
@@ -77,6 +77,58 @@ pub struct Brand {
     statement_prefix: String,
     forbidden_alone: Vec<String>,
     es: BrandEs,
+}
+
+/// The brand file as read, before its check; private, so no unchecked [`Brand`] can be built.
+#[derive(Default, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct RawBrand {
+    display_name: String,
+    business_name: String,
+    short_name: String,
+    legal_name: String,
+    spoken_legal_name: String,
+    domain: String,
+    email_from_name: String,
+    email_from_address: String,
+    statement_prefix: String,
+    forbidden_alone: Vec<String>,
+    es: RawEs,
+}
+
+/// The `es` object as read (see [`RawBrand`]).
+#[derive(Default, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct RawEs {
+    display_name: String,
+    business_name: String,
+    short_name: String,
+    legal_name: String,
+}
+
+impl RawBrand {
+    /// Moves the read fields into a [`Brand`]; private, called by [`Brand::parse`] before the check
+    /// and by [`brand()`] for the empty fallback.
+    fn into_brand(self) -> Brand {
+        Brand {
+            display_name: self.display_name,
+            business_name: self.business_name,
+            short_name: self.short_name,
+            legal_name: self.legal_name,
+            spoken_legal_name: self.spoken_legal_name,
+            domain: self.domain,
+            email_from_name: self.email_from_name,
+            email_from_address: self.email_from_address,
+            statement_prefix: self.statement_prefix,
+            forbidden_alone: self.forbidden_alone,
+            es: BrandEs {
+                display_name: self.es.display_name,
+                business_name: self.es.business_name,
+                short_name: self.es.short_name,
+                legal_name: self.es.legal_name,
+            },
+        }
+    }
 }
 
 impl Brand {
@@ -97,8 +149,9 @@ impl Brand {
     /// [`BrandError::Parse`] for bad JSON or an unknown field, [`BrandError::Field`] naming the
     /// first field that breaks its rule.
     pub fn parse(json: &str) -> Result<Self, BrandError> {
-        let brand: Self =
+        let raw: RawBrand =
             serde_json::from_str(json).map_err(|err| BrandError::Parse(err.to_string()))?;
+        let brand = raw.into_brand();
         brand.check()?;
         Ok(brand)
     }
@@ -154,7 +207,9 @@ impl Brand {
 
     /// Replaces `{brand}`, `{brand_business}`, `{brand_short}`, `{brand_legal}` and `{domain}` in
     /// `text`, with the Spanish names when `spanish`; every other `{name}` placeholder (`{job}`)
-    /// is left alone (WORD-001, WORD-008, TXT-006, D-1932).
+    /// is left alone (WORD-001, WORD-008, TXT-006, D-1932). A token is `{`, then no brace, then
+    /// `}`, the leftmost first, as in `scripts/brand.py`: `{{brand}}` fills to `{<name>}` and a
+    /// stray `{` stays as it is.
     ///
     /// # Errors
     ///
@@ -164,20 +219,24 @@ impl Brand {
         let mut rest = text;
         while let Some(start) = rest.find('{') {
             out.push_str(&rest[..start]);
-            let after = &rest[start..];
-            let Some(end) = after.find('}') else {
-                out.push_str(after);
-                return Ok(out);
+            let inner = &rest[start + 1..];
+            let Some(end) = inner
+                .find(['{', '}'])
+                .filter(|&end| inner[end..].starts_with('}'))
+            else {
+                out.push('{');
+                rest = inner;
+                continue;
             };
-            let name = &after[1..end];
+            let name = &inner[..end];
             match self.token(name, spanish) {
                 Some(value) => out.push_str(value),
                 None if name.starts_with("brand") => {
                     return Err(BrandError::UnknownToken(name.to_owned()));
                 }
-                None => out.push_str(&after[..=end]),
+                None => out.push_str(&rest[start..=start + end + 1]),
             }
-            rest = &after[end + 1..];
+            rest = &inner[end + 1..];
         }
         out.push_str(rest);
         Ok(out)
@@ -355,7 +414,8 @@ pub fn install(brand: Brand) -> Result<(), BrandError> {
 /// fails the build), this is an empty brand rather than a panic.
 #[must_use]
 pub fn brand() -> &'static Brand {
-    INSTALLED
-        .get()
-        .unwrap_or_else(|| FALLBACK.get_or_init(|| Brand::embedded().unwrap_or_default()))
+    INSTALLED.get().unwrap_or_else(|| {
+        FALLBACK
+            .get_or_init(|| Brand::embedded().unwrap_or_else(|_| RawBrand::default().into_brand()))
+    })
 }
