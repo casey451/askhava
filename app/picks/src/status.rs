@@ -17,6 +17,7 @@ use askhava_jobs::api::rules::Wait;
 use askhava_privacy::api::ReleaseBasis;
 
 use crate::rules::Stage;
+use crate::settle::SettleStep;
 
 /// A pick's status (`docs/architecture.md` section 6, FEE-052). Stored as [`PickStatus::code`].
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -72,6 +73,39 @@ pub const fn release_status(basis: ReleaseBasis) -> PickStatus {
     match basis {
         ReleaseBasis::PaidCharge => PickStatus::Paid,
         ReleaseBasis::NoFeeDue => PickStatus::Free,
+    }
+}
+
+/// The settle's step for status code `code` and `basis` (see [`SettleStep`]).
+#[must_use]
+pub(crate) fn settle_step(code: &str, basis: ReleaseBasis) -> SettleStep {
+    let at = PickStatus::ALL.into_iter().find(|s| s.code() == code);
+    match (at, release_status(basis)) {
+        (Some(PickStatus::AwaitingConfirm), _) => SettleStep::Move,
+        (Some(PickStatus::Paid), PickStatus::Paid) | (Some(PickStatus::Free), PickStatus::Free) => {
+            SettleStep::Was
+        }
+        (
+            None
+            | Some(
+                PickStatus::Paid
+                | PickStatus::Free
+                | PickStatus::Expired
+                | PickStatus::Cancelled
+                | PickStatus::NoShow
+                | PickStatus::FraudRefunded,
+            ),
+            _,
+        ) => SettleStep::Leave,
+    }
+}
+
+/// The audit action of a settle of `basis` (D-2014).
+#[must_use]
+pub(crate) const fn settle_action(basis: ReleaseBasis) -> &'static str {
+    match basis {
+        ReleaseBasis::PaidCharge => "picks.settled_paid",
+        ReleaseBasis::NoFeeDue => "picks.settled_free",
     }
 }
 

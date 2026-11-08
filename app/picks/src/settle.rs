@@ -26,12 +26,25 @@ use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
 
 use crate::models::PicksError;
-use crate::status::{PickStatus, release_status};
+use crate::status::{release_status, settle_action, settle_step};
 
 /// The masked-line retry task a failed line queues, one per pick (CALL-001, D-1688).
 pub const LINE_RETRY_KIND: &str = "picks.line_retry";
 
 const RETRY_FAILED: HandlerError = HandlerError("masked line retry failed");
+
+/// What the settle does with a pick stored at `code` for a clearing of `basis` (PICK-022,
+/// D-1564, D-1739): move it from awaiting confirm, note that an earlier call moved it, or leave
+/// any other status alone.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum SettleStep {
+    /// Awaiting confirm: move it to `release_status`.
+    Move,
+    /// Already at `release_status` for this basis.
+    Was,
+    /// Any other status, or an unknown code: nothing.
+    Leave,
+}
 
 /// What [`settle`] did with the pick (PICK-022, D-1564).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -65,11 +78,10 @@ pub async fn settle(tx: &mut PgConnection, cleared: &Releasable) -> Result<Settl
     if row.ended {
         return Ok(Settled::Left);
     }
-    if row.status == want.code() {
-        return Ok(Settled::Was(row.job_id));
-    }
-    if row.status != PickStatus::AwaitingConfirm.code() {
-        return Ok(Settled::Left);
+    match settle_step(&row.status, cleared.basis()) {
+        SettleStep::Move => {}
+        SettleStep::Was => return Ok(Settled::Was(row.job_id)),
+        SettleStep::Leave => return Ok(Settled::Left),
     }
     sqlx::query!(
         "UPDATE picks.pick SET status = $2 WHERE id = $1",
@@ -79,14 +91,9 @@ pub async fn settle(tx: &mut PgConnection, cleared: &Releasable) -> Result<Settl
     .execute(&mut *tx)
     .await
     .map_err(|_| PicksError::Database)?;
-    let action = if want == PickStatus::Paid {
-        "picks.settled_paid"
-    } else {
-        "picks.settled_free"
-    };
     let entry = AuditEntry {
         actor: Actor::System,
-        action,
+        action: settle_action(cleared.basis()),
         subject_kind: "picks.pick",
         subject_id: pick,
         change: Change::Action,
