@@ -8,13 +8,14 @@ use std::net::IpAddr;
 
 use askhava_core::api::ClientIpPolicy;
 use askhava_intake::api::{
-    Admission, REQUESTS_ALL, REQUESTS_PER_IP, REQUESTS_PER_PHONE, admit_new_request,
+    ALERT_TRIES, Admission, Key, Limit, LimitError, REQUESTS_ALL, REQUESTS_PER_IP,
+    REQUESTS_PER_PHONE, admit, admit_new_request,
 };
 use askhava_portals::api::{
-    CODE_SENDS_PER_IP, CODE_SENDS_PER_NUMBER, CODE_TRIES_PER_BUSINESS, CODE_TRIES_PER_IP,
-    LINKS_PER_BUSINESS, OWNER_TRIES_ALL, OWNER_TRIES_PER_IP, OwnerAuth, QUOTES_PER_BUSINESS,
-    SIGNUPS_ALL, admit_code_send, admit_code_try, admit_owner_password, admit_quote,
-    admit_sign_in_link, admit_sign_up, passkey_sign_in_options, verify_all,
+    CODE_SENDS_PER_IP, CODE_SENDS_PER_NUMBER, CODE_SENDS_UNKNOWN, CODE_TRIES_PER_BUSINESS,
+    CODE_TRIES_PER_IP, LINKS_PER_BUSINESS, OWNER_TRIES_ALL, OWNER_TRIES_PER_IP, OwnerAuth,
+    QUOTES_PER_BUSINESS, SIGNUPS_ALL, admit_code_send, admit_code_try, admit_owner_password,
+    admit_quote, admit_sign_in_link, admit_sign_up, passkey_sign_in_options, verify_all,
 };
 use axum::http::{HeaderMap, HeaderValue};
 use jiff::{SignedDuration, Timestamp};
@@ -43,6 +44,14 @@ fn admitted(outcomes: &[Admission]) -> usize {
         .count()
 }
 
+/// Every counter hit stored so far, all buckets together.
+async fn counter_hits(pool: &PgPool) -> i64 {
+    sqlx::query_scalar("SELECT COALESCE(SUM(hits), 0)::bigint FROM core.rate_limit")
+        .fetch_one(pool)
+        .await
+        .expect("hits")
+}
+
 async fn alerts(pool: &PgPool, kind: &str) -> Vec<String> {
     sqlx::query_scalar("SELECT severity FROM ops.alert WHERE kind = $1")
         .bind(kind)
@@ -60,7 +69,11 @@ async fn td_sec_02_five_new_requests_per_phone_per_hour_and_the_sixth_is_refused
     }
     assert_eq!(admitted(&outcomes), 5);
     assert_eq!(outcomes[5], Admission::Refused(REQUESTS_PER_PHONE));
-    assert_eq!(alerts(&pool, REQUESTS_PER_PHONE.scope).await, ["high"]);
+    assert_eq!(
+        alerts(&pool, REQUESTS_PER_PHONE.scope).await,
+        ["normal"],
+        "one homeowner's limit is a digest line, not a High alert (D-1953)"
+    );
     let next_hour = admit_new_request(&pool, (id(1), None), at(3_600)).await;
     assert_eq!(next_hour.expect("counted"), Admission::Admitted);
 }
@@ -274,8 +287,8 @@ async fn td_pick_36_portal_code_sends_are_capped_per_number_and_globally(pool: P
     }
     assert_eq!(admitted(&sends), 5);
     assert_eq!(sends[5], Admission::Refused(CODE_SENDS_PER_NUMBER));
-    let arizona_midnight = at(19 * 3_600);
-    let next_day = admit_code_send(&pool, (ip(9), Some(id(5))), (arizona_midnight, 500)).await;
+    let next_arizona_day = at(19 * 3_600);
+    let next_day = admit_code_send(&pool, (ip(9), Some(id(5))), (next_arizona_day, 500)).await;
     assert_eq!(
         next_day.expect("counted"),
         Admission::Admitted,
@@ -315,4 +328,35 @@ async fn td_sec_02_fifty_sign_ups_a_day_and_quotes_per_business(pool: PgPool) {
         );
     }
     assert_eq!(admitted(&quotes), QUOTES_PER_BUSINESS.max as usize);
+}
+
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_pick_36_unknown_and_known_numbers_spend_the_same_counter_writes(pool: PgPool) {
+    let known = admit_code_send(&pool, (ip(1), Some(id(7))), (at(0), 500)).await;
+    assert_eq!(known.expect("counted"), Admission::Admitted);
+    let after_known = counter_hits(&pool).await;
+    let unknown = admit_code_send(&pool, (ip(2), None), (at(0), 500)).await;
+    assert_eq!(unknown.expect("counted"), Admission::Admitted);
+    let after_unknown = counter_hits(&pool).await;
+    assert_eq!(after_known, 3, "a known number: IP, number and global");
+    assert_eq!(
+        after_unknown - after_known,
+        after_known,
+        "an unknown number does the same number of upserts (SEC-008, D-1954)"
+    );
+    assert!(alerts(&pool, CODE_SENDS_UNKNOWN.scope).await.is_empty());
+}
+
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_sec_02_an_alert_that_cannot_be_written_is_an_error_not_a_silent_refusal(pool: PgPool) {
+    let broken = Limit::hourly("intake.Not-A-Code-Name", 1);
+    let checks = [(broken, Key::All)];
+    let first = admit(&pool, &checks, at(0)).await;
+    assert_eq!(first.expect("counted"), Admission::Admitted);
+    assert_eq!(
+        admit(&pool, &checks, at(1)).await,
+        Err(LimitError::Alert),
+        "every one of the tries failed, so the caller hears of it"
+    );
+    assert_eq!(ALERT_TRIES, 3, "a passing database fault gets more tries");
 }

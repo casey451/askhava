@@ -90,9 +90,16 @@ pub async fn admit_code_try(
     admit(pool, &with_business(ip, CODE_TRIES_PER_IP, business), now).await
 }
 
+/// The two counters an unknown number's code send spends in place of the per-number and global
+/// counts, so both answers do the same database work (SEC-008, PICK-055, D-1954). Its ceiling is
+/// never reached, so it never refuses or alerts.
+pub const CODE_SENDS_UNKNOWN: Limit = Limit::daily("portals.code_sends_unknown", i32::MAX);
+
 /// SEC-014, PICK-055, SEC-008: a homeowner-portal code send. Every request counts against `ip`
 /// first, on file or not; a number on file (`contact`) then counts 5 a day and the global
-/// `threshold`, whose first refusal raises the High alert. An unknown number sends nothing.
+/// `threshold`, whose first refusal raises the High alert. An unknown number spends two
+/// [`CODE_SENDS_UNKNOWN`] counters instead, the same three upserts as a known one, and sends
+/// nothing (identical work and timing, TD-PICK-36).
 ///
 /// # Errors
 ///
@@ -102,11 +109,19 @@ pub async fn admit_code_send(
     (ip, contact): (IpAddr, Option<Uuid>),
     (now, threshold): (Timestamp, i32),
 ) -> Result<Admission, LimitError> {
-    let mut checks = vec![(CODE_SENDS_PER_IP, Key::Ip(ip))];
-    if let Some(contact) = contact {
-        checks.push((CODE_SENDS_PER_NUMBER, Key::Record(contact)));
-        checks.push((verify_all(threshold), Key::All));
-    }
+    let ip_check = (CODE_SENDS_PER_IP, Key::Ip(ip));
+    let checks = match contact {
+        Some(contact) => [
+            ip_check,
+            (CODE_SENDS_PER_NUMBER, Key::Record(contact)),
+            (verify_all(threshold), Key::All),
+        ],
+        None => [
+            ip_check,
+            (CODE_SENDS_UNKNOWN, Key::Record(Uuid::nil())),
+            (CODE_SENDS_UNKNOWN, Key::All),
+        ],
+    };
     admit(pool, &checks, now).await
 }
 

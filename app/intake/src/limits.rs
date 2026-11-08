@@ -5,12 +5,16 @@
 //! each `(Limit, Key)` pair, narrowest first, through `core`'s one atomic upsert
 //! (`askhava_core::api::rate_limit_hit`), so the count is exact across web processes (SEC-040),
 //! and stops at the first pair over its ceiling: a wider bucket is never spent by a refused
-//! request. The first refusal of a scope in a window raises one High `ops` alert named by the
-//! scope (SEC-015); later refusals in that window raise none. A bucket is a scope plus an IP or a
-//! record ID, never a phone or email (PRIV-002). Intake's own limits are [`admit_new_request`]'s:
-//! 5 new requests per phone per hour (SEC-014), per IP, and all numbers together per hour, so a
-//! burst of 100 fake requests is blocked and alerted (SEC-015). `portals` keeps the sign-in,
-//! code, sign-up and quote limits and runs them through [`admit`] (D-491).
+//! request. The narrower buckets a refused request already counted stay counted: `core`'s counter
+//! only adds, so a refusal by a wider limit costs the narrower keys one hit each (D-1953). The
+//! first refusal of a scope in a window raises one `ops` alert named by the scope, High unless
+//! the limit is [`Limit::quiet`] (SEC-015); later refusals in that window raise none. The
+//! refusal that takes the marker tries the alert [`ALERT_TRIES`] times (D-1953). A bucket
+//! is a scope plus an IP or a record ID, never a phone or email (PRIV-002). Intake's own limits
+//! are [`admit_new_request`]'s: 5 new requests per phone per hour (SEC-014, a Normal alert), per
+//! IP, and all numbers together per hour, so a burst of 100 fake requests is blocked and alerted
+//! High (SEC-015). `portals` keeps the sign-in, code, sign-up and quote limits and runs them
+//! through [`admit`] (D-491).
 
 use std::net::IpAddr;
 
@@ -21,8 +25,9 @@ use sqlx::PgPool;
 use sqlx::types::Uuid;
 use thiserror::Error;
 
-/// New requests one phone (her vault contact) may open per hour (SEC-014).
-pub const REQUESTS_PER_PHONE: Limit = Limit::hourly("intake.requests_per_phone", 5);
+/// New requests one phone (her vault contact) may open per hour (SEC-014); its refusal is one
+/// homeowner, not a burst, so its alert is Normal (the weekly digest, D-1953).
+pub const REQUESTS_PER_PHONE: Limit = Limit::hourly("intake.requests_per_phone", 5).quiet();
 /// New requests one client IP may open per hour (web requests, SEC-014, SEC-040).
 pub const REQUESTS_PER_IP: Limit = Limit::hourly("intake.requests_per_ip", 10);
 /// New requests all numbers together may open per hour; past it a burst is refused and
@@ -58,26 +63,39 @@ pub struct Limit {
     pub max: i32,
     /// The window.
     pub window: Window,
+    /// The severity of the alert its first refusal in a window raises (SEC-015).
+    pub alert: Severity,
 }
 
 impl Limit {
-    /// A limit of `max` per clock hour.
+    /// A limit of `max` per clock hour, alerting High.
     #[must_use]
     pub const fn hourly(scope: &'static str, max: i32) -> Self {
         Self {
             scope,
             max,
             window: Window::Hour,
+            alert: Severity::High,
         }
     }
 
-    /// A limit of `max` per Arizona day.
+    /// A limit of `max` per Arizona day, alerting High.
     #[must_use]
     pub const fn daily(scope: &'static str, max: i32) -> Self {
         Self {
             scope,
             max,
             window: Window::ArizonaDay,
+            alert: Severity::High,
+        }
+    }
+
+    /// The same limit with a Normal alert: one person's limit, not a burst (D-1953).
+    #[must_use]
+    pub const fn quiet(self) -> Self {
+        Self {
+            alert: Severity::Normal,
+            ..self
         }
     }
 }
@@ -130,7 +148,8 @@ async fn count(
 }
 
 /// Counts one request against each `(Limit, Key)` in order and stops at the first that is full;
-/// that scope's first refusal in its window raises one High alert (SEC-014, SEC-015, SEC-040).
+/// that scope's first refusal in its window raises one alert of the limit's severity (SEC-014,
+/// SEC-015, SEC-040). The narrower keys already counted keep their hit (D-1953).
 ///
 /// # Errors
 ///
@@ -150,7 +169,11 @@ pub async fn admit(
     Ok(Admission::Admitted)
 }
 
-/// One High alert per scope and window: the `<scope>:alerted` bucket admits only its first hit.
+/// One alert per scope and window (SEC-015): the `<scope>:alerted` bucket admits only its first
+/// hit, and that refusal writes the alert, trying [`ALERT_TRIES`] times, since
+/// `core`'s counter cannot take the marker back. Holding the alert in a transaction until the
+/// marker answers would need two connections per refusal and starves the pool in a burst
+/// (D-1953). Every try failing is [`LimitError::Alert`], which the caller logs.
 async fn alert_once(pool: &PgPool, limit: Limit, now: Timestamp) -> Result<(), LimitError> {
     let flag = format!("{}:alerted", limit.scope);
     if count(pool, &flag, (now, limit.window), 1).await? == RateDecision::Limited {
@@ -158,11 +181,26 @@ async fn alert_once(pool: &PgPool, limit: Limit, now: Timestamp) -> Result<(), L
     }
     let alert = NewAlert {
         kind: limit.scope,
-        severity: Severity::High,
+        severity: limit.alert,
         subject: None,
     };
+    let mut tried = write_alert(pool, &alert).await;
+    for _ in 1..ALERT_TRIES {
+        if tried.is_ok() {
+            break;
+        }
+        tried = write_alert(pool, &alert).await;
+    }
+    tried
+}
+
+/// How many times [`alert_once`] tries to write the alert, each on a fresh pool connection
+/// (D-1953).
+pub const ALERT_TRIES: usize = 3;
+
+async fn write_alert(pool: &PgPool, alert: &NewAlert) -> Result<(), LimitError> {
     let mut conn = pool.acquire().await.map_err(|_| LimitError::Alert)?;
-    raise_alert(&mut conn, &alert)
+    raise_alert(&mut conn, alert)
         .await
         .map(|_| ())
         .map_err(|_| LimitError::Alert)
