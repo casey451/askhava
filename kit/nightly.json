@@ -1,14 +1,14 @@
 {
  "schema": 1,
- "conclusion": "failure",
+ "conclusion": "success",
  "results": {
-  "ci": "failure",
+  "ci": "success",
   "twin": "success",
   "a11y": "success",
   "named_mutants": "success",
   "stripe_ips": "success"
  },
- "started_at": "2026-11-08T15:58:59Z",
- "ran_at": "2026-11-08T16:10:30Z",
- "sha": "fb13c6faf315bb10219515f25f83f47fbc86c5f8"
+ "started_at": "2026-11-08T17:01:22Z",
+ "ran_at": "2026-11-08T17:19:59Z",
+ "sha": "7b64fb31242f71f2c57312c82e5391dc50515293"
 }
