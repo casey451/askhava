@@ -11,12 +11,13 @@
 //! winner that cannot be found again. All data is fake.
 
 use std::sync::Arc;
+use std::time::Duration;
 
 use askhava_businesses::api::PHONE_STOPPED_KIND;
 use askhava_core::api::ManualClock;
 use askhava_intake::api::rules::Settings as IntakeSettings;
 use askhava_messaging::api::sender_add;
-use askhava_privacy::api::Vault;
+use askhava_privacy::api::{IndexPurpose, Vault, normalize_phone};
 use axum::body::Body;
 use axum::http::{Request, StatusCode};
 use base64::Engine as _;
@@ -116,7 +117,8 @@ async fn total(pool: &PgPool, table: &str) -> i64 {
 }
 
 /// Sends texts `1` and `2` from [`HOME`] at once, both held at the blind-index insert after
-/// their absent-contact lookups until both wait (the barrier), then released together.
+/// their absent-contact lookups until both wait (the barrier, failing after 30 seconds rather
+/// than hanging), then released together.
 async fn race(pool: &PgPool, h: &Arc<Webhooks>, first: &'static str, second: &'static str) {
     let mut lock = pool.begin().await.expect("lock connection");
     sqlx::query("LOCK TABLE privacy.contact_index IN SHARE MODE")
@@ -127,20 +129,25 @@ async fn race(pool: &PgPool, h: &Arc<Webhooks>, first: &'static str, second: &'s
     let b = tokio::spawn(text(Arc::clone(h), 2, HOME, second));
     let waiting = "SELECT count(*) FROM pg_locks \
                    WHERE relation = $1::regclass AND NOT granted";
-    while count(pool, waiting, "privacy.contact_index").await < 2 {
-        tokio::task::yield_now().await;
-    }
+    let barrier = async {
+        while count(pool, waiting, "privacy.contact_index").await < 2 {
+            tokio::task::yield_now().await;
+        }
+    };
+    tokio::time::timeout(Duration::from_secs(30), barrier)
+        .await
+        .expect("both deliveries wait at the blind-index write");
     lock.commit().await.expect("release");
     assert_eq!(a.await.expect("first"), StatusCode::OK);
     assert_eq!(b.await.expect("second"), StatusCode::OK);
 }
 
-/// Whether the text with MessageSid `n` reached intake: it opened the request or was heard in it.
-async fn reached_intake(pool: &PgPool, n: u32) -> bool {
+/// How often the text with MessageSid `n` reached intake: it opened the request or was heard in it.
+async fn reached_intake(pool: &PgPool, n: u32) -> i64 {
     let sql = "SELECT (SELECT count(*) FROM intake.conversation WHERE first_inbox_id = i.id) \
                + (SELECT count(*) FROM intake.intake_answer WHERE inbox_id = i.id) \
                FROM messaging.inbox i WHERE i.message_sid = $1";
-    count(pool, sql, &sid(n)).await > 0
+    count(pool, sql, &sid(n)).await
 }
 
 /// TD-TXT-32 (TXT-012, PRIV-001): two first texts racing for one new phone make one vault
@@ -159,8 +166,12 @@ async fn td_txt_32_two_first_texts_both_reach_intake(pool: PgPool) {
     assert_eq!(total(&pool, "privacy.contact_index").await, 1);
     assert_eq!(total(&pool, "messaging.inbox").await, 2);
     assert_eq!(total(&pool, "intake.conversation").await, 1);
-    assert!(reached_intake(&pool, 1).await && reached_intake(&pool, 2).await);
+    assert_eq!(reached_intake(&pool, 1).await, 1, "first text once");
+    assert_eq!(reached_intake(&pool, 2).await, 1, "second text once");
     let tables = [
+        "privacy.contact",
+        "privacy.contact_index",
+        "intake.conversation",
         "messaging.inbox",
         "intake.intake_answer",
         "messaging.outbox",
@@ -215,7 +226,7 @@ async fn td_txt_32_a_lost_winner_rolls_back_and_the_resend_is_handled(pool: PgPo
         .expect("drop");
     assert_eq!(text(Arc::clone(&h), 5, HOME, words).await, StatusCode::OK);
     assert_eq!(total(&pool, "privacy.contact").await, 1);
-    assert!(reached_intake(&pool, 5).await);
+    assert_eq!(reached_intake(&pool, 5).await, 1);
 }
 
 async fn link(pool: &PgPool, h: &Webhooks, business: Uuid, phone: &str) {
@@ -241,6 +252,16 @@ async fn td_biz_39_a_business_stop_reaches_businesses_once(pool: PgPool) {
     assert_eq!(count(&pool, theirs, &business.to_string()).await, 1);
     assert_eq!(total(&pool, "privacy.contact").await, 0, "no homeowner");
     assert_eq!(total(&pool, "intake.homeowner_pause").await, 0);
+    let phone = normalize_phone(SHOP).expect("fake phone");
+    let listed = "SELECT count(*) FROM messaging.suppression WHERE digest = $1";
+    for (_, digest) in h.vault.blind_index(IndexPurpose::HomeownerPhone, &phone) {
+        let n: i64 = sqlx::query_scalar(listed)
+            .bind(digest.as_slice())
+            .fetch_one(&pool)
+            .await
+            .expect("listed");
+        assert_eq!(n, 1, "the business phone is on the suppression list");
+    }
 }
 
 /// TD-BIZ-39 (BIZ-032, D-1715): a business phone's text for which `auto_reply_due` holds queues
@@ -248,7 +269,8 @@ async fn td_biz_39_a_business_stop_reaches_businesses_once(pool: PgPool) {
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_biz_39_auto_reply_only_when_due(pool: PgPool) {
     let h = hooks(&pool);
-    link(&pool, &h, Uuid::from_u128(0x7257), SHOP_STAFF).await;
+    let business = Uuid::from_u128(0x7257);
+    link(&pool, &h, business, SHOP_STAFF).await;
     let replies = "SELECT count(*) FROM messaging.outbox WHERE template_id = $1";
     for (n, words) in [(1, "CONFIRM 1042"), (2, "HELP"), (3, "BUSY 5")] {
         assert_eq!(
@@ -269,5 +291,16 @@ async fn td_biz_39_auto_reply_only_when_due(pool: PgPool) {
         );
     }
     assert_eq!(count(&pool, replies, "business_auto_reply").await, 1);
+    let row = "SELECT recipient_kind, recipient_id FROM messaging.outbox WHERE template_id = $1";
+    let (kind, recipient): (String, Uuid) = sqlx::query_as(row)
+        .bind("business_auto_reply")
+        .fetch_one(&pool)
+        .await
+        .expect("reply row");
+    assert_eq!(kind, "business");
+    assert_eq!(
+        recipient, business,
+        "D-2042: the business ID, not the line ID"
+    );
     assert_eq!(total(&pool, "privacy.contact").await, 0);
 }

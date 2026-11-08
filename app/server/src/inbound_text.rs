@@ -326,9 +326,12 @@ async fn sender(db: &mut PgConnection, vault: &Vault, from: &str) -> Step<(Uuid,
 }
 
 /// BIZ-032, D-1715: the reply to a business phone's text that `auto_reply_due` says needs one,
-/// queued once per inbound text to the business through the outbox (the send path checks the
-/// suppression list and `may_text`). The route expects no business text yet, so `expected` is
-/// false; HELP and opt-outs already ended in [`screen`] (D-2039).
+/// queued once per inbound text through the outbox. The route expects no business text yet, so
+/// `expected` is false; HELP and opt-outs already ended in [`screen`] (D-2039). The row's
+/// `recipient` is the business ID, not the phone's line ID that `business_notices` stores and
+/// `businesses::api::may_text` takes: `sender_business` answers only the business, so no sender
+/// can check `may_text` for this row or resolve its phone until `messaging` also returns the line
+/// ID (open item, D-2042).
 async fn auto_reply(h: &Webhooks, db: &mut PgConnection, msg: &InboundText<'_>) -> Step<()> {
     if !auto_reply_due(msg.text, false) {
         return Err(Halt::Ends("business"));
