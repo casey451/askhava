@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-08T18:07:22Z by runner 7b64fb31242f (actions).
+Updated 2026-11-08T19:24:45Z by runner 6017dff3be20 (actions).
 
 **Building: T254 in progress since 17:59Z; 157 of 282 done; week 53% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,11 @@ Updated 2026-11-08T18:07:22Z by runner 7b64fb31242f (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T254 claimed 17:59Z, lease until 20:59Z
 - **Week:** 53% used, 88.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:56Z, 10 min before this update
+- **Last run:** 18:07Z, 77 min before this update
 - **Keeper:** last ran 17:56Z, next wake 18:16Z
 
 ## Needs attention
-- Strict plan check red: 21 problem(s) on tasks still to run (+18 on DONE tasks); first: T255: stored context_pct 25% but it measures 30%; regenerate
+- Strict plan check red: 25 problem(s) on tasks still to run (+19 on DONE tasks); first: T254: stored context_pct 30% but it measures 39%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -30,10 +30,9 @@ Updated 2026-11-08T18:07:22Z by runner 7b64fb31242f (actions).
 | T195 | portals: business billing and statements from the ledger | done | 1 | 48 min | 23:28Z |  |
 | T085 | portals: business portal home (contact choice, your numbers, | done | 1 | 33 min | 21:43Z |  |
 | T253 | privacy, picks and portals: the signed-in business reads a r | done | 1 | 54 min | 20:44Z |  |
-| T252 | architecture test: dynamic SQL in a migration is a TD-SEC-10 | done | 1 | 19 min | 19:16Z |  |
-| T196 | businesses: verified notice email, sender rules and the addr | done | 2 | 32 min | 18:33Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests / test tests::transi |
 
 ### Plan and harness merges on main
+- 18:33Z Harness: run the start-routine smoke before the session (D-2028) (#359)
 - 15:06Z Harness: warm the smoke build before the session (D-2007) (#356)
 - 10:55Z Harness: retry release downloads; backup job's coverage tools best-effort (D-1986) (#352)
 - 07:39Z harness: chain the next cycle at once after the first smoke timeout on a head (D-1970) (#349)
