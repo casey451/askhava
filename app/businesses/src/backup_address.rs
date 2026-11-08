@@ -126,9 +126,27 @@ async fn tell_main(
         .map_err(|_| EmailCheckError::Database)
 }
 
+/// BIZ-043: whether `mailbox` is the main address of a current member of `business` (the person's
+/// own or a teammate's); a backup there would list one mailbox twice for a notice.
+async fn is_main_address(
+    tx: &mut PgConnection,
+    business: Uuid,
+    mailbox: Uuid,
+) -> Result<bool, EmailCheckError> {
+    let q = sqlx::query_scalar!(
+        "SELECT EXISTS (SELECT 1 FROM businesses.team_member WHERE business_id = $1 \
+         AND mailbox_id = $2 AND removed_at IS NULL) AS \"taken!\"",
+        business,
+        mailbox
+    );
+    db(q.fetch_one(&mut *tx).await)
+}
+
 /// BIZ-043, SEC-038: asks to make `mailbox` the backup of `member` and returns the code to email
 /// to it; any older unverified request closes, and a verified backup keeps working until the new
-/// one is confirmed. Refused unless `by` is the owner or `member` with a fresh Verify code.
+/// one is confirmed. Refused unless `by` is the owner or `member` with a fresh Verify code, and
+/// refused as [`EmailCheckError::NotAllowed`] when `mailbox` is the main address of any current
+/// member of the business, the person's own included.
 ///
 /// # Errors
 /// [`EmailCheckError::NotAllowed`], [`EmailCheckError::NoFreshCode`],
@@ -142,6 +160,9 @@ pub async fn request_backup(
 ) -> Result<String, EmailCheckError> {
     checked(conn, by, member, now).await?;
     let mut tx = db(conn.begin().await)?;
+    if is_main_address(&mut tx, by.business, mailbox).await? {
+        return Err(EmailCheckError::NotAllowed);
+    }
     let q = sqlx::query!(
         "UPDATE businesses.backup_address SET removed_at = $3 \
          WHERE business_id = $1 AND member_id = $2 AND verified_at IS NULL AND removed_at IS NULL",

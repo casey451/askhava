@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "UPDATE businesses.email_check c SET pick_alert_yes_at = NULL FROM businesses.team_member m WHERE m.id = c.member_id AND m.removed_at IS NULL AND c.pick_alert_yes_at <= $1 RETURNING c.member_id, c.business_id",
+  "query": "UPDATE businesses.email_check c SET pick_alert_yes_at = NULL FROM businesses.team_member m WHERE m.id = c.member_id AND m.removed_at IS NULL AND m.confirm_and_billing AND c.pick_alert_yes_at <= $1 RETURNING c.member_id, c.business_id",
   "describe": {
     "columns": [
       {
@@ -36,5 +36,5 @@
       false
     ]
   },
-  "hash": "b69f44b43150eda6dfbfd9bed154fbc40308efdbb1f8df36cda534c1aaed2c6d"
+  "hash": "fb49fc3ed3742081cbf19bf54dc533fbaa73be8aa26ad62c4a8a32ffdb9574ff"
 }

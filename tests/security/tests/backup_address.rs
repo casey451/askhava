@@ -220,3 +220,26 @@ async fn td_biz_19_removing_it_or_the_member_stops_it(pool: PgPool) {
     .await;
     assert!(!late.expect("no open request"));
 }
+
+/// TD-BIZ-19 (BIZ-043): a backup may not be the person's own main address or any current
+/// member's main address, so no notice lists one mailbox twice; nothing is stored.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_biz_19_a_backup_is_never_a_main_address(pool: PgPool) {
+    let (s, mut db) = (secret(), pool.acquire().await.expect("db"));
+    let [owner, billing, cards] = team(&mut db).await;
+    for (by, mailbox) in [
+        (owner, OWNER_BOX),
+        (billing, OWNER_BOX),
+        (cards, BILLING_BOX),
+    ] {
+        let r = request_backup(&mut db, &s, by, (by.member, mailbox), at(1)).await;
+        assert_eq!(r.err(), Some(EmailCheckError::NotAllowed), "{mailbox}");
+    }
+    let rows: i64 = sqlx::query_scalar("SELECT count(*) FROM businesses.backup_address")
+        .fetch_one(&mut *db)
+        .await
+        .expect("rows");
+    assert_eq!(rows, 0);
+    let picks = to(&mut db, owner.business, NoticePurpose::PicksAndRelease).await;
+    assert_eq!(picks, vec![OWNER_BOX, BILLING_BOX]);
+}

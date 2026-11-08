@@ -613,9 +613,10 @@ pub fn charge_answer(job_number: &str, tier: Tier, why_link: &str) -> String {
 
 /// BIZ-042, D-462, TD-BIZ-28: the job-card page route calls this each time `principal` opens a
 /// real job card (never a sample, never during sign-up). The first time an owner or "Confirm and
-/// billing" person does, it records the offer and returns the "Send a sample pick" step page for
-/// `app`; every other time, and for a "Cards and quotes"-only member, `None`. It never blocks the
-/// card: the step offers "Skip for now".
+/// billing" person does, it renders the "Send a sample pick" step page for `app` first, then
+/// records the offer and returns the page, so a failed render records nothing; every other time,
+/// and for a "Cards and quotes"-only member, `None`. It never blocks the card: the step offers
+/// "Skip for now".
 ///
 /// # Errors
 /// [`PortalsError::Database`] when the offer cannot be recorded or the page fails to render.
@@ -629,13 +630,9 @@ pub async fn sample_pick_on_open(
         business: principal.business,
         member: principal.member,
     };
-    if !offer_sample_pick(db, by, now)
+    let page = sample_pick_page(app, false, csrf).map_err(|_| PortalsError::Database)?;
+    let offered = offer_sample_pick(db, by, now)
         .await
-        .map_err(|_| PortalsError::Database)?
-    {
-        return Ok(None);
-    }
-    sample_pick_page(app, false, csrf)
-        .map(Some)
-        .map_err(|_| PortalsError::Database)
+        .map_err(|_| PortalsError::Database)?;
+    Ok(offered.then_some(page))
 }

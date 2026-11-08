@@ -14,7 +14,7 @@
 //! samples are not job cards, so no card count sees them. The words of each mail-app step live in
 //! `docs/copy/mail-app-steps.md`, read by `portals::email_check`.
 
-use askhava_core::api::{NewTask, brand, enqueue};
+use askhava_core::api::{NewTask, add_business_minutes, brand, enqueue};
 use jiff::{SignedDuration, Timestamp};
 use jiff_sqlx::ToSqlx;
 use serde_json::json;
@@ -79,8 +79,9 @@ pub fn sample_pick_words(time: &str, spanish: bool) -> [String; 2] {
 }
 /// How long a Yes to "Did your phone alert you?" lasts before the re-test (BIZ-042, D-380).
 pub const PICK_ALERT_YES_LIFE: SignedDuration = SignedDuration::from_hours(90 * 24);
-/// The sample pick's "Confirm by" time: 4 business hours, as a real pick (PICK-019).
-const SAMPLE_CONFIRM_IN: SignedDuration = SignedDuration::from_hours(4);
+/// The sample pick's "Confirm by" time in business minutes (8 a.m. to 8 p.m. Arizona time,
+/// `core::api::add_business_minutes`): 4 business hours, as a real pick (PICK-019).
+const SAMPLE_CONFIRM_MINUTES: u32 = 4 * 60;
 
 /// The answer to "Did it arrive in your inbox?" (BIZ-042).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -271,7 +272,8 @@ pub async fn offer_sample_pick(
     Ok(db(q.fetch_optional(conn).await)?.is_some())
 }
 
-/// BIZ-042: queues the sample pick (or its resend) to `by`'s main address, "Confirm by" 4 hours on.
+/// BIZ-042: queues the sample pick (or its resend) to `by`'s main address, "Confirm by" 4
+/// business hours on.
 ///
 /// # Errors
 /// [`EmailCheckError::UnknownMember`] or `Database`.
@@ -280,7 +282,7 @@ pub async fn send_sample_pick(
     by: Acting,
     now: Timestamp,
 ) -> Result<(), EmailCheckError> {
-    let by_time = (now + SAMPLE_CONFIRM_IN).as_second();
+    let by_time = add_business_minutes(now, SAMPLE_CONFIRM_MINUTES).as_second();
     queue(conn, by, (SAMPLE_PICK_KIND, Some(by_time)), now).await
 }
 
@@ -306,8 +308,9 @@ pub async fn record_pick_alert(
     db(q.execute(conn).await).map(|_| ())
 }
 
-/// BIZ-042, D-380: for every current person whose Yes is older than `life` (a setting, default
-/// [`PICK_ALERT_YES_LIFE`]), clears the Yes and queues the sample pick again as the re-test email.
+/// BIZ-042, D-380: for every current person who still gets picks (the owner or a "Confirm and
+/// billing" member) whose Yes is older than `life` (a setting, default [`PICK_ALERT_YES_LIFE`]),
+/// clears the Yes and queues the sample pick again as the re-test email.
 /// Returns how many were queued; safe to run twice.
 ///
 /// # Errors
@@ -323,7 +326,7 @@ pub async fn queue_pick_retests(
     let q = sqlx::query!(
         "UPDATE businesses.email_check c SET pick_alert_yes_at = NULL \
          FROM businesses.team_member m WHERE m.id = c.member_id AND m.removed_at IS NULL \
-         AND c.pick_alert_yes_at <= $1 RETURNING c.member_id, c.business_id",
+         AND m.confirm_and_billing AND c.pick_alert_yes_at <= $1 RETURNING c.member_id, c.business_id",
         before.to_sqlx() as _
     );
     let mut tx = db(conn.begin().await)?;

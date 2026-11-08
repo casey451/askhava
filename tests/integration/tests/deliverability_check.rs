@@ -8,7 +8,7 @@ use askhava_businesses::api::{
     queue_pick_retests, record_inbox_answer, record_ok_reply, record_pick_alert, sample_card_words,
     sample_pick_words, send_sample_card, send_sample_pick,
 };
-use askhava_core::api::brand;
+use askhava_core::api::{add_business_minutes, brand};
 use askhava_portals::api::{
     BUSINESS_SESSION_LIFE, BusinessPrincipal, CookieJar, HELP_REQUEST_KIND, LAST_STEP_LINE,
     MailApp, NO_EMAIL_LINE, PICK_DND_LINE, PICK_SKIP_LINE, REPLY_RECEIVED, Realm,
@@ -244,10 +244,12 @@ async fn td_biz_28_the_sample_pick_shows_on_the_first_real_card(pool: PgPool) {
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_biz_28_a_yes_lasts_ninety_days_then_a_retest(pool: PgPool) {
     let mut db = pool.acquire().await.expect("db");
-    let [owner, billing, _] = team(&mut db).await;
+    let [owner, billing, cards] = team(&mut db).await;
     send_sample_pick(&mut db, owner, at(0)).await.expect("send");
     let sent = notices(&mut db, SAMPLE_PICK_KIND).await;
     assert!(sent[0]["confirm_by"].is_i64(), "Confirm by a time");
+    let four_business_hours = add_business_minutes(at(0), 240).as_second();
+    assert_eq!(sent[0]["confirm_by"].as_i64(), Some(four_business_hours));
     let [subject, body] = sample_pick_words("2 p.m. Arizona time", false);
     assert!(subject.ends_with("Sample pick (not a real job). Confirm by 2 p.m. Arizona time."));
     assert!(body.ends_with("did your phone alert you?"));
@@ -258,11 +260,18 @@ async fn td_biz_28_a_yes_lasts_ninety_days_then_a_retest(pool: PgPool) {
     record_pick_alert(&mut db, billing, false, at(10))
         .await
         .expect("no");
+    record_pick_alert(&mut db, cards, true, at(10))
+        .await
+        .expect("a Yes from someone who gets no picks");
     let day = SignedDuration::from_hours(24).as_secs();
     let early = queue_pick_retests(&mut db, PICK_ALERT_YES_LIFE, at(10 + 89 * day)).await;
     assert_eq!(early.expect("89 days"), 0);
     let due = queue_pick_retests(&mut db, PICK_ALERT_YES_LIFE, at(10 + 90 * day)).await;
-    assert_eq!(due.expect("90 days"), 1, "only the Yes is re-tested");
+    assert_eq!(
+        due.expect("90 days"),
+        1,
+        "only the Yes of a person who gets picks is re-tested"
+    );
     let twice = queue_pick_retests(&mut db, PICK_ALERT_YES_LIFE, at(11 + 90 * day)).await;
     assert_eq!(twice.expect("again"), 0);
     assert_eq!(notices(&mut db, SAMPLE_PICK_KIND).await.len(), 2);
