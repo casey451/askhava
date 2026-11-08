@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-08T02:04:58Z by runner da71436a3692 (actions).
+Updated 2026-11-08T02:05:08Z by runner da71436a3692 (actions).
 
-**Building: T087 in progress since 01:18Z; 148 of 277 done; week 46% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 02:04Z; 148 of 277 done; week 46% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 148 of 277 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T087 claimed 01:18Z, lease until 04:18Z
+- **Lane:** idle since 02:04Z (no task in progress)
 - **Week:** 46% used, 102.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:26Z, 38 min before this update
+- **Last run:** 01:26Z, 39 min before this update
 - **Keeper:** last ran 01:01Z, next wake 01:21Z
 
 ## Needs attention
@@ -17,6 +17,7 @@ Updated 2026-11-08T02:04:58Z by runner da71436a3692 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T087 | portals: homeowner portal (phone and code), own data, no for | MERGE_PENDING | 1 | 46 min | 02:04Z |  |
 | T086 | portals: owner password, passkey or TOTP, recovery codes, 12 | done | 1 | 54 min | 00:56Z |  |
 | T195 | portals: business billing and statements from the ledger | done | 1 | 48 min | 23:28Z |  |
 | T085 | portals: business portal home (contact choice, your numbers, | done | 1 | 33 min | 21:43Z |  |
@@ -94,7 +95,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T087 (lease until 2026-11-08T04:18:40Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T086", "at": "2026-11-08T00:56:45Z", "cache_creation_input_tokens": 740362, "input_tokens": 589, "cache_read_input_tokens": 33583257, "output_tokens": 281771}
+- {"task": "T087", "at": "2026-11-08T02:04:58Z", "input_tokens": 502, "cache_creation_input_tokens": 765297, "output_tokens": 208269, "cache_read_input_tokens": 28321756}
