@@ -5,11 +5,14 @@
 //! written through `payments::api::ledger_append`, a vault that cannot read and then can, a new
 //! pool, vault and sink for each restart, and `picks.line_retry` once the masked pool recovers.
 //!
-//! `server` code names no module's schema, so the rows no module API can make without a whole
-//! quote flow (the business, the jobs, the picks and the PaymentIntent) come from the sqlx
-//! fixture `fixtures/release_recovery.sql` (D-2013); the homeowner's contact, her request, the
-//! owner and the $0 decisions are made through the module APIs. Fake data only.
+//! `server` code names no module's schema (TD-SEC-10), so every row comes through a module API
+//! (D-2013): the business and its owner (`businesses`), the job and its Open move (`jobs`), the
+//! card and the quote (`quotes::api::send_cards`, `submit_quote`, which moves it to Quotes ready),
+//! the page pick (`picks::api::page_pick`), her vault contact and request (`privacy`, `intake`),
+//! the Stripe customer, PaymentIntent and charge (`payments::api::ensure_customer`,
+//! `confirm_and_pay`, with a fake Stripe) and the $0 decisions (`ledger_append`). Fake data only.
 
+use std::collections::BTreeSet;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use std::sync::Arc;
 
@@ -17,20 +20,30 @@ use askhava_adapters::api::{
     AdapterError, AdapterMode, Charge, IdempotencyKey, IntentMetadata, MaskedPool, PaymentIntent,
     PaymentsAdapter, TwilioConfig,
 };
+use askhava_businesses::api::{AccountStatus, add_owner};
 use askhava_calls::api::{CloseReason, Connected, assign_number, close_line, job_had_line};
 use askhava_core::api::{
-    Claimed, ClientIpPolicy, MIGRATOR, ManualClock, Settings, WorkerId, claim,
+    Claimed, ClientIpPolicy, Guarded, MIGRATOR, ManualClock, Settings, WorkerId, claim,
 };
 use askhava_intake::api::rules::{Inbound, Settings as IntakeSettings};
 use askhava_intake::api::{Answer, TextIn, receive_text, record_answer};
+use askhava_jobs::api::{JobStatus, create, job_number, move_to};
+use askhava_licensing::api::{ClassMap, Holder, Job, LicenseKind};
+use askhava_ops::api::Actor;
 use askhava_payments::api::{
-    EntryKind, LedgerEntry, NewEntry, Releasable, STRIPE_WEBHOOK_PATH, StripeAccount,
-    StripeWebhook, ledger_append, money_view, no_fee_release, stripe_webhook_routes,
+    BusinessId, ChargeOutcome, EntryKind, IntentStripe, LedgerEntry, NewEntry, PickNow, Press,
+    Releasable, STRIPE_WEBHOOK_PATH, StripeAccount, StripeWebhook, confirm_and_pay,
+    ensure_customer, ledger_append, money_view, no_fee_release, receipt_for, stripe_webhook_routes,
 };
 use askhava_picks::api::{
-    BUSINESS_NOTICE_KIND, LINE_RETRY_KIND, Released, ViewAnswer, released_view, retry_line, settle,
+    BUSINESS_NOTICE_KIND, LINE_RETRY_KIND, PagePick, Released, ViewAnswer, page_pick,
+    released_view, retry_line, settle,
 };
 use askhava_privacy::api::{NewContact, Vault, store_contact};
+use askhava_quotes::api::{
+    CardBusiness, CardJob, Format, OfferTown, Price, Quote, QuoteForm, QuoteRules, Submitted,
+    parse_quote, send_cards, submit_quote,
+};
 use askhava_server::release_sink::PickReleaser;
 use askhava_server::session_minter;
 use axum::body::Body;
@@ -47,16 +60,8 @@ use sqlx::postgres::PgPoolOptions;
 use sqlx::types::Uuid;
 use tower::ServiceExt;
 
-const BUSINESS: Uuid = Uuid::from_u128(0x254b01);
-const PAID_JOB: Uuid = Uuid::from_u128(0x254a01);
-const FREE_JOB: Uuid = Uuid::from_u128(0x254a02);
-const LINE_JOB: Uuid = Uuid::from_u128(0x254a03);
-const GONE_JOB: Uuid = Uuid::from_u128(0x254a04);
-const PAID_PICK: Uuid = Uuid::from_u128(0x254c01);
-const FREE_PICK: Uuid = Uuid::from_u128(0x254c02);
-const LINE_PICK: Uuid = Uuid::from_u128(0x254c03);
-const GONE_PICK: Uuid = Uuid::from_u128(0x254c04);
 const SECRET: &str = "whsec_fake_t254_signing_secret";
+const INTENT: &str = "pi_fake254paid";
 const NAME: &str = "Dana Testperson";
 const STREET: &str = "100 Example Way, Lake Havasu City";
 /// 10:00 Arizona.
@@ -173,21 +178,150 @@ async fn her_request(pool: &PgPool, jobs: &[Uuid]) -> Uuid {
     contact
 }
 
-/// The business's owner through `businesses`; returns the owner's member ID.
-async fn owner(pool: &PgPool) -> Uuid {
+/// A business through `businesses` (pending; matching reads the in-memory record below).
+async fn new_business(pool: &PgPool) -> Uuid {
     let mut db = pool.acquire().await.expect("db");
-    askhava_businesses::api::add_owner(&mut db, BUSINESS, Uuid::from_u128(0x254f01), now())
+    askhava_businesses::api::create(&mut db, false, now())
+        .await
+        .expect("business")
+}
+
+/// The business's owner through `businesses`; returns the owner's member ID.
+async fn owner(pool: &PgPool, business: Uuid) -> Uuid {
+    let mut db = pool.acquire().await.expect("db");
+    let mailbox = Uuid::new_v4();
+    add_owner(&mut db, business, mailbox, now())
         .await
         .expect("owner")
 }
 
-/// The $0 free-first-win decision for `job` in the ledger (FEE-010, FEE-012).
-async fn zero_fee(pool: &PgPool, job: Uuid) {
+/// An AC repair job in Lake Havasu City, as matching reads it.
+fn card_job() -> CardJob {
+    let job = Job {
+        category: "hvac_repair".to_owned(),
+        job_type: "AC not cooling".to_owned(),
+        license: LicenseKind::Roc,
+        handyman_allowed: false,
+        listed: true,
+    };
+    CardJob {
+        towns: vec![OfferTown {
+            code: "lake_havasu_city".to_owned(),
+            state: "AZ".to_owned(),
+        }],
+        candidates: vec![job],
+        text: String::new(),
+    }
+}
+
+/// An active, verified R-39 business serving Lake Havasu City that ticked the job type.
+fn card_business(id: Uuid) -> CardBusiness {
+    CardBusiness {
+        id,
+        status: AccountStatus::Active,
+        verified: true,
+        towns: BTreeSet::from(["lake_havasu_city".to_owned()]),
+        ticked: BTreeSet::from([("hvac_repair".to_owned(), "AC not cooling".to_owned())]),
+        classes: vec!["R-39".to_owned()],
+        licenses: Holder::default(),
+    }
+}
+
+fn quote() -> Quote {
+    let form = QuoteForm {
+        price: Price::Firm(32_500),
+        notes: "Parts and labor included.".to_owned(),
+        original: "325 parts and labor included".to_owned(),
+        ai_read: false,
+        earliest_visit: None,
+    };
+    let rules = QuoteRules {
+        format: Format::Firm,
+        construction_type: true,
+        license: LicenseKind::Roc,
+        handyman: false,
+        certified: false,
+    };
+    parse_quote(form, &rules).expect("quote")
+}
+
+/// A job, opened, carded to `quoters` and quoted by each in turn, so it is in Quotes ready.
+async fn quoted_job(pool: &PgPool, quoters: &[Uuid]) -> Uuid {
     let mut db = pool.acquire().await.expect("db");
-    let key = format!("t254.free.{job}");
+    let job = create(&mut db, now(), false, Actor::System)
+        .await
+        .expect("job");
+    let open = (JobStatus::Intake, JobStatus::Open);
+    let moved = move_to(&mut db, job, open, now(), Actor::System).await;
+    assert_eq!(moved.expect("open"), Guarded::Applied(()));
+    let pool_of: Vec<CardBusiness> = quoters.iter().map(|b| card_business(*b)).collect();
+    let sent = send_cards(&mut db, map(), job, &card_job(), &pool_of, now()).await;
+    assert_eq!(sent.expect("cards").len(), quoters.len());
+    for business in quoters {
+        let saved = submit_quote(&mut db, (job, *business), &quote(), now()).await;
+        assert_eq!(saved.expect("quote"), Submitted::Saved);
+    }
+    job
+}
+
+fn map() -> &'static ClassMap {
+    ClassMap::shipped().expect("the shipped license map")
+}
+
+/// The homeowner's page pick of quote `n` (1-based) on `job`; returns the waiting pick.
+async fn page_picked(pool: &PgPool, job: Uuid, n: usize) -> Uuid {
+    let mut tx = pool.begin().await.expect("tx");
+    let picked = page_pick(&mut tx, (job, false), n, Actor::System, now()).await;
+    tx.commit().await.expect("commit");
+    match picked.expect("pick") {
+        PagePick::Picked(id) => id,
+        PagePick::Same(_) | PagePick::Taken => panic!("no new pick"),
+    }
+}
+
+/// One business, its owner, a quoted job, her request naming it and her page pick:
+/// `(business, owner, job, pick)`.
+async fn picked(pool: &PgPool) -> (Uuid, Uuid, Uuid, Uuid) {
+    let business = new_business(pool).await;
+    let person = owner(pool, business).await;
+    let job = quoted_job(pool, &[business]).await;
+    her_request(pool, &[job]).await;
+    let pick = page_picked(pool, job, 1).await;
+    (business, person, job, pick)
+}
+
+/// The Confirm-and-pay press of $75 through `payments`, with the fake Stripe, so the pick has its
+/// PaymentIntent and one charge attempt (FEE-016, FEE-047).
+async fn paid(pool: &PgPool, (business, job, pick): (Uuid, Uuid, Uuid)) {
+    let stripe = FakeStripe { pick };
+    let secret = SecretString::from("test-only-id-secret-not-a-real-key".to_owned());
+    ensure_customer(pool, &stripe, &secret, BusinessId(business))
+        .await
+        .expect("customer");
+    let press = Press {
+        pick,
+        business: BusinessId(business),
+        job,
+        amount_cents: 7500,
+        payment_method: "pm_fake254",
+        press: Uuid::new_v4(),
+        emergency: false,
+        now: PickNow::Payable,
+    };
+    let charged = confirm_and_pay(pool, &stripe, &secret, &press, now()).await;
+    assert!(matches!(
+        charged.expect("charge"),
+        ChargeOutcome::Succeeded(_)
+    ));
+}
+
+/// The $0 free-first-win decision for `business` on `job` in the ledger (FEE-010, FEE-012).
+async fn zero_fee(pool: &PgPool, (business, job): (Uuid, Uuid)) {
+    let mut db = pool.acquire().await.expect("db");
+    let key = format!("t254.free.{job}.{business}");
     let entry = LedgerEntry::new(NewEntry {
         kind: EntryKind::FreeFirstWin,
-        business: Some(BUSINESS),
+        business: Some(business),
         job: Some(job),
         amount_cents: 0,
         stripe_id: None,
@@ -197,16 +331,20 @@ async fn zero_fee(pool: &PgPool, job: Uuid) {
     ledger_append(&mut db, &entry).await.expect("ledger");
 }
 
-async fn cleared_free(pool: &PgPool, pick: Uuid, job: Uuid) -> Releasable {
+async fn cleared_free(pool: &PgPool, pick: Uuid, (business, job): (Uuid, Uuid)) -> Releasable {
     let mut db = pool.acquire().await.expect("db");
-    no_fee_release(&mut db, pick, (BUSINESS, job))
+    no_fee_release(&mut db, pick, (business, job))
         .await
         .expect("cleared")
 }
 
 /// What the owner sees now through the released view; the first name and street, or `None`.
-async fn seen(pool: &PgPool, person: Uuid, pick: Uuid) -> Option<(String, String)> {
-    let proof = session_minter().business(person, BUSINESS);
+async fn seen(
+    pool: &PgPool,
+    (person, business): (Uuid, Uuid),
+    pick: Uuid,
+) -> Option<(String, String)> {
+    let proof = session_minter().business(person, business);
     match released_view(pool, &vault(), &proof, pick)
         .await
         .expect("view")
@@ -262,11 +400,29 @@ async fn no_fee_written(pool: &PgPool) {
     assert_eq!(view.charges, 0);
 }
 
-struct FakeStripe;
+struct FakeStripe {
+    pick: Uuid,
+}
+
+impl FakeStripe {
+    fn succeeded(&self, id: &str) -> PaymentIntent {
+        PaymentIntent {
+            id: id.to_owned(),
+            status: "succeeded".to_owned(),
+            amount: 7500,
+            currency: "usd".to_owned(),
+            customer: "cus_fake254".to_owned(),
+            metadata: IntentMetadata {
+                pick_id: self.pick.to_string(),
+            },
+            livemode: Some(false),
+        }
+    }
+}
 
 impl PaymentsAdapter for FakeStripe {
     async fn create_customer(&self, _: &IdempotencyKey, _: &str) -> Result<String, AdapterError> {
-        Err(AdapterError::NotSent)
+        Ok("cus_fake254".to_owned())
     }
 
     async fn create_payment_intent(
@@ -278,17 +434,7 @@ impl PaymentsAdapter for FakeStripe {
     }
 
     async fn fetch_payment_intent(&self, id: &str) -> Result<PaymentIntent, AdapterError> {
-        Ok(PaymentIntent {
-            id: id.to_owned(),
-            status: "succeeded".to_owned(),
-            amount: 7500,
-            currency: "usd".to_owned(),
-            customer: "cus_fake254".to_owned(),
-            metadata: IntentMetadata {
-                pick_id: PAID_PICK.to_string(),
-            },
-            livemode: Some(false),
-        })
+        Ok(self.succeeded(id))
     }
 
     async fn create_refund(&self, _: &IdempotencyKey, _: &str) -> Result<String, AdapterError> {
@@ -296,11 +442,34 @@ impl PaymentsAdapter for FakeStripe {
     }
 }
 
-fn hooks(pool: &PgPool, vault: Vault) -> Arc<StripeWebhook<FakeStripe, PickReleaser>> {
+impl IntentStripe for FakeStripe {
+    async fn create_intent(
+        &self,
+        _: &IdempotencyKey,
+        _: &str,
+        _: u32,
+        _: &str,
+    ) -> Result<String, AdapterError> {
+        Ok(INTENT.to_owned())
+    }
+
+    async fn confirm_intent(
+        &self,
+        _: &IdempotencyKey,
+        intent: &str,
+        _: &str,
+    ) -> Result<PaymentIntent, AdapterError> {
+        Ok(self.succeeded(intent))
+    }
+}
+
+type Hooks = Arc<StripeWebhook<FakeStripe, PickReleaser>>;
+
+fn hooks(pool: &PgPool, vault: Vault, pick: Uuid) -> Hooks {
     let none: [(String, String); 0] = [];
     Arc::new(StripeWebhook {
         pool: pool.clone(),
-        stripe: FakeStripe,
+        stripe: FakeStripe { pick },
         secret: SecretString::from(SECRET),
         account: StripeAccount {
             live: false,
@@ -314,10 +483,10 @@ fn hooks(pool: &PgPool, vault: Vault) -> Arc<StripeWebhook<FakeStripe, PickRelea
     })
 }
 
-/// One signed `payment_intent.succeeded` delivery from the stand-in's host.
-async fn deliver(hooks: Arc<StripeWebhook<FakeStripe, PickReleaser>>) -> StatusCode {
+/// One signed `payment_intent.succeeded` delivery for `pick` from the stand-in's host.
+async fn deliver(hooks: Hooks, pick: Uuid) -> StatusCode {
     let body = format!(
-        r#"{{"id":"evt_fake254","type":"payment_intent.succeeded","livemode":false,"data":{{"object":{{"id":"pi_fake254paid","metadata":{{"pick_id":"{PAID_PICK}"}}}}}}}}"#
+        r#"{{"id":"evt_fake254","type":"payment_intent.succeeded","livemode":false,"data":{{"object":{{"id":"{INTENT}","metadata":{{"pick_id":"{pick}"}}}}}}}}"#
     );
     let mut mac = <Hmac<Sha256> as KeyInit>::new_from_slice(SECRET.as_bytes()).expect("key");
     mac.update(format!("{NOW}.{body}").as_bytes());
@@ -340,95 +509,105 @@ async fn deliver(hooks: Arc<StripeWebhook<FakeStripe, PickReleaser>>) -> StatusC
     reply.status()
 }
 
+async fn number(pool: &PgPool, job: Uuid) -> i64 {
+    let mut db = pool.acquire().await.expect("db");
+    job_number(&mut db, job).await.expect("number")
+}
+
 /// TD-PICK-50 (PICK-022, CALL-001): a verified success moves the awaiting-confirm pick to paid,
 /// mints for her contact and releases; a duplicate delivery and two simultaneous ones give one
 /// release, one notice, one masked line and no fee.
-#[sqlx::test(migrator = "MIGRATOR", fixtures("release_recovery"))]
+#[sqlx::test(migrator = "MIGRATOR")]
 async fn td_pick_50_a_verified_success_settles_paid_and_releases_once(pool: PgPool) {
-    let person = owner(&pool).await;
-    her_request(&pool, &[PAID_JOB]).await;
-    let hooks = hooks(&pool, vault());
-    assert_eq!(deliver(Arc::clone(&hooks)).await, StatusCode::OK);
-    assert_eq!(deliver(Arc::clone(&hooks)).await, StatusCode::OK);
-    let (a, b) = tokio::join!(deliver(Arc::clone(&hooks)), deliver(Arc::clone(&hooks)));
+    let (business, person, job, pick) = picked(&pool).await;
+    paid(&pool, (business, job, pick)).await;
+    let hooks = hooks(&pool, vault(), pick);
+    assert_eq!(deliver(Arc::clone(&hooks), pick).await, StatusCode::OK);
+    assert_eq!(deliver(Arc::clone(&hooks), pick).await, StatusCode::OK);
+    let (a, b) = tokio::join!(
+        deliver(Arc::clone(&hooks), pick),
+        deliver(Arc::clone(&hooks), pick)
+    );
     assert_eq!((a, b), (StatusCode::OK, StatusCode::OK));
-    let shown = seen(&pool, person, PAID_PICK).await;
+    let shown = seen(&pool, (person, business), pick).await;
     assert_eq!(shown, Some(("Dana".to_owned(), STREET.to_owned())));
-    assert!(had_line(&pool, PAID_JOB).await);
+    assert!(had_line(&pool, job).await);
+    let n = number(&pool, job).await;
     let mut db = pool.acquire().await.expect("db");
-    let closed = close_line(&mut db, (PAID_JOB, 2541), CloseReason::Expired, now()).await;
+    let closed = close_line(&mut db, (job, n), CloseReason::Expired, now()).await;
     assert!(closed.expect("close").is_some(), "one open line");
-    let again = close_line(&mut db, (PAID_JOB, 2541), CloseReason::Expired, now()).await;
+    let again = close_line(&mut db, (job, n), CloseReason::Expired, now()).await;
     assert!(again.expect("close").is_none(), "and only one");
     no_fee_written(&pool).await;
     let all = tasks(&pool).await;
-    assert_eq!(count(&all, BUSINESS_NOTICE_KIND, PAID_PICK), 1);
-    assert_eq!(count(&all, LINE_RETRY_KIND, PAID_PICK), 0);
+    assert_eq!(count(&all, BUSINESS_NOTICE_KIND, pick), 1);
+    assert_eq!(count(&all, LINE_RETRY_KIND, pick), 0);
     no_plaintext(&all);
 }
 
 /// TD-PICK-50 (PICK-022, FEE-010): a recorded $0 decision moves the pick to free and releases it
-/// through the same sink; a pick that left awaiting confirm is not moved and nothing is released.
-#[sqlx::test(migrator = "MIGRATOR", fixtures("release_recovery"))]
+/// through the same sink; a pick that left awaiting confirm (replaced, so cancelled) is not moved
+/// and nothing is released.
+#[sqlx::test(migrator = "MIGRATOR")]
 async fn td_pick_50_a_zero_fee_releases_free_and_a_cancelled_pick_nothing(pool: PgPool) {
-    let person = owner(&pool).await;
-    her_request(&pool, &[FREE_JOB, GONE_JOB]).await;
-    zero_fee(&pool, FREE_JOB).await;
-    zero_fee(&pool, GONE_JOB).await;
+    let (business, first, other) = (
+        new_business(&pool).await,
+        new_business(&pool).await,
+        new_business(&pool).await,
+    );
+    let (person, first_person) = (owner(&pool, business).await, owner(&pool, first).await);
+    let job = quoted_job(&pool, &[business]).await;
+    let replaced_job = quoted_job(&pool, &[first, other]).await;
+    her_request(&pool, &[job, replaced_job]).await;
+    let pick = page_picked(&pool, job, 1).await;
+    zero_fee(&pool, (business, job)).await;
+    let gone = page_picked(&pool, replaced_job, 1).await;
+    page_picked(&pool, replaced_job, 2).await;
+    zero_fee(&pool, (first, replaced_job)).await;
     let sink = sink(&pool, vault());
-    let free = sink
-        .settle_and_release(cleared_free(&pool, FREE_PICK, FREE_JOB).await)
-        .await;
-    assert!(matches!(free.expect("release"), Released::Shown(_)));
-    let gone = sink
-        .settle_and_release(cleared_free(&pool, GONE_PICK, GONE_JOB).await)
-        .await;
-    assert!(matches!(gone.expect("release"), Released::MovedOn));
-    assert!(seen(&pool, person, FREE_PICK).await.is_some());
-    assert_eq!(seen(&pool, person, GONE_PICK).await, None);
-    assert!(!had_line(&pool, GONE_JOB).await);
+    let free = sink.settle_and_release(cleared_free(&pool, pick, (business, job)).await);
+    assert!(matches!(free.await.expect("release"), Released::Shown(_)));
+    let moved = sink.settle_and_release(cleared_free(&pool, gone, (first, replaced_job)).await);
+    assert!(matches!(moved.await.expect("release"), Released::MovedOn));
+    assert!(seen(&pool, (person, business), pick).await.is_some());
+    assert_eq!(seen(&pool, (first_person, first), gone).await, None);
+    assert!(!had_line(&pool, replaced_job).await);
     let all = tasks(&pool).await;
-    assert_eq!(count(&all, BUSINESS_NOTICE_KIND, GONE_PICK), 0);
-    assert_eq!(count(&all, BUSINESS_NOTICE_KIND, FREE_PICK), 1);
+    assert_eq!(count(&all, BUSINESS_NOTICE_KIND, gone), 0);
+    assert_eq!(count(&all, BUSINESS_NOTICE_KIND, pick), 1);
 }
 
 /// TD-PICK-50 (D-1739): a restart between the settle's commit and the claim leaves the pick free,
 /// and the retried clearing, on a new pool, vault and sink, releases exactly once.
-#[sqlx::test(migrator = "MIGRATOR", fixtures("release_recovery"))]
+#[sqlx::test(migrator = "MIGRATOR")]
 async fn td_pick_50_a_restart_after_the_settle_releases_once_on_the_retry(pool: PgPool) {
-    let person = owner(&pool).await;
-    her_request(&pool, &[FREE_JOB]).await;
-    zero_fee(&pool, FREE_JOB).await;
+    let (business, person, job, pick) = picked(&pool).await;
+    zero_fee(&pool, (business, job)).await;
     {
         // The settle commits, then the process stops before the claim: the clearing is lost.
-        let cleared = cleared_free(&pool, FREE_PICK, FREE_JOB).await;
+        let cleared = cleared_free(&pool, pick, (business, job)).await;
         let mut tx = pool.begin().await.expect("tx");
         settle(&mut tx, &cleared).await.expect("settled");
         tx.commit().await.expect("commit");
     }
     let after = restarted(&pool).await;
     let sink = sink(&after, vault());
-    let first = sink
-        .settle_and_release(cleared_free(&after, FREE_PICK, FREE_JOB).await)
-        .await;
-    assert!(matches!(first.expect("release"), Released::Shown(_)));
-    let second = sink
-        .settle_and_release(cleared_free(&after, FREE_PICK, FREE_JOB).await)
-        .await;
-    assert!(matches!(second.expect("release"), Released::Already));
-    assert!(seen(&after, person, FREE_PICK).await.is_some());
+    let first = sink.settle_and_release(cleared_free(&after, pick, (business, job)).await);
+    assert!(matches!(first.await.expect("release"), Released::Shown(_)));
+    let second = sink.settle_and_release(cleared_free(&after, pick, (business, job)).await);
+    assert!(matches!(second.await.expect("release"), Released::Already));
+    assert!(seen(&after, (person, business), pick).await.is_some());
     let all = tasks(&after).await;
-    assert_eq!(count(&all, BUSINESS_NOTICE_KIND, FREE_PICK), 1);
+    assert_eq!(count(&all, BUSINESS_NOTICE_KIND, pick), 1);
 }
 
 /// TD-PICK-50 (CALL-001, D-1688): a line that fails to open (the pool is held) queues one retry,
 /// which opens it once the pool recovers, opens nothing for a job that already has a line, and
 /// never reopens a line closed after 30 days.
-#[sqlx::test(migrator = "MIGRATOR", fixtures("release_recovery"))]
+#[sqlx::test(migrator = "MIGRATOR")]
 async fn td_pick_50_a_failed_line_opens_on_the_retry_and_never_reopens(pool: PgPool) {
-    owner(&pool).await;
-    her_request(&pool, &[LINE_JOB]).await;
-    zero_fee(&pool, LINE_JOB).await;
+    let (business, _, job, pick) = picked(&pool).await;
+    zero_fee(&pool, (business, job)).await;
     let options = pool.connect_options().as_ref().clone();
     let impatient = PgPoolOptions::new()
         .connect_with(options.options([("lock_timeout", "300ms")]))
@@ -436,40 +615,40 @@ async fn td_pick_50_a_failed_line_opens_on_the_retry_and_never_reopens(pool: PgP
         .expect("pool");
     let mut holder = pool.begin().await.expect("tx");
     let other = Connected {
-        job: Uuid::from_u128(0x254a99),
-        homeowner: Uuid::from_u128(0x254a98),
-        business: Uuid::from_u128(0x254a97),
+        job: Uuid::new_v4(),
+        homeowner: Uuid::new_v4(),
+        business: Uuid::new_v4(),
     };
     assign_number(&mut holder, &masked(), other, now())
         .await
         .expect("held");
-    let cleared = cleared_free(&impatient, LINE_PICK, LINE_JOB).await;
+    let cleared = cleared_free(&impatient, pick, (business, job)).await;
     let shown = sink(&impatient, vault()).settle_and_release(cleared).await;
     assert!(matches!(shown.expect("release"), Released::Shown(_)));
-    assert!(!had_line(&pool, LINE_JOB).await);
+    assert!(!had_line(&pool, job).await);
     holder.rollback().await.expect("pool recovers");
-    let retries: Vec<Claimed> = tasks(&pool)
-        .await
+    let all = tasks(&pool).await;
+    assert_eq!(count(&all, LINE_RETRY_KIND, pick), 1);
+    let retry = all
         .into_iter()
-        .filter(|t| t.kind == LINE_RETRY_KIND)
-        .collect();
-    assert_eq!(retries.len(), 1);
-    let retry = retries.into_iter().next().expect("retry");
+        .find(|t| t.kind == LINE_RETRY_KIND)
+        .expect("retry");
     retry_line(pool.clone(), masked(), retry.clone(), now())
         .await
         .expect("opened");
-    assert!(had_line(&pool, LINE_JOB).await);
+    assert!(had_line(&pool, job).await);
     retry_line(pool.clone(), masked(), retry.clone(), now())
         .await
         .expect("nothing");
+    let n = number(&pool, job).await;
     let mut db = pool.acquire().await.expect("db");
-    let closed = close_line(&mut db, (LINE_JOB, 2543), CloseReason::Expired, now()).await;
+    let closed = close_line(&mut db, (job, n), CloseReason::Expired, now()).await;
     assert!(closed.expect("close").is_some(), "one line, opened once");
     let later = now() + SignedDuration::from_hours(24 * 31);
     retry_line(pool.clone(), masked(), retry, later)
         .await
         .expect("nothing again");
-    let reopened = close_line(&mut db, (LINE_JOB, 2543), CloseReason::Expired, later).await;
+    let reopened = close_line(&mut db, (job, n), CloseReason::Expired, later).await;
     assert!(
         reopened.expect("close").is_none(),
         "a closed line is never reopened"
@@ -479,22 +658,36 @@ async fn td_pick_50_a_failed_line_opens_on_the_retry_and_never_reopens(pool: PgP
 /// TD-PICK-49 (PICK-022, PICK-024, PRIV-005, BIZ-014, D-1565): a regular job's release claims its
 /// row and the vault read then fails, so Stripe gets the error; after a restart (a new pool,
 /// vault and sink) the resent event finds the release made, and the signed-in owner sees the
-/// details through the released view, again on a reload; one release notice, no fee, no
-/// plaintext outside the vault, and the line still opens through its retry.
-#[sqlx::test(migrator = "MIGRATOR", fixtures("release_recovery"))]
+/// details through the released view, again on a reload; one release notice, one charge, no
+/// fee, no plaintext outside the vault, and the line still opens through its retry.
+#[sqlx::test(migrator = "MIGRATOR")]
 async fn td_pick_49_a_failed_vault_read_recovers_and_shows_once(pool: PgPool) {
-    let person = owner(&pool).await;
-    her_request(&pool, &[PAID_JOB]).await;
-    let failing = hooks(&pool, broken_vault());
-    assert_eq!(deliver(failing).await, StatusCode::INTERNAL_SERVER_ERROR);
+    let (business, person, job, pick) = picked(&pool).await;
+    paid(&pool, (business, job, pick)).await;
+    let failing = hooks(&pool, broken_vault(), pick);
+    assert_eq!(
+        deliver(failing, pick).await,
+        StatusCode::INTERNAL_SERVER_ERROR
+    );
     let after = restarted(&pool).await;
-    assert_eq!(deliver(hooks(&after, vault())).await, StatusCode::OK);
+    assert_eq!(
+        deliver(hooks(&after, vault(), pick), pick).await,
+        StatusCode::OK
+    );
     let expected = Some(("Dana".to_owned(), STREET.to_owned()));
-    assert_eq!(seen(&after, person, PAID_PICK).await, expected);
-    assert_eq!(seen(&after, person, PAID_PICK).await, expected, "a reload");
+    assert_eq!(seen(&after, (person, business), pick).await, expected);
+    assert_eq!(
+        seen(&after, (person, business), pick).await,
+        expected,
+        "a reload"
+    );
+    let mut db = after.acquire().await.expect("db");
+    let charge = receipt_for(&mut db, pick, business).await;
+    assert!(charge.expect("receipt").is_some(), "one charge");
+    drop(db);
     no_fee_written(&after).await;
     let all = tasks(&after).await;
-    assert_eq!(count(&all, BUSINESS_NOTICE_KIND, PAID_PICK), 1);
+    assert_eq!(count(&all, BUSINESS_NOTICE_KIND, pick), 1);
     no_plaintext(&all);
     let retry = all
         .into_iter()
@@ -503,5 +696,5 @@ async fn td_pick_49_a_failed_vault_read_recovers_and_shows_once(pool: PgPool) {
     retry_line(after.clone(), masked(), retry, now())
         .await
         .expect("opened");
-    assert!(had_line(&after, PAID_JOB).await);
+    assert!(had_line(&after, job).await);
 }
