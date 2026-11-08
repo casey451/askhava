@@ -18019,7 +18019,15 @@
     1989,
     1990,
     1991
-   ]
+   ],
+   "reviewed_sha": "0893cb8c30433ac08eba8d0ac32c89f1c4a53f35",
+   "review_lease": {
+    "task": "T149",
+    "session": "actions-42474518557",
+    "expires": "2026-11-08T14:17:05Z"
+   },
+   "branch": "claude/task/T149-business-email-reliability",
+   "head_check_since": null
   },
   {
    "id": "T198",
@@ -24231,7 +24239,7 @@
    }
   }
  },
- "updated_at": "2026-11-08T11:24:05Z",
+ "updated_at": "2026-11-08T12:00:22Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -24329,7 +24337,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "b452cd26f0b36b3b19fd141199e534e4f6ea9701",
+ "runner_sha": "0893cb8c30433ac08eba8d0ac32c89f1c4a53f35",
  "starter": "actions",
  "smoke_runs": [
   {
