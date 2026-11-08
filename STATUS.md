@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-08T19:24:45Z by runner 6017dff3be20 (actions).
+Updated 2026-11-08T19:24:59Z by runner 6017dff3be20 (actions).
 
-**Building: T254 in progress since 17:59Z; 157 of 282 done; week 53% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 19:24Z; 157 of 282 done; week 53% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 157 of 282 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T254 claimed 17:59Z, lease until 20:59Z
+- **Lane:** idle since 19:24Z (no task in progress)
 - **Week:** 53% used, 88.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 18:07Z, 77 min before this update
 - **Keeper:** last ran 17:56Z, next wake 18:16Z
@@ -17,6 +17,7 @@ Updated 2026-11-08T19:24:45Z by runner 6017dff3be20 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T254 | server and picks: the production release (paid or free, mint | MERGE_PENDING | 1 | 84 min | 19:24Z |  |
 | T150 | picks and quotes: EMERGENCY card and pick emails with the em | done | 1 | 54 min | 16:04Z |  |
 | T198 | messaging and portals: daily open-cards email, missed-card a | done | 1 | 71 min | 14:02Z |  |
 | T149 | businesses: sign-up deliverability check with a sample card, | done | 1 | 43 min | 12:00Z |  |
@@ -87,7 +88,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T254 (lease until 2026-11-08T20:59:54Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T150", "at": "2026-11-08T16:04:07Z", "cache_read_input_tokens": 30031867, "output_tokens": 183331, "cache_creation_input_tokens": 751710, "input_tokens": 463}
+- {"task": "T254", "at": "2026-11-08T19:24:45Z", "output_tokens": 299148, "cache_creation_input_tokens": 1075541, "input_tokens": 821, "cache_read_input_tokens": 83337270}
