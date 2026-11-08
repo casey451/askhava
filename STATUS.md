@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-08T16:44:46Z by runner 7b64fb31242f (actions).
+Updated 2026-11-08T17:16:43Z by runner 7b64fb31242f (actions).
 
-**Idle since 16:34Z; 157 of 282 done; week 52% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 16:34Z; 157 of 282 done; week 53% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 157 of 282 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 16:34Z (no task in progress)
-- **Week:** 52% used, 90.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:44Z, 0 min before this update
+- **Week:** 53% used, 90.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Last run:** 17:16Z, 0 min before this update
 - **Keeper:** last ran 16:44Z, next wake 22:24Z
 
 ## Needs attention
@@ -32,7 +32,6 @@ Updated 2026-11-08T16:44:46Z by runner 7b64fb31242f (actions).
 | T253 | privacy, picks and portals: the signed-in business reads a r | done | 1 | 54 min | 20:44Z |  |
 | T252 | architecture test: dynamic SQL in a migration is a TD-SEC-10 | done | 1 | 19 min | 19:16Z |  |
 | T196 | businesses: verified notice email, sender rules and the addr | done | 2 | 32 min | 18:33Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests / test tests::transi |
-| T093 | messaging: vault references in the log, bodies cut at 30 day | done | 1 | 45 min | 17:05Z |  |
 
 ### Plan and harness merges on main
 - 15:06Z Harness: warm the smoke build before the session (D-2007) (#356)
