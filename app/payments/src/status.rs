@@ -213,6 +213,11 @@ pub enum RefundStatus {
     Succeeded,
     /// The charge is disputed, so nothing is refunded outside the dispute; Casey was alerted.
     Blocked,
+    /// Stripe holds the refund `re_…` as `pending` or `requires_action`: nothing is in the ledger
+    /// yet, and the 30-minute check or the webhook moves it on (FEE-026, D-1753).
+    Pending,
+    /// Stripe canceled the refund: like `Failed`, the hourly retry sends again (FEE-026, D-1753).
+    Canceled,
 }
 
 impl RefundStatus {
@@ -224,15 +229,34 @@ impl RefundStatus {
             Self::Failed => "failed",
             Self::Succeeded => "succeeded",
             Self::Blocked => "blocked",
+            Self::Pending => "pending",
+            Self::Canceled => "canceled",
         }
     }
 
-    /// The status of a stored code; `None` for any other text.
+    /// The status of a stored T066 code or `canceled`; `None` for any other text. `pending` is
+    /// read only by [`Self::from_stored`]: T066's `prop_one_refund` test, which T258 does not own,
+    /// still pins `pending` as an unknown code here (D-2068).
     #[must_use]
     pub fn from_code(code: &str) -> Option<Self> {
-        [Self::Sending, Self::Failed, Self::Succeeded, Self::Blocked]
-            .into_iter()
-            .find(|s| s.code() == code)
+        [
+            Self::Sending,
+            Self::Failed,
+            Self::Succeeded,
+            Self::Blocked,
+            Self::Canceled,
+        ]
+        .into_iter()
+        .find(|s| s.code() == code)
+    }
+
+    /// The status of any code `payments.refund.status` stores, `pending` included (D-1753).
+    #[must_use]
+    pub fn from_stored(code: &str) -> Option<Self> {
+        if code == Self::Pending.code() {
+            return Some(Self::Pending);
+        }
+        Self::from_code(code)
     }
 
     /// FEE-026: the next step for a pick whose refund stands at `current` (status and tries so
@@ -240,19 +264,23 @@ impl RefundStatus {
     /// an hourly retry task was queued for (`None` for a refund trigger). A succeeded refund is
     /// never sent again; a disputed charge is blocked; a failed try is sent again by its own
     /// retry or by a repeated trigger; a try with no answer is sent again only by its own retry.
+    /// A pending refund is never sent again (Stripe holds it, D-1753); a canceled one is resent
+    /// like a failed one.
     #[must_use]
     pub fn next(current: Option<(Self, i32)>, disputed: bool, retry_of: Option<i32>) -> RefundStep {
         match current {
-            Some((Self::Succeeded, _)) => RefundStep::Nothing,
+            Some((Self::Succeeded | Self::Pending, _)) => RefundStep::Nothing,
             Some((Self::Blocked, _)) => RefundStep::Block(false),
-            Some((Self::Sending | Self::Failed, _)) | None if disputed => RefundStep::Block(true),
+            Some((Self::Sending | Self::Failed | Self::Canceled, _)) | None if disputed => {
+                RefundStep::Block(true)
+            }
             None if retry_of.is_none() => RefundStep::Send(1),
             None => RefundStep::Nothing,
-            Some((Self::Failed, tries)) if retry_of.is_none_or(|t| t == tries) => {
+            Some((Self::Failed | Self::Canceled, tries)) if retry_of.is_none_or(|t| t == tries) => {
                 RefundStep::Send(tries + 1)
             }
             Some((Self::Sending, tries)) if retry_of == Some(tries) => RefundStep::Send(tries + 1),
-            Some((Self::Sending | Self::Failed, _)) => RefundStep::Nothing,
+            Some((Self::Sending | Self::Failed | Self::Canceled, _)) => RefundStep::Nothing,
         }
     }
 }

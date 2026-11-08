@@ -9,7 +9,6 @@
 //! often the success is reported. The task's handler, [`run_late_refund`], calls Stripe outside any
 //! transaction (R11) through `request_refund`, which refunds a pick once (FEE-026).
 
-use askhava_adapters::api::PaymentsAdapter;
 use askhava_core::api::{HandlerError, NewTask, enqueue};
 use askhava_ops::api::{NewAlert, Severity, raise_alert};
 use jiff::Timestamp;
@@ -21,6 +20,7 @@ use sqlx::types::Uuid;
 
 use crate::models::{MoneyEventError, PickNow, RefundTrigger};
 use crate::refund_rules::RefundReason;
+use crate::refund_stripe::RefundStripe;
 use crate::refunds::request_refund;
 
 /// The `core.task` kind that refunds a late success (FEE-021); one per pick.
@@ -111,7 +111,7 @@ pub async fn late_success(
 /// A fixed sentence when the payload is malformed or the refund could not be recorded.
 pub async fn run_late_refund(
     pool: &PgPool,
-    stripe: &impl PaymentsAdapter,
+    stripe: &impl RefundStripe,
     secret: &SecretString,
     payload: &Value,
     now: Timestamp,

@@ -36,6 +36,12 @@ pub enum EntryKind {
     Payout,
 }
 
+/// FEE-028 as changed by D-1753, D-2068: the stored kind of a refund Stripe failed or canceled
+/// after it succeeded. It is not an [`EntryKind`] variant yet (a new variant breaks the
+/// exhaustive match in `portals`' business statement, which this task does not own); only
+/// [`LedgerEntry::reversal`] makes one, and the ledger readers fold it as a negative refund.
+pub const REFUND_REVERSAL_CODE: &str = "refund-reversal";
+
 impl EntryKind {
     /// Every entry type, in FEE-028's order.
     pub const ALL: [Self; 11] = [
@@ -134,6 +140,7 @@ pub struct LedgerEntry {
     amount_cents: i64,
     stripe_id: Option<String>,
     key: String,
+    reversal: bool,
 }
 
 impl LedgerEntry {
@@ -175,7 +182,38 @@ impl LedgerEntry {
             amount_cents: raw.amount_cents,
             stripe_id: raw.stripe_id.map(str::to_owned),
             key: raw.idempotency_key.to_owned(),
+            reversal: false,
         })
+    }
+
+    /// FEE-028, D-1753: the `refund-reversal` of this `refund` entry: the same business, job,
+    /// amount and Stripe ID under `key` ([`REFUND_REVERSAL_CODE`]; [`Self::kind`] stays `Refund`).
+    ///
+    /// # Errors
+    /// [`LedgerError::Parties`] when this entry is not a refund; [`LedgerError::Key`] for a
+    /// malformed key.
+    pub fn reversal(&self, key: &str) -> Result<Self, LedgerError> {
+        if self.kind != EntryKind::Refund || self.reversal {
+            return Err(LedgerError::Parties);
+        }
+        if !key_ok(key) {
+            return Err(LedgerError::Key);
+        }
+        Ok(Self {
+            key: key.to_owned(),
+            reversal: true,
+            ..self.clone()
+        })
+    }
+
+    /// The stored kind code: the kind's, or [`REFUND_REVERSAL_CODE`] for a reversal.
+    #[must_use]
+    pub const fn code(&self) -> &'static str {
+        if self.reversal {
+            REFUND_REVERSAL_CODE
+        } else {
+            self.kind.code()
+        }
     }
 
     /// The entry type.
@@ -235,7 +273,7 @@ pub async fn ledger_append(
          VALUES ($1, $2, $3, $4, $5, $6)
          ON CONFLICT (idempotency_key) DO NOTHING
          RETURNING id",
-        entry.kind.code(),
+        entry.code(),
         entry.business,
         entry.job,
         entry.amount_cents,
@@ -256,7 +294,7 @@ pub async fn ledger_append(
     .fetch_one(&mut *conn)
     .await
     .map_err(|_| LedgerError::Database)?;
-    let same = row.kind == entry.kind.code()
+    let same = row.kind == entry.code()
         && row.business_id == entry.business
         && row.job_id == entry.job
         && row.amount_cents == entry.amount_cents

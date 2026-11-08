@@ -16,7 +16,9 @@ pub use crate::config::{AdapterMode, DEFAULT_POOL_SIZE, MaskedPool, PoolNumber, 
 pub use crate::email::{Email, EmailAdapter, ResendEmail};
 pub use crate::letters::{LettersAdapter, LobLetters, SentLetter};
 pub use crate::license_sources::{LicenseLists, LicenseSource};
-pub use crate::payments::{Charge, IntentMetadata, PaymentIntent, PaymentsAdapter, StripePayments};
+pub use crate::payments::{
+    Charge, IntentMetadata, PaymentIntent, PaymentsAdapter, StripePayments, StripeRefund,
+};
 pub use crate::signatures::{
     Delivery, REJECTED_STATUS, SignatureError, VerifiedWebhook, WEBHOOK_TOLERANCE_SECS,
     WebhookVendor, check_webhook_source, refuse, verify_webhook, webhook_source_list,
