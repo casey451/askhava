@@ -42,3 +42,23 @@ pub use crate::voice::{
     VoiceError, code_call_twiml, may_code_call, owner_bridge_twiml, place_safety_call, ring_owner,
     safety_call_answered, safety_call_key, safety_script, safety_twiml,
 };
+
+/// Whether job `job` ever had a masked line, open or closed (CALL-001, CALL-010, D-1688): the
+/// release's line retry (`picks.line_retry`) opens one only when this is false, so a line closed
+/// after 30 days is never reopened.
+///
+/// # Errors
+///
+/// [`CallsError::Database`].
+pub async fn job_had_line(
+    db: &mut sqlx::PgConnection,
+    job: sqlx::types::Uuid,
+) -> Result<bool, CallsError> {
+    sqlx::query_scalar!(
+        r#"SELECT EXISTS (SELECT 1 FROM calls.number_pool WHERE job_id = $1) AS "had!""#,
+        job
+    )
+    .fetch_one(db)
+    .await
+    .map_err(|_| CallsError::Database)
+}

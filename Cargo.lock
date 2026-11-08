@@ -737,6 +737,7 @@ version = "0.1.0"
 dependencies = [
  "askhava-adapters",
  "askhava-businesses",
+ "askhava-calls",
  "askhava-catalog",
  "askhava-core",
  "askhava-intake",
@@ -750,6 +751,8 @@ dependencies = [
  "askhava-privacy",
  "askhava-quotes",
  "axum",
+ "base64 0.23.1",
+ "hmac",
  "jiff",
  "rustls",
  "secrecy",
@@ -757,6 +760,7 @@ dependencies = [
  "sha2 0.11.1",
  "sqlx",
  "tokio",
+ "tower",
  "tower-http 0.7.1",
  "tracing",
 ]

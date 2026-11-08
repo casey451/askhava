@@ -1970,3 +1970,11 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **Passes only at function level (D-2010, D-2011).** The tests for EMERGENCY cards (TD-CARD-09) and "after-hours cards go as soon as the ZIP is in" (TD-INT-31) check the functions, not the whole path: the email sender still holds every notice at night, the homeowner's night count still uses the old count, and nothing yet turns a released emergency job into cards. Later tasks wire these.
 - **Known gap.** At night, emergency cards and picks go only to each switched-on person's sign-in email, not to the backup address they verified (PICK-037, BIZ-043). The task that wires the email sender should add the backups.
 - **Nothing needs you.**
+
+## Paid and free picks now release their details (T254, D-2013 to D-2016, November 8)
+
+- **What changed.** When Stripe tells us a payment went through (signed and checked again with Stripe), or a $0 decision is on record (a free first win, a repeat customer or a fee-free job type), the pick becomes paid or free, the business gets the homeowner's first name and address once, and the masked call line opens. A pick that was cancelled or expired first gets nothing.
+- **Recovery.** If something fails halfway (the server restarts, the contact store cannot be read for a moment), Stripe sends the event again and the release still happens exactly once; the business sees the details in its portal. If the masked line cannot open, it is tried again in the background, and a line closed after 30 days is never reopened.
+- **Settings for the test and live projects.** The webhook needs `ASKHAVA_STRIPE_WEBHOOK_SECRET` (from Stripe's dashboard, at the account checkpoint) besides the Stripe key and account already listed; the worker needs the Twilio settings for the line retry.
+- **Known gaps (D-2015).** The job itself does not yet move to Payment pending or Connected; the payment's ledger line is still added only by the nightly reconcile; a repeated Stripe event is not yet skipped by its event ID (the release stays once); every release is a masked call until the homeowner's call-or-email choice is stored; an emergency job waiting for its address is not re-released when the address arrives.
+- **Nothing needs you.**
