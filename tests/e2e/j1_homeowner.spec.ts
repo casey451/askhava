@@ -1,6 +1,6 @@
 /// <reference types="node" />
 // Journey J1, the homeowner, stage-4 slice (T098; docs/test-design.md section 5, J1, with its
-// closing checks; A11Y-021; D-491, D-493, D-1739; the slice and its gaps are D-2029 to D-2031).
+// closing checks; A11Y-021; D-491, D-493, D-1739; the slice and its gaps are D-2029 to D-2032).
 //
 // The suite's web binary (tests/e2e/webserver.ts) runs in `ci` with no public base URL and no
 // vault keys, so it serves no Twilio route and no page pick (D-1311, D-1516). This file starts a
@@ -215,18 +215,26 @@ test("J1 step 6 PICK-016 PICK-013 PICK-017 PICK-018: review, Go back, pick again
   expect(rows(`SELECT channel FROM intake.terms_acceptance WHERE conversation_id = '${state.conversation}'`)).toEqual([["quote_page"]]);
 });
 
-test("J1 variant CON-009 CON-012 CON-028: STOP after the pick; the one confirmation, then no further text; the job and the pick go on", async () => {
-  expect(await textIn(HOMEOWNER, "STOP")).toBe(200);
-  expect(await textIn(HOMEOWNER, "Is anyone coming today?")).toBe(200);
-  expect(textsTo(state.contact)).toEqual(["consent", "opt_out_confirmation"]);
-  expect(rows(`SELECT status FROM jobs.job WHERE id = '${state.job}'`)).toEqual([["awaiting_confirm"]]);
-  expect(rows(`SELECT quote_number, status FROM picks.pick WHERE job_id = '${state.job}'`)).toEqual([["2", "awaiting_confirm"]]);
+test("J1 variant CON-009 CON-012 CON-028: STOP after quotes arrive; the one confirmation, then no further text; the job and its quote page go on", async ({ page }) => {
+  const from = "+19285550146";
+  const since = now();
+  expect(await textIn(from, "Water heater leaking")).toBe(200);
+  const request = requestSince(since);
+  const seeded = seedQuotes(request.conversation);
+  expect(await textIn(from, "STOP")).toBe(200);
+  expect(await textIn(from, "Is anyone coming today?")).toBe(200);
+  expect(textsTo(request.contact)).toEqual(["consent", "opt_out_confirmation"]);
+  expect(rows(`SELECT status FROM jobs.job WHERE id = '${seeded.job}'`)).toEqual([["quotes_ready"]]);
+  await page.goto(BASE + seeded.path);
+  await expect(page.locator("#quotes > li h2")).toHaveText(["Quote #1", "Quote #2"]);
 });
 
 test("J1 variant INT-004 INT-005 D-436: 911-list words first get the 911 text and the consent text, once each; SAFE sends nothing more", async () => {
   const since = now();
   expect(await textIn("+19285550143", "I smell gas in the kitchen")).toBe(200);
   const gas = requestSince(since);
+  // Both texts are queued in one transaction with one `created_at` and a random `id`, so the
+  // outbox cannot show which came first; the set is checked here, the order is D-2032's gap.
   expect([...textsTo(gas.contact)].sort()).toEqual(["consent", "emergency_911"]);
   expect(rows(`SELECT count(*) FROM intake.emergency_event WHERE conversation_id = '${gas.conversation}' AND safe_at IS NULL`)).toEqual([["1"]]);
   expect(await textIn("+19285550143", "we're safe")).toBe(200);

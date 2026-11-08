@@ -1,6 +1,6 @@
 /// <reference types="node" />
 // Journey J1 keyboard-only, with axe at three widths (T098; A11Y-005, A11Y-021; docs/test-design.md
-// sections 5 and 6; D-2029 to D-2031).
+// sections 5 and 6; D-2029 to D-2032).
 //
 // The web steps of J1's stage-4 slice, driven with Tab, Shift+Tab, Enter and Space only: the quote
 // page with two diagnostic-visit quotes (step 5), Pick #2, the review step, "Go back", Pick #2
@@ -17,7 +17,7 @@
 // used, since a scan moves the browser's Tab starting point. The quote page is seeded through
 // fixtures.ts's psql seeding. Fake data only.
 import type { Page } from "@playwright/test";
-import { TARGETS, WIDTHS, axeScan, expect, open, test, type PageState } from "./fixtures";
+import { REVIEWED_INCOMPLETE, TARGETS, WIDTHS, axeScan, expect, open, test, type PageState } from "./fixtures";
 
 /** A job in Quotes ready with two diagnostic-visit quotes ($89 visit each), J1 step 5. */
 const TWO_VISITS: PageState = {
@@ -126,11 +126,19 @@ async function noTrap(page: Page): Promise<void> {
   expect(back.problems).toEqual([]);
 }
 
-/** axe on the page as it stands, run with focus already on the control about to be used; focus must stay there. */
+/**
+ * axe on the page as it stands, run with focus already on the control about to be used; focus must
+ * stay there. No violation, and no "incomplete" result unless reviewed in `REVIEWED_INCOMPLETE` for
+ * the page's route, as axe_all_pages.spec.ts checks (TD-A11Y-01, A11Y-025).
+ */
 async function axeClean(page: Page, step: string): Promise<void> {
   const before = await where(page);
-  const { violations } = await axeScan(page);
+  const { violations, incomplete } = await axeScan(page);
   expect(violations, `axe on ${step}`).toEqual([]);
+  const route = new URL(page.url()).pathname.replace(/^\/q\/[^/]+/, "/q/{token}");
+  const ruleOf = (result: string): string => result.split(":")[0] ?? result;
+  const unreviewed = incomplete.filter((result) => !REVIEWED_INCOMPLETE.includes(`${ruleOf(result)} on ${route}`));
+  expect(unreviewed, `TD-A11Y-01: unreviewed axe incomplete results on ${step}`).toEqual([]);
   expect((await where(page)).index, "the scan left focus where it was").toBe(before.index);
 }
 
