@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-08T04:50:52Z by runner bf568037d279 (actions).
+Updated 2026-11-08T05:26:27Z by runner ba4e0109c199 (actions).
 
 **Building: T089 in progress since 04:41Z; 151 of 282 done; week 48% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,11 @@ Updated 2026-11-08T04:50:52Z by runner bf568037d279 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T089 claimed 04:41Z, lease until 07:41Z
 - **Week:** 48% used, 98.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:33Z, 16 min before this update
+- **Last run:** 04:50Z, 35 min before this update
 - **Keeper:** last ran 04:33Z, next wake 04:53Z
 
 ## Needs attention
-- Strict plan check red: 6 problem(s) on tasks still to run (+5 on DONE tasks); first: T089: stored context_pct 9% but it measures 13%; regenerate
+- Strict plan check red: 7 problem(s) on tasks still to run (+6 on DONE tasks); first: T089: stored context_pct 9% but it measures 16%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -36,7 +36,6 @@ Updated 2026-11-08T04:50:52Z by runner bf568037d279 (actions).
 | T092 | privacy: 180-day contact purge, holds, photo and message del | done | 1 | 54 min | 08:38Z |  |
 | T091 | quotes: photos on cards only after zero retention and all th | done | 1 | 40 min | 07:24Z |  |
 | T090 | privacy: photo checks by bytes, re-encode without EXIF or GP | done | 1 | 52 min | 06:25Z |  |
-| T194 | portals: the new-device code by text or email and team sign- | done | 1 | 42 min | 05:12Z |  |
 
 ### Plan and harness merges on main
 - 01:33Z Plan: brand as configuration (T291–T295, D-1932–D-1933) (#342)
@@ -44,7 +43,6 @@ Updated 2026-11-08T04:50:52Z by runner bf568037d279 (actions).
 - 19:48Z Plan: third audit — CI filters, close-time owned-file check, request timeout, confirm money invariants, reconcile retry (D-1866–D-1873) (#331)
 - 19:25Z Harness: incremental runner smoke build (stable tree, own target dir, mtime pinning) (D-1890) (#333)
 - 15:37Z Plan: second code audit — owners and acceptance for B01–B08 and known gaps (D-1835–D-1845) (#326)
-- 05:10Z Plan: repo audit findings — owners and acceptance for A01–A06, A08–A12 (D-1751–D-1761, D-1788) (#316)
 
 ## Progress (requirements verified)
 
