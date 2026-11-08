@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-08T20:00:25Z by runner b3283662cec9 (actions).
+Updated 2026-11-08T20:51:03Z by runner 78179b78af64 (actions).
 
 **Building: T098 in progress since 20:00Z; 158 of 282 done; week 54% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,11 @@ Updated 2026-11-08T20:00:25Z by runner b3283662cec9 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T098 claimed 20:00Z, lease until 23:00Z
 - **Week:** 54% used, 86.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:36Z, 23 min before this update
+- **Last run:** 20:00Z, 50 min before this update
 - **Keeper:** last ran 19:36Z, next wake 19:56Z
 
 ## Needs attention
-- Strict plan check red: 24 problem(s) on tasks still to run (+20 on DONE tasks); first: T255: stored context_pct 25% but it measures 32%; regenerate
+- Strict plan check red: 25 problem(s) on tasks still to run (+20 on DONE tasks); first: T255: stored context_pct 25% but it measures 32%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -30,9 +30,9 @@ Updated 2026-11-08T20:00:25Z by runner b3283662cec9 (actions).
 | T086 | portals: owner password, passkey or TOTP, recovery codes, 12 | done | 1 | 54 min | 00:56Z |  |
 | T195 | portals: business billing and statements from the ledger | done | 1 | 48 min | 23:28Z |  |
 | T085 | portals: business portal home (contact choice, your numbers, | done | 1 | 33 min | 21:43Z |  |
-| T253 | privacy, picks and portals: the signed-in business reads a r | done | 1 | 54 min | 20:44Z |  |
 
 ### Plan and harness merges on main
+- 20:26Z Plan: 3-second AI reply budget, AI waits hold no DB connection, war-games latency (D-2038) (#362)
 - 18:33Z Harness: run the start-routine smoke before the session (D-2028) (#359)
 - 15:06Z Harness: warm the smoke build before the session (D-2007) (#356)
 - 10:55Z Harness: retry release downloads; backup job's coverage tools best-effort (D-1986) (#352)
