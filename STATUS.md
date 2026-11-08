@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-08T21:23:14Z by runner ed86bb479716 (actions).
+Updated 2026-11-08T22:00:46Z by runner 7e178284da68 (actions).
 
 **Building: T256 in progress since 21:23Z; 159 of 283 done; week 56% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,11 @@ Updated 2026-11-08T21:23:14Z by runner ed86bb479716 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T256 claimed 21:23Z, lease until 00:23Z
 - **Week:** 56% used, 82.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:06Z, 16 min before this update
+- **Last run:** 21:23Z, 37 min before this update
 - **Keeper:** last ran 21:06Z, next wake 21:26Z
 
 ## Needs attention
-- Strict plan check red: 24 problem(s) on tasks still to run (+21 on DONE tasks); first: T255: stored context_pct 25% but it measures 32%; regenerate
+- Strict plan check red: 25 problem(s) on tasks still to run (+24 on DONE tasks); first: T256: stored context_pct 28% but it measures 32%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -30,9 +30,9 @@ Updated 2026-11-08T21:23:14Z by runner ed86bb479716 (actions).
 | T087 | portals: homeowner portal (phone and code), own data, no for | done | 1 | 46 min | 02:04Z |  |
 | T086 | portals: owner password, passkey or TOTP, recovery codes, 12 | done | 1 | 54 min | 00:56Z |  |
 | T195 | portals: business billing and statements from the ledger | done | 1 | 48 min | 23:28Z |  |
-| T085 | portals: business portal home (contact choice, your numbers, | done | 1 | 33 min | 21:43Z |  |
 
 ### Plan and harness merges on main
+- 21:52Z Plan: vendor-call connection audit, war-games overload scenario (T297) (D-2054) (#365)
 - 20:26Z Plan: 3-second AI reply budget, AI waits hold no DB connection, war-games latency (D-2038) (#362)
 - 18:33Z Harness: run the start-routine smoke before the session (D-2028) (#359)
 - 15:06Z Harness: warm the smoke build before the session (D-2007) (#356)
