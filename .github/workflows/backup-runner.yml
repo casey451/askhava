@@ -414,7 +414,10 @@ jobs:
           # Chain only on a result that leaves work for the very next cycle: a cleared red, or a red
           # main that this cycle has just turned into a queued FIX-MAIN. A red still waiting on the
           # nightly, a lost race and every other result wait for an event or the hourly tick, so the
-          # chain can never spin without progress (D-500 review).
+          # chain can never spin without progress (D-500 review). Also the FIRST smoke timeout on a head
+          # (the smoke_runs in the row hold one timed_out run for the sha of the last run): the save step above has
+          # already kept the partial smoke build, so the next run finishes it; a second timeout on the same
+          # head waits for the keeper, so this chains at most once per commit of main (D-1970).
           log="$(gh api "repos/${GITHUB_REPOSITORY}/contents/kit/runner_log.jsonl?ref=claude/kit-state" \
             -H 'Accept: application/vnd.github.raw' 2>/dev/null || true)"
           # Only this job's own rows (its session), so another lane's job running at the same time is never
@@ -426,7 +429,12 @@ jobs:
           mine = [r for r in rows if str(r.get("at", "")) >= start and r.get("session") == session]
           def moved(r):
               return bool((r.get("changed") or {}).get("tasks"))
-          go = any(r.get("result") in ("false_red_cleared", "main_cleared") or (r.get("result") == "main_red" and moved(r)) for r in mine)
+          def first_timeout(r):
+              runs = [s for s in ((r.get("changed") or {}).get("keys") or {}).get("smoke_runs") or [] if isinstance(s, dict)]
+              head = runs[-1].get("sha") if runs and runs[-1].get("timed_out") else None
+              return bool(head) and sum(1 for s in runs if s.get("sha") == head and s.get("timed_out")) == 1
+          go = any(r.get("result") in ("false_red_cleared", "main_cleared") or (r.get("result") == "main_red" and moved(r))
+                   or (r.get("result") == "smoke_timeout" and first_timeout(r)) for r in mine)
           print("yes" if go else "no")
           ' 2>/dev/null || echo no)"
           echo "chain: ${again}"

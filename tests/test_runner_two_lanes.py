@@ -741,6 +741,33 @@ def test_the_chain_reads_only_this_jobs_rows_for_a_cleared_red() -> None:
     assert again([{"at": "2026-11-01T12:05:00", "session": "actions-88", "result": "main_cleared"}]) == "no"
 
 
+def _chain_again(rows: list[dict[str, Any]]) -> str:
+    script = _step("backup", "Start the next cycle")["run"]
+    code = script.split("again=\"$(printf '%s' \"$log\" | SESSION=\"actions-${GITHUB_RUN_ID}\" python3 -c '", 1)[1].split("\n' ", 1)[0]
+    env = {"JOB_START": "2026-11-01T12:00:00", "SESSION": "actions-77", "PATH": "/usr/bin:/bin"}
+    stdin = "".join(json.dumps(r) + "\n" for r in rows)
+    return subprocess.run([sys.executable, "-c", code], input=stdin, capture_output=True, text=True, env=env, check=True).stdout.strip()
+
+
+def test_the_chain_retries_a_smoke_timeout_once_per_head() -> None:
+    """D-1970: the first smoke timeout on a head chains at once (the save step kept the partial build);
+    a second one on the same head waits for the keeper, so the chain never spins on one commit."""
+    a, b = {"sha": "a" * 40, "ok": True}, {"sha": "b" * 40, "ok": False, "timed_out": True}
+    row = {"at": "2026-11-01T12:05:00", "session": "actions-77", "result": "smoke_timeout"}
+
+    def timeout(*runs: dict[str, Any]) -> dict[str, Any]:
+        return dict(row, changed={"keys": {"smoke_runs": list(runs)}, "tasks": {}})
+
+    assert _chain_again([timeout(a, b)]) == "yes"
+    assert _chain_again([timeout(dict(b, sha="a" * 40), a, b)]) == "yes"  # an earlier timeout on another head
+    assert _chain_again([timeout(a, b, b)]) == "no"  # the second timeout on this head
+    assert _chain_again([timeout(b, dict(b, ok=True, timed_out=None), b)]) == "no"  # a pass between does not reset it
+    assert _chain_again([timeout(b, a)]) == "no"  # the last run did not time out
+    assert _chain_again([dict(row, changed=None)]) == "no" and _chain_again([dict(row, changed={"keys": {}})]) == "no"
+    assert _chain_again([dict(timeout(a, b), session="actions-88")]) == "no"  # another job's row
+    assert _chain_again([dict(timeout(a, b), result="smoke_env")]) == "no"
+
+
 def test_after_removes_the_hand_off_only_when_it_finished_the_task(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(entry, "ROOT", tmp_path)
     (tmp_path / ".git").mkdir()
