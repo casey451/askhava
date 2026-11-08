@@ -18007,7 +18007,7 @@
     "T196",
     "T197"
    ],
-   "status": "MERGE_PENDING",
+   "status": "DONE",
    "attempts": 0,
    "slug": "business-email-reliability",
    "type": "build",
@@ -18026,13 +18026,62 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 265,
      "head_sha": "0893cb8c30433ac08eba8d0ac32c89f1c4a53f35",
-     "pr": null,
-     "checks": null,
+     "pr": 354,
+     "checks": [
+      {
+       "name": "backup",
+       "conclusion": "cancelled"
+      },
+      {
+       "name": "keeper",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "gate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-08T11:17:05Z",
      "ended_at": "2026-11-08T12:00:21Z",
-     "result": "MERGE_PENDING"
+     "result": "done"
     }
    ],
    "reviewed_sha": "371e3105ad3b4b9590d118010ded105f28173b63",
@@ -18061,7 +18110,46 @@
     }
    ],
    "update_waiting_since": null,
-   "update_push_failures": null
+   "update_push_failures": null,
+   "merged_sha": "624c0b6013e27d4df5f8f26062f0ffd18a8b1bb2",
+   "merged_at": "2026-11-08T12:31:29Z",
+   "files": [
+    ".sqlx/query-0ef9a7e914ba143bec70e47ba76d436144a59e25959b43d84ce0e3dd808fc040.json",
+    ".sqlx/query-1e428fcd4ad53592bc14527422e2e4bb95694dc2c6bfb72e25a71d71e356f172.json",
+    ".sqlx/query-373330c37723634ce6370447672c633787fa227880a4d64c1806ab64f2445956.json",
+    ".sqlx/query-38bbed91c57d39d128c7fa0fc4f04dcb24849764ac901df1b23d73fa15e53579.json",
+    ".sqlx/query-42f06081789ea92c4567a7cac3d74e18377ae1fb789534fd31d5e08acf23bca9.json",
+    ".sqlx/query-4344a547f8b13884474268fe0eb9ffcba258c0f41db97fadb513aacf59b4d721.json",
+    ".sqlx/query-449b745365c04818a9f9ccda44050db77d0f55f9d83be8a2ca054be9d52d2bd1.json",
+    ".sqlx/query-4d2a072e512a2e467a1ea6d8778d0c8b7d4be15d483c0b61d5803b80b412ddf3.json",
+    ".sqlx/query-53d1580f110ffb0050cdf0ed3bd7bdff2825b88ed68e8eb0f22e372119d3e5bd.json",
+    ".sqlx/query-615e802f5ca24cb6cd4a84540318fd50e1960317598959284b9dfdd261b4c91d.json",
+    ".sqlx/query-9526771223f6be0c74abbab58a9671434ee67dbaefff0ad3d2c88bce5158fa75.json",
+    ".sqlx/query-a43e34c5675157f8b753a538cc421af3a02c425b5c2c1ac4c5cddad2779cf17a.json",
+    ".sqlx/query-af6c0ffcc99460801084f0ef7860c4734235b419580c49a2b3896cd1135a296d.json",
+    ".sqlx/query-bd0335dac2c6afa04e9fc26aa0c4ba9bacd16447d9a6d078e442eb76ad4e424a.json",
+    ".sqlx/query-eb44c471042b0bae24a66f7d2629a63399a9d8ce11fea626dfe6c80c7b88927e.json",
+    ".sqlx/query-f0166711e2a33def2ee7e4dfd75c8e3bd44c9acda253a1035480dd8f495b088c.json",
+    ".sqlx/query-fb49fc3ed3742081cbf19bf54dc533fbaa73be8aa26ad62c4a8a32ffdb9574ff.json",
+    ".sqlx/query-feb48be7dd91cee67a074a7eb9ae8107dda9387b0720fb0749f1c2683d4a50ab.json",
+    "app/businesses/CLAUDE.md",
+    "app/businesses/src/api.rs",
+    "app/businesses/src/backup_address.rs",
+    "app/businesses/src/deliverability_check.rs",
+    "app/businesses/src/lib.rs",
+    "app/portals/CLAUDE.md",
+    "app/portals/src/api.rs",
+    "app/portals/src/business_actions.rs",
+    "app/portals/src/email_check.rs",
+    "app/portals/src/lib.rs",
+    "app/portals/templates/email_check.html",
+    "docs/architecture.md",
+    "docs/copy/mail-app-steps.md",
+    "docs/decisions.md",
+    "migrations/0145_email_reliability.sql",
+    "tests/integration/tests/deliverability_check.rs",
+    "tests/security/tests/backup_address.rs"
+   ]
   },
   {
    "id": "T198",
@@ -24278,7 +24366,7 @@
    }
   }
  },
- "updated_at": "2026-11-08T12:11:44Z",
+ "updated_at": "2026-11-08T12:35:22Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -24376,7 +24464,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "18a3a77ca32b2afef7287559a150e5de451b2f37",
+ "runner_sha": "624c0b6013e27d4df5f8f26062f0ffd18a8b1bb2",
  "starter": "actions",
  "smoke_runs": [
   {
