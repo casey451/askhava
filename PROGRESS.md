@@ -1301,3 +1301,4 @@
 - 2026-11-08T03:24:14Z runner 327f29be8e81 (actions): {}
 - 2026-11-08T03:24:29Z runner 327f29be8e81 (actions): {}
 - 2026-11-08T03:40:04Z runner a2f57c33619e (actions): {"T291": "MERGE_PENDING -> DONE"}
+- 2026-11-08T03:47:53Z runner a2f57c33619e (actions): {"T088": "QUEUED -> IN_PROGRESS"}; T088 estimated 2.7M tokens (calibrated); five-hour window has 22.7M left, week 98.0M (session_reading 2026-11-08T03:24:14Z (week)); claimed
