@@ -20,11 +20,25 @@
 //! The homeowner portal: sign-in by phone and texted code, her own record through her session
 //! proof, the texts-off switch, "Download my data" and the code-checked delete or copy request
 //! (SEC-008, PRIV-012, PRIV-021, PRIV-031, CON-035, T087). The rate limits in front of sign-in,
-//! codes, sign-ups and quotes (SEC-014, SEC-020, SEC-040, PICK-055, T089).
+//! codes, sign-ups and quotes (SEC-014, SEC-020, SEC-040, PICK-055, T089). The email action links
+//! for every former text keyword, the action pages, the quote form's fee lines and quote facts,
+//! "Ask about a charge" and email replies that never act (BIZ-028, BIZ-032, BIZ-038, PICK-006,
+//! PICK-039, PICK-040, SEC-025, SEC-026, A11Y-023, T148).
 
 /// The cookie jar the session functions take and give back (axum-extra's).
 pub use axum_extra::extract::cookie::CookieJar;
 
+pub use crate::action_links::{
+    ACTION_ROUTE, ActionGrant, ActionKind, ActionLinkError, ActionTarget, EmailReply,
+    OPEN_IN_BROWSER_LINE, UseBy, email_reply, mint_action_link, open_action_link, session_may,
+    use_action_link,
+};
+pub use crate::business_actions::{
+    ActionFacts, BUSY_DAYS_MAX, ChargeAsked, FactProblem, FactsForm, HELP_REQUEST_KIND,
+    QUOTE_MINUTES_MAX, QuoteFormFacts, action_email_text, action_page, ask_about_charge, busy_days,
+    busy_until_line, charge_answer, charge_reply_line, does_line, fee_lines, parse_facts, prefill,
+    quote_form_page, quote_minutes,
+};
 pub use crate::business_auth::{
     AddressForm, BUSINESS_SESSION_LIFE, BusinessPrincipal, CODE_TRIES, CodeAddress, CodeForm,
     CodeFuture, CodeTo, DEVICE_COOKIE, DEVICE_LIFE, DeviceCodes, LINK_LIFE, LINKS_PER_LIFE, Need,

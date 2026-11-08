@@ -23,10 +23,15 @@
 //! request (`homeowner_portal`, `data_download`, SEC-008, PRIV-012, PRIV-021, PRIV-031).
 //! T089 added the rate limits on sign-in links, code sends and tries, owner password tries,
 //! sign-ups and quotes (`limits`, SEC-014, SEC-020, SEC-040, PICK-055).
+//! T148 added the email action links for every former text keyword (`action_links`, BIZ-038,
+//! SEC-025, SEC-026) and the action pages and quote form they open (`business_actions`, BIZ-028,
+//! BIZ-032, PICK-006, PICK-039, PICK-040, A11Y-023).
 //! Portal pages extend the shared layout `app/site/templates/base.html` through `askama.toml`.
 //! Other crates reach it only through [`api`].
 
+mod action_links;
 pub mod api;
+mod business_actions;
 mod business_auth;
 mod business_portal;
 mod business_signup;

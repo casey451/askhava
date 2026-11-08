@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{#- The business action pages an email link opens and the quote form (T148; BIZ-038, SEC-026,
+    A11Y-023, PICK-006, PICK-039, PICK-040). Every page works without JavaScript and says what it
+    will do before its one button acts; the Confirm window shows as an end time, never a countdown.
+    The quote form shows the fee lines before submit and every quote fact as a required choice. -#}
+{% macro radio(name, value, label, current) %}<div><input type="radio" id="{{ name }}-{{ value }}" name="{{ name }}" value="{{ value }}"{% if current == value %} checked{% endif %}> <label for="{{ name }}-{{ value }}">{{ label }}</label></div>{% endmacro %}
+{% block title %}{% if let Some(a) = action %}{{ a.title }}{% else if let Some(f) = form %}{% if !f.problems.is_empty() %}Error: {% endif %}Quote job {{ f.job_number }}{% endif %}{% endblock %}
+{% block main %}
+{% if let Some(a) = action %}
+<h1>{{ a.title }}</h1>
+<p id="action-does">{{ a.does }}</p>
+{% if let Some(end) = a.ends_at %}<p id="action-ends">Ends at {{ end }}, Arizona time.</p>{% endif %}
+<form method="post" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+{% if a.busy %}<label for="days">Number of days (1 to {{ a.max_days }})</label>
+<input type="text" id="days" name="days" inputmode="numeric">
+{% endif %}<button type="submit">{{ a.title }}</button>
+</form>
+{% else if let Some(f) = form %}
+<h1>Quote job {{ f.job_number }}</h1>
+<p id="job-status">{{ f.status_line() }}</p>
+{% if !f.problems.is_empty() %}<div id="error-summary" role="alert" tabindex="-1" autofocus>
+<h2>Fix these to send your quote</h2>
+<ul>{% for p in f.problems %}<li><a href="#{{ p.field() }}">{{ p.message() }}</a></li>{% endfor %}</ul>
+</div>{% endif %}
+{% if let Some(price) = f.read_back %}<p id="read-back">We read {{ price }} from your text. Check the price and the answers below. The homeowner won't see anything until you send it.</p>{% endif %}
+<form method="post" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<fieldset id="trip_fee"><legend>Trip fee counts toward the repair</legend>
+{% call radio("trip_fee", "counts", "Yes", f.values.trip_fee.as_str()) %}{% endcall %}
+{% call radio("trip_fee", "does_not_count", "No", f.values.trip_fee.as_str()) %}{% endcall %}
+{% call radio("trip_fee", "none", "No trip fee", f.values.trip_fee.as_str()) %}{% endcall %}
+</fieldset>
+<fieldset id="parts"><legend>Parts and materials</legend>
+{% call radio("parts", "included", "Included", f.values.parts.as_str()) %}{% endcall %}
+{% call radio("parts", "extra", "Extra", f.values.parts.as_str()) %}{% endcall %}
+{% call radio("parts", "on_site", "Estimated on site", f.values.parts.as_str()) %}{% endcall %}
+</fieldset>
+<fieldset id="permit"><legend>Permit</legend>
+{% call radio("permit", "included", "Included", f.values.permit.as_str()) %}{% endcall %}
+{% call radio("permit", "not_included", "Not included", f.values.permit.as_str()) %}{% endcall %}
+{% call radio("permit", "not_needed", "Not needed", f.values.permit.as_str()) %}{% endcall %}
+</fieldset>
+<fieldset id="may_change"><legend>Price may change after seeing the job</legend>
+{% call radio("may_change", "yes", "Yes", f.values.may_change.as_str()) %}{% endcall %}
+{% call radio("may_change", "no", "No", f.values.may_change.as_str()) %}{% endcall %}
+</fieldset>
+<fieldset id="visit"><legend>Earliest visit</legend>
+<label for="visit_date">Date</label>
+<p id="visit_date-hint">For example, 2026-11-12 for November 12.</p>
+<input type="text" id="visit_date" name="visit_date" aria-describedby="visit_date-hint" value="{{ f.values.visit_date }}">
+<fieldset id="visit_part"><legend>Part of the day</legend>
+{% call radio("visit_part", "morning", "Morning", f.values.visit_part.as_str()) %}{% endcall %}
+{% call radio("visit_part", "afternoon", "Afternoon", f.values.visit_part.as_str()) %}{% endcall %}
+{% call radio("visit_part", "evening", "Evening", f.values.visit_part.as_str()) %}{% endcall %}
+{% call radio("visit_part", "tonight", "Tonight", f.values.visit_part.as_str()) %}{% endcall %}
+</fieldset>
+</fieldset>
+<fieldset id="spanish"><legend>Speaks Spanish</legend>
+{% call radio("spanish", "phone", "On the phone", f.values.spanish.as_str()) %}{% endcall %}
+{% call radio("spanish", "on_site", "On site", f.values.spanish.as_str()) %}{% endcall %}
+{% call radio("spanish", "both", "Both", f.values.spanish.as_str()) %}{% endcall %}
+{% call radio("spanish", "no", "No", f.values.spanish.as_str()) %}{% endcall %}
+</fieldset>
+<label for="minutes">Minutes this quote took (optional)</label>
+<p id="minutes-hint">A rough guess is fine. The homeowner never sees it.</p>
+<input type="text" id="minutes" name="minutes" inputmode="numeric" aria-describedby="minutes-hint" value="{{ f.values.minutes }}">
+<h2>Your fee if picked</h2>
+<ul id="fee-lines">{% for line in f.fee_lines %}<li>{{ line }}</li>{% endfor %}</ul>
+{% if f.same_as_last %}<button type="submit" name="same" value="yes">Same as last time</button>
+{% endif %}<button type="submit">Send quote for job {{ f.job_number }}</button>
+</form>
+{% endif %}
+{% endblock %}

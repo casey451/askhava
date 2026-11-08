@@ -1944,3 +1944,10 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **Not switched on everywhere yet.** The limits are ready, but the pages and the text line that use them belong to other tasks. The text line that takes homeowner requests is already live in testing and does not apply the per-phone limit yet; T256 adds it. The portal pages are not open yet and must apply theirs when they open.
 - **Small gap.** Code texts sent from the portal and code texts sent for a pick each have their own daily total, so the "too many code texts today" alarm watches two counts, not one combined count.
 - **Nothing needs you.**
+
+## Email action links (T148, D-1955 to D-1959, November 8)
+
+- **What was built.** Every action a business used to do by text keyword now has a secure link for its emails: Quote, Confirm, Hold for 2 more hours, Away, Pause, Resume, Busy for 1 to 60 days, Link this phone, Approve and Ask about a charge. Each link works for one person and one job, once, and only until its time ends. Opening a link only shows the page; nothing happens until the button is pressed. A "Cards and quotes" member gets no Hold, Confirm or Pause link. Replying to an email never does anything but the automatic reply or a help request.
+- **The quote form** shows the business its fee if picked, with the basis, before it sends; asks every quote fact; fills in last time's answers for the same job type; and offers the optional "minutes this quote took", stored only for your pilot scorecard.
+- **Not switched on yet.** The pages are ready but not served; the emails that carry the links, the Confirm code step and storing a "Busy" setting come with the tasks that open the business portal (D-1958).
+- **Nothing needs you.**
