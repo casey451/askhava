@@ -1953,3 +1953,12 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **A gap in the plan (D-1958).** "Ask about a charge" opens a help request with the charge, but not yet with the business's own question: nothing stores that message yet, and the queue only carries record numbers for privacy. The task that serves that page has to store the question first. Nothing is live, so nothing is lost today.
 - **Also waiting (D-1957).** The quote form's price box and the handyman's "under $1,000, no permit" box sit beside the price, so they come with the task that serves the form. A "per visit" recurring price shows no fee yet, because the form doesn't ask how often the visits are; guessing weekly could charge the wrong amount.
 - **Nothing needs you.**
+
+## Open-cards email, missed-cards email and the notice log (T198, D-1992 to D-1995, November 8)
+
+- **The open-cards email** is decided and worded: at each person's chosen time (5 p.m. unless they chose), only with a job request that still has at least an hour left or a pick waiting, never to a paused or busy business. A waiting pick comes first and goes in the subject.
+- **The missed-cards email** on the 1st follows the rule: at least 3 requests last month and at least half closed before a quote. The words are the spec's.
+- **The notice log** on each job page shows when each notice went (or "held by quiet hours"), what the mail server said, when the link was first opened ("may be a mail scanner") and when the business quoted or confirmed. It never shows homeowner details, and another business can't open it.
+- **Not switched on yet (D-1993, D-1994).** Nothing sends these two emails yet. The email system can only send its fixed set of messages, so a later task adds one that can carry a list. The owner's off switch for the missed-cards email isn't stored yet either.
+- **A test-plan fix (D-1993).** The test plan's example lists a request ending at 5:30 p.m. in the 5 p.m. email, but the rule needs an hour left. The test uses 6:30 p.m.; the plan's example should change.
+- **Nothing needs you.**
