@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE portals.owner_recovery_code SET used_at = $3 WHERE owner_id = $1 AND code_sha256 = $2 AND used_at IS NULL",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Bytea",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "ffebfcac359d81d8787d8a3b0aed4a01efa2c390c98d4d3923ab3ccf70c99c16"
+}
