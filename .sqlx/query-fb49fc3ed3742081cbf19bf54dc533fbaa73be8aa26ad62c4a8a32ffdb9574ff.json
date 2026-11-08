@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE businesses.email_check c SET pick_alert_yes_at = NULL FROM businesses.team_member m WHERE m.id = c.member_id AND m.removed_at IS NULL AND m.confirm_and_billing AND c.pick_alert_yes_at <= $1 RETURNING c.member_id, c.business_id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "member_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "businesses.email_check",
+            "name": "member_id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "business_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "businesses.email_check",
+            "name": "business_id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "fb49fc3ed3742081cbf19bf54dc533fbaa73be8aa26ad62c4a8a32ffdb9574ff"
+}

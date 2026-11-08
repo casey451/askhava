@@ -1,0 +1,32 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO businesses.backup_address (business_id, member_id, mailbox_id, requested_by, sent_at) SELECT $1, id, $3, $4, $5 FROM businesses.team_member WHERE id = $2 AND business_id = $1 AND removed_at IS NULL RETURNING id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "businesses.backup_address",
+            "name": "id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Uuid",
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "af6c0ffcc99460801084f0ef7860c4734235b419580c49a2b3896cd1135a296d"
+}

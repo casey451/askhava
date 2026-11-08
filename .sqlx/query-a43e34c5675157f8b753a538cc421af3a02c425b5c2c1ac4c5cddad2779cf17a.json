@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE businesses.backup_address SET tries = tries + 1 WHERE id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "a43e34c5675157f8b753a538cc421af3a02c425b5c2c1ac4c5cddad2779cf17a"
+}

@@ -9,9 +9,12 @@
 //! pre-fills all but the earliest visit from the business's last answers for that job type, and
 //! offers the optional "minutes this quote took" (OPS-047). A text quote's read-back (PICK-006)
 //! is the same form with the price the AI read. "Ask about a charge" enqueues
-//! [`HELP_REQUEST_KIND`] with IDs only (T151 opens the help request, OPS-036).
+//! [`HELP_REQUEST_KIND`] with IDs only (T151 opens the help request, OPS-036). The job-card page
+//! calls [`sample_pick_on_open`] when a person opens a real job card: the first time for an owner
+//! or "Confirm and billing" person it gives the "Send a sample pick" step (BIZ-042, D-462; T149).
 
 use askama::Template;
+use askhava_businesses::api::{Acting, offer_sample_pick};
 use askhava_core::api::{NewTask, brand, enqueue};
 use askhava_payments::api::{
     Fee, FeeError, FeeQuote, Period as FeePeriod, PeriodJob, Tier, fee_for, period_fee_for,
@@ -24,7 +27,9 @@ use sqlx::PgConnection;
 use sqlx::types::Uuid;
 
 use crate::action_links::{ActionKind, OPEN_IN_BROWSER_LINE};
+use crate::business_auth::BusinessPrincipal;
 use crate::confirm_pay::{FEE_FREE_LINE, money};
+use crate::email_check::{MailApp, sample_pick_page};
 use crate::session::PortalsError;
 
 /// The `core.task` kind "Ask about a charge" raises; T151's handler opens the help request.
@@ -604,4 +609,30 @@ pub fn charge_answer(job_number: &str, tier: Tier, why_link: &str) -> String {
         whole(tier.cents()),
         charge_reply_line()
     )
+}
+
+/// BIZ-042, D-462, TD-BIZ-28: the job-card page route calls this each time `principal` opens a
+/// real job card (never a sample, never during sign-up). The first time an owner or "Confirm and
+/// billing" person does, it renders the "Send a sample pick" step page for `app` first, then
+/// records the offer and returns the page, so a failed render records nothing; every other time,
+/// and for a "Cards and quotes"-only member, `None`. It never blocks the card: the step offers
+/// "Skip for now".
+///
+/// # Errors
+/// [`PortalsError::Database`] when the offer cannot be recorded or the page fails to render.
+pub async fn sample_pick_on_open(
+    db: &mut PgConnection,
+    principal: &BusinessPrincipal,
+    app: MailApp,
+    (csrf, now): (&str, Timestamp),
+) -> Result<Option<String>, PortalsError> {
+    let by = Acting {
+        business: principal.business,
+        member: principal.member,
+    };
+    let page = sample_pick_page(app, false, csrf).map_err(|_| PortalsError::Database)?;
+    let offered = offer_sample_pick(db, by, now)
+        .await
+        .map_err(|_| PortalsError::Database)?;
+    Ok(offered.then_some(page))
 }

@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{#- The sign-up inbox check and the sample pick step (T149; BIZ-042, D-328, D-352, D-380, D-462).
+    Every mail-app step, with its maker's help page and the date it was checked, comes from
+    docs/copy/mail-app-steps.md through email_check::steps. Nothing here blocks activation: each
+    screen ends with a way on. No homeowner detail. -#}
+{% macro step_list(list) %}<ol>{% for s in list %}<li>{{ s.text }}{% if !s.help_page.is_empty() %} <a href="{{ s.help_page }}">Help page for this step</a>{% endif %}</li>
+{% endfor %}</ol>{% endmacro %}
+{% block title %}{% if pick %}{{ self.line("pick_title") }}{% else %}Check that our emails reach you{% endif %}{% endblock %}
+{% block main %}
+<form method="get" novalidate>
+<label for="app">Your mail app</label>
+<select id="app" name="app">{% for a in apps %}<option value="{{ a.code() }}"{% if *a == app %} selected{% endif %}>{{ a.label() }}</option>{% endfor %}</select>
+<button type="submit">Show my steps</button>
+</form>
+{% if pick %}
+<h1>{{ self.line("pick_title") }}</h1>
+<p id="pick-dnd">{{ self.line("pick_dnd") }}</p>
+<form method="post" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<input type="hidden" name="app" value="{{ app.code() }}">
+<button type="submit" name="step" value="send_pick">Send a sample pick</button>
+</form>
+<p id="pick-skip">{{ self.line("pick_skip") }}</p>
+<form method="post" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<input type="hidden" name="app" value="{{ app.code() }}">
+<fieldset><legend>{{ self.line("pick_alert") }}</legend>
+<button type="submit" name="alert" value="yes">Yes</button>
+<button type="submit" name="alert" value="no">No</button>
+</fieldset>
+</form>
+{% if !help.is_empty() %}<h2>Give our emails their own alert</h2>
+{% call step_list(help) %}{% endcall %}{% endif %}
+<p><a href="/b">Skip for now</a></p>
+{% else %}
+<h1>Check that our emails reach you</h1>
+<p id="no-email">{{ self.line("no_email") }}</p>
+<form method="post" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<input type="hidden" name="app" value="{{ app.code() }}">
+<button type="submit" name="step" value="send_sample">{% if sent %}Send the sample again{% else %}Send me a sample job card{% endif %}</button>
+</form>
+{% if sent %}<form method="post" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<input type="hidden" name="app" value="{{ app.code() }}">
+<fieldset><legend>{{ self.line("arrived") }}</legend>
+{% for a in answers %}<button type="submit" name="answer" value="{{ a.code }}">{{ a.label }}</button>
+{% endfor %}</fieldset>
+</form>
+{% endif %}{% if !help.is_empty() %}<h2>Move our emails to your inbox</h2>
+{% call step_list(help) %}{% endcall %}{% endif %}
+<h2>Last step: reply OK</h2>
+<p id="last-step">{{ self.line("last") }}</p>
+{% call step_list(last) %}{% endcall %}
+{% if reply_received %}<p id="reply-received" role="status">{{ self.line("received") }}</p>{% endif %}
+<p><a href="/b">Skip for now</a></p>
+{% endif %}
+{% endblock %}

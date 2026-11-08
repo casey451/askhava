@@ -20,14 +20,20 @@
 //! T083 added the complaints (the BIZ-011 reply, the BIZ-029 reply box, the BIZ-012 pause and
 //! the digest listing) and the owner's phone-link email request in `complaints` (BIZ-033).
 //!
+//! T149 added the sign-up inbox check with its sample card and the sample pick step in
+//! `deliverability_check` (BIZ-042) and each person's backup notice address, which
+//! `notice_addresses` now adds, in `backup_address` (BIZ-043).
+//!
 //! Other crates reach it only through [`api`].
 
 mod about_us;
 pub mod api;
+mod backup_address;
 mod channel_preference;
 mod complaint_holds;
 mod complaints;
 mod consent;
+mod deliverability_check;
 mod email_verification;
 mod identity;
 mod models;
