@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-08T00:56:46Z by runner f86583544f11 (actions).
+Updated 2026-11-08T00:56:56Z by runner f86583544f11 (actions).
 
-**Building: T086 in progress since 00:02Z; 147 of 277 done; week 45% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 00:56Z; 147 of 277 done; week 45% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 147 of 277 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T086 claimed 00:02Z, lease until 03:02Z
+- **Lane:** idle since 00:56Z (no task in progress)
 - **Week:** 45% used, 104.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 00:08Z, 48 min before this update
 - **Keeper:** last ran 23:59Z, next wake 00:19Z
@@ -17,6 +17,7 @@ Updated 2026-11-08T00:56:46Z by runner f86583544f11 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T086 | portals: owner password, passkey or TOTP, recovery codes, 12 | MERGE_PENDING | 1 | 54 min | 00:56Z |  |
 | T195 | portals: business billing and statements from the ledger | done | 1 | 48 min | 23:28Z |  |
 | T085 | portals: business portal home (contact choice, your numbers, | done | 1 | 33 min | 21:43Z |  |
 | T253 | privacy, picks and portals: the signed-in business reads a r | done | 1 | 54 min | 20:44Z |  |
@@ -93,7 +94,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T086 (lease until 2026-11-08T03:02:31Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T195", "at": "2026-11-07T23:28:57Z", "cache_creation_input_tokens": 546189, "cache_read_input_tokens": 15243110, "output_tokens": 148057, "input_tokens": 352}
+- {"task": "T086", "at": "2026-11-08T00:56:45Z", "cache_creation_input_tokens": 740362, "input_tokens": 589, "cache_read_input_tokens": 33583257, "output_tokens": 281771}
