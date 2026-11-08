@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE portals.owner_factor SET passkey = $2 WHERE id = $1 AND kind = 'passkey'",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Jsonb"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "673bbd49dd16ce16fbefc118b58683377fd10050d76e92245d7ef580c8086c2a"
+}

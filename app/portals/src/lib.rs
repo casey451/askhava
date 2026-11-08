@@ -15,6 +15,9 @@
 //! T084 built business sign-in by a single-use 15-minute emailed link, the 30-day business session
 //! and the signed-in business principal routes are scoped by (`business_auth`, SEC-004, SEC-019).
 //! T230 built the homeowner's private feedback page after Done (`feedback`, JOB-017).
+//! T086 built owner sign-in: argon2id password plus a passkey, TOTP or recovery code, 12-hour
+//! sessions ending after 30 minutes idle, the 5-minute step-up, the one-time bootstrap and the
+//! owner-only powers (`owner_auth`, SEC-005 to SEC-007, SEC-043, SEC-044).
 //! Portal pages extend the shared layout `app/site/templates/base.html` through `askama.toml`.
 //! Other crates reach it only through [`api`].
 
@@ -27,6 +30,7 @@ mod feedback;
 mod job_release;
 mod models;
 mod notice_settings;
+mod owner_auth;
 mod pick_flow;
 mod quote_page;
 mod receipts_page;
