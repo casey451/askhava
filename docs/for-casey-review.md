@@ -2,6 +2,12 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## Your intake-speed review: three small plan changes (D-2038, November 8)
+
+- **What was checked.** The review you shared was checked against the code. One real risk: when the AI reading is wired in, the code as written would keep a database connection busy while it waits for the AI, up to about a minute with retries, and the text-message webhook does its work inside one database transaction. A few slow AI answers at once could tie up the database for everyone.
+- **What changes.** A new rule (AI-029): nothing holds the database while waiting on the AI, and an incoming text is saved before any AI call. T236 (AI-call budgets) builds and tests it; the task that later wires the AI into texts must keep it. The war-games harness (T234) now records how long each step takes (from a message to the next question, the AI's time and any database wait) as typical and slow-case figures per scenario, on fake data only. The pre-war-games review (T242) must propose a shorter AI wait for web chat, so a chat turn falls back to the fixed question instead of stalling for up to a minute; that comes to you as a P0 or P1 item with the war-games go.
+- **What doesn't.** Fees, privacy, consent and wording are untouched. The fixed question path and the AI call budgets the review suggested are already in the plan. Prefetching the next question and uploading photos early wait for your sandbox review; voice and prompt caching are not planned for now.
+
 ## The runner now wakes itself up (D-1451, November 2)
 
 - **The problem.** The build only started its next step when something nudged it: a task finishing, or GitHub's hourly timer. That timer is unreliable: it went off 24 times in 123 hours, with gaps up to almost 8 hours, so a quiet build could sit for hours doing nothing, or wait for a session like this one to nudge it.
