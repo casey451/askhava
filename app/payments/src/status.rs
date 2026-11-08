@@ -250,6 +250,24 @@ impl RefundStatus {
         .find(|s| s.code() == code)
     }
 
+    /// D-1753: Stripe holds the refund as `pending` (or `requires_action`).
+    #[must_use]
+    pub const fn is_pending(self) -> bool {
+        matches!(self, Self::Pending)
+    }
+
+    /// D-1753: Stripe took the refund, so a later failure reverses its ledger entry.
+    #[must_use]
+    pub const fn is_succeeded(self) -> bool {
+        matches!(self, Self::Succeeded)
+    }
+
+    /// D-1753: a refund Stripe can still fail or cancel (`succeeded` or `pending`).
+    #[must_use]
+    pub const fn may_fail(self) -> bool {
+        matches!(self, Self::Succeeded | Self::Pending)
+    }
+
     /// The status of any code `payments.refund.status` stores, `pending` included (D-1753).
     #[must_use]
     pub fn from_stored(code: &str) -> Option<Self> {

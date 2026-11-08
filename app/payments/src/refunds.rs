@@ -184,7 +184,7 @@ async fn claim(
     // replays the key whose success Stripe later failed (D-1545).
     let replay = row.as_ref().is_some_and(|r| r.stripe_refund_id.is_none());
     let current = row.and_then(|r| RefundStatus::from_stored(&r.status).map(|s| (s, r.tries)));
-    let pending = current.is_some_and(|(s, _)| s == RefundStatus::Pending);
+    let pending = current.is_some_and(|(s, _)| s.is_pending());
     let step = RefundStatus::next(current, disputed, retry_of);
     let (status, tries) = match step {
         RefundStep::Send(n) => (RefundStatus::Sending, n),
@@ -521,13 +521,15 @@ async fn failed(
     Ok(tries)
 }
 
-/// The pick of the refund `re_…`, its charge and its stored status, read under the pick's
+/// The pick of the refund `re_…`, its stored status and its charge, read under the pick's
 /// `pick_intent` row lock (which every writer of the refund row holds), so the status cannot move
-/// before the caller's transaction ends; `None` when no refund row holds that `re_…` now.
+/// before the caller's transaction ends; `None` when no refund row holds that `re_…` now in a
+/// status `wanted` accepts.
 async fn refund_row(
     conn: &mut PgConnection,
     refund: &str,
-) -> Result<Option<(Uuid, Option<RefundStatus>, Charged)>, MoneyEventError> {
+    wanted: fn(RefundStatus) -> bool,
+) -> Result<Option<(Uuid, RefundStatus, Charged)>, MoneyEventError> {
     let pick = db(sqlx::query_scalar!(
         "SELECT pick_id FROM payments.refund WHERE stripe_refund_id = $1",
         refund,
@@ -546,7 +548,7 @@ async fn refund_row(
     .fetch_optional(&mut *conn)
     .await)?;
     let status = status.and_then(|s| RefundStatus::from_stored(&s));
-    Ok(Some((pick, status, charged)))
+    Ok(status.filter(|s| wanted(*s)).map(|s| (pick, s, charged)))
 }
 
 /// FEE-026, D-1753: Stripe's `succeeded` for `re_…` (the webhook's, T259, or the check's). A
@@ -560,8 +562,8 @@ pub async fn refund_succeeded(
     now: Timestamp,
 ) -> Result<bool, MoneyEventError> {
     let mut tx = db(pool.begin().await)?;
-    let Some((pick, Some(RefundStatus::Pending), charged)) = refund_row(&mut tx, refund).await?
-    else {
+    let row = refund_row(&mut tx, refund, RefundStatus::is_pending).await?;
+    let Some((pick, _, charged)) = row else {
         return Ok(false);
     };
     let done = succeeded(&mut tx, pick, &charged, refund, now).await?;
@@ -602,13 +604,12 @@ async fn refund_ended(
     now: Timestamp,
 ) -> Result<bool, MoneyEventError> {
     let mut tx = db(pool.begin().await)?;
-    let Some((pick, Some(from @ (RefundStatus::Succeeded | RefundStatus::Pending)), charged)) =
-        refund_row(&mut tx, refund).await?
-    else {
+    let row = refund_row(&mut tx, refund, RefundStatus::may_fail).await?;
+    let Some((pick, from, charged)) = row else {
         return Ok(false);
     };
     let (refunds, reversals) = held(&mut tx, pick).await?;
-    if from == RefundStatus::Succeeded && refunds > reversals {
+    if from.is_succeeded() && refunds > reversals {
         let key = format!("refund-reversal.{pick}.{refund}");
         append(&mut tx, &charged, &key, true).await?;
     }
@@ -644,8 +645,10 @@ pub async fn run_refund_check(
         .ok_or(HandlerError("refund check task is malformed"))?;
     let failed = HandlerError("refund check could not be recorded");
     let mut conn = pool.acquire().await.map_err(|_| failed)?;
-    let row = refund_row(&mut conn, refund).await.map_err(|_| failed)?;
-    let Some((_, Some(RefundStatus::Pending), charged)) = row else {
+    let row = refund_row(&mut conn, refund, RefundStatus::is_pending)
+        .await
+        .map_err(|_| failed)?;
+    let Some((_, _, charged)) = row else {
         return Ok(());
     };
     let answer = stripe.fetch_refund(refund).await;

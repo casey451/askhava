@@ -611,17 +611,16 @@ fn td_fee_42_states_and_reversals() {
     assert_eq!(next(canceled, true, None), RefundStep::Block(true));
     assert_eq!(next(canceled, false, Some(1)), RefundStep::Nothing);
     assert_eq!(next(canceled, false, None), RefundStep::Send(3));
+    let pending = RefundStatus::from_stored("pending");
     assert_eq!(
-        next(Some((RefundStatus::Pending, 1)), true, Some(1)),
+        next(pending.map(|s| (s, 1)), true, Some(1)),
         RefundStep::Nothing
     );
+    assert!(pending.is_some_and(RefundStatus::is_pending));
+    let stored = |code: &str| RefundStatus::from_stored(code).map(RefundStatus::code);
     assert_eq!(
-        RefundStatus::from_stored("pending"),
-        Some(RefundStatus::Pending)
-    );
-    assert_eq!(
-        RefundStatus::from_stored("canceled"),
-        Some(RefundStatus::Canceled)
+        (stored("pending"), stored("canceled")),
+        (Some("pending"), Some("canceled"))
     );
     let entry = |kind: EntryKind| {
         LedgerEntry::new(NewEntry {
