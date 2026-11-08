@@ -35,6 +35,7 @@ from pathlib import Path
 from typing import Any
 
 import yaml  # type: ignore[import-untyped]  # reason: PyYAML ships no stubs; only safe_load is used
+import brand  # sibling script: the brand file app/core/data/brand.json (D-1932)
 from trace_spec import NOT_A_CONTRACTOR, SUPERSEDED
 
 CATEGORIES_FILE = Path("docs/catalog/categories.yaml")
@@ -815,15 +816,27 @@ def check_question_bank(
     for cat in cats.values():
         if cat.get("enabled") is True and str(cat["id"]) not in sets:
             errors.append(f"question bank: enabled category {cat['id']} has no question set")
+    brand_data = brand.load() if data.get("safety_prompts") else {}
     for prompt in data.get("safety_prompts", []):
-        if not str(prompt.get("en", "")).startswith("Ask Hava:") or not str(
-            prompt.get("es", "")
-        ).startswith("Ask Hava:"):
-            errors.append(f"question bank: safety prompt {prompt.get('id')} must start 'Ask Hava:'")
+        errors.extend(check_safety_prompt_brand(prompt, brand_data))
         for set_id in prompt.get("sets", []):
             if set_id not in sets:
                 errors.append(f"question bank: safety prompt {prompt.get('id')} names {set_id}")
     return errors
+
+def check_safety_prompt_brand(prompt: dict[str, Any], data: dict[str, Any]) -> list[str]:
+    """WORD-008, D-1932: each safety prompt, its brand tokens filled from data (brand.load(), read
+    once by the caller), starts '<short_name>:'."""
+    for lang in ("en", "es"):
+        spanish = lang == "es"
+        start = f"{brand.tokens(data, spanish)['brand_short']}:"
+        try:
+            text = brand.fill(str(prompt.get(lang, "")), spanish, data)
+        except brand.BrandError:
+            text = ""
+        if not text.startswith(start):
+            return [f"question bank: safety prompt {prompt.get('id')} must start '{start}'"]
+    return []
 
 def match_shape(ex: dict[str, Any]) -> list[str]:
     """D-110: every block and field of a matching example is present and of the right type."""

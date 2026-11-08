@@ -7,6 +7,7 @@
 //! `mod` line here; other crates reach the public items only through [`api`].
 
 pub mod api;
+mod brand;
 mod clock;
 mod db;
 mod ids;
