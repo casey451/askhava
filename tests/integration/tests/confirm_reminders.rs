@@ -110,26 +110,38 @@ fn td_pick_25_evening_picks_and_quiet_hours() {
     assert!(reminders(az(9, 10, 0), az(9, 14, 0), true, none).is_empty());
 }
 
-/// TD-PICK-25, TD-PICK-26 (PICK-019, D-332, D-345): every email bounced or failed gives one more
-/// business hour, once; a spam delivery, a wait, no email or an emergency job gives none.
+/// TD-PICK-25, TD-PICK-26 (PICK-019, D-332, D-345, D-1974): every email bounced or failed gives
+/// one more business hour, once, while the window is open; a spam delivery, a wait, no email, an
+/// emergency job or a window already ended gives none.
 #[test]
 fn td_pick_26_the_bounce_grace_is_one_hour_once() {
     use EmailOutcome::{Bounced, Delivered, Failed, Spam, Waiting};
     let (rules, due) = (WindowRules::default(), az(9, 14, 0));
+    let now = (az(9, 11, 0), due);
     let all = [Bounced, Failed, Bounced];
     assert_eq!(
-        bounce_grace(&all, (false, false), due, rules),
+        bounce_grace(&all, (false, false), now, rules),
         Some(az(9, 15, 0))
     );
-    assert_eq!(bounce_grace(&all, (false, true), due, rules), None);
-    assert_eq!(bounce_grace(&all, (true, false), due, rules), None);
+    assert_eq!(bounce_grace(&all, (false, true), now, rules), None);
+    assert_eq!(bounce_grace(&all, (true, false), now, rules), None);
     for other in [Spam, Delivered, Waiting] {
         assert_eq!(
-            bounce_grace(&[Bounced, other], (false, false), due, rules),
+            bounce_grace(&[Bounced, other], (false, false), now, rules),
             None
         );
     }
-    assert_eq!(bounce_grace(&[], (false, false), due, rules), None);
+    assert_eq!(bounce_grace(&[], (false, false), now, rules), None);
+    let last_second = (second_before(due), due);
+    assert_eq!(
+        bounce_grace(&all, (false, false), last_second, rules),
+        Some(az(9, 15, 0))
+    );
+    assert_eq!(bounce_grace(&all, (false, false), (due, due), rules), None);
+    assert_eq!(
+        bounce_grace(&all, (false, false), (az(9, 15, 0), due), rules),
+        None
+    );
 }
 
 /// TD-PICK-26, TD-PICK-25 (PICK-044, BIZ-039): an emergency pick at 14:00 has one reminder at
@@ -199,6 +211,37 @@ fn td_pick_31_reminder_wording() {
     assert!(reminder_lines(1, az(9, 10, 0), morning, Language::Es)[0].contains("10 a.m."));
     assert!(reminder_lines(1, az(9, 12, 0), morning, Language::Es)[0].contains("3 horas"));
     assert!(reminder_lines(1, az(9, 9, 30), morning, Language::Es)[0].contains("30 minutos"));
+    assert!(
+        reminder_lines(1, az(9, 12, 0), morning, Language::Es)[0].contains("le quedan 3 horas")
+    );
+    assert!(reminder_lines(1, az(9, 10, 0), morning, Language::Es)[0].contains("le queda 1 hora"));
+}
+
+/// PICK-043, D-1974: the Hold line's length follows `WindowRules::hold_minutes`, not a literal.
+#[test]
+fn pick_043_the_hold_line_follows_the_setting() {
+    let (start, due) = (az(9, 10, 0), az(9, 14, 0));
+    let first = reminders(start, due, true, WindowRules::default())[0];
+    let es = reminder_lines(1042, due, first, Language::Es);
+    assert_eq!(
+        es[1],
+        "¿Necesita más tiempo? Pida 2 horas más: confirme antes de las 4 p.m."
+    );
+    let short = WindowRules {
+        hold_minutes: 60,
+        ..WindowRules::default()
+    };
+    let one = reminders(start, due, true, short)[0];
+    assert_eq!(
+        reminder_lines(1042, due, one, Language::En)[1],
+        "Need more time? Hold for 1 more hour: confirm by 3 p.m."
+    );
+    let half = WindowRules {
+        hold_minutes: 90,
+        ..WindowRules::default()
+    };
+    let odd = reminders(start, due, true, half)[0];
+    assert!(reminder_lines(1042, due, odd, Language::En)[1].contains("Hold for 90 more minutes"));
 }
 
 /// TD-PICK-27 (PICK-046, PICK-035, QH-004, D-345, D-420): the lapse lists only the other
@@ -233,24 +276,30 @@ fn td_pick_27_the_lapse_text() {
     assert!(text.ends_with("By picking, you agree to the Terms: askhava.com/terms"));
     let none = lapse_text("Sample Plumbing", &[], "", Language::En);
     assert!(none.contains("We'll text you when another quote comes in.") && !none.contains("911"));
-    assert!(
-        lapse_text("Sample Plumbing", &lines, "x", Language::Es).ends_with("askhava.com/terms")
-    );
+    let es = lapse_text("Sample Plumbing", &lines, "x", Language::Es);
+    assert!(es.ends_with("askhava.com/terms") && es.contains("compartimos su nombre de pila y"));
     assert!(lapse_text("Sample Plumbing", &[], "", Language::Es).contains("otra cotización"));
 }
 
-/// BIZ-033 (D-258, D-491): the owner is told only when another phone confirmed, with the job, the
-/// fee and the member.
+/// BIZ-033 (D-258, D-491, D-1974): the owner is told only when another person confirmed, never of
+/// the owner's own Confirm, with the job, the fee and the member; a $0 fee says none was due.
 #[test]
 fn biz_033_the_owner_hears_of_a_members_confirm() {
     let (owner, member) = (Uuid::new_v4(), Uuid::new_v4());
-    assert!(owner_told(member, Some(owner)) && owner_told(member, None));
-    assert!(!owner_told(owner, Some(owner)));
+    assert!(owner_told(member, owner));
+    assert!(!owner_told(owner, owner));
     assert_eq!(
         member_confirmed_line(1042, 7_500, "Test Member", Language::En),
         "Ask Hava: Test Member confirmed job 1042 and paid the introduction fee by job size, $75. You can see the job in your portal."
     );
     assert!(member_confirmed_line(1042, 2_500, "Test Member", Language::Es).contains("$25"));
+    let free = member_confirmed_line(1042, 0, "Test Member", Language::En);
+    assert_eq!(
+        free,
+        "Ask Hava: Test Member confirmed job 1042. No introduction fee was due for this job. You can see the job in your portal."
+    );
+    let free_es = member_confirmed_line(1042, 0, "Test Member", Language::Es);
+    assert!(!free_es.contains("$0") && free_es.contains("No se debía ninguna cuota"));
 }
 
 /// A job waiting in Awaiting confirm with one page pick of a fake business.

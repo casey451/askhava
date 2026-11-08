@@ -609,20 +609,20 @@ pub enum EmailOutcome {
 
 /// PICK-019, D-345, D-477: the window's new end when the pick notice of a window ending at `due`
 /// had `outcomes`, one per email and address: [`WindowRules::bounce_grace_minutes`] business
-/// minutes more when every one bounced or failed, the job is not an emergency and the grace was
-/// not `granted` before; none otherwise (a spam delivery or a wait counts as sent). The homeowner
-/// gets no text about it (PICK-045).
+/// minutes more when every one bounced or failed, the job is not an emergency, the grace was not
+/// `granted` before and `now` is still before `due` (as [`hold`], D-1974); none otherwise (a spam
+/// delivery or a wait counts as sent). The homeowner gets no text about it (PICK-045).
 #[must_use]
 pub fn bounce_grace(
     outcomes: &[EmailOutcome],
     (emergency, granted): (bool, bool),
-    due: Timestamp,
+    (now, due): (Timestamp, Timestamp),
     rules: WindowRules,
 ) -> Option<Timestamp> {
     let all_bounced = !outcomes.is_empty()
         && outcomes
             .iter()
             .all(|o| matches!(o, EmailOutcome::Bounced | EmailOutcome::Failed));
-    (all_bounced && !emergency && !granted)
+    (all_bounced && !emergency && !granted && now < due)
         .then(|| add_business_minutes(due, rules.bounce_grace_minutes))
 }

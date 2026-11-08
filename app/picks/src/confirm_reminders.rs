@@ -191,16 +191,31 @@ fn business_minutes(from: Timestamp, to: Timestamp) -> u32 {
     low
 }
 
-/// "1 hour", "2 hours" or "30 minutes" (Spanish: "1 hora", "2 horas", "30 minutos").
+/// "1 hour", "2 hours", "1 minute" or "30 minutes" (Spanish: "1 hora", "2 horas", "1 minuto",
+/// "30 minutos").
 fn time_left(minutes: u32, language: Language) -> String {
     let (hours, rest) = (minutes / 60, minutes % 60);
     match (rest, hours, language) {
         (0, 1, Language::En) => "1 hour".to_owned(),
         (0, 1, Language::Es) => "1 hora".to_owned(),
-        (0, n, Language::En) => format!("{n} hours"),
-        (0, n, Language::Es) => format!("{n} horas"),
+        (0, n, Language::En) if n > 0 => format!("{n} hours"),
+        (0, n, Language::Es) if n > 0 => format!("{n} horas"),
+        (1, 0, Language::En) => "1 minute".to_owned(),
+        (1, 0, Language::Es) => "1 minuto".to_owned(),
         (_, _, Language::En) => format!("{minutes} minutes"),
         (_, _, Language::Es) => format!("{minutes} minutos"),
+    }
+}
+
+/// "2 more hours" (Spanish "2 horas más"): the HOLD's length, `minutes` business minutes.
+fn more_time(minutes: u32, language: Language) -> String {
+    let length = time_left(minutes, language);
+    match language {
+        Language::En => match length.split_once(' ') {
+            Some((n, unit)) => format!("{n} more {unit}"),
+            None => length,
+        },
+        Language::Es => format!("{length} más"),
     }
 }
 
@@ -212,11 +227,19 @@ fn short(language: Language) -> &'static str {
 }
 
 /// PICK-037, D-380: the reminder's subject for job `job` ending at `due`, `left` business minutes
-/// after it goes; then the Hold line while a HOLD is offered.
+/// after it goes; then the Hold line while a HOLD is offered. The Hold line's length is the
+/// business minutes from `due` to `r.hold_to`, which [`reminders`] sets to `due` plus
+/// [`WindowRules::hold_minutes`], so the words follow the setting (D-1974).
 #[must_use]
 pub fn reminder_lines(job: u32, due: Timestamp, r: Reminder, language: Language) -> Vec<String> {
     let (b, by) = (short(language), clock(due));
-    let left = time_left(business_minutes(r.at, due), language);
+    let minutes = business_minutes(r.at, due);
+    let left = time_left(minutes, language);
+    let quedan = if minutes == 60 || minutes == 1 {
+        "queda"
+    } else {
+        "quedan"
+    };
     let subject = match (r.last, language) {
         (false, Language::En) => format!("{b}: Reminder: accept job {job} by {by}"),
         (false, Language::Es) => {
@@ -226,18 +249,17 @@ pub fn reminder_lines(job: u32, due: Timestamp, r: Reminder, language: Language)
             "{b}: Last reminder: job {job} has {left} to accept. After {by} the homeowner can pick another quote."
         ),
         (true, Language::Es) => format!(
-            "{b}: Último recordatorio: le queda {left} para aceptar el trabajo {job}. Después de las {by}, el cliente puede elegir otra cotización."
+            "{b}: Último recordatorio: le {quedan} {left} para aceptar el trabajo {job}. Después de las {by}, el cliente puede elegir otra cotización."
         ),
     };
-    let hold = r.hold_to.map(|to| match language {
-        Language::En => format!(
-            "Need more time? Hold for 2 more hours: confirm by {}",
-            clock(to)
-        ),
-        Language::Es => format!(
-            "¿Necesita más tiempo? Pida 2 horas más: confirme antes de las {}",
-            clock(to)
-        ),
+    let hold = r.hold_to.map(|to| {
+        let (more, until) = (more_time(business_minutes(due, to), language), clock(to));
+        match language {
+            Language::En => format!("Need more time? Hold for {more}: confirm by {until}"),
+            Language::Es => {
+                format!("¿Necesita más tiempo? Pida {more}: confirme antes de las {until}")
+            }
+        }
     });
     std::iter::once(subject).chain(hold).collect()
 }
@@ -287,29 +309,37 @@ pub fn lapse_text(name: &str, lines: &[String], link: &str, language: Language) 
             brand().domain()
         ),
         (false, Language::Es) => format!(
-            "{b}: {name} no pudo tomarlo esta vez. Todavía tiene otras cotizaciones:\n{list}\nPara elegir, responda el número y SÍ, por ejemplo 2 SÍ. Al elegir, compartimos su nombre y la dirección del trabajo con esa compañía cuando acepte. O véalas en: {link}\nAl elegir, acepta los Términos: {}/terms",
+            "{b}: {name} no pudo tomarlo esta vez. Todavía tiene otras cotizaciones:\n{list}\nPara elegir, responda el número y SÍ, por ejemplo 2 SÍ. Al elegir, compartimos su nombre de pila y la dirección del trabajo con esa compañía cuando acepte. O véalas en: {link}\nAl elegir, acepta los Términos: {}/terms",
             brand().domain()
         ),
     }
 }
 
-/// BIZ-033, D-258: whether the owner gets the "confirmed by a member" email: only when the phone
-/// that confirmed is not the owner's own (phones are opaque IDs).
+/// BIZ-033, D-258, D-1974: whether the owner gets the "confirmed by a member" email: only when
+/// the person who confirmed is not the owner (both opaque person IDs from `businesses`). The
+/// owner's own Confirm never tells the owner, whether or not the owner has a linked phone.
 #[must_use]
-pub fn owner_told(confirmed_by: Uuid, owner_phone: Option<Uuid>) -> bool {
-    owner_phone != Some(confirmed_by)
+pub fn owner_told(confirmed_by: Uuid, owner: Uuid) -> bool {
+    confirmed_by != owner
 }
 
-/// BIZ-033: the owner's email line naming the job, the fee and the member who confirmed.
+/// BIZ-033, D-1974: the owner's email line naming the job, the fee and the member who confirmed;
+/// a $0 fee says no fee was due instead of "paid ... $0".
 #[must_use]
 pub fn member_confirmed_line(job: u32, fee_cents: i64, member: &str, language: Language) -> String {
     let (b, fee) = (short(language), dollars(fee_cents));
-    match language {
-        Language::En => format!(
+    match (fee_cents > 0, language) {
+        (true, Language::En) => format!(
             "{b}: {member} confirmed job {job} and paid the introduction fee by job size, {fee}. You can see the job in your portal."
         ),
-        Language::Es => format!(
+        (true, Language::Es) => format!(
             "{b}: {member} confirmó el trabajo {job} y pagó la cuota de presentación según el tamaño del trabajo, {fee}. Puede ver el trabajo en su portal."
+        ),
+        (false, Language::En) => format!(
+            "{b}: {member} confirmed job {job}. No introduction fee was due for this job. You can see the job in your portal."
+        ),
+        (false, Language::Es) => format!(
+            "{b}: {member} confirmó el trabajo {job}. No se debía ninguna cuota de presentación por este trabajo. Puede ver el trabajo en su portal."
         ),
     }
 }
