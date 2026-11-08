@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-08T16:05:59Z by runner fb13c6faf315 (actions).
+Updated 2026-11-08T16:21:00Z by runner fcdaabd675b8 (actions).
 
 **Idle since 16:04Z; 156 of 282 done; week 52% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-08T16:05:59Z by runner fb13c6faf315 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 16:04Z (no task in progress)
 - **Week:** 52% used, 90.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:05Z, 0 min before this update
+- **Last run:** 16:06Z, 14 min before this update
 - **Keeper:** last ran 16:05Z, next wake 16:25Z
 
 ## Needs attention
@@ -45,31 +45,31 @@ Updated 2026-11-08T16:05:59Z by runner fb13c6faf315 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 236 of 731 (32.3%) · partial 293 · unstarted 202
+**Requirements verified:** 0 of 731 (0.0%) · partial 529 · unstarted 202
 **Tasks merged (throughput only):** 156 of 282
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 13 | 13 | 9 | 35 |
-| ai | 14 | 10 | 4 | 28 |
-| businesses | 13 | 35 | 10 | 58 |
-| calls | 11 | 13 | 1 | 25 |
-| consent | 14 | 17 | 4 | 35 |
-| fees | 17 | 34 | 1 | 52 |
-| intake | 20 | 14 | 9 | 43 |
-| job-cards | 12 | 9 | 3 | 24 |
-| licensing | 33 | 14 | 1 | 48 |
-| lifecycle | 20 | 8 | 0 | 28 |
-| messaging | 16 | 25 | 4 | 45 |
-| ops-recovery | 2 | 5 | 47 | 54 |
-| privacy | 3 | 25 | 3 | 31 |
-| quiet-hours | 7 | 2 | 0 | 9 |
-| quotes-pick | 24 | 22 | 10 | 56 |
-| recurring | 7 | 1 | 3 | 11 |
-| security | 9 | 37 | 8 | 54 |
+| accessibility | 0 | 26 | 9 | 35 |
+| ai | 0 | 24 | 4 | 28 |
+| businesses | 0 | 48 | 10 | 58 |
+| calls | 0 | 24 | 1 | 25 |
+| consent | 0 | 31 | 4 | 35 |
+| fees | 0 | 51 | 1 | 52 |
+| intake | 0 | 34 | 9 | 43 |
+| job-cards | 0 | 21 | 3 | 24 |
+| licensing | 0 | 47 | 1 | 48 |
+| lifecycle | 0 | 28 | 0 | 28 |
+| messaging | 0 | 41 | 4 | 45 |
+| ops-recovery | 0 | 7 | 47 | 54 |
+| privacy | 0 | 28 | 3 | 31 |
+| quiet-hours | 0 | 9 | 0 | 9 |
+| quotes-pick | 0 | 46 | 10 | 56 |
+| recurring | 0 | 8 | 3 | 11 |
+| security | 0 | 46 | 8 | 54 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 1 | 27 | 28 |
-| wording | 1 | 5 | 26 | 32 |
+| wording | 0 | 6 | 26 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
