@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-08T16:04:08Z by runner 18c61c432579 (actions).
+Updated 2026-11-08T16:04:21Z by runner 18c61c432579 (actions).
 
-**Building: T150 in progress since 15:09Z; 156 of 282 done; week 52% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 16:04Z; 156 of 282 done; week 52% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 156 of 282 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T150 claimed 15:09Z, lease until 18:09Z
+- **Lane:** idle since 16:04Z (no task in progress)
 - **Week:** 52% used, 90.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 15:17Z, 46 min before this update
 - **Keeper:** last ran 14:50Z, next wake 15:10Z
@@ -17,6 +17,7 @@ Updated 2026-11-08T16:04:08Z by runner 18c61c432579 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T150 | picks and quotes: EMERGENCY card and pick emails with the em | MERGE_PENDING | 1 | 54 min | 16:04Z |  |
 | T198 | messaging and portals: daily open-cards email, missed-card a | done | 1 | 71 min | 14:02Z |  |
 | T149 | businesses: sign-up deliverability check with a sample card, | done | 1 | 43 min | 12:00Z |  |
 | T197 | picks: Confirm by email alone with the 4-business-hour windo | done | 1 | 41 min | 08:17Z |  |
@@ -88,7 +89,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T150 (lease until 2026-11-08T18:09:35Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T198", "at": "2026-11-08T14:02:56Z", "input_tokens": 527, "cache_read_input_tokens": 31576171, "output_tokens": 177534, "cache_creation_input_tokens": 677277}
+- {"task": "T150", "at": "2026-11-08T16:04:07Z", "cache_read_input_tokens": 30031867, "output_tokens": 183331, "cache_creation_input_tokens": 751710, "input_tokens": 463}
