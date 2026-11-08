@@ -1,0 +1,43 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT sample_sent_at IS NOT NULL AS \"sent!\", answer, ok_reply_at IS NOT NULL AS \"ok!\" FROM businesses.email_check WHERE member_id = $1 AND business_id = $2",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "sent!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 1,
+        "name": "answer",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "businesses.email_check",
+            "name": "answer"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "ok!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null,
+      true,
+      null
+    ]
+  },
+  "hash": "eb44c471042b0bae24a66f7d2629a63399a9d8ce11fea626dfe6c80c7b88927e"
+}

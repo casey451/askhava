@@ -37,7 +37,7 @@ pub use crate::business_actions::{
     ActionFacts, BUSY_DAYS_ERROR, BUSY_DAYS_MAX, ChargeAsked, FactProblem, FactsForm,
     HELP_REQUEST_KIND, QUOTE_MINUTES_MAX, QuoteFormFacts, action_email_text, action_page,
     ask_about_charge, busy_days, busy_until_line, charge_answer, charge_reply_line, does_line,
-    fee_lines, parse_facts, prefill, quote_form_page, quote_minutes,
+    fee_lines, parse_facts, prefill, quote_form_page, quote_minutes, sample_pick_on_open,
 };
 pub use crate::business_auth::{
     AddressForm, BUSINESS_SESSION_LIFE, BusinessPrincipal, CODE_TRIES, CodeAddress, CodeForm,
@@ -63,6 +63,11 @@ pub use crate::confirm_pay::{
 pub use crate::data_download::{
     ANSWER_WITHIN, Acted, DATA_CODE_ROUTE, DATA_REQUEST_ROUTE, DOWNLOAD_ROUTE, DataRequest,
     DataRequestKind, HeldItem, RequestError, Section, confirm_request, download_file, open_request,
+};
+pub use crate::email_check::{
+    ARRIVED_QUESTION, LAST_STEP_LINE, MailApp, NO_EMAIL_LINE, PICK_ALERT_QUESTION, PICK_DND_LINE,
+    PICK_SKIP_LINE, REPLY_RECEIVED, SAMPLE_PICK_TITLE, Step, StepList, email_check_page,
+    sample_pick_page, steps,
 };
 pub use crate::feedback::{FEEDBACK_ROUTE, SHARE_LABEL, feedback_routes};
 pub use crate::homeowner_portal::{

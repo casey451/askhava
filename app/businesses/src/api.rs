@@ -14,7 +14,9 @@
 //! business STOP email request, the auto-reply rule and the recruiting-email rules (CON-019,
 //! CON-020, BIZ-017, BIZ-032, BIZ-048; T082); complaints with the homeowner's reply, the business's
 //! 5-day reply box, the 3-in-90-days pause and the digest listing, and the owner's email request
-//! when another member links a phone (BIZ-011, BIZ-012, BIZ-029, BIZ-033; T083).
+//! when another member links a phone (BIZ-011, BIZ-012, BIZ-029, BIZ-033; T083); the sign-up inbox check,
+//! the sample card and sample pick, and each person's backup notice address, which
+//! `notice_addresses` adds (BIZ-042, BIZ-043; T149).
 
 use jiff::Timestamp;
 use secrecy::SecretString;
@@ -23,6 +25,10 @@ use sqlx::{Connection, PgConnection};
 
 pub use crate::about_us::{
     ABOUT_US_MAX, AboutUsRefusal, screen as screen_about_us, screen_public_name, set_about_us,
+};
+pub use crate::backup_address::{
+    BACKUP_CHANGED_KIND, backup_changed_words, confirm_backup, notice_addresses, remove_backup,
+    request_backup,
 };
 pub use crate::channel_preference::{
     ChannelError, NoticeChannel, NoticeRecipient, notice_channel, notice_recipients,
@@ -41,6 +47,11 @@ pub use crate::consent::{
     consent_box, consent_wording, may_get_cards, may_recruit, may_text, phone_stopped,
     record_consent, recruiting_email, request_welcome, stop_recruiting, stopped_email_line,
     welcome_lines, welcome_sent,
+};
+pub use crate::deliverability_check::{
+    EmailCheck, InboxAnswer, PICK_ALERT_YES_LIFE, SAMPLE_CARD_KIND, SAMPLE_PICK_KIND, email_check,
+    offer_sample_pick, queue_pick_retests, record_inbox_answer, record_ok_reply, record_pick_alert,
+    sample_card_words, sample_pick_words, send_sample_card, send_sample_pick,
 };
 pub use crate::email_verification::{
     ACTED_BY_ACTION, CHANGED_KIND, CHECK_TRIES, CODE_LIFE, EmailCheckError, RETURNED_KIND,
@@ -74,8 +85,7 @@ pub use crate::signup::{
 pub use crate::status::{AccountStatus, PauseReason, Refused};
 pub use crate::team::{
     Acting, MEMBER_REMOVED_KIND, NoticePurpose, Roles, SenderLink, TeamError, TeamMember,
-    add_member, add_owner, change_phone, members, notice_addresses, remove_member, set_roles,
-    unlink_phone,
+    add_member, add_owner, change_phone, members, remove_member, set_roles, unlink_phone,
 };
 
 /// SEC-038, D-480: whether `by`, a current member of `by.business`, passed a Verify code (to their

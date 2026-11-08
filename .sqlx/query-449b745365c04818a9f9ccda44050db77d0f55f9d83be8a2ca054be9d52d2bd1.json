@@ -1,0 +1,41 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT member_id, mailbox_id FROM businesses.backup_address WHERE business_id = $1 AND member_id = ANY($2) AND verified_at IS NOT NULL AND removed_at IS NULL",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "member_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "businesses.backup_address",
+            "name": "member_id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "mailbox_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "businesses.backup_address",
+            "name": "mailbox_id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "UuidArray"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "449b745365c04818a9f9ccda44050db77d0f55f9d83be8a2ca054be9d52d2bd1"
+}

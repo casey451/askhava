@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO businesses.email_check (member_id, business_id, sample_sent_at) VALUES ($1, $2, $3) ON CONFLICT (member_id) DO UPDATE SET sample_sent_at = $3",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "4344a547f8b13884474268fe0eb9ffcba258c0f41db97fadb513aacf59b4d721"
+}

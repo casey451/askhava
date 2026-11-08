@@ -1,0 +1,30 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO businesses.email_check (member_id, business_id, pick_step_offered_at) SELECT id, business_id, $3 FROM businesses.team_member WHERE id = $1 AND business_id = $2 AND removed_at IS NULL AND confirm_and_billing ON CONFLICT (member_id) DO UPDATE SET pick_step_offered_at = $3 WHERE businesses.email_check.pick_step_offered_at IS NULL RETURNING member_id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "member_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "businesses.email_check",
+            "name": "member_id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "615e802f5ca24cb6cd4a84540318fd50e1960317598959284b9dfdd261b4c91d"
+}
