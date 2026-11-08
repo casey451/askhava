@@ -20,6 +20,11 @@
 //! [`window_start`] (BIZ-034), [`emergency_plan`] and [`emergency_fix_by`] (PICK-044), and
 //! [`read_time_word`] for HOLD, ESPERA, AWAY and AUSENTE texts, with [`WindowRules`] lengths.
 //!
+//! T197: [`reminders`] and [`emergency_reminders`] time the Confirm reminders, sent once through
+//! [`claim_reminder`] with [`reminder_lines`]; [`bounce_grace`] and [`extend_once`] extend a window
+//! once (PICK-019, PICK-037, PICK-043); [`lapse_plan`] and [`lapse_text`] are the PICK-046 text;
+//! [`owner_told`] and [`member_confirmed_line`] the BIZ-033 email; [`window_open`] the Confirm edge.
+//!
 //! T069: [`release`] shows a proven pick's details in the portal once and queues the
 //! [`release_notice`] (PICK-022 to PICK-024, PRIV-005, BIZ-014); [`plan_release`] is its pure rule
 //! (INT-029).
@@ -59,9 +64,14 @@ pub use crate::confirm::{
     WINDOW_KEY, business_reply, check_at_confirm, check_at_pick, confirm_by, fee_line,
     license_at_pick, read_business_word,
 };
+pub use crate::confirm::{EmailOutcome, bounce_grace};
 pub use crate::confirm::{
     EmergencyPlan, HoldAsk, NightLine, TimeRefusal, TimeWord, WindowRules, away_for, away_until,
     emergency_fix_by, emergency_plan, hold, hold_allowed, read_time_word, window_start,
+};
+pub use crate::confirm_reminders::{
+    Extension, LapsePlan, Reminder, claim_reminder, emergency_reminders, extend_once, lapse_plan,
+    lapse_text, member_confirmed_line, owner_told, reminder_lines, reminders, window_open,
 };
 pub use crate::email_code::{
     CodeRoute, ConversationEmail, EmailFrom, OptedOutYes, Texting, check_email_code, code_route,
