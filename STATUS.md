@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-08T08:17:02Z by runner e0b00e85f562 (actions).
+Updated 2026-11-08T08:17:16Z by runner e0b00e85f562 (actions).
 
-**Building: T197 in progress since 07:35Z; 153 of 282 done; week 49% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 08:17Z; 153 of 282 done; week 49% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 153 of 282 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T197 claimed 07:35Z, lease until 10:35Z
+- **Lane:** idle since 08:17Z (no task in progress)
 - **Week:** 49% used, 96.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 07:44Z, 32 min before this update
 - **Keeper:** last ran 07:29Z, next wake 07:49Z
@@ -17,6 +17,7 @@ Updated 2026-11-08T08:17:02Z by runner e0b00e85f562 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T197 | picks: Confirm by email alone with the 4-business-hour windo | MERGE_PENDING | 1 | 41 min | 08:17Z |  |
 | T148 | portals: secure email action links for every former text key | done | 1 | 56 min | 06:57Z |  |
 | T089 | Rate limits per phone, IP and business; brute-force stops | done | 1 | 44 min | 05:26Z |  |
 | T088 | Authorization matrix over every route and actor; token isola | done | 1 | 45 min | 04:25Z |  |
@@ -91,7 +92,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T197 (lease until 2026-11-08T10:35:56Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T148", "at": "2026-11-08T06:57:33Z", "output_tokens": 223969, "cache_read_input_tokens": 33721277, "cache_creation_input_tokens": 803151, "input_tokens": 536}
+- {"task": "T197", "at": "2026-11-08T08:17:02Z", "cache_read_input_tokens": 13160195, "output_tokens": 127895, "input_tokens": 334, "cache_creation_input_tokens": 485530}
