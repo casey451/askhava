@@ -101,7 +101,9 @@ impl Session {
         (self.realm == Realm::Homeowner).then(|| mint.homeowner(self.actor_id))
     }
 
-    /// The proof for an owner-realm read; `None` in any other realm (SEC-046).
+    /// The proof for an owner-realm read; `None` in any other realm (SEC-046). [`current_session`]
+    /// returns an owner session only while it is signed in by `owner_sign_in` and not idle for
+    /// more than 30 minutes (SEC-043, D-1917).
     #[must_use]
     pub fn owner_proof(&self, mint: &SessionMint) -> Option<OwnerSessionProof> {
         (self.realm == Realm::Owner).then(|| mint.owner(self.actor_id))
@@ -193,7 +195,10 @@ pub async fn start_session(
 }
 
 /// The live session the request's cookie names, or `None` for no cookie, an unknown token or
-/// an expired session (SEC-009).
+/// an expired session (SEC-009). An owner-realm session counts only with its
+/// `portals.owner_session` row (so only one `owner_sign_in` started) and at most 30 minutes idle,
+/// the rule `owner_auth::idle_ended` applies, so `Session::owner_proof` never outlives the idle
+/// limit (SEC-043, SEC-046, D-1917). It reads only; `owner_principal` restarts the idle clock.
 ///
 /// # Errors
 ///
@@ -207,8 +212,10 @@ pub async fn current_session(
         return Ok(None);
     };
     let row = sqlx::query!(
-        "SELECT id, realm, actor_id FROM portals.session \
-         WHERE token_sha256 = $1 AND expires_at > $2",
+        "SELECT s.id, s.realm, s.actor_id FROM portals.session s \
+         LEFT JOIN portals.owner_session o ON o.session_id = s.id \
+         WHERE s.token_sha256 = $1 AND s.expires_at > $2 \
+         AND (s.realm <> 'owner' OR o.last_seen_at >= $2 - interval '30 minutes')",
         &sha256(&[cookie.value().as_bytes()])[..],
         now.to_sqlx(),
     )

@@ -59,7 +59,12 @@ CREATE INDEX owner_challenge_expires_idx ON portals.owner_challenge (expires_at)
 REVOKE INSERT, DELETE, TRUNCATE ON portals.owner FROM askhava_app;
 REVOKE UPDATE ON portals.owner FROM askhava_app;
 GRANT UPDATE (password_hash) ON portals.owner TO askhava_app;
-REVOKE UPDATE, DELETE, TRUNCATE ON portals.owner_recovery_code FROM askhava_app;
+-- Recovery codes are made only by the bootstrap (the migration role); the app role may only mark
+-- one used. A TOTP secret never changes once stored: the app role may update only the last step
+-- and a passkey's credential JSON (its counter).
+REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON portals.owner_recovery_code FROM askhava_app;
 GRANT UPDATE (used_at) ON portals.owner_recovery_code TO askhava_app;
+REVOKE UPDATE ON portals.owner_factor FROM askhava_app;
+GRANT UPDATE (totp_last_step, passkey) ON portals.owner_factor TO askhava_app;
 REVOKE TRUNCATE ON portals.owner_factor, portals.owner_session, portals.owner_challenge
   FROM askhava_app;

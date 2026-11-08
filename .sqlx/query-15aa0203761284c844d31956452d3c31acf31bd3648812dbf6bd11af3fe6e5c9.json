@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "INSERT INTO portals.owner_session (session_id, last_seen_at, factor_at) SELECT id, $2, $2 FROM portals.session WHERE token_sha256 = $1 AND realm = 'owner' RETURNING session_id",
+  "query": "INSERT INTO portals.owner_session (session_id, last_seen_at, factor_at) SELECT id, $2, $3 FROM portals.session WHERE token_sha256 = $1 AND realm = 'owner' RETURNING session_id",
   "describe": {
     "columns": [
       {
@@ -18,6 +18,7 @@
     "parameters": {
       "Left": [
         "Bytea",
+        "Timestamptz",
         "Timestamptz"
       ]
     },
@@ -25,5 +26,5 @@
       false
     ]
   },
-  "hash": "c60a4b0a662ff5cb9f5602d924d229455157de400c1b5fddc0917e914f547fac"
+  "hash": "15aa0203761284c844d31956452d3c31acf31bd3648812dbf6bd11af3fe6e5c9"
 }

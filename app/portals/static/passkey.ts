@@ -1,8 +1,9 @@
-// The owner's passkey sign-in in the browser (T086; SEC-005, D-098, D-1919). The page's
-// "Use a passkey" button carries the server's WebAuthn request options (webauthn-rs JSON, with
-// base64url binary fields) in data-options. Pressing it asks the browser for the passkey, writes
-// the answer as JSON into the form's hidden "passkey" field and submits the form, so the password
-// and the passkey go to the server together. Every word shown comes from the page; without
+// The owner's passkey sign-in in the browser (T086; SEC-005, D-098, D-1919). Pressing the page's
+// "Use a passkey" button POSTs the form's CSRF token to the button's data-route, which answers
+// {"challenge": "<row ID>", "options": "<webauthn-rs JSON, base64url binary fields>"} (the page's
+// GET stores no challenge). The script puts the row ID in the hidden "challenge" field, asks the
+// browser for the passkey, writes the answer as JSON into the hidden "passkey" field and submits
+// the form, so the password and the passkey go to the server together. Every word shown comes from the page; without
 // JavaScript the password and code still work.
 
 type Json = Record<string, unknown>;
@@ -48,15 +49,32 @@ function answerJson(credential: PublicKeyCredential): string {
   });
 }
 
+async function fetchOptions(form: HTMLFormElement, route: string): Promise<{ challenge: string; options: string }> {
+  const csrf = new FormData(form).get("csrf");
+  const reply = await fetch(route, {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({ csrf: typeof csrf === "string" ? csrf : "" }),
+  });
+  if (!reply.ok) {
+    throw new Error("no passkey options");
+  }
+  return (await reply.json()) as { challenge: string; options: string };
+}
+
 async function signInWithPasskey(button: HTMLButtonElement): Promise<void> {
   const form = document.getElementById("owner-signin") as HTMLFormElement | null;
   const field = document.getElementById("passkey-answer") as HTMLInputElement | null;
+  const challenge = document.getElementById("passkey-challenge") as HTMLInputElement | null;
   const status = document.getElementById("passkey-status");
-  if (form === null || field === null || button.dataset.options === undefined) {
+  if (form === null || field === null || challenge === null || button.dataset.route === undefined) {
     return;
   }
   try {
-    const publicKey = requestOptions(button.dataset.options);
+    const issued = await fetchOptions(form, button.dataset.route);
+    challenge.value = issued.challenge;
+    const publicKey = requestOptions(issued.options);
     const credential = await navigator.credentials.get({ publicKey });
     if (credential instanceof PublicKeyCredential) {
       field.value = answerJson(credential);

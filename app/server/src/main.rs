@@ -56,16 +56,15 @@ async fn run_migrations(settings: &askhava_core::api::Settings) -> io::Result<()
 }
 
 /// Creates the one owner (SEC-044, D-1918): the token from the host variable, the password as one
-/// line on standard input, over the migration role's URL (the app role cannot insert an owner).
-/// A second run fails. The enrolment secrets go to standard output once, for Casey's own
+/// line on standard input (not echoed on a terminal), over the migration role's URL (the app role
+/// cannot insert an owner). A second run fails. The enrolment secrets go to standard output once, for Casey's own
 /// terminal; errors name no value.
 async fn bootstrap_owner(settings: &askhava_core::api::Settings) -> io::Result<()> {
     use askhava_portals::api::{BOOTSTRAP_TOKEN_VAR, bootstrap_owner};
     use secrecy::ExposeSecret;
     use sqlx::Connection;
     let token = std::env::var(BOOTSTRAP_TOKEN_VAR).ok();
-    let mut password = String::new();
-    io::stdin().read_line(&mut password)?;
+    let password = read_password()?;
     let url = settings
         .migration_database_url()
         .map_err(io::Error::other)?;
@@ -86,6 +85,36 @@ async fn bootstrap_owner(settings: &askhava_core::api::Settings) -> io::Result<(
         out.push('\n');
     }
     io::Write::write_all(&mut io::stdout(), out.as_bytes())
+}
+
+/// Reads one line of standard input. On a terminal the typing is not echoed: `stty -echo` before
+/// the read and `stty echo` after, with std alone (no new crate, D-1918); a pipe is read as is.
+fn read_password() -> io::Result<String> {
+    use std::io::IsTerminal;
+    let terminal = io::stdin().is_terminal();
+    if terminal {
+        io::Write::write_all(&mut io::stderr(), b"Owner password (not shown): ")?;
+        set_echo(false)?;
+    }
+    let mut password = String::new();
+    let read = io::stdin().read_line(&mut password);
+    if terminal {
+        set_echo(true)?;
+        io::Write::write_all(&mut io::stderr(), b"\n")?;
+    }
+    read.map(|_| password)
+}
+
+fn set_echo(on: bool) -> io::Result<()> {
+    let status = std::process::Command::new("stty")
+        .arg(if on { "echo" } else { "-echo" })
+        .stdin(std::process::Stdio::inherit())
+        .status()?;
+    if status.success() {
+        Ok(())
+    } else {
+        Err(io::Error::other("could not turn terminal echo off"))
+    }
 }
 
 /// Reads the listening port from `PORT`. The error never echoes the value.

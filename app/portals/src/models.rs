@@ -365,18 +365,20 @@ pub(crate) async fn use_recovery_code(
     Ok(done.rows_affected() == 1)
 }
 
-/// Adds the owner row to the session whose token hashes to `digest`; returns the session ID.
+/// Adds the owner row to the session whose token hashes to `digest`, last seen at `now` with its
+/// last fresh factor at `factor_at`; returns the session ID.
 pub(crate) async fn insert_owner_session(
     conn: &mut PgConnection,
     digest: &[u8],
-    now: Timestamp,
+    (now, factor_at): (Timestamp, Timestamp),
 ) -> Result<Uuid, sqlx::Error> {
     sqlx::query_scalar!(
         "INSERT INTO portals.owner_session (session_id, last_seen_at, factor_at) \
-         SELECT id, $2, $2 FROM portals.session WHERE token_sha256 = $1 AND realm = 'owner' \
+         SELECT id, $2, $3 FROM portals.session WHERE token_sha256 = $1 AND realm = 'owner' \
          RETURNING session_id",
         digest,
         now.to_sqlx(),
+        factor_at.to_sqlx(),
     )
     .fetch_one(conn)
     .await
@@ -467,6 +469,20 @@ pub(crate) async fn end_owner_sessions(conn: &mut PgConnection) -> Result<u64, s
     Ok(done.rows_affected())
 }
 
+/// Deletes every owner session but `keep` (a password change); returns how many.
+pub(crate) async fn end_other_owner_sessions(
+    conn: &mut PgConnection,
+    keep: Uuid,
+) -> Result<u64, sqlx::Error> {
+    let done = sqlx::query!(
+        "DELETE FROM portals.session WHERE realm = 'owner' AND id <> $1",
+        keep
+    )
+    .execute(conn)
+    .await?;
+    Ok(done.rows_affected())
+}
+
 /// Stores a passkey ceremony's state for `purpose`, ending at `expires`; returns its ID.
 pub(crate) async fn insert_challenge(
     conn: &mut PgConnection,
@@ -482,6 +498,40 @@ pub(crate) async fn insert_challenge(
         expires.to_sqlx(),
     )
     .fetch_one(conn)
+    .await
+}
+
+/// Deletes every challenge expired at `now`.
+pub(crate) async fn sweep_challenges(
+    conn: &mut PgConnection,
+    now: Timestamp,
+) -> Result<(), sqlx::Error> {
+    sqlx::query!(
+        "DELETE FROM portals.owner_challenge WHERE expires_at <= $1",
+        now.to_sqlx()
+    )
+    .execute(conn)
+    .await
+    .map(|_| ())
+}
+
+/// Stores a sign-in challenge's state ending at `expires`, unless `cap` sign-in challenges are
+/// live at `now`; returns its ID, or `None` at the cap.
+pub(crate) async fn insert_sign_in_challenge(
+    conn: &mut PgConnection,
+    (state, expires, cap): (serde_json::Value, Timestamp, i64),
+    now: Timestamp,
+) -> Result<Option<Uuid>, sqlx::Error> {
+    sqlx::query_scalar!(
+        "INSERT INTO portals.owner_challenge (purpose, state, expires_at) \
+         SELECT 'sign_in', $1, $2 WHERE (SELECT count(*) FROM portals.owner_challenge \
+         WHERE purpose = 'sign_in' AND expires_at > $3) < $4 RETURNING id",
+        state,
+        expires.to_sqlx(),
+        now.to_sqlx(),
+        cap,
+    )
+    .fetch_optional(conn)
     .await
 }
 

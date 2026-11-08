@@ -6,10 +6,11 @@
 
 use askhava_portals::api::{
     CookieJar, OwnerAction, OwnerAuth, OwnerAuthError, OwnerPower, PasswordProblem, Realm,
-    SecondFactor, add_owner_totp, bootstrap_owner, change_owner_password,
+    SecondFactor, add_owner_totp, bootstrap_owner, change_owner_password, current_session,
     finish_passkey_registration, owner_power, owner_principal, owner_sign_in, owner_sign_out,
-    owner_signin_page, owner_step_up, passkey_registration_options, password_problem,
-    require_owner_step_up, sign_out_everywhere, start_session,
+    owner_signin_page, owner_step_up, passkey_registered, passkey_registration_options,
+    passkey_sign_in_options, password_problem, require_owner_step_up, sign_out_everywhere,
+    start_session,
 };
 use hmac::{Hmac, KeyInit, Mac};
 use jiff::{SignedDuration, Timestamp};
@@ -101,6 +102,17 @@ async fn td_sec_23_the_bootstrap_creates_the_owner_once(pool: PgPool) {
     .execute(&mut *db)
     .await;
     assert!(insert.is_err(), "the app role cannot create an owner");
+    let code = sqlx::query(
+        "INSERT INTO portals.owner_recovery_code (owner_id, code_sha256) \
+         SELECT id, sha256('fake') FROM portals.owner",
+    )
+    .execute(&mut *db)
+    .await;
+    assert!(code.is_err(), "the app role cannot add a recovery code");
+    let swap = sqlx::query("UPDATE portals.owner_factor SET totp_secret = sha256('fake')::bytea")
+        .execute(&mut *db)
+        .await;
+    assert!(swap.is_err(), "the app role cannot change a TOTP secret");
 }
 
 /// TD-SEC-22 (SEC-043): a 14-character password and a breached 20-character one are refused at
@@ -129,6 +141,7 @@ async fn td_sec_22_short_and_breached_passwords_are_refused(pool: PgPool) {
         .expect("hash");
     assert!(hash.starts_with("$argon2id$"));
     let jar = sign_in(&mut db, &secret, 0).await;
+    let elsewhere = sign_in(&mut db, &secret, 30).await;
     let owner = owner_principal(&mut db, &jar, at(10)).await.expect("read");
     let owner = owner.expect("owner");
     for (bad, problem) in [
@@ -140,6 +153,10 @@ async fn td_sec_22_short_and_breached_passwords_are_refused(pool: PgPool) {
     }
     let good = change_owner_password(&mut db, &owner, ("another fake pass phrase", ROUTE), at(20));
     assert_eq!(good.await, Ok(()));
+    let other = owner_principal(&mut db, &elsewhere, at(40)).await;
+    assert!(other.expect("read").is_none(), "other sessions end");
+    let this = owner_principal(&mut db, &jar, at(40)).await;
+    assert!(this.expect("read").is_some(), "this session stays");
 }
 
 /// TD-SEC-01 owner sign-in rules (SEC-005): the password alone, a wrong code, a wrong password
@@ -196,6 +213,22 @@ async fn td_sec_22_thirty_minutes_idle_ends_the_session(pool: PgPool) {
         .await
         .expect("read");
     assert!(still.is_none());
+    let idle = sign_in(&mut db, &secret, 4000).await;
+    let read = current_session(&mut db, &idle, at(4000 + 1800)).await;
+    assert!(read.expect("read").is_some(), "30:00 idle still a session");
+    let read = current_session(&mut db, &idle, at(4000 + 1860)).await;
+    assert!(
+        read.expect("read").is_none(),
+        "31:00 idle: no session, so no owner proof"
+    );
+    let life = SignedDuration::from_hours(12);
+    let login = (Realm::Owner, Uuid::from_u128(0xd1));
+    let bare = start_session(&mut db, CookieJar::new(), login, life, at(5000)).await;
+    let read = current_session(&mut db, &bare.expect("session"), at(5001)).await;
+    assert!(
+        read.expect("read").is_none(),
+        "only owner_sign_in makes an owner session"
+    );
 }
 
 /// TD-SEC-22 (SEC-043): each listed action with no second factor in the last 5 minutes is refused
@@ -301,6 +334,24 @@ async fn td_sec_06_recovery_needs_two_factors_and_offline_codes(pool: PgPool) {
     let recovered = (PASSWORD, SecondFactor::RecoveryCode(&spaced));
     let ok = owner_sign_in(&mut db, CookieJar::new(), recovered, &auth(), at(50)).await;
     assert!(ok.is_ok(), "two factors plus a paper code signs in");
+    let recovered_jar = ok.expect("signed in");
+    let mut by_code = owner_principal(&mut db, &recovered_jar, at(50))
+        .await
+        .expect("read")
+        .expect("owner");
+    let stale = require_owner_step_up(&mut db, &by_code, (OwnerAction::Settings, ROUTE), at(50));
+    assert_eq!(
+        stale.await,
+        Err(OwnerAuthError::NeedsFreshFactor),
+        "a recovery code is not a fresh factor"
+    );
+    let step = (&auth(), SecondFactor::RecoveryCode(&codes[2]), ROUTE);
+    let refused = owner_step_up(&mut db, &mut by_code, step, at(55)).await;
+    assert_eq!(
+        refused,
+        Err(OwnerAuthError::Refused),
+        "no step-up by recovery code"
+    );
     let reused = (PASSWORD, SecondFactor::RecoveryCode(&codes[0]));
     let again = owner_sign_in(&mut db, CookieJar::new(), reused, &auth(), at(60)).await;
     assert_eq!(
@@ -318,7 +369,7 @@ async fn td_sec_06_recovery_needs_two_factors_and_offline_codes(pool: PgPool) {
         Some(OwnerAuthError::Refused),
         "a code never replaces the password"
     );
-    let page = owner_signin_page("fake-csrf", None, true)
+    let page = owner_signin_page("fake-csrf", false, true)
         .expect("page")
         .to_lowercase();
     assert!(!page.contains("email"), "no email path");
@@ -388,6 +439,22 @@ async fn passkey_answers_must_be_real_and_fresh(pool: PgPool) {
         .await
         .expect("count");
     assert_eq!(left, 0, "a challenge is used once");
+    let unused = passkey_registration_options(&mut db, &owner, (&auth(), ROUTE), at(42)).await;
+    assert!(unused.is_ok());
+    assert!(!passkey_registered(&mut db).await.expect("read"));
+    let options = passkey_sign_in_options(&mut db, &auth(), at(42 + 300)).await;
+    assert_eq!(options, Ok(None), "no passkey, no options");
+    let left: i64 = sqlx::query_scalar("SELECT count(*) FROM portals.owner_challenge")
+        .fetch_one(&mut *db)
+        .await
+        .expect("count");
+    assert_eq!(left, 0, "expired challenges are swept");
+    let page = owner_signin_page("fake-csrf", true, false).expect("page");
+    assert!(page.contains("data-route=\"/owner/sign-in/passkey\""));
+    assert!(
+        page.contains("id=\"passkey-challenge\" value=\"\""),
+        "the GET holds no challenge"
+    );
     let other = OwnerAuth::new("askhava.test", "https://elsewhere.example");
     assert_eq!(other.err(), Some(OwnerAuthError::Passkey));
 }

@@ -48,6 +48,10 @@ pub const RECOVERY_CODE_COUNT: usize = 10;
 pub const MIN_OWNER_FACTORS: i64 = 2;
 /// The owner sign-in page's path (logged as the route of a failed sign-in).
 pub const OWNER_SIGNIN_ROUTE: &str = "/owner/sign-in";
+/// The `POST` that issues a passkey sign-in challenge: [`passkey_sign_in_options`] (D-1919).
+pub const OWNER_PASSKEY_ROUTE: &str = "/owner/sign-in/passkey";
+/// The most passkey sign-in challenges live at once; another is refused until one ends (D-1919).
+pub const MAX_LIVE_SIGN_IN_CHALLENGES: i64 = 20;
 /// The host variable holding the one-time bootstrap token (SEC-044).
 pub const BOOTSTRAP_TOKEN_VAR: &str = "ASKHAVA_OWNER_BOOTSTRAP_TOKEN";
 const MIN_BOOTSTRAP_TOKEN_CHARS: usize = 32;
@@ -477,7 +481,13 @@ pub async fn owner_sign_in(
     })?;
     let token = jar.get(SESSION_COOKIE).map(|c| c.value().to_owned());
     let token = token.ok_or(OwnerAuthError::Database)?;
-    let session = db(m::insert_owner_session(&mut tx, &sha256(&token), now).await)?;
+    // A recovery code is not a fresh factor (SEC-043, D-1917): its session starts stale.
+    let factor_at = match factor {
+        SecondFactor::RecoveryCode(_) => Timestamp::UNIX_EPOCH,
+        _ => now,
+    };
+    let times = (now, factor_at);
+    let session = db(m::insert_owner_session(&mut tx, &sha256(&token), times).await)?;
     let entry = owner_entry(
         owner,
         "portals.owner_signed_in",
@@ -543,8 +553,9 @@ pub async fn require_owner_step_up(
     Err(refuse(conn, why, OwnerAuthError::NeedsFreshFactor, now).await?)
 }
 
-/// Records a fresh second factor for the signed-in owner (the step-up, SEC-043): a good `factor`
-/// restarts the 5-minute window at `now`; a bad one is an `auth_failed` event.
+/// Records a fresh second factor for the signed-in owner (the step-up, SEC-043): a good TOTP code
+/// or passkey answer restarts the 5-minute window at `now`; a bad one, or any recovery code (not
+/// a fresh passkey or TOTP, and left unused), is an `auth_failed` event (D-1917).
 ///
 /// # Errors
 ///
@@ -555,7 +566,8 @@ pub async fn owner_step_up(
     (auth, factor, route): (&OwnerAuth, SecondFactor<'_>, &str),
     now: Timestamp,
 ) -> Result<(), OwnerAuthError> {
-    if !factor_ok(conn, principal.owner, (auth, factor), now).await? {
+    let recovery = matches!(factor, SecondFactor::RecoveryCode(_));
+    if recovery || !factor_ok(conn, principal.owner, (auth, factor), now).await? {
         let why = (
             SecurityEventKind::AuthFailed,
             route,
@@ -632,7 +644,8 @@ pub async fn sign_out_everywhere(
 }
 
 /// Changes the owner password (SEC-043): needs a fresh second factor, then [`password_problem`];
-/// stores the new argon2id hash with an audit row.
+/// stores the new argon2id hash and ends every other owner session (this one stays) with an audit
+/// row, in one transaction.
 ///
 /// # Errors
 ///
@@ -651,6 +664,7 @@ pub async fn change_owner_password(
     let hash = hash_password(new_password)?;
     let mut tx = db(conn.begin().await)?;
     db(m::set_owner_password(&mut tx, principal.owner, &hash).await)?;
+    db(m::end_other_owner_sessions(&mut tx, principal.session).await)?;
     let entry = owner_entry(
         principal.owner,
         "portals.owner_password_changed",
@@ -688,32 +702,51 @@ pub async fn add_owner_totp(
     ))
 }
 
-/// The passkey sign-in options for `passkey.ts` and their challenge row, or `None` when no
-/// passkey is registered (D-098). The row is used once and lasts 5 minutes.
+async fn owner_passkeys(conn: &mut PgConnection) -> Result<Vec<Passkey>, OwnerAuthError> {
+    let Some((owner, _)) = db(m::owner_password(conn).await)? else {
+        return Ok(Vec::new());
+    };
+    Ok(db(m::passkeys(conn, owner).await)?
+        .into_iter()
+        .filter_map(|(_, json)| serde_json::from_value(json).ok())
+        .collect())
+}
+
+/// Whether the owner has a passkey, so the sign-in page shows "Use a passkey" (D-098). It only
+/// reads: the page's `GET` stores nothing (D-1919).
 ///
 /// # Errors
 ///
-/// [`OwnerAuthError::Passkey`] or [`OwnerAuthError::Database`].
+/// [`OwnerAuthError::Database`].
+pub async fn passkey_registered(conn: &mut PgConnection) -> Result<bool, OwnerAuthError> {
+    Ok(!owner_passkeys(conn).await?.is_empty())
+}
+
+/// The passkey sign-in options for `passkey.ts` and their challenge row, or `None` when no
+/// passkey is registered (D-098). Only the `POST` on [`OWNER_PASSKEY_ROUTE`] calls it, never the
+/// page's `GET` (D-1919). It first deletes every expired challenge, and refuses once
+/// [`MAX_LIVE_SIGN_IN_CHALLENGES`] sign-in challenges are live, so the table stays small. The row
+/// is used once and lasts 5 minutes.
+///
+/// # Errors
+///
+/// [`OwnerAuthError::Passkey`] (also when the cap is reached) or [`OwnerAuthError::Database`].
 pub async fn passkey_sign_in_options(
     conn: &mut PgConnection,
     auth: &OwnerAuth,
     now: Timestamp,
 ) -> Result<Option<(Uuid, String)>, OwnerAuthError> {
-    let Some((owner, _)) = db(m::owner_password(conn).await)? else {
-        return Ok(None);
-    };
-    let keys: Vec<Passkey> = db(m::passkeys(conn, owner).await)?
-        .into_iter()
-        .filter_map(|(_, json)| serde_json::from_value(json).ok())
-        .collect();
+    db(m::sweep_challenges(conn, now).await)?;
+    let keys = owner_passkeys(conn).await?;
     if keys.is_empty() {
         return Ok(None);
     }
     let started = auth.webauthn.start_passkey_authentication(&keys);
     let (options, state) = started.map_err(|_| OwnerAuthError::Passkey)?;
     let state = serde_json::to_value(&state).map_err(|_| OwnerAuthError::Passkey)?;
-    let expires = now + CHALLENGE_LIFE;
-    let id = db(m::insert_challenge(conn, "sign_in", state, expires).await)?;
+    let row = (state, now + CHALLENGE_LIFE, MAX_LIVE_SIGN_IN_CHALLENGES);
+    let id = db(m::insert_sign_in_challenge(conn, row, now).await)?;
+    let id = id.ok_or(OwnerAuthError::Passkey)?;
     let options = serde_json::to_string(&options).map_err(|_| OwnerAuthError::Passkey)?;
     Ok(Some((id, options)))
 }
@@ -787,28 +820,24 @@ pub async fn finish_passkey_registration(
 #[template(path = "owner_signin.html")]
 struct SignInView<'a> {
     csrf: &'a str,
-    challenge: String,
-    options: &'a str,
+    passkey: bool,
+    passkey_route: &'a str,
     failed: bool,
 }
 
 /// The owner sign-in page (SEC-005, A11Y-013): password, then a code from an authenticator app
-/// or a recovery code, or "Use a passkey" when `passkey` holds [`passkey_sign_in_options`]'s
-/// answer; `failed` shows the error summary. No email field and no email path (SEC-007).
+/// or a recovery code, or "Use a passkey" when `passkey` ([`passkey_registered`]); that button's
+/// script asks [`OWNER_PASSKEY_ROUTE`] for the options by `POST`. `failed` shows the error
+/// summary. No email field and no email path (SEC-007).
 ///
 /// # Errors
 ///
 /// The template's render error.
-pub fn owner_signin_page(
-    csrf: &str,
-    passkey: Option<(Uuid, &str)>,
-    failed: bool,
-) -> Result<String, askama::Error> {
-    let (challenge, options) = passkey.map_or((String::new(), ""), |(id, o)| (id.to_string(), o));
+pub fn owner_signin_page(csrf: &str, passkey: bool, failed: bool) -> Result<String, askama::Error> {
     SignInView {
         csrf,
-        challenge,
-        options,
+        passkey,
+        passkey_route: OWNER_PASSKEY_ROUTE,
         failed,
     }
     .render()
