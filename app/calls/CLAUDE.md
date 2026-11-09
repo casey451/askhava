@@ -11,7 +11,7 @@ The layer-5 crate for masked calls between a homeowner and the business she conn
 - `src/routing.rs` (T077): the pure `route` (`Party`, `RoutedLine`, `CallTurn`, `Step`, `Attestation`), `job_pin`, `JobPin`, `answer_call` (`IncomingCall`, `Answer`), `TRIES_PER_CALL`, `TRIES_PER_DAY`, `READBACK_AFTER`, `PIN_ALERT` (`calls.pin_tries_exceeded`); its own query `lines_on`.
 - Migration `0116_calls_call_log.sql` (T078): `calls.call_log` (append-only: line, call SID unique, `caller` business or homeowner, `answered_by` person, machine, nobody or unknown, `length_seconds` (bigint), `reached_45s`, `ended_at`).
 - `src/rules.rs` (T078): the pure `talked`, `business_attempt`, `answered_by`, `reached_report_mark`, `REPORT_MARK` (`Caller`, `AnsweredBy`).
-- `src/handlers.rs` (T078): `dial_twiml`, `finished_call` (`FinishedCall`), `log_finished_call`, `call_log` (`LoggedCall`); its own queries.
+- `src/handlers.rs` (T078): `dial_twiml`, `finished_call` (`FinishedCall`), `log_finished_call`, `call_log` (`LoggedCall`); its own queries. T282: `call_start_confirmed` (the dialed leg's `initiated` callback joined to `calls.call_start`) and `LoggedCall::started_at` (D-2129).
 - `src/lifecycle.rs` (T079): `close_line` (`CloseReason`), `close_expired`, `expired`, `LINE_DAYS`; the pure `phone_works` and `gate` (`PhoneStanding`); `request_link`, `last4`; `greeting_twiml`, `GREETING_EN`, `GREETING_ES`; `BUSINESS_NOTICE_KIND` (`messaging.business_notice`), `CANCELLED_TEMPLATE`, `LINK_TEMPLATE`, `LINK_TEXT_TO` (`main_phone`); its own queries. Templates `line_closed_cancelled` and `link_this_phone` (en, es) in `app/messaging/templates/`.
 - `src/routing.rs` (T080): `PinWait` (`PIN_WAIT_KEY`, `ASKHAVA_PIN_WAIT_SECONDS`, `PIN_WAIT_MIN`), `pin_prompt_twiml`, `pin_heard` (`PinHeard`), `PIN_PROMPT`, `PIN_GOODBYE`.
 - `src/voice.rs` (T080): `may_code_call`, `code_call_twiml`; `Approval`, `Conditions`, `SafetySwitch`, `safety_script`, `safety_twiml`, `SafetyCall` (`from_payload`), `SafetyDialer`, `SafetyOutcome`, `place_safety_call` (the `SAFETY_CALL_KIND` handler), `safety_call_key`, `safety_call_answered`, `ring_owner`, `owner_bridge_twiml`; `SAFETY_WITHIN`, `SAFETY_SCRIPT_VERSION`, `SAFETY_CALL_ACTION`, `SAFETY_STOP_ACTION`, `SAFETY_CLAIM_ACTION`, `SAFETY_FAILED_ACTION`, `SAFETY_KEY_ACTION`, `SAFETY_RESULT_ACTION`, `VoiceError` (a `CallsError` or the provider).
@@ -32,6 +32,7 @@ The layer-5 crate for masked calls between a homeowner and the business she conn
 - CALL-025, D-1685, D-2092: 3 tries a call, 6 a day per number and pool number, stored in `calls.pin_try` (a digest of the number, never the number) by one capped upsert per wrong try, recorded per (CallSid, try) so a repeat counts nothing (`voice_turn`); the last try hangs up with one High `calls.pin_tries_exceeded` alert; a used-up number is `Refuse`d before the prompt.
 - CALL-005, D-026, D-1686: after the second wrong try, only a phone linked to a business holding a line on the number, on an A-attested call, gets `ReadBack` of its newest line; the words come from `privacy::api::read_for_readback` (first name and street only); the voice handler connects only on the caller's confirm.
 
+- FEE-022, CALL-008, D-1836, D-2129 (T282): `call_start_confirmed(db, line, parent, dialed, at)` puts `dialed` on the parent's `calls.call_start` row only when it has none, or creates the row at `at` when the webhook's write was lost; it never changes a stored `started_at`. `call_log` joins each logged call's SID to `call_start.dialed_sid` on the same line; `started_at` is `None` when no start was recorded. `dial_twiml` does not yet ask for the dialed leg's status callbacks: TD-CALL-03's test pins its tags (D-2129), so T271 or a harness task adds them with that test.
 - CALL-006, D-1691: calls are never recorded: `dial_twiml` says `record="do-not-record"` and holds the phone as a `SecretString`; no source names a recording verb or callback.
 - CALL-007, CALL-008, D-141, D-1689, D-1690: a person answering, either way and any length, is `talked`; a machine, nobody or an unknown answerer (no `human` detection, D-1690) never is; only the business's calls are `business_attempt`s; the 45-second mark is stored (`reached_45s`) for reports only. Each finished call is logged once per SID with who called (role only), who answered and its length.
 
@@ -64,6 +65,8 @@ The layer-5 crate for masked calls between a homeowner and the business she conn
 
 - Lines close on cancel, no-show, complaint and at 30 days, a cancel tells the business once and no strike is written; a blocked phone hears the PIN prompt and LINK names its last 4 digits; an email-preferred homeowner gets a line; a removed member's phones hear the PIN prompt; the greeting never records or forwards; an unapproved member-linked phone does not connect: `tests/integration/tests/line_lifecycle.rs` (`td_call_05_*`, `td_call_07_*`, `td_call_08_*`).
 
+- A start is never moved by a repeat or late callback, a lost webhook start is created by the callback, and `call_log` returns the joined start: `tests/integration/tests/call_start.rs` (`td_call_15_*`).
+
 - Stored PINs unique on a number, no ID relation, the pool alert on used-up draws, 12 concurrent wrong tries never past 6 with one alert, repeats not counted, Arizona midnight: `tests/integration/tests/call_pins.rs` (`td_call_13_*`) and `src/pins.rs` `tests`.
 
 - PIN prompts, code call, safety switch and call, Casey's bridge: `tests/integration/tests/voice_calls.rs` (`td_call_06_*`, `td_call_09_*`, `td_txt_09_*`, `ops_028_*`). Never add a `url` to `dial_twiml`'s `Number` or a `Play` to a prompt.
@@ -86,5 +89,6 @@ The layer-5 crate for masked calls between a homeowner and the business she conn
 - `tests/integration/tests/no_recording.rs` (TD-CALL-03, TD-CALL-04's log): `cargo test -p askhava-integration --test no_recording`.
 - `tests/integration/tests/line_lifecycle.rs` (TD-CALL-05, TD-CALL-07, TD-CALL-08's gate, TD-BIZ-34's removal case): `cargo test -p askhava-integration --test line_lifecycle`.
 - `tests/integration/tests/call_pins.rs` (TD-CALL-13): `cargo test -p askhava-integration --test call_pins`; `app/server/tests/inbound_voice.rs` (TD-CALL-14) drives `voice_turn` through the route.
+- `tests/integration/tests/call_start.rs` (TD-CALL-15): `cargo test -p askhava-integration --test call_start`.
 - `tests/integration/tests/schema_grants.rs` (TD-SEC-34): the `calls` default ACL and grants.
 - `tests/integration/tests/voice_calls.rs` (TD-CALL-06, TD-CALL-09, TD-TXT-09's T080 cases, OPS-028): `cargo test -p askhava-integration --test voice_calls`.

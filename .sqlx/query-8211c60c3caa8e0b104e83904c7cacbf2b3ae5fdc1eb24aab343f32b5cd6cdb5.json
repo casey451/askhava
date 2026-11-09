@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT caller, answered_by, length_seconds, reached_45s, ended_at FROM calls.call_log WHERE line_id = $1 ORDER BY ended_at, id",
+  "query": "SELECT l.caller, l.answered_by, l.length_seconds, l.reached_45s, l.ended_at,\n           s.started_at AS \"started_at?\" FROM calls.call_log l\n           LEFT JOIN calls.call_start s ON s.dialed_sid = l.call_sid AND s.line_id = l.line_id\n           WHERE l.line_id = $1 ORDER BY l.ended_at, l.id",
   "describe": {
     "columns": [
       {
@@ -57,6 +57,17 @@
             "name": "ended_at"
           }
         }
+      },
+      {
+        "ordinal": 5,
+        "name": "started_at?",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "calls.call_start",
+            "name": "started_at"
+          }
+        }
       }
     ],
     "parameters": {
@@ -69,8 +80,9 @@
       false,
       false,
       false,
+      false,
       false
     ]
   },
-  "hash": "424bdd0efd318b4b184891f96fef633dba4dc4141542b825a679817177cecc03"
+  "hash": "8211c60c3caa8e0b104e83904c7cacbf2b3ae5fdc1eb24aab343f32b5cd6cdb5"
 }
