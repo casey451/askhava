@@ -46,6 +46,7 @@ pub use crate::released_reader::read_released;
 pub use crate::scrub::{
     CommonWords, DEFAULT_COMMON_WORDS, Known, NameMemory, REMOVED, ScrubbedText, is_format, scrub,
 };
+pub use crate::scrub_context::read_inbound_for;
 pub use crate::vault::{
     BASELINE_FLOOR, BASELINE_HOURS, RATE_MULTIPLE, Vault, check_read_rates, find_by_phone,
     rotate_batch, store_contact,

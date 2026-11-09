@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT name FROM privacy.stated_name",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "name",
+        "type_info": "Bytea",
+        "origin": {
+          "Table": {
+            "table": "privacy.stated_name",
+            "name": "name"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "d9dde019c445d9af64f10f5360ba5e2465b8ec246180020b14d596d0c38cb171"
+}
