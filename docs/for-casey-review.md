@@ -4,7 +4,7 @@ These are decisions Claude made on its own and logged so the build never waits (
 
 ## Built pages nobody was putting on the site (plan change, D-2128, November 9)
 
-- **What changed.** Several finished pages had no task putting them on the site: business sign-up, the links in business emails (including the quote form), complaints, "Why was I charged?", the emergency-email switch, the homeowner portal and "Download my data", your own sign-in and owner pages, and the quote page's close button. Eight new tasks (T301 to T308) serve them, two in stage 4 because the business journey needs them, six in stage 5. Nothing needs you.
+- **What changed.** Several finished pages had no task putting them on the site: business sign-up, the links in business emails (including the quote form), complaints, "Why was I charged?", the emergency-email switch, the homeowner portal and "Download my data", your own sign-in and owner pages, and the quote page's close button. Ten new tasks (T301 to T310) serve them, two in stage 4 because the business journey needs them, eight in stage 5; the homeowner check-in answer page is now served by the task that builds it (T231). Nothing needs you.
 
 ## Fourteen finished hand-offs closed in the register (plan change, D-2116, November 9)
 
