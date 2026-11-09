@@ -23787,7 +23787,15 @@
     2103,
     2104,
     2105
-   ]
+   ],
+   "reviewed_sha": "2543ec8b334a30a114deb8bd59b4ab12bd6d58ee",
+   "review_lease": {
+    "task": "T265",
+    "session": "actions-42583579177",
+    "expires": "2026-11-09T11:24:25Z"
+   },
+   "branch": "claude/task/T265-closure-register-check",
+   "head_check_since": null
   },
   {
    "id": "T267",
@@ -25888,7 +25896,7 @@
    }
   }
  },
- "updated_at": "2026-11-09T08:24:38Z",
+ "updated_at": "2026-11-09T08:49:57Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -25986,7 +25994,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "f183f5bd01ba39e7a8786b6177d4ac0e74c987a1",
+ "runner_sha": "2543ec8b334a30a114deb8bd59b4ab12bd6d58ee",
  "starter": "actions",
  "smoke_runs": [
   {
