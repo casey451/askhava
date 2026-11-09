@@ -2,7 +2,7 @@
 
 **Input:** a fourth external, read-only review of `main` at `79dcc63` (45 findings, F1 to F45, and 4 related observations), shared by Casey in chat and treated as untrusted input. Three verifiers checked every item against the code for the overseer; this plan change spot-checked each file and line it acts on against `main` at `4c269f60` before planning anything. Decisions D-2175 to D-2184.
 
-Verdicts: **real** (the code on `main` shows it and no task owns the fix), **owned** (a queued task already covers it), **declined** (wrong, deliberate, or opinion), **Casey** (a product question; no rule changed).
+Verdicts: **real** (the code on `main` shows it and no task owns the fix), **owned** (a queued task already covers it), **declined** (wrong, deliberate, or opinion), **Casey** (a product question; no rule changed). F26 was answered by Casey during the review fix round.
 
 ## Findings
 
@@ -33,20 +33,20 @@ Verdicts: **real** (the code on `main` shows it and no task owns the fix), **own
 | F23 `views[0]` fallback | Real | `find` (`app/picks/src/service.rs:223`) returns another job's view and panics on an empty list | `find` returns `Option`; callers treat a miss as an error | T318 (new) | D-2181 |
 | F24 Lower-case addresses bypass the 911 stripper | Real | `strip_addresses` (`app/intake/src/emergency.rs:258`) needs a capital; "100 smoketree test ave" matches the smoke stem | Case-free suffix and street-word match, no market street names in code | T312 (new) | D-2177 |
 | F25 Inbound texts failing for a non-database reason are lost silently | Real | `answer` (`app/server/src/inbound_text.rs:164`) answers 200 and logs only | One body-free High alert per inbox row | T279 (extended) | D-2182 |
-| F26 Business clock runs every day | Casey | `app/core/src/clock.rs:16`; D-004 and JOB-007 say every day | Open question in `docs/for-casey-review.md`; kept as is unless Casey says otherwise | Casey | D-2175 |
+| F26 Business clock runs every day | Casey decided | `app/core/src/clock.rs:16`; D-004 and JOB-007 say every day | Casey, in chat on November 9: "Yes keep weekends"; the every-day clock stays, D-004 and JOB-007 unchanged | Casey | D-2175 |
 | F27 Out-of-table area code never texted, never alerted | Declined | QH-003 and D-100: a number outside the table is not texted by design | No change | — | D-2175 |
 | F28 Alerts written, never delivered | Owned, extended | `raise_alert` (`app/ops/src/service.rs:96`) only inserts; no handler sends | T204 builds the sender; it now also registers it in `register_handlers` and proves delivery through the worker | T204 (extended) | D-2182 |
 | F29 No backup, restore or drill | Owned | `recovery` is planned | T109, T110, T206, T139, T117 | T109, T110, T206, T139, T117 | D-2175 |
 | F30 Alert rows not de-duplicated | Real | `migrations/0021_ops_audit.sql:33` has no open-once rule; `check_webhook_silence` would raise every run | One open alert per kind and subject; `raise_alert` returns the open one; the silence check scheduled after it | T320 (new), T204 (extended) | D-2182 |
 | F31 Feedback words outside "Delete my data" and the 3-year purge | Real | `migrations/0139_jobs_feedback.sql:12` and `:31`; D-1821 (4) promised a later step | Column-scoped, audited blanking on the text stage and in the delete transaction; withdrawn from the public share | T315 (new) | D-2180 |
-| F32 5-year consent retention has no deletion | Real | `migrations/0053_intake_tables.sql:62`; `docs/legal/privacy-policy.md:91` | A daily sweep deletes CON-022 rows at 1,827 days; an opted-out number keeps a digest; the policy line is Casey's to read | T321 (new) | D-2183 |
+| F32 5-year consent retention has no deletion | Real | `migrations/0053_intake_tables.sql:62`; `docs/legal/privacy-policy.md:91` | A daily sweep deletes CON-022 rows at 1,827 days; an opted-out number keeps its suppression row, the opt-out event it references and its locked phone (PRIV-024 rotation needs it); the policy line is Casey's to read | T321 (new) | D-2183 |
 | F33 `alert_once` spends its marker before the alert | Declined | D-1953's named trade-off | No change | — | D-2175 |
 | F34 Download masking misses bare domains and split numbers | Real | `mask_contact_details` (`app/portals/src/data_download.rs:313`) | Bare domains and line-split digit runs masked | T315 (new) | D-2180 |
 | F35 Confirm page can't load Stripe under the app-wide CSP | Owned | `app/portals/src/security.rs:35` | T261 adds the Confirm-only CSP and its test | T261 | D-946, D-1754, D-2175 |
 | F36 Confirm e2e never exercises the CSP | Owned | `tests/e2e/confirm_pay.spec.ts` | T261's `tests/e2e/confirm_served.spec.ts`, TD-SEC-37 | T261 | D-1754, D-2175 |
 | F37 Public base URL accepts a path | Real | `public_base_url` (`app/core/src/settings.rs:397`) checks host, query and fragment only | A path stops start-up | T286 (extended) | D-2183 |
 | F38 95% floors only for three crates | Real | `tests/coverage_floor.json:5` | Per-file floors for money and privacy files elsewhere | T324 (new, harness) | D-2184 |
-| F39 Read-back can connect a different line | Real | `app/calls/src/pins.rs:299` drops the line; `app/server/src/inbound_voice.rs:206`; `pins.rs:333` picks the newest | The line read back is stored on its try and is the only line the confirm connects | T311 (new) | D-2176 |
+| F39 Read-back can connect a different line | Real | `app/calls/src/pins.rs:299` drops the line; `app/server/src/inbound_voice.rs:206`; `pins.rs:335` picks the newest | The line read back is stored on its try and is the only line the confirm connects | T311 (new) | D-2176 |
 | F40 AI daily cap check-then-act | Owned | `app/ai/src/service.rs:257` | T236's single-statement admission (D-1757) | T236 | D-1757, D-2175 |
 | F41 `adds_fact` skips sentence-start capitals | Real | `app/ai/src/output_checks.rs:281` | Unknown sentence-start words count unless on a data list of openers | T323 (new) | D-2184 |
 | F42 Every business notice held overnight, EMERGENCY too | Real | `app/messaging/src/business_notices.rs:460`; handler not registered (D-1826 (1)) | `emergency: true` passes the night rule; the handler is registered | T313 (new), T251 (extended) | D-2178 |
@@ -71,3 +71,4 @@ Verdicts: **real** (the code on `main` shows it and no task owns the fix), **own
 - Register rows IC-65 to IC-73 and risk R-32 added. IC-71 (the served quote page's cards show no business name, license lines or review links, PICK-041) has no owner and is left for the overseer.
 - The overseer runs an independent review of T311 (security), T314 (money) and T315 (privacy) when each hands in.
 - No task IN_PROGRESS or MERGE_PENDING was edited.
+- Review fix round (Fable review): T321 keeps an opted-out number's phone, suppression row and referenced opt-out event; T319's cap defaults to and is clamped at `EVENTS_PER_HOUR_ALERT` with a per-(kind, route) ceiling; T311 inserts the read-back line with the row and reads it back on a resend; T314 re-judges FEE-050 at the due date less 2 days; T315 replaces the body CHECK; T103 calls `admit_new_request` on its connection and depends on T317; T205 and T304 depend on T314.
