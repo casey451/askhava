@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-09T13:17:37Z by runner 6a4527381c8a (actions).
+Updated 2026-11-09T13:17:49Z by runner 6a4527381c8a (actions).
 
-**Building: T270 in progress since 12:48Z; 170 of 297 done; week 62% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 13:17Z; 170 of 297 done; week 62% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 170 of 297 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T270 claimed 12:48Z, lease until 15:48Z
+- **Lane:** idle since 13:17Z (no task in progress)
 - **Week:** 62% used, 70.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:48Z, 28 min before this update
+- **Last run:** 12:48Z, 29 min before this update
 - **Keeper:** last ran 12:25Z, next wake 12:45Z
 
 ## Needs attention
@@ -17,6 +17,7 @@ Updated 2026-11-09T13:17:37Z by runner 6a4527381c8a (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T270 | picks and payments: the unreachable refund and the fraud war | MERGE_PENDING | 1 | 29 min | 13:17Z |  |
 | T282 | calls and picks: each call's start time reaches the unreacha | done | 2 | 32 min | 12:06Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Date:      2026- |
 | T282 | calls and picks: each call's start time reaches the unreacha | check_failed | 1 | 27 min | 10:49Z |  |
 | T267 | Ally harness: page states move to a shared data file; the ch | done | 1 | 34 min | 09:42Z |  |
@@ -87,7 +88,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T270 (lease until 2026-11-09T15:48:35Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T282", "at": "2026-11-09T12:06:04Z", "input_tokens": 133, "cache_read_input_tokens": 2207187, "output_tokens": 28638, "cache_creation_input_tokens": 187992}
+- {"task": "T270", "at": "2026-11-09T13:17:37Z", "cache_read_input_tokens": 17512010, "input_tokens": 289, "output_tokens": 112371, "cache_creation_input_tokens": 456422}
