@@ -12,15 +12,20 @@
 //! [`send_page_code`] and [`check_page_code`] read the homeowner's phone themselves through
 //! `privacy::api::read_for_pick_code`, so `portals` never sees the number. Events for the business
 //! (the pick notice, the withdrawal notice) are `core.task` rows with IDs only; their emails are
-//! other tasks' (D-491).
+//! other tasks' (D-491). T287 (D-1871): each new pick stores, in its own transaction, the
+//! introduction fee by job size fixed from its chosen quote (`payments::api::fix_fee_at_pick`).
 
 use askhava_adapters::api::{CodeChannel, IdempotencyKey, VerifyAdapter};
 use askhava_core::api::{Guarded, NewTask, enqueue as enqueue_task};
 use askhava_jobs::api::{current, job_number, move_to};
 use askhava_messaging::api::{Language, NewText, Relation, enqueue, render};
 use askhava_ops::api::{Actor, AuditEntry, Change, NewAlert, Severity, audit, raise_alert};
+use askhava_payments::api::{
+    BusinessId, FeeJob, FeeQuote, Period as FeePeriod, PeriodJob, PickedFee, RecurringCap, Service,
+    VisitTier, fee_at_pick, fee_terms_in_force, fix_fee_at_pick,
+};
 use askhava_privacy::api::{Vault, read_for_pick_code};
-use askhava_quotes::api::page_quotes;
+use askhava_quotes::api::{Period, Price, page_quotes, quoted_prices};
 use jiff::Timestamp;
 use jiff::tz::{TimeZone, offset};
 use secrecy::{ExposeSecret, SecretString};
@@ -314,7 +319,8 @@ async fn pick_quote(
 /// pick of `job` as `replaced` with its business's withdrawal notice, moves the job from Quotes
 /// ready to Awaiting confirm (a job already there stays, so the Confirm window does not restart),
 /// and stores the new pick of `quote` with its audit row and pick notice; `inbox` is the text
-/// pick's inbound text, `None` on the page (channel `page`). No fee, free win or release here.
+/// pick's inbound text, `None` on the page (channel `page`). The fee is fixed with the pick
+/// (`new_pick`, D-1871); no free win or release here.
 async fn place(
     tx: &mut PgConnection,
     (job, waiting): (&JobView, Option<(Uuid, i32, Uuid)>),
@@ -336,7 +342,9 @@ async fn place(
     new_pick(tx, (job.job, quote, inbox), (actor, at)).await
 }
 
-/// Stores the pick, its audit row and the pick-notice event.
+/// Stores the pick with the fee fixed from its chosen quote (FEE-005, D-1871), its audit row and
+/// the pick-notice event. A quote whose fee can't be fixed is [`PicksError::Quotes`] and nothing
+/// is stored; the caller rolls its transaction back.
 async fn new_pick(
     tx: &mut PgConnection,
     (job, quote, inbox): (Uuid, usize, Option<Uuid>),
@@ -345,12 +353,98 @@ async fn new_pick(
     let quotes = page_quotes(tx, job).await.map_err(|_| PicksError::Quotes)?;
     let business = quotes.get(quote - 1).ok_or(PicksError::Quotes)?.business;
     let number = i32::try_from(quote).map_err(|_| PicksError::Quotes)?;
+    let fee = picked_fee(tx, job, business).await?;
     let row = (job, business, number, inbox);
     let pick = models::insert_pick(tx, row, at).await?;
+    fix_fee_at_pick(tx, pick, BusinessId(business), job, &fee, at)
+        .await
+        .map_err(|_| PicksError::Database)?;
     pick_audit(tx, actor, "picks.picked", pick).await?;
     let payload = serde_json::json!({ "pick": pick, "job": job, "business": business });
     event(tx, PICK_MADE_KIND, pick, payload, at).await?;
     Ok(pick)
+}
+
+/// FEE-005, FEE-007, D-1415, D-1871, D-2210: the introduction fee by job size of `business`'s
+/// chosen quote on `job`, from its amounts and period alone under the fee terms in force, through
+/// `quotes::api` and `payments::api` only.
+async fn picked_fee(
+    tx: &mut PgConnection,
+    job: Uuid,
+    business: Uuid,
+) -> Result<PickedFee, PicksError> {
+    let prices = quoted_prices(tx, job)
+        .await
+        .map_err(|_| PicksError::Quotes)?;
+    let price = prices
+        .into_iter()
+        .find(|q| q.business == business && !q.withdrawn)
+        .and_then(|q| q.price)
+        .ok_or(PicksError::Quotes)?;
+    let (chosen, period, facts) = fee_inputs(&price).ok_or(PicksError::Quotes)?;
+    let terms = fee_terms_in_force(tx)
+        .await
+        .map_err(|_| PicksError::Database)?;
+    fee_at_pick(chosen, period, facts, terms.mode(), None).map_err(|_| PicksError::Quotes)
+}
+
+/// FEE-005, D-1415, D-2210: the fee inputs a stored price gives: the quote, its period and the
+/// job facts. No job stores its category or job type yet, so the facts are the defaults (the $25
+/// set tier, not fee-free, the $75 recurring cap, no flat-mode edit), a period quote is a recurring
+/// job type and any other one-time. A tiered quote (no one price was chosen) or a per-visit
+/// period has no fee: none.
+fn fee_inputs(price: &Price) -> Option<(FeeQuote, Option<FeePeriod>, PeriodJob)> {
+    let (chosen, period) = match price {
+        Price::Firm(cents) => (FeeQuote::Fixed(*cents), None),
+        Price::Range { low, high, .. } => (
+            FeeQuote::Range {
+                low: *low,
+                high: *high,
+            },
+            None,
+        ),
+        Price::Hourly { rate, hours } => (
+            FeeQuote::Hourly {
+                rate: *rate,
+                hours: *hours,
+            },
+            None,
+        ),
+        Price::VisitFee(fee) => (FeeQuote::DiagnosticVisit { visit_fee: *fee }, None),
+        Price::Monthly { cents, period, .. } => {
+            (FeeQuote::Fixed(*cents), Some(fee_period(*period)?))
+        }
+        Price::Tiers(_) => return None,
+    };
+    let diagnostic_visit = matches!(
+        chosen,
+        FeeQuote::DiagnosticVisit { .. } | FeeQuote::Hourly { hours: None, .. }
+    );
+    let facts = PeriodJob {
+        job: FeeJob {
+            diagnostic_visit,
+            visit_tier: VisitTier::DEFAULT,
+            fee_free: false,
+        },
+        service: if period.is_some() {
+            Service::RecurringJobType
+        } else {
+            Service::NotRecurring
+        },
+        cap: RecurringCap::DEFAULT,
+    };
+    Some((chosen, period, facts))
+}
+
+/// REC-002: the fee period of a stored quote period; a per-visit price has none.
+const fn fee_period(period: Period) -> Option<FeePeriod> {
+    match period {
+        Period::Visit => None,
+        Period::Week => Some(FeePeriod::Weekly),
+        Period::Month => Some(FeePeriod::Monthly),
+        Period::Quarter => Some(FeePeriod::Quarterly),
+        Period::Year => Some(FeePeriod::Yearly),
+    }
 }
 
 /// The quote number of the pick on `job` waiting for Confirm, if any: the page checks it before

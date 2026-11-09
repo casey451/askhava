@@ -2067,3 +2067,10 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **Someone who opted out of texts** still gets the banner and the follow-up (email or your call list), never an automated call (D-2189).
 - **One known gap (D-2188).** The intake step still writes its usual replies into the text queue while texting is off. They are never sent while it is off, but they must not go out late once texting is back; a small follow-up task is listed for that.
 - **Nothing needs you.**
+
+## The fee fixed at the pick is stored and checked before any charge (T287, D-1871, D-2210 to D-2212, November 9)
+
+- **What changed.** When a homeowner picks, Ask Hava now stores the introduction fee by job size for that pick, worked out from the chosen quote alone. A "Confirm and pay" press must ask for exactly that amount, for that business and job, or nothing is charged and Stripe is never called.
+- **A fee-mode switch after a pick.** If you switch between tiers and flat after a homeowner picked but before the business confirms, that pick is refused at Confirm with no charge (D-1871). A pick made after the switch still needs the business to accept the new card authorization first (D-072). If the business already passed the check when you switch, its charge goes through at the stored fee and is recorded.
+- **One known gap (D-2210).** Jobs do not yet store their category and job type, so for now every pick is priced with the default category facts: the $25 visit fee size, no fee-free job types and the $75 recurring cap. A quote with packages (tiers) can't be picked until the homeowner's package choice is stored. This matches every category shipped today, but a fee-free job type would still be charged until a later task stores the job's category.
+- **Nothing needs you.**

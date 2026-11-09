@@ -14,7 +14,10 @@
 //! and must gate the charge itself: it runs before the Stripe charge and returns the
 //! [`Authorized`] proof; [`record_fee_at_confirm`] takes that proof and writes the fee fixed at
 //! the pick to the ledger after the charge, with no second authorization read, so a charge that
-//! succeeded is always recorded (D-1415). No function here takes a final bill or a check-in reply, so a
+//! succeeded is always recorded (D-1415). T287 (D-1871): the switch stores the terms in
+//! `payments.fee_terms`; [`may_confirm`] takes the pick, reads those terms itself and refuses a
+//! pick whose stored fee was fixed under another mode before any charge; [`record_fee_at_confirm`]
+//! writes the stored fee of that pick. No function here takes a final bill or a check-in reply, so a
 //! PROBLEM reply about the bill can never change a fee (FEE-006, JOB-016, D-071).
 
 use askhava_adapters::api::{IdempotencyKey, PaymentsAdapter};
@@ -29,7 +32,8 @@ use crate::ledger::{Appended, EntryKind, LedgerEntry, LedgerError, NewEntry, led
 use crate::models::{
     AUTHORIZATION_TEXT, AUTHORIZATION_VERSION, BusinessId, CardError, CustomerId, SavedCard,
 };
-use crate::rules::{Fee, FeeMode, FeeTerms, PickedFee};
+use crate::pick_fee::{fee_terms_in_force, pick_fee};
+use crate::rules::{FeeMode, FeeTerms};
 
 /// The idempotency action for a business's Stripe customer (SEC-018): the key is derived from the
 /// business ID only, so a repeated sign-up step makes one customer.
@@ -193,9 +197,14 @@ pub enum ConfirmError {
     /// A charged fee came without a Stripe charge ID (`ch_…`), or a $0 fee with one (FEE-006).
     #[error("the charge ID does not fit the fee")]
     ChargeId,
-    /// The [`Authorized`] proof is for another business or another fee mode than the pick's.
+    /// The [`Authorized`] proof is for another pick, business or fee mode than the stored fee,
+    /// or the pick has no fee fixed (a wiring error, D-1417, D-1871).
     #[error("the authorization proof does not match the Confirm")]
     Mismatch,
+    /// The fee mode changed after the pick: its fee was fixed under other terms, so nothing is
+    /// charged and the pick ends with no fee (FEE-005, FEE-007, D-1871).
+    #[error("the fee terms changed after this pick")]
+    FeeModeChanged,
     /// The ledger refused the entry.
     #[error("the ledger refused the fee entry")]
     Ledger(#[from] LedgerError),
@@ -204,21 +213,32 @@ pub enum ConfirmError {
     Database,
 }
 
-/// FEE-007, D-072: switches the fee mode, logging the change with the owner as actor in the
-/// caller's transaction (JOB-005), and returns the new terms (the next authorization version) for
-/// the caller to store as the owner-portal setting in that same transaction. Choosing the mode in
-/// force logs nothing and returns none.
+/// FEE-007, D-072, D-1871: switches the fee mode in force to `to`, in its own transaction on
+/// `conn`: the stored terms row is locked, the switch logged with the owner as actor (JOB-005) and
+/// `payments.fee_terms` updated to the new terms (the next authorization version), which it
+/// returns. Choosing the mode in force logs and stores nothing and returns none. A pick fixing its
+/// fee holds the row's share lock, so a switch waits for it (and it for the switch).
 ///
 /// # Errors
 ///
-/// [`ConfirmError::Database`] when the audit row cannot be written.
+/// [`ConfirmError::Database`] when the terms cannot be read or stored or the audit row written;
+/// nothing is then changed.
 pub async fn switch_fee_mode(
     conn: &mut PgConnection,
     owner: Uuid,
-    current: FeeTerms,
     to: FeeMode,
 ) -> Result<Option<FeeTerms>, ConfirmError> {
-    let Some(next) = current.switched(to) else {
+    let mut tx = conn.begin().await.map_err(|_| ConfirmError::Database)?;
+    let row = sqlx::query!("SELECT mode, authorization_version FROM payments.fee_terms FOR UPDATE")
+        .fetch_one(&mut *tx)
+        .await
+        .map_err(|_| ConfirmError::Database)?;
+    let from = if row.mode == FeeMode::Flat.code() {
+        FeeMode::Flat
+    } else {
+        FeeMode::Tiers
+    };
+    let Some(next) = FeeTerms::new(from, row.authorization_version).switched(to) else {
         return Ok(None);
     };
     let entry = AuditEntry {
@@ -227,13 +247,22 @@ pub async fn switch_fee_mode(
         subject_kind: FEE_MODE_SUBJECT_KIND,
         subject_id: FEE_MODE_ID,
         change: Change::Status {
-            from: current.mode().code(),
+            from: from.code(),
             to: to.code(),
         },
     };
-    audit(conn, &entry)
+    audit(&mut tx, &entry)
         .await
         .map_err(|_| ConfirmError::Database)?;
+    sqlx::query!(
+        "UPDATE payments.fee_terms SET mode = $1, authorization_version = $2",
+        to.code(),
+        next.authorization_version(),
+    )
+    .execute(&mut *tx)
+    .await
+    .map_err(|_| ConfirmError::Database)?;
+    tx.commit().await.map_err(|_| ConfirmError::Database)?;
     Ok(Some(next))
 }
 
@@ -267,16 +296,23 @@ pub async fn accept_authorization(
     Ok(())
 }
 
-/// Proof that [`may_confirm`] passed for a business under the fee terms in force: the
-/// authorization version checked before the charge (FEE-007, D-072, D-1415). Only
-/// [`may_confirm`] makes one.
+/// Proof that [`may_confirm`] passed for a pick under the fee terms in force: the pick, its
+/// business and the terms whose authorization version was checked before the charge, whose mode
+/// matched the pick's stored fee (FEE-007, D-072, D-1415, D-1871). Only [`may_confirm`] makes one.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Authorized {
+    pick: Uuid,
     business: BusinessId,
     terms: FeeTerms,
 }
 
 impl Authorized {
+    /// The pick checked.
+    #[must_use]
+    pub const fn pick(self) -> Uuid {
+        self.pick
+    }
+
     /// The business checked.
     #[must_use]
     pub const fn business(self) -> BusinessId {
@@ -290,19 +326,33 @@ impl Authorized {
     }
 }
 
-/// FEE-007, D-072: a business may confirm, and be charged, only once it has accepted the
-/// authorization version `terms` needs; after any fee-mode change it can't confirm until then.
-/// The Confirm step calls this before the Stripe charge, never after, and passes the returned
-/// [`Authorized`] to [`record_fee_at_confirm`] (D-1415).
+/// FEE-005, FEE-007, D-072, D-1871: `business` may confirm `pick`, and be charged, only when the
+/// pick's stored fee was fixed under the fee mode in force (read here, never passed in) and the
+/// business has accepted the authorization version those terms need; after any fee-mode change it
+/// can't confirm until then. The Confirm step calls this before any PaymentIntent is opened or
+/// confirmed, never after, and passes the returned [`Authorized`] to [`record_fee_at_confirm`].
 ///
 /// # Errors
 ///
+/// [`ConfirmError::Mismatch`] when the pick has no stored fee or it is another business's;
+/// [`ConfirmError::FeeModeChanged`] when the mode in force differs from the pick's;
 /// [`ConfirmError::NewAuthorizationNeeded`]; [`ConfirmError::Database`].
 pub async fn may_confirm(
     conn: &mut PgConnection,
     business: BusinessId,
-    terms: FeeTerms,
+    pick: Uuid,
 ) -> Result<Authorized, ConfirmError> {
+    let stored = pick_fee(conn, pick)
+        .await
+        .map_err(|_| ConfirmError::Database)?
+        .filter(|fee| fee.business == business)
+        .ok_or(ConfirmError::Mismatch)?;
+    let terms = fee_terms_in_force(conn)
+        .await
+        .map_err(|_| ConfirmError::Database)?;
+    if terms.mode() != stored.mode {
+        return Err(ConfirmError::FeeModeChanged);
+    }
     let accepted = sqlx::query_scalar!(
         "SELECT max(version) FROM payments.card_authorization WHERE business_id = $1",
         business.0,
@@ -311,7 +361,11 @@ pub async fn may_confirm(
     .await
     .map_err(|_| ConfirmError::Database)?;
     if accepted.is_some_and(|version| version >= terms.authorization_version()) {
-        Ok(Authorized { business, terms })
+        Ok(Authorized {
+            pick,
+            business,
+            terms,
+        })
     } else {
         Err(ConfirmError::NewAuthorizationNeeded)
     }
@@ -329,30 +383,45 @@ pub struct Confirmed<'a> {
     pub charge: Option<&'a str>,
 }
 
-/// FEE-005, FEE-006, FEE-007, FEE-045, JOB-016: writes the fee fixed at the pick to the ledger
-/// after the charge, in the caller's transaction: a charge of exactly `picked`'s amount with its
-/// `ch_…` ID, or a $0 fee-free entry with none. `authorized` is [`may_confirm`]'s proof taken
-/// before the charge; the authorization is not read again here (D-1415). The key is derived from
-/// the job and business IDs only, so a repeat appends once (SEC-018, JOB-006). The amount is
-/// never re-read from a quote, a final bill or a reply.
+/// FEE-005, FEE-006, FEE-007, FEE-045, JOB-016, D-1871: writes the fee stored at `pick` to the
+/// ledger after the charge, in the caller's transaction: a charge of exactly that amount with its
+/// `ch_…` ID, or a $0 fee-free entry with none. `authorized` is [`may_confirm`]'s proof for this
+/// pick, taken before the charge when the pick's mode matched the terms in force; it is compared
+/// with the stored mode, never with the terms now, so a switch committed after the gate cannot
+/// make this write fail (D-1415). The key is derived from the job and business IDs only, so a
+/// repeat appends once (SEC-018, JOB-006). The amount is never re-read from a quote, a final bill
+/// or a reply.
 ///
 /// # Errors
 ///
-/// [`ConfirmError::Mismatch`] when `authorized` is for another business or fee mode;
-/// [`ConfirmError::ChargeId`] for a charged fee without a `ch_…` ID, or a $0 fee with an ID;
-/// [`ConfirmError::Ledger`] when the ledger refuses the entry.
+/// [`ConfirmError::Mismatch`] when the pick has no stored fee, or `authorized` or `confirmed` is
+/// for another pick, business, job or fee mode; [`ConfirmError::ChargeId`] for a charged fee
+/// without a `ch_…` ID, or a $0 fee with an ID; [`ConfirmError::Ledger`] when the ledger refuses
+/// the entry; [`ConfirmError::Database`].
 pub async fn record_fee_at_confirm(
     conn: &mut PgConnection,
     id_secret: &SecretString,
-    (picked, authorized): (&PickedFee, Authorized),
+    (pick, authorized): (Uuid, Authorized),
     confirmed: Confirmed<'_>,
 ) -> Result<Appended, ConfirmError> {
-    if authorized.business != confirmed.business || authorized.terms.mode() != picked.mode() {
+    let stored = pick_fee(conn, pick)
+        .await
+        .map_err(|_| ConfirmError::Database)?
+        .ok_or(ConfirmError::Mismatch)?;
+    let proof = (
+        authorized.pick,
+        authorized.business,
+        authorized.terms.mode(),
+    );
+    let parties = (stored.business, stored.job);
+    if proof != (pick, stored.business, stored.mode)
+        || parties != (confirmed.business, confirmed.job)
+    {
         return Err(ConfirmError::Mismatch);
     }
-    let kind = match (picked.fee(), confirmed.charge) {
-        (Fee::Charged { .. }, Some(id)) if id.starts_with("ch_") => EntryKind::Charge,
-        (Fee::FeeFree { .. }, None) => EntryKind::FeeFreeJobType,
+    let kind = match (stored.charged, confirmed.charge) {
+        (true, Some(id)) if id.starts_with("ch_") => EntryKind::Charge,
+        (false, None) => EntryKind::FeeFreeJobType,
         _ => return Err(ConfirmError::ChargeId),
     };
     let (job, business) = (confirmed.job.to_string(), confirmed.business.0.to_string());
@@ -361,7 +430,7 @@ pub async fn record_fee_at_confirm(
         kind,
         business: Some(confirmed.business.0),
         job: Some(confirmed.job),
-        amount_cents: i64::try_from(picked.cents()).map_err(|_| LedgerError::Amount)?,
+        amount_cents: i64::try_from(stored.cents).map_err(|_| LedgerError::Amount)?,
         stripe_id: confirmed.charge,
         idempotency_key: key.as_str(),
     })?;

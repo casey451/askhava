@@ -329,7 +329,8 @@ pub struct Press<'a> {
     pub business: BusinessId,
     /// The pick's job.
     pub job: Uuid,
-    /// The fee fixed at the pick, in cents (FEE-005); above 0, a $0 pick never charges.
+    /// The fee fixed at the pick, in cents (FEE-005); above 0, a $0 pick never charges. It must
+    /// equal the stored `payments.pick_fee` amount, or the press is `FeeMismatch` (D-1871).
     pub amount_cents: u32,
     /// The card chosen in Stripe Elements, `pm_…`.
     pub payment_method: &'a str,
@@ -376,6 +377,11 @@ pub enum ChargeError {
     /// The business has no Stripe customer.
     #[error("the business has no Stripe customer")]
     NoCustomer,
+    /// The press does not match the fee fixed at the pick: no fee stored, another business or
+    /// job, a $0 fee, another amount, or a PaymentIntent of another amount; Stripe is not called
+    /// (FEE-005, FEE-016, FEE-047, D-1871).
+    #[error("the press does not match the fee fixed at the pick")]
+    FeeMismatch,
     /// The PaymentIntent could not be created or read; nothing was charged.
     #[error("the Stripe request failed")]
     Stripe,

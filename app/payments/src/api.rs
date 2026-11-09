@@ -20,6 +20,8 @@
 //! [`record_fee_at_confirm`] writes it to the ledger at Confirm, never adjusted afterwards
 //! (FEE-006, JOB-016); [`switch_fee_mode`] logs the owner's [`FeeMode`] switch, and
 //! [`may_confirm`] holds each business to the new [`FeeTerms`] authorization (FEE-007, D-072).
+//! T287 (D-1871): [`fee_terms_in_force`] reads the stored terms; [`fix_fee_at_pick`] stores the
+//! fee in the pick's transaction and [`pick_fee`] reads it, the only amount a press may charge.
 //!
 //! T061: [`record_entity_keys`] stores a business's [`EntityKey`]s at sign-up (FEE-011, D-151);
 //! [`waive_at_confirm`] decides, before any charge, whether a pick is a repeat customer (FEE-013)
@@ -111,6 +113,9 @@ pub use crate::models::{
     MoneyEventError, MoneyTotals, MoneyView, PickFacts, PickNow, Press, RefundOutcome, RefundStep,
     RefundTrigger, RefundWhy, STATEMENT_PREFIX, SavedCard, SetupIntentRequest, StripeCharge,
     attempt_label, intent_label, plan_charge,
+};
+pub use crate::pick_fee::{
+    PickFeeError, StoredPickFee, fee_terms_in_force, fix_fee_at_pick, pick_fee,
 };
 pub use crate::purge::{DISPUTE_OPEN_AFTER_DUE, place_dispute_holds, run_dispute_holds};
 pub use crate::receipts::{ChargeReceipt, RECEIPT_KIND, queue_receipt, receipt_for, tier_of_fee};

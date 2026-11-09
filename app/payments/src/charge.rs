@@ -16,7 +16,9 @@
 //! refuses with a 4xx (other than 402 and 429) charged nothing, so the intent is read again. No
 //! transaction or pooled connection is held across a Stripe call (R11). The timers and events
 //! each answer starts are `handlers.rs`'s; a success writes the pick's one FEE-042 evidence
-//! record, [`write_evidence`], in the transaction that stores it (D-1474).
+//! record, [`write_evidence`], in the transaction that stores it (D-1474). T287 (D-1871): both
+//! entry points first hold the press to the fee `payments` stored at the pick (`fee_matches`):
+//! any other amount, business or job, or a $0 fee, is `ChargeError::FeeMismatch` before Stripe.
 
 use std::future::Future;
 
@@ -35,6 +37,7 @@ use crate::handlers::{
 use crate::models::{
     BusinessId, ChargeError, ChargeOutcome, PickNow, Press, attempt_label, intent_label,
 };
+use crate::pick_fee::pick_fee;
 use crate::service::customer_of;
 use crate::status::AttemptStatus;
 
@@ -84,12 +87,47 @@ async fn intent_of(conn: &mut PgConnection, pick: Uuid) -> Result<Option<String>
     .await)
 }
 
+/// FEE-005, FEE-016, FEE-047, D-1871, D-2211: the press matches the fee fixed at its pick: a
+/// stored charged fee of exactly `press.amount_cents` for the press's business and job, and no
+/// PaymentIntent of another amount. Read before anything else, so a mismatch calls no Stripe. A
+/// press from another business on a pick whose PaymentIntent is already open is `MovedOn` (T062's
+/// FEE-017 answer, kept); [`open_intent`] reads that as a mismatch too.
+async fn fee_matches(
+    conn: &mut PgConnection,
+    press: &Press<'_>,
+) -> Result<Option<ChargeOutcome>, ChargeError> {
+    let opened = db(sqlx::query!(
+        "SELECT business_id, amount_cents FROM payments.pick_intent WHERE pick_id = $1",
+        press.pick
+    )
+    .fetch_optional(&mut *conn)
+    .await)?;
+    if opened
+        .as_ref()
+        .is_some_and(|o| o.business_id != press.business.0)
+    {
+        return Ok(Some(ChargeOutcome::MovedOn));
+    }
+    let stored = pick_fee(conn, press.pick)
+        .await
+        .map_err(|_| ChargeError::Database)?
+        .ok_or(ChargeError::FeeMismatch)?;
+    let pressed = (press.business, press.job, u64::from(press.amount_cents));
+    let intent_differs = opened.is_some_and(|o| o.amount_cents != i64::from(press.amount_cents));
+    if !stored.charged || (stored.business, stored.job, stored.cents) != pressed || intent_differs {
+        return Err(ChargeError::FeeMismatch);
+    }
+    Ok(None)
+}
+
 /// The pick's one PaymentIntent, created on the first call under the key derived from
 /// `pick-<id>-intent`, so two tabs, a reload or a retry reach the same one (FEE-047, D-490).
 ///
 /// # Errors
 /// [`ChargeError::BadField`] for a $0 fee or an answer that is not `pi_…`;
-/// [`ChargeError::NoCustomer`]; [`ChargeError::Stripe`] (nothing stored); `Database`.
+/// [`ChargeError::FeeMismatch`] when the press does not match the fee fixed at the pick (no
+/// Stripe call, D-1871); [`ChargeError::NoCustomer`]; [`ChargeError::Stripe`] (nothing stored);
+/// `Database`.
 pub async fn open_intent(
     pool: &PgPool,
     stripe: &impl IntentStripe,
@@ -101,6 +139,9 @@ pub async fn open_intent(
         return Err(ChargeError::BadField);
     }
     let mut conn = db(pool.acquire().await)?;
+    if fee_matches(&mut conn, press).await?.is_some() {
+        return Err(ChargeError::FeeMismatch);
+    }
     if let Some(found) = intent_of(&mut conn, press.pick).await? {
         return Ok(found);
     }
@@ -143,8 +184,9 @@ pub async fn open_intent(
 /// derived from `pick-<id>-try<n>`; nothing here retries a charge.
 ///
 /// # Errors
-/// [`ChargeError::BadField`] for a $0 fee or a card ID that is not `pm_…`; the errors of
-/// [`open_intent`]; [`ChargeError::Database`].
+/// [`ChargeError::BadField`] for a $0 fee or a card ID that is not `pm_…`;
+/// [`ChargeError::FeeMismatch`], checked before anything else is read or sent (D-1871); the
+/// errors of [`open_intent`]; [`ChargeError::Database`].
 pub async fn confirm_and_pay(
     pool: &PgPool,
     stripe: &impl IntentStripe,
@@ -156,6 +198,9 @@ pub async fn confirm_and_pay(
         return Err(ChargeError::BadField);
     }
     let mut conn = db(pool.acquire().await)?;
+    if let Some(stop) = fee_matches(&mut conn, press).await? {
+        return Ok(stop);
+    }
     let repeated = press_status(&mut conn, press).await?;
     drop(conn);
     if let Some(status) = repeated {

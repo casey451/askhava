@@ -9,7 +9,8 @@
 //! Stripe is a scripted fake of `IntentStripe`; the stripe-mock round trip and the adapter form
 //! carrying the description and descriptor are T132's, the Confirm page and the webhook route
 //! T224's (D-1476). The mint itself is taken only in `payments`' unit test and `server`, so this
-//! binary checks the clearing that is the only way to a proof (SEC-030). All IDs are fake.
+//! binary checks the clearing that is the only way to a proof (SEC-030). T287 (D-1871): the press
+//! fixture first stores the fee fixed at the pick. All IDs are fake.
 
 use std::collections::VecDeque;
 use std::sync::Mutex;
@@ -22,6 +23,10 @@ use askhava_payments::api::{
     BusinessId, ChargeError, ChargeOutcome, DESCRIPTOR_MAX, EntryKind, IntentStripe, IntentText,
     LedgerEntry, NewEntry, PickNow, Press, ReleaseError, StripeAccount, VerifiedStripeEvent,
     confirm_and_pay, ledger_append, no_fee_release, paid_release,
+};
+use askhava_payments::api::{
+    FeeJob, FeeMode, FeeQuote, PeriodJob, RecurringCap, Service, VisitTier, fee_at_pick,
+    fix_fee_at_pick,
 };
 use askhava_privacy::api::ReleaseBasis;
 use hmac::{Hmac, KeyInit, Mac};
@@ -150,7 +155,28 @@ async fn pressed(pool: &PgPool, confirm: &'static str) -> Result<ChargeOutcome, 
     }
     let secret = SecretString::from("fake-id-secret-t189".to_owned());
     let at = Timestamp::from_second(NOW).expect("time");
+    fixed(pool, at).await;
     confirm_and_pay(pool, &fake(confirm, vec![]), &secret, &press(1), at).await
+}
+
+/// T287 (D-1871): the $75 fee fixed at `PICK` (a firm $1,000 quote in tiers mode), which the
+/// press must match.
+async fn fixed(pool: &PgPool, at: Timestamp) {
+    let job = PeriodJob {
+        job: FeeJob {
+            diagnostic_visit: false,
+            visit_tier: VisitTier::DEFAULT,
+            fee_free: false,
+        },
+        service: Service::NotRecurring,
+        cap: RecurringCap::DEFAULT,
+    };
+    let fee = fee_at_pick(FeeQuote::Fixed(100_000), None, job, FeeMode::Tiers, None).expect("fee");
+    assert_eq!(fee.cents(), 7500);
+    let mut conn = pool.acquire().await.expect("conn");
+    fix_fee_at_pick(&mut conn, PICK, BUSINESS, JOB, &fee, at)
+        .await
+        .expect("fee fixed");
 }
 
 /// A Stripe event as `adapters` hands it over after the signature check (SEC-016).
