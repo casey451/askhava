@@ -2057,3 +2057,12 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **One known gap (D-2154).** A reply to a request that never got a job, arriving in the very second its 180-day purge runs, may not be seen, and her name, email and address would be cleared (never her phone). The fix sits in a file this task may not change; it is listed for a small follow-up task.
 - **Speed (D-2153).** The "is a hold still on its way" check reads the whole task table. It now runs before the purge takes its lock, so it no longer slows holds or other purges; an index that makes it fast is listed for a small follow-up task.
 - **Nothing needs you.**
+
+## Texting off or suspended: what happens to an emergency (T279, D-2185 to D-2189, November 9)
+
+- **What it does.** You can switch homeowner texting off and record a Twilio suspension (and the restore) from the owner portal once T108 builds the pages; both survive a restart. While texting is off, suspended, or your texting or "all" pause is on, a homeowner's emergency text raises a critical alert for you, turns the site's "Texting is temporarily unavailable" banner on (only you can turn it off), and puts her on your call list. Nothing is texted.
+- **For now, everyone goes on your call list.** The safety email needs the mailing-address footer every email carries, and no setting holds it yet, so the worker puts each homeowner on your call list instead, even one with an email (D-2186). The list shows only who she is by ID, nothing she wrote.
+- **The email's wording is a stand-in.** When the email path is turned on, it reuses the "a text to you didn't go through" email with the safety text inside. That opening is wrong for a safety message; a copy-panel task (WORD-029) should write a proper one before it is used (D-2186).
+- **Someone who opted out of texts** still gets the banner and the follow-up (email or your call list), never an automated call (D-2189).
+- **One known gap (D-2188).** The intake step still writes its usual replies into the text queue while texting is off. They are never sent while it is off, but they must not go out late once texting is back; a small follow-up task is listed for that.
+- **Nothing needs you.**

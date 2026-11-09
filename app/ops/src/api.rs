@@ -3,7 +3,8 @@
 //! The audit log, written in the caller's transaction and exported by cursor (JOB-005, OPS-010,
 //! OPS-011, PRIV-028); the off-database stream events, each a `core.task` row enqueued in the
 //! writing transaction for `server`'s writer (OPS-011, PRIV-029, D-734); alerts holding record
-//! IDs only (PRIV-006); and the owner pause switches with their append-only history (OPS-003).
+//! IDs only (PRIV-006); the owner pause switches with their append-only history (OPS-003); and the
+//! WEB-007 site status banner (`status_banner`, TXT-024, T279).
 
 use askhava_core::api::{NewTask, enqueue};
 use jiff::Timestamp;
@@ -19,6 +20,7 @@ pub use crate::models::{
     Actor, AuditEntry, AuditRow, Change, NewAlert, OpsError, Severity, Switch, is_code_name,
 };
 pub use crate::service::{EXPORT_PAGE_MAX, export_audit, is_paused, raise_alert};
+pub use crate::status_banner::{BannerBy, banner_shown, clear_banner, show_banner};
 
 /// The `core.task` kind of one off-database stream event; `server` registers its writer
 /// (`app/server/src/offdb_stream.rs`), since `ops` calls no adapter (OPS-011, D-491).

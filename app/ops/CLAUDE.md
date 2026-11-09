@@ -11,6 +11,7 @@ The layer-1 crate that keeps Ask Hava's operating records: the append-only audit
 - `src/models.rs`: `AuditEntry` (`status_change`, `check`), `Change`, `Actor`, `AuditRow` (`to_json`), `NewAlert`, `Severity`, `Switch`, `OpsError`, `is_code_name`.
 - `src/service.rs`: `audit`, `export_audit` (cursor, `EXPORT_PAGE_MAX`), `raise_alert`, `is_paused`, `set_switch`.
 - Migration `0021_ops_audit.sql`: the `ops` schema and its grants, `ops.audit_log` (append-only), `ops.alert`, `ops.pause_switch`, `ops.switch_history` (append-only).
+- `src/status_banner.rs` (T279, D-2187): the WEB-007 banner: `BannerBy` (`System(kind, id)`, `Owner`), `show_banner`, `clear_banner`, `banner_shown` (T101's layout reads it). Migration `0170_ops_status_banner.sql`: `ops.status_banner` (append-only; `shown`, `actor_kind` system/owner, `actor_id`, `cause_kind`, `cause_id`, `changed_at`).
 - `sqlx.toml`: `'TIMESTAMPTZ'` reads as `jiff_sqlx::Timestamp`.
 
 ## Rules it enforces
@@ -24,6 +25,8 @@ The layer-1 crate that keeps Ask Hava's operating records: the append-only audit
 
 - OPS-028, D-1706: `acknowledge_alert` resolves only an open critical alert, with one `ops.alert_acknowledged` system audit row, in one transaction; a repeat writes nothing (`tests/integration/tests/voice_calls.rs::ops_028_*`). JOB-006, D-1705: `audit_once` writes one row per action and subject however often or concurrently it runs; `calls` uses it as the claim before a safety call (`voice_calls.rs::td_call_09_each_safety_call_is_claimed_once_*`).
 
+- WEB-007, TXT-024, D-144 (T279): the banner is the latest `ops.status_banner` row (none: hidden); a change takes the banner's advisory lock and writes nothing when it is already in that state; the system turns it on for an emergency while texting is paused, and only Casey turns it off (the table refuses a hidden row by the system).
+
 ## Never break
 
 - The app role cannot rewrite the audit log or the switch history: `tests/integration/tests/audit_log.rs::app_role_cannot_rewrite_the_audit_log_or_switch_history`.
@@ -34,6 +37,7 @@ The layer-1 crate that keeps Ask Hava's operating records: the append-only audit
 - `OpsError` never carries a value or the database's message (PRIV-016).
 - `ops` depends on `core` only (for `enqueue`; layer 1, `kit/layers.json`); it sends nothing itself.
 - A stream event commits or rolls back with its row: `tests/integration/tests/offdb_stream.rs::every_stream_event_reaches_storage_as_it_happens`.
+- The banner clears only by Casey and its history cannot be rewritten: `tests/integration/tests/suspension_mode.rs::td_txt_33_a_restore_keeps_texting_off_and_only_casey_clears_the_banner`.
 
 ## How to change
 
