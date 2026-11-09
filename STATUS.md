@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-09T10:49:33Z by runner 44be0f583e20 (actions).
+Updated 2026-11-09T10:49:47Z by runner 44be0f583e20 (actions).
 
-**Building: T282 in progress since 10:21Z; 169 of 287 done; week 61% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 10:49Z; 169 of 287 done; week 61% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 169 of 287 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T282 claimed 10:21Z, lease until 13:21Z
+- **Lane:** idle since 10:49Z (no task in progress)
 - **Week:** 61% used, 72.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 10:22Z, 27 min before this update
 - **Keeper:** last ran 10:00Z, next wake 10:20Z
@@ -17,6 +17,7 @@ Updated 2026-11-09T10:49:33Z by runner 44be0f583e20 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T282 | calls and picks: each call's start time reaches the unreacha | MERGE_PENDING | 1 | 27 min | 10:49Z |  |
 | T267 | Ally harness: page states move to a shared data file; the ch | done | 1 | 34 min | 09:42Z |  |
 | T265 | stage exit: a security, money or privacy handoff in the inte | done | 1 | 25 min | 08:49Z |  |
 | T264 | coverage checker: a missing measurement fails, and the total | done | 1 | 24 min | 07:58Z |  |
@@ -87,7 +88,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T282 (lease until 2026-11-09T13:21:49Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T267", "at": "2026-11-09T09:42:28Z", "output_tokens": 38334, "cache_read_input_tokens": 3356128, "cache_creation_input_tokens": 160518, "input_tokens": 147}
+- {"task": "T282", "at": "2026-11-09T10:49:32Z", "cache_creation_input_tokens": 321102, "input_tokens": 224, "cache_read_input_tokens": 9908369, "output_tokens": 74711}
