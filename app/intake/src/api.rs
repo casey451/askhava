@@ -65,8 +65,8 @@ pub use crate::models::{
     IntakeAnswerRow, IntakeError, PropertyRow, RecruitingDemandRow, TermsAcceptanceRow,
 };
 pub use crate::purge::{
-    REQUEST_PURGE_KIND, contact_to_purge, purge_answers, run_purge, run_request_purge,
-    run_request_sweep, sweep_requests,
+    REQUEST_PURGE_KIND, purge_answers, run_purge, run_request_purge, run_request_sweep,
+    sweep_requests,
 };
 pub use crate::question_bank::{
     AiTurn, BankRun, BankSettings, Given, Heard, MAX_ASKED, NOT_SURE, Next, Prompt, SMELL_EN,

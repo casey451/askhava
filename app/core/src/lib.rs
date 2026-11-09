@@ -14,6 +14,7 @@ mod ids;
 mod logging;
 mod rate_limit;
 mod settings;
+mod task_queries;
 mod tasks;
 mod test_control;
 #[cfg(test)]

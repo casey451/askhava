@@ -1,0 +1,21 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT 1 AS \"locked!\" FROM (SELECT pg_advisory_xact_lock_shared(\n           hashtextextended('privacy.retention', 274))) AS lock",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "locked!",
+        "type_info": "Int4",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "96ce54f025649b1f2af3402a1cf53515e53340862c4804ae06e3bdac89331232"
+}
