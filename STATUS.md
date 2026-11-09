@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-09T09:07:50Z by runner f183f5bd01ba (actions).
+Updated 2026-11-09T09:16:15Z by runner f183f5bd01ba (actions).
 
-**Idle since 08:54Z; 168 of 286 done; week 59% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T267 in progress since 09:07Z; 168 of 286 done; week 59% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 168 of 286 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 08:54Z (no task in progress)
+- **Lane:** lane 1: T267 claimed 09:07Z, lease until 12:07Z
 - **Week:** 59% used, 76.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:52Z, 15 min before this update
+- **Last run:** 08:52Z, 23 min before this update
 - **Keeper:** last ran 08:52Z, next wake 09:12Z
 
 ## Needs attention
@@ -71,7 +71,7 @@ Updated 2026-11-09T09:07:50Z by runner f183f5bd01ba (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-09T08:00:02Z (week)): five-hour: 4.1M used, 25.0M left, resets 2026-11-09T11:56:38Z; week: 118.0M used, 76.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-11-26T17:12:43Z.
+- Pacing (session_reading 2026-11-09T08:51:52Z (week)): five-hour: 4.8M used, 24.3M left, resets 2026-11-09T11:56:38Z; week: 118.0M used, 76.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-11-26T17:47:00Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -86,7 +86,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T267 (lease until 2026-11-09T12:07:47Z)
 
 ## Last usage reading
 - {"task": "T265", "at": "2026-11-09T08:49:56Z", "output_tokens": 53038, "input_tokens": 157, "cache_creation_input_tokens": 183579, "cache_read_input_tokens": 4006315}
