@@ -1,22 +1,23 @@
 # Ask Hava build status
 
-Updated 2026-11-09T20:32:16Z by runner df839c1e45ae (actions).
+Updated 2026-11-09T21:18:47Z by runner 5cc846ad546f (actions).
 
-**Building: T287 in progress since 20:32Z; 175 of 312 done; week 68% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 21:18Z; 175 of 312 done; week 68% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 175 of 312 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T287 claimed 20:32Z, lease until 23:32Z
+- **Lane:** idle since 21:18Z (no task in progress)
 - **Week:** 68% used, 58.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:21Z, 10 min before this update
+- **Last run:** 21:18Z, 0 min before this update
 - **Keeper:** last ran 20:21Z, next wake 20:41Z
 
 ## Needs attention
-- Strict plan check red: 1 problem(s) on tasks still to run (+4 on DONE tasks); first: T248: stored context_pct 30% but it measures 34%; regenerate
+- Strict plan check red: 2 problem(s) on tasks still to run (+5 on DONE tasks); first: T287: stored context_pct 35% but it measures 41%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T287 | payments and picks: the fee fixed at the pick is stored by p | QUEUED | 1 | 46 min | 21:18Z | T287 built and smoke green, but prehandin check_pr_change fails: kit/tasks.json T287 owns lacks app/payments/src/models. |
 | T279 | messaging, ops and server: the texting switch and a number s | done | 1 | 47 min | 19:32Z |  |
 | T276 | privacy and messaging: purged photos' sealed objects and orp | done | 1 | 53 min | 17:46Z |  |
 | T275 | adapters and stand-ins: local write-once storage that a raci | done | 1 | 38 min | 16:08Z |  |
@@ -34,9 +35,9 @@ Updated 2026-11-09T20:32:16Z by runner df839c1e45ae (actions).
 | T259 | payments: the Stripe webhook dispatches refund, dispute and  | done | 1 | 61 min | 01:52Z |  |
 | T258 | adapters and payments: a refund is recorded as Stripe report | done | 1 | 80 min | 00:16Z |  |
 | T256 | server: two first texts from one new phone both reach intake | done | 1 | 37 min | 22:00Z |  |
-| T098 | Journey J1 (homeowner) and its variants, keyboard-only, with | done | 1 | 50 min | 20:51Z |  |
 
 ### Plan and harness merges on main
+- 20:44Z Harness: Fable model window from the Thu Nov 12 reset, run to the week limit, then back to the plan's models (D-2225) (#392)
 - 19:01Z Plan: fourth audit — voice confirm line, emergency notices, dispute atomicity, feedback purge, route limits, alerts (D-2200–D-2209, T311–T325) (#388)
 - 22:20Z Plan: wire the real AI into the app — T298 endpoint client, T299 intake wiring (D-2065) (#367)
 - 21:52Z Plan: vendor-call connection audit, war-games overload scenario (T297) (D-2054) (#365)
@@ -87,7 +88,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T287 (lease until 2026-11-09T23:32:13Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T279", "at": "2026-11-09T19:32:58Z", "cache_creation_input_tokens": 794593, "cache_read_input_tokens": 33188322, "input_tokens": 592, "output_tokens": 219866}
+- {"task": "T287", "at": "2026-11-09T21:18:46Z", "input_tokens": 492, "cache_creation_input_tokens": 710526, "cache_read_input_tokens": 39010532, "output_tokens": 176248}

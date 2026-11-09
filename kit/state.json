@@ -24893,8 +24893,8 @@
     "T263",
     "T258"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "QUEUED",
+   "attempts": 1,
    "slug": "fee-fixed-at-pick",
    "type": "harness",
    "stage": "4",
@@ -24905,6 +24905,22 @@
     2212,
     2213,
     2214
+   ],
+   "last_failure": "T287 built and smoke green, but prehandin check_pr_change fails: kit/tasks.json T287 owns lacks app/payments/src/models.rs (ChargeError::FeeMismatch must live there) and app/server/tests/release_recovery.rs (press amount 7500->2500, no expected change). Plan fix needed (D-2213); locked plan not edited.; the last pre-hand-in gate before it: pre-hand-in gate red on 5cc846ad546f (bash scripts/prehandin.sh, D-1300):\n== Sources unchanged\nok  sources\n\n== Secret scan (gitleaks)\nok  gitleaks\n\n== Plan, wording and source rules (as Ci runs them)\nok  pii_scan\nok  trace_spec\nok  validate_tasks\nok  check_catalog\nok  check_legal_docs\nok  check_ai_smell\nok  check_copy\nok  check_code_docs\nok  check_rust_rules\nok  check_crates\nok  check_plan_lock\nok  gen_prompts --check\nok  skip guard\n\n== Change rules against a02170038cc6ba87e9030009da131b75fe0e4143 (check_pr_change.py, branch 'claude/task/T287-fee-fixed-at-pick')\nERROR task paths: app/payments/src/models.rs: not owned by T287\nERROR task paths: app/server/tests/release_recovery.rs: not owned by T287\nchange check: 25 files changed against df839c1; 4 new decision(s); branch 'claude/task/T287-fee-fixed-at-pick'\nFAILED: check_pr_change\n9:18PM INF scanned ~25476184 bytes (25.48 MB) in 916ms\n9:18PM INF no leaks found",
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 221,
+     "head_sha": "5cc846ad546f57593c235d6032d529330ff180d0",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-09T20:32:13Z",
+     "ended_at": "2026-11-09T21:18:46Z",
+     "result": "QUEUED"
+    }
    ]
   },
   {
@@ -25618,12 +25634,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T279",
-   "at": "2026-11-09T19:32:58Z",
-   "cache_creation_input_tokens": 794593,
-   "cache_read_input_tokens": 33188322,
-   "input_tokens": 592,
-   "output_tokens": 219866
+   "task": "T287",
+   "at": "2026-11-09T21:18:46Z",
+   "input_tokens": 492,
+   "cache_creation_input_tokens": 710526,
+   "cache_read_input_tokens": 39010532,
+   "output_tokens": 176248
   },
   "source": "session_reading 2026-11-09T20:21:18Z (week)",
   "by_task": {
@@ -27213,17 +27229,22 @@
    },
    "T287": {
     "estimated_bytes": 638504,
-    "estimated_tokens": 3474104
+    "estimated_tokens": 3474104,
+    "input_tokens": 492,
+    "cache_creation_input_tokens": 710526,
+    "cache_read_input_tokens": 39010532,
+    "output_tokens": 176248,
+    "last_model": "claude-opus-5-5"
    }
   },
   "windows": {
    "five_hour": {
     "start": "2026-11-09T17:46:27Z",
-    "tokens": 6904513
+    "tokens": 11692832
    },
    "week": {
     "start": "2026-11-05T19:01:47Z",
-    "tokens": 212911273
+    "tokens": 217699592
    }
   },
   "session_reading": {
@@ -27234,7 +27255,7 @@
    }
   }
  },
- "updated_at": "2026-11-09T20:32:16Z",
+ "updated_at": "2026-11-09T21:18:47Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -27332,7 +27353,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "df839c1e45ae3a6acec5d0fe8d9c6c1a243759b4",
+ "runner_sha": "5cc846ad546f57593c235d6032d529330ff180d0",
  "starter": "actions",
  "smoke_runs": [
   {
