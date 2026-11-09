@@ -1,23 +1,23 @@
 # Ask Hava build status
 
-Updated 2026-11-09T07:16:43Z by runner efe87274fc9e (actions).
+Updated 2026-11-09T07:33:54Z by runner c6409ed7f846 (actions).
 
-**Idle since 06:56Z; 165 of 286 done; week 59% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 07:16Z; 166 of 286 done; week 59% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 165 of 286 build tasks (owner gates not counted)
+- **Tasks done:** 166 of 286 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 06:56Z (no task in progress)
+- **Lane:** idle since 07:16Z (no task in progress)
 - **Week:** 59% used, 76.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:16Z, 0 min before this update
+- **Last run:** 07:16Z, 17 min before this update
 - **Keeper:** last ran 07:16Z, next wake 07:36Z
 
 ## Needs attention
-- Strict plan check red: 32 problem(s) on tasks still to run (+41 on DONE tasks); first: T255: stored context_pct 25% but it measures 34%; regenerate
+- Strict plan check red: 31 problem(s) on tasks still to run (+43 on DONE tasks); first: T255: stored context_pct 25% but it measures 34%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T262 | calls and server: a random stored PIN per line, unique on it | MERGE_PENDING | 1 | 33 min | 06:56Z |  |
+| T262 | calls and server: a random stored PIN per line, unique on it | done | 1 | 33 min | 06:56Z |  |
 | T257 | privacy and server: the scrubber remembers names across a ho | done | 1 | 56 min | 05:54Z |  |
 | T263 | payments: the monthly fee limit is a hard cap; capacity is r | done | 1 | 49 min | 04:26Z |  |
 | T260 | stand-in and adapters: an unconfirmed PaymentIntent, its on- | done | 1 | 42 min | 03:09Z |  |
@@ -43,7 +43,7 @@ Updated 2026-11-09T07:16:43Z by runner efe87274fc9e (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 268 of 732 (36.6%) · partial 264 · unstarted 200
-**Tasks merged (throughput only):** 165 of 286
+**Tasks merged (throughput only):** 166 of 286
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -78,7 +78,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 45 of 98 done
+- stage 4: 46 of 98 done
 - stage 5: 0 of 42 done
 - stage 6: 0 of 30 done
 - stage 7: 0 of 2 done
