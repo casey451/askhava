@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-09T11:12:16Z by runner be1299246476 (actions).
+Updated 2026-11-09T11:12:24Z by runner be1299246476 (actions).
 
 **Idle since 10:49Z; 169 of 297 done; week 61% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -17,7 +17,7 @@ Updated 2026-11-09T11:12:16Z by runner be1299246476 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T282 | calls and picks: each call's start time reaches the unreacha | MERGE_PENDING | 1 | 27 min | 10:49Z |  |
+| T282 | calls and picks: each call's start time reaches the unreacha | check_failed | 1 | 27 min | 10:49Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Date:      2026- |
 | T267 | Ally harness: page states move to a shared data file; the ch | done | 1 | 34 min | 09:42Z |  |
 | T265 | stage exit: a security, money or privacy handoff in the inte | done | 1 | 25 min | 08:49Z |  |
 | T264 | coverage checker: a missing measurement fails, and the total | done | 1 | 24 min | 07:58Z |  |
