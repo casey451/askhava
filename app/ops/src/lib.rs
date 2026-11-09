@@ -7,3 +7,4 @@
 pub mod api;
 mod models;
 mod service;
+mod status_banner;

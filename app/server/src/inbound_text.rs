@@ -28,7 +28,12 @@
 //! from the same phone continues with the winner's contact; if none is found the whole delivery
 //! rolls back, inbox row included, so Twilio sends it again (PRIV-001, TXT-012, D-1751). A status
 //! callback runs `messaging::api::receive_status`, once per (MessageSid, MessageStatus).
-//! Nothing here logs a phone, a body or a URL (PRIV-016). This file is also compiled into
+//! While homeowner texting is switched off or her number suspended (`messaging::api::load_lines`),
+//! a homeowner's emergency text first runs `messaging::api::emergency_plan` (TXT-021 to TXT-024,
+//! T279, D-2187): `raise_emergency` raises the critical alert once per message, `ops::api` turns the
+//! WEB-007 banner on, `queue_paused_safety` asks for the INT-004 email or Casey's call list, and
+//! intake's safety call is asked for only where the plan keeps it; intake's own step then runs as
+//! usual and nothing here texts. Nothing here logs a phone, a body or a URL (PRIV-016). This file is also compiled into
 //! `tests/integration/tests/inbound_text_route.rs` with `#[path]`, so it names no `crate::` item.
 
 use std::sync::Arc;
@@ -36,14 +41,18 @@ use std::sync::Arc;
 use askhava_adapters::api::{Delivery, VerifiedWebhook, WebhookVendor, refuse, verify_webhook};
 use askhava_businesses::api::{AUTO_REPLY_TEMPLATE, ConsentError, auto_reply_due, phone_stopped};
 use askhava_core::api::Clock;
-use askhava_intake::api::rules::{Check, Inbound, Settings as IntakeSettings, check};
-use askhava_intake::api::{IntakeError, TextIn, receive_reply};
-use askhava_messaging::api::{
-    APP_OPT_OUT_WORDS, HelpSettings, InboundText, InboxError, Language, NewText, OutboxError,
-    Outcome, PROVIDER_OPT_OUT_WORDS, ProviderKeyword, RESUBSCRIBE_WORDS, Relation, enqueue,
-    keyword, on_inbound_text, receive_inbound, receive_status, render, reply_to_help,
-    sender_business,
+use askhava_intake::api::rules::{
+    Check, Inbound, Settings as IntakeSettings, check, safety_call_trigger, wanted_language,
 };
+use askhava_intake::api::{IntakeError, SafetyCallAsk, TextIn, enqueue_safety_call, receive_reply};
+use askhava_messaging::api::{
+    APP_OPT_OUT_WORDS, EmergencyFacts, HelpSettings, InboundText, InboxError, Language,
+    ModeStateError, NewText, OutboxError, Outcome, PROVIDER_OPT_OUT_WORDS, ProviderKeyword,
+    RESUBSCRIBE_WORDS, Relation, SendingNumber, emergency_plan, enqueue, keyword, load_lines,
+    on_inbound_text, queue_paused_safety, raise_emergency, receive_inbound, receive_status, render,
+    reply_to_help, sender_business,
+};
+use askhava_ops::api::{BannerBy, OpsError, show_banner};
 use askhava_privacy::api::{
     CommonWords, Inbound as Read, InboundWords, Known, NameMemory, NewContact, Vault, VaultError,
     find_by_phone, read_inbound, read_inbound_for, store_contact,
@@ -236,10 +245,71 @@ async fn text(
     if relation == Relation::Business {
         return auto_reply(h, db, &msg).await;
     }
+    paused_emergency(h, db, &msg, (to, now)).await?;
     if let Some(error) = unread {
         return Err(Halt::Failed("vault", error));
     }
     intake(h, db, (&msg, &read), now).await
+}
+
+/// TXT-021 to TXT-024, INT-004, WEB-007, CALL-019, D-1805, D-2187: a homeowner's emergency text
+/// while her line is paused (switched off, suspended, or restored and waiting for Casey; the line's
+/// number is the `To` she texted, so a `To` that is no +1 number counts as paused). Once per inbox
+/// message (`raise_emergency`'s claim; a resent delivery does nothing more): the critical alert,
+/// the banner on, the INT-004 email or call-list follow-up, and intake's safety call only when the
+/// plan keeps it. An open line or no 911-list match changes nothing here.
+async fn paused_emergency(
+    h: &Webhooks,
+    db: &mut PgConnection,
+    msg: &InboundText<'_>,
+    (to, now): (&str, Timestamp),
+) -> Step<()> {
+    if !msg.emergency {
+        return Ok(());
+    }
+    let lines = load_lines(db, (SendingNumber::parse(to).ok(), None))
+        .await
+        .map_err(mode_halt)?;
+    let facts = EmergencyFacts {
+        matched: true,
+        call_trigger: safety_call_trigger(msg.text),
+        arrived_at: now,
+        has_email: false,
+        opted_out: false,
+        safety_switch_on: h.intake.safety_call_on,
+    };
+    let Some(plan) = emergency_plan(&lines.homeowner, &facts) else {
+        return Ok(());
+    };
+    let pair = (msg.contact, msg.inbox_id);
+    let line = &lines.homeowner;
+    let Some(raised) = raise_emergency(db, (&plan, line), pair)
+        .await
+        .map_err(ops_halt)?
+    else {
+        return Ok(());
+    };
+    if plan.banner_on {
+        let cause = BannerBy::System("messaging.inbox", msg.inbox_id);
+        show_banner(db, cause, now).await.map_err(ops_halt)?;
+    }
+    let language = wanted_language(msg.text, None);
+    queue_paused_safety(db, pair, language, now)
+        .await
+        .map_err(mode_halt)?;
+    let Some(alert) = raised.alert else {
+        return Ok(());
+    };
+    let ask = SafetyCallAsk {
+        contact: msg.contact,
+        message: msg.inbox_id,
+        arrived_at: now,
+        alert,
+    };
+    enqueue_safety_call(db, msg.text, ask, raised.voice_call)
+        .await
+        .map(|_| ())
+        .map_err(intake_halt)
 }
 
 /// Hands a homeowner's scrubbed text to `intake::api::receive_reply` (TXT-031, INT-019, D-999).
@@ -462,6 +532,22 @@ fn consent_halt(e: ConsentError) -> Halt {
         Halt::Database
     } else {
         Halt::Failed("businesses", variant(&e))
+    }
+}
+
+fn mode_halt(e: ModeStateError) -> Halt {
+    if matches!(e, ModeStateError::Database) {
+        Halt::Database
+    } else {
+        Halt::Failed("mode", variant(&e))
+    }
+}
+
+fn ops_halt(e: OpsError) -> Halt {
+    if matches!(e, OpsError::Database) {
+        Halt::Database
+    } else {
+        Halt::Failed("ops", variant(&e))
     }
 }
 

@@ -1,0 +1,64 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT texting_on, line_state, suspended_since, launch_channel FROM messaging.mode_state WHERE audience = $1 ORDER BY seq DESC LIMIT 1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "texting_on",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "messaging.mode_state",
+            "name": "texting_on"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "line_state",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "messaging.mode_state",
+            "name": "line_state"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "suspended_since",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "messaging.mode_state",
+            "name": "suspended_since"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "launch_channel",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "messaging.mode_state",
+            "name": "launch_channel"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  "hash": "0fc5adca1f871e8bc33fbd8eaddf06878e18dab8c1701aa1e94d205bed5de01e"
+}
