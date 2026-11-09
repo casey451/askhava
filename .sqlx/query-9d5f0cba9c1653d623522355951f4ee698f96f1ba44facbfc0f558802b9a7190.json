@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO payments.fee_limit (business_id, limit_cents) VALUES ($1, $2)\n             ON CONFLICT (business_id) DO UPDATE SET limit_cents = EXCLUDED.limit_cents",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "9d5f0cba9c1653d623522355951f4ee698f96f1ba44facbfc0f558802b9a7190"
+}
