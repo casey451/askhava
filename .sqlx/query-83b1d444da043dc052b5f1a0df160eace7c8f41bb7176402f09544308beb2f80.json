@@ -1,0 +1,24 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT EXISTS (SELECT 1 FROM core.task WHERE kind = $1 AND done_at IS NULL\n           AND starts_with(dedupe_key, $2)) AS \"unfinished!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "unfinished!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "83b1d444da043dc052b5f1a0df160eace7c8f41bb7176402f09544308beb2f80"
+}
