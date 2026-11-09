@@ -6,6 +6,10 @@
 //! the call log, sends the texts, makes the decision at 96 hours and moves the job, calling
 //! `payments::api` for every refund and `jobs::api` for every move (D-491). Texts carry the public
 //! business name, the job number and the masked pool number only, never a homeowner contact.
+//!
+//! T270 (D-1836, D-2145 to D-2147): the 96-hour close and the fraud-warning end act only when
+//! `payments::api::refund_state` reads the pick's refund as `Succeeded`, whatever the refund call
+//! answered; the no-show ends a `paid` or `free` pick, and a pick in neither rolls the move back.
 
 use askhava_adapters::api::PaymentsAdapter;
 use askhava_businesses::api::{NoticePurpose, notice_addresses};
@@ -18,9 +22,9 @@ use askhava_messaging::api::{
 };
 use askhava_ops::api::Actor;
 use askhava_payments::api::{
-    Answer, CallRecord, Caller, Contact, EmailCheck, NoShow, RefundDecision, RefundOutcome,
+    Answer, CallRecord, Caller, Contact, EmailCheck, NoShow, PickRefundState, RefundDecision,
     RefundTrigger, Unmet, UnreachableFacts, decide_unreachable, early_fraud_warning,
-    mark_auto_submit, no_show, request_refund,
+    mark_auto_submit, no_show, refund_state, request_refund,
 };
 use jiff::{SignedDuration, Timestamp};
 use jiff_sqlx::ToSqlx;
@@ -279,7 +283,7 @@ pub async fn queue_reminders(
     Ok(queued)
 }
 
-/// What the 96-hour step did (FEE-022, JOB-027, D-1819).
+/// What the 96-hour step did (FEE-022, JOB-027, D-1819, D-2146).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AtNinetySix {
     /// The decision was carried out (`NotYet`: nothing to do yet).
@@ -291,22 +295,39 @@ pub enum AtNinetySix {
         /// `true` for a disputed charge, `false` for a failed send.
         blocked: bool,
     },
+    /// The refund rule was met and a try is still waiting for Stripe (`sending`, or held
+    /// `pending`): nothing was closed or emailed, so the step runs again once Stripe answers
+    /// (FEE-026, D-1836, D-2146).
+    RefundInFlight,
 }
 
-/// `None` when the pick's fee is refunded or a try is in flight (`payments` finishes it);
-/// `Some(blocked)` when the refund did not go (D-1819).
-const fn refund_waiting(outcome: &RefundOutcome) -> Option<bool> {
-    match outcome {
-        RefundOutcome::Refunded(_) | RefundOutcome::Unchanged => None,
-        RefundOutcome::Blocked => Some(true),
-        RefundOutcome::Failed => Some(false),
+/// FEE-022, FEE-026, FEE-052, D-1836: `None` only when `payments` reads the pick's refund as
+/// `Succeeded`; otherwise what the 96-hour step answers instead of closing anything.
+const fn refund_waiting(state: PickRefundState) -> Option<AtNinetySix> {
+    match state {
+        PickRefundState::Succeeded => None,
+        PickRefundState::InFlight => Some(AtNinetySix::RefundInFlight),
+        PickRefundState::Blocked => Some(AtNinetySix::RefundWaiting { blocked: true }),
+        PickRefundState::Failed | PickRefundState::NoRefund => {
+            Some(AtNinetySix::RefundWaiting { blocked: false })
+        }
     }
 }
 
-/// FEE-022, JOB-027, D-142, D-336, D-1819: the 96-hour decision. A refund goes through
-/// `payments::api::request_refund`; only once it is refunded (or already was) the job moves
-/// Connected to Closed (stopping the check-ins), the call line closes and the business gets the
-/// decision email, each once. A blocked or failed refund changes nothing ([`AtNinetySix::RefundWaiting`]).
+/// D-1836: where `pick`'s refund stands, from `payments::api::refund_state`.
+async fn read_refund(pool: &PgPool, pick: Uuid) -> Result<PickRefundState, PicksError> {
+    let mut conn = pool.acquire().await.map_err(|_| PicksError::Database)?;
+    refund_state(&mut conn, pick)
+        .await
+        .map_err(|_| PicksError::Database)
+}
+
+/// FEE-022, FEE-026, JOB-027, D-142, D-336, D-1819, D-1836: the 96-hour decision. A refund goes
+/// through `payments::api::request_refund`; only when `payments::api::refund_state` then reads it
+/// `Succeeded` (whatever `request_refund` answered) the job moves Connected to Closed (stopping
+/// the check-ins), the call line closes and the business gets the decision email, each once. A
+/// blocked or failed refund changes nothing ([`AtNinetySix::RefundWaiting`]), nor does a try still
+/// waiting for Stripe ([`AtNinetySix::RefundInFlight`]).
 /// A pick refunded before is judged as if it were not, so a run that refunded but stopped before
 /// the close finishes on the next run (`request_refund` sends nothing twice). `NotYet` does
 /// nothing. JOB-027's homeowner text and 72-hour question wait for their templates (D-1818).
@@ -333,11 +354,11 @@ pub async fn decide_at_96_hours(
     }
     if let RefundDecision::Refund(reason) = decision {
         let trigger = (case.pick, RefundTrigger::Rule(reason));
-        let outcome = request_refund(pool, stripe, secret, trigger, now)
+        request_refund(pool, stripe, secret, trigger, now)
             .await
             .map_err(|_| PicksError::Database)?;
-        if let Some(blocked) = refund_waiting(&outcome) {
-            return Ok(AtNinetySix::RefundWaiting { blocked });
+        if let Some(waiting) = refund_waiting(read_refund(pool, case.pick).await?) {
+            return Ok(waiting);
         }
         close_unreachable(pool, case, now).await?;
     }
@@ -377,10 +398,13 @@ async fn close_unreachable(
 /// JOB-013, JOB-027, D-143, D-1819: returns a no-show job to Quotes ready with its line closed and
 /// its pick a no-show (never refunded, FEE-035): a call-contact job whose business placed no call
 /// within 72 hours of the release, or an email-contact job whose homeowner answered NO to the
-/// day-3 question (`day3`, from `jobs`' check-in answer). `true` when moved.
+/// day-3 question (`day3`, from `jobs`' check-in answer). `true` when moved. FEE-035, D-1836,
+/// D-2147: the pick ends as `no_show` with its ended time whether it was `paid` or `free` (a free
+/// first win, a repeat customer or a fee-free job type), in the transaction of the move and the
+/// line close; a pick in neither status rolls all three back.
 ///
 /// # Errors
-/// `Database`, `Job`.
+/// `Database`, `Job`; `MovedOn` when the pick is no longer `paid` or `free` (nothing kept).
 pub async fn no_call_at_72_hours(
     conn: &mut PgConnection,
     case: &ReleasedPick<'_>,
@@ -404,29 +428,35 @@ pub async fn no_call_at_72_hours(
     )
     .await
     .map_err(|_| PicksError::Database)?;
-    end_pick(&mut tx, case.pick, PickStatus::NoShow, now).await?;
+    let connected = [PickStatus::Paid, PickStatus::Free];
+    end_pick(&mut tx, (case.pick, &connected), PickStatus::NoShow, now).await?;
     tx.commit().await.map_err(|_| PicksError::Database)?;
     Ok(true)
 }
 
-/// Ends paid pick `pick` as `to` at `at`; a pick no longer paid is left alone.
+/// D-1836, D-2147: ends pick `pick` as `to` at `at` only while its status is one of `from`;
+/// `MovedOn` when it is in none (the caller's transaction is then dropped, so it rolls back).
 async fn end_pick(
     tx: &mut PgConnection,
-    pick: Uuid,
+    (pick, from): (Uuid, &[PickStatus]),
     to: PickStatus,
     at: Timestamp,
 ) -> Result<(), PicksError> {
-    sqlx::query!(
-        "UPDATE picks.pick SET status = $2, ended_at = $3 WHERE id = $1 AND status = $4",
+    let codes: Vec<&str> = from.iter().map(|s| s.code()).collect();
+    let ended = sqlx::query!(
+        "UPDATE picks.pick SET status = $2, ended_at = $3 WHERE id = $1 AND status = ANY($4)",
         pick,
         to.code(),
         at.to_sqlx() as _,
-        PickStatus::Paid.code(),
+        &codes as &[&str],
     )
     .execute(tx)
     .await
-    .map_err(|_| PicksError::Database)
-    .map(drop)
+    .map_err(|_| PicksError::Database)?;
+    if ended.rows_affected() == 0 {
+        return Err(PicksError::MovedOn);
+    }
+    Ok(())
 }
 
 /// FEE-050: marks `dispute` for auto-submit through `payments::api::mark_auto_submit` only when
@@ -448,24 +478,25 @@ pub async fn dispute_auto_submit(
         .map_err(|_| PicksError::Database)
 }
 
-/// FEE-052, JOB-014, D-491, D-1819: an early fraud warning goes to
-/// `payments::api::early_fraud_warning` (the alert, and the refund of an unreleased charge); once
-/// an unreleased pick's fee is refunded (or already was) its job returns from Payment pending to
-/// Quotes ready and the pick ends as fraud-refunded, together; a blocked or failed refund, or a
-/// job no longer in Payment pending, changes nothing. `true` when moved.
+/// FEE-052, JOB-014, D-491, D-1819, D-1836: an early fraud warning goes to
+/// `payments::api::early_fraud_warning` (the alert, and the refund of an unreleased charge); only
+/// when `payments::api::refund_state` then reads an unreleased pick's refund as `Succeeded` its
+/// job returns from Payment pending to Quotes ready and the pick ends as fraud-refunded, together;
+/// a refund in flight, blocked or failed, or a job no longer in Payment pending, changes nothing.
+/// `true` when moved. Only a `paid` pick ends (FEE-052 never applies to a fee-free pick).
 ///
 /// # Errors
-/// `Database`, `Job`.
+/// `Database`, `Job`; `MovedOn` when the pick is no longer `paid` (the move is rolled back).
 pub async fn fraud_warning(
     pool: &PgPool,
     (stripe, secret): (&impl PaymentsAdapter, &SecretString),
     (pick, job, released): (Uuid, Uuid, bool),
     now: Timestamp,
 ) -> Result<bool, PicksError> {
-    let outcome = early_fraud_warning(pool, stripe, secret, (pick, released), now)
+    early_fraud_warning(pool, stripe, secret, (pick, released), now)
         .await
         .map_err(|_| PicksError::Database)?;
-    if released || refund_waiting(&outcome).is_some() {
+    if released || refund_waiting(read_refund(pool, pick).await?).is_some() {
         return Ok(false);
     }
     let mut conn = pool.acquire().await.map_err(|_| PicksError::Database)?;
@@ -475,7 +506,8 @@ pub async fn fraud_warning(
     if moved.map_err(|_| PicksError::Job)? == Guarded::MovedOn {
         return Ok(false);
     }
-    end_pick(&mut tx, pick, PickStatus::FraudRefunded, now).await?;
+    let paid = (pick, &[PickStatus::Paid][..]);
+    end_pick(&mut tx, paid, PickStatus::FraudRefunded, now).await?;
     tx.commit().await.map_err(|_| PicksError::Database)?;
     Ok(true)
 }
