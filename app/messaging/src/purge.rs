@@ -12,11 +12,12 @@ use std::sync::Arc;
 
 use askhava_adapters::api::{AdapterError, IdempotencyKey, SmsBodyDelete};
 use askhava_core::api::{Claimed, Clock, HandlerError, NewTask, Registry, TaskError, enqueue};
+use askhava_ops::api::{NewAlert, Severity, raise_alert};
 use jiff::{SignedDuration, Timestamp};
 use jiff_sqlx::ToSqlx;
 use secrecy::SecretString;
 use serde_json::json;
-use sqlx::PgConnection;
+use sqlx::{PgConnection, PgPool};
 
 use crate::models::OutboxError;
 
@@ -34,6 +35,10 @@ const DELETE_ATTEMPTS: i32 = 10;
 const DB_FAILED: HandlerError = HandlerError("message body delete database call failed");
 const VENDOR_FAILED: HandlerError = HandlerError("message body delete at the provider failed");
 const BAD_SID: HandlerError = HandlerError("body delete task payload has no message SID");
+const ALERT_FAILED: HandlerError =
+    HandlerError("message body delete failed and its alert was not stored");
+/// The High alert a body delete's last failed attempt raises (PRIV-027, D-2162).
+pub const DELETE_FAILED_ALERT: &str = "messaging.body_delete_failed";
 
 /// PRIV-027, TXT-020: queues one [`DELETE_KIND`] task for every inbound and outbound SID at least
 /// [`BODY_DELETE_AFTER`] old at `now` that has none yet; returns how many it newly queued. Safe to
@@ -107,7 +112,8 @@ pub async fn schedule_body_scan(db: &mut PgConnection, now: Timestamp) -> Result
 }
 
 /// PRIV-027, D-1841: registers [`SCAN_KIND`] (at `clock`'s now, then the next day's scan) and
-/// [`DELETE_KIND`] over the texting client `sms`, deriving each delete's key from `secret`.
+/// [`DELETE_KIND`] over the texting client `sms`, deriving each delete's key from `secret`. A
+/// delete's last failed attempt raises a High alert (D-2162).
 pub fn register_body_deletes<S>(
     registry: &mut Registry,
     sms: Arc<S>,
@@ -116,9 +122,12 @@ pub fn register_body_deletes<S>(
 ) where
     S: SmsBodyDelete + Send + Sync + 'static,
 {
-    registry.register(DELETE_KIND, move |_pool, task| {
+    registry.register(DELETE_KIND, move |pool, task| {
         let (sms, secret) = (Arc::clone(&sms), secret.clone());
-        async move { run_body_delete(&*sms, &secret, task).await }
+        async move {
+            let outcome = run_body_delete(&*sms, &secret, task.clone()).await;
+            alert_if_last(&pool, &task, outcome).await
+        }
     });
     registry.register(SCAN_KIND, move |pool, _task| {
         let now = clock.now();
@@ -132,4 +141,30 @@ pub fn register_body_deletes<S>(
                 .map_err(|_| DB_FAILED)
         }
     });
+}
+
+/// PRIV-027, OPS-001, D-2162: a delete task that failed on its last attempt is dead-lettered and,
+/// its dedupe key kept, never queued again, so it raises one High [`DELETE_FAILED_ALERT`] (no
+/// subject: the payload names no job); `outcome` is returned unchanged.
+///
+/// # Errors
+/// `outcome`'s own error, or `ALERT_FAILED` when the alert could not be stored.
+async fn alert_if_last(
+    pool: &PgPool,
+    task: &Claimed,
+    outcome: Result<(), HandlerError>,
+) -> Result<(), HandlerError> {
+    if outcome.is_ok() || task.attempts < DELETE_ATTEMPTS {
+        return outcome;
+    }
+    let alert = NewAlert {
+        kind: DELETE_FAILED_ALERT,
+        severity: Severity::High,
+        subject: None,
+    };
+    let mut conn = pool.acquire().await.map_err(|_| ALERT_FAILED)?;
+    raise_alert(&mut conn, &alert)
+        .await
+        .map_err(|_| ALERT_FAILED)?;
+    outcome
 }

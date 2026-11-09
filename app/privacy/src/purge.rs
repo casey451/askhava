@@ -26,7 +26,7 @@ use std::sync::Arc;
 
 use askhava_adapters::api::{IdempotencyKey, StorageDelete};
 use askhava_core::api::{Claimed, Clock, HandlerError, NewTask, Registry, enqueue};
-use askhava_ops::api::{Actor, AuditEntry, Change, audit};
+use askhava_ops::api::{Actor, AuditEntry, Change, NewAlert, Severity, audit, raise_alert};
 use jiff::{SignedDuration, Timestamp};
 use jiff_sqlx::ToSqlx;
 use secrecy::SecretString;
@@ -51,6 +51,10 @@ const DELETE_ATTEMPTS: i32 = 10;
 const DB_FAILED: HandlerError = HandlerError("photo object delete database call failed");
 const STORE_FAILED: HandlerError = HandlerError("photo object storage call failed");
 const BAD_NAME: HandlerError = HandlerError("photo delete task payload is not a photo object");
+const ALERT_FAILED: HandlerError =
+    HandlerError("photo object delete failed and its alert was not stored");
+/// The High alert a photo object delete's last failed attempt raises (PRIV-009, D-2162).
+pub const PHOTO_DELETE_FAILED_ALERT: &str = "privacy.photo_delete_failed";
 
 fn db_err(_: sqlx::Error) -> VaultError {
     VaultError::Database
@@ -305,7 +309,7 @@ pub async fn schedule_orphan_sweep(
 
 /// PRIV-009, D-1841: registers [`PHOTO_DELETE_KIND`] and [`ORPHAN_SWEEP_KIND`] over the photo
 /// store `storage`, deriving each delete's key from `secret`; the sweep runs at `clock`'s now and
-/// then queues the next day's.
+/// then queues the next day's. A delete's last failed attempt raises a High alert (D-2162).
 pub fn register_photo_deletes<S>(
     registry: &mut Registry,
     storage: Arc<S>,
@@ -317,7 +321,10 @@ pub fn register_photo_deletes<S>(
     let store = Arc::clone(&storage);
     registry.register(PHOTO_DELETE_KIND, move |pool, task| {
         let (store, secret) = (Arc::clone(&store), secret.clone());
-        async move { run_photo_delete(pool, (&*store, &secret), task).await }
+        async move {
+            let outcome = run_photo_delete(pool.clone(), (&*store, &secret), task.clone()).await;
+            alert_if_last(&pool, &task, outcome).await
+        }
     });
     registry.register(ORPHAN_SWEEP_KIND, move |pool, _task| {
         let (store, now) = (Arc::clone(&storage), clock.now());
@@ -329,6 +336,32 @@ pub fn register_photo_deletes<S>(
                 .map_err(|_| DB_FAILED)
         }
     });
+}
+
+/// PRIV-009, OPS-001, D-2162: a delete task that failed on its last attempt is dead-lettered and,
+/// its dedupe key kept, never queued again, so it raises one High [`PHOTO_DELETE_FAILED_ALERT`]
+/// (no subject: the payload names no job); `outcome` is returned unchanged.
+///
+/// # Errors
+/// `outcome`'s own error, or `ALERT_FAILED` when the alert could not be stored.
+async fn alert_if_last(
+    pool: &PgPool,
+    task: &Claimed,
+    outcome: Result<(), HandlerError>,
+) -> Result<(), HandlerError> {
+    if outcome.is_ok() || task.attempts < DELETE_ATTEMPTS {
+        return outcome;
+    }
+    let alert = NewAlert {
+        kind: PHOTO_DELETE_FAILED_ALERT,
+        severity: Severity::High,
+        subject: None,
+    };
+    let mut conn = pool.acquire().await.map_err(|_| ALERT_FAILED)?;
+    raise_alert(&mut conn, &alert)
+        .await
+        .map_err(|_| ALERT_FAILED)?;
+    outcome
 }
 
 /// PRIV-007, D-079: clears contact `id`'s name, email, address and on-site contact, its email

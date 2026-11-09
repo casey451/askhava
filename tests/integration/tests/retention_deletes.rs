@@ -20,10 +20,12 @@ use askhava_adapters::api::{
 };
 use askhava_core::api::{Claimed, Clock, Lease, ManualClock, Registry, Settings, WorkerId, claim};
 use askhava_integration::set_app_role;
-use askhava_messaging::api::{queue_body_deletes, register_body_deletes, schedule_body_scan};
+use askhava_messaging::api::{
+    BODY_DELETE_FAILED_ALERT, queue_body_deletes, register_body_deletes, schedule_body_scan,
+};
 use askhava_privacy::api::{
-    PHOTO_DELETE_KIND, purge_photos, register_photo_deletes, run_photo_delete,
-    schedule_orphan_sweep, sweep_orphans,
+    PHOTO_DELETE_FAILED_ALERT, PHOTO_DELETE_KIND, purge_photos, register_photo_deletes,
+    run_photo_delete, schedule_orphan_sweep, sweep_orphans,
 };
 use jiff::{SignedDuration, Timestamp};
 use jiff_sqlx::ToSqlx;
@@ -491,4 +493,84 @@ async fn td_priv_20_bodies_are_deleted_at_the_provider_once_on_day_31(pool: PgPo
         calls[3], young,
         "the stand-in never had it: 20404 is done, not retried"
     );
+}
+
+/// A texting client whose every send and body delete fails (a provider outage).
+struct Down;
+
+impl SmsAdapter for Down {
+    async fn send_text(
+        &self,
+        _key: &IdempotencyKey,
+        _to: &str,
+        _from: &str,
+        _body: &str,
+    ) -> Result<SentText, AdapterError> {
+        Err(AdapterError::NotSent)
+    }
+}
+
+impl SmsBodyDelete for Down {
+    async fn delete_message_body(
+        &self,
+        _key: &IdempotencyKey,
+        _sid: &str,
+    ) -> Result<(), AdapterError> {
+        Err(AdapterError::NotSent)
+    }
+}
+
+/// TD-PRIV-20 (PRIV-009, PRIV-027, D-2162): a photo object or body delete that fails on its last
+/// attempt is dead-lettered and never queued again, so it raises one High alert of its own kind.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_priv_20_a_delete_failing_its_last_attempt_raises_an_alert(pool: PgPool) {
+    let dir = store("last");
+    let flaky = Arc::new(Flaky {
+        inner: dir.1.clone(),
+        fail: AtomicBool::new(true),
+    });
+    let name = "photos/fake-276-last";
+    put(&dir.1, name).await;
+    add_row(&pool, JOB, name).await;
+    assert_eq!(purge_photos(&mut app(&pool).await, JOB).await, Ok(1));
+    let start = Timestamp::now();
+    let sids = ["1", "2", "3"].map(|c| format!("SM{}", c.repeat(32)));
+    add_messages(&pool, (&sids[0], &sids[1], &sids[2]), start).await;
+    let clock = Arc::new(ManualClock::new(
+        start + 31 * DAY + SignedDuration::from_hours(1),
+    ));
+    queue_body_deletes(&mut app(&pool).await, clock.now())
+        .await
+        .expect("queue");
+    let mut registry = Registry::new();
+    register_photo_deletes(&mut registry, flaky, secret(), clock.clone());
+    register_body_deletes(&mut registry, Arc::new(Down), secret(), clock.clone());
+    sqlx::query(
+        "UPDATE core.task SET attempts = max_attempts - 1, run_at = now() - interval '1 minute'",
+    )
+    .execute(&pool)
+    .await
+    .expect("last attempt next");
+    run_due(&app_pool(&pool).await, &registry, &clock).await;
+    let alerts: Vec<(String, String)> = sqlx::query_as(
+        "SELECT kind, severity FROM ops.alert WHERE subject_id IS NULL ORDER BY kind",
+    )
+    .fetch_all(&pool)
+    .await
+    .expect("alerts");
+    let high = |kind: &str| (kind.to_owned(), "high".to_owned());
+    assert_eq!(
+        alerts,
+        [
+            high(BODY_DELETE_FAILED_ALERT),
+            high(BODY_DELETE_FAILED_ALERT),
+            high(PHOTO_DELETE_FAILED_ALERT)
+        ],
+        "each dead-lettered delete raises one alert"
+    );
+    let dead: i64 = sqlx::query_scalar("SELECT count(*) FROM core.task WHERE dead_at IS NOT NULL")
+        .fetch_one(&pool)
+        .await
+        .expect("dead");
+    assert_eq!(dead, 3, "all three deletes are dead-lettered");
 }
