@@ -515,6 +515,14 @@ async fn td_fee_48_a_press_must_match_the_stored_fee(pool: PgPool) {
         let charged = confirm_and_pay(&pool, &stripe, &secret(), &p, at(30)).await;
         assert_eq!(charged, Err(ChargeError::FeeMismatch), "{p:?}");
     }
+    let stranger = Press {
+        business: BusinessId(Uuid::from_u128(0xb287_0002)),
+        ..press(opened.0, opened.1, 7500)
+    };
+    let page = open_intent(&pool, &stripe, &secret(), &stranger, at(30)).await;
+    assert_eq!(page, Err(ChargeError::FeeMismatch), "D-2211");
+    let charged = confirm_and_pay(&pool, &stripe, &secret(), &stranger, at(30)).await;
+    assert_eq!(charged, Ok(ChargeOutcome::MovedOn), "D-2211");
     assert!(stripe.calls().is_empty(), "{:?}", stripe.calls());
     let attempts = "SELECT count(*) FROM payments.charge_attempt";
     assert_eq!(count(&pool, attempts).await, 0);
