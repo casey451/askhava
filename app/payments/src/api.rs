@@ -133,7 +133,7 @@ pub use crate::release_proof::{
 };
 pub use crate::routes::{
     DISPUTE_CLOSED_ACTION, FRAUD_WARNING_KIND, ReleaseSink, STRIPE_WEBHOOK_PATH, StripeWebhook,
-    stripe_webhook_routes,
+    UNREADABLE_EVENT_ALERT, stripe_webhook_routes,
 };
 pub use crate::rules::{
     Fee, FeeError, FeeJob, FeeMode, FeeQuote, FeeTerms, Period, PeriodJob, PickedFee,

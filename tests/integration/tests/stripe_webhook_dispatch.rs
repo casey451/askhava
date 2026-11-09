@@ -5,7 +5,9 @@
 //! each reach their handler once, and the same event ID sent 100 times changes nothing after the
 //! first; a failed-then-succeeded pair arriving in the other order leaves the state Stripe reports;
 //! a database error, or a Stripe that cannot be asked, answers 500 and the resend is handled; an
-//! event for an unknown object answers 200 and changes nothing. All IDs are fake.
+//! event for an unknown object answers 200 and changes nothing but, for a refund, its event row; a
+//! closed dispute not yet recorded answers 500; a handled event the route cannot read raises one
+//! High alert per event ID (D-2073). All IDs are fake.
 
 use std::collections::HashMap;
 use std::net::{IpAddr, SocketAddr};
@@ -18,7 +20,8 @@ use askhava_adapters::api::{
 use askhava_core::api::{ClientIpPolicy, ManualClock};
 use askhava_payments::api::{
     DISPUTE_CLOSED_ACTION, FRAUD_WARNING_KIND, Releasable, ReleaseError, ReleaseSink,
-    STRIPE_WEBHOOK_PATH, StripeAccount, StripeRefund, StripeWebhook, stripe_webhook_routes,
+    STRIPE_WEBHOOK_PATH, StripeAccount, StripeRefund, StripeWebhook, UNREADABLE_EVENT_ALERT,
+    stripe_webhook_routes,
 };
 use axum::body::Body;
 use axum::extract::ConnectInfo;
@@ -175,7 +178,8 @@ async fn charged(pool: &PgPool, n: u128, re: Option<&str>) {
     }
 }
 
-/// Counts of every row an event can write, and each refund's status.
+/// Counts of every row an event can write (`events <n>` for `payments.webhook_event`), and each
+/// refund's status.
 async fn snapshot(pool: &PgPool) -> Vec<String> {
     let sql = "SELECT 'ledger ' || kind || ' ' || count(*) FROM payments.ledger_entry GROUP BY kind
        UNION ALL SELECT 'alert ' || kind || ' ' || count(*) FROM ops.alert GROUP BY kind
@@ -184,6 +188,7 @@ async fn snapshot(pool: &PgPool) -> Vec<String> {
        UNION ALL SELECT 'dispute ' || stripe_dispute_id FROM payments.dispute
        UNION ALL SELECT 'refund ' || stripe_refund_id || ' ' || status FROM payments.refund
        UNION ALL SELECT 'pick ' || pick_id || ' ' || status FROM payments.charge_attempt
+       UNION ALL SELECT 'events ' || count(*) FROM payments.webhook_event
        ORDER BY 1";
     sqlx::query_scalar(sql)
         .fetch_all(pool)
@@ -193,6 +198,11 @@ async fn snapshot(pool: &PgPool) -> Vec<String> {
 
 fn has(rows: &[String], line: &str) -> bool {
     rows.iter().any(|r| r == line)
+}
+
+/// The snapshot without its `events` line.
+fn effects(rows: &[String]) -> Vec<&String> {
+    rows.iter().filter(|r| !r.starts_with("events ")).collect()
 }
 
 /// The seven dispatched events, each `(id, type, object)`.
@@ -278,6 +288,7 @@ async fn td_fee_43_each_event_reaches_its_handler_once(pool: PgPool) {
         &format!("alert {DISPUTE_CLOSED_ACTION} 1"),
         &format!("audit {DISPUTE_CLOSED_ACTION} 1"),
         &format!("task {FRAUD_WARNING_KIND} 1"),
+        "events 9",
     ] {
         assert!(has(&rows, line), "{line} in {rows:?}");
     }
@@ -297,12 +308,18 @@ async fn td_fee_43_each_event_reaches_its_handler_once(pool: PgPool) {
 
 /// TD-FEE-43 (FEE-026, D-1753): Stripe took refund `re` then failed it; whichever order the two
 /// events arrive in, the late `succeeded` is re-read and the row ends `failed`, with no refund left
-/// in the ledger and one alert.
+/// in the ledger and one alert per refund, even when a third event ID reports the same failure; a
+/// `succeeded` that Stripe now reports `canceled` is recorded `canceled`.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_fee_43_out_of_order_leaves_the_state_stripe_reports(pool: PgPool) {
     charged(&pool, 1, Some("re_FakeA")).await;
     charged(&pool, 2, Some("re_FakeB")).await;
-    let reads = [("re_FakeA", "failed"), ("re_FakeB", "failed")];
+    charged(&pool, 3, Some("re_FakeC")).await;
+    let reads = [
+        ("re_FakeA", "failed"),
+        ("re_FakeB", "failed"),
+        ("re_FakeC", "canceled"),
+    ];
     let hooks = hooks(pool.clone(), &reads, Sink::default());
     let ok = json!({"id": "re_FakeA", "status": "succeeded"});
     let failed = json!({"id": "re_FakeA", "status": "failed"});
@@ -321,14 +338,25 @@ async fn td_fee_43_out_of_order_leaves_the_state_stripe_reports(pool: PgPool) {
         StatusCode::OK
     );
     assert_eq!(
-        send(&hooks, "evt_FakeB2", "refund.failed", failed).await,
+        send(&hooks, "evt_FakeB2", "refund.failed", failed.clone()).await,
         StatusCode::OK
     );
+    let again = send(&hooks, "evt_FakeB3", "refund.updated", failed).await;
+    assert_eq!(
+        again,
+        StatusCode::OK,
+        "a second event ID for the same failure"
+    );
+    let ok = json!({"id": "re_FakeC", "status": "succeeded"});
+    let status = send(&hooks, "evt_FakeC1", "refund.updated", ok).await;
+    assert_eq!(status, StatusCode::OK, "re-read: Stripe now says canceled");
     let rows = snapshot(&pool).await;
     for line in [
         "refund re_FakeA failed",
         "refund re_FakeB failed",
-        "alert payments.refund_failed 2",
+        "refund re_FakeC canceled",
+        "alert payments.refund_failed 3",
+        "events 6",
     ] {
         assert!(has(&rows, line), "{line} in {rows:?}");
     }
@@ -374,7 +402,12 @@ async fn td_fee_43_a_database_error_is_resent_and_handled(pool: PgPool) {
     let paid = json!({"id": "pi_FakeNone", "metadata": {"pick_id": pick_of(9).to_string()}});
     let status = send(&up, "evt_FakeE4", "payment_intent.succeeded", paid).await;
     assert_eq!(status, StatusCode::OK, "another PaymentIntent is final");
-    assert_eq!(snapshot(&pool).await, before, "none changed anything");
+    let after = snapshot(&pool).await;
+    assert_eq!(effects(&after), effects(&before), "none changed anything");
+    assert!(
+        has(&after, "events 1"),
+        "the final refusal is recorded: {after:?}"
+    );
     assert!(sink.0.lock().expect("lock").is_empty());
     for _ in 0..2 {
         let status = send(&up, event.0, event.1, event.2.clone()).await;
@@ -385,8 +418,10 @@ async fn td_fee_43_a_database_error_is_resent_and_handled(pool: PgPool) {
     assert!(has(&after, "alert payments.refund_failed 1"), "{after:?}");
 }
 
-/// TD-FEE-43 (FEE-026, FEE-027, FEE-052): events about a refund, dispute or charge `payments` does
-/// not know answer 200 and change nothing.
+/// TD-FEE-43 (FEE-026, FEE-027, FEE-052, D-2073): events about a refund, dispute or charge
+/// `payments` does not know answer 200 and change nothing; a refund no row holds still records its
+/// event row (its handler ran and changed nothing). A closed dispute not yet recorded answers 500,
+/// so Stripe resends it.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_fee_43_an_unknown_object_changes_nothing(pool: PgPool) {
     charged(&pool, 1, None).await;
@@ -415,11 +450,6 @@ async fn td_fee_43_an_unknown_object_changes_nothing(pool: PgPool) {
             "payment_intent": "pi_FakeNone", "evidence_details": {"due_by": NOW}}),
         ),
         (
-            "evt_FakeU5",
-            "charge.dispute.closed",
-            json!({"id": "dp_FakeU", "status": "won"}),
-        ),
-        (
             "evt_FakeU6",
             "radar.early_fraud_warning.created",
             json!({"id": "issfr_FakeU", "payment_intent": "pi_FakeNone"}),
@@ -428,5 +458,52 @@ async fn td_fee_43_an_unknown_object_changes_nothing(pool: PgPool) {
     for (id, kind, object) in unknown {
         assert_eq!(send(&hooks, id, kind, object).await, StatusCode::OK, "{id}");
     }
-    assert_eq!(snapshot(&pool).await, before);
+    let closed = json!({"id": "dp_FakeU", "status": "won"});
+    let status = send(&hooks, "evt_FakeU5", "charge.dispute.closed", closed).await;
+    assert_eq!(
+        status,
+        StatusCode::INTERNAL_SERVER_ERROR,
+        "resent until recorded"
+    );
+    let after = snapshot(&pool).await;
+    assert_eq!(effects(&after), effects(&before));
+    assert!(has(&after, "events 2"), "U2 and U3 only: {after:?}");
+}
+
+/// TD-FEE-43 (FEE-027, D-2073): a handled event whose object lacks a field its handler needs (a
+/// dispute with no evidence due date, a refund with a status Stripe never documented) answers 200
+/// and raises one High alert per event ID, with no dispute or refund change.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_fee_43_an_unreadable_event_alerts_casey_once(pool: PgPool) {
+    charged(&pool, 1, Some("re_FakeR")).await;
+    let hooks = hooks(pool.clone(), &[], Sink::default());
+    let no_due = json!({"id": "dp_FakeR", "amount": 7500, "payment_intent": "pi_Fake1",
+        "evidence_details": {"due_by": null}});
+    let odd = json!({"id": "re_FakeR", "status": "done"});
+    for _ in 0..3 {
+        let status = send(
+            &hooks,
+            "evt_FakeR1",
+            "charge.dispute.created",
+            no_due.clone(),
+        )
+        .await;
+        assert_eq!(status, StatusCode::OK);
+        let status = send(&hooks, "evt_FakeR2", "refund.updated", odd.clone()).await;
+        assert_eq!(status, StatusCode::OK);
+    }
+    let rows = snapshot(&pool).await;
+    for line in [
+        &format!("alert {UNREADABLE_EVENT_ALERT} 2"),
+        "refund re_FakeR pending",
+        "events 2",
+    ] {
+        assert!(has(&rows, line), "{line} in {rows:?}");
+    }
+    assert!(!rows.iter().any(|r| r.starts_with("dispute ")), "{rows:?}");
+    let severity: String = sqlx::query_scalar("SELECT DISTINCT severity::text FROM ops.alert")
+        .fetch_one(&pool)
+        .await
+        .expect("severity");
+    assert_eq!(severity, "high");
 }

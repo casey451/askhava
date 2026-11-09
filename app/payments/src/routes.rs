@@ -27,7 +27,13 @@
 //! dispute handlers commit their own transaction (each is idempotent by its own row or key) and
 //! the event row is written right after, so a crash between the two is a resend they absorb
 //! (D-2071). A database error, or a Stripe that could not be asked, answers 500 so Stripe sends
-//! the event again; an event for an unknown object answers 200 and writes nothing.
+//! the event again. An event for an unknown object answers 200: a refund no row holds still gets
+//! its event row (its handler changed nothing), a dispute or early fraud warning on a charge no
+//! pick made writes nothing; a `charge.dispute.closed` for a dispute not yet recorded answers 500,
+//! so Stripe resends it after its `charge.dispute.created`. An event of a handled type whose object
+//! lacks a field the handler needs (a dispute with no evidence due date, say) is logged and raises
+//! one High [`UNREADABLE_EVENT_ALERT`] in the event row's transaction, so Casey handles it by hand
+//! (FEE-027, D-2073).
 
 use std::future::Future;
 use std::net::{IpAddr, SocketAddr};
@@ -70,6 +76,20 @@ pub const FRAUD_WARNING_KIND: &str = "picks.fraud_warning";
 pub const DISPUTE_CLOSED_ACTION: &str = "payments.dispute_closed";
 
 const DISPUTE_SUBJECT: &str = "payments.dispute";
+
+/// The High alert kind of a handled Stripe event whose object the route cannot read (FEE-027,
+/// D-2073); one per event ID, no subject (the event names no record `payments` holds).
+pub const UNREADABLE_EVENT_ALERT: &str = "payments.stripe_event_unreadable";
+
+/// The event types the route acts on besides `payment_intent.succeeded` (D-1754).
+const HANDLED: [&str; 6] = [
+    "refund.failed",
+    "refund.updated",
+    "charge.refund.updated",
+    "charge.dispute.created",
+    "charge.dispute.closed",
+    "radar.early_fraud_warning.created",
+];
 
 /// Where a cleared pick goes: the holder of `server`'s release minter, which mints the proof for
 /// the pick's homeowner contact and releases once however often it is called (PICK-022).
@@ -176,6 +196,7 @@ enum Dispatch {
     Dispute(String, String, i64, Timestamp),
     DisputeClosed(String),
     FraudWarning(String),
+    Unreadable,
 }
 
 /// What became of an event: done (its row still to write), done with its row written, about an
@@ -228,11 +249,22 @@ fn text(object: &Value, pointer: &str) -> Option<String> {
     object.pointer(pointer)?.as_str().map(str::to_owned)
 }
 
-/// What the event type and object ask for (FEE-026, FEE-027, FEE-052, D-1754).
+/// What the event type and object ask for (FEE-026, FEE-027, FEE-052, D-1754); a handled type
+/// whose object cannot be read is [`Dispatch::Unreadable`], never dropped (D-2073).
 fn dispatch_of(kind: &str, object: &Value) -> Option<Dispatch> {
+    if kind == SUCCEEDED_EVENT {
+        return pick_of(object).map(Dispatch::Release);
+    }
+    if !HANDLED.contains(&kind) {
+        return None;
+    }
+    Some(read_object(kind, object).unwrap_or(Dispatch::Unreadable))
+}
+
+/// The handled event's object read into its [`Dispatch`]; `None` when a needed field is missing.
+fn read_object(kind: &str, object: &Value) -> Option<Dispatch> {
     let id = text(object, "/id");
     match kind {
-        SUCCEEDED_EVENT => pick_of(object).map(Dispatch::Release),
         "refund.failed" => Some(Dispatch::Refund(id?, RefundState::Failed)),
         "refund.updated" | "charge.refund.updated" => {
             let state = RefundState::parse(object.get("status")?.as_str()?)?;
@@ -282,7 +314,7 @@ where
             };
             money(record_dispute(&h.pool, &opened, now).await)
         }
-        Dispatch::DisputeClosed(_) | Dispatch::FraudWarning(_) => {
+        Dispatch::DisputeClosed(_) | Dispatch::FraudWarning(_) | Dispatch::Unreadable => {
             return in_event_tx(&h.pool, event, now)
                 .await
                 .unwrap_or(Acted::Retry);
@@ -379,8 +411,9 @@ fn money(result: Result<bool, MoneyEventError>) -> Acted {
     }
 }
 
-/// A closed dispute or an early fraud warning: the event row and its effect in one transaction;
-/// a repeat, or an unknown dispute or charge, rolls back and changes nothing (SEC-017, D-1754).
+/// A closed dispute, an early fraud warning or an unreadable event: the event row and its effect
+/// in one transaction; a repeat, or an unknown charge, rolls back and changes nothing (SEC-017,
+/// D-1754). A closed dispute not yet recorded rolls back and is resent (D-2073).
 async fn in_event_tx(pool: &PgPool, event: &Event, now: Timestamp) -> Result<Acted, OpsOrDb> {
     let mut tx = pool.begin().await?;
     if !insert_event(&mut tx, event, now).await? {
@@ -389,9 +422,13 @@ async fn in_event_tx(pool: &PgPool, event: &Event, now: Timestamp) -> Result<Act
     let known = match &event.dispatch {
         Dispatch::DisputeClosed(dispute) => dispute_closed(&mut tx, dispute).await?,
         Dispatch::FraudWarning(intent) => fraud_warning(&mut tx, intent, now).await?,
-        _ => false,
+        Dispatch::Unreadable => unreadable(&mut tx, &event.kind).await?,
+        Dispatch::Release(_) | Dispatch::Refund(..) | Dispatch::Dispute(..) => false,
     };
     if !known {
+        if matches!(event.dispatch, Dispatch::DisputeClosed(_)) {
+            return Ok(Acted::Retry);
+        }
         return Ok(Acted::Unknown);
     }
     tx.commit().await?;
@@ -477,8 +514,23 @@ async fn dispute_closed(conn: &mut PgConnection, dispute: &str) -> Result<bool, 
     Ok(true)
 }
 
+/// FEE-027, D-2073: a handled event the route cannot read is logged and raises one High
+/// [`UNREADABLE_EVENT_ALERT`] (once per event ID, by the event row in the same transaction).
+async fn unreadable(conn: &mut PgConnection, kind: &str) -> Result<bool, OpsOrDb> {
+    tracing::warn!(event_type = %kind, "stripe event lacks a field its handler needs; Casey alerted");
+    let alert = NewAlert {
+        kind: UNREADABLE_EVENT_ALERT,
+        severity: Severity::High,
+        subject: None,
+    };
+    raise_alert(conn, &alert).await?;
+    Ok(true)
+}
+
 /// FEE-052, D-1845: enqueues one [`FRAUD_WARNING_KIND`] task for the pick charged through
-/// `intent`; `false` when no pick was.
+/// `intent`; `false` when no pick was. The dedupe key `picks.fraud_warning.<pick>` stays taken for
+/// good (`core.task`'s unique `dedupe_key`), so a later task on the pick, such as T281's hourly
+/// re-run, must use another key (D-2073).
 async fn fraud_warning(
     conn: &mut PgConnection,
     intent: &str,
@@ -749,9 +801,7 @@ mod tests {
         let bodies = [
             format!(r#"{{"id":"evt_fake3","type":"refund.updated","livemode":false,"account":"acct_other","data":{{"object":{object}}}}}"#),
             format!(r#"{{"id":"evt_bad-id","type":"refund.updated","livemode":false,"data":{{"object":{object}}}}}"#),
-            r#"{"id":"evt_fake4","type":"refund.updated","livemode":false,"data":{"object":{"id":"re_Fake1","status":"done"}}}"#.to_owned(),
-            r#"{"id":"evt_fake5","type":"charge.dispute.created","livemode":false,"data":{"object":{"id":"dp_Fake1","amount":7500}}}"#.to_owned(),
-            r#"{"id":"evt_fake6","type":"radar.early_fraud_warning.created","livemode":false,"data":{"object":{"id":"issfr_Fake1"}}}"#.to_owned(),
+            r#"{"id":"evt_fake4","type":"customer.created","livemode":false,"data":{"object":{"id":"cus_Fake1"}}}"#.to_owned(),
         ];
         for body in bodies {
             let sig = signed(&body, SECRET);
