@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-09T12:06:04Z by runner 89017132e0bd (actions).
+Updated 2026-11-09T12:06:16Z by runner 89017132e0bd (actions).
 
-**Building: T282 in progress since 11:33Z; 169 of 297 done; week 61% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 12:06Z; 169 of 297 done; week 61% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 169 of 297 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T282 claimed 11:33Z, lease until 14:33Z
+- **Lane:** idle since 12:06Z (no task in progress)
 - **Week:** 61% used, 72.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 11:41Z, 25 min before this update
 - **Keeper:** last ran 11:13Z, next wake 11:33Z
@@ -17,7 +17,8 @@ Updated 2026-11-09T12:06:04Z by runner 89017132e0bd (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T282 | calls and picks: each call's start time reaches the unreacha | check_failed | 1 | 27 min | 10:49Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Date:      2026- |
+| T282 | calls and picks: each call's start time reaches the unreacha | MERGE_PENDING | 2 | 32 min | 12:06Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Date:      2026- |
+| T282 | calls and picks: each call's start time reaches the unreacha | check_failed | 1 | 27 min | 10:49Z |  |
 | T267 | Ally harness: page states move to a shared data file; the ch | done | 1 | 34 min | 09:42Z |  |
 | T265 | stage exit: a security, money or privacy handoff in the inte | done | 1 | 25 min | 08:49Z |  |
 | T264 | coverage checker: a missing measurement fails, and the total | done | 1 | 24 min | 07:58Z |  |
@@ -86,7 +87,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T282 (lease until 2026-11-09T14:33:38Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T282", "at": "2026-11-09T10:49:32Z", "cache_creation_input_tokens": 321102, "input_tokens": 224, "cache_read_input_tokens": 9908369, "output_tokens": 74711}
+- {"task": "T282", "at": "2026-11-09T12:06:04Z", "input_tokens": 133, "cache_read_input_tokens": 2207187, "output_tokens": 28638, "cache_creation_input_tokens": 187992}
