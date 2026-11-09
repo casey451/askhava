@@ -28,6 +28,7 @@ mod mode;
 mod models;
 mod open_cards_digest;
 mod optout;
+mod purge;
 mod receipt_email;
 mod retention;
 mod retries;
