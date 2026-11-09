@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-09T00:50:57Z by runner ba802a51ae9c (actions).
+Updated 2026-11-09T01:52:06Z by runner 1280a06c368e (actions).
 
 **Building: T259 in progress since 00:50Z; 161 of 286 done; week 58% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,11 @@ Updated 2026-11-09T00:50:57Z by runner ba802a51ae9c (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T259 claimed 00:50Z, lease until 03:50Z
 - **Week:** 58% used, 78.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:17Z, 33 min before this update
+- **Last run:** 00:51Z, 61 min before this update
 - **Keeper:** last ran 00:17Z, next wake 00:37Z
 
 ## Needs attention
-- Strict plan check red: 29 problem(s) on tasks still to run (+32 on DONE tasks); first: T255: stored context_pct 25% but it measures 33%; regenerate
+- Strict plan check red: 31 problem(s) on tasks still to run (+32 on DONE tasks); first: T259: stored context_pct 17% but it measures 23%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -30,7 +30,6 @@ Updated 2026-11-09T00:50:57Z by runner ba802a51ae9c (actions).
 | T088 | Authorization matrix over every route and actor; token isola | done | 1 | 45 min | 04:25Z |  |
 | T291 | core and checks: one brand file the app and the build's chec | done | 1 | 44 min | 03:16Z |  |
 | T087 | portals: homeowner portal (phone and code), own data, no for | done | 1 | 46 min | 02:04Z |  |
-| T086 | portals: owner password, passkey or TOTP, recovery codes, 12 | done | 1 | 54 min | 00:56Z |  |
 
 ### Plan and harness merges on main
 - 22:20Z Plan: wire the real AI into the app — T298 endpoint client, T299 intake wiring (D-2065) (#367)
@@ -40,7 +39,6 @@ Updated 2026-11-09T00:50:57Z by runner ba802a51ae9c (actions).
 - 15:06Z Harness: warm the smoke build before the session (D-2007) (#356)
 - 10:55Z Harness: retry release downloads; backup job's coverage tools best-effort (D-1986) (#352)
 - 07:39Z harness: chain the next cycle at once after the first smoke timeout on a head (D-1970) (#349)
-- 01:33Z Plan: brand as configuration (T291–T295, D-1932–D-1933) (#342)
 
 ## Progress (requirements verified)
 
