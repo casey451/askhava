@@ -485,7 +485,9 @@ pub enum RefundOutcome {
     Unchanged,
     /// The charge is disputed: no refund, Casey is alerted (FEE-026).
     Blocked,
-    /// Stripe refused or could not be reached: an alert is raised and the hourly retry is queued.
+    /// Not refunded (yet): Stripe refused, failed, canceled or could not be reached (an alert is
+    /// raised and the hourly retry is queued), or holds the refund `pending` (the 30-minute check
+    /// asks again, D-1753, D-2067). No "refunded" notice goes out on it.
     Failed,
 }
 
@@ -759,7 +761,8 @@ impl MoneyTotals {
 pub struct MoneyView {
     /// Introduction fees charged.
     pub charges: i64,
-    /// Refunds.
+    /// Refunds, less refunds Stripe later failed or canceled (a reversal folds in as a negative
+    /// refund, D-1753, D-2068).
     pub refunds: i64,
     /// Credits given.
     pub credits: i64,

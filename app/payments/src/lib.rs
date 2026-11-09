@@ -56,6 +56,7 @@ mod purge;
 mod receipts;
 mod reconcile;
 mod refund_rules;
+mod refund_stripe;
 mod refunds;
 mod release_proof;
 mod routes;

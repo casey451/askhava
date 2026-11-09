@@ -15,6 +15,12 @@
 //! refunds and disputes in the ledger with Stripe's to the cent and raises [`MISMATCH_ALERT`] when
 //! they differ or Stripe listed a malformed charge. [`money_view`] and [`business_statement`]
 //! read only `payments.ledger_entry`.
+//!
+//! T258 (D-1753, D-2067): the reconcile's own refund reads Stripe's answer through
+//! `RefundStripe` (every `ReconcileStripe` is one): only `succeeded` appends the `refund` entry and
+//! counts as refunded; `pending` or `requires_action` appends nothing (the next night's list shows
+//! it once Stripe finishes); `failed` or `canceled` is a failure with the alert. A
+//! `refund-reversal` entry counts against the refunds in the match and in `ledger_facts`.
 
 use std::future::Future;
 
@@ -29,11 +35,12 @@ use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
 
 use crate::late::LATE_TRIGGER;
-use crate::ledger::{EntryKind, LedgerEntry, NewEntry, ledger_append};
+use crate::ledger::{EntryKind, LedgerEntry, NewEntry, REFUND_REVERSAL_CODE, ledger_append};
 use crate::models::{
     MoneyEventError, MoneyTotals, MoneyView, PickFacts, RefundOutcome, RefundWhy, StripeCharge,
     plan_charge,
 };
+use crate::refund_stripe::{RefundState, RefundStripe};
 use crate::refunds::{REFUND_FAILED_ALERT, request_refund};
 use crate::service::CONFIRM_FEE_ACTION;
 
@@ -213,14 +220,17 @@ async fn pick_facts(
     }))
 }
 
-/// Whether the ledger already holds this charge's `charge` entry and a `refund` of its intent.
+/// Whether the ledger already holds this charge's `charge` entry and a `refund` of its intent
+/// not reversed since (D-1753).
 async fn ledger_facts(
     conn: &mut PgConnection,
     charge: &StripeCharge,
 ) -> Result<(bool, bool), MoneyEventError> {
     let row = db(sqlx::query!(
         "SELECT bool_or(kind = 'charge' AND stripe_id = $1) AS has_charge,
-                bool_or(kind = 'refund' AND stripe_id = $2) AS has_refund
+                count(*) FILTER (WHERE kind = 'refund' AND stripe_id = $2)
+                  > count(*) FILTER (WHERE kind = 'refund-reversal' AND stripe_id = $2)
+                  AS has_refund
            FROM payments.ledger_entry WHERE stripe_id IN ($1, $2)",
         charge.id,
         charge.payment_intent,
@@ -342,7 +352,8 @@ async fn refund(
 /// the reason and the night, so a rerun the same night gets Stripe's first answer and a refused
 /// refund (which Stripe would replay for the same key) is a new try the next night; a refund made
 /// on a lost answer shows as refunded in the next list and is not sent again. A failure raises
-/// [`REFUND_FAILED_ALERT`]; the ledger `refund` entry follows Stripe's success (D-1555).
+/// [`REFUND_FAILED_ALERT`]; the ledger `refund` entry follows Stripe's `succeeded` only, and a
+/// `pending` answer appends nothing and counts neither way (D-1555, D-1753).
 async fn own_refund(
     pool: &PgPool,
     stripe: &impl ReconcileStripe,
@@ -357,11 +368,17 @@ async fn own_refund(
         RECONCILE_ACTION,
         &[&charge.id, why.code(), &night],
     );
-    if stripe
-        .create_refund(&key, &charge.payment_intent)
+    let state = stripe
+        .refund(&key, &charge.payment_intent)
         .await
-        .is_err()
-    {
+        .map(|r| r.state);
+    if matches!(
+        state,
+        Ok(RefundState::Pending | RefundState::RequiresAction)
+    ) {
+        return Ok(false);
+    }
+    if state != Ok(RefundState::Succeeded) {
         report.refund_failed += 1;
         let mut conn = db(pool.acquire().await)?;
         alert(&mut conn, REFUND_FAILED_ALERT, pick.map(|p| p.pick)).await?;
@@ -397,7 +414,7 @@ async fn ledger_totals(
     let rows = db(sqlx::query!(
         "SELECT kind, amount_cents FROM payments.ledger_entry
           WHERE (kind = 'charge' AND stripe_id = ANY($1))
-             OR (kind = 'refund' AND stripe_id = ANY($2))
+             OR (kind IN ('refund', 'refund-reversal') AND stripe_id = ANY($2))
              OR (kind = 'dispute' AND stripe_id = ANY($3))",
         &ids,
         &intents,
@@ -405,14 +422,20 @@ async fn ledger_totals(
     )
     .fetch_all(pool)
     .await)?;
-    let entries = rows
-        .iter()
-        .filter_map(|r| Some((kind_of(&r.kind)?, r.amount_cents)));
+    let entries = rows.iter().filter_map(|r| fold(&r.kind, r.amount_cents));
     Ok(MoneyView::from_entries(entries).gross())
 }
 
-fn kind_of(code: &str) -> Option<EntryKind> {
-    EntryKind::ALL.into_iter().find(|k| k.code() == code)
+/// A stored entry as the money view folds it: its kind and cents, a `refund-reversal` as a
+/// negative refund (FEE-028, FEE-030, D-1753, D-2068); `None` for an unknown code.
+fn fold(code: &str, cents: i64) -> Option<(EntryKind, i64)> {
+    if code == REFUND_REVERSAL_CODE {
+        return Some((EntryKind::Refund, -cents));
+    }
+    EntryKind::ALL
+        .into_iter()
+        .find(|k| k.code() == code)
+        .map(|k| (k, cents))
 }
 
 /// The [`RECONCILE_KIND`] handler: queues the next night's task first, then runs, so a failed run
@@ -449,7 +472,7 @@ pub struct StatementLine {
     pub kind: EntryKind,
     /// The job, if the entry has one.
     pub job: Option<Uuid>,
-    /// Whole cents.
+    /// Whole cents; a `refund-reversal` is a `Refund` line with negative cents (D-2068).
     pub amount_cents: i64,
     /// When it was recorded.
     pub recorded_at: Timestamp,
@@ -480,9 +503,7 @@ pub async fn money_view(
     )
     .fetch_all(pool)
     .await)?;
-    let entries = rows
-        .iter()
-        .filter_map(|r| Some((kind_of(&r.kind)?, r.amount_cents)));
+    let entries = rows.iter().filter_map(|r| fold(&r.kind, r.amount_cents));
     Ok(MoneyView::from_entries(entries))
 }
 
@@ -507,10 +528,11 @@ pub async fn business_statement(
     let lines: Vec<StatementLine> = rows
         .into_iter()
         .filter_map(|r| {
+            let (kind, amount_cents) = fold(&r.kind, r.amount_cents)?;
             Some(StatementLine {
-                kind: kind_of(&r.kind)?,
+                kind,
                 job: r.job_id,
-                amount_cents: r.amount_cents,
+                amount_cents,
                 recorded_at: r.recorded_at.to_jiff(),
             })
         })

@@ -5,6 +5,10 @@
 //! data, and nothing here retries a charge (FEE-016); Stripe's form encoding
 //! and `Authorization: Bearer` key, so the stand-in, test mode and live differ
 //! only by the base URL and key (D-453).
+//!
+//! A refund is read as Stripe reports it (D-1753, D-2066): [`PaymentsAdapter::send_refund`] and
+//! [`PaymentsAdapter::read_refund`] return the Refund object with its status, which `payments`
+//! parses (`payments::api::RefundStripe`); `create_refund` stays until T132 retires it.
 
 use std::future::Future;
 use std::sync::Arc;
@@ -43,6 +47,22 @@ pub struct PaymentIntent {
 pub struct IntentMetadata {
     /// The pick's record ID, compared with the pick being released.
     pub pick_id: String,
+}
+
+/// A Stripe Refund object as Stripe sent it (FEE-026, D-1753): `payments` checks the status and
+/// the PaymentIntent before anything is recorded, so an unknown status is never a success.
+#[derive(Debug, Clone, PartialEq, Eq, serde::Deserialize)]
+pub struct StripeRefund {
+    /// `re_…`.
+    pub id: String,
+    /// Stripe's status: `pending`, `requires_action`, `succeeded`, `failed` or `canceled`.
+    pub status: String,
+    /// The refunded amount in cents; `None` when the adapter did not report it.
+    pub amount: Option<i64>,
+    /// The three-letter currency; `None` when the adapter did not report it.
+    pub currency: Option<String>,
+    /// The refunded PaymentIntent (`pi_…`).
+    pub payment_intent: Option<String>,
 }
 
 #[derive(serde::Deserialize)]
@@ -92,6 +112,39 @@ pub trait PaymentsAdapter {
         idempotency: &IdempotencyKey,
         payment_intent: &str,
     ) -> impl Future<Output = Result<String, AdapterError>> + Send;
+
+    /// FEE-026, D-1753, D-2066: refunds `pi_…` in full and returns the Refund with Stripe's
+    /// status. [`StripePayments`] posts it and reads the answer; the provided body, kept only for
+    /// the test fakes written before the typed refund (T132 removes it with `create_refund`),
+    /// reports `create_refund`'s `re_…` as `succeeded`.
+    fn send_refund(
+        &self,
+        idempotency: &IdempotencyKey,
+        payment_intent: &str,
+    ) -> impl Future<Output = Result<StripeRefund, AdapterError>> + Send {
+        let sent = self.create_refund(idempotency, payment_intent);
+        let asked = payment_intent.to_owned();
+        async move {
+            Ok(StripeRefund {
+                id: sent.await?,
+                status: "succeeded".to_owned(),
+                amount: None,
+                currency: None,
+                payment_intent: Some(asked),
+            })
+        }
+    }
+
+    /// FEE-026, D-1753: re-reads the Refund `re_…` with Stripe's status now. The provided body
+    /// asks nothing and answers [`AdapterError::NotSent`], so a refund it cannot read stays where
+    /// it stands; [`StripePayments`] reads it from Stripe.
+    fn read_refund(
+        &self,
+        id: &str,
+    ) -> impl Future<Output = Result<StripeRefund, AdapterError>> + Send {
+        let _ = id;
+        std::future::ready(Err(AdapterError::NotSent))
+    }
 }
 
 /// The one HTTP Stripe client (D-453).
@@ -174,5 +227,25 @@ impl PaymentsAdapter for StripePayments {
         let form = [("payment_intent", payment_intent)];
         let created: Created = self.post("refunds", &form, idempotency).await?;
         Ok(created.id)
+    }
+
+    async fn send_refund(
+        &self,
+        idempotency: &IdempotencyKey,
+        payment_intent: &str,
+    ) -> Result<StripeRefund, AdapterError> {
+        if !is_vendor_id(payment_intent, "pi_") {
+            return Err(AdapterError::InvalidId);
+        }
+        let form = [("payment_intent", payment_intent)];
+        self.post("refunds", &form, idempotency).await
+    }
+
+    async fn read_refund(&self, id: &str) -> Result<StripeRefund, AdapterError> {
+        if !is_vendor_id(id, "re_") {
+            return Err(AdapterError::InvalidId);
+        }
+        let request = self.http.request(Method::GET, &["v1", "refunds", id], None);
+        self.http.json(request).await
     }
 }
