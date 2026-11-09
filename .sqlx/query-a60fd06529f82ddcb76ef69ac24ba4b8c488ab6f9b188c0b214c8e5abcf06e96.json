@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "INSERT INTO calls.number_pool (job_id, homeowner_id, business_id, pool_number, shared, assigned_at) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, seq",
+  "query": "INSERT INTO calls.number_pool (job_id, homeowner_id, business_id, pool_number, shared, pin, assigned_at) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id, seq",
   "describe": {
     "columns": [
       {
@@ -33,6 +33,7 @@
         "Uuid",
         "Text",
         "Bool",
+        "Text",
         "Timestamptz"
       ]
     },
@@ -41,5 +42,5 @@
       false
     ]
   },
-  "hash": "27685623edeae8dbbf7f7b257c55fef32e221cc453c6105910f11f0c5edb417b"
+  "hash": "a60fd06529f82ddcb76ef69ac24ba4b8c488ab6f9b188c0b214c8e5abcf06e96"
 }

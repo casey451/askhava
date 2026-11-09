@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT pin FROM calls.number_pool WHERE id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "pin",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "calls.number_pool",
+            "name": "pin"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "0edcccf654c98c51c545aa29bfedb8d7963d28e183fd72882d2b7d74714a913b"
+}

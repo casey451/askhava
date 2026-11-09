@@ -1,0 +1,30 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO calls.pin_call (call_sid, try_no, today_before) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING RETURNING today_before",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "today_before",
+        "type_info": "Int2",
+        "origin": {
+          "Table": {
+            "table": "calls.pin_call",
+            "name": "today_before"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Int2",
+        "Int2"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "c70920a456778e01207b18ca081b500997b1c202d800f93bca45576a894459b3"
+}

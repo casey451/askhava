@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT today_before FROM calls.pin_call WHERE call_sid = $1 AND try_no = $2",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "today_before",
+        "type_info": "Int2",
+        "origin": {
+          "Table": {
+            "table": "calls.pin_call",
+            "name": "today_before"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Int2"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "aeb8640f6f51f61b8450ad6f269c7d33b5d60d566a8e13526cb8a1883086e8a7"
+}

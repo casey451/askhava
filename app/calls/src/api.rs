@@ -12,7 +12,9 @@
 //! [`pin_prompt_twiml`] and [`pin_heard`] (CALL-013, CALL-023); [`may_code_call`] and
 //! [`code_call_twiml`] (CALL-014, CALL-015); [`SafetySwitch`], [`place_safety_call`],
 //! [`safety_call_key`] and [`safety_call_answered`] (CALL-019, CALL-022, OPS-028); [`ring_owner`]
-//! and [`owner_bridge_twiml`] (OPS-028).
+//! and [`owner_bridge_twiml`] (OPS-028). T262: a random stored PIN per line ([`stored_pin`]),
+//! the stored per-day PIN tries and the inbound voice turn ([`voice_turn`], [`voice_confirm`],
+//! [`readback_twiml`], [`hangup_twiml`]) (CALL-003 to CALL-005, CALL-025, SEC-017, D-1755).
 
 pub use crate::handlers::{
     FinishedCall, LoggedCall, call_log, dial_twiml, finished_call, log_finished_call,
@@ -23,10 +25,15 @@ pub use crate::lifecycle::{
     greeting_twiml, last4, phone_works, request_link,
 };
 pub use crate::models::CallsError;
+pub use crate::pins::{
+    PIN_DRAWS, PIN_TRY_LABEL, VoiceCall, VoiceKeys, VoiceReply, arizona_day, call_start,
+    caller_digest, pin_tries_today, stored_pin, voice_confirm, voice_turn,
+};
 pub use crate::routing::{
     Answer, Attestation, CallTurn, IncomingCall, JobPin, PIN_ALERT, PIN_GOODBYE, PIN_PROMPT,
-    PIN_WAIT_KEY, PIN_WAIT_MIN, Party, PinHeard, PinWait, READBACK_AFTER, RoutedLine, Step,
-    TRIES_PER_CALL, TRIES_PER_DAY, answer_call, job_pin, pin_heard, pin_prompt_twiml, route,
+    PIN_WAIT_KEY, PIN_WAIT_MIN, Party, PinHeard, PinWait, READBACK_AFTER, READBACK_CONFIRM,
+    RoutedLine, Step, TRIES_PER_CALL, TRIES_PER_DAY, answer_call, hangup_twiml, job_pin, pin_heard,
+    pin_prompt_twiml, readback_twiml, route,
 };
 pub use crate::rules::{
     AnsweredBy, Caller, REPORT_MARK, answered_by, business_attempt, reached_report_mark, talked,

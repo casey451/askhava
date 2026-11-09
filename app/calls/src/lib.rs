@@ -18,6 +18,7 @@ pub mod api;
 mod handlers;
 mod lifecycle;
 mod models;
+mod pins;
 mod routing;
 mod rules;
 mod service;

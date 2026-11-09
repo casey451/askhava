@@ -29,6 +29,7 @@ use tower_http::request_id::{MakeRequestUuid, PropagateRequestIdLayer, SetReques
 use tower_http::trace::TraceLayer;
 
 pub mod inbound_text;
+pub mod inbound_voice;
 pub mod offdb_stream;
 pub mod release_sink;
 
@@ -63,6 +64,15 @@ pub fn start_up() -> io::Result<(Settings, LogGuard)> {
     Ok((settings, guard))
 }
 
+/// `build_router`'s optional parts: Twilio's text and voice webhooks, the page pick's keys and the
+/// Stripe webhook.
+pub type Hooks = (
+    Option<Arc<inbound_text::Webhooks>>,
+    Option<Arc<inbound_voice::VoiceHooks>>,
+    Option<PickCodeKeys<TwilioVerify>>,
+    Option<release_sink::StripeHooks>,
+);
+
 /// The app's router: every module's routes, merged once here (D-481), under
 /// the request-ID and tracing layers, so every request log line carries the
 /// request ID and the matched route template, never the URI (PRIV-016,
@@ -75,7 +85,9 @@ pub fn start_up() -> io::Result<(Settings, LogGuard)> {
 /// (`/q/{token}`, T052); its pick review step posts to the same path (`pick_flow`, T055); the
 /// private feedback page after Done is `/f/{token}` (`feedback`, T230).
 /// `webhooks` ([`webhooks`]) adds Twilio's signature-checked inbound-text and status routes
-/// (`inbound_text`, SEC-016, SEC-039, T241); `None` adds none. `pick_keys` ([`pick_code_keys`])
+/// (`inbound_text`, SEC-016, SEC-039, T241); `None` adds none. `voice` ([`voice_hooks`]) adds the
+/// pool numbers' signature-checked voice webhook (`inbound_voice`, SEC-016, SEC-017, T262).
+/// `pick_keys` ([`pick_code_keys`])
 /// let the page pick send its code and store the pick (T246, D-1516); `None` keeps the page's
 /// "Nothing was picked" lines. `stripe` ([`release_sink::stripe_webhook`]) adds `payments`' Stripe
 /// webhook route, whose cleared picks [`release_sink::PickReleaser`] settles, mints and releases
@@ -84,16 +96,13 @@ pub fn start_up() -> io::Result<(Settings, LogGuard)> {
 pub fn build_router(
     pool: PgPool,
     test_control: Router,
-    (webhooks, pick_keys, stripe): (
-        Option<Arc<inbound_text::Webhooks>>,
-        Option<PickCodeKeys<TwilioVerify>>,
-        Option<release_sink::StripeHooks>,
-    ),
+    (webhooks, voice, pick_keys, stripe): Hooks,
 ) -> Router {
     let quote_page = quote_page_routes(pool.clone(), Arc::new(SystemClock));
     let pick_flow = pick_flow_routes(pool.clone(), Arc::new(SystemClock), pick_keys);
     let feedback = feedback_routes(pool.clone(), Arc::new(SystemClock));
     let twilio = webhooks.map_or_else(Router::new, inbound_text::routes);
+    let voice = voice.map_or_else(Router::new, inbound_voice::routes);
     let stripe = stripe.map_or_else(Router::new, stripe_webhook_routes);
     let (log, _writer) = offdb_stream::RequestLog::spawn(pool);
     Router::new()
@@ -102,6 +111,7 @@ pub fn build_router(
         .merge(pick_flow)
         .merge(feedback)
         .merge(twilio)
+        .merge(voice)
         .merge(stripe)
         .layer(axum::middleware::from_fn_with_state(
             log,
@@ -266,6 +276,33 @@ where
         vault,
         names: Vec::new(),
         intake: askhava_intake::api::rules::Settings::default(),
+    })))
+}
+
+/// The voice webhook's state (T262, D-1755): with `webhooks`, the masked pool from the Twilio
+/// settings in `pairs` and the PIN wait (`ASKHAVA_PIN_WAIT_SECONDS`); `None` without `webhooks`.
+///
+/// # Errors
+///
+/// A bad Twilio setting or PIN wait, named, never its value.
+pub fn voice_hooks<I>(
+    settings: &Settings,
+    webhooks: Option<&Arc<inbound_text::Webhooks>>,
+    pairs: I,
+) -> io::Result<Option<Arc<inbound_voice::VoiceHooks>>>
+where
+    I: IntoIterator<Item = (String, String)>,
+{
+    let Some(hooks) = webhooks else {
+        return Ok(None);
+    };
+    let pairs: Vec<(String, String)> = pairs.into_iter().collect();
+    let twilio = TwilioConfig::from_settings(settings, pairs.clone()).map_err(io::Error::other)?;
+    let wait = askhava_calls::api::PinWait::from_pairs(pairs).map_err(io::Error::other)?;
+    Ok(Some(Arc::new(inbound_voice::VoiceHooks {
+        hooks: Arc::clone(hooks),
+        pool: twilio.pool().clone(),
+        wait,
     })))
 }
 
