@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-09T08:52:08Z by runner f183f5bd01ba (actions).
+Updated 2026-11-09T09:07:50Z by runner f183f5bd01ba (actions).
 
-**Idle since 08:49Z; 167 of 286 done; week 59% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 08:54Z; 168 of 286 done; week 59% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 167 of 286 build tasks (owner gates not counted)
+- **Tasks done:** 168 of 286 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 08:49Z (no task in progress)
+- **Lane:** idle since 08:54Z (no task in progress)
 - **Week:** 59% used, 76.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:52Z, 0 min before this update
+- **Last run:** 08:52Z, 15 min before this update
 - **Keeper:** last ran 08:52Z, next wake 09:12Z
 
 ## Needs attention
@@ -17,7 +17,7 @@ Updated 2026-11-09T08:52:08Z by runner f183f5bd01ba (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T265 | stage exit: a security, money or privacy handoff in the inte | MERGE_PENDING | 1 | 25 min | 08:49Z |  |
+| T265 | stage exit: a security, money or privacy handoff in the inte | done | 1 | 25 min | 08:49Z |  |
 | T264 | coverage checker: a missing measurement fails, and the total | done | 1 | 24 min | 07:58Z |  |
 | T262 | calls and server: a random stored PIN per line, unique on it | done | 1 | 33 min | 06:56Z |  |
 | T257 | privacy and server: the scrubber remembers names across a ho | done | 1 | 56 min | 05:54Z |  |
@@ -42,8 +42,8 @@ Updated 2026-11-09T08:52:08Z by runner f183f5bd01ba (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 268 of 732 (36.6%) · partial 264 · unstarted 200
-**Tasks merged (throughput only):** 167 of 286
+**Requirements verified:** 268 of 732 (36.6%) · partial 265 · unstarted 199
+**Tasks merged (throughput only):** 168 of 286
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -63,7 +63,7 @@ Updated 2026-11-09T08:52:08Z by runner f183f5bd01ba (actions).
 | quiet-hours | 8 | 1 | 0 | 9 |
 | quotes-pick | 33 | 13 | 10 | 56 |
 | recurring | 7 | 1 | 3 | 11 |
-| security | 13 | 33 | 8 | 54 |
+| security | 13 | 34 | 7 | 54 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 1 | 27 | 28 |
 | wording | 1 | 5 | 26 | 32 |
@@ -78,7 +78,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 47 of 98 done
+- stage 4: 48 of 98 done
 - stage 5: 0 of 42 done
 - stage 6: 0 of 30 done
 - stage 7: 0 of 2 done
