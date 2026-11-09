@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-09T04:57:54Z by runner 8c370a378133 (actions).
+Updated 2026-11-09T05:54:23Z by runner d44ce535e074 (actions).
 
 **Building: T257 in progress since 04:57Z; 164 of 286 done; week 58% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,11 @@ Updated 2026-11-09T04:57:54Z by runner 8c370a378133 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T257 claimed 04:57Z, lease until 07:57Z
 - **Week:** 58% used, 78.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:28Z, 29 min before this update
+- **Last run:** 04:57Z, 56 min before this update
 - **Keeper:** last ran 04:28Z, next wake 04:48Z
 
 ## Needs attention
-- Strict plan check red: 32 problem(s) on tasks still to run (+37 on DONE tasks); first: T255: stored context_pct 25% but it measures 33%; regenerate
+- Strict plan check red: 33 problem(s) on tasks still to run (+40 on DONE tasks); first: T255: stored context_pct 25% but it measures 34%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -29,7 +29,6 @@ Updated 2026-11-09T04:57:54Z by runner 8c370a378133 (actions).
 | T149 | businesses: sign-up deliverability check with a sample card, | done | 1 | 43 min | 12:00Z |  |
 | T197 | picks: Confirm by email alone with the 4-business-hour windo | done | 1 | 41 min | 08:17Z |  |
 | T148 | portals: secure email action links for every former text key | done | 1 | 56 min | 06:57Z |  |
-| T089 | Rate limits per phone, IP and business; brute-force stops | done | 1 | 44 min | 05:26Z |  |
 
 ### Plan and harness merges on main
 - 22:20Z Plan: wire the real AI into the app — T298 endpoint client, T299 intake wiring (D-2065) (#367)
