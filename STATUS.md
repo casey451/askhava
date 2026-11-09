@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-09T03:10:39Z by runner 6593f6cb6687 (actions).
+Updated 2026-11-09T03:22:06Z by runner 6593f6cb6687 (actions).
 
 **Idle since 03:09Z; 162 of 286 done; week 58% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-09T03:10:39Z by runner 6593f6cb6687 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 03:09Z (no task in progress)
 - **Week:** 58% used, 78.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:10Z, 0 min before this update
+- **Last run:** 03:22Z, 0 min before this update
 - **Keeper:** last ran 03:10Z, next wake 03:30Z
 
 ## Needs attention
@@ -30,7 +30,6 @@ Updated 2026-11-09T03:10:39Z by runner 6593f6cb6687 (actions).
 | T148 | portals: secure email action links for every former text key | done | 1 | 56 min | 06:57Z |  |
 | T089 | Rate limits per phone, IP and business; brute-force stops | done | 1 | 44 min | 05:26Z |  |
 | T088 | Authorization matrix over every route and actor; token isola | done | 1 | 45 min | 04:25Z |  |
-| T291 | core and checks: one brand file the app and the build's chec | done | 1 | 44 min | 03:16Z |  |
 
 ### Plan and harness merges on main
 - 22:20Z Plan: wire the real AI into the app — T298 endpoint client, T299 intake wiring (D-2065) (#367)
