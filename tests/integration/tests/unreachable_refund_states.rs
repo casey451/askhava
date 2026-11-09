@@ -327,7 +327,8 @@ async fn td_fee_47_refund_state_answers_each_state(pool: PgPool) {
             "{status:?} {disputed}"
         );
         let stored = status.and_then(RefundStatus::from_stored);
-        assert_eq!(PickRefundState::of(stored, disputed), expected);
+        let pure = RefundStatus::pick_state(stored, disputed);
+        assert_eq!(pure, expected);
     }
     let odd = seeded(&pool, JobStatus::Connected, paid("pi_FakeT270odd")).await;
     sqlx::query("ALTER TABLE payments.refund DROP CONSTRAINT refund_status_check")

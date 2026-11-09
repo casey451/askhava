@@ -11,6 +11,7 @@
 use jiff::Timestamp;
 
 use crate::models::{ChargeOutcome, RefundStep};
+use crate::refund_state::PickRefundState;
 
 /// Where one charge attempt stands (FEE-016). Stored as [`AttemptStatus::code`].
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -293,6 +294,26 @@ impl RefundStatus {
             }
             Some((Self::Sending, tries)) if retry_of == Some(tries) => RefundStep::Send(tries + 1),
             Some((Self::Sending | Self::Failed | Self::Canceled, _)) => RefundStep::Nothing,
+        }
+    }
+
+    /// FEE-026, D-1836, D-2145 (T270): where a pick's refund stands for its `stored` status
+    /// (`None`: no row) on a charge that is or is not `disputed`, judged as [`Self::next`] judges a
+    /// send: a dispute blocks every status that would still send (none, `sending`, `failed`,
+    /// `canceled`); `pending` stays in flight, since Stripe holds that refund and may still
+    /// finish it; only `succeeded` is [`PickRefundState::Succeeded`].
+    #[must_use]
+    pub const fn pick_state(stored: Option<Self>, disputed: bool) -> PickRefundState {
+        match stored {
+            Some(Self::Succeeded) => PickRefundState::Succeeded,
+            Some(Self::Blocked) => PickRefundState::Blocked,
+            Some(Self::Pending) => PickRefundState::InFlight,
+            None | Some(Self::Sending | Self::Failed | Self::Canceled) if disputed => {
+                PickRefundState::Blocked
+            }
+            None => PickRefundState::NoRefund,
+            Some(Self::Sending) => PickRefundState::InFlight,
+            Some(Self::Failed | Self::Canceled) => PickRefundState::Failed,
         }
     }
 }

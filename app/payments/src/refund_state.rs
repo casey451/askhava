@@ -13,7 +13,8 @@ use sqlx::types::Uuid;
 use crate::models::MoneyEventError;
 use crate::status::RefundStatus;
 
-/// Where a pick's one refund stands (FEE-026, D-1836).
+/// Where a pick's one refund stands (FEE-026, D-1836); `RefundStatus::pick_state` maps a stored
+/// status to it (every match on a status lives in `status.rs`, SEC-031).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum PickRefundState {
     /// No refund was ever asked for this pick, and its charge is not disputed.
@@ -26,29 +27,6 @@ pub enum PickRefundState {
     Failed,
     /// The charge is disputed, so no refund goes outside the dispute (FEE-026).
     Blocked,
-}
-
-impl PickRefundState {
-    /// FEE-026: the state of a stored refund `status` (`None`: no row) on a charge that is or is
-    /// not `disputed`, judged as `RefundStatus::next` judges a new send: a dispute blocks every
-    /// status that would still send (none, `sending`, `failed`, `canceled`); `pending` stays in
-    /// flight, since Stripe holds that refund and may still finish it.
-    #[must_use]
-    pub const fn of(status: Option<RefundStatus>, disputed: bool) -> Self {
-        match status {
-            Some(RefundStatus::Succeeded) => Self::Succeeded,
-            Some(RefundStatus::Blocked) => Self::Blocked,
-            Some(RefundStatus::Pending) => Self::InFlight,
-            None | Some(RefundStatus::Sending | RefundStatus::Failed | RefundStatus::Canceled)
-                if disputed =>
-            {
-                Self::Blocked
-            }
-            None => Self::NoRefund,
-            Some(RefundStatus::Sending) => Self::InFlight,
-            Some(RefundStatus::Failed | RefundStatus::Canceled) => Self::Failed,
-        }
-    }
 }
 
 /// FEE-022, FEE-026, FEE-052, D-1836: reads where `pick`'s refund stands from its
@@ -72,10 +50,10 @@ pub async fn refund_state(
     .map_err(|_| MoneyEventError::Database)?;
     let stored = row.status.as_deref().map(RefundStatus::from_stored);
     Ok(stored.map_or_else(
-        || PickRefundState::of(None, row.disputed),
+        || RefundStatus::pick_state(None, row.disputed),
         |known| {
             known.map_or(PickRefundState::Failed, |s| {
-                PickRefundState::of(Some(s), row.disputed)
+                RefundStatus::pick_state(Some(s), row.disputed)
             })
         },
     ))
