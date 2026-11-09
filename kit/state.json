@@ -24461,7 +24461,7 @@
     "T260",
     "T176"
    ],
-   "status": "MERGE_PENDING",
+   "status": "DONE",
    "attempts": 0,
    "slug": "storage-and-body-delete-adapters",
    "type": "harness",
@@ -24480,13 +24480,62 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 135,
      "head_sha": "6c0d754becdd653e279b4444329291fb6c1c0270",
-     "pr": null,
-     "checks": null,
+     "pr": 387,
+     "checks": [
+      {
+       "name": "backup",
+       "conclusion": null
+      },
+      {
+       "name": "keeper",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "gate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-09T15:30:26Z",
      "ended_at": "2026-11-09T16:08:58Z",
-     "result": "MERGE_PENDING"
+     "result": "done"
     }
    ],
    "reviewed_sha": "6c0d754becdd653e279b4444329291fb6c1c0270",
@@ -24500,7 +24549,24 @@
     "enabled": true,
     "why": "auto-merge on #387 (gh pr merge)",
     "head": "6c0d754becdd653e279b4444329291fb6c1c0270"
-   }
+   },
+   "merged_sha": "4c269f60064dca78ea9bccc3964a799856398d2e",
+   "merged_at": "2026-11-09T16:23:10Z",
+   "files": [
+    "Cargo.lock",
+    "app/adapters/CLAUDE.md",
+    "app/adapters/Cargo.toml",
+    "app/adapters/src/api.rs",
+    "app/adapters/src/sms.rs",
+    "app/adapters/src/storage.rs",
+    "app/adapters/src/tests/mod.rs",
+    "app/adapters/src/tests/storage.rs",
+    "docs/architecture.md",
+    "docs/decisions.md",
+    "stand_ins/server.py",
+    "stand_ins/twilio.py",
+    "tests/contract/test_twilio_body_delete.py"
+   ]
   },
   {
    "id": "T276",
@@ -26720,7 +26786,7 @@
    }
   }
  },
- "updated_at": "2026-11-09T16:10:25Z",
+ "updated_at": "2026-11-09T16:26:41Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",

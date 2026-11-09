@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-09T16:10:25Z by runner 474919a2c5bf (actions).
+Updated 2026-11-09T16:26:41Z by runner 474919a2c5bf (actions).
 
-**Idle since 16:08Z; 172 of 297 done; week 63% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 16:23Z; 173 of 297 done; week 63% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 172 of 297 build tasks (owner gates not counted)
+- **Tasks done:** 173 of 297 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 16:08Z (no task in progress)
+- **Lane:** idle since 16:23Z (no task in progress)
 - **Week:** 63% used, 68.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:10Z, 0 min before this update
+- **Last run:** 16:10Z, 16 min before this update
 - **Keeper:** last ran 16:10Z, next wake 16:30Z
 
 ## Needs attention
@@ -17,7 +17,7 @@ Updated 2026-11-09T16:10:25Z by runner 474919a2c5bf (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T275 | adapters and stand-ins: local write-once storage that a raci | MERGE_PENDING | 1 | 38 min | 16:08Z |  |
+| T275 | adapters and stand-ins: local write-once storage that a raci | done | 1 | 38 min | 16:08Z |  |
 | T274 | intake and privacy: the 180-day contact purge decides and cl | done | 1 | 66 min | 14:56Z |  |
 | T270 | picks and payments: the unreachable refund and the fraud war | done | 1 | 29 min | 13:17Z |  |
 | T282 | calls and picks: each call's start time reaches the unreacha | done | 2 | 32 min | 12:06Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Date:      2026- |
@@ -44,7 +44,7 @@ Updated 2026-11-09T16:10:25Z by runner 474919a2c5bf (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 252 of 732 (34.4%) · partial 281 · unstarted 199
-**Tasks merged (throughput only):** 172 of 297
+**Tasks merged (throughput only):** 173 of 297
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -79,7 +79,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 52 of 101 done
+- stage 4: 53 of 101 done
 - stage 5: 0 of 50 done
 - stage 6: 0 of 30 done
 - stage 7: 0 of 2 done
