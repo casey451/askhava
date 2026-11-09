@@ -63,6 +63,10 @@
 //! [`run_refund_check`] ([`REFUND_CHECK_KIND`]), and [`refund_succeeded`], [`refund_failed`] and
 //! [`refund_canceled`] move it on, a failure after success appending one `refund-reversal`.
 //!
+//! T270 (D-1836, D-2145): [`refund_state`] reads where a pick's refund stands as a
+//! [`PickRefundState`] (`NoRefund`, `InFlight`, `Succeeded`, `Failed`, `Blocked`); `picks` closes a
+//! job or tells a business its fee is refunded only on `Succeeded` (FEE-022, FEE-026, FEE-052).
+//!
 //! T067: [`reconcile`] (the [`RECONCILE_KIND`] task, [`run_reconcile`]) reads Stripe's charges
 //! through [`ReconcileStripe`] and auto-matches or auto-refunds each unknown one by
 //! [`plan_charge`], records processing fees and checks the ledger against Stripe to the cent
@@ -120,6 +124,7 @@ pub use crate::refund_rules::{
     EmailCheck, NoShow, RefundDecision, RefundReason, Unmet, UnreachableFacts, counted_attempts,
     decide_cancel, decide_unreachable, no_show, refund_label, talked,
 };
+pub use crate::refund_state::{PickRefundState, refund_state};
 pub use crate::refund_stripe::{Refund, RefundState, RefundStripe};
 pub use crate::refunds::{
     FRAUD_WARNING_ALERT, REFUND_ACTION, REFUND_BLOCKED_ALERT, REFUND_CHECK_EVERY,

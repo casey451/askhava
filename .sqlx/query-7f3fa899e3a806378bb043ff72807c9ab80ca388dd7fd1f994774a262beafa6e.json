@@ -1,0 +1,30 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT (SELECT status FROM payments.refund WHERE pick_id = $1) AS status,\n                  EXISTS (SELECT 1 FROM payments.dispute WHERE pick_id = $1) AS \"disputed!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "status",
+        "type_info": "Text",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 1,
+        "name": "disputed!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null,
+      null
+    ]
+  },
+  "hash": "7f3fa899e3a806378bb043ff72807c9ab80ca388dd7fd1f994774a262beafa6e"
+}
