@@ -128,7 +128,7 @@ def base() -> Iterator[str]:
     httpd.server_close()
 
 
-def call(base: str, method: str, path: str, form: Any = None, **headers: str) -> tuple[int, Any, dict[str, str]]:
+def call(base: str, method: str, path: str, form: Any = None, **headers: str) -> tuple[int, Any]:
     data = urlencode(form).encode() if form is not None else None
     req = urllib.request.Request(base + path, data, {k.replace("_", "-"): v for k, v in headers.items()}, method=method)
     try:
@@ -136,7 +136,7 @@ def call(base: str, method: str, path: str, form: Any = None, **headers: str) ->
             status, raw = resp.status, resp.read()
     except urllib.error.HTTPError as err:
         status, raw = err.code, err.read()
-    return status, json.loads(raw), {}
+    return status, json.loads(raw)
 
 
 def post(base: str, path: str, form: dict[str, str], key: str = "") -> Any:
@@ -148,13 +148,14 @@ def test_the_same_steps_over_http(base: str) -> None:
     """TD-FEE-44: the adapter's paths over HTTP: create unconfirmed, confirm, approve, fetch."""
     cus = post(base, "customers", {"metadata[business_id]": "biz-fake-2"})[1]["id"]
     form = {"amount": "2500", "currency": "usd", "customer": cus, "confirm": "false", "metadata[pick_id]": "pick-2"}
-    status, pi, _ = post(base, "payment_intents", form, "pick-2-intent")
+    form["payment_method_types[]"] = "card"
+    status, pi = post(base, "payment_intents", form, "pick-2-intent")
     assert status == 200 and pi["status"] == "requires_payment_method" and pi["client_secret"]
     path = f"payment_intents/{pi['id']}"
-    status, wants, _ = post(base, path + "/confirm", {"payment_method": "pm_card_authenticationRequired"}, "try1")
+    status, wants = post(base, path + "/confirm", {"payment_method": "pm_card_authenticationRequired"}, "try1")
     assert status == 200 and wants["status"] == "requires_action"
     assert post(base, path + "/stand_in_authenticate", {"result": "maybe"})[0] == 400
-    status, settled, _ = post(base, path + "/stand_in_authenticate", {"result": "pass"})
+    status, settled = post(base, path + "/stand_in_authenticate", {"result": "pass"})
     assert status == 200 and settled["payment_intent"]["status"] == "succeeded"
     assert "stripe-signature" in settled["headers"]
     fetched = call(base, "GET", f"/stripe/v1/{path}", authorization=AUTH)[1]
