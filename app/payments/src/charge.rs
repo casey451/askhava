@@ -10,7 +10,9 @@
 //! first, and blocks a new try until Stripe says it failed (FEE-037); the monthly fee limit
 //! (FEE-041), which ends the pick at once; only then is the PaymentIntent made, if the page has
 //! not made it, and a new attempt `pick-<id>-try<n>` started under the pick's row lock (so two
-//! presses never make two undecided tries) confirms it with its own key. A confirm Stripe
+//! presses never make two undecided tries) and the business's fee-limit row lock, where the limit
+//! is checked again with every undecided attempt of its other picks reserved (a hard cap,
+//! D-1758), confirms it with its own key. A confirm Stripe
 //! refuses with a 4xx (other than 402 and 429) charged nothing, so the intent is read again. No
 //! transaction or pooled connection is held across a Stripe call (R11). The timers and events
 //! each answer starts are `handlers.rs`'s; a success writes the pick's one FEE-042 evidence
@@ -164,8 +166,10 @@ pub async fn confirm_and_pay(
     }
     let intent = open_intent(pool, stripe, secret, press, at).await?;
     let mut conn = db(pool.acquire().await)?;
-    let Some(try_no) = begin_attempt(&mut conn, press, at).await? else {
-        return Ok(ChargeOutcome::Pending);
+    let try_no = match begin_attempt(&mut conn, press, at).await? {
+        Begun::Started(try_no) => try_no,
+        Begun::Held => return Ok(ChargeOutcome::Pending),
+        Begun::OverLimit => return Ok(ChargeOutcome::OverLimit),
     };
     drop(conn);
     let label = attempt_label(press.pick, try_no);
@@ -323,16 +327,27 @@ async fn before_attempt(
         return Ok(Some(stop));
     }
     let mut conn = db(pool.acquire().await)?;
-    if over_limit(&mut conn, press.business, press.amount_cents, at).await? {
+    if over_limit(&mut conn, press, at, false).await? {
         let mut tx = db(sqlx::Connection::begin(&mut *conn).await)?;
-        if !end_pick(&mut tx, press.pick, EndReason::FeeLimit, at).await? {
-            let parties = (press.business.0, press.job);
-            announce_end(&mut tx, press.pick, parties, EndReason::FeeLimit, at).await?;
-        }
+        end_over_limit(&mut tx, press, at).await?;
         db(tx.commit().await)?;
         return Ok(Some(ChargeOutcome::OverLimit));
     }
     Ok(None)
+}
+
+/// Ends the pick of a press over the monthly fee limit at once, with its one ended event, also
+/// when no PaymentIntent was made yet (FEE-041, D-1427).
+async fn end_over_limit(
+    tx: &mut PgConnection,
+    press: &Press<'_>,
+    at: Timestamp,
+) -> Result<(), ChargeError> {
+    if !end_pick(tx, press.pick, EndReason::FeeLimit, at).await? {
+        let parties = (press.business.0, press.job);
+        announce_end(tx, press.pick, parties, EndReason::FeeLimit, at).await?;
+    }
+    Ok(())
 }
 
 /// `payments`' own record of the pick (FEE-017): another business's pick, a paid one or an
@@ -377,8 +392,9 @@ async fn settle_earlier(
     Ok(asked.map_or(Some(ChargeOutcome::Pending), AttemptStatus::blocks_new_try))
 }
 
-/// Sets, or with `None` removes, the business's monthly fee limit (FEE-041, D-204); the portal
-/// and card-authorization field that calls it is T224's.
+/// Sets, or with `None` removes, the business's monthly fee limit (FEE-041, D-204, D-1758) in
+/// one statement, so a change cut off part way never leaves the business without its limit; the
+/// portal and card-authorization field that calls it is T224's.
 ///
 /// # Errors
 /// [`ChargeError::BadField`] for a limit of 0; [`ChargeError::Database`].
@@ -387,85 +403,148 @@ pub async fn set_fee_limit(
     business: BusinessId,
     limit_cents: Option<u32>,
 ) -> Result<(), ChargeError> {
-    if limit_cents == Some(0) {
-        return Err(ChargeError::BadField);
-    }
-    db(sqlx::query!(
-        "DELETE FROM payments.fee_limit WHERE business_id = $1",
-        business.0
-    )
-    .execute(&mut *conn)
-    .await)?;
-    if let Some(cents) = limit_cents {
-        db(sqlx::query!(
-            "INSERT INTO payments.fee_limit (business_id, limit_cents) VALUES ($1, $2)",
+    let query = match limit_cents {
+        Some(0) => return Err(ChargeError::BadField),
+        Some(cents) => sqlx::query!(
+            "INSERT INTO payments.fee_limit (business_id, limit_cents) VALUES ($1, $2)
+             ON CONFLICT (business_id) DO UPDATE SET limit_cents = EXCLUDED.limit_cents",
             business.0,
             i64::from(cents)
-        )
-        .execute(&mut *conn)
-        .await)?;
-    }
+        ),
+        None => sqlx::query!(
+            "DELETE FROM payments.fee_limit WHERE business_id = $1",
+            business.0
+        ),
+    };
+    db(query.execute(&mut *conn).await)?;
     Ok(())
 }
 
-/// True when `amount_cents` would take the business's succeeded charges this Arizona calendar
-/// month over its limit (FEE-041); exactly at the limit is still charged.
-async fn over_limit(
+/// The business's monthly fee limit, if it set one; `locked` takes the row's lock for the rest
+/// of the caller's transaction (FEE-041, D-1758). No row, no limit and nothing to lock.
+async fn limit_of(
     conn: &mut PgConnection,
     business: BusinessId,
-    amount_cents: u32,
+    locked: bool,
+) -> Result<Option<i64>, ChargeError> {
+    let query = if locked {
+        sqlx::query_scalar!(
+            "SELECT limit_cents FROM payments.fee_limit WHERE business_id = $1 FOR UPDATE",
+            business.0
+        )
+    } else {
+        sqlx::query_scalar!(
+            "SELECT limit_cents FROM payments.fee_limit WHERE business_id = $1",
+            business.0
+        )
+    };
+    db(query.fetch_optional(&mut *conn).await)
+}
+
+/// True when `press`'s fee would take the business's Arizona calendar month over its limit
+/// (FEE-041, D-1427, D-1758, D-2083): the month of `at` holds every succeeded attempt and every
+/// undecided (`sent`, `processing`) attempt of the business's other picks, each in the month its
+/// press started, so an undecided attempt reserves its fee until it is decided and a failed one
+/// frees it; a bank-approval (`needs_action`) attempt that is its open pick's latest try also
+/// reserves its fee while the card-fix window runs, since the bank's approval can still make it
+/// a success; exactly at the limit is still charged. `locked` is [`begin_attempt`]'s authoritative
+/// check under the limit row's lock; unlocked, it is the early check before any Stripe call.
+async fn over_limit(
+    conn: &mut PgConnection,
+    press: &Press<'_>,
     at: Timestamp,
+    locked: bool,
 ) -> Result<bool, ChargeError> {
-    let limit = db(sqlx::query_scalar!(
-        "SELECT limit_cents FROM payments.fee_limit WHERE business_id = $1",
-        business.0
-    )
-    .fetch_optional(&mut *conn)
-    .await)?;
-    let Some(limit) = limit else {
+    let Some(limit) = limit_of(conn, press.business, locked).await? else {
         return Ok(false);
     };
-    let month = at
+    let first = at
         .to_zoned(arizona())
         .first_of_month()
         .and_then(|day| day.start_of_day())
-        .map_err(|_| ChargeError::BadField)?
-        .timestamp();
-    let charged = db(sqlx::query_scalar!(
+        .map_err(|_| ChargeError::BadField)?;
+    let next = first
+        .checked_add(jiff::Span::new().months(1))
+        .map_err(|_| ChargeError::BadField)?;
+    let counted = db(sqlx::query_scalar!(
         r#"SELECT coalesce(sum(i.amount_cents), 0)::bigint AS "sum!" FROM payments.charge_attempt a
            JOIN payments.pick_intent i USING (pick_id)
-           WHERE i.business_id = $1 AND a.status = 'succeeded' AND a.decided_at >= $2"#,
-        business.0,
-        month.to_sqlx() as _,
+           WHERE i.business_id = $1 AND a.started_at >= $2 AND a.started_at < $3
+             AND (a.status = 'succeeded'
+                  OR (a.pick_id <> $4 AND (a.status IN ('sent', 'processing')
+                      OR (a.status = 'needs_action' AND i.ended_at IS NULL
+                          AND NOT EXISTS (SELECT 1 FROM payments.charge_attempt b
+                            WHERE b.pick_id = a.pick_id AND b.try_no > a.try_no)
+                          AND EXISTS (SELECT 1 FROM payments.pay_timer t
+                            WHERE t.pick_id = a.pick_id AND t.kind = 'card-fix'
+                              AND t.ended_at IS NULL)))))"#,
+        press.business.0,
+        first.timestamp().to_sqlx() as _,
+        next.timestamp().to_sqlx() as _,
+        press.pick,
     )
     .fetch_one(&mut *conn)
     .await)?;
-    Ok(charged + i64::from(amount_cents) > limit)
+    Ok(counted + i64::from(press.amount_cents) > limit)
 }
 
-/// Starts the next attempt, try `n`, for this press, with its 30-minute check (FEE-019), under
-/// the pick's row lock, and only while no earlier attempt is undecided or paid and the pick has
-/// not ended, so the check and the insert are one step (FEE-016, FEE-017, FEE-037); `None` when
-/// another press holds the pick (the page waits for it).
+/// What [`begin_attempt`] did with a press.
+enum Begun {
+    /// Try `n` was inserted, undecided: it reserves its fee under the limit, and is confirmed.
+    Started(i32),
+    /// Another press holds the pick, or it is paid or ended; the page waits.
+    Held,
+    /// The fee would take the month over the limit; the pick ended and nothing was inserted.
+    OverLimit,
+}
+
+/// Starts the next attempt, try `n`, for this press, with its 30-minute check (FEE-019), in one
+/// transaction that commits before Stripe is called (FEE-016, FEE-017, FEE-037, FEE-041,
+/// D-1758): under the pick's row lock, only while no earlier attempt is undecided or paid and the
+/// pick has not ended (else [`Begun::Held`]); then under the business's `payments.fee_limit` row
+/// lock (always taken after the pick's, so two presses never deadlock), only while the fee fits
+/// the month, so two presses on two picks never both pass the limit (else the pick ends,
+/// [`Begun::OverLimit`]). The inserted `sent` attempt is the reservation.
 async fn begin_attempt(
     conn: &mut PgConnection,
     press: &Press<'_>,
     at: Timestamp,
-) -> Result<Option<i32>, ChargeError> {
+) -> Result<Begun, ChargeError> {
     let mut tx = db(sqlx::Connection::begin(&mut *conn).await)?;
-    db(sqlx::query_scalar!(
-        "SELECT pick_id FROM payments.pick_intent WHERE pick_id = $1 FOR UPDATE",
+    let free = db(sqlx::query_scalar!(
+        r#"SELECT i.ended_at IS NULL AND NOT EXISTS (SELECT 1 FROM payments.charge_attempt a
+             WHERE a.pick_id = i.pick_id AND a.status IN ('sent', 'processing', 'succeeded'))
+             AS "free!"
+           FROM payments.pick_intent i WHERE i.pick_id = $1 FOR UPDATE OF i"#,
         press.pick
     )
     .fetch_one(&mut *tx)
     .await)?;
+    let begun = if !free {
+        Begun::Held
+    } else if over_limit(&mut tx, press, at, true).await? {
+        end_over_limit(&mut tx, press, at).await?;
+        Begun::OverLimit
+    } else {
+        insert_attempt(&mut tx, press, at)
+            .await?
+            .map_or(Begun::Held, Begun::Started)
+    };
+    db(tx.commit().await)?;
+    Ok(begun)
+}
+
+/// Inserts try `n` as `sent`, with its audit row and its 30-minute check, on the caller's
+/// transaction (FEE-016, FEE-019); `None` when this press already made it.
+async fn insert_attempt(
+    tx: &mut PgConnection,
+    press: &Press<'_>,
+    at: Timestamp,
+) -> Result<Option<i32>, ChargeError> {
     let try_no = db(sqlx::query_scalar!(
         r#"INSERT INTO payments.charge_attempt (pick_id, try_no, press_id, status, started_at)
            SELECT $1, coalesce(max(a.try_no), 0) + 1, $2, 'sent', $3
            FROM payments.charge_attempt a WHERE a.pick_id = $1
-           HAVING NOT coalesce(bool_or(a.status IN ('sent', 'processing', 'succeeded')), false)
-             AND NOT EXISTS (SELECT 1 FROM payments.pick_intent i
-                             WHERE i.pick_id = $1 AND i.ended_at IS NOT NULL)
            ON CONFLICT DO NOTHING RETURNING try_no"#,
         press.pick,
         press.press,
@@ -473,17 +552,15 @@ async fn begin_attempt(
     )
     .fetch_optional(&mut *tx)
     .await)?;
-    if let Some(try_no) = try_no {
-        let actor = Actor::Business(press.business.0);
-        let entry = AuditEntry::status_change(actor, (ATTEMPT_SUBJECT, press.pick), "new", "sent");
-        audit(&mut tx, &entry)
-            .await
-            .map_err(|_| ChargeError::Database)?;
-        let check_at = at.saturating_add(CHECK_AFTER).unwrap_or(at);
-        queue_check(&mut tx, press.pick, try_no, 0, check_at).await?;
-    }
-    db(tx.commit().await)?;
-    Ok(try_no)
+    let Some(try_no) = try_no else {
+        return Ok(None);
+    };
+    let actor = Actor::Business(press.business.0);
+    let entry = AuditEntry::status_change(actor, (ATTEMPT_SUBJECT, press.pick), "new", "sent");
+    audit(tx, &entry).await.map_err(|_| ChargeError::Database)?;
+    let check_at = at.saturating_add(CHECK_AFTER).unwrap_or(at);
+    queue_check(tx, press.pick, try_no, 0, check_at).await?;
+    Ok(Some(try_no))
 }
 
 /// Asks Stripe for the pick's PaymentIntent and records what it says on the latest attempt

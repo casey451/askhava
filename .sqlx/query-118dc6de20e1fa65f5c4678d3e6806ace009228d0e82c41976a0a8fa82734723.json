@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT i.ended_at IS NULL AND NOT EXISTS (SELECT 1 FROM payments.charge_attempt a\n             WHERE a.pick_id = i.pick_id AND a.status IN ('sent', 'processing', 'succeeded'))\n             AS \"free!\"\n           FROM payments.pick_intent i WHERE i.pick_id = $1 FOR UPDATE OF i",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "free!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "118dc6de20e1fa65f5c4678d3e6806ace009228d0e82c41976a0a8fa82734723"
+}
