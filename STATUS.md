@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-09T23:27:49Z by runner 6937ebb47d8d (actions).
+Updated 2026-11-09T23:28:02Z by runner 6937ebb47d8d (actions).
 
-**Building: T283 in progress since 22:57Z; 176 of 313 done; week 71% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 23:27Z; 176 of 313 done; week 71% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 176 of 313 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T283 claimed 22:57Z, lease until 01:57Z
+- **Lane:** idle since 23:27Z (no task in progress)
 - **Week:** 71% used, 52.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:04Z, 23 min before this update
+- **Last run:** 23:04Z, 24 min before this update
 - **Keeper:** last ran 22:31Z, next wake 22:51Z
 
 ## Needs attention
@@ -17,6 +17,7 @@ Updated 2026-11-09T23:27:49Z by runner 6937ebb47d8d (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T283 | Ci: a change to a document the app compiles in runs the Rust | MERGE_PENDING | 1 | 30 min | 23:27Z |  |
 | T287 | payments and picks: the fee fixed at the pick is stored by p | done | 2 | 43 min | 22:15Z | T287 built and smoke green, but prehandin check_pr_change fails: kit/tasks.json T287 owns lacks app/payments/src/models. |
 | T287 | payments and picks: the fee fixed at the pick is stored by p | QUEUED | 1 | 46 min | 21:18Z |  |
 | T279 | messaging, ops and server: the texting switch and a number s | done | 1 | 47 min | 19:32Z |  |
@@ -88,7 +89,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T283 (lease until 2026-11-10T01:57:43Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T287", "at": "2026-11-09T22:15:51Z", "input_tokens": 523, "cache_creation_input_tokens": 711773, "output_tokens": 177348, "cache_read_input_tokens": 43474964}
+- {"task": "T283", "at": "2026-11-09T23:27:48Z", "input_tokens": 202, "cache_read_input_tokens": 5318528, "output_tokens": 82844, "cache_creation_input_tokens": 226903}
