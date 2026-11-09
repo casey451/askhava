@@ -1,18 +1,17 @@
 # Ask Hava build status
 
-Updated 2026-11-09T16:37:39Z by runner 474919a2c5bf (actions).
+Updated 2026-11-09T16:53:20Z by runner 4c269f60064d (actions).
 
-**Idle since 16:23Z; 173 of 297 done; week 63% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T276 in progress since 16:53Z; 173 of 297 done; week 63% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 173 of 297 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 16:23Z (no task in progress)
+- **Lane:** lane 1: T276 claimed 16:53Z, lease until 19:53Z
 - **Week:** 63% used, 68.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:37Z, 0 min before this update
+- **Last run:** 16:37Z, 15 min before this update
 - **Keeper:** last ran 16:37Z, next wake 16:57Z
 
 ## Needs attention
-- PLAN GAP T276 (since 2026-11-09T16:26:38Z, no attempt used; a plan change fixes it): T276: dependency T275 is DONE but its owned file app/adapters/src/tests/storage.rs is not on main; T276: dependency T275 is DONE but its owned file tests/contract/test_twilio_body_delete.py is not on main
 - Strict plan check red: 23 problem(s) on tasks still to run (+50 on DONE tasks); first: T255: stored context_pct 25% but it measures 34%; regenerate
 
 ## Last 24 hours
@@ -73,7 +72,7 @@ Updated 2026-11-09T16:37:39Z by runner 474919a2c5bf (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-09T15:09:27Z (week)): five-hour: 7.5M used, 21.6M left, resets 2026-11-09T17:06:04Z; week: 126.0M used, 68.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-11-27T20:53:46Z.
+- Pacing (session_reading 2026-11-09T16:37:22Z (week)): five-hour: 9.1M used, 20.0M left, resets 2026-11-09T17:06:04Z; week: 126.0M used, 68.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-11-27T14:34:07Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -88,7 +87,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T276 (lease until 2026-11-09T19:53:18Z)
 
 ## Last usage reading
 - {"task": "T275", "at": "2026-11-09T16:08:58Z", "cache_read_input_tokens": 10618949, "input_tokens": 309, "cache_creation_input_tokens": 424858, "output_tokens": 122115}
