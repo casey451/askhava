@@ -104,3 +104,88 @@ def test_cli_exit_codes(tmp_path: Path) -> None:
     (root / "nightly.json").write_text(json.dumps(NIGHTLY))
     assert se.main(["--stage", "3", "--state", str(state_path), "--root", str(root)]) == 1
     assert se.main(["--stage", "2", "--state", str(state_path), "--root", str(root)]) == 1  # no git repo: ancestry unknown
+
+
+# TD-OPS-31 (SEC-022, D-1760): the integration-closure register, condition 5. Fake rows only.
+CLOSURE_GRAPH = [*GRAPH, {"id": "T090", "stage": "3", "type": "build"}]
+HEADER = "| ID | Handoff | Decision or finding | Producer | Consumer | Area | Owner | Test | Status | Evidence |\n|---|---|---|---|---|---|---|---|---|---|\n"
+
+
+def register(tmp_path: Path, *rows: str) -> Path:
+    path = tmp_path / "integration-closure.md"
+    body = "".join(f"| {r} |\n" for r in rows)
+    path.write_text(f"# Register\n\nIntro text.\n\n{HEADER}{body}\nAfter the table.\n", encoding="utf-8")
+    return path
+
+
+def row(area: str, owner: str, status: str = "open", evidence: str = "-", rid: str = "IC-90") -> str:
+    return f"{rid} | A fake handoff | D-1 | a | b | {area} | {owner} | TD-X-01 | {status} | {evidence}"
+
+
+def closure(stage: str, path: Path, state: dict[str, Any] | None = None) -> list[str]:
+    return se.evaluate(stage, CLOSURE_GRAPH, state or done_state(), NIGHTLY, {}, always(True), path)
+
+
+def test_td_ops_31_open_gating_row_with_a_queued_owner_passes(tmp_path: Path) -> None:
+    path = register(tmp_path, row("security", "T058"), row("money", "T011, T058"), row("privacy", "T010, T058"))
+    assert closure("2", path) == []
+    assert closure("3", path) == ["T058 is QUEUED, not DONE", "T090 is QUEUED, not DONE"]
+    gate_owned = register(tmp_path, row("security", "T127"))
+    assert closure("2", gate_owned) == []  # a gate's non-numeric stage is never at or below N: printed, not judged
+
+
+def test_td_ops_31_done_owners_with_one_in_a_later_stage_pass_earlier_and_fail_later(tmp_path: Path) -> None:
+    path = register(tmp_path, row("money", "T011, T090"))
+    state = done_state()
+    state["tasks"].append({"id": "T090", "status": "DONE", "merged_sha": "m-T090"})
+    assert closure("2", path, state) == []
+    problems = closure("3", path, state)
+    assert [p for p in problems if "IC-90" in p] == ["IC-90 (money): every owner (T011, T090) is DONE or SKIPPED; name a live owner or close it"]
+    problems, notes = se.closure_review("2", CLOSURE_GRAPH, state, se.read_register(path) or [])
+    assert problems == [] and notes == ["IC-90 (money) is open; judged at the stage of T090"]
+
+
+def test_td_ops_31_only_done_or_skipped_owners_fail(tmp_path: Path) -> None:
+    state = done_state()
+    state["tasks"].append({"id": "T127", "status": "SKIPPED"})
+    path = register(tmp_path, row("privacy", "T010, T011"))
+    assert closure("2", path, state) == ["IC-90 (privacy): every owner (T010, T011) is DONE or SKIPPED; name a live owner or close it"]
+
+
+def test_td_ops_31_no_owner_or_an_unknown_task_fails_at_every_stage(tmp_path: Path) -> None:
+    path = register(tmp_path, row("security", "none"), row("money", "T999, T058", rid="IC-91"))
+    for stage in ("2", "3"):
+        problems = [p for p in closure(stage, path) if p.startswith("IC-")]
+        assert problems == ["IC-90 (security): no owner task", "IC-91 (money): owner T999 is not a task in kit/tasks.json"]
+
+
+def test_td_ops_31_a_closed_row_needs_a_commit_or_pr_and_a_test(tmp_path: Path) -> None:
+    bare = register(tmp_path, row("security", "T010", "closed", "merged"))
+    assert closure("2", bare) == ["IC-90 (security): closed without evidence (a merged commit SHA or PR number and a test)"]
+    no_test = register(tmp_path, row("security", "T010", "closed", "#375"))
+    assert len(closure("2", no_test)) == 1
+    good = register(tmp_path, row("security", "T010", "closed", "#375, test_fake_case"), row("money", "T011", "closed", "f183f5bd TD-FEE-46"))
+    assert closure("2", good) == []
+
+
+def test_td_ops_31_a_non_gating_unowned_row_passes_with_a_printed_line(tmp_path: Path, capsys: Any) -> None:
+    root = tmp_path
+    (root / "kit").mkdir()
+    (root / "kit" / "tasks.json").write_text(json.dumps({"tasks": CLOSURE_GRAPH}))
+    (root / "docs").mkdir()
+    (root / "docs" / "integration-closure.md").write_text(register(tmp_path, row("reliability", "none", "tracked")).read_text())
+    state_path = root / "state.json"
+    state_path.write_text(json.dumps(done_state()))
+    assert closure("2", root / "docs" / "integration-closure.md") == []
+    se.main(["--stage", "2", "--state", str(state_path), "--root", str(root)])
+    assert "  note: IC-90 (reliability) is tracked; not gating" in capsys.readouterr().out.splitlines()
+
+
+def test_td_ops_31_a_missing_register_fails(tmp_path: Path, capsys: Any) -> None:
+    missing = tmp_path / "docs" / "integration-closure.md"
+    assert closure("2", missing) == [f"the integration-closure register {missing} is missing"]
+    assert se.read_register(missing) is None
+    state = done_state()
+    state["tasks"][0]["status"] = "BLOCKED"
+    assert closure("2", missing, state) == ["T010 is BLOCKED, not DONE", f"the integration-closure register {missing} is missing"]
+    assert se.passed_stages(CLOSURE_GRAPH, done_state(), NIGHTLY, {}, always(True), missing) == set()
