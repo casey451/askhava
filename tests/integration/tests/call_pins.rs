@@ -226,6 +226,35 @@ async fn td_call_13_twelve_wrong_tries_at_once_never_pass_six(db: PgPool) {
     assert_eq!(tries(&mut restarted).await, [6, 1]);
 }
 
+/// TD-CALL-13 (CALL-025): the day is Arizona's, not UTC's. 23:30Z and 00:30Z the next UTC date
+/// are both March 1 in Arizona (16:30 and 17:30), as is 06:59:59Z (23:59:59); 07:00:00Z is
+/// Arizona midnight, March 2, so the count starts again there and not at UTC midnight.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_call_13_the_try_count_follows_the_arizona_day(db: PgPool) {
+    let mut db = db.acquire().await.expect("connection");
+    let pool = one_number_pool();
+    let line = new_line(&mut db, &pool).await.expect("line");
+    let pin = stored_pin(&mut db, line).await.expect("read").expect("pin");
+    let wrong = other_than(&[pin]);
+    let instants = [
+        "2026-03-01T23:30:00Z",
+        "2026-03-02T00:30:00Z",
+        "2026-03-02T06:59:59Z",
+        "2026-03-02T07:00:00Z",
+    ];
+    for (n, at) in (10..).zip(instants) {
+        let reply = wrong_try(&mut db, (&pool, wrong), (&sid(n), STRANGER), ts(at)).await;
+        assert!(matches!(reply, VoiceReply::AskPin), "try at {at}");
+    }
+    assert_eq!(tries(&mut db).await, [3, 1]);
+    let days: Vec<String> =
+        sqlx::query_scalar("SELECT az_day::text FROM calls.pin_try ORDER BY az_day")
+            .fetch_all(&mut *db)
+            .await
+            .expect("days");
+    assert_eq!(days, ["2026-03-01", "2026-03-02"]);
+}
+
 /// TD-CALL-13 (CALL-025, SEC-017): a repeated callback with the same CallSid and digits is not
 /// another try; the right stored PIN connects nothing it should not and counts nothing.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
