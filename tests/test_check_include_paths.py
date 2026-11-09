@@ -137,7 +137,8 @@ def test_td_ops_32_the_repository_root_is_a_note_not_a_silent_skip(tmp_path: Pat
 
 def test_td_ops_32_a_workflow_without_a_rust_rule_is_red(tmp_path: Path) -> None:
     root = _tree(tmp_path, "")
-    (root / ".github" / "workflows" / "ci.yml").write_text("jobs:\n  checks:\n    steps: []\n  coverage:\n    steps: []\n")
+    no_rule = "jobs:\n  checks:\n    steps: []\n  coverage:\n    steps: []\n"
+    (root / ".github" / "workflows" / "ci.yml").write_text(no_rule)
     assert cip.main(["--root", str(root)]) == 1
 
 
