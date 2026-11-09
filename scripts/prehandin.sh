@@ -59,7 +59,7 @@ step() { printf '\n== %s\n' "$1"; }
 fail() { echo "FAILED: $1"; exit 1; }
 
 # The same path rules as ci.yml's "What this change touches" step (tests/test_prehandin.py keeps them equal).
-RUST_PATHS='^(app/|tests/(integration|security|recovery|fixtures|mutation)/|scripts/run_named_mutants\.py|migrations/|stand_ins/|kit/layers\.json|kit/allowed_crates\.txt|Cargo\.(toml|lock)|rust-toolchain\.toml|clippy\.toml|deny\.toml|\.sqlx/|\.github/workflows/ci\.yml)'
+RUST_PATHS='^(app/|tests/(integration|security|recovery|fixtures|mutation)/|scripts/run_named_mutants\.py|migrations/|docs/legal/|docs/catalog/|docs/architecture\.md|docs/copy/mail-app-steps\.md|schemas/|scripts/pii_scan\.py|stand_ins/|kit/layers\.json|kit/allowed_crates\.txt|Cargo\.(toml|lock)|rust-toolchain\.toml|clippy\.toml|deny\.toml|\.sqlx/|\.github/workflows/ci\.yml)'
 NPM_PATHS='^(package(-lock)?\.json|tsconfig|eslint\.config|tests/(e2e|a11y)/|app/[^/]+/static/.*\.ts$)'
 touches() { printf '%s\n' "${CHANGED}" | grep -Eq "$1"; }
 
@@ -109,7 +109,7 @@ quick_part() {
   secret_scan
   step "Plan, wording and source rules (as Ci runs them)"
   local check
-  for check in pii_scan trace_spec validate_tasks check_catalog check_legal_docs check_ai_smell check_copy check_code_docs check_rust_rules check_crates check_plan_lock; do
+  for check in pii_scan trace_spec validate_tasks check_catalog check_legal_docs check_ai_smell check_copy check_code_docs check_rust_rules check_crates check_include_paths check_plan_lock; do
     if [ ! -f "scripts/${check}.py" ]; then
       # A check main added after this branch was made: Ci on the branch would not run it either. Merging
       # origin/main into the branch (a plain merge, never a reset or rebase) brings it (D-1300).
