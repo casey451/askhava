@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-09T01:52:06Z by runner 1280a06c368e (actions).
+Updated 2026-11-09T01:52:20Z by runner 1280a06c368e (actions).
 
-**Building: T259 in progress since 00:50Z; 161 of 286 done; week 58% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 01:52Z; 161 of 286 done; week 58% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 161 of 286 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T259 claimed 00:50Z, lease until 03:50Z
+- **Lane:** idle since 01:52Z (no task in progress)
 - **Week:** 58% used, 78.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 00:51Z, 61 min before this update
 - **Keeper:** last ran 00:17Z, next wake 00:37Z
@@ -17,6 +17,7 @@ Updated 2026-11-09T01:52:06Z by runner 1280a06c368e (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T259 | payments: the Stripe webhook dispatches refund, dispute and  | MERGE_PENDING | 1 | 61 min | 01:52Z |  |
 | T258 | adapters and payments: a refund is recorded as Stripe report | done | 1 | 80 min | 00:16Z |  |
 | T256 | server: two first texts from one new phone both reach intake | done | 1 | 37 min | 22:00Z |  |
 | T098 | Journey J1 (homeowner) and its variants, keyboard-only, with | done | 1 | 50 min | 20:51Z |  |
@@ -86,7 +87,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T259 (lease until 2026-11-09T03:50:45Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T258", "at": "2026-11-09T00:16:55Z", "cache_read_input_tokens": 45683338, "output_tokens": 299042, "cache_creation_input_tokens": 863044, "input_tokens": 539}
+- {"task": "T259", "at": "2026-11-09T01:52:06Z", "cache_creation_input_tokens": 618057, "cache_read_input_tokens": 17419148, "output_tokens": 175205, "input_tokens": 350}
