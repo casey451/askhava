@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-09T16:26:41Z by runner 474919a2c5bf (actions).
+Updated 2026-11-09T16:35:49Z by runner 474919a2c5bf (actions).
 
 **Idle since 16:23Z; 173 of 297 done; week 63% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,10 +8,11 @@ Updated 2026-11-09T16:26:41Z by runner 474919a2c5bf (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 16:23Z (no task in progress)
 - **Week:** 63% used, 68.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:10Z, 16 min before this update
+- **Last run:** 16:10Z, 25 min before this update
 - **Keeper:** last ran 16:10Z, next wake 16:30Z
 
 ## Needs attention
+- PLAN GAP T276 (since 2026-11-09T16:26:38Z, no attempt used; a plan change fixes it): T276: dependency T275 is DONE but its owned file app/adapters/src/tests/storage.rs is not on main; T276: dependency T275 is DONE but its owned file tests/contract/test_twilio_body_delete.py is not on main
 - Strict plan check red: 23 problem(s) on tasks still to run (+50 on DONE tasks); first: T255: stored context_pct 25% but it measures 34%; regenerate
 
 ## Last 24 hours

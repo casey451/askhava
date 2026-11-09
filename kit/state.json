@@ -24579,7 +24579,14 @@
    "attempts": 0,
    "slug": "retention-deletes",
    "type": "harness",
-   "stage": "4"
+   "stage": "4",
+   "plan_gap": {
+    "at": "2026-11-09T16:26:38Z",
+    "problems": [
+     "T276: dependency T275 is DONE but its owned file app/adapters/src/tests/storage.rs is not on main",
+     "T276: dependency T275 is DONE but its owned file tests/contract/test_twilio_body_delete.py is not on main"
+    ]
+   }
   },
   {
    "id": "T277",
@@ -26786,7 +26793,7 @@
    }
   }
  },
- "updated_at": "2026-11-09T16:26:41Z",
+ "updated_at": "2026-11-09T16:35:49Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -26887,13 +26894,6 @@
  "runner_sha": "474919a2c5bf73c84d1360e520d7ddbc01036413",
  "starter": "actions",
  "smoke_runs": [
-  {
-   "sha": "030777a33a7edf4804d99fcabadb34629939c752",
-   "ok": false,
-   "at": "2026-11-08T14:39:25Z",
-   "why": "start routine",
-   "timed_out": true
-  },
   {
    "sha": "fb13c6faf315bb10219515f25f83f47fbc86c5f8",
    "ok": true,
@@ -27024,6 +27024,14 @@
    "at": "2026-11-09T15:30:26Z",
    "why": "start routine (pre-session)",
    "seconds": 514
+  },
+  {
+   "sha": "4c269f60064dca78ea9bccc3964a799856398d2e",
+   "ok": false,
+   "at": "2026-11-09T16:26:38Z",
+   "why": "start routine",
+   "seconds": 541,
+   "timed_out": true
   }
  ],
  "main_red": null,
