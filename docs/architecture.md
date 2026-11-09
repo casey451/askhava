@@ -152,7 +152,9 @@ tests/               the Rust test-layer crates integration, security and recove
                      `tests/e2e/webserver.ts` (the config's `globalSetup`, D-958) builds and starts the stand-ins,
                      worker and web binary with `test-control` and stops them after the run;
                      `tests/a11y/` (T053, D-1238 to D-1241) reuses that `globalSetup`, reads its page list from
-                     the GET routes in app/*/src (a route with no seeded state fails), seeds each state's fake
+                     the GET routes in app/*/src (a route with no seeded state fails), takes each route's states
+                     and seed function from the shared data file `tests/a11y/page_states.ts` (T267, D-1788,
+                     D-2106; the checks stay in `fixtures.ts`), seeds each state's fake
                      data through psql on DATABASE_URL and runs axe and the structure, target, contrast, reflow,
                      spacing and motion checks at 320, 768 and 1280 px (CSP bypassed only for text spacing,
                      D-1241; JSON report in test-results/a11y-report); `Ci`'s `E2e` job runs tests/e2e and
