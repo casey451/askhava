@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-09T08:49:57Z by runner 2543ec8b334a (actions).
+Updated 2026-11-09T08:50:11Z by runner 2543ec8b334a (actions).
 
-**Building: T265 in progress since 08:24Z; 167 of 286 done; week 59% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 08:49Z; 167 of 286 done; week 59% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 167 of 286 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T265 claimed 08:24Z, lease until 11:24Z
+- **Lane:** idle since 08:49Z (no task in progress)
 - **Week:** 59% used, 76.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 08:24Z, 25 min before this update
 - **Keeper:** last ran 08:00Z, next wake 08:20Z
@@ -17,6 +17,7 @@ Updated 2026-11-09T08:49:57Z by runner 2543ec8b334a (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T265 | stage exit: a security, money or privacy handoff in the inte | MERGE_PENDING | 1 | 25 min | 08:49Z |  |
 | T264 | coverage checker: a missing measurement fails, and the total | done | 1 | 24 min | 07:58Z |  |
 | T262 | calls and server: a random stored PIN per line, unique on it | done | 1 | 33 min | 06:56Z |  |
 | T257 | privacy and server: the scrubber remembers names across a ho | done | 1 | 56 min | 05:54Z |  |
@@ -85,7 +86,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T265 (lease until 2026-11-09T11:24:25Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T264", "at": "2026-11-09T07:58:18Z", "input_tokens": 157, "output_tokens": 55075, "cache_creation_input_tokens": 179872, "cache_read_input_tokens": 3986466}
+- {"task": "T265", "at": "2026-11-09T08:49:56Z", "output_tokens": 53038, "input_tokens": 157, "cache_creation_input_tokens": 183579, "cache_read_input_tokens": 4006315}
