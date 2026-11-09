@@ -1,18 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-09T21:19:20Z by runner df839c1e45ae (actions).
+Updated 2026-11-09T21:39:19Z by runner a02170038cc6 (actions).
 
-**Idle since 21:18Z; 175 of 312 done; week 70% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T287 in progress since 21:32Z; 175 of 312 done; week 70% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 175 of 312 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 21:18Z (no task in progress)
-- **Week:** 70% used, 58.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:19Z, 0 min before this update
+- **Lane:** lane 1: T287 claimed 21:32Z, lease until 00:32Z
+- **Week:** 70% used, 54.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Last run:** 21:19Z, 19 min before this update
 - **Keeper:** last ran 21:19Z, next wake 21:39Z
 
 ## Needs attention
-- Strict plan check red: 1 problem(s) on tasks still to run (+4 on DONE tasks); first: T248: stored context_pct 30% but it measures 34%; regenerate
+- Strict plan check red: 2 problem(s) on tasks still to run (+4 on DONE tasks); first: T248: stored context_pct 30% but it measures 34%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -37,6 +37,7 @@ Updated 2026-11-09T21:19:20Z by runner df839c1e45ae (actions).
 | T256 | server: two first texts from one new phone both reach intake | done | 1 | 37 min | 22:00Z |  |
 
 ### Plan and harness merges on main
+- 21:26Z Plan: T287 owns payments models.rs and T254's release_recovery test (D-2236) (#394)
 - 20:44Z Harness: Fable model window from the Thu Nov 12 reset, run to the week limit, then back to the plan's models (D-2225) (#392)
 - 19:01Z Plan: fourth audit — voice confirm line, emergency notices, dispute atomicity, feedback purge, route limits, alerts (D-2200–D-2209, T311–T325) (#388)
 - 22:20Z Plan: wire the real AI into the app — T298 endpoint client, T299 intake wiring (D-2065) (#367)
@@ -73,7 +74,7 @@ Updated 2026-11-09T21:19:20Z by runner df839c1e45ae (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-09T20:21:18Z (week)): five-hour: 6.9M used, 22.2M left, resets 2026-11-09T22:46:27Z; week: 136.0M used, 58.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-11-29T07:21:38Z.
+- Pacing (session_reading 2026-11-09T21:19:02Z (week)): five-hour: 11.7M used, 17.4M left, resets 2026-11-09T22:46:27Z; week: 140.0M used, 54.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-11-29T09:45:45Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -88,7 +89,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T287 (lease until 2026-11-10T00:32:00Z)
 
 ## Last usage reading
 - {"task": "T287", "at": "2026-11-09T21:18:46Z", "input_tokens": 492, "cache_creation_input_tokens": 710526, "cache_read_input_tokens": 39010532, "output_tokens": 176248}
