@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-09T05:54:23Z by runner d44ce535e074 (actions).
+Updated 2026-11-09T05:54:37Z by runner d44ce535e074 (actions).
 
-**Building: T257 in progress since 04:57Z; 164 of 286 done; week 58% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 05:54Z; 164 of 286 done; week 58% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 164 of 286 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T257 claimed 04:57Z, lease until 07:57Z
+- **Lane:** idle since 05:54Z (no task in progress)
 - **Week:** 58% used, 78.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 04:57Z, 56 min before this update
 - **Keeper:** last ran 04:28Z, next wake 04:48Z
@@ -17,6 +17,7 @@ Updated 2026-11-09T05:54:23Z by runner d44ce535e074 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T257 | privacy and server: the scrubber remembers names across a ho | MERGE_PENDING | 1 | 56 min | 05:54Z |  |
 | T263 | payments: the monthly fee limit is a hard cap; capacity is r | done | 1 | 49 min | 04:26Z |  |
 | T260 | stand-in and adapters: an unconfirmed PaymentIntent, its on- | done | 1 | 42 min | 03:09Z |  |
 | T259 | payments: the Stripe webhook dispatches refund, dispute and  | done | 1 | 61 min | 01:52Z |  |
@@ -85,7 +86,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T257 (lease until 2026-11-09T07:57:43Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T263", "at": "2026-11-09T04:26:38Z", "input_tokens": 308, "cache_read_input_tokens": 12545730, "output_tokens": 124556, "cache_creation_input_tokens": 517555}
+- {"task": "T257", "at": "2026-11-09T05:54:23Z", "output_tokens": 170877, "cache_creation_input_tokens": 638741, "input_tokens": 483, "cache_read_input_tokens": 25810903}
