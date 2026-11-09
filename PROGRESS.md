@@ -1525,3 +1525,4 @@
 - 2026-11-09T15:09:28Z runner 028378523988 (actions): {}
 - 2026-11-09T15:09:40Z runner 028378523988 (actions): {}
 - 2026-11-09T15:30:29Z runner 474919a2c5bf (actions): {"T274": "MERGE_PENDING -> DONE"}
+- 2026-11-09T15:30:37Z runner 474919a2c5bf (actions): {"T275": "QUEUED -> IN_PROGRESS"}; T275 estimated 2.7M tokens (calibrated); five-hour window has 21.6M left, week 68.0M (session_reading 2026-11-09T15:09:27Z (week)); claimed
