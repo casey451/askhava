@@ -192,6 +192,20 @@ def test_the_gate_parses_runs_the_ci_checks_and_matches_cis_path_rules() -> None
     assert "npm audit --audit-level=low" in steps["TypeScript checks and npm audit"]
 
 
+def test_the_include_guard_runs_on_every_push_and_in_the_quick_gate() -> None:
+    """TD-OPS-32 (D-1867): scripts/check_include_paths.py runs in Checks outside the path rule and in --quick."""
+    ci = yaml.safe_load((ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8"))
+    guard = [s for s in ci["jobs"]["checks"]["steps"] if "check_include_paths.py" in str(s.get("run", ""))]
+    assert len(guard) == 1 and "if" not in guard[0], "the guard is never behind the path rule"
+    loop = re.search(r"for check in ([^;]+); do", GATE.read_text(encoding="utf-8"))
+    assert loop is not None and "check_include_paths" in loop.group(1).split()
+    rust_paths = re.search(r"^RUST_PATHS='([^']+)'", GATE.read_text(encoding="utf-8"), re.MULTILINE)
+    assert rust_paths is not None
+    for compiled_in in ("docs/legal/", "docs/catalog/", "schemas/", r"docs/architecture\.md"):
+        assert compiled_in in rust_paths.group(1), compiled_in
+    assert not re.search(rust_paths.group(1), "docs/decisions.md"), "never all of docs/"
+
+
 def _git_repo(tmp_path: Path) -> Path:
     """A tiny repository carrying only what the quick part reads: origin/main plus one branch commit."""
     work = tmp_path / "w"
