@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-09T15:30:37Z by runner 474919a2c5bf (actions).
+Updated 2026-11-09T16:08:58Z by runner 6c0d754becdd (actions).
 
 **Building: T275 in progress since 15:30Z; 172 of 297 done; week 63% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-09T15:30:37Z by runner 474919a2c5bf (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T275 claimed 15:30Z, lease until 18:30Z
 - **Week:** 63% used, 68.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:09Z, 20 min before this update
+- **Last run:** 15:30Z, 38 min before this update
 - **Keeper:** last ran 15:09Z, next wake 15:29Z
 
 ## Needs attention
@@ -33,7 +33,6 @@ Updated 2026-11-09T15:30:37Z by runner 474919a2c5bf (actions).
 | T256 | server: two first texts from one new phone both reach intake | done | 1 | 37 min | 22:00Z |  |
 | T098 | Journey J1 (homeowner) and its variants, keyboard-only, with | done | 1 | 50 min | 20:51Z |  |
 | T254 | server and picks: the production release (paid or free, mint | done | 1 | 84 min | 19:24Z |  |
-| T150 | picks and quotes: EMERGENCY card and pick emails with the em | done | 1 | 54 min | 16:04Z |  |
 
 ### Plan and harness merges on main
 - 22:20Z Plan: wire the real AI into the app — T298 endpoint client, T299 intake wiring (D-2065) (#367)
