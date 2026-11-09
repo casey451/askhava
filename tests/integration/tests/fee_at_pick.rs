@@ -3,7 +3,8 @@
 //! or a later edit to another quote changes nothing, the fee is written to the ledger at Confirm,
 //! and a day-3 PROBLEM reply about a much higher final bill changes no ledger row.
 //!
-//! The Stripe charge itself is T062's; here its `ch_…` ID is fake. All IDs and amounts are fake.
+//! The Stripe charge itself is T062's; here its `ch_…` ID is fake. T287 (D-1871): each fixture
+//! stores the fee fixed at its pick before the Confirm. All IDs and amounts are fake.
 
 use askhava_core::api::Guarded;
 use askhava_jobs::api::rules::{CheckIn, Contact, Reply};
@@ -12,7 +13,7 @@ use askhava_ops::api::Actor;
 use askhava_payments::api::{
     AUTHORIZATION_TEXT, Appended, BusinessId, CardError, ConfirmError, Confirmed, FeeJob, FeeMode,
     FeeQuote, FeeTerms, PeriodJob, PickedFee, RecurringCap, Service, VisitTier,
-    accept_authorization, fee_at_pick, may_confirm, record_fee_at_confirm,
+    accept_authorization, fee_at_pick, fix_fee_at_pick, may_confirm, record_fee_at_confirm,
 };
 use jiff::Timestamp;
 use secrecy::SecretString;
@@ -93,15 +94,27 @@ async fn pick(db: &mut PgConnection, job: Uuid) -> PickedFee {
     fee_at_pick(chosen, None, JOB, FeeMode::Tiers, None).expect("fee")
 }
 
-/// Records the fee at Confirm with a fake charge ID, authorized before the charge.
+/// Stores `picked` as the fee fixed at `pick` of `BUSINESS` on `job` (D-1871); a repeat with
+/// the same values writes nothing.
+async fn fix(db: &mut PgConnection, (pick, job): (Uuid, Uuid), picked: &PickedFee) {
+    fix_fee_at_pick(db, pick, BUSINESS, job, picked, at(0))
+        .await
+        .expect("fee fixed");
+}
+
+/// Records the fee at Confirm with a fake charge ID, authorized before the charge, for the pick
+/// of `job` whose fee is `picked` (stored first, D-1871).
 async fn confirm(db: &mut PgConnection, job: Uuid, picked: &PickedFee) -> Appended {
+    let pick = Uuid::from_u128(job.as_u128() ^ 0x0fee);
+    fix(db, (pick, job), picked).await;
     let confirmed = Confirmed {
         business: BUSINESS,
         job,
         charge: Some("ch_FakeT060"),
     };
-    let authorized = may_confirm(db, BUSINESS, TERMS).await.expect("authorized");
-    record_fee_at_confirm(db, &secret(), (picked, authorized), confirmed)
+    let authorized = may_confirm(db, BUSINESS, pick).await.expect("authorized");
+    assert_eq!(authorized.terms(), TERMS);
+    record_fee_at_confirm(db, &secret(), (pick, authorized), confirmed)
         .await
         .expect("recorded")
 }
@@ -242,7 +255,13 @@ async fn td_fee_05_fee_free_and_refused_entries(pool: PgPool) {
         charge: Some("not-a-charge"),
     };
     let priced = pick_of(60_000);
-    let ok = may_confirm(&mut db, BUSINESS, TERMS)
+    let (priced_pick, free_pick) = (Uuid::from_u128(0x0c06_0051), Uuid::from_u128(0x0c06_0052));
+    fix(&mut db, (priced_pick, job), &priced).await;
+    fix(&mut db, (free_pick, job), &free).await;
+    let ok = may_confirm(&mut db, BUSINESS, priced_pick)
+        .await
+        .expect("authorized");
+    let ok_free = may_confirm(&mut db, BUSINESS, free_pick)
         .await
         .expect("authorized");
     let confirmed = Confirmed {
@@ -254,22 +273,22 @@ async fn td_fee_05_fee_free_and_refused_entries(pool: PgPool) {
         ..bad
     };
     for (fee, charge) in [
-        (&priced, bad),
-        (&priced, confirmed),
-        (&priced, pi),
-        (&free, pi),
+        ((priced_pick, ok), bad),
+        ((priced_pick, ok), confirmed),
+        ((priced_pick, ok), pi),
+        ((free_pick, ok_free), pi),
     ] {
-        let refused = record_fee_at_confirm(&mut db, &secret(), (fee, ok), charge).await;
+        let refused = record_fee_at_confirm(&mut db, &secret(), fee, charge).await;
         assert_eq!(refused, Err(ConfirmError::ChargeId));
     }
     let elsewhere = Confirmed {
         business: stranger,
         ..confirmed
     };
-    let refused = record_fee_at_confirm(&mut db, &secret(), (&free, ok), elsewhere).await;
+    let refused = record_fee_at_confirm(&mut db, &secret(), (free_pick, ok_free), elsewhere).await;
     assert_eq!(refused, Err(ConfirmError::Mismatch));
     assert!(ledger(&pool).await.is_empty());
-    let recorded = record_fee_at_confirm(&mut db, &secret(), (&free, ok), confirmed).await;
+    let recorded = record_fee_at_confirm(&mut db, &secret(), (free_pick, ok_free), confirmed).await;
     assert!(matches!(recorded, Ok(Appended::New(_))));
     let rows = ledger(&pool).await;
     assert_eq!(rows.len(), 1);

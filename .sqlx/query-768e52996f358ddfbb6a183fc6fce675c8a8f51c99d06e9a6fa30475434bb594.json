@@ -1,0 +1,38 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT mode, authorization_version FROM payments.fee_terms FOR UPDATE",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "mode",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "payments.fee_terms",
+            "name": "mode"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "authorization_version",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "payments.fee_terms",
+            "name": "authorization_version"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "768e52996f358ddfbb6a183fc6fce675c8a8f51c99d06e9a6fa30475434bb594"
+}

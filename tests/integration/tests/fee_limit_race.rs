@@ -7,7 +7,8 @@
 //! `set_fee_limit` is one statement, so a change cut off part way keeps the old limit.
 //!
 //! Stripe is a scripted fake of `IntentStripe` that records every call and, on each confirm,
-//! checks `pg_stat_activity` and `pg_locks` from its own connection. All IDs are fake.
+//! checks `pg_stat_activity` and `pg_locks` from its own connection. T287 (D-1871): each press's
+//! pick first gets its stored fee (`fixed`). All IDs are fake.
 
 use std::collections::VecDeque;
 use std::sync::Mutex;
@@ -199,7 +200,26 @@ async fn with_limit(pool: &PgPool, cents: u32) {
         .expect("limit");
 }
 
+/// T287 (D-1871): the fee fixed at `p`'s pick, stored as `picks` stores it at the pick, so the
+/// press matches it. These presses use limit-test amounts that are no tier, so the row is written
+/// directly; a repeat stores nothing.
+async fn fixed(pool: &PgPool, p: &Press<'_>) {
+    sqlx::query(
+        "INSERT INTO payments.pick_fee (pick_id, business_id, job_id, mode, kind, amount_cents,
+           terms_version, fixed_at)
+         VALUES ($1, $2, $3, 'tiers', 'charged', $4, 1, now()) ON CONFLICT (pick_id) DO NOTHING",
+    )
+    .bind(p.pick)
+    .bind(p.business.0)
+    .bind(p.job)
+    .bind(i64::from(p.amount_cents))
+    .execute(pool)
+    .await
+    .expect("fee fixed");
+}
+
 async fn pay(pool: &PgPool, stripe: &Fake, p: &Press<'_>, at: Timestamp) -> ChargeOutcome {
+    fixed(pool, p).await;
     confirm_and_pay(pool, stripe, &SecretString::from("fake-secret-t263"), p, at)
         .await
         .expect("press")

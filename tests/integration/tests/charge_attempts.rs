@@ -8,7 +8,9 @@
 //!
 //! Stripe is a scripted fake of `IntentStripe` that records every call; the stripe-mock round
 //! trip is T132's (D-1424). TD-FEE-20's reconcile refund of a second kept charge is T067's; the
-//! limit field and the homeowner's text are TD-FEE-40's (D-492). All IDs are fake.
+//! limit field and the homeowner's text are TD-FEE-40's (D-492). T287 (D-1871): each press's
+//! pick first gets the fee fixed at the pick (`fixed`), which the press must match. All IDs are
+//! fake.
 
 use std::collections::VecDeque;
 use std::sync::Mutex;
@@ -22,6 +24,10 @@ use askhava_payments::api::{
     ATTEMPT_ACTION, BusinessId, ChargeError, ChargeOutcome, INTENT_ACTION, IntentStripe, PickNow,
     Press, attempt_label, confirm_and_pay, intent_label, open_intent, run_charge_check,
     run_pause_watch, run_pay_timer, set_fee_limit, sync_pause,
+};
+use askhava_payments::api::{
+    FeeJob, FeeMode, FeeQuote, PeriodJob, RecurringCap, Service, VisitTier, fee_at_pick,
+    fix_fee_at_pick,
 };
 use jiff::{SignedDuration, Timestamp};
 use secrecy::SecretString;
@@ -162,7 +168,38 @@ async fn with_customer(pool: &PgPool) {
         .expect("customer");
 }
 
+/// T287 (D-1871): stores the fee fixed at `p`'s pick, for its job, as `fee_at_pick` gives it for
+/// a firm quote of that tier, so the press matches it; a press of another business finds the
+/// pick's own business's fee, and a $0 press stores nothing.
+async fn fixed(pool: &PgPool, p: &Press<'_>) {
+    let basis = match p.amount_cents {
+        0 => return,
+        2500 => 10_000,
+        7500 => 100_000,
+        _ => 200_000,
+    };
+    if p.business != BUSINESS {
+        return;
+    }
+    let job = PeriodJob {
+        job: FeeJob {
+            diagnostic_visit: false,
+            visit_tier: VisitTier::DEFAULT,
+            fee_free: false,
+        },
+        service: Service::NotRecurring,
+        cap: RecurringCap::DEFAULT,
+    };
+    let fee = fee_at_pick(FeeQuote::Fixed(basis), None, job, FeeMode::Tiers, None).expect("fee");
+    assert_eq!(fee.cents(), u64::from(p.amount_cents));
+    let mut conn = pool.acquire().await.expect("conn");
+    fix_fee_at_pick(&mut conn, p.pick, BUSINESS, p.job, &fee, az(1, 9, 0))
+        .await
+        .expect("fee fixed");
+}
+
 async fn pay(pool: &PgPool, stripe: &FakeStripe, p: &Press<'_>, at: Timestamp) -> ChargeOutcome {
+    fixed(pool, p).await;
     confirm_and_pay(pool, stripe, &secret(), p, at)
         .await
         .expect("press")
@@ -757,6 +794,7 @@ async fn td_fee_11_bad_fields_are_refused_and_a_limit_is_removed(pool: PgPool) {
     let mut odd = FakeStripe::new(vec![], vec![]);
     odd.intent_id = "ch_FakeT062".to_owned();
     let p = press(0x1070, 1, 2500);
+    fixed(&pool, &p).await;
     let card = Press {
         payment_method: "card_FakeT062",
         ..p
@@ -792,6 +830,7 @@ async fn td_fee_36_over_the_limit_after_the_page_made_the_intent(pool: PgPool) {
     with_customer(&pool).await;
     let stripe = FakeStripe::new(vec![], vec![]);
     let p = press(0x1071, 1, 2500);
+    fixed(&pool, &p).await;
     open_intent(&pool, &stripe, &secret(), &p, az(3, 9, 0))
         .await
         .expect("intent");
