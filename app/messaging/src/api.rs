@@ -45,6 +45,10 @@ pub use crate::open_cards_digest::{DigestFacts, MIN_LEFT, digest_goes, listable,
 pub use crate::optout::{
     InboundText, Outcome, RevokeChannel, on_inbound_text, send_checked, suppress,
 };
+pub use crate::purge::{
+    BODY_DELETE_AFTER, DELETE_KIND as BODY_DELETE_KIND, SCAN_KIND as BODY_SCAN_KIND,
+    queue_body_deletes, register_body_deletes, run_body_delete, schedule_body_scan,
+};
 pub use crate::receipt_email::{
     RECEIPT_EMAIL_KIND, RECEIPT_TEMPLATE, ReceiptFacts, ReceiptSender, WHY_CHARGED_PREFIX,
     render_receipt, run_receipt_email,

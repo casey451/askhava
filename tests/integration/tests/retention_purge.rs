@@ -11,9 +11,8 @@
 //! purged by `intake`'s own sweep; a re-check that just queued complaint events waits for them.
 //! Every handler runs as `askhava_app` ([`app_pool`]). Every name, phone, email and address is fake.
 //!
-//! Pending, not built and not tested here (D-1803, no owning task yet): TD-PRIV-12's day-31 Twilio
-//! body delete and PRIV-009's delete of the sealed photo objects in storage both need adapter calls
-//! (`SmsAdapter` message delete, `StorageAdapter` delete and list) that `adapters` does not have.
+//! TD-PRIV-12's day-31 Twilio body delete and PRIV-009's delete of the sealed photo objects in
+//! storage (with the orphan sweep) are T276's, tested in `retention_deletes.rs` (TD-PRIV-20, D-1841).
 
 use askhava_businesses::api::{NewComplaint, create, queue_complaint_holds, record_complaint};
 use askhava_core::api::{Claimed, WorkerId, claim};

@@ -13,7 +13,9 @@
 //! version (OPS-040, D-493). With `VAULT_KEY` and `VAULT_INDEX_KEY` set (required in the test and
 //! live projects) it registers `intake`'s homeowner job-text sender (D-1302). With the Twilio
 //! settings (required in the test and live projects) it registers `picks`' masked-line retry,
-//! `picks.line_retry`, over the masked pool (CALL-001, D-1688, T254).
+//! `picks.line_retry`, over the masked pool (CALL-001, D-1688, T254), and `messaging`'s day-31
+//! body delete at Twilio (PRIV-027, D-1841, T276). It registers `privacy`'s sealed photo object
+//! delete and queues its daily orphan sweep over the same store (PRIV-009, D-1841, T276).
 
 use std::io;
 use std::sync::Arc;
@@ -41,22 +43,18 @@ async fn main() -> io::Result<()> {
         .map(Arc::new);
     let confirm = askhava_picks::api::ConfirmSettings::from_pairs(std::env::vars())
         .map_err(io::Error::other)?;
-    let mut conn = pool.acquire().await.map_err(io::Error::other)?;
-    schedule_verify(&mut conn, clock.now())
-        .await
-        .map_err(io::Error::other)?;
-    askhava_jobs::api::schedule_sweep(&mut conn, clock.now())
-        .await
-        .map_err(io::Error::other)?;
-    askhava_messaging::api::schedule_cut(&mut conn, clock.now())
-        .await
-        .map_err(io::Error::other)?;
-    askhava_intake::api::run_golden(&mut conn, clock.now())
-        .await
-        .map_err(io::Error::other)?;
-    drop(conn);
+    schedule_start(&pool, clock.now()).await?;
+    let (photos, id_secret) = (Arc::new(stream.storage.clone()), stream.id_secret.clone());
     let mut registry = askhava_server::register_handlers(Arc::new(stream), texts, confirm);
-    if let Some(masked) = masked_pool(&settings)? {
+    let photo_clock = Arc::clone(&clock);
+    let secret = id_secret.clone();
+    askhava_privacy::api::register_photo_deletes(&mut registry, photos, secret, photo_clock);
+    if let Some(twilio) = twilio_config(&settings)? {
+        let (sms, _, _) =
+            askhava_adapters::api::twilio_clients(&twilio).map_err(io::Error::other)?;
+        let (sms, scan_clock) = (Arc::new(sms), Arc::clone(&clock));
+        askhava_messaging::api::register_body_deletes(&mut registry, sms, id_secret, scan_clock);
+        let masked = twilio.pool().clone();
         let line_clock = Arc::clone(&clock);
         registry.register(askhava_picks::api::LINE_RETRY_KIND, move |pool, task| {
             askhava_picks::api::retry_line(pool, masked.clone(), task, line_clock.now())
@@ -75,15 +73,40 @@ async fn main() -> io::Result<()> {
     Ok(())
 }
 
-/// The masked pool the release's line retry opens lines from (CALL-001, CALL-017, D-1688): from
-/// the Twilio settings; without them `None` in dev and CI (no retry handler, so a retry task waits)
+/// Queues the daily tasks at start (the chain check, the retention sweep, the body cut, the
+/// photo orphan sweep and the day-31 body scan) and runs the intake golden set once.
+async fn schedule_start(pool: &sqlx::PgPool, now: jiff::Timestamp) -> io::Result<()> {
+    let mut conn = pool.acquire().await.map_err(io::Error::other)?;
+    schedule_verify(&mut conn, now)
+        .await
+        .map_err(io::Error::other)?;
+    askhava_jobs::api::schedule_sweep(&mut conn, now)
+        .await
+        .map_err(io::Error::other)?;
+    askhava_messaging::api::schedule_cut(&mut conn, now)
+        .await
+        .map_err(io::Error::other)?;
+    askhava_privacy::api::schedule_orphan_sweep(&mut conn, now)
+        .await
+        .map_err(io::Error::other)?;
+    askhava_messaging::api::schedule_body_scan(&mut conn, now)
+        .await
+        .map_err(io::Error::other)?;
+    askhava_intake::api::run_golden(&mut conn, now)
+        .await
+        .map(|_| ())
+        .map_err(io::Error::other)
+}
+
+/// The Twilio settings the masked-line retry (its pool, CALL-001, CALL-017, D-1688) and the day-31
+/// body delete (PRIV-027) use; without them `None` in dev and CI (no handler, so those tasks wait)
 /// and an error in the test and live projects.
-fn masked_pool(
+fn twilio_config(
     settings: &askhava_core::api::Settings,
-) -> io::Result<Option<askhava_adapters::api::MaskedPool>> {
+) -> io::Result<Option<askhava_adapters::api::TwilioConfig>> {
     use askhava_core::api::Environment;
     match askhava_adapters::api::TwilioConfig::from_settings(settings, std::env::vars()) {
-        Ok(config) => Ok(Some(config.pool().clone())),
+        Ok(config) => Ok(Some(config)),
         Err(error) => match settings.environment() {
             Environment::Dev | Environment::Ci => Ok(None),
             Environment::Test | Environment::Live => Err(io::Error::other(error)),

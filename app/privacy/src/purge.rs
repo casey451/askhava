@@ -13,17 +13,44 @@
 //! transaction, shared inside every [`place_hold`] and [`release_hold`]); (2) `intake`'s homeowner
 //! row; (3) the vault contact row, which [`purge_contact`]'s `UPDATE` locks last. A hold therefore
 //! commits wholly before or wholly after a purge's decision, never between its read and its clear.
+//!
+//! Sealed photo objects (PRIV-009, D-1793, D-1841): [`purge_photos`] queues one
+//! [`PHOTO_DELETE_KIND`] task per deleted row in the rows' own transaction, so the object delete
+//! runs only after the rows' delete commits and a failed delete is retried by the task, never
+//! blocking the rows. The daily [`ORPHAN_SWEEP_KIND`] lists `photos/` and queues the same delete,
+//! a day later, for every object without a `privacy.photo` row (`store_photo` writes the object
+//! before its row); the delete re-checks that no row names the object, so only objects at least
+//! a day old with no row ever go.
 
+use std::sync::Arc;
+
+use askhava_adapters::api::{IdempotencyKey, StorageDelete};
+use askhava_core::api::{Claimed, Clock, HandlerError, NewTask, Registry, enqueue};
 use askhava_ops::api::{Actor, AuditEntry, Change, audit};
-use jiff::Timestamp;
+use jiff::{SignedDuration, Timestamp};
 use jiff_sqlx::ToSqlx;
-use sqlx::PgConnection;
+use secrecy::SecretString;
+use serde_json::json;
 use sqlx::types::Uuid;
+use sqlx::{PgConnection, PgPool};
 
 use crate::models::{HoldSource, VaultError};
 
 /// The PRIV-011 sentence "Delete my data" confirms with (D-214).
 pub const DELETE_CONFIRMATION: &str = "We keep your phone number, locked, for 5 years only as proof of your texting permission and opt-out.";
+
+/// The `core.task` kind that deletes one sealed photo object, payload `{"name"}` (PRIV-009).
+pub const PHOTO_DELETE_KIND: &str = "privacy.photo_delete";
+/// The daily `core.task` kind that sweeps `photos/` for objects with no row (PRIV-009, D-1793).
+pub const ORPHAN_SWEEP_KIND: &str = "privacy.photo_orphan_sweep";
+/// How long an object with no row is left alone first, so a `store_photo` between its object and
+/// its row is never touched (D-1791, D-1841).
+pub const ORPHAN_MIN_AGE: SignedDuration = SignedDuration::from_hours(24);
+const PHOTO_PREFIX: &str = "photos/";
+const DELETE_ATTEMPTS: i32 = 10;
+const DB_FAILED: HandlerError = HandlerError("photo object delete database call failed");
+const STORE_FAILED: HandlerError = HandlerError("photo object storage call failed");
+const BAD_NAME: HandlerError = HandlerError("photo delete task payload is not a photo object");
 
 fn db_err(_: sqlx::Error) -> VaultError {
     VaultError::Database
@@ -148,18 +175,160 @@ pub async fn any_held(db: &mut PgConnection, jobs: &[Uuid]) -> Result<bool, Vaul
     .map_err(db_err)
 }
 
-/// PRIV-009, PRIV-011: deletes every photo row of `job` (its links go with it), so no link to them
-/// can be issued or opened again; returns how many went. The sealed objects stay in storage until
-/// the storage adapter can delete (D-1803).
+/// PRIV-009, PRIV-011, D-1841: deletes every photo row of `job` (its links go with it), so no link
+/// to them can be issued or opened again, and in the same transaction (a savepoint inside the
+/// caller's) queues a [`PHOTO_DELETE_KIND`] task per row for its sealed object, which therefore
+/// runs only once the rows' delete commits; returns how many rows went.
 ///
 /// # Errors
 /// [`VaultError::Database`].
 pub async fn purge_photos(db: &mut PgConnection, job: Uuid) -> Result<u64, VaultError> {
-    let gone = sqlx::query!("DELETE FROM privacy.photo WHERE job_id = $1", job)
-        .execute(db)
+    let mut tx = sqlx::Acquire::begin(db).await.map_err(db_err)?;
+    let names = sqlx::query_scalar!(
+        "DELETE FROM privacy.photo WHERE job_id = $1 RETURNING storage_key",
+        job
+    )
+    .fetch_all(&mut *tx)
+    .await
+    .map_err(db_err)?;
+    for name in &names {
+        queue_object_delete(&mut tx, name, "purged", Timestamp::now()).await?;
+    }
+    tx.commit().await.map_err(db_err)?;
+    Ok(u64::try_from(names.len()).unwrap_or(u64::MAX))
+}
+
+/// Queues the delete of object `name` at `at`, once per `why` (`purged` or `orphan`): an object
+/// the sweep saw before its row existed is queued again when its row is purged (SEC-018).
+async fn queue_object_delete(
+    db: &mut PgConnection,
+    name: &str,
+    why: &str,
+    at: Timestamp,
+) -> Result<bool, VaultError> {
+    let mut task = NewTask::new(PHOTO_DELETE_KIND, json!({ "name": name }), at);
+    task.max_attempts = DELETE_ATTEMPTS;
+    task.dedupe_key = Some(format!("{PHOTO_DELETE_KIND}:{why}:{name}"));
+    let queued = enqueue(db, &task).await.map_err(|_| VaultError::Database)?;
+    Ok(queued.is_some())
+}
+
+/// PRIV-009, D-1841: the [`PHOTO_DELETE_KIND`] handler. Deletes the `photos/` object the task
+/// names unless a `privacy.photo` row still names it (a live photo); an object already gone is
+/// success, so a rerun does nothing. A storage error fails the task, which the queue retries.
+///
+/// # Errors
+/// A fixed [`HandlerError`] for a bad payload, a database or a storage failure.
+pub async fn run_photo_delete<S: StorageDelete + Sync>(
+    pool: PgPool,
+    (storage, secret): (&S, &SecretString),
+    task: Claimed,
+) -> Result<(), HandlerError> {
+    let name = task.payload["name"].as_str().unwrap_or_default();
+    if !name
+        .strip_prefix(PHOTO_PREFIX)
+        .is_some_and(|id| !id.is_empty())
+    {
+        return Err(BAD_NAME);
+    }
+    let live = sqlx::query_scalar!(
+        r#"SELECT EXISTS (SELECT 1 FROM privacy.photo WHERE storage_key = $1) AS "live!""#,
+        name
+    )
+    .fetch_one(&pool)
+    .await
+    .map_err(|_| DB_FAILED)?;
+    if live {
+        return Ok(());
+    }
+    let key = IdempotencyKey::derive(secret, "photo.delete", &[name]);
+    storage
+        .delete_object(&key, name)
         .await
-        .map_err(db_err)?;
-    Ok(gone.rows_affected())
+        .map_err(|_| STORE_FAILED)
+}
+
+/// PRIV-009, D-1793, D-1841: lists `photos/` and queues, [`ORPHAN_MIN_AGE`] after `now`, the
+/// delete of every object no `privacy.photo` row names; returns how many it newly queued. The
+/// delete re-checks the row, so an object whose row lands meanwhile stays.
+///
+/// # Errors
+/// A fixed [`HandlerError`] for a storage or database failure.
+pub async fn sweep_orphans<S: StorageDelete + Sync>(
+    db: &mut PgConnection,
+    storage: &S,
+    now: Timestamp,
+) -> Result<u64, HandlerError> {
+    let names = storage
+        .list_objects(PHOTO_PREFIX)
+        .await
+        .map_err(|_| STORE_FAILED)?;
+    let rowed = sqlx::query_scalar!(
+        "SELECT storage_key FROM privacy.photo WHERE storage_key = ANY($1)",
+        &names
+    )
+    .fetch_all(&mut *db)
+    .await
+    .map_err(|_| DB_FAILED)?;
+    let mut queued = 0;
+    for name in names.iter().filter(|name| !rowed.contains(name)) {
+        let at = now + ORPHAN_MIN_AGE;
+        if queue_object_delete(db, name, "orphan", at)
+            .await
+            .map_err(|_| DB_FAILED)?
+        {
+            queued += 1;
+        }
+    }
+    Ok(queued)
+}
+
+/// Queues the next daily [`ORPHAN_SWEEP_KIND`] task, one per day (PRIV-009).
+///
+/// # Errors
+/// [`VaultError::Database`].
+pub async fn schedule_orphan_sweep(
+    db: &mut PgConnection,
+    now: Timestamp,
+) -> Result<(), VaultError> {
+    let run_at = now + ORPHAN_MIN_AGE;
+    let mut task = NewTask::new(ORPHAN_SWEEP_KIND, json!({}), run_at);
+    task.dedupe_key = Some(format!(
+        "{ORPHAN_SWEEP_KIND}:{}",
+        run_at.as_second() / 86_400
+    ));
+    enqueue(db, &task)
+        .await
+        .map(|_| ())
+        .map_err(|_| VaultError::Database)
+}
+
+/// PRIV-009, D-1841: registers [`PHOTO_DELETE_KIND`] and [`ORPHAN_SWEEP_KIND`] over the photo
+/// store `storage`, deriving each delete's key from `secret`; the sweep runs at `clock`'s now and
+/// then queues the next day's.
+pub fn register_photo_deletes<S>(
+    registry: &mut Registry,
+    storage: Arc<S>,
+    secret: SecretString,
+    clock: Arc<dyn Clock>,
+) where
+    S: StorageDelete + Send + Sync + 'static,
+{
+    let store = Arc::clone(&storage);
+    registry.register(PHOTO_DELETE_KIND, move |pool, task| {
+        let (store, secret) = (Arc::clone(&store), secret.clone());
+        async move { run_photo_delete(pool, (&*store, &secret), task).await }
+    });
+    registry.register(ORPHAN_SWEEP_KIND, move |pool, _task| {
+        let (store, now) = (Arc::clone(&storage), clock.now());
+        async move {
+            let mut conn = pool.acquire().await.map_err(|_| DB_FAILED)?;
+            sweep_orphans(&mut conn, &*store, now).await?;
+            schedule_orphan_sweep(&mut conn, now)
+                .await
+                .map_err(|_| DB_FAILED)
+        }
+    });
 }
 
 /// PRIV-007, D-079: clears contact `id`'s name, email, address and on-site contact, its email
@@ -214,7 +383,8 @@ pub async fn purge_contact(db: &mut PgConnection, id: Uuid) -> Result<bool, Vaul
 
 /// PRIV-011, D-214: "Delete my data" for contact `id` and the jobs the caller found for it: the
 /// vault entry is cleared as in [`purge_contact`] (the phone kept, locked, for the consent records,
-/// D-079) and every photo of those jobs deleted; returns [`DELETE_CONFIRMATION`]. Ledger rows hold
+/// D-079) and every photo of those jobs deleted, their sealed objects queued for deletion as in
+/// [`purge_photos`]; returns [`DELETE_CONFIRMATION`]. Ledger rows hold
 /// IDs only, so they stay as they are (PRIV-010). One transaction: all of it happens or none.
 ///
 /// # Errors
