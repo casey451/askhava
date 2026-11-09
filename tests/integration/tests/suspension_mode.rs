@@ -10,18 +10,21 @@
 //! list, and nothing is texted; a non-emergency message is handled as today; a recorded restore
 //! keeps texting off until switched on; the banner clears only by Casey's action. All data is fake.
 
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
+
+use askhava_adapters::api::{AdapterError, IdempotencyKey, SentText, SmsAdapter};
 
 use askhava_core::api::{Claimed, ManualClock};
 use askhava_intake::api::SAFETY_CALL_KIND;
 use askhava_intake::api::rules::Settings as IntakeSettings;
 use askhava_integration::{is_permission_denied, set_app_role};
 use askhava_messaging::api::{
-    Audience, LaunchChannel, MailboxKind, ModeError, ModeStateError, NumberState,
-    PAUSED_SAFETY_KIND, SafetySender, SendingNumber, launch_channel, load_lines, record_restore,
-    record_suspension, run_paused_safety, set_launch_channel, switch_off, switch_on,
+    Audience, LaunchChannel, LineSendError, MailboxKind, ModeError, ModeStateError, NumberState,
+    PAUSED_SAFETY_KIND, Relation, SafetySender, SendingNumber, To, launch_channel, load_lines,
+    record_restore, record_suspension, run_paused_safety, send_on_line, set_launch_channel,
+    switch_off, switch_on,
 };
-use askhava_ops::api::{banner_shown, clear_banner};
+use askhava_ops::api::{Actor, Switch, banner_shown, clear_banner, set_switch};
 use askhava_privacy::api::{NewContact, Vault, store_contact};
 use axum::body::Body;
 use axum::http::{Request, StatusCode};
@@ -143,7 +146,76 @@ async fn paused_alerts(pool: &PgPool) -> i64 {
     .await
 }
 
-/// Runs every queued paused-safety follow-up once, as the worker would.
+/// The contacts on Casey's call list: High call-back alerts naming a vault contact ID.
+async fn called(pool: &PgPool) -> Vec<Uuid> {
+    sqlx::query_scalar(
+        "SELECT subject_id FROM ops.alert WHERE kind = 'messaging.call_back_due' \
+         AND severity = 'high' AND subject_kind = 'privacy.contact' ORDER BY raised_at",
+    )
+    .fetch_all(pool)
+    .await
+    .expect("call list")
+}
+
+/// A carrier that records every send; a paused line must never reach it.
+#[derive(Default)]
+struct Carrier(Mutex<u32>);
+
+impl SmsAdapter for Carrier {
+    async fn send_text(
+        &self,
+        _key: &IdempotencyKey,
+        _to: &str,
+        _from: &str,
+        _body: &str,
+    ) -> Result<SentText, AdapterError> {
+        let mut sent = self.0.lock().expect("lock");
+        *sent += 1;
+        Ok(SentText {
+            sid: format!("SM{:032}", *sent),
+            status: "queued".to_owned(),
+        })
+    }
+}
+
+/// D-2188: intake still queues its texts (the INT-004 text among them) while the line is paused;
+/// every one of them for `homeowners` is refused by `send_on_line` with nothing reaching the
+/// carrier, and stays queued.
+async fn nothing_goes(db: &mut PgConnection, homeowners: &[Uuid]) {
+    let rows: Vec<Uuid> = sqlx::query_scalar(
+        "SELECT id FROM messaging.outbox WHERE recipient_id = ANY($1) AND status = 'queued'",
+    )
+    .bind(homeowners)
+    .fetch_all(&mut *db)
+    .await
+    .expect("outbox");
+    assert!(!rows.is_empty(), "intake queued its INT-004 text");
+    let lines = load_lines(
+        db,
+        (Some(SendingNumber::parse(ASK_HAVA).expect("number")), None),
+    )
+    .await
+    .expect("lines");
+    let (carrier, vault) = (Carrier::default(), vault());
+    let to = To::Homeowner {
+        vault: &vault,
+        relation: Relation::OpenRequest,
+    };
+    for id in rows {
+        let sent = send_on_line(db, (&secret(), &carrier, &vault), &lines, (id, to), at()).await;
+        assert!(matches!(sent, Err(LineSendError::Paused)), "{sent:?}");
+    }
+    assert_eq!(*carrier.0.lock().expect("lock"), 0, "nothing is texted");
+    let moved = "SELECT count(*) FROM messaging.outbox WHERE status <> 'queued'";
+    assert_eq!(count_on(db, moved).await, 0);
+}
+
+async fn count_on(db: &mut PgConnection, sql: &'static str) -> i64 {
+    sqlx::query_scalar(sql).fetch_one(db).await.expect("count")
+}
+
+/// Runs every queued paused-safety follow-up once with the email keys, as a worker with a footer
+/// postal setting would.
 async fn run_follow_ups(pool: &PgPool) {
     let sender = SafetySender::new(
         (secret(), vault()),
@@ -151,7 +223,11 @@ async fn run_follow_ups(pool: &PgPool) {
         "https://askhava.com/q/fake-token",
     )
     .expect("sender");
-    let sender = Arc::new(sender);
+    run_with(pool, Arc::new(sender)).await;
+}
+
+/// Runs every queued paused-safety follow-up once with `sender`.
+async fn run_with(pool: &PgPool, sender: Arc<SafetySender>) {
     let rows: Vec<(i64, serde_json::Value)> =
         sqlx::query_as("SELECT id, payload FROM core.task WHERE kind = $1 ORDER BY id")
             .bind(PAUSED_SAFETY_KIND)
@@ -253,7 +329,7 @@ async fn td_txt_33_the_switch_and_a_suspension_survive_a_restart(pool: PgPool) {
 async fn td_txt_33_switched_off_an_emergency_alerts_once_and_texts_nothing(pool: PgPool) {
     let mut db = pool.acquire().await.expect("connection");
     let with = contact(&mut db, HOME, Some("ada@example.test")).await;
-    contact(&mut db, OTHER, None).await;
+    let without = contact(&mut db, OTHER, None).await;
     switch_off(&mut db, Audience::Homeowner, (CASEY, at()))
         .await
         .expect("off");
@@ -276,15 +352,10 @@ async fn td_txt_33_switched_off_an_emergency_alerts_once_and_texts_nothing(pool:
     .await
     .expect("emails");
     assert_eq!(emailed, [with]);
-    let called = count(
-        &pool,
-        "SELECT count(*) FROM ops.alert a JOIN messaging.inbox i ON i.id = a.subject_id \
-         WHERE a.kind = 'messaging.call_back_due' AND a.severity = 'high'",
-    )
-    .await;
     assert_eq!(
-        called, 1,
-        "the homeowner with no email is on Casey's call list"
+        called(&pool).await,
+        [without],
+        "the homeowner with no email is on Casey's call list, by contact ID only"
     );
     let int_004 = "SELECT count(*) FROM intake.emergency_event";
     assert_eq!(
@@ -292,8 +363,7 @@ async fn td_txt_33_switched_off_an_emergency_alerts_once_and_texts_nothing(pool:
         2,
         "intake's event is still queued"
     );
-    let sent = "SELECT count(*) FROM messaging.outbox WHERE status <> 'queued'";
-    assert_eq!(count(&pool, sent).await, 0, "nothing is texted");
+    nothing_goes(&mut db, &[with, without]).await;
     let calls: i64 = sqlx::query_scalar("SELECT count(*) FROM core.task WHERE kind = $1")
         .bind(SAFETY_CALL_KIND)
         .fetch_one(&pool)
@@ -359,4 +429,64 @@ async fn td_txt_33_a_restore_keeps_texting_off_and_only_casey_clears_the_banner(
     assert!(clear_banner(&mut db, CASEY, at()).await.expect("cleared"));
     assert!(!clear_banner(&mut db, CASEY, at()).await.expect("repeat"));
     assert!(!banner_shown(&mut db).await.expect("banner"));
+}
+
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_txt_33_the_owner_texting_pause_counts_as_paused(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("connection");
+    let with = contact(&mut db, HOME, Some("ada@example.test")).await;
+    set_switch(&mut db, Switch::Texting, true, Actor::System)
+        .await
+        .expect("pause");
+    let hooks = hooks(&pool);
+    assert_eq!(text(&hooks, 1, HOME, GAS).await, StatusCode::OK);
+    assert_eq!(
+        paused_alerts(&pool).await,
+        1,
+        "the ops texting pause closes the line"
+    );
+    assert!(banner_shown(&mut db).await.expect("banner"));
+    nothing_goes(&mut db, &[with]).await;
+    set_switch(&mut db, Switch::Texting, false, Actor::System)
+        .await
+        .expect("texting back");
+    set_switch(&mut db, Switch::All, true, Actor::System)
+        .await
+        .expect("pause all");
+    assert_eq!(text(&hooks, 2, HOME, GAS).await, StatusCode::OK);
+    assert_eq!(paused_alerts(&pool).await, 2, "so does the all pause");
+    run_with(&pool, Arc::new(SafetySender::call_list_only())).await;
+    assert_eq!(
+        called(&pool).await,
+        [with, with],
+        "with no email keys the worker's sender puts her on the call list"
+    );
+}
+
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_txt_33_an_opted_out_homeowner_still_gets_the_follow_up(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("connection");
+    let her = contact(&mut db, HOME, None).await;
+    let hooks = hooks(&pool);
+    assert_eq!(text(&hooks, 1, HOME, "STOP").await, StatusCode::OK);
+    switch_off(&mut db, Audience::Homeowner, (CASEY, at()))
+        .await
+        .expect("off");
+    assert_eq!(text(&hooks, 2, HOME, GAS).await, StatusCode::OK);
+    assert_eq!(
+        paused_alerts(&pool).await,
+        0,
+        "her critical alert is the opt-out flow's"
+    );
+    let optout = "SELECT count(*) FROM ops.alert WHERE kind = 'messaging.opted_out_emergency'";
+    assert_eq!(count(&pool, optout).await, 1);
+    assert!(banner_shown(&mut db).await.expect("banner"));
+    run_follow_ups(&pool).await;
+    assert_eq!(called(&pool).await, [her]);
+    let calls: i64 = sqlx::query_scalar("SELECT count(*) FROM core.task WHERE kind = $1")
+        .bind(SAFETY_CALL_KIND)
+        .fetch_one(&pool)
+        .await
+        .expect("calls");
+    assert_eq!(calls, 0, "never a call to a number that opted out");
 }

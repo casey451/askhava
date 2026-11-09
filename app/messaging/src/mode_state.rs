@@ -15,7 +15,9 @@
 //! [`PAUSED_SAFETY_KIND`] task, because the vault refuses a read inside the inbound delivery's
 //! transaction (PRIV-003). [`run_paused_safety`] then reads her email on a bare connection and
 //! queues the INT-004 text by email when one is on file, else puts her on Casey's call list as a
-//! High [`CALL_BACK_ALERT`] (TXT-023, TXT-024), once per inbox message.
+//! High [`CALL_BACK_ALERT`] on her contact ID (TXT-023, TXT-024, PRIV-006), once per inbox message.
+//! The worker registers it with [`SafetySender::call_list_only`] until a footer postal setting
+//! exists (D-2186).
 
 use std::sync::Arc;
 
@@ -341,9 +343,15 @@ pub async fn queue_paused_safety(
         .map_err(|_| ModeStateError::Database)
 }
 
-/// The email key's secret, the checked footer postal line, the vault and the homeowner's
-/// "Manage email notices" link for the [`PAUSED_SAFETY_KIND`] handler (SEC-018, SEC-028).
+/// What the [`PAUSED_SAFETY_KIND`] handler needs: the email keys when the composition has a
+/// footer postal line, else none, and then every homeowner goes on Casey's call list (D-2186).
 pub struct SafetySender {
+    email: Option<EmailKeys>,
+}
+
+/// The email key's secret, the checked footer postal line, the vault and the homeowner's
+/// "Manage email notices" link (SEC-018, SEC-028).
+struct EmailKeys {
     secret: SecretString,
     postal: PostalAddress,
     vault: Vault,
@@ -351,7 +359,8 @@ pub struct SafetySender {
 }
 
 impl SafetySender {
-    /// Checks `postal` as `kind` of mailbox (SEC-028).
+    /// A sender that emails the INT-004 text when she has an email; checks `postal` as `kind` of
+    /// mailbox (SEC-028).
     ///
     /// # Errors
     ///
@@ -361,19 +370,41 @@ impl SafetySender {
         (postal, kind): (&str, MailboxKind),
         manage_url: &str,
     ) -> Result<Self, EmailError> {
-        Ok(Self {
+        let keys = EmailKeys {
             secret,
             postal: PostalAddress::new(postal, kind)?,
             vault,
             manage_url: manage_url.to_owned(),
-        })
+        };
+        Ok(Self { email: Some(keys) })
     }
+
+    /// TXT-023, D-2186: a sender with no email keys, which puts every homeowner on Casey's call
+    /// list; the worker registers this while no footer postal setting exists.
+    #[must_use]
+    pub fn call_list_only() -> Self {
+        Self { email: None }
+    }
+}
+
+/// The sender's email keys when homeowner `her` has an email on file; none without keys, without
+/// an email, or on any vault failure, so she is called rather than missed.
+async fn email_on_file<'s>(
+    conn: &mut PgConnection,
+    sender: &'s SafetySender,
+    her: Uuid,
+) -> Option<&'s EmailKeys> {
+    let keys = sender.email.as_ref()?;
+    let found = homeowner_email(conn, &keys.vault, her).await;
+    found.is_ok_and(|e| e.is_some()).then_some(keys)
 }
 
 /// TXT-023, TXT-024, INT-004, D-2186: the [`PAUSED_SAFETY_KIND`] handler. Reads her email on a bare
 /// connection (any vault failure counts as none, so she is called rather than missed), then in one
 /// transaction claims the inbox message once and queues the INT-004 text by email, or raises the
-/// High [`CALL_BACK_ALERT`] that puts her on Casey's call list. A second run writes nothing.
+/// High [`CALL_BACK_ALERT`] on her contact ID (no message detail, PRIV-006) that puts her on
+/// Casey's call list; a [`SafetySender::call_list_only`] always does the latter. A second run
+/// writes nothing.
 ///
 /// # Errors
 ///
@@ -397,9 +428,7 @@ pub async fn run_paused_safety(
         _ => Language::En,
     };
     let mut conn = pool.acquire().await.map_err(|_| FAILED)?;
-    let on_file = homeowner_email(&mut conn, &sender.vault, her)
-        .await
-        .is_ok_and(|e| e.is_some());
+    let on_file = email_on_file(&mut conn, &sender, her).await;
     let mut tx = conn.begin().await.map_err(|_| FAILED)?;
     let claim = AuditEntry {
         actor: Actor::System,
@@ -411,15 +440,15 @@ pub async fn run_paused_safety(
     if !audit_once(&mut tx, &claim).await.map_err(|_| FAILED)? {
         return Ok(());
     }
-    if on_file {
-        safety_email(&mut tx, &sender, (her, message), language)
+    if let Some(keys) = on_file {
+        safety_email(&mut tx, keys, (her, message), language)
             .await
             .map_err(|_| FAILED)?;
     } else {
         let alert = NewAlert {
             kind: CALL_BACK_ALERT,
             severity: Severity::High,
-            subject: Some(("messaging.inbox", message)),
+            subject: Some(("privacy.contact", her)),
         };
         raise_alert(&mut tx, &alert).await.map_err(|_| FAILED)?;
     }
@@ -430,7 +459,7 @@ pub async fn run_paused_safety(
 /// the existing text-by-email notice (D-2186), keyed on the inbox `message`.
 async fn safety_email(
     db: &mut PgConnection,
-    sender: &SafetySender,
+    sender: &EmailKeys,
     (her, message): (Uuid, Uuid),
     language: Language,
 ) -> Result<(), EmailError> {

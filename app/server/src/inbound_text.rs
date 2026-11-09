@@ -29,8 +29,9 @@
 //! rolls back, inbox row included, so Twilio sends it again (PRIV-001, TXT-012, D-1751). A status
 //! callback runs `messaging::api::receive_status`, once per (MessageSid, MessageStatus).
 //! While homeowner texting is switched off or her number suspended (`messaging::api::load_lines`),
-//! a homeowner's emergency text first runs `messaging::api::emergency_plan` (TXT-021 to TXT-024,
-//! T279, D-2187): `raise_emergency` raises the critical alert once per message, `ops::api` turns the
+//! or Casey's `ops` `texting` or `all` pause is on, a homeowner's emergency text first runs
+//! `messaging::api::emergency_plan` (TXT-021 to TXT-024, T279, D-2187; an opted-out or listed
+//! homeowner's from the opt-out step, with no second critical alert and no call, D-2189): `raise_emergency` raises the critical alert once per message, `ops::api` turns the
 //! WEB-007 banner on, `queue_paused_safety` asks for the INT-004 email or Casey's call list, and
 //! intake's safety call is asked for only where the plan keeps it; intake's own step then runs as
 //! usual and nothing here texts. Nothing here logs a phone, a body or a URL (PRIV-016). This file is also compiled into
@@ -52,7 +53,7 @@ use askhava_messaging::api::{
     on_inbound_text, queue_paused_safety, raise_emergency, receive_inbound, receive_status, render,
     reply_to_help, sender_business,
 };
-use askhava_ops::api::{BannerBy, OpsError, show_banner};
+use askhava_ops::api::{BannerBy, OpsError, Switch, is_paused, show_banner};
 use askhava_privacy::api::{
     CommonWords, Inbound as Read, InboundWords, Known, NameMemory, NewContact, Vault, VaultError,
     find_by_phone, read_inbound, read_inbound_for, store_contact,
@@ -245,7 +246,7 @@ async fn text(
     if relation == Relation::Business {
         return auto_reply(h, db, &msg).await;
     }
-    paused_emergency(h, db, &msg, (to, now)).await?;
+    paused_emergency(h, db, &msg, (to, now), false).await?;
     if let Some(error) = unread {
         return Err(Halt::Failed("vault", error));
     }
@@ -253,37 +254,41 @@ async fn text(
 }
 
 /// TXT-021 to TXT-024, INT-004, WEB-007, CALL-019, D-1805, D-2187: a homeowner's emergency text
-/// while her line is paused (switched off, suspended, or restored and waiting for Casey; the line's
-/// number is the `To` she texted, so a `To` that is no +1 number counts as paused). Once per inbox
-/// message (`raise_emergency`'s claim; a resent delivery does nothing more): the critical alert,
-/// the banner on, the INT-004 email or call-list follow-up, and intake's safety call only when the
-/// plan keeps it. An open line or no 911-list match changes nothing here.
+/// while her line is paused (switched off, suspended, restored and waiting for Casey, or the `ops`
+/// `texting` or `all` pause on, which `send_on_line` also obeys; the line's number is the `To` she
+/// texted, so a `To` that is no +1 number counts as paused). Once per inbox message
+/// (`raise_emergency`'s claim; a resent delivery does nothing more): the critical alert (none for
+/// an `opted_out` number, whose alert is optout's), the banner on, the INT-004 email or call-list
+/// follow-up, and intake's safety call only when the plan keeps it. An open line or no 911-list
+/// match changes nothing here.
 async fn paused_emergency(
     h: &Webhooks,
     db: &mut PgConnection,
     msg: &InboundText<'_>,
     (to, now): (&str, Timestamp),
+    opted_out: bool,
 ) -> Step<()> {
-    if !msg.emergency {
+    if !msg.emergency || msg.relation == Relation::Business {
         return Ok(());
     }
-    let lines = load_lines(db, (SendingNumber::parse(to).ok(), None))
+    let mut line = load_lines(db, (SendingNumber::parse(to).ok(), None))
         .await
-        .map_err(mode_halt)?;
+        .map_err(mode_halt)?
+        .homeowner;
+    line.texting_on &= !owner_paused(db).await?;
     let facts = EmergencyFacts {
         matched: true,
         call_trigger: safety_call_trigger(msg.text),
         arrived_at: now,
         has_email: false,
-        opted_out: false,
+        opted_out,
         safety_switch_on: h.intake.safety_call_on,
     };
-    let Some(plan) = emergency_plan(&lines.homeowner, &facts) else {
+    let Some(plan) = emergency_plan(&line, &facts) else {
         return Ok(());
     };
     let pair = (msg.contact, msg.inbox_id);
-    let line = &lines.homeowner;
-    let Some(raised) = raise_emergency(db, (&plan, line), pair)
+    let Some(raised) = raise_emergency(db, (&plan, &line), pair)
         .await
         .map_err(ops_halt)?
     else {
@@ -310,6 +315,17 @@ async fn paused_emergency(
         .await
         .map(|_| ())
         .map_err(intake_halt)
+}
+
+/// Whether Casey's `ops` `texting` or `all` pause is on (OPS-003, TXT-021), which closes every
+/// line as `send_on_line` does.
+async fn owner_paused(db: &mut PgConnection) -> Step<bool> {
+    for switch in [Switch::Texting, Switch::All] {
+        if is_paused(db, switch).await.map_err(ops_halt)? {
+            return Ok(true);
+        }
+    }
+    Ok(false)
 }
 
 /// Hands a homeowner's scrubbed text to `intake::api::receive_reply` (TXT-031, INT-019, D-999).
@@ -361,9 +377,13 @@ async fn screen(
                     .await
                     .map_err(consent_halt)?;
             }
+            paused_emergency(h, db, msg, (to, now), true).await?;
             return Err(Halt::Ends("opted_out"));
         }
-        Outcome::Suppressed { .. } => true,
+        Outcome::Suppressed { .. } => {
+            paused_emergency(h, db, msg, (to, now), true).await?;
+            true
+        }
         Outcome::Resubscribed | Outcome::Open => false,
     };
     let replied = if keyword(msg.text).is_some() {
