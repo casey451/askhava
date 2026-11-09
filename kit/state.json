@@ -23246,7 +23246,15 @@
     2083,
     2084,
     2085
-   ]
+   ],
+   "reviewed_sha": "eaa5aae0f74ba6fddbc01a4ab3e834d8927bd3a9",
+   "review_lease": {
+    "task": "T263",
+    "session": "actions-42555983952",
+    "expires": "2026-11-09T06:37:03Z"
+   },
+   "branch": "claude/task/T263-fee-limit-hard-cap",
+   "head_check_since": null
   },
   {
    "id": "T257",
@@ -25423,7 +25431,7 @@
    }
   }
  },
- "updated_at": "2026-11-09T03:37:15Z",
+ "updated_at": "2026-11-09T04:26:39Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -25521,7 +25529,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "04d388c05746a201ab8c4d3488f22ee74b50e691",
+ "runner_sha": "eaa5aae0f74ba6fddbc01a4ab3e834d8927bd3a9",
  "starter": "actions",
  "smoke_runs": [
   {
