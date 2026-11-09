@@ -1,18 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-09T19:34:32Z by runner 95f20147558f (actions).
+Updated 2026-11-09T19:48:38Z by runner 023682240fb1 (actions).
 
-**Idle since 19:32Z; 174 of 297 done; week 67% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 19:32Z; 174 of 312 done; week 67% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 174 of 297 build tasks (owner gates not counted)
+- **Tasks done:** 174 of 312 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 19:32Z (no task in progress)
 - **Week:** 67% used, 64.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:34Z, 0 min before this update
+- **Last run:** 19:34Z, 14 min before this update
 - **Keeper:** last ran 19:34Z, next wake 19:54Z
 
 ## Needs attention
-- Strict plan check red: 23 problem(s) on tasks still to run (+52 on DONE tasks); first: T255: stored context_pct 25% but it measures 34%; regenerate
+- Strict plan check red: 1 problem(s) on tasks still to run (+1 on DONE tasks); first: T279: stored context_pct 27% but it measures 34%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -44,28 +44,28 @@ Updated 2026-11-09T19:34:32Z by runner 95f20147558f (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 252 of 732 (34.4%) · partial 281 · unstarted 199
-**Tasks merged (throughput only):** 174 of 297
+**Requirements verified:** 243 of 732 (33.2%) · partial 290 · unstarted 199
+**Tasks merged (throughput only):** 174 of 312
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 13 | 15 | 7 | 35 |
 | ai | 9 | 15 | 5 | 29 |
-| businesses | 19 | 29 | 10 | 58 |
+| businesses | 17 | 31 | 10 | 58 |
 | calls | 12 | 12 | 1 | 25 |
-| consent | 15 | 16 | 4 | 35 |
+| consent | 14 | 17 | 4 | 35 |
 | fees | 16 | 35 | 1 | 52 |
-| intake | 22 | 12 | 9 | 43 |
-| job-cards | 13 | 9 | 2 | 24 |
+| intake | 20 | 14 | 9 | 43 |
+| job-cards | 12 | 10 | 2 | 24 |
 | licensing | 33 | 14 | 1 | 48 |
 | lifecycle | 18 | 10 | 0 | 28 |
-| messaging | 18 | 23 | 4 | 45 |
+| messaging | 16 | 25 | 4 | 45 |
 | ops-recovery | 2 | 5 | 47 | 54 |
 | privacy | 6 | 22 | 3 | 31 |
 | quiet-hours | 8 | 1 | 0 | 9 |
 | quotes-pick | 32 | 14 | 10 | 56 |
 | recurring | 7 | 1 | 3 | 11 |
-| security | 8 | 39 | 7 | 54 |
+| security | 7 | 40 | 7 | 54 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 1 | 27 | 28 |
 | wording | 1 | 5 | 26 | 32 |
@@ -80,8 +80,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 54 of 101 done
-- stage 5: 0 of 50 done
+- stage 4: 54 of 113 done
+- stage 5: 0 of 53 done
 - stage 6: 0 of 30 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
