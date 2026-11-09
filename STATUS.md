@@ -1,23 +1,23 @@
 # Ask Hava build status
 
-Updated 2026-11-09T17:47:04Z by runner 4c269f60064d (actions).
+Updated 2026-11-09T18:45:29Z by runner 95f20147558f (actions).
 
-**Idle since 17:46Z; 173 of 297 done; week 65% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 18:08Z; 174 of 297 done; week 65% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 173 of 297 build tasks (owner gates not counted)
+- **Tasks done:** 174 of 297 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 17:46Z (no task in progress)
+- **Lane:** idle since 18:08Z (no task in progress)
 - **Week:** 65% used, 68.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:46Z, 0 min before this update
+- **Last run:** 17:47Z, 58 min before this update
 - **Keeper:** last ran 17:47Z, next wake 18:07Z
 
 ## Needs attention
-- Strict plan check red: 23 problem(s) on tasks still to run (+50 on DONE tasks); first: T255: stored context_pct 25% but it measures 34%; regenerate
+- Strict plan check red: 23 problem(s) on tasks still to run (+52 on DONE tasks); first: T255: stored context_pct 25% but it measures 34%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T276 | privacy and messaging: purged photos' sealed objects and orp | MERGE_PENDING | 1 | 53 min | 17:46Z |  |
+| T276 | privacy and messaging: purged photos' sealed objects and orp | done | 1 | 53 min | 17:46Z |  |
 | T275 | adapters and stand-ins: local write-once storage that a raci | done | 1 | 38 min | 16:08Z |  |
 | T274 | intake and privacy: the 180-day contact purge decides and cl | done | 1 | 66 min | 14:56Z |  |
 | T270 | picks and payments: the unreachable refund and the fraud war | done | 1 | 29 min | 13:17Z |  |
@@ -40,12 +40,11 @@ Updated 2026-11-09T17:47:04Z by runner 4c269f60064d (actions).
 - 22:20Z Plan: wire the real AI into the app — T298 endpoint client, T299 intake wiring (D-2065) (#367)
 - 21:52Z Plan: vendor-call connection audit, war-games overload scenario (T297) (D-2054) (#365)
 - 20:26Z Plan: 3-second AI reply budget, AI waits hold no DB connection, war-games latency (D-2038) (#362)
-- 18:33Z Harness: run the start-routine smoke before the session (D-2028) (#359)
 
 ## Progress (requirements verified)
 
 **Requirements verified:** 252 of 732 (34.4%) · partial 281 · unstarted 199
-**Tasks merged (throughput only):** 173 of 297
+**Tasks merged (throughput only):** 174 of 297
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -80,7 +79,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 53 of 101 done
+- stage 4: 54 of 101 done
 - stage 5: 0 of 50 done
 - stage 6: 0 of 30 done
 - stage 7: 0 of 2 done

@@ -24575,7 +24575,7 @@
     "T274",
     "T093"
    ],
-   "status": "MERGE_PENDING",
+   "status": "DONE",
    "attempts": 0,
    "slug": "retention-deletes",
    "type": "harness",
@@ -24594,13 +24594,50 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 181,
      "head_sha": "6f23657cc099b69bf0bdb424307a27a7fc6278a2",
-     "pr": null,
-     "checks": null,
+     "pr": 389,
+     "checks": [
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-09T16:53:18Z",
      "ended_at": "2026-11-09T17:46:27Z",
-     "result": "MERGE_PENDING"
+     "result": "done"
     }
    ],
    "reviewed_sha": "6f23657cc099b69bf0bdb424307a27a7fc6278a2",
@@ -24614,7 +24651,29 @@
     "enabled": true,
     "why": "auto-merge on #389 (gh pr merge)",
     "head": "6f23657cc099b69bf0bdb424307a27a7fc6278a2"
-   }
+   },
+   "merged_sha": "95f20147558f1b9b2272f5564df65da0fc2e7817",
+   "merged_at": "2026-11-09T18:08:25Z",
+   "files": [
+    ".sqlx/query-36966e29cc035acb3c79913b0702f8468b27f114c11753abe83f9c5e7fc83178.json",
+    ".sqlx/query-413ffe9d1e2b1657f2b5d99d78cc7b54742a7f6ef818c50165562e63b1e19183.json",
+    ".sqlx/query-67f15c2fdcaeea95a506ddde42c9ea9dc837cd2aad0ed12b364114855753690d.json",
+    ".sqlx/query-b732edadb1508a9acb5456517f85d75ec65c36e3881fcd8c75a341a17d1ff3a2.json",
+    ".sqlx/query-e00482ba27cdc241b888e25ef1312997ff456c5fa30e97f9366fda44546d6c24.json",
+    "app/messaging/CLAUDE.md",
+    "app/messaging/src/api.rs",
+    "app/messaging/src/lib.rs",
+    "app/messaging/src/purge.rs",
+    "app/privacy/CLAUDE.md",
+    "app/privacy/src/api.rs",
+    "app/privacy/src/purge.rs",
+    "app/server/CLAUDE.md",
+    "app/server/src/bin/worker.rs",
+    "docs/architecture.md",
+    "docs/decisions.md",
+    "tests/integration/tests/retention_deletes.rs",
+    "tests/integration/tests/retention_purge.rs"
+   ]
   },
   {
    "id": "T277",
@@ -26830,7 +26889,7 @@
    }
   }
  },
- "updated_at": "2026-11-09T17:47:04Z",
+ "updated_at": "2026-11-09T18:45:29Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -26928,7 +26987,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "4c269f60064dca78ea9bccc3964a799856398d2e",
+ "runner_sha": "95f20147558f1b9b2272f5564df65da0fc2e7817",
  "starter": "actions",
  "smoke_runs": [
   {
