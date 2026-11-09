@@ -20,12 +20,11 @@ use crate::models::CallsError;
 use crate::rules::{AnsweredBy, Caller, answered_by, reached_report_mark};
 
 /// CALL-006, CALL-008: the TwiML that dials `to` from the pool number `caller_id`, never recorded,
-/// with the provider's machine detection so the log can say who answered. It does not yet ask for
-/// the dialed leg's `initiated` and final status callbacks (T271's route): TD-CALL-03's test pins
-/// the exact `<Dial>` and `<Number>` tags, and T282 does not own it (D-1690, D-2129). `None` when
-/// `to` is not
-/// E.164, so nothing but digits reaches the XML. The result holds a phone number: send it only as
-/// the webhook's reply, never log it (PRIV-016).
+/// with the provider's machine detection so the log can say who answered (D-1690). The TwiML
+/// carries no status callback attributes, because TD-CALL-03's test in `no_recording.rs` checks
+/// the exact `<Dial>` and `<Number>` tags; adding them is a plan gap D-2129 records. `None` when
+/// `to` is not E.164, so nothing but digits reaches the XML. The result holds a phone number: send
+/// it only as the webhook's reply, never log it (PRIV-016).
 #[must_use]
 pub fn dial_twiml(caller_id: &PoolNumber, to: &SecretString) -> Option<SecretString> {
     let to = to.expose_secret();

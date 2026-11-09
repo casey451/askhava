@@ -226,11 +226,15 @@ async fn td_call_15_the_initiated_callback_joins_the_webhook_start(db: PgPool) {
 
 /// TD-CALL-15 (CALL-008, D-1836): when the webhook's write was lost the callback creates the start
 /// at its own time, and a later one never moves it; a logged call with no start reads `None` and
-/// is judged by its end.
+/// is judged by its end. Run as the app role, so its grants are what allow the create.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_call_15_a_lost_webhook_start_is_created_by_the_callback(db: PgPool) {
     let mut db = db.acquire().await.expect("connection");
     let line = line(&mut db).await;
+    sqlx::query("SET ROLE askhava_app")
+        .execute(&mut *db)
+        .await
+        .expect("role");
     let at = az(3, 10, 0, 0);
     let made = call_start_confirmed(&mut db, line, &sid(11), &sid(12), at).await;
     assert_eq!(made.expect("create"), at);
