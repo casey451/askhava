@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-09T22:31:05Z by runner 13e81649d3c9 (actions).
+Updated 2026-11-09T22:57:46Z by runner 7cd8e8f90fac (actions).
 
-**Idle since 22:15Z; 175 of 313 done; week 71% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 22:44Z; 176 of 313 done; week 71% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 175 of 313 build tasks (owner gates not counted)
+- **Tasks done:** 176 of 313 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 22:15Z (no task in progress)
+- **Lane:** idle since 22:44Z (no task in progress)
 - **Week:** 71% used, 54.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:30Z, 0 min before this update
+- **Last run:** 22:31Z, 26 min before this update
 - **Keeper:** last ran 22:31Z, next wake 22:51Z
 
 ## Needs attention
@@ -17,7 +17,7 @@ Updated 2026-11-09T22:31:05Z by runner 13e81649d3c9 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T287 | payments and picks: the fee fixed at the pick is stored by p | MERGE_PENDING | 2 | 43 min | 22:15Z | T287 built and smoke green, but prehandin check_pr_change fails: kit/tasks.json T287 owns lacks app/payments/src/models. |
+| T287 | payments and picks: the fee fixed at the pick is stored by p | done | 2 | 43 min | 22:15Z | T287 built and smoke green, but prehandin check_pr_change fails: kit/tasks.json T287 owns lacks app/payments/src/models. |
 | T287 | payments and picks: the fee fixed at the pick is stored by p | QUEUED | 1 | 46 min | 21:18Z |  |
 | T279 | messaging, ops and server: the texting switch and a number s | done | 1 | 47 min | 19:32Z |  |
 | T276 | privacy and messaging: purged photos' sealed objects and orp | done | 1 | 53 min | 17:46Z |  |
@@ -45,7 +45,7 @@ Updated 2026-11-09T22:31:05Z by runner 13e81649d3c9 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 250 of 732 (34.2%) · partial 284 · unstarted 198
-**Tasks merged (throughput only):** 175 of 313
+**Tasks merged (throughput only):** 176 of 313
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -80,7 +80,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 55 of 114 done
+- stage 4: 56 of 114 done
 - stage 5: 0 of 53 done
 - stage 6: 0 of 30 done
 - stage 7: 0 of 2 done
