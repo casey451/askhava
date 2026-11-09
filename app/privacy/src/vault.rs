@@ -8,6 +8,9 @@
 //! version stays readable, so rows sealed under v1 open while v2 is active and [`rotate_batch`]
 //! moves them over (PRIV-024). Every plaintext read writes one `ops.audit_log` row per field in
 //! the read's own transaction and counts toward the hourly SEC-047 check, [`check_read_rates`].
+//! A homeowner's stated names (`privacy.stated_name`, D-1752) are sealed the same way, their
+//! associated data naming that table and the contact, found by a `stated-name|vN` digest, and
+//! moved to the active versions by [`rotate_batch`] too.
 
 use std::collections::BTreeMap;
 use std::sync::LazyLock;
@@ -45,6 +48,12 @@ const VERSION_LEN: usize = 2;
 const UNREGISTERED_ALERT: &str = "privacy.vault_read_unregistered";
 /// The alert raised for an hour's reads above three times their baseline (SEC-047).
 const SPIKE_ALERT: &str = "privacy.vault_read_spike";
+/// The table a contact field is sealed for, named in its associated data (PRIV-002).
+const CONTACT_TABLE: &str = "privacy.contact";
+/// The table a stated name is sealed for, keyed by the contact (AI-020, D-1752).
+const STATED_TABLE: &str = "privacy.stated_name";
+/// The blind-index label of a stated name, apart from the contact purposes (PRIV-024, D-1752).
+const STATED_LABEL: &str = "stated-name";
 
 type KeyBytes = Zeroizing<[u8; 32]>;
 
@@ -123,10 +132,21 @@ impl Vault {
     ///
     /// When the operating system's random source fails, as no value may be sealed without it.
     fn seal(&self, column: &str, id: Uuid, plain: &str) -> Result<Vec<u8>, VaultError> {
+        self.seal_at((CONTACT_TABLE, column), id, plain)
+    }
+
+    /// As [`Vault::seal`] for `column` of row `id` of `table` (`privacy.contact`, or
+    /// `privacy.stated_name` keyed by the contact, D-1752).
+    fn seal_at(
+        &self,
+        (table, column): (&str, &str),
+        id: Uuid,
+        plain: &str,
+    ) -> Result<Vec<u8>, VaultError> {
         let version = self.seal_version();
         let cipher = self.seal_keys.get(&version).ok_or(VaultError::Sealed)?;
         let nonce = Nonce::<Aes256Gcm>::generate();
-        let aad = associated_data(column, id, version);
+        let aad = associated_data((table, column), id, version);
         let payload = Payload {
             msg: plain.as_bytes(),
             aad: aad.as_bytes(),
@@ -139,6 +159,16 @@ impl Vault {
 
     /// Opens a value sealed for `column` of contact `id` under whichever key version it names.
     fn open(&self, column: &str, id: Uuid, sealed: &[u8]) -> Result<SecretString, VaultError> {
+        self.open_at((CONTACT_TABLE, column), id, sealed)
+    }
+
+    /// As [`Vault::open`] for a value sealed by [`Vault::seal_at`] for the same place.
+    fn open_at(
+        &self,
+        (table, column): (&str, &str),
+        id: Uuid,
+        sealed: &[u8],
+    ) -> Result<SecretString, VaultError> {
         let (head, body) = sealed
             .split_at_checked(VERSION_LEN + NONCE_LEN)
             .ok_or(VaultError::Sealed)?;
@@ -146,7 +176,7 @@ impl Vault {
         let cipher = self.seal_keys.get(&version).ok_or(VaultError::Sealed)?;
         let nonce =
             Nonce::<Aes256Gcm>::try_from(&head[VERSION_LEN..]).map_err(|_| VaultError::Sealed)?;
-        let aad = associated_data(column, id, version);
+        let aad = associated_data((table, column), id, version);
         let plain = cipher
             .decrypt(
                 &nonce,
@@ -166,11 +196,45 @@ impl Vault {
     /// (PRIV-024). Equality-only; it leaks which rows share a value (postgres brain P12).
     #[must_use]
     pub fn blind_index(&self, purpose: IndexPurpose, value: &str) -> Vec<(u16, [u8; 32])> {
+        self.index_for(purpose.label(), value)
+    }
+
+    /// Seals the stated name `word` of `contact` under the active key, its associated data naming
+    /// `privacy.stated_name`, the contact and the version (AI-020, PRIV-002, D-1752).
+    pub(crate) fn seal_stated(&self, contact: Uuid, word: &str) -> Result<Vec<u8>, VaultError> {
+        self.seal_at((STATED_TABLE, "name"), contact, word)
+    }
+
+    /// Opens a stated name [`Vault::seal_stated`] sealed for `contact`.
+    pub(crate) fn open_stated(
+        &self,
+        contact: Uuid,
+        sealed: &[u8],
+    ) -> Result<SecretString, VaultError> {
+        self.open_at((STATED_TABLE, "name"), contact, sealed)
+    }
+
+    /// The active `stated-name|vN` digest of `word` and its index key version (PRIV-024, D-1752).
+    ///
+    /// # Errors
+    ///
+    /// [`VaultError::Sealed`] if the vault holds no index key, so no digest of version 0 is ever
+    /// stored (D-2090).
+    pub(crate) fn stated_digest(&self, word: &str) -> Result<(u16, [u8; 32]), VaultError> {
+        self.index_for(STATED_LABEL, word)
+            .into_iter()
+            .next()
+            .ok_or(VaultError::Sealed)
+    }
+
+    /// The digests of `value` under the key derived for `label` at every index key version, the
+    /// active first (PRIV-024).
+    fn index_for(&self, label: &str, value: &str) -> Vec<(u16, [u8; 32])> {
         self.index_keys
             .iter()
             .rev()
             .map(|(version, master)| {
-                let label = format!("{}|v{version}", purpose.label());
+                let label = format!("{label}|v{version}");
                 let derived = hmac(&master[..], label.as_bytes());
                 (*version, hmac(&derived, value.as_bytes()))
             })
@@ -224,8 +288,8 @@ fn hmac(key: &[u8], msg: &[u8]) -> [u8; 32] {
 }
 
 /// The associated data binding a sealed value to its place and key version (PRIV-002, PRIV-024).
-fn associated_data(column: &str, id: Uuid, version: u16) -> String {
-    format!("privacy.contact|{column}|{id}|v{version}")
+fn associated_data((table, column): (&str, &str), id: Uuid, version: u16) -> String {
+    format!("{table}|{column}|{id}|v{version}")
 }
 
 /// Parses `<version>:<base64>` entries, each a distinct version from 1 and a 32-byte key.
@@ -472,6 +536,23 @@ pub(crate) async fn read(
     fields: &[Field],
 ) -> Result<ContactDetails, VaultError> {
     ensure_bare(db).await?;
+    read_audited(db, vault, (grant, actor, pick), id, fields).await
+}
+
+/// [`read`] without the bare-connection check, for a read whose plaintext never leaves `privacy`
+/// (`read_inbound_for`, D-1752): on a connection inside a transaction its audit rows and count go
+/// in a savepoint, so they commit or roll back with the caller's transaction (PRIV-003, SEC-047).
+///
+/// # Errors
+///
+/// As [`read`], without [`VaultError::InTransaction`].
+pub(crate) async fn read_audited(
+    db: &mut PgConnection,
+    vault: &Vault,
+    (grant, actor, pick): (&Grant, Actor, Option<Uuid>),
+    id: Uuid,
+    fields: &[Field],
+) -> Result<ContactDetails, VaultError> {
     let mut tx = db.begin().await.map_err(db_err)?;
     let details = open_row(&mut tx, vault, id, fields, false).await?;
     audit_read(&mut tx, (grant, actor), id, fields).await?;
@@ -548,10 +629,15 @@ async fn audit_read(
         };
         audit(db, &entry).await.map_err(|_| VaultError::Audit)?;
     }
+    count_read(db, grant.action).await
+}
+
+/// Adds one read to `action`'s count for this UTC hour (SEC-047, D-750).
+async fn count_read(db: &mut PgConnection, action: &str) -> Result<(), VaultError> {
     sqlx::query!(
         "INSERT INTO privacy.read_count (hour, action, reads) VALUES (date_trunc('hour', now(), 'UTC'), $1, 1) \
          ON CONFLICT (action, hour) DO UPDATE SET reads = privacy.read_count.reads + 1",
-        grant.action,
+        action,
     )
     .execute(db)
     .await
@@ -573,7 +659,8 @@ fn own_grant(purpose: Purpose) -> &'static Grant {
 /// as it is the only one [`reseal`] rebuilds, so a stale digest of another purpose never makes a
 /// batch that never ends (D-753). Run it until it
 /// returns 0: both versions stay readable throughout (PRIV-024). Each move is its own transaction
-/// and audits its plaintext read as `privacy`'s rotation (PRIV-003).
+/// and audits its plaintext read as `privacy`'s rotation (PRIV-003). Stated names under an older
+/// version are moved after the contacts, up to `limit` more, and counted in the result (D-1752).
 ///
 /// # Errors
 ///
@@ -606,7 +693,69 @@ pub async fn rotate_batch(
         reseal(&mut tx, vault, details).await?;
         tx.commit().await.map_err(db_err)?;
     }
+    let stated = rotate_stated(db, vault, limit).await?;
+    Ok(ids.len() as u64 + stated)
+}
+
+/// Re-seals up to `limit` stated names still under an older `VAULT_KEY` or `VAULT_INDEX_KEY`
+/// version, each in its own transaction: the row is deleted and written again under the active
+/// versions with its ID and time (the app role has no UPDATE on it), and the read is audited and
+/// counted as `privacy`'s rotation (AI-020, PRIV-003, PRIV-024, D-1752). If the contact already
+/// holds the same name under the active digest (stated again after the key change), the old row
+/// is still deleted and the re-insert adds nothing (D-2089).
+async fn rotate_stated(
+    db: &mut PgConnection,
+    vault: &Vault,
+    limit: i64,
+) -> Result<u64, VaultError> {
+    let ids = sqlx::query_scalar!(
+        "SELECT id FROM privacy.stated_name WHERE key_version < $1 OR index_version < $2 \
+         ORDER BY id LIMIT $3",
+        i32::from(vault.seal_version()),
+        i32::from(vault.index_version()),
+        limit,
+    )
+    .fetch_all(&mut *db)
+    .await
+    .map_err(db_err)?;
+    for id in &ids {
+        let mut tx = db.begin().await.map_err(db_err)?;
+        let row = sqlx::query!(
+            "DELETE FROM privacy.stated_name WHERE id = $1 RETURNING contact_id, name, created_at",
+            id,
+        )
+        .fetch_one(&mut *tx)
+        .await
+        .map_err(db_err)?;
+        let word = vault.open_stated(row.contact_id, &row.name)?;
+        audit_rotation(&mut tx, *id).await?;
+        let sealed = vault.seal_stated(row.contact_id, word.expose_secret())?;
+        let (index_version, digest) = vault.stated_digest(word.expose_secret())?;
+        sqlx::query!(
+            "INSERT INTO privacy.stated_name (id, contact_id, name, key_version, digest, index_version, created_at) \
+             VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (contact_id, digest) DO NOTHING",
+            id, row.contact_id, sealed, i32::from(vault.seal_version()), &digest[..],
+            i32::from(index_version), row.created_at,
+        )
+        .execute(&mut *tx)
+        .await
+        .map_err(db_err)?;
+        tx.commit().await.map_err(db_err)?;
+    }
     Ok(ids.len() as u64)
+}
+
+/// Audits and counts the rotation's read of stated name `id` (PRIV-003, SEC-047, D-1752).
+async fn audit_rotation(db: &mut PgConnection, id: Uuid) -> Result<(), VaultError> {
+    let entry = AuditEntry {
+        actor: Actor::System,
+        action: own_grant(Purpose::Rotation).action,
+        subject_kind: STATED_TABLE,
+        subject_id: id,
+        change: Change::Field("name"),
+    };
+    audit(db, &entry).await.map_err(|_| VaultError::Audit)?;
+    count_read(db, entry.action).await
 }
 
 /// Writes `details` back sealed under the active key and re-indexes its phone.

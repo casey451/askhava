@@ -1,0 +1,24 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT count(*) AS \"n!\" FROM privacy.stated_name WHERE contact_id = $1\n           AND (NOT $2 OR (key_version = 2 AND index_version = 2))",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "n!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Bool"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "8354395b8f841e89867fe0e94fc2987ca6e1a7d6122c0de1fc8ded57a70957ec"
+}

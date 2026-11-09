@@ -4,8 +4,9 @@
 //! `privacy` calls only `adapters` and `ops`, so it never reads another module's tables: the job's
 //! close date reaches it on a `core.task` (`handlers.rs`), a dispute's hold comes from `payments`
 //! and a complaint's from `businesses`' events, and the module that knows a job's contact calls
-//! [`purge_contact`]. The contact purge clears name, email, address and on-site contact and keeps
-//! the phone, sealed, with its homeowner-phone index, for the consent and opt-out records (D-079).
+//! [`purge_contact`]. The contact purge clears name, email, address, on-site contact and her stated
+//! names (D-1752) and keeps the phone, sealed, with its homeowner-phone index, for the consent and
+//! opt-out records (D-079).
 
 use askhava_ops::api::{Actor, AuditEntry, Change, audit};
 use jiff::Timestamp;
@@ -104,9 +105,10 @@ pub async fn purge_photos(db: &mut PgConnection, job: Uuid) -> Result<u64, Vault
     Ok(gone.rows_affected())
 }
 
-/// PRIV-007, D-079: clears contact `id`'s name, email, address and on-site contact and its email
-/// index, keeps the sealed phone and its homeowner-phone index, and audits it once
-/// (`contact_purged`); true when anything was left to clear.
+/// PRIV-007, D-079: clears contact `id`'s name, email, address and on-site contact, its email
+/// index and every name she stated in a text (`privacy.stated_name`, AI-020, D-1752), keeps the
+/// sealed phone and its homeowner-phone index, and audits it once (`contact_purged`); true when
+/// anything was left to clear.
 ///
 /// # Errors
 /// [`VaultError::Database`], [`VaultError::Audit`].
@@ -129,6 +131,12 @@ pub async fn purge_contact(db: &mut PgConnection, id: Uuid) -> Result<bool, Vaul
     .execute(&mut *tx)
     .await
     .map_err(db_err)?;
+    let stated = sqlx::query!("DELETE FROM privacy.stated_name WHERE contact_id = $1", id)
+        .execute(&mut *tx)
+        .await
+        .map_err(db_err)?
+        .rows_affected();
+    let cleared = cleared + stated;
     if cleared > 0 {
         let entry = AuditEntry {
             actor: Actor::System,
