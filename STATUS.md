@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-09T14:58:15Z by runner 028378523988 (actions).
+Updated 2026-11-09T15:09:28Z by runner 028378523988 (actions).
 
 **Idle since 14:56Z; 171 of 297 done; week 63% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-09T14:58:15Z by runner 028378523988 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 14:56Z (no task in progress)
 - **Week:** 63% used, 70.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:58Z, 0 min before this update
+- **Last run:** 15:09Z, 0 min before this update
 - **Keeper:** last ran 14:58Z, next wake 15:18Z
 
 ## Needs attention
@@ -40,7 +40,6 @@ Updated 2026-11-09T14:58:15Z by runner 028378523988 (actions).
 - 21:52Z Plan: vendor-call connection audit, war-games overload scenario (T297) (D-2054) (#365)
 - 20:26Z Plan: 3-second AI reply budget, AI waits hold no DB connection, war-games latency (D-2038) (#362)
 - 18:33Z Harness: run the start-routine smoke before the session (D-2028) (#359)
-- 15:06Z Harness: warm the smoke build before the session (D-2007) (#356)
 
 ## Progress (requirements verified)
 
