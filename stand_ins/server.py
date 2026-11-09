@@ -10,12 +10,15 @@ must be the stand-in account SID (`AC` and 32 zeros), Stripe's key must start `s
 `re_stand_in_`, Lob's `test_`, and a Claude API key starting `sk-ant-` is refused, so a real key
 put in a setting by mistake gets the vendor's 401. Paths under `/_stand_in/` drive what the vendor
 would do on its own (an inbound text, the code on the phone, a status callback, a dispute, a
-letter's next tracking step, a signed webhook for an event); a real vendor has none of them. The
+letter's next tracking step, a signed webhook for an event), and so does Stripe's
+`/v1/payment_intents/{id}/stand_in_authenticate` (the bank's 3-D Secure answer, D-1754); a real
+vendor has none of them. The
 derived key of a text travels in the `X-Askhava-Message-Key` header and the sent log is
 `GET .../Messages.json?MessageKey=` (OPS-017); the provider's own opt-out replies are listed only
 with `Direction=outbound-reply`. It binds to 127.0.0.1 only and holds fake data only.
 
-Usage: python3 -m stand_ins.server [--port 4010]
+Usage: python3 -m stand_ins.server [--port 4010]; `--port 0` binds a free port, and the
+"listening" line names the port actually bound, so a test can start it without a port race.
 """
 
 from __future__ import annotations
@@ -226,6 +229,17 @@ def stripe_create(s: StandIns, req: Request, m: re.Match[str]) -> Out:
     return (*make(stripe_params(req.form()), req.headers.get("idempotency-key")), {})
 
 
+def stripe_intent_step(s: StandIns, req: Request, m: re.Match[str]) -> Out:
+    """The on-session confirm, or the stand-in-only 3-D Secure answer (`result` pass or fail)."""
+    params = stripe_params(req.form())
+    if m.group("step") == "confirm":
+        return (*s.stripe.confirm_payment_intent(m.group("id"), params, req.headers.get("idempotency-key")), {})
+    result = params.get("result")
+    if result not in ("pass", "fail"):
+        return (*stripe.error("invalid_request_error", "parameter_invalid", "result is pass or fail", 400), {})
+    return (*s.stripe.authenticate(m.group("id"), result == "pass", int(time.time())), {})
+
+
 def stripe_fetch(s: StandIns, req: Request, m: re.Match[str]) -> Out:
     obj = s.stripe.objects.get(m.group("id"))
     if obj is None:
@@ -258,6 +272,7 @@ def ai_messages(s: StandIns, req: Request, m: re.Match[str]) -> Out:
     return ai.messages(req.json(), req.headers.get("x-stand-in-fault", ""), req.headers.get("x-stand-in-plant", ""))
 
 
+PI = r"/stripe/v1/payment_intents/(?P<id>pi_\w+)"
 Handler = Callable[[StandIns, Request, re.Match[str]], Out]
 ROUTES: list[tuple[str, re.Pattern[str], Handler]] = [
     (r, re.compile(p + r"\Z"), h)
@@ -276,6 +291,7 @@ ROUTES: list[tuple[str, re.Pattern[str], Handler]] = [
         ("POST", r"/_stand_in/lob/advance", control_lob_advance),
         ("POST", r"/_stand_in/lob/webhooks", control_lob_webhooks),
         ("POST", r"/stripe/v1/(?P<kind>customers|setup_intents|payment_intents|refunds)", stripe_create),
+        ("POST", PI + r"/(?P<step>confirm|stand_in_authenticate)", stripe_intent_step),
         ("GET", r"/stripe/v1/(payment_intents|setup_intents|customers|refunds)/(?P<id>\w+)", stripe_fetch),
         ("GET", r"/stripe/v1/events", stripe_events),
         ("POST", r"/resend/emails", resend_send),
@@ -347,7 +363,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--port", type=int, default=4010)
     port = parser.parse_args(argv).port
     server = ThreadingHTTPServer(("127.0.0.1", port), make_handler(StandIns()))
-    print(f"stand-ins listening on http://127.0.0.1:{port}", flush=True)
+    print(f"stand-ins listening on http://127.0.0.1:{server.server_address[1]}", flush=True)
     server.serve_forever()
     return 0
 

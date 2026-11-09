@@ -6,6 +6,12 @@ and signed webhooks). Amounts are integer cents; the minimum USD charge is 50 ce
 Error envelope: {"error": {"type", "code", "message", "param"?}}. Test payment methods:
 pm_card_visa succeeds; pm_card_chargeDeclined and pm_card_chargeCustomerFail decline
 (card_declined); pm_card_authenticationRequired needs 3-D Secure (authentication_required).
+A PaymentIntent created with confirm=false (FEE-047, D-1754) has status
+requires_payment_method, a client_secret and no charge; any other create charges at once (the
+older off-session shape the contract tests pin). confirm_payment_intent (on-session, FEE-014,
+FEE-016) needs an idempotency key: the success card succeeds, a decline card answers 402, and
+the 3-D Secure card answers requires_action with the client_secret, which the stand-in-only
+authenticate then settles (succeeded, or requires_payment_method on a failed approval).
 Webhook header: Stripe-Signature: t=<unix>,v1=<hex HMAC-SHA256(secret, "<t>.<payload>")>.
 """
 
@@ -30,6 +36,13 @@ DECLINES = {
     ),
 }
 KNOWN_METHODS = {"pm_card_visa", *DECLINES}
+THREE_D_SECURE = "pm_card_authenticationRequired"
+AUTH_FAILED = (
+    "payment_intent_authentication_failure",
+    "payment_intent_authentication_failure",
+    "The provided PaymentMethod has failed authentication.",
+)
+CONFIRMABLE = {"requires_payment_method", "requires_confirmation", "requires_action"}
 
 
 def error(kind: str, code: str, message: str, status: int = 400, param: str | None = None) -> Reply:
@@ -123,9 +136,11 @@ class FakeStripe:
         return self._once(idempotency_key, params, make)
 
     def create_payment_intent(self, params: dict[str, Any], idempotency_key: str | None = None) -> Reply:
-        return self._once(idempotency_key, params, lambda: self._charge(params))
+        make = self._unconfirmed if params.get("confirm") is False else self._charge
+        return self._once(idempotency_key, params, lambda: make(params))
 
-    def _charge(self, params: dict[str, Any]) -> Reply:
+    @staticmethod
+    def _amount_problem(params: dict[str, Any]) -> Reply | None:
         amount = params.get("amount")
         if not isinstance(amount, int) or isinstance(amount, bool):
             return error("invalid_request_error", "parameter_missing", "Missing required param: amount.", 400, "amount")
@@ -137,30 +152,100 @@ class FakeStripe:
             return error(
                 "invalid_request_error", "amount_too_small", "Amount must be at least $0.50 usd", 400, "amount"
             )
+        return None
+
+    def _intent(self, params: dict[str, Any], method: str | None) -> dict[str, Any]:
+        pi = self._new(
+            "pi_",
+            object="payment_intent",
+            status="requires_payment_method",
+            amount=params["amount"],
+            currency="usd",
+            customer=params["customer"],
+            payment_method=method,
+            amount_received=0,
+            amount_refunded=0,
+            metadata=params.get("metadata", {}),
+        )
+        pi["client_secret"] = f"{pi['id']}_secret_{fake_id('', self._n, 24)}"
+        return pi
+
+    def _unconfirmed(self, params: dict[str, Any]) -> Reply:
+        problem = self._amount_problem(params)
+        if problem is not None:
+            return problem
+        if params.get("customer") not in self.objects:
+            return error("invalid_request_error", "resource_missing", "No such customer", 400, "customer")
+        return 200, dict(self._intent(params, None))
+
+    def _charge(self, params: dict[str, Any]) -> Reply:
+        problem = self._amount_problem(params)
+        if problem is not None:
+            return problem
         method = params.get("payment_method")
         if method not in KNOWN_METHODS or params.get("customer") not in self.objects:
             return error("invalid_request_error", "resource_missing", "No such customer or payment method", 400)
+        pi = self._intent(params, method)
         decline = DECLINES.get(method)
-        fields = {
-            "object": "payment_intent",
-            "amount": amount,
-            "currency": "usd",
-            "customer": params["customer"],
-            "payment_method": method,
-            "amount_refunded": 0,
-            "metadata": params.get("metadata", {}),
-        }
-        if decline is None:
-            pi = self._new("pi_", status="succeeded", amount_received=amount, **fields)
-            self._event("payment_intent.succeeded", pi)
-            return 200, dict(pi)
-        pi = self._new("pi_", status="requires_payment_method", amount_received=0, **fields)
-        self._event("payment_intent.payment_failed", pi)
+        return (200, self._succeed(pi)) if decline is None else self._decline(pi, decline)
+
+    def _succeed(self, pi: dict[str, Any]) -> dict[str, Any]:
+        pi.update(status="succeeded", amount_received=pi["amount"], next_action=None, last_payment_error=None)
+        self._event("payment_intent.succeeded", pi)
+        return dict(pi)
+
+    def _decline(self, pi: dict[str, Any], decline: tuple[str, str, str]) -> Reply:
         code, decline_code, message = decline
+        pi.update(status="requires_payment_method", next_action=None)
+        pi["last_payment_error"] = {"type": "card_error", "code": code, "decline_code": decline_code}
+        self._event("payment_intent.payment_failed", pi)
         status, body = error("card_error", code, message, 402)
         body["error"]["decline_code"] = decline_code
         body["error"]["payment_intent"] = dict(pi)
         return status, body
+
+    def confirm_payment_intent(
+        self, intent_id: str, params: dict[str, Any], idempotency_key: str | None = None
+    ) -> Reply:
+        """On-session confirm under one attempt's key (FEE-016); a repeat of the key replays."""
+        if not idempotency_key:
+            return error("invalid_request_error", "idempotency_key_missing", "Every confirm needs an Idempotency-Key.")
+        scoped = {"confirm": intent_id, **params}
+        return self._once(idempotency_key, scoped, lambda: self._confirm(intent_id, params))
+
+    def _confirm(self, intent_id: str, params: dict[str, Any]) -> Reply:
+        pi = self.objects.get(intent_id)
+        if pi is None or pi.get("object") != "payment_intent":
+            return error("invalid_request_error", "resource_missing", "No such payment_intent", 404, "intent")
+        method = params.get("payment_method")
+        if method not in KNOWN_METHODS:
+            return error("invalid_request_error", "resource_missing", "No such PaymentMethod", 400, "payment_method")
+        if pi["status"] not in CONFIRMABLE:
+            return error(
+                "invalid_request_error", "payment_intent_unexpected_state", "This PaymentIntent cannot be confirmed."
+            )
+        pi["payment_method"] = method
+        if method == THREE_D_SECURE:
+            pi.update(status="requires_action", next_action={"type": "use_stripe_sdk"})
+            self._event("payment_intent.requires_action", pi)
+            return 200, dict(pi)
+        decline = DECLINES.get(method)
+        return (200, self._succeed(pi)) if decline is None else self._decline(pi, decline)
+
+    def authenticate(self, intent_id: str, passed: bool, timestamp: int) -> Reply:
+        """Stand-in only: the bank's 3-D Secure answer settles a requires_action intent and
+        returns it with the signed delivery of the event it emitted."""
+        pi = self.objects.get(intent_id)
+        if pi is None or pi.get("object") != "payment_intent":
+            return error("invalid_request_error", "resource_missing", "No such payment_intent", 404, "intent")
+        if pi["status"] != "requires_action":
+            return error(
+                "invalid_request_error", "payment_intent_unexpected_state", "This PaymentIntent needs no approval."
+            )
+        status, body = (200, self._succeed(pi)) if passed else self._decline(pi, AUTH_FAILED)
+        payload, signature = self.webhook(self.events[-1], timestamp)
+        settled = body if status == 200 else body["error"]["payment_intent"]
+        return 200, {"payment_intent": settled, "payload": payload, "headers": {"stripe-signature": signature}}
 
     def create_refund(self, params: dict[str, Any], idempotency_key: str | None = None) -> Reply:
         return self._once(idempotency_key, params, lambda: self._refund(params))
