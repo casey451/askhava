@@ -10592,7 +10592,8 @@
     "T155",
     "T254",
     "T085",
-    "T261"
+    "T261",
+    "T300"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -15615,6 +15616,84 @@
    "branch": "claude/task/T299-ai-intake-wiring",
    "prompt": "kit/prompts/T299.md",
    "acceptance": "TD-AI-24 and TD-AI-25 pass against PostgreSQL and the stand-ins; every existing inbound-route, web-chat and `ai_budget` case passes unchanged; no app code awaits an AI call inside the webhook's transaction or while holding a database connection; the hand-in names the commit and tests that close IC-23."
+  },
+  {
+   "id": "T300",
+   "slug": "business-portal-served",
+   "title": "server and portals: the business portal is served behind the business session (home, a released job's page, billing and statements, notice settings)",
+   "goal": "No task serves the business portal (D-2116, D-2117): `server::build_router` merges no `/b` page, and `portals` exports the portal home, the released job's page, billing with its CSV statement and notice settings only as page functions with route constants (D-1728, D-1848, D-1896). (1) `app/server/src/business_portal.rs` builds the routes `GET /b` (`business_home_page`), `POST /b/open-cards` (`save_open_cards_times`), `GET /b/picks/{pick}` (`job_release_page`, which reads `picks::api::released_view` on every load with the session proof from `server::session_minter()`, D-1739), `GET /b/billing` (`billing_page`) and `GET /b/billing/statement.csv` (`statement_csv`), and `GET` and `POST /b/notices` (`notice_settings_page`, `change_channel`; the addresses read from the vault in `server`, D-1848), each page's facts built through each module's `api`; it merges them in the shared `app/server/src/lib.rs` and composes them in `main.rs`. Every route reads the person with `portals::api::business_principal`: no business person (signed out, a homeowner or owner session, a removed member) gets a 4xx answer with a link to `/b/sign-in` and no homeowner detail, so T085's signed-out checks in `tests/e2e/business_portal.spec.ts` stay true; a refusal (another business's pick, a role the page needs missing, an unknown ID) is the one not-found answer; every response is `no_store` (SEC-034); both `POST`s pass `refuse_cross_site` and the CSRF check (SEC-009, SEC-042), and a refusal is a security event (SEC-048). (2) Each served `GET` page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788), and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. (3) Tests: `app/server/tests/business_portal_route.rs` against the assembled router (TD-SEC-43 and the router half of TD-BIZ-42) and `tests/e2e/business_portal_served.spec.ts` (the browser half of TD-BIZ-42; T085's spec is not changed, D-2117). The complaints page, the \"Why was I charged?\" page, the emergency-email switch and business sign-up are not this task's. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "server",
+   "deps": [
+    "T280",
+    "T085",
+    "T253",
+    "T195",
+    "T196"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "privacy"
+   ],
+   "owns": [
+    "app/server/src/business_portal.rs",
+    "app/server/tests/business_portal_route.rs",
+    "tests/e2e/business_portal_served.spec.ts"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/security.md",
+    "docs/spec/businesses.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/job-cards.md",
+    "docs/spec/accessibility.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "SEC-004",
+    "SEC-009",
+    "SEC-024",
+    "SEC-034",
+    "SEC-042",
+    "SEC-048",
+    "BIZ-013",
+    "BIZ-015",
+    "BIZ-025",
+    "BIZ-036",
+    "PICK-024",
+    "CARD-022"
+   ],
+   "tests": [
+    "TD-SEC-43",
+    "TD-BIZ-42"
+   ],
+   "decisions": [
+    "D-1728",
+    "D-1739",
+    "D-1848",
+    "D-1896",
+    "D-2117"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 600,
+    "context_pct": 14
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T300-business-portal-served",
+   "prompt": "kit/prompts/T300.md",
+   "acceptance": "TD-SEC-43 and TD-BIZ-42 pass against PostgreSQL through the assembled router and in Playwright against the stand-ins, and `Ally` passes with the new page states; every T084, T085, T195, T196, T253, T254 and T280 case still passes, T085's `tests/e2e/business_portal.spec.ts` unchanged."
   },
   {
    "id": "T237",

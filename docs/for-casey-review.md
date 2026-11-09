@@ -6,6 +6,7 @@ These are decisions Claude made on its own and logged so the build never waits (
 
 - **What changed.** The register of hand-offs between parts of the system (`docs/integration-closure.md`) had fourteen security, money and privacy rows whose tasks had all finished but were still marked open, which would have stopped stage 4 from finishing. Each was checked against the merged code and its tests, and all fourteen are now closed with the merge and the tests that prove them: first texts racing, a business phone's STOP, names kept out of what the AI would see, refunds, Stripe's events, paid and free picks releasing their details, the business seeing them again, the masked line's retry, the card-confirm flow against the pretend Stripe, call PINs, a changed public record, the coverage floor, the register check itself, and business texts asking for consent at send time.
 - **One gap reported to the overseer.** No task yet puts the business portal's pages on the live site (the released job's page, the portal home, notice settings). The code behind them is built and tested, but a business can't open them in a browser until a task serves them; the business journey test (T099) will need it. The overseer will name the task.
+- **Gap closed (D-2117).** The business portal had no task serving it; a new task, T300, now does (home, a released job's page, billing and statements, notice settings), and the business journey test waits for it. No effect on dates beyond one more task.
 - **Nothing needs you.**
 
 ## Connecting the app to the AI (D-2065, November 8)
