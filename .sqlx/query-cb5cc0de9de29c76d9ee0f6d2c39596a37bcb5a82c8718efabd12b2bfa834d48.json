@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO privacy.read_count (hour, action, reads) SELECT $1::timestamptz - make_interval(hours => h), $2, $3 FROM generate_series(1, $4) AS h",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Timestamptz",
+        "Text",
+        "Int4",
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "cb5cc0de9de29c76d9ee0f6d2c39596a37bcb5a82c8718efabd12b2bfa834d48"
+}

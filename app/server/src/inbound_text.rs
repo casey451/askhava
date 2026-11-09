@@ -11,7 +11,10 @@
 //! only (D-1311).
 //!
 //! An inbound text runs, in order and once per MessageSid: `messaging::api::receive_inbound`
-//! (a repeat stops here), `privacy::api::read_inbound` (the raw `Body` goes no further),
+//! (a repeat stops here), the sender's lookup (blind index only), `privacy::api::read_inbound_for`
+//! (a homeowner's text, scrubbed with her vault name and the names she stated before, AI-003,
+//! AI-020, D-1752) or `read_inbound` (a business phone's, empty context; the raw `Body` goes no
+//! further),
 //! `messaging::api::on_inbound_text` (an opt-out stops here, CON-008),
 //! `messaging::api::reply_to_help` (HELP, INFO, AYUDA: the reply is queued, also to a listed
 //! number, and nothing else runs; any other text from a listed number stops here, CON-016),
@@ -40,8 +43,8 @@ use askhava_messaging::api::{
     sender_business,
 };
 use askhava_privacy::api::{
-    CommonWords, InboundWords, Known, NameMemory, NewContact, Vault, VaultError, find_by_phone,
-    read_inbound, store_contact,
+    CommonWords, Inbound as Read, InboundWords, Known, NameMemory, NewContact, Vault, VaultError,
+    find_by_phone, read_inbound, read_inbound_for, store_contact,
 };
 use axum::Router;
 use axum::body::Bytes;
@@ -211,9 +214,10 @@ async fn text(
         (Some(from), Some(to)) => (from, to),
         _ => return Err(Halt::Ends("no_number")),
     };
-    let read = read(field(hook, "Body").unwrap_or_default());
-    let words = read.text.as_str();
     let (contact, relation) = sender(db, &h.vault, from).await?;
+    let raw = field(hook, "Body").unwrap_or_default();
+    let read = read(h, db, raw, (contact, relation)).await?;
+    let words = read.text.as_str();
     let emergency = matches!(check(words, false), Check::Match(_));
     let msg = InboundText {
         inbox_id,
@@ -292,8 +296,16 @@ async fn screen(
 }
 
 /// The reader over the raw text: the sole-word flags and the scrubbed words (PRIV-026, AI-002).
-/// The emergency flag is `intake`'s own screen of the scrubbed words (INT-002, INT-026).
-fn read(raw: &str) -> askhava_privacy::api::Inbound {
+/// A homeowner's text is scrubbed with her vault name and the names she stated in earlier texts,
+/// inside this delivery's transaction, so a resent delivery is read and audited again (AI-003,
+/// AI-020, D-1752); a business phone's text with an empty context. The emergency flag is
+/// `intake`'s own screen of the scrubbed words (INT-002, INT-026).
+async fn read(
+    h: &Webhooks,
+    db: &mut PgConnection,
+    raw: &str,
+    (contact, relation): (Uuid, Relation),
+) -> Step<Read> {
     let opt_out: Vec<&str> = PROVIDER_OPT_OUT_WORDS
         .iter()
         .chain(&APP_OPT_OUT_WORDS)
@@ -305,12 +317,22 @@ fn read(raw: &str) -> askhava_privacy::api::Inbound {
         help: &HELP_WORDS,
         start: &RESUBSCRIBE_WORDS,
     };
-    let common = CommonWords::default();
-    let known = Known {
-        common: &common,
-        vault_name: None,
-    };
-    read_inbound(raw, &words, &known, &mut NameMemory::default())
+    if relation == Relation::Business {
+        let common = CommonWords::default();
+        let known = Known {
+            common: &common,
+            vault_name: None,
+        };
+        return Ok(read_inbound(
+            raw,
+            &words,
+            &known,
+            &mut NameMemory::default(),
+        ));
+    }
+    read_inbound_for(db, &h.vault, contact, raw, &words)
+        .await
+        .map_err(vault_halt)
 }
 
 /// Who wrote from `from`: a linked business phone's business (D-492), else the homeowner's vault

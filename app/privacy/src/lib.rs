@@ -17,6 +17,7 @@ mod readback_reader;
 mod reader;
 mod released_reader;
 mod scrub;
+mod scrub_context;
 mod vault;
 
 #[cfg(test)]
