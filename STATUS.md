@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-09T05:56:08Z by runner 8c370a378133 (actions).
+Updated 2026-11-09T06:09:51Z by runner 8c370a378133 (actions).
 
 **Idle since 05:54Z; 164 of 286 done; week 59% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-09T05:56:08Z by runner 8c370a378133 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 05:54Z (no task in progress)
 - **Week:** 59% used, 78.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:56Z, 0 min before this update
-- **Keeper:** last ran 05:56Z, next wake 06:16Z
+- **Last run:** 05:56Z, 13 min before this update
+- **Keeper:** last ran 06:09Z, next wake 06:29Z
 
 ## Needs attention
 - Strict plan check red: 32 problem(s) on tasks still to run (+37 on DONE tasks); first: T255: stored context_pct 25% but it measures 33%; regenerate
@@ -32,13 +32,7 @@ Updated 2026-11-09T05:56:08Z by runner 8c370a378133 (actions).
 | T148 | portals: secure email action links for every former text key | done | 1 | 56 min | 06:57Z |  |
 
 ### Plan and harness merges on main
-- 22:20Z Plan: wire the real AI into the app — T298 endpoint client, T299 intake wiring (D-2065) (#367)
-- 21:52Z Plan: vendor-call connection audit, war-games overload scenario (T297) (D-2054) (#365)
-- 20:26Z Plan: 3-second AI reply budget, AI waits hold no DB connection, war-games latency (D-2038) (#362)
-- 18:33Z Harness: run the start-routine smoke before the session (D-2028) (#359)
-- 15:06Z Harness: warm the smoke build before the session (D-2007) (#356)
-- 10:55Z Harness: retry release downloads; backup job's coverage tools best-effort (D-1986) (#352)
-- 07:39Z harness: chain the next cycle at once after the first smoke timeout on a head (D-1970) (#349)
+- none
 
 ## Progress (requirements verified)
 
