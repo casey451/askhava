@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-08T22:56:33Z by runner 3b88271ddf7d (actions).
+Updated 2026-11-09T00:16:55Z by runner 402619d3e62f (actions).
 
 **Building: T258 in progress since 22:56Z; 160 of 286 done; week 57% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,11 @@ Updated 2026-11-08T22:56:33Z by runner 3b88271ddf7d (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T258 claimed 22:56Z, lease until 01:56Z
 - **Week:** 57% used, 80.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:44Z, 12 min before this update
+- **Last run:** 22:56Z, 80 min before this update
 - **Keeper:** last ran 22:44Z, next wake 23:04Z
 
 ## Needs attention
-- Strict plan check red: 25 problem(s) on tasks still to run (+25 on DONE tasks); first: T255: stored context_pct 25% but it measures 33%; regenerate
+- Strict plan check red: 30 problem(s) on tasks still to run (+31 on DONE tasks); first: T258: stored context_pct 35% but it measures 43%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -30,7 +30,6 @@ Updated 2026-11-08T22:56:33Z by runner 3b88271ddf7d (actions).
 | T291 | core and checks: one brand file the app and the build's chec | done | 1 | 44 min | 03:16Z |  |
 | T087 | portals: homeowner portal (phone and code), own data, no for | done | 1 | 46 min | 02:04Z |  |
 | T086 | portals: owner password, passkey or TOTP, recovery codes, 12 | done | 1 | 54 min | 00:56Z |  |
-| T195 | portals: business billing and statements from the ledger | done | 1 | 48 min | 23:28Z |  |
 
 ### Plan and harness merges on main
 - 22:20Z Plan: wire the real AI into the app — T298 endpoint client, T299 intake wiring (D-2065) (#367)
