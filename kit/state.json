@@ -24069,11 +24069,11 @@
      "result": "check_failed"
     }
    ],
-   "reviewed_sha": "44be0f583e206e3a18250a7d7cf53b769f9180c6",
+   "reviewed_sha": "89017132e0bdfd638210d7f7ed8dddd5f953cc4a",
    "review_lease": {
     "task": "T282",
-    "session": "actions-42597501939",
-    "expires": "2026-11-09T13:21:49Z"
+    "session": "actions-42605771807",
+    "expires": "2026-11-09T14:33:38Z"
    },
    "branch": "claude/task/T282-call-start-times",
    "auto_merge": {
@@ -24084,7 +24084,8 @@
    "last_failure": "Ci: failure; Checks: failure\nChecks failed at step: Rust dependency audit (cargo-audit, cargo-deny)\nDate:      2026-10-30\nID:        RUSTSEC-2026-0459\nURL:       https://rustsec.org/advisories/RUSTSEC-2026-0459\nSeverity:  6.8 (medium)\nSolution:  Upgrade to >=0.39.0\nerror: 1 vulnerability found!\nwarning: 1 allowed warning found\nCrate:     basic-toml\nVersion:   0.1.10\nWarning:   unmaintained\nTitle:     `basic-toml` is unmaintained\nDate:      2026-09-26\nID:        RUSTSEC-2026-0374\nURL:       https://rustsec.org/advisories/RUSTSEC-2026-0374\n##[error]Process completed with exit code 1.\nCi failed at step: All three jobs passed\nChecks: failure, Coverage: success, E2e: success\n##[error]Process completed with exit code 1.",
    "runner_closed_prs": [
     381
-   ]
+   ],
+   "head_check_since": null
   },
   {
    "id": "T270",
@@ -26352,7 +26353,7 @@
    }
   }
  },
- "updated_at": "2026-11-09T11:41:01Z",
+ "updated_at": "2026-11-09T12:06:04Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -26450,7 +26451,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "be12992464767ee6860da1aa4ad7b7b7ea246c31",
+ "runner_sha": "89017132e0bdfd638210d7f7ed8dddd5f953cc4a",
  "starter": "actions",
  "smoke_runs": [
   {

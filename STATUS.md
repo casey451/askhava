@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-09T11:41:01Z by runner be1299246476 (actions).
+Updated 2026-11-09T12:06:04Z by runner 89017132e0bd (actions).
 
 **Building: T282 in progress since 11:33Z; 169 of 297 done; week 61% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-09T11:41:01Z by runner be1299246476 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T282 claimed 11:33Z, lease until 14:33Z
 - **Week:** 61% used, 72.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:13Z, 27 min before this update
+- **Last run:** 11:41Z, 25 min before this update
 - **Keeper:** last ran 11:13Z, next wake 11:33Z
 
 ## Needs attention
@@ -32,7 +32,6 @@ Updated 2026-11-09T11:41:01Z by runner be1299246476 (actions).
 | T254 | server and picks: the production release (paid or free, mint | done | 1 | 84 min | 19:24Z |  |
 | T150 | picks and quotes: EMERGENCY card and pick emails with the em | done | 1 | 54 min | 16:04Z |  |
 | T198 | messaging and portals: daily open-cards email, missed-card a | done | 1 | 71 min | 14:02Z |  |
-| T149 | businesses: sign-up deliverability check with a sample card, | done | 1 | 43 min | 12:00Z |  |
 
 ### Plan and harness merges on main
 - 22:20Z Plan: wire the real AI into the app — T298 endpoint client, T299 intake wiring (D-2065) (#367)
