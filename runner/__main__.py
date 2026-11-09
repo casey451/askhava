@@ -215,11 +215,11 @@ def build(args: argparse.Namespace, outbox_dir: Path) -> tuple[cycle.Config, Git
     return cfg, env
 
 
-def run_to_limit_now() -> Callable[[datetime], bool]:
-    """The pacer's run-to-limit switch: kit/runner.json's model window with `run_to_limit`, read at each
-    claim's moment (D-2220); False outside it or with no window."""
+def run_to_limit_now() -> Callable[[datetime, st.State], bool]:
+    """The pacer's run-to-limit switch: kit/runner.json's model window with `run_to_limit`, judged at each
+    claim's moment and state (D-2220); False outside it, once the limit closed it, or with no window."""
     window = model_window.load(ROOT / "kit" / "runner.json")
-    return lambda now: model_window.run_to_limit(window, now)
+    return lambda now, state: model_window.run_to_limit(window, now, state)
 
 
 def plan_health_checker(root: Path, kit: dict[str, Any]) -> Callable[[st.State, str], list[str]] | None:
@@ -523,7 +523,11 @@ def usage_reading(path: Path, env: GitHubEnv) -> str:
     if not found:
         return "usage_reading_none"
     now = now_utc()
-    if env.update_state(lambda fresh: reading_mod.record(fresh, found, now)) is None:
+    window = model_window.load(ROOT / "kit" / "runner.json")
+    note = window_ended_note(window, model_window.close_on_limit(reading_mod.record(env.read_state(), found, now), window, now)[1], env)
+    if env.update_state(lambda fresh: model_window.close_on_limit(reading_mod.record(fresh, found, now), window, now)[0]) is None:
+        if note:
+            note.unlink(missing_ok=True)
         return "lost_race"
     windows = ", ".join(f"{w} {found[w]['utilization']:.0%}" for w in ("week", "five_hour") if w in found)
     return f"usage_reading_recorded: {windows}"
@@ -576,6 +580,16 @@ def session_model(args: argparse.Namespace) -> int:
     print(f"model={model}")
     print(f"windowed={'true' if model != model_window.SESSION_MODEL else 'false'}")
     return 0
+
+
+def window_ended_note(window: model_window.Window | None, why: str, env: GitHubEnv) -> Path | None:
+    """When `--usage-reading`'s reading closes the model window at the limit (D-2220): the outbox item
+    `model-window-ended`, written before the state write so that write carries it; None otherwise."""
+    if not why or window is None:
+        return None
+    title, body = model_window.ended_note(window, why)
+    print(f"runner: model window: {window['model']} ended at the usage limit ({why})")
+    return outbox_mod.write_outbox(env.outbox_dir, model_window.ENDED_OUTBOX_ID, title, "info", body)
 
 
 def keeper_armed(minutes: int, env: GitHubEnv) -> str:

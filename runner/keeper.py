@@ -100,8 +100,8 @@ def wake_after(state: Doc, lease_doc: Doc, now: datetime, last: str = "", to_lim
     nothing to claim: the soonest `retry_after` + RESET_MARGIN, else CAP_MINUTES, so an idle build does
     not start a Claude session every IDLE_MINUTES. `last`, the result the arming cycle itself reported,
     overrides the state's guess: after `idle` (nothing it could claim) the short sleep is never used.
-    `to_limit` (default: kit/runner.json's model window with `run_to_limit` active now, D-2220) moves the
-    week stop from WEEK_STOP to the real limit."""
+    `to_limit` (default: kit/runner.json's model window with `run_to_limit` active now and, with `end_on_limit`,
+    not yet closed by the limit, D-2220) moves the week stop from WEEK_STOP to the real limit."""
     if state.get("unreadable") or lease_doc.get("unreadable"):
         return IDLE_MINUTES, "claude/kit-state or claude/lease could not be read: look again"
     why = blocker(state)
@@ -114,7 +114,7 @@ def wake_after(state: Doc, lease_doc: Doc, now: datetime, last: str = "", to_lim
     until = pacer_until(state, now)
     if until is not None:
         return _minutes(until - now, RESET_MARGIN), f"the pacer waits until {st.iso(until)}"
-    limit = model_window.run_to_limit(model_window.load(), now) if to_limit is None else to_limit
+    limit = model_window.run_to_limit(model_window.load(), now, state) if to_limit is None else to_limit
     reset = week_stop(state, now, limit)
     if reset is not None:
         return _minutes(reset - now, RESET_MARGIN), f"the week stopped at its limit; it resets {st.iso(reset)}"

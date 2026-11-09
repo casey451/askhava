@@ -29,8 +29,10 @@ FABLE = "claude-fable-5-1"
 REFUSAL = "There's an issue with the selected model (claude-fable-5-1). It may not exist or you may not have access to it."
 
 
-def window(start: datetime = NOW - timedelta(hours=1), until: datetime | None = None, run_to_limit: bool = True) -> dict[str, Any]:
-    raw = {"model": FABLE, "alias": "fable", "from": st.iso(start), "until": st.iso(until) if until else None, "run_to_limit": run_to_limit}
+def window(start: datetime = NOW - timedelta(hours=1), until: datetime | None = None, run_to_limit: bool = True,
+           end_on_limit: bool = False) -> dict[str, Any]:
+    raw = {"model": FABLE, "alias": "fable", "from": st.iso(start), "until": st.iso(until) if until else None,
+           "run_to_limit": run_to_limit, "end_on_limit": end_on_limit}
     found = mw.parse_window(raw)
     assert found is not None
     return found
@@ -81,6 +83,7 @@ def test_the_repository_window_is_caseys_thursday_switch() -> None:
     win = mw.load()
     assert win is not None and win["model"] == FABLE and win["alias"] == "fable"
     assert st.iso(win["from"]) == "2026-11-12T17:00:00Z" and win["until"] is None and win["run_to_limit"] is True
+    assert win["end_on_limit"] is True
     reset = st.parse("2026-11-12T17:00:00Z")
     assert not mw.in_window(win, reset - timedelta(seconds=1)) and mw.in_window(win, reset)
     assert mw.session_model(win, reset - timedelta(seconds=1), None) == "claude-sonnet-5-5"
@@ -408,7 +411,7 @@ def test_the_pacer_runs_to_the_limit_only_inside_the_window(tmp_path: Path, monk
     task = make_task("T001", owns=[])
     win = window(NOW, NOW + timedelta(hours=1))
     plain = pacing.make_pacer([task], tmp_path, cfg)
-    switched = pacing.make_pacer([task], tmp_path, cfg, run_to_limit=lambda now: mw.run_to_limit(win, now))
+    switched = pacing.make_pacer([task], tmp_path, cfg, run_to_limit=lambda now, state: mw.run_to_limit(win, now, state))
     state = _over_the_headroom()
     assert switched(state, task, NOW)[0] == "claim" and plain(state, task, NOW)[0] == "wait"
     for when in (NOW - timedelta(seconds=1), NOW + timedelta(hours=1)):  # before `from`, at `until`
@@ -420,7 +423,7 @@ def test_the_pacer_runs_to_the_limit_only_inside_the_window(tmp_path: Path, monk
 def test_the_runner_wires_the_pacer_switch_to_kit_runner_json() -> None:
     switch = entry.run_to_limit_now()
     reset = st.parse("2026-11-12T17:00:00Z")
-    assert switch(reset) is True and switch(reset - timedelta(seconds=1)) is False
+    assert switch(reset, st.new_state()) is True and switch(reset - timedelta(seconds=1), st.new_state()) is False
 
 
 def test_the_keeper_stops_at_the_real_limit_inside_the_window() -> None:
@@ -449,3 +452,101 @@ def test_check_state_accepts_the_new_values_and_rejects_bad_ones() -> None:
     bad = st.with_task(good, "T001", window_model={"model": "fable"})
     assert any("window_model" in p for p in cs.check(bad))
     assert any("model_window_refused" in p for p in cs.check(dict(good, model_window_refused={"model": FABLE})))
+
+
+# ---- the window ends at the first limit inside it (end_on_limit)
+
+
+def _hit(state: st.State, at: datetime) -> st.State:
+    out = copy.deepcopy(state)
+    out.setdefault("usage", {})["limit_hit"] = {"task": "T009", "at": st.iso(at), "reset_at": st.iso(at + timedelta(hours=1))}
+    return out
+
+
+def _read(state: st.State, at: datetime, week: float, five_hour: float | None = None) -> st.State:
+    out = copy.deepcopy(state)
+    reading: dict[str, Any] = {"at": st.iso(at), "week": {"utilization": week, "resets_at": st.iso(NOW + timedelta(days=3))}}
+    if five_hour is not None:
+        reading["five_hour"] = {"utilization": five_hour, "resets_at": st.iso(at + timedelta(hours=2))}
+    out.setdefault("usage", {})["session_reading"] = reading
+    return out
+
+
+def test_the_window_closes_on_the_first_limit_and_the_next_claim_uses_the_task_model(tmp_path: Path) -> None:
+    win = window(end_on_limit=True)
+    graph = [make_task("T001"), make_task("T002")]
+    env = FakeEnv(lambda t, m, log: cycle.WorkerResult("usage_limit"))
+    cfg = windowed(graph, tmp_path, win)
+    assert cycle.run_cycle(cfg, env, NOW) == st.RETRY_AFTER_RESET  # the limit, hit on the window's model
+    assert env.runs[0][1] == FABLE and mw.closed(win, env.store)
+    assert mw.session_model(win, NOW, env.store) == "claude-sonnet-5-5" and not mw.run_to_limit(win, NOW, env.store)
+    env.worker = lambda t, m, log: cycle.WorkerResult("submitted", [f"app/{t['id'].lower()}/x.py"], [m])
+    later = NOW + timedelta(hours=2)  # past the hit's reset
+    assert cycle.run_cycle(dataclasses.replace(cfg, clock=lambda: later), env, later) == st.MERGE_PENDING
+    assert env.runs[-1][1] == MODELS["sonnet"] and "window_model" not in st.entry(env.store, env.runs[-1][0])
+    assert env.store["model_window_ended"] == {"model": FABLE, "from": st.iso(win["from"]), "at": st.iso(later), "why": "limit"}
+    note = (tmp_path / f"{mw.ENDED_OUTBOX_ID}.md").read_text(encoding="utf-8")
+    assert "kind: info" in note and "back on the plan's models" in note
+    assert cs.check(env.store) == []
+    # It stays closed once recorded, even when a fresh reading after Casey's reset shows the week near zero.
+    reset = _read(env.store, later + timedelta(hours=1), 0.02)
+    assert mw.closed(win, reset) and mw.session_model(win, later + timedelta(hours=1), reset) == "claude-sonnet-5-5"
+
+
+def test_a_week_reading_at_100_inside_closes_it_and_a_five_hour_limit_does_not() -> None:
+    win = window(end_on_limit=True)
+    assert mw.limit_inside(win, _read(st.new_state(), NOW, 1.0)).startswith("the week read 100%")
+    five = _read(_hit(st.new_state(), NOW), NOW + timedelta(minutes=5), 0.6, five_hour=1.0)
+    assert mw.limit_inside(win, five) == "" and not mw.closed(win, five)  # the hit was the five-hour limit
+    assert mw.limit_inside(win, _hit(st.new_state(), NOW)).startswith("a usage limit was hit")
+    assert mw.close_on_limit(st.new_state(), win, NOW) == (st.new_state(), "")
+    assert not mw.closed(window(end_on_limit=False), _read(st.new_state(), NOW, 1.0))  # without end_on_limit: runs on
+
+
+def test_a_limit_before_from_does_not_close_a_future_window() -> None:
+    win = window(NOW, end_on_limit=True)
+    old = _read(_hit(st.new_state(), NOW - timedelta(hours=2)), NOW - timedelta(minutes=1), 1.0)
+    assert mw.limit_inside(win, old) == "" and not mw.closed(win, old)
+    assert mw.close_on_limit(old, win, NOW)[1] == ""
+    assert mw.session_model(win, NOW, old) == FABLE and mw.run_to_limit(win, NOW, old)
+    other = window(NOW - timedelta(hours=3), end_on_limit=True)  # a different window: the same limit closes it
+    ended, _ = mw.close_on_limit(old, other, NOW)
+    assert mw.closed(other, ended) and not mw.closed(win, ended)  # the record names its own `from`
+
+
+def test_after_the_window_closes_the_pacer_is_back_to_normal(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("PACING_QUOTA_CMD", raising=False)
+    cfg = dict(pacing.load_config(), quota_cmd_default="")
+    task = make_task("T001", owns=[])
+    win = window(end_on_limit=True)
+    plain = pacing.make_pacer([task], tmp_path, cfg)
+    switched = pacing.make_pacer([task], tmp_path, cfg, run_to_limit=lambda now, state: mw.run_to_limit(win, now, state))
+    open_state = _over_the_headroom()  # its 97.5% reading was taken inside the window
+    assert switched(open_state, task, NOW)[0] == "claim"
+    full = _read(open_state, NOW - timedelta(minutes=10), 1.0)
+    ended, _ = mw.close_on_limit(full, win, NOW)
+    assert switched(ended, task, NOW) == plain(ended, task, NOW) and plain(ended, task, NOW)[0] == "wait"
+    # The stale 100% reading still holds; a fresh one after Casey's reset lets the build go at normal pace.
+    fresh = _read(ended, NOW + timedelta(hours=1), 0.01)
+    fresh["usage"]["windows"] = {}
+    later = NOW + timedelta(hours=1, minutes=5)
+    assert switched(fresh, task, later) == plain(fresh, task, later) and plain(fresh, task, later)[0] == "claim"
+    assert kp.wake_after({**ended, "backup_runner": "on"}, {}, NOW)[1].startswith("the week stopped")  # the 97% stop is back
+
+
+def test_the_usage_reading_command_closes_the_window(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    reset = st.parse("2026-11-12T17:00:00Z")  # the repository's own window
+    monkeypatch.setattr(entry, "now_utc", lambda: reset + timedelta(hours=30))
+    env = FakeEnv()
+    env.outbox_dir = tmp_path  # type: ignore[attr-defined]  # reason: GitHubEnv's outbox folder
+    execution = tmp_path / "execution.json"
+    event = {"type": "rate_limit_event", "rate_limit_info": {"unifiedWindows": {"seven_day": {"utilization": 1.0, "resetsAt": 1795000000}}}}
+    execution.write_text(json.dumps([event]))
+    assert entry.usage_reading(execution, env).startswith("usage_reading_recorded")  # type: ignore[arg-type]  # reason: FakeEnv
+    assert env.store["model_window_ended"]["why"] == "limit" and (tmp_path / f"{mw.ENDED_OUTBOX_ID}.md").exists()
+
+
+def test_until_still_ends_an_end_on_limit_window() -> None:
+    win = window(NOW - timedelta(hours=2), NOW, end_on_limit=True)
+    assert mw.session_model(win, NOW, st.new_state()) == "claude-sonnet-5-5" and not mw.run_to_limit(win, NOW, st.new_state())
+    assert mw.session_model(win, NOW - timedelta(minutes=1), st.new_state()) == FABLE

@@ -1240,6 +1240,7 @@ def _next_step(cfg: Config, env: Env, state: State, base: State, now: datetime, 
                 return "smoke_env" if state == base or env.push_state(state, base) else "lost_race"
             red = set_main_red(state, cfg, "smoke", head, offending_merge(state), now)
             return "main_red" if env.push_state(red, base) else "lost_race"
+    state = close_window_on_limit(cfg, state, now)  # D-2220: unchanged unless the limit just closed the window
     task, state = _paced_pick(cfg, state, ids, now)
     if task is None:
         return "paced" if state == base or env.push_state(state, base) else "lost_race"
@@ -1917,7 +1918,18 @@ def after_handoff(cfg: Config, env: Env, res_for: Callable[[dict[str, Any]], Wor
     return hold(res) or finish(cfg, env, state, task, res, model, cfg.clock())
 
 
-# ---- the model window's fallback (D-2220)
+# ---- the model window's fallback and its end at the limit (D-2220)
+
+
+def close_window_on_limit(cfg: Config, state: State, now: datetime) -> State:
+    """Before a claim: an `end_on_limit` window whose limit now shows in the state is recorded as ended, with the
+    outbox item `model-window-ended`, in the write the claim or the pacer makes; the state is unchanged otherwise."""
+    closed, why = model_window.close_on_limit(state, cfg.model_window, now)
+    if why and cfg.model_window is not None:
+        title, body = model_window.ended_note(cfg.model_window, why)
+        outbox.write_outbox(cfg.outbox_dir, model_window.ENDED_OUTBOX_ID, title, "info", body)
+        print(f"runner: model window: {cfg.model_window['model']} ended at the usage limit ({why})")
+    return closed
 
 
 def model_fallback(cfg: Config, env: Env, why: str) -> str:

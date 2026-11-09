@@ -6,7 +6,7 @@ to opus. Its just to get more tokens out of the week for the build series." The 
 not touched: the window is one key of kit/runner.json, read at run time,
 
     "model_window": {"model": "claude-fable-5-1", "alias": "fable", "from": "2026-11-12T17:00:00Z",
-                     "until": null, "run_to_limit": true}
+                     "until": null, "run_to_limit": true, "end_on_limit": true}
 
 `model` is the full ID the session transcripts record (what verify.check_model compares), `alias` the name
 the worker call (the Agent tool) takes (D-170); `from` and `until` are UTC instants, the window being
@@ -21,6 +21,15 @@ While `now` is inside the window:
 - the orchestrating session's `--model` (backup-runner.yml, `python3 -m runner --session-model`);
 - with `run_to_limit`, the pacer (scripts/pacing.py) and the keeper (runner/keeper.py) drop the headroom
   and the 97% week stop: they hold only for a recorded usage-limit hit or a real reading at 100%.
+
+With `end_on_limit`, the window closes by itself the first time the runner records the plan's limit inside
+it: a `usage.limit_hit` taken in [from, until) (unless a session reading taken at or after it shows the week
+under 100%: that hit was the five-hour limit), or a session reading taken in [from, until) with the week at
+100%. The runner records `model_window_ended` = {model, from, at, why: "limit"} and the outbox item
+`model-window-ended` (`close_on_limit`, at a cycle's claim and at `--usage-reading`); from then on that
+window (the same model and `from`) changes no model and `run_to_limit` stops: pacing is back to its own
+rules (headroom, the 97% stop), which still wait out the stale 100% reading until a fresh one shows Casey's
+reset. Casey's words: Fable only until the week's usage runs out, then a reset, then back to Opus.
 
 A model the CLI or the worker call refuses is not the task's failure: the session runs the attempt on the
 task's own models and hands in with `--model-fallback "<error>"`, or the job's step after the session finds
@@ -47,6 +56,8 @@ from runner import state as st
 SETTINGS = Path(__file__).resolve().parent.parent / "kit" / "runner.json"
 SESSION_MODEL = "claude-sonnet-5-5"  # the orchestrating session's model outside a window (BUILD_BRIEF.md:500)
 REFUSED = "model_window_refused"  # the state key a refused window leaves (kit/state_schema.json)
+ENDED = "model_window_ended"  # the state key a window closed by the limit leaves (kit/state_schema.json)
+ENDED_OUTBOX_ID = "model-window-ended"
 MARK = "window_model"  # the task-entry key a claim inside the window sets
 OUTBOX_ID = "model-window-refused"
 MODEL_ID = re.compile(r"^claude-[a-z]+(-[0-9]+)+$")
@@ -85,10 +96,10 @@ def parse_window(raw: Any) -> Window | None:
     end = _instant(until)
     if start is None or (until is not None and end is None):
         return None
-    run_to_limit = raw.get("run_to_limit", False)
-    if not isinstance(run_to_limit, bool):
+    run_to_limit, end_on_limit = raw.get("run_to_limit", False), raw.get("end_on_limit", False)
+    if not isinstance(run_to_limit, bool) or not isinstance(end_on_limit, bool):
         return None
-    return {"model": model, "alias": alias, "from": start, "until": end, "run_to_limit": run_to_limit}
+    return {"model": model, "alias": alias, "from": start, "until": end, "run_to_limit": run_to_limit, "end_on_limit": end_on_limit}
 
 
 def load(settings: Path = SETTINGS) -> Window | None:
@@ -107,22 +118,92 @@ def in_window(window: Window | None, now: datetime) -> bool:
     return window["until"] is None or now < window["until"]
 
 
-def refused(window: Window | None, state: st.State | None) -> bool:
-    """Whether the state records this very window (model and `from`) as refused."""
-    found = (state or {}).get(REFUSED)
+def _recorded(window: Window | None, state: st.State | None, key: str) -> bool:
+    found = (state or {}).get(key)
     if window is None or not isinstance(found, dict):
         return False
     return found.get("model") == window["model"] and found.get("from") == st.iso(window["from"])
 
 
+def refused(window: Window | None, state: st.State | None) -> bool:
+    """Whether the state records this very window (model and `from`) as refused."""
+    return _recorded(window, state, REFUSED)
+
+
+def _during(window: Window, stamp: Any) -> datetime | None:
+    moment = _instant(stamp)
+    return moment if moment is not None and in_window(window, moment) else None
+
+
+def _week(reading: dict[str, Any]) -> float | None:
+    week = reading.get("week")
+    try:
+        return float(week["utilization"]) if isinstance(week, dict) else None
+    except (KeyError, TypeError, ValueError):
+        return None
+
+
+def limit_inside(window: Window | None, state: st.State | None) -> str:
+    """Why the state shows the plan's limit reached inside the window ('' when it does not): a session
+    reading taken in the window with the week at 100%, or a `usage.limit_hit` taken in the window that no
+    reading taken at or after it shows to have been the five-hour limit (the week under 100%)."""
+    usage = (state or {}).get("usage") if isinstance((state or {}).get("usage"), dict) else {}
+    if window is None or not isinstance(usage, dict):
+        return ""
+    reading = usage.get("session_reading") if isinstance(usage.get("session_reading"), dict) else {}
+    read_at, week = _during(window, reading.get("at")), _week(reading)
+    if read_at is not None and week is not None and week >= 1.0:
+        return f"the week read {week:.0%} at {st.iso(read_at)}"
+    hit = usage.get("limit_hit") if isinstance(usage.get("limit_hit"), dict) else {}
+    hit_at = _during(window, hit.get("at"))
+    if hit_at is None:
+        return ""
+    later = _instant(reading.get("at"))
+    if later is not None and later >= hit_at and week is not None and week < 1.0:
+        return ""  # the reading after the hit shows the week was not used up
+    return f"a usage limit was hit at {st.iso(hit_at)} ({hit.get('task', '')})"
+
+
+def closed(window: Window | None, state: st.State | None) -> bool:
+    """Whether an `end_on_limit` window is over: recorded as ended, or the limit already shows inside it."""
+    if window is None or not window["end_on_limit"]:
+        return False
+    return _recorded(window, state, ENDED) or bool(limit_inside(window, state))
+
+
 def switched(window: Window | None, now: datetime, state: st.State | None) -> Window | None:
-    """The window when it changes models now (inside it and not refused), else None."""
-    return window if in_window(window, now) and not refused(window, state) else None
+    """The window when it changes models now (inside it, not refused, not closed by the limit), else None."""
+    return window if in_window(window, now) and not refused(window, state) and not closed(window, state) else None
 
 
-def run_to_limit(window: Window | None, now: datetime) -> bool:
-    """Whether the pacer and the keeper run to the real limit now (inside the window, refused or not)."""
-    return bool(window and window["run_to_limit"] and in_window(window, now))
+def run_to_limit(window: Window | None, now: datetime, state: st.State | None = None) -> bool:
+    """Whether the pacer and the keeper run to the real limit now: inside the window (refused or not) and,
+    for an `end_on_limit` window, until the limit closes it."""
+    return bool(window and window["run_to_limit"] and in_window(window, now) and not closed(window, state))
+
+
+def close_on_limit(state: st.State, window: Window | None, now: datetime) -> tuple[st.State, str]:
+    """(state, why): the state with `model_window_ended` recorded when an `end_on_limit` window shows its limit
+    for the first time, and why; otherwise the state unchanged (the same object) and ''."""
+    if window is None or not window["end_on_limit"] or _recorded(window, state, ENDED):
+        return state, ""
+    why = limit_inside(window, state)
+    if not why:
+        return state, ""
+    out = copy.deepcopy(state)
+    out[ENDED] = {"model": window["model"], "from": st.iso(window["from"]), "at": st.iso(now), "why": "limit"}
+    return out, why
+
+
+def ended_note(window: Window, why: str) -> tuple[str, str]:
+    """(title, body) of the outbox item for a window the limit closed."""
+    title = f"Runner: the model window ({window['model']}) ended at the usage limit; back on the plan's models"
+    body = (f"The plan's usage limit was reached inside the model window: {why}.\n\n"
+            "From now on every worker, reviewer and session runs on the plan's own models, and pacing is back to its "
+            "usual rules (headroom, the 97% week stop). The build waits while the 100% reading holds; after the reset "
+            "(Casey's own or the weekly one) a fresh reading shows the usage down and the build resumes by itself. "
+            "kit/runner.json still holds the window; set `until` when convenient (D-2220).")
+    return title, body
 
 
 def session_model(window: Window | None, now: datetime, state: st.State | None, default: str = SESSION_MODEL) -> str:

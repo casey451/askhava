@@ -6,8 +6,9 @@ These are decisions Claude made on its own and logged so the build never waits (
 
 - **What you asked.** "on Thursday when the usage resets, I want to switch everything to fable and run the usage all the way through so I can use one of my fable resets to bring usage back to zero", then "Back to opus. Its just to get more tokens out of the week for the build series."
 - **What happens.** At the weekly reset (Thursday, November 12, 17:00 UTC, 10 a.m. Phoenix) the build switches itself to Fable: every worker, every reviewer and the runner's own session. The task list is not changed; the switch is one setting the runner reads. It also stops holding back at about 97% of the week and keeps working until the plan's real limit is reached; then it waits, as it always does, and never pays per use.
-- **After you use your reset.** The build notices within about 6 hours at most (sooner when a run starts) and carries on by itself.
-- **Going back to Opus.** One date in that setting ("until") ends the switch; the overseer does it through a normal reviewed change when you say so. From then on everything is exactly as it is today.
+- **Back to Opus by itself.** The first time the week's usage runs out while on Fable, the switch turns itself off and a note says so. From then on every task runs on its usual model (Opus) at the usual pace, with nobody changing anything.
+- **After you use your reset.** The build waits while the old "100% used" reading stands, and carries on by itself, on Opus, as soon as a fresh reading shows the usage back down (within a few hours at most; sooner when a run starts).
+- **Ending it early.** One date in that setting ("until") also ends the switch; the overseer does it through a normal reviewed change if you ask.
 - **If Fable is not accepted.** If the build's tools refuse the Fable model name, that task simply runs on its own model instead, costs no retry, and a note says so; the rest of the week then stays on the usual models. The exact model name the build tools accept could not be tested ahead of Thursday from here, which is why there is a fallback.
 - **Nothing needs you.**
 

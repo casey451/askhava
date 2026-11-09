@@ -51,7 +51,8 @@ no headroom, no estimate test, no ledger and no spend line: the pacer claims unt
 command, or a fresh session reading) says a window is at 100%, waiting then until the earlier of that
 window's reset and the reading's expiry (SESSION_READING_HOURS after it was taken: a week Casey resets by
 hand shows in the next reading), or until a recorded usage-limit hit's reset. It never pays per use
-(BUILD_BRIEF.md:509): a limit stops the work as before. Outside the window nothing here changes.
+(BUILD_BRIEF.md:509): a limit stops the work as before. A window with `end_on_limit` closes at that first
+limit, and from then on the rules above apply again. Outside the window nothing here changes.
 
 Usage: python3 scripts/pacing.py [--state PATH] [--task ID]
 """
@@ -391,15 +392,16 @@ def status_line(state: State) -> str:
 
 def make_pacer(
     graph: list[dict[str, Any]], root: Path = ROOT, config: dict[str, Any] | None = None,
-    run_to_limit: Callable[[datetime], bool] | None = None,
+    run_to_limit: Callable[[datetime, State], bool] | None = None,
 ) -> Pacer:
-    """The hook the runner calls before claiming (runner.cycle.Config.pacer). `run_to_limit(now)` says whether
-    the model window runs to the limit at that moment (runner/__main__.py, D-2220); None: never."""
+    """The hook the runner calls before claiming (runner.cycle.Config.pacer). `run_to_limit(now, state)` says
+    whether the model window runs to the limit at that moment and state (runner/__main__.py, D-2220: not once
+    an `end_on_limit` window has closed); None: never."""
     cfg = config or load_config(root / "kit" / "pacing.json")
 
     def pace(state: State, task: dict[str, Any], now: datetime) -> tuple[str, str | None, State]:
         command = os.environ.get("PACING_QUOTA_CMD") or cfg.get("quota_cmd_default", "")
-        to_limit = bool(run_to_limit and run_to_limit(now))
+        to_limit = bool(run_to_limit and run_to_limit(now, state))
         found = assess(state, task, root=root, config=cfg, now=now, quota=read_quota(command), run_to_limit=to_limit)
         verdict, detail = found["decision"]
         return verdict, detail, remember(state, task["id"], found, now, projected_finish(state, graph, cfg, now, root))
