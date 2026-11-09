@@ -1,0 +1,15 @@
+# cargo-audit policy (D-2144; docs/architecture.md section 11; SEC-021).
+# cargo-audit reads the whole Cargo.lock, including optional crates no feature builds, while
+# cargo-deny (deny.toml, `[graph] all-features = false`) checks only the resolved build graph.
+# Every ignore carries a reason, the proof it is not built, and a review date.
+
+[advisories]
+ignore = [
+    # RUSTSEC-2026-0459 (libsqlite3-sys 0.37.0, bundled C SQLite CVE): sqlx 0.9.0 is built with
+    # Postgres features only (Cargo.toml: default-features = false, no "sqlite"), so sqlx-sqlite and
+    # libsqlite3-sys appear in Cargo.lock but in no build: `cargo tree --workspace -i libsqlite3-sys
+    # --all-targets --target all -e normal,build,dev` prints nothing, and `cargo deny check
+    # advisories` passes. The fix (>=0.39.0) is outside sqlx 0.9.0's range (<0.38.0) and sqlx 0.9.0
+    # is the newest release. Remove when sqlx allows libsqlite3-sys >=0.39; review by 2027-01-31.
+    "RUSTSEC-2026-0459",
+]
