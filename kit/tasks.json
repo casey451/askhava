@@ -2575,7 +2575,7 @@
    "budget": {
     "files": 5,
     "lines": 350,
-    "context_pct": 19
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -5451,7 +5451,7 @@
    "budget": {
     "files": 4,
     "lines": 450,
-    "context_pct": 15
+    "context_pct": 19
    },
    "checks": [
     "Ci",
@@ -18158,7 +18158,8 @@
    "module": "payments",
    "deps": [
     "T263",
-    "T258"
+    "T258",
+    "T254"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -18180,7 +18181,9 @@
     "tests/integration/tests/fee_at_pick.rs",
     "tests/integration/tests/charge_attempts.rs",
     "tests/integration/tests/confirm_and_pay.rs",
-    "tests/integration/tests/fee_limit_race.rs"
+    "tests/integration/tests/fee_limit_race.rs",
+    "app/payments/src/models.rs",
+    "app/server/tests/release_recovery.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -18204,13 +18207,14 @@
     "D-1415",
     "D-1417",
     "D-072",
-    "D-1758"
+    "D-1758",
+    "D-2236"
    ],
    "cites": [],
    "budget": {
-    "files": 11,
+    "files": 13,
     "lines": 800,
-    "context_pct": 35
+    "context_pct": 43
    },
    "checks": [
     "Ci",
@@ -19592,7 +19596,7 @@
    "budget": {
     "files": 10,
     "lines": 600,
-    "context_pct": 30
+    "context_pct": 34
    },
    "checks": [
     "Ci",
@@ -20804,7 +20808,7 @@
    "budget": {
     "files": 6,
     "lines": 600,
-    "context_pct": 27
+    "context_pct": 41
    },
    "checks": [
     "Ci",
@@ -21102,7 +21106,7 @@
    "budget": {
     "files": 3,
     "lines": 400,
-    "context_pct": 36
+    "context_pct": 40
    },
    "checks": [
     "Ci",
