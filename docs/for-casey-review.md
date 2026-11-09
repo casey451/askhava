@@ -2,6 +2,12 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## Fourteen finished hand-offs closed in the register (plan change, D-2116, November 9)
+
+- **What changed.** The register of hand-offs between parts of the system (`docs/integration-closure.md`) had fourteen security, money and privacy rows whose tasks had all finished but were still marked open, which would have stopped stage 4 from finishing. Each was checked against the merged code and its tests, and all fourteen are now closed with the merge and the tests that prove them: first texts racing, a business phone's STOP, names kept out of what the AI would see, refunds, Stripe's events, paid and free picks releasing their details, the business seeing them again, the masked line's retry, the card-confirm flow against the pretend Stripe, call PINs, a changed public record, the coverage floor, the register check itself, and business texts asking for consent at send time.
+- **One gap reported to the overseer.** No task yet puts the business portal's pages on the live site (the released job's page, the portal home, notice settings). The code behind them is built and tested, but a business can't open them in a browser until a task serves them; the business journey test (T099) will need it. The overseer will name the task.
+- **Nothing needs you.**
+
 ## Connecting the app to the AI (D-2065, November 8)
 
 - **The gap.** The last change found that nothing in the plan connects the app to the AI: there is no setting for where the AI lives or for its key, the app never builds its AI connection, and nothing calls the AI when a homeowner texts or chats. As planned, the app you'd get would never use the AI, and the war games would never test it.
