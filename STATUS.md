@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-09T11:13:38Z by runner be1299246476 (actions).
+Updated 2026-11-09T11:40:50Z by runner be1299246476 (actions).
 
-**Idle since 10:49Z; 169 of 297 done; week 61% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T282 in progress since 11:33Z; 169 of 297 done; week 61% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 169 of 297 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 10:49Z (no task in progress)
+- **Lane:** lane 1: T282 claimed 11:33Z, lease until 14:33Z
 - **Week:** 61% used, 72.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:13Z, 0 min before this update
+- **Last run:** 11:13Z, 27 min before this update
 - **Keeper:** last ran 11:13Z, next wake 11:33Z
 
 ## Needs attention
@@ -72,7 +72,7 @@ Updated 2026-11-09T11:13:38Z by runner be1299246476 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-09T10:00:41Z (week)): five-hour: 5.3M used, 23.8M left, resets 2026-11-09T11:56:38Z; week: 122.0M used, 72.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-11-26T20:18:36Z.
+- Pacing (session_reading 2026-11-09T11:13:24Z (week)): five-hour: 6.7M used, 22.4M left, resets 2026-11-09T11:56:38Z; week: 122.0M used, 72.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-11-27T20:23:43Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -87,7 +87,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T282 (lease until 2026-11-09T14:33:38Z)
 
 ## Last usage reading
 - {"task": "T282", "at": "2026-11-09T10:49:32Z", "cache_creation_input_tokens": 321102, "input_tokens": 224, "cache_read_input_tokens": 9908369, "output_tokens": 74711}

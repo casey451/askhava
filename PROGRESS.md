@@ -1499,3 +1499,4 @@
 - 2026-11-09T11:12:24Z runner be1299246476 (actions): {"T282": "MERGE_PENDING -> QUEUED"}
 - 2026-11-09T11:13:25Z runner be1299246476 (actions): {}
 - 2026-11-09T11:13:38Z runner be1299246476 (actions): {}
+- 2026-11-09T11:40:50Z runner be1299246476 (actions): {"T282": "QUEUED -> IN_PROGRESS"}; T282 estimated 2.8M tokens (calibrated); five-hour window has 22.4M left, week 72.0M (session_reading 2026-11-09T11:13:24Z (week)); claimed
