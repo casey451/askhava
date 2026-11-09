@@ -496,8 +496,8 @@ The list below is the minimum, not the whole set:
 - **Haiku 5.5:** running tests and summarizing, scans, formatting, docs upkeep.
 - **Sonnet 5.5:** most code (the rule until D-1143; the tasks finished under it keep their recorded model).
 - **Opus 5.5:** spec, architecture, money, privacy, security and recovery application code, reviews of all work in those areas, and the final audit; test-only, docs and harness work there runs on Sonnet with an Opus reviewer (D-483). From October 31, 2026 every Sonnet-named task not yet started runs on Opus with an Opus reviewer (Casey's choice, D-1143: the week's budget is to be spent on accuracy, not saved); T136 stays on Haiku with an Opus reviewer, FIX-MAIN's worker and the runner's own session stay on Sonnet.
-- **Fable:** not used.
-- Models are named in each task. The runner's own session uses Sonnet at low effort.
+- **Fable:** not used, except inside a model window Casey sets in `kit/runner.json` (D-2220): from its `from` until its `until`, every worker, reviewer and the runner's own session run on its model instead of the task's, and `kit/tasks.json` is not changed.
+- Models are named in each task. The runner's own session uses Sonnet at low effort (inside a model window, the window's model, D-2220).
 
 **Context**
 - One task per session, with each task's file list loaded only when needed.
@@ -507,7 +507,7 @@ The list below is the minimum, not the whole set:
 **Pacing**
 - At full Max 20x limits, around the clock.
 - At a usage limit, wait for the reset; never pay per use.
-- The runner's pacer (`scripts/pacing.py`, `kit/pacing.json`) estimates each task's cost from the first three measured tasks, keeps working while the next task fits under the five-hour and weekly limits with 10% headroom, and otherwise waits for the recorded reset (D-486).
+- The runner's pacer (`scripts/pacing.py`, `kit/pacing.json`) estimates each task's cost from the first three measured tasks, keeps working while the next task fits under the five-hour and weekly limits with 10% headroom, and otherwise waits for the recorded reset (D-486); inside a model window with `run_to_limit` it keeps claiming until a real reading or a usage-limit rejection says the limit is reached, then waits as above (D-2220).
 
 ## 14. Environments and configuration
 

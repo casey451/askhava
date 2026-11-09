@@ -40,6 +40,11 @@ def _messages(text: str) -> list[Any]:
         return out
 
 
+def messages(text: str) -> list[Any]:
+    """`_messages` for other readers of the execution file (runner/model_window.py, D-2220)."""
+    return _messages(text)
+
+
 def _window(raw: Any) -> dict[str, Any] | None:
     if not isinstance(raw, dict) or not isinstance(raw.get("utilization"), (int, float)):
         return None

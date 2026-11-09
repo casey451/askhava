@@ -45,6 +45,14 @@ reset; a task that fits the line claims as before. The line is for the anchor's 
 window's start (its reset minus the week's hours) is later than the anchor, from the ledger's
 roll-over or a quota reading, there is no line until a new anchor is set.
 
+**Run to the limit** (D-2220, Casey's model window of November 9): while kit/runner.json's `model_window`
+with `run_to_limit` is active (runner/model_window.py; the runner passes the switch to `make_pacer`), there is
+no headroom, no estimate test, no ledger and no spend line: the pacer claims until a real reading (the quota
+command, or a fresh session reading) says a window is at 100%, waiting then until the earlier of that
+window's reset and the reading's expiry (SESSION_READING_HOURS after it was taken: a week Casey resets by
+hand shows in the next reading), or until a recorded usage-limit hit's reset. It never pays per use
+(BUILD_BRIEF.md:509): a limit stops the work as before. Outside the window nothing here changes.
+
 Usage: python3 scripts/pacing.py [--state PATH] [--task ID]
 """
 
@@ -289,16 +297,38 @@ def spend_line(cfg: dict[str, Any], week: dict[str, Any], need: int, now: dateti
     return iso(max(when, now + timedelta(minutes=1)))
 
 
+def at_limit(state: State, now: datetime, quota: dict[str, Any] | None) -> str | None:
+    """When a real reading says a window is at 100%: the ISO time to wait until (the latest reset among the
+    full windows, but no later than a session reading's expiry), else None (D-2220). The ledger is no reading."""
+    reading = quota or session_reading(state, now)
+    if not reading:
+        return None
+    full = [reading[w] for w in WINDOWS if isinstance(reading.get(w), dict) and float(reading[w].get("utilization", 0)) >= 1.0]
+    if not full:
+        return None
+    resets = [parse(str(w["resets_at"])) for w in full if w.get("resets_at")]
+    until = max(resets) if resets else now + timedelta(hours=1)
+    if not quota:
+        until = min(until, parse(str(reading["at"])) + timedelta(hours=SESSION_READING_HOURS))
+    return iso(max(until, now + timedelta(minutes=1)))
+
+
 def assess(
     state: State, task: dict[str, Any], *, root: Path = ROOT, config: dict[str, Any] | None = None,
-    now: datetime | None = None, quota: dict[str, Any] | None = None,
+    now: datetime | None = None, quota: dict[str, Any] | None = None, run_to_limit: bool = False,
 ) -> dict[str, Any]:
-    """decide() with its working: estimate, bytes, basis, standing, source."""
+    """decide() with its working: estimate, bytes, basis, standing, source. `run_to_limit` (D-2220): see the
+    module docstring."""
     cfg, now = config or load_config(), now or datetime.now(timezone.utc)
     need, size, basis = estimate(task, state, cfg, root)
     reserved = in_flight_tokens(state, str(task.get("id", "")))
     stand, source = standing(state, cfg, now, quota, reserved)
     hit = ((state.get("usage") or {}).get("limit_hit") or {}).get("reset_at")
+    if run_to_limit:
+        full = None if hit and parse(hit) > now else at_limit(state, now, quota)
+        decision = ("wait", hit) if hit and parse(hit) > now else ("wait", full) if full else ("claim", None)
+        found = {"decision": decision, "estimate": need, "bytes": size, "basis": basis, "standing": stand, "source": source}
+        return found | {"run_to_limit": True} | ({"in_flight": reserved} if reserved else {})
     decision = ("wait", hit) if hit and parse(hit) > now else _verdict(need, stand, now)
     line_at = spend_line(cfg, stand["week"], need, now) if decision[0] == "claim" else None
     if line_at:
@@ -319,6 +349,8 @@ def line(tid: str, found: dict[str, Any]) -> str:
     outcome = {"claim": "claimed", "wait": f"waiting until {detail}", "defer": f"claimed anyway ({detail})"}[verdict]
     if found.get("spend_line"):
         outcome = f"on the spend line (D-1128), {outcome}"
+    if found.get("run_to_limit"):
+        outcome = f"running to the limit (model window, D-2220), {outcome}"
     running = f" after {_k(found['in_flight'])} still running in another lane" if found.get("in_flight") else ""
     return f"{tid} estimated {_k(found['estimate'])} tokens ({found['basis']}); {left}{running} ({found['source']}); {outcome}"
 
@@ -357,13 +389,18 @@ def status_line(state: State) -> str:
     return f"Pacing ({(state.get('usage') or {}).get('source', 'ledger')}): " + "; ".join(parts) + f"; projected finish {pace.get('projected_finish')}{tail}."
 
 
-def make_pacer(graph: list[dict[str, Any]], root: Path = ROOT, config: dict[str, Any] | None = None) -> Pacer:
-    """The hook the runner calls before claiming (runner.cycle.Config.pacer)."""
+def make_pacer(
+    graph: list[dict[str, Any]], root: Path = ROOT, config: dict[str, Any] | None = None,
+    run_to_limit: Callable[[datetime], bool] | None = None,
+) -> Pacer:
+    """The hook the runner calls before claiming (runner.cycle.Config.pacer). `run_to_limit(now)` says whether
+    the model window runs to the limit at that moment (runner/__main__.py, D-2220); None: never."""
     cfg = config or load_config(root / "kit" / "pacing.json")
 
     def pace(state: State, task: dict[str, Any], now: datetime) -> tuple[str, str | None, State]:
         command = os.environ.get("PACING_QUOTA_CMD") or cfg.get("quota_cmd_default", "")
-        found = assess(state, task, root=root, config=cfg, now=now, quota=read_quota(command))
+        to_limit = bool(run_to_limit and run_to_limit(now))
+        found = assess(state, task, root=root, config=cfg, now=now, quota=read_quota(command), run_to_limit=to_limit)
         verdict, detail = found["decision"]
         return verdict, detail, remember(state, task["id"], found, now, projected_finish(state, graph, cfg, now, root))
 

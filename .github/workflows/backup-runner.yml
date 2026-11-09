@@ -378,6 +378,19 @@ jobs:
         continue-on-error: true
         timeout-minutes: 32
         run: python3 -m runner --pre-smoke
+      - name: Pick the session's model (D-2220)
+        # kit/runner.json's `model_window` (runner/model_window.py), read now, so a window starts and ends by a data
+        # change alone: inside it, and unless claude/kit-state records that window's model as refused, the session
+        # runs on the window's model; otherwise on claude-sonnet-5-5 as before. A failure here leaves the output
+        # empty and the session step falls back to claude-sonnet-5-5 itself.
+        id: session-model
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api "repos/${GITHUB_REPOSITORY}/contents/kit/state.json?ref=claude/kit-state" -H 'Accept: application/vnd.github.raw' \
+            > "$RUNNER_TEMP/session_model_state.json" 2>/dev/null || rm -f "$RUNNER_TEMP/session_model_state.json"
+          python3 -m runner --session-model "$RUNNER_TEMP/session_model_state.json" | tee -a "$GITHUB_OUTPUT"
       - uses: anthropics/claude-code-action@v1
         id: claude
         env:
@@ -407,7 +420,7 @@ jobs:
           # The prompt is fixed in this file, never taken from the event (D-505).
           # github-actions: the chaining step and the hourly tick dispatch with the job token (D-508).
           allowed_bots: "claude,github-actions"
-          claude_args: --model claude-sonnet-5-5 --allowedTools "Bash,Read,Write,Edit,MultiEdit,Glob,Grep,Agent,TodoWrite,WebFetch,WebSearch" --disallowedTools "SendMessage"
+          claude_args: --model ${{ steps.session-model.outputs.model || 'claude-sonnet-5-5' }} --allowedTools "Bash,Read,Write,Edit,MultiEdit,Glob,Grep,Agent,TodoWrite,WebFetch,WebSearch" --disallowedTools "SendMessage"
           prompt: |
             You are the Ask Hava build runner. Read BUILD_BRIEF.md sections 2, 7 and 16 now. The runner code (runner/) does the cycle; you do only the task it hands you (D-486).
 
@@ -417,6 +430,7 @@ jobs:
             3. If it is `handed_off`, the JSON `handoff` names the task, branch, prompt and models (when the output was saved to a file, read the hand-off from `.git/runner_handoff.json`, D-1317). When the hand-off's `last_failure` is not empty, give it to the worker word for word, before the task prompt: the prompt no longer has the worker read the state, where a retry's failure lives (D-1317). Run that one task through a worker subagent on that model (alias haiku, sonnet or opus, D-170) with only the prompt and the files it lists (when `prompt` is not a file path, as for FIX-MAIN, it is the prompt text itself: follow it, revert first); commit to the local branch; do not push it. Tell the worker to number new `docs/decisions.md` entries only from the handoff's `decision_ids`, in order (D-530). Tell the worker the handoff's `hand_in_by` (UTC; the lease's end less 30 minutes): by then it must have committed, run both scripts and stopped, so that step 5 runs before it; past it, report and hand in what is committed rather than start more work (D-1440).
             3b. When the handoff's `branch_ready` is true, the runner has already made that local branch (on top of the task's earlier pushed attempt when there is one, with main merged in): pass the handoff's `branch_note` to the worker word for word and tell it to `git switch` to the branch and never create, reset or rebase it, which replaces step 3 of the prompt's start routine (D-1317). A branch rebuilt from main cannot be pushed, because the runner never force-pushes (D-583).
             3c. When the handoff's `resync` is not empty, the task's reviewed work is finished and only merging main into it conflicts: give the worker the prompt and the `resync` text word for word, and its only job is to merge main into the branch with a normal merge commit, resolve each conflict keeping both sides, change nothing else, run the smoke test and commit. The reviewer in step 4 then reviews the whole diff against main as usual (D-891).
+            3d. When the handoff has a `model_window` block (a claim inside Casey's model window, D-2220), run the worker and every worker of a fix round on its `alias` and the reviewer on its `reviewer_alias`, instead of the alias of `model` and `reviewer_model`. If an Agent call refuses that model (an unknown model or alias error, not a usage limit), run that subagent and every later one of this task on `fallback_alias` (the reviewer on `fallback_reviewer_alias`) and add `--model-fallback "<the error, one line>"` to step 5's `--after`; that costs the task nothing.
             3a. Run every subagent in the foreground (run_in_background: false) and wait for it to finish. Never end your turn while a subagent is running: this job ends when you stop, and anything still running is killed with it (D-503).
             4. Run the fresh-eyes reviewer subagent on the reviewer model over the diff and the task's spec files; findings go back to the worker once, as a NEW foreground worker subagent call (run_in_background: false) given the findings and told to commit on the same branch; never resume an agent by message, which runs it in the background and ends the job before it commits (D-522).
             5. Run `python3 -m runner --after --worker-agent <worker agent id> --reviewer-agent <reviewer agent id>` (one `--worker-agent` per worker agent, the fix-round worker included; add `--outcome tests_failed --log "<summary>"` if the work failed, `--outcome usage_limit` at a usage limit).
@@ -453,6 +467,23 @@ jobs:
           # is involved: the file is read after the session ended (D-1155).
           [ -n "$EXECUTION_FILE" ] && [ -f "$EXECUTION_FILE" ] || { echo "no execution file"; exit 0; }
           python3 -m runner --usage-reading "$EXECUTION_FILE" 2>&1 || true
+      - name: Record a refused window model (D-2220)
+        # Only while the session ran on the model window's model: when its execution file shows a session that never
+        # used a tool and was refused its model, the runner records that window as refused (`model_window_refused`)
+        # with an outbox item, so the next run's session and claims use the plan's models. It claimed nothing, so no
+        # attempt is spent; anything else changes nothing.
+        if: always() && steps.session-model.outputs.windowed == 'true'
+        env:
+          RUNNER_STARTER: actions
+          RUNNER_LANE: ${{ needs.gate.outputs.lane }}
+          GH_TOKEN: ${{ github.token }}
+          RUNNER_CHECKS_TOKEN: ${{ github.token }}
+          RUNNER_PUSH_TOKEN: ${{ secrets.RUNNER_PUSH_TOKEN }}
+          EXECUTION_FILE: ${{ steps.claude.outputs.execution_file }}
+        run: |
+          set -u
+          [ -n "$EXECUTION_FILE" ] && [ -f "$EXECUTION_FILE" ] || { echo "no execution file"; exit 0; }
+          python3 -m runner --model-refused "$EXECUTION_FILE" 2>&1 | grep '^runner: ' || true
       - name: Hand in for a session that stopped without handing in (D-503)
         if: always()
         id: safety

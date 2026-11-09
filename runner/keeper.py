@@ -30,7 +30,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
-from runner import state as st
+from runner import model_window, state as st
 
 CAP_MINUTES = 340  # 5 h 40 m: one sleep stays well under GitHub's 6-hour job limit
 IDLE_MINUTES = 20  # nothing in flight and the pacer not waiting: look again soon
@@ -38,8 +38,10 @@ FLOOR_MINUTES = 10  # a computed sleep never ends before the run that armed it h
 LEASE_MARGIN = 2  # minutes past a lease's expiry
 RESET_MARGIN = 5  # minutes past the pacer's `waiting_until` (a usage window's reset)
 WEEK_STOP = 0.97  # the week's reading at which the build stops for the reset (kit/pacing.json headroom 0.03)
+LIMIT = 1.0  # inside a model window with `run_to_limit`, the stop is the plan's real limit instead (D-2220)
+READING_HOURS = 6  # a reading this old says nothing any more (scripts/pacing.py SESSION_READING_HOURS)
 NOTHING_CLAIMED = frozenset({"idle", "fix_main"})  # a cycle result after which a 20-minute look would find the same
-QUIET = ("not_lease_holder", "renewed", "renew_refused", "usage_reading", "keeper_armed")  # log rows that say nothing of the cycle
+QUIET = ("not_lease_holder", "renewed", "renew_refused", "usage_reading", "keeper_armed", "model_window")  # log rows that say nothing of the cycle
 # "T057 is MERGE_PENDING": the answer of an `--after` or a renewal for a task that has already moved on, not a
 # cycle result; the backup-runner chain step skips the same rows with the same pattern (D-723).
 STATUS_ONLY = re.compile(r"\S+ is \S+")
@@ -89,7 +91,7 @@ def _minutes(delta: timedelta, margin: int) -> int:
     return max(FLOOR_MINUTES, min(CAP_MINUTES, math.ceil(delta.total_seconds() / 60) + margin))
 
 
-def wake_after(state: Doc, lease_doc: Doc, now: datetime, last: str = "") -> tuple[int | None, str]:
+def wake_after(state: Doc, lease_doc: Doc, now: datetime, last: str = "", to_limit: bool | None = None) -> tuple[int | None, str]:
     """(minutes, why) for the next keeper, or (None, why) when none may run (D-1451).
 
     A task in flight: the soonest live lease's remaining time + LEASE_MARGIN; the pacer waiting: its
@@ -97,7 +99,9 @@ def wake_after(state: Doc, lease_doc: Doc, now: datetime, last: str = "") -> tup
     is reached by chained sleeps) and floored at FLOOR_MINUTES; work a cycle could act on: IDLE_MINUTES;
     nothing to claim: the soonest `retry_after` + RESET_MARGIN, else CAP_MINUTES, so an idle build does
     not start a Claude session every IDLE_MINUTES. `last`, the result the arming cycle itself reported,
-    overrides the state's guess: after `idle` (nothing it could claim) the short sleep is never used."""
+    overrides the state's guess: after `idle` (nothing it could claim) the short sleep is never used.
+    `to_limit` (default: kit/runner.json's model window with `run_to_limit` active now, D-2220) moves the
+    week stop from WEEK_STOP to the real limit."""
     if state.get("unreadable") or lease_doc.get("unreadable"):
         return IDLE_MINUTES, "claude/kit-state or claude/lease could not be read: look again"
     why = blocker(state)
@@ -110,7 +114,8 @@ def wake_after(state: Doc, lease_doc: Doc, now: datetime, last: str = "") -> tup
     until = pacer_until(state, now)
     if until is not None:
         return _minutes(until - now, RESET_MARGIN), f"the pacer waits until {st.iso(until)}"
-    reset = week_stop(state, now)
+    limit = model_window.run_to_limit(model_window.load(), now) if to_limit is None else to_limit
+    reset = week_stop(state, now, limit)
     if reset is not None:
         return _minutes(reset - now, RESET_MARGIN), f"the week stopped at its limit; it resets {st.iso(reset)}"
     if has_work(state, now) and last not in NOTHING_CLAIMED:
@@ -122,17 +127,23 @@ def wake_after(state: Doc, lease_doc: Doc, now: datetime, last: str = "") -> tup
     return CAP_MINUTES, f"nothing to claim{held}; events and the hourly tick still start runs"
 
 
-def week_stop(state: Doc, now: datetime) -> datetime | None:
+def week_stop(state: Doc, now: datetime, to_limit: bool = False) -> datetime | None:
     """The week's `resets_at` while the plan's own reading (usage.session_reading) says the week is at or
-    past WEEK_STOP, else None: the keeper then sleeps in chained steps to the reset (the A+ plan, item 5)."""
+    past WEEK_STOP, else None: the keeper then sleeps in chained steps to the reset (the A+ plan, item 5).
+
+    With `to_limit` (a model window running to the limit, D-2220) the stop is a reading at LIMIT, and only
+    while the reading is under READING_HOURS old, as the pacer reads it: the keeper then wakes when the
+    reading expires (or at the reset, if sooner), so a week Casey resets by hand resumes without a person."""
     usage = state.get("usage") if isinstance(state.get("usage"), dict) else {}
     reading = usage.get("session_reading") if isinstance(usage.get("session_reading"), dict) else {}
     week = reading.get("week") if isinstance(reading.get("week"), dict) else {}
     try:
         used, reset = float(week.get("utilization")), st.parse(str(week.get("resets_at")))
+        expires = st.parse(str(reading.get("at"))) + timedelta(hours=READING_HOURS) if to_limit else reset
     except (TypeError, ValueError):
         return None
-    return reset if used >= WEEK_STOP and reset > now else None
+    until = min(reset, expires)
+    return until if used >= (LIMIT if to_limit else WEEK_STOP) and until > now else None
 
 
 def has_work(state: Doc, now: datetime) -> bool:
