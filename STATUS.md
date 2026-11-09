@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-09T07:34:01Z by runner c6409ed7f846 (actions).
+Updated 2026-11-09T07:58:18Z by runner 46d08254947b (actions).
 
 **Building: T264 in progress since 07:33Z; 166 of 286 done; week 59% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-09T07:34:01Z by runner c6409ed7f846 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T264 claimed 07:33Z, lease until 10:33Z
 - **Week:** 59% used, 76.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:16Z, 17 min before this update
+- **Last run:** 07:34Z, 24 min before this update
 - **Keeper:** last ran 07:16Z, next wake 07:36Z
 
 ## Needs attention
@@ -38,7 +38,6 @@ Updated 2026-11-09T07:34:01Z by runner c6409ed7f846 (actions).
 - 18:33Z Harness: run the start-routine smoke before the session (D-2028) (#359)
 - 15:06Z Harness: warm the smoke build before the session (D-2007) (#356)
 - 10:55Z Harness: retry release downloads; backup job's coverage tools best-effort (D-1986) (#352)
-- 07:39Z harness: chain the next cycle at once after the first smoke timeout on a head (D-1970) (#349)
 
 ## Progress (requirements verified)
 
