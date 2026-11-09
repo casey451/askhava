@@ -36,10 +36,12 @@ async fn main() -> io::Result<()> {
     let control =
         TestControl::from_settings(&settings, std::env::vars()).map_err(io::Error::other)?;
     let webhooks = askhava_server::webhooks(&settings, pool.clone(), std::env::vars())?;
+    let voice = askhava_server::voice_hooks(&settings, webhooks.as_ref(), std::env::vars())?;
     let pick_keys = askhava_server::pick_code_keys(&settings, std::env::vars())?;
     let stripe =
         askhava_server::release_sink::stripe_webhook(&settings, pool.clone(), std::env::vars())?;
-    let app = askhava_server::build_router(pool, control.router(), (webhooks, pick_keys, stripe));
+    let app =
+        askhava_server::build_router(pool, control.router(), (webhooks, voice, pick_keys, stripe));
     axum::serve(
         listener,
         app.into_make_service_with_connect_info::<std::net::SocketAddr>(),

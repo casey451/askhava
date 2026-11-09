@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT pin AS \"pin!\" FROM calls.number_pool WHERE pool_number = $1 AND closed_at IS NULL AND pin IS NOT NULL",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "pin!",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "calls.number_pool",
+            "name": "pin"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "4a7511dc2a8246c2c6b9db39c639354b51c607159272dfce278a878a96b047d3"
+}
