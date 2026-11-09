@@ -33,8 +33,8 @@ pub use crate::photos::{
     store_photo,
 };
 pub use crate::purge::{
-    DELETE_CONFIRMATION, delete_my_data, is_held, place_hold, purge_contact, purge_photos,
-    release_hold,
+    DELETE_CONFIRMATION, any_held, delete_my_data, is_held, lock_retention_for_purge, place_hold,
+    purge_contact, purge_photos, release_hold,
 };
 pub use crate::readback_reader::{Readback, read_for_readback};
 pub use crate::reader::{

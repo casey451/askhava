@@ -3,7 +3,7 @@
 //! Settings (SEC-001, SEC-002, SEC-003, SEC-036), the clock and business clock
 //! (JOB-007), the database pool, migrations and the guarded-update outcome
 //! (JOB-004, D-092), and logging with `Redacted` contact values and the Sentry
-//! scrubber (PRIV-016, PRIV-017, PRIV-028), the task queue (JOB-006) and the rate-limit counters with
+//! scrubber (PRIV-016, PRIV-017, PRIV-028), the task queue and its `unfinished` read (JOB-006, PRIV-007) and the rate-limit counters with
 //! the client IP they are keyed on (SEC-014, SEC-040), and the test-control router and clock,
 //! whose routes exist only under the `test-control` feature (SEC-035), derived IDs and link tokens
 //! (CARD-017, PICK-028, SEC-037) and the webhook dedupe outcome and event key (SEC-017, SEC-039), and
@@ -28,6 +28,7 @@ pub use crate::rate_limit::{
     RateLimitError, hit as rate_limit_hit, ip_bucket, prune as prune_rate_limits,
 };
 pub use crate::settings::{Environment, Settings, SettingsError, Vendor, check_base_url};
+pub use crate::task_queries::unfinished;
 pub use crate::tasks::{
     Claimed, DEFAULT_MAX_ATTEMPTS, HandlerError, HandlerFuture, LEASE_EXPIRED, Lease, NO_HANDLER,
     NewTask, Outcome, Registry, TIMED_OUT, TaskError, WORKER_CONCURRENCY, Worker, WorkerId,

@@ -2027,3 +2027,10 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **Review fix (D-2083).** A charge waiting on the bank's approval also holds its fee while its card-fix window runs, because the bank can still approve it; without this, a $100 limit could reach $125.
 - **A test-plan fix (D-2082).** The test plan (TD-FEE-46) says that after the first charge fails "a later press on the other pick then charges", but that other pick has already ended over the limit. The test uses a third pick; the plan's wording should say "another pick".
 - **Nothing needs you.**
+
+## The 180-day contact purge can no longer lose a new request's details (T274, D-2150 to D-2152, November 9)
+
+- **What changed.** The purge that clears a homeowner's name, email and address 180 days after her job closed used to check "is anything else of hers still live, is anything held?" and then clear in a separate step. A new text from her, or a dispute or complaint hold, landing in between could lose its details. Now the check and the clear happen together, under locks that new requests and holds also wait on, so whichever comes first wins cleanly.
+- **A hold still on its way counts.** If the task that would place a dispute or complaint hold has not finished yet (or failed), the purge keeps her details and tries again later.
+- **One wide edge (D-2152).** A complaint hold event that fails for good now pauses every contact purge until it is cleared, because that event does not say which job it is about. That errs on keeping details. A later task should add the job to that event so only her purge waits.
+- **Nothing needs you.**

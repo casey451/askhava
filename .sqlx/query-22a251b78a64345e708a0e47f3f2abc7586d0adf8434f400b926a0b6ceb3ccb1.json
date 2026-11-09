@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT h.id, h.contact_id FROM intake.conversation c JOIN intake.homeowner h ON h.id = c.homeowner_id WHERE c.job_id = $1 LIMIT 1",
+  "query": "SELECT h.id, h.contact_id FROM intake.conversation c JOIN intake.homeowner h ON h.id = c.homeowner_id WHERE (c.job_id = $1 OR (c.id = $2 AND c.job_id IS NULL)) LIMIT 1",
   "describe": {
     "columns": [
       {
@@ -28,6 +28,7 @@
     ],
     "parameters": {
       "Left": [
+        "Uuid",
         "Uuid"
       ]
     },
@@ -36,5 +37,5 @@
       false
     ]
   },
-  "hash": "356f678fdfbfa21e910852cccc19f8473f539215f1f6752cd1fd569cc9495d8b"
+  "hash": "22a251b78a64345e708a0e47f3f2abc7586d0adf8434f400b926a0b6ceb3ccb1"
 }

@@ -13,14 +13,32 @@
 //! are never deleted here (CON-022, PRIV-010, D-492).
 //!
 //! [`PURGE_KIND`]: askhava_privacy::api::PURGE_KIND
+//!
+//! Decide and clear are one transaction under the retention lock order (D-1839, second audit B03,
+//! `docs/architecture.md` section 8): (1) the retention advisory key, exclusive
+//! (`privacy::api::lock_retention_for_purge`; every hold placement and release takes it shared);
+//! (2) the homeowner row (`models::lock_homeowner`, which every request-opening writer takes);
+//! (3) the vault contact row (`purge_contact`'s `UPDATE`, a savepoint here). Eligibility is read
+//! only after (1) and (2) are held, so a request or hold that committed first is seen and one that
+//! comes later waits for the clear. A hold still on its way counts as a hold: an unfinished
+//! (pending, running or failed) contact-stage `jobs.purge_due` or `privacy.purge_recheck` task of
+//! another of her jobs (the composition places `payments`' dispute holds on those tasks) or any
+//! unfinished `businesses.complaint_hold` event (its key names the complaint, not the job), read
+//! through `core::api::unfinished`. No outside call is made inside the transaction.
 
-use askhava_core::api::{Claimed, HandlerError, NewTask, TaskError, enqueue};
-use askhava_privacy::api::{PurgeStage, is_held, purge_contact, purge_target};
+use askhava_businesses::api::COMPLAINT_HOLD_KIND;
+use askhava_core::api::{Claimed, HandlerError, NewTask, TaskError, enqueue, unfinished};
+use askhava_jobs::api::PURGE_DUE_KIND;
+use askhava_privacy::api::{
+    PurgeStage, RECHECK_KIND, any_held, lock_retention_for_purge, purge_contact, purge_target,
+};
 use jiff::{SignedDuration, Timestamp};
 use jiff_sqlx::ToSqlx;
 use serde_json::json;
 use sqlx::types::Uuid;
-use sqlx::{PgConnection, PgPool};
+use sqlx::{Acquire, PgConnection, PgPool};
+
+use crate::models::lock_homeowner;
 
 /// The contact purge of a request that never got a job: payload `{"conversation"}` (PRIV-007).
 pub const REQUEST_PURGE_KIND: &str = "intake.request_purge";
@@ -34,11 +52,24 @@ struct Owner {
     contact: Uuid,
 }
 
-async fn job_owner(db: &mut PgConnection, job: Uuid) -> Result<Option<Owner>, HandlerError> {
+/// What the contact purge starts from: a job's contact stage or a jobless request.
+#[derive(Debug, Clone, Copy)]
+enum Target {
+    Job(Uuid),
+    Request(Uuid),
+}
+
+async fn owner_of(db: &mut PgConnection, target: Target) -> Result<Option<Owner>, HandlerError> {
+    let (job, request) = match target {
+        Target::Job(job) => (Some(job), None),
+        Target::Request(request) => (None, Some(request)),
+    };
     let row = sqlx::query!(
         "SELECT h.id, h.contact_id FROM intake.conversation c \
-         JOIN intake.homeowner h ON h.id = c.homeowner_id WHERE c.job_id = $1 LIMIT 1",
+         JOIN intake.homeowner h ON h.id = c.homeowner_id \
+         WHERE (c.job_id = $1 OR (c.id = $2 AND c.job_id IS NULL)) LIMIT 1",
         job,
+        request,
     )
     .fetch_optional(db)
     .await
@@ -49,75 +80,116 @@ async fn job_owner(db: &mut PgConnection, job: Uuid) -> Result<Option<Owner>, Ha
     }))
 }
 
-/// PRIV-007: true while a request of `homeowner` other than `job`'s is live at `cutoff` (now less
-/// 180 days): closed after it, open with a job, or open with no job and answered after it.
-async fn other_request_live(
+/// Her requests as one statement reads them under the locks.
+struct Standing {
+    /// PRIV-007: a request other than `job`'s is live at the cutoff.
+    live: bool,
+    /// Every job of hers.
+    jobs: Vec<Uuid>,
+}
+
+/// PRIV-007: in one statement, whether a request of `homeowner` other than `job`'s is live at
+/// `cutoff` (now less 180 days: closed after it, open with a job, or open with no job and answered
+/// after it), and all of her jobs.
+async fn standing(
     db: &mut PgConnection,
     homeowner: Uuid,
     job: Option<Uuid>,
     cutoff: Timestamp,
-) -> Result<bool, HandlerError> {
-    sqlx::query_scalar!(
+) -> Result<Standing, HandlerError> {
+    let row = sqlx::query!(
         r#"SELECT EXISTS (SELECT 1 FROM intake.conversation o WHERE o.homeowner_id = $1
            AND ($2::uuid IS NULL OR o.job_id IS DISTINCT FROM $2)
            AND (o.closed_at > $3 OR (o.closed_at IS NULL AND (o.job_id IS NOT NULL
              OR GREATEST(o.opened_at, (SELECT max(a.answered_at) FROM intake.intake_answer a
-               WHERE a.conversation_id = o.id)) > $3)))) AS "live!""#,
+               WHERE a.conversation_id = o.id)) > $3)))) AS "live!",
+           ARRAY(SELECT DISTINCT c.job_id FROM intake.conversation c
+             WHERE c.homeowner_id = $1 AND c.job_id IS NOT NULL) AS "jobs!""#,
         homeowner,
         job,
         cutoff.to_sqlx() as _,
     )
     .fetch_one(db)
     .await
-    .map_err(|_| DB_FAILED)
+    .map_err(|_| DB_FAILED)?;
+    Ok(Standing {
+        live: row.live,
+        jobs: row.jobs,
+    })
 }
 
-/// PRIV-007: true while any job of `homeowner` has an unreleased hold.
-async fn any_job_held(db: &mut PgConnection, homeowner: Uuid) -> Result<bool, HandlerError> {
-    let jobs = sqlx::query_scalar!(
-        r#"SELECT DISTINCT job_id AS "job!" FROM intake.conversation
-           WHERE homeowner_id = $1 AND job_id IS NOT NULL"#,
-        homeowner,
-    )
-    .fetch_all(&mut *db)
-    .await
-    .map_err(|_| DB_FAILED)?;
-    for job in jobs {
-        if is_held(db, job).await.map_err(|_| DB_FAILED)? {
-            return Ok(true);
+/// PRIV-007, D-1839: true while a hold-producing task is unfinished: any complaint hold event, or
+/// a contact-stage purge task (where `payments`' dispute holds are placed) of any of `jobs` but
+/// `own` (the task that handed this purge on has placed its own).
+async fn hold_on_its_way(
+    db: &mut PgConnection,
+    jobs: &[Uuid],
+    own: Option<Uuid>,
+) -> Result<bool, HandlerError> {
+    let complaint = format!("{COMPLAINT_HOLD_KIND}:");
+    if unfinished(db, COMPLAINT_HOLD_KIND, &complaint)
+        .await
+        .map_err(|_| DB_FAILED)?
+    {
+        return Ok(true);
+    }
+    for job in jobs.iter().filter(|job| Some(**job) != own) {
+        let due = format!("{PURGE_DUE_KIND}:{job}:{}", PurgeStage::Contact.code());
+        let recheck = format!("{RECHECK_KIND}:{job}:");
+        for (kind, prefix) in [(PURGE_DUE_KIND, due), (RECHECK_KIND, recheck)] {
+            if unfinished(db, kind, &prefix).await.map_err(|_| DB_FAILED)? {
+                return Ok(true);
+            }
         }
     }
     Ok(false)
 }
 
-async fn free_contact(
+/// PRIV-007, D-1839: with (1) and (2) held, whether `owner`'s contact may go: no other request of
+/// hers live at `now` less 180 days, no job of hers held, no hold-producing task unfinished.
+async fn free_under_locks(
     db: &mut PgConnection,
     owner: Owner,
     job: Option<Uuid>,
     now: Timestamp,
-) -> Result<Option<Uuid>, HandlerError> {
-    if other_request_live(db, owner.homeowner, job, now - CONTACT_DAYS).await?
-        || any_job_held(db, owner.homeowner).await?
-    {
-        return Ok(None);
+) -> Result<bool, HandlerError> {
+    let seen = standing(db, owner.homeowner, job, now - CONTACT_DAYS).await?;
+    if seen.live || any_held(db, &seen.jobs).await.map_err(|_| DB_FAILED)? {
+        return Ok(false);
     }
-    Ok(Some(owner.contact))
+    Ok(!hold_on_its_way(db, &seen.jobs, job).await?)
 }
 
-/// PRIV-007: the vault contact of `job`'s homeowner when no other request of hers is live at
-/// `now` less 180 days and none of her jobs is held.
-///
-/// # Errors
-/// [`DB_FAILED`] on a database failure.
-pub async fn contact_to_purge(
+/// PRIV-007, D-1839: the contact purge of `target` at `now`, decided and cleared in one
+/// transaction under the retention lock order; true when the contact was cleared (or nothing was
+/// left to clear). Safe to run twice and to run beside request writers and hold events.
+async fn purge_owner_contact(
     db: &mut PgConnection,
-    job: Uuid,
+    target: Target,
     now: Timestamp,
-) -> Result<Option<Uuid>, HandlerError> {
-    match job_owner(db, job).await? {
-        Some(owner) => free_contact(db, owner, Some(job), now).await,
-        None => Ok(None),
+) -> Result<bool, HandlerError> {
+    let mut tx = db.begin().await.map_err(|_| DB_FAILED)?;
+    lock_retention_for_purge(&mut tx)
+        .await
+        .map_err(|_| DB_FAILED)?;
+    let Some(owner) = owner_of(&mut tx, target).await? else {
+        return Ok(false);
+    };
+    lock_homeowner(&mut tx, owner.homeowner)
+        .await
+        .map_err(|_| DB_FAILED)?;
+    let job = match target {
+        Target::Job(job) => Some(job),
+        Target::Request(_) => None,
+    };
+    if !free_under_locks(&mut tx, owner, job, now).await? {
+        return Ok(false);
     }
+    purge_contact(&mut tx, owner.contact)
+        .await
+        .map_err(|_| HandlerError("intake contact purge failed"))?;
+    tx.commit().await.map_err(|_| DB_FAILED)?;
+    Ok(true)
 }
 
 /// PRIV-008: deletes the intake answers of `job`'s requests; returns how many went.
@@ -136,16 +208,6 @@ pub async fn purge_answers(db: &mut PgConnection, job: Uuid) -> Result<u64, Hand
     Ok(gone.rows_affected())
 }
 
-async fn clear(db: &mut PgConnection, contact: Option<Uuid>) -> Result<(), HandlerError> {
-    match contact {
-        Some(contact) => purge_contact(db, contact)
-            .await
-            .map(|_| ())
-            .map_err(|_| HandlerError("intake contact purge failed")),
-        None => Ok(()),
-    }
-}
-
 /// The [`PURGE_KIND`](askhava_privacy::api::PURGE_KIND) handler; safe to run twice.
 ///
 /// # Errors
@@ -156,10 +218,9 @@ pub async fn run_purge(pool: PgPool, task: Claimed) -> Result<(), HandlerError> 
     match stage {
         PurgeStage::Photos => Ok(()),
         PurgeStage::Text => purge_answers(&mut conn, job).await.map(|_| ()),
-        PurgeStage::Contact => {
-            let contact = contact_to_purge(&mut conn, job, Timestamp::now()).await?;
-            clear(&mut conn, contact).await
-        }
+        PurgeStage::Contact => purge_owner_contact(&mut conn, Target::Job(job), Timestamp::now())
+            .await
+            .map(|_| ()),
     }
 }
 
@@ -218,19 +279,8 @@ pub async fn run_request_purge(pool: PgPool, task: Claimed) -> Result<(), Handle
         .and_then(|s| Uuid::parse_str(s).ok())
         .ok_or(HandlerError("request purge payload is not a request"))?;
     let mut conn = pool.acquire().await.map_err(|_| DB_FAILED)?;
-    let row = sqlx::query!(
-        "SELECT h.id, h.contact_id FROM intake.conversation c JOIN intake.homeowner h \
-         ON h.id = c.homeowner_id WHERE c.id = $1 AND c.job_id IS NULL",
-        conversation,
-    )
-    .fetch_optional(&mut *conn)
-    .await
-    .map_err(|_| DB_FAILED)?;
-    let Some(r) = row else { return Ok(()) };
-    let owner = Owner {
-        homeowner: r.id,
-        contact: r.contact_id,
-    };
-    let contact = free_contact(&mut conn, owner, None, Timestamp::now()).await?;
-    clear(&mut conn, contact).await
+    let target = Target::Request(conversation);
+    purge_owner_contact(&mut conn, target, Timestamp::now())
+        .await
+        .map(|_| ())
 }
