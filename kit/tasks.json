@@ -11738,7 +11738,8 @@
     "T319",
     "T322",
     "T323",
-    "T325"
+    "T325",
+    "T326"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -21820,6 +21821,67 @@
    ],
    "branch": "claude/task/T325-inbound-text-failure-alert",
    "prompt": "kit/prompts/T325.md"
+  },
+  {
+   "id": "T326",
+   "slug": "link-notice-stored-pin",
+   "title": "calls (harness): the LINK notice names the line's stored PIN, and the ID-derived job_pin is deleted",
+   "goal": "Round 24 audit R24-1 (D-2247; CALL-011, CALL-003; D-2091, D-1696): since T262 a line's PIN is the stored random `calls.number_pool.pin` (`pins::stored_pin`), but `request_link` (`app/calls/src/lifecycle.rs:288`) still builds the `link_this_phone` notice's `{job}` from `job_pin(line).digits()`, the line ID modulo 10,000, so the \"Reply LINK <PIN>\" text and email name a number the voice route no longer accepts. Latent (`request_link` has no production caller and the LINK reply handler is not built) and it fails closed, but D-2091 left the move to a harness task that no task owned. After T292 (which owns `lifecycle.rs` and `line_lifecycle.rs` for the brand): (1) `request_link` reads the line's PIN with `pins::stored_pin` in its transaction and names exactly those four digits; a line with no stored PIN (one opened before migration 0151) queues no notice and answers `false`. (2) `job_pin` and `route` (which routes caller-built `RoutedLine`s on `job_pin`) are deleted from `app/calls/src/routing.rs` and `calls::api` (a shared path); the pure TD-CALL-02 and TD-CALL-11 cases in `tests/integration/tests/pin_routing.rs` call `route_with` with an explicit PIN per line instead, every input, expected step and assertion otherwise byte-identical, and the case that pinned the ID-modulo rule itself (`job_pin(...).digits() == \"1234\"`) goes with the rule; `tests/integration/tests/line_lifecycle.rs` asserts the notice's `job` equals the line's stored PIN; `tests/integration/tests/call_pins.rs` keeps TD-CALL-13's \"not the ID-derived PIN\" count by computing the ID modulo 10,000 in the test. This is a harness task only because those three tests belong to DONE tasks (T077, T079, T262; D-2091). (3) Tests in `tests/integration/tests/link_pin.rs` (TD-CALL-18). The LINK reply handler and `request_link`'s caller are not built here (register row IC-74). Update `app/calls/CLAUDE.md` (the `job_pin` line) and `docs/architecture.md` section 10 (the T262 and CALL-003 lines naming `job_pin`) and `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "4",
+   "module": "calls",
+   "deps": [
+    "T292",
+    "T262"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "harness"
+   ],
+   "owns": [
+    "app/calls/src/lifecycle.rs",
+    "app/calls/src/routing.rs",
+    "tests/integration/tests/pin_routing.rs",
+    "tests/integration/tests/line_lifecycle.rs",
+    "tests/integration/tests/call_pins.rs",
+    "tests/integration/tests/link_pin.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/calls.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "CALL-011",
+    "CALL-003"
+   ],
+   "tests": [
+    "TD-CALL-18"
+   ],
+   "decisions": [
+    "D-2247",
+    "D-2091",
+    "D-1696",
+    "D-1755"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 6,
+    "lines": 300,
+    "context_pct": 38
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T326-link-notice-stored-pin",
+   "prompt": "kit/prompts/T326.md"
   },
   {
    "id": "T318",
