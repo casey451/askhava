@@ -154,7 +154,7 @@ jobs:
           base="$(git merge-base origin/main HEAD)"
           files="$(git diff --no-renames --name-only "$base" HEAD)"
           rust=false; npm=false
-          echo "$files" | grep -Eq '^(app/|tests/(integration|security|recovery|fixtures|mutation)/|scripts/run_named_mutants\.py|migrations/|stand_ins/|kit/layers\.json|kit/allowed_crates\.txt|Cargo\.(toml|lock)|rust-toolchain\.toml|clippy\.toml|deny\.toml|\.sqlx/|\.github/workflows/ci\.yml)' && rust=true
+          echo "$files" | grep -Eq '^(app/|tests/(integration|security|recovery|fixtures|mutation)/|scripts/run_named_mutants\.py|migrations/|docs/legal/|docs/catalog/|docs/architecture\.md|docs/copy/mail-app-steps\.md|schemas/|scripts/pii_scan\.py|stand_ins/|kit/layers\.json|kit/allowed_crates\.txt|Cargo\.(toml|lock)|rust-toolchain\.toml|clippy\.toml|deny\.toml|\.sqlx/|\.github/workflows/ci\.yml)' && rust=true
           echo "$files" | grep -Eq '^(package(-lock)?\.json|tsconfig|eslint\.config|tests/(e2e|a11y)/|app/[^/]+/static/.*\.ts$)' && npm=true
           echo "rust=$rust" >> "$GITHUB_OUTPUT"; echo "npm=$npm" >> "$GITHUB_OUTPUT"
           echo "rust=$rust npm=$npm"
@@ -166,6 +166,10 @@ jobs:
       - name: Approved crates only (kit/allowed_crates.txt, D-479)
         run: |
           python3 scripts/check_crates.py
+
+      - name: Every compiled-in file makes the Rust rules fire (include_str! and CARGO_MANIFEST_DIR paths, D-1867)
+        run: |
+          python3 scripts/check_include_paths.py
 
       - name: Rust toolchain (the pinned release from rust-toolchain.toml)
         if: steps.changes.outputs.rust == 'true'
@@ -349,7 +353,7 @@ jobs:
           base="$(git merge-base origin/main HEAD)"
           rust=false
           git diff --no-renames --name-only "$base" HEAD \
-            | grep -Eq '^(app/|tests/(integration|security|recovery|fixtures|coverage_floor\.json)|scripts/coverage_floor\.py|migrations/|stand_ins/|kit/layers\.json|kit/allowed_crates\.txt|Cargo\.(toml|lock)|rust-toolchain\.toml|clippy\.toml|deny\.toml|\.sqlx/|\.github/workflows/ci\.yml)' && rust=true
+            | grep -Eq '^(app/|tests/(integration|security|recovery|fixtures|coverage_floor\.json)|scripts/coverage_floor\.py|migrations/|docs/legal/|docs/catalog/|docs/architecture\.md|docs/copy/mail-app-steps\.md|schemas/|scripts/pii_scan\.py|stand_ins/|kit/layers\.json|kit/allowed_crates\.txt|Cargo\.(toml|lock)|rust-toolchain\.toml|clippy\.toml|deny\.toml|\.sqlx/|\.github/workflows/ci\.yml)' && rust=true
           echo "rust=$rust" >> "$GITHUB_OUTPUT"
 
       - name: Database roles the migrations grant to (askhava_app, askhava_migrator; D-092, D-491)
@@ -475,7 +479,7 @@ jobs:
           base="$(git merge-base origin/main HEAD)"
           run=false
           git diff --no-renames --name-only "$base" HEAD \
-            | grep -Eq '^(app/|migrations/|stand_ins/|tests/(e2e|a11y)/|package(-lock)?\.json|tsconfig|Cargo\.(toml|lock)|rust-toolchain\.toml|\.sqlx/|\.github/workflows/(ci|a11y)\.yml)' && run=true
+            | grep -Eq '^(app/|migrations/|docs/legal/|docs/catalog/|docs/architecture\.md|docs/copy/mail-app-steps\.md|schemas/|stand_ins/|tests/(e2e|a11y)/|package(-lock)?\.json|tsconfig|Cargo\.(toml|lock)|rust-toolchain\.toml|\.sqlx/|\.github/workflows/(ci|a11y)\.yml)' && run=true
           echo "run=$run" >> "$GITHUB_OUTPUT"; echo "run=$run"
 
       - name: Database roles the migrations grant to (askhava_app, askhava_migrator; D-092, D-491)
