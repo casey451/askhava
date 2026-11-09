@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-09T18:45:37Z by runner 95f20147558f (actions).
+Updated 2026-11-09T19:32:58Z by runner 9ee832228a65 (actions).
 
 **Building: T279 in progress since 18:45Z; 174 of 297 done; week 65% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,11 @@ Updated 2026-11-09T18:45:37Z by runner 95f20147558f (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T279 claimed 18:45Z, lease until 21:45Z
 - **Week:** 65% used, 64.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:47Z, 58 min before this update
+- **Last run:** 18:45Z, 47 min before this update
 - **Keeper:** last ran 17:47Z, next wake 18:07Z
 
 ## Needs attention
-- Strict plan check red: 23 problem(s) on tasks still to run (+52 on DONE tasks); first: T255: stored context_pct 25% but it measures 34%; regenerate
+- Strict plan check red: 24 problem(s) on tasks still to run (+54 on DONE tasks); first: T255: stored context_pct 25% but it measures 35%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -34,9 +34,9 @@ Updated 2026-11-09T18:45:37Z by runner 95f20147558f (actions).
 | T258 | adapters and payments: a refund is recorded as Stripe report | done | 1 | 80 min | 00:16Z |  |
 | T256 | server: two first texts from one new phone both reach intake | done | 1 | 37 min | 22:00Z |  |
 | T098 | Journey J1 (homeowner) and its variants, keyboard-only, with | done | 1 | 50 min | 20:51Z |  |
-| T254 | server and picks: the production release (paid or free, mint | done | 1 | 84 min | 19:24Z |  |
 
 ### Plan and harness merges on main
+- 19:01Z Plan: fourth audit — voice confirm line, emergency notices, dispute atomicity, feedback purge, route limits, alerts (D-2200–D-2209, T311–T325) (#388)
 - 22:20Z Plan: wire the real AI into the app — T298 endpoint client, T299 intake wiring (D-2065) (#367)
 - 21:52Z Plan: vendor-call connection audit, war-games overload scenario (T297) (D-2054) (#365)
 - 20:26Z Plan: 3-second AI reply budget, AI waits hold no DB connection, war-games latency (D-2038) (#362)
