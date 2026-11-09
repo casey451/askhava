@@ -1439,3 +1439,4 @@
 - 2026-11-09T02:08:54Z runner ba802a51ae9c (actions): {}
 - 2026-11-09T02:09:07Z runner ba802a51ae9c (actions): {}
 - 2026-11-09T02:26:19Z runner 6593f6cb6687 (actions): {"T259": "MERGE_PENDING -> DONE"}
+- 2026-11-09T02:26:26Z runner 6593f6cb6687 (actions): {"T260": "QUEUED -> IN_PROGRESS"}; T260 estimated 2.5M tokens (calibrated); five-hour window has 26.6M left, week 78.0M (session_reading 2026-11-09T02:08:54Z (week)); claimed
