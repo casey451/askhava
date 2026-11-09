@@ -1,23 +1,23 @@
 # Ask Hava build status
 
-Updated 2026-11-09T15:09:40Z by runner 028378523988 (actions).
+Updated 2026-11-09T15:30:29Z by runner 474919a2c5bf (actions).
 
-**Idle since 14:56Z; 171 of 297 done; week 63% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 15:15Z; 172 of 297 done; week 63% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 171 of 297 build tasks (owner gates not counted)
+- **Tasks done:** 172 of 297 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 14:56Z (no task in progress)
+- **Lane:** idle since 15:15Z (no task in progress)
 - **Week:** 63% used, 70.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:09Z, 0 min before this update
+- **Last run:** 15:09Z, 20 min before this update
 - **Keeper:** last ran 15:09Z, next wake 15:29Z
 
 ## Needs attention
-- Strict plan check red: 22 problem(s) on tasks still to run (+47 on DONE tasks); first: T255: stored context_pct 25% but it measures 34%; regenerate
+- Strict plan check red: 23 problem(s) on tasks still to run (+50 on DONE tasks); first: T255: stored context_pct 25% but it measures 34%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T274 | intake and privacy: the 180-day contact purge decides and cl | MERGE_PENDING | 1 | 66 min | 14:56Z |  |
+| T274 | intake and privacy: the 180-day contact purge decides and cl | done | 1 | 66 min | 14:56Z |  |
 | T270 | picks and payments: the unreachable refund and the fraud war | done | 1 | 29 min | 13:17Z |  |
 | T282 | calls and picks: each call's start time reaches the unreacha | done | 2 | 32 min | 12:06Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Date:      2026- |
 | T282 | calls and picks: each call's start time reaches the unreacha | check_failed | 1 | 27 min | 10:49Z |  |
@@ -44,7 +44,7 @@ Updated 2026-11-09T15:09:40Z by runner 028378523988 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 252 of 732 (34.4%) · partial 281 · unstarted 199
-**Tasks merged (throughput only):** 171 of 297
+**Tasks merged (throughput only):** 172 of 297
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -79,7 +79,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 51 of 101 done
+- stage 4: 52 of 101 done
 - stage 5: 0 of 50 done
 - stage 6: 0 of 30 done
 - stage 7: 0 of 2 done
