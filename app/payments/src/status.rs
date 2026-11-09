@@ -256,12 +256,6 @@ impl RefundStatus {
         matches!(self, Self::Pending)
     }
 
-    /// D-1753: Stripe took the refund, so a later failure reverses its ledger entry.
-    #[must_use]
-    pub const fn is_succeeded(self) -> bool {
-        matches!(self, Self::Succeeded)
-    }
-
     /// D-1753: a refund Stripe can still fail or cancel (`succeeded` or `pending`).
     #[must_use]
     pub const fn may_fail(self) -> bool {

@@ -311,6 +311,45 @@ async fn td_fee_42_pending_then_succeeded_on_the_webhook(pool: PgPool) {
     assert_eq!(view.refunds, 7500);
 }
 
+/// TD-FEE-42 (FEE-026, FEE-028, FEE-029, D-2067): the nightly reconcile appends the refund Stripe
+/// lists while the row is still `pending`; Stripe's later `failed` reverses it once, decided from
+/// the ledger alone, so the ledger nets to Stripe's no refund and no row is changed.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_fee_42_reconciled_while_pending_then_failed_reverses(pool: PgPool) {
+    charged(&pool).await;
+    let own = StripeCharge {
+        id: "ch_FakeT258".to_owned(),
+        payment_intent: INTENT.to_owned(),
+        refunded_cents: 7500,
+        balance_transaction: "txn_FakeT258".to_owned(),
+        ..second_charge()
+    };
+    let fake = FakeStripe {
+        charges: vec![own],
+        ..stripe(&[("re_FakeA", "pending")])
+    };
+    let first = request_refund(&pool, &fake, &secret(), trigger(), at(0)).await;
+    assert_eq!(first, Ok(RefundOutcome::Failed));
+    reconcile(&pool, &fake, &secret(), at(30))
+        .await
+        .expect("run");
+    assert_eq!(status(&pool).await, "pending");
+    assert_eq!(ledger(&pool, "refund").await, 1);
+    let before = rows(&pool).await;
+    assert_eq!(refund_failed(&pool, "re_FakeA", at(60)).await, Ok(true));
+    assert_eq!(refund_failed(&pool, "re_FakeA", at(90)).await, Ok(false));
+    assert_eq!(status(&pool).await, "failed");
+    assert_eq!(ledger(&pool, "refund-reversal").await, 1);
+    let reversal = "SELECT amount_cents FROM payments.ledger_entry WHERE kind = $1";
+    assert_eq!(scalar(&pool, reversal, "refund-reversal").await, 7500);
+    let view = money_view(&pool, (at(-999 * DAY), at(999 * DAY)))
+        .await
+        .expect("view");
+    assert_eq!(view.refunds, 0, "Stripe holds no refund");
+    let after = rows(&pool).await;
+    assert_eq!(after[..before.len()], before[..], "no ledger row changed");
+}
+
 /// TD-FEE-42 (FEE-026): `failed` or `canceled` after acceptance (from `pending`, through the
 /// webhook or the check) is the alert and the hourly retry with no ledger entry.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]

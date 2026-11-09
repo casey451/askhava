@@ -573,7 +573,8 @@ pub async fn refund_succeeded(
 
 /// FEE-026, P13: Stripe's `refund.failed` for `re_…`, after it took the refund or while it was
 /// pending. The refund is marked failed, Casey alerted on its first failure, a retry queued an
-/// hour on, and a refund that had `succeeded` gets one `refund-reversal` entry (D-1753).
+/// hour on, and a `refund` entry the ledger still holds unreversed (from `succeeded`, or the nightly
+/// reconcile's while the row was `pending`) gets one `refund-reversal` entry (D-1753, D-2067).
 ///
 /// # Errors
 /// [`MoneyEventError::Database`] or `Ledger`.
@@ -609,7 +610,7 @@ async fn refund_ended(
         return Ok(false);
     };
     let (refunds, reversals) = held(&mut tx, pick).await?;
-    if from.is_succeeded() && refunds > reversals {
+    if refunds > reversals {
         let key = format!("refund-reversal.{pick}.{refund}");
         append(&mut tx, &charged, &key, true).await?;
     }
