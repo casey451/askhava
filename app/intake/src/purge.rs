@@ -20,17 +20,27 @@
 //! (2) the homeowner row (`models::lock_homeowner`, which every request-opening writer takes);
 //! (3) the vault contact row (`purge_contact`'s `UPDATE`, a savepoint here). Eligibility is read
 //! only after (1) and (2) are held, so a request or hold that committed first is seen and one that
-//! comes later waits for the clear. A hold still on its way counts as a hold: an unfinished
-//! (pending, running or failed) contact-stage `jobs.purge_due` or `privacy.purge_recheck` task of
-//! another of her jobs (the composition places `payments`' dispute holds on those tasks) or any
-//! unfinished `businesses.complaint_hold` event (its key names the complaint, not the job), read
-//! through `core::api::unfinished`. No outside call is made inside the transaction.
+//! comes later waits for the clear. No outside call is made inside the transaction.
+//!
+//! A hold still on its way counts as a hold (D-2152, D-2153): an unfinished (pending, running or
+//! dead-lettered) contact-stage `jobs.purge_due` or `privacy.purge_recheck` task of another of her
+//! jobs (the composition places `payments`' dispute holds on those tasks) or any unfinished
+//! `businesses.complaint_hold` event (its key names the complaint, not the job), read through
+//! `core::api::unfinished` before the locks are taken: a task's `done_at` is written only after
+//! its handler's hold committed, so "finished" read first means its hold is visible to the locked
+//! `any_held` read, and the `core.task` scans never run under the exclusive key. While one is
+//! unfinished nothing is cleared and the purge queues itself again [`WAIT_AGAIN`] later under a
+//! dedupe key naming the task that queued it, so it repeats until the task finishes and never
+//! depends on another job's purge to come back. A dead-lettered purge-stage task raises its own
+//! alert (`alert_if_last`); a dead-lettered complaint hold event does not yet (D-2152), so a
+//! purge it keeps back repeats hourly, keeping the details, until it is cleared.
 
 use askhava_businesses::api::COMPLAINT_HOLD_KIND;
 use askhava_core::api::{Claimed, HandlerError, NewTask, TaskError, enqueue, unfinished};
 use askhava_jobs::api::PURGE_DUE_KIND;
 use askhava_privacy::api::{
-    PurgeStage, RECHECK_KIND, any_held, lock_retention_for_purge, purge_contact, purge_target,
+    PURGE_KIND, PurgeStage, RECHECK_KIND, any_held, lock_retention_for_purge, purge_contact,
+    purge_target,
 };
 use jiff::{SignedDuration, Timestamp};
 use jiff_sqlx::ToSqlx;
@@ -44,6 +54,19 @@ use crate::models::lock_homeowner;
 pub const REQUEST_PURGE_KIND: &str = "intake.request_purge";
 const DB_FAILED: HandlerError = HandlerError("intake purge database call failed");
 const CONTACT_DAYS: SignedDuration = SignedDuration::from_hours(180 * 24);
+/// PRIV-007, D-2153: how long a contact purge kept back by an unfinished hold-producing task waits
+/// before it runs again.
+const WAIT_AGAIN: SignedDuration = SignedDuration::from_hours(1);
+
+/// What one run of the contact purge did.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Purged {
+    /// Cleared, kept for a request or hold its own purge or re-check comes back for, or nothing
+    /// left to clear: this task is finished.
+    Settled,
+    /// Kept while a hold-producing task is unfinished: this purge must run again.
+    Waiting,
+}
 
 /// A homeowner and her vault contact.
 #[derive(Debug, Clone, Copy)]
@@ -146,7 +169,7 @@ async fn hold_on_its_way(
 }
 
 /// PRIV-007, D-1839: with (1) and (2) held, whether `owner`'s contact may go: no other request of
-/// hers live at `now` less 180 days, no job of hers held, no hold-producing task unfinished.
+/// hers live at `now` less 180 days and no job of hers held.
 async fn free_under_locks(
     db: &mut PgConnection,
     owner: Owner,
@@ -154,42 +177,81 @@ async fn free_under_locks(
     now: Timestamp,
 ) -> Result<bool, HandlerError> {
     let seen = standing(db, owner.homeowner, job, now - CONTACT_DAYS).await?;
-    if seen.live || any_held(db, &seen.jobs).await.map_err(|_| DB_FAILED)? {
-        return Ok(false);
-    }
-    Ok(!hold_on_its_way(db, &seen.jobs, job).await?)
+    Ok(!seen.live && !any_held(db, &seen.jobs).await.map_err(|_| DB_FAILED)?)
 }
 
-/// PRIV-007, D-1839: the contact purge of `target` at `now`, decided and cleared in one
-/// transaction under the retention lock order; true when the contact was cleared (or nothing was
-/// left to clear). Safe to run twice and to run beside request writers and hold events.
-async fn purge_owner_contact(
+/// PRIV-007, D-2153: before any lock, whether a hold-producing task for `target`'s homeowner is
+/// unfinished (her jobs as one unlocked statement reads them; a job added later is on a live
+/// request, which the locked read sees).
+async fn waiting_for_hold(
     db: &mut PgConnection,
     target: Target,
     now: Timestamp,
 ) -> Result<bool, HandlerError> {
+    let Some(owner) = owner_of(db, target).await? else {
+        return Ok(false);
+    };
+    let seen = standing(db, owner.homeowner, own_job(target), now - CONTACT_DAYS).await?;
+    hold_on_its_way(db, &seen.jobs, own_job(target)).await
+}
+
+fn own_job(target: Target) -> Option<Uuid> {
+    match target {
+        Target::Job(job) => Some(job),
+        Target::Request(_) => None,
+    }
+}
+
+/// PRIV-007, D-1839, D-2153: the contact purge of `target` at `now`. With a hold-producing task
+/// unfinished it changes nothing and returns [`Purged::Waiting`]; otherwise it decides and clears
+/// in one transaction under the retention lock order. Safe to run twice and to run beside request
+/// writers and hold events.
+async fn purge_owner_contact(
+    db: &mut PgConnection,
+    target: Target,
+    now: Timestamp,
+) -> Result<Purged, HandlerError> {
+    if waiting_for_hold(db, target, now).await? {
+        return Ok(Purged::Waiting);
+    }
     let mut tx = db.begin().await.map_err(|_| DB_FAILED)?;
     lock_retention_for_purge(&mut tx)
         .await
         .map_err(|_| DB_FAILED)?;
     let Some(owner) = owner_of(&mut tx, target).await? else {
-        return Ok(false);
+        return Ok(Purged::Settled);
     };
     lock_homeowner(&mut tx, owner.homeowner)
         .await
         .map_err(|_| DB_FAILED)?;
-    let job = match target {
-        Target::Job(job) => Some(job),
-        Target::Request(_) => None,
-    };
-    if !free_under_locks(&mut tx, owner, job, now).await? {
-        return Ok(false);
+    if !free_under_locks(&mut tx, owner, own_job(target), now).await? {
+        return Ok(Purged::Settled);
     }
     purge_contact(&mut tx, owner.contact)
         .await
         .map_err(|_| HandlerError("intake contact purge failed"))?;
     tx.commit().await.map_err(|_| DB_FAILED)?;
-    Ok(true)
+    Ok(Purged::Settled)
+}
+
+/// PRIV-007, D-2153: runs the contact purge of `target` for `task`; when it is
+/// [`Purged::Waiting`], queues `kind` with the same payload [`WAIT_AGAIN`] from `now`, keyed by
+/// the target and `task`'s row ID (so a second run of the same task queues nothing more, and each
+/// queued run queues its own next one), so it runs again until the hold-producing task finished.
+async fn purge_or_wait(
+    db: &mut PgConnection,
+    (kind, task): (&'static str, &Claimed),
+    target: Target,
+    now: Timestamp,
+) -> Result<(), HandlerError> {
+    if purge_owner_contact(db, target, now).await? == Purged::Settled {
+        return Ok(());
+    }
+    let (Target::Job(id) | Target::Request(id)) = target;
+    let at = now + WAIT_AGAIN;
+    let mut again = NewTask::new(kind, task.payload.clone(), at);
+    again.dedupe_key = Some(format!("{kind}:{id}:after:{}", task.id));
+    enqueue(db, &again).await.map(|_| ()).map_err(|_| DB_FAILED)
 }
 
 /// PRIV-008: deletes the intake answers of `job`'s requests; returns how many went.
@@ -218,9 +280,10 @@ pub async fn run_purge(pool: PgPool, task: Claimed) -> Result<(), HandlerError> 
     match stage {
         PurgeStage::Photos => Ok(()),
         PurgeStage::Text => purge_answers(&mut conn, job).await.map(|_| ()),
-        PurgeStage::Contact => purge_owner_contact(&mut conn, Target::Job(job), Timestamp::now())
-            .await
-            .map(|_| ()),
+        PurgeStage::Contact => {
+            let now = Timestamp::now();
+            purge_or_wait(&mut conn, (PURGE_KIND, &task), Target::Job(job), now).await
+        }
     }
 }
 
@@ -280,7 +343,6 @@ pub async fn run_request_purge(pool: PgPool, task: Claimed) -> Result<(), Handle
         .ok_or(HandlerError("request purge payload is not a request"))?;
     let mut conn = pool.acquire().await.map_err(|_| DB_FAILED)?;
     let target = Target::Request(conversation);
-    purge_owner_contact(&mut conn, target, Timestamp::now())
-        .await
-        .map(|_| ())
+    let kind = (REQUEST_PURGE_KIND, &task);
+    purge_or_wait(&mut conn, kind, target, Timestamp::now()).await
 }

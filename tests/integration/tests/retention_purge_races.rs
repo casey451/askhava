@@ -10,11 +10,15 @@
 //! (`run_purge`) and a request that never got a job (`run_request_purge`). The job text
 //! (PRIV-008) and the ledger and audit records (PRIV-010) are never touched by the contact purge;
 //! the last case checks the audit row count stays one per clear. Every handler runs as
-//! `askhava_app`. Every name, phone, email and address is fake.
+//! `askhava_app`. One case drives both purge tasks through the real claim-and-run loop
+//! (`claim`, `Registry::run`) to show that a purge kept back by an unfinished hold-producing task
+//! comes back by itself (D-2153). Every name, phone, email and address is fake.
 
-use askhava_core::api::{Claimed, HandlerError, NewTask, enqueue};
+use askhava_core::api::{
+    Claimed, HandlerError, Lease, ManualClock, NewTask, Outcome, Registry, WorkerId, claim, enqueue,
+};
 use askhava_intake::api::rules::{Inbound, Settings};
-use askhava_intake::api::{TextIn, receive_text, run_purge, run_request_purge};
+use askhava_intake::api::{REQUEST_PURGE_KIND, TextIn, receive_text, run_purge, run_request_purge};
 use askhava_integration::set_app_role;
 use askhava_privacy::api::{
     HoldSource, NewContact, PURGE_KIND, Vault, find_by_phone, place_hold, release_hold,
@@ -22,7 +26,7 @@ use askhava_privacy::api::{
 };
 use base64::Engine as _;
 use base64::engine::general_purpose::STANDARD;
-use jiff::Timestamp;
+use jiff::{SignedDuration, Timestamp};
 use secrecy::SecretString;
 use serde_json::json;
 use sqlx::postgres::PgPoolOptions;
@@ -34,6 +38,9 @@ const JOB: Uuid = Uuid::from_u128(0x0000_7e57_0000_0000_0000_0000_0000_0274);
 const JOB_B: Uuid = Uuid::from_u128(0x0000_7e57_0000_0000_0000_0000_0000_274b);
 const HOMEOWNER: Uuid = Uuid::from_u128(0x274a);
 const PHONE: &str = "(928) 555-0174";
+
+/// The audit rows' off-database stream task, not under test here (run as a no-op).
+const STREAM_KIND: &str = "ops.offdb_stream";
 
 /// The purge path under test.
 #[derive(Debug, Clone, Copy)]
@@ -442,4 +449,87 @@ async fn td_priv_18_twenty_concurrent_purges_and_writers_never_deadlock(pool: Pg
         kept >= 2,
         "the contact purge touched the job text or consent"
     );
+}
+
+/// Claims every task due at `at` and runs it through `registry` as the worker does; each must
+/// finish (a purge kept back by a hold-producing task finishes too, having queued itself again).
+/// Returns how many purge tasks ran.
+async fn run_due(pool: &PgPool, registry: &Registry, at: Timestamp) -> usize {
+    let clock = ManualClock::new(at);
+    let owner = WorkerId::new(pool).await.expect("worker id");
+    let lease = SignedDuration::from_secs(60);
+    let tasks = claim(pool, owner, at, lease, 100).await.expect("claim");
+    let mut purges = 0;
+    for task in tasks {
+        purges += usize::from(task.kind != STREAM_KIND);
+        let outcome = registry.run(pool, &clock, owner, task, Lease::WORKER).await;
+        assert_eq!(outcome, Ok(Outcome::Done));
+    }
+    purges
+}
+
+/// The purge tasks of both paths not yet finished.
+async fn purges_left(pool: &PgPool) -> i64 {
+    sqlx::query_scalar(
+        "SELECT count(*) FROM core.task WHERE kind IN ('privacy.purge', 'intake.request_purge')
+           AND done_at IS NULL",
+    )
+    .fetch_one(pool)
+    .await
+    .expect("purge tasks")
+}
+
+/// TD-PRIV-18 (PRIV-007, D-2153): the whole chain through the task queue with no manual re-run. A
+/// complaint hold event that is pending, then dead-lettered, keeps the contact on both paths, and
+/// each purge task finishes having queued itself an hour on; once the event is done, the queued
+/// purges clear the contact by themselves and then stop queueing.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_priv_18_a_purge_kept_by_an_unfinished_hold_task_runs_again_by_itself(pool: PgPool) {
+    let (contact, jobless) = seeded(&pool).await;
+    let now = Timestamp::now();
+    let mut blocker = NewTask::new(
+        "businesses.complaint_hold",
+        json!({ "job": JOB_B }),
+        now + SignedDuration::from_hours(24 * 30),
+    );
+    blocker.dedupe_key = Some(format!("businesses.complaint_hold:{JOB_B}:open"));
+    let starts = [
+        (PURGE_KIND, json!({ "job": JOB, "stage": "contact" })),
+        (REQUEST_PURGE_KIND, json!({ "conversation": jobless })),
+    ];
+    let workers = app_pool(&pool, 4).await;
+    let mut conn = workers.acquire().await.expect("connection");
+    enqueue(&mut conn, &blocker).await.expect("blocker");
+    for (kind, payload) in starts {
+        let mut task = NewTask::new(kind, payload, now);
+        task.dedupe_key = Some(format!("{kind}:start"));
+        enqueue(&mut conn, &task).await.expect("purge task");
+    }
+    let mut registry = Registry::new();
+    registry.register(PURGE_KIND, run_purge);
+    registry.register(REQUEST_PURGE_KIND, run_request_purge);
+    registry.register(STREAM_KIND, |_, _| async { Ok(()) });
+    let later = |hours: i64| Timestamp::now() + SignedDuration::from_hours(hours);
+    assert_eq!(run_due(&workers, &registry, now).await, 2);
+    assert_eq!(
+        (cleared(&pool, contact).await, purges_left(&pool).await),
+        ((false, true), 2)
+    );
+    let dead = "UPDATE core.task SET dead_at = now()
+                WHERE kind = 'businesses.complaint_hold' AND $1::uuid IS NULL";
+    run(&pool, dead, None).await;
+    assert_eq!(run_due(&workers, &registry, later(2)).await, 2);
+    assert_eq!(
+        (cleared(&pool, contact).await, purges_left(&pool).await),
+        ((false, true), 2)
+    );
+    let done = "UPDATE core.task SET done_at = now()
+                WHERE kind = 'businesses.complaint_hold' AND $1::uuid IS NULL";
+    run(&pool, done, None).await;
+    assert_eq!(run_due(&workers, &registry, later(2)).await, 2);
+    assert_eq!(
+        (cleared(&pool, contact).await, purges_left(&pool).await),
+        ((true, true), 0)
+    );
+    assert_eq!(run_due(&workers, &registry, later(4)).await, 0);
 }
