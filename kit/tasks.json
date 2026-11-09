@@ -10593,7 +10593,9 @@
     "T254",
     "T085",
     "T261",
-    "T300"
+    "T300",
+    "T301",
+    "T302"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -11720,7 +11722,9 @@
     "T292",
     "T293",
     "T294",
-    "T295"
+    "T295",
+    "T301",
+    "T302"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -12604,7 +12608,7 @@
    "id": "T204",
    "slug": "ops-pushes-digest-security-alerts",
    "title": "ops: phone pushes by alert email, the weekly digest, owner flags, the away setting and security-event alerts",
-   "goal": "Only the listed alerts push to Casey's phone, as alert emails, with the 9 a.m. and 3 p.m. call-back pushes; the weekly digest and the owner-portal flags carry counts and numbers only; the away setting changes what businesses (on the portal home's review and dispute lines, `business_portal.rs` and `business_home.html`) and HELP replies (`keywords.rs`) are told, all extended here; security events are logged and a vault read count over three times its baseline alerts (OPS-026, OPS-027, OPS-029 to OPS-035, SEC-047, SEC-048). `ops` decides and records alerts; the sending is `messaging`'s handler (`alert_emails.rs`) and the digest's cross-module counts are read by `portals` (`digest_flags.rs`) through each module's `api` (architecture section 3, D-491). The away date, the digest's last-opened time, the done marks and the once-a-day push record are `ops` tables this task's migration adds; the digest also rolls up the not-covered requests by trade (OPS-041) and the BIZ-054 leaving answers (TD-OPS-09); the health-page figures are T106's and the failed-restore and HELP digest cases T109's and T151's (TD-OPS-22) (D-491). A daily worker check raises a Low alert above 70% of the database volume and a High alert, listed in the next OPS-032 daytime push, above 85%, neither starting safe mode (OPS-052); OPS-033's restart relies on OPS-049's self-exit, not the host's health check (D-492). The portal home also lets the business edit its Google and Yelp links through `businesses::api` (T165's storage; BIZ-052's portal half, D-492). A PROBLEM reply's words in the digest come from T277's owner-only `privacy::api::problem_words` by the alert's inbox row, never from `messaging.inbox` (D-1840).",
+   "goal": "Only the listed alerts push to Casey's phone, as alert emails, with the 9 a.m. and 3 p.m. call-back pushes; the weekly digest and the owner-portal flags carry counts and numbers only; the away setting changes what businesses (on the portal home's review and dispute lines, `business_portal.rs` and `business_home.html`) and HELP replies (`keywords.rs`) are told, all extended here; security events are logged and a vault read count over three times its baseline alerts (OPS-026, OPS-027, OPS-029 to OPS-035, SEC-047, SEC-048). `ops` decides and records alerts; the sending is `messaging`'s handler (`alert_emails.rs`) and the digest's cross-module counts are read by `portals` (`digest_flags.rs`) through each module's `api` (architecture section 3, D-491). The away date, the digest's last-opened time, the done marks and the once-a-day push record are `ops` tables this task's migration adds; the digest also rolls up the not-covered requests by trade (OPS-041) and the BIZ-054 leaving answers (TD-OPS-09); the health-page figures are T106's and the failed-restore and HELP digest cases T109's and T151's (TD-OPS-22) (D-491). A daily worker check raises a Low alert above 70% of the database volume and a High alert, listed in the next OPS-032 daytime push, above 85%, neither starting safe mode (OPS-052); OPS-033's restart relies on OPS-049's self-exit, not the host's health check (D-492). The portal home also lets the business edit its Google and Yelp links through `businesses::api` (T165's storage; BIZ-052's portal half, D-492). A PROBLEM reply's words in the digest come from T277's owner-only `privacy::api::problem_words` by the alert's inbox row, never from `messaging.inbox` (D-1840). T300 serves the business portal home before this task (D-2128): this task owns `app/server/src/business_portal.rs` too and keeps the served home working with what it adds.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -12629,7 +12633,8 @@
     "migrations/0176_ops_owner_digest.sql",
     "app/messaging/src/keywords.rs",
     "app/portals/src/business_portal.rs",
-    "app/portals/templates/business_home.html"
+    "app/portals/templates/business_home.html",
+    "app/server/src/business_portal.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -12692,7 +12697,7 @@
    ],
    "cites": [],
    "budget": {
-    "files": 8,
+    "files": 9,
     "lines": 400,
     "context_pct": 23
    },
@@ -13799,7 +13804,9 @@
    "stage": "5",
    "module": null,
    "deps": [
-    "T205"
+    "T205",
+    "T303",
+    "T304"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -14269,7 +14276,13 @@
     "T219",
     "T222",
     "T229",
-    "T252"
+    "T252",
+    "T303",
+    "T304",
+    "T305",
+    "T306",
+    "T307",
+    "T308"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -15621,7 +15634,7 @@
    "id": "T300",
    "slug": "business-portal-served",
    "title": "server and portals: the business portal is served behind the business session (home, a released job's page, billing and statements, notice settings)",
-   "goal": "No task serves the business portal (D-2116, D-2117): `server::build_router` merges no `/b` page, and `portals` exports the portal home, the released job's page, billing with its CSV statement and notice settings only as page functions with route constants (D-1728, D-1848, D-1896). (1) `app/server/src/business_portal.rs` builds the routes `GET /b` (`business_home_page`), `POST /b/open-cards` (`save_open_cards_times`), `GET /b/picks/{pick}` (`job_release_page`, which reads `picks::api::released_view` on every load with the session proof from `server::session_minter()`, D-1739), `GET /b/billing` (`billing_page`) and `GET /b/billing/statement.csv` (`statement_csv`), and `GET` and `POST /b/notices` (`notice_settings_page`, `change_channel`; the addresses read from the vault in `server`, D-1848), each page's facts built through each module's `api`; it merges them in the shared `app/server/src/lib.rs` and composes them in `main.rs`. Every route reads the person with `portals::api::business_principal`: no business person (signed out, a homeowner or owner session, a removed member) gets a 4xx answer with a link to `/b/sign-in` and no homeowner detail, so T085's signed-out checks in `tests/e2e/business_portal.spec.ts` stay true; a refusal (another business's pick, a role the page needs missing, an unknown ID) is the one not-found answer; every response is `no_store` (SEC-034); both `POST`s pass `refuse_cross_site` and the CSRF check (SEC-009, SEC-042), and a refusal is a security event (SEC-048). (2) Each served `GET` page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788), and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. (3) Tests: `app/server/tests/business_portal_route.rs` against the assembled router (TD-SEC-43 and the router half of TD-BIZ-42) and `tests/e2e/business_portal_served.spec.ts` (the browser half of TD-BIZ-42; T085's spec is not changed, D-2117). In that spec the fake owner signs in through the served sign-in pages with no read of any email: the spec seeds, through `psql` on `DATABASE_URL` as `tests/e2e/j1_reduced.spec.ts` seeds its quote token, the active business, its owner with a linked fake phone (555-01xx) that takes texts, and a `portals.login_link` row whose `token_sha256` is the SHA-256 of a token the spec chose, then opens `/b/sign-in/{token}`; the new-device code is the one the stand-in Verify issues for that phone, computed in the spec from its rule in `stand_ins/twilio.py` (`start_verification`: the sum of the E.164 number's character codes modulo 1,000,000, six digits); no test-control route, stand-in change or email read is needed (`/__test/messages` lists texts only and the Resend stand-in has no read route). The complaints page, the \"Why was I charged?\" page, the emergency-email switch and business sign-up are not this task's. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`.",
+   "goal": "No task serves the business portal (D-2116, D-2117): `server::build_router` merges no `/b` page, and `portals` exports the portal home, the released job's page, billing with its CSV statement and notice settings only as page functions with route constants (D-1728, D-1848, D-1896). (1) `app/server/src/business_portal.rs` builds the routes `GET /b` (`business_home_page`), `POST /b/open-cards` (`save_open_cards_times`), `GET /b/picks/{pick}` (`job_release_page`, which reads `picks::api::released_view` on every load with the session proof from `server::session_minter()`, D-1739), `GET /b/billing` (`billing_page`) and `GET /b/billing/statement.csv` (`statement_csv`), and `GET` and `POST /b/notices` (`notice_settings_page`, `change_channel`; the addresses read from the vault in `server`, D-1848), each page's facts built through each module's `api`; it merges them in the shared `app/server/src/lib.rs` and composes them in `main.rs`. Every route reads the person with `portals::api::business_principal`: no business person (signed out, a homeowner or owner session, a removed member) gets a 4xx answer with a link to `/b/sign-in` and no homeowner detail, so T085's signed-out checks in `tests/e2e/business_portal.spec.ts` stay true; a refusal (another business's pick, a role the page needs missing, an unknown ID) is the one not-found answer; every response is `no_store` (SEC-034); both `POST`s pass `refuse_cross_site` and the CSRF check (SEC-009, SEC-042), and a refusal is a security event (SEC-048). (2) Each served `GET` page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788), and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. (3) Tests: `app/server/tests/business_portal_route.rs` against the assembled router (TD-SEC-43 and the router half of TD-BIZ-42) and `tests/e2e/business_portal_served.spec.ts` (the browser half of TD-BIZ-42; T085's spec is not changed, D-2117). In that spec the fake owner signs in through the served sign-in pages with no read of any email: the spec seeds, through `psql` on `DATABASE_URL` as `tests/e2e/j1_reduced.spec.ts` seeds its quote token, the active business, its owner with a linked fake phone (555-01xx) that takes texts, and a `portals.login_link` row whose `token_sha256` is the SHA-256 of a token the spec chose, then opens `/b/sign-in/{token}`; the new-device code is the one the stand-in Verify issues for that phone, computed in the spec from its rule in `stand_ins/twilio.py` (`start_verification`: the sum of the E.164 number's character codes modulo 1,000,000, six digits); no test-control route, stand-in change or email read is needed (`/__test/messages` lists texts only and the Resend stand-in has no read route). The complaints page, the \"Why was I charged?\" page, the emergency-email switch and the job page's notice log are T306's, the action links T301's and business sign-up T302's (D-2128). Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -15631,7 +15644,8 @@
     "T085",
     "T253",
     "T195",
-    "T196"
+    "T196",
+    "T199"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -15694,6 +15708,574 @@
    "branch": "claude/task/T300-business-portal-served",
    "prompt": "kit/prompts/T300.md",
    "acceptance": "TD-SEC-43 and TD-BIZ-42 pass against PostgreSQL through the assembled router and in Playwright against the stand-ins, and `Ally` passes with the new page states; every T084, T085, T195, T196, T253, T254 and T280 case still passes, T085's `tests/e2e/business_portal.spec.ts` unchanged."
+  },
+  {
+   "id": "T301",
+   "slug": "action-links-served",
+   "title": "server and portals: the email action links are served (the quote form, the Confirm review step, Hold, Away, Pause, Resume, Busy, link a phone, approve a phone, ask about a charge)",
+   "goal": "No task serves the email action links (D-2128): `portals::api` has `open_action_link`, `use_action_link`, `action_page`, `quote_form_page` and `ask_about_charge` and the route constant `ACTION_ROUTE` (`/b/a/{kind}/{object}/{token}`, T148, \"not served yet\", D-1955), and `quotes::api::job_page` supplies the job page's data, but `server::build_router` merges none of it, so J2's quote form \"opens from its link\" (T099) cannot run. (1) `app/server/src/action_links.rs` builds `GET` and `POST` on `ACTION_ROUTE` for every `ActionKind`: `GET` calls `open_action_link` and shows `action_page` or, for a Quote link, `quote_form_page` with the job page's data, and changes nothing however often it is opened (SEC-026); only the page's `POST` with its CSRF token calls `use_action_link` in the caller's transaction and acts once (D-1955); a token for another kind, object or person, an expired token or a removed member's token gets the one not-found answer and reads nothing; every response is `no_store`; the `POST` passes `refuse_cross_site` and a refusal is a security event (SEC-042, SEC-048); merged in the shared `app/server/src/lib.rs`. (2) Tests: `app/server/tests/action_links_route.rs` against the assembled router (TD-SEC-44) and `tests/e2e/action_links_served.spec.ts` with links seeded through `psql` as `tests/e2e/j1_reduced.spec.ts` seeds its token (the `portals.login_link` row holds the SHA-256 of `action:<kind>:<object>:<token>`, D-1955). Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "server",
+   "deps": [
+    "T280",
+    "T148",
+    "T198",
+    "T199",
+    "T155",
+    "T209",
+    "T212",
+    "T164",
+    "T214",
+    "T249"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "privacy"
+   ],
+   "owns": [
+    "app/server/src/action_links.rs",
+    "app/server/tests/action_links_route.rs",
+    "tests/e2e/action_links_served.spec.ts"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/security.md",
+    "docs/spec/businesses.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/accessibility.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "BIZ-038",
+    "PICK-040",
+    "PICK-007",
+    "SEC-025",
+    "SEC-026",
+    "SEC-034",
+    "SEC-042",
+    "SEC-048"
+   ],
+   "tests": [
+    "TD-SEC-44"
+   ],
+   "decisions": [
+    "D-1955",
+    "D-1728",
+    "D-2117",
+    "D-2128"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 600,
+    "context_pct": 14
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T301-action-links-served",
+   "prompt": "kit/prompts/T301.md",
+   "acceptance": "TD-SEC-44 passes against PostgreSQL through the assembled router and in Playwright against the stand-ins, and `Ally` passes with the new page states; every T148, T199 and T300 case still passes."
+  },
+  {
+   "id": "T302",
+   "slug": "business-signup-served",
+   "title": "server and portals: business sign-up is served (every sign-up screen, the email check and the sample pick step)",
+   "goal": "No task serves business sign-up (D-2128): `portals::api` has `signup_page` with its `Screen`s and `done_facts`, and `email_check_page` and `sample_pick_page` (T193, T149), with the route constant `SIGNUP_ROUTE` (`/b/signup`), but `server::build_router` merges none of them, so J2 step 1 (T099) cannot run. (1) `app/server/src/business_signup.rs` builds `GET` and `POST` on `SIGNUP_ROUTE` for each screen in order, without a session (the pre-session CSRF cookie, SEC-042), through `businesses::api`'s sign-up, identity and email-verification calls, then the email check and sample-pick screens after the email is verified (BIZ-042); T089's sign-up limits hold through the route; a screen holding a record contact is `no_store`; a cross-site or wrong-CSRF `POST` is refused, changes nothing and is a security event (SEC-048); merged in the shared `app/server/src/lib.rs`. (2) Tests: `app/server/tests/business_signup_route.rs` against the assembled router (TD-SEC-45) and `tests/e2e/business_signup_served.spec.ts`, a fake R-37 sign-up on a fixture ROC record through activation, each emailed or texted code taken as TD-BIZ-42 takes its codes (seeded through `psql` or computed from the stand-in's rule), never from a protected path. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "server",
+   "deps": [
+    "T193",
+    "T149",
+    "T196",
+    "T089",
+    "T199",
+    "T155",
+    "T165",
+    "T248",
+    "T268",
+    "T294"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "privacy"
+   ],
+   "owns": [
+    "app/server/src/business_signup.rs",
+    "app/server/tests/business_signup_route.rs",
+    "tests/e2e/business_signup_served.spec.ts"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/security.md",
+    "docs/spec/businesses.md",
+    "docs/spec/consent.md",
+    "docs/spec/accessibility.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "BIZ-001",
+    "BIZ-016",
+    "BIZ-019",
+    "BIZ-040",
+    "BIZ-042",
+    "CON-019",
+    "SEC-015",
+    "SEC-034",
+    "SEC-042",
+    "SEC-048"
+   ],
+   "tests": [
+    "TD-SEC-45"
+   ],
+   "decisions": [
+    "D-1709",
+    "D-1728",
+    "D-2128"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 600,
+    "context_pct": 14
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T302-business-signup-served",
+   "prompt": "kit/prompts/T302.md",
+   "acceptance": "TD-SEC-45 passes against PostgreSQL through the assembled router and in Playwright against the stand-ins, and `Ally` passes with the new page states; every T193, T149, T196 and T268 case still passes."
+  },
+  {
+   "id": "T303",
+   "slug": "owner-signin-served",
+   "title": "server and portals: owner sign-in and the owner home and settings pages are served",
+   "goal": "No task serves the owner portal (D-2128): `portals::api` has `owner_signin_page`, `owner_sign_in`, `owner_principal`, `owner_step_up`, the passkey calls and the route constants `OWNER_SIGNIN_ROUTE` and `OWNER_PASSKEY_ROUTE` (T086), and T108 builds the owner home and settings pages, but `server::build_router` merges none of them, so J3 (T118) cannot sign in. (1) `app/server/src/owner_portal.rs` builds the owner sign-in (password plus TOTP or passkey, SEC-005), sign-out, and the owner home and settings pages with their switches (T108's), each change needing the fresh second factor SEC-043 names; every owner route reads the person through `owner_principal` (12-hour session, 30 minutes idle): none, a business or a homeowner session gets a 4xx with a link to `/owner/sign-in` and nothing else; every response `no_store`; every `POST` passes `refuse_cross_site` and the CSRF check, a refusal a security event; merged in the shared `app/server/src/lib.rs`. (2) Tests: `app/server/tests/owner_portal_route.rs` (TD-SEC-46) and `tests/e2e/owner_portal_served.spec.ts` (sign-in with a test TOTP secret seeded by `bootstrap_owner` and `add_owner_totp`, a pause switch changed). Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "server",
+   "deps": [
+    "T100",
+    "T086",
+    "T294",
+    "T108"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "privacy"
+   ],
+   "owns": [
+    "app/server/src/owner_portal.rs",
+    "app/server/tests/owner_portal_route.rs",
+    "tests/e2e/owner_portal_served.spec.ts"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/security.md",
+    "docs/spec/ops-recovery.md",
+    "docs/spec/accessibility.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "SEC-005",
+    "SEC-006",
+    "SEC-034",
+    "SEC-042",
+    "SEC-043",
+    "SEC-046",
+    "SEC-048",
+    "OPS-003"
+   ],
+   "tests": [
+    "TD-SEC-46"
+   ],
+   "decisions": [
+    "D-1917",
+    "D-1728",
+    "D-2128"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 600,
+    "context_pct": 13
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T303-owner-signin-served",
+   "prompt": "kit/prompts/T303.md",
+   "acceptance": "TD-SEC-46 passes against PostgreSQL through the assembled router and in Playwright against the stand-ins, and `Ally` passes with the new page states; every T086 and T108 case still passes."
+  },
+  {
+   "id": "T304",
+   "slug": "owner-tools-served",
+   "title": "server and portals: the owner refund review, the audit log viewer and the health page are served",
+   "goal": "T205 builds the owner refund review step and the audit log viewer and T106 and T109 the health page, as portals pages no route serves (D-2128); J3 (T118) refunds a charge and reads the audit log. (1) `app/server/src/owner_tools.rs` builds those pages and the refund `POST` behind T303's owner session: the refund needs a fresh second factor (SEC-043), issues one Stripe refund and one ledger row, and is blocked on a disputed charge (FEE-026, SEC-006); no other realm reaches them (a 4xx with a link to `/owner/sign-in`); every response `no_store`; every `POST` passes `refuse_cross_site` and the CSRF check, a refusal a security event; merged in the shared `app/server/src/lib.rs`. (2) Tests: `app/server/tests/owner_tools_route.rs` (TD-SEC-47) and `tests/e2e/owner_tools_served.spec.ts`. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "server",
+   "deps": [
+    "T303",
+    "T205",
+    "T106",
+    "T109"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "privacy"
+   ],
+   "owns": [
+    "app/server/src/owner_tools.rs",
+    "app/server/tests/owner_tools_route.rs",
+    "tests/e2e/owner_tools_served.spec.ts"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/security.md",
+    "docs/spec/fees.md",
+    "docs/spec/ops-recovery.md",
+    "docs/spec/accessibility.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "SEC-006",
+    "SEC-034",
+    "SEC-042",
+    "SEC-043",
+    "SEC-048",
+    "FEE-026",
+    "OPS-008",
+    "OPS-010"
+   ],
+   "tests": [
+    "TD-SEC-47"
+   ],
+   "decisions": [
+    "D-2128"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 600,
+    "context_pct": 13
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T304-owner-tools-served",
+   "prompt": "kit/prompts/T304.md",
+   "acceptance": "TD-SEC-47 passes against PostgreSQL through the assembled router and in Playwright against the stand-ins, and `Ally` passes with the new page states; every T205, T106 and T109 case still passes."
+  },
+  {
+   "id": "T305",
+   "slug": "owner-reports-served",
+   "title": "server and portals: the scorecard, the intake report, the money view, the owner help page and the business Get help form are served",
+   "goal": "T158, T210 and T200 build the owner's scorecard, intake report, money view (with its expense-entry `POST`), the owner help page with its reply box and the business Get help form, as portals pages no route serves (D-2128). (1) `app/server/src/owner_reports.rs` builds them: the owner pages behind T303's owner session (none or another realm gets a 4xx with a link to `/owner/sign-in`), the Get help form behind the business session (`portals::api::business_principal`, a 4xx with a link to `/b/sign-in` otherwise) and the site help page's owner-message form as T200 wires it; every response `no_store`; every `POST` passes `refuse_cross_site` and the CSRF check, a refusal a security event; merged in the shared `app/server/src/lib.rs`. (2) Tests: `app/server/tests/owner_reports_route.rs` (TD-SEC-48) and `tests/e2e/owner_reports_served.spec.ts`. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "server",
+   "deps": [
+    "T303",
+    "T300",
+    "T158",
+    "T210",
+    "T200"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "privacy"
+   ],
+   "owns": [
+    "app/server/src/owner_reports.rs",
+    "app/server/tests/owner_reports_route.rs",
+    "tests/e2e/owner_reports_served.spec.ts"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/security.md",
+    "docs/spec/ops-recovery.md",
+    "docs/spec/businesses.md",
+    "docs/spec/accessibility.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "SEC-004",
+    "SEC-005",
+    "SEC-034",
+    "SEC-042",
+    "SEC-048",
+    "OPS-036",
+    "OPS-039",
+    "OPS-040",
+    "BIZ-047"
+   ],
+   "tests": [
+    "TD-SEC-48"
+   ],
+   "decisions": [
+    "D-2128"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 600,
+    "context_pct": 14
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T305-owner-reports-served",
+   "prompt": "kit/prompts/T305.md",
+   "acceptance": "TD-SEC-48 passes against PostgreSQL through the assembled router and in Playwright against the stand-ins, and `Ally` passes with the new page states; every T158, T210 and T200 case still passes."
+  },
+  {
+   "id": "T306",
+   "slug": "business-account-pages-served",
+   "title": "server and portals: the complaints page, \"Why was I charged?\", the emergency-email switch and the job page's notice log are served",
+   "goal": "These business pages are built but no route serves them (D-2128): the complaints page and its reply (`complaints_page`, `reply_to_complaint`, `COMPLAINTS_ROUTE`, `COMPLAINT_REPLY_ROUTE`, T195), \"Why was I charged?\" (`why_charged_page`, `WHY_CHARGED_ROUTE` `/b/charges/{pick}`, T068), the emergency-email switch (`emergency_switch_page`, `post_step`, `EMERGENCY_SWITCH_ROUTE`, T150) and the job page's notice log (`notice_log_page`, T198); T158's \"Not a fit for us\" choice on the job page is served here too. (1) Extend T300's `app/server/src/business_portal.rs` and T301's `app/server/src/action_links.rs` (both owned after them): every page behind the business session (`portals::api::business_principal`; none gets a 4xx with a link to `/b/sign-in`); another business's pick, complaint or job and a role the page needs missing get the one not-found answer, reading nothing from the vault; the complaint reply box only within its 5 days (BIZ-029); the emergency switch only for the caller's own person; every response `no_store`; every `POST` passes `refuse_cross_site` and the CSRF check, a refusal a security event. (2) Tests: `app/server/tests/business_account_route.rs` (TD-SEC-49) and `tests/e2e/business_account_served.spec.ts`. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "server",
+   "deps": [
+    "T100",
+    "T300",
+    "T301",
+    "T195",
+    "T068",
+    "T150",
+    "T198",
+    "T158",
+    "T204"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "privacy"
+   ],
+   "owns": [
+    "app/server/src/business_portal.rs",
+    "app/server/src/action_links.rs",
+    "app/server/tests/business_account_route.rs",
+    "tests/e2e/business_account_served.spec.ts"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/security.md",
+    "docs/spec/businesses.md",
+    "docs/spec/fees.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/accessibility.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "BIZ-007",
+    "BIZ-029",
+    "BIZ-045",
+    "FEE-031",
+    "PICK-057",
+    "SEC-004",
+    "SEC-034",
+    "SEC-042",
+    "SEC-048"
+   ],
+   "tests": [
+    "TD-SEC-49"
+   ],
+   "decisions": [
+    "D-1728",
+    "D-1955",
+    "D-2117",
+    "D-2128"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 600,
+    "context_pct": 14
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T306-business-account-pages-served",
+   "prompt": "kit/prompts/T306.md",
+   "acceptance": "TD-SEC-49 passes against PostgreSQL through the assembled router and in Playwright against the stand-ins, and `Ally` passes with the new page states; every T300, T301, T195, T068, T150, T198 and T158 case still passes."
+  },
+  {
+   "id": "T307",
+   "slug": "homeowner-portal-served",
+   "title": "server and portals: the homeowner portal, \"Download my data\" and the check-in answer page are served",
+   "goal": "No task serves the homeowner portal (D-2128): `portals::api` has `send_sign_in_code`, `finish_sign_in`, `homeowner_page`, `turn_texts_off`, `open_request`, `confirm_request` and `download_file`, with the route constants `HOMEOWNER_HOME_ROUTE`, `HOMEOWNER_SIGNIN_ROUTE`, `HOMEOWNER_CODE_ROUTE`, `TEXTS_OFF_ROUTE`, `DOWNLOAD_ROUTE`, `DATA_REQUEST_ROUTE` and `DATA_CODE_ROUTE` (T087, \"not served yet\", D-1934), and T231 builds the check-in answer page, but `server::build_router` merges none of them. (1) `app/server/src/homeowner_portal.rs` builds them: sign-in by phone and texted code (SEC-008), a 30-day session per device; a number not on file gets the same answer as one on file; the portal home, the texts-off switch (one suppression entry at once, CON-035), \"Download my data\" with only her own items (PRIV-031), the delete or copy request and its code step; the check-in answer page shows on `GET` and records only on its `POST` (SEC-026); none or another realm's session gets a 4xx with a link to `/h/sign-in` and no detail; every response `no_store` (SEC-034); every `POST` passes `refuse_cross_site` and the CSRF check, a refusal a security event; merged in the shared `app/server/src/lib.rs`. (2) Tests: `app/server/tests/homeowner_portal_route.rs` (TD-PRIV-21) and `tests/e2e/homeowner_portal_served.spec.ts`, the code computed from the stand-in Verify's rule as TD-BIZ-42 does. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "server",
+   "deps": [
+    "T100",
+    "T087",
+    "T231"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "privacy"
+   ],
+   "owns": [
+    "app/server/src/homeowner_portal.rs",
+    "app/server/tests/homeowner_portal_route.rs",
+    "tests/e2e/homeowner_portal_served.spec.ts"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/security.md",
+    "docs/spec/privacy.md",
+    "docs/spec/consent.md",
+    "docs/spec/messaging.md",
+    "docs/spec/accessibility.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "SEC-008",
+    "SEC-026",
+    "SEC-034",
+    "SEC-042",
+    "SEC-046",
+    "SEC-048",
+    "PRIV-031",
+    "CON-035",
+    "TXT-034"
+   ],
+   "tests": [
+    "TD-PRIV-21"
+   ],
+   "decisions": [
+    "D-1934",
+    "D-1728",
+    "D-2128"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 600,
+    "context_pct": 14
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T307-homeowner-portal-served",
+   "prompt": "kit/prompts/T307.md",
+   "acceptance": "TD-PRIV-21 passes against PostgreSQL through the assembled router and in Playwright against the stand-ins, and `Ally` passes with the new page states; every T087 and T231 case still passes."
+  },
+  {
+   "id": "T308",
+   "slug": "quote-page-close-button",
+   "title": "portals: the quote page's close button (JOB-019) is shown and works",
+   "goal": "JOB-019 names \"the close button on the quote page\" and `intake::api::close_from_page` exists (T049, tested in `tests/integration/tests/close_which.rs`), but the served quote page (`app/portals/src/quote_page.rs`, `quote_page.html`) shows no close button and no route calls it (D-2128). Add the button to the quote page of a job that is not yet final, as a form with its CSRF token posting to the quote page's own path (`QUOTE_PAGE_ROUTE`), and handle that `POST` in `quote_page.rs`: it calls `close_from_page` for the token's job, then shows the page saying it is closed, sending no text; a second press or a job already final changes nothing; the `POST` passes `refuse_cross_site` and the CSRF check, and a refusal is a security event (SEC-042, SEC-048). Keep T246's pick form on the same path working. The page state with the button goes in the shared `tests/a11y/page_states.ts`. Tests in `tests/integration/tests/quote_page_close.rs` (TD-JOB-16). Update the `portals` `CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "portals",
+   "deps": [
+    "T100",
+    "T049",
+    "T294",
+    "T164",
+    "T232"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "privacy"
+   ],
+   "owns": [
+    "app/portals/src/quote_page.rs",
+    "app/portals/templates/quote_page.html",
+    "tests/integration/tests/quote_page_close.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/lifecycle.md",
+    "docs/spec/security.md",
+    "docs/spec/accessibility.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "JOB-018",
+    "JOB-019",
+    "SEC-042",
+    "SEC-048"
+   ],
+   "tests": [
+    "TD-JOB-16"
+   ],
+   "decisions": [
+    "D-2128"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 300,
+    "context_pct": 15
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T308-quote-page-close-button",
+   "prompt": "kit/prompts/T308.md",
+   "acceptance": "TD-JOB-16 passes against PostgreSQL, `Ally` passes with the new page state, and every T052, T055, T095 and T246 quote page and pick case still passes."
   },
   {
    "id": "T237",
@@ -17429,7 +18011,7 @@
    "id": "T158",
    "slug": "owner-scorecard-money",
    "title": "ops: the owner's pilot scorecard page with go and stop lines, and the masked-call answered share",
-   "goal": "The owner's scorecard computes every OPS-039 measure per trade and in total from the ledger and audit log, colors each against its go and stop lines, and includes the masked-call answered share, with nothing acting automatically (OPS-039, CALL-024); the \"Not a fit for us\" choice (PICK-057) is offered on the business job page, rendered by the portals route `business_actions.rs` with `business_actions.html` (both extended here), while `quotes::job_page` (`job_page.rs`) supplies its data only (D-491, D-492). The scorecard also shows OPS-046's first-six-weeks email panel and deferral alert and OPS-047's figures, including the median minutes a business spends on a quote from the optional quote-form field T148 stores (D-492). This task's migration adds `ops.not_a_fit_answer` (job, business, trade, reason, time) for PICK-057's monthly count and `ops.minutes_entry` for OPS-039's weekly minutes entry (architecture section 3) (D-493).",
+   "goal": "The owner's scorecard computes every OPS-039 measure per trade and in total from the ledger and audit log, colors each against its go and stop lines, and includes the masked-call answered share, with nothing acting automatically (OPS-039, CALL-024); the \"Not a fit for us\" choice (PICK-057) is offered on the business job page, rendered by the portals route `business_actions.rs` with `business_actions.html` (both extended here), while `quotes::job_page` (`job_page.rs`) supplies its data only (D-491, D-492). The scorecard also shows OPS-046's first-six-weeks email panel and deferral alert and OPS-047's figures, including the median minutes a business spends on a quote from the optional quote-form field T148 stores (D-492). This task's migration adds `ops.not_a_fit_answer` (job, business, trade, reason, time) for PICK-057's monthly count and `ops.minutes_entry` for OPS-039's weekly minutes entry (architecture section 3) (D-493). T301 serves the action links and the job page before this task (D-2128): keep the signatures `app/server/src/action_links.rs` calls, add the \"Not a fit for us\" choice through new functions, and T306 serves it.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -17495,7 +18077,7 @@
    "budget": {
     "files": 10,
     "lines": 400,
-    "context_pct": 15
+    "context_pct": 22
    },
    "checks": [
     "Ci",
