@@ -49,6 +49,7 @@ mod disputes;
 mod flags;
 mod free_wins;
 mod handlers;
+mod intent_http;
 mod late;
 mod ledger;
 mod models;
