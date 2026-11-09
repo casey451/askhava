@@ -337,6 +337,58 @@ async fn td_ai_19_the_vault_name_and_spanish_introductions(pool: PgPool) {
     assert_eq!(tables_with_a_name(&pool).await, Vec::<String>::new());
 }
 
+/// TD-AI-19, TD-CON-05 (CON-008, CON-018, AI-003, D-2088): when her stated name will not open (the
+/// route's vault holds another `VAULT_KEY`), a plain text is answered 200 but stops before
+/// `intake`, a HELP still gets its reply and a STOP still opts her out.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_ai_19_a_stated_name_that_will_not_open_still_lets_stop_and_help_run(pool: PgPool) {
+    let h = hooks(&pool, v1());
+    assert_eq!(text(&h, 1, HER, "I'm Zebulon").await, StatusCode::OK);
+    assert_eq!(stated(&pool).await, 1);
+    let conversation =
+        "SELECT string_agg(t::text, '|' ORDER BY t::text) FROM intake.conversation t";
+    let before: Option<String> = sqlx::query_scalar(conversation)
+        .fetch_one(&pool)
+        .await
+        .expect("conversation");
+    let outbox = "SELECT count(*) FROM messaging.outbox";
+    let queued: i64 = sqlx::query_scalar(outbox)
+        .fetch_one(&pool)
+        .await
+        .expect("outbox");
+    let h = hooks(&pool, vault(&key(1, 0x5c), &key(1, 0x6a)));
+    assert_eq!(
+        text(&h, 2, HER, "zebulon's sink leaks").await,
+        StatusCode::OK
+    );
+    let after: Option<String> = sqlx::query_scalar(conversation)
+        .fetch_one(&pool)
+        .await
+        .expect("conversation");
+    assert_eq!(after, before, "the unread text never reaches intake");
+    let count: i64 = sqlx::query_scalar(outbox)
+        .fetch_one(&pool)
+        .await
+        .expect("outbox");
+    assert_eq!(count, queued, "nothing is queued for it");
+    assert_eq!(text(&h, 3, HER, "HELP").await, StatusCode::OK);
+    assert_eq!(text(&h, 4, HER, "STOP").await, StatusCode::OK);
+    let sent: Vec<String> = sqlx::query_scalar(
+        "SELECT template_id FROM messaging.outbox \
+         WHERE template_id IN ('help_reply', 'opt_out_confirmation') ORDER BY created_at, template_id",
+    )
+    .fetch_all(&pool)
+    .await
+    .expect("outbox");
+    assert_eq!(sent, ["help_reply", "opt_out_confirmation"]);
+    let inbox: i64 = sqlx::query_scalar("SELECT count(*) FROM messaging.inbox")
+        .fetch_one(&pool)
+        .await
+        .expect("inbox");
+    assert_eq!(inbox, 4);
+    assert_eq!(tables_with_a_name(&pool).await, Vec::<String>::new());
+}
+
 /// TD-AI-19 (PRIV-007, PRIV-011, PRIV-024, D-1752): names stated through the route still match
 /// after a key rotation, and are gone after the PRIV-007 purge and "Delete my data".
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]

@@ -15,7 +15,9 @@
 //! (a homeowner's text, scrubbed with her vault name and the names she stated before, AI-003,
 //! AI-020, D-1752) or `read_inbound` (a business phone's, empty context; the raw `Body` goes no
 //! further),
-//! `messaging::api::on_inbound_text` (an opt-out stops here, CON-008),
+//! `messaging::api::on_inbound_text` (an opt-out stops here, CON-008; a homeowner's read that
+//! failed on a vault value other than a database or audit error falls back to the empty-context
+//! read for this and the HELP step and then stops before `intake`, D-2088),
 //! `messaging::api::reply_to_help` (HELP, INFO, AYUDA: the reply is queued, also to a listed
 //! number, and nothing else runs; any other text from a listed number stops here, CON-016),
 //! then, for a number that is not a linked business phone, `intake::api::receive_reply`
@@ -199,7 +201,9 @@ async fn in_transaction(h: &Webhooks, hook: &VerifiedWebhook, kind: Kind) -> Ste
     done
 }
 
-/// The inbound-text steps, in order (TXT-012, PRIV-026, CON-008, CON-018, D-999).
+/// The inbound-text steps, in order (TXT-012, PRIV-026, CON-008, CON-018, D-999). A homeowner's
+/// text whose contact-aware read failed on a vault value (D-2088) still runs the opt-out and HELP
+/// steps on its empty-context read, then stops before `intake` with `Halt::Failed`.
 async fn text(
     h: &Webhooks,
     db: &mut PgConnection,
@@ -216,7 +220,7 @@ async fn text(
     };
     let (contact, relation) = sender(db, &h.vault, from).await?;
     let raw = field(hook, "Body").unwrap_or_default();
-    let read = read(h, db, raw, (contact, relation)).await?;
+    let (read, unread) = read(h, db, raw, (contact, relation)).await?;
     let words = read.text.as_str();
     let emergency = matches!(check(words, false), Check::Match(_));
     let msg = InboundText {
@@ -232,16 +236,29 @@ async fn text(
     if relation == Relation::Business {
         return auto_reply(h, db, &msg).await;
     }
+    if let Some(error) = unread {
+        return Err(Halt::Failed("vault", error));
+    }
+    intake(h, db, (&msg, &read), now).await
+}
+
+/// Hands a homeowner's scrubbed text to `intake::api::receive_reply` (TXT-031, INT-019, D-999).
+async fn intake(
+    h: &Webhooks,
+    db: &mut PgConnection,
+    (msg, read): (&InboundText<'_>, &Read),
+    now: Timestamp,
+) -> Step<()> {
     let inbound = Inbound {
-        words,
+        words: msg.text,
         opt_out: read.flags.opt_out,
         help: read.flags.help,
-        emergency,
+        emergency: msg.emergency,
         ai_spanish: None,
     };
     let reply = TextIn {
-        inbox_id,
-        contact,
+        inbox_id: msg.inbox_id,
+        contact: msg.contact,
         inbound,
         received_at: now,
     };
@@ -300,12 +317,17 @@ async fn screen(
 /// inside this delivery's transaction, so a resent delivery is read and audited again (AI-003,
 /// AI-020, D-1752); a business phone's text with an empty context. The emergency flag is
 /// `intake`'s own screen of the scrubbed words (INT-002, INT-026).
+///
+/// A vault database or audit failure is `Halt::Database` (500, the delivery rolls back and Twilio
+/// resends). Any other vault error (a value that will not open, a contact not found) falls back to
+/// the empty-context read, so an opt-out or HELP still runs (CON-008, CON-018), and returns the
+/// error's variant name so the text stops before `intake` and the AI (AI-003, D-2088).
 async fn read(
     h: &Webhooks,
     db: &mut PgConnection,
     raw: &str,
     (contact, relation): (Uuid, Relation),
-) -> Step<Read> {
+) -> Step<(Read, Option<String>)> {
     let opt_out: Vec<&str> = PROVIDER_OPT_OUT_WORDS
         .iter()
         .chain(&APP_OPT_OUT_WORDS)
@@ -318,21 +340,23 @@ async fn read(
         start: &RESUBSCRIBE_WORDS,
     };
     if relation == Relation::Business {
-        let common = CommonWords::default();
-        let known = Known {
-            common: &common,
-            vault_name: None,
-        };
-        return Ok(read_inbound(
-            raw,
-            &words,
-            &known,
-            &mut NameMemory::default(),
-        ));
+        return Ok((plain_read(raw, &words), None));
     }
-    read_inbound_for(db, &h.vault, contact, raw, &words)
-        .await
-        .map_err(vault_halt)
+    match read_inbound_for(db, &h.vault, contact, raw, &words).await {
+        Ok(read) => Ok((read, None)),
+        Err(e @ (VaultError::Database | VaultError::Audit)) => Err(vault_halt(e)),
+        Err(e) => Ok((plain_read(raw, &words), Some(variant(&e)))),
+    }
+}
+
+/// `raw` read with an empty context: no vault name, no stated names (PRIV-026).
+fn plain_read(raw: &str, words: &InboundWords<'_>) -> Read {
+    let common = CommonWords::default();
+    let known = Known {
+        common: &common,
+        vault_name: None,
+    };
+    read_inbound(raw, words, &known, &mut NameMemory::default())
 }
 
 /// Who wrote from `from`: a linked business phone's business (D-492), else the homeowner's vault
@@ -421,8 +445,10 @@ fn outbox_halt(e: OutboxError) -> Halt {
     }
 }
 
+/// A vault database or audit-row failure is a database error (500, Twilio resends), so no text is
+/// kept unhandled because an audit row could not be written (PRIV-003, D-2088).
 fn vault_halt(e: VaultError) -> Halt {
-    if matches!(e, VaultError::Database) {
+    if matches!(e, VaultError::Database | VaultError::Audit) {
         Halt::Database
     } else {
         Halt::Failed("vault", variant(&e))

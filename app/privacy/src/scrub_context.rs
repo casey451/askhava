@@ -119,7 +119,7 @@ async fn store(
     word: &str,
 ) -> Result<(), VaultError> {
     let sealed = vault.seal_stated(contact, word)?;
-    let (index_version, digest) = vault.stated_digest(word);
+    let (index_version, digest) = vault.stated_digest(word)?;
     sqlx::query!(
         "INSERT INTO privacy.stated_name (contact_id, name, key_version, digest, index_version) \
          VALUES ($1, $2, $3, $4, $5) ON CONFLICT (contact_id, digest) DO NOTHING",

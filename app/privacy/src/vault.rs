@@ -215,11 +215,16 @@ impl Vault {
     }
 
     /// The active `stated-name|vN` digest of `word` and its index key version (PRIV-024, D-1752).
-    pub(crate) fn stated_digest(&self, word: &str) -> (u16, [u8; 32]) {
+    ///
+    /// # Errors
+    ///
+    /// [`VaultError::Sealed`] if the vault holds no index key, so no digest of version 0 is ever
+    /// stored (D-2090).
+    pub(crate) fn stated_digest(&self, word: &str) -> Result<(u16, [u8; 32]), VaultError> {
         self.index_for(STATED_LABEL, word)
             .into_iter()
             .next()
-            .unwrap_or((0, [0; 32]))
+            .ok_or(VaultError::Sealed)
     }
 
     /// The digests of `value` under the key derived for `label` at every index key version, the
@@ -695,7 +700,9 @@ pub async fn rotate_batch(
 /// Re-seals up to `limit` stated names still under an older `VAULT_KEY` or `VAULT_INDEX_KEY`
 /// version, each in its own transaction: the row is deleted and written again under the active
 /// versions with its ID and time (the app role has no UPDATE on it), and the read is audited and
-/// counted as `privacy`'s rotation (AI-020, PRIV-003, PRIV-024, D-1752).
+/// counted as `privacy`'s rotation (AI-020, PRIV-003, PRIV-024, D-1752). If the contact already
+/// holds the same name under the active digest (stated again after the key change), the old row
+/// is still deleted and the re-insert adds nothing (D-2089).
 async fn rotate_stated(
     db: &mut PgConnection,
     vault: &Vault,
@@ -723,10 +730,10 @@ async fn rotate_stated(
         let word = vault.open_stated(row.contact_id, &row.name)?;
         audit_rotation(&mut tx, *id).await?;
         let sealed = vault.seal_stated(row.contact_id, word.expose_secret())?;
-        let (index_version, digest) = vault.stated_digest(word.expose_secret());
+        let (index_version, digest) = vault.stated_digest(word.expose_secret())?;
         sqlx::query!(
             "INSERT INTO privacy.stated_name (id, contact_id, name, key_version, digest, index_version, created_at) \
-             VALUES ($1, $2, $3, $4, $5, $6, $7)",
+             VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (contact_id, digest) DO NOTHING",
             id, row.contact_id, sealed, i32::from(vault.seal_version()), &digest[..],
             i32::from(index_version), row.created_at,
         )
