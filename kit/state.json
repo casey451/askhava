@@ -23350,7 +23350,7 @@
     "T092",
     "T093"
    ],
-   "status": "MERGE_PENDING",
+   "status": "DONE",
    "attempts": 0,
    "slug": "conversation-aware-scrub",
    "type": "build",
@@ -23369,13 +23369,62 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 230,
      "head_sha": "d44ce535e0749422f499977734343aa1b53854a8",
-     "pr": null,
-     "checks": null,
+     "pr": 373,
+     "checks": [
+      {
+       "name": "backup",
+       "conclusion": null
+      },
+      {
+       "name": "keeper",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "gate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-09T04:57:43Z",
      "ended_at": "2026-11-09T05:54:23Z",
-     "result": "MERGE_PENDING"
+     "result": "done"
     }
    ],
    "reviewed_sha": "d44ce535e0749422f499977734343aa1b53854a8",
@@ -23389,7 +23438,36 @@
     "enabled": true,
     "why": "auto-merge on #373 (gh pr merge)",
     "head": "d44ce535e0749422f499977734343aa1b53854a8"
-   }
+   },
+   "merged_sha": "efe87274fc9ef02fb7ab639a0e5c0d4209fd83bc",
+   "merged_at": "2026-11-09T06:10:32Z",
+   "files": [
+    ".sqlx/query-353506d571e97b9fad27f3baf2b95113a5223cd78171cd4765e02b1f5f23ee66.json",
+    ".sqlx/query-6b45e320c3f2d136b4f9a3ec20c962f352b3e5f9e11869912818d18e479ddbdc.json",
+    ".sqlx/query-81f3f205ee301f353184e15065d36ccbb8dedcd3079224f3a64421590373b732.json",
+    ".sqlx/query-8354395b8f841e89867fe0e94fc2987ca6e1a7d6122c0de1fc8ded57a70957ec.json",
+    ".sqlx/query-a11f2ad61bceb98a1debeb3336ee7acff560d7ce3277defcac31e05a5b7629da.json",
+    ".sqlx/query-b15b9cacbcecc96f6a773ec0ae476848f3ca1e0b2f3f62bc2530c5a084f84e41.json",
+    ".sqlx/query-bf91a06acc5e3aad7e0ce9d0ffdf2ba0ca8eb267880d7b906f7c8c0d571171d6.json",
+    ".sqlx/query-c2028a579f094093af89d83c272af661e3f2fa8524bb13376dbaf208810ae90c.json",
+    ".sqlx/query-cb5cc0de9de29c76d9ee0f6d2c39596a37bcb5a82c8718efabd12b2bfa834d48.json",
+    ".sqlx/query-d9dde019c445d9af64f10f5360ba5e2465b8ec246180020b14d596d0c38cb171.json",
+    ".sqlx/query-dda2c3858da8bf9013efe0678973fe407fc8455c9e23d77f72b9d98e9a0b7331.json",
+    "app/privacy/CLAUDE.md",
+    "app/privacy/src/api.rs",
+    "app/privacy/src/lib.rs",
+    "app/privacy/src/purge.rs",
+    "app/privacy/src/scrub_context.rs",
+    "app/privacy/src/tests/mod.rs",
+    "app/privacy/src/tests/scrub_context.rs",
+    "app/privacy/src/vault.rs",
+    "app/server/CLAUDE.md",
+    "app/server/src/inbound_text.rs",
+    "docs/architecture.md",
+    "docs/decisions.md",
+    "migrations/0130_privacy_stated_names.sql",
+    "tests/integration/tests/inbound_scrub_context.rs"
+   ]
   },
   {
    "id": "T262",
@@ -25567,7 +25645,7 @@
    }
   }
  },
- "updated_at": "2026-11-09T06:09:51Z",
+ "updated_at": "2026-11-09T06:23:09Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -25665,7 +25743,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "8c370a3781336508dceb7d47cfbed5733c883fab",
+ "runner_sha": "efe87274fc9ef02fb7ab639a0e5c0d4209fd83bc",
  "starter": "actions",
  "smoke_runs": [
   {

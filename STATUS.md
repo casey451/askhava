@@ -1,23 +1,23 @@
 # Ask Hava build status
 
-Updated 2026-11-09T06:09:51Z by runner 8c370a378133 (actions).
+Updated 2026-11-09T06:23:09Z by runner efe87274fc9e (actions).
 
-**Idle since 05:54Z; 164 of 286 done; week 59% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 06:10Z; 165 of 286 done; week 59% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 164 of 286 build tasks (owner gates not counted)
+- **Tasks done:** 165 of 286 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 05:54Z (no task in progress)
+- **Lane:** idle since 06:10Z (no task in progress)
 - **Week:** 59% used, 78.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:56Z, 13 min before this update
+- **Last run:** 06:09Z, 13 min before this update
 - **Keeper:** last ran 06:09Z, next wake 06:29Z
 
 ## Needs attention
-- Strict plan check red: 32 problem(s) on tasks still to run (+37 on DONE tasks); first: T255: stored context_pct 25% but it measures 33%; regenerate
+- Strict plan check red: 32 problem(s) on tasks still to run (+41 on DONE tasks); first: T255: stored context_pct 25% but it measures 34%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T257 | privacy and server: the scrubber remembers names across a ho | MERGE_PENDING | 1 | 56 min | 05:54Z |  |
+| T257 | privacy and server: the scrubber remembers names across a ho | done | 1 | 56 min | 05:54Z |  |
 | T263 | payments: the monthly fee limit is a hard cap; capacity is r | done | 1 | 49 min | 04:26Z |  |
 | T260 | stand-in and adapters: an unconfirmed PaymentIntent, its on- | done | 1 | 42 min | 03:09Z |  |
 | T259 | payments: the Stripe webhook dispatches refund, dispute and  | done | 1 | 61 min | 01:52Z |  |
@@ -32,12 +32,18 @@ Updated 2026-11-09T06:09:51Z by runner 8c370a378133 (actions).
 | T148 | portals: secure email action links for every former text key | done | 1 | 56 min | 06:57Z |  |
 
 ### Plan and harness merges on main
-- none
+- 22:20Z Plan: wire the real AI into the app — T298 endpoint client, T299 intake wiring (D-2065) (#367)
+- 21:52Z Plan: vendor-call connection audit, war-games overload scenario (T297) (D-2054) (#365)
+- 20:26Z Plan: 3-second AI reply budget, AI waits hold no DB connection, war-games latency (D-2038) (#362)
+- 18:33Z Harness: run the start-routine smoke before the session (D-2028) (#359)
+- 15:06Z Harness: warm the smoke build before the session (D-2007) (#356)
+- 10:55Z Harness: retry release downloads; backup job's coverage tools best-effort (D-1986) (#352)
+- 07:39Z harness: chain the next cycle at once after the first smoke timeout on a head (D-1970) (#349)
 
 ## Progress (requirements verified)
 
 **Requirements verified:** 268 of 732 (36.6%) · partial 264 · unstarted 200
-**Tasks merged (throughput only):** 164 of 286
+**Tasks merged (throughput only):** 165 of 286
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -72,7 +78,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 44 of 98 done
+- stage 4: 45 of 98 done
 - stage 5: 0 of 42 done
 - stage 6: 0 of 30 done
 - stage 7: 0 of 2 done
