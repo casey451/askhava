@@ -85,14 +85,16 @@ impl Fake {
     async fn assert_nothing_held(&self) {
         let open: i64 = sqlx::query_scalar(
             "SELECT count(*) FROM pg_stat_activity WHERE datname = current_database()
-             AND pid <> pg_backend_pid() AND xact_start IS NOT NULL",
+             AND backend_type = 'client backend' AND pid <> pg_backend_pid()
+             AND xact_start IS NOT NULL",
         )
         .fetch_one(&self.pool)
         .await
         .expect("activity");
         let locks: i64 = sqlx::query_scalar(
-            "SELECT count(*) FROM pg_locks WHERE pid <> pg_backend_pid() AND relation IN
-             ('payments.fee_limit'::regclass, 'payments.pick_intent'::regclass)",
+            "SELECT count(*) FROM pg_locks WHERE pid <> pg_backend_pid()
+             AND database = (SELECT oid FROM pg_database WHERE datname = current_database())
+             AND relation IN ('payments.fee_limit'::regclass, 'payments.pick_intent'::regclass)",
         )
         .fetch_one(&self.pool)
         .await
@@ -248,6 +250,42 @@ async fn td_fee_46_two_presses_at_once_start_one_attempt(pool: PgPool) {
         1,
         "the press over the limit reaches no confirm"
     );
+}
+
+/// TD-FEE-46 (FEE-041, D-1758, D-2083): a $25 attempt waiting on the bank's approval
+/// (`needs_action`) can still succeed, so while its card-fix window runs it reserves its fee and a
+/// $25 press on another pick stops before Stripe; once its pick ends, the fee is free again.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_fee_46_a_bank_approval_reserves_its_fee(pool: PgPool) {
+    with_limit(&pool, 10_000).await;
+    let bank = Fake::new(
+        &pool,
+        vec![
+            intent("succeeded"),
+            intent("requires_action"),
+            intent("succeeded"),
+        ],
+        vec![],
+    );
+    assert!(paid(
+        &pay(&pool, &bank, &press(0x2651, 7500), az(11, 4, 9, 0)).await
+    ));
+    let waiting = pay(&pool, &bank, &press(0x2652, 2500), az(11, 4, 9, 5)).await;
+    assert!(
+        matches!(waiting, ChargeOutcome::NeedsApproval(_)),
+        "{waiting:?}"
+    );
+    let held = pay(&pool, &bank, &press(0x2653, 2500), az(11, 4, 9, 6)).await;
+    assert_eq!(held, ChargeOutcome::OverLimit, "the approval holds the $25");
+    assert_eq!(bank.count("confirm"), 2);
+    sqlx::query("UPDATE payments.pick_intent SET ended_at = now() WHERE pick_id = $1")
+        .bind(Uuid::from_u128(0x2652))
+        .execute(&pool)
+        .await
+        .expect("ended");
+    assert!(paid(
+        &pay(&pool, &bank, &press(0x2654, 2500), az(11, 4, 10, 10)).await
+    ));
 }
 
 /// TD-FEE-46 (FEE-041, FEE-037, D-1758): an attempt left undecided at 11:55 p.m. on October 31

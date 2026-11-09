@@ -2009,3 +2009,10 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **Not reachable yet (D-2030).** Nothing sends queued texts to the carrier yet; the conversation stops after the consent text; Spanish conversations cannot be switched on; and the paid release cannot be shown end to end, because the Confirm page is not served and the fake Stripe leaves out a field ("live mode") the app now insists on. That last one needs a small fix to the fake Stripe in a harness task. The full journey is T222's.
 - **Also not reachable yet (D-2032).** After STOP the pick code should go by email, but the quote page always sends it by text and the conversation never asks for an email yet; and the app's record of queued texts cannot show that the 911 text went before the consent text, only that both went once.
 - **Nothing needs you.**
+
+## The monthly fee limit is a hard cap (T263, D-2081 to D-2083, November 9)
+
+- **What changed.** A business's monthly fee limit can no longer be passed by two presses at once: each charge reserves its fee before Stripe is asked, a failed charge frees it, a paid one keeps it, and a charge that goes through after midnight on the 1st counts in the month it was pressed. Exactly at the limit is still charged. Changing a limit can no longer leave the business without one.
+- **Review fix (D-2083).** A charge waiting on the bank's approval also holds its fee while its card-fix window runs, because the bank can still approve it; without this, a $100 limit could reach $125.
+- **A test-plan fix (D-2082).** The test plan (TD-FEE-46) says that after the first charge fails "a later press on the other pick then charges", but that other pick has already ended over the limit. The test uses a third pick; the plan's wording should say "another pick".
+- **Nothing needs you.**

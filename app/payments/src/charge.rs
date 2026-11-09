@@ -442,10 +442,12 @@ async fn limit_of(
 }
 
 /// True when `press`'s fee would take the business's Arizona calendar month over its limit
-/// (FEE-041, D-1427, D-1758): the month of `at` holds every succeeded attempt and every undecided
-/// (`sent`, `processing`) attempt of the business's other picks, each in the month its press
-/// started, so an undecided attempt reserves its fee until it is decided and a failed one frees
-/// it; exactly at the limit is still charged. `locked` is [`begin_attempt`]'s authoritative
+/// (FEE-041, D-1427, D-1758, D-2083): the month of `at` holds every succeeded attempt and every
+/// undecided (`sent`, `processing`) attempt of the business's other picks, each in the month its
+/// press started, so an undecided attempt reserves its fee until it is decided and a failed one
+/// frees it; a bank-approval (`needs_action`) attempt that is its open pick's latest try also
+/// reserves its fee while the card-fix window runs, since the bank's approval can still make it
+/// a success; exactly at the limit is still charged. `locked` is [`begin_attempt`]'s authoritative
 /// check under the limit row's lock; unlocked, it is the early check before any Stripe call.
 async fn over_limit(
     conn: &mut PgConnection,
@@ -469,7 +471,13 @@ async fn over_limit(
            JOIN payments.pick_intent i USING (pick_id)
            WHERE i.business_id = $1 AND a.started_at >= $2 AND a.started_at < $3
              AND (a.status = 'succeeded'
-                  OR (a.status IN ('sent', 'processing') AND a.pick_id <> $4))"#,
+                  OR (a.pick_id <> $4 AND (a.status IN ('sent', 'processing')
+                      OR (a.status = 'needs_action' AND i.ended_at IS NULL
+                          AND NOT EXISTS (SELECT 1 FROM payments.charge_attempt b
+                            WHERE b.pick_id = a.pick_id AND b.try_no > a.try_no)
+                          AND EXISTS (SELECT 1 FROM payments.pay_timer t
+                            WHERE t.pick_id = a.pick_id AND t.kind = 'card-fix'
+                              AND t.ended_at IS NULL)))))"#,
         press.business.0,
         first.timestamp().to_sqlx() as _,
         next.timestamp().to_sqlx() as _,
