@@ -12,7 +12,10 @@ carries OptOutType. Those provider replies are kept apart in `replies`, so `sent
 the app's own sends. Inbound picture texts carry NumMedia and MediaUrl{n}; GET on a media URL gives
 the bytes (served with their content type), with `.json` the Media resource, and DELETE
 removes it; every picture gets its own Media sid. Each sent message keeps the app's derived key, and `sent_log` finds it, for OPS-017's
-"nothing sent twice" check; Calls stand in for the masked voice session (D-491). Webhooks carry
+"nothing sent twice" check. GET on one Message gives its resource; POST on it with an empty Body
+is Twilio's documented body redaction (D-1841): 200 with the resource, its body "" from then on,
+a repeat answering the same, an unknown sid 404 (20404). Calls stand in for the masked voice
+session (D-491). Webhooks carry
 X-Twilio-Signature: base64(HMAC-SHA1(auth token, URL + sorted key+value pairs)). Verify: POST
 /v2/Services/{sid}/Verifications and /VerificationCheck.
 """
@@ -100,6 +103,7 @@ class FakeTwilio:
         self.media_count = 0
         self.replies: list[dict[str, Any]] = []
         self.calls: list[dict[str, Any]] = []
+        self.received: dict[str, dict[str, Any]] = {}
 
     def create_message(self, to: str, frm: str, body: str, key: str | None = None) -> Reply:
         if not body:
@@ -179,7 +183,7 @@ class FakeTwilio:
             self.opted_out.add((to, frm))
         elif word in OPT_IN:
             self.opted_out.discard((to, frm))
-        sid = fake_id("MM" if media else "SM", 1000 + len(self.inbound), 32)
+        sid = self._received_sid("MM" if media else "SM")
         params = {"MessageSid": sid, "AccountSid": self.account_sid, "From": frm, "To": to, "Body": body}
         params["NumMedia"] = str(len(media or []))
         for n, content_type in enumerate(media or []):
@@ -188,11 +192,53 @@ class FakeTwilio:
             path = f"/2010-04-01/Accounts/{self.account_sid}/Messages/{sid}/Media/{media_sid}"
             self.media[path], self.media_types[path] = b"fake-image-bytes", content_type
             params[f"MediaUrl{n}"], params[f"MediaContentType{n}"] = path, content_type
+        self.received[sid] = {
+            **self._resource(to, frm, body),
+            "sid": sid,
+            "status": "received",
+            "direction": "inbound",
+            "num_media": params["NumMedia"],
+            "uri": f"/2010-04-01/Accounts/{self.account_sid}/Messages/{sid}.json",
+        }
         opt_type = self._auto_reply(word, frm, to)
         if opt_type:
             params["OptOutType"] = opt_type
         self.inbound.append(params)
         return params
+
+    def _received_sid(self, prefix: str) -> str:
+        """A received text's sid, hashed in its own namespace (`<prefix>:received:<n>`), so it can
+        never equal a sent or reply sid (`fake_id("SM", n)`) however many texts are sent (D-2158)."""
+        digest = hashlib.sha256(f"{prefix}:received:{len(self.inbound) + 1}".encode()).hexdigest()
+        return prefix + digest[:32]
+
+    def _message(self, sid: str) -> dict[str, Any] | None:
+        """The one Message with this sid: sent and reply sids come from one counter and received
+        sids from their own namespace, so at most one store holds it (D-2158)."""
+        found = [m for m in self.messages + self.replies if m["sid"] == sid]
+        if sid in self.received:
+            found.append(self.received[sid])
+        assert len(found) <= 1, f"stand-in sid collision: {sid}"
+        return found[0] if found else None
+
+    def message(self, sid: str) -> Reply:
+        """GET one Message resource (sent, provider reply or received); 404 (20404) if unknown."""
+        msg = self._message(sid)
+        if msg is None:
+            return error(20404, "The requested resource was not found", 404)
+        return 200, dict(msg)
+
+    def redact_message(self, sid: str, body: str | None) -> Reply:
+        """POST Body="" on a Message: Twilio's documented redaction, which keeps the record and empties
+        the body for good; a repeat answers the same 200 (PRIV-027, TXT-020, D-1841). Only redaction is
+        modelled: any other Body is refused with a stand-in-only 400 (code 20001), not a Twilio answer."""
+        msg = self._message(sid)
+        if msg is None:
+            return error(20404, "The requested resource was not found", 404)
+        if body != "":
+            return error(20001, "Stand-in models only redaction: Body must be empty")
+        msg["body"] = ""
+        return 200, dict(msg)
 
     def delete_media(self, path: str) -> Reply:
         """DELETE a stored inbound picture; 204, then 404 for any later fetch (D-492)."""

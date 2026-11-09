@@ -125,6 +125,13 @@ def twilio_list(s: StandIns, req: Request, m: re.Match[str]) -> Out:
     return 200, {"messages": sent, "page": 0, "page_size": 50, "next_page_uri": None}, {}
 
 
+def twilio_message(s: StandIns, req: Request, m: re.Match[str]) -> Out:
+    """GET one Message; POST with an empty Body redacts its body (D-1841)."""
+    if req.method == "GET":
+        return (*s.twilio.message(m.group("sid")), {})
+    return (*s.twilio.redact_message(m.group("sid"), req.form().get("Body")), {})
+
+
 def twilio_media(s: StandIns, req: Request, m: re.Match[str]) -> Out:
     """Bytes (with their stored content type) without a suffix, the Media resource JSON with `.json`, DELETE either way (D-492, D-561)."""
     path = req.path.removeprefix("/twilio").removesuffix(".json")
@@ -279,6 +286,7 @@ ROUTES: list[tuple[str, re.Pattern[str], Handler]] = [
     for r, p, h in [
         ("POST", AC + r"/Messages\.json", twilio_send),
         ("GET", AC + r"/Messages\.json", twilio_list),
+        ("GET|POST", AC + r"/Messages/(?P<sid>(SM|MM)\w{32})\.json", twilio_message),
         ("GET|DELETE", AC + r"/Messages/MM\w{32}/Media/ME\w{32}(\.json)?", twilio_media),
         ("GET|POST", AC + r"/Calls(/(?P<call>CA\w{32}))?\.json", twilio_calls),
         ("POST", r"/twilio/v2/Services/VA\w{32}/(?P<step>Verifications|VerificationCheck)", twilio_verify),

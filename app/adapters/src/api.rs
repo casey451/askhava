@@ -4,7 +4,7 @@
 //! idempotency key (SEC-018), and the texting, voice and Verify traits with
 //! their one HTTP client each (SEC-032); the payments, AI (stand-in only,
 //! AI-009), email (with suppression removal, BIZ-056), letters, license-source
-//! and storage adapters; the guarded fetch of untrusted URLs (SEC-041); and the inbound webhook
+//! and storage adapters (with `StorageDelete` and `SmsBodyDelete`, D-1841); the guarded fetch of untrusted URLs (SEC-041); and the inbound webhook
 //! signature and Stripe source-address checks (SEC-016, SEC-039, SEC-049).
 
 pub use crate::ai::{AiAdapter, StandInAi};
@@ -24,7 +24,7 @@ pub use crate::signatures::{
     Delivery, REJECTED_STATUS, SignatureError, VerifiedWebhook, WEBHOOK_TOLERANCE_SECS,
     WebhookVendor, check_webhook_source, refuse, verify_webhook, webhook_source_list,
 };
-pub use crate::sms::{SentText, SmsAdapter, TwilioSms};
-pub use crate::storage::{LocalStorage, StorageAdapter};
+pub use crate::sms::{SentText, SmsAdapter, SmsBodyDelete, TwilioSms};
+pub use crate::storage::{LocalStorage, StorageAdapter, StorageDelete};
 pub use crate::verify::{CodeChannel, TwilioVerify, VerifyAdapter};
 pub use crate::voice::{CallState, TwilioVoice, VoiceAdapter};
