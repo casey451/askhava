@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-09T14:56:07Z by runner efbb1a575c94 (actions).
+Updated 2026-11-09T14:56:21Z by runner efbb1a575c94 (actions).
 
-**Building: T274 in progress since 13:49Z; 171 of 297 done; week 62% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 14:56Z; 171 of 297 done; week 62% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 171 of 297 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T274 claimed 13:49Z, lease until 16:49Z
+- **Lane:** idle since 14:56Z (no task in progress)
 - **Week:** 62% used, 70.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:50Z, 65 min before this update
+- **Last run:** 13:50Z, 66 min before this update
 - **Keeper:** last ran 13:31Z, next wake 13:51Z
 
 ## Needs attention
@@ -17,6 +17,7 @@ Updated 2026-11-09T14:56:07Z by runner efbb1a575c94 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T274 | intake and privacy: the 180-day contact purge decides and cl | MERGE_PENDING | 1 | 66 min | 14:56Z |  |
 | T270 | picks and payments: the unreachable refund and the fraud war | done | 1 | 29 min | 13:17Z |  |
 | T282 | calls and picks: each call's start time reaches the unreacha | done | 2 | 32 min | 12:06Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Date:      2026- |
 | T282 | calls and picks: each call's start time reaches the unreacha | check_failed | 1 | 27 min | 10:49Z |  |
@@ -87,7 +88,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T274 (lease until 2026-11-09T16:49:58Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T270", "at": "2026-11-09T13:17:37Z", "cache_read_input_tokens": 17512010, "input_tokens": 289, "output_tokens": 112371, "cache_creation_input_tokens": 456422}
+- {"task": "T274", "at": "2026-11-09T14:56:06Z", "cache_read_input_tokens": 35552333, "input_tokens": 508, "cache_creation_input_tokens": 941473, "output_tokens": 206397}
