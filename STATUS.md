@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-09T08:00:14Z by runner c6409ed7f846 (actions).
+Updated 2026-11-09T08:24:29Z by runner f183f5bd01ba (actions).
 
-**Idle since 07:58Z; 166 of 286 done; week 59% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 08:06Z; 167 of 286 done; week 59% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 166 of 286 build tasks (owner gates not counted)
+- **Tasks done:** 167 of 286 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 07:58Z (no task in progress)
+- **Lane:** idle since 08:06Z (no task in progress)
 - **Week:** 59% used, 76.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:00Z, 0 min before this update
+- **Last run:** 08:00Z, 24 min before this update
 - **Keeper:** last ran 08:00Z, next wake 08:20Z
 
 ## Needs attention
@@ -17,7 +17,7 @@ Updated 2026-11-09T08:00:14Z by runner c6409ed7f846 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T264 | coverage checker: a missing measurement fails, and the total | MERGE_PENDING | 1 | 24 min | 07:58Z |  |
+| T264 | coverage checker: a missing measurement fails, and the total | done | 1 | 24 min | 07:58Z |  |
 | T262 | calls and server: a random stored PIN per line, unique on it | done | 1 | 33 min | 06:56Z |  |
 | T257 | privacy and server: the scrubber remembers names across a ho | done | 1 | 56 min | 05:54Z |  |
 | T263 | payments: the monthly fee limit is a hard cap; capacity is r | done | 1 | 49 min | 04:26Z |  |
@@ -30,7 +30,6 @@ Updated 2026-11-09T08:00:14Z by runner c6409ed7f846 (actions).
 | T150 | picks and quotes: EMERGENCY card and pick emails with the em | done | 1 | 54 min | 16:04Z |  |
 | T198 | messaging and portals: daily open-cards email, missed-card a | done | 1 | 71 min | 14:02Z |  |
 | T149 | businesses: sign-up deliverability check with a sample card, | done | 1 | 43 min | 12:00Z |  |
-| T197 | picks: Confirm by email alone with the 4-business-hour windo | done | 1 | 41 min | 08:17Z |  |
 
 ### Plan and harness merges on main
 - 22:20Z Plan: wire the real AI into the app — T298 endpoint client, T299 intake wiring (D-2065) (#367)
@@ -43,7 +42,7 @@ Updated 2026-11-09T08:00:14Z by runner c6409ed7f846 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 268 of 732 (36.6%) · partial 264 · unstarted 200
-**Tasks merged (throughput only):** 166 of 286
+**Tasks merged (throughput only):** 167 of 286
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -78,7 +77,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 46 of 98 done
+- stage 4: 47 of 98 done
 - stage 5: 0 of 42 done
 - stage 6: 0 of 30 done
 - stage 7: 0 of 2 done
