@@ -2,6 +2,10 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## Built pages nobody was putting on the site (plan change, D-2128, November 9)
+
+- **What changed.** Several finished pages had no task putting them on the site: business sign-up, the links in business emails (including the quote form), complaints, "Why was I charged?", the emergency-email switch, the homeowner portal and "Download my data", your own sign-in and owner pages, and the quote page's close button. Ten new tasks (T301 to T310) serve them, two in stage 4 because the business journey needs them, eight in stage 5; the homeowner check-in answer page is now served by the task that builds it (T231). Nothing needs you.
+
 ## Fourteen finished hand-offs closed in the register (plan change, D-2116, November 9)
 
 - **What changed.** The register of hand-offs between parts of the system (`docs/integration-closure.md`) had fourteen security, money and privacy rows whose tasks had all finished but were still marked open, which would have stopped stage 4 from finishing. Each was checked against the merged code and its tests, and all fourteen are now closed with the merge and the tests that prove them: first texts racing, a business phone's STOP, names kept out of what the AI would see, refunds, Stripe's events, paid and free picks releasing their details, the business seeing them again, the masked line's retry, the card-confirm flow against the pretend Stripe, call PINs, a changed public record, the coverage floor, the register check itself, and business texts asking for consent at send time.
