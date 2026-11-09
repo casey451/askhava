@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-09T09:42:28Z by runner 20860d410ffb (actions).
+Updated 2026-11-09T09:42:40Z by runner 20860d410ffb (actions).
 
-**Building: T267 in progress since 09:07Z; 168 of 286 done; week 59% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 09:42Z; 168 of 286 done; week 59% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 168 of 286 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T267 claimed 09:07Z, lease until 12:07Z
+- **Lane:** idle since 09:42Z (no task in progress)
 - **Week:** 59% used, 76.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 09:16Z, 26 min before this update
 - **Keeper:** last ran 08:52Z, next wake 09:12Z
@@ -17,6 +17,7 @@ Updated 2026-11-09T09:42:28Z by runner 20860d410ffb (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T267 | Ally harness: page states move to a shared data file; the ch | MERGE_PENDING | 1 | 34 min | 09:42Z |  |
 | T265 | stage exit: a security, money or privacy handoff in the inte | done | 1 | 25 min | 08:49Z |  |
 | T264 | coverage checker: a missing measurement fails, and the total | done | 1 | 24 min | 07:58Z |  |
 | T262 | calls and server: a random stored PIN per line, unique on it | done | 1 | 33 min | 06:56Z |  |
@@ -86,7 +87,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T267 (lease until 2026-11-09T12:07:47Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T265", "at": "2026-11-09T08:49:56Z", "output_tokens": 53038, "input_tokens": 157, "cache_creation_input_tokens": 183579, "cache_read_input_tokens": 4006315}
+- {"task": "T267", "at": "2026-11-09T09:42:28Z", "output_tokens": 38334, "cache_read_input_tokens": 3356128, "cache_creation_input_tokens": 160518, "input_tokens": 147}
