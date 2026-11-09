@@ -75,6 +75,7 @@ fn call(at: Timestamp, answered: AnsweredBy) -> CallRecord {
         answered,
         length: SignedDuration::from_secs(20),
         reached_45s: false,
+        started_at: Some(at),
         ended_at: at,
     };
     call_record(&logged)

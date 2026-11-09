@@ -64,7 +64,10 @@ pub struct ReleasedPick<'a> {
     pub language: (Language, bool),
 }
 
-/// CALL-007: a logged call as the refund rule reads it; only a person answering is talking.
+/// CALL-007, FEE-022, D-1836: a logged call as the refund rule reads it; only a person answering
+/// is talking. `at` is the call's start; a call whose start was never recorded (a lost callback,
+/// Ask Hava's fault) is judged by its end time for every FEE-022 check and still counts as an
+/// attempt, so the business never loses its refund for it.
 #[must_use]
 pub fn call_record(call: &LoggedCall) -> CallRecord {
     let caller = match call.caller {
@@ -77,7 +80,7 @@ pub fn call_record(call: &LoggedCall) -> CallRecord {
         AnsweredBy::Nobody | AnsweredBy::Unknown => Answer::NoAnswer,
     };
     CallRecord {
-        at: call.ended_at,
+        at: call.started_at.unwrap_or(call.ended_at),
         caller,
         answer,
     }

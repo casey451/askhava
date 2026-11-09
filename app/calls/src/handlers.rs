@@ -4,7 +4,10 @@
 //! [`dial_twiml`] is the one TwiML that bridges a masked call: it always says `do-not-record` and
 //! holds no recording verb (CALL-006). [`finished_call`] reads the provider's verified status
 //! callback; [`log_finished_call`] appends it to `calls.call_log` once per call SID, so a repeated
-//! callback logs nothing twice (JOB-006); [`call_log`] reads a line's log back for `picks`.
+//! callback logs nothing twice (JOB-006); [`call_log`] reads a line's log back for `picks`, each
+//! call with its start. T282 (FEE-022, D-1836, D-2129): [`call_start_confirmed`] joins the dialed
+//! leg's SID to the start T262's voice webhook stored in `calls.call_start` (or stores the start
+//! when that write was lost), and [`call_log`] joins each logged call to it by the dialed SID.
 
 use askhava_adapters::api::PoolNumber;
 use jiff::{SignedDuration, Timestamp};
@@ -17,10 +20,11 @@ use crate::models::CallsError;
 use crate::rules::{AnsweredBy, Caller, answered_by, reached_report_mark};
 
 /// CALL-006, CALL-008: the TwiML that dials `to` from the pool number `caller_id`, never recorded,
-/// with the provider's machine detection so the log can say who answered. T080 adds the dialed
-/// leg's final status callback, which carries that result (D-1690). `None` when `to` is not
-/// E.164, so nothing but digits reaches the XML. The result holds a phone number: send it only as
-/// the webhook's reply, never log it (PRIV-016).
+/// with the provider's machine detection so the log can say who answered (D-1690). The TwiML
+/// carries no status callback attributes, because TD-CALL-03's test in `no_recording.rs` checks
+/// the exact `<Dial>` and `<Number>` tags; adding them is a plan gap D-2129 records. `None` when
+/// `to` is not E.164, so nothing but digits reaches the XML. The result holds a phone number: send
+/// it only as the webhook's reply, never log it (PRIV-016).
 #[must_use]
 pub fn dial_twiml(caller_id: &PoolNumber, to: &SecretString) -> Option<SecretString> {
     let to = to.expose_secret();
@@ -139,19 +143,58 @@ pub struct LoggedCall {
     pub length: SignedDuration,
     /// Whether it reached the 45-second mark; reports only (CALL-007).
     pub reached_45s: bool,
+    /// When it started: the start stored in `calls.call_start` for its dialed SID; `None` when no
+    /// start was recorded for it (a lost callback; FEE-022 then judges its end, D-1836).
+    pub started_at: Option<Timestamp>,
     /// When it ended.
     pub ended_at: Timestamp,
 }
 
-/// CALL-008: the line's logged calls, oldest first.
+/// FEE-022, CALL-008, D-1836: the dialed leg `dialed` of the call with parent CallSid `parent` on
+/// `line` was initiated at `at`. Records `dialed` on the start T262's voice webhook stored for
+/// `parent`, or, when that write was lost, stores the start at `at`. A repeated or late callback
+/// never moves a start, and a start already joined to a dialed SID keeps it. Returns the start as
+/// stored. `line` is needed only to create a lost row (`line_id` is not null, D-2129).
+///
+/// # Errors
+///
+/// [`CallsError::Database`] when the write fails: a SID that is not `CA…`, an unknown line, or a
+/// dialed SID already joined to another parent's start.
+pub async fn call_start_confirmed(
+    db: &mut PgConnection,
+    line: Uuid,
+    parent: &str,
+    dialed: &str,
+    at: Timestamp,
+) -> Result<Timestamp, CallsError> {
+    let started = sqlx::query_scalar!(
+        "INSERT INTO calls.call_start (parent_sid, line_id, started_at, dialed_sid) \
+         VALUES ($1, $2, $3, $4) ON CONFLICT (parent_sid) DO UPDATE \
+         SET dialed_sid = COALESCE(calls.call_start.dialed_sid, EXCLUDED.dialed_sid) \
+         RETURNING started_at",
+        parent,
+        line,
+        at.to_sqlx() as _,
+        dialed
+    )
+    .fetch_one(db)
+    .await
+    .map_err(|_| CallsError::Database)?;
+    Ok(started.to_jiff())
+}
+
+/// CALL-008, FEE-022: the line's logged calls, oldest end first, each with the start its dialed
+/// SID joins in `calls.call_start` on the same line (`None` when none was recorded, D-1836).
 ///
 /// # Errors
 ///
 /// [`CallsError::Database`] when the read fails or a row holds a word this code does not know.
 pub async fn call_log(db: &mut PgConnection, line: Uuid) -> Result<Vec<LoggedCall>, CallsError> {
     let rows = sqlx::query!(
-        "SELECT caller, answered_by, length_seconds, reached_45s, ended_at FROM calls.call_log \
-         WHERE line_id = $1 ORDER BY ended_at, id",
+        r#"SELECT l.caller, l.answered_by, l.length_seconds, l.reached_45s, l.ended_at,
+           s.started_at AS "started_at?" FROM calls.call_log l
+           LEFT JOIN calls.call_start s ON s.dialed_sid = l.call_sid AND s.line_id = l.line_id
+           WHERE l.line_id = $1 ORDER BY l.ended_at, l.id"#,
         line
     )
     .fetch_all(db)
@@ -164,6 +207,7 @@ pub async fn call_log(db: &mut PgConnection, line: Uuid) -> Result<Vec<LoggedCal
                 answered: parse_answered(&r.answered_by).ok_or(CallsError::Database)?,
                 length: SignedDuration::from_secs(r.length_seconds),
                 reached_45s: r.reached_45s,
+                started_at: r.started_at.map(|t| t.to_jiff()),
                 ended_at: r.ended_at.to_jiff(),
             })
         })
