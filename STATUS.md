@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-09T12:25:01Z by runner 79dcc633860d (actions).
+Updated 2026-11-09T12:48:38Z by runner e332d652d98c (actions).
 
-**Idle since 12:06Z; 169 of 297 done; week 62% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 12:37Z; 170 of 297 done; week 62% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 169 of 297 build tasks (owner gates not counted)
+- **Tasks done:** 170 of 297 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 12:06Z (no task in progress)
+- **Lane:** idle since 12:37Z (no task in progress)
 - **Week:** 62% used, 72.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:24Z, 0 min before this update
+- **Last run:** 12:25Z, 23 min before this update
 - **Keeper:** last ran 12:25Z, next wake 12:45Z
 
 ## Needs attention
@@ -17,7 +17,7 @@ Updated 2026-11-09T12:25:01Z by runner 79dcc633860d (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T282 | calls and picks: each call's start time reaches the unreacha | MERGE_PENDING | 2 | 32 min | 12:06Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Date:      2026- |
+| T282 | calls and picks: each call's start time reaches the unreacha | done | 2 | 32 min | 12:06Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Date:      2026- |
 | T282 | calls and picks: each call's start time reaches the unreacha | check_failed | 1 | 27 min | 10:49Z |  |
 | T267 | Ally harness: page states move to a shared data file; the ch | done | 1 | 34 min | 09:42Z |  |
 | T265 | stage exit: a security, money or privacy handoff in the inte | done | 1 | 25 min | 08:49Z |  |
@@ -44,7 +44,7 @@ Updated 2026-11-09T12:25:01Z by runner 79dcc633860d (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 252 of 732 (34.4%) · partial 281 · unstarted 199
-**Tasks merged (throughput only):** 169 of 297
+**Tasks merged (throughput only):** 170 of 297
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -79,7 +79,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 49 of 101 done
+- stage 4: 50 of 101 done
 - stage 5: 0 of 50 done
 - stage 6: 0 of 30 done
 - stage 7: 0 of 2 done
