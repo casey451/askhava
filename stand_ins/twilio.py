@@ -183,7 +183,7 @@ class FakeTwilio:
             self.opted_out.add((to, frm))
         elif word in OPT_IN:
             self.opted_out.discard((to, frm))
-        sid = fake_id("MM" if media else "SM", 1000 + len(self.inbound), 32)
+        sid = self._received_sid("MM" if media else "SM")
         params = {"MessageSid": sid, "AccountSid": self.account_sid, "From": frm, "To": to, "Body": body}
         params["NumMedia"] = str(len(media or []))
         for n, content_type in enumerate(media or []):
@@ -206,9 +206,20 @@ class FakeTwilio:
         self.inbound.append(params)
         return params
 
+    def _received_sid(self, prefix: str) -> str:
+        """A received text's sid, hashed in its own namespace (`<prefix>:received:<n>`), so it can
+        never equal a sent or reply sid (`fake_id("SM", n)`) however many texts are sent (D-2158)."""
+        digest = hashlib.sha256(f"{prefix}:received:{len(self.inbound) + 1}".encode()).hexdigest()
+        return prefix + digest[:32]
+
     def _message(self, sid: str) -> dict[str, Any] | None:
-        sent = (m for m in self.messages + self.replies if m["sid"] == sid)
-        return next(sent, self.received.get(sid))
+        """The one Message with this sid: sent and reply sids come from one counter and received
+        sids from their own namespace, so at most one store holds it (D-2158)."""
+        found = [m for m in self.messages + self.replies if m["sid"] == sid]
+        if sid in self.received:
+            found.append(self.received[sid])
+        assert len(found) <= 1, f"stand-in sid collision: {sid}"
+        return found[0] if found else None
 
     def message(self, sid: str) -> Reply:
         """GET one Message resource (sent, provider reply or received); 404 (20404) if unknown."""

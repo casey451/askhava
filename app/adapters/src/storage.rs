@@ -85,7 +85,7 @@ impl LocalStorage {
     fn path(&self, name: &str) -> Result<PathBuf, AdapterError> {
         let mut path = self.root.clone();
         for part in name.split('/') {
-            if !is_safe_name(part) {
+            if !is_storable_part(part) {
                 return Err(AdapterError::InvalidId);
             }
             path.push(part);
@@ -153,6 +153,17 @@ pub(crate) fn write_once_observed(
             .and_then(|()| same_bytes(path, bytes)),
         Err(_) => Err(AdapterError::NotSent),
     }
+}
+
+/// The longest part of an object name, in bytes: the temporary file
+/// `.<part>.<32 hex>.part` adds 39 bytes and must still fit a 255-byte file
+/// name, so a longer part could never be written (D-2158).
+pub(crate) const MAX_PART: usize = 200;
+
+/// A part of an object name: a safe name (`base::is_safe_name`, SEC-032) no
+/// longer than [`MAX_PART`] bytes, so every accepted name is writable (D-2158).
+fn is_storable_part(part: &str) -> bool {
+    part.len() <= MAX_PART && is_safe_name(part)
 }
 
 /// How many random names one attempt tries before it gives up.
@@ -274,7 +285,7 @@ impl LocalStorage {
     /// name, and the last, partial part only safe characters (SEC-032).
     fn prefix_start(&self, prefix: &str) -> Result<(PathBuf, String), AdapterError> {
         let (folders, partial) = prefix.rsplit_once('/').unwrap_or(("", prefix));
-        if !partial.is_empty() && !is_safe_name(partial) {
+        if !partial.is_empty() && !is_storable_part(partial) {
             return Err(AdapterError::InvalidId);
         }
         if folders.is_empty() {

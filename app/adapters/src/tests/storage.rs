@@ -5,8 +5,9 @@
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::mpsc::{self, Receiver, Sender};
-use std::sync::{Arc, Barrier, Mutex};
+use std::sync::{Arc, Condvar, Mutex};
 use std::thread::JoinHandle;
+use std::time::Duration;
 
 use askhava_core::api::Settings;
 use secrecy::SecretString;
@@ -16,11 +17,14 @@ use crate::api::{
     AdapterError, IdempotencyKey, LocalStorage, SmsAdapter, SmsBodyDelete, StorageAdapter,
     StorageDelete, TwilioConfig, twilio_clients,
 };
-use crate::storage::{Step, write_once_observed};
+use crate::storage::{MAX_PART, Step, write_once_observed};
 
 /// Large enough that a partly written object would be seen by the reader.
 const SIZE: usize = 1 << 20;
 const SID: &str = "AC00000000000000000000000000000000";
+
+/// How long a lockstep attempt waits for the other before the case fails.
+const PATIENCE: Duration = Duration::from_secs(30);
 
 type Outcome = Result<(), AdapterError>;
 type Temporaries = Arc<Mutex<[Option<PathBuf>; 2]>>;
@@ -69,6 +73,37 @@ fn left_in(dir: &Path) -> Vec<String> {
     names
 }
 
+/// A two-party barrier whose wait panics after [`PATIENCE`], so an assertion
+/// that panics in one attempt fails the case instead of leaving the other
+/// attempt waiting forever (a `std::sync::Barrier` never times out).
+#[derive(Default)]
+struct Lockstep {
+    /// Arrivals at the current step and the step's generation.
+    state: Mutex<(usize, u64)>,
+    turn: Condvar,
+}
+
+impl Lockstep {
+    fn wait(&self) {
+        let mut state = self.state.lock().unwrap();
+        let generation = state.1;
+        state.0 += 1;
+        if state.0 == 2 {
+            *state = (0, generation + 1);
+            self.turn.notify_all();
+            return;
+        }
+        let (_state, waited) = self
+            .turn
+            .wait_timeout_while(state, PATIENCE, |s| s.1 == generation)
+            .unwrap();
+        assert!(
+            !waited.timed_out(),
+            "the other attempt never reached this step"
+        );
+    }
+}
+
 /// One lockstep attempt `me` (0 or 1): both stop after creating and after
 /// writing, both try the link before either removes; attempt 1 removes only
 /// after attempt 0 checked that removing its own file left attempt 1's.
@@ -76,7 +111,7 @@ fn lockstep(
     me: usize,
     bytes: Vec<u8>,
     path: PathBuf,
-    barrier: Arc<Barrier>,
+    barrier: Arc<Lockstep>,
     temporaries: Temporaries,
     (done, go): (Option<Sender<()>>, Option<Receiver<()>>),
 ) -> JoinHandle<Outcome> {
@@ -116,7 +151,7 @@ fn race(case: &str, first: Vec<u8>, second: Vec<u8>) -> ([Outcome; 2], Vec<Vec<u
     let path = dir.join("object.bin");
     let stop = Arc::new(AtomicBool::new(false));
     let reader = watch(path.clone(), Arc::clone(&stop));
-    let barrier = Arc::new(Barrier::new(2));
+    let barrier = Arc::new(Lockstep::default());
     let temporaries: Temporaries = Arc::default();
     let (done, go) = mpsc::channel();
     let shared = |me, bytes, signal| {
@@ -249,6 +284,27 @@ async fn delete_and_list_objects_by_prefix() {
     assert_eq!(store.read_object("stream/c.bin").await.unwrap(), b"fake");
     let bad = store.delete_object(&delete, "../escape.bin").await;
     assert_eq!(bad, Err(AdapterError::InvalidId));
+    let _ = std::fs::remove_dir_all(dir);
+}
+
+/// SEC-032, D-2158: a name part longer than `MAX_PART` bytes is `InvalidId`
+/// before any write, since its temporary file name could never be created;
+/// a part of exactly `MAX_PART` bytes is written and read back.
+#[tokio::test]
+async fn a_name_part_too_long_to_write_is_refused() {
+    let dir = fresh_dir("long");
+    let store = LocalStorage::new(&format!("file://{}", dir.display())).unwrap();
+    let k = key("storage.put", "photo-long");
+    let longest = format!("photos/{}", "a".repeat(MAX_PART));
+    store
+        .put_object(&k, &longest, b"fake".to_vec())
+        .await
+        .unwrap();
+    assert_eq!(store.read_object(&longest).await.unwrap(), b"fake");
+    let too_long = format!("photos/{}", "a".repeat(MAX_PART + 1));
+    let refused = store.put_object(&k, &too_long, b"fake".to_vec()).await;
+    assert_eq!(refused, Err(AdapterError::InvalidId));
+    assert_eq!(left_in(&dir.join("photos")), ["a".repeat(MAX_PART)]);
     let _ = std::fs::remove_dir_all(dir);
 }
 

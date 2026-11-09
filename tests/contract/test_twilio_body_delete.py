@@ -92,3 +92,16 @@ def test_unknown_sid_auth_and_non_empty_body_are_refused(base: str) -> None:
     assert status == 401 and err["code"] == 20003
     assert call(base, "POST", f"{ROOT}/{sid}.json", {"Body": "new words"})[0] == 400
     assert call(base, "GET", f"{ROOT}/{sid}.json")[1]["body"] == "Ask Hava: fake text"
+
+
+def test_a_received_sid_never_matches_a_sent_one() -> None:
+    """D-2158: after 1,000 sends the received text's sid is still its own, so redacting it never
+    empties a sent message (received sids once reused the sent counter's 1000th value)."""
+    fake = twilio.FakeTwilio()
+    sent_sids = {fake.create_message(HOMEOWNER, OURS, f"Ask Hava: fake text {n}")[1]["sid"] for n in range(1001)}
+    sid = fake.receive(HOMEOWNER, OURS, "fake homeowner words")["MessageSid"]
+    picture = fake.receive(HOMEOWNER, OURS, "fake picture", media=["image/jpeg"])["MessageSid"]
+    assert sid not in sent_sids and picture not in sent_sids and len(sent_sids) == 1001
+    status, msg = fake.redact_message(sid, "")
+    assert status == 200 and msg["direction"] == "inbound" and msg["body"] == ""
+    assert all(m["body"].startswith("Ask Hava: fake text") for m in fake.sent_log())
