@@ -15,9 +15,11 @@
 //! and [`owner_bridge_twiml`] (OPS-028). T262: a random stored PIN per line ([`stored_pin`]),
 //! the stored per-day PIN tries and the inbound voice turn ([`voice_turn`], [`voice_confirm`],
 //! [`readback_twiml`], [`hangup_twiml`]) (CALL-003 to CALL-005, CALL-025, SEC-017, D-1755).
+//! T282: [`call_start_confirmed`] and each logged call's `started_at` (FEE-022, D-1836).
 
 pub use crate::handlers::{
-    FinishedCall, LoggedCall, call_log, dial_twiml, finished_call, log_finished_call,
+    FinishedCall, LoggedCall, call_log, call_start_confirmed, dial_twiml, finished_call,
+    log_finished_call,
 };
 pub use crate::lifecycle::{
     BUSINESS_NOTICE_KIND, CANCELLED_TEMPLATE, CloseReason, GREETING_EN, GREETING_ES, LINE_DAYS,

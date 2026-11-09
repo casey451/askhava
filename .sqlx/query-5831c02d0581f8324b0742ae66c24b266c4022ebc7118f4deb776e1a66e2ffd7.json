@@ -1,0 +1,31 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO calls.call_start (parent_sid, line_id, started_at, dialed_sid) VALUES ($1, $2, $3, $4) ON CONFLICT (parent_sid) DO UPDATE SET dialed_sid = COALESCE(calls.call_start.dialed_sid, EXCLUDED.dialed_sid) RETURNING started_at",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "started_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "calls.call_start",
+            "name": "started_at"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Uuid",
+        "Timestamptz",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "5831c02d0581f8324b0742ae66c24b266c4022ebc7118f4deb776e1a66e2ffd7"
+}
