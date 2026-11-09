@@ -13,12 +13,12 @@ use std::sync::{Arc, Mutex};
 
 use askhava_adapters::api::{
     AdapterError, AdapterMode, Charge, IdempotencyKey, IntentMetadata, PaymentIntent,
-    PaymentsAdapter, StripeRefund,
+    PaymentsAdapter,
 };
 use askhava_core::api::{ClientIpPolicy, ManualClock};
 use askhava_payments::api::{
     DISPUTE_CLOSED_ACTION, FRAUD_WARNING_KIND, Releasable, ReleaseError, ReleaseSink,
-    STRIPE_WEBHOOK_PATH, StripeAccount, StripeWebhook, stripe_webhook_routes,
+    STRIPE_WEBHOOK_PATH, StripeAccount, StripeRefund, StripeWebhook, stripe_webhook_routes,
 };
 use axum::body::Body;
 use axum::extract::ConnectInfo;
