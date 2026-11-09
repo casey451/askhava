@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-09T00:16:55Z by runner 402619d3e62f (actions).
+Updated 2026-11-09T00:17:08Z by runner 402619d3e62f (actions).
 
-**Building: T258 in progress since 22:56Z; 160 of 286 done; week 57% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 00:16Z; 160 of 286 done; week 57% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 160 of 286 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T258 claimed 22:56Z, lease until 01:56Z
+- **Lane:** idle since 00:16Z (no task in progress)
 - **Week:** 57% used, 80.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 22:56Z, 80 min before this update
 - **Keeper:** last ran 22:44Z, next wake 23:04Z
@@ -17,6 +17,7 @@ Updated 2026-11-09T00:16:55Z by runner 402619d3e62f (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T258 | adapters and payments: a refund is recorded as Stripe report | MERGE_PENDING | 1 | 80 min | 00:16Z |  |
 | T256 | server: two first texts from one new phone both reach intake | done | 1 | 37 min | 22:00Z |  |
 | T098 | Journey J1 (homeowner) and its variants, keyboard-only, with | done | 1 | 50 min | 20:51Z |  |
 | T254 | server and picks: the production release (paid or free, mint | done | 1 | 84 min | 19:24Z |  |
@@ -87,7 +88,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T258 (lease until 2026-11-09T01:56:22Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T256", "at": "2026-11-08T22:00:46Z", "cache_creation_input_tokens": 558851, "output_tokens": 101119, "input_tokens": 329, "cache_read_input_tokens": 14033331}
+- {"task": "T258", "at": "2026-11-09T00:16:55Z", "cache_read_input_tokens": 45683338, "output_tokens": 299042, "cache_creation_input_tokens": 863044, "input_tokens": 539}
