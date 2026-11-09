@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT shown FROM ops.status_banner ORDER BY id DESC LIMIT 1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "shown",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "ops.status_banner",
+            "name": "shown"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "cf3671141a80e959e4f99e0bd4109b98db40c7644edd9f3fb209eafd6f18e1e1"
+}

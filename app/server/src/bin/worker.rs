@@ -15,7 +15,9 @@
 //! settings (required in the test and live projects) it registers `picks`' masked-line retry,
 //! `picks.line_retry`, over the masked pool (CALL-001, D-1688, T254), and `messaging`'s day-31
 //! body delete at Twilio (PRIV-027, D-1841, T276). It registers `privacy`'s sealed photo object
-//! delete and queues its daily orphan sweep over the same store (PRIV-009, D-1841, T276).
+//! delete and queues its daily orphan sweep over the same store (PRIV-009, D-1841, T276), and
+//! `messaging`'s paused-emergency follow-up with no email keys, so each homeowner goes on Casey's
+//! call list until a footer postal setting exists (TXT-023, D-2186, T279).
 
 use std::io;
 use std::sync::Arc;
@@ -49,6 +51,13 @@ async fn main() -> io::Result<()> {
     let photo_clock = Arc::clone(&clock);
     let secret = id_secret.clone();
     askhava_privacy::api::register_photo_deletes(&mut registry, photos, secret, photo_clock);
+    let safety = Arc::new(askhava_messaging::api::SafetySender::call_list_only());
+    registry.register(
+        askhava_messaging::api::PAUSED_SAFETY_KIND,
+        move |pool, task| {
+            askhava_messaging::api::run_paused_safety(pool, Arc::clone(&safety), task)
+        },
+    );
     if let Some(twilio) = twilio_config(&settings)? {
         let (sms, _, _) =
             askhava_adapters::api::twilio_clients(&twilio).map_err(io::Error::other)?;
