@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-09T13:50:10Z by runner 028378523988 (actions).
+Updated 2026-11-09T14:56:07Z by runner efbb1a575c94 (actions).
 
 **Building: T274 in progress since 13:49Z; 171 of 297 done; week 62% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,11 @@ Updated 2026-11-09T13:50:10Z by runner 028378523988 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T274 claimed 13:49Z, lease until 16:49Z
 - **Week:** 62% used, 70.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:31Z, 18 min before this update
+- **Last run:** 13:50Z, 65 min before this update
 - **Keeper:** last ran 13:31Z, next wake 13:51Z
 
 ## Needs attention
-- Strict plan check red: 22 problem(s) on tasks still to run (+47 on DONE tasks); first: T255: stored context_pct 25% but it measures 34%; regenerate
+- Strict plan check red: 24 problem(s) on tasks still to run (+49 on DONE tasks); first: T255: stored context_pct 25% but it measures 34%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -33,7 +33,6 @@ Updated 2026-11-09T13:50:10Z by runner 028378523988 (actions).
 | T098 | Journey J1 (homeowner) and its variants, keyboard-only, with | done | 1 | 50 min | 20:51Z |  |
 | T254 | server and picks: the production release (paid or free, mint | done | 1 | 84 min | 19:24Z |  |
 | T150 | picks and quotes: EMERGENCY card and pick emails with the em | done | 1 | 54 min | 16:04Z |  |
-| T198 | messaging and portals: daily open-cards email, missed-card a | done | 1 | 71 min | 14:02Z |  |
 
 ### Plan and harness merges on main
 - 22:20Z Plan: wire the real AI into the app — T298 endpoint client, T299 intake wiring (D-2065) (#367)
