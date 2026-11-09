@@ -1,23 +1,23 @@
 # Ask Hava build status
 
-Updated 2026-11-09T04:28:15Z by runner 04d388c05746 (actions).
+Updated 2026-11-09T04:57:46Z by runner 8c370a378133 (actions).
 
-**Idle since 04:26Z; 163 of 286 done; week 58% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 04:42Z; 164 of 286 done; week 58% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 163 of 286 build tasks (owner gates not counted)
+- **Tasks done:** 164 of 286 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 04:26Z (no task in progress)
+- **Lane:** idle since 04:42Z (no task in progress)
 - **Week:** 58% used, 78.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:28Z, 0 min before this update
+- **Last run:** 04:28Z, 29 min before this update
 - **Keeper:** last ran 04:28Z, next wake 04:48Z
 
 ## Needs attention
-- Strict plan check red: 31 problem(s) on tasks still to run (+36 on DONE tasks); first: T255: stored context_pct 25% but it measures 33%; regenerate
+- Strict plan check red: 32 problem(s) on tasks still to run (+37 on DONE tasks); first: T255: stored context_pct 25% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T263 | payments: the monthly fee limit is a hard cap; capacity is r | MERGE_PENDING | 1 | 49 min | 04:26Z |  |
+| T263 | payments: the monthly fee limit is a hard cap; capacity is r | done | 1 | 49 min | 04:26Z |  |
 | T260 | stand-in and adapters: an unconfirmed PaymentIntent, its on- | done | 1 | 42 min | 03:09Z |  |
 | T259 | payments: the Stripe webhook dispatches refund, dispute and  | done | 1 | 61 min | 01:52Z |  |
 | T258 | adapters and payments: a refund is recorded as Stripe report | done | 1 | 80 min | 00:16Z |  |
@@ -43,7 +43,7 @@ Updated 2026-11-09T04:28:15Z by runner 04d388c05746 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 268 of 732 (36.6%) · partial 264 · unstarted 200
-**Tasks merged (throughput only):** 163 of 286
+**Tasks merged (throughput only):** 164 of 286
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -78,7 +78,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 43 of 98 done
+- stage 4: 44 of 98 done
 - stage 5: 0 of 42 done
 - stage 6: 0 of 30 done
 - stage 7: 0 of 2 done
