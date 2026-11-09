@@ -42,6 +42,8 @@
 //!
 //! T224: [`stripe_webhook_routes`] is the Stripe webhook route ([`STRIPE_WEBHOOK_PATH`]): source
 //! rule, signature, then [`paid_release`] and the [`ReleaseSink`] that mints (SEC-039, SEC-049).
+//! T259: it also dispatches refund, dispute and early-fraud-warning events once each by event ID
+//! ([`DISPUTE_CLOSED_ACTION`], [`FRAUD_WARNING_KIND`]; SEC-017, FEE-026, FEE-027, FEE-052).
 //!
 //! T065: [`decide_unreachable`] and [`decide_cancel`] decide each automatic refund from the call
 //! log ([`CallRecord`]s) as a [`RefundDecision`], once per pick under [`refund_label`]; [`no_show`]
@@ -129,7 +131,10 @@ pub use crate::release_proof::{
     Minter, Releasable, ReleaseError, SUCCEEDED_EVENT, StripeAccount, VerifiedStripeEvent,
     no_fee_release, paid_release,
 };
-pub use crate::routes::{ReleaseSink, STRIPE_WEBHOOK_PATH, StripeWebhook, stripe_webhook_routes};
+pub use crate::routes::{
+    DISPUTE_CLOSED_ACTION, FRAUD_WARNING_KIND, ReleaseSink, STRIPE_WEBHOOK_PATH, StripeWebhook,
+    stripe_webhook_routes,
+};
 pub use crate::rules::{
     Fee, FeeError, FeeJob, FeeMode, FeeQuote, FeeTerms, Period, PeriodJob, PickedFee,
     RECURRING_MONTHS, RecurringCap, Service, Tier, VisitTier, fee_at_pick, fee_for, flat_tier,
