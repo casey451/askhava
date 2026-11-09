@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-09T16:08:58Z by runner 6c0d754becdd (actions).
+Updated 2026-11-09T16:09:11Z by runner 6c0d754becdd (actions).
 
-**Building: T275 in progress since 15:30Z; 172 of 297 done; week 63% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 16:08Z; 172 of 297 done; week 63% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 172 of 297 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T275 claimed 15:30Z, lease until 18:30Z
+- **Lane:** idle since 16:08Z (no task in progress)
 - **Week:** 63% used, 68.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 15:30Z, 38 min before this update
 - **Keeper:** last ran 15:09Z, next wake 15:29Z
@@ -17,6 +17,7 @@ Updated 2026-11-09T16:08:58Z by runner 6c0d754becdd (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T275 | adapters and stand-ins: local write-once storage that a raci | MERGE_PENDING | 1 | 38 min | 16:08Z |  |
 | T274 | intake and privacy: the 180-day contact purge decides and cl | done | 1 | 66 min | 14:56Z |  |
 | T270 | picks and payments: the unreachable refund and the fraud war | done | 1 | 29 min | 13:17Z |  |
 | T282 | calls and picks: each call's start time reaches the unreacha | done | 2 | 32 min | 12:06Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Date:      2026- |
@@ -86,7 +87,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T275 (lease until 2026-11-09T18:30:26Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T274", "at": "2026-11-09T14:56:06Z", "cache_read_input_tokens": 35552333, "input_tokens": 508, "cache_creation_input_tokens": 941473, "output_tokens": 206397}
+- {"task": "T275", "at": "2026-11-09T16:08:58Z", "cache_read_input_tokens": 10618949, "input_tokens": 309, "cache_creation_input_tokens": 424858, "output_tokens": 122115}
