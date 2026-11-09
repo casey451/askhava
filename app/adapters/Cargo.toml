@@ -10,6 +10,7 @@ publish.workspace = true
 askhava-core = { workspace = true }
 base64 = { workspace = true }
 hmac = { workspace = true }
+rand = { workspace = true }
 reqwest = { workspace = true }
 secrecy = { workspace = true }
 serde = { workspace = true }

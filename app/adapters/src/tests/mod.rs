@@ -2,3 +2,4 @@
 
 mod adapter_config;
 mod ssrf_guard;
+mod storage;
