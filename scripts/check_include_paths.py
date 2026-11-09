@@ -43,7 +43,7 @@ INCLUDE_ARG = re.compile(r"\s*" + LITERAL + r"\s*,?\s*\)")
 CONCAT_ENV = re.compile(r"\bconcat!\s*\(\s*env!\s*\(")
 MANIFEST_ARG = re.compile(r'\s*"CARGO_MANIFEST_DIR"\s*\)\s*')
 CONCAT_REST = re.compile(r"((?:,\s*" + LITERAL + r"\s*)*),?\s*\)")
-SKIPPED = re.compile(r"//[^\n]*|/\*.*?\*/|\br(#*)\".*?\"\1|\"(?:[^\"\\]|\\.)*\"|'(?:[^'\\\n]|\\[^']*)'", re.DOTALL)
+SKIPPED = re.compile(r"//[^\n]*|/\*.*?\*/|\b(?:b|c)?r(#*)\".*?\"\1|\"(?:[^\"\\]|\\.)*\"|'(?:[^'\\\n]|\\[^']*)'", re.DOTALL)
 
 
 def read_rules(root: Path) -> dict[str, str]:

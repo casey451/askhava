@@ -50,7 +50,7 @@
   "scripts/check_code_docs.py": "cb5df5710797e221ae5d5a5b2daa9d6c3612e9bca1ccd24f07ea07b34e470fbd",
   "scripts/check_copy.py": "cde92b2b75bd96ec1c365e0c11161591a93e4010277ada417169c87a1a6db459",
   "scripts/check_crates.py": "6191806bd18621eb13b6ead908507c4150859ce587426670dd26d1c55a8666bc",
-  "scripts/check_include_paths.py": "a76e9dcb3ed97f234d344780fcb3bcf4e3e58287e1ede278d410d00ab4a11c33",
+  "scripts/check_include_paths.py": "2031cae9734517314a48a0fda747dbfe629c38c21dc4df1d063634e43a6b7f76",
   "scripts/check_legal_docs.py": "c04c68df77cb1c8e2e41bdef54641b96ddb67b3b2136d4b1699d2be965615cc6",
   "scripts/check_plan_lock.py": "15571e4da313f02b0a9931497e78057e29e218a16fc14ef6f3007b0611f97814",
   "scripts/check_pr_change.py": "bff82974c36a3b5bbc57f9fdd5bf929b1935e1d0da9ee4bd2b3826e7ccb3cf8d",

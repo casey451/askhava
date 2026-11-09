@@ -123,8 +123,13 @@ def test_td_ops_32_macros_named_in_comments_or_strings_are_not_calls(tmp_path: P
               '/* include!("../gone.rs") */\n'
               'const S: &str = "include_bytes!(\\"../gone.bin\\")";\n'
               "const C: char = '\"';\n"
-              'const R: &str = r#"concat!(env!("CARGO_MANIFEST_DIR"), "/gone")"#;\n')
-    assert _problems(_tree(tmp_path, source)) == []
+              'const R: &str = r#"concat!(env!("CARGO_MANIFEST_DIR"), "/gone")"#;\n'
+              'const B: &[u8] = br#"a " b"#;\n'
+              'const P: &[u8] = br"\\";\n'
+              'const X: &str = include_str!("../../../docs/other/x.md");\n')
+    problems = _problems(_tree(tmp_path, source, ("docs/other/x.md",)))
+    assert len(problems) == 3, problems
+    assert all(p.startswith("app/fake/src/lib.rs:8: include_str! -> docs/other/x.md: not matched") for p in problems)
 
 
 def test_td_ops_32_the_repository_root_is_a_note_not_a_silent_skip(tmp_path: Path) -> None:
