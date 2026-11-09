@@ -1567,3 +1567,4 @@
 - 2026-11-09T22:30:51Z runner 13e81649d3c9 (actions): {}
 - 2026-11-09T22:31:05Z runner 13e81649d3c9 (actions): {}
 - 2026-11-09T22:57:46Z runner 7cd8e8f90fac (actions): {"T287": "MERGE_PENDING -> DONE"}
+- 2026-11-09T23:03:54Z runner 7cd8e8f90fac (actions): {"T283": "QUEUED -> IN_PROGRESS"}; T283 estimated 2.5M tokens (calibrated); five-hour window has 29.1M left, week 52.0M (session_reading 2026-11-09T22:30:51Z (week)); claimed
