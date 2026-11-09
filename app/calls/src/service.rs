@@ -18,6 +18,7 @@ use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection};
 
 use crate::models::{self, CallsError, OpenLine};
+use crate::pins::allocate_pin;
 
 /// The `ops.alert` kind raised when a job had to share a number (CALL-017, D-077).
 pub const POOL_ALERT: &str = "calls.pool_exhausted";
@@ -98,13 +99,16 @@ pub(crate) fn choose(
 /// Gives `job` its masked number at `now`, or returns its open line again (safe to call twice).
 /// Writes the line, its audit row and, for a shared number with no pool alert open, one High
 /// `calls.pool_exhausted` alert, in one transaction (a savepoint inside the caller's)
-/// (CALL-001, CALL-002, CALL-017, JOB-005; D-077, D-231).
+/// (CALL-001, CALL-002, CALL-017, JOB-005; D-077, D-231). The line's PIN is drawn at random in the
+/// same transaction, unique among the number's open lines; when [`crate::pins::PIN_DRAWS`] draws
+/// all collide, the pool alert is raised and no line is stored (CALL-003, D-1755).
 ///
 /// # Errors
 ///
 /// [`CallsError::LineOpen`] when the job's open line is another business's or homeowner's,
 /// [`CallsError::PoolEmpty`] when the pool holds no number (settings refuse one),
 /// [`CallsError::NumberRetired`] when its open line's number left the pool,
+/// [`CallsError::NoFreePin`] when no free PIN was drawn,
 /// [`CallsError::Ops`] or [`CallsError::Database`].
 pub async fn assign_number(
     db: &mut PgConnection,
@@ -130,8 +134,12 @@ pub async fn assign_number(
     let (index, shared) =
         choose(numbers, &open, (job.homeowner, job.business)).ok_or(CallsError::PoolEmpty)?;
     let number = numbers.get(index).cloned().ok_or(CallsError::PoolEmpty)?;
+    let Some(pin) = allocate_pin(&mut tx, number.as_str()).await? else {
+        return refuse_line(tx).await;
+    };
     let ids = (job.job, job.homeowner, job.business);
-    let stored = models::insert_line(&mut tx, ids, (number.as_str(), shared), now).await?;
+    let pin = pin.digits();
+    let stored = models::insert_line(&mut tx, ids, (number.as_str(), shared, &pin), now).await?;
     let entry = AuditEntry {
         actor: Actor::System,
         action: ASSIGNED_ACTION,
@@ -149,6 +157,21 @@ pub async fn assign_number(
         number,
         shared,
     })
+}
+
+/// No free PIN on the chosen number: raises the pool alert (no line to name), commits it and
+/// refuses the line (CALL-003, CALL-017, D-1755).
+async fn refuse_line(mut tx: sqlx::Transaction<'_, sqlx::Postgres>) -> Result<Line, CallsError> {
+    let alert = NewAlert {
+        kind: POOL_ALERT,
+        severity: Severity::High,
+        subject: None,
+    };
+    raise_alert(&mut tx, &alert)
+        .await
+        .map_err(|_| CallsError::Ops)?;
+    tx.commit().await.map_err(|_| CallsError::Database)?;
+    Err(CallsError::NoFreePin)
 }
 
 /// The pool's own number equal to `stored`, if it is still in the pool.

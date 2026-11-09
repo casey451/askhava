@@ -1,0 +1,30 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT tries FROM calls.pin_try WHERE caller_digest = $1 AND pool_number = $2 AND az_day = $3",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "tries",
+        "type_info": "Int2",
+        "origin": {
+          "Table": {
+            "table": "calls.pin_try",
+            "name": "tries"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Bytea",
+        "Text",
+        "Date"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "e27b42f300f94e62aa6bdaa0111fc8007c4dd414fe3d42e97ec7a6e14c20de4a"
+}

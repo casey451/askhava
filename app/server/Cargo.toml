@@ -13,6 +13,7 @@ path = "src/main.rs"
 [dependencies]
 askhava-adapters = { workspace = true }
 askhava-businesses = { workspace = true }
+askhava-calls = { workspace = true }
 askhava-catalog = { workspace = true }
 askhava-core = { workspace = true }
 askhava-intake = { workspace = true }
@@ -37,9 +38,9 @@ tower-http = { workspace = true }
 tracing = { workspace = true }
 
 [dev-dependencies]
-askhava-calls = { workspace = true }
 base64 = { workspace = true }
 hmac = { workspace = true }
+sha1 = { workspace = true }
 tower = { workspace = true }
 
 [lints]

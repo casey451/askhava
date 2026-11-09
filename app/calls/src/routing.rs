@@ -4,11 +4,12 @@
 //! [`route`] is the pure rule for one turn of an incoming call to a pool number. A caller whose
 //! linked business, or whose own vault number, holds exactly one open line on that number is
 //! connected; anyone else, and a caller with two or more lines on it, must enter that job's
-//! 4-digit PIN ([`job_pin`], derived from the line's ID, D-1684), and a wrong PIN never connects
-//! (CALL-003, CALL-004). At most 3 tries per call and 6 per calling number per pool number per day:
+//! 4-digit PIN, and a wrong PIN never connects (CALL-003, CALL-004). Since T262 a stored line's PIN
+//! is its `calls.number_pool.pin`, drawn at random when the line was assigned (`crate::pins`), and
+//! [`answer_call`] routes only on it, never on the line ID (D-1755, D-2091). At most 3 tries per call and 6 per calling number per pool number per day:
 //! the third wrong try, or the sixth of the day, hangs up and raises one High [`PIN_ALERT`], and a
-//! number that used its 6 is refused before the prompt (CALL-025). The day's count is the voice
-//! handler's to keep and pass in (`CallTurn::tries_today`, D-1685). After the second wrong try, a
+//! number that used its 6 is refused before the prompt (CALL-025). The day's count is stored by
+//! `crate::pins::voice_turn` and passed in here (`CallTurn::tries_today`, D-1685, D-1755). After the second wrong try, a
 //! phone linked to the business holding a line on the number hears that line's first name and
 //! street, but only on an A-attested call, and is connected only when it confirms (CALL-005,
 //! D-026); lines open only at the release of a paid or $0 pick, so that business is the paid one
@@ -82,9 +83,18 @@ impl JobPin {
     pub fn digits(self) -> String {
         format!("{:04}", self.0)
     }
+
+    /// The PIN numbered `n`, when `n` is below 10,000.
+    pub(crate) fn from_number(n: u16) -> Option<Self> {
+        (n < 10_000).then_some(Self(n))
+    }
 }
 
-/// The PIN of the line with ID `line`: its ID's value modulo 10,000 (D-1684).
+/// The ID-derived PIN of D-1684 (the ID modulo 10,000), which is NOT a stored line's PIN since
+/// T262: [`answer_call`] and `pins::voice_turn` route only on `calls.number_pool.pin` and
+/// `pins::stored_pin` reads it (D-1755). Kept only for [`route`] over caller-built
+/// [`RoutedLine`]s and for `request_link`, whose files T262 does not own; a later task moves them
+/// to the stored PIN and removes this (D-2091).
 #[must_use]
 pub fn job_pin(line: Uuid) -> JobPin {
     JobPin(u16::try_from(line.as_u128() % 10_000).unwrap_or_default())
@@ -153,9 +163,20 @@ fn own_lines(party: Party, lines: &[RoutedLine]) -> Vec<RoutedLine> {
 }
 
 /// The pure routing rule for one turn (CALL-003, CALL-004, CALL-005, CALL-025, D-026); `lines`
-/// in assignment order. See the module docs.
+/// in assignment order, each line's PIN taken as [`job_pin`] (D-2091). See the module docs.
 #[must_use]
 pub fn route(party: Party, lines: &[RoutedLine], turn: CallTurn) -> Step {
+    route_with(party, lines, turn, |l| Some(job_pin(l.line)))
+}
+
+/// The routing rule with each line's PIN from `pin_of` (`None`: the line has no PIN, so no PIN
+/// reaches it) (CALL-003, CALL-004, CALL-005, CALL-025).
+pub(crate) fn route_with(
+    party: Party,
+    lines: &[RoutedLine],
+    turn: CallTurn,
+    pin_of: impl Fn(&RoutedLine) -> Option<JobPin>,
+) -> Step {
     let mine = own_lines(party, lines);
     if let [only] = mine.as_slice() {
         return Step::Connect(only.line);
@@ -167,7 +188,7 @@ pub fn route(party: Party, lines: &[RoutedLine], turn: CallTurn) -> Step {
         return Step::AskPin;
     };
     let reach = if mine.is_empty() { lines } else { &mine };
-    let hits: Vec<_> = reach.iter().filter(|l| job_pin(l.line) == pin).collect();
+    let hits: Vec<_> = reach.iter().filter(|l| pin_of(l) == Some(pin)).collect();
     if let [hit] = hits.as_slice() {
         return Step::Connect(hit.line);
     }
@@ -282,6 +303,45 @@ pub fn pin_prompt_twiml(wait: PinWait, action: &str) -> String {
     )
 }
 
+/// Said after the CALL-005 read-back: the caller confirms with 1.
+pub const READBACK_CONFIRM: &str = "If this is the job you are calling about, press 1.";
+
+/// CALL-005, CALL-023, D-026: the read-back's TwiML, the reply to the calling side's own webhook
+/// only: her first name and street, then [`READBACK_CONFIRM`] in a `Gather` for one digit posted
+/// to `action`, then a hang-up. Both values are XML-escaped. `None` when either is missing. The
+/// result holds her first name and street: answer it, never log it (PRIV-016).
+#[must_use]
+pub fn readback_twiml(words: &Readback, wait: PinWait, action: &str) -> Option<SecretString> {
+    let name = xml_escape(words.first_name()?.expose_secret());
+    let street = xml_escape(words.street()?.expose_secret());
+    Some(SecretString::from(format!(
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Gather input=\"dtmf\" \
+         numDigits=\"1\" timeout=\"{}\" action=\"{action}\"><Say>{name}, {street}. \
+         {READBACK_CONFIRM}</Say></Gather><Hangup/></Response>",
+        wait.seconds()
+    )))
+}
+
+/// CALL-025: the reply that ends a call with nothing said (too many tries, refused for the day).
+#[must_use]
+pub fn hangup_twiml() -> String {
+    "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Hangup/></Response>".to_owned()
+}
+
+/// `text` with the five XML special characters escaped.
+fn xml_escape(text: &str) -> String {
+    text.chars()
+        .map(|c| match c {
+            '&' => "&amp;".to_owned(),
+            '<' => "&lt;".to_owned(),
+            '>' => "&gt;".to_owned(),
+            '"' => "&quot;".to_owned(),
+            '\'' => "&apos;".to_owned(),
+            other => other.to_string(),
+        })
+        .collect()
+}
+
 /// An incoming call: the pool number called and the caller's number (never logged).
 pub struct IncomingCall<'a> {
     /// The pool number called.
@@ -300,8 +360,9 @@ pub enum Answer {
 }
 
 /// Answers one turn of `call` (CALL-003 to CALL-005, CALL-025): finds the caller, the open lines
-/// on the number, applies [`route`], raises one High [`PIN_ALERT`] on a hang-up and reads the
-/// first name and street from the vault for a read-back. Call it outside a transaction.
+/// on the number with their stored PINs, applies the routing rule, raises one High [`PIN_ALERT`]
+/// on a hang-up and reads the first name and street from the vault for a read-back. Call it
+/// outside a transaction.
 ///
 /// # Errors
 ///
@@ -314,16 +375,32 @@ pub async fn answer_call(
     turn: CallTurn,
 ) -> Result<Answer, CallsError> {
     let party = party_of(db, vault, call.caller).await?;
-    let lines = lines_on(db, call.pool_number).await?;
-    match route(party, &lines, turn) {
+    answer_for(db, vault, (party, call.pool_number), turn, true).await
+}
+
+/// One turn for a known `party` on `number`, routed on the stored PINs (D-1755); the hang-up alert
+/// only when `alert` (a repeated callback raises none, SEC-017).
+pub(crate) async fn answer_for(
+    db: &mut PgConnection,
+    vault: &Vault,
+    (party, number): (Party, &str),
+    turn: CallTurn,
+    alert: bool,
+) -> Result<Answer, CallsError> {
+    let stored = lines_on(db, number).await?;
+    let lines: Vec<RoutedLine> = stored.iter().map(|(l, _)| *l).collect();
+    let pin_of = |l: &RoutedLine| stored.iter().find(|(s, _)| s.line == l.line)?.1;
+    match route_with(party, &lines, turn, pin_of) {
         Step::HangUp => {
-            let subject = lines.first().map(|l| ("calls.number_pool", l.line));
-            let alert = NewAlert {
-                kind: PIN_ALERT,
-                severity: Severity::High,
-                subject,
-            };
-            raise_alert(db, &alert).await.map_err(|_| CallsError::Ops)?;
+            if alert {
+                let subject = lines.first().map(|l| ("calls.number_pool", l.line));
+                let alert = NewAlert {
+                    kind: PIN_ALERT,
+                    severity: Severity::High,
+                    subject,
+                };
+                raise_alert(db, &alert).await.map_err(|_| CallsError::Ops)?;
+            }
             Ok(Answer::Step(Step::HangUp))
         }
         Step::ReadBack(id) => {
@@ -339,7 +416,7 @@ pub async fn answer_call(
 }
 
 /// The caller's party: a linked business phone first, then a vault homeowner, else unlinked.
-async fn party_of(
+pub(crate) async fn party_of(
     db: &mut PgConnection,
     vault: &Vault,
     caller: &SecretString,
@@ -357,10 +434,14 @@ async fn party_of(
     })
 }
 
-/// The open lines on `number`, in assignment order.
-async fn lines_on(db: &mut PgConnection, number: &str) -> Result<Vec<RoutedLine>, CallsError> {
+/// The open lines on `number`, in assignment order, each with its stored PIN (`None` for a line
+/// assigned before T262's migration, which no PIN reaches).
+pub(crate) async fn lines_on(
+    db: &mut PgConnection,
+    number: &str,
+) -> Result<Vec<(RoutedLine, Option<JobPin>)>, CallsError> {
     let rows = sqlx::query!(
-        "SELECT id, homeowner_id, business_id FROM calls.number_pool \
+        "SELECT id, homeowner_id, business_id, pin FROM calls.number_pool \
          WHERE pool_number = $1 AND closed_at IS NULL ORDER BY seq",
         number
     )
@@ -369,10 +450,13 @@ async fn lines_on(db: &mut PgConnection, number: &str) -> Result<Vec<RoutedLine>
     .map_err(|_| CallsError::Database)?;
     Ok(rows
         .into_iter()
-        .map(|r| RoutedLine {
-            line: r.id,
-            homeowner: r.homeowner_id,
-            business: r.business_id,
+        .map(|r| {
+            let line = RoutedLine {
+                line: r.id,
+                homeowner: r.homeowner_id,
+                business: r.business_id,
+            };
+            (line, r.pin.as_deref().and_then(JobPin::parse))
         })
         .collect())
 }
