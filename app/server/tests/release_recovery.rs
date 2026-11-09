@@ -295,7 +295,8 @@ async fn picked(pool: &PgPool) -> (Uuid, Uuid, Uuid, Uuid) {
     (business, person, job, pick)
 }
 
-/// The Confirm-and-pay press of $75 through `payments`, with the fake Stripe, so the pick has its
+/// The Confirm-and-pay press of $25 (the fee `picks` fixed at the page pick of the $325 firm
+/// quote, D-1871) through `payments`, with the fake Stripe, so the pick has its
 /// PaymentIntent and one charge attempt (FEE-016, FEE-047).
 async fn paid(pool: &PgPool, (business, job, pick): (Uuid, Uuid, Uuid)) {
     let stripe = FakeStripe { pick };
@@ -307,7 +308,7 @@ async fn paid(pool: &PgPool, (business, job, pick): (Uuid, Uuid, Uuid)) {
         pick,
         business: BusinessId(business),
         job,
-        amount_cents: 7500,
+        amount_cents: 2500,
         payment_method: "pm_fake254",
         press: Uuid::new_v4(),
         emergency: false,
@@ -414,7 +415,7 @@ impl FakeStripe {
         PaymentIntent {
             id: id.to_owned(),
             status: "succeeded".to_owned(),
-            amount: 7500,
+            amount: 2500,
             currency: "usd".to_owned(),
             customer: "cus_fake254".to_owned(),
             metadata: IntentMetadata {

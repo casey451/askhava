@@ -1,0 +1,38 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT mode, authorization_version FROM payments.fee_terms FOR SHARE",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "mode",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "payments.fee_terms",
+            "name": "mode"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "authorization_version",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "payments.fee_terms",
+            "name": "authorization_version"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "5ad917dbde667f542f618203391d42c2fad90f840f1969b45f129d9f4c2b6f7b"
+}

@@ -53,6 +53,7 @@ mod intent_http;
 mod late;
 mod ledger;
 mod models;
+mod pick_fee;
 mod purge;
 mod receipts;
 mod reconcile;

@@ -1,12 +1,15 @@
 //! TD-FEE-06 (FEE-007, D-072): on a fresh database, the owner's fee-mode switch is logged in the
 //! audit log with the owner as actor, flat mode defaults each job type to its category's set
 //! tier, and a business that has not accepted the new authorization version can't confirm until
-//! it does. All IDs and amounts are fake.
+//! it does. T287 (D-1871): the switch is stored and each pick's fee fixed before its Confirm, so
+//! the fixtures fix the fee at each pick and pass the pick to `may_confirm`. All IDs and amounts
+//! are fake.
 
 use askhava_payments::api::{
     AUTHORIZATION_TEXT, BusinessId, ConfirmError, Confirmed, FEE_MODE_ACTION, FEE_MODE_ID, FeeJob,
-    FeeMode, FeeQuote, FeeTerms, PeriodJob, RecurringCap, Service, VisitTier, accept_authorization,
-    fee_at_pick, may_confirm, record_fee_at_confirm, switch_fee_mode,
+    FeeMode, FeeQuote, FeeTerms, PeriodJob, PickedFee, RecurringCap, Service, VisitTier,
+    accept_authorization, fee_at_pick, fix_fee_at_pick, may_confirm, record_fee_at_confirm,
+    switch_fee_mode,
 };
 use jiff::Timestamp;
 use secrecy::SecretString;
@@ -16,6 +19,9 @@ use sqlx::types::Uuid;
 const BUSINESS: BusinessId = BusinessId(Uuid::from_u128(0xb060_0006));
 const OWNER: Uuid = Uuid::from_u128(0x0a06_0006);
 const START: FeeTerms = FeeTerms::new(FeeMode::Tiers, 1);
+/// A pick made in tiers mode and one made after the switch to flat (D-1871).
+const TIERS_PICK: Uuid = Uuid::from_u128(0x0c06_0006);
+const FLAT_PICK: Uuid = Uuid::from_u128(0x0c06_0007);
 /// An audit row as (actor kind, actor, action, subject, from, to).
 type AuditRow = (
     String,
@@ -28,6 +34,13 @@ type AuditRow = (
 
 fn at(minute: i64) -> Timestamp {
     Timestamp::from_second(1_790_000_000 + minute * 60).expect("time")
+}
+
+/// Stores `picked` as the fee fixed at `pick` of `BUSINESS` on `job` (D-1871).
+async fn fix(db: &mut sqlx::PgConnection, (pick, job): (Uuid, Uuid), picked: &PickedFee) {
+    fix_fee_at_pick(db, pick, BUSINESS, job, picked, at(0))
+        .await
+        .expect("fee fixed");
 }
 
 /// A job in a category whose set tier is $75.
@@ -48,9 +61,9 @@ fn medium_job() -> PeriodJob {
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_fee_06_the_switch_is_logged(pool: PgPool) {
     let mut db = pool.acquire().await.expect("connection");
-    let same = switch_fee_mode(&mut db, OWNER, START, FeeMode::Tiers).await;
+    let same = switch_fee_mode(&mut db, OWNER, FeeMode::Tiers).await;
     assert_eq!(same, Ok(None));
-    let flat = switch_fee_mode(&mut db, OWNER, START, FeeMode::Flat).await;
+    let flat = switch_fee_mode(&mut db, OWNER, FeeMode::Flat).await;
     assert_eq!(flat, Ok(Some(FeeTerms::new(FeeMode::Flat, 2))));
     let rows: Vec<AuditRow> = sqlx::query_as(
         "SELECT actor_kind, actor_id, action, subject_id, from_status, to_status \
@@ -82,16 +95,25 @@ async fn td_fee_06_no_confirm_without_the_new_authorization(pool: PgPool) {
         .execute(&mut *db)
         .await
         .expect("customer");
-    let refused = may_confirm(&mut db, BUSINESS, START).await;
+    let tiers_fee = fee_at_pick(
+        FeeQuote::Fixed(900_000),
+        None,
+        medium_job(),
+        FeeMode::Tiers,
+        None,
+    );
+    let tiers_job = Uuid::from_u128(0x0b06_0007);
+    fix(&mut db, (TIERS_PICK, tiers_job), &tiers_fee.expect("fee")).await;
+    let refused = may_confirm(&mut db, BUSINESS, TIERS_PICK).await;
     assert_eq!(refused, Err(ConfirmError::NewAuthorizationNeeded));
     accept_authorization(&mut db, BUSINESS, START, AUTHORIZATION_TEXT, at(0))
         .await
         .expect("accepted");
-    let tiers = may_confirm(&mut db, BUSINESS, START)
+    let tiers = may_confirm(&mut db, BUSINESS, TIERS_PICK)
         .await
         .expect("authorized");
     assert_eq!((tiers.business(), tiers.terms()), (BUSINESS, START));
-    let flat = switch_fee_mode(&mut db, OWNER, START, FeeMode::Flat)
+    let flat = switch_fee_mode(&mut db, OWNER, FeeMode::Flat)
         .await
         .expect("switch")
         .expect("changed");
@@ -104,15 +126,17 @@ async fn td_fee_06_no_confirm_without_the_new_authorization(pool: PgPool) {
     )
     .expect("fee");
     assert_eq!(picked.cents(), 7_500);
+    let job = Uuid::from_u128(0x0b06_0006);
+    fix(&mut db, (FLAT_PICK, job), &picked).await;
     let confirmed = Confirmed {
         business: BUSINESS,
-        job: Uuid::from_u128(0x0b06_0006),
+        job,
         charge: Some("ch_FakeT060b"),
     };
     let secret = SecretString::from("fake-id-secret-t060".to_owned());
-    let early = may_confirm(&mut db, BUSINESS, flat).await;
+    let early = may_confirm(&mut db, BUSINESS, FLAT_PICK).await;
     assert_eq!(early, Err(ConfirmError::NewAuthorizationNeeded));
-    let stale = record_fee_at_confirm(&mut db, &secret, (&picked, tiers), confirmed).await;
+    let stale = record_fee_at_confirm(&mut db, &secret, (FLAT_PICK, tiers), confirmed).await;
     assert_eq!(stale, Err(ConfirmError::Mismatch));
     let count = "SELECT count(*) FROM payments.ledger_entry";
     let rows: i64 = sqlx::query_scalar(count)
@@ -129,10 +153,10 @@ async fn td_fee_06_no_confirm_without_the_new_authorization(pool: PgPool) {
     )
     .await
     .expect("accepted again");
-    let authorized = may_confirm(&mut db, BUSINESS, flat)
+    let authorized = may_confirm(&mut db, BUSINESS, FLAT_PICK)
         .await
         .expect("authorized");
-    let late = record_fee_at_confirm(&mut db, &secret, (&picked, authorized), confirmed).await;
+    let late = record_fee_at_confirm(&mut db, &secret, (FLAT_PICK, authorized), confirmed).await;
     assert!(late.is_ok());
     let amount: i64 = sqlx::query_scalar("SELECT amount_cents FROM payments.ledger_entry")
         .fetch_one(&pool)
