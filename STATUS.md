@@ -1,13 +1,13 @@
 # Ask Hava build status
 
-Updated 2026-11-09T23:57:46Z by runner a4c0b6e5287f (actions).
+Updated 2026-11-09T23:57:55Z by runner a4c0b6e5287f (actions).
 
-**Idle since 23:44Z; 177 of 313 done; week 73% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T284 in progress since 23:57Z; 177 of 313 done; week 73% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 177 of 313 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 23:44Z (no task in progress)
-- **Week:** 73% used, 52.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 1: T284 claimed 23:57Z, lease until 02:57Z
+- **Week:** 73% used, 48.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 23:43Z, 14 min before this update
 - **Keeper:** last ran 23:43Z, next wake 00:03Z
 
@@ -74,7 +74,7 @@ Updated 2026-11-09T23:57:46Z by runner a4c0b6e5287f (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-09T22:30:51Z (week)): five-hour: 0k used, 29.1M left, resets on first use; week: 142.0M used, 52.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-11-29T14:07:37Z.
+- Pacing (session_reading 2026-11-09T23:42:50Z (week)): five-hour: 842k used, 28.3M left, resets 2026-11-10T04:27:48Z; week: 146.0M used, 48.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-11-29T10:51:23Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -89,7 +89,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T284 (lease until 2026-11-10T02:57:42Z)
 
 ## Last usage reading
 - {"task": "T283", "at": "2026-11-09T23:27:48Z", "input_tokens": 202, "cache_read_input_tokens": 5318528, "output_tokens": 82844, "cache_creation_input_tokens": 226903}

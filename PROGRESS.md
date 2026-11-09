@@ -1575,3 +1575,4 @@
 - 2026-11-09T23:42:51Z runner 72a168d54263 (actions): {}
 - 2026-11-09T23:43:06Z runner 72a168d54263 (actions): {}
 - 2026-11-09T23:57:46Z runner a4c0b6e5287f (actions): {"T283": "MERGE_PENDING -> DONE"}
+- 2026-11-09T23:57:55Z runner a4c0b6e5287f (actions): {"T284": "QUEUED -> IN_PROGRESS"}; T284 estimated 2.2M tokens (calibrated); five-hour window has 28.3M left, week 48.0M (session_reading 2026-11-09T23:42:50Z (week)); claimed
