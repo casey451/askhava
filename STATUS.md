@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-09T21:39:19Z by runner a02170038cc6 (actions).
+Updated 2026-11-09T22:15:51Z by runner 79814df4c3d8 (actions).
 
 **Building: T287 in progress since 21:32Z; 175 of 312 done; week 70% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,11 @@ Updated 2026-11-09T21:39:19Z by runner a02170038cc6 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T287 claimed 21:32Z, lease until 00:32Z
 - **Week:** 70% used, 54.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:19Z, 19 min before this update
+- **Last run:** 21:39Z, 36 min before this update
 - **Keeper:** last ran 21:19Z, next wake 21:39Z
 
 ## Needs attention
-- Strict plan check red: 2 problem(s) on tasks still to run (+4 on DONE tasks); first: T248: stored context_pct 30% but it measures 34%; regenerate
+- Strict plan check red: 1 problem(s) on tasks still to run (+3 on DONE tasks); first: T287: stored context_pct 43% but it measures 49%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -34,14 +34,13 @@ Updated 2026-11-09T21:39:19Z by runner a02170038cc6 (actions).
 | T260 | stand-in and adapters: an unconfirmed PaymentIntent, its on- | done | 1 | 42 min | 03:09Z |  |
 | T259 | payments: the Stripe webhook dispatches refund, dispute and  | done | 1 | 61 min | 01:52Z |  |
 | T258 | adapters and payments: a refund is recorded as Stripe report | done | 1 | 80 min | 00:16Z |  |
-| T256 | server: two first texts from one new phone both reach intake | done | 1 | 37 min | 22:00Z |  |
 
 ### Plan and harness merges on main
+- 21:41Z Plan: the LINK notice names the stored PIN; job_pin deleted (T326, D-2247) (#395)
 - 21:26Z Plan: T287 owns payments models.rs and T254's release_recovery test (D-2236) (#394)
 - 20:44Z Harness: Fable model window from the Thu Nov 12 reset, run to the week limit, then back to the plan's models (D-2225) (#392)
 - 19:01Z Plan: fourth audit — voice confirm line, emergency notices, dispute atomicity, feedback purge, route limits, alerts (D-2200–D-2209, T311–T325) (#388)
 - 22:20Z Plan: wire the real AI into the app — T298 endpoint client, T299 intake wiring (D-2065) (#367)
-- 21:52Z Plan: vendor-call connection audit, war-games overload scenario (T297) (D-2054) (#365)
 
 ## Progress (requirements verified)
 
