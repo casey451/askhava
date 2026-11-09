@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-09T22:15:51Z by runner 79814df4c3d8 (actions).
+Updated 2026-11-09T22:16:06Z by runner 79814df4c3d8 (actions).
 
-**Building: T287 in progress since 21:32Z; 175 of 312 done; week 70% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 22:15Z; 175 of 312 done; week 70% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 175 of 312 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T287 claimed 21:32Z, lease until 00:32Z
+- **Lane:** idle since 22:15Z (no task in progress)
 - **Week:** 70% used, 54.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 21:39Z, 36 min before this update
 - **Keeper:** last ran 21:19Z, next wake 21:39Z
@@ -17,7 +17,8 @@ Updated 2026-11-09T22:15:51Z by runner 79814df4c3d8 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T287 | payments and picks: the fee fixed at the pick is stored by p | QUEUED | 1 | 46 min | 21:18Z | T287 built and smoke green, but prehandin check_pr_change fails: kit/tasks.json T287 owns lacks app/payments/src/models. |
+| T287 | payments and picks: the fee fixed at the pick is stored by p | MERGE_PENDING | 2 | 43 min | 22:15Z | T287 built and smoke green, but prehandin check_pr_change fails: kit/tasks.json T287 owns lacks app/payments/src/models. |
+| T287 | payments and picks: the fee fixed at the pick is stored by p | QUEUED | 1 | 46 min | 21:18Z |  |
 | T279 | messaging, ops and server: the texting switch and a number s | done | 1 | 47 min | 19:32Z |  |
 | T276 | privacy and messaging: purged photos' sealed objects and orp | done | 1 | 53 min | 17:46Z |  |
 | T275 | adapters and stand-ins: local write-once storage that a raci | done | 1 | 38 min | 16:08Z |  |
@@ -88,7 +89,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T287 (lease until 2026-11-10T00:32:00Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T287", "at": "2026-11-09T21:18:46Z", "input_tokens": 492, "cache_creation_input_tokens": 710526, "cache_read_input_tokens": 39010532, "output_tokens": 176248}
+- {"task": "T287", "at": "2026-11-09T22:15:51Z", "input_tokens": 523, "cache_creation_input_tokens": 711773, "output_tokens": 177348, "cache_read_input_tokens": 43474964}
