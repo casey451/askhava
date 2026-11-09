@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-09T17:46:28Z by runner 6f23657cc099 (actions).
+Updated 2026-11-09T17:46:40Z by runner 6f23657cc099 (actions).
 
-**Building: T276 in progress since 16:53Z; 173 of 297 done; week 63% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 17:46Z; 173 of 297 done; week 63% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 173 of 297 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T276 claimed 16:53Z, lease until 19:53Z
+- **Lane:** idle since 17:46Z (no task in progress)
 - **Week:** 63% used, 68.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 16:53Z, 53 min before this update
 - **Keeper:** last ran 16:37Z, next wake 16:57Z
@@ -17,6 +17,7 @@ Updated 2026-11-09T17:46:28Z by runner 6f23657cc099 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T276 | privacy and messaging: purged photos' sealed objects and orp | MERGE_PENDING | 1 | 53 min | 17:46Z |  |
 | T275 | adapters and stand-ins: local write-once storage that a raci | done | 1 | 38 min | 16:08Z |  |
 | T274 | intake and privacy: the 180-day contact purge decides and cl | done | 1 | 66 min | 14:56Z |  |
 | T270 | picks and payments: the unreachable refund and the fraud war | done | 1 | 29 min | 13:17Z |  |
@@ -87,7 +88,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T276 (lease until 2026-11-09T19:53:18Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T275", "at": "2026-11-09T16:08:58Z", "cache_read_input_tokens": 10618949, "input_tokens": 309, "cache_creation_input_tokens": 424858, "output_tokens": 122115}
+- {"task": "T276", "at": "2026-11-09T17:46:27Z", "input_tokens": 405, "output_tokens": 161510, "cache_creation_input_tokens": 606797, "cache_read_input_tokens": 18019184}
