@@ -1,23 +1,23 @@
 # Ask Hava build status
 
-Updated 2026-11-09T13:31:16Z by runner e332d652d98c (actions).
+Updated 2026-11-09T13:50:01Z by runner 028378523988 (actions).
 
-**Idle since 13:17Z; 170 of 297 done; week 62% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 13:35Z; 171 of 297 done; week 62% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 170 of 297 build tasks (owner gates not counted)
+- **Tasks done:** 171 of 297 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 13:17Z (no task in progress)
+- **Lane:** idle since 13:35Z (no task in progress)
 - **Week:** 62% used, 70.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:31Z, 0 min before this update
+- **Last run:** 13:31Z, 18 min before this update
 - **Keeper:** last ran 13:31Z, next wake 13:51Z
 
 ## Needs attention
-- Strict plan check red: 21 problem(s) on tasks still to run (+45 on DONE tasks); first: T255: stored context_pct 25% but it measures 34%; regenerate
+- Strict plan check red: 22 problem(s) on tasks still to run (+47 on DONE tasks); first: T255: stored context_pct 25% but it measures 34%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T270 | picks and payments: the unreachable refund and the fraud war | MERGE_PENDING | 1 | 29 min | 13:17Z |  |
+| T270 | picks and payments: the unreachable refund and the fraud war | done | 1 | 29 min | 13:17Z |  |
 | T282 | calls and picks: each call's start time reaches the unreacha | done | 2 | 32 min | 12:06Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Date:      2026- |
 | T282 | calls and picks: each call's start time reaches the unreacha | check_failed | 1 | 27 min | 10:49Z |  |
 | T267 | Ally harness: page states move to a shared data file; the ch | done | 1 | 34 min | 09:42Z |  |
@@ -45,7 +45,7 @@ Updated 2026-11-09T13:31:16Z by runner e332d652d98c (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 252 of 732 (34.4%) · partial 281 · unstarted 199
-**Tasks merged (throughput only):** 170 of 297
+**Tasks merged (throughput only):** 171 of 297
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -80,7 +80,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 50 of 101 done
+- stage 4: 51 of 101 done
 - stage 5: 0 of 50 done
 - stage 6: 0 of 30 done
 - stage 7: 0 of 2 done
