@@ -17518,7 +17518,8 @@
     "T155",
     "T254",
     "T085",
-    "T261"
+    "T261",
+    "T300"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -24437,6 +24438,21 @@
    "slug": "ai-intake-wiring",
    "type": "build",
    "stage": "6"
+  },
+  {
+   "id": "T300",
+   "deps": [
+    "T280",
+    "T085",
+    "T253",
+    "T195",
+    "T196"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "business-portal-served",
+   "type": "build",
+   "stage": "4"
   }
  ],
  "owner_waits": [],
@@ -26022,7 +26038,7 @@
    }
   }
  },
- "updated_at": "2026-11-09T09:44:28Z",
+ "updated_at": "2026-11-09T10:00:23Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -26120,7 +26136,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "f183f5bd01ba39e7a8786b6177d4ac0e74c987a1",
+ "runner_sha": "8c221d504403fd6eeab76b20febdc0dda37e54f7",
  "starter": "actions",
  "smoke_runs": [
   {
