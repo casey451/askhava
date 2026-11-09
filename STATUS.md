@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-09T23:43:06Z by runner 72a168d54263 (actions).
+Updated 2026-11-09T23:57:46Z by runner a4c0b6e5287f (actions).
 
-**Idle since 23:27Z; 176 of 313 done; week 73% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 23:44Z; 177 of 313 done; week 73% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 176 of 313 build tasks (owner gates not counted)
+- **Tasks done:** 177 of 313 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 23:27Z (no task in progress)
+- **Lane:** idle since 23:44Z (no task in progress)
 - **Week:** 73% used, 52.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:42Z, 0 min before this update
+- **Last run:** 23:43Z, 14 min before this update
 - **Keeper:** last ran 23:43Z, next wake 00:03Z
 
 ## Needs attention
@@ -17,7 +17,7 @@ Updated 2026-11-09T23:43:06Z by runner 72a168d54263 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T283 | Ci: a change to a document the app compiles in runs the Rust | MERGE_PENDING | 1 | 30 min | 23:27Z |  |
+| T283 | Ci: a change to a document the app compiles in runs the Rust | done | 1 | 30 min | 23:27Z |  |
 | T287 | payments and picks: the fee fixed at the pick is stored by p | done | 2 | 43 min | 22:15Z | T287 built and smoke green, but prehandin check_pr_change fails: kit/tasks.json T287 owns lacks app/payments/src/models. |
 | T287 | payments and picks: the fee fixed at the pick is stored by p | QUEUED | 1 | 46 min | 21:18Z |  |
 | T279 | messaging, ops and server: the texting switch and a number s | done | 1 | 47 min | 19:32Z |  |
@@ -46,7 +46,7 @@ Updated 2026-11-09T23:43:06Z by runner 72a168d54263 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 250 of 732 (34.2%) · partial 284 · unstarted 198
-**Tasks merged (throughput only):** 176 of 313
+**Tasks merged (throughput only):** 177 of 313
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -81,7 +81,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 56 of 114 done
+- stage 4: 57 of 114 done
 - stage 5: 0 of 53 done
 - stage 6: 0 of 30 done
 - stage 7: 0 of 2 done
