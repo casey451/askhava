@@ -29,7 +29,8 @@ with these variables:
                       `gate_answers`: {gate id: "yes"|"no"} for each cleared conditional gate it
                       depends on, T170)
   RUNNER_MODEL        the full model ID the attempt must run on
-  RUNNER_MODEL_ALIAS  haiku | sonnet | opus (the worker call takes only the alias, D-170)
+  RUNNER_MODEL_ALIAS  haiku | sonnet | opus (the worker call takes only the alias, D-170), or the model
+                      window's alias for an attempt claimed inside the window (D-2225)
   RUNNER_LOG_FILE     the previous attempt's failure log (may be empty)
   RUNNER_BRANCH       the task branch to commit to (local; the runner pushes it after review)
   RUNNER_RESULT_FILE  where the command writes JSON: {"outcome": ..., "transcripts": [paths],
@@ -60,7 +61,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from runner import state as st, status, verify
+from runner import model_window, state as st, status, verify
 from runner.cycle import DROP_MARKER, WorkerResult
 from runner.update_merge import UpdateMerge
 from runner.state import State
@@ -1946,8 +1947,10 @@ class GitHubEnv:
             files = {name: Path(tmp) / name for name in ("task.json", "log.txt", "result.json")}
             files["task.json"].write_text(json.dumps(task), encoding="utf-8")
             files["log.txt"].write_text(log, encoding="utf-8")
+            mark = model_window.mark_of(task)
+            alias = mark["alias"] if mark and mark["model"] == model else alias_for(model)
             env = dict(os.environ, RUNNER_TASK_FILE=str(files["task.json"]), RUNNER_MODEL=model,
-                       RUNNER_MODEL_ALIAS=alias_for(model), RUNNER_LOG_FILE=str(files["log.txt"]),
+                       RUNNER_MODEL_ALIAS=alias, RUNNER_LOG_FILE=str(files["log.txt"]),
                        RUNNER_BRANCH=self.branch_for(task["id"]), RUNNER_RESULT_FILE=str(files["result.json"]))
             code = wait_with_heartbeat(subprocess.Popen(shlex.split(command), cwd=self.root, env=env), heartbeat)
             report = json.loads(files["result.json"].read_text(encoding="utf-8")) if files["result.json"].exists() else {}

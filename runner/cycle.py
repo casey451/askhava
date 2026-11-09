@@ -10,7 +10,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Protocol
 
-from runner import lanes, outbox, proof, state as st, verify
+from runner import lanes, model_window, outbox, proof, state as st, verify
 from runner.state import State
 
 MAX_ATTEMPTS = 3  # BUILD_BRIEF.md:540; one more only through a plan-fix re-queue (D-677); FIX-MAIN re-arms (D-1099)
@@ -215,6 +215,9 @@ class Config:
     # The plan-health check run before a claim (scripts/plan_health.py checker, D-1350): the problems that
     # make a task's plan unsound to claim now ([] when sound). None skips the check.
     plan_health: Callable[[State, str], list[str]] | None = None
+    # kit/runner.json "model_window" (runner/model_window.py, D-2225): while it is active every claim is
+    # marked with its model, which the attempt's worker and reviewer then run on. None changes nothing.
+    model_window: dict[str, Any] | None = None
 
 
 # Casey reviews code-owner PRs by day. Such a task is claimed only from 06:00 to 19:00 Arizona time
@@ -250,6 +253,34 @@ def attempt_model(task: dict[str, Any], attempts: int, models: dict[str, str]) -
     if attempts >= MAX_ATTEMPTS - 1:
         return models["opus"]
     return str(task["model"])
+
+
+def worker_model(task: dict[str, Any], attempts: int, models: dict[str, str]) -> str:
+    """The model this attempt's worker runs on: the model window's when the claim was marked with one
+    (`window_model`, D-2225), else attempt_model. `task` is the plan entry merged with its state entry."""
+    mark = model_window.mark_of(task)
+    return mark["model"] if mark else attempt_model(task, attempts, models)
+
+
+def reviewer_model(task: dict[str, Any]) -> str | None:
+    """The model the attempt's reviewer runs on: the window's mark when the task has a reviewer (D-2225),
+    else the task's own `reviewer_model` (None: no review required)."""
+    mark, want = model_window.mark_of(task), task.get("reviewer_model")
+    return mark["model"] if mark and want else want
+
+
+def with_claim_mark(task: dict[str, Any], entry: dict[str, Any]) -> dict[str, Any]:
+    """The picked task with the claim's model window mark (D-2225): the one the claim just set or removed in
+    `entry`, never one the task carried over from an earlier attempt's entry. Unchanged contents without one."""
+    mark = model_window.mark_of(entry)
+    return {k: v for k, v in task.items() if k != model_window.MARK} | ({model_window.MARK: mark} if mark else {})
+
+
+def known_models(task: dict[str, Any], models: dict[str, str]) -> list[str]:
+    """The full model IDs verify.check_model accepts: kit/tasks.json `models`, plus the window's model for
+    an attempt claimed inside the window (D-2225)."""
+    mark = model_window.mark_of(task)
+    return [*models.values(), *([mark["model"]] if mark else [])]
 
 
 def record_failure(state: State, task_id: str, reason: str) -> State:
@@ -308,7 +339,7 @@ def _after_worker(
     if res.outcome != "submitted":
         return record_failure(state, tid, res.log or res.outcome)
     problems = verify.check_paths(res.changed_paths, task, cfg.protected, cfg.shared)
-    problems += verify.check_model(res.model_evidence, model, cfg.models.values())
+    problems += verify.check_model(res.model_evidence, model, known_models(task, cfg.models))
     problems += _review_problems(task, res, cfg)
     if problems:
         return plan_gap_failure(state, tid, problems, now) or record_failure(state, tid, "; ".join(problems))
@@ -319,10 +350,10 @@ def _after_worker(
 
 def _review_problems(task: dict[str, Any], res: WorkerResult, cfg: Config) -> list[str]:
     """The fresh-eyes reviewer must have run on the task's reviewer model (BUILD_BRIEF.md:250, governance 7)."""
-    want = task.get("reviewer_model")
+    want = reviewer_model(task)
     if not want:
         return []
-    return [f"review: {p}" for p in verify.check_model(res.reviewer_evidence, str(want), cfg.models.values())]
+    return [f"review: {p}" for p in verify.check_model(res.reviewer_evidence, str(want), known_models(task, cfg.models))]
 
 
 def _close_history(state: State, tid: str, pr: dict[str, Any], result: str) -> State:
@@ -1209,10 +1240,12 @@ def _next_step(cfg: Config, env: Env, state: State, base: State, now: datetime, 
                 return "smoke_env" if state == base or env.push_state(state, base) else "lost_race"
             red = set_main_red(state, cfg, "smoke", head, offending_merge(state), now)
             return "main_red" if env.push_state(red, base) else "lost_race"
+    state = close_window_on_limit(cfg, state, now)  # D-2225: unchanged unless the limit just closed the window
     task, state = _paced_pick(cfg, state, ids, now)
     if task is None:
         return "paced" if state == base or env.push_state(state, base) else "lost_race"
     claimed = st.claim(state, task["id"], cfg.session, now, lane, taken=cfg.decisions() if cfg.decisions else None)
+    claimed = model_window.mark_claim(claimed, task["id"], cfg.model_window, now)  # D-2225; unchanged outside a window
     if not env.push_state(claimed, base):
         return "lost_race"
     done = _work(cfg, env, claimed, task, now)
@@ -1300,7 +1333,8 @@ def _paced_pick(cfg: Config, state: State, ids: list[str], now: datetime) -> tup
 def _work(cfg: Config, env: Env, claimed: State, task: dict[str, Any], now: datetime) -> str:
     tid = task["id"]
     entry = st.entry(claimed, tid)
-    model = attempt_model(task, int(entry.get("attempts", 0)), cfg.models)
+    task = with_claim_mark(task, entry)
+    model = worker_model(task, int(entry.get("attempts", 0)), cfg.models)
     current: dict[str, Any] = {"state": claimed, "lost": False}
     lane = st.lane_of(claimed, tid) or st.LANE_ONE
 
@@ -1435,7 +1469,7 @@ def _history_entry(state: State, task: dict[str, Any], res: WorkerResult, model:
         path_ok = not verify.check_paths(res.changed_paths, task, cfg.protected, cfg.shared)
     record = {
         "attempt": int(entry.get("attempts", 0)) + 1, "model": model, "model_evidence_count": len(res.model_evidence),
-        "head_sha": res.head_sha, "pr": None, "checks": None, "reviewer_model": task.get("reviewer_model"),
+        "head_sha": res.head_sha, "pr": None, "checks": None, "reviewer_model": reviewer_model(task),
         "path_check_ok": path_ok, "started_at": entry.get("attempt_started_at"), "ended_at": st.iso(cfg.clock()),
         "result": res.outcome,
     }
@@ -1862,11 +1896,12 @@ def session_lease(state: State, session: str, now: datetime) -> dict[str, Any] |
 
 
 def after_handoff(cfg: Config, env: Env, res_for: Callable[[dict[str, Any]], WorkerResult],
-                  hold: Callable[[WorkerResult], str] = lambda res: "") -> str:
+                  hold: Callable[[WorkerResult], str] = lambda res: "", own_models: bool = False) -> str:
     """`python3 -m runner --after`: finish the task this session holds the lease on, on whichever lane.
     When `hold` answers a result for the hand-in (the pre-hand-in gate was red and the session still has
     a fix round, D-1300), nothing is finished and kit/state.json is not written: the lease stays held and the
-    task IN_PROGRESS (runner/__main__.py still pushes its runner_log.jsonl row)."""
+    task IN_PROGRESS (runner/__main__.py still pushes its runner_log.jsonl row). `own_models` (a model
+    window fallback, D-2225) judges the attempt on the task's own models even if its mark could not be removed."""
     state = env.read_state()
     lease = session_lease(state, cfg.session, cfg.clock())
     if lease is None:
@@ -1874,8 +1909,55 @@ def after_handoff(cfg: Config, env: Env, res_for: Callable[[dict[str, Any]], Wor
     tid = str(lease["task"])
     graph_def = next((t for t in cfg.graph if t["id"] == tid), {})
     task = {**st.entry(state, tid), **graph_def}
+    if own_models:
+        task.pop(model_window.MARK, None)
     if st.status(state, tid) != st.IN_PROGRESS:
         return f"{tid} is {st.status(state, tid)}"
-    model = attempt_model(task, int(st.entry(state, tid).get("attempts", 0)), cfg.models)
+    model = worker_model(task, int(st.entry(state, tid).get("attempts", 0)), cfg.models)
     res = res_for(task)
     return hold(res) or finish(cfg, env, state, task, res, model, cfg.clock())
+
+
+# ---- the model window's fallback and its end at the limit (D-2225)
+
+
+def close_window_on_limit(cfg: Config, state: State, now: datetime) -> State:
+    """Before a claim: an `end_on_limit` window whose limit now shows in the state is recorded as ended, with the
+    outbox item `model-window-ended`, in the write the claim or the pacer makes; the state is unchanged otherwise."""
+    closed, why = model_window.close_on_limit(state, cfg.model_window, now)
+    if why and cfg.model_window is not None:
+        title, body = model_window.ended_note(cfg.model_window, why)
+        outbox.write_outbox(cfg.outbox_dir, model_window.ENDED_OUTBOX_ID, title, "info", body)
+        print(f"runner: model window: {cfg.model_window['model']} ended at the usage limit ({why})")
+    return closed
+
+
+def model_fallback(cfg: Config, env: Env, why: str) -> str:
+    """`--after --model-fallback WHY`: the session found the window's model refused (an unknown model or
+    alias) and ran this attempt on the task's own models. Before the hand-in is judged, the task's
+    `window_model` mark is removed, so `--after` checks the evidence against the task's own models, and the
+    window is recorded as refused (`model_window_refused`) with an outbox item, so later claims change no
+    model; no attempt is counted for it. WHY must read as a model refusal (`model_window.is_refusal`); any other
+    text changes nothing, and the attempt is judged as usual. Returns the log line ('' when this session holds
+    no lease)."""
+    if not model_window.is_refusal(why):
+        return f"model window: not a model refusal, nothing recorded: {' '.join(why.split())[:160]}"
+    now = cfg.clock()
+    state = env.read_state()
+    lease = session_lease(state, cfg.session, now)
+    if lease is None:
+        return ""
+    tid = str(lease["task"])
+    mark = model_window.mark_of(st.entry(state, tid))
+    window = cfg.model_window
+    if mark is None:
+        return f"model window: {tid} was not claimed inside a window; nothing to fall back from"
+    if window is None or window["model"] != mark["model"]:
+        done = env.update_state(lambda fresh: model_window.unmark(fresh, tid))
+        return f"model window: {tid} falls back from {mark['model']} to its own models" + ("" if done else " (not recorded: lost race)")
+    title, body = model_window.refusal_note(window, why, f"worker or reviewer of {tid}")
+    outbox.write_outbox(cfg.outbox_dir, model_window.OUTBOX_ID, title, "info", body)
+    if env.update_state(lambda fresh: model_window.record_refusal(fresh, window, why, now, tid)) is None:
+        (cfg.outbox_dir / f"{model_window.OUTBOX_ID}.md").unlink(missing_ok=True)
+        return f"model window: {window['model']} refused for {tid}; the refusal was not recorded (lost race)"
+    return f"model window: {window['model']} refused for {tid} ({' '.join(why.split())[:160]}); {tid} is judged on its own models"
