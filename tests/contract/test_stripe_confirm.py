@@ -21,6 +21,8 @@ from stand_ins import server, stripe
 
 Reply = tuple[int, dict[str, Any]]
 AUTH = "Bearer sk_test_fake"
+THREE_D_SECURE = stripe.THREE_D_SECURE
+FIRST_TRY = "pick-1042-try1"
 
 
 def unconfirmed(fake: stripe.FakeStripe, key: str = "pick-1042-intent") -> dict[str, Any]:
@@ -104,7 +106,7 @@ def test_the_3ds_card_asks_for_approval_then_the_bank_answer_settles_it(passed: 
     """TD-FEE-44 (FEE-014): the bank approval passes (succeeded) or fails, with the signed event."""
     fake = stripe.FakeStripe()
     pi = unconfirmed(fake)
-    code, wants = confirm(fake, pi, "pm_card_authenticationRequired", "pick-1042-try1")
+    code, wants = confirm(fake, pi, THREE_D_SECURE, FIRST_TRY)
     assert code == 200 and wants["status"] == "requires_action"
     assert wants["client_secret"] == pi["client_secret"] and wants["next_action"]["type"] == "use_stripe_sdk"
     code, settled = fake.authenticate(pi["id"], passed, 1_800_000_000)
@@ -115,7 +117,7 @@ def test_the_3ds_card_asks_for_approval_then_the_bank_answer_settles_it(passed: 
     assert stripe.verify_signature(fake.webhook_secret, settled["payload"], signature, 1_800_000_000)
     assert fake.authenticate(pi["id"], passed, 1_800_000_000)[1]["error"]["code"] == "payment_intent_unexpected_state"
     assert fake.authenticate("pi_none", passed, 1_800_000_000)[0] == 404
-    assert confirm(fake, pi, "pm_card_authenticationRequired", "pick-1042-try1") == (200, wants)
+    assert confirm(fake, pi, THREE_D_SECURE, FIRST_TRY) == (200, wants)
 
 
 @pytest.fixture
