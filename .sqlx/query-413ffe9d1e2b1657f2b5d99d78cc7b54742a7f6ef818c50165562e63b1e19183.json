@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT message_sid AS \"sid!\" FROM messaging.inbox WHERE received_at <= $1\n           UNION SELECT provider_sid AS \"sid!\" FROM messaging.outbox\n           WHERE provider_sid IS NOT NULL AND COALESCE(sent_at, created_at) <= $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "sid!",
+        "type_info": "Text",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "413ffe9d1e2b1657f2b5d99d78cc7b54742a7f6ef818c50165562e63b1e19183"
+}
