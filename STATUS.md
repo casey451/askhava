@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-09T07:58:18Z by runner 46d08254947b (actions).
+Updated 2026-11-09T07:58:29Z by runner 46d08254947b (actions).
 
-**Building: T264 in progress since 07:33Z; 166 of 286 done; week 59% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 07:58Z; 166 of 286 done; week 59% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 166 of 286 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T264 claimed 07:33Z, lease until 10:33Z
+- **Lane:** idle since 07:58Z (no task in progress)
 - **Week:** 59% used, 76.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 07:34Z, 24 min before this update
 - **Keeper:** last ran 07:16Z, next wake 07:36Z
@@ -17,6 +17,7 @@ Updated 2026-11-09T07:58:18Z by runner 46d08254947b (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T264 | coverage checker: a missing measurement fails, and the total | MERGE_PENDING | 1 | 24 min | 07:58Z |  |
 | T262 | calls and server: a random stored PIN per line, unique on it | done | 1 | 33 min | 06:56Z |  |
 | T257 | privacy and server: the scrubber remembers names across a ho | done | 1 | 56 min | 05:54Z |  |
 | T263 | payments: the monthly fee limit is a hard cap; capacity is r | done | 1 | 49 min | 04:26Z |  |
@@ -85,7 +86,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T264 (lease until 2026-11-09T10:33:51Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T262", "at": "2026-11-09T06:56:38Z", "cache_creation_input_tokens": 568588, "cache_read_input_tokens": 27080965, "output_tokens": 206832, "input_tokens": 415}
+- {"task": "T264", "at": "2026-11-09T07:58:18Z", "input_tokens": 157, "output_tokens": 55075, "cache_creation_input_tokens": 179872, "cache_read_input_tokens": 3986466}
