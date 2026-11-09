@@ -45,7 +45,7 @@ reset; a task that fits the line claims as before. The line is for the anchor's 
 window's start (its reset minus the week's hours) is later than the anchor, from the ledger's
 roll-over or a quota reading, there is no line until a new anchor is set.
 
-**Run to the limit** (D-2220, Casey's model window of November 9): while kit/runner.json's `model_window`
+**Run to the limit** (D-2225, Casey's model window of November 9): while kit/runner.json's `model_window`
 with `run_to_limit` is active (runner/model_window.py; the runner passes the switch to `make_pacer`), there is
 no headroom, no estimate test, no ledger and no spend line: the pacer claims until a real reading (the quota
 command, or a fresh session reading) says a window is at 100%, waiting then until the earlier of that
@@ -300,7 +300,7 @@ def spend_line(cfg: dict[str, Any], week: dict[str, Any], need: int, now: dateti
 
 def at_limit(state: State, now: datetime, quota: dict[str, Any] | None) -> str | None:
     """When a real reading says a window is at 100%: the ISO time to wait until (the latest reset among the
-    full windows, but no later than a session reading's expiry), else None (D-2220). The ledger is no reading."""
+    full windows, but no later than a session reading's expiry), else None (D-2225). The ledger is no reading."""
     reading = quota or session_reading(state, now)
     if not reading:
         return None
@@ -318,7 +318,7 @@ def assess(
     state: State, task: dict[str, Any], *, root: Path = ROOT, config: dict[str, Any] | None = None,
     now: datetime | None = None, quota: dict[str, Any] | None = None, run_to_limit: bool = False,
 ) -> dict[str, Any]:
-    """decide() with its working: estimate, bytes, basis, standing, source. `run_to_limit` (D-2220): see the
+    """decide() with its working: estimate, bytes, basis, standing, source. `run_to_limit` (D-2225): see the
     module docstring."""
     cfg, now = config or load_config(), now or datetime.now(timezone.utc)
     need, size, basis = estimate(task, state, cfg, root)
@@ -351,7 +351,7 @@ def line(tid: str, found: dict[str, Any]) -> str:
     if found.get("spend_line"):
         outcome = f"on the spend line (D-1128), {outcome}"
     if found.get("run_to_limit"):
-        outcome = f"running to the limit (model window, D-2220), {outcome}"
+        outcome = f"running to the limit (model window, D-2225), {outcome}"
     running = f" after {_k(found['in_flight'])} still running in another lane" if found.get("in_flight") else ""
     return f"{tid} estimated {_k(found['estimate'])} tokens ({found['basis']}); {left}{running} ({found['source']}); {outcome}"
 
@@ -395,7 +395,7 @@ def make_pacer(
     run_to_limit: Callable[[datetime, State], bool] | None = None,
 ) -> Pacer:
     """The hook the runner calls before claiming (runner.cycle.Config.pacer). `run_to_limit(now, state)` says
-    whether the model window runs to the limit at that moment and state (runner/__main__.py, D-2220: not once
+    whether the model window runs to the limit at that moment and state (runner/__main__.py, D-2225: not once
     an `end_on_limit` window has closed); None: never."""
     cfg = config or load_config(root / "kit" / "pacing.json")
 

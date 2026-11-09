@@ -54,16 +54,16 @@ line of JSON with what changed.
                                     the session found the model window's model refused and ran the
                                     attempt on the task's own models: the window is recorded as refused
                                     (`model_window_refused`, outbox item), the attempt is judged on the
-                                    task's own models and costs nothing for it (D-2220)
+                                    task's own models and costs nothing for it (D-2225)
   python3 -m runner --session-model [STATE_FILE]
                                     print `model=` (the orchestrating session's --model: the model
                                     window's while it is active and STATE_FILE, kit/state.json as the job
                                     read it, does not record it refused, else claude-sonnet-5-5) and
-                                    `windowed=true|false`, for $GITHUB_OUTPUT; always exit 0 (D-2220)
+                                    `windowed=true|false`, for $GITHUB_OUTPUT; always exit 0 (D-2225)
   python3 -m runner --model-refused FILE
                                     after the session: when its execution file shows a session that
                                     never used a tool and was refused its model, record the window as
-                                    refused, with an outbox item (D-2220)
+                                    refused, with an outbox item (D-2225)
   RUNNER_LANE                       the lane a backup-runner run serves (its gate picks it): the run
                                     claims only on that lane; unset, the first free lane (D-620);
                                     with two or more lanes a cycle that hands off starts one run
@@ -142,10 +142,10 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
     ap.add_argument("--keeper-armed", type=int, help="minutes until the keeper just dispatched wakes (D-1451)")
     ap.add_argument("--warm-smoke", action="store_true", help="build the smoke's cargo artifacts before the session (D-2007)")
     ap.add_argument("--pre-smoke", action="store_true", help="run the start routine's smoke before the session (D-2028)")
-    ap.add_argument("--model-fallback", default="", help="with --after: the window's model was refused; the error line (D-2220)")
+    ap.add_argument("--model-fallback", default="", help="with --after: the window's model was refused; the error line (D-2225)")
     ap.add_argument("--session-model", nargs="?", const="", default=None, metavar="STATE_FILE",
-                    help="print the orchestrating session's model; STATE_FILE: kit/state.json as read from claude/kit-state (D-2220)")
-    ap.add_argument("--model-refused", type=Path, help="the session's execution file: record a refused window model (D-2220)")
+                    help="print the orchestrating session's model; STATE_FILE: kit/state.json as read from claude/kit-state (D-2225)")
+    ap.add_argument("--model-refused", type=Path, help="the session's execution file: record a refused window model (D-2225)")
     return ap.parse_args(argv)
 
 
@@ -217,7 +217,7 @@ def build(args: argparse.Namespace, outbox_dir: Path) -> tuple[cycle.Config, Git
 
 def run_to_limit_now() -> Callable[[datetime, st.State], bool]:
     """The pacer's run-to-limit switch: kit/runner.json's model window with `run_to_limit`, judged at each
-    claim's moment and state (D-2220); False outside it, once the limit closed it, or with no window."""
+    claim's moment and state (D-2225); False outside it, once the limit closed it, or with no window."""
     window = model_window.load(ROOT / "kit" / "runner.json")
     return lambda now, state: model_window.run_to_limit(window, now, state)
 
@@ -293,8 +293,8 @@ def after(args: argparse.Namespace, cfg: cycle.Config, env: GitHubEnv) -> str:
     held = str(read_handoff().get("prehandin_log") or "")
     if held and args.outcome != "submitted":
         log = f"{log}; the last pre-hand-in gate before it: {held}"  # the retry still reads why the gate was red (D-1300)
-    fallback = bool(args.model_fallback.strip())
-    if fallback:
+    fallback = model_window.is_refusal(args.model_fallback)  # any other text is no fallback (D-2225)
+    if args.model_fallback.strip():
         line = cycle.model_fallback(cfg, env, args.model_fallback)
         if line:
             print(f"runner: {line}")
@@ -479,7 +479,7 @@ def write_handoff(cfg: cycle.Config, env: GitHubEnv) -> dict[str, Any]:
     }
     mark = model_window.mark_of(task)
     if mark and task.get("model"):
-        # Only for a claim inside the model window: the aliases for the Agent calls and what to fall back to (D-2220).
+        # Only for a claim inside the model window: the aliases for the Agent calls and what to fall back to (D-2225).
         own = cycle.attempt_model(task, int(task.get("attempts", 0)), cfg.models)
         info["model_window"] = model_window.handoff_block(mark, own, task.get("reviewer_model"), alias_for)
     if not env.dry_run:
@@ -524,10 +524,16 @@ def usage_reading(path: Path, env: GitHubEnv) -> str:
         return "usage_reading_none"
     now = now_utc()
     window = model_window.load(ROOT / "kit" / "runner.json")
-    note = window_ended_note(window, model_window.close_on_limit(reading_mod.record(env.read_state(), found, now), window, now)[1], env)
-    if env.update_state(lambda fresh: model_window.close_on_limit(reading_mod.record(fresh, found, now), window, now)[0]) is None:
-        if note:
-            note.unlink(missing_ok=True)
+    note = env.outbox_dir / f"{model_window.ENDED_OUTBOX_ID}.md"
+
+    def apply(fresh: st.State) -> st.State:
+        out, why = model_window.close_on_limit(reading_mod.record(fresh, found, now), window, now)
+        # The outbox item is written inside the transform, before its push, so that push carries it (D-2225).
+        window_ended_note(window, why, env) if why else note.unlink(missing_ok=True)
+        return out
+
+    if env.update_state(apply) is None:
+        note.unlink(missing_ok=True)
         return "lost_race"
     windows = ", ".join(f"{w} {found[w]['utilization']:.0%}" for w in ("week", "five_hour") if w in found)
     return f"usage_reading_recorded: {windows}"
@@ -537,7 +543,7 @@ def model_refused(path: Path, cfg: cycle.Config, env: GitHubEnv) -> str:
     """`--model-refused FILE` (backup-runner.yml, after the session, inside a model window): when the session's
     execution file shows a session that never used a tool and whose model was refused, the window is recorded
     as refused (`model_window_refused`) with an outbox item, so the next run's session and claims use the plan's
-    models (D-2220). Anything else changes nothing; nothing was claimed by such a session, so no attempt is spent."""
+    models (D-2225). Anything else changes nothing; nothing was claimed by such a session, so no attempt is spent."""
     from runner import usage_reading as reading_mod
 
     now = now_utc()
@@ -558,12 +564,12 @@ def model_refused(path: Path, cfg: cycle.Config, env: GitHubEnv) -> str:
 
 
 # `--model-refused` results that change nothing: no kit/runner_log.jsonl row, so the session's own row stays the
-# last one the keeper and the chain step read (D-2220).
+# last one the keeper and the chain step read (D-2225).
 MODEL_WINDOW_SILENT = ("model_window_inactive", "model_window_ok", "model_window_unread")
 
 
 def session_model(args: argparse.Namespace) -> int:
-    """`--session-model [STATE_FILE]` (backup-runner.yml, before the session, D-2220): `model=<ID>` and
+    """`--session-model [STATE_FILE]` (backup-runner.yml, before the session, D-2225): `model=<ID>` and
     `windowed=true|false` for $GITHUB_OUTPUT. The model is kit/runner.json's window model while the window is
     active and STATE_FILE (kit/state.json as the job read it from claude/kit-state) does not record it
     refused, else claude-sonnet-5-5 (BUILD_BRIEF.md:500). A missing or unreadable file counts as not
@@ -583,7 +589,7 @@ def session_model(args: argparse.Namespace) -> int:
 
 
 def window_ended_note(window: model_window.Window | None, why: str, env: GitHubEnv) -> Path | None:
-    """When `--usage-reading`'s reading closes the model window at the limit (D-2220): the outbox item
+    """When `--usage-reading`'s reading closes the model window at the limit (D-2225): the outbox item
     `model-window-ended`, written before the state write so that write carries it; None otherwise."""
     if not why or window is None:
         return None

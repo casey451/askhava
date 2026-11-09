@@ -38,7 +38,7 @@ FLOOR_MINUTES = 10  # a computed sleep never ends before the run that armed it h
 LEASE_MARGIN = 2  # minutes past a lease's expiry
 RESET_MARGIN = 5  # minutes past the pacer's `waiting_until` (a usage window's reset)
 WEEK_STOP = 0.97  # the week's reading at which the build stops for the reset (kit/pacing.json headroom 0.03)
-LIMIT = 1.0  # inside a model window with `run_to_limit`, the stop is the plan's real limit instead (D-2220)
+LIMIT = 1.0  # inside a model window with `run_to_limit`, the stop is the plan's real limit instead (D-2225)
 READING_HOURS = 6  # a reading this old says nothing any more (scripts/pacing.py SESSION_READING_HOURS)
 NOTHING_CLAIMED = frozenset({"idle", "fix_main"})  # a cycle result after which a 20-minute look would find the same
 QUIET = ("not_lease_holder", "renewed", "renew_refused", "usage_reading", "keeper_armed", "model_window")  # log rows that say nothing of the cycle
@@ -91,7 +91,9 @@ def _minutes(delta: timedelta, margin: int) -> int:
     return max(FLOOR_MINUTES, min(CAP_MINUTES, math.ceil(delta.total_seconds() / 60) + margin))
 
 
-def wake_after(state: Doc, lease_doc: Doc, now: datetime, last: str = "", to_limit: bool | None = None) -> tuple[int | None, str]:
+def wake_after(
+    state: Doc, lease_doc: Doc, now: datetime, last: str = "", to_limit: bool | None = None, ended: bool | None = None,
+) -> tuple[int | None, str]:
     """(minutes, why) for the next keeper, or (None, why) when none may run (D-1451).
 
     A task in flight: the soonest live lease's remaining time + LEASE_MARGIN; the pacer waiting: its
@@ -101,7 +103,10 @@ def wake_after(state: Doc, lease_doc: Doc, now: datetime, last: str = "", to_lim
     not start a Claude session every IDLE_MINUTES. `last`, the result the arming cycle itself reported,
     overrides the state's guess: after `idle` (nothing it could claim) the short sleep is never used.
     `to_limit` (default: kit/runner.json's model window with `run_to_limit` active now and, with `end_on_limit`,
-    not yet closed by the limit, D-2220) moves the week stop from WEEK_STOP to the real limit."""
+    not yet closed by the limit, D-2225) moves the week stop from WEEK_STOP to the real limit. With it, and
+    once that window is recorded ended at the limit (`ended`, default from kit-state's `model_window_ended`),
+    the week stop and the pacer's wait last no longer than the session reading's READING_HOURS expiry: a cycle
+    then starts, refreshes the reading and claims once Casey has reset the week (D-2225)."""
     if state.get("unreadable") or lease_doc.get("unreadable"):
         return IDLE_MINUTES, "claude/kit-state or claude/lease could not be read: look again"
     why = blocker(state)
@@ -111,11 +116,12 @@ def wake_after(state: Doc, lease_doc: Doc, now: datetime, last: str = "", to_lim
     if held:
         soonest = min(st.parse(str(lease["expires"])) for lease in held.values())
         return _minutes(soonest - now, LEASE_MARGIN), f"a task is in flight; its lease ends {st.iso(soonest)}"
+    limit, expire = window_terms(state, now, to_limit, ended)
     until = pacer_until(state, now)
+    until = bounded(until, state, now) if expire and until is not None else until
     if until is not None:
         return _minutes(until - now, RESET_MARGIN), f"the pacer waits until {st.iso(until)}"
-    limit = model_window.run_to_limit(model_window.load(), now, state) if to_limit is None else to_limit
-    reset = week_stop(state, now, limit)
+    reset = week_stop(state, now, limit, expire)
     if reset is not None:
         return _minutes(reset - now, RESET_MARGIN), f"the week stopped at its limit; it resets {st.iso(reset)}"
     if has_work(state, now) and last not in NOTHING_CLAIMED:
@@ -127,19 +133,47 @@ def wake_after(state: Doc, lease_doc: Doc, now: datetime, last: str = "", to_lim
     return CAP_MINUTES, f"nothing to claim{held}; events and the hourly tick still start runs"
 
 
-def week_stop(state: Doc, now: datetime, to_limit: bool = False) -> datetime | None:
+def window_terms(state: Doc, now: datetime, to_limit: bool | None, ended: bool | None) -> tuple[bool, bool]:
+    """(run to the limit, readings expire) from kit/runner.json's model window and the state (D-2225): readings
+    expire while the window runs to the limit and after it was recorded ended at the limit."""
+    window = model_window.load() if to_limit is None or ended is None else None
+    limit = model_window.run_to_limit(window, now, state) if to_limit is None else to_limit
+    over = model_window.ended(window, state) if ended is None else ended
+    return limit, limit or over
+
+
+def reading_expiry(state: Doc) -> datetime | None:
+    """When the session reading stops counting (its `at` + READING_HOURS), None without a readable one."""
+    usage = state.get("usage") if isinstance(state.get("usage"), dict) else {}
+    reading = usage.get("session_reading") if isinstance(usage.get("session_reading"), dict) else {}
+    try:
+        return st.parse(str(reading.get("at"))) + timedelta(hours=READING_HOURS)
+    except ValueError:
+        return None
+
+
+def bounded(until: datetime, state: Doc, now: datetime) -> datetime | None:
+    """The pacer's wait cut at the reading's expiry (D-2225); None once that has passed, as a stale reading no
+    longer holds the pacer and its ledger was dropped when the window ended."""
+    expiry = reading_expiry(state)
+    cut = until if expiry is None else min(until, expiry)
+    return cut if cut > now else None
+
+
+def week_stop(state: Doc, now: datetime, to_limit: bool = False, expire: bool | None = None) -> datetime | None:
     """The week's `resets_at` while the plan's own reading (usage.session_reading) says the week is at or
     past WEEK_STOP, else None: the keeper then sleeps in chained steps to the reset (the A+ plan, item 5).
 
-    With `to_limit` (a model window running to the limit, D-2220) the stop is a reading at LIMIT, and only
+    With `to_limit` (a model window running to the limit, D-2225) the stop is a reading at LIMIT, and only
     while the reading is under READING_HOURS old, as the pacer reads it: the keeper then wakes when the
-    reading expires (or at the reset, if sooner), so a week Casey resets by hand resumes without a person."""
+    reading expires (or at the reset, if sooner), so a week Casey resets by hand resumes without a person.
+    `expire` (default `to_limit`) applies that expiry to the WEEK_STOP stop as well: after the window ended."""
     usage = state.get("usage") if isinstance(state.get("usage"), dict) else {}
     reading = usage.get("session_reading") if isinstance(usage.get("session_reading"), dict) else {}
     week = reading.get("week") if isinstance(reading.get("week"), dict) else {}
     try:
         used, reset = float(week.get("utilization")), st.parse(str(week.get("resets_at")))
-        expires = st.parse(str(reading.get("at"))) + timedelta(hours=READING_HOURS) if to_limit else reset
+        expires = st.parse(str(reading.get("at"))) + timedelta(hours=READING_HOURS) if (to_limit if expire is None else expire) else reset
     except (TypeError, ValueError):
         return None
     until = min(reset, expires)

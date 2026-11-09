@@ -1,4 +1,4 @@
-"""The model window (D-2220): a time-boxed switch of every model the runner starts, read from kit/runner.json.
+"""The model window (D-2225): a time-boxed switch of every model the runner starts, read from kit/runner.json.
 
 Casey, November 9, 2026: switch everything to Fable at the weekly reset and run the usage to the limit; then
 back to Opus. Fake tasks only; the runner's outside world is test_failure_drills.FakeEnv.
@@ -385,7 +385,7 @@ def test_run_to_limit_claims_past_the_headroom_and_the_ledger(tmp_path: Path) ->
     state = _over_the_headroom()
     assert pacing.decide(state, task, root=tmp_path, now=NOW)[0] == "wait"
     found = pacing.assess(state, task, root=tmp_path, now=NOW, run_to_limit=True)
-    assert found["decision"] == ("claim", None) and "running to the limit (model window, D-2220)" in pacing.line("T001", found)
+    assert found["decision"] == ("claim", None) and "running to the limit (model window, D-2225)" in pacing.line("T001", found)
 
 
 def test_run_to_limit_waits_for_a_real_limit() -> None:
@@ -475,11 +475,14 @@ def _read(state: st.State, at: datetime, week: float, five_hour: float | None = 
 def test_the_window_closes_on_the_first_limit_and_the_next_claim_uses_the_task_model(tmp_path: Path) -> None:
     win = window(end_on_limit=True)
     graph = [make_task("T001"), make_task("T002")]
-    env = FakeEnv(lambda t, m, log: cycle.WorkerResult("usage_limit"))
+    env = FakeEnv(lambda t, m, log: cycle.WorkerResult("usage_limit", usage={"input_tokens": 5_000_000}))
     cfg = windowed(graph, tmp_path, win)
     assert cycle.run_cycle(cfg, env, NOW) == st.RETRY_AFTER_RESET  # the limit, hit on the window's model
-    assert env.runs[0][1] == FABLE and mw.closed(win, env.store)
-    assert mw.session_model(win, NOW, env.store) == "claude-sonnet-5-5" and not mw.run_to_limit(win, NOW, env.store)
+    assert env.runs[0][1] == FABLE
+    assert not mw.closed(win, env.store)  # a limit_hit alone (maybe the five-hour limit) is no proof
+    env.store = _read(env.store, NOW + timedelta(minutes=1), 1.0)  # the session's reading: the week is used up
+    assert mw.closed(win, env.store) and mw.session_model(win, NOW, env.store) == "claude-sonnet-5-5"
+    assert not mw.run_to_limit(win, NOW, env.store)
     env.worker = lambda t, m, log: cycle.WorkerResult("submitted", [f"app/{t['id'].lower()}/x.py"], [m])
     later = NOW + timedelta(hours=2)  # past the hit's reset
     assert cycle.run_cycle(dataclasses.replace(cfg, clock=lambda: later), env, later) == st.MERGE_PENDING
@@ -493,14 +496,58 @@ def test_the_window_closes_on_the_first_limit_and_the_next_claim_uses_the_task_m
     assert mw.closed(win, reset) and mw.session_model(win, later + timedelta(hours=1), reset) == "claude-sonnet-5-5"
 
 
-def test_a_week_reading_at_100_inside_closes_it_and_a_five_hour_limit_does_not() -> None:
+def test_only_a_week_reading_at_the_limit_closes_it() -> None:
     win = window(end_on_limit=True)
-    assert mw.limit_inside(win, _read(st.new_state(), NOW, 1.0)).startswith("the week read 100%")
+    assert mw.limit_inside(win, _read(st.new_state(), NOW, 1.0)).startswith("the week read at its limit")
+    rejected = _read(st.new_state(), NOW, 0.93)
+    rejected["usage"]["session_reading"]["week"]["status"] = "rejected"
+    assert mw.limit_inside(win, rejected)  # the API's own refusal counts as the limit
     five = _read(_hit(st.new_state(), NOW), NOW + timedelta(minutes=5), 0.6, five_hour=1.0)
     assert mw.limit_inside(win, five) == "" and not mw.closed(win, five)  # the hit was the five-hour limit
-    assert mw.limit_inside(win, _hit(st.new_state(), NOW)).startswith("a usage limit was hit")
+    assert mw.limit_inside(win, _hit(st.new_state(), NOW)) == ""  # a hit with no reading after it: no proof
     assert mw.close_on_limit(st.new_state(), win, NOW) == (st.new_state(), "")
     assert not mw.closed(window(end_on_limit=False), _read(st.new_state(), NOW, 1.0))  # without end_on_limit: runs on
+
+
+def test_after_a_close_the_keeper_wakes_within_6_hours_and_casey_reset_resumes_on_the_task_model(tmp_path: Path) -> None:
+    """B1: limit, close, Casey's reset. The pacer's ledger (piled up while it was not consulted) is dropped at
+    the close; the keeper sleeps no longer than the reading's expiry, not to the weekly reset; the cycle after
+    the fresh low reading claims on the task's own model at normal pace."""
+    win = window(end_on_limit=True)
+    graph = [make_task("T001")]
+    full = _read(st.sync_graph(st.new_state(), graph), NOW, 1.0)
+    full["usage"]["windows"] = {"five_hour": {"start": st.iso(NOW - timedelta(hours=1)), "tokens": 90_000_000},
+                                "week": {"start": st.iso(NOW - timedelta(days=1)), "tokens": 400_000_000}}
+    ended, why = mw.close_on_limit(full, win, NOW)
+    assert why and "windows" not in ended["usage"] and mw.ended(win, ended)
+    cfg = dict(pacing.load_config(), quota_cmd_default="")
+    pacer = pacing.make_pacer(graph, tmp_path, cfg, run_to_limit=lambda now, state: mw.run_to_limit(win, now, state))
+    verdict, until, paced = pacer(ended, graph[0], NOW + timedelta(minutes=5))
+    assert verdict == "wait" and st.parse(str(until)) > NOW + timedelta(days=1)  # the normal pacer: until the weekly reset
+    awake = {**paced, "backup_runner": "on"}
+    minutes, reason = kp.wake_after(awake, {}, NOW + timedelta(minutes=5), to_limit=False, ended=True)
+    assert minutes is not None and minutes <= 6 * 60 + kp.RESET_MARGIN, reason
+    assert kp.wake_after(awake, {}, NOW + timedelta(minutes=5), to_limit=False, ended=False)[0] == kp.CAP_MINUTES  # before: to the reset
+    stale = NOW + timedelta(hours=6, minutes=5)
+    assert kp.wake_after(awake, {}, stale, to_limit=False, ended=True) == (kp.IDLE_MINUTES, "idle")
+    # Casey's reset: the woken cycle's session reports the week near zero, and the claim goes to Sonnet.
+    env = FakeEnv()
+    env.store = _read(paced, stale, 0.02)
+    run_cfg = dataclasses.replace(windowed(graph, tmp_path, win), pacer=pacer, clock=lambda: stale)
+    assert cycle.run_cycle(run_cfg, env, stale) == st.MERGE_PENDING
+    assert env.runs[-1][1] == MODELS["sonnet"]
+
+
+def test_the_keeper_reads_the_ended_record_from_the_repository_window() -> None:
+    win = mw.load()
+    assert win is not None
+    later = st.parse("2026-11-14T12:00:00Z")
+    reading = _read(st.new_state(), later, 1.0)
+    reading["usage"]["session_reading"]["week"]["resets_at"] = "2026-11-19T17:00:00Z"  # the next weekly reset
+    ended, _ = mw.close_on_limit(reading, win, later)
+    awake = {**ended, "backup_runner": "on"}
+    minutes, reason = kp.wake_after(awake, {}, later + timedelta(minutes=1))
+    assert minutes is not None and minutes <= 6 * 60 + kp.RESET_MARGIN and reason.startswith("the week stopped")
 
 
 def test_a_limit_before_from_does_not_close_a_future_window() -> None:
@@ -550,3 +597,62 @@ def test_until_still_ends_an_end_on_limit_window() -> None:
     win = window(NOW - timedelta(hours=2), NOW, end_on_limit=True)
     assert mw.session_model(win, NOW, st.new_state()) == "claude-sonnet-5-5" and not mw.run_to_limit(win, NOW, st.new_state())
     assert mw.session_model(win, NOW - timedelta(minutes=1), st.new_state()) == FABLE
+
+
+# ---- review fixes: the limit stops a session mid-task; the model check; the fallback gate
+
+
+def _events(*infos: dict[str, Any]) -> str:
+    return json.dumps([{"type": "rate_limit_event", "rate_limit_info": info} for info in infos])
+
+
+def test_at_limit_reads_the_last_reading_of_the_execution_file(tmp_path: Path) -> None:
+    from runner import usage_reading as ur
+
+    under = {"unifiedWindows": {"seven_day": {"utilization": 0.8, "resetsAt": 1795000000}}}
+    full = {"unifiedWindows": {"seven_day": {"utilization": 1.0, "resetsAt": 1795000000}}}
+    five = {"unifiedWindows": {"five_hour": {"utilization": 1.0}, "seven_day": {"utilization": 0.4}}}
+    assert not ur.at_limit(_events(under)) and ur.at_limit(_events(under, full)) and ur.at_limit(_events(five))
+    assert ur.at_limit(_events({"status": "rejected", "rateLimitType": "seven_day"}))
+    assert ur.at_limit(_events(under, {"status": "rejected"}))
+    assert not ur.at_limit("") and not ur.at_limit(_events({"status": "allowed", "rateLimitType": "seven_day", "utilization": 0.5}))
+    assert ur.latest_reading(_events({"status": "rejected", "rateLimitType": "seven_day"})) == {"week": {"utilization": 1.0, "status": "rejected"}}
+    f = tmp_path / "exec.json"
+    f.write_text(_events(full))
+    assert ur.main(["--at-limit", str(f)]) == 0
+    f.write_text(_events(under))
+    assert ur.main(["--at-limit", str(f)]) == 1 and ur.main(["--at-limit", str(tmp_path / "none")]) == 1 and ur.main([]) == 2
+
+
+def test_a_session_stopped_at_the_limit_hands_in_usage_limit_at_no_attempt_cost(tmp_path: Path) -> None:
+    step = next(s for s in _backup_steps() if s.get("id") == "safety")
+    assert step["env"]["EXECUTION_FILE"] == "${{ steps.claude.outputs.execution_file }}"
+    assert 'python3 -m runner.usage_reading --at-limit "$EXECUTION_FILE"' in step["run"] and "outcome=usage_limit" in step["run"]
+    assert '--outcome "$outcome"' in step["run"] and "usage_limit:*" in step["run"]  # and no chained run
+    env = FakeEnv(lambda t, m, log: cycle.WorkerResult("handed_off"))
+    cfg = windowed([make_task("T001")], tmp_path, window())
+    cycle.run_cycle(cfg, env, NOW)
+    assert cycle.after_handoff(cfg, env, lambda task: cycle.WorkerResult("usage_limit", log="stopped")) == st.RETRY_AFTER_RESET
+    entry_ = st.entry(env.store, "T001")
+    assert entry_["attempts"] == 0 and env.store["usage"]["limit_hit"]["task"] == "T001"
+
+
+def test_fable_evidence_on_an_unmarked_attempt_is_rejected(tmp_path: Path) -> None:
+    unmarked = make_task("T001")
+    assert cycle.known_models(unmarked, MODELS) == list(MODELS.values())
+    assert cycle.known_models({**unmarked, "window_model": {"model": FABLE, "alias": "fable"}}, MODELS) == [*MODELS.values(), FABLE]
+    env = FakeEnv(lambda t, m, log: cycle.WorkerResult("submitted", ["app/t001/x.py"], [FABLE]))
+    assert cycle.run_cycle(windowed([unmarked], tmp_path, None), env, NOW) == st.QUEUED
+    assert f"model {FABLE} ran, task names {MODELS['sonnet']}" in st.entry(env.store, "T001")["last_failure"]
+
+
+def test_a_fallback_text_that_is_no_refusal_changes_nothing(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    env, cfg = _claimed_inside(tmp_path, [make_task("T001")])
+    before = copy.deepcopy(env.store)
+    assert cycle.model_fallback(cfg, env, "the tests failed").startswith("model window: not a model refusal")
+    assert env.store == before and not (tmp_path / f"{mw.OUTBOX_ID}.md").exists()
+    env.log = []  # type: ignore[attr-defined]  # reason: GitHubEnv's log list
+    env.collect_result = lambda task, *rest: cycle.WorkerResult("submitted", ["app/t001/x.py"], [MODELS["sonnet"]])  # type: ignore[attr-defined]  # reason: GitHubEnv.collect_result's stand-in
+    monkeypatch.setattr(entry, "read_handoff", lambda: {})
+    args = entry.parse_args(["--after", "--model-fallback", "the tests failed"])
+    assert entry.after(args, cfg, env) == st.QUEUED  # type: ignore[arg-type]  # reason: FakeEnv; judged on the window's model as usual

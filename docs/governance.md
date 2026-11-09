@@ -44,7 +44,7 @@ A rule enforced only by a document is a rule a tired session can skip. The matri
 | The end-to-end journeys and the accessibility suite are required checks | `Ci` e2e job and `Ally` from T173 |
 | The twin is a hard-failing oracle | `Twin` from T172 (stand-alone twin) and T074 (against the app's rules) |
 | Every Rust file and public item is documented; rule code names its requirement IDs; `CLAUDE.md` stays under 200 lines | `Ci` (`scripts/check_code_docs.py`) |
-| The model named in the task (for a claim inside Casey's model window, the window's model, D-2220) is the model that ran; a task is DONE only when its PR merged green and `main`'s tree equals the tested head | Runner code (`runner/verify.py`, `runner/cycle.py`; `python3 -m runner`, D-486) |
+| The model named in the task (for a claim inside Casey's model window, the window's model, D-2225) is the model that ran; a task is DONE only when its PR merged green and `main`'s tree equals the tested head | Runner code (`runner/verify.py`, `runner/cycle.py`; `python3 -m runner`, D-486) |
 | A push to a task branch gets auto-merge only after the runner's review | `auto-pr.yml` reads `reviewed_sha` and the review lease from `claude/kit-state` and `claude/lease` with `runner/verify.py` from `main`; the runner alone turns auto-merge on (D-486) |
 | The full suite runs on `main` nightly and its result is on record | `nightly-main` writes `kit/nightly.json` to `claude/kit-state` |
 | An owner gate clears only on a short, unnegated reply carrying its phrase; a comment performed through a GitHub App is never an owner answer | `runner/outbox.py`; `inbox.yml`. **Reader** for a session posting as the owner through other means until E-1 |

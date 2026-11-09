@@ -1,4 +1,4 @@
-"""The model window: a time-boxed switch of every model the runner starts (D-2220).
+"""The model window: a time-boxed switch of every model the runner starts (D-2225).
 
 Casey, November 9, 2026: "on Thursday when the usage resets, I want to switch everything to fable and run
 the usage all the way through so I can use one of my fable resets to bring usage back to zero", and "Back
@@ -23,13 +23,13 @@ While `now` is inside the window:
   and the 97% week stop: they hold only for a recorded usage-limit hit or a real reading at 100%.
 
 With `end_on_limit`, the window closes by itself the first time the runner records the plan's limit inside
-it: a `usage.limit_hit` taken in [from, until) (unless a session reading taken at or after it shows the week
-under 100%: that hit was the five-hour limit), or a session reading taken in [from, until) with the week at
-100%. The runner records `model_window_ended` = {model, from, at, why: "limit"} and the outbox item
+it: a session reading taken in [from, until) with the week at 100% or rejected (a `usage.limit_hit` alone,
+which may be the five-hour limit, does not close it). The runner records `model_window_ended` = {model, from, at, why: "limit"} and the outbox item
 `model-window-ended` (`close_on_limit`, at a cycle's claim and at `--usage-reading`); from then on that
 window (the same model and `from`) changes no model and `run_to_limit` stops: pacing is back to its own
 rules (headroom, the 97% stop), which still wait out the stale 100% reading until a fresh one shows Casey's
-reset. Casey's words: Fable only until the week's usage runs out, then a reset, then back to Opus.
+reset: the close drops the pacer's ledger, and the keeper bounds its waits by the reading's 6-hour expiry, so a
+cycle starts within 6 hours of the last reading and refreshes it. Casey's words: Fable only until the week's usage runs out, then a reset, then back to Opus.
 
 A model the CLI or the worker call refuses is not the task's failure: the session runs the attempt on the
 task's own models and hands in with `--model-fallback "<error>"`, or the job's step after the session finds
@@ -39,7 +39,7 @@ the orchestrating session refused (`--model-refused FILE`); either way the state
 `from` in kit/runner.json is a new window and is tried again.
 
 Outside the window, or with no or a malformed `model_window` key, nothing here changes anything: every
-function returns the value the runner used before D-2220.
+function returns the value the runner used before D-2225.
 """
 
 from __future__ import annotations
@@ -67,7 +67,7 @@ ALIAS = re.compile(r"^[a-z]+$")
 # `model`, and the Agent tool's schema refusal of an alias it does not list.
 REFUSAL = re.compile(
     r"issue with the selected model|not_found_error[^\n]{0,80}model|model[^\n]{0,80}(not found|does not exist|"
-    r"may not exist|not available|is not supported|unknown|invalid)|(unknown|invalid) model|"
+    r"may not exist|not available|is not supported|not have access|unknown|invalid)|(unknown|invalid) model|"
     r"invalid_enum_value[^\n]{0,200}model",
     re.IGNORECASE,
 )
@@ -135,33 +135,38 @@ def _during(window: Window, stamp: Any) -> datetime | None:
     return moment if moment is not None and in_window(window, moment) else None
 
 
-def _week(reading: dict[str, Any]) -> float | None:
+def _week_full(reading: dict[str, Any]) -> bool:
+    """Whether a session reading's week is at the plan's limit: utilization at 100%, or the API's own
+    `status` "rejected" for it (runner/usage_reading.py keeps that status)."""
     week = reading.get("week")
+    if not isinstance(week, dict):
+        return False
+    if week.get("status") == "rejected":
+        return True
     try:
-        return float(week["utilization"]) if isinstance(week, dict) else None
+        return float(week["utilization"]) >= 1.0
     except (KeyError, TypeError, ValueError):
-        return None
+        return False
 
 
 def limit_inside(window: Window | None, state: st.State | None) -> str:
-    """Why the state shows the plan's limit reached inside the window ('' when it does not): a session
-    reading taken in the window with the week at 100%, or a `usage.limit_hit` taken in the window that no
-    reading taken at or after it shows to have been the five-hour limit (the week under 100%)."""
+    """Why the state shows the week's limit reached inside the window ('' when it does not). Only positive
+    evidence counts: a session reading taken in the window whose week is at 100% or rejected. A
+    `usage.limit_hit` alone never counts (it may be the five-hour limit, or have no reading after it); the
+    reading that follows a week's limit is what closes the window."""
     usage = (state or {}).get("usage") if isinstance((state or {}).get("usage"), dict) else {}
     if window is None or not isinstance(usage, dict):
         return ""
     reading = usage.get("session_reading") if isinstance(usage.get("session_reading"), dict) else {}
-    read_at, week = _during(window, reading.get("at")), _week(reading)
-    if read_at is not None and week is not None and week >= 1.0:
-        return f"the week read {week:.0%} at {st.iso(read_at)}"
-    hit = usage.get("limit_hit") if isinstance(usage.get("limit_hit"), dict) else {}
-    hit_at = _during(window, hit.get("at"))
-    if hit_at is None:
+    read_at = _during(window, reading.get("at"))
+    if read_at is None or not _week_full(reading):
         return ""
-    later = _instant(reading.get("at"))
-    if later is not None and later >= hit_at and week is not None and week < 1.0:
-        return ""  # the reading after the hit shows the week was not used up
-    return f"a usage limit was hit at {st.iso(hit_at)} ({hit.get('task', '')})"
+    return f"the week read at its limit at {st.iso(read_at)}"
+
+
+def ended(window: Window | None, state: st.State | None) -> bool:
+    """Whether the state records this very window as ended at the limit (`model_window_ended`)."""
+    return _recorded(window, state, ENDED)
 
 
 def closed(window: Window | None, state: st.State | None) -> bool:
@@ -184,7 +189,10 @@ def run_to_limit(window: Window | None, now: datetime, state: st.State | None = 
 
 def close_on_limit(state: st.State, window: Window | None, now: datetime) -> tuple[st.State, str]:
     """(state, why): the state with `model_window_ended` recorded when an `end_on_limit` window shows its limit
-    for the first time, and why; otherwise the state unchanged (the same object) and ''."""
+    for the first time, and why; otherwise the state unchanged (the same object) and ''. The pacer's own
+    ledger (`usage.windows`) is dropped in the same write: it was not read while the window ran to the limit,
+    holds that whole spend against the placeholder budgets, and would otherwise hold the build for up to a
+    week after Casey's reset once the last reading is stale (the next attempt's usage starts it again)."""
     if window is None or not window["end_on_limit"] or _recorded(window, state, ENDED):
         return state, ""
     why = limit_inside(window, state)
@@ -192,6 +200,8 @@ def close_on_limit(state: st.State, window: Window | None, now: datetime) -> tup
         return state, ""
     out = copy.deepcopy(state)
     out[ENDED] = {"model": window["model"], "from": st.iso(window["from"]), "at": st.iso(now), "why": "limit"}
+    if isinstance(out.get("usage"), dict):
+        out["usage"].pop("windows", None)
     return out, why
 
 
@@ -202,7 +212,7 @@ def ended_note(window: Window, why: str) -> tuple[str, str]:
             "From now on every worker, reviewer and session runs on the plan's own models, and pacing is back to its "
             "usual rules (headroom, the 97% week stop). The build waits while the 100% reading holds; after the reset "
             "(Casey's own or the weekly one) a fresh reading shows the usage down and the build resumes by itself. "
-            "kit/runner.json still holds the window; set `until` when convenient (D-2220).")
+            "kit/runner.json still holds the window; set `until` when convenient (D-2225).")
     return title, body
 
 
@@ -252,7 +262,7 @@ def refusal_note(window: Window, why: str, where: str) -> tuple[str, str]:
     body = (f"The {where} could not run on {window['model']} (alias {window['alias']}): {' '.join(why.split())[:300]}\n\n"
             "No attempt was counted against the task for it. Until kit/runner.json names another model or `from`, "
             "every worker, reviewer and session runs on the plan's own models; `run_to_limit` still applies. "
-            "Check the model string, or set `until` to end the window (D-2220).")
+            "Check the model string, or set `until` to end the window (D-2225).")
     return title, body
 
 

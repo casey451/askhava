@@ -215,7 +215,7 @@ class Config:
     # The plan-health check run before a claim (scripts/plan_health.py checker, D-1350): the problems that
     # make a task's plan unsound to claim now ([] when sound). None skips the check.
     plan_health: Callable[[State, str], list[str]] | None = None
-    # kit/runner.json "model_window" (runner/model_window.py, D-2220): while it is active every claim is
+    # kit/runner.json "model_window" (runner/model_window.py, D-2225): while it is active every claim is
     # marked with its model, which the attempt's worker and reviewer then run on. None changes nothing.
     model_window: dict[str, Any] | None = None
 
@@ -257,20 +257,20 @@ def attempt_model(task: dict[str, Any], attempts: int, models: dict[str, str]) -
 
 def worker_model(task: dict[str, Any], attempts: int, models: dict[str, str]) -> str:
     """The model this attempt's worker runs on: the model window's when the claim was marked with one
-    (`window_model`, D-2220), else attempt_model. `task` is the plan entry merged with its state entry."""
+    (`window_model`, D-2225), else attempt_model. `task` is the plan entry merged with its state entry."""
     mark = model_window.mark_of(task)
     return mark["model"] if mark else attempt_model(task, attempts, models)
 
 
 def reviewer_model(task: dict[str, Any]) -> str | None:
-    """The model the attempt's reviewer runs on: the window's mark when the task has a reviewer (D-2220),
+    """The model the attempt's reviewer runs on: the window's mark when the task has a reviewer (D-2225),
     else the task's own `reviewer_model` (None: no review required)."""
     mark, want = model_window.mark_of(task), task.get("reviewer_model")
     return mark["model"] if mark and want else want
 
 
 def with_claim_mark(task: dict[str, Any], entry: dict[str, Any]) -> dict[str, Any]:
-    """The picked task with the claim's model window mark (D-2220): the one the claim just set or removed in
+    """The picked task with the claim's model window mark (D-2225): the one the claim just set or removed in
     `entry`, never one the task carried over from an earlier attempt's entry. Unchanged contents without one."""
     mark = model_window.mark_of(entry)
     return {k: v for k, v in task.items() if k != model_window.MARK} | ({model_window.MARK: mark} if mark else {})
@@ -278,7 +278,7 @@ def with_claim_mark(task: dict[str, Any], entry: dict[str, Any]) -> dict[str, An
 
 def known_models(task: dict[str, Any], models: dict[str, str]) -> list[str]:
     """The full model IDs verify.check_model accepts: kit/tasks.json `models`, plus the window's model for
-    an attempt claimed inside the window (D-2220)."""
+    an attempt claimed inside the window (D-2225)."""
     mark = model_window.mark_of(task)
     return [*models.values(), *([mark["model"]] if mark else [])]
 
@@ -1240,12 +1240,12 @@ def _next_step(cfg: Config, env: Env, state: State, base: State, now: datetime, 
                 return "smoke_env" if state == base or env.push_state(state, base) else "lost_race"
             red = set_main_red(state, cfg, "smoke", head, offending_merge(state), now)
             return "main_red" if env.push_state(red, base) else "lost_race"
-    state = close_window_on_limit(cfg, state, now)  # D-2220: unchanged unless the limit just closed the window
+    state = close_window_on_limit(cfg, state, now)  # D-2225: unchanged unless the limit just closed the window
     task, state = _paced_pick(cfg, state, ids, now)
     if task is None:
         return "paced" if state == base or env.push_state(state, base) else "lost_race"
     claimed = st.claim(state, task["id"], cfg.session, now, lane, taken=cfg.decisions() if cfg.decisions else None)
-    claimed = model_window.mark_claim(claimed, task["id"], cfg.model_window, now)  # D-2220; unchanged outside a window
+    claimed = model_window.mark_claim(claimed, task["id"], cfg.model_window, now)  # D-2225; unchanged outside a window
     if not env.push_state(claimed, base):
         return "lost_race"
     done = _work(cfg, env, claimed, task, now)
@@ -1901,7 +1901,7 @@ def after_handoff(cfg: Config, env: Env, res_for: Callable[[dict[str, Any]], Wor
     When `hold` answers a result for the hand-in (the pre-hand-in gate was red and the session still has
     a fix round, D-1300), nothing is finished and kit/state.json is not written: the lease stays held and the
     task IN_PROGRESS (runner/__main__.py still pushes its runner_log.jsonl row). `own_models` (a model
-    window fallback, D-2220) judges the attempt on the task's own models even if its mark could not be removed."""
+    window fallback, D-2225) judges the attempt on the task's own models even if its mark could not be removed."""
     state = env.read_state()
     lease = session_lease(state, cfg.session, cfg.clock())
     if lease is None:
@@ -1918,7 +1918,7 @@ def after_handoff(cfg: Config, env: Env, res_for: Callable[[dict[str, Any]], Wor
     return hold(res) or finish(cfg, env, state, task, res, model, cfg.clock())
 
 
-# ---- the model window's fallback and its end at the limit (D-2220)
+# ---- the model window's fallback and its end at the limit (D-2225)
 
 
 def close_window_on_limit(cfg: Config, state: State, now: datetime) -> State:
@@ -1937,7 +1937,11 @@ def model_fallback(cfg: Config, env: Env, why: str) -> str:
     alias) and ran this attempt on the task's own models. Before the hand-in is judged, the task's
     `window_model` mark is removed, so `--after` checks the evidence against the task's own models, and the
     window is recorded as refused (`model_window_refused`) with an outbox item, so later claims change no
-    model; no attempt is counted for it. Returns the log line ('' when this session holds no lease)."""
+    model; no attempt is counted for it. WHY must read as a model refusal (`model_window.is_refusal`); any other
+    text changes nothing, and the attempt is judged as usual. Returns the log line ('' when this session holds
+    no lease)."""
+    if not model_window.is_refusal(why):
+        return f"model window: not a model refusal, nothing recorded: {' '.join(why.split())[:160]}"
     now = cfg.clock()
     state = env.read_state()
     lease = session_lease(state, cfg.session, now)

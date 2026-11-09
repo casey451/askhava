@@ -30,7 +30,7 @@ with these variables:
                       depends on, T170)
   RUNNER_MODEL        the full model ID the attempt must run on
   RUNNER_MODEL_ALIAS  haiku | sonnet | opus (the worker call takes only the alias, D-170), or the model
-                      window's alias for an attempt claimed inside the window (D-2220)
+                      window's alias for an attempt claimed inside the window (D-2225)
   RUNNER_LOG_FILE     the previous attempt's failure log (may be empty)
   RUNNER_BRANCH       the task branch to commit to (local; the runner pushes it after review)
   RUNNER_RESULT_FILE  where the command writes JSON: {"outcome": ..., "transcripts": [paths],
