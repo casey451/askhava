@@ -55,7 +55,7 @@
   "scripts/check_pr_change.py": "bff82974c36a3b5bbc57f9fdd5bf929b1935e1d0da9ee4bd2b3826e7ccb3cf8d",
   "scripts/check_rust_rules.py": "559029dff80fed3f8a701527b115660bbb19edf05e548b7d4d1caf86d57a573d",
   "scripts/check_state.py": "eb0afa5a32a4648d2a0bf24bc972e00ff6d2347c7f0be81aff384b39f9df0393",
-  "scripts/coverage_floor.py": "a18722aa9295cb1a07e87e3ec72367853cb56303255d2c9fd1da342fd498031d",
+  "scripts/coverage_floor.py": "a1c2a7fcfea10a6a873b76111e7b05cf4a8419281b182b3667a46fabb576354b",
   "scripts/gen_prompts.py": "59e38965520e0d05134d26fc394dda3283033a2dd2254a7e6e225c4e6e39fb3e",
   "scripts/pacing.py": "e3a7c4f493f78189ff12d5e01c7fcbfc90df547ee5ce2d27a58fb2ef98a7854c",
   "scripts/pii_scan.py": "d3163ddad2e35bc435e0c468b0e241146c9827a7b9eae48d52d8251558324c60",
