@@ -56,6 +56,11 @@
 //! T064: [`late_success`] queues the refund of a payment that succeeded after its job moved on and
 //! alerts Casey, once per pick; [`run_late_refund`] sends it through [`request_refund`] (FEE-021).
 //!
+//! T258 (D-1753, D-2067): [`RefundStripe`] reads each refund as Stripe reports it ([`Refund`],
+//! [`RefundState`]); only `succeeded` is refunded, a `pending` one is asked about again by
+//! [`run_refund_check`] ([`REFUND_CHECK_KIND`]), and [`refund_succeeded`], [`refund_failed`] and
+//! [`refund_canceled`] move it on, a failure after success appending one `refund-reversal`.
+//!
 //! T067: [`reconcile`] (the [`RECONCILE_KIND`] task, [`run_reconcile`]) reads Stripe's charges
 //! through [`ReconcileStripe`] and auto-matches or auto-refunds each unknown one by
 //! [`plan_charge`], records processing fees and checks the ledger against Stripe to the cent
@@ -90,7 +95,9 @@ pub use crate::handlers::{
 pub use crate::late::{
     LATE_KIND, LATE_SUCCESS_ALERT, LATE_TRIGGER, LateSuccess, late_success, run_late_refund,
 };
-pub use crate::ledger::{Appended, EntryKind, LedgerEntry, LedgerError, NewEntry, ledger_append};
+pub use crate::ledger::{
+    Appended, EntryKind, LedgerEntry, LedgerError, NewEntry, REFUND_REVERSAL_CODE, ledger_append,
+};
 pub use crate::models::{
     AUTHORIZATION_TEXT, AUTHORIZATION_VERSION, BusinessId, CardError, ChargeError, ChargeOutcome,
     ChargePlan, CustomerId, DESCRIPTOR_MAX, DisputeOpened, DisputeView, ENTITY_KEY_ACTION,
@@ -111,9 +118,12 @@ pub use crate::refund_rules::{
     EmailCheck, NoShow, RefundDecision, RefundReason, Unmet, UnreachableFacts, counted_attempts,
     decide_cancel, decide_unreachable, no_show, refund_label, talked,
 };
+pub use crate::refund_stripe::{Refund, RefundState, RefundStripe};
 pub use crate::refunds::{
-    FRAUD_WARNING_ALERT, REFUND_ACTION, REFUND_BLOCKED_ALERT, REFUND_FAILED_ALERT, RETRY_EVERY,
-    RETRY_KIND, early_fraud_warning, refund_failed, request_refund, run_refund_retry,
+    FRAUD_WARNING_ALERT, REFUND_ACTION, REFUND_BLOCKED_ALERT, REFUND_CHECK_EVERY,
+    REFUND_CHECK_KIND, REFUND_FAILED_ALERT, RETRY_EVERY, RETRY_KIND, early_fraud_warning,
+    refund_canceled, refund_failed, refund_succeeded, request_refund, run_refund_check,
+    run_refund_retry,
 };
 pub use crate::release_proof::{
     Minter, Releasable, ReleaseError, SUCCEEDED_EVENT, StripeAccount, VerifiedStripeEvent,
@@ -131,3 +141,4 @@ pub use crate::service::{
     may_confirm, record_fee_at_confirm, save_card, switch_fee_mode,
 };
 pub use crate::status::{AttemptStatus, RefundStatus};
+pub use askhava_adapters::api::StripeRefund;

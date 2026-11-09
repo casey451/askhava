@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT EXISTS (SELECT 1 FROM payments.ledger_entry WHERE idempotency_key = $1)\n             AS \"reversed!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "reversed!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "103de8580827a3f3516db5ba741aeb2e8f35337c635418b1a6ae2e0f6be5bad5"
+}
