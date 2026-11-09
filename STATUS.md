@@ -1,18 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-09T20:21:35Z by runner 023682240fb1 (actions).
+Updated 2026-11-09T20:32:16Z by runner df839c1e45ae (actions).
 
-**Idle since 20:04Z; 175 of 312 done; week 68% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T287 in progress since 20:32Z; 175 of 312 done; week 68% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 175 of 312 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 20:04Z (no task in progress)
-- **Week:** 68% used, 64.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:21Z, 0 min before this update
+- **Lane:** lane 1: T287 claimed 20:32Z, lease until 23:32Z
+- **Week:** 68% used, 58.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Last run:** 20:21Z, 10 min before this update
 - **Keeper:** last ran 20:21Z, next wake 20:41Z
 
 ## Needs attention
-- nothing
+- Strict plan check red: 1 problem(s) on tasks still to run (+4 on DONE tasks); first: T248: stored context_pct 30% but it measures 34%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -40,7 +40,6 @@ Updated 2026-11-09T20:21:35Z by runner 023682240fb1 (actions).
 - 19:01Z Plan: fourth audit — voice confirm line, emergency notices, dispute atomicity, feedback purge, route limits, alerts (D-2200–D-2209, T311–T325) (#388)
 - 22:20Z Plan: wire the real AI into the app — T298 endpoint client, T299 intake wiring (D-2065) (#367)
 - 21:52Z Plan: vendor-call connection audit, war-games overload scenario (T297) (D-2054) (#365)
-- 20:26Z Plan: 3-second AI reply budget, AI waits hold no DB connection, war-games latency (D-2038) (#362)
 
 ## Progress (requirements verified)
 
@@ -73,7 +72,7 @@ Updated 2026-11-09T20:21:35Z by runner 023682240fb1 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-09T17:46:52Z (week)): five-hour: 2.6M used, 26.5M left, resets 2026-11-09T22:46:27Z; week: 130.0M used, 64.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-11-27T16:56:23Z.
+- Pacing (session_reading 2026-11-09T20:21:18Z (week)): five-hour: 6.9M used, 22.2M left, resets 2026-11-09T22:46:27Z; week: 136.0M used, 58.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-11-29T07:21:38Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -88,7 +87,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T287 (lease until 2026-11-09T23:32:13Z)
 
 ## Last usage reading
 - {"task": "T279", "at": "2026-11-09T19:32:58Z", "cache_creation_input_tokens": 794593, "cache_read_input_tokens": 33188322, "input_tokens": 592, "output_tokens": 219866}
