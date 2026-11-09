@@ -1,0 +1,30 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO payments.charge_attempt (pick_id, try_no, press_id, status, started_at)\n           SELECT $1, coalesce(max(a.try_no), 0) + 1, $2, 'sent', $3\n           FROM payments.charge_attempt a WHERE a.pick_id = $1\n           ON CONFLICT DO NOTHING RETURNING try_no",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "try_no",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "payments.charge_attempt",
+            "name": "try_no"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "5e0d474db78b1525424c5a178d70a722bc974d10ee8065eb602ea65a1bfda482"
+}
