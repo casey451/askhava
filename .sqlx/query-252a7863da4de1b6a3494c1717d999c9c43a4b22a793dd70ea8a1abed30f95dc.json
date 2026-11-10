@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT readback_line FROM calls.pin_call WHERE call_sid = $1 AND try_no = $2",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "readback_line",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "calls.pin_call",
+            "name": "readback_line"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Int2"
+      ]
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "252a7863da4de1b6a3494c1717d999c9c43a4b22a793dd70ea8a1abed30f95dc"
+}
