@@ -64,6 +64,7 @@ def test_a_resync_still_goes_first() -> None:
     ids = ["T001", "T002", "T003"]
     assert cycle.claim_order(ids, s, ("T003", "T001")) == ["T002", "T003", "T001"]
     assert cycle.claim_order(ids, s, ("T003", "T003", "T001")) == ["T002", "T003", "T001"]  # a repeat keeps its first place
+    assert cycle.claim_order(ids, s, ("T003", "T001", "T003")) == ["T002", "T003", "T001"]  # not the last place
 
 
 def test_the_setting_is_read_from_kit_runner_json_and_fails_safe(tmp_path: Path) -> None:
@@ -83,3 +84,11 @@ def test_the_repository_list_names_only_plan_tasks() -> None:
     assert list(listed) == raw.get("claim_first", [])
     plan = {t["id"] for t in json.loads((ROOT / "kit" / "tasks.json").read_text(encoding="utf-8"))["tasks"]}
     assert set(listed) <= plan
+
+
+def test_the_entry_point_passes_the_list_into_the_config() -> None:
+    """runner/__main__.py `build` hands kit/runner.json's list to the Config; without this wiring the setting
+    would load and do nothing (a full `build` needs the GitHub environment, so the call is read from source)."""
+    import inspect
+
+    assert 'claim_first=claim_first(ROOT / "kit" / "runner.json")' in inspect.getsource(entry.build)
