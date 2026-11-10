@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-10T09:08:30Z by runner c0640d1ba090 (actions).
+Updated 2026-11-10T09:49:55Z by runner c0640d1ba090 (actions).
 
-**Idle since 09:07Z; 182 of 333 done; week 85% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T290 in progress since 09:41Z; 182 of 333 done; week 85% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 182 of 333 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 09:07Z (no task in progress)
-- **Week:** 85% used, 26.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:08Z, 0 min before this update
+- **Lane:** lane 1: T290 claimed 09:41Z, lease until 12:41Z
+- **Week:** 85% used, 24.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Last run:** 09:08Z, 41 min before this update
 - **Keeper:** last ran 09:08Z, next wake 09:28Z
 
 ## Needs attention
@@ -35,9 +35,9 @@ Updated 2026-11-10T09:08:30Z by runner c0640d1ba090 (actions).
 | T270 | picks and payments: the unreachable refund and the fraud war | done | 1 | 29 min | 13:17Z |  |
 | T282 | calls and picks: each call's start time reaches the unreacha | done | 2 | 32 min | 12:06Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Date:      2026- |
 | T282 | calls and picks: each call's start time reaches the unreacha | check_failed | 1 | 27 min | 10:49Z |  |
-| T267 | Ally harness: page states move to a shared data file; the ch | done | 1 | 34 min | 09:42Z |  |
 
 ### Plan and harness merges on main
+- 09:36Z Plan: T290 may update the two tests that pin recurring rows by data; nearest reachable bases (D-2386) (#413)
 - 03:30Z Plan: pentest assessment — Actions pinned, purpose-bound codes, Verify sends outside transactions (D-2346–D-2350, T345–T346) (#407)
 - 02:15Z Plan: seventh audit — fee facts from the job's category at the pick, tier and per-visit picks, whole-field quote gate, atomic Verify cap (D-2329–D-2335, 
 - 01:33Z Plan: the refused-connection test holds its port (T338, D-2318) (#404)
@@ -79,7 +79,7 @@ Updated 2026-11-10T09:08:30Z by runner c0640d1ba090 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-10T08:32:38Z (week)): five-hour: 4.6M used, 24.5M left, resets 2026-11-10T09:57:17Z; week: 168.0M used, 26.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-01T18:23:14Z.
+- Pacing (session_reading 2026-11-10T09:08:12Z (week)): five-hour: 4.8M used, 24.3M left, resets 2026-11-10T09:57:17Z; week: 170.0M used, 24.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-01T18:58:30Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -94,7 +94,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T290 (lease until 2026-11-10T12:41:18Z)
 
 ## Last usage reading
 - {"task": "T290", "at": "2026-11-10T09:07:56Z", "input_tokens": 56, "output_tokens": 12755, "cache_read_input_tokens": 1302748, "cache_creation_input_tokens": 123903}
