@@ -6,7 +6,8 @@
 //! channel with the wording version and time (a text row also names the phone), and refuses an
 //! unticked box. A phone gets texts only after a current member ticked the text box for that
 //! phone ([`may_text`]); no call consent exists. On
-//! activation [`request_welcome`] queues the welcome email once; [`welcome_sent`] marks it gone and
+//! activation [`request_welcome`] queues the welcome email once (its lines end with
+//! [`welcome_card_line`], the link to the portal's contact-card download, T199); [`welcome_sent`] marks it gone and
 //! [`may_get_cards`] stays false until then. [`phone_stopped`] handles an opt-out from a business
 //! phone: the account keeps its status and the owner is emailed [`stopped_email_line`].
 //! [`auto_reply_due`] says when a business text gets [`AUTO_REPLY_TEMPLATE`]. Recruiting is by
@@ -367,7 +368,26 @@ pub fn welcome_lines() -> Vec<String> {
         format!("To change how you get notices, sign in at {}b.", site()),
         "If you choose texts, text STOP from a phone to stop texts to that phone.".to_owned(),
         format!("{name} emails come only from addresses ending in {domain}, never ask for your card or a code, and every button goes to {domain}."),
+        welcome_card_line(),
     ]
+}
+
+/// The portal's contact-card download path (`portals::api::CONTACT_CARD_ROUTE`; `businesses` may
+/// not call `portals`, D-491).
+pub const CONTACT_CARD_PATH: &str = "b/contact-card.vcf";
+
+/// BIZ-046, CON-020, TD-BIZ-22, D-344, D-491: the welcome email's offer of the "<brand> homeowner
+/// calls" card, a link to the portal's card download, which always holds the current masked pool
+/// numbers. Line 3's "Save the attached contact card" wording is pinned by
+/// `tests/integration/tests/business_consent.rs` (T082's) and stays until that test moves (D-2411).
+#[must_use]
+pub fn welcome_card_line() -> String {
+    let name = brand().display_name();
+    format!(
+        "Save the numbers homeowners will call you from, so you know to pick up. Sign in to your \
+         portal, then open {}{CONTACT_CARD_PATH}. It adds a contact named \"{name} homeowner calls\".",
+        site()
+    )
 }
 
 /// BIZ-017, D-311, D-344: after `messaging` listed a phone of `business` that texted an opt-out

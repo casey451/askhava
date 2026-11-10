@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO portals.shared_inbox (member_id, business_id, shared, changed_at) VALUES ($1, $2, $3, $4) ON CONFLICT (member_id) DO UPDATE SET shared = $3, changed_at = $4",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Bool",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "4f64415d2a613589a9bed090617c87410301797e86e987be535e79a4fc8b956e"
+}
