@@ -10,11 +10,11 @@
 //! [`may_get_cards`] stays false until then. [`phone_stopped`] handles an opt-out from a business
 //! phone: the account keeps its status and the owner is emailed [`stopped_email_line`].
 //! [`auto_reply_due`] says when a business text gets [`AUTO_REPLY_TEMPLATE`]. Recruiting is by
-//! email only: [`recruiting_email`] opens with [`ADVERTISEMENT_LINE`], and [`stop_recruiting`] is
+//! email only: [`recruiting_email`] opens with [`advertisement_line`], and [`stop_recruiting`] is
 //! honored at once by [`may_recruit`]. No contact value is stored here, only opaque IDs and keyed
 //! digests (PRIV-001).
 
-use askhava_core::api::{NewTask, enqueue};
+use askhava_core::api::{NewTask, brand, enqueue};
 use askhava_messaging::api::{FROM, MailboxKind, PostalAddress, detect_opt_out, keyword};
 use askhava_ops::api::{Actor, AuditEntry, Change, audit};
 use jiff::Timestamp;
@@ -25,20 +25,38 @@ use sqlx::{Connection, PgConnection};
 
 /// The wording version stored with each consent row (CON-019); bump it when the wording changes.
 pub const CONSENT_VERSION: &str = "con019-v1";
-/// CON-019, D-344: the line every consent box carries.
-pub const NO_CALLS_LINE: &str = "Ask Hava never places recorded or automated calls to you.";
+/// CON-019, D-344, WORD-001: the line every consent box carries, naming the brand's display name
+/// (D-1932).
+#[must_use]
+pub fn no_calls_line() -> String {
+    format!(
+        "{} never places recorded or automated calls to you.",
+        brand().display_name()
+    )
+}
 /// The `core.task` kind that sends the CON-020 welcome email.
 pub const WELCOME_KIND: &str = "businesses.welcome";
 /// The `core.task` kind that emails the owner after a STOP from a business phone (BIZ-017).
 pub const PHONE_STOPPED_KIND: &str = "businesses.phone_stopped";
 /// BIZ-032: the reply template for a business text the app does not expect.
 pub const AUTO_REPLY_TEMPLATE: &str = "business_auto_reply";
-/// BIZ-048: the first line of every recruiting email.
-pub const ADVERTISEMENT_LINE: &str = "This email is an advertisement for Ask Hava.";
+/// BIZ-048, WORD-001: the first line of every recruiting email, naming the brand's display name
+/// (D-1932).
+#[must_use]
+pub fn advertisement_line() -> String {
+    format!(
+        "This email is an advertisement for {}.",
+        brand().display_name()
+    )
+}
 const BUSINESS: &str = "businesses.business";
 const MEMBER: &str = "businesses.team_member";
 const INBOX: &str = "messaging.inbox";
-const SITE: &str = "https://askhava.com/";
+
+/// The site's root on the brand's domain, `https://<domain>/` (D-1932).
+fn site() -> String {
+    format!("https://{}/", brand().domain())
+}
 
 /// A channel a consent box covers. There is no call channel (BIZ-039, D-344).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -105,15 +123,16 @@ fn db<T>(r: Result<T, sqlx::Error>) -> Result<T, ConsentError> {
 /// CON-019, D-312, D-344: the box's wording for `channels`, naming each one and saying no calls.
 #[must_use]
 pub fn consent_wording(channels: &[ConsentChannel]) -> String {
+    let name = brand().display_name();
     let mut lines = Vec::new();
     if channels.contains(&ConsentChannel::Email) {
-        lines.push("I agree to get job and account notices from Ask Hava by email at the address above, not on paper.");
+        lines.push(format!("I agree to get job and account notices from {name} by email at the address above, not on paper."));
     }
     if channels.contains(&ConsentChannel::Text) {
-        lines.push("I agree to get job-card texts from Ask Hava at the phone number above. Message frequency varies. Message and data rates may apply. Text STOP to stop or HELP for help.");
+        lines.push(format!("I agree to get job-card texts from {name} at the phone number above. Message frequency varies. Message and data rates may apply. Text STOP to stop or HELP for help."));
     }
-    lines.push(NO_CALLS_LINE);
-    lines.push("You can change this any time in your portal.");
+    lines.push(no_calls_line());
+    lines.push("You can change this any time in your portal.".to_owned());
     lines.join(" ")
 }
 
@@ -339,14 +358,15 @@ pub async fn may_get_cards(conn: &mut PgConnection, business: Uuid) -> Result<bo
 /// every channel choice, so they never say cards come only by email (BIZ-036).
 #[must_use]
 pub fn welcome_lines() -> Vec<String> {
+    let (name, domain) = (brand().display_name(), brand().domain());
     vec![
-        "Welcome to Ask Hava. Your business is active and can now get job cards.".to_owned(),
+        format!("Welcome to {name}. Your business is active and can now get job cards."),
         format!("Our emails come from {FROM}. Add it to your contacts so job cards reach your inbox."),
         "If we land in spam or junk: in Gmail, tap Not spam, add us to contacts, make a filter for our address with \"Never send it to Spam\" and move us to Primary. In Outlook, tap Not junk, then add us to Safe senders. In Yahoo, tap Not spam. In iPhone Mail, add us to VIP. In any other email app, add us to your contacts.".to_owned(),
-        "Save the attached contact card, \"Ask Hava homeowner calls\". Calls from these numbers are homeowners who chose your quote, calling on an Ask Hava masked number. Ask Hava never calls you.".to_owned(),
-        format!("To change how you get notices, sign in at {SITE}b."),
+        format!("Save the attached contact card, \"{name} homeowner calls\". Calls from these numbers are homeowners who chose your quote, calling on an {name} masked number. {name} never calls you."),
+        format!("To change how you get notices, sign in at {}b.", site()),
         "If you choose texts, text STOP from a phone to stop texts to that phone.".to_owned(),
-        "Ask Hava emails come only from addresses ending in askhava.com, never ask for your card or a code, and every button goes to askhava.com.".to_owned(),
+        format!("{name} emails come only from addresses ending in {domain}, never ask for your card or a code, and every button goes to {domain}."),
     ]
 }
 
@@ -381,7 +401,8 @@ pub async fn phone_stopped(
 #[must_use]
 pub fn stopped_email_line(last4: &str) -> String {
     format!(
-        "Ask Hava: Texts to the phone ending {last4} are off because it texted STOP. Text START from it to turn them back on."
+        "{}: Texts to the phone ending {last4} are off because it texted STOP. Text START from it to turn them back on.",
+        brand().short_name()
     )
 }
 
@@ -440,7 +461,7 @@ pub fn auto_reply_due(words: &str, expected: bool) -> bool {
 pub struct RecruitingEmail {
     /// The subject as given, checked honest.
     pub subject: String,
-    /// [`ADVERTISEMENT_LINE`], the body, the stop link and the postal address.
+    /// [`advertisement_line`], the body, the stop link and the postal address.
     pub lines: Vec<String>,
 }
 
@@ -457,20 +478,21 @@ pub fn recruiting_email(
     stop_url: &str,
 ) -> Result<RecruitingEmail, ConsentError> {
     let s = subject.trim().to_lowercase();
-    let notice = ["re:", "fwd:", "fw:", "ask hava:"]
+    let opening = format!("{}:", brand().short_name().to_lowercase());
+    let notice = ["re:", "fwd:", "fw:", opening.as_str()]
         .iter()
         .any(|p| s.starts_with(p));
     if s.is_empty() || notice || s.contains("job card") || s.contains("your account") {
         return Err(ConsentError::Subject);
     }
     PostalAddress::new(postal, kind).map_err(|_| ConsentError::Footer)?;
-    if !stop_url.starts_with(SITE) {
+    if !stop_url.starts_with(&site()) {
         return Err(ConsentError::Footer);
     }
-    let mut lines = vec![ADVERTISEMENT_LINE.to_owned()];
+    let mut lines = vec![advertisement_line()];
     lines.extend(body.iter().map(|l| (*l).to_owned()));
     lines.push(format!("To stop these emails: {stop_url}"));
-    lines.push(format!("Ask Hava LLC, {}", postal.trim()));
+    lines.push(format!("{}, {}", brand().legal_name(), postal.trim()));
     Ok(RecruitingEmail {
         subject: subject.trim().to_owned(),
         lines,

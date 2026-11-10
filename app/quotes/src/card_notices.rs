@@ -13,9 +13,9 @@
 //! provider accepted and that did not all hard-bounce (`messaging::api::card_notice_accepted`).
 
 use askhava_businesses::api::{
-    BUSINESS_STATEMENT, NoticePurpose, may_get_cards, notice_recipients,
+    NoticePurpose, business_statement, may_get_cards, notice_recipients,
 };
-use askhava_core::api::{NewTask, enqueue};
+use askhava_core::api::{NewTask, brand, enqueue};
 use askhava_messaging::api::{BUSINESS_NOTICE_KIND, JOB_CARD_TEMPLATE, card_notice_accepted};
 use jiff::Timestamp;
 use serde_json::{Value, json};
@@ -24,8 +24,12 @@ use sqlx::types::Uuid;
 
 use crate::models::{self, QuotesError};
 
-/// The signed-in job page a card email links to; the job number follows (PRIV-027, D-493).
-pub const JOB_PAGE_PREFIX: &str = "https://askhava.com/b/jobs/";
+/// The signed-in job page a card email links to, on the brand's domain; the job number follows
+/// (PRIV-027, D-493, D-1932).
+#[must_use]
+pub fn job_page_prefix() -> String {
+    format!("https://{}/b/jobs/", brand().domain())
+}
 
 /// PICK-001, CARD-020, D-1828: the quote window's length; `messaging` writes "Quote by" as the
 /// send time plus this, so a card held to 8 a.m. (QH-005) counts from 8 a.m.
@@ -56,8 +60,8 @@ pub fn card_payload(
         "business": business, "job": job, "to": to, "texts": texts,
         "values": {"trade": notice.category, "town": notice.town, "job": notice.number,
                    "quote_hours": QUOTE_HOURS},
-        "card": notice.card, "statement": BUSINESS_STATEMENT,
-        "page": format!("{JOB_PAGE_PREFIX}{}", notice.number),
+        "card": notice.card, "statement": business_statement(),
+        "page": format!("{}{}", job_page_prefix(), notice.number),
     })
 }
 

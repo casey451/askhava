@@ -11,6 +11,7 @@
 //! setting is on and the summary passed [`check_summary`], the summary with its label. Nothing
 //! here holds a phone, an address or the "minutes this quote took" field.
 
+use askhava_core::api::brand;
 use askhava_licensing::api::{CardLanguage, CardLine};
 use jiff::civil::Date;
 use sqlx::PgConnection;
@@ -237,15 +238,15 @@ impl QuoteCard {
     /// homeowner and for the business's preview.
     #[must_use]
     pub fn lines(&self, language: CardLanguage) -> Vec<CardLine> {
-        let w = match language {
-            CardLanguage::English => &EN,
-            CardLanguage::Spanish => &ES,
+        let (w, spanish) = match language {
+            CardLanguage::English => (&EN, false),
+            CardLanguage::Spanish => (&ES, true),
         };
         let plain = |text: String| CardLine { text, link: None };
         let mut out = vec![plain(self.business_name.clone())];
         out.extend(self.license_lines.iter().cloned());
-        out.push(plain(w.check_yourself.to_owned()));
-        out.push(plain(w.independent.to_owned()));
+        out.push(plain(branded(w.check_yourself, spanish)));
+        out.push(plain(branded(w.independent, spanish)));
         if self.after_hours {
             out.push(plain(w.after_hours.to_owned()));
         }
@@ -256,7 +257,11 @@ impl QuoteCard {
         }
         out.push(plain(format!("{} {}", w.own_words, self.original)));
         if let Some(Summary(text)) = &self.summary {
-            out.push(plain(format!("{} {}", w.summary_label, text)));
+            out.push(plain(format!(
+                "{} {}",
+                branded(w.summary_label, spanish),
+                text
+            )));
         }
         out
     }
@@ -308,6 +313,15 @@ pub async fn quote_card(
 }
 
 /// The `i`th word of a fixed list (the enums' order matches each list).
+/// `text` with its `{brand}` token filled from the brand file, Spanish names when `spanish`
+/// (WORD-001, WORD-014, D-1932). The card words hold only `{brand}`, so `fill` never refuses
+/// them (`src/tests/quote_card.rs`); a refusal would leave the words as written.
+fn branded(text: &str, spanish: bool) -> String {
+    brand()
+        .fill(text, spanish)
+        .unwrap_or_else(|_| text.to_owned())
+}
+
 fn pick(i: usize, set: &[&'static str]) -> &'static str {
     set.get(i).copied().unwrap_or_default()
 }
@@ -369,8 +383,8 @@ impl Words {
 }
 
 const EN: Words = Words {
-    check_yourself: "Ask Hava doesn't rank businesses; check it yourself.",
-    independent: "Independent business, not affiliated with Ask Hava.",
+    check_yourself: "{brand} doesn't rank businesses; check it yourself.",
+    independent: "Independent business, not affiliated with {brand}.",
     after_hours: "Gets emergency requests at night",
     facts: [
         "Trip fee counts toward the repair:",
@@ -420,12 +434,12 @@ const EN: Words = Words {
     ],
     free_estimate: "Free estimate: the business comes out and prices the job on site.",
     own_words: "The business's own words:",
-    summary_label: "Summary by Ask Hava's software. The business's own words above control.",
+    summary_label: "Summary by {brand}'s software. The business's own words above control.",
 };
 
 const ES: Words = Words {
-    check_yourself: "Ask Hava no califica ni ordena a los negocios; revise este negocio usted mismo.",
-    independent: "Negocio independiente, sin relación con Ask Hava.",
+    check_yourself: "{brand} no califica ni ordena a los negocios; revise este negocio usted mismo.",
+    independent: "Negocio independiente, sin relación con {brand}.",
     after_hours: "Recibe solicitudes de emergencia de noche",
     facts: [
         "El cargo por venir se descuenta de la reparación:",
@@ -475,5 +489,5 @@ const ES: Words = Words {
     ],
     free_estimate: "Cotización gratis: el negocio viene y le da el precio del trabajo en el lugar.",
     own_words: "Palabras del negocio:",
-    summary_label: "Resumen hecho por el software de Ask Hava. Las palabras del negocio arriba son las que valen.",
+    summary_label: "Resumen hecho por el software de {brand}. Las palabras del negocio arriba son las que valen.",
 };

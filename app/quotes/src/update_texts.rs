@@ -15,6 +15,7 @@
 //! The lapsed-pick text (PICK-046) has no template yet; its owner adds it here as a
 //! [`Shape::List`] entry, since it lists the other quotes.
 
+use askhava_core::api::brand;
 use askhava_messaging::api::{Language, Registry};
 
 use crate::models::QuotesError;
@@ -23,14 +24,23 @@ use crate::models::QuotesError;
 pub const SHORT: usize = 15;
 /// The most words in any sentence (WORD-029's 20-word limit, D-482).
 pub const LIMIT: usize = 20;
-/// The opening every text has (WORD-008); it is not part of a sentence's count.
-const OPENING: &str = "Ask Hava:";
 /// The placeholders an update text may fill: the request number, the counts and her page link.
 /// Anything else (an amount, a business, a date) is a quote detail (TXT-040).
 const PLAIN_VALUES: [&str; 4] = ["job", "quoted", "count", "link"];
-/// Her private quote page's address (PICK-010, `/q/{token}`); a rendered text links here, never
-/// only to the Terms or help pages.
-const PAGE_LINK: &str = "https://askhava.com/q/";
+/// Her private quote page's address on the brand's domain (PICK-010, `/q/{token}`, D-1932); a
+/// rendered text links here, never only to the Terms or help pages.
+fn page_link() -> String {
+    format!("https://{}/q/", brand().domain())
+}
+
+/// `text` after its `<short_name>:` opening, English or Spanish, from the brand file (WORD-008,
+/// D-1932); the opening is not part of a sentence's count. A text without one is returned whole.
+fn without_opening(text: &str) -> &str {
+    [brand().short_name(), brand().es().short_name()]
+        .iter()
+        .find_map(|short| text.strip_prefix(short).and_then(|r| r.strip_prefix(':')))
+        .unwrap_or(text)
+}
 
 /// How a template is held to TXT-040.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -156,7 +166,7 @@ pub enum Problem {
 /// The text's sentences, the "Ask Hava:" opening left out (WORD-008).
 #[must_use]
 pub(crate) fn sentences(text: &str) -> Vec<String> {
-    let body = text.strip_prefix(OPENING).unwrap_or(text);
+    let body = without_opening(text);
     let mut out = Vec::new();
     let mut current = String::new();
     let mut chars = body.chars().peekable();
@@ -215,10 +225,11 @@ pub fn check(text: &str, shape: Shape) -> Vec<Problem> {
     found
 }
 
-/// Whether a word of `text` is a link to her quote page with a token after [`PAGE_LINK`].
+/// Whether a word of `text` is a link to her quote page with a token after [`page_link`].
 fn links_page(text: &str) -> bool {
+    let link = page_link();
     text.split_whitespace()
-        .filter_map(|w| w.strip_prefix(PAGE_LINK))
+        .filter_map(|w| w.strip_prefix(link.as_str()))
         .any(|token| !token.is_empty() && !token.contains('/'))
 }
 
