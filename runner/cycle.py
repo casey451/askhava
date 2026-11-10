@@ -232,6 +232,9 @@ class Config:
     # kit/runner.json "claim_first" (D-2540): task ids tried before the other claimable ones, in this
     # order; ordering only (`claim_order`). Empty keeps the state order.
     claim_first: tuple[str, ...] = ()
+    # kit/runner.json "order" (D-2591): "critical_path" tries the claimable ids with the longest chain of
+    # open dependents first (`chain_lengths`); anything else keeps the state order. Ordering only.
+    order: str = "state"
 
 
 # Casey reviews code-owner PRs by day. Such a task is claimed only from 06:00 to 19:00 Arizona time
@@ -1282,7 +1285,8 @@ def _next_step(cfg: Config, env: Env, state: State, base: State, now: datetime, 
         return "gate_open" if env.push_state(opened, base) else "lost_race"
     ids = _by_day(cfg, st.eligible(state, now, _passed(cfg, state), cfg.proof_stages), now)
     ids = lanes.compatible_ids(ids, state, now, lambda tid: _task_def(cfg, state, tid), cfg.locked, cfg.proof_stages)
-    ids = claim_order(ids, state, cfg.claim_first)  # resyncs first (D-891), then `claim_first` (D-2540)
+    chains = _chains_or_none(cfg, state)
+    ids = claim_order(ids, state, cfg.claim_first, chains)  # resync (D-891), `claim_first` (D-2540), chain (D-2591)
     ids, state = plan_health_pass(cfg, state, ids, now)
     if not ids:
         if state != base and not env.push_state(state, base):
@@ -1325,15 +1329,71 @@ def _next_step(cfg: Config, env: Env, state: State, base: State, now: datetime, 
     return "fix_main" if task["id"] == st.FIX_MAIN and done not in ("lost_race", "handed_off") else done
 
 
-def claim_order(ids: list[str], state: State, first: tuple[str, ...] = ()) -> list[str]:
+def claim_order(ids: list[str], state: State, first: tuple[str, ...] = (), chains: dict[str, int] | None = None) -> list[str]:
     """The claimable ids in the order the cycle tries them. A resync finishes reviewed work first (D-891);
-    then the ids kit/runner.json lists in `claim_first`, in its order (D-2540); then the rest in state
-    order (the sort is stable). Only the order changes: a listed id that is not claimable is not in `ids`
-    and is ignored, so a listed task still waits for its dependencies, its lane, plan health and pacing."""
+    then the ids kit/runner.json lists in `claim_first`, in its order (D-2540); then, when `chains` is
+    given (kit/runner.json "order": "critical_path", D-2591), the longest chain of open dependents first;
+    then state order (the sort is stable). Only the order changes: a listed id that is not claimable is
+    not in `ids` and is ignored, so a listed task still waits for its dependencies, its lane, plan health
+    and pacing."""
     rank: dict[str, int] = {}
     for tid in first:
         rank.setdefault(tid, len(rank))
-    return sorted(ids, key=lambda tid: (not st.entry(state, tid).get("resync"), rank.get(tid, len(rank))))
+    chain = chains or {}
+    return sorted(ids, key=lambda tid: (not st.entry(state, tid).get("resync"), rank.get(tid, len(rank)),
+                                        -chain.get(tid, 1)))
+
+
+CRITICAL_PATH = "critical_path"  # kit/runner.json "order" value that turns on `chain_lengths` (D-2591)
+
+
+def _chains_or_none(cfg: Config, state: State) -> dict[str, int] | None:
+    """`chain_lengths` when kit/runner.json asks for critical-path order (D-2591), else None (state order).
+    Any error in it prints one note and gives None, so a malformed graph can never stop a cycle."""
+    if cfg.order != CRITICAL_PATH:
+        return None
+    try:
+        return chain_lengths(cfg.graph, state)
+    except Exception as exc:  # noqa: BLE001  # reason: ordering is optional; a broken graph must never stop a cycle (D-2591)
+        print(f"runner: critical-path order unavailable, using state order: {str(exc)[:200]}")
+        return None
+
+
+def chain_lengths(graph: list[dict[str, Any]], state: State) -> dict[str, int]:
+    """For every plan task, the number of tasks on its longest chain of dependents (kit/tasks.json `deps`
+    read backwards) that are not DONE or SKIPPED, counting the task itself (D-2591). A finished dependent
+    adds nothing and ends that chain. Gate tasks count like any other: an owner wait on the path still
+    takes time before the build ends. Memoised and iterative, so ~350 tasks cost one pass; a dependency
+    cycle (which `scripts/validate_tasks.py` forbids) is cut where it closes instead of looping forever."""
+    finished = (st.DONE, st.SKIPPED)
+    open_ids = {t["id"] for t in graph if st.entry(state, t["id"]).get("status") not in finished}
+    dependents: dict[str, list[str]] = {t["id"]: [] for t in graph}
+    for t in graph:
+        for dep in t.get("deps", []):
+            if dep in dependents and t["id"] in open_ids:
+                dependents[dep].append(t["id"])
+    memo: dict[str, int] = {}
+    for tid in dependents:
+        _chain_from(tid, dependents, memo)
+    return memo
+
+
+def _chain_from(root: str, dependents: dict[str, list[str]], memo: dict[str, int]) -> None:
+    """Fill `memo` for `root` and everything below it by an explicit-stack depth-first walk; a node met
+    again while still on the stack (a cycle) counts as 0 for the edge that closes it."""
+    on_stack: set[str] = set()
+    stack: list[tuple[str, bool]] = [(root, False)]
+    while stack:
+        node, expanded = stack.pop()
+        if node in memo:
+            continue
+        if expanded:
+            on_stack.discard(node)
+            memo[node] = 1 + max((memo.get(d, 0) for d in dependents[node]), default=0)  # on-stack: not in memo, 0
+            continue
+        on_stack.add(node)
+        stack.append((node, True))
+        stack.extend((d, False) for d in dependents[node] if d not in memo and d not in on_stack)
 
 
 PLAN_GAP_PROBLEMS_KEPT = 10  # problems stored per task; the rest are counted, not listed
