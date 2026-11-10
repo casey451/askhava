@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-10T01:51:19Z by runner 3bb23bcaf87b (actions).
+Updated 2026-11-10T01:51:30Z by runner 3bb23bcaf87b (actions).
 
-**Building: T284 in progress since 01:29Z; 177 of 324 done; week 77% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 01:51Z; 177 of 324 done; week 77% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 177 of 324 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T284 claimed 01:29Z, lease until 04:29Z
+- **Lane:** idle since 01:51Z (no task in progress)
 - **Week:** 77% used, 40.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 01:29Z, 21 min before this update
 - **Keeper:** last ran 01:18Z, next wake 01:38Z
@@ -17,7 +17,8 @@ Updated 2026-11-10T01:51:19Z by runner 3bb23bcaf87b (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T284 | server: every route the architecture lists is wired in the r | check_failed | 1 | 34 min | 00:32Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests / test tests::ssrf_g |
+| T284 | server: every route the architecture lists is wired in the r | MERGE_PENDING | 2 | 21 min | 01:51Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests / test tests::ssrf_g |
+| T284 | server: every route the architecture lists is wired in the r | check_failed | 1 | 34 min | 00:32Z |  |
 | T283 | Ci: a change to a document the app compiles in runs the Rust | done | 1 | 30 min | 23:27Z |  |
 | T287 | payments and picks: the fee fixed at the pick is stored by p | done | 2 | 43 min | 22:15Z | T287 built and smoke green, but prehandin check_pr_change fails: kit/tasks.json T287 owns lacks app/payments/src/models. |
 | T287 | payments and picks: the fee fixed at the pick is stored by p | QUEUED | 1 | 46 min | 21:18Z |  |
@@ -92,7 +93,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T284 (lease until 2026-11-10T04:29:21Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T284", "at": "2026-11-10T00:32:29Z", "input_tokens": 291, "cache_read_input_tokens": 11820831, "cache_creation_input_tokens": 482032, "output_tokens": 95281}
+- {"task": "T284", "at": "2026-11-10T01:51:19Z", "cache_read_input_tokens": 2650192, "output_tokens": 29487, "cache_creation_input_tokens": 160766, "input_tokens": 133}

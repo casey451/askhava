@@ -1594,3 +1594,4 @@
 - 2026-11-10T01:29:23Z runner 05c4ed68bf3b (actions): {"T284": "QUEUED -> IN_PROGRESS"}; T284 estimated 2.2M tokens (calibrated); five-hour window has 26.5M left, week 40.0M (session_reading 2026-11-10T01:17:52Z (week)); claimed
 - 2026-11-10T01:29:34Z runner 05c4ed68bf3b (actions): {}
 - 2026-11-10T01:51:19Z runner 3bb23bcaf87b (actions): {}
+- 2026-11-10T01:51:30Z runner 3bb23bcaf87b (actions): {"T284": "IN_PROGRESS -> MERGE_PENDING"}
