@@ -25316,11 +25316,11 @@
      "result": "check_failed"
     }
    ],
-   "reviewed_sha": "3bb23bcaf87b472923d1b649840d54f95cf4ef5f",
+   "reviewed_sha": "37b32324cf454ad82e71e7058eb6b4d81a88f0a6",
    "review_lease": {
     "task": "T284",
-    "session": "actions-42732320353",
-    "expires": "2026-11-10T04:29:21Z"
+    "session": "actions-42741533376",
+    "expires": "2026-11-10T05:27:54Z"
    },
    "branch": "claude/task/T284-route-wiring-check",
    "auto_merge": {
@@ -25331,7 +25331,8 @@
    "last_failure": "Ci: failure; Checks: failure\nChecks failed at step: Rust build (the one boundary build) and tests\ntest tests::ssrf_guard::redirect_off_the_allowed_hosts_is_not_followed ... ok\ntest tests::storage::message_body_delete_redacts_at_the_stand_in ... ok\ntest tests::ssrf_guard::slow_redirect_chains_time_out_overall ... ok\nfailures:\n---- tests::adapter_config::unreachable_vendor_is_not_sent stdout ----\nthread 'tests::adapter_config::unreachable_vendor_is_not_sent' (27140) panicked at app/adapters/src/tests/adapter_config.rs:444:5:\nassertion `left == right` failed\n  left: Err(OutcomeUnknown)\n right: Err(NotSent)\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\n    tests::adapter_config::unreachable_vendor_is_not_sent\ntest result: FAILED. 40 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.37s\nerror: test failed, to rerun pass `-p askhava-adapters --lib`\n##[error]Process completed with exit code 101.\nCi failed at step: All three jobs passed\nChecks: failure, Coverage: success, E2e: success\n##[error]Process completed with exit code 1.",
    "runner_closed_prs": [
     401
-   ]
+   ],
+   "head_check_since": null
   },
   {
    "id": "T285",
@@ -27912,7 +27913,7 @@
    }
   }
  },
- "updated_at": "2026-11-10T02:28:05Z",
+ "updated_at": "2026-11-10T03:02:34Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -28010,7 +28011,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "9225a9d319f882503ea73745fd5529e046e80788",
+ "runner_sha": "37b32324cf454ad82e71e7058eb6b4d81a88f0a6",
  "starter": "actions",
  "smoke_runs": [
   {
