@@ -11,8 +11,8 @@ use std::collections::BTreeMap;
 
 use askhava_businesses::api::{
     AccountStatus, BusinessesError, Capability, CapabilityAnswers, JobTypeChoice, LargestJob,
-    TradeOffer, capabilities, checklist_offer, create, is_recurring, job_types, pre_ticked,
-    save_capability,
+    OfferRow, TradeOffer, capabilities, checklist_offer, create, is_recurring, job_types,
+    pre_ticked, save_capability,
 };
 use askhava_catalog::api::{Catalog, parse};
 use askhava_licensing::api::{ClassMap, Holder, Job, LicenseKind};
@@ -362,25 +362,89 @@ fn td_biz_29_missing_answers_are_listed() {
     let html = capability_page(&p).expect("renders");
     assert!(html.contains("<title>Error: ") && html.contains(r#"id="error-summary""#));
     assert!(html.contains(r#"id="largest-error""#) && html.contains(r#"value="lots""#));
+    assert!(
+        html.contains(
+            r#"name="largest_amount" inputmode="decimal" aria-describedby="largest-error""#
+        )
+    );
+    assert!(html.contains(r#"<fieldset id="job-types" aria-describedby="job-types-hint">"#));
 }
 
-/// TD-BIZ-29 (BIZ-049): the quote form warns before a quote above the largest job is sent, and
-/// lets it through once confirmed.
+/// TD-BIZ-29 (BIZ-030, D-2511): a check screen reached with answers missing offers no "Save and
+/// continue"; it shows the one-page form with the missing answers listed.
+#[test]
+fn td_biz_29_incomplete_check_screen_offers_no_save() {
+    let offer = r11_offer();
+    let v = CapabilityValues::from_pairs(&[("largest".into(), "none".into())]);
+    let html = page(CapabilityStep::Check, &offer, &v);
+    assert!(!html.contains("Save and continue"));
+    assert!(!html.contains(r#"id="capability-summary""#));
+    assert!(html.contains("<title>Error: ") && html.contains(r#"id="error-summary""#));
+    assert!(html.contains(r#"id="towns-error""#) && html.contains(r#"id="recurring-error""#));
+    assert!(!html.contains(r#"id="largest-error""#));
+    assert!(html.contains(r#"<fieldset id="after_hours""#));
+    assert!(html.contains("Check your answers</button>"));
+}
+
+/// TD-BIZ-29 (BIZ-049): "(no license needed)" is on a trade's legend only when no row needs a
+/// license; in a mixed trade it is on each no-license row, whatever the row order.
+#[test]
+fn td_biz_29_no_license_label_fits_mixed_trades() {
+    let row = |job: &str, licensed: bool| OfferRow {
+        choice: pick("electrical", job),
+        licensed,
+        recurring: false,
+    };
+    let offer = vec![
+        TradeOffer {
+            category: "electrical".to_owned(),
+            name: "Electrical".to_owned(),
+            rows: vec![row("fake extra", false), row("panel upgrade", true)],
+        },
+        TradeOffer {
+            category: "pool_cleaning".to_owned(),
+            name: "Pool cleaning".to_owned(),
+            rows: vec![OfferRow {
+                choice: pick("pool_cleaning", "weekly pool service"),
+                licensed: false,
+                recurring: true,
+            }],
+        },
+    ];
+    let html = page(
+        CapabilityStep::JobTypes,
+        &offer,
+        &CapabilityValues::fresh(&offer),
+    );
+    assert!(html.contains("<legend>Electrical</legend>"));
+    assert!(html.contains("fake extra (no license needed)</label>"));
+    assert!(html.contains("panel upgrade</label>"));
+    assert!(html.contains("<legend>Pool cleaning (no license needed)</legend>"));
+    assert!(html.contains("weekly pool service</label>"));
+}
+
+/// TD-BIZ-29 (BIZ-049, D-2510): the quote form warns before a quote above the largest job is
+/// sent, lets it through once that same amount is confirmed, and warns again when the price was
+/// raised after the warning.
 #[test]
 fn td_biz_29_quote_form_warns_above_the_largest_job() {
     let limit = LargestJob::Cents(150_000);
-    let warning = largest_job_warning(&Price::Firm(200_000), limit, false).expect("warns");
-    assert!(warning.contains("$1,500"));
+    let warning = largest_job_warning(&Price::Firm(200_000), limit, None).expect("warns");
+    assert!(warning.text.contains("$1,500"));
+    assert_eq!(warning.cents, 200_000);
     assert_eq!(
-        largest_job_warning(&Price::Firm(200_000), limit, true),
+        largest_job_warning(&Price::Firm(200_000), limit, Some(200_000)),
+        None
+    );
+    let raised = largest_job_warning(&Price::Firm(900_000), limit, Some(200_000))
+        .expect("a raised price is warned again");
+    assert_eq!(raised.cents, 900_000);
+    assert_eq!(
+        largest_job_warning(&Price::Firm(150_000), limit, None),
         None
     );
     assert_eq!(
-        largest_job_warning(&Price::Firm(150_000), limit, false),
-        None
-    );
-    assert_eq!(
-        largest_job_warning(&Price::Firm(900_000), LargestJob::NoLimit, false),
+        largest_job_warning(&Price::Firm(900_000), LargestJob::NoLimit, None),
         None
     );
     let range = Price::Range {
@@ -388,7 +452,7 @@ fn td_biz_29_quote_form_warns_above_the_largest_job() {
         high: 160_000,
         on_site: false,
     };
-    assert!(largest_job_warning(&range, limit, false).is_some());
+    assert!(largest_job_warning(&range, limit, None).is_some());
     let facts = QuoteFormFacts {
         job_number: "1001".to_owned(),
         sent: 3,
@@ -401,7 +465,7 @@ fn td_biz_29_quote_form_warns_above_the_largest_job() {
     };
     let html = quote_form_page_warned(&facts, "fake-csrf", Some(&warning)).expect("renders");
     assert!(html.contains(r#"id="largest-warning""#));
-    assert!(html.contains(r#"name="over_largest" value="yes""#));
+    assert!(html.contains(r#"name="over_largest" value="200000""#));
 }
 
 /// The e2e axe scan's pages: written only when `CAPABILITY_HTML_DIR` is set.

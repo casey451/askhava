@@ -568,6 +568,7 @@ pub struct CapabilityPage<'a> {
 #[template(path = "capability_setup.html")]
 struct CapabilityView<'a> {
     page: &'a CapabilityPage<'a>,
+    problems: Vec<CapabilityProblem>,
     title: &'static str,
     show: [bool; 5],
     carried: Vec<(&'static str, String)>,
@@ -592,9 +593,15 @@ impl CapabilityView<'_> {
         self.page.values.towns.contains(code)
     }
 
+    /// Whether no row of `trade` needs a license, so its legend says "(no license needed)"; in a
+    /// mixed trade each no-license row says it instead.
+    fn no_license(trade: &TradeOffer) -> bool {
+        trade.rows.iter().all(|r| !r.licensed)
+    }
+
     /// The problem message for `field`, if any.
     fn error_for(&self, field: &str) -> Option<&'static str> {
-        let found = self.page.problems.iter().find(|p| p.field() == field);
+        let found = self.problems.iter().find(|p| p.field() == field);
         found.map(|p| p.message())
     }
 }
@@ -603,13 +610,23 @@ impl CapabilityView<'_> {
 /// over `templates/capability_setup.html`: the checklist pre-ticked from the license, the
 /// no-license extras, towns, largest job, recurring work and after-hours, all on one page or one
 /// per guided screen; the check screen reads the answers back. The form posts to
-/// [`CAPABILITY_ROUTE`] with `step` set to the next screen.
+/// [`CAPABILITY_ROUTE`] with `step` set to the next screen. D-2511: a check screen whose answers
+/// are incomplete offers no "Save and continue"; it shows the one-page form with the missing
+/// answers as problems.
 ///
 /// # Errors
 /// The template's render error.
 pub fn capability_page(page: &CapabilityPage<'_>) -> Result<String, askama::Error> {
     use CapabilityStep as S;
-    let step = page.step;
+    let answers = page.values.answers();
+    let mut problems = page.problems.to_vec();
+    let step = match (page.step, &answers) {
+        (S::Check, Err(found)) => {
+            problems.extend(found.iter().filter(|f| !page.problems.contains(f)));
+            S::All
+        }
+        (s, _) => s,
+    };
     let all = step == S::All;
     let show = [
         S::JobTypes,
@@ -619,7 +636,7 @@ pub fn capability_page(page: &CapabilityPage<'_>) -> Result<String, askama::Erro
         S::AfterHours,
     ]
     .map(|s| all || s == step);
-    let summary = match (step, page.values.answers()) {
+    let summary = match (step, answers) {
         (S::Check, Ok(a)) => capability_summary(page.offer, page.towns, &a),
         _ => Vec::new(),
     };
@@ -636,6 +653,7 @@ pub fn capability_page(page: &CapabilityPage<'_>) -> Result<String, askama::Erro
     let next = step.next().unwrap_or(S::Check).slug().to_owned();
     CapabilityView {
         page,
+        problems,
         title,
         show,
         carried,

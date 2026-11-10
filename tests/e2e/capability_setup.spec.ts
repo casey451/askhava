@@ -3,8 +3,10 @@
 // D-1709).
 //
 // The sign-up routes are not served yet (D-1709), so no browser can reach the step through a
-// session. What a request checks now is the edge: a signed-out GET or POST of the step gets no
-// checklist and stores nothing. The pages themselves are the templates as rendered: the
+// session. What a request checks now is only the edge: the step is not served, so a signed-out
+// GET or POST of it is refused (4xx) and gets no checklist. That nothing is stored is not checked
+// here (no route exists to store through); `save_capability`'s rules are checked in the
+// integration test. The pages themselves are the templates as rendered: the
 // integration test `td_biz_29_write_pages_for_axe` (tests/integration/tests/capability_setup.rs)
 // writes the one-page form and every guided screen for an R-11 business into a temporary folder,
 // and each is loaded here and scanned with axe at 320, 768 and 1280 px; each guided screen asks
@@ -33,7 +35,7 @@ function renderScreens(): string {
   return dir;
 }
 
-test("TD-BIZ-29: a signed-out browser gets no capability checklist and stores nothing", async ({ request }) => {
+test("TD-BIZ-29 (edge): a signed-out GET or POST of the unserved capability step is refused with no checklist", async ({ request }) => {
   const get = await request.get("/b/signup/capability?step=all", { maxRedirects: 0 });
   expect(get.status()).toBeGreaterThanOrEqual(400);
   expect(await get.text()).not.toContain("Which jobs do you want?");
@@ -41,6 +43,7 @@ test("TD-BIZ-29: a signed-out browser gets no capability checklist and stores no
     form: { job_type: "electrical:panel upgrade", largest: "none" },
   });
   expect(post.status()).toBeGreaterThanOrEqual(400);
+  expect(await post.text()).not.toContain("Which jobs do you want?");
 });
 
 test("TD-BIZ-29 (axe part): the one-page form and every guided screen pass axe at 320, 768 and 1280 px", async ({ page }) => {

@@ -24,7 +24,8 @@ use crate::models::{self, BusinessesError, db};
 use crate::rules::JobTypeChoice;
 use crate::service::{Ticks, set_job_types, set_ticks, set_towns};
 
-/// The largest typed amount accepted, in cents ($10,000,000); a larger one reads "no limit".
+/// The largest typed amount accepted, in cents ($10,000,000); a larger one does not parse
+/// ([`LargestJob::parse`] gives `None`, the form's error), so "no limit" must be chosen.
 pub const LARGEST_JOB_MAX_CENTS: u64 = 1_000_000_000;
 
 /// BIZ-049: the largest job a business will quote.
