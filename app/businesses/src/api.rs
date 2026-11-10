@@ -44,11 +44,11 @@ pub use crate::complaints::{
     reply, run_box_closed,
 };
 pub use crate::consent::{
-    AUTO_REPLY_TEMPLATE, CONSENT_VERSION, ConsentBox, ConsentChannel, ConsentError,
-    PHONE_STOPPED_KIND, RecruitingEmail, WELCOME_KIND, advertisement_line, auto_reply_due,
-    consent_box, consent_wording, may_get_cards, may_recruit, may_text, no_calls_line,
-    phone_stopped, record_consent, recruiting_email, request_welcome, stop_recruiting,
-    stopped_email_line, welcome_lines, welcome_sent,
+    AUTO_REPLY_TEMPLATE, CONSENT_VERSION, CONTACT_CARD_PATH, ConsentBox, ConsentChannel,
+    ConsentError, PHONE_STOPPED_KIND, RecruitingEmail, WELCOME_KIND, advertisement_line,
+    auto_reply_due, consent_box, consent_wording, may_get_cards, may_recruit, may_text,
+    no_calls_line, phone_stopped, record_consent, recruiting_email, request_welcome,
+    stop_recruiting, stopped_email_line, welcome_card_line, welcome_lines, welcome_sent,
 };
 pub use crate::deliverability_check::{
     EmailCheck, InboxAnswer, PICK_ALERT_YES_LIFE, SAMPLE_CARD_KIND, SAMPLE_PICK_KIND, email_check,

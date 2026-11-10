@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT shared FROM portals.shared_inbox WHERE member_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "shared",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "portals.shared_inbox",
+            "name": "shared"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "dde63b67c8942c5ffca9f97deed2aacbf56d77e7a21d4ab9e7c60ab1377e08aa"
+}

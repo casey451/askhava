@@ -1,7 +1,9 @@
 {% extends "base.html" %}
 {#- The business portal home (T085; BIZ-025 "Your numbers", CARD-022 open-cards email times).
     The numbers come from the composition; the times are the signed-in person's own. No homeowner
-    detail. More than two times shows the A11Y-030 error summary, focused. -#}
+    detail. More than two times shows the A11Y-030 error summary, focused. T199: the homeowner
+    calls card with the current masked pool numbers (BIZ-046) and the "This inbox is shared"
+    switch (SEC-027), which needs a fresh code and, to turn on, a phone that gets texts. -#}
 {% block title %}{% if too_many %}Error: {% endif %}Your business account{% endblock %}
 {% block main %}
 <h1>Your business account</h1>
@@ -26,4 +28,20 @@
 {% endfor %}</fieldset>
 <button type="submit">Save times</button>
 </form>
-{% endblock %}
+<h2 id="calls-card">Calls from homeowners</h2>
+<p>{{ card_note }}</p>
+<ul id="pool-numbers">
+{% for n in card %}<li>{{ n }}</li>
+{% endfor %}</ul>
+<p><a href="{{ crate::business_portal::CONTACT_CARD_ROUTE }}" download>Save these numbers to your phone (contact card: {{ card_name }})</a></p>
+<h2 id="shared-inbox">This inbox is shared</h2>
+{% if inbox.shared %}<p id="shared-state">Your job email inbox is marked shared. Before you confirm a job, we text a code to your phone, so only you can confirm it. You can still quote or hold jobs from the emails.</p>
+{% else %}<p id="shared-state">Your job email inbox isn't marked shared. If office staff or anyone else can read it, mark it shared. Then we'll text a code to your phone before you confirm a job.</p>
+{% endif %}{% if inbox.text_phone || inbox.shared %}<form method="post" action="{{ crate::business_portal::SHARED_INBOX_ROUTE }}" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<input type="hidden" name="shared" value="{% if inbox.shared %}no{% else %}yes{% endif %}">
+<p id="shared-hint">We'll ask for a new code before we change this.</p>
+<button type="submit" aria-describedby="shared-hint">{% if inbox.shared %}Mark my inbox not shared{% else %}Mark my inbox shared{% endif %}</button>
+</form>
+{% else %}<p id="shared-needs-phone">To mark it shared, first add a mobile number that gets texts. A code sent by email would land in the shared inbox, where others could see it.</p>
+{% endif %}{% endblock %}
