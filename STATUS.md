@@ -1,18 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-10T18:32:29Z by runner e0b5aa9b3e05 (actions).
+Updated 2026-11-10T18:32:41Z by runner 20f8e470c6ed (actions).
 
 **Building: T294 in progress since 17:49Z; 187 of 335 done; week 92% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 187 of 335 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T294 claimed 17:49Z, lease until 20:49Z
-- **Week:** 92% used, 10.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 1: T294 claimed 17:49Z, lease until 20:49Z; lane 2: T311 claimed 18:32Z, lease until 21:32Z
+- **Week:** 92% used, 6.8M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 17:50Z, 42 min before this update
 - **Keeper:** last ran 17:22Z, next wake 17:42Z
 
 ## Needs attention
-- Strict plan check red: 2 problem(s) on tasks still to run (+20 on DONE tasks); first: T294: stored context_pct 27% but it measures 31%; regenerate
+- Strict plan check red: 1 problem(s) on tasks still to run (+18 on DONE tasks); first: T162: stored context_pct 16% but it measures 20%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -83,7 +83,7 @@ Updated 2026-11-10T18:32:29Z by runner e0b5aa9b3e05 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-10T17:21:58Z (week)): five-hour: 6.3M used, 22.8M left, resets 2026-11-10T20:58:09Z; week: 184.0M used, 10.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-02T00:20:51Z.
+- Pacing (session_reading 2026-11-10T17:21:58Z (week)): five-hour: 9.5M used, 19.6M left, resets 2026-11-10T20:58:09Z; week: 187.2M used, 6.8M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-01T04:59:59Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -99,6 +99,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T294 (lease until 2026-11-10T20:49:55Z)
+- lane 2: T311 (lease until 2026-11-10T21:32:35Z)
 
 ## Last usage reading
 - {"task": "T231", "at": "2026-11-10T17:08:51Z", "output_tokens": 133064, "input_tokens": 366, "cache_creation_input_tokens": 494041, "cache_read_input_tokens": 25379485}
