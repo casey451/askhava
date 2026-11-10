@@ -159,7 +159,7 @@
 
 ## Second pass, November 10, 2026 (D-2506)
 
-**Source:** an outside model plan Casey shared ("Sonnet junior / Opus senior reviewer", 57 Sonnet, 89 Opus, 2 Haiku), read as data. Every candidate it moved to Sonnet beyond the 15 above was judged against the first rubric, the validator's rule that money, privacy, security and recovery application code runs on Opus (`BUILD_BRIEF.md:498`, `scripts/validate_tasks.py:346`), and Casey's rule of November 10 that Fable is only for dire cases (no Fable worker or reviewer anywhere here). Result over the 146 queued tasks: **27 Sonnet, 1 Haiku, 118 Opus**; every reviewer stays Opus. T294 is in flight and keeps its model.
+**Source:** an outside model plan Casey shared ("Sonnet junior / Opus senior reviewer", 57 Sonnet, 89 Opus, 2 Haiku), read as data. Every candidate it moved to Sonnet beyond the 15 above was judged against the first rubric, the validator's rule that money, privacy, security and recovery application code runs on Opus (`BUILD_BRIEF.md:498`, `scripts/validate_tasks.py:346`), and Casey's rule of November 10 that Fable is only for dire cases (no Fable worker or reviewer anywhere here). Result over the 146 queued tasks, after the PR #427 review: **27 Sonnet, 119 Opus, no Haiku**; every reviewer stays Opus. T294 is in flight and keeps its model.
 
 **Moved now:**
 
@@ -176,9 +176,8 @@
 | T141 | Opus | Sonnet | the handover pack, compiled from existing documents |
 | T161 | Opus | Sonnet | wording and copy scans with planted failing examples |
 | T222 | Opus | Sonnet | J1/J2 full-variant journey tests only; the reviewer adds omitted negative paths |
-| T229 | Opus | Sonnet | plain-language rewrite of approved legal drafts, not new terms; the reviewer diffs every clause |
 | T338 | Opus | Sonnet | a test fixture that holds its port (`app/adapters/src/tests/`), no policy |
-| T159 | Sonnet | Haiku | a pure pattern scan (no phone number but 911; no safety-number step), its goal now naming planted fail cases |
+| T159 | Sonnet | Sonnet | stays on Sonnet (no Haiku for code, D-2463); its goal now names planted fail cases: another number, 211, 988, a Spanish template and a safety-number checklist line (PR #427 review) |
 
 **Kept on Opus although the outside plan proposed Sonnet or Haiku:**
 
@@ -197,6 +196,7 @@
 | T300, T302, T305, T306, T309 | route wiring with privacy and security application code (the validator's Opus rule), high effort; T348's doors come first in any case |
 | T106, T107, T158, T210, T200, T308, T329, T202 | money, privacy or security application code (the validator's Opus rule) |
 | T111, T112 | drafting the binding terms and privacy policy creates policy |
+| T229 | rewriting the legal drafts in plain language needs legal-meaning judgement (PR #427 review) |
 | T120 | the vault sentinel, high effort, privacy core |
 | T138 | harness: a workflow scanning the test site |
 | T203 | its scan carries judgement (no pest advertising, what the fee is called), so Sonnet, not Haiku |

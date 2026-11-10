@@ -14396,7 +14396,7 @@
     "T113",
     "T115"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -19271,7 +19271,7 @@
    "id": "T159",
    "slug": "safety-contacts-verify",
    "title": "launch checklist: confirm no template or page names a phone number other than 911 and that the Gate C list has no safety-number step (D-436)",
-   "goal": "A docs test confirms that no template or page names a phone number other than 911 and that the Gate C checklist has no safety-number step, with planted fail cases (a template holding another phone number, and a checklist line naming a safety number) that the test must reject (D-2506), recorded in `docs/launch/no_safety_numbers_check.md` (D-411, D-436).",
+   "goal": "A docs test confirms that no template or page names a phone number other than 911 and that the Gate C checklist has no safety-number step, with planted fail cases that the test must reject: a template holding another phone number, the short numbers 211 and 988, a Spanish template naming another number, and a checklist line naming a safety number (D-2506), recorded in `docs/launch/no_safety_numbers_check.md` (D-411, D-436).",
    "type": "build",
    "phase": 2,
    "stage": "6",
@@ -19279,7 +19279,7 @@
    "deps": [
     "T140"
    ],
-   "model": "claude-haiku-5-5",
+   "model": "claude-sonnet-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
