@@ -7,9 +7,11 @@
 //! (no database is reached). Each row is probed with an extension method no route takes, sent as
 //! a same-origin request: a matched path answers 405 with an `Allow` header naming the methods it
 //! takes, the fallback answers 404, so a row reaches its route only when the answer is 405 and
-//! `Allow` names the row's method. A `yes` row must reach its route and a task row must not, so a
-//! route never merged into `build_router` fails here naming its row, and the task that wires a
-//! route flips its own row. A malformed row, a duplicate row or an unknown task ID fails with the
+//! `Allow` names the row's method. Route layers run before that 405, so a task row counts as
+//! reached on any other answer than the fallback 404 or a 405 whose `Allow` lacks its method (a
+//! wired route whose layer answers 4xx still fails its row). A `yes` row must reach its route and
+//! a task row must not, so a route never merged into `build_router` fails here naming its row, and
+//! the task that wires a route flips its own row. A malformed row, a duplicate row or an unknown task ID fails with the
 //! row quoted. Fake values only.
 
 use std::collections::HashSet;
@@ -93,19 +95,18 @@ fn task_shaped(cell: &str) -> bool {
     cell.len() >= 4 && cell.starts_with('T') && cell[1..].chars().all(|c| c.is_ascii_digit())
 }
 
-/// One table line checked against the row rules; `None` for the header and separator lines.
-fn parse_line(line: &str, tasks: &HashSet<String>) -> Option<Result<Row, String>> {
-    let inner = line.trim().strip_prefix('|')?.strip_suffix('|');
-    let bad = |why: &str| Some(Err(format!("{why}: {line:?}")));
-    let Some(inner) = inner else {
-        return bad("malformed row (no closing |)");
+/// One body line of the table checked against the row rules (the header and separator are
+/// skipped by `parse_table`).
+fn parse_line(line: &str, tasks: &HashSet<String>) -> Result<Row, String> {
+    let bad = |why: &str| Err(format!("{why}: {line:?}"));
+    let Some(inner) = line
+        .trim()
+        .strip_prefix('|')
+        .and_then(|l| l.strip_suffix('|'))
+    else {
+        return bad("malformed row (not opened and closed by |)");
     };
     let cells: Vec<&str> = inner.split('|').map(str::trim).collect();
-    if cells.first() == Some(&"Method")
-        || cells.iter().all(|c| c.chars().all(|ch| "-:".contains(ch)))
-    {
-        return None;
-    }
     let [method, path, module, wired] = cells[..] else {
         return bad("malformed row (not 4 cells)");
     };
@@ -123,27 +124,47 @@ fn parse_line(line: &str, tasks: &HashSet<String>) -> Option<Result<Row, String>
         return bad("malformed row (method, path or module)");
     }
     let method = Method::from_bytes(method.as_bytes()).expect("a listed method");
-    let row = Row {
+    Ok(Row {
         line: line.to_owned(),
         method,
         path: path.to_owned(),
         wired,
-    };
-    Some(Ok(row))
+    })
+}
+
+/// Whether `line` is the table's separator: `|`-bounded cells, each non-empty `-` and `:` only.
+fn separator(line: &str) -> bool {
+    let inner = line
+        .trim()
+        .strip_prefix('|')
+        .and_then(|l| l.strip_suffix('|'));
+    inner.is_some_and(|inner| {
+        inner
+            .split('|')
+            .map(str::trim)
+            .all(|c| !c.is_empty() && c.chars().all(|ch| "-:".contains(ch)))
+    })
 }
 
 /// Every row of the table, or every problem with the row quoted (a duplicate method and path too).
+/// The table runs from the first line opening with `|` to the end of the section: its first line
+/// is the header, then one separator; every later line, blank or not, is a row.
 fn parse_table(table: &str, tasks: &HashSet<String>) -> Result<Vec<Row>, Vec<String>> {
     let (mut rows, mut problems) = (Vec::new(), Vec::new());
     let mut seen = HashSet::new();
-    for line in table.lines().filter(|l| l.trim_start().starts_with('|')) {
+    let start = match table.find("\n|") {
+        _ if table.starts_with('|') => 0,
+        found => found.map_or(table.len(), |at| at + 1),
+    };
+    let mut lines = table[start..].trim_end().lines().skip(1).peekable();
+    lines.next_if(|l| separator(l));
+    for line in lines {
         match parse_line(line, tasks) {
-            None => {}
-            Some(Err(problem)) => problems.push(problem),
-            Some(Ok(row)) if !seen.insert((row.method.clone(), row.path.clone())) => {
+            Err(problem) => problems.push(problem),
+            Ok(row) if !seen.insert((row.method.clone(), row.path.clone())) => {
                 problems.push(format!("duplicate row: {:?}", row.line));
             }
-            Some(Ok(row)) => rows.push(row),
+            Ok(row) => rows.push(row),
         }
     }
     if problems.is_empty() {
@@ -228,9 +249,20 @@ fn concrete(path: &str) -> String {
         .join("/")
 }
 
-/// Whether `method` on `path` reaches a route: a same-origin `PROBE` request answered 405 whose
-/// `Allow` names `method`. The fallback answers 404, so an unmerged route never passes.
-async fn reaches(app: &Router, method: &Method, path: &str) -> bool {
+/// What a same-origin `PROBE` request on `path` says about `method` there.
+#[derive(Debug, PartialEq, Eq)]
+enum Probe {
+    /// 405 with `Allow` naming `method`: the route is served.
+    Served,
+    /// The fallback 404, or a 405 whose `Allow` lacks `method`: not served for `method`.
+    Absent,
+    /// Any other answer, such as a route layer's 4xx: the path is matched, the method unproven.
+    Other,
+}
+
+/// Probes `method` on `path` with a same-origin `PROBE` request. Route layers run before the 405,
+/// so a layer that answers first shows as `Other`; the fallback answers 404.
+async fn probe(app: &Router, method: &Method, path: &str) -> Probe {
     let request = Request::builder()
         .method(Method::from_bytes(b"PROBE").expect("an extension method"))
         .uri(concrete(path))
@@ -245,8 +277,12 @@ async fn reaches(app: &Router, method: &Method, path: &str) -> bool {
         .get(header::ALLOW)
         .and_then(|v| v.to_str().ok())
         .unwrap_or_default();
-    response.status() == StatusCode::METHOD_NOT_ALLOWED
-        && allow.split(',').any(|m| m.trim() == method.as_str())
+    let named = allow.split(',').any(|m| m.trim() == method.as_str());
+    match response.status() {
+        StatusCode::METHOD_NOT_ALLOWED if named => Probe::Served,
+        StatusCode::METHOD_NOT_ALLOWED | StatusCode::NOT_FOUND => Probe::Absent,
+        _ => Probe::Other,
+    }
 }
 
 /// TD-SEC-41: section 13 parses (no malformed or duplicate row, no unknown task ID), every `yes`
@@ -263,10 +299,12 @@ async fn td_sec_41_yes_rows_are_served_and_task_rows_are_not() {
     let app = router();
     let mut problems = Vec::new();
     for row in &rows {
-        let reached = reaches(&app, &row.method, &row.path).await;
-        match (&row.wired, reached) {
-            (Wired::Yes, false) => problems.push(format!("marked yes, not served: {:?}", row.line)),
-            (Wired::Task(id), true) => problems.push(format!(
+        let found = probe(&app, &row.method, &row.path).await;
+        match (&row.wired, found) {
+            (Wired::Yes, Probe::Absent | Probe::Other) => {
+                problems.push(format!("marked yes, not served: {:?}", row.line));
+            }
+            (Wired::Task(id), Probe::Served | Probe::Other) => problems.push(format!(
                 "served, still names {id} (mark it yes): {:?}",
                 row.line
             )),
@@ -285,12 +323,22 @@ async fn td_sec_41_yes_rows_are_served_and_task_rows_are_not() {
 #[tokio::test]
 async fn td_sec_41_the_probe_tells_a_route_from_the_fallback() {
     let app = router();
-    assert!(reaches(&app, &Method::GET, "/q/{token}").await);
-    assert!(!reaches(&app, &Method::GET, "/no-such-route").await);
-    assert!(!reaches(&app, &Method::GET, "/webhooks/stripe").await);
+    assert_eq!(probe(&app, &Method::GET, "/q/{token}").await, Probe::Served);
+    assert_eq!(
+        probe(&app, &Method::GET, "/no-such-route").await,
+        Probe::Absent
+    );
+    assert_eq!(
+        probe(&app, &Method::GET, "/webhooks/stripe").await,
+        Probe::Absent
+    );
 }
 
-/// TD-SEC-41: a malformed row, a duplicate row and an unknown task ID each fail with the row quoted.
+/// The header and separator a test table opens with.
+const HEAD: &str = "| Method | Path | Module | Wired |\n|---|---|---|---|\n";
+
+/// TD-SEC-41: a malformed row (an empty-cell row, a second header, a line not opened by `|`, a
+/// blank line inside the table), a duplicate row and an unknown task ID fail with the row quoted.
 #[test]
 fn td_sec_41_a_bad_row_fails_with_the_row_quoted() {
     let tasks: HashSet<String> = ["T261".to_owned()].into_iter().collect();
@@ -302,18 +350,24 @@ fn td_sec_41_a_bad_row_fails_with_the_row_quoted() {
         "| GET | /q/{token} | portals | maybe |",
         "| GET | /b/picks/{pick}/confirm | portals | T9999 |",
         "| GET | /q/{token} | portals | yes",
+        "| | | | |",
+        "| Method | Path | Module | Wired |",
+        "GET /q/{token} portals yes",
+        "",
     ];
     for case in cases {
-        let table = format!("| Method | Path | Module | Wired |\n|---|---|---|---|\n{case}\n");
+        let row = "| GET | /f/{token} | portals | yes |";
+        let table = format!("Text.\n\n{HEAD}{case}\n{row}\n");
         let problems = parse_table(&table, &tasks).expect_err(case);
         assert!(
             problems.iter().any(|p| p.contains(&format!("{case:?}"))),
             "{problems:?}"
         );
     }
-    let unknown = parse_table("| GET | /b | portals | T9999 |", &tasks).expect_err("unknown");
+    let unknown = format!("{HEAD}| GET | /b | portals | T9999 |");
+    let unknown = parse_table(&unknown, &tasks).expect_err("unknown");
     assert!(unknown[0].contains("unknown task id T9999"), "{unknown:?}");
     let row = "| GET | /b/picks/{pick}/confirm | portals | T261 |";
-    let problems = parse_table(&format!("{row}\n{row}\n"), &tasks).expect_err("duplicate");
+    let problems = parse_table(&format!("{HEAD}{row}\n{row}\n"), &tasks).expect_err("duplicate");
     assert_eq!(problems, vec![format!("duplicate row: {row:?}")]);
 }
