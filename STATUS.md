@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-10T06:30:28Z by runner 7f1b09d4274b (actions).
+Updated 2026-11-10T06:30:43Z by runner 7f1b09d4274b (actions).
 
-**Building: T288 in progress since 05:29Z; 180 of 333 done; week 84% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 06:30Z; 180 of 333 done; week 84% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 180 of 333 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T288 claimed 05:29Z, lease until 08:29Z
+- **Lane:** idle since 06:30Z (no task in progress)
 - **Week:** 84% used, 26.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 05:30Z, 60 min before this update
 - **Keeper:** last ran 05:09Z, next wake 05:29Z
@@ -17,6 +17,7 @@ Updated 2026-11-10T06:30:28Z by runner 7f1b09d4274b (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T288 | payments: a Stripe charge the nightly reconcile cannot settl | MERGE_PENDING | 1 | 60 min | 06:30Z |  |
 | T286 | server: every request has a whole-request time limit, answer | done | 1 | 26 min | 04:57Z |  |
 | T285 | runner: a task closes with a visible mark when a file it own | done | 1 | 19 min | 03:45Z |  |
 | T284 | server: every route the architecture lists is wired in the r | done | 3 | 34 min | 03:02Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests / test tests::ssrf_g |
@@ -94,7 +95,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T288 (lease until 2026-11-10T08:29:54Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T286", "at": "2026-11-10T04:57:17Z", "cache_read_input_tokens": 9060026, "input_tokens": 220, "output_tokens": 106170, "cache_creation_input_tokens": 333980}
+- {"task": "T288", "at": "2026-11-10T06:30:27Z", "cache_read_input_tokens": 18134579, "input_tokens": 387, "cache_creation_input_tokens": 683863, "output_tokens": 198503}
