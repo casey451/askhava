@@ -1628,3 +1628,4 @@
 - 2026-11-10T05:09:21Z runner 9c9459249f80 (actions): {}
 - 2026-11-10T05:09:33Z runner 9c9459249f80 (actions): {}
 - 2026-11-10T05:29:57Z runner 3976d91e2924 (actions): {"T286": "MERGE_PENDING -> DONE"}
+- 2026-11-10T05:30:07Z runner 3976d91e2924 (actions): {"T288": "QUEUED -> IN_PROGRESS"}; T288 estimated 2.6M tokens (calibrated); five-hour window has 27.8M left, week 26.0M (session_reading 2026-11-10T05:09:20Z (week)); claimed
