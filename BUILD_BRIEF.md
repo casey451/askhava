@@ -247,7 +247,7 @@ Then the runner sends the **"Finished: ready for your review"** message (§16). 
    - **model check:** the runner confirms which model actually ran from evidence it can inspect itself (session or usage records), not from what the subagent says. K8 establishes which evidence is reliable and which model-ID format the subagent call accepts. A substituted model fails the attempt.
    - **path check:** before handing in, the runner checks the diff against the task's owned files and the protected paths (§2, rule 7).
 4. **Fresh-eyes review:** a reviewer subagent (Opus for money, privacy, security and recovery tasks; Sonnet otherwise until D-1143, Opus for every task not yet started since) sees only the diff and the task's spec files. It checks for:
-   - drift from the spec;
+   - drift from the spec, and, when the worker ran below Opus, a realistic counterexample for elevated-risk work and proof that the worker's tests fail on a deliberately wrong implementation (D-2506);
    - duplicated logic;
    - dead code and TODOs;
    - secrets or PII;

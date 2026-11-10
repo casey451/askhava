@@ -10115,7 +10115,7 @@
     "T057",
     "T075"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-sonnet-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -11338,7 +11338,7 @@
     "T301",
     "T302"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-sonnet-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -12559,7 +12559,7 @@
     "T279",
     "T294"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-sonnet-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -13086,7 +13086,7 @@
     "T230",
     "T231"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-sonnet-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -14396,7 +14396,7 @@
     "T113",
     "T115"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-sonnet-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -14456,7 +14456,7 @@
     "T113",
     "T202"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-sonnet-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -14651,7 +14651,7 @@
    "deps": [
     "T206"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-sonnet-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -14721,7 +14721,7 @@
     "T304",
     "T310"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-sonnet-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -14777,7 +14777,7 @@
     "T118",
     "T103"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-sonnet-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -14897,7 +14897,7 @@
     "T120",
     "T345"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-sonnet-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -14960,7 +14960,7 @@
     "T116",
     "T117"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-sonnet-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -17679,7 +17679,7 @@
     "T140",
     "T159"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-sonnet-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -19271,7 +19271,7 @@
    "id": "T159",
    "slug": "safety-contacts-verify",
    "title": "launch checklist: confirm no template or page names a phone number other than 911 and that the Gate C list has no safety-number step (D-436)",
-   "goal": "A docs test confirms that no template or page names a phone number other than 911 and that the Gate C checklist has no safety-number step, recorded in `docs/launch/no_safety_numbers_check.md` (D-411, D-436).",
+   "goal": "A docs test confirms that no template or page names a phone number other than 911 and that the Gate C checklist has no safety-number step, with planted fail cases (a template holding another phone number, and a checklist line naming a safety number) that the test must reject (D-2506), recorded in `docs/launch/no_safety_numbers_check.md` (D-411, D-436).",
    "type": "build",
    "phase": 2,
    "stage": "6",
@@ -19279,7 +19279,7 @@
    "deps": [
     "T140"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-haiku-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -19304,7 +19304,8 @@
    ],
    "decisions": [
     "D-436",
-    "D-1143"
+    "D-1143",
+    "D-2506"
    ],
    "cites": [],
    "budget": {
@@ -19333,7 +19334,7 @@
     "T203",
     "T202"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-sonnet-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [

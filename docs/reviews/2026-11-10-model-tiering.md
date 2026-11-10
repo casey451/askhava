@@ -156,3 +156,47 @@
 | T346 | Opus | Opus | areas privacy,security; migration with data movement; concurrency/transactions/locks; vendor adapter or webhook; size 550 lines/36%; high effort |
 | T347 | Opus | Opus | areas harness,licensing,money; harness; concurrency/transactions/locks; multi-crate (licensing,quotes); size 250 lines/35% |
 | T348 | Opus | Opus | areas harness,privacy,security; harness; vendor adapter or webhook; size 800 lines/36%; high effort |
+
+## Second pass, November 10, 2026 (D-2506)
+
+**Source:** an outside model plan Casey shared ("Sonnet junior / Opus senior reviewer", 57 Sonnet, 89 Opus, 2 Haiku), read as data. Every candidate it moved to Sonnet beyond the 15 above was judged against the first rubric, the validator's rule that money, privacy, security and recovery application code runs on Opus (`BUILD_BRIEF.md:498`, `scripts/validate_tasks.py:346`), and Casey's rule of November 10 that Fable is only for dire cases (no Fable worker or reviewer anywhere here). Result over the 146 queued tasks: **27 Sonnet, 1 Haiku, 118 Opus**; every reviewer stays Opus. T294 is in flight and keeps its model.
+
+**Moved now:**
+
+| Task | Was | Now | Reason |
+|---|---|---|---|
+| T099 | Opus | Sonnet | J2 journey tests only (`tests/e2e`, `tests/a11y`); the reviewer confirms each assertion fails on a planted wrong implementation |
+| T101 | Opus | Sonnet | site base layout, one crate, no money, privacy or security logic |
+| T114 | Opus | Sonnet | docs tests that compare terms with fee and recurring code; never changes a rule to fit copy |
+| T117 | Opus | Sonnet | the runbook, compiled from tested procedures; the reviewer replays the critical steps |
+| T118 | Opus | Sonnet | J3 operator journey tests only; the reviewer checks refund, audit and authorization assertions fail on planted wrong behaviour |
+| T119 | Opus | Sonnet | J4 outage journey tests only; the reviewer checks no dropped job, duplicate notice or ledger mismatch slips through |
+| T121 | Opus | Sonnet | startup and supply-chain tests only (`tests/security`); the planted hits must fail |
+| T122 | Opus | Sonnet | the account checklist document and its docs test |
+| T141 | Opus | Sonnet | the handover pack, compiled from existing documents |
+| T161 | Opus | Sonnet | wording and copy scans with planted failing examples |
+| T222 | Opus | Sonnet | J1/J2 full-variant journey tests only; the reviewer adds omitted negative paths |
+| T229 | Opus | Sonnet | plain-language rewrite of approved legal drafts, not new terms; the reviewer diffs every clause |
+| T338 | Opus | Sonnet | a test fixture that holds its port (`app/adapters/src/tests/`), no policy |
+| T159 | Sonnet | Haiku | a pure pattern scan (no phone number but 911; no safety-number step), its goal now naming planted fail cases |
+
+**Kept on Opus although the outside plan proposed Sonnet or Haiku:**
+
+| Task | Reason |
+|---|---|
+| T312, T323, T316 | pulled back in the PR #424 review (the emergency word check, the AI adds-no-fact guard, a licensing read across crates) |
+| T342 | the quote contact gate (privacy) and per-visit price scheduling |
+| T320 | database uniqueness under concurrent inserts |
+| T155 | licensing scope on sign-up (licensing, security application code) |
+| T325 | inbound failure alert that must stay free of message bodies (privacy, security code) |
+| T327 | harness: the handler-coverage gate and its alert; a gap lets queued work go unrun |
+| T296 | AI reply deadline: timeouts, cancellation and fallback |
+| T345 | harness: pins in the workflow that holds the runner's tokens (auth secrets) |
+| T343, T324 | harness over money and privacy tests and coverage floors |
+| T295 | harness, high effort, money and privacy code |
+| T300, T302, T305, T306, T309 | route wiring with privacy and security application code (the validator's Opus rule), high effort; T348's doors come first in any case |
+| T106, T107, T158, T210, T200, T308, T329, T202 | money, privacy or security application code (the validator's Opus rule) |
+| T111, T112 | drafting the binding terms and privacy policy creates policy |
+| T120 | the vault sentinel, high effort, privacy core |
+| T138 | harness: a workflow scanning the test site |
+| T203 | its scan carries judgement (no pest advertising, what the fee is called), so Sonnet, not Haiku |
