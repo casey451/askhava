@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-10T11:54:16Z by runner f973fd9232c2 (actions).
+Updated 2026-11-10T12:35:45Z by runner f036702f076f (actions).
 
 **Building: T293 in progress since 11:54Z; 184 of 333 done; week 86% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-10T11:54:16Z by runner f973fd9232c2 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T293 claimed 11:54Z, lease until 14:54Z
 - **Week:** 86% used, 22.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:31Z, 23 min before this update
+- **Last run:** 11:54Z, 41 min before this update
 - **Keeper:** last ran 11:30Z, next wake 11:50Z
 
 ## Needs attention
@@ -35,7 +35,6 @@ Updated 2026-11-10T11:54:16Z by runner f973fd9232c2 (actions).
 | T275 | adapters and stand-ins: local write-once storage that a raci | done | 1 | 38 min | 16:08Z |  |
 | T274 | intake and privacy: the 180-day contact purge decides and cl | done | 1 | 66 min | 14:56Z |  |
 | T270 | picks and payments: the unreachable refund and the fraud war | done | 1 | 29 min | 13:17Z |  |
-| T282 | calls and picks: each call's start time reaches the unreacha | done | 2 | 32 min | 12:06Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Date:      2026- |
 
 ### Plan and harness merges on main
 - 09:36Z Plan: T290 may update the two tests that pin recurring rows by data; nearest reachable bases (D-2386) (#413)
