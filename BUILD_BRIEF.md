@@ -237,7 +237,7 @@ Then the runner sends the **"Finished: ready for your review"** message (§16). 
 1. **Start routine:**
    - read this file's §2 and §7;
    - read `kit/state.json` and the last 30 lines of PROGRESS.md (both on `claude/kit-state`), and the last 20 commits on `main`;
-   - run the smoke test on `main`. If `main` is red, the only task is "fix main";
+   - run the smoke test on `main` (a green run the runner already recorded on `main`'s same head, with nothing since doubting it, stands for it: D-2560). If `main` is red, the only task is "fix main";
    - honor gate and `WAITING_FOR_OWNER` states by posting status and exiting. A `BLOCKED` task holds only its dependents.
 2. **Pick** the next task whose dependencies are all `DONE`, and claim the lease.
 3. **Delegate the work** to a subagent:
