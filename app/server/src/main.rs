@@ -5,7 +5,8 @@
 //! `test-control` build, SEC-035) (each request queues its request-log
 //! line, OPS-011; Twilio's inbound-text and status webhooks once `ASKHAVA_PUBLIC_BASE_URL` is
 //! set, SEC-016, T241; the page pick's code keys once the vault keys are set, D-1516; Stripe's
-//! webhook and the release once `ASKHAVA_STRIPE_WEBHOOK_SECRET` is set, T254) and serves it, with
+//! webhook and the release once `ASKHAVA_STRIPE_WEBHOOK_SECRET` is set, T254; every request under
+//! the `ASKHAVA_REQUEST_TIMEOUT_SECS` limit, D-1870) and serves it, with
 //! the socket peer as connect info (SEC-040), on `0.0.0.0:$PORT` (the host sets `PORT`) until SIGINT or SIGTERM, then
 //! finishes the requests in flight and exits 0. `server migrate` instead
 //! applies the pending migrations as the migration role and exits: the
@@ -40,8 +41,9 @@ async fn main() -> io::Result<()> {
     let pick_keys = askhava_server::pick_code_keys(&settings, std::env::vars())?;
     let stripe =
         askhava_server::release_sink::stripe_webhook(&settings, pool.clone(), std::env::vars())?;
-    let app =
-        askhava_server::build_router(pool, control.router(), (webhooks, voice, pick_keys, stripe));
+    let limit = askhava_server::request_timeout::RequestTimeout::from_settings(&settings);
+    let hooks = (webhooks, voice, pick_keys, stripe);
+    let app = askhava_server::build_router(pool, control.router(), (hooks, limit));
     axum::serve(
         listener,
         app.into_make_service_with_connect_info::<std::net::SocketAddr>(),

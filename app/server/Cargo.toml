@@ -41,6 +41,8 @@ tracing = { workspace = true }
 base64 = { workspace = true }
 hmac = { workspace = true }
 sha1 = { workspace = true }
+# The paused clock for the request time-limit tests (T286, D-1870).
+tokio = { workspace = true, features = ["test-util"] }
 tower = { workspace = true }
 
 [lints]
