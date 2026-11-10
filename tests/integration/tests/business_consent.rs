@@ -1,7 +1,8 @@
 //! A business's notice consent, welcome, STOP, auto-reply and recruiting rules across
 //! `businesses`, `ops`' audit log, `core`'s task queue, `messaging`'s templates and `portals`' done
-//! screen (TD-CON-08, TD-BIZ-17, TD-TXT-13, TD-BIZ-35, and BIZ-032's auto-reply case of TD-BIZ-12;
-//! CON-019, CON-020, BIZ-017, BIZ-032, BIZ-048; D-191, D-312, D-344, D-491, D-492).
+//! screen (TD-CON-08, TD-BIZ-17, TD-TXT-13, TD-BIZ-35, TD-WORD-36, and BIZ-032's auto-reply case
+//! of TD-BIZ-12; CON-019, CON-020, BIZ-017, BIZ-032, BIZ-048, WORD-001, WORD-002, WORD-008; D-191,
+//! D-312, D-344, D-491, D-492, D-1932).
 //!
 //! Proves on a fresh database that the E-SIGN box starts unticked and is stored with its wording
 //! version and time, once per box, that no call consent can exist, that a phone may be texted
@@ -11,10 +12,10 @@
 //! honored at once. All IDs and addresses are fake.
 
 use askhava_businesses::api::{
-    ADVERTISEMENT_LINE, AUTO_REPLY_TEMPLATE, Acting, CONSENT_VERSION, Checks, ConsentChannel,
-    ConsentError, Event, NO_CALLS_LINE, PHONE_STOPPED_KIND, Roles, WELCOME_KIND, add_member,
-    add_owner, apply, auto_reply_due, business, consent_box, create, may_get_cards, may_recruit,
-    may_text, phone_stopped, record_consent, recruiting_email, remove_member, request_welcome,
+    AUTO_REPLY_TEMPLATE, Acting, CONSENT_VERSION, Checks, ConsentChannel, ConsentError, Event,
+    PHONE_STOPPED_KIND, Roles, WELCOME_KIND, add_member, add_owner, advertisement_line, apply,
+    auto_reply_due, business, consent_box, create, may_get_cards, may_recruit, may_text,
+    no_calls_line, phone_stopped, record_consent, recruiting_email, remove_member, request_welcome,
     stop_recruiting, stopped_email_line, welcome_lines, welcome_sent,
 };
 use askhava_messaging::api::{Language, MailboxKind, count_segments, render, template_ids};
@@ -83,7 +84,7 @@ fn td_con_08_box_starts_unticked_and_names_each_channel() {
     assert!(!both.ticked);
     assert!(both.wording.contains("by email") && both.wording.contains("job-card texts"));
     for w in [&email.wording, &both.wording, &consent_box(&[Text]).wording] {
-        assert!(w.contains(NO_CALLS_LINE));
+        assert!(w.contains(&no_calls_line()));
         assert!(!w.contains("agree to get calls") && !w.to_lowercase().contains("emergency"));
     }
 }
@@ -331,7 +332,7 @@ async fn td_biz_35_recruiting_is_email_only_and_stops_at_once(pool: PgPool) {
     let mail = mail.expect("email");
     assert_eq!(
         mail.lines.first().map(String::as_str),
-        Some(ADVERTISEMENT_LINE)
+        Some(advertisement_line().as_str())
     );
     assert!(mail.lines.iter().any(|l| l.contains(stop)));
     assert!(mail.lines.iter().any(|l| l.contains("PO Box 0000")));
@@ -369,4 +370,119 @@ fn td_biz_17_done_screen_says_email_once() {
     let line = lines.join(" ");
     assert!(line.contains("We'll tell you once, by email, when requests in your trade start."));
     assert!(!line.to_lowercase().contains("text"));
+}
+
+/// TD-WORD-36 (WORD-001, WORD-002, WORD-008, T293, D-1932): under the embedded brand the
+/// business and quote copy that now reads the brand file is byte-identical to the words it held
+/// as literals, in English and Spanish; WORD-002's business statement keeps its exact words.
+#[test]
+fn td_word_36_consent_welcome_and_sign_up_lines_are_unchanged_under_the_embedded_brand() {
+    use askhava_businesses::api::{business_statement, waitlist_line};
+    assert_eq!(
+        consent_box(&[Email, Text]).wording,
+        "I agree to get job and account notices from Ask Hava by email at the address above, not on paper. I agree to get job-card texts from Ask Hava at the phone number above. Message frequency varies. Message and data rates may apply. Text STOP to stop or HELP for help. Ask Hava never places recorded or automated calls to you. You can change this any time in your portal."
+    );
+    assert_eq!(
+        advertisement_line(),
+        "This email is an advertisement for Ask Hava."
+    );
+    let welcome = welcome_lines();
+    assert_eq!(
+        welcome[0],
+        "Welcome to Ask Hava. Your business is active and can now get job cards."
+    );
+    assert_eq!(
+        welcome[3],
+        "Save the attached contact card, \"Ask Hava homeowner calls\". Calls from these numbers are homeowners who chose your quote, calling on an Ask Hava masked number. Ask Hava never calls you."
+    );
+    assert_eq!(
+        welcome[4],
+        "To change how you get notices, sign in at https://askhava.com/b."
+    );
+    assert_eq!(
+        waitlist_line(),
+        "The trades you picked aren't open on Ask Hava yet, so you're on the waitlist. Your join date is kept. No priority; everyone waiting is told at once."
+    );
+    assert_eq!(
+        business_statement(),
+        "Ask Hava is not a contractor. It passes along this request and the homeowner's choice. If the homeowner picks you, they hire you directly; Ask Hava doesn't direct, schedule, supervise or pay for the work."
+    );
+    let postal = (
+        "PO Box 0000, Lake Havasu City, AZ 86403",
+        MailboxKind::PoBox,
+    );
+    let mail = recruiting_email(
+        "Get job requests",
+        &[],
+        postal,
+        "https://askhava.com/stop/fake-token",
+    );
+    let mail = mail.expect("email");
+    assert_eq!(
+        mail.lines.last().map(String::as_str),
+        Some("Ask Hava LLC, PO Box 0000, Lake Havasu City, AZ 86403")
+    );
+    let opening = recruiting_email("Ask Hava: hello", &[], postal, "https://askhava.com/stop/x");
+    assert_eq!(opening, Err(ConsentError::Subject));
+}
+
+/// TD-WORD-36 (WORD-001, WORD-002, WORD-008, D-1932): the complaint reply and phone-link line in
+/// English and Spanish, the About us reasons and the returned-address banner, byte for byte.
+#[test]
+fn td_word_36_complaint_about_us_and_banner_lines_are_unchanged_under_the_embedded_brand() {
+    use askhava_businesses::api::{AboutUsRefusal, ReplyFacts, phone_linked_line, returned_line};
+    let facts = ReplyFacts {
+        business: "Desert Pipe Co",
+        number: "(928) 555-0142",
+        job: "1042",
+        trade: "plumbing",
+    };
+    assert_eq!(
+        facts.text(false),
+        "Ask Hava: Sorry about the trouble with Desert Pipe Co on request 1042 (plumbing). Ask Hava is not a contractor and does not perform, bid on or supervise work; Desert Pipe Co is an independent business. You can call them at (928) 555-0142. The owner of Ask Hava reads every complaint. If the job needed a state contractor license, you can also file with the state here: askhava.com/help/roc-complaint"
+    );
+    assert_eq!(
+        facts.text(true),
+        "Ask Hava: Lamentamos el problema con Desert Pipe Co en la solicitud 1042 (plumbing). Ask Hava no es contratista y no realiza, cotiza ni supervisa trabajos; Desert Pipe Co es un negocio independiente. Puede llamarlos al (928) 555-0142. El dueño de Ask Hava lee cada queja. Si el trabajo necesitaba licencia de contratista, también puede quejarse ante el estado: askhava.com/help/roc-complaint"
+    );
+    assert_eq!(
+        phone_linked_line("Sam", "0142", false),
+        "Ask Hava: Sam, on your team, linked the phone number ending in 0142 to your account. If you don't recognize it, sign in at askhava.com/b and remove it."
+    );
+    assert_eq!(
+        phone_linked_line("Sam", "0142", true),
+        "Ask Hava: Sam, de su equipo, vinculó el número que termina en 0142 a su cuenta. Si no lo reconoce, entre en askhava.com/b y quítelo."
+    );
+    assert_eq!(
+        AboutUsRefusal::Contact.reason(),
+        "Leave out phone numbers, emails, links and \"call me\". Homeowners reach you through Ask Hava."
+    );
+    assert_eq!(
+        AboutUsRefusal::Channel.reason(),
+        "Leave out other ways to find you, like Google, Facebook, Yelp or \"search for us\". Homeowners reach you through Ask Hava."
+    );
+    assert_eq!(
+        AboutUsRefusal::Length.reason(),
+        "Write a short line about your business, up to 140 characters."
+    );
+    assert_eq!(
+        returned_line("old@example.test"),
+        "Ask Hava emails to old@example.test are being returned or marked as spam, so you may miss job requests. Add or fix an email address."
+    );
+}
+
+/// TD-WORD-36 (WORD-001, D-1932): `quotes`' contact bounce and the card email's job-page link,
+/// byte for byte (the card words and quote texts keep their own pins).
+#[test]
+fn td_word_36_quote_bounce_and_job_page_link_are_unchanged_under_the_embedded_brand() {
+    use askhava_quotes::api::{Bounce, job_page_prefix};
+    assert_eq!(
+        Bounce::Contact.message(),
+        "Please take out any phone number, email, link, or \"call me\" or \"text me\" line, including numbers written out as words. If the homeowner picks your quote, Ask Hava puts you in touch."
+    );
+    assert_eq!(
+        Bounce::NeedsHours.message(),
+        "Please add how many hours you think it will take, or a range like 2 to 3 hours."
+    );
+    assert_eq!(job_page_prefix(), "https://askhava.com/b/jobs/");
 }

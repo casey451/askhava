@@ -13,7 +13,7 @@
 //! no call is ever placed (BIZ-039). Every email goes from `messaging::api::FROM` (SEC-025).
 
 use askhava_adapters::api::IdempotencyKey;
-use askhava_core::api::{NewTask, enqueue};
+use askhava_core::api::{NewTask, brand, enqueue};
 use askhava_ops::api::{Actor, AuditEntry, Change, audit};
 use jiff::{SignedDuration, Timestamp};
 use jiff_sqlx::ToSqlx;
@@ -548,7 +548,8 @@ pub async fn returned_mailboxes(
 #[must_use]
 pub fn returned_line(address: &str) -> String {
     format!(
-        "Ask Hava emails to {address} are being returned or marked as spam, so you may miss job \
-         requests. Add or fix an email address."
+        "{} emails to {address} are being returned or marked as spam, so you may miss job \
+         requests. Add or fix an email address.",
+        brand().display_name()
     )
 }

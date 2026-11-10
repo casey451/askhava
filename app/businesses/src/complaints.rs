@@ -12,7 +12,7 @@
 //! [`phone_link_notice`] queues one [`PHONE_LINKED_KIND`] owner email when a member other than the
 //! owner links a phone (BIZ-033); the Approve gate and the text are T148's (D-493).
 
-use askhava_core::api::{Claimed, HandlerError, NewTask, enqueue};
+use askhava_core::api::{Claimed, HandlerError, NewTask, brand, enqueue};
 use askhava_ops::api::{Actor, AuditEntry, Change, NewAlert, Severity, audit, raise_alert};
 use jiff::{SignedDuration, Timestamp};
 use jiff_sqlx::ToSqlx;
@@ -148,13 +148,16 @@ impl ReplyFacts<'_> {
             job,
             trade,
         } = *self;
+        let domain = brand().domain();
         if spanish {
+            let (short, name) = (brand().es().short_name(), brand().es().display_name());
             format!(
-                "Ask Hava: Lamentamos el problema con {business} en la solicitud {job} ({trade}). Ask Hava no es contratista y no realiza, cotiza ni supervisa trabajos; {business} es un negocio independiente. Puede llamarlos al {number}. El dueño de Ask Hava lee cada queja. Si el trabajo necesitaba licencia de contratista, también puede quejarse ante el estado: askhava.com/help/roc-complaint"
+                "{short}: Lamentamos el problema con {business} en la solicitud {job} ({trade}). {name} no es contratista y no realiza, cotiza ni supervisa trabajos; {business} es un negocio independiente. Puede llamarlos al {number}. El dueño de {name} lee cada queja. Si el trabajo necesitaba licencia de contratista, también puede quejarse ante el estado: {domain}/help/roc-complaint"
             )
         } else {
+            let (short, name) = (brand().short_name(), brand().display_name());
             format!(
-                "Ask Hava: Sorry about the trouble with {business} on request {job} ({trade}). Ask Hava is not a contractor and does not perform, bid on or supervise work; {business} is an independent business. You can call them at {number}. The owner of Ask Hava reads every complaint. If the job needed a state contractor license, you can also file with the state here: askhava.com/help/roc-complaint"
+                "{short}: Sorry about the trouble with {business} on request {job} ({trade}). {name} is not a contractor and does not perform, bid on or supervise work; {business} is an independent business. You can call them at {number}. The owner of {name} reads every complaint. If the job needed a state contractor license, you can also file with the state here: {domain}/help/roc-complaint"
             )
         }
     }
@@ -533,13 +536,16 @@ pub async fn phone_link_notice(
 /// sender reads from the vault) linked the phone ending `last4`, in Spanish when `spanish`.
 #[must_use]
 pub fn phone_linked_line(member: &str, last4: &str, spanish: bool) -> String {
+    let domain = brand().domain();
     if spanish {
+        let short = brand().es().short_name();
         format!(
-            "Ask Hava: {member}, de su equipo, vinculó el número que termina en {last4} a su cuenta. Si no lo reconoce, entre en askhava.com/b y quítelo."
+            "{short}: {member}, de su equipo, vinculó el número que termina en {last4} a su cuenta. Si no lo reconoce, entre en {domain}/b y quítelo."
         )
     } else {
+        let short = brand().short_name();
         format!(
-            "Ask Hava: {member}, on your team, linked the phone number ending in {last4} to your account. If you don't recognize it, sign in at askhava.com/b and remove it."
+            "{short}: {member}, on your team, linked the phone number ending in {last4} to your account. If you don't recognize it, sign in at {domain}/b and remove it."
         )
     }
 }

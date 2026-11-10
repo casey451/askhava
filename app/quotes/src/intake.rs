@@ -7,7 +7,7 @@
 //! D-491). [`submit_quote`] checks the business's own window and the job's status, stores the
 //! quote and schedules the every-window-ended check (`crate::handlers`).
 
-use askhava_core::api::{Clock, Guarded, SystemClock};
+use askhava_core::api::{Clock, Guarded, SystemClock, brand};
 use askhava_licensing::api::{LicenseKind, QuotePrice, QuoteRefusal, QuoteSubmission, check_quote};
 use jiff::civil::Date;
 use jiff::{SignedDuration, Timestamp};
@@ -273,12 +273,16 @@ pub enum Bounce {
 }
 
 impl Bounce {
-    /// The line the business reads on the quote form.
+    /// The line the business reads on the quote form; the contact line names the brand's display
+    /// name (WORD-001, D-1932).
     #[must_use]
-    pub const fn message(self) -> &'static str {
-        match self {
+    pub fn message(self) -> String {
+        let line = match self {
             Self::Contact => {
-                "Please take out any phone number, email, link, or \"call me\" or \"text me\" line, including numbers written out as words. If the homeowner picks your quote, Ask Hava puts you in touch."
+                return format!(
+                    "Please take out any phone number, email, link, or \"call me\" or \"text me\" line, including numbers written out as words. If the homeowner picks your quote, {} puts you in touch.",
+                    brand().display_name()
+                );
             }
             Self::Restricted => {
                 "One word in your quote can't be sent in a text. Please reword it and send again."
@@ -298,7 +302,8 @@ impl Bounce {
             Self::Handyman(_) => {
                 "Under Arizona's handyman rule, this job has to stay under $1,000, parts and labor together, including the top of your price range. Please bring your quote under $1,000 to send it."
             }
-        }
+        };
+        line.to_owned()
     }
 }
 
