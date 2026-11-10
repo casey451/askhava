@@ -11,8 +11,21 @@
 //! (`businesses` cannot call `quotes`, D-491). The fee box's numbers come from the fee settings
 //! ([`fee_numbers`]). The routes that read the sign-up and post its steps are wired with the
 //! business portal (D-1709).
+//!
+//! T155 added the capability step (BIZ-049, BIZ-004, CARD-001; D-393, D-492): [`capability_page`]
+//! over `templates/capability_setup.html` shows the checklist `businesses::api::checklist_offer`
+//! builds from the license map (pre-ticked, untick any, no-license extras only), then towns,
+//! largest job, recurring work and after-hours, as checkboxes on one page ([`CapabilityStep::All`])
+//! or one question per guided screen; [`CapabilityValues`] reads either post the same way and
+//! [`capability_summary`] reads the answers back on the check screen. Saving is
+//! `businesses::api::save_capability`; the route waits with the rest of sign-up (D-1709).
+
+use std::collections::BTreeSet;
 
 use askama::Template;
+use askhava_businesses::api::{
+    Capability, CapabilityAnswers, JobTypeChoice, LargestJob, TradeOffer, kept_ticks, pre_ticked,
+};
 use askhava_businesses::api::{
     FeeNumbers, MaskedContact, NUMBER_OLD_BUTTON, SOMEONE_ELSE_LINE, STOP_FIX_BUTTON, fee_summary,
     fix_record_lines, trade_count,
@@ -276,4 +289,377 @@ pub fn signup_page(screen: Screen<'_>, parts: &Parts<'_>) -> Result<String, aska
         }
     }
     v.render()
+}
+
+/// BIZ-049: the capability step's path; `?step=<slug>` picks one guided screen.
+pub const CAPABILITY_ROUTE: &str = "/b/signup/capability";
+
+/// BIZ-049, D-393: one screen of the capability step. `All` is every question as checkboxes on
+/// one page; the others are the guided sequence, one question per screen, in [`Self::GUIDED`]
+/// order, ending with `Check`, which reads the answers back (BIZ-030).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CapabilityStep {
+    /// Every question on one page.
+    All,
+    /// The job-type checklist.
+    JobTypes,
+    /// The towns served (BIZ-010).
+    Towns,
+    /// The largest job.
+    Largest,
+    /// Recurring work.
+    Recurring,
+    /// After-hours emergency jobs (BIZ-007).
+    AfterHours,
+    /// The answers read back before saving.
+    Check,
+}
+
+impl CapabilityStep {
+    /// The guided sequence, in order.
+    pub const GUIDED: [Self; 6] = [
+        Self::JobTypes,
+        Self::Towns,
+        Self::Largest,
+        Self::Recurring,
+        Self::AfterHours,
+        Self::Check,
+    ];
+
+    /// The `step` value in the path.
+    #[must_use]
+    pub const fn slug(self) -> &'static str {
+        match self {
+            Self::All => "all",
+            Self::JobTypes => "jobs",
+            Self::Towns => "towns",
+            Self::Largest => "largest",
+            Self::Recurring => "recurring",
+            Self::AfterHours => "after-hours",
+            Self::Check => "check",
+        }
+    }
+
+    /// The step a `step` value names; unknown is `None`.
+    #[must_use]
+    pub fn from_slug(slug: &str) -> Option<Self> {
+        [Self::All]
+            .into_iter()
+            .chain(Self::GUIDED)
+            .find(|s| s.slug() == slug)
+    }
+
+    /// The guided screen after this one; `None` after `Check` and for `All`.
+    #[must_use]
+    pub fn next(self) -> Option<Self> {
+        let at = Self::GUIDED.iter().position(|s| *s == self)?;
+        Self::GUIDED.get(at + 1).copied()
+    }
+}
+
+/// BIZ-049: a missing or bad capability answer, with its field and message (A11Y-030).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CapabilityProblem {
+    /// No town chosen.
+    Towns,
+    /// No largest-job choice, or a typed amount that is not money.
+    Largest,
+    /// No recurring-work answer.
+    Recurring,
+    /// No after-hours answer.
+    AfterHours,
+}
+
+impl CapabilityProblem {
+    /// The form element the summary links to.
+    #[must_use]
+    pub const fn field(self) -> &'static str {
+        match self {
+            Self::Towns => "towns",
+            Self::Largest => "largest",
+            Self::Recurring => "recurring",
+            Self::AfterHours => "after_hours",
+        }
+    }
+
+    /// What to do, shown in the summary and by the field.
+    #[must_use]
+    pub const fn message(self) -> &'static str {
+        match self {
+            Self::Towns => "Choose at least one town you work in.",
+            Self::Largest => {
+                "Choose the largest job you'll quote, or type an amount in dollars, like 2500."
+            }
+            Self::Recurring => "Choose yes or no for recurring work.",
+            Self::AfterHours => "Choose yes or no for after-hours emergency jobs.",
+        }
+    }
+}
+
+/// BIZ-049, A11Y-012: the capability answers so far, read from posted `(name, value)` pairs.
+/// Every screen carries the other answers as hidden fields, so the guided sequence and the
+/// one-page form post the same pairs and reach the same answers.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct CapabilityValues {
+    /// The ticked job types.
+    pub ticked: BTreeSet<JobTypeChoice>,
+    /// The ticked town codes.
+    pub towns: BTreeSet<String>,
+    /// The largest-job choice: `none`, `1500`, `5000` or `typed`.
+    pub largest: String,
+    /// The typed amount.
+    pub amount: String,
+    /// `yes` or `no` for recurring work.
+    pub recurring: String,
+    /// `yes` or `no` for after-hours emergency jobs.
+    pub after_hours: String,
+}
+
+/// A job type's form value, "category:job type".
+fn choice_value(c: &JobTypeChoice) -> String {
+    format!("{}:{}", c.category, c.job_type)
+}
+
+impl CapabilityValues {
+    /// BIZ-049: the first screen's values: every job type the license covers ticked.
+    #[must_use]
+    pub fn fresh(offer: &[TradeOffer]) -> Self {
+        Self {
+            ticked: pre_ticked(offer).into_iter().collect(),
+            ..Self::default()
+        }
+    }
+
+    /// The values a post holds; `job_type` and `town` repeat, the rest keep the last value.
+    #[must_use]
+    pub fn from_pairs(pairs: &[(String, String)]) -> Self {
+        let mut v = Self::default();
+        for (name, value) in pairs {
+            match name.as_str() {
+                "job_type" => v
+                    .ticked
+                    .extend(value.split_once(':').map(|(c, t)| JobTypeChoice::new(c, t))),
+                "town" => drop(v.towns.insert(value.clone())),
+                "largest" => v.largest.clone_from(value),
+                "largest_amount" => v.amount.clone_from(value),
+                "recurring" => v.recurring.clone_from(value),
+                "after_hours" => v.after_hours.clone_from(value),
+                _ => {}
+            }
+        }
+        v
+    }
+
+    /// The hidden fields that carry every answer but `step`'s own (A11Y-012).
+    #[must_use]
+    pub fn carried(&self, step: CapabilityStep) -> Vec<(&'static str, String)> {
+        let mut out = Vec::new();
+        if step != CapabilityStep::JobTypes {
+            out.extend(self.ticked.iter().map(|c| ("job_type", choice_value(c))));
+        }
+        if step != CapabilityStep::Towns {
+            out.extend(self.towns.iter().map(|t| ("town", t.clone())));
+        }
+        let singles = [
+            (CapabilityStep::Largest, "largest", &self.largest),
+            (CapabilityStep::Largest, "largest_amount", &self.amount),
+            (CapabilityStep::Recurring, "recurring", &self.recurring),
+            (CapabilityStep::AfterHours, "after_hours", &self.after_hours),
+        ];
+        let kept = singles
+            .into_iter()
+            .filter(|(s, _, v)| *s != step && !v.is_empty());
+        out.extend(kept.map(|(_, n, v)| (n, v.clone())));
+        out
+    }
+
+    /// BIZ-049: the answers, or every problem in page order.
+    ///
+    /// # Errors
+    /// The [`CapabilityProblem`]s found.
+    pub fn answers(&self) -> Result<CapabilityAnswers, Vec<CapabilityProblem>> {
+        let yes_no = |s: &str| match s {
+            "yes" => Some(true),
+            "no" => Some(false),
+            _ => None,
+        };
+        let largest = LargestJob::parse(&self.largest, &self.amount);
+        let (recurring, after_hours) = (yes_no(&self.recurring), yes_no(&self.after_hours));
+        let problems: Vec<CapabilityProblem> = [
+            (self.towns.is_empty(), CapabilityProblem::Towns),
+            (largest.is_none(), CapabilityProblem::Largest),
+            (recurring.is_none(), CapabilityProblem::Recurring),
+            (after_hours.is_none(), CapabilityProblem::AfterHours),
+        ]
+        .into_iter()
+        .filter_map(|(bad, p)| bad.then_some(p))
+        .collect();
+        match (largest, recurring, after_hours) {
+            (Some(largest), Some(recurring), Some(after_hours)) if problems.is_empty() => {
+                Ok(CapabilityAnswers {
+                    ticked: self.ticked.iter().cloned().collect(),
+                    towns: self.towns.iter().cloned().collect(),
+                    capability: Capability { largest, recurring },
+                    after_hours,
+                })
+            }
+            _ => Err(problems),
+        }
+    }
+}
+
+/// BIZ-049, BIZ-030: the answers read back on the check screen, towns by their names in
+/// `towns`; a recurring "no" leaves the recurring job types out, as saving does.
+#[must_use]
+pub fn capability_summary(
+    offer: &[TradeOffer],
+    towns: &[(String, String)],
+    answers: &CapabilityAnswers,
+) -> Vec<String> {
+    let kept = kept_ticks(offer, answers);
+    let mut lines: Vec<String> = offer
+        .iter()
+        .filter_map(|t| {
+            let jobs: Vec<&str> = t
+                .rows
+                .iter()
+                .filter(|r| kept.contains(&r.choice))
+                .map(|r| r.choice.job_type.as_str())
+                .collect();
+            (!jobs.is_empty()).then(|| format!("{}: {}", t.name, jobs.join(", ")))
+        })
+        .collect();
+    if lines.is_empty() {
+        lines.push("Jobs: none ticked".to_owned());
+    }
+    let named = towns.iter().filter(|(c, _)| answers.towns.contains(c));
+    let names: Vec<&str> = named.map(|(_, n)| n.as_str()).collect();
+    let yes = |b: bool| if b { "Yes" } else { "No" };
+    lines.extend([
+        format!("Towns: {}", names.join(", ")),
+        format!(
+            "Largest job you'll quote: {}",
+            answers.capability.largest.line()
+        ),
+        format!("Recurring work: {}", yes(answers.capability.recurring)),
+        format!("After-hours emergency jobs: {}", yes(answers.after_hours)),
+    ]);
+    lines
+}
+
+/// What the capability step's page shows (BIZ-049).
+#[derive(Debug, Clone, Copy)]
+pub struct CapabilityPage<'a> {
+    /// The screen.
+    pub step: CapabilityStep,
+    /// The checklist from `businesses::api::checklist_offer`.
+    pub offer: &'a [TradeOffer],
+    /// The towns the business may pick, as (code, name).
+    pub towns: &'a [(String, String)],
+    /// The answers so far.
+    pub values: &'a CapabilityValues,
+    /// The problems after a failed save; empty at first render.
+    pub problems: &'a [CapabilityProblem],
+    /// The session's CSRF token (SEC-042).
+    pub csrf: &'a str,
+}
+
+#[derive(Template)]
+#[template(path = "capability_setup.html")]
+struct CapabilityView<'a> {
+    page: &'a CapabilityPage<'a>,
+    problems: Vec<CapabilityProblem>,
+    title: &'static str,
+    show: [bool; 5],
+    carried: Vec<(&'static str, String)>,
+    summary: Vec<String>,
+    next: String,
+    button: &'static str,
+}
+
+impl CapabilityView<'_> {
+    /// Whether the job type is ticked now.
+    fn ticked(&self, c: &JobTypeChoice) -> bool {
+        self.page.values.ticked.contains(c)
+    }
+
+    /// The form value of a job type.
+    fn value(c: &JobTypeChoice) -> String {
+        choice_value(c)
+    }
+
+    /// Whether the town `code` is ticked now.
+    fn town_ticked(&self, code: &str) -> bool {
+        self.page.values.towns.contains(code)
+    }
+
+    /// Whether no row of `trade` needs a license, so its legend says "(no license needed)"; in a
+    /// mixed trade each no-license row says it instead.
+    fn no_license(trade: &TradeOffer) -> bool {
+        trade.rows.iter().all(|r| !r.licensed)
+    }
+
+    /// The problem message for `field`, if any.
+    fn error_for(&self, field: &str) -> Option<&'static str> {
+        let found = self.problems.iter().find(|p| p.field() == field);
+        found.map(|p| p.message())
+    }
+}
+
+/// BIZ-049, BIZ-004, BIZ-007, BIZ-010, BIZ-030, A11Y-012, A11Y-030: the capability step's page
+/// over `templates/capability_setup.html`: the checklist pre-ticked from the license, the
+/// no-license extras, towns, largest job, recurring work and after-hours, all on one page or one
+/// per guided screen; the check screen reads the answers back. The form posts to
+/// [`CAPABILITY_ROUTE`] with `step` set to the next screen. D-2511: a check screen whose answers
+/// are incomplete offers no "Save and continue"; it shows the one-page form with the missing
+/// answers as problems.
+///
+/// # Errors
+/// The template's render error.
+pub fn capability_page(page: &CapabilityPage<'_>) -> Result<String, askama::Error> {
+    use CapabilityStep as S;
+    let answers = page.values.answers();
+    let mut problems = page.problems.to_vec();
+    let step = match (page.step, &answers) {
+        (S::Check, Err(found)) => {
+            problems.extend(found.iter().filter(|f| !page.problems.contains(f)));
+            S::All
+        }
+        (s, _) => s,
+    };
+    let all = step == S::All;
+    let show = [
+        S::JobTypes,
+        S::Towns,
+        S::Largest,
+        S::Recurring,
+        S::AfterHours,
+    ]
+    .map(|s| all || s == step);
+    let summary = match (step, answers) {
+        (S::Check, Ok(a)) => capability_summary(page.offer, page.towns, &a),
+        _ => Vec::new(),
+    };
+    let (title, button) = match step {
+        S::All => ("Pick the jobs we send you", "Check your answers"),
+        S::Check => ("Check your answers", "Save and continue"),
+        _ => ("Pick the jobs we send you", "Next"),
+    };
+    let carried = if all {
+        Vec::new()
+    } else {
+        page.values.carried(step)
+    };
+    let next = step.next().unwrap_or(S::Check).slug().to_owned();
+    CapabilityView {
+        page,
+        problems,
+        title,
+        show,
+        carried,
+        summary,
+        next,
+        button,
+    }
+    .render()
 }

@@ -13,10 +13,13 @@
 //! calls [`sample_pick_on_open`] when a person opens a real job card: the first time for an owner
 //! or "Confirm and billing" person it gives the "Send a sample pick" step (BIZ-042, D-462; T149).
 //! T199: [`open_quote_form`], the quote form's `GET`, reads the link and stamps the notice's
-//! first opening once (SEC-026, OPS-037).
+//! first opening once (SEC-026, OPS-037). T155: [`largest_job_warning`] and
+//! [`quote_form_page_warned`] warn before a quote above the business's largest-job answer is sent
+//! (BIZ-049, D-393); the send goes through only with the form's `over_largest` field equal to the
+//! warned amount in cents, so a raised price is warned again.
 
 use askama::Template;
-use askhava_businesses::api::{Acting, offer_sample_pick};
+use askhava_businesses::api::{Acting, LargestJob, offer_sample_pick};
 use askhava_core::api::{NewTask, brand, enqueue};
 use askhava_messaging::api::{notice_log, record_first_open};
 use askhava_payments::api::{
@@ -130,6 +133,7 @@ pub struct ActionFacts<'a> {
 struct ActionsView<'a> {
     action: Option<ActionView<'a>>,
     form: Option<&'a QuoteFormFacts>,
+    warning: Option<&'a LargestWarning>,
     csrf: &'a str,
 }
 
@@ -164,6 +168,7 @@ pub fn action_page(facts: &ActionFacts<'_>) -> Result<String, askama::Error> {
     ActionsView {
         action: Some(action),
         form: None,
+        warning: None,
         csrf: facts.csrf,
     }
     .render()
@@ -547,12 +552,72 @@ impl QuoteFormFacts {
 /// # Errors
 /// The template's render error.
 pub fn quote_form_page(facts: &QuoteFormFacts, csrf: &str) -> Result<String, askama::Error> {
+    quote_form_page_warned(facts, csrf, None)
+}
+
+/// BIZ-049, D-393: [`quote_form_page`] with the largest-job `warning` from
+/// [`largest_job_warning`] above the button, focused, and the `over_largest` field holding the
+/// warned amount in cents, so the next send of that same amount goes through.
+///
+/// # Errors
+/// The template's render error.
+pub fn quote_form_page_warned(
+    facts: &QuoteFormFacts,
+    csrf: &str,
+    warning: Option<&LargestWarning>,
+) -> Result<String, askama::Error> {
     ActionsView {
         action: None,
         form: Some(facts),
+        warning,
         csrf,
     }
     .render()
+}
+
+/// BIZ-049: the most a quote asks, in cents, for the largest-job check: the firm price, the top of
+/// a range, the highest tier, the visit fee, or the hourly rate times the most hours. A monthly
+/// price and an hourly rate with no hours have no job size, so `None`.
+#[must_use]
+pub fn quote_top_cents(price: &Price) -> Option<u64> {
+    match price {
+        Price::Firm(c) | Price::VisitFee(c) => Some(*c),
+        Price::Range { high, .. } => Some(*high),
+        Price::Tiers(tiers) => tiers.iter().map(|(_, c)| *c).max(),
+        Price::Hourly { rate, hours } => hours.map(|(_, most)| rate * u64::from(most)),
+        Price::Monthly { .. } => None,
+    }
+}
+
+/// BIZ-049, D-393: the largest-job warning: its words and the quote amount it warned about, in
+/// cents, which the form posts back as `over_largest`.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LargestWarning {
+    /// The warning line shown above the send button.
+    pub text: String,
+    /// The quote's top amount ([`quote_top_cents`]) the warning was shown for.
+    pub cents: u64,
+}
+
+/// BIZ-049, D-393, D-2510: the warning shown before a quote above the business's `largest` job is
+/// sent; none for no limit, at or under it, or once the business confirmed this same amount
+/// (`confirmed`, the posted `over_largest` cents). A confirmation of another amount (the price
+/// changed after the warning) warns again.
+#[must_use]
+pub fn largest_job_warning(
+    price: &Price,
+    largest: LargestJob,
+    confirmed: Option<u64>,
+) -> Option<LargestWarning> {
+    let top = quote_top_cents(price)?;
+    (confirmed != Some(top) && largest.below(top)).then(|| LargestWarning {
+        text: format!(
+            "This quote is over {}, which you told us is the largest job you'd quote. You can send \
+it anyway or change the price.",
+            largest.line()
+        ),
+        cents: top,
+    })
 }
 
 /// SEC-026, OPS-037, BIZ-038, D-347, D-491: the quote form's `GET`. It only reads the Quote link
