@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE payments.reconcile_open SET alerted_at = $1\n          WHERE settled_at IS NULL AND alerted_at IS NULL AND first_seen <= $2\n          RETURNING id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "payments.reconcile_open",
+            "name": "id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Timestamptz",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "3b1bf6fa964b428fd322eda4d6d931d2aa710997e0509036c99ba42734b9038a"
+}
