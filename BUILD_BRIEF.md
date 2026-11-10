@@ -268,7 +268,7 @@ Then the runner sends the **"Finished: ready for your review"** message (§16). 
 
 | What happened | What the runner does |
 |---|---|
-| Checks fail | The same model gets one more try with the failure log. A Sonnet task that fails twice gets one Opus try, logged (since D-1143 the queued tasks already run on Opus, so the third try changes nothing but the log). After that the task is `BLOCKED`: dependents wait, other work continues, and it goes on the end-of-build list (§16), unless a logged plan change fixes the plan that made it fail: then `python3 -m runner --requeue T### --plan-fix D-###` gives it exactly one more attempt, on Opus, once per decision (D-677); FIX-MAIN is the exception, retried by the runner while `main` is red (D-1099). Casey is asked only if a human action is the only way through |
+| Checks fail | The same model gets one more try with the failure log. A Sonnet task that fails twice gets one Opus try, logged (and since D-2463 a Sonnet task that fails an attempt is moved to Opus by a small plan change before its next one). After that the task is `BLOCKED`: dependents wait, other work continues, and it goes on the end-of-build list (§16), unless a logged plan change fixes the plan that made it fail: then `python3 -m runner --requeue T### --plan-fix D-###` gives it exactly one more attempt, on Opus, once per decision (D-677); FIX-MAIN is the exception, retried by the runner while `main` is red (D-1099). Casey is asked only if a human action is the only way through |
 | Flaky test (passes on rerun with no change) | Logged, and a fix task is queued first in line. A quarantined test keeps running and reporting; it may leave its required check for at most 48 hours. It is never deleted |
 | Vendor sandbox outage (Phase 2) | `RETRY_LATER` with backoff, so it isn't counted as a failure |
 | Usage limit hit, or a run rejected | `RETRY_AFTER_RESET`; the hourly run picks it up after the reset. No pay-per-use |
@@ -494,8 +494,8 @@ The list below is the minimum, not the whole set:
 
 **Models**
 - **Haiku 5.5:** running tests and summarizing, scans, formatting, docs upkeep.
-- **Sonnet 5.5:** most code (the rule until D-1143; the tasks finished under it keep their recorded model).
-- **Opus 5.5:** spec, architecture, money, privacy, security and recovery application code, reviews of all work in those areas, and the final audit; test-only, docs and harness work there runs on Sonnet with an Opus reviewer (D-483). From October 31, 2026 every Sonnet-named task not yet started runs on Opus with an Opus reviewer (Casey's choice, D-1143: the week's budget is to be spent on accuracy, not saved); T136 stays on Haiku with an Opus reviewer, FIX-MAIN's worker and the runner's own session stay on Sonnet.
+- **Sonnet 5.5:** the tasks D-2463's rubric gives it (docs, copy, templates, catalog data, tests-only work and small single-crate changes with no money or privacy logic); the tasks finished earlier keep their recorded model.
+- **Opus 5.5:** spec, architecture, money, privacy, security and recovery application code, reviews of all work in those areas, and the final audit; test-only, docs and harness work there runs on Sonnet with an Opus reviewer (D-483). From November 10, 2026 each queued task runs on the lowest model that can do it well, Sonnet or Opus by D-2463's rubric, always with an Opus reviewer (Casey's choice; it sets aside D-1143's Opus for every unstarted task); FIX-MAIN's worker and the runner's own session stay on Sonnet.
 - **Fable:** not used, except inside a model window Casey sets in `kit/runner.json` (D-2225): from its `from` until its `until`, every worker, reviewer and the runner's own session run on its model instead of the task's, and `kit/tasks.json` is not changed.
 - Models are named in each task. The runner's own session uses Sonnet at low effort (inside a model window, the window's model, D-2225).
 

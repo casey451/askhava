@@ -79,7 +79,7 @@ def test_load_reads_kit_runner_json_and_fails_safe(tmp_path: Path) -> None:
 def test_the_repository_window_is_caseys_thursday_switch() -> None:
     """kit/runner.json as Casey asked on November 9: Fable from the weekly reset, open-ended, to the limit."""
     raw = json.loads((ROOT / "kit" / "runner.json").read_text(encoding="utf-8"))
-    assert raw["lanes"] == 1 and raw["owner_review"] is False  # the locked switches are untouched (D-620)
+    assert raw["lanes"] == 2 and raw["owner_review"] is False  # the locked switches as set: two lanes since D-2462 (D-620)
     win = mw.load()
     assert win is not None and win["model"] == FABLE and win["alias"] == "fable"
     assert st.iso(win["from"]) == "2026-11-12T17:00:00Z" and win["until"] is None and win["run_to_limit"] is True
