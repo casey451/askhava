@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-10T04:00:40Z by runner 78e2c82b2d8d (actions).
+Updated 2026-11-10T04:30:38Z by runner 9c9459249f80 (actions).
 
-**Idle since 03:45Z; 178 of 333 done; week 84% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 04:19Z; 179 of 333 done; week 84% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 178 of 333 build tasks (owner gates not counted)
+- **Tasks done:** 179 of 333 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 03:45Z (no task in progress)
+- **Lane:** idle since 04:19Z (no task in progress)
 - **Week:** 84% used, 28.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:00Z, 0 min before this update
+- **Last run:** 04:00Z, 29 min before this update
 - **Keeper:** last ran 04:00Z, next wake 04:20Z
 
 ## Needs attention
@@ -17,7 +17,7 @@ Updated 2026-11-10T04:00:40Z by runner 78e2c82b2d8d (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T285 | runner: a task closes with a visible mark when a file it own | MERGE_PENDING | 1 | 19 min | 03:45Z |  |
+| T285 | runner: a task closes with a visible mark when a file it own | done | 1 | 19 min | 03:45Z |  |
 | T284 | server: every route the architecture lists is wired in the r | done | 3 | 34 min | 03:02Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests / test tests::ssrf_g |
 | T284 | server: every route the architecture lists is wired in the r | check_failed | 2 | 21 min | 01:51Z |  |
 | T284 | server: every route the architecture lists is wired in the r | check_failed | 1 | 34 min | 00:32Z |  |
@@ -36,7 +36,6 @@ Updated 2026-11-10T04:00:40Z by runner 78e2c82b2d8d (actions).
 | T264 | coverage checker: a missing measurement fails, and the total | done | 1 | 24 min | 07:58Z |  |
 | T262 | calls and server: a random stored PIN per line, unique on it | done | 1 | 33 min | 06:56Z |  |
 | T257 | privacy and server: the scrubber remembers names across a ho | done | 1 | 56 min | 05:54Z |  |
-| T263 | payments: the monthly fee limit is a hard cap; capacity is r | done | 1 | 49 min | 04:26Z |  |
 
 ### Plan and harness merges on main
 - 03:30Z Plan: pentest assessment — Actions pinned, purpose-bound codes, Verify sends outside transactions (D-2346–D-2350, T345–T346) (#407)
@@ -52,7 +51,7 @@ Updated 2026-11-10T04:00:40Z by runner 78e2c82b2d8d (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 232 of 733 (31.7%) · partial 302 · unstarted 199
-**Tasks merged (throughput only):** 178 of 333
+**Tasks merged (throughput only):** 179 of 333
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -87,7 +86,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 58 of 134 done
+- stage 4: 59 of 134 done
 - stage 5: 0 of 53 done
 - stage 6: 0 of 30 done
 - stage 7: 0 of 2 done
