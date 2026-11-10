@@ -39,7 +39,10 @@ use serde_json::Value;
 use sqlx::PgConnection;
 use sqlx::types::Uuid;
 
-use crate::email::{EMAIL_ACTION, MailboxKind, PostalAddress, Rendered, audience_kind};
+use crate::email::{
+    EMAIL_ACTION, MailboxKind, OnDomain, PostalAddress, Rendered, audience_kind, footer_lines,
+    legal_name, short_name,
+};
 use crate::mode::Lines;
 use crate::models::{self, EmailError};
 use crate::service::{NewText, Relation, enqueue};
@@ -49,11 +52,12 @@ use crate::templates::{Audience, Language, Registry};
 pub const BUSINESS_NOTICE_KIND: &str = "messaging.business_notice";
 /// The job card's template (CARD-020): its words are the text and the email's first line.
 pub const JOB_CARD_TEMPLATE: &str = "job_card_notice";
-/// The business sign-in page every signed `{link}` opens (PICK-024, D-1761).
-pub const SIGN_IN_URL: &str = "https://askhava.com/b/sign-in";
+/// The business sign-in page every signed `{link}` opens, on the brand's domain (PICK-024, D-1761,
+/// D-1932).
+pub const SIGN_IN_URL: OnDomain = OnDomain("/b/sign-in");
 /// How long a signed sign-in link lasts (D-1761).
 pub const LINK_LIFE: SignedDuration = SignedDuration::from_hours(7 * 24);
-const PORTAL: &str = "https://askhava.com/b";
+const PORTAL: OnDomain = OnDomain("/b");
 const ARIZONA: &str = "America/Phoenix";
 /// The pick notices whose "Accept by" is set when they are sent (PICK-019, D-1503, D-1828).
 const PICK_TEMPLATES: [&str; 2] = ["pick_notice", "pick_notice_emergency"];
@@ -268,6 +272,7 @@ struct NoticeView<'a> {
     why: &'a str,
     manage_url: &'a str,
     manage_label: &'a str,
+    legal: &'a str,
     postal: &'a str,
 }
 
@@ -285,14 +290,16 @@ fn words(n: &Parsed, id: &str, link: Option<&str>) -> Result<String, EmailError>
     Ok(text.map_err(|_| EmailError::Template)?.body)
 }
 
-/// CARD-020: "Ask Hava: New <category> job in <town>. Quote by <time>." from the card's values.
+/// CARD-020: "<short_name>: New <category> job in <town>. Quote by <time>." from the card's
+/// values; the short name is the brand's (WORD-008, D-1932).
 fn card_subject(n: &Parsed) -> String {
     let value = |key: &str| {
         let found = n.values.iter().find(|(k, _)| k == key);
         found.map_or("", |(_, v)| v.as_str())
     };
     let (trade, town, time) = (value("trade"), value("town"), value("time"));
-    format!("Ask Hava: New {trade} job in {town}. Quote by {time}.")
+    let short = short_name(Language::En);
+    format!("{short}: New {trade} job in {town}. Quote by {time}.")
 }
 
 /// BIZ-019, CARD-020, PRIV-027, SEC-028: the email to `person`: the notice's words, its `{link}`
@@ -321,22 +328,23 @@ fn render(sender: &NoticeSender, n: &Parsed, link: Option<&str>) -> Result<Rende
         lines.extend([card.clone(), statement.clone()]);
         page = Some(url.as_str());
     }
-    let why =
-        "You get these emails because your business signed up for job requests from Ask Hava.";
+    let (why, manage_label) = footer_lines(Audience::Business, Language::En);
+    let (portal, legal) = (PORTAL.to_string(), legal_name(Language::En));
     let view = NoticeView {
         lang: "en",
         subject: &subject,
         lines: &lines,
         link: page,
-        why,
-        manage_url: PORTAL,
-        manage_label: "Manage email notices",
+        why: &why,
+        manage_url: &portal,
+        manage_label,
+        legal,
         postal: &sender.postal,
     };
     let html = view.render().map_err(|_| EmailError::Template)?;
     let page = page.map(|u| format!("{u}\n")).unwrap_or_default();
     let plain = format!(
-        "{}\n{page}\n--\n{why}\nManage email notices: {PORTAL}\nAsk Hava LLC, {}\n",
+        "{}\n{page}\n--\n{why}\n{manage_label}: {portal}\n{legal}, {}\n",
         lines.join("\n"),
         sender.postal
     );

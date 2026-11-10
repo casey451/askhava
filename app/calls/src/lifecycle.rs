@@ -25,7 +25,7 @@
 //! and no forward (CALL-020).
 
 use askhava_businesses::api::{NoticePurpose, notice_addresses};
-use askhava_core::api::{NewTask, enqueue};
+use askhava_core::api::{NewTask, brand, enqueue};
 use askhava_ops::api::{Actor, AuditEntry, Change, audit};
 use jiff::{SignedDuration, Timestamp};
 use jiff_sqlx::ToSqlx;
@@ -45,13 +45,26 @@ pub const BUSINESS_NOTICE_KIND: &str = "messaging.business_notice";
 pub const CANCELLED_TEMPLATE: &str = "line_closed_cancelled";
 /// CALL-011, D-078: the "Link this phone" and "Reply LINK <PIN>" notice.
 pub const LINK_TEMPLATE: &str = "link_this_phone";
-/// CALL-020, D-227: the English greeting of the Ask Hava number.
-pub const GREETING_EN: &str = "This is Ask Hava LLC. We work by text. To start a request, text \
-     this number. For help, text HELP. If this is an emergency, hang up and call 911.";
-/// CALL-020, D-1697: the Spanish greeting, said after the English one.
-pub const GREETING_ES: &str = "Habla Ask Hava LLC. Trabajamos por mensaje de texto. Para hacer \
-     una solicitud, mande un texto a este número. Para ayuda, mande AYUDA. Si es una emergencia, \
-     cuelgue y llame al 911.";
+/// CALL-020, D-227, WORD-001: the English greeting of the main number, opening with the brand's
+/// legal name (D-1932).
+#[must_use]
+pub fn greeting_en() -> String {
+    format!(
+        "This is {}. We work by text. To start a request, text this number. For help, text HELP. \
+         If this is an emergency, hang up and call 911.",
+        brand().legal_name()
+    )
+}
+/// CALL-020, D-1697, WORD-001: the Spanish greeting, said after the English one, opening with the
+/// brand's Spanish legal name (D-1932).
+#[must_use]
+pub fn greeting_es() -> String {
+    format!(
+        "Habla {}. Trabajamos por mensaje de texto. Para hacer una solicitud, mande un texto a \
+         este número. Para ayuda, mande AYUDA. Si es una emergencia, cuelgue y llame al 911.",
+        brand().es().legal_name()
+    )
+}
 /// CALL-011, D-078, D-1696: the LINK notice's `text_to`: its text goes only to the business's
 /// signed-up main phone, and only when the business chose text; `to` is the email list.
 pub const LINK_TEXT_TO: &str = "main_phone";
@@ -301,7 +314,9 @@ pub async fn request_link(
 pub fn greeting_twiml() -> String {
     format!(
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response>\
-         <Say language=\"en-US\">{GREETING_EN}</Say><Say language=\"es-MX\">{GREETING_ES}</Say>\
-         <Hangup/></Response>"
+         <Say language=\"en-US\">{}</Say><Say language=\"es-MX\">{}</Say>\
+         <Hangup/></Response>",
+        greeting_en(),
+        greeting_es()
     )
 }
