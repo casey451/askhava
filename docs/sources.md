@@ -51,3 +51,5 @@ Each row is a conflict listed in the table in "How to read this file" of `Change
 | 12 | Any build-plan copy exported before the Oct 27 reviews: sessions flip "passes"; K9 runs real app tasks; build 1 to 2 weeks (the copies in `02_build_plan/` are already updated) | Runner-only completion, practice-task rehearsal, revised estimates (changes file section 8) | Row 6 |
 | 13 | Grok review, "Conflicts" item 1: goal possibly $20k to $50k **a month** | Goal is **$20k to $50k a year** | Row 7; section 3 |
 | 14 | Grok review, "Conflicts" item 2: no homeowner details may go to any AI | Zero-retention AI is allowed, **after** a plain-code scrub | Row 8; section 3 |
+
+**Owner rulings that overrule the changes file.** Casey's owner ruling of November 10, 2026 (D-2407) overrules the changes file's split-job lines (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:41`'s "no job splitting" as a platform check, `:208` and `:241`): there is no split-job check, each handyman job is judged by its own price, and the source file stays unedited.
