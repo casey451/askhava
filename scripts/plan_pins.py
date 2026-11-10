@@ -89,7 +89,6 @@ GRANTS = re.compile(r"\b(?:also owns?|owns? (?:both|it|them|the)|may (?:edit|upd
 SENTENCE = re.compile(r"(?<=[.;])\s+(?=[A-Z(`])")
 # The plan's own files: every task appends to them, so a count over them is no list a task adds to.
 PLAN_FILES = ("docs/decisions.md", "kit/")
-WARN_KEY = "pinned lists (report-only, D-2550)"
 
 
 @dataclass(frozen=True)
@@ -426,10 +425,10 @@ def main(argv: list[str] | None = None) -> int:
     try:
         state = json.loads(args.state.read_text(encoding="utf-8")) if args.state else {"tasks": []}
         plan = read_plan(args.root, state)
-    except (OSError, ValueError) as error:
+        pins = find_pins(args.root)
+    except (OSError, ValueError, KeyError) as error:
         print(f"ERROR inputs unreadable: {str(error)[:300]}")
         return 2
-    pins = find_pins(args.root)
     if args.pins:
         print("\n".join(f"{p.kind:5} {p.where()} {p.symbol} ({p.detail}) <- {', '.join(p.sources)}" for p in pins))
         return 0

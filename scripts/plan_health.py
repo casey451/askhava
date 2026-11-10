@@ -25,9 +25,10 @@ attempt used and claim the next task instead. Three checks, each reusing the pla
 (d) **Pinned lists (report-only, D-2550).** scripts/plan_pins.py: the task's goal adds rows to a data
     file, or serves a route, that an existing test pins by exact list or count (T290's `RECURRING` and
     `checked == 14`, D-2386; T231's route `door`, D-2429), and the task may not edit that test. Printed
-    as `WARN` lines under `--all` or `--pinned` (in --json, under the key `pinned lists (report-only,
-    D-2550)` when there are any); never returned by `check_task`, so it holds no task and never sets
-    the exit code. D-2551 (reserved) makes it a holding problem once it has shown no false positives.
+    as `WARN` lines after the (a) to (c) report under `--all` or `--pinned` (in --json, under the key
+    `pinned lists (report-only, D-2550)` when there are any); never returned by `check_task`, so it
+    holds no task and never sets the exit code; imported only when it runs, and any fault in it is one
+    `check (d) unavailable` line. D-2551 (reserved) makes it a holding problem once it has shown no false positives.
 
 Each problem is one plain string. Exit 0 when clean, 1 when there are gaps, 2 when the inputs
 cannot be read.
@@ -59,12 +60,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import check_pr_change  # sibling scripts, imported after their folder is on the path
 import gen_prompts
-import plan_pins
 import validate_tasks
 
 from runner import state as st
 
 ROOT = Path(__file__).resolve().parent.parent
+PINNED_KEY = "pinned lists (report-only, D-2550)"
 STATE_REF = "origin/claude/kit-state"
 CITED_PATH = re.compile(
     r"`((?:app|tests|migrations|scripts|docs|kit|runner|twin|stand_ins|\.github)/[A-Za-z0-9_./-]+\.[A-Za-z0-9]+)`"
@@ -235,25 +236,40 @@ def main(argv: list[str] | None = None) -> int:
     if args.all:
         found["DONE tasks"] = done_file_problems(args.root, doc, state)
     code = 1 if any(found.values()) else 0
-    warned = plan_pins.warnings(args.root, state, [t for t in found if t != "DONE tasks"]) if args.all or args.pinned else []
-    report(found, args.json, warned)
+    ids = [t for t in found if t != "DONE tasks"]
+    if args.json:
+        report(found, True, pinned_warnings(args.root, state, ids) if args.all or args.pinned else [])
+        return code
+    report(found, False)
+    if args.all or args.pinned:
+        warned = pinned_warnings(args.root, state, ids)
+        print("\n".join(f"WARN {line}" for line in warned) + ("\n" if warned else "")
+              + f"{len(warned)} report-only pinned-list warning(s) (D-2550)")
     return code
 
 
+def pinned_warnings(root: Path, state: st.State, ids: list[str]) -> list[str]:
+    """Check (d), report-only (D-2550): scripts/plan_pins.py's warnings for the tasks. Imported here, not at
+    the top, so a fault in it can never stop the runner, which imports this module (D-1350); any error
+    becomes one `check (d) unavailable` line and the (a) to (c) report stands."""
+    try:
+        import plan_pins  # sibling script; deliberately imported late
+
+        return plan_pins.warnings(root, state, ids)
+    except Exception as error:  # noqa: BLE001 - report-only: no fault in (d) may hide (a) to (c)
+        return [f"check (d) unavailable: {type(error).__name__}: {str(error)[:200]}"]
+
+
 def report(found: dict[str, list[str]], as_json: bool, warned: list[str] | None = None) -> None:
-    """Print the problems, one per line, or as JSON; a clean task prints `ok`. Check (d)'s warnings
-    follow as `WARN` lines (in JSON, under `plan_pins.WARN_KEY` when there are any); they never count as
-    gaps (D-2550)."""
+    """Print the problems, one per line, or as JSON; a clean task prints `ok`. In JSON, check (d)'s
+    warnings go under `PINNED_KEY` when there are any; they never count as gaps (D-2550)."""
     warned = warned or []
     if as_json:
-        print(json.dumps({**found, plan_pins.WARN_KEY: warned} if warned else found, indent=1))
+        print(json.dumps({**found, PINNED_KEY: warned} if warned else found, indent=1))
         return
     for tid, problems in found.items():
         print(f"ok  {tid}" if not problems else "\n".join(f"GAP {p}" for p in problems))
-    for line in warned:
-        print(f"WARN {line}")
-    tail = f", {len(warned)} report-only pinned-list warning(s) (D-2550)" if warned else ""
-    print(f"checked {len(found)} tasks, {sum(1 for p in found.values() if p)} with gaps{tail}")
+    print(f"checked {len(found)} tasks, {sum(1 for p in found.values() if p)} with gaps")
 
 
 if __name__ == "__main__":

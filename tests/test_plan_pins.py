@@ -221,9 +221,139 @@ def test_plan_health_prints_warnings_but_holds_nothing(tmp_path: Path, capsys: A
     assert ph.main(["--root", str(root), "--state", str(state_file), "--pinned", "T290"]) == 0
     out = capsys.readouterr().out
     assert out.count("WARN T290: its goal adds to docs/catalog/worked_examples.yaml") == 2
-    assert "with gaps, 2 report-only pinned-list warning(s) (D-2550)" in out
+    assert out.index("checked 1 tasks, 0 with gaps") < out.index("WARN T290")  # (a) to (c) first
+    assert out.endswith("2 report-only pinned-list warning(s) (D-2550)\n")
     assert ph.main(["--root", str(root), "--state", str(state_file), "--pinned", "--json", "T290"]) == 0
     found = json.loads(capsys.readouterr().out)
-    assert found["T290"] == [] and len(found[pp.WARN_KEY]) == 2
+    assert found["T290"] == [] and len(found[ph.PINNED_KEY]) == 2
     assert ph.main(["--root", str(root), "--state", str(state_file), "T290"]) == 0
     assert "WARN" not in capsys.readouterr().out  # a single-task check without --pinned prints only (a) to (c)
+
+
+def test_a_fault_in_check_d_is_one_line_and_the_gaps_still_print(tmp_path: Path, capsys: Any, monkeypatch: Any) -> None:
+    """Review fix 1: a raising plan_pins.warnings never hides (a) to (c) nor changes the exit code."""
+    def boom(*_: Any) -> list[str]:
+        raise RuntimeError("fake fault")
+
+    monkeypatch.setattr(pp, "warnings", boom)
+    root = make_repo(tmp_path, [plan_task("T001"), plan_task("T002", ["T001"])])
+    state_file = root / "state.json"
+    state_file.write_text(json.dumps(done("T001")), encoding="utf-8")
+    assert ph.main(["--root", str(root), "--state", str(state_file), "--all"]) == 1
+    out = capsys.readouterr().out
+    assert "GAP T002: dependency T001 is DONE but its owned file app/t001.rs is not on main" in out
+    assert "WARN check (d) unavailable: RuntimeError: fake fault" in out
+    assert ph.main(["--root", str(root), "--state", str(state_file), "--all", "--json"]) == 1
+    found = json.loads(capsys.readouterr().out)
+    assert found[ph.PINNED_KEY] == ["check (d) unavailable: RuntimeError: fake fault"] and found["T002"]
+
+
+def test_plan_pins_exits_two_on_unreadable_inputs(tmp_path: Path, capsys: Any, monkeypatch: Any) -> None:
+    """Review fix 3: a test file that cannot be read is exit 2, as the docstring says."""
+    root = t290_repo(tmp_path)
+    assert pp.main(["--root", str(root), "T290"]) == 0
+    def unreadable(_: Path) -> list[pp.Pin]:
+        raise PermissionError("fake: denied")
+
+    monkeypatch.setattr(pp, "find_pins", unreadable)
+    assert pp.main(["--root", str(root), "T290"]) == 2
+    assert "ERROR inputs unreadable: fake: denied" in capsys.readouterr().out
+    assert pp.main(["--root", str(tmp_path / "nowhere")]) == 2
+
+
+def test_plan_health_does_not_import_plan_pins_at_the_top() -> None:
+    """Review fix 2: the runner imports plan_health (D-1350); plan_pins loads only when (d) runs."""
+    source = Path(ph.__file__).read_text(encoding="utf-8")
+    assert "\nimport plan_pins" not in source and "        import plan_pins" in source
+
+
+# ---- rules a mutation could drop unseen (review fix 4)
+
+def test_a_serving_sentence_about_a_stand_in_is_not_warned(tmp_path: Path) -> None:
+    goal = "It serves `GET /v1/charges` in `stand_ins/stripe.py`."
+    assert warned(t231_repo(tmp_path, goal), done("T088"), "T231") == []
+    assert "/v1/charges falls under no branch" in warned(t231_repo(tmp_path / "b", "It serves `GET /v1/charges`."),
+                                                         done("T088"), "T231")[0]
+
+
+ONE_FILE = """//! Fake catalog test reading one file through the crate.
+const FILE: &str = include_str!("../../../../docs/catalog/worked_examples.yaml");
+
+#[test]
+fn every_row_loads() {
+    let rows = load_embedded();
+    assert_eq!(rows.len(), 4);
+}
+"""
+
+
+def test_a_rust_count_in_a_test_of_one_data_file_is_a_pin_but_not_in_python(tmp_path: Path) -> None:
+    """The whole-file fallback (catalog_settings.rs's `on.len() == 37`) is Rust-only."""
+    root = t290_repo(tmp_path, ONE_FILE, "//! nothing\n")
+    assert [(p.test, p.line, p.sources) for p in pp.find_pins(root)] == [
+        ("app/payments/src/tests/worked_examples.rs", 7, ("docs/catalog/worked_examples.yaml",))]
+    write(root, "tests/test_rows.py", 'FILE = "docs/catalog/worked_examples.yaml"\n\n\ndef test_rows():\n'
+                                      '    assert len(load_embedded()) == 4\n')
+    assert [p.test for p in pp.find_pins(root)] == ["app/payments/src/tests/worked_examples.rs"]
+
+
+def test_a_counter_the_file_never_increments_is_no_pin(tmp_path: Path) -> None:
+    recurring = RECURRING.replace("        checked += 1;\n", "").replace("let mut checked = 0;", "let checked = rows.len();")
+    root = t290_repo(tmp_path, "//! nothing\n", recurring)
+    assert pp.find_pins(root) == []
+    assert len(pp.find_pins(t290_repo(tmp_path / "b", "//! nothing\n"))) == 1
+
+
+def test_the_decision_log_and_kit_are_no_data(tmp_path: Path) -> None:
+    """Every task appends to docs/decisions.md; a count over it is no list a task adds to."""
+    test = ('//! Fake.\nconst LOG: &str = include_str!("../../../../docs/decisions.md");\n'
+            'const TASKS: &str = include_str!("../../../../kit/tasks.json");\n\n'
+            '#[test]\nfn counts() {\n    assert_eq!(LOG.lines().count(), 5);\n    assert_eq!(TASKS.len(), 9);\n}\n')
+    root = t290_repo(tmp_path, test, "//! nothing\n", goal="Add a decision entry to `docs/decisions.md`.")
+    assert pp.find_pins(root) == []
+    assert warned(root, done("T058", "T188"), "T290") == []
+
+
+# ---- known false positives and negatives, recorded as current behaviour for D-2551 to tighten
+
+def test_known_fp_a_count_in_a_function_that_reads_two_data_files(tmp_path: Path) -> None:
+    """KNOWN FALSE POSITIVE: `checked` counts example rows only, but its function also names CATEGORIES,
+    so a task adding a category is warned (recurring.rs's td_fee_03 has this shape)."""
+    recurring = RECURRING.replace("const EXAMPLES", 'const CATEGORIES: &str = include_str!('
+                                  '"../../../../docs/catalog/categories.yaml");\nconst EXAMPLES')
+    recurring = recurring.replace("let rows = parse(EXAMPLES);", "let rows = parse(EXAMPLES, CATEGORIES);")
+    root = t290_repo(tmp_path, "//! nothing\n", recurring, owns=["docs/catalog/categories.yaml"],
+                     goal="Add a category to `docs/catalog/categories.yaml`.")
+    write(root, "docs/catalog/categories.yaml", "categories: []\n")
+    assert len(warned(root, done("T058", "T188"), "T290")) == 1
+
+
+def test_known_fp_a_goal_that_adds_a_field_not_a_row(tmp_path: Path) -> None:
+    """KNOWN FALSE POSITIVE: adding a field to every row leaves every count as it is, but "add" with the
+    file's name is all the data rule reads."""
+    root = t290_repo(tmp_path, goal="Add a `tier` field to every row of `docs/catalog/worked_examples.yaml`.")
+    assert len(warned(root, done("T058", "T188"), "T290")) == 2
+
+
+def test_known_fp_an_id_list_that_is_not_the_whole_file(tmp_path: Path) -> None:
+    """KNOWN FALSE POSITIVE: REFUSED names three of the file's rows, a subset, so new ordinary rows leave
+    it whole; any id list whose ids are all in the file counts as a pin."""
+    worked = WORKED.replace('const RECURRING: [&str; 3] = ["W11", "W12", "W13"];', 'const REFUSED: [&str; 2] = ["W26", "W11"];')
+    root = t290_repo(tmp_path, worked, "//! nothing\n")
+    assert "REFUSED (exact list of 2 ids)" in warned(root, done("T058", "T188"), "T290")[0]
+
+
+def test_known_fp_a_serving_goal_with_no_path(tmp_path: Path) -> None:
+    """KNOWN FALSE POSITIVE: the page may well sit under `/q/{token}`, which the matrix takes, but a goal that
+    names no path is warned (that is how T231's was caught)."""
+    goal = "This task also serves the quote page's print view."
+    assert "does not name" in warned(t231_repo(tmp_path, goal), done("T088"), "T231")[0]
+
+
+def test_known_fn_a_loose_owns_the_decision_excuses(tmp_path: Path) -> None:
+    """KNOWN FALSE NEGATIVE (too loose an excuse): the decision gives the test to another task, yet "owns the"
+    beside the path clears the warning; D-2551 should require the task's own ID in that sentence."""
+    log = "- **D-001** Question: x? Choice: T999 owns the test `app/payments/src/tests/recurring.rs` from now on.\n"
+    root = t290_repo(tmp_path, decisions=["D-001"], log=log)
+    found = warned(root, done("T058", "T188"), "T290")
+    assert len(found) == 1 and "recurring.rs" not in found[0]
