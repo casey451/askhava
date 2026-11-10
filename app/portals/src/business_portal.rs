@@ -15,20 +15,29 @@
 //! [`change_fee_limit`] and [`change_saved_card`] pass the role check and [`require_step_up`]
 //! first; [`complaints_page`] and [`reply_to_complaint`] read and write through
 //! `businesses::api` (kind and date, no homeowner detail, the reply box open for 5 days).
+//!
+//! T199 (BIZ-046, SEC-027, CALL-017; D-333, D-344, D-492): [`contact_card`] renders the
+//! "<brand> homeowner calls" vCard from the current masked pool ([`CONTACT_CARD_ROUTE`]); the home
+//! lists the same numbers; [`set_inbox_shared`] keeps the person's "This inbox is shared" switch
+//! in `portals.shared_inbox` (a text phone to turn it on, a fresh code either way) and
+//! [`inbox_shared`] reads it for the Confirm page (T232).
 
 use askama::Template;
+use askhava_adapters::api::PoolNumber;
 use askhava_businesses::api::{
     Acting, Complaint, ComplaintError, OpenCardsTime, OpenCardsTimes, has_fresh_step_up, reply,
     set_open_cards_times,
 };
+use askhava_core::api::brand;
 use askhava_payments::api::{
     BusinessId, DISPUTE_FEE_CENTS, EntryKind, SavedCard, Statement, save_card, set_fee_limit,
 };
 use jiff::Timestamp;
+use jiff_sqlx::ToSqlx;
 use sqlx::PgConnection;
 use sqlx::types::Uuid;
 
-use crate::business_auth::{BusinessPrincipal, Need};
+use crate::business_auth::{BusinessPrincipal, CodeTo, Need};
 use crate::confirm_pay::money;
 use crate::security::{SecurityEvent, SecurityEventKind, record_security_event};
 
@@ -56,11 +65,13 @@ pub enum SensitiveChange {
     MonthlyLimit,
     /// Opting in to auto-confirm.
     AutoConfirm,
+    /// Marking the notice inbox shared, or not (SEC-027).
+    SharedInbox,
 }
 
 impl SensitiveChange {
     /// Every guarded change.
-    pub const ALL: [Self; 8] = [
+    pub const ALL: [Self; 9] = [
         Self::NoticeAddress,
         Self::BackupAddress,
         Self::LinkPhone,
@@ -69,6 +80,7 @@ impl SensitiveChange {
         Self::SavedCard,
         Self::MonthlyLimit,
         Self::AutoConfirm,
+        Self::SharedInbox,
     ];
 }
 
@@ -192,16 +204,33 @@ struct HomeView<'a> {
     boxes: Vec<TimeBox>,
     too_many: bool,
     csrf: &'a str,
+    card: Vec<String>,
+    card_name: String,
+    card_note: String,
+    inbox: &'a InboxSwitch,
 }
 
-/// BIZ-025, CARD-022: the portal home with `numbers` and the person's `times`; `too_many` shows
-/// the form's error after more than two times were sent (A11Y-030).
+/// The portal home's calls card and "This inbox is shared" switch, read by the composition for
+/// the signed-in person (BIZ-046, SEC-027).
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct InboxSwitch {
+    /// Whether the person's notice inbox is marked shared now ([`inbox_shared`]).
+    pub shared: bool,
+    /// Whether the person has a phone that gets texts; without one the switch can't be turned on.
+    pub text_phone: bool,
+}
+
+/// BIZ-025, CARD-022, BIZ-046, SEC-027: the portal home with `numbers` and the person's `times`;
+/// `too_many` shows the form's error after more than two times were sent (A11Y-030). It lists
+/// the current masked `pool` numbers with the [`CONTACT_CARD_ROUTE`] download, so a pool change
+/// shows at the next load, and the `inbox` switch.
 ///
 /// # Errors
 /// [`askama::Error`] when the template fails.
 pub fn business_home_page(
     numbers: &YourNumbers,
     (times, too_many): (OpenCardsTimes, bool),
+    (pool, inbox): (&[PoolNumber], &InboxSwitch),
     csrf: &str,
 ) -> Result<String, askama::Error> {
     let chosen = times.times();
@@ -224,6 +253,10 @@ pub fn business_home_page(
             .collect(),
         too_many,
         csrf,
+        card: pool.iter().map(|n| shown_number(n.as_str())).collect(),
+        card_name: contact_card_name(),
+        card_note: contact_card_note(),
+        inbox,
     };
     view.render()
 }
@@ -250,6 +283,134 @@ pub async fn save_open_cards_times(
     };
     set_open_cards_times(db, by, times, now).await?;
     Ok(Some(times))
+}
+
+/// The portal's contact-card download (BIZ-046); the done screen and the welcome email link here.
+pub const CONTACT_CARD_ROUTE: &str = "/b/contact-card.vcf";
+/// Where the "This inbox is shared" switch posts (SEC-027; not served yet, D-1728).
+pub const SHARED_INBOX_ROUTE: &str = "/b/shared-inbox";
+
+/// BIZ-046, D-344: the card's name, "<brand> homeowner calls".
+#[must_use]
+pub fn contact_card_name() -> String {
+    format!("{} homeowner calls", brand().display_name())
+}
+
+/// BIZ-046, D-359: the line the card, the done screen and the portal carry.
+#[must_use]
+pub fn contact_card_note() -> String {
+    let name = brand().display_name();
+    format!(
+        "Calls from these numbers are homeowners who chose your quote, calling on an {name} \
+         masked number. {name} never calls you."
+    )
+}
+
+/// A `+1` number as people write it (928-555-0100); any other number as stored.
+fn shown_number(e164: &str) -> String {
+    match e164.strip_prefix("+1") {
+        Some(d) if d.len() == 10 && d.bytes().all(|b| b.is_ascii_digit()) => {
+            format!("{}-{}-{}", &d[..3], &d[3..6], &d[6..])
+        }
+        _ => e164.to_owned(),
+    }
+}
+
+/// RFC 6350 text escaping for a vCard value.
+fn vcard_text(text: &str) -> String {
+    text.replace('\\', "\\\\")
+        .replace(',', "\\,")
+        .replace(';', "\\;")
+}
+
+#[derive(Template)]
+#[template(path = "contact_card.vcf", escape = "none")]
+struct CardView<'a> {
+    name: String,
+    note: String,
+    numbers: Vec<&'a str>,
+}
+
+/// BIZ-046, CALL-017, D-344: the "<brand> homeowner calls" vCard holding exactly the current
+/// masked `pool` numbers, CRLF line ends; served at [`CONTACT_CARD_ROUTE`], so a pool change gives
+/// an updated card. No business or homeowner number is ever on it.
+///
+/// # Errors
+/// [`askama::Error`] when the template fails.
+pub fn contact_card(pool: &[PoolNumber]) -> Result<String, askama::Error> {
+    let card = CardView {
+        name: vcard_text(&contact_card_name()),
+        note: vcard_text(&contact_card_note()),
+        numbers: pool.iter().map(PoolNumber::as_str).collect(),
+    };
+    Ok(card.render()?.replace('\n', "\r\n"))
+}
+
+/// Why the "This inbox is shared" switch did not change.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, thiserror::Error)]
+pub enum SharedInboxError {
+    /// The person has no phone that gets texts; an email code would land in the shared inbox.
+    #[error("link a phone that gets texts first")]
+    NeedsTextPhone,
+    /// No Verify code in the last 5 minutes (SEC-038).
+    #[error("this change needs a fresh code")]
+    NeedsCode,
+    /// A database call failed.
+    #[error("shared-inbox database call failed")]
+    Database,
+}
+
+/// SEC-027, D-333, D-478: whether `member` marked their notice inbox "This inbox is shared".
+///
+/// # Errors
+/// [`SharedInboxError::Database`].
+pub async fn inbox_shared(db: &mut PgConnection, member: Uuid) -> Result<bool, SharedInboxError> {
+    let shared = sqlx::query_scalar!(
+        "SELECT shared FROM portals.shared_inbox WHERE member_id = $1",
+        member
+    )
+    .fetch_optional(db)
+    .await
+    .map_err(|_| SharedInboxError::Database)?;
+    Ok(shared.unwrap_or(false))
+}
+
+/// SEC-027, SEC-038, D-333, D-478: sets `principal`'s own "This inbox is shared" switch. Turning
+/// it on needs a phone that gets texts (`code_to` is [`CodeTo::Phone`]); either way the person
+/// must have passed a Verify code in the last 5 minutes ([`require_step_up`], checked before the
+/// change is written).
+///
+/// # Errors
+/// [`SharedInboxError`].
+pub async fn set_inbox_shared(
+    db: &mut PgConnection,
+    principal: &BusinessPrincipal,
+    (shared, code_to): (bool, &CodeTo),
+    now: Timestamp,
+) -> Result<(), SharedInboxError> {
+    if shared && !matches!(code_to, CodeTo::Phone(_)) {
+        return Err(SharedInboxError::NeedsTextPhone);
+    }
+    let change = (SensitiveChange::SharedInbox, SHARED_INBOX_ROUTE);
+    require_step_up(db, principal, change, now)
+        .await
+        .map_err(|e| match e {
+            StepUpError::NeedsCode => SharedInboxError::NeedsCode,
+            StepUpError::Database => SharedInboxError::Database,
+        })?;
+    sqlx::query!(
+        "INSERT INTO portals.shared_inbox (member_id, business_id, shared, changed_at) \
+         VALUES ($1, $2, $3, $4) ON CONFLICT (member_id) \
+         DO UPDATE SET shared = $3, changed_at = $4",
+        principal.member,
+        principal.business,
+        shared,
+        now.to_sqlx() as _,
+    )
+    .execute(db)
+    .await
+    .map_err(|_| SharedInboxError::Database)?;
+    Ok(())
 }
 
 /// The billing page's path (BIZ-015; not served yet, D-1728).
@@ -605,7 +766,9 @@ mod tests {
             finished: (4, 2, 9),
             typical_quotes: vec![("Plumbing".to_owned(), 25)],
         };
-        let page = business_home_page(&n, (OpenCardsTimes::DEFAULT, false), "t").expect("page");
+        let off = InboxSwitch::default();
+        let page = business_home_page(&n, (OpenCardsTimes::DEFAULT, false), (&[], &off), "t");
+        let page = page.expect("page");
         for want in [
             "<dd>12</dd>",
             "<dd>7</dd>",
@@ -621,6 +784,7 @@ mod tests {
         let none = business_home_page(
             &YourNumbers::default(),
             (OpenCardsTimes::DEFAULT, true),
+            (&[], &off),
             "t",
         );
         let none = none.expect("page");

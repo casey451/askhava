@@ -12,10 +12,13 @@
 //! [`HELP_REQUEST_KIND`] with IDs only (T151 opens the help request, OPS-036). The job-card page
 //! calls [`sample_pick_on_open`] when a person opens a real job card: the first time for an owner
 //! or "Confirm and billing" person it gives the "Send a sample pick" step (BIZ-042, D-462; T149).
+//! T199: [`open_quote_form`], the quote form's `GET`, reads the link and stamps the notice's
+//! first opening once (SEC-026, OPS-037).
 
 use askama::Template;
 use askhava_businesses::api::{Acting, offer_sample_pick};
 use askhava_core::api::{NewTask, brand, enqueue};
+use askhava_messaging::api::record_first_open;
 use askhava_payments::api::{
     Fee, FeeError, FeeQuote, Period as FeePeriod, PeriodJob, Tier, fee_for, period_fee_for,
 };
@@ -26,7 +29,7 @@ use serde_json::json;
 use sqlx::PgConnection;
 use sqlx::types::Uuid;
 
-use crate::action_links::{ActionKind, OPEN_IN_BROWSER_LINE};
+use crate::action_links::{ActionKind, ActionLinkError, OPEN_IN_BROWSER_LINE, open_action_link};
 use crate::business_auth::BusinessPrincipal;
 use crate::confirm_pay::{FEE_FREE_LINE, money};
 use crate::email_check::{MailApp, sample_pick_page};
@@ -548,6 +551,31 @@ pub fn quote_form_page(facts: &QuoteFormFacts, csrf: &str) -> Result<String, ask
         csrf,
     }
     .render()
+}
+
+/// SEC-026, OPS-037, BIZ-038, D-347, D-491: the quote form's `GET`. It only reads the Quote link
+/// `token` for `job` (opening never acts or uses it up, so a mail scanner's fetch changes no
+/// quote and no expiry), then stamps the first opening of the notice `notice` the link came in
+/// through `messaging::api::record_first_open` (once; a later opening changes nothing, and the
+/// notice log calls it "may be a mail scanner"). No pixel or redirect is involved: this is the
+/// app's own page request. The caller renders [`quote_form_page`] on `Ok`.
+///
+/// # Errors
+/// [`ActionLinkError::Ended`] for a link that would not work (nothing is stamped), or
+/// [`ActionLinkError::Store`] when a read or the stamp fails.
+pub async fn open_quote_form(
+    db: &mut PgConnection,
+    (job, token): (Uuid, &str),
+    notice: Option<Uuid>,
+    now: Timestamp,
+) -> Result<(), ActionLinkError> {
+    open_action_link(db, (ActionKind::Quote, job), token, now).await?;
+    if let Some(id) = notice {
+        record_first_open(db, id, now)
+            .await
+            .map_err(|_| PortalsError::Database)?;
+    }
+    Ok(())
 }
 
 /// A11Y-023, A11Y-024, BIZ-038, SEC-025: the plain-text part of an email with one action link:

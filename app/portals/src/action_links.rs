@@ -12,6 +12,8 @@
 //! re-reads the member's roles in the caller's transaction. Quote and Hold act through the link
 //! alone, Confirm through the link and a Verify code, every other action through a signed-in
 //! session ([`UseBy`]). The token never reaches a log: the minted link is a [`SecretString`].
+//! T199 (SEC-027): [`fresh_code_needed`] says when a Confirm press needs a fresh code (no
+//! session, or "This inbox is shared" on); Quote and Hold never do.
 
 use askhava_businesses::api::{Roles, members};
 use askhava_core::api::brand;
@@ -322,6 +324,16 @@ pub async fn use_action_link(
         Some((owner, roles)) if kind.allowed(owner, roles) => Ok(ActionGrant { member, business }),
         _ => Err(ActionLinkError::NotAllowed),
     }
+}
+
+/// SEC-004, SEC-027, BIZ-038, D-333: whether pressing `kind`'s button needs a fresh Verify code
+/// to the person's own phone. Confirm needs one without a live session, and always while the
+/// person's notice inbox is marked shared (`business_portal::inbox_shared`); Quote and Hold keep
+/// working by the link alone whatever the switch says, and the session actions never need one.
+/// The Confirm page applies it (T232).
+#[must_use]
+pub const fn fresh_code_needed(kind: ActionKind, signed_in: bool, inbox_shared: bool) -> bool {
+    matches!(kind, ActionKind::Confirm) && (!signed_in || inbox_shared)
 }
 
 /// BIZ-038, SEC-004: whether a signed-in `principal` may take `kind` for `business` in the
