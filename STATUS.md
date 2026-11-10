@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-10T23:22:06Z by runner f33177e31705 (actions).
+Updated 2026-11-10T23:34:03Z by runner d89244532af0 (actions).
 
 **Building: T207 in progress since 22:57Z; 190 of 336 done; week 52% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-10T23:22:06Z by runner f33177e31705 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T207 claimed 22:57Z, lease until 01:57Z
 - **Week:** 52% used, 89.4M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:22Z, 0 min before this update
+- **Last run:** 23:22Z, 11 min before this update
 - **Keeper:** last ran 23:22Z, next wake 02:00Z
 
 ## Needs attention
@@ -36,7 +36,6 @@ Updated 2026-11-10T23:22:06Z by runner f33177e31705 (actions).
 | T284 | server: every route the architecture lists is wired in the r | done | 3 | 34 min | 03:02Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests / test tests::ssrf_g |
 | T284 | server: every route the architecture lists is wired in the r | check_failed | 2 | 21 min | 01:51Z |  |
 | T284 | server: every route the architecture lists is wired in the r | check_failed | 1 | 34 min | 00:32Z |  |
-| T283 | Ci: a change to a document the app compiles in runs the Rust | done | 1 | 30 min | 23:27Z |  |
 
 ### Plan and harness merges on main
 - 22:59Z Plan: claim the longest remaining dependency chain first (D-2591) (#436)
