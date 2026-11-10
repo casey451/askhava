@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-10T20:31:55Z by runner 0cac801cd159 (actions).
+Updated 2026-11-10T20:45:02Z by runner 9f2d85e90f63 (actions).
 
 **Building: T338 in progress since 20:20Z; 188 of 336 done; week 97% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-10T20:31:55Z by runner 0cac801cd159 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T338 claimed 20:20Z, lease until 23:20Z
 - **Week:** 97% used, 2.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:31Z, 0 min before this update
+- **Last run:** 20:32Z, 12 min before this update
 - **Keeper:** last ran 20:31Z, next wake 23:22Z
 
 ## Needs attention
@@ -54,7 +54,6 @@ Updated 2026-11-10T20:31:55Z by runner 0cac801cd159 (actions).
 - 00:05Z Plan: fifth audit — every queued task kind gets a registered handler; late success on ended picks; unreadable Stripe success and unmatched fraud warning 
 - 21:41Z Plan: the LINK notice names the stored PIN; job_pin deleted (T326, D-2247) (#395)
 - 21:26Z Plan: T287 owns payments models.rs and T254's release_recovery test (D-2236) (#394)
-- 20:44Z Harness: Fable model window from the Thu Nov 12 reset, run to the week limit, then back to the plan's models (D-2225) (#392)
 
 ## Progress (requirements verified)
 
