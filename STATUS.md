@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-10T10:36:16Z by runner 01ba88c7b30e (actions).
+Updated 2026-11-10T10:55:31Z by runner 974446276d37 (actions).
 
-**Idle since 10:21Z; 182 of 333 done; week 86% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 10:44Z; 183 of 333 done; week 86% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 182 of 333 build tasks (owner gates not counted)
+- **Tasks done:** 183 of 333 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 10:21Z (no task in progress)
+- **Lane:** idle since 10:44Z (no task in progress)
 - **Week:** 86% used, 24.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:36Z, 0 min before this update
+- **Last run:** 10:36Z, 19 min before this update
 - **Keeper:** last ran 10:36Z, next wake 10:56Z
 
 ## Needs attention
@@ -17,7 +17,7 @@ Updated 2026-11-10T10:36:16Z by runner 01ba88c7b30e (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T290 | worked examples: pin D-033 for one-cent-wide recurring range | MERGE_PENDING | 2 | 39 min | 10:21Z | T290 blocked: any new recurring worked-example row breaks tests::worked_examples (fixed RECURRING list of 13 ids, worked |
+| T290 | worked examples: pin D-033 for one-cent-wide recurring range | done | 2 | 39 min | 10:21Z | T290 blocked: any new recurring worked-example row breaks tests::worked_examples (fixed RECURRING list of 13 ids, worked |
 | T290 | worked examples: pin D-033 for one-cent-wide recurring range | QUEUED | 1 | 1 min | 09:07Z |  |
 | T289 | jobs tests: the refused-move test counts its one bug log the | done | 1 | 44 min | 07:52Z |  |
 | T288 | payments: a Stripe charge the nightly reconcile cannot settl | done | 1 | 60 min | 06:30Z |  |
@@ -35,7 +35,6 @@ Updated 2026-11-10T10:36:16Z by runner 01ba88c7b30e (actions).
 | T274 | intake and privacy: the 180-day contact purge decides and cl | done | 1 | 66 min | 14:56Z |  |
 | T270 | picks and payments: the unreachable refund and the fraud war | done | 1 | 29 min | 13:17Z |  |
 | T282 | calls and picks: each call's start time reaches the unreacha | done | 2 | 32 min | 12:06Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Date:      2026- |
-| T282 | calls and picks: each call's start time reaches the unreacha | check_failed | 1 | 27 min | 10:49Z |  |
 
 ### Plan and harness merges on main
 - 09:36Z Plan: T290 may update the two tests that pin recurring rows by data; nearest reachable bases (D-2386) (#413)
@@ -52,7 +51,7 @@ Updated 2026-11-10T10:36:16Z by runner 01ba88c7b30e (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 232 of 733 (31.7%) · partial 302 · unstarted 199
-**Tasks merged (throughput only):** 182 of 333
+**Tasks merged (throughput only):** 183 of 333
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -87,7 +86,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 62 of 134 done
+- stage 4: 63 of 134 done
 - stage 5: 0 of 53 done
 - stage 6: 0 of 30 done
 - stage 7: 0 of 2 done
