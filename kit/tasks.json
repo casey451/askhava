@@ -10648,9 +10648,9 @@
   {
    "id": "T347",
    "slug": "no-split-job-check",
-   "title": "licensing: remove the handyman split-job check; each job is judged by its own price (Casey's ruling)",
-   "goal": "Casey's owner ruling of November 10, 2026 (D-2407, D-2408; LIC-023, LIC-019): there is no split-job check; a handyman job is judged only by its own price. Remove the check: `split_job`, `HandymanJob`, `SPLIT_JOB_WINDOW_DAYS` and `QuoteRefusal::SplitJob` from `app/licensing/src/handyman.rs` (`:20`, `:186`, `:209` to `:244`), their exports from `app/licensing/src/api.rs` (`:44`, `:45`) and every doc line naming them (`handyman.rs:3` and `:5`, `api.rs:9`, `app/licensing/src/rules.rs:7`). No production code calls `split_job`; the quote form's refusal line matches `Bounce::Handyman(_)` (`app/quotes/src/intake.rs:298`, not edited); no table, migration or setting holds state for the rule. Tests: remove `split_job_check_window_and_totals` and its `prior` helper (`app/licensing/src/tests/handyman.rs:260` to the end of that test) and the property `split_job_blocks_near_jobs_reaching_the_limit` (`app/licensing/src/tests/prop_handyman_never_gas.rs:122` to `:140`), with their now-unused imports, and drop `Bounce::Handyman(QuoteRefusal::SplitJob)` from the list of every bounce in `app/quotes/src/tests/quote_bounce.rs:95`. Removing these tests is allowed only because the spec changed and the change is logged (D-2407, D-2408; BUILD_BRIEF.md rule 6), never as a weakened test; no other assertion changes. Add the new TD-LIC-10 test in `app/licensing/src/tests/handyman.rs`: two handyman jobs of one business at one address on the same day, sharing a job type, $600 and $500, are each accepted by `check_quote`; keep TD-LIC-08's single-job edges ($999.99 accepted, $1,000.00 refused) unchanged. TD-FEE-09 (`tests/integration/tests/repeat_customer.rs`) still holds and is not edited. Update the `licensing` `CLAUDE.md` (the LIC-023 line and the test list), `docs/architecture.md` section 10 (what T035 built) and `docs/decisions.md`.",
-   "type": "build",
+   "title": "licensing (harness): remove the handyman split-job check; each job is judged by its own price (Casey's ruling)",
+   "goal": "Casey's owner ruling of November 10, 2026 (D-2407, D-2408; LIC-023, LIC-019): there is no split-job check; a handyman job is judged only by its own price. Remove the check: `split_job`, `HandymanJob`, `SPLIT_JOB_WINDOW_DAYS` and `QuoteRefusal::SplitJob` from `app/licensing/src/handyman.rs` (`:20`, `:186`, `:209` to `:244`), their exports from `app/licensing/src/api.rs` (`:44`, `:45`) and every doc line naming them (`handyman.rs:3` and `:5`, `api.rs:9`, `app/licensing/src/rules.rs:7`). No production code calls `split_job`; the quote form's refusal line matches `Bounce::Handyman(_)` (`app/quotes/src/intake.rs:298`, not edited); no table, migration or setting holds state for the rule. Tests: remove `split_job_check_window_and_totals` and its `prior` helper (`app/licensing/src/tests/handyman.rs:260` to the end of that test) and the property `split_job_blocks_near_jobs_reaching_the_limit` (`app/licensing/src/tests/prop_handyman_never_gas.rs:122` to `:140`), with their now-unused imports, and drop `Bounce::Handyman(QuoteRefusal::SplitJob)` from the list of every bounce in `app/quotes/src/tests/quote_bounce.rs:95`. Removing these tests is allowed only because the spec changed and the change is logged (D-2407, D-2408; BUILD_BRIEF.md rule 6), never as a weakened test; no other assertion changes. Add the new TD-LIC-10 test in `app/licensing/src/tests/handyman.rs`: two handyman jobs of one business at one address on the same day, sharing a job type, $600 and $500, are each accepted by `check_quote`; keep TD-LIC-08's single-job edges ($999.99 accepted, $1,000.00 refused) unchanged. TD-FEE-09 (`tests/integration/tests/repeat_customer.rs`) still holds and is not edited. Update the `licensing` `CLAUDE.md` (the LIC-023 line and the test list), `docs/architecture.md` section 10 (what T035 built) and `docs/decisions.md`. This is a harness task because it deletes and edits DONE tasks' tests (T035's and T046's); Opus review.",
+   "type": "harness",
    "phase": 1,
    "stage": "4",
    "module": "licensing",
@@ -10666,7 +10666,8 @@
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
     "money",
-    "licensing"
+    "licensing",
+    "harness"
    ],
    "owns": [
     "app/licensing/src/handyman.rs",
