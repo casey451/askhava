@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-10T01:29:34Z by runner 05c4ed68bf3b (actions).
+Updated 2026-11-10T01:51:19Z by runner 3bb23bcaf87b (actions).
 
 **Building: T284 in progress since 01:29Z; 177 of 324 done; week 77% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,11 @@ Updated 2026-11-10T01:29:34Z by runner 05c4ed68bf3b (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T284 claimed 01:29Z, lease until 04:29Z
 - **Week:** 77% used, 40.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:18Z, 11 min before this update
+- **Last run:** 01:29Z, 21 min before this update
 - **Keeper:** last ran 01:18Z, next wake 01:38Z
 
 ## Needs attention
-- nothing
+- Strict plan check red: 1 problem(s) on tasks still to run (+1 on DONE tasks); first: T284: stored context_pct 10% but it measures 15%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -38,6 +38,7 @@ Updated 2026-11-10T01:29:34Z by runner 05c4ed68bf3b (actions).
 | T259 | payments: the Stripe webhook dispatches refund, dispute and  | done | 1 | 61 min | 01:52Z |  |
 
 ### Plan and harness merges on main
+- 01:33Z Plan: the refused-connection test holds its port (T338, D-2318) (#404)
 - 00:54Z Plan: sixth audit — $0 release bound to its pick, refund amounts checked, reconcile catch-up and paging, real Stripe reads, rate-limit prune, inbound-tex
 - 00:05Z Plan: fifth audit — every queued task kind gets a registered handler; late success on ended picks; unreadable Stripe success and unmatched fraud warning 
 - 21:41Z Plan: the LINK notice names the stored PIN; job_pin deleted (T326, D-2247) (#395)
