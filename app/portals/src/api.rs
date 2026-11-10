@@ -56,8 +56,8 @@ pub use crate::business_portal::{
     statement_csv,
 };
 pub use crate::business_signup::{
-    DoneError, DoneFacts, NOTICE_OFF, NOTICE_ON, PEST_ATTESTATION, Parts, SIGNUP_ROUTE, Screen,
-    done_facts, done_lines, fee_numbers, notice_line, signup_page,
+    DoneError, DoneFacts, NOTICE_OFF, PEST_ATTESTATION, Parts, SIGNUP_ROUTE, Screen, done_facts,
+    done_lines, fee_numbers, notice_line, notice_on, signup_page,
 };
 pub use crate::checkin::{CHECK_IN_ROUTE, checkin_routes};
 pub use crate::confirm_pay::{
@@ -77,7 +77,7 @@ pub use crate::emergency_switch_page::{
     ALERT_QUESTION, DND_LINE, EMERGENCY_SWITCH_ROUTE, OFF_WARNING, SWITCH_LABEL, SwitchStep,
     TEST_BUTTON, dnd_steps, emergency_switch_page, post_step,
 };
-pub use crate::feedback::{FEEDBACK_ROUTE, SHARE_LABEL, feedback_routes};
+pub use crate::feedback::{FEEDBACK_ROUTE, feedback_routes, share_label};
 pub use crate::homeowner_portal::{
     HOMEOWNER_CODE_ROUTE, HOMEOWNER_HOME_ROUTE, HOMEOWNER_SESSION_LIFE, HOMEOWNER_SIGNIN_ROUTE,
     HomeFacts, HomeownerError, OnFile, PortalScreen, TEXTS_OFF_LINE, TEXTS_OFF_ROUTE,

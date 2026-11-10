@@ -10,10 +10,10 @@
 <link rel="stylesheet" href="/static/portals/feedback.css">
 {% if sent %}
 <h1 id="feedback-sent" tabindex="-1" autofocus>Thanks. We got your feedback on request {{ request }}.</h1>
-<p>If you ticked the box, we may put your words on askhava.com with your first name and town. You can close this page now.</p>
+<p>If you ticked the box, we may put your words on {{ askhava_core::api::brand().domain() }} with your first name and town. You can close this page now.</p>
 {% else %}
 <h1>How did request {{ request }} go?</h1>
-<p>Tell us how it went. It comes to Ask Hava, not the business. It's never shown on quote cards and never changes the order of anyone's quotes.</p>
+<p>Tell us how it went. It comes to {{ askhava_core::api::brand().display_name() }}, not the business. It's never shown on quote cards and never changes the order of anyone's quotes.</p>
 {% if let Some(error) = error %}<div id="feedback-error" role="alert" tabindex="-1" autofocus>
 <p>Your feedback wasn't sent:</p>
 <ul><li><a href="#feedback-body">{{ error }}</a></li></ul>

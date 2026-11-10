@@ -7,18 +7,5 @@
   "app/messaging/templates/es.json": 96,
   "app/payments/src/models.rs": 2,
   "app/picks/src/service.rs": 2,
-  "app/portals/src/business_auth.rs": 1,
-  "app/portals/src/business_signup.rs": 2,
-  "app/portals/src/feedback.rs": 1,
-  "app/portals/src/owner_auth.rs": 2,
-  "app/portals/src/receipts_page.rs": 1,
-  "app/portals/templates/confirm_pay.html": 2,
-  "app/portals/templates/feedback.html": 2,
-  "app/portals/templates/homeowner_home.html": 3,
-  "app/portals/templates/notice_settings.html": 1,
-  "app/portals/templates/pick_code.html": 1,
-  "app/portals/templates/pick_review.html": 3,
-  "app/portals/templates/quote_page.html": 5,
-  "app/portals/templates/why_charged.html": 1,
-  "app/site/templates/base.html": 2
+  "app/portals/templates/homeowner_home.html": 3
 }
