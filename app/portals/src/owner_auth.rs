@@ -200,7 +200,8 @@ pub struct OwnerAuth {
 }
 
 impl OwnerAuth {
-    /// The relying party for `rp_id` (such as `askhava.com`) served at `origin`.
+    /// The relying party for `rp_id` (such as `askhava.com`) served at `origin`, named with the
+    /// brand file's display name (WORD-001, D-1932, T294).
     ///
     /// # Errors
     ///
@@ -208,7 +209,9 @@ impl OwnerAuth {
     pub fn new(rp_id: &str, origin: &str) -> Result<Self, OwnerAuthError> {
         let url = Url::parse(origin).map_err(|_| OwnerAuthError::Passkey)?;
         let builder = WebauthnBuilder::new(rp_id, &url).map_err(|_| OwnerAuthError::Passkey)?;
-        let webauthn = builder.rp_name("Ask Hava").build();
+        let webauthn = builder
+            .rp_name(askhava_core::api::brand().display_name())
+            .build();
         Ok(Self {
             webauthn: webauthn.map_err(|_| OwnerAuthError::Passkey)?,
         })
@@ -764,7 +767,8 @@ pub async fn passkey_sign_in_options(
 }
 
 /// Starts registering a passkey (D-098): needs a fresh second factor; returns the challenge row
-/// and the creation options for `passkey.ts`, excluding the passkeys already registered.
+/// and the creation options for `passkey.ts`, excluding the passkeys already registered. The
+/// passkey's display name is "<display name> owner" from the brand file (WORD-001, D-1932, T294).
 ///
 /// # Errors
 ///
@@ -781,12 +785,10 @@ pub async fn passkey_registration_options(
         .filter_map(|(_, json)| serde_json::from_value::<Passkey>(json).ok())
         .map(|key| key.cred_id().clone())
         .collect();
-    let started = auth.webauthn.start_passkey_registration(
-        principal.owner,
-        "owner",
-        "Ask Hava owner",
-        Some(known),
-    );
+    let shown = format!("{} owner", askhava_core::api::brand().display_name());
+    let started =
+        auth.webauthn
+            .start_passkey_registration(principal.owner, "owner", &shown, Some(known));
     let (options, state) = started.map_err(|_| OwnerAuthError::Passkey)?;
     let state = serde_json::to_value(&state).map_err(|_| OwnerAuthError::Passkey)?;
     let id = db(m::insert_challenge(conn, "register", state, now + CHALLENGE_LIFE).await)?;

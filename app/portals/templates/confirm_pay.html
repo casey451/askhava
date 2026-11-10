@@ -17,14 +17,14 @@
 {% else %}<li id="fee-line">{{ no_fee_line }}</li>
 {% endif %}<li id="refund-line">{{ refund }}</li>
 <li id="terms-version">You're agreeing to business terms version {{ terms_version }}. <a href="/terms/business">Read the business terms</a></li>
-<li>Ask Hava is not a contractor and does not perform, bid on or supervise work.</li>
+<li>{{ askhava_core::api::brand().display_name() }} is not a contractor and does not perform, bid on or supervise work.</li>
 </ul>
 <form method="post" action="/b/picks/{{ pick }}/confirm" id="confirm-form" data-stripe-key="{{ stripe_key }}" data-paid="{% if paid %}yes{% else %}no{% endif %}" novalidate>
 <input type="hidden" name="csrf" value="{{ csrf }}">
 <input type="hidden" name="press" value="{{ press }}">
 <input type="hidden" name="payment_method" value="">
 <h2>Card</h2>
-<p id="card-hint">{% if paid %}Enter a card. Your card number goes straight to Stripe. Ask Hava never sees it.{% else %}You don't need a card for this one. You can save one here for next time.{% endif %}</p>
+<p id="card-hint">{% if paid %}Enter a card. Your card number goes straight to Stripe. {{ askhava_core::api::brand().display_name() }} never sees it.{% else %}You don't need a card for this one. You can save one here for next time.{% endif %}</p>
 <div id="card-element" aria-describedby="card-hint"></div>
 <noscript><p>Turn on JavaScript to enter a card. Stripe's card form needs it.</p></noscript>
 <p><input type="checkbox" id="save-card" name="save_card" value="yes" aria-describedby="save-card-text">
