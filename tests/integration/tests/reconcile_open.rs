@@ -4,7 +4,9 @@
 //! left open is retried on night 10, after it left the 7-day list, and settles with one refund; a
 //! charge refunded or disputed at Stripe since it was stored is settled by that state with no
 //! refund sent; a row open 7 days raises one High alert naming only the row (`alerted_at`); a
-//! settled row is never retried; the report counts open rows; no row holds a contact detail.
+//! settled row is never retried; the report counts open rows; no row holds a contact detail. A
+//! retry raises no per-charge alert of its own (D-2364); a ledger that differs from Stripe is
+//! `mismatch` and reopens a settled row; a refund Stripe holds `pending` is `refund-pending`.
 //!
 //! Stripe is a scripted fake whose list holds only charges created in the run's window (as the
 //! 7-day `LOOKBACK` read does), whose `fetch_charge` reads any charge and counts the reads, and
@@ -13,10 +15,12 @@
 use std::collections::HashMap;
 use std::sync::Mutex;
 
-use askhava_adapters::api::{AdapterError, Charge, IdempotencyKey, PaymentIntent, PaymentsAdapter};
+use askhava_adapters::api::{
+    AdapterError, Charge, IdempotencyKey, PaymentIntent, PaymentsAdapter, StripeRefund,
+};
 use askhava_payments::api::{
-    CHARGE_FAILED_ALERT, OPEN_CHARGE_ALERT, ReconcileReport, ReconcileStripe, StripeCharge,
-    reconcile,
+    CHARGE_FAILED_ALERT, OPEN_CHARGE_ALERT, REFUND_FAILED_ALERT, ReconcileReport, ReconcileStripe,
+    StripeCharge, reconcile,
 };
 use jiff::Timestamp;
 use secrecy::SecretString;
@@ -38,6 +42,7 @@ struct FakeStripe {
     fail: Mutex<bool>,
     fetched: Mutex<Vec<String>>,
     fetch_down: Mutex<bool>,
+    pending: Mutex<bool>,
 }
 
 impl FakeStripe {
@@ -113,6 +118,27 @@ impl PaymentsAdapter for FakeStripe {
         answer.ok_or(AdapterError::Vendor {
             status: 400,
             code: None,
+        })
+    }
+
+    /// Stripe's answer to a refund: `pending` while `pending` is set, else `succeeded` as the
+    /// provided body says for each refund `create_refund` takes.
+    async fn send_refund(
+        &self,
+        key: &IdempotencyKey,
+        intent: &str,
+    ) -> Result<StripeRefund, AdapterError> {
+        let (id, status) = if *self.pending.lock().expect("lock") {
+            ("re_FakeT288p".to_owned(), "pending")
+        } else {
+            (self.create_refund(key, intent).await?, "succeeded")
+        };
+        Ok(StripeRefund {
+            id,
+            status: status.to_owned(),
+            amount: None,
+            currency: None,
+            payment_intent: Some(intent.to_owned()),
         })
     }
 }
@@ -257,6 +283,11 @@ async fn td_fee_49_an_open_charge_is_retried_past_the_window_and_alerted_once(po
             i64::from(n >= 7),
             "night {n}"
         );
+        assert_eq!(
+            alerts(&pool, REFUND_FAILED_ALERT).await,
+            (n + 1).min(8),
+            "night {n}: one per listed night, none on a retry (D-2364)"
+        );
     }
     let (id, kind, severity): (Uuid, String, String) =
         sqlx::query_as("SELECT subject_id, subject_kind, severity FROM ops.alert WHERE kind = $1")
@@ -287,6 +318,7 @@ async fn td_fee_49_an_open_charge_is_retried_past_the_window_and_alerted_once(po
     assert_eq!(stripe.fetches(), fetched, "a settled row is never retried");
     assert_eq!(stripe.refunds(), ["pi_FakeT288b"]);
     assert_eq!(alerts(&pool, OPEN_CHARGE_ALERT).await, 1);
+    assert_eq!(alerts(&pool, REFUND_FAILED_ALERT).await, 8);
     assert_eq!(
         entries(&pool, "charge").await + entries(&pool, "refund").await,
         0
@@ -410,4 +442,90 @@ async fn td_fee_49_an_unreadable_or_missing_charge_stays_open(pool: PgPool) {
         (4, "not-found".into(), false)
     );
     assert!(stripe.refunds().is_empty());
+}
+
+/// TD-FEE-49 (FEE-029, D-2364): a charge whose ledger append fails every night raises
+/// `payments.reconcile_charge_failed` once per night it is listed and none on a retry, and one
+/// High alert after 7 days, so the per-charge alerts never pile up.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_fee_49_a_retried_write_failure_raises_no_alert_of_its_own(pool: PgPool) {
+    pick(&pool).await;
+    let stripe = FakeStripe::with(vec![charge(6, "pi_FakeT288", None)]);
+    let block =
+        "ALTER TABLE payments.ledger_entry ADD CONSTRAINT t288_block CHECK (kind <> 'charge')";
+    sqlx::query(block).execute(&pool).await.expect("block");
+    for n in 0..12 {
+        let report = run(&pool, &stripe, n).await;
+        assert_eq!((report.failed, report.open), (1, 1), "night {n}");
+        assert_eq!(report.retried, usize::from(n > 7), "night {n}");
+        assert_eq!(alerts(&pool, CHARGE_FAILED_ALERT).await, (n + 1).min(8));
+    }
+    assert_eq!(alerts(&pool, OPEN_CHARGE_ALERT).await, 1);
+    assert_eq!(
+        row(&pool, "ch_FakeT288n6").await,
+        (12, "write-failed".into(), false)
+    );
+    assert_eq!(entries(&pool, "charge").await, 0);
+}
+
+/// TD-FEE-49 (FEE-029, FEE-030, D-2361): a settled row whose ledger charge later differs from
+/// Stripe's is reopened as `mismatch` with one more try and its first `first_seen`.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_fee_49_a_mismatch_reopens_a_settled_row(pool: PgPool) {
+    pick(&pool).await;
+    let stripe = FakeStripe::with(vec![charge(7, "pi_FakeT288", None)]);
+    let block =
+        "ALTER TABLE payments.ledger_entry ADD CONSTRAINT t288_block CHECK (kind <> 'charge')";
+    sqlx::query(block).execute(&pool).await.expect("block");
+    run(&pool, &stripe, 0).await;
+    let unblock = "ALTER TABLE payments.ledger_entry DROP CONSTRAINT t288_block";
+    sqlx::query(unblock).execute(&pool).await.expect("unblock");
+    assert_eq!(run(&pool, &stripe, 1).await.open, 0);
+    assert_eq!(
+        row(&pool, "ch_FakeT288n7").await,
+        (2, "write-failed".into(), true)
+    );
+    stripe.change("ch_FakeT288n7", |c| c.amount_cents = 19_900);
+    let report = run(&pool, &stripe, 2).await;
+    assert_eq!((report.failed, report.open), (0, 1), "{report:?}");
+    assert_eq!(
+        row(&pool, "ch_FakeT288n7").await,
+        (3, "mismatch".into(), false)
+    );
+    let first = "SELECT extract(epoch FROM first_seen)::bigint FROM payments.reconcile_open
+                  WHERE stripe_charge_id = $1";
+    assert_eq!(scalar(&pool, first, "ch_FakeT288n7").await, NOW);
+    assert_eq!(entries(&pool, "charge").await, 1);
+    assert!(stripe.refunds().is_empty());
+}
+
+/// TD-FEE-49 (FEE-026, FEE-029, D-2364): a closed job's charge refunded through T066 that Stripe
+/// holds `pending` is stored as `refund-pending`, not as refused, and nothing is appended.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_fee_49_a_pending_t066_refund_is_stored_as_pending(pool: PgPool) {
+    for sql in [
+        "INSERT INTO payments.pick_intent (pick_id, business_id, job_id, amount_cents,
+           stripe_intent_id, emergency, created_at, ended_at)
+         VALUES ($1, $2, $3, 7500, 'pi_FakeT288', false, now(), now())",
+        "INSERT INTO payments.charge_attempt (pick_id, try_no, press_id, status, started_at,
+           decided_at) VALUES ($1, 1, $2, 'succeeded', now(), now())",
+        "INSERT INTO payments.charge_evidence (pick_id, business_id, job_id, press_id, try_no,
+           idempotency_label, stripe_customer_id, stripe_intent_id, authorization_version,
+           amount_cents, pressed_at, charged_at) VALUES ($1, $2, $3, $2, 1,
+           'pick-' || $1::text || '-try1', 'cus_FakeT288', 'pi_FakeT288', 1, 7500, now(), now())",
+    ] {
+        let seed = sqlx::query(sql).bind(PICK).bind(BUSINESS).bind(JOB);
+        seed.execute(&pool).await.expect("seed");
+    }
+    let stripe = FakeStripe::with(vec![charge(8, "pi_FakeT288", Some(PICK))]);
+    *stripe.pending.lock().expect("lock") = true;
+    let report = run(&pool, &stripe, 0).await;
+    assert_eq!((report.refunded, report.open), (0, 1), "{report:?}");
+    assert_eq!(
+        row(&pool, "ch_FakeT288n8").await,
+        (1, "refund-pending".into(), false)
+    );
+    let t066 = "SELECT count(*) FROM payments.refund WHERE status = $1";
+    assert_eq!(scalar(&pool, t066, "pending").await, 1, "sent through T066");
+    assert_eq!(entries(&pool, "refund").await, 0);
 }

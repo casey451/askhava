@@ -30,7 +30,9 @@
 //! charge under the same ledger and refund keys, so a retry never doubles an entry or a refund and a
 //! charge refunded or disputed since is settled by that state. A settled row gets `settled_at` and
 //! is never retried; a row open [`OPEN_ALERT_AFTER`] after `first_seen` raises one High
-//! [`OPEN_CHARGE_ALERT`] naming only its row, marked `alerted_at` in the same transaction.
+//! [`OPEN_CHARGE_ALERT`] naming only its row, marked `alerted_at` in the same transaction. A
+//! retry raises no [`CHARGE_FAILED_ALERT`] or [`REFUND_FAILED_ALERT`] of its own, so a stuck row
+//! alerts at most for the nights it is listed plus that one alert (D-2364).
 
 use std::future::Future;
 
@@ -50,6 +52,7 @@ use crate::models::{
     MoneyEventError, MoneyTotals, MoneyView, PickFacts, RefundOutcome, RefundWhy, StripeCharge,
     plan_charge,
 };
+use crate::refund_state::{PickRefundState, refund_state};
 use crate::refund_stripe::{RefundState, RefundStripe};
 use crate::refunds::{REFUND_FAILED_ALERT, request_refund};
 use crate::service::CONFIRM_FEE_ACTION;
@@ -225,7 +228,7 @@ pub async fn reconcile(
             pool,
             stripe,
             id_secret,
-            (charge, now),
+            (charge, now, false),
             &mut report,
             &mut known,
         )
@@ -245,23 +248,26 @@ pub async fn reconcile(
 
 /// Runs [`one_charge`] and says why the charge is still open, if it is: a failed write is counted,
 /// alerted with [`CHARGE_FAILED_ALERT`] and open as [`OpenWhy::WriteFailed`] (D-1555, D-1872). A
-/// charge on a known pick joins `known` for the FEE-030 match.
+/// `retry` of a stored row raises no per-charge alert: [`OPEN_CHARGE_ALERT`] is its one alert
+/// (D-2364). A charge on a known pick joins `known` for the FEE-030 match.
 async fn settle(
     pool: &PgPool,
     stripe: &impl ReconcileStripe,
     id_secret: &SecretString,
-    (charge, now): (&StripeCharge, Timestamp),
+    attempt: (&StripeCharge, Timestamp, bool),
     report: &mut ReconcileReport,
     known: &mut Vec<StripeCharge>,
 ) -> Result<Option<OpenWhy>, MoneyEventError> {
-    match one_charge(pool, stripe, id_secret, charge, report, now).await {
+    match one_charge(pool, stripe, id_secret, attempt, report).await {
         Ok((held, open)) => {
             known.extend(held);
             Ok(open)
         }
         Err(_) => {
             report.failed += 1;
-            alert(&mut *db(pool.acquire().await)?, CHARGE_FAILED_ALERT, None).await?;
+            if !attempt.2 {
+                alert(&mut *db(pool.acquire().await)?, CHARGE_FAILED_ALERT, None).await?;
+            }
             Ok(Some(OpenWhy::WriteFailed))
         }
     }
@@ -275,9 +281,8 @@ async fn one_charge(
     pool: &PgPool,
     stripe: &impl ReconcileStripe,
     id_secret: &SecretString,
-    charge: &StripeCharge,
+    (charge, now, retry): (&StripeCharge, Timestamp, bool),
     report: &mut ReconcileReport,
-    now: Timestamp,
 ) -> Result<(Option<StripeCharge>, Option<OpenWhy>), MoneyEventError> {
     let mut tx = db(pool.begin().await)?;
     let pick = pick_facts(&mut tx, charge).await?;
@@ -294,7 +299,10 @@ async fn one_charge(
     db(tx.commit().await)?;
     let mut held = charge.clone();
     let sent = match plan.refund {
-        Some(why) => refund(pool, stripe, id_secret, (charge, now), (pick, why), report).await?,
+        Some(why) => {
+            let attempt = (charge, now, retry);
+            refund(pool, stripe, id_secret, attempt, (pick, why), report).await?
+        }
         None => Sent::Nothing,
     };
     let open = match sent {
@@ -448,16 +456,18 @@ async fn first_seen(
 /// intent goes through T066's `request_refund` (its refund row under the pick's lock, so T064's
 /// late-success refund and this one are one refund, with T066's try keys, hourly retry and alert)
 /// when T066 has the pick's evidence record; otherwise [`own_refund`] sends it. T066's
-/// `Unchanged` (a try in flight) is [`OpenWhy::RefundPending`] and `Blocked` (disputed) owes
-/// nothing more (D-1872).
+/// `Unchanged` (a try in flight) is [`OpenWhy::RefundPending`], as is a `Failed` answer whose
+/// refund row Stripe holds `pending` ([`refund_state`] `InFlight`, D-2364), and `Blocked`
+/// (disputed) owes nothing more (D-1872).
 async fn refund(
     pool: &PgPool,
     stripe: &impl ReconcileStripe,
     id_secret: &SecretString,
-    (charge, now): (&StripeCharge, Timestamp),
+    attempt: (&StripeCharge, Timestamp, bool),
     (pick, why): (Option<PickFacts>, RefundWhy),
     report: &mut ReconcileReport,
 ) -> Result<Sent, MoneyEventError> {
+    let now = attempt.1;
     if let Some(facts) = pick.filter(|f| f.own_intent) {
         match request_refund(pool, stripe, id_secret, (facts.pick, LATE_TRIGGER), now).await {
             Err(MoneyEventError::NothingCharged) => {}
@@ -467,27 +477,39 @@ async fn refund(
             }
             Ok(RefundOutcome::Failed) => {
                 report.refund_failed += 1;
-                return Ok(Sent::Open(OpenWhy::RefundRefused));
+                return failed_why(pool, facts.pick).await;
             }
             Ok(RefundOutcome::Unchanged) => return Ok(Sent::Open(OpenWhy::RefundPending)),
             Ok(RefundOutcome::Blocked) => return Ok(Sent::Nothing),
             Err(e) => return Err(e),
         }
     }
-    own_refund(pool, stripe, id_secret, (charge, now), (pick, why), report).await
+    own_refund(pool, stripe, id_secret, attempt, (pick, why), report).await
+}
+
+/// D-2364: T066 answers `Failed` both for a refused refund and for one Stripe holds `pending`
+/// (D-2067); the pick's refund row tells them apart.
+async fn failed_why(pool: &PgPool, pick: Uuid) -> Result<Sent, MoneyEventError> {
+    let state = refund_state(&mut *db(pool.acquire().await)?, pick).await?;
+    Ok(Sent::Open(if state == PickRefundState::InFlight {
+        OpenWhy::RefundPending
+    } else {
+        OpenWhy::RefundRefused
+    }))
 }
 
 /// The reconcile's own refund of a charge T066 has no record of. The Stripe key names the charge,
 /// the reason and the night, so a rerun the same night gets Stripe's first answer and a refused
 /// refund (which Stripe would replay for the same key) is a new try the next night; a refund made
 /// on a lost answer shows as refunded in the next list and is not sent again. A failure raises
-/// [`REFUND_FAILED_ALERT`]; the ledger `refund` entry follows Stripe's `succeeded` only, and a
+/// [`REFUND_FAILED_ALERT`], except on a `retry` of a stored row, whose one alert is
+/// [`OPEN_CHARGE_ALERT`] (D-2364); the ledger `refund` entry follows Stripe's `succeeded` only, and a
 /// `pending` answer appends nothing and counts neither way (D-1555, D-1753).
 async fn own_refund(
     pool: &PgPool,
     stripe: &impl ReconcileStripe,
     id_secret: &SecretString,
-    (charge, now): (&StripeCharge, Timestamp),
+    (charge, now, retry): (&StripeCharge, Timestamp, bool),
     (pick, why): (Option<PickFacts>, RefundWhy),
     report: &mut ReconcileReport,
 ) -> Result<Sent, MoneyEventError> {
@@ -509,8 +531,10 @@ async fn own_refund(
     }
     if state != Ok(RefundState::Succeeded) {
         report.refund_failed += 1;
-        let mut conn = db(pool.acquire().await)?;
-        alert(&mut conn, REFUND_FAILED_ALERT, pick.map(|p| p.pick)).await?;
+        if !retry {
+            let mut conn = db(pool.acquire().await)?;
+            alert(&mut conn, REFUND_FAILED_ALERT, pick.map(|p| p.pick)).await?;
+        }
         return Ok(Sent::Open(OpenWhy::RefundRefused));
     }
     report.refunded += 1;
@@ -579,7 +603,7 @@ async fn retry_open(
                     ..charge.clone()
                 };
                 if fresh.is_well_formed() {
-                    settle(pool, stripe, id_secret, (&fresh, now), report, known).await?
+                    settle(pool, stripe, id_secret, (&fresh, now, true), report, known).await?
                 } else {
                     Some(OpenWhy::StripeUnreadable)
                 }
