@@ -15,12 +15,10 @@
 use std::collections::HashMap;
 use std::sync::Mutex;
 
-use askhava_adapters::api::{
-    AdapterError, Charge, IdempotencyKey, PaymentIntent, PaymentsAdapter, StripeRefund,
-};
+use askhava_adapters::api::{AdapterError, Charge, IdempotencyKey, PaymentIntent, PaymentsAdapter};
 use askhava_payments::api::{
     CHARGE_FAILED_ALERT, OPEN_CHARGE_ALERT, REFUND_FAILED_ALERT, ReconcileReport, ReconcileStripe,
-    StripeCharge, reconcile,
+    StripeCharge, StripeRefund, reconcile,
 };
 use jiff::Timestamp;
 use secrecy::SecretString;
