@@ -12,7 +12,8 @@
 //! wired route whose layer answers 4xx still fails its row). A `yes` row must reach its route and
 //! a task row must not, so a route never merged into `build_router` fails here naming its row, and
 //! the task that wires a route flips its own row. A malformed row, a duplicate row or an unknown task ID fails with the
-//! row quoted. Fake values only.
+//! row quoted, and a header other than `| Method | Path | Module | Wired |` or a missing separator
+//! fails with that line quoted. Fake values only.
 
 use std::collections::HashSet;
 use std::path::Path;
@@ -96,7 +97,7 @@ fn task_shaped(cell: &str) -> bool {
 }
 
 /// One body line of the table checked against the row rules (the header and separator are
-/// skipped by `parse_table`).
+/// checked by `body_lines`).
 fn parse_line(line: &str, tasks: &HashSet<String>) -> Result<Row, String> {
     let bad = |why: &str| Err(format!("{why}: {line:?}"));
     let Some(inner) = line
@@ -146,19 +147,36 @@ fn separator(line: &str) -> bool {
     })
 }
 
-/// Every row of the table, or every problem with the row quoted (a duplicate method and path too).
-/// The table runs from the first line opening with `|` to the end of the section: its first line
-/// is the header, then one separator; every later line, blank or not, is a row.
-fn parse_table(table: &str, tasks: &HashSet<String>) -> Result<Vec<Row>, Vec<String>> {
-    let (mut rows, mut problems) = (Vec::new(), Vec::new());
-    let mut seen = HashSet::new();
+/// The table's header line, exactly.
+const HEADER: &str = "| Method | Path | Module | Wired |";
+
+/// The table's lines after its header and separator, or the problem with the line quoted: the
+/// table opens at the first line opening with `|`, which must be `HEADER`, then a separator.
+fn body_lines(table: &str) -> Result<std::str::Lines<'_>, String> {
     let start = match table.find("\n|") {
         _ if table.starts_with('|') => 0,
         found => found.map_or(table.len(), |at| at + 1),
     };
-    let mut lines = table[start..].trim_end().lines().skip(1).peekable();
-    lines.next_if(|l| separator(l));
-    for line in lines {
+    let mut lines = table[start..].trim_end().lines();
+    let header = lines.next().unwrap_or_default();
+    if header.trim() != HEADER {
+        return Err(format!("table header is not {HEADER:?}: {header:?}"));
+    }
+    let sep = lines.next().unwrap_or_default();
+    if !separator(sep) {
+        return Err(format!("table separator missing after the header: {sep:?}"));
+    }
+    Ok(lines)
+}
+
+/// Every row of the table, or every problem with the row quoted (a duplicate method and path too).
+/// The table runs from the first line opening with `|` to the end of the section: its first line
+/// is `HEADER`, then one separator (each checked, quoted when wrong); every later line, blank or
+/// not, is a row.
+fn parse_table(table: &str, tasks: &HashSet<String>) -> Result<Vec<Row>, Vec<String>> {
+    let (mut rows, mut problems) = (Vec::new(), Vec::new());
+    let mut seen = HashSet::new();
+    for line in body_lines(table).map_err(|problem| vec![problem])? {
         match parse_line(line, tasks) {
             Err(problem) => problems.push(problem),
             Ok(row) if !seen.insert((row.method.clone(), row.path.clone())) => {
@@ -336,6 +354,33 @@ async fn td_sec_41_the_probe_tells_a_route_from_the_fallback() {
 
 /// The header and separator a test table opens with.
 const HEAD: &str = "| Method | Path | Module | Wired |\n|---|---|---|---|\n";
+
+/// TD-SEC-41: a table whose header is not `| Method | Path | Module | Wired |`, or whose header is
+/// not followed by a separator, fails quoting the line, and its first row is not skipped as a header.
+#[test]
+fn td_sec_41_a_bad_header_or_separator_fails_with_the_line_quoted() {
+    let tasks = HashSet::new();
+    let row = "| GET | /f/{token} | portals | yes |";
+    let cases = [
+        (
+            "| Method | Path | Wired | Module |\n|---|---|---|---|\n",
+            "| Method | Path | Wired | Module |",
+        ),
+        (
+            "| Method | Path | Module |\n|---|---|---|\n",
+            "| Method | Path | Module |",
+        ),
+        ("", row),
+        ("| Method | Path | Module | Wired |\n", row),
+    ];
+    for (head, quoted) in cases {
+        let problems = parse_table(&format!("Text.\n\n{head}{row}\n"), &tasks).expect_err(head);
+        assert_eq!(problems.len(), 1, "{problems:?}");
+        assert!(problems[0].contains(&format!("{quoted:?}")), "{problems:?}");
+    }
+    let rows = parse_table(&format!("Text.\n\n{HEAD}{row}\n"), &tasks).expect("a good table");
+    assert_eq!(rows.len(), 1);
+}
 
 /// TD-SEC-41: a malformed row (an empty-cell row, a second header, a line not opened by `|`, a
 /// blank line inside the table), a duplicate row and an unknown task ID fail with the row quoted.
