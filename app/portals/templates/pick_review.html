@@ -15,8 +15,8 @@
 <h1 id="pick-result" tabindex="-1" autofocus>Done. The business has your pick.</h1>
 <p>We'll text you when they accept. You can still pick another quote on <a href="/q/{{ token }}">your quote page</a>.</p>
 {% if let Some(time) = accept_by %}<p id="accept-by">The business has until {{ time }} to accept.</p>
-{% endif %}<p><a href="data:text/vcard;charset=utf-8,BEGIN%3AVCARD%0D%0AVERSION%3A3.0%0D%0AFN%3AAsk%20Hava%0D%0AORG%3AAsk%20Hava%20LLC%0D%0AURL%3Ahttps%3A%2F%2Faskhava.com%0D%0AEND%3AVCARD%0D%0A" download="ask-hava.vcf">Add Ask Hava to your contacts</a></p>
-<p>Know someone who needs quotes? Send them askhava.com.</p>
+{% endif %}{% let brand = askhava_core::api::brand() %}<p><a href="data:text/vcard;charset=utf-8,BEGIN%3AVCARD%0D%0AVERSION%3A3.0%0D%0AFN%3A{{ brand.display_name()|urlencode_strict }}%0D%0AORG%3A{{ brand.legal_name()|urlencode_strict }}%0D%0AURL%3Ahttps%3A%2F%2F{{ brand.domain()|urlencode_strict }}%0D%0AEND%3AVCARD%0D%0A" download="{{ brand.display_name().to_lowercase().replace(' ', "-") }}.vcf">Add {{ brand.display_name() }} to your contacts</a></p>
+<p>Know someone who needs quotes? Send them {{ brand.domain() }}.</p>
 {% else %}
 {% if not_open %}<p id="pick-not-open" tabindex="-1" autofocus>Nothing was picked. Picking on this page isn't open yet, so no code was sent.</p>
 {% endif %}<h1>Check your pick: quote #{{ quote }}</h1>
@@ -25,7 +25,7 @@
 <li>After you press Pick, we text a 6-digit code to your phone. Type it on the next page to finish.</li>
 <li>You're picking one business for this request. If it falls through, you can pick another quote.</li>
 <li>We'll pass your pick to the business and text you when it's accepted. Your phone number stays private.</li>
-<li>You hire the business directly. Ask Hava isn't part of your agreement with it.</li>
+<li>You hire the business directly. {{ askhava_core::api::brand().display_name() }} isn't part of your agreement with it.</li>
 </ul>
 <form method="post" action="/q/{{ token }}/pick" novalidate>
 <input type="hidden" name="csrf" value="{{ csrf }}">

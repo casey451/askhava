@@ -12,12 +12,12 @@
 {% if still_open %}
 <p>Your request {{ request }} is still open. Close it on your quote page.</p>
 {% endif %}
-<p>Free for you. The business you pick pays Ask Hava a set introduction fee.</p>
-<p>Ask Hava doesn't rank businesses or show ratings. Check each business yourself: its license, and its reviews on Google and Yelp.</p>
+<p>Free for you. The business you pick pays {{ askhava_core::api::brand().display_name() }} a set introduction fee.</p>
+<p>{{ askhava_core::api::brand().display_name() }} doesn't rank businesses or show ratings. Check each business yourself: its license, and its reviews on Google and Yelp.</p>
 <p>Every eligible quote shown, in the order received. #1 means first received, not first choice.</p>
 <p id="quote-status" role="status" data-one="1 new quote added below." data-many="{n} new quotes added below." data-gone-one="1 quote is no longer available." data-gone-many="{n} quotes are no longer available."></p>
 {% if quotes.is_empty() %}
-<p id="no-quotes">No quotes yet. New quotes show up here as they come in, and Ask Hava texts you when the first one arrives.</p>
+<p id="no-quotes">No quotes yet. New quotes show up here as they come in, and {{ askhava_core::api::brand().display_name() }} texts you when the first one arrives.</p>
 {% endif %}
 <ol id="quotes" data-live="{{ live }}">
 {% for q in quotes %}
@@ -28,7 +28,7 @@
 <p>No longer available, so it can't be picked.</p>
 {% else %}
 <h2 id="quote-{{ q.number }}-title">Quote #{{ q.number }}</h2>
-<p>Ask Hava doesn't rank businesses; check it yourself.</p>
+<p>{{ askhava_core::api::brand().display_name() }} doesn't rank businesses; check it yourself.</p>
 <p>In their words:</p>
 <blockquote><p>{{ q.quote.original }}</p></blockquote>
 {% if pick_open %}
@@ -45,6 +45,6 @@
 {% endfor %}
 </ol>
 <p>Can't open links? Reply LIST to get your quotes by text.</p>
-<p>Ask Hava is not a contractor and does not perform, bid on or supervise work.</p>
+<p>{{ askhava_core::api::brand().display_name() }} is not a contractor and does not perform, bid on or supervise work.</p>
 <script type="module" src="/static/portals/quote_page.js"></script>
 {% endblock %}

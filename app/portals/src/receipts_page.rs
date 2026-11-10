@@ -61,15 +61,18 @@ const fn tier_words(tier: Tier) -> (&'static str, &'static str) {
     }
 }
 
-/// FEE-031, FEE-039, D-1561: how the basis was set, and its tier range checked against the tier
+/// FEE-031, FEE-039, D-1561, WORD-001: how the basis was set, and its tier range checked against the tier
 /// charged: when they differ (a recurring cap, FEE-039, or a flat fee, FEE-007) the page says the
 /// fee for this kind of job is set at the charged tier's fee instead of claiming the basis set it.
 fn basis_line(charged: Option<Tier>, basis: Basis) -> String {
     let cents = match basis {
         Basis::OnSite => {
-            let lead = "You set your price after seeing the job, so Ask Hava used the usual visit fee for this kind of work.";
+            let lead = format!(
+                "You set your price after seeing the job, so {} used the usual visit fee for this kind of work.",
+                askhava_core::api::brand().display_name()
+            );
             return charged.map_or_else(
-                || lead.to_owned(),
+                || lead.clone(),
                 |tier| format!("{lead} That makes it a {}.", tier_words(tier).0),
             );
         }

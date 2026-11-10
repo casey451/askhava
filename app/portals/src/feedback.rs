@@ -50,9 +50,17 @@ vertical-align:middle;border:2px solid #1f1d1b;border-radius:3px;background:#fff
 #feedback-share:checked{background:#1f1d1b;box-shadow:inset 0 0 0 4px #fff}\
 #feedback-body{display:block;width:100%;max-width:40rem;box-sizing:border-box}\n";
 
-/// The share box's label, word for word (JOB-017).
-pub const SHARE_LABEL: &str =
-    "Ask Hava may show what I wrote on askhava.com with my first name and town";
+/// JOB-017, WORD-001: the share box's label, word for word, with the display name and the public
+/// domain from the brand file (D-1932, T294).
+#[must_use]
+pub fn share_label() -> String {
+    let brand = askhava_core::api::brand();
+    format!(
+        "{} may show what I wrote on {} with my first name and town",
+        brand.display_name(),
+        brand.domain()
+    )
+}
 
 /// The page's state: the pool, the clock and the cross-site and CSRF refusals' event log.
 #[derive(Clone)]
@@ -123,14 +131,14 @@ pub(crate) struct FeedbackView {
     pub(crate) share: bool,
     /// What stopped the send, if anything ([`Problem::message`]).
     pub(crate) error: Option<&'static str>,
-    /// The share box's label.
-    pub(crate) label: &'static str,
+    /// The share box's label ([`share_label`]).
+    pub(crate) label: String,
 }
 
 impl FeedbackView {
     /// JOB-017: the first view of the form for request `request` at link `token`: empty, share
     /// box unticked.
-    pub(crate) const fn form(request: i64, token: String, csrf: String) -> Self {
+    pub(crate) fn form(request: i64, token: String, csrf: String) -> Self {
         Self {
             request,
             token,
@@ -139,7 +147,7 @@ impl FeedbackView {
             body: String::new(),
             share: false,
             error: None,
-            label: SHARE_LABEL,
+            label: share_label(),
         }
     }
 }
@@ -345,7 +353,7 @@ mod tests {
     use sqlx::PgConnection;
     use sqlx::types::Uuid;
 
-    use super::{FeedbackView, Kept, MAX_CHARS, Problem, SHARE_LABEL, check, keep};
+    use super::{FeedbackView, Kept, MAX_CHARS, Problem, check, keep, share_label};
 
     type Db = sqlx::pool::PoolConnection<sqlx::Postgres>;
 
@@ -371,11 +379,12 @@ mod tests {
     fn td_job_10_the_share_box_is_unticked_with_the_job_017_label() {
         let html = form().render().expect("form renders");
         assert_eq!(
-            SHARE_LABEL,
+            share_label(),
             "Ask Hava may show what I wrote on askhava.com with my first name and town"
         );
         assert!(html.contains(&format!(
-            "<label for=\"feedback-share\">{SHARE_LABEL}</label>"
+            "<label for=\"feedback-share\">{}</label>",
+            share_label()
         )));
         let start = html.find("id=\"feedback-share\"").expect("share box");
         let tag = &html[start..start + html[start..].find('>').expect("tag end")];

@@ -25,5 +25,5 @@
 </form>
 {% else %}<p>Only the account owner can change this. Ask them if it needs to change.</p>
 {% for c in choices %}{% if c.checked %}<p>Now: {{ c.label }}</p>{% endif %}{% endfor %}
-{% endif %}<p>Ask Hava never places recorded or automated calls to you.</p>
+{% endif %}<p>{{ askhava_core::api::brand().display_name() }} never places recorded or automated calls to you.</p>
 {% endblock %}
