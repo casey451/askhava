@@ -1,22 +1,23 @@
 # Ask Hava build status
 
-Updated 2026-11-10T15:29:42Z by runner d145202dd72b (actions).
+Updated 2026-11-10T15:58:11Z by runner 26074ad16e3e (actions).
 
-**Building: T231 in progress since 15:29Z; 186 of 334 done; week 89% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 15:58Z; 186 of 334 done; week 89% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 186 of 334 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T231 claimed 15:29Z, lease until 18:29Z
+- **Lane:** idle since 15:58Z (no task in progress)
 - **Week:** 89% used, 16.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:14Z, 14 min before this update
+- **Last run:** 15:29Z, 28 min before this update
 - **Keeper:** last ran 15:14Z, next wake 15:34Z
 
 ## Needs attention
-- nothing
+- Strict plan check red: 1 problem(s) on tasks still to run (+13 on DONE tasks); first: T231: stored context_pct 13% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T231 | portals: the homeowner check-in email buttons and answer pag | QUEUED | 1 | 28 min | 15:58Z | T231 built and committed (b2f7b11e, 26074ad1) but smoke red: tests/security/tests/auth_matrix.rs (T088, protected, no se |
 | T199 | portals: no automated call to a business, voice codes only o | done | 1 | 64 min | 14:22Z |  |
 | T293 | businesses and quotes: sign-up, consent, complaint and quote | done | 1 | 41 min | 12:35Z |  |
 | T292 | messaging and calls: every text, email and call takes the br | done | 1 | 21 min | 11:16Z |  |
@@ -95,7 +96,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T231 (lease until 2026-11-10T18:29:39Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T199", "at": "2026-11-10T14:22:51Z", "output_tokens": 187450, "cache_read_input_tokens": 43470634, "input_tokens": 672, "cache_creation_input_tokens": 730316}
+- {"task": "T231", "at": "2026-11-10T15:58:09Z", "input_tokens": 309, "cache_creation_input_tokens": 481180, "output_tokens": 126021, "cache_read_input_tokens": 25509329}
