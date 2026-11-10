@@ -29355,7 +29355,7 @@
    }
   }
  },
- "updated_at": "2026-11-10T19:58:39Z",
+ "updated_at": "2026-11-10T20:04:16Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -29456,13 +29456,6 @@
  "runner_sha": "6c127bfac1da0d865b7fa93fcc374e1ac626fc43",
  "starter": "actions",
  "smoke_runs": [
-  {
-   "sha": "9c9459249f80748fc567ad6e7703722feb54fc5a",
-   "ok": true,
-   "at": "2026-11-10T04:30:34Z",
-   "why": "start routine (pre-session)",
-   "seconds": 406
-  },
   {
    "sha": "3976d91e292432da5260dad04f028f92f2330cd6",
    "ok": true,
@@ -29598,12 +29591,19 @@
    "at": "2026-11-10T19:53:02Z",
    "why": "start routine",
    "seconds": 326
+  },
+  {
+   "sha": "0cac801cd15967296c2c52e38146bdae7e8d7f3f",
+   "ok": true,
+   "at": "2026-11-10T19:58:45Z",
+   "why": "start routine",
+   "seconds": 328
   }
  ],
  "main_red": null,
  "pacing": {
   "last": "T157 estimated 3.7M tokens (calibrated); five-hour window has 16.6M left, week 399k after 3.6M still running in another lane (session_reading 2026-11-10T19:39:42Z (week)); waiting until 2026-11-12T17:00:00Z",
-  "at": "2026-11-10T19:53:02Z",
+  "at": "2026-11-10T19:58:45Z",
   "decision": "wait",
   "waiting_until": "2026-11-12T17:00:00Z",
   "standing": {
@@ -29621,7 +29621,7 @@
    }
   },
   "remaining_estimate": 565954163,
-  "projected_finish": "2026-12-01T05:59:19Z"
+  "projected_finish": "2026-12-01T06:05:01Z"
  },
  "main_red_history": [
   {
