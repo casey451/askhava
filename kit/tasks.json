@@ -10102,6 +10102,59 @@
    "prompt": "kit/prompts/T337.md"
   },
   {
+   "id": "T338",
+   "slug": "refused-connection-test-port",
+   "title": "adapters (harness): the refused-connection test holds its port, so a parallel stand-in can never take it",
+   "goal": "T284 attempt 1 (Ci, 01:17Z Nov 10) failed on a test it neither owns nor touched (D-2318; SEC-018, D-703): `unreachable_vendor_is_not_sent` (`app/adapters/src/tests/adapter_config.rs:434`, T016's) binds 127.0.0.1:0, reads the port, drops the listener and expects `Err(AdapterError::NotSent)` from a send to that port, but got `Err(OutcomeUnknown)`. Cause: `send_error` (`app/adapters/src/base.rs:114`) maps a build or connect error to `NotSent` and anything after a connection was made to `OutcomeUnknown`, which is correct (a request that may have reached the vendor must not be resent blind); but the freed port can be taken before the send by another test's stand-in, which `stand_in()` (`adapter_config.rs:247`) starts in parallel on a port chosen the same way (bind 0, drop, let Python bind it), so the send connects to a foreign server and fails after connecting. The mapping is not ambiguous; the test is racy. (1) The test holds the port for its whole duration with a socket that is bound but never listening (`tokio::net::TcpSocket::new_v4()`, `bind`, no `listen`), so a connect to it is refused and no other process can bind it; the assertion stays exactly `Err(AdapterError::NotSent)`. (2) A second case pins the other branch: a listener that accepts the connection and closes it without answering gives `Err(AdapterError::OutcomeUnknown)` (TD-SEC-59). Acceptance: both cases pass 200 times in a row under `cargo test -p askhava-adapters` with the crate's other tests in parallel (stand-ins included); no other test changes and no assertion is weakened. A harness task because the test is T016's (DONE). Update `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "4",
+   "module": "adapters",
+   "deps": [
+    "T016",
+    "T057",
+    "T075"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness",
+    "security"
+   ],
+   "owns": [
+    "app/adapters/src/tests/adapter_config.rs"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "docs/spec/security.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "SEC-018"
+   ],
+   "tests": [
+    "TD-SEC-59"
+   ],
+   "decisions": [
+    "D-2318",
+    "D-1873"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 1,
+    "lines": 150,
+    "context_pct": 5
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T338-refused-connection-test-port",
+   "prompt": "kit/prompts/T338.md"
+  },
+  {
    "id": "T255",
    "slug": "emergency-address-rerelease",
    "title": "intake, payments and server: ask again for an emergency address and release once it arrives",
@@ -11811,7 +11864,8 @@
     "T334",
     "T335",
     "T336",
-    "T337"
+    "T337",
+    "T338"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
