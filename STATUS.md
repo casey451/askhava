@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-10T20:15:25Z by runner 5ca79792dad1 (actions).
+Updated 2026-11-10T20:15:40Z by runner 5ca79792dad1 (actions).
 
-**Building: T155 in progress since 19:17Z; 188 of 335 done; week 96% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Waiting for tokens until 17:00Z; 188 of 335 done; week 96% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 188 of 335 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T155 claimed 19:17Z, lease until 22:17Z
+- **Lane:** idle since 20:15Z (no task in progress)
 - **Week:** 96% used, 0.4M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:05Z, 9 min before this update
+- **Last run:** 20:05Z, 10 min before this update
 - **Keeper:** last ran 20:05Z, next wake 22:20Z
 
 ## Needs attention
@@ -17,6 +17,7 @@ Updated 2026-11-10T20:15:25Z by runner 5ca79792dad1 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T155 | businesses: sign-up capability setup pre-ticked from the lic | MERGE_PENDING | 1 | 57 min | 20:15Z |  |
 | T311 | calls and server: a voice read-back confirm connects only th | check_failed | 1 | 21 min | 18:54Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T294 | portals and site: every page takes the brand from the brand  | done | 1 | 42 min | 18:32Z |  |
 | T231 | portals (harness): the homeowner check-in email buttons and  | done | 2 | 26 min | 17:08Z | T231 built and committed (b2f7b11e, 26074ad1) but smoke red: tests/security/tests/auth_matrix.rs (T088, protected, no se |
@@ -101,7 +102,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T155 (lease until 2026-11-10T22:17:56Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T311", "at": "2026-11-10T18:54:34Z", "cache_creation_input_tokens": 343076, "cache_read_input_tokens": 8466456, "output_tokens": 92652, "input_tokens": 212}
+- {"task": "T155", "at": "2026-11-10T20:15:24Z", "output_tokens": 189359, "cache_read_input_tokens": 27115828, "cache_creation_input_tokens": 663166, "input_tokens": 479}
