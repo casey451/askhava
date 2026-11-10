@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{#- The sign-up capability step (T155; BIZ-049, BIZ-004, BIZ-007, BIZ-010, BIZ-030, A11Y-012,
+    A11Y-030; D-393). `show` holds the five questions in order (job types, towns, largest job,
+    recurring work, after-hours): all five on the one-page form, one on each guided screen, none
+    on the check screen, which reads the answers back. Every other answer rides along as a hidden
+    field, so nothing is asked twice. The job types the license covers arrive ticked; the
+    no-license extras arrive unticked. A failed save gives an "Error: " title, a focused summary
+    with links and the same message by each question. -#}
+{% macro err(field) %}{% if let Some(m) = error_for(field) %}<p id="{{ field }}-error" class="field-error">Error: {{ m }}</p>{% endif %}{% endmacro %}
+{% macro radio(name, value, label, current) %}<p><input type="radio" id="{{ name }}-{{ value }}" name="{{ name }}" value="{{ value }}"{% if current == value %} checked{% endif %}> <label for="{{ name }}-{{ value }}">{{ label }}</label></p>{% endmacro %}
+{% block title %}{% if !page.problems.is_empty() %}Error: {% endif %}{{ title }}{% endblock %}
+{% block main %}
+<h1>{{ title }}</h1>
+{% if !page.problems.is_empty() %}<div id="error-summary" role="alert" tabindex="-1" autofocus>
+<h2>Fix these to continue</h2>
+<ul>{% for p in page.problems %}<li><a href="#{{ p.field() }}">{{ p.message() }}</a></li>{% endfor %}</ul>
+</div>{% endif %}
+{% if !summary.is_empty() %}<ul id="capability-summary">
+{% for line in summary %}<li>{{ line }}</li>
+{% endfor %}</ul>
+<p>You can change any answer later in your portal.</p>
+{% endif %}
+<form method="post" action="{{ crate::business_signup::CAPABILITY_ROUTE }}?step={{ next }}" novalidate>
+<input type="hidden" name="csrf" value="{{ page.csrf }}">
+{% for (name, value) in carried %}<input type="hidden" name="{{ name }}" value="{{ value }}">
+{% endfor %}
+{% if show[0] %}<fieldset id="job-types"><legend>Which jobs do you want?</legend>
+<p id="job-types-hint">We ticked every job your license covers. Untick any you don't want. Below them are jobs that need no license. Tick any you also do.</p>
+{% for trade in page.offer %}<fieldset id="trade-{{ trade.category }}"><legend>{{ trade.name }}{% if !trade.rows[0].licensed %} (no license needed){% endif %}</legend>
+{% for row in trade.rows %}{% let v = Self::value(row.choice) %}<p><input type="checkbox" id="jt-{{ v|urlencode_strict }}" name="job_type" value="{{ v }}"{% if ticked(row.choice) %} checked{% endif %}>
+<label for="jt-{{ v|urlencode_strict }}">{{ row.choice.job_type }}</label></p>
+{% endfor %}</fieldset>
+{% endfor %}</fieldset>
+{% endif %}
+{% if show[1] %}<fieldset id="towns"{% if error_for("towns").is_some() %} aria-describedby="towns-error"{% endif %}><legend>Which towns do you work in?</legend>
+{% call err("towns") %}{% endcall %}
+{% for (code, name) in page.towns %}<p><input type="checkbox" id="town-{{ code }}" name="town" value="{{ code }}"{% if town_ticked(code) %} checked{% endif %}>
+<label for="town-{{ code }}">{{ name }}</label></p>
+{% endfor %}</fieldset>
+{% endif %}
+{% if show[2] %}<fieldset id="largest" aria-describedby="largest-hint{% if error_for("largest").is_some() %} largest-error{% endif %}"><legend>What's the largest job you'll quote?</legend>
+<p id="largest-hint">If a homeowner's answers put a job over this amount, we won't send it to you. If you ever quote more, we'll ask you to double-check before it goes out.</p>
+{% call err("largest") %}{% endcall %}
+{% call radio("largest", "none", "No limit", page.values.largest.as_str()) %}{% endcall %}
+{% call radio("largest", "1500", "$1,500", page.values.largest.as_str()) %}{% endcall %}
+{% call radio("largest", "5000", "$5,000", page.values.largest.as_str()) %}{% endcall %}
+{% call radio("largest", "typed", "Another amount", page.values.largest.as_str()) %}{% endcall %}
+<p><label for="largest_amount">Your amount in dollars</label>
+<input type="text" id="largest_amount" name="largest_amount" inputmode="decimal" value="{{ page.values.amount }}"></p>
+</fieldset>
+{% endif %}
+{% if show[3] %}<fieldset id="recurring" aria-describedby="recurring-hint{% if error_for("recurring").is_some() %} recurring-error{% endif %}"><legend>Do you take recurring work, like weekly or monthly service?</legend>
+<p id="recurring-hint">If you answer no, we won't send you recurring jobs.</p>
+{% call err("recurring") %}{% endcall %}
+{% call radio("recurring", "yes", "Yes", page.values.recurring.as_str()) %}{% endcall %}
+{% call radio("recurring", "no", "No", page.values.recurring.as_str()) %}{% endcall %}
+</fieldset>
+{% endif %}
+{% if show[4] %}<fieldset id="after_hours" aria-describedby="after_hours-hint{% if error_for("after_hours").is_some() %} after_hours-error{% endif %}"><legend>Do you take after-hours emergency jobs?</legend>
+<p id="after_hours-hint">These come by email at night. You can turn this off in your portal any time.</p>
+{% call err("after_hours") %}{% endcall %}
+{% call radio("after_hours", "yes", "Yes", page.values.after_hours.as_str()) %}{% endcall %}
+{% call radio("after_hours", "no", "No", page.values.after_hours.as_str()) %}{% endcall %}
+</fieldset>
+{% endif %}
+<button type="submit">{{ button }}</button>
+</form>
+{% endblock %}

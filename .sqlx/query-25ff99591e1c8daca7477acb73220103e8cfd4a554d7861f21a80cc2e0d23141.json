@@ -1,0 +1,52 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT business_id, largest_job_cents, recurring FROM businesses.capability WHERE business_id = ANY($1)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "business_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "businesses.capability",
+            "name": "business_id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "largest_job_cents",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "businesses.capability",
+            "name": "largest_job_cents"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "recurring",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "businesses.capability",
+            "name": "recurring"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "UuidArray"
+      ]
+    },
+    "nullable": [
+      false,
+      true,
+      false
+    ]
+  },
+  "hash": "25ff99591e1c8daca7477acb73220103e8cfd4a554d7861f21a80cc2e0d23141"
+}
