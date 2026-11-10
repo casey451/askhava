@@ -6,9 +6,9 @@ These are decisions Claude made on its own and logged so the build never waits (
 
 - **What it found.** Three of its eight points were already handled by the fifth review's tasks. The new ones: a free ($0) pick's release check didn't confirm that the free decision belonged to that same pick, so one free decision could have waived the fee on another job of the same business; a refund was booked as the whole charge without checking what Stripe actually refunded; the nightly money check only looked back 7 days and read everything at once; the rate-limit counters (which hold visitors' internet addresses) were never cleaned up; and a text that failed to process was only alerted, never retried.
 - **What changed.** Five new tasks (T333 to T337) plus additions to T261, T255, T319 and T328. Choices made for you:
-  - **Only full refunds.** Ask Hava only ever refunds a whole charge. If Stripe ever reports a smaller refund or another currency, the books record what Stripe says and you get an alert.
-  - **Money-check catch-up.** If the nightly check was down, it catches up from its last good run, up to 25 days back (Stripe keeps 30). If the gap is longer, you get an alert to check Stripe by hand.
-  - **Text retry (the overseer's call, made under your "final say").** A text that failed to process is tried again up to 3 times. Each try reads the text back from Twilio, which keeps it until day 31. The app never stores the text itself; after day 31 the retry stops.
+  - **Only full refunds.** Ask Hava only ever refunds a whole charge. If Stripe ever reports a smaller refund, the books record what Stripe says and you get an alert; if it reports another currency, the books keep the charge amount and you get an alert to check it.
+  - **Money-check catch-up.** If the nightly check was down, it catches up from its last good run, however long ago, reading page by page so nothing is skipped. If it was down more than 2 days, you also get an alert so you know.
+  - **Text retry (the overseer's call, made under your "final say").** A text that failed to process is tried again up to 3 times. Each try reads the text back from Twilio, which keeps it until day 31. The app never stores the text itself; after day 31 the retry stops. A STOP or HELP is always honoured; if she has texted again since, only the STOP or HELP part is done; any reply waits for daytime hours.
   - **Rate-limit cleanup.** Old counters are deleted daily, so visitors' addresses aren't kept longer than a few days.
 - **Nothing needs you.**
 
