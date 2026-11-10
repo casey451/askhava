@@ -59,6 +59,7 @@ pub use crate::business_signup::{
     DoneError, DoneFacts, NOTICE_OFF, NOTICE_ON, PEST_ATTESTATION, Parts, SIGNUP_ROUTE, Screen,
     done_facts, done_lines, fee_numbers, notice_line, signup_page,
 };
+pub use crate::checkin::{CHECK_IN_ROUTE, checkin_routes};
 pub use crate::confirm_pay::{
     ConfirmFacts, FEE_FREE_LINE, NoFee, PORTAL_LINK, PressReply, REFUND_LINE, confirm_page,
     may_confirm, press_reply,
