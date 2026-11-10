@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-10T21:37:33Z by runner 9786eb0e62d7 (actions).
+Updated 2026-11-10T21:52:11Z by runner 8d9d12749933 (actions).
 
 **Waiting for tokens until 17:00Z; 190 of 336 done; week 97% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-10T21:37:33Z by runner 9786eb0e62d7 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 21:16Z (no task in progress)
 - **Week:** 97% used, 0.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:37Z, 0 min before this update
+- **Last run:** 21:37Z, 14 min before this update
 - **Keeper:** last ran 21:37Z, next wake 03:17Z
 
 ## Needs attention
@@ -39,6 +39,7 @@ Updated 2026-11-10T21:37:33Z by runner 9786eb0e62d7 (actions).
 | T287 | payments and picks: the fee fixed at the pick is stored by p | done | 2 | 43 min | 22:15Z | T287 built and smoke green, but prehandin check_pr_change fails: kit/tasks.json T287 owns lacks app/payments/src/models. |
 
 ### Plan and harness merges on main
+- 21:38Z Plan: claim the flaky-test fixes first — T338, then T311 and T349 (D-2540) (#431)
 - 19:42Z Plan: second tiering pass — 13 more tasks on Sonnet, T159 on Haiku, reviewer counterexample duty (D-2506) (#427)
 - 19:31Z Plan: PIN draws fail only when the OS source fails; one failed draw costs one draw (D-2451, T311) (#422)
 - 19:17Z Plan: no Fable window on Thursday — the D-2225 window closes before it opens (D-2485) (#425)
@@ -52,7 +53,6 @@ Updated 2026-11-10T21:37:33Z by runner 9786eb0e62d7 (actions).
 - 01:33Z Plan: the refused-connection test holds its port (T338, D-2318) (#404)
 - 00:54Z Plan: sixth audit — $0 release bound to its pick, refund amounts checked, reconcile catch-up and paging, real Stripe reads, rate-limit prune, inbound-tex
 - 00:05Z Plan: fifth audit — every queued task kind gets a registered handler; late success on ended picks; unreadable Stripe success and unmatched fraud warning 
-- 21:41Z Plan: the LINK notice names the stored PIN; job_pin deleted (T326, D-2247) (#395)
 
 ## Progress (requirements verified)
 
@@ -85,7 +85,7 @@ Updated 2026-11-10T21:37:33Z by runner 9786eb0e62d7 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-10T21:29:20Z (week)): five-hour: 0k used, 29.1M left, resets on first use; week: 194.0M used, 0k left, resets 2026-11-12T17:00:00Z; projected finish 2026-11-30T14:08:53Z; waiting until 2026-11-12T17:00:00Z.
+- Pacing (session_reading 2026-11-10T21:37:17Z (week)): five-hour: 0k used, 29.1M left, resets on first use; week: 194.0M used, 0k left, resets 2026-11-12T17:00:00Z; projected finish 2026-11-30T14:40:57Z; waiting until 2026-11-12T17:00:00Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
