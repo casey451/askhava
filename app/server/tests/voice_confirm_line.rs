@@ -40,17 +40,17 @@ const PEOPLE: [(&str, &str, &str); 3] = [
     (
         "Ada Example",
         "+19285550181",
-        "11 Alder St, Lake Havasu City, AZ 86403",
+        "11 Test St, Lake Havasu City, AZ 86403",
     ),
     (
         "Bea Example",
         "+19285550182",
-        "22 Birch St, Lake Havasu City, AZ 86403",
+        "22 Example St, Lake Havasu City, AZ 86403",
     ),
     (
         "Cora Example",
         "+19285550183",
-        "33 Cedar St, Lake Havasu City, AZ 86403",
+        "33 Sample St, Lake Havasu City, AZ 86403",
     ),
 ];
 
@@ -267,7 +267,7 @@ async fn td_call_17_the_confirm_connects_exactly_the_line_read_back(db: PgPool) 
     let call = sid(1);
     let words = read_back(&v, &call, &s.wrong).await;
     assert!(
-        words.contains("Ada") && words.contains("11 Alder St"),
+        words.contains("Ada") && words.contains("11 Test St"),
         "{words}"
     );
     assert!(!words.contains("Cora") && !words.contains("Example"));
@@ -385,11 +385,11 @@ async fn td_call_17_a_resent_read_back_turn_reads_back_the_bound_line(db: PgPool
     line(&mut conn, s.people[1], s.x).await;
     let resent = turn(&v, (&call, PASSED_A), "?try=2", &s.wrong).await;
     assert!(
-        resent.contains("Ada") && resent.contains("11 Alder St"),
+        resent.contains("Ada") && resent.contains("11 Test St"),
         "{resent}"
     );
     assert!(
-        !resent.contains("Bea") && !resent.contains("22 Birch St"),
+        !resent.contains("Bea") && !resent.contains("22 Example St"),
         "{resent}"
     );
     assert!(resent.contains("?confirm=2\""), "{resent}");
