@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-10T15:58:55Z by runner d145202dd72b (actions).
+Updated 2026-11-10T16:27:56Z by runner d145202dd72b (actions).
 
 **Idle since 15:58Z; 186 of 334 done; week 89% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-10T15:58:55Z by runner d145202dd72b (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 15:58Z (no task in progress)
 - **Week:** 89% used, 16.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:58Z, 0 min before this update
+- **Last run:** 15:59Z, 28 min before this update
 - **Keeper:** last ran 15:58Z, next wake 16:18Z
 
 ## Needs attention
@@ -35,7 +35,6 @@ Updated 2026-11-10T15:58:55Z by runner d145202dd72b (actions).
 | T287 | payments and picks: the fee fixed at the pick is stored by p | QUEUED | 1 | 46 min | 21:18Z |  |
 | T279 | messaging, ops and server: the texting switch and a number s | done | 1 | 47 min | 19:32Z |  |
 | T276 | privacy and messaging: purged photos' sealed objects and orp | done | 1 | 53 min | 17:46Z |  |
-| T275 | adapters and stand-ins: local write-once storage that a raci | done | 1 | 38 min | 16:08Z |  |
 
 ### Plan and harness merges on main
 - 13:07Z Plan: no handyman split-job check — each job judged by its own price (Casey's ruling; D-2407, D-2408, T347) (#416)
