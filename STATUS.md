@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-10T03:26:49Z by runner 56c277428c17 (actions).
+Updated 2026-11-10T03:45:52Z by runner 4e6b3ca4a5f2 (actions).
 
 **Building: T285 in progress since 03:26Z; 178 of 331 done; week 83% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-10T03:26:49Z by runner 56c277428c17 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T285 claimed 03:26Z, lease until 06:26Z
 - **Week:** 83% used, 28.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:13Z, 13 min before this update
+- **Last run:** 03:26Z, 18 min before this update
 - **Keeper:** last ran 03:13Z, next wake 03:33Z
 
 ## Needs attention
@@ -38,6 +38,7 @@ Updated 2026-11-10T03:26:49Z by runner 56c277428c17 (actions).
 | T263 | payments: the monthly fee limit is a hard cap; capacity is r | done | 1 | 49 min | 04:26Z |  |
 
 ### Plan and harness merges on main
+- 03:30Z Plan: pentest assessment — Actions pinned, purpose-bound codes, Verify sends outside transactions (D-2346–D-2350, T345–T346) (#407)
 - 02:15Z Plan: seventh audit — fee facts from the job's category at the pick, tier and per-visit picks, whole-field quote gate, atomic Verify cap (D-2329–D-2335, 
 - 01:33Z Plan: the refused-connection test holds its port (T338, D-2318) (#404)
 - 00:54Z Plan: sixth audit — $0 release bound to its pick, refund amounts checked, reconcile catch-up and paging, real Stripe reads, rate-limit prune, inbound-tex
