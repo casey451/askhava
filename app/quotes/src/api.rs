@@ -40,6 +40,9 @@
 
 use sqlx::types::Uuid;
 
+pub use crate::capability_match::{
+    CapabilitySkip, JobFit, band_floor_cents, capability_skip, capable_pool,
+};
 pub use crate::card_notices::{
     CardNotice, QUOTE_HOURS, card_payload, job_page_prefix, queue_card_notice, sent_count,
 };
