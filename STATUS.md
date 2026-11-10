@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-10T22:06:31Z by runner fbfe8c8cd68f (actions).
+Updated 2026-11-10T22:22:28Z by runner 2b84fbf1dfae (actions).
 
 **Waiting for tokens until 17:00Z; 190 of 336 done; week 98% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,11 @@ Updated 2026-11-10T22:06:31Z by runner fbfe8c8cd68f (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 21:16Z (no task in progress)
 - **Week:** 98% used, 0.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:06Z, 0 min before this update
+- **Last run:** 22:06Z, 15 min before this update
 - **Keeper:** last ran 22:06Z, next wake 03:46Z
 
 ## Needs attention
-- Strict plan check red: 3 problem(s) on tasks still to run (+23 on DONE tasks); first: T207: stored context_pct 12% but it measures 17%; regenerate
+- Strict plan check red: 4 problem(s) on tasks still to run (+23 on DONE tasks); first: T207: stored context_pct 12% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -36,9 +36,9 @@ Updated 2026-11-10T22:06:31Z by runner fbfe8c8cd68f (actions).
 | T284 | server: every route the architecture lists is wired in the r | check_failed | 2 | 21 min | 01:51Z |  |
 | T284 | server: every route the architecture lists is wired in the r | check_failed | 1 | 34 min | 00:32Z |  |
 | T283 | Ci: a change to a document the app compiles in runs the Rust | done | 1 | 30 min | 23:27Z |  |
-| T287 | payments and picks: the fee fixed at the pick is stored by p | done | 2 | 43 min | 22:15Z | T287 built and smoke green, but prehandin check_pr_change fails: kit/tasks.json T287 owns lacks app/payments/src/models. |
 
 ### Plan and harness merges on main
+- 22:08Z Harness: report queued tasks that add to lists existing tests pin (D-2550) (#433)
 - 21:53Z Harness: reuse a recorded green smoke on main's head; fix the start-up smoke timeouts (D-2560) (#434)
 - 21:38Z Plan: claim the flaky-test fixes first — T338, then T311 and T349 (D-2540) (#431)
 - 19:42Z Plan: second tiering pass — 13 more tasks on Sonnet, T159 on Haiku, reviewer counterexample duty (D-2506) (#427)
