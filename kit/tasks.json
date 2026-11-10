@@ -10398,7 +10398,7 @@
    "id": "T341",
    "slug": "tier-and-visit-schedule-at-pick",
    "title": "picks and portals (harness): the homeowner picks a tier of a tiers quote, and a per-visit price with its schedule gets its fee",
-   "goal": "Seventh audit N7-02 and N7-04's pick side (D-2332, D-2333; PICK-053, PICK-038, PICK-039, PICK-021, REC-010, REC-011; sets aside only D-2210's refusals of a tiered quote and a per-visit period). After T340 and T342: (1) Tiers: the quote page's Pick for a tiers quote names one tier (one button or radio per tier, `app/portals/templates/quote_page.html` and `app/portals/src/pick_flow.rs`); `migrations/0178_picks_chosen_tier.sql` adds the chosen tier's index and name to `picks.pick`, written in the pick's transaction; `fee_inputs` uses that tier's price and no default tier exists; a missing or stale tier (the quote edited since) is a validation error that shows the choices again and stores nothing; the Confirm page (`app/portals/templates/confirm_pay.html`) shows the chosen tier with the fee basis (PICK-021). The text pick (`<n> YES`, PICK-015) names no tier and the spec gives no text syntax for one, so a text pick of a tiers quote stores nothing and replies with the quote-page link to choose the package; the syntax is listed for Casey (D-2332). (2) Per-visit: `fee_period` (`service.rs:439`) maps a per-visit price with its stored visit schedule (T342, T164) to the matching fee period (weekly 52/12, every two weeks 26/12, and so on, as `app/payments/src/rules.rs:198` already converts); a per-visit quote without a schedule cannot exist after T342, and one from before is refused. (3) `tests/integration/tests/fee_fixed_at_pick.rs`'s tiered-pick case changes only as D-2332 records: the refusal is for a pick with no tier. Tests in `tests/integration/tests/tier_and_visit_pick.rs` (TD-FEE-63). Money: the overseer runs an independent money review of the hand-in. Update the `picks` and `portals` `CLAUDE.md` files and `docs/decisions.md`.",
+   "goal": "Seventh audit N7-02 and N7-04's pick side (D-2332, D-2333; PICK-053, PICK-038, PICK-039, PICK-021, REC-010, REC-011; sets aside only D-2210's refusals of a tiered quote and a per-visit period). After T340 and T342: (1) Tiers: the quote page's Pick for a tiers quote names one tier (one button or radio per tier, `app/portals/templates/quote_page.html` and `app/portals/src/pick_flow.rs`); `migrations/0179_picks_chosen_tier.sql` adds the chosen tier's index and name to `picks.pick`, written in the pick's transaction; `fee_inputs` uses that tier's price and no default tier exists; a missing or stale tier (the quote edited since) is a validation error that shows the choices again and stores nothing; the Confirm page (`app/portals/templates/confirm_pay.html`) shows the chosen tier with the fee basis (PICK-021). The text pick (`<n> YES`, PICK-015) names no tier and the spec gives no text syntax for one, so a text pick of a tiers quote stores nothing and replies with the quote-page link to choose the package; the syntax is listed for Casey (D-2332). (2) Per-visit: `fee_period` (`service.rs:439`) maps a per-visit price with its stored visit schedule (T342, T164) to the matching fee period (weekly 52/12, every two weeks 26/12, and so on, as `app/payments/src/rules.rs:198` already converts); a per-visit quote without a schedule cannot exist after T342, and one from before is refused. (3) `tests/integration/tests/fee_fixed_at_pick.rs`'s tiered-pick case changes only as D-2332 records: the refusal is for a pick with no tier. Tests in `tests/integration/tests/tier_and_visit_pick.rs` (TD-FEE-63). Money: the overseer runs an independent money review of the hand-in. Update the `picks` and `portals` `CLAUDE.md` files and `docs/decisions.md`.",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -10423,7 +10423,7 @@
     "harness"
    ],
    "owns": [
-    "migrations/0178_picks_chosen_tier.sql",
+    "migrations/0179_picks_chosen_tier.sql",
     "app/picks/src/service.rs",
     "app/portals/src/pick_flow.rs",
     "app/portals/templates/quote_page.html",
@@ -10521,6 +10521,129 @@
    ],
    "branch": "claude/task/T344-verify-day-cap-lock",
    "prompt": "kit/prompts/T344.md"
+  },
+  {
+   "id": "T345",
+   "slug": "pin-every-workflow-action",
+   "title": "harness: every external GitHub Actions `uses:` in every workflow is pinned to a full commit SHA",
+   "goal": "Pentest PT-01 (D-2347; SEC-045): 15 external `uses:` lines are pinned to mutable tags, against SEC-045 (\"every GitHub Actions `uses:`\"), and no decision allows a tag: `backup-runner.yml` :64, :231 and :630 (`actions/checkout@v4`), :243 (`actions/setup-python@v5`), :251 (`actions/cache@v4`), :274 (`actions/cache/restore@v4`), :394 (`anthropics/claude-code-action@v1`, on the job that holds the Claude OAuth token, the conditional push token and contents, pull-requests, issues, id-token and actions write), :450 (`actions/cache/save@v4`); `nightly-main.yml:170`, `twin.yml:29`, `auto-pr.yml:30`, `governance.yml:47`, `inbox.yml:39` and `notify.yml:25` (`actions/checkout@v4`); `twin.yml:53` (`actions/upload-artifact@v4`). Pin each to the full 40-character commit SHA its tag resolves to when this task runs (read from the action's public repository, never guessed), with the version in a trailing comment as `ci.yml` does (`# v4.4.0`), and record every action, tag, resolved version and SHA in this task's `docs/decisions.md` entry. Behaviour is unchanged: each pin is the commit the tag named. Nothing else in the workflows changes (permissions and tokens stay as they are; trimming them is not this task). `.github/dependabot.yml` already watches the `github-actions` ecosystem, so the pins get update pull requests. Proof for the runner pin: the next runner cycle after the merge completes on fake data; the hand-in report says how to revert (the one-line pin back to `@v1` in `backup-runner.yml`, by a harness pull request) if it does not. The repository-wide test that keeps every workflow pinned is T121's (TD-SEC-24). Harness: an Opus review.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "4",
+   "module": null,
+   "deps": [
+    "T056",
+    "T074",
+    "T172"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "harness"
+   ],
+   "owns": [
+    ".github/workflows/backup-runner.yml",
+    ".github/workflows/nightly-main.yml",
+    ".github/workflows/twin.yml",
+    ".github/workflows/auto-pr.yml",
+    ".github/workflows/governance.yml",
+    ".github/workflows/inbox.yml",
+    ".github/workflows/notify.yml"
+   ],
+   "reads": [
+    "docs/spec/security.md",
+    ".github/workflows/ci.yml",
+    ".github/dependabot.yml"
+   ],
+   "requirements": [
+    "SEC-045"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-2347",
+    "D-480"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 7,
+    "lines": 120,
+    "context_pct": 16
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T345-pin-every-workflow-action",
+   "prompt": "kit/prompts/T345.md",
+   "acceptance": "No external `uses:` line in `.github/workflows/` lacks a 40-character SHA (a grep or the T121 check pattern finds none); each SHA is the commit its former tag resolved to, recorded in the decision; the next runner cycle after the merge completes on fake data, or the report names the revert."
+  },
+  {
+   "id": "T346",
+   "slug": "code-purpose-challenges",
+   "title": "portals: every homeowner Verify code is bound to its purpose by a local challenge with a try cap",
+   "goal": "Pentest PT-03 and the PT-02 gap beyond the report (D-2348; SEC-055, SEC-008, PRIV-031). One Twilio Verify service serves every purpose and `VerifyAdapter::check_code(to, code)` (`app/adapters/src/verify.rs:50`, :86) is not bound to one, so `confirm_request` (`app/portals/src/data_download.rs:210`) acts on any of her open requests (up to 30 days old) after any passing code for her phone, the sign-in code included, and homeowner sign-in (`finish_sign_in`, `app/portals/src/homeowner_portal.rs:164`) keeps no local challenge; neither has an app-side try cap. Build: (1) `migrations/0176_portals_code_challenge.sql` adds `portals.code_challenge` (ID, purpose `homeowner_signin`, `data_copy` or `data_delete`, subject ID (her contact for sign-in, the request for copy and delete), sent at, used at, tries; app role SELECT, INSERT and UPDATE of `tries` and `used_at` only). (2) `app/portals/src/code_challenge.rs`: every send (`send_sign_in_code`, `open_request` and a new `resend_request_code` for an open request) writes a challenge for its purpose and subject in a short committed transaction before calling Verify; a check is refused before Verify is called unless an unused challenge of that purpose and subject sent within the Verify code's life (10 minutes, the `SEND_WINDOW_SECONDS` both files use) exists; the try is reserved first by one atomic `UPDATE ... SET tries = tries + 1 WHERE tries < CODE_TRIES` committed before the Verify call (the cap is `business_auth::CODE_TRIES`, the same constant as T272; a reservation never comes back, so a crash or a timeout uses a try); a right code sets `used_at` in the same transaction as the action it confirms (the session start, or the confirmed audit row with the copy or the delete); no transaction or reservation is held across the Verify await. The signatures the server calls stay as they are, beside the new `resend_request_code` (T307 serves it). Picks' codes and business sign-in keep their own rows (T272 binds the business code to its sent challenge). (3) No change to `stand_ins/twilio.py`: it keys a verification by `to` only, which is the shared-service model these tests need. Tests in `tests/security/tests/code_purpose.rs` (TD-SEC-60): a code sent for one purpose is refused for another before Verify is called (a sign-in code cannot confirm a delete whose own challenge expired or was used; a pick code cannot sign in); 20 simultaneous wrong checks reach Verify at most 5 times and the sixth is refused; a used challenge is refused; a right code and the action commit together. Update the `portals` `CLAUDE.md`, `docs/architecture.md` section 10 and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "portals",
+   "deps": [
+    "T272",
+    "T315",
+    "T087",
+    "T057",
+    "T075"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "privacy"
+   ],
+   "owns": [
+    "migrations/0176_portals_code_challenge.sql",
+    "app/portals/src/code_challenge.rs",
+    "app/portals/src/homeowner_portal.rs",
+    "app/portals/src/data_download.rs",
+    "tests/security/tests/code_purpose.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/security.md",
+    "docs/spec/privacy.md",
+    "docs/brains/postgres-operations.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "SEC-055",
+    "SEC-008",
+    "PRIV-031"
+   ],
+   "tests": [
+    "TD-SEC-60"
+   ],
+   "decisions": [
+    "D-2348",
+    "D-1837",
+    "D-1934"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 5,
+    "lines": 450,
+    "context_pct": 36
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T346-code-purpose-challenges",
+   "prompt": "kit/prompts/T346.md"
   },
   {
    "id": "T255",
@@ -11904,7 +12027,7 @@
    "owns": [
     "app/messaging/src/help_requests.rs",
     "app/messaging/src/help_answers.rs",
-    "migrations/0183_help_requests.sql",
+    "migrations/0184_help_requests.sql",
     "tests/integration/tests/help_requests.rs",
     "app/ops/src/help_requests.rs",
     "app/portals/src/digest_flags.rs",
@@ -12239,7 +12362,9 @@
     "T341",
     "T342",
     "T343",
-    "T344"
+    "T344",
+    "T345",
+    "T346"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -12728,7 +12853,7 @@
     "app/intake/src/web_chat.rs",
     "app/intake/src/conversation.rs",
     "tests/integration/tests/web_chat.rs",
-    "migrations/0179_intake_request_source.sql"
+    "migrations/0180_intake_request_source.sql"
    ],
    "reads": [
     "docs/architecture.md",
@@ -13057,7 +13182,7 @@
     "app/ops/src/alerts.rs",
     "app/ops/src/safe_mode.rs",
     "app/ops/src/models.rs",
-    "migrations/0180_ops_alerts_safe_mode.sql",
+    "migrations/0181_ops_alerts_safe_mode.sql",
     "tests/integration/tests/safe_mode.rs",
     "app/payments/src/safe_mode_check.rs",
     "app/picks/src/safe_mode_check.rs",
@@ -13129,7 +13254,7 @@
    "id": "T320",
    "slug": "ops-alert-open-once",
    "title": "ops: one open alert per kind and subject, so a check that runs on a schedule never raises the same alert again",
-   "goal": "Fourth external audit F30 (D-2207; OPS-004, SEC-051): `ops.alert` has no rule against a second open alert of the same kind and subject (`migrations/0021_ops_audit.sql:33`), so a check that runs on a schedule, such as `messaging::check_webhook_silence` (`app/messaging/src/email.rs:684`) once T204 schedules it, raises a new alert on every run while its condition lasts, and a pushing kind would push each time. (1) `migrations/0181_ops_alert_open_once.sql`: a unique index on `ops.alert (kind, subject_kind, subject_id)` over unresolved rows (`resolved_at IS NULL`, and T105's acknowledgement column if it adds one) with `NULLS NOT DISTINCT` (PostgreSQL 16), so a subject-less kind is open once too. (2) `raise_alert` (`app/ops/src/service.rs:96`) inserts with `ON CONFLICT DO NOTHING` and returns the open alert's ID when one exists (no new row, so no new push); a raise after it was resolved opens a new one. Read every caller of `raise_alert` (about 60): those that need one alert per event (each HELP request, each dispute, each failed purge) already carry a distinct subject; list in the decision any caller whose behaviour changes. Tests in `tests/integration/tests/alert_dedupe.rs` (TD-OPS-34): two raises of one kind and subject leave one open row and return its ID; after it is resolved a raise opens a new one; two subject-less raises of one kind leave one; two concurrent raises leave one. Every existing test that raises alerts passes unchanged; if one expects two open alerts of one kind and subject, stop and report. Update the `ops` `CLAUDE.md`, `docs/architecture.md` section 10 and `docs/decisions.md`.",
+   "goal": "Fourth external audit F30 (D-2207; OPS-004, SEC-051): `ops.alert` has no rule against a second open alert of the same kind and subject (`migrations/0021_ops_audit.sql:33`), so a check that runs on a schedule, such as `messaging::check_webhook_silence` (`app/messaging/src/email.rs:684`) once T204 schedules it, raises a new alert on every run while its condition lasts, and a pushing kind would push each time. (1) `migrations/0182_ops_alert_open_once.sql`: a unique index on `ops.alert (kind, subject_kind, subject_id)` over unresolved rows (`resolved_at IS NULL`, and T105's acknowledgement column if it adds one) with `NULLS NOT DISTINCT` (PostgreSQL 16), so a subject-less kind is open once too. (2) `raise_alert` (`app/ops/src/service.rs:96`) inserts with `ON CONFLICT DO NOTHING` and returns the open alert's ID when one exists (no new row, so no new push); a raise after it was resolved opens a new one. Read every caller of `raise_alert` (about 60): those that need one alert per event (each HELP request, each dispute, each failed purge) already carry a distinct subject; list in the decision any caller whose behaviour changes. Tests in `tests/integration/tests/alert_dedupe.rs` (TD-OPS-34): two raises of one kind and subject leave one open row and return its ID; after it is resolved a raise opens a new one; two subject-less raises of one kind leave one; two concurrent raises leave one. Every existing test that raises alerts passes unchanged; if one expects two open alerts of one kind and subject, stop and report. Update the `ops` `CLAUDE.md`, `docs/architecture.md` section 10 and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -13142,7 +13267,7 @@
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [],
    "owns": [
-    "migrations/0181_ops_alert_open_once.sql",
+    "migrations/0182_ops_alert_open_once.sql",
     "app/ops/src/service.rs",
     "tests/integration/tests/alert_dedupe.rs"
    ],
@@ -13206,7 +13331,7 @@
     "app/messaging/src/alert_emails.rs",
     "tests/integration/tests/alert_routing.rs",
     "app/portals/src/digest_flags.rs",
-    "migrations/0182_ops_owner_digest.sql",
+    "migrations/0183_ops_owner_digest.sql",
     "app/messaging/src/keywords.rs",
     "app/portals/src/business_portal.rs",
     "app/portals/templates/business_home.html",
@@ -13416,7 +13541,7 @@
    "id": "T321",
    "slug": "consent-five-year-purge",
    "title": "messaging, intake and privacy: consent records, keyword events and message logs go 5 years after a number's last message",
-   "goal": "Fourth external audit F32 (D-2208; CON-022, CON-036, D-079): CON-022 keeps consent records, opt-in wording versions, STOP/HELP/START events and message logs 5 years after the last message to that number, and the privacy policy promises the same (`docs/legal/privacy-policy.md:91`), but nothing ever deletes them: `intake.consent_record` and the `messaging` keyword and message-log rows are append-only (`migrations/0053_intake_tables.sql:62`) and `app/intake/src/purge.rs` says they are never deleted there. (1) A daily `messaging.consent_sweep` (registered in the shared `app/server/src/lib.rs`, queued once a day) finds each number whose last inbound or outbound message is more than 1,827 days old (5 years, never short by a leap day) and deletes, in one transaction per number: its rows of every table CON-022 names, through `app/messaging/src/consent_purge.rs` for `messaging`'s and `intake::api` (`app/intake/src/consent_purge.rs`) for `intake.consent_record`, each with one `ops` audit row of IDs only; `migrations/0184_consent_five_year_purge.sql` grants the app role DELETE on exactly those tables and nothing else (no UPDATE, so they stay append-only for every other change). (2) The opt-out is never weakened: a number on `messaging.suppression` keeps its suppression row, the `messaging.optout_event` row that row points to (`event_id`, `migrations/0044_messaging_optout.sql:33`; digest-only, no phone) and its locked phone in the vault, because the suppression digest is keyed `homeowner-phone|v<n>` and PRIV-024's key rotation rebuilds it from the vault plaintext (D-079), so clearing the phone would lose the opt-out at the next rotation; only its other CON-022 rows (consent records, keyword events, message logs) go at 5 years. A number not on suppression loses its CON-022 rows and then its locked vault phone, cleared through `privacy::api` (`app/privacy/src/consent_phone.rs`). The DELETE grant on `messaging.optout_event` is limited to rows no suppression row references (a policy or a trigger that refuses the rest). That an opted-out number's phone stays locked past 5 years is listed for Casey, with whether the privacy policy should say so (D-2208). (3) Tests in `tests/integration/tests/consent_purge.rs` (TD-CON-30): a number last messaged 1,826 days ago keeps everything; at 1,827 days a number not on suppression loses its rows and its vault phone, with audit rows of IDs only; an opted-out number keeps its suppression row, the opt-out event it points to and its locked phone, loses its other rows, and is still refused a text after the purge and after an index-key rotation; deleting an opt-out event a suppression row references is refused; a message in between restarts its clock. The rotation case builds its two-version `VAULT_INDEX_KEY` the way `tests/integration/tests/vault.rs` does (its `key(version, byte)` helper at line 32 and the v1-plus-v2 key set of `the_rotation_drill_moves_every_row_to_v2`, TD-PRIV-09) and rotates with `privacy::api::rotate_batch` as that test and `tests/integration/tests/inbound_scrub_context.rs` do; it is not skipped. Update the `messaging`, `intake` and `privacy` `CLAUDE.md` files, `docs/architecture.md` section 10 and `docs/decisions.md`.",
+   "goal": "Fourth external audit F32 (D-2208; CON-022, CON-036, D-079): CON-022 keeps consent records, opt-in wording versions, STOP/HELP/START events and message logs 5 years after the last message to that number, and the privacy policy promises the same (`docs/legal/privacy-policy.md:91`), but nothing ever deletes them: `intake.consent_record` and the `messaging` keyword and message-log rows are append-only (`migrations/0053_intake_tables.sql:62`) and `app/intake/src/purge.rs` says they are never deleted there. (1) A daily `messaging.consent_sweep` (registered in the shared `app/server/src/lib.rs`, queued once a day) finds each number whose last inbound or outbound message is more than 1,827 days old (5 years, never short by a leap day) and deletes, in one transaction per number: its rows of every table CON-022 names, through `app/messaging/src/consent_purge.rs` for `messaging`'s and `intake::api` (`app/intake/src/consent_purge.rs`) for `intake.consent_record`, each with one `ops` audit row of IDs only; `migrations/0185_consent_five_year_purge.sql` grants the app role DELETE on exactly those tables and nothing else (no UPDATE, so they stay append-only for every other change). (2) The opt-out is never weakened: a number on `messaging.suppression` keeps its suppression row, the `messaging.optout_event` row that row points to (`event_id`, `migrations/0044_messaging_optout.sql:33`; digest-only, no phone) and its locked phone in the vault, because the suppression digest is keyed `homeowner-phone|v<n>` and PRIV-024's key rotation rebuilds it from the vault plaintext (D-079), so clearing the phone would lose the opt-out at the next rotation; only its other CON-022 rows (consent records, keyword events, message logs) go at 5 years. A number not on suppression loses its CON-022 rows and then its locked vault phone, cleared through `privacy::api` (`app/privacy/src/consent_phone.rs`). The DELETE grant on `messaging.optout_event` is limited to rows no suppression row references (a policy or a trigger that refuses the rest). That an opted-out number's phone stays locked past 5 years is listed for Casey, with whether the privacy policy should say so (D-2208). (3) Tests in `tests/integration/tests/consent_purge.rs` (TD-CON-30): a number last messaged 1,826 days ago keeps everything; at 1,827 days a number not on suppression loses its rows and its vault phone, with audit rows of IDs only; an opted-out number keeps its suppression row, the opt-out event it points to and its locked phone, loses its other rows, and is still refused a text after the purge and after an index-key rotation; deleting an opt-out event a suppression row references is refused; a message in between restarts its clock. The rotation case builds its two-version `VAULT_INDEX_KEY` the way `tests/integration/tests/vault.rs` does (its `key(version, byte)` helper at line 32 and the v1-plus-v2 key set of `the_rotation_drill_moves_every_row_to_v2`, TD-PRIV-09) and rotates with `privacy::api::rotate_batch` as that test and `tests/integration/tests/inbound_scrub_context.rs` do; it is not skipped. Update the `messaging`, `intake` and `privacy` `CLAUDE.md` files, `docs/architecture.md` section 10 and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -13433,7 +13558,7 @@
     "compliance"
    ],
    "owns": [
-    "migrations/0184_consent_five_year_purge.sql",
+    "migrations/0185_consent_five_year_purge.sql",
     "app/messaging/src/consent_purge.rs",
     "app/intake/src/consent_purge.rs",
     "app/privacy/src/consent_phone.rs",
@@ -13653,7 +13778,7 @@
     "app/recovery/src/api.rs",
     "app/recovery/src/models.rs",
     "app/recovery/src/backup.rs",
-    "migrations/0185_recovery_backup_export.sql",
+    "migrations/0186_recovery_backup_export.sql",
     "tests/recovery/tests/export_restores.rs",
     "app/portals/src/digest_flags.rs",
     "app/portals/src/health_page.rs"
@@ -13725,7 +13850,7 @@
    "owns": [
     "app/recovery/src/replay.rs",
     "app/recovery/src/models.rs",
-    "migrations/0186_recovery_replay.sql",
+    "migrations/0187_recovery_replay.sql",
     "app/recovery/src/tests/replay_ids.rs"
    ],
    "reads": [
@@ -14618,13 +14743,14 @@
    "id": "T121",
    "slug": "security-startup-supply",
    "title": "Startup key checks, control router absent in live, supply-chain checks",
-   "goal": "Security tests prove the app refuses to start on a live key in test, a test key in live or a vendor account off the environment's allow-list, the test-control router is absent from the release build, every route input rejects unknown fields, and the supply-chain steps (audits, pinned Actions and images, gitleaks over the commit range) fail on a planted hit (SEC-001 to SEC-003, SEC-010, SEC-021, SEC-035, SEC-036, SEC-045).",
+   "goal": "Security tests prove the app refuses to start on a live key in test, a test key in live or a vendor account off the environment's allow-list, the test-control router is absent from the release build, every route input rejects unknown fields, and the supply-chain steps (audits, pinned Actions and images, gitleaks over the commit range) fail on a planted hit (SEC-001 to SEC-003, SEC-010, SEC-021, SEC-035, SEC-036, SEC-045). Pentest PT-01 (D-2347): the supply-chain test reads every `.github/workflows/*.yml` and `*.yaml` file, not only `ci.yml`, and fails on any external `uses:` (anything but a `./` local action) without a 40-character commit SHA, with a planted-hit case (a workflow text using a tag) that must fail (TD-SEC-24). After T345 pinned every current one.",
    "type": "build",
    "phase": 1,
    "stage": "5",
    "module": null,
    "deps": [
-    "T120"
+    "T120",
+    "T345"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -14659,7 +14785,8 @@
    "decisions": [
     "D-480",
     "D-492",
-    "D-1143"
+    "D-1143",
+    "D-2347"
    ],
    "cites": [],
    "budget": {
@@ -15846,7 +15973,7 @@
    "id": "T242",
    "slug": "pre-war-games-review",
    "title": "Pre-war-games competitive gap analysis and feature readiness review (Casey's mandatory milestone)",
-   "goal": "Casey's mandatory milestone (November 1, 2026, D-1339; his words are `docs/reviews/pre-war-games-review-brief.md`, read whole): after the approved build is complete and verified (the stage-6 chain through the restore drill, T139) and before any war game (T234 to T239), write `docs/reviews/pre-war-games-review.md`, titled \"ASK HAVA — PRE-WAR-GAMES COMPETITIVE & FEATURE READINESS REVIEW\", and `docs/reviews/pre-war-games-plan.md`, the recommended feature implementation plan and decision log. This task reviews and recommends; it builds no feature and changes no code, requirement, test or locked file. Ask Hava's current state is verified from the code on `main` and the spec, never assumed: for the matrix's current-state column this task may grep and read, without changing, `app/`, `migrations/`, `docs/spec/`, `docs/test-design.md` and `kit/state.json` beyond the files under Scope; Runhome (runhome.com) evidence comes from public sources only (its website, FAQ, terms, privacy policy and other legitimate public material; no unauthorized access to its systems, data or technology), each claim marked verified, marketing assertion or speculation, with its URL and the date read. Runhome capabilities to check (brief section 1) include finding businesses without the homeowner searching, preliminary AI estimates, contacting businesses and getting quotes, negotiating or coordinating parts of the repair, arranging appointments, support through the repair, a hands-off experience, urgent repairs, and a broader home-management relationship rather than a single transaction. Earlier notes Casey asked to keep (the benchmark price range, inspection-report upload, a one-tap approval summary, time-to-quote and win-rate measures, cold start, intake fatigue, pick rates by fee tier) are in `docs/handoff/2026-11-02-evening.md` lines 32 and 33; the review weighs them too. Investigate in detail (brief section 3): A. contractor discovery without prior sign-up in a market with no registered businesses (finding trades and service areas, licensing verification, inviting businesses that never registered to quote a real request, explaining the introduction fee before they take part, converting responders to opted-in participants; permitted directories, licensing databases, APIs and public websites; CAN-SPAM, TCPA, state solicitation rules, consent, opt-outs and carrier policies, with live calls, B2B email, automated texts and AI voice calls kept apart; cold AI calls and unsolicited automated texts are never assumed lawful; whether discovery is essential before launch or should be developed even earlier); B. preliminary AI repair estimates (localized ranges, labor and material ranges, why prices differ, factors that change the final cost, whether a quote looks unusual; data quality, hallucination risk, liability, operating cost, effect on trust; any estimate is labelled preliminary, never a business's offer); C. post-selection coordination, \"Hava Assist\" (\"I'll take it from here\" or \"Hava, help me handle the rest\": relaying appointment preferences, confirmations and reminders, arrival and delay updates, job status, follow-ups, satisfaction checks, completion, spotting a homeowner who needs help), which of these tasks are realistically automatable through the Rust backend services, AI agents, messaging infrastructure and existing integrations, separating administrative help from construction management, which Arizona law may regulate as contractor activity (describing Hava as an AI assistant does not remove those obligations); D. emergency and urgent requests (same-day availability, fast invitations, a first-acceptable-quote path that keeps the homeowner's choice, emergency categories, escalation when no one answers, realistic response times, safety warnings and emergency-service referral), or excluding emergencies at launch; never implying coverage the system cannot give; E. homeowner decision fatigue (standardized comparison, scope differences, availability, licence indicators, questions to ask, side by side, new-quote notices, choosing before every quote arrives) with neutrality kept; F. repeat engagement (repair history, past businesses, maintenance and seasonal reminders, rebooking, recurring requests, a homeowner dashboard), keeping only what earns retention; G. contractor economics and fee resistance (the $199 fee just above $1,500, whether businesses know what they buy, cancellations, invalid or duplicate requests, unreachable homeowners, jobs that do not go ahead, fee disputes and credits, willingness to quote again; recommend protections that preserve profitability without making businesses reluctant to quote again); H. conversion and operations metrics (requests, eligible businesses found, invitations delivered and accepted, quotes, time to first quote, picks, confirmations and payments, introductions, completed repairs where known, failed requests and reasons, revenue and variable cost per request, refunds, credits and disputes, repeat homeowners and businesses), recommending the smallest instrumentation that shows whether the business works. Look beyond Runhome (brief section 4) from six views: a homeowner wanting a repair done with least effort, a business deciding whether Ask Hava is worth paying for, a competitor, a founder running it without a support team, expansion into markets with no business network (Casey, November 1: \"We will run it small market first with the plan to expand.\"; November 3 and 5: national-ready is a standing design goal, D-1515: the code must take every market value from data, the launch market is open (Phoenix metro with a business partner, Lake Havasu City otherwise), and the launch still starts in one market; T248 and T249 build markets as data, each business's service radius and radius matching, and anything further is a recommendation for a later plan change), and a security and compliance reviewer; more features is not a better product, so each addition needs evidence that it materially improves conversion, trust, reliability, retention or profitability. The report (brief section 5) holds a comparison matrix (capability, Ask Hava current state, Runhome evidence, competitive gap, recommendation Build, Improve, Defer or Reject, priority) covering at least contractor discovery, AI price estimates, repair coordination and emergency handling and every other meaningful issue found; for each proposed feature the problem, business benefit, evidence, reusable existing functionality, technical approach, dependencies, development effort and ongoing cost, security, privacy, legal and operational risks, acceptance criteria, how to measure it, and whether it belongs before the war games, after them or after launch; priorities P0 (required before the war games: a missing capability or defect that would invalidate testing the intended launch product), P1 (important, deferrable without invalidating the war games) and P2 (future); legally blocked or legal-review features listed apart from product priorities, never authorized because they rank P0, and every Arizona contractor-licensing question (Hava Assist above all) marked for professional legal review; and answers to the brief's eight questions (section 7): what Runhome offers that Ask Hava lacks; which differences would make homeowners or businesses prefer Runhome; which must be fixed before launch; whether Ask Hava can be as convenient without becoming a licensed construction manager; whether it can fill requests where no business has signed up; whether it can grow without substantial human work per job; which features improve measurable outcomes enough to justify their cost; and whether the product is ready for the war games. Constraints: preserve the business model and fee structure (introduction fee by job size, $25 under $500, $75 for $500 to $1,500, $199 above $1,500, ongoing services at 4 months of estimated value capped at the $75 tier; homeowners pay nothing; anonymous quotes from every qualified opted-in business; details released only on a confirmed, paid pick; masked calling) unless the evidence gives a substantial reason, stated as a recommendation for Casey; never turn Ask Hava into a general contractor, construction manager or repair company; never propose undisclosed paid rankings or anything that steers which quote wins; nothing live (no sign-ups, outreach, messages or accounts, BUILD_BRIEF.md:61); fake data only. The plan file lists each recommended feature as a proposed task (owner files, dependencies, tests, security controls, docs) and a decision log, every item marked awaiting Casey's approval: no feature is built without it. The plan file also holds the national-ready inventory (D-1515): every rule in the spec and the code that is Lake Havasu City or Arizona only (at least LIC-011's city license list, QH-001's Arizona quiet hours, JOB-007's Arizona business clock and the time zone, the ROC lookup and other licensing sources, FEE-046's sales-tax set-aside, INT-022's Arizona-only towns, the identity sources for no-license categories, and what the Phoenix metro fixture needs for the war games), each with how it becomes per-market data, its effort and whether it must come before the war games; these items are the candidates for the approved-enhancements step of D-1339's sequence and go to Casey with the P0 list under T243. The war games use Phoenix metro (many cities, jobs across city lines) as the stress market and Lake Havasu City as the comparison and fallback scenario, within D-1154's $40 AI cap. It also records the follow-up that the war games, once any approved enhancements are built and verified, must be updated by a plan change to test missing business networks, failed outreach, emergency demand, quote abandonment, cancellations, fee disputes and attempted abuse (D-1339). The war games hold for Casey's decision: this task's hand-in adds to `docs/for-casey-review.md` a section asking him which P0 items to build (or none). The hold is a real owner gate (D-1473): T243 (`war-games-go`) opens when this task merges, sends Casey the review, the plan and the P0 list, and T234 waits for it; Casey replies exactly 'war games go' to start the war games with nothing added, or names the P0 items to build, which a plan change adds as tasks T234 then depends on, built and verified before the war games. Required review item (D-2038; Casey's decision of November 8, 2026 after his shared intake-latency review): the AI reply budget. AI-023 now gives every call a homeowner's reply waits on 3 seconds by default, a setting from 1 to 5 seconds, retries and backoff inside it, then the fixed question-bank question (INT-021, INT-039); T296 builds it. The review checks on `main` that every such call, on web chat and in reply to a text, runs within that budget and falls back at once, recommends a value within 1 to 5 seconds for Casey's war-games go (T243), and names the war-games check that confirms it from T234's latency table (p50 and p95 per scenario, and how many turns fell back on the AI budget), since this review runs before the war games. It also says whether the app exposes the AI call time and the database pool wait that T234's latency records need, and if not, lists the smallest instrumentation as a candidate. Required review item (D-2054; from Casey's shared AI-capacity review, November 8, 2026): AI-029's rule, generalised. The review audits every outbound vendor call path on `main` (Twilio texts, voice and Verify, Resend email, Stripe, Lob, the license sources, object storage and the AI) for a database connection or open transaction held across the network await, and lists each call site as held or not held with its evidence (`file:line`); every held one is a P0 or P1 candidate for Casey's war-games go (T243). It confirms on `main` that T298 delivered the AI endpoint settings and the real Claude client (IC-23's first half, D-2065), without which neither the test site's real Claude calls (T137, D-1154) nor T297's fault proxy can be reached, and that T299, which builds the client at start-up and calls the AI reading from the text and web-chat paths (IC-23's second half), is still queued before the first war-games round (T237); anything of T298 missing, or T299 no longer ahead of T237, is a P0 candidate. It also rates IC-53 (`docs/integration-closure.md`, the AI writing calls with no owner, D-2065) for the war-games go: while it is open, INT-039's reword and skip, the AI-written card, project file and follow-up (AI-010, AI-019) and the CARD-010 screen they pass through stay unreachable with the AI on, so the war games exercise no AI-written text; it says whether that is a P0, P1 or P2 candidate and why. It also says whether the AI adapter and its `Transport` boundary (`app/ai/src/models.rs`) leave a seam for a later per-model concurrency limit and usage metrics (nothing is built now), and whether the pool's highest use, its acquire wait and the task-queue depth and oldest task age that T297 reports are exposed, listing the smallest instrumentation if not.",
+   "goal": "Casey's mandatory milestone (November 1, 2026, D-1339; his words are `docs/reviews/pre-war-games-review-brief.md`, read whole): after the approved build is complete and verified (the stage-6 chain through the restore drill, T139) and before any war game (T234 to T239), write `docs/reviews/pre-war-games-review.md`, titled \"ASK HAVA — PRE-WAR-GAMES COMPETITIVE & FEATURE READINESS REVIEW\", and `docs/reviews/pre-war-games-plan.md`, the recommended feature implementation plan and decision log. This task reviews and recommends; it builds no feature and changes no code, requirement, test or locked file. Ask Hava's current state is verified from the code on `main` and the spec, never assumed: for the matrix's current-state column this task may grep and read, without changing, `app/`, `migrations/`, `docs/spec/`, `docs/test-design.md` and `kit/state.json` beyond the files under Scope; Runhome (runhome.com) evidence comes from public sources only (its website, FAQ, terms, privacy policy and other legitimate public material; no unauthorized access to its systems, data or technology), each claim marked verified, marketing assertion or speculation, with its URL and the date read. Runhome capabilities to check (brief section 1) include finding businesses without the homeowner searching, preliminary AI estimates, contacting businesses and getting quotes, negotiating or coordinating parts of the repair, arranging appointments, support through the repair, a hands-off experience, urgent repairs, and a broader home-management relationship rather than a single transaction. Earlier notes Casey asked to keep (the benchmark price range, inspection-report upload, a one-tap approval summary, time-to-quote and win-rate measures, cold start, intake fatigue, pick rates by fee tier) are in `docs/handoff/2026-11-02-evening.md` lines 32 and 33; the review weighs them too. Investigate in detail (brief section 3): A. contractor discovery without prior sign-up in a market with no registered businesses (finding trades and service areas, licensing verification, inviting businesses that never registered to quote a real request, explaining the introduction fee before they take part, converting responders to opted-in participants; permitted directories, licensing databases, APIs and public websites; CAN-SPAM, TCPA, state solicitation rules, consent, opt-outs and carrier policies, with live calls, B2B email, automated texts and AI voice calls kept apart; cold AI calls and unsolicited automated texts are never assumed lawful; whether discovery is essential before launch or should be developed even earlier); B. preliminary AI repair estimates (localized ranges, labor and material ranges, why prices differ, factors that change the final cost, whether a quote looks unusual; data quality, hallucination risk, liability, operating cost, effect on trust; any estimate is labelled preliminary, never a business's offer); C. post-selection coordination, \"Hava Assist\" (\"I'll take it from here\" or \"Hava, help me handle the rest\": relaying appointment preferences, confirmations and reminders, arrival and delay updates, job status, follow-ups, satisfaction checks, completion, spotting a homeowner who needs help), which of these tasks are realistically automatable through the Rust backend services, AI agents, messaging infrastructure and existing integrations, separating administrative help from construction management, which Arizona law may regulate as contractor activity (describing Hava as an AI assistant does not remove those obligations); D. emergency and urgent requests (same-day availability, fast invitations, a first-acceptable-quote path that keeps the homeowner's choice, emergency categories, escalation when no one answers, realistic response times, safety warnings and emergency-service referral), or excluding emergencies at launch; never implying coverage the system cannot give; E. homeowner decision fatigue (standardized comparison, scope differences, availability, licence indicators, questions to ask, side by side, new-quote notices, choosing before every quote arrives) with neutrality kept; F. repeat engagement (repair history, past businesses, maintenance and seasonal reminders, rebooking, recurring requests, a homeowner dashboard), keeping only what earns retention; G. contractor economics and fee resistance (the $199 fee just above $1,500, whether businesses know what they buy, cancellations, invalid or duplicate requests, unreachable homeowners, jobs that do not go ahead, fee disputes and credits, willingness to quote again; recommend protections that preserve profitability without making businesses reluctant to quote again); H. conversion and operations metrics (requests, eligible businesses found, invitations delivered and accepted, quotes, time to first quote, picks, confirmations and payments, introductions, completed repairs where known, failed requests and reasons, revenue and variable cost per request, refunds, credits and disputes, repeat homeowners and businesses), recommending the smallest instrumentation that shows whether the business works. Look beyond Runhome (brief section 4) from six views: a homeowner wanting a repair done with least effort, a business deciding whether Ask Hava is worth paying for, a competitor, a founder running it without a support team, expansion into markets with no business network (Casey, November 1: \"We will run it small market first with the plan to expand.\"; November 3 and 5: national-ready is a standing design goal, D-1515: the code must take every market value from data, the launch market is open (Phoenix metro with a business partner, Lake Havasu City otherwise), and the launch still starts in one market; T248 and T249 build markets as data, each business's service radius and radius matching, and anything further is a recommendation for a later plan change), and a security and compliance reviewer; more features is not a better product, so each addition needs evidence that it materially improves conversion, trust, reliability, retention or profitability. The report (brief section 5) holds a comparison matrix (capability, Ask Hava current state, Runhome evidence, competitive gap, recommendation Build, Improve, Defer or Reject, priority) covering at least contractor discovery, AI price estimates, repair coordination and emergency handling and every other meaningful issue found; for each proposed feature the problem, business benefit, evidence, reusable existing functionality, technical approach, dependencies, development effort and ongoing cost, security, privacy, legal and operational risks, acceptance criteria, how to measure it, and whether it belongs before the war games, after them or after launch; priorities P0 (required before the war games: a missing capability or defect that would invalidate testing the intended launch product), P1 (important, deferrable without invalidating the war games) and P2 (future); legally blocked or legal-review features listed apart from product priorities, never authorized because they rank P0, and every Arizona contractor-licensing question (Hava Assist above all) marked for professional legal review; and answers to the brief's eight questions (section 7): what Runhome offers that Ask Hava lacks; which differences would make homeowners or businesses prefer Runhome; which must be fixed before launch; whether Ask Hava can be as convenient without becoming a licensed construction manager; whether it can fill requests where no business has signed up; whether it can grow without substantial human work per job; which features improve measurable outcomes enough to justify their cost; and whether the product is ready for the war games. Constraints: preserve the business model and fee structure (introduction fee by job size, $25 under $500, $75 for $500 to $1,500, $199 above $1,500, ongoing services at 4 months of estimated value capped at the $75 tier; homeowners pay nothing; anonymous quotes from every qualified opted-in business; details released only on a confirmed, paid pick; masked calling) unless the evidence gives a substantial reason, stated as a recommendation for Casey; never turn Ask Hava into a general contractor, construction manager or repair company; never propose undisclosed paid rankings or anything that steers which quote wins; nothing live (no sign-ups, outreach, messages or accounts, BUILD_BRIEF.md:61); fake data only. The plan file lists each recommended feature as a proposed task (owner files, dependencies, tests, security controls, docs) and a decision log, every item marked awaiting Casey's approval: no feature is built without it. The plan file also holds the national-ready inventory (D-1515): every rule in the spec and the code that is Lake Havasu City or Arizona only (at least LIC-011's city license list, QH-001's Arizona quiet hours, JOB-007's Arizona business clock and the time zone, the ROC lookup and other licensing sources, FEE-046's sales-tax set-aside, INT-022's Arizona-only towns, the identity sources for no-license categories, and what the Phoenix metro fixture needs for the war games), each with how it becomes per-market data, its effort and whether it must come before the war games; these items are the candidates for the approved-enhancements step of D-1339's sequence and go to Casey with the P0 list under T243. The war games use Phoenix metro (many cities, jobs across city lines) as the stress market and Lake Havasu City as the comparison and fallback scenario, within D-1154's $40 AI cap. It also records the follow-up that the war games, once any approved enhancements are built and verified, must be updated by a plan change to test missing business networks, failed outreach, emergency demand, quote abandonment, cancellations, fee disputes and attempted abuse (D-1339). The war games hold for Casey's decision: this task's hand-in adds to `docs/for-casey-review.md` a section asking him which P0 items to build (or none). The hold is a real owner gate (D-1473): T243 (`war-games-go`) opens when this task merges, sends Casey the review, the plan and the P0 list, and T234 waits for it; Casey replies exactly 'war games go' to start the war games with nothing added, or names the P0 items to build, which a plan change adds as tasks T234 then depends on, built and verified before the war games. Required review item (D-2038; Casey's decision of November 8, 2026 after his shared intake-latency review): the AI reply budget. AI-023 now gives every call a homeowner's reply waits on 3 seconds by default, a setting from 1 to 5 seconds, retries and backoff inside it, then the fixed question-bank question (INT-021, INT-039); T296 builds it. The review checks on `main` that every such call, on web chat and in reply to a text, runs within that budget and falls back at once, recommends a value within 1 to 5 seconds for Casey's war-games go (T243), and names the war-games check that confirms it from T234's latency table (p50 and p95 per scenario, and how many turns fell back on the AI budget), since this review runs before the war games. It also says whether the app exposes the AI call time and the database pool wait that T234's latency records need, and if not, lists the smallest instrumentation as a candidate. Required review item (D-2054; from Casey's shared AI-capacity review, November 8, 2026): AI-029's rule, generalised. The review audits every outbound vendor call path on `main` (Twilio texts, voice and Verify, Resend email, Stripe, Lob, the license sources, object storage and the AI) for a database connection or open transaction held across the network await, and lists each call site as held or not held with its evidence (`file:line`); every held one is a P0 or P1 candidate for Casey's war-games go (T243). It confirms on `main` that T298 delivered the AI endpoint settings and the real Claude client (IC-23's first half, D-2065), without which neither the test site's real Claude calls (T137, D-1154) nor T297's fault proxy can be reached, and that T299, which builds the client at start-up and calls the AI reading from the text and web-chat paths (IC-23's second half), is still queued before the first war-games round (T237); anything of T298 missing, or T299 no longer ahead of T237, is a P0 candidate. It also rates IC-53 (`docs/integration-closure.md`, the AI writing calls with no owner, D-2065) for the war-games go: while it is open, INT-039's reword and skip, the AI-written card, project file and follow-up (AI-010, AI-019) and the CARD-010 screen they pass through stay unreachable with the AI on, so the war games exercise no AI-written text; it says whether that is a P0, P1 or P2 candidate and why. It also says whether the AI adapter and its `Transport` boundary (`app/ai/src/models.rs`) leave a seam for a later per-model concurrency limit and usage metrics (nothing is built now), and whether the pool's highest use, its acquire wait and the task-queue depth and oldest task age that T297 reports are exposed, listing the smallest instrumentation if not. Known inputs (pentest PT-04, D-2349, D-2350): the pooled connection is held across a Verify call at `check_once`'s handler connection (`app/portals/src/business_auth.rs:693`), `app/portals/src/homeowner_portal.rs:152` and :174, and `app/portals/src/data_download.rs:170` and :222 (as of `main` 9225a9d3; T272 and T346 remove the held transactions, not the held connection); list each as held or not held on `main` when this review runs. The pentest matrix (`docs/reviews/war-games-inputs/2026-11-09-pentest-matrix.md`, 38 cases) is an input: the review says which cases the war games run and which are skipped, with the reason.",
    "type": "audit",
    "phase": 2,
    "stage": "6",
@@ -15886,7 +16013,8 @@
     "D-1515",
     "D-2038",
     "D-2054",
-    "D-2065"
+    "D-2065",
+    "D-2350"
    ],
    "cites": [
     "docs/reviews/pre-war-games-review-brief.md:11",
@@ -15963,7 +16091,7 @@
    "id": "T234",
    "slug": "wargames-harness",
    "title": "War games harness: persona library, scenario runner and chaos injectors",
-   "goal": "Phase 2 war games (Casey, October 31, D-1154), part 1: `wargames/` (Python, standard library only) drives the Railway test site through its real entry points (signed inbound texts and status callbacks to the texting webhook, the web intake and web chat, signed inbound business email replies, the homeowner, business and owner portal pages) and, for faults the sandboxes cannot make, a local lane (`--target local`: the stand-ins and the test-control router, as `Ci`'s journeys run). A persona library (`wargames/personas.py`) holds both sides: ordinary, confused and vanishing homeowners; Spanish speakers; tenants; STOP and START mid-job; pranksters and AI-credit drainers (photo spam, bursts of requests, endless rambling intake, re-entry loops, opt-out and opt-in churn, one- and two-word messages); people posing as businesses; contractors gaming quotes (bounced contact details, edits, double picks, after-hours claims, never confirming). Chaos injectors (`wargames/chaos.py`): duplicate and replayed webhooks, out-of-order texts, the clock at the 8 a.m. and 8 p.m. quiet-hour edges and at the 24-hour and 4-business-hour timer edges (local lane), a vendor outage mid-flow and the AI returning junk (local lane, through the stand-ins' fault and plant headers). The campaign session plays personas live too, improvising beyond the library, and adds each new one to it. Fake data only (BUILD_BRIEF.md:66, PRIV-019): every persona's name, phone (555-0100 to 555-0199), email (example.com) and street comes from the fixture generator, and no real number, key or person is ever used; signing secrets and test keys are read the way T129's sandbox mode reads its credentials (from the build environment's secrets, never printed, logged or committed); an entry point whose secret this session cannot reach runs on the local lane only and the run log says so; timers on the test site are shortened only through settings, as T136 does, and each simulated business day is recorded with its wall-clock span. `wargames/anomalies.py` checks after every step, from outside effects only (docs/test-design.md section 1 rule 1): no duplicate outbound text, email or charge; consent text first on every path; an opt-out word stops every text; no text outside quiet hours; no homeowner contact detail outside the vault or on any text to a business; every status change has an audit row; and every anomaly is logged as one JSON line with the request, job and message IDs (`wargames/runs/<run>.jsonl`, fake IDs only). The tests under `tests/wargames/` run offline in `Ci` (no test site, no network, the stand-ins at most) and run logs `wargames/runs/*.jsonl` are git-ignored (`.gitignore`), so only the reports carry results; persona addresses use fake street names such as \"1 Test Way\", since `scripts/pii_scan.py` scans `wargames/`. On the test site the AI-008 switch is on during the money run and the rounds, so real Claude calls are made on fake data from the test project's Console key (T137's), and the campaign's AI spend is capped at $40 in all (a test-project daily AI-call cap, AI-021, of 600 calls, and the Console spend limit Casey set at the account checkpoint, whichever is lower); outbound texts use Twilio's test credentials and magic numbers only, so no real phone receives anything (BUILD_BRIEF.md:190). Latency (D-2038, from Casey's shared intake-latency review, November 8, 2026): every scenario step records, on fake data only, the time from a homeowner's web submit or inbound text to the next question shown on the page or sent as a text, measured from outside (the request the harness sent, the reply it saw), and, where the app or the stand-ins expose them, the AI call time and the database pool wait for that step (otherwise the record says \"not exposed\", never a guess); a timing record holds the run, scenario, persona class, step kind, lane, fake request ID and milliseconds, and never a message body, name, phone, email or address; each run ends with a table of p50 and p95 (nearest rank) per scenario for each measure, with how many turns fell back on the AI budget (AI-023's reply budget ran out and the fixed question went instead), ready for the round's results in `docs/phase2/war-games.md`. The concurrency and overload scenario is T297's (D-2054): it imports this task's drivers, chaos injectors and latency recorder from `wargames/`, so each stays usable on its own (a driver per entry point, the recorder independent of any one scenario).",
+   "goal": "Phase 2 war games (Casey, October 31, D-1154), part 1: `wargames/` (Python, standard library only) drives the Railway test site through its real entry points (signed inbound texts and status callbacks to the texting webhook, the web intake and web chat, signed inbound business email replies, the homeowner, business and owner portal pages) and, for faults the sandboxes cannot make, a local lane (`--target local`: the stand-ins and the test-control router, as `Ci`'s journeys run). A persona library (`wargames/personas.py`) holds both sides: ordinary, confused and vanishing homeowners; Spanish speakers; tenants; STOP and START mid-job; pranksters and AI-credit drainers (photo spam, bursts of requests, endless rambling intake, re-entry loops, opt-out and opt-in churn, one- and two-word messages); people posing as businesses; contractors gaming quotes (bounced contact details, edits, double picks, after-hours claims, never confirming). Chaos injectors (`wargames/chaos.py`): duplicate and replayed webhooks, out-of-order texts, the clock at the 8 a.m. and 8 p.m. quiet-hour edges and at the 24-hour and 4-business-hour timer edges (local lane), a vendor outage mid-flow and the AI returning junk (local lane, through the stand-ins' fault and plant headers). The campaign session plays personas live too, improvising beyond the library, and adds each new one to it. Fake data only (BUILD_BRIEF.md:66, PRIV-019): every persona's name, phone (555-0100 to 555-0199), email (example.com) and street comes from the fixture generator, and no real number, key or person is ever used; signing secrets and test keys are read the way T129's sandbox mode reads its credentials (from the build environment's secrets, never printed, logged or committed); an entry point whose secret this session cannot reach runs on the local lane only and the run log says so; timers on the test site are shortened only through settings, as T136 does, and each simulated business day is recorded with its wall-clock span. `wargames/anomalies.py` checks after every step, from outside effects only (docs/test-design.md section 1 rule 1): no duplicate outbound text, email or charge; consent text first on every path; an opt-out word stops every text; no text outside quiet hours; no homeowner contact detail outside the vault or on any text to a business; every status change has an audit row; and every anomaly is logged as one JSON line with the request, job and message IDs (`wargames/runs/<run>.jsonl`, fake IDs only). The tests under `tests/wargames/` run offline in `Ci` (no test site, no network, the stand-ins at most) and run logs `wargames/runs/*.jsonl` are git-ignored (`.gitignore`), so only the reports carry results; persona addresses use fake street names such as \"1 Test Way\", since `scripts/pii_scan.py` scans `wargames/`. On the test site the AI-008 switch is on during the money run and the rounds, so real Claude calls are made on fake data from the test project's Console key (T137's), and the campaign's AI spend is capped at $40 in all (a test-project daily AI-call cap, AI-021, of 600 calls, and the Console spend limit Casey set at the account checkpoint, whichever is lower); outbound texts use Twilio's test credentials and magic numbers only, so no real phone receives anything (BUILD_BRIEF.md:190). Latency (D-2038, from Casey's shared intake-latency review, November 8, 2026): every scenario step records, on fake data only, the time from a homeowner's web submit or inbound text to the next question shown on the page or sent as a text, measured from outside (the request the harness sent, the reply it saw), and, where the app or the stand-ins expose them, the AI call time and the database pool wait for that step (otherwise the record says \"not exposed\", never a guess); a timing record holds the run, scenario, persona class, step kind, lane, fake request ID and milliseconds, and never a message body, name, phone, email or address; each run ends with a table of p50 and p95 (nearest rank) per scenario for each measure, with how many turns fell back on the AI budget (AI-023's reply budget ran out and the fixed question went instead), ready for the round's results in `docs/phase2/war-games.md`. The concurrency and overload scenario is T297's (D-2054): it imports this task's drivers, chaos injectors and latency recorder from `wargames/`, so each stays usable on its own (a driver per entry point, the recorder independent of any one scenario). `wargames/scenarios.py` maps each of the 38 cases of the pentest matrix (`docs/reviews/war-games-inputs/2026-11-09-pentest-matrix.md`) to a scenario or a stated skip with its reason, and `tests/wargames/test_wargames.py` fails when a case ID has neither (D-2350); every case runs in the isolated environment only, with synthetic accounts and no production key, outreach, real message or payment.",
    "type": "harness",
    "phase": 2,
    "stage": "6",
@@ -15996,7 +16124,8 @@
     "docs/deploy.md",
     "docs/phase2/e2e-test-site.md",
     "stand_ins/server.py",
-    "tests/contract/conftest.py"
+    "tests/contract/conftest.py",
+    "docs/reviews/war-games-inputs/2026-11-09-pentest-matrix.md"
    ],
    "requirements": [],
    "tests": [],
@@ -16004,7 +16133,8 @@
     "D-1154",
     "D-1473",
     "D-2038",
-    "D-2054"
+    "D-2054",
+    "D-2350"
    ],
    "cites": [
     "BUILD_BRIEF.md:196",
@@ -16084,7 +16214,7 @@
    "id": "T235",
    "slug": "wargames-money",
    "title": "Money war game: jobs to completion through Stripe test mode, ledger equals Stripe to the cent",
-   "goal": "War games part 2 (D-1154): `wargames/money.py` runs full jobs to completion on the Railway test site with Stripe in test mode, so introduction fees by job size ($25 / $75 / $199, each tier at and either side of its edges), free first wins, repeat-customer and fee-free $0 rows, declined and 3DS test cards, a double confirm, a payment that succeeds after the job moved on, refunds on a cancel before the business talked to the homeowner and on a failed pick, and a dispute all appear in the owner portal's money view and the businesses' statements. `wargames/reconcile.py` proves, to the cent, that the ledger (the owner portal's ledger export) equals the Stripe test-mode records (charges, refunds, disputes and processing fees read with the test key) and that the owner portal's rundown and each business statement CSV equal the ledger; any difference is an anomaly with its job and Stripe IDs. Fake data only (BUILD_BRIEF.md:66, PRIV-019): every persona's name, phone (555-0100 to 555-0199), email (example.com) and street comes from the fixture generator, and no real number, key or person is ever used; signing secrets and test keys are read the way T129's sandbox mode reads its credentials (from the build environment's secrets, never printed, logged or committed); an entry point whose secret this session cannot reach runs on the local lane only and the run log says so; `docs/phase2/money-war-game.md` records the jobs, the totals by entry type and the reconciliation result. On the test site the AI-008 switch is on during the money run and the rounds, so real Claude calls are made on fake data from the test project's Console key (T137's), and the campaign's AI spend is capped at $40 in all (a test-project daily AI-call cap, AI-021, of 600 calls, and the Console spend limit Casey set at the account checkpoint, whichever is lower); outbound texts use Twilio's test credentials and magic numbers only, so no real phone receives anything (BUILD_BRIEF.md:190).",
+   "goal": "War games part 2 (D-1154): `wargames/money.py` runs full jobs to completion on the Railway test site with Stripe in test mode, so introduction fees by job size ($25 / $75 / $199, each tier at and either side of its edges), free first wins, repeat-customer and fee-free $0 rows, declined and 3DS test cards, a double confirm, a payment that succeeds after the job moved on, refunds on a cancel before the business talked to the homeowner and on a failed pick, and a dispute all appear in the owner portal's money view and the businesses' statements. `wargames/reconcile.py` proves, to the cent, that the ledger (the owner portal's ledger export) equals the Stripe test-mode records (charges, refunds, disputes and processing fees read with the test key) and that the owner portal's rundown and each business statement CSV equal the ledger; any difference is an anomaly with its job and Stripe IDs. Fake data only (BUILD_BRIEF.md:66, PRIV-019): every persona's name, phone (555-0100 to 555-0199), email (example.com) and street comes from the fixture generator, and no real number, key or person is ever used; signing secrets and test keys are read the way T129's sandbox mode reads its credentials (from the build environment's secrets, never printed, logged or committed); an entry point whose secret this session cannot reach runs on the local lane only and the run log says so; `docs/phase2/money-war-game.md` records the jobs, the totals by entry type and the reconciliation result. On the test site the AI-008 switch is on during the money run and the rounds, so real Claude calls are made on fake data from the test project's Console key (T137's), and the campaign's AI spend is capped at $40 in all (a test-project daily AI-call cap, AI-021, of 600 calls, and the Console spend limit Casey set at the account checkpoint, whichever is lower); outbound texts use Twilio's test credentials and magic numbers only, so no real phone receives anything (BUILD_BRIEF.md:190). The money runs cover the pentest matrix's MONEY-01 to MONEY-05 and HOOK-02 to HOOK-04 cases (`docs/reviews/war-games-inputs/2026-11-09-pentest-matrix.md`) or state the skip (D-2350).",
    "type": "harness",
    "phase": 2,
    "stage": "6",
@@ -16110,7 +16240,8 @@
     "docs/spec/fees.md",
     "docs/spec/businesses.md",
     "docs/brains/payments-stripe.md",
-    "docs/phase2/e2e-test-site.md"
+    "docs/phase2/e2e-test-site.md",
+    "docs/reviews/war-games-inputs/2026-11-09-pentest-matrix.md"
    ],
    "requirements": [
     "FEE-021",
@@ -16125,7 +16256,8 @@
    ],
    "tests": [],
    "decisions": [
-    "D-1154"
+    "D-1154",
+    "D-2350"
    ],
    "cites": [
     "BUILD_BRIEF.md:196",
@@ -16820,14 +16952,15 @@
    "id": "T307",
    "slug": "homeowner-portal-served",
    "title": "server and portals: the homeowner portal and \"Download my data\" are served",
-   "goal": "No task serves the homeowner portal (D-2128): `portals::api` has `send_sign_in_code`, `finish_sign_in`, `homeowner_page`, `turn_texts_off`, `open_request`, `confirm_request` and `download_file`, with the route constants `HOMEOWNER_HOME_ROUTE`, `HOMEOWNER_SIGNIN_ROUTE`, `HOMEOWNER_CODE_ROUTE`, `TEXTS_OFF_ROUTE`, `DOWNLOAD_ROUTE`, `DATA_REQUEST_ROUTE` and `DATA_CODE_ROUTE` (T087, \"not served yet\", D-1934) but `server::build_router` merges none of them. (1) `app/server/src/homeowner_portal.rs` builds them: sign-in by phone and texted code (SEC-008), a 30-day session per device; a number not on file gets the same answer as one on file; the portal home, the texts-off switch (one suppression entry at once, CON-035), \"Download my data\" with only her own items (PRIV-031), the delete or copy request and its code step; none or another realm's session gets a 4xx with a link to `/h/sign-in` and no detail; every response `no_store` (SEC-034); every `POST` passes `refuse_cross_site` and the CSRF check, a refusal a security event; merged in the shared `app/server/src/lib.rs`. (2) Tests: `app/server/tests/homeowner_portal_route.rs` (TD-PRIV-21) and `tests/e2e/homeowner_portal_served.spec.ts`, the code computed from the stand-in Verify's rule as TD-BIZ-42 does. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. The sign-in and data-code sends call `portals::api::admit_code_send` first (the IP, then her contact when on file, so an unknown number spends the IP limit and sends nothing) and their code checks `admit_code_try` (D-1951; fourth external audit F12, D-2206).",
+   "goal": "No task serves the homeowner portal (D-2128): `portals::api` has `send_sign_in_code`, `finish_sign_in`, `homeowner_page`, `turn_texts_off`, `open_request`, `confirm_request` and `download_file`, with the route constants `HOMEOWNER_HOME_ROUTE`, `HOMEOWNER_SIGNIN_ROUTE`, `HOMEOWNER_CODE_ROUTE`, `TEXTS_OFF_ROUTE`, `DOWNLOAD_ROUTE`, `DATA_REQUEST_ROUTE` and `DATA_CODE_ROUTE` (T087, \"not served yet\", D-1934) but `server::build_router` merges none of them. (1) `app/server/src/homeowner_portal.rs` builds them: sign-in by phone and texted code (SEC-008), a 30-day session per device; a number not on file gets the same answer as one on file; the portal home, the texts-off switch (one suppression entry at once, CON-035), \"Download my data\" with only her own items (PRIV-031), the delete or copy request and its code step; none or another realm's session gets a 4xx with a link to `/h/sign-in` and no detail; every response `no_store` (SEC-034); every `POST` passes `refuse_cross_site` and the CSRF check, a refusal a security event; merged in the shared `app/server/src/lib.rs`. (2) Tests: `app/server/tests/homeowner_portal_route.rs` (TD-PRIV-21) and `tests/e2e/homeowner_portal_served.spec.ts`, the code computed from the stand-in Verify's rule as TD-BIZ-42 does. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. The sign-in and data-code sends call `portals::api::admit_code_send` first (the IP, then her contact when on file, so an unknown number spends the IP limit and sends nothing) and their code checks `admit_code_try` (D-1951; fourth external audit F12, D-2206). The data-request code step also offers \"Send the code again\", served through T346's `resend_request_code` (behind `admit_code_send` like every send), because a request's code challenge lives 10 minutes while the request stays open 30 days (D-2348).",
    "type": "build",
    "phase": 1,
    "stage": "5",
    "module": "server",
    "deps": [
     "T100",
-    "T087"
+    "T087",
+    "T346"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -16868,7 +17001,8 @@
     "D-1728",
     "D-2128",
     "D-2206",
-    "D-1951"
+    "D-1951",
+    "D-2348"
    ],
    "cites": [],
    "budget": {
@@ -17082,7 +17216,7 @@
    "id": "T237",
    "slug": "wargames-round-1",
    "title": "War games round 1: the first chaotic run, findings fixed",
-   "goal": "War games round 1 (D-1154): run the whole cast of `wargames/personas.py` and every chaos injector against the Railway test site and the local lane, as chaotically as the business could ever be run: overlapping jobs, pranks and AI-credit drains in the middle of real ones, businesses gaming quotes while homeowners vanish, opt out and come back, and money flowing through Stripe test mode (T235's jobs mixed in). The session plays personas live beyond the library and adds each new one. Every anomaly becomes one row of the findings table in `docs/phase2/war-games.md` (WG-###, round, persona, scenario, request, job and message IDs, the requirement ID it breaks, severity, status). Each Critical, High or Medium finding is fixed in this task with a regression test, in the owned folders, that fails without the fix, and its scenario re-run green; a Low finding is fixed or listed; a finding whose fix would change a requirement, a test-design entry or a locked file is not fixed here: it goes to the top of `docs/for-casey-review.md` as a plan-change item with its WG number; fixes beyond the 800-line budget are carried, listed as open, to the next round. Fake data only (BUILD_BRIEF.md:66, PRIV-019): every persona's name, phone (555-0100 to 555-0199), email (example.com) and street comes from the fixture generator, and no real number, key or person is ever used;  An existing test is never changed or weakened to pass; a wrong test changes only through a logged spec change (BUILD_BRIEF.md:69), which this task cannot make. On the test site the AI-008 switch is on during the money run and the rounds, so real Claude calls are made on fake data from the test project's Console key (T137's), and the campaign's AI spend is capped at $40 in all (a test-project daily AI-call cap, AI-021, of 600 calls, and the Console spend limit Casey set at the account checkpoint, whichever is lower); outbound texts use Twilio's test credentials and magic numbers only, so no real phone receives anything (BUILD_BRIEF.md:190).",
+   "goal": "War games round 1 (D-1154): run the whole cast of `wargames/personas.py` and every chaos injector against the Railway test site and the local lane, as chaotically as the business could ever be run: overlapping jobs, pranks and AI-credit drains in the middle of real ones, businesses gaming quotes while homeowners vanish, opt out and come back, and money flowing through Stripe test mode (T235's jobs mixed in). The session plays personas live beyond the library and adds each new one. Every anomaly becomes one row of the findings table in `docs/phase2/war-games.md` (WG-###, round, persona, scenario, request, job and message IDs, the requirement ID it breaks, severity, status). Each Critical, High or Medium finding is fixed in this task with a regression test, in the owned folders, that fails without the fix, and its scenario re-run green; a Low finding is fixed or listed; a finding whose fix would change a requirement, a test-design entry or a locked file is not fixed here: it goes to the top of `docs/for-casey-review.md` as a plan-change item with its WG number; fixes beyond the 800-line budget are carried, listed as open, to the next round. Fake data only (BUILD_BRIEF.md:66, PRIV-019): every persona's name, phone (555-0100 to 555-0199), email (example.com) and street comes from the fixture generator, and no real number, key or person is ever used;  An existing test is never changed or weakened to pass; a wrong test changes only through a logged spec change (BUILD_BRIEF.md:69), which this task cannot make. On the test site the AI-008 switch is on during the money run and the rounds, so real Claude calls are made on fake data from the test project's Console key (T137's), and the campaign's AI spend is capped at $40 in all (a test-project daily AI-call cap, AI-021, of 600 calls, and the Console spend limit Casey set at the account checkpoint, whichever is lower); outbound texts use Twilio's test credentials and magic numbers only, so no real phone receives anything (BUILD_BRIEF.md:190). Each round records, per case of the pentest matrix (`docs/reviews/war-games-inputs/2026-11-09-pentest-matrix.md`), the run and its outcome or the stated skip (D-2350).",
    "type": "harness",
    "phase": 2,
    "stage": "6",
@@ -17120,7 +17254,8 @@
     "docs/spec/intake.md",
     "docs/spec/consent.md",
     "docs/phase2/money-war-game.md",
-    "docs/brains/sms-compliance.md"
+    "docs/brains/sms-compliance.md",
+    "docs/reviews/war-games-inputs/2026-11-09-pentest-matrix.md"
    ],
    "requirements": [
     "AI-021",
@@ -17136,7 +17271,8 @@
    "decisions": [
     "D-1154",
     "D-2038",
-    "D-2054"
+    "D-2054",
+    "D-2350"
    ],
    "cites": [
     "BUILD_BRIEF.md:196",
@@ -17160,7 +17296,7 @@
    "id": "T238",
    "slug": "wargames-round-2",
    "title": "War games round 2: the findings of round 1 fixed and the whole cast run again",
-   "goal": "War games round 2 (D-1154): run the whole cast of `wargames/personas.py` and every chaos injector against the Railway test site and the local lane, as chaotically as the business could ever be run: overlapping jobs, pranks and AI-credit drains in the middle of real ones, businesses gaming quotes while homeowners vanish, opt out and come back, and money flowing through Stripe test mode (T235's jobs mixed in). The session plays personas live beyond the library and adds each new one. Every anomaly becomes one row of the findings table in `docs/phase2/war-games.md` (WG-###, round, persona, scenario, request, job and message IDs, the requirement ID it breaks, severity, status). Each Critical, High or Medium finding is fixed in this task with a regression test, in the owned folders, that fails without the fix, and its scenario re-run green; a Low finding is fixed or listed; a finding whose fix would change a requirement, a test-design entry or a locked file is not fixed here: it goes to the top of `docs/for-casey-review.md` as a plan-change item with its WG number; fixes beyond the 800-line budget are carried, listed as open, to the next round. Fake data only (BUILD_BRIEF.md:66, PRIV-019): every persona's name, phone (555-0100 to 555-0199), email (example.com) and street comes from the fixture generator, and no real number, key or person is ever used; Round 1's open findings are fixed first, then the run starts from scratch, with each persona's script varied from round 1 (new timings, languages and orders). An existing test is never changed or weakened to pass; a wrong test changes only through a logged spec change (BUILD_BRIEF.md:69), which this task cannot make. On the test site the AI-008 switch is on during the money run and the rounds, so real Claude calls are made on fake data from the test project's Console key (T137's), and the campaign's AI spend is capped at $40 in all (a test-project daily AI-call cap, AI-021, of 600 calls, and the Console spend limit Casey set at the account checkpoint, whichever is lower); outbound texts use Twilio's test credentials and magic numbers only, so no real phone receives anything (BUILD_BRIEF.md:190).",
+   "goal": "War games round 2 (D-1154): run the whole cast of `wargames/personas.py` and every chaos injector against the Railway test site and the local lane, as chaotically as the business could ever be run: overlapping jobs, pranks and AI-credit drains in the middle of real ones, businesses gaming quotes while homeowners vanish, opt out and come back, and money flowing through Stripe test mode (T235's jobs mixed in). The session plays personas live beyond the library and adds each new one. Every anomaly becomes one row of the findings table in `docs/phase2/war-games.md` (WG-###, round, persona, scenario, request, job and message IDs, the requirement ID it breaks, severity, status). Each Critical, High or Medium finding is fixed in this task with a regression test, in the owned folders, that fails without the fix, and its scenario re-run green; a Low finding is fixed or listed; a finding whose fix would change a requirement, a test-design entry or a locked file is not fixed here: it goes to the top of `docs/for-casey-review.md` as a plan-change item with its WG number; fixes beyond the 800-line budget are carried, listed as open, to the next round. Fake data only (BUILD_BRIEF.md:66, PRIV-019): every persona's name, phone (555-0100 to 555-0199), email (example.com) and street comes from the fixture generator, and no real number, key or person is ever used; Round 1's open findings are fixed first, then the run starts from scratch, with each persona's script varied from round 1 (new timings, languages and orders). An existing test is never changed or weakened to pass; a wrong test changes only through a logged spec change (BUILD_BRIEF.md:69), which this task cannot make. On the test site the AI-008 switch is on during the money run and the rounds, so real Claude calls are made on fake data from the test project's Console key (T137's), and the campaign's AI spend is capped at $40 in all (a test-project daily AI-call cap, AI-021, of 600 calls, and the Console spend limit Casey set at the account checkpoint, whichever is lower); outbound texts use Twilio's test credentials and magic numbers only, so no real phone receives anything (BUILD_BRIEF.md:190). Each round records, per case of the pentest matrix (`docs/reviews/war-games-inputs/2026-11-09-pentest-matrix.md`), the run and its outcome or the stated skip (D-2350).",
    "type": "harness",
    "phase": 2,
    "stage": "6",
@@ -17196,7 +17332,8 @@
     "docs/spec/intake.md",
     "docs/spec/consent.md",
     "docs/phase2/money-war-game.md",
-    "docs/brains/sms-compliance.md"
+    "docs/brains/sms-compliance.md",
+    "docs/reviews/war-games-inputs/2026-11-09-pentest-matrix.md"
    ],
    "requirements": [
     "AI-021",
@@ -17212,7 +17349,8 @@
    "decisions": [
     "D-1154",
     "D-2038",
-    "D-2054"
+    "D-2054",
+    "D-2350"
    ],
    "cites": [
     "BUILD_BRIEF.md:196",
@@ -17236,7 +17374,7 @@
    "id": "T239",
    "slug": "wargames-final-round",
    "title": "War games final round and report: a full run that finds nothing new",
-   "goal": "War games round 3 (D-1154): run the whole cast of `wargames/personas.py` and every chaos injector against the Railway test site and the local lane, as chaotically as the business could ever be run: overlapping jobs, pranks and AI-credit drains in the middle of real ones, businesses gaming quotes while homeowners vanish, opt out and come back, and money flowing through Stripe test mode (T235's jobs mixed in). The session plays personas live beyond the library and adds each new one. Every anomaly becomes one row of the findings table in `docs/phase2/war-games.md` (WG-###, round, persona, scenario, request, job and message IDs, the requirement ID it breaks, severity, status). Each Critical, High or Medium finding is fixed in this task with a regression test, in the owned folders, that fails without the fix, and its scenario re-run green; a Low finding is fixed or listed; a finding whose fix would change a requirement, a test-design entry or a locked file is not fixed here: it goes to the top of `docs/for-casey-review.md` as a plan-change item with its WG number; fixes beyond the 800-line budget are carried, listed as open, to the next round. Fake data only (BUILD_BRIEF.md:66, PRIV-019): every persona's name, phone (555-0100 to 555-0199), email (example.com) and street comes from the fixture generator, and no real number, key or person is ever used; This is the clean run: if it finds anything new, the finding is fixed as above, the round is recorded as not clean, and the report and the top of `docs/for-casey-review.md` say a further round is needed, which only a plan change can add (D-1154). The task then completes `docs/phase2/war-games.md` as the report: the cast, the runs, every finding with its fix (commit) or open status, the money reconciliation, the credit-drain defense as proven (each drain persona's AI calls stayed within AI-021 and AI-028, measured), and the final run. An existing test is never changed or weakened to pass; a wrong test changes only through a logged spec change (BUILD_BRIEF.md:69), which this task cannot make. On the test site the AI-008 switch is on during the money run and the rounds, so real Claude calls are made on fake data from the test project's Console key (T137's), and the campaign's AI spend is capped at $40 in all (a test-project daily AI-call cap, AI-021, of 600 calls, and the Console spend limit Casey set at the account checkpoint, whichever is lower); outbound texts use Twilio's test credentials and magic numbers only, so no real phone receives anything (BUILD_BRIEF.md:190).",
+   "goal": "War games round 3 (D-1154): run the whole cast of `wargames/personas.py` and every chaos injector against the Railway test site and the local lane, as chaotically as the business could ever be run: overlapping jobs, pranks and AI-credit drains in the middle of real ones, businesses gaming quotes while homeowners vanish, opt out and come back, and money flowing through Stripe test mode (T235's jobs mixed in). The session plays personas live beyond the library and adds each new one. Every anomaly becomes one row of the findings table in `docs/phase2/war-games.md` (WG-###, round, persona, scenario, request, job and message IDs, the requirement ID it breaks, severity, status). Each Critical, High or Medium finding is fixed in this task with a regression test, in the owned folders, that fails without the fix, and its scenario re-run green; a Low finding is fixed or listed; a finding whose fix would change a requirement, a test-design entry or a locked file is not fixed here: it goes to the top of `docs/for-casey-review.md` as a plan-change item with its WG number; fixes beyond the 800-line budget are carried, listed as open, to the next round. Fake data only (BUILD_BRIEF.md:66, PRIV-019): every persona's name, phone (555-0100 to 555-0199), email (example.com) and street comes from the fixture generator, and no real number, key or person is ever used; This is the clean run: if it finds anything new, the finding is fixed as above, the round is recorded as not clean, and the report and the top of `docs/for-casey-review.md` say a further round is needed, which only a plan change can add (D-1154). The task then completes `docs/phase2/war-games.md` as the report: the cast, the runs, every finding with its fix (commit) or open status, the money reconciliation, the credit-drain defense as proven (each drain persona's AI calls stayed within AI-021 and AI-028, measured), and the final run. An existing test is never changed or weakened to pass; a wrong test changes only through a logged spec change (BUILD_BRIEF.md:69), which this task cannot make. On the test site the AI-008 switch is on during the money run and the rounds, so real Claude calls are made on fake data from the test project's Console key (T137's), and the campaign's AI spend is capped at $40 in all (a test-project daily AI-call cap, AI-021, of 600 calls, and the Console spend limit Casey set at the account checkpoint, whichever is lower); outbound texts use Twilio's test credentials and magic numbers only, so no real phone receives anything (BUILD_BRIEF.md:190). Each round records, per case of the pentest matrix (`docs/reviews/war-games-inputs/2026-11-09-pentest-matrix.md`), the run and its outcome or the stated skip (D-2350).",
    "type": "harness",
    "phase": 2,
    "stage": "6",
@@ -17272,7 +17410,8 @@
     "docs/spec/intake.md",
     "docs/spec/consent.md",
     "docs/phase2/money-war-game.md",
-    "docs/brains/sms-compliance.md"
+    "docs/brains/sms-compliance.md",
+    "docs/reviews/war-games-inputs/2026-11-09-pentest-matrix.md"
    ],
    "requirements": [
     "AI-021",
@@ -17288,7 +17427,8 @@
    "decisions": [
     "D-1154",
     "D-2038",
-    "D-2054"
+    "D-2054",
+    "D-2350"
    ],
    "cites": [
     "BUILD_BRIEF.md:196",
@@ -20814,7 +20954,7 @@
    "id": "T272",
    "slug": "signin-admission",
    "title": "portals: the sign-in link cap and the code-try cap are atomic admissions, so concurrent requests cannot pass them",
-   "goal": "D-1725 allows at most 5 sign-in links per member in 15 minutes and D-1777 at most 5 failed code checks per link, but both are check-then-act: `send_one` counts links (`models::links_since`, `app/portals/src/models.rs`) and then inserts and sends, and `check_once` counts `auth_failed` events, calls Verify and records the failure afterwards (`app/portals/src/business_auth.rs:444`, `:652`), so simultaneous requests that all see 4 all go through (second external audit B01, D-1837). (1) Links: the count and the insert of the new `portals.login_link` row happen in one short transaction under a per-member transaction-scoped lock (`pg_advisory_xact_lock` on the member's ID under a `portals` key namespace), committed before the email is sent; no transaction is held across the mail call. (2) Code tries: `migrations/0167_portals_code_tries.sql` adds `portals.code_try` (link ID, try number 1 to 5 unique per link, reserved time, outcome `pending`, `right`, `wrong` or `abandoned`; app role SELECT, INSERT and UPDATE of the outcome only); a check first reserves the next try number in its own short transaction (the unique key and the check constraint refuse a sixth), then calls Verify with no transaction open, then records the outcome; a reservation left `pending` (a crash or a Verify timeout) counts as a used try, so a restart never gives a try back; the fifth used try uses the link up and shows the \"stopped working\" screen as today; a right code consumes the link once (the existing guarded `UPDATE`), and a concurrent right code and wrong code never both sign in. Each wrong or failed check still writes its `auth_failed` security event (SEC-048). T089's per-IP and per-business limits sit in front of these and never re-count links or tries (D-1837). Tests in `tests/security/tests/signin_admission.rs` with 20 simultaneous requests over several pooled connections. Update the `portals` `CLAUDE.md`, `docs/architecture.md` section 10 and `docs/decisions.md`.",
+   "goal": "D-1725 allows at most 5 sign-in links per member in 15 minutes and D-1777 at most 5 failed code checks per link, but both are check-then-act: `send_one` counts links (`models::links_since`, `app/portals/src/models.rs`) and then inserts and sends, and `check_once` counts `auth_failed` events, calls Verify and records the failure afterwards (`app/portals/src/business_auth.rs:444`, `:652`), so simultaneous requests that all see 4 all go through (second external audit B01, D-1837). (1) Links: the count and the insert of the new `portals.login_link` row happen in one short transaction under a per-member transaction-scoped lock (`pg_advisory_xact_lock` on the member's ID under a `portals` key namespace), committed before the email is sent; no transaction is held across the mail call. (2) Code tries: `migrations/0167_portals_code_tries.sql` adds `portals.code_try` (link ID, try number 1 to 5 unique per link, reserved time, outcome `pending`, `right`, `wrong` or `abandoned`; app role SELECT, INSERT and UPDATE of the outcome only); a check first reserves the next try number in its own short transaction (the unique key and the check constraint refuse a sixth), then calls Verify with no transaction open, then records the outcome; a reservation left `pending` (a crash or a Verify timeout) counts as a used try, so a restart never gives a try back; the fifth used try uses the link up and shows the \"stopped working\" screen as today; a right code consumes the link once (the existing guarded `UPDATE`), and a concurrent right code and wrong code never both sign in. Each wrong or failed check still writes its `auth_failed` security event (SEC-048). T089's per-IP and per-business limits sit in front of these and never re-count links or tries (D-1837). Tests in `tests/security/tests/signin_admission.rs` with 20 simultaneous requests over several pooled connections. Update the `portals` `CLAUDE.md`, `docs/architecture.md` section 10 and `docs/decisions.md`. Pentest PT-04 and PT-03's business half (D-2349): `send_once` (`app/portals/src/business_auth.rs:630`) holds a transaction across `codes.verify.send`, and `check_once` (:664) never requires that a code was sent for its link. This sets aside only D-1776's held transaction. (3) The same migration adds `portals.code_send` (link ID primary key, reserved at, outcome `pending`, `sent` or `failed`); a press reserves the link's one send in a short committed transaction (a new row, or a `failed` one, or a `pending` one older than the adapter's 15-second timeout plus a minute, which a crash left), calls Verify with no transaction open, then records `sent` or `failed`, so a failed send can be pressed again and two presses at once send once; it replaces the `code-sent:<link>` marker row. (4) `check_once` refuses a link whose send is not `sent` before any try is reserved or Verify is called. Tests in `signin_admission.rs` (TD-SEC-38): a failed send can be retried; 20 simultaneous presses send once; a check with no sent code reaches Verify zero times; with a fake Verify that hangs, no transaction is open during the wait.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -20842,7 +20982,8 @@
     "docs/code-docs.md",
     "docs/spec/security.md",
     "docs/brains/postgres-operations.md",
-    "docs/brains/rust-production.md"
+    "docs/brains/rust-production.md",
+    "docs/reviews/war-games-inputs/2026-11-09-pentest-matrix.md"
    ],
    "requirements": [
     "SEC-004",
@@ -20857,7 +20998,8 @@
     "D-1837",
     "D-1725",
     "D-1777",
-    "D-1933"
+    "D-1933",
+    "D-2349"
    ],
    "cites": [],
    "budget": {
@@ -22477,7 +22619,7 @@
    "id": "T332",
    "slug": "late-success-trigger-and-ended-picks",
    "title": "payments (harness): a late success has its own refund trigger, and a success on a pick payments ended is refunded once",
-   "goal": "Fifth audit review fix round (D-2290; FEE-021, FEE-018, FEE-020, FEE-026; D-1547). Two preconditions of T328's `payments.late_success_refund` registration. (1) D-1547's tracked follow-up: `payments.refund.trigger`'s check (`migrations/0102_payments_refunds_disputes.sql:14`) has no late-success code, so `LATE_TRIGGER` stores a late-success refund as `charged-after-cancel` (`app/payments/src/late.rs:32`). `migrations/0176_payments_late_success_trigger.sql` replaces that check with one that also allows `late-success` (rows already stored keep their code); `app/payments/src/models.rs` (after T295) gains `RefundTrigger::LateSuccess` with code `late-success`, read back by the same parser; `late.rs`'s `LATE_TRIGGER` becomes it. `tests/integration/tests/late_success.rs` (T064's) changes only in the expected trigger, `charged-after-cancel` to `late-success`, as D-2290 records; every other input, count and assertion stays byte-identical. (2) A success on a pick that `payments` itself ended (`payments.pick_intent.ended_at` set by the FEE-018 four-hour end or the FEE-020 card-fix window) never reaches `late_success` today: `paid_release` stops at `ReleaseError::PickEnded` before the success is stored (`app/payments/src/release_proof.rs:304`), and the `CHECK_KIND` round that stores it later calls nothing (`app/payments/src/handlers.rs:371`; D-1547's known gap). Now: `paid_release`, on a verified success for an ended pick, stores the success and its evidence as the check round would and calls `late_success` in the same transaction, then answers `PickEnded` (nothing is released, no `ReleaseProof` is built); `run_charge_check`, when its round records a success on an ended pick, calls `late_success` in that round's transaction; a declined attempt ended by the card-fix window that later succeeds reaches the first path through the webhook. `late_success` already queues once per pick and alerts only on a new queue, so both paths together give exactly one refund and one `payments.late_success` alert. Tests in `tests/integration/tests/late_success_ended.rs` (TD-FEE-56). This is a harness task because `late_success.rs` is a DONE task's test. Money: 95% branch floor; the overseer runs an independent money review of the hand-in. Update the `payments` `CLAUDE.md` and `docs/decisions.md`.",
+   "goal": "Fifth audit review fix round (D-2290; FEE-021, FEE-018, FEE-020, FEE-026; D-1547). Two preconditions of T328's `payments.late_success_refund` registration. (1) D-1547's tracked follow-up: `payments.refund.trigger`'s check (`migrations/0102_payments_refunds_disputes.sql:14`) has no late-success code, so `LATE_TRIGGER` stores a late-success refund as `charged-after-cancel` (`app/payments/src/late.rs:32`). `migrations/0177_payments_late_success_trigger.sql` replaces that check with one that also allows `late-success` (rows already stored keep their code); `app/payments/src/models.rs` (after T295) gains `RefundTrigger::LateSuccess` with code `late-success`, read back by the same parser; `late.rs`'s `LATE_TRIGGER` becomes it. `tests/integration/tests/late_success.rs` (T064's) changes only in the expected trigger, `charged-after-cancel` to `late-success`, as D-2290 records; every other input, count and assertion stays byte-identical. (2) A success on a pick that `payments` itself ended (`payments.pick_intent.ended_at` set by the FEE-018 four-hour end or the FEE-020 card-fix window) never reaches `late_success` today: `paid_release` stops at `ReleaseError::PickEnded` before the success is stored (`app/payments/src/release_proof.rs:304`), and the `CHECK_KIND` round that stores it later calls nothing (`app/payments/src/handlers.rs:371`; D-1547's known gap). Now: `paid_release`, on a verified success for an ended pick, stores the success and its evidence as the check round would and calls `late_success` in the same transaction, then answers `PickEnded` (nothing is released, no `ReleaseProof` is built); `run_charge_check`, when its round records a success on an ended pick, calls `late_success` in that round's transaction; a declined attempt ended by the card-fix window that later succeeds reaches the first path through the webhook. `late_success` already queues once per pick and alerts only on a new queue, so both paths together give exactly one refund and one `payments.late_success` alert. Tests in `tests/integration/tests/late_success_ended.rs` (TD-FEE-56). This is a harness task because `late_success.rs` is a DONE task's test. Money: 95% branch floor; the overseer runs an independent money review of the hand-in. Update the `payments` `CLAUDE.md` and `docs/decisions.md`.",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -22496,7 +22638,7 @@
     "security"
    ],
    "owns": [
-    "migrations/0176_payments_late_success_trigger.sql",
+    "migrations/0177_payments_late_success_trigger.sql",
     "app/payments/src/models.rs",
     "app/payments/src/late.rs",
     "app/payments/src/release_proof.rs",
@@ -22604,7 +22746,7 @@
    "id": "T334",
    "slug": "reconcile-catch-up-and-paging",
    "title": "payments: the nightly reconcile catches up after an outage from its last good run, reads Stripe in pages, and checks refund amounts",
-   "goal": "Sixth audit U-07 and U-05's reconcile half (D-2304, D-2303; FEE-029, FEE-051, FEE-028). After T288 (which keeps unsettled charges open) and T333: (1) `LOOKBACK` is 7 days (`app/payments/src/reconcile.rs:57`), so a charge whose events all fell before a reconcile outage of more than 7 days is never read. `migrations/0177_payments_reconcile_checkpoint.sql` adds `payments.reconcile_checkpoint` (one row: the start of the last run that finished; app role SELECT, INSERT and UPDATE of that column only); each run reads every charge created since the earlier of now − 7 days and that time − 1 day, with no cap (the charge list, `GET /v1/charges` with `created[gte]`, has no 30-day limit), so no charge is skipped however long the outage; when the gap since the last finished run is over 2 days it also raises one High `payments.reconcile_gap` alert, as information only (it skips nothing); the checkpoint moves only when a run finishes. (2) `ReconcileStripe::list_charges` (:63) returns an unbounded `Vec`; it becomes a paged read (`since`, a cursor, a page size of at most 100) and the run handles one page at a time in bounded batches, committing page by page, so memory and transaction size do not grow with volume; the FEE-030 cent-match totals (gross charges, refunds, disputes, fees) accumulate across pages and are compared once at the end of the run. (3) `own_refund` (:357) records a refund at the charged amount; it uses T333's check: a reported amount that differs or a currency other than `usd` records Stripe's amount and raises the same High alert. Tests in `tests/integration/tests/reconcile_catch_up.rs` (TD-FEE-60) with the fake `ReconcileStripe`: a 10-day outage reads back to the checkpoint less a day; a 40-day one reads every charge back to its checkpoint and raises the information alert once; the cent match over several pages equals the match over one; 250 charges are read in three pages; a partial refund found by the reconcile alerts; a failed run leaves the checkpoint. T335 implements the paged read over HTTP. Money: the overseer runs an independent money review of the hand-in. Update the `payments` `CLAUDE.md`, `docs/architecture.md` section 3 (the new table) and section 10, and `docs/decisions.md`.",
+   "goal": "Sixth audit U-07 and U-05's reconcile half (D-2304, D-2303; FEE-029, FEE-051, FEE-028). After T288 (which keeps unsettled charges open) and T333: (1) `LOOKBACK` is 7 days (`app/payments/src/reconcile.rs:57`), so a charge whose events all fell before a reconcile outage of more than 7 days is never read. `migrations/0178_payments_reconcile_checkpoint.sql` adds `payments.reconcile_checkpoint` (one row: the start of the last run that finished; app role SELECT, INSERT and UPDATE of that column only); each run reads every charge created since the earlier of now − 7 days and that time − 1 day, with no cap (the charge list, `GET /v1/charges` with `created[gte]`, has no 30-day limit), so no charge is skipped however long the outage; when the gap since the last finished run is over 2 days it also raises one High `payments.reconcile_gap` alert, as information only (it skips nothing); the checkpoint moves only when a run finishes. (2) `ReconcileStripe::list_charges` (:63) returns an unbounded `Vec`; it becomes a paged read (`since`, a cursor, a page size of at most 100) and the run handles one page at a time in bounded batches, committing page by page, so memory and transaction size do not grow with volume; the FEE-030 cent-match totals (gross charges, refunds, disputes, fees) accumulate across pages and are compared once at the end of the run. (3) `own_refund` (:357) records a refund at the charged amount; it uses T333's check: a reported amount that differs or a currency other than `usd` records Stripe's amount and raises the same High alert. Tests in `tests/integration/tests/reconcile_catch_up.rs` (TD-FEE-60) with the fake `ReconcileStripe`: a 10-day outage reads back to the checkpoint less a day; a 40-day one reads every charge back to its checkpoint and raises the information alert once; the cent match over several pages equals the match over one; 250 charges are read in three pages; a partial refund found by the reconcile alerts; a failed run leaves the checkpoint. T335 implements the paged read over HTTP. Money: the overseer runs an independent money review of the hand-in. Update the `payments` `CLAUDE.md`, `docs/architecture.md` section 3 (the new table) and section 10, and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -22620,7 +22762,7 @@
     "money"
    ],
    "owns": [
-    "migrations/0177_payments_reconcile_checkpoint.sql",
+    "migrations/0178_payments_reconcile_checkpoint.sql",
     "app/payments/src/reconcile.rs",
     "tests/integration/tests/reconcile_catch_up.rs"
    ],
