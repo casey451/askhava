@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-10T23:39:47Z by runner 8d1197507108 (actions).
+Updated 2026-11-10T23:39:59Z by runner 8d1197507108 (actions).
 
-**Building: T207 in progress since 22:57Z; 190 of 336 done; week 52% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 23:39Z; 190 of 336 done; week 52% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 190 of 336 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T207 claimed 22:57Z, lease until 01:57Z
+- **Lane:** idle since 23:39Z (no task in progress)
 - **Week:** 52% used, 89.4M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 23:34Z, 5 min before this update
 - **Keeper:** last ran 23:34Z, next wake 02:00Z
@@ -17,6 +17,7 @@ Updated 2026-11-10T23:39:47Z by runner 8d1197507108 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T207 | businesses: re-apply the license map when a daily list chang | MERGE_PENDING | 1 | 41 min | 23:39Z |  |
 | T311 | calls and server: a voice read-back confirm connects only th | MERGE_PENDING | 2 | 33 min | 23:21Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T338 | adapters (harness): the refused-connection test holds its po | done | 1 | 24 min | 20:45Z |  |
 | T155 | businesses: sign-up capability setup pre-ticked from the lic | done | 1 | 57 min | 20:15Z |  |
@@ -103,7 +104,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T207 (lease until 2026-11-11T01:57:48Z)
 
 ## Last usage reading
-- {"task": "T311", "at": "2026-11-10T23:21:24Z", "input_tokens": 159, "output_tokens": 39656, "cache_creation_input_tokens": 253732, "cache_read_input_tokens": 3767970}
+- {"task": "T207", "at": "2026-11-10T23:39:46Z", "output_tokens": 120925, "cache_read_input_tokens": 12462779, "cache_creation_input_tokens": 465583, "input_tokens": 353}
