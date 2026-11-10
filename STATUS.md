@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-10T11:31:00Z by runner 974446276d37 (actions).
+Updated 2026-11-10T11:54:07Z by runner f973fd9232c2 (actions).
 
-**Idle since 11:16Z; 183 of 333 done; week 86% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 11:37Z; 184 of 333 done; week 86% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 183 of 333 build tasks (owner gates not counted)
+- **Tasks done:** 184 of 333 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 11:16Z (no task in progress)
+- **Lane:** idle since 11:37Z (no task in progress)
 - **Week:** 86% used, 22.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:30Z, 0 min before this update
+- **Last run:** 11:31Z, 23 min before this update
 - **Keeper:** last ran 11:30Z, next wake 11:50Z
 
 ## Needs attention
@@ -17,7 +17,7 @@ Updated 2026-11-10T11:31:00Z by runner 974446276d37 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T292 | messaging and calls: every text, email and call takes the br | MERGE_PENDING | 1 | 21 min | 11:16Z |  |
+| T292 | messaging and calls: every text, email and call takes the br | done | 1 | 21 min | 11:16Z |  |
 | T290 | worked examples: pin D-033 for one-cent-wide recurring range | done | 2 | 39 min | 10:21Z | T290 blocked: any new recurring worked-example row breaks tests::worked_examples (fixed RECURRING list of 13 ids, worked |
 | T290 | worked examples: pin D-033 for one-cent-wide recurring range | QUEUED | 1 | 1 min | 09:07Z |  |
 | T289 | jobs tests: the refused-move test counts its one bug log the | done | 1 | 44 min | 07:52Z |  |
@@ -51,8 +51,8 @@ Updated 2026-11-10T11:31:00Z by runner 974446276d37 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 232 of 733 (31.7%) · partial 302 · unstarted 199
-**Tasks merged (throughput only):** 183 of 333
+**Requirements verified:** 232 of 733 (31.7%) · partial 303 · unstarted 198
+**Tasks merged (throughput only):** 184 of 333
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -66,7 +66,7 @@ Updated 2026-11-10T11:31:00Z by runner 974446276d37 (actions).
 | job-cards | 12 | 10 | 2 | 24 |
 | licensing | 33 | 14 | 1 | 48 |
 | lifecycle | 17 | 11 | 0 | 28 |
-| messaging | 16 | 25 | 4 | 45 |
+| messaging | 16 | 26 | 3 | 45 |
 | ops-recovery | 2 | 5 | 47 | 54 |
 | privacy | 7 | 21 | 3 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
@@ -87,7 +87,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 63 of 134 done
+- stage 4: 64 of 134 done
 - stage 5: 0 of 53 done
 - stage 6: 0 of 30 done
 - stage 7: 0 of 2 done
