@@ -1,22 +1,23 @@
 # Ask Hava build status
 
-Updated 2026-11-10T18:32:41Z by runner 20f8e470c6ed (actions).
+Updated 2026-11-10T18:32:51Z by runner e0b5aa9b3e05 (actions).
 
-**Building: T294 in progress since 17:49Z; 187 of 335 done; week 92% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T311 in progress since 18:32Z; 187 of 335 done; week 92% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 187 of 335 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T294 claimed 17:49Z, lease until 20:49Z; lane 2: T311 claimed 18:32Z, lease until 21:32Z
+- **Lane:** lane 2: T311 claimed 18:32Z, lease until 21:32Z
 - **Week:** 92% used, 6.8M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:50Z, 42 min before this update
+- **Last run:** 18:32Z, 0 min before this update
 - **Keeper:** last ran 17:22Z, next wake 17:42Z
 
 ## Needs attention
-- Strict plan check red: 1 problem(s) on tasks still to run (+18 on DONE tasks); first: T162: stored context_pct 16% but it measures 20%; regenerate
+- Strict plan check red: 2 problem(s) on tasks still to run (+20 on DONE tasks); first: T294: stored context_pct 27% but it measures 31%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T294 | portals and site: every page takes the brand from the brand  | MERGE_PENDING | 1 | 42 min | 18:32Z |  |
 | T231 | portals (harness): the homeowner check-in email buttons and  | done | 2 | 26 min | 17:08Z | T231 built and committed (b2f7b11e, 26074ad1) but smoke red: tests/security/tests/auth_matrix.rs (T088, protected, no se |
 | T231 | portals (harness): the homeowner check-in email buttons and  | QUEUED | 1 | 28 min | 15:58Z |  |
 | T199 | portals: no automated call to a business, voice codes only o | done | 1 | 64 min | 14:22Z |  |
@@ -98,8 +99,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T294 (lease until 2026-11-10T20:49:55Z)
+- nothing
 - lane 2: T311 (lease until 2026-11-10T21:32:35Z)
 
 ## Last usage reading
-- {"task": "T231", "at": "2026-11-10T17:08:51Z", "output_tokens": 133064, "input_tokens": 366, "cache_creation_input_tokens": 494041, "cache_read_input_tokens": 25379485}
+- {"task": "T294", "at": "2026-11-10T18:32:28Z", "cache_read_input_tokens": 9840604, "cache_creation_input_tokens": 269748, "input_tokens": 268, "output_tokens": 72170}
