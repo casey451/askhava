@@ -1,6 +1,6 @@
 {
  "items": {
-  "BUILD_BRIEF.md": "9f461c2b520040011f446fa205efd4f5b890a62ec5bebac9732ce3f4b5c59ebb",
+  "BUILD_BRIEF.md": "55eb1f6d9dcb115aa93f76c69035ae36de1f3128d1d6fef21fac1b460121c70a",
   "CLAUDE.md": "b0583382f0e224518f101e0d18a294635ccce76569297b6c9333896b56d44ad1",
   "docs/architecture.md#3": "c97b1036703c1b8e23718cbbef01ae3f51b8540468dd7b702c4abab73e13b6a7",
   "docs/architecture.md#4": "310b91ad3d6c776b1531bee08d7f743aa3b69905b786cba5d201a028e7926258",
@@ -41,9 +41,9 @@
   "docs/test-design.md": "a303f02827f1ba28bd65674dd7fdf453c815b7657889c274bd3ebf1959e5dc66",
   "docs/threat-model.md": "f42b7fa58e2dccd9fda2e968823f75b3c6143b1ee8d5da126aa231d7b7ec9b16",
   "kit/prompts/TEMPLATE.md": "75b992112639a77a79d3330536a73e9ab8c1743cb7efa779471efb10a8ff34c1",
-  "kit/runner.json": "2bee8016a0aef7ee393e436d8316440f6fd6139416337be956ce15bd8e486bd7",
+  "kit/runner.json": "c962f87801cecb0414090061aec09238f47b051aeed62a5dca7c373ab51dee52",
   "kit/sources.sha256": "853b7f37d6e04259ad9d7b64e16e6cb0111ee4499e37af46aeb3183748c7f335",
-  "kit/tasks.json": "c95e5bbb7e21d783df25ec4982e1d79d350e9fa9ac58b89ebe0c33644332de73",
+  "kit/tasks.json": "9efa1d1e41d86d519199a1a0f9e16abdc8d97c7ad123044bfac80fa85ed970f9",
   "scripts/brand.py": "13d78b9984835e09b072aa5386a2429ba9f65395a6c2ca03677f7ac8c1173d8d",
   "scripts/check_ai_smell.py": "85dabd31a4def57084ccca15c6c8efee89cc3f5a9e376a9ed07f4f6a98a2885a",
   "scripts/check_catalog.py": "c5ee638f3fa6b90324623d91c0ecfd1aa487c52c59e3be1b369b8c3e1e505454",
