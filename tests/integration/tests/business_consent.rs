@@ -376,12 +376,8 @@ fn td_biz_17_done_screen_says_email_once() {
 /// business and quote copy that now reads the brand file is byte-identical to the words it held
 /// as literals, in English and Spanish; WORD-002's business statement keeps its exact words.
 #[test]
-fn td_word_36_business_and_quote_copy_is_unchanged_under_the_embedded_brand() {
-    use askhava_businesses::api::{
-        AboutUsRefusal, ReplyFacts, business_statement, phone_linked_line, returned_line,
-        waitlist_line,
-    };
-    use askhava_quotes::api::{Bounce, job_page_prefix};
+fn td_word_36_consent_welcome_and_sign_up_lines_are_unchanged_under_the_embedded_brand() {
+    use askhava_businesses::api::{business_statement, waitlist_line};
     assert_eq!(
         consent_box(&[Email, Text]).wording,
         "I agree to get job and account notices from Ask Hava by email at the address above, not on paper. I agree to get job-card texts from Ask Hava at the phone number above. Message frequency varies. Message and data rates may apply. Text STOP to stop or HELP for help. Ask Hava never places recorded or automated calls to you. You can change this any time in your portal."
@@ -411,6 +407,30 @@ fn td_word_36_business_and_quote_copy_is_unchanged_under_the_embedded_brand() {
         business_statement(),
         "Ask Hava is not a contractor. It passes along this request and the homeowner's choice. If the homeowner picks you, they hire you directly; Ask Hava doesn't direct, schedule, supervise or pay for the work."
     );
+    let postal = (
+        "PO Box 0000, Lake Havasu City, AZ 86403",
+        MailboxKind::PoBox,
+    );
+    let mail = recruiting_email(
+        "Get job requests",
+        &[],
+        postal,
+        "https://askhava.com/stop/fake-token",
+    );
+    let mail = mail.expect("email");
+    assert_eq!(
+        mail.lines.last().map(String::as_str),
+        Some("Ask Hava LLC, PO Box 0000, Lake Havasu City, AZ 86403")
+    );
+    let opening = recruiting_email("Ask Hava: hello", &[], postal, "https://askhava.com/stop/x");
+    assert_eq!(opening, Err(ConsentError::Subject));
+}
+
+/// TD-WORD-36 (WORD-001, WORD-002, WORD-008, D-1932): the complaint reply and phone-link line in
+/// English and Spanish, the About us reasons and the returned-address banner, byte for byte.
+#[test]
+fn td_word_36_complaint_about_us_and_banner_lines_are_unchanged_under_the_embedded_brand() {
+    use askhava_businesses::api::{AboutUsRefusal, ReplyFacts, phone_linked_line, returned_line};
     let facts = ReplyFacts {
         business: "Desert Pipe Co",
         number: "(928) 555-0142",
@@ -449,6 +469,13 @@ fn td_word_36_business_and_quote_copy_is_unchanged_under_the_embedded_brand() {
         returned_line("old@example.test"),
         "Ask Hava emails to old@example.test are being returned or marked as spam, so you may miss job requests. Add or fix an email address."
     );
+}
+
+/// TD-WORD-36 (WORD-001, D-1932): `quotes`' contact bounce and the card email's job-page link,
+/// byte for byte (the card words and quote texts keep their own pins).
+#[test]
+fn td_word_36_quote_bounce_and_job_page_link_are_unchanged_under_the_embedded_brand() {
+    use askhava_quotes::api::{Bounce, job_page_prefix};
     assert_eq!(
         Bounce::Contact.message(),
         "Please take out any phone number, email, link, or \"call me\" or \"text me\" line, including numbers written out as words. If the homeowner picks your quote, Ask Hava puts you in touch."
@@ -458,21 +485,4 @@ fn td_word_36_business_and_quote_copy_is_unchanged_under_the_embedded_brand() {
         "Please add how many hours you think it will take, or a range like 2 to 3 hours."
     );
     assert_eq!(job_page_prefix(), "https://askhava.com/b/jobs/");
-    let postal = (
-        "PO Box 0000, Lake Havasu City, AZ 86403",
-        MailboxKind::PoBox,
-    );
-    let mail = recruiting_email(
-        "Get job requests",
-        &[],
-        postal,
-        "https://askhava.com/stop/fake-token",
-    );
-    let mail = mail.expect("email");
-    assert_eq!(
-        mail.lines.last().map(String::as_str),
-        Some("Ask Hava LLC, PO Box 0000, Lake Havasu City, AZ 86403")
-    );
-    let opening = recruiting_email("Ask Hava: hello", &[], postal, "https://askhava.com/stop/x");
-    assert_eq!(opening, Err(ConsentError::Subject));
 }
