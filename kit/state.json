@@ -25178,8 +25178,8 @@
    "deps": [
     "T283"
    ],
-   "status": "MERGE_PENDING",
-   "attempts": 0,
+   "status": "QUEUED",
+   "attempts": 1,
    "slug": "route-wiring-check",
    "type": "build",
    "stage": "4",
@@ -25197,13 +25197,50 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 116,
      "head_sha": "79abfc715e5d18bc59a7ba93cea45d01338f8f5b",
-     "pr": null,
-     "checks": null,
+     "pr": 401,
+     "checks": [
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "failure"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "failure"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-09T23:57:42Z",
      "ended_at": "2026-11-10T00:32:29Z",
-     "result": "MERGE_PENDING"
+     "result": "check_failed"
     }
    ],
    "reviewed_sha": "3bb23bcaf87b472923d1b649840d54f95cf4ef5f",
@@ -25244,7 +25281,8 @@
     }
    ],
    "update_waiting_since": null,
-   "update_push_failures": null
+   "update_push_failures": null,
+   "last_failure": "Ci: failure; Checks: failure\nChecks failed at step: Rust build (the one boundary build) and tests\ntest tests::ssrf_guard::redirect_off_the_allowed_hosts_is_not_followed ... ok\ntest tests::storage::message_body_delete_redacts_at_the_stand_in ... ok\ntest tests::ssrf_guard::slow_redirect_chains_time_out_overall ... ok\nfailures:\n---- tests::adapter_config::unreachable_vendor_is_not_sent stdout ----\nthread 'tests::adapter_config::unreachable_vendor_is_not_sent' (27140) panicked at app/adapters/src/tests/adapter_config.rs:444:5:\nassertion `left == right` failed\n  left: Err(OutcomeUnknown)\n right: Err(NotSent)\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\n    tests::adapter_config::unreachable_vendor_is_not_sent\ntest result: FAILED. 40 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.37s\nerror: test failed, to rerun pass `-p askhava-adapters --lib`\n##[error]Process completed with exit code 101.\nCi failed at step: All three jobs passed\nChecks: failure, Coverage: success, E2e: success\n##[error]Process completed with exit code 1."
   },
   {
    "id": "T285",
@@ -27726,7 +27764,7 @@
    }
   }
  },
- "updated_at": "2026-11-10T01:05:39Z",
+ "updated_at": "2026-11-10T01:17:39Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -27824,7 +27862,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "ee7121ce04ebdc6f3a8b876104435ebc6d2770f1",
+ "runner_sha": "05c4ed68bf3bf06d8675dc5526d8ac442f84bc54",
  "starter": "actions",
  "smoke_runs": [
   {

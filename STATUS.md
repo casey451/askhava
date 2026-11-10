@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-10T01:05:39Z by runner ee7121ce04eb (actions).
+Updated 2026-11-10T01:17:39Z by runner 05c4ed68bf3b (actions).
 
 **Idle since 00:32Z; 177 of 324 done; week 77% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-10T01:05:39Z by runner ee7121ce04eb (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 00:32Z (no task in progress)
 - **Week:** 77% used, 48.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:05Z, 0 min before this update
+- **Last run:** 01:05Z, 11 min before this update
 - **Keeper:** last ran 01:05Z, next wake 01:25Z
 
 ## Needs attention
@@ -17,7 +17,7 @@ Updated 2026-11-10T01:05:39Z by runner ee7121ce04eb (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T284 | server: every route the architecture lists is wired in the r | MERGE_PENDING | 1 | 34 min | 00:32Z |  |
+| T284 | server: every route the architecture lists is wired in the r | check_failed | 1 | 34 min | 00:32Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests / test tests::ssrf_g |
 | T283 | Ci: a change to a document the app compiles in runs the Rust | done | 1 | 30 min | 23:27Z |  |
 | T287 | payments and picks: the fee fixed at the pick is stored by p | done | 2 | 43 min | 22:15Z | T287 built and smoke green, but prehandin check_pr_change fails: kit/tasks.json T287 owns lacks app/payments/src/models. |
 | T287 | payments and picks: the fee fixed at the pick is stored by p | QUEUED | 1 | 46 min | 21:18Z |  |
