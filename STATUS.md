@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-10T07:52:41Z by runner 997891639d6d (actions).
+Updated 2026-11-10T07:52:57Z by runner 997891639d6d (actions).
 
-**Building: T289 in progress since 07:07Z; 181 of 333 done; week 84% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 07:52Z; 181 of 333 done; week 84% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 181 of 333 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T289 claimed 07:07Z, lease until 10:07Z
+- **Lane:** idle since 07:52Z (no task in progress)
 - **Week:** 84% used, 26.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 07:08Z, 44 min before this update
 - **Keeper:** last ran 06:49Z, next wake 07:09Z
@@ -17,6 +17,7 @@ Updated 2026-11-10T07:52:41Z by runner 997891639d6d (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T289 | jobs tests: the refused-move test counts its one bug log the | MERGE_PENDING | 1 | 44 min | 07:52Z |  |
 | T288 | payments: a Stripe charge the nightly reconcile cannot settl | done | 1 | 60 min | 06:30Z |  |
 | T286 | server: every request has a whole-request time limit, answer | done | 1 | 26 min | 04:57Z |  |
 | T285 | runner: a task closes with a visible mark when a file it own | done | 1 | 19 min | 03:45Z |  |
@@ -94,7 +95,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T289 (lease until 2026-11-10T10:07:45Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T288", "at": "2026-11-10T06:30:27Z", "cache_read_input_tokens": 18134579, "input_tokens": 387, "cache_creation_input_tokens": 683863, "output_tokens": 198503}
+- {"task": "T289", "at": "2026-11-10T07:52:40Z", "cache_read_input_tokens": 3192812, "output_tokens": 45456, "input_tokens": 159, "cache_creation_input_tokens": 171863}
