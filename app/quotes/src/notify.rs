@@ -12,6 +12,7 @@
 //! conversion, rounding or suggestion (WORD-011, D-358). The first-quote text carries no amount at
 //! all; the amounts are in the LIST text and on the quote card (D-1191).
 
+use askhava_core::api::brand;
 use askhava_messaging::api::{Language, Text, render};
 use jiff::civil::Date;
 use jiff::{SignedDuration, Timestamp};
@@ -28,10 +29,18 @@ pub const UPDATE_GAP: SignedDuration = SignedDuration::from_hours(3);
 pub const LIST_PAGE: usize = 10;
 /// The default for "a card went to 1 or 2 businesses" (TXT-032, a setting).
 pub const SLOW_AT_MOST: u32 = 2;
-/// Every template begins with this; a joined text keeps it once.
-const PREFIX: &str = "Ask Hava: ";
 /// The clock Ask Hava states every time in (TXT-033).
 const ARIZONA: &str = "America/Phoenix";
+
+/// The opening every template in `language` begins with, `<short_name>: ` from the brand file;
+/// a joined text keeps it once (WORD-008, D-1932).
+fn prefix(language: Language) -> String {
+    let short = match language {
+        Language::En => brand().short_name(),
+        Language::Es => brand().es().short_name(),
+    };
+    format!("{short}: ")
+}
 
 /// The language a homeowner is texted in: her own, and whether Spanish conversations are on
 /// (TXT-039). The same rule `messaging::api::render` applies to each template.
@@ -342,7 +351,7 @@ pub fn list_texts_from(
                 .collect();
             let head = text("quote_list", reader, &[("job", job)])?.body;
             let end = text("quote_list_end", reader, &[])?.body;
-            let end = end.strip_prefix(PREFIX).unwrap_or(&end);
+            let end = end.strip_prefix(&prefix(reader.language())).unwrap_or(&end);
             Ok(format!("{head}\n{}\n{end}", lines.join("\n")))
         })
         .collect()
@@ -487,9 +496,10 @@ pub fn cards_out_text(
     if (1..=out.slow_at_most).contains(&out.count) {
         parts.push(text("request_out_slow", reader, &[("count", &count)])?);
     }
+    let opening = prefix(reader.language());
     let bodies: Vec<&str> = parts
         .iter()
-        .map(|t| t.body.strip_prefix(PREFIX).unwrap_or(&t.body))
+        .map(|t| t.body.strip_prefix(&opening).unwrap_or(&t.body))
         .collect();
-    Ok(format!("{PREFIX}{}", bodies.join(" ")))
+    Ok(format!("{opening}{}", bodies.join(" ")))
 }
