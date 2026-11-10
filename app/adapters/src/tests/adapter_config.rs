@@ -429,17 +429,32 @@ async fn verify_client_sends_and_checks_over_http() {
     assert!(right.await.unwrap());
 }
 
-/// SEC-018: a refused connection is `NotSent`, so the caller knows a retry cannot duplicate the text.
+/// TD-SEC-59; SEC-018: a refused connection is `NotSent`, so the caller knows a retry cannot duplicate the text.
+/// The socket is bound but never listening and lives to the end of the test, so
+/// the connect is refused and no other test's stand-in can take the port (D-2318).
 #[tokio::test]
 async fn unreachable_vendor_is_not_sent() {
-    let port = TcpListener::bind("127.0.0.1:0")
-        .unwrap()
-        .local_addr()
-        .unwrap()
-        .port();
+    let held = tokio::net::TcpSocket::new_v4().unwrap();
+    held.bind("127.0.0.1:0".parse().unwrap()).unwrap();
+    let port = held.local_addr().unwrap().port();
     let (sms, _, _) = twilio_clients(&stand_in_config(port)).unwrap();
     let result = sms
         .send_text(&key("sms.send", "outbox-3"), TO, FROM, "Ask Hava: test")
         .await;
     assert_eq!(result, Err(AdapterError::NotSent));
+    drop(held);
+}
+
+/// TD-SEC-59; SEC-018: a vendor that accepts the connection and closes it without answering is `OutcomeUnknown`, because the request may have arrived and must not be resent blind.
+#[tokio::test]
+async fn closed_without_answer_is_outcome_unknown() {
+    let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+    let port = listener.local_addr().unwrap().port();
+    let closer = std::thread::spawn(move || drop(listener.accept().unwrap()));
+    let (sms, _, _) = twilio_clients(&stand_in_config(port)).unwrap();
+    let result = sms
+        .send_text(&key("sms.send", "outbox-4"), TO, FROM, "Ask Hava: test")
+        .await;
+    closer.join().unwrap();
+    assert_eq!(result, Err(AdapterError::OutcomeUnknown));
 }
