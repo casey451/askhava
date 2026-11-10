@@ -33,11 +33,11 @@
 <ul id="pool-numbers">
 {% for n in card %}<li>{{ n }}</li>
 {% endfor %}</ul>
-<p><a href="/b/contact-card.vcf" download>Save these numbers to your phone (contact card: {{ card_name }})</a></p>
+<p><a href="{{ crate::business_portal::CONTACT_CARD_ROUTE }}" download>Save these numbers to your phone (contact card: {{ card_name }})</a></p>
 <h2 id="shared-inbox">This inbox is shared</h2>
 {% if inbox.shared %}<p id="shared-state">Your job email inbox is marked shared. Before you confirm a job, we text a code to your phone, so only you can confirm it. You can still quote or hold jobs from the emails.</p>
 {% else %}<p id="shared-state">Your job email inbox isn't marked shared. If office staff or anyone else can read it, mark it shared. Then we'll text a code to your phone before you confirm a job.</p>
-{% endif %}{% if inbox.text_phone || inbox.shared %}<form method="post" action="/b/shared-inbox" novalidate>
+{% endif %}{% if inbox.text_phone || inbox.shared %}<form method="post" action="{{ crate::business_portal::SHARED_INBOX_ROUTE }}" novalidate>
 <input type="hidden" name="csrf" value="{{ csrf }}">
 <input type="hidden" name="shared" value="{% if inbox.shared %}no{% else %}yes{% endif %}">
 <p id="shared-hint">We'll ask for a new code before we change this.</p>

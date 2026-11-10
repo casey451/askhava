@@ -20,7 +20,7 @@
 {% if title == "You're signed up" %}<section id="contact-card" aria-labelledby="contact-card-title">
 <h2 id="contact-card-title">Save the numbers homeowners call you from</h2>
 <p>{{ crate::business_portal::contact_card_note() }}</p>
-<p><a href="/b/contact-card.vcf" download>Save these numbers to your phone (contact card: {{ crate::business_portal::contact_card_name() }})</a></p>
+<p><a href="{{ crate::business_portal::CONTACT_CARD_ROUTE }}" download>Save these numbers to your phone (contact card: {{ crate::business_portal::contact_card_name() }})</a></p>
 </section>
 {% endif %}
 {% if !categories.is_empty() %}

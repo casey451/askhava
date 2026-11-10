@@ -185,7 +185,8 @@ async fn mint(db: &mut PgConnection, o: &Owner, kind: ActionKind, object: Uuid) 
 /// link or expiry; the page sends no referrer; a POST without a CSRF token is refused and changes
 /// nothing; the button's POST acts, once; the token is 256 bits and only its hash is stored.
 /// TD-SEC-09 (SEC-026, D-493): a cross-site POST to the action page is refused even with a good
-/// token, and the same POST sent twice acts once.
+/// token, and a second press uses nothing more (the served route's answer to it, the same result
+/// as the first, waits on D-1958).
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_sec_08_a_scanner_get_changes_nothing_and_only_the_csrf_post_acts(pool: PgPool) {
     let mut db = pool.acquire().await.expect("db");
@@ -224,8 +225,14 @@ async fn td_sec_08_a_scanner_get_changes_nothing_and_only_the_csrf_post_acts(poo
     assert_eq!(rows(&mut db, o.by.member).await, before);
     let (status, _) = send(&pool, request("POST", &path, &body)).await;
     assert_eq!(status, StatusCode::OK, "the button acts");
-    let (status, _) = send(&pool, request("POST", &path, &body)).await;
-    assert_eq!(status, StatusCode::GONE, "a second press acts no more");
+    let used = rows(&mut db, o.by.member).await;
+    assert!(used.iter().all(|(_, at)| at.is_some()), "used once");
+    send(&pool, request("POST", &path, &body)).await;
+    assert_eq!(
+        rows(&mut db, o.by.member).await,
+        used,
+        "a second press acts no more"
+    );
     let stored: i64 = sqlx::query_scalar(
         "SELECT count(*) FROM portals.login_link WHERE member_id = $1 \
          AND length(token_sha256) = 32 AND encode(token_sha256, 'hex') <> $2",
@@ -284,6 +291,37 @@ async fn td_sec_08_opening_the_quote_form_stamps_the_first_open_once(pool: PgPoo
         later(9),
     );
     assert_eq!(ended.await, Err(ActionLinkError::Ended), "another job");
+}
+
+/// TD-SEC-08 (SEC-026, OPS-037, D-2412): the quote form stamps only the link's own business's
+/// notice for the link's job; a notice of another job opens the form and stays unstamped.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_sec_08_a_quote_link_never_stamps_another_jobs_notice(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("db");
+    let o = owner(&mut db).await;
+    let job = Uuid::from_u128(0x2042);
+    let path = mint(&mut db, &o, ActionKind::Quote, job).await;
+    let token = path.rsplit('/').next().expect("token").to_owned();
+    let other = NewNoticeLog {
+        business: o.by.business,
+        job: Uuid::from_u128(0x2044),
+        kind: NoticeKind::Card,
+        mailbox: Uuid::from_u128(0x3042),
+        email: None,
+    };
+    let other = record_notice(&mut db, &other, Sending::Sent(start()))
+        .await
+        .expect("another job's notice");
+    open_quote_form(&mut db, (job, &token), Some(other), later(6))
+        .await
+        .expect("opened");
+    let stamped: Option<String> =
+        sqlx::query_scalar("SELECT first_opened_at::text FROM messaging.notice_log WHERE id = $1")
+            .bind(other)
+            .fetch_one(&mut *db)
+            .await
+            .expect("other notice");
+    assert_eq!(stamped, None, "never another job's notice");
 }
 
 /// TD-SEC-08 (SEC-027, SEC-038, D-333, D-478): marking the inbox shared needs a phone that gets

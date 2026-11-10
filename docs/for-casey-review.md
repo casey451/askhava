@@ -2,6 +2,10 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## The homeowner calls contact card (T199, D-2409 to D-2413, November 10)
+
+- **Copy still to fix.** The welcome email's third line still says "Save the attached contact card", but the card is now a link to the download in the business portal, not an attachment. The line is pinned word for word by a test another task owns (`tests/integration/tests/business_consent.rs`), so a follow-up task that owns that test rewrites it (for example "Save the contact card from your business account"). Nothing is sent to a real business before then.
+
 ## Handyman split jobs: your ruling (plan change, D-2407 and D-2408, November 10)
 
 - **Your call, as you put it:** "I only care about individual jobs being under the 1000 mark" and "I dont want the 30 day rule". The 30-day split-job check is gone. Each handyman job is judged only by its own price: under $1,000 is fine, $1,000 or more is refused. Another job by the same handyman at the same house never blocks a quote. Task T347 removes the old check and its tests.

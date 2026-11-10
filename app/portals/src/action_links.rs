@@ -19,7 +19,9 @@ use askhava_businesses::api::{Roles, members};
 use askhava_core::api::brand;
 use askhava_picks::api::{HoldAsk, hold_allowed};
 use jiff::Timestamp;
+use jiff_sqlx::ToSqlx;
 use secrecy::SecretString;
+use sha2::{Digest, Sha256};
 use sqlx::PgConnection;
 use sqlx::types::Uuid;
 
@@ -293,6 +295,32 @@ pub async fn open_action_link(
     } else {
         Err(ActionLinkError::Ended)
     }
+}
+
+/// SEC-026, OPS-037: the business of the unused, unexpired `kind` link `token` for `object` at
+/// `now`; reads only, like [`open_action_link`]. The quote form checks with it that the notice it
+/// stamps is that business's own (D-2412).
+///
+/// # Errors
+///
+/// [`ActionLinkError::Ended`] for any link that would not work; [`ActionLinkError::Store`].
+pub(crate) async fn action_link_business(
+    db: &mut PgConnection,
+    (kind, object): (ActionKind, Uuid),
+    token: &str,
+    now: Timestamp,
+) -> Result<Uuid, ActionLinkError> {
+    let hash = Sha256::digest(binding(kind, object, token).as_bytes()).to_vec();
+    let business = sqlx::query_scalar!(
+        "SELECT business_id FROM portals.login_link \
+         WHERE token_sha256 = $1 AND used_at IS NULL AND expires_at > $2",
+        hash,
+        now.to_sqlx(),
+    )
+    .fetch_optional(db)
+    .await
+    .map_err(|_| PortalsError::Database)?;
+    business.ok_or(ActionLinkError::Ended)
 }
 
 /// SEC-025, SEC-026, PICK-043: uses the `kind` link `token` for `object` at `now` (the page's

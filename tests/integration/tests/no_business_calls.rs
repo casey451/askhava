@@ -122,25 +122,73 @@ fn files(dir: &Path, exts: &[&str], out: &mut Vec<(String, String)>) {
     }
 }
 
+/// The portal pages a homeowner or the owner sees; every other portal source, template or
+/// script is a business screen (sign-up, home, actions, Confirm and pay, release, notices,
+/// billing, receipts, mail checks, the emergency switch).
+const NOT_BUSINESS: [&str; 9] = [
+    "quote_page",
+    "pick_flow",
+    "pick_code",
+    "pick_review",
+    "homeowner_",
+    "data_download",
+    "feedback",
+    "owner_",
+    "passkey",
+];
+
+/// Whether `path` is a business screen's source, template or script in `portals`.
+fn business_screen(path: &str) -> bool {
+    let Some((_, rest)) = path.split_once("app/portals/") else {
+        return false;
+    };
+    let Some(name) = ["src/", "templates/", "static/"]
+        .iter()
+        .find_map(|dir| rest.strip_prefix(dir))
+    else {
+        return false;
+    };
+    !name.starts_with("tests/") && !NOT_BUSINESS.iter().any(|n| name.starts_with(n))
+}
+
 /// TD-BIZ-22, TD-BIZ-25 (BIZ-039, BIZ-046, D-344): no pick-call, emergency-call, test-call or
 /// account-call code path or setting exists anywhere in the app or its migrations, and no
-/// business screen offers "Call me with the code".
+/// business screen (every `portals` source, template and script but the homeowner's and the
+/// owner's pages, Confirm and pay included) offers "Call me with the code".
 #[test]
 fn td_biz_22_no_business_call_path_setting_or_control_exists() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
     let mut all = Vec::new();
-    files(&root.join("app"), &["rs", "toml", "json", "html"], &mut all);
+    files(
+        &root.join("app"),
+        &["rs", "toml", "json", "html", "ts"],
+        &mut all,
+    );
     files(&root.join("migrations"), &["sql"], &mut all);
     assert!(all.len() > 100, "the scan found the app");
+    let screens: Vec<&str> = all
+        .iter()
+        .map(|(path, _)| path.as_str())
+        .filter(|path| business_screen(path))
+        .collect();
+    for page in [
+        "confirm_pay.rs",
+        "confirm_pay.html",
+        "confirm_pay.ts",
+        "business_home.html",
+    ] {
+        assert!(
+            screens.iter().any(|p| p.ends_with(page)),
+            "{page} is scanned"
+        );
+    }
     let banned = ["pick_call", "emergency_call", "test_call", "account_call"];
     for (path, text) in &all {
         let lower = text.to_lowercase();
         for word in banned {
             assert!(!lower.contains(word), "{word} in {path}");
         }
-        let business_screen =
-            path.contains("portals/templates/business_") || path.contains("portals/src/business_");
-        if business_screen {
+        if business_screen(path) {
             assert!(!lower.contains("call me with the code"), "{path}");
         }
     }
