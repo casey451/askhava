@@ -96,7 +96,9 @@ fn row_fee(example: &Example, catalog: &askhava_catalog::api::Catalog, cap: Recu
 
 /// TD-FEE-03, TD-FEE-21, TD-FEE-02 (REC-002 to REC-005, REC-011, FEE-039): every worked example
 /// with a period, and W32, match to the cent (W11 to W20, W30, W33, W37, W18's range, W30's
-/// round-down); with the cap removed W20 and W33 pay $199, so the cap is what holds them at $75.
+/// round-down, and TD-FEE-50's W41 to W62, one-cent-wide ranges at the $500 and $1,500 edges,
+/// D-033, D-2386); with the cap removed W20, W33, W44, W48, W52 and W62 pay $199, so the cap is
+/// what holds them at $75.
 #[test]
 fn td_fee_03_every_recurring_worked_example_matches() {
     let catalog = askhava_catalog::api::parse(CATEGORIES).expect("catalog parses");
@@ -119,7 +121,7 @@ fn td_fee_03_every_recurring_worked_example_matches() {
             &catalog,
             RecurringCap::from_dollars(199).expect("cap"),
         );
-        let want = if ["W20", "W33"].contains(&id.as_str()) {
+        let want = if ["W20", "W33", "W44", "W48", "W52", "W62"].contains(&id.as_str()) {
             19_900
         } else {
             fee.cents()
@@ -127,7 +129,7 @@ fn td_fee_03_every_recurring_worked_example_matches() {
         assert_eq!(uncapped.cents(), want, "{id} without the cap");
         checked += 1;
     }
-    assert_eq!(checked, 14);
+    assert_eq!(checked, 36);
 }
 
 /// TD-FEE-03 (REC-006): the one month multiplier is 4, in code and in the worked examples'
