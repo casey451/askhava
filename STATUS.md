@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-10T21:52:53Z by runner 8d9d12749933 (actions).
+Updated 2026-11-10T22:05:42Z by runner fbfe8c8cd68f (actions).
 
 **Waiting for tokens until 17:00Z; 190 of 336 done; week 97% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,11 @@ Updated 2026-11-10T21:52:53Z by runner 8d9d12749933 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 21:16Z (no task in progress)
 - **Week:** 97% used, 0.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:52Z, 0 min before this update
+- **Last run:** 21:53Z, 12 min before this update
 - **Keeper:** last ran 21:52Z, next wake 03:32Z
 
 ## Needs attention
-- Strict plan check red: 3 problem(s) on tasks still to run (+22 on DONE tasks); first: T207: stored context_pct 12% but it measures 17%; regenerate
+- Strict plan check red: 3 problem(s) on tasks still to run (+23 on DONE tasks); first: T207: stored context_pct 12% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -39,6 +39,7 @@ Updated 2026-11-10T21:52:53Z by runner 8d9d12749933 (actions).
 | T287 | payments and picks: the fee fixed at the pick is stored by p | done | 2 | 43 min | 22:15Z | T287 built and smoke green, but prehandin check_pr_change fails: kit/tasks.json T287 owns lacks app/payments/src/models. |
 
 ### Plan and harness merges on main
+- 21:53Z Harness: reuse a recorded green smoke on main's head; fix the start-up smoke timeouts (D-2560) (#434)
 - 21:38Z Plan: claim the flaky-test fixes first — T338, then T311 and T349 (D-2540) (#431)
 - 19:42Z Plan: second tiering pass — 13 more tasks on Sonnet, T159 on Haiku, reviewer counterexample duty (D-2506) (#427)
 - 19:31Z Plan: PIN draws fail only when the OS source fails; one failed draw costs one draw (D-2451, T311) (#422)
@@ -85,7 +86,7 @@ Updated 2026-11-10T21:52:53Z by runner 8d9d12749933 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-10T21:37:17Z (week)): five-hour: 0k used, 29.1M left, resets on first use; week: 194.0M used, 0k left, resets 2026-11-12T17:00:00Z; projected finish 2026-11-30T14:41:14Z; waiting until 2026-11-12T17:00:00Z.
+- Pacing (session_reading 2026-11-10T21:52:39Z (week)): five-hour: 0k used, 29.1M left, resets on first use; week: 194.0M used, 0k left, resets 2026-11-12T17:00:00Z; projected finish 2026-11-30T16:31:28Z; waiting until 2026-11-12T17:00:00Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
