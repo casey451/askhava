@@ -16,7 +16,7 @@
 //! claim ([`claim_launch_notice`], BIZ-031). The screens themselves are `portals`'.
 
 use askhava_adapters::api::PaymentsAdapter;
-use askhava_core::api::SettingsError;
+use askhava_core::api::{SettingsError, brand};
 use askhava_licensing::api::{ClassMap, Opening};
 use askhava_ops::api::{Actor, AuditEntry, Change, audit};
 use askhava_payments::api::{
@@ -33,9 +33,16 @@ use crate::identity::{RecordContacts, Step};
 use crate::models::{self, BusinessesError, db};
 use crate::status::AccountStatus;
 
-/// The waitlist line shown when only coming-later categories were chosen (BIZ-021, D-175, D-288).
-pub const WAITLIST_LINE: &str = "The trades you picked aren't open on Ask Hava yet, so you're on the \
-waitlist. Your join date is kept. No priority; everyone waiting is told at once.";
+/// The waitlist line shown when only coming-later categories were chosen (BIZ-021, D-175, D-288),
+/// naming the brand's display name (WORD-001, D-1932).
+#[must_use]
+pub fn waitlist_line() -> String {
+    format!(
+        "The trades you picked aren't open on {} yet, so you're on the waitlist. Your join date is \
+         kept. No priority; everyone waiting is told at once.",
+        brand().display_name()
+    )
+}
 
 /// Why a sign-up step failed. No variant carries a value (rust brain R5, R6).
 #[derive(Debug, thiserror::Error, PartialEq, Eq)]
@@ -162,7 +169,7 @@ pub fn waitlisted(map: &ClassMap, form: &SignUpForm) -> Result<bool, SignupError
 pub struct SignedUp {
     /// The business record ID.
     pub business: Uuid,
-    /// On the waitlist (show [`WAITLIST_LINE`]).
+    /// On the waitlist (show [`waitlist_line`]).
     pub waitlist: bool,
     /// The Stripe customer was made; when false the caller retries `ensure_customer` (BIZ-001).
     pub customer_ready: bool,
@@ -350,10 +357,17 @@ pub const STOP_FIX_BUTTON: &str = "Stop, I'll fix my record first";
 /// BIZ-026, D-254: the `messaging` template sent when a daily list shows a new record contact.
 pub const RECORD_UPDATED_TEMPLATE: &str = "signup_record_updated";
 
-/// BIZ-030, WORD-002, D-356: the business statement of the plain-words box.
-pub const BUSINESS_STATEMENT: &str = "Ask Hava is not a contractor. It passes along this request \
-and the homeowner's choice. If the homeowner picks you, they hire you directly; Ask Hava doesn't \
-direct, schedule, supervise or pay for the work.";
+/// BIZ-030, WORD-002, D-356: the business statement of the plain-words box; WORD-002's exact words
+/// around the brand's display name (WORD-001, D-1932).
+#[must_use]
+pub fn business_statement() -> String {
+    let name = brand().display_name();
+    format!(
+        "{name} is not a contractor. It passes along this request and the homeowner's choice. If \
+         the homeowner picks you, they hire you directly; {name} doesn't direct, schedule, \
+         supervise or pay for the work."
+    )
+}
 
 /// BIZ-030, FEE-013: days after a job closes that repeat picks from the same homeowner are free.
 pub const REPEAT_FREE_DAYS: u32 = 180;
@@ -747,13 +761,13 @@ pub fn fee_summary(n: &FeeNumbers) -> Vec<String> {
         "It's an introduction fee for a homeowner who chose you.".to_owned(),
         format!("You pay one fixed fee when you confirm a pick: {s}, {m} or {l} by job size. It's not a share of the job. If you call twice inside the homeowner's window and can't reach them, the refund rule gives the fee back without you asking."),
         "It's a fixed introduction fee, never a share of the job, and it doesn't depend on the work being done or paid for.".to_owned(),
-        BUSINESS_STATEMENT.to_owned(),
+        business_statement(),
         "The homeowner sees every quote and picks one business: you. It isn't shared with anyone else.".to_owned(),
         "A new fee never applies until you accept it.".to_owned(),
         format!("Repeat picks from the same homeowner are free for {REPEAT_FREE_DAYS} days after the job closes."),
         "Fees follow the published schedule, and a change needs your OK first.".to_owned(),
         "Statements download as CSV.".to_owned(),
-        "If many picks in your trade end without a hire, the Ask Hava owner reviews it and may add a credit.".to_owned(),
+        format!("If many picks in your trade end without a hire, the {} owner reviews it and may add a credit.", brand().display_name()),
     ]
 }
 

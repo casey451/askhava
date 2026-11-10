@@ -11,9 +11,9 @@ use askhava_adapters::api::{
 };
 use askhava_businesses::api::{
     AboutUsRefusal, BusinessesError, EntityValues, Flag, HeardFrom, RecordContacts, SignUpForm,
-    SignupError, Step, TermsShown, WAITLIST_LINE, accept_terms, approve, business, category_list,
-    check_code, hand_entity_keys, letter_code, next_step, record_match, review_due, review_told,
-    screen_about_us, screen_public_name, send_code, set_about_us, sign_up,
+    SignupError, Step, TermsShown, accept_terms, approve, business, category_list, check_code,
+    hand_entity_keys, letter_code, next_step, record_match, review_due, review_told,
+    screen_about_us, screen_public_name, send_code, set_about_us, sign_up, waitlist_line,
 };
 use askhava_licensing::api::ClassMap;
 use askhava_payments::api::{BusinessId, customer_of};
@@ -345,8 +345,8 @@ async fn td_biz_05_category_list_waitlist_and_email(pool: PgPool) {
     assert!(up.waitlist);
     let mut db = pool.acquire().await.expect("conn");
     assert_eq!(status(&mut db, up.business).await, "waitlist");
-    assert!(WAITLIST_LINE.contains("Your join date is kept."));
-    assert!(WAITLIST_LINE.contains("No priority; everyone waiting is told at once."));
+    assert!(waitlist_line().contains("Your join date is kept."));
+    assert!(waitlist_line().contains("No priority; everyone waiting is told at once."));
 }
 
 /// TD-BIZ-12 (BIZ-022, PICK-007, PICK-041, WORD-003): 140 characters pass and 141 fail; channel

@@ -1,11 +1,6 @@
 {
   "app/ai/src/models.rs": 1,
   "app/ai/src/output_checks.rs": 1,
-  "app/businesses/src/about_us.rs": 2,
-  "app/businesses/src/complaints.rs": 4,
-  "app/businesses/src/consent.rs": 11,
-  "app/businesses/src/email_verification.rs": 1,
-  "app/businesses/src/signup.rs": 4,
   "app/intake/src/job_texts.rs": 1,
   "app/intake/src/question_bank.rs": 1,
   "app/messaging/templates/en.json": 96,
@@ -25,10 +20,5 @@
   "app/portals/templates/pick_review.html": 3,
   "app/portals/templates/quote_page.html": 5,
   "app/portals/templates/why_charged.html": 1,
-  "app/quotes/src/card_notices.rs": 1,
-  "app/quotes/src/intake.rs": 1,
-  "app/quotes/src/notify.rs": 1,
-  "app/quotes/src/quote_card.rs": 6,
-  "app/quotes/src/update_texts.rs": 2,
   "app/site/templates/base.html": 2
 }

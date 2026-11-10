@@ -9,6 +9,7 @@
 //! (D-1703). A refused line goes back with its reason.
 
 use askhava_catalog::api::restricted_match;
+use askhava_core::api::brand;
 use sqlx::PgConnection;
 use sqlx::types::Uuid;
 
@@ -75,21 +76,28 @@ pub enum AboutUsRefusal {
 }
 
 impl AboutUsRefusal {
-    /// The reason shown beside the returned line.
+    /// The reason shown beside the returned line; the contact and channel reasons name the brand's
+    /// display name (WORD-001, D-1932).
     #[must_use]
-    pub const fn reason(self) -> &'static str {
+    pub fn reason(self) -> String {
+        let name = brand().display_name();
         match self {
-            Self::Length => "Write a short line about your business, up to 140 characters.",
-            Self::Contact => {
-                "Leave out phone numbers, emails, links and \"call me\". Homeowners reach you through Ask Hava."
+            Self::Length => {
+                "Write a short line about your business, up to 140 characters.".to_owned()
             }
-            Self::Channel => {
-                "Leave out other ways to find you, like Google, Facebook, Yelp or \"search for us\". Homeowners reach you through Ask Hava."
-            }
+            Self::Contact => format!(
+                "Leave out phone numbers, emails, links and \"call me\". Homeowners reach you through {name}."
+            ),
+            Self::Channel => format!(
+                "Leave out other ways to find you, like Google, Facebook, Yelp or \"search for us\". Homeowners reach you through {name}."
+            ),
             Self::Claim => {
                 "Leave out rankings and praise, like \"#1\" or \"top\". Say what you do instead."
+                    .to_owned()
             }
-            Self::Licensed => "Your card shows no state license, so leave out \"licensed\".",
+            Self::Licensed => {
+                "Your card shows no state license, so leave out \"licensed\".".to_owned()
+            }
         }
     }
 }

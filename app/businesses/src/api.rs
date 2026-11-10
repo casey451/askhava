@@ -44,11 +44,11 @@ pub use crate::complaints::{
     reply, run_box_closed,
 };
 pub use crate::consent::{
-    ADVERTISEMENT_LINE, AUTO_REPLY_TEMPLATE, CONSENT_VERSION, ConsentBox, ConsentChannel,
-    ConsentError, NO_CALLS_LINE, PHONE_STOPPED_KIND, RecruitingEmail, WELCOME_KIND, auto_reply_due,
-    consent_box, consent_wording, may_get_cards, may_recruit, may_text, phone_stopped,
-    record_consent, recruiting_email, request_welcome, stop_recruiting, stopped_email_line,
-    welcome_lines, welcome_sent,
+    AUTO_REPLY_TEMPLATE, CONSENT_VERSION, ConsentBox, ConsentChannel, ConsentError,
+    PHONE_STOPPED_KIND, RecruitingEmail, WELCOME_KIND, advertisement_line, auto_reply_due,
+    consent_box, consent_wording, may_get_cards, may_recruit, may_text, no_calls_line,
+    phone_stopped, record_consent, recruiting_email, request_welcome, stop_recruiting,
+    stopped_email_line, welcome_lines, welcome_sent,
 };
 pub use crate::deliverability_check::{
     EmailCheck, InboxAnswer, PICK_ALERT_YES_LIFE, SAMPLE_CARD_KIND, SAMPLE_PICK_KIND, email_check,
@@ -84,13 +84,13 @@ pub use crate::service::{
     set_job_types, set_own_hours, set_ticks, set_towns,
 };
 pub use crate::signup::{
-    BUSINESS_STATEMENT, ContactKind, EntityValues, FeeNumbers, HeardFrom, LIST_DELAY_KEY,
-    MaskedContact, NUMBER_OLD_BUTTON, RECORD_UPDATED_TEMPLATE, REPEAT_FREE_DAYS, REVIEW_TARGET_KEY,
-    RecordSeen, SOMEONE_ELSE_LINE, STOP_FIX_BUTTON, SignUpForm, SignedUp, SignupError,
-    SignupSettings, TermsShown, WAITLIST_LINE, accept_terms, category_list, claim_launch_notice,
-    fee_summary, fix_record_lines, hand_entity_keys, number_is_old, resume_on_new_record,
-    review_due, review_target, review_target_line, review_told, sign_up, trade_count,
-    waiting_on_record, waitlisted,
+    ContactKind, EntityValues, FeeNumbers, HeardFrom, LIST_DELAY_KEY, MaskedContact,
+    NUMBER_OLD_BUTTON, RECORD_UPDATED_TEMPLATE, REPEAT_FREE_DAYS, REVIEW_TARGET_KEY, RecordSeen,
+    SOMEONE_ELSE_LINE, STOP_FIX_BUTTON, SignUpForm, SignedUp, SignupError, SignupSettings,
+    TermsShown, accept_terms, business_statement, category_list, claim_launch_notice, fee_summary,
+    fix_record_lines, hand_entity_keys, number_is_old, resume_on_new_record, review_due,
+    review_target, review_target_line, review_told, sign_up, trade_count, waiting_on_record,
+    waitlist_line, waitlisted,
 };
 pub use crate::status::{AccountStatus, PauseReason, Refused};
 pub use crate::team::{
