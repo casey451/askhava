@@ -25,6 +25,7 @@ const STRIPE_SECRET_KEY: &str = "ASKHAVA_STRIPE_SECRET_KEY";
 const ALLOW_LIST_TEST: &str = "ASKHAVA_ALLOW_LIST_TEST";
 const ALLOW_LIST_LIVE: &str = "ASKHAVA_ALLOW_LIST_LIVE";
 const PUBLIC_BASE_URL: &str = "ASKHAVA_PUBLIC_BASE_URL";
+const REQUEST_TIMEOUT_SECS: &str = "ASKHAVA_REQUEST_TIMEOUT_SECS";
 
 /// Every key the parser accepts; any other `ASKHAVA_*` key stops startup (D-493).
 const KEYS: &[&str] = &[
@@ -39,6 +40,8 @@ const KEYS: &[&str] = &[
     ALLOW_LIST_LIVE,
     // The app's own public origin, the base of every signed webhook URL (T241, SEC-016, D-1216).
     PUBLIC_BASE_URL,
+    // The web process's whole-request time limit (T286, D-1870).
+    REQUEST_TIMEOUT_SECS,
     "ASKHAVA_TWILIO_ACCOUNT_SID",
     "ASKHAVA_STRIPE_ACCOUNT_ID",
     "ASKHAVA_RESEND_DOMAIN",
@@ -82,6 +85,8 @@ const LIVE_MARKERS: &[&str] = &["sk_live_", "rk_live_", "pk_live_"];
 /// Key prefixes that only a vendor's test mode issues (SEC-002).
 const TEST_MARKERS: &[&str] = &["sk_test_", "rk_test_", "pk_test_"];
 const DEFAULT_POOL_MAX: u32 = 10;
+/// The default whole-request time limit in seconds (D-1870).
+const DEFAULT_REQUEST_TIMEOUT_SECS: u64 = 60;
 
 /// Why startup refused the settings. Each variant names a key, never its value (SEC-001).
 #[derive(Debug, Error, PartialEq, Eq)]
@@ -234,6 +239,7 @@ pub struct Settings {
     stripe_secret_key: Option<SecretString>,
     accounts: HashMap<Vendor, String>,
     public_base_url: Option<String>,
+    request_timeout_secs: u64,
 }
 
 impl Settings {
@@ -270,6 +276,7 @@ impl Settings {
             stripe_secret_key: stripe_secret_key.map(SecretString::from),
             accounts,
             public_base_url,
+            request_timeout_secs: request_timeout_secs(raw.remove(REQUEST_TIMEOUT_SECS))?,
         })
     }
 
@@ -334,6 +341,14 @@ impl Settings {
     pub fn public_base_url(&self) -> Option<&str> {
         self.public_base_url.as_deref()
     }
+
+    /// The web process's whole-request time limit in seconds (`ASKHAVA_REQUEST_TIMEOUT_SECS`, a
+    /// whole number from 10 to 300, default 60), longer than a handler's longest chain of bounded
+    /// vendor calls (T286, D-1870, FEE-037).
+    #[must_use]
+    pub fn request_timeout_secs(&self) -> u64 {
+        self.request_timeout_secs
+    }
 }
 
 /// Checks a vendor base URL for its environment (SEC-002, SEC-032; TD-SEC-13):
@@ -395,7 +410,9 @@ fn is_local_host(host: &str) -> bool {
 }
 
 /// `ASKHAVA_PUBLIC_BASE_URL`, if set: an `http` or `https` origin passing [`check_base_url`]
-/// (`https` to a non-local host in live), with no query or fragment; a trailing slash is dropped.
+/// (`https` to a non-local host in live), with no path, query or fragment; a trailing slash is
+/// dropped. The routes are served at the root and Twilio signs this base plus the route path, so a
+/// path here would break every signature check (SEC-016, D-2208).
 fn public_base_url(
     environment: Environment,
     raw: Option<String>,
@@ -404,7 +421,7 @@ fn public_base_url(
         return Ok(None);
     };
     let host = match url.split_once("://") {
-        Some(("https" | "http", rest)) => url_host(rest),
+        Some(("https" | "http", rest)) if !rest.contains('/') => url_host(rest),
         _ => String::new(),
     };
     if host.is_empty() || url.contains(['?', '#']) {
@@ -517,6 +534,16 @@ fn pool_max(raw: Option<String>) -> Result<u32, SettingsError> {
     match raw.trim().parse::<u32>() {
         Ok(max @ 1..=100) => Ok(max),
         _ => Err(SettingsError::Invalid(DB_POOL_MAX)),
+    }
+}
+
+fn request_timeout_secs(raw: Option<String>) -> Result<u64, SettingsError> {
+    let Some(raw) = raw else {
+        return Ok(DEFAULT_REQUEST_TIMEOUT_SECS);
+    };
+    match raw.trim().parse::<u64>() {
+        Ok(secs @ 10..=300) => Ok(secs),
+        _ => Err(SettingsError::Invalid(REQUEST_TIMEOUT_SECS)),
     }
 }
 

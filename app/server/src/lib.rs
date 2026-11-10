@@ -32,6 +32,9 @@ pub mod inbound_text;
 pub mod inbound_voice;
 pub mod offdb_stream;
 pub mod release_sink;
+pub mod request_timeout;
+
+use request_timeout::RequestTimeout;
 
 /// Installs rustls' aws-lc-rs provider as the process default, so sqlx and
 /// reqwest share one TLS provider (D-481, D-488). Call it first in `main`.
@@ -73,6 +76,29 @@ pub type Hooks = (
     Option<release_sink::StripeHooks>,
 );
 
+/// `build_router`'s third argument: the optional [`Hooks`] and the whole-request time limit
+/// (D-1870). `main` passes `(hooks, RequestTimeout::from_settings(&settings))`; bare [`Hooks`]
+/// take [`RequestTimeout::DEFAULT`].
+pub struct RouterParts {
+    hooks: Hooks,
+    limit: RequestTimeout,
+}
+
+impl From<Hooks> for RouterParts {
+    fn from(hooks: Hooks) -> Self {
+        Self {
+            hooks,
+            limit: RequestTimeout::DEFAULT,
+        }
+    }
+}
+
+impl From<(Hooks, RequestTimeout)> for RouterParts {
+    fn from((hooks, limit): (Hooks, RequestTimeout)) -> Self {
+        Self { hooks, limit }
+    }
+}
+
 /// The app's router: every module's routes, merged once here (D-481), under
 /// the request-ID and tracing layers, so every request log line carries the
 /// request ID and the matched route template, never the URI (PRIV-016,
@@ -92,12 +118,12 @@ pub type Hooks = (
 /// "Nothing was picked" lines. `stripe` ([`release_sink::stripe_webhook`]) adds `payments`' Stripe
 /// webhook route, whose cleared picks [`release_sink::PickReleaser`] settles, mints and releases
 /// (PICK-022, SEC-039, D-1480, D-1739); serve with connect info, so the socket peer is known
-/// (SEC-040). `None` adds none.
-pub fn build_router(
-    pool: PgPool,
-    test_control: Router,
-    (webhooks, voice, pick_keys, stripe): Hooks,
-) -> Router {
+/// (SEC-040). `None` adds none. Inside the request-ID and security-headers layers, every route
+/// runs under the whole-request time limit (`request_timeout`, 503 with `Retry-After`, D-1870)
+/// and, innermost, the panic layer (500 naming no panic message, D-2208).
+pub fn build_router(pool: PgPool, test_control: Router, parts: impl Into<RouterParts>) -> Router {
+    let RouterParts { hooks, limit } = parts.into();
+    let (webhooks, voice, pick_keys, stripe) = hooks;
     let quote_page = quote_page_routes(pool.clone(), Arc::new(SystemClock));
     let pick_flow = pick_flow_routes(pool.clone(), Arc::new(SystemClock), pick_keys);
     let feedback = feedback_routes(pool.clone(), Arc::new(SystemClock));
@@ -113,6 +139,11 @@ pub fn build_router(
         .merge(twilio)
         .merge(voice)
         .merge(stripe)
+        .layer(request_timeout::catch_panic())
+        .layer(axum::middleware::from_fn_with_state(
+            limit,
+            request_timeout::limit_request,
+        ))
         .layer(axum::middleware::from_fn_with_state(
             log,
             offdb_stream::log_request,
