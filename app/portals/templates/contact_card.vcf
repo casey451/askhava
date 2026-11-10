@@ -1,11 +1,6 @@
-{#- The "<brand> homeowner calls" contact card (T199; BIZ-046, CALL-017, D-344, D-359): the name,
-    exactly the current masked pool numbers, the BIZ-046 line. Values arrive vCard-escaped from
-    `business_portal::contact_card`, which also turns the line ends into CRLF. No business or
-    homeowner number is ever here. -#}
 BEGIN:VCARD
 VERSION:3.0
-FN:{{ name }}
-N:{{ name }};;;;
-{% for n in numbers %}TEL;TYPE=VOICE:{{ n }}
-{% endfor %}NOTE:{{ note }}
+FN:{name}
+N:{name};;;;
+{numbers}NOTE:{note}
 END:VCARD

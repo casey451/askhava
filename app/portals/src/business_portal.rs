@@ -323,27 +323,22 @@ fn vcard_text(text: &str) -> String {
         .replace(';', "\\;")
 }
 
-#[derive(Template)]
-#[template(path = "contact_card.vcf", escape = "none")]
-struct CardView<'a> {
-    name: String,
-    note: String,
-    numbers: Vec<&'a str>,
-}
+/// The card's shape: `{name}`, `{numbers}` (one `TEL` line each) and `{note}` are filled in.
+const CARD: &str = include_str!("../templates/contact_card.vcf");
 
 /// BIZ-046, CALL-017, D-344: the "<brand> homeowner calls" vCard holding exactly the current
 /// masked `pool` numbers, CRLF line ends; served at [`CONTACT_CARD_ROUTE`], so a pool change gives
-/// an updated card. No business or homeowner number is ever on it.
-///
-/// # Errors
-/// [`askama::Error`] when the template fails.
-pub fn contact_card(pool: &[PoolNumber]) -> Result<String, askama::Error> {
-    let card = CardView {
-        name: vcard_text(&contact_card_name()),
-        note: vcard_text(&contact_card_note()),
-        numbers: pool.iter().map(PoolNumber::as_str).collect(),
-    };
-    Ok(card.render()?.replace('\n', "\r\n"))
+/// an updated card. No business or homeowner number is ever on it. The template is plain text
+/// with `{name}`, `{numbers}` and `{note}` slots (no HTML escaping applies to a vCard, SEC-011).
+#[must_use]
+pub fn contact_card(pool: &[PoolNumber]) -> String {
+    let numbers: String = (pool.iter())
+        .map(|n| format!("TEL;TYPE=VOICE:{}\n", n.as_str()))
+        .collect();
+    let card = (CARD.replace("{name}", &vcard_text(&contact_card_name())))
+        .replace("{note}", &vcard_text(&contact_card_note()))
+        .replace("{numbers}", &numbers);
+    card.replace('\n', "\r\n")
 }
 
 /// Why the "This inbox is shared" switch did not change.

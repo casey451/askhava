@@ -154,12 +154,11 @@ fn card_numbers(card: &str) -> Vec<&str> {
 
 /// TD-BIZ-22 (BIZ-046, CALL-017, CON-020, D-344, D-359, D-491): the card is named "Ask Hava
 /// homeowner calls", holds exactly the current pool numbers and the BIZ-046 line; adding a pool
-/// number gives an updated card and portal list; the done screen and the welcome email offer it by
-/// a link to the portal's card download.
+/// number gives an updated card and portal list.
 #[test]
 fn td_biz_22_the_contact_card_holds_exactly_the_current_pool() {
     let two = pool(&["+15005550101", "+15005550102"]);
-    let card = contact_card(two.numbers()).expect("card");
+    let card = contact_card(two.numbers());
     assert!(card.starts_with("BEGIN:VCARD\r\nVERSION:3.0\r\n"));
     assert!(card.contains("FN:Ask Hava homeowner calls\r\n"));
     assert!(card.contains(
@@ -169,7 +168,7 @@ fn td_biz_22_the_contact_card_holds_exactly_the_current_pool() {
     assert_eq!(card_numbers(&card), ["+15005550101", "+15005550102"]);
     assert!(!card.contains("+1928"), "no business or homeowner number");
     let three = pool(&["+15005550101", "+15005550102", "+15005550103"]);
-    let updated = contact_card(three.numbers()).expect("card");
+    let updated = contact_card(three.numbers());
     assert_eq!(card_numbers(&updated).len(), 3, "the added number is on it");
     let home = business_home_page(
         &YourNumbers::default(),
@@ -183,6 +182,12 @@ fn td_biz_22_the_contact_card_holds_exactly_the_current_pool() {
         "the portal lists the new number"
     );
     assert!(home.contains(&format!("href=\"{CONTACT_CARD_ROUTE}\" download")));
+}
+
+/// TD-BIZ-22 (BIZ-046, CON-020, D-491): the done screen, and only it, offers the card; the
+/// welcome email links to the portal's card download.
+#[test]
+fn td_biz_22_the_done_screen_and_welcome_email_offer_the_card() {
     let facts = DoneFacts {
         trade: "Plumbing".to_owned(),
         count: 2,
