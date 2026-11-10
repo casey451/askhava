@@ -10115,7 +10115,7 @@
     "T057",
     "T075"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-sonnet-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -10776,6 +10776,57 @@
    "acceptance": "TD-SEC-61 passes on `main` with zero routes served under the new doors; every planted correct route passes and every planted leaking route fails; both files assert the shared case list; each existing test in `auth_matrix.rs` passes with no door, probe, row or assertion removed or loosened; the only replaced check is the served-realm failure, now a demand for a `yes` row that `door_matrix.rs` probes over HTTP."
   },
   {
+   "id": "T349",
+   "slug": "pin-draws-only-fail-on-os",
+   "title": "calls: a PIN draw fails only when the OS source fails, and one failed draw costs one draw",
+   "goal": "Moved out of T311, which the runner claimed before this fix reached main (D-2451). PIN draws that fail for no reason (D-2451; CALL-003, CALL-017, D-1755): `os_number` (`app/calls/src/pins.rs:53`) rejects two-byte values of 60,000 or more and gives up after 4 tries, so about 1 call in 19,600 it returns `None` although the OS source works (8.4% rejection, 0.0845⁴ ≈ 5.1e-5), and `draw_pin` (`:46`) uses `map_while`, so that one `None` ends all 8 draws; `allocate_pin` then gives none, `assign_number` (`app/calls/src/service.rs:137`) calls `refuse_line` (`:162`), which raises a false High `calls.pool_exhausted` alert and refuses the line with `NoFreePin` (the masked-line assignments at `app/picks/src/release.rs:236` and `app/picks/src/settle.rs:148`; T254's one `picks.line_retry` hides most of them). Fix: `os_number` returns `None` only when the OS source fails, by drawing again until a value below the largest multiple of 10,000 the width holds, with a cap so large it is never the reason (for example 64 two-byte draws, about 2e-69), the bytes coming from an injectable fill function so the rejection step can be tested; `draw_pin` uses `filter_map`, so a failed draw costs one of the 8 draws, not all of them. Unit tests beside the existing ones in `pins.rs`: a source that fails once and then gives a free PIN succeeds; an injected byte source that gives values of 60,000 or more several times and then one below gives that value modulo 10,000; an injected source that fails gives `None`. The two existing unit tests and TD-CALL-13's 500-line integration test (`tests/integration/tests/call_pins.rs`) pass unchanged. After T311 (the other owner of `pins.rs`, whose read-back changes this task must keep). Update the `calls` `CLAUDE.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "calls",
+   "deps": [
+    "T311"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security"
+   ],
+   "owns": [
+    "app/calls/src/pins.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/calls.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "CALL-003"
+   ],
+   "tests": [
+    "TD-CALL-20"
+   ],
+   "decisions": [
+    "D-2451",
+    "D-1755"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 1,
+    "lines": 150,
+    "context_pct": 10
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T349-pin-draws-only-fail-on-os",
+   "prompt": "kit/prompts/T349.md"
+  },
+  {
    "id": "T255",
    "slug": "emergency-address-rerelease",
    "title": "intake, payments and server: ask again for an emergency address and release once it arrives",
@@ -11338,7 +11389,7 @@
     "T301",
     "T302"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-sonnet-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -12501,7 +12552,8 @@
     "T345",
     "T346",
     "T347",
-    "T348"
+    "T348",
+    "T349"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -12559,7 +12611,7 @@
     "T279",
     "T294"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-sonnet-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -13086,7 +13138,7 @@
     "T230",
     "T231"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-sonnet-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -14456,7 +14508,7 @@
     "T113",
     "T202"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-sonnet-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -14651,7 +14703,7 @@
    "deps": [
     "T206"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-sonnet-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -14721,7 +14773,7 @@
     "T304",
     "T310"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-sonnet-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -14777,7 +14829,7 @@
     "T118",
     "T103"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-sonnet-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -14897,7 +14949,7 @@
     "T120",
     "T345"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-sonnet-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -14960,7 +15012,7 @@
     "T116",
     "T117"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-sonnet-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -17679,7 +17731,7 @@
     "T140",
     "T159"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-sonnet-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -19271,7 +19323,7 @@
    "id": "T159",
    "slug": "safety-contacts-verify",
    "title": "launch checklist: confirm no template or page names a phone number other than 911 and that the Gate C list has no safety-number step (D-436)",
-   "goal": "A docs test confirms that no template or page names a phone number other than 911 and that the Gate C checklist has no safety-number step, recorded in `docs/launch/no_safety_numbers_check.md` (D-411, D-436).",
+   "goal": "A docs test confirms that no template or page names a phone number other than 911 and that the Gate C checklist has no safety-number step, with planted fail cases that the test must reject: a template holding another phone number, the short numbers 211 and 988, a Spanish template naming another number, and a checklist line naming a safety number (D-2506), recorded in `docs/launch/no_safety_numbers_check.md` (D-411, D-436).",
    "type": "build",
    "phase": 2,
    "stage": "6",
@@ -19304,7 +19356,8 @@
    ],
    "decisions": [
     "D-436",
-    "D-1143"
+    "D-1143",
+    "D-2506"
    ],
    "cites": [],
    "budget": {
@@ -19333,7 +19386,7 @@
     "T203",
     "T202"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-sonnet-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
