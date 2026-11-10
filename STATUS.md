@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-10T21:26:16Z by runner 9786eb0e62d7 (actions).
+Updated 2026-11-10T21:26:29Z by runner 9786eb0e62d7 (actions).
 
 **Waiting for tokens until 17:00Z; 190 of 336 done; week 97% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-10T21:26:16Z by runner 9786eb0e62d7 (actions).
 - **Lane:** idle since 21:16Z (no task in progress)
 - **Week:** 97% used, 0.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 21:26Z, 0 min before this update
-- **Keeper:** last ran 21:12Z, next wake 02:52Z
+- **Keeper:** last ran 21:26Z, next wake 03:06Z
 
 ## Needs attention
 - Strict plan check red: 3 problem(s) on tasks still to run (+22 on DONE tasks); first: T207: stored context_pct 12% but it measures 17%; regenerate
@@ -53,7 +53,6 @@ Updated 2026-11-10T21:26:16Z by runner 9786eb0e62d7 (actions).
 - 00:54Z Plan: sixth audit — $0 release bound to its pick, refund amounts checked, reconcile catch-up and paging, real Stripe reads, rate-limit prune, inbound-tex
 - 00:05Z Plan: fifth audit — every queued task kind gets a registered handler; late success on ended picks; unreadable Stripe success and unmatched fraud warning 
 - 21:41Z Plan: the LINK notice names the stored PIN; job_pin deleted (T326, D-2247) (#395)
-- 21:26Z Plan: T287 owns payments models.rs and T254's release_recovery test (D-2236) (#394)
 
 ## Progress (requirements verified)
 
