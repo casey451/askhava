@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-10T17:08:51Z by runner 5025f621c477 (actions).
+Updated 2026-11-10T17:09:03Z by runner 5025f621c477 (actions).
 
-**Building: T231 in progress since 16:41Z; 186 of 334 done; week 90% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 17:08Z; 186 of 334 done; week 90% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 186 of 334 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T231 claimed 16:41Z, lease until 19:41Z
+- **Lane:** idle since 17:08Z (no task in progress)
 - **Week:** 90% used, 14.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 16:42Z, 26 min before this update
 - **Keeper:** last ran 16:28Z, next wake 16:48Z
@@ -17,7 +17,8 @@ Updated 2026-11-10T17:08:51Z by runner 5025f621c477 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T231 | portals (harness): the homeowner check-in email buttons and  | QUEUED | 1 | 28 min | 15:58Z | T231 built and committed (b2f7b11e, 26074ad1) but smoke red: tests/security/tests/auth_matrix.rs (T088, protected, no se |
+| T231 | portals (harness): the homeowner check-in email buttons and  | MERGE_PENDING | 2 | 26 min | 17:08Z | T231 built and committed (b2f7b11e, 26074ad1) but smoke red: tests/security/tests/auth_matrix.rs (T088, protected, no se |
+| T231 | portals (harness): the homeowner check-in email buttons and  | QUEUED | 1 | 28 min | 15:58Z |  |
 | T199 | portals: no automated call to a business, voice codes only o | done | 1 | 64 min | 14:22Z |  |
 | T293 | businesses and quotes: sign-up, consent, complaint and quote | done | 1 | 41 min | 12:35Z |  |
 | T292 | messaging and calls: every text, email and call takes the br | done | 1 | 21 min | 11:16Z |  |
@@ -97,7 +98,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T231 (lease until 2026-11-10T19:41:58Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T231", "at": "2026-11-10T15:58:09Z", "input_tokens": 309, "cache_creation_input_tokens": 481180, "output_tokens": 126021, "cache_read_input_tokens": 25509329}
+- {"task": "T231", "at": "2026-11-10T17:08:51Z", "output_tokens": 133064, "input_tokens": 366, "cache_creation_input_tokens": 494041, "cache_read_input_tokens": 25379485}
