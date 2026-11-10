@@ -1,0 +1,98 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT stripe_charge_id, stripe_intent_id, pick_id, amount_cents, refunded_cents,\n                fee_cents, balance_transaction\n           FROM payments.reconcile_open WHERE settled_at IS NULL ORDER BY first_seen, id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "stripe_charge_id",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "payments.reconcile_open",
+            "name": "stripe_charge_id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "stripe_intent_id",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "payments.reconcile_open",
+            "name": "stripe_intent_id"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "pick_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "payments.reconcile_open",
+            "name": "pick_id"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "amount_cents",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "payments.reconcile_open",
+            "name": "amount_cents"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "refunded_cents",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "payments.reconcile_open",
+            "name": "refunded_cents"
+          }
+        }
+      },
+      {
+        "ordinal": 5,
+        "name": "fee_cents",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "payments.reconcile_open",
+            "name": "fee_cents"
+          }
+        }
+      },
+      {
+        "ordinal": 6,
+        "name": "balance_transaction",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "payments.reconcile_open",
+            "name": "balance_transaction"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "b4835601727eebb8debe34e5fbc091f7e3727caadac5e24021ca308b8883e9d6"
+}
