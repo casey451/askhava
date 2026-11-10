@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-10T18:54:35Z by runner 8bced933e4e5 (actions).
+Updated 2026-11-10T18:54:48Z by runner 8bced933e4e5 (actions).
 
-**Building: T311 in progress since 18:32Z; 187 of 335 done; week 95% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 18:54Z; 187 of 335 done; week 95% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 187 of 335 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T311 claimed 18:32Z, lease until 21:32Z
+- **Lane:** idle since 18:54Z (no task in progress)
 - **Week:** 95% used, 6.8M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 18:52Z, 2 min before this update
 - **Keeper:** last ran 18:51Z, next wake 21:34Z
@@ -17,6 +17,7 @@ Updated 2026-11-10T18:54:35Z by runner 8bced933e4e5 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T311 | calls and server: a voice read-back confirm connects only th | MERGE_PENDING | 1 | 21 min | 18:54Z |  |
 | T294 | portals and site: every page takes the brand from the brand  | MERGE_PENDING | 1 | 42 min | 18:32Z |  |
 | T231 | portals (harness): the homeowner check-in email buttons and  | done | 2 | 26 min | 17:08Z | T231 built and committed (b2f7b11e, 26074ad1) but smoke red: tests/security/tests/auth_matrix.rs (T088, protected, no se |
 | T231 | portals (harness): the homeowner check-in email buttons and  | QUEUED | 1 | 28 min | 15:58Z |  |
@@ -100,7 +101,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T311 (lease until 2026-11-10T21:32:35Z)
 
 ## Last usage reading
-- {"task": "T294", "at": "2026-11-10T18:32:28Z", "cache_read_input_tokens": 9840604, "cache_creation_input_tokens": 269748, "input_tokens": 268, "output_tokens": 72170}
+- {"task": "T311", "at": "2026-11-10T18:54:34Z", "cache_creation_input_tokens": 343076, "cache_read_input_tokens": 8466456, "output_tokens": 92652, "input_tokens": 212}
