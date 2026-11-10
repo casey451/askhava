@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-10T16:28:28Z by runner d145202dd72b (actions).
+Updated 2026-11-10T16:42:04Z by runner 261a13b14923 (actions).
 
-**Idle since 15:58Z; 186 of 334 done; week 90% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T231 in progress since 16:41Z; 186 of 334 done; week 90% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 186 of 334 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 15:58Z (no task in progress)
-- **Week:** 90% used, 16.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:28Z, 0 min before this update
+- **Lane:** lane 1: T231 claimed 16:41Z, lease until 19:41Z
+- **Week:** 90% used, 14.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Last run:** 16:28Z, 13 min before this update
 - **Keeper:** last ran 16:28Z, next wake 16:48Z
 
 ## Needs attention
@@ -17,7 +17,7 @@ Updated 2026-11-10T16:28:28Z by runner d145202dd72b (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T231 | portals: the homeowner check-in email buttons and answer pag | QUEUED | 1 | 28 min | 15:58Z | T231 built and committed (b2f7b11e, 26074ad1) but smoke red: tests/security/tests/auth_matrix.rs (T088, protected, no se |
+| T231 | portals (harness): the homeowner check-in email buttons and  | QUEUED | 1 | 28 min | 15:58Z | T231 built and committed (b2f7b11e, 26074ad1) but smoke red: tests/security/tests/auth_matrix.rs (T088, protected, no se |
 | T199 | portals: no automated call to a business, voice codes only o | done | 1 | 64 min | 14:22Z |  |
 | T293 | businesses and quotes: sign-up, consent, complaint and quote | done | 1 | 41 min | 12:35Z |  |
 | T292 | messaging and calls: every text, email and call takes the br | done | 1 | 21 min | 11:16Z |  |
@@ -37,6 +37,7 @@ Updated 2026-11-10T16:28:28Z by runner d145202dd72b (actions).
 | T276 | privacy and messaging: purged photos' sealed objects and orp | done | 1 | 53 min | 17:46Z |  |
 
 ### Plan and harness merges on main
+- 16:29Z Plan: T231 extends the authorization matrix to /c/{token}/{answer} as a harness task (D-2429) (#420)
 - 13:07Z Plan: no handyman split-job check — each job judged by its own price (Casey's ruling; D-2407, D-2408, T347) (#416)
 - 09:36Z Plan: T290 may update the two tests that pin recurring rows by data; nearest reachable bases (D-2386) (#413)
 - 03:30Z Plan: pentest assessment — Actions pinned, purpose-bound codes, Verify sends outside transactions (D-2346–D-2350, T345–T346) (#407)
@@ -80,7 +81,7 @@ Updated 2026-11-10T16:28:28Z by runner d145202dd72b (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-10T15:14:33Z (week)): five-hour: 0k used, 29.1M left, resets on first use; week: 178.0M used, 16.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-01T18:41:10Z.
+- Pacing (session_reading 2026-11-10T16:28:09Z (week)): five-hour: 3.2M used, 25.9M left, resets 2026-11-10T20:58:09Z; week: 180.0M used, 14.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-01T20:09:38Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -95,7 +96,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T231 (lease until 2026-11-10T19:41:58Z)
 
 ## Last usage reading
 - {"task": "T231", "at": "2026-11-10T15:58:09Z", "input_tokens": 309, "cache_creation_input_tokens": 481180, "output_tokens": 126021, "cache_read_input_tokens": 25509329}
