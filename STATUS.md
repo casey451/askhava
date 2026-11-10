@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-10T19:27:12Z by runner 2d9b8e0a8a08 (actions).
+Updated 2026-11-10T19:38:35Z by runner 2d9b8e0a8a08 (actions).
 
 **Building: T155 in progress since 19:17Z; 188 of 335 done; week 95% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 188 of 335 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T155 claimed 19:17Z, lease until 22:17Z
-- **Week:** 95% used, 4.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:56Z, 31 min before this update
+- **Week:** 95% used, 0.4M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Last run:** 19:27Z, 11 min before this update
 - **Keeper:** last ran 18:56Z, next wake 19:16Z
 
 ## Needs attention
@@ -36,7 +36,6 @@ Updated 2026-11-10T19:27:12Z by runner 2d9b8e0a8a08 (actions).
 | T283 | Ci: a change to a document the app compiles in runs the Rust | done | 1 | 30 min | 23:27Z |  |
 | T287 | payments and picks: the fee fixed at the pick is stored by p | done | 2 | 43 min | 22:15Z | T287 built and smoke green, but prehandin check_pr_change fails: kit/tasks.json T287 owns lacks app/payments/src/models. |
 | T287 | payments and picks: the fee fixed at the pick is stored by p | QUEUED | 1 | 46 min | 21:18Z |  |
-| T279 | messaging, ops and server: the texting switch and a number s | done | 1 | 47 min | 19:32Z |  |
 
 ### Plan and harness merges on main
 - 19:17Z Plan: no Fable window on Thursday — the D-2225 window closes before it opens (D-2485) (#425)
@@ -85,7 +84,7 @@ Updated 2026-11-10T19:27:12Z by runner 2d9b8e0a8a08 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-10T18:55:49Z (week)): five-hour: 8.9M used, 20.2M left, resets 2026-11-10T20:58:09Z; week: 190.0M used, 4.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-01T03:25:07Z.
+- Pacing (session_reading 2026-11-10T18:55:49Z (week)): five-hour: 12.5M used, 16.6M left, resets 2026-11-10T20:58:09Z; week: 193.6M used, 399k left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-01T03:36:48Z; waiting until 2026-11-12T17:00:00Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
