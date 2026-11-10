@@ -233,6 +233,18 @@ def test_the_session_model_follows_the_window() -> None:
     assert mw.session_model(None, NOW, None) == "claude-sonnet-5-5"
 
 
+def _open_window_root(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Path:
+    """A copy of the repository's kit/runner.json with its window open (`until` null), as entry.ROOT: the
+    entry points' wiring to an active window stays proven while the repository's own window is closed (D-2485)."""
+    root = tmp_path / "open-window"
+    (root / "kit").mkdir(parents=True)
+    raw = json.loads((ROOT / "kit" / "runner.json").read_text(encoding="utf-8"))
+    raw["model_window"]["until"] = None
+    (root / "kit" / "runner.json").write_text(json.dumps(raw), encoding="utf-8")
+    monkeypatch.setattr(entry, "ROOT", root)
+    return root
+
+
 def _session_model_output(monkeypatch: pytest.MonkeyPatch, when: datetime, state_file: str) -> list[str]:
     monkeypatch.setattr(entry, "now_utc", lambda: when)
     out = io.StringIO()
@@ -245,7 +257,10 @@ def test_the_session_model_command_reads_runner_json_and_the_state(monkeypatch: 
     reset = st.parse("2026-11-12T17:00:00Z")  # the repository's own window, closed before it opens (D-2485)
     assert _session_model_output(monkeypatch, reset - timedelta(minutes=1), "") == ["model=claude-sonnet-5-5", "windowed=false"]
     assert _session_model_output(monkeypatch, reset, str(tmp_path / "missing.json")) == ["model=claude-sonnet-5-5", "windowed=false"]
-    win = mw.load()
+    root = _open_window_root(monkeypatch, tmp_path)  # the same window, open: the command prints its model
+    assert _session_model_output(monkeypatch, reset - timedelta(minutes=1), "") == ["model=claude-sonnet-5-5", "windowed=false"]
+    assert _session_model_output(monkeypatch, reset, str(tmp_path / "missing.json")) == [f"model={FABLE}", "windowed=true"]
+    win = mw.load(root / "kit" / "runner.json")
     assert win is not None
     (tmp_path / "state.json").write_text(json.dumps(mw.record_refusal(st.new_state(), win, REFUSAL, reset)))
     assert _session_model_output(monkeypatch, reset, str(tmp_path / "state.json")) == ["model=claude-sonnet-5-5", "windowed=false"]
@@ -421,10 +436,13 @@ def test_the_pacer_runs_to_the_limit_only_inside_the_window(tmp_path: Path, monk
     assert not mw.run_to_limit(off, NOW) and mw.session_model(off, NOW, None) == FABLE
 
 
-def test_the_runner_wires_the_pacer_switch_to_kit_runner_json() -> None:
+def test_the_runner_wires_the_pacer_switch_to_kit_runner_json(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     switch = entry.run_to_limit_now()
     reset = st.parse("2026-11-12T17:00:00Z")  # the repository's window is closed before it opens (D-2485)
     assert switch(reset, st.new_state()) is False and switch(reset - timedelta(seconds=1), st.new_state()) is False
+    _open_window_root(monkeypatch, tmp_path)  # the same window, open: the switch follows it
+    switch = entry.run_to_limit_now()
+    assert switch(reset, st.new_state()) is True and switch(reset - timedelta(seconds=1), st.new_state()) is False
 
 
 def test_the_keeper_stops_at_the_real_limit_inside_the_window() -> None:
@@ -593,6 +611,11 @@ def test_the_usage_reading_command_closes_the_window(monkeypatch: pytest.MonkeyP
     assert entry.usage_reading(execution, env).startswith("usage_reading_recorded")  # type: ignore[arg-type]  # reason: FakeEnv
     # The repository's window is closed before it opens (D-2485): the reading is kept and closes nothing.
     assert "model_window_ended" not in env.store and not (tmp_path / f"{mw.ENDED_OUTBOX_ID}.md").exists()
+    _open_window_root(monkeypatch, tmp_path)  # the same window, open: the limit reading closes it, with its note
+    env = FakeEnv()
+    env.outbox_dir = tmp_path  # type: ignore[attr-defined]  # reason: GitHubEnv's outbox folder
+    assert entry.usage_reading(execution, env).startswith("usage_reading_recorded")  # type: ignore[arg-type]  # reason: FakeEnv
+    assert env.store["model_window_ended"]["why"] == "limit" and (tmp_path / f"{mw.ENDED_OUTBOX_ID}.md").exists()
 
 
 def test_until_still_ends_an_end_on_limit_window() -> None:
