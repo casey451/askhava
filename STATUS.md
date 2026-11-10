@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-10T03:03:19Z by runner 9225a9d319f8 (actions).
+Updated 2026-11-10T03:13:02Z by runner 9225a9d319f8 (actions).
 
 **Idle since 03:02Z; 177 of 331 done; week 83% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-10T03:03:19Z by runner 9225a9d319f8 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 03:02Z (no task in progress)
 - **Week:** 83% used, 34.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:03Z, 0 min before this update
+- **Last run:** 03:12Z, 0 min before this update
 - **Keeper:** last ran 03:03Z, next wake 03:23Z
 
 ## Needs attention
@@ -36,7 +36,6 @@ Updated 2026-11-10T03:03:19Z by runner 9225a9d319f8 (actions).
 | T262 | calls and server: a random stored PIN per line, unique on it | done | 1 | 33 min | 06:56Z |  |
 | T257 | privacy and server: the scrubber remembers names across a ho | done | 1 | 56 min | 05:54Z |  |
 | T263 | payments: the monthly fee limit is a hard cap; capacity is r | done | 1 | 49 min | 04:26Z |  |
-| T260 | stand-in and adapters: an unconfirmed PaymentIntent, its on- | done | 1 | 42 min | 03:09Z |  |
 
 ### Plan and harness merges on main
 - 02:15Z Plan: seventh audit — fee facts from the job's category at the pick, tier and per-visit picks, whole-field quote gate, atomic Verify cap (D-2329–D-2335, 
