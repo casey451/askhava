@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-10T02:04:53Z by runner 63b7c55a58ec (actions).
+Updated 2026-11-10T02:05:03Z by runner 63b7c55a58ec (actions).
 
 **Idle since 01:51Z; 177 of 325 done; week 79% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-10T02:04:53Z by runner 63b7c55a58ec (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 01:51Z (no task in progress)
 - **Week:** 79% used, 40.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:52Z, 12 min before this update
+- **Last run:** 01:52Z, 13 min before this update
 - **Keeper:** last ran 01:51Z, next wake 02:11Z
 
 ## Needs attention
@@ -17,7 +17,7 @@ Updated 2026-11-10T02:04:53Z by runner 63b7c55a58ec (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T284 | server: every route the architecture lists is wired in the r | MERGE_PENDING | 2 | 21 min | 01:51Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests / test tests::ssrf_g |
+| T284 | server: every route the architecture lists is wired in the r | check_failed | 2 | 21 min | 01:51Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests / test tests::ssrf_g |
 | T284 | server: every route the architecture lists is wired in the r | check_failed | 1 | 34 min | 00:32Z |  |
 | T283 | Ci: a change to a document the app compiles in runs the Rust | done | 1 | 30 min | 23:27Z |  |
 | T287 | payments and picks: the fee fixed at the pick is stored by p | done | 2 | 43 min | 22:15Z | T287 built and smoke green, but prehandin check_pr_change fails: kit/tasks.json T287 owns lacks app/payments/src/models. |
