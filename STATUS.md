@@ -1,24 +1,24 @@
 # Ask Hava build status
 
-Updated 2026-11-10T20:45:48Z by runner 0cac801cd159 (actions).
+Updated 2026-11-10T20:57:02Z by runner 05d8a985f2ee (actions).
 
-**Idle since 20:45Z; 188 of 336 done; week 97% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 20:45Z; 189 of 336 done; week 97% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 188 of 336 build tasks (owner gates not counted)
+- **Tasks done:** 189 of 336 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 20:45Z (no task in progress)
 - **Week:** 97% used, 2.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:45Z, 0 min before this update
+- **Last run:** 20:45Z, 11 min before this update
 - **Keeper:** last ran 20:45Z, next wake 02:25Z
 
 ## Needs attention
-- Strict plan check red: 1 problem(s) on tasks still to run (+19 on DONE tasks); first: T162: stored context_pct 16% but it measures 20%; regenerate
+- Strict plan check red: 3 problem(s) on tasks still to run (+22 on DONE tasks); first: T207: stored context_pct 12% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T338 | adapters (harness): the refused-connection test holds its po | MERGE_PENDING | 1 | 24 min | 20:45Z |  |
-| T155 | businesses: sign-up capability setup pre-ticked from the lic | MERGE_PENDING | 1 | 57 min | 20:15Z |  |
+| T155 | businesses: sign-up capability setup pre-ticked from the lic | done | 1 | 57 min | 20:15Z |  |
 | T311 | calls and server: a voice read-back confirm connects only th | check_failed | 1 | 21 min | 18:54Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T294 | portals and site: every page takes the brand from the brand  | done | 1 | 42 min | 18:32Z |  |
 | T231 | portals (harness): the homeowner check-in email buttons and  | done | 2 | 26 min | 17:08Z | T231 built and committed (b2f7b11e, 26074ad1) but smoke red: tests/security/tests/auth_matrix.rs (T088, protected, no se |
@@ -58,14 +58,14 @@ Updated 2026-11-10T20:45:48Z by runner 0cac801cd159 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 236 of 733 (32.2%) · partial 304 · unstarted 193
-**Tasks merged (throughput only):** 188 of 336
+**Requirements verified:** 236 of 733 (32.2%) · partial 305 · unstarted 192
+**Tasks merged (throughput only):** 189 of 336
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 15 | 13 | 7 | 35 |
 | ai | 11 | 13 | 5 | 29 |
-| businesses | 17 | 32 | 9 | 58 |
+| businesses | 17 | 33 | 8 | 58 |
 | calls | 11 | 13 | 1 | 25 |
 | consent | 14 | 17 | 4 | 35 |
 | fees | 11 | 40 | 1 | 52 |
@@ -94,7 +94,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 68 of 137 done
+- stage 4: 69 of 137 done
 - stage 5: 0 of 53 done
 - stage 6: 0 of 30 done
 - stage 7: 0 of 2 done
