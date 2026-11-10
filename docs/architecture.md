@@ -691,3 +691,63 @@ No Web Push crate is pinned: the installable business app with push is a later, 
 - Job timers (T031, D-805 to D-807): `jobs` queues one backstop timer per waiting status of section 6, counted from the entry (`app/jobs/src/rules.rs`, values in `JobStatus::wait`), as a `core.task` of kind `jobs.timeout` carrying the job ID, status and `jobs.job.version`; the handler, registered in `register_handlers()`, does nothing once the version has moved on. A wait the spec counts from a later event or extends or pauses (INT-019's last reply, JOB-014's decline, JOB-015's visit date, FEE-018, FEE-038, PICK-043, BIZ-034) is re-timed by the task owning that event through `jobs::api::restart_timer`, which bumps `jobs.job.timer_version` and moves `timer_from`, so the superseded timer does nothing (D-807). The other finer timers (the Intake reminder, the Connected call check and check-ins) are later tasks', each moving the job through `jobs::api::move_to`. T032 (D-871 to D-875) adds the timeout texts: Open's 6 p.m. move, No quotes yet's and Quotes ready's closes queue a `jobs.homeowner_text` `core.task` event (job ID, version, template ID and numbers only) in the move's transaction, as does `jobs::api::all_windows_ended`, which `quotes` (T046) calls once every card's window has ended: it closes a Quotes ready job with no choosable quote left, or queues the one TXT-042 text. `jobs` holds no homeowner contact, so the event's sender is `intake`'s (events go up, section 4 rule 2): it fills the quote-page link, applies quiet hours and calls `jobs::api::text_due` before sending; T240 built and registered it (`intake::api::run_job_text`, D-1301 to D-1303). `jobs::api::connected_reply` moves a Connected job on DONE, NO or PROBLEM (JOB-015).
 - Stage proofs and the war-games gate (D-1473): `runner/proof.py` maps each clause of a stage's exit row (`docs/build-readiness.md` section 3) to the test files, marks (a test title, a mutant group, the axe widths) and nightly-main jobs (`kit/nightly.json` `results`) that prove it, for stages 1, 2 and 4 (`MACHINE_PROOFS`); stages 3, 5 and 6 stay hand-recorded with the reason (`HAND_RECORDED`). `scripts/validate_tasks.py` holds an eighth gate kind, `war-games-go` (T243), after the pre-war-games review (the task owning `docs/reviews/pre-war-games-review.md`) and before every task owning a `wargames/` path; it is the one `exact` gate, which `runner/outbox.py` clears only on a reply that is its phrase and nothing else.
 - Integration-closure gate (T265, D-1760, D-2101, SEC-022): `scripts/stage_exit.py` has a fifth condition read from `docs/integration-closure.md`'s table. A `security`, `money` or `privacy` row that is not `closed` is judged at stage N only when every owner it names has a numeric `stage` at or below N in `kit/tasks.json` (otherwise it prints a `note:` line, so a later owner's merge never closes an earlier stage the runner re-checks on each claim); a judged row fails when every owner is DONE or SKIPPED; a row with no owner or an unknown task id fails at every stage; a `closed` row of those areas needs a commit SHA or `#PR` and a test name (`test_…` or a `TD-` id) in Evidence; other areas only print; a missing register fails. `evaluate`/`passed_stages` take the register path as an optional last argument and judge it only when given; the command line always passes `<root>/docs/integration-closure.md`. The runner's gate (`runner/__main__.py` `build.gate`) does not pass it yet (D-2101). Tests: `tests/test_stage_exit.py` (TD-OPS-31).
+
+## 13. Routes
+
+Every HTTP route the `web` process serves or a queued task's goal says it will serve, one row per method and path (T284, D-1868, D-2269). `Wired` is `yes` for a route `server::build_router` serves on `main` today, and otherwise the ID of the queued task that wires it; that task marks its own row `yes` in the same pull request, and a task that serves a route not listed adds its row as `yes`. `app/server/tests/route_wiring.rs` (TD-SEC-41) compiles this table in and probes the router `build_router` builds with every optional part configured: a `yes` row must reach its route, a task row must not, and a malformed row, a duplicate row or a task ID not in `kit/tasks.json` fails with the row quoted, and a header other than `| Method | Path | Module | Wired |` or a missing separator fails with that line quoted. T285's runner check reads the same table at each task's close. `Module` is the crate that owns the handler or page. A path parameter is written `{name}`, as in the code. The test-control routes (`/__test/...`, compiled only with the `test-control` feature, SEC-035) are not app routes and are not listed. Routes whose path no constant or goal fixes yet (T231's check-in answer page, T271's call status callback, T133's signed inbound email, T303's sign-out and step-up, the owner pages of T304, T305 and T310, T306's notice log, T309's help forms, the first photo task's `GET /photos/{token}` (D-1791 names no one task), and the public site pages no goal fixes a path for: home and how it works (T102), web chat (T103), the accessibility statement (T115), services and "What we cover now" (T201), the Spanish pages including the Spanish data pages (T202, T221)) get their row from the task that wires them (D-2270). The site's legal pages (T221's goal: `/terms`, `/privacy`, `/sms-terms`, `/your-data`, `/business-data`) and T201's help page (`askhava.com/help`, D-289) and ROC page (`askhava.com/help/roc-complaint`, WEB-011) are listed. The T116 Stage 0.5 static set is not served by the `web` process and is not listed. The test checks only the rows listed: an axum router cannot list its routes, so a route served with no row passes, and the task that merges a route adds its row.
+
+| Method | Path | Module | Wired |
+|---|---|---|---|
+| GET | /q/{token} | portals | yes |
+| POST | /q/{token} | portals | yes |
+| POST | /q/{token}/pick | portals | yes |
+| POST | /q/{token}/code | portals | yes |
+| POST | /q/{token}/close | portals | T308 |
+| GET | /f/{token} | portals | yes |
+| POST | /f/{token} | portals | yes |
+| GET | /static/portals/feedback.css | portals | yes |
+| POST | /webhooks/twilio/sms | server | yes |
+| POST | /webhooks/twilio/status | server | yes |
+| POST | /webhooks/twilio/voice | server | yes |
+| POST | /webhooks/stripe | payments | yes |
+| GET | /healthz | server | T106 |
+| GET | /b | portals | T300 |
+| POST | /b/open-cards | portals | T300 |
+| GET | /b/picks/{pick} | portals | T300 |
+| GET | /b/billing | portals | T300 |
+| GET | /b/billing/statement.csv | portals | T300 |
+| GET | /b/notices | portals | T300 |
+| POST | /b/notices | portals | T300 |
+| GET | /b/picks/{pick}/confirm | portals | T261 |
+| POST | /b/picks/{pick}/confirm | portals | T261 |
+| GET | /b/sign-in | portals | T280 |
+| POST | /b/sign-in | portals | T280 |
+| GET | /b/sign-in/{token} | portals | T280 |
+| POST | /b/sign-in/{token} | portals | T280 |
+| GET | /b/a/{kind}/{object}/{token} | portals | T301 |
+| POST | /b/a/{kind}/{object}/{token} | portals | T301 |
+| GET | /b/signup | portals | T302 |
+| POST | /b/signup | portals | T302 |
+| GET | /b/complaints | portals | T306 |
+| POST | /b/complaints/{complaint}/reply | portals | T306 |
+| GET | /b/charges/{pick} | portals | T306 |
+| GET | /b/emergency-emails | portals | T306 |
+| POST | /b/emergency-emails | portals | T306 |
+| GET | /owner/sign-in | portals | T303 |
+| POST | /owner/sign-in | portals | T303 |
+| POST | /owner/sign-in/passkey | portals | T303 |
+| GET | /h | portals | T307 |
+| GET | /h/sign-in | portals | T307 |
+| POST | /h/sign-in | portals | T307 |
+| POST | /h/sign-in/code | portals | T307 |
+| POST | /h/texts-off | portals | T307 |
+| GET | /h/my-data | portals | T307 |
+| POST | /h/my-data/request | portals | T307 |
+| POST | /h/my-data/code | portals | T307 |
+| GET | /terms | site | T221 |
+| GET | /privacy | site | T221 |
+| GET | /sms-terms | site | T221 |
+| GET | /your-data | site | T221 |
+| GET | /business-data | site | T221 |
+| GET | /help | site | T201 |
+| GET | /help/roc-complaint | site | T201 |
