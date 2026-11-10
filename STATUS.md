@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-10T12:35:45Z by runner f036702f076f (actions).
+Updated 2026-11-10T12:35:59Z by runner f036702f076f (actions).
 
-**Building: T293 in progress since 11:54Z; 184 of 333 done; week 86% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 12:35Z; 184 of 333 done; week 86% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 184 of 333 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T293 claimed 11:54Z, lease until 14:54Z
+- **Lane:** idle since 12:35Z (no task in progress)
 - **Week:** 86% used, 22.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 11:54Z, 41 min before this update
 - **Keeper:** last ran 11:30Z, next wake 11:50Z
@@ -17,6 +17,7 @@ Updated 2026-11-10T12:35:45Z by runner f036702f076f (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T293 | businesses and quotes: sign-up, consent, complaint and quote | MERGE_PENDING | 1 | 41 min | 12:35Z |  |
 | T292 | messaging and calls: every text, email and call takes the br | done | 1 | 21 min | 11:16Z |  |
 | T290 | worked examples: pin D-033 for one-cent-wide recurring range | done | 2 | 39 min | 10:21Z | T290 blocked: any new recurring worked-example row breaks tests::worked_examples (fixed RECURRING list of 13 ids, worked |
 | T290 | worked examples: pin D-033 for one-cent-wide recurring range | QUEUED | 1 | 1 min | 09:07Z |  |
@@ -94,7 +95,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T293 (lease until 2026-11-10T14:54:03Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T292", "at": "2026-11-10T11:16:32Z", "output_tokens": 102984, "cache_creation_input_tokens": 430397, "cache_read_input_tokens": 13811524, "input_tokens": 285}
+- {"task": "T293", "at": "2026-11-10T12:35:44Z", "cache_creation_input_tokens": 460225, "input_tokens": 314, "output_tokens": 80290, "cache_read_input_tokens": 15176330}
