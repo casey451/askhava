@@ -1,3 +1,3 @@
-{"owner_review": false, "lanes": 1,
+{"owner_review": false, "lanes": 2,
  "model_window": {"model": "claude-fable-5-1", "alias": "fable", "from": "2026-11-12T17:00:00Z", "until": null, "run_to_limit": true, "end_on_limit": true,
   "note": "Casey, Nov 9 (D-2225): from the weekly reset every worker, reviewer and the runner's session run on this model instead of the plan's, and the pacer runs to the real usage limit; kit/tasks.json is unchanged. With end_on_limit the window closes by itself at the first usage limit inside it (kit-state `model_window_ended`), and the build is back on the plan's models and normal pacing. `until` (an ISO UTC time, set in a reviewed PR) also ends it; outside [from, until) nothing changes. runner/model_window.py reads it."}}

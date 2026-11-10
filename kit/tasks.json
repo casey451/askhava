@@ -4704,7 +4704,7 @@
    "budget": {
     "files": 6,
     "lines": 350,
-    "context_pct": 26
+    "context_pct": 30
    },
    "checks": [
     "Ci",
@@ -4768,7 +4768,7 @@
    "budget": {
     "files": 6,
     "lines": 400,
-    "context_pct": 25
+    "context_pct": 29
    },
    "checks": [
     "Ci",
@@ -12633,7 +12633,7 @@
     "T101",
     "T348"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-sonnet-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -12708,7 +12708,7 @@
    "deps": [
     "T101"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-sonnet-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -12796,7 +12796,7 @@
     "T221",
     "T348"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-sonnet-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -13149,7 +13149,7 @@
    "deps": [
     "T103"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-sonnet-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -13233,7 +13233,7 @@
     "T103",
     "T104"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-sonnet-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -14313,7 +14313,7 @@
    "deps": [
     "T112"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-sonnet-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -14519,7 +14519,7 @@
    "deps": [
     "T103"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-sonnet-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -14583,7 +14583,7 @@
     "T166",
     "T216"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-sonnet-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -15051,7 +15051,7 @@
     "T216",
     "T218"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-sonnet-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -15831,7 +15831,7 @@
    "deps": [
     "T135"
    ],
-   "model": "claude-haiku-5-5",
+   "model": "claude-sonnet-5-5",
    "effort": "low",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -17742,7 +17742,7 @@
    "deps": [
     "T141"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-sonnet-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -19279,7 +19279,7 @@
    "deps": [
     "T140"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-sonnet-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -22258,7 +22258,10 @@
    "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
-   "review_areas": [],
+   "review_areas": [
+    "security",
+    "compliance"
+   ],
    "owns": [
     "app/intake/src/emergency.rs",
     "app/intake/src/tests/emergency_streets.rs"
@@ -22498,7 +22501,10 @@
    "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
-   "review_areas": [],
+   "review_areas": [
+    "privacy",
+    "licensing"
+   ],
    "owns": [
     "app/businesses/src/public_name.rs",
     "tests/integration/tests/business_public_name.rs"
@@ -23578,7 +23584,9 @@
    "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
-   "review_areas": [],
+   "review_areas": [
+    "security"
+   ],
    "owns": [
     "app/ai/src/output_checks.rs",
     "app/ai/data/sentence_openers.json",
@@ -23685,7 +23693,7 @@
    "deps": [
     "T101"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-sonnet-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -23752,7 +23760,7 @@
     "T101",
     "T166"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-sonnet-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -23940,7 +23948,7 @@
     "T026",
     "T161"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-sonnet-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
