@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-10T03:13:17Z by runner 9225a9d319f8 (actions).
+Updated 2026-11-10T03:26:41Z by runner 56c277428c17 (actions).
 
-**Idle since 03:02Z; 177 of 331 done; week 83% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 03:16Z; 178 of 331 done; week 83% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 177 of 331 build tasks (owner gates not counted)
+- **Tasks done:** 178 of 331 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 03:02Z (no task in progress)
+- **Lane:** idle since 03:16Z (no task in progress)
 - **Week:** 83% used, 34.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:13Z, 0 min before this update
+- **Last run:** 03:13Z, 13 min before this update
 - **Keeper:** last ran 03:13Z, next wake 03:33Z
 
 ## Needs attention
@@ -17,7 +17,7 @@ Updated 2026-11-10T03:13:17Z by runner 9225a9d319f8 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T284 | server: every route the architecture lists is wired in the r | MERGE_PENDING | 3 | 34 min | 03:02Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests / test tests::ssrf_g |
+| T284 | server: every route the architecture lists is wired in the r | done | 3 | 34 min | 03:02Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests / test tests::ssrf_g |
 | T284 | server: every route the architecture lists is wired in the r | check_failed | 2 | 21 min | 01:51Z |  |
 | T284 | server: every route the architecture lists is wired in the r | check_failed | 1 | 34 min | 00:32Z |  |
 | T283 | Ci: a change to a document the app compiles in runs the Rust | done | 1 | 30 min | 23:27Z |  |
@@ -50,7 +50,7 @@ Updated 2026-11-10T03:13:17Z by runner 9225a9d319f8 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 232 of 732 (31.7%) · partial 302 · unstarted 198
-**Tasks merged (throughput only):** 177 of 331
+**Tasks merged (throughput only):** 178 of 331
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -85,7 +85,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 57 of 132 done
+- stage 4: 58 of 132 done
 - stage 5: 0 of 53 done
 - stage 6: 0 of 30 done
 - stage 7: 0 of 2 done
