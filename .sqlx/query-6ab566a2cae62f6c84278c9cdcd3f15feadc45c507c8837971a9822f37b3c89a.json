@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE payments.reconcile_open\n                SET settled_at = $2, last_tried = $2, tries = tries + 1\n              WHERE stripe_charge_id = $1 AND settled_at IS NULL",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "6ab566a2cae62f6c84278c9cdcd3f15feadc45c507c8837971a9822f37b3c89a"
+}
