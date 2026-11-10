@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-10T11:16:33Z by runner dfd4a04b49cd (actions).
+Updated 2026-11-10T11:16:45Z by runner dfd4a04b49cd (actions).
 
-**Building: T292 in progress since 10:55Z; 183 of 333 done; week 86% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 11:16Z; 183 of 333 done; week 86% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 183 of 333 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T292 claimed 10:55Z, lease until 13:55Z
+- **Lane:** idle since 11:16Z (no task in progress)
 - **Week:** 86% used, 22.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:55Z, 20 min before this update
+- **Last run:** 10:55Z, 21 min before this update
 - **Keeper:** last ran 10:36Z, next wake 10:56Z
 
 ## Needs attention
@@ -17,6 +17,7 @@ Updated 2026-11-10T11:16:33Z by runner dfd4a04b49cd (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T292 | messaging and calls: every text, email and call takes the br | MERGE_PENDING | 1 | 21 min | 11:16Z |  |
 | T290 | worked examples: pin D-033 for one-cent-wide recurring range | done | 2 | 39 min | 10:21Z | T290 blocked: any new recurring worked-example row breaks tests::worked_examples (fixed RECURRING list of 13 ids, worked |
 | T290 | worked examples: pin D-033 for one-cent-wide recurring range | QUEUED | 1 | 1 min | 09:07Z |  |
 | T289 | jobs tests: the refused-move test counts its one bug log the | done | 1 | 44 min | 07:52Z |  |
@@ -94,7 +95,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T292 (lease until 2026-11-10T13:55:28Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T290", "at": "2026-11-10T10:21:11Z", "cache_read_input_tokens": 3237668, "input_tokens": 151, "output_tokens": 32803, "cache_creation_input_tokens": 156840}
+- {"task": "T292", "at": "2026-11-10T11:16:32Z", "output_tokens": 102984, "cache_creation_input_tokens": 430397, "cache_read_input_tokens": 13811524, "input_tokens": 285}
