@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-10T03:46:28Z by runner 56c277428c17 (actions).
+Updated 2026-11-10T04:00:06Z by runner 78e2c82b2d8d (actions).
 
-**Idle since 03:45Z; 178 of 331 done; week 84% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 03:45Z; 178 of 333 done; week 84% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 178 of 331 build tasks (owner gates not counted)
+- **Tasks done:** 178 of 333 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 03:45Z (no task in progress)
 - **Week:** 84% used, 28.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:46Z, 0 min before this update
+- **Last run:** 03:46Z, 13 min before this update
 - **Keeper:** last ran 03:46Z, next wake 04:06Z
 
 ## Needs attention
@@ -51,8 +51,8 @@ Updated 2026-11-10T03:46:28Z by runner 56c277428c17 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 232 of 732 (31.7%) · partial 302 · unstarted 198
-**Tasks merged (throughput only):** 178 of 331
+**Requirements verified:** 232 of 733 (31.7%) · partial 302 · unstarted 199
+**Tasks merged (throughput only):** 178 of 333
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -72,7 +72,7 @@ Updated 2026-11-10T03:46:28Z by runner 56c277428c17 (actions).
 | quiet-hours | 7 | 2 | 0 | 9 |
 | quotes-pick | 28 | 18 | 10 | 56 |
 | recurring | 5 | 3 | 3 | 11 |
-| security | 7 | 40 | 7 | 54 |
+| security | 7 | 40 | 8 | 55 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 2 | 26 | 28 |
 | wording | 1 | 5 | 26 | 32 |
@@ -87,7 +87,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 58 of 132 done
+- stage 4: 58 of 134 done
 - stage 5: 0 of 53 done
 - stage 6: 0 of 30 done
 - stage 7: 0 of 2 done

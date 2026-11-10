@@ -18825,7 +18825,9 @@
     "T341",
     "T342",
     "T343",
-    "T344"
+    "T344",
+    "T345",
+    "T346"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19202,7 +19204,8 @@
   {
    "id": "T121",
    "deps": [
-    "T120"
+    "T120",
+    "T345"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -25874,7 +25877,8 @@
    "id": "T307",
    "deps": [
     "T100",
-    "T087"
+    "T087",
+    "T346"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -26349,6 +26353,34 @@
    "status": "QUEUED",
    "attempts": 0,
    "slug": "verify-day-cap-lock",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T345",
+   "deps": [
+    "T056",
+    "T074",
+    "T172"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "pin-every-workflow-action",
+   "type": "harness",
+   "stage": "4"
+  },
+  {
+   "id": "T346",
+   "deps": [
+    "T272",
+    "T315",
+    "T087",
+    "T057",
+    "T075"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "code-purpose-challenges",
    "type": "build",
    "stage": "4"
   }
@@ -28026,7 +28058,7 @@
    }
   }
  },
- "updated_at": "2026-11-10T03:46:28Z",
+ "updated_at": "2026-11-10T04:00:06Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -28124,7 +28156,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "56c277428c17ae0b318da8c252db31dd0f8fb3bb",
+ "runner_sha": "78e2c82b2d8d4b19832e66c82f1984210ad999d7",
  "starter": "actions",
  "smoke_runs": [
   {
