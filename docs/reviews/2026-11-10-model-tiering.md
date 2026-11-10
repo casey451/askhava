@@ -159,7 +159,7 @@
 
 ## Second pass, November 10, 2026 (D-2506)
 
-**Source:** an outside model plan Casey shared ("Sonnet junior / Opus senior reviewer", 57 Sonnet, 89 Opus, 2 Haiku), read as data. Every candidate it moved to Sonnet beyond the 15 above was judged against the first rubric, the validator's rule that money, privacy, security and recovery application code runs on Opus (`BUILD_BRIEF.md:498`, `scripts/validate_tasks.py:346`), and Casey's rule of November 10 that Fable is only for dire cases (no Fable worker or reviewer anywhere here). Result over the 146 queued tasks, after the PR #427 review: **27 Sonnet, 119 Opus, no Haiku**; every reviewer stays Opus. T294 is in flight and keeps its model.
+**Source:** an outside model plan Casey shared ("Sonnet junior / Opus senior reviewer", 57 Sonnet, 89 Opus, 2 Haiku), read as data. Every candidate it moved to Sonnet beyond the 15 above was judged against the first rubric, the validator's rule that money, privacy, security and recovery application code runs on Opus (`BUILD_BRIEF.md:498`, `scripts/validate_tasks.py:346`), and Casey's rule of November 10 that Fable is only for dire cases (no Fable worker or reviewer anywhere here). Result over the queued tasks, after the PR #427 review and the merge of `main` at 6c127bfa: **147 queued, 27 Sonnet, 120 Opus, no Haiku**; every reviewer stays Opus. T349 (the PIN-draw fix, new on `main` from D-2451) runs on Opus: it changes the masked-line PIN draw and its refusal alert in the calls module (security). T155 is now in flight and keeps its model. T294 is in flight and keeps its model.
 
 **Moved now:**
 
