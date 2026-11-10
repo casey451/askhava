@@ -289,9 +289,9 @@ def claim_first(settings: Path) -> tuple[str, ...]:
 
 
 def claim_order_setting(settings: Path) -> str:
-    """kit/runner.json "order" (D-2571): "critical_path" when the file says exactly that, so the cycle
+    """kit/runner.json "order" (D-2591): "critical_path" when the file says exactly that, so the cycle
     tries the claimable task with the longest chain of open dependents first (`cycle.chain_lengths`);
-    "state" (the kit-state order, as before D-2571) when the file or key is missing, unreadable or any
+    "state" (the kit-state order, as before D-2591) when the file or key is missing, unreadable or any
     other value. Ordering only, after a resync and `claim_first`."""
     try:
         value = json.loads(settings.read_text(encoding="utf-8")).get("order")

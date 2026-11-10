@@ -232,7 +232,7 @@ class Config:
     # kit/runner.json "claim_first" (D-2540): task ids tried before the other claimable ones, in this
     # order; ordering only (`claim_order`). Empty keeps the state order.
     claim_first: tuple[str, ...] = ()
-    # kit/runner.json "order" (D-2571): "critical_path" tries the claimable ids with the longest chain of
+    # kit/runner.json "order" (D-2591): "critical_path" tries the claimable ids with the longest chain of
     # open dependents first (`chain_lengths`); anything else keeps the state order. Ordering only.
     order: str = "state"
 
@@ -1285,8 +1285,8 @@ def _next_step(cfg: Config, env: Env, state: State, base: State, now: datetime, 
         return "gate_open" if env.push_state(opened, base) else "lost_race"
     ids = _by_day(cfg, st.eligible(state, now, _passed(cfg, state), cfg.proof_stages), now)
     ids = lanes.compatible_ids(ids, state, now, lambda tid: _task_def(cfg, state, tid), cfg.locked, cfg.proof_stages)
-    chains = chain_lengths(cfg.graph, state) if cfg.order == CRITICAL_PATH else None
-    ids = claim_order(ids, state, cfg.claim_first, chains)  # resync (D-891), `claim_first` (D-2540), chain (D-2571)
+    chains = _chains_or_none(cfg, state)
+    ids = claim_order(ids, state, cfg.claim_first, chains)  # resync (D-891), `claim_first` (D-2540), chain (D-2591)
     ids, state = plan_health_pass(cfg, state, ids, now)
     if not ids:
         if state != base and not env.push_state(state, base):
@@ -1332,7 +1332,7 @@ def _next_step(cfg: Config, env: Env, state: State, base: State, now: datetime, 
 def claim_order(ids: list[str], state: State, first: tuple[str, ...] = (), chains: dict[str, int] | None = None) -> list[str]:
     """The claimable ids in the order the cycle tries them. A resync finishes reviewed work first (D-891);
     then the ids kit/runner.json lists in `claim_first`, in its order (D-2540); then, when `chains` is
-    given (kit/runner.json "order": "critical_path", D-2571), the longest chain of open dependents first;
+    given (kit/runner.json "order": "critical_path", D-2591), the longest chain of open dependents first;
     then state order (the sort is stable). Only the order changes: a listed id that is not claimable is
     not in `ids` and is ignored, so a listed task still waits for its dependencies, its lane, plan health
     and pacing."""
@@ -1344,12 +1344,24 @@ def claim_order(ids: list[str], state: State, first: tuple[str, ...] = (), chain
                                         -chain.get(tid, 1)))
 
 
-CRITICAL_PATH = "critical_path"  # kit/runner.json "order" value that turns on `chain_lengths` (D-2571)
+CRITICAL_PATH = "critical_path"  # kit/runner.json "order" value that turns on `chain_lengths` (D-2591)
+
+
+def _chains_or_none(cfg: Config, state: State) -> dict[str, int] | None:
+    """`chain_lengths` when kit/runner.json asks for critical-path order (D-2591), else None (state order).
+    Any error in it prints one note and gives None, so a malformed graph can never stop a cycle."""
+    if cfg.order != CRITICAL_PATH:
+        return None
+    try:
+        return chain_lengths(cfg.graph, state)
+    except Exception as exc:  # noqa: BLE001  # reason: ordering is optional; a broken graph must never stop a cycle (D-2591)
+        print(f"runner: critical-path order unavailable, using state order: {str(exc)[:200]}")
+        return None
 
 
 def chain_lengths(graph: list[dict[str, Any]], state: State) -> dict[str, int]:
     """For every plan task, the number of tasks on its longest chain of dependents (kit/tasks.json `deps`
-    read backwards) that are not DONE or SKIPPED, counting the task itself (D-2571). A finished dependent
+    read backwards) that are not DONE or SKIPPED, counting the task itself (D-2591). A finished dependent
     adds nothing and ends that chain. Gate tasks count like any other: an owner wait on the path still
     takes time before the build ends. Memoised and iterative, so ~350 tasks cost one pass; a dependency
     cycle (which `scripts/validate_tasks.py` forbids) is cut where it closes instead of looping forever."""
@@ -1377,7 +1389,7 @@ def _chain_from(root: str, dependents: dict[str, list[str]], memo: dict[str, int
             continue
         if expanded:
             on_stack.discard(node)
-            memo[node] = 1 + max((memo.get(d, 0) for d in dependents[node] if d not in on_stack), default=0)
+            memo[node] = 1 + max((memo.get(d, 0) for d in dependents[node]), default=0)  # on-stack: not in memo, 0
             continue
         on_stack.add(node)
         stack.append((node, True))

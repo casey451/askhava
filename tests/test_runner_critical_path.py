@@ -1,4 +1,4 @@
-"""kit/runner.json "order": "critical_path" (D-2571): the longest remaining dependency chain is tried first.
+"""kit/runner.json "order": "critical_path" (D-2591): the longest remaining dependency chain is tried first.
 
 Casey, November 10, 2026: "We have 50% weekly tokens to get through by Thursday morning. Optimize the build
 as well as we can ... Dont negatively impact the build". The longest open chain (64 tasks, through T157)
@@ -131,4 +131,14 @@ def test_on_the_real_plan_the_top_claim_heads_the_longest_open_chain() -> None:
     open_ids = [t["id"] for t in tasks if st.status(state, t["id"]) not in finished]
     assert chains[ordered[0]] == max(chains[i] for i in open_ids)  # the longest open chain starts at a ready task
     assert [chains[i] for i in ordered] == sorted((chains[i] for i in ordered), reverse=True)
-    print("critical-path order:", [(i, chains[i]) for i in ordered[:10]])
+
+
+def test_a_graph_the_chain_count_cannot_read_falls_back_to_state_order(tmp_path: Path, capsys: Any) -> None:
+    """Catches: an unguarded `chain_lengths` call, which would stop every cycle on a malformed graph."""
+    tasks = [make_task("T001"), make_task("T002"), make_task("T003", deps=None)]
+    tasks[2]["deps"] = None
+    cfg = dataclasses.replace(config(tasks, tmp_path), order=cycle.CRITICAL_PATH)
+    s = st.sync_graph(st.new_state(), [make_task("T001"), make_task("T002"), make_task("T003")])
+    assert cycle._chains_or_none(cfg, s) is None
+    assert "critical-path order unavailable" in capsys.readouterr().out
+    assert first_claim(tmp_path, cycle.CRITICAL_PATH) == "T003"  # a sound graph still orders by chain
