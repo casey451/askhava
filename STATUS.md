@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-10T04:57:17Z by runner 3a33995a7362 (actions).
+Updated 2026-11-10T04:57:30Z by runner 3a33995a7362 (actions).
 
-**Building: T286 in progress since 04:30Z; 179 of 333 done; week 84% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 04:57Z; 179 of 333 done; week 84% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 179 of 333 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T286 claimed 04:30Z, lease until 07:30Z
+- **Lane:** idle since 04:57Z (no task in progress)
 - **Week:** 84% used, 26.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 04:30Z, 26 min before this update
 - **Keeper:** last ran 04:00Z, next wake 04:20Z
@@ -17,6 +17,7 @@ Updated 2026-11-10T04:57:17Z by runner 3a33995a7362 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T286 | server: every request has a whole-request time limit, answer | MERGE_PENDING | 1 | 26 min | 04:57Z |  |
 | T285 | runner: a task closes with a visible mark when a file it own | done | 1 | 19 min | 03:45Z |  |
 | T284 | server: every route the architecture lists is wired in the r | done | 3 | 34 min | 03:02Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests / test tests::ssrf_g |
 | T284 | server: every route the architecture lists is wired in the r | check_failed | 2 | 21 min | 01:51Z |  |
@@ -94,7 +95,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T286 (lease until 2026-11-10T07:30:34Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T285", "at": "2026-11-10T03:45:51Z", "input_tokens": 205, "cache_creation_input_tokens": 229700, "output_tokens": 70529, "cache_read_input_tokens": 6362345}
+- {"task": "T286", "at": "2026-11-10T04:57:17Z", "cache_read_input_tokens": 9060026, "input_tokens": 220, "output_tokens": 106170, "cache_creation_input_tokens": 333980}
