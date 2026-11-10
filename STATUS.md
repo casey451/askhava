@@ -1,13 +1,13 @@
 # Ask Hava build status
 
-Updated 2026-11-10T17:49:59Z by runner 73d5bcfa8f33 (actions).
+Updated 2026-11-10T17:50:11Z by runner 73d5bcfa8f33 (actions).
 
-**Idle since 17:36Z; 187 of 335 done; week 92% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T294 in progress since 17:49Z; 187 of 335 done; week 92% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 187 of 335 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 17:36Z (no task in progress)
-- **Week:** 92% used, 14.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 1: T294 claimed 17:49Z, lease until 20:49Z
+- **Week:** 92% used, 10.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 17:22Z, 27 min before this update
 - **Keeper:** last ran 17:22Z, next wake 17:42Z
 
@@ -82,7 +82,7 @@ Updated 2026-11-10T17:49:59Z by runner 73d5bcfa8f33 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-10T16:28:09Z (week)): five-hour: 3.2M used, 25.9M left, resets 2026-11-10T20:58:09Z; week: 180.0M used, 14.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-01T20:09:38Z.
+- Pacing (session_reading 2026-11-10T17:21:58Z (week)): five-hour: 6.3M used, 22.8M left, resets 2026-11-10T20:58:09Z; week: 184.0M used, 10.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-02T00:20:51Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -97,7 +97,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T294 (lease until 2026-11-10T20:49:55Z)
 
 ## Last usage reading
 - {"task": "T231", "at": "2026-11-10T17:08:51Z", "output_tokens": 133064, "input_tokens": 366, "cache_creation_input_tokens": 494041, "cache_read_input_tokens": 25379485}
