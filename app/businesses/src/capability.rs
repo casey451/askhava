@@ -17,8 +17,10 @@ use askhava_core::api::{NewTask, brand, enqueue};
 use askhava_licensing::api::ClassMap;
 use askhava_ops::api::{Actor, AuditEntry, Change, audit};
 use jiff::Timestamp;
+use jiff::civil::Date;
 use jiff_sqlx::ToSqlx;
 use serde_json::json;
+use sha2::{Digest, Sha256};
 use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection};
 
@@ -338,17 +340,19 @@ pub const LICENSE_CHANGE_KIND: &str = "businesses.license_change";
 /// BIZ-050: what re-applying the license map changed for one business.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct Reapplied {
-    /// Ticked job types the new classes no longer cover, removed at once.
+    /// Ticked job types the old classes covered and the new classes no longer cover, removed.
     pub removed: Vec<JobTypeChoice>,
-    /// Job types only the new classes cover, offered by email and never ticked.
+    /// Job types of a switched-on category only the new classes cover, offered, never ticked.
     pub offered: Vec<JobTypeChoice>,
     /// The removal left no job type ticked, so the business was paused (D-393).
     pub paused: bool,
 }
 
-/// BIZ-050, LIC-043: the pure part of [`reapply_license`]: of `ticks`, the job types of a
-/// licensed category the `new` classes do not cover (removed), and the job types the `new` classes
-/// cover that the `old` did not and that are not ticked (offered). A no-license job type is kept.
+/// BIZ-050, LIC-043, D-2595: the pure part of [`reapply_license`]: of `ticks`, the job types the
+/// `old` classes covered that the `new` classes no longer cover (removed; a no-license or
+/// agency-licensed job type, which no class covers, is never removed here), and the job types of
+/// a switched-on category the `new` classes cover that the `old` did not and that are not ticked
+/// (offered).
 #[must_use]
 pub fn license_change(
     map: &ClassMap,
@@ -358,14 +362,13 @@ pub fn license_change(
 ) -> Reapplied {
     let key = |c: &JobTypeChoice| (c.category.clone(), c.job_type.clone());
     let (was, now) = (map.job_types(old), map.job_types(new));
-    let free = |c: &JobTypeChoice| {
-        let cats = catalog.categories.iter();
-        cats.filter(|d| d.id == c.category)
-            .any(|d| d.license.kind == "none")
-    };
-    let removed = ticks.iter().filter(|c| !now.contains(&key(c)) && !free(c));
+    let lost: BTreeSet<_> = was.difference(&now).collect();
+    let removed = ticks.iter().filter(|c| lost.contains(&key(c)));
     let ticked: BTreeSet<_> = ticks.iter().map(key).collect();
-    let offered = now.difference(&was).filter(|k| !ticked.contains(*k));
+    let on = |c: &str| catalog.categories.iter().any(|d| d.id == c && d.enabled);
+    let offered = now
+        .difference(&was)
+        .filter(|k| !ticked.contains(*k) && on(&k.0));
     Reapplied {
         removed: removed.cloned().collect(),
         offered: offered.map(|(c, t)| JobTypeChoice::new(c, t)).collect(),
@@ -373,11 +376,12 @@ pub fn license_change(
     }
 }
 
-/// BIZ-050, LIC-043, D-393: re-applies the license map to business `id` when a daily list moves
-/// its classes from `old` to `new`, in one transaction: removes the [`license_change`] job types
-/// with an audit row, pauses the business through `pause_for_rule` (`NoCoveredJobType`) when a
-/// removal leaves nothing ticked and it was taking cards, and queues one [`LICENSE_CHANGE_KIND`]
-/// email when anything was removed or offered. Nothing is ever ticked here.
+/// BIZ-050, LIC-043, D-393: re-applies the license map to business `id` when the daily list of
+/// `list` (its date) moves its classes from `old` to `new`, in one transaction: locks the business
+/// row, removes the [`license_change`] job types with an audit row, pauses the business through
+/// `pause_for_rule` (`NoCoveredJobType`) when a removal leaves nothing ticked and it was taking
+/// cards, and queues one [`LICENSE_CHANGE_KIND`] email when anything was removed or offered (one
+/// per business, class change and list date, D-2596). Nothing is ever ticked here.
 ///
 /// # Errors
 ///
@@ -387,9 +391,14 @@ pub async fn reapply_license(
     id: Uuid,
     (map, catalog): (&ClassMap, &Catalog),
     classes: (&[&str], &[&str]),
-    now: Timestamp,
+    (list, now): (Date, Timestamp),
 ) -> Result<Reapplied, BusinessesError> {
     let mut tx = db(conn.begin().await)?;
+    let lock = sqlx::query!(
+        "SELECT id FROM businesses.business WHERE id = $1 FOR UPDATE",
+        id
+    );
+    db(lock.fetch_optional(&mut *tx).await)?.ok_or(BusinessesError::UnknownBusiness)?;
     let ticks = models::job_types(&mut tx, id).await?;
     let mut change = license_change(map, catalog, &ticks, classes);
     if !change.removed.is_empty() {
@@ -410,7 +419,7 @@ pub async fn reapply_license(
         change.paused = kept.is_empty() && pause_bare(&mut tx, id, now).await?;
     }
     if !change.removed.is_empty() || !change.offered.is_empty() {
-        queue_notice(&mut tx, id, &change, classes, now).await?;
+        queue_notice(&mut tx, (id, list), &change, classes, now).await?;
     }
     db(tx.commit().await)?;
     Ok(change)
@@ -431,10 +440,34 @@ async fn pause_bare(
     }
 }
 
+/// LIC-006: a class as the license map reads it (single spaces, upper case), so `r-11 ` and
+/// `R-11` are the same class.
+fn class_norm(class: &str) -> String {
+    let words: Vec<&str> = class.split_whitespace().collect();
+    words.join(" ").to_ascii_uppercase()
+}
+
+/// BIZ-050, R13, D-2596: the email's dedupe key: the business, the list date and a SHA256
+/// digest of the normalised, sorted old and new classes, so a retry at any later time queues
+/// nothing new.
+fn notice_key(id: Uuid, list: Date, (old, new): (&[&str], &[&str])) -> String {
+    let set = |v: &[&str]| -> BTreeSet<String> { v.iter().map(|c| class_norm(c)).collect() };
+    let mut hash = Sha256::new();
+    for side in [set(old), set(new)] {
+        hash.update((side.len() as u64).to_be_bytes());
+        for class in side {
+            hash.update((class.len() as u64).to_be_bytes());
+            hash.update(class.as_bytes());
+        }
+    }
+    let digest: String = hash.finalize().iter().map(|b| format!("{b:02x}")).collect();
+    format!("{LICENSE_CHANGE_KIND}.{id}.{list}.{digest}")
+}
+
 /// BIZ-050: queues the owner's [`LICENSE_CHANGE_KIND`] email (no contact value in the payload).
 async fn queue_notice(
     tx: &mut PgConnection,
-    id: Uuid,
+    (id, list): (Uuid, Date),
     change: &Reapplied,
     (old, new): (&[&str], &[&str]),
     now: Timestamp,
@@ -444,7 +477,12 @@ async fn queue_notice(
             .map(|c| [c.category.clone(), c.job_type.clone()])
             .collect()
     };
-    let dropped: Vec<&str> = old.iter().filter(|c| !new.contains(c)).copied().collect();
+    let kept: BTreeSet<String> = new.iter().map(|c| class_norm(c)).collect();
+    let dropped: Vec<&str> = old
+        .iter()
+        .filter(|c| !kept.contains(&class_norm(c)))
+        .copied()
+        .collect();
     let payload = json!({
         "business": id,
         "removed": pairs(&change.removed),
@@ -453,7 +491,7 @@ async fn queue_notice(
         "paused": change.paused,
     });
     let mut task = NewTask::new(LICENSE_CHANGE_KIND, payload, now);
-    task.dedupe_key = Some(format!("{LICENSE_CHANGE_KIND}.{id}.{}", now.as_second()));
+    task.dedupe_key = Some(notice_key(id, list, (old, new)));
     enqueue(tx, &task)
         .await
         .map(|_| ())

@@ -2,6 +2,14 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+
+## A license list change updates a business's job types (T207, D-2592, D-2595, D-2596, November 10)
+
+- **What it does.** When the state's daily license list changes a business's classes, the job types the old license covered and the new one no longer does come off at once, with an email saying which and why; job types the new license adds are offered by email and never ticked for them. Pest control, septic pumping and home inspection (licensed by another agency, not by a class) and the no-license trades are never touched by a class change (D-2595). A retry of the same day's list never sends a second email (D-2596).
+- **Your call: when to pause (D-2592).** "A removed class that leaves no covered job type pauses the business" is read as "nothing left on its list at all". A plumber whose license lapses but who also ticked window cleaning keeps getting window-cleaning cards and is not paused. If you meant "paused whenever no licensed job type is left", say so and it changes in one line.
+- **Your call: the way back.** A business paused this way has no way back yet: it is not resumed when a later list shows the class again, and it cannot resume itself. For now only you could resume it, once a page for that exists. A later task should add the resume; tell us if it should be automatic when the license comes back.
+- **One known gap.** The Spanish email names the job types by their English catalog names; the sender's task needs Spanish job-type names (BIZ-018).
+- **Not wired yet (D-2593).** The daily list import does not call this yet and no sender delivers the email.
 ## The homeowner calls contact card (T199, D-2409 to D-2413, November 10)
 
 - **Copy still to fix.** The welcome email's third line still says "Save the attached contact card", but the card is now a link to the download in the business portal, not an attachment. The line is pinned word for word by a test another task owns (`tests/integration/tests/business_consent.rs`), so a follow-up task that owns that test rewrites it (for example "Save the contact card from your business account"). Nothing is sent to a real business before then.
