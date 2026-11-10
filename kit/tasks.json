@@ -10157,8 +10157,8 @@
   {
    "id": "T339",
    "slug": "job-category-and-types-stored",
-   "title": "jobs: each job stores its category code and its remaining candidate job type codes once, for the fee at the pick",
-   "goal": "Seventh audit N7-01 (D-2330; INT-018, FEE-005, FEE-045; D-2210): no table stores a job's category or job types (`jobs.job` has no such column), so the pick's fee uses defaults (D-2210's known gap). `migrations/0164_jobs_job_facts.sql` adds `jobs.job_facts` (job ID primary key, the catalog category code, the remaining candidate job type codes as a non-empty text array, set at; app role SELECT and INSERT only, so a job's facts are written once and never change); `app/jobs/src/job_facts.rs`, through `jobs::api`, offers `record_job_facts(tx, job, category, job_types)` (idempotent: the same facts again change nothing, different facts are refused) and `job_facts(conn, job)`. Codes only: every fact derived from them (fee-free, visit tier, one-time or recurring) is resolved from catalog data at the pick (T340), never stored here (national-ready). The caller is T251's card sender, which records the facts in the transaction that sends the cards (cards go out once, after the job types are settled or kept with \"Job type not certain\", INT-040). Tests in `tests/integration/tests/job_facts.rs` (TD-JOB-17). Update the `jobs` `CLAUDE.md`, `docs/architecture.md` section 3 (the new table) and section 10, and `docs/decisions.md`.",
+   "title": "jobs: each job keeps its category code and remaining candidate job type codes as append-only narrowing rows, for the fee at the pick",
+   "goal": "Seventh audit N7-01 (D-2330; INT-018, FEE-005, FEE-045; D-2210): no table stores a job's category or job types (`jobs.job` has no such column), so the pick's fee uses defaults (D-2210's known gap). `migrations/0164_jobs_job_facts.sql` adds `jobs.job_facts`, append-only narrowing rows: job ID, a per-job sequence number (primary key with the job), the catalog category code, the remaining candidate job type codes as a non-empty text array, set at; app role SELECT and INSERT only, so no row is ever changed or deleted. `app/jobs/src/job_facts.rs`, through `jobs::api`, offers `record_job_facts(tx, job, category, job_types)` and `job_facts(conn, job)`. The first row is written at card send. A later row may only narrow: the same category and a candidate set that is a subset of the latest row's; the same set again writes nothing (idempotent); anything else (another category, a set with a code not in the latest row, an empty set) is refused and writes nothing. `record_job_facts` locks the job's `jobs.job` row first, so two narrowings at once are applied one after the other. `job_facts` returns the latest row (highest sequence number), or none. Codes only: every fact derived from them (fee-free, visit tier, one-time or recurring) is resolved from catalog data at the pick (T340), never stored here (national-ready). Callers: T251's card sender writes the first row in the transaction that sends the cards, on the approval and the emergency path; T162's intake order writes a narrowing row whenever a later answer settles or narrows the job type (on the emergency path the trade questions come after the cards, INT-029). Tests in `tests/integration/tests/job_facts.rs` (TD-JOB-17). Update the `jobs` `CLAUDE.md`, `docs/architecture.md` section 3 (the new table) and section 10, and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -10174,7 +10174,9 @@
    "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
-   "review_areas": [],
+   "review_areas": [
+    "money"
+   ],
    "owns": [
     "migrations/0164_jobs_job_facts.sql",
     "app/jobs/src/job_facts.rs",
@@ -10213,17 +10215,75 @@
    "prompt": "kit/prompts/T339.md"
   },
   {
+   "id": "T343",
+   "slug": "job-facts-in-pick-fixtures",
+   "title": "harness: the DONE pick tests' fixtures record each job's facts, before the fee reads them",
+   "goal": "Seventh audit fix round (D-2331, D-2330): once T340 prices the pick from the job's stored facts, a non-emergency job with no facts row is refused at the pick, so the DONE tests whose fixtures create a job and pick it would fail. This task changes only those fixtures: after a fixture creates a job, it records a facts row through T339's `jobs::api::record_job_facts` with a category and job type whose catalog resolution gives the facts the test already assumes (not fee-free, the category's default visit tier, recurring only where the test's quote has a period), so every expected value stays as it is. Files: `tests/integration/tests/fee_fixed_at_pick.rs` (T287), `page_pick.rs` (T246), `text_pick.rs` (T054), `app/server/tests/release_recovery.rs` (T254, T287), `consent_records.rs` (T181) and `first_quote_move.rs` (T247). No assertion, case or expected value changes, none is removed, and no new case is added; recording facts changes no behaviour until T340, so every test passes before and after (D-2331 is the logged spec change). Harness: an Opus review.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "4",
+   "module": "picks",
+   "deps": [
+    "T339"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "money",
+    "harness"
+   ],
+   "owns": [
+    "tests/integration/tests/fee_fixed_at_pick.rs",
+    "tests/integration/tests/page_pick.rs",
+    "tests/integration/tests/text_pick.rs",
+    "app/server/tests/release_recovery.rs",
+    "tests/integration/tests/consent_records.rs",
+    "tests/integration/tests/first_quote_move.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/fees.md",
+    "docs/test-design.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "FEE-005"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-2331",
+    "D-2330"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 6,
+    "lines": 300,
+    "context_pct": 29
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T343-job-facts-in-pick-fixtures",
+   "prompt": "kit/prompts/T343.md",
+   "acceptance": "Every test in the six files passes with its assertions unchanged and each fixture job holding a facts row; the diff of the six files shows only fixture lines that record facts; T340 must keep them passing."
+  },
+  {
    "id": "T340",
    "slug": "fee-facts-at-pick",
-   "title": "picks and payments (harness): the fee at the pick uses the job's stored category and job types resolved from the catalog; a fee-free job type is never charged",
-   "goal": "Seventh audit N7-01 and N7-05 (D-2331, D-2335; FEE-045, FEE-005, FEE-004, FEE-007, PICK-055; sets aside only D-2210's default facts and closes its known gap). Today `fee_inputs` (`app/picks/src/service.rs:396`) prices every pick with default facts: not fee-free, `VisitTier::DEFAULT`, `RecurringCap::DEFAULT`, recurring when the quote has a period. So a buyer inspection (a `fee_free_job_types` entry, `docs/catalog/categories.yaml:665`) is charged, against FEE-045. After T339 and T251 (which record each job's codes) and T295 and T318 (the queued owners of `service.rs`): (1) `picks` reads the job's codes through `jobs::api::job_facts` and passes them with the chosen quote to `payments`; `app/payments/src/fee_facts.rs` resolves them from `catalog::api` (payments may call catalog; picks may not): the category's set visit tier, whether the pick is fee-free and whether it is one-time or recurring. A job with no stored codes, an unknown code, or candidates spanning more than one category is refused at the pick (`PicksError::Quotes`), storing nothing (fail closed). (2) The rule when several candidate job types remain (INT-040's \"Job type not certain\"; D-2331): the category decides the visit tier; if any remaining candidate is fee-free, the pick is fee-free ($0, a `fee-free job type` ledger entry, no free first win used), never charged; the pick is one-time if every remaining candidate is one-time, otherwise the quote's period decides as today. (3) N7-05: `send_code` (:676) takes a transaction-level advisory lock keyed to the Arizona day it already computes (the same `arizona()` source as today) before `send_counts`, so two contacts at the PICK-055 global threshold − 1 cannot both pass; Verify is still called after the commit and the once-a-day alert is unchanged. (4) The page-pick and text-pick tests of DONE tasks whose jobs now need codes change only in their fixtures (the job's facts recorded), and T287's `fee_fixed_at_pick.rs` gains cases; no expected value is weakened (D-2331 is the logged spec change). Tests in `tests/integration/tests/fee_facts_at_pick.rs` through the real page-pick and text-pick paths with a catalog fixture (TD-FEE-62, TD-PICK-56). Money: the overseer runs an independent money review of the hand-in. Update the `picks` and `payments` `CLAUDE.md` files, `docs/architecture.md` section 10 and `docs/decisions.md`.",
-   "type": "harness",
+   "title": "picks and payments: the fee at the pick uses the job's latest stored category and job types resolved from the catalog; a fee-free job type is never charged; an emergency pick is never refused for unsettled facts",
+   "goal": "Seventh audit N7-01 (D-2331; FEE-045, FEE-005, FEE-004, FEE-007; sets aside only D-2210's default facts and closes its known gap). Today `fee_inputs` (`app/picks/src/service.rs:396`) prices every pick with default facts: not fee-free, `VisitTier::DEFAULT`, `RecurringCap::DEFAULT`, recurring when the quote has a period. So a buyer inspection (a `fee_free_job_types` entry, `docs/catalog/categories.yaml:665`) is charged, against FEE-045. After T339 and T251 (which record each job's codes), T343 (the DONE tests' fixtures record facts) and T295 and T318 (the queued owners of `service.rs`): (1) `picks` reads the job's latest facts row through `jobs::api::job_facts` and passes the codes with the chosen quote to `payments`; `app/payments/src/fee_facts.rs` resolves them from `catalog::api` (payments may call catalog; picks may not): the category's set visit tier, whether the pick is fee-free and whether it is one-time or recurring. (2) Several candidates (INT-040's \"Job type not certain\", or an emergency job whose type has not settled; D-2331): the category decides the visit tier; if any remaining candidate is fee-free, the pick is fee-free ($0, a `fee-free job type` ledger entry, no free first win used), never charged; the pick is one-time only if every remaining candidate is one-time, otherwise the quote's period decides as today. (3) A non-emergency job with no row, an unknown code, or candidates spanning more than one category is refused at the pick (`PicksError::Quotes`), storing nothing (fail closed). (4) An emergency job (`jobs::api::current`'s `emergency`) is never refused for its facts: with no row, an unknown code or candidates spanning categories, the pick proceeds on the catalog's default facts for a one-time job (`VisitTier::DEFAULT`, not fee-free, one-time) and raises one High alert `picks.fee_facts_unsettled` per pick through `ops::api::raise_alert`, naming the job number and the pick only, never homeowner details. The money reasoning (D-2331): Confirm (T261) charges exactly the fee stored at the pick and nothing recomputes it (D-1871), so the alert is the control that lets the owner check that fee before the business confirms. Tests in `tests/integration/tests/fee_facts_at_pick.rs` through the real page-pick and text-pick paths with a catalog fixture (TD-FEE-62). Money: the overseer runs an independent money review of the hand-in. Update the `picks` and `payments` `CLAUDE.md` files, `docs/architecture.md` section 10 and `docs/decisions.md`.",
+   "type": "build",
    "phase": 1,
    "stage": "4",
    "module": "picks",
    "deps": [
     "T339",
     "T251",
+    "T343",
     "T295",
     "T318",
     "T287"
@@ -10233,19 +10293,12 @@
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
     "money",
-    "privacy",
-    "harness"
+    "privacy"
    ],
    "owns": [
     "app/picks/src/service.rs",
     "app/payments/src/fee_facts.rs",
-    "tests/integration/tests/fee_facts_at_pick.rs",
-    "tests/integration/tests/fee_fixed_at_pick.rs",
-    "tests/integration/tests/page_pick.rs",
-    "tests/integration/tests/text_pick.rs",
-    "app/server/tests/release_recovery.rs",
-    "tests/integration/tests/consent_records.rs",
-    "tests/integration/tests/first_quote_move.rs"
+    "tests/integration/tests/fee_facts_at_pick.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -10261,25 +10314,22 @@
     "FEE-045",
     "FEE-005",
     "FEE-004",
-    "FEE-007",
-    "PICK-055"
+    "FEE-007"
    ],
    "tests": [
-    "TD-FEE-62",
-    "TD-PICK-56"
+    "TD-FEE-62"
    ],
    "decisions": [
     "D-2331",
-    "D-2335",
     "D-2210",
     "D-1871",
     "D-403"
    ],
    "cites": [],
    "budget": {
-    "files": 9,
-    "lines": 800,
-    "context_pct": 50
+    "files": 3,
+    "lines": 600,
+    "context_pct": 35
    },
    "checks": [
     "Ci",
@@ -10293,7 +10343,7 @@
    "id": "T342",
    "slug": "quote-text-whole-field-gate",
    "title": "quotes: a quote's contact check also reads the whole field with line breaks folded, and a per-visit price must carry its visit schedule",
-   "goal": "Seventh audit N7-03 and N7-04's quote side (D-2334, D-2333; PICK-007, REC-010). (1) `gate_once` (`app/quotes/src/gate.rs:63`) gates each line on its own, so \"555\\n123\\n4567\" in a quote's notes, original wording or a tier name passes `text_bounce` (`app/quotes/src/intake.rs:369`). `text_bounce` also gates a second view of the whole field with every whitespace run (line feed, carriage return, tab, no-break space) folded to one space, and bounces when either view is cut; `gate.rs` is unchanged, so a card keeps its lines. Homeowner text is unaffected: `privacy::scrub` already reads it whole. (2) `Price::Monthly` gains the visit schedule for a per-visit period (one of the five frequencies `payments::rules::Period` takes, `app/payments/src/rules.rs:198`: weekly, every two weeks, monthly, quarterly, yearly), parsed from the quote form T164 extends; a per-visit quote with none bounces at submission with the reason. After T293 (the brand owner of `intake.rs`) and T164 (the form and the stored column). Tests in `tests/integration/tests/quote_whole_field_gate.rs` (TD-PICK-58): 555/123/4567 across `\\n`, `\\r\\n`, a tab and a no-break space; an email or domain split across lines; \"3 x 4-foot boards\" still accepted; each in notes, original wording and a tier name; a per-visit quote without a schedule bounced, with one accepted. Update the `quotes` `CLAUDE.md` and `docs/decisions.md`.",
+   "goal": "Seventh audit N7-03 and N7-04's quote side (D-2334, D-2333; PICK-007, REC-010). (1) `gate_once` (`app/quotes/src/gate.rs:63`) gates each line on its own, so \"555\\n123\\n4567\" in a quote's notes, original wording or a tier name passes `text_bounce` (`app/quotes/src/intake.rs:369`). `text_bounce` also gates a second view of the whole field with every whitespace run (line feed, carriage return, tab, no-break space) folded to one space, and bounces when either view is cut; `gate.rs` is unchanged, so a card keeps its lines. Homeowner text is unaffected: `privacy::scrub` already reads it whole. (2) `Price::Monthly` gains the visit schedule for a per-visit period (one of the five frequencies `payments::rules::Period` takes, `app/payments/src/rules.rs:198`: weekly, every two weeks, monthly, quarterly, yearly), parsed from the quote form T164 extends; a per-visit quote with none bounces at submission with the reason (an \"Other\" schedule is a monthly price, D-1407, and needs none). After T293 (the brand owner of `intake.rs`) and T164 (the form and the stored column). Tests in `tests/integration/tests/quote_whole_field_gate.rs` (TD-PICK-58): 555/123/4567 across `\\n`, `\\r\\n`, a tab and a no-break space; an email or domain split across lines; \"3 x 4-foot boards\", \"2 coats\\n3 days\" and short numbers on separate lines still accepted; each in notes, original wording and a tier name; a per-visit quote without a schedule bounced, with one accepted. Update the `quotes` `CLAUDE.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -10418,6 +10468,59 @@
    ],
    "branch": "claude/task/T341-tier-and-visit-schedule-at-pick",
    "prompt": "kit/prompts/T341.md"
+  },
+  {
+   "id": "T344",
+   "slug": "verify-day-cap-lock",
+   "title": "picks: the global daily Verify cap holds under concurrent code sends",
+   "goal": "Seventh audit N7-05 (D-2335; PICK-055): `send_code` (`app/picks/src/service.rs:676`) takes only the contact's lock and the global daily Verify count is a plain count (`app/picks/src/models.rs:183`), so two contacts at the global threshold − 1 can both pass. `send_code` takes a transaction-level advisory lock keyed to the Arizona day it already computes (the same `arizona()` source as today) before `send_counts`; Verify is still called after the commit and the once-a-day alert is unchanged. After T341 (the last queued owner of `service.rs` in this round). Tests in `tests/integration/tests/verify_day_cap.rs` (TD-PICK-56). Update the `picks` `CLAUDE.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "picks",
+   "deps": [
+    "T341"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "security"
+   ],
+   "owns": [
+    "app/picks/src/service.rs",
+    "tests/integration/tests/verify_day_cap.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/quotes-pick.md",
+    "docs/brains/postgres-operations.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "PICK-055"
+   ],
+   "tests": [
+    "TD-PICK-56"
+   ],
+   "decisions": [
+    "D-2335"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 200,
+    "context_pct": 18
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T344-verify-day-cap-lock",
+   "prompt": "kit/prompts/T344.md"
   },
   {
    "id": "T255",
@@ -12134,7 +12237,9 @@
     "T339",
     "T340",
     "T341",
-    "T342"
+    "T342",
+    "T343",
+    "T344"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -19001,7 +19106,7 @@
    "id": "T162",
    "slug": "intake-photos-design",
    "title": "intake: the one intake order for the five paths and the Spanish 'we continue in English' line",
-   "goal": "With the photo and design steps of T212 in place (steps 9 and 10), every intake path in INT-043's \"Intake order\" table (regular, urgent, 911 list, night and web chat) follows the INT-043 order, with a golden test per text path here and the web-chat golden test in T103 (TD-INT-30, which runs later, D-491), and a Spanish homeowner with Spanish conversations off gets the \"we continue in English\" line (INT-043, TXT-041). `order.rs` holds the order and `conversation.rs` (T040's, extended here; T103 extends it later) calls it in place of its own step sequence; the TXT-041 Spanish line is a fixed template key this task adds (D-492). Step 4 (the ZIP and area check) calls T251's `zip_step` (INT-049, D-1521).",
+   "goal": "With the photo and design steps of T212 in place (steps 9 and 10), every intake path in INT-043's \"Intake order\" table (regular, urgent, 911 list, night and web chat) follows the INT-043 order, with a golden test per text path here and the web-chat golden test in T103 (TD-INT-30, which runs later, D-491), and a Spanish homeowner with Spanish conversations off gets the \"we continue in English\" line (INT-043, TXT-041). `order.rs` holds the order and `conversation.rs` (T040's, extended here; T103 extends it later) calls it in place of its own step sequence; the TXT-041 Spanish line is a fixed template key this task adds (D-492). Step 4 (the ZIP and area check) calls T251's `zip_step` (INT-049, D-1521). Whenever a later answer settles or narrows the job type (the trade questions of step 8, on the ordinary path and on the emergency path where they follow the cards, INT-029), the order writes a narrowing row through `jobs::api::record_job_facts` with the same category and the remaining candidates, in the answer's transaction; a refused write (not a narrowing) is logged without homeowner text and changes nothing (seventh audit fix round, D-2330; TD-INT-26).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -19010,7 +19115,8 @@
     "T208",
     "T091",
     "T212",
-    "T251"
+    "T251",
+    "T339"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -19050,7 +19156,8 @@
     "D-446",
     "D-460",
     "D-490",
-    "D-1521"
+    "D-1521",
+    "D-2330"
    ],
    "cites": [],
    "budget": {
@@ -19287,7 +19394,7 @@
    "id": "T164",
    "slug": "quotes-uniform-notes",
    "title": "quotes: one quote format per category, screened notes, and edit or withdraw before a pick",
-   "goal": "Every quote uses its category's `quote_format`; a quote's 300-character note goes back with the reason when it holds a contact detail or an off-platform phrase; and before any pick a business may edit (re-checked, shown as updated) or withdraw its quote (PICK-051 to PICK-053); the edit and withdraw controls and the format choice go on the business job page and quote form, rendered by the portals route `business_actions.rs` with `business_actions.html`, both extended here; `quotes::job_page` is data only (D-491, D-492). On the homeowner side an edited quote shows \"Updated <time>\" and a withdrawn one is replaced with \"Withdrawn by the business\" on the quote page (`quote_page.html`) and in the LIST reply and quote card text (`quote_card.rs`), both extended here (TD-PICK-34, D-492). T301 serves the email action links (D-2128): keep the signatures `app/server/src/action_links.rs` calls; any page or action this task adds is served by T306, not by a `.route` in `server`. Seventh audit N7-04 (D-2333; REC-010): the quote form asks a per-visit price's visit schedule (weekly, every two weeks, monthly, quarterly or yearly, the frequencies `payments::rules::Period` converts) and requires it, and `migrations/0157_quotes_formats.sql` stores it with the quote; T342 parses and bounces, T341 prices it at the pick. Tested in `tests/integration/tests/quote_formats.rs` (TD-PICK-57).",
+   "goal": "Every quote uses its category's `quote_format`; a quote's 300-character note goes back with the reason when it holds a contact detail or an off-platform phrase; and before any pick a business may edit (re-checked, shown as updated) or withdraw its quote (PICK-051 to PICK-053); the edit and withdraw controls and the format choice go on the business job page and quote form, rendered by the portals route `business_actions.rs` with `business_actions.html`, both extended here; `quotes::job_page` is data only (D-491, D-492). On the homeowner side an edited quote shows \"Updated <time>\" and a withdrawn one is replaced with \"Withdrawn by the business\" on the quote page (`quote_page.html`) and in the LIST reply and quote card text (`quote_card.rs`), both extended here (TD-PICK-34, D-492). T301 serves the email action links (D-2128): keep the signatures `app/server/src/action_links.rs` calls; any page or action this task adds is served by T306, not by a `.route` in `server`. Seventh audit N7-04 (D-2333; REC-010): the quote form asks a per-visit price's visit schedule (weekly, every two weeks, monthly, quarterly or yearly, the frequencies `payments::rules::Period` converts) and requires it; any other schedule (for example twice a week) is offered as \"Other: enter the monthly amount\", which makes the quote a monthly price, as D-1407 has the form convert it, and `migrations/0157_quotes_formats.sql` stores it with the quote; T342 parses and bounces, T341 prices it at the pick. Tested in `tests/integration/tests/quote_formats.rs` (TD-PICK-57).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -20019,7 +20126,7 @@
    "id": "T251",
    "slug": "intake-zip-and-cards-out",
    "title": "intake and quotes: the ZIP question, the job location, and the card-sending caller (every window-opened card goes out once, idempotent, quiet hours honoured)",
-   "goal": "Job cards never go out in production today (D-1521): nothing outside `quotes` calls `quotes::api::send_job_cards`, no code builds the `CardJob` and the business `Pool` it takes (both caller-filled, D-1013, D-1014), the `intake.cards_approved` event T208's approval step enqueues has no handler (D-1274, D-1277), nor has the `intake.emergency_released` event of INT-029, and no code asks the homeowner's ZIP or writes `intake.property` (only tests insert rows). Build the missing pieces. (1) The ZIP question (INT-049): `app/intake/src/zip_step.rs` asks the 5-digit ZIP of the home the job is at (new `zip_question` and `zip_again` templates in the shared English and Spanish template files, drafts for the copy panel, WORD-028), reads one 5-digit ZIP from the reply, maps it to its service-area town with `catalog::api::town_for_zip` (T248's market data, INT-048, including reviewed extra ZIPs with no centroid, which give no location), and stores the property with the ZIP and the town (`app/intake/src/models.rs`; `migrations/0165_intake_property_zip.sql` adds `intake.property.zip`, 5 digits, nullable for rows written before, PRIV-028); a ZIP in the Arizona centroid table but in no service-area town goes to `routing`'s out-of-area close (INT-022); any other reply (no ZIP, two ZIPs, or a well-formed ZIP Ask Hava does not know) asks once more (the twin's re-ask, `twin/app.py:521`, is the draft) and then waits for a usable reply without closing the request (INT-019's no-reply wait still applies). Its integration test asserts `intake.property` holds exactly the contact ID, the town and the ZIP, never an address (TD-PRIV-13's schema case). The ZIP goes into no AI call, card, log line or audit value. T162's intake order calls this step at step 4; this task adds the step and its tests, not the order. (2) The card pool (`app/quotes/src/card_pool.rs`, exported through the shared `app/quotes/src/api.rs`): build `Pool` for a job's towns and candidate trades from `businesses::api` (status, towns, ticked job types, the overflow switch), `licensing::api` (each business's classes and other licenses, and CARD-015's latest check for `verified`) and `ops::api::is_paused` (the owner pauses), never naming another module's tables. (3) The card sender (`app/intake/src/cards_out.rs`, its handlers registered in the shared `app/server/src/lib.rs`): on `intake.cards_approved` it sends only when T208's `approved_card` holds for the payload's digest, so the card the businesses get is the card she approved (TD-INT-23); on `intake.emergency_released` it sends at once (INT-029). It builds the `CardJob` from the request (the job's own town, the remaining candidate job types and the scrubbed text; neighbouring towns stay the caller's later choice, D-1014), calls `send_job_cards` in one transaction (idempotent: `ON CONFLICT DO NOTHING`, so a repeat or a retry records no second card), enqueues each new card's notice through T147's `app/quotes/src/card_notices.rs` (held whole by quiet hours, QH-005; each card's 24 hours start at the actual send, D-042, D-1021), and queues the homeowner's TXT-032 cards-out text through the homeowner-text steps T240 uses (`may_text`, `send_window` for quiet hours and opt-out, the outbox). Late cards (CARD-018, `send_late_cards`) keep their trigger with the tasks that make a business newly eligible. Tests: `app/intake/src/tests/zip_step.rs` (TD-INT-38) and `tests/integration/tests/cards_out.rs` (TD-CARD-14: approval and the end of the wait send once, a changed card is refused, a rerun sends nothing new, the emergency path, paused businesses skipped, night notices held, one TXT-032 text). Every existing test must still pass; if a done task's test breaks, stop and report. Update `app/intake/CLAUDE.md`, `app/quotes/CLAUDE.md` and `docs/architecture.md` section 10. The card pool holds only businesses for which `businesses::api::may_get_cards` is true at send time, beside `receives_cards` (D-1715, D-1760). On the emergency path (`intake.emergency_released`) each card's notice is queued through T150's `quotes::api::queue_emergency_card` (CARD-021: at once for the people with \"Emergency emails at any hour\" on at an after-hours business, at 8 a.m. for the rest, with the EMERGENCY subject and first line), not `queue_card_notice` (fourth external audit F42, D-2203). The card sender also records the job's category code and remaining candidate job type codes through T339's `jobs::api::record_job_facts`, in the transaction that sends the cards, on both the approval and the emergency path, so the fee at the pick can read them (seventh audit N7-01, D-2330).",
+   "goal": "Job cards never go out in production today (D-1521): nothing outside `quotes` calls `quotes::api::send_job_cards`, no code builds the `CardJob` and the business `Pool` it takes (both caller-filled, D-1013, D-1014), the `intake.cards_approved` event T208's approval step enqueues has no handler (D-1274, D-1277), nor has the `intake.emergency_released` event of INT-029, and no code asks the homeowner's ZIP or writes `intake.property` (only tests insert rows). Build the missing pieces. (1) The ZIP question (INT-049): `app/intake/src/zip_step.rs` asks the 5-digit ZIP of the home the job is at (new `zip_question` and `zip_again` templates in the shared English and Spanish template files, drafts for the copy panel, WORD-028), reads one 5-digit ZIP from the reply, maps it to its service-area town with `catalog::api::town_for_zip` (T248's market data, INT-048, including reviewed extra ZIPs with no centroid, which give no location), and stores the property with the ZIP and the town (`app/intake/src/models.rs`; `migrations/0165_intake_property_zip.sql` adds `intake.property.zip`, 5 digits, nullable for rows written before, PRIV-028); a ZIP in the Arizona centroid table but in no service-area town goes to `routing`'s out-of-area close (INT-022); any other reply (no ZIP, two ZIPs, or a well-formed ZIP Ask Hava does not know) asks once more (the twin's re-ask, `twin/app.py:521`, is the draft) and then waits for a usable reply without closing the request (INT-019's no-reply wait still applies). Its integration test asserts `intake.property` holds exactly the contact ID, the town and the ZIP, never an address (TD-PRIV-13's schema case). The ZIP goes into no AI call, card, log line or audit value. T162's intake order calls this step at step 4; this task adds the step and its tests, not the order. (2) The card pool (`app/quotes/src/card_pool.rs`, exported through the shared `app/quotes/src/api.rs`): build `Pool` for a job's towns and candidate trades from `businesses::api` (status, towns, ticked job types, the overflow switch), `licensing::api` (each business's classes and other licenses, and CARD-015's latest check for `verified`) and `ops::api::is_paused` (the owner pauses), never naming another module's tables. (3) The card sender (`app/intake/src/cards_out.rs`, its handlers registered in the shared `app/server/src/lib.rs`): on `intake.cards_approved` it sends only when T208's `approved_card` holds for the payload's digest, so the card the businesses get is the card she approved (TD-INT-23); on `intake.emergency_released` it sends at once (INT-029). It builds the `CardJob` from the request (the job's own town, the remaining candidate job types and the scrubbed text; neighbouring towns stay the caller's later choice, D-1014), calls `send_job_cards` in one transaction (idempotent: `ON CONFLICT DO NOTHING`, so a repeat or a retry records no second card), enqueues each new card's notice through T147's `app/quotes/src/card_notices.rs` (held whole by quiet hours, QH-005; each card's 24 hours start at the actual send, D-042, D-1021), and queues the homeowner's TXT-032 cards-out text through the homeowner-text steps T240 uses (`may_text`, `send_window` for quiet hours and opt-out, the outbox). Late cards (CARD-018, `send_late_cards`) keep their trigger with the tasks that make a business newly eligible. Tests: `app/intake/src/tests/zip_step.rs` (TD-INT-38) and `tests/integration/tests/cards_out.rs` (TD-CARD-14: approval and the end of the wait send once, a changed card is refused, a rerun sends nothing new, the emergency path, paused businesses skipped, night notices held, one TXT-032 text). Every existing test must still pass; if a done task's test breaks, stop and report. Update `app/intake/CLAUDE.md`, `app/quotes/CLAUDE.md` and `docs/architecture.md` section 10. The card pool holds only businesses for which `businesses::api::may_get_cards` is true at send time, beside `receives_cards` (D-1715, D-1760). On the emergency path (`intake.emergency_released`) each card's notice is queued through T150's `quotes::api::queue_emergency_card` (CARD-021: at once for the people with \"Emergency emails at any hour\" on at an after-hours business, at 8 a.m. for the rest, with the EMERGENCY subject and first line), not `queue_card_notice` (fourth external audit F42, D-2203). The card sender also writes the job's first facts row through T339's `jobs::api::record_job_facts`, in the transaction that sends the cards, on both the approval and the emergency path, so the fee at the pick can read it (seventh audit N7-01, D-2330): the category and exactly the candidate job types the cards went with. On the emergency path the category is always known at release (the trade check, step 5, comes before \"How soon?\" and the choice, INT-016, INT-030, and the choice is offered only with the category, `app/intake/src/service.rs:604`); the job type may not be, so the candidates are the ones intake still holds, which is every job type of the category when the trade questions have not narrowed it; later answers narrow the row (T162). Tested in TD-CARD-14.",
    "type": "build",
    "phase": 1,
    "stage": "4",
