@@ -29,6 +29,7 @@
 mod about_us;
 pub mod api;
 mod backup_address;
+mod capability;
 mod channel_preference;
 mod complaint_holds;
 mod complaints;

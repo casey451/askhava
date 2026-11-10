@@ -211,7 +211,8 @@ def build(args: argparse.Namespace, outbox_dir: Path) -> tuple[cycle.Config, Git
                        lanes(ROOT / "kit" / "runner.json"), env.decision_numbers,
                        proof_stages=frozenset(proof.MACHINE_PROOFS), stage_proof=stage_proof,
                        lane_hint=lane_hint(os.environ.get("RUNNER_LANE", "")), locked=locked_path,
-                       plan_health=plan_health_checker(ROOT, kit), model_window=model_window.load(ROOT / "kit" / "runner.json"))
+                       plan_health=plan_health_checker(ROOT, kit), model_window=model_window.load(ROOT / "kit" / "runner.json"),
+                       claim_first=claim_first(ROOT / "kit" / "runner.json"))
     return cfg, env
 
 
@@ -272,6 +273,18 @@ def lanes(settings: Path) -> int:
         return 1
     value = json.loads(settings.read_text(encoding="utf-8")).get("lanes", 1)
     return value if isinstance(value, int) and not isinstance(value, bool) and value >= 1 else 1
+
+
+def claim_first(settings: Path) -> tuple[str, ...]:
+    """The task ids kit/runner.json "claim_first" lists, tried before every other claimable task, in this
+    order (D-2540: Casey's "make these the next claims"). Ordering only (`cycle.claim_order`): eligibility,
+    lanes, plan health, pacing and gates are unchanged. () when the file or key is missing, unreadable or
+    not a list; an entry that is not a string is dropped."""
+    try:
+        value = json.loads(settings.read_text(encoding="utf-8")).get("claim_first", [])
+    except (OSError, ValueError, AttributeError):
+        return ()
+    return tuple(v for v in value if isinstance(v, str)) if isinstance(value, list) else ()
 
 
 def owner_paths(codeowners: Path) -> tuple[str, ...]:
