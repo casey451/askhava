@@ -1,6 +1,6 @@
 {
  "items": {
-  "BUILD_BRIEF.md": "55eb1f6d9dcb115aa93f76c69035ae36de1f3128d1d6fef21fac1b460121c70a",
+  "BUILD_BRIEF.md": "198e74400b27c6db7e473784434985f2bb5e5895b67f67f4cfd73297db057115",
   "CLAUDE.md": "b0583382f0e224518f101e0d18a294635ccce76569297b6c9333896b56d44ad1",
   "docs/architecture.md#3": "c97b1036703c1b8e23718cbbef01ae3f51b8540468dd7b702c4abab73e13b6a7",
   "docs/architecture.md#4": "310b91ad3d6c776b1531bee08d7f743aa3b69905b786cba5d201a028e7926258",
@@ -43,7 +43,7 @@
   "kit/prompts/TEMPLATE.md": "75b992112639a77a79d3330536a73e9ab8c1743cb7efa779471efb10a8ff34c1",
   "kit/runner.json": "43d3608b27118af18c0786e5c2e2daa5312e5b5605f96d310e43cd022b72e5ef",
   "kit/sources.sha256": "853b7f37d6e04259ad9d7b64e16e6cb0111ee4499e37af46aeb3183748c7f335",
-  "kit/tasks.json": "eac5b5c292cccfd662fd47881dc789185e940b7fb91038eb4e2cef2baf1e03d1",
+  "kit/tasks.json": "20238cc71f669501af09c3cd3c584e4ee05bab4e186a821f5ddfa36f11c917d6",
   "scripts/brand.py": "13d78b9984835e09b072aa5386a2429ba9f65395a6c2ca03677f7ac8c1173d8d",
   "scripts/check_ai_smell.py": "85dabd31a4def57084ccca15c6c8efee89cc3f5a9e376a9ed07f4f6a98a2885a",
   "scripts/check_catalog.py": "c5ee638f3fa6b90324623d91c0ecfd1aa487c52c59e3be1b369b8c3e1e505454",
