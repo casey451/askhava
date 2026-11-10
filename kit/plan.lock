@@ -41,7 +41,7 @@
   "docs/test-design.md": "a303f02827f1ba28bd65674dd7fdf453c815b7657889c274bd3ebf1959e5dc66",
   "docs/threat-model.md": "f42b7fa58e2dccd9fda2e968823f75b3c6143b1ee8d5da126aa231d7b7ec9b16",
   "kit/prompts/TEMPLATE.md": "75b992112639a77a79d3330536a73e9ab8c1743cb7efa779471efb10a8ff34c1",
-  "kit/runner.json": "2bee8016a0aef7ee393e436d8316440f6fd6139416337be956ce15bd8e486bd7",
+  "kit/runner.json": "4624ae4ed3c884d5059d16ef2f78f0d08797ef21d4c0d47fa02597dec6b99dbe",
   "kit/sources.sha256": "853b7f37d6e04259ad9d7b64e16e6cb0111ee4499e37af46aeb3183748c7f335",
   "kit/tasks.json": "c95e5bbb7e21d783df25ec4982e1d79d350e9fa9ac58b89ebe0c33644332de73",
   "scripts/brand.py": "13d78b9984835e09b072aa5386a2429ba9f65395a6c2ca03677f7ac8c1173d8d",

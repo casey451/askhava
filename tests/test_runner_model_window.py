@@ -82,12 +82,13 @@ def test_the_repository_window_is_caseys_thursday_switch() -> None:
     assert raw["lanes"] == 1 and raw["owner_review"] is False  # the locked switches are untouched (D-620)
     win = mw.load()
     assert win is not None and win["model"] == FABLE and win["alias"] == "fable"
-    assert st.iso(win["from"]) == "2026-11-12T17:00:00Z" and win["until"] is None and win["run_to_limit"] is True
+    # Closed before it opens (D-2485, Casey Nov 10): until == from, an empty [from, until) that is never active.
+    assert st.iso(win["from"]) == st.iso(win["until"]) == "2026-11-12T17:00:00Z" and win["run_to_limit"] is True
     assert win["end_on_limit"] is True
     reset = st.parse("2026-11-12T17:00:00Z")
-    assert not mw.in_window(win, reset - timedelta(seconds=1)) and mw.in_window(win, reset)
+    assert not mw.in_window(win, reset - timedelta(seconds=1)) and not mw.in_window(win, reset)
     assert mw.session_model(win, reset - timedelta(seconds=1), None) == "claude-sonnet-5-5"
-    assert mw.session_model(win, reset, None) == FABLE
+    assert mw.session_model(win, reset, None) == "claude-sonnet-5-5"  # the plan's models straight through Thursday
 
 
 # ---- workers and reviewers
@@ -241,9 +242,9 @@ def _session_model_output(monkeypatch: pytest.MonkeyPatch, when: datetime, state
 
 
 def test_the_session_model_command_reads_runner_json_and_the_state(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    reset = st.parse("2026-11-12T17:00:00Z")  # the repository's own window
+    reset = st.parse("2026-11-12T17:00:00Z")  # the repository's own window, closed before it opens (D-2485)
     assert _session_model_output(monkeypatch, reset - timedelta(minutes=1), "") == ["model=claude-sonnet-5-5", "windowed=false"]
-    assert _session_model_output(monkeypatch, reset, str(tmp_path / "missing.json")) == [f"model={FABLE}", "windowed=true"]
+    assert _session_model_output(monkeypatch, reset, str(tmp_path / "missing.json")) == ["model=claude-sonnet-5-5", "windowed=false"]
     win = mw.load()
     assert win is not None
     (tmp_path / "state.json").write_text(json.dumps(mw.record_refusal(st.new_state(), win, REFUSAL, reset)))
@@ -422,8 +423,8 @@ def test_the_pacer_runs_to_the_limit_only_inside_the_window(tmp_path: Path, monk
 
 def test_the_runner_wires_the_pacer_switch_to_kit_runner_json() -> None:
     switch = entry.run_to_limit_now()
-    reset = st.parse("2026-11-12T17:00:00Z")
-    assert switch(reset, st.new_state()) is True and switch(reset - timedelta(seconds=1), st.new_state()) is False
+    reset = st.parse("2026-11-12T17:00:00Z")  # the repository's window is closed before it opens (D-2485)
+    assert switch(reset, st.new_state()) is False and switch(reset - timedelta(seconds=1), st.new_state()) is False
 
 
 def test_the_keeper_stops_at_the_real_limit_inside_the_window() -> None:
@@ -590,7 +591,8 @@ def test_the_usage_reading_command_closes_the_window(monkeypatch: pytest.MonkeyP
     event = {"type": "rate_limit_event", "rate_limit_info": {"unifiedWindows": {"seven_day": {"utilization": 1.0, "resetsAt": 1795000000}}}}
     execution.write_text(json.dumps([event]))
     assert entry.usage_reading(execution, env).startswith("usage_reading_recorded")  # type: ignore[arg-type]  # reason: FakeEnv
-    assert env.store["model_window_ended"]["why"] == "limit" and (tmp_path / f"{mw.ENDED_OUTBOX_ID}.md").exists()
+    # The repository's window is closed before it opens (D-2485): the reading is kept and closes nothing.
+    assert "model_window_ended" not in env.store and not (tmp_path / f"{mw.ENDED_OUTBOX_ID}.md").exists()
 
 
 def test_until_still_ends_an_end_on_limit_window() -> None:
