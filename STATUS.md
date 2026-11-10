@@ -1,18 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-10T15:14:49Z by runner 3ddb3a449ab6 (actions).
+Updated 2026-11-10T15:29:42Z by runner d145202dd72b (actions).
 
-**Idle since 14:54Z; 186 of 334 done; week 89% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T231 in progress since 15:29Z; 186 of 334 done; week 89% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 186 of 334 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 14:54Z (no task in progress)
-- **Week:** 89% used, 18.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:14Z, 0 min before this update
+- **Lane:** lane 1: T231 claimed 15:29Z, lease until 18:29Z
+- **Week:** 89% used, 16.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Last run:** 15:14Z, 14 min before this update
 - **Keeper:** last ran 15:14Z, next wake 15:34Z
 
 ## Needs attention
-- PLAN GAP T231 (since 2026-11-10T15:04:18Z, no attempt used; a plan change fixes it): T231: dependency T199 is DONE but its owned file app/portals/templates/contact_card.vcf is not on main; T231: dependency T199 is DONE but its owned file tests/integration/tests/no_business_calls.rs is not on main; T231: dependency T199 is DONE but its owned file tests/security/tests/link_scanners.rs is not on main; T231: dependency T199 is DONE but its owned file migrations/0148_portals_shared_inbox.sql is not on main
+- nothing
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -80,7 +80,7 @@ Updated 2026-11-10T15:14:49Z by runner 3ddb3a449ab6 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-10T13:02:08Z (week)): five-hour: 4.5M used, 24.6M left, resets 2026-11-10T15:21:11Z; week: 176.0M used, 18.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-01T13:40:53Z.
+- Pacing (session_reading 2026-11-10T15:14:33Z (week)): five-hour: 0k used, 29.1M left, resets on first use; week: 178.0M used, 16.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-01T18:41:10Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -95,7 +95,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T231 (lease until 2026-11-10T18:29:39Z)
 
 ## Last usage reading
 - {"task": "T199", "at": "2026-11-10T14:22:51Z", "output_tokens": 187450, "cache_read_input_tokens": 43470634, "input_tokens": 672, "cache_creation_input_tokens": 730316}
