@@ -605,10 +605,19 @@ def _plan_gap_line(task: dict[str, Any]) -> str:
     return f"- PLAN GAP {task['id']} (since {gap.get('at')}, no attempt used; a plan change fixes it): {problems}"
 
 
+def _owned_gap_line(task: dict[str, Any]) -> str:
+    """A DONE task whose owned file or route was missing on main at its close (runner.cycle.mark_owned_gap,
+    D-1869); listed until main has it or a plan change moves it."""
+    gap = task.get("owned_gap") or {}
+    problems = "; ".join(str(p) for p in gap.get("problems") or [])
+    return f"- OWNED GAP {task['id']} (DONE, since {gap.get('at')}; a later task or plan change must add it): {problems}"
+
+
 def _attention(state: State, now: datetime) -> list[str]:
     lines = [f"- BLOCKED {t['id']}: {t.get('reason', '')}{_waits_for(t)}" for t in state.get("tasks", []) if t.get("status") == st.BLOCKED]
     lines += [f"- Waiting for Casey: {t['id']}" for t in state.get("tasks", []) if t.get("status") == st.WAITING_FOR_OWNER]
     lines += [_plan_gap_line(t) for t in state.get("tasks", []) if t.get("plan_gap") and t.get("status") not in st.SATISFIED]
+    lines += [_owned_gap_line(t) for t in state.get("tasks", []) if t.get("owned_gap")]
     lines += [f"- Deviation {d.get('id')}: {d.get('rule')} ({d.get('owner')}, until {d.get('expiry')})" for d in st.open_deviations(state, now)]
     red = state.get("main_red")
     if red:
@@ -1015,6 +1024,18 @@ class GitHubEnv:
             return None
         code, _, _ = self._run(["git", "merge-base", "--is-ancestor", sha, main], None, self.root)
         return {0: True, 1: False}.get(code)
+
+    def text_at(self, sha: str, path: str) -> str | None:
+        """The file's text at that commit, None when no such file is there; raises RuntimeError when this
+        clone cannot read the commit, so the owned-files check takes no evidence from it (D-1869)."""
+        self.git("cat-file", "-e", f"{sha}^{{commit}}")
+        return self._show(sha, path)
+
+    def files_at(self, sha: str, path: str) -> list[str]:
+        """The files at or under `path` at that commit, [] when none; raises RuntimeError when this clone
+        cannot read the commit (D-1869)."""
+        self.git("cat-file", "-e", f"{sha}^{{commit}}")
+        return self.git("ls-tree", "-r", "--name-only", sha, "--", path).splitlines()
 
     def decision_numbers(self) -> set[int] | None:
         """The D-numbers on main's docs/decisions.md (fetched fresh), plus those on the head of every open

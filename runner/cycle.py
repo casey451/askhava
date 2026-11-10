@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import copy
+import json
 import re
 from collections.abc import Callable
 from dataclasses import dataclass, field
@@ -182,6 +183,16 @@ class Env(Protocol):
     def checks_on(self, sha: str) -> dict[str, str] | None:
         """{required check name: conclusion, or "running"} on that commit (REST, read only); None when
         the checks cannot be read (D-630)."""
+        ...
+
+    def text_at(self, sha: str, path: str) -> str | None:
+        """The file's text at that commit, None when no such file is there; raises when git cannot read
+        the commit (D-1869). Optional: an Env without it skips the owned-files check."""
+        ...
+
+    def files_at(self, sha: str, path: str) -> list[str]:
+        """The files at or under `path` at that commit (`git ls-tree -r --name-only`), [] when none;
+        raises when git cannot read the commit (D-1869). Optional, like text_at."""
         ...
 
 
@@ -396,7 +407,8 @@ def _resolve_one(state: State, env: Env, cfg: Config, now: datetime, task: dict[
         return state, "merge_pending"
     if reviewed is None:
         return _unplaced_merge(state, cfg, tid, pr, now)
-    return _merged(state, tid, pr, cfg, now, reviewed)
+    state, result = _merged(state, tid, pr, cfg, now, reviewed)
+    return mark_owned_gap(state, env, cfg, tid, now), result
 
 
 def _lane_outcome(state: State, tid: str, lane: str, result: str, now: datetime,
@@ -1104,6 +1116,7 @@ def run_cycle(cfg: Config, env: Env, now: datetime) -> str:
     state = st.release_expired(_record_inbox(st.sync_graph(base, cfg.graph), cfg, items, now), now)
     state = release_proven(record_proofs(cfg, state, now))
     state = _adopt_orphan_pr(base, state, env)
+    state = recheck_owned_gaps(state, env)
     if state != base:
         if not env.push_state(state, base):
             return "lost_race"  # inbox files stay put and are read again next cycle
@@ -1300,6 +1313,93 @@ def _mark_plan_gap(state: State, tid: str, problems: list[str], now: datetime) -
     if held.get("problems") == kept:
         return state
     return st.with_task(state, tid, plan_gap={"at": held.get("at") or st.iso(now), "problems": kept})
+
+
+# ---- owned files and routes at a task's close (T285, D-1869)
+
+OWNED_GAP_TITLE = "{tid}: owned file missing at close"
+ROUTES_HEADING = "## 13. Routes"  # docs/architecture.md section 13, T284's route table (D-1868)
+
+
+def owned_problems(env: Env, tid: str, sha: str, plan_sha: str) -> list[str] | None:
+    """What of `tid`'s plan is missing at commit `sha`: each path it owns in `kit/tasks.json` at `plan_sha`
+    (a path ending in `/` must be a non-empty folder) and each route row in docs/architecture.md section 13
+    whose Wired cell still names it. None when git cannot say or the Env cannot read commits (D-1869)."""
+    show, ls = getattr(env, "text_at", None), getattr(env, "files_at", None)
+    if show is None or ls is None or not sha or not plan_sha:
+        return None
+    try:
+        plan = show(plan_sha, "kit/tasks.json")
+        if plan is None:
+            return None
+        owns = _owns(plan, tid)
+        missing = [p for p in owns if not _present(p, list(ls(sha, p)))]
+        rows = _unwired_routes(show(sha, "docs/architecture.md") or "", tid)
+    except Exception as exc:  # noqa: BLE001  # reason: a failed git read is no evidence either way (D-1350, D-1869)
+        print(f"runner: owned-files check failed for {tid}: {str(exc)[:200]}")
+        return None
+    return [f"{tid}: {p} missing on main" for p in missing] + [
+        f"{tid}: route {r} still reads Wired {tid} in docs/architecture.md section 13" for r in rows]
+
+
+def _owns(plan_text: str, tid: str) -> list[str]:
+    """The `owns` list of `tid` in a kit/tasks.json text ([] when the task is not in it)."""
+    tasks = json.loads(plan_text).get("tasks", [])
+    found = next((t for t in tasks if t.get("id") == tid), {})
+    return [str(p) for p in found.get("owns") or []]
+
+
+def _present(path: str, files: list[str]) -> bool:
+    """A folder path (ending in `/`) has a file under it; a file path is itself a file."""
+    return bool(files) if path.endswith("/") else path in files
+
+
+def _unwired_routes(arch: str, tid: str) -> list[str]:
+    """`METHOD path` of every section-13 row whose Wired cell is `tid`."""
+    section = arch.split(ROUTES_HEADING, 1)[1].split("\n## ", 1)[0] if ROUTES_HEADING in arch else ""
+    rows = [[c.strip() for c in line.strip().strip("|").split("|")] for line in section.splitlines() if line.startswith("|")]
+    return [f"{r[0]} {r[1]}" for r in rows if len(r) == 4 and r[3] == tid]
+
+
+def mark_owned_gap(state: State, env: Env, cfg: Config, tid: str, now: datetime) -> State:
+    """At a close that made the task DONE (not an empty hand-in, not FIX-MAIN), check its plan at the merge.
+    A miss never un-merges and never holds the lane: the task stays DONE with an `owned_gap` mark ({at,
+    problems}) and one outbox item, so the overseer hears of it in the same cycle (D-1869)."""
+    entry = st.entry(state, tid)
+    if entry.get("status") != st.DONE or entry.get("empty_handin") or tid == st.FIX_MAIN:
+        return state
+    merge = str(entry.get("merged_sha") or "")
+    problems = owned_problems(env, tid, merge, merge)
+    if not problems:
+        return state
+    kept = _kept(problems)
+    body = ("The task merged and is DONE, but its plan is not all on main:\n\n" + "\n".join(f"- {p}" for p in kept) +
+            "\n\nA later task or a plan change must add or move these; the mark clears by itself once main has them (D-1869).")
+    outbox.write_outbox(cfg.outbox_dir, f"{tid}-owned-gap", OWNED_GAP_TITLE.format(tid=tid), "blocked", body)
+    return st.with_task(state, tid, owned_gap={"at": st.iso(now), "problems": kept})
+
+
+def _kept(problems: list[str]) -> list[str]:
+    """At most PLAN_GAP_PROBLEMS_KEPT problems, then one line counting the rest."""
+    kept = problems[:PLAN_GAP_PROBLEMS_KEPT]
+    return kept + ([f"and {len(problems) - len(kept)} more"] if len(problems) > len(kept) else [])
+
+
+def recheck_owned_gaps(state: State, env: Env) -> State:
+    """Each cycle, judge every DONE task's `owned_gap` mark against main's head and main's kit/tasks.json:
+    it clears once nothing is missing (the file arrived, a plan change moved it, the row reads `yes` or names
+    another task) and narrows to what is still missing; a git error leaves it as it is (D-1350, D-1869).
+    No mark, no git read."""
+    marked = [t["id"] for t in state["tasks"] if t.get("owned_gap") and t.get("status") == st.DONE]
+    head = env.main_head() if marked else ""
+    for tid in marked:
+        problems = owned_problems(env, tid, head, head)
+        held = st.entry(state, tid)["owned_gap"]
+        if problems == []:
+            state = _without(state, tid, "owned_gap")
+        elif problems is not None and _kept(problems) != held.get("problems"):
+            state = st.with_task(state, tid, owned_gap={"at": held.get("at"), "problems": _kept(problems)})
+    return state
 
 
 def _task_def(cfg: Config, state: State, tid: str) -> dict[str, Any]:
