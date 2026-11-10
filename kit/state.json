@@ -18819,7 +18819,13 @@
     "T335",
     "T336",
     "T337",
-    "T338"
+    "T338",
+    "T339",
+    "T340",
+    "T341",
+    "T342",
+    "T343",
+    "T344"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -20223,7 +20229,8 @@
     "T208",
     "T091",
     "T212",
-    "T251"
+    "T251",
+    "T339"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -22345,7 +22352,8 @@
     "T184",
     "T045",
     "T240",
-    "T247"
+    "T247",
+    "T339"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -23709,7 +23717,9 @@
     "T254",
     "T287",
     "T328",
-    "T337"
+    "T337",
+    "T340",
+    "T341"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -25774,7 +25784,8 @@
     "T049",
     "T294",
     "T164",
-    "T232"
+    "T232",
+    "T341"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -26029,7 +26040,8 @@
     "T327",
     "T266",
     "T332",
-    "T335"
+    "T335",
+    "T340"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -26149,6 +26161,90 @@
    "attempts": 0,
    "slug": "refused-connection-test-port",
    "type": "harness",
+   "stage": "4"
+  },
+  {
+   "id": "T339",
+   "deps": [
+    "T031",
+    "T057",
+    "T075",
+    "T248",
+    "T247",
+    "T240"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "job-category-and-types-stored",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T343",
+   "deps": [
+    "T339"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "job-facts-in-pick-fixtures",
+   "type": "harness",
+   "stage": "4"
+  },
+  {
+   "id": "T340",
+   "deps": [
+    "T339",
+    "T251",
+    "T343",
+    "T295",
+    "T318",
+    "T287"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "fee-facts-at-pick",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T342",
+   "deps": [
+    "T293",
+    "T164"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "quote-text-whole-field-gate",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T341",
+   "deps": [
+    "T340",
+    "T342",
+    "T157",
+    "T214",
+    "T266",
+    "T164",
+    "T232",
+    "T294"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "tier-and-visit-schedule-at-pick",
+   "type": "harness",
+   "stage": "4"
+  },
+  {
+   "id": "T344",
+   "deps": [
+    "T341"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "verify-day-cap-lock",
+   "type": "build",
    "stage": "4"
   }
  ],
@@ -27816,7 +27912,7 @@
    }
   }
  },
- "updated_at": "2026-11-10T02:05:28Z",
+ "updated_at": "2026-11-10T02:27:56Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -27914,7 +28010,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "63b7c55a58ecb2e5b0b28e88687eaff944f9a3c7",
+ "runner_sha": "9225a9d319f882503ea73745fd5529e046e80788",
  "starter": "actions",
  "smoke_runs": [
   {

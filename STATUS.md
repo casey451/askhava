@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-10T02:05:28Z by runner 63b7c55a58ec (actions).
+Updated 2026-11-10T02:27:56Z by runner 9225a9d319f8 (actions).
 
-**Idle since 01:51Z; 177 of 325 done; week 80% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 01:51Z; 177 of 331 done; week 80% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 177 of 325 build tasks (owner gates not counted)
+- **Tasks done:** 177 of 331 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 01:51Z (no task in progress)
 - **Week:** 80% used, 40.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:05Z, 0 min before this update
+- **Last run:** 02:05Z, 22 min before this update
 - **Keeper:** last ran 02:05Z, next wake 02:25Z
 
 ## Needs attention
@@ -38,6 +38,7 @@ Updated 2026-11-10T02:05:28Z by runner 63b7c55a58ec (actions).
 | T260 | stand-in and adapters: an unconfirmed PaymentIntent, its on- | done | 1 | 42 min | 03:09Z |  |
 
 ### Plan and harness merges on main
+- 02:15Z Plan: seventh audit — fee facts from the job's category at the pick, tier and per-visit picks, whole-field quote gate, atomic Verify cap (D-2329–D-2335, 
 - 01:33Z Plan: the refused-connection test holds its port (T338, D-2318) (#404)
 - 00:54Z Plan: sixth audit — $0 release bound to its pick, refund amounts checked, reconcile catch-up and paging, real Stripe reads, rate-limit prune, inbound-tex
 - 00:05Z Plan: fifth audit — every queued task kind gets a registered handler; late success on ended picks; unreadable Stripe success and unmatched fraud warning 
@@ -48,8 +49,8 @@ Updated 2026-11-10T02:05:28Z by runner 63b7c55a58ec (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 237 of 732 (32.4%) · partial 297 · unstarted 198
-**Tasks merged (throughput only):** 177 of 325
+**Requirements verified:** 232 of 732 (31.7%) · partial 302 · unstarted 198
+**Tasks merged (throughput only):** 177 of 331
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -67,8 +68,8 @@ Updated 2026-11-10T02:05:28Z by runner 63b7c55a58ec (actions).
 | ops-recovery | 2 | 5 | 47 | 54 |
 | privacy | 7 | 21 | 3 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
-| quotes-pick | 31 | 15 | 10 | 56 |
-| recurring | 7 | 1 | 3 | 11 |
+| quotes-pick | 28 | 18 | 10 | 56 |
+| recurring | 5 | 3 | 3 | 11 |
 | security | 7 | 40 | 7 | 54 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 2 | 26 | 28 |
@@ -84,7 +85,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 57 of 126 done
+- stage 4: 57 of 132 done
 - stage 5: 0 of 53 done
 - stage 6: 0 of 30 done
 - stage 7: 0 of 2 done
