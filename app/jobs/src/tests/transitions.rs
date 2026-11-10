@@ -96,8 +96,8 @@ impl<S: tracing::Subscriber> tracing_subscriber::Layer<S> for Errors {
     }
 }
 
-/// TD-JOB-01: a move with no arrow is refused, logged once as a bug and writes nothing; a move from a status the job has
-/// left applies to nothing (JOB-002, JOB-004).
+/// TD-JOB-01, TD-JOB-15: a move with no arrow is refused, logged once as a bug and writes nothing; a move from a
+/// status the job has left applies to nothing (JOB-002, JOB-004).
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn a_refused_or_stale_move_changes_nothing(pool: PgPool) {
     let mut db = pool.acquire().await.expect("connection");
