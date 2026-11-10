@@ -358,8 +358,10 @@ def process_alive(pid: int) -> bool:
 
 def stop_background_smoke(alive: Callable[[int], bool] = process_alive, sleep: Callable[[float], None] = time.sleep) -> str:
     """Stop this job's background smoke (SMOKE_BG), if it still runs: SIGTERM to its process group and to its
-    smoke.sh's (SMOKE_BG_CHILD), up to SMOKE_STOP_WAIT seconds for it to end, then SIGKILL to both; the record
-    goes. Returns "stopped" or "none" (D-2560). Used for a smoke of a head main has left and before the cache save."""
+    smoke.sh's (SMOKE_BG_CHILD), up to SMOKE_STOP_WAIT seconds for both leaders to end, then SIGKILL to every
+    recorded group whatever the wait saw (a test binary or a smoke.sh that ignores SIGTERM, or a group whose leader
+    already left, still goes); the record goes. Returns "stopped" or "none" (D-2560). Used for a smoke of a head
+    main has left and before the cache save."""
     base = smoke_target_dir().parent
     bg = _read_json(base / SMOKE_BG) or {}
     pid = bg.get("pid") if bg.get("job") == job_id() and isinstance(bg.get("pid"), int) else None
@@ -369,21 +371,24 @@ def stop_background_smoke(alive: Callable[[int], bool] = process_alive, sleep: C
         groups = [pid, int((base / SMOKE_BG_CHILD).read_text(encoding="utf-8").strip())]
     except (OSError, ValueError):
         groups = [pid]
-    for sig in (signal.SIGTERM, signal.SIGKILL):
-        for group in groups:
-            try:
-                os.killpg(group, sig)
-            except (ProcessLookupError, PermissionError):
-                pass
-        for _ in range(SMOKE_STOP_WAIT if sig == signal.SIGTERM else 0):
-            if not alive(pid):
-                break
-            sleep(1)
-        if not alive(pid):
+    _signal_groups(groups, signal.SIGTERM)
+    for _ in range(SMOKE_STOP_WAIT):
+        if not any(alive(group) for group in groups):
             break
+        sleep(1)
+    _signal_groups(groups, signal.SIGKILL)
     for name in (SMOKE_BG, SMOKE_BG_CHILD):
         (base / name).unlink(missing_ok=True)
     return "stopped"
+
+
+def _signal_groups(groups: list[int], sig: signal.Signals) -> None:
+    """Send `sig` to each process group in `groups`; a group already gone (or not ours) is skipped."""
+    for group in groups:
+        try:
+            os.killpg(group, sig)
+        except (ProcessLookupError, PermissionError):
+            pass
 
 
 def _read_json(path: Path) -> dict[str, Any] | None:
@@ -857,6 +862,7 @@ class GitHubEnv:
         self.smoke_background = os.environ.get(SMOKE_BACKGROUND) == "1"  # run the session's smoke detached (D-2560)
         self.smoke_wait: float = SMOKE_WAIT  # how long one smoke_main waits for the background smoke (D-2560)
         self.monotonic: Callable[[], float] = time.monotonic  # the wait's clock; tests replace it (D-2560)
+        self.wait_from = time.monotonic()  # the background wait's start: one SMOKE_WAIT per runner call, retries included
         self.bg_stop: Callable[[], str] = lambda: stop_background_smoke(self.bg_alive, self.sleep)  # tests replace it
         self.bg_start: Callable[[str, Path], int] = start_background_smoke  # tests replace it (D-2560)
         self.bg_alive: Callable[[int], bool] = process_alive  # tests replace it (D-2560)
@@ -1271,10 +1277,20 @@ class GitHubEnv:
         is collected or stopped (`_background_smoke`) before anything is claimed beside it."""
         if self.dry_run or not job_id():
             return False
-        if _pre_result(head)[0] is not None:
-            return True
         bg = _read_json(smoke_target_dir().parent / SMOKE_BG) or {}
-        return bg.get("job") == job_id() and isinstance(bg.get("pid"), int) and self.bg_alive(bg["pid"])
+        alive = bg.get("job") == job_id() and isinstance(bg.get("pid"), int) and self.bg_alive(bg["pid"])
+        return _pre_result(head)[0] is not None or alive  # alive first: a smoke that writes and ends between is seen
+
+    def settle_background_smoke(self, head: str) -> None:
+        """Stop this job's background smoke when it runs for another head than `head` (`bg_stop`), before the start
+        routine judges a reuse (D-2560): a green another lane recorded on `head` can then stand, and nothing is
+        ever claimed beside a running smoke, since a smoke for `head` itself still makes `own_smoke_for` true."""
+        if self.dry_run or not job_id():
+            return
+        bg = _read_json(smoke_target_dir().parent / SMOKE_BG) or {}
+        pid = bg.get("pid")
+        if bg.get("job") == job_id() and bg.get("sha") != head and isinstance(pid, int) and self.bg_alive(pid):
+            self.log.append(f"the background smoke of {str(bg.get('sha'))[:12]} {self.bg_stop()}: main is now {head[:12]}")
 
     def _background_smoke(self, head: str) -> tuple[bool, str]:
         """The session's smoke of `head`, detached (D-2560): this job's background smoke for `head` (SMOKE_BG) if it
@@ -1290,8 +1306,10 @@ class GitHubEnv:
             self.log.append(f"the background smoke of {str(bg.get('sha'))[:12]} {self.bg_stop()}: main is now {head[:12]}")
             bg, alive = {}, False
         if not alive and bg.get("sha") == head and pid is not None:
-            return self._background_lost(head)
+            pre, _ = _pre_result(head)  # it may have written its result just before it ended
+            return self._use_pre_smoke(pre, head) if pre is not None else self._background_lost(head)
         if pid is None or not alive:
+            (smoke_target_dir().parent / SMOKE_BG_CHILD).unlink(missing_ok=True)
             pid = self.bg_start(head, self.root)
             _write_json(smoke_target_dir().parent / SMOKE_BG, {"sha": head, "job": job_id(), "pid": pid, "at": _utc_now()})
             _mark_smoke_ran()
@@ -1299,8 +1317,9 @@ class GitHubEnv:
         return self._await_background(head, pid)
 
     def _await_background(self, head: str, pid: int) -> tuple[bool, str]:
-        """Wait up to `smoke_wait` for the background smoke's result for `head` (D-2560); see `_background_smoke`."""
-        deadline = self.monotonic() + self.smoke_wait
+        """Wait for the background smoke's result for `head` until `smoke_wait` after `wait_from` (when this env, one
+        runner call, began), so a lost-race retry in the same call never waits a second time (D-2560)."""
+        deadline = self.wait_from + self.smoke_wait
         while True:
             alive = self.bg_alive(pid)
             pre, _ = _pre_result(head)
@@ -1310,7 +1329,7 @@ class GitHubEnv:
                 return self._background_lost(head)
             if self.monotonic() >= deadline:
                 self.smoke_pending = True
-                self.log.append(f"smoke on {head[:12]}: still running in the background after {round(self.smoke_wait)} s")
+                self.log.append(f"smoke on {head[:12]}: still running in the background ({round(self.smoke_wait)} s per runner call)")
                 return False, head
             self.sleep(min(SMOKE_POLL, max(0.0, deadline - self.monotonic())))
 

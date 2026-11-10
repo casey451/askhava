@@ -876,6 +876,9 @@ def _start_smoke(state: State, env: Env, now: datetime) -> tuple[State, bool, st
     Env's `own_smoke_for`: a pre-session or background result, or a background smoke still running), that is judged
     and never replaced by a green another lane recorded, so a red of its own always counts (D-498, set_main_red)."""
     head = env.main_head()
+    settle = getattr(env, "settle_background_smoke", None)
+    if callable(settle):
+        settle(head)  # a smoke of a head main has left is stopped first, so a reuse may stand (D-2560)
     if _own_smoke_for(env, head):
         return _smoke(state, env, now, "start routine")
     kept = st.reusable_smoke(state, head, now)

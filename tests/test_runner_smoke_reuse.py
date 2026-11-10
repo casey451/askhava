@@ -207,7 +207,7 @@ def test_a_smoke_still_running_is_pending_and_the_next_call_waits_for_the_same_o
     env, _ = _env(tmp_path)
     started = _background(env, job, [None], [True])
     assert env.smoke_main() == (False, HEAD) and env.smoke_pending and not env.smoke_timed_out
-    assert env.log[-1] == f"smoke on {HEAD[:12]}: still running in the background after 0 s"
+    assert env.log[-1] == f"smoke on {HEAD[:12]}: still running in the background (0 s per runner call)"
     _background(env, job, [_bg_result(code=101)], [True])
     env.bg_start = lambda head, root: pytest.fail("a second smoke beside the running one")  # type: ignore[assignment]  # reason: must not run
     assert env.smoke_main() == (False, HEAD) and not env.smoke_pending and not env.smoke_timed_out, "a red result is red"
@@ -239,7 +239,7 @@ def test_one_for_an_older_head_still_running_is_stopped_before_the_new_head_is_s
 def _clocked(env: Any, wait: float) -> list[float]:
     """A real wait of `wait` seconds on a fake clock that each sleep moves on; returns the sleeps."""
     now, sleeps = [1000.0], []
-    env.smoke_wait, env.monotonic = wait, lambda: now[0]
+    env.smoke_wait, env.monotonic, env.wait_from = wait, lambda: now[0], now[0]
 
     def sleep(seconds: float) -> None:
         sleeps.append(seconds)
@@ -506,3 +506,123 @@ def test_the_cache_save_is_skipped_when_a_background_smoke_had_to_be_stopped() -
     assert stop["id"] == "bg-smoke" and stop["if"].startswith("always()") and stop["continue-on-error"] is True
     assert "stop_background_smoke" in stop["run"] and "stopped=" in stop["run"]
     assert save["if"].endswith("&& steps.bg-smoke.outputs.stopped != 'stopped'")
+
+
+# ---- re-review: ordering, stopping, one wait per call, a stale child pid, reuse after a stale smoke
+
+
+def test_own_smoke_for_sees_a_red_written_just_before_the_smoke_ended(job: Path, tmp_path: Path) -> None:
+    env, _ = _env(tmp_path)
+    job.mkdir(parents=True, exist_ok=True)
+    (job / ge.SMOKE_BG).write_text(json.dumps({"sha": HEAD, "job": "77-1", "pid": 4242}))
+
+    def ends(pid: int) -> bool:
+        ge.write_pre_smoke(_bg_result(code=101))  # writes red, then is gone
+        return False
+
+    env.bg_alive = ends  # type: ignore[assignment]  # reason: the race between the two reads
+    assert env.own_smoke_for(HEAD) is True, "never claims beside its own red"
+
+
+def test_a_smoke_that_wrote_its_result_and_ended_is_used_not_lost(job: Path, tmp_path: Path) -> None:
+    env, _ = _env(tmp_path)
+    env.smoke_background = True
+    job.mkdir(parents=True, exist_ok=True)
+    (job / ge.SMOKE_BG).write_text(json.dumps({"sha": HEAD, "job": "77-1", "pid": 4242}))
+
+    def ends(pid: int) -> bool:
+        ge.write_pre_smoke(_bg_result(code=101))  # after smoke_main's first look: writes red, then is gone
+        return False
+
+    env.bg_alive = ends  # type: ignore[assignment]  # reason: the race between the two reads
+    env.bg_start = lambda head, root: pytest.fail("its result is there")  # type: ignore[assignment]
+    assert env.smoke_main() == (False, HEAD) and not env.smoke_timed_out, "a red result, not 'no verdict'"
+    assert env.smoke_source == ge.BACKGROUND and "the background smoke ended without a result" not in env.log[-1]
+
+
+def test_stop_background_smoke_kills_a_smoke_sh_group_that_ignores_sigterm(job: Path, tmp_path: Path) -> None:
+    ready = tmp_path / "ready"
+    ignore = f"import pathlib, signal, time; signal.signal(signal.SIGTERM, signal.SIG_IGN); pathlib.Path({str(ready)!r}).write_text('1'); time.sleep(60)"
+    parent = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(60)"], start_new_session=True)
+    child = subprocess.Popen([sys.executable, "-c", ignore], start_new_session=True)
+    try:
+        for _ in range(200):
+            if ready.exists():
+                break
+            subprocess.run(["sleep", "0.02"], check=True)
+        job.mkdir(parents=True, exist_ok=True)
+        (job / ge.SMOKE_BG).write_text(json.dumps({"sha": HEAD, "job": "77-1", "pid": parent.pid}))
+        (job / ge.SMOKE_BG_CHILD).write_text(str(child.pid))
+        assert ge.stop_background_smoke(sleep=lambda s: subprocess.run(["sleep", "0.05"], check=True)) == "stopped"
+        assert child.wait(timeout=10) == -9, "SIGKILL reached the group that ignored SIGTERM"
+        assert parent.wait(timeout=10) is not None
+    finally:
+        for proc in (parent, child):
+            proc.kill()
+            proc.wait()
+
+
+def test_a_lost_race_retry_in_the_same_call_does_not_wait_again(job: Path, tmp_path: Path) -> None:
+    env, _ = _env(tmp_path)
+    _background(env, job, [], [True])
+    sleeps = _clocked(env, 12)
+    assert env.smoke_main() == (False, HEAD) and env.smoke_pending and sum(sleeps) == 12
+    assert env.smoke_main() == (False, HEAD) and env.smoke_pending and sum(sleeps) == 12, "no second wait in one call"
+
+
+def test_a_stale_child_pid_is_removed_before_a_new_smoke_starts(job: Path, tmp_path: Path) -> None:
+    env, _ = _env(tmp_path)
+    _background(env, job, [_bg_result()], [False])
+    job.mkdir(parents=True, exist_ok=True)
+    (job / ge.SMOKE_BG_CHILD).write_text("99999")
+
+    def start(head: str, root: Path) -> int:
+        assert not (job / ge.SMOKE_BG_CHILD).exists(), "an old smoke.sh pid must never be signalled for the new smoke"
+        return 4242
+
+    env.bg_start = start  # type: ignore[assignment]  # reason: checks the order
+    assert env.smoke_main() == (True, HEAD)
+
+
+class SettlingEnv(OwnSmokeEnv):
+    """OwnSmokeEnv that also stops a smoke of another head first, as the session's env does."""
+
+    def settle_background_smoke(self, head: str) -> None:
+        self.real.settle_background_smoke(head)
+
+
+def test_a_smoke_of_an_older_head_is_stopped_and_another_lanes_green_on_the_new_head_stands(job: Path, tmp_path: Path) -> None:
+    real, calls = _env(tmp_path, smoke=(1, "must not run"))
+    real.smoke_background = True
+    job.mkdir(parents=True, exist_ok=True)
+    (job / ge.SMOKE_BG).write_text(json.dumps({"sha": OLD, "job": "77-1", "pid": 4242}))
+    running = [True]
+    real.bg_alive = lambda pid: running[0]  # type: ignore[assignment]  # reason: no real process
+    real.bg_stop = lambda: running.__setitem__(0, False) or "stopped"  # type: ignore[assignment]  # reason: no real process
+    real.bg_start = lambda head, root: pytest.fail("a reusable green needs no new smoke")  # type: ignore[assignment]
+    env, cfg = SettlingEnv(real), config([make_task("T001")], tmp_path)
+    since = st.iso(NOW - timedelta(minutes=5))
+    env.store = dict(env.store, smoke_runs=[_run(HEAD, at=since)])
+    assert cycle.run_cycle(cfg, env, NOW) == st.MERGE_PENDING and env.runs[0][0] == "T001"
+    assert running == [False] and env.store["smoke_runs"][-1]["reused"] == since
+    assert f"the background smoke of {OLD[:12]} stopped: main is now {HEAD[:12]}" in real.log
+
+
+def test_a_smoke_of_the_head_itself_still_running_is_never_claimed_beside(job: Path, tmp_path: Path) -> None:
+    real, _ = _env(tmp_path)
+    real.smoke_background = True
+    job.mkdir(parents=True, exist_ok=True)
+    (job / ge.SMOKE_BG).write_text(json.dumps({"sha": HEAD, "job": "77-1", "pid": 4242}))
+    real.bg_alive = lambda pid: True  # type: ignore[assignment]  # reason: no real process
+    real.bg_stop = lambda: pytest.fail("its own head's smoke is collected, not stopped")  # type: ignore[assignment]
+    real.smoke_wait = 0
+    env, cfg = SettlingEnv(real), config([make_task("T001")], tmp_path)
+
+    def smoke() -> tuple[bool, str]:
+        ok, head = real.smoke_main()
+        env.smoke_timed_out, env.smoke_pending = real.smoke_timed_out, real.smoke_pending
+        return ok, head
+
+    env.smoke_main = smoke  # type: ignore[method-assign]  # reason: carries smoke_pending
+    env.store = dict(env.store, smoke_runs=[_run(HEAD)])
+    assert cycle.run_cycle(cfg, env, NOW) == cycle.SMOKE_PENDING and env.runs == []
