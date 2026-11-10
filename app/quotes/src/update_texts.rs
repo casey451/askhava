@@ -163,7 +163,8 @@ pub enum Problem {
     Details,
 }
 
-/// The text's sentences, the "Ask Hava:" opening left out (WORD-008).
+/// The text's sentences, the brand's `<short_name>:` opening (English or Spanish, from the
+/// brand file) left out (WORD-008).
 #[must_use]
 pub(crate) fn sentences(text: &str) -> Vec<String> {
     let body = without_opening(text);

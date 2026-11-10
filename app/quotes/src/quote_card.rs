@@ -312,7 +312,6 @@ pub async fn quote_card(
     }))
 }
 
-/// The `i`th word of a fixed list (the enums' order matches each list).
 /// `text` with its `{brand}` token filled from the brand file, Spanish names when `spanish`
 /// (WORD-001, WORD-014, D-1932). The card words hold only `{brand}`, so `fill` never refuses
 /// them (`src/tests/quote_card.rs`); a refusal would leave the words as written.
@@ -322,6 +321,7 @@ fn branded(text: &str, spanish: bool) -> String {
         .unwrap_or_else(|_| text.to_owned())
 }
 
+/// The `i`th word of a fixed list (the enums' order matches each list).
 fn pick(i: usize, set: &[&'static str]) -> &'static str {
     set.get(i).copied().unwrap_or_default()
 }
