@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-09T23:57:55Z by runner a4c0b6e5287f (actions).
+Updated 2026-11-10T00:32:29Z by runner 79abfc715e5d (actions).
 
 **Building: T284 in progress since 23:57Z; 177 of 313 done; week 73% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,11 @@ Updated 2026-11-09T23:57:55Z by runner a4c0b6e5287f (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T284 claimed 23:57Z, lease until 02:57Z
 - **Week:** 73% used, 48.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:43Z, 14 min before this update
+- **Last run:** 23:58Z, 34 min before this update
 - **Keeper:** last ran 23:43Z, next wake 00:03Z
 
 ## Needs attention
-- nothing
+- Strict plan check red: 1 problem(s) on tasks still to run (+6 on DONE tasks); first: T284: stored context_pct 10% but it measures 15%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -35,9 +35,9 @@ Updated 2026-11-09T23:57:55Z by runner a4c0b6e5287f (actions).
 | T263 | payments: the monthly fee limit is a hard cap; capacity is r | done | 1 | 49 min | 04:26Z |  |
 | T260 | stand-in and adapters: an unconfirmed PaymentIntent, its on- | done | 1 | 42 min | 03:09Z |  |
 | T259 | payments: the Stripe webhook dispatches refund, dispute and  | done | 1 | 61 min | 01:52Z |  |
-| T258 | adapters and payments: a refund is recorded as Stripe report | done | 1 | 80 min | 00:16Z |  |
 
 ### Plan and harness merges on main
+- 00:05Z Plan: fifth audit — every queued task kind gets a registered handler; late success on ended picks; unreadable Stripe success and unmatched fraud warning 
 - 21:41Z Plan: the LINK notice names the stored PIN; job_pin deleted (T326, D-2247) (#395)
 - 21:26Z Plan: T287 owns payments models.rs and T254's release_recovery test (D-2236) (#394)
 - 20:44Z Harness: Fable model window from the Thu Nov 12 reset, run to the week limit, then back to the plan's models (D-2225) (#392)

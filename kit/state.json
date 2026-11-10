@@ -25172,7 +25172,15 @@
     2271,
     2272,
     2273
-   ]
+   ],
+   "reviewed_sha": "79abfc715e5d18bc59a7ba93cea45d01338f8f5b",
+   "review_lease": {
+    "task": "T284",
+    "session": "actions-42722938770",
+    "expires": "2026-11-10T02:57:42Z"
+   },
+   "branch": "claude/task/T284-route-wiring-check",
+   "head_check_since": null
   },
   {
    "id": "T285",
@@ -27505,7 +27513,7 @@
    }
   }
  },
- "updated_at": "2026-11-09T23:57:55Z",
+ "updated_at": "2026-11-10T00:32:29Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -27603,7 +27611,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "a4c0b6e5287f703015617b5e84cef43167ca1f22",
+ "runner_sha": "79abfc715e5d18bc59a7ba93cea45d01338f8f5b",
  "starter": "actions",
  "smoke_runs": [
   {
