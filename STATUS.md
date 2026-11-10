@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-10T17:09:32Z by runner 261a13b14923 (actions).
+Updated 2026-11-10T17:21:37Z by runner e47432249e16 (actions).
 
-**Idle since 17:08Z; 186 of 334 done; week 92% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 17:08Z; 186 of 335 done; week 92% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 186 of 334 build tasks (owner gates not counted)
+- **Tasks done:** 186 of 335 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 17:08Z (no task in progress)
 - **Week:** 92% used, 14.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:09Z, 0 min before this update
+- **Last run:** 17:09Z, 11 min before this update
 - **Keeper:** last ran 17:09Z, next wake 17:29Z
 
 ## Needs attention
@@ -55,7 +55,7 @@ Updated 2026-11-10T17:09:32Z by runner 261a13b14923 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 231 of 733 (31.5%) · partial 308 · unstarted 194
-**Tasks merged (throughput only):** 186 of 334
+**Tasks merged (throughput only):** 186 of 335
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -90,7 +90,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 66 of 135 done
+- stage 4: 66 of 136 done
 - stage 5: 0 of 53 done
 - stage 6: 0 of 30 done
 - stage 7: 0 of 2 done
