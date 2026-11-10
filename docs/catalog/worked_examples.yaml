@@ -489,7 +489,7 @@ examples:
 
   - id: W53
     description: Quarterly range $374.99 to $375.00 has a 4-month basis of $499.9933, rounded down once to $499.99, below the $500 edge
-    category: pest_control
+    category: trash_can_cleaning
     business: qualified
     situation: new_customer
     quote: {type: range, low: "374.99", high: "375.00", period: quarterly}
@@ -497,7 +497,7 @@ examples:
 
   - id: W54
     description: Quarterly range $375.00 to $375.01 has a 4-month basis of $500.0067, rounded down once to $500.00, at the $500 edge
-    category: pest_control
+    category: trash_can_cleaning
     business: qualified
     situation: new_customer
     quote: {type: range, low: "375.00", high: "375.01", period: quarterly}
@@ -505,7 +505,7 @@ examples:
 
   - id: W55
     description: Quarterly range $1,124.99 to $1,125.00 has a 4-month basis of $1,499.9933, rounded down once to $1,499.99, below the $1,500 edge
-    category: pest_control
+    category: trash_can_cleaning
     business: qualified
     situation: new_customer
     quote: {type: range, low: "1124.99", high: "1125.00", period: quarterly}
@@ -513,7 +513,7 @@ examples:
 
   - id: W56
     description: Quarterly range $1,125.00 to $1,125.01 has a 4-month basis of $1,500.0067, rounded down once to $1,500.00, at the $1,500 edge
-    category: pest_control
+    category: trash_can_cleaning
     business: qualified
     situation: new_customer
     quote: {type: range, low: "1125.00", high: "1125.01", period: quarterly}
