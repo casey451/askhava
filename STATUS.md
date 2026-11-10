@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-10T09:49:55Z by runner c0640d1ba090 (actions).
+Updated 2026-11-10T10:21:11Z by runner deb9d4aa9baa (actions).
 
 **Building: T290 in progress since 09:41Z; 182 of 333 done; week 85% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,11 @@ Updated 2026-11-10T09:49:55Z by runner c0640d1ba090 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T290 claimed 09:41Z, lease until 12:41Z
 - **Week:** 85% used, 24.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:08Z, 41 min before this update
+- **Last run:** 09:50Z, 31 min before this update
 - **Keeper:** last ran 09:08Z, next wake 09:28Z
 
 ## Needs attention
-- nothing
+- Strict plan check red: 1 problem(s) on tasks still to run (+9 on DONE tasks); first: T290: stored context_pct 5% but it measures 9%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
