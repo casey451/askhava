@@ -10155,6 +10155,271 @@
    "prompt": "kit/prompts/T338.md"
   },
   {
+   "id": "T339",
+   "slug": "job-category-and-types-stored",
+   "title": "jobs: each job stores its category code and its remaining candidate job type codes once, for the fee at the pick",
+   "goal": "Seventh audit N7-01 (D-2330; INT-018, FEE-005, FEE-045; D-2210): no table stores a job's category or job types (`jobs.job` has no such column), so the pick's fee uses defaults (D-2210's known gap). `migrations/0164_jobs_job_facts.sql` adds `jobs.job_facts` (job ID primary key, the catalog category code, the remaining candidate job type codes as a non-empty text array, set at; app role SELECT and INSERT only, so a job's facts are written once and never change); `app/jobs/src/job_facts.rs`, through `jobs::api`, offers `record_job_facts(tx, job, category, job_types)` (idempotent: the same facts again change nothing, different facts are refused) and `job_facts(conn, job)`. Codes only: every fact derived from them (fee-free, visit tier, one-time or recurring) is resolved from catalog data at the pick (T340), never stored here (national-ready). The caller is T251's card sender, which records the facts in the transaction that sends the cards (cards go out once, after the job types are settled or kept with \"Job type not certain\", INT-040). Tests in `tests/integration/tests/job_facts.rs` (TD-JOB-17). Update the `jobs` `CLAUDE.md`, `docs/architecture.md` section 3 (the new table) and section 10, and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "jobs",
+   "deps": [
+    "T031",
+    "T057",
+    "T075",
+    "T248",
+    "T247",
+    "T240"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [],
+   "owns": [
+    "migrations/0164_jobs_job_facts.sql",
+    "app/jobs/src/job_facts.rs",
+    "tests/integration/tests/job_facts.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/intake.md",
+    "docs/spec/fees.md",
+    "docs/brains/postgres-operations.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "INT-018"
+   ],
+   "tests": [
+    "TD-JOB-17"
+   ],
+   "decisions": [
+    "D-2330",
+    "D-2210"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 300,
+    "context_pct": 10
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T339-job-category-and-types-stored",
+   "prompt": "kit/prompts/T339.md"
+  },
+  {
+   "id": "T340",
+   "slug": "fee-facts-at-pick",
+   "title": "picks and payments (harness): the fee at the pick uses the job's stored category and job types resolved from the catalog; a fee-free job type is never charged",
+   "goal": "Seventh audit N7-01 and N7-05 (D-2331, D-2335; FEE-045, FEE-005, FEE-004, FEE-007, PICK-055; sets aside only D-2210's default facts and closes its known gap). Today `fee_inputs` (`app/picks/src/service.rs:396`) prices every pick with default facts: not fee-free, `VisitTier::DEFAULT`, `RecurringCap::DEFAULT`, recurring when the quote has a period. So a buyer inspection (a `fee_free_job_types` entry, `docs/catalog/categories.yaml:665`) is charged, against FEE-045. After T339 and T251 (which record each job's codes) and T295 and T318 (the queued owners of `service.rs`): (1) `picks` reads the job's codes through `jobs::api::job_facts` and passes them with the chosen quote to `payments`; `app/payments/src/fee_facts.rs` resolves them from `catalog::api` (payments may call catalog; picks may not): the category's set visit tier, whether the pick is fee-free and whether it is one-time or recurring. A job with no stored codes, an unknown code, or candidates spanning more than one category is refused at the pick (`PicksError::Quotes`), storing nothing (fail closed). (2) The rule when several candidate job types remain (INT-040's \"Job type not certain\"; D-2331): the category decides the visit tier; if any remaining candidate is fee-free, the pick is fee-free ($0, a `fee-free job type` ledger entry, no free first win used), never charged; the pick is one-time if every remaining candidate is one-time, otherwise the quote's period decides as today. (3) N7-05: `send_code` (:676) takes a transaction-level advisory lock keyed to the Arizona day it already computes (the same `arizona()` source as today) before `send_counts`, so two contacts at the PICK-055 global threshold − 1 cannot both pass; Verify is still called after the commit and the once-a-day alert is unchanged. (4) The page-pick and text-pick tests of DONE tasks whose jobs now need codes change only in their fixtures (the job's facts recorded), and T287's `fee_fixed_at_pick.rs` gains cases; no expected value is weakened (D-2331 is the logged spec change). Tests in `tests/integration/tests/fee_facts_at_pick.rs` through the real page-pick and text-pick paths with a catalog fixture (TD-FEE-62, TD-PICK-56). Money: the overseer runs an independent money review of the hand-in. Update the `picks` and `payments` `CLAUDE.md` files, `docs/architecture.md` section 10 and `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "4",
+   "module": "picks",
+   "deps": [
+    "T339",
+    "T251",
+    "T295",
+    "T318",
+    "T287"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "money",
+    "privacy",
+    "harness"
+   ],
+   "owns": [
+    "app/picks/src/service.rs",
+    "app/payments/src/fee_facts.rs",
+    "tests/integration/tests/fee_facts_at_pick.rs",
+    "tests/integration/tests/fee_fixed_at_pick.rs",
+    "tests/integration/tests/page_pick.rs",
+    "tests/integration/tests/text_pick.rs",
+    "app/server/tests/release_recovery.rs",
+    "tests/integration/tests/consent_records.rs",
+    "tests/integration/tests/first_quote_move.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/fees.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/licensing.md",
+    "docs/spec/intake.md",
+    "docs/brains/payments-stripe.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "FEE-045",
+    "FEE-005",
+    "FEE-004",
+    "FEE-007",
+    "PICK-055"
+   ],
+   "tests": [
+    "TD-FEE-62",
+    "TD-PICK-56"
+   ],
+   "decisions": [
+    "D-2331",
+    "D-2335",
+    "D-2210",
+    "D-1871",
+    "D-403"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 9,
+    "lines": 800,
+    "context_pct": 50
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T340-fee-facts-at-pick",
+   "prompt": "kit/prompts/T340.md"
+  },
+  {
+   "id": "T342",
+   "slug": "quote-text-whole-field-gate",
+   "title": "quotes: a quote's contact check also reads the whole field with line breaks folded, and a per-visit price must carry its visit schedule",
+   "goal": "Seventh audit N7-03 and N7-04's quote side (D-2334, D-2333; PICK-007, REC-010). (1) `gate_once` (`app/quotes/src/gate.rs:63`) gates each line on its own, so \"555\\n123\\n4567\" in a quote's notes, original wording or a tier name passes `text_bounce` (`app/quotes/src/intake.rs:369`). `text_bounce` also gates a second view of the whole field with every whitespace run (line feed, carriage return, tab, no-break space) folded to one space, and bounces when either view is cut; `gate.rs` is unchanged, so a card keeps its lines. Homeowner text is unaffected: `privacy::scrub` already reads it whole. (2) `Price::Monthly` gains the visit schedule for a per-visit period (one of the five frequencies `payments::rules::Period` takes, `app/payments/src/rules.rs:198`: weekly, every two weeks, monthly, quarterly, yearly), parsed from the quote form T164 extends; a per-visit quote with none bounces at submission with the reason. After T293 (the brand owner of `intake.rs`) and T164 (the form and the stored column). Tests in `tests/integration/tests/quote_whole_field_gate.rs` (TD-PICK-58): 555/123/4567 across `\\n`, `\\r\\n`, a tab and a no-break space; an email or domain split across lines; \"3 x 4-foot boards\" still accepted; each in notes, original wording and a tier name; a per-visit quote without a schedule bounced, with one accepted. Update the `quotes` `CLAUDE.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "quotes",
+   "deps": [
+    "T293",
+    "T164"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy"
+   ],
+   "owns": [
+    "app/quotes/src/intake.rs",
+    "tests/integration/tests/quote_whole_field_gate.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/recurring.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "PICK-007",
+    "REC-010"
+   ],
+   "tests": [
+    "TD-PICK-58"
+   ],
+   "decisions": [
+    "D-2334",
+    "D-2333"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 350,
+    "context_pct": 14
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T342-quote-text-whole-field-gate",
+   "prompt": "kit/prompts/T342.md"
+  },
+  {
+   "id": "T341",
+   "slug": "tier-and-visit-schedule-at-pick",
+   "title": "picks and portals (harness): the homeowner picks a tier of a tiers quote, and a per-visit price with its schedule gets its fee",
+   "goal": "Seventh audit N7-02 and N7-04's pick side (D-2332, D-2333; PICK-053, PICK-038, PICK-039, PICK-021, REC-010, REC-011; sets aside only D-2210's refusals of a tiered quote and a per-visit period). After T340 and T342: (1) Tiers: the quote page's Pick for a tiers quote names one tier (one button or radio per tier, `app/portals/templates/quote_page.html` and `app/portals/src/pick_flow.rs`); `migrations/0178_picks_chosen_tier.sql` adds the chosen tier's index and name to `picks.pick`, written in the pick's transaction; `fee_inputs` uses that tier's price and no default tier exists; a missing or stale tier (the quote edited since) is a validation error that shows the choices again and stores nothing; the Confirm page (`app/portals/templates/confirm_pay.html`) shows the chosen tier with the fee basis (PICK-021). The text pick (`<n> YES`, PICK-015) names no tier and the spec gives no text syntax for one, so a text pick of a tiers quote stores nothing and replies with the quote-page link to choose the package; the syntax is listed for Casey (D-2332). (2) Per-visit: `fee_period` (`service.rs:439`) maps a per-visit price with its stored visit schedule (T342, T164) to the matching fee period (weekly 52/12, every two weeks 26/12, and so on, as `app/payments/src/rules.rs:198` already converts); a per-visit quote without a schedule cannot exist after T342, and one from before is refused. (3) `tests/integration/tests/fee_fixed_at_pick.rs`'s tiered-pick case changes only as D-2332 records: the refusal is for a pick with no tier. Tests in `tests/integration/tests/tier_and_visit_pick.rs` (TD-FEE-63). Money: the overseer runs an independent money review of the hand-in. Update the `picks` and `portals` `CLAUDE.md` files and `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "4",
+   "module": "picks",
+   "deps": [
+    "T340",
+    "T342",
+    "T157",
+    "T214",
+    "T266",
+    "T164",
+    "T232",
+    "T294"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "money",
+    "privacy",
+    "security",
+    "harness"
+   ],
+   "owns": [
+    "migrations/0178_picks_chosen_tier.sql",
+    "app/picks/src/service.rs",
+    "app/portals/src/pick_flow.rs",
+    "app/portals/templates/quote_page.html",
+    "app/portals/templates/confirm_pay.html",
+    "tests/integration/tests/fee_fixed_at_pick.rs",
+    "tests/integration/tests/tier_and_visit_pick.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/recurring.md",
+    "docs/spec/fees.md",
+    "docs/spec/accessibility.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "PICK-053",
+    "PICK-038",
+    "PICK-021",
+    "REC-010",
+    "REC-011"
+   ],
+   "tests": [
+    "TD-FEE-63"
+   ],
+   "decisions": [
+    "D-2332",
+    "D-2333",
+    "D-2210"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 7,
+    "lines": 700,
+    "context_pct": 27
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T341-tier-and-visit-schedule-at-pick",
+   "prompt": "kit/prompts/T341.md"
+  },
+  {
    "id": "T255",
    "slug": "emergency-address-rerelease",
    "title": "intake, payments and server: ask again for an emergency address and release once it arrives",
@@ -11536,7 +11801,7 @@
    "owns": [
     "app/messaging/src/help_requests.rs",
     "app/messaging/src/help_answers.rs",
-    "migrations/0182_help_requests.sql",
+    "migrations/0183_help_requests.sql",
     "tests/integration/tests/help_requests.rs",
     "app/ops/src/help_requests.rs",
     "app/portals/src/digest_flags.rs",
@@ -11865,7 +12130,11 @@
     "T335",
     "T336",
     "T337",
-    "T338"
+    "T338",
+    "T339",
+    "T340",
+    "T341",
+    "T342"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -12354,7 +12623,7 @@
     "app/intake/src/web_chat.rs",
     "app/intake/src/conversation.rs",
     "tests/integration/tests/web_chat.rs",
-    "migrations/0178_intake_request_source.sql"
+    "migrations/0179_intake_request_source.sql"
    ],
    "reads": [
     "docs/architecture.md",
@@ -12683,7 +12952,7 @@
     "app/ops/src/alerts.rs",
     "app/ops/src/safe_mode.rs",
     "app/ops/src/models.rs",
-    "migrations/0179_ops_alerts_safe_mode.sql",
+    "migrations/0180_ops_alerts_safe_mode.sql",
     "tests/integration/tests/safe_mode.rs",
     "app/payments/src/safe_mode_check.rs",
     "app/picks/src/safe_mode_check.rs",
@@ -12755,7 +13024,7 @@
    "id": "T320",
    "slug": "ops-alert-open-once",
    "title": "ops: one open alert per kind and subject, so a check that runs on a schedule never raises the same alert again",
-   "goal": "Fourth external audit F30 (D-2207; OPS-004, SEC-051): `ops.alert` has no rule against a second open alert of the same kind and subject (`migrations/0021_ops_audit.sql:33`), so a check that runs on a schedule, such as `messaging::check_webhook_silence` (`app/messaging/src/email.rs:684`) once T204 schedules it, raises a new alert on every run while its condition lasts, and a pushing kind would push each time. (1) `migrations/0180_ops_alert_open_once.sql`: a unique index on `ops.alert (kind, subject_kind, subject_id)` over unresolved rows (`resolved_at IS NULL`, and T105's acknowledgement column if it adds one) with `NULLS NOT DISTINCT` (PostgreSQL 16), so a subject-less kind is open once too. (2) `raise_alert` (`app/ops/src/service.rs:96`) inserts with `ON CONFLICT DO NOTHING` and returns the open alert's ID when one exists (no new row, so no new push); a raise after it was resolved opens a new one. Read every caller of `raise_alert` (about 60): those that need one alert per event (each HELP request, each dispute, each failed purge) already carry a distinct subject; list in the decision any caller whose behaviour changes. Tests in `tests/integration/tests/alert_dedupe.rs` (TD-OPS-34): two raises of one kind and subject leave one open row and return its ID; after it is resolved a raise opens a new one; two subject-less raises of one kind leave one; two concurrent raises leave one. Every existing test that raises alerts passes unchanged; if one expects two open alerts of one kind and subject, stop and report. Update the `ops` `CLAUDE.md`, `docs/architecture.md` section 10 and `docs/decisions.md`.",
+   "goal": "Fourth external audit F30 (D-2207; OPS-004, SEC-051): `ops.alert` has no rule against a second open alert of the same kind and subject (`migrations/0021_ops_audit.sql:33`), so a check that runs on a schedule, such as `messaging::check_webhook_silence` (`app/messaging/src/email.rs:684`) once T204 schedules it, raises a new alert on every run while its condition lasts, and a pushing kind would push each time. (1) `migrations/0181_ops_alert_open_once.sql`: a unique index on `ops.alert (kind, subject_kind, subject_id)` over unresolved rows (`resolved_at IS NULL`, and T105's acknowledgement column if it adds one) with `NULLS NOT DISTINCT` (PostgreSQL 16), so a subject-less kind is open once too. (2) `raise_alert` (`app/ops/src/service.rs:96`) inserts with `ON CONFLICT DO NOTHING` and returns the open alert's ID when one exists (no new row, so no new push); a raise after it was resolved opens a new one. Read every caller of `raise_alert` (about 60): those that need one alert per event (each HELP request, each dispute, each failed purge) already carry a distinct subject; list in the decision any caller whose behaviour changes. Tests in `tests/integration/tests/alert_dedupe.rs` (TD-OPS-34): two raises of one kind and subject leave one open row and return its ID; after it is resolved a raise opens a new one; two subject-less raises of one kind leave one; two concurrent raises leave one. Every existing test that raises alerts passes unchanged; if one expects two open alerts of one kind and subject, stop and report. Update the `ops` `CLAUDE.md`, `docs/architecture.md` section 10 and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -12768,7 +13037,7 @@
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [],
    "owns": [
-    "migrations/0180_ops_alert_open_once.sql",
+    "migrations/0181_ops_alert_open_once.sql",
     "app/ops/src/service.rs",
     "tests/integration/tests/alert_dedupe.rs"
    ],
@@ -12832,7 +13101,7 @@
     "app/messaging/src/alert_emails.rs",
     "tests/integration/tests/alert_routing.rs",
     "app/portals/src/digest_flags.rs",
-    "migrations/0181_ops_owner_digest.sql",
+    "migrations/0182_ops_owner_digest.sql",
     "app/messaging/src/keywords.rs",
     "app/portals/src/business_portal.rs",
     "app/portals/templates/business_home.html",
@@ -13042,7 +13311,7 @@
    "id": "T321",
    "slug": "consent-five-year-purge",
    "title": "messaging, intake and privacy: consent records, keyword events and message logs go 5 years after a number's last message",
-   "goal": "Fourth external audit F32 (D-2208; CON-022, CON-036, D-079): CON-022 keeps consent records, opt-in wording versions, STOP/HELP/START events and message logs 5 years after the last message to that number, and the privacy policy promises the same (`docs/legal/privacy-policy.md:91`), but nothing ever deletes them: `intake.consent_record` and the `messaging` keyword and message-log rows are append-only (`migrations/0053_intake_tables.sql:62`) and `app/intake/src/purge.rs` says they are never deleted there. (1) A daily `messaging.consent_sweep` (registered in the shared `app/server/src/lib.rs`, queued once a day) finds each number whose last inbound or outbound message is more than 1,827 days old (5 years, never short by a leap day) and deletes, in one transaction per number: its rows of every table CON-022 names, through `app/messaging/src/consent_purge.rs` for `messaging`'s and `intake::api` (`app/intake/src/consent_purge.rs`) for `intake.consent_record`, each with one `ops` audit row of IDs only; `migrations/0183_consent_five_year_purge.sql` grants the app role DELETE on exactly those tables and nothing else (no UPDATE, so they stay append-only for every other change). (2) The opt-out is never weakened: a number on `messaging.suppression` keeps its suppression row, the `messaging.optout_event` row that row points to (`event_id`, `migrations/0044_messaging_optout.sql:33`; digest-only, no phone) and its locked phone in the vault, because the suppression digest is keyed `homeowner-phone|v<n>` and PRIV-024's key rotation rebuilds it from the vault plaintext (D-079), so clearing the phone would lose the opt-out at the next rotation; only its other CON-022 rows (consent records, keyword events, message logs) go at 5 years. A number not on suppression loses its CON-022 rows and then its locked vault phone, cleared through `privacy::api` (`app/privacy/src/consent_phone.rs`). The DELETE grant on `messaging.optout_event` is limited to rows no suppression row references (a policy or a trigger that refuses the rest). That an opted-out number's phone stays locked past 5 years is listed for Casey, with whether the privacy policy should say so (D-2208). (3) Tests in `tests/integration/tests/consent_purge.rs` (TD-CON-30): a number last messaged 1,826 days ago keeps everything; at 1,827 days a number not on suppression loses its rows and its vault phone, with audit rows of IDs only; an opted-out number keeps its suppression row, the opt-out event it points to and its locked phone, loses its other rows, and is still refused a text after the purge and after an index-key rotation; deleting an opt-out event a suppression row references is refused; a message in between restarts its clock. The rotation case builds its two-version `VAULT_INDEX_KEY` the way `tests/integration/tests/vault.rs` does (its `key(version, byte)` helper at line 32 and the v1-plus-v2 key set of `the_rotation_drill_moves_every_row_to_v2`, TD-PRIV-09) and rotates with `privacy::api::rotate_batch` as that test and `tests/integration/tests/inbound_scrub_context.rs` do; it is not skipped. Update the `messaging`, `intake` and `privacy` `CLAUDE.md` files, `docs/architecture.md` section 10 and `docs/decisions.md`.",
+   "goal": "Fourth external audit F32 (D-2208; CON-022, CON-036, D-079): CON-022 keeps consent records, opt-in wording versions, STOP/HELP/START events and message logs 5 years after the last message to that number, and the privacy policy promises the same (`docs/legal/privacy-policy.md:91`), but nothing ever deletes them: `intake.consent_record` and the `messaging` keyword and message-log rows are append-only (`migrations/0053_intake_tables.sql:62`) and `app/intake/src/purge.rs` says they are never deleted there. (1) A daily `messaging.consent_sweep` (registered in the shared `app/server/src/lib.rs`, queued once a day) finds each number whose last inbound or outbound message is more than 1,827 days old (5 years, never short by a leap day) and deletes, in one transaction per number: its rows of every table CON-022 names, through `app/messaging/src/consent_purge.rs` for `messaging`'s and `intake::api` (`app/intake/src/consent_purge.rs`) for `intake.consent_record`, each with one `ops` audit row of IDs only; `migrations/0184_consent_five_year_purge.sql` grants the app role DELETE on exactly those tables and nothing else (no UPDATE, so they stay append-only for every other change). (2) The opt-out is never weakened: a number on `messaging.suppression` keeps its suppression row, the `messaging.optout_event` row that row points to (`event_id`, `migrations/0044_messaging_optout.sql:33`; digest-only, no phone) and its locked phone in the vault, because the suppression digest is keyed `homeowner-phone|v<n>` and PRIV-024's key rotation rebuilds it from the vault plaintext (D-079), so clearing the phone would lose the opt-out at the next rotation; only its other CON-022 rows (consent records, keyword events, message logs) go at 5 years. A number not on suppression loses its CON-022 rows and then its locked vault phone, cleared through `privacy::api` (`app/privacy/src/consent_phone.rs`). The DELETE grant on `messaging.optout_event` is limited to rows no suppression row references (a policy or a trigger that refuses the rest). That an opted-out number's phone stays locked past 5 years is listed for Casey, with whether the privacy policy should say so (D-2208). (3) Tests in `tests/integration/tests/consent_purge.rs` (TD-CON-30): a number last messaged 1,826 days ago keeps everything; at 1,827 days a number not on suppression loses its rows and its vault phone, with audit rows of IDs only; an opted-out number keeps its suppression row, the opt-out event it points to and its locked phone, loses its other rows, and is still refused a text after the purge and after an index-key rotation; deleting an opt-out event a suppression row references is refused; a message in between restarts its clock. The rotation case builds its two-version `VAULT_INDEX_KEY` the way `tests/integration/tests/vault.rs` does (its `key(version, byte)` helper at line 32 and the v1-plus-v2 key set of `the_rotation_drill_moves_every_row_to_v2`, TD-PRIV-09) and rotates with `privacy::api::rotate_batch` as that test and `tests/integration/tests/inbound_scrub_context.rs` do; it is not skipped. Update the `messaging`, `intake` and `privacy` `CLAUDE.md` files, `docs/architecture.md` section 10 and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -13059,7 +13328,7 @@
     "compliance"
    ],
    "owns": [
-    "migrations/0183_consent_five_year_purge.sql",
+    "migrations/0184_consent_five_year_purge.sql",
     "app/messaging/src/consent_purge.rs",
     "app/intake/src/consent_purge.rs",
     "app/privacy/src/consent_phone.rs",
@@ -13279,7 +13548,7 @@
     "app/recovery/src/api.rs",
     "app/recovery/src/models.rs",
     "app/recovery/src/backup.rs",
-    "migrations/0184_recovery_backup_export.sql",
+    "migrations/0185_recovery_backup_export.sql",
     "tests/recovery/tests/export_restores.rs",
     "app/portals/src/digest_flags.rs",
     "app/portals/src/health_page.rs"
@@ -13351,7 +13620,7 @@
    "owns": [
     "app/recovery/src/replay.rs",
     "app/recovery/src/models.rs",
-    "migrations/0185_recovery_replay.sql",
+    "migrations/0186_recovery_replay.sql",
     "app/recovery/src/tests/replay_ids.rs"
    ],
    "reads": [
@@ -16525,7 +16794,8 @@
     "T049",
     "T294",
     "T164",
-    "T232"
+    "T232",
+    "T341"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -19017,7 +19287,7 @@
    "id": "T164",
    "slug": "quotes-uniform-notes",
    "title": "quotes: one quote format per category, screened notes, and edit or withdraw before a pick",
-   "goal": "Every quote uses its category's `quote_format`; a quote's 300-character note goes back with the reason when it holds a contact detail or an off-platform phrase; and before any pick a business may edit (re-checked, shown as updated) or withdraw its quote (PICK-051 to PICK-053); the edit and withdraw controls and the format choice go on the business job page and quote form, rendered by the portals route `business_actions.rs` with `business_actions.html`, both extended here; `quotes::job_page` is data only (D-491, D-492). On the homeowner side an edited quote shows \"Updated <time>\" and a withdrawn one is replaced with \"Withdrawn by the business\" on the quote page (`quote_page.html`) and in the LIST reply and quote card text (`quote_card.rs`), both extended here (TD-PICK-34, D-492). T301 serves the email action links (D-2128): keep the signatures `app/server/src/action_links.rs` calls; any page or action this task adds is served by T306, not by a `.route` in `server`.",
+   "goal": "Every quote uses its category's `quote_format`; a quote's 300-character note goes back with the reason when it holds a contact detail or an off-platform phrase; and before any pick a business may edit (re-checked, shown as updated) or withdraw its quote (PICK-051 to PICK-053); the edit and withdraw controls and the format choice go on the business job page and quote form, rendered by the portals route `business_actions.rs` with `business_actions.html`, both extended here; `quotes::job_page` is data only (D-491, D-492). On the homeowner side an edited quote shows \"Updated <time>\" and a withdrawn one is replaced with \"Withdrawn by the business\" on the quote page (`quote_page.html`) and in the LIST reply and quote card text (`quote_card.rs`), both extended here (TD-PICK-34, D-492). T301 serves the email action links (D-2128): keep the signatures `app/server/src/action_links.rs` calls; any page or action this task adds is served by T306, not by a `.route` in `server`. Seventh audit N7-04 (D-2333; REC-010): the quote form asks a per-visit price's visit schedule (weekly, every two weeks, monthly, quarterly or yearly, the frequencies `payments::rules::Period` converts) and requires it, and `migrations/0157_quotes_formats.sql` stores it with the quote; T342 parses and bounces, T341 prices it at the pick. Tested in `tests/integration/tests/quote_formats.rs` (TD-PICK-57).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -19060,19 +19330,22 @@
     "docs/spec/wording.md",
     "docs/catalog/categories.yaml",
     "docs/brains/contractor-lead-experience.md",
-    "docs/brains/rust-production.md"
+    "docs/brains/rust-production.md",
+    "docs/spec/recurring.md"
    ],
    "requirements": [
     "PICK-051",
     "PICK-052",
-    "PICK-053"
+    "PICK-053",
+    "REC-010"
    ],
    "tests": [
     "TD-PICK-35",
     "TD-PICK-34",
     "TD-LIC-23",
     "TD-FEE-27",
-    "TD-FEE-02"
+    "TD-FEE-02",
+    "TD-PICK-57"
    ],
    "decisions": [
     "D-441",
@@ -19081,12 +19354,13 @@
     "D-446",
     "D-490",
     "D-492",
-    "D-1933"
+    "D-1933",
+    "D-2333"
    ],
    "cites": [],
    "budget": {
     "files": 10,
-    "lines": 450,
+    "lines": 550,
     "context_pct": 22
    },
    "checks": [
@@ -19181,7 +19455,7 @@
    "id": "T266",
    "slug": "pick-contact-choice",
    "title": "portals, picks and privacy: the homeowner's contact choice and shared email are stored for the release",
-   "goal": "At the page pick the homeowner chooses a masked call or an email she shares (PICK-018), but `app/portals/src/pick_flow.rs` checks the choice and the email and passes them on unstored (`pick_flow.rs:38`, D-1264), so the release can only ever be a masked call (`email_chosen` false, D-1740 (2)) and PICK-042's accepted-quote email has no address (D-1761). (1) `migrations/0165_picks_contact_choice.sql`: `picks.contact_choice` (pick ID, `call` or `email`, decided time; one row per pick, app role SELECT and INSERT). (2) `app/privacy/src/vault.rs`: `privacy::api::store_shared_email(conn, vault, contact, email)` seals the email into the contact's vault `email` field (field-bound encryption, a new version, one audit row naming the actor and purpose `shared_at_pick`; no plaintext returned), so the email is stored only in the vault (PRIV-001, PRIV-002). (3) `app/picks/src/contact_choice.rs`: `picks::api::record_contact_choice` (in the page pick's transaction, after `page_pick`) and `picks::api::contact_choice(conn, pick)` for the release's caller. (4) `pick_flow.rs` stores both in the transaction that records the pick; an error keeps her choices on the page as now; a text pick (no page) stays a masked call. (5) `app/server/src/release_sink.rs` (T254's sink, extended by T255) passes `picks::api::contact_choice` as `email_chosen` instead of D-1740 (2)'s masked-call default, on the first release and on T255's re-release (D-1761). No email reaches a log, task payload or business page. Update the `picks`, `privacy` and `portals` `CLAUDE.md` files, `docs/architecture.md` section 10 and `docs/decisions.md`.",
+   "goal": "At the page pick the homeowner chooses a masked call or an email she shares (PICK-018), but `app/portals/src/pick_flow.rs` checks the choice and the email and passes them on unstored (`pick_flow.rs:38`, D-1264), so the release can only ever be a masked call (`email_chosen` false, D-1740 (2)) and PICK-042's accepted-quote email has no address (D-1761). (1) `migrations/0166_picks_contact_choice.sql`: `picks.contact_choice` (pick ID, `call` or `email`, decided time; one row per pick, app role SELECT and INSERT). (2) `app/privacy/src/vault.rs`: `privacy::api::store_shared_email(conn, vault, contact, email)` seals the email into the contact's vault `email` field (field-bound encryption, a new version, one audit row naming the actor and purpose `shared_at_pick`; no plaintext returned), so the email is stored only in the vault (PRIV-001, PRIV-002). (3) `app/picks/src/contact_choice.rs`: `picks::api::record_contact_choice` (in the page pick's transaction, after `page_pick`) and `picks::api::contact_choice(conn, pick)` for the release's caller. (4) `pick_flow.rs` stores both in the transaction that records the pick; an error keeps her choices on the page as now; a text pick (no page) stays a masked call. (5) `app/server/src/release_sink.rs` (T254's sink, extended by T255) passes `picks::api::contact_choice` as `email_chosen` instead of D-1740 (2)'s masked-call default, on the first release and on T255's re-release (D-1761). No email reaches a log, task payload or business page. Update the `picks`, `privacy` and `portals` `CLAUDE.md` files, `docs/architecture.md` section 10 and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -19202,7 +19476,7 @@
    "owns": [
     "app/portals/src/pick_flow.rs",
     "app/picks/src/contact_choice.rs",
-    "migrations/0165_picks_contact_choice.sql",
+    "migrations/0166_picks_contact_choice.sql",
     "app/privacy/src/vault.rs",
     "tests/integration/tests/pick_contact_choice.rs",
     "app/server/src/release_sink.rs",
@@ -19745,7 +20019,7 @@
    "id": "T251",
    "slug": "intake-zip-and-cards-out",
    "title": "intake and quotes: the ZIP question, the job location, and the card-sending caller (every window-opened card goes out once, idempotent, quiet hours honoured)",
-   "goal": "Job cards never go out in production today (D-1521): nothing outside `quotes` calls `quotes::api::send_job_cards`, no code builds the `CardJob` and the business `Pool` it takes (both caller-filled, D-1013, D-1014), the `intake.cards_approved` event T208's approval step enqueues has no handler (D-1274, D-1277), nor has the `intake.emergency_released` event of INT-029, and no code asks the homeowner's ZIP or writes `intake.property` (only tests insert rows). Build the missing pieces. (1) The ZIP question (INT-049): `app/intake/src/zip_step.rs` asks the 5-digit ZIP of the home the job is at (new `zip_question` and `zip_again` templates in the shared English and Spanish template files, drafts for the copy panel, WORD-028), reads one 5-digit ZIP from the reply, maps it to its service-area town with `catalog::api::town_for_zip` (T248's market data, INT-048, including reviewed extra ZIPs with no centroid, which give no location), and stores the property with the ZIP and the town (`app/intake/src/models.rs`; `migrations/0164_intake_property_zip.sql` adds `intake.property.zip`, 5 digits, nullable for rows written before, PRIV-028); a ZIP in the Arizona centroid table but in no service-area town goes to `routing`'s out-of-area close (INT-022); any other reply (no ZIP, two ZIPs, or a well-formed ZIP Ask Hava does not know) asks once more (the twin's re-ask, `twin/app.py:521`, is the draft) and then waits for a usable reply without closing the request (INT-019's no-reply wait still applies). Its integration test asserts `intake.property` holds exactly the contact ID, the town and the ZIP, never an address (TD-PRIV-13's schema case). The ZIP goes into no AI call, card, log line or audit value. T162's intake order calls this step at step 4; this task adds the step and its tests, not the order. (2) The card pool (`app/quotes/src/card_pool.rs`, exported through the shared `app/quotes/src/api.rs`): build `Pool` for a job's towns and candidate trades from `businesses::api` (status, towns, ticked job types, the overflow switch), `licensing::api` (each business's classes and other licenses, and CARD-015's latest check for `verified`) and `ops::api::is_paused` (the owner pauses), never naming another module's tables. (3) The card sender (`app/intake/src/cards_out.rs`, its handlers registered in the shared `app/server/src/lib.rs`): on `intake.cards_approved` it sends only when T208's `approved_card` holds for the payload's digest, so the card the businesses get is the card she approved (TD-INT-23); on `intake.emergency_released` it sends at once (INT-029). It builds the `CardJob` from the request (the job's own town, the remaining candidate job types and the scrubbed text; neighbouring towns stay the caller's later choice, D-1014), calls `send_job_cards` in one transaction (idempotent: `ON CONFLICT DO NOTHING`, so a repeat or a retry records no second card), enqueues each new card's notice through T147's `app/quotes/src/card_notices.rs` (held whole by quiet hours, QH-005; each card's 24 hours start at the actual send, D-042, D-1021), and queues the homeowner's TXT-032 cards-out text through the homeowner-text steps T240 uses (`may_text`, `send_window` for quiet hours and opt-out, the outbox). Late cards (CARD-018, `send_late_cards`) keep their trigger with the tasks that make a business newly eligible. Tests: `app/intake/src/tests/zip_step.rs` (TD-INT-38) and `tests/integration/tests/cards_out.rs` (TD-CARD-14: approval and the end of the wait send once, a changed card is refused, a rerun sends nothing new, the emergency path, paused businesses skipped, night notices held, one TXT-032 text). Every existing test must still pass; if a done task's test breaks, stop and report. Update `app/intake/CLAUDE.md`, `app/quotes/CLAUDE.md` and `docs/architecture.md` section 10. The card pool holds only businesses for which `businesses::api::may_get_cards` is true at send time, beside `receives_cards` (D-1715, D-1760). On the emergency path (`intake.emergency_released`) each card's notice is queued through T150's `quotes::api::queue_emergency_card` (CARD-021: at once for the people with \"Emergency emails at any hour\" on at an after-hours business, at 8 a.m. for the rest, with the EMERGENCY subject and first line), not `queue_card_notice` (fourth external audit F42, D-2203).",
+   "goal": "Job cards never go out in production today (D-1521): nothing outside `quotes` calls `quotes::api::send_job_cards`, no code builds the `CardJob` and the business `Pool` it takes (both caller-filled, D-1013, D-1014), the `intake.cards_approved` event T208's approval step enqueues has no handler (D-1274, D-1277), nor has the `intake.emergency_released` event of INT-029, and no code asks the homeowner's ZIP or writes `intake.property` (only tests insert rows). Build the missing pieces. (1) The ZIP question (INT-049): `app/intake/src/zip_step.rs` asks the 5-digit ZIP of the home the job is at (new `zip_question` and `zip_again` templates in the shared English and Spanish template files, drafts for the copy panel, WORD-028), reads one 5-digit ZIP from the reply, maps it to its service-area town with `catalog::api::town_for_zip` (T248's market data, INT-048, including reviewed extra ZIPs with no centroid, which give no location), and stores the property with the ZIP and the town (`app/intake/src/models.rs`; `migrations/0165_intake_property_zip.sql` adds `intake.property.zip`, 5 digits, nullable for rows written before, PRIV-028); a ZIP in the Arizona centroid table but in no service-area town goes to `routing`'s out-of-area close (INT-022); any other reply (no ZIP, two ZIPs, or a well-formed ZIP Ask Hava does not know) asks once more (the twin's re-ask, `twin/app.py:521`, is the draft) and then waits for a usable reply without closing the request (INT-019's no-reply wait still applies). Its integration test asserts `intake.property` holds exactly the contact ID, the town and the ZIP, never an address (TD-PRIV-13's schema case). The ZIP goes into no AI call, card, log line or audit value. T162's intake order calls this step at step 4; this task adds the step and its tests, not the order. (2) The card pool (`app/quotes/src/card_pool.rs`, exported through the shared `app/quotes/src/api.rs`): build `Pool` for a job's towns and candidate trades from `businesses::api` (status, towns, ticked job types, the overflow switch), `licensing::api` (each business's classes and other licenses, and CARD-015's latest check for `verified`) and `ops::api::is_paused` (the owner pauses), never naming another module's tables. (3) The card sender (`app/intake/src/cards_out.rs`, its handlers registered in the shared `app/server/src/lib.rs`): on `intake.cards_approved` it sends only when T208's `approved_card` holds for the payload's digest, so the card the businesses get is the card she approved (TD-INT-23); on `intake.emergency_released` it sends at once (INT-029). It builds the `CardJob` from the request (the job's own town, the remaining candidate job types and the scrubbed text; neighbouring towns stay the caller's later choice, D-1014), calls `send_job_cards` in one transaction (idempotent: `ON CONFLICT DO NOTHING`, so a repeat or a retry records no second card), enqueues each new card's notice through T147's `app/quotes/src/card_notices.rs` (held whole by quiet hours, QH-005; each card's 24 hours start at the actual send, D-042, D-1021), and queues the homeowner's TXT-032 cards-out text through the homeowner-text steps T240 uses (`may_text`, `send_window` for quiet hours and opt-out, the outbox). Late cards (CARD-018, `send_late_cards`) keep their trigger with the tasks that make a business newly eligible. Tests: `app/intake/src/tests/zip_step.rs` (TD-INT-38) and `tests/integration/tests/cards_out.rs` (TD-CARD-14: approval and the end of the wait send once, a changed card is refused, a rerun sends nothing new, the emergency path, paused businesses skipped, night notices held, one TXT-032 text). Every existing test must still pass; if a done task's test breaks, stop and report. Update `app/intake/CLAUDE.md`, `app/quotes/CLAUDE.md` and `docs/architecture.md` section 10. The card pool holds only businesses for which `businesses::api::may_get_cards` is true at send time, beside `receives_cards` (D-1715, D-1760). On the emergency path (`intake.emergency_released`) each card's notice is queued through T150's `quotes::api::queue_emergency_card` (CARD-021: at once for the people with \"Emergency emails at any hour\" on at an after-hours business, at 8 a.m. for the rest, with the EMERGENCY subject and first line), not `queue_card_notice` (fourth external audit F42, D-2203). The card sender also records the job's category code and remaining candidate job type codes through T339's `jobs::api::record_job_facts`, in the transaction that sends the cards, on both the approval and the emergency path, so the fee at the pick can read them (seventh audit N7-01, D-2330).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -19759,7 +20033,8 @@
     "T184",
     "T045",
     "T240",
-    "T247"
+    "T247",
+    "T339"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -19773,7 +20048,7 @@
     "app/intake/src/cards_out.rs",
     "app/intake/src/models.rs",
     "app/quotes/src/card_pool.rs",
-    "migrations/0164_intake_property_zip.sql",
+    "migrations/0165_intake_property_zip.sql",
     "app/intake/src/tests/zip_step.rs",
     "tests/integration/tests/cards_out.rs"
    ],
@@ -19815,7 +20090,8 @@
     "D-042",
     "D-1715",
     "D-1760",
-    "D-2203"
+    "D-2203",
+    "D-2330"
    ],
    "cites": [],
    "budget": {
@@ -19891,7 +20167,7 @@
    "id": "T261",
    "slug": "served-confirm-route",
    "title": "portals and server: the served Confirm page under the real middleware, the payment page's own Stripe CSP, and truthful bank-approval handling",
-   "goal": "The Confirm view, form and script exist (T224) but no route serves them (D-1480 (a), D-1740 (1)), the global `security_headers` layer replaces every response's CSP with the self-only policy so Stripe.js could never load (D-1480 (c)), the script ignores `handleNextAction`'s result, and the only browser test is a hand-written substitute page (external audit A08, D-1754). (1) Serve `GET` and `POST /b/picks/{pick}/confirm` from `app/portals/src/confirm_pay.rs` (T084's session and principal scoping, T232's terms record), merged in the shared `app/server/src/lib.rs` with T260's `StripeHttp` as the `IntentStripe`: only a signed-in owner or \"Confirm and billing\" member of the pick's business reaches it (any other answers the one not-found page); `intake::api::paused_by_homeowner` and the pick's status are checked again on every load and press (CON-029); the fee, currency and job type come from the server's stored facts, never the form: the fee is `payments::api::pick_fee`, the fee T287 fixed at the pick, and every `Press` carries exactly that amount (D-1871); `open_intent` on the first load, `waive_at_confirm` for a $0 pick, `may_confirm` and `confirm_and_pay` per press, `press_reply` as JSON with the client secret only for a bank approval. When `may_confirm` answers `ConfirmError::FeeModeChanged` (the owner switched the fee mode after the pick), nothing is charged, the page says the fee terms changed after this pick so it can't be confirmed, and the pick ends at once with no fee through the same `picks` call as T232's \"Can't take it\" with its own reason, never counted against the business (PICK-050, OPS-034, D-1871). (2) CSP: `app/portals/src/security.rs` keeps the self-only policy for every page and lets the Confirm route alone add `https://js.stripe.com` to `script-src` and `frame-src` (and Stripe's documented `connect-src`), by a response marker the layer reads rather than by trusting any handler header; a test proves every other page still gets the strict policy (SEC-012). (3) `app/portals/static/confirm_pay.ts`: `handleNextAction`'s error or cancel shows the try-again line and never a success, success shows \"Checking with your bank\" until the server's answer, and the page then asks the server for the attempt's state rather than trusting the browser. (4) Tests: `app/server/tests/confirm_route.rs` (the served route with the real middleware) and `tests/e2e/confirm_served.spec.ts` against the app and the stand-ins; T224's `tests/e2e/confirm_pay.spec.ts` stays as it is and counts as a component test of the script only, never as journey evidence (D-1754). Update `docs/architecture.md` section 10, the `portals` and `server` `CLAUDE.md` files and `docs/decisions.md`. The Confirm route is served only after T328 registers the payments tasks it relies on (the charge check, the pay timer, the refunds and the reconcile), so no Confirm press can queue a task the worker would dead-letter (fifth external audit AH-001, D-2286). (Sixth audit U-02, D-2302; IC-33.) The $0 handoff: on a $0 decision the route records it with `waive_at_confirm`, then takes `payments::api::no_fee_release(conn, pick)` (bound to the pick's own stored fee row since T337) and hands that `Releasable` to the production release sink (`app/server/src/release_sink.rs`), which settles and releases once; a press repeated after a crash between the waiver and the release finds the waiver recorded and the release row, and releases nothing twice. Tests in `app/server/tests/confirm_route.rs` (TD-FEE-58).",
+   "goal": "The Confirm view, form and script exist (T224) but no route serves them (D-1480 (a), D-1740 (1)), the global `security_headers` layer replaces every response's CSP with the self-only policy so Stripe.js could never load (D-1480 (c)), the script ignores `handleNextAction`'s result, and the only browser test is a hand-written substitute page (external audit A08, D-1754). (1) Serve `GET` and `POST /b/picks/{pick}/confirm` from `app/portals/src/confirm_pay.rs` (T084's session and principal scoping, T232's terms record), merged in the shared `app/server/src/lib.rs` with T260's `StripeHttp` as the `IntentStripe`: only a signed-in owner or \"Confirm and billing\" member of the pick's business reaches it (any other answers the one not-found page); `intake::api::paused_by_homeowner` and the pick's status are checked again on every load and press (CON-029); the fee, currency and job type come from the server's stored facts, never the form: the fee is `payments::api::pick_fee`, the fee T287 fixed at the pick, and every `Press` carries exactly that amount (D-1871); `open_intent` on the first load, `waive_at_confirm` for a $0 pick, `may_confirm` and `confirm_and_pay` per press, `press_reply` as JSON with the client secret only for a bank approval. When `may_confirm` answers `ConfirmError::FeeModeChanged` (the owner switched the fee mode after the pick), nothing is charged, the page says the fee terms changed after this pick so it can't be confirmed, and the pick ends at once with no fee through the same `picks` call as T232's \"Can't take it\" with its own reason, never counted against the business (PICK-050, OPS-034, D-1871). (2) CSP: `app/portals/src/security.rs` keeps the self-only policy for every page and lets the Confirm route alone add `https://js.stripe.com` to `script-src` and `frame-src` (and Stripe's documented `connect-src`), by a response marker the layer reads rather than by trusting any handler header; a test proves every other page still gets the strict policy (SEC-012). (3) `app/portals/static/confirm_pay.ts`: `handleNextAction`'s error or cancel shows the try-again line and never a success, success shows \"Checking with your bank\" until the server's answer, and the page then asks the server for the attempt's state rather than trusting the browser. (4) Tests: `app/server/tests/confirm_route.rs` (the served route with the real middleware) and `tests/e2e/confirm_served.spec.ts` against the app and the stand-ins; T224's `tests/e2e/confirm_pay.spec.ts` stays as it is and counts as a component test of the script only, never as journey evidence (D-1754). Update `docs/architecture.md` section 10, the `portals` and `server` `CLAUDE.md` files and `docs/decisions.md`. The Confirm route is served only after T328 registers the payments tasks it relies on (the charge check, the pay timer, the refunds and the reconcile), so no Confirm press can queue a task the worker would dead-letter (fifth external audit AH-001, D-2286). (Sixth audit U-02, D-2302; IC-33.) The $0 handoff: on a $0 decision the route records it with `waive_at_confirm`, then takes `payments::api::no_fee_release(conn, pick)` (bound to the pick's own stored fee row since T337) and hands that `Releasable` to the production release sink (`app/server/src/release_sink.rs`), which settles and releases once; a press repeated after a crash between the waiver and the release finds the waiver recorded and the release row, and releases nothing twice. Tests in `app/server/tests/confirm_route.rs` (TD-FEE-58). The Confirm route is served only after T340 and T341 fix the fee from the job's stored facts and the chosen tier, so no fee-free job is ever charged (seventh audit, D-2331).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -19903,7 +20179,9 @@
     "T254",
     "T287",
     "T328",
-    "T337"
+    "T337",
+    "T340",
+    "T341"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -19955,7 +20233,8 @@
     "D-946",
     "D-1871",
     "D-2286",
-    "D-2302"
+    "D-2302",
+    "D-2331"
    ],
    "cites": [],
    "budget": {
@@ -22420,7 +22699,8 @@
     "T327",
     "T266",
     "T332",
-    "T335"
+    "T335",
+    "T340"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",

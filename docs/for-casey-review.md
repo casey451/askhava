@@ -2,6 +2,17 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## The seventh outside review (plan change, D-2329 to D-2335, November 10)
+
+- **One question for you (handyman split jobs).** Today a handyman's quote is blocked when the same business has another handyman job at the same address within 30 days and the two together reach $1,000 or share a job type. It checks pairs, so three $400 jobs of different types at one address in 30 days pass ($1,200 in all, but each pair is $800). Should the check add up all of that business's handyman jobs at the address in the window? Nothing changes until you answer.
+- **What it found and what changed.**
+  - **Fee-free inspections would have been charged.** The app didn't yet store what kind of job each request is, so a buyer or refinance inspection would have carried a fee. Each job now stores its category and job type, and the fee is worked out from them. Nothing charged in the meantime: the Confirm page isn't live and now waits for this.
+  - **Choice made for you:** when intake couldn't settle the exact job type and one of the possible types is fee-free, the job is treated as fee-free. It's never charged when it might be a sale-related inspection.
+  - **Package (tier) quotes and per-visit prices can now be picked.** The homeowner picks a package on the quote page, and a per-visit price must state how often visits happen (weekly, every two weeks and so on). A homeowner who texts "2 YES" for a package quote is sent the quote-page link to choose the package; whether texts should name a package is your call.
+  - **Phone numbers split over several lines** in a business's quote are now caught.
+  - **The daily code-send cap** now holds when many people ask at once.
+- **Nothing else needs you.**
+
 ## The sixth outside review (plan change, D-2301 to D-2307, November 10)
 
 - **What it found.** Three of its eight points were already handled by the fifth review's tasks. The new ones: a free ($0) pick's release check didn't confirm that the free decision belonged to that same pick, so one free decision could have waived the fee on another job of the same business; a refund was booked as the whole charge without checking what Stripe actually refunded; the nightly money check only looked back 7 days and read everything at once; the rate-limit counters (which hold visitors' internet addresses) were never cleaned up; and a text that failed to process was only alerted, never retried.
