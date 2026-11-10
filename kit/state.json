@@ -1,7 +1,7 @@
 {
  "schema": 1,
  "phase": "kit",
- "current": "T290",
+ "current": "T292",
  "backup_runner": "on",
  "ruleset_verified": true,
  "lease": null,
@@ -26104,11 +26104,19 @@
     "T147",
     "T196"
    ],
-   "status": "QUEUED",
+   "status": "IN_PROGRESS",
    "attempts": 0,
    "slug": "brand-texts-emails-calls",
    "type": "harness",
-   "stage": "4"
+   "stage": "4",
+   "attempt_started_at": "2026-11-10T10:55:28Z",
+   "decision_ids": [
+    2387,
+    2388,
+    2389,
+    2390,
+    2391
+   ]
   },
   {
    "id": "T293",
@@ -26885,7 +26893,7 @@
    "output_tokens": 32803,
    "cache_creation_input_tokens": 156840
   },
-  "source": "session_reading 2026-11-10T09:08:12Z (week)",
+  "source": "session_reading 2026-11-10T10:36:00Z (week)",
   "by_task": {
    "FIX-MAIN": {
     "estimated_bytes": 1552047,
@@ -28542,6 +28550,10 @@
     "cache_read_input_tokens": 4540416,
     "cache_creation_input_tokens": 280743,
     "last_model": "claude-opus-5-5"
+   },
+   "T292": {
+    "estimated_bytes": 607412,
+    "estimated_tokens": 3326398
    }
   },
   "windows": {
@@ -28562,7 +28574,7 @@
    }
   }
  },
- "updated_at": "2026-11-10T10:55:31Z",
+ "updated_at": "2026-11-10T10:55:39Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -28663,13 +28675,6 @@
  "runner_sha": "974446276d379266260b786b44f13b240f8d6074",
  "starter": "actions",
  "smoke_runs": [
-  {
-   "sha": "0283785239881509f46e3fd2b8242048a819a1d7",
-   "ok": true,
-   "at": "2026-11-09T13:49:58Z",
-   "why": "start routine (pre-session)",
-   "seconds": 527
-  },
   {
    "sha": "474919a2c5bf73c84d1360e520d7ddbc01036413",
    "ok": true,
@@ -28805,30 +28810,37 @@
    "at": "2026-11-10T09:41:18Z",
    "why": "start routine",
    "seconds": 512
+  },
+  {
+   "sha": "974446276d379266260b786b44f13b240f8d6074",
+   "ok": true,
+   "at": "2026-11-10T10:55:28Z",
+   "why": "start routine (pre-session)",
+   "seconds": 351
   }
  ],
  "main_red": null,
  "pacing": {
-  "last": "T290 estimated 503k tokens (calibrated); five-hour window has 24.3M left, week 24.0M (session_reading 2026-11-10T09:08:12Z (week)); claimed",
-  "at": "2026-11-10T09:41:18Z",
+  "last": "T292 estimated 3.3M tokens (calibrated); five-hour window has 28.6M left, week 22.0M (session_reading 2026-11-10T10:36:00Z (week)); claimed",
+  "at": "2026-11-10T10:55:28Z",
   "decision": "claim",
   "waiting_until": null,
   "standing": {
    "five_hour": {
-    "used": 4846329,
+    "used": 513560,
     "budget": 29100000,
-    "left": 24253671,
-    "resets_at": "2026-11-10T09:57:17Z"
+    "left": 28586440,
+    "resets_at": "2026-11-10T15:21:11Z"
    },
    "week": {
-    "used": 170000000,
+    "used": 172000000,
     "budget": 194000000,
-    "left": 24000000,
+    "left": 22000000,
     "resets_at": "2026-11-12T17:00:00Z"
    }
   },
-  "remaining_estimate": 592724185,
-  "projected_finish": "2026-12-01T18:58:30Z"
+  "remaining_estimate": 592670566,
+  "projected_finish": "2026-12-01T20:09:54Z"
  },
  "main_red_history": [
   {
@@ -28905,7 +28917,7 @@
    "why": "smoke red while Ci, Twin and Ally were green on the head"
   }
  ],
- "next_decision": 2376,
+ "next_decision": 2392,
  "stage_proofs": {
   "1": {
    "evidence": "Recorded by the runner (D-551): nightly-main green (Ci, Twin, Ally) on main 5d45d8ef0bee8d8e290462e58aa81c580bf57c1e, which contains every stage-1 merge (T002 739f29a31cec, T003 7161be09784c, T004 36b13e66ddf4, T172 189cfe54c716, T005 f55fa02095c0, T006 1e9c2dbb261b, T007 d57693ea8e79, T008 d57693ea8e79, T170 1cdbd960f712, T154 b4f7265f01d2, T167 5d45d8ef0bee); the exit row's tests ran in it (tests/twin/test_gate.py, tests/test_check_catalog.py, tests/test_matching_examples.py, tests/contract/test_stand_in_server.py); every requirement owned only by tasks of stage 1 or earlier is verified (OPS-053).",
