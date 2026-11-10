@@ -10043,17 +10043,77 @@
    "prompt": "kit/prompts/T254.md"
   },
   {
+   "id": "T337",
+   "slug": "no-fee-release-pick-bound",
+   "title": "payments: a $0 release proof is bound to the pick's own stored business and job",
+   "goal": "Sixth audit U-02 (D-2302; FEE-012, FEE-013, FEE-045, PICK-022; sets aside only D-1478's premise): `no_fee_release` (`app/payments/src/release_proof.rs:225`) checks only that the pick has no PaymentIntent and that some $0 ledger entry exists for the business and job its caller passes, never that the pick belongs to that pair, and `picks::settle` (`app/picks/src/settle.rs:66`) does not check either; so a $0 waiver recorded for one job of a business could clear a different pick of that business for release with no fee (a fee bypass; the pick still goes to its own business). D-1478's premise, that `payments` holds no record tying a $0 pick to its business and job, is out of date: since T287 `payments.pick_fee` is keyed by pick and carries its business and job (`fix_fee_at_pick`, `app/payments/src/pick_fee.rs:100`). Now `no_fee_release` reads the pick's `payments.pick_fee` row, refuses with `NoFeeDecision` when there is none or when the caller's (business, job) differs from it, and checks the $0 ledger entry against the row's business and job; the signature is unchanged, so its callers (T254's release sink, T255's re-clear) keep compiling, and both inherit the binding. Tests in `tests/integration/tests/no_fee_release_binding.rs` (TD-FEE-57): a $0 waiver for pick A's job does not clear pick B of the same business on another job, with either pair passed; pick B with its own waiver is cleared; a pick with no `pick_fee` row is refused. Money: 95% branch floor; the overseer runs an independent money review of the hand-in. Update the `payments` `CLAUDE.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "payments",
+   "deps": [
+    "T287"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "money",
+    "security"
+   ],
+   "owns": [
+    "app/payments/src/release_proof.rs",
+    "tests/integration/tests/no_fee_release_binding.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/fees.md",
+    "docs/spec/quotes-pick.md",
+    "docs/brains/payments-stripe.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "FEE-012",
+    "FEE-013",
+    "FEE-045",
+    "PICK-022"
+   ],
+   "tests": [
+    "TD-FEE-57"
+   ],
+   "decisions": [
+    "D-2302",
+    "D-1478",
+    "D-1871"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 250,
+    "context_pct": 15
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T337-no-fee-release-pick-bound",
+   "prompt": "kit/prompts/T337.md"
+  },
+  {
    "id": "T255",
    "slug": "emergency-address-rerelease",
    "title": "intake, payments and server: ask again for an emergency address and release once it arrives",
-   "goal": "On an emergency job a release that comes before the address stores one `picks.address_wait` row and queues one `picks.address_needed` event (T069, TD-INT-34), but nothing handles the event, and nothing releases once the address arrives: the proof was consumed and `paid_release` needs a new Stripe event (D-1563). Build both (D-1739). (1) `app/intake/src/address_wait.rs`: the `picks.address_needed` handler, registered in the shared `app/server/src/bin/worker.rs`, asks the homeowner the name-and-address question again at once through `intake::api::ask_name_address` (INT-027, INT-029), once per pick; and `address_arrived`, which `conversation.rs` (T040's, extended by T162) calls after `take_name_address` stores an address for a job with a waiting pick, queueing one `intake.address_in` event. (2) `app/payments/src/reclear.rs`: `payments::api::reclear_release(conn, pick)` returns a `Releasable` only from the pick's stored charge success (the succeeded PaymentIntent T189's `paid_release` checked) or its recorded $0 decision (`no_fee_release`'s rule), never from a redirect, the homeowner's message or a new event (SEC-030). (3) The `intake.address_in` handler in `app/server/src/release_sink.rs` (T254's) re-clears, settles and releases through the same sink, so the masked line opens then (TD-CALL-12's database path); a pick that left paid or free before the address arrived releases nothing, and a second address message releases nothing again. Tests in `app/server/tests/address_rerelease.rs` (TD-INT-39; only `server` may mint). Update `docs/architecture.md` section 10 and the `intake`, `payments` and `server` `CLAUDE.md` files.",
+   "goal": "On an emergency job a release that comes before the address stores one `picks.address_wait` row and queues one `picks.address_needed` event (T069, TD-INT-34), but nothing handles the event, and nothing releases once the address arrives: the proof was consumed and `paid_release` needs a new Stripe event (D-1563). Build both (D-1739). (1) `app/intake/src/address_wait.rs`: the `picks.address_needed` handler, registered in the shared `app/server/src/bin/worker.rs`, asks the homeowner the name-and-address question again at once through `intake::api::ask_name_address` (INT-027, INT-029), once per pick; and `address_arrived`, which `conversation.rs` (T040's, extended by T162) calls after `take_name_address` stores an address for a job with a waiting pick, queueing one `intake.address_in` event. (2) `app/payments/src/reclear.rs`: `payments::api::reclear_release(conn, pick)` returns a `Releasable` only from the pick's stored charge success (the succeeded PaymentIntent T189's `paid_release` checked) or its recorded $0 decision (`no_fee_release`'s rule), never from a redirect, the homeowner's message or a new event (SEC-030). (3) The `intake.address_in` handler in `app/server/src/release_sink.rs` (T254's) re-clears, settles and releases through the same sink, so the masked line opens then (TD-CALL-12's database path); a pick that left paid or free before the address arrived releases nothing, and a second address message releases nothing again. Tests in `app/server/tests/address_rerelease.rs` (TD-INT-39; only `server` may mint). Update `docs/architecture.md` section 10 and the `intake`, `payments` and `server` `CLAUDE.md` files. The re-clear uses `no_fee_release`'s pick-bound rule from T337 (the pick's own `payments.pick_fee` business and job, D-2302), never a pair its caller passes.",
    "type": "build",
    "phase": 1,
    "stage": "4",
    "module": "intake",
    "deps": [
     "T254",
-    "T162"
+    "T162",
+    "T337"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -10090,7 +10150,8 @@
    "decisions": [
     "D-1563",
     "D-1564",
-    "D-1739"
+    "D-1739",
+    "D-2302"
    ],
    "cites": [],
    "budget": {
@@ -11422,7 +11483,7 @@
    "owns": [
     "app/messaging/src/help_requests.rs",
     "app/messaging/src/help_answers.rs",
-    "migrations/0181_help_requests.sql",
+    "migrations/0182_help_requests.sql",
     "tests/integration/tests/help_requests.rs",
     "app/ops/src/help_requests.rs",
     "app/portals/src/digest_flags.rs",
@@ -11745,7 +11806,12 @@
     "T329",
     "T330",
     "T331",
-    "T332"
+    "T332",
+    "T333",
+    "T334",
+    "T335",
+    "T336",
+    "T337"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -12234,7 +12300,7 @@
     "app/intake/src/web_chat.rs",
     "app/intake/src/conversation.rs",
     "tests/integration/tests/web_chat.rs",
-    "migrations/0177_intake_request_source.sql"
+    "migrations/0178_intake_request_source.sql"
    ],
    "reads": [
     "docs/architecture.md",
@@ -12563,7 +12629,7 @@
     "app/ops/src/alerts.rs",
     "app/ops/src/safe_mode.rs",
     "app/ops/src/models.rs",
-    "migrations/0178_ops_alerts_safe_mode.sql",
+    "migrations/0179_ops_alerts_safe_mode.sql",
     "tests/integration/tests/safe_mode.rs",
     "app/payments/src/safe_mode_check.rs",
     "app/picks/src/safe_mode_check.rs",
@@ -12635,7 +12701,7 @@
    "id": "T320",
    "slug": "ops-alert-open-once",
    "title": "ops: one open alert per kind and subject, so a check that runs on a schedule never raises the same alert again",
-   "goal": "Fourth external audit F30 (D-2207; OPS-004, SEC-051): `ops.alert` has no rule against a second open alert of the same kind and subject (`migrations/0021_ops_audit.sql:33`), so a check that runs on a schedule, such as `messaging::check_webhook_silence` (`app/messaging/src/email.rs:684`) once T204 schedules it, raises a new alert on every run while its condition lasts, and a pushing kind would push each time. (1) `migrations/0179_ops_alert_open_once.sql`: a unique index on `ops.alert (kind, subject_kind, subject_id)` over unresolved rows (`resolved_at IS NULL`, and T105's acknowledgement column if it adds one) with `NULLS NOT DISTINCT` (PostgreSQL 16), so a subject-less kind is open once too. (2) `raise_alert` (`app/ops/src/service.rs:96`) inserts with `ON CONFLICT DO NOTHING` and returns the open alert's ID when one exists (no new row, so no new push); a raise after it was resolved opens a new one. Read every caller of `raise_alert` (about 60): those that need one alert per event (each HELP request, each dispute, each failed purge) already carry a distinct subject; list in the decision any caller whose behaviour changes. Tests in `tests/integration/tests/alert_dedupe.rs` (TD-OPS-34): two raises of one kind and subject leave one open row and return its ID; after it is resolved a raise opens a new one; two subject-less raises of one kind leave one; two concurrent raises leave one. Every existing test that raises alerts passes unchanged; if one expects two open alerts of one kind and subject, stop and report. Update the `ops` `CLAUDE.md`, `docs/architecture.md` section 10 and `docs/decisions.md`.",
+   "goal": "Fourth external audit F30 (D-2207; OPS-004, SEC-051): `ops.alert` has no rule against a second open alert of the same kind and subject (`migrations/0021_ops_audit.sql:33`), so a check that runs on a schedule, such as `messaging::check_webhook_silence` (`app/messaging/src/email.rs:684`) once T204 schedules it, raises a new alert on every run while its condition lasts, and a pushing kind would push each time. (1) `migrations/0180_ops_alert_open_once.sql`: a unique index on `ops.alert (kind, subject_kind, subject_id)` over unresolved rows (`resolved_at IS NULL`, and T105's acknowledgement column if it adds one) with `NULLS NOT DISTINCT` (PostgreSQL 16), so a subject-less kind is open once too. (2) `raise_alert` (`app/ops/src/service.rs:96`) inserts with `ON CONFLICT DO NOTHING` and returns the open alert's ID when one exists (no new row, so no new push); a raise after it was resolved opens a new one. Read every caller of `raise_alert` (about 60): those that need one alert per event (each HELP request, each dispute, each failed purge) already carry a distinct subject; list in the decision any caller whose behaviour changes. Tests in `tests/integration/tests/alert_dedupe.rs` (TD-OPS-34): two raises of one kind and subject leave one open row and return its ID; after it is resolved a raise opens a new one; two subject-less raises of one kind leave one; two concurrent raises leave one. Every existing test that raises alerts passes unchanged; if one expects two open alerts of one kind and subject, stop and report. Update the `ops` `CLAUDE.md`, `docs/architecture.md` section 10 and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -12648,7 +12714,7 @@
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [],
    "owns": [
-    "migrations/0179_ops_alert_open_once.sql",
+    "migrations/0180_ops_alert_open_once.sql",
     "app/ops/src/service.rs",
     "tests/integration/tests/alert_dedupe.rs"
    ],
@@ -12712,7 +12778,7 @@
     "app/messaging/src/alert_emails.rs",
     "tests/integration/tests/alert_routing.rs",
     "app/portals/src/digest_flags.rs",
-    "migrations/0180_ops_owner_digest.sql",
+    "migrations/0181_ops_owner_digest.sql",
     "app/messaging/src/keywords.rs",
     "app/portals/src/business_portal.rs",
     "app/portals/templates/business_home.html",
@@ -12922,7 +12988,7 @@
    "id": "T321",
    "slug": "consent-five-year-purge",
    "title": "messaging, intake and privacy: consent records, keyword events and message logs go 5 years after a number's last message",
-   "goal": "Fourth external audit F32 (D-2208; CON-022, CON-036, D-079): CON-022 keeps consent records, opt-in wording versions, STOP/HELP/START events and message logs 5 years after the last message to that number, and the privacy policy promises the same (`docs/legal/privacy-policy.md:91`), but nothing ever deletes them: `intake.consent_record` and the `messaging` keyword and message-log rows are append-only (`migrations/0053_intake_tables.sql:62`) and `app/intake/src/purge.rs` says they are never deleted there. (1) A daily `messaging.consent_sweep` (registered in the shared `app/server/src/lib.rs`, queued once a day) finds each number whose last inbound or outbound message is more than 1,827 days old (5 years, never short by a leap day) and deletes, in one transaction per number: its rows of every table CON-022 names, through `app/messaging/src/consent_purge.rs` for `messaging`'s and `intake::api` (`app/intake/src/consent_purge.rs`) for `intake.consent_record`, each with one `ops` audit row of IDs only; `migrations/0182_consent_five_year_purge.sql` grants the app role DELETE on exactly those tables and nothing else (no UPDATE, so they stay append-only for every other change). (2) The opt-out is never weakened: a number on `messaging.suppression` keeps its suppression row, the `messaging.optout_event` row that row points to (`event_id`, `migrations/0044_messaging_optout.sql:33`; digest-only, no phone) and its locked phone in the vault, because the suppression digest is keyed `homeowner-phone|v<n>` and PRIV-024's key rotation rebuilds it from the vault plaintext (D-079), so clearing the phone would lose the opt-out at the next rotation; only its other CON-022 rows (consent records, keyword events, message logs) go at 5 years. A number not on suppression loses its CON-022 rows and then its locked vault phone, cleared through `privacy::api` (`app/privacy/src/consent_phone.rs`). The DELETE grant on `messaging.optout_event` is limited to rows no suppression row references (a policy or a trigger that refuses the rest). That an opted-out number's phone stays locked past 5 years is listed for Casey, with whether the privacy policy should say so (D-2208). (3) Tests in `tests/integration/tests/consent_purge.rs` (TD-CON-30): a number last messaged 1,826 days ago keeps everything; at 1,827 days a number not on suppression loses its rows and its vault phone, with audit rows of IDs only; an opted-out number keeps its suppression row, the opt-out event it points to and its locked phone, loses its other rows, and is still refused a text after the purge and after an index-key rotation; deleting an opt-out event a suppression row references is refused; a message in between restarts its clock. The rotation case builds its two-version `VAULT_INDEX_KEY` the way `tests/integration/tests/vault.rs` does (its `key(version, byte)` helper at line 32 and the v1-plus-v2 key set of `the_rotation_drill_moves_every_row_to_v2`, TD-PRIV-09) and rotates with `privacy::api::rotate_batch` as that test and `tests/integration/tests/inbound_scrub_context.rs` do; it is not skipped. Update the `messaging`, `intake` and `privacy` `CLAUDE.md` files, `docs/architecture.md` section 10 and `docs/decisions.md`.",
+   "goal": "Fourth external audit F32 (D-2208; CON-022, CON-036, D-079): CON-022 keeps consent records, opt-in wording versions, STOP/HELP/START events and message logs 5 years after the last message to that number, and the privacy policy promises the same (`docs/legal/privacy-policy.md:91`), but nothing ever deletes them: `intake.consent_record` and the `messaging` keyword and message-log rows are append-only (`migrations/0053_intake_tables.sql:62`) and `app/intake/src/purge.rs` says they are never deleted there. (1) A daily `messaging.consent_sweep` (registered in the shared `app/server/src/lib.rs`, queued once a day) finds each number whose last inbound or outbound message is more than 1,827 days old (5 years, never short by a leap day) and deletes, in one transaction per number: its rows of every table CON-022 names, through `app/messaging/src/consent_purge.rs` for `messaging`'s and `intake::api` (`app/intake/src/consent_purge.rs`) for `intake.consent_record`, each with one `ops` audit row of IDs only; `migrations/0183_consent_five_year_purge.sql` grants the app role DELETE on exactly those tables and nothing else (no UPDATE, so they stay append-only for every other change). (2) The opt-out is never weakened: a number on `messaging.suppression` keeps its suppression row, the `messaging.optout_event` row that row points to (`event_id`, `migrations/0044_messaging_optout.sql:33`; digest-only, no phone) and its locked phone in the vault, because the suppression digest is keyed `homeowner-phone|v<n>` and PRIV-024's key rotation rebuilds it from the vault plaintext (D-079), so clearing the phone would lose the opt-out at the next rotation; only its other CON-022 rows (consent records, keyword events, message logs) go at 5 years. A number not on suppression loses its CON-022 rows and then its locked vault phone, cleared through `privacy::api` (`app/privacy/src/consent_phone.rs`). The DELETE grant on `messaging.optout_event` is limited to rows no suppression row references (a policy or a trigger that refuses the rest). That an opted-out number's phone stays locked past 5 years is listed for Casey, with whether the privacy policy should say so (D-2208). (3) Tests in `tests/integration/tests/consent_purge.rs` (TD-CON-30): a number last messaged 1,826 days ago keeps everything; at 1,827 days a number not on suppression loses its rows and its vault phone, with audit rows of IDs only; an opted-out number keeps its suppression row, the opt-out event it points to and its locked phone, loses its other rows, and is still refused a text after the purge and after an index-key rotation; deleting an opt-out event a suppression row references is refused; a message in between restarts its clock. The rotation case builds its two-version `VAULT_INDEX_KEY` the way `tests/integration/tests/vault.rs` does (its `key(version, byte)` helper at line 32 and the v1-plus-v2 key set of `the_rotation_drill_moves_every_row_to_v2`, TD-PRIV-09) and rotates with `privacy::api::rotate_batch` as that test and `tests/integration/tests/inbound_scrub_context.rs` do; it is not skipped. Update the `messaging`, `intake` and `privacy` `CLAUDE.md` files, `docs/architecture.md` section 10 and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -12939,7 +13005,7 @@
     "compliance"
    ],
    "owns": [
-    "migrations/0182_consent_five_year_purge.sql",
+    "migrations/0183_consent_five_year_purge.sql",
     "app/messaging/src/consent_purge.rs",
     "app/intake/src/consent_purge.rs",
     "app/privacy/src/consent_phone.rs",
@@ -13159,7 +13225,7 @@
     "app/recovery/src/api.rs",
     "app/recovery/src/models.rs",
     "app/recovery/src/backup.rs",
-    "migrations/0183_recovery_backup_export.sql",
+    "migrations/0184_recovery_backup_export.sql",
     "tests/recovery/tests/export_restores.rs",
     "app/portals/src/digest_flags.rs",
     "app/portals/src/health_page.rs"
@@ -13231,7 +13297,7 @@
    "owns": [
     "app/recovery/src/replay.rs",
     "app/recovery/src/models.rs",
-    "migrations/0184_recovery_replay.sql",
+    "migrations/0185_recovery_replay.sql",
     "app/recovery/src/tests/replay_ids.rs"
    ],
    "reads": [
@@ -14582,7 +14648,8 @@
    "module": "adapters",
    "deps": [
     "T127",
-    "T275"
+    "T275",
+    "T336"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -14693,7 +14760,8 @@
    "module": "adapters",
    "deps": [
     "T130",
-    "T275"
+    "T275",
+    "T336"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -14758,7 +14826,8 @@
    "module": "adapters",
    "deps": [
     "T131",
-    "T260"
+    "T260",
+    "T335"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -14993,7 +15062,8 @@
    "module": null,
    "deps": [
     "T134",
-    "T303"
+    "T303",
+    "T319"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -15733,7 +15803,8 @@
     "T236",
     "T298",
     "T317",
-    "T325"
+    "T325",
+    "T336"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -19766,7 +19837,7 @@
    "id": "T261",
    "slug": "served-confirm-route",
    "title": "portals and server: the served Confirm page under the real middleware, the payment page's own Stripe CSP, and truthful bank-approval handling",
-   "goal": "The Confirm view, form and script exist (T224) but no route serves them (D-1480 (a), D-1740 (1)), the global `security_headers` layer replaces every response's CSP with the self-only policy so Stripe.js could never load (D-1480 (c)), the script ignores `handleNextAction`'s result, and the only browser test is a hand-written substitute page (external audit A08, D-1754). (1) Serve `GET` and `POST /b/picks/{pick}/confirm` from `app/portals/src/confirm_pay.rs` (T084's session and principal scoping, T232's terms record), merged in the shared `app/server/src/lib.rs` with T260's `StripeHttp` as the `IntentStripe`: only a signed-in owner or \"Confirm and billing\" member of the pick's business reaches it (any other answers the one not-found page); `intake::api::paused_by_homeowner` and the pick's status are checked again on every load and press (CON-029); the fee, currency and job type come from the server's stored facts, never the form: the fee is `payments::api::pick_fee`, the fee T287 fixed at the pick, and every `Press` carries exactly that amount (D-1871); `open_intent` on the first load, `waive_at_confirm` for a $0 pick, `may_confirm` and `confirm_and_pay` per press, `press_reply` as JSON with the client secret only for a bank approval. When `may_confirm` answers `ConfirmError::FeeModeChanged` (the owner switched the fee mode after the pick), nothing is charged, the page says the fee terms changed after this pick so it can't be confirmed, and the pick ends at once with no fee through the same `picks` call as T232's \"Can't take it\" with its own reason, never counted against the business (PICK-050, OPS-034, D-1871). (2) CSP: `app/portals/src/security.rs` keeps the self-only policy for every page and lets the Confirm route alone add `https://js.stripe.com` to `script-src` and `frame-src` (and Stripe's documented `connect-src`), by a response marker the layer reads rather than by trusting any handler header; a test proves every other page still gets the strict policy (SEC-012). (3) `app/portals/static/confirm_pay.ts`: `handleNextAction`'s error or cancel shows the try-again line and never a success, success shows \"Checking with your bank\" until the server's answer, and the page then asks the server for the attempt's state rather than trusting the browser. (4) Tests: `app/server/tests/confirm_route.rs` (the served route with the real middleware) and `tests/e2e/confirm_served.spec.ts` against the app and the stand-ins; T224's `tests/e2e/confirm_pay.spec.ts` stays as it is and counts as a component test of the script only, never as journey evidence (D-1754). Update `docs/architecture.md` section 10, the `portals` and `server` `CLAUDE.md` files and `docs/decisions.md`. The Confirm route is served only after T328 registers the payments tasks it relies on (the charge check, the pay timer, the refunds and the reconcile), so no Confirm press can queue a task the worker would dead-letter (fifth external audit AH-001, D-2286).",
+   "goal": "The Confirm view, form and script exist (T224) but no route serves them (D-1480 (a), D-1740 (1)), the global `security_headers` layer replaces every response's CSP with the self-only policy so Stripe.js could never load (D-1480 (c)), the script ignores `handleNextAction`'s result, and the only browser test is a hand-written substitute page (external audit A08, D-1754). (1) Serve `GET` and `POST /b/picks/{pick}/confirm` from `app/portals/src/confirm_pay.rs` (T084's session and principal scoping, T232's terms record), merged in the shared `app/server/src/lib.rs` with T260's `StripeHttp` as the `IntentStripe`: only a signed-in owner or \"Confirm and billing\" member of the pick's business reaches it (any other answers the one not-found page); `intake::api::paused_by_homeowner` and the pick's status are checked again on every load and press (CON-029); the fee, currency and job type come from the server's stored facts, never the form: the fee is `payments::api::pick_fee`, the fee T287 fixed at the pick, and every `Press` carries exactly that amount (D-1871); `open_intent` on the first load, `waive_at_confirm` for a $0 pick, `may_confirm` and `confirm_and_pay` per press, `press_reply` as JSON with the client secret only for a bank approval. When `may_confirm` answers `ConfirmError::FeeModeChanged` (the owner switched the fee mode after the pick), nothing is charged, the page says the fee terms changed after this pick so it can't be confirmed, and the pick ends at once with no fee through the same `picks` call as T232's \"Can't take it\" with its own reason, never counted against the business (PICK-050, OPS-034, D-1871). (2) CSP: `app/portals/src/security.rs` keeps the self-only policy for every page and lets the Confirm route alone add `https://js.stripe.com` to `script-src` and `frame-src` (and Stripe's documented `connect-src`), by a response marker the layer reads rather than by trusting any handler header; a test proves every other page still gets the strict policy (SEC-012). (3) `app/portals/static/confirm_pay.ts`: `handleNextAction`'s error or cancel shows the try-again line and never a success, success shows \"Checking with your bank\" until the server's answer, and the page then asks the server for the attempt's state rather than trusting the browser. (4) Tests: `app/server/tests/confirm_route.rs` (the served route with the real middleware) and `tests/e2e/confirm_served.spec.ts` against the app and the stand-ins; T224's `tests/e2e/confirm_pay.spec.ts` stays as it is and counts as a component test of the script only, never as journey evidence (D-1754). Update `docs/architecture.md` section 10, the `portals` and `server` `CLAUDE.md` files and `docs/decisions.md`. The Confirm route is served only after T328 registers the payments tasks it relies on (the charge check, the pay timer, the refunds and the reconcile), so no Confirm press can queue a task the worker would dead-letter (fifth external audit AH-001, D-2286). (Sixth audit U-02, D-2302; IC-33.) The $0 handoff: on a $0 decision the route records it with `waive_at_confirm`, then takes `payments::api::no_fee_release(conn, pick)` (bound to the pick's own stored fee row since T337) and hands that `Releasable` to the production release sink (`app/server/src/release_sink.rs`), which settles and releases once; a press repeated after a crash between the waiver and the release finds the waiver recorded and the release row, and releases nothing twice. Tests in `app/server/tests/confirm_route.rs` (TD-FEE-58).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -19777,7 +19848,8 @@
     "T232",
     "T254",
     "T287",
-    "T328"
+    "T328",
+    "T337"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -19814,11 +19886,13 @@
     "SEC-012",
     "CON-029",
     "PICK-024",
-    "BIZ-037"
+    "BIZ-037",
+    "FEE-012"
    ],
    "tests": [
     "TD-FEE-45",
-    "TD-SEC-37"
+    "TD-SEC-37",
+    "TD-FEE-58"
    ],
    "decisions": [
     "D-1754",
@@ -19826,7 +19900,8 @@
     "D-1482",
     "D-946",
     "D-1871",
-    "D-2286"
+    "D-2286",
+    "D-2302"
    ],
    "cites": [],
    "budget": {
@@ -21969,7 +22044,8 @@
    "module": "payments",
    "deps": [
     "T295",
-    "T327"
+    "T327",
+    "T337"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -22025,10 +22101,261 @@
    "prompt": "kit/prompts/T332.md"
   },
   {
+   "id": "T333",
+   "slug": "refund-amount-checked",
+   "title": "payments (harness): a succeeded refund is recorded at the amount Stripe reports, and a refund that is not the full charge in USD alerts Casey",
+   "goal": "Sixth audit U-05 (D-2303; FEE-026, FEE-028, FEE-053): the app only ever asks Stripe for a full refund (`app/adapters/src/payments.rs:326`), but a refund Stripe reports `succeeded` is recorded at the charged amount whatever Stripe says it refunded: `Refund` carries `amount_cents` and `currency` (`app/payments/src/refund_stripe.rs:53`), `Refund::checked` (:67) compares neither, and `succeeded` and the ledger `append` in `app/payments/src/refunds.rs` (:376, :474) write `charged.amount`. Now, in `refunds.rs` (with a shared check in `refund_stripe.rs` that `reconcile` also uses, T334): a succeeded refund in `usd` whose reported amount is present and differs from the charged amount records the ledger refund at the amount Stripe reported (the ledger matches the money), raises one High `payments.refund_amount_mismatch` alert for that pick (only while none is open for it), and sends no \"refunded in full\" notice; a refund whose currency is present and not `usd` is treated as unconfirmed: it is recorded at the charged amount, never at the foreign figure, with one High `payments.refund_amount_unconfirmed` alert, and no \"refunded in full\" notice; a refund whose amount is missing is re-read once with `fetch_refund`, and if it is still missing it is recorded at the charged amount (the app only asks for full refunds) with the same unconfirmed alert, and its notice goes as today. The refund state machine and its keys are unchanged, so a duplicate event or retry records nothing twice. A harness task because T258's `tests/integration/tests/refund_lifecycle.rs` fakes must report the amount and currency a real full refund carries; their expected values do not change. Tests in `tests/integration/tests/refund_amounts.rs` (TD-FEE-59): full; $25 of a $75 charge; amount missing then present on the re-read; amount missing on both; currency `eur`; the same event twice. Money: the overseer runs an independent money review of the hand-in. Update the `payments` `CLAUDE.md` and `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "4",
+   "module": "payments",
+   "deps": [
+    "T258",
+    "T331"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "money",
+    "harness"
+   ],
+   "owns": [
+    "app/payments/src/refunds.rs",
+    "app/payments/src/refund_stripe.rs",
+    "tests/integration/tests/refund_lifecycle.rs",
+    "tests/integration/tests/refund_amounts.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/fees.md",
+    "docs/brains/payments-stripe.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "FEE-026",
+    "FEE-028",
+    "FEE-053"
+   ],
+   "tests": [
+    "TD-FEE-59"
+   ],
+   "decisions": [
+    "D-2303",
+    "D-1753",
+    "D-2072"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 450,
+    "context_pct": 21
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T333-refund-amount-checked",
+   "prompt": "kit/prompts/T333.md"
+  },
+  {
+   "id": "T334",
+   "slug": "reconcile-catch-up-and-paging",
+   "title": "payments: the nightly reconcile catches up after an outage from its last good run, reads Stripe in pages, and checks refund amounts",
+   "goal": "Sixth audit U-07 and U-05's reconcile half (D-2304, D-2303; FEE-029, FEE-051, FEE-028). After T288 (which keeps unsettled charges open) and T333: (1) `LOOKBACK` is 7 days (`app/payments/src/reconcile.rs:57`), so a charge whose events all fell before a reconcile outage of more than 7 days is never read. `migrations/0177_payments_reconcile_checkpoint.sql` adds `payments.reconcile_checkpoint` (one row: the start of the last run that finished; app role SELECT, INSERT and UPDATE of that column only); each run reads every charge created since the earlier of now − 7 days and that time − 1 day, with no cap (the charge list, `GET /v1/charges` with `created[gte]`, has no 30-day limit), so no charge is skipped however long the outage; when the gap since the last finished run is over 2 days it also raises one High `payments.reconcile_gap` alert, as information only (it skips nothing); the checkpoint moves only when a run finishes. (2) `ReconcileStripe::list_charges` (:63) returns an unbounded `Vec`; it becomes a paged read (`since`, a cursor, a page size of at most 100) and the run handles one page at a time in bounded batches, committing page by page, so memory and transaction size do not grow with volume; the FEE-030 cent-match totals (gross charges, refunds, disputes, fees) accumulate across pages and are compared once at the end of the run. (3) `own_refund` (:357) records a refund at the charged amount; it uses T333's check: a reported amount that differs or a currency other than `usd` records Stripe's amount and raises the same High alert. Tests in `tests/integration/tests/reconcile_catch_up.rs` (TD-FEE-60) with the fake `ReconcileStripe`: a 10-day outage reads back to the checkpoint less a day; a 40-day one reads every charge back to its checkpoint and raises the information alert once; the cent match over several pages equals the match over one; 250 charges are read in three pages; a partial refund found by the reconcile alerts; a failed run leaves the checkpoint. T335 implements the paged read over HTTP. Money: the overseer runs an independent money review of the hand-in. Update the `payments` `CLAUDE.md`, `docs/architecture.md` section 3 (the new table) and section 10, and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "payments",
+   "deps": [
+    "T288",
+    "T333"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "money"
+   ],
+   "owns": [
+    "migrations/0177_payments_reconcile_checkpoint.sql",
+    "app/payments/src/reconcile.rs",
+    "tests/integration/tests/reconcile_catch_up.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/fees.md",
+    "docs/brains/payments-stripe.md",
+    "docs/brains/postgres-operations.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "FEE-029",
+    "FEE-051",
+    "FEE-028"
+   ],
+   "tests": [
+    "TD-FEE-60"
+   ],
+   "decisions": [
+    "D-2304",
+    "D-2303",
+    "D-1872"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 500,
+    "context_pct": 18
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T334-reconcile-catch-up-and-paging",
+   "prompt": "kit/prompts/T334.md"
+  },
+  {
+   "id": "T335",
+   "slug": "stripe-reconcile-and-dispute-reads",
+   "title": "adapters, payments and stand-in (harness): the reconcile's paged charge read and the dispute evidence submit over the real Stripe client",
+   "goal": "Sixth audit, the T328 gap (D-2305; FEE-029, FEE-051, FEE-027, FEE-050): `run_reconcile` needs `impl ReconcileStripe` (`app/payments/src/reconcile.rs:63`) and `run_dispute_submit` needs `impl DisputeStripe` (`app/payments/src/disputes.rs:42`), and only test fakes implement them (`reconcile.rs:62` says \"T132's client implements it\", but T132's goal never names either), so T328 could not register those two kinds as written. (1) `app/adapters/src/payments.rs`: typed reads on the one `StripePayments` client, under its timeouts and keys: a page of succeeded charges created since a time (`GET /v1/charges` with `created[gte]`, `limit`, `starting_after`, expanding `balance_transaction` for the processing fee, the refunded amount and the dispute) and the evidence submit (`POST /v1/disputes/{id}` with `submit=true`, idempotency key). (2) In `payments` (as `intent_http.rs` does for `IntentStripe`, because `adapters` may not name `payments`' traits): `app/payments/src/reconcile_http.rs` implements T334's paged `ReconcileStripe` and `app/payments/src/dispute_http.rs` implements `DisputeStripe`, both over `StripePayments`. (3) `stand_ins/stripe.py` serves `GET /v1/charges` (paged, with balance transactions) and `POST /v1/disputes/{id}` in Stripe's shapes if it does not yet (it serves `GET /v1/events` today); `tests/contract/test_stripe_reconcile_dispute.py` checks both against the stand-in, and T132 later runs them against Stripe test mode. A harness task because `stand_ins/` is protected. T328 depends on this task; T132 runs after it. Update the `adapters` and `payments` `CLAUDE.md` files and `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "4",
+   "module": "payments",
+   "deps": [
+    "T334",
+    "T314",
+    "T260"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "money",
+    "harness",
+    "security"
+   ],
+   "owns": [
+    "app/adapters/src/payments.rs",
+    "stand_ins/stripe.py",
+    "app/payments/src/reconcile_http.rs",
+    "app/payments/src/dispute_http.rs",
+    "tests/contract/test_stripe_reconcile_dispute.py"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/fees.md",
+    "docs/brains/payments-stripe.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "FEE-029",
+    "FEE-051",
+    "FEE-027",
+    "FEE-050"
+   ],
+   "tests": [
+    "TD-FEE-61"
+   ],
+   "decisions": [
+    "D-2305",
+    "D-1424",
+    "D-1754"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 5,
+    "lines": 550,
+    "context_pct": 18
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T335-stripe-reconcile-and-dispute-reads",
+   "prompt": "kit/prompts/T335.md"
+  },
+  {
+   "id": "T336",
+   "slug": "inbound-text-bounded-retry",
+   "title": "server, adapters and stand-in (harness): a text stopped by a module error is retried a bounded number of times from Twilio's copy of its body, never stored",
+   "goal": "Sixth audit U-06 (D-2307; TXT-012, TXT-020, CON-008, CON-018; D-801): a text stopped by a non-database module error (`Halt::Failed`) is answered 200 and, after T325, raises an alert, but nothing processes it again; D-2284's reason (no body to replay) was incomplete: Twilio keeps the body until the app redacts it on day 31 (`app/messaging/src/purge.rs:3`) and the inbox row holds the MessageSid. After T325: (1) `app/server/src/inbound_text.rs`: a `Halt::Failed` text also queues one `messaging.inbound_retry` task in the delivery's transaction (payload the inbox row ID only; dedupe per inbox row), retried at most 3 times with backoff (5 minutes, 30 minutes, 2 hours); the last failure leaves T325's alert open and adds nothing. (2) `app/adapters/src/sms.rs`: `SmsBodyRead::fetch_message_body(sid)` (GET Messages/{sid}.json) answers the body, or `Gone` for a redacted or unknown message; `stand_ins/twilio.py` already serves that GET (D-2156) and gains only what the contract test needs. (3) `app/server/src/inbound_retry.rs` (registered in the shared `app/server/src/bin/worker.rs` under the Twilio settings): it reads the inbox row, fetches the body, runs it through the same scrubbing reader (`privacy::api::read_inbound_for`) and then the same steps in the same order as the route, skipping the inbox insert; it never stores or logs the body (D-801). Three rules: (a) opt-out and HELP always run (CON-008, CON-018); (b) if a newer inbox row from the same sender has already been processed, the retry does only (a) and closes, so stale content never overrides what she said since, and T325's alert stays as the record; (c) anything the retry sends goes through the normal outbound path under quiet hours (8 a.m. to 8 p.m. in the stricter of Arizona and the area code's time, QH-001), never as an immediate reply outside them. Before building, read how a `Halt::Failed` delivery commits the steps that ran before the failure and state it: each step is either keyed once per inbox row or MessageSid, so a repeat changes nothing, or the retry starts after the last committed step; a step that cannot be made safe to repeat stops this task, and it is reported instead. `Gone` (redacted on day 31, or by `Delete my data`) closes the task with no error. Permanent classes are not retried: a delivery refused as `BadWebhook`, a sender on the suppression list, and a step that answered a known refusal (`Halt::Ends`). Tests in `tests/integration/tests/inbound_text_retry.rs` (TD-TXT-35, including a STOP retried after a newer text, a retry after a newer processed text doing only opt-out and HELP, and a retry at 22:00 whose reply waits for 8 a.m.) and `tests/contract/test_twilio_message_read.py`. A harness task because `stand_ins/` is protected. Privacy and security: the overseer runs an independent review of the hand-in. T299 and T129 run after it. Update the `server` and `adapters` `CLAUDE.md` files and `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "4",
+   "module": "server",
+   "deps": [
+    "T325",
+    "T275"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "security",
+    "harness"
+   ],
+   "owns": [
+    "app/server/src/inbound_text.rs",
+    "app/server/src/inbound_retry.rs",
+    "app/adapters/src/sms.rs",
+    "stand_ins/twilio.py",
+    "tests/integration/tests/inbound_text_retry.rs",
+    "tests/contract/test_twilio_message_read.py"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/messaging.md",
+    "docs/spec/consent.md",
+    "docs/spec/privacy.md",
+    "docs/brains/sms-compliance.md",
+    "docs/brains/rust-production.md",
+    "docs/spec/quiet-hours.md"
+   ],
+   "requirements": [
+    "TXT-012",
+    "TXT-020",
+    "CON-008",
+    "CON-018",
+    "QH-001"
+   ],
+   "tests": [
+    "TD-TXT-35"
+   ],
+   "decisions": [
+    "D-2307",
+    "D-801",
+    "D-2156"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 6,
+    "lines": 600,
+    "context_pct": 19
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T336-inbound-text-bounded-retry",
+   "prompt": "kit/prompts/T336.md"
+  },
+  {
    "id": "T328",
    "slug": "payment-jobs-registered",
    "title": "server, payments and picks: every payments task runs in the production worker with the real Stripe adapter, the reconcile is scheduled, and an ended pick offers the next quote",
-   "goal": "Fifth external audit AH-001 (D-2286; FEE-018, FEE-019, FEE-020, FEE-021, FEE-026, FEE-027, FEE-029, FEE-041): the production worker registers only `payments.pause_watch` and the two `payments` events it hands to `picks`, `payments.card_needs_fix` and `payments.receipt` (`app/server/src/lib.rs:367`), so `payments.charge_check` (`app/payments/src/handlers.rs:35`, `run_charge_check` :371), `payments.pay_timer` (:37, `run_pay_timer` :438), `payments.refund_retry` and `payments.refund_check` (`app/payments/src/refunds.rs:43`, :47; `run_refund_retry` :111, `run_refund_check` :638), `payments.late_success_refund` (`app/payments/src/late.rs:27`, `run_late_refund` :112), `payments.dispute_submit` (`app/payments/src/disputes.rs:34`, `run_dispute_submit` :279, queued today by the dispute webhook) and `payments.reconcile` (`app/payments/src/reconcile.rs:48`, `run_reconcile` :447, which queues its next night but whose first run nothing queues) are dead-lettered; `payments.pick_ended` (`handlers.rs:42`, queued at :352) has no handler at all; and `late_success` (`late.rs:62`) has no production caller. (1) `app/server/src/payment_jobs.rs` builds the Stripe clients once from the settings as `release_sink::stripe_webhook` does (stand-in in dev and ci, live only in live) and registers those seven kinds in the shared `app/server/src/lib.rs` (or `worker.rs` where a vendor client is needed), each through its existing `run_*` function; `payments.dispute_submit` is registered here, not in T314 (T314 builds `picks.dispute_opened`). (2) `worker.rs`'s `schedule_start` seeds the first `payments.reconcile` run for the next night under the same dedupe key the run itself uses for its next night, so a restart never queues a second one. (3) `app/picks/src/pick_ended.rs` handles `payments.pick_ended` (`{pick, business, job, reason}`) as FEE-018, FEE-020 and FEE-041 say: the pick is released and the homeowner is offered the next quote (the PICK-046 \"couldn't take it this time\" text and quote list, under quiet hours unless the job is an emergency, QH-004), once per pick. (4) `app/server/src/release_sink.rs` (after T255 and T266): a verified payment success for a pick `picks` has moved on (`Settled::Left` with a succeeded charge) calls `payments::api::late_success`, so FEE-021's refund and Casey's alert happen; nothing is released. The other FEE-021 case, a pick `payments` itself ended (the FEE-018 four-hour end, the FEE-020 card-fix window) and that then succeeds, through the webhook or through the check round, is T332's, which this task depends on along with its `late-success` refund trigger (D-1547's precondition for registering `payments.late_success_refund`). (5) Tests in `tests/integration/tests/payment_jobs.rs` run the real worker loop against PostgreSQL and the stand-in Stripe (TD-FEE-52, TD-PICK-54): each kind enqueued completes with the ledger, refund and pick rows its rule expects; a worker stopped after the vendor answered and before its database write is restarted and finishes once with no second charge, refund or ledger row; the reconcile is seeded once over two starts; through the registered worker, a pick ended by `payments` that then succeeds, by the webhook and by the check round, gives exactly one refund with trigger `late-success` and one alert. Money code: the overseer runs an independent money review of the hand-in. Update the `server`, `payments` and `picks` `CLAUDE.md` files, `docs/architecture.md` section 10 and `docs/decisions.md`.",
+   "goal": "Fifth external audit AH-001 (D-2286; FEE-018, FEE-019, FEE-020, FEE-021, FEE-026, FEE-027, FEE-029, FEE-041): the production worker registers only `payments.pause_watch` and the two `payments` events it hands to `picks`, `payments.card_needs_fix` and `payments.receipt` (`app/server/src/lib.rs:367`), so `payments.charge_check` (`app/payments/src/handlers.rs:35`, `run_charge_check` :371), `payments.pay_timer` (:37, `run_pay_timer` :438), `payments.refund_retry` and `payments.refund_check` (`app/payments/src/refunds.rs:43`, :47; `run_refund_retry` :111, `run_refund_check` :638), `payments.late_success_refund` (`app/payments/src/late.rs:27`, `run_late_refund` :112), `payments.dispute_submit` (`app/payments/src/disputes.rs:34`, `run_dispute_submit` :279, queued today by the dispute webhook) and `payments.reconcile` (`app/payments/src/reconcile.rs:48`, `run_reconcile` :447, which queues its next night but whose first run nothing queues) are dead-lettered; `payments.pick_ended` (`handlers.rs:42`, queued at :352) has no handler at all; and `late_success` (`late.rs:62`) has no production caller. (1) `app/server/src/payment_jobs.rs` builds the Stripe clients once from the settings as `release_sink::stripe_webhook` does (stand-in in dev and ci, live only in live) and registers those seven kinds in the shared `app/server/src/lib.rs` (or `worker.rs` where a vendor client is needed), each through its existing `run_*` function; `payments.dispute_submit` is registered here, not in T314 (T314 builds `picks.dispute_opened`). (2) `worker.rs`'s `schedule_start` seeds the first `payments.reconcile` run for the next night under the same dedupe key the run itself uses for its next night, so a restart never queues a second one. (3) `app/picks/src/pick_ended.rs` handles `payments.pick_ended` (`{pick, business, job, reason}`) as FEE-018, FEE-020 and FEE-041 say: the pick is released and the homeowner is offered the next quote (the PICK-046 \"couldn't take it this time\" text and quote list, under quiet hours unless the job is an emergency, QH-004), once per pick. (4) `app/server/src/release_sink.rs` (after T255 and T266): a verified payment success for a pick `picks` has moved on (`Settled::Left` with a succeeded charge) calls `payments::api::late_success`, so FEE-021's refund and Casey's alert happen; nothing is released. The other FEE-021 case, a pick `payments` itself ended (the FEE-018 four-hour end, the FEE-020 card-fix window) and that then succeeds, through the webhook or through the check round, is T332's, which this task depends on along with its `late-success` refund trigger (D-1547's precondition for registering `payments.late_success_refund`). (5) Tests in `tests/integration/tests/payment_jobs.rs` run the real worker loop against PostgreSQL and the stand-in Stripe (TD-FEE-52, TD-PICK-54): each kind enqueued completes with the ledger, refund and pick rows its rule expects; a worker stopped after the vendor answered and before its database write is restarted and finishes once with no second charge, refund or ledger row; the reconcile is seeded once over two starts; through the registered worker, a pick ended by `payments` that then succeeds, by the webhook and by the check round, gives exactly one refund with trigger `late-success` and one alert. Money code: the overseer runs an independent money review of the hand-in. Update the `server`, `payments` and `picks` `CLAUDE.md` files, `docs/architecture.md` section 10 and `docs/decisions.md`. The `ReconcileStripe` and `DisputeStripe` implementations over `StripePayments` are T335's (D-2305); this task registers through them.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -22038,7 +22365,8 @@
     "T288",
     "T327",
     "T266",
-    "T332"
+    "T332",
+    "T335"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -22082,7 +22410,8 @@
     "D-2286",
     "D-1547",
     "D-2071",
-    "D-2290"
+    "D-2290",
+    "D-2305"
    ],
    "cites": [],
    "budget": {
@@ -22368,7 +22697,7 @@
    "id": "T319",
    "slug": "security-event-cap-and-webhook-refusals",
    "title": "portals and server: security-event rows are capped per address, webhook refusals are security events, and expired sessions are swept",
-   "goal": "Fourth external audit F14, F5 and F7 (D-2207; SEC-048, SEC-016, SEC-004): (1) `portals::security`'s refusal (`app/portals/src/security.rs:96`) takes a pool connection and writes a security-event row before any limit, so a flood of cross-site or bad-CSRF requests turns each into a database write. An in-process counter, checked before the pool is touched, writes at most N rows per (event kind, client address as SEC-040 takes it, route) per minute and only counts the rest, logged as one line per minute with the count and no address; the 403 answer is unchanged. N is a setting in the shared `app/core/src/settings.rs` whose default is `EVENTS_PER_HOUR_ALERT` (50, `app/portals/src/security.rs:59`) and which is clamped up to it (a lower value is raised to it and logged at start-up), because the burst alert counts stored rows over the last hour (`security.rs:318`), so a cap below the threshold would stop it from ever firing. Until T135 proves that the edge overwrites the client-address header, a forged header must not buy a fresh cap: the counter also keeps a per-(kind, route) ceiling of N rows per minute across all addresses, so a flood with a new forged address on each request still writes at most N rows a minute per kind and route (the burst alert fires from those). (2) The Stripe, Twilio text and Twilio voice webhook routes answer a source or signature refusal 403 with a log line and record no security event, so SEC-048's hourly alert never sees them and a rotated Stripe address list fails silently. `app/server/src/webhook_refusals.rs` is a layer the shared `app/server/src/lib.rs` puts on those three routers only: each 403 they answer records one `webhook_signature_failed` event (route and request ID, no actor) through `portals::api::record_security_event`, under the same cap; first check that those routes answer 403 for nothing else, and if one does, tell the cases apart without reading the body. (3) Expired sessions are never removed (`app/portals/src/session.rs:165` deletes only a replaced cookie's row): a daily `portals.session_sweep` task, registered in the shared `app/server/src/lib.rs` and queued once a day like the purge sweep, deletes `portals.session` rows expired more than a day earlier, in batches. Tests in `tests/security/tests/security_event_cap.rs` (TD-SEC-53) and `tests/integration/tests/session_sweep.rs` (TD-SEC-54); every existing security-event and session test passes unchanged. Update the `portals` and `server` `CLAUDE.md` files and `docs/decisions.md`.",
+   "goal": "Fourth external audit F14, F5 and F7 (D-2207; SEC-048, SEC-016, SEC-004): (1) `portals::security`'s refusal (`app/portals/src/security.rs:96`) takes a pool connection and writes a security-event row before any limit, so a flood of cross-site or bad-CSRF requests turns each into a database write. An in-process counter, checked before the pool is touched, writes at most N rows per (event kind, client address as SEC-040 takes it, route) per minute and only counts the rest, logged as one line per minute with the count and no address; the 403 answer is unchanged. N is a setting in the shared `app/core/src/settings.rs` whose default is `EVENTS_PER_HOUR_ALERT` (50, `app/portals/src/security.rs:59`) and which is clamped up to it (a lower value is raised to it and logged at start-up), because the burst alert counts stored rows over the last hour (`security.rs:318`), so a cap below the threshold would stop it from ever firing. Until T135 proves that the edge overwrites the client-address header, a forged header must not buy a fresh cap: the counter also keeps a per-(kind, route) ceiling of N rows per minute across all addresses, so a flood with a new forged address on each request still writes at most N rows a minute per kind and route (the burst alert fires from those). (2) The Stripe, Twilio text and Twilio voice webhook routes answer a source or signature refusal 403 with a log line and record no security event, so SEC-048's hourly alert never sees them and a rotated Stripe address list fails silently. `app/server/src/webhook_refusals.rs` is a layer the shared `app/server/src/lib.rs` puts on those three routers only: each 403 they answer records one `webhook_signature_failed` event (route and request ID, no actor) through `portals::api::record_security_event`, under the same cap; first check that those routes answer 403 for nothing else, and if one does, tell the cases apart without reading the body. (3) Expired sessions are never removed (`app/portals/src/session.rs:165` deletes only a replaced cookie's row): a daily `portals.session_sweep` task, registered in the shared `app/server/src/lib.rs` and queued once a day like the purge sweep, deletes `portals.session` rows expired more than a day earlier, in batches. (4) Sixth audit U-08 (D-2306; SEC-014, SEC-040): `core.rate_limit` rows are never deleted (`prune`, `app/core/src/rate_limit.rs:230`, has no production caller) and their bucket names hold client addresses. A daily `core.rate_limit_prune` task, registered in the shared `app/server/src/lib.rs` and seeded in `worker.rs`'s `schedule_start` under a per-day dedupe key, deletes rows whose window started more than the longest configured window plus one day ago, in batches of at most 5,000 rows each in its own short statement (`prune_batch`, added to `rate_limit.rs`); it is registered, not deferred, in T327's registry. No index is added: once pruned daily the table holds a few days of windows. Tests in `tests/security/tests/security_event_cap.rs` (TD-SEC-53) and `tests/integration/tests/session_sweep.rs` (TD-SEC-54, TD-SEC-58); every existing security-event and session test passes unchanged. Update the `portals` and `server` `CLAUDE.md` files and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -22387,7 +22716,8 @@
     "app/portals/src/session.rs",
     "app/server/src/webhook_refusals.rs",
     "tests/security/tests/security_event_cap.rs",
-    "tests/integration/tests/session_sweep.rs"
+    "tests/integration/tests/session_sweep.rs",
+    "app/core/src/rate_limit.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -22399,21 +22729,25 @@
    "requirements": [
     "SEC-048",
     "SEC-016",
-    "SEC-004"
+    "SEC-004",
+    "SEC-014",
+    "SEC-040"
    ],
    "tests": [
     "TD-SEC-53",
-    "TD-SEC-54"
+    "TD-SEC-54",
+    "TD-SEC-58"
    ],
    "decisions": [
     "D-2207",
     "D-709",
-    "D-480"
+    "D-480",
+    "D-2306"
    ],
    "cites": [],
    "budget": {
-    "files": 5,
-    "lines": 450,
+    "files": 6,
+    "lines": 550,
     "context_pct": 22
    },
    "checks": [
