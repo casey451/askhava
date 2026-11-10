@@ -105,9 +105,15 @@ async fn a_refused_or_stale_move_changes_nothing(pool: PgPool) {
         .await
         .expect("job");
     let errors = Arc::new(AtomicUsize::new(0));
+    // Tracing caches each call site's interest for every thread. With one live dispatcher it asks
+    // only the registering thread's default, so a parallel test with none (the property runs hit
+    // the same bug log) could switch the site off; a second live one makes every thread ask all of
+    // them, this counter included, and the rebuild drops any interest cached before (D-1873).
+    let _shared = tracing::Dispatch::new(tracing_subscriber::registry());
     let guard = tracing::subscriber::set_default(
         tracing_subscriber::registry().with(Errors(Arc::clone(&errors))),
     );
+    tracing::callsite::rebuild_interest_cache();
     let skip = (JobStatus::Intake, JobStatus::Connected);
     let refused = move_to(&mut db, id, skip, start(), Actor::System).await;
     drop(guard);
