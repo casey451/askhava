@@ -19087,7 +19087,8 @@
     "T345",
     "T346",
     "T347",
-    "T348"
+    "T348",
+    "T349"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -27570,6 +27571,17 @@
    "slug": "matrix-doors",
    "type": "harness",
    "stage": "4"
+  },
+  {
+   "id": "T349",
+   "deps": [
+    "T311"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "pin-draws-only-fail-on-os",
+   "type": "build",
+   "stage": "4"
   }
  ],
  "owner_waits": [],
@@ -29343,7 +29355,7 @@
    }
   }
  },
- "updated_at": "2026-11-10T19:40:00Z",
+ "updated_at": "2026-11-10T19:53:04Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -29441,7 +29453,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "2d9b8e0a8a0846a32f7ed6df30f725c65fb9c561",
+ "runner_sha": "6c127bfac1da0d865b7fa93fcc374e1ac626fc43",
  "starter": "actions",
  "smoke_runs": [
   {

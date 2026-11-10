@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-10T19:40:00Z by runner 2d9b8e0a8a08 (actions).
+Updated 2026-11-10T19:53:04Z by runner 6c127bfac1da (actions).
 
-**Building: T155 in progress since 19:17Z; 188 of 335 done; week 95% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T155 in progress since 19:17Z; 188 of 336 done; week 95% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 188 of 335 build tasks (owner gates not counted)
+- **Tasks done:** 188 of 336 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T155 claimed 19:17Z, lease until 22:17Z
 - **Week:** 95% used, 0.4M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:39Z, 0 min before this update
+- **Last run:** 19:40Z, 12 min before this update
 - **Keeper:** last ran 19:39Z, next wake 22:19Z
 
 ## Needs attention
@@ -38,6 +38,8 @@ Updated 2026-11-10T19:40:00Z by runner 2d9b8e0a8a08 (actions).
 | T287 | payments and picks: the fee fixed at the pick is stored by p | QUEUED | 1 | 46 min | 21:18Z |  |
 
 ### Plan and harness merges on main
+- 19:42Z Plan: second tiering pass — 13 more tasks on Sonnet, T159 on Haiku, reviewer counterexample duty (D-2506) (#427)
+- 19:31Z Plan: PIN draws fail only when the OS source fails; one failed draw costs one draw (D-2451, T311) (#422)
 - 19:17Z Plan: no Fable window on Thursday — the D-2225 window closes before it opens (D-2485) (#425)
 - 18:21Z Plan: two lanes, and each queued task on the lowest model that can do it well (D-2462, D-2463) (#424)
 - 16:53Z Plan: matrix doors before the serving tasks — public, owner and action-link doors, HTTP probe for served realm routes (D-2440, T348) (#421)
@@ -56,7 +58,7 @@ Updated 2026-11-10T19:40:00Z by runner 2d9b8e0a8a08 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 236 of 733 (32.2%) · partial 304 · unstarted 193
-**Tasks merged (throughput only):** 188 of 335
+**Tasks merged (throughput only):** 188 of 336
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -91,7 +93,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 68 of 136 done
+- stage 4: 68 of 137 done
 - stage 5: 0 of 53 done
 - stage 6: 0 of 30 done
 - stage 7: 0 of 2 done
