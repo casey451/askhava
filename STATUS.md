@@ -1,24 +1,24 @@
 # Ask Hava build status
 
-Updated 2026-11-10T18:56:03Z by runner 20f8e470c6ed (actions).
+Updated 2026-11-10T19:18:03Z by runner 2d9b8e0a8a08 (actions).
 
-**Idle since 18:54Z; 187 of 335 done; week 95% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 19:01Z; 188 of 335 done; week 95% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 187 of 335 build tasks (owner gates not counted)
+- **Tasks done:** 188 of 335 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 18:54Z (no task in progress)
+- **Lane:** idle since 19:01Z (no task in progress)
 - **Week:** 95% used, 6.8M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:55Z, 0 min before this update
+- **Last run:** 18:56Z, 21 min before this update
 - **Keeper:** last ran 18:56Z, next wake 19:16Z
 
 ## Needs attention
-- Strict plan check red: 1 problem(s) on tasks still to run (+18 on DONE tasks); first: T162: stored context_pct 16% but it measures 20%; regenerate
+- Strict plan check red: 1 problem(s) on tasks still to run (+19 on DONE tasks); first: T162: stored context_pct 16% but it measures 20%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T311 | calls and server: a voice read-back confirm connects only th | MERGE_PENDING | 1 | 21 min | 18:54Z |  |
-| T294 | portals and site: every page takes the brand from the brand  | MERGE_PENDING | 1 | 42 min | 18:32Z |  |
+| T311 | calls and server: a voice read-back confirm connects only th | check_failed | 1 | 21 min | 18:54Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
+| T294 | portals and site: every page takes the brand from the brand  | done | 1 | 42 min | 18:32Z |  |
 | T231 | portals (harness): the homeowner check-in email buttons and  | done | 2 | 26 min | 17:08Z | T231 built and committed (b2f7b11e, 26074ad1) but smoke red: tests/security/tests/auth_matrix.rs (T088, protected, no se |
 | T231 | portals (harness): the homeowner check-in email buttons and  | QUEUED | 1 | 28 min | 15:58Z |  |
 | T199 | portals: no automated call to a business, voice codes only o | done | 1 | 64 min | 14:22Z |  |
@@ -39,6 +39,7 @@ Updated 2026-11-10T18:56:03Z by runner 20f8e470c6ed (actions).
 | T279 | messaging, ops and server: the texting switch and a number s | done | 1 | 47 min | 19:32Z |  |
 
 ### Plan and harness merges on main
+- 19:17Z Plan: no Fable window on Thursday — the D-2225 window closes before it opens (D-2485) (#425)
 - 18:21Z Plan: two lanes, and each queued task on the lowest model that can do it well (D-2462, D-2463) (#424)
 - 16:53Z Plan: matrix doors before the serving tasks — public, owner and action-link doors, HTTP probe for served realm routes (D-2440, T348) (#421)
 - 16:29Z Plan: T231 extends the authorization matrix to /c/{token}/{answer} as a harness task (D-2429) (#420)
@@ -52,12 +53,11 @@ Updated 2026-11-10T18:56:03Z by runner 20f8e470c6ed (actions).
 - 21:41Z Plan: the LINK notice names the stored PIN; job_pin deleted (T326, D-2247) (#395)
 - 21:26Z Plan: T287 owns payments models.rs and T254's release_recovery test (D-2236) (#394)
 - 20:44Z Harness: Fable model window from the Thu Nov 12 reset, run to the week limit, then back to the plan's models (D-2225) (#392)
-- 19:01Z Plan: fourth audit — voice confirm line, emergency notices, dispute atomicity, feedback purge, route limits, alerts (D-2200–D-2209, T311–T325) (#388)
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 236 of 733 (32.2%) · partial 303 · unstarted 194
-**Tasks merged (throughput only):** 187 of 335
+**Requirements verified:** 236 of 733 (32.2%) · partial 304 · unstarted 193
+**Tasks merged (throughput only):** 188 of 335
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -79,7 +79,7 @@ Updated 2026-11-10T18:56:03Z by runner 20f8e470c6ed (actions).
 | recurring | 5 | 3 | 3 | 11 |
 | security | 7 | 42 | 6 | 55 |
 | terms | 0 | 3 | 32 | 35 |
-| website | 0 | 2 | 26 | 28 |
+| website | 0 | 3 | 25 | 28 |
 | wording | 1 | 6 | 25 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
@@ -92,7 +92,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 67 of 136 done
+- stage 4: 68 of 136 done
 - stage 5: 0 of 53 done
 - stage 6: 0 of 30 done
 - stage 7: 0 of 2 done
