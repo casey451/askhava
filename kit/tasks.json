@@ -22252,10 +22252,13 @@
    "deps": [
     "T080"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
-   "review_areas": [],
+   "review_areas": [
+    "security",
+    "compliance"
+   ],
    "owns": [
     "app/intake/src/emergency.rs",
     "app/intake/src/tests/emergency_streets.rs"
@@ -22492,10 +22495,13 @@
    "deps": [
     "T193"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
-   "review_areas": [],
+   "review_areas": [
+    "privacy",
+    "licensing"
+   ],
    "owns": [
     "app/businesses/src/public_name.rs",
     "tests/integration/tests/business_public_name.rs"
@@ -23572,10 +23578,12 @@
    "deps": [
     "T295"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
-   "review_areas": [],
+   "review_areas": [
+    "security"
+   ],
    "owns": [
     "app/ai/src/output_checks.rs",
     "app/ai/data/sentence_openers.json",

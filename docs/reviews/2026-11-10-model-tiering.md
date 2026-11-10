@@ -2,7 +2,7 @@
 
 **Source:** Casey, in chat about 17:00Z on November 10, 2026: "Can we go to a two-lane approach and have each task briefly reviewed to see what the lowest level agent can successfully complete it is, and have that agent do it before it's checked?" Decision D-2463 holds the rubric; D-2462 the second lane.
 
-**Scope:** every task QUEUED on `claude/kit-state` when this was written (148 tasks), none claimed; tasks in flight, DONE tasks and T246 keep their recorded model. Every reviewer stays Opus. Result: **18 Sonnet, 130 Opus**; the model window from Thursday November 12, 17:00Z still runs every worker and reviewer on its own model while it is open (D-2225).
+**Scope:** every task QUEUED on `claude/kit-state` when this was written (148 tasks), none claimed; tasks in flight, DONE tasks and T246 keep their recorded model. Every reviewer stays Opus. Result: **15 Sonnet, 133 Opus** (after the PR #424 review); the model window from Thursday November 12, 17:00Z still runs every worker and reviewer on its own model while it is open (D-2225).
 
 **Rubric (D-2463):** Opus for review areas money, privacy, security, recovery, licensing or harness; harness tasks; anything owning `runner/`; a migration that moves data; concurrency, transactions or locks; vendor adapters or webhooks (Stripe, Twilio, email); work across more than one crate; a budget of about 500 lines or 35% of context or more; high effort; a task that already failed an attempt. Sonnet for docs, copy, templates, catalog data, tests-only tasks, small single-crate changes and page wiring with no money or privacy logic. No Haiku for code.
 
@@ -41,7 +41,7 @@
 | T133 | Opus | Opus | areas harness,security; harness; vendor adapter or webhook; multi-crate (adapters,businesses) |
 | T134 | Opus | Opus | areas harness,recovery,security; harness; concurrency/transactions/locks; vendor adapter or webhook |
 | T135 | Opus | Opus | areas security; vendor adapter or webhook |
-| T136 | Haiku | Sonnet | docs/templates/tests/data only |
+| T136 | Haiku | Sonnet | moves up from Haiku: a docs task that drives the four journeys (J1 to J4) on the test site and records what it finds, which needs more judgement than Haiku gives; Opus reviewer |
 | T137 | Opus | Opus | areas privacy,security |
 | T138 | Opus | Opus | areas harness,security; harness |
 | T139 | Opus | Opus | areas recovery; high effort |
@@ -119,18 +119,18 @@
 | T309 | Opus | Opus | areas privacy,security; vendor adapter or webhook; size 600 lines/13%; high effort |
 | T310 | Opus | Opus | areas privacy,security; vendor adapter or webhook; size 600 lines/13%; high effort |
 | T311 | Opus | Opus | areas privacy,security; concurrency/transactions/locks; vendor adapter or webhook; multi-crate (calls,server); high effort |
-| T312 | Opus | Sonnet | single-crate small change (intake, 250 lines) |
+| T312 | Opus | Opus | the emergency word check (INT-002) is a safety rule; review areas security and compliance (PR #424 review) |
 | T313 | Opus | Opus | areas privacy; high effort |
 | T314 | Opus | Opus | areas money,privacy; concurrency/transactions/locks; multi-crate (payments,picks); high effort |
 | T315 | Opus | Opus | areas privacy,security; migration with data movement; concurrency/transactions/locks; multi-crate (jobs,portals); size 500 lines/32%; high effort |
-| T316 | Opus | Sonnet | single-crate small change (businesses, 300 lines) |
+| T316 | Opus | Opus | reads licensing data and screens a public name across crates; review areas privacy and licensing (PR #424 review) |
 | T317 | Opus | Opus | areas harness,privacy,security; harness; concurrency/transactions/locks; vendor adapter or webhook; multi-crate (intake,server); size 600 lines/24%; high effort |
 | T318 | Opus | Opus | areas privacy; concurrency/transactions/locks; multi-crate (calls,messaging,picks,quotes); size 550 lines/19%; high effort |
 | T319 | Opus | Opus | areas security; vendor adapter or webhook; multi-crate (core,portals,server); size 550 lines/22%; high effort |
 | T320 | Opus | Opus | concurrency/transactions/locks; vendor adapter or webhook |
 | T321 | Opus | Opus | areas privacy; concurrency/transactions/locks; multi-crate (intake,messaging,privacy); size 500 lines/31%; high effort |
 | T322 | Opus | Opus | areas security; concurrency/transactions/locks |
-| T323 | Opus | Sonnet | single-crate small change (ai, 300 lines) |
+| T323 | Opus | Opus | the AI adds-no-fact guard (AI-019) is a security control; review area security (PR #424 review) |
 | T324 | Opus | Opus | areas harness,money,privacy; harness |
 | T325 | Opus | Opus | areas privacy,security; concurrency/transactions/locks; vendor adapter or webhook |
 | T326 | Opus | Opus | areas harness,security; harness; concurrency/transactions/locks; size 300 lines/38% |
