@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-10T20:45:02Z by runner 9f2d85e90f63 (actions).
+Updated 2026-11-10T20:45:16Z by runner 9f2d85e90f63 (actions).
 
-**Building: T338 in progress since 20:20Z; 188 of 336 done; week 97% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 20:45Z; 188 of 336 done; week 97% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 188 of 336 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T338 claimed 20:20Z, lease until 23:20Z
+- **Lane:** idle since 20:45Z (no task in progress)
 - **Week:** 97% used, 2.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:32Z, 12 min before this update
+- **Last run:** 20:32Z, 13 min before this update
 - **Keeper:** last ran 20:31Z, next wake 23:22Z
 
 ## Needs attention
@@ -17,6 +17,7 @@ Updated 2026-11-10T20:45:02Z by runner 9f2d85e90f63 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T338 | adapters (harness): the refused-connection test holds its po | MERGE_PENDING | 1 | 24 min | 20:45Z |  |
 | T155 | businesses: sign-up capability setup pre-ticked from the lic | MERGE_PENDING | 1 | 57 min | 20:15Z |  |
 | T311 | calls and server: a voice read-back confirm connects only th | check_failed | 1 | 21 min | 18:54Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T294 | portals and site: every page takes the brand from the brand  | done | 1 | 42 min | 18:32Z |  |
@@ -102,7 +103,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T338 (lease until 2026-11-10T23:20:37Z)
 
 ## Last usage reading
-- {"task": "T155", "at": "2026-11-10T20:15:24Z", "output_tokens": 189359, "cache_read_input_tokens": 27115828, "cache_creation_input_tokens": 663166, "input_tokens": 479}
+- {"task": "T338", "at": "2026-11-10T20:45:02Z", "cache_creation_input_tokens": 98889, "cache_read_input_tokens": 1011144, "output_tokens": 20804, "input_tokens": 65}
