@@ -841,8 +841,12 @@ def _smoke(state: State, env: Env, now: datetime, why: str) -> tuple[State, bool
     """Run the smoke test on main and record the run in state (the 'verified' of governance 5.3).
     A run that outran its budget is recorded with `timed_out` (D-1178). A result this job's step before the
     session produced for the same head (the real Env's `smoke_source`) has it in `why`, e.g. "start routine
-    (pre-session)", and `seconds` is how long smoke.sh ran when the env says (D-2028)."""
+    (pre-session)", and `seconds` is how long smoke.sh ran when the env says (D-2028). A smoke still running in
+    the background (the real Env's `smoke_pending`) is no verdict and is not recorded: the next call collects it
+    (D-2560)."""
     ok, head = env.smoke_main()
+    if _smoke_pending(env):
+        return state, False, head
     source = str(getattr(env, "smoke_source", "") or "")
     run: dict[str, Any] = {"sha": head, "ok": ok, "at": st.iso(now), "why": f"{why} ({source})" if source else why}
     seconds = getattr(env, "smoke_seconds", None)
@@ -852,6 +856,39 @@ def _smoke(state: State, env: Env, now: datetime, why: str) -> tuple[State, bool
         run["timed_out"] = True
     out = dict(state, smoke_runs=[*state.get("smoke_runs", [])[-19:], run])
     return out, ok, head
+
+
+def _smoke_pending(env: Env) -> bool:
+    """Whether the env's smoke is still running in the background past this call's wait (the real Env sets
+    `smoke_pending`, D-2560): no verdict yet, the session runs the runner again to collect it."""
+    return bool(getattr(env, "smoke_pending", False))
+
+
+SMOKE_PENDING = "smoke_pending"  # the cycle result while the smoke runs on in the background (D-2560)
+
+
+def _start_smoke(state: State, env: Env, now: datetime) -> tuple[State, bool, str]:
+    """The start routine's smoke (BUILD_BRIEF.md:240): a green run already recorded for main's very head is reused
+    (`st.reusable_smoke`) when the nightly is not red on that head and `main`'s own checks on it are not red, and
+    the reuse is recorded as a run of its own (`why` "start routine (reused <at>)", `reused` the green run's time,
+    no `seconds`); otherwise the smoke runs (`_smoke`). Reuse is only ever green on a head that was smoked green,
+    so `main_red` and FIX-MAIN are untouched by it (D-2560)."""
+    head = env.main_head()
+    kept = st.reusable_smoke(state, head, now)
+    if kept is None or _head_doubted(env, head):
+        return _smoke(state, env, now, "start routine")
+    since = str(kept.get("reused") or kept.get("at"))
+    run = {"sha": head, "ok": True, "at": st.iso(now), "why": f"start routine (reused {since})", "reused": since}
+    return dict(state, smoke_runs=[*state.get("smoke_runs", [])[-19:], run]), True, head
+
+
+def _head_doubted(env: Env, head: str) -> bool:
+    """Whether something outside `smoke_runs` doubts `head` (D-2560): kit/nightly.json is for it and not a success,
+    or `Ci`, `Twin` or `Ally` failed on it. Either way the start routine runs the smoke rather than reuse a green."""
+    nightly = env.read_nightly() or {}
+    if nightly.get("sha") == head and nightly.get("conclusion") != "success":
+        return True
+    return env.main_checks_green(head) is False
 
 
 def _smoke_timed_out(env: Env) -> bool:
@@ -879,6 +916,8 @@ def clear_main_red(cfg: Config, state: State, env: Env, now: datetime) -> tuple[
     for that head, a successful nightly; then the reverted task returns with attempts+1 (5.3, 5.4).
     A red smoke run after FIX-MAIN merged is revert_landed_red: FIX-MAIN stays DONE (D-1099)."""
     state, ok, head = _smoke(state, env, now, "verify FIX-MAIN")
+    if not ok and _smoke_pending(env):
+        return state, SMOKE_PENDING  # still running: the session collects it with its next call (D-2560)
     if not ok and _smoke_timed_out(env):
         return state, "main_red"  # no verdict yet: main stays red until a smoke finishes (D-1178)
     if not ok:
@@ -1234,7 +1273,9 @@ def _next_step(cfg: Config, env: Env, state: State, base: State, now: datetime, 
             return "lost_race"
         return "fix_main" if state.get("main_red") else (result or "idle")
     if ids[0] != st.FIX_MAIN:
-        state, ok, head = _smoke(state, env, now, "start routine")  # BUILD_BRIEF.md:240
+        state, ok, head = _start_smoke(state, env, now)  # BUILD_BRIEF.md:240; a recorded green may stand (D-2560)
+        if not ok and _smoke_pending(env):
+            return SMOKE_PENDING if state == base or env.push_state(state, base) else "lost_race"
         if not ok and _smoke_timed_out(env):
             # The smoke outran its budget: no verdict on main, no strike (D-498 is for a red result),
             # nothing claimed this cycle; the next run tries again. After a few on one head Casey's

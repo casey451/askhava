@@ -363,6 +363,17 @@ jobs:
         continue-on-error: true
         timeout-minutes: 25
         run: python3 -m runner --warm-smoke
+      - name: Read the recorded smoke runs for the pre-session smoke (D-2560)
+        # kit/state.json from claude/kit-state, read-only with the job token as "Pick the session's model" does, so the
+        # next step can skip a smoke the start routine will not need: main's head already smoked green and nothing
+        # since doubts it (`st.reusable_smoke`). A failed read leaves no file, and the step then smokes as before.
+        if: hashFiles('Cargo.lock') != ''
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api "repos/${GITHUB_REPOSITORY}/contents/kit/state.json?ref=claude/kit-state" -H 'Accept: application/vnd.github.raw' \
+            > "$RUNNER_TEMP/pre_smoke_state.json" 2>/dev/null || rm -f "$RUNNER_TEMP/pre_smoke_state.json"
       - name: Run the start-routine smoke before the session (D-2028)
         # Even with the build warm, smoke.sh's checks and tests took 366 to 551 s on heads with nothing to compile,
         # against the session's 540-second cap (D-1178), so heads timed out again and again. Here, with no 600-second
@@ -373,10 +384,15 @@ jobs:
         # this job's (`GITHUB_RUN_ID`, `GITHUB_RUN_ATTEMPT`); otherwise the session runs the smoke as before. A red
         # or timed-out result counts exactly as one run in the session. It writes no state; a failure here only
         # leaves the smoke to the session. After the warm-up, which already judged whether the build is worth
-        # saving (D-2007); it leaves `target/smoke-ran` itself only on a timeout.
+        # saving (D-2007); it leaves `target/smoke-ran` itself only on a timeout. When the state read above records a
+        # green smoke on that very head that the start routine may reuse (never while `main` is red, never after a
+        # later red or timed-out run on the head, at most 6 hours old), it runs nothing: the ~9 minutes are saved and
+        # the session's start routine reuses the record, or smokes itself if anything changed meanwhile (D-2560).
         if: hashFiles('Cargo.lock') != ''
         continue-on-error: true
         timeout-minutes: 32
+        env:
+          RUNNER_PRE_SMOKE_STATE: ${{ runner.temp }}/pre_smoke_state.json
         run: python3 -m runner --pre-smoke
       - name: Pick the session's model (D-2225)
         # kit/runner.json's `model_window` (runner/model_window.py), read now, so a window starts and ends by a data
@@ -410,6 +426,9 @@ jobs:
           # A Bash result over 15,000 characters is saved to a file and arrives as a 2,000-character preview and
           # the path, instead of staying in every later turn's context (default 30,000; D-1317).
           BASH_MAX_OUTPUT_LENGTH: "15000"
+          # When main moved after the pre-session smoke, the session's smoke runs detached and each runner call waits
+          # up to 540 s for it (result `smoke_pending` until it ends), so no 600-second Bash call cuts it off (D-2560).
+          RUNNER_SMOKE_BACKGROUND: "1"
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           # The session's own turns in the job log (private repository; secrets stay masked), so a session
@@ -426,7 +445,7 @@ jobs:
 
             Do exactly this:
             1. Run `python3 -m runner` (RUNNER_STARTER=actions is already set) in the foreground with the Bash tool's longest timeout (600000 ms); never with run_in_background. It prints a result line and a JSON line. If a call still times out, run it again: the runner picks up where it stopped. Never end your turn before you have its result line: this job ends when you stop, and a runner still running is killed mid-cycle (D-510).
-            2. If the result is anything but `handed_off`, stop. Never do the runner's steps by hand; a live lease naming another session means stop (D-171).
+            2. If the result is `smoke_pending`, the smoke test is still running in the background: run step 1 again, the same way, and go on with its result (D-2560). If the result is anything else but `handed_off`, stop. Never do the runner's steps by hand; a live lease naming another session means stop (D-171).
             3. If it is `handed_off`, the JSON `handoff` names the task, branch, prompt and models (when the output was saved to a file, read the hand-off from `.git/runner_handoff.json`, D-1317). When the hand-off's `last_failure` is not empty, give it to the worker word for word, before the task prompt: the prompt no longer has the worker read the state, where a retry's failure lives (D-1317). Run that one task through a worker subagent on that model (alias haiku, sonnet or opus, D-170) with only the prompt and the files it lists (when `prompt` is not a file path, as for FIX-MAIN, it is the prompt text itself: follow it, revert first); commit to the local branch; do not push it. Tell the worker to number new `docs/decisions.md` entries only from the handoff's `decision_ids`, in order (D-530). Tell the worker the handoff's `hand_in_by` (UTC; the lease's end less 30 minutes): by then it must have committed, run both scripts and stopped, so that step 5 runs before it; past it, report and hand in what is committed rather than start more work (D-1440).
             3b. When the handoff's `branch_ready` is true, the runner has already made that local branch (on top of the task's earlier pushed attempt when there is one, with main merged in): pass the handoff's `branch_note` to the worker word for word and tell it to `git switch` to the branch and never create, reset or rebase it, which replaces step 3 of the prompt's start routine (D-1317). A branch rebuilt from main cannot be pushed, because the runner never force-pushes (D-583).
             3c. When the handoff's `resync` is not empty, the task's reviewed work is finished and only merging main into it conflicts: give the worker the prompt and the `resync` text word for word, and its only job is to merge main into the branch with a normal merge commit, resolve each conflict keeping both sides, change nothing else, run the smoke test and commit. The reviewer in step 4 then reviews the whole diff against main as usual (D-891).
