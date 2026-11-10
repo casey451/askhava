@@ -212,7 +212,8 @@ def build(args: argparse.Namespace, outbox_dir: Path) -> tuple[cycle.Config, Git
                        proof_stages=frozenset(proof.MACHINE_PROOFS), stage_proof=stage_proof,
                        lane_hint=lane_hint(os.environ.get("RUNNER_LANE", "")), locked=locked_path,
                        plan_health=plan_health_checker(ROOT, kit), model_window=model_window.load(ROOT / "kit" / "runner.json"),
-                       claim_first=claim_first(ROOT / "kit" / "runner.json"))
+                       claim_first=claim_first(ROOT / "kit" / "runner.json"),
+                       order=claim_order_setting(ROOT / "kit" / "runner.json"))
     return cfg, env
 
 
@@ -285,6 +286,18 @@ def claim_first(settings: Path) -> tuple[str, ...]:
     except (OSError, ValueError, AttributeError):
         return ()
     return tuple(v for v in value if isinstance(v, str)) if isinstance(value, list) else ()
+
+
+def claim_order_setting(settings: Path) -> str:
+    """kit/runner.json "order" (D-2571): "critical_path" when the file says exactly that, so the cycle
+    tries the claimable task with the longest chain of open dependents first (`cycle.chain_lengths`);
+    "state" (the kit-state order, as before D-2571) when the file or key is missing, unreadable or any
+    other value. Ordering only, after a resync and `claim_first`."""
+    try:
+        value = json.loads(settings.read_text(encoding="utf-8")).get("order")
+    except (OSError, ValueError, AttributeError):
+        return "state"
+    return cycle.CRITICAL_PATH if value == cycle.CRITICAL_PATH else "state"
 
 
 def owner_paths(codeowners: Path) -> tuple[str, ...]:
