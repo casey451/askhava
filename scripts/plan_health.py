@@ -22,6 +22,14 @@ attempt used and claim the next task instead. Three checks, each reusing the pla
 (c) **Dependencies.** Every dependency is DONE or SKIPPED in kit/state.json, and every regular
     file a DONE dependency owns is on disk (the runner's checkout of `main`).
 
+(d) **Pinned lists (report-only, D-2550).** scripts/plan_pins.py: the task's goal adds rows to a data
+    file, or serves a route, that an existing test pins by exact list or count (T290's `RECURRING` and
+    `checked == 14`, D-2386; T231's route `door`, D-2429), and the task may not edit that test. Printed
+    as `WARN` lines after the (a) to (c) report under `--all` or `--pinned` (in --json, under the key
+    `pinned lists (report-only, D-2550)` when there are any); never returned by `check_task`, so it
+    holds no task and never sets the exit code; imported only when it runs, and any fault in it is one
+    `check (d) unavailable` line. D-2551 (reserved) makes it a holding problem once it has shown no false positives.
+
 Each problem is one plain string. Exit 0 when clean, 1 when there are gaps, 2 when the inputs
 cannot be read.
 
@@ -30,6 +38,7 @@ Usage:
   python3 scripts/plan_health.py --all-eligible [--json] [--state PATH]   tasks claimable now
   python3 scripts/plan_health.py --all [--json] [--state PATH]            every task not DONE or SKIPPED (a
                                          dependency not yet DONE is no gap here), and every DONE task's owned files
+  python3 scripts/plan_health.py T290 --pinned                            also check (d), report-only
 
 Without --state the state is read from `origin/claude/kit-state` (`git show`), read only.
 """
@@ -56,6 +65,7 @@ import validate_tasks
 from runner import state as st
 
 ROOT = Path(__file__).resolve().parent.parent
+PINNED_KEY = "pinned lists (report-only, D-2550)"
 STATE_REF = "origin/claude/kit-state"
 CITED_PATH = re.compile(
     r"`((?:app|tests|migrations|scripts|docs|kit|runner|twin|stand_ins|\.github)/[A-Za-z0-9_./-]+\.[A-Za-z0-9]+)`"
@@ -211,6 +221,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--all-eligible", action="store_true", help="every task claimable now")
     parser.add_argument("--all", action="store_true", help="every task not DONE or SKIPPED")
     parser.add_argument("--json", action="store_true", help="print {task: [problems]}")
+    parser.add_argument("--pinned", action="store_true", help="also check (d), pinned lists; report-only (D-2550)")
     parser.add_argument("--state", type=Path, help="a kit/state.json file instead of claude/kit-state")
     parser.add_argument("--root", type=Path, default=ROOT)
     args = parser.parse_args(argv)
@@ -224,14 +235,37 @@ def main(argv: list[str] | None = None) -> int:
     found = {tid: check(state, tid) for tid in chosen(args, doc, state)}
     if args.all:
         found["DONE tasks"] = done_file_problems(args.root, doc, state)
-    report(found, args.json)
-    return 1 if any(found.values()) else 0
+    code = 1 if any(found.values()) else 0
+    ids = [t for t in found if t != "DONE tasks"]
+    if args.json:
+        report(found, True, pinned_warnings(args.root, state, ids) if args.all or args.pinned else [])
+        return code
+    report(found, False)
+    if args.all or args.pinned:
+        warned = pinned_warnings(args.root, state, ids)
+        print("\n".join(f"WARN {line}" for line in warned) + ("\n" if warned else "")
+              + f"{len(warned)} report-only pinned-list warning(s) (D-2550)")
+    return code
 
 
-def report(found: dict[str, list[str]], as_json: bool) -> None:
-    """Print the problems, one per line, or as JSON; a clean task prints `ok`."""
+def pinned_warnings(root: Path, state: st.State, ids: list[str]) -> list[str]:
+    """Check (d), report-only (D-2550): scripts/plan_pins.py's warnings for the tasks. Imported here, not at
+    the top, so a fault in it can never stop the runner, which imports this module (D-1350); any error
+    becomes one `check (d) unavailable` line and the (a) to (c) report stands."""
+    try:
+        import plan_pins  # sibling script; deliberately imported late
+
+        return plan_pins.warnings(root, state, ids)
+    except Exception as error:  # noqa: BLE001 - report-only: no fault in (d) may hide (a) to (c)
+        return [f"check (d) unavailable: {type(error).__name__}: {str(error)[:200]}"]
+
+
+def report(found: dict[str, list[str]], as_json: bool, warned: list[str] | None = None) -> None:
+    """Print the problems, one per line, or as JSON; a clean task prints `ok`. In JSON, check (d)'s
+    warnings go under `PINNED_KEY` when there are any; they never count as gaps (D-2550)."""
+    warned = warned or []
     if as_json:
-        print(json.dumps(found, indent=1))
+        print(json.dumps({**found, PINNED_KEY: warned} if warned else found, indent=1))
         return
     for tid, problems in found.items():
         print(f"ok  {tid}" if not problems else "\n".join(f"GAP {p}" for p in problems))
