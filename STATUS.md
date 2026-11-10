@@ -1,18 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-10T13:26:41Z by runner 77805472a1cd (actions).
+Updated 2026-11-10T14:22:52Z by runner 80158e04ebcd (actions).
 
-**Building: T199 in progress since 13:18Z; 185 of 333 done; week 88% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T199 in progress since 13:18Z; 185 of 334 done; week 88% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 185 of 333 build tasks (owner gates not counted)
+- **Tasks done:** 185 of 334 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T199 claimed 13:18Z, lease until 16:18Z
 - **Week:** 88% used, 18.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:02Z, 24 min before this update
+- **Last run:** 13:26Z, 56 min before this update
 - **Keeper:** last ran 13:02Z, next wake 13:22Z
 
 ## Needs attention
-- nothing
+- Strict plan check red: 1 problem(s) on tasks still to run (+11 on DONE tasks); first: T199: stored context_pct 35% but it measures 40%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -51,8 +51,8 @@ Updated 2026-11-10T13:26:41Z by runner 77805472a1cd (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 232 of 733 (31.7%) · partial 304 · unstarted 197
-**Tasks merged (throughput only):** 185 of 333
+**Requirements verified:** 230 of 733 (31.4%) · partial 306 · unstarted 197
+**Tasks merged (throughput only):** 185 of 334
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -64,7 +64,7 @@ Updated 2026-11-10T13:26:41Z by runner 77805472a1cd (actions).
 | fees | 10 | 41 | 1 | 52 |
 | intake | 20 | 14 | 9 | 43 |
 | job-cards | 12 | 10 | 2 | 24 |
-| licensing | 33 | 14 | 1 | 48 |
+| licensing | 31 | 16 | 1 | 48 |
 | lifecycle | 17 | 11 | 0 | 28 |
 | messaging | 16 | 26 | 3 | 45 |
 | ops-recovery | 2 | 5 | 47 | 54 |
