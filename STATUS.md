@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-10T00:32:29Z by runner 79abfc715e5d (actions).
+Updated 2026-11-10T00:32:44Z by runner 79abfc715e5d (actions).
 
-**Building: T284 in progress since 23:57Z; 177 of 313 done; week 73% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 00:32Z; 177 of 313 done; week 73% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 177 of 313 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T284 claimed 23:57Z, lease until 02:57Z
+- **Lane:** idle since 00:32Z (no task in progress)
 - **Week:** 73% used, 48.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 23:58Z, 34 min before this update
 - **Keeper:** last ran 23:43Z, next wake 00:03Z
@@ -17,6 +17,7 @@ Updated 2026-11-10T00:32:29Z by runner 79abfc715e5d (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T284 | server: every route the architecture lists is wired in the r | MERGE_PENDING | 1 | 34 min | 00:32Z |  |
 | T283 | Ci: a change to a document the app compiles in runs the Rust | done | 1 | 30 min | 23:27Z |  |
 | T287 | payments and picks: the fee fixed at the pick is stored by p | done | 2 | 43 min | 22:15Z | T287 built and smoke green, but prehandin check_pr_change fails: kit/tasks.json T287 owns lacks app/payments/src/models. |
 | T287 | payments and picks: the fee fixed at the pick is stored by p | QUEUED | 1 | 46 min | 21:18Z |  |
@@ -89,7 +90,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T284 (lease until 2026-11-10T02:57:42Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T283", "at": "2026-11-09T23:27:48Z", "input_tokens": 202, "cache_read_input_tokens": 5318528, "output_tokens": 82844, "cache_creation_input_tokens": 226903}
+- {"task": "T284", "at": "2026-11-10T00:32:29Z", "input_tokens": 291, "cache_read_input_tokens": 11820831, "cache_creation_input_tokens": 482032, "output_tokens": 95281}
