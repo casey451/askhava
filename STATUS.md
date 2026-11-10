@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-10T16:42:04Z by runner 261a13b14923 (actions).
+Updated 2026-11-10T17:08:51Z by runner 5025f621c477 (actions).
 
 **Building: T231 in progress since 16:41Z; 186 of 334 done; week 90% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,11 @@ Updated 2026-11-10T16:42:04Z by runner 261a13b14923 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T231 claimed 16:41Z, lease until 19:41Z
 - **Week:** 90% used, 14.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:28Z, 13 min before this update
+- **Last run:** 16:42Z, 26 min before this update
 - **Keeper:** last ran 16:28Z, next wake 16:48Z
 
 ## Needs attention
-- nothing
+- Strict plan check red: 2 problem(s) on tasks still to run (+19 on DONE tasks); first: T231: stored context_pct 17% but it measures 23%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -37,6 +37,7 @@ Updated 2026-11-10T16:42:04Z by runner 261a13b14923 (actions).
 | T276 | privacy and messaging: purged photos' sealed objects and orp | done | 1 | 53 min | 17:46Z |  |
 
 ### Plan and harness merges on main
+- 16:53Z Plan: matrix doors before the serving tasks — public, owner and action-link doors, HTTP probe for served realm routes (D-2440, T348) (#421)
 - 16:29Z Plan: T231 extends the authorization matrix to /c/{token}/{answer} as a harness task (D-2429) (#420)
 - 13:07Z Plan: no handyman split-job check — each job judged by its own price (Casey's ruling; D-2407, D-2408, T347) (#416)
 - 09:36Z Plan: T290 may update the two tests that pin recurring rows by data; nearest reachable bases (D-2386) (#413)
