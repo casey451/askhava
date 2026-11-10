@@ -229,6 +229,9 @@ class Config:
     # kit/runner.json "model_window" (runner/model_window.py, D-2225): while it is active every claim is
     # marked with its model, which the attempt's worker and reviewer then run on. None changes nothing.
     model_window: dict[str, Any] | None = None
+    # kit/runner.json "claim_first" (D-2540): task ids tried before the other claimable ones, in this
+    # order; ordering only (`claim_order`). Empty keeps the state order.
+    claim_first: tuple[str, ...] = ()
 
 
 # Casey reviews code-owner PRs by day. Such a task is claimed only from 06:00 to 19:00 Arizona time
@@ -1227,7 +1230,7 @@ def _next_step(cfg: Config, env: Env, state: State, base: State, now: datetime, 
         return "gate_open" if env.push_state(opened, base) else "lost_race"
     ids = _by_day(cfg, st.eligible(state, now, _passed(cfg, state), cfg.proof_stages), now)
     ids = lanes.compatible_ids(ids, state, now, lambda tid: _task_def(cfg, state, tid), cfg.locked, cfg.proof_stages)
-    ids = sorted(ids, key=lambda tid: not st.entry(state, tid).get("resync"))  # a resync finishes reviewed work first (D-891)
+    ids = claim_order(ids, state, cfg.claim_first)  # resyncs first (D-891), then `claim_first` (D-2540)
     ids, state = plan_health_pass(cfg, state, ids, now)
     if not ids:
         if state != base and not env.push_state(state, base):
@@ -1266,6 +1269,17 @@ def _next_step(cfg: Config, env: Env, state: State, base: State, now: datetime, 
     # A handed-off FIX-MAIN must reach the session as `handed_off`, or the session stops and the claimed
     # revert is never worked (D-501); only a finished FIX-MAIN cycle reports `fix_main`.
     return "fix_main" if task["id"] == st.FIX_MAIN and done not in ("lost_race", "handed_off") else done
+
+
+def claim_order(ids: list[str], state: State, first: tuple[str, ...] = ()) -> list[str]:
+    """The claimable ids in the order the cycle tries them. A resync finishes reviewed work first (D-891);
+    then the ids kit/runner.json lists in `claim_first`, in its order (D-2540); then the rest in state
+    order (the sort is stable). Only the order changes: a listed id that is not claimable is not in `ids`
+    and is ignored, so a listed task still waits for its dependencies, its lane, plan health and pacing."""
+    rank: dict[str, int] = {}
+    for tid in first:
+        rank.setdefault(tid, len(rank))
+    return sorted(ids, key=lambda tid: (not st.entry(state, tid).get("resync"), rank.get(tid, len(rank))))
 
 
 PLAN_GAP_PROBLEMS_KEPT = 10  # problems stored per task; the rest are counted, not listed
