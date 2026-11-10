@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-10T10:21:11Z by runner deb9d4aa9baa (actions).
+Updated 2026-11-10T10:21:27Z by runner deb9d4aa9baa (actions).
 
-**Building: T290 in progress since 09:41Z; 182 of 333 done; week 85% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 10:21Z; 182 of 333 done; week 85% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 182 of 333 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T290 claimed 09:41Z, lease until 12:41Z
+- **Lane:** idle since 10:21Z (no task in progress)
 - **Week:** 85% used, 24.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 09:50Z, 31 min before this update
 - **Keeper:** last ran 09:08Z, next wake 09:28Z
@@ -17,7 +17,8 @@ Updated 2026-11-10T10:21:11Z by runner deb9d4aa9baa (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T290 | worked examples: pin D-033 for one-cent-wide recurring range | QUEUED | 1 | 1 min | 09:07Z | T290 blocked: any new recurring worked-example row breaks tests::worked_examples (fixed RECURRING list of 13 ids, worked |
+| T290 | worked examples: pin D-033 for one-cent-wide recurring range | MERGE_PENDING | 2 | 39 min | 10:21Z | T290 blocked: any new recurring worked-example row breaks tests::worked_examples (fixed RECURRING list of 13 ids, worked |
+| T290 | worked examples: pin D-033 for one-cent-wide recurring range | QUEUED | 1 | 1 min | 09:07Z |  |
 | T289 | jobs tests: the refused-move test counts its one bug log the | done | 1 | 44 min | 07:52Z |  |
 | T288 | payments: a Stripe charge the nightly reconcile cannot settl | done | 1 | 60 min | 06:30Z |  |
 | T286 | server: every request has a whole-request time limit, answer | done | 1 | 26 min | 04:57Z |  |
@@ -94,7 +95,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T290 (lease until 2026-11-10T12:41:18Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T290", "at": "2026-11-10T09:07:56Z", "input_tokens": 56, "output_tokens": 12755, "cache_read_input_tokens": 1302748, "cache_creation_input_tokens": 123903}
+- {"task": "T290", "at": "2026-11-10T10:21:11Z", "cache_read_input_tokens": 3237668, "input_tokens": 151, "output_tokens": 32803, "cache_creation_input_tokens": 156840}
