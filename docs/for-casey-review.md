@@ -2,6 +2,12 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## Handyman split jobs: your ruling (plan change, D-2407 and D-2408, November 10)
+
+- **Your call, as you put it:** "I only care about individual jobs being under the 1000 mark" and "I dont want the 30 day rule". The 30-day split-job check is gone. Each handyman job is judged only by its own price: under $1,000 is fine, $1,000 or more is refused. Another job by the same handyman at the same house never blocks a quote. Task T347 removes the old check and its tests.
+- **Kept:** the handyman still ticks the box saying the quote is the full-job price under $1,000 with no permit, every handyman card still says "Not a licensed contractor", and gas, smoke-alarm, sprinkler and permit jobs still never go to a handyman.
+- **Legal note (recorded as your informed choice):** Arizona's handyman exemption is strict about splitting one project to stay under $1,000, and a word with your lawyer was suggested before launch. You decided to drop the check anyway. The handyman's own promise not to split a project (in the pilot terms) stays.
+
 ## The security assessment (plan change, D-2346 to D-2350, November 10)
 
 - **What it found.** Four points, all confirmed in the code. (1) Fifteen places in the build automation load outside tools by a version label that their authors can move, including the step that runs Claude with the build's access; they will be locked to exact versions, and a test will keep every workflow locked. (2) and (4) Two sign-in steps for businesses could be hurried past the five-try limit or hold the database while waiting for the texting service; those fixes were already planned or are added to the same task. (3) A texted code for one thing (for example signing in) could also confirm a different thing, such as deleting a homeowner's data. Each code will now work only for what it was sent for, with at most five tries.
@@ -12,7 +18,7 @@ These are decisions Claude made on its own and logged so the build never waits (
 
 ## The seventh outside review (plan change, D-2329 to D-2335, November 10)
 
-- **One question for you (handyman split jobs).** Today a handyman's quote is blocked when the same business has another handyman job at the same address within 30 days and the two together reach $1,000 or share a job type. It checks pairs, so three $400 jobs of different types at one address in 30 days pass ($1,200 in all, but each pair is $800). Should the check add up all of that business's handyman jobs at the address in the window? Nothing changes until you answer.
+- **One question for you (handyman split jobs; answered November 10: no split-job rule, D-2407).** Today a handyman's quote is blocked when the same business has another handyman job at the same address within 30 days and the two together reach $1,000 or share a job type. It checks pairs, so three $400 jobs of different types at one address in 30 days pass ($1,200 in all, but each pair is $800). Should the check add up all of that business's handyman jobs at the address in the window? Nothing changes until you answer.
 - **What it found and what changed.**
   - **Fee-free inspections would have been charged.** The app didn't yet store what kind of job each request is, so a buyer or refinance inspection would have carried a fee. Each job now stores its category and job type, and the fee is worked out from them. Nothing charged in the meantime: the Confirm page isn't live and now waits for this.
   - **Choice made for you:** when intake couldn't settle the exact job type and one of the possible types is fee-free, the job is treated as fee-free. It's never charged when it might be a sale-related inspection.
