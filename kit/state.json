@@ -18807,7 +18807,13 @@
     "T322",
     "T323",
     "T325",
-    "T326"
+    "T326",
+    "T327",
+    "T328",
+    "T329",
+    "T330",
+    "T331",
+    "T332"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -23690,7 +23696,8 @@
     "T084",
     "T232",
     "T254",
-    "T287"
+    "T287",
+    "T328"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -25871,6 +25878,87 @@
    "slug": "link-notice-stored-pin",
    "type": "harness",
    "stage": "4"
+  },
+  {
+   "id": "T327",
+   "deps": [
+    "T013",
+    "T057",
+    "T075"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "task-kind-registry-check",
+   "type": "harness",
+   "stage": "4"
+  },
+  {
+   "id": "T332",
+   "deps": [
+    "T295",
+    "T327"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "late-success-trigger-and-ended-picks",
+   "type": "harness",
+   "stage": "4"
+  },
+  {
+   "id": "T328",
+   "deps": [
+    "T255",
+    "T288",
+    "T327",
+    "T266",
+    "T332"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "payment-jobs-registered",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T329",
+   "deps": [
+    "T313",
+    "T293",
+    "T322",
+    "T268",
+    "T327"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "business-event-emails",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T330",
+   "deps": [
+    "T313",
+    "T295",
+    "T318",
+    "T327"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "withdrawn-optout-safety-handlers",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T331",
+   "deps": [
+    "T259",
+    "T327"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "stripe-unreadable-success-and-unmatched-warning",
+   "type": "harness",
+   "stage": "4"
   }
  ],
  "owner_waits": [],
@@ -27537,7 +27625,7 @@
    }
   }
  },
- "updated_at": "2026-11-10T00:33:14Z",
+ "updated_at": "2026-11-10T00:44:32Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -27635,7 +27723,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "a4c0b6e5287f703015617b5e84cef43167ca1f22",
+ "runner_sha": "978c68bffb0109026ab9580b25dec99ee811d9b5",
  "starter": "actions",
  "smoke_runs": [
   {

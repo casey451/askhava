@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-10T00:33:14Z by runner a4c0b6e5287f (actions).
+Updated 2026-11-10T00:44:32Z by runner 978c68bffb01 (actions).
 
-**Idle since 00:32Z; 177 of 313 done; week 75% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 00:32Z; 177 of 319 done; week 75% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 177 of 313 build tasks (owner gates not counted)
+- **Tasks done:** 177 of 319 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 00:32Z (no task in progress)
 - **Week:** 75% used, 48.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:33Z, 0 min before this update
+- **Last run:** 00:33Z, 11 min before this update
 - **Keeper:** last ran 00:33Z, next wake 00:53Z
 
 ## Needs attention
@@ -46,26 +46,26 @@ Updated 2026-11-10T00:33:14Z by runner a4c0b6e5287f (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 250 of 732 (34.2%) · partial 284 · unstarted 198
-**Tasks merged (throughput only):** 177 of 313
+**Requirements verified:** 242 of 732 (33.1%) · partial 292 · unstarted 198
+**Tasks merged (throughput only):** 177 of 319
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 14 | 14 | 7 | 35 |
 | ai | 11 | 13 | 5 | 29 |
-| businesses | 18 | 30 | 10 | 58 |
-| calls | 13 | 11 | 1 | 25 |
+| businesses | 17 | 31 | 10 | 58 |
+| calls | 11 | 13 | 1 | 25 |
 | consent | 15 | 16 | 4 | 35 |
-| fees | 16 | 35 | 1 | 52 |
+| fees | 13 | 38 | 1 | 52 |
 | intake | 20 | 14 | 9 | 43 |
 | job-cards | 12 | 10 | 2 | 24 |
 | licensing | 33 | 14 | 1 | 48 |
-| lifecycle | 18 | 10 | 0 | 28 |
+| lifecycle | 17 | 11 | 0 | 28 |
 | messaging | 16 | 25 | 4 | 45 |
 | ops-recovery | 2 | 5 | 47 | 54 |
 | privacy | 7 | 21 | 3 | 31 |
 | quiet-hours | 8 | 1 | 0 | 9 |
-| quotes-pick | 32 | 14 | 10 | 56 |
+| quotes-pick | 31 | 15 | 10 | 56 |
 | recurring | 7 | 1 | 3 | 11 |
 | security | 7 | 40 | 7 | 54 |
 | terms | 0 | 3 | 32 | 35 |
@@ -82,7 +82,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 57 of 114 done
+- stage 4: 57 of 120 done
 - stage 5: 0 of 53 done
 - stage 6: 0 of 30 done
 - stage 7: 0 of 2 done
