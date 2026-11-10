@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-10T14:39:31Z by runner 3ddb3a449ab6 (actions).
+Updated 2026-11-10T15:04:21Z by runner 3ddb3a449ab6 (actions).
 
-**Idle since 14:22Z; 185 of 334 done; week 89% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 14:54Z; 186 of 334 done; week 89% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 185 of 334 build tasks (owner gates not counted)
+- **Tasks done:** 186 of 334 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 14:22Z (no task in progress)
+- **Lane:** idle since 14:54Z (no task in progress)
 - **Week:** 89% used, 18.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:39Z, 0 min before this update
+- **Last run:** 14:39Z, 24 min before this update
 - **Keeper:** last ran 14:39Z, next wake 14:59Z
 
 ## Needs attention
@@ -17,7 +17,7 @@ Updated 2026-11-10T14:39:31Z by runner 3ddb3a449ab6 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T199 | portals: no automated call to a business, voice codes only o | MERGE_PENDING | 1 | 64 min | 14:22Z |  |
+| T199 | portals: no automated call to a business, voice codes only o | done | 1 | 64 min | 14:22Z |  |
 | T293 | businesses and quotes: sign-up, consent, complaint and quote | done | 1 | 41 min | 12:35Z |  |
 | T292 | messaging and calls: every text, email and call takes the br | done | 1 | 21 min | 11:16Z |  |
 | T290 | worked examples: pin D-033 for one-cent-wide recurring range | done | 2 | 39 min | 10:21Z | T290 blocked: any new recurring worked-example row breaks tests::worked_examples (fixed RECURRING list of 13 ids, worked |
@@ -35,7 +35,6 @@ Updated 2026-11-10T14:39:31Z by runner 3ddb3a449ab6 (actions).
 | T279 | messaging, ops and server: the texting switch and a number s | done | 1 | 47 min | 19:32Z |  |
 | T276 | privacy and messaging: purged photos' sealed objects and orp | done | 1 | 53 min | 17:46Z |  |
 | T275 | adapters and stand-ins: local write-once storage that a raci | done | 1 | 38 min | 16:08Z |  |
-| T274 | intake and privacy: the 180-day contact purge decides and cl | done | 1 | 66 min | 14:56Z |  |
 
 ### Plan and harness merges on main
 - 13:07Z Plan: no handyman split-job check — each job judged by its own price (Casey's ruling; D-2407, D-2408, T347) (#416)
@@ -52,14 +51,14 @@ Updated 2026-11-10T14:39:31Z by runner 3ddb3a449ab6 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 230 of 733 (31.4%) · partial 306 · unstarted 197
-**Tasks merged (throughput only):** 185 of 334
+**Requirements verified:** 231 of 733 (31.5%) · partial 308 · unstarted 194
+**Tasks merged (throughput only):** 186 of 334
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 14 | 14 | 7 | 35 |
+| accessibility | 15 | 13 | 7 | 35 |
 | ai | 11 | 13 | 5 | 29 |
-| businesses | 17 | 31 | 10 | 58 |
+| businesses | 17 | 32 | 9 | 58 |
 | calls | 11 | 13 | 1 | 25 |
 | consent | 14 | 17 | 4 | 35 |
 | fees | 10 | 41 | 1 | 52 |
@@ -73,7 +72,7 @@ Updated 2026-11-10T14:39:31Z by runner 3ddb3a449ab6 (actions).
 | quiet-hours | 7 | 2 | 0 | 9 |
 | quotes-pick | 28 | 18 | 10 | 56 |
 | recurring | 5 | 3 | 3 | 11 |
-| security | 7 | 40 | 8 | 55 |
+| security | 7 | 42 | 6 | 55 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 2 | 26 | 28 |
 | wording | 1 | 6 | 25 | 32 |
@@ -88,7 +87,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 65 of 135 done
+- stage 4: 66 of 135 done
 - stage 5: 0 of 53 done
 - stage 6: 0 of 30 done
 - stage 7: 0 of 2 done
