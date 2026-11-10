@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-10T15:04:21Z by runner 3ddb3a449ab6 (actions).
+Updated 2026-11-10T15:13:29Z by runner 3ddb3a449ab6 (actions).
 
 **Idle since 14:54Z; 186 of 334 done; week 89% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,11 @@ Updated 2026-11-10T15:04:21Z by runner 3ddb3a449ab6 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 14:54Z (no task in progress)
 - **Week:** 89% used, 18.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:39Z, 24 min before this update
+- **Last run:** 14:39Z, 33 min before this update
 - **Keeper:** last ran 14:39Z, next wake 14:59Z
 
 ## Needs attention
-- nothing
+- PLAN GAP T231 (since 2026-11-10T15:04:18Z, no attempt used; a plan change fixes it): T231: dependency T199 is DONE but its owned file app/portals/templates/contact_card.vcf is not on main; T231: dependency T199 is DONE but its owned file tests/integration/tests/no_business_calls.rs is not on main; T231: dependency T199 is DONE but its owned file tests/security/tests/link_scanners.rs is not on main; T231: dependency T199 is DONE but its owned file migrations/0148_portals_shared_inbox.sql is not on main
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
