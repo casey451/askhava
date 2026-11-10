@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-10T06:49:08Z by runner 3976d91e2924 (actions).
+Updated 2026-11-10T07:07:48Z by runner e5b1fbdbfd32 (actions).
 
-**Idle since 06:30Z; 180 of 333 done; week 84% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 06:51Z; 181 of 333 done; week 84% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 180 of 333 build tasks (owner gates not counted)
+- **Tasks done:** 181 of 333 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 06:30Z (no task in progress)
+- **Lane:** idle since 06:51Z (no task in progress)
 - **Week:** 84% used, 26.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:49Z, 0 min before this update
+- **Last run:** 06:49Z, 18 min before this update
 - **Keeper:** last ran 06:49Z, next wake 07:09Z
 
 ## Needs attention
@@ -17,7 +17,7 @@ Updated 2026-11-10T06:49:08Z by runner 3976d91e2924 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T288 | payments: a Stripe charge the nightly reconcile cannot settl | MERGE_PENDING | 1 | 60 min | 06:30Z |  |
+| T288 | payments: a Stripe charge the nightly reconcile cannot settl | done | 1 | 60 min | 06:30Z |  |
 | T286 | server: every request has a whole-request time limit, answer | done | 1 | 26 min | 04:57Z |  |
 | T285 | runner: a task closes with a visible mark when a file it own | done | 1 | 19 min | 03:45Z |  |
 | T284 | server: every route the architecture lists is wired in the r | done | 3 | 34 min | 03:02Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests / test tests::ssrf_g |
@@ -36,7 +36,6 @@ Updated 2026-11-10T06:49:08Z by runner 3976d91e2924 (actions).
 | T267 | Ally harness: page states move to a shared data file; the ch | done | 1 | 34 min | 09:42Z |  |
 | T265 | stage exit: a security, money or privacy handoff in the inte | done | 1 | 25 min | 08:49Z |  |
 | T264 | coverage checker: a missing measurement fails, and the total | done | 1 | 24 min | 07:58Z |  |
-| T262 | calls and server: a random stored PIN per line, unique on it | done | 1 | 33 min | 06:56Z |  |
 
 ### Plan and harness merges on main
 - 03:30Z Plan: pentest assessment — Actions pinned, purpose-bound codes, Verify sends outside transactions (D-2346–D-2350, T345–T346) (#407)
@@ -52,7 +51,7 @@ Updated 2026-11-10T06:49:08Z by runner 3976d91e2924 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 232 of 733 (31.7%) · partial 302 · unstarted 199
-**Tasks merged (throughput only):** 180 of 333
+**Tasks merged (throughput only):** 181 of 333
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -87,7 +86,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 60 of 134 done
+- stage 4: 61 of 134 done
 - stage 5: 0 of 53 done
 - stage 6: 0 of 30 done
 - stage 7: 0 of 2 done
