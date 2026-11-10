@@ -241,8 +241,8 @@ def doors_of(body: str) -> tuple[Door, ...]:
 def route_pins(rel: str, text: str) -> list[Pin]:
     """A test that reads the route table from source and classifies each path in a function that
     panics on a path no branch names (T088's `door`, SEC-019); the doors it fails once served too."""
-    if not ROUTE_SCAN.search(text):
-        return []
+    if not rel.endswith(".rs") or not ROUTE_SCAN.search(text):
+        return []  # only a Rust test: a Python test that holds such Rust as a fixture string is none
     pins: list[Pin] = []
     for m in CLASSIFIER.finditer(text):
         body = fn_body(text, m.end())

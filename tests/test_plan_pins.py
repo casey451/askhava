@@ -357,3 +357,9 @@ def test_known_fn_a_loose_owns_the_decision_excuses(tmp_path: Path) -> None:
     root = t290_repo(tmp_path, decisions=["D-001"], log=log)
     found = warned(root, done("T058", "T188"), "T290")
     assert len(found) == 1 and "recurring.rs" not in found[0]
+
+
+def test_a_route_matrix_held_as_a_string_in_a_python_test_is_no_pin() -> None:
+    """This file holds MATRIX as a fixture; only a Rust test is a route pin (found on the real repo)."""
+    assert pp.route_pins("tests/test_fake.py", MATRIX) == []
+    assert [p.symbol for p in pp.route_pins("tests/security/tests/auth_matrix.rs", MATRIX)] == ["door()"]

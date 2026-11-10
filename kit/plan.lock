@@ -61,7 +61,7 @@
   "scripts/pacing.py": "db5efd714109d37de7566654f8c10fa90fb129ee9e119f0bbfbf050d2fe62aef",
   "scripts/pii_scan.py": "d3163ddad2e35bc435e0c468b0e241146c9827a7b9eae48d52d8251558324c60",
   "scripts/plan_health.py": "46da5dd234ec2126c20abf7df2fe00ecd2be608f07ac2bfd2b07a257908a6a93",
-  "scripts/plan_pins.py": "3f05fd51e0feceb7517743f3a7470f09069dc9592ee864c160504aaad4dc2c2f",
+  "scripts/plan_pins.py": "7be3ec44b3590183f1284c9308ff2532bf716b1b2f63ba96bd34c87e75aab9e9",
   "scripts/prehandin.sh": "32b00e405a944c7fe536b520ee12e266fdc8c7f65f963efbedee14d6195236a2",
   "scripts/progress.py": "6a31a132e709c974e5e71468a8e6fa8c212b753bad7501713250f39c0e5d08be",
   "scripts/quota_probe.py": "63f21117d06c02632e2e79698ef828a33668cefc1403cfc261cc2d813d3cf951",
