@@ -2,6 +2,14 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## The security assessment (plan change, D-2346 to D-2350, November 10)
+
+- **What it found.** Four points, all confirmed in the code. (1) Fifteen places in the build automation load outside tools by a version label that their authors can move, including the step that runs Claude with the build's access; they will be locked to exact versions, and a test will keep every workflow locked. (2) and (4) Two sign-in steps for businesses could be hurried past the five-try limit or hold the database while waiting for the texting service; those fixes were already planned or are added to the same task. (3) A texted code for one thing (for example signing in) could also confirm a different thing, such as deleting a homeowner's data. Each code will now work only for what it was sent for, with at most five tries.
+- **Choice made for you:** no separate Twilio Verify service just for delete confirmations. The app-side check closes the gap without a new Twilio setup step. If you ever want that extra separation anyway, it is an option you can choose later.
+- **Not done yet, on purpose:** the build robot's job still has wide write access and the push key. Narrowing that changes what the robot can do, so it needs its own trial run; it is noted as a risk for a later change.
+- **Its 38 test cases** are saved for the war games, which must run each one or say why not, only in the test setup with made-up accounts.
+- **Nothing needs you.**
+
 ## The seventh outside review (plan change, D-2329 to D-2335, November 10)
 
 - **One question for you (handyman split jobs).** Today a handyman's quote is blocked when the same business has another handyman job at the same address within 30 days and the two together reach $1,000 or share a job type. It checks pairs, so three $400 jobs of different types at one address in 30 days pass ($1,200 in all, but each pair is $800). Should the check add up all of that business's handyman jobs at the address in the window? Nothing changes until you answer.
