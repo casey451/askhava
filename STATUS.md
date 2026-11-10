@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-10T03:45:52Z by runner 4e6b3ca4a5f2 (actions).
+Updated 2026-11-10T03:46:03Z by runner 4e6b3ca4a5f2 (actions).
 
-**Building: T285 in progress since 03:26Z; 178 of 331 done; week 83% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 03:45Z; 178 of 331 done; week 83% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 178 of 331 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T285 claimed 03:26Z, lease until 06:26Z
+- **Lane:** idle since 03:45Z (no task in progress)
 - **Week:** 83% used, 28.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:26Z, 18 min before this update
+- **Last run:** 03:26Z, 19 min before this update
 - **Keeper:** last ran 03:13Z, next wake 03:33Z
 
 ## Needs attention
@@ -17,6 +17,7 @@ Updated 2026-11-10T03:45:52Z by runner 4e6b3ca4a5f2 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T285 | runner: a task closes with a visible mark when a file it own | MERGE_PENDING | 1 | 19 min | 03:45Z |  |
 | T284 | server: every route the architecture lists is wired in the r | done | 3 | 34 min | 03:02Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests / test tests::ssrf_g |
 | T284 | server: every route the architecture lists is wired in the r | check_failed | 2 | 21 min | 01:51Z |  |
 | T284 | server: every route the architecture lists is wired in the r | check_failed | 1 | 34 min | 00:32Z |  |
@@ -94,7 +95,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T285 (lease until 2026-11-10T06:26:38Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T284", "at": "2026-11-10T03:02:34Z", "input_tokens": 227, "cache_creation_input_tokens": 301740, "cache_read_input_tokens": 4619284, "output_tokens": 52588}
+- {"task": "T285", "at": "2026-11-10T03:45:51Z", "input_tokens": 205, "cache_creation_input_tokens": 229700, "output_tokens": 70529, "cache_read_input_tokens": 6362345}
