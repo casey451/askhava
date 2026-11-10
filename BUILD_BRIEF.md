@@ -247,7 +247,7 @@ Then the runner sends the **"Finished: ready for your review"** message (§16). 
    - **model check:** the runner confirms which model actually ran from evidence it can inspect itself (session or usage records), not from what the subagent says. K8 establishes which evidence is reliable and which model-ID format the subagent call accepts. A substituted model fails the attempt.
    - **path check:** before handing in, the runner checks the diff against the task's owned files and the protected paths (§2, rule 7).
 4. **Fresh-eyes review:** a reviewer subagent (Opus for money, privacy, security and recovery tasks; Sonnet otherwise until D-1143, Opus for every task not yet started since) sees only the diff and the task's spec files. It checks for:
-   - drift from the spec;
+   - drift from the spec, and, when the worker ran below Opus, a concrete wrong implementation per worker-written test with why the test fails on it (run where its tools allow), plus a realistic counterexample for elevated-risk work the change handles, either missing being a finding (D-2506);
    - duplicated logic;
    - dead code and TODOs;
    - secrets or PII;
@@ -494,8 +494,8 @@ The list below is the minimum, not the whole set:
 
 **Models**
 - **Haiku 5.5:** running tests and summarizing, scans, formatting, docs upkeep.
-- **Sonnet 5.5:** the tasks D-2463's rubric gives it (docs, copy, templates, catalog data, tests-only work and small single-crate changes with no money or privacy logic); the tasks finished earlier keep their recorded model.
-- **Opus 5.5:** spec, architecture, money, privacy, security and recovery application code, reviews of all work in those areas, and the final audit; test-only, docs and harness work there runs on Sonnet with an Opus reviewer (D-483). From November 10, 2026 each queued task runs on the lowest model that can do it well, Sonnet or Opus by D-2463's rubric, always with an Opus reviewer (Casey's choice; it sets aside D-1143's Opus for every unstarted task); FIX-MAIN starts each round on Sonnet and runs on Opus from its second attempt in a round (D-2474), and the runner's own session stays on Sonnet.
+- **Sonnet 5.5:** the tasks D-2463's rubric, as D-2506 narrows it, gives it (docs, copy, templates, catalog data, tests-only work and small single-crate changes with no money or privacy logic); the tasks finished earlier keep their recorded model.
+- **Opus 5.5:** spec, architecture, money, privacy, security and recovery application code, reviews of all work in those areas, and the final audit; test-only, docs and harness work there runs on Sonnet with an Opus reviewer (D-483). From November 10, 2026 each queued task runs on the lowest model that can do it well, Sonnet or Opus by D-2463's rubric as D-2506 narrows it, always with an Opus reviewer (Casey's choice; it sets aside D-1143's Opus for every unstarted task); FIX-MAIN starts each round on Sonnet and runs on Opus from its second attempt in a round (D-2474), and the runner's own session stays on Sonnet.
 - **Fable:** not used, except inside a model window Casey sets in `kit/runner.json` (D-2225): from its `from` until its `until`, every worker, reviewer and the runner's own session run on its model instead of the task's, and `kit/tasks.json` is not changed.
 - Models are named in each task. The runner's own session uses Sonnet at low effort (inside a model window, the window's model, D-2225).
 
@@ -577,7 +577,7 @@ Do exactly this:
 1. Run `RUNNER_STARTER=routine python3 -m runner`. It reads claude/kit-state and claude/lease, records inbox answers, resolves MERGE_PENDING, honours gates, the lease, red main and stage exits, and prints a result line and a JSON line.
 2. If the result is anything but `handed_off` (lease_live, idle, merge_pending, gate_open, fix_main, lost_race, state_invalid, ...), stop. Never do the runner's steps by hand; a live lease naming another session means stop (D-171).
 3. If it is `handed_off`, the JSON `handoff` names the task, branch, prompt and models. Run that one task through a worker subagent on that model (alias haiku, sonnet or opus, D-170) with only the prompt and the files it lists; commit to the local branch; do not push it.
-4. Run the fresh-eyes reviewer subagent on the reviewer model over the diff and the task's spec files; findings go back to the worker once.
+4. Run the fresh-eyes reviewer subagent on the reviewer model over the diff and the task's spec files, with §7 step 4's duty for a worker below Opus (D-2506); findings go back to the worker once.
 5. Run `RUNNER_STARTER=routine python3 -m runner --after --worker-agent <worker agent id> --reviewer-agent <reviewer agent id>` (add `--outcome tests_failed --log "<summary>"` if the work failed, `--outcome usage_limit` at a usage limit). The runner checks paths and models itself, records the review, pushes the branch and sets MERGE_PENDING.
 6. While the task runs longer than 30 minutes, run `RUNNER_STARTER=routine python3 -m runner --renew` every 30 minutes.
 7. Never edit kit/state.json, claude/kit-state or claude/lease yourself, never push to main, never force-push. Only the runner writes outbox/; never post to GitHub directly.
