@@ -271,7 +271,7 @@ def test_drill_failed_test_retries_then_opus_then_blocks(tmp_path: Path) -> None
     env, cfg = FakeEnv(lambda t, m, log: cycle.WorkerResult("tests_failed", log="2 failed")), config(graph, tmp_path)
     for minute in range(3):
         assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=minute)) in (st.QUEUED, st.BLOCKED)
-    assert [r[1] for r in env.runs] == [MODELS["sonnet"], MODELS["sonnet"], MODELS["opus"]]
+    assert [r[1] for r in env.runs] == [MODELS["sonnet"], MODELS["opus"], MODELS["opus"]]  # Opus from attempt 2 (D-2474)
     assert env.runs[1][2] == "2 failed"
     assert st.status(env.store, "T001") == st.BLOCKED
     assert st.entry(env.store, "T001")["attempts"] == 3
@@ -588,7 +588,12 @@ def test_gate_p_holds_the_build(tmp_path: Path) -> None:
 
 def test_attempt_model_policy() -> None:
     task = make_task("T001")
-    assert [cycle.attempt_model(task, n, MODELS) for n in range(4)] == [MODELS["sonnet"]] * 2 + [MODELS["opus"]] * 2
+    # A task named on Sonnet moves to Opus from its second attempt (D-2474); an Opus task stays on Opus.
+    assert [cycle.attempt_model(task, n, MODELS) for n in range(4)] == [MODELS["sonnet"]] + [MODELS["opus"]] * 3
+    opus = dict(task, model=MODELS["opus"])
+    assert [cycle.attempt_model(opus, n, MODELS) for n in range(4)] == [MODELS["opus"]] * 4
+    haiku = dict(task, model="claude-haiku-5-5")
+    assert [cycle.attempt_model(haiku, n, MODELS) for n in range(3)] == ["claude-haiku-5-5"] + [MODELS["opus"]] * 2
 
 
 # ---- Gate P (BUILD_BRIEF.md section 16) on the real state shape
@@ -1635,13 +1640,13 @@ def test_drill_a_push_with_no_head_gets_its_own_blocked_reason(tmp_path: Path) -
 
 
 def test_drill_an_empty_hand_in_from_any_other_task_is_a_failed_attempt(tmp_path: Path) -> None:
-    """No commits is no work: the retry ladder runs (same model, same model with the log, Opus), then
+    """No commits is no work: the retry ladder runs (the task's model, then Opus with the log, D-2474), then
     BLOCKED holds only the dependents. Nothing is pushed and the task never waits for a PR."""
     graph = [make_task("T001"), make_task("T002", ["T001"]), make_task("T003")]
     env, cfg = FakeEnv(lambda t, m, log: empty(t, m) if t["id"] == "T001" else reviewed(t, m)), config(graph, tmp_path)
     for minute in range(3):
         assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=minute)) in (st.QUEUED, st.BLOCKED)
-    assert [r[1] for r in env.runs] == [MODELS["sonnet"], MODELS["sonnet"], MODELS["opus"]]
+    assert [r[1] for r in env.runs] == [MODELS["sonnet"], MODELS["opus"], MODELS["opus"]]  # Opus from attempt 2 (D-2474)
     assert env.runs[1][2] == cycle.NO_CHANGES and st.entry(env.store, "T001")["reason"] == cycle.NO_CHANGES
     assert st.status(env.store, "T001") == st.BLOCKED and env.branch_pushes == []
     assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=3)) == st.MERGE_PENDING and env.runs[-1][0] == "T003"

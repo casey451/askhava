@@ -260,8 +260,9 @@ def _by_day(cfg: Config, ids: list[str], now: datetime) -> list[str]:
 
 
 def attempt_model(task: dict[str, Any], attempts: int, models: dict[str, str]) -> str:
-    """Same model first, the same again with the log, Opus on the last try (BUILD_BRIEF.md:540)."""
-    if attempts >= MAX_ATTEMPTS - 1:
+    """The task's own model first; from the second attempt Opus for a task named on any other model
+    (D-2474: a Sonnet task that failed once moves up at once); Opus on the last try (BUILD_BRIEF.md:540)."""
+    if attempts >= MAX_ATTEMPTS - 1 or (attempts >= 1 and task["model"] != models["opus"]):
         return models["opus"]
     return str(task["model"])
 
@@ -1748,11 +1749,14 @@ def _per_key_onto(base: dict[str, Any], ours: dict[str, Any], fresh: dict[str, A
 def _usage_onto(base: dict[str, Any], ours: dict[str, Any], fresh: dict[str, Any]) -> dict[str, Any]:
     """This attempt's usage laid onto the fresh `usage` (D-620): the `by_task` entries it changed, the
     other keys it changed (`last_reading`, `limit_hit`, `source`), and its tokens added to each pacing
-    window (`_windows_onto`) instead of replacing what another lane's attempt added meanwhile."""
+    window (`_windows_onto`) instead of replacing what another lane's attempt added meanwhile. A ledger
+    the fresh state no longer has, though this attempt's base had it, was dropped by `close_on_limit`
+    after this attempt began (D-2225): the drop is newer, so the windows stay dropped (D-2474)."""
     out = _per_key_onto({k: v for k, v in base.items() if k not in ("by_task", "windows")},
                         {k: v for k, v in ours.items() if k not in ("by_task", "windows")}, fresh)
     out["by_task"] = _per_key_onto(base.get("by_task") or {}, ours.get("by_task") or {}, fresh.get("by_task") or {})
-    if "windows" in ours and ours["windows"] != base.get("windows"):
+    dropped = "windows" in base and "windows" not in fresh  # close_on_limit dropped the ledger meanwhile (D-2225, D-2474)
+    if not dropped and "windows" in ours and ours["windows"] != base.get("windows"):
         out["windows"] = _windows_onto(base.get("windows") or {}, ours["windows"], fresh.get("windows") or {})
     if not out["by_task"] and "by_task" not in fresh and "by_task" not in ours:
         out.pop("by_task")
