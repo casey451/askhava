@@ -1,23 +1,23 @@
 # Ask Hava build status
 
-Updated 2026-11-10T17:22:13Z by runner e47432249e16 (actions).
+Updated 2026-11-10T17:49:59Z by runner 73d5bcfa8f33 (actions).
 
-**Idle since 17:08Z; 186 of 335 done; week 92% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 17:36Z; 187 of 335 done; week 92% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 186 of 335 build tasks (owner gates not counted)
+- **Tasks done:** 187 of 335 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 17:08Z (no task in progress)
+- **Lane:** idle since 17:36Z (no task in progress)
 - **Week:** 92% used, 14.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:22Z, 0 min before this update
+- **Last run:** 17:22Z, 27 min before this update
 - **Keeper:** last ran 17:22Z, next wake 17:42Z
 
 ## Needs attention
-- nothing
+- Strict plan check red: 1 problem(s) on tasks still to run (+20 on DONE tasks); first: T162: stored context_pct 16% but it measures 20%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T231 | portals (harness): the homeowner check-in email buttons and  | MERGE_PENDING | 2 | 26 min | 17:08Z | T231 built and committed (b2f7b11e, 26074ad1) but smoke red: tests/security/tests/auth_matrix.rs (T088, protected, no se |
+| T231 | portals (harness): the homeowner check-in email buttons and  | done | 2 | 26 min | 17:08Z | T231 built and committed (b2f7b11e, 26074ad1) but smoke red: tests/security/tests/auth_matrix.rs (T088, protected, no se |
 | T231 | portals (harness): the homeowner check-in email buttons and  | QUEUED | 1 | 28 min | 15:58Z |  |
 | T199 | portals: no automated call to a business, voice codes only o | done | 1 | 64 min | 14:22Z |  |
 | T293 | businesses and quotes: sign-up, consent, complaint and quote | done | 1 | 41 min | 12:35Z |  |
@@ -35,7 +35,6 @@ Updated 2026-11-10T17:22:13Z by runner e47432249e16 (actions).
 | T287 | payments and picks: the fee fixed at the pick is stored by p | done | 2 | 43 min | 22:15Z | T287 built and smoke green, but prehandin check_pr_change fails: kit/tasks.json T287 owns lacks app/payments/src/models. |
 | T287 | payments and picks: the fee fixed at the pick is stored by p | QUEUED | 1 | 46 min | 21:18Z |  |
 | T279 | messaging, ops and server: the texting switch and a number s | done | 1 | 47 min | 19:32Z |  |
-| T276 | privacy and messaging: purged photos' sealed objects and orp | done | 1 | 53 min | 17:46Z |  |
 
 ### Plan and harness merges on main
 - 16:53Z Plan: matrix doors before the serving tasks — public, owner and action-link doors, HTTP probe for served realm routes (D-2440, T348) (#421)
@@ -54,8 +53,8 @@ Updated 2026-11-10T17:22:13Z by runner e47432249e16 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 231 of 733 (31.5%) · partial 308 · unstarted 194
-**Tasks merged (throughput only):** 186 of 335
+**Requirements verified:** 236 of 733 (32.2%) · partial 303 · unstarted 194
+**Tasks merged (throughput only):** 187 of 335
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -64,12 +63,12 @@ Updated 2026-11-10T17:22:13Z by runner e47432249e16 (actions).
 | businesses | 17 | 32 | 9 | 58 |
 | calls | 11 | 13 | 1 | 25 |
 | consent | 14 | 17 | 4 | 35 |
-| fees | 10 | 41 | 1 | 52 |
+| fees | 11 | 40 | 1 | 52 |
 | intake | 20 | 14 | 9 | 43 |
 | job-cards | 12 | 10 | 2 | 24 |
 | licensing | 31 | 16 | 1 | 48 |
-| lifecycle | 17 | 11 | 0 | 28 |
-| messaging | 16 | 26 | 3 | 45 |
+| lifecycle | 18 | 10 | 0 | 28 |
+| messaging | 19 | 23 | 3 | 45 |
 | ops-recovery | 2 | 5 | 47 | 54 |
 | privacy | 7 | 21 | 3 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
@@ -90,7 +89,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 66 of 136 done
+- stage 4: 67 of 136 done
 - stage 5: 0 of 53 done
 - stage 6: 0 of 30 done
 - stage 7: 0 of 2 done
