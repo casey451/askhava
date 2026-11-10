@@ -18818,7 +18818,8 @@
     "T334",
     "T335",
     "T336",
-    "T337"
+    "T337",
+    "T338"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -26087,6 +26088,19 @@
    "slug": "inbound-text-bounded-retry",
    "type": "harness",
    "stage": "4"
+  },
+  {
+   "id": "T338",
+   "deps": [
+    "T016",
+    "T057",
+    "T075"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "refused-connection-test-port",
+   "type": "harness",
+   "stage": "4"
   }
  ],
  "owner_waits": [],
@@ -27753,7 +27767,7 @@
    }
   }
  },
- "updated_at": "2026-11-10T01:51:56Z",
+ "updated_at": "2026-11-10T02:04:53Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -27851,7 +27865,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "05c4ed68bf3bf06d8675dc5526d8ac442f84bc54",
+ "runner_sha": "63b7c55a58ecb2e5b0b28e88687eaff944f9a3c7",
  "starter": "actions",
  "smoke_runs": [
   {

@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-10T01:51:56Z by runner 05c4ed68bf3b (actions).
+Updated 2026-11-10T02:04:53Z by runner 63b7c55a58ec (actions).
 
-**Idle since 01:51Z; 177 of 324 done; week 79% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 01:51Z; 177 of 325 done; week 79% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 177 of 324 build tasks (owner gates not counted)
+- **Tasks done:** 177 of 325 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 01:51Z (no task in progress)
 - **Week:** 79% used, 40.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:51Z, 0 min before this update
+- **Last run:** 01:52Z, 12 min before this update
 - **Keeper:** last ran 01:51Z, next wake 02:11Z
 
 ## Needs attention
@@ -36,7 +36,6 @@ Updated 2026-11-10T01:51:56Z by runner 05c4ed68bf3b (actions).
 | T257 | privacy and server: the scrubber remembers names across a ho | done | 1 | 56 min | 05:54Z |  |
 | T263 | payments: the monthly fee limit is a hard cap; capacity is r | done | 1 | 49 min | 04:26Z |  |
 | T260 | stand-in and adapters: an unconfirmed PaymentIntent, its on- | done | 1 | 42 min | 03:09Z |  |
-| T259 | payments: the Stripe webhook dispatches refund, dispute and  | done | 1 | 61 min | 01:52Z |  |
 
 ### Plan and harness merges on main
 - 01:33Z Plan: the refused-connection test holds its port (T338, D-2318) (#404)
@@ -50,7 +49,7 @@ Updated 2026-11-10T01:51:56Z by runner 05c4ed68bf3b (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 237 of 732 (32.4%) · partial 297 · unstarted 198
-**Tasks merged (throughput only):** 177 of 324
+**Tasks merged (throughput only):** 177 of 325
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -85,7 +84,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 57 of 125 done
+- stage 4: 57 of 126 done
 - stage 5: 0 of 53 done
 - stage 6: 0 of 30 done
 - stage 7: 0 of 2 done
