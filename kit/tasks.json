@@ -10710,6 +10710,72 @@
    "prompt": "kit/prompts/T347.md"
   },
   {
+   "id": "T348",
+   "slug": "matrix-doors",
+   "title": "harness: the authorization matrix gets public, owner and action-link doors and an HTTP probe for every served realm route",
+   "goal": "Matrix doors before the serving tasks (D-2440; SEC-019, SEC-048, SEC-034, SEC-004 to SEC-008, SEC-026; D-1945, D-736, D-2429). T088's authorization matrix (`tests/security/tests/auth_matrix.rs`) gives every route of the generated route table a door and panics on a path it does not name (`:107`), and `td_sec_01_route_table_is_generated_and_every_path_has_a_door` fails on any served `/h` or `/b` route (`:527` to `:531`), because those realms are probed only through the guard function \"since those routes are not served yet\". So every queued task that serves a public page, an owner page, an email action link or a homeowner or business page would fail the matrix. Before any of them, extend the matrix; nothing in it is exempted, loosened or removed. (1) New doors in `door`, beside the existing ones: `Public` for `/healthz`, `/help` and every path below it, the legal pages (`/terms`, `/privacy`, `/sms-terms`, `/your-data`, `/business-data`) and any route the `site` module serves (the route table records the module of each `.route(` call; a site route outside this list is still public); `ActionLink` for `/b/a/` paths (T148's signed email action links, before the `/b` business arm); `Owner` for `/owner` and every path below it except the sign-in paths, which stay `SignIn`. `allowed`: `Public` admits every actor; `ActionLink` admits no session by itself (the link is the key); `Owner` admits only the owner. (2) `td_sec_01_route_table_is_generated_and_every_path_has_a_door` no longer fails on a served realm route; instead every served path of the `Homeowner`, `Business`, `Owner`, `ActionLink` and `Public` doors must have a row in `docs/architecture.md` section 13 reading `yes` (which `app/server/tests/route_wiring.rs` already proves served), so the HTTP probe below reaches it; a served one without that row fails naming it. With nothing served under those doors today the check passes. (3) `app/server/tests/door_matrix.rs` (new; a test crate may not depend on `askhava-server`, D-736, so the HTTP probe lives in the server crate): against `server::build_router` over a real test database, the same six actors as the matrix (anonymous, homeowners A and B, businesses X and Y, the owner, signed in the way `auth_matrix.rs` signs them in) send every method of every section 13 row reading `yes` whose path falls under those five doors (the same prefix rules, restated in the file): a `Homeowner` route admits A and B only, to their own records (A's page never names B's job or token), and gives anyone else a 4xx with a link to `/h/sign-in` and no detail; a `Business` route admits X and Y only, a `{pick}` or `{complaint}` of the other business is the one not-found answer, and anyone else gets a 4xx with a link to `/b/sign-in` and no homeowner detail; an `Owner` route admits only the owner and gives anyone else a 4xx with a link to `/owner/sign-in`; an `ActionLink` route opens only for the token minted for that kind, object and member (`portals::api` minting, as T148's tests do), a `GET` changes nothing (SEC-026), and a token for another kind, object or member, or none, is the one not-found answer; a `Public` route answers every actor's `GET` without a session and its body holds none of the fixtures' names, phones, addresses, tokens or job numbers. Every `Homeowner`, `Business`, `Owner` and `ActionLink` response is `no_store` (SEC-034), and every `POST` of any of the five doors, sent cross-site or with a wrong CSRF token, is a 403 with one `csrf_rejected` security event naming the route template (SEC-048). Path parameters are filled from fixtures: `{pick}`, `{complaint}`, `{kind}`, `{object}`, `{token}`; a row with any other parameter fails naming it, so the task that adds one takes the probe for that fill in a plan change. With no such row served today the probe passes with zero routes and starts probing each row as its serving task flips it to `yes`. How the probe judges (amended in the PR #421 review): an admitted `GET` is a 200 on the actor's own record; an admitted `POST` carries only the CSRF field and passes when the answer is anything other than that door's refusal or a 5xx; the owner fixture has no fresh step-up, and a step-up challenge (SEC-043, `owner_auth.rs`'s own tested rule) counts as admitted, because the probe judges who reaches a page, not the owner's second factor, and a challenge must differ from the door's refusal; the router is built as `app/server/tests/route_wiring.rs:238` builds it, every vendor setting a fake (unreachable base URLs, fake keys), over the test database, so no probe reaches a vendor (T261's Confirm and Stripe included). (4) Planted cases: on a test-local router, `door_matrix.rs` runs its judging code against one correct and one leaking route per door (a homeowner page naming B's job; a business page answering Y's pick; an owner page open to a business; an action link whose `GET` changes state; a public page holding a fixture phone; a realm page without `no_store`); each correct one must pass and each leaking one must fail. (5) One shared case list of paths and their doors, `tests/security/door_cases.txt`, read with `include_str!` by both `auth_matrix.rs` and `door_matrix.rs`, each asserting its own door rules give every listed door, so the two files' prefix rules cannot drift. (6) The matrix's module doc says where each door is probed. This is a harness task because it edits a DONE task's protected security test (T088's) and adds a cross-module security probe; Opus worker and reviewer. Update the `server` `CLAUDE.md`, `docs/architecture.md` section 10 and `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "4",
+   "module": null,
+   "deps": [
+    "T231",
+    "T088",
+    "T284",
+    "T148",
+    "T057",
+    "T075"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "privacy",
+    "harness"
+   ],
+   "owns": [
+    "tests/security/tests/auth_matrix.rs",
+    "app/server/tests/door_matrix.rs",
+    "tests/security/door_cases.txt"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/security.md",
+    "docs/brains/rust-production.md",
+    "app/server/tests/route_wiring.rs"
+   ],
+   "requirements": [
+    "SEC-019",
+    "SEC-048",
+    "SEC-034"
+   ],
+   "tests": [
+    "TD-SEC-61"
+   ],
+   "decisions": [
+    "D-2440",
+    "D-1945",
+    "D-736",
+    "D-2429"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 800,
+    "context_pct": 36
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T348-matrix-doors",
+   "prompt": "kit/prompts/T348.md",
+   "acceptance": "TD-SEC-61 passes on `main` with zero routes served under the new doors; every planted correct route passes and every planted leaking route fails; both files assert the shared case list; each existing test in `auth_matrix.rs` passes with no door, probe, row or assertion removed or loosened; the only replaced check is the served-realm failure, now a demand for a `yes` row that `door_matrix.rs` probes over HTTP."
+  },
+  {
    "id": "T255",
    "slug": "emergency-address-rerelease",
    "title": "intake, payments and server: ask again for an emergency address and release once it arrives",
@@ -12434,7 +12500,8 @@
     "T344",
     "T345",
     "T346",
-    "T347"
+    "T347",
+    "T348"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -12557,13 +12624,14 @@
    "id": "T221",
    "slug": "site-legal-pages",
    "title": "site: the terms, privacy policy, SMS terms, homeowner data and business data pages",
-   "goal": "askhava.com serves /terms, /privacy, /sms-terms, /your-data and /business-data in English from the drafted legal documents in `docs/legal/`, rendered at build time by `app/site/build.rs` with `pulldown-cmark` (allowed by D-491) into Askama pages, the build failing if a document is missing; the two data pages also exist in Spanish (TERMS-021, TERMS-023; the terms, privacy policy and SMS terms have no Spanish source yet); each page carries the WORD-002 footer statement, the data pages and the help-page link hold the AI-018 switched-off sentence while the AI switch is off, and the consent text's links resolve (WEB-014, TERMS-021, TERMS-023, AI-018). The Stage 0.5 static set is T116's (D-491). Each published version of the four documents is kept once in `docs/legal/published/versions.json` with its full text and SHA-256, and a docs test fails if a published version's text no longer matches its hash (TERMS-034, D-492).",
+   "goal": "askhava.com serves /terms, /privacy, /sms-terms, /your-data and /business-data in English from the drafted legal documents in `docs/legal/`, rendered at build time by `app/site/build.rs` with `pulldown-cmark` (allowed by D-491) into Askama pages, the build failing if a document is missing; the two data pages also exist in Spanish (TERMS-021, TERMS-023; the terms, privacy policy and SMS terms have no Spanish source yet); each page carries the WORD-002 footer statement, the data pages and the help-page link hold the AI-018 switched-off sentence while the AI switch is off, and the consent text's links resolve (WEB-014, TERMS-021, TERMS-023, AI-018). The Stage 0.5 static set is T116's (D-491). Each published version of the four documents is kept once in `docs/legal/published/versions.json` with its full text and SHA-256, and a docs test fails if a published version's text no longer matches its hash (TERMS-034, D-492). Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around.",
    "type": "build",
    "phase": 1,
    "stage": "5",
    "module": "site",
    "deps": [
-    "T101"
+    "T101",
+    "T348"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -12610,7 +12678,8 @@
    "decisions": [
     "D-491",
     "D-492",
-    "D-1143"
+    "D-1143",
+    "D-2440"
    ],
    "cites": [],
    "budget": {
@@ -12716,7 +12785,7 @@
    "id": "T201",
    "slug": "site-services-help-pages",
    "title": "site: services and help pages, the ROC complaint page",
-   "goal": "The services page opens each licensed trade with \"Get quotes from licensed <trade>.\" and the long statement; the help page answers \"Is Ask Hava a person?\" with the automated-texts line; askhava.com/help/roc-complaint links to the ROC; and the \"What we cover now\" page (`coverage.html`, with `roc_complaint.html` for the ROC page) lists the open and not-yet categories (WEB-008, WEB-011, WEB-015, WEB-023, WORD-009); the help page also holds the AI-018 switched-off sentence while the AI switch is off (AI-018), and its \"Send the Ask Hava owner a message\" form is wired to the help-request endpoint by T200 (D-491).",
+   "goal": "The services page opens each licensed trade with \"Get quotes from licensed <trade>.\" and the long statement; the help page answers \"Is Ask Hava a person?\" with the automated-texts line; askhava.com/help/roc-complaint links to the ROC; and the \"What we cover now\" page (`coverage.html`, with `roc_complaint.html` for the ROC page) lists the open and not-yet categories (WEB-008, WEB-011, WEB-015, WEB-023, WORD-009); the help page also holds the AI-018 switched-off sentence while the AI switch is off (AI-018), and its \"Send the Ask Hava owner a message\" form is wired to the help-request endpoint by T200 (D-491). Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -12724,7 +12793,8 @@
    "deps": [
     "T101",
     "T102",
-    "T221"
+    "T221",
+    "T348"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -12780,7 +12850,8 @@
     "D-356",
     "D-371",
     "D-492",
-    "D-1143"
+    "D-1143",
+    "D-2440"
    ],
    "cites": [],
    "budget": {
@@ -12898,7 +12969,7 @@
    "id": "T103",
    "slug": "site-web-chat",
    "title": "site: web chat with the consent text first, typing a verified mobile number is the opt-in",
-   "goal": "A homeowner can start a request by web chat as well as by text: the consent text sits above the chat box with no agree button, the opt-in is typing a mobile number and then its code (no AI call before the code), business-intent messages are detected on both paths (the text path's check lives in `app/intake/src/conversation.rs`, extended here), and a `g` link code is recorded with the request and nothing else tracked (CON-025, INT-001, INT-020, INT-047, AI-021). While the AI-008 switch is on, the chat page shows \"An AI service helps word our questions.\" above the chat box (AI-026, D-492). The request page shows the full consent text (WEB-014's request-page clause; the legal pages are T221's) (D-493). This task's migration adds the request source column INT-047 records (the `g` link code, or 'text' for a request started by text), which T158's scorecard reads (D-493). The WEB-006 Spanish consent draft sits above the English consent text on the request page (D-493). A web-chat request that would open a new request calls `intake::api::admit_new_request` first, on the connection of the transaction that opens it, with her vault contact and the client IP (SEC-014, D-1951; T317 changed it to take a connection, D-2206); a refused one opens nothing and the page says to try again later.",
+   "goal": "A homeowner can start a request by web chat as well as by text: the consent text sits above the chat box with no agree button, the opt-in is typing a mobile number and then its code (no AI call before the code), business-intent messages are detected on both paths (the text path's check lives in `app/intake/src/conversation.rs`, extended here), and a `g` link code is recorded with the request and nothing else tracked (CON-025, INT-001, INT-020, INT-047, AI-021). While the AI-008 switch is on, the chat page shows \"An AI service helps word our questions.\" above the chat box (AI-026, D-492). The request page shows the full consent text (WEB-014's request-page clause; the legal pages are T221's) (D-493). This task's migration adds the request source column INT-047 records (the `g` link code, or 'text' for a request started by text), which T158's scorecard reads (D-493). The WEB-006 Spanish consent draft sits above the English consent text on the request page (D-493). A web-chat request that would open a new request calls `intake::api::admit_new_request` first, on the connection of the transaction that opens it, with her vault contact and the client IP (SEC-014, D-1951; T317 changed it to take a connection, D-2206); a refused one opens nothing and the page says to try again later. It adds one row per method and path the web chat and request page serve to section 13 (module `site`, Wired `yes`; the Public door, D-2440). Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -12906,7 +12977,8 @@
    "deps": [
     "T202",
     "T255",
-    "T317"
+    "T317",
+    "T348"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -12972,7 +13044,8 @@
     "D-492",
     "D-1739",
     "D-2206",
-    "D-1951"
+    "D-1951",
+    "D-2440"
    ],
    "cites": [],
    "budget": {
@@ -13486,14 +13559,15 @@
    "id": "T106",
    "slug": "ops-health",
    "title": "ops: /healthz, health page figures, monthly spot-check",
-   "goal": "The app answers `/healthz` for the uptime monitor, the owner portal shows the OPS-008 health figures, and it offers the monthly spot-check of 10 random job cards (OPS-007 to OPS-009). The `/healthz` probe is `app/server/src/healthz.rs` (the server binary checks the process, the database and the worker heartbeat, which is the age of the newest `core.task` lease or finish, so no new table is needed; `ops` holds no route, D-491); the health page with its figures is a portals page reading each module's `api` (the last-backup figure reads `ops::api`, where `recovery` records each backup and restore result; T109 adds that record and replaces this task's 'not yet recorded' placeholder, D-493). `web` and `worker` exit non-zero when their own liveness check has failed for 3 minutes (a setting) so the host's On Failure policy restarts them (OPS-049), and the health page shows each required secret as present, parsed and environment-matched, never its value, length or hash (OPS-008) (D-492). T304 serves the health page (D-2128): the page function and route constant only, no `.route` for it in `server` (`/healthz` stays this task's).",
+   "goal": "The app answers `/healthz` for the uptime monitor, the owner portal shows the OPS-008 health figures, and it offers the monthly spot-check of 10 random job cards (OPS-007 to OPS-009). The `/healthz` probe is `app/server/src/healthz.rs` (the server binary checks the process, the database and the worker heartbeat, which is the age of the newest `core.task` lease or finish, so no new table is needed; `ops` holds no route, D-491); the health page with its figures is a portals page reading each module's `api` (the last-backup figure reads `ops::api`, where `recovery` records each backup and restore result; T109 adds that record and replaces this task's 'not yet recorded' placeholder, D-493). `web` and `worker` exit non-zero when their own liveness check has failed for 3 minutes (a setting) so the host's On Failure policy restarts them (OPS-049), and the health page shows each required secret as present, parsed and environment-matched, never its value, length or hash (OPS-008) (D-492). T304 serves the health page (D-2128): the page function and route constant only, no `.route` for it in `server` (`/healthz` stays this task's). Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around.",
    "type": "build",
    "phase": 1,
    "stage": "5",
    "module": "portals",
    "deps": [
     "T204",
-    "T221"
+    "T221",
+    "T348"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -13533,7 +13607,8 @@
     "D-344",
     "D-347",
     "D-381",
-    "D-492"
+    "D-492",
+    "D-2440"
    ],
    "cites": [],
    "budget": {
@@ -16500,7 +16575,7 @@
    "id": "T300",
    "slug": "business-portal-served",
    "title": "server and portals: the business portal is served behind the business session (home, a released job's page, billing and statements, notice settings)",
-   "goal": "No task serves the business portal (D-2116, D-2117): `server::build_router` merges no `/b` page, and `portals` exports the portal home, the released job's page, billing with its CSV statement and notice settings only as page functions with route constants (D-1728, D-1848, D-1896). (1) `app/server/src/business_portal.rs` builds the routes `GET /b` (`business_home_page`), `POST /b/open-cards` (`save_open_cards_times`), `GET /b/picks/{pick}` (`job_release_page`, which reads `picks::api::released_view` on every load with the session proof from `server::session_minter()`, D-1739), `GET /b/billing` (`billing_page`) and `GET /b/billing/statement.csv` (`statement_csv`), and `GET` and `POST /b/notices` (`notice_settings_page`, `change_channel`; the addresses read from the vault in `server`, D-1848), each page's facts built through each module's `api`; it merges them in the shared `app/server/src/lib.rs` and composes them in `main.rs`. Every route reads the person with `portals::api::business_principal`: no business person (signed out, a homeowner or owner session, a removed member) gets a 4xx answer with a link to `/b/sign-in` and no homeowner detail, so T085's signed-out checks in `tests/e2e/business_portal.spec.ts` stay true; a refusal (another business's pick, a role the page needs missing, an unknown ID) is the one not-found answer; every response is `no_store` (SEC-034); both `POST`s pass `refuse_cross_site` and the CSRF check (SEC-009, SEC-042), and a refusal is a security event (SEC-048). (2) Each served `GET` page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788), and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. (3) Tests: `app/server/tests/business_portal_route.rs` against the assembled router (TD-SEC-43 and the router half of TD-BIZ-42) and `tests/e2e/business_portal_served.spec.ts` (the browser half of TD-BIZ-42; T085's spec is not changed, D-2117). In that spec the fake owner signs in through the served sign-in pages with no read of any email: the spec seeds, through `psql` on `DATABASE_URL` as `tests/e2e/j1_reduced.spec.ts` seeds its quote token, the active business, its owner with a linked fake phone (555-01xx) that takes texts, and a `portals.login_link` row whose `token_sha256` is the SHA-256 of a token the spec chose, then opens `/b/sign-in/{token}`; the new-device code is the one the stand-in Verify issues for that phone, computed in the spec from its rule in `stand_ins/twilio.py` (`start_verification`: the sum of the E.164 number's character codes modulo 1,000,000, six digits); no test-control route, stand-in change or email read is needed (`/__test/messages` lists texts only and the Resend stand-in has no read route). The complaints page, the \"Why was I charged?\" page, the emergency-email switch and the job page's notice log are T306's, the action links T301's and business sign-up T302's (D-2128). Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`.",
+   "goal": "No task serves the business portal (D-2116, D-2117): `server::build_router` merges no `/b` page, and `portals` exports the portal home, the released job's page, billing with its CSV statement and notice settings only as page functions with route constants (D-1728, D-1848, D-1896). (1) `app/server/src/business_portal.rs` builds the routes `GET /b` (`business_home_page`), `POST /b/open-cards` (`save_open_cards_times`), `GET /b/picks/{pick}` (`job_release_page`, which reads `picks::api::released_view` on every load with the session proof from `server::session_minter()`, D-1739), `GET /b/billing` (`billing_page`) and `GET /b/billing/statement.csv` (`statement_csv`), and `GET` and `POST /b/notices` (`notice_settings_page`, `change_channel`; the addresses read from the vault in `server`, D-1848), each page's facts built through each module's `api`; it merges them in the shared `app/server/src/lib.rs` and composes them in `main.rs`. Every route reads the person with `portals::api::business_principal`: no business person (signed out, a homeowner or owner session, a removed member) gets a 4xx answer with a link to `/b/sign-in` and no homeowner detail, so T085's signed-out checks in `tests/e2e/business_portal.spec.ts` stay true; a refusal (another business's pick, a role the page needs missing, an unknown ID) is the one not-found answer; every response is `no_store` (SEC-034); both `POST`s pass `refuse_cross_site` and the CSRF check (SEC-009, SEC-042), and a refusal is a security event (SEC-048). (2) Each served `GET` page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788), and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. (3) Tests: `app/server/tests/business_portal_route.rs` against the assembled router (TD-SEC-43 and the router half of TD-BIZ-42) and `tests/e2e/business_portal_served.spec.ts` (the browser half of TD-BIZ-42; T085's spec is not changed, D-2117). In that spec the fake owner signs in through the served sign-in pages with no read of any email: the spec seeds, through `psql` on `DATABASE_URL` as `tests/e2e/j1_reduced.spec.ts` seeds its quote token, the active business, its owner with a linked fake phone (555-01xx) that takes texts, and a `portals.login_link` row whose `token_sha256` is the SHA-256 of a token the spec chose, then opens `/b/sign-in/{token}`; the new-device code is the one the stand-in Verify issues for that phone, computed in the spec from its rule in `stand_ins/twilio.py` (`start_verification`: the sum of the E.164 number's character codes modulo 1,000,000, six digits); no test-control route, stand-in change or email read is needed (`/__test/messages` lists texts only and the Resend stand-in has no read route). The complaints page, the \"Why was I charged?\" page, the emergency-email switch and the job page's notice log are T306's, the action links T301's and business sign-up T302's (D-2128). Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -16511,7 +16586,8 @@
     "T253",
     "T195",
     "T196",
-    "T199"
+    "T199",
+    "T348"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -16558,7 +16634,8 @@
     "D-1739",
     "D-1848",
     "D-1896",
-    "D-2117"
+    "D-2117",
+    "D-2440"
    ],
    "cites": [],
    "budget": {
@@ -16579,7 +16656,7 @@
    "id": "T301",
    "slug": "action-links-served",
    "title": "server and portals: the email action links are served (the quote form, the Confirm review step, Hold, Away, Pause, Resume, Busy, link a phone, approve a phone, ask about a charge)",
-   "goal": "No task serves the email action links (D-2128): `portals::api` has `open_action_link`, `use_action_link`, `action_page`, `quote_form_page` and `ask_about_charge` and the route constant `ACTION_ROUTE` (`/b/a/{kind}/{object}/{token}`, T148, \"not served yet\", D-1955), and `quotes::api::job_page` supplies the job page's data, but `server::build_router` merges none of it, so J2's quote form \"opens from its link\" (T099) cannot run. (1) `app/server/src/action_links.rs` builds `GET` and `POST` on `ACTION_ROUTE` for every `ActionKind`: `GET` calls `open_action_link` and shows `action_page` or, for a Quote link, `quote_form_page` with the job page's data, and changes nothing however often it is opened (SEC-026); only the page's `POST` with its CSRF token calls `use_action_link` in the caller's transaction and acts once (D-1955); a token for another kind, object or person, an expired token or a removed member's token gets the one not-found answer and reads nothing; every response is `no_store`; the `POST` passes `refuse_cross_site` and a refusal is a security event (SEC-042, SEC-048); merged in the shared `app/server/src/lib.rs`. Later owners of `business_actions.rs` and `quotes::job_page` (T209, T212, T164, T214, T249, T158) keep the signatures this file calls, and T306 serves any page or action they add (D-2128). (2) Tests: `app/server/tests/action_links_route.rs` against the assembled router (TD-SEC-44) and `tests/e2e/action_links_served.spec.ts` with links seeded through `psql` as `tests/e2e/j1_reduced.spec.ts` seeds its token (the `portals.login_link` row holds the SHA-256 of `action:<kind>:<object>:<token>`, D-1955). Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. Fourth external audit F12 (D-2206, D-1951): the quote form's `POST` calls `portals::api::admit_quote` with the business and the client address first; a refused quote is not stored and the page says to try again later.",
+   "goal": "No task serves the email action links (D-2128): `portals::api` has `open_action_link`, `use_action_link`, `action_page`, `quote_form_page` and `ask_about_charge` and the route constant `ACTION_ROUTE` (`/b/a/{kind}/{object}/{token}`, T148, \"not served yet\", D-1955), and `quotes::api::job_page` supplies the job page's data, but `server::build_router` merges none of it, so J2's quote form \"opens from its link\" (T099) cannot run. (1) `app/server/src/action_links.rs` builds `GET` and `POST` on `ACTION_ROUTE` for every `ActionKind`: `GET` calls `open_action_link` and shows `action_page` or, for a Quote link, `quote_form_page` with the job page's data, and changes nothing however often it is opened (SEC-026); only the page's `POST` with its CSRF token calls `use_action_link` in the caller's transaction and acts once (D-1955); a token for another kind, object or person, an expired token or a removed member's token gets the one not-found answer and reads nothing; every response is `no_store`; the `POST` passes `refuse_cross_site` and a refusal is a security event (SEC-042, SEC-048); merged in the shared `app/server/src/lib.rs`. Later owners of `business_actions.rs` and `quotes::job_page` (T209, T212, T164, T214, T249, T158) keep the signatures this file calls, and T306 serves any page or action they add (D-2128). (2) Tests: `app/server/tests/action_links_route.rs` against the assembled router (TD-SEC-44) and `tests/e2e/action_links_served.spec.ts` with links seeded through `psql` as `tests/e2e/j1_reduced.spec.ts` seeds its token (the `portals.login_link` row holds the SHA-256 of `action:<kind>:<object>:<token>`, D-1955). Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. Fourth external audit F12 (D-2206, D-1951): the quote form's `POST` calls `portals::api::admit_quote` with the business and the client address first; a refused quote is not stored and the page says to try again later. Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -16589,7 +16666,8 @@
     "T148",
     "T198",
     "T199",
-    "T155"
+    "T155",
+    "T348"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -16632,7 +16710,8 @@
     "D-2117",
     "D-2128",
     "D-2206",
-    "D-1951"
+    "D-1951",
+    "D-2440"
    ],
    "cites": [],
    "budget": {
@@ -16804,7 +16883,7 @@
    "id": "T304",
    "slug": "owner-tools-served",
    "title": "server and portals: the owner refund review, the audit log viewer and the health page are served",
-   "goal": "T205 builds the owner refund review step and the audit log viewer and T106 and T109 the health page, as portals pages no route serves (D-2128); J3 (T118) refunds a charge and reads the audit log. (1) `app/server/src/owner_tools.rs` builds those pages and the refund `POST` behind T303's owner session (T304 uses T303's owner-session check): the refund needs a fresh second factor (SEC-043), issues one Stripe refund and one ledger row, and is blocked on a disputed charge (FEE-026, SEC-006); no other realm reaches them (a 4xx with a link to `/owner/sign-in`); every response `no_store`; every `POST` passes `refuse_cross_site` and the CSRF check, a refusal a security event; merged in the shared `app/server/src/lib.rs`. (2) Tests: `app/server/tests/owner_tools_route.rs` (TD-SEC-47) and `tests/e2e/owner_tools_served.spec.ts`, which takes the browser half of J3's refund and audit-log steps that T205's spec cannot reach while the pages are unserved, signing in as T303's spec does. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. It also serves T205's \"I submitted the evidence myself\" `POST` (fresh second factor, CSRF, `no_store`), which calls `payments::api::record_owner_submission` once (fourth external audit F44, D-2204).",
+   "goal": "T205 builds the owner refund review step and the audit log viewer and T106 and T109 the health page, as portals pages no route serves (D-2128); J3 (T118) refunds a charge and reads the audit log. (1) `app/server/src/owner_tools.rs` builds those pages and the refund `POST` behind T303's owner session (T304 uses T303's owner-session check): the refund needs a fresh second factor (SEC-043), issues one Stripe refund and one ledger row, and is blocked on a disputed charge (FEE-026, SEC-006); no other realm reaches them (a 4xx with a link to `/owner/sign-in`); every response `no_store`; every `POST` passes `refuse_cross_site` and the CSRF check, a refusal a security event; merged in the shared `app/server/src/lib.rs`. (2) Tests: `app/server/tests/owner_tools_route.rs` (TD-SEC-47) and `tests/e2e/owner_tools_served.spec.ts`, which takes the browser half of J3's refund and audit-log steps that T205's spec cannot reach while the pages are unserved, signing in as T303's spec does. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. It also serves T205's \"I submitted the evidence myself\" `POST` (fresh second factor, CSRF, `no_store`), which calls `payments::api::record_owner_submission` once (fourth external audit F44, D-2204). It adds one row per method and path it serves to section 13 (module `server`, Wired `yes`), every owner page under `/owner/` (the Owner door, D-2440). Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -16814,7 +16893,8 @@
     "T205",
     "T106",
     "T109",
-    "T314"
+    "T314",
+    "T348"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -16853,7 +16933,8 @@
    ],
    "decisions": [
     "D-2128",
-    "D-2204"
+    "D-2204",
+    "D-2440"
    ],
    "cites": [],
    "budget": {
@@ -16874,7 +16955,7 @@
    "id": "T305",
    "slug": "owner-reports-served",
    "title": "server and portals: the scorecard, the intake report, the money view and the owner help page are served",
-   "goal": "T158 and T210 build the owner's scorecard, intake report and money view (with its expense-entry `POST`), and T200 the owner help page with its reply box, as portals pages no route serves (D-2128); the business Get help form is T309's. (1) `app/server/src/owner_reports.rs` builds them behind T303's owner session (none or another realm gets a 4xx with a link to `/owner/sign-in`); every response `no_store`; every `POST` passes `refuse_cross_site` and the CSRF check, a refusal a security event; merged in the shared `app/server/src/lib.rs`. (2) Tests: `app/server/tests/owner_reports_route.rs` (TD-SEC-48) and `tests/e2e/owner_reports_served.spec.ts`, which takes the browser half of TD-OPS-15 (T158's row), signing in as T303's spec does. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`.",
+   "goal": "T158 and T210 build the owner's scorecard, intake report and money view (with its expense-entry `POST`), and T200 the owner help page with its reply box, as portals pages no route serves (D-2128); the business Get help form is T309's. (1) `app/server/src/owner_reports.rs` builds them behind T303's owner session (none or another realm gets a 4xx with a link to `/owner/sign-in`); every response `no_store`; every `POST` passes `refuse_cross_site` and the CSRF check, a refusal a security event; merged in the shared `app/server/src/lib.rs`. (2) Tests: `app/server/tests/owner_reports_route.rs` (TD-SEC-48) and `tests/e2e/owner_reports_served.spec.ts`, which takes the browser half of TD-OPS-15 (T158's row), signing in as T303's spec does. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. It adds one row per method and path it serves to section 13 (module `server`, Wired `yes`), every owner page under `/owner/` (the Owner door, D-2440). Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -16883,7 +16964,8 @@
     "T303",
     "T158",
     "T210",
-    "T200"
+    "T200",
+    "T348"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -16918,7 +17000,8 @@
     "TD-SEC-48"
    ],
    "decisions": [
-    "D-2128"
+    "D-2128",
+    "D-2440"
    ],
    "cites": [],
    "budget": {
@@ -16939,7 +17022,7 @@
    "id": "T306",
    "slug": "business-account-pages-served",
    "title": "server and portals: the complaints page, \"Why was I charged?\", the emergency-email switch and the job page's notice log are served",
-   "goal": "These business pages are built but no route serves them (D-2128): the complaints page and its reply (`complaints_page`, `reply_to_complaint`, `COMPLAINTS_ROUTE`, `COMPLAINT_REPLY_ROUTE`, T195), \"Why was I charged?\" (`why_charged_page`, `WHY_CHARGED_ROUTE` `/b/charges/{pick}`, T068), the emergency-email switch (`emergency_switch_page`, `post_step`, `EMERGENCY_SWITCH_ROUTE`, T150) and the job page's notice log (`notice_log_page`, T198); T158's \"Not a fit for us\" choice on the job page is served here too. (1) Extend T300's `app/server/src/business_portal.rs` and T301's `app/server/src/action_links.rs` (both owned after them): every page behind the business session (`portals::api::business_principal`; none gets a 4xx with a link to `/b/sign-in`); another business's pick, complaint or job and a role the page needs missing get the one not-found answer, reading nothing from the vault; the complaint reply box only within its 5 days (BIZ-029); the emergency switch only for the caller's own person; every response `no_store`; every `POST` passes `refuse_cross_site` and the CSRF check, a refusal a security event. (2) Tests: `app/server/tests/business_account_route.rs` (TD-SEC-49) and `tests/e2e/business_account_served.spec.ts`. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`.",
+   "goal": "These business pages are built but no route serves them (D-2128): the complaints page and its reply (`complaints_page`, `reply_to_complaint`, `COMPLAINTS_ROUTE`, `COMPLAINT_REPLY_ROUTE`, T195), \"Why was I charged?\" (`why_charged_page`, `WHY_CHARGED_ROUTE` `/b/charges/{pick}`, T068), the emergency-email switch (`emergency_switch_page`, `post_step`, `EMERGENCY_SWITCH_ROUTE`, T150) and the job page's notice log (`notice_log_page`, T198); T158's \"Not a fit for us\" choice on the job page is served here too. (1) Extend T300's `app/server/src/business_portal.rs` and T301's `app/server/src/action_links.rs` (both owned after them): every page behind the business session (`portals::api::business_principal`; none gets a 4xx with a link to `/b/sign-in`); another business's pick, complaint or job and a role the page needs missing get the one not-found answer, reading nothing from the vault; the complaint reply box only within its 5 days (BIZ-029); the emergency switch only for the caller's own person; every response `no_store`; every `POST` passes `refuse_cross_site` and the CSRF check, a refusal a security event. (2) Tests: `app/server/tests/business_account_route.rs` (TD-SEC-49) and `tests/e2e/business_account_served.spec.ts`. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -16958,7 +17041,8 @@
     "T212",
     "T164",
     "T214",
-    "T249"
+    "T249",
+    "T348"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -17001,7 +17085,8 @@
     "D-1728",
     "D-1955",
     "D-2117",
-    "D-2128"
+    "D-2128",
+    "D-2440"
    ],
    "cites": [],
    "budget": {
@@ -17022,7 +17107,7 @@
    "id": "T307",
    "slug": "homeowner-portal-served",
    "title": "server and portals: the homeowner portal and \"Download my data\" are served",
-   "goal": "No task serves the homeowner portal (D-2128): `portals::api` has `send_sign_in_code`, `finish_sign_in`, `homeowner_page`, `turn_texts_off`, `open_request`, `confirm_request` and `download_file`, with the route constants `HOMEOWNER_HOME_ROUTE`, `HOMEOWNER_SIGNIN_ROUTE`, `HOMEOWNER_CODE_ROUTE`, `TEXTS_OFF_ROUTE`, `DOWNLOAD_ROUTE`, `DATA_REQUEST_ROUTE` and `DATA_CODE_ROUTE` (T087, \"not served yet\", D-1934) but `server::build_router` merges none of them. (1) `app/server/src/homeowner_portal.rs` builds them: sign-in by phone and texted code (SEC-008), a 30-day session per device; a number not on file gets the same answer as one on file; the portal home, the texts-off switch (one suppression entry at once, CON-035), \"Download my data\" with only her own items (PRIV-031), the delete or copy request and its code step; none or another realm's session gets a 4xx with a link to `/h/sign-in` and no detail; every response `no_store` (SEC-034); every `POST` passes `refuse_cross_site` and the CSRF check, a refusal a security event; merged in the shared `app/server/src/lib.rs`. (2) Tests: `app/server/tests/homeowner_portal_route.rs` (TD-PRIV-21) and `tests/e2e/homeowner_portal_served.spec.ts`, the code computed from the stand-in Verify's rule as TD-BIZ-42 does. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. The sign-in and data-code sends call `portals::api::admit_code_send` first (the IP, then her contact when on file, so an unknown number spends the IP limit and sends nothing) and their code checks `admit_code_try` (D-1951; fourth external audit F12, D-2206). The data-request code step also offers \"Send the code again\", served through T346's `resend_request_code` (behind `admit_code_send` like every send), because a request's code challenge lives 10 minutes while the request stays open 30 days (D-2348). The homeowner sign-in and data-request functions take the router's `&PgPool`, not a connection, after T346 (D-2349): the routes pass the pool and hold no connection of their own across those calls.",
+   "goal": "No task serves the homeowner portal (D-2128): `portals::api` has `send_sign_in_code`, `finish_sign_in`, `homeowner_page`, `turn_texts_off`, `open_request`, `confirm_request` and `download_file`, with the route constants `HOMEOWNER_HOME_ROUTE`, `HOMEOWNER_SIGNIN_ROUTE`, `HOMEOWNER_CODE_ROUTE`, `TEXTS_OFF_ROUTE`, `DOWNLOAD_ROUTE`, `DATA_REQUEST_ROUTE` and `DATA_CODE_ROUTE` (T087, \"not served yet\", D-1934) but `server::build_router` merges none of them. (1) `app/server/src/homeowner_portal.rs` builds them: sign-in by phone and texted code (SEC-008), a 30-day session per device; a number not on file gets the same answer as one on file; the portal home, the texts-off switch (one suppression entry at once, CON-035), \"Download my data\" with only her own items (PRIV-031), the delete or copy request and its code step; none or another realm's session gets a 4xx with a link to `/h/sign-in` and no detail; every response `no_store` (SEC-034); every `POST` passes `refuse_cross_site` and the CSRF check, a refusal a security event; merged in the shared `app/server/src/lib.rs`. (2) Tests: `app/server/tests/homeowner_portal_route.rs` (TD-PRIV-21) and `tests/e2e/homeowner_portal_served.spec.ts`, the code computed from the stand-in Verify's rule as TD-BIZ-42 does. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. The sign-in and data-code sends call `portals::api::admit_code_send` first (the IP, then her contact when on file, so an unknown number spends the IP limit and sends nothing) and their code checks `admit_code_try` (D-1951; fourth external audit F12, D-2206). The data-request code step also offers \"Send the code again\", served through T346's `resend_request_code` (behind `admit_code_send` like every send), because a request's code challenge lives 10 minutes while the request stays open 30 days (D-2348). The homeowner sign-in and data-request functions take the router's `&PgPool`, not a connection, after T346 (D-2349): the routes pass the pool and hold no connection of their own across those calls. Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -17030,7 +17115,8 @@
    "deps": [
     "T100",
     "T087",
-    "T346"
+    "T346",
+    "T348"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -17072,7 +17158,8 @@
     "D-2128",
     "D-2206",
     "D-1951",
-    "D-2348"
+    "D-2348",
+    "D-2440"
    ],
    "cites": [],
    "budget": {
@@ -17157,7 +17244,7 @@
    "id": "T309",
    "slug": "help-forms-served",
    "title": "server and portals: the business Get help form and the site help page's owner-message form are served",
-   "goal": "T200 builds the business portal's Get help form and wires the site help page's \"Send the Ask Hava owner a message\" form to the same help-request endpoint, as portals code no route serves (D-2128). (1) `app/server/src/help_forms.rs` builds the Get help form and its `POST` behind the business session (`portals::api::business_principal`; none gets a 4xx with a link to `/b/sign-in`), opening one help request for that business (BIZ-047, OPS-036), and the site help form's `POST` without a session (the pre-session CSRF cookie); a delete or copy request sent through the help form acts only after its Verify code (PRIV-031); every response `no_store`; every `POST` passes `refuse_cross_site` and the CSRF check, a refusal a security event; merged in the shared `app/server/src/lib.rs`. (2) Tests: `app/server/tests/help_forms_route.rs` (TD-SEC-51) and `tests/e2e/help_forms_served.spec.ts`, which takes the browser halves of TD-BIZ-23 and TD-PRIV-16 (T200's rows). Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`.",
+   "goal": "T200 builds the business portal's Get help form and wires the site help page's \"Send the Ask Hava owner a message\" form to the same help-request endpoint, as portals code no route serves (D-2128). (1) `app/server/src/help_forms.rs` builds the Get help form and its `POST` behind the business session (`portals::api::business_principal`; none gets a 4xx with a link to `/b/sign-in`), opening one help request for that business (BIZ-047, OPS-036), and the site help form's `POST` without a session (the pre-session CSRF cookie); a delete or copy request sent through the help form acts only after its Verify code (PRIV-031); every response `no_store`; every `POST` passes `refuse_cross_site` and the CSRF check, a refusal a security event; merged in the shared `app/server/src/lib.rs`. (2) Tests: `app/server/tests/help_forms_route.rs` (TD-SEC-51) and `tests/e2e/help_forms_served.spec.ts`, which takes the browser halves of TD-BIZ-23 and TD-PRIV-16 (T200's rows). Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. It adds one row per method and path it serves to section 13 (Wired `yes`): the business Get help form under `/b/` (the Business door) and the site help form's `POST` under `/help` (the Public door) (D-2440). Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -17165,7 +17252,8 @@
    "deps": [
     "T100",
     "T300",
-    "T200"
+    "T200",
+    "T348"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -17202,7 +17290,8 @@
     "TD-SEC-51"
    ],
    "decisions": [
-    "D-2128"
+    "D-2128",
+    "D-2440"
    ],
    "cites": [],
    "budget": {
@@ -17223,14 +17312,15 @@
    "id": "T310",
    "slug": "owner-portal-served",
    "title": "server and portals: the owner home and settings pages and their switches are served",
-   "goal": "T108 builds the owner home and settings pages (pause, fee mode, category and texting switches, the safe-mode acknowledgement, the needs-review sign-ups, the Stripe-answer record) as portals pages no route serves (D-2128); J3 (T118) pauses a trade and switches fee mode. (1) `app/server/src/owner_portal.rs` builds those pages and their `POST`s behind T303's owner session, each change needing the fresh second factor SEC-043 names; none or another realm gets a 4xx with a link to `/owner/sign-in`; every response `no_store`; every `POST` passes `refuse_cross_site` and the CSRF check, a refusal a security event; merged in the shared `app/server/src/lib.rs`. (2) Tests: `app/server/tests/owner_portal_route.rs` (TD-SEC-50) and `tests/e2e/owner_portal_served.spec.ts`, which takes the browser halves of TD-OPS-01, TD-BIZ-07 and TD-PICK-41 (T108's rows), signing in as T303's spec does. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`.",
+   "goal": "T108 builds the owner home and settings pages (pause, fee mode, category and texting switches, the safe-mode acknowledgement, the needs-review sign-ups, the Stripe-answer record) as portals pages no route serves (D-2128); J3 (T118) pauses a trade and switches fee mode. (1) `app/server/src/owner_portal.rs` builds those pages and their `POST`s behind T303's owner session, each change needing the fresh second factor SEC-043 names; none or another realm gets a 4xx with a link to `/owner/sign-in`; every response `no_store`; every `POST` passes `refuse_cross_site` and the CSRF check, a refusal a security event; merged in the shared `app/server/src/lib.rs`. (2) Tests: `app/server/tests/owner_portal_route.rs` (TD-SEC-50) and `tests/e2e/owner_portal_served.spec.ts`, which takes the browser halves of TD-OPS-01, TD-BIZ-07 and TD-PICK-41 (T108's rows), signing in as T303's spec does. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. It adds one row per method and path it serves to section 13 (module `server`, Wired `yes`), every owner page under `/owner/` (the Owner door, D-2440). Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around.",
    "type": "build",
    "phase": 1,
    "stage": "5",
    "module": "server",
    "deps": [
     "T303",
-    "T108"
+    "T108",
+    "T348"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -17265,7 +17355,8 @@
     "TD-SEC-50"
    ],
    "decisions": [
-    "D-2128"
+    "D-2128",
+    "D-2440"
    ],
    "cites": [],
    "budget": {
@@ -20484,7 +20575,7 @@
    "id": "T261",
    "slug": "served-confirm-route",
    "title": "portals and server: the served Confirm page under the real middleware, the payment page's own Stripe CSP, and truthful bank-approval handling",
-   "goal": "The Confirm view, form and script exist (T224) but no route serves them (D-1480 (a), D-1740 (1)), the global `security_headers` layer replaces every response's CSP with the self-only policy so Stripe.js could never load (D-1480 (c)), the script ignores `handleNextAction`'s result, and the only browser test is a hand-written substitute page (external audit A08, D-1754). (1) Serve `GET` and `POST /b/picks/{pick}/confirm` from `app/portals/src/confirm_pay.rs` (T084's session and principal scoping, T232's terms record), merged in the shared `app/server/src/lib.rs` with T260's `StripeHttp` as the `IntentStripe`: only a signed-in owner or \"Confirm and billing\" member of the pick's business reaches it (any other answers the one not-found page); `intake::api::paused_by_homeowner` and the pick's status are checked again on every load and press (CON-029); the fee, currency and job type come from the server's stored facts, never the form: the fee is `payments::api::pick_fee`, the fee T287 fixed at the pick, and every `Press` carries exactly that amount (D-1871); `open_intent` on the first load, `waive_at_confirm` for a $0 pick, `may_confirm` and `confirm_and_pay` per press, `press_reply` as JSON with the client secret only for a bank approval. When `may_confirm` answers `ConfirmError::FeeModeChanged` (the owner switched the fee mode after the pick), nothing is charged, the page says the fee terms changed after this pick so it can't be confirmed, and the pick ends at once with no fee through the same `picks` call as T232's \"Can't take it\" with its own reason, never counted against the business (PICK-050, OPS-034, D-1871). (2) CSP: `app/portals/src/security.rs` keeps the self-only policy for every page and lets the Confirm route alone add `https://js.stripe.com` to `script-src` and `frame-src` (and Stripe's documented `connect-src`), by a response marker the layer reads rather than by trusting any handler header; a test proves every other page still gets the strict policy (SEC-012). (3) `app/portals/static/confirm_pay.ts`: `handleNextAction`'s error or cancel shows the try-again line and never a success, success shows \"Checking with your bank\" until the server's answer, and the page then asks the server for the attempt's state rather than trusting the browser. (4) Tests: `app/server/tests/confirm_route.rs` (the served route with the real middleware) and `tests/e2e/confirm_served.spec.ts` against the app and the stand-ins; T224's `tests/e2e/confirm_pay.spec.ts` stays as it is and counts as a component test of the script only, never as journey evidence (D-1754). Update `docs/architecture.md` section 10, the `portals` and `server` `CLAUDE.md` files and `docs/decisions.md`. The Confirm route is served only after T328 registers the payments tasks it relies on (the charge check, the pay timer, the refunds and the reconcile), so no Confirm press can queue a task the worker would dead-letter (fifth external audit AH-001, D-2286). (Sixth audit U-02, D-2302; IC-33.) The $0 handoff: on a $0 decision the route records it with `waive_at_confirm`, then takes `payments::api::no_fee_release(conn, pick)` (bound to the pick's own stored fee row since T337) and hands that `Releasable` to the production release sink (`app/server/src/release_sink.rs`), which settles and releases once; a press repeated after a crash between the waiver and the release finds the waiver recorded and the release row, and releases nothing twice. Tests in `app/server/tests/confirm_route.rs` (TD-FEE-58). The Confirm route is served only after T340 and T341 fix the fee from the job's stored facts and the chosen tier, so no fee-free job is ever charged (seventh audit, D-2331).",
+   "goal": "The Confirm view, form and script exist (T224) but no route serves them (D-1480 (a), D-1740 (1)), the global `security_headers` layer replaces every response's CSP with the self-only policy so Stripe.js could never load (D-1480 (c)), the script ignores `handleNextAction`'s result, and the only browser test is a hand-written substitute page (external audit A08, D-1754). (1) Serve `GET` and `POST /b/picks/{pick}/confirm` from `app/portals/src/confirm_pay.rs` (T084's session and principal scoping, T232's terms record), merged in the shared `app/server/src/lib.rs` with T260's `StripeHttp` as the `IntentStripe`: only a signed-in owner or \"Confirm and billing\" member of the pick's business reaches it (any other answers the one not-found page); `intake::api::paused_by_homeowner` and the pick's status are checked again on every load and press (CON-029); the fee, currency and job type come from the server's stored facts, never the form: the fee is `payments::api::pick_fee`, the fee T287 fixed at the pick, and every `Press` carries exactly that amount (D-1871); `open_intent` on the first load, `waive_at_confirm` for a $0 pick, `may_confirm` and `confirm_and_pay` per press, `press_reply` as JSON with the client secret only for a bank approval. When `may_confirm` answers `ConfirmError::FeeModeChanged` (the owner switched the fee mode after the pick), nothing is charged, the page says the fee terms changed after this pick so it can't be confirmed, and the pick ends at once with no fee through the same `picks` call as T232's \"Can't take it\" with its own reason, never counted against the business (PICK-050, OPS-034, D-1871). (2) CSP: `app/portals/src/security.rs` keeps the self-only policy for every page and lets the Confirm route alone add `https://js.stripe.com` to `script-src` and `frame-src` (and Stripe's documented `connect-src`), by a response marker the layer reads rather than by trusting any handler header; a test proves every other page still gets the strict policy (SEC-012). (3) `app/portals/static/confirm_pay.ts`: `handleNextAction`'s error or cancel shows the try-again line and never a success, success shows \"Checking with your bank\" until the server's answer, and the page then asks the server for the attempt's state rather than trusting the browser. (4) Tests: `app/server/tests/confirm_route.rs` (the served route with the real middleware) and `tests/e2e/confirm_served.spec.ts` against the app and the stand-ins; T224's `tests/e2e/confirm_pay.spec.ts` stays as it is and counts as a component test of the script only, never as journey evidence (D-1754). Update `docs/architecture.md` section 10, the `portals` and `server` `CLAUDE.md` files and `docs/decisions.md`. The Confirm route is served only after T328 registers the payments tasks it relies on (the charge check, the pay timer, the refunds and the reconcile), so no Confirm press can queue a task the worker would dead-letter (fifth external audit AH-001, D-2286). (Sixth audit U-02, D-2302; IC-33.) The $0 handoff: on a $0 decision the route records it with `waive_at_confirm`, then takes `payments::api::no_fee_release(conn, pick)` (bound to the pick's own stored fee row since T337) and hands that `Releasable` to the production release sink (`app/server/src/release_sink.rs`), which settles and releases once; a press repeated after a crash between the waiver and the release finds the waiver recorded and the release row, and releases nothing twice. Tests in `app/server/tests/confirm_route.rs` (TD-FEE-58). The Confirm route is served only after T340 and T341 fix the fee from the job's stored facts and the chosen tier, so no fee-free job is ever charged (seventh audit, D-2331). Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -20498,7 +20589,8 @@
     "T328",
     "T337",
     "T340",
-    "T341"
+    "T341",
+    "T348"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -20551,7 +20643,8 @@
     "D-1871",
     "D-2286",
     "D-2302",
-    "D-2331"
+    "D-2331",
+    "D-2440"
    ],
    "cites": [],
    "budget": {
