@@ -25654,7 +25654,15 @@
     2363,
     2364,
     2365
-   ]
+   ],
+   "reviewed_sha": "7f1b09d4274b6b4e13750c116a804cfbcac2d984",
+   "review_lease": {
+    "task": "T288",
+    "session": "actions-42760889278",
+    "expires": "2026-11-10T08:29:54Z"
+   },
+   "branch": "claude/task/T288-reconcile-open-charges",
+   "head_check_since": null
   },
   {
    "id": "T289",
@@ -28251,7 +28259,7 @@
    }
   }
  },
- "updated_at": "2026-11-10T05:30:07Z",
+ "updated_at": "2026-11-10T06:30:28Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -28349,7 +28357,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "3976d91e292432da5260dad04f028f92f2330cd6",
+ "runner_sha": "7f1b09d4274b6b4e13750c116a804cfbcac2d984",
  "starter": "actions",
  "smoke_runs": [
   {

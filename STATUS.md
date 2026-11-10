@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-10T05:30:07Z by runner 3976d91e2924 (actions).
+Updated 2026-11-10T06:30:28Z by runner 7f1b09d4274b (actions).
 
 **Building: T288 in progress since 05:29Z; 180 of 333 done; week 84% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,11 @@ Updated 2026-11-10T05:30:07Z by runner 3976d91e2924 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T288 claimed 05:29Z, lease until 08:29Z
 - **Week:** 84% used, 26.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:09Z, 20 min before this update
+- **Last run:** 05:30Z, 60 min before this update
 - **Keeper:** last ran 05:09Z, next wake 05:29Z
 
 ## Needs attention
-- nothing
+- Strict plan check red: 1 problem(s) on tasks still to run (+8 on DONE tasks); first: T288: stored context_pct 15% but it measures 22%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -36,7 +36,6 @@ Updated 2026-11-10T05:30:07Z by runner 3976d91e2924 (actions).
 | T265 | stage exit: a security, money or privacy handoff in the inte | done | 1 | 25 min | 08:49Z |  |
 | T264 | coverage checker: a missing measurement fails, and the total | done | 1 | 24 min | 07:58Z |  |
 | T262 | calls and server: a random stored PIN per line, unique on it | done | 1 | 33 min | 06:56Z |  |
-| T257 | privacy and server: the scrubber remembers names across a ho | done | 1 | 56 min | 05:54Z |  |
 
 ### Plan and harness merges on main
 - 03:30Z Plan: pentest assessment — Actions pinned, purpose-bound codes, Verify sends outside transactions (D-2346–D-2350, T345–T346) (#407)
