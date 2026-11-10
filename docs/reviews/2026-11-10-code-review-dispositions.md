@@ -1,0 +1,31 @@
+# Code review of merged code, November 10, 2026: dispositions
+
+**Input:** three independent Opus code reviews of `main` at `d8924453`, requested after Casey's chat of November 10 (about 23:20Z): payments (F1 to F5), privacy and every contact read (F1 to F4), messaging and texting compliance (F1 to F6, plus CON-016). Each report was read as untrusted input; the plan builder checked every finding against `main` at `d8924453` (file and line, and whether a queued task already owns it). Decisions D-2620 to D-2630.
+
+| Item | Verdict | Evidence on `main` d8924453 | Disposition | Owner | Decision |
+|---|---|---|---|---|---|
+| Payments F1 (High) A successful charge writes no `charge` ledger entry | Confirmed | `record_fee_at_confirm` (`app/payments/src/service.rs:401`) has no caller; `effects` and `write_evidence` (`handlers.rs:144`, `charge.rs:656`) write no ledger row; the adapter's `PaymentIntent` has no charge ID (`app/adapters/src/payments.rs:32`); `is_repeat` reads only ledger rows (`free_wins.rs:170`) | The success transaction writes the entry under `record_fee_at_confirm`'s key, with the `ch_` ID; a fee-free job type's $0 entry is written at Confirm | T352 (new, harness), T261 | D-2623 |
+| Payments F2 (Medium) A won dispute is never recorded | Confirmed | `dispute_closed` (`routes.rs:489`) reads no status; nothing writes `CounteringFeeReturn` | `countering-fee-return` and a `dispute-reversal` stored code on `won`; reconcile compares open or lost disputes; FEE-028 names the code | T353 (new) | D-2625 |
+| Payments F3 (Medium) No charge queues its receipt | Confirmed | `queue_receipt` (`receipts.rs:56`) has no caller; D-1557 and D-1561's follow-up is orphaned | Queued in the success transaction when the evidence row is new | T352 | D-2623 |
+| Payments F4 (Medium) No description or statement suffix on the PaymentIntent | Confirmed | `create_unconfirmed_intent` (`adapters/src/payments.rs:227`) sends neither; D-1476 named T132, whose goal never said so | T132's goal states it, through a defaulted trait method | T132 (extended) | D-2624 |
+| Payments F5 (Low) The evidence record lacks the charge ID | Confirmed | `write_evidence` stores no `ch_` | Stored with F1 | T352 | D-2623 |
+| Privacy F1 (High) Scrubber and CARD-008 gate miss common contact shapes | Confirmed (code read; the reviewer's probe output) | `mark_codes` (`scrub.rs:640`), `mark_bare_houses`/`titled` (`:608`, `:624`), `TRIGGERS` (`:197`), `sign_off` (`:693`), `digit_form`; `final_gate` (`quotes/src/gate.rs:48`) | Each root cause fixed; the shapes join the recall corpus; false-positive guards | T351 (new) | D-2622 |
+| Privacy F2 (Medium) Photos are never re-sealed on key rotation | Confirmed | Only an INSERT touches `privacy.photo` (`photos.rs:358`); `rotate_batch` (`vault.rs:668`) moves contacts and names only | `rotate_photos`, new object before the row moves; the drill runs both | T354 (new) | D-2626 |
+| Privacy F3 (Low) The release claim can race a fraud end | Plausible, latent; accepted as a fix | `show`/`record` (`picks/src/release.rs:282`, `:394`) unlocked; `fraud_warning` (`unreachable_refund.rs:490`) trusts the caller's snapshot | Row lock in the claim; the fraud end refuses a released pick | T355 (new) | D-2627 |
+| Privacy F4 (Low) `no_fee_release` clears on any $0 entry of the same business and job | Dropped | D-2302 accepted the same-business, same-job overlap; the scenario needs a caller that clears an unconfirmed pick, and the planned callers do not (T261 after the press, T255 on a settled pick) | No change | - | D-2620 |
+| Messaging F1 (High) A phrase opt-out after a stated name is lost, and the word is remembered as a name | Confirmed | `inbound_text.rs:233` classifies scrubbed text; `mark_stated` (`scrub.rs:657`) and `mark_known` (`:704`) | No opt-out, HELP or START word is ever a name; a drift test against messaging's lists | T350 (new) | D-2621 |
+| Messaging F2 (Medium) START into an open request sends no consent text | Confirmed | `Resubscribed` handled as `Open` (`inbound_text.rs:387`); `rules.rs:100` | `restart_after_start` queues the consent text under the START row | T357 (new) | D-2629 |
+| Messaging F3 (Medium) No email confirmation while texting is off or suspended | Confirmed | `confirm` reads only the ops pause (`optout.rs:195`); the route drops `email` (`inbound_text.rs:372`) | Paused decided from the line state; the email confirmation queued | T357 | D-2629 |
+| Messaging F4 (Medium) No sender, and no quiet-hours check at send | Confirmed | `send_on_line` and `send_checked` have test callers only; no not-before column; D-2188's duty unowned | `not_before`, a send-instant check, a worker sender, stale rows expired | T356 (new) | D-2628 |
+| Messaging F5 (High in effect) CANCEL never pauses the job | Not owned as the report thought | T330 handles the queued event only and owns no route file; nothing calls `on_opt_out` (D-1229) | The route calls `on_opt_out` | T357 | D-2629 |
+| Messaging F6 (Low) The two area-code tables disagree | Confirmed | `keywords.rs:25` has 382, 683, 753, 942; `area_codes.json` lacks them and has 257 | One table; the four codes added | T358 (new, Sonnet) | D-2630 |
+| Messaging, not built: CON-016 | Confirmed | `inbound_text.rs:380`, `:393` end at "suppressed" | Email at most daily, else a digest row T204 counts | T357, T204 | D-2629 |
+
+## Plan changes made
+
+- New tasks T350 to T358; T132, T261, T204 and T299 extended or reordered.
+- Order: T351 after T350; T352 after T331, T332, T335, T341, T343 and before T132; T353 after T352; T354 after T273; T355 after T318 and T278; T357 after T336 and T356, before T299 and T204; T358 before T204; T350 to T358 before T100.
+- Migrations: T352 0180, T353 0181, T354 0182, T356 0183; queued T103, T105, T320, T204, T151, T321, T109 and T110 move to 0184 to 0191 (V9).
+- FEE-028 names `dispute-reversal` (D-2625); TD-FEE-38 and TD-FEE-58 gain a case each; new TD-CON-32, TD-CON-33, TD-AI-27, TD-FEE-64, TD-FEE-65, TD-PRIV-24, TD-PICK-59, TD-QH-05, TD-QH-06; IC-86 to IC-88; R-40, R-41.
+- Independent reviews when built: T352, T353 (money); T350, T351, T354, T355, T356, T357 (privacy and consent).
+- No task IN_PROGRESS or MERGE_PENDING was edited (T207 and T311 were MERGE_PENDING).

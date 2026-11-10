@@ -2121,3 +2121,13 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **A fee-mode switch after a pick.** If you switch between tiers and flat after a homeowner picked but before the business confirms, that pick is refused at Confirm with no charge (D-1871). A pick made after the switch still needs the business to accept the new card authorization first (D-072). If the business already passed the check when you switch, its charge goes through at the stored fee and is recorded.
 - **One known gap (D-2210).** Jobs do not yet store their category and job type, so for now every pick is priced with the default category facts: the $25 visit fee size, no fee-free job types and the $75 recurring cap. A quote with packages (tiers) can't be picked until the homeowner's package choice is stored. This matches every category shipped today, but a fee-free job type would still be charged until a later task stores the job's category.
 - **Nothing needs you.**
+
+## The code review of the merged code (plan change, D-2620 to D-2630, November 10)
+
+- **What it found.** Three separate reviews read the code already built for payments, privacy and texting. The main points: a paid charge is never written into the books, so a repeat customer would be charged twice and no Ask Hava receipt goes out; a won bank dispute stays booked as lost; a homeowner who writes "This is Bob, stop texting me" is not opted out, because the name filter swallows the word "stop"; no part of the app actually sends the queued texts yet, and nothing re-checks quiet hours at the moment of sending; START with a request still open gets no consent text; CANCEL does not pause a job; a few ways of writing a gate code, a street address or an email slip past the contact filter; and photos would become unreadable after a key change.
+- **What changed.** Nine new tasks (T350 to T358) plus additions to T132, T261, T204 and T299. One review point was dropped because an earlier decision already covers it.
+- **Choices made for you:**
+  - **A won dispute** is recorded as two returns in the books: the dispute amount and the $15 countering fee. Stripe's own dispute fee stays as a cost, since Stripe keeps it.
+  - **A text queued while texting was off** is never sent late once texting is back (an opt-out confirmation never goes later than 5 minutes).
+  - **A homeowner who opted out and writes again** gets at most one email a day if one is on file; otherwise she is counted in your weekly digest.
+- **Nothing needs you.**

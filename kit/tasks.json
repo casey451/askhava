@@ -757,7 +757,7 @@
    "budget": {
     "files": 5,
     "lines": 150,
-    "context_pct": 54
+    "context_pct": 61
    },
    "checks": [
     "Ci",
@@ -3730,7 +3730,7 @@
    "budget": {
     "files": 4,
     "lines": 550,
-    "context_pct": 22
+    "context_pct": 26
    },
    "checks": [
     "Ci",
@@ -3919,7 +3919,7 @@
    "budget": {
     "files": 4,
     "lines": 250,
-    "context_pct": 13
+    "context_pct": 17
    },
    "checks": [
     "Ci",
@@ -3989,7 +3989,7 @@
    "budget": {
     "files": 4,
     "lines": 400,
-    "context_pct": 17
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -4119,7 +4119,7 @@
    "budget": {
     "files": 4,
     "lines": 400,
-    "context_pct": 17
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -4835,7 +4835,7 @@
    "budget": {
     "files": 5,
     "lines": 250,
-    "context_pct": 20
+    "context_pct": 24
    },
    "checks": [
     "Ci",
@@ -7270,7 +7270,7 @@
    "budget": {
     "files": 7,
     "lines": 600,
-    "context_pct": 23
+    "context_pct": 28
    },
    "checks": [
     "Ci",
@@ -7549,7 +7549,7 @@
    "budget": {
     "files": 2,
     "lines": 450,
-    "context_pct": 16
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -8458,7 +8458,7 @@
    "budget": {
     "files": 5,
     "lines": 350,
-    "context_pct": 22
+    "context_pct": 26
    },
    "checks": [
     "Ci",
@@ -8862,7 +8862,7 @@
    "budget": {
     "files": 9,
     "lines": 350,
-    "context_pct": 22
+    "context_pct": 26
    },
    "checks": [
     "Ci",
@@ -8926,7 +8926,7 @@
    "budget": {
     "files": 4,
     "lines": 350,
-    "context_pct": 18
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -11292,7 +11292,7 @@
    "budget": {
     "files": 6,
     "lines": 500,
-    "context_pct": 17
+    "context_pct": 23
    },
    "checks": [
     "Ci",
@@ -12175,7 +12175,7 @@
    "budget": {
     "files": 10,
     "lines": 400,
-    "context_pct": 35
+    "context_pct": 40
    },
    "checks": [
     "Ci",
@@ -12213,7 +12213,7 @@
    "owns": [
     "app/messaging/src/help_requests.rs",
     "app/messaging/src/help_answers.rs",
-    "migrations/0184_help_requests.sql",
+    "migrations/0188_help_requests.sql",
     "tests/integration/tests/help_requests.rs",
     "app/ops/src/help_requests.rs",
     "app/portals/src/digest_flags.rs",
@@ -12411,7 +12411,7 @@
    "budget": {
     "files": 3,
     "lines": 300,
-    "context_pct": 11
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -12553,7 +12553,16 @@
     "T346",
     "T347",
     "T348",
-    "T349"
+    "T349",
+    "T350",
+    "T351",
+    "T352",
+    "T353",
+    "T354",
+    "T355",
+    "T356",
+    "T357",
+    "T358"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -13047,7 +13056,7 @@
     "app/intake/src/web_chat.rs",
     "app/intake/src/conversation.rs",
     "tests/integration/tests/web_chat.rs",
-    "migrations/0180_intake_request_source.sql"
+    "migrations/0184_intake_request_source.sql"
    ],
    "reads": [
     "docs/architecture.md",
@@ -13377,7 +13386,7 @@
     "app/ops/src/alerts.rs",
     "app/ops/src/safe_mode.rs",
     "app/ops/src/models.rs",
-    "migrations/0181_ops_alerts_safe_mode.sql",
+    "migrations/0185_ops_alerts_safe_mode.sql",
     "tests/integration/tests/safe_mode.rs",
     "app/payments/src/safe_mode_check.rs",
     "app/picks/src/safe_mode_check.rs",
@@ -13449,7 +13458,7 @@
    "id": "T320",
    "slug": "ops-alert-open-once",
    "title": "ops: one open alert per kind and subject, so a check that runs on a schedule never raises the same alert again",
-   "goal": "Fourth external audit F30 (D-2207; OPS-004, SEC-051): `ops.alert` has no rule against a second open alert of the same kind and subject (`migrations/0021_ops_audit.sql:33`), so a check that runs on a schedule, such as `messaging::check_webhook_silence` (`app/messaging/src/email.rs:684`) once T204 schedules it, raises a new alert on every run while its condition lasts, and a pushing kind would push each time. (1) `migrations/0182_ops_alert_open_once.sql`: a unique index on `ops.alert (kind, subject_kind, subject_id)` over unresolved rows (`resolved_at IS NULL`, and T105's acknowledgement column if it adds one) with `NULLS NOT DISTINCT` (PostgreSQL 16), so a subject-less kind is open once too. (2) `raise_alert` (`app/ops/src/service.rs:96`) inserts with `ON CONFLICT DO NOTHING` and returns the open alert's ID when one exists (no new row, so no new push); a raise after it was resolved opens a new one. Read every caller of `raise_alert` (about 60): those that need one alert per event (each HELP request, each dispute, each failed purge) already carry a distinct subject; list in the decision any caller whose behaviour changes. Tests in `tests/integration/tests/alert_dedupe.rs` (TD-OPS-34): two raises of one kind and subject leave one open row and return its ID; after it is resolved a raise opens a new one; two subject-less raises of one kind leave one; two concurrent raises leave one. Every existing test that raises alerts passes unchanged; if one expects two open alerts of one kind and subject, stop and report. Update the `ops` `CLAUDE.md`, `docs/architecture.md` section 10 and `docs/decisions.md`.",
+   "goal": "Fourth external audit F30 (D-2207; OPS-004, SEC-051): `ops.alert` has no rule against a second open alert of the same kind and subject (`migrations/0021_ops_audit.sql:33`), so a check that runs on a schedule, such as `messaging::check_webhook_silence` (`app/messaging/src/email.rs:684`) once T204 schedules it, raises a new alert on every run while its condition lasts, and a pushing kind would push each time. (1) `migrations/0186_ops_alert_open_once.sql`: a unique index on `ops.alert (kind, subject_kind, subject_id)` over unresolved rows (`resolved_at IS NULL`, and T105's acknowledgement column if it adds one) with `NULLS NOT DISTINCT` (PostgreSQL 16), so a subject-less kind is open once too. (2) `raise_alert` (`app/ops/src/service.rs:96`) inserts with `ON CONFLICT DO NOTHING` and returns the open alert's ID when one exists (no new row, so no new push); a raise after it was resolved opens a new one. Read every caller of `raise_alert` (about 60): those that need one alert per event (each HELP request, each dispute, each failed purge) already carry a distinct subject; list in the decision any caller whose behaviour changes. Tests in `tests/integration/tests/alert_dedupe.rs` (TD-OPS-34): two raises of one kind and subject leave one open row and return its ID; after it is resolved a raise opens a new one; two subject-less raises of one kind leave one; two concurrent raises leave one. Every existing test that raises alerts passes unchanged; if one expects two open alerts of one kind and subject, stop and report. Update the `ops` `CLAUDE.md`, `docs/architecture.md` section 10 and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -13462,7 +13471,7 @@
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [],
    "owns": [
-    "migrations/0182_ops_alert_open_once.sql",
+    "migrations/0186_ops_alert_open_once.sql",
     "app/ops/src/service.rs",
     "tests/integration/tests/alert_dedupe.rs"
    ],
@@ -13503,7 +13512,7 @@
    "id": "T204",
    "slug": "ops-pushes-digest-security-alerts",
    "title": "ops: phone pushes by alert email, the weekly digest, owner flags, the away setting and security-event alerts",
-   "goal": "Only the listed alerts push to Casey's phone, as alert emails, with the 9 a.m. and 3 p.m. call-back pushes; the weekly digest and the owner-portal flags carry counts and numbers only; the away setting changes what businesses (on the portal home's review and dispute lines, `business_portal.rs` and `business_home.html`) and HELP replies (`keywords.rs`) are told, all extended here; security events are logged and a vault read count over three times its baseline alerts (OPS-026, OPS-027, OPS-029 to OPS-035, SEC-047, SEC-048). `ops` decides and records alerts; the sending is `messaging`'s handler (`alert_emails.rs`) and the digest's cross-module counts are read by `portals` (`digest_flags.rs`) through each module's `api` (architecture section 3, D-491). The away date, the digest's last-opened time, the done marks and the once-a-day push record are `ops` tables this task's migration adds; the digest also rolls up the not-covered requests by trade (OPS-041) and the BIZ-054 leaving answers (TD-OPS-09); the health-page figures are T106's and the failed-restore and HELP digest cases T109's and T151's (TD-OPS-22) (D-491). A daily worker check raises a Low alert above 70% of the database volume and a High alert, listed in the next OPS-032 daytime push, above 85%, neither starting safe mode (OPS-052); OPS-033's restart relies on OPS-049's self-exit, not the host's health check (D-492). The portal home also lets the business edit its Google and Yelp links through `businesses::api` (T165's storage; BIZ-052's portal half, D-492). A PROBLEM reply's words in the digest come from T277's owner-only `privacy::api::problem_words` by the alert's inbox row, never from `messaging.inbox` (D-1840). T300 serves the business portal home before this task (D-2128): this task owns `app/server/src/business_portal.rs` too and keeps the served home working with what it adds. Fourth external audit F28 and SEC-051 (D-2207): the alert email sender is registered in `server::register_handlers` (the shared `app/server/src/lib.rs`) with its configuration (the alert address, OPS-035), so a raised pushing alert reaches the email provider through the worker, and `tests/integration/tests/alert_routing.rs` proves it through the worker, never by calling the sender; and `messaging::api::check_webhook_silence` (SEC-051, `app/messaging/src/email.rs:684`), which nothing runs today, is run hourly by a worker task this task queues, after T320 made a repeat raise keep one open alert.",
+   "goal": "Only the listed alerts push to Casey's phone, as alert emails, with the 9 a.m. and 3 p.m. call-back pushes; the weekly digest and the owner-portal flags carry counts and numbers only; the away setting changes what businesses (on the portal home's review and dispute lines, `business_portal.rs` and `business_home.html`) and HELP replies (`keywords.rs`) are told, all extended here; security events are logged and a vault read count over three times its baseline alerts (OPS-026, OPS-027, OPS-029 to OPS-035, SEC-047, SEC-048). `ops` decides and records alerts; the sending is `messaging`'s handler (`alert_emails.rs`) and the digest's cross-module counts are read by `portals` (`digest_flags.rs`) through each module's `api` (architecture section 3, D-491). The away date, the digest's last-opened time, the done marks and the once-a-day push record are `ops` tables this task's migration adds; the digest also rolls up the not-covered requests by trade (OPS-041) and the BIZ-054 leaving answers (TD-OPS-09); the health-page figures are T106's and the failed-restore and HELP digest cases T109's and T151's (TD-OPS-22) (D-491). A daily worker check raises a Low alert above 70% of the database volume and a High alert, listed in the next OPS-032 daytime push, above 85%, neither starting safe mode (OPS-052); OPS-033's restart relies on OPS-049's self-exit, not the host's health check (D-492). The portal home also lets the business edit its Google and Yelp links through `businesses::api` (T165's storage; BIZ-052's portal half, D-492). A PROBLEM reply's words in the digest come from T277's owner-only `privacy::api::problem_words` by the alert's inbox row, never from `messaging.inbox` (D-1840). T300 serves the business portal home before this task (D-2128): this task owns `app/server/src/business_portal.rs` too and keeps the served home working with what it adds. Fourth external audit F28 and SEC-051 (D-2207): the alert email sender is registered in `server::register_handlers` (the shared `app/server/src/lib.rs`) with its configuration (the alert address, OPS-035), so a raised pushing alert reaches the email provider through the worker, and `tests/integration/tests/alert_routing.rs` proves it through the worker, never by calling the sender; and `messaging::api::check_webhook_silence` (SEC-051, `app/messaging/src/email.rs:684`), which nothing runs today, is run hourly by a worker task this task queues, after T320 made a repeat raise keep one open alert. The weekly digest also counts the `messaging.optout_wrote_again` rows T357 records for CON-016 (a listed homeowner who wrote without START and has no email on file), as a count with job numbers only (D-2629, TD-OPS-09).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -13512,7 +13521,9 @@
     "T100",
     "T105",
     "T277",
-    "T320"
+    "T320",
+    "T357",
+    "T358"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -13526,7 +13537,7 @@
     "app/messaging/src/alert_emails.rs",
     "tests/integration/tests/alert_routing.rs",
     "app/portals/src/digest_flags.rs",
-    "migrations/0183_ops_owner_digest.sql",
+    "migrations/0187_ops_owner_digest.sql",
     "app/messaging/src/keywords.rs",
     "app/portals/src/business_portal.rs",
     "app/portals/templates/business_home.html",
@@ -13590,13 +13601,14 @@
     "D-480",
     "D-492",
     "D-1840",
-    "D-2207"
+    "D-2207",
+    "D-2629"
    ],
    "cites": [],
    "budget": {
     "files": 9,
     "lines": 400,
-    "context_pct": 23
+    "context_pct": 27
    },
    "checks": [
     "Ci",
@@ -13738,7 +13750,7 @@
    "id": "T321",
    "slug": "consent-five-year-purge",
    "title": "messaging, intake and privacy: consent records, keyword events and message logs go 5 years after a number's last message",
-   "goal": "Fourth external audit F32 (D-2208; CON-022, CON-036, D-079): CON-022 keeps consent records, opt-in wording versions, STOP/HELP/START events and message logs 5 years after the last message to that number, and the privacy policy promises the same (`docs/legal/privacy-policy.md:91`), but nothing ever deletes them: `intake.consent_record` and the `messaging` keyword and message-log rows are append-only (`migrations/0053_intake_tables.sql:62`) and `app/intake/src/purge.rs` says they are never deleted there. (1) A daily `messaging.consent_sweep` (registered in the shared `app/server/src/lib.rs`, queued once a day) finds each number whose last inbound or outbound message is more than 1,827 days old (5 years, never short by a leap day) and deletes, in one transaction per number: its rows of every table CON-022 names, through `app/messaging/src/consent_purge.rs` for `messaging`'s and `intake::api` (`app/intake/src/consent_purge.rs`) for `intake.consent_record`, each with one `ops` audit row of IDs only; `migrations/0185_consent_five_year_purge.sql` grants the app role DELETE on exactly those tables and nothing else (no UPDATE, so they stay append-only for every other change). (2) The opt-out is never weakened: a number on `messaging.suppression` keeps its suppression row, the `messaging.optout_event` row that row points to (`event_id`, `migrations/0044_messaging_optout.sql:33`; digest-only, no phone) and its locked phone in the vault, because the suppression digest is keyed `homeowner-phone|v<n>` and PRIV-024's key rotation rebuilds it from the vault plaintext (D-079), so clearing the phone would lose the opt-out at the next rotation; only its other CON-022 rows (consent records, keyword events, message logs) go at 5 years. A number not on suppression loses its CON-022 rows and then its locked vault phone, cleared through `privacy::api` (`app/privacy/src/consent_phone.rs`). The DELETE grant on `messaging.optout_event` is limited to rows no suppression row references (a policy or a trigger that refuses the rest). That an opted-out number's phone stays locked past 5 years is listed for Casey, with whether the privacy policy should say so (D-2208). (3) Tests in `tests/integration/tests/consent_purge.rs` (TD-CON-30): a number last messaged 1,826 days ago keeps everything; at 1,827 days a number not on suppression loses its rows and its vault phone, with audit rows of IDs only; an opted-out number keeps its suppression row, the opt-out event it points to and its locked phone, loses its other rows, and is still refused a text after the purge and after an index-key rotation; deleting an opt-out event a suppression row references is refused; a message in between restarts its clock. The rotation case builds its two-version `VAULT_INDEX_KEY` the way `tests/integration/tests/vault.rs` does (its `key(version, byte)` helper at line 32 and the v1-plus-v2 key set of `the_rotation_drill_moves_every_row_to_v2`, TD-PRIV-09) and rotates with `privacy::api::rotate_batch` as that test and `tests/integration/tests/inbound_scrub_context.rs` do; it is not skipped. Update the `messaging`, `intake` and `privacy` `CLAUDE.md` files, `docs/architecture.md` section 10 and `docs/decisions.md`.",
+   "goal": "Fourth external audit F32 (D-2208; CON-022, CON-036, D-079): CON-022 keeps consent records, opt-in wording versions, STOP/HELP/START events and message logs 5 years after the last message to that number, and the privacy policy promises the same (`docs/legal/privacy-policy.md:91`), but nothing ever deletes them: `intake.consent_record` and the `messaging` keyword and message-log rows are append-only (`migrations/0053_intake_tables.sql:62`) and `app/intake/src/purge.rs` says they are never deleted there. (1) A daily `messaging.consent_sweep` (registered in the shared `app/server/src/lib.rs`, queued once a day) finds each number whose last inbound or outbound message is more than 1,827 days old (5 years, never short by a leap day) and deletes, in one transaction per number: its rows of every table CON-022 names, through `app/messaging/src/consent_purge.rs` for `messaging`'s and `intake::api` (`app/intake/src/consent_purge.rs`) for `intake.consent_record`, each with one `ops` audit row of IDs only; `migrations/0189_consent_five_year_purge.sql` grants the app role DELETE on exactly those tables and nothing else (no UPDATE, so they stay append-only for every other change). (2) The opt-out is never weakened: a number on `messaging.suppression` keeps its suppression row, the `messaging.optout_event` row that row points to (`event_id`, `migrations/0044_messaging_optout.sql:33`; digest-only, no phone) and its locked phone in the vault, because the suppression digest is keyed `homeowner-phone|v<n>` and PRIV-024's key rotation rebuilds it from the vault plaintext (D-079), so clearing the phone would lose the opt-out at the next rotation; only its other CON-022 rows (consent records, keyword events, message logs) go at 5 years. A number not on suppression loses its CON-022 rows and then its locked vault phone, cleared through `privacy::api` (`app/privacy/src/consent_phone.rs`). The DELETE grant on `messaging.optout_event` is limited to rows no suppression row references (a policy or a trigger that refuses the rest). That an opted-out number's phone stays locked past 5 years is listed for Casey, with whether the privacy policy should say so (D-2208). (3) Tests in `tests/integration/tests/consent_purge.rs` (TD-CON-30): a number last messaged 1,826 days ago keeps everything; at 1,827 days a number not on suppression loses its rows and its vault phone, with audit rows of IDs only; an opted-out number keeps its suppression row, the opt-out event it points to and its locked phone, loses its other rows, and is still refused a text after the purge and after an index-key rotation; deleting an opt-out event a suppression row references is refused; a message in between restarts its clock. The rotation case builds its two-version `VAULT_INDEX_KEY` the way `tests/integration/tests/vault.rs` does (its `key(version, byte)` helper at line 32 and the v1-plus-v2 key set of `the_rotation_drill_moves_every_row_to_v2`, TD-PRIV-09) and rotates with `privacy::api::rotate_batch` as that test and `tests/integration/tests/inbound_scrub_context.rs` do; it is not skipped. Update the `messaging`, `intake` and `privacy` `CLAUDE.md` files, `docs/architecture.md` section 10 and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -13755,7 +13767,7 @@
     "compliance"
    ],
    "owns": [
-    "migrations/0185_consent_five_year_purge.sql",
+    "migrations/0189_consent_five_year_purge.sql",
     "app/messaging/src/consent_purge.rs",
     "app/intake/src/consent_purge.rs",
     "app/privacy/src/consent_phone.rs",
@@ -13975,7 +13987,7 @@
     "app/recovery/src/api.rs",
     "app/recovery/src/models.rs",
     "app/recovery/src/backup.rs",
-    "migrations/0186_recovery_backup_export.sql",
+    "migrations/0190_recovery_backup_export.sql",
     "tests/recovery/tests/export_restores.rs",
     "app/portals/src/digest_flags.rs",
     "app/portals/src/health_page.rs"
@@ -14047,7 +14059,7 @@
    "owns": [
     "app/recovery/src/replay.rs",
     "app/recovery/src/models.rs",
-    "migrations/0187_recovery_replay.sql",
+    "migrations/0191_recovery_replay.sql",
     "app/recovery/src/tests/replay_ids.rs"
    ],
    "reads": [
@@ -15571,7 +15583,7 @@
    "id": "T132",
    "slug": "sandbox-stripe",
    "title": "Stripe test mode behind the adapter; contract and webhook tests against it",
-   "goal": "The Stripe test-mode client sits behind the payments adapter, and the contract and webhook tests pass against it: cards only through Elements and the authorization stored, signed webhooks processed once, idempotency keys on every call, and the ledger reconciling to Stripe test mode (FEE-014, FEE-015, FEE-028 to FEE-030, FEE-032, FEE-036, SEC-016 to SEC-018). This task also retires `PaymentsAdapter::create_refund` (ID only), moving its remaining callers to T258's typed `RefundStripe` read, once the Stripe test-mode refund shapes are checked (D-1753).",
+   "goal": "The Stripe test-mode client sits behind the payments adapter, and the contract and webhook tests pass against it: cards only through Elements and the authorization stored, signed webhooks processed once, idempotency keys on every call, and the ledger reconciling to Stripe test mode (FEE-014, FEE-015, FEE-028 to FEE-030, FEE-032, FEE-036, SEC-016 to SEC-018). This task also retires `PaymentsAdapter::create_refund` (ID only), moving its remaining callers to T258's typed `RefundStripe` read, once the Stripe test-mode refund shapes are checked (D-1753). Nov 10 code review, payments F4 (D-2624, D-1476; FEE-031, FEE-049): the PaymentIntent is created with no description and no statement-descriptor suffix (`create_unconfirmed_intent`, `app/adapters/src/payments.rs:227`), so the card statement shows no job number; D-1476 gave this to T132 and its goal never said so. Here: the create form sends `description` (\"Ask Hava introduction service, job <n>\") and `statement_descriptor_suffix` (\"JOB <n>\") from `payments::api::IntentText`; `IntentStripe` gains a method with a default body that carries the text (so the done tests' fakes compile unchanged) and `intent_http.rs` overrides it; `charge::open_intent` passes the text for the pick's job number without changing a signature done tests call; TD-FEE-38's stripe-mock case checks both fields.",
    "type": "harness",
    "phase": 2,
    "stage": "6",
@@ -15579,7 +15591,8 @@
    "deps": [
     "T131",
     "T260",
-    "T335"
+    "T335",
+    "T352"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -15593,7 +15606,9 @@
     "app/adapters/src/stripe_real.rs",
     "stand_ins/stripe.py",
     "app/adapters/src/payments.rs",
-    "tests/contract/test_sandbox_t132.py"
+    "tests/contract/test_sandbox_t132.py",
+    "app/payments/src/intent_http.rs",
+    "app/payments/src/charge.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -15614,25 +15629,30 @@
     "FEE-036",
     "SEC-016",
     "SEC-017",
-    "SEC-018"
+    "SEC-018",
+    "FEE-031",
+    "FEE-049"
    ],
    "tests": [
     "TD-FEE-10",
     "TD-FEE-16",
+    "TD-FEE-38",
     "TD-SEC-03"
    ],
    "decisions": [
     "D-365",
     "D-401",
-    "D-1753"
+    "D-1753",
+    "D-2624",
+    "D-1476"
    ],
    "cites": [
     "BUILD_BRIEF.md:191"
    ],
    "budget": {
-    "files": 4,
+    "files": 6,
     "lines": 500,
-    "context_pct": 15
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -16561,7 +16581,8 @@
     "T298",
     "T317",
     "T325",
-    "T336"
+    "T336",
+    "T357"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -18245,7 +18266,7 @@
    "budget": {
     "files": 10,
     "lines": 400,
-    "context_pct": 21
+    "context_pct": 29
    },
    "checks": [
     "Ci",
@@ -18490,7 +18511,7 @@
    "budget": {
     "files": 14,
     "lines": 500,
-    "context_pct": 27
+    "context_pct": 32
    },
    "checks": [
     "Ci",
@@ -18715,7 +18736,7 @@
    "budget": {
     "files": 7,
     "lines": 450,
-    "context_pct": 33
+    "context_pct": 37
    },
    "checks": [
     "Ci",
@@ -19517,7 +19538,7 @@
    "budget": {
     "files": 3,
     "lines": 300,
-    "context_pct": 16
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -20040,7 +20061,7 @@
    "budget": {
     "files": 5,
     "lines": 450,
-    "context_pct": 14
+    "context_pct": 18
    },
    "checks": [
     "Ci",
@@ -20383,7 +20404,7 @@
    "budget": {
     "files": 6,
     "lines": 400,
-    "context_pct": 16
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -20628,7 +20649,7 @@
    "id": "T261",
    "slug": "served-confirm-route",
    "title": "portals and server: the served Confirm page under the real middleware, the payment page's own Stripe CSP, and truthful bank-approval handling",
-   "goal": "The Confirm view, form and script exist (T224) but no route serves them (D-1480 (a), D-1740 (1)), the global `security_headers` layer replaces every response's CSP with the self-only policy so Stripe.js could never load (D-1480 (c)), the script ignores `handleNextAction`'s result, and the only browser test is a hand-written substitute page (external audit A08, D-1754). (1) Serve `GET` and `POST /b/picks/{pick}/confirm` from `app/portals/src/confirm_pay.rs` (T084's session and principal scoping, T232's terms record), merged in the shared `app/server/src/lib.rs` with T260's `StripeHttp` as the `IntentStripe`: only a signed-in owner or \"Confirm and billing\" member of the pick's business reaches it (any other answers the one not-found page); `intake::api::paused_by_homeowner` and the pick's status are checked again on every load and press (CON-029); the fee, currency and job type come from the server's stored facts, never the form: the fee is `payments::api::pick_fee`, the fee T287 fixed at the pick, and every `Press` carries exactly that amount (D-1871); `open_intent` on the first load, `waive_at_confirm` for a $0 pick, `may_confirm` and `confirm_and_pay` per press, `press_reply` as JSON with the client secret only for a bank approval. When `may_confirm` answers `ConfirmError::FeeModeChanged` (the owner switched the fee mode after the pick), nothing is charged, the page says the fee terms changed after this pick so it can't be confirmed, and the pick ends at once with no fee through the same `picks` call as T232's \"Can't take it\" with its own reason, never counted against the business (PICK-050, OPS-034, D-1871). (2) CSP: `app/portals/src/security.rs` keeps the self-only policy for every page and lets the Confirm route alone add `https://js.stripe.com` to `script-src` and `frame-src` (and Stripe's documented `connect-src`), by a response marker the layer reads rather than by trusting any handler header; a test proves every other page still gets the strict policy (SEC-012). (3) `app/portals/static/confirm_pay.ts`: `handleNextAction`'s error or cancel shows the try-again line and never a success, success shows \"Checking with your bank\" until the server's answer, and the page then asks the server for the attempt's state rather than trusting the browser. (4) Tests: `app/server/tests/confirm_route.rs` (the served route with the real middleware) and `tests/e2e/confirm_served.spec.ts` against the app and the stand-ins; T224's `tests/e2e/confirm_pay.spec.ts` stays as it is and counts as a component test of the script only, never as journey evidence (D-1754). Update `docs/architecture.md` section 10, the `portals` and `server` `CLAUDE.md` files and `docs/decisions.md`. The Confirm route is served only after T328 registers the payments tasks it relies on (the charge check, the pay timer, the refunds and the reconcile), so no Confirm press can queue a task the worker would dead-letter (fifth external audit AH-001, D-2286). (Sixth audit U-02, D-2302; IC-33.) The $0 handoff: on a $0 decision the route records it with `waive_at_confirm`, then takes `payments::api::no_fee_release(conn, pick)` (bound to the pick's own stored fee row since T337) and hands that `Releasable` to the production release sink (`app/server/src/release_sink.rs`), which settles and releases once; a press repeated after a crash between the waiver and the release finds the waiver recorded and the release row, and releases nothing twice. Tests in `app/server/tests/confirm_route.rs` (TD-FEE-58). The Confirm route is served only after T340 and T341 fix the fee from the job's stored facts and the chosen tier, so no fee-free job is ever charged (seventh audit, D-2331). Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around.",
+   "goal": "The Confirm view, form and script exist (T224) but no route serves them (D-1480 (a), D-1740 (1)), the global `security_headers` layer replaces every response's CSP with the self-only policy so Stripe.js could never load (D-1480 (c)), the script ignores `handleNextAction`'s result, and the only browser test is a hand-written substitute page (external audit A08, D-1754). (1) Serve `GET` and `POST /b/picks/{pick}/confirm` from `app/portals/src/confirm_pay.rs` (T084's session and principal scoping, T232's terms record), merged in the shared `app/server/src/lib.rs` with T260's `StripeHttp` as the `IntentStripe`: only a signed-in owner or \"Confirm and billing\" member of the pick's business reaches it (any other answers the one not-found page); `intake::api::paused_by_homeowner` and the pick's status are checked again on every load and press (CON-029); the fee, currency and job type come from the server's stored facts, never the form: the fee is `payments::api::pick_fee`, the fee T287 fixed at the pick, and every `Press` carries exactly that amount (D-1871); `open_intent` on the first load, `waive_at_confirm` for a $0 pick, `may_confirm` and `confirm_and_pay` per press, `press_reply` as JSON with the client secret only for a bank approval. When `may_confirm` answers `ConfirmError::FeeModeChanged` (the owner switched the fee mode after the pick), nothing is charged, the page says the fee terms changed after this pick so it can't be confirmed, and the pick ends at once with no fee through the same `picks` call as T232's \"Can't take it\" with its own reason, never counted against the business (PICK-050, OPS-034, D-1871). (2) CSP: `app/portals/src/security.rs` keeps the self-only policy for every page and lets the Confirm route alone add `https://js.stripe.com` to `script-src` and `frame-src` (and Stripe's documented `connect-src`), by a response marker the layer reads rather than by trusting any handler header; a test proves every other page still gets the strict policy (SEC-012). (3) `app/portals/static/confirm_pay.ts`: `handleNextAction`'s error or cancel shows the try-again line and never a success, success shows \"Checking with your bank\" until the server's answer, and the page then asks the server for the attempt's state rather than trusting the browser. (4) Tests: `app/server/tests/confirm_route.rs` (the served route with the real middleware) and `tests/e2e/confirm_served.spec.ts` against the app and the stand-ins; T224's `tests/e2e/confirm_pay.spec.ts` stays as it is and counts as a component test of the script only, never as journey evidence (D-1754). Update `docs/architecture.md` section 10, the `portals` and `server` `CLAUDE.md` files and `docs/decisions.md`. The Confirm route is served only after T328 registers the payments tasks it relies on (the charge check, the pay timer, the refunds and the reconcile), so no Confirm press can queue a task the worker would dead-letter (fifth external audit AH-001, D-2286). (Sixth audit U-02, D-2302; IC-33.) The $0 handoff: on a $0 decision the route records it with `waive_at_confirm`, then takes `payments::api::no_fee_release(conn, pick)` (bound to the pick's own stored fee row since T337) and hands that `Releasable` to the production release sink (`app/server/src/release_sink.rs`), which settles and releases once; a press repeated after a crash between the waiver and the release finds the waiver recorded and the release row, and releases nothing twice. Tests in `app/server/tests/confirm_route.rs` (TD-FEE-58). The Confirm route is served only after T340 and T341 fix the fee from the job's stored facts and the chosen tier, so no fee-free job is ever charged (seventh audit, D-2331). Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. Nov 10 code review, payments F1 (D-2623; FEE-045, D-1419): for a fee-free job-type pick `waive_at_confirm` returns `NotWaived` and writes nothing (`app/payments/src/free_wins.rs:139`), so `no_fee_release` finds no $0 entry and the pick is never released; on such a pick the route calls `payments::api::record_fee_at_confirm` with no charge ID (the `fee-free-job-type` entry, D-1419) before `no_fee_release`, safe to repeat (TD-FEE-58).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -20697,7 +20718,8 @@
     "D-2286",
     "D-2302",
     "D-2331",
-    "D-2440"
+    "D-2440",
+    "D-2623"
    ],
    "cites": [],
    "budget": {
@@ -21937,7 +21959,7 @@
    "budget": {
     "files": 1,
     "lines": 300,
-    "context_pct": 10
+    "context_pct": 16
    },
    "checks": [
     "Ci",
@@ -21990,7 +22012,7 @@
    "budget": {
     "files": 3,
     "lines": 400,
-    "context_pct": 40
+    "context_pct": 45
    },
    "checks": [
     "Ci",
@@ -22052,7 +22074,7 @@
    "budget": {
     "files": 3,
     "lines": 400,
-    "context_pct": 16
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -22109,7 +22131,7 @@
    "budget": {
     "files": 3,
     "lines": 450,
-    "context_pct": 15
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -22222,7 +22244,7 @@
    "budget": {
     "files": 3,
     "lines": 250,
-    "context_pct": 5
+    "context_pct": 9
    },
    "checks": [
     "Ci",
@@ -24171,6 +24193,590 @@
    ],
    "branch": "claude/task/T245-payments-default-privileges",
    "prompt": "kit/prompts/T245.md"
+  },
+  {
+   "id": "T350",
+   "slug": "optout-words-never-names",
+   "title": "privacy: an opt-out, HELP or START word is never taken or removed as a stated name, so a phrase opt-out after a name is still heard",
+   "goal": "Nov 10 code review, messaging F1 (D-2621; CON-010, CON-013, CON-035, AI-020, D-146): the inbound route classifies opt-outs on the scrubbed text (`app/server/src/inbound_text.rs:233`, `messaging::rules::detect_opt_out`, `app/messaging/src/rules.rs:503`), and `mark_stated` (`app/privacy/src/scrub.rs:657`) removes up to two words after \"this is\", \"I'm\", \"I am\", \"it's\" or \"soy\" (the first not a common word), so the second word is often the first word of the opt-out phrase: \"This is Bob stop texting me\" scrubs to \"This is [removed] texting me\" and is answered as an intake reply, never listed (the same for \"I am Bob unsubscribe me\", \"It's Maria remove me\", \"Soy Ana dejen de escribirme\"). `read_inbound_for` (`app/privacy/src/scrub_context.rs:58`) then remembers \"stop\" as one of her names, and `mark_known` (`scrub.rs:704`) deletes it from every later text, so \"Stop texting me please\" is missed too. Fix in `privacy` only: no word of messaging's opt-out phrases (`OPT_OUT_PHRASES`, folded) or of the sole opt-out, HELP and START words, English and Spanish, is ever cut as a stated or sign-off name, stored as a remembered name, or removed as one (a remembered name already stored that is such a word is ignored, so numbers that sent one before this fix are covered); the word list lives in `privacy` (it may not depend on `messaging`), and the test below proves it holds every word of messaging's lists, so a phrase added there fails the build until it is added here. No field is added to a struct done tests build by name (`InboundWords`, `Flags`). Tests in `tests/integration/tests/optout_after_name.rs` (TD-CON-32), each failing on today's `main`: for every phrase in `messaging::api::OPT_OUT_PHRASES`, prefixed with \"This is Bob \", \"I'm Bob \", \"I am Bob \", \"It's Maria \" and \"Soy Ana \", `privacy::api::scrub` with an empty context then `detect_opt_out` still finds it; \"Bob here\" then \"stop texting me\" from the same number through `read_inbound_for` finds the opt-out; the coverage check over messaging's lists; \"This is Bob, sink leaking\" still removes \"Bob\" (the AI-020 name cut is unchanged). Every TD-AI case and the 99% recall corpus (`app/privacy/src/tests/scrub.rs`) pass unchanged. Update the `privacy` `CLAUDE.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "privacy",
+   "deps": [
+    "T257"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "compliance"
+   ],
+   "owns": [
+    "app/privacy/src/scrub.rs",
+    "app/privacy/src/scrub_context.rs",
+    "tests/integration/tests/optout_after_name.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/consent.md",
+    "docs/spec/ai.md",
+    "docs/spec/privacy.md",
+    "docs/brains/sms-compliance.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "CON-010",
+    "CON-013",
+    "CON-035",
+    "AI-020"
+   ],
+   "tests": [
+    "TD-CON-32"
+   ],
+   "decisions": [
+    "D-2621",
+    "D-2620",
+    "D-146"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 300,
+    "context_pct": 15
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T350-optout-words-never-names",
+   "prompt": "kit/prompts/T350.md"
+  },
+  {
+   "id": "T351",
+   "slug": "scrub-contact-shapes",
+   "title": "privacy and quotes: spaced gate codes, lower-case street addresses, spoken dashes, \"it's Steve\" names and (at)/(dot) emails are cut by the scrubber and the CARD-008 gate",
+   "goal": "Nov 10 code review, privacy F1 (D-2622; AI-002, AI-020, CARD-007, CARD-008, PRIV-005, D-800): the scrubber (`privacy::api::scrub`) and the card's final gate (`quotes::api::final_gate`, `app/quotes/src/gate.rs:48`) both let these fake shapes through to the AI and to every business's job card before any pick: \"Gate code is 4 4 1 2\" and \"Gate code 44 12\" (`mark_codes`, `app/privacy/src/scrub.rs:640`, cuts only one token of 3 or more digits); \"i live at 2150 mesquite in havasu\" (`mark_bare_houses` needs a capitalised street, `titled`, `:624`); \"928 dash 555 dash 1234\" (`digit_form` breaks on \"dash\"); \"Steve Smith here\", \"Hi, it is Steve\", \"Hey its steve\" (`TRIGGERS`, `:197`, lacks \"it is\", \"its\", \"call me\" and \"<name> here\" at the start); \"Sink is leaking. Best, Steve\" and \"Thanks, Steve Smith 928-555-1234\" (`sign_off`, `:693`, lacks \"best\" and \"cheers\" and needs the name to be the last one or two tokens); \"steve(at)gmail(dot)com\" and \"steve @ gmail.com\" (one token with no `@`; the local part kept). Fix each root cause in `scrub.rs`: after a code cue, cut every following digit-form token within a few words while the run holds 3 or more digits; after \"at\", \"live\", \"address\" or \"is\", a 3- to 6-digit house number followed by a lower-case word that is not common is an address; \"dash\", \"guion\" and \"space\" join a spoken digit run; the new triggers and sign-offs, the name allowed before trailing contact tokens; `(at)`, `[at]`, `(dot)`, `[dot]` inside a token read as `@` and `.` before the email check, and a spaced `@` cuts both sides. In `gate.rs`, CARD-008 also cuts the rest of a sentence holding a code cue followed by digits. T350's rule holds for every new trigger: no opt-out, HELP or START word is taken as a name. Tests: every shape above joins `CONTACTS` in `app/privacy/src/tests/scrub.rs` (the 99% recall corpus; the bar is never lowered, every existing case and the precision cases stay unchanged), and `tests/integration/tests/scrub_contact_shapes.rs` (TD-AI-27) runs each through `scrub` with an empty context and then `final_gate` and asserts no digit run of the code, house number, phone, email local part or name is left, plus false-positive guards (\"the 2 4x4 posts\", \"call me back\", \"it is leaking\", \"best price\", \"Ask for 3 quotes\"); each shape fails on today's `main`. Update the `privacy` and `quotes` `CLAUDE.md` files and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "privacy",
+   "deps": [
+    "T350"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy"
+   ],
+   "owns": [
+    "app/privacy/src/scrub.rs",
+    "app/privacy/src/tests/scrub.rs",
+    "app/quotes/src/gate.rs",
+    "tests/integration/tests/scrub_contact_shapes.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/ai.md",
+    "docs/spec/privacy.md",
+    "docs/spec/job-cards.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "AI-002",
+    "AI-020",
+    "CARD-007",
+    "CARD-008",
+    "PRIV-005"
+   ],
+   "tests": [
+    "TD-AI-27"
+   ],
+   "decisions": [
+    "D-2622",
+    "D-2620",
+    "D-800",
+    "D-146"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 500,
+    "context_pct": 20
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T351-scrub-contact-shapes",
+   "prompt": "kit/prompts/T351.md"
+  },
+  {
+   "id": "T352",
+   "slug": "charge-success-ledger-receipt",
+   "title": "payments (harness): a successful charge writes its charge ledger entry with the Stripe charge ID, stores that ID in its evidence record and queues its receipt",
+   "goal": "Nov 10 code review, payments F1, F3 and F5 (D-2623; FEE-013, FEE-028, FEE-030, FEE-031, FEE-042; D-1414, D-1557, D-1561): a successful charge writes its attempt status and `payments.charge_evidence` (`write_evidence`, `app/payments/src/charge.rs:656`, from `effects`, `app/payments/src/handlers.rs:144`) but no `charge` ledger entry: `record_fee_at_confirm` (`app/payments/src/service.rs:401`) has no caller and needs a `ch_` ID that nothing on the success path has (the adapter's `PaymentIntent`, `app/adapters/src/payments.rs:32`, has no `latest_charge`). So (1) a second job of the same customer is charged again, since `free_wins::is_repeat` reads only ledger rows (FEE-013); (2) the business statement and money view show no charges but do show their refunds (FEE-030); (3) once T328 schedules the reconcile, every legitimate charge raises a High `payments.unknown_charge` alert; (4) the evidence record lacks the charge ID (FEE-042); and (5) `queue_receipt` (`app/payments/src/receipts.rs:56`) has no caller, so no Ask Hava receipt is ever emailed (FEE-031; D-1557 and D-1561 named `write_evidence` as the caller and a task that never took it). Fix: the adapter's `PaymentIntent` gains `latest_charge: Option<String>` (`#[serde(default)]`) and the stand-in returns a `ch_` ID on a succeeded intent; the release proof's fresh fetch (`paid_release`, `app/payments/src/release_proof.rs:193`) requires a `ch_` `latest_charge` on a succeeded intent (a missing one is refused like any other unreadable field, so Stripe's resend retries it) and carries it to the success write; in the transaction that writes the evidence (`migrations/0180_payments_charge_id.sql` adds a nullable `stripe_charge_id` to `payments.charge_evidence`, append-only for the app role as before), the success path stores the charge ID, appends one `charge` ledger entry at the pick's stored fee (`payments.pick_fee`, equal to the checked intent amount) with that ID under the key `record_fee_at_confirm` derives (`CONFIRM_FEE_ACTION`, job and business), so the nightly reconcile converges on it instead of adding a second (`app/payments/src/reconcile.rs:381`), and calls `queue_receipt` when the evidence row was newly written; a replayed success writes nothing more. This harness task adopts the done tests that build `PaymentIntent` by name (`charge_attempts.rs`, `fee_limit_race.rs`, `stripe_webhook_dispatch.rs`, `confirm_and_pay.rs`, `fee_fixed_at_pick.rs`, `app/server/tests/request_timeout.rs`, `release_recovery.rs`): each literal gains a fake `ch_` ID, and no assertion is removed or weakened. Tests in `tests/integration/tests/charge_ledger_entry.rs` (TD-FEE-64), each failing on today's `main`: a stand-in success webhook leaves exactly one `charge` row with the `ch_` ID and the stored cents, the evidence row holds the same ID, and one `payments.receipt` task is queued; the replayed webhook adds no row and no task; `business_statement` totals equal the charges; a later pick of the same business on another job of the same customer is waived as `Repeat`; a reconcile run over the paid pick raises no `unknown_charge` alert and appends nothing. Money: 95% branch floor; the overseer runs an independent money review of the hand-in. Update the `payments` and `adapters` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "4",
+   "module": "payments",
+   "deps": [
+    "T331",
+    "T332",
+    "T335",
+    "T341",
+    "T343",
+    "T286"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "money",
+    "harness",
+    "security"
+   ],
+   "owns": [
+    "app/adapters/src/payments.rs",
+    "stand_ins/stripe.py",
+    "app/payments/src/charge.rs",
+    "app/payments/src/handlers.rs",
+    "app/payments/src/release_proof.rs",
+    "migrations/0180_payments_charge_id.sql",
+    "tests/integration/tests/charge_ledger_entry.rs",
+    "tests/integration/tests/charge_attempts.rs",
+    "tests/integration/tests/fee_limit_race.rs",
+    "tests/integration/tests/stripe_webhook_dispatch.rs",
+    "tests/integration/tests/confirm_and_pay.rs",
+    "tests/integration/tests/fee_fixed_at_pick.rs",
+    "app/server/tests/request_timeout.rs",
+    "app/server/tests/release_recovery.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/fees.md",
+    "docs/spec/quotes-pick.md",
+    "docs/brains/payments-stripe.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "FEE-013",
+    "FEE-028",
+    "FEE-030",
+    "FEE-031",
+    "FEE-042"
+   ],
+   "tests": [
+    "TD-FEE-64"
+   ],
+   "decisions": [
+    "D-2623",
+    "D-2620",
+    "D-1414",
+    "D-1419"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 14,
+    "lines": 600,
+    "context_pct": 47
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T352-charge-success-ledger-receipt",
+   "prompt": "kit/prompts/T352.md"
+  },
+  {
+   "id": "T353",
+   "slug": "dispute-won-recorded",
+   "title": "payments: a won dispute records the countering fee's return and the disputed amount's return, and the reconcile compares only disputes not won",
+   "goal": "Nov 10 code review, payments F2 (D-2625; FEE-027 to FEE-030, FEE-050; D-1383, D-1753): `charge.dispute.closed` (`dispute_closed`, `app/payments/src/routes.rs:489`) only writes an audit row and a High alert; it never reads the event's `status` (`read_object` keeps only `/id`), and no code writes `EntryKind::CounteringFeeReturn` (`app/payments/src/ledger.rs:32`). So when Casey wins a $75 dispute whose evidence was submitted, the ledger keeps the `dispute` 9000 and the `countering-fee` 1500 as lost, `MoneyView::net()` understates by $90 for good, the business statement shows a dispute it won, and the reconcile cannot see it because `MoneyTotals::of_stripe` counts a dispute whatever its status. D-1383 left \"how a won dispute's returned amount is recorded\" to the dispute tasks, and none took it. Fix: `dispute_closed` reads `status`; on `won`, in the event's transaction and once per dispute, it appends a `countering-fee-return` equal to the recorded countering fee (when one was recorded, FEE-050) and a `dispute-reversal` of the disputed amount without Stripe's non-refundable dispute fee, the stored code made only by a `LedgerEntry` constructor and folded by every ledger reader as a negative dispute, as D-1753 did for `refund-reversal` (not an `EntryKind` variant, so `portals`' exhaustive statement match is untouched; `migrations/0181_payments_dispute_reversal.sql` adds the code to the ledger's `kind` check; FEE-028 lists it since D-2625); any other closing status changes nothing but the audit and alert as today. The reconcile compares the disputed amounts of disputes that are open or lost only, reading each dispute's status through T335's `DisputeStripe`. Tests in `tests/integration/tests/dispute_won.rs` (TD-FEE-65), each failing on today's `main`: after a submitted dispute, a `won` closure leaves `MoneyView.dispute_fees` equal to the non-refundable dispute fee only and the net disputed amount 0, and the business statement shows the dispute as won; the same event again appends nothing; a `lost` closure changes no ledger row; a won dispute with no countering fee appends no `countering-fee-return`; the reconcile over a won dispute raises no difference. Money: 95% branch floor; the overseer runs an independent money review of the hand-in. Update the `payments` `CLAUDE.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "payments",
+   "deps": [
+    "T331",
+    "T332",
+    "T335",
+    "T352"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "money"
+   ],
+   "owns": [
+    "app/payments/src/routes.rs",
+    "app/payments/src/ledger.rs",
+    "app/payments/src/models.rs",
+    "app/payments/src/reconcile.rs",
+    "migrations/0181_payments_dispute_reversal.sql",
+    "tests/integration/tests/dispute_won.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/fees.md",
+    "docs/brains/payments-stripe.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "FEE-027",
+    "FEE-028",
+    "FEE-029",
+    "FEE-030",
+    "FEE-050"
+   ],
+   "tests": [
+    "TD-FEE-65"
+   ],
+   "decisions": [
+    "D-2625",
+    "D-2620",
+    "D-1383",
+    "D-1753",
+    "D-2073"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 6,
+    "lines": 450,
+    "context_pct": 28
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T353-dispute-won-recorded",
+   "prompt": "kit/prompts/T353.md"
+  },
+  {
+   "id": "T354",
+   "slug": "photo-reseal-on-rotation",
+   "title": "privacy: key rotation re-seals stored photos too, so dropping the old vault key never makes a photo unreadable",
+   "goal": "Nov 10 code review, privacy F2 (D-2626; PRIV-023, PRIV-024): `rotate_batch` (`app/privacy/src/vault.rs:668`) moves `privacy.contact` and `privacy.stated_name` to the newest key, but no code re-seals `privacy.photo` (only the INSERT at `app/privacy/src/photos.rs:358`; the app role has no UPDATE on it), and `PhotoSeal::open` needs the row's `key_version` in its key map. The documented drill (`app/privacy/CLAUDE.md`: run `rotate_batch` until it returns 0, then drop `1:`) therefore makes every photo sealed under v1 fail with `PhotoError::Sealed` (not even `LinkDead`) for the rest of its life (job close plus 30 days, longer under a dispute hold), or forces the old key to stay live, which defeats a rotation after a key leak. Fix: `rotate_photos(db, seal, storage, limit)` in `photos.rs` re-seals, in bounded batches, each photo whose `key_version` is below the active one: it reads the object, opens it under its version and AAD, seals it under the active version and AAD, writes it as a new object, then moves the row to the new object and version in one statement and deletes the old object only after that commits (a crash at any step leaves a readable photo and at most one orphan, which the orphan sweep removes, D-1793); `migrations/0182_privacy_photo_reseal.sql` grants the app role UPDATE on exactly those columns of `privacy.photo`. The drill in the crate doc becomes: run `rotate_batch` and `rotate_photos` until both return 0, then drop the old key. No plaintext is logged or kept; open audits are not written for a re-seal (it returns nothing to a reader). Tests in `tests/integration/tests/photo_key_rotation.rs` (TD-PRIV-24), each failing on today's `main` where noted: a photo stored under v1, then the drill with `2:K2,1:K1`, then `VAULT_KEY=2:K2` alone: `open_link` still returns the same bytes (fails today); a run over no old photos returns 0; a re-seal interrupted after the new object is written leaves the photo readable under the old row; the row's version and the AAD bind the new object. `the_rotation_drill_moves_every_row_to_v2` passes unchanged. Update the `privacy` `CLAUDE.md`, the key-rotation runbook line it cites, and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "privacy",
+   "deps": [
+    "T273"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "security"
+   ],
+   "owns": [
+    "app/privacy/src/photos.rs",
+    "migrations/0182_privacy_photo_reseal.sql",
+    "tests/integration/tests/photo_key_rotation.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/privacy.md",
+    "docs/spec/security.md",
+    "docs/brains/postgres-operations.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "PRIV-023",
+    "PRIV-024"
+   ],
+   "tests": [
+    "TD-PRIV-24"
+   ],
+   "decisions": [
+    "D-2626",
+    "D-2620",
+    "D-1793"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 400,
+    "context_pct": 14
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T354-photo-reseal-on-rotation",
+   "prompt": "kit/prompts/T354.md"
+  },
+  {
+   "id": "T355",
+   "slug": "release-claim-locks-pick",
+   "title": "picks: the release claim re-checks the pick under its row lock, and a fraud end refuses a pick already released",
+   "goal": "Nov 10 code review, privacy F3 (D-2627; PICK-022, PRIV-005, FEE-052): the release claim reads its target unlocked (`show`, `app/picks/src/release.rs:282`, through `release_target`) and `record` (`:394`) inserts `picks.release` with `ON CONFLICT (pick_id)` only, while `fraud_warning` (`app/picks/src/unreachable_refund.rs:490`) decides on the caller's `released` snapshot and `end_pick` (`:439`) checks only `status = paid`. When a payment success and T281's early-fraud-warning task run together for one pick, the warning can refund and end the pick as `fraud_refunded` while the release, which read it as confirmed and not ended, commits its row and opens the name and address: the business gets both the refund and the details (FEE-052 ends only an unreleased paid pick). Fix: `record` locks the pick (`SELECT … FROM picks.pick WHERE id = $1 AND status = $want AND ended_at IS NULL FOR UPDATE`) inside the claim's transaction and answers `MovedOn` when it is gone, before any vault read; `end_pick` and `fraud_warning` refuse a pick that has a `picks.release` row, read in the same statement (`AND NOT EXISTS …`), whatever the caller's snapshot says, so a released pick goes to Casey's decision list as FEE-052 says. Tests in `tests/integration/tests/release_fraud_race.rs` (TD-PICK-59), with two connections and a held row lock (no sleeps): a pick ended between `release_target` and `record` gives `MovedOn`, no release row and no `vault_read.picks.release` audit row (fails today); a fraud warning on a pick whose release committed first lists it for Casey and refunds nothing; the plain release and the plain fraud end behave as before. Update the `picks` `CLAUDE.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "picks",
+   "deps": [
+    "T318",
+    "T278"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "money"
+   ],
+   "owns": [
+    "app/picks/src/release.rs",
+    "app/picks/src/unreachable_refund.rs",
+    "tests/integration/tests/release_fraud_race.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/fees.md",
+    "docs/spec/privacy.md",
+    "docs/brains/postgres-operations.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "PICK-022",
+    "PRIV-005",
+    "FEE-052"
+   ],
+   "tests": [
+    "TD-PICK-59"
+   ],
+   "decisions": [
+    "D-2627",
+    "D-2620"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 300,
+    "context_pct": 20
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T355-release-claim-locks-pick",
+   "prompt": "kit/prompts/T355.md"
+  },
+  {
+   "id": "T356",
+   "slug": "outbox-sender-quiet-hours",
+   "title": "messaging and server: the worker sends queued texts, re-checking quiet hours, the line and the suppression list at the moment of sending",
+   "goal": "Nov 10 code review, messaging F4, and D-2188's unowned follow-up (D-2628; QH-001, QH-006, QH-008, TXT-021, CON-009, CON-030): nothing in production sends a `messaging.outbox` row: `send_on_line` (`app/messaging/src/mode.rs:225`) and `send_checked` (`app/messaging/src/optout.rs:310`) have only test callers, so no consent text, HELP reply, opt-out confirmation or job text ever reaches a phone; and both check the suppression list and the line but never quiet hours, the outbox has no not-before time (only retries have `next_retry`), so once a sender drains rows as written, every row queued at night (a held missed-call text, a business auto reply) goes at once. D-2188 left two duties to \"the owner of the outbox sender\": a row queued while its line was paused must not go out late once texting is back. Fix: (1) `migrations/0183_messaging_outbox_not_before.sql` adds a nullable `not_before` to `messaging.outbox`, set at enqueue from the row's message kind and `rules::decide` (`Hold { until }` gives `until`), with no change to `NewText` or any struct done tests build by name; (2) `send_checked` re-runs the quiet-hours rule for the row's kind at the send instant (QH-001, and QH-008 for a retry) and refuses with a hold that sets `not_before` instead of reaching the carrier, so the rule no longer depends on each enqueuer; the CON-018 HELP reply and the CON-009 confirmation keep their any-hour rule; (3) `app/messaging/src/outbox_sender.rs`: a `messaging.send_due` worker task, registered in `app/server/src/bin/worker.rs` (shared) with the Twilio settings like `picks.line_retry`, claims due rows (`FOR UPDATE SKIP LOCKED`, `not_before` passed, not blocked) in bounded batches and sends each through `send_on_line`, outside any transaction across the carrier call; it re-queues itself; (4) a non-reply row queued while its line was paused, switched off or suspended is marked expired with one audit row and never sent (D-2188), and a CON-009 confirmation older than 5 minutes is never sent (CON-030 forbids a later confirmation). Every enqueuer keeps its own behaviour; `suspension_mode.rs` and every TD-TXT and TD-CON case pass unchanged. Tests in `tests/integration/tests/outbox_sender.rs` (TD-QH-05), through the worker with the stand-in Twilio: a `caller_missed` row queued at 21:30 Arizona time for a 928 number is not sent at 21:31 and is sent at 08:00; a consent text queued at 14:00 is sent at once; a suppressed number gets nothing but HELP; a row queued while the line was suspended is expired, not sent, when the line reopens; a confirmation is sent within 5 minutes or never; two workers send a row once. Update the `messaging` and `server` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "messaging",
+   "deps": [
+    "T096",
+    "T240",
+    "T279"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "compliance"
+   ],
+   "owns": [
+    "app/messaging/src/outbox_sender.rs",
+    "app/messaging/src/optout.rs",
+    "app/messaging/src/models.rs",
+    "migrations/0183_messaging_outbox_not_before.sql",
+    "tests/integration/tests/outbox_sender.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/messaging.md",
+    "docs/spec/quiet-hours.md",
+    "docs/spec/consent.md",
+    "docs/brains/sms-compliance.md",
+    "docs/brains/postgres-operations.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "QH-001",
+    "QH-006",
+    "QH-008",
+    "TXT-021",
+    "CON-009",
+    "CON-030"
+   ],
+   "tests": [
+    "TD-QH-05"
+   ],
+   "decisions": [
+    "D-2628",
+    "D-2620",
+    "D-2188",
+    "D-1302"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 5,
+    "lines": 600,
+    "context_pct": 20
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T356-outbox-sender-quiet-hours",
+   "prompt": "kit/prompts/T356.md"
+  },
+  {
+   "id": "T357",
+   "slug": "inbound-optout-start-followups",
+   "title": "server, messaging and intake: START into an open request restarts with the consent text, an opt-out while texting is off is confirmed by email, CANCEL pauses the job, and a listed homeowner who writes is emailed or listed for Casey",
+   "goal": "Nov 10 code review, messaging F2, F3 and F5 and CON-016 (D-2629; CON-001, CON-015, CON-016, CON-028, CON-029, CON-030; D-1229). After T336 (the last earlier owner of `inbound_text.rs`): (1) START into a still-open request: the route treats `Outcome::Resubscribed` like `Open` (`app/server/src/inbound_text.rs:387`) and passes \"START\" to `intake::receive_reply`, whose rules send no consent text once one was sent (`app/intake/src/rules.rs:100`), so a homeowner who opted out and texts START a day later gets no consent text and \"START\" is heard as an answer (CON-015, CON-001). Now the route calls a new `intake::api::restart_after_start` (`app/intake/src/resubscribe.rs`), which queues the consent text again under the START inbox row as its subject, records it as sent, and passes nothing to the open question. (2) An opt-out while the homeowner line is switched off, suspended or restored and waiting gets no confirmation: `confirm` (`app/messaging/src/optout.rs:195`) answers \"email instead\" only for the ops pause and never reads `messaging.mode_state`, and the route drops the `email` flag (`inbound_text.rs:372`). Now `confirm` decides \"paused\" from the same facts `send_on_line` uses, queues no text then, and `app/messaging/src/optout_email.rs` queues the CON-030 email confirmation through the email outbox when an email is on file (vault lookup, never logged). (3) D-1229 named the inbound route to call `intake::api::on_opt_out` after `Outcome::OptedOut`; no task did (T330 builds only the handler of the event it queues), so a sole CANCEL while a pick waits for Confirm neither pauses the job nor withdraws the pick, and the business can still pay and get her details: the route now calls it in the delivery's transaction. (4) CON-016: a listed homeowner who writes without START (`Outcome::Suppressed`) is emailed once a day at most when an email is on file (\"You opted out of texts…\", English and Spanish email templates, the copy panel's drafts), and otherwise recorded as one `messaging.optout_wrote_again` row (IDs only) that T204's weekly digest counts; the CON-017 emergency alert is unchanged. Tests in `tests/integration/tests/optout_followups.rs` (TD-CON-33) through the served route, each failing on today's `main`: open request, STOP, then START with `OptOutType=START` gives one `consent` outbox row for the START inbox row and no intake answer holding \"START\"; a suspended line, a phrase opt-out and an email on file give one email confirmation and no outbox text row; CANCEL with a waiting pick gives an `intake.homeowner_pause` row and the queued `intake.opted_out_live_job` event; a listed homeowner's plain text gives one email (with email) or one digest row (without). Every TD-TXT, TD-CON and TD-SEC-52 case passes unchanged. Update the `server`, `messaging` and `intake` `CLAUDE.md` files and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "server",
+   "deps": [
+    "T336",
+    "T356"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "compliance"
+   ],
+   "owns": [
+    "app/server/src/inbound_text.rs",
+    "app/messaging/src/optout.rs",
+    "app/messaging/src/optout_email.rs",
+    "app/intake/src/resubscribe.rs",
+    "tests/integration/tests/optout_followups.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/consent.md",
+    "docs/spec/messaging.md",
+    "docs/spec/intake.md",
+    "docs/brains/sms-compliance.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "CON-001",
+    "CON-015",
+    "CON-016",
+    "CON-028",
+    "CON-029",
+    "CON-030"
+   ],
+   "tests": [
+    "TD-CON-33"
+   ],
+   "decisions": [
+    "D-2629",
+    "D-2620",
+    "D-1229",
+    "D-2188",
+    "D-226"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 5,
+    "lines": 550,
+    "context_pct": 20
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T357-inbound-optout-start-followups",
+   "prompt": "kit/prompts/T357.md"
+  },
+  {
+   "id": "T358",
+   "slug": "one-area-code-table",
+   "title": "messaging: the Canadian area codes for the HELP roaming line come from the quiet-hours table, which gains the four new Ontario codes",
+   "goal": "Nov 10 code review, messaging F6 (D-2630; CON-018, QH-002, D-100): the two area-code tables disagree. `CANADIAN_AREA_CODES` (`app/messaging/src/keywords.rs:25`) lists 382, 683, 753 and 942, which `app/messaging/area_codes.json` (the quiet-hours zone table) lacks, so a homeowner on one of those numbers gets the HELP reply and nothing else (`NotTextable`); and 257 (British Columbia) is in the zone table but not in the Canadian list, so its HELP reply misses the roaming line. Fix: the four Ontario codes join `area_codes.json` under their zone (each checked against the North American numbering plan's published assignment, cited in the decision), and the Canadian set is derived from the zone table's Canadian entries (one source; a code's country is read from its zone or a tag in the same file), so the two cannot drift. Tests in `app/messaging/src/tests/area_codes.rs` (TD-QH-06), each failing on today's `main`: every code of the Canadian set has a zone in the table; 257 gets the roaming line; 382, 683, 753 and 942 are textable inside 8 a.m. to 8 p.m. in both Arizona and Toronto time; a US code never gets the roaming line. Every TD-QH and TD-CON case passes unchanged. Update the `messaging` `CLAUDE.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "messaging",
+   "deps": [
+    "T075",
+    "T030",
+    "T027"
+   ],
+   "model": "claude-sonnet-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "compliance"
+   ],
+   "owns": [
+    "app/messaging/src/keywords.rs",
+    "app/messaging/area_codes.json",
+    "app/messaging/src/tests/area_codes.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/messaging.md",
+    "docs/spec/quiet-hours.md",
+    "docs/spec/consent.md",
+    "docs/brains/sms-compliance.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "CON-018",
+    "QH-002"
+   ],
+   "tests": [
+    "TD-QH-06"
+   ],
+   "decisions": [
+    "D-2630",
+    "D-2620",
+    "D-100"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 150,
+    "context_pct": 16
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T358-one-area-code-table",
+   "prompt": "kit/prompts/T358.md"
   }
  ]
 }
