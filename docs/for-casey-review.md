@@ -6,6 +6,7 @@ These are decisions Claude made on its own and logged so the build never waits (
 
 - **What it found.** Four points, all confirmed in the code. (1) Fifteen places in the build automation load outside tools by a version label that their authors can move, including the step that runs Claude with the build's access; they will be locked to exact versions, and a test will keep every workflow locked. (2) and (4) Two sign-in steps for businesses could be hurried past the five-try limit or hold the database while waiting for the texting service; those fixes were already planned or are added to the same task. (3) A texted code for one thing (for example signing in) could also confirm a different thing, such as deleting a homeowner's data. Each code will now work only for what it was sent for, with at most five tries.
 - **Choice made for you:** no separate Twilio Verify service just for delete confirmations. The app-side check closes the gap without a new Twilio setup step. If you ever want that extra separation anyway, it is an option you can choose later.
+- **Not done yet, on purpose:** the build robot's job still has wide write access and the push key. Narrowing that changes what the robot can do, so it needs its own trial run; it is noted as a risk for a later change.
 - **Its 38 test cases** are saved for the war games, which must run each one or say why not, only in the test setup with made-up accounts.
 - **Nothing needs you.**
 
