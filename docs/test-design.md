@@ -721,6 +721,7 @@ Kind: **B** behavior, **E** boundary (edge), **F** failure, **I** invariant. Lay
 | TD-SEC-56 | F | U | SEC-016 | In `app/server/tests/server_hardening.rs` (T286, D-2208): `ASKHAVA_PUBLIC_BASE_URL` with a path (`https://x.example/app`) stops start-up naming the key and never the value; one with only a trailing slash is accepted and the slash dropped |
 | TD-SEC-57 | B | In | SEC-040, OPS-050 | In `tests/integration/tests/client_ip_header.rs` (T135, D-2208): in live and sandbox, settings with no explicit `ASKHAVA_CLIENT_IP_HEADER` stop start-up naming the key; in dev and ci the `x-real-ip` default stands; `docs/deploy.md` records the probe's result and the header it proved on the test project |
 | TD-SEC-58 | B | In | SEC-014, SEC-040 | In `tests/integration/tests/session_sweep.rs` (T319, D-2306), clock advanced: the daily `core.rate_limit_prune` task deletes windows older than the longest window plus a day, in batches, keeps newer ones, is queued once per day, and is registered in the production worker |
+| TD-SEC-59 | F | U | SEC-018 | In `app/adapters/src/tests/adapter_config.rs` (T338, D-2318): a send to a port held by a bound, non-listening socket for the whole test is refused and answers exactly `Err(AdapterError::NotSent)`, with no other test able to take the port; a send to a listener that accepts and closes without answering answers `Err(AdapterError::OutcomeUnknown)`; both pass 200 runs in a row with the crate's other tests (stand-ins included) in parallel |
 
 ### 7.15 Accessibility
 
