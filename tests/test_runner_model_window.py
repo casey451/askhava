@@ -79,7 +79,7 @@ def test_load_reads_kit_runner_json_and_fails_safe(tmp_path: Path) -> None:
 def test_the_repository_window_is_caseys_thursday_switch() -> None:
     """kit/runner.json as Casey asked on November 9: Fable from the weekly reset, open-ended, to the limit."""
     raw = json.loads((ROOT / "kit" / "runner.json").read_text(encoding="utf-8"))
-    assert raw["lanes"] == 1 and raw["owner_review"] is False  # the locked switches are untouched (D-620)
+    assert raw["lanes"] == 2 and raw["owner_review"] is False  # the locked switches as set: two lanes since D-2462 (D-620)
     win = mw.load()
     assert win is not None and win["model"] == FABLE and win["alias"] == "fable"
     # Closed before it opens (D-2485, Casey Nov 10): until == from, an empty [from, until) that is never active.
@@ -176,7 +176,8 @@ def test_setting_until_in_the_past_restores_todays_behaviour(tmp_path: Path) -> 
     later = NOW + timedelta(minutes=5)
     env.worker = lambda t, m, log: cycle.WorkerResult("submitted", ["app/t001/x.py"], [m])
     assert cycle.run_cycle(dataclasses.replace(config(graph, tmp_path, clock=lambda: later), model_window=ended), env, later) == st.MERGE_PENDING
-    assert env.runs[-1][1] == MODELS["sonnet"] and "window_model" not in st.entry(env.store, "T001")
+    # Its own ladder again: a Sonnet task's second attempt runs on Opus (D-2474), no longer on the window's model.
+    assert env.runs[-1][1] == MODELS["opus"] and "window_model" not in st.entry(env.store, "T001")
     assert mw.session_model(ended, later, env.store) == "claude-sonnet-5-5" and not mw.run_to_limit(ended, later)
 
 
@@ -681,3 +682,27 @@ def test_a_fallback_text_that_is_no_refusal_changes_nothing(tmp_path: Path, monk
     monkeypatch.setattr(entry, "read_handoff", lambda: {})
     args = entry.parse_args(["--after", "--model-fallback", "the tests failed"])
     assert entry.after(args, cfg, env) == st.QUEUED  # type: ignore[arg-type]  # reason: FakeEnv; judged on the window's model as usual
+
+
+def test_a_ledger_the_limit_dropped_stays_dropped_when_the_other_lane_hands_in() -> None:
+    """D-2474 (two lanes, D-2225 B1): lane 2's attempt began on a state holding the pacer's ledger; while it ran,
+    lane 1's cycle saw the week at its limit and `close_on_limit` dropped `usage.windows`. Lane 2's `--after`
+    lays its usage onto that fresh state: its own `by_task` entry and reading land, the drop is newer than its
+    base, and the ledger is not brought back with lane 2's tokens."""
+    win = window(end_on_limit=True)
+    graph = [make_task("T001"), make_task("T002")]
+    ledger = {"five_hour": {"start": st.iso(NOW - timedelta(hours=1)), "tokens": 90_000_000},
+              "week": {"start": st.iso(NOW - timedelta(days=1)), "tokens": 400_000_000}}
+    base = st.sync_graph(st.new_state(), graph)
+    base["usage"] = {"windows": copy.deepcopy(ledger), "by_task": {}}
+    full = _read(copy.deepcopy(base), NOW, 1.0)
+    fresh, why = mw.close_on_limit(full, win, NOW)
+    assert why and "windows" not in fresh["usage"]
+    ours = copy.deepcopy(base)
+    ours["usage"]["windows"] = {name: dict(w, tokens=w["tokens"] + 2_000_000) for name, w in ledger.items()}
+    ours["usage"]["by_task"] = {"T002": {"output_tokens": 50}}
+    out = cycle._ours_onto(base, ours, fresh)
+    assert "windows" not in out["usage"]  # the drop stands; before D-2474 the ledger came back with 2M added
+    assert out["usage"]["by_task"] == {"T002": {"output_tokens": 50}} and mw.ended(win, out)
+    kept = cycle._ours_onto(base, ours, copy.deepcopy(base))["usage"]["windows"]
+    assert kept == ours["usage"]["windows"]  # with no drop meanwhile the windows still take this attempt's tokens
