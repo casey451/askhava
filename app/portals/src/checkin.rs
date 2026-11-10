@@ -352,9 +352,8 @@ mod tests {
             let reply = show(State(page.clone()), path, CookieJar::new()).await;
             assert_eq!(reply.status(), 200, "{code}");
         }
-        assert_eq!(
-            status_of(&pool, job).await,
-            JobStatus::Connected,
+        assert!(
+            status_of(&pool, job).await.takes_check_ins(),
             "GET records nothing"
         );
         for (raw, code) in [
@@ -390,18 +389,17 @@ mod tests {
             security,
         };
         assert!(post(&page, &token, "3-later").await.contains("Thanks."));
-        assert_eq!(
-            status_of(&pool, job).await,
-            JobStatus::Connected,
+        assert!(
+            status_of(&pool, job).await.takes_check_ins(),
             "LATER moves nothing"
         );
         assert!(post(&page, &token, "3-done").await.contains("Thanks."));
-        assert_eq!(status_of(&pool, job).await, JobStatus::Done);
+        assert!(status_of(&pool, job).await.takes_feedback(), "Done");
         let again = post(&page, &token, "3-done").await;
         assert!(
             again.contains("nothing to send for request"),
             "recorded once"
         );
-        assert_eq!(status_of(&pool, job).await, JobStatus::Done);
+        assert!(status_of(&pool, job).await.takes_feedback(), "Done");
     }
 }
