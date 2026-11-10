@@ -19,6 +19,7 @@
 
 pub mod api;
 mod business_notices;
+mod checkin_email;
 mod email;
 mod email_timing;
 mod handlers;

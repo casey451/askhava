@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{#- The check-in answer page (T231; TXT-034, SEC-026, JOB-015, D-2414 to D-2417). The answer
+    first, then one Send button whose POST carries the CSRF token; opening the page records
+    nothing. After the POST, the thanks; for a job no longer waiting, the closed line. No name,
+    phone or address. -#}
+{% block title %}{% match screen %}{% when Screen::Ask %}Send your answer for request {{ request }}{% when Screen::Sent %}Answer sent for request {{ request }}{% when Screen::Closed %}Nothing to send for request {{ request }}{% endmatch %}{% endblock %}
+{% block main %}
+{% match screen %}
+{% when Screen::Ask %}
+<h1>Send your answer for request {{ request }}</h1>
+<p>You picked: <strong>{{ label }}</strong></p>
+<p>We won't record it until you press Send. If that's not right, go back to the email and tap a different one.</p>
+<form method="post" action="{{ action }}" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<button type="submit">Send</button>
+</form>
+{% when Screen::Sent %}
+<h1 id="checkin-sent" tabindex="-1" autofocus>Thanks. We got your answer for request {{ request }}.</h1>
+<p>You told us: {{ label }}. You can close this page now.</p>
+{% when Screen::Closed %}
+<h1>There's nothing to send for request {{ request }}</h1>
+<p>We already have your answer, or request {{ request }} no longer needs one. You don't need to do anything else. If that seems wrong, reply to the email and tell us what happened.</p>
+{% endmatch %}
+{% endblock %}
