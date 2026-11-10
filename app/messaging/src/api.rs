@@ -21,6 +21,11 @@ pub use crate::business_notices::{
     BUSINESS_NOTICE_KIND, JOB_CARD_TEMPLATE, LINK_LIFE, NoticeOutcome, NoticeSender, SIGN_IN_URL,
     SendChecks, business_notice, card_notice_accepted, held_until, sign_in_link,
 };
+pub use crate::checkin_email::{
+    CHECK_IN_ANSWERS, CHECK_IN_DAYS, CHECK_IN_EMAIL_TEMPLATE, CHECK_IN_PREFIX, CheckInFacts,
+    CheckInSender, answer_label, check_in_code, parse_check_in_code, queue_check_in_email,
+    render_check_in,
+};
 pub use crate::email::{
     COMPLAINT_ALERT, DailyLimit, EMAIL_ACTION, EmailClass, EmailEvent, EmailSent, EmailTo, FROM,
     MailboxKind, NewEmail, Notice, OnDomain, PostalAddress, Recipient, Rendered, Sender,

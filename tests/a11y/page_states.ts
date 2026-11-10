@@ -108,10 +108,34 @@ const FEEDBACK_STATES: readonly PageState[] = [
   ["feedback sent", "Thanks.", "Send feedback", feedbackPage(true)],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: FEEDBACK_ROUTE, name, shows, hides, sql, statusRegions: [] }));
 
+const CHECK_IN_ROUTE = "/c/{token}/{answer}";
+
+/** A job in `status` with a live link token: Connected waits for a check-in answer (T231, TXT-034). */
+function checkInPage(status: string): string {
+  return `WITH j AS (INSERT INTO jobs.job (status, emergency, created_at, status_at, timer_from)
+      VALUES ('${status}', false, now(), now(), now()) RETURNING id),
+    n AS (UPDATE jobs.job_number_next SET next = next + 1 RETURNING next - 1 AS n),
+    num AS (INSERT INTO jobs.job_number (number, job_id, issued_at) SELECT n.n, j.id, now() FROM n, j)
+    INSERT INTO jobs.quote_token (job_id, salt, key_version, token_hash, issued_at)
+      SELECT id, decode(md5(random()::text), 'hex'), 1, decode(':hash', 'hex'), now() FROM j`;
+}
+
+/** Seeds a check-in state and opens it with the day-3 DONE button's answer code. */
+function checkInSeed(state: PageState): string {
+  return tokenSeed(state).replace("{answer}", "3-done");
+}
+
+/** The check-in answer page's states: the answer with its Send button, and the closed line (T231). */
+const CHECK_IN_STATES: readonly PageState[] = [
+  ["check-in answer", "You picked:", "nothing to send", checkInPage("connected")],
+  ["check-in closed", "nothing to send for request", "You picked:", checkInPage("done")],
+].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: CHECK_IN_ROUTE, name, shows, hides, sql, statusRegions: [] }));
+
 /** Every page's entry: its route, its states and its seed function. Append a new page's entry. */
 export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: QUOTE_ROUTE, seed: tokenSeed, states: QUOTE_STATES },
   { route: FEEDBACK_ROUTE, seed: tokenSeed, states: FEEDBACK_STATES },
+  { route: CHECK_IN_ROUTE, seed: checkInSeed, states: CHECK_IN_STATES },
 ];
 
 /** Every state of every page, in entry order. */

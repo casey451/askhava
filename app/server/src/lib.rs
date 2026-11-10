@@ -28,6 +28,7 @@ use tokio::signal::unix::{SignalKind, signal};
 use tower_http::request_id::{MakeRequestUuid, PropagateRequestIdLayer, SetRequestIdLayer};
 use tower_http::trace::TraceLayer;
 
+pub mod checkin;
 pub mod inbound_text;
 pub mod inbound_voice;
 pub mod offdb_stream;
@@ -109,7 +110,8 @@ impl From<(Hooks, RequestTimeout)> for RouterParts {
 /// routes in the release build (SEC-035, D-739). The outermost layer sets the SEC-012 security
 /// headers on every response, a 404 included (T051). The homeowner's quote page is `portals`'
 /// (`/q/{token}`, T052); its pick review step posts to the same path (`pick_flow`, T055); the
-/// private feedback page after Done is `/f/{token}` (`feedback`, T230).
+/// private feedback page after Done is `/f/{token}` (`feedback`, T230); the check-in answer page
+/// the emailed check-in's buttons open is `/c/{token}/{answer}` ([`checkin`], T231).
 /// `webhooks` ([`webhooks`]) adds Twilio's signature-checked inbound-text and status routes
 /// (`inbound_text`, SEC-016, SEC-039, T241); `None` adds none. `voice` ([`voice_hooks`]) adds the
 /// pool numbers' signature-checked voice webhook (`inbound_voice`, SEC-016, SEC-017, T262).
@@ -127,6 +129,7 @@ pub fn build_router(pool: PgPool, test_control: Router, parts: impl Into<RouterP
     let quote_page = quote_page_routes(pool.clone(), Arc::new(SystemClock));
     let pick_flow = pick_flow_routes(pool.clone(), Arc::new(SystemClock), pick_keys);
     let feedback = feedback_routes(pool.clone(), Arc::new(SystemClock));
+    let checkin = checkin::routes(pool.clone());
     let twilio = webhooks.map_or_else(Router::new, inbound_text::routes);
     let voice = voice.map_or_else(Router::new, inbound_voice::routes);
     let stripe = stripe.map_or_else(Router::new, stripe_webhook_routes);
@@ -136,6 +139,7 @@ pub fn build_router(pool: PgPool, test_control: Router, parts: impl Into<RouterP
         .merge(quote_page)
         .merge(pick_flow)
         .merge(feedback)
+        .merge(checkin)
         .merge(twilio)
         .merge(voice)
         .merge(stripe)

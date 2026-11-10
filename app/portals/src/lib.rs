@@ -37,6 +37,7 @@ mod business_actions;
 mod business_auth;
 mod business_portal;
 mod business_signup;
+mod checkin;
 mod confirm_pay;
 mod data_download;
 mod email_check;
