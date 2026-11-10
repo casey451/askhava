@@ -474,3 +474,34 @@ def open_deviations(state: State, now: datetime) -> list[Task]:
         if not expiry or parse(str(expiry)) > now:
             out.append(dev)
     return out
+
+
+SMOKE_REUSE_MAX_AGE = timedelta(hours=6)  # how long one green smoke on a head may stand for later start routines (D-2560)
+
+
+def reusable_smoke(state: State, head: str, now: datetime) -> Task | None:
+    """The recorded green smoke run that a start routine on main's `head` may reuse instead of running the smoke
+    again (D-2560), or None. Only when `main` is not red, `head` was never the SHA of a red `main` (`main_red_history`),
+    the LAST run recorded for `head` in `smoke_runs` is green and finished (a later red or timed-out run on the same
+    head ends the reuse), no finished run on `head` was ever red and no D-498 strike names it (`smoke_env_problems`:
+    a head with any red of its own is always smoked afresh), and the green run it stands on (`reused`, else its own `at`) is at most
+    SMOKE_REUSE_MAX_AGE old: the same commit gives the same verdict, but the job's image and services drift. The
+    caller adds what this state cannot tell (the nightly and `main`'s own checks on the head, `cycle._start_smoke`);
+    clearing a red `main` never reuses (docs/governance.md 5.3)."""
+    if not head or state.get("main_red"):
+        return None
+    if any(isinstance(r, dict) and r.get("sha") == head for r in state.get("main_red_history") or []):
+        return None
+    if any(isinstance(n, dict) and n.get("sha") == head for n in state.get("smoke_env_problems") or []):
+        return None
+    runs = [r for r in state.get("smoke_runs") or [] if isinstance(r, dict) and r.get("sha") == head]
+    if not runs or runs[-1].get("ok") is not True or runs[-1].get("timed_out"):
+        return None
+    if any(r.get("ok") is not True and not r.get("timed_out") for r in runs):
+        return None
+    try:
+        since = parse(str(runs[-1].get("reused") or runs[-1].get("at") or ""))
+    except ValueError:
+        return None
+    last: Task = runs[-1]
+    return last if timedelta(0) <= now - since <= SMOKE_REUSE_MAX_AGE else None
