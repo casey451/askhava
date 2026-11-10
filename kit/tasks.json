@@ -11128,9 +11128,9 @@
   {
    "id": "T231",
    "slug": "checkin-email-page",
-   "title": "portals: the homeowner check-in email buttons and answer page",
-   "goal": "In web-and-email mode the day-3 and day-14 check-ins (T097's) go by email, composed by `app/messaging/src/checkin_email.rs` from a `core.task` event through T094's pipeline, with one button per answer; each button opens a portals answer page (`checkin.rs`, `checkin.html`) that shows the answer first, and only the page's POST with a CSRF token records it, so a GET (a mail scanner's, twice) changes nothing (TXT-034's emailed-buttons clause, SEC-026). (D-493) This task also serves the answer page (D-2128): `app/server/src/checkin.rs` builds its `GET` (shows the answer, changes nothing) and its `POST` (records it with its CSRF token, once), `no_store`, the `POST` passing `refuse_cross_site`, merged in the shared `app/server/src/lib.rs`, with its `PAGE_STATES` entry in the shared `tests/a11y/page_states.ts`, so `tests/e2e/checkin.spec.ts` runs against the served page.",
-   "type": "build",
+   "title": "portals (harness): the homeowner check-in email buttons and answer page, held to the authorization matrix",
+   "goal": "In web-and-email mode the day-3 and day-14 check-ins (T097's) go by email, composed by `app/messaging/src/checkin_email.rs` from a `core.task` event through T094's pipeline, with one button per answer; each button opens a portals answer page (`checkin.rs`, `checkin.html`) that shows the answer first, and only the page's POST with a CSRF token records it, so a GET (a mail scanner's, twice) changes nothing (TXT-034's emailed-buttons clause, SEC-026). (D-493) This task also serves the answer page (D-2128): `app/server/src/checkin.rs` builds its `GET` (shows the answer, changes nothing) and its `POST` (records it with its CSRF token, once), `no_store`, the `POST` passing `refuse_cross_site`, merged in the shared `app/server/src/lib.rs`, with its `PAGE_STATES` entry in the shared `tests/a11y/page_states.ts`, so `tests/e2e/checkin.spec.ts` runs against the served page. The new route `/c/{token}/{answer}` must pass T088's authorization matrix (`tests/security/tests/auth_matrix.rs`, TD-SEC-01, SEC-019, SEC-048), whose `door` fails the whole run on any route it does not classify (`:107`), so `td_sec_01_route_table_is_generated_and_every_path_has_a_door`, `td_sec_01_every_route_by_every_actor` and `sec_048_every_refusal_is_a_security_event` all fail until it is classified (attempt 1, D-2429). Extend the matrix, never exempt the route: (1) a `Door::Link` arm for paths starting `/c/{token}`; (2) the test app (`world`, `:326`) merges the check-in router as `server::build_router` merges it; a test crate may not depend on `askhava-server` (D-736), so the router is `portals::api::checkin_routes(pool, clock)`, built in `app/portals/src/checkin.rs` and exported as `feedback_routes` is, and `app/server/src/checkin.rs` merges it with whatever only `server` holds; (3) `probe_link` fills `{answer}` with a valid answer code of the check-in (for example `3-done`) and uses the token the check-in email carries for the job; (4) `send` posts only the CSRF field to a `/c/` path; (5) `sec_048_every_refusal_is_a_security_event` builds its target (`:612`, `path.replace(\"{token}\", …)`) with `{answer}` filled by the same valid answer code, so its cross-site and wrong-token posts reach the `/c` handler's CSRF check (the `/c` handler also checks CSRF before it reads the answer). The new route is held to the same link-door checks as `/q` and `/f`: the holder reaches only her own job (a 200 naming it, or a 303 to her own page), anyone else gets the bare 404 for an unissued token, no other homeowner's job or token appears, and every cross-site or wrong-token `POST` is a 403 with one `csrf_rejected` event naming the route template. No existing matrix row, door, probe or assertion is removed or loosened. This is a harness task because it edits a DONE task's protected security test (T088's); Opus worker and reviewer. Add the rows `GET /c/{token}/{answer}` and `POST /c/{token}/{answer}` (module `portals`, Wired `yes`) to `docs/architecture.md` section 13, which `app/server/tests/route_wiring.rs` reads (TD-SEC-41).",
+   "type": "harness",
    "phase": 1,
    "stage": "4",
    "module": "portals",
@@ -11144,19 +11144,22 @@
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
     "privacy",
-    "security"
+    "security",
+    "harness"
    ],
    "owns": [
     "app/portals/src/checkin.rs",
     "app/portals/templates/checkin.html",
     "app/messaging/src/checkin_email.rs",
     "tests/e2e/checkin.spec.ts",
-    "app/server/src/checkin.rs"
+    "app/server/src/checkin.rs",
+    "tests/security/tests/auth_matrix.rs"
    ],
    "reads": [
     "docs/architecture.md",
     "docs/code-docs.md",
-    "docs/spec/messaging.md"
+    "docs/spec/messaging.md",
+    "docs/spec/security.md"
    ],
    "requirements": [
     "TXT-034"
@@ -11165,13 +11168,14 @@
     "TD-TXT-31"
    ],
    "decisions": [
-    "D-493"
+    "D-493",
+    "D-2429"
    ],
    "cites": [],
    "budget": {
-    "files": 5,
-    "lines": 400,
-    "context_pct": 13
+    "files": 6,
+    "lines": 500,
+    "context_pct": 17
    },
    "checks": [
     "Ci",
@@ -11180,7 +11184,8 @@
    ],
    "branch": "claude/task/T231-checkin-email-page",
    "prompt": "kit/prompts/T231.md",
-   "copy": true
+   "copy": true,
+   "acceptance": "TD-TXT-31 and TD-SEC-01 pass: every test in `tests/security/tests/auth_matrix.rs` passes with `/c/{token}/{answer}` classified as a link door and probed over HTTP by every actor; the matrix's diff only adds (the `/c/{token}` door arm, the check-in router merged into `world`, the `{answer}` fill and token in `probe_link` and in `sec_048`'s target, the CSRF-only body in `send`) and removes or loosens nothing; `app/server/tests/route_wiring.rs` passes with the two `/c/{token}/{answer}` rows in `docs/architecture.md` section 13 reading `yes`."
   },
   {
    "id": "T098",
