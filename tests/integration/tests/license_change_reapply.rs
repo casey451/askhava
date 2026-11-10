@@ -4,9 +4,9 @@
 //! business when nothing is left; a no-license job type stays and keeps it active. Fake data only.
 
 use askhava_businesses::api::{
-    AccountStatus, Capability, CapabilityAnswers, JobTypeChoice, LICENSE_CHANGE_KIND, LargestJob,
-    PauseReason, Reapplied, business, checklist_offer, create, job_types, license_change_words,
-    pre_ticked, reapply_license, save_capability,
+    Capability, CapabilityAnswers, JobTypeChoice, LICENSE_CHANGE_KIND, LargestJob, Reapplied,
+    business, checklist_offer, create, job_types, license_change_words, pre_ticked,
+    reapply_license, save_capability,
 };
 use askhava_catalog::api::{Catalog, parse};
 use askhava_licensing::api::ClassMap;
@@ -92,7 +92,7 @@ async fn td_biz_30_added_class_offers_and_ticks_nothing(pool: sqlx::PgPool) {
             .is_some_and(|o| !o.is_empty())
     );
     let status = business(&mut db, id).await.expect("read").status;
-    assert_eq!(status, AccountStatus::Active);
+    assert_eq!(status.code(), "active");
 }
 
 /// TD-BIZ-30 (BIZ-050, D-393): a list removing R-11 removes the electrical job types at once,
@@ -110,8 +110,9 @@ async fn td_biz_30_removed_class_unticks_emails_and_pauses(pool: sqlx::PgPool) {
     assert!(change.offered.is_empty() && change.paused);
     assert!(job_types(&mut db, id).await.expect("read").is_empty());
     let b = business(&mut db, id).await.expect("read");
-    assert_eq!(b.status, AccountStatus::Paused);
-    assert_eq!(b.pause_reason, Some(PauseReason::NoCoveredJobType));
+    assert_eq!(b.status.code(), "paused");
+    let reason = b.pause_reason.map(|r| r.code());
+    assert_eq!(reason, Some("no_covered_job_type"));
     let tasks = notices(&mut db).await;
     assert_eq!(tasks.len(), 1);
     assert_eq!(tasks[0]["dropped_classes"], serde_json::json!(["R-11"]));
@@ -136,7 +137,7 @@ async fn td_biz_30_no_license_job_type_keeps_the_business_active(pool: sqlx::PgP
     let kept = job_types(&mut db, id).await.expect("read");
     assert_eq!(kept, vec![JobTypeChoice::new(WINDOWS.0, WINDOWS.1)]);
     let status = business(&mut db, id).await.expect("read").status;
-    assert_eq!(status, AccountStatus::Active);
+    assert_eq!(status.code(), "active");
     let pending = r11_business(&mut db, None).await;
     sqlx::query("UPDATE businesses.business SET status = 'pending' WHERE id = $1")
         .bind(pending)
@@ -146,7 +147,7 @@ async fn td_biz_30_no_license_job_type_keeps_the_business_active(pool: sqlx::PgP
     let change = reapply_license(&mut db, pending, (map(), &catalog()), classes, now()).await;
     assert!(!change.expect("re-applied").paused);
     let status = business(&mut db, pending).await.expect("read").status;
-    assert_eq!(status, AccountStatus::Pending);
+    assert_eq!(status.code(), "pending");
 }
 
 /// TD-BIZ-30 (BIZ-050, BIZ-018): the email names the removed job types and why, the pause, and
