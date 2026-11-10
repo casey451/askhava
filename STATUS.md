@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-10T22:57:51Z by runner f33177e31705 (actions).
+Updated 2026-11-10T23:21:24Z by runner 5eb1d42b3e9b (actions).
 
 **Building: T311 in progress since 22:48Z; 190 of 336 done; week 51% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,11 @@ Updated 2026-11-10T22:57:51Z by runner f33177e31705 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T311 claimed 22:48Z, lease until 01:48Z; lane 2: T207 claimed 22:57Z, lease until 01:57Z
 - **Week:** 51% used, 89.4M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:48Z, 9 min before this update
+- **Last run:** 22:57Z, 23 min before this update
 - **Keeper:** last ran 22:36Z, next wake 04:16Z
 
 ## Needs attention
-- Strict plan check red: 4 problem(s) on tasks still to run (+23 on DONE tasks); first: T207: stored context_pct 12% but it measures 17%; regenerate
+- Strict plan check red: 5 problem(s) on tasks still to run (+23 on DONE tasks); first: T207: stored context_pct 12% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -38,6 +38,7 @@ Updated 2026-11-10T22:57:51Z by runner f33177e31705 (actions).
 | T283 | Ci: a change to a document the app compiles in runs the Rust | done | 1 | 30 min | 23:27Z |  |
 
 ### Plan and harness merges on main
+- 22:59Z Plan: claim the longest remaining dependency chain first (D-2591) (#436)
 - 22:08Z Harness: report queued tasks that add to lists existing tests pin (D-2550) (#433)
 - 21:53Z Harness: reuse a recorded green smoke on main's head; fix the start-up smoke timeouts (D-2560) (#434)
 - 21:38Z Plan: claim the flaky-test fixes first — T338, then T311 and T349 (D-2540) (#431)

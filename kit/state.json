@@ -27228,12 +27228,11 @@
      "result": "check_failed"
     }
    ],
-   "reviewed_sha": "8bced933e4e5fffe3ec7865e2cac3288169a32cf",
+   "reviewed_sha": "5eb1d42b3e9b9bf522ac1b165977a6546e8f943c",
    "review_lease": {
     "task": "T311",
-    "session": "actions-42874427398",
-    "expires": "2026-11-10T21:32:35Z",
-    "lane": "2"
+    "session": "actions-42914961798",
+    "expires": "2026-11-11T01:48:18Z"
    },
    "branch": "claude/task/T311-voice-confirm-bound-line",
    "auto_merge": {
@@ -27244,7 +27243,8 @@
    "last_failure": "Ci: failure; Coverage: failure\nCoverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly)\ntest td_call_13_the_same_callsid_and_digits_are_not_another_try ... ok\ntest td_call_13_a_used_up_retry_raises_the_pool_alert ... ok\ntest td_call_13_twelve_wrong_tries_at_once_never_pass_six ... ok\ntest td_call_13_five_hundred_lines_get_unique_stored_pins ... FAILED\nfailures:\n---- td_call_13_five_hundred_lines_get_unique_stored_pins stdout ----\nthread 'td_call_13_five_hundred_lines_get_unique_stored_pins' (8538) panicked at tests/integration/tests/call_pins.rs:140:51:\nline: NoFreePin\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\n    td_call_13_five_hundred_lines_get_unique_stored_pins\ntest result: FAILED. 4 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.64s\nerror: test failed, to rerun pass `-p askhava-integration --test call_pins`\nerror: process didn't exit successfully: `/home/runner/.rustup/toolchains/nightly-2026-10-15-x86_64-unknown-linux-gnu/bin/cargo test --tests --manifest-path /home/runner/work/askhava/askhava/Cargo.tom\n##[error]Process completed with exit code 101.\nCi failed at step: All three jobs passed\nChecks: success, Coverage: failure, E2e: success\n##[error]Process completed with exit code 1.",
    "runner_closed_prs": [
     428
-   ]
+   ],
+   "head_check_since": null
   },
   {
    "id": "T312",
@@ -29609,7 +29609,7 @@
    }
   }
  },
- "updated_at": "2026-11-10T22:57:51Z",
+ "updated_at": "2026-11-10T23:21:24Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -29707,7 +29707,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "f33177e317053a1d11ecccdf5b9c4d6f3de97675",
+ "runner_sha": "5eb1d42b3e9b9bf522ac1b165977a6546e8f943c",
  "starter": "actions",
  "smoke_runs": [
   {
