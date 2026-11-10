@@ -7,13 +7,13 @@
 //! TD-SEC-15) is a served route with its methods, and every `const *_ROUTE` or `*_PATH` naming a
 //! path is a declared route, served or not. Each path falls through [`door`] to its door; a path
 //! no door names fails the run, so a new kind of route cannot go untested. Six actors (anonymous,
-//! homeowners A and B, businesses X and Y, the owner) try every route: a link route (`/q`, `/f`)
-//! over HTTP through the portals routers merged as `server::build_router` merges them, a webhook
+//! homeowners A and B, businesses X and Y, the owner) try every route: a link route (`/q`, `/f`,
+//! and `/c` with a valid check-in answer code, D-2429) over HTTP through the portals routers merged as `server::build_router` merges them, a webhook
 //! through the adapter's signature check, a homeowner or business route through the realm guard
 //! its handler must call first (the homeowner realm, the only one `homeowner_proof` mints for;
 //! `business_principal` with `may`), since those routes are not served yet; one served fails the
-//! run until the matrix probes it over HTTP. Homeowner A versus B isolation is proven for the `/q`
-//! and `/f` tokens only, not yet for `/h` (D-1945). Sign-in routes are open to everyone; their
+//! run until the matrix probes it over HTTP. Homeowner A versus B isolation is proven for the `/q`,
+//! `/f` and `/c` tokens only, not yet for `/h` (D-1945). Sign-in routes are open to everyone; their
 //! rules are `business_signin.rs`', `owner_auth.rs`' and `homeowner_portal::tests`'; only the
 //! owner has pause, refund and release (`owner_auth.rs`). Every refusal of a served route is one
 //! `csrf_rejected` event with route template, request ID and session ID; webhook signature
@@ -31,8 +31,9 @@ use askhava_jobs::api::quote_token::issue;
 use askhava_jobs::api::{JobStatus, create, job_number, move_to};
 use askhava_ops::api::Actor as AuditActor;
 use askhava_portals::api::{
-    CookieJar, Need, Realm, business_principal, channel_choices, csrf_token, current_session,
-    ensure_pre_session, feedback_routes, pick_flow_routes, quote_page_routes, start_session,
+    CookieJar, Need, Realm, business_principal, channel_choices, checkin_routes, csrf_token,
+    current_session, ensure_pre_session, feedback_routes, pick_flow_routes, quote_page_routes,
+    start_session,
 };
 use axum::Router;
 use axum::body::{Body, to_bytes};
@@ -46,6 +47,8 @@ use tower::ServiceExt;
 const HOST: &str = "askhava.test";
 /// A well-formed link token no job was ever given.
 const UNISSUED: &str = "0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f";
+/// A valid answer code of the emailed check-in, filling `/c/{token}/{answer}` (TXT-034, D-2429).
+const ANSWER: &str = "3-done";
 /// Words a push web app would bring (BIZ-041, TD-BIZ-31).
 const PUSH_WORDS: [&str; 7] = [
     "serviceworker",
@@ -112,7 +115,10 @@ fn door(path: &str) -> Door {
         Door::Asset
     } else if path.contains("/sign-in") || path == "/b/signup" {
         Door::SignIn
-    } else if path.starts_with("/q/{token}") || path.starts_with("/f/{token}") {
+    } else if ["/q/{token}", "/f/{token}", "/c/{token}"]
+        .iter()
+        .any(|root| path.starts_with(root))
+    {
         Door::Link
     } else if under("/h") {
         Door::Homeowner
@@ -344,7 +350,8 @@ async fn world(pool: &PgPool) -> World {
             clock.clone(),
             None,
         ))
-        .merge(feedback_routes(pool.clone(), clock));
+        .merge(feedback_routes(pool.clone(), clock.clone()))
+        .merge(checkin_routes(pool.clone(), clock));
     World { app, who }
 }
 
@@ -379,9 +386,11 @@ async fn send(
         _ => csrf_token(&who.jar).expect("csrf"),
     };
     let fields = if path.starts_with("/f/") {
-        "body=Fake+words"
+        "&body=Fake+words"
+    } else if path.starts_with("/c/") {
+        ""
     } else {
-        "quote=1"
+        "&quote=1"
     };
     let fetch = if site == Site::Cross {
         "cross-site"
@@ -397,7 +406,7 @@ async fn send(
         .header("x-request-id", id.to_string())
         .header(header::COOKIE, cookie_header(&who.jar))
         .header(header::CONTENT_TYPE, "application/x-www-form-urlencoded")
-        .body(Body::from(format!("csrf={csrf}&{fields}")))
+        .body(Body::from(format!("csrf={csrf}{fields}")))
         .expect("request");
     let response = app.clone().oneshot(request).await.expect("response");
     let (parts, body) = response.into_parts();
@@ -425,7 +434,9 @@ fn names(text: &str, number: i64) -> bool {
 /// token, gets a bare 404 for a token that opens nothing (SEC-019, SEC-037, D-1945).
 async fn probe_link(w: &World, method: &str, template: &str, who: &Who) {
     let token = who.link.as_ref().map_or(UNISSUED, |(t, _)| t.as_str());
-    let path = template.replace("{token}", token);
+    let path = template
+        .replace("{token}", token)
+        .replace("{answer}", ANSWER);
     let (status, text, _) = send(&w.app, (method, &path), who, Site::Own).await;
     let case = format!("{method} {template} as {:?}", who.actor);
     let Some((own_token, own)) = &who.link else {
@@ -520,6 +531,7 @@ fn td_sec_01_route_table_is_generated_and_every_path_has_a_door() {
     served("/q/{token}", &["get", "post"]);
     served("/q/{token}/pick", &["post"]);
     served("/f/{token}", &["get", "post"]);
+    served("/c/{token}/{answer}", &["get", "post"]);
     served("/webhooks/stripe", &["post"]);
     assert!(
         table.contains_key("/h") && table.contains_key("/b"),
@@ -611,7 +623,7 @@ async fn sec_048_every_refusal_is_a_security_event(pool: PgPool) {
         for who in &w.who {
             for site in [Site::Cross, Site::WrongToken] {
                 let token = who.link.as_ref().map_or(UNISSUED, |(t, _)| t.as_str());
-                let target = path.replace("{token}", token);
+                let target = path.replace("{token}", token).replace("{answer}", ANSWER);
                 let (status, _, request) = send(&w.app, ("post", &target), who, site).await;
                 assert_eq!(status, 403, "{path} as {:?}", who.actor);
                 let rows: Vec<(String, String, Option<Uuid>)> = sqlx::query_as(
