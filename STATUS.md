@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-10T00:45:07Z by runner 978c68bffb01 (actions).
+Updated 2026-11-10T01:05:08Z by runner ee7121ce04eb (actions).
 
-**Idle since 00:32Z; 177 of 319 done; week 76% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 00:32Z; 177 of 324 done; week 76% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 177 of 319 build tasks (owner gates not counted)
+- **Tasks done:** 177 of 324 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 00:32Z (no task in progress)
 - **Week:** 76% used, 48.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:44Z, 0 min before this update
+- **Last run:** 00:45Z, 19 min before this update
 - **Keeper:** last ran 00:45Z, next wake 01:05Z
 
 ## Needs attention
@@ -38,6 +38,7 @@ Updated 2026-11-10T00:45:07Z by runner 978c68bffb01 (actions).
 | T259 | payments: the Stripe webhook dispatches refund, dispute and  | done | 1 | 61 min | 01:52Z |  |
 
 ### Plan and harness merges on main
+- 00:54Z Plan: sixth audit — $0 release bound to its pick, refund amounts checked, reconcile catch-up and paging, real Stripe reads, rate-limit prune, inbound-tex
 - 00:05Z Plan: fifth audit — every queued task kind gets a registered handler; late success on ended picks; unreadable Stripe success and unmatched fraud warning 
 - 21:41Z Plan: the LINK notice names the stored PIN; job_pin deleted (T326, D-2247) (#395)
 - 21:26Z Plan: T287 owns payments models.rs and T254's release_recovery test (D-2236) (#394)
@@ -46,8 +47,8 @@ Updated 2026-11-10T00:45:07Z by runner 978c68bffb01 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 242 of 732 (33.1%) · partial 292 · unstarted 198
-**Tasks merged (throughput only):** 177 of 319
+**Requirements verified:** 237 of 732 (32.4%) · partial 297 · unstarted 198
+**Tasks merged (throughput only):** 177 of 324
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -55,8 +56,8 @@ Updated 2026-11-10T00:45:07Z by runner 978c68bffb01 (actions).
 | ai | 11 | 13 | 5 | 29 |
 | businesses | 17 | 31 | 10 | 58 |
 | calls | 11 | 13 | 1 | 25 |
-| consent | 15 | 16 | 4 | 35 |
-| fees | 13 | 38 | 1 | 52 |
+| consent | 14 | 17 | 4 | 35 |
+| fees | 10 | 41 | 1 | 52 |
 | intake | 20 | 14 | 9 | 43 |
 | job-cards | 12 | 10 | 2 | 24 |
 | licensing | 33 | 14 | 1 | 48 |
@@ -64,7 +65,7 @@ Updated 2026-11-10T00:45:07Z by runner 978c68bffb01 (actions).
 | messaging | 16 | 25 | 4 | 45 |
 | ops-recovery | 2 | 5 | 47 | 54 |
 | privacy | 7 | 21 | 3 | 31 |
-| quiet-hours | 8 | 1 | 0 | 9 |
+| quiet-hours | 7 | 2 | 0 | 9 |
 | quotes-pick | 31 | 15 | 10 | 56 |
 | recurring | 7 | 1 | 3 | 11 |
 | security | 7 | 40 | 7 | 54 |
@@ -82,7 +83,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 57 of 120 done
+- stage 4: 57 of 125 done
 - stage 5: 0 of 53 done
 - stage 6: 0 of 30 done
 - stage 7: 0 of 2 done
