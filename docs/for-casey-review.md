@@ -2,6 +2,16 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## The sixth outside review (plan change, D-2301 to D-2307, November 10)
+
+- **What it found.** Three of its eight points were already handled by the fifth review's tasks. The new ones: a free ($0) pick's release check didn't confirm that the free decision belonged to that same pick, so one free decision could have waived the fee on another job of the same business; a refund was booked as the whole charge without checking what Stripe actually refunded; the nightly money check only looked back 7 days and read everything at once; the rate-limit counters (which hold visitors' internet addresses) were never cleaned up; and a text that failed to process was only alerted, never retried.
+- **What changed.** Five new tasks (T333 to T337) plus additions to T261, T255, T319 and T328. Choices made for you:
+  - **Only full refunds.** Ask Hava only ever refunds a whole charge. If Stripe ever reports a smaller refund or another currency, the books record what Stripe says and you get an alert.
+  - **Money-check catch-up.** If the nightly check was down, it catches up from its last good run, up to 25 days back (Stripe keeps 30). If the gap is longer, you get an alert to check Stripe by hand.
+  - **Text retry (the overseer's call, made under your "final say").** A text that failed to process is tried again up to 3 times. Each try reads the text back from Twilio, which keeps it until day 31. The app never stores the text itself; after day 31 the retry stops.
+  - **Rate-limit cleanup.** Old counters are deleted daily, so visitors' addresses aren't kept longer than a few days.
+- **Nothing needs you.**
+
 ## The fifth outside code review (plan change, D-2284 to D-2289, November 9)
 
 - **What it found.** Seventeen of its twenty points repeat the fourth review and already have tasks. Three are new. The biggest: several background jobs the app queues have no worker set up to run them, mostly payment ones (checking a charge that hasn't answered, the timers, refund retries, the nightly money check) plus some business emails, the charge receipt and the safety call. Today they would just pile up unrun. The other two: a Stripe "payment succeeded" message with a missing job reference, and a fraud warning that arrives before its charge record, were each being dropped without telling you.
