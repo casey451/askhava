@@ -387,3 +387,182 @@ examples:
     situation: new_customer
     quote: {type: hourly, rate: "100.00", hours_low: "6", hours_high: "10"}
     expected: {outcome: refused, fee_basis: null, fee: 0, waived: 0}
+
+  # ---- One-cent-wide recurring ranges at the $500 and $1,500 edges: the 4-month basis is
+  # worked exactly from the sum of the ends and rounded down once (D-033, D-1874, D-2386) ----
+
+  - id: W41
+    description: Weekly range $28.84 to $28.85 has a 4-month basis of exactly $499.98, below the $500 edge
+    category: pool_cleaning
+    business: qualified
+    situation: new_customer
+    quote: {type: range, low: "28.84", high: "28.85", period: weekly}
+    expected: {outcome: charged, fee_basis: "499.98", fee: 25, waived: 0}
+
+  - id: W42
+    description: Weekly range $28.85 to $28.86 has a 4-month basis of $500.1533, rounded down once to $500.15, above the $500 edge
+    category: pool_cleaning
+    business: qualified
+    situation: new_customer
+    quote: {type: range, low: "28.85", high: "28.86", period: weekly}
+    expected: {outcome: charged, fee_basis: "500.15", fee: 75, waived: 0}
+
+  - id: W43
+    description: Weekly range $86.53 to $86.54 has a 4-month basis of exactly $1,499.94, below the $1,500 edge
+    category: pool_cleaning
+    business: qualified
+    situation: new_customer
+    quote: {type: range, low: "86.53", high: "86.54", period: weekly}
+    expected: {outcome: charged, fee_basis: "1499.94", fee: 75, waived: 0}
+
+  - id: W44
+    description: Weekly range $86.54 to $86.55 has a 4-month basis of $1,500.1133, rounded down once to $1,500.11, above the $1,500 edge
+    category: pool_cleaning
+    business: qualified
+    situation: new_customer
+    quote: {type: range, low: "86.54", high: "86.55", period: weekly}
+    expected: {outcome: charged, fee_basis: "1500.11", fee: 75, waived: 0}
+
+  - id: W45
+    description: Every-two-weeks range $57.68 to $57.69 has a 4-month basis of $499.9367, rounded down once to $499.93, below the $500 edge
+    category: house_cleaning
+    business: qualified
+    situation: new_customer
+    quote: {type: range, low: "57.68", high: "57.69", period: every_two_weeks}
+    expected: {outcome: charged, fee_basis: "499.93", fee: 25, waived: 0}
+
+  - id: W46
+    description: Every-two-weeks range $57.69 to $57.70 has a 4-month basis of $500.0233, rounded down once to $500.02, above the $500 edge
+    category: house_cleaning
+    business: qualified
+    situation: new_customer
+    quote: {type: range, low: "57.69", high: "57.70", period: every_two_weeks}
+    expected: {outcome: charged, fee_basis: "500.02", fee: 75, waived: 0}
+
+  - id: W47
+    description: Every-two-weeks range $173.07 to $173.08 has a 4-month basis of $1,499.9833, rounded down once to $1,499.98, below the $1,500 edge
+    category: house_cleaning
+    business: qualified
+    situation: new_customer
+    quote: {type: range, low: "173.07", high: "173.08", period: every_two_weeks}
+    expected: {outcome: charged, fee_basis: "1499.98", fee: 75, waived: 0}
+
+  - id: W48
+    description: Every-two-weeks range $173.08 to $173.09 has a 4-month basis of exactly $1,500.07, above the $1,500 edge
+    category: house_cleaning
+    business: qualified
+    situation: new_customer
+    quote: {type: range, low: "173.08", high: "173.09", period: every_two_weeks}
+    expected: {outcome: charged, fee_basis: "1500.07", fee: 75, waived: 0}
+
+  - id: W49
+    description: Monthly range $124.99 to $125.00 has a 4-month basis of exactly $499.98, below the $500 edge
+    category: landscape_maintenance
+    business: qualified
+    situation: new_customer
+    quote: {type: range, low: "124.99", high: "125.00", period: monthly}
+    expected: {outcome: charged, fee_basis: "499.98", fee: 25, waived: 0}
+
+  - id: W50
+    description: Monthly range $125.00 to $125.01 has a 4-month basis of exactly $500.02, above the $500 edge
+    category: landscape_maintenance
+    business: qualified
+    situation: new_customer
+    quote: {type: range, low: "125.00", high: "125.01", period: monthly}
+    expected: {outcome: charged, fee_basis: "500.02", fee: 75, waived: 0}
+
+  - id: W51
+    description: Monthly range $374.99 to $375.00 has a 4-month basis of exactly $1,499.98, below the $1,500 edge
+    category: landscape_maintenance
+    business: qualified
+    situation: new_customer
+    quote: {type: range, low: "374.99", high: "375.00", period: monthly}
+    expected: {outcome: charged, fee_basis: "1499.98", fee: 75, waived: 0}
+
+  - id: W52
+    description: Monthly range $375.00 to $375.01 has a 4-month basis of exactly $1,500.02, above the $1,500 edge
+    category: landscape_maintenance
+    business: qualified
+    situation: new_customer
+    quote: {type: range, low: "375.00", high: "375.01", period: monthly}
+    expected: {outcome: charged, fee_basis: "1500.02", fee: 75, waived: 0}
+
+  - id: W53
+    description: Quarterly range $374.99 to $375.00 has a 4-month basis of $499.9933, rounded down once to $499.99, below the $500 edge
+    category: trash_can_cleaning
+    business: qualified
+    situation: new_customer
+    quote: {type: range, low: "374.99", high: "375.00", period: quarterly}
+    expected: {outcome: charged, fee_basis: "499.99", fee: 25, waived: 0}
+
+  - id: W54
+    description: Quarterly range $375.00 to $375.01 has a 4-month basis of $500.0067, rounded down once to $500.00, at the $500 edge
+    category: trash_can_cleaning
+    business: qualified
+    situation: new_customer
+    quote: {type: range, low: "375.00", high: "375.01", period: quarterly}
+    expected: {outcome: charged, fee_basis: "500.00", fee: 75, waived: 0}
+
+  - id: W55
+    description: Quarterly range $1,124.99 to $1,125.00 has a 4-month basis of $1,499.9933, rounded down once to $1,499.99, below the $1,500 edge
+    category: trash_can_cleaning
+    business: qualified
+    situation: new_customer
+    quote: {type: range, low: "1124.99", high: "1125.00", period: quarterly}
+    expected: {outcome: charged, fee_basis: "1499.99", fee: 75, waived: 0}
+
+  - id: W56
+    description: Quarterly range $1,125.00 to $1,125.01 has a 4-month basis of $1,500.0067, rounded down once to $1,500.00, at the $1,500 edge
+    category: trash_can_cleaning
+    business: qualified
+    situation: new_customer
+    quote: {type: range, low: "1125.00", high: "1125.01", period: quarterly}
+    expected: {outcome: charged, fee_basis: "1500.00", fee: 75, waived: 0}
+
+  - id: W57
+    description: Yearly range $1,499.97 to $1,499.98 has a 4-month basis of $499.9917, rounded down once to $499.99, below the $500 edge
+    category: home_watch
+    business: qualified
+    situation: new_customer
+    quote: {type: range, low: "1499.97", high: "1499.98", period: yearly}
+    expected: {outcome: charged, fee_basis: "499.99", fee: 25, waived: 0}
+
+  - id: W58
+    description: Yearly range $1,500.00 to $1,500.01 has a 4-month basis of $500.0017, rounded down once to $500.00, at the $500 edge
+    category: home_watch
+    business: qualified
+    situation: new_customer
+    quote: {type: range, low: "1500.00", high: "1500.01", period: yearly}
+    expected: {outcome: charged, fee_basis: "500.00", fee: 75, waived: 0}
+
+  - id: W59
+    description: Yearly range $1,500.03 to $1,500.04 has a 4-month basis of $500.0117, rounded down once to $500.01, above the $500 edge
+    category: home_watch
+    business: qualified
+    situation: new_customer
+    quote: {type: range, low: "1500.03", high: "1500.04", period: yearly}
+    expected: {outcome: charged, fee_basis: "500.01", fee: 75, waived: 0}
+
+  - id: W60
+    description: Yearly range $4,499.97 to $4,499.98 has a 4-month basis of $1,499.9917, rounded down once to $1,499.99, below the $1,500 edge
+    category: home_watch
+    business: qualified
+    situation: new_customer
+    quote: {type: range, low: "4499.97", high: "4499.98", period: yearly}
+    expected: {outcome: charged, fee_basis: "1499.99", fee: 75, waived: 0}
+
+  - id: W61
+    description: Yearly range $4,500.00 to $4,500.01 has a 4-month basis of $1,500.0017, rounded down once to $1,500.00, at the $1,500 edge
+    category: home_watch
+    business: qualified
+    situation: new_customer
+    quote: {type: range, low: "4500.00", high: "4500.01", period: yearly}
+    expected: {outcome: charged, fee_basis: "1500.00", fee: 75, waived: 0}
+
+  - id: W62
+    description: Yearly range $4,500.03 to $4,500.04 has a 4-month basis of $1,500.0117, rounded down once to $1,500.01, above the $1,500 edge
+    category: home_watch
+    business: qualified
+    situation: new_customer
+    quote: {type: range, low: "4500.03", high: "4500.04", period: yearly}
+    expected: {outcome: charged, fee_basis: "1500.01", fee: 75, waived: 0}
