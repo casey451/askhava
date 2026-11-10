@@ -68,7 +68,9 @@ DATA_PATH = re.compile(
     r"""(["'])(?:[^"'\n]*?/)?((?:docs|kit|migrations|tests|app|twin|stand_ins)/[A-Za-z0-9_./-]+"""
     r"""\.(?:ya?ml|json|toml|csv|txt|md|sql|html))\1"""
 )
-BINDING = re.compile(r"^\s*(?:pub\s+)?(?:const|static|let|export\s+const)?\s*([A-Za-z_][A-Za-z0-9_]*)\s*(?::[^=\n]*)?=")
+# A module-level name bound on the path's line (`const FILE: &str = include_str!(..)`, `GOLDEN = ...`); a
+# name bound inside a function is not needed (the path itself is then in the function's text).
+BINDING = re.compile(r"^(?:pub\s+)?(?:(?:const|static|let|export\s+const)\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*(?::[^=\n]*)?=")
 RUST_EQ = re.compile(r"assert_eq!\(\s*([^,;]+?)\s*,\s*([^,;]+?)\s*[,)]")
 PY_LEN = re.compile(r"^\s*assert\s+((?:len|sum)\(.+?\))\s*==\s*(\d+)\b", re.MULTILINE)
 TS_LEN = re.compile(r"(\S+?)(?:\)\.toHaveLength\(|\.length\)\.toBe\(|\.length\s*===?\s*)(\d+)\)?")

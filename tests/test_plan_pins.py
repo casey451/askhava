@@ -363,3 +363,10 @@ def test_a_route_matrix_held_as_a_string_in_a_python_test_is_no_pin() -> None:
     """This file holds MATRIX as a fixture; only a Rust test is a route pin (found on the real repo)."""
     assert pp.route_pins("tests/test_fake.py", MATRIX) == []
     assert [p.symbol for p in pp.route_pins("tests/security/tests/auth_matrix.rs", MATRIX)] == ["door()"]
+
+
+def test_a_local_name_bound_beside_a_path_ties_no_other_function() -> None:
+    """A path in an indented line (`root = repo(owns=["docs/x.yaml"])`) binds no name: `root` would else
+    tie every function that uses it (found on this file in the real repo)."""
+    text = 'def test_a():\n    root = repo(owns=["docs/catalog/x.yaml"])\n\n\nFILE = "docs/catalog/y.yaml"\n'
+    assert pp.data_reads(text) == {"docs/catalog/x.yaml": set(), "docs/catalog/y.yaml": {"FILE"}}
