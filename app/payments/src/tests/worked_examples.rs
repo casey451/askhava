@@ -15,8 +15,10 @@ const CATEGORIES: &str = include_str!("../../../../docs/catalog/categories.yaml"
 const EXAMPLES: &str = include_str!("../../../../docs/catalog/worked_examples.yaml");
 
 /// Rows with a recurring period: T188's.
-const RECURRING: [&str; 13] = [
+const RECURRING: [&str; 35] = [
     "W11", "W12", "W13", "W14", "W15", "W16", "W17", "W18", "W19", "W20", "W30", "W33", "W37",
+    "W41", "W42", "W43", "W44", "W45", "W46", "W47", "W48", "W49", "W50", "W51", "W52", "W53",
+    "W54", "W55", "W56", "W57", "W58", "W59", "W60", "W61", "W62",
 ];
 /// Rows refused by the handyman limit: `licensing`'s.
 const REFUSED: [&str; 3] = ["W26", "W27", "W40"];
