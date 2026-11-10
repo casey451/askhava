@@ -23,10 +23,10 @@ pub use crate::business_notices::{
 };
 pub use crate::email::{
     COMPLAINT_ALERT, DailyLimit, EMAIL_ACTION, EmailClass, EmailEvent, EmailSent, EmailTo, FROM,
-    MailboxKind, NewEmail, Notice, PostalAddress, REPLY_TO, Recipient, Rendered, UpdateChannel,
-    WEBHOOK_GRACE, WEBHOOKS_SILENT_ALERT, check_webhook_silence, email_log, email_status,
-    next_reset, queue_email, receive_email_event, render as render_email, send_email,
-    set_update_channel, update_channel,
+    MailboxKind, NewEmail, Notice, OnDomain, PostalAddress, Recipient, Rendered, Sender,
+    UpdateChannel, WEBHOOK_GRACE, WEBHOOKS_SILENT_ALERT, check_webhook_silence, email_log,
+    email_status, next_reset, queue_email, receive_email_event, render as render_email, reply_to,
+    send_email, set_update_channel, update_channel,
 };
 pub use crate::email_timing::{
     NewNoticeLog, NoticeEntry, NoticeKind, ProviderStatus, Sending, mark_sent, notice_log,

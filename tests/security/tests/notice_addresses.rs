@@ -7,7 +7,11 @@ use askhava_businesses::api::{
     add_member, add_owner, confirm_mailbox, create, mark_returned, may_get_notices, record_step_up,
     remove_member, request_notice_change, verified_by_link,
 };
-use askhava_messaging::api::FROM;
+use askhava_core::api::{Brand, brand};
+use askhava_messaging::api::{
+    Audience, FROM, Language, MailboxKind, Notice, PostalAddress, Recipient, Registry, SIGN_IN_URL,
+    WHY_CHARGED_PREFIX, render_email, reply_to,
+};
 use askhava_portals::api::{
     BUSINESS_SESSION_LIFE, BusinessPrincipal, ChannelChangeError, ChannelFacts, CookieJar,
     NoticeAddress, Realm, business_principal, change_channel, notice_settings_page, start_session,
@@ -143,7 +147,150 @@ async fn td_sec_07_only_the_owner_changes_and_the_new_address_is_verified_first(
 /// TD-SEC-07 (SEC-025): every business email comes from the one askhava.com sending subdomain.
 #[test]
 fn td_sec_07_business_email_comes_from_the_sending_subdomain() {
-    assert_eq!(FROM, "\"Ask Hava\" <jobs@notify.askhava.com>");
+    assert_eq!(FROM.to_string(), "\"Ask Hava\" <jobs@notify.askhava.com>");
+}
+
+/// A brand file like the embedded one with `short` as both short names (fake, D-1932).
+fn fake_brand(short: &str) -> Brand {
+    let mut data: serde_json::Value =
+        serde_json::from_str(include_str!("../../../app/core/data/brand.json")).expect("brand");
+    data["short_name"] = short.into();
+    data["es"]["short_name"] = short.into();
+    Brand::parse(&data.to_string()).expect("fake brand")
+}
+
+/// One template in each language, `segments` 1, with the English and Spanish text given.
+fn one_template(en: &str, es: &str) -> (String, String) {
+    let entry = |text: &str, draft: bool| {
+        serde_json::json!({"t": {"audience": "homeowner", "segments": 1, "draft": draft, "text": text}})
+            .to_string()
+    };
+    (entry(en, false), entry(es, true))
+}
+
+/// TD-WORD-35 (WORD-001, WORD-008, TXT-001, TXT-044, D-1932): every registry text is today's under
+/// the embedded brand and opens `<short_name>:`; a registry filled under a brand whose text then
+/// lacks `<short_name>:` or needs more segments than recorded is refused.
+#[test]
+fn td_word_35_the_registry_fills_the_brand_and_refuses_a_lacking_or_longer_text() {
+    let registry = Registry::embedded().expect("registry");
+    let raw: [serde_json::Value; 2] = [
+        serde_json::from_str(include_str!("../../../app/messaging/templates/en.json")).expect("en"),
+        serde_json::from_str(include_str!("../../../app/messaging/templates/es.json")).expect("es"),
+    ];
+    for (language, file, spanish) in [
+        (Language::En, &raw[0], false),
+        (Language::Es, &raw[1], true),
+    ] {
+        for id in registry.ids() {
+            let before = brand()
+                .fill(file[&id]["text"].as_str().expect("text"), spanish)
+                .expect("fill");
+            let (text, _) = registry.template(&id, language).expect("template");
+            assert_eq!(text, before, "{id}");
+            assert!(text.starts_with("Ask Hava:"), "{id}");
+        }
+    }
+    let tail = "a".repeat(140);
+    let (en, es) = one_template(
+        &format!("{{brand_short}}: {tail}"),
+        &format!("{{brand_short}}: {tail}"),
+    );
+    let filled = Registry::parse_with(&en, &es, brand()).expect("fits one segment");
+    assert_eq!(
+        filled.template("t", Language::En).expect("t").0,
+        format!("Ask Hava: {tail}")
+    );
+    let longer = fake_brand("Fakeco Home Services");
+    assert!(
+        Registry::parse_with(&en, &es, &longer).is_err(),
+        "a longer brand adds a segment"
+    );
+    let (en, es) = one_template("{brand_short}: Hi.", "{brand_short}: Hola.");
+    assert!(Registry::parse_with(&en, &es, &longer).is_ok());
+    let (en, es) = one_template("Ask Hava: Hi.", "Ask Hava: Hola.");
+    assert!(
+        Registry::parse_with(&en, &es, &longer).is_err(),
+        "lacks <short_name>:"
+    );
+    let (en, es) = one_template("{brand_short}: Hi.", "{brand_nope}: Hola.");
+    assert!(
+        Registry::parse_with(&en, &es, brand()).is_err(),
+        "an unknown brand token"
+    );
+}
+
+/// Each audience and language: the still-open email's subject and why-line in today's words.
+const EMAIL_CASES: [(Audience, Language, &str, &str); 4] = [
+    (
+        Audience::Business,
+        Language::En,
+        "Ask Hava: Request 1042 is still open",
+        "You get these emails because your business signed up for job requests from Ask Hava.",
+    ),
+    (
+        Audience::Homeowner,
+        Language::En,
+        "Ask Hava: Request 1042 is still open",
+        "You get these emails because you asked Ask Hava for quotes.",
+    ),
+    (
+        Audience::Business,
+        Language::Es,
+        "Ask Hava: La solicitud 1042 sigue abierta",
+        "Recibe estos correos porque su negocio se inscribió para recibir solicitudes de trabajo de Ask Hava.",
+    ),
+    (
+        Audience::Homeowner,
+        Language::Es,
+        "Ask Hava: La solicitud 1042 sigue abierta",
+        "Recibe estos correos porque pidió cotizaciones a Ask Hava.",
+    ),
+];
+
+/// TD-WORD-35 (SEC-025, WORD-001, WORD-008, D-1932): the sender, Reply-To, subjects, why-lines and
+/// footer entity come from the brand file, in today's words.
+#[test]
+fn td_word_35_the_email_sender_subjects_and_footers_come_from_the_brand() {
+    let b = brand();
+    assert_eq!(
+        FROM.to_string(),
+        format!("\"{}\" <{}>", b.email_from_name(), b.email_from_address())
+    );
+    assert_eq!(reply_to(), "help@askhava.com");
+    assert_eq!(
+        WHY_CHARGED_PREFIX.to_string(),
+        "https://askhava.com/b/charges/"
+    );
+    assert_eq!(SIGN_IN_URL.to_string(), "https://askhava.com/b/sign-in");
+    let postal = PostalAddress::new(
+        "PO Box 1234, Lake Havasu City, AZ 86405",
+        MailboxKind::PoBox,
+    )
+    .expect("postal");
+    for (audience, language, subject, why) in EMAIL_CASES {
+        let to = Recipient {
+            id: Uuid::from_u128(1),
+            audience,
+            language,
+            manage_url: "https://askhava.com/b",
+        };
+        let email = render_email(&postal, &to, Notice::StillOpen(1042)).expect("email");
+        assert_eq!(email.subject, subject);
+        assert!(email.subject.starts_with(&format!("{}:", b.short_name())));
+        assert!(email.plain.contains(&format!("\n{why}\n")), "{why}");
+        assert!(
+            email
+                .plain
+                .ends_with("\nAsk Hava LLC, PO Box 1234, Lake Havasu City, AZ 86405\n")
+        );
+        assert!(
+            email
+                .html
+                .contains("<p>Ask Hava LLC, PO Box 1234, Lake Havasu City, AZ 86405</p>")
+        );
+        assert!(email.html.contains(&format!("<p>{}, ", b.legal_name())));
+    }
 }
 
 async fn principal(db: &mut PgConnection, who: Acting) -> BusinessPrincipal {
