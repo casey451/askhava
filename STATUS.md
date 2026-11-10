@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-10T23:21:24Z by runner 5eb1d42b3e9b (actions).
+Updated 2026-11-10T23:21:38Z by runner 5eb1d42b3e9b (actions).
 
-**Building: T311 in progress since 22:48Z; 190 of 336 done; week 51% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T207 in progress since 22:57Z; 190 of 336 done; week 51% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 190 of 336 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T311 claimed 22:48Z, lease until 01:48Z; lane 2: T207 claimed 22:57Z, lease until 01:57Z
+- **Lane:** lane 2: T207 claimed 22:57Z, lease until 01:57Z
 - **Week:** 51% used, 89.4M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 22:57Z, 23 min before this update
 - **Keeper:** last ran 22:36Z, next wake 04:16Z
@@ -17,9 +17,10 @@ Updated 2026-11-10T23:21:24Z by runner 5eb1d42b3e9b (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T311 | calls and server: a voice read-back confirm connects only th | MERGE_PENDING | 2 | 33 min | 23:21Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T338 | adapters (harness): the refused-connection test holds its po | done | 1 | 24 min | 20:45Z |  |
 | T155 | businesses: sign-up capability setup pre-ticked from the lic | done | 1 | 57 min | 20:15Z |  |
-| T311 | calls and server: a voice read-back confirm connects only th | check_failed | 1 | 21 min | 18:54Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
+| T311 | calls and server: a voice read-back confirm connects only th | check_failed | 1 | 21 min | 18:54Z |  |
 | T294 | portals and site: every page takes the brand from the brand  | done | 1 | 42 min | 18:32Z |  |
 | T231 | portals (harness): the homeowner check-in email buttons and  | done | 2 | 26 min | 17:08Z | T231 built and committed (b2f7b11e, 26074ad1) but smoke red: tests/security/tests/auth_matrix.rs (T088, protected, no se |
 | T231 | portals (harness): the homeowner check-in email buttons and  | QUEUED | 1 | 28 min | 15:58Z |  |
@@ -102,8 +103,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T311 (lease until 2026-11-11T01:48:18Z)
+- nothing
 - lane 2: T207 (lease until 2026-11-11T01:57:48Z)
 
 ## Last usage reading
-- {"task": "T338", "at": "2026-11-10T20:45:02Z", "cache_creation_input_tokens": 98889, "cache_read_input_tokens": 1011144, "output_tokens": 20804, "input_tokens": 65}
+- {"task": "T311", "at": "2026-11-10T23:21:24Z", "input_tokens": 159, "output_tokens": 39656, "cache_creation_input_tokens": 253732, "cache_read_input_tokens": 3767970}
