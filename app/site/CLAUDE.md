@@ -29,4 +29,4 @@ The layer-8 crate for the public website (`docs/architecture.md` section 3). For
 
 - `tests/security/tests/no_third_party.rs` (TD-SEC-04): `cargo test -p askhava-security --test no_third_party`.
 - `app/portals/src/security.rs` `tests` (TD-SEC-04): `cargo test -p askhava-portals`.
-- `app/portals/src/tests/brand_pages.rs` (TD-WORD-37: the title suffix and home link are today's bytes): `cargo test -p askhava-portals tests::brand_pages`.
+- `app/portals/src/feedback.rs` `brand_tests` (TD-WORD-37: the title suffix and home link are today's bytes): `cargo test -p askhava-portals feedback::brand_tests`.
