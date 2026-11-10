@@ -35,13 +35,24 @@ pub const NOTICE_OFF: [&str; 2] = [
     "Las solicitudes de trabajo y las selecciones llegan por correo electrónico. No enviamos \
 mensajes de texto ni llamamos a los negocios.",
 ];
-/// WEB-024, TXT-035: the notice line while business texting is on, English and Spanish.
-pub const NOTICE_ON: [&str; 2] = [
-    "Choose how you get job requests and picks: email, text or both. Ask Hava never calls you \
+/// WEB-024, TXT-035, WORD-001: the notice line while business texting is on, English and Spanish,
+/// with the brand file's display name and its Spanish form (D-1932, T294).
+#[must_use]
+pub fn notice_on() -> [String; 2] {
+    let brand = askhava_core::api::brand();
+    [
+        format!(
+            "Choose how you get job requests and picks: email, text or both. {} never calls you \
 with a recording.",
-    "Elija cómo recibir las solicitudes de trabajo y las selecciones: correo electrónico, texto o \
-ambos. Ask Hava nunca le llama con una grabación.",
-];
+            brand.display_name()
+        ),
+        format!(
+            "Elija cómo recibir las solicitudes de trabajo y las selecciones: correo electrónico, \
+texto o ambos. {} nunca le llama con una grabación.",
+            brand.es().display_name()
+        ),
+    ]
+}
 
 /// LIC-047, D-417: the pest-control attestation and its record categories.
 pub const PEST_ATTESTATION: &str =
@@ -50,11 +61,15 @@ pub const PEST_ATTESTATION: &str =
 /// WEB-024, TXT-035, D-493: the notice line for the business-texting switch, in `language`, with
 /// its `lang` code: the sign-up page is English, so a Spanish line is marked `lang="es"` (A11Y).
 #[must_use]
-pub const fn notice_line(texting_on: bool, language: PageLanguage) -> (&'static str, &'static str) {
-    let lines = if texting_on { NOTICE_ON } else { NOTICE_OFF };
+pub fn notice_line(texting_on: bool, language: PageLanguage) -> (String, &'static str) {
+    let [en, es] = if texting_on {
+        notice_on()
+    } else {
+        NOTICE_OFF.map(String::from)
+    };
     match language {
-        PageLanguage::En => (lines[0], "en"),
-        PageLanguage::Es => (lines[1], "es"),
+        PageLanguage::En => (en, "en"),
+        PageLanguage::Es => (es, "es"),
     }
 }
 
@@ -192,7 +207,7 @@ pub struct Parts<'a> {
 #[template(path = "business_signup.html")]
 struct SignupView<'a> {
     title: &'static str,
-    notice: &'static str,
+    notice: String,
     notice_lang: &'static str,
     someone_else: &'static str,
     lines: Vec<String>,

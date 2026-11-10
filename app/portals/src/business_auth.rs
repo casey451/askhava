@@ -79,8 +79,11 @@ pub const LINKS_PER_LIFE: i64 = 5;
 pub const DEVICE_COOKIE: &str = "__Host-askhava-device";
 /// How long a device stays known after a correct code (D-1773).
 pub const DEVICE_LIFE: SignedDuration = SignedDuration::from_hours(180 * 24);
-/// The site the emailed link points at (SEC-025: askhava.com only).
-const SITE: &str = "https://askhava.com";
+/// SEC-025, WORD-001: the site the emailed link points at, `https://` on the brand file's public
+/// domain only (D-1932, T294).
+pub(crate) fn site() -> String {
+    format!("https://{}", askhava_core::api::brand().domain())
+}
 /// Wrong codes (or failed checks) one link takes; the next try uses the link up (D-1777).
 pub const CODE_TRIES: i64 = 5;
 
@@ -476,7 +479,7 @@ async fn send_one<M: SignInMail>(
         .map_err(|_| PortalsError::BadLifetime)?;
     let token = models::new_link_token()?;
     models::insert_link(db, &token, (member.id, to.business), (now, expires)).await?;
-    let link = SecretString::from(format!("{SITE}/b/sign-in/{token}"));
+    let link = SecretString::from(format!("{}/b/sign-in/{token}", site()));
     state.mail.send_link(db, to, &link).await
 }
 
