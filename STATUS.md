@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-10T13:02:22Z by runner f973fd9232c2 (actions).
+Updated 2026-11-10T13:26:41Z by runner 77805472a1cd (actions).
 
-**Idle since 12:50Z; 185 of 333 done; week 88% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T199 in progress since 13:18Z; 185 of 333 done; week 88% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 185 of 333 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 12:50Z (no task in progress)
-- **Week:** 88% used, 22.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:02Z, 0 min before this update
+- **Lane:** lane 1: T199 claimed 13:18Z, lease until 16:18Z
+- **Week:** 88% used, 18.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Last run:** 13:02Z, 24 min before this update
 - **Keeper:** last ran 13:02Z, next wake 13:22Z
 
 ## Needs attention
@@ -35,9 +35,9 @@ Updated 2026-11-10T13:02:22Z by runner f973fd9232c2 (actions).
 | T276 | privacy and messaging: purged photos' sealed objects and orp | done | 1 | 53 min | 17:46Z |  |
 | T275 | adapters and stand-ins: local write-once storage that a raci | done | 1 | 38 min | 16:08Z |  |
 | T274 | intake and privacy: the 180-day contact purge decides and cl | done | 1 | 66 min | 14:56Z |  |
-| T270 | picks and payments: the unreachable refund and the fraud war | done | 1 | 29 min | 13:17Z |  |
 
 ### Plan and harness merges on main
+- 13:07Z Plan: no handyman split-job check — each job judged by its own price (Casey's ruling; D-2407, D-2408, T347) (#416)
 - 09:36Z Plan: T290 may update the two tests that pin recurring rows by data; nearest reachable bases (D-2386) (#413)
 - 03:30Z Plan: pentest assessment — Actions pinned, purpose-bound codes, Verify sends outside transactions (D-2346–D-2350, T345–T346) (#407)
 - 02:15Z Plan: seventh audit — fee facts from the job's category at the pick, tier and per-visit picks, whole-field quote gate, atomic Verify cap (D-2329–D-2335, 
@@ -80,7 +80,7 @@ Updated 2026-11-10T13:02:22Z by runner f973fd9232c2 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-10T11:30:45Z (week)): five-hour: 2.4M used, 26.7M left, resets 2026-11-10T15:21:11Z; week: 172.0M used, 22.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-01T18:13:18Z.
+- Pacing (session_reading 2026-11-10T13:02:08Z (week)): five-hour: 4.5M used, 24.6M left, resets 2026-11-10T15:21:11Z; week: 176.0M used, 18.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-01T13:40:53Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -95,7 +95,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T199 (lease until 2026-11-10T16:18:18Z)
 
 ## Last usage reading
 - {"task": "T293", "at": "2026-11-10T12:35:44Z", "cache_creation_input_tokens": 460225, "input_tokens": 314, "output_tokens": 80290, "cache_read_input_tokens": 15176330}
