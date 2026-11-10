@@ -179,10 +179,10 @@ struct StalledStripe {
     fetches: Mutex<VecDeque<&'static str>>,
 }
 
-fn intent(status: &str) -> Result<PaymentIntent, AdapterError> {
+fn intent(state: &str) -> Result<PaymentIntent, AdapterError> {
     Ok(PaymentIntent {
         id: "pi_FakeT286".to_owned(),
-        status: status.to_owned(),
+        status: state.to_owned(),
         amount: 2500,
         currency: "usd".to_owned(),
         customer: "cus_FakeT286".to_owned(),
