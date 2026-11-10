@@ -456,7 +456,7 @@ The list below is the minimum, not the whole set:
 
 **Routing**
 - Licensing per the category list: pest, alarm, inspection and septic jobs go to licensees only.
-- Handyman cap, split-job check, gas and permit block, and the disclosure line.
+- Handyman cap on each job's own price (no split-job check, D-2407), gas and permit block, and the disclosure line.
 - Junk removal and garage doors are off at launch.
 - The Spanish tag is shown only to businesses that ticked "We speak Spanish." There is no tenant flag (D-437).
 
