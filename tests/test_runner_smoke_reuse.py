@@ -46,6 +46,14 @@ def test_a_later_red_or_timed_out_run_on_the_same_head_ends_the_reuse(later: dic
     assert st.reusable_smoke(_state(_run(HEAD), later), HEAD, NOW) is None
 
 
+def test_a_red_run_on_the_head_ends_the_reuse_even_when_a_green_came_after() -> None:
+    assert st.reusable_smoke(_state(_run(HEAD, ok=False), _run(HEAD)), HEAD, NOW) is None
+    assert st.reusable_smoke(_state(_run(HEAD, ok=False, timed_out=True), _run(HEAD)), HEAD, NOW) is not None, "a timeout is no verdict"
+    strike = {"sha": HEAD, "at": st.iso(NOW), "why": "smoke red while Ci, Twin and Ally were green on the head"}
+    assert st.reusable_smoke(_state(_run(HEAD), smoke_env_problems=[strike]), HEAD, NOW) is None
+    assert st.reusable_smoke(_state(_run(HEAD), smoke_env_problems=[dict(strike, sha=OLD)]), HEAD, NOW) is not None
+
+
 def test_never_while_main_is_red_nor_on_a_head_that_was_once_red() -> None:
     red = {"check": "smoke", "sha": HEAD, "task": "T001", "revert_sha": "m1", "files": [], "set_at": st.iso(NOW)}
     assert st.reusable_smoke(_state(_run(HEAD), main_red=red), HEAD, NOW) is None
@@ -214,13 +222,84 @@ def test_a_background_smoke_that_ended_without_a_result_is_no_verdict(job: Path,
     assert not (job / ge.SMOKE_BG).exists(), "the next call starts afresh"
 
 
-def test_one_for_an_older_head_still_running_is_waited_out_never_doubled(job: Path, tmp_path: Path) -> None:
+def test_one_for_an_older_head_still_running_is_stopped_before_the_new_head_is_smoked(job: Path, tmp_path: Path) -> None:
     env, _ = _env(tmp_path)
     started = _background(env, job, [None], [True])
     env.smoke_main()
+    stops: list[str] = []
+    env.bg_stop = lambda: stops.append("stop") or "stopped"  # type: ignore[assignment]  # reason: no real process
     env.main_head = lambda: OLD  # type: ignore[method-assign]  # reason: main moved while it ran
-    assert env.smoke_main() == (False, OLD) and env.smoke_pending and started == [HEAD]
-    assert env.log[-1] == f"the background smoke of {HEAD[:12]} still runs; main is now {OLD[:12]}"
+    _background(env, job, [_bg_result(OLD)], [True])
+    env.bg_start = lambda head, root: started.append(head) or 4343  # type: ignore[assignment]  # reason: count starts
+    assert env.smoke_main() == (True, OLD) and stops == ["stop"] and started == [HEAD, OLD], "stopped, never run beside it"
+    assert f"the background smoke of {HEAD[:12]} stopped: main is now {OLD[:12]}" in env.log
+    assert json.loads((job / ge.SMOKE_BG).read_text())["sha"] == OLD
+
+
+def _clocked(env: Any, wait: float) -> list[float]:
+    """A real wait of `wait` seconds on a fake clock that each sleep moves on; returns the sleeps."""
+    now, sleeps = [1000.0], []
+    env.smoke_wait, env.monotonic = wait, lambda: now[0]
+
+    def sleep(seconds: float) -> None:
+        sleeps.append(seconds)
+        now[0] += seconds
+
+    env.sleep = sleep
+    return sleeps
+
+
+def test_a_call_waits_for_the_background_result_up_to_its_budget(job: Path, tmp_path: Path) -> None:
+    env, _ = _env(tmp_path)
+    _background(env, job, [None, None, _bg_result()], [True])
+    sleeps = _clocked(env, 12)
+    assert env.smoke_main() == (True, HEAD) and sleeps == [ge.SMOKE_POLL, ge.SMOKE_POLL] and not env.smoke_pending
+    env, _ = _env(tmp_path)
+    (job / ge.SMOKE_PRE).unlink()
+    (job / ge.SMOKE_BG).unlink()
+    _background(env, job, [], [True])
+    sleeps = _clocked(env, 12)
+    assert env.smoke_main() == (False, HEAD) and env.smoke_pending and sleeps == [5, 5, 2], "the whole budget, then pending"
+    assert ge.SMOKE_WAIT + 120 <= 600 and env.__class__(tmp_path, [], tmp_path, repo="o/r", starter="actions", runner_sha="x").smoke_wait == ge.SMOKE_WAIT
+
+
+def test_stop_background_smoke_ends_both_process_groups_and_the_record(job: Path, tmp_path: Path) -> None:
+    parent = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(60)"], start_new_session=True)
+    child = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(60)"], start_new_session=True)
+    try:
+        job.mkdir(parents=True, exist_ok=True)
+        (job / ge.SMOKE_BG).write_text(json.dumps({"sha": HEAD, "job": "77-1", "pid": parent.pid, "at": "x"}))
+        (job / ge.SMOKE_BG_CHILD).write_text(str(child.pid))
+        assert ge.stop_background_smoke() == "stopped"
+        assert parent.wait(timeout=10) is not None and child.wait(timeout=10) is not None
+        assert not (job / ge.SMOKE_BG).exists() and not (job / ge.SMOKE_BG_CHILD).exists()
+        assert ge.stop_background_smoke() == "none"
+    finally:
+        for proc in (parent, child):
+            proc.kill()
+            proc.wait()
+
+
+def test_a_background_smoke_says_where_its_smoke_sh_runs(job: Path, tmp_path: Path, monkeypatch: Any) -> None:
+    out = tmp_path / "logs" / "out.log"
+    assert ge.run_pre_smoke(["sh", "-c", "exit 0"], tmp_path, 30, out) == 0 and not (job / ge.SMOKE_BG_CHILD).exists()
+    monkeypatch.setenv(ge.PRE_SMOKE_HEAD, HEAD)
+    assert ge.run_pre_smoke(["sh", "-c", "exit 0"], tmp_path, 30, out) == 0
+    assert int((job / ge.SMOKE_BG_CHILD).read_text()) > 0
+
+
+def test_own_smoke_for_is_this_jobs_result_for_the_head_or_its_running_smoke(job: Path, tmp_path: Path, monkeypatch: Any) -> None:
+    env, _ = _env(tmp_path)
+    env.bg_alive = lambda pid: False  # type: ignore[assignment]  # reason: no real process
+    assert env.own_smoke_for(HEAD) is False
+    _pre(env, code=1)
+    env.pre_smoke()
+    assert env.own_smoke_for(HEAD) is True and env.own_smoke_for(OLD) is False
+    (job / ge.SMOKE_BG).write_text(json.dumps({"sha": HEAD, "job": "77-1", "pid": 4242}))
+    env.bg_alive = lambda pid: pid == 4242  # type: ignore[assignment]  # reason: a running smoke of any head counts
+    assert env.own_smoke_for(OLD) is True
+    monkeypatch.setenv("GITHUB_RUN_ATTEMPT", "2")
+    assert env.own_smoke_for(HEAD) is False, "another job's files are not this job's smoke"
 
 
 def test_without_the_switch_or_outside_actions_the_smoke_runs_in_the_call(job: Path, tmp_path: Path, monkeypatch: Any) -> None:
@@ -341,3 +420,89 @@ def test_start_background_smoke_detaches_a_pre_smoke_of_the_head(job: Path, tmp_
     assert seen["env"][ge.PRE_SMOKE_HEAD] == OLD and seen["env"]["GITHUB_RUN_ID"] == "77", "the same job, so the session takes its result"
     assert Path(seen["stdout"].name) == job / ge.SMOKE_BG_LOG
     ge._BACKGROUND.clear()
+
+
+# ---- a job's own red is never replaced by another lane's green (review H1)
+
+
+class OwnSmokeEnv(PreSmokeEnv):
+    """PreSmokeEnv that also answers `own_smoke_for` from the real GitHubEnv, as the session's env does."""
+
+    def own_smoke_for(self, head: str) -> bool:
+        return bool(self.real.own_smoke_for(head))
+
+
+def _own_red(job: Path, tmp_path: Path) -> tuple[OwnSmokeEnv, Any]:
+    real, calls = _env(tmp_path, smoke=(0, "must not run"))
+    _pre(real, code=101, lines="error: test failed, to rerun pass `--test call_pins`\n")
+    real.pre_smoke()
+    env, cfg = OwnSmokeEnv(real), config([make_task("T001")], tmp_path)
+    env.store = dict(env.store, smoke_runs=[_run(HEAD, at=NOW - timedelta(minutes=5), why="start routine (pre-session)")])
+    return env, cfg
+
+
+@pytest.mark.parametrize("checks", [None, True])
+def test_a_red_result_of_this_job_beats_another_lanes_green_on_the_same_head(job: Path, tmp_path: Path, checks: Any) -> None:
+    env, cfg = _own_red(job, tmp_path)
+    env.checks_green = checks
+    result = cycle.run_cycle(cfg, env, NOW)
+    assert env.runs == [] and env.store["smoke_runs"][-1]["ok"] is False
+    if checks:
+        assert result == "smoke_env" and env.store["smoke_env_problems"][-1]["sha"] == HEAD, "a D-498 strike"
+    else:
+        assert result == "main_red" and env.store["main_red"]["sha"] == HEAD
+
+
+def test_after_a_lost_race_to_a_reuse_the_re_read_still_judges_the_own_red(job: Path, tmp_path: Path) -> None:
+    env, cfg = _own_red(job, tmp_path)
+    plain = env.push_state
+
+    def push(new: st.State, base: st.State) -> bool:
+        if (new.get("smoke_runs") or [{}])[-1].get("ok") is False and not env.store.get("raced"):
+            reuse = _run(HEAD, why="start routine (reused x)", reused=st.iso(NOW - timedelta(minutes=5)))
+            env.store = dict(env.store, raced=True, smoke_runs=[*env.store["smoke_runs"], reuse])
+            return False
+        return plain(new, base)
+
+    env.push_state = push  # type: ignore[method-assign]  # reason: lane 2 writes its reuse first
+    assert cycle.run_cycle(cfg, env, NOW) == "lost_race"
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=1)) == "main_red" and env.runs == []
+    assert env.store["smoke_runs"][-1]["ok"] is False and env.store["main_red"]["check"] == "smoke"
+
+
+def test_clear_main_red_never_asks_for_a_reuse(tmp_path: Path, monkeypatch: Any) -> None:
+    env, cfg = go_red(tmp_path)
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=10)) == "fix_main"
+    env.prs[st.FIX_MAIN] = green_pr(sha="revert01", tree="t-revert")
+    env.head = "main0002"
+    env.store = dict(env.store, smoke_runs=[_run("main0002", at=NOW + timedelta(minutes=12))])
+    for name in ("reusable_smoke",):
+        monkeypatch.setattr(st, name, lambda *a: pytest.fail("clear_main_red asked for a reuse"))
+    monkeypatch.setattr(cycle, "_start_smoke", lambda *a: pytest.fail("clear_main_red took the start routine's path"))
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=20)) == "main_cleared" and env.smokes[-1] == "main0002"
+
+
+def test_process_alive_reads_an_unreaped_zombie_as_dead(monkeypatch: Any) -> None:
+    proc = subprocess.Popen([sys.executable, "-c", "pass"])
+    stat = Path(f"/proc/{proc.pid}/stat")
+    for _ in range(200):
+        if stat.read_text().rsplit(")", 1)[-1].split()[0] == "Z":
+            break
+        subprocess.run(["sleep", "0.02"], check=True)
+    monkeypatch.setattr(ge.os, "waitpid", lambda *a: (_ for _ in ()).throw(ChildProcessError()))
+    try:
+        assert ge.process_alive(proc.pid) is False
+    finally:
+        monkeypatch.undo()
+        proc.wait()
+
+
+def test_the_cache_save_is_skipped_when_a_background_smoke_had_to_be_stopped() -> None:
+    steps = _flow()["jobs"]["backup"]["steps"]
+    order = [step.get("name") or step.get("uses") for step in steps]
+    stop = steps[order.index("Stop a background smoke before the cache save (D-2560)")]
+    save = steps[order.index("Smoke build cache, save (D-1911)")]
+    assert order.index("anthropics/claude-code-action@v1") < order.index(stop["name"]) < order.index(save["name"])
+    assert stop["id"] == "bg-smoke" and stop["if"].startswith("always()") and stop["continue-on-error"] is True
+    assert "stop_background_smoke" in stop["run"] and "stopped=" in stop["run"]
+    assert save["if"].endswith("&& steps.bg-smoke.outputs.stopped != 'stopped'")

@@ -427,7 +427,7 @@ jobs:
           # the path, instead of staying in every later turn's context (default 30,000; D-1317).
           BASH_MAX_OUTPUT_LENGTH: "15000"
           # When main moved after the pre-session smoke, the session's smoke runs detached and each runner call waits
-          # up to 540 s for it (result `smoke_pending` until it ends), so no 600-second Bash call cuts it off (D-2560).
+          # up to 450 s for it (result `smoke_pending` until it ends), so no 600-second Bash call cuts it off (D-2560).
           RUNNER_SMOKE_BACKGROUND: "1"
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
@@ -460,12 +460,23 @@ jobs:
             8. Report the runner's output lines and stop.
 
             Never break section 2. Never claim a test passed unless you ran it here.
+      - name: Stop a background smoke before the cache save (D-2560)
+        # A session that ended while its background smoke still ran (it stopped early, or the job is ending) must not
+        # have `target/smoke` archived while that smoke writes into it: stop it (SIGTERM to its process groups, then
+        # SIGKILL) and skip the save below for this job. A runner without the helper prints nothing and changes nothing.
+        id: bg-smoke
+        if: always() && hashFiles('target/smoke-bg.json') != ''
+        continue-on-error: true
+        run: |
+          stopped="$(python3 -c 'from runner.github_env import stop_background_smoke; print(stop_background_smoke())' 2>/dev/null || true)"
+          echo "background smoke: ${stopped:-unknown}"
+          echo "stopped=${stopped}" >> "$GITHUB_OUTPUT"
       - name: Smoke build cache, save (D-1911)
         # Only when this job's runner ran the smoke (`target/smoke-ran`, written by `smoke_main`, by the warm-up when it
         # compiled and by the pre-session smoke when it timed out, D-2007, D-2028; outside both
         # entries), whatever the session's outcome: the manifest is written before Cargo runs, so even a red or
         # timed-out smoke leaves a target dir that matches it.
-        if: always() && hashFiles('target/smoke-ran') != '' && steps.smoke-cache.outputs.cache-primary-key != ''
+        if: always() && hashFiles('target/smoke-ran') != '' && steps.smoke-cache.outputs.cache-primary-key != '' && steps.bg-smoke.outputs.stopped != 'stopped'
         uses: actions/cache/save@v4
         with:
           path: target/smoke

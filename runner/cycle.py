@@ -872,14 +872,24 @@ def _start_smoke(state: State, env: Env, now: datetime) -> tuple[State, bool, st
     (`st.reusable_smoke`) when the nightly is not red on that head and `main`'s own checks on it are not red, and
     the reuse is recorded as a run of its own (`why` "start routine (reused <at>)", `reused` the green run's time,
     no `seconds`); otherwise the smoke runs (`_smoke`). Reuse is only ever green on a head that was smoked green,
-    so `main_red` and FIX-MAIN are untouched by it (D-2560)."""
+    so `main_red` and FIX-MAIN are untouched by it (D-2560). When this job has its own smoke for the head (the real
+    Env's `own_smoke_for`: a pre-session or background result, or a background smoke still running), that is judged
+    and never replaced by a green another lane recorded, so a red of its own always counts (D-498, set_main_red)."""
     head = env.main_head()
+    if _own_smoke_for(env, head):
+        return _smoke(state, env, now, "start routine")
     kept = st.reusable_smoke(state, head, now)
     if kept is None or _head_doubted(env, head):
         return _smoke(state, env, now, "start routine")
     since = str(kept.get("reused") or kept.get("at"))
     run = {"sha": head, "ok": True, "at": st.iso(now), "why": f"start routine (reused {since})", "reused": since}
     return dict(state, smoke_runs=[*state.get("smoke_runs", [])[-19:], run]), True, head
+
+
+def _own_smoke_for(env: Env, head: str) -> bool:
+    """The env's `own_smoke_for(head)` (D-2560); an env without one (the drills' FakeEnv) has none."""
+    own = getattr(env, "own_smoke_for", None)
+    return bool(own(head)) if callable(own) else False
 
 
 def _head_doubted(env: Env, head: str) -> bool:

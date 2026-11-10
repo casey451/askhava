@@ -89,14 +89,17 @@ PRE_SESSION = "pre-session"  # `smoke_source` when smoke_main used the pre-sessi
 # The session's own smoke when the pre-session result is for an older head (main moved during the ~10 minutes of
 # warm-up and pre-session smoke, which is what made every in-session smoke of Nov 10 time out at 540 s): with
 # RUNNER_SMOKE_BACKGROUND=1 it runs as a detached `--pre-smoke` for main's new head, within PRE_SMOKE_TIMEOUT, and
-# each runner call waits for it up to SMOKE_TIMEOUT, so no 600-second Bash call cuts it off (D-2560).
+# each runner call waits for it up to SMOKE_WAIT, so no 600-second Bash call cuts it off (D-2560).
 SMOKE_BACKGROUND = "RUNNER_SMOKE_BACKGROUND"  # "1" in the backup job's session step: run the session's smoke detached
 PRE_SMOKE_HEAD = "RUNNER_PRE_SMOKE_HEAD"  # the head a background `--pre-smoke` smokes instead of the checkout's main
 PRE_SMOKE_STATE = "RUNNER_PRE_SMOKE_STATE"  # kit/state.json as the step read it: a reusable green skips the step
 SMOKE_BG = "smoke-bg.json"  # beside the smoke's target dir: the background smoke this job started {sha, job, pid, at}
 SMOKE_BG_LOG = "smoke-bg.log"  # beside it too: that smoke's output
 BACKGROUND = "background"  # `smoke_source` (and the result's `source`) of a background smoke; added to the run's `why`
+SMOKE_BG_CHILD = "smoke-bg-child"  # beside it too: the pid (and process group) of that smoke's smoke.sh
 SMOKE_POLL = 5  # seconds between looks at the background smoke's result
+SMOKE_WAIT = 450  # seconds one runner call waits for it: room for the cycle's own work inside the 600-second Bash call
+SMOKE_STOP_WAIT = 30  # seconds a stopped background smoke gets to end on SIGTERM before SIGKILL
 SHA = re.compile(r"^[0-9a-f]{40}$")
 _BACKGROUND: list[subprocess.Popen[bytes]] = []  # the background smokes this process started, kept so none is reaped early
 # The Rust compile steps of scripts/smoke.sh word for word, `cargo test` with `--no-run`: the same flags and
@@ -292,12 +295,23 @@ def run_pre_smoke(args: list[str], cwd: Path, timeout: float, out: Path) -> int:
     with out.open("wb") as sink:
         proc = subprocess.Popen(args, cwd=cwd, env=_smoke_env(), stdin=subprocess.DEVNULL, stdout=sink,
                                 stderr=subprocess.STDOUT, start_new_session=True)
+        if os.environ.get(PRE_SMOKE_HEAD):  # a background smoke: say where smoke.sh's group is, so it can be stopped
+            _note_child(proc.pid)
         try:
             return proc.wait(timeout=timeout)
         except subprocess.TimeoutExpired:
             os.killpg(proc.pid, signal.SIGKILL)
             proc.wait()
             raise
+
+
+def _note_child(pid: int) -> None:
+    """Write SMOKE_BG_CHILD (a background smoke's smoke.sh pid, D-2560); best effort, never failing the smoke."""
+    try:
+        smoke_target_dir().parent.mkdir(parents=True, exist_ok=True)
+        (smoke_target_dir().parent / SMOKE_BG_CHILD).write_text(str(pid), encoding="utf-8")
+    except OSError:
+        pass
 
 
 def job_id() -> str:
@@ -322,8 +336,9 @@ def start_background_smoke(head: str, root: Path) -> int:
 
 
 def process_alive(pid: int) -> bool:
-    """Whether process `pid` still runs: a finished child of this process is reaped first, so it never reads as
-    alive while a zombie; a process of another user counts as alive (D-2560)."""
+    """Whether process `pid` still runs: a finished child of this process is reaped first, and a zombie (state Z
+    in /proc/<pid>/stat, a finished process nobody reaped yet) is dead; a process of another user counts as
+    alive (D-2560)."""
     try:
         if os.waitpid(pid, os.WNOHANG)[0] == pid:
             return False
@@ -335,7 +350,40 @@ def process_alive(pid: int) -> bool:
         return False
     except PermissionError:
         return True
-    return True
+    try:
+        return Path(f"/proc/{pid}/stat").read_text(encoding="utf-8").rsplit(")", 1)[-1].split()[0] != "Z"
+    except (OSError, IndexError):
+        return True
+
+
+def stop_background_smoke(alive: Callable[[int], bool] = process_alive, sleep: Callable[[float], None] = time.sleep) -> str:
+    """Stop this job's background smoke (SMOKE_BG), if it still runs: SIGTERM to its process group and to its
+    smoke.sh's (SMOKE_BG_CHILD), up to SMOKE_STOP_WAIT seconds for it to end, then SIGKILL to both; the record
+    goes. Returns "stopped" or "none" (D-2560). Used for a smoke of a head main has left and before the cache save."""
+    base = smoke_target_dir().parent
+    bg = _read_json(base / SMOKE_BG) or {}
+    pid = bg.get("pid") if bg.get("job") == job_id() and isinstance(bg.get("pid"), int) else None
+    if pid is None or not alive(pid):
+        return "none"
+    try:
+        groups = [pid, int((base / SMOKE_BG_CHILD).read_text(encoding="utf-8").strip())]
+    except (OSError, ValueError):
+        groups = [pid]
+    for sig in (signal.SIGTERM, signal.SIGKILL):
+        for group in groups:
+            try:
+                os.killpg(group, sig)
+            except (ProcessLookupError, PermissionError):
+                pass
+        for _ in range(SMOKE_STOP_WAIT if sig == signal.SIGTERM else 0):
+            if not alive(pid):
+                break
+            sleep(1)
+        if not alive(pid):
+            break
+    for name in (SMOKE_BG, SMOKE_BG_CHILD):
+        (base / name).unlink(missing_ok=True)
+    return "stopped"
 
 
 def _read_json(path: Path) -> dict[str, Any] | None:
@@ -807,7 +855,9 @@ class GitHubEnv:
         self.smoke_seconds: int | None = None  # how long the last smoke_main's smoke.sh ran, wherever it ran (D-2028)
         self.smoke_pending = False  # the last smoke_main left the smoke running in the background (D-2560)
         self.smoke_background = os.environ.get(SMOKE_BACKGROUND) == "1"  # run the session's smoke detached (D-2560)
-        self.smoke_wait: float = SMOKE_TIMEOUT  # how long one smoke_main waits for the background smoke (D-2560)
+        self.smoke_wait: float = SMOKE_WAIT  # how long one smoke_main waits for the background smoke (D-2560)
+        self.monotonic: Callable[[], float] = time.monotonic  # the wait's clock; tests replace it (D-2560)
+        self.bg_stop: Callable[[], str] = lambda: stop_background_smoke(self.bg_alive, self.sleep)  # tests replace it
         self.bg_start: Callable[[str, Path], int] = start_background_smoke  # tests replace it (D-2560)
         self.bg_alive: Callable[[int], bool] = process_alive  # tests replace it (D-2560)
 
@@ -1214,20 +1264,31 @@ class GitHubEnv:
             self.log.append(f"{why}: the smoke runs here")
         return pre
 
+    def own_smoke_for(self, head: str) -> bool:
+        """Whether this job has its own smoke to judge `head` by (D-2560): a pre-session or background result for
+        `head` from this job (`_pre_result`), or a background smoke of this job still running, for any head. The
+        start routine then never reuses a green recorded elsewhere: a red of its own is judged, and a running smoke
+        is collected or stopped (`_background_smoke`) before anything is claimed beside it."""
+        if self.dry_run or not job_id():
+            return False
+        if _pre_result(head)[0] is not None:
+            return True
+        bg = _read_json(smoke_target_dir().parent / SMOKE_BG) or {}
+        return bg.get("job") == job_id() and isinstance(bg.get("pid"), int) and self.bg_alive(bg["pid"])
+
     def _background_smoke(self, head: str) -> tuple[bool, str]:
         """The session's smoke of `head`, detached (D-2560): this job's background smoke for `head` (SMOKE_BG) if it
         still runs, else a new one (`bg_start`, which also marks SMOKE_RAN so the cache is saved); then wait up to
         `smoke_wait` for its result. A result is used as a pre-session one is (source BACKGROUND); still running is
         `smoke_pending` (no verdict, nothing recorded, the session calls the runner again); one for an older head
-        still running is waited out the same way, never run beside it in the one smoke tree; one that ended with no
-        result is `smoke_timed_out` (no verdict, as D-1178)."""
+        still running is stopped first (`bg_stop`), never run beside the new one in the one smoke tree and database;
+        one that ended with no result is `smoke_timed_out` (no verdict, as D-1178)."""
         bg = _read_json(smoke_target_dir().parent / SMOKE_BG) or {}
         pid = bg.get("pid") if bg.get("job") == job_id() and isinstance(bg.get("pid"), int) else None
         alive = pid is not None and self.bg_alive(pid)
         if alive and bg.get("sha") != head:
-            self.smoke_pending = True
-            self.log.append(f"the background smoke of {str(bg.get('sha'))[:12]} still runs; main is now {head[:12]}")
-            return False, head
+            self.log.append(f"the background smoke of {str(bg.get('sha'))[:12]} {self.bg_stop()}: main is now {head[:12]}")
+            bg, alive = {}, False
         if not alive and bg.get("sha") == head and pid is not None:
             return self._background_lost(head)
         if pid is None or not alive:
@@ -1239,7 +1300,7 @@ class GitHubEnv:
 
     def _await_background(self, head: str, pid: int) -> tuple[bool, str]:
         """Wait up to `smoke_wait` for the background smoke's result for `head` (D-2560); see `_background_smoke`."""
-        deadline = time.monotonic() + self.smoke_wait
+        deadline = self.monotonic() + self.smoke_wait
         while True:
             alive = self.bg_alive(pid)
             pre, _ = _pre_result(head)
@@ -1247,11 +1308,11 @@ class GitHubEnv:
                 return self._use_pre_smoke(pre, head)
             if not alive:
                 return self._background_lost(head)
-            if time.monotonic() >= deadline:
+            if self.monotonic() >= deadline:
                 self.smoke_pending = True
                 self.log.append(f"smoke on {head[:12]}: still running in the background after {round(self.smoke_wait)} s")
                 return False, head
-            self.sleep(min(SMOKE_POLL, max(0.0, deadline - time.monotonic())))
+            self.sleep(min(SMOKE_POLL, max(0.0, deadline - self.monotonic())))
 
     def _background_lost(self, head: str) -> tuple[bool, str]:
         """The background smoke of `head` ended without a result: no verdict, recorded as a timeout (D-1178, D-2560)."""
