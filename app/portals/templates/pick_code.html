@@ -29,7 +29,7 @@
 <p id="reach-hint">If you choose a call, they may call from 8 a.m. to 8 p.m. Arizona time. On an emergency job, they may call at any hour.</p>
 {% if let Some(message) = reach_error %}<p id="reach-error">Error: {{ message }}</p>
 {% endif %}<p><input type="radio" id="reach-call" name="reach" value="call"{% if reach == "call" %} checked{% endif %}>
-<label for="reach-call">A phone call. They call an Ask Hava number that rings your phone. They never see your number.</label></p>
+<label for="reach-call">A phone call. They call an {{ askhava_core::api::brand().display_name() }} number that rings your phone. They never see your number.</label></p>
 <p><input type="radio" id="reach-email" name="reach" value="email"{% if reach == "email" %} checked{% endif %}>
 <label for="reach-email">Email. We give this business the email address you type below. They never see your phone number.</label></p>
 </fieldset>
