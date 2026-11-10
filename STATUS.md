@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-10T17:50:11Z by runner 73d5bcfa8f33 (actions).
+Updated 2026-11-10T18:32:29Z by runner e0b5aa9b3e05 (actions).
 
 **Building: T294 in progress since 17:49Z; 187 of 335 done; week 92% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,11 @@ Updated 2026-11-10T17:50:11Z by runner 73d5bcfa8f33 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T294 claimed 17:49Z, lease until 20:49Z
 - **Week:** 92% used, 10.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:22Z, 27 min before this update
+- **Last run:** 17:50Z, 42 min before this update
 - **Keeper:** last ran 17:22Z, next wake 17:42Z
 
 ## Needs attention
-- Strict plan check red: 1 problem(s) on tasks still to run (+20 on DONE tasks); first: T162: stored context_pct 16% but it measures 20%; regenerate
+- Strict plan check red: 2 problem(s) on tasks still to run (+20 on DONE tasks); first: T294: stored context_pct 27% but it measures 31%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -37,6 +37,7 @@ Updated 2026-11-10T17:50:11Z by runner 73d5bcfa8f33 (actions).
 | T279 | messaging, ops and server: the texting switch and a number s | done | 1 | 47 min | 19:32Z |  |
 
 ### Plan and harness merges on main
+- 18:21Z Plan: two lanes, and each queued task on the lowest model that can do it well (D-2462, D-2463) (#424)
 - 16:53Z Plan: matrix doors before the serving tasks — public, owner and action-link doors, HTTP probe for served realm routes (D-2440, T348) (#421)
 - 16:29Z Plan: T231 extends the authorization matrix to /c/{token}/{answer} as a harness task (D-2429) (#420)
 - 13:07Z Plan: no handyman split-job check — each job judged by its own price (Casey's ruling; D-2407, D-2408, T347) (#416)
