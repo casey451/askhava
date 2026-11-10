@@ -19,7 +19,10 @@ use secrecy::SecretString;
 use sqlx::PgPool;
 use sqlx::types::Uuid;
 
-use crate::email::{EMAIL_ACTION, MailboxKind, PostalAddress, Recipient, Rendered, audience_kind};
+use crate::email::{
+    EMAIL_ACTION, MailboxKind, OnDomain, PostalAddress, Recipient, Rendered, audience_kind,
+    footer_lines, legal_name, short_name,
+};
 use crate::models::{self, EmailError};
 use crate::templates::{Audience, Language};
 
@@ -27,10 +30,11 @@ use crate::templates::{Audience, Language};
 pub const RECEIPT_EMAIL_KIND: &str = "messaging.charge_receipt";
 /// The receipt email's template ID; with the recipient and pick it makes the email's key.
 pub const RECEIPT_TEMPLATE: &str = "charge_receipt";
-/// The "Why was I charged?" page of a pick is this prefix, the pick ID and nothing else (FEE-031).
-pub const WHY_CHARGED_PREFIX: &str = "https://askhava.com/b/charges/";
+/// The "Why was I charged?" page of a pick is this prefix, the pick ID and nothing else (FEE-031),
+/// on the brand's domain (D-1932).
+pub const WHY_CHARGED_PREFIX: OnDomain = OnDomain("/b/charges/");
 /// The business portal, the receipt's "Manage email notices" link (SEC-028).
-const PORTAL: &str = "https://askhava.com/b";
+const PORTAL: OnDomain = OnDomain("/b");
 
 /// What one receipt says (FEE-031): the pick, its job number, the fee and the charge description.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -84,31 +88,30 @@ struct ReceiptView<'a> {
     why: &'a str,
     manage_url: &'a str,
     manage_label: &'a str,
+    legal: &'a str,
     postal: &'a str,
 }
 
-/// The receipt's words in `language`: subject, tax line, one-charge line, link label, footer
-/// why-line and footer link label (FEE-031, SEC-028). Spanish is a draft (TXT-003).
-fn words(language: Language, job: i64) -> (String, [&'static str; 5]) {
+/// The receipt's words in `language`: subject (opening with the brand's short name, D-1932), tax
+/// line, one-charge line and link label (FEE-031); the footer is `email.rs`'s business footer
+/// (SEC-028). Spanish is a draft (TXT-003).
+fn words(language: Language, job: i64) -> (String, [&'static str; 3]) {
+    let short = short_name(language);
     match language {
         Language::En => (
-            format!("Ask Hava: Receipt for job {job}"),
+            format!("{short}: Receipt for job {job}"),
             [
                 "Tax included.",
                 "You're charged because a homeowner picked you and you confirmed. Stripe also emails its own receipt for this same charge.",
                 "Why was I charged?",
-                "You get these emails because your business signed up for job requests from Ask Hava.",
-                "Manage email notices",
             ],
         ),
         Language::Es => (
-            format!("Ask Hava: Recibo del trabajo {job}"),
+            format!("{short}: Recibo del trabajo {job}"),
             [
                 "Impuestos incluidos.",
                 "Se le cobra porque un cliente lo eligió y usted confirmó. Stripe también le envía por correo su propio recibo de este mismo cargo.",
                 "¿Por qué se me cobró?",
-                "Recibe estos correos porque su negocio se inscribió para recibir solicitudes de trabajo de Ask Hava.",
-                "Administrar avisos por correo",
             ],
         ),
     }
@@ -123,8 +126,9 @@ pub fn render_receipt(
     language: Language,
     facts: &ReceiptFacts,
 ) -> Result<Rendered, EmailError> {
-    let (subject, [tax, one_line, why_label, why, manage_label]) =
-        words(language, facts.job_number);
+    let (subject, [tax, one_line, why_label]) = words(language, facts.job_number);
+    let (why, manage_label) = footer_lines(Audience::Business, language);
+    let (portal, legal) = (PORTAL.to_string(), legal_name(language));
     let charge = format!(
         "{}: ${}.{:02}",
         facts.line,
@@ -141,15 +145,16 @@ pub fn render_receipt(
         one_line,
         why_url: &why_url,
         why_label,
-        why,
-        manage_url: PORTAL,
+        why: &why,
+        manage_url: &portal,
         manage_label,
+        legal,
         postal: &sender.postal,
     };
     let html = view.render().map_err(|_| EmailError::Template)?;
     let plain = format!(
-        "{charge}\n{tax}\n{one_line}\n{why_label} {why_url}\n\n--\n{why}\n{manage_label}: {PORTAL}\n\
-         Ask Hava LLC, {}\n",
+        "{charge}\n{tax}\n{one_line}\n{why_label} {why_url}\n\n--\n{why}\n{manage_label}: {portal}\n\
+         {legal}, {}\n",
         sender.postal
     );
     Ok(Rendered {
@@ -196,12 +201,13 @@ pub async fn run_receipt_email(
     }
     let rendered = render_receipt(&sender, Language::En, &facts).map_err(|_| FAILED)?;
     let mut tx = pool.begin().await.map_err(|_| FAILED)?;
+    let portal = PORTAL.to_string();
     for address in to {
         let to = Recipient {
             id: address,
             audience: Audience::Business,
             language: Language::En,
-            manage_url: PORTAL,
+            manage_url: &portal,
         };
         let ids = (RECEIPT_TEMPLATE, to.id, std::slice::from_ref(&facts.pick));
         let parts = [

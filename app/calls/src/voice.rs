@@ -20,6 +20,7 @@
 //! T108's.
 
 use askhava_adapters::api::{IdempotencyKey, PoolNumber, VoiceAdapter};
+use askhava_core::api::brand;
 use askhava_messaging::api::{RevokeChannel, suppress};
 use askhava_ops::api::{Actor, AuditEntry, Change, acknowledge_alert, audit, audit_once};
 use askhava_privacy::api::{Field, Purpose, Reader, Vault, read_contact};
@@ -117,8 +118,9 @@ pub fn code_call_twiml(
     let said = spoken(code).filter(|_| digits_only)?;
     let back = callback(main, from)?;
     let words = format!(
-        "This is Ask Hava LLC. Your code is {said}. Again, your code is {said}. \
-         To call us back, dial {back}. Press 1 to hear it again."
+        "This is {}. Your code is {said}. Again, your code is {said}. \
+         To call us back, dial {back}. Press 1 to hear it again.",
+        brand().legal_name()
     );
     Some(SecretString::from(format!(
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response><Gather input=\"dtmf\" \
@@ -210,10 +212,11 @@ impl SafetySwitch {
 #[must_use]
 pub fn safety_script(main: &str, from: &PoolNumber) -> Option<String> {
     let back = callback(main, from)?;
+    let (spoken, name) = (brand().spoken_legal_name(), brand().display_name());
     Some(format!(
-        "This is Ask Hava L L C. You sent us a message about a danger. Leave the building now \
-         and call 9 1 1. Ask Hava is not an emergency service. To call us back, dial {back}. \
-         Press 9 to stop all calls from Ask Hava."
+        "This is {spoken}. You sent us a message about a danger. Leave the building now \
+         and call 9 1 1. {name} is not an emergency service. To call us back, dial {back}. \
+         Press 9 to stop all calls from {name}."
     ))
 }
 

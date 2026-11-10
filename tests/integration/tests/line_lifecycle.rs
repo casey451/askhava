@@ -10,12 +10,12 @@ use askhava_businesses::api::{
     Acting, Roles, SenderLink, TeamError, add_member, add_owner, create, link_phone, remove_member,
 };
 use askhava_calls::api::{
-    Answer, Attestation, CallTurn, CloseReason, Connected, GREETING_EN, GREETING_ES, IncomingCall,
-    LINK_TEXT_TO, Party, PhoneStanding, RoutedLine, Step, answer_call, assign_number,
-    close_expired, close_line, expired, gate, greeting_twiml, job_pin, last4, phone_works,
-    request_link, route,
+    Answer, Attestation, CallTurn, CloseReason, Connected, IncomingCall, LINK_TEXT_TO, Party,
+    PhoneStanding, RoutedLine, Step, answer_call, assign_number, close_expired, close_line,
+    code_call_twiml, expired, gate, greeting_en, greeting_es, greeting_twiml, job_pin, last4,
+    phone_works, request_link, route, safety_script,
 };
-use askhava_core::api::Settings;
+use askhava_core::api::{Settings, brand};
 use askhava_messaging::api::{OutboxError, UpdateChannel, sender_add, set_update_channel};
 use askhava_privacy::api::{NewContact, Vault, store_contact};
 use base64::Engine as _;
@@ -376,11 +376,11 @@ async fn td_call_07_a_removed_members_phones_hear_the_pin_prompt(pool: PgPool) {
 #[test]
 fn td_call_07_the_ask_hava_number_plays_the_greeting_and_hangs_up() {
     let twiml = greeting_twiml();
-    let en = twiml.find(GREETING_EN).expect("English");
-    let es = twiml.find(GREETING_ES).expect("Spanish");
+    let en = twiml.find(&greeting_en()).expect("English");
+    let es = twiml.find(&greeting_es()).expect("Spanish");
     assert!(en < es && twiml.ends_with("<Hangup/></Response>"));
-    assert!(GREETING_EN.starts_with("This is Ask Hava LLC. We work by text."));
-    assert!(GREETING_EN.ends_with("If this is an emergency, hang up and call 911."));
+    assert!(greeting_en().starts_with("This is Ask Hava LLC. We work by text."));
+    assert!(greeting_en().ends_with("If this is an emergency, hang up and call 911."));
     for verb in [
         "<Record",
         "<Dial",
@@ -392,6 +392,40 @@ fn td_call_07_the_ask_hava_number_plays_the_greeting_and_hangs_up() {
     ] {
         assert!(!twiml.contains(verb), "{verb}");
     }
+}
+
+/// TD-WORD-35 (WORD-001, D-1932): under the embedded brand the greetings, the code call and the
+/// safety call say today's words byte for byte, and each opens with the brand file's legal or
+/// spoken legal name.
+#[test]
+fn td_word_35_the_voice_lines_come_from_the_brand_and_are_unchanged() {
+    assert_eq!(
+        greeting_en(),
+        "This is Ask Hava LLC. We work by text. To start a request, text this number. For help, \
+         text HELP. If this is an emergency, hang up and call 911."
+    );
+    assert_eq!(
+        greeting_es(),
+        "Habla Ask Hava LLC. Trabajamos por mensaje de texto. Para hacer una solicitud, mande un \
+         texto a este número. Para ayuda, mande AYUDA. Si es una emergencia, cuelgue y llame al 911."
+    );
+    assert!(greeting_en().starts_with(&format!("This is {}.", brand().legal_name())));
+    assert!(greeting_es().starts_with(&format!("Habla {}.", brand().es().legal_name())));
+    let pool = pool().numbers()[0].clone();
+    let script = safety_script("+19285550100", &pool).expect("script");
+    assert_eq!(
+        script,
+        "This is Ask Hava L L C. You sent us a message about a danger. Leave the building now \
+         and call 9 1 1. Ask Hava is not an emergency service. To call us back, dial \
+         9 2 8, 5 5 5, 0 1 0 0. Press 9 to stop all calls from Ask Hava."
+    );
+    assert!(script.starts_with(&format!("This is {}.", brand().spoken_legal_name())));
+    let code = SecretString::from("1234".to_owned());
+    let call = code_call_twiml(&pool, "+19285550100", &code, "/again").expect("code call");
+    assert!(call.expose_secret().contains(&format!(
+        "This is {}. Your code is 1, 2, 3, 4.",
+        brand().legal_name()
+    )));
 }
 
 /// TD-CALL-08 (CALL-012, BIZ-033, D-288, D-311): with the approval state seeded, a phone a

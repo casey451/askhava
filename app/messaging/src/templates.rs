@@ -4,17 +4,18 @@
 //! The two files `templates/en.json` and `templates/es.json` are compiled in. Each key is a template
 //! ID; each entry holds the text, the audience, the `segments` count recorded for TXT-044 and, in
 //! Spanish, the draft mark and whether the text stays on while Spanish conversations are off. Later
-//! tasks add only their own keys, in both files. Placeholders are `{name}`. Parsing refuses a registry
-//! where a kind lacks a language, a text does not begin "Ask Hava:" or a Spanish text is not a draft.
-//! The link, emoji and wording scan is `tests/docs/test_template_scan.py`.
+//! tasks add only their own keys, in both files. Placeholders are `{name}`. The brand is not written in
+//! the files: `{brand_short}`, `{brand}`, `{brand_legal}` and `{domain}` are filled once from
+//! `core::api::brand()` while the registry is built (Spanish names in `es.json`, D-1932), before any
+//! check. Parsing refuses a registry where a kind lacks a language, a filled text does not begin
+//! `<short_name>:` (WORD-008), needs more segments than recorded (TXT-044) or a Spanish text is not
+//! a draft. The link, emoji and wording scan is `tests/docs/test_template_scan.py`.
 
 use std::collections::BTreeMap;
 use std::sync::OnceLock;
 
+use askhava_core::api::{Brand, brand};
 use serde::Deserialize;
-
-/// Every text the app composes begins with this (WORD-008, D-064).
-const PREFIX: &str = "Ask Hava:";
 
 /// A template language.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -125,23 +126,75 @@ impl Registry {
             .map_err(Clone::clone)
     }
 
-    /// Parses and checks the two files: the same IDs in both (TXT-001), every text begins "Ask Hava:"
-    /// (WORD-008), every Spanish template is a draft (TXT-003) and no English one is.
+    /// Parses and checks the two files under the process's brand; see [`Registry::parse_with`].
     ///
     /// # Errors
     ///
     /// [`TemplateError::Invalid`] naming the first broken rule.
     pub fn parse(en_json: &str, es_json: &str) -> Result<Registry, TemplateError> {
-        let read = |json: &str, which: &str| {
-            serde_json::from_str::<BTreeMap<String, Entry>>(json)
-                .map_err(|e| TemplateError::Invalid(format!("{which}: {e}")))
+        Registry::parse_with(en_json, es_json, brand())
+    }
+
+    /// Parses the two files, fills the brand tokens from `brand` once (Spanish names in `es.json`,
+    /// D-1932) and checks the filled texts: the same IDs in both (TXT-001), every text begins
+    /// `<short_name>:` (WORD-008, WORD-001), no text needs more segments than recorded (TXT-044),
+    /// every Spanish template is a draft (TXT-003) and no English one is. A longer brand that adds
+    /// a segment is refused here rather than sent unannounced.
+    ///
+    /// # Errors
+    ///
+    /// [`TemplateError::Invalid`] naming the first broken rule.
+    pub fn parse_with(
+        en_json: &str,
+        es_json: &str,
+        brand: &Brand,
+    ) -> Result<Registry, TemplateError> {
+        let read = |json: &str, which: &str, spanish: bool| {
+            let mut map = serde_json::from_str::<BTreeMap<String, Entry>>(json)
+                .map_err(|e| TemplateError::Invalid(format!("{which}: {e}")))?;
+            for (id, entry) in &mut map {
+                entry.text = brand
+                    .fill(&entry.text, spanish)
+                    .map_err(|e| TemplateError::Invalid(format!("{which} {id}: {e}")))?;
+            }
+            Ok::<_, TemplateError>(map)
         };
         let registry = Registry {
-            en: read(en_json, "en.json")?,
-            es: read(es_json, "es.json")?,
+            en: read(en_json, "en.json", false)?,
+            es: read(es_json, "es.json", true)?,
         };
         registry.check().map_err(TemplateError::Invalid)?;
+        let prefixes = (
+            format!("{}:", brand.short_name()),
+            format!("{}:", brand.es().short_name()),
+        );
+        registry
+            .check_filled(&prefixes.0, &prefixes.1)
+            .map_err(TemplateError::Invalid)?;
         Ok(registry)
+    }
+
+    /// WORD-008, TXT-044: every filled text begins with its language's prefix and needs no more
+    /// segments than recorded.
+    fn check_filled(&self, en_prefix: &str, es_prefix: &str) -> Result<(), String> {
+        let all = self
+            .en
+            .iter()
+            .map(|e| (e, en_prefix))
+            .chain(self.es.iter().map(|e| (e, es_prefix)));
+        for ((id, entry), prefix) in all {
+            if !entry.text.starts_with(prefix) {
+                return Err(format!("text does not begin \"{prefix}\": {}", entry.text));
+            }
+            let counted = count_segments(&entry.text).segments;
+            if counted > entry.segments {
+                return Err(format!(
+                    "{id} needs {counted} segments, above its recorded {}",
+                    entry.segments
+                ));
+            }
+        }
+        Ok(())
     }
 
     fn check(&self) -> Result<(), String> {
@@ -160,15 +213,7 @@ impl Registry {
                 return Err(format!("{id}: audience differs between languages"));
             }
         }
-        match self
-            .en
-            .values()
-            .chain(self.es.values())
-            .find(|e| !e.text.starts_with(PREFIX))
-        {
-            Some(e) => Err(format!("text does not begin \"{PREFIX}\": {}", e.text)),
-            None => Ok(()),
-        }
+        Ok(())
     }
 
     /// Every template ID, sorted.

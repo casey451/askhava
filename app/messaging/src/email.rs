@@ -14,10 +14,13 @@
 //! alert, and 24 hours of sends with no webhook raises another (SEC-050, SEC-051). The
 //! homeowner's update channel (TXT-018) is read and written here too.
 
+use std::fmt;
+
 use askama::Template;
 use askhava_adapters::api::{
     AdapterError, Email, EmailAdapter, IdempotencyKey, VerifiedWebhook, WebhookVendor,
 };
+use askhava_core::api::brand;
 use askhava_ops::api::{NewAlert, Severity, raise_alert};
 use askhava_privacy::api::{Field, Purpose, Reader, Vault, read_contact};
 use jiff::{SignedDuration, Timestamp};
@@ -29,10 +32,68 @@ use crate::models::{self, EmailError, EmailLog};
 use crate::rules::CONFIRMATION_TEMPLATE;
 use crate::templates::{Audience, Language, Registry};
 
-/// The From of every email (deliverability checklist).
-pub const FROM: &str = "\"Ask Hava\" <jobs@notify.askhava.com>";
-/// The monitored help address every email replies to; never a no-reply address.
-pub const REPLY_TO: &str = "help@askhava.com";
+/// The From of every email: `"<email_from_name>" <<email_from_address>>` from the brand file
+/// (SEC-025, D-1932). It displays, so `format!("{FROM}")` and `FROM.to_string()` read it.
+pub const FROM: Sender = Sender;
+
+/// The type of [`FROM`]: the brand's one email sender, written when displayed (SEC-025).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Sender;
+
+impl fmt::Display for Sender {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let brand = brand();
+        write!(
+            f,
+            "\"{}\" <{}>",
+            brand.email_from_name(),
+            brand.email_from_address()
+        )
+    }
+}
+
+/// A link on the brand's domain: displays as `https://<domain><path>`, so a constant of it reads in
+/// `format!` like a string while the domain comes from the brand file (TXT-006, SEC-025, D-1932).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct OnDomain(pub &'static str);
+
+impl fmt::Display for OnDomain {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "https://{}{}", brand().domain(), self.0)
+    }
+}
+
+/// The monitored help address every email replies to, `help@` the brand's domain; never a
+/// no-reply address (SEC-025, D-1932).
+#[must_use]
+pub fn reply_to() -> String {
+    format!("help@{}", brand().domain())
+}
+
+/// The brand's display name in `language`: the why-lines and the portal's name (WORD-001, D-1932).
+pub(crate) fn display_name(language: Language) -> &'static str {
+    match language {
+        Language::En => brand().display_name(),
+        Language::Es => brand().es().display_name(),
+    }
+}
+
+/// The brand's short name in `language`: every subject opens `<short_name>:` (WORD-008, D-1932).
+pub(crate) fn short_name(language: Language) -> &'static str {
+    match language {
+        Language::En => brand().short_name(),
+        Language::Es => brand().es().short_name(),
+    }
+}
+
+/// The brand's legal name in `language`: the footer's entity before the postal address (SEC-028,
+/// WORD-001, D-1932).
+pub(crate) fn legal_name(language: Language) -> &'static str {
+    match language {
+        Language::En => brand().legal_name(),
+        Language::Es => brand().es().legal_name(),
+    }
+}
 /// The action every email's idempotency key is derived under (SEC-018).
 pub const EMAIL_ACTION: &str = "email.send";
 /// How long a provider limit refusal waits while today's count is still under the daily limit.
@@ -142,26 +203,33 @@ struct Layout<'a> {
     why: &'a str,
     manage_url: &'a str,
     manage_label: &'a str,
+    legal: &'a str,
     postal: &'a str,
 }
 
-/// The SEC-028 why-line and the "Manage email notices" label for an audience and language.
-fn footer_lines(audience: Audience, language: Language) -> (&'static str, &'static str) {
+/// The SEC-028 why-line, naming the brand's display name (D-1932), and the "Manage email notices"
+/// label for an audience and language.
+pub(crate) fn footer_lines(audience: Audience, language: Language) -> (String, &'static str) {
+    let name = display_name(language);
     match (language, audience) {
         (Language::En, Audience::Business) => (
-            "You get these emails because your business signed up for job requests from Ask Hava.",
+            format!(
+                "You get these emails because your business signed up for job requests from {name}."
+            ),
             "Manage email notices",
         ),
         (Language::En, Audience::Homeowner) => (
-            "You get these emails because you asked Ask Hava for quotes.",
+            format!("You get these emails because you asked {name} for quotes."),
             "Manage email notices",
         ),
         (Language::Es, Audience::Business) => (
-            "Recibe estos correos porque su negocio se inscribió para recibir solicitudes de trabajo de Ask Hava.",
+            format!(
+                "Recibe estos correos porque su negocio se inscribió para recibir solicitudes de trabajo de {name}."
+            ),
             "Administrar avisos por correo",
         ),
         (Language::Es, Audience::Homeowner) => (
-            "Recibe estos correos porque pidió cotizaciones a Ask Hava.",
+            format!("Recibe estos correos porque pidió cotizaciones a {name}."),
             "Administrar avisos por correo",
         ),
     }
@@ -171,6 +239,7 @@ fn footer_lines(audience: Audience, language: Language) -> (&'static str, &'stat
 /// the CON-009 text itself, `opt_out_confirmation` in the person's language (CON-035).
 fn notice_lines(notice: Notice<'_>, to: &Recipient<'_>) -> Result<(String, String), EmailError> {
     let es = to.language == Language::Es;
+    let short = short_name(to.language);
     Ok(match notice {
         Notice::TextFailed(text) => text_failed_lines(text, to),
         Notice::OptedOut => {
@@ -179,18 +248,18 @@ fn notice_lines(notice: Notice<'_>, to: &Recipient<'_>) -> Result<(String, Strin
                 .render(CONFIRMATION_TEMPLATE, to.language, true, &[])
                 .map_err(|_| EmailError::Template)?;
             let subject = if es {
-                "Ask Hava: Ya no recibirá mensajes de texto"
+                format!("{short}: Ya no recibirá mensajes de texto")
             } else {
-                "Ask Hava: You're unsubscribed from texts"
+                format!("{short}: You're unsubscribed from texts")
             };
-            (subject.to_owned(), text.body)
+            (subject, text.body)
         }
         Notice::StillOpen(n) if es => (
-            format!("Ask Hava: La solicitud {n} sigue abierta"),
+            format!("{short}: La solicitud {n} sigue abierta"),
             format!("Su solicitud {n} sigue abierta. Ciérrela en su página de cotizaciones."),
         ),
         Notice::StillOpen(n) => (
-            format!("Ask Hava: Request {n} is still open"),
+            format!("{short}: Request {n} is still open"),
             format!("Your request {n} is still open. Close it on your quote page."),
         ),
     })
@@ -199,19 +268,24 @@ fn notice_lines(notice: Notice<'_>, to: &Recipient<'_>) -> Result<(String, Strin
 /// The subject and message of a failed important text sent by email, pointing to where the
 /// portal shows it: the homeowner's quote page or the business portal (TXT-014).
 fn text_failed_lines(text: &str, to: &Recipient<'_>) -> (String, String) {
+    let (name, short) = (display_name(to.language), short_name(to.language));
     let page = match (to.language, to.audience) {
-        (Language::En, Audience::Homeowner) => "You can also see it on your quote page.",
-        (Language::En, Audience::Business) => "You can also see it in your Ask Hava portal.",
-        (Language::Es, Audience::Homeowner) => "También puede verlo en su página de cotizaciones.",
-        (Language::Es, Audience::Business) => "También puede verlo en su portal de Ask Hava.",
+        (Language::En, Audience::Homeowner) => "You can also see it on your quote page.".to_owned(),
+        (Language::En, Audience::Business) => format!("You can also see it in your {name} portal."),
+        (Language::Es, Audience::Homeowner) => {
+            "También puede verlo en su página de cotizaciones.".to_owned()
+        }
+        (Language::Es, Audience::Business) => {
+            format!("También puede verlo en su portal de {name}.")
+        }
     };
     match to.language {
         Language::En => (
-            "Ask Hava: A text to you didn't go through".to_owned(),
+            format!("{short}: A text to you didn't go through"),
             format!("This text to you didn't go through, so here it is by email: {text} {page}"),
         ),
         Language::Es => (
-            "Ask Hava: No le llegó un mensaje de texto".to_owned(),
+            format!("{short}: No le llegó un mensaje de texto"),
             format!(
                 "Este mensaje de texto no le llegó, así que se lo enviamos por correo: {text} {page}"
             ),
@@ -240,15 +314,18 @@ pub fn render(
         lang,
         subject: &subject,
         message: &message,
-        why,
+        why: &why,
         manage_url: to.manage_url,
         manage_label,
+        legal: legal_name(to.language),
         postal: &postal.0,
     };
     let html = layout.render().map_err(|_| EmailError::Template)?;
     let plain = format!(
-        "{message}\n\n--\n{why}\n{manage_label}: {}\nAsk Hava LLC, {}\n",
-        to.manage_url, postal.0
+        "{message}\n\n--\n{why}\n{manage_label}: {}\n{}, {}\n",
+        to.manage_url,
+        legal_name(to.language),
+        postal.0
     );
     Ok(Rendered {
         subject,
@@ -391,10 +468,11 @@ pub async fn send_email(
         secret,
         (&claim.template_id, claim.recipient, &claim.subject),
     );
+    let (from, reply_to) = (FROM.to_string(), reply_to());
     let email = Email {
-        from: FROM,
+        from: &from,
         to: address.expose_secret(),
-        reply_to: REPLY_TO,
+        reply_to: &reply_to,
         subject: &claim.rendered.subject,
         html: &claim.rendered.html,
         text: &claim.rendered.plain,
