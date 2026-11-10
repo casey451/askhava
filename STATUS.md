@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-10T14:24:44Z by runner 77805472a1cd (actions).
+Updated 2026-11-10T14:38:59Z by runner 3ddb3a449ab6 (actions).
 
-**Idle since 14:22Z; 185 of 333 done; week 89% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 14:22Z; 185 of 334 done; week 89% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 185 of 333 build tasks (owner gates not counted)
+- **Tasks done:** 185 of 334 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 14:22Z (no task in progress)
 - **Week:** 89% used, 18.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:24Z, 0 min before this update
+- **Last run:** 14:24Z, 14 min before this update
 - **Keeper:** last ran 14:24Z, next wake 14:44Z
 
 ## Needs attention
@@ -52,8 +52,8 @@ Updated 2026-11-10T14:24:44Z by runner 77805472a1cd (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 232 of 733 (31.7%) · partial 304 · unstarted 197
-**Tasks merged (throughput only):** 185 of 333
+**Requirements verified:** 230 of 733 (31.4%) · partial 306 · unstarted 197
+**Tasks merged (throughput only):** 185 of 334
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -65,7 +65,7 @@ Updated 2026-11-10T14:24:44Z by runner 77805472a1cd (actions).
 | fees | 10 | 41 | 1 | 52 |
 | intake | 20 | 14 | 9 | 43 |
 | job-cards | 12 | 10 | 2 | 24 |
-| licensing | 33 | 14 | 1 | 48 |
+| licensing | 31 | 16 | 1 | 48 |
 | lifecycle | 17 | 11 | 0 | 28 |
 | messaging | 16 | 26 | 3 | 45 |
 | ops-recovery | 2 | 5 | 47 | 54 |
@@ -88,7 +88,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 65 of 134 done
+- stage 4: 65 of 135 done
 - stage 5: 0 of 53 done
 - stage 6: 0 of 30 done
 - stage 7: 0 of 2 done
