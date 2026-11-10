@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-10T08:32:53Z by runner c0640d1ba090 (actions).
+Updated 2026-11-10T09:06:05Z by runner c0640d1ba090 (actions).
 
-**Idle since 08:07Z; 182 of 333 done; week 84% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T290 in progress since 09:06Z; 182 of 333 done; week 84% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 182 of 333 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 08:07Z (no task in progress)
+- **Lane:** lane 1: T290 claimed 09:06Z, lease until 12:06Z
 - **Week:** 84% used, 26.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:32Z, 0 min before this update
+- **Last run:** 08:33Z, 33 min before this update
 - **Keeper:** last ran 08:32Z, next wake 08:52Z
 
 ## Needs attention
@@ -35,7 +35,6 @@ Updated 2026-11-10T08:32:53Z by runner c0640d1ba090 (actions).
 | T282 | calls and picks: each call's start time reaches the unreacha | done | 2 | 32 min | 12:06Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Date:      2026- |
 | T282 | calls and picks: each call's start time reaches the unreacha | check_failed | 1 | 27 min | 10:49Z |  |
 | T267 | Ally harness: page states move to a shared data file; the ch | done | 1 | 34 min | 09:42Z |  |
-| T265 | stage exit: a security, money or privacy handoff in the inte | done | 1 | 25 min | 08:49Z |  |
 
 ### Plan and harness merges on main
 - 03:30Z Plan: pentest assessment — Actions pinned, purpose-bound codes, Verify sends outside transactions (D-2346–D-2350, T345–T346) (#407)
@@ -79,7 +78,7 @@ Updated 2026-11-10T08:32:53Z by runner c0640d1ba090 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-10T06:48:54Z (week)): five-hour: 4.0M used, 25.1M left, resets 2026-11-10T09:57:17Z; week: 168.0M used, 26.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-01T13:48:25Z.
+- Pacing (session_reading 2026-11-10T08:32:38Z (week)): five-hour: 4.6M used, 24.5M left, resets 2026-11-10T09:57:17Z; week: 168.0M used, 26.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-01T18:23:14Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -94,7 +93,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T290 (lease until 2026-11-10T12:06:01Z)
 
 ## Last usage reading
 - {"task": "T289", "at": "2026-11-10T07:52:40Z", "cache_read_input_tokens": 3192812, "output_tokens": 45456, "input_tokens": 159, "cache_creation_input_tokens": 171863}
