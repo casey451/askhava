@@ -2,6 +2,13 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## Five waiting steps fixed before they start (plan change, D-3055, November 11)
+
+- **What happened.** A check of five steps still waiting in line found that each would have stopped partway, because the plan asked for something the code or older tests do not allow.
+- **What changed.** The business's Confirm page step is split in two: one part records the business's agreement to the terms on the Confirm page and adds the extra code check for a shared inbox; a new step, T388, emails the homeowner a copy of the quote she accepted and shows it on her quote page. The business sign-in step may now change one line in an older test so the new pages can be checked. Quiet hours for waiting texts are checked by the new text sender itself, so older tests stay as they are. The pest-license step keeps what it can do, and a new step, T389, pauses a pest business's pest jobs when a homeowner reports its license is wrong. The nightly payments check reads Stripe in pages through a new read, so older tests stay as they are.
+- **Still open.** Nothing yet lets a homeowner send the wrong-license report (no page or text keyword for it). And the pest quote card's line "This business told us it holds … license" is not built by any step. Both go in the next plan change.
+- **Nothing needs you.**
+
 ## A flaky coverage check on the payments code gets a fix, first in line (plan change, D-3049, November 11)
 
 - **What happened.** The build requires at least 95% of the payments code's branches to be exercised by tests. After the last refund change it sits right on that line: the same code measured 95.07% on one run and 94.94% on another, so one test reaches a piece of payments code only some of the time, and the check now passes or fails by chance.
