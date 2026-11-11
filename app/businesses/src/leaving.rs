@@ -193,7 +193,7 @@ pub async fn pause_ask_due(
     let row = models::read(conn, business).await?;
     let paused_for = now.duration_since(row.status_changed_at);
     let long = paused_for > SignedDuration::from_hours(after_days.saturating_mul(24));
-    if row.status != AccountStatus::Paused || !long {
+    if !row.status.asks_pause_reason() || !long {
         return Ok(false);
     }
     Ok(!reason_asked(conn, business).await?)

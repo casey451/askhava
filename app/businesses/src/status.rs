@@ -70,6 +70,17 @@ impl AccountStatus {
             }
         }
     }
+    /// Whether a long stay in this status asks the optional BIZ-054 reason: only `Paused` (T228).
+    #[must_use]
+    pub const fn asks_pause_reason(self) -> bool {
+        match self {
+            Self::Paused => true,
+            Self::Pending | Self::Active | Self::Waitlist | Self::NeedsReview | Self::Removed => {
+                false
+            }
+        }
+    }
+
     /// Whether an identity code may be sent or checked in this status (BIZ-002, D-1703): only a
     /// sign-up still waiting, `Pending` or `NeedsReview` (Casey's approval needs the code too).
     #[must_use]

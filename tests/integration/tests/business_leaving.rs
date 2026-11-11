@@ -229,10 +229,8 @@ async fn td_biz_32_leaving_withdraws_moves_removes_and_ends(pool: PgPool) {
         1,
         "the backup has the pick"
     );
-    assert_eq!(
-        current(&mut db, b).await.expect("job").status,
-        JobStatus::QuotesReady
-    );
+    let status = current(&mut db, b).await.expect("job").status;
+    assert_eq!(status.code(), "quotes_ready", "job B back to Quotes ready");
     let open = "SELECT count(*) FROM quotes.quote WHERE business_id = $1 AND withdrawn_at IS NULL";
     assert_eq!(
         count(&mut db, open, who.business).await,
