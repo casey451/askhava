@@ -1,24 +1,25 @@
 # Ask Hava build status
 
-Updated 2026-11-11T04:58:55Z by runner 18d7cc8f2592 (actions).
+Updated 2026-11-11T04:59:15Z by runner 18d7cc8f2592 (actions).
 
 **Building: T209 in progress since 03:10Z; 195 of 369 done; week 60% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 195 of 369 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T209 claimed 03:10Z, lease until 06:10Z; lane 2: T295 claimed 04:58Z, lease until 07:58Z; lane 3: T337 claimed 04:55Z, lease until 07:55Z
+- **Lane:** lane 1: T209 claimed 03:10Z, lease until 06:10Z; lane 3: T337 claimed 04:55Z, lease until 07:55Z
 - **Week:** 60% used, 67.6M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:56Z, 2 min before this update
+- **Last run:** 04:59Z, 0 min before this update
 - **Keeper:** last ran 04:51Z, next wake 06:13Z
 
 ## Needs attention
-- nothing
+- BLOCKED T295: T295 blocked at step 3 (checked by the runner session, no worker run): tests/brand_literal_baseline.json still lists app/messaging/templates/en.json (96) and es.json (96), owned by T360, and app/portals/templates/homeowner_home.html (3), owned by T087; kit/tasks.json T295 owns none of them. A plan change must give these an owner before the guard is made strict. No code changed.
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T295 | payments, ai, intake and picks take the brand from the brand | BLOCKED | 3 | 0 min | 04:59Z | T295 blocked at step 3: tests/brand_literal_baseline.json still lists files T295 does not own: app/messaging/templates/e |
 | T337 | payments: a $0 release proof is bound to the pick's own stor | QUEUED | 2 | 25 min | 04:51Z | T337 built and committed (53e675b1, cf42d54e); smoke/prehandin red on tests T337 does not own: confirm_and_pay.rs td_fee |
-| T295 | payments, ai, intake and picks take the brand from the brand | QUEUED | 2 | 0 min | 04:49Z | T295 blocked at step 3: tests/brand_literal_baseline.json still lists files T295 does not own: app/messaging/templates/e |
+| T295 | payments, ai, intake and picks take the brand from the brand | QUEUED | 2 | 0 min | 04:49Z |  |
 | T295 | payments, ai, intake and picks take the brand from the brand | QUEUED | 1 | 1 min | 04:44Z |  |
 | T374 | licensing and businesses: one read of everything a business  | done | 1 | 45 min | 03:08Z |  |
 | T157 | picks: the homeowner's backup choice at the pick | done | 2 | 22 min | 02:41Z | E2e: failure; Ally: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-1 |
@@ -110,7 +111,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T209 (lease until 2026-11-11T06:10:38Z)
-- lane 2: T295 (lease until 2026-11-11T07:58:50Z)
 - lane 3: T337 (lease until 2026-11-11T07:55:48Z)
 
 ## Last usage reading
