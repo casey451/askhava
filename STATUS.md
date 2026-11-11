@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T22:35:14Z by runner 0137f98c1451 (actions).
+Updated 2026-11-11T22:35:33Z by runner 0137f98c1451 (actions).
 
 **Building: T228 in progress since 22:22Z; 214 of 376 done; week 76% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-11T22:35:14Z by runner 0137f98c1451 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T228 claimed 22:22Z, lease until 01:22Z; lane 2: T334 claimed 22:00Z, lease until 01:00Z
 - **Week:** 76% used, 36.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:34Z, 0 min before this update
-- **Keeper:** last ran 22:32Z, next wake 01:02Z
+- **Last run:** 22:35Z, 0 min before this update
+- **Keeper:** last ran 22:35Z, next wake 01:02Z
 
 ## Needs attention
 - BLOCKED T317: plan gap reported: PLAN GAP: tests/integration/tests/suspension_mode.rs:69-78 (owned by T279) and app/server/tests/voice_confirm_line.rs:95-104 (owned by T311) also build Webhooks by struct literal with names: Vec::new(); T317 owns neither, and goals (3) and (4) (remove names, add Environment) stop both compiling. Reviewer confirmed: all-public fields, no Default or constructor. Smallest fix: add both files to T317's owned files, say six done tests in goal (5) with the same construction-only rule, and raise the file budget from 7 to 9.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T317 --plan-fix D-### --reason "..."` (D-2859)
