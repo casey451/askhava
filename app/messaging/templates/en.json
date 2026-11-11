@@ -478,5 +478,35 @@
     "audience": "business",
     "segments": 1,
     "text": "{brand_short}: Your bank wants you to approve the payment for job {job}. You haven't been charged yet. Approve it here: {link}"
+  },
+  "check_in_day3": {
+    "audience": "homeowner",
+    "segments": 2,
+    "text": "{brand_short}: Reply DONE, PROBLEM, or NO if they never reached you. Not done yet? Reply LATER. More answers: reply MORE.\nThis is about the business you picked for request {job}."
+  },
+  "check_in_day14": {
+    "audience": "homeowner",
+    "segments": 2,
+    "text": "{brand_short}: Reply DONE, PROBLEM, or NO if they never reached you. Not done yet? Reply LATER. More answers: reply MORE.\nChecking in again about the business you picked for request {job}."
+  },
+  "check_in_more": {
+    "audience": "homeowner",
+    "segments": 2,
+    "text": "{brand_short}: Answers for request {job}:\nDONE: the work is done.\nPROBLEM: something went wrong. Add a few words if you like.\nNO: they never reached you.\nLATER: not done yet.\nONGOING: they've started a regular service.\nOTHER: you hired someone else."
+  },
+  "feedback_request": {
+    "audience": "homeowner",
+    "segments": 1,
+    "text": "{brand_short}: Thanks for the update on request {job}. How did it go? Tell us here: {link} What you write stays private unless you check the box to share it."
+  },
+  "unreachable_closed": {
+    "audience": "homeowner",
+    "segments": 1,
+    "text": "{brand_short}: {business} couldn't reach you. Text us any time to start again."
+  },
+  "emailed_question": {
+    "audience": "homeowner",
+    "segments": 1,
+    "text": "{brand_short}: Did {business} email you and agree a time? Text back YES or NO."
   }
 }

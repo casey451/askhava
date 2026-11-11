@@ -15,7 +15,7 @@ use askhava_adapters::api::PaymentsAdapter;
 use askhava_businesses::api::{NoticePurpose, notice_addresses};
 use askhava_calls::api::{AnsweredBy, CloseReason, LoggedCall, close_line};
 use askhava_core::api::{Guarded, NewTask, enqueue as enqueue_task};
-use askhava_jobs::api::{JobStatus, move_to};
+use askhava_jobs::api::{JobStatus, TEXT_KIND, current, move_to};
 use askhava_messaging::api::{
     AreaCodes, Channel, Decision, Kind, Language, NewText, Outgoing, QuietHoursError, Relation,
     SendWindow, decide, enqueue, render,
@@ -39,6 +39,8 @@ use crate::status::PickStatus;
 
 /// TXT-030: the missed-call text to the homeowner (an important text, TXT-014).
 pub const MISSED_CALL_TEMPLATE: &str = "caller_missed";
+/// JOB-027: the homeowner's text when the unreachable refund closes her job (D-1818, D-1842).
+pub const UNREACHABLE_CLOSED_TEMPLATE: &str = "unreachable_closed";
 /// TXT-026: the no-call reminder to the business.
 pub const REMINDER_TEMPLATE: &str = "business_no_call_reminder";
 /// TXT-026: the reminder when the homeowner chose email, with the email line.
@@ -330,7 +332,8 @@ async fn read_refund(pool: &PgPool, pick: Uuid) -> Result<PickRefundState, Picks
 /// waiting for Stripe ([`AtNinetySix::RefundInFlight`]).
 /// A pick refunded before is judged as if it were not, so a run that refunded but stopped before
 /// the close finishes on the next run (`request_refund` sends nothing twice). `NotYet` does
-/// nothing. JOB-027's homeowner text and 72-hour question wait for their templates (D-1818).
+/// nothing. The close queues JOB-027's homeowner text (D-1842); the 72-hour question's sending is
+/// T281's (D-1818).
 ///
 /// # Errors
 /// `Database` (a refund or move failure too), `Template`, `Outbox`.
@@ -370,8 +373,9 @@ pub async fn decide_at_96_hours(
     Ok(AtNinetySix::Decided(decision))
 }
 
-/// JOB-027, D-142: Connected to Closed and the line closed, in one transaction; a job already
-/// moved on changes nothing. The homeowner's close text waits for its template (D-1818).
+/// JOB-027, D-142, D-1842: Connected to Closed, the line closed and the homeowner's
+/// [`UNREACHABLE_CLOSED_TEMPLATE`] text queued, in one transaction; a job already moved on
+/// changes nothing and queues nothing.
 async fn close_unreachable(
     pool: &PgPool,
     case: &ReleasedPick<'_>,
@@ -392,7 +396,35 @@ async fn close_unreachable(
     )
     .await
     .map_err(|_| PicksError::Database)?;
+    queue_closed_text(&mut tx, case, now).await?;
     tx.commit().await.map_err(|_| PicksError::Database)
+}
+
+/// JOB-027, D-1818, D-1842: one `jobs.homeowner_text` event for [`UNREACHABLE_CLOSED_TEMPLATE`]
+/// at the closed job's version (a final status's, so the sender still sends it, QH-007), with the
+/// job number and the business's public name only; `intake`'s sender applies consent, opt-out and
+/// quiet hours. Deduped per job, so a rerun queues nothing more.
+async fn queue_closed_text(
+    tx: &mut PgConnection,
+    case: &ReleasedPick<'_>,
+    now: Timestamp,
+) -> Result<(), PicksError> {
+    let version = current(tx, case.job)
+        .await
+        .map_err(|_| PicksError::Job)?
+        .version;
+    let payload = json!({"job": case.job, "version": version,
+        "template": UNREACHABLE_CLOSED_TEMPLATE,
+        "values": {"job": case.job_number, "business": case.business_name}});
+    let mut task = NewTask::new(TEXT_KIND, payload, now);
+    task.dedupe_key = Some(format!(
+        "{TEXT_KIND}.{}.{UNREACHABLE_CLOSED_TEMPLATE}",
+        case.job
+    ));
+    enqueue_task(tx, &task)
+        .await
+        .map_err(|_| PicksError::Database)
+        .map(drop)
 }
 
 /// JOB-013, JOB-027, D-143, D-1819: returns a no-show job to Quotes ready with its line closed and

@@ -1,6 +1,7 @@
 //! The sender of the homeowner texts a job event asks for: the `jobs.homeowner_text` handler
-//! (JOB-009, JOB-010, JOB-011, JOB-012, JOB-025, TXT-016, TXT-042, TXT-040, QH-001, QH-006,
-//! QH-007, SEC-037, CON-021, CON-028; D-871, D-872, D-1030 (A), D-1215, D-1301 to D-1303).
+//! (JOB-009, JOB-010, JOB-011, JOB-012, JOB-015, JOB-016, JOB-017, JOB-025, JOB-027, TXT-016,
+//! TXT-029, TXT-042, TXT-040, QH-001, QH-006, QH-007, SEC-037, CON-021, CON-028; D-871, D-872,
+//! D-1030 (A), D-1215, D-1301 to D-1303, D-1842).
 //!
 //! `jobs` holds no homeowner contact, so a move that texts the homeowner queues a `core.task` of
 //! kind `jobs::api::TEXT_KIND` with the job ID, the job's version, the template ID and the numbers
@@ -15,7 +16,8 @@
 //! zone the same event is queued again for the next instant both are open (QH-001, QH-006). Intake
 //! never sees her number (D-1196). Inside the window it renders the template in her language with
 //! the request number and, for TXT-042, `quoted` and `count`, and for TXT-042 and TXT-016
-//! (`first_quote`, sent with the first-quote move, D-1517) her quote-page link, whose token
+//! (`first_quote`, sent with the first-quote move, D-1517) her quote-page link, and for JOB-017's
+//! `feedback_request` the feedback page's `/f/` link (D-1842), whose token
 //! `jobs::api::quote_token::issue` makes at send time (SEC-037; never in a payload or a log), and
 //! queues one outbox row keyed on template, contact and job, in one transaction with the token:
 //! a second run finds the row and rolls its new token back, so the queued link stays live.
@@ -26,7 +28,9 @@ use askhava_core::api::{
     Claimed, Clock, HandlerError, IdSecret, NewTask, SystemClock, brand, enqueue,
 };
 use askhava_jobs::api::quote_token::issue;
-use askhava_jobs::api::{TEXT_KIND, text_due};
+use askhava_jobs::api::{
+    CHECK_IN_DAY3, CHECK_IN_DAY14, FEEDBACK_REQUEST, PROBLEM_REPLY, TEXT_KIND, text_due,
+};
 use askhava_messaging::api::{Language, NewText, Relation, SendWindow, render, send_window};
 use askhava_privacy::api::Vault;
 use jiff::Timestamp;
@@ -43,22 +47,43 @@ use crate::service::{Queued, may_text};
 pub const ALL_QUOTES_IN_TEMPLATE: &str = "all_quotes_in";
 /// The TXT-016 template, sent with the first-quote move to Quotes ready; it carries the link too.
 const FIRST_QUOTE_TEMPLATE: &str = "first_quote";
+/// JOB-027's close text after the unreachable refund (`picks`' `close_unreachable`, D-1842).
+pub const UNREACHABLE_CLOSED_TEMPLATE: &str = "unreachable_closed";
+/// JOB-027's 72-hour question to an email-contact homeowner (sent by T281's step, D-1817).
+pub const EMAILED_QUESTION_TEMPLATE: &str = "emailed_question";
+/// The reply to MORE or MÁS at a check-in: the full list of answers (JOB-015, JOB-028, D-1842).
+pub const CHECK_IN_MORE_TEMPLATE: &str = "check_in_more";
 /// Every template a `jobs.homeowner_text` event may name: JOB-010, JOB-011, JOB-012, JOB-025's
-/// closing note, TXT-042 and TXT-016 (`jobs`' `timeout_text`, `handlers` and `first_quote`).
-pub const JOB_TEXT_TEMPLATES: [&str; 6] = [
+/// closing note, TXT-042 and TXT-016 (`jobs`' `timeout_text`, `handlers` and `first_quote`), the
+/// day-3 and day-14 check-ins and the MORE list (JOB-015), the feedback request (JOB-017), the
+/// TXT-029 PROBLEM reply (JOB-016) and JOB-027's close text and 72-hour question (D-1842).
+pub const JOB_TEXT_TEMPLATES: [&str; 13] = [
     "no_quotes_yet",
     "closed_no_quotes",
     "closed_no_pick",
     "closed_no_quote_left",
     ALL_QUOTES_IN_TEMPLATE,
     FIRST_QUOTE_TEMPLATE,
+    CHECK_IN_DAY3,
+    CHECK_IN_DAY14,
+    CHECK_IN_MORE_TEMPLATE,
+    FEEDBACK_REQUEST,
+    PROBLEM_REPLY,
+    UNREACHABLE_CLOSED_TEMPLATE,
+    EMAILED_QUESTION_TEMPLATE,
 ];
-/// The templates whose text carries her quote-page link (TXT-016, TXT-042, SEC-037).
-const LINKED_TEMPLATES: [&str; 2] = [ALL_QUOTES_IN_TEMPLATE, FIRST_QUOTE_TEMPLATE];
-/// Her private quote page on the brand's domain, `https://<domain>/q/<token>` (PICK-010,
-/// TXT-016, D-1932; the `/q/{token}` route is `portals`').
-fn quote_page_link(token: &str) -> String {
-    format!("https://{}/q/{token}", brand().domain())
+/// The page a template's `{link}` opens, by path prefix on the brand's domain: her quote page
+/// `/q/` for TXT-016 and TXT-042 (PICK-010), the private feedback page `/f/` for JOB-017 (T230,
+/// D-1821); both take the job's quote-page link token (SEC-037). Other templates carry no link.
+const LINKED_TEMPLATES: [(&str, &str); 3] = [
+    (ALL_QUOTES_IN_TEMPLATE, "q"),
+    (FIRST_QUOTE_TEMPLATE, "q"),
+    (FEEDBACK_REQUEST, "f"),
+];
+/// The link `https://<domain>/<page>/<token>` (PICK-010, TXT-016, JOB-017, D-1932; the `/q/` and
+/// `/f/` routes are `portals`').
+fn page_link(page: &str, token: &str) -> String {
+    format!("https://{}/{page}/{token}", brand().domain())
 }
 
 const BAD_PAYLOAD: &str = "bad jobs homeowner-text payload";
@@ -296,8 +321,8 @@ async fn hold(
     Ok(JobTextStep::Held(until))
 }
 
-/// Renders and queues the text in one transaction with its quote-page token (TXT-016, TXT-042,
-/// SEC-037),
+/// Renders and queues the text in one transaction with its link token (TXT-016, TXT-042,
+/// JOB-017, SEC-037),
 /// re-checking the version inside it; an outbox row already there rolls the new token back.
 async fn queue(
     db: &mut PgConnection,
@@ -310,13 +335,17 @@ async fn queue(
     if !due(&mut tx, text).await? {
         return Ok(JobTextStep::Skipped(JobTextSkip::MovedOn));
     }
-    let link = if LINKED_TEMPLATES.contains(&text.template) {
-        let token = issue(&mut tx, &keys.link, text.job, now)
-            .await
-            .map_err(|_| IntakeError::Job)?;
-        Some(quote_page_link(token.as_str()))
-    } else {
-        None
+    let page = LINKED_TEMPLATES
+        .iter()
+        .find_map(|(id, page)| (*id == text.template).then_some(*page));
+    let link = match page {
+        Some(page) => {
+            let token = issue(&mut tx, &keys.link, text.job, now)
+                .await
+                .map_err(|_| IntakeError::Job)?;
+            Some(page_link(page, token.as_str()))
+        }
+        None => None,
     };
     let body = job_text_body(text, language_from_code(language), link.as_deref())?;
     let new = NewText {
@@ -341,8 +370,8 @@ async fn queue(
 }
 
 /// The text of `text` in `language` (Spanish only for a Spanish request): `{job}` from the
-/// request number, `{quoted}` and `{count}` from the event, `{link}` from `link` (TXT-040,
-/// TXT-042).
+/// request number, `{quoted}` and `{count}` from the event, `{business}` (the business's public
+/// name, JOB-027's texts) from the event, `{link}` from `link` (TXT-040, TXT-042, JOB-027).
 ///
 /// # Errors
 ///
@@ -356,6 +385,11 @@ pub fn job_text_body(
     let owned: Vec<(&str, String)> = ["job", "quoted", "count"]
         .into_iter()
         .filter_map(|key| number(key).map(|n| (key, n)))
+        .chain(
+            text.values["business"]
+                .as_str()
+                .map(|b| ("business", b.to_owned())),
+        )
         .chain(link.map(|l| ("link", l.to_owned())))
         .collect();
     let values: Vec<(&str, &str)> = owned.iter().map(|(k, v)| (*k, v.as_str())).collect();

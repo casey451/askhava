@@ -30,16 +30,21 @@
 //! `settle::retry_line` runs (T254, D-1688); a failed release queues that task only once its
 //! claim stands (D-2017). The who's-calling text (TXT-027) is not sent here
 //! yet (D-1687).
+//!
+//! T278 (JOB-015, D-1842): the claim's transaction also queues the day-3 and day-14 check-ins of
+//! a Connected job, from the release and the picked quote's earliest visit
+//! ([`check_ins_at_release`]).
 
 use askhava_adapters::api::MaskedPool;
 use askhava_businesses::api::{NoticePurpose, notice_addresses};
 use askhava_calls::api::{Connected, assign_number};
 use askhava_core::api::{NewTask, enqueue};
-use askhava_jobs::api::{current, job_number};
+use askhava_jobs::api::{current, job_number, schedule_check_ins};
 use askhava_ops::api::{NewAlert, Severity, raise_alert};
 use askhava_privacy::api::{
     ContactDetails, Field, ReleaseBasis, ReleaseProof, Vault, read_for_release,
 };
+use askhava_quotes::api::earliest_visit;
 use jiff::Timestamp;
 use secrecy::{ExposeSecret, SecretString};
 use serde_json::{Value, json};
@@ -387,8 +392,37 @@ async fn ask_again(
     tx.commit().await.map_err(|_| PicksError::Database)
 }
 
+/// JOB-015, D-1811 (2), D-1842: when job `job` is Connected, queues its day-3 and day-14
+/// check-ins (`jobs::api::schedule_check_ins`) in the caller's transaction, from the release at
+/// `at` and `business`'s quote's earliest visit (`quotes::api::earliest_visit`); `true` when
+/// queued. A job not Connected gets none: nothing moves a job to Connected yet (D-2015 (1)), and
+/// a check-in tagged with an earlier version would never send (D-1812). The release's claim
+/// calls it, so a second release of the pick queues nothing more; the dedupe key is per job,
+/// version and day anyway.
+///
+/// # Errors
+/// [`PicksError::Job`] or [`PicksError::Quotes`].
+pub async fn check_ins_at_release(
+    tx: &mut PgConnection,
+    (job, business): (Uuid, Uuid),
+    at: Timestamp,
+) -> Result<bool, PicksError> {
+    let row = current(tx, job).await.map_err(|_| PicksError::Job)?;
+    if !row.status.takes_check_ins() {
+        return Ok(false);
+    }
+    let visit = earliest_visit(tx, (job, business))
+        .await
+        .map_err(|_| PicksError::Quotes)?;
+    schedule_check_ins(tx, job, at, visit)
+        .await
+        .map_err(|_| PicksError::Job)?;
+    Ok(true)
+}
+
 /// Stores the one release row, bound to the proof's contact and her email choice (D-1739), and
-/// queues the notice in one transaction, or one High [`RELEASE_NO_RECIPIENT_ALERT`] when the
+/// queues the notice in one transaction, with the check-ins of a Connected job
+/// ([`check_ins_at_release`]), or one High [`RELEASE_NO_RECIPIENT_ALERT`] when the
 /// business has no recipient; false when another call released first (PICK-022, PICK-024, R11,
 /// D-1561).
 async fn record(
@@ -407,6 +441,7 @@ async fn record(
     if !models::insert_release(&mut tx, (pick, job, business), bound, at).await? {
         return Ok(false);
     }
+    check_ins_at_release(&mut tx, (job, business), at).await?;
     let to = notice_addresses(&mut tx, business, NoticePurpose::PicksAndRelease)
         .await
         .map_err(|_| PicksError::Database)?;
