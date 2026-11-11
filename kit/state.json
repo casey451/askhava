@@ -28127,7 +28127,7 @@
     "T057",
     "T075"
    ],
-   "status": "IN_PROGRESS",
+   "status": "QUEUED",
    "attempts": 0,
    "slug": "task-kind-registry-check",
    "type": "harness",
@@ -28140,6 +28140,14 @@
     2851,
     2852,
     2853
+   ],
+   "stale_leases": [
+    {
+     "task": "T327",
+     "session": "actions-42964954349",
+     "expires": "2026-11-11T08:24:57Z",
+     "lane": "3"
+    }
    ]
   },
   {
@@ -31378,7 +31386,7 @@
    }
   }
  },
- "updated_at": "2026-11-11T08:38:07Z",
+ "updated_at": "2026-11-11T08:41:17Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -31476,8 +31484,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "cf9b14cb7c734b30006e452692b7449493e27144",
- "starter": "manual",
+ "runner_sha": "51d43b98c1b254f98024bdd4fac7e0a20f48dcd3",
+ "starter": "actions",
  "smoke_runs": [
   {
    "sha": "5fd99b77318810999dc350af1e1e5d7c240c2266",

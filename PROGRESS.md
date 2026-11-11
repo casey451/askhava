@@ -1936,3 +1936,4 @@
 - 2026-11-11T08:24:00Z runner 68d6b3ac2530 (actions): {}
 - 2026-11-11T08:24:23Z runner 68d6b3ac2530 (actions): {"T295": "QUEUED -> IN_PROGRESS"}; T295 estimated 3.7M tokens (calibrated); five-hour window has 7.5M left, week 67.5M after 2.5M still running in another lane (session_reading 2026-11-11T08:23:45Z (week)); claimed
 - 2026-11-11T08:38:07Z runner cf9b14cb7c73 (manual): {"T337": "BLOCKED -> QUEUED"}
+- 2026-11-11T08:41:17Z runner 51d43b98c1b2 (actions): {"T327": "IN_PROGRESS -> QUEUED"}
