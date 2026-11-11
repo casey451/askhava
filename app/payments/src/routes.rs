@@ -845,10 +845,12 @@ mod tests {
         assert!(sink.0.lock().expect("lock").is_empty());
     }
 
-    /// D-2289: a success with no readable pick is recorded, never acknowledged unread, so with no
-    /// database to record it in Stripe is asked to resend; nothing is released either way.
+    /// D-2289: a success with no readable pick is never acknowledged unread: it goes to the
+    /// database, so with none reachable Stripe is asked to resend; nothing is released. This lazy
+    /// pool fails at the first read, so the recording itself is guarded by `td_fee_53` in
+    /// `tests/integration/tests/stripe_webhook_dispatch.rs`.
     #[tokio::test]
-    async fn an_event_without_a_pick_releases_nothing_and_is_recorded() {
+    async fn an_event_without_a_pick_releases_nothing_and_reaches_the_database() {
         let sink = Arc::new(Recorded::default());
         let body = r#"{"id":"evt_fake2","type":"payment_intent.succeeded","livemode":false,"data":{"object":{"id":"pi_fake2","metadata":{"pick_id":"not-a-pick"}}}}"#.to_owned();
         let sig = signed(&body, SECRET);

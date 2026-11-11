@@ -552,7 +552,7 @@ async fn alerts(pool: &PgPool) -> Vec<(String, String, Option<Uuid>)> {
 }
 
 /// TD-FEE-53 (SEC-017, PICK-022, D-2289): a signed success whose `metadata.pick_id` is missing,
-/// empty or not a UUID writes one event row and one High unreadable alert with no subject, answers
+/// empty, not a UUID or not a string (a number, `null`) writes one event row and one High unreadable alert with no subject, answers
 /// 200 and releases nothing; its resends change nothing; a well-formed success still releases
 /// through the re-fetched PaymentIntent.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
@@ -570,6 +570,14 @@ async fn td_fee_53_a_success_naming_no_pick_is_recorded_not_released(pool: PgPoo
             "evt_FakeP3",
             json!({"id": "pi_Fake1", "metadata": {"pick_id": "not-a-pick"}}),
         ),
+        (
+            "evt_FakeP5",
+            json!({"id": "pi_Fake1", "metadata": {"pick_id": 7}}),
+        ),
+        (
+            "evt_FakeP6",
+            json!({"id": "pi_Fake1", "metadata": {"pick_id": null}}),
+        ),
     ];
     let mut first = Vec::new();
     for round in 0..3 {
@@ -583,10 +591,10 @@ async fn td_fee_53_a_success_naming_no_pick_is_recorded_not_released(pool: PgPoo
     }
     let rows = snapshot(&pool).await;
     assert_eq!(rows, first, "a resend changes nothing");
-    let line = format!("alert {UNREADABLE_EVENT_ALERT} 3");
-    assert!(has(&rows, &line) && has(&rows, "events 3"), "{rows:?}");
+    let line = format!("alert {UNREADABLE_EVENT_ALERT} 5");
+    assert!(has(&rows, &line) && has(&rows, "events 5"), "{rows:?}");
     let high = (UNREADABLE_EVENT_ALERT.to_owned(), "high".to_owned(), None);
-    assert_eq!(alerts(&pool).await, vec![high.clone(), high.clone(), high]);
+    assert_eq!(alerts(&pool).await, vec![high; 5]);
     assert!(sink.0.lock().expect("lock").is_empty(), "nothing released");
     let paid = json!({"id": "pi_Fake1", "metadata": {"pick_id": pick_of(1).to_string()}});
     let status = send(&hooks, "evt_FakeP4", "payment_intent.succeeded", paid).await;
