@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-11T23:04:12Z by runner 73c040ef5e53 (actions).
+Updated 2026-11-11T23:04:25Z by runner 73c040ef5e53 (actions).
 
-**Building: T228 in progress since 22:22Z; 214 of 376 done; week 77% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T334 in progress since 22:00Z; 214 of 376 done; week 77% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 214 of 376 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T228 claimed 22:22Z, lease until 01:22Z; lane 2: T334 claimed 22:00Z, lease until 01:00Z; lane 4: T348 claimed 22:48Z, lease until 01:48Z
+- **Lane:** lane 2: T334 claimed 22:00Z, lease until 01:00Z; lane 4: T348 claimed 22:48Z, lease until 01:48Z
 - **Week:** 77% used, 34.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:03Z, 0 min before this update
+- **Last run:** 23:03Z, 1 min before this update
 - **Keeper:** last ran 22:38Z, next wake 01:02Z
 
 ## Needs attention
@@ -17,12 +17,13 @@ Updated 2026-11-11T23:04:12Z by runner 73c040ef5e53 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T228 | businesses: leaving Ask Hava, the optional reason and what h | MERGE_PENDING | 2 | 41 min | 23:04Z | Ci: failure; Checks: failure / Checks failed at step: Rust toolchain (the pinned release from rust-toolchain.toml) / inf |
 | T317 | server and intake: the inbound text route applies SEC-014's  | BLOCKED | 1 | 4 min | 22:34Z | PLAN GAP: tests/integration/tests/suspension_mode.rs:69-78 (owned by T279) and app/server/tests/voice_confirm_line.rs:95 |
 | T232 | portals and businesses: the Confirm step's "Can't take it" l | MERGE_PENDING | 1 | 51 min | 22:02Z |  |
 | T387 | payments (harness): the branch that flaps payments coverage  | done | 1 | 90 min | 21:49Z |  |
 | T388 | picks, intake, messaging and portals: after a Confirm the ho | MERGE_PENDING | 1 | 34 min | 21:46Z |  |
 | T334 | payments: the nightly reconcile catches up after an outage f | QUEUED | 1 | 15 min | 21:21Z | Worker stopped with PLAN GAP: reconcile_open.rs:343 and :423 (T288 tests, night 0 then night 8) fail once the run reads  |
-| T228 | businesses: leaving Ask Hava, the optional reason and what h | check_failed | 1 | 31 min | 19:59Z | Ci: failure; Checks: failure / Checks failed at step: Rust toolchain (the pinned release from rust-toolchain.toml) / inf |
+| T228 | businesses: leaving Ask Hava, the optional reason and what h | check_failed | 1 | 31 min | 19:59Z |  |
 | T228 | businesses: leaving Ask Hava, the optional reason and what h | resync | 1 | 77 min | 19:09Z |  |
 | T316 | businesses: one read of each business's public name for the  | done | 2 | 26 min | 19:02Z | PLAN GAP: app/businesses/src/holding.rs:8 and migrations/0050_licensing_imports.sql:22-55: nothing links a business to a |
 | T332 | payments (harness): a late success has its own refund trigge | done | 4 | 25 min | 18:53Z | merging main into the reviewed head conflicts in app/payments/CLAUDE.md; a resync merges it in on this attempt (D-891) |
@@ -154,9 +155,9 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T228 (lease until 2026-11-12T01:22:47Z)
+- nothing
 - lane 2: T334 (lease until 2026-11-12T01:00:14Z)
 - lane 4: T348 (lease until 2026-11-12T01:48:59Z)
 
 ## Last usage reading
-- {"task": "T317", "at": "2026-11-11T22:34:34Z", "input_tokens": 110, "cache_read_input_tokens": 3596393, "cache_creation_input_tokens": 220888, "output_tokens": 28226}
+- {"task": "T228", "at": "2026-11-11T23:04:11Z", "cache_creation_input_tokens": 228594, "output_tokens": 47358, "input_tokens": 185, "cache_read_input_tokens": 3749756}
