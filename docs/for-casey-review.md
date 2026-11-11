@@ -2,6 +2,12 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## Your call: a try lost to an outside outage is given back; T332 gets its try (plan change, D-3031, November 11)
+
+- **What happened.** T332's third and last try was failed by the Ubuntu download outage (D-3030): the step that sets up the test browser could not download, so its accessibility and journey tests never ran. The rules only gave a task an extra try when the plan itself was wrong, so you were asked, and you said "Give it back".
+- **What changed.** The build rules now say: when a try fails only at a setup step, before any of its tests ran, because of an outside fault that a logged fix has since removed, the task gets one more try, on Opus. A failure inside a test, or in the task's own work, never counts. T332's plan now carries the note that lets the runner give it that try; its work and tests are unchanged. T384 and T269 lost a try the same way but still have tries left.
+- **Nothing needs you.**
+
 ## The share box at the pick is required, and five older tests tick it (plan change, D-3032, November 11)
 
 - **What happened.** The step that adds the homeowner's "Share my first name and the job address" box at the pick stopped a second time. Pressing Pick without ticking the box must now show an error and pick nothing, but five older tests press Pick without the box, and that step was not allowed to change them.
