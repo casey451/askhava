@@ -27,9 +27,14 @@ pub use crate::closing::{
     CLOSE_MENTION_TEMPLATE, CLOSE_WHICH_TEMPLATE, Closing, JOB_CLOSED_TEMPLATE,
     JOBS_CLOSED_TEMPLATE, answer_close, close_from_page,
 };
+pub use crate::conversation::{AfterQuestions, after_questions};
 pub use crate::conversation::{
     Answer, JobStart, Opened, Recorded, Taken, ask_name_address, begin_job, hear, joining_job,
     record_answer, stop_if_under_18, take_name_address,
+};
+pub use crate::design::{
+    CONCEPT_OFFER_TEMPLATE, CONCEPT_QUESTION, ConceptStep, LOOK_ASK_TEMPLATE,
+    LOOK_DESCRIBE_TEMPLATE, concept_step, is_design_category,
 };
 pub use crate::emergency::{SAFETY_CALL_KIND, SafetyCallAsk, enqueue_safety_call};
 pub use crate::emergency_count::{
@@ -63,6 +68,11 @@ pub use crate::matching::{
 pub use crate::models::{
     ConsentRecordRow, ConversationRow, EmergencyEventRow, GoldenResultRow, HomeownerRow,
     IntakeAnswerRow, IntakeError, PropertyRow, RecruitingDemandRow, TermsAcceptanceRow,
+};
+pub use crate::photos::{
+    LEAVE_OUT_LINE, MAX_PHOTO_ASKS, NO_PHOTO_LINE, PHOTO_ASK_TEMPLATE, PHOTO_CHECK_TEMPLATE,
+    PHOTO_HEIC_TEMPLATE, PHOTO_REASK_TEMPLATE, PhotoStep, PhotoText, after_photo, left_off_note,
+    photo_answer, photo_body, photo_text,
 };
 pub use crate::purge::{
     REQUEST_PURGE_KIND, purge_answers, run_purge, run_request_purge, run_request_sweep,

@@ -7,13 +7,31 @@
     (A11Y-030). A quote over the largest-job answer shows the focused warning and the
     `over_largest` field (the warned cents) before the send button (T155; BIZ-049). The optional
     "Auto-confirm and pay if picked" box follows the fee lines only when `auto_box` is given,
-    unticked unless the quote's box is ticked now, with its own authorization (T209; PICK-048). -#}
+    unticked unless the quote's box is ticked now, with its own authorization (T209; PICK-048).
+    The job page shows the card, answers, photos, project file and any concept image with its
+    label on the image's alt text and beside it (T212; CARD-023, INT-044 to INT-046). -#}
 {% macro radio(name, value, label, current) %}<div><input type="radio" id="{{ name }}-{{ value }}" name="{{ name }}" value="{{ value }}"{% if current == value %} checked{% endif %}> <label for="{{ name }}-{{ value }}">{{ label }}</label></div>{% endmacro %}
 {% macro err(f, name) %}{% if let Some(m) = f.error_for(name) %}<p id="{{ name }}-error" class="field-error">Error: {{ m }}</p>{% endif %}{% endmacro %}
 {% macro errby(f, name) %}{% if f.error_for(name).is_some() %} aria-describedby="{{ name }}-error"{% endif %}{% endmacro %}
-{% block title %}{% if let Some(a) = action %}{% if a.days_error.is_some() %}Error: {% endif %}{{ a.title }}{% else if let Some(f) = form %}{% if !f.problems.is_empty() %}Error: {% endif %}Quote job {{ f.job_number }}{% endif %}{% endblock %}
+{% block title %}{% if let Some(p) = page %}Job {{ p.job_number }}{% else if let Some(a) = action %}{% if a.days_error.is_some() %}Error: {% endif %}{{ a.title }}{% else if let Some(f) = form %}{% if !f.problems.is_empty() %}Error: {% endif %}Quote job {{ f.job_number }}{% endif %}{% endblock %}
 {% block main %}
-{% if let Some(a) = action %}
+{% if let Some(p) = page %}
+<h1>Job {{ p.job_number }}</h1>
+<p id="job-counts">Sent to {{ p.sent }} business{% if p.sent != 1 %}es{% endif %}. Quotes so far: {{ p.quoted }}.</p>
+<h2>Job card</h2>
+<ul id="job-card">{% for line in p.card_lines %}<li>{{ line }}</li>{% endfor %}</ul>
+{% if !p.answers.is_empty() %}<h2>Homeowner's answers</h2>
+<dl id="job-answers">{% for pair in p.answers %}<dt>{{ pair.0 }}</dt><dd>{{ pair.1 }}</dd>{% endfor %}</dl>
+{% endif %}{% if !p.photos.is_empty() %}<h2>Photos</h2>
+<ul id="job-photos">{% for link in p.photos %}<li><img src="{{ link }}" alt="Photo {{ loop.index }} from the homeowner" width="320"></li>{% endfor %}</ul>
+{% endif %}{% if let Some(f) = p.project_file %}<h2>Project file</h2>
+<p id="project-file">{{ f }}</p>
+{% endif %}{% if let Some((link, label)) = p.concept %}<h2>Example picture</h2>
+<figure id="concept-image"><img src="{{ link }}" alt="Example picture. {{ label }}" width="320"><figcaption>{{ label }}</figcaption></figure>
+{% endif %}{% if !p.later.is_empty() %}<h2>Added by the homeowner later</h2>
+<ul id="job-later">{% for detail in p.later %}<li>{{ detail }}</li>{% endfor %}</ul>
+{% endif %}
+{% else if let Some(a) = action %}
 <h1>{{ a.title }}</h1>
 {% if let Some(m) = a.days_error %}<div id="error-summary" role="alert" tabindex="-1" autofocus>
 <h2>Fix this to continue</h2>
