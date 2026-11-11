@@ -31022,8 +31022,8 @@
     "T074",
     "T172"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "BLOCKED",
+   "attempts": 1,
    "slug": "pin-every-workflow-action",
    "type": "harness",
    "stage": "4",
@@ -31035,6 +31035,23 @@
     3052,
     3053,
     3054
+   ],
+   "reason": "plan gap reported: PLAN GAP: tests/test_runner_keeper.py:417,:426,:652; tests/test_runner_pre_smoke.py:263; tests/test_runner_smoke_reuse.py:402,:505 hard-code actions/cache/restore@v4, actions/cache/save@v4 and anthropics/claude-code-action@v1. No task owns these files (harness PRs #264, #359, #434); T345 owns no test file (kit/prompts/T345.md:68). Pinning to SHAs makes 5 tests fail (smoke.sh red). Reviewer confirmed pins are correct and the gap is real. Smallest fix: add the three test files to T345 owns and match on the action name before the @.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T345 --plan-fix D-### --reason \"...\"` (D-2859)",
+   "last_failure": "PLAN GAP: tests/test_runner_keeper.py:417,:426,:652; tests/test_runner_pre_smoke.py:263; tests/test_runner_smoke_reuse.py:402,:505 hard-code actions/cache/restore@v4, actions/cache/save@v4 and anthropics/claude-code-action@v1. No task owns these files (harness PRs #264, #359, #434); T345 owns no test file (kit/prompts/T345.md:68). Pinning to SHAs makes 5 tests fail (smoke.sh red). Reviewer confirmed pins are correct and the gap is real. Smallest fix: add the three test files to T345 owns and match on the action name before the @.",
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 34,
+     "head_sha": "9250244ebd3c0b214bb237f0eeeda23c7a70b102",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-11T18:36:12Z",
+     "ended_at": "2026-11-11T18:44:13Z",
+     "result": "BLOCKED"
+    }
    ]
   },
   {
@@ -32211,12 +32228,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T332",
-   "at": "2026-11-11T18:10:29Z",
-   "cache_creation_input_tokens": 522119,
-   "cache_read_input_tokens": 9112538,
-   "output_tokens": 74891,
-   "input_tokens": 285
+   "task": "T345",
+   "at": "2026-11-11T18:44:13Z",
+   "cache_creation_input_tokens": 90565,
+   "input_tokens": 80,
+   "output_tokens": 25924,
+   "cache_read_input_tokens": 1226830
   },
   "source": "session_reading 2026-11-11T18:12:03Z (week)",
   "by_task": {
@@ -34152,17 +34169,22 @@
    },
    "T345": {
     "estimated_bytes": 160524,
-    "estimated_tokens": 879730
+    "estimated_tokens": 879730,
+    "cache_creation_input_tokens": 90565,
+    "input_tokens": 80,
+    "output_tokens": 25924,
+    "cache_read_input_tokens": 1226830,
+    "last_model": "claude-opus-5-5"
    }
   },
   "windows": {
    "five_hour": {
     "start": "2026-11-11T15:04:09Z",
-    "tokens": 17409156
+    "tokens": 17648408
    },
    "week": {
     "start": "2026-11-05T19:01:47Z",
-    "tokens": 333992365
+    "tokens": 334231617
    }
   },
   "session_reading": {
@@ -34173,7 +34195,7 @@
    }
   }
  },
- "updated_at": "2026-11-11T18:39:29Z",
+ "updated_at": "2026-11-11T18:44:14Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -34271,7 +34293,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "60a8d50b1c568fba03f66e143749604ed7533432",
+ "runner_sha": "9250244ebd3c0b214bb237f0eeeda23c7a70b102",
  "starter": "actions",
  "smoke_runs": [
   {

@@ -1,23 +1,25 @@
 # Ask Hava build status
 
-Updated 2026-11-11T18:39:29Z by runner 60a8d50b1c56 (actions).
+Updated 2026-11-11T18:44:14Z by runner 9250244ebd3c (actions).
 
-**Building: T228 in progress since 17:51Z; 211 of 373 done; week 71% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T228 in progress since 17:51Z; 211 of 374 done; week 71% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 211 of 373 build tasks (owner gates not counted)
+- **Tasks done:** 211 of 374 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T228 claimed 17:51Z, lease until 20:51Z; lane 2: T332 claimed 18:28Z, lease until 21:28Z; lane 3: T345 claimed 18:36Z, lease until 21:36Z; lane 4: T316 claimed 18:35Z, lease until 21:35Z
+- **Lane:** lane 1: T228 claimed 17:51Z, lease until 20:51Z; lane 2: T332 claimed 18:28Z, lease until 21:28Z; lane 4: T316 claimed 18:35Z, lease until 21:35Z
 - **Week:** 71% used, 42.6M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:36Z, 3 min before this update
+- **Last run:** 18:39Z, 4 min before this update
 - **Keeper:** last ran 18:12Z, next wake 20:54Z
 
 ## Needs attention
+- BLOCKED T345: plan gap reported: PLAN GAP: tests/test_runner_keeper.py:417,:426,:652; tests/test_runner_pre_smoke.py:263; tests/test_runner_smoke_reuse.py:402,:505 hard-code actions/cache/restore@v4, actions/cache/save@v4 and anthropics/claude-code-action@v1. No task owns these files (harness PRs #264, #359, #434); T345 owns no test file (kit/prompts/T345.md:68). Pinning to SHAs makes 5 tests fail (smoke.sh red). Reviewer confirmed pins are correct and the gap is real. Smallest fix: add the three test files to T345 owns and match on the action name before the @.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T345 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T280 (since 2026-11-11T18:35:57Z, no attempt used; a plan change fixes it): T280: dependency T272 is DONE but its owned file migrations/0167_portals_code_tries.sql is not on main; T280: dependency T272 is DONE but its owned file tests/security/tests/signin_admission.rs is not on main
-- Strict plan check red: 27 problem(s) on tasks still to run (+54 on DONE tasks); first: T340: stored context_pct 35% but it measures 39%; regenerate
+- Strict plan check red: 27 problem(s) on tasks still to run (+55 on DONE tasks); first: T340: stored context_pct 35% but it measures 39%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T345 | harness: every external GitHub Actions `uses:` in every work | BLOCKED | 1 | 8 min | 18:44Z | PLAN GAP: tests/test_runner_keeper.py:417,:426,:652; tests/test_runner_pre_smoke.py:263; tests/test_runner_smoke_reuse.p |
 | T332 | payments (harness): a late success has its own refund trigge | resync | 4 | 46 min | 18:10Z | merging main into the reviewed head conflicts in app/payments/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T272 | portals: the sign-in link cap and the code-try cap are atomi | done | 1 | 20 min | 18:05Z |  |
 | T333 | payments (harness): a succeeded refund is recorded at the am | done | 2 | 32 min | 17:20Z | PLAN GAP: app/payments/src/routes.rs:412 (T259) and app/payments/src/refund_state.rs:34 (T270) / app/picks/src/unreachab |
@@ -105,8 +107,8 @@ Updated 2026-11-11T18:39:29Z by runner 60a8d50b1c56 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 223 of 733 (30.4%) · partial 335 · unstarted 175
-**Tasks merged (throughput only):** 211 of 373
+**Requirements verified:** 221 of 733 (30.2%) · partial 337 · unstarted 175
+**Tasks merged (throughput only):** 211 of 374
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -115,7 +117,7 @@ Updated 2026-11-11T18:39:29Z by runner 60a8d50b1c56 (actions).
 | businesses | 16 | 36 | 6 | 58 |
 | calls | 11 | 13 | 1 | 25 |
 | consent | 8 | 23 | 4 | 35 |
-| fees | 13 | 38 | 1 | 52 |
+| fees | 11 | 40 | 1 | 52 |
 | intake | 22 | 15 | 6 | 43 |
 | job-cards | 13 | 9 | 2 | 24 |
 | licensing | 25 | 23 | 0 | 48 |
@@ -151,8 +153,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T228 (lease until 2026-11-11T20:51:50Z)
 - lane 2: T332 (lease until 2026-11-11T21:28:29Z)
-- lane 3: T345 (lease until 2026-11-11T21:36:12Z)
 - lane 4: T316 (lease until 2026-11-11T21:35:41Z)
 
 ## Last usage reading
-- {"task": "T332", "at": "2026-11-11T18:10:29Z", "cache_creation_input_tokens": 522119, "cache_read_input_tokens": 9112538, "output_tokens": 74891, "input_tokens": 285}
+- {"task": "T345", "at": "2026-11-11T18:44:13Z", "cache_creation_input_tokens": 90565, "input_tokens": 80, "output_tokens": 25924, "cache_read_input_tokens": 1226830}
