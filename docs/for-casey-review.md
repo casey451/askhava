@@ -2271,6 +2271,12 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **One thing you may want changed.** The LIST text ends "for example 2 YES" whatever quote 2 is, even when quote 2 was withdrawn. It is a fixed line from an earlier step; changing it to name a quote she can pick would be a small later task.
 - **Nothing needs you now.**
 
+## The "job confirmed" email's sign-in link now works (T269, D-3025 to D-3028, November 11)
+
+- **What it does.** The link in that email opens business sign-in for the person it was sent to. Pressing "Sign in" emails them the usual one-time sign-in link; after that link (and the new-device code, when asked) they land on that job's page. The link alone never signs anyone in or shows any job detail. A changed, expired or someone else's link just shows the normal sign-in form.
+- **One wording point for later.** The screen with the button reuses today's words, "Press the button to finish signing in.", although pressing it sends an email. A small copy change would fit better; this task was not allowed to write new wording.
+- **Nothing needs you now.**
+
 ## T214: the share box at the pick and "Can't take it" (D-2992 to D-2994)
 
 - **What changed.** Before her final Pick the homeowner sees an unticked box: "Share my first name and the job address with the business for quote #2 once they accept." Pressing Pick without ticking it shows the page again with the error by the box; nothing is picked and no code is sent. The tick is logged with the pick. The pick notice now carries a "Can't take it" link for the business; pressing it ends the pick at once with no fee and moves the pick to her backup, or reopens her quotes.

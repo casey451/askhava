@@ -133,6 +133,27 @@ pub async fn has_fresh_step_up(
     Ok(at.is_some_and(|at| at <= now && now.duration_since(at) <= STEP_UP_LIFE))
 }
 
+/// SEC-004, PICK-024, D-1761: the businesses where `mailbox` (the opaque ID of a sign-in email)
+/// belongs to a current team member, in ID order. A signed notice link names its person by
+/// mailbox, so `portals` asks this before it emails that person a sign-in link (T269).
+///
+/// # Errors
+///
+/// [`BusinessesError::Database`].
+pub async fn businesses_of_mailbox(
+    conn: &mut PgConnection,
+    mailbox: Uuid,
+) -> Result<Vec<Uuid>, BusinessesError> {
+    sqlx::query_scalar!(
+        "SELECT business_id FROM businesses.team_member \
+         WHERE mailbox_id = $1 AND removed_at IS NULL ORDER BY business_id",
+        mailbox
+    )
+    .fetch_all(conn)
+    .await
+    .map_err(|_| BusinessesError::Database)
+}
+
 /// The pure status and checklist rules, for the rules bridge and other crates' property tests.
 pub mod rules {
     pub use crate::rules::{
