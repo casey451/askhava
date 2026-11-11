@@ -2331,3 +2331,10 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **What changed.** The app can now look up the name to show for a business: its trade name (DBA) if it gave one at sign-up, otherwise its business name, checked again for phone numbers, links and "find us on" wording. The LIST reply and the "who's calling" text will use it once their own steps are built (T317, T318).
 - **Worth a look.** A business whose stored name fails that check, or that has no name stored, is left out of the list and you get one digest alert naming only the business, not the name. A business can't edit its name in the portal yet.
 - **Nothing needs you now.**
+
+## Runner: lanes now prefer different parts of the app (D-3082)
+
+- **What changed.** When several tasks are equally urgent, the runner now starts first one that works in a part of the app no other lane is working in. Two lanes in the same part both edit its notes file, and the second then needs an extra session to merge; that happened 6 times today (3 in portals, 2 in payments, 1 in quotes).
+- **What did not change.** Resyncs, your "claim first" list and the longest-chain order still come first, and every lane still fills: if every waiting task overlaps, the runner claims as before.
+- **To turn it off.** Set `prefer_disjoint_crates` to `false` in `kit/runner.json`.
+- **Nothing needs you now.**

@@ -23,6 +23,10 @@ Occupancy lives in runner/state.py (`in_flight`: a live lease, or MERGE_PENDING 
   could not be pushed) is a strike; a task on that lane reaching DONE, or failing for its own work,
   clears them. Two strikes in a row set `lanes_fallback`, and the runner keeps to one lane until a
   person runs `python3 -m runner --restore-lanes`, so it never flaps between one and two.
+- `crowded` (D-3082): the claimable ids whose `app/` crates overlap a crate of a task in flight. With
+  kit/runner.json "prefer_disjoint_crates" true, `cycle.claim_order` tries them after the others of the
+  same priority (ordering only), since both tasks would edit that crate's `CLAUDE.md` and the second
+  needs a resync.
 """
 
 from __future__ import annotations
@@ -136,6 +140,27 @@ def compatible_ids(
     done = {t["id"] for t in state["tasks"] if t.get("status") in st.SATISFIED}
     early = {t["id"]: str(t.get("stage")) for t in state["tasks"] if st.awaits_proof(t) and str(t.get("stage")) in proof_stages}
     return [i for i in ids if not refusal(task_def(i), [t for t in flying if t["id"] != i], done, locked, early)]
+
+
+def crates(paths: Iterable[str]) -> frozenset[str]:
+    """The `app/` crates a task's owned paths fall in ("app/payments/src/x.rs" is "payments"), D-3082."""
+    split = (str(p).split("/") for p in paths)
+    return frozenset(parts[1] for parts in split if len(parts) >= 3 and parts[0] == "app" and parts[1])
+
+
+def crowded(ids: list[str], state: State, now: datetime, task_def: Callable[[str], dict[str, Any]]) -> frozenset[str]:
+    """The ids among `ids` that own a path in an `app/` crate a task in flight also owns (D-3082).
+
+    Two tasks in one crate both update its `CLAUDE.md` (docs/code-docs.md section 2, a shared path the lane
+    check allows), and the second to merge needs a resync (D-891). `cycle.claim_order` tries these ids
+    last within their priority class; it never drops one, so every lane still fills."""
+    flying = {tid: crates(task_def(tid).get("owns") or []) for tid in st.in_flight(state, now)}
+    out = set()
+    for tid in ids:
+        mine = crates(task_def(tid).get("owns") or [])
+        if any(mine & theirs for other, theirs in flying.items() if other != tid):
+            out.add(tid)
+    return frozenset(out)
 
 
 def strike(state: State, lane: str, why: str, now: datetime) -> State:

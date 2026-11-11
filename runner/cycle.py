@@ -260,6 +260,10 @@ class Config:
     # kit/runner.json "order" (D-2591): "critical_path" tries the claimable ids with the longest chain of
     # open dependents first (`chain_lengths`); anything else keeps the state order. Ordering only.
     order: str = "state"
+    # kit/runner.json "prefer_disjoint_crates" (D-3082): among claimable ids of equal priority, try first
+    # the ones whose `app/` crates no task in flight shares (`lanes.crowded`). Ordering only; False keeps
+    # the order without it.
+    prefer_disjoint_crates: bool = False
 
 
 # Casey reviews code-owner PRs by day. Such a task is claimed only from 06:00 to 19:00 Arizona time
@@ -1368,8 +1372,7 @@ def _next_step(cfg: Config, env: Env, state: State, base: State, now: datetime, 
         return "gate_open" if env.push_state(opened, base) else "lost_race"
     ids = _by_day(cfg, st.eligible(state, now, _passed(cfg, state), cfg.proof_stages), now)
     ids = lanes.compatible_ids(ids, state, now, lambda tid: _task_def(cfg, state, tid), cfg.locked, cfg.proof_stages)
-    chains = _chains_or_none(cfg, state)
-    ids = claim_order(ids, state, cfg.claim_first, chains)  # resync (D-891), `claim_first` (D-2540), chain (D-2591)
+    ids = _claim_ordered(cfg, state, ids, now)  # resync, `claim_first`, chain, disjoint crates (D-3082)
     ids, state = plan_health_pass(cfg, state, ids, now)
     if not ids:
         if state != base and not env.push_state(state, base):
@@ -1412,19 +1415,33 @@ def _next_step(cfg: Config, env: Env, state: State, base: State, now: datetime, 
     return "fix_main" if task["id"] == st.FIX_MAIN and done not in ("lost_race", "handed_off") else done
 
 
-def claim_order(ids: list[str], state: State, first: tuple[str, ...] = (), chains: dict[str, int] | None = None) -> list[str]:
+def _claim_ordered(cfg: Config, state: State, ids: list[str], now: datetime) -> list[str]:
+    """`claim_order` with this cycle's settings: the chains when kit/runner.json asks for critical-path
+    order (D-2591), and the ids that share an `app/` crate with a task in flight when it asks for
+    "prefer_disjoint_crates" (D-3082)."""
+    chains = _chains_or_none(cfg, state)
+    crowded: frozenset[str] = frozenset()
+    if cfg.prefer_disjoint_crates:
+        crowded = lanes.crowded(ids, state, now, lambda tid: _task_def(cfg, state, tid))
+    return claim_order(ids, state, cfg.claim_first, chains, crowded)
+
+
+def claim_order(ids: list[str], state: State, first: tuple[str, ...] = (), chains: dict[str, int] | None = None,
+                crowded: frozenset[str] = frozenset()) -> list[str]:
     """The claimable ids in the order the cycle tries them. A resync finishes reviewed work first (D-891);
     then the ids kit/runner.json lists in `claim_first`, in its order (D-2540); then, when `chains` is
     given (kit/runner.json "order": "critical_path", D-2591), the longest chain of open dependents first;
-    then state order (the sort is stable). Only the order changes: a listed id that is not claimable is
-    not in `ids` and is ignored, so a listed task still waits for its dependencies, its lane, plan health
-    and pacing."""
+    then, among ids equal on all of those, the ones not in `crowded` (an `app/` crate shared with a task
+    in flight, D-3082) before the ones in it; then state order (the sort is stable). Only the order
+    changes: a listed id that is not claimable is not in `ids` and is ignored, so a listed task still
+    waits for its dependencies, its lane, plan health and pacing, and a crowded id is still claimed when
+    nothing else is."""
     rank: dict[str, int] = {}
     for tid in first:
         rank.setdefault(tid, len(rank))
     chain = chains or {}
     return sorted(ids, key=lambda tid: (not st.entry(state, tid).get("resync"), rank.get(tid, len(rank)),
-                                        -chain.get(tid, 1)))
+                                        -chain.get(tid, 1), tid in crowded))
 
 
 CRITICAL_PATH = "critical_path"  # kit/runner.json "order" value that turns on `chain_lengths` (D-2591)
