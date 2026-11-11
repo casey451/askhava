@@ -31526,7 +31526,7 @@
     "T074",
     "T172"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "pin-every-workflow-action",
    "type": "harness",
@@ -31540,8 +31540,8 @@
     3053,
     3054
    ],
-   "reason": "plan gap reported: PLAN GAP: tests/test_runner_keeper.py:417,:426,:652; tests/test_runner_pre_smoke.py:263; tests/test_runner_smoke_reuse.py:402,:505 hard-code actions/cache/restore@v4, actions/cache/save@v4 and anthropics/claude-code-action@v1. No task owns these files (harness PRs #264, #359, #434); T345 owns no test file (kit/prompts/T345.md:68). Pinning to SHAs makes 5 tests fail (smoke.sh red). Reviewer confirmed pins are correct and the gap is real. Smallest fix: add the three test files to T345 owns and match on the action name before the @.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T345 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: tests/test_runner_keeper.py:417,:426,:652; tests/test_runner_pre_smoke.py:263; tests/test_runner_smoke_reuse.py:402,:505 hard-code actions/cache/restore@v4, actions/cache/save@v4 and anthropics/claude-code-action@v1. No task owns these files (harness PRs #264, #359, #434); T345 owns no test file (kit/prompts/T345.md:68). Pinning to SHAs makes 5 tests fail (smoke.sh red). Reviewer confirmed pins are correct and the gap is real. Smallest fix: add the three test files to T345 owns and match on the action name before the @.",
+   "reason": null,
+   "last_failure": "PLAN GAP: tests/test_runner_keeper.py:417,:426,:652; tests/test_runner_pre_smoke.py:263; tests/test_runner_smoke_reuse.py:402,:505 hard-code actions/cache/restore@v4, actions/cache/save@v4 and anthropics/claude-code-action@v1. No task owns these files (harness PRs #264, #359, #434); T345 owns no test file (kit/prompts/T345.md:68). Pinning to SHAs makes 5 tests fail (smoke.sh red). Reviewer confirmed pins are correct and the gap is real. Smallest fix: add the three test files to T345 owns and match on the action name before the @.\nre-queued after plan fix D-3083: Plan fixed by D-3083 (#524): T345 owns the three runner test files, may change only action-ref matches (name before @)",
    "history": [
     {
      "attempt": 1,
@@ -31555,6 +31555,21 @@
      "started_at": "2026-11-11T18:36:12Z",
      "ended_at": "2026-11-11T18:44:13Z",
      "result": "BLOCKED"
+    }
+   ],
+   "requeues": [
+    {
+     "at": "2026-11-11T23:03:12Z",
+     "reason": "Plan fixed by D-3083 (#524): T345 owns the three runner test files, may change only action-ref matches (name before @)",
+     "by": "manual-2bb24f861eb2",
+     "was": "plan gap reported: PLAN GAP: tests/test_runner_keeper.py:417,:426,:652; tests/test_runner_pre_smoke.py:263; tests/test_runner_smoke_reuse.py:402,:505 hard-code actions/cache/restore@v4, actions/cache/save@v4 and anthropics/claude-code-action@v1. No task owns these files (harness PRs #264, #359, #434); T345 owns no test file (kit/prompts/T345.md:68). Pinning to SHAs makes 5 tests fail (smoke.sh red). Reviewer confirmed pins are correct and the gap is real. Smallest fix: add the three test files to T345 owns and match on the action name before the @.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T345 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 1,
+     "plan_fix": "D-3083",
+     "plan_since": "2026-11-11T18:36:12Z",
+     "plan_base": "d413b0e8998f2917b5f91fcdb522caa75dc57026",
+     "plan_head": "53361d7bd2797a688fd8a79ec891db15a06a0898",
+     "plan_then": "0c23552bf40fe5fc28ce06f5d1176746402bb1fed459b40cad21989d1c1c4afe",
+     "plan_now": "2183ca88ee56f18b4510ea9a689f78398ad337790ceeeb75a7e0624a54b71da2"
     }
    ]
   },
@@ -34986,7 +35001,7 @@
    }
   }
  },
- "updated_at": "2026-11-11T23:02:53Z",
+ "updated_at": "2026-11-11T23:03:12Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
