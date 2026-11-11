@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T12:13:28Z by runner 9826ef4c3b40 (actions).
+Updated 2026-11-11T12:13:43Z by runner 285525e3134a (actions).
 
 **Idle since 12:10Z; 202 of 372 done; week 65% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-11T12:13:28Z by runner 9826ef4c3b40 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 12:10Z (no task in progress)
 - **Week:** 65% used, 60.5M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:10Z, 3 min before this update
-- **Keeper:** last ran 12:05Z, next wake 15:00Z
+- **Last run:** 12:13Z, 0 min before this update
+- **Keeper:** last ran 12:13Z, next wake 12:33Z
 
 ## Needs attention
 - BLOCKED T332: plan gap reported: PLAN GAP: tests/integration/tests/late_success.rs:216 (T064's TD-FEE-12, DONE) clashes with T332's goal and D-2290 (the file changes only in the expected trigger). T332 requires run_charge_check to call late_success in its own round on an ended pick, so the later report call at line 216 answers AlreadyQueued, not Queued; the (1,1) count at line 220 stays. Reviewer confirmed (late.rs:62-102 dedupe key; test lines 202-222). Smallest plan change: T332 may also change that one assertion to Ok(LateSuccess::AlreadyQueued), logged in decisions. Also: D-2290 says migration 0176, the goal says 0177; ne; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T332 --plan-fix D-### --reason "..."` (D-2859)
