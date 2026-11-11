@@ -2,6 +2,11 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## A runner self-check no longer trips on work in progress (harness change, D-3057, November 11)
+
+- **What happened.** One of the runner's own checks before claiming a task compared the plan with the build's live progress and failed whenever a task already being worked sat at the head of the longest remaining chain. The build itself was fine, but the runner stopped without claiming anything five times today, and enough of these in a row could have wrongly marked the build broken and undone good work.
+- **What changed.** The check now only considers tasks the runner could actually pick up, so work already in progress no longer counts against it. It still catches the mistake it was written for, and a new test reproduces today's failure.
+
 ## Five waiting steps fixed before they start (plan change, D-3055, November 11)
 
 - **What happened.** A check of five steps still waiting in line found that each would have stopped partway, because the plan asked for something the code or older tests do not allow.
