@@ -103,7 +103,7 @@
 {% call money(pr, "setup", "One-time setup charge ($, optional)", pr.fields.setup) %}{% endcall %}{% else if pr.code() == "diagnostic_visit" %}{% call money(pr, "amount", "Visit fee ($)", pr.fields.amount) %}{% endcall %}<p id="visit-fee-hint">You'll price the work after you've seen the job.</p>
 {% else %}{% call money(pr, "amount", "Price ($)", pr.fields.amount) %}{% endcall %}{% endif %}
 <label for="notes">Note for the homeowner (optional, up to 300 characters)</label>
-<p id="notes-hint">Keep it about the job. Leave out your phone number, email, links and any request to pay outside {{ askhava_core::api::brand().display_name() }}. If you're picked, {{ askhava_core::api::brand().display_name() }} puts you in touch.</p>
+<p id="notes-hint">Keep it about the job. Leave out your phone number, email, links and any request to pay outside {{ askhava_core::api::brand().display_name() }}. If the homeowner picks your quote and you accept the introduction, {{ askhava_core::api::brand().display_name() }} puts you in touch.</p>
 {% if let Some(m) = pr.note_error() %}<p id="notes-error" class="field-error">Error: {{ m }}</p>
 {% endif %}<textarea id="notes" name="notes" maxlength="300" aria-describedby="notes-hint{% if pr.note_problem.is_some() %} notes-error{% endif %}">{{ pr.note }}</textarea>
 {% endif %}<fieldset id="trip_fee"{% call errby(f, "trip_fee") %}{% endcall %}><legend>Trip fee counts toward the repair</legend>

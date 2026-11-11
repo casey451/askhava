@@ -116,6 +116,13 @@ async fn td_pick_35_notes_come_back_with_the_reason() {
         outside.as_str(),
         "Cash discount if you book this week.",
         "Venmo works for the deposit.",
+        "Call us for a better price.",
+        "Text us before you book.",
+        "Message us on the weekend.",
+        "Contact us for the details.",
+        "Email me the measurements.",
+        "We can do it if you pay in cash.",
+        "Cash only, no cards.",
     ];
     for note in off {
         let got = check_note(note);
@@ -128,6 +135,12 @@ async fn td_pick_35_notes_come_back_with_the_reason() {
             reason.contains("outside") && !reason.contains(note),
             "{note}"
         );
+    }
+    for plain in [
+        "We call ahead before we arrive.",
+        "Cashier's check is not needed.",
+    ] {
+        assert_eq!(check_note(plain), Ok(()), "{plain}");
     }
     assert_eq!(check_note(&"a".repeat(NOTE_LIMIT)), Ok(()));
     let long = check_note(&"a".repeat(NOTE_LIMIT + 1));
@@ -252,4 +265,36 @@ async fn td_pick_34_a_pick_move_holding_the_lock_wins(pool: PgPool) {
     pick.commit().await.expect("commit");
     let got = waiting.await.expect("join");
     assert_eq!(got, Ok(Withdrawal::EditClosed));
+}
+
+/// TD-PICK-34 (PICK-051, D-2912): an edit waiting on the job's row lock while a pick's move holds
+/// it reads the moved status after the move commits and is refused; the quote keeps its first
+/// amount. Without `save_quote`'s lock the edit would read the old status and be stored.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_pick_34_an_edit_waits_for_a_pick_move_holding_the_lock(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("conn");
+    let (id, business) = job(&mut db, &[JobStatus::Open]).await;
+    let q = quote(30_000, "");
+    let first = save_quote(&mut db, (id, business), &q, None, at("03T09:00:00"));
+    assert_eq!(first.await, Ok(Saved::Stored(Submitted::Saved)));
+    let mut pick = pool.begin().await.expect("tx");
+    sqlx::query(
+        "UPDATE jobs.job SET status = 'awaiting_confirm', version = version + 1 WHERE id = $1",
+    )
+    .bind(id)
+    .execute(&mut *pick)
+    .await
+    .expect("move");
+    let waiting = tokio::spawn(async move {
+        let edit = quote(25_000, "");
+        let got = save_quote(&mut db, (id, business), &edit, None, at("03T11:00:00")).await;
+        (got, row(&mut db, id).await)
+    });
+    tokio::time::sleep(Duration::from_millis(300)).await;
+    assert!(!waiting.is_finished(), "the edit waits on the lock");
+    pick.commit().await.expect("commit");
+    let (got, (amount, _, received, edited, _)) = waiting.await.expect("join");
+    assert_eq!(got, Ok(Saved::Stored(Submitted::EditClosed)));
+    assert_eq!((amount, edited), (Some(30_000), None));
+    assert_eq!(received.to_jiff(), at("03T09:00:00"));
 }

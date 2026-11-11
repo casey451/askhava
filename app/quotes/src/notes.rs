@@ -20,14 +20,29 @@ pub const NOTE_LIMIT: usize = 300;
 
 /// PICK-052: the off-platform phrases a note may not hold, matched as whole words in any case;
 /// "outside <brand>" is added from the brand file (D-1932).
-pub const OFF_PLATFORM: [&str; 11] = [
+pub const OFF_PLATFORM: [&str; 26] = [
     "call me",
+    "call us",
     "text me",
+    "text us",
     "message me",
+    "message us",
     "dm me",
+    "dm us",
+    "email me",
+    "email us",
+    "contact me",
+    "contact us",
     "whatsapp",
     "pay cash",
+    "pay in cash",
+    "paid in cash",
+    "pay me cash",
+    "pay us cash",
+    "cash only",
+    "cash price",
     "cash discount",
+    "cash discounts",
     "venmo",
     "zelle",
     "cash app",
@@ -68,7 +83,7 @@ impl NoteProblem {
         match self {
             Self::TooLong => format!("Please keep your note to {NOTE_LIMIT} characters or fewer."),
             Self::Contact | Self::OffPlatform => format!(
-                "Please take out any phone number, email or link. Also take out any request to call, text, message or pay you outside {name}. If the homeowner picks your quote, {name} puts you in touch."
+                "Please take out any phone number, email or link. Also take out any request to call, text, message or pay you outside {name}. If the homeowner picks your quote and you accept the introduction, {name} puts you in touch."
             ),
             Self::Restricted => {
                 "Your note has a word we can't pass on to the homeowner by text. Please reword it.".to_owned()

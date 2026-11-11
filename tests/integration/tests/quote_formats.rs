@@ -13,7 +13,7 @@ use askhava_portals::api::{FactsForm, PriceForm, QuoteFormFacts, quote_form_page
 use askhava_quotes::api::{
     Bounce, Format, OTHER_SCHEDULE, Period, Price, PriceFields, PriceProblem, QuoteForm,
     QuoteRules, Saved, Submitted, VisitSchedule, format_for, parse_price, parse_quote, save_quote,
-    visit_schedule_of,
+    submit_quote, visit_schedule_of,
 };
 use jiff::Timestamp;
 use jiff_sqlx::ToSqlx;
@@ -199,6 +199,24 @@ async fn td_pick_57_other_stores_a_monthly_price(mut db: Db) {
             .await
             .expect("period");
     assert_eq!(period.as_deref(), Some("month"));
+}
+
+/// TD-PICK-57 (REC-010): an edit stored straight through `submit_quote`, not `save_quote`, keeps
+/// no stale schedule: migration 0157's trigger clears it on every upsert.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_pick_57_an_edit_through_submit_quote_drops_the_old_schedule(mut db: Db) {
+    let ids = open_job(&mut db).await;
+    let (first, weekly) = parse_price(Format::Monthly, &per_visit("weekly")).expect("price");
+    let quote = parse_quote(form(first), &rules(Format::Monthly)).expect("quote");
+    let saved = save_quote(&mut db, ids, &quote, weekly, at("03T09:00:00")).await;
+    assert_eq!(saved, Ok(Saved::Stored(Submitted::Saved)));
+    assert_eq!(visit_schedule_of(&mut db, ids).await, Ok(weekly));
+    let (price, monthly) = parse_price(Format::Monthly, &per_visit("monthly")).expect("price");
+    assert_eq!(monthly, Some(VisitSchedule::Monthly));
+    let quote = parse_quote(form(price), &rules(Format::Monthly)).expect("quote");
+    let edited = submit_quote(&mut db, ids, &quote, at("03T10:00:00")).await;
+    assert_eq!(edited, Ok(Submitted::Saved));
+    assert_eq!(visit_schedule_of(&mut db, ids).await, Ok(None));
 }
 
 /// TD-PICK-57: a per-visit price with neither a schedule nor "Other" is refused with the

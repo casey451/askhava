@@ -11,3 +11,18 @@ ALTER TABLE quotes.quote
     CHECK (visit_schedule IN ('weekly', 'every_two_weeks', 'monthly', 'quarterly', 'yearly')),
   ADD CONSTRAINT quote_visit_schedule_per_visit
     CHECK (visit_schedule IS NULL OR period = 'visit');
+
+-- A quote saved again (every upsert sets period) drops its old schedule, whichever path wrote it,
+-- so an edit through quotes::intake::submit_quote never keeps a stale one; save_quote sets the new
+-- schedule after the upsert in its own UPDATE of visit_schedule alone, which this does not fire on.
+-- CHECK constraints run after this, so an edit away from a per-visit price never fails on them.
+CREATE FUNCTION quotes.quote_schedule_resets() RETURNS trigger
+  LANGUAGE plpgsql SET search_path = quotes, pg_temp AS $$
+BEGIN
+  NEW.visit_schedule := NULL;
+  RETURN NEW;
+END
+$$;
+
+CREATE TRIGGER quote_schedule_resets BEFORE UPDATE OF period ON quotes.quote
+  FOR EACH ROW EXECUTE FUNCTION quotes.quote_schedule_resets();
