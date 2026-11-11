@@ -2271,6 +2271,12 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **One thing you may want changed.** The LIST text ends "for example 2 YES" whatever quote 2 is, even when quote 2 was withdrawn. It is a fixed line from an earlier step; changing it to name a quote she can pick would be a small later task.
 - **Nothing needs you now.**
 
+## The "job confirmed" email's sign-in link now works (T269, D-3025 to D-3028, November 11)
+
+- **What it does.** The link in that email opens business sign-in for the person it was sent to. Pressing "Sign in" emails them the usual one-time sign-in link; after that link (and the new-device code, when asked) they land on that job's page. The link alone never signs anyone in or shows any job detail. A changed, expired or someone else's link just shows the normal sign-in form.
+- **One wording point for later.** The screen with the button reuses today's words, "Press the button to finish signing in.", although pressing it sends an email. A small copy change would fit better; this task was not allowed to write new wording.
+- **Nothing needs you now.**
+
 ## T165: business names, license numbers and Google and Yelp links at sign-up (D-3033 to D-3036)
 
 - **What changed.** The sign-up form now asks the business name (needed), a trade name or DBA, the ROC, BTR and city license numbers it has, and an optional Google Business Profile link and Yelp link. A name with a phone number, a link or "find us on Google" is sent back with the reason and nothing is saved. A link is kept only if it is on Google's or Yelp's own site and the page opens. Saved links show on every quote card as two plain links, "Google" and "Yelp", with no stars or counts.
