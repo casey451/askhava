@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-11T05:39:26Z by runner 0a6c287a3c5c (actions).
+Updated 2026-11-11T05:39:39Z by runner 0a6c287a3c5c (actions).
 
-**Building: T383 in progress since 05:18Z; 195 of 370 done; week 60% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T327 in progress since 05:24Z; 195 of 370 done; week 60% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 195 of 370 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T383 claimed 05:18Z, lease until 08:18Z; lane 3: T327 claimed 05:24Z, lease until 08:24Z
+- **Lane:** lane 3: T327 claimed 05:24Z, lease until 08:24Z
 - **Week:** 60% used, 71.2M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 05:37Z, 2 min before this update
 - **Keeper:** last ran 05:37Z, next wake 08:21Z
@@ -17,6 +17,7 @@ Updated 2026-11-11T05:39:26Z by runner 0a6c287a3c5c (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T383 | messaging and portals: the text templates and the homeowner  | MERGE_PENDING | 1 | 20 min | 05:39Z |  |
 | T337 | payments: a $0 release proof is bound to the pick's own stor | BLOCKED | 3 | 16 min | 05:11Z | T337 built and committed (53e675b1, cf42d54e); smoke/prehandin red on tests T337 does not own: confirm_and_pay.rs td_fee |
 | T209 | picks and payments: the optional auto-confirm-and-pay box wi | MERGE_PENDING | 1 | 115 min | 05:06Z |  |
 | T295 | payments, ai, intake and picks take the brand from the brand | BLOCKED | 3 | 0 min | 04:59Z | T295 blocked at step 3: tests/brand_literal_baseline.json still lists files T295 does not own: app/messaging/templates/e |
@@ -115,8 +116,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T383 (lease until 2026-11-11T08:18:35Z)
 - lane 3: T327 (lease until 2026-11-11T08:24:57Z)
 
 ## Last usage reading
-- {"task": "T337", "at": "2026-11-11T05:11:51Z", "cache_creation_input_tokens": 209039, "input_tokens": 155, "cache_read_input_tokens": 5585684, "output_tokens": 41795}
+- {"task": "T383", "at": "2026-11-11T05:39:25Z", "output_tokens": 45137, "cache_creation_input_tokens": 198030, "input_tokens": 205, "cache_read_input_tokens": 5150445}
