@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO businesses.business_name (business_id, business_name, trade_name, city_license_number, changed_at) SELECT id, $2, $3, $4, now() FROM businesses.business WHERE id = $1 ON CONFLICT (business_id) DO UPDATE SET business_name = EXCLUDED.business_name, trade_name = EXCLUDED.trade_name, city_license_number = EXCLUDED.city_license_number, changed_at = EXCLUDED.changed_at",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "1ffbc534cce196d41632a1f036b465e3b3dcc820238ce1a57b6cdf40d1d5060e"
+}

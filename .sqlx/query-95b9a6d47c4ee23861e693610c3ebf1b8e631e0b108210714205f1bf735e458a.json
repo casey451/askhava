@@ -1,0 +1,52 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT business_name, trade_name, city_license_number FROM businesses.business_name WHERE business_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "business_name",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "businesses.business_name",
+            "name": "business_name"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "trade_name",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "businesses.business_name",
+            "name": "trade_name"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "city_license_number",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "businesses.business_name",
+            "name": "city_license_number"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      true,
+      true
+    ]
+  },
+  "hash": "95b9a6d47c4ee23861e693610c3ebf1b8e631e0b108210714205f1bf735e458a"
+}
