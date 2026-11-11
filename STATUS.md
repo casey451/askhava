@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-11T03:08:48Z by runner eb915eeec984 (actions).
+Updated 2026-11-11T03:09:00Z by runner eb915eeec984 (actions).
 
-**Building: T374 in progress since 02:22Z; 193 of 362 done; week 57% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 03:08Z; 193 of 362 done; week 57% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 193 of 362 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T374 claimed 02:22Z, lease until 05:22Z
+- **Lane:** idle since 03:08Z (no task in progress)
 - **Week:** 57% used, 78.3M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 02:46Z, 22 min before this update
 - **Keeper:** last ran 02:46Z, next wake 05:25Z
@@ -17,6 +17,7 @@ Updated 2026-11-11T03:08:48Z by runner eb915eeec984 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T374 | licensing and businesses: one read of everything a business  | MERGE_PENDING | 1 | 45 min | 03:08Z |  |
 | T157 | picks: the homeowner's backup choice at the pick | MERGE_PENDING | 2 | 22 min | 02:41Z | E2e: failure; Ally: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-1 |
 | T157 | picks: the homeowner's backup choice at the pick | check_failed | 1 | 66 min | 02:10Z |  |
 | T337 | payments: a $0 release proof is bound to the pick's own stor | QUEUED | 1 | 31 min | 02:07Z | T337 code+tests done (commit 6b896e8f) but smoke/prehandin red: tests/integration/tests/confirm_and_pay.rs td_fee_25_a_p |
@@ -104,7 +105,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T374 (lease until 2026-11-11T05:22:52Z)
 
 ## Last usage reading
-- {"task": "T157", "at": "2026-11-11T02:41:38Z", "output_tokens": 43467, "cache_creation_input_tokens": 318212, "cache_read_input_tokens": 4971390, "input_tokens": 162}
+- {"task": "T374", "at": "2026-11-11T03:08:47Z", "cache_read_input_tokens": 14069131, "output_tokens": 111729, "cache_creation_input_tokens": 451602, "input_tokens": 358}
