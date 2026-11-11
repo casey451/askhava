@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-11T10:21:09Z by runner 722416045b2b (actions).
+Updated 2026-11-11T10:24:51Z by runner 722416045b2b (actions).
 
-**Idle since 10:09Z; 200 of 371 done; week 63% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T164 in progress since 10:21Z; 200 of 371 done; week 63% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 200 of 371 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 10:09Z (no task in progress)
+- **Lane:** lane 1: T164 claimed 10:21Z, lease until 13:21Z
 - **Week:** 63% used, 68.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:08Z, 12 min before this update
+- **Last run:** 10:21Z, 3 min before this update
 - **Keeper:** last ran 10:08Z, next wake 10:28Z
 
 ## Needs attention
@@ -49,7 +49,6 @@ Updated 2026-11-11T10:21:09Z by runner 722416045b2b (actions).
 | T199 | portals: no automated call to a business, voice codes only o | done | 1 | 64 min | 14:22Z |  |
 | T293 | businesses and quotes: sign-up, consent, complaint and quote | done | 1 | 41 min | 12:35Z |  |
 | T292 | messaging and calls: every text, email and call takes the br | done | 1 | 21 min | 11:16Z |  |
-| T290 | worked examples: pin D-033 for one-cent-wide recurring range | done | 2 | 39 min | 10:21Z | T290 blocked: any new recurring worked-example row breaks tests::worked_examples (fixed RECURRING list of 13 ids, worked |
 
 ### Plan and harness merges on main
 - 09:54Z Harness: a planned file deletion is not a plan gap — 5 eligible tasks were held (D-2922) (#470)
@@ -111,7 +110,7 @@ Updated 2026-11-11T10:21:09Z by runner 722416045b2b (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-11T10:02:58Z (week)): five-hour: 951k used, 28.1M left, resets 2026-11-11T14:49:36Z; week: 126.0M used, 68.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-04T13:27:26Z.
+- Pacing (session_reading 2026-11-11T10:07:56Z (week)): five-hour: 1.3M used, 27.8M left, resets 2026-11-11T14:49:36Z; week: 126.0M used, 68.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-04T11:36:32Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -126,7 +125,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T164 (lease until 2026-11-11T13:21:20Z)
 
 ## Last usage reading
 - {"task": "T316", "at": "2026-11-11T10:06:23Z", "output_tokens": 16507, "cache_creation_input_tokens": 145354, "input_tokens": 100, "cache_read_input_tokens": 1713839}
