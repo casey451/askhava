@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-11T17:05:27Z by runner 1cc4eaa641ef (actions).
+Updated 2026-11-11T17:05:42Z by runner 1cc4eaa641ef (actions).
 
 **Building: T272 in progress since 16:49Z; 207 of 373 done; week 70% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 207 of 373 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T272 claimed 16:49Z, lease until 19:49Z; lane 2: T165 claimed 16:47Z, lease until 19:47Z; lane 4: T333 claimed 16:47Z, lease until 19:47Z
+- **Lane:** lane 1: T272 claimed 16:49Z, lease until 19:49Z; lane 4: T333 claimed 16:47Z, lease until 19:47Z
 - **Week:** 70% used, 46.9M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 16:55Z, 10 min before this update
 - **Keeper:** last ran 16:55Z, next wake 19:49Z
@@ -17,8 +17,9 @@ Updated 2026-11-11T17:05:27Z by runner 1cc4eaa641ef (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T165 | businesses: business name, Google and Yelp links and license | MERGE_PENDING | 1 | 18 min | 17:05Z | merging main into the reviewed head conflicts in app/portals/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T214 | picks (harness): the homeowner's share box at the pick and t | MERGE_PENDING | 3 | 45 min | 16:44Z | PLAN GAP: tests/integration/tests/page_pick.rs:131 and tests/security/tests/page_pick_privacy.rs:224 (both T246's; page_ |
-| T165 | businesses: business name, Google and Yelp links and license | resync | 1 | 47 min | 16:25Z | merging main into the reviewed head conflicts in app/portals/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T165 | businesses: business name, Google and Yelp links and license | resync | 1 | 47 min | 16:25Z |  |
 | T269 | portals: a business notice's signed link opens sign-in for t | done | 2 | 23 min | 16:14Z | merging main into the reviewed head conflicts in app/portals/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T269 | portals: a business notice's signed link opens sign-in for t | resync | 2 | 44 min | 15:46Z |  |
 | T384 | quotes and portals: the homeowner sees an edited quote as up | done | 2 | 18 min | 15:05Z | Ci: failure; E2e: failure; Ally: failure / E2e failed at step: Chromium and its system libraries / E: Failed to fetch ht |
@@ -146,8 +147,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T272 (lease until 2026-11-11T19:49:55Z)
-- lane 2: T165 (lease until 2026-11-11T19:47:09Z)
 - lane 4: T333 (lease until 2026-11-11T19:47:34Z)
 
 ## Last usage reading
-- {"task": "T214", "at": "2026-11-11T16:44:06Z", "cache_creation_input_tokens": 826304, "input_tokens": 529, "cache_read_input_tokens": 35001096, "output_tokens": 174224}
+- {"task": "T165", "at": "2026-11-11T17:05:26Z", "cache_creation_input_tokens": 137565, "input_tokens": 66, "output_tokens": 15340, "cache_read_input_tokens": 888274}

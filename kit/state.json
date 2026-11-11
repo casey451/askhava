@@ -22014,7 +22014,7 @@
     "T384",
     "T374"
    ],
-   "status": "IN_PROGRESS",
+   "status": "MERGE_PENDING",
    "attempts": 0,
    "slug": "businesses-links-leaving",
    "type": "build",
@@ -22073,6 +22073,20 @@
      "started_at": "2026-11-11T15:37:57Z",
      "ended_at": "2026-11-11T16:25:20Z",
      "result": "resync"
+    },
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 16,
+     "head_sha": "4be23ce6b3bcaedff0967db9fac4d7b446015e31",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": true,
+     "started_at": "2026-11-11T16:47:09Z",
+     "ended_at": "2026-11-11T17:05:26Z",
+     "result": "MERGE_PENDING",
+     "resync": true
     }
    ],
    "reviewed_sha": "b62ffd777333180ee92d17bae9c86784b3cd3235",
@@ -22085,21 +22099,12 @@
    "branch": "claude/task/T165-businesses-links-leaving",
    "auto_merge": {
     "enabled": true,
-    "why": "auto-merge on #498 (gh pr merge)",
-    "head": "7a8f5a8462540ae2fd6534a895620cd9b7fd5700"
+    "why": "auto-merge on #501 (gh pr merge)",
+    "head": "b62ffd777333180ee92d17bae9c86784b3cd3235"
    },
    "runner_closed_prs": [
     498
    ],
-   "resync": {
-    "attempt": 1,
-    "from": "7a8f5a8462540ae2fd6534a895620cd9b7fd5700",
-    "main": "a7b2897013c1971bfeca2a68a96a1ab6bea5d87e",
-    "paths": [
-     "app/portals/CLAUDE.md"
-    ],
-    "at": "2026-11-11T16:35:30Z"
-   },
    "resyncs": [
     {
      "attempt": 1,
@@ -22113,7 +22118,6 @@
    ],
    "last_failure": "merging main into the reviewed head conflicts in app/portals/CLAUDE.md; a resync merges it in on this attempt (D-891)",
    "lane": "2",
-   "head_check_since": null,
    "update_merges": [
     {
      "from": "4be23ce6b3bcaedff0967db9fac4d7b446015e31",
@@ -31638,12 +31642,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T214",
-   "at": "2026-11-11T16:44:06Z",
-   "cache_creation_input_tokens": 826304,
-   "input_tokens": 529,
-   "cache_read_input_tokens": 35001096,
-   "output_tokens": 174224
+   "task": "T165",
+   "at": "2026-11-11T17:05:26Z",
+   "cache_creation_input_tokens": 137565,
+   "input_tokens": 66,
+   "output_tokens": 15340,
+   "cache_read_input_tokens": 888274
   },
   "source": "session_reading 2026-11-11T16:45:43Z (week)",
   "by_task": {
@@ -33558,10 +33562,10 @@
    "T165": {
     "estimated_bytes": 682541,
     "estimated_tokens": 3735085,
-    "input_tokens": 474,
-    "cache_creation_input_tokens": 747436,
-    "output_tokens": 178313,
-    "cache_read_input_tokens": 28381507,
+    "input_tokens": 540,
+    "cache_creation_input_tokens": 885001,
+    "output_tokens": 193653,
+    "cache_read_input_tokens": 29269781,
     "last_model": "claude-opus-5-5"
    },
    "T272": {
@@ -33572,11 +33576,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-11T15:04:09Z",
-    "tokens": 10833075
+    "tokens": 11074873
    },
    "week": {
     "start": "2026-11-05T19:01:47Z",
-    "tokens": 327416284
+    "tokens": 327658082
    }
   },
   "session_reading": {
@@ -33587,7 +33591,7 @@
    }
   }
  },
- "updated_at": "2026-11-11T17:05:27Z",
+ "updated_at": "2026-11-11T17:05:42Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
