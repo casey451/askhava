@@ -2,6 +2,11 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## The build no longer pauses for a five-hour limit (plan change, D-3056, November 11)
+
+- **What happened.** The pacer also budgeted a five-hour token window, using a made-up 30M figure. By 19:10Z that figure was nearly used up, so it would have let only about four tasks run at once until 20:04Z, while the week still had tokens to spare.
+- **What changed.** You said you don't have a five-hour window, so the pacer now ignores it and only watches the week. If a real usage reading ever says some limit is at 100%, the build still stops until that limit resets; it never pays per use.
+
 ## A runner self-check no longer trips on work in progress (harness change, D-3057, November 11)
 
 - **What happened.** One of the runner's own checks before claiming a task compared the plan with the build's live progress and failed whenever a task already being worked sat at the head of the longest remaining chain. The build itself was fine, but the runner stopped without claiming anything five times today, and enough of these in a row could have wrongly marked the build broken and undone good work.
