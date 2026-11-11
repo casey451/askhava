@@ -19103,7 +19103,13 @@
     "T362",
     "T365",
     "T366",
-    "T367"
+    "T367",
+    "T368",
+    "T369",
+    "T370",
+    "T371",
+    "T372",
+    "T374"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19596,7 +19602,9 @@
     "T324",
     "T361",
     "T363",
-    "T364"
+    "T364",
+    "T373",
+    "T375"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -21805,7 +21813,8 @@
    "id": "T236",
    "deps": [
     "T235",
-    "T295"
+    "T295",
+    "T370"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -22920,7 +22929,8 @@
     "T045",
     "T240",
     "T247",
-    "T339"
+    "T339",
+    "T374"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -27169,7 +27179,10 @@
     "T165",
     "T248",
     "T268",
-    "T294"
+    "T294",
+    "T368",
+    "T369",
+    "T374"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -27239,7 +27252,8 @@
     "T164",
     "T214",
     "T249",
-    "T348"
+    "T348",
+    "T369"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -28447,6 +28461,102 @@
    "slug": "purge-sweeps-schedule-first",
    "type": "build",
    "stage": "4"
+  },
+  {
+   "id": "T374",
+   "deps": [
+    "T207",
+    "T075"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "license-holder-read",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T368",
+   "deps": [
+    "T207"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "capability-offer-all-licenses",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T369",
+   "deps": [
+    "T368"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "after-hours-needs-cover",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T370",
+   "deps": [
+    "T369",
+    "T038"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "night-count-counts-covered",
+   "type": "harness",
+   "stage": "4"
+  },
+  {
+   "id": "T371",
+   "deps": [
+    "T075"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "daily-license-lists-run",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T372",
+   "deps": [
+    "T369",
+    "T036",
+    "T056",
+    "T374"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "license-change-reapplied-daily",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T373",
+   "deps": [
+    "T322",
+    "T361"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "phone-change-ends-consent",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T375",
+   "deps": [
+    "T306",
+    "T372",
+    "T374"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "job-types-page-served",
+   "type": "build",
+   "stage": "5"
   }
  ],
  "owner_waits": [],
@@ -30266,7 +30376,7 @@
    }
   }
  },
- "updated_at": "2026-11-11T02:11:07Z",
+ "updated_at": "2026-11-11T02:19:07Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -30364,7 +30474,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "5fd99b77318810999dc350af1e1e5d7c240c2266",
+ "runner_sha": "daef586a5cd2ee22939da00a31cf1252d780d1e4",
  "starter": "actions",
  "smoke_runs": [
   {

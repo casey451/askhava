@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-11T02:11:07Z by runner 5fd99b773188 (actions).
+Updated 2026-11-11T02:19:07Z by runner daef586a5cd2 (actions).
 
-**Idle since 02:10Z; 193 of 354 done; week 56% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 02:10Z; 193 of 362 done; week 56% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 193 of 354 build tasks (owner gates not counted)
+- **Tasks done:** 193 of 362 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 02:10Z (no task in progress)
 - **Week:** 56% used, 80.3M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:11Z, 0 min before this update
+- **Last run:** 02:11Z, 7 min before this update
 - **Keeper:** last ran 02:11Z, next wake 02:31Z
 
 ## Needs attention
@@ -56,24 +56,23 @@ Updated 2026-11-11T02:11:07Z by runner 5fd99b773188 (actions).
 - 13:07Z Plan: no handyman split-job check — each job judged by its own price (Casey's ruling; D-2407, D-2408, T347) (#416)
 - 09:36Z Plan: T290 may update the two tests that pin recurring rows by data; nearest reachable bases (D-2386) (#413)
 - 03:30Z Plan: pentest assessment — Actions pinned, purpose-bound codes, Verify sends outside transactions (D-2346–D-2350, T345–T346) (#407)
-- 02:15Z Plan: seventh audit — fee facts from the job's category at the pick, tier and per-visit picks, whole-field quote gate, atomic Verify cap (D-2329–D-2335, 
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 212 of 733 (28.9%) · partial 330 · unstarted 191
-**Tasks merged (throughput only):** 193 of 354
+**Requirements verified:** 206 of 733 (28.1%) · partial 336 · unstarted 191
+**Tasks merged (throughput only):** 193 of 362
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 15 | 13 | 7 | 35 |
 | ai | 8 | 16 | 5 | 29 |
-| businesses | 17 | 34 | 7 | 58 |
+| businesses | 16 | 35 | 7 | 58 |
 | calls | 11 | 13 | 1 | 25 |
 | consent | 8 | 23 | 4 | 35 |
 | fees | 10 | 41 | 1 | 52 |
 | intake | 19 | 15 | 9 | 43 |
 | job-cards | 10 | 12 | 2 | 24 |
-| licensing | 29 | 18 | 1 | 48 |
+| licensing | 24 | 23 | 1 | 48 |
 | lifecycle | 17 | 11 | 0 | 28 |
 | messaging | 19 | 23 | 3 | 45 |
 | ops-recovery | 2 | 5 | 47 | 54 |
@@ -96,8 +95,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 73 of 152 done
-- stage 5: 0 of 56 done
+- stage 4: 73 of 158 done
+- stage 5: 0 of 58 done
 - stage 6: 0 of 30 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
