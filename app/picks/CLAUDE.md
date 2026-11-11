@@ -66,8 +66,6 @@ The layer-6 crate that takes the homeowner's pick and carries it to the business
 
 ## Never break
 
-- A Confirm queues one accepted-quote task, IDs only, and a second settle none: `tests/integration/tests/accepted_quote_email.rs` (TD-PICK-42).
-
 - Refused at exactly 10:00, cooldown after the fifth wrong try, paste reads: `src/tests/pick_code_rules.rs`, `tests/security/tests/pick_code.rs::td_pick_06_*`.
 - Voice only on the tap and never at night from another session; every cap holds; one alert a day; no number stored: `pick_code.rs::pick_055_*`.
 - No pick before the Terms line; one acceptance per text pick: `tests/integration/tests/text_pick.rs::td_pick_40_*`.
@@ -82,7 +80,7 @@ The layer-6 crate that takes the homeowner's pick and carries it to the business
 
 - The released view: the refusal rule over every status, seat and pairing, and on the database (crate-private `viewable`: owner and billing member only, the bound contact and email choice, a removed or demoted member refused) in `src/tests/released_view.rs`; the business-proof read in `privacy`'s `realm_tests`; the real mint and an unknown pick in `app/server/tests/released_view.rs` (TD-PICK-48, D-1895). Never let `portals` name `read_released`.
 
-- Details only on a proof, once, never the phone, no detail in the notice: `src/tests/prop_release_only_paid.rs`, `tests/security/tests/no_phone_released.rs`. Never add `Field::Phone` to a release field list or a phone field to `ReleaseView`.
+- Details only on a proof, once, never the phone, no detail in the notice: `src/tests/prop_release_only_paid.rs`, `tests/security/tests/no_phone_released.rs`. A Confirm queues one accepted-quote task, IDs only, and a second settle none: `tests/integration/tests/accepted_quote_email.rs` (TD-PICK-42). Never add `Field::Phone` to a release field list or a phone field to `ReleaseView`.
 
 - An emailed code keeps the limits, a quote-page address never gets one, an opted-out YES queues no text and picks only after the Terms line: `tests/integration/tests/email_pick_code.rs`.
 
