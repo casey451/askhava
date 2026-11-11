@@ -135,8 +135,17 @@ fn is_test(rel: &str) -> bool {
     rel.starts_with("tests/") || rel.contains("/src/tests/") || rel.contains("/tests/")
 }
 
+/// The one file that defines and calls the off-session confirm and builds `OffSession`.
+const OFF_SESSION: &str = "app/payments/src/off_session.rs";
+/// The one production caller of `charge_off_session`.
+const AUTO_CONFIRM: &str = "app/picks/src/auto_confirm.rs";
+/// The files that define or re-export `charge_off_session` without calling it.
+const CHARGE_NAMERS: [&str; 2] = [OFF_SESSION, "app/payments/src/api.rs"];
+
 /// TD-FEE-30 (FEE-014, D-401): the only production callers of the off-session confirm and of
-/// `charge_off_session` are `payments/src/off_session.rs` and `picks/src/auto_confirm.rs`, and no
+/// `charge_off_session` are `payments/src/off_session.rs` and `picks/src/auto_confirm.rs`; any
+/// mention of the names counts, not only a call, so a qualified path, a `use … as` rename or a
+/// function reference is caught, as is building the `OffSession(` wrapper anywhere else; and no
 /// production source outside `adapters` (the Stripe transport T132 adds the form field to, reached
 /// only through `OffSessionStripe`) posts `off_session=true`.
 #[test]
@@ -152,18 +161,15 @@ fn td_fee_30_no_other_code_path_charges_off_session() {
         if is_test(&rel) {
             continue;
         }
-        if text.contains(".confirm_off_session(") {
+        if text.contains("confirm_off_session") || text.contains("OffSession(") {
             assert_eq!(
-                rel, "app/payments/src/off_session.rs",
-                "off-session confirm"
+                rel, OFF_SESSION,
+                "the off-session confirm or its wrapper named"
             );
             seen.0 = true;
         }
-        if text.contains("charge_off_session(") && rel != "app/payments/src/off_session.rs" {
-            assert_eq!(
-                rel, "app/picks/src/auto_confirm.rs",
-                "charge_off_session caller"
-            );
+        if text.contains("charge_off_session") && !CHARGE_NAMERS.contains(&rel.as_str()) {
+            assert_eq!(rel, AUTO_CONFIRM, "charge_off_session named");
             seen.1 = true;
         }
         if rel.starts_with("app/adapters/") {

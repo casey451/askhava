@@ -160,17 +160,41 @@ pub enum AutoConfirmed {
     Tried(OffSessionOutcome),
 }
 
-/// The pick's job and business, while it waits for Confirm.
-async fn waiting(db: &mut PgConnection, pick: Uuid) -> Result<Option<(Uuid, Uuid)>, PicksError> {
+/// The waiting pick as stored: its job, business, time and channel.
+struct Waiting {
+    job: Uuid,
+    business: Uuid,
+    picked_at: Timestamp,
+    text: bool,
+}
+
+/// The pick's job, business, time and channel, while it waits for Confirm.
+async fn waiting(db: &mut PgConnection, pick: Uuid) -> Result<Option<Waiting>, PicksError> {
     let row = sqlx::query!(
-        "SELECT job_id, business_id FROM picks.pick WHERE id = $1 AND status = $2",
+        "SELECT job_id, business_id, picked_at, channel FROM picks.pick
+         WHERE id = $1 AND status = $2",
         pick,
         PickStatus::AwaitingConfirm.code(),
     )
     .fetch_optional(db)
     .await
     .map_err(|_| PicksError::Database)?;
-    Ok(row.map(|r| (r.job_id, r.business_id)))
+    Ok(row.map(|r| Waiting {
+        job: r.job_id,
+        business: r.business_id,
+        picked_at: r.picked_at.to_jiff(),
+        text: r.channel == "text",
+    }))
+}
+
+/// PICK-056, FEE-014: the pick's proof is the caller's, except that a pick stored with channel
+/// `text` is a text pick whatever the caller says, so it never auto-charges.
+const fn proof_of(stored_text: bool, claimed: PickProof) -> PickProof {
+    if stored_text {
+        PickProof::Text
+    } else {
+        claimed
+    }
 }
 
 /// Reads the facts for `pick` of `business`; the tick and the fee in cents with them.
@@ -213,7 +237,9 @@ async fn facts(
 /// PICK-048, PICK-056, FEE-014, FEE-016, D-401, D-480: runs the auto-confirm for `pick` right
 /// after the pick that `proof` proved committed: the one off-session charge when
 /// [`auto_confirm_plan`] says so, the void and its notice when the tick is void, else nothing.
-/// `emergency` is the job's emergency flag (PICK-044). A text pick never charges.
+/// `emergency` is the job's emergency flag (PICK-044). A text pick never charges: a pick stored
+/// with channel `text` is read as [`PickProof::Text`] whatever `proof` says. Only a tick placed at
+/// or before the pick's `picked_at` counts (a tick after the pick never fires for it).
 ///
 /// # Errors
 /// [`PicksError::Database`], [`PicksError::Quotes`] or [`PicksError::Outbox`]; a failed charge
@@ -226,10 +252,12 @@ pub async fn auto_confirm(
     at: Timestamp,
 ) -> Result<AutoConfirmed, PicksError> {
     let mut db = pool.acquire().await.map_err(|_| PicksError::Database)?;
-    let Some((job, business)) = waiting(&mut db, pick).await? else {
+    let Some(stored) = waiting(&mut db, pick).await? else {
         return Ok(AutoConfirmed::Skipped(Skip::NothingToCharge));
     };
-    let tick = auto_confirm_of(&mut db, (job, business))
+    let (job, business) = (stored.job, stored.business);
+    let proof = proof_of(stored.text, proof);
+    let tick = auto_confirm_of(&mut db, (job, business), Some(stored.picked_at))
         .await
         .map_err(|_| PicksError::Quotes)?;
     let (facts, fee) = facts(&mut db, (pick, business, proof), tick.as_ref()).await?;

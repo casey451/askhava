@@ -1,9 +1,9 @@
 -- quotes (T209): the optional "Auto-confirm and pay if picked" tick on a quote (PICK-048, PICK-056,
 -- FEE-014, SEC-038; D-401, D-480, D-491), and the owner-portal record of Stripe's written answer on
 -- charges without the business present, kept here in quotes, not catalog (D-2783).
--- quotes.auto_confirm keeps every tick of a quote's box: the member who ticked it, the fee shown and
--- the authorization version and wording version they agreed to, and the saved card it was ticked
--- with; an untick sets unticked_at (by the business, or `void` when picks found the card, the fee,
+-- quotes.auto_confirm keeps every tick of a quote's box: the member who ticked it, the fee shown, the
+-- authorization version they agreed to (one number naming the wording) and the saved card it was
+-- ticked with; an untick sets unticked_at (by the business, or `void` when picks found the card, the fee,
 -- the version or the member changed). At most one live tick per quote. picks reads it through
 -- quotes::api at the pick. The app role inserts and reads it and may only stamp the untick; nothing
 -- is deleted. businesses, payments and picks are other schemas, so no foreign key there

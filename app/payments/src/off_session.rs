@@ -223,12 +223,20 @@ pub async fn charge_off_session(
     })
 }
 
-/// PICK-048: ends the card-fix window a declined off-session attempt opened, so its notice and
-/// its end never run; the pick keeps the normal Confirm window (PICK-019).
+/// PICK-048, D-2784: ends the card-fix window a declined off-session attempt opened, so its end
+/// never runs and its notice, read after this, sends nothing; the pick keeps the normal Confirm
+/// window (PICK-019). It runs just after `confirm_and_pay` commits the decline (and queues the
+/// notice task), not in that transaction, so a worker that runs the notice in between can still
+/// send it, and a failure here leaves the window open; a rerun of [`charge_off_session`] answers
+/// from the recorded attempt and ends the window again, never sending to Stripe (D-2784). Only
+/// while the pick's latest attempt is the off-session one (press ID = pick ID): a window a later
+/// press of the business opened is never ended here.
 async fn stop_card_fix(pool: &PgPool, pick: Uuid, at: Timestamp) -> Result<(), ChargeError> {
     sqlx::query!(
         "UPDATE payments.pay_timer SET ended_at = $2
-         WHERE pick_id = $1 AND kind = 'card-fix' AND ended_at IS NULL",
+         WHERE pick_id = $1 AND kind = 'card-fix' AND ended_at IS NULL
+           AND (SELECT press_id FROM payments.charge_attempt WHERE pick_id = $1
+                ORDER BY try_no DESC LIMIT 1) = $1",
         pick,
         at.to_sqlx() as _,
     )

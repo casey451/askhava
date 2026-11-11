@@ -5,7 +5,8 @@
 //! ticked it, the fee shown, the authorization version ([`AUTO_CONFIRM_VERSION`], the wording of
 //! [`auto_confirm_authorization`]) and the saved card it was ticked with; [`untick_auto_confirm`]
 //! ends it (the business's own untick, or `picks`' void when the member, the card, the fee or the
-//! version no longer match); [`auto_confirm_of`] is the live tick `picks` reads at the pick;
+//! version no longer match); [`auto_confirm_of`] is the live tick `picks` reads at the pick, only
+//! one placed at or before the pick's own time;
 //! [`stripe_answer_filed`] reads the owner's filed Stripe answer (D-2783). This
 //! module never decides whether the box shows (the answer filed, a saved card and the member's
 //! role are the portals route's), never checks the fresh Verify code (the route's
@@ -150,7 +151,8 @@ async fn end_live(
 }
 
 /// PICK-048, PICK-056: ends the live tick on the business's quote for `job`, if any; `true` when
-/// one ended. An untick after the pick changes nothing for that pick: `picks` read it already.
+/// one ended. An untick before `picks` reads the tick stops the charge; one after it changes
+/// nothing for that pick, whose charge was already decided.
 ///
 /// # Errors
 /// [`AutoConfirmError::Database`].
@@ -174,20 +176,26 @@ pub async fn untick_auto_confirm(
 }
 
 /// PICK-048, PICK-056: the live tick on the business's quote for `job`, as stored; `None` when the
-/// box is unticked. `picks` compares it with the pick's fee, card, version and member.
+/// box is unticked. With `picked_at` (the pick's own time, `picks` at the pick) only a tick placed
+/// at or before the pick counts: the box authorizes a charge "if the homeowner picks it", so a
+/// tick placed after the pick never fires for it. `None` (the quote form) reads any live tick.
+/// `picks` compares the tick with the pick's fee, card, version and member.
 ///
 /// # Errors
 /// [`AutoConfirmError::Database`].
 pub async fn auto_confirm_of(
     db_conn: &mut PgConnection,
     (job, business): (Uuid, Uuid),
+    picked_at: Option<Timestamp>,
 ) -> Result<Option<AutoConfirmTick>, AutoConfirmError> {
     let row = db(sqlx::query!(
         "SELECT a.member_id, a.fee_cents, a.authorization_version, a.payment_method
          FROM quotes.auto_confirm a JOIN quotes.quote q ON q.id = a.quote_id
-         WHERE q.job_id = $1 AND q.business_id = $2 AND a.unticked_at IS NULL",
+         WHERE q.job_id = $1 AND q.business_id = $2 AND a.unticked_at IS NULL
+           AND ($3::timestamptz IS NULL OR a.ticked_at <= $3)",
         job,
-        business
+        business,
+        picked_at.map(ToSqlx::to_sqlx) as _,
     )
     .fetch_optional(db_conn)
     .await)?;

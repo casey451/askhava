@@ -16,12 +16,15 @@ use askhava_adapters::api::{
     AdapterError, Charge, IdempotencyKey, IntentMetadata, PaymentIntent, PaymentsAdapter,
 };
 use askhava_businesses::api::{Acting, add_owner, create, record_step_up};
+use askhava_ops::api::Actor;
 use askhava_payments::api::{
-    ATTEMPT_ACTION, BusinessId, CardFixWindow, FeeJob, FeeMode, FeeQuote, IntentStripe,
-    OffSessionOutcome, OffSessionStripe, PeriodJob, RecurringCap, SavedCard, Service, VisitTier,
-    attempt_label, card_fix_window, fee_at_pick, fix_fee_at_pick, save_card, set_fee_limit,
+    ATTEMPT_ACTION, BusinessId, CardFixWindow, ChargeOutcome, IntentStripe, OffSessionOutcome,
+    OffSessionStripe, PickNow, Press, SavedCard, attempt_label, card_fix_window, confirm_and_pay,
+    save_card, set_fee_limit,
 };
-use askhava_picks::api::{AutoConfirmed, PickProof, Skip, Void, auto_confirm};
+use askhava_picks::api::{
+    AutoConfirmed, PICK_MADE_KIND, PagePick, PickProof, Skip, Void, auto_confirm, page_pick,
+};
 use askhava_portals::api::{
     AUTO_CONFIRM_ROUTE, AutoConfirmBoxError, BUSINESS_SESSION_LIFE, BusinessPrincipal, CookieJar,
     Realm, auto_confirm_box, business_principal, set_auto_confirm, start_session,
@@ -35,6 +38,8 @@ use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
 
 const FEE: u64 = 7500;
+/// The second the pick is made, after every tick but the late one.
+const PICKED: i64 = 50;
 const CARD: &str = "pm_FakeT209";
 type Answer = Result<PaymentIntent, AdapterError>;
 
@@ -47,10 +52,12 @@ fn secret() -> SecretString {
 }
 
 /// A fake Stripe: the off-session confirm answers `answer` and is recorded; the on-session
-/// confirm panics (FEE-014: only the press charges on-session, and no press runs here).
+/// confirm answers `press` and is recorded, and panics when no press is expected (FEE-014: only
+/// the business's press charges on-session).
 struct FakeStripe {
     calls: Mutex<Vec<String>>,
     answer: fn() -> Answer,
+    press: Option<fn() -> Answer>,
 }
 
 impl FakeStripe {
@@ -58,6 +65,7 @@ impl FakeStripe {
         Self {
             calls: Mutex::new(Vec::new()),
             answer,
+            press: None,
         }
     }
 
@@ -128,8 +136,13 @@ impl IntentStripe for FakeStripe {
         Ok("pi_FakeT209".to_owned())
     }
 
-    async fn confirm_intent(&self, _: &IdempotencyKey, _: &str, _: &str) -> Answer {
-        panic!("an auto-confirm never confirms on-session")
+    async fn confirm_intent(&self, key: &IdempotencyKey, intent: &str, pm: &str) -> Answer {
+        let press = self
+            .press
+            .expect("an auto-confirm never confirms on-session");
+        let call = format!("on_session {} {intent} {pm}", key.as_str());
+        self.calls.lock().expect("lock").push(call);
+        press()
     }
 }
 
@@ -142,7 +155,8 @@ impl OffSessionStripe for FakeStripe {
 }
 
 /// One business, its owner signed in, a customer, a saved card, a job with a quote and a waiting
-/// page pick whose fee ($75) is fixed.
+/// page pick made at `at(50)` through `picks`' own `page_pick`, so its fee ($75) is fixed and its
+/// pick notice queued as for any pick. Ticks before `at(50)` were placed before the pick.
 struct World {
     pool: PgPool,
     who: Acting,
@@ -195,8 +209,14 @@ async fn world(pool: PgPool) -> World {
         .await
         .expect("customer");
     save(&mut db, who.business, CARD, at(2)).await;
-    let (job, pick) = (Uuid::from_u128(0x2090_000b), Uuid::from_u128(0x2090_000c));
-    seed_job(&mut db, (job, pick, who.business)).await;
+    let job = Uuid::from_u128(0x2090_000b);
+    seed_job(&mut db, (job, who.business)).await;
+    let mut tx = sqlx::Connection::begin(&mut *db).await.expect("tx");
+    let picked = page_pick(&mut tx, (job, false), 1, Actor::System, at(PICKED)).await;
+    let Ok(PagePick::Picked(pick)) = picked else {
+        panic!("a page pick");
+    };
+    tx.commit().await.expect("commit");
     drop(db);
     World {
         pool,
@@ -207,49 +227,23 @@ async fn world(pool: PgPool) -> World {
     }
 }
 
-async fn seed_job(db: &mut PgConnection, (job, pick, business): (Uuid, Uuid, Uuid)) {
+async fn seed_job(db: &mut PgConnection, (job, business): (Uuid, Uuid)) {
     let statements = [
         "INSERT INTO jobs.job (id, status, created_at, status_at, timer_from) \
-         VALUES ($1, 'awaiting_confirm', $4, $4, $4)",
-        "INSERT INTO jobs.job_number (number, job_id, issued_at) VALUES (1209, $1, $4)",
+         VALUES ($1, 'quotes_ready', $3, $3, $3)",
+        "INSERT INTO jobs.job_number (number, job_id, issued_at) VALUES (1209, $1, $3)",
         "INSERT INTO quotes.quote (job_id, business_id, format, amount_cents, confirm_on_site, \
          notes, original, ai_read, confirmed, received_at) \
-         VALUES ($1, $3, 'firm', 100000, false, '', 'Fake quote', false, true, $4)",
-        "INSERT INTO picks.pick (id, job_id, business_id, quote_number, channel, status, \
-         picked_at) VALUES ($2, $1, $3, 1, 'page', 'awaiting_confirm', $4)",
+         VALUES ($1, $2, 'firm', 100000, false, '', 'Fake quote', false, true, $3)",
     ];
     for sql in statements {
         sqlx::query(sql)
             .bind(job)
-            .bind(pick)
             .bind(business)
             .bind(at(3).to_sqlx())
             .execute(&mut *db)
             .await
             .expect(sql);
-    }
-    let fee = fee_at_pick(
-        FeeQuote::Fixed(100_000),
-        None,
-        period_job(),
-        FeeMode::Tiers,
-        None,
-    );
-    let fee = fee.expect("fee");
-    fix_fee_at_pick(db, pick, BusinessId(business), job, &fee, at(3))
-        .await
-        .expect("fee fixed");
-}
-
-fn period_job() -> PeriodJob {
-    PeriodJob {
-        job: FeeJob {
-            diagnostic_visit: false,
-            visit_tier: VisitTier::DEFAULT,
-            fee_free: false,
-        },
-        service: Service::NotRecurring,
-        cap: RecurringCap::DEFAULT,
     }
 }
 
@@ -267,6 +261,10 @@ async fn file_answer(pool: &PgPool, allows: bool, when: Timestamp) {
 
 impl World {
     async fn tick(&self, member: Uuid, fee: u64, card: &str) {
+        self.tick_at(member, (fee, card), at(10)).await;
+    }
+
+    async fn tick_at(&self, member: Uuid, (fee, card): (u64, &str), when: Timestamp) {
         let tick = AutoConfirmTick {
             member,
             fee_cents: fee,
@@ -274,7 +272,7 @@ impl World {
             payment_method: card.to_owned(),
         };
         let mut db = self.pool.acquire().await.expect("db");
-        tick_auto_confirm(&mut db, (self.job, self.who.business), &tick, at(10))
+        tick_auto_confirm(&mut db, (self.job, self.who.business), &tick, when)
             .await
             .expect("ticked");
     }
@@ -299,6 +297,31 @@ impl World {
             .expect(sql)
     }
 
+    async fn pick_notices(&self) -> i64 {
+        sqlx::query_scalar(
+            "SELECT count(*) FROM core.task WHERE kind = $2 AND payload->>'pick' = $1::text",
+        )
+        .bind(self.pick)
+        .bind(PICK_MADE_KIND)
+        .fetch_one(&self.pool)
+        .await
+        .expect("pick notices")
+    }
+
+    /// The business's own "Confirm and pay" press on the pick, on-session.
+    fn press(&self) -> Press<'static> {
+        Press {
+            pick: self.pick,
+            business: BusinessId(self.who.business),
+            job: self.job,
+            amount_cents: 7500,
+            payment_method: CARD,
+            press: Uuid::from_u128(0x2090_00f1),
+            emergency: false,
+            now: PickNow::Payable,
+        }
+    }
+
     async fn void_notices(&self) -> i64 {
         self.count(
             "SELECT count(*) FROM core.task WHERE kind = 'picks.auto_confirm_voided' \
@@ -308,8 +331,8 @@ impl World {
     }
 }
 
-fn key() -> String {
-    let label = attempt_label(Uuid::from_u128(0x2090_000c), 1);
+fn key(pick: Uuid, try_no: i32) -> String {
+    let label = attempt_label(pick, try_no);
     IdempotencyKey::derive(&secret(), ATTEMPT_ACTION, &[&label])
         .as_str()
         .to_owned()
@@ -357,7 +380,7 @@ async fn td_fee_30_one_off_session_charge_with_its_own_key(pool: PgPool) {
     assert_eq!(again, AutoConfirmed::Tried(paid));
     let expected = vec![
         "create 7500".to_owned(),
-        format!("off_session {} pi_FakeT209 {CARD}", key()),
+        format!("off_session {} pi_FakeT209 {CARD}", key(w.pick, 1)),
     ];
     assert_eq!(
         stripe.calls(),
@@ -370,15 +393,15 @@ async fn td_fee_30_one_off_session_charge_with_its_own_key(pool: PgPool) {
     assert_eq!(attempts, 1);
 }
 
-/// TD-FEE-30 (PICK-048, PICK-019): a decline and an `authentication_required` answer each fall
-/// back to the normal Confirm step: nothing charged, the pick still waits, no card-fix window or
-/// card-fix notice runs.
+/// TD-FEE-30 (PICK-048, PICK-019): a decline falls back to the normal Confirm step: nothing
+/// charged, the pick still waits with its pick notice queued, no card-fix window runs, and the
+/// business's own press afterwards is a new attempt (try 2, its own key) that charges on-session.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_fee_30_a_decline_falls_back_to_confirm(pool: PgPool) {
     let w = world(pool).await;
     file_answer(&w.pool, true, at(4)).await;
     w.tick(w.who.member, FEE, CARD).await;
-    let stripe = FakeStripe::new(declined);
+    let mut stripe = FakeStripe::new(declined);
     let done = w.run(&stripe, PickProof::PageCode).await;
     assert_eq!(done, AutoConfirmed::Tried(OffSessionOutcome::FellBack));
     let mut db = w.pool.acquire().await.expect("db");
@@ -388,6 +411,42 @@ async fn td_fee_30_a_decline_falls_back_to_confirm(pool: PgPool) {
         .count("SELECT count(*) FROM picks.pick WHERE id = $1 AND status = 'awaiting_confirm'")
         .await;
     assert_eq!(waiting, 1, "the pick waits for the normal Confirm step");
+    assert_eq!(w.pick_notices().await, 1, "the pick notice is queued");
+    stripe.press = Some(succeeded);
+    let paid = confirm_and_pay(&w.pool, &stripe, &secret(), &w.press(), at(120)).await;
+    assert_eq!(paid, Ok(ChargeOutcome::Succeeded("pi_FakeT209".to_owned())));
+    let calls = stripe.calls();
+    let expected = format!("on_session {} pi_FakeT209 {CARD}", key(w.pick, 2));
+    assert_eq!(calls.last(), Some(&expected), "try 2 with its own key");
+    assert_ne!(key(w.pick, 1), key(w.pick, 2));
+}
+
+/// D-2784: a card-fix window left open by a failed stop (simulated by reopening it) is ended by
+/// the next run, which answers from the recorded attempt and never calls Stripe again.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_fee_30_a_rerun_ends_a_card_fix_window_left_open(pool: PgPool) {
+    let w = world(pool).await;
+    file_answer(&w.pool, true, at(4)).await;
+    w.tick(w.who.member, FEE, CARD).await;
+    let stripe = FakeStripe::new(declined);
+    w.run(&stripe, PickProof::PageCode).await;
+    sqlx::query("UPDATE payments.pay_timer SET ended_at = NULL WHERE pick_id = $1")
+        .bind(w.pick)
+        .execute(&w.pool)
+        .await
+        .expect("reopened");
+    let mut db = w.pool.acquire().await.expect("db");
+    let open = card_fix_window(&mut db, w.pick).await.expect("window");
+    assert!(
+        matches!(open, CardFixWindow::Running(_)),
+        "reopened: {open:?}"
+    );
+    let sent = stripe.calls().len();
+    let again = w.run(&stripe, PickProof::PageCode).await;
+    assert_eq!(again, AutoConfirmed::Tried(OffSessionOutcome::FellBack));
+    let window = card_fix_window(&mut db, w.pick).await.expect("window");
+    assert_eq!(window, CardFixWindow::Closed, "the rerun ends it");
+    assert_eq!(stripe.calls().len(), sent, "no second Stripe call");
 }
 
 /// TD-FEE-30 (PICK-048): a card the bank must approve off-session falls back the same way.
@@ -432,8 +491,50 @@ async fn td_fee_31_a_text_pick_never_auto_charges(pool: PgPool) {
     assert_eq!(done, AutoConfirmed::Skipped(Skip::NotProven));
     assert!(stripe.calls().is_empty());
     let mut db = w.pool.acquire().await.expect("db");
-    let kept = auto_confirm_of(&mut db, (w.job, w.who.business)).await;
+    let kept = auto_confirm_of(&mut db, (w.job, w.who.business), None).await;
     assert!(kept.expect("read").is_some(), "the tick stays");
+}
+
+/// TD-FEE-31 (PICK-056, FEE-014): a pick stored as a text pick never auto-charges, even when
+/// the caller passes a page-code proof: the stored channel wins.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_fee_31_a_stored_text_pick_never_auto_charges_whatever_the_caller_says(pool: PgPool) {
+    let w = world(pool).await;
+    file_answer(&w.pool, true, at(4)).await;
+    w.tick(w.who.member, FEE, CARD).await;
+    sqlx::query("UPDATE picks.pick SET channel = 'text', inbox_id = $2 WHERE id = $1")
+        .bind(w.pick)
+        .bind(Uuid::from_u128(0x2090_00a1))
+        .execute(&w.pool)
+        .await
+        .expect("a text pick");
+    let stripe = FakeStripe::new(succeeded);
+    for proof in [PickProof::PageCode, PickProof::PortalSession] {
+        let done = w.run(&stripe, proof).await;
+        assert_eq!(done, AutoConfirmed::Skipped(Skip::NotProven));
+    }
+    assert!(stripe.calls().is_empty(), "no Stripe call");
+}
+
+/// PICK-048 ("if the homeowner picks it"): a tick placed after the pick never fires for it, and
+/// the tick stays for the quote form.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn pick_048_a_tick_after_the_pick_does_not_fire(pool: PgPool) {
+    let w = world(pool).await;
+    file_answer(&w.pool, true, at(4)).await;
+    w.tick_at(w.who.member, (FEE, CARD), at(PICKED + 1)).await;
+    let stripe = FakeStripe::new(succeeded);
+    let done = w.run(&stripe, PickProof::PageCode).await;
+    assert_eq!(done, AutoConfirmed::Skipped(Skip::NotTicked));
+    assert!(stripe.calls().is_empty());
+    let mut db = w.pool.acquire().await.expect("db");
+    let at_pick = auto_confirm_of(&mut db, (w.job, w.who.business), Some(at(PICKED))).await;
+    assert_eq!(at_pick, Ok(None), "not ticked at the pick");
+    let live = auto_confirm_of(&mut db, (w.job, w.who.business), None).await;
+    assert!(
+        live.expect("read").is_some(),
+        "the later tick is still live"
+    );
 }
 
 /// TD-FEE-31 (PICK-056): a tick by a member since removed does not fire, and is voided.
@@ -486,7 +587,7 @@ async fn td_fee_31_a_card_change_voids_and_tells_the_business(pool: PgPool) {
     assert_eq!(done, AutoConfirmed::Voided(Void::CardChanged));
     assert!(stripe.calls().is_empty());
     assert_eq!(w.void_notices().await, 1, "the business is told");
-    let tick = auto_confirm_of(&mut db, (w.job, w.who.business)).await;
+    let tick = auto_confirm_of(&mut db, (w.job, w.who.business), None).await;
     assert_eq!(tick, Ok(None), "the tick is void");
 }
 
@@ -531,12 +632,12 @@ async fn td_sec_17_ticking_needs_a_fresh_code(pool: PgPool) {
     assert_eq!(late, Err(AutoConfirmBoxError::NeedsCode), "5:01 refused");
     let fresh = set_auto_confirm(&mut db, &w.principal, tick(true), at(350)).await;
     assert_eq!(fresh, Ok(()), "4 minutes passes");
-    let stored = auto_confirm_of(&mut db, (w.job, w.who.business)).await;
+    let stored = auto_confirm_of(&mut db, (w.job, w.who.business), None).await;
     let stored = stored.expect("read").expect("ticked");
     assert_eq!((stored.member, stored.fee_cents), (w.who.member, FEE));
     assert_eq!(stored.payment_method, CARD);
     let off = set_auto_confirm(&mut db, &w.principal, tick(false), at(900)).await;
     assert_eq!(off, Ok(()), "an untick needs no code");
-    let gone = auto_confirm_of(&mut db, (w.job, w.who.business)).await;
+    let gone = auto_confirm_of(&mut db, (w.job, w.who.business), None).await;
     assert_eq!(gone, Ok(None));
 }

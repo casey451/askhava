@@ -800,7 +800,7 @@ pub async fn auto_confirm_box(
     if box_card(db, principal).await?.is_none() {
         return Ok(None);
     }
-    let ticked = auto_confirm_of(db, (job, principal.business))
+    let ticked = auto_confirm_of(db, (job, principal.business), None)
         .await
         .map_err(|_| PortalsError::Database)?
         .is_some_and(|t| t.fee_cents == fee);
