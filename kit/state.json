@@ -22113,7 +22113,7 @@
      "result": "MERGE_PENDING"
     }
    ],
-   "reviewed_sha": "d98adb6d7c971fb8c623ad4c007a71d4fb8475ce",
+   "reviewed_sha": "30238018bb6cf36620bb9e3dea7bba12880ffe22",
    "review_lease": {
     "task": "T232",
     "session": "actions-43100150032",
@@ -22133,6 +22133,18 @@
      "main": "4755bac9f62a597cf4e658dd9447d7a18f025b5e",
      "how": "hand-in",
      "at": "2026-11-11T22:02:57Z"
+    },
+    {
+     "from": "d98adb6d7c971fb8c623ad4c007a71d4fb8475ce",
+     "to": "30238018bb6cf36620bb9e3dea7bba12880ffe22",
+     "main": "0137f98c1451ea9196534502adb25cbf8820360b",
+     "how": "runner",
+     "checks": {
+      "Ci": "success",
+      "Ally": "success",
+      "Twin": "success"
+     },
+     "at": "2026-11-11T22:22:10Z"
     }
    ],
    "update_waiting_since": null,
@@ -22360,8 +22372,8 @@
     "T164",
     "T157"
    ],
-   "status": "MERGE_PENDING",
-   "attempts": 0,
+   "status": "QUEUED",
+   "attempts": 1,
    "slug": "businesses-leaving",
    "type": "build",
    "stage": "4",
@@ -22425,13 +22437,54 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 39,
      "head_sha": "d143271aaec446c930f3282bb442815b9d1c281d",
-     "pr": null,
-     "checks": null,
+     "pr": 515,
+     "checks": [
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "failure"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "failure"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-11T19:28:10Z",
      "ended_at": "2026-11-11T19:59:14Z",
-     "result": "MERGE_PENDING",
+     "result": "check_failed",
      "resync": true
     }
    ],
@@ -22462,7 +22515,7 @@
      "at": "2026-11-11T19:15:54Z"
     }
    ],
-   "last_failure": "merging main into the reviewed head conflicts in app/payments/CLAUDE.md; a resync merges it in on this attempt (D-891)",
+   "last_failure": "Ci: failure; Checks: failure\nChecks failed at step: Rust toolchain (the pinned release from rust-toolchain.toml)\ninfo: syncing channel updates for 1.99.0-x86_64-unknown-linux-gnu\ninfo: latest update on 2026-10-01 for version 1.99.0 (b940084d7 2026-09-28)\ninfo: recovering from a partially installed toolchain\ninfo: removing previous version of component rustc\ninfo: removing previous version of component cargo\ninfo: removing previous version of component rust-std\ninfo: removing previous version of component rust-docs\ninfo: removing previous version of component rustfmt\ninfo: removing previous version of component clippy\ninfo: downloading 6 components\ninfo: rolling back changes\nerror: failed to install component: 'clippy-preview-x86_64-unknown-linux-gnu', detected conflict: 'bin/cargo-clippy'\n##[error]Process completed with exit code 1.\nCi failed at step: All four jobs passed\nChecks: failure, Python: success, Coverage: success, E2e: success\n##[error]Process completed with exit code 1.",
    "lane": "4",
    "update_merges": [
     {
@@ -32606,7 +32659,7 @@
     "T061",
     "T333"
    ],
-   "status": "MERGE_PENDING",
+   "status": "DONE",
    "attempts": 0,
    "slug": "payments-coverage-margin",
    "type": "harness",
@@ -32625,13 +32678,66 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 139,
      "head_sha": "1e753dc9cf08aa951f81daf8ed94247a89af9065",
-     "pr": null,
-     "checks": null,
+     "pr": 520,
+     "checks": [
+      {
+       "name": "backup",
+       "conclusion": null
+      },
+      {
+       "name": "keeper",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "gate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-11T20:19:01Z",
      "ended_at": "2026-11-11T21:49:17Z",
-     "result": "MERGE_PENDING"
+     "result": "done"
     }
    ],
    "reviewed_sha": "2891f4cb777edc0d767a483c3dbfaf633c373b97",
@@ -32656,7 +32762,16 @@
     }
    ],
    "update_waiting_since": null,
-   "update_push_failures": null
+   "update_push_failures": null,
+   "merged_sha": "0137f98c1451ea9196534502adb25cbf8820360b",
+   "merged_at": "2026-11-11T22:09:14Z",
+   "files": [
+    "app/payments/CLAUDE.md",
+    "app/payments/src/tests/coverage_margin.rs",
+    "app/payments/src/tests/mod.rs",
+    "docs/decisions.md",
+    "tests/integration/tests/payments_coverage_margin.rs"
+   ]
   },
   {
    "id": "T388",
@@ -32698,7 +32813,7 @@
      "result": "MERGE_PENDING"
     }
    ],
-   "reviewed_sha": "edda885e299ccdc21a6183c8378d452f5e5b2721",
+   "reviewed_sha": "3d8427f8798a3302e954da69be98459d89687fa3",
    "review_lease": {
     "task": "T388",
     "session": "actions-43100153726",
@@ -32722,6 +32837,18 @@
       "Twin": "success"
      },
      "at": "2026-11-11T22:00:14Z"
+    },
+    {
+     "from": "edda885e299ccdc21a6183c8378d452f5e5b2721",
+     "to": "3d8427f8798a3302e954da69be98459d89687fa3",
+     "main": "0137f98c1451ea9196534502adb25cbf8820360b",
+     "how": "runner",
+     "checks": {
+      "Ci": "success",
+      "Twin": "success",
+      "Ally": "success"
+     },
+     "at": "2026-11-11T22:22:10Z"
     }
    ],
    "update_waiting_since": null,
@@ -34772,7 +34899,7 @@
    }
   }
  },
- "updated_at": "2026-11-11T22:17:49Z",
+ "updated_at": "2026-11-11T22:22:25Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -34871,7 +34998,7 @@
   ]
  },
  "runner_sha": "0137f98c1451ea9196534502adb25cbf8820360b",
- "starter": "manual",
+ "starter": "actions",
  "smoke_runs": [
   {
    "sha": "60a8d50b1c568fba03f66e143749604ed7533432",

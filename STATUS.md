@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-11T22:17:49Z by runner 0137f98c1451 (manual).
+Updated 2026-11-11T22:22:25Z by runner 0137f98c1451 (actions).
 
-**Building: T334 in progress since 22:00Z; 213 of 376 done; week 76% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T334 in progress since 22:00Z; 214 of 376 done; week 76% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 213 of 376 build tasks (owner gates not counted)
+- **Tasks done:** 214 of 376 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T334 claimed 22:00Z, lease until 01:00Z
 - **Week:** 76% used, 40.9M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:05Z, 12 min before this update
+- **Last run:** 22:18Z, 4 min before this update
 - **Keeper:** last ran 22:05Z, next wake 01:03Z
 
 ## Needs attention
@@ -19,10 +19,10 @@ Updated 2026-11-11T22:17:49Z by runner 0137f98c1451 (manual).
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T232 | portals and businesses: the Confirm step's "Can't take it" l | MERGE_PENDING | 1 | 51 min | 22:02Z |  |
-| T387 | payments (harness): the branch that flaps payments coverage  | MERGE_PENDING | 1 | 90 min | 21:49Z |  |
+| T387 | payments (harness): the branch that flaps payments coverage  | done | 1 | 90 min | 21:49Z |  |
 | T388 | picks, intake, messaging and portals: after a Confirm the ho | MERGE_PENDING | 1 | 34 min | 21:46Z |  |
 | T334 | payments: the nightly reconcile catches up after an outage f | QUEUED | 1 | 15 min | 21:21Z | Worker stopped with PLAN GAP: reconcile_open.rs:343 and :423 (T288 tests, night 0 then night 8) fail once the run reads  |
-| T228 | businesses: leaving Ask Hava, the optional reason and what h | MERGE_PENDING | 1 | 31 min | 19:59Z | merging main into the reviewed head conflicts in app/payments/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T228 | businesses: leaving Ask Hava, the optional reason and what h | check_failed | 1 | 31 min | 19:59Z | Ci: failure; Checks: failure / Checks failed at step: Rust toolchain (the pinned release from rust-toolchain.toml) / inf |
 | T228 | businesses: leaving Ask Hava, the optional reason and what h | resync | 1 | 77 min | 19:09Z |  |
 | T316 | businesses: one read of each business's public name for the  | done | 2 | 26 min | 19:02Z | PLAN GAP: app/businesses/src/holding.rs:8 and migrations/0050_licensing_imports.sql:22-55: nothing links a business to a |
 | T332 | payments (harness): a late success has its own refund trigge | done | 4 | 25 min | 18:53Z | merging main into the reviewed head conflicts in app/payments/CLAUDE.md; a resync merges it in on this attempt (D-891) |
@@ -109,8 +109,8 @@ Updated 2026-11-11T22:17:49Z by runner 0137f98c1451 (manual).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 221 of 733 (30.2%) · partial 337 · unstarted 175
-**Tasks merged (throughput only):** 213 of 376
+**Requirements verified:** 222 of 733 (30.3%) · partial 336 · unstarted 175
+**Tasks merged (throughput only):** 214 of 376
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -119,7 +119,7 @@ Updated 2026-11-11T22:17:49Z by runner 0137f98c1451 (manual).
 | businesses | 16 | 36 | 6 | 58 |
 | calls | 11 | 13 | 1 | 25 |
 | consent | 8 | 23 | 4 | 35 |
-| fees | 11 | 40 | 1 | 52 |
+| fees | 12 | 39 | 1 | 52 |
 | intake | 22 | 15 | 6 | 43 |
 | job-cards | 13 | 9 | 2 | 24 |
 | licensing | 25 | 23 | 0 | 48 |
@@ -145,7 +145,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 93 of 168 done
+- stage 4: 94 of 168 done
 - stage 5: 0 of 58 done
 - stage 6: 0 of 34 done
 - stage 7: 0 of 2 done
