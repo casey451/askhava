@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO picks.backup_move (pick_id, new_pick_id, decided_at) VALUES ($1, $2, $3) ON CONFLICT (pick_id) DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "07d4a99ca16881aee005aa96f923cee97fdce65cdc7e59b26f28871119302657"
+}

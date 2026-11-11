@@ -8,7 +8,8 @@
     (A11Y-014); the acceptance end time when given (PICK-045), the contact card and the after-Done
     line follow (PICK-054). "Go back" carries an empty query ("?") because the review is the POST
     answer at the quote page's own address, where a bare "#quote-<n>" only scrolls (D-1251). No
-    name, phone or address. -#}
+    name, phone or address. T157 (PICK-047, D-400): before the final Pick, the backup choice:
+    "No backup" selected, the other available quotes in arrival order, none preselected. -#}
 {% block title %}{% if done %}Done: your pick for request {{ request }}{% else %}Check your pick for request {{ request }}{% endif %}{% endblock %}
 {% block main %}
 {% if done %}
@@ -30,7 +31,13 @@
 <form method="post" action="/q/{{ token }}/pick" novalidate>
 <input type="hidden" name="csrf" value="{{ csrf }}">
 <input type="hidden" name="quote" value="{{ quote }}">
-<button type="submit" id="final-pick">Pick #{{ quote }}</button>
+{% if !others.is_empty() %}<p><label for="backup">If the business for quote #{{ quote }} can't take it, move my pick to:</label></p>
+<p id="backup-hint">If they can't, your pick moves to that quote right away and we'll text you. To change your backup later, press Pick on quote #{{ quote }} again and type the new code we text you.</p>
+<p><select id="backup" name="backup" aria-describedby="backup-hint">
+<option value="" selected>No backup</option>
+{% for n in others %}<option value="{{ n }}">Quote #{{ n }}</option>
+{% endfor %}</select></p>
+{% endif %}<button type="submit" id="final-pick">Pick #{{ quote }}</button>
 <p id="terms-line" lang="{{ terms.0 }}">{{ terms.1 }} <a href="/terms">{{ terms.2 }}</a></p>
 </form>
 <p>or reply {{ quote }} YES</p>

@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT backup_quote FROM picks.backup_choice WHERE pick_id = $1 AND (NOT $2 OR set_at <= (SELECT ended_at FROM picks.pick WHERE id = $1)) ORDER BY set_at DESC, id DESC LIMIT 1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "backup_quote",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "picks.backup_choice",
+            "name": "backup_quote"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Bool"
+      ]
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "9e488cdc5e8294c5db2f7d7f40203bf398268b3df10fd4dcb23524250a2d57bb"
+}
