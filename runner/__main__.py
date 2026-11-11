@@ -7,19 +7,23 @@ line of JSON with what changed.
   python3 -m runner                 one cycle; a claimed task is handed to this session (`handed_off`)
                                     unless RUNNER_WORKER_CMD runs it (runner/github_env.py)
   python3 -m runner --after [--transcript P ... | --worker-agent ID ...] [--reviewer-transcript P ...
-                    | --reviewer-agent ID ...] [--outcome submitted|tests_failed|usage_limit|...]
+                    | --reviewer-agent ID ...] [--outcome submitted|tests_failed|plan_gap|usage_limit|...]
                                     finish the handed-off task: path check (git diff --no-renames),
                                     model check from the transcripts, the pre-hand-in gate (main's
                                     scripts/prehandin.sh --quick on the head; red: `prehandin_red`,
                                     lease kept, up to 2 fix rounds, then a failed attempt, D-1300),
                                     review record (reviewed_sha and lease) pushed, branch pushed,
-                                    MERGE_PENDING
+                                    MERGE_PENDING. `--outcome plan_gap --log "PLAN GAP: ..."` (also a
+                                    tests_failed log opening with `PLAN GAP:`): the worker found only a
+                                    plan change can unblock the task; the attempt counts, the task is
+                                    BLOCKED (outbox item T###-plan-gap) until `--requeue --plan-fix`, or a
+                                    plain `--requeue` for a mistaken report (D-2859)
   python3 -m runner --renew         renew this session's lease (every 30 minutes while working)
   python3 -m runner --record-proof N --evidence TEXT
                                     record stage N's named proof for scripts/stage_exit.py
   python3 -m runner --requeue T### --reason TEXT
                                     move a task BLOCKED outside its own work (push, no head,
-                                    permission, stage proof) back to QUEUED, attempts unchanged and
+                                    permission, stage proof, a mistaken plan-gap report) back to QUEUED, attempts unchanged and
                                     the reason as its last_failure (refused for a task out of attempts,
                                     or while any lease is live; recorded in `requeues`, D-583). FIX-MAIN
                                     only while main is red and FIX-MAIN is BLOCKED: it restarts with
@@ -29,7 +33,9 @@ line of JSON with what changed.
                                     after a plan fix: since its last attempt started, D-### is new on
                                     main in docs/decisions.md and in the task's own `decisions` list, and
                                     its kit/tasks.json entry or prompt changed on main; once per decision,
-                                    never under a lease that matters (D-677)
+                                    never under a lease that matters (D-677). The same lifts a task
+                                    BLOCKED on a plan gap its worker reported, which keeps the attempts
+                                    it has left (D-2859)
   python3 -m runner --reserve-decision --reason TEXT
                                     take ONE D-number from the live counter for a change made outside
                                     the runner (a plan change, a human fix): the next free number at or
@@ -316,8 +322,9 @@ def after(args: argparse.Namespace, cfg: cycle.Config, env: GitHubEnv) -> str:
     transcripts = list(args.transcript) + find_transcripts(args.worker_agent)
     reviews = list(args.reviewer_transcript) + find_transcripts(args.reviewer_agent)
     log = args.log
+    outcome = cycle.session_outcome(args.outcome, log)  # a worker's plan-gap report blocks the task for a plan fix (D-2859)
     held = str(read_handoff().get("prehandin_log") or "")
-    if held and args.outcome != "submitted":
+    if held and outcome != "submitted":
         log = f"{log}; the last pre-hand-in gate before it: {held}"  # the retry still reads why the gate was red (D-1300)
     fallback = model_window.is_refusal(args.model_fallback)  # any other text is no fallback (D-2225)
     if args.model_fallback.strip():
@@ -325,7 +332,7 @@ def after(args: argparse.Namespace, cfg: cycle.Config, env: GitHubEnv) -> str:
         if line:
             print(f"runner: {line}")
             env.log.append(line)
-    return cycle.after_handoff(cfg, env, lambda task: env.collect_result(task, args.outcome, transcripts, reviews, log),
+    return cycle.after_handoff(cfg, env, lambda task: env.collect_result(task, outcome, transcripts, reviews, log),
                                hold_red_gate, own_models=fallback)
 
 

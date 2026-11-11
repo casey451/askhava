@@ -60,15 +60,33 @@ DROP_MARKER = "<!-- askhava-runner: closed to drop auto-merge (D-584) -->"
 REQUEUABLE = ("branch push rejected", "no head to push", "permission blocked", st.PROOF_MISSING, "unchecked merge")
 # `--requeue T### --plan-fix D-###`: one more attempt for a capped task after a logged plan fix (D-677).
 PLAN_FIX_ID = re.compile(r"^D-\d{3,}$")
+# A worker's report that only a plan change can unblock its task (D-2859): the outcome `plan_gap`, which
+# `--after` also reads from a `tests_failed` log that opens with PLAN_GAP_MARKER (the line kit/prompts/TEMPLATE.md
+# has the worker write) or, as a narrow fallback, whose first sentence (up to the first ". " or line end) says
+# "a/the plan change must" or "<T###|it|this task|the task|;|:|,> needs a plan/harness change|task|fix" (or
+# "needs plan/harness fix") with no hedge in that sentence (PLAN_GAP_HEDGES: a negation, "but", "thought", "if",
+# "goal", "says", a quotation mark or backtick), so a denial, a doubt or a quoted task goal never matches. The attempt
+# counts and the task is BLOCKED with a reason opening with PLAN_GAP_REPORTED and an outbox item `T###-plan-gap`.
+PLAN_GAP = "plan_gap"
+PLAN_GAP_MARKER = "PLAN GAP:"
+PLAN_GAP_PHRASES = re.compile(
+    r"\b(?:a|the) plan change must\b"
+    r"|(?:^|[;:,]\s*|\b(?:T\d{3,}|it|this task|the task)\s+)needs (?:a )?(?:(?:plan|harness) (?:change|task|fix)|plan/harness fix)\b",
+    re.IGNORECASE)
+PLAN_GAP_HEDGES = re.compile(
+    r"\b(?:not|no|never|but|thought|thinks?|if|whether|maybe|might|goal|says|said)\b|n't\b|[\"`\u201c\u201d]", re.IGNORECASE)
+PLAN_GAP_SENTENCE_END = re.compile(r"\.(?:\s|$)|\n")
+PLAN_GAP_REPORTED = "plan gap reported"
+PLAN_GAP_KEPT = 600  # characters of the worker's report kept in the BLOCKED reason (the whole text goes to last_failure)
 
 
 @dataclass
 class WorkerResult:
-    """What a worker session reports. 'outcome' is one of: submitted, tests_failed,
-    usage_limit, permission_blocked, vendor_outage, or handed_off (the starting session does the
-    work itself and calls `python3 -m runner --after`; the lease stays held). A crash is an
-    exception, not a result. changed_paths, model_evidence, reviewer_evidence, usage and
-    commits_ahead are read by the runner from git and the transcripts, never from what the worker
+    """What a worker session reports. 'outcome' is one of: submitted, tests_failed, plan_gap (only a
+    plan change can unblock the task, D-2859), usage_limit, permission_blocked, vendor_outage, or
+    handed_off (the starting session does the work itself and calls `python3 -m runner --after`; the
+    lease stays held). A crash is an exception, not a result. changed_paths, model_evidence,
+    reviewer_evidence, usage and commits_ahead are read by the runner from git and the transcripts, never from what the worker
     says (BUILD_BRIEF.md:247-248). commits_ahead counts the head's commits that main lacks
     (`git rev-list --count main..head`): 0 is an empty hand-in, None unknown (D-551).
     """
@@ -318,6 +336,50 @@ def record_failure(state: State, task_id: str, reason: str) -> State:
     return st.with_task(state, task_id, status=st.QUEUED, attempts=attempts, last_failure=reason)
 
 
+def session_outcome(outcome: str, log: str) -> str:
+    """The outcome `--after` hands on (D-2859): PLAN_GAP for a `tests_failed` whose log (the session's own
+    `--log`, never a gate's output or a stored failure) opens with PLAN_GAP_MARKER, or whose first sentence
+    matches PLAN_GAP_PHRASES with no PLAN_GAP_HEDGES; any other outcome unchanged. RUNNER_WORKER_CMD's result
+    file does not pass through here: its command reports `plan_gap` itself (harmless: no session writes it)."""
+    if outcome != "tests_failed":
+        return outcome
+    text = log.strip()
+    if text.upper().startswith(PLAN_GAP_MARKER):
+        return PLAN_GAP
+    first = PLAN_GAP_SENTENCE_END.split(text, maxsplit=1)[0]
+    return PLAN_GAP if PLAN_GAP_PHRASES.search(first) and not PLAN_GAP_HEDGES.search(first) else outcome
+
+
+def record_plan_gap(state: State, task_id: str, report: str) -> State:
+    """A failed attempt whose worker reported that only a plan change can unblock the task (D-2859).
+
+    The attempt counts (the 3-attempt cap still holds), but the task is not put back on the same prompt:
+    it is BLOCKED at once, with a reason opening with PLAN_GAP_REPORTED that STATUS.md lists under "Needs
+    attention" (and an outbox item, _plan_gap_outbox), and the report kept whole as `last_failure` for the
+    attempt after the fix. `--requeue T### --plan-fix D-###` lifts it once the plan fix has merged
+    (plan_fix_precheck accepts it with attempts left); a plain `--requeue T### --reason` lifts a mistaken
+    block while attempts remain (requeue_refusal). A `resync` mark goes, as in record_failure."""
+    state = _without(state, task_id, "resync") if st.entry(state, task_id).get("resync") else state
+    attempts = int(st.entry(state, task_id).get("attempts", 0)) + 1
+    text = report.strip() or PLAN_GAP
+    reason = (f"{PLAN_GAP_REPORTED}: {text[:PLAN_GAP_KEPT]}; fix the plan (the task's kit/tasks.json entry or prompt, the "
+              f"decision in its `decisions` list), then run `python3 -m runner --requeue {task_id} --plan-fix D-### "
+              '--reason "..."` (D-2859)')
+    return st.with_task(state, task_id, status=st.BLOCKED, attempts=attempts, reason=reason, last_failure=text)
+
+
+def _plan_gap_outbox(cfg: Config, tid: str, report: str) -> None:
+    """The outbox item `T###-plan-gap` for a task BLOCKED by record_plan_gap, so the overseer hears of it in
+    the same cycle, as an owned gap is told (D-1869, D-2859)."""
+    body = (f"{tid}'s worker reported that only a plan change can unblock it; the task is BLOCKED and is not "
+            f"retried on its unchanged prompt.\n\n{report.strip()[:PLAN_GAP_KEPT * 3] or PLAN_GAP}\n\nCheck the "
+            f"cited file, owner or contradiction. If the plan is wrong, change it (the task's kit/tasks.json entry or "
+            f"prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue {tid} --plan-fix "
+            f'D-### --reason "..."`. If the report is mistaken, `python3 -m runner --requeue {tid} --reason "..."` '
+            "brings it back with the attempts it has left (D-2859).")
+    outbox.write_outbox(cfg.outbox_dir, f"{tid}-plan-gap", f"{tid}: plan gap reported, blocked for a plan fix", "blocked", body)
+
+
 NOT_OWNED = ": not owned by "  # the path-check problem of a file the plan did not list (verify.check_paths)
 
 
@@ -361,6 +423,9 @@ def _after_worker(
         return _outage(state, tid, now)
     if res.outcome == "permission_blocked":
         return st.with_task(state, tid, status=st.BLOCKED, reason=f"permission blocked: {res.log}")
+    if res.outcome == PLAN_GAP and tid != st.FIX_MAIN:
+        _plan_gap_outbox(cfg, tid, res.log)
+        return record_plan_gap(state, tid, res.log)
     if res.outcome != "submitted":
         return record_failure(state, tid, res.log or res.outcome)
     problems = verify.check_paths(res.changed_paths, task, cfg.protected, cfg.shared)
@@ -2020,7 +2085,7 @@ def requeue_refusal(state: State, tid: str, now: datetime, cfg: Config | None = 
     if int(entry.get("attempts", 0)) >= MAX_ATTEMPTS:
         return (f"{tid} has used all {MAX_ATTEMPTS} attempts; it stays BLOCKED for the end-of-build list (BUILD_BRIEF.md:540) "
                 "unless a logged plan fix changed its task entry or prompt: then --plan-fix D-### gives one more (D-677)")
-    if not str(entry.get("reason") or "").startswith(REQUEUABLE):
+    if not str(entry.get("reason") or "").startswith(REQUEUABLE) and not _plan_gap_blocked(entry):
         return f"{tid} is BLOCKED for its own work ({str(entry.get('reason'))[:120]}), not for a push, permission or proof"
     held = _requeue_blockers(state, tid, now, cfg)
     if held:
@@ -2052,7 +2117,8 @@ def requeue(state: State, tid: str, reason: str, now: datetime, by: str, cfg: Co
     """BLOCKED to QUEUED with `reason` cleared (D-583); None when refused (requeue_refusal).
 
     Only a task blocked for a cause outside its own work (a rejected push, no head, a permission
-    block, a missing stage proof) with attempts left, and only while no lease that matters is live
+    block, a missing stage proof), or BLOCKED on a plan gap its worker reported that proved mistaken
+    (record_plan_gap, D-2859; that attempt already counted), with attempts left, and only while no lease that matters is live
     (any lease with one lane; with two, see requeue_refusal, D-620). `attempts` is
     left as it is, so the 3-attempt cap holds (BUILD_BRIEF.md:271, :540); the given reason is appended
     to `last_failure` as "re-queued: ...", so the retry sees both the earlier failure and why it was
@@ -2083,8 +2149,14 @@ def plan_since(entry: dict[str, Any]) -> str | None:
     return str(last.get("started_at") or last.get("ended_at") or "") or None
 
 
+def _plan_gap_blocked(entry: dict[str, Any]) -> bool:
+    """Whether a task is BLOCKED by record_plan_gap (D-2859): only a plan fix lifts it."""
+    return entry.get("status") == st.BLOCKED and str(entry.get("reason") or "").startswith(PLAN_GAP_REPORTED)
+
+
 def plan_fix_precheck(state: State, tid: str, decision: str, now: datetime, cfg: Config | None = None) -> str:
-    """The state-only half of plan_fix_refusal (D-677): '' when main is worth reading."""
+    """The state-only half of plan_fix_refusal (D-677): '' when main is worth reading. A task with attempts
+    left passes only when it is BLOCKED on a plan gap its worker reported (_plan_gap_blocked, D-2859)."""
     if tid == st.FIX_MAIN:
         return "FIX-MAIN takes no --plan-fix; while main is red use --requeue FIX-MAIN --reason (D-1099)"
     if not any(t["id"] == tid for t in state.get("tasks", [])):
@@ -2095,7 +2167,7 @@ def plan_fix_precheck(state: State, tid: str, decision: str, now: datetime, cfg:
         return f"--plan-fix needs a decision number like D-677, not {decision[:40]!r}"
     entry = st.entry(state, tid)
     used = int(entry.get("attempts", 0))
-    if used < MAX_ATTEMPTS:
+    if used < MAX_ATTEMPTS and not _plan_gap_blocked(entry):
         return f"{tid} has attempts left ({used} of {MAX_ATTEMPTS} used); --plan-fix is only for a task that used them all"
     if any(r.get("plan_fix") == decision for r in entry.get("requeues") or []):
         return f"{tid} was already re-queued once for {decision}; a plan fix gives exactly one more attempt"
@@ -2157,7 +2229,8 @@ def requeue_plan_fix(
     (plan_fix_refusal). `attempts` stays as it is, so attempt_model keeps the attempt on Opus and its
     failure blocks the task again (record_failure); the re-queue is kept in `requeues` with the decision,
     the moment measured from (`plan_since`), main's commit then and now, and both plan fingerprints, so
-    anyone can check it."""
+    anyone can check it. A task BLOCKED on a plan gap its worker reported (record_plan_gap, D-2859) comes
+    back the same way with the attempts it has left; its failures then count as usual (record_failure)."""
     if evidence is None or plan_fix_refusal(state, tid, decision, evidence, now, cfg):
         return None
     entry = st.entry(state, tid)
