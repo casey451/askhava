@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-11T12:13:43Z by runner 285525e3134a (actions).
+Updated 2026-11-11T12:15:56Z by runner 9826ef4c3b40 (actions).
 
-**Idle since 12:10Z; 202 of 372 done; week 65% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 12:10Z; 203 of 372 done; week 65% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 202 of 372 build tasks (owner gates not counted)
+- **Tasks done:** 203 of 372 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 12:10Z (no task in progress)
 - **Week:** 65% used, 60.5M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:13Z, 0 min before this update
+- **Last run:** 12:13Z, 2 min before this update
 - **Keeper:** last ran 12:13Z, next wake 12:33Z
 
 ## Needs attention
@@ -20,7 +20,7 @@ Updated 2026-11-11T12:13:43Z by runner 285525e3134a (actions).
 |---|---|---|---|---|---|---|
 | T332 | payments (harness): a late success has its own refund trigge | BLOCKED | 1 | 11 min | 12:10Z | PLAN GAP: tests/integration/tests/late_success.rs:216 (T064's TD-FEE-12, DONE) clashes with T332's goal and D-2290 (the  |
 | T164 | quotes: one quote format per category, screened notes, and e | MERGE_PENDING | 3 | 19 min | 12:02Z | merging main into the reviewed head conflicts in app/quotes/CLAUDE.md; a resync merges it in on this attempt (D-891) |
-| T331 | payments (harness): a payment success with no readable pick  | MERGE_PENDING | 1 | 49 min | 11:35Z |  |
+| T331 | payments (harness): a payment success with no readable pick  | done | 1 | 49 min | 11:35Z |  |
 | T164 | quotes: one quote format per category, screened notes, and e | resync | 3 | 12 min | 11:31Z |  |
 | T164 | quotes: one quote format per category, screened notes, and e | check_failed | 2 | 39 min | 11:00Z |  |
 | T278 | quotes, intake and picks: the check-in, feedback and unreach | done | 1 | 29 min | 10:56Z |  |
@@ -89,7 +89,7 @@ Updated 2026-11-11T12:13:43Z by runner 285525e3134a (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 208 of 733 (28.4%) · partial 344 · unstarted 181
-**Tasks merged (throughput only):** 202 of 372
+**Tasks merged (throughput only):** 203 of 372
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -124,7 +124,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 82 of 164 done
+- stage 4: 83 of 164 done
 - stage 5: 0 of 58 done
 - stage 6: 0 of 34 done
 - stage 7: 0 of 2 done

@@ -21710,7 +21710,7 @@
      "plan_now": "625d8bc8e164f8e1564c3f8135874beadb993a53b0471e27533a4395978a61ca"
     }
    ],
-   "reviewed_sha": "6fe19ffbe2b832bc192cbf02edb885eb0b983762",
+   "reviewed_sha": "797757cde028aafda9685eeaeee276e703c13c2e",
    "review_lease": {
     "task": "T164",
     "session": "actions-43010117643",
@@ -21746,6 +21746,17 @@
      "main": "9826ef4c3b4045a43bdb640567482176d339ca12",
      "how": "hand-in",
      "at": "2026-11-11T12:02:42Z"
+    },
+    {
+     "from": "6fe19ffbe2b832bc192cbf02edb885eb0b983762",
+     "to": "797757cde028aafda9685eeaeee276e703c13c2e",
+     "main": "790d4ec251b2d7ad65ccaf0f8a397e0bd597d792",
+     "how": "runner",
+     "checks": {
+      "Ally": "success",
+      "Twin": "success"
+     },
+     "at": "2026-11-11T12:15:48Z"
     }
    ],
    "update_waiting_since": null,
@@ -28946,7 +28957,7 @@
     "T259",
     "T327"
    ],
-   "status": "MERGE_PENDING",
+   "status": "DONE",
    "attempts": 0,
    "slug": "stripe-unreadable-success-and-unmatched-warning",
    "type": "harness",
@@ -28966,13 +28977,66 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 94,
      "head_sha": "48de7e61157b1329dc66642e831828bd8cda52bb",
-     "pr": null,
-     "checks": null,
+     "pr": 478,
+     "checks": [
+      {
+       "name": "backup",
+       "conclusion": null
+      },
+      {
+       "name": "keeper",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "gate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-11T10:45:45Z",
      "ended_at": "2026-11-11T11:35:23Z",
-     "result": "MERGE_PENDING"
+     "result": "done"
     }
    ],
    "reviewed_sha": "8da4916fb67a69f50bd3bde4e9e7021111a8e046",
@@ -29009,7 +29073,17 @@
     }
    ],
    "update_waiting_since": null,
-   "update_push_failures": null
+   "update_push_failures": null,
+   "merged_sha": "790d4ec251b2d7ad65ccaf0f8a397e0bd597d792",
+   "merged_at": "2026-11-11T12:08:01Z",
+   "files": [
+    ".sqlx/query-17a776fdf68d480742379fbf5a9fb63b9b4c6cefd08d92b6b87fca88f8862661.json",
+    "app/payments/CLAUDE.md",
+    "app/payments/src/routes.rs",
+    "docs/architecture.md",
+    "docs/decisions.md",
+    "tests/integration/tests/stripe_webhook_dispatch.rs"
+   ]
   },
   {
    "id": "T337",
@@ -32368,7 +32442,7 @@
    }
   }
  },
- "updated_at": "2026-11-11T12:13:43Z",
+ "updated_at": "2026-11-11T12:15:56Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -32466,7 +32540,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "285525e3134a1c4255c19af0183bd4557347c503",
+ "runner_sha": "9826ef4c3b4045a43bdb640567482176d339ca12",
  "starter": "actions",
  "smoke_runs": [
   {
