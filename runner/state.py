@@ -9,7 +9,7 @@ Lane "1" is also kept in the old top-level `lease` key, without its "lane" field
 that knows only `lease` keeps working; `lease` is what lane "1" reads, and every writer goes
 through `with_lease`, which keeps the two in step. A state without `leases` (written before D-515)
 reads as lane "1" holding `lease`, and stays in that old shape while only lane "1" is written.
-The lane count is `lanes` in kit/runner.json (1 unless Casey sets 2, BUILD_BRIEF.md:209). A task in
+The lane count is `lanes` in kit/runner.json (1 unless a logged plan change sets more; 3 since D-2810, BUILD_BRIEF.md:209). A task in
 flight occupies its lane: a live lease, or MERGE_PENDING on the task's own `lane` (D-620, in_flight).
 Times are UTC ISO strings ending in "Z". Every function returns a new state; nothing mutates
 its argument. Keys this runner adds (D-486, kit/state_schema.json): `main_red` (falsy, or the failing
