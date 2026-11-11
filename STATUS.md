@@ -1,10 +1,10 @@
 # Ask Hava build status
 
-Updated 2026-11-11T23:27:49Z by runner 6a4287611ebc (actions).
+Updated 2026-11-11T23:27:59Z by runner 6a4287611ebc (actions).
 
-**Building: T317 in progress since 23:23Z; 215 of 378 done; week 77% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T317 in progress since 23:23Z; 216 of 378 done; week 77% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 215 of 378 build tasks (owner gates not counted)
+- **Tasks done:** 216 of 378 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T317 claimed 23:23Z, lease until 02:23Z; lane 2: T334 claimed 22:00Z, lease until 01:00Z; lane 4: T348 claimed 22:48Z, lease until 01:48Z; lane 5: T228 claimed 23:21Z, lease until 02:21Z
 - **Week:** 77% used, 31.2M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
@@ -19,7 +19,7 @@ Updated 2026-11-11T23:27:49Z by runner 6a4287611ebc (actions).
 |---|---|---|---|---|---|---|
 | T228 | businesses: leaving Ask Hava, the optional reason and what h | resync | 2 | 41 min | 23:04Z | merging main into the reviewed head conflicts in app/picks/CLAUDE.md, app/quotes/src/api.rs; a resync merges it in on th |
 | T317 | server and intake: the inbound text route applies SEC-014's  | BLOCKED | 1 | 4 min | 22:34Z | PLAN GAP: tests/integration/tests/suspension_mode.rs:69-78 (owned by T279) and app/server/tests/voice_confirm_line.rs:95 |
-| T232 | portals and businesses: the Confirm step's "Can't take it" l | MERGE_PENDING | 1 | 51 min | 22:02Z |  |
+| T232 | portals and businesses: the Confirm step's "Can't take it" l | done | 1 | 51 min | 22:02Z |  |
 | T387 | payments (harness): the branch that flaps payments coverage  | done | 1 | 90 min | 21:49Z |  |
 | T388 | picks, intake, messaging and portals: after a Confirm the ho | done | 1 | 34 min | 21:46Z |  |
 | T334 | payments: the nightly reconcile catches up after an outage f | QUEUED | 1 | 15 min | 21:21Z | Worker stopped with PLAN GAP: reconcile_open.rs:343 and :423 (T288 tests, night 0 then night 8) fail once the run reads  |
@@ -112,7 +112,7 @@ Updated 2026-11-11T23:27:49Z by runner 6a4287611ebc (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 220 of 733 (30.0%) · partial 339 · unstarted 174
-**Tasks merged (throughput only):** 215 of 378
+**Tasks merged (throughput only):** 216 of 378
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -147,7 +147,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 95 of 170 done
+- stage 4: 96 of 170 done
 - stage 5: 0 of 58 done
 - stage 6: 0 of 34 done
 - stage 7: 0 of 2 done
