@@ -12595,7 +12595,8 @@
     "T378",
     "T386",
     "T387",
-    "T390"
+    "T390",
+    "T391"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -16663,7 +16664,7 @@
     "T325",
     "T336",
     "T357",
-    "T390"
+    "T391"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -26969,17 +26970,77 @@
   },
   {
    "id": "T390",
-   "slug": "link-request-and-reply",
-   "title": "calls and server: a blocked staff call queues the LINK notice, and the main phone's \"LINK <PIN>\" reply links that phone, failing closed",
-   "goal": "Register row IC-74 (D-3079; CALL-011, CALL-003, CALL-012, CALL-025; D-1696, D-2247, D-078, D-311, D-1755): nothing in production calls `request_link` (`app/calls/src/lifecycle.rs:279`, exported by `calls::api`), and no code handles the business's \"LINK <PIN>\" reply (the inbound text route sends a business phone's text only to `phone_stopped` or the auto-reply, `app/server/src/inbound_text.rs:246`), so the LINK notice of CALL-011 is never sent and a reply to it would do nothing. After T326 (the notice names the line's stored PIN) and T357 (the last stage-4 owner of `inbound_text.rs`). Which call is \"blocked\": an unlinked phone made to enter the PIN (D-078: \"the blocked caller hears the PIN prompt\"). Its business is known only once the PIN it entered connects a line, so only then is a notice queued; a call that connects no line queues nothing, because a business picked any other way could be told the last 4 digits of another business's caller. (1) `app/calls/src/link_reply.rs` (new), through `calls::api`: `link_after_dial(db, vault, call_sid, caller, now)`, which the voice route (`answer` in `app/server/src/inbound_voice.rs`) calls after a turn answered with the dial: when the caller's party is `Party::Unlinked` (`routing::party_of`) and the CallSid's stored call start (`models::call_start`) names a line, it calls `request_link` for that line and, in the same transaction, when a notice was queued, stores one pending link for the line in `calls.link_request`: the line, its business, the caller's keyed digests under the vault's `sender-dir` index (`Vault::blind_index`, as `messaging.sender_directory` stores a linked phone), the request time and an expiry 24 hours later; never the number, its last 4 digits or the PIN (PRIV-002, D-1696). A homeowner, a linked business phone, a wrong-PIN hang-up and a repeat on the same line (`request_link`'s once-per-line rule) store nothing. A failure here is one log line naming no number, line or PIN and never changes the TwiML: the dial still answers. (2) `link_reply(conn, vault, (business, from), pin, now)`, which the inbound text route calls in the delivery's transaction for a text from a linked business phone (`Relation::Business`) that is exactly `LINK` and 4 digits (any case, surrounding spaces; any other text keeps today's path). It links only when the replying phone is the business's main phone (the owner's, CALL-012; any other phone of the business is refused) and a live pending link on an open line of that same business has a stored PIN (`pins::stored_pin`) equal to the 4 digits. Then, in one transaction: a new `businesses.staff_phone`, linked as by the owner so it works at once (BIZ-033), through `businesses::api` (`app/businesses/src/reply_link.rs`, new; one `businesses.phone_linked` audit row naming IDs only); the pending digests put in the sender directory for that phone through `messaging::api` (`app/messaging/src/sender_pending.rs`, new; a digest another phone already holds refuses the link); and the pending link used up, its digests deleted. Everything else fails closed with no change and the same outcome: a wrong PIN, the PIN of another business's line (the lookup is by the replying business), an expired or used pending link (so a replayed LINK), a closed line, no pending link. At most 3 refused LINK replies per replying phone per Arizona day (the per-call PIN count of CALL-025), counted by the phone's keyed digest, never its number; past that, every LINK from it that day is refused without the PIN being compared, so the reply is no PIN oracle. Expired and used rows are deleted when met. A LINK text gets no auto-reply and no text answer (no new customer copy; a confirmation text is listed for Casey, D-3079). (3) `migrations/0185_calls_link_request.sql` (new): the pending links and the refused-reply counts, with no number column; the app role gets only the grants the two functions use. The email's \"Link this phone\" page (`ActionKind::LinkPhone`, T148's) can call the same link step later; wiring its button is not this task's. Tests in `tests/integration/tests/link_reply.rs` (TD-CALL-23) through the served voice and inbound text routes with signed fake Twilio requests and fake numbers only. Update the `calls`, `businesses`, `messaging` and `server` `CLAUDE.md` files and `docs/decisions.md`.",
+   "slug": "link-request",
+   "title": "calls and server: a blocked staff call that connects a line queues the LINK notice and one pending link holding no number",
+   "goal": "Register row IC-74, voice side (D-3079; CALL-011, CALL-003; D-1696, D-2247, D-078, D-311): nothing in production calls `request_link` (`app/calls/src/lifecycle.rs:279`, exported by `calls::api`); the voice route answers each turn through `voice_turn`/`voice_confirm` and calls nothing after a dial (`app/server/src/inbound_voice.rs:149`), so the LINK notice of CALL-011 is never sent. The reply side (the business's \"LINK <PIN>\" text) is T391's, which builds on this task. After T326 (the notice names the line's stored PIN) and T311 (an earlier owner of `inbound_voice.rs`). Which call is \"blocked\": an unlinked phone made to enter the PIN (D-078: \"the blocked caller hears the PIN prompt\"). Its business is known only once the PIN it entered connects a line, so only then is a notice queued; a call that connects no line queues nothing, because a business picked any other way could be told the last 4 digits of another business's caller. (1) `app/calls/src/link_request.rs` (new), through `calls::api`: `link_after_dial(db, vault, call_sid, caller, now)`, which the voice route (`answer` in `app/server/src/inbound_voice.rs`) calls after a turn answered with the dial: when the caller's party is `Party::Unlinked` (`routing::party_of`) and the CallSid's stored call start (`models::call_start`) names a line, it calls `request_link` for that line and, in the same transaction, when a notice was queued, stores one pending link for the line in `calls.link_request`: the line, its business, the caller's keyed digests under the vault's `sender-dir` index (`Vault::blind_index`, as `messaging.sender_directory` stores a linked phone), the request time and an expiry time 24 hours after the request; never the number, its last 4 digits or the PIN (PRIV-002, D-1696). A pending link is live only while its expiry time is still in the future: one exactly 24 hours old is no longer live (T391 refuses it). A homeowner, a linked business phone, a wrong-PIN hang-up and a repeat on the same line (`request_link`'s once-per-line rule) store nothing. A failure here is one log line naming no number, line or PIN and never changes the TwiML: the dial still answers. (2) `migrations/0185_calls_link_request.sql` (new): `calls.link_request` (the pending links) and the refused-LINK-reply counts T391 keeps (by the replying phone's keyed digest and Arizona day), neither with a number column; the app role gets only the grants `link_after_dial` and T391's `link_reply` use (one migration for both, so T391 needs no migration number and the stage-5 block does not move again). Tests in `tests/integration/tests/link_request.rs` (TD-CALL-23) through the served voice route with signed fake Twilio requests and fake numbers only. Update the `calls` and `server` `CLAUDE.md` files and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
    "module": "calls",
    "deps": [
     "T326",
-    "T357",
     "T311"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "privacy"
+   ],
+   "owns": [
+    "app/calls/src/link_request.rs",
+    "app/server/src/inbound_voice.rs",
+    "migrations/0185_calls_link_request.sql",
+    "tests/integration/tests/link_request.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/calls.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "CALL-011",
+    "CALL-003"
+   ],
+   "tests": [
+    "TD-CALL-23"
+   ],
+   "decisions": [
+    "D-3079",
+    "D-1696",
+    "D-2247",
+    "D-078",
+    "D-311"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 350,
+    "context_pct": 11
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T390-link-request",
+   "prompt": "kit/prompts/T390.md",
+   "acceptance": "TD-CALL-23 passes against PostgreSQL through the served voice route; each of its cases fails on today's `main`; every TD-CALL-14, TD-CALL-17, TD-CALL-18 and other existing voice case passes unchanged; no table, log line, task payload or audit row holds a blocked number, its last 4 digits outside the notice, or a PIN."
+  },
+  {
+   "id": "T391",
+   "slug": "link-reply",
+   "title": "calls, businesses, messaging and server: the main phone's \"LINK <PIN>\" reply links the blocked phone, failing closed",
+   "goal": "Register row IC-74, reply side (D-3079; CALL-011, CALL-003, CALL-012, CALL-025; D-1696, D-2247, D-311, D-1755): T390 queues the LINK notice and stores one pending link (`calls.link_request`, the blocked caller's keyed `sender-dir` digests only, with an expiry time) after a blocked call connects a line, but no code handles the business's \"LINK <PIN>\" reply (the inbound text route sends a business phone's text only to `phone_stopped` or the auto-reply, `app/server/src/inbound_text.rs:246`), so a reply to the notice does nothing. After T390 (the pending links, the refused-reply counts and their grants, all in its `migrations/0185_calls_link_request.sql`) and T357 (the last earlier stage-4 owner of `inbound_text.rs`). (1) `app/calls/src/link_reply.rs` (new), through `calls::api`: `link_reply(conn, vault, (business, from), pin, now)`, which the inbound text route calls in the delivery's transaction for a text from a linked business phone (`Relation::Business`) that is exactly `LINK` and 4 digits (any case, surrounding spaces; any other text keeps today's path). It links only when the replying phone is the business's main phone (the owner's, CALL-012; any other phone of the business is refused) and a live pending link on an open line of that same business has a stored PIN (`pins::stored_pin`) equal to the 4 digits. A pending link is live only while its expiry time is still in the future (`now < expiry`), so one exactly 24 hours old is refused. Then, in one transaction: a new `businesses.staff_phone`, linked as by the owner so it works at once (BIZ-033), through `businesses::api` (`app/businesses/src/reply_link.rs`, new; one `businesses.phone_linked` audit row naming IDs only); the pending digests put in the sender directory for that phone through `messaging::api` (`app/messaging/src/sender_pending.rs`, new; a digest another phone already holds refuses the link); and the pending link used up, its digests deleted. Everything else fails closed with no change and the same outcome: a wrong PIN, the PIN of another business's line (the lookup is by the replying business), a pending link no longer live or already used (so a replayed LINK), a closed line, no pending link. At most 3 refused LINK replies per replying phone per Arizona day (the per-call PIN count of CALL-025), counted by the phone's keyed digest, never its number; past that, every LINK from it that day is refused without the PIN being compared, so the reply is no PIN oracle. Pending links no longer live and used ones are deleted when met. A LINK text gets no auto-reply and no text answer (no new customer copy; a confirmation text is listed for Casey, D-3079). The email's \"Link this phone\" page (`ActionKind::LinkPhone`, T148's) can call the same link step later; wiring its button is not this task's. (2) `app/server/src/inbound_text.rs`: the LINK branch above. Tests in `tests/integration/tests/link_reply.rs` (TD-CALL-24) through the served voice and inbound text routes with signed fake Twilio requests and fake numbers only. Update the `calls`, `businesses`, `messaging` and `server` `CLAUDE.md` files and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "calls",
+   "deps": [
+    "T390",
+    "T357"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -26992,9 +27053,7 @@
     "app/calls/src/link_reply.rs",
     "app/businesses/src/reply_link.rs",
     "app/messaging/src/sender_pending.rs",
-    "app/server/src/inbound_voice.rs",
     "app/server/src/inbound_text.rs",
-    "migrations/0185_calls_link_request.sql",
     "tests/integration/tests/link_reply.rs"
    ],
    "reads": [
@@ -27010,30 +27069,29 @@
     "CALL-025"
    ],
    "tests": [
-    "TD-CALL-23"
+    "TD-CALL-24"
    ],
    "decisions": [
     "D-3079",
     "D-1696",
     "D-2247",
-    "D-078",
     "D-311",
     "D-1755"
    ],
    "cites": [],
    "budget": {
-    "files": 7,
-    "lines": 600,
-    "context_pct": 15
+    "files": 5,
+    "lines": 500,
+    "context_pct": 13
    },
    "checks": [
     "Ci",
     "Twin",
     "Ally"
    ],
-   "branch": "claude/task/T390-link-request-and-reply",
-   "prompt": "kit/prompts/T390.md",
-   "acceptance": "TD-CALL-23 passes against PostgreSQL through the served routes; each of its cases fails on today's `main`; every TD-CALL-14, TD-CALL-17, TD-CALL-18, TD-BIZ-39 and other existing voice and inbound text case passes unchanged; no table, log line, task payload or audit row holds a blocked number, its last 4 digits outside the notice, or a PIN."
+   "branch": "claude/task/T391-link-reply",
+   "prompt": "kit/prompts/T391.md",
+   "acceptance": "TD-CALL-24 passes against PostgreSQL through the served routes; each of its cases fails on `main` with T390 merged; every TD-CALL-23, TD-BIZ-39 and other existing inbound text and voice case passes unchanged; no table, log line, task payload or audit row holds a blocked number or a PIN."
   }
  ]
 }
