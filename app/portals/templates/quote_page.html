@@ -7,7 +7,9 @@
     carries the PICK-041 "check it yourself" line (TD-PICK-18). The Pick form posts to this same
     address (the pick step is T055's). A withdrawn quote keeps its number with "Withdrawn by the
     business" and no wording or Pick button; an edited one shows "Updated <time>" and carries the
-    edit time in data-updated, so quote_page.ts swaps it (PICK-051, T384). -#}
+    edit time in data-updated, so quote_page.ts swaps it (PICK-051, T384). While the job's pick is
+    paid or free, the quote she accepted shows above the list with the contact card, no reward
+    (PICK-042, PICK-054, T388). -#}
 {% block title %}Your quotes for request {{ request }}{% endblock %}
 {% block main %}
 <h1>Your quotes for request {{ request }}</h1>
@@ -17,6 +19,17 @@
 <p>Free for you. The business you pick pays {{ askhava_core::api::brand().display_name() }} a set introduction fee.</p>
 <p>{{ askhava_core::api::brand().display_name() }} doesn't rank businesses or show ratings. Check each business yourself: its license, and its reviews on Google and Yelp.</p>
 <p>Every eligible quote shown, in the order received. #1 means first received, not first choice.</p>
+{% if let Some(a) = self.accepted() %}{% let brand = askhava_core::api::brand() %}
+<section id="accepted-quote" aria-labelledby="accepted-quote-title">
+<h2 id="accepted-quote-title">You picked quote #{{ a.number }}</h2>
+<p>Type: {{ a.kind }}</p>
+<p>Amount: {{ a.amount }}</p>
+{% if let Some(day) = a.visit %}<p>Earliest visit: {{ day }}</p>
+{% endif %}<p>In their words:</p>
+<blockquote><p>{{ a.words }}</p></blockquote>
+<p><a href="data:text/vcard;charset=utf-8,BEGIN%3AVCARD%0D%0AVERSION%3A3.0%0D%0AFN%3A{{ brand.display_name()|urlencode_strict }}%0D%0AORG%3A{{ brand.legal_name()|urlencode_strict }}%0D%0AURL%3Ahttps%3A%2F%2F{{ brand.domain()|urlencode_strict }}%0D%0AEND%3AVCARD%0D%0A" download="{{ brand.display_name().to_lowercase().replace(' ', "-") }}.vcf">Add {{ brand.display_name() }} to your contacts (contact card)</a></p>
+</section>
+{% endif %}
 <p id="quote-status" role="status" data-one="1 new quote added below." data-many="{n} new quotes added below." data-gone-one="1 quote is no longer available." data-gone-many="{n} quotes are no longer available."></p>
 {% if quotes.is_empty() %}
 <p id="no-quotes">No quotes yet. New quotes show up here as they come in, and {{ askhava_core::api::brand().display_name() }} texts you when the first one arrives.</p>

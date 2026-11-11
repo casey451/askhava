@@ -23,6 +23,7 @@
 //! SEC-015, SEC-040).
 //! Other crates reach it only through [`api`].
 
+mod accepted_quote;
 pub mod api;
 mod closing;
 mod conversation;

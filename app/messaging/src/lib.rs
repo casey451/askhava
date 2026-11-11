@@ -17,6 +17,7 @@
 //! (`business_notices`, BIZ-019, TXT-035 to TXT-037, QH-005). The outbox is the message log, and a
 //! daily task cuts any body still kept 30 days on (`retention`, TXT-019, TXT-020).
 
+mod accepted_quote_email;
 pub mod api;
 mod business_notices;
 mod checkin_email;
