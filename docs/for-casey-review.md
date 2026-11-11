@@ -2,6 +2,12 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## Six more waiting steps fixed before they start (plan change, D-3094, November 11)
+
+- **What happened.** A third check of steps still waiting in line found six that would have stopped partway or misled the worker: new homeowner emails that an older test would reject unless they are listed as outside the update-text check, a category switch that would have broken an older license-change test, a test case that already passes today and so proves nothing, and three steps told to use code they cannot reach.
+- **What changed.** Each step's instructions now name the right file or case: the opt-out emails step (T360) may add its emails to that list and runs before the "who's calling" step (T318), which also edits it; a category never stored falls back to the catalog file's on/off setting, while a switch you make always wins. No rule for homeowners or businesses changes and no test is loosened.
+- **Nothing needs you.**
+
 ## Linking a team phone by text gets an owner, and two waiting steps are trimmed (plan change, D-3079, November 11)
 
 - **What happened.** The outside review you shared found one security item with no step assigned: when someone on a business's team calls a homeowner's line from a phone the business has not added, nothing yet sends the business the "Reply LINK <PIN> to add this phone" message, and nothing handles that reply. The build cannot finish its current stage while that item has no owner. The review also found that two waiting steps were planned to load more than the allowed share of the AI's working memory.
