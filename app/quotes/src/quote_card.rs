@@ -3,8 +3,9 @@
 //!
 //! [`QuoteCard::lines`] is pure and takes no viewer, so the business preview and the homeowner's
 //! card can't differ (PICK-005). Line order: the business's public name, its license record lines
-//! (LIC-026, LIC-034, LIC-047, built by `licensing`), the Google and Yelp link slot (T165, D-491),
-//! the "check it yourself" line, WORD-014's "Independent business" line, "Gets emergency requests
+//! (LIC-026, LIC-034, LIC-047, built by `licensing`), the Google and Yelp links the business saved
+//! at sign-up ([`review_lines`], appended to the license lines when a stored card is read; T165,
+//! BIZ-052), the "check it yourself" line, WORD-014's "Independent business" line, "Gets emergency requests
 //! at night" for a business that ticked after-hours emergencies (BIZ-007), the six quote facts in
 //! their fixed order, the format's plain definition (and "Free estimate" for no trip fee, never on
 //! a visit-fee quote), then the business's own words and, only when the "AI quote summaries"
@@ -304,8 +305,25 @@ pub async fn quote_card(
     card_of(db, business, stored, source).await.map(Some)
 }
 
+/// BIZ-052, PICK-041: the business's Google and Yelp links as plain link lines ("Google",
+/// "Yelp"; the same names in Spanish), in that order, none when not given; never stars, counts or
+/// excerpts. They follow the license lines, before the "check it yourself" line.
+#[must_use]
+pub fn review_lines(links: &askhava_businesses::api::ReviewLinks) -> Vec<CardLine> {
+    [("Google", links.google()), ("Yelp", links.yelp())]
+        .into_iter()
+        .filter_map(|(text, link)| {
+            link.map(|l| CardLine {
+                text: text.to_owned(),
+                link: Some(l.to_owned()),
+            })
+        })
+        .collect()
+}
+
 /// The card of `business`'s `stored` quote, with its after-hours tick read from `businesses::api`
-/// (BIZ-007, PICK-044).
+/// (BIZ-007, PICK-044) and its saved Google and Yelp links after the license lines
+/// ([`review_lines`], BIZ-052).
 async fn card_of(
     db: &mut PgConnection,
     business: Uuid,
@@ -315,11 +333,16 @@ async fn card_of(
     let record = askhava_businesses::api::business(db, business)
         .await
         .map_err(|_| QuotesError::Business)?;
+    let links = askhava_businesses::api::review_links(db, business)
+        .await
+        .map_err(|_| QuotesError::Business)?;
     let mut facts = source.facts;
     facts.earliest_visit = stored.earliest_visit.unwrap_or(facts.earliest_visit);
+    let mut license_lines = source.license_lines;
+    license_lines.extend(review_lines(&links));
     Ok(QuoteCard {
         business_name: source.business_name,
-        license_lines: source.license_lines,
+        license_lines,
         after_hours: record.after_hours,
         format: stored.format,
         facts,
