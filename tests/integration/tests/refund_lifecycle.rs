@@ -56,6 +56,15 @@ fn answer_for(id: &str, status: &str, intent: &str) -> StripeRefund {
     }
 }
 
+/// The webhook's re-read of `id`: `succeeded`, the full $75 in `usd` (D-3018).
+fn read(raw: &StripeRefund) -> Refund {
+    Refund::checked(raw.clone(), None).expect("refund")
+}
+
+fn re(id: &str) -> StripeRefund {
+    answer(id, "succeeded")
+}
+
 fn stripe(script: &[(&str, &str)]) -> FakeStripe {
     let answers = script.iter().map(|(id, s)| Ok(answer(id, s))).collect();
     FakeStripe {
@@ -300,9 +309,15 @@ async fn td_fee_42_pending_then_succeeded_on_the_webhook(pool: PgPool) {
         .await
         .expect("run");
     assert_eq!(ledger(&pool, "refund").await, 1);
-    assert_eq!(refund_succeeded(&pool, "re_FakeA", at(60)).await, Ok(true));
+    assert_eq!(
+        refund_succeeded(&pool, &read(&re("re_FakeA")), at(60)).await,
+        Ok(true)
+    );
     for again in ["re_FakeA", "re_FakeUnknown"] {
-        assert_eq!(refund_succeeded(&pool, again, at(90)).await, Ok(false));
+        assert_eq!(
+            refund_succeeded(&pool, &read(&re(again)), at(90)).await,
+            Ok(false)
+        );
     }
     assert_eq!(ledger(&pool, "refund").await, 1);
     let view = money_view(&pool, (at(-999 * DAY), at(999 * DAY)))
