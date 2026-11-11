@@ -93,3 +93,15 @@ def test_usage_source_carries_a_note_and_a_session_reading_is_allowed() -> None:
     assert not [p for p in cs.check(base) if "session_reading" in p]
     base["usage"]["session_reading"] = {"week": {}}
     assert any("session_reading" in p for p in cs.check(base))
+
+
+def test_every_update_merge_kind_the_runner_writes_is_valid() -> None:
+    """runner/cycle.py writes `how` as "runner", "adopted" and, since D-2798, "hand-in"; the schema must accept
+    each, or every later cycle stops with state_invalid (D-2870). An unknown kind is still refused."""
+    for how in ("runner", "adopted", "hand-in"):
+        state = base()
+        state["tasks"][0]["update_merges"] = [{"from": "a1", "to": "b2", "main": "c3", "how": how, "at": "2026-01-01T00:00:00Z"}]
+        assert cs.check(state) == [], how
+    state = base()
+    state["tasks"][0]["update_merges"] = [{"from": "a1", "to": "b2", "how": "guessed", "at": "2026-01-01T00:00:00Z"}]
+    assert any("update_merges[0].how" in p for p in cs.check(state))
