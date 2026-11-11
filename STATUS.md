@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T18:46:54Z by runner 82e788ae1c2d (manual).
+Updated 2026-11-11T18:52:11Z by runner 82e788ae1c2d (actions).
 
 **Building: T228 in progress since 17:51Z; 211 of 374 done; week 72% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-11T18:46:54Z by runner 82e788ae1c2d (manual).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T228 claimed 17:51Z, lease until 20:51Z; lane 2: T332 claimed 18:28Z, lease until 21:28Z; lane 4: T316 claimed 18:35Z, lease until 21:35Z
 - **Week:** 72% used, 42.6M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:46Z, 0 min before this update
+- **Last run:** 18:47Z, 5 min before this update
 - **Keeper:** last ran 18:45Z, next wake 20:53Z
 
 ## Needs attention
@@ -71,6 +71,7 @@ Updated 2026-11-11T18:46:54Z by runner 82e788ae1c2d (manual).
 | T311 | calls and server: a voice read-back confirm connects only th | check_failed | 1 | 21 min | 18:54Z |  |
 
 ### Plan and harness merges on main
+- 18:49Z Plan: five lanes (D-3043) (#504)
 - 18:37Z Plan: T387 steadies payments branch coverage and adds margin, claimed first (D-3049) (#507)
 - 15:44Z Plan: T214 owns the final-Pick share box end to end and ticks it in five finished tests (D-3032) (#495)
 - 15:02Z Plan: T333 may book the webhook refund amount and hold the refunded notice on an unchecked refund (D-3018) (#487)
@@ -143,7 +144,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 91 of 165 done
+- stage 4: 91 of 166 done
 - stage 5: 0 of 58 done
 - stage 6: 0 of 34 done
 - stage 7: 0 of 2 done
