@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T03:36:15Z by runner 24f3182faebb (actions).
+Updated 2026-11-11T03:47:28Z by runner 24f3182faebb (actions).
 
 **Building: T209 in progress since 03:10Z; 194 of 362 done; week 58% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-11T03:36:15Z by runner 24f3182faebb (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T209 claimed 03:10Z, lease until 06:10Z
 - **Week:** 58% used, 80.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:36Z, 0 min before this update
+- **Last run:** 03:36Z, 11 min before this update
 - **Keeper:** last ran 03:36Z, next wake 06:13Z
 
 ## Needs attention
@@ -38,9 +38,9 @@ Updated 2026-11-11T03:36:15Z by runner 24f3182faebb (actions).
 | T289 | jobs tests: the refused-move test counts its one bug log the | done | 1 | 44 min | 07:52Z |  |
 | T288 | payments: a Stripe charge the nightly reconcile cannot settl | done | 1 | 60 min | 06:30Z |  |
 | T286 | server: every request has a whole-request time limit, answer | done | 1 | 26 min | 04:57Z |  |
-| T285 | runner: a task closes with a visible mark when a file it own | done | 1 | 19 min | 03:45Z |  |
 
 ### Plan and harness merges on main
+- 03:41Z Plan: fix tasks from the Nov 11 vendor-double review (D-2760–D-2770) (#446)
 - 03:25Z Harness: CI speed — cache saves on main only, pytest in its own job, C YAML loader (D-2782) (#449)
 - 01:56Z Harness: the test suite drops the live job's smoke switch and run ids (D-2660) (#441)
 - 01:46Z Plan: fix tasks from the Nov 11 businesses and catalog review (D-2700–D-2712) (#442)
