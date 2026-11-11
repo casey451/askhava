@@ -1,24 +1,24 @@
 # Ask Hava build status
 
-Updated 2026-11-10T23:40:27Z by runner f33177e31705 (actions).
+Updated 2026-11-11T00:03:42Z by runner 5a57f2e1b7f9 (actions).
 
-**Idle since 23:39Z; 190 of 336 done; week 53% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 23:48Z; 191 of 336 done; week 53% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 190 of 336 build tasks (owner gates not counted)
+- **Tasks done:** 191 of 336 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 23:39Z (no task in progress)
+- **Lane:** idle since 23:48Z (no task in progress)
 - **Week:** 53% used, 89.4M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:40Z, 0 min before this update
+- **Last run:** 23:40Z, 23 min before this update
 - **Keeper:** last ran 23:40Z, next wake 00:00Z
 
 ## Needs attention
-- Strict plan check red: 4 problem(s) on tasks still to run (+23 on DONE tasks); first: T207: stored context_pct 12% but it measures 17%; regenerate
+- Strict plan check red: 4 problem(s) on tasks still to run (+24 on DONE tasks); first: T207: stored context_pct 12% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T207 | businesses: re-apply the license map when a daily list chang | MERGE_PENDING | 1 | 41 min | 23:39Z |  |
-| T311 | calls and server: a voice read-back confirm connects only th | MERGE_PENDING | 2 | 33 min | 23:21Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
+| T311 | calls and server: a voice read-back confirm connects only th | done | 2 | 33 min | 23:21Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T338 | adapters (harness): the refused-connection test holds its po | done | 1 | 24 min | 20:45Z |  |
 | T155 | businesses: sign-up capability setup pre-ticked from the lic | done | 1 | 57 min | 20:15Z |  |
 | T311 | calls and server: a voice read-back confirm connects only th | check_failed | 1 | 21 min | 18:54Z |  |
@@ -60,7 +60,7 @@ Updated 2026-11-10T23:40:27Z by runner f33177e31705 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 236 of 733 (32.2%) · partial 305 · unstarted 192
-**Tasks merged (throughput only):** 190 of 336
+**Tasks merged (throughput only):** 191 of 336
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -95,7 +95,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 70 of 137 done
+- stage 4: 71 of 137 done
 - stage 5: 0 of 53 done
 - stage 6: 0 of 30 done
 - stage 7: 0 of 2 done
