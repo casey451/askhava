@@ -28440,7 +28440,7 @@
      "result": "MERGE_PENDING"
     }
    ],
-   "reviewed_sha": "e10d697b10407b8d66961f6a28b18bc51f83706c",
+   "reviewed_sha": "14d5796b38d73d00a668a3ddce0d639652052287",
    "review_lease": {
     "task": "T327",
     "session": "actions-42987119900",
@@ -28460,6 +28460,18 @@
      "main": "ea7b57e0aac03c4061b9ec51fe0e3a7a51032554",
      "how": "hand-in",
      "at": "2026-11-11T09:38:37Z"
+    },
+    {
+     "from": "e10d697b10407b8d66961f6a28b18bc51f83706c",
+     "to": "14d5796b38d73d00a668a3ddce0d639652052287",
+     "main": "722416045b2b9a891585549e8cceddac03522190",
+     "how": "runner",
+     "checks": {
+      "Ci": "success",
+      "Ally": "success",
+      "Twin": "success"
+     },
+     "at": "2026-11-11T09:56:15Z"
     }
    ],
    "update_waiting_since": null,
@@ -28652,7 +28664,7 @@
      "plan_now": "0b8a52c51aedd500f7b6fe6ae1ae376c77e3cadec628e3095f7043e529084c0f"
     }
    ],
-   "reviewed_sha": "3f20b2a325e9aedd89ca3e6e1f81b1463a6c1ff7",
+   "reviewed_sha": "c400f8af96ac20ad610e4e6411b430063de1cab6",
    "review_lease": {
     "task": "T337",
     "session": "actions-42993515316",
@@ -28672,6 +28684,17 @@
      "main": "6b803a362f31833eb87d7ee62bdfcdc182f3b229",
      "how": "hand-in",
      "at": "2026-11-11T09:49:37Z"
+    },
+    {
+     "from": "3f20b2a325e9aedd89ca3e6e1f81b1463a6c1ff7",
+     "to": "c400f8af96ac20ad610e4e6411b430063de1cab6",
+     "main": "722416045b2b9a891585549e8cceddac03522190",
+     "how": "runner",
+     "checks": {
+      "Ally": "success",
+      "Twin": "success"
+     },
+     "at": "2026-11-11T09:56:15Z"
     }
    ],
    "update_waiting_since": null,
@@ -31770,7 +31793,7 @@
    }
   }
  },
- "updated_at": "2026-11-11T09:56:19Z",
+ "updated_at": "2026-11-11T09:56:36Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
