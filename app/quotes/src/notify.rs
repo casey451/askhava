@@ -20,7 +20,7 @@ use sqlx::PgConnection;
 use sqlx::types::Uuid;
 
 use crate::intake::{DayPart, Period, Price};
-use crate::models::{self, QuotesError};
+use crate::models::{self, ListRow, QuotesError};
 
 /// The least gap between two quote texts on one job, measured from the delivery of the previous
 /// one (TXT-017, D-012). The gap is a setting; this is its default.
@@ -287,27 +287,46 @@ fn hourly(rate: u64, hours: Option<(u32, u32)>, es: bool) -> String {
     }
 }
 
-/// "Nov 9, evening" in the reader's language (TXT-031, PICK-040).
-fn visit(date: Date, part: DayPart, es: bool) -> String {
+/// "Nov 9" ("9 nov" in Spanish), the day of `date` (TXT-031, PICK-040, PICK-051).
+fn month_day(date: Date, es: bool) -> String {
     const EN: [&str; 12] = [
         "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
     ];
     const ES: [&str; 12] = [
         "ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic",
     ];
-    let i = usize::try_from(date.month() - 1).unwrap_or_default();
-    let (months, parts) = if es {
-        (ES, ["mañana", "tarde", "noche", "esta noche"])
+    let i = usize::try_from(date.month() - 1)
+        .unwrap_or_default()
+        .min(11);
+    if es {
+        format!("{} {}", date.day(), ES[i])
     } else {
-        (EN, ["morning", "afternoon", "evening", "tonight"])
-    };
-    let day = format!("{} {}", months[i.min(11)], date.day());
-    let day = if es {
-        format!("{} {}", date.day(), months[i.min(11)])
+        format!("{} {}", EN[i], date.day())
+    }
+}
+
+/// "Nov 9, evening" in the reader's language (TXT-031, PICK-040).
+fn visit(date: Date, part: DayPart, es: bool) -> String {
+    let parts = if es {
+        ["mañana", "tarde", "noche", "esta noche"]
     } else {
-        day
+        ["morning", "afternoon", "evening", "tonight"]
     };
-    format!("{day}, {}", parts[part as usize])
+    format!("{}, {}", month_day(date, es), parts[part as usize])
+}
+
+/// PICK-051, TXT-033: "Updated Nov 3, 9:15 a.m. Arizona time" ("Actualizada el 3 nov, 9:15 a.m.
+/// hora de Arizona"), the line an edited quote shows on the quote page and its card. Arizona keeps
+/// UTC-7 all year, so the time needs no zone database and can't fail.
+#[must_use]
+pub fn updated_line(at: Timestamp, es: bool) -> String {
+    let az = at.to_zoned(jiff::tz::TimeZone::fixed(jiff::tz::offset(-7)));
+    let day = month_day(az.date(), es);
+    if es {
+        format!("Actualizada el {day}, {} hora de Arizona", clock(&az))
+    } else {
+        format!("Updated {day}, {} Arizona time", clock(&az))
+    }
 }
 
 /// One LIST line: its number, the business, the amount and the earliest visit (TXT-031).
@@ -326,6 +345,53 @@ fn list_line(n: usize, item: &Listed, es: bool) -> String {
     }
 }
 
+/// One numbered LIST line: a pickable quote, or a withdrawn one's number (PICK-051).
+enum Line {
+    /// A quote she can pick.
+    Quote(Listed),
+    /// A quote its business withdrew: its number and "Withdrawn by the business", no name or price.
+    Withdrawn,
+}
+
+/// PICK-051, TXT-001: "2. Withdrawn by the business." ("2. Retirada por el negocio.").
+fn withdrawn_line(n: usize, es: bool) -> String {
+    if es {
+        format!("{n}. Retirada por el negocio.")
+    } else {
+        format!("{n}. Withdrawn by the business.")
+    }
+}
+
+/// TXT-031, PICK-051: the LIST texts for `lines`, each with its own number, at most [`LIST_PAGE`]
+/// lines a text, each text ending with the "2 YES" line, the share sentence and the Terms line. No
+/// pickable line makes no text, so a "2 YES" line never goes with nothing to pick.
+fn numbered_texts(
+    reader: Reader,
+    job: &str,
+    lines: &[(usize, Line)],
+) -> Result<Vec<String>, QuotesError> {
+    if !lines.iter().any(|(_, l)| matches!(l, Line::Quote(_))) {
+        return Ok(Vec::new());
+    }
+    let es = reader.language() == Language::Es;
+    lines
+        .chunks(LIST_PAGE)
+        .map(|chunk| {
+            let words: Vec<String> = chunk
+                .iter()
+                .map(|(n, line)| match line {
+                    Line::Quote(item) => list_line(*n, item, es),
+                    Line::Withdrawn => withdrawn_line(*n, es),
+                })
+                .collect();
+            let head = text("quote_list", reader, &[("job", job)])?.body;
+            let end = text("quote_list_end", reader, &[])?.body;
+            let end = end.strip_prefix(&prefix(reader.language())).unwrap_or(&end);
+            Ok(format!("{head}\n{}\n{end}", words.join("\n")))
+        })
+        .collect()
+}
+
 /// TXT-031, D-239, D-290, D-358, D-420, D-443, D-446: the pickable quotes in the order given (arrival
 /// order), numbered from 1, at most [`LIST_PAGE`] to a text; every text ends with the "2 YES" line,
 /// the share sentence and the Terms line (PICK-016). Twelve quotes make two texts, numbered 1 to 10
@@ -339,31 +405,24 @@ pub fn list_texts_from(
     job: &str,
     items: &[Listed],
 ) -> Result<Vec<String>, QuotesError> {
-    let es = reader.language() == Language::Es;
-    items
-        .chunks(LIST_PAGE)
+    let lines: Vec<(usize, Line)> = items
+        .iter()
         .enumerate()
-        .map(|(page, chunk)| {
-            let lines: Vec<String> = chunk
-                .iter()
-                .enumerate()
-                .map(|(i, item)| list_line(page * LIST_PAGE + i + 1, item, es))
-                .collect();
-            let head = text("quote_list", reader, &[("job", job)])?.body;
-            let end = text("quote_list_end", reader, &[])?.body;
-            let end = end.strip_prefix(&prefix(reader.language())).unwrap_or(&end);
-            Ok(format!("{head}\n{}\n{end}", lines.join("\n")))
-        })
-        .collect()
+        .map(|(i, item)| (i + 1, Line::Quote(item.clone())))
+        .collect();
+    numbered_texts(reader, job, &lines)
 }
 
-/// TXT-031, PICK-002: [`list_texts_from`] for the job's pickable quotes (confirmed, not withdrawn,
-/// not marked unavailable), in arrival order, naming each business from `names`.
+/// TXT-031, PICK-002, PICK-051, D-084: the LIST texts for the job's confirmed quotes in arrival
+/// order, each line numbered by the quote's place on the quote page (the number "<n> YES" picks):
+/// a quote marked unavailable is left out with its number skipped, a withdrawn one keeps its line
+/// as "Withdrawn by the business" with no name or price, and each pickable one is named from
+/// `names` (a withdrawn one needs no name). No pickable quote makes no text.
 ///
 /// # Errors
 ///
-/// [`QuotesError::Database`], or [`QuotesError::Business`] when a quote's business has no name in
-/// `names`, or [`QuotesError::Text`].
+/// [`QuotesError::Database`], or [`QuotesError::Business`] when a pickable quote's business has no
+/// name in `names`, or [`QuotesError::Text`].
 pub async fn list_texts(
     db: &mut PgConnection,
     (job_id, job): (Uuid, &str),
@@ -371,18 +430,23 @@ pub async fn list_texts(
     names: &[(Uuid, String)],
 ) -> Result<Vec<String>, QuotesError> {
     let rows = models::list_rows(db, job_id).await?;
-    let items: Result<Vec<Listed>, QuotesError> = rows
-        .into_iter()
-        .map(|r| {
-            let name = names.iter().find(|(id, _)| *id == r.business);
-            Ok(Listed {
-                name: name.ok_or(QuotesError::Business)?.1.clone(),
-                price: r.price,
-                earliest_visit: r.earliest_visit,
-            })
-        })
-        .collect();
-    list_texts_from(reader, job, &items?)
+    let mut lines = Vec::new();
+    for (i, row) in rows.into_iter().enumerate() {
+        let line = match row {
+            ListRow::Unavailable => continue,
+            ListRow::Withdrawn => Line::Withdrawn,
+            ListRow::Pickable(p) => {
+                let name = names.iter().find(|(id, _)| *id == p.business);
+                Line::Quote(Listed {
+                    name: name.ok_or(QuotesError::Business)?.1.clone(),
+                    price: p.price,
+                    earliest_visit: p.earliest_visit,
+                })
+            }
+        };
+        lines.push((i + 1, line));
+    }
+    numbered_texts(reader, job, &lines)
 }
 
 /// TXT-031, D-239: with more than one job in Quotes ready the homeowner is first asked which job,

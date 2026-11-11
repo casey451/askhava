@@ -24,6 +24,8 @@ fn quote(id: u128, minute: i64) -> PageQuote {
         received_at: base() + SignedDuration::from_mins(minute),
         unavailable: false,
         original: format!("Sample wording {id}"),
+        withdrawn: false,
+        updated_at: None,
     }
 }
 

@@ -2226,3 +2226,9 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **What changed.** The quote form now shows only the price boxes for the job type's one format, with the same plain definition the homeowner sees. A price per visit must say how often (weekly, every two weeks, monthly, every 3 months or once a year), or the business picks "Other: enter the monthly amount". A note to the homeowner is limited to 300 characters and comes back with the reason if it holds a phone number, link, email, or a line like "text me", "Venmo" or "cash discount". Before any pick a business can change or withdraw its quote from the job page; after a pick it can't. A changed quote keeps its place in line.
 - **Still to come.** The homeowner seeing "Updated" or "Withdrawn by the business" is the next step (T384). The AI check on notes is ready to plug in but has no AI behind it yet.
 - **Nothing needs you now.**
+
+## T384: the homeowner sees a changed or withdrawn quote (D-2987 to D-2990)
+
+- **What changed.** When a business changes its quote before any pick, the homeowner's quote page and the quote card show "Updated Nov 3, 9:15 a.m. Arizona time", and the quote keeps its number. A withdrawn quote keeps its number and place, says "Withdrawn by the business" and has no Pick button; no one can pick it by page, by "2 YES" text or as a backup. The LIST text now numbers each line with the quote's page number, so "2 YES" always picks the quote shown as 2 (before, after a failed pick the list could renumber and "2 YES" could pick a different business).
+- **One thing you may want changed.** The LIST text ends "for example 2 YES" whatever quote 2 is, even when quote 2 was withdrawn. It is a fixed line from an earlier step; changing it to name a quote she can pick would be a small later task.
+- **Nothing needs you now.**
