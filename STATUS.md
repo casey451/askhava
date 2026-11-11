@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-11T01:03:57Z by runner 5fd99b773188 (actions).
+Updated 2026-11-11T01:11:59Z by runner 5fd99b773188 (actions).
 
-**Building: T157 in progress since 01:03Z; 192 of 354 done; week 54% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T157 in progress since 01:03Z; 193 of 354 done; week 54% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 192 of 354 build tasks (owner gates not counted)
+- **Tasks done:** 193 of 354 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T157 claimed 01:03Z, lease until 04:03Z
 - **Week:** 54% used, 86.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:57Z, 6 min before this update
+- **Last run:** 01:04Z, 7 min before this update
 - **Keeper:** last ran 00:57Z, next wake 01:17Z
 
 ## Needs attention
@@ -17,7 +17,7 @@ Updated 2026-11-11T01:03:57Z by runner 5fd99b773188 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T349 | calls: a PIN draw fails only when the OS source fails, and o | MERGE_PENDING | 1 | 36 min | 00:40Z |  |
+| T349 | calls: a PIN draw fails only when the OS source fails, and o | done | 1 | 36 min | 00:40Z |  |
 | T207 | businesses: re-apply the license map when a daily list chang | done | 1 | 41 min | 23:39Z |  |
 | T311 | calls and server: a voice read-back confirm connects only th | done | 2 | 33 min | 23:21Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T338 | adapters (harness): the refused-connection test holds its po | done | 1 | 24 min | 20:45Z |  |
@@ -59,7 +59,7 @@ Updated 2026-11-11T01:03:57Z by runner 5fd99b773188 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 212 of 733 (28.9%) · partial 330 · unstarted 191
-**Tasks merged (throughput only):** 192 of 354
+**Tasks merged (throughput only):** 193 of 354
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -94,7 +94,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 72 of 152 done
+- stage 4: 73 of 152 done
 - stage 5: 0 of 56 done
 - stage 6: 0 of 30 done
 - stage 7: 0 of 2 done
