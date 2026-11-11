@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-11T17:20:12Z by runner cfd8d0d5711b (actions).
+Updated 2026-11-11T17:20:29Z by runner cfd8d0d5711b (actions).
 
-**Building: T333 in progress since 16:47Z; 208 of 373 done; week 70% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 17:20Z; 208 of 373 done; week 70% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 208 of 373 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 4: T333 claimed 16:47Z, lease until 19:47Z
+- **Lane:** idle since 17:20Z (no task in progress)
 - **Week:** 70% used, 46.9M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 17:19Z, 0 min before this update
 - **Keeper:** last ran 17:19Z, next wake 19:50Z
@@ -19,6 +19,7 @@ Updated 2026-11-11T17:20:12Z by runner cfd8d0d5711b (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T333 | payments (harness): a succeeded refund is recorded at the am | MERGE_PENDING | 2 | 32 min | 17:20Z | PLAN GAP: app/payments/src/routes.rs:412 (T259) and app/payments/src/refund_state.rs:34 (T270) / app/picks/src/unreachab |
 | T272 | portals: the sign-in link cap and the code-try cap are atomi | MERGE_PENDING | 1 | 27 min | 17:17Z |  |
 | T165 | businesses: business name, Google and Yelp links and license | MERGE_PENDING | 1 | 18 min | 17:05Z | merging main into the reviewed head conflicts in app/portals/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T214 | picks (harness): the homeowner's share box at the pick and t | done | 3 | 45 min | 16:44Z | PLAN GAP: tests/integration/tests/page_pick.rs:131 and tests/security/tests/page_pick_privacy.rs:224 (both T246's; page_ |
@@ -32,7 +33,7 @@ Updated 2026-11-11T17:20:12Z by runner cfd8d0d5711b (actions).
 | T269 | portals: a business notice's signed link opens sign-in for t | check_failed | 1 | 20 min | 14:19Z |  |
 | T384 | quotes and portals: the homeowner sees an edited quote as up | check_failed | 1 | 40 min | 13:40Z |  |
 | T214 | picks (harness): the homeowner's share box at the pick and t | BLOCKED | 1 | 15 min | 13:19Z |  |
-| T333 | payments (harness): a succeeded refund is recorded at the am | BLOCKED | 1 | 50 min | 13:14Z | PLAN GAP: app/payments/src/routes.rs:412 (T259) and app/payments/src/refund_state.rs:34 (T270) / app/picks/src/unreachab |
+| T333 | payments (harness): a succeeded refund is recorded at the am | BLOCKED | 1 | 50 min | 13:14Z |  |
 | T332 | payments (harness): a late success has its own refund trigge | BLOCKED | 2 | 2 min | 12:40Z |  |
 | T332 | payments (harness): a late success has its own refund trigge | BLOCKED | 1 | 11 min | 12:10Z |  |
 | T164 | quotes: one quote format per category, screened notes, and e | done | 3 | 19 min | 12:02Z | merging main into the reviewed head conflicts in app/quotes/CLAUDE.md; a resync merges it in on this attempt (D-891) |
@@ -149,7 +150,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 4: T333 (lease until 2026-11-11T19:47:34Z)
 
 ## Last usage reading
-- {"task": "T272", "at": "2026-11-11T17:17:34Z", "input_tokens": 285, "output_tokens": 128325, "cache_creation_input_tokens": 427997, "cache_read_input_tokens": 15626946}
+- {"task": "T333", "at": "2026-11-11T17:20:10Z", "cache_read_input_tokens": 18699527, "output_tokens": 117906, "cache_creation_input_tokens": 453119, "input_tokens": 300}
