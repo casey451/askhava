@@ -29435,8 +29435,8 @@
     "T258",
     "T331"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "BLOCKED",
+   "attempts": 1,
    "slug": "refund-amount-checked",
    "type": "harness",
    "stage": "4",
@@ -29448,6 +29448,23 @@
     2973,
     2974,
     2975
+   ],
+   "reason": "plan gap reported: PLAN GAP: app/payments/src/routes.rs:412 (T259) and app/payments/src/refund_state.rs:34 (T270) / app/picks/src/unreachable_refund.rs:306 (T191, T270). kit/prompts/T333.md:23-26 owns only refunds.rs, refund_stripe.rs, refund_lifecycle.rs, refund_amounts.rs. routes.rs calls refund_succeeded(pool, re, now) without the amount, so a webhook-driven success is booked at the full charge unchecked; picks sends the refunded email when refund_state reads Succeeded, so a mismatched or foreign-currency refund can still send the notice. Reviewer confirmed both lie in files T333 does not own. Rest of T333 co; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T333 --plan-fix D-### --reason \"...\"` (D-2859)",
+   "last_failure": "PLAN GAP: app/payments/src/routes.rs:412 (T259) and app/payments/src/refund_state.rs:34 (T270) / app/picks/src/unreachable_refund.rs:306 (T191, T270). kit/prompts/T333.md:23-26 owns only refunds.rs, refund_stripe.rs, refund_lifecycle.rs, refund_amounts.rs. routes.rs calls refund_succeeded(pool, re, now) without the amount, so a webhook-driven success is booked at the full charge unchecked; picks sends the refunded email when refund_state reads Succeeded, so a mismatched or foreign-currency refund can still send the notice. Reviewer confirmed both lie in files T333 does not own. Rest of T333 committed (3c88e306), smoke and prehandin green.",
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 151,
+     "head_sha": "3c88e3069c4ae9343e482ca28fd201df3273f9be",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-11T12:24:00Z",
+     "ended_at": "2026-11-11T13:14:47Z",
+     "result": "BLOCKED"
+    }
    ]
   },
   {
@@ -30696,12 +30713,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T332",
-   "at": "2026-11-11T12:40:38Z",
-   "cache_read_input_tokens": 2286102,
-   "output_tokens": 20434,
-   "cache_creation_input_tokens": 211636,
-   "input_tokens": 86
+   "task": "T333",
+   "at": "2026-11-11T13:14:47Z",
+   "input_tokens": 333,
+   "cache_creation_input_tokens": 570378,
+   "output_tokens": 117712,
+   "cache_read_input_tokens": 15326493
   },
   "source": "session_reading 2026-11-11T12:42:42Z (week)",
   "by_task": {
@@ -32570,7 +32587,12 @@
    },
    "T333": {
     "estimated_bytes": 531964,
-    "estimated_tokens": 2881307
+    "estimated_tokens": 2881307,
+    "input_tokens": 333,
+    "cache_creation_input_tokens": 570378,
+    "output_tokens": 117712,
+    "cache_read_input_tokens": 15326493,
+    "last_model": "claude-opus-5-5"
    },
    "T384": {
     "estimated_bytes": 619217,
@@ -32584,11 +32606,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-11T09:49:36Z",
-    "tokens": 12042666
+    "tokens": 14263738
    },
    "week": {
     "start": "2026-11-05T19:01:47Z",
-    "tokens": 304750712
+    "tokens": 306971784
    }
   },
   "session_reading": {
@@ -32599,7 +32621,7 @@
    }
   }
  },
- "updated_at": "2026-11-11T13:03:56Z",
+ "updated_at": "2026-11-11T13:14:47Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -32697,7 +32719,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "8eba59454470d8ffc8b21fa996ae8b3d1496a694",
+ "runner_sha": "3c88e3069c4ae9343e482ca28fd201df3273f9be",
  "starter": "actions",
  "smoke_runs": [
   {
