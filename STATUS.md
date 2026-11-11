@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T16:50:01Z by runner a7b2897013c1 (actions).
+Updated 2026-11-11T16:50:41Z by runner 877da5613137 (manual).
 
 **Building: T272 in progress since 16:49Z; 207 of 373 done; week 70% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,26 +8,10 @@ Updated 2026-11-11T16:50:01Z by runner a7b2897013c1 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T272 claimed 16:49Z, lease until 19:49Z; lane 2: T165 claimed 16:47Z, lease until 19:47Z; lane 4: T333 claimed 16:47Z, lease until 19:47Z
 - **Week:** 70% used, 46.9M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:47Z, 2 min before this update
+- **Last run:** 16:50Z, 0 min before this update
 - **Keeper:** last ran 16:45Z, next wake 17:05Z
 
 ## Needs attention
-- BLOCKED T332: Ci: failure; Ally: failure; E2e: failure
-Ally failed at step: Chromium and its system libraries
-E: Failed to fetch https://security.ubuntu.com/ubuntu/pool/universe/u/unifont/fonts-unifont_16.0.04-1build1_all.deb  Temporary failure resolving 'security.ubuntu.com'
-E: Failed to fetch https://security.ubuntu.com/ubuntu/pool/universe/f/fonts-wqy-zenhei/fonts-wqy-zenhei_0.9.45-8build1_all.deb  Temporary failure resolving 'security.ubuntu.com'
-E: Failed to fetch https://security.ubuntu.com/ubuntu/pool/main/x/xfonts-encodings/xfonts-encodings_1.0.5-0ubuntu3_all.deb  Temporary failure resolving 'security.ubuntu.com'
-E: Failed to fetch https://security.ubuntu.com/ubuntu/pool/main/x/xfonts-utils/xfonts-utils_7.7%2b7build1_amd64v3.deb  Temporary failure resolving 'security.ubuntu.com'
-E: Failed to fetch https://security.ubuntu.com/ubuntu/pool/universe/x/xfonts-cyrillic/xfonts-cyrillic_1.0.5%2bnmu1build1_all.deb  Temporary failure resolving 'security.ubuntu.com'
-E: Failed to fetch https://security.ubuntu.com/ubuntu/pool/universe/x/xfonts-scalable/xfonts-scalable_1.0.3-1.3build1_all.deb  Temporary failure resolving 'security.ubuntu.com'
-E: Unable to fetch some archives, maybe run apt update or try with --fix-missing?
-Failed to install browsers
-Error: Installation process exited with code: 100
-##[error]Process completed with exit code 1.
-E2e failed at step: Chromium and its system libraries
-Error: Installation process exited with code: 100
-##[error]Process completed with exit code 1.
-Ci fai
 - Strict plan check red: 22 problem(s) on tasks still to run (+40 on DONE tasks); first: T340: stored context_pct 35% but it measures 39%; regenerate
 
 ## Last 24 hours
