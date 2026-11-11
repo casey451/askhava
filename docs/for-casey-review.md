@@ -2225,6 +2225,13 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 
 - **What changed.** The quote form now shows only the price boxes for the job type's one format, with the same plain definition the homeowner sees. A price per visit must say how often (weekly, every two weeks, monthly, every 3 months or once a year), or the business picks "Other: enter the monthly amount". A note to the homeowner is limited to 300 characters and comes back with the reason if it holds a phone number, link, email, or a line like "text me", "Venmo" or "cash discount". Before any pick a business can change or withdraw its quote from the job page; after a pick it can't. A changed quote keeps its place in line.
 - **Still to come.** The homeowner seeing "Updated" or "Withdrawn by the business" is the next step (T384). The AI check on notes is ready to plug in but has no AI behind it yet.
+
+## The build now works four tasks at once (plan change, D-2986, November 11)
+
+- **What changed.** You asked to speed the build up. Since this morning the token pacer almost never held a task back; the number of lanes did. The runner now works up to four tasks side by side instead of three.
+- **What stays the same.** Two tasks side by side still never touch the same files or sit in different stages. If one extra lane fails twice in a row for a harness reason, the runner drops to one lane by itself and tells you why.
+- **Cost.** About 62M tokens are left this week before Thursday's 17:00 UTC reset; four lanes will use them sooner, as you said is fine. With more branches open at once, tasks will more often need `main` merged in before they land.
+- **Undo.** Setting the lane count back to 3 is a one-line logged change.
 - **Nothing needs you now.**
 
 ## A late payment on a pick the system ended is kept on record and refunded (plan change, D-3007, November 11)
