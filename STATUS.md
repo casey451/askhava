@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-11T09:38:37Z by runner b33f1140a01b (actions).
+Updated 2026-11-11T09:38:54Z by runner b33f1140a01b (actions).
 
 **Building: T337 in progress since 09:25Z; 199 of 370 done; week 63% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 199 of 370 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T337 claimed 09:25Z, lease until 12:25Z; lane 3: T327 claimed 08:49Z, lease until 11:49Z
+- **Lane:** lane 2: T337 claimed 09:25Z, lease until 12:25Z
 - **Week:** 63% used, 62.3M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 09:36Z, 2 min before this update
 - **Keeper:** last ran 09:36Z, next wake 11:52Z
@@ -24,6 +24,7 @@ Updated 2026-11-11T09:38:37Z by runner b33f1140a01b (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T327 | harness: every task kind the app queues has a handler in the | MERGE_PENDING | 1 | 48 min | 09:38Z |  |
 | T164 | quotes: one quote format per category, screened notes, and e | BLOCKED | 1 | 14 min | 09:03Z | PLAN GAP: app/portals/src/tests/prop_arrival_order.rs:22 (T052) and app/quotes/src/notify.rs:179 / app/quotes/src/models |
 | T295 | payments, ai, intake and picks take the brand from the brand | done | 4 | 33 min | 08:57Z | T295 blocked at step 3: tests/brand_literal_baseline.json still lists files T295 does not own: app/messaging/templates/e |
 | T212 | intake: photo asks with on-server checks and preview, inspir | done | 2 | 19 min | 08:12Z | Ci: failure; Coverage: failure; Checks: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned |
@@ -129,7 +130,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T337 (lease until 2026-11-11T12:25:53Z)
-- lane 3: T327 (lease until 2026-11-11T11:49:41Z)
 
 ## Last usage reading
-- {"task": "T164", "at": "2026-11-11T09:03:38Z", "cache_read_input_tokens": 3535882, "cache_creation_input_tokens": 226191, "output_tokens": 35965, "input_tokens": 128}
+- {"task": "T327", "at": "2026-11-11T09:38:36Z", "output_tokens": 182491, "cache_read_input_tokens": 28088494, "cache_creation_input_tokens": 636491, "input_tokens": 581}
