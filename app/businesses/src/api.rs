@@ -20,8 +20,9 @@
 //! its test emergency email, the after-hours tick's conditions and the covered night count
 //! (BIZ-007, BIZ-037, BIZ-042, INT-033; T150); the licensing holder read, [`holding`] (LIC-019,
 //! BIZ-049, CARD-001; T374); the business's own names and its checked Google and Yelp links
-//! (BIZ-022, BIZ-052, PICK-041, SEC-041; T165); leaving and the optional BIZ-054 reason (BIZ-051,
-//! BIZ-054; T228).
+//! (BIZ-022, BIZ-052, PICK-041, SEC-041; T165); the public business name read for the LIST reply
+//! and the who's-calling text, [`public_names`] (PICK-041, BIZ-022, TXT-031, D-2943; T316);
+//! leaving and the optional BIZ-054 reason (BIZ-051, BIZ-054; T228).
 
 use jiff::Timestamp;
 use secrecy::SecretString;
@@ -97,6 +98,7 @@ pub use crate::models::{Business, BusinessesError, Insurance};
 pub use crate::open_cards_times::{
     OpenCardsTime, OpenCardsTimes, open_cards_times, set_open_cards_times,
 };
+pub use crate::public_name::{PUBLIC_NAME_ALERT, public_names};
 pub use crate::rules::JobTypeChoice;
 pub use crate::rules::{Checks, Event, OwnHours, Widens};
 pub use crate::service::{

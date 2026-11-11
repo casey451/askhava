@@ -19,7 +19,8 @@
 //! `refund.updated` and `charge.refund.updated` go by the refund's status, and `refund.failed`
 //! always, to T258's `refund_succeeded`, `refund_failed` or `refund_canceled` (a `succeeded`
 //! status is the one Stripe can still leave, P13, so it is first re-read through the adapter and
-//! the state Stripe reports now is applied); `charge.dispute.created` goes to `record_dispute`;
+//! the state Stripe reports now is applied, a `succeeded` re-read handed on whole so its amount
+//! and currency are checked, D-2303, D-3018); `charge.dispute.created` goes to `record_dispute`;
 //! `charge.dispute.closed` writes one audit row and one High alert per dispute, no money moves
 //! (D-1545); `radar.early_fraud_warning.created` enqueues one [`FRAUD_WARNING_KIND`] task for the
 //! charge's pick, which `picks` (T281) runs through `picks::api::fraud_warning` (D-1845). The two
@@ -385,6 +386,8 @@ where
 /// FEE-026, D-1753: a refund event by its status; a `succeeded` one is re-read through the adapter
 /// first and Stripe's present state applied, so a late `succeeded` never undoes a `failed`. A
 /// refund Stripe does not know, or answers unreadably, is unknown; an unreachable Stripe resends.
+/// D-2303, D-3018: a re-read still `succeeded` goes to `refund_succeeded` as the `Refund` read, so
+/// its amount and currency are checked (and alerted) as on the request path.
 async fn refund_event<S, R>(
     h: &StripeWebhook<S, R>,
     refund: &str,
@@ -396,6 +399,9 @@ where
 {
     let state = if state == RefundState::Succeeded {
         match h.stripe.fetch_refund(refund).await {
+            Ok(read) if read.state == RefundState::Succeeded => {
+                return money(refund_succeeded(&h.pool, &read, now).await);
+            }
             Ok(read) => read.state,
             Err(
                 AdapterError::Vendor { status: 404, .. }
@@ -409,10 +415,9 @@ where
     };
     let pool = &h.pool;
     money(match state {
-        RefundState::Succeeded => refund_succeeded(pool, refund, now).await,
         RefundState::Failed => refund_failed(pool, refund, now).await,
         RefundState::Canceled => refund_canceled(pool, refund, now).await,
-        RefundState::Pending | RefundState::RequiresAction => Ok(false),
+        RefundState::Succeeded | RefundState::Pending | RefundState::RequiresAction => Ok(false),
     })
 }
 

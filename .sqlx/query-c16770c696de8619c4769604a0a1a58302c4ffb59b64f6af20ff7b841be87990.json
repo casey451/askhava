@@ -1,0 +1,52 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT b.id AS \"id!\", n.business_name AS \"business_name?\", n.trade_name\n           FROM unnest($1::uuid[]) WITH ORDINALITY AS wanted (id, at)\n           JOIN businesses.business b ON b.id = wanted.id\n           LEFT JOIN businesses.business_name n ON n.business_id = b.id\n           ORDER BY wanted.at",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id!",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "businesses.business",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "business_name?",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "businesses.business_name",
+            "name": "business_name"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "trade_name",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "businesses.business_name",
+            "name": "trade_name"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "UuidArray"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "c16770c696de8619c4769604a0a1a58302c4ffb59b64f6af20ff7b841be87990"
+}

@@ -9,7 +9,8 @@
 //!
 //! T270 (D-1836, D-2145 to D-2147): the 96-hour close and the fraud-warning end act only when
 //! `payments::api::refund_state` reads the pick's refund as `Succeeded`, whatever the refund call
-//! answered; the no-show ends a `paid` or `free` pick, and a pick in neither rolls the move back.
+//! answered; T333 (D-2303, D-3018): the 96-hour "refunded" email goes only when
+//! `payments::api::refund_in_full` answers `true`; the no-show ends a `paid` or `free` pick, and a pick in neither rolls the move back.
 
 use askhava_adapters::api::PaymentsAdapter;
 use askhava_businesses::api::{NoticePurpose, notice_addresses};
@@ -24,7 +25,7 @@ use askhava_ops::api::Actor;
 use askhava_payments::api::{
     Answer, CallRecord, Caller, Contact, EmailCheck, NoShow, PickRefundState, RefundDecision,
     RefundTrigger, Unmet, UnreachableFacts, decide_unreachable, early_fraud_warning,
-    mark_auto_submit, no_show, refund_state, request_refund,
+    mark_auto_submit, no_show, refund_in_full, refund_state, request_refund,
 };
 use jiff::{SignedDuration, Timestamp};
 use jiff_sqlx::ToSqlx;
@@ -333,10 +334,14 @@ async fn read_refund(pool: &PgPool, pick: Uuid) -> Result<PickRefundState, Picks
 /// A pick refunded before is judged as if it were not, so a run that refunded but stopped before
 /// the close finishes on the next run (`request_refund` sends nothing twice). `NotYet` does
 /// nothing. The close queues JOB-027's homeowner text (D-1842); the 72-hour question's sending is
-/// T281's (D-1818).
+/// T281's (D-1818). FEE-026, FEE-053, D-2303, D-3018: before the close,
+/// `payments::api::refund_in_full` is asked whether the refund is the whole charge in `usd`; an
+/// error returns before anything closes (the next run finishes), and on `false` the job, the line
+/// and the homeowner's text close and go as above but no `unreachable_refunded` email is queued
+/// (Casey has the amount alert).
 ///
 /// # Errors
-/// `Database` (a refund or move failure too), `Template`, `Outbox`.
+/// `Database` (a refund, refund read or move failure too), `Template`, `Outbox`.
 pub async fn decide_at_96_hours(
     pool: &PgPool,
     (stripe, secret): (&impl PaymentsAdapter, &SecretString),
@@ -363,7 +368,13 @@ pub async fn decide_at_96_hours(
         if let Some(waiting) = refund_waiting(read_refund(pool, case.pick).await?) {
             return Ok(waiting);
         }
+        let in_full = refund_in_full(pool, stripe, case.pick)
+            .await
+            .map_err(|_| PicksError::Database)?;
         close_unreachable(pool, case, now).await?;
+        if !in_full {
+            return Ok(AtNinetySix::Decided(decision));
+        }
     }
     let mut conn = pool.acquire().await.map_err(|_| PicksError::Database)?;
     if let Some(template) = decision_template(decision) {

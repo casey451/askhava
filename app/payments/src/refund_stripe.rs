@@ -8,6 +8,9 @@
 //! [`AdapterError::Decode`], never a success, an ID that is not `re_…` is
 //! [`AdapterError::InvalidId`], and a refund of another PaymentIntent than the one asked for is
 //! `Decode`.
+//!
+//! T333 (D-2303): [`Refund::amount_against`] reads a refund's reported amount and currency against
+//! the charge as a [`RefundAmount`]; every path that books or announces a refund uses it.
 
 use std::future::Future;
 
@@ -81,6 +84,38 @@ impl Refund {
             currency: raw.currency,
             payment_intent,
         })
+    }
+}
+
+/// The one currency Ask Hava charges and refunds in (D-2303).
+pub const REFUND_CURRENCY: &str = "usd";
+
+/// What a refund's reported amount and currency say against the charge it refunds (FEE-026,
+/// FEE-028, D-2303). The app only ever asks for full refunds, so anything but `Full` is Casey's.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RefundAmount {
+    /// `usd` and exactly the charged amount.
+    Full,
+    /// `usd` but another amount: the ledger records this one, the money Stripe moved.
+    Differs(i64),
+    /// Another currency: never booked at the foreign figure.
+    Foreign,
+    /// No amount (or not above zero), or an amount with no currency: unconfirmed.
+    Missing,
+}
+
+impl Refund {
+    /// FEE-026, FEE-028, D-2303: reads this refund's amount against `charged` cents. A currency
+    /// other than `usd` is `Foreign` whatever the amount; a missing currency or amount is `Missing`.
+    /// The request path, the webhook, the check, `refund_in_full` and `reconcile` (T334) share it.
+    #[must_use]
+    pub fn amount_against(&self, charged: i64) -> RefundAmount {
+        match (self.currency.as_deref(), self.amount_cents) {
+            (Some(c), _) if !c.eq_ignore_ascii_case(REFUND_CURRENCY) => RefundAmount::Foreign,
+            (Some(_), Some(a)) if a == charged => RefundAmount::Full,
+            (Some(_), Some(a)) if a > 0 => RefundAmount::Differs(a),
+            _ => RefundAmount::Missing,
+        }
     }
 }
 
