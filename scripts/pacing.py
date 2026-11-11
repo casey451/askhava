@@ -25,6 +25,12 @@ ledger. Next comes the reading the build action itself reported at the end of it
 under SESSION_READING_HOURS old for the windows it holds. state.usage.source records which was used
 ("quota_cmd", "session_reading <at> (<windows>)" or "ledger", with the probe's reason when it failed).
 
+**A window with no budget** (D-3056: Casey, November 11, 2026, "I don't have a 5-hour token window"): when
+kit/pacing.json's `budget_tokens_<window>` is null, that window has no ledger budget: it is left out of the
+standing, the estimate test and the projected finish (the ledger still counts its tokens). A real reading
+(the quota command or a fresh session reading) that reports any window at 100% still makes the pacer wait
+until its reset (`at_limit`), so a limit the plan does enforce is never run through (BUILD_BRIEF.md:509).
+
 **Decision** (`decide`): claim when estimate <= budget * (1 - headroom) - used in both windows;
 otherwise wait until the latest reset among the windows it does not fit; "defer" when it cannot fit
 even an empty window (the runner then claims it anyway at the start of a window: waiting cannot
@@ -86,6 +92,11 @@ def iso(moment: datetime) -> str:
 def parse(stamp: str) -> datetime:
     moment = datetime.fromisoformat(stamp.replace("Z", "+00:00"))
     return moment if moment.tzinfo else moment.replace(tzinfo=timezone.utc)
+
+
+def budgeted(cfg: dict[str, Any]) -> tuple[str, ...]:
+    """The windows kit/pacing.json gives a budget; a null `budget_tokens_<window>` means none (D-3056)."""
+    return tuple(w for w in WINDOWS if cfg.get(f"budget_tokens_{w}") is not None)
 
 
 def load_config(path: Path = CONFIG) -> dict[str, Any]:
@@ -204,7 +215,7 @@ def standing(
     out: dict[str, dict[str, Any]] = {}
     ledger = windows(state, cfg, now)
     reading = None if quota else session_reading(state, now)
-    for w in WINDOWS:
+    for w in budgeted(cfg):
         budget = float(cfg[f"budget_tokens_{w}"])
         if quota:
             used, reset = float(quota[w]["utilization"]) * budget, quota[w].get("resets_at")
@@ -257,7 +268,7 @@ def session_reading(state: State, now: datetime) -> dict[str, Any] | None:
 
 
 def _verdict(need: int, stand: dict[str, dict[str, Any]], now: datetime) -> tuple[str, str | None]:
-    failing = [w for w in WINDOWS if need > stand[w]["left"]]
+    failing = [w for w in WINDOWS if w in stand and need > stand[w]["left"]]
     waitable = [w for w in failing if stand[w]["used"] > 0]
     if waitable:
         return "wait", max(stand[w]["resets_at"] or iso(now) for w in waitable)
@@ -331,6 +342,8 @@ def assess(
         found = {"decision": decision, "estimate": need, "bytes": size, "basis": basis, "standing": stand, "source": source}
         return found | {"run_to_limit": True} | ({"in_flight": reserved} if reserved else {})
     decision = ("wait", hit) if hit and parse(hit) > now else _verdict(need, stand, now)
+    full = at_limit(state, now, quota) if decision[0] != "wait" else None
+    decision = ("wait", full) if full else decision  # a real reading at 100%, budgeted or not (D-3056)
     line_at = spend_line(cfg, stand["week"], need, now) if decision[0] == "claim" else None
     if line_at:
         decision = ("wait", line_at)
@@ -346,7 +359,10 @@ def _k(tokens: float) -> str:
 def line(tid: str, found: dict[str, Any]) -> str:
     """The PROGRESS.md line: 'T058 estimated 180k tokens; window has 1.2M left; claimed'."""
     stand, (verdict, detail) = found["standing"], found["decision"]
-    left = f"five-hour window has {_k(stand['five_hour']['left'])} left, week {_k(stand['week']['left'])}"
+    if "five_hour" in stand:
+        left = f"five-hour window has {_k(stand['five_hour']['left'])} left, week {_k(stand['week']['left'])}"
+    else:
+        left = f"week has {_k(stand['week']['left'])} left (no five-hour budget, D-3056)"
     outcome = {"claim": "claimed", "wait": f"waiting until {detail}", "defer": f"claimed anyway ({detail})"}[verdict]
     if found.get("spend_line"):
         outcome = f"on the spend line (D-1128), {outcome}"
@@ -360,7 +376,7 @@ def projected_finish(state: State, graph: list[dict[str, Any]], cfg: dict[str, A
     """(remaining estimated tokens, projected finish ISO) at the budgets' sustained rate."""
     status = {t["id"]: t.get("status") for t in state.get("tasks", [])}
     remaining = sum(estimate(t, state, cfg, root)[0] for t in graph if t.get("type") != "gate" and status.get(t["id"]) not in DONE)
-    rates = [float(cfg[f"budget_tokens_{w}"]) * (1 - float(cfg["headroom"])) / float(cfg["window_hours"][w]) for w in WINDOWS]
+    rates = [float(cfg[f"budget_tokens_{w}"]) * (1 - float(cfg["headroom"])) / float(cfg["window_hours"][w]) for w in budgeted(cfg)]
     return remaining, iso(now + timedelta(hours=remaining / min(rates)))
 
 

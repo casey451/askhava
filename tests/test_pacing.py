@@ -186,3 +186,25 @@ def test_a_failing_probe_says_why_in_the_source(tmp_path: Path) -> None:
     reading = pc.read_quota(f"{sys.executable} {probe}")
     assert reading and pc.standing(spent(0), CFG, NOW, reading)[1] == "quota_cmd"
     assert pc.read_quota("") is None and pc.standing(spent(0), CFG, NOW, None)[1] == "ledger"
+
+
+def test_no_five_hour_budget_never_waits_on_the_ledger_but_still_on_a_full_reading_and_the_week(tmp_path: Path) -> None:
+    """D-3056: a null five-hour budget drops that window from the ledger test; a real reading at 100% and the week still bind."""
+    root, cfg = repo(tmp_path), dict(CFG, budget_tokens_five_hour=None)
+    assert pc.budgeted(pc.load_config()) == ("week",) and pc.budgeted(CFG) == pc.WINDOWS
+    heavy = {"tasks": [], "usage": {"windows": {"five_hour": {"start": pc.iso(NOW), "tokens": 50_000_000},
+                                                "week": {"start": pc.iso(NOW), "tokens": 0}}}}
+    assert pc.decide(heavy, TASK, root=root, config=CFG, now=NOW)[0] == "wait"  # budgeted: the ledger binds
+    found = pc.assess(heavy, TASK, root=root, config=cfg, now=NOW)
+    assert found["decision"] == ("claim", None) and set(found["standing"]) == {"week"}
+    assert "week has 9.0M left (no five-hour budget, D-3056)" in pc.line("T058", found)
+    assert pc.projected_finish(heavy, [TASK], cfg, NOW, root)[0] > 0
+    reset = pc.iso(NOW + timedelta(hours=2))
+    full = {"five_hour": {"utilization": 1.0, "resets_at": reset}, "week": {"utilization": 0.1, "resets_at": None}}
+    assert pc.decide(heavy, TASK, root=root, config=cfg, now=NOW, quota=full) == ("wait", reset)
+    session = dict(heavy, usage=dict(heavy["usage"], session_reading={"at": pc.iso(NOW - timedelta(minutes=10)), **full}))
+    assert pc.decide(session, TASK, root=root, config=cfg, now=NOW) == ("wait", reset)
+    nearly = {"at": pc.iso(NOW), "five_hour": {"utilization": 0.99, "resets_at": reset}}
+    assert pc.decide(dict(heavy, usage=dict(heavy["usage"], session_reading=nearly)), TASK, root=root, config=cfg, now=NOW)[0] == "claim"
+    week_full = spent(9_500_000)
+    assert pc.decide(week_full, TASK, root=root, config=cfg, now=NOW) == ("wait", pc.iso(NOW + timedelta(hours=168)))
