@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T10:13:58Z by runner 722416045b2b (actions).
+Updated 2026-11-11T10:21:09Z by runner 722416045b2b (actions).
 
 **Idle since 10:09Z; 200 of 371 done; week 63% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,17 +8,11 @@ Updated 2026-11-11T10:13:58Z by runner 722416045b2b (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 10:09Z (no task in progress)
 - **Week:** 63% used, 68.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:08Z, 5 min before this update
+- **Last run:** 10:08Z, 12 min before this update
 - **Keeper:** last ran 10:08Z, next wake 10:28Z
 
 ## Needs attention
 - BLOCKED T316: plan gap reported: PLAN GAP: app/businesses/src/holding.rs:8 and migrations/0050_licensing_imports.sql:22-55: nothing links a business to a stored record that holds a name. businesses.business and businesses.signup hold no name or license number; licensing.agency_record has no names (ROC import header is license_number,class,status,issued_on); licensing.city_license_entry has names but no business_id and city_standing does not store the match; licensing::api returns no name for a business ID. D-2206 assumed a link that D-2741 documents does not exist, and T316's no-storage rule forbids adding one. Reviewer confi; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T316 --plan-fix D-### --reason "..."` (D-2859)
-- PLAN GAP T164 (since 2026-11-11T10:03:50Z, no attempt used; a plan change fixes it): T164: dependency T293 is DONE but its owned file tests/brand_literal_baseline.json is not on main; T164: dependency T294 is DONE but its owned file tests/brand_literal_baseline.json is not on main
-- PLAN GAP T269 (since 2026-11-11T09:25:53Z, no attempt used; a plan change fixes it): T269: dependency T294 is DONE but its owned file tests/brand_literal_baseline.json is not on main; T269: dependency T291 is DONE but its owned file tests/brand_literal_baseline.json is not on main
-- PLAN GAP T278 (since 2026-11-11T09:25:53Z, no attempt used; a plan change fixes it): T278: dependency T293 is DONE but its owned file tests/brand_literal_baseline.json is not on main; T278: dependency T295 is DONE but its owned file tests/brand_literal_baseline.json is not on main
-- PLAN GAP T313 (since 2026-11-11T09:25:53Z, no attempt used; a plan change fixes it): T313: dependency T292 is DONE but its owned file tests/brand_literal_baseline.json is not on main
-- PLAN GAP T323 (since 2026-11-11T09:25:53Z, no attempt used; a plan change fixes it): T323: dependency T295 is DONE but its owned file tests/brand_literal_baseline.json is not on main
-- PLAN GAP T326 (since 2026-11-11T09:25:53Z, no attempt used; a plan change fixes it): T326: dependency T292 is DONE but its owned file tests/brand_literal_baseline.json is not on main
 - Strict plan check red: 11 problem(s) on tasks still to run (+19 on DONE tasks); first: T255: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours

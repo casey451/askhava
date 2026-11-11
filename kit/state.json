@@ -21594,14 +21594,7 @@
      "plan_then": "f82003dbd4f50a821266b89d1bceb6b382d9b48deee7f64cb9795ea4b55c43a7",
      "plan_now": "625d8bc8e164f8e1564c3f8135874beadb993a53b0471e27533a4395978a61ca"
     }
-   ],
-   "plan_gap": {
-    "at": "2026-11-11T10:03:50Z",
-    "problems": [
-     "T164: dependency T293 is DONE but its owned file tests/brand_literal_baseline.json is not on main",
-     "T164: dependency T294 is DONE but its owned file tests/brand_literal_baseline.json is not on main"
-    ]
-   }
+   ]
   },
   {
    "id": "T214",
@@ -24791,14 +24784,7 @@
    "attempts": 0,
    "slug": "notice-signin-link",
    "type": "build",
-   "stage": "4",
-   "plan_gap": {
-    "at": "2026-11-11T09:25:53Z",
-    "problems": [
-     "T269: dependency T294 is DONE but its owned file tests/brand_literal_baseline.json is not on main",
-     "T269: dependency T291 is DONE but its owned file tests/brand_literal_baseline.json is not on main"
-    ]
-   }
+   "stage": "4"
   },
   {
    "id": "T261",
@@ -25847,14 +25833,7 @@
    "attempts": 0,
    "slug": "check-in-and-unreachable-texts",
    "type": "build",
-   "stage": "4",
-   "plan_gap": {
-    "at": "2026-11-11T09:25:53Z",
-    "problems": [
-     "T278: dependency T293 is DONE but its owned file tests/brand_literal_baseline.json is not on main",
-     "T278: dependency T295 is DONE but its owned file tests/brand_literal_baseline.json is not on main"
-    ]
-   }
+   "stage": "4"
   },
   {
    "id": "T279",
@@ -28246,13 +28225,7 @@
    "attempts": 0,
    "slug": "emergency-business-notices",
    "type": "build",
-   "stage": "4",
-   "plan_gap": {
-    "at": "2026-11-11T09:25:53Z",
-    "problems": [
-     "T313: dependency T292 is DONE but its owned file tests/brand_literal_baseline.json is not on main"
-    ]
-   }
+   "stage": "4"
   },
   {
    "id": "T314",
@@ -28385,13 +28358,7 @@
    "attempts": 0,
    "slug": "adds-fact-sentence-start",
    "type": "build",
-   "stage": "4",
-   "plan_gap": {
-    "at": "2026-11-11T09:25:53Z",
-    "problems": [
-     "T323: dependency T295 is DONE but its owned file tests/brand_literal_baseline.json is not on main"
-    ]
-   }
+   "stage": "4"
   },
   {
    "id": "T324",
@@ -28414,13 +28381,7 @@
    "attempts": 0,
    "slug": "link-notice-stored-pin",
    "type": "harness",
-   "stage": "4",
-   "plan_gap": {
-    "at": "2026-11-11T09:25:53Z",
-    "problems": [
-     "T326: dependency T292 is DONE but its owned file tests/brand_literal_baseline.json is not on main"
-    ]
-   }
+   "stage": "4"
   },
   {
    "id": "T327",
@@ -31900,7 +31861,7 @@
    }
   }
  },
- "updated_at": "2026-11-11T10:13:58Z",
+ "updated_at": "2026-11-11T10:21:09Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
