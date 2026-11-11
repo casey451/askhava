@@ -1,18 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-11T11:36:09Z by runner ee153a16c726 (actions).
+Updated 2026-11-11T11:37:35Z by runner 48de7e61157b (actions).
 
-**Idle since 11:35Z; 202 of 372 done; week 65% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 11:35Z; 202 of 371 done; week 65% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 202 of 372 build tasks (owner gates not counted)
+- **Tasks done:** 202 of 371 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 11:35Z (no task in progress)
 - **Week:** 65% used, 60.7M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:35Z, 0 min before this update
+- **Last run:** 11:35Z, 1 min before this update
 - **Keeper:** last ran 11:33Z, next wake 13:47Z
 
 ## Needs attention
-- Strict plan check red: 13 problem(s) on tasks still to run (+24 on DONE tasks); first: T255: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 15 problem(s) on tasks still to run (+24 on DONE tasks); first: T255: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -86,7 +86,7 @@ Updated 2026-11-11T11:36:09Z by runner ee153a16c726 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 208 of 733 (28.4%) · partial 344 · unstarted 181
-**Tasks merged (throughput only):** 202 of 372
+**Tasks merged (throughput only):** 202 of 371
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
