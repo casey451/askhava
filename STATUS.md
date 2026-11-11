@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T13:42:51Z by runner 8eba59454470 (actions).
+Updated 2026-11-11T13:49:38Z by runner da0eb3920737 (manual).
 
 **Building: T342 in progress since 13:39Z; 204 of 372 done; week 67% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-11T13:42:51Z by runner 8eba59454470 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T342 claimed 13:39Z, lease until 16:39Z; lane 3: T332 claimed 13:35Z, lease until 16:35Z
 - **Week:** 67% used, 53.3M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:42Z, 0 min before this update
+- **Last run:** 13:42Z, 6 min before this update
 - **Keeper:** last ran 13:42Z, next wake 16:37Z
 
 ## Needs attention
@@ -60,6 +60,7 @@ Updated 2026-11-11T13:42:51Z by runner 8eba59454470 (actions).
 | T199 | portals: no automated call to a business, voice codes only o | done | 1 | 64 min | 14:22Z |  |
 
 ### Plan and harness merges on main
+- 13:45Z Plan: four lanes (D-2986) (#483)
 - 13:14Z Plan: T332 updates the ended-pick test — success stored, one refund queued, still never cleared (D-3007) (#484)
 - 12:26Z Plan: T332 may expect AlreadyQueued after its own check round queues the late success (D-2970) (#482)
 - 11:00Z Plan: sign-up reads the business's own state record — name check and identity contacts (T385, D-2954) (#475)
