@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-11T17:17:35Z by runner ba8db682d853 (actions).
+Updated 2026-11-11T17:17:51Z by runner ba8db682d853 (actions).
 
-**Building: T272 in progress since 16:49Z; 208 of 373 done; week 70% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T333 in progress since 16:47Z; 208 of 373 done; week 70% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 208 of 373 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T272 claimed 16:49Z, lease until 19:49Z; lane 4: T333 claimed 16:47Z, lease until 19:47Z
+- **Lane:** lane 4: T333 claimed 16:47Z, lease until 19:47Z
 - **Week:** 70% used, 46.9M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 17:16Z, 0 min before this update
 - **Keeper:** last ran 17:07Z, next wake 19:50Z
@@ -17,6 +17,7 @@ Updated 2026-11-11T17:17:35Z by runner ba8db682d853 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T272 | portals: the sign-in link cap and the code-try cap are atomi | MERGE_PENDING | 1 | 27 min | 17:17Z |  |
 | T165 | businesses: business name, Google and Yelp links and license | MERGE_PENDING | 1 | 18 min | 17:05Z | merging main into the reviewed head conflicts in app/portals/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T214 | picks (harness): the homeowner's share box at the pick and t | done | 3 | 45 min | 16:44Z | PLAN GAP: tests/integration/tests/page_pick.rs:131 and tests/security/tests/page_pick_privacy.rs:224 (both T246's; page_ |
 | T165 | businesses: business name, Google and Yelp links and license | resync | 1 | 47 min | 16:25Z |  |
@@ -145,8 +146,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T272 (lease until 2026-11-11T19:49:55Z)
+- nothing
 - lane 4: T333 (lease until 2026-11-11T19:47:34Z)
 
 ## Last usage reading
-- {"task": "T165", "at": "2026-11-11T17:05:26Z", "cache_creation_input_tokens": 137565, "input_tokens": 66, "output_tokens": 15340, "cache_read_input_tokens": 888274}
+- {"task": "T272", "at": "2026-11-11T17:17:34Z", "input_tokens": 285, "output_tokens": 128325, "cache_creation_input_tokens": 427997, "cache_read_input_tokens": 15626946}
