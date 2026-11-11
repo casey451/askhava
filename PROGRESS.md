@@ -2159,3 +2159,4 @@
 - 2026-11-11T17:31:10Z runner 50a51df4b7da (actions): {}
 - 2026-11-11T17:45:25Z runner 7bf1bf2a7b54 (actions): {"T165": "MERGE_PENDING -> DONE", "T272": "MERGE_PENDING -> QUEUED"}
 - 2026-11-11T17:45:35Z runner 7bf1bf2a7b54 (actions): {"T272": "QUEUED -> IN_PROGRESS"}; T272 estimated 3.0M tokens (calibrated); five-hour window has 10.1M left, week 50.6M after 3.4M still running in another lane (session_reading 2026-11-11T17:30:49Z (week)); claimed
+- 2026-11-11T17:51:55Z runner 7bf1bf2a7b54 (actions): {"T228": "QUEUED -> IN_PROGRESS"}; T228 estimated 2.9M tokens (calibrated); five-hour window has 7.1M left, week 47.6M after 6.4M still running in another lane (session_reading 2026-11-11T17:30:49Z (week)); claimed

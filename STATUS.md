@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-11T17:45:35Z by runner 7bf1bf2a7b54 (actions).
+Updated 2026-11-11T17:51:55Z by runner 7bf1bf2a7b54 (actions).
 
-**Building: T272 in progress since 17:45Z; 209 of 373 done; week 70% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T228 in progress since 17:51Z; 209 of 373 done; week 70% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 209 of 373 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T272 claimed 17:45Z, lease until 20:45Z; lane 3: T332 claimed 17:24Z, lease until 20:24Z
-- **Week:** 70% used, 50.6M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:31Z, 14 min before this update
+- **Lane:** lane 1: T228 claimed 17:51Z, lease until 20:51Z; lane 2: T272 claimed 17:45Z, lease until 20:45Z; lane 3: T332 claimed 17:24Z, lease until 20:24Z
+- **Week:** 70% used, 47.6M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Last run:** 17:45Z, 6 min before this update
 - **Keeper:** last ran 17:31Z, next wake 20:26Z
 
 ## Needs attention
@@ -132,7 +132,7 @@ Updated 2026-11-11T17:45:35Z by runner 7bf1bf2a7b54 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-11T17:30:49Z (week)): five-hour: 19.0M used, 10.1M left, resets 2026-11-11T20:04:09Z; week: 143.4M used, 50.6M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-04T22:02:52Z.
+- Pacing (session_reading 2026-11-11T17:30:49Z (week)): five-hour: 22.0M used, 7.1M left, resets 2026-11-11T20:04:09Z; week: 146.4M used, 47.6M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-04T22:09:28Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -147,7 +147,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T228 (lease until 2026-11-11T20:51:50Z)
 - lane 2: T272 (lease until 2026-11-11T20:45:14Z)
 - lane 3: T332 (lease until 2026-11-11T20:24:05Z)
 
