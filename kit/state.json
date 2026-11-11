@@ -25162,7 +25162,10 @@
     "why": "auto-merge on #490 (gh pr merge)",
     "head": "b1639f25d419ec5457e7a9e6a26a5394aa1ab0b6"
    },
-   "last_failure": "Ci: failure; E2e: failure; Ally: failure\nE2e failed at step: Chromium and its system libraries\nE: Failed to fetch https://security.ubuntu.com/ubuntu/pool/universe/u/unifont/fonts-unifont_16.0.04-1build1_all.deb  Temporary failure resolving 'security.ubuntu.com'\nE: Failed to fetch https://security.ubuntu.com/ubuntu/pool/universe/f/fonts-wqy-zenhei/fonts-wqy-zenhei_0.9.45-8build1_all.deb  Temporary failure resolving 'security.ubuntu.com'\nE: Failed to fetch https://security.ubuntu.com/ubuntu/pool/main/x/xfonts-encodings/xfonts-encodings_1.0.5-0ubuntu3_all.deb  Temporary failure resolving 'security.ubuntu.com'\nE: Failed to fetch https://security.ubuntu.com/ubuntu/pool/main/x/xfonts-utils/xfonts-utils_7.7%2b7build1_amd64v3.deb  Temporary failure resolving 'security.ubuntu.com'\nE: Failed to fetch https://security.ubuntu.com/ubuntu/pool/universe/x/xfonts-cyrillic/xfonts-cyrillic_1.0.5%2bnmu1build1_all.deb  Temporary failure resolving 'security.ubuntu.com'\nE: Failed to fetch https://security.ubuntu.com/ubuntu/pool/universe/x/xfonts-scalable/xfonts-scalable_1.0.3-1.3build1_all.deb  Temporary failure resolving 'security.ubuntu.com'\nE: Unable to fetch some archives, maybe run apt update or try with --fix-missing?\nFailed to install browsers\nError: Installation process exited with code: 100\n##[error]Process completed with exit code 1.\nAlly failed at step: Chromium and its system libraries\nError: Installation process exited with code: 100\n##[error]Process completed with exit code 1.\nCi fai"
+   "last_failure": "Ci: failure; E2e: failure; Ally: failure\nE2e failed at step: Chromium and its system libraries\nE: Failed to fetch https://security.ubuntu.com/ubuntu/pool/universe/u/unifont/fonts-unifont_16.0.04-1build1_all.deb  Temporary failure resolving 'security.ubuntu.com'\nE: Failed to fetch https://security.ubuntu.com/ubuntu/pool/universe/f/fonts-wqy-zenhei/fonts-wqy-zenhei_0.9.45-8build1_all.deb  Temporary failure resolving 'security.ubuntu.com'\nE: Failed to fetch https://security.ubuntu.com/ubuntu/pool/main/x/xfonts-encodings/xfonts-encodings_1.0.5-0ubuntu3_all.deb  Temporary failure resolving 'security.ubuntu.com'\nE: Failed to fetch https://security.ubuntu.com/ubuntu/pool/main/x/xfonts-utils/xfonts-utils_7.7%2b7build1_amd64v3.deb  Temporary failure resolving 'security.ubuntu.com'\nE: Failed to fetch https://security.ubuntu.com/ubuntu/pool/universe/x/xfonts-cyrillic/xfonts-cyrillic_1.0.5%2bnmu1build1_all.deb  Temporary failure resolving 'security.ubuntu.com'\nE: Failed to fetch https://security.ubuntu.com/ubuntu/pool/universe/x/xfonts-scalable/xfonts-scalable_1.0.3-1.3build1_all.deb  Temporary failure resolving 'security.ubuntu.com'\nE: Unable to fetch some archives, maybe run apt update or try with --fix-missing?\nFailed to install browsers\nError: Installation process exited with code: 100\n##[error]Process completed with exit code 1.\nAlly failed at step: Chromium and its system libraries\nError: Installation process exited with code: 100\n##[error]Process completed with exit code 1.\nCi fai",
+   "runner_closed_prs": [
+    490
+   ]
   },
   {
    "id": "T261",
@@ -33015,7 +33018,7 @@
    }
   }
  },
- "updated_at": "2026-11-11T15:02:32Z",
+ "updated_at": "2026-11-11T15:02:43Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
