@@ -37,11 +37,15 @@ fn td_pick_10_the_release_code_never_names_the_phone() {
 
 /// PICK-024, TXT-036, D-306, D-454: in both languages the release email and text hold only the
 /// job number and, for the email, the sign-in link; the English words are the spec's.
+/// TD-WORD-35 (WORD-001, WORD-008, TXT-001, D-2843): each file is read with its brand filled.
 #[test]
 fn td_pick_10_the_release_email_and_text_carry_no_homeowner_detail() {
     for lang in ["en", "es"] {
         let path = root().join(format!("app/messaging/templates/{lang}.json"));
-        let raw = std::fs::read_to_string(path).expect("templates");
+        let read = std::fs::read_to_string(path).expect("templates");
+        let raw = askhava_core::api::brand()
+            .fill(&read, lang == "es")
+            .expect("brand tokens");
         let all: serde_json::Value = serde_json::from_str(&raw).expect("json");
         for (id, allowed) in [
             (RELEASE_TEMPLATE, &["job", "link"][..]),

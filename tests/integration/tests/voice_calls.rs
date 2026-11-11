@@ -219,6 +219,7 @@ fn td_call_09_the_code_call_goes_only_on_her_tap_and_never_to_a_business() {
 
 /// TD-CALL-06 (CALL-016, D-359): no text slot carries a business's own words, the inbound route
 /// marks a linked business phone a business, and `messaging` never sends from a pool number.
+/// TD-WORD-35 (WORD-001, WORD-008, TXT-001, D-2843): each file is read with its brand filled.
 #[test]
 fn td_call_06_no_route_lets_a_business_text_a_homeowner() {
     let root = concat!(env!("CARGO_MANIFEST_DIR"), "/../..");
@@ -235,7 +236,10 @@ fn td_call_06_no_route_lets_a_business_text_a_homeowner() {
         "{trade}",
     ];
     for lang in ["en", "es"] {
-        let text = read(&format!("app/messaging/templates/{lang}.json"));
+        let raw = read(&format!("app/messaging/templates/{lang}.json"));
+        let text = askhava_core::api::brand()
+            .fill(&raw, lang == "es")
+            .expect("brand tokens");
         for slot in text.split('{').skip(1).filter_map(|s| s.split_once('}')) {
             let name = format!("{{{}}}", slot.0);
             let fixed = !slot.0.chars().all(|c| c.is_ascii_lowercase() || c == '_');
