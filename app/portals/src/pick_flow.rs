@@ -46,6 +46,12 @@
 //! `picks::api::bind_backup` in the pick's transaction after her code passed (D-2661). Pressing
 //! Pick again on the waiting quote with a different backup (`picks::api::backup_changed`) sends a
 //! code instead of the result, and the change counts after it passes. Ask Hava never fills it in.
+//!
+//! T214 (PICK-049, D-3032): the review step's share box (`share`, value `yes`) starts unticked and
+//! sits before the final Pick button. Unticked or missing, the final Pick shows the review again
+//! with a focused error summary and the error beside the box, her backup kept, and sends and stores
+//! nothing; ticked, `picks::api::tick_share` logs it with the backup, `store` stores no pick for a
+//! quote this browser never ticked, and `picks::api::bind_share` logs the tick with the pick.
 
 use std::sync::Arc;
 
@@ -62,8 +68,9 @@ use askhava_messaging::api::{Language, SendWindow, send_window};
 use askhava_ops::api::Actor;
 use askhava_picks::api::rules::{CodeVia, SendAsk, SendRefused, Stage, parse_code, stage};
 use askhava_picks::api::{
-    Browser, CodeCheck, CodeSent, PageCodeKeys, PagePick, backup_changed, bind_backup,
-    check_page_code, choose_backup, page_pick, send_page_code, waiting_quote,
+    Browser, CodeCheck, CodeSent, PageCodeKeys, PagePick, backup_changed, bind_backup, bind_share,
+    check_page_code, choose_backup, page_pick, send_page_code, share_ticked, tick_share,
+    waiting_quote,
 };
 use askhava_privacy::api::Vault;
 use askhava_quotes::api::page_quotes;
@@ -108,8 +115,9 @@ impl PageLanguage {
     }
 }
 
-/// The posted Pick form: the CSRF token, the quote's number on the page (PICK-008) and the
-/// backup's number, empty for "No backup" (PICK-047).
+/// The posted Pick form: the CSRF token, the quote's number on the page (PICK-008), the
+/// backup's number, empty for "No backup" (PICK-047), and the share box, `yes` when ticked
+/// (PICK-049).
 #[derive(Debug, serde::Deserialize)]
 #[serde(deny_unknown_fields)]
 struct PickForm {
@@ -118,6 +126,8 @@ struct PickForm {
     quote: usize,
     #[serde(default)]
     backup: String,
+    #[serde(default)]
+    share: String,
 }
 
 impl CsrfField for PickForm {
@@ -149,6 +159,14 @@ pub(crate) struct ReviewView {
     pub(crate) accept_by: Option<String>,
     /// The other available quotes' numbers in arrival order, the backup's choices (PICK-047).
     pub(crate) others: Vec<usize>,
+    /// The backup she posted, kept selected when the review shows again (A11Y-012).
+    backup: Option<usize>,
+    /// `true` when the final Pick came with the share box unticked (PICK-049, A11Y-011).
+    share_error: bool,
+    /// The share box's language (PICK-049).
+    language: PageLanguage,
+    /// The picked business's name for the share box; `None` names it by its quote number.
+    business: Option<String>,
 }
 
 impl ReviewView {
@@ -165,7 +183,48 @@ impl ReviewView {
             not_open: false,
             accept_by: None,
             others: Vec::new(),
+            backup: None,
+            share_error: false,
+            language: PageLanguage::En,
+            business: None,
         }
+    }
+
+    /// PICK-049, D-3032: the share box's label, "Share my first name and the job address with
+    /// <Business> once they accept.", in the page's language.
+    fn share_label(&self) -> String {
+        let quote = self.quote;
+        match (self.language, self.business.as_deref()) {
+            (PageLanguage::En, Some(name)) => {
+                format!("Share my first name and the job address with {name} once they accept.")
+            }
+            (PageLanguage::En, None) => format!(
+                "Share my first name and the job address with the business for quote #{quote} once they accept."
+            ),
+            (PageLanguage::Es, Some(name)) => format!(
+                "Compartir mi nombre de pila y la dirección del trabajo con {name} cuando acepte."
+            ),
+            (PageLanguage::Es, None) => format!(
+                "Compartir mi nombre de pila y la dirección del trabajo con la empresa de la cotización #{quote} cuando acepte."
+            ),
+        }
+    }
+
+    /// PICK-049, A11Y-011: the error beside the unticked share box.
+    const fn share_error_text(&self) -> &'static str {
+        match self.language {
+            PageLanguage::En => {
+                "Tick the box to pick this quote. They get your first name and job address only if they accept."
+            }
+            PageLanguage::Es => {
+                "Marque la casilla para elegir esta cotización. Solo reciben su nombre de pila y la dirección del trabajo si aceptan."
+            }
+        }
+    }
+
+    /// Whether quote `n` is the backup she posted (A11Y-012).
+    fn chosen(&self, n: &usize) -> bool {
+        self.backup == Some(*n)
     }
 
     /// The same view with the Terms line in `language` (PICK-016). Only tests call it until the
@@ -174,6 +233,16 @@ impl ReviewView {
     #[must_use]
     pub(crate) fn in_language(mut self, language: PageLanguage) -> Self {
         self.terms = language.terms();
+        self.language = language;
+        self
+    }
+
+    /// The same view naming `business` in the share box (PICK-049). Only tests call it until the
+    /// page reads business names (D-3032).
+    #[cfg(test)]
+    #[must_use]
+    pub(crate) fn for_business(mut self, business: &str) -> Self {
+        self.business = Some(business.to_owned());
         self
     }
 }
@@ -328,8 +397,9 @@ async fn review<V>(
 }
 
 /// `POST /q/{token}/pick`: the final Pick, the code step (PICK-013, D-1516). It re-checks the link
-/// and the quote; without keys it shows the review again under "Nothing was picked" (D-1248,
-/// D-1251); with them [`start_code`] decides; from Payment pending on it shows the confirmed line.
+/// and the quote; an unticked share box shows the review again with its error, keys or not, and
+/// sends and stores nothing (PICK-049, D-3032); without keys it shows the review again under
+/// "Nothing was picked" (D-1248, D-1251); with them [`start_code`] decides; from Payment pending on it shows the confirmed line.
 async fn final_pick<V>(
     State(flow): State<PickFlow<V>>,
     Path(raw): Path<String>,
@@ -341,6 +411,15 @@ where
 {
     let csrf = csrf_token(&jar).unwrap_or_default();
     let found = pickable(&flow, &raw, form.quote).await;
+    if let (
+        Ok(Pickable::Open {
+            request, others, ..
+        }),
+        false,
+    ) = (&found, form.share == "yes")
+    {
+        return render(refused(*request, &form, others.clone(), (raw, csrf)));
+    }
     let Some(keys) = flow.keys.clone() else {
         return match found {
             Ok(Pickable::Open { request, .. }) => {
@@ -368,14 +447,35 @@ where
     started(&flow, &keys, (job, form.quote), view).await
 }
 
+/// PICK-049, A11Y-011, A11Y-012, D-3032: the review shown again after a final Pick with the share
+/// box unticked: nothing sent or stored, the posted backup kept, the box unticked with its error.
+fn refused(
+    request: i64,
+    form: &PickForm,
+    others: Vec<usize>,
+    link: (String, String),
+) -> ReviewView {
+    let mut view = ReviewView::review(request, form.quote, link.0, link.1);
+    view.backup = form
+        .backup
+        .trim()
+        .parse()
+        .ok()
+        .filter(|n| others.contains(n));
+    view.others = others;
+    view.share_error = true;
+    view
+}
+
 /// The browser a backup choice belongs to: the SHA256 of the page's CSRF token (D-2661).
 fn browser(csrf: &str) -> Browser {
     Sha256::digest(csrf.as_bytes()).into()
 }
 
-/// PICK-047, D-400, D-2661: stores the backup posted with the final Pick of `quote` on `job`
-/// from `browser` (empty or unreadable is "No backup"; `choose_backup` keeps only another
-/// available quote); it counts only once bound after her code. A failed write is a bare 500,
+/// PICK-047, PICK-049, D-400, D-2661, D-3032: stores the backup posted with the final Pick of
+/// `quote` on `job` from `browser` (empty or unreadable is "No backup"; `choose_backup` keeps only
+/// another available quote) and logs the ticked share box; both count only once bound after her
+/// code. A failed write is a bare 500,
 /// logged once with no value.
 async fn keep_backup<V>(
     flow: &PickFlow<V>,
@@ -387,8 +487,10 @@ async fn keep_backup<V>(
     let named = backup.trim().parse::<usize>().ok();
     choose_backup(&mut db, (job, quote), (named, browser), flow.clock.now())
         .await
-        .map(|_| ())
-        .map_err(|_| failed("backup"))
+        .map_err(|_| failed("backup"))?;
+    tick_share(&mut db, (job, quote), browser, flow.clock.now())
+        .await
+        .map_err(|_| failed("share"))
 }
 
 /// Starts the code for `quote` of `job` and renders what happened in `view`: the result page for
@@ -612,6 +714,10 @@ struct CodeForm {
     /// (PICK-047, D-2661) and never read: only the final Pick stores a backup.
     #[serde(default, rename = "backup")]
     _backup: String,
+    /// The review form's share box, accepted and never read here: only the final Pick logs it
+    /// (PICK-049, D-3032).
+    #[serde(default, rename = "share")]
+    _share: String,
 }
 
 impl CsrfField for CodeForm {
@@ -709,6 +815,7 @@ impl CodeView {
             email: String::new(),
             send: String::new(),
             _backup: String::new(),
+            _share: String::new(),
         };
         Self::checked(request, token, csrf, form)
     }
@@ -904,8 +1011,9 @@ where
 /// seen: CON-029, D-1602): the pause re-checked, the page pick, then the terms acceptance with
 /// channel `quote_page`, the line shown beside the final Pick and the published Terms (PICK-016,
 /// TERMS-016, D-1516). `false` when nothing could be picked (rolled back: the job moved, was
-/// paused or the quote went); a failed acceptance insert rolls the pick back too. The backup
-/// `browser` asked for is bound to the pick, new or kept, in the same transaction (D-2661).
+/// paused or the quote went, or this browser never ticked the share box for the quote: PICK-049);
+/// a failed acceptance insert rolls the pick back too. The backup and the share tick `browser`
+/// sent are bound to the pick, new or kept, in the same transaction (D-2661, D-3032).
 async fn store<V>(
     flow: &PickFlow<V>,
     keys: &PickCodeKeys<V>,
@@ -914,6 +1022,12 @@ async fn store<V>(
 ) -> Result<bool, StatusCode> {
     let now = flow.clock.now();
     let mut tx = flow.pool.begin().await.map_err(|_| failed("begin"))?;
+    if !share_ticked(&mut tx, (job, quote), browser)
+        .await
+        .map_err(|_| failed("share"))?
+    {
+        return Ok(false);
+    }
     let paused = paused_under_lock(&mut tx, owner.conversation, job)
         .await
         .map_err(|_| failed("pause"))?;
@@ -921,18 +1035,14 @@ async fn store<V>(
     let pick = match page_pick(&mut tx, (job, paused), quote, actor, now).await {
         Ok(PagePick::Picked(pick)) => pick,
         Ok(PagePick::Same(pick)) => {
-            bind_backup(&mut tx, pick, browser, now)
-                .await
-                .map_err(|_| failed("backup"))?;
+            bind(&mut tx, ((job, quote), pick), browser, now).await?;
             tx.commit().await.map_err(|_| failed("commit"))?;
             return Ok(true);
         }
         Ok(PagePick::Taken) | Err(askhava_picks::api::PicksError::MovedOn) => return Ok(false),
         Err(_) => return Err(failed("pick")),
     };
-    bind_backup(&mut tx, pick, browser, now)
-        .await
-        .map_err(|_| failed("backup"))?;
+    bind(&mut tx, ((job, quote), pick), browser, now).await?;
     // The review step is shown in English only until the page reads the request's language
     // (D-1249), so the acceptance stores the English line it showed, not `owner.language`.
     let (_, lead, link) = PageLanguage::En.terms();
@@ -953,6 +1063,22 @@ async fn store<V>(
         .map_err(|_| failed("terms"))?;
     tx.commit().await.map_err(|_| failed("commit"))?;
     Ok(true)
+}
+
+/// PICK-047, PICK-049, D-2661, D-3032: binds `browser`'s backup and its share tick to the pick,
+/// new or kept, in the transaction that stores it.
+async fn bind(
+    tx: &mut sqlx::PgConnection,
+    (asked, pick): ((Uuid, usize), Uuid),
+    browser: &Browser,
+    now: jiff::Timestamp,
+) -> Result<(), StatusCode> {
+    bind_backup(tx, pick, browser, now)
+        .await
+        .map_err(|_| failed("backup"))?;
+    bind_share(tx, (asked, pick), browser, now)
+        .await
+        .map_err(|_| failed("share"))
 }
 
 #[cfg(test)]
@@ -984,6 +1110,49 @@ mod code_tests {
             "@example.com",
         ] {
             assert!(email_problem(bad).is_some(), "{bad}");
+        }
+    }
+}
+
+#[cfg(test)]
+mod share_tests {
+    //! The share box as rendered (TD-PICK-34, TD-PICK-19; PICK-049, A11Y-011). Fake values only.
+
+    use askama::Template;
+
+    use super::{PageLanguage, ReviewView};
+
+    fn review(language: PageLanguage, refused: bool) -> String {
+        let mut view = ReviewView::review(1042, 2, "t".to_owned(), "c".to_owned())
+            .in_language(language)
+            .for_business("Sample Plumbing");
+        view.share_error = refused;
+        view.render().expect("review renders")
+    }
+
+    #[test]
+    fn td_pick_34_share_box_unticked_before_pick_in_english_and_spanish() {
+        let cases = [
+            (
+                PageLanguage::En,
+                "Share my first name and the job address with Sample Plumbing once they accept.",
+            ),
+            (
+                PageLanguage::Es,
+                "Compartir mi nombre de pila y la dirección del trabajo con Sample Plumbing cuando acepte.",
+            ),
+        ];
+        for (language, label) in cases {
+            for refused in [false, true] {
+                let html = review(language, refused);
+                let label_at = html.find(label).expect("label");
+                assert!(label_at < html.find("id=\"final-pick\"").expect("button"));
+                assert!(
+                    html.contains("type=\"checkbox\" id=\"share\" name=\"share\" value=\"yes\"")
+                );
+                assert!(!html.contains(" checked"), "never rendered ticked");
+                assert_eq!(html.contains("id=\"share-error\""), refused);
+            }
         }
     }
 }

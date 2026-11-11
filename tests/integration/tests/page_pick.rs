@@ -128,7 +128,7 @@ impl Page {
     /// The final Pick of quote `n` (the code step).
     async fn pick(&self, n: &str) -> String {
         self.clock.advance(jiff::SignedDuration::from_secs(1));
-        let (status, body) = self.post("/pick", &[("quote", n)]).await;
+        let (status, body) = self.post("/pick", &[("quote", n), ("share", "yes")]).await;
         assert_eq!(status, StatusCode::OK, "{body}");
         body
     }
