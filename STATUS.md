@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-11T12:59:57Z by runner 8eba59454470 (actions).
+Updated 2026-11-11T13:03:56Z by runner 8eba59454470 (actions).
 
 **Building: T384 in progress since 12:59Z; 204 of 372 done; week 66% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 204 of 372 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T384 claimed 12:59Z, lease until 15:59Z; lane 3: T333 claimed 12:24Z, lease until 15:24Z
-- **Week:** 66% used, 59.1M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:43Z, 16 min before this update
+- **Lane:** lane 1: T384 claimed 12:59Z, lease until 15:59Z; lane 2: T214 claimed 13:03Z, lease until 16:03Z; lane 3: T333 claimed 12:24Z, lease until 15:24Z
+- **Week:** 66% used, 55.7M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Last run:** 13:00Z, 3 min before this update
 - **Keeper:** last ran 12:42Z, next wake 15:26Z
 
 ## Needs attention
@@ -118,7 +118,7 @@ Updated 2026-11-11T12:59:57Z by runner 8eba59454470 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-11T12:42:42Z (week)): five-hour: 14.9M used, 14.2M left, resets 2026-11-11T14:49:36Z; week: 134.9M used, 59.1M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-04T17:10:47Z.
+- Pacing (session_reading 2026-11-11T12:42:42Z (week)): five-hour: 18.3M used, 10.8M left, resets 2026-11-11T14:49:36Z; week: 138.3M used, 55.7M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-04T17:14:57Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -134,6 +134,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T384 (lease until 2026-11-11T15:59:44Z)
+- lane 2: T214 (lease until 2026-11-11T16:03:53Z)
 - lane 3: T333 (lease until 2026-11-11T15:24:00Z)
 
 ## Last usage reading
