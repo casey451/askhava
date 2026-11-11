@@ -13,6 +13,7 @@
 use std::collections::HashSet;
 use std::sync::OnceLock;
 
+use askhava_core::api::brand;
 use serde::Deserialize;
 use unicode_normalization::UnicodeNormalization;
 use unicode_normalization::char::is_combining_mark;
@@ -301,11 +302,26 @@ fn adds_fact(text: &str, sources: &[&str]) -> bool {
             let word = token.trim_matches(|c: char| !is_word(c));
             let named = !starts
                 && word.chars().next().is_some_and(char::is_uppercase)
-                && !["I", "Ask", "Hava"].contains(&word);
+                && word != "I"
+                && !is_brand_word(word);
             starts = token.ends_with(['.', '!', '?', ':']);
             named && unknown(word)
         })
     })
+}
+
+/// A word of the brand's display or short name, English or Spanish, which a question may name
+/// capitalised without adding a fact (AI-019, WORD-001, D-1932).
+fn is_brand_word(word: &str) -> bool {
+    let names = brand();
+    [
+        names.display_name(),
+        names.short_name(),
+        names.es().display_name(),
+        names.es().short_name(),
+    ]
+    .iter()
+    .any(|name| name.split_whitespace().any(|part| part == word))
 }
 
 /// CARD-008's shapes: 7 or more digits in any script (spaces, dashes, dots and brackets between), a run of
