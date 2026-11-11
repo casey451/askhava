@@ -2179,3 +2179,9 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **What happened.** Twice today a step (the no-fee check and the brand switch) stopped on its first try and said plainly that the plan had to change first. The runner treated that like an ordinary failed try and ran the same step again, unchanged, one or two more times; each repeat hit the same wall and spent a lot of usage for nothing.
 - **What changed.** A step that finds it cannot pass without a change the plan forbids it to make now says so in a fixed first line, naming the file and the step that owns it (a hard job or its own failing test does not count). Once the reviewer agrees, the runner stops it at once, lists it under "Needs attention" on the status page and leaves a note in the outbox. It comes back after the plan is fixed, with the tries it has left; if the report turns out to be wrong, one command brings it straight back.
 - **Nothing needs you now.**
+
+## The no-fee check meets a third old test (plan change, D-2896, November 11)
+
+- **What happened.** The no-fee check step tried again after this morning's fix and found one more older test it was not allowed to touch. That test lets two businesses quote the same job, then assumes the homeowner's first pick went to a particular one of them; really the page lists them in an order that comes out either way, so with the new check the test failed about half the time.
+- **What changed.** The step may now fix that test's setup so it uses the business the pick really went to, and only that: every check in it stays exactly as it was. The step that adds job details to the same test file now waits for it, so only one step edits the file at a time. No other test calls the no-fee check with a guessed business, so a fourth surprise of this kind is not expected.
+- **Nothing needs you now.**
