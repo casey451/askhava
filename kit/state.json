@@ -28000,8 +28000,8 @@
    "deps": [
     "T287"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 2,
+   "status": "BLOCKED",
+   "attempts": 3,
    "slug": "no-fee-release-pick-bound",
    "type": "build",
    "stage": "4",
@@ -28040,9 +28040,23 @@
      "started_at": "2026-11-11T04:25:41Z",
      "ended_at": "2026-11-11T04:51:04Z",
      "result": "QUEUED"
+    },
+    {
+     "attempt": 3,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 79,
+     "head_sha": "496c504986770f7b32e261e64d77a664a8d0ce10",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-11T04:55:48Z",
+     "ended_at": "2026-11-11T05:11:51Z",
+     "result": "BLOCKED"
     }
    ],
-   "lane": "3"
+   "lane": "3",
+   "reason": "T337 built and committed (496c5049) but smoke/prehandin red on tests T337 does not own: confirm_and_pay.rs td_fee_25_a_paid_pick_is_never_cleared_as_no_fee and td_fee_25_a_recorded_no_fee_decision_clears (need fix_fee_at_pick rows), app/server/tests/release_recovery.rs td_pick_50_a_zero_fee_releases_free_and_a_cancelled_pick_nothing (random pick order). No assertion change; needs plan/harness fix (D-2714, plan branch claude/plan-t337-fixture D-2832 unmerged)."
   },
   {
    "id": "T333",
@@ -29111,12 +29125,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T209",
-   "at": "2026-11-11T05:06:30Z",
-   "cache_read_input_tokens": 80841812,
-   "output_tokens": 291655,
-   "input_tokens": 820,
-   "cache_creation_input_tokens": 1193920
+   "task": "T337",
+   "at": "2026-11-11T05:11:51Z",
+   "cache_creation_input_tokens": 209039,
+   "input_tokens": 155,
+   "cache_read_input_tokens": 5585684,
+   "output_tokens": 41795
   },
   "source": "session_reading 2026-11-11T04:51:22Z (week)",
   "by_task": {
@@ -30878,10 +30892,10 @@
    "T337": {
     "estimated_bytes": 525767,
     "estimated_tokens": 2844235,
-    "cache_read_input_tokens": 12361386,
-    "input_tokens": 295,
-    "cache_creation_input_tokens": 391626,
-    "output_tokens": 73898,
+    "cache_read_input_tokens": 17947070,
+    "input_tokens": 450,
+    "cache_creation_input_tokens": 600665,
+    "output_tokens": 115693,
     "last_model": "claude-opus-5-5"
    },
    "T374": {
@@ -30915,11 +30929,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-11T04:44:28Z",
-    "tokens": 10583583
+    "tokens": 11393140
    },
    "week": {
     "start": "2026-11-05T19:01:47Z",
-    "tokens": 276794775
+    "tokens": 277604332
    }
   },
   "session_reading": {
@@ -30930,7 +30944,7 @@
    }
   }
  },
- "updated_at": "2026-11-11T05:09:12Z",
+ "updated_at": "2026-11-11T05:11:52Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -31028,8 +31042,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "89fd85f4a8a06259c6c7d90474372d3914d5752e",
- "starter": "manual",
+ "runner_sha": "496c504986770f7b32e261e64d77a664a8d0ce10",
+ "starter": "actions",
  "smoke_runs": [
   {
    "sha": "fbfe8c8cd68fb6fe2f231354f28b782260f1f9d8",

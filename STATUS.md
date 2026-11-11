@@ -1,25 +1,26 @@
 # Ask Hava build status
 
-Updated 2026-11-11T05:09:12Z by runner 89fd85f4a8a0 (manual).
+Updated 2026-11-11T05:11:52Z by runner 496c50498677 (actions).
 
-**Building: T337 in progress since 04:55Z; 195 of 370 done; week 60% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 05:11Z; 195 of 369 done; week 60% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 195 of 370 build tasks (owner gates not counted)
+- **Tasks done:** 195 of 369 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 3: T337 claimed 04:55Z, lease until 07:55Z
+- **Lane:** idle since 05:11Z (no task in progress)
 - **Week:** 60% used, 67.6M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:08Z, 0 min before this update
+- **Last run:** 05:09Z, 2 min before this update
 - **Keeper:** last ran 05:08Z, next wake 07:58Z
 
 ## Needs attention
-- nothing
+- BLOCKED T337: T337 built and committed (496c5049) but smoke/prehandin red on tests T337 does not own: confirm_and_pay.rs td_fee_25_a_paid_pick_is_never_cleared_as_no_fee and td_fee_25_a_recorded_no_fee_decision_clears (need fix_fee_at_pick rows), app/server/tests/release_recovery.rs td_pick_50_a_zero_fee_releases_free_and_a_cancelled_pick_nothing (random pick order). No assertion change; needs plan/harness fix (D-2714, plan branch claude/plan-t337-fixture D-2832 unmerged).
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T337 | payments: a $0 release proof is bound to the pick's own stor | BLOCKED | 3 | 16 min | 05:11Z | T337 built and committed (53e675b1, cf42d54e); smoke/prehandin red on tests T337 does not own: confirm_and_pay.rs td_fee |
 | T209 | picks and payments: the optional auto-confirm-and-pay box wi | MERGE_PENDING | 1 | 115 min | 05:06Z |  |
 | T295 | payments, ai, intake and picks take the brand from the brand | BLOCKED | 3 | 0 min | 04:59Z | T295 blocked at step 3: tests/brand_literal_baseline.json still lists files T295 does not own: app/messaging/templates/e |
-| T337 | payments: a $0 release proof is bound to the pick's own stor | QUEUED | 2 | 25 min | 04:51Z | T337 built and committed (53e675b1, cf42d54e); smoke/prehandin red on tests T337 does not own: confirm_and_pay.rs td_fee |
+| T337 | payments: a $0 release proof is bound to the pick's own stor | QUEUED | 2 | 25 min | 04:51Z |  |
 | T295 | payments, ai, intake and picks take the brand from the brand | QUEUED | 2 | 0 min | 04:49Z |  |
 | T295 | payments, ai, intake and picks take the brand from the brand | QUEUED | 1 | 1 min | 04:44Z |  |
 | T374 | licensing and businesses: one read of everything a business  | done | 1 | 45 min | 03:08Z |  |
@@ -68,8 +69,8 @@ Updated 2026-11-11T05:09:12Z by runner 89fd85f4a8a0 (manual).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 204 of 733 (27.8%) · partial 340 · unstarted 189
-**Tasks merged (throughput only):** 195 of 370
+**Requirements verified:** 205 of 733 (28.0%) · partial 339 · unstarted 189
+**Tasks merged (throughput only):** 195 of 369
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -83,7 +84,7 @@ Updated 2026-11-11T05:09:12Z by runner 89fd85f4a8a0 (manual).
 | job-cards | 10 | 12 | 2 | 24 |
 | licensing | 24 | 24 | 0 | 48 |
 | lifecycle | 17 | 11 | 0 | 28 |
-| messaging | 18 | 24 | 3 | 45 |
+| messaging | 19 | 23 | 3 | 45 |
 | ops-recovery | 2 | 5 | 47 | 54 |
 | privacy | 6 | 22 | 3 | 31 |
 | quiet-hours | 4 | 5 | 0 | 9 |
@@ -113,7 +114,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 3: T337 (lease until 2026-11-11T07:55:48Z)
 
 ## Last usage reading
-- {"task": "T209", "at": "2026-11-11T05:06:30Z", "cache_read_input_tokens": 80841812, "output_tokens": 291655, "input_tokens": 820, "cache_creation_input_tokens": 1193920}
+- {"task": "T337", "at": "2026-11-11T05:11:51Z", "cache_creation_input_tokens": 209039, "input_tokens": 155, "cache_read_input_tokens": 5585684, "output_tokens": 41795}
