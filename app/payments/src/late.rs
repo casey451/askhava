@@ -8,6 +8,12 @@
 //! and raises the [`LATE_SUCCESS_ALERT`] only when that task is new, so Casey is told once however
 //! often the success is reported. The task's handler, [`run_late_refund`], calls Stripe outside any
 //! transaction (R11) through `request_refund`, which refunds a pick once (FEE-026).
+//!
+//! T332 (FEE-018, FEE-020, D-2290): the refund row's trigger is its own `late-success`
+//! ([`LATE_TRIGGER`]), and every success `payments` stores calls [`late_success`] in its own
+//! transaction, so a success on a pick `payments` ended (the 4-hour end or the card-fix window)
+//! is queued whether the webhook, the charge check, or both record it, and whether the end or the
+//! success commits first (D-2958).
 
 use askhava_core::api::{HandlerError, NewTask, enqueue};
 use askhava_ops::api::{NewAlert, Severity, raise_alert};
@@ -19,7 +25,6 @@ use sqlx::PgPool;
 use sqlx::types::Uuid;
 
 use crate::models::{MoneyEventError, PickNow, RefundTrigger};
-use crate::refund_rules::RefundReason;
 use crate::refund_stripe::RefundStripe;
 use crate::refunds::request_refund;
 
@@ -27,9 +32,9 @@ use crate::refunds::request_refund;
 pub const LATE_KIND: &str = "payments.late_success_refund";
 /// The alert raised once per pick whose payment succeeded after it moved on (FEE-021).
 pub const LATE_SUCCESS_ALERT: &str = "payments.late_success";
-/// The trigger stored on a late success's refund row: a charge taken after the job moved on
-/// (D-1547; `payments.refund.trigger` has no code of its own for it yet).
-pub const LATE_TRIGGER: RefundTrigger = RefundTrigger::Rule(RefundReason::ChargedAfterCancel);
+/// The trigger stored on a late success's refund row, its own code `late-success` (FEE-021,
+/// D-1547, D-2290; migration 0177).
+pub const LATE_TRIGGER: RefundTrigger = RefundTrigger::LateSuccess;
 const PICK_SUBJECT: &str = "payments.pick_intent";
 
 /// What [`late_success`] did with a succeeded payment (FEE-021).
@@ -52,9 +57,12 @@ fn db<T>(result: Result<T, sqlx::Error>) -> Result<T, MoneyEventError> {
 /// (or `payments` ended the pick itself) is queued for its refund and alerted, once per pick.
 /// Runs in the caller's transaction; calls no vendor.
 ///
-/// The success must be recorded first: on a pick `payments` ended, `paid_release` stops at
-/// `PickEnded` without storing it, and the `CHECK_KIND` round that records it later calls nothing
-/// here, so the caller (T191) calls again once that round has stored it (D-1547).
+/// The success must be recorded first. `payments` calls this itself, with `PickNow::Payable`, in
+/// the transaction that stores any success (`handlers::record`, so `paid_release` and the
+/// `CHECK_KIND` round alike), and `handlers::end_pick` calls it when it ends a pick whose success
+/// is already stored, so a success on a pick `payments` ended is queued once whichever of the two
+/// commits last (D-2290, D-2958). The select takes the pick's `pick_intent` share lock, so it waits
+/// for a concurrent end and reads the committed `ended_at`.
 ///
 /// # Errors
 /// [`MoneyEventError::NothingCharged`] when the pick has no succeeded charge (no FEE-042 evidence
@@ -71,7 +79,7 @@ pub async fn late_success(
                    OR EXISTS (SELECT 1 FROM payments.dispute d WHERE d.pick_id = e.pick_id))
                    AS "in_hand!"
              FROM payments.charge_evidence e JOIN payments.pick_intent p ON p.pick_id = e.pick_id
-            WHERE e.pick_id = $1"#,
+            WHERE e.pick_id = $1 FOR SHARE OF p"#,
         pick,
     )
     .fetch_optional(&mut *conn)
