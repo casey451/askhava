@@ -103,7 +103,7 @@ impl NoteScreener for StandInAi {
 }
 
 /// TD-PICK-35 (PICK-052, D-442): contact and off-platform notes come back with the reason; a
-/// note over 300 characters too; a plain note passes; the stand-in AI flags criticism.
+/// note over 300 characters too; a plain note passes.
 #[tokio::test]
 async fn td_pick_35_notes_come_back_with_the_reason() {
     let outside = format!(
@@ -145,6 +145,12 @@ async fn td_pick_35_notes_come_back_with_the_reason() {
     assert_eq!(check_note(&"a".repeat(NOTE_LIMIT)), Ok(()));
     let long = check_note(&"a".repeat(NOTE_LIMIT + 1));
     assert_eq!(long, Err(NoteProblem::TooLong));
+}
+
+/// TD-PICK-35 (PICK-052, D-442): with the stand-in AI check on, a note criticizing another
+/// business is flagged with the reason; a plain note passes; with the check off nothing is flagged.
+#[tokio::test]
+async fn td_pick_35_the_stand_in_ai_flags_criticism() {
     let plain = "Includes haul-away of the old unit. Two of us on site.";
     assert_eq!(screen_note(plain, Some(&StandInAi)).await, Ok(()));
     let rude = "The other company in town does sloppy work. We don't.";
