@@ -13,7 +13,6 @@ The layer-2 crate that loads `docs/catalog/categories.yaml` (the K2b list) into 
 - `src/service.rs`: the SQL: `load`, reads, `set_enabled`.
 - `src/models.rs`: file types (`Catalog`, `CategoryDef`, `LicenseRule`), `Category`, `CatalogError`.
 - Migration `0027_catalog_module.sql`: `catalog.category`, `job_type`, `license_rule`, `fee_rule`, `not_offered`.
-- `api.rs` (T209, D-2783): `stripe_answer_filed` over `catalog.stripe_written_answer` (migration `0159_catalog_stripe_answer.sql`; T108's settings page files it).
 
 ## Rules it enforces
 
@@ -25,7 +24,6 @@ The layer-2 crate that loads `docs/catalog/categories.yaml` (the K2b list) into 
 
 - LIC-042: `loader::covers_warranty` makes `parse` refuse a category, job type or keyword (and `parse_bank` a set code) that covers a warranty, protection plan, service contract or guarantee (D-755).
 - CARD-010: `restricted_words::restricted_match`: whole-word, any-case match against the SHAFT, cannabis and drug list, naming the entry, never the text; trade words such as "weed" and "nail gun" are off the list on purpose (D-813). `ai` screens AI-written text with it (AI-021); `quotes` (T185) removes the phrases from card descriptions.
-- PICK-048, D-401: only the latest filed Stripe answer counts, and only `allows = true` lets the auto-confirm box show or the off-session charge run.
 
 ## Never break
 
@@ -45,4 +43,3 @@ The layer-2 crate that loads `docs/catalog/categories.yaml` (the K2b list) into 
 - `src/tests/question_bank_load.rs` (TD-LIC-24, TD-LIC-16; LIC-040 to LIC-042).
 - The restricted list's cases are in `app/ai/src/tests/no_tools.rs::restricted_list_matches_whole_words_only` (T024, TD-AI-10).
 - `src/tests/loader.rs` and `tests/integration/tests/catalog_settings.rs` (TD-LIC-01; LIC-001 to LIC-005, AI-017).
-- `tests/integration/tests/auto_confirm.rs` (T209: the filed-answer cases): `cargo test -p askhava-integration --test auto_confirm`.

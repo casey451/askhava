@@ -5,9 +5,10 @@
 //! ticked it, the fee shown, the authorization version ([`AUTO_CONFIRM_VERSION`], the wording of
 //! [`auto_confirm_authorization`]) and the saved card it was ticked with; [`untick_auto_confirm`]
 //! ends it (the business's own untick, or `picks`' void when the member, the card, the fee or the
-//! version no longer match); [`auto_confirm_of`] is the live tick `picks` reads at the pick. This
-//! module never decides whether the box shows (Stripe's written answer filed, a saved card and the
-//! member's role are the portals route's), never checks the fresh Verify code (the route's
+//! version no longer match); [`auto_confirm_of`] is the live tick `picks` reads at the pick;
+//! [`stripe_answer_filed`] reads the owner's filed Stripe answer (D-2783). This
+//! module never decides whether the box shows (the answer filed, a saved card and the member's
+//! role are the portals route's), never checks the fresh Verify code (the route's
 //! `require_step_up` first) and never charges anything.
 
 use askhava_core::api::brand;
@@ -196,4 +197,21 @@ pub async fn auto_confirm_of(
         authorization_version: r.authorization_version,
         payment_method: r.payment_method,
     }))
+}
+
+/// PICK-048, FEE-014, D-401, D-2783: whether the owner-portal record "Stripe written answer on
+/// charges without the business present" is filed and allows the charge: the latest filed record
+/// (date, reference and answer) in `quotes.stripe_written_answer` says yes. No record, or a latest
+/// one saying no, is `false`: no box shows and no off-session charge is made. The owner portal's
+/// settings page (T108) files the record.
+///
+/// # Errors
+/// [`AutoConfirmError::Database`].
+pub async fn stripe_answer_filed(db_conn: &mut PgConnection) -> Result<bool, AutoConfirmError> {
+    let allows = db(sqlx::query_scalar!(
+        "SELECT allows FROM quotes.stripe_written_answer ORDER BY filed_at DESC, id LIMIT 1"
+    )
+    .fetch_optional(db_conn)
+    .await)?;
+    Ok(allows == Some(true))
 }

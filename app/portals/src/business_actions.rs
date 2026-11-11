@@ -29,12 +29,12 @@ use askhava_core::api::{NewTask, brand, enqueue};
 use askhava_messaging::api::{notice_log, record_first_open};
 use askhava_payments::api::{
     BusinessId, Fee, FeeError, FeeQuote, Period as FeePeriod, PeriodJob, Tier, fee_for,
-    period_fee_for, saved_card_of, stripe_answer_filed,
+    period_fee_for, saved_card_of,
 };
 use askhava_quotes::api::{
     AUTO_CONFIRM_VERSION, AutoConfirmError as QuotesAutoError, AutoConfirmTick, DayPart, Parts,
     Period, Permit, Price, QuoteFacts, Spanish, TripFee, Untick, auto_confirm_authorization,
-    auto_confirm_of, tick_auto_confirm, untick_auto_confirm,
+    auto_confirm_of, stripe_answer_filed, tick_auto_confirm, untick_auto_confirm,
 };
 use jiff::Timestamp;
 use jiff::civil::Date;
@@ -784,7 +784,7 @@ pub struct AutoConfirmBox {
 /// PICK-048, FEE-014, D-401, D-491: the box for `principal`'s quote on `job` with the fee
 /// `fee_cents` (the one fee the form shows; `None` for none or more than one), or `None` when it
 /// is not shown: the person is not the owner or a "Confirm and billing" member, Stripe's written
-/// answer is not filed (`payments::api::stripe_answer_filed`, `catalog`'s record), the business
+/// answer is not filed (`quotes::api::stripe_answer_filed`, D-2783), the business
 /// has no saved card, or the quote has no single fee. This route decides, never `quotes`.
 ///
 /// # Errors

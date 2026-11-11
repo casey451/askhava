@@ -2,8 +2,9 @@
 //! FEE-014, FEE-016, FEE-041, D-401, D-480, D-1758).
 //!
 //! [`charge_off_session`] is the only code that charges a card without its business's press, and
-//! `picks::auto_confirm` its only caller. In order: Stripe's written answer must be filed and
-//! allow it ([`stripe_answer_filed`], `catalog`'s record), else nothing is charged; the card the
+//! `picks::auto_confirm` its only caller. In order: the caller must have found Stripe's written
+//! answer filed and allowing it (`answer_filed`, read through `quotes::api`, which `payments` may
+//! not call, D-2783), else nothing is charged; the card the
 //! box was ticked with must still be the business's saved card ([`saved_card_of`]), else nothing
 //! is charged; then one attempt goes through [`confirm_and_pay`] itself, so it passes every check
 //! a press passes (the fee fixed at the pick, the FEE-017 state, the charging pause, an earlier
@@ -20,7 +21,6 @@ use std::future::Future;
 use askhava_adapters::api::{
     AdapterError, Charge, IdempotencyKey, PaymentIntent, PaymentsAdapter, StripeRefund,
 };
-use askhava_catalog::api as catalog;
 use jiff::Timestamp;
 use jiff_sqlx::ToSqlx;
 use secrecy::SecretString;
@@ -118,17 +118,6 @@ impl<S: OffSessionStripe + Sync> IntentStripe for OffSession<'_, S> {
     }
 }
 
-/// PICK-048, FEE-014, D-401: whether Stripe's written answer on charges without the business
-/// present is filed and allows them (`catalog::api::stripe_answer_filed`).
-///
-/// # Errors
-/// [`ChargeError::Database`].
-pub async fn stripe_answer_filed(conn: &mut PgConnection) -> Result<bool, ChargeError> {
-    catalog::stripe_answer_filed(conn)
-        .await
-        .map_err(|_| ChargeError::Database)
-}
-
 /// FEE-014, FEE-015, PICK-048: the business's saved card, `pm_…`: its latest card not removed;
 /// `None` when it has none. Only the ID, never card data.
 ///
@@ -165,6 +154,9 @@ pub struct OffSessionCharge<'a> {
     pub payment_method: &'a str,
     /// The job was chosen as an emergency (PICK-044).
     pub emergency: bool,
+    /// The caller read Stripe's written answer filed and allowing the charge just now
+    /// (`quotes::api::stripe_answer_filed`, PICK-048, D-2783).
+    pub answer_filed: bool,
 }
 
 /// What a PICK-048 charge came to.
@@ -197,10 +189,10 @@ pub async fn charge_off_session(
     charge: &OffSessionCharge<'_>,
     at: Timestamp,
 ) -> Result<OffSessionOutcome, ChargeError> {
-    let mut conn = pool.acquire().await.map_err(|_| ChargeError::Database)?;
-    if !stripe_answer_filed(&mut conn).await? {
+    if !charge.answer_filed {
         return Ok(OffSessionOutcome::NotFiled);
     }
+    let mut conn = pool.acquire().await.map_err(|_| ChargeError::Database)?;
     let saved = saved_card_of(&mut conn, charge.business).await?;
     if saved.as_deref() != Some(charge.payment_method) {
         return Ok(OffSessionOutcome::CardChanged);

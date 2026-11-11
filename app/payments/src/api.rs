@@ -84,8 +84,8 @@
 //! [`tier_edge_flag`] applies the [`TierEdgeRule`] to a business's latest fee bases (FEE-033).
 //!
 //! T209: [`charge_off_session`] is the one off-session charge, the PICK-048 auto-confirm charge,
-//! through an [`OffSessionStripe`], only while [`stripe_answer_filed`] and only with the
-//! [`saved_card_of`] the business (PICK-048, PICK-056, FEE-014, D-401).
+//! through an [`OffSessionStripe`], only when the caller found Stripe's written answer filed and
+//! only with the [`saved_card_of`] the business (PICK-048, PICK-056, FEE-014, D-401).
 
 pub use crate::charge::{
     ATTEMPT_ACTION, ATTEMPT_SUBJECT, IN_FLIGHT, INTENT_ACTION, IntentStripe, confirm_and_pay,
@@ -124,7 +124,6 @@ pub use crate::models::{
 };
 pub use crate::off_session::{
     OffSessionCharge, OffSessionOutcome, OffSessionStripe, charge_off_session, saved_card_of,
-    stripe_answer_filed,
 };
 pub use crate::pick_fee::{
     PickFeeError, StoredPickFee, fee_terms_in_force, fix_fee_at_pick, pick_fee,

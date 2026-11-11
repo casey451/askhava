@@ -6,7 +6,7 @@
 //! text pick; only while Stripe's written answer is filed and the box is ticked; and the tick is
 //! void when its author is no longer the owner or a current "Confirm and billing" member, the saved
 //! card changed, or the fee or the authorization version differs from the one shown at the tick.
-//! [`auto_confirm`] reads those facts (the tick through `quotes::api`, the written answer, the
+//! [`auto_confirm`] reads those facts (the tick and the written answer through `quotes::api`, the
 //! saved card and the fee fixed at the pick through `payments::api`, the members through
 //! `businesses::api`) and either makes the one off-session charge through
 //! `payments::api::charge_off_session`, or voids the tick and queues the
@@ -19,10 +19,11 @@ use askhava_businesses::api::members;
 use askhava_core::api::{NewTask, enqueue};
 use askhava_payments::api::{
     BusinessId, OffSessionCharge, OffSessionOutcome, OffSessionStripe, charge_off_session,
-    pick_fee, saved_card_of, stripe_answer_filed,
+    pick_fee, saved_card_of,
 };
 use askhava_quotes::api::{
-    AUTO_CONFIRM_VERSION, AutoConfirmTick, Untick, auto_confirm_of, untick_auto_confirm,
+    AUTO_CONFIRM_VERSION, AutoConfirmTick, Untick, auto_confirm_of, stripe_answer_filed,
+    untick_auto_confirm,
 };
 use jiff::Timestamp;
 use secrecy::SecretString;
@@ -180,7 +181,7 @@ async fn facts(
 ) -> Result<(AutoFacts, u64), PicksError> {
     let filed = stripe_answer_filed(db)
         .await
-        .map_err(|_| PicksError::Database)?;
+        .map_err(|_| PicksError::Quotes)?;
     let fee = pick_fee(db, pick)
         .await
         .map_err(|_| PicksError::Database)?
@@ -246,6 +247,7 @@ pub async fn auto_confirm(
         amount_cents: u32::try_from(fee).map_err(|_| PicksError::Database)?,
         payment_method: &tick.payment_method,
         emergency,
+        answer_filed: facts.filed,
     };
     let outcome = charge_off_session(pool, stripe, secret, &charge, at)
         .await

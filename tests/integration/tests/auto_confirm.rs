@@ -255,7 +255,7 @@ fn period_job() -> PeriodJob {
 
 async fn file_answer(pool: &PgPool, allows: bool, when: Timestamp) {
     sqlx::query(
-        "INSERT INTO catalog.stripe_written_answer (answered_on, reference, allows, filed_at) \
+        "INSERT INTO quotes.stripe_written_answer (answered_on, reference, allows, filed_at) \
          VALUES ('2026-11-01', 'FAKE-REF-209', $1, $2)",
     )
     .bind(allows)
