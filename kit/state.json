@@ -21866,7 +21866,7 @@
     "T148",
     "T198"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 2,
    "slug": "picks-share-box-cant-take",
    "type": "build",
@@ -21880,8 +21880,8 @@
     2995,
     2996
    ],
-   "reason": "plan gap reported: PLAN GAP: tests/integration/tests/page_pick.rs:131 and tests/security/tests/page_pick_privacy.rs:224 (both T246's; page_pick.rs also T343's) and tests/e2e/j1_homeowner.spec.ts:203 (T098's) press the final Pick without the share box, which PICK-049 now requires. Smallest plan change: give T214 those three test files for a fake-value change only (add (\"share\",\"yes\") to each posted final Pick, and check the box before #final-pick in j1_homeowner), or move the server-side refusal to a harness task that owns them. Evidence: kit/tasks.json ownership (T214 owns none of the three); page_pick.rs:131 po; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T214 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: tests/integration/tests/page_pick.rs:131 and tests/security/tests/page_pick_privacy.rs:224 (both T246's; page_pick.rs also T343's) and tests/e2e/j1_homeowner.spec.ts:203 (T098's) press the final Pick without the share box, which PICK-049 now requires. Smallest plan change: give T214 those three test files for a fake-value change only (add (\"share\",\"yes\") to each posted final Pick, and check the box before #final-pick in j1_homeowner), or move the server-side refusal to a harness task that owns them. Evidence: kit/tasks.json ownership (T214 owns none of the three); page_pick.rs:131 posts only quote and :266 expects the code text; page_pick_privacy.rs:224 posts only quote and expects the code text; j1_homeowner.spec.ts:203 clicks #final-pick unticked and expects the Finish your pick heading. Reviewer confirmed: refusing at /pick or /code breaks them, and accepting a missing field breaks PICK-049.",
+   "reason": null,
+   "last_failure": "PLAN GAP: tests/integration/tests/page_pick.rs:131 and tests/security/tests/page_pick_privacy.rs:224 (both T246's; page_pick.rs also T343's) and tests/e2e/j1_homeowner.spec.ts:203 (T098's) press the final Pick without the share box, which PICK-049 now requires. Smallest plan change: give T214 those three test files for a fake-value change only (add (\"share\",\"yes\") to each posted final Pick, and check the box before #final-pick in j1_homeowner), or move the server-side refusal to a harness task that owns them. Evidence: kit/tasks.json ownership (T214 owns none of the three); page_pick.rs:131 posts only quote and :266 expects the code text; page_pick_privacy.rs:224 posts only quote and expects the code text; j1_homeowner.spec.ts:203 clicks #final-pick unticked and expects the Finish your pick heading. Reviewer confirmed: refusing at /pick or /code breaks them, and accepting a missing field breaks PICK-049.\nre-queued after plan fix D-3032: D-3032: T214 (harness) owns the share-box refusal and ticks the box in the five finished tests that press the final Pick",
    "history": [
     {
      "attempt": 1,
@@ -21923,6 +21923,19 @@
      "plan_head": "18c60bd6ee5c4a08c8a19e95b51d569f9ebfe650",
      "plan_then": "72e05070692d8e539f55fc60ce3b1b913f9cd3cd742e10d0f6f0d1e8ca149d8e",
      "plan_now": "b2aecf84674edf0043728058073f76d5a2ec62c4853a228e58b8a68ad7a39292"
+    },
+    {
+     "at": "2026-11-11T15:44:17Z",
+     "reason": "D-3032: T214 (harness) owns the share-box refusal and ticks the box in the five finished tests that press the final Pick",
+     "by": "manual-10d8e672c9b3",
+     "was": "plan gap reported: PLAN GAP: tests/integration/tests/page_pick.rs:131 and tests/security/tests/page_pick_privacy.rs:224 (both T246's; page_pick.rs also T343's) and tests/e2e/j1_homeowner.spec.ts:203 (T098's) press the final Pick without the share box, which PICK-049 now requires. Smallest plan change: give T214 those three test files for a fake-value change only (add (\"share\",\"yes\") to each posted final Pick, and check the box before #final-pick in j1_homeowner), or move the server-side refusal to a harness task that owns them. Evidence: kit/tasks.json ownership (T214 owns none of the three); page_pick.rs:131 po; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T214 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 2,
+     "plan_fix": "D-3032",
+     "plan_since": "2026-11-11T15:01:03Z",
+     "plan_base": "18c60bd6ee5c4a08c8a19e95b51d569f9ebfe650",
+     "plan_head": "4ce9c9f7532defdddef49a12870e7f8488062a38",
+     "plan_then": "b2aecf84674edf0043728058073f76d5a2ec62c4853a228e58b8a68ad7a39292",
+     "plan_now": "f6bf5f9ec1a8f4861c4e66645599efe6d1e3aba7a9211a6d8172fbc64d556cd6"
     }
    ]
   },
@@ -33176,7 +33189,7 @@
    }
   }
  },
- "updated_at": "2026-11-11T15:38:02Z",
+ "updated_at": "2026-11-11T15:44:17Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -33274,8 +33287,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "db621470604098c8b7a3a9c2e60cdb55d612e9ee",
- "starter": "actions",
+ "runner_sha": "4ce9c9f7532defdddef49a12870e7f8488062a38",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "ea7b57e0aac03c4061b9ec51fe0e3a7a51032554",
