@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T18:21:01Z by runner 60a8d50b1c56 (actions).
+Updated 2026-11-11T18:28:21Z by runner 60a8d50b1c56 (actions).
 
 **Building: T228 in progress since 17:51Z; 211 of 373 done; week 71% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,10 +8,11 @@ Updated 2026-11-11T18:21:01Z by runner 60a8d50b1c56 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T228 claimed 17:51Z, lease until 20:51Z
 - **Week:** 71% used, 47.6M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:17Z, 3 min before this update
+- **Last run:** 18:17Z, 11 min before this update
 - **Keeper:** last ran 18:12Z, next wake 20:54Z
 
 ## Needs attention
+- PLAN GAP T280 (since 2026-11-11T18:20:53Z, no attempt used; a plan change fixes it): T280: dependency T272 is DONE but its owned file migrations/0167_portals_code_tries.sql is not on main; T280: dependency T272 is DONE but its owned file tests/security/tests/signin_admission.rs is not on main
 - Strict plan check red: 27 problem(s) on tasks still to run (+54 on DONE tasks); first: T340: stored context_pct 35% but it measures 39%; regenerate
 
 ## Last 24 hours
@@ -101,7 +102,6 @@ Updated 2026-11-11T18:21:01Z by runner 60a8d50b1c56 (actions).
 - 19:42Z Plan: second tiering pass — 13 more tasks on Sonnet, T159 on Haiku, reviewer counterexample duty (D-2506) (#427)
 - 19:31Z Plan: PIN draws fail only when the OS source fails; one failed draw costs one draw (D-2451, T311) (#422)
 - 19:17Z Plan: no Fable window on Thursday — the D-2225 window closes before it opens (D-2485) (#425)
-- 18:21Z Plan: two lanes, and each queued task on the lowest model that can do it well (D-2462, D-2463) (#424)
 
 ## Progress (requirements verified)
 
