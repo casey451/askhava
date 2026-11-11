@@ -48,22 +48,39 @@ pub const PIN_DRAWS: u8 = 8;
 /// The domain label of the calling-number digest in `calls.pin_try` (PRIV-024).
 pub const PIN_TRY_LABEL: &str = "pin-try|v1";
 
-/// The first unused PIN of at most [`PIN_DRAWS`] numbers from `source`; `None` when every draw
-/// collided with `used` or the source failed (CALL-003, D-1755).
+/// Two-byte values drawn at most for one number; each is rejected with odds 5,536 in 65,536, so
+/// all 64 rejected (about 2e-69) is never the reason a draw fails (D-2451).
+const NUMBER_TRIES: u8 = 64;
+/// The largest multiple of 10,000 two bytes hold; values from it up are drawn again (D-2451).
+const UNBIASED_BELOW: u16 = 60_000;
+
+/// The first unused PIN of at most [`PIN_DRAWS`] numbers from `source`; a failed or invalid draw
+/// costs that one draw, not the rest; `None` when no draw gave a free PIN (CALL-003, CALL-017,
+/// D-1755, D-2451).
 pub(crate) fn draw_pin(used: &[JobPin], mut source: impl FnMut() -> Option<u16>) -> Option<JobPin> {
     (0..PIN_DRAWS)
-        .map_while(|_| source().and_then(JobPin::from_number))
+        .filter_map(|_| source().and_then(JobPin::from_number))
         .find(|pin| !used.contains(pin))
 }
 
-/// One number below 10,000 from the OS random source, without modulo bias.
+/// One number below 10,000 from the OS random source, without modulo bias (D-2451).
 fn os_number() -> Option<u16> {
-    (0..4).find_map(|_| {
+    number_from(|bytes| SysRng.try_fill_bytes(bytes).ok())
+}
+
+/// One number below 10,000 from two-byte values `fill` writes, drawing again while a value is at
+/// least [`UNBIASED_BELOW`]; `None` only when `fill` fails (or, never in practice, after
+/// [`NUMBER_TRIES`] rejections) (CALL-003, D-2451).
+fn number_from(mut fill: impl FnMut(&mut [u8; 2]) -> Option<()>) -> Option<u16> {
+    for _ in 0..NUMBER_TRIES {
         let mut bytes = [0_u8; 2];
-        SysRng.try_fill_bytes(&mut bytes).ok()?;
+        fill(&mut bytes)?;
         let n = u16::from_be_bytes(bytes);
-        (n < 60_000).then_some(n % 10_000)
-    })
+        if n < UNBIASED_BELOW {
+            return Some(n % 10_000);
+        }
+    }
+    None
 }
 
 /// A PIN no open line on `number` holds, drawn under the pool lock in `tx` (CALL-003, D-1755).
@@ -501,8 +518,9 @@ async fn connect(
 
 #[cfg(test)]
 mod tests {
-    //! TD-CALL-13's forced-collision cases (CALL-003, D-1755) on the pure draw.
-    use super::{PIN_DRAWS, draw_pin};
+    //! TD-CALL-13's forced-collision cases (CALL-003, D-1755) on the pure draw, and TD-CALL-20's
+    //! failed-draw and rejection cases (CALL-003, CALL-017, D-2451).
+    use super::{PIN_DRAWS, draw_pin, number_from};
     use crate::routing::JobPin;
 
     fn pin(n: u16) -> JobPin {
@@ -527,5 +545,49 @@ mod tests {
         assert_eq!((got, calls), (None, u32::from(PIN_DRAWS)));
         assert_eq!(draw_pin(&[], || None), None);
         assert_eq!(draw_pin(&[], || Some(10_000)), None);
+    }
+
+    /// TD-CALL-20: a draw whose source fails costs that draw only; the next free PIN is taken.
+    #[test]
+    fn td_call_20_a_failed_draw_costs_one_draw() {
+        let mut draws = [None, Some(42)].into_iter();
+        assert_eq!(draw_pin(&[], || draws.next().flatten()), Some(pin(42)));
+    }
+
+    /// TD-CALL-20: values of 60,000 or more are drawn again; the first below is taken mod 10,000.
+    /// Six rejected values come first, more than a 4-try cap would allow (D-2597).
+    #[test]
+    fn td_call_20_rejected_values_are_drawn_again() {
+        let rejected = [65_535_u16, 60_000, 61_234, 63_000, 64_999, 60_001];
+        let mut values = rejected.into_iter().chain([59_999]);
+        let got = number_from(|bytes| {
+            *bytes = values.next()?.to_be_bytes();
+            Some(())
+        });
+        assert_eq!((got, values.next()), (Some(9_999), None));
+    }
+
+    /// TD-CALL-20: a failing byte source gives `None`, after one try.
+    #[test]
+    fn td_call_20_a_failing_byte_source_gives_none() {
+        let mut calls = 0;
+        let got = number_from(|_| {
+            calls += 1;
+            None
+        });
+        assert_eq!((got, calls), (None, 1));
+    }
+
+    /// TD-CALL-20: the rejection cap of 64 draws ends a draw that only ever gives rejected values;
+    /// the literal 64 is pinned so a small cap cannot come back (D-2597).
+    #[test]
+    fn td_call_20_the_rejection_cap_ends_the_draw() {
+        let mut calls = 0_u32;
+        let got = number_from(|bytes| {
+            calls += 1;
+            *bytes = 60_000_u16.to_be_bytes();
+            Some(())
+        });
+        assert_eq!((got, calls), (None, 64));
     }
 }
