@@ -172,6 +172,8 @@ for (const width of WIDTHS) {
     await tabTo(page, /^Pick #2$/);
     await page.keyboard.press("Space");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Check your pick: quote #2");
+    await tabTo(page, /^share$/);
+    await page.keyboard.press("Space");
     await tabTo(page, /^Pick #2$/);
     await page.keyboard.press("Enter");
     await expect(page.locator("#pick-not-open")).toBeFocused();

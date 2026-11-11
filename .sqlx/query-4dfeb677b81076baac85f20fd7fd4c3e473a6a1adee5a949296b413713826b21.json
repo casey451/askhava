@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT EXISTS (SELECT 1 FROM picks.share_consent WHERE job_id = $1 AND for_quote = $2 AND browser = $3 AND pick_id IS NULL) AS \"ticked!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "ticked!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Int4",
+        "Bytea"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "4dfeb677b81076baac85f20fd7fd4c3e473a6a1adee5a949296b413713826b21"
+}

@@ -221,7 +221,7 @@ async fn td_pick_46_the_code_goes_to_her_phone_and_her_digits_go_nowhere(pool: P
     let verify = FakeVerify::default();
     let app = routes(&pool, Some(&verify));
     let reads = "SELECT count(*) FROM ops.audit_log WHERE action = 'vault_read.picks.pick_code'";
-    let sent = post(&app, &token, "/pick", &[("quote", "1")]).await;
+    let sent = post(&app, &token, "/pick", &[("quote", "1"), ("share", "yes")]).await;
     assert!(
         sent.contains("We texted a 6-digit code to your phone."),
         "{sent}"
@@ -271,7 +271,7 @@ async fn td_pick_46_a_paused_job_or_an_opted_out_number_gets_no_code(pool: PgPoo
     .execute(&mut *db)
     .await
     .expect("fixture: pause");
-    let paused = post(&app, &token, "/pick", &[("quote", "1")]).await;
+    let paused = post(&app, &token, "/pick", &[("quote", "1"), ("share", "yes")]).await;
     assert!(paused.contains(NO_CODE), "{paused}");
     assert!(!paused.contains("Finish my pick"), "no form");
     sqlx::query("UPDATE intake.homeowner_pause SET ended_at = now()")
@@ -282,7 +282,7 @@ async fn td_pick_46_a_paused_job_or_an_opted_out_number_gets_no_code(pool: PgPoo
     suppress(&mut db, &vault(), PHONE, channel, ts(DAY))
         .await
         .expect("suppress");
-    let opted = post(&app, &token, "/pick", &[("quote", "1")]).await;
+    let opted = post(&app, &token, "/pick", &[("quote", "1"), ("share", "yes")]).await;
     assert!(opted.contains(NO_CODE), "{opted}");
     assert!(verify.sent.lock().expect("lock").is_empty(), "no code");
     assert_eq!(count(&mut db, "SELECT count(*) FROM picks.pick").await, 0);
@@ -295,7 +295,7 @@ async fn td_pick_46_the_daily_cap_holds_on_the_page(pool: PgPool) {
     let (_, token) = ready(&mut db).await;
     let verify = FakeVerify::default();
     let app = routes(&pool, Some(&verify));
-    post(&app, &token, "/pick", &[("quote", "1")]).await;
+    post(&app, &token, "/pick", &[("quote", "1"), ("share", "yes")]).await;
     let again = [("quote", "1"), ("reach", "call"), ("send", "new")];
     for _ in 0..4 {
         let body = post(&app, &token, "/code", &again).await;
@@ -316,7 +316,7 @@ async fn td_pick_46_without_keys_nothing_is_sent_or_read(pool: PgPool) {
     let mut db = pool.acquire().await.expect("db");
     let (_, token) = ready(&mut db).await;
     let app = routes(&pool, None);
-    let review = post(&app, &token, "/pick", &[("quote", "1")]).await;
+    let review = post(&app, &token, "/pick", &[("quote", "1"), ("share", "yes")]).await;
     assert!(
         review.contains(
             "Nothing was picked. Picking on this page isn't open yet, so no code was sent."
