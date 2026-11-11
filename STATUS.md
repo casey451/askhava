@@ -1,13 +1,13 @@
 # Ask Hava build status
 
-Updated 2026-11-11T06:24:05Z by runner 946202fb2ebb (actions).
+Updated 2026-11-11T06:24:16Z by runner 946202fb2ebb (actions).
 
-**Building: T327 in progress since 05:24Z; 196 of 370 done; week 60% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T212 in progress since 06:23Z; 196 of 370 done; week 60% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 196 of 370 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 3: T327 claimed 05:24Z, lease until 08:24Z
-- **Week:** 60% used, 71.2M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 1: T212 claimed 06:23Z, lease until 09:23Z; lane 3: T327 claimed 05:24Z, lease until 08:24Z
+- **Week:** 60% used, 71.5M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 06:23Z, 0 min before this update
 - **Keeper:** last ran 05:37Z, next wake 08:21Z
 
@@ -101,7 +101,7 @@ Updated 2026-11-11T06:24:05Z by runner 946202fb2ebb (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-11T05:22:42Z (week)): five-hour: 14.2M used, 14.9M left, resets 2026-11-11T09:44:28Z; week: 122.8M used, 71.2M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-04T07:37:31Z.
+- Pacing (session_reading 2026-11-11T05:37:03Z (week)): five-hour: 14.6M used, 14.5M left, resets 2026-11-11T09:44:28Z; week: 122.5M used, 71.5M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-04T10:05:18Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -116,7 +116,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T212 (lease until 2026-11-11T09:23:57Z)
 - lane 3: T327 (lease until 2026-11-11T08:24:57Z)
 
 ## Last usage reading
