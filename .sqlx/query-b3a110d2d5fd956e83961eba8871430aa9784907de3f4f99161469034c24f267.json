@@ -1,0 +1,71 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT agency, license_number, wood_destroying, weed_control,\n                  paused_at IS NOT NULL AS \"paused!\"\n           FROM licensing.business_license WHERE business_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "agency",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "licensing.business_license",
+            "name": "agency"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "license_number",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "licensing.business_license",
+            "name": "license_number"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "wood_destroying",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "licensing.business_license",
+            "name": "wood_destroying"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "weed_control",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "licensing.business_license",
+            "name": "weed_control"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "paused!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      null
+    ]
+  },
+  "hash": "b3a110d2d5fd956e83961eba8871430aa9784907de3f4f99161469034c24f267"
+}

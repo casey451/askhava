@@ -16,12 +16,17 @@
 //! T153 added the license class map, the commercial-only sign-up stop, the R-61 and R-62 project
 //! limits and the `launch_open` openings (LIC-035, LIC-043 to LIC-046) in `class_map`.
 //!
+//! T374 added the sign-up writers for agency licenses and the pest attestation and the one read
+//! of a business's holder (LIC-006, LIC-011, LIC-012, LIC-015, LIC-016, LIC-047, LIC-048) in
+//! `holder`.
+//!
 //! Other crates reach it only through [`api`].
 
 pub mod api;
 mod class_map;
 mod handlers;
 mod handyman;
+mod holder;
 mod imports;
 mod lines;
 mod models;

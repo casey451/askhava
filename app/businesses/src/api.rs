@@ -18,7 +18,8 @@
 //! the sample card and sample pick, and each person's backup notice address, which
 //! `notice_addresses` adds (BIZ-042, BIZ-043; T149); the "Emergency emails at any hour" switch,
 //! its test emergency email, the after-hours tick's conditions and the covered night count
-//! (BIZ-007, BIZ-037, BIZ-042, INT-033; T150).
+//! (BIZ-007, BIZ-037, BIZ-042, INT-033; T150); the licensing holder read, [`holding`] (LIC-019,
+//! BIZ-049, CARD-001; T374).
 
 use jiff::Timestamp;
 use secrecy::SecretString;
@@ -75,6 +76,7 @@ pub use crate::emergency_switch::{
     set_after_hours, set_emergency_emails, suspend_after_hours, switch_off_warns, switch_state,
     yes_current,
 };
+pub use crate::holding::{HANDYMAN_CATEGORY, Known, holding};
 pub use crate::identity::{
     Flag, IDENTITY_CODE_TRIES, RecordContacts, Step, approve, check_code, episode_letter_code,
     letter_code, next_step, record_match, send_code, send_code_seen, settle,
