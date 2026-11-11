@@ -1,23 +1,25 @@
 # Ask Hava build status
 
-Updated 2026-11-11T22:32:34Z by runner 0137f98c1451 (actions).
+Updated 2026-11-11T22:34:34Z by runner 0137f98c1451 (actions).
 
 **Building: T228 in progress since 22:22Z; 214 of 376 done; week 76% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 214 of 376 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T228 claimed 22:22Z, lease until 01:22Z; lane 2: T334 claimed 22:00Z, lease until 01:00Z; lane 4: T317 claimed 22:29Z, lease until 01:29Z
+- **Lane:** lane 1: T228 claimed 22:22Z, lease until 01:22Z; lane 2: T334 claimed 22:00Z, lease until 01:00Z
 - **Week:** 76% used, 36.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:32Z, 0 min before this update
+- **Last run:** 22:32Z, 1 min before this update
 - **Keeper:** last ran 22:32Z, next wake 01:02Z
 
 ## Needs attention
+- BLOCKED T317: plan gap reported: PLAN GAP: tests/integration/tests/suspension_mode.rs:69-78 (owned by T279) and app/server/tests/voice_confirm_line.rs:95-104 (owned by T311) also build Webhooks by struct literal with names: Vec::new(); T317 owns neither, and goals (3) and (4) (remove names, add Environment) stop both compiling. Reviewer confirmed: all-public fields, no Default or constructor. Smallest fix: add both files to T317's owned files, say six done tests in goal (5) with the same construction-only rule, and raise the file budget from 7 to 9.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T317 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T345: plan gap reported: PLAN GAP: tests/test_runner_keeper.py:417,:426,:652; tests/test_runner_pre_smoke.py:263; tests/test_runner_smoke_reuse.py:402,:505 hard-code actions/cache/restore@v4, actions/cache/save@v4 and anthropics/claude-code-action@v1. No task owns these files (harness PRs #264, #359, #434); T345 owns no test file (kit/prompts/T345.md:68). Pinning to SHAs makes 5 tests fail (smoke.sh red). Reviewer confirmed pins are correct and the gap is real. Smallest fix: add the three test files to T345 owns and match on the action name before the @.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T345 --plan-fix D-### --reason "..."` (D-2859)
 - Strict plan check red: 28 problem(s) on tasks still to run (+58 on DONE tasks); first: T340: stored context_pct 35% but it measures 40%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T317 | server and intake: the inbound text route applies SEC-014's  | BLOCKED | 1 | 4 min | 22:34Z | PLAN GAP: tests/integration/tests/suspension_mode.rs:69-78 (owned by T279) and app/server/tests/voice_confirm_line.rs:95 |
 | T232 | portals and businesses: the Confirm step's "Can't take it" l | MERGE_PENDING | 1 | 51 min | 22:02Z |  |
 | T387 | payments (harness): the branch that flaps payments coverage  | done | 1 | 90 min | 21:49Z |  |
 | T388 | picks, intake, messaging and portals: after a Confirm the ho | MERGE_PENDING | 1 | 34 min | 21:46Z |  |
@@ -155,7 +157,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T228 (lease until 2026-11-12T01:22:47Z)
 - lane 2: T334 (lease until 2026-11-12T01:00:14Z)
-- lane 4: T317 (lease until 2026-11-12T01:29:38Z)
 
 ## Last usage reading
-- {"task": "T232", "at": "2026-11-11T22:02:55Z", "cache_read_input_tokens": 25929942, "cache_creation_input_tokens": 628526, "output_tokens": 144044, "input_tokens": 425}
+- {"task": "T317", "at": "2026-11-11T22:34:34Z", "input_tokens": 110, "cache_read_input_tokens": 3596393, "cache_creation_input_tokens": 220888, "output_tokens": 28226}
