@@ -2207,3 +2207,4 @@
 - 2026-11-11T19:16:03Z runner b2f1343b3d73 (actions): {"T228": "MERGE_PENDING -> QUEUED"}
 - 2026-11-11T19:20:34Z runner 08f1c85bd062 (actions): {"T316": "MERGE_PENDING -> DONE"}
 - 2026-11-11T19:23:23Z runner b2f1343b3d73 (actions): {}
+- 2026-11-11T19:29:09Z runner 08f1c85bd062 (actions): {"T228": "QUEUED -> IN_PROGRESS"}; T228 estimated 3.0M tokens (calibrated); five-hour window has 3.8M left, week 50.0M (session_reading 2026-11-11T19:10:58Z (week)); claimed

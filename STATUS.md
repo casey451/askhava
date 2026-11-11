@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-11T19:23:23Z by runner b2f1343b3d73 (actions).
+Updated 2026-11-11T19:29:09Z by runner 08f1c85bd062 (actions).
 
-**Idle since 19:19Z; 213 of 374 done; week 72% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T228 in progress since 19:28Z; 213 of 374 done; week 72% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 213 of 374 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 19:19Z (no task in progress)
-- **Week:** 72% used, 42.6M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:16Z, 6 min before this update
+- **Lane:** lane 4: T228 claimed 19:28Z, lease until 22:28Z
+- **Week:** 72% used, 50.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Last run:** 19:28Z, 1 min before this update
 - **Keeper:** last ran 19:11Z, next wake 19:31Z
 
 ## Needs attention
 - BLOCKED T345: plan gap reported: PLAN GAP: tests/test_runner_keeper.py:417,:426,:652; tests/test_runner_pre_smoke.py:263; tests/test_runner_smoke_reuse.py:402,:505 hard-code actions/cache/restore@v4, actions/cache/save@v4 and anthropics/claude-code-action@v1. No task owns these files (harness PRs #264, #359, #434); T345 owns no test file (kit/prompts/T345.md:68). Pinning to SHAs makes 5 tests fail (smoke.sh red). Reviewer confirmed pins are correct and the gap is real. Smallest fix: add the three test files to T345 owns and match on the action name before the @.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T345 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T317 (since 2026-11-11T19:21:01Z, no attempt used; a plan change fixes it): T317: dependency T316 is DONE but its owned file app/businesses/src/public_name.rs is not on main; T317: dependency T316 is DONE but its owned file tests/integration/tests/business_public_name.rs is not on main
-- Strict plan check red: 27 problem(s) on tasks still to run (+55 on DONE tasks); first: T340: stored context_pct 35% but it measures 39%; regenerate
+- Strict plan check red: 28 problem(s) on tasks still to run (+58 on DONE tasks); first: T340: stored context_pct 35% but it measures 40%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -138,7 +138,7 @@ Updated 2026-11-11T19:23:23Z by runner b2f1343b3d73 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-11T18:12:03Z (week)): five-hour: 26.9M used, 2.2M left, resets 2026-11-11T20:04:09Z; week: 151.4M used, 42.6M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-04T19:06:00Z.
+- Pacing (session_reading 2026-11-11T19:10:58Z (week)): five-hour: 25.3M used, 3.8M left, resets 2026-11-11T20:04:09Z; week: 144.0M used, 50.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-04T18:10:41Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -154,6 +154,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
+- lane 4: T228 (lease until 2026-11-11T22:28:10Z)
 
 ## Last usage reading
 - {"task": "T228", "at": "2026-11-11T19:09:05Z", "output_tokens": 197599, "cache_read_input_tokens": 49267674, "input_tokens": 610, "cache_creation_input_tokens": 873920}
