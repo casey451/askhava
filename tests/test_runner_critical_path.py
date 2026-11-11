@@ -109,10 +109,47 @@ def test_the_entry_point_passes_the_setting_into_the_config() -> None:
     assert 'order=claim_order_setting(ROOT / "kit" / "runner.json")' in inspect.getsource(entry.build)
 
 
+IN_FLIGHT = (st.IN_PROGRESS, st.MERGE_PENDING)  # claimed (a claim sets IN_PROGRESS) or awaiting its merge
+
+
+def held_by_flight(tasks: list[dict[str, Any]], state: st.State) -> set[str]:
+    """The ids in flight and every task downstream of one: none of them is claimable this cycle (D-3057)."""
+    held = {t["id"] for t in tasks if st.status(state, t["id"]) in IN_FLIGHT}
+    grown = True
+    while grown:
+        more = {t["id"] for t in tasks if t["id"] not in held and set(t.get("deps") or []) & held}
+        held |= more
+        grown = bool(more)
+    return held
+
+
+def check_top_claim(tasks: list[dict[str, Any]], state: st.State) -> None:
+    """The property the critical-path order promises on any state, computed over what the runner can claim
+    (`st.eligible` never offers a task in flight, D-3057): resync work first in state order (D-891); after
+    it the longest chain heads the order, and the longest open chain outside the in-flight work starts at a
+    claimable task. Catches: dependents read the wrong way round (deps instead of dependents)."""
+    chains = cycle.chain_lengths(tasks, state)
+    finished = (st.DONE, st.SKIPPED)
+    held = held_by_flight(tasks, state)
+    open_ids = [t["id"] for t in tasks if st.status(state, t["id"]) not in finished and t["id"] not in held]
+    deps = {t["id"]: t.get("deps") or [] for t in tasks}
+    ready = [i for i in open_ids if all(st.status(state, d) in finished for d in deps[i])]
+    assert all(chains[i] >= 1 for i in open_ids)
+    if not ready:
+        return
+    assert max(chains[i] for i in ready) == max(chains[i] for i in open_ids)  # the longest open chain starts ready
+    ordered = cycle.claim_order(ready, state, (), chains)
+    resync = [i for i in ready if st.entry(state, i).get("resync")]
+    assert ordered[:len(resync)] == resync
+    rest = ordered[len(resync):]
+    if rest:
+        assert chains[rest[0]] == max(chains[i] for i in rest)
+        assert [chains[i] for i in rest] == sorted((chains[i] for i in rest), reverse=True)
+
+
 def test_on_the_real_plan_the_top_claim_heads_the_longest_open_chain() -> None:
-    """On kit/tasks.json and the kit-state (when readable), properties only, no pinned ids: the chain of the
-    top id in critical-path order is the largest among the open, dependency-ready tasks, and every chain is
-    at least 1. Catches: dependents read the wrong way round (deps instead of dependents)."""
+    """On kit/tasks.json and the kit-state (when readable; the runner's smoke has it, Ci does not),
+    properties only, no pinned ids: `check_top_claim`. Correct for any live state (D-3057)."""
     tasks = json.loads((ROOT / "kit" / "tasks.json").read_text(encoding="utf-8"))["tasks"]
     try:
         raw = subprocess.run(["git", "show", "origin/claude/kit-state:kit/state.json"], cwd=ROOT,
@@ -120,17 +157,31 @@ def test_on_the_real_plan_the_top_claim_heads_the_longest_open_chain() -> None:
         state = st.sync_graph(json.loads(raw), tasks)
     except (OSError, subprocess.CalledProcessError, ValueError):
         state = st.sync_graph(st.new_state(), tasks)
-    chains = cycle.chain_lengths(tasks, state)
-    finished = (st.DONE, st.SKIPPED)
-    ready = [t["id"] for t in tasks if st.status(state, t["id"]) not in finished
-             and all(st.status(state, d) in finished for d in t.get("deps", []))]
-    if not ready:
-        return
-    ordered = cycle.claim_order(ready, state, (), chains)
-    assert chains[ordered[0]] == max(chains[i] for i in ready)
-    open_ids = [t["id"] for t in tasks if st.status(state, t["id"]) not in finished]
-    assert chains[ordered[0]] == max(chains[i] for i in open_ids)  # the longest open chain starts at a ready task
-    assert [chains[i] for i in ordered] == sorted((chains[i] for i in ordered), reverse=True)
+    check_top_claim(tasks, state)
+    check_top_claim(tasks, st.sync_graph(st.new_state(), tasks))  # nothing in flight: the plain plan
+
+
+def test_work_in_flight_at_the_head_of_the_longest_chain_is_not_a_failure() -> None:
+    """The runner-smoke failure of D-3057 (job 130704663742, `assert 43 == 54`), rebuilt small. T002 is
+    in flight at the head of the longest chain (T002 -> T004 -> T005 -> T007), T003 is in flight with a
+    resync note (as T332 was), T006 waits QUEUED with one: the old check (every not-finished id with its
+    deps finished, against every not-finished id) fails here; `check_top_claim` holds, and the top
+    claimable id after the resync is still the one with the longest claimable chain. Catches: a check
+    that reads in-flight tasks as claimable, or one that ignores the resync-first order."""
+    tasks = [make_task("T001"), make_task("T002"), make_task("T003"), make_task("T004", deps=["T002"]),
+             make_task("T005", deps=["T004"]), make_task("T006"), make_task("T007", deps=["T005"]),
+             make_task("T008", deps=["T001"]), make_task("T009", deps=["T008"])]
+    s = st.sync_graph(st.new_state(), tasks)
+    s = st.with_task(s, "T002", status=st.IN_PROGRESS)
+    s = st.with_task(s, "T003", status=st.IN_PROGRESS, resync={"attempt": 1, "from": "h", "paths": [], "at": "x"})
+    s = st.with_task(s, "T006", resync={"attempt": 1, "from": "h", "paths": [], "at": "x"})
+    chains = cycle.chain_lengths(tasks, s)
+    old_ready = [t["id"] for t in tasks if not t["deps"]]
+    old_top = cycle.claim_order(old_ready, s, (), chains)[0]
+    assert old_top == "T003" and chains[old_top] < max(chains.values())  # what the old check asserted against
+    assert held_by_flight(tasks, s) == {"T002", "T003", "T004", "T005", "T007"}
+    check_top_claim(tasks, s)
+    assert cycle.claim_order(["T001", "T006"], s, (), chains) == ["T006", "T001"] and chains["T001"] == 3
 
 
 def test_a_graph_the_chain_count_cannot_read_falls_back_to_state_order(tmp_path: Path, capsys: Any) -> None:
