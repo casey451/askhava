@@ -1,24 +1,24 @@
 # Ask Hava build status
 
-Updated 2026-11-11T18:17:02Z by runner 60a8d50b1c56 (manual).
+Updated 2026-11-11T18:21:01Z by runner 60a8d50b1c56 (actions).
 
-**Building: T228 in progress since 17:51Z; 210 of 373 done; week 71% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T228 in progress since 17:51Z; 211 of 373 done; week 71% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 210 of 373 build tasks (owner gates not counted)
+- **Tasks done:** 211 of 373 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T228 claimed 17:51Z, lease until 20:51Z
 - **Week:** 71% used, 47.6M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:12Z, 4 min before this update
+- **Last run:** 18:17Z, 3 min before this update
 - **Keeper:** last ran 18:12Z, next wake 20:54Z
 
 ## Needs attention
-- Strict plan check red: 28 problem(s) on tasks still to run (+53 on DONE tasks); first: T340: stored context_pct 35% but it measures 39%; regenerate
+- Strict plan check red: 27 problem(s) on tasks still to run (+54 on DONE tasks); first: T340: stored context_pct 35% but it measures 39%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T332 | payments (harness): a late success has its own refund trigge | MERGE_PENDING | 4 | 46 min | 18:10Z | PLAN GAP: tests/integration/tests/confirm_and_pay.rs:393-413 (td_fee_25_an_ended_pick_is_never_cleared, TD-FEE-25, T189  |
-| T272 | portals: the sign-in link cap and the code-try cap are atomi | MERGE_PENDING | 1 | 20 min | 18:05Z | merging main into the reviewed head conflicts in app/portals/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T332 | payments (harness): a late success has its own refund trigge | resync | 4 | 46 min | 18:10Z | merging main into the reviewed head conflicts in app/payments/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T272 | portals: the sign-in link cap and the code-try cap are atomi | done | 1 | 20 min | 18:05Z |  |
 | T333 | payments (harness): a succeeded refund is recorded at the am | done | 2 | 32 min | 17:20Z | PLAN GAP: app/payments/src/routes.rs:412 (T259) and app/payments/src/refund_state.rs:34 (T270) / app/picks/src/unreachab |
 | T272 | portals: the sign-in link cap and the code-try cap are atomi | resync | 1 | 27 min | 17:17Z |  |
 | T165 | businesses: business name, Google and Yelp links and license | done | 1 | 18 min | 17:05Z |  |
@@ -106,7 +106,7 @@ Updated 2026-11-11T18:17:02Z by runner 60a8d50b1c56 (manual).
 ## Progress (requirements verified)
 
 **Requirements verified:** 223 of 733 (30.4%) · partial 335 · unstarted 175
-**Tasks merged (throughput only):** 210 of 373
+**Tasks merged (throughput only):** 211 of 373
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -141,7 +141,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 90 of 165 done
+- stage 4: 91 of 165 done
 - stage 5: 0 of 58 done
 - stage 6: 0 of 34 done
 - stage 7: 0 of 2 done

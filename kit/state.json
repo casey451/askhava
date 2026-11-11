@@ -26339,7 +26339,7 @@
     "T086",
     "T294"
    ],
-   "status": "MERGE_PENDING",
+   "status": "DONE",
    "attempts": 0,
    "slug": "signin-admission",
    "type": "build",
@@ -26412,13 +26412,66 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 35,
      "head_sha": "113172ac00c2d2d520614984219669ac9517923f",
-     "pr": null,
-     "checks": null,
+     "pr": 505,
+     "checks": [
+      {
+       "name": "backup",
+       "conclusion": null
+      },
+      {
+       "name": "keeper",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "gate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-11T17:45:14Z",
      "ended_at": "2026-11-11T18:05:47Z",
-     "result": "MERGE_PENDING",
+     "result": "done",
      "resync": true
     }
    ],
@@ -26461,7 +26514,29 @@
     }
    ],
    "update_waiting_since": null,
-   "update_push_failures": null
+   "update_push_failures": null,
+   "merged_sha": "d413b0e8998f2917b5f91fcdb522caa75dc57026",
+   "merged_at": "2026-11-11T18:18:12Z",
+   "files": [
+    ".sqlx/query-47347ed295828e3d3f71aa6ff008b16babff651be19f679c36e8c67dc8d7010d.json",
+    ".sqlx/query-5b458ba202b10480bf38767627920db900f4a325d4873e33e75de6a0ecaa68c5.json",
+    ".sqlx/query-7cb2699d3c61ca06bc57732db2e8aac1bf60175fa824e7aa318e8b5ecb1592e9.json",
+    ".sqlx/query-7f63344da4ee74850660a5ede3a549b12cd236e5b12dd454c44082cb915426b1.json",
+    ".sqlx/query-866a2bb2e91e6f17b082c8f59e7b991fef71c546dce9b5804a900a78d4270ff1.json",
+    ".sqlx/query-94c9f1ef274fd37c7a9e7b4ad418b95a8ba970ad4d497f0aa2fd2a96e09fba48.json",
+    ".sqlx/query-9fc7d3ac0facc48f354f89a4f5d464f403a7a4bc051015a062952f86bed4c9ee.json",
+    ".sqlx/query-a034eb416e007eb9ccfe820b1ed09df4ac56733b0e3e32eea58e67b93b42d1c9.json",
+    ".sqlx/query-cd220c14ca3e169de61a257bf1d22d19c752efccc23412f6f0b3c3f274703071.json",
+    ".sqlx/query-e288345f66b0969a538cfea0318fa88ad3bf387723cd93ecdb5e2612ba4a1032.json",
+    ".sqlx/query-f8555e10eda990f589844046911719f0493e6ef5375d4a8b223d8b3d2bf3b260.json",
+    "app/portals/CLAUDE.md",
+    "app/portals/src/business_auth.rs",
+    "app/portals/src/models.rs",
+    "docs/architecture.md",
+    "docs/decisions.md",
+    "migrations/0167_portals_code_tries.sql",
+    "tests/security/tests/signin_admission.rs"
+   ]
   },
   {
    "id": "T273",
@@ -29721,7 +29796,7 @@
     "T327",
     "T337"
    ],
-   "status": "MERGE_PENDING",
+   "status": "QUEUED",
    "attempts": 3,
    "slug": "late-success-trigger-and-ended-picks",
    "type": "harness",
@@ -29735,7 +29810,7 @@
     2959
    ],
    "reason": null,
-   "last_failure": "PLAN GAP: tests/integration/tests/confirm_and_pay.rs:393-413 (td_fee_25_an_ended_pick_is_never_cleared, TD-FEE-25, T189 DONE; also owned by T287, T337, T352; not T332) asserts paid_release on an ended pick with a verified success stores nothing (evidence empty line ~408, attempt stays \"processing\" line ~413). T332 goal part (2) and D-2290 require paid_release to store the success and evidence and call late_success, then answer PickEnded. No implementation passes both. D-2290 and D-2970 do not name confirm_and_pay.rs. Smallest plan change: T332 may also change only that test's two \"stores nothing\" assertions (evidence row exists, attempt succeeded, one payments.late_success_refund task and one payments.late_success alert; Err(PickEnded) stays) and its doc comment; also the late_success.rs:197-200 comment \"paid_release stores no success\". Keep T352 ordered after T332. Reviewer confirmed.\nre-queued after plan fix D-3007: D-3007 lets T332 change the two 'stores nothing' assertions in td_fee_25_an_ended_pick_is_never_cleared so an ended pick with a verified success stores it and its evidence (D-2290)\nre-queued after plan fix D-3031: D-3031 (Casey's go): last hand-in lost at a setup step to the Ubuntu mirror outage that D-3030 fixed",
+   "last_failure": "merging main into the reviewed head conflicts in app/payments/CLAUDE.md; a resync merges it in on this attempt (D-891)",
    "history": [
     {
      "attempt": 1,
@@ -29822,13 +29897,54 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 100,
      "head_sha": "8172b7a9cf12b136f6759d3b1a6e294aed3c961e",
-     "pr": null,
-     "checks": null,
+     "pr": 506,
+     "checks": [
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-11T17:24:05Z",
      "ended_at": "2026-11-11T18:10:29Z",
-     "result": "MERGE_PENDING"
+     "result": "resync"
     }
    ],
    "requeues": [
@@ -29887,8 +30003,31 @@
     "head": "8172b7a9cf12b136f6759d3b1a6e294aed3c961e"
    },
    "runner_closed_prs": [
-    491
-   ]
+    491,
+    506
+   ],
+   "resync": {
+    "attempt": 4,
+    "from": "8172b7a9cf12b136f6759d3b1a6e294aed3c961e",
+    "main": "d413b0e8998f2917b5f91fcdb522caa75dc57026",
+    "paths": [
+     "app/payments/CLAUDE.md"
+    ],
+    "at": "2026-11-11T18:20:53Z"
+   },
+   "resyncs": [
+    {
+     "attempt": 4,
+     "from": "8172b7a9cf12b136f6759d3b1a6e294aed3c961e",
+     "main": "d413b0e8998f2917b5f91fcdb522caa75dc57026",
+     "paths": [
+      "app/payments/CLAUDE.md"
+     ],
+     "at": "2026-11-11T18:20:53Z"
+    }
+   ],
+   "update_waiting_since": null,
+   "update_push_failures": null
   },
   {
    "id": "T328",
@@ -34013,7 +34152,7 @@
    }
   }
  },
- "updated_at": "2026-11-11T18:17:02Z",
+ "updated_at": "2026-11-11T18:21:01Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -34112,7 +34251,7 @@
   ]
  },
  "runner_sha": "60a8d50b1c568fba03f66e143749604ed7533432",
- "starter": "manual",
+ "starter": "actions",
  "smoke_runs": [
   {
    "sha": "8eba59454470d8ffc8b21fa996ae8b3d1496a694",
