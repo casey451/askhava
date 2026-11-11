@@ -22,9 +22,10 @@ def _no_live_runner_tokens(monkeypatch: pytest.MonkeyPatch) -> None:
 
 @pytest.fixture(autouse=True)
 def _no_live_smoke_job(monkeypatch: pytest.MonkeyPatch) -> None:
-    """The session step sets RUNNER_SMOKE_BACKGROUND and Actions sets GITHUB_RUN_ID and GITHUB_RUN_ATTEMPT; the
-    in-session smoke runs this suite with them, so the smoke tests would judge the live job's own smoke files
+    """The session step sets RUNNER_SMOKE_BACKGROUND, the background smoke's child RUNNER_PRE_SMOKE_HEAD, the
+    pre-smoke step RUNNER_PRE_SMOKE_STATE, and Actions GITHUB_RUN_ID and GITHUB_RUN_ATTEMPT; the smoke runs this suite with them, so the smoke tests would judge the live job's own smoke files
     instead of their fixtures (33 red on 2b62f938, D-2660). Tests start without them and set them where they test
     them, as for the tokens above (D-510)."""
-    for name in ("RUNNER_SMOKE_BACKGROUND", "GITHUB_RUN_ID", "GITHUB_RUN_ATTEMPT"):
+    for name in ("RUNNER_SMOKE_BACKGROUND", "RUNNER_PRE_SMOKE_HEAD", "RUNNER_PRE_SMOKE_STATE",
+                 "GITHUB_RUN_ID", "GITHUB_RUN_ATTEMPT"):
         monkeypatch.delenv(name, raising=False)
