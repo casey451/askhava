@@ -2,6 +2,12 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## A flaky coverage check on the payments code gets a fix, first in line (plan change, D-3049, November 11)
+
+- **What happened.** The build requires at least 95% of the payments code's branches to be exercised by tests. After the last refund change it sits right on that line: the same code measured 95.07% on one run and 94.94% on another, so one test reaches a piece of payments code only some of the time, and the check now passes or fails by chance.
+- **What changed.** A new step, T387, finds that piece, makes the test reach it every time, and adds refund tests so payments has room above 95% (at least 95.5%). It only adds or fixes tests: no payments code changes, the 95% bar stays, and no existing check is loosened. It is the next step the build picks up.
+- **Nothing needs you.**
+
 ## The build now works five tasks at once (plan change, D-3043, November 11)
 
 - **What changed.** You said not to worry about the token budget, just to use the tokens efficiently. The runner now works up to five tasks side by side instead of four.
