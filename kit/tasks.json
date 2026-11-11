@@ -10535,7 +10535,7 @@
    "id": "T345",
    "slug": "pin-every-workflow-action",
    "title": "harness: every external GitHub Actions `uses:` in every workflow is pinned to a full commit SHA",
-   "goal": "Pentest PT-01 (D-2347; SEC-045): 15 external `uses:` lines are pinned to mutable tags, against SEC-045 (\"every GitHub Actions `uses:`\"), and no decision allows a tag: `backup-runner.yml` :64, :231 and :630 (`actions/checkout@v4`), :243 (`actions/setup-python@v5`), :251 (`actions/cache@v4`), :274 (`actions/cache/restore@v4`), :394 (`anthropics/claude-code-action@v1`, on the job that holds the Claude OAuth token, the conditional push token and contents, pull-requests, issues, id-token and actions write), :450 (`actions/cache/save@v4`); `nightly-main.yml:170`, `twin.yml:29`, `auto-pr.yml:30`, `governance.yml:47`, `inbox.yml:39` and `notify.yml:25` (`actions/checkout@v4`); `twin.yml:53` (`actions/upload-artifact@v4`). Pin each to the full 40-character commit SHA its tag resolves to when this task runs (read from the action's public repository, never guessed), with the version in a trailing comment as `ci.yml` does (`# v4.4.0`), and record every action, tag, resolved version and SHA in this task's `docs/decisions.md` entry. Before hand-in, confirm each SHA equals the tag's dereferenced commit (`refs/tags/<tag>^{}`, or the tag ref itself when it is lightweight) in the action's own repository, and put that check's output in the hand-in report; the overseer watches the first runner cycle after the merge. Behaviour is unchanged: each pin is the commit the tag named. Nothing else in the workflows changes (permissions and tokens stay as they are; trimming them is not this task). `.github/dependabot.yml` already watches the `github-actions` ecosystem, so the pins get update pull requests. Proof for the runner pin: the next runner cycle after the merge completes on fake data; the hand-in report says how to revert (the one-line pin back to `@v1` in `backup-runner.yml`, by a harness pull request) if it does not. The repository-wide test that keeps every workflow pinned is T121's (TD-SEC-24). Harness: an Opus review.",
+   "goal": "Pentest PT-01 (D-2347; SEC-045): 15 external `uses:` lines are pinned to mutable tags, against SEC-045 (\"every GitHub Actions `uses:`\"), and no decision allows a tag: `backup-runner.yml` :64, :231 and :630 (`actions/checkout@v4`), :243 (`actions/setup-python@v5`), :251 (`actions/cache@v4`), :274 (`actions/cache/restore@v4`), :394 (`anthropics/claude-code-action@v1`, on the job that holds the Claude OAuth token, the conditional push token and contents, pull-requests, issues, id-token and actions write), :450 (`actions/cache/save@v4`); `nightly-main.yml:170`, `twin.yml:29`, `auto-pr.yml:30`, `governance.yml:47`, `inbox.yml:39` and `notify.yml:25` (`actions/checkout@v4`); `twin.yml:53` (`actions/upload-artifact@v4`). Pin each to the full 40-character commit SHA its tag resolves to when this task runs (read from the action's public repository, never guessed), with the version in a trailing comment as `ci.yml` does (`# v4.4.0`), and record every action, tag, resolved version and SHA in this task's `docs/decisions.md` entry. Before hand-in, confirm each SHA equals the tag's dereferenced commit (`refs/tags/<tag>^{}`, or the tag ref itself when it is lightweight) in the action's own repository, and put that check's output in the hand-in report; the overseer watches the first runner cycle after the merge. Behaviour is unchanged: each pin is the commit the tag named. Nothing else in the workflows changes (permissions and tokens stay as they are; trimming them is not this task). `.github/dependabot.yml` already watches the `github-actions` ecosystem, so the pins get update pull requests. Proof for the runner pin: the next runner cycle after the merge completes on fake data; the hand-in report says how to revert (the one-line pin back to `@v1` in `backup-runner.yml`, by a harness pull request) if it does not. Three done runner tests hard-code the tags being pinned (D-3083): `tests/test_runner_keeper.py:417`, `:426` and `:652`, `tests/test_runner_pre_smoke.py:263` and `tests/test_runner_smoke_reuse.py:402` and `:505` (`actions/cache/restore@v4`, `actions/cache/save@v4`, `anthropics/claude-code-action@v1`); in those files only these action-ref matches change, so each compares the action name before `@`, and no other assertion, input or expected value changes (`tests/test_runner_live.py:777`, a fake log line, and `tests/test_runner_two_lanes.py:712`, a prefix match, need none). The repository-wide test that keeps every workflow pinned is T121's (TD-SEC-24). Harness: an Opus review.",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -10559,7 +10559,10 @@
     ".github/workflows/auto-pr.yml",
     ".github/workflows/governance.yml",
     ".github/workflows/inbox.yml",
-    ".github/workflows/notify.yml"
+    ".github/workflows/notify.yml",
+    "tests/test_runner_keeper.py",
+    "tests/test_runner_pre_smoke.py",
+    "tests/test_runner_smoke_reuse.py"
    ],
    "reads": [
     "docs/spec/security.md",
@@ -10572,13 +10575,14 @@
    "tests": [],
    "decisions": [
     "D-2347",
-    "D-480"
+    "D-480",
+    "D-3083"
    ],
    "cites": [],
    "budget": {
-    "files": 7,
-    "lines": 120,
-    "context_pct": 16
+    "files": 10,
+    "lines": 160,
+    "context_pct": 28
    },
    "checks": [
     "Ci",
@@ -10658,7 +10662,7 @@
    "id": "T347",
    "slug": "no-split-job-check",
    "title": "licensing (harness): remove the handyman split-job check; each job is judged by its own price (Casey's ruling)",
-   "goal": "Casey's owner ruling of November 10, 2026 (D-2407, D-2408; LIC-023, LIC-019): there is no split-job check; a handyman job is judged only by its own price. Remove the check: `split_job`, `HandymanJob`, `SPLIT_JOB_WINDOW_DAYS` and `QuoteRefusal::SplitJob` from `app/licensing/src/handyman.rs` (`:20`, `:186`, `:209` to `:244`), their exports from `app/licensing/src/api.rs` (`:44`, `:45`) and every doc line naming them (`handyman.rs:3` and `:5`, `api.rs:9`, `app/licensing/src/rules.rs:7`). No production code calls `split_job`; the quote form's refusal line matches `Bounce::Handyman(_)` (`app/quotes/src/intake.rs:298`, not edited); no table, migration or setting holds state for the rule. Tests: remove `split_job_check_window_and_totals` and its `prior` helper (`app/licensing/src/tests/handyman.rs:260` to the end of that test) and the property `split_job_blocks_near_jobs_reaching_the_limit` (`app/licensing/src/tests/prop_handyman_never_gas.rs:122` to `:140`), with their now-unused imports, and drop `Bounce::Handyman(QuoteRefusal::SplitJob)` from the list of every bounce in `app/quotes/src/tests/quote_bounce.rs:95`. Removing these tests is allowed only because the spec changed and the change is logged (D-2407, D-2408; BUILD_BRIEF.md rule 6), never as a weakened test; no other assertion changes. Add the new TD-LIC-10 test in `app/licensing/src/tests/handyman.rs`: two handyman jobs of one business at one address on the same day, sharing a job type, $600 and $500, are each accepted by `check_quote`; keep TD-LIC-08's single-job edges ($999.99 accepted, $1,000.00 refused) unchanged. TD-FEE-09 (`tests/integration/tests/repeat_customer.rs`) still holds and is not edited. Update the `licensing` `CLAUDE.md` (the LIC-023 line and the test list), `docs/architecture.md` section 10 (what T035 built) and `docs/decisions.md`. This is a harness task because it deletes and edits DONE tasks' tests (T035's and T046's); Opus review. Nov 10 code review batch 2, quotes F1 (D-2637; LIC-021, LIC-022, D-898): `never_handyman` (`app/licensing/src/handyman.rs:118`) checks the request text only against the gas list, smoke alarms and sprinklers only against candidate job types, and permit types only as an exact candidate, while the AI-off keyword reading (`app/intake/src/matching.rs:47`) has no smoke, sprinkler or wall rule, so \"Install hardwired smoke detectors by the bedroom door\" and \"fire sprinkler head leaking by the garage door\" (candidates [\"door repair\"]) and \"remove the wall between kitchen and den, then drywall\" ([\"drywall patch\"]) reach handymen. `never_handyman` also scans the request text for smoke alarm(s), smoke detector(s) and fire sprinkler(s) (\"fire\" required, so a lawn sprinkler passes) and for permit phrases (wall removal, remove the/a wall, panel upgrade, new circuit, re-roof). TD-LIC-09 gains those three cases (each blocked) and \"lawn sprinkler head broke by the fence\" (not blocked) in `app/licensing/src/tests/handyman.rs`, and the property in `prop_handyman_never_gas.rs` covers the new words.",
+   "goal": "Casey's owner ruling of November 10, 2026 (D-2407, D-2408; LIC-023, LIC-019): there is no split-job check; a handyman job is judged only by its own price. Remove the check: `split_job`, `HandymanJob`, `SPLIT_JOB_WINDOW_DAYS` and `QuoteRefusal::SplitJob` from `app/licensing/src/handyman.rs` (`:21`, `:187`, `:210` to `:244`), their exports from `app/licensing/src/api.rs` (`:48`, `:49`) and every doc line naming them (`handyman.rs:3` and `:5`, `api.rs:9`, `app/licensing/src/rules.rs:7`). No production code calls `split_job`; the quote form's refusal line matches `Bounce::Handyman(_)` (`app/quotes/src/intake.rs:302`, not edited); no table, migration or setting holds state for the rule. Tests: remove `split_job_check_window_and_totals` and its `prior` helper (`app/licensing/src/tests/handyman.rs`: `prior` at `:260`, the test at `:268` to `:293`, and the `DAY` constant at `:258` that only they use) and the property `split_job_blocks_near_jobs_reaching_the_limit` (`app/licensing/src/tests/prop_handyman_never_gas.rs:122` to `:140`), with their now-unused imports, and drop `Bounce::Handyman(QuoteRefusal::SplitJob)` from the list of every bounce in `app/quotes/src/tests/quote_bounce.rs:95`. Line numbers as of `main` 0137f98c (D-3083). Removing these tests is allowed only because the spec changed and the change is logged (D-2407, D-2408; BUILD_BRIEF.md rule 6), never as a weakened test; no other assertion changes. Add the new TD-LIC-10 test in `app/licensing/src/tests/handyman.rs`: two handyman jobs of one business at one address on the same day, sharing a job type, $600 and $500, are each accepted by `check_quote`; keep TD-LIC-08's single-job edges ($999.99 accepted, $1,000.00 refused) unchanged. TD-FEE-09 (`tests/integration/tests/repeat_customer.rs`) still holds and is not edited. Update the `licensing` `CLAUDE.md` (the LIC-023 line and the test list), `docs/architecture.md` section 10 (what T035 built) and `docs/decisions.md`. This is a harness task because it deletes and edits DONE tasks' tests (T035's and T046's); Opus review. Nov 10 code review batch 2, quotes F1 (D-2637; LIC-021, LIC-022, D-898): `never_handyman` (`app/licensing/src/handyman.rs:105`) checks the request text only against the gas list, smoke alarms and sprinklers only against candidate job types, and permit types only as an exact candidate, while the AI-off keyword reading (`app/intake/src/matching.rs:52`, `RULES`) has no smoke, sprinkler or wall rule, so \"Install hardwired smoke detectors by the bedroom door\" and \"fire sprinkler head leaking by the garage door\" (candidates [\"door repair\"]) and \"remove the wall between kitchen and den, then drywall\" ([\"drywall patch\"]) reach handymen. `never_handyman` also scans the request text for smoke alarm(s), smoke detector(s) and fire sprinkler(s) (\"fire\" required, so a lawn sprinkler passes) and for permit phrases (wall removal, remove the/a wall, panel upgrade, new circuit, re-roof). TD-LIC-09 gains those three cases (each blocked) and \"lawn sprinkler head broke by the fence\" (not blocked) in `app/licensing/src/tests/handyman.rs`, and the property in `prop_handyman_never_gas.rs` covers the new words.",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -10706,13 +10710,14 @@
     "D-2407",
     "D-2408",
     "D-035",
-    "D-2637"
+    "D-2637",
+    "D-3083"
    ],
    "cites": [],
    "budget": {
     "files": 6,
     "lines": 350,
-    "context_pct": 35
+    "context_pct": 40
    },
    "checks": [
     "Ci",
@@ -22844,7 +22849,7 @@
    "id": "T313",
    "slug": "emergency-business-notices",
    "title": "messaging and server: an EMERGENCY card notice goes at night with its own subject, and the business-notice worker runs",
-   "goal": "Fourth external audit F42 and F43 (D-2203; CARD-021, CARD-020, QH-004, BIZ-037; D-1826 (1), D-2011 (1)): `messaging::business_notices` checks the night hold before anything else (`app/messaging/src/business_notices.rs:460`), so `quotes::queue_emergency_card`'s group due at once for the people with \"Emergency emails at any hour\" on at an after-hours business (`app/quotes/src/emergency_card_notice.rs:110`) is held to 8 a.m. like any card; its parsed notice has no `emergency`, `subject` or `first_line` (`business_notices.rs:171`), so CARD-021's EMERGENCY subject and first line are lost; and no worker runs `messaging.business_notice` at all (`server::register_handlers` has no handler for it, D-1826 (1)). After T292 (which owns the file for the brand): (1) `business_notices.rs` reads `emergency`, `subject` and `first_line` from the payload; a notice with `emergency: true` is not held by the night rule (`quotes` already chose its recipients under QH-004 and BIZ-037, and its 8 a.m. group carries its own due time) and is sent with that subject and first line; every other notice is held as today. (2) Register `messaging.business_notice` in `server::register_handlers` (the shared `app/server/src/lib.rs`): the `NoticeSender` with the postal address from the typed settings (add the key to the shared `app/core/src/settings.rs` if no setting holds it; a missing value in live stops the worker's start naming the key), the `Lines` from T279's stored mode state through `messaging::api`, and a `TextGate` over `businesses::api::may_text`. (3) T251 queues an emergency job's card notices through `queue_emergency_card` (D-2203). Tests in `tests/integration/tests/emergency_notices.rs`, run through the worker (TD-CARD-15): at 22:40 an EMERGENCY card notice reaches the fake email provider at once with CARD-021's subject and first line for a switched-on person at an after-hours business, and at 8 a.m. for the rest; an ordinary card notice at 22:40 is held to 8 a.m.; a repeat run sends nothing twice. Every existing `tests/integration/tests/business_notices.rs` case passes unchanged. Update the `messaging` and `server` `CLAUDE.md` files, `docs/architecture.md` section 10 and `docs/decisions.md`. (4) Fifth external audit AH-001 (D-2287): also register `messaging.charge_receipt` (`run_receipt_email`, `app/messaging/src/receipt_email.rs:187`, queued by `picks::money_notices`) with a `ReceiptSender` built from the same postal-address setting (D-1826 (1)), and prove in the same test file that a receipt event reaches the fake email provider once through the worker (TD-FEE-55).",
+   "goal": "Fourth external audit F42 and F43 (D-2203; CARD-021, CARD-020, QH-004, BIZ-037; D-1826 (1), D-2011 (1)): `messaging::business_notices` checks the night hold before anything else (`app/messaging/src/business_notices.rs:460`), so `quotes::queue_emergency_card`'s group due at once for the people with \"Emergency emails at any hour\" on at an after-hours business (`app/quotes/src/emergency_card_notice.rs:110`) is held to 8 a.m. like any card; its parsed notice has no `emergency`, `subject` or `first_line` (`business_notices.rs:171`), so CARD-021's EMERGENCY subject and first line are lost; and no worker runs `messaging.business_notice` at all (`server::register_handlers` has no handler for it, D-1826 (1)). After T292 (which owns the file for the brand): (1) `business_notices.rs` reads `emergency`, `subject` and `first_line` from the payload; a notice with `emergency: true` is not held by the night rule (`quotes` already chose its recipients under QH-004 and BIZ-037, and its 8 a.m. group carries its own due time) and is sent with that subject and first line; every other notice is held as today. (2) Register `messaging.business_notice` in `server::register_handlers` (the shared `app/server/src/lib.rs`): the `NoticeSender` with the postal address from the typed settings (add the key to the shared `app/core/src/settings.rs` if no setting holds it; a missing value in test or live stops the worker's start naming the key, and in dev or ci skips this registration and (4)'s, as `twilio_config` does (`app/server/src/lib.rs:495`), so `tests/integration/tests/task_registry.rs:133`, whose stand-in settings hold no postal key, still builds the registry (both kinds stay listed in `tests/task_kinds_deferred.json`); D-3083), the `Lines` from T279's stored mode state through `messaging::api`, and the `SendChecks` (`app/messaging/src/business_notices.rs:70`): `may_text` over `businesses::api::may_text`, and `accept_by` (`:82`) through `picks::api::notice_sent` with the `ConfirmSettings` `register_handlers` already takes (D-3083). (3) T251 queues an emergency job's card notices through `queue_emergency_card` (D-2203). Tests in `tests/integration/tests/emergency_notices.rs`, run through the worker (TD-CARD-15): at 22:40 an EMERGENCY card notice reaches the fake email provider at once with CARD-021's subject and first line for a switched-on person at an after-hours business, and at 8 a.m. for the rest; an ordinary card notice at 22:40 is held to 8 a.m.; a repeat run sends nothing twice. Every existing `tests/integration/tests/business_notices.rs` case passes unchanged. Update the `messaging` and `server` `CLAUDE.md` files, `docs/architecture.md` section 10 and `docs/decisions.md`. (4) Fifth external audit AH-001 (D-2287): also register `messaging.charge_receipt` (`run_receipt_email`, `app/messaging/src/receipt_email.rs:187`, queued by `picks::money_notices`) with a `ReceiptSender` built from the same postal-address setting (D-1826 (1)), and prove in the same test file that a receipt event reaches the fake email provider once through the worker (TD-FEE-55).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -22888,13 +22893,14 @@
     "D-2203",
     "D-1826",
     "D-2011",
-    "D-2287"
+    "D-2287",
+    "D-3083"
    ],
    "cites": [],
    "budget": {
     "files": 2,
     "lines": 450,
-    "context_pct": 33
+    "context_pct": 39
    },
    "checks": [
     "Ci",
@@ -23027,7 +23033,7 @@
    "id": "T315",
    "slug": "feedback-purge-and-export-mask",
    "title": "jobs and portals: feedback words are blanked by the 3-year purge and by \"Delete my data\", and the data download masks bare domains",
-   "goal": "Fourth external audit F31 and F34 (D-2205; PRIV-009, PRIV-011, PRIV-031, JOB-017; D-1821 (4)): the homeowner's feedback words in `jobs.feedback` (her own unscrubbed text, up to 2,000 characters, shown on askhava.com when ticked) outlive both \"Delete my data\" and the 3-year text purge, because the app role has no UPDATE or DELETE on the body (`migrations/0139_jobs_feedback.sql:31`) and neither `privacy` nor `intake` may name a `jobs` table; and the \"Download my data\" masking (`app/portals/src/data_download.rs:313`) misses a bare domain (\"acmeplumbing.example\") and a phone number split across lines. (1) `migrations/0175_jobs_feedback_purge.sql` adds `body_purged_at` to `jobs.feedback`, lets the app role clear the body once (a column-scoped `UPDATE (body, body_purged_at)` grant; the existing `CHECK (char_length(btrim(body)) BETWEEN 1 AND 2000)` (`0139_jobs_feedback.sql:20`) is dropped and replaced by one that keeps that rule while `body_purged_at` is null and requires an empty body once it is set) and adds a trigger that refuses any other change to the body, so a purged body never comes back. (2) `app/jobs/src/feedback_purge.rs`, through `jobs::api`: `purge_feedback(job)` blanks the body, sets `body_purged_at` and writes one `ops` audit row (IDs only), once; `feedback::shown` never returns purged feedback, so it leaves askhava.com at once. It runs on the text stage in the purge composition (the shared `app/server/src/lib.rs`, in the handler that runs `privacy`'s decided text stage, so complaint and dispute holds apply to it as to the job text) and in the PRIV-011 path: `data_download.rs`'s confirmed delete calls it for her own jobs in the transaction of `privacy::api::delete_my_data`. (3) `data_download.rs` also masks a bare domain (two or more dot-separated labels ending in 2 to 24 letters, never a decimal number such as \"3.5\") and a run of 7 or more digits broken only by line breaks and the separators it already allows. Tests: `tests/integration/tests/feedback_purge.rs` (TD-PRIV-22) and `app/portals/src/tests/data_download_mask.rs` (TD-PRIV-23); every existing T087, T230 and purge test passes unchanged. The overseer runs an independent privacy review of the hand-in (D-2205). Update the `jobs` and `portals` `CLAUDE.md` files, `docs/architecture.md` section 10 and `docs/decisions.md`.",
+   "goal": "Fourth external audit F31 and F34 (D-2205; PRIV-009, PRIV-011, PRIV-031, JOB-017; D-1821 (4)): the homeowner's feedback words in `jobs.feedback` (her own unscrubbed text, up to 2,000 characters, shown on askhava.com when ticked) outlive both \"Delete my data\" and the 3-year text purge, because the app role has no UPDATE or DELETE on the body (`migrations/0139_jobs_feedback.sql:31`) and neither `privacy` nor `intake` may name a `jobs` table; and the \"Download my data\" masking (`app/portals/src/data_download.rs:313`) misses a bare domain (\"acmeplumbing.example\") and a phone number split across lines. (1) `migrations/0175_jobs_feedback_purge.sql` adds `body_purged_at` to `jobs.feedback`, lets the app role clear the body once (a column-scoped `UPDATE (body, body_purged_at)` grant; the existing `CHECK (char_length(btrim(body)) BETWEEN 1 AND 2000)` (`0139_jobs_feedback.sql:20`) is dropped and replaced by one that keeps that rule while `body_purged_at` is null and requires an empty body once it is set) and adds a trigger that refuses any other change to the body, so a purged body never comes back. (2) `app/jobs/src/feedback_purge.rs`, through `jobs::api`: `purge_feedback(job)` blanks the body, sets `body_purged_at` and writes one `ops` audit row (IDs only), once; `feedback::shown` never returns purged feedback, so it leaves askhava.com at once (its query in the shared `app/jobs/src/api.rs`, `:298` to `:304`, gains only that filter; D-3083). It runs on the text stage in the purge composition (the shared `app/server/src/lib.rs`, in the handler that runs `privacy`'s decided text stage, so complaint and dispute holds apply to it as to the job text) and in the PRIV-011 path: `data_download.rs`'s confirmed delete calls it for her own jobs in the transaction of `privacy::api::delete_my_data`. (3) `data_download.rs` also masks a bare domain (two or more dot-separated labels ending in 2 to 24 letters, never a decimal number such as \"3.5\") and a run of 7 or more digits broken only by line breaks and the separators it already allows. Tests: `tests/integration/tests/feedback_purge.rs` (TD-PRIV-22) and `app/portals/src/tests/data_download_mask.rs` (TD-PRIV-23); every existing T087, T230 and purge test passes unchanged. The overseer runs an independent privacy review of the hand-in (D-2205). Update the `jobs` and `portals` `CLAUDE.md` files, `docs/architecture.md` section 10 and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -23073,13 +23079,14 @@
     "D-1821",
     "D-1823",
     "D-214",
-    "D-1799"
+    "D-1799",
+    "D-3083"
    ],
    "cites": [],
    "budget": {
     "files": 5,
     "lines": 500,
-    "context_pct": 32
+    "context_pct": 37
    },
    "checks": [
     "Ci",
@@ -23152,7 +23159,7 @@
    "id": "T317",
    "slug": "inbound-text-limit-and-list-names",
    "title": "server and intake: the inbound text route applies SEC-014's new-request limit in the delivery's transaction, and LIST names each business",
-   "goal": "Fourth external audit F12 and F17 (D-2206; SEC-014, TXT-031; D-1951, D-2041 (2), D-1310): the inbound text route opens requests with no SEC-014 limit (D-1951 named the next owner of `app/server/src/inbound_text.rs` to call `intake::api::admit_new_request`; D-2041 (2) left it because `admit_new_request` counts on its own pool outside the delivery's transaction, so a 500 and resend counts twice, and the route has no open-request read), and the LIST reply names no business (`Webhooks::names` is built empty, `app/server/src/lib.rs:277`). This is a harness task only because it adopts four done tests that build `Webhooks` by name (D-2206). After T279: (1) `app/intake/src/limits.rs`: `admit_new_request` counts on the connection it is given (the delivery's transaction, so a rolled-back delivery counts nothing), keyed by the sender's vault contact (blind index; no IP, the request comes from Twilio); `intake::api` gains the read of whether the sender has an open request. The signature changes from the pool to a connection for every caller: the web-chat path calls it too (with her contact and the client IP, in the transaction that opens the request), which T103 builds and T299 wires, both after this task (D-2206). (2) `inbound_text.rs` calls it before `receive_reply` only for a homeowner sender with no open request; a refused text keeps its inbox row (so Twilio's resend is a repeat), opens nothing, is answered by nothing and raises at most one Low alert per sender per window, with no body or phone; HELP, STOP and START are handled before the limit as today. (3) `Webhooks::names` is removed: the LIST reply reads the quoted businesses' names at the time of the text through T316's `businesses::api::public_names` (D-1310's no-name fallback stays). (4) `Webhooks` gains the route's `Environment`, set from the settings in `main.rs`, which T299 passes to the AI gate (D-2065). (5) The four done tests that build `Webhooks` (`tests/integration/tests/inbound_text_route.rs`, `inbound_first_contact.rs`, `inbound_scrub_context.rs` and `app/server/tests/inbound_voice.rs`) change only in that construction (no `names`, the test environment set) and, where a test passed names for LIST, in seeding those businesses' records instead; every input, expected value and assertion stays byte-identical. Tests in `tests/integration/tests/inbound_text_guards.rs` through the served route (TD-SEC-52); every TD-TXT-12, TD-TXT-16, TD-TXT-32, TD-TXT-33, TD-CALL-14 and TD-AI-19 case passes. Update `app/server/CLAUDE.md`, `app/intake/CLAUDE.md` and `docs/decisions.md`.",
+   "goal": "Fourth external audit F12 and F17 (D-2206; SEC-014, TXT-031; D-1951, D-2041 (2), D-1310): the inbound text route opens requests with no SEC-014 limit (D-1951 named the next owner of `app/server/src/inbound_text.rs` to call `intake::api::admit_new_request`; D-2041 (2) left it because `admit_new_request` counts on its own pool outside the delivery's transaction, so a 500 and resend counts twice, and the route has no open-request read), and the LIST reply names no business (`Webhooks::names` is built empty, `app/server/src/lib.rs:277`). This is a harness task only because it adopts six done tests that build `Webhooks` by name (D-2206, D-3083). After T279: (1) `app/intake/src/limits.rs`: `admit_new_request` takes `impl Acquire<'_, Database = Postgres>` and counts on the connection it acquires (the delivery's transaction, so a rolled-back delivery counts nothing), through a connection-taking variant of `core`'s counter added in `app/core/src/rate_limit.rs` and exported through `core::api` (`hit`, `:201`, takes only `&PgPool`; it and its callers stay as they are); `&PgPool` still meets the bound, so T089's `tests/security/tests/rate_limits.rs` (`:67`, `:77`, `:87`, `:107` and the concurrent pool clones at `:182`) compiles and passes unchanged (D-3083); keyed by the sender's vault contact (blind index; no IP, the request comes from Twilio); `intake::api` gains the read of whether the sender has an open request. Every caller may then pass its own connection: the web-chat path calls it too (with her contact and the client IP, in the transaction that opens the request), which T103 builds and T299 wires, both after this task (D-2206). (2) `inbound_text.rs` calls it before `receive_reply` only for a homeowner sender with no open request; a refused text keeps its inbox row (so Twilio's resend is a repeat), opens nothing, is answered by nothing and raises at most one Low alert per sender per window, with no body or phone; HELP, STOP and START are handled before the limit as today. (3) `Webhooks::names` is removed: the LIST reply reads the quoted businesses' names at the time of the text through T316's `businesses::api::public_names` (D-1310's no-name fallback stays). This needs no change to `intake::replies`: `inbound_text.rs` builds the names it already passes to `receive_reply` from `intake::api::jobs_of_contact` (her jobs), `quotes::api::quoted_prices` (each job's quoted businesses) and `businesses::api::public_names`, on the delivery's connection (D-3083). (4) `Webhooks` gains the route's `Environment`, set from the settings in `main.rs`, which T299 passes to the AI gate (D-2065). (5) The six done tests that build `Webhooks` (`tests/integration/tests/inbound_text_route.rs`, `inbound_first_contact.rs`, `inbound_scrub_context.rs`, `suspension_mode.rs` (T279's, `:69`), `app/server/tests/inbound_voice.rs` and `app/server/tests/voice_confirm_line.rs` (T311's, `:95`); D-3083) change only in that construction (no `names`, the test environment set) and, where a test passed names for LIST, in seeding those businesses' records instead; every input, expected value and assertion stays byte-identical. Tests in `tests/integration/tests/inbound_text_guards.rs` through the served route (TD-SEC-52); every TD-TXT-12, TD-TXT-16, TD-TXT-32, TD-TXT-33, TD-CALL-14 and TD-AI-19 case passes. Update `app/server/CLAUDE.md`, `app/intake/CLAUDE.md` and `docs/decisions.md`.",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -23161,7 +23168,8 @@
     "T279",
     "T316",
     "T089",
-    "T262"
+    "T262",
+    "T311"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -23178,7 +23186,10 @@
     "tests/integration/tests/inbound_text_route.rs",
     "tests/integration/tests/inbound_first_contact.rs",
     "tests/integration/tests/inbound_scrub_context.rs",
-    "app/server/tests/inbound_voice.rs"
+    "app/server/tests/inbound_voice.rs",
+    "tests/integration/tests/suspension_mode.rs",
+    "app/server/tests/voice_confirm_line.rs",
+    "app/core/src/rate_limit.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -23201,13 +23212,14 @@
     "D-1951",
     "D-2041",
     "D-1310",
-    "D-2065"
+    "D-2065",
+    "D-3083"
    ],
    "cites": [],
    "budget": {
-    "files": 7,
-    "lines": 600,
-    "context_pct": 24
+    "files": 10,
+    "lines": 700,
+    "context_pct": 32
    },
    "checks": [
     "Ci",
@@ -24277,7 +24289,8 @@
    "stage": "4",
    "module": "portals",
    "deps": [
-    "T261"
+    "T261",
+    "T317"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -24322,7 +24335,7 @@
    "budget": {
     "files": 6,
     "lines": 550,
-    "context_pct": 22
+    "context_pct": 26
    },
    "checks": [
     "Ci",
@@ -24389,7 +24402,7 @@
    "id": "T323",
    "slug": "adds-fact-sentence-start",
    "title": "ai: a new capitalized name at the start of a sentence counts as an added fact",
-   "goal": "Fourth external audit F41 (D-2209; AI-019, D-988): `adds_fact` (`app/ai/src/output_checks.rs:281`) never counts a capitalized word that starts a line or follows `.`, `!`, `?` or `:`, so \"Rheem unit is leaking.\" passes AI-019's \"adds no fact\" check when her words never named Rheem; the only case plants the name mid-sentence (`app/ai/src/tests/prop_ai_output_limits.rs:220`). After T295 (which owns the file for the brand words): a sentence-start word also counts as a new fact when it is unknown to her words, answers and photo notes and is not an ordinary sentence opener; the openers are a fixed list kept as data (`app/ai/data/sentence_openers.json`, English and Spanish function words, pronouns and the first words of the question bank and card templates; no brand or market name), read once. Check every fixed Ask Hava text the AI may echo so none trips it. Tests in `app/ai/src/tests/adds_fact_openers.rs` (TD-AI-26): \"Rheem unit is leaking.\" and \"Water heater broke. Rheem says so.\" are refused when her words never named Rheem and pass when they did; \"The water heater is leaking.\" and \"¿Cuándo empezó?\" pass; every existing `ai` output-check test passes unchanged. Update the `ai` `CLAUDE.md` and `docs/decisions.md`.",
+   "goal": "Fourth external audit F41 (D-2209; AI-019, D-988): `adds_fact` (`app/ai/src/output_checks.rs:281`) never counts a capitalized word that starts a line or follows `.`, `!`, `?` or `:`, so \"Rheem unit is leaking.\" passes AI-019's \"adds no fact\" check when her words never named Rheem; the only case plants the name mid-sentence (`app/ai/src/tests/prop_ai_output_limits.rs:220`). After T295 (which owns the file for the brand words): a sentence-start word also counts as a new fact when it is unknown to her words, answers and photo notes and is not an ordinary sentence opener; the openers are a fixed list kept as data (`app/ai/data/sentence_openers.json`, English and Spanish function words, pronouns and the first words of the question bank and card templates; no brand or market name), read once. A sentence-start word that ends in a colon is a label, and the list's labels, \"Note\" among them, are openers: the done property `a_planted_limit_breach_falls_back` plants every phrase in a sentence starting \"Note: \" (`app/ai/src/tests/prop_ai_output_limits.rs:112`), and `check_output` runs `adds_fact` before `is_contact` (`output_checks.rs:194` to `:198`), so without it that property's contact cases would end as an added fact, not a contact (D-3083). Check every fixed Ask Hava text the AI may echo so none trips it. Tests in `app/ai/src/tests/adds_fact_openers.rs` (TD-AI-26): \"Rheem unit is leaking.\" and \"Water heater broke. Rheem says so.\" are refused when her words never named Rheem and pass when they did; \"The water heater is leaking.\" and \"¿Cuándo empezó?\" pass; every existing `ai` output-check test passes unchanged. Update the `ai` `CLAUDE.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -24422,7 +24435,8 @@
    ],
    "decisions": [
     "D-2209",
-    "D-988"
+    "D-988",
+    "D-3083"
    ],
    "cites": [],
    "budget": {
