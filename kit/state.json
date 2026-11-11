@@ -28874,7 +28874,7 @@
     "T327",
     "T337"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "late-success-trigger-and-ended-picks",
    "type": "harness",
@@ -28887,8 +28887,8 @@
     2958,
     2959
    ],
-   "reason": "plan gap reported: PLAN GAP: tests/integration/tests/late_success.rs:216 (T064's TD-FEE-12, DONE) clashes with T332's goal and D-2290 (the file changes only in the expected trigger). T332 requires run_charge_check to call late_success in its own round on an ended pick, so the later report call at line 216 answers AlreadyQueued, not Queued; the (1,1) count at line 220 stays. Reviewer confirmed (late.rs:62-102 dedupe key; test lines 202-222). Smallest plan change: T332 may also change that one assertion to Ok(LateSuccess::AlreadyQueued), logged in decisions. Also: D-2290 says migration 0176, the goal says 0177; ne; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T332 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: tests/integration/tests/late_success.rs:216 (T064's TD-FEE-12, DONE) clashes with T332's goal and D-2290 (the file changes only in the expected trigger). T332 requires run_charge_check to call late_success in its own round on an ended pick, so the later report call at line 216 answers AlreadyQueued, not Queued; the (1,1) count at line 220 stays. Reviewer confirmed (late.rs:62-102 dedupe key; test lines 202-222). Smallest plan change: T332 may also change that one assertion to Ok(LateSuccess::AlreadyQueued), logged in decisions. Also: D-2290 says migration 0176, the goal says 0177; newest existing is 0174.",
+   "reason": null,
+   "last_failure": "PLAN GAP: tests/integration/tests/late_success.rs:216 (T064's TD-FEE-12, DONE) clashes with T332's goal and D-2290 (the file changes only in the expected trigger). T332 requires run_charge_check to call late_success in its own round on an ended pick, so the later report call at line 216 answers AlreadyQueued, not Queued; the (1,1) count at line 220 stays. Reviewer confirmed (late.rs:62-102 dedupe key; test lines 202-222). Smallest plan change: T332 may also change that one assertion to Ok(LateSuccess::AlreadyQueued), logged in decisions. Also: D-2290 says migration 0176, the goal says 0177; newest existing is 0174.\nre-queued after plan fix D-2970: late_success.rs:216 may expect AlreadyQueued once the charge check queues first (D-2970, #482)",
    "history": [
     {
      "attempt": 1,
@@ -28902,6 +28902,21 @@
      "started_at": "2026-11-11T11:58:29Z",
      "ended_at": "2026-11-11T12:10:03Z",
      "result": "BLOCKED"
+    }
+   ],
+   "requeues": [
+    {
+     "at": "2026-11-11T12:26:42Z",
+     "reason": "late_success.rs:216 may expect AlreadyQueued once the charge check queues first (D-2970, #482)",
+     "by": "manual-cd6fb2e30dec",
+     "was": "plan gap reported: PLAN GAP: tests/integration/tests/late_success.rs:216 (T064's TD-FEE-12, DONE) clashes with T332's goal and D-2290 (the file changes only in the expected trigger). T332 requires run_charge_check to call late_success in its own round on an ended pick, so the later report call at line 216 answers AlreadyQueued, not Queued; the (1,1) count at line 220 stays. Reviewer confirmed (late.rs:62-102 dedupe key; test lines 202-222). Smallest plan change: T332 may also change that one assertion to Ok(LateSuccess::AlreadyQueued), logged in decisions. Also: D-2290 says migration 0176, the goal says 0177; ne; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T332 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 1,
+     "plan_fix": "D-2970",
+     "plan_since": "2026-11-11T11:58:29Z",
+     "plan_base": "9826ef4c3b4045a43bdb640567482176d339ca12",
+     "plan_head": "a70f6e601017c41a759081af4d036079782b2ffe",
+     "plan_then": "42e10d3c606462c441c79f49b110c8682206aece5e627e6f4b025b9e4fb542b2",
+     "plan_now": "da22b880b96fa5a1cb5c1ade056ff1f05bd3f47f9047caec9cdebd1bfc78ac13"
     }
    ]
   },
@@ -32455,7 +32470,7 @@
    }
   }
  },
- "updated_at": "2026-11-11T12:24:05Z",
+ "updated_at": "2026-11-11T12:26:42Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -32553,8 +32568,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "790d4ec251b2d7ad65ccaf0f8a397e0bd597d792",
- "starter": "actions",
+ "runner_sha": "a70f6e601017c41a759081af4d036079782b2ffe",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "4b70d894e350bfb3a5895ec4d49e1baa21f163bc",

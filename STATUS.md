@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T12:24:05Z by runner 790d4ec251b2 (actions).
+Updated 2026-11-11T12:26:42Z by runner a70f6e601017 (manual).
 
 **Building: T333 in progress since 12:24Z; 203 of 372 done; week 66% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,10 @@ Updated 2026-11-11T12:24:05Z by runner 790d4ec251b2 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 3: T333 claimed 12:24Z, lease until 15:24Z
 - **Week:** 66% used, 62.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:16Z, 7 min before this update
+- **Last run:** 12:24Z, 2 min before this update
 - **Keeper:** last ran 12:16Z, next wake 12:36Z
 
 ## Needs attention
-- BLOCKED T332: plan gap reported: PLAN GAP: tests/integration/tests/late_success.rs:216 (T064's TD-FEE-12, DONE) clashes with T332's goal and D-2290 (the file changes only in the expected trigger). T332 requires run_charge_check to call late_success in its own round on an ended pick, so the later report call at line 216 answers AlreadyQueued, not Queued; the (1,1) count at line 220 stays. Reviewer confirmed (late.rs:62-102 dedupe key; test lines 202-222). Smallest plan change: T332 may also change that one assertion to Ok(LateSuccess::AlreadyQueued), logged in decisions. Also: D-2290 says migration 0176, the goal says 0177; ne; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T332 --plan-fix D-### --reason "..."` (D-2859)
 - Strict plan check red: 18 problem(s) on tasks still to run (+25 on DONE tasks); first: T255: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
@@ -56,6 +55,7 @@ Updated 2026-11-11T12:24:05Z by runner 790d4ec251b2 (actions).
 | T293 | businesses and quotes: sign-up, consent, complaint and quote | done | 1 | 41 min | 12:35Z |  |
 
 ### Plan and harness merges on main
+- 12:26Z Plan: T332 may expect AlreadyQueued after its own check round queues the late success (D-2970) (#482)
 - 11:00Z Plan: sign-up reads the business's own state record — name check and identity contacts (T385, D-2954) (#475)
 - 10:38Z Plan: businesses give their public name at sign-up; T316 reads it (D-2943) (#473)
 - 09:54Z Harness: a planned file deletion is not a plan gap — 5 eligible tasks were held (D-2922) (#470)
