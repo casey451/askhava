@@ -6,7 +6,9 @@
 //! replaces them, and a name holding a phone number, a link or a channel direction is refused with
 //! its reason and stores nothing; each save writes one audit row naming the field only. A Google
 //! link on another domain and a dead Yelp link are refused; saved links show on the stored quote
-//! card as plain "Google" and "Yelp" link lines right after the license lines. The guarded fetch
+//! card as plain "Google" and "Yelp" link lines right after the license lines. A city license
+//! number holding a phone number is refused; a Google search, Sites, Docs or `/url?q=` link and a
+//! Yelp search link are refused (D-3037). The guarded fetch
 //! itself is `adapters`' `ssrf_guard.rs` (TD-SEC-20); here a fake opener answers.
 
 use askhava_businesses::api::{
@@ -110,7 +112,7 @@ async fn td_biz_32_a_screened_name_stores_nothing(pool: sqlx::PgPool) {
     let mut conn = app(&pool).await;
     let id = create(&mut conn, false, now()).await.expect("business");
     let long = "x".repeat(201);
-    let refused: [NameCase<'_>; 6] = [
+    let refused: [NameCase<'_>; 7] = [
         (("Sample Plumbing 928 555 0199", None), None, contact()),
         (
             ("Sample Plumbing", Some("sampleplumbing.com")),
@@ -124,6 +126,11 @@ async fn td_biz_32_a_screened_name_stores_nothing(pool: sqlx::PgPool) {
             ("Sample Plumbing", None),
             Some(&"9".repeat(65)),
             NameRefusal::CityLicense,
+        ),
+        (
+            ("Sample Plumbing", None),
+            Some("928-555-0100"),
+            NameRefusal::CityLicenseScreened(askhava_businesses::api::AboutUsRefusal::Contact),
         ),
     ];
     for (names, city, want) in refused {
@@ -167,11 +174,19 @@ async fn td_biz_32_links_on_another_domain_or_dead_are_refused() {
         "https://@google.com/x",
         "https://google.com:8443/x",
         "https://.google.com/x",
+        "https://www.google.com/search?q=928-555-0100",
+        "https://sites.google.com/view/example-sample",
+        "https://docs.google.com/document/d/example",
+        "https://www.google.com/url?q=https://example.com",
     ];
     for url in bad {
         assert!(!on_site(ReviewSite::Google, url), "{url}");
     }
     assert!(!on_site(ReviewSite::Yelp, GOOGLE));
+    assert!(!on_site(
+        ReviewSite::Yelp,
+        "https://www.yelp.com/search?find_desc=928-555-0100"
+    ));
     let wrong = check_links(&FakeOpener(true), Some("https://example.com/biz"), None).await;
     assert_eq!(wrong, Err(LinkRefusal::WrongSite(ReviewSite::Google)));
     let dead = check_links(&FakeOpener(false), None, Some(YELP)).await;

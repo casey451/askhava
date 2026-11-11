@@ -5,9 +5,11 @@
 //! city license number a no-license business entered, then writes or replaces the one
 //! `businesses.business_name` row with an audit row naming the field only (PRIV-028). A name with
 //! a phone number, a link or a direction to another channel is refused with its reason and
-//! nothing is stored ([`screen_public_name`]). [`check_links`] accepts a Google Business Profile
-//! link only on a Google host and a Yelp link only on yelp.com, and only when it opens through
-//! the SEC-041 guard ([`GuardedOpener`] over `adapters::api::fetch_untrusted`); only a
+//! nothing is stored ([`screen_public_name`]); the city license number goes through the same
+//! screen (D-3037). [`check_links`] accepts only a Google Business Profile link shape
+//! ([`GOOGLE_SHAPES`]) and a Yelp business page ([`YELP_SHAPES`]) with no phone number and no
+//! link inside it, and only when it opens through the SEC-041 guard ([`GuardedOpener`] over
+//! `adapters::api::fetch_untrusted`); only a
 //! [`ReviewLinks`] it built is saved ([`save_review_links`]). The quote card reads
 //! [`review_links`] (PICK-041). Editing the links in the portal is T204's; leaving is T228's.
 
@@ -28,10 +30,28 @@ pub const NAME_MAX: usize = 200;
 pub const CITY_LICENSE_MAX: usize = 64;
 /// The longest review link (BIZ-052).
 pub const LINK_MAX: usize = 500;
-/// Google's hosts a Business Profile link may sit on, subdomains included (BIZ-052).
-pub const GOOGLE_HOSTS: [&str; 4] = ["google.com", "g.page", "goo.gl", "g.co"];
-/// Yelp's host, subdomains included (BIZ-052).
+/// SEC-041: Google's hosts, subdomains included, the guarded fetch of a Google link may visit,
+/// redirects included (BIZ-052).
+pub const GOOGLE_HOSTS: [&str; 5] = ["google.com", "g.page", "goo.gl", "g.co", "share.google"];
+/// SEC-041: Yelp's hosts, subdomains included, the guarded fetch of a Yelp link may visit.
 pub const YELP_HOSTS: [&str; 1] = ["yelp.com"];
+/// BIZ-052, D-3037: the Business Profile link shapes Google gives out, as an exact host and a
+/// start of the path; a prefix ending in `/` needs more after it. Search, Sites, Docs and
+/// `/url?q=` links on Google's domains are refused.
+pub const GOOGLE_SHAPES: [(&str, &str); 8] = [
+    ("g.page", "/"),
+    ("maps.app.goo.gl", "/"),
+    ("g.co", "/kgs/"),
+    ("share.google", "/"),
+    ("www.google.com", "/maps/"),
+    ("maps.google.com", "/maps/"),
+    ("maps.google.com", "/?cid="),
+    ("business.google.com", ""),
+];
+/// BIZ-052, D-3037: a Yelp business page, `/biz/<page>` on `www.yelp.com` or `yelp.com`.
+pub const YELP_SHAPES: [(&str, &str); 2] = [("www.yelp.com", "/biz/"), ("yelp.com", "/biz/")];
+/// D-3037: the characters a written phone number may hold between its digits.
+const PHONE_SEPARATORS: [char; 6] = [' ', '-', '.', '(', ')', '+'];
 
 /// Why a name or city license number was refused (BIZ-022); `reason` is shown beside the field.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -44,6 +64,9 @@ pub enum NameRefusal {
     Screened(AboutUsRefusal),
     /// The city license number is over [`CITY_LICENSE_MAX`] characters.
     CityLicense,
+    /// The city license number holds a phone number, a link or a direction to another channel
+    /// (D-3037).
+    CityLicenseScreened(AboutUsRefusal),
 }
 
 impl NameRefusal {
@@ -53,7 +76,7 @@ impl NameRefusal {
         match self {
             Self::Missing => "Enter your business name.".to_owned(),
             Self::TooLong => "Keep each name to 200 characters or fewer.".to_owned(),
-            Self::Screened(r) => r.reason(),
+            Self::Screened(r) | Self::CityLicenseScreened(r) => r.reason(),
             Self::CityLicense => {
                 "Keep the city license number to 64 characters or fewer.".to_owned()
             }
@@ -71,12 +94,21 @@ pub enum ReviewSite {
 }
 
 impl ReviewSite {
-    /// The hosts its links must sit on.
+    /// The hosts its guarded fetch may visit (SEC-041).
     #[must_use]
     pub const fn hosts(self) -> &'static [&'static str] {
         match self {
             Self::Google => &GOOGLE_HOSTS,
             Self::Yelp => &YELP_HOSTS,
+        }
+    }
+
+    /// The link shapes a business may paste (BIZ-052, D-3037).
+    #[must_use]
+    pub const fn shapes(self) -> &'static [(&'static str, &'static str)] {
+        match self {
+            Self::Google => &GOOGLE_SHAPES,
+            Self::Yelp => &YELP_SHAPES,
         }
     }
 
@@ -90,7 +122,8 @@ impl ReviewSite {
 /// Why a review link was refused (BIZ-052); `reason` is shown beside the field.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum LinkRefusal {
-    /// Not an `https` link on the site's own domain, or over [`LINK_MAX`] characters.
+    /// Not an `https` link of the site's own shape, holds a phone number or a link, or over
+    /// [`LINK_MAX`] characters.
     WrongSite(ReviewSite),
     /// The page did not open.
     DoesNotOpen(ReviewSite),
@@ -102,10 +135,10 @@ impl LinkRefusal {
     pub fn reason(self) -> &'static str {
         match self {
             Self::WrongSite(ReviewSite::Google) => {
-                "Paste your Google Business Profile link. It should start with https:// and go to google.com, g.page, g.co or goo.gl."
+                "Paste the link to your Google Business Profile, the one its Share button gives you. It should start with https:// and go to g.page, maps.app.goo.gl, share.google, g.co/kgs or google.com/maps, with no phone number in it."
             }
             Self::WrongSite(ReviewSite::Yelp) => {
-                "Paste your Yelp page link. It should start with https:// and go to yelp.com."
+                "Paste your Yelp business page link. It should start with https://www.yelp.com/biz/ and have no phone number in it."
             }
             Self::DoesNotOpen(_) => {
                 "That page didn't open for us. Check the link, or leave it blank."
@@ -144,8 +177,8 @@ fn given(text: Option<&str>) -> Option<&str> {
     text.map(str::trim).filter(|t| !t.is_empty())
 }
 
-/// BIZ-022, PICK-041, D-336, D-2943, D-2954: checks the names and city license number; the
-/// trimmed values on success.
+/// BIZ-022, PICK-041, D-336, D-2943, D-2954, D-3037: checks the names and the city license
+/// number (length, then the same phone, link and channel screen); the trimmed values on success.
 ///
 /// # Errors
 /// The first [`NameRefusal`].
@@ -163,8 +196,11 @@ pub fn screen_names<'a>(
         screen_public_name(n).map_err(NameRefusal::Screened)?;
     }
     let city = given(city_license);
-    if city.is_some_and(|c| c.chars().count() > CITY_LICENSE_MAX) {
-        return Err(NameRefusal::CityLicense);
+    if let Some(c) = city {
+        if c.chars().count() > CITY_LICENSE_MAX {
+            return Err(NameRefusal::CityLicense);
+        }
+        screen_public_name(c).map_err(NameRefusal::CityLicenseScreened)?;
     }
     Ok((name, trade, city))
 }
@@ -261,28 +297,98 @@ pub struct GuardedOpener;
 
 impl LinkOpener for GuardedOpener {
     async fn opens(&self, site: ReviewSite, url: &str) -> bool {
-        let fetched = fetch_untrusted(&site.policy(), url).await;
-        matches!(fetched, Ok(_) | Err(FetchError::TooLarge))
+        opened(&fetch_untrusted(&site.policy(), url).await)
     }
 }
 
-/// BIZ-052: whether `url` is an `https` link, with no user name, password or port, on one of
-/// `site`'s hosts or their subdomains, and at most [`LINK_MAX`] characters.
+/// SEC-041, D-3034: a guarded fetch's result counts as open on a normal answer or a body over the
+/// cap (the page answered); every other failure is "didn't open".
+pub(crate) const fn opened(fetched: &Result<Vec<u8>, FetchError>) -> bool {
+    matches!(fetched, Ok(_) | Err(FetchError::TooLarge))
+}
+
+/// BIZ-052, D-3037: whether `url` is an `https` link, with no user name, password, port, backslash
+/// or whitespace, of one of `site`'s [`ReviewSite::shapes`], with no phone number and no link
+/// inside it, and at most [`LINK_MAX`] characters.
 #[must_use]
 pub fn on_site(site: ReviewSite, url: &str) -> bool {
-    let Some(rest) = url.strip_prefix("https://") else {
+    let Some(after) = url.strip_prefix("https://") else {
         return false;
     };
-    let host = rest.split(['/', '?', '#']).next().unwrap_or_default();
+    let cut = after.find(['/', '?', '#']).unwrap_or(after.len());
+    let (host, rest) = after.split_at(cut);
     let host = host.to_ascii_lowercase();
     let clean = !host.contains(['@', ':', '\\']) && !url.chars().any(char::is_whitespace);
-    let listed = site.hosts().iter().any(|h| {
+    let shaped = site.shapes().iter().any(|(h, prefix)| {
         host == *h
-            || host
-                .strip_suffix(h)
-                .is_some_and(|s| s.ends_with('.') && s.len() > 1)
+            && rest.starts_with(prefix)
+            && (!prefix.ends_with('/') || rest.len() > prefix.len())
     });
-    clean && listed && url.chars().count() <= LINK_MAX
+    let inner = decoded(rest).to_ascii_lowercase();
+    let nested = inner.contains("://") || inner.contains("http:") || inner.contains("https:");
+    clean && shaped && !nested && !holds_phone(&inner) && url.chars().count() <= LINK_MAX
+}
+
+/// `text` with `%XX` escapes decoded and `+` read as a space, as a browser reads a query.
+fn decoded(text: &str) -> String {
+    let bytes = text.as_bytes();
+    let mut out = Vec::with_capacity(bytes.len());
+    let mut i = 0;
+    while i < bytes.len() {
+        let hex = bytes
+            .get(i + 1..i + 3)
+            .and_then(|h| std::str::from_utf8(h).ok())
+            .and_then(|h| u8::from_str_radix(h, 16).ok());
+        match (bytes[i], hex) {
+            (b'%', Some(b)) => {
+                out.push(b);
+                i += 3;
+                continue;
+            }
+            (b'+', _) => out.push(b' '),
+            (b, _) => out.push(b),
+        }
+        i += 1;
+    }
+    String::from_utf8_lossy(&out).into_owned()
+}
+
+/// D-3037: whether `text` holds a written phone number: 7 to 15 digits joined only by
+/// [`PHONE_SEPARATORS`], not glued to a letter or digit on either side (so map IDs, short codes
+/// and `!3d34.48` data are not numbers), and not one decimal number such as a map coordinate.
+fn holds_phone(text: &str) -> bool {
+    let chars: Vec<char> = text.chars().collect();
+    let mut i = 0;
+    while i < chars.len() {
+        if !chars[i].is_ascii_digit() {
+            i += 1;
+            continue;
+        }
+        let (mut j, mut end, mut digits) = (i, i, 0);
+        while j < chars.len() && (chars[j].is_ascii_digit() || PHONE_SEPARATORS.contains(&chars[j]))
+        {
+            if chars[j].is_ascii_digit() {
+                digits += 1;
+                end = j + 1;
+            }
+            j += 1;
+        }
+        let glued = (i > 0 && chars[i - 1].is_alphanumeric())
+            || chars.get(end).is_some_and(|c| c.is_alphanumeric());
+        if !glued && (7..=15).contains(&digits) && !decimal(&chars[i..end]) {
+            return true;
+        }
+        i = j;
+    }
+    false
+}
+
+/// A decimal number such as `114.3225123`: digits with one dot and at most three digits before it.
+fn decimal(token: &[char]) -> bool {
+    let dots = token.iter().filter(|c| **c == '.').count();
+    let plain = token.iter().all(|c| c.is_ascii_digit() || *c == '.');
+    let whole = token.iter().take_while(|c| **c != '.').count();
+    dots == 1 && plain && whole <= 3
 }
 
 /// The Google and Yelp links of one business, each checked on its site and open (BIZ-052). Only

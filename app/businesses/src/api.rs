@@ -83,10 +83,10 @@ pub use crate::identity::{
     letter_code, next_step, record_match, send_code, send_code_seen, settle,
 };
 pub use crate::links::{
-    BusinessNames, CITY_LICENSE_MAX, GOOGLE_HOSTS, GuardedOpener, LINK_MAX, LinkOpener,
-    LinkRefusal, LinksError, NAME_MAX, NameRefusal, ReviewLinks, ReviewSite, YELP_HOSTS,
-    business_names, check_links, on_site, review_links, save_business_name, save_review_links,
-    screen_names,
+    BusinessNames, CITY_LICENSE_MAX, GOOGLE_HOSTS, GOOGLE_SHAPES, GuardedOpener, LINK_MAX,
+    LinkOpener, LinkRefusal, LinksError, NAME_MAX, NameRefusal, ReviewLinks, ReviewSite,
+    YELP_HOSTS, YELP_SHAPES, business_names, check_links, on_site, review_links,
+    save_business_name, save_review_links, screen_names,
 };
 pub use crate::models::{Business, BusinessesError, Insurance};
 pub use crate::open_cards_times::{
