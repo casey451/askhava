@@ -2076,3 +2076,4 @@
 - 2026-11-11T14:49:06Z runner 18c60bd6ee5c (manual): {"T214": "BLOCKED -> QUEUED"}
 - 2026-11-11T14:50:37Z runner 18c60bd6ee5c (manual): {}
 - 2026-11-11T14:53:31Z runner 9e8ac4355245 (actions): {}
+- 2026-11-11T15:01:18Z runner 9e8ac4355245 (actions): {"T214": "QUEUED -> IN_PROGRESS"}; T214 estimated 4.0M tokens (calibrated); five-hour window has 25.7M left, week 54.6M after 3.4M still running in another lane (session_reading 2026-11-11T14:40:15Z (week)); claimed
