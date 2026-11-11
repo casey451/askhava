@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-11T21:11:49Z by runner 53eba4dfccb6 (actions).
+Updated 2026-11-11T21:12:33Z by runner 53eba4dfccb6 (actions).
 
 **Building: T387 in progress since 20:19Z; 213 of 376 done; week 73% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 213 of 376 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T387 claimed 20:19Z, lease until 23:19Z; lane 2: T334 claimed 21:05Z, lease until 00:05Z; lane 3: T232 claimed 21:11Z, lease until 00:11Z
-- **Week:** 73% used, 44.1M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:06Z, 5 min before this update
+- **Lane:** lane 1: T387 claimed 20:19Z, lease until 23:19Z; lane 2: T334 claimed 21:05Z, lease until 00:05Z; lane 3: T232 claimed 21:11Z, lease until 00:11Z; lane 5: T388 claimed 21:12Z, lease until 00:12Z
+- **Week:** 73% used, 41.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Last run:** 21:12Z, 0 min before this update
 - **Keeper:** last ran 20:16Z, next wake 20:36Z
 
 ## Needs attention
@@ -136,7 +136,7 @@ Updated 2026-11-11T21:11:49Z by runner 53eba4dfccb6 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-11T20:15:48Z (week)): five-hour: 3.9M used, 25.2M left, resets on first use; week: 149.9M used, 44.1M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-05T01:47:10Z.
+- Pacing (session_reading 2026-11-11T20:15:48Z (week)): five-hour: 7.0M used, 22.1M left, resets on first use; week: 153.0M used, 41.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-05T01:47:55Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -154,6 +154,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - T387 (lease until 2026-11-11T23:19:01Z)
 - lane 2: T334 (lease until 2026-11-12T00:05:40Z)
 - lane 3: T232 (lease until 2026-11-12T00:11:40Z)
+- lane 5: T388 (lease until 2026-11-12T00:12:26Z)
 
 ## Last usage reading
 - {"task": "T228", "at": "2026-11-11T19:59:14Z", "output_tokens": 24991, "cache_read_input_tokens": 2155726, "cache_creation_input_tokens": 111875, "input_tokens": 138}
