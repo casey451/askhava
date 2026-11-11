@@ -4,8 +4,9 @@
 //! after its attempts; `core` may not call `ops`, so it raises nothing. This worker task does,
 //! once an hour: in the test and live environments it reads each kind with such a dead letter
 //! (`core::api::dead_without_handler`) and raises one High [`ALERT`] per kind unless that kind's
-//! alert is still open (`ops::api::alert_open`). In dev and ci it raises nothing, so a local queue
-//! of stand-in tasks never alerts.
+//! alert is still open (`ops::api::raise_alert_once`: the check and the raise under one advisory
+//! lock, so two checks at once raise one alert, D-2852). In dev and ci it raises nothing, so a
+//! local queue of stand-in tasks never alerts.
 //!
 //! `ops.alert` holds a kind, a severity and a subject only. The alert names the task kind as its
 //! subject kind (a code name the enqueuing code wrote) with an ID derived from the kind
@@ -19,7 +20,7 @@ use std::sync::{Arc, Mutex, OnceLock};
 use askhava_core::api::{
     Clock, Environment, HandlerError, NewTask, Registry, TaskError, dead_without_handler, enqueue,
 };
-use askhava_ops::api::{NewAlert, Severity, alert_open, is_code_name, raise_alert};
+use askhava_ops::api::{Severity, is_code_name, raise_alert_once};
 use jiff::{SignedDuration, Timestamp};
 use serde_json::json;
 use sha2::{Digest, Sha256};
@@ -87,19 +88,12 @@ async fn alert_kind(db: &mut PgConnection, kind: &str, count: i64) -> Result<(),
         tracing::error!("a dead-lettered task kind is not a code name");
         return Ok(());
     };
-    let subject = (name, kind_id(name));
-    if alert_open(db, ALERT, subject)
+    let raised = raise_alert_once(db, ALERT, Severity::High, (name, kind_id(name)))
         .await
-        .map_err(|_| DB_FAILED)?
-    {
+        .map_err(|_| DB_FAILED)?;
+    if raised.is_none() {
         return Ok(());
     }
-    let alert = NewAlert {
-        kind: ALERT,
-        severity: Severity::High,
-        subject: Some(subject),
-    };
-    raise_alert(db, &alert).await.map_err(|_| DB_FAILED)?;
     tracing::error!(
         task_kind = name,
         count,

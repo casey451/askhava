@@ -7,8 +7,9 @@
 //! registrations), with stand-in settings that turn on every conditional registration (the vault
 //! keys for `jobs.homeowner_text`, the Twilio settings for `picks.line_retry` and the body
 //! deletes). It then scans the non-test Rust under `app/` (files under a `tests/` folder and
-//! everything from a file's `#[cfg(test)] mod` on are skipped) for every `const <NAME>_KIND: &str`
-//! and every string literal passed to `NewTask::new`, less [`NOT_TASK_KINDS`]. Each found kind must
+//! a file's top-level `#[cfg(test)] mod` items, through their closing brace, are skipped) for every
+//! `const` or `static <NAME>_KIND: &str` and every string literal passed to `NewTask::new`, less
+//! [`NOT_TASK_KINDS`]. Each found kind must
 //! be registered or listed in `tests/task_kinds_deferred.json` with its owner task and reason; a
 //! listed kind that is registered passes and is printed as stale. The scan must find
 //! [`FLOOR`], so a scan that finds nothing fails. Outside the scan: a kind held in a constant not
@@ -163,16 +164,47 @@ fn first_literal(text: &str) -> Option<&str> {
     Some(&text[start..start + len])
 }
 
-/// The kinds in one file's non-test code: `*_KIND` constants and literals given to `NewTask::new`.
+/// `source` without its top-level test modules (rustfmt's layout, which `cargo fmt --check`
+/// holds): a `#[cfg(test)]` line then `mod <name>;` drops those two lines, then `mod <name> {`
+/// drops through its closing `}` at column 0. Everything else is kept, before or after.
+fn non_test_code(source: &str) -> String {
+    let mut kept = String::new();
+    let mut lines = source.lines().peekable();
+    while let Some(line) = lines.next() {
+        let test_mod = line == "#[cfg(test)]"
+            && lines.peek().is_some_and(|next| {
+                let next = next
+                    .trim_start_matches("pub ")
+                    .trim_start_matches("pub(crate) ");
+                next.starts_with("mod ")
+            });
+        if !test_mod {
+            kept.push_str(line);
+            kept.push('\n');
+            continue;
+        }
+        let head = lines.next().unwrap_or_default();
+        if head.ends_with('{') {
+            lines.by_ref().find(|l| *l == "}");
+        }
+    }
+    kept
+}
+
+/// The kinds in one file's non-test code: `*_KIND` constants and statics and literals given to
+/// `NewTask::new`.
 fn kinds_in(source: &str) -> BTreeSet<String> {
-    let code = source.split("#[cfg(test)]\nmod ").next().unwrap_or(source);
+    let code = non_test_code(source);
+    let code = code.as_str();
     let mut kinds = BTreeSet::new();
-    for (at, _) in code.match_indices("const ") {
-        let item = &code[at + 6..];
-        let item = &item[..item.find(';').unwrap_or(item.len())];
-        let name = item.split(':').next().unwrap_or_default().trim();
-        if name.ends_with("_KIND") && item.contains("str") {
-            kinds.extend(first_literal(item).map(str::to_owned));
+    for keyword in ["const ", "static "] {
+        for (at, _) in code.match_indices(keyword) {
+            let item = &code[at + keyword.len()..];
+            let item = &item[..item.find(';').unwrap_or(item.len())];
+            let name = item.split(':').next().unwrap_or_default().trim();
+            if name.ends_with("_KIND") && item.contains("str") {
+                kinds.extend(first_literal(item).map(str::to_owned));
+            }
         }
     }
     for (at, _) in code.match_indices("NewTask::new(") {
@@ -299,6 +331,14 @@ fn td_ops_36_a_planted_kind_or_an_ownerless_entry_fails_and_a_registered_one_is_
         "pub const PLANT_KIND: &str =\n    \"test.planted\";\nlet t = NewTask::new( \"test.literal\", p, at);\n#[cfg(test)]\nmod tests { const X_KIND: &str = \"test.in_tests\"; }",
     );
     assert_eq!(found, set(&["test.literal", "test.planted"]));
+    let after = kinds_in(
+        "#[cfg(test)]\nmod tests;\nconst A_KIND: &str = \"test.after_file_mod\";\n#[cfg(test)]\nmod more {\n    const B_KIND: &str = \"test.in_block\";\n    fn f() {\n    }\n}\npub static C_KIND: &str = \"test.static\";\nNewTask::new(\"test.after_block\", p, at);\n",
+    );
+    assert_eq!(
+        after,
+        set(&["test.after_block", "test.after_file_mod", "test.static"]),
+        "only the test module's own lines are skipped, and statics count"
+    );
     let (problems, _) = verdict(&found, &set(&["test.literal"]), &[]);
     assert_eq!(
         problems,
@@ -439,4 +479,62 @@ async fn td_ops_37_dev_and_ci_raise_nothing_and_live_does(pool: PgPool) {
         !row.to_string().contains("7e570327"),
         "no payload in the alert: {row}"
     );
+}
+
+/// How many checks run at once in the race case: the worker's own limit.
+const AT_ONCE: i64 = 4;
+
+/// Waits until `count` lock requests (table or advisory) are waiting, or panics after 30 seconds.
+async fn wait_for_waiters(pool: &PgPool, count: i64) {
+    for _ in 0..600 {
+        let waiting: i64 = sqlx::query_scalar(
+            "SELECT count(*) FROM pg_locks WHERE NOT granted AND locktype IN ('relation', 'advisory') \
+             AND database = (SELECT oid FROM pg_database WHERE datname = current_database())",
+        )
+        .fetch_one(pool)
+        .await
+        .expect("pg_locks");
+        if waiting >= count {
+            return;
+        }
+        tokio::time::sleep(std::time::Duration::from_millis(50)).await;
+    }
+    panic!("the checks never reached the alert write");
+}
+
+/// D-2852: the checks race to the alert write. A held table lock lets every check read "no open
+/// alert" yet holds each insert, so without the advisory lock each would raise one when released;
+/// with it, the first holds the lock at its insert and the others wait before their read.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_ops_37_checks_at_once_raise_one_alert(pool: PgPool) {
+    let clock = Arc::new(ManualClock::new(
+        "2026-11-02T17:00:00Z".parse().expect("time"),
+    ));
+    dead_letter(&pool, &production_registry(clock.clone()), &clock).await;
+    let pool = sqlx::postgres::PgPoolOptions::new()
+        .max_connections(u32::try_from(AT_ONCE).expect("small") + 2)
+        .connect_with((*pool.connect_options()).clone())
+        .await
+        .expect("a pool for every check, the hold and the watch");
+    let mut hold = pool.begin().await.expect("begin");
+    sqlx::query("LOCK TABLE ops.alert IN SHARE ROW EXCLUSIVE MODE")
+        .execute(&mut *hold)
+        .await
+        .expect("table lock");
+    let checks: Vec<_> = (0..AT_ONCE)
+        .map(|_| {
+            let pool = pool.clone();
+            let now = clock.now();
+            tokio::spawn(
+                async move { no_handler_alert::run_check(&pool, Environment::Test, now).await },
+            )
+        })
+        .collect();
+    wait_for_waiters(&pool, AT_ONCE).await;
+    hold.commit().await.expect("release");
+    for check in checks {
+        check.await.expect("joined").expect("check");
+    }
+    let raised = alerts(&pool).await;
+    assert_eq!(raised.len(), 1, "one alert from checks at once: {raised:?}");
 }
