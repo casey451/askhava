@@ -30,6 +30,10 @@
 //! fills `Holder::roc_covers` (LIC-043, LIC-035), [`ClassMap::sign_up`] stops a commercial-only
 //! record (LIC-044), [`ClassMap::check_project_limit`] applies the R-61 and R-62 limits (LIC-045),
 //! [`ClassMap::opening`] and [`request_intake`] honor `launch_open` (LIC-046).
+//!
+//! The holder (T374, D-2712): [`record_pest_attestation`] and [`record_agency_license`] store a
+//! business's other-agency licenses at sign-up (LIC-047, LIC-015, LIC-016); [`holder_for`] reads
+//! them with its ROC classes and city-list standing into [`HolderParts`] (LIC-006, LIC-011).
 
 pub use crate::class_map::{
     ClassMap, ClassMapError, JobTypeKey, Opening, ProjectLimitRefusal, RequestIntake,
@@ -43,6 +47,10 @@ pub use crate::handlers::{
 pub use crate::handyman::{
     HANDYMAN_CARD_LINE, HANDYMAN_LIMIT_CENTS, HandymanJob, JobRequest, NeverHandyman, QuotePrice,
     QuoteRefusal, QuoteSubmission, SPLIT_JOB_WINDOW_DAYS, check_quote, never_handyman, split_job,
+};
+pub use crate::holder::{
+    HolderError, HolderInputs, HolderParts, holder_for, record_agency_license,
+    record_pest_attestation,
 };
 pub use crate::imports::{
     CITY_HEADER, CityRow, ImportError, ParsedList, ROC_HEADER, RocRow, RocStatus,

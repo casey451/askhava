@@ -24,6 +24,8 @@
 //! `deliverability_check` (BIZ-042) and each person's backup notice address, which
 //! `notice_addresses` now adds, in `backup_address` (BIZ-043).
 //!
+//! T374 added the licensing holder read in `holding` (LIC-019, BIZ-049, CARD-001, D-2712).
+//!
 //! Other crates reach it only through [`api`].
 
 mod about_us;
@@ -37,6 +39,7 @@ mod consent;
 mod deliverability_check;
 mod email_verification;
 mod emergency_switch;
+mod holding;
 mod identity;
 mod models;
 mod open_cards_times;
