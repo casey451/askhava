@@ -29,11 +29,24 @@
 //! billing" member of the picked business may see the page or press (PICK-033, SEC-019, D-492,
 //! T084); the route calls it before reading any fact, and anyone else gets the denial.
 
-use askama::Template;
-use askhava_payments::api::{AUTHORIZATION_TEXT, ChargeOutcome, Fee, Tier};
-use sqlx::types::Uuid;
+use std::net::IpAddr;
 
-use crate::business_auth::{BusinessPrincipal, Need};
+use askama::Template;
+use askhava_adapters::api::{AdapterError, CodeChannel, IdempotencyKey, VerifyAdapter};
+use askhava_businesses::api::members;
+use askhava_intake::api::Admission;
+use askhava_messaging::api::{NoticeKind, notice_log, record_first_open};
+use askhava_payments::api::{AUTHORIZATION_TEXT, ChargeOutcome, Fee, Tier};
+use jiff::Timestamp;
+use secrecy::{ExposeSecret, SecretString};
+use sqlx::types::Uuid;
+use sqlx::{PgConnection, PgPool};
+
+use crate::action_links::{ActionKind, fresh_code_needed};
+use crate::business_auth::{BusinessPrincipal, CodeAddress, CodeTo, Need};
+use crate::business_portal::inbox_shared;
+use crate::limits::{admit_code_send, admit_code_try};
+use crate::session::PortalsError;
 
 /// The one refund line every Confirm page shows (PICK-021).
 pub const REFUND_LINE: &str = "Refund if you can't reach them: 2 call attempts at least 3 hours \
@@ -91,6 +104,7 @@ struct ConfirmView<'a> {
     press: Uuid,
     csrf: &'a str,
     stripe_key: &'a str,
+    code: Option<CodeStep>,
 }
 
 /// The page's name for the tier (FEE-001).
@@ -129,6 +143,18 @@ fn basis_line(basis: Option<u64>, tier: &str) -> String {
 /// # Errors
 /// The template's render error.
 pub fn confirm_page(facts: &ConfirmFacts) -> Result<String, askama::Error> {
+    confirm_page_with_code(facts, None)
+}
+
+/// The page for `facts` with SEC-027's code step when `code` is given (the route gives it when
+/// [`confirm_code_needed`]); PICK-050's "Can't take it" stays on every page with a form.
+///
+/// # Errors
+/// The template's render error.
+pub fn confirm_page_with_code(
+    facts: &ConfirmFacts,
+    code: Option<CodeStep>,
+) -> Result<String, askama::Error> {
     let (tier, no_fee_line) = match (facts.fee, facts.waived) {
         (Fee::FeeFree { .. }, _) => ("", FEE_FREE_LINE),
         (Fee::Charged { tier, .. }, None) => (tier_name(tier), ""),
@@ -156,6 +182,7 @@ pub fn confirm_page(facts: &ConfirmFacts) -> Result<String, askama::Error> {
         press: facts.press,
         csrf: &facts.csrf,
         stripe_key: &facts.stripe_key,
+        code,
     }
     .render()
 }
@@ -243,6 +270,231 @@ pub fn press_reply(
 #[must_use]
 pub fn may_confirm(principal: Option<&BusinessPrincipal>, picked_business: Uuid) -> bool {
     principal.is_some_and(|p| p.may(picked_business, Need::ConfirmAndBilling))
+}
+
+/// SEC-027's code step on the Confirm page: the line about the last send and the code field's
+/// error (A11Y-011, A11Y-012). `Default` is the step before any code was asked for.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct CodeStep {
+    /// What the last "Text me a code" did ([`CodeSent::line`]).
+    pub line: Option<&'static str>,
+    /// Why the code field failed ([`CodeCheck::error`]); the page then says "Error: " first.
+    pub error: Option<&'static str>,
+}
+
+/// SEC-027, D-2410: whether `member`'s Confirm needs a fresh Verify code: with "This inbox is
+/// shared" on, even inside a live session (`signed_in`), by T199's `fresh_code_needed`.
+///
+/// # Errors
+/// [`PortalsError::Database`].
+pub async fn confirm_code_needed(
+    db: &mut PgConnection,
+    member: Uuid,
+    signed_in: bool,
+) -> Result<bool, PortalsError> {
+    let shared = inbox_shared(db, member)
+        .await
+        .map_err(|_| PortalsError::Database)?;
+    Ok(fresh_code_needed(ActionKind::Confirm, signed_in, shared))
+}
+
+/// OPS-037, D-2412: the Confirm page's `GET` stamps the first opening of the pick notice that
+/// went to `member`'s own address for `job` (the latest one), once, through
+/// `messaging::api::record_first_open`; a later opening, another business's notice or a person
+/// with no pick notice changes nothing. True when this opening was the first.
+///
+/// # Errors
+/// [`PortalsError::Database`].
+pub async fn open_confirm_page(
+    db: &mut PgConnection,
+    (business, job, member): (Uuid, Uuid, Uuid),
+    now: Timestamp,
+) -> Result<bool, PortalsError> {
+    let people = members(db, business)
+        .await
+        .map_err(|_| PortalsError::Database)?;
+    let Some(person) = people.into_iter().find(|m| m.id == member) else {
+        return Ok(false);
+    };
+    let log = notice_log(db, business, job)
+        .await
+        .map_err(|_| PortalsError::Database)?;
+    let pick = log
+        .iter()
+        .rev()
+        .find(|e| e.kind == NoticeKind::Pick && e.mailbox == person.mailbox);
+    match pick {
+        Some(entry) => record_first_open(db, entry.id, now)
+            .await
+            .map_err(|_| PortalsError::Database),
+        None => Ok(false),
+    }
+}
+
+/// The Confirm code's parts (SEC-027, TXT-038): the same Verify, [`CodeAddress`] and key secret
+/// [`crate::business_auth::DeviceCodes`] is built from; never the outbox.
+pub struct ConfirmCodes<V> {
+    verify: V,
+    to: Box<dyn CodeAddress>,
+    key: SecretString,
+}
+
+impl<V: VerifyAdapter + Send + Sync> ConfirmCodes<V> {
+    /// Codes sent and checked by `verify`, to the phone `to` names, keyed with `key`.
+    pub fn new(verify: V, to: impl CodeAddress, key: SecretString) -> Self {
+        Self {
+            verify,
+            to: Box::new(to),
+            key,
+        }
+    }
+
+    /// The person's own linked phone that takes texts; none for an email-only person.
+    async fn phone(&self, pool: &PgPool, person: Uuid) -> Result<Option<String>, PortalsError> {
+        let mut conn = pool.acquire().await.map_err(|_| PortalsError::Database)?;
+        Ok(match self.to.code_to(&mut conn, person).await? {
+            CodeTo::Phone(phone) => Some(phone.expose_secret().to_owned()),
+            CodeTo::Email(_) => None,
+        })
+    }
+}
+
+/// What one "Text me a code" did (SEC-014, SEC-027).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CodeSent {
+    /// Verify texted a code to the person's own phone.
+    Sent,
+    /// The person has no phone that takes texts, so nothing was sent.
+    NoPhone,
+    /// A SEC-014 send limit refused it; nothing was sent.
+    Limited,
+    /// Verify did not take it.
+    Failed,
+}
+
+impl CodeSent {
+    /// The line the page shows after the send.
+    #[must_use]
+    pub const fn line(self) -> &'static str {
+        match self {
+            Self::Sent => "We texted a code to your phone. Type it below.",
+            Self::NoPhone => {
+                "We can't text you a code, so you can't confirm yet. In your portal, link a phone that gets texts."
+            }
+            Self::Limited => {
+                "You've asked for too many codes. Try again in an hour, or tomorrow if you see this again."
+            }
+            Self::Failed => "We couldn't send the code. Press \"Text me a code\" again.",
+        }
+    }
+}
+
+/// SEC-027, SEC-014, TXT-038: texts `person` a fresh Confirm code for `pick` through Verify, to
+/// their own phone only, after `admit_code_send` (per IP, 5 a day per person, the global
+/// `threshold`) admits it. The phone is looked up first, so an email-only person (`NoPhone`)
+/// spends no send. No connection is held across Verify (PT-04).
+///
+/// # Errors
+/// [`PortalsError::Database`] when a limit or the phone lookup fails.
+pub async fn send_confirm_code<V: VerifyAdapter + Send + Sync>(
+    codes: &ConfirmCodes<V>,
+    pool: &PgPool,
+    (ip, person, pick): (IpAddr, Uuid, Uuid),
+    (now, threshold): (Timestamp, i32),
+) -> Result<CodeSent, PortalsError> {
+    let Some(phone) = codes.phone(pool, person).await? else {
+        return Ok(CodeSent::NoPhone);
+    };
+    let admitted = admit_code_send(pool, (ip, Some(person)), (now, threshold)).await;
+    if matches!(
+        admitted.map_err(|_| PortalsError::Database)?,
+        Admission::Refused(_)
+    ) {
+        return Ok(CodeSent::Limited);
+    }
+    let parts = [pick.to_string(), person.to_string(), now.to_string()];
+    let key = IdempotencyKey::derive(
+        &codes.key,
+        "verify.confirm_code",
+        &parts.each_ref().map(String::as_str),
+    );
+    let sent = codes.verify.send_code(&key, &phone, CodeChannel::Sms).await;
+    Ok(if sent.is_ok() {
+        CodeSent::Sent
+    } else {
+        CodeSent::Failed
+    })
+}
+
+/// What one Confirm code try answered (SEC-014, SEC-020, SEC-027).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CodeCheck {
+    /// Verify accepted it: the press may go on.
+    Right,
+    /// Not 6 digits: no try was spent.
+    Missing,
+    /// Verify said no.
+    Wrong,
+    /// Verify ended the code (its 5 checks, its 10 minutes), or the person has no phone.
+    Ended,
+    /// Verify was not reached or gave no answer (a network failure): the code may still be good.
+    Unchecked,
+    /// A SEC-020 try limit refused it; Verify was not asked.
+    Limited,
+}
+
+impl CodeCheck {
+    /// The code field's error, none when it was right.
+    #[must_use]
+    pub const fn error(self) -> Option<&'static str> {
+        match self {
+            Self::Right => None,
+            Self::Missing => Some("Type the 6-digit code from our text."),
+            Self::Wrong => Some("That code isn't right. Check the text and type it again."),
+            Self::Ended => Some("That code has run out. Press \"Text me a code\" for a new one."),
+            Self::Unchecked => Some("We couldn't check the code. Type it again, then confirm."),
+            Self::Limited => Some(
+                "Too many wrong codes. Wait an hour, then press \"Text me a code\" for a new one.",
+            ),
+        }
+    }
+}
+
+/// SEC-027, SEC-020: checks `code` against Verify for `person`'s own phone, after
+/// `admit_code_try` (per IP and per `business`, 20 an hour each) admits the try. No
+/// `portals.code_try` row is written (a Confirm code has no sign-in link) and no connection is
+/// held across Verify. Verify refusing the code (a 4xx answer: its 5-check cap 60202, an expired
+/// or unknown code) ends it; no answer, a 5xx or an unreadable answer is [`CodeCheck::Unchecked`].
+///
+/// # Errors
+/// [`PortalsError::Database`] when a limit or the phone lookup fails.
+pub async fn check_confirm_code<V: VerifyAdapter + Send + Sync>(
+    codes: &ConfirmCodes<V>,
+    pool: &PgPool,
+    (ip, person, business): (IpAddr, Uuid, Uuid),
+    code: &str,
+    now: Timestamp,
+) -> Result<CodeCheck, PortalsError> {
+    let code = code.trim();
+    if code.len() != 6 || !code.bytes().all(|b| b.is_ascii_digit()) {
+        return Ok(CodeCheck::Missing);
+    }
+    let admitted = admit_code_try(pool, (ip, Some(business)), now).await;
+    if matches!(
+        admitted.map_err(|_| PortalsError::Database)?,
+        Admission::Refused(_)
+    ) {
+        return Ok(CodeCheck::Limited);
+    }
+    let Some(phone) = codes.phone(pool, person).await? else {
+        return Ok(CodeCheck::Ended);
+    };
+    Ok(match codes.verify.check_code(&phone, code).await {
+        Ok(true) => CodeCheck::Right,
+        Ok(false) => CodeCheck::Wrong,
+        Err(AdapterError::Vendor { status, .. }) if status < 500 => CodeCheck::Ended,
+        Err(_) => CodeCheck::Unchecked,
+    })
 }
 
 #[cfg(test)]
