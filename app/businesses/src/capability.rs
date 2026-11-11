@@ -13,16 +13,21 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use askhava_catalog::api::Catalog;
+use askhava_core::api::{NewTask, brand, enqueue};
 use askhava_licensing::api::ClassMap;
 use askhava_ops::api::{Actor, AuditEntry, Change, audit};
 use jiff::Timestamp;
+use jiff::civil::Date;
 use jiff_sqlx::ToSqlx;
+use serde_json::json;
+use sha2::{Digest, Sha256};
 use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection};
 
 use crate::models::{self, BusinessesError, db};
 use crate::rules::JobTypeChoice;
-use crate::service::{Ticks, set_job_types, set_ticks, set_towns};
+use crate::service::{Ticks, pause_for_rule, set_job_types, set_ticks, set_towns};
+use crate::status::PauseReason;
 
 /// The largest typed amount accepted, in cents ($10,000,000); a larger one does not parse
 /// ([`LargestJob::parse`] gives `None`, the form's error), so "no limit" must be chosen.
@@ -325,4 +330,231 @@ pub async fn capabilities(
             Ok((r.business_id, cap))
         })
         .collect()
+}
+
+/// BIZ-050: the email task queued when a daily license list changes a business's job types; its
+/// payload holds `business`, `removed` and `offered` (each `[category, job type]` pairs),
+/// `dropped_classes` (the reason) and `paused`. The sender renders [`license_change_words`].
+pub const LICENSE_CHANGE_KIND: &str = "businesses.license_change";
+
+/// BIZ-050: what re-applying the license map changed for one business.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct Reapplied {
+    /// Ticked job types the old classes covered and the new classes no longer cover, removed.
+    pub removed: Vec<JobTypeChoice>,
+    /// Job types of a switched-on category only the new classes cover, offered, never ticked.
+    pub offered: Vec<JobTypeChoice>,
+    /// The removal left no job type ticked, so the business was paused (D-393).
+    pub paused: bool,
+}
+
+/// BIZ-050, LIC-043, D-2595: the pure part of [`reapply_license`]: of `ticks`, the job types the
+/// `old` classes covered that the `new` classes no longer cover (removed; a no-license or
+/// agency-licensed job type, which no class covers, is never removed here), and the job types of
+/// a switched-on category the `new` classes cover that the `old` did not and that are not ticked
+/// (offered).
+#[must_use]
+pub fn license_change(
+    map: &ClassMap,
+    catalog: &Catalog,
+    ticks: &[JobTypeChoice],
+    (old, new): (&[&str], &[&str]),
+) -> Reapplied {
+    let key = |c: &JobTypeChoice| (c.category.clone(), c.job_type.clone());
+    let (was, now) = (map.job_types(old), map.job_types(new));
+    let lost: BTreeSet<_> = was.difference(&now).collect();
+    let removed = ticks.iter().filter(|c| lost.contains(&key(c)));
+    let ticked: BTreeSet<_> = ticks.iter().map(key).collect();
+    let on = |c: &str| catalog.categories.iter().any(|d| d.id == c && d.enabled);
+    let offered = now
+        .difference(&was)
+        .filter(|k| !ticked.contains(*k) && on(&k.0));
+    Reapplied {
+        removed: removed.cloned().collect(),
+        offered: offered.map(|(c, t)| JobTypeChoice::new(c, t)).collect(),
+        paused: false,
+    }
+}
+
+/// BIZ-050, LIC-043, D-393: re-applies the license map to business `id` when the daily list of
+/// `list` (its date) moves its classes from `old` to `new`, in one transaction: locks the business
+/// row, removes the [`license_change`] job types with an audit row, pauses the business through
+/// `pause_for_rule` (`NoCoveredJobType`) when a removal leaves nothing ticked and it was taking
+/// cards, and queues one [`LICENSE_CHANGE_KIND`] email when anything was removed or offered (one
+/// per business, class change and list date, D-2596). Nothing is ever ticked here.
+///
+/// # Errors
+///
+/// `UnknownBusiness`, `MovedOn`, `Database` or `Audit`.
+pub async fn reapply_license(
+    conn: &mut PgConnection,
+    id: Uuid,
+    (map, catalog): (&ClassMap, &Catalog),
+    classes: (&[&str], &[&str]),
+    (list, now): (Date, Timestamp),
+) -> Result<Reapplied, BusinessesError> {
+    let mut tx = db(conn.begin().await)?;
+    let lock = sqlx::query!(
+        "SELECT id FROM businesses.business WHERE id = $1 FOR UPDATE",
+        id
+    );
+    db(lock.fetch_optional(&mut *tx).await)?.ok_or(BusinessesError::UnknownBusiness)?;
+    let ticks = models::job_types(&mut tx, id).await?;
+    let mut change = license_change(map, catalog, &ticks, classes);
+    if !change.removed.is_empty() {
+        let kept: Vec<JobTypeChoice> = ticks
+            .into_iter()
+            .filter(|c| !change.removed.contains(c))
+            .collect();
+        models::replace_job_types(&mut tx, id, &kept).await?;
+        let entry = AuditEntry {
+            actor: Actor::System,
+            action: "businesses.field_changed",
+            subject_kind: "businesses.business",
+            subject_id: id,
+            change: Change::Field("job_types"),
+        };
+        let logged = audit(&mut tx, &entry).await;
+        logged.map_err(|_| BusinessesError::Audit)?;
+        change.paused = kept.is_empty() && pause_bare(&mut tx, id, now).await?;
+    }
+    if !change.removed.is_empty() || !change.offered.is_empty() {
+        queue_notice(&mut tx, (id, list), &change, classes, now).await?;
+    }
+    db(tx.commit().await)?;
+    Ok(change)
+}
+
+/// D-393, BIZ-050: pauses an active (or self-paused) business for `NoCoveredJobType`; one in any
+/// other status (pending, already paused by a rule) is left as it is. True when it was paused.
+async fn pause_bare(
+    tx: &mut PgConnection,
+    id: Uuid,
+    now: Timestamp,
+) -> Result<bool, BusinessesError> {
+    let reason = PauseReason::NoCoveredJobType;
+    match pause_for_rule(tx, id, reason, Actor::System, now).await {
+        Ok(_) => Ok(true),
+        Err(BusinessesError::Refused) => Ok(false),
+        Err(e) => Err(e),
+    }
+}
+
+/// LIC-006: a class as the license map reads it (single spaces, upper case), so `r-11 ` and
+/// `R-11` are the same class.
+fn class_norm(class: &str) -> String {
+    let words: Vec<&str> = class.split_whitespace().collect();
+    words.join(" ").to_ascii_uppercase()
+}
+
+/// BIZ-050, R13, D-2596: the email's dedupe key: the business, the list date and a SHA256
+/// digest of the normalised, sorted old and new classes, so a retry at any later time queues
+/// nothing new.
+fn notice_key(id: Uuid, list: Date, (old, new): (&[&str], &[&str])) -> String {
+    let set = |v: &[&str]| -> BTreeSet<String> { v.iter().map(|c| class_norm(c)).collect() };
+    let mut hash = Sha256::new();
+    for side in [set(old), set(new)] {
+        hash.update((side.len() as u64).to_be_bytes());
+        for class in side {
+            hash.update((class.len() as u64).to_be_bytes());
+            hash.update(class.as_bytes());
+        }
+    }
+    let digest: String = hash.finalize().iter().map(|b| format!("{b:02x}")).collect();
+    format!("{LICENSE_CHANGE_KIND}.{id}.{list}.{digest}")
+}
+
+/// BIZ-050: queues the owner's [`LICENSE_CHANGE_KIND`] email (no contact value in the payload).
+async fn queue_notice(
+    tx: &mut PgConnection,
+    (id, list): (Uuid, Date),
+    change: &Reapplied,
+    (old, new): (&[&str], &[&str]),
+    now: Timestamp,
+) -> Result<(), BusinessesError> {
+    let pairs = |v: &[JobTypeChoice]| -> Vec<[String; 2]> {
+        v.iter()
+            .map(|c| [c.category.clone(), c.job_type.clone()])
+            .collect()
+    };
+    let kept: BTreeSet<String> = new.iter().map(|c| class_norm(c)).collect();
+    let dropped: Vec<&str> = old
+        .iter()
+        .filter(|c| !kept.contains(&class_norm(c)))
+        .copied()
+        .collect();
+    let payload = json!({
+        "business": id,
+        "removed": pairs(&change.removed),
+        "offered": pairs(&change.offered),
+        "dropped_classes": dropped,
+        "paused": change.paused,
+    });
+    let mut task = NewTask::new(LICENSE_CHANGE_KIND, payload, now);
+    task.dedupe_key = Some(notice_key(id, list, (old, new)));
+    enqueue(tx, &task)
+        .await
+        .map(|_| ())
+        .map_err(|_| BusinessesError::Database)
+}
+
+/// The lines of the [`LICENSE_CHANGE_KIND`] email in one language; `{c}` is the classes,
+/// `{j}` the job types.
+struct Lines {
+    subject: &'static str,
+    changed: &'static str,
+    dropped: &'static str,
+    removed: &'static str,
+    paused: &'static str,
+    offered: &'static str,
+}
+
+const EN: Lines = Lines {
+    subject: "We changed your job types after a license update",
+    changed: "Arizona's license list now shows a different class on your license",
+    dropped: "Arizona's license list no longer shows {c} on your license",
+    removed: ". So you won't get cards for these job types anymore: {j}. If the state's list is wrong, reply to this email.",
+    paused: "That leaves no job types on your list, so we've paused your account. You won't get job cards while it's paused.",
+    offered: "Your license now also covers: {j}. We didn't add these for you. To get those jobs, check them on the Job types page in your account.",
+};
+
+const ES: Lines = Lines {
+    subject: "Cambiamos sus tipos de trabajo por un cambio en su licencia",
+    changed: "La lista de licencias de Arizona ahora muestra otra clase en su licencia",
+    dropped: "La lista de licencias de Arizona ya no muestra {c} en su licencia",
+    removed: ". Por eso ya no recibirá tarjetas para estos tipos de trabajo: {j}. Si la lista del estado está mal, responda a este correo.",
+    paused: "No le queda ningún tipo de trabajo, así que pausamos su cuenta. No recibirá tarjetas mientras esté pausada.",
+    offered: "Su licencia ahora también cubre: {j}. No los agregamos por usted. Para recibir esos trabajos, márquelos en la página Tipos de trabajo de su cuenta.",
+};
+
+/// BIZ-050, BIZ-018: the owner's email for [`LICENSE_CHANGE_KIND`] as `[subject, body]`, in
+/// Spanish when `spanish`. The body names the `removed` job types and why (`dropped`, the classes
+/// the list no longer shows; empty when a class changed instead), says when the account was
+/// paused, and names the `offered` job types without ticking them.
+#[must_use]
+pub fn license_change_words(spanish: bool, change: &Reapplied, dropped: &[&str]) -> [String; 2] {
+    let (l, b) = if spanish {
+        (&ES, brand().es().short_name().to_owned())
+    } else {
+        (&EN, brand().short_name().to_owned())
+    };
+    let names = |v: &[JobTypeChoice]| {
+        let v: Vec<&str> = v.iter().map(|c| c.job_type.as_str()).collect();
+        v.join(", ")
+    };
+    let mut body = Vec::new();
+    if !change.removed.is_empty() {
+        let why = match dropped.join(", ") {
+            c if c.is_empty() => l.changed.to_owned(),
+            c => l.dropped.replace("{c}", &c),
+        };
+        body.push(why + &l.removed.replace("{j}", &names(&change.removed)));
+    }
+    if change.paused {
+        body.push(l.paused.to_owned());
+    }
+    if !change.offered.is_empty() {
+        body.push(l.offered.replace("{j}", &names(&change.offered)));
+    }
+    [format!("{b}: {}", l.subject), body.join("\n\n")]
 }
