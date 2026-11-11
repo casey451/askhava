@@ -2173,3 +2173,9 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **What happened.** The step that makes sure a no-fee job can only unlock the job it was recorded for was built, but two older tests failed against it: they unlocked jobs without the stored fee record every real pick has. The step was not allowed to touch those tests.
 - **What changed.** The step may now add the missing fee records to those two tests, and only that: every check in them stays exactly as it was. It is now a harness step (the kind allowed to adjust earlier tests), and the Stripe charge-ID step that edits the same test file waits for it.
 - **Nothing needs you now.**
+
+## A step that says the plan is wrong now waits for the plan fix (harness change, D-2859, November 11)
+
+- **What happened.** Twice today a step (the no-fee check and the brand switch) stopped on its first try and said plainly that the plan had to change first. The runner treated that like an ordinary failed try and ran the same step again, unchanged, one or two more times; each repeat hit the same wall and spent a lot of usage for nothing.
+- **What changed.** A step that finds it cannot pass without a change the plan forbids it to make now says so in a fixed first line, naming the file and the step that owns it (a hard job or its own failing test does not count). Once the reviewer agrees, the runner stops it at once, lists it under "Needs attention" on the status page and leaves a note in the outbox. It comes back after the plan is fixed, with the tries it has left; if the report turns out to be wrong, one command brings it straight back.
+- **Nothing needs you now.**
