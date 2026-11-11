@@ -1,23 +1,23 @@
 # Ask Hava build status
 
-Updated 2026-11-11T00:03:52Z by runner 5a57f2e1b7f9 (actions).
+Updated 2026-11-11T00:21:06Z by runner 5a57f2e1b7f9 (actions).
 
-**Building: T349 in progress since 00:03Z; 191 of 336 done; week 53% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T349 in progress since 00:03Z; 192 of 336 done; week 53% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 191 of 336 build tasks (owner gates not counted)
+- **Tasks done:** 192 of 336 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T349 claimed 00:03Z, lease until 03:03Z
 - **Week:** 53% used, 88.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:40Z, 23 min before this update
+- **Last run:** 00:03Z, 17 min before this update
 - **Keeper:** last ran 23:40Z, next wake 00:00Z
 
 ## Needs attention
-- Strict plan check red: 4 problem(s) on tasks still to run (+24 on DONE tasks); first: T207: stored context_pct 12% but it measures 17%; regenerate
+- Strict plan check red: 3 problem(s) on tasks still to run (+25 on DONE tasks); first: T162: stored context_pct 16% but it measures 20%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T207 | businesses: re-apply the license map when a daily list chang | MERGE_PENDING | 1 | 41 min | 23:39Z |  |
+| T207 | businesses: re-apply the license map when a daily list chang | done | 1 | 41 min | 23:39Z |  |
 | T311 | calls and server: a voice read-back confirm connects only th | done | 2 | 33 min | 23:21Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T338 | adapters (harness): the refused-connection test holds its po | done | 1 | 24 min | 20:45Z |  |
 | T155 | businesses: sign-up capability setup pre-ticked from the lic | done | 1 | 57 min | 20:15Z |  |
@@ -55,18 +55,17 @@ Updated 2026-11-11T00:03:52Z by runner 5a57f2e1b7f9 (actions).
 - 02:15Z Plan: seventh audit — fee facts from the job's category at the pick, tier and per-visit picks, whole-field quote gate, atomic Verify cap (D-2329–D-2335, 
 - 01:33Z Plan: the refused-connection test holds its port (T338, D-2318) (#404)
 - 00:54Z Plan: sixth audit — $0 release bound to its pick, refund amounts checked, reconcile catch-up and paging, real Stripe reads, rate-limit prune, inbound-tex
-- 00:05Z Plan: fifth audit — every queued task kind gets a registered handler; late success on ended picks; unreadable Stripe success and unmatched fraud warning 
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 236 of 733 (32.2%) · partial 305 · unstarted 192
-**Tasks merged (throughput only):** 191 of 336
+**Requirements verified:** 236 of 733 (32.2%) · partial 306 · unstarted 191
+**Tasks merged (throughput only):** 192 of 336
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 15 | 13 | 7 | 35 |
 | ai | 11 | 13 | 5 | 29 |
-| businesses | 17 | 33 | 8 | 58 |
+| businesses | 17 | 34 | 7 | 58 |
 | calls | 11 | 13 | 1 | 25 |
 | consent | 14 | 17 | 4 | 35 |
 | fees | 11 | 40 | 1 | 52 |
@@ -95,7 +94,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 71 of 137 done
+- stage 4: 72 of 137 done
 - stage 5: 0 of 53 done
 - stage 6: 0 of 30 done
 - stage 7: 0 of 2 done

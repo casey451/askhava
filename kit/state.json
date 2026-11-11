@@ -20225,7 +20225,7 @@
     "T153",
     "T155"
    ],
-   "status": "MERGE_PENDING",
+   "status": "DONE",
    "attempts": 0,
    "slug": "businesses-license-change-reapply",
    "type": "build",
@@ -20245,13 +20245,62 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 146,
      "head_sha": "8d1197507108e024be512813389c7c02a0849138",
-     "pr": null,
-     "checks": null,
+     "pr": 438,
+     "checks": [
+      {
+       "name": "backup",
+       "conclusion": "cancelled"
+      },
+      {
+       "name": "keeper",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "gate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-10T22:57:48Z",
      "ended_at": "2026-11-10T23:39:46Z",
-     "result": "MERGE_PENDING"
+     "result": "done"
     }
    ],
    "reviewed_sha": "a8a06bb6c01442116e1a3188cd52ab9894709a7a",
@@ -20282,7 +20331,18 @@
     }
    ],
    "update_waiting_since": null,
-   "update_push_failures": null
+   "update_push_failures": null,
+   "merged_sha": "2b62f938b8b8ebe5b3a7310e287572fde2d4dad9",
+   "merged_at": "2026-11-11T00:17:55Z",
+   "files": [
+    "app/businesses/CLAUDE.md",
+    "app/businesses/src/api.rs",
+    "app/businesses/src/capability.rs",
+    "docs/architecture.md",
+    "docs/decisions.md",
+    "docs/for-casey-review.md",
+    "tests/integration/tests/license_change_reapply.rs"
+   ]
   },
   {
    "id": "T156",
@@ -29760,7 +29820,7 @@
    }
   }
  },
- "updated_at": "2026-11-11T00:03:52Z",
+ "updated_at": "2026-11-11T00:21:06Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
