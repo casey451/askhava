@@ -1938,3 +1938,4 @@
 - 2026-11-11T08:38:07Z runner cf9b14cb7c73 (manual): {"T337": "BLOCKED -> QUEUED"}
 - 2026-11-11T08:41:17Z runner 51d43b98c1b2 (actions): {"T327": "IN_PROGRESS -> QUEUED"}
 - 2026-11-11T08:41:26Z runner 51d43b98c1b2 (actions): {"T212": "MERGE_PENDING -> DONE"}
+- 2026-11-11T08:49:16Z runner 51d43b98c1b2 (actions): {"T164": "QUEUED -> IN_PROGRESS"}; T164 estimated 3.5M tokens (calibrated); five-hour window has 6.3M left, week 66.3M after 3.7M still running in another lane (session_reading 2026-11-11T08:23:45Z (week)); claimed
