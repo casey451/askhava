@@ -48,6 +48,9 @@
 //! T384: [`page_quotes`] keeps a withdrawn quote in its place, never pickable and without its
 //! words, with each edit's time; [`list_texts`] numbers its lines by quote-page number with a
 //! withdrawn line in place; [`shown_card`] adds "Updated <time>" ([`updated_line`]) (PICK-051).
+//! T388: [`accepted_quote`] reads the quote a homeowner accepted as an [`AcceptedQuote`] (its page
+//! number, type, amount, earliest visit and the business's own words) for her accepted-quote email
+//! and quote page (PICK-042, D-3075).
 
 use sqlx::types::Uuid;
 
@@ -355,6 +358,174 @@ pub async fn earliest_visit(
     .flatten();
     let day = visit.and_then(|d| d.parse::<jiff::civil::Date>().ok());
     Ok(day.and_then(|d| d.in_tz("America/Phoenix").ok().map(|z| z.timestamp())))
+}
+
+/// PICK-042, D-3075: the quote a homeowner accepted, as her email and quote page show it.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct AcceptedQuote {
+    /// Its number on her quote page, from 1 in arrival order (PICK-008).
+    pub number: usize,
+    /// The price exactly as the business stored it (PICK-002, WORD-011).
+    pub price: Price,
+    /// The earliest visit day the business gave, if any.
+    pub earliest_visit: Option<jiff::civil::Date>,
+    /// The business's own words (PICK-003).
+    pub original: String,
+}
+
+/// "$40", "$1,250", "$40.50": the stored cents, nothing rounded (WORD-011).
+fn dollars(cents: u64) -> String {
+    let digits = (cents / 100).to_string();
+    let mut out = String::new();
+    for (i, c) in digits.chars().enumerate() {
+        if i > 0 && (digits.len() - i).is_multiple_of(3) {
+            out.push(',');
+        }
+        out.push(c);
+    }
+    match cents % 100 {
+        0 => format!("${out}"),
+        rest => format!("${out}.{rest:02}"),
+    }
+}
+
+/// An hourly rate with the hours the business estimated, if any, as `notify` writes it (FEE-043).
+fn hourly(rate: u64, hours: Option<(u32, u32)>, es: bool) -> String {
+    let pick = |en: &'static str, sp: &'static str| if es { sp } else { en };
+    let base = format!("{} {}", dollars(rate), pick("per hour", "por hora"));
+    let (about, to, unit) = (
+        pick("about", "unas"),
+        pick("to", "a"),
+        pick("hours", "horas"),
+    );
+    match hours {
+        None => base,
+        Some((lo, hi)) if lo == hi => format!("{base}, {about} {lo} {unit}"),
+        Some((lo, hi)) => format!("{base}, {about} {lo} {to} {hi} {unit}"),
+    }
+}
+
+impl AcceptedQuote {
+    /// PICK-042, PICK-053: the quote's type in English or Spanish (`es`), the card definitions'
+    /// names.
+    #[must_use]
+    pub fn kind(&self, es: bool) -> &'static str {
+        let (en, sp) = match self.price {
+            Price::Firm(_) => ("Firm price", "Precio fijo"),
+            Price::Range { .. } => ("Price range", "Rango de precio"),
+            Price::Monthly { .. } => ("Recurring price", "Servicio regular"),
+            Price::Tiers(_) => ("Packages", "Paquetes"),
+            Price::VisitFee(_) => ("Visit fee", "Cargo por revisión"),
+            Price::Hourly { .. } => ("Hourly rate", "Tarifa por hora"),
+        };
+        if es { sp } else { en }
+    }
+
+    /// PICK-042, WORD-011, D-358: the amount as stored, the LIST text's words (`notify::amount`;
+    /// change both together), nothing converted, rounded or added.
+    #[must_use]
+    pub fn amount(&self, es: bool) -> String {
+        let pick = |en: &'static str, sp: &'static str| if es { sp } else { en };
+        match &self.price {
+            Price::Firm(c) => dollars(*c),
+            Price::Range { low, high, on_site } => {
+                let base = format!("{}{}{}", dollars(*low), pick(" to ", " a "), dollars(*high));
+                let site = pick(
+                    "Range to be confirmed on site",
+                    "rango por confirmar en el sitio",
+                );
+                if *on_site {
+                    format!("{base}, {site}")
+                } else {
+                    base
+                }
+            }
+            Price::Monthly {
+                cents,
+                period,
+                setup,
+            } => {
+                let per = [
+                    ("per visit", "por visita"),
+                    ("per week", "por semana"),
+                    ("per month", "por mes"),
+                    ("per quarter", "por trimestre"),
+                    ("per year", "por año"),
+                ][*period as usize];
+                let base = format!("{} {}", dollars(*cents), pick(per.0, per.1));
+                let once = pick("plus {} one-time setup", "más {} de instalación única");
+                setup.map_or(base.clone(), |s| {
+                    format!("{base}, {}", once.replace("{}", &dollars(s)))
+                })
+            }
+            Price::Tiers(t) => {
+                let tiers: Vec<String> = t
+                    .iter()
+                    .map(|(n, c)| format!("{n} {}", dollars(*c)))
+                    .collect();
+                tiers.join("; ")
+            }
+            Price::VisitFee(c) => format!("{} {}", dollars(*c), pick("visit fee", "por la visita")),
+            Price::Hourly { rate, hours } => hourly(*rate, *hours, es),
+        }
+    }
+
+    /// PICK-040: the earliest visit day, "Nov 9" ("9 nov" in Spanish), if the business gave one.
+    #[must_use]
+    pub fn visit(&self, es: bool) -> Option<String> {
+        const EN: [&str; 12] = [
+            "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+        ];
+        const ES: [&str; 12] = [
+            "ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic",
+        ];
+        let date = self.earliest_visit?;
+        let i = usize::try_from(date.month() - 1)
+            .unwrap_or_default()
+            .min(11);
+        Some(if es {
+            format!("{} {}", date.day(), ES[i])
+        } else {
+            format!("{} {}", EN[i], date.day())
+        })
+    }
+}
+
+/// PICK-042, PICK-008, D-3075: `business`'s confirmed, unwithdrawn quote on `job` with its page
+/// number, price, earliest visit day (Arizona) and words, through [`page_quotes`],
+/// [`quoted_prices`] and [`earliest_visit`]; none when there is no such quote or its price does
+/// not read back.
+///
+/// # Errors
+///
+/// [`QuotesError::Database`].
+pub async fn accepted_quote(
+    db: &mut sqlx::PgConnection,
+    (job, business): (Uuid, Uuid),
+) -> Result<Option<AcceptedQuote>, QuotesError> {
+    let page = page_quotes(db, job).await?;
+    let Some(at) = page
+        .iter()
+        .position(|q| q.business == business && !q.withdrawn)
+    else {
+        return Ok(None);
+    };
+    let prices = quoted_prices(db, job).await?;
+    let Some(price) = prices
+        .into_iter()
+        .find(|p| p.business == business)
+        .and_then(|p| p.price)
+    else {
+        return Ok(None);
+    };
+    let visit = earliest_visit(db, (job, business)).await?;
+    let arizona = jiff::tz::TimeZone::fixed(jiff::tz::offset(-7));
+    Ok(Some(AcceptedQuote {
+        number: at + 1,
+        price,
+        earliest_visit: visit.map(|v| v.to_zoned(arizona.clone()).date()),
+        original: page[at].original.clone(),
+    }))
 }
 
 /// The pure matching rules, for the rules bridge and other crates' property tests.

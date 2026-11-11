@@ -10336,7 +10336,7 @@
    "budget": {
     "files": 3,
     "lines": 600,
-    "context_pct": 35
+    "context_pct": 40
    },
    "checks": [
     "Ci",
@@ -10535,7 +10535,7 @@
    "id": "T345",
    "slug": "pin-every-workflow-action",
    "title": "harness: every external GitHub Actions `uses:` in every workflow is pinned to a full commit SHA",
-   "goal": "Pentest PT-01 (D-2347; SEC-045): 15 external `uses:` lines are pinned to mutable tags, against SEC-045 (\"every GitHub Actions `uses:`\"), and no decision allows a tag: `backup-runner.yml` :64, :231 and :630 (`actions/checkout@v4`), :243 (`actions/setup-python@v5`), :251 (`actions/cache@v4`), :274 (`actions/cache/restore@v4`), :394 (`anthropics/claude-code-action@v1`, on the job that holds the Claude OAuth token, the conditional push token and contents, pull-requests, issues, id-token and actions write), :450 (`actions/cache/save@v4`); `nightly-main.yml:170`, `twin.yml:29`, `auto-pr.yml:30`, `governance.yml:47`, `inbox.yml:39` and `notify.yml:25` (`actions/checkout@v4`); `twin.yml:53` (`actions/upload-artifact@v4`). Pin each to the full 40-character commit SHA its tag resolves to when this task runs (read from the action's public repository, never guessed), with the version in a trailing comment as `ci.yml` does (`# v4.4.0`), and record every action, tag, resolved version and SHA in this task's `docs/decisions.md` entry. Before hand-in, confirm each SHA equals the tag's dereferenced commit (`refs/tags/<tag>^{}`, or the tag ref itself when it is lightweight) in the action's own repository, and put that check's output in the hand-in report; the overseer watches the first runner cycle after the merge. Behaviour is unchanged: each pin is the commit the tag named. Nothing else in the workflows changes (permissions and tokens stay as they are; trimming them is not this task). `.github/dependabot.yml` already watches the `github-actions` ecosystem, so the pins get update pull requests. Proof for the runner pin: the next runner cycle after the merge completes on fake data; the hand-in report says how to revert (the one-line pin back to `@v1` in `backup-runner.yml`, by a harness pull request) if it does not. The repository-wide test that keeps every workflow pinned is T121's (TD-SEC-24). Harness: an Opus review.",
+   "goal": "Pentest PT-01 (D-2347; SEC-045): 15 external `uses:` lines are pinned to mutable tags, against SEC-045 (\"every GitHub Actions `uses:`\"), and no decision allows a tag: `backup-runner.yml` :64, :231 and :663 (`actions/checkout@v4`), :243 (`actions/setup-python@v5`), :251 (`actions/cache@v4`), :274 (`actions/cache/restore@v4`), :413 (`anthropics/claude-code-action@v1`, on the job that holds the Claude OAuth token, the conditional push token and contents, pull-requests, issues, id-token and actions write), :483 (`actions/cache/save@v4`); `nightly-main.yml:170`, `twin.yml:29`, `auto-pr.yml:30`, `governance.yml:47`, `inbox.yml:39` and `notify.yml:25` (`actions/checkout@v4`); `twin.yml:53` (`actions/upload-artifact@v4`). Pin each to the full 40-character commit SHA its tag resolves to when this task runs (read from the action's public repository, never guessed), with the version in a trailing comment as `ci.yml` does (`# v4.4.0`), and record every action, tag, resolved version and SHA in this task's `docs/decisions.md` entry. Before hand-in, confirm each SHA equals the tag's dereferenced commit (`refs/tags/<tag>^{}`, or the tag ref itself when it is lightweight) in the action's own repository, and put that check's output in the hand-in report; the overseer watches the first runner cycle after the merge. Behaviour is unchanged: each pin is the commit the tag named. Nothing else in the workflows changes (permissions and tokens stay as they are; trimming them is not this task). `.github/dependabot.yml` already watches the `github-actions` ecosystem, so the pins get update pull requests. Proof for the runner pin: the next runner cycle after the merge completes on fake data; the hand-in report says how to revert (the one-line pin back to `@v1` in `backup-runner.yml`, by a harness pull request) if it does not. Line numbers as of `main` after PR #516 (D-3083). Three done runner tests hard-code the tags being pinned (D-3083): `tests/test_runner_keeper.py:417`, `:426` and `:652`, `tests/test_runner_pre_smoke.py:263` and `tests/test_runner_smoke_reuse.py:402` and `:505` (`actions/cache/restore@v4`, `actions/cache/save@v4`, `anthropics/claude-code-action@v1`); in those files only these action-ref matches change, so each compares the action name before `@`, and no other assertion, input or expected value changes (`tests/test_runner_live.py:777`, a fake log line, and `tests/test_runner_two_lanes.py:712`, a prefix match, need none). The repository-wide test that keeps every workflow pinned is T121's (TD-SEC-24). Harness: an Opus review.",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -10559,7 +10559,10 @@
     ".github/workflows/auto-pr.yml",
     ".github/workflows/governance.yml",
     ".github/workflows/inbox.yml",
-    ".github/workflows/notify.yml"
+    ".github/workflows/notify.yml",
+    "tests/test_runner_keeper.py",
+    "tests/test_runner_pre_smoke.py",
+    "tests/test_runner_smoke_reuse.py"
    ],
    "reads": [
     "docs/spec/security.md",
@@ -10572,13 +10575,14 @@
    "tests": [],
    "decisions": [
     "D-2347",
-    "D-480"
+    "D-480",
+    "D-3083"
    ],
    "cites": [],
    "budget": {
-    "files": 7,
-    "lines": 120,
-    "context_pct": 16
+    "files": 10,
+    "lines": 160,
+    "context_pct": 28
    },
    "checks": [
     "Ci",
@@ -10644,7 +10648,7 @@
    "budget": {
     "files": 5,
     "lines": 550,
-    "context_pct": 36
+    "context_pct": 40
    },
    "checks": [
     "Ci",
@@ -10658,7 +10662,7 @@
    "id": "T347",
    "slug": "no-split-job-check",
    "title": "licensing (harness): remove the handyman split-job check; each job is judged by its own price (Casey's ruling)",
-   "goal": "Casey's owner ruling of November 10, 2026 (D-2407, D-2408; LIC-023, LIC-019): there is no split-job check; a handyman job is judged only by its own price. Remove the check: `split_job`, `HandymanJob`, `SPLIT_JOB_WINDOW_DAYS` and `QuoteRefusal::SplitJob` from `app/licensing/src/handyman.rs` (`:20`, `:186`, `:209` to `:244`), their exports from `app/licensing/src/api.rs` (`:44`, `:45`) and every doc line naming them (`handyman.rs:3` and `:5`, `api.rs:9`, `app/licensing/src/rules.rs:7`). No production code calls `split_job`; the quote form's refusal line matches `Bounce::Handyman(_)` (`app/quotes/src/intake.rs:298`, not edited); no table, migration or setting holds state for the rule. Tests: remove `split_job_check_window_and_totals` and its `prior` helper (`app/licensing/src/tests/handyman.rs:260` to the end of that test) and the property `split_job_blocks_near_jobs_reaching_the_limit` (`app/licensing/src/tests/prop_handyman_never_gas.rs:122` to `:140`), with their now-unused imports, and drop `Bounce::Handyman(QuoteRefusal::SplitJob)` from the list of every bounce in `app/quotes/src/tests/quote_bounce.rs:95`. Removing these tests is allowed only because the spec changed and the change is logged (D-2407, D-2408; BUILD_BRIEF.md rule 6), never as a weakened test; no other assertion changes. Add the new TD-LIC-10 test in `app/licensing/src/tests/handyman.rs`: two handyman jobs of one business at one address on the same day, sharing a job type, $600 and $500, are each accepted by `check_quote`; keep TD-LIC-08's single-job edges ($999.99 accepted, $1,000.00 refused) unchanged. TD-FEE-09 (`tests/integration/tests/repeat_customer.rs`) still holds and is not edited. Update the `licensing` `CLAUDE.md` (the LIC-023 line and the test list), `docs/architecture.md` section 10 (what T035 built) and `docs/decisions.md`. This is a harness task because it deletes and edits DONE tasks' tests (T035's and T046's); Opus review. Nov 10 code review batch 2, quotes F1 (D-2637; LIC-021, LIC-022, D-898): `never_handyman` (`app/licensing/src/handyman.rs:118`) checks the request text only against the gas list, smoke alarms and sprinklers only against candidate job types, and permit types only as an exact candidate, while the AI-off keyword reading (`app/intake/src/matching.rs:47`) has no smoke, sprinkler or wall rule, so \"Install hardwired smoke detectors by the bedroom door\" and \"fire sprinkler head leaking by the garage door\" (candidates [\"door repair\"]) and \"remove the wall between kitchen and den, then drywall\" ([\"drywall patch\"]) reach handymen. `never_handyman` also scans the request text for smoke alarm(s), smoke detector(s) and fire sprinkler(s) (\"fire\" required, so a lawn sprinkler passes) and for permit phrases (wall removal, remove the/a wall, panel upgrade, new circuit, re-roof). TD-LIC-09 gains those three cases (each blocked) and \"lawn sprinkler head broke by the fence\" (not blocked) in `app/licensing/src/tests/handyman.rs`, and the property in `prop_handyman_never_gas.rs` covers the new words.",
+   "goal": "Casey's owner ruling of November 10, 2026 (D-2407, D-2408; LIC-023, LIC-019): there is no split-job check; a handyman job is judged only by its own price. Remove the check: `split_job`, `HandymanJob`, `SPLIT_JOB_WINDOW_DAYS` and `QuoteRefusal::SplitJob` from `app/licensing/src/handyman.rs` (`:21`, `:187`, `:210` to `:244`), their exports from `app/licensing/src/api.rs` (`:48`, `:49`) and every doc line naming them (`handyman.rs:3` and `:5`, `api.rs:9`, `app/licensing/src/rules.rs:7`). No production code calls `split_job`; the quote form's refusal line matches `Bounce::Handyman(_)` (`app/quotes/src/intake.rs:302`, not edited); no table, migration or setting holds state for the rule. Tests: remove `split_job_check_window_and_totals` and its `prior` helper (`app/licensing/src/tests/handyman.rs`: `prior` at `:260`, the test at `:268` to `:293`, and the `DAY` constant at `:258` that only they use) and the property `split_job_blocks_near_jobs_reaching_the_limit` (`app/licensing/src/tests/prop_handyman_never_gas.rs:122` to `:140`), with their now-unused imports, and drop `Bounce::Handyman(QuoteRefusal::SplitJob)` from the list of every bounce in `app/quotes/src/tests/quote_bounce.rs:95`. Line numbers as of `main` 0137f98c (D-3083). Removing these tests is allowed only because the spec changed and the change is logged (D-2407, D-2408; BUILD_BRIEF.md rule 6), never as a weakened test; no other assertion changes. Add the new TD-LIC-10 test in `app/licensing/src/tests/handyman.rs`: two handyman jobs of one business at one address on the same day, sharing a job type, $600 and $500, are each accepted by `check_quote`; keep TD-LIC-08's single-job edges ($999.99 accepted, $1,000.00 refused) unchanged. TD-FEE-09 (`tests/integration/tests/repeat_customer.rs`) still holds and is not edited. Update the `licensing` `CLAUDE.md` (the LIC-023 line and the test list), `docs/architecture.md` section 10 (what T035 built) and `docs/decisions.md`. This is a harness task because it deletes and edits DONE tasks' tests (T035's and T046's); Opus review. Nov 10 code review batch 2, quotes F1 (D-2637; LIC-021, LIC-022, D-898): `never_handyman` (`app/licensing/src/handyman.rs:105`) checks the request text only against the gas list, smoke alarms and sprinklers only against candidate job types, and permit types only as an exact candidate, while the AI-off keyword reading (`app/intake/src/matching.rs:52`, `RULES`) has no smoke, sprinkler or wall rule, so \"Install hardwired smoke detectors by the bedroom door\" and \"fire sprinkler head leaking by the garage door\" (candidates [\"door repair\"]) and \"remove the wall between kitchen and den, then drywall\" ([\"drywall patch\"]) reach handymen. `never_handyman` also scans the request text for smoke alarm(s), smoke detector(s) and fire sprinkler(s) (\"fire\" required, so a lawn sprinkler passes) and for permit phrases (wall removal, remove the/a wall, panel upgrade, new circuit, re-roof). TD-LIC-09 gains those three cases (each blocked) and \"lawn sprinkler head broke by the fence\" (not blocked) in `app/licensing/src/tests/handyman.rs`, and the property in `prop_handyman_never_gas.rs` covers the new words.",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -10706,13 +10710,14 @@
     "D-2407",
     "D-2408",
     "D-035",
-    "D-2637"
+    "D-2637",
+    "D-3083"
    ],
    "cites": [],
    "budget": {
     "files": 6,
     "lines": 350,
-    "context_pct": 35
+    "context_pct": 40
    },
    "checks": [
     "Ci",
@@ -10895,7 +10900,7 @@
    "budget": {
     "files": 5,
     "lines": 500,
-    "context_pct": 34
+    "context_pct": 40
    },
    "checks": [
     "Ci",
@@ -12226,7 +12231,7 @@
    "owns": [
     "app/messaging/src/help_requests.rs",
     "app/messaging/src/help_answers.rs",
-    "migrations/0189_help_requests.sql",
+    "migrations/0190_help_requests.sql",
     "tests/integration/tests/help_requests.rs",
     "app/ops/src/help_requests.rs",
     "app/portals/src/digest_flags.rs",
@@ -12363,7 +12368,7 @@
    "budget": {
     "files": 7,
     "lines": 300,
-    "context_pct": 20
+    "context_pct": 24
    },
    "checks": [
     "Ci",
@@ -12595,6 +12600,8 @@
     "T378",
     "T386",
     "T387",
+    "T390",
+    "T391",
     "T393"
    ],
    "model": "claude-opus-5-5",
@@ -13089,7 +13096,7 @@
     "app/intake/src/web_chat.rs",
     "app/intake/src/conversation.rs",
     "tests/integration/tests/web_chat.rs",
-    "migrations/0185_intake_request_source.sql"
+    "migrations/0186_intake_request_source.sql"
    ],
    "reads": [
     "docs/architecture.md",
@@ -13421,7 +13428,7 @@
     "app/ops/src/alerts.rs",
     "app/ops/src/safe_mode.rs",
     "app/ops/src/models.rs",
-    "migrations/0186_ops_alerts_safe_mode.sql",
+    "migrations/0187_ops_alerts_safe_mode.sql",
     "tests/integration/tests/safe_mode.rs",
     "app/payments/src/safe_mode_check.rs",
     "app/picks/src/safe_mode_check.rs",
@@ -13493,7 +13500,7 @@
    "id": "T320",
    "slug": "ops-alert-open-once",
    "title": "ops: one open alert per kind and subject, so a check that runs on a schedule never raises the same alert again",
-   "goal": "Fourth external audit F30 (D-2207; OPS-004, SEC-051): `ops.alert` has no rule against a second open alert of the same kind and subject (`migrations/0021_ops_audit.sql:33`), so a check that runs on a schedule, such as `messaging::check_webhook_silence` (`app/messaging/src/email.rs:684`) once T204 schedules it, raises a new alert on every run while its condition lasts, and a pushing kind would push each time. (1) `migrations/0187_ops_alert_open_once.sql`: a unique index on `ops.alert (kind, subject_kind, subject_id)` over unresolved rows (`resolved_at IS NULL`, and T105's acknowledgement column if it adds one) with `NULLS NOT DISTINCT` (PostgreSQL 16), so a subject-less kind is open once too. (2) `raise_alert` (`app/ops/src/service.rs:96`) inserts with `ON CONFLICT DO NOTHING` and returns the open alert's ID when one exists (no new row, so no new push); a raise after it was resolved opens a new one. Read every caller of `raise_alert` (about 60): those that need one alert per event (each HELP request, each dispute, each failed purge) already carry a distinct subject; list in the decision any caller whose behaviour changes. Tests in `tests/integration/tests/alert_dedupe.rs` (TD-OPS-34): two raises of one kind and subject leave one open row and return its ID; after it is resolved a raise opens a new one; two subject-less raises of one kind leave one; two concurrent raises leave one. Every existing test that raises alerts passes unchanged; if one expects two open alerts of one kind and subject, stop and report. Update the `ops` `CLAUDE.md`, `docs/architecture.md` section 10 and `docs/decisions.md`.",
+   "goal": "Fourth external audit F30 (D-2207; OPS-004, SEC-051): `ops.alert` has no rule against a second open alert of the same kind and subject (`migrations/0021_ops_audit.sql:33`), so a check that runs on a schedule, such as `messaging::check_webhook_silence` (`app/messaging/src/email.rs:684`) once T204 schedules it, raises a new alert on every run while its condition lasts, and a pushing kind would push each time. (1) `migrations/0188_ops_alert_open_once.sql`: a unique index on `ops.alert (kind, subject_kind, subject_id)` over unresolved rows (`resolved_at IS NULL`, and T105's acknowledgement column if it adds one) with `NULLS NOT DISTINCT` (PostgreSQL 16), so a subject-less kind is open once too. (2) `raise_alert` (`app/ops/src/service.rs:96`) inserts with `ON CONFLICT DO NOTHING` and returns the open alert's ID when one exists (no new row, so no new push); a raise after it was resolved opens a new one. Read every caller of `raise_alert` (about 60): those that need one alert per event (each HELP request, each dispute, each failed purge) already carry a distinct subject; list in the decision any caller whose behaviour changes. Tests in `tests/integration/tests/alert_dedupe.rs` (TD-OPS-34): two raises of one kind and subject leave one open row and return its ID; after it is resolved a raise opens a new one; two subject-less raises of one kind leave one; two concurrent raises leave one. Every existing test that raises alerts passes unchanged; if one expects two open alerts of one kind and subject, stop and report. Update the `ops` `CLAUDE.md`, `docs/architecture.md` section 10 and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -13506,7 +13513,7 @@
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [],
    "owns": [
-    "migrations/0187_ops_alert_open_once.sql",
+    "migrations/0188_ops_alert_open_once.sql",
     "app/ops/src/service.rs",
     "tests/integration/tests/alert_dedupe.rs"
    ],
@@ -13533,7 +13540,7 @@
    "budget": {
     "files": 3,
     "lines": 300,
-    "context_pct": 31
+    "context_pct": 36
    },
    "checks": [
     "Ci",
@@ -13574,7 +13581,7 @@
     "app/messaging/src/alert_emails.rs",
     "tests/integration/tests/alert_routing.rs",
     "app/portals/src/digest_flags.rs",
-    "migrations/0188_ops_owner_digest.sql",
+    "migrations/0189_ops_owner_digest.sql",
     "app/messaging/src/keywords.rs",
     "app/portals/src/business_portal.rs",
     "app/portals/templates/business_home.html",
@@ -13787,7 +13794,7 @@
    "id": "T321",
    "slug": "consent-five-year-purge",
    "title": "messaging, intake and privacy: consent records, keyword events and message logs go 5 years after a number's last message",
-   "goal": "Fourth external audit F32 (D-2208; CON-022, CON-036, D-079): CON-022 keeps consent records, opt-in wording versions, STOP/HELP/START events and message logs 5 years after the last message to that number, and the privacy policy promises the same (`docs/legal/privacy-policy.md:91`), but nothing ever deletes them: `intake.consent_record` and the `messaging` keyword and message-log rows are append-only (`migrations/0053_intake_tables.sql:62`) and `app/intake/src/purge.rs` says they are never deleted there. (1) A daily `messaging.consent_sweep` (registered in the shared `app/server/src/lib.rs`, queued once a day) finds each number whose last inbound or outbound message is more than 1,827 days old (5 years, never short by a leap day) and deletes, in one transaction per number: its rows of every table CON-022 names, through `app/messaging/src/consent_purge.rs` for `messaging`'s and `intake::api` (`app/intake/src/consent_purge.rs`) for `intake.consent_record`, each with one `ops` audit row of IDs only; `migrations/0190_consent_five_year_purge.sql` grants the app role DELETE on exactly those tables and nothing else (no UPDATE, so they stay append-only for every other change). (2) The opt-out is never weakened: a number on `messaging.suppression` keeps its suppression row, the `messaging.optout_event` row that row points to (`event_id`, `migrations/0044_messaging_optout.sql:33`; digest-only, no phone) and its locked phone in the vault, because the suppression digest is keyed `homeowner-phone|v<n>` and PRIV-024's key rotation rebuilds it from the vault plaintext (D-079), so clearing the phone would lose the opt-out at the next rotation; only its other CON-022 rows (consent records, keyword events, message logs) go at 5 years. A number not on suppression loses its CON-022 rows and then its locked vault phone, cleared through `privacy::api` (`app/privacy/src/consent_phone.rs`). The DELETE grant on `messaging.optout_event` is limited to rows no suppression row references (a policy or a trigger that refuses the rest). That an opted-out number's phone stays locked past 5 years is listed for Casey, with whether the privacy policy should say so (D-2208). (3) Tests in `tests/integration/tests/consent_purge.rs` (TD-CON-30): a number last messaged 1,826 days ago keeps everything; at 1,827 days a number not on suppression loses its rows and its vault phone, with audit rows of IDs only; an opted-out number keeps its suppression row, the opt-out event it points to and its locked phone, loses its other rows, and is still refused a text after the purge and after an index-key rotation; deleting an opt-out event a suppression row references is refused; a message in between restarts its clock. The rotation case builds its two-version `VAULT_INDEX_KEY` the way `tests/integration/tests/vault.rs` does (its `key(version, byte)` helper at line 32 and the v1-plus-v2 key set of `the_rotation_drill_moves_every_row_to_v2`, TD-PRIV-09) and rotates with `privacy::api::rotate_batch` as that test and `tests/integration/tests/inbound_scrub_context.rs` do; it is not skipped. Update the `messaging`, `intake` and `privacy` `CLAUDE.md` files, `docs/architecture.md` section 10 and `docs/decisions.md`.",
+   "goal": "Fourth external audit F32 (D-2208; CON-022, CON-036, D-079): CON-022 keeps consent records, opt-in wording versions, STOP/HELP/START events and message logs 5 years after the last message to that number, and the privacy policy promises the same (`docs/legal/privacy-policy.md:91`), but nothing ever deletes them: `intake.consent_record` and the `messaging` keyword and message-log rows are append-only (`migrations/0053_intake_tables.sql:62`) and `app/intake/src/purge.rs` says they are never deleted there. (1) A daily `messaging.consent_sweep` (registered in the shared `app/server/src/lib.rs`, queued once a day) finds each number whose last inbound or outbound message is more than 1,827 days old (5 years, never short by a leap day) and deletes, in one transaction per number: its rows of every table CON-022 names, through `app/messaging/src/consent_purge.rs` for `messaging`'s and `intake::api` (`app/intake/src/consent_purge.rs`) for `intake.consent_record`, each with one `ops` audit row of IDs only; `migrations/0191_consent_five_year_purge.sql` grants the app role DELETE on exactly those tables and nothing else (no UPDATE, so they stay append-only for every other change). (2) The opt-out is never weakened: a number on `messaging.suppression` keeps its suppression row, the `messaging.optout_event` row that row points to (`event_id`, `migrations/0044_messaging_optout.sql:33`; digest-only, no phone) and its locked phone in the vault, because the suppression digest is keyed `homeowner-phone|v<n>` and PRIV-024's key rotation rebuilds it from the vault plaintext (D-079), so clearing the phone would lose the opt-out at the next rotation; only its other CON-022 rows (consent records, keyword events, message logs) go at 5 years. A number not on suppression loses its CON-022 rows and then its locked vault phone, cleared through `privacy::api` (`app/privacy/src/consent_phone.rs`). The DELETE grant on `messaging.optout_event` is limited to rows no suppression row references (a policy or a trigger that refuses the rest). That an opted-out number's phone stays locked past 5 years is listed for Casey, with whether the privacy policy should say so (D-2208). (3) Tests in `tests/integration/tests/consent_purge.rs` (TD-CON-30): a number last messaged 1,826 days ago keeps everything; at 1,827 days a number not on suppression loses its rows and its vault phone, with audit rows of IDs only; an opted-out number keeps its suppression row, the opt-out event it points to and its locked phone, loses its other rows, and is still refused a text after the purge and after an index-key rotation; deleting an opt-out event a suppression row references is refused; a message in between restarts its clock. The rotation case builds its two-version `VAULT_INDEX_KEY` the way `tests/integration/tests/vault.rs` does (its `key(version, byte)` helper at line 32 and the v1-plus-v2 key set of `the_rotation_drill_moves_every_row_to_v2`, TD-PRIV-09) and rotates with `privacy::api::rotate_batch` as that test and `tests/integration/tests/inbound_scrub_context.rs` do; it is not skipped. Update the `messaging`, `intake` and `privacy` `CLAUDE.md` files, `docs/architecture.md` section 10 and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -13804,7 +13811,7 @@
     "compliance"
    ],
    "owns": [
-    "migrations/0190_consent_five_year_purge.sql",
+    "migrations/0191_consent_five_year_purge.sql",
     "app/messaging/src/consent_purge.rs",
     "app/intake/src/consent_purge.rs",
     "app/privacy/src/consent_phone.rs",
@@ -13834,7 +13841,7 @@
    "budget": {
     "files": 5,
     "lines": 500,
-    "context_pct": 31
+    "context_pct": 36
    },
    "checks": [
     "Ci",
@@ -14026,7 +14033,7 @@
     "app/recovery/src/api.rs",
     "app/recovery/src/models.rs",
     "app/recovery/src/backup.rs",
-    "migrations/0191_recovery_backup_export.sql",
+    "migrations/0192_recovery_backup_export.sql",
     "tests/recovery/tests/export_restores.rs",
     "app/portals/src/digest_flags.rs",
     "app/portals/src/health_page.rs"
@@ -14099,7 +14106,7 @@
    "owns": [
     "app/recovery/src/replay.rs",
     "app/recovery/src/models.rs",
-    "migrations/0192_recovery_replay.sql",
+    "migrations/0193_recovery_replay.sql",
     "app/recovery/src/tests/replay_ids.rs"
    ],
    "reads": [
@@ -15357,7 +15364,7 @@
    "budget": {
     "files": 3,
     "lines": 400,
-    "context_pct": 56
+    "context_pct": 62
    },
    "checks": [
     "Ci",
@@ -16666,7 +16673,8 @@
     "T317",
     "T325",
     "T336",
-    "T357"
+    "T357",
+    "T391"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -19460,7 +19468,7 @@
    "budget": {
     "files": 10,
     "lines": 400,
-    "context_pct": 22
+    "context_pct": 28
    },
    "checks": [
     "Ci",
@@ -20220,7 +20228,7 @@
    "id": "T266",
    "slug": "pick-contact-choice",
    "title": "portals, picks and privacy: the homeowner's contact choice and shared email are stored for the release",
-   "goal": "At the page pick the homeowner chooses a masked call or an email she shares (PICK-018), but `app/portals/src/pick_flow.rs` checks the choice and the email and passes them on unstored (`pick_flow.rs:38`, D-1264), so the release can only ever be a masked call (`email_chosen` false, D-1740 (2)) and PICK-042's accepted-quote email has no address (D-1761). (1) `migrations/0166_picks_contact_choice.sql`: `picks.contact_choice` (pick ID, `call` or `email`, decided time; one row per pick, app role SELECT and INSERT). (2) `app/privacy/src/vault.rs`: `privacy::api::store_shared_email(conn, vault, contact, email)` seals the email into the contact's vault `email` field (field-bound encryption, a new version, one audit row naming the actor and purpose `shared_at_pick`; no plaintext returned), so the email is stored only in the vault (PRIV-001, PRIV-002). (3) `app/picks/src/contact_choice.rs`: `picks::api::record_contact_choice` (in the page pick's transaction, after `page_pick`) and `picks::api::contact_choice(conn, pick)` for the release's caller. (4) `pick_flow.rs` stores both in the transaction that records the pick; an error keeps her choices on the page as now; a text pick (no page) stays a masked call. (5) `app/server/src/release_sink.rs` (T254's sink, extended by T255) passes `picks::api::contact_choice` as `email_chosen` instead of D-1740 (2)'s masked-call default, on the first release and on T255's re-release (D-1761). No email reaches a log, task payload or business page. Update the `picks`, `privacy` and `portals` `CLAUDE.md` files, `docs/architecture.md` section 10 and `docs/decisions.md`.",
+   "goal": "At the page pick the homeowner chooses a masked call or an email she shares (PICK-018), but `app/portals/src/pick_flow.rs` checks the choice and the email and passes them on unstored (`pick_flow.rs:38`, D-1264), so the release can only ever be a masked call (`email_chosen` false, D-1740 (2)) and PICK-042's accepted-quote email has no address (D-1761). (1) `migrations/0166_picks_contact_choice.sql`: `picks.contact_choice` (pick ID, `call` or `email`, decided time; one row per pick, app role SELECT and INSERT). (2) `app/privacy/src/vault.rs`: `privacy::api::store_shared_email(conn, vault, contact, email)` seals the email into the contact's vault `email` field (field-bound encryption, a new version, one audit row naming the actor and purpose `shared_at_pick`; no plaintext returned), so the email is stored only in the vault (PRIV-001, PRIV-002). (3) `app/picks/src/contact_choice.rs`: `picks::api::record_contact_choice` (in the page pick's transaction, after `page_pick`) and `picks::api::contact_choice(conn, pick)` for the release's caller. (4) `pick_flow.rs` stores both in the transaction that records the pick; an error keeps her choices on the page as now; a text pick (no page) stays a masked call. (5) `app/server/src/release_sink.rs` (T254's sink, extended by T255) passes `picks::api::contact_choice` as `email_chosen` instead of D-1740 (2)'s masked-call default, on the first release and on T255's re-release (D-1761). No email reaches a log, task payload or business page. Update the `picks`, `privacy` and `portals` `CLAUDE.md` files, the off-database records and recovery notes of `docs/architecture.md` (one line, found by grep, never loaded whole; D-3079) and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -20274,7 +20282,7 @@
    "budget": {
     "files": 7,
     "lines": 400,
-    "context_pct": 40
+    "context_pct": 27
    },
    "checks": [
     "Ci",
@@ -20898,7 +20906,7 @@
    "budget": {
     "files": 10,
     "lines": 600,
-    "context_pct": 34
+    "context_pct": 41
    },
    "checks": [
     "Ci",
@@ -21061,7 +21069,7 @@
    "budget": {
     "files": 7,
     "lines": 600,
-    "context_pct": 36
+    "context_pct": 41
    },
    "checks": [
     "Ci",
@@ -21216,7 +21224,7 @@
    "budget": {
     "files": 5,
     "lines": 600,
-    "context_pct": 41
+    "context_pct": 45
    },
    "checks": [
     "Ci",
@@ -21409,7 +21417,7 @@
    "id": "T249",
    "slug": "quotes-radius-matching",
    "title": "quotes and portals: radius matching by ZIP centroid, the coverage count by the same rule, and the radius in the business portal",
-   "goal": "Radius matching (CARD-024, D-1519): `quotes`' matching is pure and caller-filled (D-1013, D-1014). Add the job's location (`CardJob`: its ZIP centroid from `catalog::api::zip_location`, or none) and each business's reach (`CardBusiness`: its base ZIP centroid and radius from T248's `businesses.service_area`, or none) in `app/quotes/src/models.rs`, and change `rules::card_for`'s town test (`app/quotes/src/rules.rs`) to: serves an offered Arizona town (CARD-002, INT-022), or the job has a location, the business has a reach and `catalog::api::miles_between(base, job)` is at most the radius (inclusive). Every other CARD-001 test (active, verified, licensed for every candidate job type as the license map says for the job's place, a ticked job type, the BIZ-049 skips), \"jobs nobody else covers\" (CARD-004) and the owner pauses are unchanged, so a business serving the job's town keeps the card and a radius only adds reach; a business whose base ZIP has no location matches by its towns served alone, and only Arizona towns match (INT-022). `coverage` (the count intake tells the homeowner, INT-017, INT-032, D-1022) uses the same test, so the count and the recipients agree, and `send_job_cards` and `send_late_cards` (`app/quotes/src/service.rs`) carry the new fields. T251's card sender (`app/intake/src/cards_out.rs`) and card pool (`app/quotes/src/card_pool.rs`) build `CardJob` and `Pool`; this task fills the job's location there from the ZIP T251 stores on `intake.property` and each business's reach from `businesses.service_area` (D-1521); a job with no stored ZIP matches by towns only. The portal edit (BIZ-010, BIZ-058): the business portal's settings (`app/portals/src/business_actions.rs`, `app/portals/templates/business_actions.html`) let the owner change the base ZIP and radius with sign-up's checks and accessible errors, audited by field name only (draft wording through the copy panel, WORD-028). Tests: `app/quotes/src/tests/radius_matching.rs` (TD-CARD-13's pure cases with fixture centroids, including a Phoenix metro fixture of several towns: a card crossing a town line and one not, overlapping radii, the inclusive boundary, a business in reach without the license for a candidate job type, no location meaning towns only, the coverage count equal to the recipients) and `tests/integration/tests/radius_matching.rs` (`send_job_cards` sending to a business in reach in another town; TD-BIZ-38's portal edit). No geocoding service and no new crate. Update `app/quotes/CLAUDE.md`, `app/portals/CLAUDE.md` and `docs/architecture.md` section 10. T301 serves the email action links (D-2128): keep the signatures `app/server/src/action_links.rs` calls; any page or action this task adds is served by T306, not by a `.route` in `server`.",
+   "goal": "Radius matching (CARD-024, D-1519): `quotes`' matching is pure and caller-filled (D-1013, D-1014). Add the job's location (`CardJob`: its ZIP centroid from `catalog::api::zip_location`, or none) and each business's reach (`CardBusiness`: its base ZIP centroid and radius from T248's `businesses.service_area`, or none) in `app/quotes/src/models.rs`, and change `rules::card_for`'s town test (`app/quotes/src/rules.rs`) to: serves an offered Arizona town (CARD-002, INT-022), or the job has a location, the business has a reach and `catalog::api::miles_between(base, job)` is at most the radius (inclusive). Every other CARD-001 test (active, verified, licensed for every candidate job type as the license map says for the job's place, a ticked job type, the BIZ-049 skips), \"jobs nobody else covers\" (CARD-004) and the owner pauses are unchanged, so a business serving the job's town keeps the card and a radius only adds reach; a business whose base ZIP has no location matches by its towns served alone, and only Arizona towns match (INT-022). `coverage` (the count intake tells the homeowner, INT-017, INT-032, D-1022) uses the same test, so the count and the recipients agree, and `send_job_cards` and `send_late_cards` (`app/quotes/src/service.rs`) carry the new fields. T251's card sender (`app/intake/src/cards_out.rs`) and card pool (`app/quotes/src/card_pool.rs`) build `CardJob` and `Pool`; this task fills the job's location there from the ZIP T251 stores on `intake.property` and each business's reach from `businesses.service_area` (D-1521); a job with no stored ZIP matches by towns only. The portal edit (BIZ-010, BIZ-058): the business portal's settings (`app/portals/src/business_actions.rs`, `app/portals/templates/business_actions.html`) let the owner change the base ZIP and radius with sign-up's checks and accessible errors, audited by field name only (draft wording through the copy panel, WORD-028). Tests: `app/quotes/src/tests/radius_matching.rs` (TD-CARD-13's pure cases with fixture centroids, including a Phoenix metro fixture of several towns: a card crossing a town line and one not, overlapping radii, the inclusive boundary, a business in reach without the license for a candidate job type, no location meaning towns only, the coverage count equal to the recipients) and `tests/integration/tests/radius_matching.rs` (`send_job_cards` sending to a business in reach in another town; TD-BIZ-38's portal edit). No geocoding service and no new crate. Update `app/quotes/CLAUDE.md`, `app/portals/CLAUDE.md` and add this task's line to the off-database records and recovery notes of `docs/architecture.md` (found by grep, never loaded whole; D-3079). T301 serves the email action links (D-2128): keep the signatures `app/server/src/action_links.rs` calls; any page or action this task adds is served by T306, not by a `.route` in `server`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -21476,7 +21484,7 @@
    "budget": {
     "files": 9,
     "lines": 600,
-    "context_pct": 39
+    "context_pct": 26
    },
    "checks": [
     "Ci",
@@ -21669,7 +21677,7 @@
    "budget": {
     "files": 2,
     "lines": 350,
-    "context_pct": 29
+    "context_pct": 35
    },
    "checks": [
     "Ci",
@@ -22870,7 +22878,7 @@
    "id": "T313",
    "slug": "emergency-business-notices",
    "title": "messaging and server: an EMERGENCY card notice goes at night with its own subject, and the business-notice worker runs",
-   "goal": "Fourth external audit F42 and F43 (D-2203; CARD-021, CARD-020, QH-004, BIZ-037; D-1826 (1), D-2011 (1)): `messaging::business_notices` checks the night hold before anything else (`app/messaging/src/business_notices.rs:460`), so `quotes::queue_emergency_card`'s group due at once for the people with \"Emergency emails at any hour\" on at an after-hours business (`app/quotes/src/emergency_card_notice.rs:110`) is held to 8 a.m. like any card; its parsed notice has no `emergency`, `subject` or `first_line` (`business_notices.rs:171`), so CARD-021's EMERGENCY subject and first line are lost; and no worker runs `messaging.business_notice` at all (`server::register_handlers` has no handler for it, D-1826 (1)). After T292 (which owns the file for the brand): (1) `business_notices.rs` reads `emergency`, `subject` and `first_line` from the payload; a notice with `emergency: true` is not held by the night rule (`quotes` already chose its recipients under QH-004 and BIZ-037, and its 8 a.m. group carries its own due time) and is sent with that subject and first line; every other notice is held as today. (2) Register `messaging.business_notice` in `server::register_handlers` (the shared `app/server/src/lib.rs`): the `NoticeSender` with the postal address from the typed settings (add the key to the shared `app/core/src/settings.rs` if no setting holds it; a missing value in live stops the worker's start naming the key), the `Lines` from T279's stored mode state through `messaging::api`, and a `TextGate` over `businesses::api::may_text`. (3) T251 queues an emergency job's card notices through `queue_emergency_card` (D-2203). Tests in `tests/integration/tests/emergency_notices.rs`, run through the worker (TD-CARD-15): at 22:40 an EMERGENCY card notice reaches the fake email provider at once with CARD-021's subject and first line for a switched-on person at an after-hours business, and at 8 a.m. for the rest; an ordinary card notice at 22:40 is held to 8 a.m.; a repeat run sends nothing twice. Every existing `tests/integration/tests/business_notices.rs` case passes unchanged. Update the `messaging` and `server` `CLAUDE.md` files, `docs/architecture.md` section 10 and `docs/decisions.md`. (4) Fifth external audit AH-001 (D-2287): also register `messaging.charge_receipt` (`run_receipt_email`, `app/messaging/src/receipt_email.rs:187`, queued by `picks::money_notices`) with a `ReceiptSender` built from the same postal-address setting (D-1826 (1)), and prove in the same test file that a receipt event reaches the fake email provider once through the worker (TD-FEE-55).",
+   "goal": "Fourth external audit F42 and F43 (D-2203; CARD-021, CARD-020, QH-004, BIZ-037; D-1826 (1), D-2011 (1)): `messaging::business_notices` checks the night hold before anything else (`app/messaging/src/business_notices.rs:460`), so `quotes::queue_emergency_card`'s group due at once for the people with \"Emergency emails at any hour\" on at an after-hours business (`app/quotes/src/emergency_card_notice.rs:110`) is held to 8 a.m. like any card; its parsed notice has no `emergency`, `subject` or `first_line` (`business_notices.rs:171`), so CARD-021's EMERGENCY subject and first line are lost; and no worker runs `messaging.business_notice` at all (`server::register_handlers` has no handler for it, D-1826 (1)). After T292 (which owns the file for the brand): (1) `business_notices.rs` reads `emergency`, `subject` and `first_line` from the payload; a notice with `emergency: true` is not held by the night rule (`quotes` already chose its recipients under QH-004 and BIZ-037, and its 8 a.m. group carries its own due time) and is sent with that subject and first line; every other notice is held as today. (2) Register `messaging.business_notice` in `server::register_handlers` (the shared `app/server/src/lib.rs`): the `NoticeSender` with the postal address from the typed settings (add the key to the shared `app/core/src/settings.rs` if no setting holds it; a missing value in test or live stops the worker's start naming the key, and in dev or ci skips this registration and (4)'s, as `twilio_config` does (`app/server/src/lib.rs:495`), so `tests/integration/tests/task_registry.rs:133`, whose stand-in settings hold no postal key, still builds the registry (both kinds stay listed in `tests/task_kinds_deferred.json`); D-3083), the `Lines` from T279's stored mode state through `messaging::api`, and the `SendChecks` (`app/messaging/src/business_notices.rs:70`): `may_text` over `businesses::api::may_text`, and `accept_by` (`:82`) through `picks::api::notice_sent` with the `ConfirmSettings` `register_handlers` already takes (D-3083). (3) T251 queues an emergency job's card notices through `queue_emergency_card` (D-2203). Tests in `tests/integration/tests/emergency_notices.rs`, run through the worker (TD-CARD-15): at 22:40 an EMERGENCY card notice reaches the fake email provider at once with CARD-021's subject and first line for a switched-on person at an after-hours business, and at 8 a.m. for the rest; an ordinary card notice at 22:40 is held to 8 a.m.; a repeat run sends nothing twice. Every existing `tests/integration/tests/business_notices.rs` case passes unchanged. Update the `messaging` and `server` `CLAUDE.md` files, `docs/architecture.md` section 10 and `docs/decisions.md`. (4) Fifth external audit AH-001 (D-2287): also register `messaging.charge_receipt` (`run_receipt_email`, `app/messaging/src/receipt_email.rs:187`, queued by `picks::money_notices`) with a `ReceiptSender` built from the same postal-address setting (D-1826 (1)), and prove in the same test file that a receipt event reaches the fake email provider once through the worker (TD-FEE-55).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -22914,13 +22922,14 @@
     "D-2203",
     "D-1826",
     "D-2011",
-    "D-2287"
+    "D-2287",
+    "D-3083"
    ],
    "cites": [],
    "budget": {
     "files": 2,
     "lines": 450,
-    "context_pct": 33
+    "context_pct": 39
    },
    "checks": [
     "Ci",
@@ -23053,7 +23062,7 @@
    "id": "T315",
    "slug": "feedback-purge-and-export-mask",
    "title": "jobs and portals: feedback words are blanked by the 3-year purge and by \"Delete my data\", and the data download masks bare domains",
-   "goal": "Fourth external audit F31 and F34 (D-2205; PRIV-009, PRIV-011, PRIV-031, JOB-017; D-1821 (4)): the homeowner's feedback words in `jobs.feedback` (her own unscrubbed text, up to 2,000 characters, shown on askhava.com when ticked) outlive both \"Delete my data\" and the 3-year text purge, because the app role has no UPDATE or DELETE on the body (`migrations/0139_jobs_feedback.sql:31`) and neither `privacy` nor `intake` may name a `jobs` table; and the \"Download my data\" masking (`app/portals/src/data_download.rs:313`) misses a bare domain (\"acmeplumbing.example\") and a phone number split across lines. (1) `migrations/0175_jobs_feedback_purge.sql` adds `body_purged_at` to `jobs.feedback`, lets the app role clear the body once (a column-scoped `UPDATE (body, body_purged_at)` grant; the existing `CHECK (char_length(btrim(body)) BETWEEN 1 AND 2000)` (`0139_jobs_feedback.sql:20`) is dropped and replaced by one that keeps that rule while `body_purged_at` is null and requires an empty body once it is set) and adds a trigger that refuses any other change to the body, so a purged body never comes back. (2) `app/jobs/src/feedback_purge.rs`, through `jobs::api`: `purge_feedback(job)` blanks the body, sets `body_purged_at` and writes one `ops` audit row (IDs only), once; `feedback::shown` never returns purged feedback, so it leaves askhava.com at once. It runs on the text stage in the purge composition (the shared `app/server/src/lib.rs`, in the handler that runs `privacy`'s decided text stage, so complaint and dispute holds apply to it as to the job text) and in the PRIV-011 path: `data_download.rs`'s confirmed delete calls it for her own jobs in the transaction of `privacy::api::delete_my_data`. (3) `data_download.rs` also masks a bare domain (two or more dot-separated labels ending in 2 to 24 letters, never a decimal number such as \"3.5\") and a run of 7 or more digits broken only by line breaks and the separators it already allows. Tests: `tests/integration/tests/feedback_purge.rs` (TD-PRIV-22) and `app/portals/src/tests/data_download_mask.rs` (TD-PRIV-23); every existing T087, T230 and purge test passes unchanged. The overseer runs an independent privacy review of the hand-in (D-2205). Update the `jobs` and `portals` `CLAUDE.md` files, `docs/architecture.md` section 10 and `docs/decisions.md`.",
+   "goal": "Fourth external audit F31 and F34 (D-2205; PRIV-009, PRIV-011, PRIV-031, JOB-017; D-1821 (4)): the homeowner's feedback words in `jobs.feedback` (her own unscrubbed text, up to 2,000 characters, shown on askhava.com when ticked) outlive both \"Delete my data\" and the 3-year text purge, because the app role has no UPDATE or DELETE on the body (`migrations/0139_jobs_feedback.sql:31`) and neither `privacy` nor `intake` may name a `jobs` table; and the \"Download my data\" masking (`app/portals/src/data_download.rs:313`) misses a bare domain (\"acmeplumbing.example\") and a phone number split across lines. (1) `migrations/0175_jobs_feedback_purge.sql` adds `body_purged_at` to `jobs.feedback`, lets the app role clear the body once (a column-scoped `UPDATE (body, body_purged_at)` grant; the existing `CHECK (char_length(btrim(body)) BETWEEN 1 AND 2000)` (`0139_jobs_feedback.sql:20`) is dropped and replaced by one that keeps that rule while `body_purged_at` is null and requires an empty body once it is set) and adds a trigger that refuses any other change to the body, so a purged body never comes back. (2) `app/jobs/src/feedback_purge.rs`, through `jobs::api`: `purge_feedback(job)` blanks the body, sets `body_purged_at` and writes one `ops` audit row (IDs only), once; `feedback::shown` never returns purged feedback, so it leaves askhava.com at once (its query in the shared `app/jobs/src/api.rs`, `:298` to `:304`, gains only that filter; D-3083). It runs on the text stage in the purge composition (the shared `app/server/src/lib.rs`, in the handler that runs `privacy`'s decided text stage, so complaint and dispute holds apply to it as to the job text) and in the PRIV-011 path: `data_download.rs`'s confirmed delete calls it for her own jobs in the transaction of `privacy::api::delete_my_data`. (3) `data_download.rs` also masks a bare domain (two or more dot-separated labels ending in 2 to 24 letters, never a decimal number such as \"3.5\") and a run of 7 or more digits broken only by line breaks and the separators it already allows. Tests: `tests/integration/tests/feedback_purge.rs` (TD-PRIV-22) and `app/portals/src/tests/data_download_mask.rs` (TD-PRIV-23); every existing T087, T230 and purge test passes unchanged. The overseer runs an independent privacy review of the hand-in (D-2205). Update the `jobs` and `portals` `CLAUDE.md` files, `docs/architecture.md` section 10 and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -23099,13 +23108,14 @@
     "D-1821",
     "D-1823",
     "D-214",
-    "D-1799"
+    "D-1799",
+    "D-3083"
    ],
    "cites": [],
    "budget": {
     "files": 5,
     "lines": 500,
-    "context_pct": 32
+    "context_pct": 37
    },
    "checks": [
     "Ci",
@@ -23178,7 +23188,7 @@
    "id": "T317",
    "slug": "inbound-text-limit-and-list-names",
    "title": "server and intake: the inbound text route applies SEC-014's new-request limit in the delivery's transaction, and LIST names each business",
-   "goal": "Fourth external audit F12 and F17 (D-2206; SEC-014, TXT-031; D-1951, D-2041 (2), D-1310): the inbound text route opens requests with no SEC-014 limit (D-1951 named the next owner of `app/server/src/inbound_text.rs` to call `intake::api::admit_new_request`; D-2041 (2) left it because `admit_new_request` counts on its own pool outside the delivery's transaction, so a 500 and resend counts twice, and the route has no open-request read), and the LIST reply names no business (`Webhooks::names` is built empty, `app/server/src/lib.rs:277`). This is a harness task only because it adopts four done tests that build `Webhooks` by name (D-2206). After T279: (1) `app/intake/src/limits.rs`: `admit_new_request` counts on the connection it is given (the delivery's transaction, so a rolled-back delivery counts nothing), keyed by the sender's vault contact (blind index; no IP, the request comes from Twilio); `intake::api` gains the read of whether the sender has an open request. The signature changes from the pool to a connection for every caller: the web-chat path calls it too (with her contact and the client IP, in the transaction that opens the request), which T103 builds and T299 wires, both after this task (D-2206). (2) `inbound_text.rs` calls it before `receive_reply` only for a homeowner sender with no open request; a refused text keeps its inbox row (so Twilio's resend is a repeat), opens nothing, is answered by nothing and raises at most one Low alert per sender per window, with no body or phone; HELP, STOP and START are handled before the limit as today. (3) `Webhooks::names` is removed: the LIST reply reads the quoted businesses' names at the time of the text through T316's `businesses::api::public_names` (D-1310's no-name fallback stays). (4) `Webhooks` gains the route's `Environment`, set from the settings in `main.rs`, which T299 passes to the AI gate (D-2065). (5) The four done tests that build `Webhooks` (`tests/integration/tests/inbound_text_route.rs`, `inbound_first_contact.rs`, `inbound_scrub_context.rs` and `app/server/tests/inbound_voice.rs`) change only in that construction (no `names`, the test environment set) and, where a test passed names for LIST, in seeding those businesses' records instead; every input, expected value and assertion stays byte-identical. Tests in `tests/integration/tests/inbound_text_guards.rs` through the served route (TD-SEC-52); every TD-TXT-12, TD-TXT-16, TD-TXT-32, TD-TXT-33, TD-CALL-14 and TD-AI-19 case passes. Update `app/server/CLAUDE.md`, `app/intake/CLAUDE.md` and `docs/decisions.md`.",
+   "goal": "Fourth external audit F12 and F17 (D-2206; SEC-014, TXT-031; D-1951, D-2041 (2), D-1310): the inbound text route opens requests with no SEC-014 limit (D-1951 named the next owner of `app/server/src/inbound_text.rs` to call `intake::api::admit_new_request`; D-2041 (2) left it because `admit_new_request` counts on its own pool outside the delivery's transaction, so a 500 and resend counts twice, and the route has no open-request read), and the LIST reply names no business (`Webhooks::names` is built empty, `app/server/src/lib.rs:277`). This is a harness task only because it adopts six done tests that build `Webhooks` by name (D-2206, D-3083). After T279: (1) `app/intake/src/limits.rs`: `admit_new_request` takes `impl Acquire<'_, Database = Postgres>` and counts on the connection it acquires (the delivery's transaction, so a rolled-back delivery counts nothing), through a connection-taking variant of `core`'s counter added in `app/core/src/rate_limit.rs` and exported through `core::api` (`hit`, `:201`, takes only `&PgPool`; it and its callers stay as they are); `&PgPool` still meets the bound, so T089's `tests/security/tests/rate_limits.rs` (`:67`, `:77`, `:87`, `:107` and the concurrent pool clones at `:182`) compiles and passes unchanged (D-3083); the count stays in the delivery's transaction, never a separate statement, because a separate count survives a rolled-back delivery and Twilio's resend counts again (D-2041 (2), D-2206), but `intake.requests_all` is one row per hour shared by every new request, so its lock must not serialize inbound texts: the count runs only for a homeowner with no open request, as the delivery's last step before `receive_reply`, with the global bucket last (`admit`'s narrowest-first order), and nothing between the count and the commit waits on the network (carrier, AI or any HTTP call), so the row is held only for the delivery's remaining database statements (D-3083); keyed by the sender's vault contact (blind index; no IP, the request comes from Twilio); `intake::api` gains the read of whether the sender has an open request. Every caller may then pass its own connection: the web-chat path calls it too (with her contact and the client IP, in the transaction that opens the request), which T103 builds and T299 wires, both after this task (D-2206). (2) `inbound_text.rs` calls it before `receive_reply` only for a homeowner sender with no open request; a refused text keeps its inbox row (so Twilio's resend is a repeat), opens nothing, is answered by nothing and raises at most one Low alert per sender per window, with no body or phone; HELP, STOP and START are handled before the limit as today. (3) `Webhooks::names` is removed: the LIST reply reads the quoted businesses' names at the time of the text through T316's `businesses::api::public_names` (D-1310's no-name fallback stays). This needs no change to `intake::replies`: `inbound_text.rs` builds the names it already passes to `receive_reply` from `intake::api::jobs_of_contact` (her jobs), `quotes::api::quoted_prices` (each job's quoted businesses) and `businesses::api::public_names`, on the delivery's connection (D-3083). (4) `Webhooks` gains the route's `Environment`, set from the settings in `main.rs`, which T299 passes to the AI gate (D-2065). (5) The six done tests that build `Webhooks` (`tests/integration/tests/inbound_text_route.rs`, `inbound_first_contact.rs`, `inbound_scrub_context.rs`, `suspension_mode.rs` (T279's, `:69`), `app/server/tests/inbound_voice.rs` and `app/server/tests/voice_confirm_line.rs` (T311's, `:95`); D-3083) change only in that construction (no `names`, the test environment set) and, where a test passed names for LIST, in seeding those businesses' records instead; every input, expected value and assertion stays byte-identical. Tests in `tests/integration/tests/inbound_text_guards.rs` through the served route (TD-SEC-52); every TD-TXT-12, TD-TXT-16, TD-TXT-32, TD-TXT-33, TD-CALL-14 and TD-AI-19 case passes. Update `app/server/CLAUDE.md`, `app/intake/CLAUDE.md` and `docs/decisions.md`.",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -23187,7 +23197,8 @@
     "T279",
     "T316",
     "T089",
-    "T262"
+    "T262",
+    "T311"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -23204,7 +23215,10 @@
     "tests/integration/tests/inbound_text_route.rs",
     "tests/integration/tests/inbound_first_contact.rs",
     "tests/integration/tests/inbound_scrub_context.rs",
-    "app/server/tests/inbound_voice.rs"
+    "app/server/tests/inbound_voice.rs",
+    "tests/integration/tests/suspension_mode.rs",
+    "app/server/tests/voice_confirm_line.rs",
+    "app/core/src/rate_limit.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -23227,13 +23241,14 @@
     "D-1951",
     "D-2041",
     "D-1310",
-    "D-2065"
+    "D-2065",
+    "D-3083"
    ],
    "cites": [],
    "budget": {
-    "files": 7,
-    "lines": 600,
-    "context_pct": 24
+    "files": 10,
+    "lines": 700,
+    "context_pct": 32
    },
    "checks": [
     "Ci",
@@ -23350,7 +23365,7 @@
    "budget": {
     "files": 6,
     "lines": 300,
-    "context_pct": 38
+    "context_pct": 43
    },
    "checks": [
     "Ci",
@@ -23613,7 +23628,7 @@
    "budget": {
     "files": 8,
     "lines": 450,
-    "context_pct": 25
+    "context_pct": 29
    },
    "checks": [
     "Ci",
@@ -24016,7 +24031,7 @@
    "budget": {
     "files": 4,
     "lines": 600,
-    "context_pct": 32
+    "context_pct": 38
    },
    "checks": [
     "Ci",
@@ -24079,7 +24094,7 @@
    "budget": {
     "files": 2,
     "lines": 500,
-    "context_pct": 31
+    "context_pct": 36
    },
    "checks": [
     "Ci",
@@ -24148,7 +24163,7 @@
    "budget": {
     "files": 3,
     "lines": 500,
-    "context_pct": 31
+    "context_pct": 36
    },
    "checks": [
     "Ci",
@@ -24303,7 +24318,8 @@
    "stage": "4",
    "module": "portals",
    "deps": [
-    "T261"
+    "T261",
+    "T317"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -24348,7 +24364,7 @@
    "budget": {
     "files": 6,
     "lines": 550,
-    "context_pct": 22
+    "context_pct": 26
    },
    "checks": [
     "Ci",
@@ -24415,7 +24431,7 @@
    "id": "T323",
    "slug": "adds-fact-sentence-start",
    "title": "ai: a new capitalized name at the start of a sentence counts as an added fact",
-   "goal": "Fourth external audit F41 (D-2209; AI-019, D-988): `adds_fact` (`app/ai/src/output_checks.rs:281`) never counts a capitalized word that starts a line or follows `.`, `!`, `?` or `:`, so \"Rheem unit is leaking.\" passes AI-019's \"adds no fact\" check when her words never named Rheem; the only case plants the name mid-sentence (`app/ai/src/tests/prop_ai_output_limits.rs:220`). After T295 (which owns the file for the brand words): a sentence-start word also counts as a new fact when it is unknown to her words, answers and photo notes and is not an ordinary sentence opener; the openers are a fixed list kept as data (`app/ai/data/sentence_openers.json`, English and Spanish function words, pronouns and the first words of the question bank and card templates; no brand or market name), read once. Check every fixed Ask Hava text the AI may echo so none trips it. Tests in `app/ai/src/tests/adds_fact_openers.rs` (TD-AI-26): \"Rheem unit is leaking.\" and \"Water heater broke. Rheem says so.\" are refused when her words never named Rheem and pass when they did; \"The water heater is leaking.\" and \"¿Cuándo empezó?\" pass; every existing `ai` output-check test passes unchanged. Update the `ai` `CLAUDE.md` and `docs/decisions.md`.",
+   "goal": "Fourth external audit F41 (D-2209; AI-019, D-988): `adds_fact` (`app/ai/src/output_checks.rs:281`) never counts a capitalized word that starts a line or follows `.`, `!`, `?` or `:`, so \"Rheem unit is leaking.\" passes AI-019's \"adds no fact\" check when her words never named Rheem; the only case plants the name mid-sentence (`app/ai/src/tests/prop_ai_output_limits.rs:220`). After T295 (which owns the file for the brand words): a sentence-start word also counts as a new fact when it is unknown to her words, answers and photo notes and is not an ordinary sentence opener; the openers are a fixed list kept as data (`app/ai/data/sentence_openers.json`, English and Spanish function words, pronouns and the first words of the question bank and card templates; no brand or market name), read once. A sentence-start word that ends in a colon is a label, and the list's labels, \"Note\" among them, are openers: the done property `a_planted_limit_breach_falls_back` plants every phrase in a sentence starting \"Note: \" (`app/ai/src/tests/prop_ai_output_limits.rs:112`), and `check_output` runs `adds_fact` before `is_contact` (`output_checks.rs:194` to `:198`), so without it that property's contact cases would end as an added fact, not a contact; a label not on the list counts like any other sentence-start word, so \"Rheem: unit is leaking.\" is refused when her words never named Rheem (AI-019 holds), and TD-AI-26 has that case and \"Note: the water heater is leaking.\" passing (D-3083). Check every fixed Ask Hava text the AI may echo so none trips it. Tests in `app/ai/src/tests/adds_fact_openers.rs` (TD-AI-26): \"Rheem unit is leaking.\" and \"Water heater broke. Rheem says so.\" are refused when her words never named Rheem and pass when they did; \"The water heater is leaking.\" and \"¿Cuándo empezó?\" pass; every existing `ai` output-check test passes unchanged. Update the `ai` `CLAUDE.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -24448,7 +24464,8 @@
    ],
    "decisions": [
     "D-2209",
-    "D-988"
+    "D-988",
+    "D-3083"
    ],
    "cites": [],
    "budget": {
@@ -25343,7 +25360,7 @@
    "budget": {
     "files": 6,
     "lines": 450,
-    "context_pct": 21
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -25740,7 +25757,7 @@
    "budget": {
     "files": 8,
     "lines": 550,
-    "context_pct": 29
+    "context_pct": 33
    },
    "checks": [
     "Ci",
@@ -25889,7 +25906,7 @@
    "budget": {
     "files": 10,
     "lines": 600,
-    "context_pct": 32
+    "context_pct": 36
    },
    "checks": [
     "Ci",
@@ -26990,6 +27007,131 @@
    "branch": "claude/task/T387-payments-coverage-margin",
    "prompt": "kit/prompts/T387.md",
    "acceptance": "The decision entry names the flapping branch with per-run evidence; five consecutive scoped runs on the hand-in head (`cargo +nightly-2026-10-15 llvm-cov --branch -p askhava-payments -p askhava-integration-tests` with the Coverage job's other flags, excludes and `--ignore-filename-regex`) each report `app/payments/` at or above 95.5% with the same covered-branch count; `tests/coverage_floor.json`, `scripts/coverage_floor.py` and every file under `app/payments/src/` are unchanged, except the new `tests/coverage_margin.rs` and the single `mod coverage_margin;` line in the shared `app/payments/src/tests/mod.rs`; no existing assertion in `free_wins.rs` is changed or removed; Ci's Coverage job passes; no test pins `refunds.rs` behaviour T380 changes."
+  },
+  {
+   "id": "T390",
+   "slug": "link-request",
+   "title": "calls and server: a blocked staff call that connects a line queues the LINK notice and one pending link holding no number",
+   "goal": "Register row IC-74, voice side (D-3079; CALL-011, CALL-003; D-1696, D-2247, D-078, D-311): nothing in production calls `request_link` (`app/calls/src/lifecycle.rs:279`, exported by `calls::api`); the voice route answers each turn through `voice_turn`/`voice_confirm` and calls nothing after a dial (`app/server/src/inbound_voice.rs:149`), so the LINK notice of CALL-011 is never sent. The reply side (the business's \"LINK <PIN>\" text) is T391's, which builds on this task. After T326 (the notice names the line's stored PIN) and T311 (an earlier owner of `inbound_voice.rs`). Which call is \"blocked\": an unlinked phone made to enter the PIN (D-078: \"the blocked caller hears the PIN prompt\"). Its business is known only once the PIN it entered connects a line, so only then is a notice queued; a call that connects no line queues nothing, because a business picked any other way could be told the last 4 digits of another business's caller. (1) `app/calls/src/link_request.rs` (new), through `calls::api`: `link_after_dial(db, vault, call_sid, caller, now)`, which the voice route (`answer` in `app/server/src/inbound_voice.rs`) calls after a turn answered with the dial: when the caller's party is `Party::Unlinked` (`routing::party_of`) and the CallSid's stored call start (`models::call_start`) names a line, it calls `request_link` for that line and, in the same transaction, when a notice was queued, stores one pending link for the line in `calls.link_request`: the line, its business, the caller's keyed digests under the vault's `sender-dir` index (`Vault::blind_index`, as `messaging.sender_directory` stores a linked phone), the request time and an expiry time 24 hours after the request; never the number, its last 4 digits or the PIN (PRIV-002, D-1696). A pending link is live only while its expiry time is still in the future: one exactly 24 hours old is no longer live (T391 refuses it). A homeowner, a linked business phone, a wrong-PIN hang-up and a repeat on the same line (`request_link`'s once-per-line rule) store nothing. A failure here is one log line naming no number, line or PIN and never changes the TwiML: the dial still answers. (2) `migrations/0185_calls_link_request.sql` (new): `calls.link_request` (the pending links) and the refused-LINK-reply counts T391 keeps (by the replying phone's keyed digest and Arizona day), neither with a number column; the app role gets only the grants `link_after_dial` and T391's `link_reply` use (one migration for both, so T391 needs no migration number and the stage-5 block does not move again). Tests in `tests/integration/tests/link_request.rs` (TD-CALL-23) through the served voice route with signed fake Twilio requests and fake numbers only. Update the `calls` and `server` `CLAUDE.md` files and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "calls",
+   "deps": [
+    "T326",
+    "T311"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "privacy"
+   ],
+   "owns": [
+    "app/calls/src/link_request.rs",
+    "app/server/src/inbound_voice.rs",
+    "migrations/0185_calls_link_request.sql",
+    "tests/integration/tests/link_request.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/calls.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "CALL-011",
+    "CALL-003"
+   ],
+   "tests": [
+    "TD-CALL-23"
+   ],
+   "decisions": [
+    "D-3079",
+    "D-1696",
+    "D-2247",
+    "D-078",
+    "D-311"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 350,
+    "context_pct": 11
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T390-link-request",
+   "prompt": "kit/prompts/T390.md",
+   "acceptance": "TD-CALL-23 passes against PostgreSQL through the served voice route; each of its cases fails on today's `main`; every TD-CALL-14, TD-CALL-17, TD-CALL-18 and other existing voice case passes unchanged; no table, log line, task payload or audit row holds a blocked number, its last 4 digits outside the notice, or a PIN."
+  },
+  {
+   "id": "T391",
+   "slug": "link-reply",
+   "title": "calls, businesses, messaging and server: the main phone's \"LINK <PIN>\" reply links the blocked phone, failing closed",
+   "goal": "Register row IC-74, reply side (D-3079; CALL-011, CALL-003, CALL-012, CALL-025; D-1696, D-2247, D-311, D-1755): T390 queues the LINK notice and stores one pending link (`calls.link_request`, the blocked caller's keyed `sender-dir` digests only, with an expiry time) after a blocked call connects a line, but no code handles the business's \"LINK <PIN>\" reply (the inbound text route sends a business phone's text only to `phone_stopped` or the auto-reply, `app/server/src/inbound_text.rs:246`), so a reply to the notice does nothing. After T390 (the pending links, the refused-reply counts and their grants, all in its `migrations/0185_calls_link_request.sql`) and T357 (the last earlier stage-4 owner of `inbound_text.rs`). (1) `app/calls/src/link_reply.rs` (new), through `calls::api`: `link_reply(conn, vault, (business, from), pin, now)`, which the inbound text route calls in the delivery's transaction for a text from a linked business phone (`Relation::Business`) that is exactly `LINK` and 4 digits (any case, surrounding spaces; any other text keeps today's path). It links only when the replying phone is the business's main phone (the owner's, CALL-012; any other phone of the business is refused) and a live pending link on an open line of that same business has a stored PIN (`pins::stored_pin`) equal to the 4 digits. A pending link is live only while its expiry time is still in the future (`now < expiry`), so one exactly 24 hours old is refused. Then, in one transaction: a new `businesses.staff_phone`, linked as by the owner so it works at once (BIZ-033), through `businesses::api` (`app/businesses/src/reply_link.rs`, new; one `businesses.phone_linked` audit row naming IDs only); the pending digests put in the sender directory for that phone through `messaging::api` (`app/messaging/src/sender_pending.rs`, new; a digest another phone already holds refuses the link); and the pending link used up, its digests deleted. Everything else fails closed with no change and the same outcome: a wrong PIN, the PIN of another business's line (the lookup is by the replying business), a pending link no longer live or already used (so a replayed LINK), a closed line, no pending link. At most 3 refused LINK replies per replying phone per Arizona day (the per-call PIN count of CALL-025), counted by the phone's keyed digest, never its number; past that, every LINK from it that day is refused without the PIN being compared, so the reply is no PIN oracle. Pending links no longer live and used ones are deleted when met. A LINK text gets no auto-reply and no text answer (no new customer copy; a confirmation text is listed for Casey, D-3079). The email's \"Link this phone\" page (`ActionKind::LinkPhone`, T148's) can call the same link step later; wiring its button is not this task's. (2) `app/server/src/inbound_text.rs`: the LINK branch above. Tests in `tests/integration/tests/link_reply.rs` (TD-CALL-24) through the served voice and inbound text routes with signed fake Twilio requests and fake numbers only. Update the `calls`, `businesses`, `messaging` and `server` `CLAUDE.md` files and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "calls",
+   "deps": [
+    "T390",
+    "T357"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "privacy"
+   ],
+   "owns": [
+    "app/calls/src/link_reply.rs",
+    "app/businesses/src/reply_link.rs",
+    "app/messaging/src/sender_pending.rs",
+    "app/server/src/inbound_text.rs",
+    "tests/integration/tests/link_reply.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/calls.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "CALL-011",
+    "CALL-003",
+    "CALL-012",
+    "CALL-025"
+   ],
+   "tests": [
+    "TD-CALL-24"
+   ],
+   "decisions": [
+    "D-3079",
+    "D-1696",
+    "D-2247",
+    "D-311",
+    "D-1755"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 5,
+    "lines": 500,
+    "context_pct": 13
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T391-link-reply",
+   "prompt": "kit/prompts/T391.md",
+   "acceptance": "TD-CALL-24 passes against PostgreSQL through the served routes; each of its cases fails on `main` with T390 merged; every TD-CALL-23, TD-BIZ-39 and other existing inbound text and voice case passes unchanged; no table, log line, task payload or audit row holds a blocked number or a PIN."
   },
   {
    "id": "T392",

@@ -11,6 +11,11 @@
 //! address: none is read here (PICK-010). It is `noindex`, `no-store` and behind the cross-site
 //! refusal, so a cross-site POST is refused (TD-PICK-05). `static/quote_page.ts` polls this same
 //! page to add new quotes; without JavaScript a reload does the same (D-492).
+//!
+//! T388 (PICK-042, PICK-054, D-3078): while the job's pick is `paid` or `free`
+//! (`picks::api::accepted_pick`) and the token works, the page shows that quote above the list as
+//! the quote she accepted (number, type, amount, earliest visit, the business's own words) with
+//! the "Add Ask Hava to your contacts" card; no name, phone or address.
 
 use std::sync::Arc;
 
@@ -19,7 +24,8 @@ use askhava_core::api::{Clock, LinkToken};
 use askhava_intake::api::paused_by_homeowner;
 use askhava_jobs::api::quote_token::resolve;
 use askhava_jobs::api::{current, job_number};
-use askhava_quotes::api::{PageQuote, page_quotes};
+use askhava_picks::api::accepted_pick;
+use askhava_quotes::api::{AcceptedQuote, PageQuote, accepted_quote, page_quotes};
 use axum::Router;
 use axum::extract::{Path, Request, State};
 use axum::http::{HeaderName, HeaderValue, StatusCode};
@@ -71,6 +77,33 @@ pub fn token_expired(is_final: bool, closed_at: Timestamp, now: Timestamp) -> bo
     is_final && now.duration_since(closed_at) >= TOKEN_LIFE_AFTER_CLOSE
 }
 
+/// The quote she accepted, as the page shows it (PICK-042): English, as the page is (D-1236).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct Accepted {
+    /// Its number on the page.
+    pub(crate) number: usize,
+    /// Its type ("Firm price").
+    pub(crate) kind: &'static str,
+    /// The amount as stored.
+    pub(crate) amount: String,
+    /// The earliest visit day, if given.
+    pub(crate) visit: Option<String>,
+    /// The business's own words.
+    pub(crate) words: String,
+}
+
+impl From<AcceptedQuote> for Accepted {
+    fn from(q: AcceptedQuote) -> Self {
+        Self {
+            number: q.number,
+            kind: q.kind(false),
+            amount: q.amount(false),
+            visit: q.visit(false),
+            words: q.original,
+        }
+    }
+}
+
 /// The quote page's state: the pool and the clock the 30-day rule reads.
 #[derive(Clone)]
 struct QuotePage {
@@ -94,6 +127,37 @@ pub(crate) struct PageView {
     pub(crate) csrf: String,
     /// The quotes in arrival order (PICK-008).
     pub(crate) quotes: Vec<Numbered>,
+}
+
+impl PageView {
+    /// The page alone shows no accepted quote; [`ShownPage`] adds it (PICK-042, D-3078).
+    pub(crate) const fn accepted(&self) -> Option<&Accepted> {
+        None
+    }
+}
+
+/// The served page: [`PageView`] (its fields read through `Deref`) and the quote she accepted,
+/// while the job's pick is `paid` or `free` (PICK-042, D-3078).
+#[derive(Template)]
+#[template(path = "quote_page.html")]
+struct ShownPage {
+    page: PageView,
+    accepted_quote: Option<Accepted>,
+}
+
+impl ShownPage {
+    /// The accepted quote the template shows above the list, if any (PICK-042).
+    const fn accepted(&self) -> Option<&Accepted> {
+        self.accepted_quote.as_ref()
+    }
+}
+
+impl std::ops::Deref for ShownPage {
+    type Target = PageView;
+
+    fn deref(&self) -> &PageView {
+        &self.page
+    }
 }
 
 /// Why the page could not be built; logged once, with no value (rust-production R5).
@@ -161,7 +225,7 @@ async fn load(
     page: &QuotePage,
     token: &LinkToken,
     csrf: String,
-) -> Result<Option<PageView>, PageError> {
+) -> Result<Option<ShownPage>, PageError> {
     let mut db = page.pool.acquire().await.map_err(|_| PageError::Read)?;
     let Some(job) = resolve(&mut db, token).await.map_err(|_| PageError::Read)? else {
         return Ok(None);
@@ -184,12 +248,30 @@ async fn load(
     let quotes = page_quotes(&mut db, job)
         .await
         .map_err(|_| PageError::Read)?;
-    Ok(Some(PageView {
+    let view = PageView {
         request,
         still_open,
         live: !is_final,
         pick_open: row.status.takes_pick(),
         csrf,
         quotes: number_quotes(quotes),
+    };
+    Ok(Some(ShownPage {
+        page: view,
+        accepted_quote: accepted(&mut db, job).await?,
     }))
+}
+
+/// PICK-042, D-3078: the quote of `job`'s `paid` or `free` pick, or none.
+async fn accepted(
+    db: &mut sqlx::PgConnection,
+    job: sqlx::types::Uuid,
+) -> Result<Option<Accepted>, PageError> {
+    let Some(pick) = accepted_pick(db, job).await.map_err(|_| PageError::Read)? else {
+        return Ok(None);
+    };
+    let quote = accepted_quote(db, (job, pick.business))
+        .await
+        .map_err(|_| PageError::Read)?;
+    Ok(quote.map(Accepted::from))
 }

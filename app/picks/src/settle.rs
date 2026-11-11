@@ -16,13 +16,19 @@
 //! 30 days is never reopened and a job whose line is open is left alone, and only while the pick
 //! is still `paid` or `free` (`status::release_shown_codes`, D-2017); a failure is the task's
 //! error, so the worker's retries and dead letter apply, and the release's High alert stays.
+//!
+//! The move is the Confirm (PICK-042, T388, D-3074): in the same transaction [`settle`] queues one
+//! [`ACCEPTED_QUOTE_KIND`] task (pick, job and business IDs only, deduped per pick), whose
+//! handler (`intake`'s) emails the homeowner a copy of the accepted quote; [`accepted_pick`] is the
+//! read of a job's `paid` or `free` pick that handler and the quote page use.
 
 use askhava_adapters::api::MaskedPool;
 use askhava_calls::api::{Connected, assign_number, job_had_line};
-use askhava_core::api::{Claimed, HandlerError};
+use askhava_core::api::{Claimed, HandlerError, NewTask, enqueue};
 use askhava_ops::api::{Actor, AuditEntry, Change, audit};
 use askhava_payments::api::Releasable;
 use jiff::Timestamp;
+use serde_json::json;
 use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
 
@@ -31,6 +37,9 @@ use crate::status::{release_shown_codes, release_status, settle_action, settle_s
 
 /// The masked-line retry task a failed line queues, one per pick (CALL-001, D-1688).
 pub const LINE_RETRY_KIND: &str = "picks.line_retry";
+
+/// The task a Confirm queues for the homeowner's accepted-quote email, one per pick (PICK-042).
+pub const ACCEPTED_QUOTE_KIND: &str = "picks.accepted_quote";
 
 const RETRY_FAILED: HandlerError = HandlerError("masked line retry failed");
 
@@ -66,7 +75,7 @@ pub enum Settled {
 pub async fn settle(tx: &mut PgConnection, cleared: &Releasable) -> Result<Settled, PicksError> {
     let (pick, want) = (cleared.pick(), release_status(cleared.basis()));
     let row = sqlx::query!(
-        r#"SELECT job_id, status, ended_at IS NOT NULL AS "ended!"
+        r#"SELECT job_id, business_id, status, ended_at IS NOT NULL AS "ended!"
            FROM picks.pick WHERE id = $1 FOR UPDATE"#,
         pick
     )
@@ -100,7 +109,59 @@ pub async fn settle(tx: &mut PgConnection, cleared: &Releasable) -> Result<Settl
         change: Change::Action,
     };
     audit(tx, &entry).await.map_err(|_| PicksError::Audit)?;
+    queue_accepted_quote(tx, pick, (row.job_id, row.business_id)).await?;
     Ok(Settled::Moved(row.job_id))
+}
+
+/// PICK-042, D-3074: queues the accepted-quote email's task for `pick` of `job` and `business` in
+/// the settle's transaction, IDs only (PRIV-002), once per pick.
+async fn queue_accepted_quote(
+    tx: &mut PgConnection,
+    pick: Uuid,
+    (job, business): (Uuid, Uuid),
+) -> Result<(), PicksError> {
+    let payload = json!({"pick": pick, "job": job, "business": business});
+    let mut task = NewTask::new(ACCEPTED_QUOTE_KIND, payload, Timestamp::now());
+    task.dedupe_key = Some(format!("{ACCEPTED_QUOTE_KIND}.{pick}"));
+    enqueue(tx, &task)
+        .await
+        .map(|_| ())
+        .map_err(|_| PicksError::Database)
+}
+
+/// A job's accepted pick: the pick and the business whose quote the homeowner accepted.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct AcceptedPick {
+    /// The pick, `paid` or `free`.
+    pub pick: Uuid,
+    /// The business whose quote it is.
+    pub business: Uuid,
+}
+
+/// PICK-042, PICK-011, D-3074: `job`'s pick that is `paid` or `free` now and not ended (at most one:
+/// a job's pick settles once), or none; the quote page shows its quote and the accepted-quote
+/// email goes only while this answers that pick.
+///
+/// # Errors
+/// [`PicksError::Database`].
+pub async fn accepted_pick(
+    db: &mut PgConnection,
+    job: Uuid,
+) -> Result<Option<AcceptedPick>, PicksError> {
+    let row = sqlx::query!(
+        "SELECT id, business_id FROM picks.pick
+         WHERE job_id = $1 AND status = ANY($2) AND ended_at IS NULL
+         ORDER BY picked_at DESC LIMIT 1",
+        job,
+        &release_shown_codes()
+    )
+    .fetch_optional(db)
+    .await
+    .map_err(|_| PicksError::Database)?;
+    Ok(row.map(|r| AcceptedPick {
+        pick: r.id,
+        business: r.business_id,
+    }))
 }
 
 /// The [`LINE_RETRY_KIND`] handler: opens the released job's masked line from `masked` for the

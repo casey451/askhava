@@ -1,6 +1,7 @@
 //! In-crate tests for `askhava-payments`.
 
 mod charge;
+mod coverage_margin;
 mod fee_at_pick;
 mod fee_tiers;
 mod ledger_append;
