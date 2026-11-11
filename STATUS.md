@@ -1,26 +1,26 @@
 # Ask Hava build status
 
-Updated 2026-11-11T12:42:57Z by runner 790d4ec251b2 (actions).
+Updated 2026-11-11T12:59:47Z by runner 8eba59454470 (actions).
 
-**Building: T333 in progress since 12:24Z; 203 of 372 done; week 66% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T333 in progress since 12:24Z; 204 of 372 done; week 66% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 203 of 372 build tasks (owner gates not counted)
+- **Tasks done:** 204 of 372 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 3: T333 claimed 12:24Z, lease until 15:24Z
 - **Week:** 66% used, 59.1M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:42Z, 0 min before this update
+- **Last run:** 12:43Z, 16 min before this update
 - **Keeper:** last ran 12:42Z, next wake 15:26Z
 
 ## Needs attention
 - BLOCKED T332: plan gap reported: PLAN GAP: tests/integration/tests/confirm_and_pay.rs:393-413 (td_fee_25_an_ended_pick_is_never_cleared, TD-FEE-25, T189 DONE; also owned by T287, T337, T352; not T332) asserts paid_release on an ended pick with a verified success stores nothing (evidence empty line ~408, attempt stays "processing" line ~413). T332 goal part (2) and D-2290 require paid_release to store the success and evidence and call late_success, then answer PickEnded. No implementation passes both. D-2290 and D-2970 do not name confirm_and_pay.rs. Smallest plan change: T332 may also change only that test's two "stores nothi; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T332 --plan-fix D-### --reason "..."` (D-2859)
-- Strict plan check red: 18 problem(s) on tasks still to run (+25 on DONE tasks); first: T255: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 21 problem(s) on tasks still to run (+31 on DONE tasks); first: T255: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T332 | payments (harness): a late success has its own refund trigge | BLOCKED | 2 | 2 min | 12:40Z | PLAN GAP: tests/integration/tests/confirm_and_pay.rs:393-413 (td_fee_25_an_ended_pick_is_never_cleared, TD-FEE-25, T189  |
 | T332 | payments (harness): a late success has its own refund trigge | BLOCKED | 1 | 11 min | 12:10Z |  |
-| T164 | quotes: one quote format per category, screened notes, and e | MERGE_PENDING | 3 | 19 min | 12:02Z | merging main into the reviewed head conflicts in app/quotes/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T164 | quotes: one quote format per category, screened notes, and e | done | 3 | 19 min | 12:02Z | merging main into the reviewed head conflicts in app/quotes/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T331 | payments (harness): a payment success with no readable pick  | done | 1 | 49 min | 11:35Z |  |
 | T164 | quotes: one quote format per category, screened notes, and e | resync | 3 | 12 min | 11:31Z |  |
 | T164 | quotes: one quote format per category, screened notes, and e | check_failed | 2 | 39 min | 11:00Z |  |
@@ -89,8 +89,8 @@ Updated 2026-11-11T12:42:57Z by runner 790d4ec251b2 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 208 of 733 (28.4%) · partial 344 · unstarted 181
-**Tasks merged (throughput only):** 203 of 372
+**Requirements verified:** 213 of 733 (29.1%) · partial 342 · unstarted 178
+**Tasks merged (throughput only):** 204 of 372
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -99,17 +99,17 @@ Updated 2026-11-11T12:42:57Z by runner 790d4ec251b2 (actions).
 | businesses | 16 | 35 | 7 | 58 |
 | calls | 11 | 13 | 1 | 25 |
 | consent | 8 | 23 | 4 | 35 |
-| fees | 10 | 41 | 1 | 52 |
+| fees | 13 | 38 | 1 | 52 |
 | intake | 19 | 18 | 6 | 43 |
 | job-cards | 13 | 9 | 2 | 24 |
-| licensing | 24 | 24 | 0 | 48 |
+| licensing | 25 | 23 | 0 | 48 |
 | lifecycle | 18 | 10 | 0 | 28 |
 | messaging | 18 | 24 | 3 | 45 |
 | ops-recovery | 2 | 6 | 46 | 54 |
 | privacy | 6 | 23 | 2 | 31 |
 | quiet-hours | 4 | 5 | 0 | 9 |
-| quotes-pick | 25 | 24 | 7 | 56 |
-| recurring | 5 | 3 | 3 | 11 |
+| quotes-pick | 25 | 27 | 4 | 56 |
+| recurring | 6 | 2 | 3 | 11 |
 | security | 6 | 43 | 6 | 55 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 3 | 25 | 28 |
@@ -125,7 +125,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 83 of 164 done
+- stage 4: 84 of 164 done
 - stage 5: 0 of 58 done
 - stage 6: 0 of 34 done
 - stage 7: 0 of 2 done
