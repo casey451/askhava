@@ -33,8 +33,9 @@ pub use crate::backup_address::{
     request_backup,
 };
 pub use crate::capability::{
-    Capability, CapabilityAnswers, LARGEST_JOB_MAX_CENTS, LargestJob, OfferRow, TradeOffer,
-    capabilities, checklist_offer, is_recurring, kept_ticks, pre_ticked, save_capability,
+    Capability, CapabilityAnswers, LARGEST_JOB_MAX_CENTS, LICENSE_CHANGE_KIND, LargestJob,
+    OfferRow, Reapplied, TradeOffer, capabilities, checklist_offer, is_recurring, kept_ticks,
+    license_change, license_change_words, pre_ticked, reapply_license, save_capability,
     whole_dollars,
 };
 pub use crate::channel_preference::{
