@@ -2220,3 +2220,11 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **What changed.** That one line of the older test now expects "already queued" at the later report. The test still checks that you get exactly one alert and exactly one refund job; only which step queues it first moved. Nothing else in that test changes, beyond the refund label change planned on November 9.
 - **Also fixed.** The November 9 note gave this step's database change number 0176; a later change already moved it to 0177, and the plan now says so.
 - **Nothing needs you now.**
+
+## The build now works four tasks at once (plan change, D-2986, November 11)
+
+- **What changed.** You asked to speed the build up. Since this morning the token pacer almost never held a task back; the number of lanes did. The runner now works up to four tasks side by side instead of three.
+- **What stays the same.** Two tasks side by side still never touch the same files or sit in different stages. If one extra lane fails twice in a row for a harness reason, the runner drops to one lane by itself and tells you why.
+- **Cost.** About 62M tokens are left this week before Thursday's 17:00 UTC reset; four lanes will use them sooner, as you said is fine. With more branches open at once, tasks will more often need `main` merged in before they land.
+- **Undo.** Setting the lane count back to 3 is a one-line logged change.
+- **Nothing needs you now.**
