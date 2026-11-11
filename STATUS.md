@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T17:24:22Z by runner 877da5613137 (actions).
+Updated 2026-11-11T17:27:35Z by runner 50a51df4b7da (actions).
 
 **Building: T332 in progress since 17:24Z; 208 of 373 done; week 70% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,13 +8,13 @@ Updated 2026-11-11T17:24:22Z by runner 877da5613137 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 3: T332 claimed 17:24Z, lease until 20:24Z
 - **Week:** 70% used, 54.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:22Z, 2 min before this update
+- **Last run:** 17:26Z, 1 min before this update
 - **Keeper:** last ran 17:22Z, next wake 17:42Z
 
 ## Needs attention
 - PLAN GAP T232 (since 2026-11-11T17:19:47Z, no attempt used; a plan change fixes it): T232: dependency T214 is DONE but its owned file app/picks/src/share_consent.rs is not on main; T232: dependency T214 is DONE but its owned file app/picks/src/cant_take.rs is not on main; T232: dependency T214 is DONE but its owned file tests/integration/tests/share_and_cant_take.rs is not on main; T232: dependency T214 is DONE but its owned file migrations/0158_picks_share_box.sql is not on main
 - PLAN GAP T386 (since 2026-11-11T17:19:47Z, no attempt used; a plan change fixes it): T386: dependency T214 is DONE but its owned file app/picks/src/share_consent.rs is not on main; T386: dependency T214 is DONE but its owned file app/picks/src/cant_take.rs is not on main; T386: dependency T214 is DONE but its owned file tests/integration/tests/share_and_cant_take.rs is not on main; T386: dependency T214 is DONE but its owned file migrations/0158_picks_share_box.sql is not on main
-- Strict plan check red: 22 problem(s) on tasks still to run (+40 on DONE tasks); first: T340: stored context_pct 35% but it measures 39%; regenerate
+- Strict plan check red: 26 problem(s) on tasks still to run (+44 on DONE tasks); first: T340: stored context_pct 35% but it measures 39%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -105,7 +105,7 @@ Updated 2026-11-11T17:24:22Z by runner 877da5613137 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 210 of 733 (28.6%) · partial 347 · unstarted 176
+**Requirements verified:** 220 of 733 (30.0%) · partial 337 · unstarted 176
 **Tasks merged (throughput only):** 208 of 373
 
 | Area | Verified | Partial | Unstarted | Total |
@@ -116,20 +116,20 @@ Updated 2026-11-11T17:24:22Z by runner 877da5613137 (actions).
 | calls | 11 | 13 | 1 | 25 |
 | consent | 8 | 23 | 4 | 35 |
 | fees | 13 | 38 | 1 | 52 |
-| intake | 19 | 18 | 6 | 43 |
+| intake | 22 | 15 | 6 | 43 |
 | job-cards | 13 | 9 | 2 | 24 |
 | licensing | 25 | 23 | 0 | 48 |
 | lifecycle | 18 | 10 | 0 | 28 |
 | messaging | 18 | 24 | 3 | 45 |
 | ops-recovery | 2 | 6 | 46 | 54 |
-| privacy | 6 | 23 | 2 | 31 |
+| privacy | 7 | 22 | 2 | 31 |
 | quiet-hours | 4 | 5 | 0 | 9 |
-| quotes-pick | 24 | 30 | 2 | 56 |
+| quotes-pick | 29 | 25 | 2 | 56 |
 | recurring | 6 | 2 | 3 | 11 |
 | security | 6 | 43 | 6 | 55 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 3 | 25 | 28 |
-| wording | 1 | 6 | 25 | 32 |
+| wording | 2 | 5 | 25 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
