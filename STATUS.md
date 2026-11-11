@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T07:21:16Z by runner 946202fb2ebb (actions).
+Updated 2026-11-11T07:37:06Z by runner 4b70d894e350 (actions).
 
 **Building: T327 in progress since 05:24Z; 197 of 370 done; week 62% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,16 +8,16 @@ Updated 2026-11-11T07:21:16Z by runner 946202fb2ebb (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 3: T327 claimed 05:24Z, lease until 08:24Z
 - **Week:** 62% used, 71.5M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:21Z, 0 min before this update
+- **Last run:** 07:21Z, 15 min before this update
 - **Keeper:** last ran 07:21Z, next wake 08:27Z
 
 ## Needs attention
-- Strict plan check red: 6 problem(s) on tasks still to run (+16 on DONE tasks); first: T100: stored context_pct 41% but it measures 45%; regenerate
+- Strict plan check red: 6 problem(s) on tasks still to run (+13 on DONE tasks); first: T126: stored context_pct 56% but it measures 60%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T212 | intake: photo asks with on-server checks and preview, inspir | MERGE_PENDING | 1 | 56 min | 07:20Z |  |
+| T212 | intake: photo asks with on-server checks and preview, inspir | check_failed | 1 | 56 min | 07:20Z | Ci: failure; Coverage: failure; Checks: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned |
 | T383 | messaging and portals: the text templates and the homeowner  | done | 1 | 20 min | 05:39Z |  |
 | T337 | payments (harness): a $0 release proof is bound to the pick' | BLOCKED | 3 | 16 min | 05:11Z | T337 built and committed (53e675b1, cf42d54e); smoke/prehandin red on tests T337 does not own: confirm_and_pay.rs td_fee |
 | T209 | picks and payments: the optional auto-confirm-and-pay box wi | done | 1 | 115 min | 05:06Z |  |
