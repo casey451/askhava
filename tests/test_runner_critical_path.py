@@ -125,8 +125,8 @@ def held_by_flight(tasks: list[dict[str, Any]], state: st.State) -> set[str]:
 
 def check_top_claim(tasks: list[dict[str, Any]], state: st.State) -> None:
     """The property the critical-path order promises on any state, computed over what the runner can claim
-    (`st.eligible` never offers a task in flight, D-3057): resync work first in state order (D-891); after
-    it the longest chain heads the order, and the longest open chain outside the in-flight work starts at a
+    (`st.eligible` never offers a task in flight, D-3057): resync work first (D-891); within the resync
+    group and within the rest the longest chain goes first (state order breaks ties), and the longest open chain outside the in-flight work starts at a
     claimable task. Catches: dependents read the wrong way round (deps instead of dependents)."""
     chains = cycle.chain_lengths(tasks, state)
     finished = (st.DONE, st.SKIPPED)
@@ -140,11 +140,11 @@ def check_top_claim(tasks: list[dict[str, Any]], state: st.State) -> None:
     assert max(chains[i] for i in ready) == max(chains[i] for i in open_ids)  # the longest open chain starts ready
     ordered = cycle.claim_order(ready, state, (), chains)
     resync = [i for i in ready if st.entry(state, i).get("resync")]
-    assert ordered[:len(resync)] == resync
-    rest = ordered[len(resync):]
-    if rest:
-        assert chains[rest[0]] == max(chains[i] for i in rest)
-        assert [chains[i] for i in rest] == sorted((chains[i] for i in rest), reverse=True)
+    assert set(ordered[:len(resync)]) == set(resync)
+    for group in (ordered[:len(resync)], ordered[len(resync):]):
+        if group:
+            assert chains[group[0]] == max(chains[i] for i in group)
+            assert [chains[i] for i in group] == sorted((chains[i] for i in group), reverse=True)
 
 
 def test_on_the_real_plan_the_top_claim_heads_the_longest_open_chain() -> None:
@@ -182,6 +182,20 @@ def test_work_in_flight_at_the_head_of_the_longest_chain_is_not_a_failure() -> N
     assert held_by_flight(tasks, s) == {"T002", "T003", "T004", "T005", "T007"}
     check_top_claim(tasks, s)
     assert cycle.claim_order(["T001", "T006"], s, (), chains) == ["T006", "T001"] and chains["T001"] == 3
+
+
+def test_two_claimable_resync_tasks_are_ordered_by_chain() -> None:
+    """Two claimable tasks with a resync note: both go before the rest (D-891), the longer chain of the two
+    first, not state order (`claim_order` keys resync, then `claim_first`, then chain). Catches: a check
+    that demands state order inside the resync group (the first draft of D-3057 did)."""
+    tasks = [make_task("T001"), make_task("T002"), make_task("T003"), make_task("T004", deps=["T002"]),
+             make_task("T005", deps=["T003"]), make_task("T006", deps=["T005"])]
+    s = st.sync_graph(st.new_state(), tasks)
+    for tid in ("T001", "T002"):
+        s = st.with_task(s, tid, resync={"attempt": 1, "from": "h", "paths": [], "at": "x"})
+    chains = cycle.chain_lengths(tasks, s)
+    assert cycle.claim_order(["T001", "T002", "T003"], s, (), chains) == ["T002", "T001", "T003"]
+    check_top_claim(tasks, s)
 
 
 def test_a_graph_the_chain_count_cannot_read_falls_back_to_state_order(tmp_path: Path, capsys: Any) -> None:
