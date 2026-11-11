@@ -1,24 +1,24 @@
 # Ask Hava build status
 
-Updated 2026-11-11T03:09:29Z by runner daef586a5cd2 (actions).
+Updated 2026-11-11T03:10:45Z by runner fdd6e540e3c3 (actions).
 
-**Idle since 03:08Z; 193 of 362 done; week 57% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 03:08Z; 194 of 362 done; week 57% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 193 of 362 build tasks (owner gates not counted)
+- **Tasks done:** 194 of 362 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 03:08Z (no task in progress)
 - **Week:** 57% used, 78.3M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:09Z, 0 min before this update
+- **Last run:** 03:09Z, 1 min before this update
 - **Keeper:** last ran 03:09Z, next wake 03:29Z
 
 ## Needs attention
-- nothing
+- Strict plan check red: 1 problem(s) on tasks still to run (+4 on DONE tasks); first: T210: stored context_pct 14% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T374 | licensing and businesses: one read of everything a business  | MERGE_PENDING | 1 | 45 min | 03:08Z |  |
-| T157 | picks: the homeowner's backup choice at the pick | MERGE_PENDING | 2 | 22 min | 02:41Z | E2e: failure; Ally: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-1 |
+| T157 | picks: the homeowner's backup choice at the pick | done | 2 | 22 min | 02:41Z | E2e: failure; Ally: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-1 |
 | T157 | picks: the homeowner's backup choice at the pick | check_failed | 1 | 66 min | 02:10Z |  |
 | T337 | payments: a $0 release proof is bound to the pick's own stor | QUEUED | 1 | 31 min | 02:07Z | T337 code+tests done (commit 6b896e8f) but smoke/prehandin red: tests/integration/tests/confirm_and_pay.rs td_fee_25_a_p |
 | T349 | calls: a PIN draw fails only when the OS source fails, and o | done | 1 | 36 min | 00:40Z |  |
@@ -60,8 +60,8 @@ Updated 2026-11-11T03:09:29Z by runner daef586a5cd2 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 206 of 733 (28.1%) · partial 336 · unstarted 191
-**Tasks merged (throughput only):** 193 of 362
+**Requirements verified:** 206 of 733 (28.1%) · partial 337 · unstarted 190
+**Tasks merged (throughput only):** 194 of 362
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -79,7 +79,7 @@ Updated 2026-11-11T03:09:29Z by runner daef586a5cd2 (actions).
 | ops-recovery | 2 | 5 | 47 | 54 |
 | privacy | 6 | 22 | 3 | 31 |
 | quiet-hours | 4 | 5 | 0 | 9 |
-| quotes-pick | 25 | 21 | 10 | 56 |
+| quotes-pick | 25 | 22 | 9 | 56 |
 | recurring | 5 | 3 | 3 | 11 |
 | security | 6 | 43 | 6 | 55 |
 | terms | 0 | 3 | 32 | 35 |
@@ -96,7 +96,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 73 of 158 done
+- stage 4: 74 of 158 done
 - stage 5: 0 of 58 done
 - stage 6: 0 of 30 done
 - stage 7: 0 of 2 done
