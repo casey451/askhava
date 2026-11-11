@@ -373,7 +373,144 @@ pub fn parse_quote(form: QuoteForm, rules: &QuoteRules) -> Result<Quote, Bounce>
 
 /// PICK-007: a text bounces when the card gate (CARD-008) would cut any word of it, or when it
 /// holds a carrier-restricted phrase (CARD-010); one gate decides both, so cards and quotes agree.
+/// The gate reads line by line, so each check runs twice: on the text as written and on the
+/// whole field with every whitespace run (line feed, carriage return, tab, no-break space)
+/// folded to one space, and either view bounces (D-2334): "555\n123\n4567" is a phone number.
 pub(crate) fn text_bounce(text: &str) -> Result<(), Bounce> {
+    for view in [text, folded(text).as_str()] {
+        view_bounce(view)?;
+    }
+    Ok(())
+}
+
+/// PICK-007, D-2334, D-3019, D-3021, D-3022: `text` with every whitespace run folded to one
+/// space, with two exceptions. A run that splits a domain goes ([`joins`]), so "example\n.com"
+/// and "example.\ncom" read as the domain they are. A line break inside a list of numbers stays
+/// a line break unless the list holds a phone-shaped run ([`kept_breaks`]), so "Sizes\n24\n36"
+/// passes and "555\n123\n4567" bounces.
+fn folded(text: &str) -> String {
+    let pieces = pieces(text);
+    let keep = kept_breaks(&pieces);
+    let mut out = String::with_capacity(text.len());
+    for (&(piece, _), kept) in pieces.iter().zip(keep) {
+        if kept {
+            out.push('\n');
+        } else if !out.is_empty() && !joins(&out, piece) {
+            out.push(' ');
+        }
+        out.push_str(piece);
+    }
+    out
+}
+
+/// D-3019: each whitespace-free piece of `text`, with whether a line break comes before it.
+fn pieces(text: &str) -> Vec<(&str, bool)> {
+    let mut out = Vec::new();
+    let mut broke = false;
+    for line in text.split(['\n', '\r']) {
+        for piece in line.split_whitespace() {
+            out.push((piece, broke));
+            broke = false;
+        }
+        broke = !out.is_empty();
+    }
+    out
+}
+
+/// The top-level domains a split domain is rejoined on (D-3021).
+const SPLIT_TLDS: [&str; 8] = ["com", "net", "org", "biz", "us", "io", "co", "info"];
+
+/// PICK-007, D-3019, D-3021: whether `piece` joins the end of `out` with no space: a piece that
+/// is a lone "." or "." and a letter ("example\n.com"), or one that, with the letters after the
+/// last dot of `out`'s last word, spells a common top-level domain ("example.\ncom",
+/// "example.c\nom"). "Pump replaced.\nParts included" stays two words.
+fn joins(out: &str, piece: &str) -> bool {
+    let mut chars = piece.chars();
+    if chars.next() == Some('.') && chars.next().is_none_or(char::is_alphabetic) {
+        return true;
+    }
+    let last = out.rsplit([' ', '\n']).next().unwrap_or_default();
+    let Some((host, tail)) = last.rsplit_once('.') else {
+        return false;
+    };
+    let core = piece.trim_end_matches(|c: char| !c.is_alphanumeric());
+    host.chars().filter(|c| c.is_alphanumeric()).count() >= 2
+        && tail.len() <= 2
+        && tail.chars().all(|c| c.is_ascii_alphabetic())
+        && core.chars().all(|c| c.is_ascii_alphabetic())
+        && SPLIT_TLDS.contains(&format!("{tail}{core}").to_lowercase().as_str())
+}
+
+/// A piece of a number run: its digit count, or a number word (D-3022).
+#[derive(Clone, Copy)]
+enum Count {
+    Digits(usize),
+    Word,
+}
+
+/// D-3022: a piece of only digits (the letter O counts, as in the card gate) and price or phone
+/// punctuation counts its digits; a word the card gate reads as a number word (three in a row
+/// are cut) is a `Word`; anything else ends a run.
+fn count(piece: &str) -> Option<Count> {
+    let digit = |c: char| c.is_ascii_digit() || matches!(c, 'o' | 'O');
+    if piece.chars().any(|c| c.is_ascii_digit())
+        && piece.chars().all(|c| digit(c) || "$()-+./#,:".contains(c))
+    {
+        return Some(Count::Digits(piece.chars().filter(|&c| digit(c)).count()));
+    }
+    let core = piece.trim_matches(|c: char| !c.is_alphanumeric());
+    let probe = format!("{core} {core} {core}");
+    (!core.is_empty() && core.chars().all(char::is_alphabetic) && final_gate(&probe) != probe)
+        .then_some(Count::Word)
+}
+
+/// PICK-007, D-3022: for each piece, whether the line break before it is kept in the folded
+/// view: only a break between two pieces of one number run, and only when the run is not
+/// phone-shaped ([`phone_shaped`]).
+fn kept_breaks(pieces: &[(&str, bool)]) -> Vec<bool> {
+    let counts: Vec<Option<Count>> = pieces.iter().map(|&(p, _)| count(p)).collect();
+    let mut keep = vec![false; pieces.len()];
+    let mut start = 0;
+    while start < pieces.len() {
+        let end = (start..pieces.len())
+            .find(|&i| counts[i].is_none())
+            .unwrap_or(pieces.len());
+        let run: Vec<Count> = counts[start..end].iter().flatten().copied().collect();
+        if end > start + 1 && !phone_shaped(&run) {
+            let inside = start + 1..end;
+            for (kept, &(_, broke)) in keep[inside.clone()].iter_mut().zip(&pieces[inside]) {
+                *kept = broke;
+            }
+        }
+        start = end + 1;
+    }
+    keep
+}
+
+/// PICK-007, D-3022: a run is phone-shaped when it holds 3 or more number words, or any
+/// unbroken stretch of it adds up to 7, 10 or 11 digits (a local, a 10-digit or a 1 + 10-digit
+/// number; a number word counts as one digit). "24 36 48 60" (8) and "$450 $300 $120" (9) are
+/// not; a 3/3/4 split (10) and "$1200 $450" (7) are: privacy wins over a list.
+fn phone_shaped(run: &[Count]) -> bool {
+    let weight = |c: &Count| match c {
+        Count::Digits(n) => *n,
+        Count::Word => 1,
+    };
+    if run.iter().filter(|c| matches!(c, Count::Word)).count() >= 3 {
+        return true;
+    }
+    (0..run.len()).any(|a| {
+        let mut sum = 0;
+        run[a..].iter().any(|c| {
+            sum += weight(c);
+            matches!(sum, 7 | 10 | 11)
+        })
+    })
+}
+
+/// PICK-007, CARD-008, CARD-010: one view of a quote's text against the restricted list and the
+/// card gate; bounces when the gate would cut any word of it.
+fn view_bounce(text: &str) -> Result<(), Bounce> {
     if askhava_catalog::api::restricted_match(text).is_some() {
         return Err(Bounce::Restricted);
     }
