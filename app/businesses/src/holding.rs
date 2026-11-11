@@ -5,8 +5,10 @@
 //! [`holding`] adds what only `businesses` knows, the handyman standing (the Handyman category
 //! chosen at sign-up, `handyman` in `businesses.signup.trades`), to the ROC license number and city
 //! names the caller holds, and calls `licensing::api::holder_for`; `licensing` never calls
-//! `businesses` (`kit/layers.json`). No business table holds a license number or a name (PRIV-001),
-//! so the caller passes them; with no number, `licensing` reads the latest daily check's.
+//! `businesses` (`kit/layers.json`). The caller passes the ROC number and the city names; with no
+//! number, `licensing` reads the latest daily check's. The business's own names (and a no-license
+//! business's city license number) are stored in `businesses.business_name` (T165, D-2943,
+//! D-2954; PRIV-001 covers homeowner details only), read with `api::business_names`.
 
 use askhava_licensing::api::{CityRecord, HolderInputs, HolderParts, holder_for};
 use sqlx::PgConnection;

@@ -2296,3 +2296,9 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **What changed.** Before her final Pick the homeowner sees an unticked box: "Share my first name and the job address with the business for quote #2 once they accept." Pressing Pick without ticking it shows the page again with the error by the box; nothing is picked and no code is sent. The tick is logged with the pick. The pick notice now carries a "Can't take it" link for the business; pressing it ends the pick at once with no fee and moves the pick to her backup, or reopens her quotes.
 - **One thing you may want changed.** The box names "the business for quote #2" until businesses' names are stored for the page; the Spanish label is "Compartir mi nombre de pila y la dirección del trabajo con ... cuando acepte."
 - **Nothing needs you now.**
+
+## T165: business names, license numbers and Google and Yelp links at sign-up (D-3033 to D-3036)
+
+- **What changed.** The sign-up form now asks the business name (needed), a trade name or DBA, the ROC, BTR and city license numbers it has, and an optional Google Business Profile link and Yelp link. A name with a phone number, a link or "find us on Google" is sent back with the reason and nothing is saved. A link is kept only if it is on Google's or Yelp's own site and the page opens. Saved links show on every quote card as two plain links, "Google" and "Yelp", with no stars or counts.
+- **One thing you may want changed.** Links are checked when they are saved, not again later; a page Google or Yelp takes down stays on the cards until the business changes it in the portal (a later task).
+- **Nothing needs you now.**
