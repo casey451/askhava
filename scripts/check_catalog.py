@@ -38,6 +38,10 @@ import yaml  # type: ignore[import-untyped]  # reason: PyYAML ships no stubs; on
 import brand  # sibling script: the brand file app/core/data/brand.json (D-1932)
 from trace_spec import NOT_A_CONTRACTOR, SUPERSEDED
 
+# libyaml's safe loader when PyYAML was built with it (the CI wheels are), about 10x faster on docs/catalog
+# with identical results; the pure-Python SafeLoader otherwise (D-2782).
+SAFE_LOADER = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
+
 CATEGORIES_FILE = Path("docs/catalog/categories.yaml")
 EXAMPLES_FILE = Path("docs/catalog/worked_examples.yaml")
 LICENSE_MAP_FILE = Path("docs/catalog/license_map.yaml")
@@ -788,7 +792,7 @@ def check_kb_link(root: Path, set_id: str, qset: dict[str, Any]) -> list[str]:
         return [f"question bank {set_id}: kb_trade {slug} has no file (LIC-040)"]
     if len(photos) > MAX_PHOTOS:
         return [f"question bank {set_id}: more than {MAX_PHOTOS} photos (INT-044)"]
-    known = {str(p.get("id")) for p in (yaml.safe_load(path.read_text(encoding="utf-8")) or {}).get("photos_to_request", [])}
+    known = {str(p.get("id")) for p in (yaml.load(path.read_text(encoding="utf-8"), Loader=SAFE_LOADER) or {}).get("photos_to_request", [])}
     return [f"question bank {set_id}: photo {p} not in {slug}" for p in photos if str(p) not in known]
 
 
@@ -1016,7 +1020,7 @@ def check_matching(
 
 
 def load(root: Path, rel: Path) -> dict[str, Any]:
-    data = yaml.safe_load((root / rel).read_text(encoding="utf-8"))
+    data = yaml.load((root / rel).read_text(encoding="utf-8"), Loader=SAFE_LOADER)
     if not isinstance(data, dict):
         raise TypeError(f"{rel.as_posix()}: top level must be a mapping")
     return data
