@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-11T19:59:15Z by runner 0f5e8c3b0df6 (actions).
+Updated 2026-11-11T19:59:29Z by runner 0f5e8c3b0df6 (actions).
 
-**Building: T228 in progress since 19:28Z; 213 of 374 done; week 73% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Waiting for tokens until 20:04Z; 213 of 374 done; week 73% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 213 of 374 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 4: T228 claimed 19:28Z, lease until 22:28Z
+- **Lane:** idle since 19:59Z (no task in progress)
 - **Week:** 73% used, 45.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 19:50Z, 8 min before this update
 - **Keeper:** last ran 19:50Z, next wake 22:30Z
@@ -18,7 +18,8 @@ Updated 2026-11-11T19:59:15Z by runner 0f5e8c3b0df6 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T228 | businesses: leaving Ask Hava, the optional reason and what h | resync | 1 | 77 min | 19:09Z | merging main into the reviewed head conflicts in app/payments/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T228 | businesses: leaving Ask Hava, the optional reason and what h | MERGE_PENDING | 1 | 31 min | 19:59Z | merging main into the reviewed head conflicts in app/payments/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T228 | businesses: leaving Ask Hava, the optional reason and what h | resync | 1 | 77 min | 19:09Z |  |
 | T316 | businesses: one read of each business's public name for the  | done | 2 | 26 min | 19:02Z | PLAN GAP: app/businesses/src/holding.rs:8 and migrations/0050_licensing_imports.sql:22-55: nothing links a business to a |
 | T332 | payments (harness): a late success has its own refund trigge | done | 4 | 25 min | 18:53Z | merging main into the reviewed head conflicts in app/payments/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T345 | harness: every external GitHub Actions `uses:` in every work | BLOCKED | 1 | 8 min | 18:44Z | PLAN GAP: tests/test_runner_keeper.py:417,:426,:652; tests/test_runner_pre_smoke.py:263; tests/test_runner_smoke_reuse.p |
@@ -152,7 +153,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 4: T228 (lease until 2026-11-11T22:28:10Z)
 
 ## Last usage reading
-- {"task": "T228", "at": "2026-11-11T19:09:05Z", "output_tokens": 197599, "cache_read_input_tokens": 49267674, "input_tokens": 610, "cache_creation_input_tokens": 873920}
+- {"task": "T228", "at": "2026-11-11T19:59:14Z", "output_tokens": 24991, "cache_read_input_tokens": 2155726, "cache_creation_input_tokens": 111875, "input_tokens": 138}
