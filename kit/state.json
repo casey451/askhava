@@ -28025,7 +28025,7 @@
    "deps": [
     "T287"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 3,
    "slug": "no-fee-release-pick-bound",
    "type": "build",
@@ -28038,7 +28038,7 @@
     2716,
     2717
    ],
-   "last_failure": "T337 built and committed (53e675b1, cf42d54e); smoke/prehandin red on tests T337 does not own: confirm_and_pay.rs td_fee_25_a_paid_pick_is_never_cleared_as_no_fee and td_fee_25_a_recorded_no_fee_decision_clears (need fix_fee_at_pick rows), and app/server/tests/release_recovery.rs td_pick_50_a_zero_fee_releases_free_and_a_cancelled_pick_nothing (random pick order; clear gone for the business its pick_fee row names). No assertion change; needs a harness task (D-2714).",
+   "last_failure": "T337 built and committed (53e675b1, cf42d54e); smoke/prehandin red on tests T337 does not own: confirm_and_pay.rs td_fee_25_a_paid_pick_is_never_cleared_as_no_fee and td_fee_25_a_recorded_no_fee_decision_clears (need fix_fee_at_pick rows), and app/server/tests/release_recovery.rs td_pick_50_a_zero_fee_releases_free_and_a_cancelled_pick_nothing (random pick order; clear gone for the business its pick_fee row names). No assertion change; needs a harness task (D-2714).\nre-queued after plan fix D-2832: plan fixed by D-2832 (#453): T337 owns the confirm_and_pay.rs fixture rows (fixture-only, assertions unchanged) and keeps the paid-pick guard tested in no_fee_release_binding.rs",
    "history": [
     {
      "attempt": 1,
@@ -28081,7 +28081,22 @@
     }
    ],
    "lane": "3",
-   "reason": "T337 built and committed (496c5049) but smoke/prehandin red on tests T337 does not own: confirm_and_pay.rs td_fee_25_a_paid_pick_is_never_cleared_as_no_fee and td_fee_25_a_recorded_no_fee_decision_clears (need fix_fee_at_pick rows), app/server/tests/release_recovery.rs td_pick_50_a_zero_fee_releases_free_and_a_cancelled_pick_nothing (random pick order). No assertion change; needs plan/harness fix (D-2714, plan branch claude/plan-t337-fixture D-2832 unmerged)."
+   "reason": null,
+   "requeues": [
+    {
+     "at": "2026-11-11T05:26:31Z",
+     "reason": "plan fixed by D-2832 (#453): T337 owns the confirm_and_pay.rs fixture rows (fixture-only, assertions unchanged) and keeps the paid-pick guard tested in no_fee_release_binding.rs",
+     "by": "manual-b50f352b2b29",
+     "was": "T337 built and committed (496c5049) but smoke/prehandin red on tests T337 does not own: confirm_and_pay.rs td_fee_25_a_paid_pick_is_never_cleared_as_no_fee and td_fee_25_a_recorded_no_fee_decision_clears (need fix_fee_at_pick rows), app/server/tests/release_recovery.rs td_pick_50_a_zero_fee_releases_free_and_a_cancelled_pick_nothing (random pick order). No assertion change; needs plan/harness fix (D-2714, plan branch claude/plan-t337-fixture D-2832 unmerged).",
+     "attempts": 3,
+     "plan_fix": "D-2832",
+     "plan_since": "2026-11-11T04:55:48Z",
+     "plan_base": "18d7cc8f25928eecd7091aa634c5a592dac77fc6",
+     "plan_head": "d4ae3ec32f11fcbe7e4149f8289df888c5bfc336",
+     "plan_then": "3b0d99fb21238250c62075f081d22a012825aa1fb800c9a2d6b928a1b750710f",
+     "plan_now": "7b529186e31c9a3175c620595bcc19e37c7bfb5edd5815ea03b76494847ec7e5"
+    }
+   ]
   },
   {
    "id": "T333",
@@ -31000,7 +31015,7 @@
    }
   }
  },
- "updated_at": "2026-11-11T05:25:02Z",
+ "updated_at": "2026-11-11T05:26:31Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -31098,8 +31113,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "89fd85f4a8a06259c6c7d90474372d3914d5752e",
- "starter": "actions",
+ "runner_sha": "d4ae3ec32f11fcbe7e4149f8289df888c5bfc336",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "f33177e317053a1d11ecccdf5b9c4d6f3de97675",

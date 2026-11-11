@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T05:25:02Z by runner 89fd85f4a8a0 (actions).
+Updated 2026-11-11T05:26:31Z by runner d4ae3ec32f11 (manual).
 
 **Building: T383 in progress since 05:18Z; 195 of 370 done; week 60% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,25 +8,25 @@ Updated 2026-11-11T05:25:02Z by runner 89fd85f4a8a0 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T383 claimed 05:18Z, lease until 08:18Z; lane 3: T327 claimed 05:24Z, lease until 08:24Z
 - **Week:** 60% used, 71.2M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:23Z, 1 min before this update
+- **Last run:** 05:25Z, 1 min before this update
 - **Keeper:** last ran 05:22Z, next wake 08:20Z
 
 ## Needs attention
-- BLOCKED T337: T337 built and committed (496c5049) but smoke/prehandin red on tests T337 does not own: confirm_and_pay.rs td_fee_25_a_paid_pick_is_never_cleared_as_no_fee and td_fee_25_a_recorded_no_fee_decision_clears (need fix_fee_at_pick rows), app/server/tests/release_recovery.rs td_pick_50_a_zero_fee_releases_free_and_a_cancelled_pick_nothing (random pick order). No assertion change; needs plan/harness fix (D-2714, plan branch claude/plan-t337-fixture D-2832 unmerged).
+- nothing
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T337 | payments: a $0 release proof is bound to the pick's own stor | BLOCKED | 3 | 16 min | 05:11Z | T337 built and committed (53e675b1, cf42d54e); smoke/prehandin red on tests T337 does not own: confirm_and_pay.rs td_fee |
+| T337 | payments (harness): a $0 release proof is bound to the pick' | BLOCKED | 3 | 16 min | 05:11Z | T337 built and committed (53e675b1, cf42d54e); smoke/prehandin red on tests T337 does not own: confirm_and_pay.rs td_fee |
 | T209 | picks and payments: the optional auto-confirm-and-pay box wi | MERGE_PENDING | 1 | 115 min | 05:06Z |  |
 | T295 | payments, ai, intake and picks take the brand from the brand | BLOCKED | 3 | 0 min | 04:59Z | T295 blocked at step 3: tests/brand_literal_baseline.json still lists files T295 does not own: app/messaging/templates/e |
-| T337 | payments: a $0 release proof is bound to the pick's own stor | QUEUED | 2 | 25 min | 04:51Z |  |
+| T337 | payments (harness): a $0 release proof is bound to the pick' | QUEUED | 2 | 25 min | 04:51Z |  |
 | T295 | payments, ai, intake and picks take the brand from the brand | QUEUED | 2 | 0 min | 04:49Z |  |
 | T295 | payments, ai, intake and picks take the brand from the brand | QUEUED | 1 | 1 min | 04:44Z |  |
 | T374 | licensing and businesses: one read of everything a business  | done | 1 | 45 min | 03:08Z |  |
 | T157 | picks: the homeowner's backup choice at the pick | done | 2 | 22 min | 02:41Z | E2e: failure; Ally: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-1 |
 | T157 | picks: the homeowner's backup choice at the pick | check_failed | 1 | 66 min | 02:10Z |  |
-| T337 | payments: a $0 release proof is bound to the pick's own stor | QUEUED | 1 | 31 min | 02:07Z |  |
+| T337 | payments (harness): a $0 release proof is bound to the pick' | QUEUED | 1 | 31 min | 02:07Z |  |
 | T349 | calls: a PIN draw fails only when the OS source fails, and o | done | 1 | 36 min | 00:40Z |  |
 | T207 | businesses: re-apply the license map when a daily list chang | done | 1 | 41 min | 23:39Z |  |
 | T311 | calls and server: a voice read-back confirm connects only th | done | 2 | 33 min | 23:21Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
@@ -45,6 +45,7 @@ Updated 2026-11-11T05:25:02Z by runner 89fd85f4a8a0 (actions).
 | T288 | payments: a Stripe charge the nightly reconcile cannot settl | done | 1 | 60 min | 06:30Z |  |
 
 ### Plan and harness merges on main
+- 05:26Z Plan: T337 owns its confirm_and_pay fixture rows; paid-pick guard keeps a test (D-2832) (#453)
 - 05:08Z Plan: new T383 removes the brand words left in the text templates and homeowner page; T295 waits for it (D-2843) (#455)
 - 04:14Z Plan: three lanes (D-2810) (#451)
 - 04:04Z Plan: shorten the stage-6 critical path by removing ordering-only dependencies (D-2821) (#452)
