@@ -2162,6 +2162,12 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **What changed.** Those waits are removed; each step still waits for what it really needs (the sandbox setup, the account checkpoint, the test site). The Twilio calls, email and license sandbox checks stay in a row, and the two Stripe refund and dispute fixes come after them, because each adds to the same pretend-vendor file; four of them now own that file, which they needed and did not have. The pre-war-games review still sees the AI-call limits as planned rather than built, as before, because they wait for your go and the review comes before it. The test-site run of the four journeys still waits for every sandbox check, and the first war-games round still waits for the money run. The longest remaining chain of steps drops from 66 to 59.
 - **Nothing needs you now.**
 
+## Brand switch: the last brand words in the texts get an owner (plan change, D-2843, November 11)
+
+- **What it found.** The step that proves the brand name can be switched in one place (T295) stopped because three files still spell out "Ask Hava": the two files that hold every text message (English and Spanish) and the homeowner's own page. No step was assigned to change them.
+- **What changed.** A new short step, T383, swaps those words for the brand setting, so every text and the page read exactly as today under "Ask Hava" and follow a new name automatically. T295 now waits for it. The Spanish texts stay Spanish, and no text is added or removed.
+- **Nothing needs you now.**
+
 ## A fee check that tripped on two old tests (plan change, D-2832, November 11)
 
 - **What happened.** The step that makes sure a no-fee job can only unlock the job it was recorded for was built, but two older tests failed against it: they unlocked jobs without the stored fee record every real pick has. The step was not allowed to touch those tests.
