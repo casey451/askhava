@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT count(*) FROM portals.security_event WHERE kind = 'auth_failed' AND route = $1 AND actor_ref = $2",
+  "query": "SELECT count(*) FROM portals.login_link WHERE member_id = $1 AND created_at > $2 AND expires_at - created_at <= interval '1 day'",
   "describe": {
     "columns": [
       {
@@ -12,13 +12,13 @@
     ],
     "parameters": {
       "Left": [
-        "Text",
-        "Uuid"
+        "Uuid",
+        "Timestamptz"
       ]
     },
     "nullable": [
       null
     ]
   },
-  "hash": "a034eb416e007eb9ccfe820b1ed09df4ac56733b0e3e32eea58e67b93b42d1c9"
+  "hash": "f8555e10eda990f589844046911719f0493e6ef5375d4a8b223d8b3d2bf3b260"
 }

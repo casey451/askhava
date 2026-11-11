@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO businesses.review_link (business_id, google_url, yelp_url, changed_at) SELECT id, $2, $3, now() FROM businesses.business WHERE id = $1 ON CONFLICT (business_id) DO UPDATE SET google_url = EXCLUDED.google_url, yelp_url = EXCLUDED.yelp_url, changed_at = EXCLUDED.changed_at",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "6642729edbbecd0c44ce327042f35dfb265950fdad8e1bde2dad9c6dbee8ae31"
+}

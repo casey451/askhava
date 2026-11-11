@@ -64,6 +64,9 @@
 //! [`RefundState`]); only `succeeded` is refunded, a `pending` one is asked about again by
 //! [`run_refund_check`] ([`REFUND_CHECK_KIND`]), and [`refund_succeeded`], [`refund_failed`] and
 //! [`refund_canceled`] move it on, a failure after success appending one `refund-reversal`.
+//! T333 (D-2303): a succeeded refund is booked at what Stripe reports ([`RefundAmount`]), alerted
+//! [`REFUND_MISMATCH_ALERT`] or [`REFUND_UNCONFIRMED_ALERT`]; [`refund_in_full`] says whether
+//! `picks` may announce it as refunded in full.
 //!
 //! T270 (D-1836, D-2145): [`refund_state`] reads where a pick's refund stands as a
 //! [`PickRefundState`] (`NoRefund`, `InFlight`, `Succeeded`, `Failed`, `Blocked`); `picks` closes a
@@ -141,12 +144,12 @@ pub use crate::refund_rules::{
     decide_cancel, decide_unreachable, no_show, refund_label, talked,
 };
 pub use crate::refund_state::{PickRefundState, refund_state};
-pub use crate::refund_stripe::{Refund, RefundState, RefundStripe};
+pub use crate::refund_stripe::{REFUND_CURRENCY, Refund, RefundAmount, RefundState, RefundStripe};
 pub use crate::refunds::{
     FRAUD_WARNING_ALERT, REFUND_ACTION, REFUND_BLOCKED_ALERT, REFUND_CHECK_EVERY,
-    REFUND_CHECK_KIND, REFUND_FAILED_ALERT, RETRY_EVERY, RETRY_KIND, early_fraud_warning,
-    refund_canceled, refund_failed, refund_succeeded, request_refund, run_refund_check,
-    run_refund_retry,
+    REFUND_CHECK_KIND, REFUND_FAILED_ALERT, REFUND_MISMATCH_ALERT, REFUND_UNCONFIRMED_ALERT,
+    RETRY_EVERY, RETRY_KIND, early_fraud_warning, refund_canceled, refund_failed, refund_in_full,
+    refund_succeeded, request_refund, run_refund_check, run_refund_retry,
 };
 pub use crate::release_proof::{
     Minter, Releasable, ReleaseError, SUCCEEDED_EVENT, StripeAccount, VerifiedStripeEvent,

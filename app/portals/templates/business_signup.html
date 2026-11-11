@@ -5,7 +5,9 @@
     plain-words fee box, then the Terms link. No full record contact is ever shown. The pest
     fields are not `required`: the server checks them only for a business that ticks pest
     control (LIC-047). The done screen also offers the homeowner calls contact card (T199;
-    BIZ-046, D-344), its name and line from `business_portal`. -#}
+    BIZ-046, D-344), its name and line from `business_portal`. T165 (BIZ-022, BIZ-052, LIC-011,
+    D-2943, D-2954): the business name and trade name, the license numbers and the Google and Yelp
+    links; a refused one shows again with its reason and a focused summary (A11Y-030). -#}
 {% block title %}{{ title }}{% endblock %}
 {% block main %}
 <h1>{{ title }}</h1>
@@ -26,6 +28,38 @@
 {% if !categories.is_empty() %}
 <form method="post" action="/b/signup/start" id="signup-form" novalidate>
 <input type="hidden" name="csrf" value="{{ csrf }}">
+{% if let Some((field, reason)) = entered.problem %}<div id="error-summary" role="alert" tabindex="-1" autofocus>
+<h2>Fix the entry marked below</h2>
+<p><a href="#{{ field.replace('_', "-") }}">{{ reason }}</a></p>
+</div>
+{% endif %}
+<fieldset id="names"><legend>The name on your quotes</legend>
+<p><label for="business-name">Business name</label>
+<span id="business-name-hint">The name homeowners see on your quotes. Leave out phone numbers and links.</span>
+<input type="text" id="business-name" name="business_name" maxlength="200" autocomplete="organization" aria-describedby="business-name-hint{% if error_for("business_name").is_some() %} business-name-error{% endif %}" value="{{ entered.business_name }}"{% if error_for("business_name").is_some() %} aria-invalid="true"{% endif %}>
+{% if let Some(reason) = error_for("business_name") %}<span id="business-name-error" class="error">{{ reason }}</span>{% endif %}</p>
+<p><label for="trade-name">Trade name or DBA, if you use one</label>
+<input type="text" id="trade-name" name="trade_name" maxlength="200" value="{{ entered.trade_name }}"{% if error_for("trade_name").is_some() %} aria-invalid="true" aria-describedby="trade-name-error"{% endif %}>
+{% if let Some(reason) = error_for("trade_name") %}<span id="trade-name-error" class="error">{{ reason }}</span>{% endif %}</p>
+</fieldset>
+<fieldset id="license-numbers"><legend>Your license numbers</legend>
+<p><label for="roc-number">ROC license number, if you have one</label>
+<input type="text" id="roc-number" name="roc_number" maxlength="64" value="{{ entered.roc_number }}"></p>
+<p><label for="btr-number">Arizona Board of Technical Registration (BTR) number, if you have one</label>
+<input type="text" id="btr-number" name="btr_number" maxlength="64" value="{{ entered.btr_number }}"></p>
+<p><label for="city-license-number">City business license number, if you don't need a state license</label>
+<input type="text" id="city-license-number" name="city_license_number" maxlength="64" value="{{ entered.city_license_number }}"{% if error_for("city_license_number").is_some() %} aria-invalid="true" aria-describedby="city-license-number-error"{% endif %}>
+{% if let Some(reason) = error_for("city_license_number") %}<span id="city-license-number-error" class="error">{{ reason }}</span>{% endif %}</p>
+</fieldset>
+<fieldset id="review-links"><legend>Your Google and Yelp links, shown on every quote</legend>
+<p id="review-links-hint">Both are optional. We'll make sure each link works, and homeowners will see them on your quotes.</p>
+<p><label for="google-link">Google Business Profile link</label>
+<input type="url" id="google-link" name="google_link" maxlength="500" aria-describedby="review-links-hint{% if error_for("google_link").is_some() %} google-link-error{% endif %}" value="{{ entered.google_link }}"{% if error_for("google_link").is_some() %} aria-invalid="true"{% endif %}>
+{% if let Some(reason) = error_for("google_link") %}<span id="google-link-error" class="error">{{ reason }}</span>{% endif %}</p>
+<p><label for="yelp-link">Yelp page link</label>
+<input type="url" id="yelp-link" name="yelp_link" maxlength="500" aria-describedby="review-links-hint{% if error_for("yelp_link").is_some() %} yelp-link-error{% endif %}" value="{{ entered.yelp_link }}"{% if error_for("yelp_link").is_some() %} aria-invalid="true"{% endif %}>
+{% if let Some(reason) = error_for("yelp_link") %}<span id="yelp-link-error" class="error">{{ reason }}</span>{% endif %}</p>
+</fieldset>
 <p><label for="email">Email for job requests and picks</label>
 <input type="email" id="email" name="email" autocomplete="email"></p>
 <fieldset id="categories"><legend>What work do you do?</legend>

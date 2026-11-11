@@ -97,7 +97,7 @@ pub use crate::photos::{
 pub use crate::quote_card::{
     CardSource, POLICY_SUMMARY_SENTENCE, Parts, Permit, QuoteCard, QuoteFacts, ShownCard, Spanish,
     Summary, SummarySetting, SwitchRefused, TripFee, check_summary, format_definition, quote_card,
-    shown_card, switch_on,
+    review_lines, shown_card, switch_on,
 };
 pub use crate::service::{card_holders, coverage, send_cards, send_job_cards, send_late_cards};
 pub use crate::update_texts::{
