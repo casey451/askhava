@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T17:18:39Z by runner 877da5613137 (actions).
+Updated 2026-11-11T17:19:15Z by runner ba8db682d853 (actions).
 
 **Building: T333 in progress since 16:47Z; 208 of 373 done; week 70% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -12,7 +12,7 @@ Updated 2026-11-11T17:18:39Z by runner 877da5613137 (actions).
 - **Keeper:** last ran 17:18Z, next wake 19:49Z
 
 ## Needs attention
-- Strict plan check red: 22 problem(s) on tasks still to run (+40 on DONE tasks); first: T340: stored context_pct 35% but it measures 39%; regenerate
+- Strict plan check red: 24 problem(s) on tasks still to run (+41 on DONE tasks); first: T340: stored context_pct 35% but it measures 39%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
