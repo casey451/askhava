@@ -1,18 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-11T23:47:14Z by runner 65ef6c584190 (actions).
+Updated 2026-11-11T23:57:11Z by runner 49e840f96747 (actions).
 
-**Building: T317 in progress since 23:23Z; 216 of 376 done; week 78% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T317 in progress since 23:23Z; 216 of 378 done; week 78% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 216 of 376 build tasks (owner gates not counted)
+- **Tasks done:** 216 of 378 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T317 claimed 23:23Z, lease until 02:23Z; lane 3: T313 claimed 23:27Z, lease until 02:27Z
 - **Week:** 78% used, 27.4M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:47Z, 0 min before this update
+- **Last run:** 23:47Z, 9 min before this update
 - **Keeper:** last ran 23:47Z, next wake 02:26Z
 
 ## Needs attention
-- Strict plan check red: 29 problem(s) on tasks still to run (+61 on DONE tasks); first: T340: stored context_pct 35% but it measures 40%; regenerate
+- Strict plan check red: 6 problem(s) on tasks still to run (+64 on DONE tasks); first: T348: stored context_pct 36% but it measures 41%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -77,6 +77,7 @@ Updated 2026-11-11T23:47:14Z by runner 65ef6c584190 (actions).
 | T349 | calls: a PIN draw fails only when the OS source fails, and o | done | 1 | 36 min | 00:40Z |  |
 
 ### Plan and harness merges on main
+- 23:50Z Plan: Gate C preconditions, vendor-leak check, quote cards, AI writing calls (D-3080) (#518)
 - 23:07Z Plan: IC-74 owners T390/T391, migration renumber, budget refresh, IC-95 logged (D-3079) (#517)
 - 23:02Z Plan: pre-flight fixes for T317, T323, T313, T315, T347 and the T345 gap (D-3083) (#524)
 - 22:35Z Harness: smoke ancestry reuse across DONE task merges and a running duplicate smoke yields (D-3058) (#516)
@@ -113,15 +114,15 @@ Updated 2026-11-11T23:47:14Z by runner 65ef6c584190 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 222 of 733 (30.3%) · partial 337 · unstarted 174
-**Tasks merged (throughput only):** 216 of 376
+**Requirements verified:** 220 of 733 (30.0%) · partial 339 · unstarted 174
+**Tasks merged (throughput only):** 216 of 378
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 13 | 16 | 6 | 35 |
 | ai | 7 | 17 | 5 | 29 |
 | businesses | 16 | 36 | 6 | 58 |
-| calls | 11 | 13 | 1 | 25 |
+| calls | 9 | 15 | 1 | 25 |
 | consent | 8 | 23 | 4 | 35 |
 | fees | 12 | 39 | 1 | 52 |
 | intake | 22 | 15 | 6 | 43 |
