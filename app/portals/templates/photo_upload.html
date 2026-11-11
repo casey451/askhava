@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{#- The homeowner's photo upload page (T212; INT-044, PRIV-015, A11Y-027, A11Y-030, PRIV-025).
+    One native file input with a visible label, no drag-and-drop; the PRIV-015 line before it.
+    A refused upload gives an "Error: " title, a focused summary linking to the field and the
+    same message by it. A stored photo shows as it will look on the card before she sends it. -#}
+{% block title %}{% if error.is_some() %}Error: {% endif %}{% if preview.is_some() %}Check your photo for request {{ job_number }}{% else %}Add photos to request {{ job_number }}{% endif %}{% endblock %}
+{% block main %}
+{% if let Some(link) = preview %}
+<h1 id="photo-check" tabindex="-1" autofocus>Check your photo for request {{ job_number }}</h1>
+<p>This is how businesses will see it.</p>
+<img id="photo-preview" src="{{ link }}" alt="Your photo as it will look on your request" width="320">
+<p id="photo-question">Check that it shows no people, house numbers or license plates.</p>
+<form method="post" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<button type="submit" name="answer" value="yes">Send this photo</button>
+<button type="submit" name="answer" value="remove">Take it off</button>
+</form>
+{% else %}
+<h1>Add photos to request {{ job_number }}</h1>
+{% if let Some(m) = error %}<div id="error-summary" role="alert" tabindex="-1" autofocus>
+<h2>Fix this to add your photo</h2>
+<ul><li><a href="#photo">{{ m }}</a></li></ul>
+</div>{% endif %}
+<p id="no-photo">{{ no_photo }}</p>
+{% if !asks.is_empty() %}<ul id="photo-asks">{% for ask in asks %}<li>{{ ask }}</li>{% endfor %}</ul>{% endif %}
+<p id="leave-out">{{ leave_out }}</p>
+<form method="post" enctype="multipart/form-data" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<label for="photo">Photo</label>
+<p id="photo-hint">A JPEG or PNG photo. Add one photo at a time.</p>
+{% if let Some(m) = error %}<p id="photo-error" class="field-error">Error: {{ m }}</p>
+{% endif %}<input type="file" id="photo" name="photo" accept="image/jpeg,image/png,image/webp" aria-describedby="photo-hint{% if error.is_some() %} photo-error{% endif %}"{% if error.is_some() %} aria-invalid="true"{% endif %}>
+<button type="submit">Add photo</button>
+</form>
+{% endif %}
+{% endblock %}

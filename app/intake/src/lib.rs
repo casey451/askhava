@@ -26,6 +26,7 @@
 pub mod api;
 mod closing;
 mod conversation;
+mod design;
 mod emergency;
 mod emergency_count;
 mod golden_run;
@@ -34,6 +35,7 @@ mod job_texts;
 mod limits;
 mod matching;
 mod models;
+mod photos;
 mod purge;
 mod question_bank;
 mod replies;
