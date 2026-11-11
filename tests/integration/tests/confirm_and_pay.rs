@@ -21,8 +21,9 @@ use askhava_adapters::api::{
 };
 use askhava_payments::api::{
     BusinessId, ChargeError, ChargeOutcome, DESCRIPTOR_MAX, EntryKind, IntentStripe, IntentText,
-    LedgerEntry, NewEntry, PickNow, Press, ReleaseError, StripeAccount, VerifiedStripeEvent,
-    confirm_and_pay, ledger_append, no_fee_release, paid_release,
+    LATE_KIND, LATE_SUCCESS_ALERT, LedgerEntry, NewEntry, PickNow, Press, ReleaseError,
+    StripeAccount, VerifiedStripeEvent, confirm_and_pay, ledger_append, no_fee_release,
+    paid_release,
 };
 use askhava_payments::api::{
     FeeJob, FeeMode, FeeQuote, PeriodJob, RecurringCap, Service, VisitTier, fee_at_pick,
@@ -254,6 +255,19 @@ async fn evidence(pool: &PgPool) -> Vec<(Uuid, Uuid, i32, String, String, String
     .expect("evidence")
 }
 
+/// The `core.task` rows of `LATE_KIND` and the `ops.alert` rows of `LATE_SUCCESS_ALERT`.
+async fn late_rows(pool: &PgPool) -> (i64, i64) {
+    sqlx::query_as(
+        "SELECT (SELECT count(*) FROM core.task WHERE kind = $1),
+                (SELECT count(*) FROM ops.alert WHERE kind = $2)",
+    )
+    .bind(LATE_KIND)
+    .bind(LATE_SUCCESS_ALERT)
+    .fetch_one(pool)
+    .await
+    .expect("late rows")
+}
+
 /// TD-FEE-38 (FEE-042, FEE-015, D-1478): a successful press writes one evidence record of IDs and
 /// timestamps at charge time, with the authorization version accepted before the press (not one
 /// accepted after); a verified success arriving later writes no second one.
@@ -390,8 +404,9 @@ async fn td_sec_18_a_mismatched_event_clears_nothing(pool: PgPool) {
     assert_eq!(clear(&pool, &own, paid()).await, Ok(PICK));
 }
 
-/// TD-FEE-25, TD-SEC-18 (FEE-018, FEE-020, FEE-041, JOB-014, D-1478): once the pick has ended, a
-/// verified success event for its own intent clears nothing and stores nothing.
+/// TD-FEE-25, TD-SEC-18 (FEE-018, FEE-020, FEE-021, FEE-041, FEE-042, JOB-014, D-1478, D-3007):
+/// once the pick has ended, a verified success event for its own intent clears nothing; the
+/// verified success and its evidence are stored and one late-success refund is queued.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_fee_25_an_ended_pick_is_never_cleared(pool: PgPool) {
     pressed(&pool, "processing").await.expect("press");
@@ -405,12 +420,13 @@ async fn td_fee_25_an_ended_pick_is_never_cleared(pool: PgPool) {
         clear(&pool, &succeeded(), paid()).await,
         Err(ReleaseError::PickEnded)
     );
-    assert!(evidence(&pool).await.is_empty());
+    assert_eq!(evidence(&pool).await.len(), 1);
     let status: String = sqlx::query_scalar("SELECT status FROM payments.charge_attempt")
         .fetch_one(&pool)
         .await
         .expect("attempt");
-    assert_eq!(status, "processing");
+    assert_eq!(status, "succeeded");
+    assert_eq!(late_rows(&pool).await, (1, 1));
 }
 
 /// TD-FEE-25 (FEE-036, PICK-022, D-1478): a pick with a PaymentIntent has a fee to pay, so a $0

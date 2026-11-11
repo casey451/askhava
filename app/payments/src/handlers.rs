@@ -5,7 +5,8 @@
 //! or bank approval opens the card-fix window (1 business hour, 60 clock minutes on an emergency
 //! job, PICK-044) and queues [`CARD_FIX_KIND`], which `picks::money_notices` turns into the
 //! business's notice (FEE-020, D-492); a success writes the pick's one FEE-042 evidence record
-//! ([`write_evidence`], D-1474); no answer from Stripe starts the 4-hour release (FEE-018);
+//! ([`write_evidence`], D-1474) and, on a pick `payments` already ended, queues its one late-success
+//! refund and alert through `late_success` (FEE-021, D-2290); no answer from Stripe starts the 4-hour release (FEE-018);
 //! an undecided attempt queues [`CHECK_KIND`] for 30 minutes later (FEE-019). A timer is a
 //! `payments.pay_timer` row plus a [`TIMER_KIND`] task at its due time; [`run_pay_timer`] asks
 //! Stripe once more: the 4-hour release ends the pick only while Stripe still cannot be reached,
@@ -28,7 +29,8 @@ use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
 
 use crate::charge::{ATTEMPT_SUBJECT, ask_stripe, latest, write_evidence};
-use crate::models::ChargeError;
+use crate::late::late_success;
+use crate::models::{ChargeError, PickNow};
 use crate::status::AttemptStatus;
 
 /// The `core.task` kind of the 30-minute "ask Stripe directly" check (FEE-019).
@@ -150,6 +152,9 @@ async fn effects(
     if status.paid() {
         end_timers(tx, pick, None, at).await?;
         write_evidence(tx, pick, try_no, at).await?;
+        late_success(tx, pick, PickNow::Payable, at)
+            .await
+            .map_err(|_| ChargeError::Database)?;
     } else if status.stripe_answered() {
         end_timers(tx, pick, Some(STRIPE_DOWN), at).await?;
     } else {
@@ -364,7 +369,9 @@ const DB_FAILED: HandlerError = HandlerError("payments database statement failed
 /// The [`CHECK_KIND`] handler (FEE-019, FEE-037): if attempt `try` is still the pick's latest
 /// and undecided, ask Stripe directly; while Stripe is unreachable or the attempt is still
 /// undecided (for example `processing`), the next round is queued 30 minutes on, so an attempt
-/// never blocks the pick without a check. Safe to run twice (JOB-006).
+/// never blocks the pick without a check. A round that records a success on a pick `payments`
+/// ended queues its late-success refund in that round's transaction (`record`; FEE-021, D-2290).
+/// Safe to run twice (JOB-006).
 ///
 /// # Errors
 /// A fixed sentence when the task is malformed or the database fails.
