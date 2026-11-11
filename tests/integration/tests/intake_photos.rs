@@ -114,6 +114,9 @@ impl PictureTextMedia for FakeMedia {
     }
 
     async fn delete_media(&self, _: &IdempotencyKey, url: &str) -> Result<(), AdapterError> {
+        if url.contains("fail-delete") {
+            return Err(AdapterError::NotSent);
+        }
         self.deleted.lock().expect("deleted").push(url.to_owned());
         Ok(())
     }
@@ -140,6 +143,19 @@ impl ConceptImageAdapter for StandInImages {
     ) -> Result<Vec<u8>, AdapterError> {
         self.0.lock().expect("requests").push(request.clone());
         Ok(png(400, 400))
+    }
+}
+
+/// An image maker that fails (`None`) or answers bytes that are not a picture.
+struct BrokenImages(Option<Vec<u8>>);
+
+impl ConceptImageAdapter for BrokenImages {
+    async fn make_image(
+        &self,
+        _: &IdempotencyKey,
+        _: &serde_json::Value,
+    ) -> Result<Vec<u8>, AdapterError> {
+        self.0.clone().ok_or(AdapterError::NotSent)
     }
 }
 
@@ -459,4 +475,51 @@ async fn td_card_12_the_job_page_shows_photos_project_file_and_labeled_concept(p
         html.contains(&format!("<figcaption>{CONCEPT_LABEL}</figcaption>")),
         "{html}"
     );
+}
+
+/// TD-INT-27, TD-INT-28, PRIV-025, INT-046: a HEIC file gets the PRIV-025 reply, a file over the
+/// limits is left off, a broken decode gets the re-ask, a failed provider delete is reported for
+/// a retry, and a failed or unreadable concept image is no image; an empty project file is none.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_int_27_refusals_and_failures_keep_nothing(pool: PgPool) {
+    let kit = kit("refusals");
+    let mut conn = app(&pool).await;
+    let keys = (&kit.seal, &kit.storage, &kit.secret);
+    let mut heic = vec![0, 0, 0, 24];
+    heic.extend_from_slice(b"ftypheic\0\0\0\0mif1heic");
+    let mut broken = png(400, 400);
+    broken.truncate(60);
+    let huge = vec![0xFF; 16 * 1024 * 1024];
+    let wide = png(8_001, 1);
+    let want = [
+        PhotoTaken::Heic,
+        PhotoTaken::ReAsk,
+        PhotoTaken::Refused,
+        PhotoTaken::Refused,
+    ];
+    for (bytes, want) in [heic, broken, huge, wide].into_iter().zip(want) {
+        let taken = take_upload(&mut conn, keys, (JOB, bytes), 320, at()).await;
+        assert_eq!(taken, Ok(want));
+    }
+    assert_eq!(after_photo(PhotoTaken::Heic, false), PhotoStep::Heic);
+    let media = FakeMedia::new(Some(png(400, 400)));
+    let url = "https://api.twilio.com/fail-delete";
+    let texted = take_picture_text(&mut conn, keys, &media, (JOB, url), (320, at())).await;
+    assert!(!texted.expect("taken").media_deleted);
+    for maker in [
+        BrokenImages(None),
+        BrokenImages(Some(b"not an image".to_vec())),
+    ] {
+        let deps = (keys, &maker);
+        let made = make_concept(&mut conn, deps, (JOB, 0, true), &project(), at()).await;
+        assert_eq!(made, Ok(Concept::Failed));
+    }
+    let common = CommonWords::default();
+    let known = Known {
+        common: &common,
+        vault_name: None,
+    };
+    let blank = scrub("   ", &known, &mut NameMemory::default());
+    assert_eq!(ProjectFile::from_scrubbed(&blank), None);
+    assert!(format!("{:?}", project()).starts_with("ProjectFile("));
 }
