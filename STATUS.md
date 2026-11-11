@@ -1,26 +1,26 @@
 # Ask Hava build status
 
-Updated 2026-11-11T11:35:38Z by runner 48de7e61157b (actions).
+Updated 2026-11-11T11:36:09Z by runner ee153a16c726 (actions).
 
-**Idle since 11:35Z; 201 of 371 done; week 65% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 11:35Z; 202 of 372 done; week 65% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 201 of 371 build tasks (owner gates not counted)
+- **Tasks done:** 202 of 372 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 11:35Z (no task in progress)
 - **Week:** 65% used, 60.7M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:34Z, 1 min before this update
+- **Last run:** 11:35Z, 0 min before this update
 - **Keeper:** last ran 11:33Z, next wake 13:47Z
 
 ## Needs attention
-- Strict plan check red: 16 problem(s) on tasks still to run (+23 on DONE tasks); first: T255: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 13 problem(s) on tasks still to run (+24 on DONE tasks); first: T255: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T331 | payments (harness): a payment success with no readable pick  | MERGE_PENDING | 1 | 49 min | 11:35Z |  |
-| T164 | quotes: one quote format per category, screened notes, and e | MERGE_PENDING | 3 | 12 min | 11:31Z | Ci: failure; Checks: failure / Checks failed at step: Rust format and lint (clippy once, before the build, D-488) / Chec |
+| T164 | quotes: one quote format per category, screened notes, and e | resync | 3 | 12 min | 11:31Z | merging main into the reviewed head conflicts in app/quotes/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T164 | quotes: one quote format per category, screened notes, and e | check_failed | 2 | 39 min | 11:00Z |  |
-| T278 | quotes, intake and picks: the check-in, feedback and unreach | MERGE_PENDING | 1 | 29 min | 10:56Z |  |
+| T278 | quotes, intake and picks: the check-in, feedback and unreach | done | 1 | 29 min | 10:56Z |  |
 | T316 | businesses: one read of each business's public name for the  | BLOCKED | 1 | 2 min | 10:06Z | PLAN GAP: app/businesses/src/holding.rs:8 and migrations/0050_licensing_imports.sql:22-55: nothing links a business to a |
 | T337 | payments (harness): a $0 release proof is bound to the pick' | done | 5 | 23 min | 09:49Z | PLAN GAP: app/server/tests/release_recovery.rs:572-576 (td_pick_50_a_zero_fee_releases_free_and_a_cancelled_pick_nothing |
 | T327 | harness: every task kind the app queues has a handler in the | done | 1 | 48 min | 09:38Z |  |
@@ -86,7 +86,7 @@ Updated 2026-11-11T11:35:38Z by runner 48de7e61157b (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 208 of 733 (28.4%) · partial 344 · unstarted 181
-**Tasks merged (throughput only):** 201 of 371
+**Tasks merged (throughput only):** 202 of 372
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -121,7 +121,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 81 of 164 done
+- stage 4: 82 of 164 done
 - stage 5: 0 of 58 done
 - stage 6: 0 of 34 done
 - stage 7: 0 of 2 done
