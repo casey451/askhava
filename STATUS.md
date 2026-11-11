@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-11T19:05:26Z by runner d413b0e8998f (actions).
+Updated 2026-11-11T19:08:22Z by runner b2f1343b3d73 (actions).
 
-**Building: T228 in progress since 17:51Z; 211 of 373 done; week 72% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T228 in progress since 17:51Z; 212 of 374 done; week 72% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 211 of 373 build tasks (owner gates not counted)
+- **Tasks done:** 212 of 374 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T228 claimed 17:51Z, lease until 20:51Z
 - **Week:** 72% used, 42.6M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:05Z, 0 min before this update
+- **Last run:** 19:05Z, 2 min before this update
 - **Keeper:** last ran 19:05Z, next wake 20:54Z
 
 ## Needs attention
@@ -19,7 +19,7 @@ Updated 2026-11-11T19:05:26Z by runner d413b0e8998f (actions).
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T316 | businesses: one read of each business's public name for the  | MERGE_PENDING | 2 | 26 min | 19:02Z | PLAN GAP: app/businesses/src/holding.rs:8 and migrations/0050_licensing_imports.sql:22-55: nothing links a business to a |
-| T332 | payments (harness): a late success has its own refund trigge | MERGE_PENDING | 4 | 25 min | 18:53Z | merging main into the reviewed head conflicts in app/payments/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T332 | payments (harness): a late success has its own refund trigge | done | 4 | 25 min | 18:53Z | merging main into the reviewed head conflicts in app/payments/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T345 | harness: every external GitHub Actions `uses:` in every work | BLOCKED | 1 | 8 min | 18:44Z | PLAN GAP: tests/test_runner_keeper.py:417,:426,:652; tests/test_runner_pre_smoke.py:263; tests/test_runner_smoke_reuse.p |
 | T332 | payments (harness): a late success has its own refund trigge | resync | 4 | 46 min | 18:10Z |  |
 | T272 | portals: the sign-in link cap and the code-try cap are atomi | done | 1 | 20 min | 18:05Z |  |
@@ -108,8 +108,8 @@ Updated 2026-11-11T19:05:26Z by runner d413b0e8998f (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 223 of 733 (30.4%) · partial 335 · unstarted 175
-**Tasks merged (throughput only):** 211 of 373
+**Requirements verified:** 221 of 733 (30.2%) · partial 337 · unstarted 175
+**Tasks merged (throughput only):** 212 of 374
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -118,7 +118,7 @@ Updated 2026-11-11T19:05:26Z by runner d413b0e8998f (actions).
 | businesses | 16 | 36 | 6 | 58 |
 | calls | 11 | 13 | 1 | 25 |
 | consent | 8 | 23 | 4 | 35 |
-| fees | 13 | 38 | 1 | 52 |
+| fees | 11 | 40 | 1 | 52 |
 | intake | 22 | 15 | 6 | 43 |
 | job-cards | 13 | 9 | 2 | 24 |
 | licensing | 25 | 23 | 0 | 48 |
@@ -144,7 +144,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 91 of 166 done
+- stage 4: 92 of 166 done
 - stage 5: 0 of 58 done
 - stage 6: 0 of 34 done
 - stage 7: 0 of 2 done
