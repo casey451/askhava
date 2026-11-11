@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-11T09:49:37Z by runner f8b6eca9a590 (actions).
+Updated 2026-11-11T09:49:51Z by runner f8b6eca9a590 (actions).
 
-**Building: T337 in progress since 09:25Z; 199 of 370 done; week 63% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 09:49Z; 199 of 370 done; week 63% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 199 of 370 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T337 claimed 09:25Z, lease until 12:25Z
+- **Lane:** idle since 09:49Z (no task in progress)
 - **Week:** 63% used, 62.3M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 09:41Z, 8 min before this update
 - **Keeper:** last ran 09:41Z, next wake 12:28Z
@@ -23,11 +23,12 @@ Updated 2026-11-11T09:49:37Z by runner f8b6eca9a590 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T337 | payments (harness): a $0 release proof is bound to the pick' | MERGE_PENDING | 5 | 23 min | 09:49Z | PLAN GAP: app/server/tests/release_recovery.rs:572-576 (td_pick_50_a_zero_fee_releases_free_and_a_cancelled_pick_nothing |
 | T327 | harness: every task kind the app queues has a handler in the | MERGE_PENDING | 1 | 48 min | 09:38Z |  |
 | T164 | quotes: one quote format per category, screened notes, and e | BLOCKED | 1 | 14 min | 09:03Z | PLAN GAP: app/portals/src/tests/prop_arrival_order.rs:22 (T052) and app/quotes/src/notify.rs:179 / app/quotes/src/models |
 | T295 | payments, ai, intake and picks take the brand from the brand | done | 4 | 33 min | 08:57Z | T295 blocked at step 3: tests/brand_literal_baseline.json still lists files T295 does not own: app/messaging/templates/e |
 | T212 | intake: photo asks with on-server checks and preview, inspir | done | 2 | 19 min | 08:12Z | Ci: failure; Coverage: failure; Checks: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned |
-| T337 | payments (harness): a $0 release proof is bound to the pick' | BLOCKED | 4 | 9 min | 08:05Z | PLAN GAP: app/server/tests/release_recovery.rs:572-576 (td_pick_50_a_zero_fee_releases_free_and_a_cancelled_pick_nothing |
+| T337 | payments (harness): a $0 release proof is bound to the pick' | BLOCKED | 4 | 9 min | 08:05Z |  |
 | T212 | intake: photo asks with on-server checks and preview, inspir | check_failed | 1 | 56 min | 07:20Z |  |
 | T383 | messaging and portals: the text templates and the homeowner  | done | 1 | 20 min | 05:39Z |  |
 | T337 | payments (harness): a $0 release proof is bound to the pick' | BLOCKED | 3 | 16 min | 05:11Z |  |
@@ -129,7 +130,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T337 (lease until 2026-11-11T12:25:53Z)
 
 ## Last usage reading
-- {"task": "T327", "at": "2026-11-11T09:38:36Z", "output_tokens": 182491, "cache_read_input_tokens": 28088494, "cache_creation_input_tokens": 636491, "input_tokens": 581}
+- {"task": "T337", "at": "2026-11-11T09:49:36Z", "cache_creation_input_tokens": 241756, "cache_read_input_tokens": 6514201, "input_tokens": 180, "output_tokens": 57599}
