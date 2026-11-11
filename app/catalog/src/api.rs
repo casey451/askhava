@@ -110,3 +110,22 @@ pub async fn set_category_enabled(
 ) -> Result<bool, CatalogError> {
     service::set_enabled(db, code, on, actor).await
 }
+
+/// PICK-048, FEE-014, D-401, D-491 (T209): whether the owner-portal record "Stripe written answer
+/// on charges without the business present" is filed and allows the charge: the latest filed
+/// record (date, reference and answer) in `catalog.stripe_written_answer` says yes. No record, or
+/// a latest one saying no, is `false`, so no auto-confirm box shows and no off-session charge is
+/// made. The owner portal's settings page (T108) files the record.
+///
+/// # Errors
+///
+/// [`CatalogError::Database`].
+pub async fn stripe_answer_filed(db: &mut PgConnection) -> Result<bool, CatalogError> {
+    let allows = sqlx::query_scalar!(
+        "SELECT allows FROM catalog.stripe_written_answer ORDER BY filed_at DESC, id LIMIT 1"
+    )
+    .fetch_optional(db)
+    .await
+    .map_err(|_| CatalogError::Database)?;
+    Ok(allows == Some(true))
+}

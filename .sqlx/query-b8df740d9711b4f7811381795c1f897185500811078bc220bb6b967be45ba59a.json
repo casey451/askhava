@@ -1,0 +1,65 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT a.member_id, a.fee_cents, a.authorization_version, a.payment_method\n         FROM quotes.auto_confirm a JOIN quotes.quote q ON q.id = a.quote_id\n         WHERE q.job_id = $1 AND q.business_id = $2 AND a.unticked_at IS NULL",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "member_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "quotes.auto_confirm",
+            "name": "member_id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "fee_cents",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "quotes.auto_confirm",
+            "name": "fee_cents"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "authorization_version",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "quotes.auto_confirm",
+            "name": "authorization_version"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "payment_method",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "quotes.auto_confirm",
+            "name": "payment_method"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "b8df740d9711b4f7811381795c1f897185500811078bc220bb6b967be45ba59a"
+}

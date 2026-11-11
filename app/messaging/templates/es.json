@@ -582,5 +582,11 @@
     "draft": true,
     "segments": 2,
     "text": "Ask Hava: Su banco pide que apruebe el pago para el trabajo {job}. Todavía no se le cobró nada. Apruébelo aquí: {link}"
+  },
+  "auto_confirm_void": {
+    "audience": "business",
+    "draft": true,
+    "segments": 4,
+    "text": "{brand_short}: El propietario eligió su cotización del trabajo {job}, pero la confirmación automática no se hizo. Cambió su tarjeta, la tarifa o la persona que marcó la casilla. No se cobró nada. Para aceptar el trabajo, toque Confirmar en el correo que le enviamos."
   }
 }

@@ -22,6 +22,7 @@ The layer-5 crate that decides who receives each job card, and later holds the c
 - `src/service.rs`: `send_cards` (choose and record), `send_job_cards` (full match, new holders only), `send_late_cards` (CARD-018), `coverage` (shipped map), `card_holders`.
 - Migration `0067_quotes_matching.sql`: the `quotes` schema and `quotes.job_card` (job and business IDs, handyman flag, `sent_at`; unique per job and business; no `UPDATE`, `DELETE` or `TRUNCATE` for `askhava_app`). No homeowner detail.
 - Migration `0070_quotes_quote.sql`: `quotes.quote` (one per business per job; format, amounts, tiers, period, setup, hourly rate and hours, on-site tick, notes, original wording, `ai_read`, `confirmed`, earliest visit, `received_at`, `edited_at`, `withdrawn_at`, `unavailable_at`; no expiry column; no `DELETE` or `TRUNCATE` for `askhava_app`). Migration `0143_quotes_quote_minutes.sql` (T148, D-1957) adds `quote_minutes` (1 to 600 or NULL), never on a quote card.
+- `src/auto_confirm_box.rs` (T209, D-2783 to D-2787): `AUTO_CONFIRM_VERSION`, `auto_confirm_authorization` (PICK-048's words, legal name from the brand file), `AutoConfirmTick`, `Untick` (`Business`, `Void`), `AutoConfirmError`, `tick_auto_confirm`, `untick_auto_confirm`, `auto_confirm_of`. Migration `0156_quotes_auto_confirm.sql`: `quotes.auto_confirm` (one live tick per quote; app role SELECT, INSERT and UPDATE of `unticked_at`, `untick_reason` only) and `catalog.stripe_written_answer`.
 
 ## Rules it enforces
 
@@ -58,6 +59,7 @@ The layer-5 crate that decides who receives each job card, and later holds the c
 - Not here yet: the JOB-010 email to card holders when she adds details (D-1290); the lapsed-pick text (PICK-046) in `UPDATE_TEXTS`; the job page's photo and concept-image display (T090, T212).
 - Not here yet: the PICK-040 fact columns (D-1957, so `CardSource::facts` comes from the caller); the Google and Yelp links (T165) and the price line (T164) on the card; the "no longer available" line (D-1051); the stored owner-portal summary setting; the withdraw action (PICK-051); calling `mark_unavailable` on a failed pick is `picks`' (T063).
 - Not here yet: the callers of T147's `queue_card_notice` and `sent_count` and CARD-021's emergency emails (D-1826); the call from `send_job_cards` and `send_late_cards` to `capable_pool` with the job's band floor and recurring flag (T155 built the skips, D-2508); CARD-015's daily check feeds `verified`.
+- PICK-048, PICK-056, D-2785: a tick stores the member, the fee shown, the authorization version and the saved card, replacing any live tick; an untick only stamps the row; `quotes` never decides whether the box shows (that is the portals route) and never charges.
 
 ## Never break
 
@@ -118,3 +120,4 @@ The layer-5 crate that decides who receives each job card, and later holds the c
 - `src/tests/card_lines.rs`: TD-CARD-02, the card cases of TD-CARD-03 and TD-CARD-07 (`cargo test -p askhava-quotes tests::card_lines`).
 - Run `cargo test -p askhava-quotes tests::matching_examples` and `cargo test -p askhava-quotes tests::prop_matching_props`.
 - TD-LIC-26 (LIC-036, a handyman's text quote gets the portal link) is listed for T044 but covers none of its requirements and needs quote intake by text, which does not exist yet; no case is written here (D-1016).
+- `tests/integration/tests/auto_confirm.rs` (T209: TD-FEE-30, TD-FEE-31, TD-SEC-17 auto-confirm case): `cargo test -p askhava-integration --test auto_confirm`.

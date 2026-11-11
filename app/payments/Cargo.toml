@@ -8,6 +8,7 @@ publish.workspace = true
 
 [dependencies]
 askhava-adapters = { workspace = true }
+askhava-catalog = { workspace = true }
 askhava-core = { workspace = true }
 askhava-ops = { workspace = true }
 askhava-privacy = { workspace = true }
@@ -22,7 +23,6 @@ thiserror = { workspace = true }
 tracing = { workspace = true }
 
 [dev-dependencies]
-askhava-catalog = { workspace = true }
 hmac = { workspace = true }
 proptest = { workspace = true }
 serde-saphyr = { workspace = true }

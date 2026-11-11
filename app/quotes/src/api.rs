@@ -37,9 +37,16 @@
 //! [`ScreenCheck`]s through a [`PhotoScreener`] (AI-016, CARD-013, CARD-014).
 //! T193: [`open_card_jobs`] lists a business's carded jobs still waiting for quotes (BIZ-031).
 //! T148: [`record_quote_minutes`] stores the optional "minutes this quote took" (PICK-040, OPS-047).
+//! T209: [`tick_auto_confirm`], [`untick_auto_confirm`] and [`auto_confirm_of`] store and read the
+//! quote's "Auto-confirm and pay if picked" tick, worded by [`auto_confirm_authorization`]
+//! (PICK-048, PICK-056, D-401).
 
 use sqlx::types::Uuid;
 
+pub use crate::auto_confirm_box::{
+    AUTO_CONFIRM_VERSION, AutoConfirmError, AutoConfirmTick, Untick, auto_confirm_authorization,
+    auto_confirm_of, tick_auto_confirm, untick_auto_confirm,
+};
 pub use crate::capability_match::{
     CapabilitySkip, JobFit, band_floor_cents, capability_skip, capable_pool,
 };
