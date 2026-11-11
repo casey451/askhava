@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-11T11:17:44Z by runner ee153a16c726 (actions).
+Updated 2026-11-11T11:19:13Z by runner ee153a16c726 (actions).
 
-**Building: T331 in progress since 10:45Z; 201 of 372 done; week 65% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T164 in progress since 11:19Z; 201 of 372 done; week 65% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 201 of 372 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 3: T331 claimed 10:45Z, lease until 13:45Z
-- **Week:** 65% used, 61.4M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:17Z, 0 min before this update
+- **Lane:** lane 1: T164 claimed 11:19Z, lease until 14:19Z; lane 3: T331 claimed 10:45Z, lease until 13:45Z
+- **Week:** 65% used, 60.7M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Last run:** 11:17Z, 1 min before this update
 - **Keeper:** last ran 11:17Z, next wake 13:48Z
 
 ## Needs attention
@@ -112,7 +112,7 @@ Updated 2026-11-11T11:17:44Z by runner ee153a16c726 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-11T10:07:56Z (week)): five-hour: 7.9M used, 21.2M left, resets 2026-11-11T14:49:36Z; week: 132.6M used, 61.4M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-04T13:07:05Z.
+- Pacing (session_reading 2026-11-11T11:17:29Z (week)): five-hour: 12.5M used, 16.6M left, resets 2026-11-11T14:49:36Z; week: 133.3M used, 60.7M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-04T16:17:46Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -127,7 +127,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T164 (lease until 2026-11-11T14:19:08Z)
 - lane 3: T331 (lease until 2026-11-11T13:45:45Z)
 
 ## Last usage reading

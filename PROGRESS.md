@@ -1996,3 +1996,4 @@
 - 2026-11-11T11:14:50Z runner ee153a16c726 (actions): {"T164": "MERGE_PENDING -> QUEUED"}
 - 2026-11-11T11:17:29Z runner ee153a16c726 (actions): {}
 - 2026-11-11T11:17:44Z runner ee153a16c726 (actions): {}
+- 2026-11-11T11:19:13Z runner ee153a16c726 (actions): {"T164": "QUEUED -> IN_PROGRESS"}; T164 estimated 3.5M tokens (calibrated); five-hour window has 16.6M left, week 60.7M after 3.3M still running in another lane (session_reading 2026-11-11T11:17:29Z (week)); claimed
