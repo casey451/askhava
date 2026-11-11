@@ -63,6 +63,8 @@ jobs:
         uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
         with:
           shared-key: e2e
+          # Restored on every run, saved only on main, where the nightly calls this workflow (D-2782).
+          save-if: ${{ github.ref == 'refs/heads/main' }}
 
       - name: Build server and worker with test-control (never the release build, SEC-035)
         run: |
