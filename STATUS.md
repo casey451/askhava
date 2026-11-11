@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-11T15:36:00Z by runner ee5cdf2ecfbe (actions).
+Updated 2026-11-11T15:38:02Z by runner db6214706040 (actions).
 
-**Building: T269 in progress since 15:02Z; 205 of 373 done; week 69% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T165 in progress since 15:37Z; 205 of 373 done; week 69% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 205 of 373 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 3: T269 claimed 15:02Z, lease until 18:02Z
-- **Week:** 69% used, 50.6M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:24Z, 11 min before this update
+- **Lane:** lane 1: T165 claimed 15:37Z, lease until 18:37Z; lane 3: T269 claimed 15:02Z, lease until 18:02Z
+- **Week:** 69% used, 53.1M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Last run:** 15:24Z, 13 min before this update
 - **Keeper:** last ran 15:24Z, next wake 18:05Z
 
 ## Needs attention
@@ -29,7 +29,7 @@ E2e failed at step: Chromium and its system libraries
 Error: Installation process exited with code: 100
 ##[error]Process completed with exit code 1.
 Ci fai
-- Strict plan check red: 19 problem(s) on tasks still to run (+32 on DONE tasks); first: T255: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 22 problem(s) on tasks still to run (+36 on DONE tasks); first: T340: stored context_pct 35% but it measures 39%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -145,7 +145,7 @@ Ci fai
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-11T14:40:15Z (week)): five-hour: 7.4M used, 21.7M left, resets on first use; week: 143.4M used, 50.6M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-04T19:20:35Z.
+- Pacing (session_reading 2026-11-11T15:23:45Z (week)): five-hour: 4.1M used, 25.0M left, resets 2026-11-11T20:04:09Z; week: 140.9M used, 53.1M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-05T00:18:26Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -160,7 +160,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T165 (lease until 2026-11-11T18:37:57Z)
 - lane 3: T269 (lease until 2026-11-11T18:02:25Z)
 
 ## Last usage reading
