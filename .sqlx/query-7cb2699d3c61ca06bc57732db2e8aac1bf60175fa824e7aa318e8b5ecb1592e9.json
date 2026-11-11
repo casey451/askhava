@@ -1,0 +1,30 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO portals.code_send (link_id, reserved_at, outcome) VALUES ($1, $2, 'pending') ON CONFLICT (link_id) DO UPDATE SET reserved_at = EXCLUDED.reserved_at, outcome = 'pending' WHERE portals.code_send.outcome = 'failed' OR (portals.code_send.outcome = 'pending' AND portals.code_send.reserved_at < $3) RETURNING link_id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "link_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "portals.code_send",
+            "name": "link_id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "7cb2699d3c61ca06bc57732db2e8aac1bf60175fa824e7aa318e8b5ecb1592e9"
+}
