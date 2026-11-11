@@ -40,12 +40,17 @@
 use std::sync::Arc;
 
 use askhava_adapters::api::{Delivery, VerifiedWebhook, WebhookVendor, refuse, verify_webhook};
-use askhava_businesses::api::{AUTO_REPLY_TEMPLATE, ConsentError, auto_reply_due, phone_stopped};
-use askhava_core::api::Clock;
+use askhava_businesses::api::{
+    AUTO_REPLY_TEMPLATE, BusinessesError, ConsentError, auto_reply_due, phone_stopped, public_names,
+};
+use askhava_core::api::{Clock, Environment};
 use askhava_intake::api::rules::{
     Check, Inbound, Settings as IntakeSettings, check, safety_call_trigger, wanted_language,
 };
-use askhava_intake::api::{IntakeError, SafetyCallAsk, TextIn, enqueue_safety_call, receive_reply};
+use askhava_intake::api::{
+    Admission, IntakeError, LimitError, SafetyCallAsk, TextIn, admit_new_request,
+    enqueue_safety_call, list_ask, open_request_jobs, receive_reply,
+};
 use askhava_messaging::api::{
     APP_OPT_OUT_WORDS, EmergencyFacts, HelpSettings, InboundText, InboxError, Language,
     ModeStateError, NewText, OutboxError, Outcome, PROVIDER_OPT_OUT_WORDS, ProviderKeyword,
@@ -58,6 +63,7 @@ use askhava_privacy::api::{
     CommonWords, Inbound as Read, InboundWords, Known, NameMemory, NewContact, Vault, VaultError,
     find_by_phone, read_inbound, read_inbound_for, store_contact,
 };
+use askhava_quotes::api::{QuotesError, quoted_prices};
 use axum::Router;
 use axum::body::Bytes;
 use axum::extract::State;
@@ -91,8 +97,13 @@ pub struct Webhooks {
     pub id_secret: SecretString,
     /// The vault: phone lookups and the sender directory (PRIV-002).
     pub vault: Vault,
-    /// The businesses' public names for LIST (TXT-031); empty until `businesses` holds names.
-    pub names: Vec<(Uuid, String)>,
+    /// The environment the route runs in (`core::api::Settings::environment`), for the AI gate
+    /// T299 wires (D-2065, D-2206).
+    #[allow(
+        dead_code,
+        reason = "T299's AI gate reads it; the test crates that compile this file by #[path] do not (D-3086)"
+    )]
+    pub environment: Environment,
     /// The owner settings `intake` reads (TXT-039, CALL-019).
     pub intake: IntakeSettings,
 }
@@ -329,12 +340,27 @@ async fn owner_paused(db: &mut PgConnection) -> Step<bool> {
 }
 
 /// Hands a homeowner's scrubbed text to `intake::api::receive_reply` (TXT-031, INT-019, D-999).
+/// With an open request, a LIST text gets its quoted businesses' public names read now
+/// ([`list_names`]); with none, SEC-014's new-request limit is counted first ([`admitted`]),
+/// except for a START text, which is never limited (D-2206, D-3083).
 async fn intake(
     h: &Webhooks,
     db: &mut PgConnection,
     (msg, read): (&InboundText<'_>, &Read),
     now: Timestamp,
 ) -> Step<()> {
+    let names = match open_request_jobs(db, msg.contact)
+        .await
+        .map_err(intake_halt)?
+    {
+        Some(jobs) if list_ask(msg.text).is_some() => list_names(db, &jobs).await?,
+        Some(_) => Vec::new(),
+        None if read.flags.start => Vec::new(),
+        None => {
+            admitted(db, msg.contact, now).await?;
+            Vec::new()
+        }
+    };
     let inbound = Inbound {
         words: msg.text,
         opt_out: read.flags.opt_out,
@@ -348,11 +374,39 @@ async fn intake(
         inbound,
         received_at: now,
     };
-    let pass = (h.intake, h.names.as_slice());
-    receive_reply(db, &h.id_secret, &reply, pass)
+    receive_reply(db, &h.id_secret, &reply, (h.intake, names.as_slice()))
         .await
         .map(|_| ())
         .map_err(intake_halt)
+}
+
+/// SEC-014, SEC-015, D-1951, D-2206, D-3083: the new-request limit for a homeowner with no open
+/// request, keyed by her vault contact (no IP: Twilio posts the text), counted on the delivery's
+/// transaction as its last step before `receive_reply`, so a rolled-back delivery counts nothing
+/// and nothing waits on the network while the shared hourly row is held. A refused text ends here
+/// (200, its inbox row kept, so Twilio's resend is a repeat): it opens nothing and is answered by
+/// nothing; its alert (one per window, no body or phone) is `intake`'s. A counter or alert error
+/// is a database error, so the delivery rolls back and Twilio resends it.
+async fn admitted(db: &mut PgConnection, contact: Uuid, now: Timestamp) -> Step<()> {
+    match admit_new_request(&mut *db, (contact, None), now).await {
+        Ok(Admission::Admitted) => Ok(()),
+        Ok(Admission::Refused(_)) => Err(Halt::Ends("limited")),
+        Err(LimitError::Counter | LimitError::Alert) => Err(Halt::Database),
+    }
+}
+
+/// TXT-031, PICK-041, D-1310, D-2206, D-3083: the public names, read now through
+/// `businesses::api::public_names`, of every business that quoted one of `jobs`, for the LIST
+/// reply; a business with no usable name is left out, so `receive_reply` keeps D-1310's fallback.
+async fn list_names(db: &mut PgConnection, jobs: &[Uuid]) -> Step<Vec<(Uuid, String)>> {
+    let mut quoted: Vec<Uuid> = Vec::new();
+    for &job in jobs {
+        let prices = quoted_prices(db, job).await.map_err(quotes_halt)?;
+        quoted.extend(prices.iter().map(|p| p.business));
+    }
+    quoted.sort_unstable();
+    quoted.dedup();
+    public_names(db, &quoted).await.map_err(businesses_halt)
 }
 
 /// The opt-out check, then the HELP reply (CON-008, CON-013, CON-016, CON-018): an opt-out ends
@@ -549,6 +603,22 @@ fn vault_halt(e: VaultError) -> Halt {
 /// a business STOP is never lost before its owner email is queued (BIZ-017, D-2039).
 fn consent_halt(e: ConsentError) -> Halt {
     if matches!(e, ConsentError::Database | ConsentError::Audit) {
+        Halt::Database
+    } else {
+        Halt::Failed("businesses", variant(&e))
+    }
+}
+
+fn quotes_halt(e: QuotesError) -> Halt {
+    if matches!(e, QuotesError::Database) {
+        Halt::Database
+    } else {
+        Halt::Failed("quotes", variant(&e))
+    }
+}
+
+fn businesses_halt(e: BusinessesError) -> Halt {
+    if matches!(e, BusinessesError::Database) {
         Halt::Database
     } else {
         Halt::Failed("businesses", variant(&e))

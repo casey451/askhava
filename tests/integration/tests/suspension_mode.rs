@@ -14,7 +14,7 @@ use std::sync::{Arc, Mutex};
 
 use askhava_adapters::api::{AdapterError, IdempotencyKey, SentText, SmsAdapter};
 
-use askhava_core::api::{Claimed, ManualClock};
+use askhava_core::api::{Claimed, Environment, ManualClock};
 use askhava_intake::api::SAFETY_CALL_KIND;
 use askhava_intake::api::rules::Settings as IntakeSettings;
 use askhava_integration::{is_permission_denied, set_app_role};
@@ -73,7 +73,7 @@ fn hooks(pool: &PgPool) -> Arc<Webhooks> {
         auth_token: SecretString::from(TOKEN),
         id_secret: secret(),
         vault: vault(),
-        names: Vec::new(),
+        environment: Environment::Test,
         intake: IntakeSettings::default(),
     })
 }
