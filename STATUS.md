@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-11T03:47:55Z by runner 24f3182faebb (actions).
+Updated 2026-11-11T03:57:50Z by runner 6e360d3647a6 (actions).
 
-**Building: T209 in progress since 03:10Z; 194 of 362 done; week 58% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T209 in progress since 03:10Z; 194 of 369 done; week 58% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 194 of 362 build tasks (owner gates not counted)
+- **Tasks done:** 194 of 369 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T209 claimed 03:10Z, lease until 06:10Z
 - **Week:** 58% used, 80.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:47Z, 0 min before this update
+- **Last run:** 03:48Z, 9 min before this update
 - **Keeper:** last ran 03:47Z, next wake 06:12Z
 
 ## Needs attention
@@ -40,6 +40,7 @@ Updated 2026-11-11T03:47:55Z by runner 24f3182faebb (actions).
 | T286 | server: every request has a whole-request time limit, answer | done | 1 | 26 min | 04:57Z |  |
 
 ### Plan and harness merges on main
+- 03:53Z Harness: merge main before the hand-in push when the head is behind (D-2798) (#450)
 - 03:41Z Plan: fix tasks from the Nov 11 vendor-double review (D-2760–D-2770) (#446)
 - 03:25Z Harness: CI speed — cache saves on main only, pytest in its own job, C YAML loader (D-2782) (#449)
 - 01:56Z Harness: the test suite drops the live job's smoke switch and run ids (D-2660) (#441)
@@ -60,13 +61,13 @@ Updated 2026-11-11T03:47:55Z by runner 24f3182faebb (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 206 of 733 (28.1%) · partial 337 · unstarted 190
-**Tasks merged (throughput only):** 194 of 362
+**Requirements verified:** 205 of 733 (28.0%) · partial 338 · unstarted 190
+**Tasks merged (throughput only):** 194 of 369
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 15 | 13 | 7 | 35 |
-| ai | 8 | 16 | 5 | 29 |
+| ai | 7 | 17 | 5 | 29 |
 | businesses | 16 | 35 | 7 | 58 |
 | calls | 11 | 13 | 1 | 25 |
 | consent | 8 | 23 | 4 | 35 |
@@ -96,9 +97,9 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 74 of 158 done
+- stage 4: 74 of 161 done
 - stage 5: 0 of 58 done
-- stage 6: 0 of 30 done
+- stage 6: 0 of 34 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
 - stage kit: 14 of 15 done

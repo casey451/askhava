@@ -19109,7 +19109,10 @@
     "T370",
     "T371",
     "T372",
-    "T374"
+    "T374",
+    "T376",
+    "T377",
+    "T378"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19299,7 +19302,8 @@
     "T106",
     "T107",
     "T279",
-    "T287"
+    "T287",
+    "T378"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19338,7 +19342,8 @@
   {
    "id": "T110",
    "deps": [
-    "T109"
+    "T109",
+    "T377"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19639,7 +19644,8 @@
    "deps": [
     "T127",
     "T275",
-    "T336"
+    "T336",
+    "T377"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19663,7 +19669,8 @@
    "deps": [
     "T130",
     "T275",
-    "T336"
+    "T336",
+    "T378"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -21954,7 +21961,11 @@
    "deps": [
     "T236",
     "T297",
-    "T299"
+    "T299",
+    "T379",
+    "T380",
+    "T381",
+    "T382"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -27237,7 +27248,8 @@
   {
    "id": "T298",
    "deps": [
-    "T136"
+    "T136",
+    "T376"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -28757,6 +28769,100 @@
    "slug": "job-types-page-served",
    "type": "build",
    "stage": "5"
+  },
+  {
+   "id": "T379",
+   "deps": [
+    "T133",
+    "T313"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "suppressed-email-not-reached",
+   "type": "harness",
+   "stage": "6"
+  },
+  {
+   "id": "T380",
+   "deps": [
+    "T132",
+    "T333"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "refund-key-expiry",
+   "type": "harness",
+   "stage": "6"
+  },
+  {
+   "id": "T377",
+   "deps": [
+    "T336"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "sms-status-callback-sent-log",
+   "type": "harness",
+   "stage": "4"
+  },
+  {
+   "id": "T378",
+   "deps": [
+    "T377",
+    "T292"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "voice-calls-carry-twiml-and-callbacks",
+   "type": "harness",
+   "stage": "4"
+  },
+  {
+   "id": "T376",
+   "deps": [
+    "T024",
+    "T167",
+    "T057",
+    "T075"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "ai-schema-supported-keywords",
+   "type": "harness",
+   "stage": "4"
+  },
+  {
+   "id": "T381",
+   "deps": [
+    "T380",
+    "T314",
+    "T353"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "dispute-inquiry",
+   "type": "harness",
+   "stage": "6"
+  },
+  {
+   "id": "T382",
+   "deps": [
+    "T131",
+    "T340",
+    "T341",
+    "T344",
+    "T295",
+    "T318",
+    "T361",
+    "T268",
+    "T269",
+    "T272"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "verify-max-tries-cooldown",
+   "type": "build",
+   "stage": "6"
   }
  ],
  "owner_waits": [],
@@ -30589,7 +30695,7 @@
    }
   }
  },
- "updated_at": "2026-11-11T03:47:55Z",
+ "updated_at": "2026-11-11T03:57:50Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -30687,7 +30793,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "24f3182faebbf525e5f90856bccff8646d660355",
+ "runner_sha": "6e360d3647a627e79d18016c7caf23cd3c288ffe",
  "starter": "actions",
  "smoke_runs": [
   {
