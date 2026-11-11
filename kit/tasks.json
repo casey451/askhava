@@ -18976,10 +18976,76 @@
    "copy": true
   },
   {
+   "id": "T383",
+   "slug": "brand-text-templates",
+   "title": "messaging and portals: the text templates and the homeowner page take the brand from the brand file",
+   "goal": "After T292 and T294 (D-2843; D-1932, D-1933, D-2387). T292's registry already fills the brand tokens from `core::api::brand()` while it builds (Spanish names for `es.json`) and checks the filled text, but `app/messaging/templates/en.json` and `es.json` kept their literal brand words because two tests of DONE tasks read the raw files (D-2387), and T087's `app/portals/templates/homeowner_home.html` came after T294 with three literals; `tests/brand_literal_baseline.json` still lists the three, so T295 cannot make the guard strict. (1) The two tests change only in how they reach the text: `tests/integration/tests/voice_calls.rs::td_call_06_no_route_lets_a_business_text_a_homeowner` and `tests/security/tests/no_phone_released.rs::td_pick_10_the_release_email_and_text_carry_no_homeowner_detail` fill each template's raw text through `askhava_core::api::brand().fill(text, spanish)` (Spanish for `es.json`) before their slot and wording checks; every slot list, expected literal (\"Ask Hava: Job {job} is confirmed. …\") and assertion stays byte-identical. (2) In both template files, in this order: \"Ask Hava LLC\" becomes `{brand_legal}`, each `askhava.com` `{domain}`, the opening \"Ask Hava:\" `{brand_short}:` and any other \"Ask Hava\" `{brand}`; no key is added or removed, every text kind keeps its Spanish template (TXT-001) and each Spanish text keeps its Spanish words and its `draft` mark. Before committing, a run over both files shows that filling every converted text under the embedded brand (`scripts/brand.py` `fill`, Spanish names for `es.json`) gives exactly the text it replaced, for every ID (the PR description gives the command and its result); so every text, segment count and test is unchanged under the brand as it is (D-1932). (3) `homeowner_home.html` names the brand through `{{ askhava_core::api::brand().display_name() }}`, as T294's pages do; the page is byte-identical under the embedded brand and Ally stays clean (WCAG 2.2 AA). (4) This task removes the three files' entries from `tests/brand_literal_baseline.json` (the baseline only shrinks), so it lists only T295's own files. Every other existing test passes unchanged. Update the `messaging` and `portals` `CLAUDE.md` files and `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "4",
+   "module": "messaging",
+   "deps": [
+    "T294",
+    "T087",
+    "T080",
+    "T069"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness",
+    "compliance",
+    "security"
+   ],
+   "owns": [
+    "app/messaging/templates/en.json",
+    "app/messaging/templates/es.json",
+    "app/portals/templates/homeowner_home.html",
+    "tests/integration/tests/voice_calls.rs",
+    "tests/security/tests/no_phone_released.rs",
+    "tests/brand_literal_baseline.json"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/wording.md",
+    "docs/spec/messaging.md"
+   ],
+   "requirements": [
+    "WORD-001",
+    "WORD-008",
+    "TXT-001"
+   ],
+   "tests": [
+    "TD-WORD-35"
+   ],
+   "decisions": [
+    "D-2843",
+    "D-2387",
+    "D-1932",
+    "D-1933"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 6,
+    "lines": 600,
+    "context_pct": 25
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T383-brand-text-templates",
+   "prompt": "kit/prompts/T383.md",
+   "acceptance": "TD-WORD-35 passes; `tests/brand_literal_baseline.json` lists none of the three files and `tests/docs/test_brand_literals.py` passes; every text in both files fills to exactly its old text under the embedded brand; every existing test passes with its expected text unchanged."
+  },
+  {
    "id": "T295",
    "slug": "brand-switch-proof",
    "title": "payments, ai, intake and picks take the brand from the brand file, and a test proves a switch changes every channel",
-   "goal": "After T292, T293 and T294 (D-1932, D-1933). (1) The last literals: `payments`' `STATEMENT_PREFIX` and the intent description (FEE-049; the prefix still has to match the Stripe account's setting, so the brand file's `statement_prefix` is the one place it is written, and `DESCRIPTOR_MAX` is still enforced), `ai`'s request prompt (`models.rs`) and the brand words `output_checks.rs` lets stay capitalised, `intake`'s question text opening (`question_bank.rs`, `<short_name>:`) and quote-page link (`job_texts.rs`, on `domain`), and `picks`' Terms line (`service.rs`, on `domain`, English and Spanish). `AUTHORIZATION_TEXT` and `app/ai/data/word_022_phrases.json` keep their words (T291's exemptions). (2) `tests/integration/tests/brand_setting.rs` (TD-WORD-38): its own test binary installs a fake brand before anything renders (`Testbrand`, `Testbrand for Business`, `Testbrand LLC`, `Testbrand L L C`, `testbrand.example`, `jobs@notify.testbrand.example`, prefix `TESTBRND`) and renders, through the crates' public functions: a homeowner text and a business text in English and Spanish from the template registry, a homeowner email and a business email (sender, subject, body, footer), the receipt email, the quote page and the site layout, the voice greeting, the intent description and statement descriptor, a question-bank text and a quote-card label; each holds the fake name or domain and none holds \"Ask Hava\", `askhava.com` or `ASKHAVA` as a whole word. A second test, on the embedded brand, checks that the compiled-in homeowner Terms (`docs/legal/homeowner-terms.md`), `AUTHORIZATION_TEXT` and the WORD-022 list each name its `legal_name` or `display_name`, so a switch fails `Ci` until those legal records are re-issued under a new version (TERMS-016); and it pins the SHA-256 of `AUTHORIZATION_TEXT` for the current `AUTHORIZATION_VERSION` in a table keyed by version, so rewording the authorization without raising the version fails. (3) First, if `tests/brand_literal_baseline.json` still lists a file this task does not own, stop and report it: a plan change gives that file an owner before the guard is made strict. Then the guard becomes strict: delete `tests/brand_literal_baseline.json` and the baseline code in `tests/docs/test_brand_literals.py`, keeping every other case; with no baseline any brand literal in a scanned file fails. A test of a DONE task named below may change only in how it reaches a text whose constant became a function (for example `NO_CALLS_LINE` to `no_calls_line()`); every expected literal, input and assertion stays byte-identical, so it still pins today's wording. Every other existing test passes unchanged. Update the `payments`, `ai`, `intake` and `picks` `CLAUDE.md` files and `docs/decisions.md`. Nov 10 code review batch 2, quotes F2 (D-2638; INT-039, CARD-007, AI-019, D-1269): with AI off the question bank skips a question when exactly one multi-word option appears in her words, even after a negation (`keyword_answer`, `app/intake/src/question_bank.rs:138`, used by `skip_reading`, `:255`): \"Water is not under a sink, it is dripping from the ceiling\" answers \"Under a sink\" and \"Not the water heater, my toilet keeps running\" answers \"Water heater\", so the card states a wrong fact. A match with a negation (not, no, isn't, never, no es, no está) within three words before it does not skip; the question is asked. TD-INT-21 gains both cases (each asks) and \"Swamp cooler pads are dry\" (still skips) in `app/intake/src/tests/question_bank.rs`, which this task now also owns (adding cases only).",
+   "goal": "After T292, T293 and T294 (D-1932, D-1933). (1) The last literals: `payments`' `STATEMENT_PREFIX` and the intent description (FEE-049; the prefix still has to match the Stripe account's setting, so the brand file's `statement_prefix` is the one place it is written, and `DESCRIPTOR_MAX` is still enforced), `ai`'s request prompt (`models.rs`) and the brand words `output_checks.rs` lets stay capitalised, `intake`'s question text opening (`question_bank.rs`, `<short_name>:`) and quote-page link (`job_texts.rs`, on `domain`), and `picks`' Terms line (`service.rs`, on `domain`, English and Spanish). `AUTHORIZATION_TEXT` and `app/ai/data/word_022_phrases.json` keep their words (T291's exemptions). (2) `tests/integration/tests/brand_setting.rs` (TD-WORD-38): its own test binary installs a fake brand before anything renders (`Testbrand`, `Testbrand for Business`, `Testbrand LLC`, `Testbrand L L C`, `testbrand.example`, `jobs@notify.testbrand.example`, prefix `TESTBRND`) and renders, through the crates' public functions: a homeowner text and a business text in English and Spanish from the template registry, a homeowner email and a business email (sender, subject, body, footer), the receipt email, the quote page and the site layout, the voice greeting, the intent description and statement descriptor, a question-bank text and a quote-card label; each holds the fake name or domain and none holds \"Ask Hava\", `askhava.com` or `ASKHAVA` as a whole word. A second test, on the embedded brand, checks that the compiled-in homeowner Terms (`docs/legal/homeowner-terms.md`), `AUTHORIZATION_TEXT` and the WORD-022 list each name its `legal_name` or `display_name`, so a switch fails `Ci` until those legal records are re-issued under a new version (TERMS-016); and it pins the SHA-256 of `AUTHORIZATION_TEXT` for the current `AUTHORIZATION_VERSION` in a table keyed by version, so rewording the authorization without raising the version fails. (3) First, if `tests/brand_literal_baseline.json` still lists a file this task does not own, stop and report it: a plan change gives that file an owner before the guard is made strict (T383 cleared the two text-template files and the homeowner page, D-2843). Then the guard becomes strict: delete `tests/brand_literal_baseline.json` and the baseline code in `tests/docs/test_brand_literals.py`, keeping every other case; with no baseline any brand literal in a scanned file fails. A test of a DONE task named below may change only in how it reaches a text whose constant became a function (for example `NO_CALLS_LINE` to `no_calls_line()`); every expected literal, input and assertion stays byte-identical, so it still pins today's wording. Every other existing test passes unchanged. Update the `payments`, `ai`, `intake` and `picks` `CLAUDE.md` files and `docs/decisions.md`. Nov 10 code review batch 2, quotes F2 (D-2638; INT-039, CARD-007, AI-019, D-1269): with AI off the question bank skips a question when exactly one multi-word option appears in her words, even after a negation (`keyword_answer`, `app/intake/src/question_bank.rs:138`, used by `skip_reading`, `:255`): \"Water is not under a sink, it is dripping from the ceiling\" answers \"Under a sink\" and \"Not the water heater, my toilet keeps running\" answers \"Water heater\", so the card states a wrong fact. A match with a negation (not, no, isn't, never, no es, no está) within three words before it does not skip; the question is asked. TD-INT-21 gains both cases (each asks) and \"Swamp cooler pads are dry\" (still skips) in `app/intake/src/tests/question_bank.rs`, which this task now also owns (adding cases only).",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -18993,7 +19059,8 @@
     "T024",
     "T156",
     "T163",
-    "T240"
+    "T240",
+    "T383"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -19041,7 +19108,8 @@
     "D-1932",
     "D-1933",
     "D-490",
-    "D-2638"
+    "D-2638",
+    "D-2843"
    ],
    "cites": [],
    "budget": {
@@ -25399,7 +25467,7 @@
    "id": "T360",
    "slug": "optout-emails",
    "title": "messaging: the opt-out confirmation email while texting is off, and CON-016's email or owner count for a listed homeowner who writes again",
-   "goal": "Nov 10 code review, messaging F3 and CON-016, the email half (D-2629; CON-016, CON-030, CON-009, D-226). (1) CON-030: while texting is off or suspended an opt-out is confirmed by email if one is on file, never by a later text; no code sends that email. `app/messaging/src/optout_email.rs` adds `messaging::api::queue_optout_confirmation_email(db, vault, contact, language, event)`: it reads her email through the vault (never logged), and when one is on file queues one email under the opt-out event as its subject through T094's email outbox (`send_email`), with the CON-009 wording as an email (English and Spanish), once per event. (2) CON-016: a listed homeowner who writes without START is emailed if an email is on file, and otherwise is listed in Casey's weekly digest; `queue_optout_wrote_again(db, vault, contact, inbox, now)` queues at most one such email a day per homeowner (\"You opted out of texts from Ask Hava…\": how to text again with START, and that her open requests continue on the quote page and by email, CON-012), and with no email on file writes one `ops` audit row, action `messaging.optout_wrote_again`, subject the inbox row, IDs only, which T204's weekly digest counts (no new table, no migration). The new email templates go in `app/messaging/templates/en.json` and `es.json` through the cold read and the copy panel (WORD-028, WORD-029). The route that calls both is T357's. Tests in `tests/integration/tests/optout_emails.rs` (TD-CON-34): with an email on file one confirmation email per event and none on a repeat; none without an email; a listed homeowner's message gives one email, a second the same day gives none, the next day one; without an email one audit row per message and no email; no body, phone or email address in any audit row or log line. Update the `messaging` `CLAUDE.md` and `docs/decisions.md`.",
+   "goal": "Nov 10 code review, messaging F3 and CON-016, the email half (D-2629; CON-016, CON-030, CON-009, D-226). (1) CON-030: while texting is off or suspended an opt-out is confirmed by email if one is on file, never by a later text; no code sends that email. `app/messaging/src/optout_email.rs` adds `messaging::api::queue_optout_confirmation_email(db, vault, contact, language, event)`: it reads her email through the vault (never logged), and when one is on file queues one email under the opt-out event as its subject through T094's email outbox (`send_email`), with the CON-009 wording as an email (English and Spanish), once per event. (2) CON-016: a listed homeowner who writes without START is emailed if an email is on file, and otherwise is listed in Casey's weekly digest; `queue_optout_wrote_again(db, vault, contact, inbox, now)` queues at most one such email a day per homeowner (\"You opted out of texts from Ask Hava…\": how to text again with START, and that her open requests continue on the quote page and by email, CON-012), and with no email on file writes one `ops` audit row, action `messaging.optout_wrote_again`, subject the inbox row, IDs only, which T204's weekly digest counts (no new table, no migration). The new email templates go in `app/messaging/templates/en.json` and `es.json` through the cold read and the copy panel (WORD-028, WORD-029); their brand words are tokens, never literals (`{brand_short}:` to open, `{brand}`, `{domain}`; filled by the registry, D-1932, D-2843), since the brand-literal guard refuses a new literal line in either file. The route that calls both is T357's. Tests in `tests/integration/tests/optout_emails.rs` (TD-CON-34): with an email on file one confirmation email per event and none on a repeat; none without an email; a listed homeowner's message gives one email, a second the same day gives none, the next day one; without an email one audit row per message and no email; no body, phone or email address in any audit row or log line. Update the `messaging` `CLAUDE.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -25443,7 +25511,8 @@
    "decisions": [
     "D-2629",
     "D-2620",
-    "D-226"
+    "D-226",
+    "D-2843"
    ],
    "cites": [],
    "budget": {
