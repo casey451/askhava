@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T10:03:16Z by runner 6b803a362f31 (actions).
+Updated 2026-11-11T10:03:57Z by runner 6b803a362f31 (actions).
 
 **Idle since 09:49Z; 199 of 371 done; week 63% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -12,6 +12,7 @@ Updated 2026-11-11T10:03:16Z by runner 6b803a362f31 (actions).
 - **Keeper:** last ran 10:03Z, next wake 10:23Z
 
 ## Needs attention
+- PLAN GAP T164 (since 2026-11-11T10:03:50Z, no attempt used; a plan change fixes it): T164: dependency T293 is DONE but its owned file tests/brand_literal_baseline.json is not on main; T164: dependency T294 is DONE but its owned file tests/brand_literal_baseline.json is not on main
 - PLAN GAP T269 (since 2026-11-11T09:25:53Z, no attempt used; a plan change fixes it): T269: dependency T294 is DONE but its owned file tests/brand_literal_baseline.json is not on main; T269: dependency T291 is DONE but its owned file tests/brand_literal_baseline.json is not on main
 - PLAN GAP T278 (since 2026-11-11T09:25:53Z, no attempt used; a plan change fixes it): T278: dependency T293 is DONE but its owned file tests/brand_literal_baseline.json is not on main; T278: dependency T295 is DONE but its owned file tests/brand_literal_baseline.json is not on main
 - PLAN GAP T313 (since 2026-11-11T09:25:53Z, no attempt used; a plan change fixes it): T313: dependency T292 is DONE but its owned file tests/brand_literal_baseline.json is not on main
