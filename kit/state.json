@@ -20746,12 +20746,11 @@
      "result": "check_failed"
     }
    ],
-   "reviewed_sha": "64b049c1ac2a9a01bb17f9c7c3e9011bb99b1cf7",
+   "reviewed_sha": "1a8bc64940c83b40a2644d2be864eef30a684556",
    "review_lease": {
     "task": "T157",
-    "session": "actions-42932700801",
-    "expires": "2026-11-11T04:03:53Z",
-    "lane": "2"
+    "session": "actions-42943647556",
+    "expires": "2026-11-11T05:19:04Z"
    },
    "branch": "claude/task/T157-picks-backup-autoconfirm",
    "auto_merge": {
@@ -20762,7 +20761,8 @@
    "last_failure": "E2e: failure; Ally: failure\nE2e failed at step: The journeys (npx playwright test tests/e2e)\n{\"timestamp\":\"2026-11-11T02:14:10.524012Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":128,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-11T02:14:10.524228Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":126,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-11T02:14:10.524440Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":125,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-11T02:14:10.525764Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":129,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-11T02:14:10.526574Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":130,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n  \u2718  33 tests/e2e/j1_reduced.spec.ts:65:1 \u203a J1 step 6 (partial): Pick #2 and the review step, then the code-and-contact form reached directly (form action rewritten to /code), with the call or email c\n##[error]  1) tests/e2e/j1_reduced.spec.ts:65:1 \u203a J1 step 6 (partial): Pick #2 and the review step, then the code-and-contact form reached directly (form action rewritten to /code), with the call or e\nAlly failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing)\n##[error]Process completed with exit code 1.",
    "runner_closed_prs": [
     445
-   ]
+   ],
+   "head_check_since": null
   },
   {
    "id": "T209",
@@ -30422,7 +30422,7 @@
    }
   }
  },
- "updated_at": "2026-11-11T02:22:55Z",
+ "updated_at": "2026-11-11T02:41:38Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -30520,7 +30520,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "daef586a5cd2ee22939da00a31cf1252d780d1e4",
+ "runner_sha": "1a8bc64940c83b40a2644d2be864eef30a684556",
  "starter": "actions",
  "smoke_runs": [
   {
