@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-11T04:32:27Z by runner d669dfa47dae (actions).
+Updated 2026-11-11T04:43:17Z by runner 18d7cc8f2592 (actions).
 
-**Building: T209 in progress since 03:10Z; 194 of 369 done; week 59% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T209 in progress since 03:10Z; 195 of 369 done; week 59% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 194 of 369 build tasks (owner gates not counted)
+- **Tasks done:** 195 of 369 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T209 claimed 03:10Z, lease until 06:10Z; lane 3: T337 claimed 04:25Z, lease until 07:25Z
 - **Week:** 59% used, 72.5M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:32Z, 0 min before this update
+- **Last run:** 04:32Z, 10 min before this update
 - **Keeper:** last ran 04:32Z, next wake 06:13Z
 
 ## Needs attention
@@ -17,7 +17,7 @@ Updated 2026-11-11T04:32:27Z by runner d669dfa47dae (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T374 | licensing and businesses: one read of everything a business  | MERGE_PENDING | 1 | 45 min | 03:08Z |  |
+| T374 | licensing and businesses: one read of everything a business  | done | 1 | 45 min | 03:08Z |  |
 | T157 | picks: the homeowner's backup choice at the pick | done | 2 | 22 min | 02:41Z | E2e: failure; Ally: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-1 |
 | T157 | picks: the homeowner's backup choice at the pick | check_failed | 1 | 66 min | 02:10Z |  |
 | T337 | payments: a $0 release proof is bound to the pick's own stor | QUEUED | 1 | 31 min | 02:07Z | T337 code+tests done (commit 6b896e8f) but smoke/prehandin red: tests/integration/tests/confirm_and_pay.rs td_fee_25_a_p |
@@ -63,8 +63,8 @@ Updated 2026-11-11T04:32:27Z by runner d669dfa47dae (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 205 of 733 (28.0%) · partial 338 · unstarted 190
-**Tasks merged (throughput only):** 194 of 369
+**Requirements verified:** 205 of 733 (28.0%) · partial 339 · unstarted 189
+**Tasks merged (throughput only):** 195 of 369
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -76,7 +76,7 @@ Updated 2026-11-11T04:32:27Z by runner d669dfa47dae (actions).
 | fees | 10 | 41 | 1 | 52 |
 | intake | 19 | 15 | 9 | 43 |
 | job-cards | 10 | 12 | 2 | 24 |
-| licensing | 24 | 23 | 1 | 48 |
+| licensing | 24 | 24 | 0 | 48 |
 | lifecycle | 17 | 11 | 0 | 28 |
 | messaging | 19 | 23 | 3 | 45 |
 | ops-recovery | 2 | 5 | 47 | 54 |
@@ -99,7 +99,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 74 of 161 done
+- stage 4: 75 of 161 done
 - stage 5: 0 of 58 done
 - stage 6: 0 of 34 done
 - stage 7: 0 of 2 done
