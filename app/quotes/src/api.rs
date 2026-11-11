@@ -45,6 +45,9 @@
 //! [`check_note`] and [`screen_note`] send a note back with its reason (PICK-052);
 //! [`save_quote`] and [`withdraw_quote`] store a quote, an edit or a withdrawal under the job's
 //! row lock, never after a pick (PICK-051, D-2912); [`format_definition`] is the plain definition.
+//! T384: [`page_quotes`] keeps a withdrawn quote in its place, never pickable and without its
+//! words, with each edit's time; [`list_texts`] numbers its lines by quote-page number with a
+//! withdrawn line in place; [`shown_card`] adds "Updated <time>" ([`updated_line`]) (PICK-051).
 
 use sqlx::types::Uuid;
 
@@ -85,16 +88,16 @@ pub use crate::notes::{
 pub use crate::notify::{
     CardsOut, Counts, LIST_PAGE, Listed, Notice, Reader, SLOW_AT_MOST, Sent, UPDATE_GAP,
     arizona_time, cards_out_text, first_quote_text, list_texts, list_texts_from, notice,
-    notice_for, update_text, which_job_text,
+    notice_for, update_text, updated_line, which_job_text,
 };
 pub use crate::photos::{
     CardPhoto, CardPhotoOutcome, HomeownerAnswer, LeftOff, PhotoAiGate, PhotoScreener, ScreenCheck,
     ScreenFailed, ScreenVerdict, card_photo,
 };
 pub use crate::quote_card::{
-    CardSource, POLICY_SUMMARY_SENTENCE, Parts, Permit, QuoteCard, QuoteFacts, Spanish, Summary,
-    SummarySetting, SwitchRefused, TripFee, check_summary, format_definition, quote_card,
-    switch_on,
+    CardSource, POLICY_SUMMARY_SENTENCE, Parts, Permit, QuoteCard, QuoteFacts, ShownCard, Spanish,
+    Summary, SummarySetting, SwitchRefused, TripFee, check_summary, format_definition, quote_card,
+    shown_card, switch_on,
 };
 pub use crate::service::{card_holders, coverage, send_cards, send_job_cards, send_late_cards};
 pub use crate::update_texts::{
@@ -109,14 +112,37 @@ pub struct PageQuote {
     pub business: Uuid,
     /// When the quote first arrived; an edit keeps it, so its place never moves (PICK-051).
     pub received_at: jiff::Timestamp,
-    /// `picks` marked it after a failed pick, so it shows "no longer available" (JOB-025, D-084).
+    /// It can't be picked: `picks` marked it after a failed pick (JOB-025, D-084), or the business
+    /// withdrew it (PICK-051); either way it keeps its place and number.
     pub unavailable: bool,
-    /// The business's own words (PICK-003).
+    /// The business's own words (PICK-003); empty for a withdrawn quote, whose words are never read.
     pub original: String,
+    /// The business withdrew it: "Withdrawn by the business" in its place (PICK-051).
+    pub withdrawn: bool,
+    /// When the business last edited it ("Updated <time>"); none if never edited or withdrawn
+    /// (PICK-051).
+    pub updated_at: Option<jiff::Timestamp>,
 }
 
-/// PICK-008, D-084: `job`'s confirmed, unwithdrawn quotes in arrival order (time received, then
-/// business ID), the unavailable ones kept in their place so no number moves.
+impl PageQuote {
+    /// PICK-051: "Updated Nov 3, 9:15 a.m. Arizona time" for an edited quote, else none.
+    #[must_use]
+    pub fn updated_line(&self) -> Option<String> {
+        self.updated_at
+            .map(|at| crate::notify::updated_line(at, false))
+    }
+
+    /// The edit time for the page's `data-updated` attribute, empty when never edited, so the live
+    /// page swaps a card whose quote was edited (PICK-051).
+    #[must_use]
+    pub fn updated_stamp(&self) -> String {
+        self.updated_at.map(|at| at.to_string()).unwrap_or_default()
+    }
+}
+
+/// PICK-008, PICK-051, D-084: `job`'s confirmed quotes in arrival order (time received, then
+/// business ID). Unavailable and withdrawn ones keep their place, so no number moves; a withdrawn
+/// one is always `unavailable`, and its wording is never selected (`original` is empty).
 ///
 /// # Errors
 ///
@@ -126,9 +152,11 @@ pub async fn page_quotes(
     job: Uuid,
 ) -> Result<Vec<PageQuote>, QuotesError> {
     let rows = sqlx::query!(
-        "SELECT business_id, received_at, unavailable_at IS NOT NULL AS \"unavailable!\", \
-         original FROM quotes.quote WHERE job_id = $1 AND confirmed AND withdrawn_at IS NULL \
-         ORDER BY received_at, business_id",
+        "SELECT business_id, received_at, withdrawn_at IS NOT NULL AS \"withdrawn!\", \
+         (unavailable_at IS NOT NULL OR withdrawn_at IS NOT NULL) AS \"unavailable!\", \
+         CASE WHEN withdrawn_at IS NULL THEN original ELSE '' END AS \"original!\", \
+         CASE WHEN withdrawn_at IS NULL THEN edited_at END AS edited \
+         FROM quotes.quote WHERE job_id = $1 AND confirmed ORDER BY received_at, business_id",
         job
     )
     .fetch_all(db)
@@ -141,6 +169,8 @@ pub async fn page_quotes(
             received_at: r.received_at.to_jiff(),
             unavailable: r.unavailable,
             original: r.original,
+            withdrawn: r.withdrawn,
+            updated_at: r.edited.map(jiff_sqlx::Timestamp::to_jiff),
         })
         .collect())
 }
