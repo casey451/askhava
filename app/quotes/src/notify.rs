@@ -363,19 +363,18 @@ fn withdrawn_line(n: usize, es: bool) -> String {
 }
 
 /// TXT-031, PICK-051: the LIST texts for `lines`, each with its own number, at most [`LIST_PAGE`]
-/// lines a text, each text ending with the "2 YES" line, the share sentence and the Terms line. No
-/// pickable line makes no text, so a "2 YES" line never goes with nothing to pick.
+/// lines a text, each text ending with the "2 YES" line, the share sentence and the Terms line. A
+/// text with no pickable line is not sent (its lines are all withdrawn quotes, still shown on the
+/// quote page), so a "2 YES" line never goes with nothing to pick; no pickable line makes no text.
 fn numbered_texts(
     reader: Reader,
     job: &str,
     lines: &[(usize, Line)],
 ) -> Result<Vec<String>, QuotesError> {
-    if !lines.iter().any(|(_, l)| matches!(l, Line::Quote(_))) {
-        return Ok(Vec::new());
-    }
     let es = reader.language() == Language::Es;
     lines
         .chunks(LIST_PAGE)
+        .filter(|chunk| chunk.iter().any(|(_, l)| matches!(l, Line::Quote(_))))
         .map(|chunk| {
             let words: Vec<String> = chunk
                 .iter()
@@ -417,7 +416,8 @@ pub fn list_texts_from(
 /// order, each line numbered by the quote's place on the quote page (the number "<n> YES" picks):
 /// a quote marked unavailable is left out with its number skipped, a withdrawn one keeps its line
 /// as "Withdrawn by the business" with no name or price, and each pickable one is named from
-/// `names` (a withdrawn one needs no name). No pickable quote makes no text.
+/// `names` (a withdrawn one needs no name). A text whose lines are all withdrawn is not sent, so no
+/// pickable quote makes no text.
 ///
 /// # Errors
 ///

@@ -130,22 +130,28 @@ async fn three_quotes(db: &mut Db) -> (Uuid, [Uuid; 3]) {
         .expect("open");
     let mut ids = [Uuid::nil(); 3];
     for (n, id) in ids.iter_mut().enumerate() {
-        *id = create_business(db, false, at("01T09:00:00"))
-            .await
-            .expect("business");
-        sqlx::query("INSERT INTO quotes.job_card (job_id, business_id, handyman, sent_at) VALUES ($1, $2, false, $3)")
-            .bind(job)
-            .bind(*id)
-            .bind(at("03T08:00:00").to_sqlx())
-            .execute(&mut **db)
-            .await
-            .expect("card");
-        let when = at(&format!("03T09:0{}:00", n + 1));
-        let words = format!("Sample wording {}", n + 1);
-        let saved = submit_quote(db, (job, *id), &form(&words), when).await;
-        assert_eq!(saved, Ok(Submitted::Saved));
+        *id = one_quote(db, job, n + 1).await;
     }
     (job, ids)
+}
+
+/// A new business sent `job`'s card quoting at 9:<n> a.m. with "Sample wording <n>"; its id.
+async fn one_quote(db: &mut Db, job: Uuid, n: usize) -> Uuid {
+    let id = create_business(db, false, at("01T09:00:00"))
+        .await
+        .expect("business");
+    sqlx::query("INSERT INTO quotes.job_card (job_id, business_id, handyman, sent_at) VALUES ($1, $2, false, $3)")
+        .bind(job)
+        .bind(id)
+        .bind(at("03T08:00:00").to_sqlx())
+        .execute(&mut **db)
+        .await
+        .expect("card");
+    let when = at(&format!("03T09:{n:02}:00"));
+    let words = format!("Sample wording {n}");
+    let saved = submit_quote(db, (job, id), &form(&words), when).await;
+    assert_eq!(saved, Ok(Submitted::Saved));
+    id
 }
 
 /// Fake names for the LIST: business `k` of `ids` (from 1) is "Sample Business <k>", for each
@@ -396,4 +402,45 @@ async fn td_pick_34_all_withdrawn_is_no_list_and_a_resubmission_returns(mut db: 
     assert!(english.contains("\n1. Withdrawn by the business.\n"));
     assert!(english.contains("\n2. Sample Business 2: $190."));
     assert!(english.contains("\n3. Withdrawn by the business.\n"));
+}
+
+/// TD-PICK-34 (PICK-051, TXT-031): a LIST text whose lines are all withdrawn is not sent. With 11
+/// quotes and #11 withdrawn the LIST is one text, lines 1 to 10, with its "2 YES" ending; the
+/// second text would hold only "11. Withdrawn by the business." and a "2 YES" line with nothing
+/// to pick (English and Spanish). Once #12 arrives the second text returns with both lines.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_pick_34_a_text_of_only_withdrawn_lines_is_not_sent(mut db: Db) {
+    let (job, three) = three_quotes(&mut db).await;
+    let mut ids = three.to_vec();
+    for n in 4..=11 {
+        ids.push(one_quote(&mut db, job, n).await);
+    }
+    let gone = withdraw_quote(&mut db, (job, ids[10]), at("03T10:00:00")).await;
+    assert_eq!(gone, Ok(Withdrawal::Withdrawn));
+    let named: Vec<(Uuid, String)> = ids[..10]
+        .iter()
+        .enumerate()
+        .map(|(i, id)| (*id, format!("Sample Business {}", i + 1)))
+        .collect();
+    for (reader, gone_words) in [
+        (EN, "11. Withdrawn by the business."),
+        (ES, "11. Retirada por el negocio."),
+    ] {
+        let texts = list_texts(&mut db, (job, "1234"), reader, &named)
+            .await
+            .expect("list");
+        assert_eq!(texts.len(), 1);
+        assert!(texts[0].contains("\n10. Sample Business 10: $190."));
+        assert!(!texts[0].contains(gone_words));
+    }
+    let twelfth = one_quote(&mut db, job, 12).await;
+    let mut more = named.clone();
+    more.push((twelfth, "Sample Business 12".to_owned()));
+    let texts = list_texts(&mut db, (job, "1234"), EN, &more)
+        .await
+        .expect("list");
+    assert_eq!(texts.len(), 2);
+    assert!(texts[1].contains("\n11. Withdrawn by the business.\n"));
+    assert!(texts[1].contains("\n12. Sample Business 12: $190."));
+    assert_eq!(texts[0].lines().last(), texts[1].lines().last());
 }
