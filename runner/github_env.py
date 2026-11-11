@@ -866,6 +866,7 @@ class GitHubEnv:
         self.bg_stop: Callable[[], str] = lambda: stop_background_smoke(self.bg_alive, self.sleep)  # tests replace it
         self.bg_start: Callable[[str, Path], int] = start_background_smoke  # tests replace it (D-2560)
         self.bg_alive: Callable[[int], bool] = process_alive  # tests replace it (D-2560)
+        self.smoke_ancestry = 0  # kit/runner.json "smoke_ancestry_reuse", set by runner/__main__.py (D-3058); 0 off
 
     # ---- git plumbing
 
@@ -1281,6 +1282,35 @@ class GitHubEnv:
         alive = bg.get("job") == job_id() and isinstance(bg.get("pid"), int) and self.bg_alive(bg["pid"])
         return _pre_result(head)[0] is not None or alive  # alive first: a smoke that writes and ends between is seen
 
+    def yield_own_smoke(self, head: str) -> bool:
+        """Stop this job's background smoke of `head` while it still runs with no result, because a green another lane
+        recorded on `head` passes the reuse in full (the caller, `cycle._start_smoke`, judged that first; D-3058): True
+        when stopped, its record gone. False, and nothing stopped or kept from judgment, when there is no such smoke or
+        it has a result, also one written while it was being stopped: a finished own result is always judged."""
+        if self.dry_run or not job_id():
+            return False
+        base = smoke_target_dir().parent
+        bg = _read_json(base / SMOKE_BG) or {}
+        pid = bg.get("pid")
+        if bg.get("job") != job_id() or bg.get("sha") != head or not isinstance(pid, int) or not self.bg_alive(pid):
+            return False
+        if _pre_result(head)[0] is not None:
+            return False
+        how = self.bg_stop()
+        if _pre_result(head)[0] is not None:
+            return False
+        for name in (SMOKE_BG, SMOKE_BG_CHILD):
+            (base / name).unlink(missing_ok=True)
+        self.log.append(f"the background smoke of {head[:12]} {how}: a green smoke another lane recorded on it stands (D-3058)")
+        return True
+
+    def main_first_parents(self, head: str, count: int) -> list[str] | None:
+        """`main`'s first-parent history from `head`, at most `count` commits, newest first (`git rev-list
+        --first-parent`; the commits must be local, as after `main_head`); None when git cannot say (D-3058)."""
+        code, out, _ = self._run(["git", "rev-list", "--first-parent", f"--max-count={count}", head], None, self.root)
+        rows = out.split() if code == 0 else []
+        return rows if rows and rows[0] == head else None
+
     def settle_background_smoke(self, head: str) -> None:
         """Stop this job's background smoke when it runs for another head than `head` (`bg_stop`), before the start
         routine judges a reuse (D-2560): a green another lane recorded on `head` can then stand, and nothing is
@@ -1387,14 +1417,32 @@ class GitHubEnv:
 
     def _reusable_line(self, head: str) -> str:
         """The step's line when the state it read (PRE_SMOKE_STATE) records a green smoke on `head` that the start
-        routine may reuse (`st.reusable_smoke`, D-2560), else "" (no file, an unreadable one, nothing reusable)."""
+        routine may reuse (`st.reusable_smoke`, D-2560) or a real green on an ancestor it may stand on
+        (`_ancestry_line`, D-3058), else "" (no file, an unreadable one, nothing reusable)."""
         path = os.environ.get(PRE_SMOKE_STATE, "")
         state = _read_json(Path(path)) if path else None
         kept = st.reusable_smoke(state, head, self.clock()) if state is not None else None
         if kept is None:
-            return ""
+            return self._ancestry_line(state, head) if state is not None else ""
         since = str(kept.get("reused") or kept.get("at"))
         return f"pre-session smoke skipped on {head[:12]}: a green smoke of this head is recorded ({since}); the session reuses it"
+
+    def _ancestry_line(self, state: State, head: str) -> str:
+        """The step's line when `st.ancestry_smoke` finds a real green on an ancestor of `head` at most `smoke_ancestry`
+        first-parent commits back with only DONE tasks' squash merges since (D-3058), else "" (off, git or the state
+        unreadable, nothing found). The session's start routine still checks the nightly and `main`'s checks."""
+        if self.smoke_ancestry < 1:
+            return ""
+        try:
+            chain = self.main_first_parents(head, self.smoke_ancestry + 1) or []
+            found = st.ancestry_smoke(state, chain, st.done_merges(state), self.clock(), self.smoke_ancestry) if chain else None
+        except Exception:  # noqa: BLE001  # reason: an odd state or git failure only means the step smokes (D-3058)
+            return ""
+        if found is None:
+            return ""
+        base, run = found
+        return (f"pre-session smoke skipped on {head[:12]}: the green smoke of {base[:12]} ({run.get('at')}), "
+                f"{chain.index(base)} DONE task merge(s) back, stands for it (D-3058); the session reuses it")
 
     def _pre_smoke_run(self, tree: Path, out: Path) -> tuple[int, bool, int]:
         """smoke.sh through `pre_run` in `tree`: (exit, timed out, seconds); a timeout is exit 124 as in-session."""

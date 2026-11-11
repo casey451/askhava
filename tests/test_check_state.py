@@ -105,3 +105,19 @@ def test_every_update_merge_kind_the_runner_writes_is_valid() -> None:
     state = base()
     state["tasks"][0]["update_merges"] = [{"from": "a1", "to": "b2", "how": "guessed", "at": "2026-01-01T00:00:00Z"}]
     assert any("update_merges[0].how" in p for p in cs.check(state))
+
+
+def test_every_smoke_run_kind_the_runner_writes_is_valid() -> None:
+    """runner/cycle.py writes a smoke run, a same-head reuse (`reused`, D-2560) and, since D-3058, an ancestry reuse
+    (`reused` and `base`); each must validate, or every later cycle stops with state_invalid (D-2870). A `base` or
+    `reused` that is not a string is still refused."""
+    sha, at = "a" * 40, "2026-11-11T20:00:00Z"
+    kinds = [
+        {"sha": sha, "ok": True, "at": at, "why": "start routine", "seconds": 400},
+        {"sha": sha, "ok": True, "at": at, "why": f"start routine (reused {at})", "reused": at},
+        {"sha": sha, "ok": True, "at": at, "why": f"start routine (ancestry reuse of {'b' * 12}, {at})", "reused": at, "base": "b" * 40},
+    ]
+    for run in kinds:
+        assert cs.check(dict(base(), smoke_runs=[run])) == [], run
+    for bad in ({"base": 7}, {"base": ""}, {"reused": True}):
+        assert any("smoke_runs[0]" in p for p in cs.check(dict(base(), smoke_runs=[dict(kinds[2], **bad)]))), bad
