@@ -1,10 +1,10 @@
 # Ask Hava build status
 
-Updated 2026-11-11T09:41:12Z by runner 51d43b98c1b2 (actions).
+Updated 2026-11-11T09:41:27Z by runner 6b803a362f31 (manual).
 
-**Building: T337 in progress since 09:25Z; 199 of 370 done; week 63% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T337 in progress since 09:25Z; 199 of 371 done; week 63% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 199 of 370 build tasks (owner gates not counted)
+- **Tasks done:** 199 of 371 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T337 claimed 09:25Z, lease until 12:25Z
 - **Week:** 63% used, 62.3M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
@@ -12,14 +12,13 @@ Updated 2026-11-11T09:41:12Z by runner 51d43b98c1b2 (actions).
 - **Keeper:** last ran 09:41Z, next wake 12:28Z
 
 ## Needs attention
-- BLOCKED T164: plan gap reported: PLAN GAP: app/portals/src/tests/prop_arrival_order.rs:22 (T052) and app/quotes/src/notify.rs:179 / app/quotes/src/models.rs:573 (T047). The homeowner side of T164 (quote page "Updated <time>"/"Withdrawn by the business", LIST reply) needs api.rs (page_quotes filters withdrawn_at, api.rs:116), PageQuote fields (api.rs:93, built field-by-field in the T052 test), notify.rs list_line/Listed and models.rs list_rows, none owned by T164. Reviewer confirmed (kit/tasks.json owns vs. those files; T361 covers part but depends on T164).; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T164 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T269 (since 2026-11-11T09:25:53Z, no attempt used; a plan change fixes it): T269: dependency T294 is DONE but its owned file tests/brand_literal_baseline.json is not on main; T269: dependency T291 is DONE but its owned file tests/brand_literal_baseline.json is not on main
 - PLAN GAP T278 (since 2026-11-11T09:25:53Z, no attempt used; a plan change fixes it): T278: dependency T293 is DONE but its owned file tests/brand_literal_baseline.json is not on main; T278: dependency T295 is DONE but its owned file tests/brand_literal_baseline.json is not on main
 - PLAN GAP T313 (since 2026-11-11T09:25:53Z, no attempt used; a plan change fixes it): T313: dependency T292 is DONE but its owned file tests/brand_literal_baseline.json is not on main
 - PLAN GAP T323 (since 2026-11-11T09:25:53Z, no attempt used; a plan change fixes it): T323: dependency T295 is DONE but its owned file tests/brand_literal_baseline.json is not on main
 - PLAN GAP T326 (since 2026-11-11T09:25:53Z, no attempt used; a plan change fixes it): T326: dependency T292 is DONE but its owned file tests/brand_literal_baseline.json is not on main
 - OWNED GAP T295 (DONE, since 2026-11-11T09:25:53Z; a later task or plan change must add it): T295: tests/brand_literal_baseline.json missing on main
-- Strict plan check red: 10 problem(s) on tasks still to run (+19 on DONE tasks); first: T126: stored context_pct 56% but it measures 60%; regenerate
+- Strict plan check red: 11 problem(s) on tasks still to run (+19 on DONE tasks); first: T255: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -56,6 +55,7 @@ Updated 2026-11-11T09:41:12Z by runner 51d43b98c1b2 (actions).
 | T290 | worked examples: pin D-033 for one-cent-wide recurring range | done | 2 | 39 min | 10:21Z | T290 blocked: any new recurring worked-example row breaks tests::worked_examples (fixed RECURRING list of 13 ids, worked |
 
 ### Plan and harness merges on main
+- 09:40Z Plan: split T164 — new T384 shows edited/withdrawn quotes in place; LIST numbers match picks (D-2912) (#468)
 - 08:37Z Plan: T337 also owns release_recovery.rs for a fixture-only fix (D-2896) (#464)
 - 07:43Z Harness: td_pick_09 asks on the fixed clock — test failing everywhere since 07:00Z (D-2886) (#461)
 - 06:32Z Harness: a worker's plan-gap report blocks the task instead of a retry on the same prompt (D-2859) (#458)
@@ -85,7 +85,7 @@ Updated 2026-11-11T09:41:12Z by runner 51d43b98c1b2 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 208 of 733 (28.4%) · partial 343 · unstarted 182
-**Tasks merged (throughput only):** 199 of 370
+**Tasks merged (throughput only):** 199 of 371
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|

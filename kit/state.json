@@ -21550,7 +21550,7 @@
     "T293",
     "T294"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "quotes-uniform-notes",
    "type": "build",
@@ -21563,8 +21563,8 @@
     2900,
     2901
    ],
-   "reason": "plan gap reported: PLAN GAP: app/portals/src/tests/prop_arrival_order.rs:22 (T052) and app/quotes/src/notify.rs:179 / app/quotes/src/models.rs:573 (T047). The homeowner side of T164 (quote page \"Updated <time>\"/\"Withdrawn by the business\", LIST reply) needs api.rs (page_quotes filters withdrawn_at, api.rs:116), PageQuote fields (api.rs:93, built field-by-field in the T052 test), notify.rs list_line/Listed and models.rs list_rows, none owned by T164. Reviewer confirmed (kit/tasks.json owns vs. those files; T361 covers part but depends on T164).; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T164 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: app/portals/src/tests/prop_arrival_order.rs:22 (T052) and app/quotes/src/notify.rs:179 / app/quotes/src/models.rs:573 (T047). The homeowner side of T164 (quote page \"Updated <time>\"/\"Withdrawn by the business\", LIST reply) needs api.rs (page_quotes filters withdrawn_at, api.rs:116), PageQuote fields (api.rs:93, built field-by-field in the T052 test), notify.rs list_line/Listed and models.rs list_rows, none owned by T164. Reviewer confirmed (kit/tasks.json owns vs. those files; T361 covers part but depends on T164).",
+   "reason": null,
+   "last_failure": "PLAN GAP: app/portals/src/tests/prop_arrival_order.rs:22 (T052) and app/quotes/src/notify.rs:179 / app/quotes/src/models.rs:573 (T047). The homeowner side of T164 (quote page \"Updated <time>\"/\"Withdrawn by the business\", LIST reply) needs api.rs (page_quotes filters withdrawn_at, api.rs:116), PageQuote fields (api.rs:93, built field-by-field in the T052 test), notify.rs list_line/Listed and models.rs list_rows, none owned by T164. Reviewer confirmed (kit/tasks.json owns vs. those files; T361 covers part but depends on T164).\nre-queued after plan fix D-2912: T164 split: business side only, new T384 owns the homeowner display files (D-2912, #468)",
    "history": [
     {
      "attempt": 1,
@@ -21578,6 +21578,21 @@
      "started_at": "2026-11-11T08:48:49Z",
      "ended_at": "2026-11-11T09:03:38Z",
      "result": "BLOCKED"
+    }
+   ],
+   "requeues": [
+    {
+     "at": "2026-11-11T09:41:27Z",
+     "reason": "T164 split: business side only, new T384 owns the homeowner display files (D-2912, #468)",
+     "by": "manual-83b684294ab3",
+     "was": "plan gap reported: PLAN GAP: app/portals/src/tests/prop_arrival_order.rs:22 (T052) and app/quotes/src/notify.rs:179 / app/quotes/src/models.rs:573 (T047). The homeowner side of T164 (quote page \"Updated <time>\"/\"Withdrawn by the business\", LIST reply) needs api.rs (page_quotes filters withdrawn_at, api.rs:116), PageQuote fields (api.rs:93, built field-by-field in the T052 test), notify.rs list_line/Listed and models.rs list_rows, none owned by T164. Reviewer confirmed (kit/tasks.json owns vs. those files; T361 covers part but depends on T164).; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T164 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 1,
+     "plan_fix": "D-2912",
+     "plan_since": "2026-11-11T08:48:49Z",
+     "plan_base": "cf9b14cb7c734b30006e452692b7449493e27144",
+     "plan_head": "6b803a362f31833eb87d7ee62bdfcdc182f3b229",
+     "plan_then": "f82003dbd4f50a821266b89d1bceb6b382d9b48deee7f64cb9795ea4b55c43a7",
+     "plan_now": "625d8bc8e164f8e1564c3f8135874beadb993a53b0471e27533a4395978a61ca"
     }
    ]
   },
@@ -31702,7 +31717,7 @@
    }
   }
  },
- "updated_at": "2026-11-11T09:41:12Z",
+ "updated_at": "2026-11-11T09:41:27Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -31800,8 +31815,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "51d43b98c1b254f98024bdd4fac7e0a20f48dcd3",
- "starter": "actions",
+ "runner_sha": "6b803a362f31833eb87d7ee62bdfcdc182f3b229",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "18d7cc8f25928eecd7091aa634c5a592dac77fc6",
