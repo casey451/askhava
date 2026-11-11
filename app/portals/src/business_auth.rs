@@ -59,7 +59,7 @@ use askhava_core::api::{
 };
 use askhava_privacy::api::{BusinessSessionProof, SessionMint};
 use axum::Router;
-use axum::extract::{FromRef, Path, Query, State};
+use axum::extract::{FromRef, Path, RawQuery, State};
 use axum::http::StatusCode;
 use axum::middleware::{from_fn, from_fn_with_state};
 use axum::response::{Html, IntoResponse, Redirect, Response};
@@ -439,20 +439,55 @@ pub async fn signin_form(jar: CookieJar) -> Response {
 }
 
 /// The sign-in routes' query: a notice link's `p`, `j`, `e` and `t`, or the next `job` an emailed
-/// link carries (D-1761). Every field is text, so a bad value is plain sign-in, never a 400.
-#[derive(Default, serde::Deserialize)]
-#[serde(deny_unknown_fields)]
+/// link carries (D-1761). Read leniently from the raw query ([`NoticeQuery::from_raw`]): an
+/// unknown field is ignored and a repeated or bad value counts as absent, so a bad value is plain
+/// sign-in, never a 400 (D-3028).
+#[derive(Default)]
 pub struct NoticeQuery {
-    #[serde(default)]
     p: Option<String>,
-    #[serde(default)]
     j: Option<String>,
-    #[serde(default)]
     e: Option<String>,
-    #[serde(default)]
     t: Option<String>,
-    #[serde(default)]
     job: Option<String>,
+}
+
+impl NoticeQuery {
+    /// The fields of a raw query string (no percent-decoding: every value the routes accept is
+    /// digits, hex or a UUID, so an encoded one is a bad value). A field given twice is absent.
+    #[must_use]
+    pub fn from_raw(raw: Option<&str>) -> Self {
+        let mut q = Self::default();
+        let mut seen: Vec<&str> = Vec::new();
+        for (key, value) in raw
+            .unwrap_or("")
+            .split('&')
+            .filter_map(|kv| kv.split_once('='))
+        {
+            let slot = match key {
+                "p" => &mut q.p,
+                "j" => &mut q.j,
+                "e" => &mut q.e,
+                "t" => &mut q.t,
+                "job" => &mut q.job,
+                _ => continue,
+            };
+            *slot = if seen.contains(&key) {
+                None
+            } else {
+                Some(value.to_owned())
+            };
+            seen.push(key);
+        }
+        q
+    }
+}
+
+/// A job number from the URL: ASCII digits only, positive, no sign (D-3026, D-3028).
+fn job_number(raw: &str) -> Option<i64> {
+    if raw.is_empty() || !raw.bytes().all(|b| b.is_ascii_digit()) {
+        return None;
+    }
+    raw.parse().ok().filter(|&n: &i64| n > 0)
 }
 
 /// A notice link whose token checked out and has not expired (R1: parsed once, here).
@@ -468,7 +503,7 @@ struct Notice {
 /// is before `e`; else `None`.
 fn signed_notice(secret: &IdSecret, q: &NoticeQuery, now: Timestamp) -> Option<Notice> {
     let person = Uuid::parse_str(q.p.as_deref()?).ok()?;
-    let job: i64 = q.j.as_deref()?.parse().ok()?;
+    let job = job_number(q.j.as_deref()?)?;
     let expires: i64 = q.e.as_deref()?.parse().ok()?;
     let token = LinkToken::parse(q.t.as_deref()?).ok()?;
     let salt = LinkSalt::from_bytes(&[job.to_be_bytes(), expires.to_be_bytes()].concat()).ok()?;
@@ -532,9 +567,10 @@ fn job_page(job: i64) -> Response {
 /// email form. Changes nothing (SEC-026, PICK-024, D-1761).
 pub async fn signin_page<M: SignInMail>(
     State(state): State<SignIn<M>>,
-    Query(q): Query<NoticeQuery>,
+    RawQuery(raw): RawQuery,
     jar: CookieJar,
 ) -> Response {
+    let q = NoticeQuery::from_raw(raw.as_deref());
     match open_notice(&state, &jar, &q).await {
         Ok(Opened::Notice(n)) => {
             let (p, j, e, t) = (n.person, n.job, n.expires, n.token.as_str());
@@ -583,9 +619,9 @@ async fn notice_post<M: SignInMail>(
     page(jar, "sent", ("", ""), false)
 }
 
-/// The job number an emailed link carries as `?job=` (D-1761).
+/// The job number an emailed link carries as `?job=`, when it is one (D-1761, D-3028).
 fn next_job(q: &NoticeQuery) -> Option<i64> {
-    q.job.as_deref().and_then(|j| j.parse().ok())
+    q.job.as_deref().and_then(job_number)
 }
 
 /// `token` with `?job=<n>` when there is a next job, for the link's and code's form actions.
@@ -685,9 +721,10 @@ fn well_formed(token: &str) -> bool {
 pub async fn signin_open<M: SignInMail>(
     State(state): State<SignIn<M>>,
     Path(token): Path<String>,
-    Query(q): Query<NoticeQuery>,
+    RawQuery(raw): RawQuery,
     jar: CookieJar,
 ) -> Response {
+    let q = NoticeQuery::from_raw(raw.as_deref());
     if !well_formed(&token) {
         return page(jar, "ended", ("", ""), false);
     }
@@ -734,10 +771,11 @@ enum Step {
 pub async fn signin_post<M: SignInMail>(
     State(state): State<SignIn<M>>,
     Path(token): Path<String>,
-    Query(q): Query<NoticeQuery>,
+    RawQuery(raw): RawQuery,
     jar: CookieJar,
     CsrfForm(form): CsrfForm<CodeForm>,
 ) -> Response {
+    let q = NoticeQuery::from_raw(raw.as_deref());
     if token == NOTICE_SEGMENT {
         return notice_post(&state, jar, &q).await;
     }

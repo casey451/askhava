@@ -113,6 +113,12 @@ fn notice(person: u128, expires: Timestamp) -> String {
 }
 
 async fn world(pool: &PgPool) -> (Router, Arc<FakeMail>, Uuid) {
+    world_with(pool, true).await
+}
+
+/// The sign-in routes over one business (owner and crew member); `notices` sets
+/// `SignIn::with_notice_links`.
+async fn world_with(pool: &PgPool, notices: bool) -> (Router, Arc<FakeMail>, Uuid) {
     let mut db = pool.acquire().await.expect("db");
     let business = create(&mut db, false, start()).await.expect("business");
     let owner = add_owner(&mut db, business, Uuid::from_u128(OWNER_BOX), start());
@@ -134,9 +140,12 @@ async fn world(pool: &PgPool) -> (Router, Arc<FakeMail>, Uuid) {
     let key = SecretString::from("fake-key-for-tests-only-0123456789".to_owned());
     let codes = DeviceCodes::new(FakeVerify, FakeCodeTo, key);
     let clock = Arc::new(ManualClock::new(start()));
-    let state = SignIn::new(pool.clone(), clock, Arc::clone(&mail))
-        .with_device_codes(codes)
-        .with_notice_links(secret());
+    let state = SignIn::new(pool.clone(), clock, Arc::clone(&mail)).with_device_codes(codes);
+    let state = if notices {
+        state.with_notice_links(secret())
+    } else {
+        state
+    };
     let routes = Router::new()
         .route(
             SIGNIN_ROUTE,
@@ -338,4 +347,84 @@ async fn td_pick_51_another_signed_in_person_gets_plain_sign_in(pool: PgPool) {
     let who = me.map(|p| p.member());
     assert!(who.is_some() && who != Some(owner), "still the crew member");
     assert_eq!(sessions(&pool).await, 1);
+}
+
+/// Asks for the crew member's one-time link, opens `emailed` + `query` and finishes with the code
+/// on the same URL; the page sign-in ends on.
+async fn crew_sign_in(app: &Router, mail: &FakeMail, query: &str) -> (Browser, String) {
+    let mut b = Browser::default();
+    let ask = "&email=crew@x.example";
+    b.press(app, SIGNIN_ROUTE, SIGNIN_ROUTE, ask).await;
+    let url = format!("{}{query}", last_link(mail).expect("crew link"));
+    let code = b.press(app, &url, &url, "").await;
+    assert!(
+        code.contains("name=\"code\""),
+        "the code step of {url}: {code}"
+    );
+    let field = format!("&code={CODE}");
+    let done = b.press(app, SIGNIN_ROUTE, &url, &field).await;
+    (b, done)
+}
+
+/// Signs the crew member in through each of `queries` on the one-time link (each on a new
+/// browser; at most three per test, as each new device's row counts toward `LINKS_PER_LIFE`) and
+/// checks every sign-in finishes on the signed-in screen, never a redirect.
+async fn ignored_job_values(pool: &PgPool, queries: &[&str]) {
+    let (app, mail, _) = world(pool).await;
+    for query in queries {
+        let (b, done) = crew_sign_in(&app, &mail, query).await;
+        assert!(done.contains("You're signed in"), "{query}: {done}");
+        assert_eq!(b.location, None, "{query}: no redirect");
+        assert!(b.cookies.contains_key(SESSION_COOKIE), "{query}");
+    }
+    assert_eq!(
+        sessions(pool).await,
+        i64::try_from(queries.len()).expect("len")
+    );
+}
+
+/// TD-PICK-51, D-3028: a `?job=` naming another site, an encoded path or a negative number is
+/// ignored: sign-in finishes on the signed-in screen with no off-site (or any) redirect.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_pick_51_a_bad_job_value_is_plain_sign_in(pool: PgPool) {
+    let bad = ["?job=//evil.example", "?job=1042%2F..", "?job=-1"];
+    ignored_job_values(&pool, &bad).await;
+}
+
+/// D-3028: a signed, zero or repeated `?job=` is ignored too (digits only, positive, once).
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn a_signed_zero_or_repeated_job_is_plain_sign_in(pool: PgPool) {
+    let bad = ["?job=+5", "?job=0", "?job=1042&job=1043"];
+    ignored_job_values(&pool, &bad).await;
+}
+
+/// D-3028: an unknown query field on the one-time link (a mail tracker's `utm_source`) is ignored:
+/// the link still opens, signs in and keeps a good `?job=`.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn an_unknown_query_field_on_the_one_time_link_still_works(pool: PgPool) {
+    let (app, mail, _) = world(&pool).await;
+    let (b, done) = crew_sign_in(&app, &mail, "?utm_source=x").await;
+    assert!(done.contains("You're signed in"), "{done}");
+    assert_eq!(b.location, None);
+    let (b, _) = crew_sign_in(&app, &mail, "?utm_source=x&job=7").await;
+    assert_eq!(b.location.as_deref(), Some("/b/jobs/7"));
+    assert_eq!(sessions(&pool).await, 2);
+}
+
+/// D-3027: without `SignIn::with_notice_links` a good notice link opens plain sign-in on `GET`
+/// and on the button's `POST`, emails nothing and starts no session (fails closed).
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn without_notice_links_a_notice_link_opens_plain_sign_in(pool: PgPool) {
+    let (app, mail, _) = world_with(&pool, false).await;
+    let link = notice(OWNER_BOX, start() + SignedDuration::from_hours(7 * 24));
+    let mut b = Browser::default();
+    let opened = b.send(&app, "GET", &link, "").await;
+    assert!(
+        opened.contains("id=\"email\"") && !opened.contains("notice?"),
+        "{opened}"
+    );
+    let posted = b.press(&app, &link, &button(&link), "").await;
+    assert!(posted.contains("id=\"email\"") && b.location.is_none());
+    assert_eq!(last_link(&mail), None, "no link emailed");
+    assert_eq!(sessions(&pool).await, 0);
 }

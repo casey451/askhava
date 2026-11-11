@@ -2254,7 +2254,7 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **Calls Claude made that you may want to check.** In the email the address shows as plain text, not a button; making it clickable is a small later change.
 - **Nothing needs you now.**
 
-## The "job confirmed" email's sign-in link now works (T269, D-3025 to D-3027, November 11)
+## The "job confirmed" email's sign-in link now works (T269, D-3025 to D-3028, November 11)
 
 - **What it does.** The link in that email opens business sign-in for the person it was sent to. Pressing "Sign in" emails them the usual one-time sign-in link; after that link (and the new-device code, when asked) they land on that job's page. The link alone never signs anyone in or shows any job detail. A changed, expired or someone else's link just shows the normal sign-in form.
 - **One wording point for later.** The screen with the button reuses today's words, "Press the button to finish signing in.", although pressing it sends an email. A small copy change would fit better; this task was not allowed to write new wording.
