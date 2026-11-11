@@ -308,3 +308,142 @@ async fn td_sec_32_code_brute_force_hits_the_limits(pool: PgPool) {
         "a refused try reaches no Verify"
     );
 }
+
+fn terms() -> ConfirmTerms<'static> {
+    ConfirmTerms {
+        version: 4,
+        published_text: "abc",
+        language: "en",
+    }
+}
+
+async fn acceptances(db: &mut PgConnection, biz: Uuid) -> i64 {
+    sqlx::query_scalar("SELECT count(*) FROM businesses.terms_acceptance WHERE business_id = $1")
+        .bind(biz)
+        .fetch_one(db)
+        .await
+        .expect("count")
+}
+
+/// TD-TERMS-11 (TERMS-033): opening and reloading the Confirm page stores no acceptance; only a
+/// press does.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_terms_11_reloading_the_page_stores_none(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("conn");
+    let (biz, owner, mailbox) = business(&mut db).await;
+    let job = Uuid::new_v4();
+    let notice = NewNoticeLog {
+        business: biz,
+        job,
+        kind: NoticeKind::Pick,
+        mailbox,
+        email: None,
+    };
+    record_notice(&mut db, &notice, Sending::Sent(at(1)))
+        .await
+        .expect("logged");
+    for n in 2..5 {
+        open_confirm_page(&mut db, (biz, job, owner), at(n))
+            .await
+            .expect("opened");
+        let page = confirm_page_with_code(&facts(), Some(CodeStep::default())).expect("page");
+        assert!(page.contains(&confirm_assent_line(4)));
+    }
+    assert_eq!(
+        acceptances(&mut db, biz).await,
+        0,
+        "a page load stores none"
+    );
+}
+
+/// TD-TERMS-11 (TERMS-033, D-3070): the app role can store a Confirm acceptance; a sign-up row
+/// carrying a pick is refused.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_terms_11_the_app_role_stores_and_a_signup_row_takes_no_pick(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("conn");
+    let (biz, owner, _) = business(&mut db).await;
+    let signup_with_pick = "INSERT INTO businesses.terms_acceptance (business_id, person_id, \
+         document, version, text_sha256, language, channel, assent_line, accepted_at, pick_id) \
+         VALUES ($1, $1, 'business_terms', '4', repeat('a', 64), 'en', 'business_signup', 'x', \
+         now(), $2)";
+    let refused = sqlx::query(signup_with_pick)
+        .bind(biz)
+        .bind(Uuid::new_v4())
+        .execute(&mut *db)
+        .await;
+    assert!(refused.is_err(), "a business_signup row has no pick");
+    sqlx::query("SET ROLE askhava_app")
+        .execute(&mut *db)
+        .await
+        .expect("role");
+    let mut tx = sqlx::Connection::begin(&mut *db).await.expect("tx");
+    let stored = record_confirm_terms(&mut tx, (biz, owner), Uuid::new_v4(), terms(), at(2)).await;
+    assert!(stored.expect("the app role inserts"));
+    tx.commit().await.expect("commit");
+    assert_eq!(acceptances(&mut db, biz).await, 1);
+}
+
+/// SEC-014: an email-only person gets `NoPhone` every time and spends no send, so the people
+/// with phones behind the same IP still get theirs.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn sec_014_no_phone_spends_no_send(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("conn");
+    let (_, owner, _) = business(&mut db).await;
+    let calls = Calls::default();
+    let codes = codes(&calls, owner);
+    let (crew, pick) = (Uuid::new_v4(), Uuid::new_v4());
+    for n in 0..8 {
+        let sent = send_confirm_code(&codes, &pool, (IP, crew, pick), (at(n), 1000)).await;
+        assert_eq!(sent.expect("send"), CodeSent::NoPhone);
+    }
+    for n in 10..15 {
+        let sent = send_confirm_code(&codes, &pool, (IP, owner, pick), (at(n), 1000)).await;
+        assert_eq!(
+            sent.expect("send"),
+            CodeSent::Sent,
+            "the IP's sends are not spent"
+        );
+    }
+    assert_eq!(calls.lock().expect("lock").0.len(), 5);
+}
+
+/// A Verify that never answers a check the same way twice: no answer, then a 503.
+struct DownVerify(Mutex<u32>);
+
+impl VerifyAdapter for DownVerify {
+    async fn send_code(
+        &self,
+        _: &IdempotencyKey,
+        _: &str,
+        _: CodeChannel,
+    ) -> Result<String, AdapterError> {
+        Err(AdapterError::NotSent)
+    }
+    async fn check_code(&self, _: &str, _: &str) -> Result<bool, AdapterError> {
+        let mut n = self.0.lock().expect("lock");
+        *n += 1;
+        Err(if *n == 1 {
+            AdapterError::OutcomeUnknown
+        } else {
+            AdapterError::Vendor {
+                status: 503,
+                code: None,
+            }
+        })
+    }
+}
+
+/// SEC-027 (D-3069): no answer or a 5xx from Verify is `Unchecked`, never "That code has run
+/// out"; only Verify's own refusal ends the code.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn sec_027_a_network_failure_is_not_an_ended_code(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("conn");
+    let (biz, owner, _) = business(&mut db).await;
+    let key = SecretString::from("fake-key".to_owned());
+    let codes = ConfirmCodes::new(DownVerify(Mutex::new(0)), FakeCodeTo(owner), key);
+    for _ in 0..2 {
+        let tried = check_confirm_code(&codes, &pool, (IP, owner, biz), CODE, at(1)).await;
+        assert_eq!(tried.expect("try"), CodeCheck::Unchecked);
+    }
+    assert_ne!(CodeCheck::Unchecked.error(), CodeCheck::Ended.error());
+}

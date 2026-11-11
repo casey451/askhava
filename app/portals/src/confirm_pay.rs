@@ -32,7 +32,7 @@
 use std::net::IpAddr;
 
 use askama::Template;
-use askhava_adapters::api::{CodeChannel, IdempotencyKey, VerifyAdapter};
+use askhava_adapters::api::{AdapterError, CodeChannel, IdempotencyKey, VerifyAdapter};
 use askhava_businesses::api::members;
 use askhava_intake::api::Admission;
 use askhava_messaging::api::{NoticeKind, notice_log, record_first_open};
@@ -391,7 +391,8 @@ impl CodeSent {
 
 /// SEC-027, SEC-014, TXT-038: texts `person` a fresh Confirm code for `pick` through Verify, to
 /// their own phone only, after `admit_code_send` (per IP, 5 a day per person, the global
-/// `threshold`) admits it. No connection is held across Verify (PT-04).
+/// `threshold`) admits it. The phone is looked up first, so an email-only person (`NoPhone`)
+/// spends no send. No connection is held across Verify (PT-04).
 ///
 /// # Errors
 /// [`PortalsError::Database`] when a limit or the phone lookup fails.
@@ -401,6 +402,9 @@ pub async fn send_confirm_code<V: VerifyAdapter + Send + Sync>(
     (ip, person, pick): (IpAddr, Uuid, Uuid),
     (now, threshold): (Timestamp, i32),
 ) -> Result<CodeSent, PortalsError> {
+    let Some(phone) = codes.phone(pool, person).await? else {
+        return Ok(CodeSent::NoPhone);
+    };
     let admitted = admit_code_send(pool, (ip, Some(person)), (now, threshold)).await;
     if matches!(
         admitted.map_err(|_| PortalsError::Database)?,
@@ -408,9 +412,6 @@ pub async fn send_confirm_code<V: VerifyAdapter + Send + Sync>(
     ) {
         return Ok(CodeSent::Limited);
     }
-    let Some(phone) = codes.phone(pool, person).await? else {
-        return Ok(CodeSent::NoPhone);
-    };
     let parts = [pick.to_string(), person.to_string(), now.to_string()];
     let key = IdempotencyKey::derive(
         &codes.key,
@@ -434,8 +435,10 @@ pub enum CodeCheck {
     Missing,
     /// Verify said no.
     Wrong,
-    /// Verify ended the code (its 5 checks, its 10 minutes) or could not check it.
+    /// Verify ended the code (its 5 checks, its 10 minutes), or the person has no phone.
     Ended,
+    /// Verify was not reached or gave no answer (a network failure): the code may still be good.
+    Unchecked,
     /// A SEC-020 try limit refused it; Verify was not asked.
     Limited,
 }
@@ -449,6 +452,7 @@ impl CodeCheck {
             Self::Missing => Some("Type the 6-digit code from our text."),
             Self::Wrong => Some("That code isn't right. Check the text and type it again."),
             Self::Ended => Some("That code has run out. Press \"Text me a code\" for a new one."),
+            Self::Unchecked => Some("We couldn't check the code. Type it again, then confirm."),
             Self::Limited => Some(
                 "Too many wrong codes. Wait an hour, then press \"Text me a code\" for a new one.",
             ),
@@ -459,7 +463,8 @@ impl CodeCheck {
 /// SEC-027, SEC-020: checks `code` against Verify for `person`'s own phone, after
 /// `admit_code_try` (per IP and per `business`, 20 an hour each) admits the try. No
 /// `portals.code_try` row is written (a Confirm code has no sign-in link) and no connection is
-/// held across Verify.
+/// held across Verify. Verify refusing the code (a 4xx answer: its 5-check cap 60202, an expired
+/// or unknown code) ends it; no answer, a 5xx or an unreadable answer is [`CodeCheck::Unchecked`].
 ///
 /// # Errors
 /// [`PortalsError::Database`] when a limit or the phone lookup fails.
@@ -487,7 +492,8 @@ pub async fn check_confirm_code<V: VerifyAdapter + Send + Sync>(
     Ok(match codes.verify.check_code(&phone, code).await {
         Ok(true) => CodeCheck::Right,
         Ok(false) => CodeCheck::Wrong,
-        Err(_) => CodeCheck::Ended,
+        Err(AdapterError::Vendor { status, .. }) if status < 500 => CodeCheck::Ended,
+        Err(_) => CodeCheck::Unchecked,
     })
 }
 

@@ -28,7 +28,7 @@
 <li id="terms-version">You're agreeing to business terms version {{ terms_version }}. <a href="/terms/business">Read the business terms</a></li>
 <li>{{ askhava_core::api::brand().display_name() }} is not a contractor and does not perform, bid on or supervise work.</li>
 </ul>
-{% if let Some(step) = code %}<h2>Only you can confirm this job</h2>
+{% if let Some(step) = code %}<h2>Confirming needs a code sent to your phone</h2>
 <p id="code-why">This inbox is shared, so others may see this page. Each time you confirm, we text a new code to your own phone.</p>
 {% if let Some(line) = step.line %}<p id="code-sent" role="status">{{ line }}</p>
 {% endif %}<form method="post" action="/b/picks/{{ pick }}/confirm/code" id="code-form" novalidate>
