@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE portals.code_try SET outcome = $3 WHERE link_id = $1 AND try_no = $2 AND outcome = 'pending'",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Int4",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "7f63344da4ee74850660a5ede3a549b12cd236e5b12dd454c44082cb915426b1"
+}

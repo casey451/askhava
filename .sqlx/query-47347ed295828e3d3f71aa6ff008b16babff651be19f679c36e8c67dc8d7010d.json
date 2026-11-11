@@ -1,0 +1,30 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO portals.code_try (link_id, try_no, reserved_at, outcome)\n           SELECT $1, count(*)::integer + 1, $2, 'pending' FROM portals.code_try\n           WHERE link_id = $1 HAVING count(*) < $3 RETURNING try_no",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "try_no",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "portals.code_try",
+            "name": "try_no"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "47347ed295828e3d3f71aa6ff008b16babff651be19f679c36e8c67dc8d7010d"
+}
