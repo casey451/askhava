@@ -25115,7 +25115,7 @@
     "T294",
     "T291"
    ],
-   "status": "MERGE_PENDING",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "notice-signin-link",
    "type": "build",
@@ -25189,13 +25189,46 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 88,
      "head_sha": "c440e418139acd4e84324592758fea400e29ab38",
-     "pr": null,
-     "checks": null,
+     "pr": 496,
+     "checks": [
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "E2e",
+       "conclusion": null
+      },
+      {
+       "name": "Checks",
+       "conclusion": null
+      },
+      {
+       "name": "Coverage",
+       "conclusion": null
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": null
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-11T15:02:25Z",
      "ended_at": "2026-11-11T15:46:33Z",
-     "result": "MERGE_PENDING"
+     "result": "resync"
     }
    ],
    "reviewed_sha": "c440e418139acd4e84324592758fea400e29ab38",
@@ -25211,10 +25244,33 @@
     "why": "auto-merge on #496 (gh pr merge)",
     "head": "c440e418139acd4e84324592758fea400e29ab38"
    },
-   "last_failure": "Ci: failure; E2e: failure; Ally: failure\nE2e failed at step: Chromium and its system libraries\nE: Failed to fetch https://security.ubuntu.com/ubuntu/pool/universe/u/unifont/fonts-unifont_16.0.04-1build1_all.deb  Temporary failure resolving 'security.ubuntu.com'\nE: Failed to fetch https://security.ubuntu.com/ubuntu/pool/universe/f/fonts-wqy-zenhei/fonts-wqy-zenhei_0.9.45-8build1_all.deb  Temporary failure resolving 'security.ubuntu.com'\nE: Failed to fetch https://security.ubuntu.com/ubuntu/pool/main/x/xfonts-encodings/xfonts-encodings_1.0.5-0ubuntu3_all.deb  Temporary failure resolving 'security.ubuntu.com'\nE: Failed to fetch https://security.ubuntu.com/ubuntu/pool/main/x/xfonts-utils/xfonts-utils_7.7%2b7build1_amd64v3.deb  Temporary failure resolving 'security.ubuntu.com'\nE: Failed to fetch https://security.ubuntu.com/ubuntu/pool/universe/x/xfonts-cyrillic/xfonts-cyrillic_1.0.5%2bnmu1build1_all.deb  Temporary failure resolving 'security.ubuntu.com'\nE: Failed to fetch https://security.ubuntu.com/ubuntu/pool/universe/x/xfonts-scalable/xfonts-scalable_1.0.3-1.3build1_all.deb  Temporary failure resolving 'security.ubuntu.com'\nE: Unable to fetch some archives, maybe run apt update or try with --fix-missing?\nFailed to install browsers\nError: Installation process exited with code: 100\n##[error]Process completed with exit code 1.\nAlly failed at step: Chromium and its system libraries\nError: Installation process exited with code: 100\n##[error]Process completed with exit code 1.\nCi fai",
+   "last_failure": "merging main into the reviewed head conflicts in app/portals/CLAUDE.md; a resync merges it in on this attempt (D-891)",
    "runner_closed_prs": [
-    490
-   ]
+    490,
+    496
+   ],
+   "resync": {
+    "attempt": 2,
+    "from": "c440e418139acd4e84324592758fea400e29ab38",
+    "main": "4ce9c9f7532defdddef49a12870e7f8488062a38",
+    "paths": [
+     "app/portals/CLAUDE.md"
+    ],
+    "at": "2026-11-11T15:51:12Z"
+   },
+   "resyncs": [
+    {
+     "attempt": 2,
+     "from": "c440e418139acd4e84324592758fea400e29ab38",
+     "main": "4ce9c9f7532defdddef49a12870e7f8488062a38",
+     "paths": [
+      "app/portals/CLAUDE.md"
+     ],
+     "at": "2026-11-11T15:51:12Z"
+    }
+   ],
+   "update_waiting_since": null,
+   "update_push_failures": null
   },
   {
    "id": "T261",
@@ -33212,7 +33268,7 @@
    }
   }
  },
- "updated_at": "2026-11-11T15:49:26Z",
+ "updated_at": "2026-11-11T15:51:22Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -33310,7 +33366,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "9e8ac4355245a8481fa377e1a16ed80a2c4dd613",
+ "runner_sha": "ee5cdf2ecfbe49d582079f1efaa068a12e855f3d",
  "starter": "actions",
  "smoke_runs": [
   {
