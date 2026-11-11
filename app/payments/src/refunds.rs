@@ -20,10 +20,18 @@
 //! appends one `refund-reversal` entry keyed by the `re_…`, and the retry's next success one new
 //! `refund` entry keyed by its own `re_…`, so the ledger nets to what Stripe holds and no ledger
 //! row is ever changed.
+//!
+//! T333 (D-2303, D-3018): a `succeeded` refund is booked at what Stripe reports
+//! ([`Refund::amount_against`]): a `usd` amount other than the charge is booked as reported with
+//! one [`REFUND_MISMATCH_ALERT`]; another currency, or an amount still missing after one re-read
+//! (the request path re-reads; the webhook's and the check's `Refund` is already the re-read), is
+//! booked at the charge with one [`REFUND_UNCONFIRMED_ALERT`]; each alert at most once open per
+//! pick. A reversal reverses the amount its refund entry holds. [`refund_in_full`] tells `picks`
+//! whether the "refunded in full" notice may go.
 
 use askhava_adapters::api::{AdapterError, IdempotencyKey};
 use askhava_core::api::{HandlerError, NewTask, enqueue};
-use askhava_ops::api::{NewAlert, Severity, raise_alert};
+use askhava_ops::api::{NewAlert, Severity, raise_alert, raise_alert_once};
 use jiff::{SignedDuration, Timestamp};
 use jiff_sqlx::ToSqlx;
 use secrecy::SecretString;
@@ -34,7 +42,7 @@ use sqlx::{PgConnection, PgPool};
 use crate::ledger::{EntryKind, LedgerEntry, NewEntry, ledger_append};
 use crate::models::{MoneyEventError, RefundOutcome, RefundStep, RefundTrigger};
 use crate::refund_rules::refund_label;
-use crate::refund_stripe::{Refund, RefundState, RefundStripe};
+use crate::refund_stripe::{Refund, RefundAmount, RefundState, RefundStripe};
 use crate::status::RefundStatus;
 
 /// The idempotency action each refund try's Stripe key is derived under (SEC-018).
@@ -53,6 +61,10 @@ pub const REFUND_FAILED_ALERT: &str = "payments.refund_failed";
 pub const REFUND_BLOCKED_ALERT: &str = "payments.refund_blocked";
 /// The alert raised on every early fraud warning (FEE-052).
 pub const FRAUD_WARNING_ALERT: &str = "payments.fraud_warning";
+/// D-2303: a succeeded `usd` refund of another amount than the charge, booked as Stripe reported.
+pub const REFUND_MISMATCH_ALERT: &str = "payments.refund_amount_mismatch";
+/// D-2303: a succeeded refund in another currency, or with no amount, booked at the charge.
+pub const REFUND_UNCONFIRMED_ALERT: &str = "payments.refund_amount_unconfirmed";
 const PICK_SUBJECT: &str = "payments.pick_intent";
 
 /// The charge being refunded, from its FEE-042 evidence record.
@@ -302,11 +314,36 @@ async fn finish(
         RefundStep::Nothing => return Ok(RefundOutcome::Unchanged),
     };
     let answer = send(stripe, secret, (pick, try_no, replay), &charged.intent).await;
+    let answer = reread_missing(stripe, answer, charged).await;
     let mut tx = db(pool.begin().await)?;
     charged_of(&mut tx, pick).await?;
     let outcome = record_answer(&mut tx, (pick, try_no), charged, answer, now).await?;
     db(tx.commit().await)?;
     Ok(outcome)
+}
+
+/// D-2303: a `succeeded` answer whose amount is missing ([`RefundAmount::Missing`]) is re-read
+/// once with `fetch_refund`, outside any transaction (R11); the re-read replaces it only when it is
+/// still `succeeded` for the same PaymentIntent, else the answer stands (booked at the charge with
+/// the unconfirmed alert).
+async fn reread_missing(
+    stripe: &impl RefundStripe,
+    answer: Result<Refund, AdapterError>,
+    charged: &Charged,
+) -> Result<Refund, AdapterError> {
+    let refund = answer?;
+    let missing = refund.amount_against(charged.amount) == RefundAmount::Missing;
+    if refund.state != RefundState::Succeeded || !missing {
+        return Ok(refund);
+    }
+    match stripe.fetch_refund(&refund.id).await {
+        Ok(read)
+            if read.state == RefundState::Succeeded && read.payment_intent == charged.intent =>
+        {
+            Ok(read)
+        }
+        _ => Ok(refund),
+    }
 }
 
 /// FEE-026, D-1753: records try `try_no`'s answer as Stripe reports it. Only `succeeded` is
@@ -326,7 +363,7 @@ async fn record_answer(
     };
     match refund.state {
         RefundState::Succeeded => {
-            if succeeded(conn, pick, charged, &refund.id, now).await? {
+            if succeeded(conn, pick, charged, &refund, now).await? {
                 return Ok(RefundOutcome::Refunded(refund.id));
             }
             failed(conn, pick, sending, RefundStatus::Failed, now).await?;
@@ -369,20 +406,27 @@ async fn send(
     stripe.refund(&key(try_no), intent).await
 }
 
-/// FEE-026, FEE-028, D-1753: stores Stripe's `succeeded` for `re_…` (the caller holds the pick's
-/// lock) and appends the refund entry the ledger then lacks. A success naming a
-/// `re_…` already reversed is a stale answer (Stripe never moves a failed or canceled refund on),
-/// so nothing is recorded and `false` comes back.
+/// FEE-026, FEE-028, D-1753, D-2303: stores Stripe's `succeeded` for `re_…` (the caller holds the
+/// pick's lock) and appends the refund entry the ledger then lacks, at [`booked`]'s amount with its
+/// alert. A success naming a `re_…` already reversed is a stale answer (Stripe never moves a failed
+/// or canceled refund on), so nothing is recorded and `false` comes back.
 async fn succeeded(
     conn: &mut PgConnection,
     pick: Uuid,
     charged: &Charged,
-    refund: &str,
+    refund: &Refund,
     now: Timestamp,
 ) -> Result<bool, MoneyEventError> {
-    if reversed(conn, pick, refund).await? {
+    if reversed(conn, pick, &refund.id).await? {
         return Ok(false);
     }
+    let (amount, flagged) = booked(refund, charged.amount);
+    if let Some(kind) = flagged {
+        raise_alert_once(conn, kind, Severity::High, (PICK_SUBJECT, pick))
+            .await
+            .map_err(|_| MoneyEventError::Database)?;
+    }
+    let refund = refund.id.as_str();
     db(sqlx::query!(
         "UPDATE payments.refund SET status = $2, stripe_refund_id = $3, decided_at = $4
           WHERE pick_id = $1",
@@ -402,8 +446,19 @@ async fn succeeded(
     } else {
         format!("refund.{pick}.{refund}")
     };
-    append(conn, charged, &key, false).await?;
+    append(conn, charged, (&key, amount), false).await?;
     Ok(true)
+}
+
+/// FEE-026, FEE-028, FEE-053, D-2303: the amount a succeeded refund is booked at and the alert it
+/// raises: the charge with none when full, Stripe's `usd` amount with [`REFUND_MISMATCH_ALERT`],
+/// and the charge (never a foreign or missing figure) with [`REFUND_UNCONFIRMED_ALERT`].
+fn booked(refund: &Refund, charged: i64) -> (i64, Option<&'static str>) {
+    match refund.amount_against(charged) {
+        RefundAmount::Full => (charged, None),
+        RefundAmount::Differs(amount) => (amount, Some(REFUND_MISMATCH_ALERT)),
+        RefundAmount::Foreign | RefundAmount::Missing => (charged, Some(REFUND_UNCONFIRMED_ALERT)),
+    }
 }
 
 /// D-1753: stores the `re_…` Stripe holds as `pending` and queues the first [`REFUND_CHECK_KIND`] task.
@@ -454,6 +509,21 @@ async fn held(conn: &mut PgConnection, pick: Uuid) -> Result<(i64, i64), MoneyEv
     Ok((row.refunds, row.reversals))
 }
 
+/// D-2303: the amount of the pick's latest `refund` entry, the one a reversal undoes (a refund
+/// booked at Stripe's own amount is reversed at that amount); `None` when there is none.
+async fn last_refund(conn: &mut PgConnection, pick: Uuid) -> Result<Option<i64>, MoneyEventError> {
+    db(sqlx::query_scalar!(
+        "SELECT amount_cents FROM payments.ledger_entry
+          WHERE kind = 'refund'
+            AND (idempotency_key = 'refund.' || $1::uuid::text
+                 OR idempotency_key LIKE 'refund.' || $1::uuid::text || '.%')
+          ORDER BY seq DESC LIMIT 1",
+        pick,
+    )
+    .fetch_optional(conn)
+    .await)
+}
+
 async fn reversed(
     conn: &mut PgConnection,
     pick: Uuid,
@@ -469,19 +539,19 @@ async fn reversed(
     .await)
 }
 
-/// Appends one `refund` entry, or its `refund-reversal` when `reverse`, of the charged amount
-/// naming the refunded PaymentIntent (FEE-028, D-1753).
+/// Appends one `refund` entry, or its `refund-reversal` when `reverse`, of `amount` naming the
+/// refunded PaymentIntent (FEE-028, D-1753, D-2303).
 async fn append(
     conn: &mut PgConnection,
     charged: &Charged,
-    key: &str,
+    (key, amount): (&str, i64),
     reverse: bool,
 ) -> Result<(), MoneyEventError> {
     let mut entry = LedgerEntry::new(NewEntry {
         kind: EntryKind::Refund,
         business: Some(charged.business),
         job: Some(charged.job),
-        amount_cents: charged.amount,
+        amount_cents: amount,
         stripe_id: Some(&charged.intent),
         idempotency_key: key,
     })?;
@@ -551,24 +621,82 @@ async fn refund_row(
     Ok(status.filter(|s| wanted(*s)).map(|s| (pick, s, charged)))
 }
 
-/// FEE-026, D-1753: Stripe's `succeeded` for `re_…` (the webhook's, T259, or the check's). A
-/// `pending` refund becomes `succeeded` with its ledger refund entry; anything else is unchanged.
+/// FEE-026, FEE-028, D-1753, D-2303, D-3018: Stripe's `succeeded` `refund` as the caller re-read
+/// it (the webhook's, T259, or the check's; that read is D-2303's one re-read, so nothing is
+/// fetched again). A `pending` refund of the pick's own PaymentIntent becomes `succeeded` with its
+/// ledger refund entry at the amount and with the alert [`Refund::amount_against`] gives; anything
+/// else is unchanged.
 ///
 /// # Errors
 /// [`MoneyEventError::Database`] or `Ledger`.
 pub async fn refund_succeeded(
     pool: &PgPool,
-    refund: &str,
+    refund: &Refund,
     now: Timestamp,
 ) -> Result<bool, MoneyEventError> {
     let mut tx = db(pool.begin().await)?;
-    let row = refund_row(&mut tx, refund, RefundStatus::is_pending).await?;
+    let row = refund_row(&mut tx, &refund.id, RefundStatus::is_pending).await?;
     let Some((pick, _, charged)) = row else {
         return Ok(false);
     };
+    if charged.intent != refund.payment_intent {
+        return Ok(false);
+    }
     let done = succeeded(&mut tx, pick, &charged, refund, now).await?;
     db(tx.commit().await)?;
     Ok(done)
+}
+
+/// FEE-026, FEE-028, FEE-053, D-2303, D-3018: whether `pick`'s succeeded refund may be announced
+/// as "refunded in full" (`picks`' `unreachable_refunded`). `false` only on positive evidence that
+/// it is not the whole charge in `usd`: the ledger holds its refund at another amount, or a re-read
+/// of its `re_…` reports another currency or another `usd` amount. `true` when there is no succeeded
+/// refund, or the re-read reports no amount or no currency, or answers [`AdapterError::NotSent`]
+/// (the provided `read_refund`): a missing amount's notice goes (D-2303).
+///
+/// # Errors
+/// [`MoneyEventError::Stripe`] for any other read error (a foreign refund must never be announced
+/// on a guess), or `Database`.
+pub async fn refund_in_full(
+    pool: &PgPool,
+    stripe: &impl RefundStripe,
+    pick: Uuid,
+) -> Result<bool, MoneyEventError> {
+    let mut conn = db(pool.acquire().await)?;
+    let Some((refund, charged)) = succeeded_refund(&mut conn, pick).await? else {
+        return Ok(true);
+    };
+    let (refunds, reversals) = held(&mut conn, pick).await?;
+    let booked = last_refund(&mut conn, pick).await?;
+    drop(conn);
+    if refunds > reversals && booked.is_some_and(|a| a != charged) {
+        return Ok(false);
+    }
+    match stripe.fetch_refund(&refund).await {
+        Ok(read) => Ok(matches!(
+            read.amount_against(charged),
+            RefundAmount::Full | RefundAmount::Missing
+        )),
+        Err(AdapterError::NotSent) => Ok(true),
+        Err(_) => Err(MoneyEventError::Stripe),
+    }
+}
+
+/// The `re_…` of `pick`'s `succeeded` refund and the charged amount, from its FEE-042 record.
+async fn succeeded_refund(
+    conn: &mut PgConnection,
+    pick: Uuid,
+) -> Result<Option<(String, i64)>, MoneyEventError> {
+    let row = db(sqlx::query!(
+        r#"SELECT r.stripe_refund_id AS "refund!", e.amount_cents AS charged
+             FROM payments.refund r JOIN payments.charge_evidence e ON e.pick_id = r.pick_id
+            WHERE r.pick_id = $1 AND r.status = $2 AND r.stripe_refund_id IS NOT NULL"#,
+        pick,
+        RefundStatus::Succeeded.code(),
+    )
+    .fetch_optional(conn)
+    .await)?;
+    Ok(row.map(|r| (r.refund, r.charged)))
 }
 
 /// FEE-026, P13: Stripe's `refund.failed` for `re_…`, after it took the refund or while it was
@@ -612,7 +740,8 @@ async fn refund_ended(
     let (refunds, reversals) = held(&mut tx, pick).await?;
     if refunds > reversals {
         let key = format!("refund-reversal.{pick}.{refund}");
-        append(&mut tx, &charged, &key, true).await?;
+        let amount = last_refund(&mut tx, pick).await?.unwrap_or(charged.amount);
+        append(&mut tx, &charged, (&key, amount), true).await?;
     }
     let tries = failed(&mut tx, pick, (from, None), to, now)
         .await?
@@ -653,14 +782,11 @@ pub async fn run_refund_check(
         return Ok(());
     };
     let answer = stripe.fetch_refund(refund).await;
-    let state = answer
-        .ok()
-        .filter(|r| r.payment_intent == charged.intent)
-        .map(|r| r.state);
-    let moved = match state {
-        Some(RefundState::Succeeded) => refund_succeeded(pool, refund, now).await,
-        Some(RefundState::Failed) => refund_failed(pool, refund, now).await,
-        Some(RefundState::Canceled) => refund_canceled(pool, refund, now).await,
+    let answer = answer.ok().filter(|r| r.payment_intent == charged.intent);
+    let moved = match answer.as_ref().map(|r| (r, r.state)) {
+        Some((read, RefundState::Succeeded)) => refund_succeeded(pool, read, now).await,
+        Some((_, RefundState::Failed)) => refund_failed(pool, refund, now).await,
+        Some((_, RefundState::Canceled)) => refund_canceled(pool, refund, now).await,
         _ => Ok(false),
     };
     if !moved.map_err(|_| failed)? {

@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT amount_cents FROM payments.ledger_entry\n          WHERE kind = 'refund'\n            AND (idempotency_key = 'refund.' || $1::uuid::text\n                 OR idempotency_key LIKE 'refund.' || $1::uuid::text || '.%')\n          ORDER BY seq DESC LIMIT 1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "amount_cents",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "payments.ledger_entry",
+            "name": "amount_cents"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "df6450cc6620454949ca974426e64ccc31785f510e6833725dc5a60631a4f108"
+}
