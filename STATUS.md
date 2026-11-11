@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-11T01:35:24Z by runner f8231346d80a (actions).
+Updated 2026-11-11T02:07:03Z by runner 6b896e8fd79a (actions).
 
-**Building: T337 in progress since 01:35Z; 193 of 354 done; week 55% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T157 in progress since 01:03Z; 193 of 354 done; week 55% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 193 of 354 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T337 claimed 01:35Z, lease until 04:35Z; lane 2: T157 claimed 01:03Z, lease until 04:03Z
+- **Lane:** lane 2: T157 claimed 01:03Z, lease until 04:03Z
 - **Week:** 55% used, 80.3M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:18Z, 16 min before this update
+- **Last run:** 01:35Z, 31 min before this update
 - **Keeper:** last ran 01:18Z, next wake 04:06Z
 
 ## Needs attention
@@ -17,6 +17,7 @@ Updated 2026-11-11T01:35:24Z by runner f8231346d80a (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T337 | payments: a $0 release proof is bound to the pick's own stor | QUEUED | 1 | 31 min | 02:07Z | T337 code+tests done (commit 6b896e8f) but smoke/prehandin red: tests/integration/tests/confirm_and_pay.rs td_fee_25_a_p |
 | T349 | calls: a PIN draw fails only when the OS source fails, and o | done | 1 | 36 min | 00:40Z |  |
 | T207 | businesses: re-apply the license map when a daily list chang | done | 1 | 41 min | 23:39Z |  |
 | T311 | calls and server: a voice read-back confirm connects only th | done | 2 | 33 min | 23:21Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
@@ -36,9 +37,10 @@ Updated 2026-11-11T01:35:24Z by runner f8231346d80a (actions).
 | T286 | server: every request has a whole-request time limit, answer | done | 1 | 26 min | 04:57Z |  |
 | T285 | runner: a task closes with a visible mark when a file it own | done | 1 | 19 min | 03:45Z |  |
 | T284 | server: every route the architecture lists is wired in the r | done | 3 | 34 min | 03:02Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests / test tests::ssrf_g |
-| T284 | server: every route the architecture lists is wired in the r | check_failed | 2 | 21 min | 01:51Z |  |
 
 ### Plan and harness merges on main
+- 01:56Z Harness: the test suite drops the live job's smoke switch and run ids (D-2660) (#441)
+- 01:46Z Plan: fix tasks from the Nov 11 businesses and catalog review (D-2700–D-2712) (#442)
 - 00:36Z Plan: fix tasks from the Nov 10 code review — payments, privacy, texting, portals, calls, jobs (D-2620–D-2642) (#439)
 - 22:59Z Plan: claim the longest remaining dependency chain first (D-2591) (#436)
 - 22:08Z Harness: report queued tasks that add to lists existing tests pin (D-2550) (#433)
@@ -101,8 +103,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T337 (lease until 2026-11-11T04:35:20Z)
+- nothing
 - lane 2: T157 (lease until 2026-11-11T04:03:53Z)
 
 ## Last usage reading
-- {"task": "T349", "at": "2026-11-11T00:40:35Z", "output_tokens": 37351, "cache_read_input_tokens": 2430022, "input_tokens": 136, "cache_creation_input_tokens": 218990}
+- {"task": "T337", "at": "2026-11-11T02:07:02Z", "cache_read_input_tokens": 6104521, "input_tokens": 143, "cache_creation_input_tokens": 194584, "output_tokens": 35643}
