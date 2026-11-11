@@ -36,3 +36,23 @@ pub use crate::tasks::{
 };
 pub use crate::test_control::{TEST_CONTROL_COMPILED, TestControl, TestControlError};
 pub use crate::webhooks::{Dedupe, EventKey, WebhookError};
+
+/// OPS-004, JOB-006, D-2285: each task kind with a dead-lettered `core.task` whose last error is
+/// [`NO_HANDLER`], with how many, in kind order. Kinds and counts only, never a payload; the
+/// server's hourly no-handler check reads it (`app/server/src/no_handler_alert.rs`, T327).
+///
+/// # Errors
+/// [`TaskError::Db`] when the read fails.
+pub async fn dead_without_handler(
+    db: &mut sqlx::PgConnection,
+) -> Result<Vec<(String, i64)>, TaskError> {
+    let rows = sqlx::query!(
+        r#"SELECT kind, count(*) AS "count!" FROM core.task
+           WHERE dead_at IS NOT NULL AND last_error = $1 GROUP BY kind ORDER BY kind"#,
+        NO_HANDLER,
+    )
+    .fetch_all(db)
+    .await
+    .map_err(|_| TaskError::Db)?;
+    Ok(rows.into_iter().map(|r| (r.kind, r.count)).collect())
+}
