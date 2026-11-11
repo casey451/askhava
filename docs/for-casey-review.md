@@ -2,6 +2,12 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## The share box at the pick is required, and five older tests tick it (plan change, D-3032, November 11)
+
+- **What happened.** The step that adds the homeowner's "Share my first name and the job address" box at the pick stopped a second time. Pressing Pick without ticking the box must now show an error and pick nothing, but five older tests press Pick without the box, and that step was not allowed to change them.
+- **What changed.** The same step may now change those five tests, and only to tick the box before pressing Pick; every check they make stays the same. Because it now changes finished tests, it runs as a harness step with the stricter review. One queued step that also edits one of those tests now waits for it.
+- **Also pinned.** The tick is saved in its own small record and attached to the pick only once the homeowner's code checks out. If she forgets the box, the page says so at the top, takes her to the box, and keeps the backup quote she had chosen. The box's Spanish wording is left to that step, which logs it.
+- **Nothing needs you.**
 
 ## Browser setup survives an Ubuntu mirror outage (harness change, D-3030, November 11)
 
@@ -2252,6 +2258,17 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **What happened.** The step that adds the "Can't take it" link to the email a business gets when it is picked stopped on its first try. Its plan pointed it at the wrong file, and the email's words are shared texts it wasn't allowed to change. Adding the link to those texts also breaks five older tests that build the same email or every text with a fixed list of sample values.
 - **What changed.** The work is split in two. The first step now puts the link's address in where the email is built. A new follow-up step (T386) adds the line to both pick emails (regular and emergency) in English, "Can't take it:" and the link, and in Spanish, "¿No puede aceptarlo?" and the link. The five older tests only gain a sample address; every check they make stays the same. The link opens a page that asks the business to sign in, and it carries no homeowner details. The full journey test of the business side waits for the new step.
 - **Calls Claude made that you may want to check.** In the email the address shows as plain text, not a button; making it clickable is a small later change.
+
+## A partial or foreign-currency refund is checked on every path, and the business is not told "refunded" (plan change, D-3018, November 11)
+
+- **What happened.** The step that checks how much Stripe actually refunded stopped: two of the places it has to reach belonged to earlier, finished steps. A refund confirmed by Stripe's later notification skipped the check, and the "your introduction fee is refunded" message to the business is sent by another part of the system that didn't know about the check.
+- **What changed.** The same step may now change exactly those two places. A refund confirmed later is checked the same way as one confirmed at once. If Stripe refunded less than the full fee, or in a currency other than US dollars, the job still closes as before, you get the alert, and the business does not get the "refunded" message; you decide what to tell them. If Stripe simply didn't say the amount or the currency, the message goes as today, because the system only ever asks for full refunds. If the system can't reach Stripe to check before sending the message, it closes nothing yet and tries again on its next run, so an unchecked refund is never announced. No other step and no test written by another step changes.
+- **Nothing needs you now.**
+
+## T384: the homeowner sees a changed or withdrawn quote (D-2987 to D-2990)
+
+- **What changed.** When a business changes its quote before any pick, the homeowner's quote page and the quote card show "Updated Nov 3, 9:15 a.m. Arizona time", and the quote keeps its number. A withdrawn quote keeps its number and place, says "Withdrawn by the business" and has no Pick button; no one can pick it by page, by "2 YES" text or as a backup. The LIST text now numbers each line with the quote's page number, so "2 YES" always picks the quote shown as 2 (before, after a failed pick the list could renumber and "2 YES" could pick a different business).
+- **One thing you may want changed.** The LIST text ends "for example 2 YES" whatever quote 2 is, even when quote 2 was withdrawn. It is a fixed line from an earlier step; changing it to name a quote she can pick would be a small later task.
 - **Nothing needs you now.**
 
 ## The "job confirmed" email's sign-in link now works (T269, D-3025 to D-3028, November 11)
