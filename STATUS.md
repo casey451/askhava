@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-11T10:45:48Z by runner ed6a569f223d (actions).
+Updated 2026-11-11T10:53:02Z by runner ed6a569f223d (actions).
 
 **Building: T164 in progress since 10:21Z; 201 of 371 done; week 63% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 201 of 371 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T164 claimed 10:21Z, lease until 13:21Z; lane 2: T278 claimed 10:27Z, lease until 13:27Z
-- **Week:** 63% used, 64.5M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:38Z, 7 min before this update
+- **Lane:** lane 1: T164 claimed 10:21Z, lease until 13:21Z; lane 2: T278 claimed 10:27Z, lease until 13:27Z; lane 3: T331 claimed 10:45Z, lease until 13:45Z
+- **Week:** 63% used, 61.4M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Last run:** 10:38Z, 14 min before this update
 - **Keeper:** last ran 10:08Z, next wake 10:28Z
 
 ## Needs attention
@@ -110,7 +110,7 @@ Updated 2026-11-11T10:45:48Z by runner ed6a569f223d (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-11T10:07:56Z (week)): five-hour: 4.8M used, 24.3M left, resets 2026-11-11T14:49:36Z; week: 129.5M used, 64.5M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-04T12:35:43Z.
+- Pacing (session_reading 2026-11-11T10:07:56Z (week)): five-hour: 7.9M used, 21.2M left, resets 2026-11-11T14:49:36Z; week: 132.6M used, 61.4M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-04T13:07:05Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -127,6 +127,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T164 (lease until 2026-11-11T13:21:20Z)
 - lane 2: T278 (lease until 2026-11-11T13:27:24Z)
+- lane 3: T331 (lease until 2026-11-11T13:45:45Z)
 
 ## Last usage reading
 - {"task": "T316", "at": "2026-11-11T10:06:23Z", "output_tokens": 16507, "cache_creation_input_tokens": 145354, "input_tokens": 100, "cache_read_input_tokens": 1713839}
