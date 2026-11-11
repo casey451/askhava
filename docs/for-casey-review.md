@@ -2308,3 +2308,9 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **What changed.** The sign-up form now asks the business name (needed), a trade name or DBA, the ROC, BTR and city license numbers it has, and an optional Google Business Profile link and Yelp link. A name with a phone number, a link or "find us on Google" is sent back with the reason and nothing is saved. A link is kept only if it is on Google's or Yelp's own site and the page opens. Saved links show on every quote card as two plain links, "Google" and "Yelp", with no stars or counts.
 - **One thing you may want changed.** Links are checked when they are saved, not again later; a page Google or Yelp takes down stays on the cards until the business changes it in the portal (a later task).
 - **Nothing needs you now.**
+
+## T316: one read of each business's public name (D-2923)
+
+- **What changed.** The app can now look up the name to show for a business: its trade name (DBA) if it gave one at sign-up, otherwise its business name, checked again for phone numbers, links and "find us on" wording. The LIST reply and the "who's calling" text will use it once their own steps are built (T317, T318).
+- **Worth a look.** A business whose stored name fails that check, or that has no name stored, is left out of the list and you get one digest alert naming only the business, not the name. A business can't edit its name in the portal yet.
+- **Nothing needs you now.**
