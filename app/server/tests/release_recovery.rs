@@ -33,7 +33,8 @@ use askhava_ops::api::Actor;
 use askhava_payments::api::{
     BusinessId, ChargeOutcome, EntryKind, IntentStripe, LedgerEntry, NewEntry, PickNow, Press,
     Releasable, STRIPE_WEBHOOK_PATH, StripeAccount, StripeWebhook, confirm_and_pay,
-    ensure_customer, ledger_append, money_view, no_fee_release, receipt_for, stripe_webhook_routes,
+    ensure_customer, ledger_append, money_view, no_fee_release, pick_fee, receipt_for,
+    stripe_webhook_routes,
 };
 use askhava_picks::api::{
     BUSINESS_NOTICE_KIND, LINE_RETRY_KIND, PagePick, Released, ViewAnswer, page_pick,
@@ -556,18 +557,24 @@ async fn td_pick_50_a_verified_success_settles_paid_and_releases_once(pool: PgPo
 /// and nothing is released.
 #[sqlx::test(migrator = "MIGRATOR")]
 async fn td_pick_50_a_zero_fee_releases_free_and_a_cancelled_pick_nothing(pool: PgPool) {
-    let (business, first, other) = (
+    let (business, one, two) = (
         new_business(&pool).await,
         new_business(&pool).await,
         new_business(&pool).await,
     );
-    let (person, first_person) = (owner(&pool, business).await, owner(&pool, first).await);
+    let person = owner(&pool, business).await;
     let job = quoted_job(&pool, &[business]).await;
-    let replaced_job = quoted_job(&pool, &[first, other]).await;
+    let replaced_job = quoted_job(&pool, &[one, two]).await;
     her_request(&pool, &[job, replaced_job]).await;
     let pick = page_picked(&pool, job, 1).await;
     zero_fee(&pool, (business, job)).await;
     let gone = page_picked(&pool, replaced_job, 1).await;
+    let mut db = pool.acquire().await.expect("db");
+    let stored = pick_fee(&mut db, gone).await.expect("read").expect("fixed");
+    drop(db);
+    assert_eq!(stored.job, replaced_job);
+    let first = stored.business.0;
+    let first_person = owner(&pool, first).await;
     page_picked(&pool, replaced_job, 2).await;
     zero_fee(&pool, (first, replaced_job)).await;
     let sink = sink(&pool, vault());

@@ -179,6 +179,25 @@ async fn fixed(pool: &PgPool, at: Timestamp) {
         .expect("fee fixed");
 }
 
+/// T337 (D-2832): the fee-free $0 fee fixed at `pick` on `BUSINESS` and `job` (tiers mode), the
+/// stored pair `no_fee_release` binds the pick to (D-2302).
+async fn fee_free(conn: &mut sqlx::PgConnection, pick: Uuid, job: Uuid) {
+    let period = PeriodJob {
+        job: FeeJob {
+            diagnostic_visit: false,
+            visit_tier: VisitTier::DEFAULT,
+            fee_free: true,
+        },
+        service: Service::NotRecurring,
+        cap: RecurringCap::DEFAULT,
+    };
+    let fee = fee_at_pick(FeeQuote::Fixed(100_000), None, period, FeeMode::Tiers, None);
+    let at = Timestamp::from_second(NOW).expect("time");
+    fix_fee_at_pick(conn, pick, BUSINESS, job, &fee.expect("fee"), at)
+        .await
+        .expect("fee-free fee fixed");
+}
+
 /// A Stripe event as `adapters` hands it over after the signature check (SEC-016).
 fn event(kind: &str, livemode: bool, account: Option<&str>, object: &str) -> VerifiedStripeEvent {
     let mut body = serde_json::json!({"id": "evt_FakeT189", "type": kind, "livemode": livemode,
@@ -396,12 +415,15 @@ async fn td_fee_25_an_ended_pick_is_never_cleared(pool: PgPool) {
 
 /// TD-FEE-25 (FEE-036, PICK-022, D-1478): a pick with a PaymentIntent has a fee to pay, so a $0
 /// decision recorded for another job of its business never clears it; a pick with no intent
-/// passed the same parties is cleared.
+/// passed the same parties is cleared. Since T337 the paid pick is refused on its stored pair
+/// before its PaymentIntent is looked at, so the PaymentIntent case now lives in
+/// `no_fee_release_binding.rs` (D-2832).
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_fee_25_a_paid_pick_is_never_cleared_as_no_fee(pool: PgPool) {
     pressed(&pool, "processing").await.expect("press");
     let other = Uuid::from_u128(0x189_0243);
     let mut conn = pool.acquire().await.expect("connection");
+    fee_free(&mut conn, Uuid::from_u128(0x189_0043), other).await;
     let raw = NewEntry {
         kind: EntryKind::FeeFreeJobType,
         business: Some(BUSINESS.0),
@@ -475,6 +497,7 @@ fn td_sec_11_only_a_stripe_webhook_is_a_stripe_event() {
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_fee_25_a_recorded_no_fee_decision_clears(pool: PgPool) {
     let mut conn = pool.acquire().await.expect("connection");
+    fee_free(&mut conn, PICK, Uuid::from_u128(0x189_0242)).await;
     let parties = (BUSINESS.0, JOB);
     let none = no_fee_release(&mut conn, PICK, parties)
         .await
