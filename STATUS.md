@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-11T01:18:35Z by runner 5fd99b773188 (actions).
+Updated 2026-11-11T01:35:24Z by runner f8231346d80a (actions).
 
-**Building: T157 in progress since 01:03Z; 193 of 354 done; week 55% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T337 in progress since 01:35Z; 193 of 354 done; week 55% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 193 of 354 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T157 claimed 01:03Z, lease until 04:03Z
-- **Week:** 55% used, 86.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:18Z, 0 min before this update
+- **Lane:** lane 1: T337 claimed 01:35Z, lease until 04:35Z; lane 2: T157 claimed 01:03Z, lease until 04:03Z
+- **Week:** 55% used, 80.3M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Last run:** 01:18Z, 16 min before this update
 - **Keeper:** last ran 01:18Z, next wake 04:06Z
 
 ## Needs attention
@@ -54,7 +54,6 @@ Updated 2026-11-11T01:18:35Z by runner 5fd99b773188 (actions).
 - 09:36Z Plan: T290 may update the two tests that pin recurring rows by data; nearest reachable bases (D-2386) (#413)
 - 03:30Z Plan: pentest assessment — Actions pinned, purpose-bound codes, Verify sends outside transactions (D-2346–D-2350, T345–T346) (#407)
 - 02:15Z Plan: seventh audit — fee facts from the job's category at the pick, tier and per-visit picks, whole-field quote gate, atomic Verify cap (D-2329–D-2335, 
-- 01:33Z Plan: the refused-connection test holds its port (T338, D-2318) (#404)
 
 ## Progress (requirements verified)
 
@@ -87,7 +86,7 @@ Updated 2026-11-11T01:18:35Z by runner 5fd99b773188 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-11T00:57:03Z (week)): five-hour: 3.0M used, 26.1M left, resets 2026-11-11T04:21:24Z; week: 108.0M used, 86.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-02T12:26:23Z.
+- Pacing (session_reading 2026-11-11T01:18:20Z (week)): five-hour: 6.7M used, 22.4M left, resets 2026-11-11T04:21:24Z; week: 113.7M used, 80.3M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-02T10:44:27Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -102,7 +101,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T337 (lease until 2026-11-11T04:35:20Z)
 - lane 2: T157 (lease until 2026-11-11T04:03:53Z)
 
 ## Last usage reading
