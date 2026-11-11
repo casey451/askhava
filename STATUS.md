@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T22:05:11Z by runner 4755bac9f62a (actions).
+Updated 2026-11-11T22:17:49Z by runner 0137f98c1451 (manual).
 
 **Building: T334 in progress since 22:00Z; 213 of 376 done; week 76% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-11T22:05:11Z by runner 4755bac9f62a (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T334 claimed 22:00Z, lease until 01:00Z
 - **Week:** 76% used, 40.9M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:05Z, 0 min before this update
+- **Last run:** 22:05Z, 12 min before this update
 - **Keeper:** last ran 22:05Z, next wake 01:03Z
 
 ## Needs attention
@@ -106,7 +106,6 @@ Updated 2026-11-11T22:05:11Z by runner 4755bac9f62a (actions).
 - 01:46Z Plan: fix tasks from the Nov 11 businesses and catalog review (D-2700–D-2712) (#442)
 - 00:36Z Plan: fix tasks from the Nov 10 code review — payments, privacy, texting, portals, calls, jobs (D-2620–D-2642) (#439)
 - 22:59Z Plan: claim the longest remaining dependency chain first (D-2591) (#436)
-- 22:08Z Harness: report queued tasks that add to lists existing tests pin (D-2550) (#433)
 
 ## Progress (requirements verified)
 
