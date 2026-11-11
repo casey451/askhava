@@ -1864,3 +1864,4 @@
 - 2026-11-11T04:32:27Z runner d669dfa47dae (actions): {}
 - 2026-11-11T04:43:17Z runner 18d7cc8f2592 (actions): {"T374": "MERGE_PENDING -> DONE"}
 - 2026-11-11T04:43:26Z runner 18d7cc8f2592 (actions): {"T295": "QUEUED -> IN_PROGRESS"}; T295 estimated 3.6M tokens (calibrated); five-hour window has 22.7M left, week 69.6M after 6.4M still running in another lane (session_reading 2026-11-11T04:32:09Z (week)); claimed
+- 2026-11-11T04:44:29Z runner 18d7cc8f2592 (actions): {"T295": "IN_PROGRESS -> QUEUED"}

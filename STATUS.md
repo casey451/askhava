@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-11T04:43:26Z by runner 18d7cc8f2592 (actions).
+Updated 2026-11-11T04:44:29Z by runner 18d7cc8f2592 (actions).
 
 **Building: T209 in progress since 03:10Z; 195 of 369 done; week 59% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 195 of 369 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T209 claimed 03:10Z, lease until 06:10Z; lane 2: T295 claimed 04:43Z, lease until 07:43Z; lane 3: T337 claimed 04:25Z, lease until 07:25Z
+- **Lane:** lane 1: T209 claimed 03:10Z, lease until 06:10Z; lane 3: T337 claimed 04:25Z, lease until 07:25Z
 - **Week:** 59% used, 69.6M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:32Z, 10 min before this update
+- **Last run:** 04:43Z, 0 min before this update
 - **Keeper:** last ran 04:32Z, next wake 06:13Z
 
 ## Needs attention
@@ -17,6 +17,7 @@ Updated 2026-11-11T04:43:26Z by runner 18d7cc8f2592 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T295 | payments, ai, intake and picks take the brand from the brand | QUEUED | 1 | 1 min | 04:44Z | T295 blocked at step 3: tests/brand_literal_baseline.json still lists files T295 does not own: app/messaging/templates/e |
 | T374 | licensing and businesses: one read of everything a business  | done | 1 | 45 min | 03:08Z |  |
 | T157 | picks: the homeowner's backup choice at the pick | done | 2 | 22 min | 02:41Z | E2e: failure; Ally: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-1 |
 | T157 | picks: the homeowner's backup choice at the pick | check_failed | 1 | 66 min | 02:10Z |  |
@@ -108,8 +109,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T209 (lease until 2026-11-11T06:10:38Z)
-- lane 2: T295 (lease until 2026-11-11T07:43:14Z)
 - lane 3: T337 (lease until 2026-11-11T07:25:41Z)
 
 ## Last usage reading
-- {"task": "T374", "at": "2026-11-11T03:08:47Z", "cache_read_input_tokens": 14069131, "output_tokens": 111729, "cache_creation_input_tokens": 451602, "input_tokens": 358}
+- {"task": "T295", "at": "2026-11-11T04:44:28Z", "cache_read_input_tokens": 619825, "cache_creation_input_tokens": 80920, "input_tokens": 41, "output_tokens": 8929}
