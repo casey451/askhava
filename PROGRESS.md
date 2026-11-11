@@ -2128,3 +2128,4 @@
 - 2026-11-11T16:45:44Z runner 7b2da50aa6b2 (actions): {}
 - 2026-11-11T16:46:00Z runner 4ce9c9f7532d (actions): {}
 - 2026-11-11T16:47:15Z runner a7b2897013c1 (actions): {"T165": "QUEUED -> IN_PROGRESS"}; T165 estimated 3.7M tokens (calibrated); five-hour window has 18.3M left, week 54.0M (session_reading 2026-11-11T16:45:43Z (week)); claimed
+- 2026-11-11T16:47:41Z runner ef7f7fc80423 (actions): {"T333": "QUEUED -> IN_PROGRESS"}; T333 estimated 3.4M tokens (calibrated); five-hour window has 14.5M left, week 50.3M after 3.7M still running in another lane (session_reading 2026-11-11T16:45:43Z (week)); claimed
