@@ -2239,3 +2239,9 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **What happened.** The step that refunds a payment arriving after the system had already ended a pick stopped a second time. Its plan has the system keep a record of that payment and queue its refund, but an older test expected the system to keep no record of it at all, so no build could pass both.
 - **What changed.** That older test still checks that an ended pick is never handed to the business. Instead of "nothing is kept", it now checks that the payment and its record are kept, and that exactly one refund job and one alert to you are made. A stale comment in another test is corrected too. Every other test that touches these payments was checked; none other needs a change.
 - **Nothing needs you now.**
+
+## The "job confirmed" email's sign-in link now works (T269, D-3025 to D-3027, November 11)
+
+- **What it does.** The link in that email opens business sign-in for the person it was sent to. Pressing "Sign in" emails them the usual one-time sign-in link; after that link (and the new-device code, when asked) they land on that job's page. The link alone never signs anyone in or shows any job detail. A changed, expired or someone else's link just shows the normal sign-in form.
+- **One wording point for later.** The screen with the button reuses today's words, "Press the button to finish signing in.", although pressing it sends an email. A small copy change would fit better; this task was not allowed to write new wording.
+- **Nothing needs you now.**

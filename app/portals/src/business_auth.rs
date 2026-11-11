@@ -25,6 +25,18 @@
 //! [`DeviceCodes`] the link alone signs in (T084's behaviour), so the composition must never serve
 //! the routes without [`SignIn::with_device_codes`] (D-1777).
 //!
+//! The release notice's signed link (T269, PICK-024, SEC-004, D-1761): `GET` [`SIGNIN_ROUTE`]
+//! through [`signin_page`] with `p` (the person's mailbox ID), `j` (job number), `e` (expiry, Unix
+//! seconds) and `t`, the `messaging` sender's `core` Action token over `p` salted with `j` and `e`
+//! (8 big-endian bytes each). With [`SignIn::with_notice_links`] set, the token is recomputed and
+//! compared in constant time; a valid, unexpired link shows the "Sign in" button, whose `POST` to
+//! `/b/sign-in/`[`NOTICE_SEGMENT`] checks it again and emails that person the usual one-time link
+//! (every business the mailbox is a current member of), carrying `?job=<j>` so that, after the
+//! unchanged link and code steps, sign-in ends with a 303 to [`JOB_PAGE_PREFIX`]`<j>`. A tampered,
+//! expired or other signed-in person's link shows plain sign-in; the same person already signed in
+//! goes straight to the job page, which checks the session itself. The link alone starts no
+//! session and this file reads no job.
+//!
 //! [`business_principal`] is the only way a business route learns who is signed in: a business
 //! session whose member is still a current member of its business; owner and homeowner sessions
 //! are never one, so the owner realm (its own 12-hour sign-in, SEC-005, T086) and the homeowner
@@ -40,14 +52,17 @@ use std::sync::Arc;
 
 use askama::Template;
 use askhava_adapters::api::{CodeChannel, IdempotencyKey, VerifyAdapter};
+use askhava_businesses::api::businesses_of_mailbox;
 use askhava_businesses::api::members;
-use askhava_core::api::{Claimed, Clock, HandlerError};
+use askhava_core::api::{
+    Claimed, Clock, HandlerError, IdSecret, LinkKind, LinkSalt, LinkToken, link_token,
+};
 use askhava_privacy::api::{BusinessSessionProof, SessionMint};
 use axum::Router;
-use axum::extract::{FromRef, Path, State};
+use axum::extract::{FromRef, Path, Query, State};
 use axum::http::StatusCode;
 use axum::middleware::{from_fn, from_fn_with_state};
-use axum::response::{Html, IntoResponse, Response};
+use axum::response::{Html, IntoResponse, Redirect, Response};
 use axum_extra::extract::cookie::{Cookie, CookieJar};
 use jiff::{SignedDuration, Timestamp};
 use jiff_sqlx::ToSqlx;
@@ -55,6 +70,7 @@ use secrecy::{ExposeSecret, SecretString};
 use sha2::{Digest, Sha256};
 use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
+use subtle::ConstantTimeEq;
 
 use crate::models;
 use crate::security::{
@@ -69,6 +85,10 @@ use crate::session::{
 pub const SIGNIN_ROUTE: &str = "/b/sign-in";
 /// The emailed link; the token is the one path segment (SEC-026).
 pub const SIGNIN_LINK_ROUTE: &str = "/b/sign-in/{token}";
+/// The path segment after [`SIGNIN_ROUTE`] whose `POST` takes a notice link's button (D-1761).
+pub const NOTICE_SEGMENT: &str = "notice";
+/// The business job page, the next page after a notice link's sign-in: this then the job number.
+pub const JOB_PAGE_PREFIX: &str = "/b/jobs/";
 /// SEC-004: a sign-in link works for 15 minutes.
 pub const LINK_LIFE: SignedDuration = SignedDuration::from_mins(15);
 /// SEC-004, D-014: a business session lasts 30 days.
@@ -312,6 +332,7 @@ pub struct SignIn<M> {
     mail: Arc<M>,
     security: WebSecurity,
     codes: Option<Arc<DeviceCodes>>,
+    notice: Option<Arc<IdSecret>>,
 }
 
 impl<M> Clone for SignIn<M> {
@@ -322,6 +343,7 @@ impl<M> Clone for SignIn<M> {
             mail: Arc::clone(&self.mail),
             security: self.security.clone(),
             codes: self.codes.clone(),
+            notice: self.notice.clone(),
         }
     }
 }
@@ -342,6 +364,7 @@ impl<M: SignInMail> SignIn<M> {
             mail,
             security,
             codes: None,
+            notice: None,
         }
     }
 
@@ -351,6 +374,15 @@ impl<M: SignInMail> SignIn<M> {
     #[must_use]
     pub fn with_device_codes(mut self, codes: DeviceCodes) -> Self {
         self.codes = Some(Arc::new(codes));
+        self
+    }
+
+    /// Checks the release notice's signed links with `secret`, the `ID_SECRET` the `messaging`
+    /// notice sender signs them with (PICK-024, D-1761); without it every notice link opens plain
+    /// sign-in.
+    #[must_use]
+    pub fn with_notice_links(mut self, secret: IdSecret) -> Self {
+        self.notice = Some(Arc::new(secret));
         self
     }
 
@@ -406,6 +438,161 @@ pub async fn signin_form(jar: CookieJar) -> Response {
     page(jar, "form", ("", ""), false)
 }
 
+/// The sign-in routes' query: a notice link's `p`, `j`, `e` and `t`, or the next `job` an emailed
+/// link carries (D-1761). Every field is text, so a bad value is plain sign-in, never a 400.
+#[derive(Default, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct NoticeQuery {
+    #[serde(default)]
+    p: Option<String>,
+    #[serde(default)]
+    j: Option<String>,
+    #[serde(default)]
+    e: Option<String>,
+    #[serde(default)]
+    t: Option<String>,
+    #[serde(default)]
+    job: Option<String>,
+}
+
+/// A notice link whose token checked out and has not expired (R1: parsed once, here).
+struct Notice {
+    person: Uuid,
+    job: i64,
+    expires: i64,
+    token: LinkToken,
+}
+
+/// PICK-024, SEC-004, D-1761: the notice link in `q` when its token is `core`'s Action token over
+/// `p`, salted with `j` and `e` as 8 big-endian bytes each (compared in constant time), and `now`
+/// is before `e`; else `None`.
+fn signed_notice(secret: &IdSecret, q: &NoticeQuery, now: Timestamp) -> Option<Notice> {
+    let person = Uuid::parse_str(q.p.as_deref()?).ok()?;
+    let job: i64 = q.j.as_deref()?.parse().ok()?;
+    let expires: i64 = q.e.as_deref()?.parse().ok()?;
+    let token = LinkToken::parse(q.t.as_deref()?).ok()?;
+    let salt = LinkSalt::from_bytes(&[job.to_be_bytes(), expires.to_be_bytes()].concat()).ok()?;
+    let want = link_token(secret, LinkKind::Action, person, &salt);
+    let same: bool = want
+        .as_str()
+        .as_bytes()
+        .ct_eq(token.as_str().as_bytes())
+        .into();
+    (same && now.as_second() < expires).then_some(Notice {
+        person,
+        job,
+        expires,
+        token,
+    })
+}
+
+/// What a notice link opens.
+enum Opened {
+    /// Plain sign-in: no, a bad or an expired link, or another person signed in.
+    Plain,
+    /// Sign-in for the link's person.
+    Notice(Notice),
+    /// The link's person is already signed in: the job page.
+    SignedIn(i64),
+}
+
+/// Checks `q` as a notice link at the clock's now, then who is signed in on this browser.
+async fn open_notice<M>(
+    state: &SignIn<M>,
+    jar: &CookieJar,
+    q: &NoticeQuery,
+) -> Result<Opened, &'static str> {
+    let now = state.clock.now();
+    let Some(n) = (state.notice.as_deref()).and_then(|s| signed_notice(s, q, now)) else {
+        return Ok(Opened::Plain);
+    };
+    let mut db = state.pool.acquire().await.map_err(|_| "database")?;
+    let who = business_principal(&mut db, jar, now).await;
+    let Some(who) = who.map_err(|_| "session read")? else {
+        return Ok(Opened::Notice(n));
+    };
+    let team = members(&mut db, who.business()).await;
+    let team = team.map_err(|_| "team read")?;
+    let same = team
+        .iter()
+        .any(|m| m.id == who.member() && m.mailbox == n.person);
+    Ok(if same {
+        Opened::SignedIn(n.job)
+    } else {
+        Opened::Plain
+    })
+}
+
+fn job_page(job: i64) -> Response {
+    Redirect::to(&format!("{JOB_PAGE_PREFIX}{job}")).into_response()
+}
+
+/// `GET` [`SIGNIN_ROUTE`] for the composition: a valid notice link's "Sign in" button (posting
+/// the link to [`NOTICE_SEGMENT`]), the job page when its person is already signed in, else the
+/// email form. Changes nothing (SEC-026, PICK-024, D-1761).
+pub async fn signin_page<M: SignInMail>(
+    State(state): State<SignIn<M>>,
+    Query(q): Query<NoticeQuery>,
+    jar: CookieJar,
+) -> Response {
+    match open_notice(&state, &jar, &q).await {
+        Ok(Opened::Notice(n)) => {
+            let (p, j, e, t) = (n.person, n.job, n.expires, n.token.as_str());
+            let action = format!("{NOTICE_SEGMENT}?p={p}&j={j}&e={e}&t={t}");
+            page(jar, "open", ("", &action), false)
+        }
+        Ok(Opened::SignedIn(job)) => job_page(job),
+        Ok(Opened::Plain) => signin_form(jar).await,
+        Err(what) => failure(what),
+    }
+}
+
+/// The notice button's `POST`: checks the link again and emails its person the one-time link
+/// with the job next, at most [`LINKS_PER_LIFE`] as always; the "check your email" screen either
+/// way. Signs no one in (SEC-004, PICK-024, D-1761).
+async fn notice_post<M: SignInMail>(
+    state: &SignIn<M>,
+    jar: CookieJar,
+    q: &NoticeQuery,
+) -> Response {
+    let n = match open_notice(state, &jar, q).await {
+        Ok(Opened::Notice(n)) => n,
+        Ok(Opened::SignedIn(job)) => return job_page(job),
+        Ok(Opened::Plain) => return page(jar, "form", ("", ""), false),
+        Err(what) => return failure(what),
+    };
+    let Ok(mut db) = state.pool.acquire().await else {
+        return failure("database");
+    };
+    let Ok(found) = businesses_of_mailbox(&mut db, n.person).await else {
+        return failure("member lookup");
+    };
+    let now = state.clock.now();
+    for business in found {
+        let to = SignInAddress {
+            business,
+            mailbox: n.person,
+        };
+        if send_one(state, &mut db, to, (now, Some(n.job)))
+            .await
+            .is_err()
+        {
+            return failure("link not sent");
+        }
+    }
+    page(jar, "sent", ("", ""), false)
+}
+
+/// The job number an emailed link carries as `?job=` (D-1761).
+fn next_job(q: &NoticeQuery) -> Option<i64> {
+    q.job.as_deref().and_then(|j| j.parse().ok())
+}
+
+/// `token` with `?job=<n>` when there is a next job, for the link's and code's form actions.
+fn with_next(token: &str, next: Option<i64>) -> String {
+    next.map_or_else(|| token.to_owned(), |job| format!("{token}?job={job}"))
+}
+
 /// The sign-in form's fields.
 #[derive(serde::Deserialize)]
 pub struct AddressForm {
@@ -447,7 +634,7 @@ pub async fn signin_request<M: SignInMail>(
         return failure("address lookup");
     };
     for to in found {
-        if send_one(&state, &mut db, to, now).await.is_err() {
+        if send_one(&state, &mut db, to, (now, None)).await.is_err() {
             return failure("link not sent");
         }
     }
@@ -455,12 +642,13 @@ pub async fn signin_request<M: SignInMail>(
 }
 
 /// Stores and emails one link to the current member behind `to`, unless that member already got
-/// [`LINKS_PER_LIFE`] in the last 15 minutes (D-1725).
+/// [`LINKS_PER_LIFE`] in the last 15 minutes (D-1725); a `next` job rides on the link as `?job=`
+/// (D-1761).
 async fn send_one<M: SignInMail>(
     state: &SignIn<M>,
     db: &mut PgConnection,
     to: SignInAddress,
-    now: Timestamp,
+    (now, next): (Timestamp, Option<i64>),
 ) -> Result<(), PortalsError> {
     let team = members(db, to.business)
         .await
@@ -479,7 +667,8 @@ async fn send_one<M: SignInMail>(
         .map_err(|_| PortalsError::BadLifetime)?;
     let token = models::new_link_token()?;
     models::insert_link(db, &token, (member.id, to.business), (now, expires)).await?;
-    let link = SecretString::from(format!("{}/b/sign-in/{token}", site()));
+    let path = with_next(&token, next);
+    let link = SecretString::from(format!("{}/b/sign-in/{path}", site()));
     state.mail.send_link(db, to, &link).await
 }
 
@@ -492,10 +681,11 @@ fn well_formed(token: &str) -> bool {
 }
 
 /// `GET` [`SIGNIN_LINK_ROUTE`]: the "Sign in" button for a usable link, or the "ended" screen.
-/// Uses nothing up (SEC-026).
+/// Uses nothing up (SEC-026); a `?job=` rides on to the button's form (D-1761).
 pub async fn signin_open<M: SignInMail>(
     State(state): State<SignIn<M>>,
     Path(token): Path<String>,
+    Query(q): Query<NoticeQuery>,
     jar: CookieJar,
 ) -> Response {
     if !well_formed(&token) {
@@ -505,7 +695,7 @@ pub async fn signin_open<M: SignInMail>(
         return failure("database");
     };
     match models::link_open(&mut db, &token, state.clock.now()).await {
-        Ok(true) => page(jar, "open", ("", &token), false),
+        Ok(true) => page(jar, "open", ("", &with_next(&token, next_job(&q))), false),
         Ok(false) => page(jar, "ended", ("", ""), false),
         Err(_) => failure("link read"),
     }
@@ -538,13 +728,20 @@ enum Step {
 
 /// `POST` [`SIGNIN_LINK_ROUTE`]: uses the link and signs its member in for 30 days, after the
 /// new-device code on a browser that is not a known device of that member when [`DeviceCodes`] is
-/// set; a bad link or a wrong code is an `auth_failed` event (SEC-004, SEC-048, TXT-038).
+/// set; a bad link or a wrong code is an `auth_failed` event (SEC-004, SEC-048, TXT-038). With a
+/// `?job=` a finished sign-in is a 303 to that job page; [`NOTICE_SEGMENT`] is a notice link's
+/// button, which only emails a link (D-1761).
 pub async fn signin_post<M: SignInMail>(
     State(state): State<SignIn<M>>,
     Path(token): Path<String>,
+    Query(q): Query<NoticeQuery>,
     jar: CookieJar,
     CsrfForm(form): CsrfForm<CodeForm>,
 ) -> Response {
+    if token == NOTICE_SEGMENT {
+        return notice_post(&state, jar, &q).await;
+    }
+    let next = next_job(&q);
     let Ok(mut db) = state.pool.acquire().await else {
         return failure("database");
     };
@@ -557,11 +754,16 @@ pub async fn signin_post<M: SignInMail>(
     let signed = match step {
         Ok(Step::SignIn { remember }) => start(&mut db, jar.clone(), &token, now, remember).await,
         Ok(Step::Refused) => Ok(None),
-        Ok(Step::Code { phone, failed }) => return code_page(jar, &token, phone, failed),
+        Ok(Step::Code { phone, failed }) => {
+            return code_page(jar, &with_next(&token, next), phone, failed);
+        }
         Err(what) => return failure(what),
     };
     match signed {
-        Ok(Some(jar)) => page(jar, "done", ("", ""), false),
+        Ok(Some(jar)) => match next {
+            Some(job) => (jar, job_page(job)).into_response(),
+            None => page(jar, "done", ("", ""), false),
+        },
         Ok(None) if auth_failed(&mut db, None, now).await => page(jar, "ended", ("", ""), false),
         Ok(None) => failure("security event"),
         Err(_) => failure("sign-in"),
