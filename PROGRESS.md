@@ -2272,3 +2272,4 @@
 - 2026-11-11T22:22:55Z runner 0137f98c1451 (actions): {"T228": "QUEUED -> IN_PROGRESS"}; T228 estimated 3.0M tokens (calibrated); week has 39.0M left (no five-hour budget, D-3056) after 3.0M still running in another lane (session_reading 2026-11-11T22:22:38Z (week)); claimed
 - 2026-11-11T22:23:05Z runner 0137f98c1451 (actions): {}
 - 2026-11-11T22:23:11Z runner 0137f98c1451 (actions): {}
+- 2026-11-11T22:26:04Z runner 0137f98c1451 (manual): {}
