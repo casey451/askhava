@@ -25115,7 +25115,7 @@
     "T294",
     "T291"
    ],
-   "status": "IN_PROGRESS",
+   "status": "MERGE_PENDING",
    "attempts": 1,
    "slug": "notice-signin-link",
    "type": "build",
@@ -25183,6 +25183,19 @@
      "started_at": "2026-11-11T13:58:53Z",
      "ended_at": "2026-11-11T14:19:22Z",
      "result": "check_failed"
+    },
+    {
+     "attempt": 2,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 88,
+     "head_sha": "c440e418139acd4e84324592758fea400e29ab38",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": true,
+     "started_at": "2026-11-11T15:02:25Z",
+     "ended_at": "2026-11-11T15:46:33Z",
+     "result": "MERGE_PENDING"
     }
    ],
    "reviewed_sha": "c440e418139acd4e84324592758fea400e29ab38",
@@ -25195,14 +25208,13 @@
    "branch": "claude/task/T269-notice-signin-link",
    "auto_merge": {
     "enabled": true,
-    "why": "auto-merge on #490 (gh pr merge)",
-    "head": "b1639f25d419ec5457e7a9e6a26a5394aa1ab0b6"
+    "why": "auto-merge on #496 (gh pr merge)",
+    "head": "c440e418139acd4e84324592758fea400e29ab38"
    },
    "last_failure": "Ci: failure; E2e: failure; Ally: failure\nE2e failed at step: Chromium and its system libraries\nE: Failed to fetch https://security.ubuntu.com/ubuntu/pool/universe/u/unifont/fonts-unifont_16.0.04-1build1_all.deb  Temporary failure resolving 'security.ubuntu.com'\nE: Failed to fetch https://security.ubuntu.com/ubuntu/pool/universe/f/fonts-wqy-zenhei/fonts-wqy-zenhei_0.9.45-8build1_all.deb  Temporary failure resolving 'security.ubuntu.com'\nE: Failed to fetch https://security.ubuntu.com/ubuntu/pool/main/x/xfonts-encodings/xfonts-encodings_1.0.5-0ubuntu3_all.deb  Temporary failure resolving 'security.ubuntu.com'\nE: Failed to fetch https://security.ubuntu.com/ubuntu/pool/main/x/xfonts-utils/xfonts-utils_7.7%2b7build1_amd64v3.deb  Temporary failure resolving 'security.ubuntu.com'\nE: Failed to fetch https://security.ubuntu.com/ubuntu/pool/universe/x/xfonts-cyrillic/xfonts-cyrillic_1.0.5%2bnmu1build1_all.deb  Temporary failure resolving 'security.ubuntu.com'\nE: Failed to fetch https://security.ubuntu.com/ubuntu/pool/universe/x/xfonts-scalable/xfonts-scalable_1.0.3-1.3build1_all.deb  Temporary failure resolving 'security.ubuntu.com'\nE: Unable to fetch some archives, maybe run apt update or try with --fix-missing?\nFailed to install browsers\nError: Installation process exited with code: 100\n##[error]Process completed with exit code 1.\nAlly failed at step: Chromium and its system libraries\nError: Installation process exited with code: 100\n##[error]Process completed with exit code 1.\nCi fai",
    "runner_closed_prs": [
     490
-   ],
-   "head_check_since": null
+   ]
   },
   {
    "id": "T261",
@@ -31260,12 +31272,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T384",
-   "at": "2026-11-11T15:05:27Z",
-   "cache_read_input_tokens": 2960348,
-   "input_tokens": 119,
-   "output_tokens": 23149,
-   "cache_creation_input_tokens": 244078
+   "task": "T269",
+   "at": "2026-11-11T15:46:33Z",
+   "cache_read_input_tokens": 6211026,
+   "output_tokens": 52812,
+   "cache_creation_input_tokens": 345416,
+   "input_tokens": 232
   },
   "source": "session_reading 2026-11-11T15:23:45Z (week)",
   "by_task": {
@@ -33171,10 +33183,10 @@
    "T269": {
     "estimated_bytes": 532930,
     "estimated_tokens": 2901452,
-    "cache_creation_input_tokens": 448403,
-    "input_tokens": 292,
-    "cache_read_input_tokens": 16390555,
-    "output_tokens": 113315,
+    "cache_creation_input_tokens": 793819,
+    "input_tokens": 524,
+    "cache_read_input_tokens": 22601581,
+    "output_tokens": 166127,
     "last_model": "claude-opus-5-5"
    },
    "T165": {
@@ -33185,11 +33197,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-11T15:04:09Z",
-    "tokens": 1165942
+    "tokens": 2185504
    },
    "week": {
     "start": "2026-11-05T19:01:47Z",
-    "tokens": 317749151
+    "tokens": 318768713
    }
   },
   "session_reading": {
@@ -33200,7 +33212,7 @@
    }
   }
  },
- "updated_at": "2026-11-11T15:46:34Z",
+ "updated_at": "2026-11-11T15:46:52Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
