@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE portals.code_send SET outcome = $3 WHERE link_id = $1 AND reserved_at = $2 AND outcome = 'pending'",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "9fc7d3ac0facc48f354f89a4f5d464f403a7a4bc051015a062952f86bed4c9ee"
+}
