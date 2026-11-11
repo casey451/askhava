@@ -1859,3 +1859,4 @@
 - 2026-11-11T04:19:26Z runner 0b7cd31c5abc (actions): {}
 - 2026-11-11T04:19:34Z runner 0b7cd31c5abc (actions): {}
 - 2026-11-11T04:19:49Z runner 0b7cd31c5abc (actions): {}
+- 2026-11-11T04:25:44Z runner d669dfa47dae (actions): {"T337": "QUEUED -> IN_PROGRESS"}; T337 estimated 2.8M tokens (calibrated); five-hour window has 25.6M left, week 72.5M after 3.5M still running in another lane (session_reading 2026-11-11T04:19:34Z (week)); claimed
