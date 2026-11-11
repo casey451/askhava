@@ -13,7 +13,7 @@ The layer-2 crate that loads `docs/catalog/categories.yaml` (the K2b list) into 
 - `src/service.rs`: the SQL: `load`, reads, `set_enabled`.
 - `src/models.rs`: file types (`Catalog`, `CategoryDef`, `LicenseRule`), `Category`, `CatalogError`.
 - Migration `0027_catalog_module.sql`: `catalog.category`, `job_type`, `license_rule`, `fee_rule`, `not_offered`.
-- `api.rs` (T209, D-2783): `stripe_answer_filed` over `catalog.stripe_written_answer` (migration `0156_quotes_auto_confirm.sql`; T108's settings page files it).
+- `api.rs` (T209, D-2783): `stripe_answer_filed` over `catalog.stripe_written_answer` (migration `0159_catalog_stripe_answer.sql`; T108's settings page files it).
 
 ## Rules it enforces
 
