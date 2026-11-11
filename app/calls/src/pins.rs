@@ -555,9 +555,11 @@ mod tests {
     }
 
     /// TD-CALL-20: values of 60,000 or more are drawn again; the first below is taken mod 10,000.
+    /// Six rejected values come first, more than a 4-try cap would allow (D-2597).
     #[test]
     fn td_call_20_rejected_values_are_drawn_again() {
-        let mut values = [65_535_u16, 60_000, 61_234, 59_999].into_iter();
+        let rejected = [65_535_u16, 60_000, 61_234, 63_000, 64_999, 60_001];
+        let mut values = rejected.into_iter().chain([59_999]);
         let got = number_from(|bytes| {
             *bytes = values.next()?.to_be_bytes();
             Some(())
@@ -576,7 +578,8 @@ mod tests {
         assert_eq!((got, calls), (None, 1));
     }
 
-    /// TD-CALL-20: the rejection cap ends a draw that only ever gives rejected values.
+    /// TD-CALL-20: the rejection cap of 64 draws ends a draw that only ever gives rejected values;
+    /// the literal 64 is pinned so a small cap cannot come back (D-2597).
     #[test]
     fn td_call_20_the_rejection_cap_ends_the_draw() {
         let mut calls = 0_u32;
@@ -585,6 +588,6 @@ mod tests {
             *bytes = 60_000_u16.to_be_bytes();
             Some(())
         });
-        assert_eq!((got, calls), (None, u32::from(super::NUMBER_TRIES)));
+        assert_eq!((got, calls), (None, 64));
     }
 }
