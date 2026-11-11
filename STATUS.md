@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T15:45:21Z by runner ee5cdf2ecfbe (actions).
+Updated 2026-11-11T15:46:34Z by runner c440e418139a (actions).
 
 **Building: T165 in progress since 15:37Z; 205 of 373 done; week 69% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-11T15:45:21Z by runner ee5cdf2ecfbe (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T165 claimed 15:37Z, lease until 18:37Z; lane 3: T269 claimed 15:02Z, lease until 18:02Z
 - **Week:** 69% used, 53.1M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:44Z, 0 min before this update
+- **Last run:** 15:44Z, 2 min before this update
 - **Keeper:** last ran 15:24Z, next wake 18:05Z
 
 ## Needs attention
@@ -28,7 +28,7 @@ E2e failed at step: Chromium and its system libraries
 Error: Installation process exited with code: 100
 ##[error]Process completed with exit code 1.
 Ci fai
-- Strict plan check red: 19 problem(s) on tasks still to run (+32 on DONE tasks); first: T255: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 23 problem(s) on tasks still to run (+35 on DONE tasks); first: T340: stored context_pct 35% but it measures 39%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |

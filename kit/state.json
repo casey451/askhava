@@ -25185,12 +25185,12 @@
      "result": "check_failed"
     }
    ],
-   "reviewed_sha": "b1639f25d419ec5457e7a9e6a26a5394aa1ab0b6",
+   "reviewed_sha": "c440e418139acd4e84324592758fea400e29ab38",
    "review_lease": {
     "task": "T269",
-    "session": "actions-43032035284",
-    "expires": "2026-11-11T16:58:53Z",
-    "lane": "4"
+    "session": "actions-43041806873",
+    "expires": "2026-11-11T18:02:25Z",
+    "lane": "3"
    },
    "branch": "claude/task/T269-notice-signin-link",
    "auto_merge": {
@@ -25201,7 +25201,8 @@
    "last_failure": "Ci: failure; E2e: failure; Ally: failure\nE2e failed at step: Chromium and its system libraries\nE: Failed to fetch https://security.ubuntu.com/ubuntu/pool/universe/u/unifont/fonts-unifont_16.0.04-1build1_all.deb  Temporary failure resolving 'security.ubuntu.com'\nE: Failed to fetch https://security.ubuntu.com/ubuntu/pool/universe/f/fonts-wqy-zenhei/fonts-wqy-zenhei_0.9.45-8build1_all.deb  Temporary failure resolving 'security.ubuntu.com'\nE: Failed to fetch https://security.ubuntu.com/ubuntu/pool/main/x/xfonts-encodings/xfonts-encodings_1.0.5-0ubuntu3_all.deb  Temporary failure resolving 'security.ubuntu.com'\nE: Failed to fetch https://security.ubuntu.com/ubuntu/pool/main/x/xfonts-utils/xfonts-utils_7.7%2b7build1_amd64v3.deb  Temporary failure resolving 'security.ubuntu.com'\nE: Failed to fetch https://security.ubuntu.com/ubuntu/pool/universe/x/xfonts-cyrillic/xfonts-cyrillic_1.0.5%2bnmu1build1_all.deb  Temporary failure resolving 'security.ubuntu.com'\nE: Failed to fetch https://security.ubuntu.com/ubuntu/pool/universe/x/xfonts-scalable/xfonts-scalable_1.0.3-1.3build1_all.deb  Temporary failure resolving 'security.ubuntu.com'\nE: Unable to fetch some archives, maybe run apt update or try with --fix-missing?\nFailed to install browsers\nError: Installation process exited with code: 100\n##[error]Process completed with exit code 1.\nAlly failed at step: Chromium and its system libraries\nError: Installation process exited with code: 100\n##[error]Process completed with exit code 1.\nCi fai",
    "runner_closed_prs": [
     490
-   ]
+   ],
+   "head_check_since": null
   },
   {
    "id": "T261",
@@ -33199,7 +33200,7 @@
    }
   }
  },
- "updated_at": "2026-11-11T15:45:21Z",
+ "updated_at": "2026-11-11T15:46:34Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -33297,7 +33298,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "ee5cdf2ecfbe49d582079f1efaa068a12e855f3d",
+ "runner_sha": "c440e418139acd4e84324592758fea400e29ab38",
  "starter": "actions",
  "smoke_runs": [
   {
