@@ -13,10 +13,9 @@ lines (//, {# #}, <!-- -->); CLAUDE.md, Cargo.toml and the brand file itself; in
 (the lower-case askhava_ and askhava- crate, role and schema names, ASKHAVA_* keys, an askhava.<x>
 setting or cookie name, a JSON schema's $id), never a brand word joined by a hyphen ("Hava-approved"). Exempt by name, each with its reason, in EXEMPT_FILES and EXEMPT_CONSTS.
 
-Until T292 to T295 finish, tests/brand_literal_baseline.json (file to count of lines) lets a listed
-file keep at most its count; every other file must have none. The baseline only shrinks: an entry
-above the same entry in main's baseline fails (read with git show; skipped when main has none).
-The planted cases build a temporary tree. Fake data only ("Fakeco" is invented).
+Strict since T295 (D-1933): there is no baseline, so any brand literal in a scanned file fails, and
+tests/brand_literal_baseline.json must not come back. The planted cases build a temporary tree.
+Fake data only ("Fakeco" is invented).
 
 Run: python3 -m pytest tests/docs/test_brand_literals.py -q -p no:cacheprovider
 """
@@ -26,7 +25,6 @@ from __future__ import annotations
 import importlib.util
 import json
 import re
-import subprocess
 import sys
 from collections.abc import Iterator
 from pathlib import Path
@@ -38,7 +36,7 @@ import check_legal_docs
 import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
-BASELINE = Path("tests") / "brand_literal_baseline.json"
+RETIRED_BASELINE = Path("tests") / "brand_literal_baseline.json"
 BRAND_FILE = "app/core/data/brand.json"
 # Files that cannot hold customer text a literal check could read; anything else must be UTF-8.
 BINARY_EXTENSIONS = frozenset({".png", ".jpg", ".jpeg", ".webp", ".gif", ".ico", ".woff", ".woff2"})
@@ -157,59 +155,28 @@ def scan(root: Path, data: dict[str, Any]) -> tuple[dict[str, list[str]], list[s
     return found, unreadable
 
 
-def over_baseline(found: dict[str, list[str]], baseline: dict[str, int]) -> list[str]:
-    """Each hit of a file over its baseline count (none allowed for an unlisted file)."""
-    return [
-        f"{hit} (brand literal; {len(hits)} lines, baseline {baseline.get(rel, 0)})"
-        for rel, hits in sorted(found.items())
-        if len(hits) > baseline.get(rel, 0)
-        for hit in hits
-    ]
+def literals(found: dict[str, list[str]]) -> list[str]:
+    """Every hit of every file: no file may keep a brand literal (D-1933)."""
+    return [f"{hit} (brand literal)" for _, hits in sorted(found.items()) for hit in hits]
 
 
-def grown(baseline: dict[str, int], main: dict[str, int] | None) -> list[str]:
-    """Entries above main's baseline: the baseline only shrinks (D-1933)."""
-    if main is None:
-        return []
-    return [
-        f"{BASELINE.as_posix()}: {rel} is {count}, above main's {main.get(rel, 0)}"
-        for rel, count in sorted(baseline.items())
-        if count > main.get(rel, 0)
-    ]
-
-
-def main_baseline(root: Path) -> dict[str, int] | None:
-    """The baseline at main (or origin/main), or None when neither has it."""
-    for ref in ("main", "origin/main"):
-        shown = subprocess.run(
-            ["git", "-C", str(root), "show", f"{ref}:{BASELINE.as_posix()}"],
-            capture_output=True,
-            text=True,
-            check=False,
-        )
-        if shown.returncode == 0:
-            return json.loads(shown.stdout)
-    return None
-
-
-def guard(root: Path, data: dict[str, Any], main: dict[str, int] | None) -> list[str]:
-    """Every problem the guard reports for the tree at root."""
-    path = root / BASELINE
-    baseline = json.loads(path.read_text(encoding="utf-8")) if path.is_file() else {}
+def guard(root: Path, data: dict[str, Any]) -> list[str]:
+    """Every problem the guard reports for the tree at root, the retired baseline file included."""
     found, unreadable = scan(root, data)
-    return unreadable + over_baseline(found, baseline) + grown(baseline, main)
+    retired = [f"{RETIRED_BASELINE.as_posix()}: the baseline is retired (D-1933)"]
+    return unreadable + literals(found) + (retired if (root / RETIRED_BASELINE).exists() else [])
 
 
 def test_td_word_34_no_new_brand_literal_under_app() -> None:
-    """TD-WORD-34: the tree passes the guard against its baseline and main's."""
-    problems = guard(ROOT, brand.load(), main_baseline(ROOT))
+    """TD-WORD-34, TD-WORD-38: the tree passes the strict guard, with no baseline file."""
+    problems = guard(ROOT, brand.load())
     assert problems == [], "\n".join(problems)
 
 
-# The planted cases: a temporary tree with its own app/ and baseline.
+# The planted cases: a temporary tree with its own app/.
 
 
-def plant(root: Path, files: dict[str, str | bytes], baseline: dict[str, int] | None = None) -> Path:
+def plant(root: Path, files: dict[str, str | bytes]) -> Path:
     for rel, body in files.items():
         path = root / rel
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -217,9 +184,6 @@ def plant(root: Path, files: dict[str, str | bytes], baseline: dict[str, int] | 
             path.write_bytes(body)
         else:
             path.write_text(body, encoding="utf-8")
-    if baseline is not None:
-        (root / BASELINE).parent.mkdir(parents=True, exist_ok=True)
-        (root / BASELINE).write_text(json.dumps(baseline), encoding="utf-8")
     return root
 
 
@@ -245,7 +209,7 @@ def plant(root: Path, files: dict[str, str | bytes], baseline: dict[str, int] | 
 )
 def test_td_word_34_a_new_file_with_a_brand_word_fails(tmp_path: Path, line: str) -> None:
     root = plant(tmp_path, {"app/fake/src/lib.rs": f"//! Fake.\n{line}\n"})
-    problems = guard(root, brand.load(), None)
+    problems = guard(root, brand.load())
     assert problems and problems[0].startswith("app/fake/src/lib.rs:2:"), problems
 
 
@@ -270,12 +234,12 @@ HTML = "app/fake/templates/page.html"
 )
 def test_td_word_34_comments_test_modules_and_identifiers_pass(tmp_path: Path, rel: str, body: str) -> None:
     root = plant(tmp_path, {rel: body})
-    assert guard(root, brand.load(), None) == []
+    assert guard(root, brand.load()) == []
 
 
 def test_td_word_34_a_one_line_cfg_test_item_does_not_hide_the_next_line(tmp_path: Path) -> None:
     body = '#[cfg(test)] mod tests;\nlet s = "Ask Hava";\n#[cfg(test)]\nmod more;\nlet t = "Hava";\n'
-    problems = guard(plant(tmp_path, {RS: body}), brand.load(), None)
+    problems = guard(plant(tmp_path, {RS: body}), brand.load())
     assert [p.split(" ", 1)[0] for p in problems] == [f"{RS}:2:", f"{RS}:5:"], problems
 
 
@@ -294,35 +258,20 @@ def test_td_word_34_test_folders_skipped_files_and_exemptions_pass(tmp_path: Pat
             "app/fake/static/logo.png": b"\x89PNG\r\n\x1a\n\xff\xfe",
         },
     )
-    assert guard(root, brand.load(), None) == []
+    assert guard(root, brand.load()) == []
 
 
 def test_td_word_34_a_non_text_file_of_an_unlisted_type_fails(tmp_path: Path) -> None:
     root = plant(tmp_path, {"app/fake/data/blob.dat": b"\xff\xfe\x00Ask"})
-    assert guard(root, brand.load(), None) == ["app/fake/data/blob.dat: not UTF-8 text and not a listed binary type"]
+    assert guard(root, brand.load()) == ["app/fake/data/blob.dat: not UTF-8 text and not a listed binary type"]
 
 
-def test_td_word_34_the_baseline_allows_its_count_and_no_more(tmp_path: Path) -> None:
-    two = 'let a = "Ask Hava";\nlet b = "Ask Hava";\n'
-    root = plant(tmp_path, {"app/fake/src/lib.rs": two}, {"app/fake/src/lib.rs": 2})
-    assert guard(root, brand.load(), None) == []
-    plant(root, {"app/fake/src/lib.rs": two + 'let c = "askhava.com";\n'})
-    problems = guard(root, brand.load(), None)
-    assert len(problems) == 3 and all("baseline 2" in p for p in problems), problems
-
-
-def test_td_word_34_a_baseline_entry_above_mains_fails(tmp_path: Path) -> None:
-    root = plant(tmp_path, {}, {"app/fake/src/lib.rs": 3, "app/fake/src/other.rs": 1})
-    (root / "app").mkdir()
-    problems = guard(root, brand.load(), {"app/fake/src/lib.rs": 2, "app/fake/src/other.rs": 1})
-    assert problems == [f"{BASELINE.as_posix()}: app/fake/src/lib.rs is 3, above main's 2"]
-    assert grown({"app/new.rs": 1}, {}) == [f"{BASELINE.as_posix()}: app/new.rs is 1, above main's 0"]
-
-
-def test_td_word_34_main_baseline_reads_git_or_gives_none(tmp_path: Path) -> None:
-    assert main_baseline(tmp_path) is None
-    on_main = main_baseline(ROOT)
-    assert on_main is None or isinstance(on_main, dict)
+def test_td_word_38_one_literal_fails_and_a_baseline_file_is_refused(tmp_path: Path) -> None:
+    """TD-WORD-38: with no baseline any brand literal fails, and a baseline file is not read."""
+    root = plant(tmp_path, {"app/fake/src/lib.rs": 'let a = "Ask Hava";\n'})
+    assert guard(root, brand.load()) == ['app/fake/src/lib.rs:1: let a = "Ask Hava"; (brand literal)']
+    plant(root, {"app/fake/src/lib.rs": "//! Fake.\n", RETIRED_BASELINE.as_posix(): '{"app/fake/src/lib.rs": 1}'})
+    assert guard(root, brand.load()) == [f"{RETIRED_BASELINE.as_posix()}: the baseline is retired (D-1933)"]
 
 
 # scripts/brand.py fills and checks the same way as app/core/src/brand.rs.

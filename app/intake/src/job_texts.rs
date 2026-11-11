@@ -22,7 +22,9 @@
 
 use std::sync::Arc;
 
-use askhava_core::api::{Claimed, Clock, HandlerError, IdSecret, NewTask, SystemClock, enqueue};
+use askhava_core::api::{
+    Claimed, Clock, HandlerError, IdSecret, NewTask, SystemClock, brand, enqueue,
+};
 use askhava_jobs::api::quote_token::issue;
 use askhava_jobs::api::{TEXT_KIND, text_due};
 use askhava_messaging::api::{Language, NewText, Relation, SendWindow, render, send_window};
@@ -53,8 +55,12 @@ pub const JOB_TEXT_TEMPLATES: [&str; 6] = [
 ];
 /// The templates whose text carries her quote-page link (TXT-016, TXT-042, SEC-037).
 const LINKED_TEMPLATES: [&str; 2] = [ALL_QUOTES_IN_TEMPLATE, FIRST_QUOTE_TEMPLATE];
-/// Her private quote page (PICK-010, `/q/{token}`, served by `portals`).
-const QUOTE_PAGE: &str = "https://askhava.com/q/";
+/// Her private quote page on the brand's domain, `https://<domain>/q/<token>` (PICK-010,
+/// TXT-016, D-1932; the `/q/{token}` route is `portals`').
+fn quote_page_link(token: &str) -> String {
+    format!("https://{}/q/{token}", brand().domain())
+}
+
 const BAD_PAYLOAD: &str = "bad jobs homeowner-text payload";
 const FAILED: &str = "the jobs homeowner-text step failed";
 
@@ -308,7 +314,7 @@ async fn queue(
         let token = issue(&mut tx, &keys.link, text.job, now)
             .await
             .map_err(|_| IntakeError::Job)?;
-        Some(format!("{QUOTE_PAGE}{}", token.as_str()))
+        Some(quote_page_link(token.as_str()))
     } else {
         None
     };
