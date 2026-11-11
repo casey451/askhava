@@ -10,6 +10,7 @@
 
 pub mod api;
 mod handlers;
+mod media_fetch;
 mod models;
 mod photos;
 mod purge;

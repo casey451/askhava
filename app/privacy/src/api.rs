@@ -23,6 +23,12 @@ use crate::vault;
 pub use crate::handlers::{
     PURGE_KIND, RECHECK_KIND, purge_target, run_complaint_hold, run_purge_due, run_purge_due_after,
 };
+pub use crate::media_fetch::{
+    CONCEPT_CHANGES, CONCEPT_LABEL, Concept, ConceptImageAdapter, DEFAULT_MIN_SHORT_SIDE,
+    MAX_PROJECT_FILE, MediaState, PhotoKeys, PictureText, PictureTextMedia, ProjectFile,
+    Taken as PhotoTaken, fetch_twilio_media, make_concept, shorter_side, take_picture_text,
+    take_upload,
+};
 pub use crate::models::{
     ContactDetails, Field, GRANTS, Grant, HoldSource, IndexPurpose, NewContact, OwnerPurpose,
     PhotoError, PurgeStage, Purpose, Reader, VaultError, grant_for, normalize_phone,

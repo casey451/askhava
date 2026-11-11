@@ -34,8 +34,8 @@ pub use crate::action_links::{
     open_action_link, session_may, use_action_link,
 };
 pub use crate::business_actions::{
-    AUTO_CONFIRM_ROUTE, AutoConfirmBox, AutoConfirmBoxError, auto_confirm_box,
-    quote_form_page_full, set_auto_confirm,
+    AUTO_CONFIRM_ROUTE, AutoConfirmBox, AutoConfirmBoxError, JobPageLinks, auto_confirm_box,
+    job_details_page, quote_form_page_full, set_auto_confirm,
 };
 pub use crate::business_actions::{
     ActionFacts, BUSY_DAYS_ERROR, BUSY_DAYS_MAX, ChargeAsked, FactProblem, FactsForm,
@@ -116,6 +116,10 @@ pub use crate::owner_auth::{
     owner_power, owner_principal, owner_sign_in, owner_sign_out, owner_signin_page, owner_step_up,
     passkey_registered, passkey_registration_options, passkey_sign_in_options, password_problem,
     require_owner_step_up, sign_out_everywhere,
+};
+pub use crate::photo_upload::{
+    HEIC_ERROR, PHOTO_UPLOAD_ROUTE, REASK_ERROR, TOO_BIG_ERROR, TOO_MANY_PIXELS_ERROR,
+    UploadScreen, photo_upload_page, upload_screen,
 };
 pub use crate::pick_flow::{
     CODE_ROUTE, PICK_ROUTE, PageLanguage, PickCodeKeys, VERIFY_DAILY_THRESHOLD, pick_flow_routes,
