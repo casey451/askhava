@@ -7,6 +7,11 @@ These are decisions Claude made on its own and logged so the build never waits (
 - **What happened.** The pacer also budgeted a five-hour token window, using a made-up 30M figure. By 19:10Z that figure was nearly used up, so it would have let only about four tasks run at once until 20:04Z, while the week still had tokens to spare.
 - **What changed.** You said you don't have a five-hour window, so the pacer now ignores it and only watches the week. If a real usage reading ever says some limit is at 100%, the build still stops until that limit resets; it never pays per use.
 
+## A runner self-check no longer trips on work in progress (harness change, D-3057, November 11)
+
+- **What happened.** One of the runner's own checks before claiming a task compared the plan with the build's live progress and failed whenever a task already being worked sat at the head of the longest remaining chain. The build itself was fine, but the runner stopped without claiming anything five times today, and enough of these in a row could have wrongly marked the build broken and undone good work.
+- **What changed.** The check now only considers tasks the runner could actually pick up, so work already in progress no longer counts against it. It still catches the mistake it was written for, and a new test reproduces today's failure.
+
 ## Five waiting steps fixed before they start (plan change, D-3055, November 11)
 
 - **What happened.** A check of five steps still waiting in line found that each would have stopped partway, because the plan asked for something the code or older tests do not allow.
