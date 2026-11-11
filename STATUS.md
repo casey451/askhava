@@ -1,18 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-11T00:49:49Z by runner 2b62f938b8b8 (actions).
+Updated 2026-11-11T00:56:06Z by runner 5fd99b773188 (actions).
 
-**Idle since 00:40Z; 192 of 336 done; week 54% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 00:40Z; 192 of 354 done; week 54% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 192 of 336 build tasks (owner gates not counted)
+- **Tasks done:** 192 of 354 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 00:40Z (no task in progress)
 - **Week:** 54% used, 88.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:49Z, 0 min before this update
+- **Last run:** 00:49Z, 6 min before this update
 - **Keeper:** last ran 00:49Z, next wake 01:09Z
 
 ## Needs attention
-- Strict plan check red: 4 problem(s) on tasks still to run (+25 on DONE tasks); first: T162: stored context_pct 16% but it measures 20%; regenerate
+- nothing
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -55,32 +55,31 @@ Updated 2026-11-11T00:49:49Z by runner 2b62f938b8b8 (actions).
 - 03:30Z Plan: pentest assessment — Actions pinned, purpose-bound codes, Verify sends outside transactions (D-2346–D-2350, T345–T346) (#407)
 - 02:15Z Plan: seventh audit — fee facts from the job's category at the pick, tier and per-visit picks, whole-field quote gate, atomic Verify cap (D-2329–D-2335, 
 - 01:33Z Plan: the refused-connection test holds its port (T338, D-2318) (#404)
-- 00:54Z Plan: sixth audit — $0 release bound to its pick, refund amounts checked, reconcile catch-up and paging, real Stripe reads, rate-limit prune, inbound-tex
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 236 of 733 (32.2%) · partial 306 · unstarted 191
-**Tasks merged (throughput only):** 192 of 336
+**Requirements verified:** 212 of 733 (28.9%) · partial 330 · unstarted 191
+**Tasks merged (throughput only):** 192 of 354
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 15 | 13 | 7 | 35 |
-| ai | 11 | 13 | 5 | 29 |
+| ai | 8 | 16 | 5 | 29 |
 | businesses | 17 | 34 | 7 | 58 |
 | calls | 11 | 13 | 1 | 25 |
-| consent | 14 | 17 | 4 | 35 |
-| fees | 11 | 40 | 1 | 52 |
-| intake | 20 | 14 | 9 | 43 |
-| job-cards | 12 | 10 | 2 | 24 |
-| licensing | 31 | 16 | 1 | 48 |
-| lifecycle | 18 | 10 | 0 | 28 |
+| consent | 8 | 23 | 4 | 35 |
+| fees | 10 | 41 | 1 | 52 |
+| intake | 19 | 15 | 9 | 43 |
+| job-cards | 10 | 12 | 2 | 24 |
+| licensing | 29 | 18 | 1 | 48 |
+| lifecycle | 17 | 11 | 0 | 28 |
 | messaging | 19 | 23 | 3 | 45 |
 | ops-recovery | 2 | 5 | 47 | 54 |
-| privacy | 7 | 21 | 3 | 31 |
-| quiet-hours | 7 | 2 | 0 | 9 |
-| quotes-pick | 28 | 18 | 10 | 56 |
+| privacy | 6 | 22 | 3 | 31 |
+| quiet-hours | 4 | 5 | 0 | 9 |
+| quotes-pick | 25 | 21 | 10 | 56 |
 | recurring | 5 | 3 | 3 | 11 |
-| security | 7 | 42 | 6 | 55 |
+| security | 6 | 43 | 6 | 55 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 3 | 25 | 28 |
 | wording | 1 | 6 | 25 | 32 |
@@ -95,8 +94,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 72 of 137 done
-- stage 5: 0 of 53 done
+- stage 4: 72 of 152 done
+- stage 5: 0 of 56 done
 - stage 6: 0 of 30 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
