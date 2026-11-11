@@ -111,7 +111,7 @@ async fn td_biz_32_a_screened_name_stores_nothing(pool: sqlx::PgPool) {
     let id = create(&mut conn, false, now()).await.expect("business");
     let long = "x".repeat(201);
     let refused: [NameCase<'_>; 6] = [
-        (("Sample Plumbing 555 010 0199", None), None, contact()),
+        (("Sample Plumbing 928 555 0199", None), None, contact()),
         (
             ("Sample Plumbing", Some("sampleplumbing.com")),
             None,
@@ -164,7 +164,7 @@ async fn td_biz_32_links_on_another_domain_or_dead_are_refused() {
         "http://g.page/x",
         "https://g.page.example.com/x",
         "https://notgoogle.com/x",
-        "https://user@google.com/x",
+        "https://@google.com/x",
         "https://google.com:8443/x",
         "https://.google.com/x",
     ];
@@ -298,7 +298,7 @@ fn td_biz_32_the_form_shows_a_refused_name_again() {
     assert!(!page.contains("required") && !page.contains("error-summary"));
     let reason = contact().reason();
     let entered = Entered {
-        business_name: "Sample Plumbing 555 010 0199",
+        business_name: "Sample Plumbing 928 555 0199",
         google_link: GOOGLE,
         problem: Some(("business_name", reason.as_str())),
         ..Entered::default()
@@ -308,6 +308,6 @@ fn td_biz_32_the_form_shows_a_refused_name_again() {
     assert!(again.contains("href=\"#business-name\""));
     assert!(again.contains("id=\"business-name-error\""));
     assert!(again.contains("aria-invalid=\"true\""));
-    assert!(again.contains("value=\"Sample Plumbing 555 010 0199\""));
+    assert!(again.contains("value=\"Sample Plumbing 928 555 0199\""));
     assert!(again.contains(&format!("value=\"{GOOGLE}\"")));
 }
