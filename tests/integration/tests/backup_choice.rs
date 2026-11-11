@@ -109,8 +109,8 @@ async fn td_pick_32_a_lapse_moves_the_pick_to_the_backup(pool: PgPool) {
         before + 1,
         "PICK-037: its own notice"
     );
-    let status = current(&mut db, job).await.expect("job").status;
-    assert_eq!(status, JobStatus::AwaitingConfirm);
+    let status = current(&mut db, job).await.expect("job").status.code();
+    assert_eq!(status, "awaiting_confirm");
     let again = lapse(&mut db, pick, false, (Actor::System, at(301))).await;
     assert_eq!(again, Ok(Backup::Done));
     assert_eq!(notices(&mut db).await, before + 1);
