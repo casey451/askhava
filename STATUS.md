@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T04:08:07Z by runner bb72f5b93761 (actions).
+Updated 2026-11-11T04:19:15Z by runner 0b7cd31c5abc (actions).
 
 **Building: T209 in progress since 03:10Z; 194 of 369 done; week 59% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,11 @@ Updated 2026-11-11T04:08:07Z by runner bb72f5b93761 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T209 claimed 03:10Z, lease until 06:10Z
 - **Week:** 59% used, 80.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:08Z, 0 min before this update
+- **Last run:** 04:08Z, 11 min before this update
 - **Keeper:** last ran 04:08Z, next wake 06:13Z
 
 ## Needs attention
-- Strict plan check red: 1 problem(s) on tasks still to run (+6 on DONE tasks); first: T210: stored context_pct 14% but it measures 18%; regenerate
+- nothing
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -40,6 +40,7 @@ Updated 2026-11-11T04:08:07Z by runner bb72f5b93761 (actions).
 | T286 | server: every request has a whole-request time limit, answer | done | 1 | 26 min | 04:57Z |  |
 
 ### Plan and harness merges on main
+- 04:14Z Plan: three lanes (D-2810) (#451)
 - 04:04Z Plan: shorten the stage-6 critical path by removing ordering-only dependencies (D-2821) (#452)
 - 03:53Z Harness: merge main before the hand-in push when the head is behind (D-2798) (#450)
 - 03:41Z Plan: fix tasks from the Nov 11 vendor-double review (D-2760–D-2770) (#446)
