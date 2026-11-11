@@ -1,0 +1,40 @@
+# The shared path-to-door cases of the authorization matrix (TD-SEC-61, SEC-019, D-2440).
+# Read with include_str! by tests/security/tests/auth_matrix.rs and app/server/tests/door_matrix.rs;
+# each asserts that its own door rules give every line's door, so the two files' prefix rules
+# cannot drift. One case a line: the door, the path, and `site` when the site module serves it.
+Webhook /webhooks/stripe
+Webhook /webhooks/twilio/sms
+Asset /static/portals/feedback.css
+SignIn /b/sign-in
+SignIn /b/sign-in/{token}
+SignIn /b/signup
+SignIn /h/sign-in
+SignIn /h/sign-in/code
+SignIn /owner/sign-in
+SignIn /owner/sign-in/passkey
+Link /q/{token}
+Link /q/{token}/pick
+Link /f/{token}
+Link /c/{token}/{answer}
+Public /healthz
+Public /help
+Public /help/roc-complaint
+Public /terms
+Public /privacy
+Public /sms-terms
+Public /your-data
+Public /business-data
+Public /help site
+Public / site
+Public /how-it-works site
+ActionLink /b/a/{kind}/{object}/{token}
+Owner /owner
+Owner /owner/jobs
+Owner /owner/refunds/{pick}
+Homeowner /h
+Homeowner /h/my-data
+Homeowner /h/requests site
+Business /b
+Business /b/account
+Business /b/picks/{pick}
+Business /b/complaints/{complaint}/reply

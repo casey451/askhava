@@ -18,6 +18,18 @@
 //! owner has pause, refund and release (`owner_auth.rs`). Every refusal of a served route is one
 //! `csrf_rejected` event with route template, request ID and session ID; webhook signature
 //! failures and realm-guard refusals are not events yet, so SEC-048 is only partly met (D-1948).
+//!
+//! T348 (TD-SEC-61, SEC-019, SEC-034, SEC-048, D-2440) adds three doors: `Public` (`/healthz`,
+//! `/help` and below, the five legal pages, and any route the `site` module serves outside a realm
+//! prefix), `ActionLink` (`/b/a/`, T148's signed email links, before the business door) and
+//! `Owner` (`/owner` and below, its sign-in paths staying `SignIn`). Where each door is probed:
+//! `Link` and served `Asset` routes over HTTP here; `Webhook` through the signature check here;
+//! `Homeowner` and `Business` through the realm guard here and, once served, over HTTP in
+//! `app/server/tests/door_matrix.rs`; `Owner`, `ActionLink` and `Public` over HTTP in
+//! `door_matrix.rs` only; `SignIn` by the sign-in tests named above. A served path of the
+//! homeowner, business, owner, action-link or public door must have a `yes` row in
+//! `docs/architecture.md` section 13 (which `route_wiring.rs` proves served), so `door_matrix.rs`
+//! reaches it. Both files assert the shared case list `tests/security/door_cases.txt`.
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
@@ -104,10 +116,28 @@ enum Door {
     Homeowner,
     /// The business portal: a business session, scoped to its own business (SEC-004, D-1726).
     Business,
+    /// A public page: every actor, no session needed, no personal data (SEC-019, D-2440).
+    Public,
+    /// A signed email action link: the link is the key, no session opens it (SEC-025, SEC-026).
+    ActionLink,
+    /// The owner portal: the owner's session only (SEC-005, SEC-006, SEC-007).
+    Owner,
 }
 
-/// The door of `path`; a path no door names fails the run (SEC-019: every route is tested).
-fn door(path: &str) -> Door {
+/// The paths of the public door besides `/help` and below and the `site` module's routes.
+const PUBLIC_PATHS: [&str; 6] = [
+    "/healthz",
+    "/terms",
+    "/privacy",
+    "/sms-terms",
+    "/your-data",
+    "/business-data",
+];
+
+/// The door of `path`, which the `site` module serves when `site`; a path no door names fails the
+/// run (SEC-019: every route is tested). A `site` route under a realm prefix keeps that realm's
+/// door, the stricter one (D-3089).
+fn door(path: &str, site: bool) -> Door {
     let under = |root: &str| path == root || path.starts_with(&format!("{root}/"));
     if under("/webhooks") {
         Door::Webhook
@@ -120,10 +150,18 @@ fn door(path: &str) -> Door {
         .any(|root| path.starts_with(root))
     {
         Door::Link
+    } else if PUBLIC_PATHS.contains(&path) || under("/help") {
+        Door::Public
+    } else if path.starts_with("/b/a/") {
+        Door::ActionLink
+    } else if under("/owner") {
+        Door::Owner
     } else if under("/h") {
         Door::Homeowner
     } else if under("/b") {
         Door::Business
+    } else if site {
+        Door::Public
     } else {
         panic!("{path} has no door in auth_matrix.rs: add its matrix rule (SEC-019)")
     }
@@ -132,15 +170,16 @@ fn door(path: &str) -> Door {
 /// The expected answer of the matrix: whether `actor` passes `door`.
 fn allowed(door: Door, actor: Actor) -> bool {
     match door {
-        Door::Asset | Door::SignIn => true,
-        Door::Webhook => false,
+        Door::Asset | Door::SignIn | Door::Public => true,
+        Door::Webhook | Door::ActionLink => false,
+        Door::Owner => actor == Actor::Owner,
         Door::Link | Door::Homeowner => matches!(actor, Actor::HomeownerA | Actor::HomeownerB),
         Door::Business => matches!(actor, Actor::BusinessX | Actor::BusinessY),
     }
 }
 
-/// The non-test Rust of every `app/*/src` file.
-fn app_sources() -> Vec<String> {
+/// The non-test Rust of every `app/*/src` file, with its module's folder name.
+fn app_sources() -> Vec<(String, String)> {
     fn collect(dir: &Path, out: &mut Vec<PathBuf>) {
         for entry in fs::read_dir(dir).expect("dir") {
             let path = entry.expect("entry").path();
@@ -152,18 +191,24 @@ fn app_sources() -> Vec<String> {
         }
     }
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../app");
-    let mut files = Vec::new();
+    let mut found = Vec::new();
     for module in fs::read_dir(root).expect("app") {
-        let src = module.expect("module").path().join("src");
-        if src.is_dir() {
-            collect(&src, &mut files);
+        let module = module.expect("module").path();
+        let name = module
+            .file_name()
+            .expect("name")
+            .to_string_lossy()
+            .into_owned();
+        let mut files = Vec::new();
+        if module.join("src").is_dir() {
+            collect(&module.join("src"), &mut files);
+        }
+        for file in files {
+            let text = fs::read_to_string(file).expect("source");
+            found.push((name.clone(), without_test_modules(&text)));
         }
     }
-    let text = |f: &PathBuf| fs::read_to_string(f).expect("source");
-    files
-        .iter()
-        .map(|f| without_test_modules(&text(f)))
-        .collect()
+    found
 }
 
 /// `source` without its top-level `#[cfg(test)] mod name { ... }` blocks.
@@ -184,15 +229,18 @@ fn without_test_modules(source: &str) -> String {
     kept
 }
 
-fn code_lines(sources: &[String]) -> impl Iterator<Item = &str> {
-    let lines = sources.iter().flat_map(|s| s.lines());
-    lines.filter(|l| !l.trim_start().starts_with("//"))
+/// Every code line of `sources` (comments left out) with its module.
+fn code_lines(sources: &[(String, String)]) -> impl Iterator<Item = (&str, &str)> {
+    let lines = sources
+        .iter()
+        .flat_map(|(module, s)| s.lines().map(move |l| (module.as_str(), l)));
+    lines.filter(|(_, l)| !l.trim_start().starts_with("//"))
 }
 
 /// Every `const NAME: &str = "...";` in `sources`.
-fn constants(sources: &[String]) -> BTreeMap<String, String> {
+fn constants(sources: &[(String, String)]) -> BTreeMap<String, String> {
     let mut found = BTreeMap::new();
-    for line in code_lines(sources) {
+    for (_, line) in code_lines(sources) {
         let Some((head, value)) = line.split_once(": &str = \"") else {
             continue;
         };
@@ -221,15 +269,20 @@ fn methods_in(rest: &str) -> BTreeSet<&'static str> {
 
 /// The route table: each path with the methods it is served on (none: declared, not served yet).
 fn route_table() -> BTreeMap<String, BTreeSet<&'static str>> {
+    routes().into_iter().map(|(p, (m, _))| (p, m)).collect()
+}
+
+/// [`route_table`] with, for each path, whether a `.route(` call of the `site` module serves it.
+fn routes() -> BTreeMap<String, (BTreeSet<&'static str>, bool)> {
     let sources = app_sources();
     let consts = constants(&sources);
-    let mut table: BTreeMap<String, BTreeSet<&'static str>> = BTreeMap::new();
+    let mut table: BTreeMap<String, (BTreeSet<&'static str>, bool)> = BTreeMap::new();
     for (name, path) in &consts {
         if (name.ends_with("_ROUTE") || name.ends_with("_PATH")) && path.starts_with('/') {
             table.entry(path.clone()).or_default();
         }
     }
-    for line in code_lines(&sources) {
+    for (module, line) in code_lines(&sources) {
         let Some((_, call)) = line.split_once(".route(") else {
             continue;
         };
@@ -243,7 +296,9 @@ fn route_table() -> BTreeMap<String, BTreeSet<&'static str>> {
         if !path.starts_with("/__test/") {
             let methods = methods_in(rest);
             assert!(!methods.is_empty(), "{path}: no method read");
-            table.entry(path).or_default().extend(methods);
+            let entry = table.entry(path).or_default();
+            entry.0.extend(methods);
+            entry.1 |= module == "site";
         }
     }
     table
@@ -515,14 +570,41 @@ async fn probe_realm(pool: &PgPool, w: &World, door: Door, who: &Who) {
     }
 }
 
-/// TD-SEC-01, TD-BIZ-31 (SEC-019, BIZ-041): the table is read from the source, holds the served
-/// quote, pick and feedback routes, gives every path a door, and has no push route. A served
-/// homeowner or business route fails here: the realm probe does not reach its handler (D-1945).
+/// The architecture file, whose section 13 lists every route with `yes` once served (D-2269).
+const ARCHITECTURE: &str = include_str!("../../../docs/architecture.md");
+/// The shared path-to-door cases (TD-SEC-61, D-2440).
+const DOOR_CASES: &str = include_str!("../door_cases.txt");
+
+/// Every `(method, path)` row of `docs/architecture.md` section 13 whose `Wired` cell is `yes`,
+/// the method lower-case as the route table holds it.
+fn yes_rows() -> BTreeSet<(String, String)> {
+    let start = ARCHITECTURE.find("\n## 13. Routes\n").expect("section 13");
+    let body = &ARCHITECTURE[start + 1..];
+    let body = body[1..].find("\n## ").map_or(body, |end| &body[..=end]);
+    body.lines()
+        .map(|l| l.split('|').map(str::trim).collect::<Vec<_>>())
+        .filter(|c| c.len() == 6 && c[4] == "yes")
+        .map(|c| (c[1].to_lowercase(), c[2].to_owned()))
+        .collect()
+}
+
+/// The doors `door_matrix.rs` probes over HTTP once a path is served (TD-SEC-61).
+fn probed_over_http(door: Door) -> bool {
+    matches!(
+        door,
+        Door::Homeowner | Door::Business | Door::Owner | Door::ActionLink | Door::Public
+    )
+}
+
+/// TD-SEC-01, TD-BIZ-31, TD-SEC-61 (SEC-019, BIZ-041, D-2440): the table is read from the source,
+/// holds the served quote, pick and feedback routes, gives every path a door, and has no push
+/// route. A served path of the homeowner, business, owner, action-link or public door without a
+/// `yes` row in section 13 fails naming it: `door_matrix.rs` probes exactly those rows over HTTP.
 #[test]
 fn td_sec_01_route_table_is_generated_and_every_path_has_a_door() {
-    let table = route_table();
+    let (table, yes) = (routes(), yes_rows());
     let served = |path: &str, methods: &[&str]| {
-        let found = table.get(path).unwrap_or_else(|| panic!("{path} not read"));
+        let (found, _) = table.get(path).unwrap_or_else(|| panic!("{path} not read"));
         assert!(
             methods.iter().all(|m| found.contains(m)),
             "{path}: {found:?}"
@@ -537,12 +619,16 @@ fn td_sec_01_route_table_is_generated_and_every_path_has_a_door() {
         table.contains_key("/h") && table.contains_key("/b"),
         "declared routes read"
     );
-    for (path, methods) in &table {
-        let realm = matches!(door(path), Door::Homeowner | Door::Business);
-        assert!(
-            !realm || methods.is_empty(),
-            "{path} is served: extend the matrix (D-1945)"
-        );
+    for (path, (methods, site)) in &table {
+        let probed = probed_over_http(door(path, *site));
+        for method in methods.iter().filter(|_| probed) {
+            assert!(
+                yes.contains(&((*method).to_owned(), path.clone())),
+                "{} {path} is served: add its `yes` row to docs/architecture.md section 13 so \
+                 door_matrix.rs probes it (D-2440)",
+                method.to_uppercase()
+            );
+        }
         let lower = path.to_lowercase();
         assert!(!PUSH_WORDS.iter().any(|w| lower.contains(w)), "{path}");
     }
@@ -589,8 +675,8 @@ fn td_biz_31_no_service_worker_manifest_or_push() {
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_sec_01_every_route_by_every_actor(pool: PgPool) {
     let w = world(&pool).await;
-    for (path, methods) in route_table() {
-        let door = door(&path);
+    for (path, (methods, site)) in routes() {
+        let door = door(&path, site);
         for who in &w.who {
             match door {
                 Door::Link => {
@@ -604,7 +690,8 @@ async fn td_sec_01_every_route_by_every_actor(pool: PgPool) {
                 }
                 Door::Webhook => probe_webhook(&path, who),
                 Door::Homeowner | Door::Business => probe_realm(&pool, &w, door, who).await,
-                Door::Asset | Door::SignIn => {}
+                // Probed over HTTP in app/server/tests/door_matrix.rs (TD-SEC-61, D-2440).
+                Door::Asset | Door::SignIn | Door::Public | Door::ActionLink | Door::Owner => {}
             }
         }
     }
@@ -616,9 +703,9 @@ async fn td_sec_01_every_route_by_every_actor(pool: PgPool) {
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn sec_048_every_refusal_is_a_security_event(pool: PgPool) {
     let w = world(&pool).await;
-    let posts = route_table()
-        .into_iter()
-        .filter(|(path, methods)| methods.contains("post") && matches!(door(path), Door::Link));
+    let posts = route_table().into_iter().filter(|(path, methods)| {
+        methods.contains("post") && matches!(door(path, false), Door::Link)
+    });
     for (path, _) in posts {
         for who in &w.who {
             for site in [Site::Cross, Site::WrongToken] {
@@ -638,5 +725,47 @@ async fn sec_048_every_refusal_is_a_security_event(pool: PgPool) {
                 assert_eq!(rows, vec![event], "{path} as {:?}", who.actor);
             }
         }
+    }
+}
+
+/// TD-SEC-61 (SEC-019, D-2440): `door` gives every case of the shared list
+/// `tests/security/door_cases.txt` its listed door, every door has a case, and the list is the
+/// one `app/server/tests/door_matrix.rs` asserts too, so the two files' rules cannot drift.
+#[test]
+fn td_sec_61_the_shared_door_cases_hold_here() {
+    let mut seen = BTreeSet::new();
+    for line in DOOR_CASES
+        .lines()
+        .filter(|l| !l.is_empty() && !l.starts_with('#'))
+    {
+        let parts: Vec<&str> = line.split(' ').collect();
+        let (listed, path, site) = match parts[..] {
+            [listed, path] => (listed, path, false),
+            [listed, path, "site"] => (listed, path, true),
+            _ => panic!("malformed door case: {line:?}"),
+        };
+        assert_eq!(format!("{:?}", door(path, site)), listed, "{line}");
+        seen.insert(listed);
+    }
+    assert_eq!(seen.len(), 9, "every door has a case: {seen:?}");
+}
+
+/// TD-SEC-61: the section 13 reader finds the served rows, and the owner door admits the owner
+/// alone, the action-link door no session, the public door everyone (D-2440).
+#[test]
+fn td_sec_61_yes_rows_and_new_door_rules() {
+    let yes = yes_rows();
+    assert!(
+        yes.contains(&("get".to_owned(), "/q/{token}".to_owned())),
+        "{yes:?}"
+    );
+    assert!(
+        !yes.iter().any(|(_, p)| p == "/healthz"),
+        "T106's row is not yes"
+    );
+    for actor in ACTORS {
+        assert!(allowed(Door::Public, actor));
+        assert!(!allowed(Door::ActionLink, actor));
+        assert_eq!(allowed(Door::Owner, actor), actor == Actor::Owner);
     }
 }
