@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-11T17:07:18Z by runner a7b2897013c1 (actions).
+Updated 2026-11-11T17:12:20Z by runner 877da5613137 (actions).
 
-**Building: T272 in progress since 16:49Z; 207 of 373 done; week 70% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T272 in progress since 16:49Z; 208 of 373 done; week 70% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 207 of 373 build tasks (owner gates not counted)
+- **Tasks done:** 208 of 373 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T272 claimed 16:49Z, lease until 19:49Z; lane 4: T333 claimed 16:47Z, lease until 19:47Z
 - **Week:** 70% used, 46.9M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:07Z, 0 min before this update
+- **Last run:** 17:07Z, 4 min before this update
 - **Keeper:** last ran 17:07Z, next wake 19:50Z
 
 ## Needs attention
@@ -18,7 +18,7 @@ Updated 2026-11-11T17:07:18Z by runner a7b2897013c1 (actions).
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T165 | businesses: business name, Google and Yelp links and license | MERGE_PENDING | 1 | 18 min | 17:05Z | merging main into the reviewed head conflicts in app/portals/CLAUDE.md; a resync merges it in on this attempt (D-891) |
-| T214 | picks (harness): the homeowner's share box at the pick and t | MERGE_PENDING | 3 | 45 min | 16:44Z | PLAN GAP: tests/integration/tests/page_pick.rs:131 and tests/security/tests/page_pick_privacy.rs:224 (both T246's; page_ |
+| T214 | picks (harness): the homeowner's share box at the pick and t | done | 3 | 45 min | 16:44Z | PLAN GAP: tests/integration/tests/page_pick.rs:131 and tests/security/tests/page_pick_privacy.rs:224 (both T246's; page_ |
 | T165 | businesses: business name, Google and Yelp links and license | resync | 1 | 47 min | 16:25Z |  |
 | T269 | portals: a business notice's signed link opens sign-in for t | done | 2 | 23 min | 16:14Z | merging main into the reviewed head conflicts in app/portals/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T269 | portals: a business notice's signed link opens sign-in for t | resync | 2 | 44 min | 15:46Z |  |
@@ -63,7 +63,6 @@ Updated 2026-11-11T17:07:18Z by runner a7b2897013c1 (actions).
 | T155 | businesses: sign-up capability setup pre-ticked from the lic | done | 1 | 57 min | 20:15Z |  |
 | T311 | calls and server: a voice read-back confirm connects only th | check_failed | 1 | 21 min | 18:54Z |  |
 | T294 | portals and site: every page takes the brand from the brand  | done | 1 | 42 min | 18:32Z |  |
-| T231 | portals (harness): the homeowner check-in email buttons and  | done | 2 | 26 min | 17:08Z | T231 built and committed (b2f7b11e, 26074ad1) but smoke red: tests/security/tests/auth_matrix.rs (T088, protected, no se |
 
 ### Plan and harness merges on main
 - 15:44Z Plan: T214 owns the final-Pick share box end to end and ticks it in five finished tests (D-3032) (#495)
@@ -102,8 +101,8 @@ Updated 2026-11-11T17:07:18Z by runner a7b2897013c1 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 210 of 733 (28.6%) · partial 345 · unstarted 178
-**Tasks merged (throughput only):** 207 of 373
+**Requirements verified:** 210 of 733 (28.6%) · partial 347 · unstarted 176
+**Tasks merged (throughput only):** 208 of 373
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -121,7 +120,7 @@ Updated 2026-11-11T17:07:18Z by runner a7b2897013c1 (actions).
 | ops-recovery | 2 | 6 | 46 | 54 |
 | privacy | 6 | 23 | 2 | 31 |
 | quiet-hours | 4 | 5 | 0 | 9 |
-| quotes-pick | 24 | 28 | 4 | 56 |
+| quotes-pick | 24 | 30 | 2 | 56 |
 | recurring | 6 | 2 | 3 | 11 |
 | security | 6 | 43 | 6 | 55 |
 | terms | 0 | 3 | 32 | 35 |
@@ -138,7 +137,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 87 of 165 done
+- stage 4: 88 of 165 done
 - stage 5: 0 of 58 done
 - stage 6: 0 of 34 done
 - stage 7: 0 of 2 done
