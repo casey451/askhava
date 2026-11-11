@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T10:02:59Z by runner 6b803a362f31 (actions).
+Updated 2026-11-11T10:03:16Z by runner 6b803a362f31 (actions).
 
 **Idle since 09:49Z; 199 of 371 done; week 63% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-11T10:02:59Z by runner 6b803a362f31 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 09:49Z (no task in progress)
 - **Week:** 63% used, 62.3M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:00Z, 2 min before this update
-- **Keeper:** last ran 09:51Z, next wake 10:11Z
+- **Last run:** 10:03Z, 0 min before this update
+- **Keeper:** last ran 10:03Z, next wake 10:23Z
 
 ## Needs attention
 - PLAN GAP T269 (since 2026-11-11T09:25:53Z, no attempt used; a plan change fixes it): T269: dependency T294 is DONE but its owned file tests/brand_literal_baseline.json is not on main; T269: dependency T291 is DONE but its owned file tests/brand_literal_baseline.json is not on main
