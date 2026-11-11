@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T12:42:42Z by runner a70f6e601017 (actions).
+Updated 2026-11-11T12:42:57Z by runner 790d4ec251b2 (actions).
 
 **Building: T333 in progress since 12:24Z; 203 of 372 done; week 66% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-11T12:42:42Z by runner a70f6e601017 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 3: T333 claimed 12:24Z, lease until 15:24Z
 - **Week:** 66% used, 59.1M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:40Z, 1 min before this update
-- **Keeper:** last ran 12:16Z, next wake 12:36Z
+- **Last run:** 12:42Z, 0 min before this update
+- **Keeper:** last ran 12:42Z, next wake 15:26Z
 
 ## Needs attention
 - BLOCKED T332: plan gap reported: PLAN GAP: tests/integration/tests/confirm_and_pay.rs:393-413 (td_fee_25_an_ended_pick_is_never_cleared, TD-FEE-25, T189 DONE; also owned by T287, T337, T352; not T332) asserts paid_release on an ended pick with a verified success stores nothing (evidence empty line ~408, attempt stays "processing" line ~413). T332 goal part (2) and D-2290 require paid_release to store the success and evidence and call late_success, then answer PickEnded. No implementation passes both. D-2290 and D-2970 do not name confirm_and_pay.rs. Smallest plan change: T332 may also change only that test's two "stores nothi; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T332 --plan-fix D-### --reason "..."` (D-2859)
