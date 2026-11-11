@@ -200,6 +200,7 @@ test("J1 step 6 PICK-016 PICK-013 PICK-017 PICK-018: review, Go back, pick again
   await page.getByRole("link", { name: "Go back" }).click();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(/^Your quotes for request \d+$/);
   await page.getByRole("button", { name: "Pick #2" }).click();
+  await page.locator("#share").check();
   await page.locator("#final-pick").click();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(/^Finish your pick for request \d+$/);
   await page.getByLabel(/^A phone call/).check();

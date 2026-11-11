@@ -2,7 +2,8 @@
 //! `0067_quotes_matching.sql`; CARD-001 to CARD-004, CARD-016, CARD-018, LIC-035); T046 adds
 //! the `quotes.quote` queries (migration `0070_quotes_quote.sql`; PICK-001, PICK-002, TXT-042);
 //! T186 adds [`stored_card`], what a quote card reads of a shown quote (PICK-003, PICK-040);
-//! T047 adds [`list_rows`], the pickable quotes the LIST text states (TXT-031, PICK-002); T213 adds
+//! T047 adds [`list_rows`], the quotes the LIST text states (TXT-031, PICK-002; T384 keeps
+//! withdrawn and unavailable ones in place, PICK-051); T213 adds
 //! [`page_counts`], the business job page's counts and card check (CARD-019, CARD-023).
 //!
 //! Nothing here holds a homeowner's detail: a job is its offer towns, its candidate job types and
@@ -470,6 +471,8 @@ pub(crate) struct StoredCard {
     pub format: Format,
     pub original: String,
     pub earliest_visit: Option<(jiff::civil::Date, DayPart)>,
+    /// When the business last edited the quote (PICK-051); none if never edited.
+    pub edited_at: Option<Timestamp>,
 }
 
 /// PICK-003: the stored card of a confirmed, unwithdrawn quote, or none (PICK-002, PICK-006).
@@ -479,7 +482,8 @@ pub(crate) async fn stored_card(
     business: Uuid,
 ) -> Result<Option<StoredCard>, QuotesError> {
     let row = sqlx::query!(
-        "SELECT format, original, earliest_visit::text AS visit, visit_part FROM quotes.quote \
+        "SELECT format, original, earliest_visit::text AS visit, visit_part, edited_at \
+         FROM quotes.quote \
          WHERE job_id = $1 AND business_id = $2 AND confirmed AND withdrawn_at IS NULL",
         job,
         business
@@ -496,16 +500,83 @@ pub(crate) async fn stored_card(
         format,
         original: row.original,
         earliest_visit: visit,
+        edited_at: row.edited_at.map(jiff_sqlx::Timestamp::to_jiff),
     }))
 }
 
-/// One quote the LIST text states: who made it, the price exactly as stored and the earliest visit
-/// (TXT-031, PICK-002, WORD-011).
+/// One pickable quote the LIST text states: who made it, the price exactly as stored and the
+/// earliest visit (TXT-031, PICK-002, WORD-011).
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub(crate) struct ListRow {
+pub(crate) struct Pickable {
     pub business: Uuid,
     pub price: Price,
     pub earliest_visit: Option<(jiff::civil::Date, DayPart)>,
+}
+
+/// One confirmed quote in the LIST's arrival order, so its place is its quote-page number
+/// (TXT-031, PICK-051, D-084).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) enum ListRow {
+    /// It can be picked.
+    Pickable(Pickable),
+    /// `picks` marked it after a failed pick: left out, its number skipped.
+    Unavailable,
+    /// Its business withdrew it: its line says so.
+    Withdrawn,
+}
+
+/// The columns [`list_rows`] reads of one confirmed quote.
+struct ListColumns {
+    business_id: Uuid,
+    withdrawn: bool,
+    unavailable: bool,
+    format: String,
+    amount_cents: Option<i64>,
+    low_cents: Option<i64>,
+    high_cents: Option<i64>,
+    tier_names: Option<Vec<String>>,
+    tier_cents: Option<Vec<i64>>,
+    period: Option<String>,
+    setup_cents: Option<i64>,
+    hourly_rate_cents: Option<i64>,
+    hours_low: Option<i32>,
+    hours_high: Option<i32>,
+    confirm_on_site: bool,
+    visit: Option<String>,
+    visit_part: Option<String>,
+}
+
+impl ListColumns {
+    /// PICK-051, D-084: a withdrawn quote is `Withdrawn` (even when also marked unavailable), a
+    /// marked one `Unavailable`; only a pickable one's price is read back.
+    fn row(self) -> Result<ListRow, QuotesError> {
+        if self.withdrawn {
+            return Ok(ListRow::Withdrawn);
+        }
+        if self.unavailable {
+            return Ok(ListRow::Unavailable);
+        }
+        let format = Format::from_code(&self.format).ok_or(QuotesError::Database)?;
+        let price = price_of(PriceColumns {
+            format,
+            amount: self.amount_cents,
+            range: (self.low_cents, self.high_cents),
+            tiers: (self.tier_names, self.tier_cents),
+            period: self.period,
+            setup: self.setup_cents,
+            rate: self.hourly_rate_cents,
+            hours: (self.hours_low, self.hours_high),
+            on_site: self.confirm_on_site,
+        })
+        .ok_or(QuotesError::Database)?;
+        let part = self.visit_part.as_deref().and_then(DayPart::from_code);
+        let date = self.visit.and_then(|d| d.parse::<jiff::civil::Date>().ok());
+        Ok(ListRow::Pickable(Pickable {
+            business: self.business_id,
+            price,
+            earliest_visit: date.zip(part),
+        }))
+    }
 }
 
 /// The period a stored `period` code names.
@@ -568,47 +639,25 @@ fn price_of(c: PriceColumns) -> Option<Price> {
     }
 }
 
-/// TXT-031, PICK-002: the job's pickable quotes in arrival order: confirmed, not withdrawn and
-/// not marked unavailable by a failed pick, oldest first (ties by business ID).
+/// TXT-031, PICK-002, PICK-051, D-084: the job's confirmed quotes in the quote page's arrival
+/// order (time received, then business ID), withdrawn and unavailable ones kept in their place.
 pub(crate) async fn list_rows(
     db: &mut PgConnection,
     job: Uuid,
 ) -> Result<Vec<ListRow>, QuotesError> {
-    let rows = sqlx::query!(
-        "SELECT business_id, format, amount_cents, low_cents, high_cents, tier_names, tier_cents, \
-         period, setup_cents, hourly_rate_cents, hours_low, hours_high, confirm_on_site, \
-         earliest_visit::text AS visit, visit_part FROM quotes.quote \
-         WHERE job_id = $1 AND confirmed AND withdrawn_at IS NULL AND unavailable_at IS NULL \
-         ORDER BY received_at, business_id",
+    let rows = sqlx::query_as!(
+        ListColumns,
+        "SELECT business_id, withdrawn_at IS NOT NULL AS \"withdrawn!\", \
+         unavailable_at IS NOT NULL AS \"unavailable!\", format, amount_cents, low_cents, \
+         high_cents, tier_names, tier_cents, period, setup_cents, hourly_rate_cents, hours_low, \
+         hours_high, confirm_on_site, earliest_visit::text AS visit, visit_part FROM quotes.quote \
+         WHERE job_id = $1 AND confirmed ORDER BY received_at, business_id",
         job
     )
     .fetch_all(db)
     .await
     .map_err(|_| QuotesError::Database)?;
-    rows.into_iter()
-        .map(|r| {
-            let format = Format::from_code(&r.format).ok_or(QuotesError::Database)?;
-            let price = price_of(PriceColumns {
-                format,
-                amount: r.amount_cents,
-                range: (r.low_cents, r.high_cents),
-                tiers: (r.tier_names, r.tier_cents),
-                period: r.period,
-                setup: r.setup_cents,
-                rate: r.hourly_rate_cents,
-                hours: (r.hours_low, r.hours_high),
-                on_site: r.confirm_on_site,
-            })
-            .ok_or(QuotesError::Database)?;
-            let part = r.visit_part.as_deref().and_then(DayPart::from_code);
-            let date = r.visit.and_then(|d| d.parse::<jiff::civil::Date>().ok());
-            Ok(ListRow {
-                business: r.business_id,
-                price,
-                earliest_visit: date.zip(part),
-            })
-        })
-        .collect()
+    rows.into_iter().map(ListColumns::row).collect()
 }
 
 /// CARD-023, CARD-019: what the business job page counts for `job`, and whether `business` holds a

@@ -31,15 +31,21 @@
 //! reason ([`PriceForm`]; PICK-052, PICK-053, REC-010); [`job_details_page_with_quote`] adds the
 //! "Change your quote" and "Withdraw your quote" controls before any pick ([`QuoteControls`],
 //! PICK-051). The routes that serve them are T306's.
+//! T214: [`cant_take_page`] is the "Can't take it" page the pick notice links to
+//! (`picks::api::cant_take_link`) and [`cant_take_pick`] its button: the pick ends at once with no
+//! fee and moves to the homeowner's backup (PICK-050, PICK-047). The route is T306's.
 
 use askama::Template;
 use askhava_businesses::api::{Acting, LargestJob, offer_sample_pick};
 use askhava_core::api::{NewTask, brand, enqueue};
+use askhava_intake::api::paused_by_homeowner;
 use askhava_messaging::api::{notice_log, record_first_open};
+use askhava_ops::api::Actor;
 use askhava_payments::api::{
     BusinessId, Fee, FeeError, FeeQuote, Period as FeePeriod, PeriodJob, Tier, fee_for,
     period_fee_for, saved_card_of,
 };
+use askhava_picks::api::{Backup, cant_take, cant_take_job};
 use askhava_quotes::api::{
     AUTO_CONFIRM_VERSION, AutoConfirmError as QuotesAutoError, AutoConfirmTick, DayPart, Format,
     JobPage, NoteProblem, OTHER_SCHEDULE, Parts, Period, Permit, Price, PriceFields, PriceProblem,
@@ -294,6 +300,69 @@ pub fn action_page(facts: &ActionFacts<'_>) -> Result<String, askama::Error> {
         csrf: facts.csrf,
     }
     .render()
+}
+
+/// PICK-050, D-446: what the "Can't take it" page says before its one button.
+pub const CANT_TAKE_LINE: &str = "This ends the homeowner's pick of your quote right away. There's no introduction fee, and it doesn't count against your business.";
+
+/// PICK-050, SEC-026, A11Y-023: the "Can't take it" page of the pick on job `job_number`: what it
+/// does, then one CSRF button; a GET of it changes nothing.
+///
+/// # Errors
+/// The template's render error.
+pub fn cant_take_page(job_number: &str, csrf: &str) -> Result<String, askama::Error> {
+    let action = ActionView {
+        title: format!("Can't take it: job {job_number}"),
+        does: CANT_TAKE_LINE,
+        ends_at: None,
+        busy: false,
+        max_days: BUSY_DAYS_MAX,
+        days: "",
+        days_error: None,
+    };
+    ActionsView {
+        action: Some(action),
+        form: None,
+        warning: None,
+        auto_box: None,
+        page: None,
+        price: None,
+        price_error: false,
+        csrf,
+    }
+    .render()
+}
+
+/// PICK-050, PICK-047, SEC-019, D-446, D-3024: the "Can't take it" button for pick `pick`, in the
+/// caller's transaction: only the owner or a "Confirm and billing" member of the picked business,
+/// and only while the pick waits for its Confirm (else `None`, nothing changed). The pick ends at
+/// once with no fee and moves to her backup; the answer says whether it moved
+/// ([`Backup::Moved`]) or PICK-046's text is due ([`Backup::NoBackup`]).
+///
+/// # Errors
+/// [`PortalsError::Database`].
+pub async fn cant_take_pick(
+    tx: &mut PgConnection,
+    principal: &BusinessPrincipal,
+    pick: Uuid,
+    now: Timestamp,
+) -> Result<Option<Backup>, PortalsError> {
+    let business = principal.business;
+    if !principal.may(business, Need::ConfirmAndBilling) {
+        return Ok(None);
+    }
+    let job = cant_take_job(tx, pick, business).await;
+    let Some(job) = job.map_err(|_| PortalsError::Database)? else {
+        return Ok(None);
+    };
+    let paused = paused_by_homeowner(tx, job)
+        .await
+        .map_err(|_| PortalsError::Database)?;
+    let by = (Actor::Business(business), now);
+    cant_take(tx, (pick, job), paused, by)
+        .await
+        .map(Some)
+        .map_err(|_| PortalsError::Database)
 }
 
 /// REC-004, REC-010, D-1407, D-1957: a per-visit price has no visit schedule on the form, and

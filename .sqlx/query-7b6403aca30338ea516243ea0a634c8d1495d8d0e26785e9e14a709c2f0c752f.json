@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT business_id, format, amount_cents, low_cents, high_cents, tier_names, tier_cents, period, setup_cents, hourly_rate_cents, hours_low, hours_high, confirm_on_site, earliest_visit::text AS visit, visit_part FROM quotes.quote WHERE job_id = $1 AND confirmed AND withdrawn_at IS NULL AND unavailable_at IS NULL ORDER BY received_at, business_id",
+  "query": "SELECT business_id, withdrawn_at IS NOT NULL AS \"withdrawn!\", unavailable_at IS NOT NULL AS \"unavailable!\", format, amount_cents, low_cents, high_cents, tier_names, tier_cents, period, setup_cents, hourly_rate_cents, hours_low, hours_high, confirm_on_site, earliest_visit::text AS visit, visit_part FROM quotes.quote WHERE job_id = $1 AND confirmed ORDER BY received_at, business_id",
   "describe": {
     "columns": [
       {
@@ -16,6 +16,18 @@
       },
       {
         "ordinal": 1,
+        "name": "withdrawn!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 2,
+        "name": "unavailable!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 3,
         "name": "format",
         "type_info": "Text",
         "origin": {
@@ -26,7 +38,7 @@
         }
       },
       {
-        "ordinal": 2,
+        "ordinal": 4,
         "name": "amount_cents",
         "type_info": "Int8",
         "origin": {
@@ -37,7 +49,7 @@
         }
       },
       {
-        "ordinal": 3,
+        "ordinal": 5,
         "name": "low_cents",
         "type_info": "Int8",
         "origin": {
@@ -48,7 +60,7 @@
         }
       },
       {
-        "ordinal": 4,
+        "ordinal": 6,
         "name": "high_cents",
         "type_info": "Int8",
         "origin": {
@@ -59,7 +71,7 @@
         }
       },
       {
-        "ordinal": 5,
+        "ordinal": 7,
         "name": "tier_names",
         "type_info": "TextArray",
         "origin": {
@@ -70,7 +82,7 @@
         }
       },
       {
-        "ordinal": 6,
+        "ordinal": 8,
         "name": "tier_cents",
         "type_info": "Int8Array",
         "origin": {
@@ -81,7 +93,7 @@
         }
       },
       {
-        "ordinal": 7,
+        "ordinal": 9,
         "name": "period",
         "type_info": "Text",
         "origin": {
@@ -92,7 +104,7 @@
         }
       },
       {
-        "ordinal": 8,
+        "ordinal": 10,
         "name": "setup_cents",
         "type_info": "Int8",
         "origin": {
@@ -103,7 +115,7 @@
         }
       },
       {
-        "ordinal": 9,
+        "ordinal": 11,
         "name": "hourly_rate_cents",
         "type_info": "Int8",
         "origin": {
@@ -114,7 +126,7 @@
         }
       },
       {
-        "ordinal": 10,
+        "ordinal": 12,
         "name": "hours_low",
         "type_info": "Int4",
         "origin": {
@@ -125,7 +137,7 @@
         }
       },
       {
-        "ordinal": 11,
+        "ordinal": 13,
         "name": "hours_high",
         "type_info": "Int4",
         "origin": {
@@ -136,7 +148,7 @@
         }
       },
       {
-        "ordinal": 12,
+        "ordinal": 14,
         "name": "confirm_on_site",
         "type_info": "Bool",
         "origin": {
@@ -147,13 +159,13 @@
         }
       },
       {
-        "ordinal": 13,
+        "ordinal": 15,
         "name": "visit",
         "type_info": "Text",
         "origin": "Expression"
       },
       {
-        "ordinal": 14,
+        "ordinal": 16,
         "name": "visit_part",
         "type_info": "Text",
         "origin": {
@@ -171,6 +183,8 @@
     },
     "nullable": [
       false,
+      null,
+      null,
       false,
       true,
       true,
@@ -187,5 +201,5 @@
       true
     ]
   },
-  "hash": "aafde508321e872905c9c0fd9ae2a421d17f8ee32cf5c63750f6f1058396d11f"
+  "hash": "7b6403aca30338ea516243ea0a634c8d1495d8d0e26785e9e14a709c2f0c752f"
 }

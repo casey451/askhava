@@ -10230,7 +10230,8 @@
    "module": "picks",
    "deps": [
     "T339",
-    "T337"
+    "T337",
+    "T214"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -12588,7 +12589,8 @@
     "T374",
     "T376",
     "T377",
-    "T378"
+    "T378",
+    "T386"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -13171,7 +13173,8 @@
     "T165",
     "T232",
     "T230",
-    "T231"
+    "T231",
+    "T386"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -20093,9 +20096,9 @@
   {
    "id": "T214",
    "slug": "picks-share-box-cant-take",
-   "title": "picks: the homeowner's share box at the pick and the 'Can't take it' link",
-   "goal": "The pick review step shows the required share box, unticked at first (pressing Pick unticked shows an error and picks nothing), and logs its tick; no consent, sharing, charge or feedback box on any page starts ticked (PICK-049, D-492); the pick notice carries a \"Can't take it\" link that ends the pick at once with no fee (PICK-050), added to the pick notice composer `app/picks/src/confirm.rs` (T063's, extended here, D-493); the introduction-fee wording scan (WORD-026) is T203's; the share box goes on the pick review step (`pick_review.html`, `pick_flow.rs`) and the \"Can't take it\" action page on `business_actions.html` and `business_actions.rs`, extended here (D-491); the Confirm review step's link, the Confirm-page terms acceptance and the accepted-quote email are T232's (D-493). T301 serves the email action links (D-2128): keep the signatures `app/server/src/action_links.rs` calls; any page or action this task adds is served by T306, not by a `.route` in `server`.",
-   "type": "build",
+   "title": "picks (harness): the homeowner's share box at the pick and the 'Can't take it' link",
+   "goal": "The pick review step shows the required share box, unticked at first (pressing Pick unticked shows an error and picks nothing), and logs its tick; no consent, sharing, charge or feedback box on any page starts ticked (PICK-049, D-492); the pick notice carries a \"Can't take it\" link that ends the pick at once with no fee (PICK-050), added where the pick notice is composed, `run_pick_notice` in `app/picks/src/handlers.rs` (T063's, extended here, D-493, D-3024); the introduction-fee wording scan (WORD-026) is T203's; the share box goes on the pick review step (`pick_review.html`, `pick_flow.rs`) and the \"Can't take it\" action page on `business_actions.html` and `business_actions.rs`, extended here (D-491); the Confirm review step's link, the Confirm-page terms acceptance and the accepted-quote email are T232's (D-493). T301 serves the email action links (D-2128): keep the signatures `app/server/src/action_links.rs` calls; any page or action this task adds is served by T306, not by a `.route` in `server`. D-3024 (attempt 1 stopped, reviewer confirmed: the notice's values are built in `handlers.rs`, not in `confirm.rs`, which only names the template IDs): T214 owns `app/picks/src/handlers.rs` instead of `confirm.rs`. In it, `run_pick_notice` adds one value, `cant_take`, to the notice's `values` beside `job` and `window` (keys, template IDs, the dedupe key and everything else unchanged): the on-domain address of the \"Can't take it\" page this task adds for that pick, built from the pick ID alone, with no token, secret or homeowner detail (the page asks for a signed-in business member, as the Confirm page's link does). T214 does not change `app/messaging/templates/en.json` or `es.json`: a value the template does not name is ignored when it fills, so the value is safe alone, and T386 adds the words that show it. TD-PICK-43's pick-notice half here: the queued notice's `values.cant_take` names the pick's page and opening it and pressing \"Can't take it\" ends the pick at once with no fee; the rendered email line is T386's. D-3032 (attempt 2 stopped, reviewer confirmed: five done tests press the final Pick with no share box, and refusing it breaks them): T214 is a harness task (Opus with an Opus reviewer) and also owns those five tests for a tick-the-box change only. The refusal: the final Pick (`POST /q/{token}/pick`) reads the box as the field `share` with the value `yes` (the checkbox `id=\"share\" name=\"share\" value=\"yes\"`, placed before the final Pick button so the Terms line stays the only thing after it, TD-PICK-30); unticked or missing, with or without the Verify keys, it shows the review step again, sends no code and stores nothing (PICK-049); ticked, everything goes on exactly as today (no keys: \"Nothing was picked\"; keys: the code step). The refused review (A11Y-011, A11Y-012): the backup she posted stays selected (today `pick_review.html` always selects \"No backup\"); the box is never rendered checked; an error summary at the top takes focus (`tabindex=\"-1\" autofocus`, as `#pick-not-open` does) and links to `#share`; the error text (`id=\"share-error\"`) sits before the button, and the checkbox carries `aria-describedby=\"share-error\"` and `aria-invalid=\"true\"`; nothing new goes after the button (`app/portals/src/tests/pick_flow.rs:62` counts exactly one `<p>` there). `ReviewView::review` keeps its four arguments and its `not_open` field (`app/portals/src/tests/pick_flow.rs:16` and `:87` are T055's, not owned here); the business name for PICK-049's label comes in by a field or a setter, as `in_language` does. Write the label's Spanish for `PageLanguage::Es` and log it in `docs/decisions.md`. The tick is stored in its own table, `picks.share_consent`, in the owned migration `migrations/0158_picks_share_box.sql` and written by the owned `app/picks/src/share_consent.rs`, keyed like `picks.backup_choice` (`job_id`, `for_quote`, `browser` = SHA256 of the CSRF token, `set_at`; append-only for the app role; no `pick_id` until the code passes); it is bound to the pick, by a row with `pick_id`, inside the code step's store transaction beside `bind_backup` (`app/portals/src/pick_flow.rs:907` to `:935`), new or kept pick alike; `app/picks/src/backup_choice.rs` and `migrations/0153` do not change. The code step keeps every answer it gives today (a test that reaches it directly with the form's address switched to `/code` is unchanged) and only stores no pick for a quote whose final Pick was not ticked from that browser. The five tests change only by ticking the box, every other line byte-identical, no assertion removed or loosened: `tests/integration/tests/page_pick.rs` (T246's; T343 changes it after this task) adds `(\"share\", \"yes\")` to the one final-Pick post in `Page::pick`; `tests/security/tests/page_pick_privacy.rs` (T246's) adds it to each of its five `\"/pick\"` posts; `tests/e2e/j1_homeowner.spec.ts` (T098's) checks the box before `#final-pick` in step 6; `tests/e2e/pick_flow.spec.ts` (T055's) checks it before the final Pick in the TD-A11Y-02 \"says nothing was picked\" test; `tests/a11y/j1_keyboard.spec.ts` (T098's) tabs to the box and presses Space before the final Pick (keyboard only). The tests that switch the form's address to `/code` (`tests/a11y/pick_forms.spec.ts`, `tests/a11y/j1_keyboard.spec.ts`'s `toCodeStep`, `tests/e2e/j1_reduced.spec.ts`) and `tests/integration/tests/backup_choice.rs` (no keys) stay as they are.",
+   "type": "harness",
    "phase": 1,
    "stage": "4",
    "module": "quotes",
@@ -20106,12 +20109,14 @@
     "T164",
     "T157",
     "T148",
-    "T198"
+    "T198",
+    "T098"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
+    "harness",
     "compliance",
     "privacy",
     "money",
@@ -20126,7 +20131,12 @@
     "app/portals/src/pick_flow.rs",
     "app/portals/templates/business_actions.html",
     "app/portals/src/business_actions.rs",
-    "app/picks/src/confirm.rs"
+    "app/picks/src/handlers.rs",
+    "tests/integration/tests/page_pick.rs",
+    "tests/security/tests/page_pick_privacy.rs",
+    "tests/e2e/j1_homeowner.spec.ts",
+    "tests/e2e/pick_flow.spec.ts",
+    "tests/a11y/j1_keyboard.spec.ts"
    ],
    "reads": [
     "docs/architecture.md",
@@ -20134,6 +20144,7 @@
     "docs/spec/quotes-pick.md",
     "docs/spec/fees.md",
     "docs/spec/wording.md",
+    "docs/spec/accessibility.md",
     "docs/catalog/categories.yaml",
     "docs/brains/contractor-lead-experience.md",
     "docs/brains/rust-production.md",
@@ -20141,7 +20152,9 @@
    ],
    "requirements": [
     "PICK-049",
-    "PICK-050"
+    "PICK-050",
+    "A11Y-011",
+    "A11Y-012"
    ],
    "tests": [
     "TD-PICK-34",
@@ -20152,13 +20165,15 @@
     "D-443",
     "D-444",
     "D-446",
-    "D-492"
+    "D-492",
+    "D-3024",
+    "D-3032"
    ],
    "cites": [],
    "budget": {
-    "files": 9,
-    "lines": 350,
-    "context_pct": 27
+    "files": 14,
+    "lines": 420,
+    "context_pct": 39
    },
    "checks": [
     "Ci",
@@ -23297,7 +23312,8 @@
     "D-1547",
     "D-2286",
     "D-2970",
-    "D-3007"
+    "D-3007",
+    "D-3031"
    ],
    "cites": [],
    "budget": {
@@ -23317,25 +23333,29 @@
    "id": "T333",
    "slug": "refund-amount-checked",
    "title": "payments (harness): a succeeded refund is recorded at the amount Stripe reports, and a refund that is not the full charge in USD alerts Casey",
-   "goal": "Sixth audit U-05 (D-2303; FEE-026, FEE-028, FEE-053): the app only ever asks Stripe for a full refund (`app/adapters/src/payments.rs:326`), but a refund Stripe reports `succeeded` is recorded at the charged amount whatever Stripe says it refunded: `Refund` carries `amount_cents` and `currency` (`app/payments/src/refund_stripe.rs:53`), `Refund::checked` (:67) compares neither, and `succeeded` and the ledger `append` in `app/payments/src/refunds.rs` (:376, :474) write `charged.amount`. Now, in `refunds.rs` (with a shared check in `refund_stripe.rs` that `reconcile` also uses, T334): a succeeded refund in `usd` whose reported amount is present and differs from the charged amount records the ledger refund at the amount Stripe reported (the ledger matches the money), raises one High `payments.refund_amount_mismatch` alert for that pick (only while none is open for it), and sends no \"refunded in full\" notice; a refund whose currency is present and not `usd` is treated as unconfirmed: it is recorded at the charged amount, never at the foreign figure, with one High `payments.refund_amount_unconfirmed` alert, and no \"refunded in full\" notice; a refund whose amount is missing is re-read once with `fetch_refund`, and if it is still missing it is recorded at the charged amount (the app only asks for full refunds) with the same unconfirmed alert, and its notice goes as today. The refund state machine and its keys are unchanged, so a duplicate event or retry records nothing twice. A harness task because T258's `tests/integration/tests/refund_lifecycle.rs` fakes must report the amount and currency a real full refund carries; their expected values do not change. Tests in `tests/integration/tests/refund_amounts.rs` (TD-FEE-59): full; $25 of a $75 charge; amount missing then present on the re-read; amount missing on both; currency `eur`; the same event twice. Money: the overseer runs an independent money review of the hand-in. Update the `payments` `CLAUDE.md` and `docs/decisions.md`.",
+   "goal": "Sixth audit U-05 (D-2303; FEE-026, FEE-028, FEE-053): the app only ever asks Stripe for a full refund (`app/adapters/src/payments.rs:326`), but a refund Stripe reports `succeeded` is recorded at the charged amount whatever Stripe says it refunded: `Refund` carries `amount_cents` and `currency` (`app/payments/src/refund_stripe.rs:53`), `Refund::checked` (:67) compares neither, and `succeeded` and the ledger `append` in `app/payments/src/refunds.rs` (:376, :474) write `charged.amount`. Now, in `refunds.rs` (with a shared check in `refund_stripe.rs` that `reconcile` also uses, T334): a succeeded refund in `usd` whose reported amount is present and differs from the charged amount records the ledger refund at the amount Stripe reported (the ledger matches the money), raises one High `payments.refund_amount_mismatch` alert for that pick (only while none is open for it), and sends no \"refunded in full\" notice; a refund whose currency is present and not `usd` is treated as unconfirmed: it is recorded at the charged amount, never at the foreign figure, with one High `payments.refund_amount_unconfirmed` alert, and no \"refunded in full\" notice; a refund whose amount is missing is re-read once with `fetch_refund`, and if it is still missing it is recorded at the charged amount (the app only asks for full refunds) with the same unconfirmed alert, and its notice goes as today; a refund with an amount but no currency is handled as a missing amount (re-read once, then recorded at the charged amount with the unconfirmed alert, its notice going), never booked at the reported figure. The refund state machine and its keys are unchanged, so a duplicate event or retry records nothing twice. A harness task because T258's `tests/integration/tests/refund_lifecycle.rs` fakes must report the amount and currency a real full refund carries; their expected values do not change. Tests in `tests/integration/tests/refund_amounts.rs` (TD-FEE-59): full; $25 of a $75 charge; amount missing then present on the re-read; amount missing on both; currency `eur`; the same event twice. Money: the overseer runs an independent money review of the hand-in. Two places outside these files carry the check, as D-3018 records. (a) The webhook path: `refund_event` in `app/payments/src/routes.rs` (T259's) re-reads a `succeeded` refund with `fetch_refund` but hands `refund_succeeded` only the `re_…`, so a webhook-driven success would be booked at the charge unchecked; `refund_succeeded` now takes the re-read `Refund`, which counts as D-2303's re-read (a missing amount or currency is booked at the charge with the unconfirmed alert and nothing is fetched again). Its callers pass the `Refund` they hold: `refund_event`, and `run_refund_check` (`app/payments/src/refunds.rs:661`, the `Refund` it fetched); the owned `refund_lifecycle.rs` calls (:303, :305) change only to pass a `Refund`, and no expected value changes. In `routes.rs` only `refund_event` changes (with its `use` line and the `//!` and `///` lines that describe it); nothing else in that file changes. (b) The \"refunded in full\" notice is `picks`' `unreachable_refunded` text, queued by `decide_at_96_hours` (`app/picks/src/unreachable_refund.rs`) once `payments::api::refund_state` reads `Succeeded`. A new read `refund_in_full(pool, stripe, pick)` in `refunds.rs` (exported through `api.rs`) answers `false` only on positive evidence that the pick's succeeded refund is not the whole charge in `usd`: the ledger holds its refund at an amount other than the charge, or a re-read of its `re_…` with `fetch_refund` reports a currency other than `usd` or a `usd` amount other than the charge; it answers `true` when the re-read reports no amount or no currency, or fails with `AdapterError::NotSent` (what the provided `read_refund` answers, `app/adapters/src/payments.rs:189`, and so the test fakes), so a missing amount's notice goes as D-2303 says; any other read error is `Err(MoneyEventError::Stripe)`, never `true`, because a foreign-currency refund must not be announced and neither the ledger nor an alert tells it from a missing amount. In `unreachable_refund.rs` only `decide_at_96_hours` changes (a private helper and its doc lines may join it): it calls `refund_in_full` before `close_unreachable`, so an error returns before anything closes and the next run retries (the existing finish-on-next-run path), and it queues `unreachable_refunded` only when `refund_in_full` answers `true`; the job, the call line and the homeowner's text close and go as today, and on `false` no business text is queued (Casey has the alert); `refund_state`, `PickRefundState`, `refund_waiting` and `fraud_warning` are unchanged. Every existing test of these paths (`unreachable_refund.rs`, `unreachable_refund_states.rs`, `check_in_texts.rs`, `stripe_webhook_dispatch.rs`) passes unchanged. `refund_amounts.rs` also shows: `refund_succeeded` given a $25-of-$75 `usd` refund books $25 with the mismatch alert, as the request path does; `refund_in_full` answers each TD-FEE-59 case; and through `picks::api::decide_at_96_hours`, a $25-of-$75 refund and an `eur` refund close the job and queue no `unreachable_refunded`. Update the `payments` and `picks` `CLAUDE.md` files and `docs/decisions.md`.",
    "type": "harness",
    "phase": 1,
    "stage": "4",
    "module": "payments",
    "deps": [
     "T258",
-    "T331"
+    "T331",
+    "T278"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
     "money",
-    "harness"
+    "harness",
+    "privacy"
    ],
    "owns": [
     "app/payments/src/refunds.rs",
     "app/payments/src/refund_stripe.rs",
+    "app/payments/src/routes.rs",
+    "app/picks/src/unreachable_refund.rs",
     "tests/integration/tests/refund_lifecycle.rs",
     "tests/integration/tests/refund_amounts.rs"
    ],
@@ -23344,7 +23364,8 @@
     "docs/code-docs.md",
     "docs/spec/fees.md",
     "docs/brains/payments-stripe.md",
-    "docs/brains/rust-production.md"
+    "docs/brains/rust-production.md",
+    "tests/integration/tests/unreachable_refund_states.rs"
    ],
    "requirements": [
     "FEE-026",
@@ -23357,13 +23378,14 @@
    "decisions": [
     "D-2303",
     "D-1753",
-    "D-2072"
+    "D-2072",
+    "D-3018"
    ],
    "cites": [],
    "budget": {
-    "files": 4,
-    "lines": 450,
-    "context_pct": 21
+    "files": 6,
+    "lines": 620,
+    "context_pct": 32
    },
    "checks": [
     "Ci",
@@ -25236,7 +25258,8 @@
    "module": "picks",
    "deps": [
     "T318",
-    "T278"
+    "T278",
+    "T333"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -26670,6 +26693,72 @@
    ],
    "branch": "claude/task/T385-signup-own-record-read",
    "prompt": "kit/prompts/T385.md"
+  },
+  {
+   "id": "T386",
+   "slug": "pick-notice-cant-take-words",
+   "title": "messaging (harness): the pick notice's \"Can't take it\" line in both languages",
+   "goal": "Plan change D-3024 (PICK-050, PICK-037, TXT-001, TXT-044; D-446, D-493, D-491): after T214 adds the `cant_take` value to the pick notice (`run_pick_notice`, `app/picks/src/handlers.rs`), the words show it. (1) In `app/messaging/templates/en.json`, `pick_notice` and `pick_notice_emergency` each gain, right after \"Accept by {time}.\", exactly \" Can't take it: {cant_take}\"; in `app/messaging/templates/es.json` the same two keys gain, after \"Acepte antes de {time}.\", exactly \" ¿No puede aceptarlo? {cant_take}\" (still `draft`), so every text kind keeps its Spanish template (TXT-001); each of the four entries' `segments` rises to what the registry's TXT-044 check counts; no other key changes and no key is added, removed or renamed. The email subject (the first sentence) is unchanged. (2) Five done tests that render these templates with a fixed value list change only by adding a fake `cant_take` value (an `example` address, never a real brand word or domain), every other line byte-identical, no assertion removed or loosened: `app/messaging/src/tests/template_registry.rs` (T026's) adds `(\"cant_take\", ...)` to its `VALUES`; `app/intake/src/tests/intake_timeouts.rs` (T048's) adds the same to its `VALUES`; `tests/integration/tests/business_notices.rs` (T147's) `td_biz_14_times_are_set_at_send_and_a_link_is_never_unsigned` adds `\"cant_take\"` to its two `pick_notice` payloads' `values`; `tests/integration/tests/brand_setting.rs` (T295's) `td_word_38_texts_take_the_fake_brand` adds a `(\"cant_take\", ...)` pair to its `values`; and `app/picks/src/tests/confirm.rs` (T063's) `td_pick_33_templates_equal_the_spec_text` expects the two English texts with the sentence appended (still exact equality). (3) TD-PICK-43's rendered half, in `tests/integration/tests/business_notices.rs` (one new test beside `td_biz_14`): a `pick_notice` and a `pick_notice_emergency` notice with a fake `cant_take` address are sent, and both the stored plain body and the HTML body hold the \"Can't take it:\" line and the address. The HTML email shows it as text inside the line's `<p>`, not as an `<a>` (only `{link}` is made a link, `app/messaging/src/business_notices.rs:263`); making it a link is a possible later change to `business_notices.rs` (T313's and T379's), not this task's. Update the `messaging` `CLAUDE.md` and `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "4",
+   "module": "messaging",
+   "deps": [
+    "T214",
+    "T295"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness",
+    "compliance",
+    "privacy"
+   ],
+   "owns": [
+    "app/messaging/templates/en.json",
+    "app/messaging/templates/es.json",
+    "app/picks/src/tests/confirm.rs",
+    "tests/integration/tests/business_notices.rs",
+    "tests/integration/tests/brand_setting.rs",
+    "app/messaging/src/tests/template_registry.rs",
+    "app/intake/src/tests/intake_timeouts.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/messaging.md",
+    "docs/spec/wording.md"
+   ],
+   "requirements": [
+    "PICK-050",
+    "PICK-037",
+    "TXT-001",
+    "TXT-044"
+   ],
+   "tests": [
+    "TD-PICK-43"
+   ],
+   "decisions": [
+    "D-446",
+    "D-493",
+    "D-3024"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 7,
+    "lines": 200,
+    "context_pct": 29
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T386-pick-notice-cant-take-words",
+   "prompt": "kit/prompts/T386.md",
+   "copy": true
   }
  ]
 }
