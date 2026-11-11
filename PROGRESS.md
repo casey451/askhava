@@ -1924,3 +1924,4 @@
 - 2026-11-11T07:37:40Z runner 4b70d894e350 (actions): {}
 - 2026-11-11T07:53:03Z runner 68d6b3ac2530 (actions): {"T212": "QUEUED -> IN_PROGRESS"}; T212 estimated 3.6M tokens (calibrated); five-hour window has 8.7M left, week 67.5M after 2.5M still running in another lane (session_reading 2026-11-11T07:37:24Z (week)); claimed
 - 2026-11-11T07:53:15Z runner 68d6b3ac2530 (actions): {}
+- 2026-11-11T07:55:59Z runner 68d6b3ac2530 (actions): {"T337": "QUEUED -> IN_PROGRESS"}; T337 estimated 3.0M tokens (calibrated); five-hour window has 5.0M left, week 63.9M after 6.1M still running in another lane (session_reading 2026-11-11T07:37:24Z (week)); claimed
