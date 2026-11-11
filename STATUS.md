@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-11T11:00:22Z by runner bcfa251c3eea (actions).
+Updated 2026-11-11T11:00:57Z by runner bcfa251c3eea (actions).
 
-**Building: T164 in progress since 10:21Z; 201 of 371 done; week 65% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T331 in progress since 10:45Z; 201 of 371 done; week 65% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 201 of 371 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T164 claimed 10:21Z, lease until 13:21Z; lane 3: T331 claimed 10:45Z, lease until 13:45Z
+- **Lane:** lane 3: T331 claimed 10:45Z, lease until 13:45Z
 - **Week:** 65% used, 61.4M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 10:59Z, 1 min before this update
 - **Keeper:** last ran 10:59Z, next wake 13:24Z
@@ -17,11 +17,12 @@ Updated 2026-11-11T11:00:22Z by runner bcfa251c3eea (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T164 | quotes: one quote format per category, screened notes, and e | MERGE_PENDING | 2 | 39 min | 11:00Z | PLAN GAP: app/portals/src/tests/prop_arrival_order.rs:22 (T052) and app/quotes/src/notify.rs:179 / app/quotes/src/models |
 | T278 | quotes, intake and picks: the check-in, feedback and unreach | MERGE_PENDING | 1 | 29 min | 10:56Z |  |
 | T316 | businesses: one read of each business's public name for the  | BLOCKED | 1 | 2 min | 10:06Z | PLAN GAP: app/businesses/src/holding.rs:8 and migrations/0050_licensing_imports.sql:22-55: nothing links a business to a |
 | T337 | payments (harness): a $0 release proof is bound to the pick' | done | 5 | 23 min | 09:49Z | PLAN GAP: app/server/tests/release_recovery.rs:572-576 (td_pick_50_a_zero_fee_releases_free_and_a_cancelled_pick_nothing |
 | T327 | harness: every task kind the app queues has a handler in the | done | 1 | 48 min | 09:38Z |  |
-| T164 | quotes: one quote format per category, screened notes, and e | BLOCKED | 1 | 14 min | 09:03Z | PLAN GAP: app/portals/src/tests/prop_arrival_order.rs:22 (T052) and app/quotes/src/notify.rs:179 / app/quotes/src/models |
+| T164 | quotes: one quote format per category, screened notes, and e | BLOCKED | 1 | 14 min | 09:03Z |  |
 | T295 | payments, ai, intake and picks take the brand from the brand | done | 4 | 33 min | 08:57Z | T295 blocked at step 3: tests/brand_literal_baseline.json still lists files T295 does not own: app/messaging/templates/e |
 | T212 | intake: photo asks with on-server checks and preview, inspir | done | 2 | 19 min | 08:12Z | Ci: failure; Coverage: failure; Checks: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned |
 | T337 | payments (harness): a $0 release proof is bound to the pick' | BLOCKED | 4 | 9 min | 08:05Z |  |
@@ -126,8 +127,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T164 (lease until 2026-11-11T13:21:20Z)
+- nothing
 - lane 3: T331 (lease until 2026-11-11T13:45:45Z)
 
 ## Last usage reading
-- {"task": "T278", "at": "2026-11-11T10:56:46Z", "output_tokens": 140292, "cache_creation_input_tokens": 656401, "input_tokens": 436, "cache_read_input_tokens": 34616434}
+- {"task": "T164", "at": "2026-11-11T11:00:21Z", "input_tokens": 477, "cache_creation_input_tokens": 731684, "output_tokens": 199508, "cache_read_input_tokens": 27532660}
