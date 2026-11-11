@@ -1,22 +1,24 @@
 # Ask Hava build status
 
-Updated 2026-11-11T08:58:42Z by runner 68d6b3ac2530 (actions).
+Updated 2026-11-11T09:03:38Z by runner cf9b14cb7c73 (actions).
 
-**Building: T164 in progress since 08:48Z; 198 of 370 done; week 62% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T327 in progress since 08:49Z; 198 of 370 done; week 62% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 198 of 370 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T164 claimed 08:48Z, lease until 11:48Z; lane 3: T327 claimed 08:49Z, lease until 11:49Z
+- **Lane:** lane 3: T327 claimed 08:49Z, lease until 11:49Z
 - **Week:** 62% used, 62.8M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:58Z, 0 min before this update
+- **Last run:** 08:58Z, 4 min before this update
 - **Keeper:** last ran 08:58Z, next wake 11:51Z
 
 ## Needs attention
-- Strict plan check red: 6 problem(s) on tasks still to run (+13 on DONE tasks); first: T126: stored context_pct 56% but it measures 60%; regenerate
+- BLOCKED T164: plan gap reported: PLAN GAP: app/portals/src/tests/prop_arrival_order.rs:22 (T052) and app/quotes/src/notify.rs:179 / app/quotes/src/models.rs:573 (T047). The homeowner side of T164 (quote page "Updated <time>"/"Withdrawn by the business", LIST reply) needs api.rs (page_quotes filters withdrawn_at, api.rs:116), PageQuote fields (api.rs:93, built field-by-field in the T052 test), notify.rs list_line/Listed and models.rs list_rows, none owned by T164. Reviewer confirmed (kit/tasks.json owns vs. those files; T361 covers part but depends on T164).; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T164 --plan-fix D-### --reason "..."` (D-2859)
+- Strict plan check red: 11 problem(s) on tasks still to run (+18 on DONE tasks); first: T126: stored context_pct 56% but it measures 60%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T164 | quotes: one quote format per category, screened notes, and e | BLOCKED | 1 | 14 min | 09:03Z | PLAN GAP: app/portals/src/tests/prop_arrival_order.rs:22 (T052) and app/quotes/src/notify.rs:179 / app/quotes/src/models |
 | T295 | payments, ai, intake and picks take the brand from the brand | MERGE_PENDING | 4 | 33 min | 08:57Z | T295 blocked at step 3: tests/brand_literal_baseline.json still lists files T295 does not own: app/messaging/templates/e |
 | T212 | intake: photo asks with on-server checks and preview, inspir | done | 2 | 19 min | 08:12Z | Ci: failure; Coverage: failure; Checks: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned |
 | T337 | payments (harness): a $0 release proof is bound to the pick' | BLOCKED | 4 | 9 min | 08:05Z | PLAN GAP: app/server/tests/release_recovery.rs:572-576 (td_pick_50_a_zero_fee_releases_free_and_a_cancelled_pick_nothing |
@@ -121,8 +123,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T164 (lease until 2026-11-11T11:48:49Z)
+- nothing
 - lane 3: T327 (lease until 2026-11-11T11:49:41Z)
 
 ## Last usage reading
-- {"task": "T295", "at": "2026-11-11T08:57:53Z", "output_tokens": 123356, "cache_read_input_tokens": 24403408, "cache_creation_input_tokens": 539328, "input_tokens": 398}
+- {"task": "T164", "at": "2026-11-11T09:03:38Z", "cache_read_input_tokens": 3535882, "cache_creation_input_tokens": 226191, "output_tokens": 35965, "input_tokens": 128}

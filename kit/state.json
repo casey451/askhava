@@ -21550,8 +21550,8 @@
     "T293",
     "T294"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "BLOCKED",
+   "attempts": 1,
    "slug": "quotes-uniform-notes",
    "type": "build",
    "stage": "4",
@@ -21562,6 +21562,23 @@
     2899,
     2900,
     2901
+   ],
+   "reason": "plan gap reported: PLAN GAP: app/portals/src/tests/prop_arrival_order.rs:22 (T052) and app/quotes/src/notify.rs:179 / app/quotes/src/models.rs:573 (T047). The homeowner side of T164 (quote page \"Updated <time>\"/\"Withdrawn by the business\", LIST reply) needs api.rs (page_quotes filters withdrawn_at, api.rs:116), PageQuote fields (api.rs:93, built field-by-field in the T052 test), notify.rs list_line/Listed and models.rs list_rows, none owned by T164. Reviewer confirmed (kit/tasks.json owns vs. those files; T361 covers part but depends on T164).; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T164 --plan-fix D-### --reason \"...\"` (D-2859)",
+   "last_failure": "PLAN GAP: app/portals/src/tests/prop_arrival_order.rs:22 (T052) and app/quotes/src/notify.rs:179 / app/quotes/src/models.rs:573 (T047). The homeowner side of T164 (quote page \"Updated <time>\"/\"Withdrawn by the business\", LIST reply) needs api.rs (page_quotes filters withdrawn_at, api.rs:116), PageQuote fields (api.rs:93, built field-by-field in the T052 test), notify.rs list_line/Listed and models.rs list_rows, none owned by T164. Reviewer confirmed (kit/tasks.json owns vs. those files; T361 covers part but depends on T164).",
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 47,
+     "head_sha": "cf9b14cb7c734b30006e452692b7449493e27144",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-11T08:48:49Z",
+     "ended_at": "2026-11-11T09:03:38Z",
+     "result": "BLOCKED"
+    }
    ]
   },
   {
@@ -29671,12 +29688,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T295",
-   "at": "2026-11-11T08:57:53Z",
-   "output_tokens": 123356,
-   "cache_read_input_tokens": 24403408,
-   "cache_creation_input_tokens": 539328,
-   "input_tokens": 398
+   "task": "T164",
+   "at": "2026-11-11T09:03:38Z",
+   "cache_read_input_tokens": 3535882,
+   "cache_creation_input_tokens": 226191,
+   "output_tokens": 35965,
+   "input_tokens": 128
   },
   "source": "session_reading 2026-11-11T08:23:45Z (week)",
   "by_task": {
@@ -31495,17 +31512,22 @@
    },
    "T164": {
     "estimated_bytes": 644373,
-    "estimated_tokens": 3488005
+    "estimated_tokens": 3488005,
+    "cache_read_input_tokens": 3535882,
+    "cache_creation_input_tokens": 226191,
+    "output_tokens": 35965,
+    "input_tokens": 128,
+    "last_model": "claude-opus-5-5"
    }
   },
   "windows": {
    "five_hour": {
     "start": "2026-11-11T04:44:28Z",
-    "tokens": 22252570
+    "tokens": 22868442
    },
    "week": {
     "start": "2026-11-05T19:01:47Z",
-    "tokens": 288463762
+    "tokens": 289079634
    }
   },
   "session_reading": {
@@ -31516,7 +31538,7 @@
    }
   }
  },
- "updated_at": "2026-11-11T08:58:42Z",
+ "updated_at": "2026-11-11T09:03:38Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -31614,7 +31636,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "68d6b3ac2530c64a79450e73af0e09485ac05c54",
+ "runner_sha": "cf9b14cb7c734b30006e452692b7449493e27144",
  "starter": "actions",
  "smoke_runs": [
   {
