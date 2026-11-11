@@ -104,15 +104,31 @@ struct Paid {
     intent: &'static str,
 }
 
-const FIRST: Paid = Paid {
-    pick: Uuid::from_u128(0x387_0a01),
-    job: Uuid::from_u128(0x387_0c01),
-    intent: "pi_FakeT387a",
-};
-const SECOND: Paid = Paid {
-    pick: Uuid::from_u128(0x387_0a02),
-    job: Uuid::from_u128(0x387_0c02),
-    intent: "pi_FakeT387b",
+/// Six paid picks, one per case.
+const PAID: [Paid; 6] = {
+    const INTENTS: [&str; 6] = [
+        "pi_FakeT387a",
+        "pi_FakeT387b",
+        "pi_FakeT387c",
+        "pi_FakeT387d",
+        "pi_FakeT387e",
+        "pi_FakeT387f",
+    ];
+    let mut paid = [Paid {
+        pick: Uuid::nil(),
+        job: Uuid::nil(),
+        intent: "",
+    }; 6];
+    let mut n = 0;
+    while n < 6 {
+        paid[n] = Paid {
+            pick: Uuid::from_u128(0x387_0a00 + n as u128),
+            job: Uuid::from_u128(0x387_0c00 + n as u128),
+            intent: INTENTS[n],
+        };
+        n += 1;
+    }
+    paid
 };
 
 /// `paid`'s $75 charge with its FEE-042 evidence record, as T062 and T189 write it.
@@ -171,31 +187,93 @@ async fn requested(pool: &PgPool, stripe: &FakeStripe, paid: Paid) -> RefundOutc
         .expect("refund")
 }
 
-/// TD-FEE-59 (FEE-026, FEE-028, FEE-053; D-2303): a `succeeded` refund with no amount whose one
-/// re-read is still `pending`, or reports `succeeded` for another PaymentIntent, is not replaced by
-/// that read: the answer stands, booked once at the $75 charge with one unconfirmed alert.
+/// One request case: the pick, Stripe's answer, its re-reads, the ledger `refund` amounts and
+/// the unconfirmed alerts it must leave.
+type Case = (
+    Paid,
+    StripeRefund,
+    Vec<Result<StripeRefund, AdapterError>>,
+    Vec<i64>,
+    i64,
+);
+
+fn request_cases() -> [Case; 4] {
+    let [a, b, c, d, ..] = PAID;
+    let usd = |n| (Some(n), Some("usd"));
+    let other = "pi_FakeT387other";
+    [
+        (
+            a,
+            refund(a.intent, "succeeded", NO_AMOUNT),
+            vec![Ok(refund(a.intent, "pending", usd(2500)))],
+            vec![7500],
+            1,
+        ),
+        (
+            b,
+            refund(b.intent, "succeeded", NO_AMOUNT),
+            vec![Ok(refund(other, "succeeded", usd(2500)))],
+            vec![7500],
+            1,
+        ),
+        (
+            c,
+            refund(c.intent, "succeeded", NO_AMOUNT),
+            vec![Ok(refund(c.intent, "succeeded", usd(2500)))],
+            vec![2500],
+            0,
+        ),
+        (
+            d,
+            refund(d.intent, "succeeded", usd(7500)),
+            vec![Ok(refund(d.intent, "succeeded", usd(2500)))],
+            vec![7500],
+            0,
+        ),
+    ]
+}
+
+/// TD-FEE-59 (FEE-026, FEE-028, FEE-053; D-2303): the request path's one re-read of a `succeeded`
+/// answer with no amount. A re-read still `pending`, or `succeeded` for another PaymentIntent,
+/// leaves the answer: booked at the $75 charge with one unconfirmed alert. A re-read `succeeded`
+/// for the pick's own PaymentIntent replaces it (booked at its $25, no unconfirmed alert). An
+/// answer with its amount is never re-read. Every arm of the re-read runs in this one binary.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
-async fn td_fee_59_a_reread_not_succeeded_or_for_another_intent_leaves_the_answer(pool: PgPool) {
-    let rereads = [
-        (
-            FIRST,
-            refund(FIRST.intent, "pending", (Some(2500), Some("usd"))),
-        ),
-        (
-            SECOND,
-            refund("pi_FakeT387other", "succeeded", (Some(2500), Some("usd"))),
-        ),
-    ];
-    for (paid, reread) in rereads {
+async fn td_fee_59_a_missing_amount_is_reread_once_and_only_a_matching_success_replaces_it(
+    pool: PgPool,
+) {
+    for (paid, answer, reads, amounts, unconfirmed) in request_cases() {
         charged(&pool, paid).await;
-        let answer = refund(paid.intent, "succeeded", NO_AMOUNT);
-        let stripe = FakeStripe::new(&[answer], vec![Ok(reread)]);
+        let stripe = FakeStripe::new(&[answer], reads);
         let outcome = requested(&pool, &stripe, paid).await;
         assert_eq!(outcome, RefundOutcome::Refunded(REFUND.to_owned()));
-        assert_eq!(booked(&pool, paid).await, [7500]);
-        assert_eq!(alerts(&pool, REFUND_UNCONFIRMED_ALERT, paid).await, 1);
-        assert!(stripe.reads.lock().expect("lock").is_empty(), "one re-read");
+        assert_eq!(booked(&pool, paid).await, amounts, "{}", paid.intent);
+        let alerted = alerts(&pool, REFUND_UNCONFIRMED_ALERT, paid).await;
+        assert_eq!(alerted, unconfirmed, "{}", paid.intent);
+        let left = stripe.reads.lock().expect("lock").len();
+        assert_eq!(
+            left,
+            usize::from(paid.intent == PAID[3].intent),
+            "{}",
+            paid.intent
+        );
     }
+}
+
+/// TD-FEE-59 (FEE-026, FEE-028; D-2067): a `pending` answer is not re-read and books nothing; the
+/// request is not refunded yet.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_fee_59_a_pending_answer_is_not_reread(pool: PgPool) {
+    let paid = PAID[4];
+    charged(&pool, paid).await;
+    let reread = refund(paid.intent, "succeeded", (Some(7500), Some("usd")));
+    let stripe = FakeStripe::new(
+        &[refund(paid.intent, "pending", NO_AMOUNT)],
+        vec![Ok(reread)],
+    );
+    assert_eq!(requested(&pool, &stripe, paid).await, RefundOutcome::Failed);
+    assert!(booked(&pool, paid).await.is_empty());
+    assert_eq!(stripe.reads.lock().expect("lock").len(), 1);
 }
 
 /// A `succeeded` refund row for the pick whose ledger has no `refund` entry (as when the ledger
@@ -214,26 +292,46 @@ async fn succeeded_without_entry(pool: &PgPool, paid: Paid) {
     .expect("refund row");
 }
 
-/// TD-FEE-59 (FEE-026, FEE-053; D-2303, D-3018): with no ledger refund to judge by,
-/// `refund_in_full` takes Stripe's re-read: the whole charge in `usd` is `true`, the charge in
-/// `eur` is `false`, and a read error other than `NotSent` is `MoneyEventError::Stripe`, never a
-/// guessed `true`.
+/// TD-FEE-59 (FEE-026, FEE-053; D-2303, D-3018): `refund_in_full`. No succeeded refund is
+/// `true`. With no ledger refund to judge by it takes Stripe's re-read: the whole charge in `usd`
+/// is `true`, the charge in `eur` `false`, and a read error other than `NotSent` is
+/// `MoneyEventError::Stripe`, never a guessed `true`. A ledger refund at the charge still reads
+/// Stripe (`NotSent` is `true`); one at another amount is `false` with no read. Every arm runs in
+/// this one binary.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
-async fn td_fee_59_refund_in_full_with_no_ledger_entry_reads_stripe(pool: PgPool) {
-    succeeded_without_entry(&pool, FIRST).await;
-    assert!(booked(&pool, FIRST).await.is_empty());
+async fn td_fee_59_refund_in_full_judges_the_ledger_then_stripe(pool: PgPool) {
+    let [first, full, part, .., unrefunded] = PAID;
+    charged(&pool, unrefunded).await;
+    let none = FakeStripe::default();
+    assert_eq!(
+        refund_in_full(&pool, &none, unrefunded.pick).await,
+        Ok(true)
+    );
+    succeeded_without_entry(&pool, first).await;
+    assert!(booked(&pool, first).await.is_empty());
     let stripe = FakeStripe::new(
         &[],
         vec![
-            Ok(refund(FIRST.intent, "succeeded", (Some(7500), Some("usd")))),
-            Ok(refund(FIRST.intent, "succeeded", (Some(7500), Some("eur")))),
+            Ok(refund(first.intent, "succeeded", (Some(7500), Some("usd")))),
+            Ok(refund(first.intent, "succeeded", (Some(7500), Some("eur")))),
             Err(AdapterError::OutcomeUnknown),
         ],
     );
-    assert_eq!(refund_in_full(&pool, &stripe, FIRST.pick).await, Ok(true));
-    assert_eq!(refund_in_full(&pool, &stripe, FIRST.pick).await, Ok(false));
+    assert_eq!(refund_in_full(&pool, &stripe, first.pick).await, Ok(true));
+    assert_eq!(refund_in_full(&pool, &stripe, first.pick).await, Ok(false));
     assert_eq!(
-        refund_in_full(&pool, &stripe, FIRST.pick).await,
+        refund_in_full(&pool, &stripe, first.pick).await,
         Err(MoneyEventError::Stripe)
     );
+    for (paid, amount, in_full) in [(full, 7500, true), (part, 2500, false)] {
+        charged(&pool, paid).await;
+        let answer = refund(paid.intent, "succeeded", (Some(amount), Some("usd")));
+        let sent = FakeStripe::new(&[answer], Vec::new());
+        assert_eq!(
+            requested(&pool, &sent, paid).await,
+            RefundOutcome::Refunded(REFUND.to_owned())
+        );
+        assert_eq!(booked(&pool, paid).await, [amount]);
+        assert_eq!(refund_in_full(&pool, &sent, paid.pick).await, Ok(in_full));
+    }
 }

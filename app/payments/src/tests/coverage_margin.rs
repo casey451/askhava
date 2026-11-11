@@ -1,7 +1,9 @@
-//! T387 (D-3049): deterministic examples for `askhava-payments` branches that a randomized
+//! T387 (D-3049, D-3059): deterministic examples for `askhava-payments` branches that a randomized
 //! property test reaches only sometimes, or no test reaches, so the crate's branch coverage is the
-//! same on every run (BUILD_BRIEF.md:481). The property suites stay randomized; these pin one fixed
-//! input each. Every ID here is fake.
+//! same on every run (BUILD_BRIEF.md:481). The property suites stay randomized; these pin fixed
+//! inputs. llvm-cov counts a function's branches from its single best-covered instantiation, and
+//! this unit-test binary compiles its own copy of the crate, so each test here drives every arm of
+//! its function itself rather than only the arm other binaries miss. Every ID here is fake.
 
 use sqlx::types::Uuid;
 
@@ -57,42 +59,79 @@ fn a_known_pick_charge_with_no_stripe_fee_appends_no_fee_line() {
     assert_eq!(plan.refund, Some(RefundWhy::ClosedJob));
 }
 
-/// FEE-029, FEE-030: a charge whose `ch_…` has nothing after its prefix is malformed, so the
-/// reconcile never matches it.
+/// FEE-029, FEE-030, FEE-027: a charge whose dispute ID is not a `dp_…` is malformed, so the
+/// reconcile never matches it; a `dp_…` with a positive amount is kept. Both arms of the dispute
+/// check run in this one binary.
 #[test]
-fn a_charge_id_with_no_tail_is_not_well_formed() {
+fn a_charge_with_a_malformed_dispute_id_is_not_well_formed() {
     let (good, _) = charge_on_pick(0);
-    assert!(good.is_well_formed());
-    let bare = StripeCharge {
-        id: "ch_".to_owned(),
+    let disputed = StripeCharge {
+        dispute: Some(("dp_FakeT387".to_owned(), 7500)),
+        ..good.clone()
+    };
+    assert!(disputed.is_well_formed());
+    let malformed = StripeCharge {
+        dispute: Some(("dx_FakeT387".to_owned(), 7500)),
         ..good
     };
-    assert!(!bare.is_well_formed());
+    assert!(!malformed.is_well_formed());
 }
 
-/// FEE-026, FEE-028 (D-2303): a refund Stripe reports for another PaymentIntent than the one asked
-/// about is refused as `Decode`, never booked; the asked one is read.
-#[test]
-fn a_refund_for_another_intent_is_refused() {
-    let raw = StripeRefund {
-        id: "re_FakeT387".to_owned(),
+/// Stripe's refund object `id` of `intent`, `succeeded` for the whole $75 in `usd`.
+fn stripe_refund(id: &str, intent: Option<&str>) -> StripeRefund {
+    StripeRefund {
+        id: id.to_owned(),
         status: "succeeded".to_owned(),
         amount: Some(7500),
         currency: Some("usd".to_owned()),
-        payment_intent: Some("pi_FakeT387other".to_owned()),
-    };
-    let refused = Refund::checked(raw.clone(), Some("pi_FakeT387"));
-    assert_eq!(refused.err(), Some(AdapterError::Decode));
-    let read = Refund::checked(raw, Some("pi_FakeT387other")).expect("refund");
-    assert_eq!(read.payment_intent, "pi_FakeT387other");
+        payment_intent: intent.map(str::to_owned),
+    }
 }
 
-/// FEE-009, FEE-036: a Stripe customer ID longer than the table allows (200 characters after
-/// `cus_`) is refused; 200 is kept.
+/// FEE-026, FEE-028 (D-1753, D-2303): `Refund::checked` refuses an ID that is not a `re_…` or is
+/// only the prefix (`InvalidId`), an unknown status or a missing PaymentIntent (`Decode`), and a
+/// refund for another PaymentIntent than the one asked about (`Decode`), so none is ever booked;
+/// the asked one, or one read with nothing asked, is kept. Every arm runs in this one binary.
 #[test]
-fn a_customer_id_over_the_table_limit_is_refused() {
-    let longest = format!("cus_{}", "A".repeat(200));
-    assert!(CustomerId::parse(&longest).is_ok());
-    let over = format!("cus_{}", "A".repeat(201));
-    assert!(matches!(CustomerId::parse(&over), Err(CardError::BadField)));
+fn checked_refuses_every_malformed_or_foreign_refund() {
+    let asked = Some("pi_FakeT387");
+    for id in ["ch_FakeT387", "re_"] {
+        let refused = Refund::checked(stripe_refund(id, Some("pi_FakeT387")), asked);
+        assert_eq!(refused.err(), Some(AdapterError::InvalidId), "{id}");
+    }
+    let unknown = StripeRefund {
+        status: "reversed".to_owned(),
+        ..stripe_refund("re_FakeT387", Some("pi_FakeT387"))
+    };
+    assert_eq!(
+        Refund::checked(unknown, asked).err(),
+        Some(AdapterError::Decode)
+    );
+    let no_intent = stripe_refund("re_FakeT387", None);
+    assert_eq!(
+        Refund::checked(no_intent, asked).err(),
+        Some(AdapterError::Decode)
+    );
+    let other = stripe_refund("re_FakeT387", Some("pi_FakeT387other"));
+    assert_eq!(
+        Refund::checked(other.clone(), asked).err(),
+        Some(AdapterError::Decode)
+    );
+    let read = Refund::checked(other, None).expect("refund");
+    assert_eq!(read.payment_intent, "pi_FakeT387other");
+    let own = Refund::checked(stripe_refund("re_FakeT387", Some("pi_FakeT387")), asked);
+    assert_eq!(own.expect("refund").amount_cents, Some(7500));
+}
+
+/// FEE-014, FEE-036 (D-1409): a Stripe customer ID's tail may hold letters, digits and `_` (the
+/// table's `'^cus_[A-Za-z0-9_]{1,200}$'`); any other character, or no tail, is `BadField`.
+#[test]
+fn a_customer_id_takes_letters_digits_and_underscores_only() {
+    assert!(CustomerId::parse("cus_Fake_T387").is_ok());
+    for bad in ["cus_Fake-T387", "cus_", "pm_FakeT387"] {
+        assert!(
+            matches!(CustomerId::parse(bad), Err(CardError::BadField)),
+            "{bad}"
+        );
+    }
 }
