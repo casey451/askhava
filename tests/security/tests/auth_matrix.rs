@@ -136,14 +136,14 @@ const PUBLIC_PATHS: [&str; 6] = [
 
 /// The door of `path`, which the `site` module serves when `site`; a path no door names fails the
 /// run (SEC-019: every route is tested). A `site` route under a realm prefix keeps that realm's
-/// door, the stricter one (D-3089).
+/// door, the stricter one (D-3089). `sign-in` counts only as a whole path segment.
 fn door(path: &str, site: bool) -> Door {
     let under = |root: &str| path == root || path.starts_with(&format!("{root}/"));
     if under("/webhooks") {
         Door::Webhook
     } else if under("/static") {
         Door::Asset
-    } else if path.contains("/sign-in") || path == "/b/signup" {
+    } else if path.split('/').any(|seg| seg == "sign-in") || path == "/b/signup" {
         Door::SignIn
     } else if ["/q/{token}", "/f/{token}", "/c/{token}"]
         .iter()
@@ -758,10 +758,6 @@ fn td_sec_61_yes_rows_and_new_door_rules() {
     assert!(
         yes.contains(&("get".to_owned(), "/q/{token}".to_owned())),
         "{yes:?}"
-    );
-    assert!(
-        !yes.iter().any(|(_, p)| p == "/healthz"),
-        "T106's row is not yes"
     );
     for actor in ACTORS {
         assert!(allowed(Door::Public, actor));

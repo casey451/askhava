@@ -31,6 +31,7 @@ ActionLink /b/a/{kind}/{object}/{token}
 Owner /owner
 Owner /owner/jobs
 Owner /owner/refunds/{pick}
+Owner /owner/sign-in-history
 Homeowner /h
 Homeowner /h/my-data
 Homeowner /h/requests site

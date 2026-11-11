@@ -10,9 +10,9 @@
 //! [`door`]; both files assert the shared list `tests/security/door_cases.txt`). Six actors
 //! (anonymous, homeowners A and B, businesses X and Y, the owner) send every method of each row:
 //! a realm or owner route admits only its own people and refuses everyone else with a 4xx linking
-//! to its sign-in and no fixture detail; a business route answers the other business's `{pick}`
-//! or `{complaint}` with the one not-found answer; an action link opens only for its minted kind,
-//! object and member, and its `GET` changes nothing; a public `GET` needs no session and shows no
+//! to its sign-in and no fixture detail; a homeowner or business route answers the other side's
+//! `{pick}` or `{complaint}` with the one not-found answer; an action link opens only for its
+//! minted kind, object and token (the path names no member, D-3093), and its `GET` changes nothing; a public `GET` needs no session and shows no
 //! fixture's personal data; every non-public response is `no-store`; every `POST`, cross-site or
 //! with a wrong CSRF token, is a 403 with one `csrf_rejected` security event (its log line,
 //! captured here, since `server` may read no module's table, TD-SEC-10) naming the route
@@ -71,6 +71,8 @@ const DOOR_CASES: &str = include_str!("../../../tests/security/door_cases.txt");
 const FILLS: [&str; 5] = ["{pick}", "{complaint}", "{kind}", "{object}", "{token}"];
 /// A well-formed link token nobody was given.
 const UNISSUED: &str = "0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f";
+/// A base URL nothing listens on, for every vendor client, so no probe reaches a vendor.
+const UNREACHABLE: &str = "http://127.0.0.1:9";
 /// Homeowners A's and B's fake names, phones and streets.
 const NAMES: [&str; 2] = ["Dana Testperson", "Robin Fakename"];
 const PHONES: [&str; 2] = ["+19285550190", "+19285550191"];
@@ -128,7 +130,8 @@ const PUBLIC_PATHS: [&str; 6] = [
 ];
 
 /// The door of `path` (served by the `site` module when `site`), `auth_matrix.rs`' rules restated
-/// (SEC-019, D-2440); `None` where that file fails the run.
+/// (SEC-019, D-2440); `None` where that file fails the run. `sign-in` counts only as a whole path
+/// segment, so `/owner/sign-in-history` is the owner's.
 fn door(path: &str, site: bool) -> Option<Door> {
     let under = |root: &str| path == root || path.starts_with(&format!("{root}/"));
     let link = ["/q/{token}", "/f/{token}", "/c/{token}"];
@@ -136,7 +139,7 @@ fn door(path: &str, site: bool) -> Option<Door> {
         Door::Webhook
     } else if under("/static") {
         Door::Asset
-    } else if path.contains("/sign-in") || path == "/b/signup" {
+    } else if path.split('/').any(|seg| seg == "sign-in") || path == "/b/signup" {
         Door::SignIn
     } else if link.iter().any(|root| path.starts_with(root)) {
         Door::Link
@@ -180,7 +183,8 @@ fn sign_in(door: Door) -> &'static str {
 /// One row the probe takes: method, path template and door.
 type Row = (Method, String, Door);
 
-/// The section 13 rows reading `yes` under the five probed doors.
+/// The section 13 rows reading `yes` under the five probed doors; a `yes` row no door names fails
+/// naming it (as `auth_matrix.rs` fails the run).
 fn probed_rows() -> Vec<Row> {
     let start = ARCHITECTURE.find("\n## 13. Routes\n").expect("section 13");
     let body = &ARCHITECTURE[start + 1..];
@@ -192,7 +196,7 @@ fn probed_rows() -> Vec<Row> {
             continue;
         }
         let Some(door) = door(cells[2], cells[3] == "site") else {
-            continue;
+            panic!("served row {line:?} has no door: add its matrix rule (SEC-019)");
         };
         let probed = !matches!(
             door,
@@ -577,6 +581,9 @@ fn pairs() -> Vec<(String, String)> {
         ("ASKHAVA_STRIPE_WEBHOOK_SECRET", "whsec_fake_value_0001"),
         ("ASKHAVA_STRIPE_SECRET_KEY", "sk_test_fake_value_0001"),
         ("ASKHAVA_STRIPE_ACCOUNT_ID", "acct_testfake"),
+        ("ASKHAVA_STRIPE_BASE_URL", UNREACHABLE),
+        ("ASKHAVA_TWILIO_BASE_URL", UNREACHABLE),
+        ("ASKHAVA_TWILIO_VERIFY_BASE_URL", UNREACHABLE),
     ];
     let keys = [
         ("VAULT_KEY", vault_key(0x41)),
@@ -911,8 +918,8 @@ async fn world(pool: &PgPool) -> World {
     }
 }
 
-/// A realm, owner or public row by `who` (SEC-019): the door's answer, and on a business route
-/// the other business's `{pick}` or `{complaint}` is the one not-found answer.
+/// A realm, owner or public row by `who` (SEC-019): the door's answer, and on a homeowner or
+/// business route the other side's `{pick}` or `{complaint}` is the one not-found answer.
 async fn probe_page(
     w: &World,
     (method, template, door): (&Method, &str, Door),
@@ -926,7 +933,8 @@ async fn probe_page(
     let reply = get(fill(template, w.fx.ids(side), link)?).await;
     judge(door, (who.actor, method), &reply, &w.fx)?;
     let foreign = template.contains("{pick}") || template.contains("{complaint}");
-    if door != Door::Business || !allowed(door, who.actor) || !foreign {
+    let realm = matches!(door, Door::Business | Door::Homeowner);
+    if !realm || !allowed(door, who.actor) || !foreign {
         return Ok(());
     }
     let theirs = get(fill(template, w.fx.ids(1 - side), link)?).await;
@@ -944,8 +952,9 @@ async fn open(pool: &PgPool, link: &Minted) -> bool {
 }
 
 /// An action-link row by `who` (SEC-025, SEC-026): X's fresh link opens, its `GET` changes
-/// nothing; another kind, another object, Y's member's token or an unissued one is the one
-/// not-found answer, `no-store`.
+/// nothing; another kind, another object, a token minted for Y's member on B's job (refused by
+/// its object, since the path names no member) or an unissued one is the one not-found answer,
+/// `no-store`.
 async fn probe_link(
     w: &World,
     (method, template): (&Method, &str),
