@@ -5,6 +5,11 @@
 //! used in one statement that also checks it is unused and unexpired, so of two presses of one
 //! link only one signs in. Every query names only the `portals` schema.
 //!
+//! T272 (D-1837, D-2349): [`admit_link`] counts and inserts a link under the member's advisory
+//! lock in one short transaction; [`reserve_code_send`] and [`reserve_try`] reserve a link's one
+//! Verify send and its numbered code tries (`portals.code_send`, `portals.code_try`) in short
+//! committed steps on the pool, so no transaction or connection is held across a Verify call.
+//!
 //! T086 added the owner queries on `portals.owner`, `owner_factor`, `owner_recovery_code`,
 //! `owner_session` and `owner_challenge` (SEC-005, SEC-007, SEC-043, SEC-044, D-1917): a TOTP
 //! step, a recovery code and a passkey challenge are each used by one guarded statement.
@@ -14,8 +19,8 @@ use jiff_sqlx::ToSqlx;
 use rand::TryRng;
 use rand::rngs::SysRng;
 use sha2::{Digest, Sha256};
-use sqlx::PgConnection;
 use sqlx::types::Uuid;
+use sqlx::{PgConnection, PgPool};
 
 use crate::session::PortalsError;
 
@@ -58,20 +63,166 @@ pub(crate) async fn insert_link(
     .map(|_| ())
 }
 
-/// How many links `member` was sent since `since`.
-pub(crate) async fn links_since(
+/// Stores the link `token` for `member` of `business` unless that member already has `cap` links
+/// since `since`: the count and the insert run in one short transaction under the member's
+/// transaction-scoped advisory lock, so simultaneous requests are admitted one at a time and the
+/// caller sends the email only after the commit (SEC-004, SEC-014, D-1725, D-1837). `false` when
+/// refused.
+pub(crate) async fn admit_link(
+    conn: &mut PgConnection,
+    token: &str,
+    (member, business): (Uuid, Uuid),
+    (now, expires, since): (Timestamp, Timestamp, Timestamp),
+    cap: i64,
+) -> Result<bool, PortalsError> {
+    let mut tx = db(sqlx::Connection::begin(&mut *conn).await)?;
+    db(sqlx::query!(
+        r#"SELECT 1 AS "locked!" FROM (SELECT pg_advisory_xact_lock(hashtextextended('portals.login_link:' || $1::uuid::text, 0))) AS lock"#,
+        member,
+    )
+    .fetch_one(&mut *tx)
+    .await)?;
+    if links_since(&mut tx, member, since).await? >= cap {
+        return Ok(false);
+    }
+    insert_link(&mut tx, token, (member, business), (now, expires)).await?;
+    db(tx.commit().await)?;
+    Ok(true)
+}
+
+/// How many sign-in links `member` was sent since `since`. A remembered device's row (born used,
+/// living over a day) is not a link sent and is left out (SEC-014, D-1725, D-2635); action links
+/// and old code markers are backdated past any window.
+async fn links_since(
     conn: &mut PgConnection,
     member: Uuid,
     since: Timestamp,
 ) -> Result<i64, PortalsError> {
     let count = db(sqlx::query_scalar!(
-        "SELECT count(*) FROM portals.login_link WHERE member_id = $1 AND created_at > $2",
+        "SELECT count(*) FROM portals.login_link WHERE member_id = $1 AND created_at > $2 \
+         AND expires_at - created_at <= interval '1 day'",
         member,
         since.to_sqlx(),
     )
     .fetch_one(conn)
     .await)?;
     Ok(count.unwrap_or(0))
+}
+
+/// Reserves `link`'s one Verify send at `now` in one committed statement: a new row, a `failed`
+/// one, or a `pending` one reserved before `stale` (a crash left it). `false` when another press
+/// holds it or the code was sent (SEC-004, SEC-018, D-1776, D-2349).
+pub(crate) async fn reserve_code_send(
+    pool: &PgPool,
+    link: Uuid,
+    (now, stale): (Timestamp, Timestamp),
+) -> Result<bool, PortalsError> {
+    let row = db(sqlx::query_scalar!(
+        "INSERT INTO portals.code_send (link_id, reserved_at, outcome) VALUES ($1, $2, 'pending') \
+         ON CONFLICT (link_id) DO UPDATE SET reserved_at = EXCLUDED.reserved_at, \
+         outcome = 'pending' WHERE portals.code_send.outcome = 'failed' \
+         OR (portals.code_send.outcome = 'pending' AND portals.code_send.reserved_at < $3) \
+         RETURNING link_id",
+        link,
+        now.to_sqlx(),
+        stale.to_sqlx(),
+    )
+    .fetch_optional(pool)
+    .await)?;
+    Ok(row.is_some())
+}
+
+/// Records how the send reserved at `reserved` went: `sent`, or `failed` so a press may retry it.
+pub(crate) async fn finish_code_send(
+    pool: &PgPool,
+    (link, reserved): (Uuid, Timestamp),
+    sent: bool,
+) -> Result<(), PortalsError> {
+    db(sqlx::query!(
+        "UPDATE portals.code_send SET outcome = $3 \
+         WHERE link_id = $1 AND reserved_at = $2 AND outcome = 'pending'",
+        link,
+        reserved.to_sqlx(),
+        if sent { "sent" } else { "failed" },
+    )
+    .execute(pool)
+    .await)
+    .map(|_| ())
+}
+
+/// Whether `link`'s code was sent; a check of any other link reaches no Verify (PT-03, D-2349).
+pub(crate) async fn code_sent(pool: &PgPool, link: Uuid) -> Result<bool, PortalsError> {
+    let sent = db(sqlx::query_scalar!(
+        "SELECT EXISTS (SELECT 1 FROM portals.code_send WHERE link_id = $1 AND outcome = 'sent')",
+        link,
+    )
+    .fetch_one(pool)
+    .await)?;
+    Ok(sent.unwrap_or(false))
+}
+
+/// Reserves `link`'s next numbered code try at `now` in one short transaction under the link's
+/// advisory lock; `None` once `cap` tries (any outcome, `pending` included) are used, and the
+/// table's unique key and check refuse a sixth anyway (SEC-020, D-1777, D-1837).
+pub(crate) async fn reserve_try(
+    pool: &PgPool,
+    link: Uuid,
+    now: Timestamp,
+    cap: i64,
+) -> Result<Option<i32>, PortalsError> {
+    let mut tx = db(pool.begin().await)?;
+    db(sqlx::query!(
+        r#"SELECT 1 AS "locked!" FROM (SELECT pg_advisory_xact_lock(hashtextextended('portals.code_try:' || $1::uuid::text, 0))) AS lock"#,
+        link,
+    )
+    .fetch_one(&mut *tx)
+    .await)?;
+    let try_no = db(sqlx::query_scalar!(
+        r#"INSERT INTO portals.code_try (link_id, try_no, reserved_at, outcome)
+           SELECT $1, count(*)::integer + 1, $2, 'pending' FROM portals.code_try
+           WHERE link_id = $1 HAVING count(*) < $3 RETURNING try_no"#,
+        link,
+        now.to_sqlx(),
+        cap,
+    )
+    .fetch_optional(&mut *tx)
+    .await)?;
+    db(tx.commit().await)?;
+    Ok(try_no)
+}
+
+/// Records try `try_no` of `link` as `outcome` (`right`, `wrong` or `abandoned`), once.
+pub(crate) async fn finish_try(
+    pool: &PgPool,
+    (link, try_no): (Uuid, i32),
+    outcome: &str,
+) -> Result<(), PortalsError> {
+    db(sqlx::query!(
+        "UPDATE portals.code_try SET outcome = $3 \
+         WHERE link_id = $1 AND try_no = $2 AND outcome = 'pending'",
+        link,
+        try_no,
+        outcome,
+    )
+    .execute(pool)
+    .await)
+    .map(|_| ())
+}
+
+/// Uses `link` up at `now` (its tries are spent), if it is still unused (D-1777).
+pub(crate) async fn use_up_link(
+    pool: &PgPool,
+    link: Uuid,
+    now: Timestamp,
+) -> Result<(), PortalsError> {
+    db(sqlx::query!(
+        "UPDATE portals.login_link SET used_at = $2 WHERE id = $1 AND used_at IS NULL",
+        link,
+        now.to_sqlx(),
+    )
+    .execute(pool)
+    .await)
+    .map(|_| ())
 }
 
 /// Whether `token` names a link that is unused and unexpired at `now`; reads only (SEC-026).

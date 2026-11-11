@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT 1 AS \"locked!\" FROM (SELECT pg_advisory_xact_lock(hashtextextended('portals.login_link:' || $1::uuid::text, 0))) AS lock",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "locked!",
+        "type_info": "Int4",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "866a2bb2e91e6f17b082c8f59e7b991fef71c546dce9b5804a900a78d4270ff1"
+}
