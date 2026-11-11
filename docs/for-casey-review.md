@@ -3,6 +3,13 @@
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
 
+## Browser setup survives an Ubuntu mirror outage (harness change, D-3030, November 11)
+
+- **What happened.** From about 13:48Z the build servers could not reach Ubuntu's download mirrors. The step that prepares the test browser waited 12 minutes for some optional fonts and then failed, so the accessibility and journey tests never ran and T384 lost an attempt.
+- **What changed.** The step now waits less, tries three times, and if the mirrors stay down it carries on with what the server already has, but only after proving the browser starts and shows a page. If it cannot, the step fails as before. When it carries on, the run shows a warning.
+- **What is not changed.** No test, rule or check is relaxed. Only optional fonts for languages the site does not use (Chinese, Japanese, Thai and the like) can be missing.
+- **Nothing needs you.**
+
 ## A license list change updates a business's job types (T207, D-2592, D-2595, D-2596, November 10)
 
 - **What it does.** When the state's daily license list changes a business's classes, the job types the old license covered and the new one no longer does come off at once, with an email saying which and why; job types the new license adds are offered by email and never ticked for them. Pest control, septic pumping and home inspection (licensed by another agency, not by a class) and the no-license trades are never touched by a class change (D-2595). A retry of the same day's list never sends a second email (D-2596).
