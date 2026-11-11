@@ -6,7 +6,9 @@
 //! job, PICK-044) and queues [`CARD_FIX_KIND`], which `picks::money_notices` turns into the
 //! business's notice (FEE-020, D-492); a success writes the pick's one FEE-042 evidence record
 //! ([`write_evidence`], D-1474) and, on a pick `payments` already ended, queues its one
-//! late-success refund and alert through `late_success` (FEE-021, D-2290); no answer from Stripe
+//! late-success refund and alert through `late_success` (FEE-021, D-2290), under the pick's
+//! `pick_intent` share lock so a concurrent [`end_pick`] is seen, and [`end_pick`] queues it for a
+//! success committed before it (D-2958); no answer from Stripe
 //! starts the 4-hour release (FEE-018); an undecided attempt queues [`CHECK_KIND`] for 30 minutes
 //! later (FEE-019). A timer is a
 //! `payments.pay_timer` row plus a [`TIMER_KIND`] task at its due time; [`run_pay_timer`] asks
@@ -31,7 +33,7 @@ use sqlx::{PgConnection, PgPool};
 
 use crate::charge::{ATTEMPT_SUBJECT, ask_stripe, latest, write_evidence};
 use crate::late::late_success;
-use crate::models::{ChargeError, PickNow};
+use crate::models::{ChargeError, MoneyEventError, PickNow};
 use crate::status::AttemptStatus;
 
 /// The `core.task` kind of the 30-minute "ask Stripe directly" check (FEE-019).
@@ -151,6 +153,7 @@ async fn effects(
     at: Timestamp,
 ) -> Result<(), ChargeError> {
     if status.paid() {
+        hold_pick(tx, pick).await?;
         end_timers(tx, pick, None, at).await?;
         write_evidence(tx, pick, try_no, at).await?;
         late_success(tx, pick, PickNow::Payable, at)
@@ -179,6 +182,20 @@ async fn effects(
         let check_at = at.saturating_add(CHECK_AFTER).unwrap_or(at);
         queue_check(tx, pick, try_no, 0, check_at).await?;
     }
+    Ok(())
+}
+
+/// Takes the pick's `pick_intent` share lock before a success touches its timers (FEE-021,
+/// D-2958): an [`end_pick`] running at the same time commits first or waits, so [`late_success`]
+/// reads its committed `ended_at`; taken before the `pay_timer` rows, it keeps `end_pick`'s order
+/// (`pick_intent`, then `pay_timer`), so the two never deadlock.
+async fn hold_pick(tx: &mut PgConnection, pick: Uuid) -> Result<(), ChargeError> {
+    db(sqlx::query!(
+        "SELECT pick_id FROM payments.pick_intent WHERE pick_id = $1 FOR SHARE",
+        pick
+    )
+    .fetch_optional(&mut *tx)
+    .await)?;
     Ok(())
 }
 
@@ -313,6 +330,9 @@ async fn end_timers(
 
 /// Ends the pick once, with its timers, its audit row and [`PICK_ENDED_KIND`] (FEE-018, FEE-020,
 /// FEE-041); returns false, changing nothing, for a pick already ended or with no PaymentIntent.
+/// A success stored before this end (its [`record`] committed first) gets its one late-success
+/// refund and alert here through `late_success`; an uncharged pick has nothing to refund
+/// (FEE-021, D-2958).
 pub(crate) async fn end_pick(
     tx: &mut PgConnection,
     pick: Uuid,
@@ -332,7 +352,10 @@ pub(crate) async fn end_pick(
     };
     end_timers(tx, pick, None, at).await?;
     announce_end(tx, pick, (row.business_id, row.job_id), reason, at).await?;
-    Ok(true)
+    match late_success(tx, pick, PickNow::Payable, at).await {
+        Ok(_) | Err(MoneyEventError::NothingCharged) => Ok(true),
+        Err(_) => Err(ChargeError::Database),
+    }
 }
 
 /// The audit row and the [`PICK_ENDED_KIND`] event of an ended pick, `parties` its business and

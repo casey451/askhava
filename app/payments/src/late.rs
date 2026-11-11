@@ -12,7 +12,8 @@
 //! T332 (FEE-018, FEE-020, D-2290): the refund row's trigger is its own `late-success`
 //! ([`LATE_TRIGGER`]), and every success `payments` stores calls [`late_success`] in its own
 //! transaction, so a success on a pick `payments` ended (the 4-hour end or the card-fix window)
-//! is queued whether the webhook, the charge check, or both record it.
+//! is queued whether the webhook, the charge check, or both record it, and whether the end or the
+//! success commits first (D-2958).
 
 use askhava_core::api::{HandlerError, NewTask, enqueue};
 use askhava_ops::api::{NewAlert, Severity, raise_alert};
@@ -58,8 +59,10 @@ fn db<T>(result: Result<T, sqlx::Error>) -> Result<T, MoneyEventError> {
 ///
 /// The success must be recorded first. `payments` calls this itself, with `PickNow::Payable`, in
 /// the transaction that stores any success (`handlers::record`, so `paid_release` and the
-/// `CHECK_KIND` round alike), so a success on a pick `payments` ended is queued once whoever
-/// reports it (D-2290).
+/// `CHECK_KIND` round alike), and `handlers::end_pick` calls it when it ends a pick whose success
+/// is already stored, so a success on a pick `payments` ended is queued once whichever of the two
+/// commits last (D-2290, D-2958). The select takes the pick's `pick_intent` share lock, so it waits
+/// for a concurrent end and reads the committed `ended_at`.
 ///
 /// # Errors
 /// [`MoneyEventError::NothingCharged`] when the pick has no succeeded charge (no FEE-042 evidence
@@ -76,7 +79,7 @@ pub async fn late_success(
                    OR EXISTS (SELECT 1 FROM payments.dispute d WHERE d.pick_id = e.pick_id))
                    AS "in_hand!"
              FROM payments.charge_evidence e JOIN payments.pick_intent p ON p.pick_id = e.pick_id
-            WHERE e.pick_id = $1"#,
+            WHERE e.pick_id = $1 FOR SHARE OF p"#,
         pick,
     )
     .fetch_optional(&mut *conn)
