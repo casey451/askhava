@@ -29740,7 +29740,14 @@
    "attempts": 0,
    "slug": "inbound-text-limit-and-list-names",
    "type": "harness",
-   "stage": "4"
+   "stage": "4",
+   "plan_gap": {
+    "at": "2026-11-11T19:41:01Z",
+    "problems": [
+     "T317: dependency T316 is DONE but its owned file app/businesses/src/public_name.rs is not on main",
+     "T317: dependency T316 is DONE but its owned file tests/integration/tests/business_public_name.rs is not on main"
+    ]
+   }
   },
   {
    "id": "T325",
@@ -32527,7 +32534,7 @@
    "input_tokens": 610,
    "cache_creation_input_tokens": 873920
   },
-  "source": "session_reading 2026-11-11T19:35:52Z (week)",
+  "source": "session_reading 2026-11-11T19:39:07Z (week)",
   "by_task": {
    "FIX-MAIN": {
     "estimated_bytes": 1552047,
@@ -34496,7 +34503,7 @@
    }
   }
  },
- "updated_at": "2026-11-11T19:39:25Z",
+ "updated_at": "2026-11-11T19:41:09Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -34594,16 +34601,9 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "74e1f303a72d1efd315b7065e91b7174b04aa4ab",
+ "runner_sha": "08f1c85bd062c1f9194b3a8f3bb4614807804f53",
  "starter": "actions",
  "smoke_runs": [
-  {
-   "sha": "4ce9c9f7532defdddef49a12870e7f8488062a38",
-   "ok": true,
-   "at": "2026-11-11T15:58:29Z",
-   "why": "start routine (reused 2026-11-11T15:51:12Z)",
-   "reused": "2026-11-11T15:51:12Z"
-  },
   {
    "sha": "ef7f7fc804232e7ded2fb112c6f77c7384c2c291",
    "ok": false,
@@ -34736,12 +34736,19 @@
    "at": "2026-11-11T19:37:41Z",
    "why": "start routine (reused 2026-11-11T19:34:48Z)",
    "reused": "2026-11-11T19:34:48Z"
+  },
+  {
+   "sha": "74e1f303a72d1efd315b7065e91b7174b04aa4ab",
+   "ok": true,
+   "at": "2026-11-11T19:41:01Z",
+   "why": "start routine (background)",
+   "seconds": 713
   }
  ],
  "main_red": null,
  "pacing": {
-  "last": "T387 estimated 881k tokens (calibrated); five-hour window has 878k left, week 45.0M after 3.0M still running in another lane (session_reading 2026-11-11T19:35:52Z (week)); waiting until 2026-11-11T20:04:09Z",
-  "at": "2026-11-11T19:37:41Z",
+  "last": "T387 estimated 881k tokens (calibrated); five-hour window has 878k left, week 45.0M after 3.0M still running in another lane (session_reading 2026-11-11T19:39:07Z (week)); waiting until 2026-11-11T20:04:09Z",
+  "at": "2026-11-11T19:41:01Z",
   "decision": "wait",
   "waiting_until": "2026-11-11T20:04:09Z",
   "standing": {
@@ -34758,8 +34765,8 @@
     "resets_at": "2026-11-12T17:00:00Z"
    }
   },
-  "remaining_estimate": 636856820,
-  "projected_finish": "2026-12-04T19:07:59Z"
+  "remaining_estimate": 635937316,
+  "projected_finish": "2026-12-04T18:23:32Z"
  },
  "main_red_history": [
   {
