@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T15:15:12Z by runner ee5cdf2ecfbe (actions).
+Updated 2026-11-11T15:15:27Z by runner ee5cdf2ecfbe (actions).
 
 **Building: T269 in progress since 15:02Z; 204 of 373 done; week 69% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-11T15:15:12Z by runner ee5cdf2ecfbe (actions).
 - **Lane:** lane 3: T269 claimed 15:02Z, lease until 18:02Z
 - **Week:** 69% used, 50.6M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 15:15Z, 0 min before this update
-- **Keeper:** last ran 15:06Z, next wake 18:05Z
+- **Keeper:** last ran 15:15Z, next wake 18:05Z
 
 ## Needs attention
 - BLOCKED T214: plan gap reported: PLAN GAP: tests/integration/tests/page_pick.rs:131 and tests/security/tests/page_pick_privacy.rs:224 (both T246's; page_pick.rs also T343's) and tests/e2e/j1_homeowner.spec.ts:203 (T098's) press the final Pick without the share box, which PICK-049 now requires. Smallest plan change: give T214 those three test files for a fake-value change only (add ("share","yes") to each posted final Pick, and check the box before #final-pick in j1_homeowner), or move the server-side refusal to a harness task that owns them. Evidence: kit/tasks.json ownership (T214 owns none of the three); page_pick.rs:131 po; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T214 --plan-fix D-### --reason "..."` (D-2859)
