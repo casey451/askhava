@@ -2,6 +2,12 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## Your call: a try lost to an outside outage is given back; T332 gets its try (plan change, D-3031, November 11)
+
+- **What happened.** T332's third and last try was failed by the Ubuntu download outage (D-3030): the step that sets up the test browser could not download, so its accessibility and journey tests never ran. The rules only gave a task an extra try when the plan itself was wrong, so you were asked, and you said "Give it back".
+- **What changed.** The build rules now say: when a try fails only at a setup step, before any of its tests ran, because of an outside fault that a logged fix has since removed, the task gets one more try, on Opus. A failure inside a test, or in the task's own work, never counts. T332's plan now carries the note that lets the runner give it that try; its work and tests are unchanged. T384 and T269 lost a try the same way but still have tries left.
+- **Nothing needs you.**
+
 ## The share box at the pick is required, and five older tests tick it (plan change, D-3032, November 11)
 
 - **What happened.** The step that adds the homeowner's "Share my first name and the job address" box at the pick stopped a second time. Pressing Pick without ticking the box must now show an error and pick nothing, but five older tests press Pick without the box, and that step was not allowed to change them.
@@ -2275,4 +2281,10 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 
 - **What it does.** The link in that email opens business sign-in for the person it was sent to. Pressing "Sign in" emails them the usual one-time sign-in link; after that link (and the new-device code, when asked) they land on that job's page. The link alone never signs anyone in or shows any job detail. A changed, expired or someone else's link just shows the normal sign-in form.
 - **One wording point for later.** The screen with the button reuses today's words, "Press the button to finish signing in.", although pressing it sends an email. A small copy change would fit better; this task was not allowed to write new wording.
+- **Nothing needs you now.**
+
+## T214: the share box at the pick and "Can't take it" (D-2992 to D-2994)
+
+- **What changed.** Before her final Pick the homeowner sees an unticked box: "Share my first name and the job address with the business for quote #2 once they accept." Pressing Pick without ticking it shows the page again with the error by the box; nothing is picked and no code is sent. The tick is logged with the pick. The pick notice now carries a "Can't take it" link for the business; pressing it ends the pick at once with no fee and moves the pick to her backup, or reopens her quotes.
+- **One thing you may want changed.** The box names "the business for quote #2" until businesses' names are stored for the page; the Spanish label is "Compartir mi nombre de pila y la dirección del trabajo con ... cuando acepte."
 - **Nothing needs you now.**

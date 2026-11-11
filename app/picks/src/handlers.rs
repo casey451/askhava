@@ -12,6 +12,7 @@
 //! [`run_confirm_ends`] expires a pick still waiting and returns the job to Quotes ready. A job
 //! chosen as an emergency keeps `jobs`' own 60 clock minutes (PICK-044). A notice held until after
 //! `jobs` already returned the job (its backstop or the emergency's 60 minutes) expires the pick.
+//! T214 (PICK-050, D-3024): the notice's values carry `cant_take`, the pick's "Can't take it" page.
 
 use askhava_businesses::api::{NoticePurpose, notice_addresses};
 use askhava_core::api::{Claimed, Guarded, HandlerError, NewTask, add_business_minutes, enqueue};
@@ -22,6 +23,7 @@ use serde_json::{Value, json};
 use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection, PgPool};
 
+use crate::cant_take::cant_take_link;
 use crate::confirm::{
     ConfirmSettings, PICK_NOTICE_EMERGENCY_TEMPLATE, PICK_NOTICE_TEMPLATE, confirm_by,
 };
@@ -44,7 +46,8 @@ fn id(payload: &Value, name: &str) -> Result<Uuid, HandlerError> {
 /// The `picks.pick_made` handler (PICK-037, BIZ-019, D-491): queues the pick notice to the owner
 /// and every "Confirm and billing" member, once per pick; the emergency subject on an emergency
 /// job. `window` is `settings`' Confirm window in business minutes; the "Accept by <time>" is the
-/// deadline [`notice_sent`] returns at the send, from the same settings (D-1503).
+/// deadline [`notice_sent`] returns at the send, from the same settings (D-1503). `cant_take` is
+/// the pick's "Can't take it" page ([`cant_take_link`], PICK-050, D-3024).
 ///
 /// # Errors
 /// A fixed sentence for a malformed event or a failed statement; the queue tries again.
@@ -74,7 +77,7 @@ pub async fn run_pick_notice(
     let window = settings.window_minutes;
     let payload = json!({
         "template": template, "business": business, "pick": pick, "to": to,
-        "values": {"job": number, "window": window},
+        "values": {"job": number, "window": window, "cant_take": cant_take_link(pick)},
     });
     let mut notice = NewTask::new(BUSINESS_NOTICE_KIND, payload, Timestamp::now());
     notice.dedupe_key = Some(format!("{BUSINESS_NOTICE_KIND}.{template}.{pick}"));

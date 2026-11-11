@@ -109,6 +109,7 @@ test("TD-PICK-28: the review step shows no end-time words", async ({ page }) => 
 test("TD-A11Y-02: the final Pick is enabled and, before the code step, says nothing was picked", async ({ page }) => {
   await openReview(page, 1);
   await expect(page.getByRole("button", { name: "Pick #1" })).toBeEnabled();
+  await page.locator("#share").check();
   await page.getByRole("button", { name: "Pick #1" }).click();
   await expect(page.locator("#pick-not-open")).toHaveText("Nothing was picked. Picking on this page isn't open yet, so no code was sent.");
   await expect(page.getByRole("button", { name: "Pick #1" })).toBeEnabled();
