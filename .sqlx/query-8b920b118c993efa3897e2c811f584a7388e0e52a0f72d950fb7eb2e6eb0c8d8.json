@@ -1,0 +1,30 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT backup_quote FROM picks.backup_choice WHERE job_id = $1 AND for_quote = $2 AND browser = $3 AND pick_id IS NULL ORDER BY set_at DESC, id DESC LIMIT 1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "backup_quote",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "picks.backup_choice",
+            "name": "backup_quote"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Int4",
+        "Bytea"
+      ]
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "8b920b118c993efa3897e2c811f584a7388e0e52a0f72d950fb7eb2e6eb0c8d8"
+}

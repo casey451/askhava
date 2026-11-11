@@ -48,7 +48,9 @@
 //! by email to a [`ConversationEmail`] when texting is off (PICK-029); [`opted_out_yes`] takes an
 //! opted-out homeowner's "<number> YES" with no text back (PICK-030).
 //!
-//! T157: [`choose_backup`] stores the homeowner's backup on the pick review step; [`backup_choice`]
+//! T157: [`choose_backup`] stores the backup asked for on the pick review step, [`bind_backup`]
+//! binds it to the pick after her code passed and [`backup_changed`] says a change needs one;
+//! [`backup_choice`]
 //! moves an ended pick to it at once ([`Backup`], [`backup_target`]), and [`lapse`] and
 //! [`refused_at_confirm`] call it on a lapse and a refused Confirm; [`backup_text`] is her text
 //! (PICK-020, PICK-046, PICK-047, D-400).
@@ -65,7 +67,10 @@ pub use crate::aftermath::{
     LossSettings, compare, live_pick_reply, loss_template, lost_notices, no_longer_active,
     refused_after_confirm,
 };
-pub use crate::backup_choice::{Backup, backup_choice, backup_target, backup_text, choose_backup};
+pub use crate::backup_choice::{
+    Backup, Browser, backup_changed, backup_choice, backup_target, backup_text, bind_backup,
+    choose_backup,
+};
 pub use crate::confirm::{
     BusinessWord, ConfirmReply, ConfirmSettings, EXPIRED_TEMPLATE, FEE_REPLY_TEMPLATE, FeeBasis,
     LicenseAtPick, PICK_NOTICE_EMERGENCY_TEMPLATE, PICK_NOTICE_TEMPLATE, Refusal, StoredFacts,

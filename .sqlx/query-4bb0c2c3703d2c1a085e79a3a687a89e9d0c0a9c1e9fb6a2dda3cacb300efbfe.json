@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT job_id, business_id, quote_number FROM picks.pick p WHERE id = $1 AND ended_at IS NOT NULL AND status IN ($2, $3) AND end_reason IS DISTINCT FROM 'replaced' AND end_reason IS DISTINCT FROM 'paused' AND NOT EXISTS (SELECT 1 FROM picks.backup_move m WHERE m.pick_id = p.id) FOR UPDATE",
+  "query": "SELECT job_id, quote_number FROM picks.pick WHERE id = $1 AND status = $2 FOR UPDATE",
   "describe": {
     "columns": [
       {
@@ -16,17 +16,6 @@
       },
       {
         "ordinal": 1,
-        "name": "business_id",
-        "type_info": "Uuid",
-        "origin": {
-          "Table": {
-            "table": "picks.pick",
-            "name": "business_id"
-          }
-        }
-      },
-      {
-        "ordinal": 2,
         "name": "quote_number",
         "type_info": "Int4",
         "origin": {
@@ -40,15 +29,13 @@
     "parameters": {
       "Left": [
         "Uuid",
-        "Text",
         "Text"
       ]
     },
     "nullable": [
       false,
-      false,
       false
     ]
   },
-  "hash": "4a887dc16136939862ed56b49d9b9ba601d1322b672424481e18381def1f3472"
+  "hash": "4bb0c2c3703d2c1a085e79a3a687a89e9d0c0a9c1e9fb6a2dda3cacb300efbfe"
 }

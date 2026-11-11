@@ -32,7 +32,7 @@
 <input type="hidden" name="csrf" value="{{ csrf }}">
 <input type="hidden" name="quote" value="{{ quote }}">
 {% if !others.is_empty() %}<p><label for="backup">If the business for quote #{{ quote }} can't take it, move my pick to:</label></p>
-<p id="backup-hint">If they can't, your pick moves to that quote right away and we'll text you. To change your backup later, press Pick on quote #{{ quote }} again.</p>
+<p id="backup-hint">If they can't, your pick moves to that quote right away and we'll text you. To change your backup later, press Pick on quote #{{ quote }} again and type the new code we text you.</p>
 <p><select id="backup" name="backup" aria-describedby="backup-hint">
 <option value="" selected>No backup</option>
 {% for n in others %}<option value="{{ n }}">Quote #{{ n }}</option>
