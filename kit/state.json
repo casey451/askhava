@@ -20688,7 +20688,7 @@
     "T246",
     "T294"
    ],
-   "status": "IN_PROGRESS",
+   "status": "MERGE_PENDING",
    "attempts": 1,
    "slug": "picks-backup-autoconfirm",
    "type": "build",
@@ -20744,6 +20744,19 @@
      "started_at": "2026-11-11T01:03:53Z",
      "ended_at": "2026-11-11T02:10:25Z",
      "result": "check_failed"
+    },
+    {
+     "attempt": 2,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 55,
+     "head_sha": "1a8bc64940c83b40a2644d2be864eef30a684556",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": true,
+     "started_at": "2026-11-11T02:19:04Z",
+     "ended_at": "2026-11-11T02:41:38Z",
+     "result": "MERGE_PENDING"
     }
    ],
    "reviewed_sha": "1a8bc64940c83b40a2644d2be864eef30a684556",
@@ -20755,14 +20768,13 @@
    "branch": "claude/task/T157-picks-backup-autoconfirm",
    "auto_merge": {
     "enabled": true,
-    "why": "auto-merge on #445 (gh pr merge)",
-    "head": "64b049c1ac2a9a01bb17f9c7c3e9011bb99b1cf7"
+    "why": "auto-merge on #447 (gh pr merge)",
+    "head": "1a8bc64940c83b40a2644d2be864eef30a684556"
    },
    "last_failure": "E2e: failure; Ally: failure\nE2e failed at step: The journeys (npx playwright test tests/e2e)\n{\"timestamp\":\"2026-11-11T02:14:10.524012Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":128,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-11T02:14:10.524228Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":126,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-11T02:14:10.524440Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":125,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-11T02:14:10.525764Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":129,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-11T02:14:10.526574Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":130,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n  \u2718  33 tests/e2e/j1_reduced.spec.ts:65:1 \u203a J1 step 6 (partial): Pick #2 and the review step, then the code-and-contact form reached directly (form action rewritten to /code), with the call or email c\n##[error]  1) tests/e2e/j1_reduced.spec.ts:65:1 \u203a J1 step 6 (partial): Pick #2 and the review step, then the code-and-contact form reached directly (form action rewritten to /code), with the call or e\nAlly failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing)\n##[error]Process completed with exit code 1.",
    "runner_closed_prs": [
     445
-   ],
-   "head_check_since": null
+   ]
   },
   {
    "id": "T209",
@@ -28627,11 +28639,11 @@
  "usage": {
   "last_reading": {
    "task": "T157",
-   "at": "2026-11-11T02:10:25Z",
-   "cache_creation_input_tokens": 766269,
-   "input_tokens": 569,
-   "cache_read_input_tokens": 34806412,
-   "output_tokens": 226752
+   "at": "2026-11-11T02:41:38Z",
+   "output_tokens": 43467,
+   "cache_creation_input_tokens": 318212,
+   "cache_read_input_tokens": 4971390,
+   "input_tokens": 162
   },
   "source": "session_reading 2026-11-11T02:10:52Z (week)",
   "by_task": {
@@ -30357,10 +30369,10 @@
    "T157": {
     "estimated_bytes": 686930,
     "estimated_tokens": 3716077,
-    "cache_creation_input_tokens": 766269,
-    "input_tokens": 569,
-    "cache_read_input_tokens": 34806412,
-    "output_tokens": 226752,
+    "cache_creation_input_tokens": 1084481,
+    "input_tokens": 731,
+    "cache_read_input_tokens": 39777802,
+    "output_tokens": 270219,
     "last_model": "claude-opus-5-5"
    },
    "T338": {
@@ -30407,11 +30419,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-10T23:21:24Z",
-    "tokens": 8318014
+    "tokens": 9176994
    },
    "week": {
     "start": "2026-11-05T19:01:47Z",
-    "tokens": 263381610
+    "tokens": 264240590
    }
   },
   "session_reading": {
@@ -30422,7 +30434,7 @@
    }
   }
  },
- "updated_at": "2026-11-11T02:41:38Z",
+ "updated_at": "2026-11-11T02:41:54Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
