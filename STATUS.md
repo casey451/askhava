@@ -1,10 +1,10 @@
 # Ask Hava build status
 
-Updated 2026-11-11T09:25:55Z by runner ea7b57e0aac0 (actions).
+Updated 2026-11-11T09:26:03Z by runner ea7b57e0aac0 (actions).
 
-**Building: T327 in progress since 08:49Z; 198 of 370 done; week 63% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T327 in progress since 08:49Z; 199 of 370 done; week 63% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 198 of 370 build tasks (owner gates not counted)
+- **Tasks done:** 199 of 370 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 3: T327 claimed 08:49Z, lease until 11:49Z
 - **Week:** 63% used, 62.8M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
@@ -13,13 +13,14 @@ Updated 2026-11-11T09:25:55Z by runner ea7b57e0aac0 (actions).
 
 ## Needs attention
 - BLOCKED T164: plan gap reported: PLAN GAP: app/portals/src/tests/prop_arrival_order.rs:22 (T052) and app/quotes/src/notify.rs:179 / app/quotes/src/models.rs:573 (T047). The homeowner side of T164 (quote page "Updated <time>"/"Withdrawn by the business", LIST reply) needs api.rs (page_quotes filters withdrawn_at, api.rs:116), PageQuote fields (api.rs:93, built field-by-field in the T052 test), notify.rs list_line/Listed and models.rs list_rows, none owned by T164. Reviewer confirmed (kit/tasks.json owns vs. those files; T361 covers part but depends on T164).; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T164 --plan-fix D-### --reason "..."` (D-2859)
-- Strict plan check red: 12 problem(s) on tasks still to run (+18 on DONE tasks); first: T255: stored context_pct 34% but it measures 38%; regenerate
+- OWNED GAP T295 (DONE, since 2026-11-11T09:25:53Z; a later task or plan change must add it): T295: tests/brand_literal_baseline.json missing on main
+- Strict plan check red: 11 problem(s) on tasks still to run (+19 on DONE tasks); first: T255: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T164 | quotes: one quote format per category, screened notes, and e | BLOCKED | 1 | 14 min | 09:03Z | PLAN GAP: app/portals/src/tests/prop_arrival_order.rs:22 (T052) and app/quotes/src/notify.rs:179 / app/quotes/src/models |
-| T295 | payments, ai, intake and picks take the brand from the brand | MERGE_PENDING | 4 | 33 min | 08:57Z | T295 blocked at step 3: tests/brand_literal_baseline.json still lists files T295 does not own: app/messaging/templates/e |
+| T295 | payments, ai, intake and picks take the brand from the brand | done | 4 | 33 min | 08:57Z | T295 blocked at step 3: tests/brand_literal_baseline.json still lists files T295 does not own: app/messaging/templates/e |
 | T212 | intake: photo asks with on-server checks and preview, inspir | done | 2 | 19 min | 08:12Z | Ci: failure; Coverage: failure; Checks: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned |
 | T337 | payments (harness): a $0 release proof is bound to the pick' | BLOCKED | 4 | 9 min | 08:05Z | PLAN GAP: app/server/tests/release_recovery.rs:572-576 (td_pick_50_a_zero_fee_releases_free_and_a_cancelled_pick_nothing |
 | T212 | intake: photo asks with on-server checks and preview, inspir | check_failed | 1 | 56 min | 07:20Z |  |
@@ -79,7 +80,7 @@ Updated 2026-11-11T09:25:55Z by runner ea7b57e0aac0 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 208 of 733 (28.4%) · partial 343 · unstarted 182
-**Tasks merged (throughput only):** 198 of 370
+**Tasks merged (throughput only):** 199 of 370
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -114,7 +115,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 78 of 162 done
+- stage 4: 79 of 162 done
 - stage 5: 0 of 58 done
 - stage 6: 0 of 34 done
 - stage 7: 0 of 2 done
