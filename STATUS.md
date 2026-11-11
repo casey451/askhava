@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-11T08:24:00Z by runner 68d6b3ac2530 (actions).
+Updated 2026-11-11T08:24:23Z by runner 68d6b3ac2530 (actions).
 
-**Building: T327 in progress since 05:24Z; 197 of 370 done; week 62% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T295 in progress since 08:24Z; 197 of 370 done; week 62% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 197 of 370 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 3: T327 claimed 05:24Z, lease until 08:24Z
-- **Week:** 62% used, 63.9M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:23Z, 0 min before this update
+- **Lane:** lane 2: T295 claimed 08:24Z, lease until 11:24Z; lane 3: T327 claimed 05:24Z, lease until 08:24Z
+- **Week:** 62% used, 67.5M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Last run:** 08:24Z, 0 min before this update
 - **Keeper:** last ran 08:24Z, next wake 08:34Z
 
 ## Needs attention
@@ -105,7 +105,7 @@ Updated 2026-11-11T08:24:00Z by runner 68d6b3ac2530 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-11T07:37:24Z (week)): five-hour: 24.1M used, 5.0M left, resets 2026-11-11T09:44:28Z; week: 130.1M used, 63.9M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-04T10:33:48Z.
+- Pacing (session_reading 2026-11-11T08:23:45Z (week)): five-hour: 21.6M used, 7.5M left, resets 2026-11-11T09:44:28Z; week: 126.5M used, 67.5M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-04T11:02:08Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -121,6 +121,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
+- lane 2: T295 (lease until 2026-11-11T11:24:16Z)
 - lane 3: T327 (lease until 2026-11-11T08:24:57Z)
 
 ## Last usage reading
