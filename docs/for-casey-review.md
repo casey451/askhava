@@ -2,6 +2,12 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## Gate C now waits on proof, not just a date (plan change, D-3080, November 11)
+
+- **What happened.** An outside 80-point review said the build is not yet ready for real customers, real texts or real charges. Checked against the files, the main gaps were real: the go-live step had a one-line description, your security checklist items had no place to be proved before go-live, nobody owned showing each business's name and license on the quote page, and nobody owned the AI-written questions and job cards.
+- **What changed.** Go-live now opens only when a check finds your 14 must-do security items recorded, no open money, privacy or security handoffs, a clean check that no vendor kept customer details it shouldn't, a restore drill that met the recovery targets you set, a release record you signed and a fresh readiness verdict. Your "go live" counts only after a real alert has reached your phone in the rehearsal. You still do every step yourself. Four new steps build this (the check, the vendor check, the quote-page cards and the AI-written text), and the restore drill and handover pack now record the timings and the release record.
+- **What you need to do.** Nothing now. Before go-live you'll see a list of anything still missing, including the recovery targets (how long a restore may take and how much recent data you could lose) only you can set.
+
 ## A runner self-check no longer trips on work in progress (harness change, D-3057, November 11)
 
 - **What happened.** One of the runner's own checks before claiming a task compared the plan with the build's live progress and failed whenever a task already being worked sat at the head of the longest remaining chain. The build itself was fine, but the runner stopped without claiming anything five times today, and enough of these in a row could have wrongly marked the build broken and undone good work.

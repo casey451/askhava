@@ -12594,7 +12594,8 @@
     "T377",
     "T378",
     "T386",
-    "T387"
+    "T387",
+    "T393"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -16205,7 +16206,7 @@
    "id": "T139",
    "slug": "restore-drill-railway",
    "title": "Restore drill on Railway, including the switch to the restored database",
-   "goal": "Phase 2 step 7: restore drill with replay and the switch to the restored database; a step that needs Casey's hands becomes a hands-on stop (BUILD_BRIEF.md:548). The drill follows OPS-051: role bootstrap first, `pg_restore --single-transaction`, the ownership check (OPS-014, D-492).",
+   "goal": "Phase 2 step 7: restore drill with replay and the switch to the restored database; a step that needs Casey's hands becomes a hands-on stop (BUILD_BRIEF.md:548). The drill follows OPS-051: role bootstrap first, `pg_restore --single-transaction`, the ownership check (OPS-014, D-492). Its record in `docs/phase2/restore-drill.md` states, measured on this drill (amendment A-01, D-3080; `docs/compliance/reconciliation.md` TECH-05 and F-03): the snapshot or point in time restored (its time, never its contents); the restore time, from the start of the restore to the app serving from the restored database; the data-loss window, measured with fake marker rows written up to the cutover (the newest committed marker missing from the restored database); and that the replay after the switch sent no text twice and charged nothing twice (by outbox and Stripe test-mode IDs). Each figure is set against Casey's recovery targets (RTO and RPO, owner action 3 in `docs/compliance/owner-actions.md`) once they are recorded in `docs/compliance/evidence-register.md`, and marked met or missed; with no targets recorded the record says \"targets not set\" and the task lists that for Casey in `docs/for-casey-review.md`, never inventing a target. A missed target is a finding for Casey, not a failed task, and Gate C (T145) refuses until it is met or Casey accepts it in writing. `tests/recovery/tests/railway_drill.rs` checks that the record holds every measured field.",
    "type": "build",
    "phase": 2,
    "stage": "6",
@@ -16230,7 +16231,9 @@
     "docs/spec/ops-recovery.md",
     "docs/brains/postgres-operations.md",
     "docs/brains/rust-production.md",
-    "docs/brains/deploy-operations.md"
+    "docs/brains/deploy-operations.md",
+    "docs/compliance/owner-actions.md",
+    "docs/compliance/evidence-register.md"
    ],
    "requirements": [
     "OPS-012",
@@ -16243,7 +16246,8 @@
     "TD-OPS-05"
    ],
    "decisions": [
-    "D-492"
+    "D-492",
+    "D-3080"
    ],
    "cites": [
     "BUILD_BRIEF.md:196"
@@ -16259,7 +16263,8 @@
     "Ally"
    ],
    "branch": "claude/task/T139-restore-drill-railway",
-   "prompt": "kit/prompts/T139.md"
+   "prompt": "kit/prompts/T139.md",
+   "acceptance": "TD-OPS-05 passes on the Railway test project; `docs/phase2/restore-drill.md` records the snapshot time, the measured restore time and data-loss window, the no-double-send and no-double-charge result, and each figure met, missed or \"targets not set\" against Casey's RTO and RPO (A-01, D-3080)."
   },
   {
    "id": "T242",
@@ -17560,7 +17565,8 @@
     "T380",
     "T381",
     "T382",
-    "T235"
+    "T235",
+    "T394"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -17608,7 +17614,8 @@
     "D-1154",
     "D-2038",
     "D-2054",
-    "D-2350"
+    "D-2350",
+    "D-3080"
    ],
    "cites": [
     "BUILD_BRIEF.md:196",
@@ -17794,7 +17801,8 @@
    "stage": "6",
    "module": null,
    "deps": [
-    "T239"
+    "T239",
+    "T392"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -17822,7 +17830,8 @@
     "TD-SEC-28"
    ],
    "decisions": [
-    "D-473"
+    "D-473",
+    "D-3080"
    ],
    "cites": [
     "BUILD_BRIEF.md:197",
@@ -17845,7 +17854,7 @@
    "id": "T141",
    "slug": "handover-pack",
    "title": "Handover pack: owner guide, runbook, results, conformance notes, Gate C key checklist",
-   "goal": "Handover pack: owner guide, runbook, results, conformance notes, Gate C key checklist `docs/README.md` is the start-here map for a session that has never seen the code: one line per folder and document, and the common changes (fees, categories and job types, text templates, settings and switches, legal pages) with the files, spec lines and tests each one touches (docs/code-docs.md, D-473). The Gate C key checklist (`docs/account-checklist.md` Part 2) gets one item before the live AI key is entered: the live Claude API key is created in the Console under the same Anthropic account as Casey's Claude subscription, so production AI usage draws on the subscription's included API credit ($200 a month, Casey, October 31) instead of a separately billed account, and Casey confirms on the Console's billing page that usage is drawn from that credit (D-1154). The item names where the key goes: the live project's secret variable `ASKHAVA_AI_API_KEY`, with `ASKHAVA_ADAPTER_MODE_AI` left at its live default `api` (T298), and says that without it the live app starts with the AI off and raises a high alert naming the missing setting (D-2065).",
+   "goal": "Handover pack: owner guide, runbook, results, conformance notes, Gate C key checklist `docs/README.md` is the start-here map for a session that has never seen the code: one line per folder and document, and the common changes (fees, categories and job types, text templates, settings and switches, legal pages) with the files, spec lines and tests each one touches (docs/code-docs.md, D-473). The Gate C key checklist (`docs/account-checklist.md` Part 2) gets one item before the live AI key is entered: the live Claude API key is created in the Console under the same Anthropic account as Casey's Claude subscription, so production AI usage draws on the subscription's included API credit ($200 a month, Casey, October 31) instead of a separately billed account, and Casey confirms on the Console's billing page that usage is drawn from that credit (D-1154). The item names where the key goes: the live project's secret variable `ASKHAVA_AI_API_KEY`, with `ASKHAVA_ADAPTER_MODE_AI` left at its live default `api` (T298), and says that without it the live app starts with the AI off and raises a high alert naming the missing setting (D-2065). Amendment A-02 (D-3080; `docs/compliance/reconciliation.md` TECH-14 and TECH-16; OPS-043): `docs/release-record.md` is the one-page release record template OPS-043 names, one field per line: the source SHA; the `Ci`, `Twin` and `Ally` run IDs on that SHA; the migrations it applies; the rollback or no-rollback decision with its reason; open vulnerabilities (the cargo-audit, cargo-deny and npm audit results on that SHA, each open one with its exception owner); the secret scope (the secrets the release needs, by setting name only, never a value or fingerprint); the health check after deploy; the link to the independent Opus security review of the release diff; and Casey's sign-off line (his name, the date and \"go for this SHA\"). A filled copy is `docs/releases/<date>-<sha12>.md`, written only by Casey or from his owner answer, never by a task; the handover pack links the template. `docs/account-checklist.md` Part 2 also lists, one line each, the Gate C preconditions that `scripts/gate_c_ready.py` (T395) checks, with the command that prints what is still missing (D-3080).",
    "type": "docs",
    "phase": 2,
    "stage": "6",
@@ -17865,7 +17874,8 @@
     "docs/runbook.md",
     "docs/account-checklist.md",
     "docs/handover.md",
-    "docs/README.md"
+    "docs/README.md",
+    "docs/release-record.md"
    ],
    "reads": [
     "docs/code-docs.md",
@@ -17886,15 +17896,16 @@
     "D-492",
     "D-1143",
     "D-1154",
-    "D-2065"
+    "D-2065",
+    "D-3080"
    ],
    "cites": [
     "BUILD_BRIEF.md:523",
     "BUILD_BRIEF.md:529"
    ],
    "budget": {
-    "files": 5,
-    "lines": 550,
+    "files": 6,
+    "lines": 600,
     "context_pct": 3
    },
    "checks": [
@@ -17981,7 +17992,10 @@
     "T236",
     "T237",
     "T238",
-    "T239"
+    "T239",
+    "T392",
+    "T394",
+    "T395"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -18011,7 +18025,7 @@
    "budget": {
     "files": 2,
     "lines": 400,
-    "context_pct": 41
+    "context_pct": 47
    },
    "checks": [
     "Ci",
@@ -18106,13 +18120,14 @@
    "id": "T145",
    "slug": "gate-c",
    "title": "Gate C: live keys and 'go live', real-phone rehearsal",
-   "goal": "After the business accounts; a real-phone rehearsal runs on Casey's phone.",
+   "goal": "Gate C (BUILD_BRIEF.md:203, BUILD_BRIEF.md:551): after the business accounts, Casey enters the live keys, presses Deploy for the signed release (OPS-022, OPS-043), runs the real-phone rehearsal on his own phone and says 'go live'; the first live charge is its own go (T146). This stop stays Casey's: nothing does any of it for him and Claude never holds or enters a live key. D-3080 adds preconditions, checked by `scripts/gate_c_ready.py` (T395): the runner opens this ask only when `--ask` passes on `main`, else it writes a `blocked` note listing what is missing; and it accepts 'go live' only when `--go-live` passes, else it keeps the reply and says what is missing. `--ask`: every owner action P0 item 1 to 14 (`docs/compliance/owner-actions.md`) has its `operating` row `OA-<n>` in `docs/compliance/evidence-register.md`; `docs/integration-closure.md` has no open or tracked row in money, privacy or security, and IC-53 (the AI writing calls) is closed or Casey's dated written acceptance of launching without them is recorded; the vendor-side leak check (T392) reads \"Verdict: clean\"; the restore drill (T139) met Casey's recovery targets or he accepted the miss in writing; the newest release record (`docs/releases/`, template `docs/release-record.md`, T141) is complete and signed by Casey; `docs/build-readiness.md` is re-issued for Gate C (`docs/governance.md` section 10). `--go-live` also needs the `GC-ALERT` row: in the rehearsal a real alert reached a real person (Casey's phone, OPS-029, OPS-035). Casey's checklist is `docs/account-checklist.md` Part 2 (OPS-042).",
    "type": "gate",
    "phase": 2,
    "stage": "7",
    "module": null,
    "deps": [
-    "T144"
+    "T144",
+    "T395"
    ],
    "model": null,
    "effort": null,
@@ -18120,11 +18135,16 @@
    "review_areas": [],
    "owns": [],
    "reads": [
-    "docs/brains/deploy-operations.md"
+    "docs/brains/deploy-operations.md",
+    "docs/account-checklist.md",
+    "docs/compliance/owner-actions.md",
+    "docs/compliance/evidence-register.md"
    ],
    "requirements": [],
    "tests": [],
-   "decisions": [],
+   "decisions": [
+    "D-3080"
+   ],
    "cites": [
     "BUILD_BRIEF.md:203",
     "BUILD_BRIEF.md:552"
@@ -18140,7 +18160,13 @@
    "gate": {
     "kind": "gate-c",
     "waits_on_owner": true,
-    "resume": "Casey enters live keys and says 'go live'"
+    "resume": "Casey enters live keys and says 'go live'",
+    "steps": [
+     "This ask opened only because `scripts/gate_c_ready.py --ask` passed on main: your P0 owner actions are recorded, no money, privacy or security handoff is open, the vendor leak check is clean, the restore drill met your recovery targets, your release record is signed and the readiness verdict is re-issued (D-3080).",
+     "Enter the live keys in the live project yourself, following `docs/account-checklist.md` Part 2, and press Deploy for the release SHA you signed (OPS-022, OPS-043).",
+     "Run the real-phone rehearsal on your own phone, including one test alert raised on the live project that must reach your phone; record it as evidence row GC-ALERT in `docs/compliance/evidence-register.md` (date and alert ID only).",
+     "Then reply 'go live'. A 'go live' sent before the GC-ALERT row is on main is kept and answered with what is still missing; it does not clear this gate."
+    ]
    }
   },
   {
@@ -26964,6 +26990,278 @@
    "branch": "claude/task/T387-payments-coverage-margin",
    "prompt": "kit/prompts/T387.md",
    "acceptance": "The decision entry names the flapping branch with per-run evidence; five consecutive scoped runs on the hand-in head (`cargo +nightly-2026-10-15 llvm-cov --branch -p askhava-payments -p askhava-integration-tests` with the Coverage job's other flags, excludes and `--ignore-filename-regex`) each report `app/payments/` at or above 95.5% with the same covered-branch count; `tests/coverage_floor.json`, `scripts/coverage_floor.py` and every file under `app/payments/src/` are unchanged, except the new `tests/coverage_margin.rs` and the single `mod coverage_margin;` line in the shared `app/payments/src/tests/mod.rs`; no existing assertion in `free_wins.rs` is changed or removed; Ci's Coverage job passes; no test pins `refunds.rs` behaviour T380 changes."
+  },
+  {
+   "id": "T392",
+   "slug": "vendor-leak-check",
+   "title": "Vendor-side leak check on the test site: fake markers through J1, then every vendor's records searched",
+   "goal": "Proposal N-02 (D-2740, D-3080; `docs/compliance/reconciliation.md` TECH-12, TECH-07, TECH-13 and F-04): the code's privacy rules are proved in `Ci` (T217's `sentinel_db_logs.rs`, T120's local sentinel), but no test looks at what the vendors keep. On the Railway test project, after T136's journeys and T137's real AI run, with every vendor in its sandbox and fake data only (PRIV-019), `tests/sandbox_sentinel/sentinel_trace.py` (standard library only) makes one set of unique fake markers (a fixture name, a 555-01xx phone, an example.com email, a street number and a marker written into a test photo's metadata), runs J1 once with them, then reads each sink through its sandbox API or export and records every marker as present-and-protected, absent or deleted: the app's logs (web, worker, migrate), Sentry events (PRIV-017), Twilio message records after the T276 body-redaction job, Resend's logs, the photo bucket (only sealed objects, PRIV-023), the off-database audit stream, and the AI request inputs as the adapter sent them (only scrubbed text, AI-004); a sink the sandbox gives no way to read is recorded as \"not observable\" with the reason, never as absent. The allowed places are a table in the script (the vault's ciphertext, a Twilio body before its redaction ran, and so on), each with its requirement. Any marker found outside its allowed place is a High finding: it goes at the top of `docs/for-casey-review.md`, is filed for a plan change and is not fixed here (as T136, D-491), and it blocks Gate C (T145, D-3080) until a later run of this script is clean. `docs/phase2/sentinel-trace.md` records the run (commit, date, each sink's query and result, by marker kind and never the value) and ends with one line, \"Verdict: clean\" or \"Verdict: blocked\" with the finding count. The live run needs the test project's sandbox credentials, which Claude never holds, so a step that needs one is a hands-on stop (BUILD_BRIEF.md:548); it never runs in `Ci` and never touches the live project or a live key (BUILD_BRIEF.md:68). `tests/sandbox_sentinel/test_sentinel_trace.py` (TD-PRIV-26) runs in `Ci` offline over fake sink exports.",
+   "type": "build",
+   "phase": 2,
+   "stage": "6",
+   "module": null,
+   "deps": [
+    "T136",
+    "T137"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "security"
+   ],
+   "owns": [
+    "tests/sandbox_sentinel/sentinel_trace.py",
+    "tests/sandbox_sentinel/test_sentinel_trace.py",
+    "docs/phase2/sentinel-trace.md"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/spec/privacy.md",
+    "docs/spec/ai.md",
+    "docs/compliance/reconciliation.md",
+    "docs/brains/deploy-operations.md",
+    "docs/brains/sms-compliance.md"
+   ],
+   "requirements": [
+    "PRIV-006",
+    "PRIV-016",
+    "PRIV-017",
+    "PRIV-027",
+    "AI-004"
+   ],
+   "tests": [
+    "TD-PRIV-26"
+   ],
+   "decisions": [
+    "D-2740",
+    "D-491",
+    "D-3080"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 450,
+    "context_pct": 10
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T392-vendor-leak-check",
+   "prompt": "kit/prompts/T392.md",
+   "acceptance": "TD-PRIV-26 passes in `Ci`; `docs/phase2/sentinel-trace.md` records one live run on the Railway test project with every listed sink read or marked not observable, and ends with its verdict line; any High finding is at the top of `docs/for-casey-review.md`."
+  },
+  {
+   "id": "T393",
+   "slug": "quote-page-cards",
+   "title": "portals and licensing: the served quote page's cards show each business's public name, license lines and review links",
+   "goal": "Register row IC-71, the quote-card half of the fourth audit's F17 (D-2206, D-3080; PICK-041, LIC-024, LIC-026, LIC-034, LIC-038, LIC-047, BIZ-052): the served quote page (`/q/{token}`, `app/portals/src/quote_page.rs`) lists each quote's number and Pick button and the page's two fixed sentences, but no card: nothing outside tests builds a `quotes::api::CardSource` or calls `quotes::api::quote_card`, so no homeowner sees a business's public name, license lines or Google and Yelp links (T316 left this to IC-71). (1) `app/licensing/src/card_facts.rs`, through `licensing::api`: for one business and one job type, the `LicenseFacts` of the license that makes it eligible (issuer, the number as the record writes it, the day of the check that showed it Active, the original-issue year when the record has one) or the `NoLicenseFacts` of a no-license card, read from the rows `holder_for` (T374) reads; read only, adding no table, column or writer. (2) `app/portals/src/quote_cards.rs`: for the page's shown quotes, one read of the public names (`businesses::api::public_names`, T316), the card facts turned into lines by `licensing::api::licensed_lines` or `no_license_lines` in the page's language, and `quotes::api::quote_card` with that `CardSource` (which adds the review links, BIZ-052, and the after-hours line); a business that `public_names` leaves out gets a fixed fallback the task chooses and logs in `docs/decisions.md`, never a name from anywhere else. (3) The page renders each card's lines (`ShownCard::lines`), review and record links as plain links with no stars, counts or excerpts, the top sentence once and \"doesn't rank businesses; check it yourself\" once per card (today's template line goes once the card carries it); it still shows no homeowner detail and no business phone or address (PICK-010). Tests in `tests/integration/tests/quote_page_cards.rs` (TD-PICK-62), fake businesses and records only. Update the `portals` and `licensing` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`, and name in the hand-in the commit and tests that close IC-71.",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "portals",
+   "deps": [
+    "T316",
+    "T341",
+    "T374"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "licensing",
+    "privacy"
+   ],
+   "owns": [
+    "app/licensing/src/card_facts.rs",
+    "app/portals/src/quote_cards.rs",
+    "app/portals/src/quote_page.rs",
+    "app/portals/templates/quote_page.html",
+    "tests/integration/tests/quote_page_cards.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/licensing.md",
+    "docs/spec/businesses.md",
+    "docs/spec/accessibility.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "PICK-041",
+    "LIC-026",
+    "LIC-034",
+    "LIC-047",
+    "LIC-024",
+    "LIC-038",
+    "BIZ-052",
+    "PICK-010"
+   ],
+   "tests": [
+    "TD-PICK-62"
+   ],
+   "decisions": [
+    "D-2206",
+    "D-2943",
+    "D-3080"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 5,
+    "lines": 550,
+    "context_pct": 20
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T393-quote-page-cards",
+   "prompt": "kit/prompts/T393.md",
+   "acceptance": "TD-PICK-62 passes against PostgreSQL; every existing quote-page, pick and `quote_card` test passes unchanged; the served page for a job with quotes shows each card's name, license lines and given review links; the hand-in names the commit and tests that close IC-71."
+  },
+  {
+   "id": "T394",
+   "slug": "ai-writing-calls",
+   "title": "ai and intake (harness): the AI writing calls (reword, follow-up, job card, project file) wired through the scrub, check and budget rules",
+   "goal": "Register row IC-53 (D-990, D-2065, D-3080; AI-010, AI-019, AI-021, AI-028, AI-029, INT-039, CARD-010): T163 built the pure last step (`ai::api::accept_question` and `accept_document`, `app/ai/src/writer.rs`) and the question bank already passes a reworded question through `accept_question` (`app/intake/src/question_bank.rs:325`), but `INSTRUCTIONS` holds only the intake reading (`app/ai/src/models.rs:95`), so with the AI on nothing ever asks for a reword, the follow-up, the job card or the project file and the homeowner always gets the AI-off text. AI-010 and AI-019 put them in launch scope, so this task wires them after T299's turn and before the war games (T237). (1) `app/ai/src/writing.rs`: four versioned `Instruction`s added to `INSTRUCTIONS` (reword the next bank question, the one follow-up the set's brief allows, the job card, the project file), each with a request builder beside `intake_request`: only `ScrubbedText` goes in (AI-004), inside the AI-025 tag with its name escaped and the instruction saying the tag's content is data; no tools (AI-006); the reply schema-validated (AI-005, AI-010) as the task decides against AI-022's one committed schema and logs in `docs/decisions.md` (`schemas/intake_reading.json` is owned here for that), anything failing it discarded; then `accept_question` or `accept_document` (AI-019 and AI-021's checks, the CARD-010 screen, the URL ban, the length cap), falling back to the template or her own scrubbed words on any hit. Each call goes through the gated, budgeted entry T236 built for the reading: the AI-008 switch, the AI-021 admission and its AI-028 step budget (1 reword per bank question and at most 8, 1 follow-up, card and project file 1 each plus 1 per EDIT and at most 3, the card call reserved), no database connection held across the provider await (AI-029), inside AI-023's reply budget, and the AI-off path at once when any of them refuses. (2) `intake`: T299's turn (`app/intake/src/ai_turn.rs`) asks for the reword before a bank question and the follow-up where the brief allows one (INT-039), and the card step (`app/intake/src/summary_step.rs`) asks for the card and the project file before the card is shown; a step past its budget, timed out or refused takes the AI-off path with nothing said (INT-021). (3) The stand-in AI (`stand_ins/ai.py`) answers a writing request deterministically under its schema, and its plants give an added fact, a link and a screened word for the fallback cases. Photo descriptions (AI-016, only after zero retention) and the INT-046 concept prompt are not this task's. Tests in `app/ai/src/tests/writing.rs` and `tests/integration/tests/ai_writing.rs` (TD-AI-29), fake data only; every existing `ai`, `intake`, `ai_budget` and `ai_wiring` test passes unchanged. Update `app/ai/CLAUDE.md`, `app/intake/CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`, and name in the hand-in the commit and tests that close IC-53.",
+   "type": "harness",
+   "phase": 2,
+   "stage": "6",
+   "module": "ai",
+   "deps": [
+    "T299",
+    "T236"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "security",
+    "harness"
+   ],
+   "owns": [
+    "app/ai/src/writing.rs",
+    "app/ai/src/models.rs",
+    "app/ai/src/tests/writing.rs",
+    "app/intake/src/ai_turn.rs",
+    "app/intake/src/summary_step.rs",
+    "app/intake/src/question_bank.rs",
+    "stand_ins/ai.py",
+    "schemas/intake_reading.json",
+    "tests/integration/tests/ai_writing.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/ai.md",
+    "docs/spec/intake.md",
+    "docs/spec/job-cards.md",
+    "docs/brains/ai-intake.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "AI-010",
+    "AI-019",
+    "AI-021",
+    "AI-028",
+    "AI-029",
+    "AI-004",
+    "AI-005",
+    "AI-025",
+    "INT-039",
+    "CARD-010"
+   ],
+   "tests": [
+    "TD-AI-29"
+   ],
+   "decisions": [
+    "D-990",
+    "D-2065",
+    "D-3080"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 9,
+    "lines": 600,
+    "context_pct": 21
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T394-ai-writing-calls",
+   "prompt": "kit/prompts/T394.md",
+   "acceptance": "TD-AI-29 passes against PostgreSQL and the stand-ins; every existing `ai`, `intake`, `ai_budget` and `ai_wiring` test passes unchanged; with the AI-008 switch on, a conversation through the stand-in gets an AI-written reword, follow-up, card and project file, and each fallback case gets the AI-off text; the hand-in names the commit and tests that close IC-53."
+  },
+  {
+   "id": "T395",
+   "slug": "gate-c-preconditions",
+   "title": "Gate C preconditions (harness): the runner opens Gate C and accepts 'go live' only when scripts/gate_c_ready.py passes",
+   "goal": "D-3080 (the external 80-point audit's items 11, 70, 71 and 80; owner actions P0; reconciliation N-02, A-01, A-02): Gate C (T145) had a one-line goal and nothing checked what must be true before real customer data, live texts and live charges. (1) `scripts/gate_c_ready.py` (standard library only, no network, reading only files on `main` and `kit/state.json`, never a secret, an account ID or a vendor API) checks T145's preconditions and prints one line per unmet one, exiting 1 when any is unmet: with `--ask`, (a) each owner action P0 item 1 to 14 in `docs/compliance/owner-actions.md` has an `operating` row in `docs/compliance/evidence-register.md` naming it `OA-<n>` with a date, who recorded it and a pointer; (b) `docs/integration-closure.md` has no row whose area is `money`, `privacy` or `security` with status `open` or `tracked`, and row IC-53 is closed or its Evidence cell names a `docs/decisions.md` entry recording Casey's dated written acceptance of going live without AI-written text; (c) `docs/phase2/sentinel-trace.md` (T392) ends \"Verdict: clean\"; (d) `docs/phase2/restore-drill.md` (T139) records the measured restore time and data-loss window, each met against Casey's targets or accepted by him in writing; (e) the newest record in `docs/releases/` follows `docs/release-record.md` (T141, A-02) with every field filled, a source SHA on `main` and Casey's dated sign-off (OPS-043); (f) `docs/build-readiness.md` records a verdict re-issued for Gate C, dated after the stage 6 exit proof in `kit/state.json` and not before that release record (`docs/governance.md` section 10). With `--go-live`, also (g) an `operating` row `GC-ALERT` records that in the real-phone rehearsal a real alert reached a real person: one High test alert raised on the live project pushed to Casey's alert address and was seen on his phone (OPS-029, OPS-035), by date and alert ID only. (2) In `runner/cycle.py` the runner opens the `gate-c` ask only when `--ask` passes on its `main` checkout; otherwise it opens nothing and writes one `blocked` outbox note listing the unmet lines, rewritten only when the list changes; and it applies a 'go live' answer only when `--go-live` passes, otherwise it keeps the reply in the gate's answers, leaves the gate waiting and writes one `info` note naming what is missing. Casey's own stop is unchanged: he enters the keys, runs the rehearsal and says 'go live'; this adds preconditions and never clears the gate for him. No other gate changes. Tests in `tests/test_gate_c_ready.py` and `tests/test_runner_gate_c.py` (TD-OPS-39); every existing runner test passes unchanged. Update `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 2,
+   "stage": "6",
+   "module": null,
+   "deps": [
+    "T141",
+    "T392",
+    "T139"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness",
+    "security"
+   ],
+   "owns": [
+    "scripts/gate_c_ready.py",
+    "tests/test_gate_c_ready.py",
+    "runner/cycle.py",
+    "tests/test_runner_gate_c.py"
+   ],
+   "reads": [
+    "docs/governance.md",
+    "docs/compliance/owner-actions.md",
+    "docs/compliance/evidence-register.md",
+    "docs/integration-closure.md",
+    "docs/build-readiness.md",
+    "docs/spec/ops-recovery.md"
+   ],
+   "requirements": [
+    "OPS-042",
+    "OPS-043"
+   ],
+   "tests": [
+    "TD-OPS-39"
+   ],
+   "decisions": [
+    "D-2740",
+    "D-1760",
+    "D-3080"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 500,
+    "context_pct": 30
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T395-gate-c-preconditions",
+   "prompt": "kit/prompts/T395.md",
+   "acceptance": "TD-OPS-39 passes; on today's `main` `scripts/gate_c_ready.py --ask` exits 1 listing every unmet precondition; every existing runner test passes unchanged."
   }
  ]
 }

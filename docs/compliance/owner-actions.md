@@ -1,6 +1,6 @@
 # Owner actions
 
-**Status:** open (D-2740). Only Casey or counsel can close these; a Claude session can prepare each one. P0 = before real customer data, live charges or any production privilege (Gate C). P1 = establish now, evidence before any certification work. Record each closure as an `operating` row in `evidence-register.md` (pointer or opaque label only, never the secret or account detail).
+**Status:** open (D-2740). Only Casey or counsel can close these; a Claude session can prepare each one. P0 = before real customer data, live charges or any production privilege (Gate C). P1 = establish now, evidence before any certification work. Record each closure as an `operating` row in `evidence-register.md` named `OA-<n>` (pointer or opaque label only, never the secret or account detail). Gate C (T145) does not open until P0 items 1 to 14 each have that row (D-3080, checked by `scripts/gate_c_ready.py`, T395).
 
 ## P0 — Casey
 

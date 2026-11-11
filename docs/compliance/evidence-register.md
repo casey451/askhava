@@ -4,6 +4,8 @@
 
 **Kinds.** `design` — a spec, plan or document says what should happen. `test` — an automated test passed in the build environment. `operating` — the control was observed working in the test or live environment, or a human record shows it was carried out. Only `operating` rows can move a control in `soa.md` past "Designed, CI-tested".
 
+**Names Gate C reads (D-3080).** A row that closes owner action *n* in `owner-actions.md` names it `OA-<n>` in its Control cell (for example `OA-3 RTO and RPO set`), and the real-phone rehearsal's alert row is `GC-ALERT`. Gate C (T145) opens only when every P0 item 1 to 14 has an `operating` `OA-<n>` row with a date, who recorded it and a pointer, and accepts "go live" only once `GC-ALERT` is recorded (`scripts/gate_c_ready.py`, T395).
+
 ## Template
 
 | ID | Control (SoA ref) | Kind | Pointer (path@SHA, run, label) | Environment | Result | Date | Recorded by | Reviewer | Follow-up |
