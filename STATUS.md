@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-11T17:22:10Z by runner ef7f7fc80423 (actions).
+Updated 2026-11-11T17:24:12Z by runner 877da5613137 (actions).
 
-**Idle since 17:20Z; 208 of 373 done; week 70% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T332 in progress since 17:24Z; 208 of 373 done; week 70% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 208 of 373 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 17:20Z (no task in progress)
-- **Week:** 70% used, 46.9M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:22Z, 0 min before this update
+- **Lane:** lane 3: T332 claimed 17:24Z, lease until 20:24Z
+- **Week:** 70% used, 54.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Last run:** 17:22Z, 1 min before this update
 - **Keeper:** last ran 17:22Z, next wake 17:42Z
 
 ## Needs attention
 - PLAN GAP T232 (since 2026-11-11T17:19:47Z, no attempt used; a plan change fixes it): T232: dependency T214 is DONE but its owned file app/picks/src/share_consent.rs is not on main; T232: dependency T214 is DONE but its owned file app/picks/src/cant_take.rs is not on main; T232: dependency T214 is DONE but its owned file tests/integration/tests/share_and_cant_take.rs is not on main; T232: dependency T214 is DONE but its owned file migrations/0158_picks_share_box.sql is not on main
 - PLAN GAP T386 (since 2026-11-11T17:19:47Z, no attempt used; a plan change fixes it): T386: dependency T214 is DONE but its owned file app/picks/src/share_consent.rs is not on main; T386: dependency T214 is DONE but its owned file app/picks/src/cant_take.rs is not on main; T386: dependency T214 is DONE but its owned file tests/integration/tests/share_and_cant_take.rs is not on main; T386: dependency T214 is DONE but its owned file migrations/0158_picks_share_box.sql is not on main
-- Strict plan check red: 22 problem(s) on tasks still to run (+37 on DONE tasks); first: T340: stored context_pct 35% but it measures 39%; regenerate
+- Strict plan check red: 22 problem(s) on tasks still to run (+40 on DONE tasks); first: T340: stored context_pct 35% but it measures 39%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -134,7 +134,7 @@ Updated 2026-11-11T17:22:10Z by runner ef7f7fc80423 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-11T16:45:43Z (week)): five-hour: 17.9M used, 11.2M left, resets 2026-11-11T20:04:09Z; week: 147.1M used, 46.9M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-04T22:56:18Z.
+- Pacing (session_reading 2026-11-11T17:21:50Z (week)): five-hour: 15.6M used, 13.5M left, resets 2026-11-11T20:04:09Z; week: 140.0M used, 54.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-04T20:05:32Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -150,6 +150,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
+- lane 3: T332 (lease until 2026-11-11T20:24:05Z)
 
 ## Last usage reading
 - {"task": "T333", "at": "2026-11-11T17:20:10Z", "cache_read_input_tokens": 18699527, "output_tokens": 117906, "cache_creation_input_tokens": 453119, "input_tokens": 300}
