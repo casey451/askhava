@@ -9,7 +9,7 @@ use askhava_privacy::api::{CommonWords, Known, NameMemory, ScrubbedText, scrub};
 use crate::api::rules::{Check, check};
 use crate::api::{
     AiTurn, BankRun, BankSettings, Decision, Given, Heard, MAX_ASKED, Next, Prompt, Reading,
-    Scored, decide, keyword_reading, starts_now,
+    Scored, decide, keyword_answer, keyword_reading, starts_now,
 };
 
 const WORDS: &str = "The house is warm and the system makes a noise";
@@ -159,6 +159,63 @@ fn td_int_21_ai_off_asks_templates_and_skips_by_keyword_only() {
         (p.id.as_str(), p.text.as_str(), p.reworded),
         ("symptom", "What's happening?", false)
     );
+    assert_eq!(run.answers()[0], ("system_type".into(), Given::Option(3)));
+}
+
+/// The English options of one plumbing-repair question.
+fn plumbing_options(id: &str) -> Vec<String> {
+    let bank = bank();
+    let set = &bank.sets["plumbing_repair"];
+    let q = set
+        .questions
+        .iter()
+        .find(|q| q.id == id)
+        .expect("the question");
+    q.options_en.clone().expect("numbered")
+}
+
+/// TD-INT-21, D-2638 (INT-039, CARD-007): with AI off a negation within three words before an
+/// option asks the question instead of storing the opposite of what she said.
+#[test]
+fn td_int_21_a_negated_option_is_asked_not_skipped() {
+    let leak_where = plumbing_options("leak_where");
+    let ceiling = "Water is not under a sink, it is dripping from the ceiling";
+    assert_eq!(keyword_answer(&leak_where, ceiling), None);
+    assert_eq!(
+        keyword_answer(&leak_where, "Water is under a sink"),
+        Some(1)
+    );
+    let fixture = plumbing_options("fixture");
+    let toilet = "Not the water heater, my toilet keeps running";
+    assert_eq!(keyword_answer(&fixture, toilet), None);
+    assert_eq!(
+        keyword_answer(&fixture, "The water heater is leaking"),
+        Some(4)
+    );
+    let bank = bank();
+    let set = &bank.sets["plumbing_repair"];
+    let mut run = BankRun::new(set, false, false, BankSettings::default());
+    let p = ask(&mut run, toilet, &AiTurn::default()).expect("a question");
+    assert_eq!(p.id, "fixture");
+    assert!(run.answers().is_empty());
+}
+
+/// TD-INT-21, D-2638: a negation more than three words before the option, or none at all, still
+/// skips; "Swamp cooler pads are dry" answers the system type.
+#[test]
+fn td_int_21_a_plain_option_still_skips() {
+    let leak_where = plumbing_options("leak_where");
+    let far = "Not sure why, but water drips under a sink";
+    assert_eq!(keyword_answer(&leak_where, far), Some(1));
+    let bank = bank();
+    let mut run = BankRun::new(
+        &bank.sets["hvac_repair"],
+        false,
+        false,
+        BankSettings::default(),
+    );
+    let p = ask(&mut run, "Swamp cooler pads are dry", &AiTurn::default()).expect("a question");
+    assert_eq!(p.id, "symptom");
     assert_eq!(run.answers()[0], ("system_type".into(), Given::Option(3)));
 }
 

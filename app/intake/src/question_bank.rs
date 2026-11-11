@@ -16,6 +16,7 @@
 
 use askhava_ai::api::{WriteSources, accept_question};
 use askhava_catalog::api::{Question, QuestionSet};
+use askhava_core::api::brand;
 
 use crate::rules::fold;
 
@@ -77,14 +78,23 @@ pub struct Prompt {
     pub options: Vec<String>,
     /// True when `text` is the AI's wording.
     pub reworded: bool,
+    /// True for a Spanish conversation: the text opens with the brand's Spanish short name.
+    pub spanish: bool,
 }
 
 impl Prompt {
-    /// The text as sent: "Ask Hava: <question> 1) <option> 2) <option>".
+    /// The text as sent: "<short name>: <question> 1) <option> 2) <option>", the short name the
+    /// brand file's, Spanish for a Spanish conversation (WORD-008, D-1932).
     #[must_use]
     pub fn render(&self) -> String {
+        let names = brand();
+        let short = if self.spanish {
+            names.es().short_name()
+        } else {
+            names.short_name()
+        };
         let numbered = self.options.iter().enumerate();
-        numbered.fold(format!("Ask Hava: {}", self.text), |s, (i, o)| {
+        numbered.fold(format!("{short}: {}", self.text), |s, (i, o)| {
             format!("{s} {}) {o}", i + 1)
         })
     }
@@ -132,21 +142,61 @@ pub fn starts_now(emergency: bool, cards_out: bool) -> bool {
     !emergency || cards_out
 }
 
-/// INT-039: the answer her own words give when exactly one option of two or more words appears
-/// in them as whole words; the AI-off skip rule.
+/// INT-039, D-2638: the answer her own words give when exactly one option of two or more words
+/// appears in them as whole words, the AI-off skip rule. A match with a negation among the three
+/// words before it ("not under a sink") skips nothing: the question is asked, so a card never
+/// states the opposite of what she said (CARD-007).
 #[must_use]
 pub fn keyword_answer(options: &[String], words: &str) -> Option<u32> {
-    let padded = format!(" {} ", fold(words));
-    let hits: Vec<usize> = (0..options.len())
-        .filter(|&i| {
-            let o = fold(&options[i]);
-            o.contains(' ') && padded.contains(&format!(" {o} "))
-        })
-        .collect();
+    let folded = fold(words);
+    let said: Vec<&str> = folded.split(' ').collect();
+    let mut hits = Vec::new();
+    for (i, option) in options.iter().enumerate() {
+        let o = fold(option);
+        let option: Vec<&str> = o.split(' ').collect();
+        if option.len() < 2 {
+            continue;
+        }
+        match appearance(&said, &option) {
+            Appearance::Absent => {}
+            Appearance::Plain => hits.push(i),
+            Appearance::Negated => return None,
+        }
+    }
     match hits.as_slice() {
         [one] => u32::try_from(*one + 1).ok(),
         _ => None,
     }
+}
+
+/// The folded negation words (D-2638): "isn't" folds to "isnt"; "no" also covers "no es" and
+/// "no está".
+const NEGATIONS: [&str; 4] = ["not", "no", "isnt", "never"];
+/// How many words before an option a negation still reaches (D-2638).
+const NEGATION_REACH: usize = 3;
+
+/// How an option's words appear in hers (INT-039, D-2638).
+enum Appearance {
+    Absent,
+    Plain,
+    Negated,
+}
+
+/// Whether `option` appears in `said` as whole words, and whether any appearance has a negation
+/// among the [`NEGATION_REACH`] words before it (D-2638).
+fn appearance(said: &[&str], option: &[&str]) -> Appearance {
+    let mut found = Appearance::Absent;
+    for (at, window) in said.windows(option.len()).enumerate() {
+        if window != option {
+            continue;
+        }
+        let before = &said[at.saturating_sub(NEGATION_REACH)..at];
+        if before.iter().any(|w| NEGATIONS.contains(w)) {
+            return Appearance::Negated;
+        }
+        found = Appearance::Plain;
+    }
+    found
 }
 
 /// INT-039, D-436: a numbered answer that names a smell without naming its kind ("Strange noise
@@ -286,6 +336,7 @@ impl<'a> BankRun<'a> {
             text,
             options,
             reworded,
+            spanish: self.spanish,
         }
     }
 
@@ -302,6 +353,7 @@ impl<'a> BankRun<'a> {
                 .map(|o| (*o).to_owned())
                 .collect(),
             reworded: false,
+            spanish: self.spanish,
         })
     }
 
@@ -320,6 +372,7 @@ impl<'a> BankRun<'a> {
                 text: written.text().to_owned(),
                 options: Vec::new(),
                 reworded: true,
+                spanish: self.spanish,
             }
         })
     }

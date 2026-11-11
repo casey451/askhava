@@ -15,8 +15,10 @@
 //! other tasks' (D-491). T287 (D-1871): each new pick stores, in its own transaction, the
 //! introduction fee by job size fixed from its chosen quote (`payments::api::fix_fee_at_pick`).
 
+use std::sync::OnceLock;
+
 use askhava_adapters::api::{CodeChannel, IdempotencyKey, VerifyAdapter};
-use askhava_core::api::{Guarded, NewTask, enqueue as enqueue_task};
+use askhava_core::api::{Guarded, NewTask, brand, enqueue as enqueue_task};
 use askhava_jobs::api::{current, job_number, move_to};
 use askhava_messaging::api::{Language, NewText, Relation, enqueue, render};
 use askhava_ops::api::{Actor, AuditEntry, Change, NewAlert, Severity, audit, raise_alert};
@@ -62,12 +64,22 @@ pub const PICK_WITHDRAWN_KIND: &str = "picks.pick_withdrawn";
 /// The High alert when the global daily Verify count passes the threshold (PICK-055).
 pub const VERIFY_CAP_ALERT: &str = "picks.verify_daily_cap";
 
-/// The last line of every text that offers a text pick, by language (PICK-016, D-492).
+/// The last line of every text that offers a text pick, by language, on the brand's domain
+/// (PICK-016, D-492, D-1932). Built once from `core::api::brand()`, which every binary installs
+/// at start-up before anything renders, so the line is the same for the process's life.
 #[must_use]
-pub const fn terms_line(language: Language) -> &'static str {
+pub fn terms_line(language: Language) -> &'static str {
+    static LINES: OnceLock<[String; 2]> = OnceLock::new();
+    let [en, es] = LINES.get_or_init(|| {
+        let domain = brand().domain();
+        [
+            format!("By picking, you agree to the Terms: {domain}/terms"),
+            format!("Al elegir, usted acepta los Términos: {domain}/terms"),
+        ]
+    });
     match language {
-        Language::En => "By picking, you agree to the Terms: askhava.com/terms",
-        Language::Es => "Al elegir, usted acepta los Términos: askhava.com/terms",
+        Language::En => en,
+        Language::Es => es,
     }
 }
 

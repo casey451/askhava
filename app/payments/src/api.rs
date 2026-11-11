@@ -119,8 +119,8 @@ pub use crate::models::{
     ChargePlan, CustomerId, DESCRIPTOR_MAX, DisputeOpened, DisputeView, ENTITY_KEY_ACTION,
     EVIDENCE_PRODUCT, EntityKey, EntityKind, EvidencePack, FreeWinError, IntentText, JoinDates,
     MoneyEventError, MoneyTotals, MoneyView, PickFacts, PickNow, Press, RefundOutcome, RefundStep,
-    RefundTrigger, RefundWhy, STATEMENT_PREFIX, SavedCard, SetupIntentRequest, StripeCharge,
-    attempt_label, intent_label, plan_charge,
+    RefundTrigger, RefundWhy, SavedCard, SetupIntentRequest, StripeCharge, attempt_label,
+    intent_label, plan_charge, statement_prefix,
 };
 pub use crate::off_session::{
     OffSessionCharge, OffSessionOutcome, OffSessionStripe, charge_off_session, saved_card_of,
