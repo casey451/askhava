@@ -166,6 +166,20 @@ def test_the_mark_clears_when_a_plan_change_moves_the_path(tmp_path: Path) -> No
     assert "owned_gap" not in st.entry(cycle.recheck_owned_gaps(env.store, env), "T001")
 
 
+def test_a_file_the_task_deletes_is_no_miss_and_a_plan_change_naming_it_clears_the_mark(tmp_path: Path) -> None:
+    """D-2922: T295 deleted tests/brand_literal_baseline.json as its goal said; once kit/tasks.json lists the
+    file under that task's `deletes`, its absence is no gap at a close and a standing mark clears."""
+    env = marked(tmp_path)
+    plan = {"tasks": [{"id": "T001", "owns": T1_OWNS, "deletes": ["app/t001/src/purge.rs"]}]}
+    env.commits[env.head] = {**commit({"T001": T1_OWNS}, ["app/t001/templates/a.html"]),
+                             "kit/tasks.json": json.dumps(plan)}
+    assert cycle.owned_problems(env, "T001", env.head, env.head) == []
+    assert "owned_gap" not in st.entry(cycle.recheck_owned_gaps(env.store, env), "T001")
+    plan["tasks"][0]["deletes"] = []
+    env.commits[env.head]["kit/tasks.json"] = json.dumps(plan)
+    assert cycle.owned_problems(env, "T001", env.head, env.head) == ["T001: app/t001/src/purge.rs missing on main"]
+
+
 def test_the_mark_narrows_and_clears_by_route_rows(tmp_path: Path) -> None:
     env = GitEnv()
     gap = {"at": "2026-11-01T12:00:00Z", "problems": ["T001: a", "T001: b"]}
