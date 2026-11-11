@@ -568,6 +568,20 @@ def test_lane_outcome_strikes_a_check_failure_only_when_the_same_check_passed_be
     assert cycle._lane_outcome(s, "T002", "2", "merge_pending", NOW) is s  # a merge still waiting never strikes
 
 
+def test_lane_outcome_neither_strikes_nor_clears_on_a_check_failed_on_a_hand_in_merge() -> None:
+    """A hand-in merge (D-2798) keeps no checks: the reviewed head never ran its own round, so a red check on
+    the merge cannot be told apart from one main brought in, and the lane's strikes stay as they were."""
+    failed = [{"attempt": 1, "checks": [{"name": "Ci", "conclusion": "failure"}]}]
+    hand_in = {"from": "h", "to": "m", "main": "main0002", "how": "hand-in", "at": "x"}
+    s = lanes.strike(st.with_task(st.new_state(), "T002", lane="2", last_failure="Ci: failure", history=failed,
+                                  update_merges=[hand_in]), "2", "earlier", NOW)
+    assert cycle._lane_outcome(s, "T002", "2", "check_failed", NOW) is s
+    assert cycle._lane_outcome(s, "T002", "2", "done", NOW)["lane_strikes"]["2"]["count"] == 0  # DONE still clears
+    later = st.with_task(s, "T002", update_merges=[hand_in, {"from": "m", "to": "m2", "how": "runner", "at": "y",
+                                                             "checks": {"Ci": "success"}}])
+    assert cycle._lane_outcome(later, "T002", "2", "check_failed", NOW)["lane_strikes"]["2"]["count"] == 2  # stage C's judges
+
+
 def test_drill_a_check_broken_by_mains_change_after_an_update_is_a_strike(tmp_path: Path) -> None:
     env, graph = _two_merge_pending(tmp_path)
     env.prs["T002"] = dict(green_pr(head_of("T002"), merged=False), number=2, state="open", auto_merge=True)
