@@ -370,7 +370,8 @@ where
 /// no-reply reminder and close (INT-019), the card approval auto-send (INT-041); `picks` the FEE-020
 /// card-fix notice on `payments`' event (D-492), and with `confirm` (read once from
 /// `ASKHAVA_PICK_CONFIRM_WINDOW_MINUTES`) the pick notice (PICK-037, D-1503) and the Confirm
-/// window's end (PICK-019); `payments` the pause watch that stops and resumes
+/// window's end (PICK-019); `intake` the accepted-quote email after a Confirm, with no sender until
+/// the footer postal setting exists, so it sends nothing yet (PICK-042, D-3077); `payments` the pause watch that stops and resumes
 /// the payment timers with the charging pause (FEE-038, D-1427); and, with
 /// `texts` ([`job_text_keys`]), the homeowner job texts `jobs` queues (JOB-010 to JOB-012,
 /// TXT-042, D-1030 (A)). It takes the release mint first, through [`release_minter`], so a second
@@ -426,6 +427,7 @@ where
         },
     );
     register_business_handlers(&mut registry);
+    register_accepted_quote(&mut registry);
     register_purge_handlers(&mut registry);
     if let Some(keys) = texts {
         registry.register(askhava_jobs::api::TEXT_KIND, move |pool, task| {
@@ -516,6 +518,14 @@ fn register_business_handlers(registry: &mut Registry) {
         askhava_businesses::api::MEMBER_REMOVED_KIND,
         askhava_portals::api::run_member_removed,
     );
+}
+
+/// `intake`'s accepted-quote email after a Confirm (PICK-042, T388), with no sender until the
+/// footer postal setting exists, so each task ends done with nothing sent (D-3077).
+fn register_accepted_quote(registry: &mut Registry) {
+    registry.register(askhava_picks::api::ACCEPTED_QUOTE_KIND, |pool, task| {
+        askhava_intake::api::run_accepted_quote(pool, None, task)
+    });
 }
 
 /// The retention purge (PRIV-007 to PRIV-009, D-491): `messaging`'s daily body cut (TXT-020,

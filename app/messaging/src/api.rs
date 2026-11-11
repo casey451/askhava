@@ -15,8 +15,13 @@
 //! (`mode_state`, T279);
 //! read a message log entry and cut bodies kept 30 days (`retention`, TXT-019, TXT-020); keep each
 //! job's notice log (`email_timing`, BIZ-045, OPS-037) and decide the open-cards and missed-cards
-//! emails (`open_cards_digest`, CARD-022; `missed_cards`, BIZ-044).
+//! emails (`open_cards_digest`, CARD-022; `missed_cards`, BIZ-044); store the homeowner's copy of
+//! the quote she accepted (`accepted_quote_email`, PICK-042, PICK-054).
 
+pub use crate::accepted_quote_email::{
+    ACCEPTED_QUOTE_TEMPLATE, AcceptedQuoteFacts, AcceptedQuoteSender, queue_accepted_quote,
+    render_accepted_quote,
+};
 pub use crate::business_notices::{
     BUSINESS_NOTICE_KIND, JOB_CARD_TEMPLATE, LINK_LIFE, NoticeOutcome, NoticeSender, SIGN_IN_URL,
     SendChecks, business_notice, card_notice_accepted, held_until, sign_in_link,

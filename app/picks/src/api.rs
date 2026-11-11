@@ -131,7 +131,9 @@ pub use crate::service::{
     check_page_code, page_pick, record_terms_line, send_code, send_page_code, terms_line,
     terms_line_sent, text_pick, waiting_quote, withdraw_paused,
 };
-pub use crate::settle::{LINE_RETRY_KIND, Settled, retry_line, settle};
+pub use crate::settle::{
+    ACCEPTED_QUOTE_KIND, AcceptedPick, LINE_RETRY_KIND, Settled, accepted_pick, retry_line, settle,
+};
 pub use crate::share_consent::{bind_share, share_ticked, tick_share};
 pub use crate::unreachable_refund::{
     AtNinetySix, MISSED_CALL_TEMPLATE, REMINDER_EMAIL_TEMPLATE, REMINDER_TEMPLATE, REMINDERS_AFTER,
