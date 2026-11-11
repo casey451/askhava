@@ -3,15 +3,24 @@
     TD-FEE-25, TD-FEE-37, TD-FEE-40, D-1479). Fee, tier, basis, refund line, terms version, "Go
     back" and "Can't take it" are plain HTML around the one Stripe Elements iframe (accessibility
     brain section 6). The save box is never ticked by default. Only this page loads Stripe.js
-    (TD-SEC-04). A paused job shows the refusal and no form. No homeowner name, phone or address. -#}
-{% block title %}Confirm job {{ job_number }}{% endblock %}
+    (TD-SEC-04). A paused job shows the refusal and no form. No homeowner name, phone or address.
+    T232 (SEC-027, A11Y-011, A11Y-012, D-3069): with the code step, "Text me a code" is its own
+    form before the Confirm form, and the code field (label, hint, error, kept as the pick code
+    form's) sits in the Confirm form, so the press posts it; a failed code puts "Error: " in the
+    title and a focused summary linking to the field first. "Can't take it" (PICK-050) stays on
+    every page with a form. -#}
+{% block title %}{% if let Some(step) = code %}{% if step.error.is_some() %}Error: {% endif %}{% endif %}Confirm job {{ job_number }}{% endblock %}
 {% block main %}
 <h1>Confirm job {{ job_number }}</h1>
 {% if paused %}
 <p id="confirm-paused" role="alert">The homeowner has paused this job, so it can't be confirmed now. Nothing was charged.</p>
 <p><a href="/b">Go back</a></p>
 {% else %}
-<h2>Before you confirm</h2>
+{% if let Some(step) = code %}{% if let Some(message) = step.error %}<div id="error-summary" role="alert" tabindex="-1" autofocus>
+<h2>Fix this to confirm</h2>
+<p><a href="#code">{{ message }}</a></p>
+</div>
+{% endif %}{% endif %}<h2>Before you confirm</h2>
 <ul>
 {% if paid %}<li id="fee-line">Introduction fee by job size: ${{ fee_dollars }}. {{ basis }}</li>
 {% else %}<li id="fee-line">{{ no_fee_line }}</li>
@@ -19,11 +28,22 @@
 <li id="terms-version">You're agreeing to business terms version {{ terms_version }}. <a href="/terms/business">Read the business terms</a></li>
 <li>{{ askhava_core::api::brand().display_name() }} is not a contractor and does not perform, bid on or supervise work.</li>
 </ul>
-<form method="post" action="/b/picks/{{ pick }}/confirm" id="confirm-form" data-stripe-key="{{ stripe_key }}" data-paid="{% if paid %}yes{% else %}no{% endif %}" novalidate>
+{% if let Some(step) = code %}<h2>Your code</h2>
+<p id="code-why">This inbox is shared, so each Confirm needs a new code. We text it to your own phone.</p>
+{% if let Some(line) = step.line %}<p id="code-sent" role="status">{{ line }}</p>
+{% endif %}<form method="post" action="/b/picks/{{ pick }}/confirm/code" id="code-form" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<button type="submit" id="send-code">Text me a code</button>
+</form>
+{% endif %}<form method="post" action="/b/picks/{{ pick }}/confirm" id="confirm-form" data-stripe-key="{{ stripe_key }}" data-paid="{% if paid %}yes{% else %}no{% endif %}" novalidate>
 <input type="hidden" name="csrf" value="{{ csrf }}">
 <input type="hidden" name="press" value="{{ press }}">
 <input type="hidden" name="payment_method" value="">
-<h2>Card</h2>
+{% if let Some(step) = code %}<p><label for="code">6-digit code</label></p>
+<p id="code-hint">Type or paste the code from our text, or your phone may fill it in. It works for 10 minutes.</p>
+{% if let Some(message) = step.error %}<p id="code-error">Error: {{ message }}</p>
+{% endif %}<p><input type="text" id="code" name="code" value="" inputmode="numeric" autocomplete="one-time-code" aria-describedby="code-why code-hint{% if step.error.is_some() %} code-error{% endif %}"{% if step.error.is_some() %} aria-invalid="true"{% endif %}></p>
+{% endif %}<h2>Card</h2>
 <p id="card-hint">{% if paid %}Enter a card. Your card number goes straight to Stripe. {{ askhava_core::api::brand().display_name() }} never sees it.{% else %}You don't need a card for this one. You can save one here for next time.{% endif %}</p>
 <div id="card-element" aria-describedby="card-hint"></div>
 <noscript><p>Turn on JavaScript to enter a card. Stripe's card form needs it.</p></noscript>
