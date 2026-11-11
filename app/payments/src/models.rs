@@ -463,10 +463,21 @@ pub enum RefundTrigger {
     Rule(RefundReason),
     /// FEE-052: an early fraud warning on a charge whose details were not yet released.
     FraudWarning,
+    /// FEE-021: a payment that succeeded after its job or pick moved on (T332, D-2290).
+    LateSuccess,
 }
 
 impl RefundTrigger {
-    /// The stored code name.
+    /// Every trigger, in the order of `payments.refund.trigger`'s check.
+    pub const ALL: [Self; 5] = [
+        Self::Rule(RefundReason::Unreachable),
+        Self::Rule(RefundReason::CancelledBeforeTalk),
+        Self::Rule(RefundReason::ChargedAfterCancel),
+        Self::FraudWarning,
+        Self::LateSuccess,
+    ];
+
+    /// The stored code name (FEE-026; the check of migrations 0102 and 0177).
     #[must_use]
     pub const fn code(self) -> &'static str {
         match self {
@@ -474,7 +485,14 @@ impl RefundTrigger {
             Self::Rule(RefundReason::CancelledBeforeTalk) => "cancelled-before-talk",
             Self::Rule(RefundReason::ChargedAfterCancel) => "charged-after-cancel",
             Self::FraudWarning => "fraud-warning",
+            Self::LateSuccess => "late-success",
         }
+    }
+
+    /// Reads a stored code back (FEE-021, FEE-026, D-2290); `None` for a code no trigger has.
+    #[must_use]
+    pub fn from_code(code: &str) -> Option<Self> {
+        Self::ALL.into_iter().find(|t| t.code() == code)
     }
 }
 
