@@ -1,18 +1,23 @@
 # Ask Hava build status
 
-Updated 2026-11-11T09:26:03Z by runner ea7b57e0aac0 (actions).
+Updated 2026-11-11T09:26:10Z by runner ea7b57e0aac0 (actions).
 
-**Building: T327 in progress since 08:49Z; 199 of 370 done; week 63% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T337 in progress since 09:25Z; 199 of 370 done; week 63% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 199 of 370 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 3: T327 claimed 08:49Z, lease until 11:49Z
-- **Week:** 63% used, 62.8M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 2: T337 claimed 09:25Z, lease until 12:25Z; lane 3: T327 claimed 08:49Z, lease until 11:49Z
+- **Week:** 63% used, 65.5M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 09:05Z, 20 min before this update
 - **Keeper:** last ran 09:05Z, next wake 11:52Z
 
 ## Needs attention
 - BLOCKED T164: plan gap reported: PLAN GAP: app/portals/src/tests/prop_arrival_order.rs:22 (T052) and app/quotes/src/notify.rs:179 / app/quotes/src/models.rs:573 (T047). The homeowner side of T164 (quote page "Updated <time>"/"Withdrawn by the business", LIST reply) needs api.rs (page_quotes filters withdrawn_at, api.rs:116), PageQuote fields (api.rs:93, built field-by-field in the T052 test), notify.rs list_line/Listed and models.rs list_rows, none owned by T164. Reviewer confirmed (kit/tasks.json owns vs. those files; T361 covers part but depends on T164).; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T164 --plan-fix D-### --reason "..."` (D-2859)
+- PLAN GAP T269 (since 2026-11-11T09:25:53Z, no attempt used; a plan change fixes it): T269: dependency T294 is DONE but its owned file tests/brand_literal_baseline.json is not on main; T269: dependency T291 is DONE but its owned file tests/brand_literal_baseline.json is not on main
+- PLAN GAP T278 (since 2026-11-11T09:25:53Z, no attempt used; a plan change fixes it): T278: dependency T293 is DONE but its owned file tests/brand_literal_baseline.json is not on main; T278: dependency T295 is DONE but its owned file tests/brand_literal_baseline.json is not on main
+- PLAN GAP T313 (since 2026-11-11T09:25:53Z, no attempt used; a plan change fixes it): T313: dependency T292 is DONE but its owned file tests/brand_literal_baseline.json is not on main
+- PLAN GAP T323 (since 2026-11-11T09:25:53Z, no attempt used; a plan change fixes it): T323: dependency T295 is DONE but its owned file tests/brand_literal_baseline.json is not on main
+- PLAN GAP T326 (since 2026-11-11T09:25:53Z, no attempt used; a plan change fixes it): T326: dependency T292 is DONE but its owned file tests/brand_literal_baseline.json is not on main
 - OWNED GAP T295 (DONE, since 2026-11-11T09:25:53Z; a later task or plan change must add it): T295: tests/brand_literal_baseline.json missing on main
 - Strict plan check red: 11 problem(s) on tasks still to run (+19 on DONE tasks); first: T255: stored context_pct 34% but it measures 38%; regenerate
 
@@ -108,7 +113,7 @@ Updated 2026-11-11T09:26:03Z by runner ea7b57e0aac0 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-11T08:23:45Z (week)): five-hour: 26.3M used, 2.8M left, resets 2026-11-11T09:44:28Z; week: 131.2M used, 62.8M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-04T11:38:16Z.
+- Pacing (session_reading 2026-11-11T09:05:23Z (week)): five-hour: 25.4M used, 3.7M left, resets 2026-11-11T09:44:28Z; week: 128.5M used, 65.5M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-04T09:57:40Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -124,6 +129,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
+- lane 2: T337 (lease until 2026-11-11T12:25:53Z)
 - lane 3: T327 (lease until 2026-11-11T11:49:41Z)
 
 ## Last usage reading

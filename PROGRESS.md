@@ -1949,3 +1949,4 @@
 - 2026-11-11T09:05:38Z runner 51d43b98c1b2 (actions): {}
 - 2026-11-11T09:25:55Z runner ea7b57e0aac0 (actions): {}
 - 2026-11-11T09:26:03Z runner ea7b57e0aac0 (actions): {"T295": "MERGE_PENDING -> DONE"}
+- 2026-11-11T09:26:10Z runner ea7b57e0aac0 (actions): {"T337": "QUEUED -> IN_PROGRESS"}; T337 estimated 3.2M tokens (calibrated); five-hour window has 3.7M left, week 65.5M after 2.5M still running in another lane (session_reading 2026-11-11T09:05:23Z (week)); claimed
