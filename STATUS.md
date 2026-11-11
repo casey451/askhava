@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T05:12:06Z by runner 496c50498677 (actions).
+Updated 2026-11-11T05:12:19Z by runner 18d7cc8f2592 (actions).
 
 **Idle since 05:11Z; 195 of 369 done; week 60% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-11T05:12:06Z by runner 496c50498677 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 05:11Z (no task in progress)
 - **Week:** 60% used, 67.6M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:11Z, 0 min before this update
-- **Keeper:** last ran 05:08Z, next wake 07:58Z
+- **Last run:** 05:12Z, 0 min before this update
+- **Keeper:** last ran 05:12Z, next wake 05:32Z
 
 ## Needs attention
 - BLOCKED T337: T337 built and committed (496c5049) but smoke/prehandin red on tests T337 does not own: confirm_and_pay.rs td_fee_25_a_paid_pick_is_never_cleared_as_no_fee and td_fee_25_a_recorded_no_fee_decision_clears (need fix_fee_at_pick rows), app/server/tests/release_recovery.rs td_pick_50_a_zero_fee_releases_free_and_a_cancelled_pick_nothing (random pick order). No assertion change; needs plan/harness fix (D-2714, plan branch claude/plan-t337-fixture D-2832 unmerged).
