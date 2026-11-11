@@ -9,6 +9,11 @@
 //! reply and closes the request. The name-and-address answer goes to the vault and nowhere else
 //! (INT-027, D-146): nothing in this file touches an AI. A new job's no-reply wait and each
 //! reply's restart of it are `handlers`' (INT-019).
+//!
+//! T212 places the photo and design steps in INT-043's order ([`after_questions`]): after the
+//! trade questions come the photos (INT-044, `photos.rs`), then in a `design: true` category the
+//! look pictures or, before the AI may read photos, a few words on the look, then the concept image
+//! while its switch is on (INT-045, INT-046, `design.rs`), then the name and address (INT-027).
 
 use askhava_core::api::Guarded;
 use askhava_jobs::api::{JobStatus, create, current, move_to};
@@ -46,6 +51,49 @@ pub struct JobStart<'a> {
     pub trade: &'a str,
     /// When the message arrived.
     pub at: Timestamp,
+}
+
+/// One step of INT-043's order after the trade questions (steps 9 to 11).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum AfterQuestions {
+    /// The photo asks (INT-044).
+    Photos,
+    /// "Have any pictures of the look you want?" (INT-045).
+    LookPictures,
+    /// Before the AI may read photos: the look in a few words, for the project file (INT-045).
+    DescribeLook,
+    /// One labeled concept image from the project file, while "Concept images" is on (INT-046).
+    ConceptImage,
+    /// The first name and street address (INT-027).
+    NameAddress,
+}
+
+/// INT-043, INT-044 to INT-046, D-433, D-446: the steps after the trade questions for a job in
+/// `category`. No photo ask while a 911 text waits for SAFE (`safe_hold`): the steps start again
+/// once she answers SAFE. The look steps come only in a `design: true` range category; the look
+/// in a few words only until the AI may read photos (`ai_reads_photos`, AI-016); the concept image
+/// only while `concept_on`.
+#[must_use]
+pub fn after_questions(
+    category: &str,
+    safe_hold: bool,
+    (ai_reads_photos, concept_on): (bool, bool),
+) -> Vec<AfterQuestions> {
+    let mut steps = Vec::new();
+    if !safe_hold {
+        steps.push(AfterQuestions::Photos);
+    }
+    if crate::design::is_design_category(category) {
+        steps.push(AfterQuestions::LookPictures);
+        if !ai_reads_photos {
+            steps.push(AfterQuestions::DescribeLook);
+        }
+        if concept_on {
+            steps.push(AfterQuestions::ConceptImage);
+        }
+    }
+    steps.push(AfterQuestions::NameAddress);
+    steps
 }
 
 /// What [`begin_job`] did.

@@ -4,7 +4,9 @@
 //!
 //! This module supplies the data only; the portals route renders it (T148's business actions
 //! page, D-491). The card's screened photos and any concept image travel inside the approved
-//! [`JobCard`]; showing them and the project file is T090's and T212's (D-491).
+//! [`JobCard`]; T212's [`JobPage::with_design`] adds the design category's project file (gated)
+//! and names which card image is the concept image, so the page shows the photos, the project
+//! file and the concept image with its INT-046 label apart (INT-045, INT-046, D-491).
 //!
 //! No homeowner contact detail is on the page: the card has no slot for one (CARD-005, PRIV-006),
 //! and every answer and later detail passes the same final gate as the card (CARD-008, CARD-010),
@@ -13,6 +15,8 @@
 
 use sqlx::PgConnection;
 use sqlx::types::Uuid;
+
+use askhava_privacy::api::CONCEPT_LABEL;
 
 use crate::cards::JobCard;
 use crate::gate::final_gate;
@@ -52,6 +56,8 @@ pub struct JobPage {
     later: Vec<String>,
     sent: u32,
     quoted: u32,
+    project_file: Option<String>,
+    concept: Option<Uuid>,
 }
 
 impl std::fmt::Debug for JobPage {
@@ -82,6 +88,36 @@ impl JobPage {
     #[must_use]
     pub fn later(&self) -> &[String] {
         &self.later
+    }
+
+    /// INT-045, INT-046, CARD-023: the page with the design category's project file, through
+    /// [`final_gate`], and the concept image's ID; an ID that is not one of the card's images is
+    /// ignored, so only an image she accepted onto the card shows.
+    #[must_use]
+    pub fn with_design(mut self, project_file: Option<&str>, concept: Option<Uuid>) -> Self {
+        self.project_file = project_file.map(final_gate).filter(|f| !f.is_empty());
+        self.concept = concept.filter(|id| self.card.photos().contains(id));
+        self
+    }
+
+    /// The card's photos, the concept image left out (INT-044, CARD-023).
+    #[must_use]
+    pub fn photos(&self) -> Vec<Uuid> {
+        let concept = self.concept;
+        let photos = self.card.photos().iter().copied();
+        photos.filter(|id| Some(*id) != concept).collect()
+    }
+
+    /// The project file of a design category, through the final gate (INT-045).
+    #[must_use]
+    pub fn project_file(&self) -> Option<&str> {
+        self.project_file.as_deref()
+    }
+
+    /// The concept image and the label shown on and beside it (INT-046).
+    #[must_use]
+    pub fn concept(&self) -> Option<(Uuid, &'static str)> {
+        self.concept.map(|id| (id, CONCEPT_LABEL))
     }
 
     /// The number of businesses the card went to (CARD-019).
@@ -125,5 +161,7 @@ pub async fn job_page(
         later: parts.later.iter().map(|d| final_gate(d)).collect(),
         sent: counts.sent,
         quoted: counts.quoted,
+        project_file: None,
+        concept: None,
     }))
 }

@@ -29,6 +29,7 @@ askhava-quotes = { workspace = true }
 axum = { workspace = true }
 base64 = { workspace = true }
 hmac = { workspace = true }
+image = { workspace = true }
 jiff = { workspace = true }
 jiff-sqlx = { workspace = true, features = ["postgres"] }
 proptest = { workspace = true }
