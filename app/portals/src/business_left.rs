@@ -187,7 +187,7 @@ async fn leave_in_one(
     let quotes = withdraw_for_leaving(&mut tx, business, now)
         .await
         .map_err(db_err)?;
-    let cards = remove_saved_cards(&mut tx, BusinessId(business), now)
+    let cards = remove_saved_cards(&mut tx, BusinessId(business))
         .await
         .map_err(db_err)?;
     let sessions = end_sessions(&mut tx, business, now).await?;

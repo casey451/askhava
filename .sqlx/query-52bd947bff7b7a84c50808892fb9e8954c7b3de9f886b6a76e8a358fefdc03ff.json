@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "UPDATE payments.payment_method SET removed_at = $2 WHERE business_id = $1 AND removed_at IS NULL RETURNING stripe_payment_method_id",
+  "query": "UPDATE payments.payment_method SET removed_at = now() WHERE business_id = $1 AND removed_at IS NULL RETURNING stripe_payment_method_id",
   "describe": {
     "columns": [
       {
@@ -17,13 +17,12 @@
     ],
     "parameters": {
       "Left": [
-        "Uuid",
-        "Timestamptz"
+        "Uuid"
       ]
     },
     "nullable": [
       false
     ]
   },
-  "hash": "2a04c94f07cdcd986bd72a38af585a7f3214c41a5317f129f68ed32cd690370a"
+  "hash": "52bd947bff7b7a84c50808892fb9e8954c7b3de9f886b6a76e8a358fefdc03ff"
 }

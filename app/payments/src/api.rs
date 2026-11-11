@@ -171,10 +171,11 @@ pub use crate::service::{
 pub use crate::status::{AttemptStatus, RefundStatus};
 pub use askhava_adapters::api::StripeRefund;
 
-/// BIZ-051, D-446 (T228): marks every saved card of `business` removed at `at`, inside the
-/// caller's transaction, and returns their `pm_…` IDs for the caller to detach at Stripe after the
-/// commit; [`saved_card_of`] then finds none, so no charge can use them. The rows, the ledger and
-/// the authorizations stay.
+/// BIZ-051, D-446, D-3046 (T228): marks every saved card of `business` removed, at the
+/// transaction's own time (this file names no date type, TD-FEE-41), inside the caller's
+/// transaction, and returns their `pm_…` IDs for the caller to detach at Stripe after the commit;
+/// [`saved_card_of`] then finds none, so no charge can use them. The rows, the ledger and the
+/// authorizations stay.
 ///
 /// # Errors
 ///
@@ -182,14 +183,11 @@ pub use askhava_adapters::api::StripeRefund;
 pub async fn remove_saved_cards(
     tx: &mut sqlx::PgConnection,
     business: BusinessId,
-    at: jiff::Timestamp,
 ) -> Result<Vec<String>, CardError> {
-    use jiff_sqlx::ToSqlx;
     sqlx::query_scalar!(
-        "UPDATE payments.payment_method SET removed_at = $2 \
+        "UPDATE payments.payment_method SET removed_at = now() \
          WHERE business_id = $1 AND removed_at IS NULL RETURNING stripe_payment_method_id",
         business.0,
-        at.to_sqlx() as _,
     )
     .fetch_all(tx)
     .await
