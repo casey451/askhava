@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-11T19:02:14Z by runner 945c6f9a895d (actions).
+Updated 2026-11-11T19:02:30Z by runner 945c6f9a895d (actions).
 
 **Building: T228 in progress since 17:51Z; 211 of 373 done; week 72% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 211 of 373 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T228 claimed 17:51Z, lease until 20:51Z; lane 4: T316 claimed 18:35Z, lease until 21:35Z
+- **Lane:** lane 1: T228 claimed 17:51Z, lease until 20:51Z
 - **Week:** 72% used, 42.6M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:57Z, 4 min before this update
+- **Last run:** 18:57Z, 5 min before this update
 - **Keeper:** last ran 18:57Z, next wake 20:54Z
 
 ## Needs attention
@@ -18,6 +18,7 @@ Updated 2026-11-11T19:02:14Z by runner 945c6f9a895d (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T316 | businesses: one read of each business's public name for the  | MERGE_PENDING | 2 | 26 min | 19:02Z | PLAN GAP: app/businesses/src/holding.rs:8 and migrations/0050_licensing_imports.sql:22-55: nothing links a business to a |
 | T332 | payments (harness): a late success has its own refund trigge | MERGE_PENDING | 4 | 25 min | 18:53Z | merging main into the reviewed head conflicts in app/payments/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T345 | harness: every external GitHub Actions `uses:` in every work | BLOCKED | 1 | 8 min | 18:44Z | PLAN GAP: tests/test_runner_keeper.py:417,:426,:652; tests/test_runner_pre_smoke.py:263; tests/test_runner_smoke_reuse.p |
 | T332 | payments (harness): a late success has its own refund trigge | resync | 4 | 46 min | 18:10Z |  |
@@ -44,7 +45,7 @@ Updated 2026-11-11T19:02:14Z by runner 945c6f9a895d (actions).
 | T164 | quotes: one quote format per category, screened notes, and e | resync | 3 | 12 min | 11:31Z |  |
 | T164 | quotes: one quote format per category, screened notes, and e | check_failed | 2 | 39 min | 11:00Z |  |
 | T278 | quotes, intake and picks: the check-in, feedback and unreach | done | 1 | 29 min | 10:56Z |  |
-| T316 | businesses: one read of each business's public name for the  | BLOCKED | 1 | 2 min | 10:06Z | PLAN GAP: app/businesses/src/holding.rs:8 and migrations/0050_licensing_imports.sql:22-55: nothing links a business to a |
+| T316 | businesses: one read of each business's public name for the  | BLOCKED | 1 | 2 min | 10:06Z |  |
 | T337 | payments (harness): a $0 release proof is bound to the pick' | done | 5 | 23 min | 09:49Z | PLAN GAP: app/server/tests/release_recovery.rs:572-576 (td_pick_50_a_zero_fee_releases_free_and_a_cancelled_pick_nothing |
 | T327 | harness: every task kind the app queues has a handler in the | done | 1 | 48 min | 09:38Z |  |
 | T164 | quotes: one quote format per category, screened notes, and e | BLOCKED | 1 | 14 min | 09:03Z |  |
@@ -152,7 +153,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T228 (lease until 2026-11-11T20:51:50Z)
-- lane 4: T316 (lease until 2026-11-11T21:35:41Z)
 
 ## Last usage reading
-- {"task": "T332", "at": "2026-11-11T18:53:29Z", "output_tokens": 30755, "cache_read_input_tokens": 3077140, "input_tokens": 141, "cache_creation_input_tokens": 243188}
+- {"task": "T316", "at": "2026-11-11T19:02:13Z", "cache_creation_input_tokens": 248205, "input_tokens": 199, "cache_read_input_tokens": 7281570, "output_tokens": 47369}
