@@ -4,7 +4,7 @@
 -- record by ID only (no cross-schema foreign key, Arch 4 rule 3), set exactly on confirm_page rows,
 -- and unique where set, so a second press for the same pick (after a decline, or a repeat) stores
 -- nothing. Every existing row is a business_signup row with no pick, so both checks hold for it.
--- The table stays append-only for askhava_app (0119's REVOKE stands). The table is small and the
+-- The table stays append-only for the app role (0119's REVOKE stands). The table is small and the
 -- checks are added NOT VALID then validated (P2); the partial index is built in the migration's
 -- transaction, as the table is small before launch (verify with host before Gate C).
 
