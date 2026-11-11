@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-11T22:02:57Z by runner c55d69c1ba49 (actions).
+Updated 2026-11-11T22:03:13Z by runner c55d69c1ba49 (actions).
 
 **Building: T334 in progress since 22:00Z; 213 of 376 done; week 75% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 213 of 376 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T334 claimed 22:00Z, lease until 01:00Z; lane 3: T232 claimed 21:11Z, lease until 00:11Z
+- **Lane:** lane 2: T334 claimed 22:00Z, lease until 01:00Z
 - **Week:** 75% used, 40.9M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 22:00Z, 2 min before this update
 - **Keeper:** last ran 21:51Z, next wake 00:14Z
@@ -18,6 +18,7 @@ Updated 2026-11-11T22:02:57Z by runner c55d69c1ba49 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T232 | portals and businesses: the Confirm step's "Can't take it" l | MERGE_PENDING | 1 | 51 min | 22:02Z |  |
 | T387 | payments (harness): the branch that flaps payments coverage  | MERGE_PENDING | 1 | 90 min | 21:49Z |  |
 | T388 | picks, intake, messaging and portals: after a Confirm the ho | MERGE_PENDING | 1 | 34 min | 21:46Z |  |
 | T334 | payments: the nightly reconcile catches up after an outage f | QUEUED | 1 | 15 min | 21:21Z | Worker stopped with PLAN GAP: reconcile_open.rs:343 and :423 (T288 tests, night 0 then night 8) fail once the run reads  |
@@ -155,7 +156,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T334 (lease until 2026-11-12T01:00:14Z)
-- lane 3: T232 (lease until 2026-11-12T00:11:40Z)
 
 ## Last usage reading
-- {"task": "T387", "at": "2026-11-11T21:49:17Z", "output_tokens": 113438, "input_tokens": 339, "cache_read_input_tokens": 17563558, "cache_creation_input_tokens": 407013}
+- {"task": "T232", "at": "2026-11-11T22:02:55Z", "cache_read_input_tokens": 25929942, "cache_creation_input_tokens": 628526, "output_tokens": 144044, "input_tokens": 425}
