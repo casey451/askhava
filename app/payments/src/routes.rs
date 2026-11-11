@@ -28,12 +28,19 @@
 //! the event row is written right after, so a crash between the two is a resend they absorb
 //! (D-2071). A database error, or a Stripe that could not be asked, answers 500 so Stripe sends
 //! the event again. An event for an unknown object answers 200: a refund no row holds still gets
-//! its event row (its handler changed nothing), a dispute or early fraud warning on a charge no
-//! pick made writes nothing; a `charge.dispute.closed` for a dispute not yet recorded answers 500,
-//! so Stripe resends it after its `charge.dispute.created`. An event of a handled type whose object
-//! lacks a field the handler needs (a dispute with no evidence due date, say) is logged and raises
-//! one High [`UNREADABLE_EVENT_ALERT`] in the event row's transaction, so Casey handles it by hand
-//! (FEE-027, D-2073).
+//! its event row (its handler changed nothing), a dispute on a charge no pick made writes nothing;
+//! an early fraud warning whose PaymentIntent no pick made commits its event row with one High
+//! [`FRAUD_WARNING_ALERT`] and queues nothing (FEE-052, D-2289). A `charge.dispute.closed` for a
+//! dispute not yet recorded answers 500, so Stripe resends it after its `charge.dispute.created`;
+//! an early fraud warning whose pick has a `payments.pick_intent` row but no `charge_evidence` row
+//! yet answers 500 too, and raises one High [`FRAUD_WARNING_ALERT`] for the pick in its own short
+//! transaction unless one is open, so Casey hears of it once however often Stripe resends
+//! (D-2289). An event of a handled type whose object lacks a field the handler needs (a dispute
+//! with no evidence due date, a `payment_intent.succeeded` whose `metadata.pick_id` is missing or
+//! not a UUID) is logged and raises one High [`UNREADABLE_EVENT_ALERT`] in the event row's
+//! transaction, so Casey handles it by hand; nothing is released from untrusted metadata, and the
+//! nightly reconcile still matches the charge by its PaymentIntent (FEE-027, FEE-029, D-2073,
+//! D-2289).
 
 use std::future::Future;
 use std::net::{IpAddr, SocketAddr};
@@ -44,7 +51,9 @@ use askhava_adapters::api::{
     check_webhook_source, refuse, verify_webhook,
 };
 use askhava_core::api::{ClientIpPolicy, Clock, NewTask, enqueue};
-use askhava_ops::api::{Actor, AuditEntry, Change, NewAlert, Severity, audit_once, raise_alert};
+use askhava_ops::api::{
+    Actor, AuditEntry, Change, NewAlert, Severity, audit_once, raise_alert, raise_alert_once,
+};
 use axum::Router;
 use axum::body::Bytes;
 use axum::extract::{ConnectInfo, State};
@@ -60,7 +69,7 @@ use sqlx::{PgConnection, PgPool};
 use crate::disputes::record_dispute;
 use crate::models::{DisputeOpened, MoneyEventError};
 use crate::refund_stripe::{RefundState, RefundStripe};
-use crate::refunds::{refund_canceled, refund_failed, refund_succeeded};
+use crate::refunds::{FRAUD_WARNING_ALERT, refund_canceled, refund_failed, refund_succeeded};
 use crate::release_proof::{
     Releasable, ReleaseError, SUCCEEDED_EVENT, StripeAccount, VerifiedStripeEvent, paid_release,
 };
@@ -76,6 +85,9 @@ pub const FRAUD_WARNING_KIND: &str = "picks.fraud_warning";
 pub const DISPUTE_CLOSED_ACTION: &str = "payments.dispute_closed";
 
 const DISPUTE_SUBJECT: &str = "payments.dispute";
+
+/// The subject kind of a pick's alert, as `refunds` and `late` raise it.
+const PICK_SUBJECT: &str = "payments.pick_intent";
 
 /// The High alert kind of a handled Stripe event whose object the route cannot read (FEE-027,
 /// D-2073); one per event ID, no subject (the event names no record `payments` holds).
@@ -250,10 +262,12 @@ fn text(object: &Value, pointer: &str) -> Option<String> {
 }
 
 /// What the event type and object ask for (FEE-026, FEE-027, FEE-052, D-1754); a handled type
-/// whose object cannot be read is [`Dispatch::Unreadable`], never dropped (D-2073).
+/// whose object cannot be read is [`Dispatch::Unreadable`], never dropped (D-2073). A success whose
+/// `metadata.pick_id` is missing or not a UUID is unreadable too: recorded and alerted, nothing
+/// released from it (SEC-017, PICK-022, D-2289).
 fn dispatch_of(kind: &str, object: &Value) -> Option<Dispatch> {
     if kind == SUCCEEDED_EVENT {
-        return pick_of(object).map(Dispatch::Release);
+        return Some(pick_of(object).map_or(Dispatch::Unreadable, Dispatch::Release));
     }
     if !HANDLED.contains(&kind) {
         return None;
@@ -411,28 +425,56 @@ fn money(result: Result<bool, MoneyEventError>) -> Acted {
     }
 }
 
+/// What an effect run in the event row's transaction found.
+enum Found {
+    /// Done: commit the row and the effect.
+    Yes,
+    /// About nothing `payments` holds: roll back, answer 200.
+    Unknown,
+    /// Not yet recorded: roll back, answer 500 so Stripe resends.
+    NotYet,
+    /// A fraud warning on this pick before its evidence row: roll back, alert once, answer 500.
+    NoEvidence(Uuid),
+}
+
 /// A closed dispute, an early fraud warning or an unreadable event: the event row and its effect
-/// in one transaction; a repeat, or an unknown charge, rolls back and changes nothing (SEC-017,
-/// D-1754). A closed dispute not yet recorded rolls back and is resent (D-2073).
+/// in one transaction; a repeat rolls back and changes nothing (SEC-017, D-1754). A closed dispute
+/// not yet recorded rolls back and is resent (D-2073); so is a fraud warning whose pick has no
+/// evidence row yet, after one alert for the pick in its own transaction (FEE-052, D-2289).
 async fn in_event_tx(pool: &PgPool, event: &Event, now: Timestamp) -> Result<Acted, OpsOrDb> {
     let mut tx = pool.begin().await?;
     if !insert_event(&mut tx, event, now).await? {
         return Ok(Acted::Recorded);
     }
-    let known = match &event.dispatch {
+    let found = match &event.dispatch {
         Dispatch::DisputeClosed(dispute) => dispute_closed(&mut tx, dispute).await?,
         Dispatch::FraudWarning(intent) => fraud_warning(&mut tx, intent, now).await?,
         Dispatch::Unreadable => unreadable(&mut tx, &event.kind).await?,
-        Dispatch::Release(_) | Dispatch::Refund(..) | Dispatch::Dispute(..) => false,
+        Dispatch::Release(_) | Dispatch::Refund(..) | Dispatch::Dispute(..) => Found::Unknown,
     };
-    if !known {
-        if matches!(event.dispatch, Dispatch::DisputeClosed(_)) {
-            return Ok(Acted::Retry);
+    match found {
+        Found::Yes => {
+            tx.commit().await?;
+            Ok(Acted::Recorded)
         }
-        return Ok(Acted::Unknown);
+        Found::Unknown => Ok(Acted::Unknown),
+        Found::NotYet => Ok(Acted::Retry),
+        Found::NoEvidence(pick) => {
+            tx.rollback().await?;
+            no_evidence_alert(pool, pick).await?;
+            Ok(Acted::Retry)
+        }
     }
-    tx.commit().await?;
-    Ok(Acted::Recorded)
+}
+
+/// FEE-052, D-2289: one High [`FRAUD_WARNING_ALERT`] for `pick`, raised in its own short
+/// transaction only when no unresolved one with the pick as subject is open (checked in that
+/// transaction under `ops`' advisory lock), so Stripe's resends raise nothing new.
+async fn no_evidence_alert(pool: &PgPool, pick: Uuid) -> Result<(), OpsOrDb> {
+    let mut conn = pool.acquire().await?;
+    let subject = (PICK_SUBJECT, pick);
+    raise_alert_once(&mut conn, FRAUD_WARNING_ALERT, Severity::High, subject).await?;
+    Ok(())
 }
 
 /// Any failure of [`in_event_tx`]: the transaction rolls back and Stripe resends.
@@ -485,8 +527,9 @@ async fn seen(pool: &PgPool, id: &str) -> Result<bool, sqlx::Error> {
 }
 
 /// FEE-027, D-1545: one audit row and one High alert per closed dispute `dp_…`, whatever its
-/// outcome and however many events report it; no money moves. `false` for an unknown dispute.
-async fn dispute_closed(conn: &mut PgConnection, dispute: &str) -> Result<bool, OpsOrDb> {
+/// outcome and however many events report it; no money moves. An unknown dispute is not yet
+/// recorded (D-2073).
+async fn dispute_closed(conn: &mut PgConnection, dispute: &str) -> Result<Found, OpsOrDb> {
     let id = sqlx::query_scalar!(
         "SELECT id FROM payments.dispute WHERE stripe_dispute_id = $1",
         dispute,
@@ -494,7 +537,7 @@ async fn dispute_closed(conn: &mut PgConnection, dispute: &str) -> Result<bool, 
     .fetch_optional(&mut *conn)
     .await?;
     let Some(id) = id else {
-        return Ok(false);
+        return Ok(Found::NotYet);
     };
     let entry = AuditEntry {
         actor: Actor::System,
@@ -511,12 +554,12 @@ async fn dispute_closed(conn: &mut PgConnection, dispute: &str) -> Result<bool, 
         };
         raise_alert(conn, &alert).await?;
     }
-    Ok(true)
+    Ok(Found::Yes)
 }
 
 /// FEE-027, D-2073: a handled event the route cannot read is logged and raises one High
 /// [`UNREADABLE_EVENT_ALERT`] (once per event ID, by the event row in the same transaction).
-async fn unreadable(conn: &mut PgConnection, kind: &str) -> Result<bool, OpsOrDb> {
+async fn unreadable(conn: &mut PgConnection, kind: &str) -> Result<Found, OpsOrDb> {
     tracing::warn!(event_type = %kind, "stripe event lacks a field its handler needs; Casey alerted");
     let alert = NewAlert {
         kind: UNREADABLE_EVENT_ALERT,
@@ -524,31 +567,56 @@ async fn unreadable(conn: &mut PgConnection, kind: &str) -> Result<bool, OpsOrDb
         subject: None,
     };
     raise_alert(conn, &alert).await?;
-    Ok(true)
+    Ok(Found::Yes)
 }
 
-/// FEE-052, D-1845: enqueues one [`FRAUD_WARNING_KIND`] task for the pick charged through
-/// `intent`; `false` when no pick was. The dedupe key `picks.fraud_warning.<pick>` stays taken for
-/// good (`core.task`'s unique `dedupe_key`), so a later task on the pick, such as T281's hourly
-/// re-run, must use another key (D-2073).
+/// FEE-052, D-1845, D-2289: enqueues one [`FRAUD_WARNING_KIND`] task for the pick charged
+/// through `intent` (its `charge_evidence` row). A pick holding the PaymentIntent with no evidence
+/// row yet is [`Found::NoEvidence`]; a PaymentIntent no pick holds raises one High
+/// [`FRAUD_WARNING_ALERT`] with no subject and queues nothing. The dedupe key
+/// `picks.fraud_warning.<pick>` stays taken for good (`core.task`'s unique `dedupe_key`), so a
+/// later task on the pick, such as T281's hourly re-run, must use another key (D-2073).
 async fn fraud_warning(
     conn: &mut PgConnection,
     intent: &str,
     now: Timestamp,
-) -> Result<bool, OpsOrDb> {
-    let pick = sqlx::query_scalar!(
+) -> Result<Found, OpsOrDb> {
+    let charged = sqlx::query_scalar!(
         "SELECT pick_id FROM payments.charge_evidence WHERE stripe_intent_id = $1",
         intent,
     )
     .fetch_optional(&mut *conn)
     .await?;
-    let Some(pick) = pick else {
-        return Ok(false);
+    let Some(pick) = charged else {
+        return unmatched_warning(conn, intent).await;
     };
     let mut task = NewTask::new(FRAUD_WARNING_KIND, json!({"pick": pick}), now);
     task.dedupe_key = Some(format!("{FRAUD_WARNING_KIND}.{pick}"));
     enqueue(conn, &task).await?;
-    Ok(true)
+    Ok(Found::Yes)
+}
+
+/// FEE-052, D-2289: a warning with no evidence row: [`Found::NoEvidence`] when a pick holds the
+/// PaymentIntent, else one High [`FRAUD_WARNING_ALERT`] with no subject in the event row's
+/// transaction (a warning always reaches Casey).
+async fn unmatched_warning(conn: &mut PgConnection, intent: &str) -> Result<Found, OpsOrDb> {
+    let pick = sqlx::query_scalar!(
+        "SELECT pick_id FROM payments.pick_intent WHERE stripe_intent_id = $1",
+        intent,
+    )
+    .fetch_optional(&mut *conn)
+    .await?;
+    if let Some(pick) = pick {
+        return Ok(Found::NoEvidence(pick));
+    }
+    tracing::warn!("early fraud warning on a charge no pick made; Casey alerted");
+    let alert = NewAlert {
+        kind: FRAUD_WARNING_ALERT,
+        severity: Severity::High,
+        subject: None,
+    };
+    raise_alert(conn, &alert).await?;
+    Ok(Found::Yes)
 }
 
 #[cfg(test)]
@@ -777,8 +845,12 @@ mod tests {
         assert!(sink.0.lock().expect("lock").is_empty());
     }
 
+    /// D-2289: a success with no readable pick is never acknowledged unread: it goes to the
+    /// database, so with none reachable Stripe is asked to resend; nothing is released. This lazy
+    /// pool fails at the first read, so the recording itself is guarded by `td_fee_53` in
+    /// `tests/integration/tests/stripe_webhook_dispatch.rs`.
     #[tokio::test]
-    async fn an_event_without_a_pick_changes_nothing() {
+    async fn an_event_without_a_pick_releases_nothing_and_reaches_the_database() {
         let sink = Arc::new(Recorded::default());
         let body = r#"{"id":"evt_fake2","type":"payment_intent.succeeded","livemode":false,"data":{"object":{"id":"pi_fake2","metadata":{"pick_id":"not-a-pick"}}}}"#.to_owned();
         let sig = signed(&body, SECRET);
@@ -789,7 +861,7 @@ mod tests {
             sig,
         )
         .await;
-        assert_eq!(status, StatusCode::OK);
+        assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR);
         assert!(sink.0.lock().expect("lock").is_empty());
     }
 
