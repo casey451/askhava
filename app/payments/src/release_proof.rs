@@ -12,7 +12,8 @@
 //! has ended, before or while the intent was fetched, is never cleared (D-1478). A redirect to
 //! a success page carries no verified event, so it can never make one (SEC-030).
 //! [`no_fee_release`] makes one from a recorded $0 decision only: a free first win, a
-//! repeat customer or a fee-free job type in the ledger (FEE-010, FEE-013, FEE-045), never for a
+//! repeat customer or a fee-free job type in the ledger (FEE-010, FEE-013, FEE-045), for the
+//! pick's own business and job as its `payments.pick_fee` row stores them (D-2302), never for a
 //! pick with a PaymentIntent (D-1478). Releasing
 //! once however often a proof arrives is the release's own record (PICK-022).
 
@@ -24,6 +25,7 @@ use sqlx::{PgConnection, PgPool};
 
 use crate::charge::latest;
 use crate::handlers::record;
+use crate::pick_fee::pick_fee;
 use crate::status::AttemptStatus;
 
 /// The one Stripe event type a paid release is built from (PICK-022).
@@ -214,11 +216,13 @@ pub async fn paid_release(
     Ok(Releasable { pick, basis })
 }
 
-/// Clears pick `pick` with no fee due, only when the ledger holds the $0 decision for its business
-/// and job: a free first win, a repeat customer or a fee-free job type (FEE-010, FEE-013, FEE-036,
-/// FEE-045, PICK-022). A pick with a PaymentIntent has a fee to pay and is never cleared here.
-/// `payments` holds no record tying a $0 pick to its business and job, so the caller (`picks`,
-/// which owns the pick) passes its own; D-1478.
+/// Clears pick `pick` with no fee due, only when the ledger holds the $0 decision for the pick's
+/// own business and job: a free first win, a repeat customer or a fee-free job type (FEE-010,
+/// FEE-012, FEE-013, FEE-036, FEE-045, PICK-022). The pick's own pair is its `payments.pick_fee`
+/// row, fixed at the pick (D-1871): a pick with no row, or a caller pair other than the row's, is
+/// refused before the ledger is read, so a waiver for one job of a business never clears a pick
+/// of another job (D-2302, D-2713). A pick with a PaymentIntent has a fee to pay and is never
+/// cleared here (D-1478).
 ///
 /// # Errors
 /// [`ReleaseError::NoFeeDecision`]; [`ReleaseError::Database`].
@@ -227,13 +231,20 @@ pub async fn no_fee_release(
     pick: Uuid,
     (business, job): (Uuid, Uuid),
 ) -> Result<Releasable, ReleaseError> {
+    let stored = pick_fee(conn, pick)
+        .await
+        .map_err(|_| ReleaseError::Database)?
+        .ok_or(ReleaseError::NoFeeDecision)?;
+    if (stored.business.0, stored.job) != (business, job) {
+        return Err(ReleaseError::NoFeeDecision);
+    }
     let decided = sqlx::query_scalar!(
         r#"SELECT NOT EXISTS (SELECT 1 FROM payments.pick_intent WHERE pick_id = $3)
              AND EXISTS (SELECT 1 FROM payments.ledger_entry WHERE business_id = $1
              AND job_id = $2 AND amount_cents = 0
              AND kind IN ('free-first-win', 'repeat-customer', 'fee-free-job-type')) AS "found!""#,
-        business,
-        job,
+        stored.business.0,
+        stored.job,
         pick
     )
     .fetch_one(conn)
