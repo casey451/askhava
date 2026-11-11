@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-11T06:54:52Z by runner 5d2ce844e8fa (actions).
+Updated 2026-11-11T07:00:41Z by runner 5d2ce844e8fa (actions).
 
-**Building: T212 in progress since 06:23Z; 196 of 370 done; week 61% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T212 in progress since 06:23Z; 197 of 370 done; week 61% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 196 of 370 build tasks (owner gates not counted)
+- **Tasks done:** 197 of 370 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T212 claimed 06:23Z, lease until 09:23Z; lane 3: T327 claimed 05:24Z, lease until 08:24Z
 - **Week:** 61% used, 71.5M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:54Z, 0 min before this update
+- **Last run:** 06:54Z, 5 min before this update
 - **Keeper:** last ran 06:54Z, next wake 08:27Z
 
 ## Needs attention
@@ -17,7 +17,7 @@ Updated 2026-11-11T06:54:52Z by runner 5d2ce844e8fa (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T383 | messaging and portals: the text templates and the homeowner  | MERGE_PENDING | 1 | 20 min | 05:39Z |  |
+| T383 | messaging and portals: the text templates and the homeowner  | done | 1 | 20 min | 05:39Z |  |
 | T337 | payments (harness): a $0 release proof is bound to the pick' | BLOCKED | 3 | 16 min | 05:11Z | T337 built and committed (53e675b1, cf42d54e); smoke/prehandin red on tests T337 does not own: confirm_and_pay.rs td_fee |
 | T209 | picks and payments: the optional auto-confirm-and-pay box wi | done | 1 | 115 min | 05:06Z |  |
 | T295 | payments, ai, intake and picks take the brand from the brand | BLOCKED | 3 | 0 min | 04:59Z | T295 blocked at step 3: tests/brand_literal_baseline.json still lists files T295 does not own: app/messaging/templates/e |
@@ -73,7 +73,7 @@ Updated 2026-11-11T06:54:52Z by runner 5d2ce844e8fa (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 204 of 733 (27.8%) · partial 342 · unstarted 187
-**Tasks merged (throughput only):** 196 of 370
+**Tasks merged (throughput only):** 197 of 370
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -108,7 +108,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 76 of 162 done
+- stage 4: 77 of 162 done
 - stage 5: 0 of 58 done
 - stage 6: 0 of 34 done
 - stage 7: 0 of 2 done
