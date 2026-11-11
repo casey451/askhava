@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T16:35:42Z by runner ef7f7fc80423 (actions).
+Updated 2026-11-11T16:42:58Z by runner ef7f7fc80423 (actions).
 
 **Building: T214 in progress since 15:58Z; 207 of 373 done; week 69% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-11T16:35:42Z by runner ef7f7fc80423 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 3: T214 claimed 15:58Z, lease until 18:58Z
 - **Week:** 69% used, 49.4M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:27Z, 8 min before this update
+- **Last run:** 16:27Z, 15 min before this update
 - **Keeper:** last ran 16:26Z, next wake 19:00Z
 
 ## Needs attention
@@ -28,6 +28,7 @@ E2e failed at step: Chromium and its system libraries
 Error: Installation process exited with code: 100
 ##[error]Process completed with exit code 1.
 Ci fai
+- PLAN GAP T272 (since 2026-11-11T16:35:30Z, no attempt used; a plan change fixes it): T272: dependency T269 is DONE but its owned file tests/integration/tests/notice_signin_link.rs is not on main
 - Strict plan check red: 22 problem(s) on tasks still to run (+37 on DONE tasks); first: T340: stored context_pct 35% but it measures 39%; regenerate
 
 ## Last 24 hours
