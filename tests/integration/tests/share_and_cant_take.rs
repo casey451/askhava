@@ -7,11 +7,17 @@
 //! error and stores nothing; a tick is logged and bound to the pick; no page template renders a
 //! consent, sharing, charge or feedback box ticked; the pick notice names the pick's "Can't take
 //! it" page, and pressing it ends the pick at once with no fee and moves it to her backup.
+//! With the page pick's keys over a Verify stand-in that records sends and passes only [`CODE`],
+//! an unticked final Pick sends no code, and a browser that never ticked and goes straight to the
+//! code step passes its code but stores no pick. Fake numbers (555-01xx) only.
 
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
+use askhava_adapters::api::{AdapterError, CodeChannel, IdempotencyKey, VerifyAdapter};
 use askhava_businesses::api::{add_owner, create};
 use askhava_core::api::{Claimed, Guarded, IdSecret, ManualClock};
+use askhava_intake::api::rules::{Inbound, Settings};
+use askhava_intake::api::{JobStart, Opened, TextIn, begin_job, receive_text};
 use askhava_jobs::api::quote_token::issue;
 use askhava_jobs::api::{JobStatus, current, move_to};
 use askhava_ops::api::Actor;
@@ -20,11 +26,15 @@ use askhava_picks::api::{
     choose_backup, page_pick, run_pick_notice, share_ticked, tick_share,
 };
 use askhava_portals::api::{
-    BUSINESS_SESSION_LIFE, BusinessPrincipal, CookieJar, PRE_SESSION_COOKIE, Realm,
+    BUSINESS_SESSION_LIFE, BusinessPrincipal, CookieJar, PRE_SESSION_COOKIE, PickCodeKeys, Realm,
     business_principal, cant_take_page, cant_take_pick, pick_flow_routes, start_session,
 };
+use askhava_privacy::api::{NewContact, Vault, store_contact};
+use axum::Router;
 use axum::body::{Body, to_bytes};
 use axum::http::{Request, StatusCode, header};
+use base64::Engine as _;
+use base64::engine::general_purpose::STANDARD;
 use jiff::{SignedDuration, Timestamp};
 use jiff_sqlx::ToSqlx;
 use secrecy::SecretString;
@@ -37,6 +47,8 @@ use tower::ServiceExt;
 const DAY: &str = "2026-11-04T17:00:00Z";
 const COOKIE: &str = "fake-pre-session-cookie-value-0214";
 const BROWSER: Browser = [4; 32];
+const PHONE: &str = "+19285550152";
+const CODE: &str = "123456";
 
 fn at(minutes: i64) -> Timestamp {
     DAY.parse::<Timestamp>().expect("instant") + SignedDuration::from_mins(minutes)
@@ -47,6 +59,12 @@ async fn quoted(db: &mut PgConnection, first: Uuid) -> Uuid {
     let job = askhava_jobs::api::create(db, at(0), false, Actor::System)
         .await
         .expect("job");
+    ready(db, job, first).await;
+    job
+}
+
+/// Walks `job` to Quotes ready with three confirmed quotes; quote 1 is `first`'s.
+async fn ready(db: &mut PgConnection, job: Uuid, first: Uuid) {
     for step in [
         (JobStatus::Intake, JobStatus::Open),
         (JobStatus::Open, JobStatus::QuotesReady),
@@ -71,7 +89,6 @@ async fn quoted(db: &mut PgConnection, first: Uuid) -> Uuid {
         .await
         .expect("quote");
     }
-    job
 }
 
 /// A business with its owner signed in.
@@ -97,19 +114,33 @@ async fn signed_in(db: &mut PgConnection) -> (Uuid, BusinessPrincipal) {
     (business, principal.expect("signed in"))
 }
 
+fn secret() -> SecretString {
+    SecretString::from("test-only-id-secret-not-a-real-key-214".to_owned())
+}
+
+/// A fresh quote-page token for `job`.
+async fn token(pool: &PgPool, job: Uuid) -> String {
+    let mut db = pool.acquire().await.expect("db");
+    let link = IdSecret::new(1, secret()).expect("id");
+    let token = issue(&mut db, &link, job, at(6)).await.expect("token");
+    token.as_str().to_owned()
+}
+
 /// Posts `body` to the final Pick of `job`'s quote page, without the Verify keys.
 async fn final_pick(pool: &PgPool, job: Uuid, body: &str) -> (StatusCode, String) {
-    let mut db = pool.acquire().await.expect("db");
-    let secret = SecretString::from("test-only-id-secret-not-a-real-key-214".to_owned());
-    let link = IdSecret::new(1, secret).expect("id");
-    let token = issue(&mut db, &link, job, at(6)).await.expect("token");
+    let token = token(pool, job).await;
     let clock = Arc::new(ManualClock::new(at(7)));
-    let app = pick_flow_routes::<askhava_adapters::api::TwilioVerify>(pool.clone(), clock, None);
+    let app = pick_flow_routes::<FakeVerify>(pool.clone(), clock, None);
+    post(app, &format!("/q/{token}/pick"), body).await
+}
+
+/// Posts `body` with the pre-session cookie's CSRF token to `path` of `app`, as a browser would.
+async fn post(app: Router, path: &str, body: &str) -> (StatusCode, String) {
     let csrf: String = Sha256::digest(format!("askhava.csrf.pre\0{COOKIE}").as_bytes())
         .iter()
         .map(|b| format!("{b:02x}"))
         .collect();
-    let request = Request::post(format!("/q/{}/pick", token.as_str()))
+    let request = Request::post(path)
         .header(header::HOST, "askhava.test")
         .header(header::ORIGIN, "https://askhava.test")
         .header("sec-fetch-site", "same-origin")
@@ -121,6 +152,92 @@ async fn final_pick(pool: &PgPool, job: Uuid, body: &str) -> (StatusCode, String
     let status = response.status();
     let bytes = to_bytes(response.into_body(), 1 << 20).await.expect("body");
     (status, String::from_utf8(bytes.to_vec()).expect("utf8"))
+}
+
+/// A Verify stand-in: records each send and passes only [`CODE`].
+#[derive(Clone, Default)]
+struct FakeVerify {
+    sent: Arc<Mutex<Vec<String>>>,
+}
+
+impl VerifyAdapter for FakeVerify {
+    async fn send_code(
+        &self,
+        _key: &IdempotencyKey,
+        to: &str,
+        _channel: CodeChannel,
+    ) -> Result<String, AdapterError> {
+        self.sent.lock().expect("lock").push(to.to_owned());
+        Ok("VEfake".to_owned())
+    }
+
+    async fn check_code(&self, _to: &str, code: &str) -> Result<bool, AdapterError> {
+        Ok(code == CODE)
+    }
+}
+
+impl FakeVerify {
+    fn sends(&self) -> usize {
+        self.sent.lock().expect("lock").len()
+    }
+}
+
+fn vault() -> Vault {
+    let key = |b: u8| SecretString::from(format!("1:{}", STANDARD.encode([b; 32])));
+    let url = SecretString::from("postgres://askhava_app@db.invalid/askhava".to_owned());
+    Vault::new(&key(0x46), &key(0x56), &url).expect("vault")
+}
+
+/// The pick routes with the page pick's keys over `verify`.
+fn keyed(pool: &PgPool, verify: &FakeVerify) -> Router {
+    let terms = (
+        "2026-11-01".to_owned(),
+        "Sample homeowner terms for tests only.",
+    );
+    let keys = PickCodeKeys::new(verify.clone(), vault(), secret(), terms);
+    let clock = Arc::new(ManualClock::new(at(7)));
+    pick_flow_routes(pool.clone(), clock, Some(keys))
+}
+
+/// A homeowner with a fake vaulted phone texts in; her job walks to Quotes ready with three
+/// confirmed quotes, so the keyed code step can send and check a code for it.
+async fn her_job(db: &mut PgConnection) -> Uuid {
+    let new = NewContact {
+        name: None,
+        phone: Some(SecretString::from(PHONE.to_owned())),
+        email: None,
+        address: None,
+        onsite_contact: None,
+    };
+    let her = store_contact(db, &vault(), &new).await.expect("contact");
+    let words = "my kitchen sink is leaking under the cabinet";
+    let inbound = Inbound {
+        words,
+        opt_out: false,
+        help: false,
+        emergency: false,
+        ai_spanish: None,
+    };
+    let msg = TextIn {
+        inbox_id: Uuid::new_v4(),
+        contact: her,
+        inbound,
+        received_at: at(0),
+    };
+    let handled = receive_text(db, &secret(), &msg, Settings::default()).await;
+    let conversation = handled.expect("open").conversation.expect("request");
+    let start = JobStart {
+        conversation,
+        words,
+        emergency: false,
+        trade: "plumbing",
+        at: at(0),
+    };
+    let Ok(Opened::Created(job)) = begin_job(db, &start).await else {
+        panic!("a new job");
+    };
+    ready(db, job, Uuid::from_u128(0x2141)).await;
+    job
 }
 
 async fn count(db: &mut PgConnection, sql: String) -> i64 {
@@ -163,6 +280,67 @@ async fn td_pick_34_an_unticked_share_box_picks_nothing(pool: PgPool) {
     let (_, ticked) = final_pick(&pool, job, "quote=1&share=yes").await;
     assert!(ticked.contains("Nothing was picked."), "{ticked}");
     assert!(!ticked.contains("share-error"), "{ticked}");
+}
+
+/// The rows a pick attempt can leave: share ticks, backups, code sends and picks.
+async fn stored(db: &mut PgConnection) -> Vec<i64> {
+    let mut rows = Vec::new();
+    for table in [
+        "picks.share_consent",
+        "picks.backup_choice",
+        "picks.code_attempt",
+        "picks.pick",
+    ] {
+        rows.push(count(db, format!("SELECT count(*) FROM {table}")).await);
+    }
+    rows
+}
+
+/// TD-PICK-34 with the Verify keys (PICK-049, D-3032): an unticked final Pick shows the review
+/// again with its error, sends no code and stores nothing; ticked, the code is sent as before.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_pick_34_with_keys_an_unticked_share_box_sends_no_code(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("db");
+    let job = her_job(&mut db).await;
+    let verify = FakeVerify::default();
+    let path = format!("/q/{}/pick", token(&pool, job).await);
+    let app = keyed(&pool, &verify);
+    let (status, page) = post(app.clone(), &path, "quote=1&backup=3").await;
+    assert_eq!(status, StatusCode::OK, "{page}");
+    assert!(page.contains("id=\"share-error\""), "{page}");
+    assert!(page.contains("<option value=\"3\" selected>Quote #3</option>"));
+    assert!(!page.contains("code-sent"), "{page}");
+    assert_eq!(verify.sends(), 0, "no code sent");
+    assert_eq!(stored(&mut db).await, [0, 0, 0, 0], "nothing stored");
+    let (_, ticked) = post(app, &path, "quote=1&share=yes").await;
+    assert!(ticked.contains("We texted a 6-digit code"), "{ticked}");
+    assert_eq!(verify.sends(), 1, "ticked, the code is sent");
+}
+
+/// TD-PICK-34 (PICK-049, D-3032): a browser that never ticked the box and posts the code step
+/// directly gets a code and passes it as today, but no pick is stored for the quote.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_pick_34_a_code_without_a_tick_stores_no_pick(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("db");
+    let job = her_job(&mut db).await;
+    let verify = FakeVerify::default();
+    let path = format!("/q/{}/code", token(&pool, job).await);
+    let app = keyed(&pool, &verify);
+    let (_, sent) = post(app.clone(), &path, "quote=1&send=new").await;
+    assert!(sent.contains("We texted a 6-digit code"), "{sent}");
+    assert_eq!(verify.sends(), 1);
+    let finish = format!("quote=1&code={CODE}&reach=call&send=pick");
+    let (status, page) = post(app, &path, &finish).await;
+    assert_eq!(status, StatusCode::OK, "{page}");
+    assert!(!page.contains("tries left"), "the code passed: {page}");
+    assert!(page.contains("your pick didn&#39;t go through"), "{page}");
+    assert!(
+        !page.contains("Done. The business has your pick."),
+        "{page}"
+    );
+    assert_eq!(stored(&mut db).await[3], 0, "no pick without a tick");
+    let status = current(&mut db, job).await.expect("job").status;
+    assert_eq!(status.code(), "quotes_ready");
 }
 
 /// TD-PICK-34 (PICK-049, D-3032): a ticked final Pick is logged for that browser and quote only,
