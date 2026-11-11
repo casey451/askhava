@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-11T14:19:23Z by runner b1639f25d419 (actions).
+Updated 2026-11-11T14:19:36Z by runner b1639f25d419 (actions).
 
 **Building: T342 in progress since 13:39Z; 204 of 372 done; week 68% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 204 of 372 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T342 claimed 13:39Z, lease until 16:39Z; lane 3: T332 claimed 13:35Z, lease until 16:35Z; lane 4: T269 claimed 13:58Z, lease until 16:58Z
+- **Lane:** lane 2: T342 claimed 13:39Z, lease until 16:39Z; lane 3: T332 claimed 13:35Z, lease until 16:35Z
 - **Week:** 68% used, 54.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 14:18Z, 1 min before this update
 - **Keeper:** last ran 14:15Z, next wake 16:37Z
@@ -19,6 +19,7 @@ Updated 2026-11-11T14:19:23Z by runner b1639f25d419 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T269 | portals: a business notice's signed link opens sign-in for t | MERGE_PENDING | 1 | 20 min | 14:19Z |  |
 | T384 | quotes and portals: the homeowner sees an edited quote as up | check_failed | 1 | 40 min | 13:40Z | Ci: failure; E2e: failure; Ally: failure / E2e failed at step: Chromium and its system libraries / E: Failed to fetch ht |
 | T214 | picks: the homeowner's share box at the pick and the 'Can't  | BLOCKED | 1 | 15 min | 13:19Z | PLAN GAP: app/picks/src/handlers.rs:73-76 (T063's) and the pick_notice / pick_notice_emergency keys in app/messaging/tem |
 | T333 | payments (harness): a succeeded refund is recorded at the am | BLOCKED | 1 | 50 min | 13:14Z | PLAN GAP: app/payments/src/routes.rs:412 (T259) and app/payments/src/refund_state.rs:34 (T270) / app/picks/src/unreachab |
@@ -141,7 +142,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 - lane 2: T342 (lease until 2026-11-11T16:39:59Z)
 - lane 3: T332 (lease until 2026-11-11T16:35:27Z)
-- lane 4: T269 (lease until 2026-11-11T16:58:53Z)
 
 ## Last usage reading
-- {"task": "T384", "at": "2026-11-11T13:40:02Z", "cache_read_input_tokens": 22433529, "input_tokens": 402, "output_tokens": 131749, "cache_creation_input_tokens": 597777}
+- {"task": "T269", "at": "2026-11-11T14:19:22Z", "cache_creation_input_tokens": 448403, "input_tokens": 292, "cache_read_input_tokens": 16390555, "output_tokens": 113315}
