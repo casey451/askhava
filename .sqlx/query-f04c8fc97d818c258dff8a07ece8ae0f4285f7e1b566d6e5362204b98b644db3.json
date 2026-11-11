@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT stripe_payment_method_id FROM payments.payment_method\n         WHERE business_id = $1 AND removed_at IS NULL\n         ORDER BY saved_at DESC, stripe_payment_method_id LIMIT 1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "stripe_payment_method_id",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "payments.payment_method",
+            "name": "stripe_payment_method_id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "f04c8fc97d818c258dff8a07ece8ae0f4285f7e1b566d6e5362204b98b644db3"
+}

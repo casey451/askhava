@@ -1,0 +1,19 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO quotes.auto_confirm (quote_id, member_id, fee_cents, authorization_version,\n           payment_method, ticked_at) VALUES ($1, $2, $3, $4, $5, $6)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Int8",
+        "Int4",
+        "Text",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "6d13a5055bb43e561a6b810aaf2df6d7555924a50ec8744fd3a862d2fa95b802"
+}
