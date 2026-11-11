@@ -1,6 +1,6 @@
 # ISMS scope (draft)
 
-**Status:** draft — **OWNER APPROVAL REQUIRED** (D-2722). Not in force until Casey records approval as a decision naming this file's commit SHA.
+**Status:** draft — **OWNER APPROVAL REQUIRED** (D-2740). Not in force until Casey records approval as a decision naming this file's commit SHA.
 
 ## 1. Organization
 

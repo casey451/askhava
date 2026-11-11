@@ -1,6 +1,6 @@
 # Asset, data and provider inventory
 
-**Status:** draft (D-2722); the owner completes the cells marked **owner**. Reconciled with the WISP (`docs/legal/information-security-program.md` sections 2, 4b and 5) and `docs/architecture.md` sections 7 and 9 on `main` `f8231346`. **No account IDs, project IDs, key values or key fingerprints go in this file**; secret names below are the setting names already public in the architecture.
+**Status:** draft (D-2740); the owner completes the cells marked **owner**. Reconciled with the WISP (`docs/legal/information-security-program.md` sections 2, 4b and 5) and `docs/architecture.md` sections 7 and 9 on `main` `f8231346`. **No account IDs, project IDs, key values or key fingerprints go in this file**; secret names below are the setting names already public in the architecture.
 
 ## 1. Data classes
 

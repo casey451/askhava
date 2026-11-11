@@ -1,6 +1,6 @@
 # Security objectives (draft)
 
-**Status:** draft — **OWNER APPROVAL REQUIRED** for every target (D-2722). Targets apply from Gate C unless a row says "now". Each month's figures go in one scorecard row below; the source column says where the figure comes from, so a figure without a source is not recorded.
+**Status:** draft — **OWNER APPROVAL REQUIRED** for every target (D-2740). Targets apply from Gate C unless a row says "now". Each month's figures go in one scorecard row below; the source column says where the figure comes from, so a figure without a source is not recorded.
 
 ## Objectives
 

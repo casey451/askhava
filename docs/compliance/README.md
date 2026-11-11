@@ -1,6 +1,6 @@
 # Ask Hava security readiness (ISO/IEC 27001:2022) — index
 
-**Status:** draft for owner review (D-2722, November 11, 2026). Nothing here is approved, certified or a legal conclusion. Items that need Casey or counsel say so.
+**Status:** draft for owner review (D-2740, November 11, 2026). Nothing here is approved, certified or a legal conclusion. Items that need Casey or counsel say so.
 
 **Why this exists.** Casey shared an outside ISO 27001 readiness gap analysis on November 11, 2026 (reviewed `main` at `f8231346`). It found that the build already carries strong engineering controls, and that what is missing is a small, evidenced management system around them. This folder is that management layer, kept deliberately small: one index, one scope, one Statement of Applicability, one evidence register, one audit and review template, one inventory, one owner checklist. It does not replace the build's own plan, risk register or legal drafts; it points at them.
 

@@ -1,6 +1,6 @@
 # Internal audit, management review and corrective action
 
-**Status:** templates (D-2722). The program itself starts only when Casey approves it and controls have operated long enough to sample (after Gate C).
+**Status:** templates (D-2740). The program itself starts only when Casey approves it and controls have operated long enough to sample (after Gate C).
 
 ## 1. AI review is not an independent ISMS audit
 

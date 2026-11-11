@@ -1,6 +1,6 @@
 # Statement of Applicability (skeleton)
 
-**Status:** draft — **OWNER APPROVAL REQUIRED** for every applicability choice and exclusion (D-2722). Control references and short titles follow ISO/IEC 27001:2022 Annex A; the standard's text is not reproduced, and a licensed copy is needed before any certification work.
+**Status:** draft — **OWNER APPROVAL REQUIRED** for every applicability choice and exclusion (D-2740). Control references and short titles follow ISO/IEC 27001:2022 Annex A; the standard's text is not reproduced, and a licensed copy is needed before any certification work.
 
 **Status values.** `Not started` — no design. `Designed` — written in a spec, plan or draft. `Designed, CI-tested` — code and a passing test in the build environment (`reconciliation.md`, "Test evidence used"). `Owner action` — only Casey or an outside party can supply it. **No row says "implemented" or "operating"**: operating evidence from the test or live environment does not exist yet. Operating evidence is filled only from `evidence-register.md` rows.
 
