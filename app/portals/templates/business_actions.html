@@ -9,17 +9,38 @@
     "Auto-confirm and pay if picked" box follows the fee lines only when `auto_box` is given,
     unticked unless the quote's box is ticked now, with its own authorization (T209; PICK-048).
     The job page shows the card, answers, photos, project file and any concept image with its
-    label on the image's alt text and beside it (T212; CARD-023, INT-044 to INT-046). -#}
+    label on the image's alt text and beside it (T212; CARD-023, INT-044 to INT-046). With `price`
+    the quote form shows only the job's one format's price fields beside its plain definition (no
+    visit fee on a range job), a per-visit price's required visit schedule and the notes box; with
+    `p.controls` the job page shows the business's own quote controls (T164; PICK-051 to PICK-053,
+    REC-010). -#}
 {% macro radio(name, value, label, current) %}<div><input type="radio" id="{{ name }}-{{ value }}" name="{{ name }}" value="{{ value }}"{% if current == value %} checked{% endif %}> <label for="{{ name }}-{{ value }}">{{ label }}</label></div>{% endmacro %}
 {% macro err(f, name) %}{% if let Some(m) = f.error_for(name) %}<p id="{{ name }}-error" class="field-error">Error: {{ m }}</p>{% endif %}{% endmacro %}
+{% macro money(pr, name, label, value) %}<label for="{{ name }}">{{ label }}</label>
+{% if let Some(m) = pr.error_for(name) %}<p id="{{ name }}-error" class="field-error">Error: {{ m }}</p>
+{% endif %}<input type="text" id="{{ name }}" name="{{ name }}" inputmode="decimal" value="{{ value }}"{% if pr.error_for(name).is_some() %} aria-describedby="{{ name }}-error" aria-invalid="true"{% endif %}>
+{% endmacro %}
 {% macro errby(f, name) %}{% if f.error_for(name).is_some() %} aria-describedby="{{ name }}-error"{% endif %}{% endmacro %}
-{% block title %}{% if let Some(p) = page %}Job {{ p.job_number }}{% else if let Some(a) = action %}{% if a.days_error.is_some() %}Error: {% endif %}{{ a.title }}{% else if let Some(f) = form %}{% if !f.problems.is_empty() %}Error: {% endif %}Quote job {{ f.job_number }}{% endif %}{% endblock %}
+{% block title %}{% if let Some(p) = page %}Job {{ p.job_number }}{% else if let Some(a) = action %}{% if a.days_error.is_some() %}Error: {% endif %}{{ a.title }}{% else if let Some(f) = form %}{% if !f.problems.is_empty() || price_error %}Error: {% endif %}Quote job {{ f.job_number }}{% endif %}{% endblock %}
 {% block main %}
 {% if let Some(p) = page %}
 <h1>Job {{ p.job_number }}</h1>
 <p id="job-counts">Sent to {{ p.sent }} business{% if p.sent != 1 %}es{% endif %}. Quotes so far: {{ p.quoted }}.</p>
 <h2>Job card</h2>
 <ul id="job-card">{% for line in p.card_lines %}<li>{{ line }}</li>{% endfor %}</ul>
+{% if let Some(c) = p.controls %}<h2>Your quote</h2>
+{% if c.standing() %}<p id="quote-controls-line">You can change or withdraw your quote until the homeowner picks one. Withdrawing takes it off the homeowner's page, and you can send a new one until they pick.</p>
+<p><a id="edit-quote" href="{{ c.edit_link }}">Change your quote</a></p>
+<form method="post" action="{{ c.withdraw_action }}" novalidate>
+<input type="hidden" name="csrf" value="{{ c.csrf }}">
+<button type="submit">Withdraw your quote</button>
+</form>
+{% else if c.withdrawn() %}<p id="quote-controls-line">You withdrew your quote. You can send a new one until the homeowner picks one.</p>
+<p><a id="edit-quote" href="{{ c.edit_link }}">Send a new quote</a></p>
+{% else if c.not_sent() %}<p id="quote-controls-line">You haven't quoted this job yet.</p>
+<p><a id="edit-quote" href="{{ c.edit_link }}">Send a quote</a></p>
+{% else %}<p id="quote-controls-line">The homeowner has picked a quote, so you can't change or withdraw yours now.</p>
+{% endif %}{% endif %}
 {% if !p.answers.is_empty() %}<h2>Homeowner's answers</h2>
 <dl id="job-answers">{% for pair in p.answers %}<dt>{{ pair.0 }}</dt><dd>{{ pair.1 }}</dd>{% endfor %}</dl>
 {% endif %}{% if !p.photos.is_empty() %}<h2>Photos</h2>
@@ -49,14 +70,43 @@
 {% else if let Some(f) = form %}
 <h1>Quote job {{ f.job_number }}</h1>
 <p id="job-status">{{ f.status_line() }}</p>
-{% if !f.problems.is_empty() %}<div id="error-summary" role="alert" tabindex="-1" autofocus>
+{% if !f.problems.is_empty() || price_error %}<div id="error-summary" role="alert" tabindex="-1" autofocus>
 <h2>Fix these to send your quote</h2>
-<ul>{% for p in f.problems %}<li><a href="#{{ p.field() }}">{{ p.message() }}</a></li>{% endfor %}</ul>
+<ul>{% if let Some(pr) = price %}{% if let Some(pp) = pr.problem %}<li><a href="#{{ pp.field() }}">{{ pp.message() }}</a></li>{% endif %}{% if let Some(m) = pr.note_error() %}<li><a href="#notes">{{ m }}</a></li>{% endif %}{% endif %}{% for p in f.problems %}<li><a href="#{{ p.field() }}">{{ p.message() }}</a></li>{% endfor %}</ul>
 </div>{% endif %}
 {% if let Some(price) = f.read_back %}<p id="read-back">We read {{ price }} from your text. Check the price and the answers below. The homeowner won't see anything until you send it.</p>{% endif %}
 <form method="post" novalidate>
 <input type="hidden" name="csrf" value="{{ csrf }}">
-<fieldset id="trip_fee"{% call errby(f, "trip_fee") %}{% endcall %}><legend>Trip fee counts toward the repair</legend>
+{% if let Some(pr) = price %}<h2>Your price</h2>
+<p id="format-definition">{{ pr.definition() }}</p>
+<input type="hidden" name="format" value="{{ pr.code() }}">
+{% if pr.code() == "range" %}{% call money(pr, "low", "Low price ($)", pr.fields.low) %}{% endcall %}{% call money(pr, "high", "High price ($)", pr.fields.high) %}{% endcall %}<div><input type="checkbox" id="on_site" name="on_site" value="yes"{% if pr.fields.on_site %} checked{% endif %}> <label for="on_site">Range to be confirmed on site</label></div>
+{% else if pr.code() == "tiers" %}<fieldset id="tiers"><legend>Packages (up to 3)</legend>
+{% if let Some(m) = pr.error_for("tier1_name") %}<p id="tier1_name-error" class="field-error">Error: {{ m }}</p>
+{% endif %}{% for (name, cents) in pr.fields.tiers %}<label for="tier{{ loop.index }}_name">Package {{ loop.index }} name</label>
+<input type="text" id="tier{{ loop.index }}_name" name="tier{{ loop.index }}_name" value="{{ name }}"{% if loop.first && pr.error_for("tier1_name").is_some() %} aria-describedby="tier1_name-error" aria-invalid="true"{% endif %}>
+<label for="tier{{ loop.index }}_price">Package {{ loop.index }} price ($)</label>
+<input type="text" id="tier{{ loop.index }}_price" name="tier{{ loop.index }}_price" inputmode="decimal" value="{{ cents }}">
+{% endfor %}</fieldset>
+{% else if pr.code() == "monthly" %}{% call money(pr, "amount", "Price ($)", pr.fields.amount) %}{% endcall %}<fieldset id="per"{% if pr.error_for("per").is_some() %} aria-describedby="per-error"{% endif %}><legend>What does this price cover?</legend>
+{% if let Some(m) = pr.error_for("per") %}<p id="per-error" class="field-error">Error: {{ m }}</p>
+{% endif %}{% call radio("per", "week", "One week", pr.fields.per.as_str()) %}{% endcall %}
+{% call radio("per", "month", "One month", pr.fields.per.as_str()) %}{% endcall %}
+{% call radio("per", "quarter", "3 months", pr.fields.per.as_str()) %}{% endcall %}
+{% call radio("per", "year", "One year", pr.fields.per.as_str()) %}{% endcall %}
+{% call radio("per", "visit", "One visit", pr.fields.per.as_str()) %}{% endcall %}
+</fieldset>
+<fieldset id="schedule"{% if pr.error_for("schedule").is_some() %} aria-describedby="schedule-error"{% endif %}><legend>If you priced per visit, how often will you come?</legend>
+{% if let Some(m) = pr.error_for("schedule") %}<p id="schedule-error" class="field-error">Error: {{ m }}</p>
+{% endif %}{% for (code, label) in pr.schedules() %}{% call radio("schedule", code, label, pr.fields.schedule.as_str()) %}{% endcall %}
+{% endfor %}</fieldset>
+{% call money(pr, "setup", "One-time setup charge ($, optional)", pr.fields.setup) %}{% endcall %}{% else if pr.code() == "diagnostic_visit" %}{% call money(pr, "amount", "Visit fee ($)", pr.fields.amount) %}{% endcall %}<p id="visit-fee-hint">You'll price the work after you've seen the job.</p>
+{% else %}{% call money(pr, "amount", "Price ($)", pr.fields.amount) %}{% endcall %}{% endif %}
+<label for="notes">Note for the homeowner (optional, up to 300 characters)</label>
+<p id="notes-hint">Keep it about the job. Leave out your phone number, email, links and any request to pay outside {{ askhava_core::api::brand().display_name() }}. If the homeowner picks your quote and you accept the introduction, {{ askhava_core::api::brand().display_name() }} puts you in touch.</p>
+{% if let Some(m) = pr.note_error() %}<p id="notes-error" class="field-error">Error: {{ m }}</p>
+{% endif %}<textarea id="notes" name="notes" maxlength="300" aria-describedby="notes-hint{% if pr.note_problem.is_some() %} notes-error{% endif %}">{{ pr.note }}</textarea>
+{% endif %}<fieldset id="trip_fee"{% call errby(f, "trip_fee") %}{% endcall %}><legend>Trip fee counts toward the repair</legend>
 {% call err(f, "trip_fee") %}{% endcall %}
 {% call radio("trip_fee", "counts", "Yes", f.values.trip_fee.as_str()) %}{% endcall %}
 {% call radio("trip_fee", "does_not_count", "No", f.values.trip_fee.as_str()) %}{% endcall %}

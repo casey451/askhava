@@ -26,6 +26,11 @@
 //! the photos through their short-lived links, the project file and the concept image with its
 //! label on and beside it (INT-044 to INT-046, D-491); the route that serves it is T306's and adds
 //! `no_store` (SEC-034).
+//! T164: [`quote_form_page_priced`] adds the price fields of the job's one format beside its
+//! plain definition, a per-visit price's required visit schedule and the notes box with its
+//! reason ([`PriceForm`]; PICK-052, PICK-053, REC-010); [`job_details_page_with_quote`] adds the
+//! "Change your quote" and "Withdraw your quote" controls before any pick ([`QuoteControls`],
+//! PICK-051). The routes that serve them are T306's.
 
 use askama::Template;
 use askhava_businesses::api::{Acting, LargestJob, offer_sample_pick};
@@ -36,9 +41,11 @@ use askhava_payments::api::{
     period_fee_for, saved_card_of,
 };
 use askhava_quotes::api::{
-    AUTO_CONFIRM_VERSION, AutoConfirmError as QuotesAutoError, AutoConfirmTick, DayPart, JobPage,
-    Parts, Period, Permit, Price, QuoteFacts, Spanish, TripFee, Untick, auto_confirm_authorization,
-    auto_confirm_of, stripe_answer_filed, tick_auto_confirm, untick_auto_confirm,
+    AUTO_CONFIRM_VERSION, AutoConfirmError as QuotesAutoError, AutoConfirmTick, DayPart, Format,
+    JobPage, NoteProblem, OTHER_SCHEDULE, Parts, Period, Permit, Price, PriceFields, PriceProblem,
+    QuoteFacts, Spanish, TripFee, Untick, VisitSchedule, auto_confirm_authorization,
+    auto_confirm_of, format_definition, stripe_answer_filed, tick_auto_confirm,
+    untick_auto_confirm,
 };
 use jiff::Timestamp;
 use jiff::civil::Date;
@@ -151,6 +158,8 @@ struct ActionsView<'a> {
     warning: Option<&'a LargestWarning>,
     auto_box: Option<&'a AutoConfirmBox>,
     page: Option<JobView<'a>>,
+    price: Option<&'a PriceForm<'a>>,
+    price_error: bool,
     csrf: &'a str,
 }
 
@@ -165,6 +174,7 @@ struct JobView<'a> {
     concept: Option<(&'a str, &'static str)>,
     sent: u32,
     quoted: u32,
+    controls: Option<QuoteControls<'a>>,
 }
 
 /// The links a job page needs beside its data: each photo's `/photos/<token>` path, in
@@ -190,6 +200,29 @@ pub struct JobPageLinks<'a> {
 /// # Errors
 /// The template's render error.
 pub fn job_details_page(page: &JobPage, links: &JobPageLinks<'_>) -> Result<String, askama::Error> {
+    render_job(page, links, None)
+}
+
+/// PICK-051 (T164): [`job_details_page`] with the business's own quote controls: "Change your
+/// quote" and "Withdraw your quote" before any pick, "Send a new quote" after a withdrawal, and
+/// the closed line once the job has had a pick.
+///
+/// # Errors
+/// The template's render error.
+pub fn job_details_page_with_quote(
+    page: &JobPage,
+    links: &JobPageLinks<'_>,
+    controls: QuoteControls<'_>,
+) -> Result<String, askama::Error> {
+    render_job(page, links, Some(controls))
+}
+
+/// Renders the job page with or without the quote controls.
+fn render_job(
+    page: &JobPage,
+    links: &JobPageLinks<'_>,
+    controls: Option<QuoteControls<'_>>,
+) -> Result<String, askama::Error> {
     let concept = page
         .concept()
         .and_then(|(_, label)| links.concept.map(|link| (link, label)));
@@ -207,6 +240,7 @@ pub fn job_details_page(page: &JobPage, links: &JobPageLinks<'_>) -> Result<Stri
         concept,
         sent: page.sent(),
         quoted: page.quoted(),
+        controls,
     };
     ActionsView {
         action: None,
@@ -214,6 +248,8 @@ pub fn job_details_page(page: &JobPage, links: &JobPageLinks<'_>) -> Result<Stri
         warning: None,
         auto_box: None,
         page: Some(view),
+        price: None,
+        price_error: false,
         csrf: "",
     }
     .render()
@@ -253,6 +289,8 @@ pub fn action_page(facts: &ActionFacts<'_>) -> Result<String, askama::Error> {
         warning: None,
         auto_box: None,
         page: None,
+        price: None,
+        price_error: false,
         csrf: facts.csrf,
     }
     .render()
@@ -665,15 +703,152 @@ pub fn quote_form_page_full(
     warning: Option<&LargestWarning>,
     auto_box: Option<&AutoConfirmBox>,
 ) -> Result<String, askama::Error> {
+    render_form(facts, csrf, (warning, auto_box), None)
+}
+
+/// PICK-052, PICK-053, REC-010 (T164): [`quote_form_page_full`] with the price fields of the
+/// job's one format beside its plain definition (no visit-fee field on a range job), a per-visit
+/// price's required visit schedule with "Other: enter the monthly amount", and the notes box with
+/// any reason it came back.
+///
+/// # Errors
+/// The template's render error.
+pub fn quote_form_page_priced(
+    facts: &QuoteFormFacts,
+    csrf: &str,
+    (warning, auto_box): (Option<&LargestWarning>, Option<&AutoConfirmBox>),
+    price: &PriceForm<'_>,
+) -> Result<String, askama::Error> {
+    render_form(facts, csrf, (warning, auto_box), Some(price))
+}
+
+/// Renders the quote form, with the price fields when given.
+fn render_form(
+    facts: &QuoteFormFacts,
+    csrf: &str,
+    (warning, auto_box): (Option<&LargestWarning>, Option<&AutoConfirmBox>),
+    price: Option<&PriceForm<'_>>,
+) -> Result<String, askama::Error> {
     ActionsView {
         action: None,
         form: Some(facts),
         warning,
         auto_box,
         page: None,
+        price,
+        price_error: price.is_some_and(PriceForm::has_error),
         csrf,
     }
     .render()
+}
+
+/// PICK-053, PICK-052 (T164): what the quote form's price part shows: the job's format, the
+/// posted price fields and notes, and any problem with them.
+#[derive(Debug, Clone)]
+pub struct PriceForm<'a> {
+    /// The job type's format (`quotes::api::format_for`).
+    pub format: Format,
+    /// The posted price fields; empty at first render.
+    pub fields: &'a PriceFields,
+    /// The posted note, kept after a failed send.
+    pub note: &'a str,
+    /// The price field the last send found missing or unreadable.
+    pub problem: Option<PriceProblem>,
+    /// Why the note came back (`quotes::api::screen_note`).
+    pub note_problem: Option<NoteProblem>,
+}
+
+impl PriceForm<'_> {
+    /// The format's plain definition, as the quote card shows it.
+    #[must_use]
+    pub fn definition(&self) -> &'static str {
+        format_definition(self.format)
+    }
+
+    /// The format's code, which picks the fields shown.
+    #[must_use]
+    pub const fn code(&self) -> &'static str {
+        self.format.code()
+    }
+
+    /// A11Y-030: the price message for the form element `field`.
+    #[must_use]
+    pub fn error_for(&self, field: &str) -> Option<&'static str> {
+        self.problem
+            .filter(|p| p.field() == field)
+            .map(PriceProblem::message)
+    }
+
+    /// The reason the note came back, shown by the notes box and in the summary.
+    #[must_use]
+    pub fn note_error(&self) -> Option<String> {
+        self.note_problem.map(NoteProblem::message)
+    }
+
+    /// Whether anything in the price part needs fixing.
+    #[must_use]
+    pub const fn has_error(&self) -> bool {
+        self.problem.is_some() || self.note_problem.is_some()
+    }
+
+    /// The visit schedules offered for a per-visit price: code and label.
+    #[must_use]
+    pub fn schedules(&self) -> Vec<(&'static str, &'static str)> {
+        VisitSchedule::ALL
+            .into_iter()
+            .map(|s| (s.code(), s.label()))
+            .chain([(OTHER_SCHEDULE, OTHER_SCHEDULE_LABEL)])
+            .collect()
+    }
+}
+
+/// D-2333, D-1407: the label of the schedule choice that makes the price monthly.
+pub const OTHER_SCHEDULE_LABEL: &str = "Other: enter the monthly amount";
+
+/// PICK-051 (T164): where the business's own quote on the job stands.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum OwnQuote {
+    /// No quote yet.
+    NotSent,
+    /// Sent and still on the homeowner's page; it can be edited or withdrawn.
+    Standing,
+    /// Withdrawn; a new send is an edit that brings it back.
+    Withdrawn,
+    /// The job has had a pick, so it can't change.
+    Closed,
+}
+
+/// PICK-051 (T164): the job page's quote controls; the routes are T306's.
+#[derive(Debug, Clone, Copy)]
+pub struct QuoteControls<'a> {
+    /// Where the business's quote stands.
+    pub state: OwnQuote,
+    /// The quote form's link (a new quote or an edit).
+    pub edit_link: &'a str,
+    /// The withdraw POST's path.
+    pub withdraw_action: &'a str,
+    /// The withdraw form's CSRF token.
+    pub csrf: &'a str,
+}
+
+impl QuoteControls<'_> {
+    /// True while the quote can be edited or withdrawn.
+    #[must_use]
+    pub fn standing(&self) -> bool {
+        self.state == OwnQuote::Standing
+    }
+
+    /// True after the business withdrew it.
+    #[must_use]
+    pub fn withdrawn(&self) -> bool {
+        self.state == OwnQuote::Withdrawn
+    }
+
+    /// True before any quote.
+    #[must_use]
+    pub fn not_sent(&self) -> bool {
+        self.state == OwnQuote::NotSent
+    }
 }
 
 /// BIZ-049: the most a quote asks, in cents, for the largest-job check: the firm price, the top of

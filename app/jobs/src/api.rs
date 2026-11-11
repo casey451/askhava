@@ -90,6 +90,26 @@ pub async fn first_quote(
     Ok(Guarded::MovedOn)
 }
 
+/// PICK-051, D-2912 (T164): takes job `id`'s row lock (`SELECT ... FOR UPDATE`) in the caller's
+/// transaction and returns its status read under it. A pick's status move updates this row, so a
+/// quote edit or withdrawal holding the lock either commits before the move or reads the moved
+/// status and refuses.
+///
+/// # Errors
+///
+/// [`JobsError::NotFound`] or [`JobsError::Database`].
+pub async fn lock_for_quote_change(
+    db: &mut PgConnection,
+    id: Uuid,
+) -> Result<JobStatus, JobsError> {
+    let code = sqlx::query_scalar!("SELECT status FROM jobs.job WHERE id = $1 FOR UPDATE", id)
+        .fetch_optional(db)
+        .await
+        .map_err(|_| JobsError::Database)?
+        .ok_or(JobsError::NotFound)?;
+    JobStatus::from_code(&code).ok_or(JobsError::Database)
+}
+
 /// The homeowner's private feedback after Done, its share tick, removals and author marks
 /// (JOB-017, T230, D-083, D-466, D-493). Table `jobs.feedback` (migration 0139): one row per job,
 /// the words and tick as sent and never changed; there is no rating or tone column, so
