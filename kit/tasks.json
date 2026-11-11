@@ -15811,7 +15811,7 @@
    "id": "T134",
    "slug": "sandbox-license-storage",
    "title": "License sources and object storage behind the adapters",
-   "goal": "The real license-source and object-storage clients sit behind their adapters: daily lists and the throttled lookup work against the real sources for verification only, and the audit stream and exports land in the bucket through a write-only, prefix-scoped token (CARD-015, LIC-006, LIC-007, LIC-010, LIC-027, OPS-010, OPS-011, PRIV-029). The real store also implements T275's `StorageDelete` (D-1841). The `photos/` prefix uses its own key with read, list and delete; PRIV-029's write-only, prefix-scoped token, versioning and object lock stay in force for the audit-stream and export (backup) prefixes (D-1841).",
+   "goal": "The real license-source and object-storage clients sit behind their adapters: daily lists and the throttled lookup work against the real sources for verification only, and the audit stream and exports land in the bucket through a write-only, prefix-scoped token (CARD-015, LIC-006, LIC-007, LIC-010, LIC-027, OPS-010, OPS-011, PRIV-029). The real store also implements T275's `StorageDelete` (D-1841). The `photos/` prefix uses its own key with read, list and delete; PRIV-029's write-only, prefix-scoped token, versioning and object lock stay in force for the audit-stream and export (backup) prefixes (D-1841). Plan change D-2954: the real client also implements T385's `LicenseRecords::lookup_record` and answers in T385's `RECORD_HEADER` format: for `roc` the ROC's public detail of that one license, for `city` that number's row of the latest city spreadsheet; one record per call, only for a signing-up business's own license, nothing kept (LIC-010); a field the source does not publish (an email, the phone kind) is left empty.",
    "type": "harness",
    "phase": 2,
    "stage": "6",
@@ -15819,7 +15819,8 @@
    "deps": [
     "T133",
     "T260",
-    "T275"
+    "T275",
+    "T385"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -15867,7 +15868,8 @@
     "D-480",
     "D-492",
     "D-1143",
-    "D-1841"
+    "D-1841",
+    "D-2954"
    ],
    "cites": [],
    "budget": {
@@ -16876,7 +16878,7 @@
    "id": "T302",
    "slug": "business-signup-served",
    "title": "server and portals: business sign-up is served (every sign-up screen, the email check and the sample pick step)",
-   "goal": "No task serves business sign-up (D-2128): `portals::api` has `signup_page` with its `Screen`s and `done_facts`, and `email_check_page` and `sample_pick_page` (T193, T149), with the route constant `SIGNUP_ROUTE` (`/b/signup`), but `server::build_router` merges none of them, so J2 step 1 (T099) cannot run. (1) `app/server/src/business_signup.rs` builds `GET` and `POST` on `SIGNUP_ROUTE` for each screen in order, without a session (the pre-session CSRF cookie, SEC-042), through `businesses::api`'s sign-up, identity and email-verification calls, then the email check and sample-pick screens after the email is verified (BIZ-042); T089's sign-up limits hold through the route; a screen holding a record contact is `no_store`; a cross-site or wrong-CSRF `POST` is refused, changes nothing and is a security event (SEC-048); merged in the shared `app/server/src/lib.rs`. (2) Tests: `app/server/tests/business_signup_route.rs` against the assembled router (TD-SEC-45) and `tests/e2e/business_signup_served.spec.ts`, a fake R-37 sign-up on a fixture ROC record through activation, the identity code computed from the stand-in Verify's rule for the record's fake phone (`stand_ins/twilio.py` `start_verification`), and the sign-up email marked verified by setting that sign-up's `businesses.mailbox_check.verified_at` through `psql` on `DATABASE_URL` (the emailed code is an HMAC under `ASKHAVA_ID_SECRET`, which the web server's environment draws at random and the spec cannot read, and it is never stored, D-2128); the email code step itself is proved in the route test. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. Each sign-up `POST` calls `portals::api::admit_sign_up` first (D-1951; fourth external audit F12, D-2206). Nov 11 code review batch 3, F6 (D-2709; BIZ-049, BIZ-004, BIZ-007, D-2508 (2), D-2511): it also serves `portals::api::CAPABILITY_ROUTE` (`/b/signup/capability`), `GET` and `POST` for each capability screen (the one-page form and the guided sequence); the path falls under `door()`'s Business rule (`tests/security/tests/auth_matrix.rs:109`), so it is served behind `portals::api::business_principal`: at activation the owner is sent the normal sign-in link to the verified sign-up email (link plus code, SEC-004; no session is started without it), and the first sign-in of an owner whose capability step is not saved lands on it; the checklist from T368's entry point (the business's ROC classes, agency licenses, pest attestation and handyman standing, and the stored category switch), saved through `businesses::api::save_capability` (T369's after-hours rule); a tick outside the offer changes nothing and shows the form again; route cases in `app/server/tests/business_signup_route.rs` (TD-BIZ-49). Nov 11 code review batch 3 (D-2711, D-2712): the sign-up `POST` stores what the holder read needs: a pest business's attestation, license number and record categories through `licensing::api::record_pest_attestation` (LIC-047), and an agency-category business's license number through `licensing::api::record_agency_license` (LIC-015, LIC-016; the number from T165's form field), both T374's; the Handyman category choice is already stored in `businesses.signup.trades` and is how T374 reads handyman standing; TD-BIZ-49 gains these cases. Plan change D-2943 (BIZ-022): the sign-up `POST` also stores the business name and trade name from T165's form fields through `businesses::api::save_business_name` (T165), a refused name showing the screen again with its reason; for a no-license business the same stored business name and trade name are the `CityRecord` names it passes (through `businesses::api::holding`'s `Known.city_names`) to LIC-011's city-list match (D-255), and no match follows LIC-011, BIZ-003 and BIZ-016 (pending until a later daily list matches; a flagged sign-up waits in needs review); TD-BIZ-49 gains those cases.",
+   "goal": "No task serves business sign-up (D-2128): `portals::api` has `signup_page` with its `Screen`s and `done_facts`, and `email_check_page` and `sample_pick_page` (T193, T149), with the route constant `SIGNUP_ROUTE` (`/b/signup`), but `server::build_router` merges none of them, so J2 step 1 (T099) cannot run. (1) `app/server/src/business_signup.rs` builds `GET` and `POST` on `SIGNUP_ROUTE` for each screen in order, without a session (the pre-session CSRF cookie, SEC-042), through `businesses::api`'s sign-up, identity and email-verification calls, then the email check and sample-pick screens after the email is verified (BIZ-042); T089's sign-up limits hold through the route; a screen holding a record contact is `no_store`; a cross-site or wrong-CSRF `POST` is refused, changes nothing and is a security event (SEC-048); merged in the shared `app/server/src/lib.rs`. (2) Tests: `app/server/tests/business_signup_route.rs` against the assembled router (TD-SEC-45) and `tests/e2e/business_signup_served.spec.ts`, a fake R-37 sign-up on a fixture ROC record through activation, the identity code computed from the stand-in Verify's rule for the record's fake phone (`stand_ins/twilio.py` `start_verification`), and the sign-up email marked verified by setting that sign-up's `businesses.mailbox_check.verified_at` through `psql` on `DATABASE_URL` (the emailed code is an HMAC under `ASKHAVA_ID_SECRET`, which the web server's environment draws at random and the spec cannot read, and it is never stored, D-2128); the email code step itself is proved in the route test. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. Each sign-up `POST` calls `portals::api::admit_sign_up` first (D-1951; fourth external audit F12, D-2206). Nov 11 code review batch 3, F6 (D-2709; BIZ-049, BIZ-004, BIZ-007, D-2508 (2), D-2511): it also serves `portals::api::CAPABILITY_ROUTE` (`/b/signup/capability`), `GET` and `POST` for each capability screen (the one-page form and the guided sequence); the path falls under `door()`'s Business rule (`tests/security/tests/auth_matrix.rs:109`), so it is served behind `portals::api::business_principal`: at activation the owner is sent the normal sign-in link to the verified sign-up email (link plus code, SEC-004; no session is started without it), and the first sign-in of an owner whose capability step is not saved lands on it; the checklist from T368's entry point (the business's ROC classes, agency licenses, pest attestation and handyman standing, and the stored category switch), saved through `businesses::api::save_capability` (T369's after-hours rule); a tick outside the offer changes nothing and shows the form again; route cases in `app/server/tests/business_signup_route.rs` (TD-BIZ-49). Nov 11 code review batch 3 (D-2711, D-2712): the sign-up `POST` stores what the holder read needs: a pest business's attestation, license number and record categories through `licensing::api::record_pest_attestation` (LIC-047), and an agency-category business's license number through `licensing::api::record_agency_license` (LIC-015, LIC-016; the number from T165's form field), both T374's; the Handyman category choice is already stored in `businesses.signup.trades` and is how T374 reads handyman standing; TD-BIZ-49 gains these cases. Plan change D-2943 (BIZ-022): the sign-up `POST` also stores the business name and trade name from T165's form fields through `businesses::api::save_business_name` (T165), a refused name showing the screen again with its reason; for a no-license business the same stored business name and trade name are the `CityRecord` names it passes (through `businesses::api::holding`'s `Known.city_names`) to LIC-011's city-list match (D-255), and no match follows LIC-011, BIZ-003 and BIZ-016 (pending until a later daily list matches; a flagged sign-up waits in needs review); TD-BIZ-49 gains those cases. Plan change D-2954 (BIZ-002, BIZ-016, D-059, D-1699): the sign-up reads the business's own public record through T385: the server's license source is `adapters::api::LicenseLists` on `ASKHAVA_LICENSE_BASE_URL`, checked by `check_base_url` (T385's `file://` fixture directory in the e2e); for an ROC business, after its names are saved, `licensing::api::read_own_record(source, \"roc\", number)`, and `businesses::api::record_name_flag` goes to `record_match` with the license match, so a name that agrees with neither the record's business name nor its DBA waits in needs review (BIZ-016); for a city-list or pest business (LIC-011, LIC-048), `read_own_record(source, \"city\", n)` on `licensing::api::city_match_number`'s number, no number meaning no record contact; each identity screen builds `RecordContacts`, `RecordSeen` and the masked contact from `businesses::api::record_contacts` of a read made in that request, never stored, logged or put in an error; `NotFound`, or a record with no usable contact, is `Flag::NoRecordContact` (needs review, BIZ-002), while `Unreadable` changes nothing and shows the screen again asking the business to try again shortly; the e2e's identity code goes to T385's fixture record phone; TD-BIZ-49 gains these cases.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -16894,7 +16896,8 @@
     "T294",
     "T368",
     "T369",
-    "T374"
+    "T374",
+    "T385"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -16928,7 +16931,8 @@
     "SEC-034",
     "SEC-042",
     "SEC-048",
-    "SEC-014"
+    "SEC-014",
+    "BIZ-002"
    ],
    "tests": [
     "TD-SEC-45",
@@ -16943,7 +16947,8 @@
     "D-2709",
     "D-2711",
     "D-2712",
-    "D-2943"
+    "D-2943",
+    "D-2954"
    ],
    "cites": [],
    "budget": {
@@ -26580,6 +26585,81 @@
    ],
    "branch": "claude/task/T375-job-types-page-served",
    "prompt": "kit/prompts/T375.md"
+  },
+  {
+   "id": "T385",
+   "slug": "signup-own-record-read",
+   "title": "adapters, licensing and businesses (harness): the sign-up read of the business's own state or city record, its names for the BIZ-016 name check and its contacts for the identity code, nothing kept",
+   "goal": "Plan change D-2954 (BIZ-002, BIZ-016, LIC-006, LIC-010, LIC-011, LIC-048; D-059, D-366, D-1699, D-1712, D-2943): nothing reads a business's own public record at sign-up, so BIZ-016's name check has no record name for an ROC business and the identity chain's `RecordContacts` (`app/businesses/src/identity.rs:44`, read by the caller \"from `licensing`\") have no source: the daily imports keep no name, phone, email or address from the ROC list and no contact from the city list (`app/licensing/src/imports.rs:9`, `migrations/0050_licensing_imports.sql:6`), the live lookup answers only Active or Inactive (`app/licensing/src/handlers.rs:203`), and `LicenseSource` (`app/adapters/src/license_sources.rs:17`) has no record call. The blueprint already looks the license up at sign-up (`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:194`). (1) `app/adapters/src/license_sources.rs`: a second read-only trait, `LicenseRecords`, with `lookup_record(list, number)` (the raw answer for one license on list `roc` or `city`; a `lookup_` read, no idempotency key, D-596), implemented by `LicenseLists` at `<dir>/record/<list>/<number>` for `file://` fixtures and the same path over HTTP, unsafe names refused as today (SEC-032), exported from `adapters::api`; `LicenseSource` is unchanged, so its test fakes need no edit. (2) `app/licensing/src/own_record.rs`, exported from `licensing::api`: `RECORD_HEADER` (`license_number,business_name,trade_name,phone,phone_kind,email,address,town,zip`, one row; `phone_kind` is `mobile`, `landline` or empty, empty read as able to get texts); `read_own_record(source, list, number)` makes one `lookup_record` call for the business's own number, normalised as the lists normalise it, never retried, and gives `RecordRead::Found(OwnRecord)`, `RecordRead::NotFound` (no record) or `RecordRead::Unreadable` (a failed call, a wrong header, not exactly one row, or a row for another number: a misread never counts, LIC-008); `OwnRecord` has no `Debug` and holds every contact as a `SecretString`; `OwnRecord::texting_phone` leaves out a phone marked `landline` (D-366) and `OwnRecord::landline` gives that phone for the masked kind (BIZ-026); `names_agree(record, business_name, trade_name)` is true when either name the business gave equals the record's business name or trade name (DBA) under LIC-011's comparison (`compared`, `app/licensing/src/rules.rs:211`: case, spacing and punctuation ignored); no qualifying-party or owner name is read; `city_match_number(conn, names)` gives the city license number of the latest city-list row that LIC-011 matches for those names (`city_list_standing`'s rule), `None` when none matches or the matched row has no number. Nothing is written: no table, column, audit row or log line gets a record name or contact, and no error carries one (LIC-010, PRIV-016, D-1699). (3) `app/businesses/src/record_names.rs`, exported from `businesses::api`: `record_name_flag(conn, business, &OwnRecord)` reads the business's stored names (`businesses.business_name`, T165) and gives `Some(Flag::NameMismatch)` when `names_agree` is false or no name is stored, else `None` (BIZ-016); `record_contacts(&OwnRecord)` gives the `RecordContacts` (texting phone, email, has-address), the full record address for `RecordSeen` and the town and ZIP for `MaskedContact::for_step`. T302 calls these on the sign-up `POST`. (4) `tests/fixtures/license_source/record/roc/ROC100001`: one fake record in the record format (a business name and DBA, a mobile phone in the fictional 555-0100 to 555-0199 block, an `example.test` email, a fake address), the record T302's e2e signs up; `tests/e2e/webserver.ts` (T227's) sets `ASKHAVA_LICENSE_BASE_URL` for both binaries to `file://` that `tests/fixtures/license_source` directory, the key the server reads for its license source (T302). Tests in `tests/integration/tests/signup_own_record.rs` (TD-LIC-30), fake data only, fixture records written to a temporary `file://` directory. Update the `adapters`, `licensing` and `businesses` `CLAUDE.md` files and `docs/decisions.md`. A harness task because it edits T227's e2e start-up file; Opus review.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "4",
+   "module": "licensing",
+   "deps": [
+    "T165",
+    "T176",
+    "T036",
+    "T081",
+    "T227"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "licensing",
+    "privacy",
+    "security",
+    "harness"
+   ],
+   "owns": [
+    "app/adapters/src/license_sources.rs",
+    "app/licensing/src/own_record.rs",
+    "app/businesses/src/record_names.rs",
+    "tests/integration/tests/signup_own_record.rs",
+    "tests/fixtures/license_source/record/roc/ROC100001",
+    "tests/e2e/webserver.ts"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/businesses.md",
+    "docs/spec/licensing.md",
+    "docs/spec/privacy.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "BIZ-002",
+    "BIZ-016",
+    "LIC-006",
+    "LIC-010",
+    "LIC-011",
+    "LIC-048"
+   ],
+   "tests": [
+    "TD-LIC-30"
+   ],
+   "decisions": [
+    "D-059",
+    "D-255",
+    "D-366",
+    "D-1699",
+    "D-1712",
+    "D-2943",
+    "D-2954"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 6,
+    "lines": 500,
+    "context_pct": 13
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T385-signup-own-record-read",
+   "prompt": "kit/prompts/T385.md"
   }
  ]
 }
