@@ -2,481 +2,481 @@
   "consent": {
     "audience": "homeowner",
     "segments": 2,
-    "text": "Ask Hava: Got it. Next, a few quick questions. Ask Hava is not a contractor; you hire the business you pick directly. Automated texts about your request. Msg frequency varies. Msg & data rates may apply. Reply STOP to opt out, HELP for help. Terms: askhava.com/terms Privacy: askhava.com/privacy"
+    "text": "{brand_short}: Got it. Next, a few quick questions. {brand} is not a contractor; you hire the business you pick directly. Automated texts about your request. Msg frequency varies. Msg & data rates may apply. Reply STOP to opt out, HELP for help. Terms: {domain}/terms Privacy: {domain}/privacy"
   },
   "consent_safety_call": {
     "audience": "homeowner",
     "segments": 3,
-    "text": "Ask Hava: Got it. Next, a few quick questions. Ask Hava is not a contractor; you hire the business you pick directly. Automated texts about your request. Msg frequency varies. Msg & data rates may apply. If you report a danger like gas or smoke and we can't text, we may try one recorded call to this number. Don't wait for it: call 911. Reply STOP to opt out, HELP for help. Terms: askhava.com/terms Privacy: askhava.com/privacy"
+    "text": "{brand_short}: Got it. Next, a few quick questions. {brand} is not a contractor; you hire the business you pick directly. Automated texts about your request. Msg frequency varies. Msg & data rates may apply. If you report a danger like gas or smoke and we can't text, we may try one recorded call to this number. Don't wait for it: call 911. Reply STOP to opt out, HELP for help. Terms: {domain}/terms Privacy: {domain}/privacy"
   },
   "who_is_this": {
     "audience": "homeowner",
     "segments": 2,
-    "text": "Ask Hava: Ask Hava is a local service. Our texts are automated. The Ask Hava owner gets HELP messages right away and usually replies within 2 days, or within 24 hours if your job is urgent."
+    "text": "{brand_short}: {brand} is a local service. Our texts are automated. The {brand} owner gets HELP messages right away and usually replies within 2 days, or within 24 hours if your job is urgent."
   },
   "opt_out_confirmation": {
     "audience": "homeowner",
     "segments": 1,
-    "text": "Ask Hava: You're unsubscribed. You won't get more texts or automated calls from Ask Hava at this number. To use Ask Hava again, text START."
+    "text": "{brand_short}: You're unsubscribed. You won't get more texts or automated calls from {brand} at this number. To use {brand} again, text START."
   },
   "start_reply": {
     "audience": "homeowner",
     "segments": 1,
-    "text": "Ask Hava: You can text us again. Send your request to start. Msg & data rates may apply. Reply HELP for help, STOP to opt out."
+    "text": "{brand_short}: You can text us again. Send your request to start. Msg & data rates may apply. Reply HELP for help, STOP to opt out."
   },
   "help_reply": {
     "audience": "homeowner",
     "segments": 3,
-    "text": "Ask Hava: Tell us what's wrong in one text. The Ask Hava owner gets HELP messages right away and usually replies within {reply_time}. This number is text-only. If anyone is in danger, call 911. Can't open links? Reply LIST to get your quotes by text. Help: help@askhava.com or askhava.com/help Reply STOP to opt out."
+    "text": "{brand_short}: Tell us what's wrong in one text. The {brand} owner gets HELP messages right away and usually replies within {reply_time}. This number is text-only. If anyone is in danger, call 911. Can't open links? Reply LIST to get your quotes by text. Help: help@{domain} or {domain}/help Reply STOP to opt out."
   },
   "help_reply_ca": {
     "audience": "homeowner",
     "segments": 3,
-    "text": "Ask Hava: Tell us what's wrong in one text. The Ask Hava owner gets HELP messages right away and usually replies within {reply_time}. This number is text-only. If anyone is in danger, call 911. Can't open links? Reply LIST to get your quotes by text. Canadian numbers may pay roaming charges. Help: help@askhava.com or askhava.com/help Reply STOP to opt out."
+    "text": "{brand_short}: Tell us what's wrong in one text. The {brand} owner gets HELP messages right away and usually replies within {reply_time}. This number is text-only. If anyone is in danger, call 911. Can't open links? Reply LIST to get your quotes by text. Canadian numbers may pay roaming charges. Help: help@{domain} or {domain}/help Reply STOP to opt out."
   },
   "help_reply_away": {
     "audience": "homeowner",
     "segments": 3,
-    "text": "Ask Hava: Tell us what's wrong in one text. The Ask Hava owner is away until {time} and will reply by then. If anyone is in danger, call 911. Can't open links? Reply LIST to get your quotes by text. Help: help@askhava.com or askhava.com/help Reply STOP to opt out."
+    "text": "{brand_short}: Tell us what's wrong in one text. The {brand} owner is away until {time} and will reply by then. If anyone is in danger, call 911. Can't open links? Reply LIST to get your quotes by text. Help: help@{domain} or {domain}/help Reply STOP to opt out."
   },
   "help_reply_away_ca": {
     "audience": "homeowner",
     "segments": 3,
-    "text": "Ask Hava: Tell us what's wrong in one text. The Ask Hava owner is away until {time} and will reply by then. If anyone is in danger, call 911. Can't open links? Reply LIST to get your quotes by text. Canadian numbers may pay roaming charges. Help: help@askhava.com or askhava.com/help Reply STOP to opt out."
+    "text": "{brand_short}: Tell us what's wrong in one text. The {brand} owner is away until {time} and will reply by then. If anyone is in danger, call 911. Can't open links? Reply LIST to get your quotes by text. Canadian numbers may pay roaming charges. Help: help@{domain} or {domain}/help Reply STOP to opt out."
   },
   "emergency_911": {
     "audience": "homeowner",
     "segments": 2,
-    "text": "Ask Hava: Ask Hava isn't an emergency service. If you smell gas, see smoke or fire, a CO alarm is going off, or a power line is down, get everyone out and call 911 from outside. Reply SAFE when you're safe."
+    "text": "{brand_short}: {brand} isn't an emergency service. If you smell gas, see smoke or fire, a CO alarm is going off, or a power line is down, get everyone out and call 911 from outside. Reply SAFE when you're safe."
   },
   "spanish_not_yet": {
     "audience": "homeowner",
     "segments": 1,
-    "text": "Ask Hava: For now we text in English. Reply HELP if you need help."
+    "text": "{brand_short}: For now we text in English. Reply HELP if you need help."
   },
   "under_18": {
     "audience": "homeowner",
     "segments": 1,
-    "text": "Ask Hava: Sorry, you must be 18 or older to use Ask Hava. Please ask a parent or adult to text us."
+    "text": "{brand_short}: Sorry, you must be 18 or older to use {brand}. Please ask a parent or adult to text us."
   },
   "request_out": {
     "audience": "homeowner",
     "segments": 1,
-    "text": "Ask Hava: Request {job} is out to {count} {trade} businesses. Not every business answers. We'll text you when the first quote comes in."
+    "text": "{brand_short}: Request {job} is out to {count} {trade} businesses. Not every business answers. We'll text you when the first quote comes in."
   },
   "first_quote": {
     "audience": "homeowner",
     "segments": 2,
-    "text": "Ask Hava: Your first quote for request {job} is in, and more may come. Free for you. The business you pick pays Ask Hava a set introduction fee. Can't open links? Reply LIST to get your quotes by text. See them here: {link} Terms (18+): askhava.com/terms"
+    "text": "{brand_short}: Your first quote for request {job} is in, and more may come. Free for you. The business you pick pays {brand} a set introduction fee. Can't open links? Reply LIST to get your quotes by text. See them here: {link} Terms (18+): {domain}/terms"
   },
   "all_quotes_in": {
     "audience": "homeowner",
     "segments": 2,
-    "text": "Ask Hava: All quotes are in for request {job}: {quoted} of {count} businesses quoted. {link} Reply LIST to see them here, or CLOSE {job} if you don't need it."
+    "text": "{brand_short}: All quotes are in for request {job}: {quoted} of {count} businesses quoted. {link} Reply LIST to see them here, or CLOSE {job} if you don't need it."
   },
   "no_quotes_yet": {
     "audience": "homeowner",
     "segments": 2,
-    "text": "Ask Hava: No quotes yet for request {job}. A few more details or a photo often help a business price it. Reply 1 to add details, 2 to keep waiting, or 3 to close."
+    "text": "{brand_short}: No quotes yet for request {job}. A few more details or a photo often help a business price it. Reply 1 to add details, 2 to keep waiting, or 3 to close."
   },
   "closed_no_quotes": {
     "audience": "homeowner",
     "segments": 1,
-    "text": "Ask Hava: Request {job} is closed because no quotes came in. Text us any time to try again."
+    "text": "{brand_short}: Request {job} is closed because no quotes came in. Text us any time to try again."
   },
   "closed_no_pick": {
     "audience": "homeowner",
     "segments": 1,
-    "text": "Ask Hava: Request {job} is closed because no quote was picked. Text us any time to start a new one."
+    "text": "{brand_short}: Request {job} is closed because no quote was picked. Text us any time to start a new one."
   },
   "closed_no_quote_left": {
     "audience": "homeowner",
     "segments": 1,
-    "text": "Ask Hava: Request {job} is closed because none of its quotes can go ahead. Text us any time to start a new one."
+    "text": "{brand_short}: Request {job} is closed because none of its quotes can go ahead. Text us any time to start a new one."
   },
   "caller_missed": {
     "audience": "homeowner",
     "segments": 1,
-    "text": "Ask Hava: {business} tried to call you about request {job}. Call them back on {number}."
+    "text": "{brand_short}: {business} tried to call you about request {job}. Call them back on {number}."
   },
   "problem_reply": {
     "audience": "homeowner",
     "segments": 2,
-    "text": "Ask Hava: Thanks. The Ask Hava owner reads every problem report, usually within 7 days. Ask Hava can't settle disputes about work or price. Licensed trades: you can also file with the state at askhava.com/help/roc-complaint."
+    "text": "{brand_short}: Thanks. The {brand} owner reads every problem report, usually within 7 days. {brand} can't settle disputes about work or price. Licensed trades: you can also file with the state at {domain}/help/roc-complaint."
   },
   "close_howto": {
     "audience": "homeowner",
     "segments": 1,
-    "text": "Ask Hava: Reply CLOSE {job} to close request {job}. If that doesn't fix it, reply with what's wrong and the Ask Hava owner gets it right away."
+    "text": "{brand_short}: Reply CLOSE {job} to close request {job}. If that doesn't fix it, reply with what's wrong and the {brand} owner gets it right away."
   },
   "cost_answer": {
     "audience": "homeowner",
     "segments": 2,
-    "text": "Ask Hava: It's free for you. The business you pick pays Ask Hava a fixed introduction fee ($25, $75 or $199, by quote size). You pay the business directly for the work. If that doesn't fix it, reply with what's wrong and the Ask Hava owner gets it right away."
+    "text": "{brand_short}: It's free for you. The business you pick pays {brand} a fixed introduction fee ($25, $75 or $199, by quote size). You pay the business directly for the work. If that doesn't fix it, reply with what's wrong and the {brand} owner gets it right away."
   },
   "business_no_call_reminder": {
     "audience": "business",
     "segments": 2,
-    "text": "Ask Hava: Job {job}: no call yet. Call within 72 hours of the release, or the fee can't be refunded. Call between 8 a.m. and 8 p.m. Arizona time (any hour on an emergency job). Your 2 attempts can be on different days."
+    "text": "{brand_short}: Job {job}: no call yet. Call within 72 hours of the release, or the fee can't be refunded. Call between 8 a.m. and 8 p.m. Arizona time (any hour on an emergency job). Your 2 attempts can be on different days."
   },
   "business_pick_waiting": {
     "audience": "business",
     "segments": 1,
-    "text": "Ask Hava: A homeowner picked your quote for job {job}. Accept by {time}."
+    "text": "{brand_short}: A homeowner picked your quote for job {job}. Accept by {time}."
   },
   "beep_question": {
     "audience": "homeowner",
     "segments": 1,
-    "text": "Ask Hava: Is it 1) a chirp every minute or so, or 2) an alarm that keeps going off?"
+    "text": "{brand_short}: Is it 1) a chirp every minute or so, or 2) an alarm that keeps going off?"
   },
   "how_soon": {
     "audience": "homeowner",
     "segments": 1,
-    "text": "Ask Hava: How soon do you need this? 1) Today, it's urgent 2) In the next few days 3) No rush 4) By a certain day"
+    "text": "{brand_short}: How soon do you need this? 1) Today, it's urgent 2) In the next few days 3) No rush 4) By a certain day"
   },
   "needed_by_day": {
     "audience": "homeowner",
     "segments": 1,
-    "text": "Ask Hava: Which day do you need it by?"
+    "text": "{brand_short}: Which day do you need it by?"
   },
   "emergency_choice": {
     "audience": "homeowner",
     "segments": 2,
-    "text": "Ask Hava: Is this an emergency? Emergency: businesses get your request by email marked EMERGENCY, and the business you pick has 60 minutes to confirm. Businesses that get emergency requests at night may be able to come tonight. After-hours work usually costs more. Reply 1 for emergency or 2 for regular."
+    "text": "{brand_short}: Is this an emergency? Emergency: businesses get your request by email marked EMERGENCY, and the business you pick has 60 minutes to confirm. Businesses that get emergency requests at night may be able to come tonight. After-hours work usually costs more. Reply 1 for emergency or 2 for regular."
   },
   "night_count_many": {
     "audience": "homeowner",
     "segments": 1,
-    "text": "Ask Hava: {count} {trade} businesses on Ask Hava get emergency requests at night."
+    "text": "{brand_short}: {count} {trade} businesses on {brand} get emergency requests at night."
   },
   "night_count_one": {
     "audience": "homeowner",
     "segments": 1,
-    "text": "Ask Hava: 1 {trade} business on Ask Hava gets emergency requests at night."
+    "text": "{brand_short}: 1 {trade} business on {brand} gets emergency requests at night."
   },
   "night_count_none": {
     "audience": "homeowner",
     "segments": 1,
-    "text": "Ask Hava: No {trade} business on Ask Hava gets emergency requests at night yet. Your request goes out at 8 a.m."
+    "text": "{brand_short}: No {trade} business on {brand} gets emergency requests at night yet. Your request goes out at 8 a.m."
   },
   "under_18": {
     "audience": "homeowner",
     "segments": 1,
-    "text": "Ask Hava: Sorry, you must be 18 or older to use Ask Hava. Please ask a parent or adult to text us."
+    "text": "{brand_short}: Sorry, you must be 18 or older to use {brand}. Please ask a parent or adult to text us."
   },
   "name_address": {
     "audience": "homeowner",
     "segments": 1,
-    "text": "Ask Hava: What is your first name and street address? Only the business you pick gets this, after you pick it. We never ask about immigration status or ID."
+    "text": "{brand_short}: What is your first name and street address? Only the business you pick gets this, after you pick it. We never ask about immigration status or ID."
   },
   "not_covered": {
     "audience": "homeowner",
     "segments": 1,
-    "text": "Ask Hava: We don't cover {trade} jobs yet. We've noted your request so we can add businesses. Text us any time."
+    "text": "{brand_short}: We don't cover {trade} jobs yet. We've noted your request so we can add businesses. Text us any time."
   },
   "out_of_area": {
     "audience": "homeowner",
     "segments": 1,
-    "text": "Ask Hava: We don't cover your town yet, so we can't take this request. Text us any time."
+    "text": "{brand_short}: We don't cover your town yet, so we can't take this request. Text us any time."
   },
   "coverage_count_many": {
     "audience": "homeowner",
     "segments": 1,
-    "text": "Ask Hava: Got it. We'll send this to the {count} {trade} businesses on Ask Hava."
+    "text": "{brand_short}: Got it. We'll send this to the {count} {trade} businesses on {brand}."
   },
   "coverage_count_one": {
     "audience": "homeowner",
     "segments": 1,
-    "text": "Ask Hava: Got it. We'll send this to the 1 {trade} business on Ask Hava."
+    "text": "{brand_short}: Got it. We'll send this to the 1 {trade} business on {brand}."
   },
   "split_offer": {
     "audience": "homeowner",
     "segments": 1,
-    "text": "Ask Hava: This needs 2 kinds of business. Reply SPLIT to send it as 2 requests, one per trade."
+    "text": "{brand_short}: This needs 2 kinds of business. Reply SPLIT to send it as 2 requests, one per trade."
   },
   "quote_update": {
     "audience": "homeowner",
     "segments": 2,
-    "text": "Ask Hava: You now have {quoted} quotes for request {job}. {quoted} of {count} businesses have quoted so far. See them here: {link} Can't open links? Reply LIST."
+    "text": "{brand_short}: You now have {quoted} quotes for request {job}. {quoted} of {count} businesses have quoted so far. See them here: {link} Can't open links? Reply LIST."
   },
   "quote_list": {
     "audience": "homeowner",
     "segments": 1,
-    "text": "Ask Hava: Your quotes for request {job}:"
+    "text": "{brand_short}: Your quotes for request {job}:"
   },
   "quote_list_end": {
     "audience": "homeowner",
     "segments": 2,
-    "text": "Ask Hava: To pick, reply the number and YES, for example 2 YES. Picking shares your first name and job address with that business once it accepts.\nBy picking, you agree to the Terms: askhava.com/terms"
+    "text": "{brand_short}: To pick, reply the number and YES, for example 2 YES. Picking shares your first name and job address with that business once it accepts.\nBy picking, you agree to the Terms: {domain}/terms"
   },
   "quote_list_which": {
     "audience": "homeowner",
     "segments": 1,
-    "text": "Ask Hava: You have quotes on more than one request. Reply LIST and the request number, for example LIST {job}."
+    "text": "{brand_short}: You have quotes on more than one request. Reply LIST and the request number, for example LIST {job}."
   },
   "request_out_held": {
     "audience": "homeowner",
     "segments": 1,
-    "text": "Ask Hava: It goes out at {time}."
+    "text": "{brand_short}: It goes out at {time}."
   },
   "request_out_today": {
     "audience": "homeowner",
     "segments": 1,
-    "text": "Ask Hava: You can pick as soon as the first quote arrives. If it can't wait, it's fine to call a company you know too."
+    "text": "{brand_short}: You can pick as soon as the first quote arrives. If it can't wait, it's fine to call a company you know too."
   },
   "request_out_slow": {
     "audience": "homeowner",
     "segments": 1,
-    "text": "Ask Hava: Quotes may be slow with only {count} on Ask Hava so far."
+    "text": "{brand_short}: Quotes may be slow with only {count} on {brand} so far."
   },
   "intake_reminder": {
     "audience": "homeowner",
     "segments": 1,
-    "text": "Ask Hava: Request {job} is still open. Answer our last question when you can and we'll pick up where we left off."
+    "text": "{brand_short}: Request {job} is still open. Answer our last question when you can and we'll pick up where we left off."
   },
   "intake_closed_no_reply": {
     "audience": "homeowner",
     "segments": 1,
-    "text": "Ask Hava: We closed request {job} because we didn't hear back. No problem. Text us any time and we'll start again."
+    "text": "{brand_short}: We closed request {job} because we didn't hear back. No problem. Text us any time and we'll start again."
   },
   "close_which": {
     "audience": "homeowner",
     "segments": 1,
-    "text": "Ask Hava: Close which? You have requests {job} open. Reply CLOSE and the number, or CLOSE ALL."
+    "text": "{brand_short}: Close which? You have requests {job} open. Reply CLOSE and the number, or CLOSE ALL."
   },
   "close_mention": {
     "audience": "homeowner",
     "segments": 1,
-    "text": "Ask Hava: To close request {job}, reply CLOSE {job}."
+    "text": "{brand_short}: To close request {job}, reply CLOSE {job}."
   },
   "job_closed": {
     "audience": "homeowner",
     "segments": 1,
-    "text": "Ask Hava: Request {job} is closed, as you asked. Text us any time to start a new one."
+    "text": "{brand_short}: Request {job} is closed, as you asked. Text us any time to start a new one."
   },
   "jobs_closed": {
     "audience": "homeowner",
     "segments": 1,
-    "text": "Ask Hava: Requests {job} are closed, as you asked. Text us any time to start a new one."
+    "text": "{brand_short}: Requests {job} are closed, as you asked. Text us any time to start a new one."
   },
   "text_pick_terms": {
     "audience": "homeowner",
     "segments": 2,
-    "text": "Ask Hava: One more step for quote {quoted} on request {job}. Reply {quoted} YES again to pick. Picking shares your first name and job address with that business once it accepts.\nBy picking, you agree to the Terms: askhava.com/terms"
+    "text": "{brand_short}: One more step for quote {quoted} on request {job}. Reply {quoted} YES again to pick. Picking shares your first name and job address with that business once it accepts.\nBy picking, you agree to the Terms: {domain}/terms"
   },
   "text_pick_which": {
     "audience": "homeowner",
     "segments": 2,
-    "text": "Ask Hava: You have quotes on requests {job}. Add the request number so we know which one, like {number} 2 YES. Picking shares your first name and job address with that business once it accepts.\nBy picking, you agree to the Terms: askhava.com/terms"
+    "text": "{brand_short}: You have quotes on requests {job}. Add the request number so we know which one, like {number} 2 YES. Picking shares your first name and job address with that business once it accepts.\nBy picking, you agree to the Terms: {domain}/terms"
   },
   "text_pick_done": {
     "audience": "homeowner",
     "segments": 2,
-    "text": "Ask Hava: Done. You picked quote {quoted} for request {job}. We'll text you when the business accepts. You can still pick another quote. Reply LIST to see them."
+    "text": "{brand_short}: Done. You picked quote {quoted} for request {job}. We'll text you when the business accepts. You can still pick another quote. Reply LIST to see them."
   },
   "text_pick_no_quote": {
     "audience": "homeowner",
     "segments": 1,
-    "text": "Ask Hava: There's no quote {quoted} to pick on request {job}. Reply LIST to see your quotes."
+    "text": "{brand_short}: There's no quote {quoted} to pick on request {job}. Reply LIST to see your quotes."
   },
   "text_pick_confirmed": {
     "audience": "homeowner",
     "segments": 1,
-    "text": "Ask Hava: The business accepted your pick for request {job}. To close the request, reply CLOSE {job}."
+    "text": "{brand_short}: The business accepted your pick for request {job}. To close the request, reply CLOSE {job}."
   },
   "text_pick_waiting": {
     "audience": "homeowner",
     "segments": 1,
-    "text": "Ask Hava: No quotes yet for request {job}. We'll text you when the first one comes in."
+    "text": "{brand_short}: No quotes yet for request {job}. We'll text you when the first one comes in."
   },
   "text_pick_none": {
     "audience": "homeowner",
     "segments": 1,
-    "text": "Ask Hava: You have no quotes to pick right now."
+    "text": "{brand_short}: You have no quotes to pick right now."
   },
   "card_shown": {
     "audience": "homeowner",
     "segments": 2,
-    "text": "Ask Hava: Here's request {job} as businesses will see it: [card] It goes out in {time}. Reply EDIT to change it, or SEND to send it now."
+    "text": "{brand_short}: Here's request {job} as businesses will see it: [card] It goes out in {time}. Reply EDIT to change it, or SEND to send it now."
   },
   "card_link": {
     "audience": "homeowner",
     "segments": 2,
-    "text": "Ask Hava: Request {job} is ready. Take a look before it goes out: {link} It goes out in {time}. Reply EDIT to change it, or SEND to send it now."
+    "text": "{brand_short}: Request {job} is ready. Take a look before it goes out: {link} It goes out in {time}. Reply EDIT to change it, or SEND to send it now."
   },
   "card_edit": {
     "audience": "homeowner",
     "segments": 1,
-    "text": "Ask Hava: Sure, what should we change on request {job}? Tell us in one text and we'll show you how it looks now. Nothing goes out until you've seen it."
+    "text": "{brand_short}: Sure, what should we change on request {job}? Tell us in one text and we'll show you how it looks now. Nothing goes out until you've seen it."
   },
   "card_fix_notice": {
     "audience": "business",
     "segments": 2,
-    "text": "Ask Hava: Your card didn't go through for job {job}. You haven't been charged. After {time}, the homeowner can pick another business's quote. Try again or use another card: {link}"
+    "text": "{brand_short}: Your card didn't go through for job {job}. You haven't been charged. After {time}, the homeowner can pick another business's quote. Try again or use another card: {link}"
   },
   "card_approval_notice": {
     "audience": "business",
     "segments": 2,
-    "text": "Ask Hava: Your bank wants you to approve the payment for job {job}. You haven't been charged yet. After {time}, the homeowner can pick another business's quote. Approve it here: {link}"
+    "text": "{brand_short}: Your bank wants you to approve the payment for job {job}. You haven't been charged yet. After {time}, the homeowner can pick another business's quote. Approve it here: {link}"
   },
   "pick_notice": {
     "audience": "business",
     "segments": 1,
-    "text": "Ask Hava: A homeowner picked your quote for job {job}. Accept by {time}."
+    "text": "{brand_short}: A homeowner picked your quote for job {job}. Accept by {time}."
   },
   "pick_notice_emergency": {
     "audience": "business",
     "segments": 1,
-    "text": "Ask Hava: EMERGENCY: a homeowner picked your quote for job {job}. Accept by {time}."
+    "text": "{brand_short}: EMERGENCY: a homeowner picked your quote for job {job}. Accept by {time}."
   },
   "pick_fee_reply": {
     "audience": "business",
     "segments": 1,
-    "text": "Ask Hava: {number}. Confirm and pay here: {link}."
+    "text": "{brand_short}: {number}. Confirm and pay here: {link}."
   },
   "pick_expired": {
     "audience": "business",
     "segments": 1,
-    "text": "Ask Hava: Time ran out to accept job {job}, so the pick expired. You weren't charged. Your quote can't be picked again for this job."
+    "text": "{brand_short}: Time ran out to accept job {job}, so the pick expired. You weren't charged. Your quote can't be picked again for this job."
   },
   "release_notice": {
     "audience": "business",
     "segments": 1,
-    "text": "Ask Hava: Job {job} is confirmed. Sign in to see the homeowner's details. {link}"
+    "text": "{brand_short}: Job {job} is confirmed. Sign in to see the homeowner's details. {link}"
   },
   "release_text": {
     "audience": "business",
     "segments": 1,
-    "text": "Ask Hava: Job {job} is confirmed. The details are at askhava.com/business."
+    "text": "{brand_short}: Job {job} is confirmed. The details are at {domain}/business."
   },
   "pick_lost": {
     "audience": "business",
     "segments": 1,
-    "text": "Ask Hava: Job {job} went to another business this time."
+    "text": "{brand_short}: Job {job} went to another business this time."
   },
   "pick_lost_lower": {
     "audience": "business",
     "segments": 2,
-    "text": "Ask Hava: Job {job} went to another business this time. {count} businesses quoted; the picked quote was lower than yours. No action needed. Thanks for quoting."
+    "text": "{brand_short}: Job {job} went to another business this time. {count} businesses quoted; the picked quote was lower than yours. No action needed. Thanks for quoting."
   },
   "pick_lost_same": {
     "audience": "business",
     "segments": 2,
-    "text": "Ask Hava: Job {job} went to another business this time. {count} businesses quoted; the picked quote was about the same as yours. No action needed. Thanks for quoting."
+    "text": "{brand_short}: Job {job} went to another business this time. {count} businesses quoted; the picked quote was about the same as yours. No action needed. Thanks for quoting."
   },
   "pick_lost_higher": {
     "audience": "business",
     "segments": 2,
-    "text": "Ask Hava: Job {job} went to another business this time. {count} businesses quoted; the picked quote was higher than yours. No action needed. Thanks for quoting."
+    "text": "{brand_short}: Job {job} went to another business this time. {count} businesses quoted; the picked quote was higher than yours. No action needed. Thanks for quoting."
   },
   "pick_lost_several_lower": {
     "audience": "business",
     "segments": 2,
-    "text": "Ask Hava: Job {job} went to another business this time. Several businesses quoted; the picked quote was lower than yours. No action needed. Thanks for quoting."
+    "text": "{brand_short}: Job {job} went to another business this time. Several businesses quoted; the picked quote was lower than yours. No action needed. Thanks for quoting."
   },
   "pick_lost_several_same": {
     "audience": "business",
     "segments": 2,
-    "text": "Ask Hava: Job {job} went to another business this time. Several businesses quoted; the picked quote was about the same as yours. No action needed. Thanks for quoting."
+    "text": "{brand_short}: Job {job} went to another business this time. Several businesses quoted; the picked quote was about the same as yours. No action needed. Thanks for quoting."
   },
   "pick_lost_several_higher": {
     "audience": "business",
     "segments": 2,
-    "text": "Ask Hava: Job {job} went to another business this time. Several businesses quoted; the picked quote was higher than yours. No action needed. Thanks for quoting."
+    "text": "{brand_short}: Job {job} went to another business this time. Several businesses quoted; the picked quote was higher than yours. No action needed. Thanks for quoting."
   },
   "pick_lost_other_type": {
     "audience": "business",
     "segments": 1,
-    "text": "Ask Hava: Job {job} went to another business this time. The picked quote was a different type of quote from yours. No action needed. Thanks for quoting."
+    "text": "{brand_short}: Job {job} went to another business this time. The picked quote was a different type of quote from yours. No action needed. Thanks for quoting."
   },
   "job_no_longer_active": {
     "audience": "business",
     "segments": 1,
-    "text": "Ask Hava: Job {job}. This job is no longer active."
+    "text": "{brand_short}: Job {job}. This job is no longer active."
   },
   "pick_live_reply": {
     "audience": "business",
     "segments": 2,
-    "text": "Ask Hava: The homeowner picked your quote for job {job}. Confirm here: {link} Then you'll see their first name and address in your portal."
+    "text": "{brand_short}: The homeowner picked your quote for job {job}. Confirm here: {link} Then you'll see their first name and address in your portal."
   },
   "line_closed_cancelled": {
     "audience": "business",
     "segments": 1,
-    "text": "Ask Hava: The homeowner cancelled job {job}, so the call number for that job is off now. This doesn't count against you. Nothing to do."
+    "text": "{brand_short}: The homeowner cancelled job {job}, so the call number for that job is off now. This doesn't count against you. Nothing to do."
   },
   "link_this_phone": {
     "audience": "business",
     "segments": 1,
-    "text": "Ask Hava: A phone ending in {number} called your Ask Hava line. It isn't on your account yet. If it's yours, reply LINK {job}. If not, ignore this text."
+    "text": "{brand_short}: A phone ending in {number} called your {brand} line. It isn't on your account yet. If it's yours, reply LINK {job}. If not, ignore this text."
   },
   "signup_record_updated": {
     "audience": "business",
     "segments": 1,
-    "text": "Ask Hava: We see your updated record. Tap to finish sign-up: {link}."
+    "text": "{brand_short}: We see your updated record. Tap to finish sign-up: {link}."
   },
   "business_auto_reply": {
     "audience": "business",
     "segments": 1,
-    "text": "Ask Hava: We couldn't read that as a quote or a reply word. To quote, confirm or change settings, use your portal: https://askhava.com/b. Text HELP for help."
+    "text": "{brand_short}: We couldn't read that as a quote or a reply word. To quote, confirm or change settings, use your portal: https://{domain}/b. Text HELP for help."
   },
   "business_no_call_reminder_email": {
     "audience": "business",
     "segments": 2,
-    "text": "Ask Hava: Job {job}: no call yet. Call within 72 hours of the release, or the fee can't be refunded. Call between 8 a.m. and 8 p.m. Arizona time (any hour on an emergency job). Your 2 attempts can be on different days. The homeowner chose email; your 2 call attempts still count for the refund."
+    "text": "{brand_short}: Job {job}: no call yet. Call within 72 hours of the release, or the fee can't be refunded. Call between 8 a.m. and 8 p.m. Arizona time (any hour on an emergency job). Your 2 attempts can be on different days. The homeowner chose email; your 2 call attempts still count for the refund."
   },
   "unreachable_refunded": {
     "audience": "business",
     "segments": 2,
-    "text": "Ask Hava: Job {job}: your introduction fee is refunded. You called twice, at least 3 hours apart, within 72 hours of the release and in the calling hours. Nobody picked up, and we told the homeowner you'd tried. Questions? Use the Ask about a charge form on your billing page at https://askhava.com/b."
+    "text": "{brand_short}: Job {job}: your introduction fee is refunded. You called twice, at least 3 hours apart, within 72 hours of the release and in the calling hours. Nobody picked up, and we told the homeowner you'd tried. Questions? Use the Ask about a charge form on your billing page at https://{domain}/b."
   },
   "unreachable_no_talked": {
     "audience": "business",
     "segments": 2,
-    "text": "Ask Hava: Job {job}: no refund of your introduction fee. A person picked up one of the calls between you and the homeowner. Questions? Use the Ask about a charge form on your billing page at https://askhava.com/b."
+    "text": "{brand_short}: Job {job}: no refund of your introduction fee. A person picked up one of the calls between you and the homeowner. Questions? Use the Ask about a charge form on your billing page at https://{domain}/b."
   },
   "unreachable_no_attempts": {
     "audience": "business",
     "segments": 2,
-    "text": "Ask Hava: Job {job}: no refund of your introduction fee. We found no call from you within 72 hours of the release, from 8 a.m. to 8 p.m. Arizona time (any hour on an emergency job). The refund needs 2. Questions? Use the Ask about a charge form on your billing page at https://askhava.com/b."
+    "text": "{brand_short}: Job {job}: no refund of your introduction fee. We found no call from you within 72 hours of the release, from 8 a.m. to 8 p.m. Arizona time (any hour on an emergency job). The refund needs 2. Questions? Use the Ask about a charge form on your billing page at https://{domain}/b."
   },
   "unreachable_no_one_attempt": {
     "audience": "business",
     "segments": 2,
-    "text": "Ask Hava: Job {job}: no refund of your introduction fee. Only 1 of your calls came within 72 hours of the release, from 8 a.m. to 8 p.m. Arizona time (any hour on an emergency job). The refund needs 2. Questions? Use the Ask about a charge form on your billing page at https://askhava.com/b."
+    "text": "{brand_short}: Job {job}: no refund of your introduction fee. Only 1 of your calls came within 72 hours of the release, from 8 a.m. to 8 p.m. Arizona time (any hour on an emergency job). The refund needs 2. Questions? Use the Ask about a charge form on your billing page at https://{domain}/b."
   },
   "unreachable_no_too_close": {
     "audience": "business",
     "segments": 2,
-    "text": "Ask Hava: Job {job}: no refund of your introduction fee. Your 2 calls were less than 3 hours apart. The refund needs them at least 3 hours apart. Questions? Use the Ask about a charge form on your billing page at https://askhava.com/b."
+    "text": "{brand_short}: Job {job}: no refund of your introduction fee. Your 2 calls were less than 3 hours apart. The refund needs them at least 3 hours apart. Questions? Use the Ask about a charge form on your billing page at https://{domain}/b."
   },
   "unreachable_no_notice": {
     "audience": "business",
     "segments": 2,
-    "text": "Ask Hava: Job {job}: no refund of your introduction fee. We had no way to send the homeowner the message that you called, and the refund needs that message to go out. Questions? Use the Ask about a charge form on your billing page at https://askhava.com/b."
+    "text": "{brand_short}: Job {job}: no refund of your introduction fee. We had no way to send the homeowner the message that you called, and the refund needs that message to go out. Questions? Use the Ask about a charge form on your billing page at https://{domain}/b."
   },
   "unreachable_no_reply": {
     "audience": "business",
     "segments": 2,
-    "text": "Ask Hava: Job {job}: no refund of your introduction fee. The homeowner answered our check-in with DONE or PROBLEM. Questions? Use the Ask about a charge form on your billing page at https://askhava.com/b."
+    "text": "{brand_short}: Job {job}: no refund of your introduction fee. The homeowner answered our check-in with DONE or PROBLEM. Questions? Use the Ask about a charge form on your billing page at https://{domain}/b."
   },
   "unreachable_no_emailed": {
     "audience": "business",
     "segments": 2,
-    "text": "Ask Hava: Job {job}: no refund of your introduction fee. The homeowner told us you emailed and set up a time. Questions? Use the Ask about a charge form on your billing page at https://askhava.com/b."
+    "text": "{brand_short}: Job {job}: no refund of your introduction fee. The homeowner told us you emailed and set up a time. Questions? Use the Ask about a charge form on your billing page at https://{domain}/b."
   },
   "job_card_notice": {
     "audience": "business",
     "segments": 1,
-    "text": "Ask Hava: New {trade} job {job}. Quote by {time}. See it at askhava.com/business."
+    "text": "{brand_short}: New {trade} job {job}. Quote by {time}. See it at {domain}/business."
   },
   "card_fix_notice_untimed": {
     "audience": "business",
     "segments": 1,
-    "text": "Ask Hava: Your card didn't go through for job {job}. You haven't been charged. Try again or use another card: {link}"
+    "text": "{brand_short}: Your card didn't go through for job {job}. You haven't been charged. Try again or use another card: {link}"
   },
   "card_approval_notice_untimed": {
     "audience": "business",
     "segments": 1,
-    "text": "Ask Hava: Your bank wants you to approve the payment for job {job}. You haven't been charged yet. Approve it here: {link}"
+    "text": "{brand_short}: Your bank wants you to approve the payment for job {job}. You haven't been charged yet. Approve it here: {link}"
   }
 }

@@ -3,584 +3,584 @@
     "audience": "homeowner",
     "draft": true,
     "segments": 2,
-    "text": "Ask Hava: Recibido. Ahora, unas preguntas. Ask Hava no es contratista; usted contrata al negocio que elija. Textos automatizados sobre su solicitud; frecuencia variable. Pueden aplicar cargos de msj y datos. PARAR para salir, AYUDA para ayuda. Términos: askhava.com/terms Privacidad: askhava.com/privacy"
+    "text": "{brand_short}: Recibido. Ahora, unas preguntas. {brand} no es contratista; usted contrata al negocio que elija. Textos automatizados sobre su solicitud; frecuencia variable. Pueden aplicar cargos de msj y datos. PARAR para salir, AYUDA para ayuda. Términos: {domain}/terms Privacidad: {domain}/privacy"
   },
   "consent_safety_call": {
     "audience": "homeowner",
     "draft": true,
     "segments": 3,
-    "text": "Ask Hava: Recibido. Ahora, unas preguntas. Ask Hava no es contratista; usted contrata al negocio que elija. Textos automatizados sobre su solicitud; frecuencia variable. Pueden aplicar cargos de msj y datos. Si reporta un peligro como gas o humo y no podemos enviarle textos, podemos intentar una llamada grabada a este teléfono. No la espere: llame al 911. PARAR para salir, AYUDA para ayuda. Términos: askhava.com/terms Privacidad: askhava.com/privacy"
+    "text": "{brand_short}: Recibido. Ahora, unas preguntas. {brand} no es contratista; usted contrata al negocio que elija. Textos automatizados sobre su solicitud; frecuencia variable. Pueden aplicar cargos de msj y datos. Si reporta un peligro como gas o humo y no podemos enviarle textos, podemos intentar una llamada grabada a este teléfono. No la espere: llame al 911. PARAR para salir, AYUDA para ayuda. Términos: {domain}/terms Privacidad: {domain}/privacy"
   },
   "who_is_this": {
     "audience": "homeowner",
     "draft": true,
     "segments": 4,
-    "text": "Ask Hava: Ask Hava es un servicio local. Nuestros textos son automatizados. El dueño de Ask Hava recibe los mensajes de AYUDA de inmediato y normalmente responde en 2 días, o en 24 horas si su trabajo es urgente."
+    "text": "{brand_short}: {brand} es un servicio local. Nuestros textos son automatizados. El dueño de {brand} recibe los mensajes de AYUDA de inmediato y normalmente responde en 2 días, o en 24 horas si su trabajo es urgente."
   },
   "opt_out_confirmation": {
     "audience": "homeowner",
     "draft": true,
     "segments": 3,
-    "text": "Ask Hava: Se canceló su suscripción. No recibirá más textos ni llamadas automáticas de Ask Hava en este número. Para volver a usar Ask Hava, envíe START.",
+    "text": "{brand_short}: Se canceló su suscripción. No recibirá más textos ni llamadas automáticas de {brand} en este número. Para volver a usar {brand}, envíe START.",
     "spanish_stays_on": true
   },
   "start_reply": {
     "audience": "homeowner",
     "draft": true,
     "segments": 3,
-    "text": "Ask Hava: Ya puede escribirnos de nuevo. Envíe su solicitud para empezar. Pueden aplicar cargos de msj y datos. Responda AYUDA para ayuda, PARAR para salir."
+    "text": "{brand_short}: Ya puede escribirnos de nuevo. Envíe su solicitud para empezar. Pueden aplicar cargos de msj y datos. Responda AYUDA para ayuda, PARAR para salir."
   },
   "help_reply": {
     "audience": "homeowner",
     "draft": true,
     "segments": 7,
-    "text": "Ask Hava: Díganos qué pasa en un solo texto. El dueño de Ask Hava recibe los mensajes de AYUDA de inmediato y normalmente responde en {reply_time}. Este número es solo para textos. Si alguien está en peligro, llame al 911. ¿No puede abrir enlaces? Responda LISTA para recibir sus cotizaciones por texto. Ayuda: help@askhava.com o askhava.com/help Responda PARAR para salir.",
+    "text": "{brand_short}: Díganos qué pasa en un solo texto. El dueño de {brand} recibe los mensajes de AYUDA de inmediato y normalmente responde en {reply_time}. Este número es solo para textos. Si alguien está en peligro, llame al 911. ¿No puede abrir enlaces? Responda LISTA para recibir sus cotizaciones por texto. Ayuda: help@{domain} o {domain}/help Responda PARAR para salir.",
     "spanish_stays_on": true
   },
   "help_reply_ca": {
     "audience": "homeowner",
     "draft": true,
     "segments": 8,
-    "text": "Ask Hava: Díganos qué pasa en un solo texto. El dueño de Ask Hava recibe los mensajes de AYUDA de inmediato y normalmente responde en {reply_time}. Este número es solo para textos. Si alguien está en peligro, llame al 911. ¿No puede abrir enlaces? Responda LISTA para recibir sus cotizaciones por texto. Los números de Canadá pueden pagar cargos de roaming. Ayuda: help@askhava.com o askhava.com/help Responda PARAR para salir.",
+    "text": "{brand_short}: Díganos qué pasa en un solo texto. El dueño de {brand} recibe los mensajes de AYUDA de inmediato y normalmente responde en {reply_time}. Este número es solo para textos. Si alguien está en peligro, llame al 911. ¿No puede abrir enlaces? Responda LISTA para recibir sus cotizaciones por texto. Los números de Canadá pueden pagar cargos de roaming. Ayuda: help@{domain} o {domain}/help Responda PARAR para salir.",
     "spanish_stays_on": true
   },
   "help_reply_away": {
     "audience": "homeowner",
     "draft": true,
     "segments": 6,
-    "text": "Ask Hava: Díganos qué pasa en un solo texto. El dueño de Ask Hava está fuera hasta el {time} y responderá para entonces. Si alguien está en peligro, llame al 911. ¿No puede abrir enlaces? Responda LISTA para recibir sus cotizaciones por texto. Ayuda: help@askhava.com o askhava.com/help Responda PARAR para salir.",
+    "text": "{brand_short}: Díganos qué pasa en un solo texto. El dueño de {brand} está fuera hasta el {time} y responderá para entonces. Si alguien está en peligro, llame al 911. ¿No puede abrir enlaces? Responda LISTA para recibir sus cotizaciones por texto. Ayuda: help@{domain} o {domain}/help Responda PARAR para salir.",
     "spanish_stays_on": true
   },
   "help_reply_away_ca": {
     "audience": "homeowner",
     "draft": true,
     "segments": 7,
-    "text": "Ask Hava: Díganos qué pasa en un solo texto. El dueño de Ask Hava está fuera hasta el {time} y responderá para entonces. Si alguien está en peligro, llame al 911. ¿No puede abrir enlaces? Responda LISTA para recibir sus cotizaciones por texto. Los números de Canadá pueden pagar cargos de roaming. Ayuda: help@askhava.com o askhava.com/help Responda PARAR para salir.",
+    "text": "{brand_short}: Díganos qué pasa en un solo texto. El dueño de {brand} está fuera hasta el {time} y responderá para entonces. Si alguien está en peligro, llame al 911. ¿No puede abrir enlaces? Responda LISTA para recibir sus cotizaciones por texto. Los números de Canadá pueden pagar cargos de roaming. Ayuda: help@{domain} o {domain}/help Responda PARAR para salir.",
     "spanish_stays_on": true
   },
   "emergency_911": {
     "audience": "homeowner",
     "draft": true,
     "segments": 4,
-    "text": "Ask Hava: Ask Hava no es un servicio de emergencia. Si huele a gas, ve humo o fuego, suena una alarma de CO o hay un cable de luz caído, saque a todos y llame al 911 desde afuera. Responda SEGURO cuando esté a salvo.",
+    "text": "{brand_short}: {brand} no es un servicio de emergencia. Si huele a gas, ve humo o fuego, suena una alarma de CO o hay un cable de luz caído, saque a todos y llame al 911 desde afuera. Responda SEGURO cuando esté a salvo.",
     "spanish_stays_on": true
   },
   "spanish_not_yet": {
     "audience": "homeowner",
     "draft": true,
     "segments": 1,
-    "text": "Ask Hava: Por ahora seguimos en inglés. Responda AYUDA si necesita ayuda.",
+    "text": "{brand_short}: Por ahora seguimos en inglés. Responda AYUDA si necesita ayuda.",
     "spanish_stays_on": true
   },
   "under_18": {
     "audience": "homeowner",
     "draft": true,
     "segments": 2,
-    "text": "Ask Hava: Lo sentimos, debe tener 18 años o más para usar Ask Hava. Pídale a un padre o adulto que nos escriba."
+    "text": "{brand_short}: Lo sentimos, debe tener 18 años o más para usar {brand}. Pídale a un padre o adulto que nos escriba."
   },
   "request_out": {
     "audience": "homeowner",
     "draft": true,
     "segments": 3,
-    "text": "Ask Hava: La solicitud {job} se envió a {count} negocios de {trade}. No todos responden. Le escribiremos cuando llegue la primera cotización."
+    "text": "{brand_short}: La solicitud {job} se envió a {count} negocios de {trade}. No todos responden. Le escribiremos cuando llegue la primera cotización."
   },
   "first_quote": {
     "audience": "homeowner",
     "draft": true,
     "segments": 5,
-    "text": "Ask Hava: Llegó la primera cotización de su solicitud {job}, y pueden llegar más. Es gratis para usted. El negocio que elija le paga a Ask Hava una tarifa fija de presentación. ¿No puede abrir enlaces? Responda LISTA para recibir sus cotizaciones por texto. Véalas aquí: {link} Términos (18+): askhava.com/terms"
+    "text": "{brand_short}: Llegó la primera cotización de su solicitud {job}, y pueden llegar más. Es gratis para usted. El negocio que elija le paga a {brand} una tarifa fija de presentación. ¿No puede abrir enlaces? Responda LISTA para recibir sus cotizaciones por texto. Véalas aquí: {link} Términos (18+): {domain}/terms"
   },
   "all_quotes_in": {
     "audience": "homeowner",
     "draft": true,
     "segments": 3,
-    "text": "Ask Hava: Ya llegaron todas las cotizaciones de la solicitud {job}: cotizaron {quoted} de {count} negocios. {link} Responda LISTA para verlas aquí, o CERRAR {job} si ya no la necesita."
+    "text": "{brand_short}: Ya llegaron todas las cotizaciones de la solicitud {job}: cotizaron {quoted} de {count} negocios. {link} Responda LISTA para verlas aquí, o CERRAR {job} si ya no la necesita."
   },
   "no_quotes_yet": {
     "audience": "homeowner",
     "draft": true,
     "segments": 4,
-    "text": "Ask Hava: Aún no hay cotizaciones para la solicitud {job}. Unos detalles más o una foto suelen ayudar a que un negocio le ponga precio. Responda 1 para agregar detalles, 2 para seguir esperando o 3 para cerrarla."
+    "text": "{brand_short}: Aún no hay cotizaciones para la solicitud {job}. Unos detalles más o una foto suelen ayudar a que un negocio le ponga precio. Responda 1 para agregar detalles, 2 para seguir esperando o 3 para cerrarla."
   },
   "closed_no_quotes": {
     "audience": "homeowner",
     "draft": true,
     "segments": 2,
-    "text": "Ask Hava: La solicitud {job} está cerrada porque no llegaron cotizaciones. Escríbanos cuando quiera para intentarlo de nuevo."
+    "text": "{brand_short}: La solicitud {job} está cerrada porque no llegaron cotizaciones. Escríbanos cuando quiera para intentarlo de nuevo."
   },
   "closed_no_pick": {
     "audience": "homeowner",
     "draft": true,
     "segments": 2,
-    "text": "Ask Hava: La solicitud {job} está cerrada porque no se eligió ninguna cotización. Escríbanos cuando quiera para empezar una nueva."
+    "text": "{brand_short}: La solicitud {job} está cerrada porque no se eligió ninguna cotización. Escríbanos cuando quiera para empezar una nueva."
   },
   "closed_no_quote_left": {
     "audience": "homeowner",
     "draft": true,
     "segments": 3,
-    "text": "Ask Hava: La solicitud {job} está cerrada porque ninguna de sus cotizaciones puede seguir adelante. Escríbanos cuando quiera para empezar una nueva."
+    "text": "{brand_short}: La solicitud {job} está cerrada porque ninguna de sus cotizaciones puede seguir adelante. Escríbanos cuando quiera para empezar una nueva."
   },
   "caller_missed": {
     "audience": "homeowner",
     "draft": true,
     "segments": 2,
-    "text": "Ask Hava: {business} intentó llamarle por la solicitud {job}. Llámele de vuelta al {number}."
+    "text": "{brand_short}: {business} intentó llamarle por la solicitud {job}. Llámele de vuelta al {number}."
   },
   "problem_reply": {
     "audience": "homeowner",
     "draft": true,
     "segments": 4,
-    "text": "Ask Hava: Gracias. El dueño de Ask Hava lee cada reporte de problema, normalmente en 7 días. Ask Hava no puede resolver disputas sobre el trabajo o el precio. Oficios con licencia: también puede presentar una queja ante el estado en askhava.com/help/roc-complaint."
+    "text": "{brand_short}: Gracias. El dueño de {brand} lee cada reporte de problema, normalmente en 7 días. {brand} no puede resolver disputas sobre el trabajo o el precio. Oficios con licencia: también puede presentar una queja ante el estado en {domain}/help/roc-complaint."
   },
   "close_howto": {
     "audience": "homeowner",
     "draft": true,
     "segments": 2,
-    "text": "Ask Hava: Responda CERRAR {job} para cerrar la solicitud {job}. Si eso no lo resuelve, responda con lo que pasa y el dueño de Ask Hava lo atiende de inmediato."
+    "text": "{brand_short}: Responda CERRAR {job} para cerrar la solicitud {job}. Si eso no lo resuelve, responda con lo que pasa y el dueño de {brand} lo atiende de inmediato."
   },
   "cost_answer": {
     "audience": "homeowner",
     "draft": true,
     "segments": 5,
-    "text": "Ask Hava: Es gratis para usted. El negocio que elija le paga a Ask Hava una tarifa fija de presentación ($25, $75 o $199, según el tamaño de la cotización). Usted le paga directamente al negocio por el trabajo. Si eso no lo resuelve, responda con lo que pasa y el dueño de Ask Hava lo atiende de inmediato."
+    "text": "{brand_short}: Es gratis para usted. El negocio que elija le paga a {brand} una tarifa fija de presentación ($25, $75 o $199, según el tamaño de la cotización). Usted le paga directamente al negocio por el trabajo. Si eso no lo resuelve, responda con lo que pasa y el dueño de {brand} lo atiende de inmediato."
   },
   "business_no_call_reminder": {
     "audience": "business",
     "draft": true,
     "segments": 4,
-    "text": "Ask Hava: Trabajo {job}: aún no hay llamada. Llame dentro de 72 horas de la entrega, o la tarifa no se puede reembolsar. Llame entre las 8 a.m. y las 8 p.m., hora de Arizona (a cualquier hora en un trabajo de emergencia). Sus 2 intentos pueden ser en días distintos."
+    "text": "{brand_short}: Trabajo {job}: aún no hay llamada. Llame dentro de 72 horas de la entrega, o la tarifa no se puede reembolsar. Llame entre las 8 a.m. y las 8 p.m., hora de Arizona (a cualquier hora en un trabajo de emergencia). Sus 2 intentos pueden ser en días distintos."
   },
   "business_pick_waiting": {
     "audience": "business",
     "draft": true,
     "segments": 2,
-    "text": "Ask Hava: Un propietario eligió su cotización del trabajo {job}. Acepte antes de {time}."
+    "text": "{brand_short}: Un propietario eligió su cotización del trabajo {job}. Acepte antes de {time}."
   },
   "beep_question": {
     "audience": "homeowner",
     "draft": true,
     "segments": 2,
-    "text": "Ask Hava: ¿Es 1) un chirrido cada minuto más o menos, o 2) una alarma que no deja de sonar?"
+    "text": "{brand_short}: ¿Es 1) un chirrido cada minuto más o menos, o 2) una alarma que no deja de sonar?"
   },
   "how_soon": {
     "audience": "homeowner",
     "draft": true,
     "segments": 2,
-    "text": "Ask Hava: ¿Para cuándo lo necesita? 1) Hoy, es urgente 2) En los próximos días 3) Sin prisa 4) Para un día específico"
+    "text": "{brand_short}: ¿Para cuándo lo necesita? 1) Hoy, es urgente 2) En los próximos días 3) Sin prisa 4) Para un día específico"
   },
   "needed_by_day": {
     "audience": "homeowner",
     "draft": true,
     "segments": 1,
-    "text": "Ask Hava: ¿Para qué día lo necesita?"
+    "text": "{brand_short}: ¿Para qué día lo necesita?"
   },
   "emergency_choice": {
     "audience": "homeowner",
     "draft": true,
     "segments": 6,
-    "text": "Ask Hava: ¿Es una emergencia? Emergencia: los negocios reciben su solicitud por correo marcada EMERGENCY, y el negocio que elija tiene 60 minutos para confirmar. Los negocios que reciben solicitudes de emergencia de noche tal vez puedan venir esta noche. El trabajo fuera de horario suele costar más. Responda 1 para emergencia o 2 para normal."
+    "text": "{brand_short}: ¿Es una emergencia? Emergencia: los negocios reciben su solicitud por correo marcada EMERGENCY, y el negocio que elija tiene 60 minutos para confirmar. Los negocios que reciben solicitudes de emergencia de noche tal vez puedan venir esta noche. El trabajo fuera de horario suele costar más. Responda 1 para emergencia o 2 para normal."
   },
   "night_count_many": {
     "audience": "homeowner",
     "draft": true,
     "segments": 1,
-    "text": "Ask Hava: {count} negocios de {trade} en Ask Hava reciben solicitudes de emergencia de noche."
+    "text": "{brand_short}: {count} negocios de {trade} en {brand} reciben solicitudes de emergencia de noche."
   },
   "night_count_one": {
     "audience": "homeowner",
     "draft": true,
     "segments": 1,
-    "text": "Ask Hava: 1 negocio de {trade} en Ask Hava recibe solicitudes de emergencia de noche."
+    "text": "{brand_short}: 1 negocio de {trade} en {brand} recibe solicitudes de emergencia de noche."
   },
   "night_count_none": {
     "audience": "homeowner",
     "draft": true,
     "segments": 2,
-    "text": "Ask Hava: Ningún negocio de {trade} en Ask Hava recibe solicitudes de emergencia de noche todavía. Su solicitud sale a las 8 a.m."
+    "text": "{brand_short}: Ningún negocio de {trade} en {brand} recibe solicitudes de emergencia de noche todavía. Su solicitud sale a las 8 a.m."
   },
   "under_18": {
     "audience": "homeowner",
     "draft": true,
     "segments": 2,
-    "text": "Ask Hava: Lo sentimos, debe tener 18 años o más para usar Ask Hava. Pídale a un padre o adulto que nos escriba.",
+    "text": "{brand_short}: Lo sentimos, debe tener 18 años o más para usar {brand}. Pídale a un padre o adulto que nos escriba.",
     "spanish_stays_on": true
   },
   "name_address": {
     "audience": "homeowner",
     "draft": true,
     "segments": 3,
-    "text": "Ask Hava: ¿Cuál es su primer nombre y la dirección de su casa? Solo el negocio que usted elija la recibe, después de que lo elija. Nunca preguntamos por estatus migratorio ni identificación."
+    "text": "{brand_short}: ¿Cuál es su primer nombre y la dirección de su casa? Solo el negocio que usted elija la recibe, después de que lo elija. Nunca preguntamos por estatus migratorio ni identificación."
   },
   "not_covered": {
     "audience": "homeowner",
     "draft": true,
     "segments": 2,
-    "text": "Ask Hava: Todavía no cubrimos trabajos de {trade}. Anotamos su solicitud para poder agregar negocios. Escríbanos cuando quiera."
+    "text": "{brand_short}: Todavía no cubrimos trabajos de {trade}. Anotamos su solicitud para poder agregar negocios. Escríbanos cuando quiera."
   },
   "out_of_area": {
     "audience": "homeowner",
     "draft": true,
     "segments": 2,
-    "text": "Ask Hava: Todavía no cubrimos su ciudad, así que no podemos tomar esta solicitud. Escríbanos cuando quiera."
+    "text": "{brand_short}: Todavía no cubrimos su ciudad, así que no podemos tomar esta solicitud. Escríbanos cuando quiera."
   },
   "coverage_count_many": {
     "audience": "homeowner",
     "draft": true,
     "segments": 1,
-    "text": "Ask Hava: Listo. Vamos a enviar su solicitud a los {count} negocios de {trade} en Ask Hava."
+    "text": "{brand_short}: Listo. Vamos a enviar su solicitud a los {count} negocios de {trade} en {brand}."
   },
   "coverage_count_one": {
     "audience": "homeowner",
     "draft": true,
     "segments": 1,
-    "text": "Ask Hava: Listo. Vamos a enviar su solicitud al negocio de {trade} que hay en Ask Hava."
+    "text": "{brand_short}: Listo. Vamos a enviar su solicitud al negocio de {trade} que hay en {brand}."
   },
   "split_offer": {
     "audience": "homeowner",
     "draft": true,
     "segments": 1,
-    "text": "Ask Hava: Este trabajo necesita 2 tipos de negocio. Responda DIVIDIR y lo enviamos como 2 solicitudes, una para cada oficio."
+    "text": "{brand_short}: Este trabajo necesita 2 tipos de negocio. Responda DIVIDIR y lo enviamos como 2 solicitudes, una para cada oficio."
   },
   "quote_update": {
     "audience": "homeowner",
     "draft": true,
     "segments": 3,
-    "text": "Ask Hava: Ya tiene {quoted} cotizaciones de la solicitud {job}. {quoted} de {count} negocios han cotizado hasta ahora. Véalas aquí: {link} ¿No puede abrir enlaces? Responda LISTA."
+    "text": "{brand_short}: Ya tiene {quoted} cotizaciones de la solicitud {job}. {quoted} de {count} negocios han cotizado hasta ahora. Véalas aquí: {link} ¿No puede abrir enlaces? Responda LISTA."
   },
   "quote_list": {
     "audience": "homeowner",
     "draft": true,
     "segments": 1,
-    "text": "Ask Hava: Sus cotizaciones de la solicitud {job}:"
+    "text": "{brand_short}: Sus cotizaciones de la solicitud {job}:"
   },
   "quote_list_end": {
     "audience": "homeowner",
     "draft": true,
     "segments": 4,
-    "text": "Ask Hava: Para elegir, responda el número y SÍ, por ejemplo 2 SÍ. Al elegir, el negocio recibe su nombre de pila y la dirección del trabajo cuando acepte.\nAl elegir, usted acepta los Términos: askhava.com/terms"
+    "text": "{brand_short}: Para elegir, responda el número y SÍ, por ejemplo 2 SÍ. Al elegir, el negocio recibe su nombre de pila y la dirección del trabajo cuando acepte.\nAl elegir, usted acepta los Términos: {domain}/terms"
   },
   "quote_list_which": {
     "audience": "homeowner",
     "draft": true,
     "segments": 2,
-    "text": "Ask Hava: Tiene cotizaciones en más de una solicitud. Responda LISTA y el número de la solicitud, por ejemplo LISTA {job}."
+    "text": "{brand_short}: Tiene cotizaciones en más de una solicitud. Responda LISTA y el número de la solicitud, por ejemplo LISTA {job}."
   },
   "request_out_held": {
     "audience": "homeowner",
     "draft": true,
     "segments": 1,
-    "text": "Ask Hava: Sale a las {time}."
+    "text": "{brand_short}: Sale a las {time}."
   },
   "request_out_today": {
     "audience": "homeowner",
     "draft": true,
     "segments": 3,
-    "text": "Ask Hava: Puede elegir en cuanto llegue la primera cotización. Si no puede esperar, también está bien llamar a una empresa que conozca."
+    "text": "{brand_short}: Puede elegir en cuanto llegue la primera cotización. Si no puede esperar, también está bien llamar a una empresa que conozca."
   },
   "request_out_slow": {
     "audience": "homeowner",
     "draft": true,
     "segments": 1,
-    "text": "Ask Hava: Las cotizaciones pueden tardar, pues hasta ahora solo hay {count} en Ask Hava."
+    "text": "{brand_short}: Las cotizaciones pueden tardar, pues hasta ahora solo hay {count} en {brand}."
   },
   "intake_reminder": {
     "audience": "homeowner",
     "draft": true,
     "segments": 2,
-    "text": "Ask Hava: La solicitud {job} sigue abierta. Responda a nuestra última pregunta cuando pueda y seguimos donde quedamos."
+    "text": "{brand_short}: La solicitud {job} sigue abierta. Responda a nuestra última pregunta cuando pueda y seguimos donde quedamos."
   },
   "intake_closed_no_reply": {
     "audience": "homeowner",
     "draft": true,
     "segments": 2,
-    "text": "Ask Hava: Cerramos la solicitud {job} porque no tuvimos respuesta. No hay problema. Escríbanos cuando quiera y empezamos de nuevo."
+    "text": "{brand_short}: Cerramos la solicitud {job} porque no tuvimos respuesta. No hay problema. Escríbanos cuando quiera y empezamos de nuevo."
   },
   "close_which": {
     "audience": "homeowner",
     "draft": true,
     "segments": 2,
-    "text": "Ask Hava: ¿Cuál cerramos? Tiene abiertas las solicitudes {job}. Responda CERRAR y el número, o CERRAR TODO."
+    "text": "{brand_short}: ¿Cuál cerramos? Tiene abiertas las solicitudes {job}. Responda CERRAR y el número, o CERRAR TODO."
   },
   "close_mention": {
     "audience": "homeowner",
     "draft": true,
     "segments": 1,
-    "text": "Ask Hava: Para cerrar la solicitud {job}, responda CERRAR {job}."
+    "text": "{brand_short}: Para cerrar la solicitud {job}, responda CERRAR {job}."
   },
   "job_closed": {
     "audience": "homeowner",
     "draft": true,
     "segments": 2,
-    "text": "Ask Hava: La solicitud {job} está cerrada, como pidió. Escríbanos cuando quiera para empezar una nueva."
+    "text": "{brand_short}: La solicitud {job} está cerrada, como pidió. Escríbanos cuando quiera para empezar una nueva."
   },
   "jobs_closed": {
     "audience": "homeowner",
     "draft": true,
     "segments": 2,
-    "text": "Ask Hava: Las solicitudes {job} están cerradas, como pidió. Escríbanos cuando quiera para empezar una nueva."
+    "text": "{brand_short}: Las solicitudes {job} están cerradas, como pidió. Escríbanos cuando quiera para empezar una nueva."
   },
   "text_pick_terms": {
     "audience": "homeowner",
     "draft": true,
     "segments": 4,
-    "text": "Ask Hava: Falta un paso para la cotización {quoted} de la solicitud {job}. Responda {quoted} SÍ otra vez para elegir. Al elegir, el negocio recibe su nombre de pila y la dirección del trabajo cuando acepte.\nAl elegir, usted acepta los Términos: askhava.com/terms"
+    "text": "{brand_short}: Falta un paso para la cotización {quoted} de la solicitud {job}. Responda {quoted} SÍ otra vez para elegir. Al elegir, el negocio recibe su nombre de pila y la dirección del trabajo cuando acepte.\nAl elegir, usted acepta los Términos: {domain}/terms"
   },
   "text_pick_which": {
     "audience": "homeowner",
     "draft": true,
     "segments": 5,
-    "text": "Ask Hava: Tiene cotizaciones en las solicitudes {job}. Agregue el número de solicitud para saber cuál, por ejemplo {number} 2 SÍ. Al elegir, el negocio recibe su nombre de pila y la dirección del trabajo cuando acepte.\nAl elegir, usted acepta los Términos: askhava.com/terms"
+    "text": "{brand_short}: Tiene cotizaciones en las solicitudes {job}. Agregue el número de solicitud para saber cuál, por ejemplo {number} 2 SÍ. Al elegir, el negocio recibe su nombre de pila y la dirección del trabajo cuando acepte.\nAl elegir, usted acepta los Términos: {domain}/terms"
   },
   "text_pick_done": {
     "audience": "homeowner",
     "draft": true,
     "segments": 3,
-    "text": "Ask Hava: Listo. Eligió la cotización {quoted} de la solicitud {job}. Le avisaremos por texto cuando el negocio acepte. Todavía puede elegir otra cotización. Responda LISTA para verlas."
+    "text": "{brand_short}: Listo. Eligió la cotización {quoted} de la solicitud {job}. Le avisaremos por texto cuando el negocio acepte. Todavía puede elegir otra cotización. Responda LISTA para verlas."
   },
   "text_pick_no_quote": {
     "audience": "homeowner",
     "draft": true,
     "segments": 2,
-    "text": "Ask Hava: No hay una cotización {quoted} para elegir en la solicitud {job}. Responda LISTA para ver sus cotizaciones."
+    "text": "{brand_short}: No hay una cotización {quoted} para elegir en la solicitud {job}. Responda LISTA para ver sus cotizaciones."
   },
   "text_pick_confirmed": {
     "audience": "homeowner",
     "draft": true,
     "segments": 2,
-    "text": "Ask Hava: El negocio aceptó su elección para la solicitud {job}. Para cerrar la solicitud, responda CERRAR {job}."
+    "text": "{brand_short}: El negocio aceptó su elección para la solicitud {job}. Para cerrar la solicitud, responda CERRAR {job}."
   },
   "text_pick_waiting": {
     "audience": "homeowner",
     "draft": true,
     "segments": 2,
-    "text": "Ask Hava: Aún no hay cotizaciones para la solicitud {job}. Le avisaremos por texto cuando llegue la primera."
+    "text": "{brand_short}: Aún no hay cotizaciones para la solicitud {job}. Le avisaremos por texto cuando llegue la primera."
   },
   "text_pick_none": {
     "audience": "homeowner",
     "draft": true,
     "segments": 1,
-    "text": "Ask Hava: No tiene cotizaciones para elegir ahora."
+    "text": "{brand_short}: No tiene cotizaciones para elegir ahora."
   },
   "card_shown": {
     "audience": "homeowner",
     "draft": true,
     "segments": 3,
-    "text": "Ask Hava: Así verán los negocios la solicitud {job}: [card] Sale en {time}. Responda CAMBIAR para cambiarla, o ENVIAR para enviarla ya."
+    "text": "{brand_short}: Así verán los negocios la solicitud {job}: [card] Sale en {time}. Responda CAMBIAR para cambiarla, o ENVIAR para enviarla ya."
   },
   "card_link": {
     "audience": "homeowner",
     "draft": true,
     "segments": 3,
-    "text": "Ask Hava: La solicitud {job} está lista. Revísela antes de que salga: {link} Sale en {time}. Responda CAMBIAR para cambiarla, o ENVIAR para enviarla ya."
+    "text": "{brand_short}: La solicitud {job} está lista. Revísela antes de que salga: {link} Sale en {time}. Responda CAMBIAR para cambiarla, o ENVIAR para enviarla ya."
   },
   "card_edit": {
     "audience": "homeowner",
     "draft": true,
     "segments": 2,
-    "text": "Ask Hava: Claro, ¿qué cambiamos en la solicitud {job}? Díganos en un texto y le mostramos cómo queda. No sale nada hasta que lo vea."
+    "text": "{brand_short}: Claro, ¿qué cambiamos en la solicitud {job}? Díganos en un texto y le mostramos cómo queda. No sale nada hasta que lo vea."
   },
   "card_fix_notice": {
     "audience": "business",
     "draft": true,
     "segments": 3,
-    "text": "Ask Hava: Su tarjeta no pasó para el trabajo {job}. No se le cobró nada. Después de {time}, el propietario puede elegir la cotización de otro negocio. Intente de nuevo o use otra tarjeta: {link}"
+    "text": "{brand_short}: Su tarjeta no pasó para el trabajo {job}. No se le cobró nada. Después de {time}, el propietario puede elegir la cotización de otro negocio. Intente de nuevo o use otra tarjeta: {link}"
   },
   "card_approval_notice": {
     "audience": "business",
     "draft": true,
     "segments": 3,
-    "text": "Ask Hava: Su banco pide que apruebe el pago para el trabajo {job}. Todavía no se le cobró nada. Después de {time}, el propietario puede elegir la cotización de otro negocio. Apruébelo aquí: {link}"
+    "text": "{brand_short}: Su banco pide que apruebe el pago para el trabajo {job}. Todavía no se le cobró nada. Después de {time}, el propietario puede elegir la cotización de otro negocio. Apruébelo aquí: {link}"
   },
   "pick_notice": {
     "audience": "business",
     "draft": true,
     "segments": 2,
-    "text": "Ask Hava: Un propietario eligió su cotización para el trabajo {job}. Acepte antes de {time}."
+    "text": "{brand_short}: Un propietario eligió su cotización para el trabajo {job}. Acepte antes de {time}."
   },
   "pick_notice_emergency": {
     "audience": "business",
     "draft": true,
     "segments": 2,
-    "text": "Ask Hava: EMERGENCIA: un propietario eligió su cotización para el trabajo {job}. Acepte antes de {time}."
+    "text": "{brand_short}: EMERGENCIA: un propietario eligió su cotización para el trabajo {job}. Acepte antes de {time}."
   },
   "pick_fee_reply": {
     "audience": "business",
     "draft": true,
     "segments": 1,
-    "text": "Ask Hava: {number}. Confirme y pague aquí: {link}."
+    "text": "{brand_short}: {number}. Confirme y pague aquí: {link}."
   },
   "pick_expired": {
     "audience": "business",
     "draft": true,
     "segments": 3,
-    "text": "Ask Hava: Se acabó el tiempo para aceptar el trabajo {job}, así que la elección venció. No se le cobró nada. Su cotización no se puede elegir otra vez para este trabajo."
+    "text": "{brand_short}: Se acabó el tiempo para aceptar el trabajo {job}, así que la elección venció. No se le cobró nada. Su cotización no se puede elegir otra vez para este trabajo."
   },
   "release_notice": {
     "audience": "business",
     "draft": true,
     "segments": 2,
-    "text": "Ask Hava: El trabajo {job} ya está confirmado. Inicie sesión para ver los datos del dueño de la casa. {link}"
+    "text": "{brand_short}: El trabajo {job} ya está confirmado. Inicie sesión para ver los datos del dueño de la casa. {link}"
   },
   "release_text": {
     "audience": "business",
     "draft": true,
     "segments": 2,
-    "text": "Ask Hava: El trabajo {job} ya está confirmado. Los datos están en askhava.com/business."
+    "text": "{brand_short}: El trabajo {job} ya está confirmado. Los datos están en {domain}/business."
   },
   "pick_lost": {
     "audience": "business",
     "draft": true,
     "segments": 1,
-    "text": "Ask Hava: El trabajo {job} fue para otro negocio esta vez."
+    "text": "{brand_short}: El trabajo {job} fue para otro negocio esta vez."
   },
   "pick_lost_lower": {
     "audience": "business",
     "draft": true,
     "segments": 3,
-    "text": "Ask Hava: El trabajo {job} fue para otro negocio esta vez. {count} negocios cotizaron; la cotización elegida fue más baja que la suya. No tiene que hacer nada. Gracias por cotizar."
+    "text": "{brand_short}: El trabajo {job} fue para otro negocio esta vez. {count} negocios cotizaron; la cotización elegida fue más baja que la suya. No tiene que hacer nada. Gracias por cotizar."
   },
   "pick_lost_same": {
     "audience": "business",
     "draft": true,
     "segments": 3,
-    "text": "Ask Hava: El trabajo {job} fue para otro negocio esta vez. {count} negocios cotizaron; la cotización elegida fue más o menos igual a la suya. No tiene que hacer nada. Gracias por cotizar."
+    "text": "{brand_short}: El trabajo {job} fue para otro negocio esta vez. {count} negocios cotizaron; la cotización elegida fue más o menos igual a la suya. No tiene que hacer nada. Gracias por cotizar."
   },
   "pick_lost_higher": {
     "audience": "business",
     "draft": true,
     "segments": 3,
-    "text": "Ask Hava: El trabajo {job} fue para otro negocio esta vez. {count} negocios cotizaron; la cotización elegida fue más alta que la suya. No tiene que hacer nada. Gracias por cotizar."
+    "text": "{brand_short}: El trabajo {job} fue para otro negocio esta vez. {count} negocios cotizaron; la cotización elegida fue más alta que la suya. No tiene que hacer nada. Gracias por cotizar."
   },
   "pick_lost_several_lower": {
     "audience": "business",
     "draft": true,
     "segments": 3,
-    "text": "Ask Hava: El trabajo {job} fue para otro negocio esta vez. Varios negocios cotizaron; la cotización elegida fue más baja que la suya. No tiene que hacer nada. Gracias por cotizar."
+    "text": "{brand_short}: El trabajo {job} fue para otro negocio esta vez. Varios negocios cotizaron; la cotización elegida fue más baja que la suya. No tiene que hacer nada. Gracias por cotizar."
   },
   "pick_lost_several_same": {
     "audience": "business",
     "draft": true,
     "segments": 3,
-    "text": "Ask Hava: El trabajo {job} fue para otro negocio esta vez. Varios negocios cotizaron; la cotización elegida fue más o menos igual a la suya. No tiene que hacer nada. Gracias por cotizar."
+    "text": "{brand_short}: El trabajo {job} fue para otro negocio esta vez. Varios negocios cotizaron; la cotización elegida fue más o menos igual a la suya. No tiene que hacer nada. Gracias por cotizar."
   },
   "pick_lost_several_higher": {
     "audience": "business",
     "draft": true,
     "segments": 3,
-    "text": "Ask Hava: El trabajo {job} fue para otro negocio esta vez. Varios negocios cotizaron; la cotización elegida fue más alta que la suya. No tiene que hacer nada. Gracias por cotizar."
+    "text": "{brand_short}: El trabajo {job} fue para otro negocio esta vez. Varios negocios cotizaron; la cotización elegida fue más alta que la suya. No tiene que hacer nada. Gracias por cotizar."
   },
   "pick_lost_other_type": {
     "audience": "business",
     "draft": true,
     "segments": 3,
-    "text": "Ask Hava: El trabajo {job} fue para otro negocio esta vez. La cotización elegida era de un tipo distinto a la suya. No tiene que hacer nada. Gracias por cotizar."
+    "text": "{brand_short}: El trabajo {job} fue para otro negocio esta vez. La cotización elegida era de un tipo distinto a la suya. No tiene que hacer nada. Gracias por cotizar."
   },
   "job_no_longer_active": {
     "audience": "business",
     "draft": true,
     "segments": 1,
-    "text": "Ask Hava: Trabajo {job}. Este trabajo ya no está activo."
+    "text": "{brand_short}: Trabajo {job}. Este trabajo ya no está activo."
   },
   "pick_live_reply": {
     "audience": "business",
     "draft": true,
     "segments": 4,
-    "text": "Ask Hava: El propietario eligió su cotización para el trabajo {job}. Confirme aquí: {link} Luego verá el nombre y la dirección del cliente en su portal."
+    "text": "{brand_short}: El propietario eligió su cotización para el trabajo {job}. Confirme aquí: {link} Luego verá el nombre y la dirección del cliente en su portal."
   },
   "line_closed_cancelled": {
     "audience": "business",
     "draft": true,
     "segments": 3,
-    "text": "Ask Hava: El propietario canceló el trabajo {job}, así que el número de llamadas de ese trabajo ya no funciona. Esto no cuenta en su contra. No tiene que hacer nada."
+    "text": "{brand_short}: El propietario canceló el trabajo {job}, así que el número de llamadas de ese trabajo ya no funciona. Esto no cuenta en su contra. No tiene que hacer nada."
   },
   "link_this_phone": {
     "audience": "business",
     "draft": true,
     "segments": 3,
-    "text": "Ask Hava: Un teléfono que termina en {number} llamó a su línea de Ask Hava. Todavía no está en su cuenta. Si es suyo, responda LINK {job}. Si no, ignore este mensaje."
+    "text": "{brand_short}: Un teléfono que termina en {number} llamó a su línea de {brand}. Todavía no está en su cuenta. Si es suyo, responda LINK {job}. Si no, ignore este mensaje."
   },
   "signup_record_updated": {
     "audience": "business",
     "draft": true,
     "segments": 1,
-    "text": "Ask Hava: Vemos su registro actualizado. Toque para terminar el registro: {link}."
+    "text": "{brand_short}: Vemos su registro actualizado. Toque para terminar el registro: {link}."
   },
   "business_auto_reply": {
     "audience": "business",
     "draft": true,
     "segments": 1,
-    "text": "Ask Hava: No pudimos leer ese mensaje. Para cotizar, confirmar o cambiar ajustes, use su portal: https://askhava.com/b. Escriba AYUDA para recibir ayuda."
+    "text": "{brand_short}: No pudimos leer ese mensaje. Para cotizar, confirmar o cambiar ajustes, use su portal: https://{domain}/b. Escriba AYUDA para recibir ayuda."
   },
   "business_no_call_reminder_email": {
     "audience": "business",
     "draft": true,
     "segments": 6,
-    "text": "Ask Hava: Trabajo {job}: aún no hay llamada. Llame dentro de 72 horas de la entrega, o la tarifa no se puede reembolsar. Llame entre las 8 a.m. y las 8 p.m., hora de Arizona (a cualquier hora en un trabajo de emergencia). Sus 2 intentos pueden ser en días distintos. El cliente eligió correo electrónico; sus 2 intentos de llamada siguen contando para el reembolso."
+    "text": "{brand_short}: Trabajo {job}: aún no hay llamada. Llame dentro de 72 horas de la entrega, o la tarifa no se puede reembolsar. Llame entre las 8 a.m. y las 8 p.m., hora de Arizona (a cualquier hora en un trabajo de emergencia). Sus 2 intentos pueden ser en días distintos. El cliente eligió correo electrónico; sus 2 intentos de llamada siguen contando para el reembolso."
   },
   "unreachable_refunded": {
     "audience": "business",
     "draft": true,
     "segments": 6,
-    "text": "Ask Hava: Trabajo {job}: su tarifa de presentación se reembolsa. Llamó 2 veces, con al menos 3 horas de diferencia, dentro de 72 horas de la entrega y en el horario de llamadas. Nadie contestó y le avisamos al cliente que usted llamó. ¿Preguntas? Use el formulario Preguntar por un cargo en su página de facturación en https://askhava.com/b."
+    "text": "{brand_short}: Trabajo {job}: su tarifa de presentación se reembolsa. Llamó 2 veces, con al menos 3 horas de diferencia, dentro de 72 horas de la entrega y en el horario de llamadas. Nadie contestó y le avisamos al cliente que usted llamó. ¿Preguntas? Use el formulario Preguntar por un cargo en su página de facturación en https://{domain}/b."
   },
   "unreachable_no_talked": {
     "audience": "business",
     "draft": true,
     "segments": 4,
-    "text": "Ask Hava: Trabajo {job}: no hay reembolso de su tarifa de presentación. Una persona contestó una de las llamadas entre usted y el cliente. ¿Preguntas? Use el formulario Preguntar por un cargo en su página de facturación en https://askhava.com/b."
+    "text": "{brand_short}: Trabajo {job}: no hay reembolso de su tarifa de presentación. Una persona contestó una de las llamadas entre usted y el cliente. ¿Preguntas? Use el formulario Preguntar por un cargo en su página de facturación en https://{domain}/b."
   },
   "unreachable_no_attempts": {
     "audience": "business",
     "draft": true,
     "segments": 6,
-    "text": "Ask Hava: Trabajo {job}: no hay reembolso de su tarifa de presentación. No encontramos ninguna llamada suya dentro de 72 horas de la entrega, de 8 a.m. a 8 p.m., hora de Arizona (a cualquier hora en un trabajo de emergencia). El reembolso necesita 2. ¿Preguntas? Use el formulario Preguntar por un cargo en su página de facturación en https://askhava.com/b."
+    "text": "{brand_short}: Trabajo {job}: no hay reembolso de su tarifa de presentación. No encontramos ninguna llamada suya dentro de 72 horas de la entrega, de 8 a.m. a 8 p.m., hora de Arizona (a cualquier hora en un trabajo de emergencia). El reembolso necesita 2. ¿Preguntas? Use el formulario Preguntar por un cargo en su página de facturación en https://{domain}/b."
   },
   "unreachable_no_one_attempt": {
     "audience": "business",
     "draft": true,
     "segments": 6,
-    "text": "Ask Hava: Trabajo {job}: no hay reembolso de su tarifa de presentación. Solo 1 de sus llamadas fue dentro de 72 horas de la entrega, de 8 a.m. a 8 p.m., hora de Arizona (a cualquier hora en un trabajo de emergencia). El reembolso necesita 2. ¿Preguntas? Use el formulario Preguntar por un cargo en su página de facturación en https://askhava.com/b."
+    "text": "{brand_short}: Trabajo {job}: no hay reembolso de su tarifa de presentación. Solo 1 de sus llamadas fue dentro de 72 horas de la entrega, de 8 a.m. a 8 p.m., hora de Arizona (a cualquier hora en un trabajo de emergencia). El reembolso necesita 2. ¿Preguntas? Use el formulario Preguntar por un cargo en su página de facturación en https://{domain}/b."
   },
   "unreachable_no_too_close": {
     "audience": "business",
     "draft": true,
     "segments": 5,
-    "text": "Ask Hava: Trabajo {job}: no hay reembolso de su tarifa de presentación. Sus 2 llamadas tuvieron menos de 3 horas de diferencia. El reembolso las necesita con al menos 3 horas de diferencia. ¿Preguntas? Use el formulario Preguntar por un cargo en su página de facturación en https://askhava.com/b."
+    "text": "{brand_short}: Trabajo {job}: no hay reembolso de su tarifa de presentación. Sus 2 llamadas tuvieron menos de 3 horas de diferencia. El reembolso las necesita con al menos 3 horas de diferencia. ¿Preguntas? Use el formulario Preguntar por un cargo en su página de facturación en https://{domain}/b."
   },
   "unreachable_no_notice": {
     "audience": "business",
     "draft": true,
     "segments": 5,
-    "text": "Ask Hava: Trabajo {job}: no hay reembolso de su tarifa de presentación. No tuvimos forma de enviarle al cliente el mensaje de que usted llamó, y el reembolso necesita que ese mensaje salga. ¿Preguntas? Use el formulario Preguntar por un cargo en su página de facturación en https://askhava.com/b."
+    "text": "{brand_short}: Trabajo {job}: no hay reembolso de su tarifa de presentación. No tuvimos forma de enviarle al cliente el mensaje de que usted llamó, y el reembolso necesita que ese mensaje salga. ¿Preguntas? Use el formulario Preguntar por un cargo en su página de facturación en https://{domain}/b."
   },
   "unreachable_no_reply": {
     "audience": "business",
     "draft": true,
     "segments": 4,
-    "text": "Ask Hava: Trabajo {job}: no hay reembolso de su tarifa de presentación. El cliente respondió a nuestra consulta con LISTO o PROBLEMA. ¿Preguntas? Use el formulario Preguntar por un cargo en su página de facturación en https://askhava.com/b."
+    "text": "{brand_short}: Trabajo {job}: no hay reembolso de su tarifa de presentación. El cliente respondió a nuestra consulta con LISTO o PROBLEMA. ¿Preguntas? Use el formulario Preguntar por un cargo en su página de facturación en https://{domain}/b."
   },
   "unreachable_no_emailed": {
     "audience": "business",
     "draft": true,
     "segments": 4,
-    "text": "Ask Hava: Trabajo {job}: no hay reembolso de su tarifa de presentación. El cliente nos dijo que usted le escribió por correo y acordaron una hora. ¿Preguntas? Use el formulario Preguntar por un cargo en su página de facturación en https://askhava.com/b."
+    "text": "{brand_short}: Trabajo {job}: no hay reembolso de su tarifa de presentación. El cliente nos dijo que usted le escribió por correo y acordaron una hora. ¿Preguntas? Use el formulario Preguntar por un cargo en su página de facturación en https://{domain}/b."
   },
   "job_card_notice": {
     "audience": "business",
     "draft": true,
     "segments": 1,
-    "text": "Ask Hava: Nuevo trabajo {job} de {trade}. Cotice hasta las {time}. Véalo en askhava.com/business."
+    "text": "{brand_short}: Nuevo trabajo {job} de {trade}. Cotice hasta las {time}. Véalo en {domain}/business."
   },
   "card_fix_notice_untimed": {
     "audience": "business",
     "draft": true,
     "segments": 2,
-    "text": "Ask Hava: Su tarjeta no pasó para el trabajo {job}. No se le cobró nada. Intente de nuevo o use otra tarjeta: {link}"
+    "text": "{brand_short}: Su tarjeta no pasó para el trabajo {job}. No se le cobró nada. Intente de nuevo o use otra tarjeta: {link}"
   },
   "card_approval_notice_untimed": {
     "audience": "business",
     "draft": true,
     "segments": 2,
-    "text": "Ask Hava: Su banco pide que apruebe el pago para el trabajo {job}. Todavía no se le cobró nada. Apruébelo aquí: {link}"
+    "text": "{brand_short}: Su banco pide que apruebe el pago para el trabajo {job}. Todavía no se le cobró nada. Apruébelo aquí: {link}"
   }
 }
