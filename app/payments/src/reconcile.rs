@@ -33,12 +33,26 @@
 //! [`OPEN_CHARGE_ALERT`] naming only its row, marked `alerted_at` in the same transaction. A
 //! retry raises no [`CHARGE_FAILED_ALERT`] or [`REFUND_FAILED_ALERT`] of its own, so a stuck row
 //! alerts at most for the nights it is listed plus that one alert (D-2364).
+//!
+//! T334 (D-2304, D-2303): each run reads every charge created since the earlier of now less
+//! [`LOOKBACK`] and the start of the last finished run (`payments.reconcile_checkpoint`) less
+//! [`CATCH_UP_MARGIN`], with no cap, so a reconcile outage of any length skips no charge; a gap of
+//! over [`GAP_ALERT_AFTER`] raises one information-only High [`RECONCILE_GAP_ALERT`]. The read goes
+//! only through [`ReconcileStripe::list_charges_page`], [`PAGE_SIZE`] charges at a time: each page
+//! is handled (every charge in its own short transaction) and its FEE-030 totals folded before the
+//! next page is read, and the match is compared once at the end. A listed charge with an unsettled
+//! `payments.reconcile_open` row first seen before now less [`LOOKBACK`] is left to the retry,
+//! which reads it through `fetch_charge` under the same keys (D-3064). The checkpoint moves only
+//! when a run finishes. The reconcile's own refund is booked by T333's
+//! [`Refund::amount_against`](crate::refund_stripe::Refund::amount_against): another `usd` amount at
+//! Stripe's amount with one High `payments.refund_amount_mismatch`, another currency at the charge
+//! with one High `payments.refund_amount_unconfirmed` (D-3065).
 
 use std::future::Future;
 
 use askhava_adapters::api::{AdapterError, IdempotencyKey, PaymentsAdapter};
 use askhava_core::api::{HandlerError, NewTask, enqueue};
-use askhava_ops::api::{NewAlert, Severity, raise_alert};
+use askhava_ops::api::{NewAlert, Severity, raise_alert, raise_alert_once};
 use jiff::{SignedDuration, Timestamp};
 use jiff_sqlx::ToSqlx;
 use secrecy::SecretString;
@@ -53,8 +67,10 @@ use crate::models::{
     plan_charge,
 };
 use crate::refund_state::{PickRefundState, refund_state};
-use crate::refund_stripe::{RefundState, RefundStripe};
-use crate::refunds::{REFUND_FAILED_ALERT, request_refund};
+use crate::refund_stripe::{Refund, RefundAmount, RefundState, RefundStripe};
+use crate::refunds::{
+    REFUND_FAILED_ALERT, REFUND_MISMATCH_ALERT, REFUND_UNCONFIRMED_ALERT, request_refund,
+};
 use crate::service::CONFIRM_FEE_ACTION;
 
 /// The nightly task kind `server` registers with [`run_reconcile`].
@@ -76,6 +92,27 @@ pub const RECONCILE_EVERY: SignedDuration = SignedDuration::from_hours(24);
 pub const OPEN_CHARGE_ALERT: &str = "payments.reconcile_open";
 /// How long a stored charge may stay unsettled before its one alert (D-1872).
 pub const OPEN_ALERT_AFTER: SignedDuration = SignedDuration::from_hours(7 * 24);
+/// Raised once per run, as information only, when the last finished run started more than
+/// [`GAP_ALERT_AFTER`] ago; the run still reads every charge back to it (FEE-029, D-2304).
+pub const RECONCILE_GAP_ALERT: &str = "payments.reconcile_gap";
+/// The gap since the last finished run past which [`RECONCILE_GAP_ALERT`] is raised (D-2304).
+pub const GAP_ALERT_AFTER: SignedDuration = SignedDuration::from_hours(2 * 24);
+/// How far before the last finished run's start a run reads, when that is earlier than now less
+/// [`LOOKBACK`] (D-2304).
+pub const CATCH_UP_MARGIN: SignedDuration = SignedDuration::from_hours(24);
+/// The most charges one page holds: Stripe's list limit (D-2304).
+pub const PAGE_SIZE: usize = 100;
+/// The subject kind of an alert about one pick.
+const PICK_SUBJECT: &str = "payments.pick_intent";
+
+/// One page of Stripe's charge list and the cursor of the next, `None` after the last (D-2304).
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct ChargePage {
+    /// The page's charges.
+    pub charges: Vec<StripeCharge>,
+    /// The cursor to pass for the next page; `None` when this page is the last.
+    pub next: Option<String>,
+}
 
 /// The Stripe reads the reconcile needs; T132's client implements it (FEE-029, FEE-051).
 pub trait ReconcileStripe: PaymentsAdapter {
@@ -97,6 +134,30 @@ pub trait ReconcileStripe: PaymentsAdapter {
         let id = id.to_owned();
         let all = self.list_charges(Timestamp::MIN);
         async move { Ok(all.await?.into_iter().find(|c| c.id == id)) }
+    }
+
+    /// FEE-029, D-2304, D-3055: one page of the charges created at or after `since`: at most
+    /// `limit` (1 to [`PAGE_SIZE`]) charges after the cursor `after`, with the next page's cursor.
+    /// The provided body orders [`list_charges`](Self::list_charges) by charge ID: the cursor is
+    /// the last ID of the previous page and a page holds the charges with a greater ID. T335's
+    /// client overrides it with Stripe's paged `GET /v1/charges`, its own order and cursor.
+    fn list_charges_page(
+        &self,
+        since: Timestamp,
+        after: Option<&str>,
+        limit: usize,
+    ) -> impl Future<Output = Result<ChargePage, AdapterError>> + Send {
+        let after = after.map(str::to_owned);
+        let limit = limit.clamp(1, PAGE_SIZE);
+        let all = self.list_charges(since);
+        async move {
+            let mut charges = all.await?;
+            charges.retain(|c| after.as_deref().is_none_or(|a| c.id.as_str() > a));
+            charges.sort_by(|a, b| a.id.cmp(&b.id));
+            let next = (charges.len() > limit).then(|| charges[limit - 1].id.clone());
+            charges.truncate(limit);
+            Ok(ChargePage { charges, next })
+        }
     }
 }
 
@@ -133,9 +194,10 @@ impl OpenWhy {
     }
 }
 
-/// What a refund attempt came to: taken, nothing owed any more, or still open.
+/// What a refund attempt came to: taken (with the cents booked), nothing owed any more, or still
+/// open.
 enum Sent {
-    Refunded,
+    Refunded(i64),
     Nothing,
     Open(OpenWhy),
 }
@@ -186,7 +248,7 @@ async fn alert(
     kind: &'static str,
     pick: Option<Uuid>,
 ) -> Result<(), MoneyEventError> {
-    let subject = pick.map(|p| ("payments.pick_intent", p));
+    let subject = pick.map(|p| (PICK_SUBJECT, p));
     let alert = NewAlert {
         kind,
         severity: Severity::High,
@@ -201,49 +263,139 @@ async fn alert(
 /// FEE-029, FEE-030, FEE-051, D-1872: one reconcile run (see the module comment). A malformed
 /// charge is counted and raises [`MISMATCH_ALERT`]; a charge whose writes fail raises
 /// [`CHARGE_FAILED_ALERT`] and the run goes on to the next (D-1555); a charge left unsettled is
-/// stored and every stored one retried.
+/// stored and every stored one retried. T334 (D-2304): it reads from [`read_from`]'s time, page by
+/// page, folds each page's FEE-030 totals before the next read, compares them once at the end and
+/// only then moves the checkpoint to `now`.
 ///
 /// # Errors
-/// [`MoneyEventError::Stripe`] when the list cannot be read, else `Database` when an alert, a
-/// stored charge or the match cannot be read or written.
+/// [`MoneyEventError::Stripe`] when a page cannot be read or Stripe repeats a cursor, else
+/// `Database` when an alert, a stored charge, the match or the checkpoint cannot be read or
+/// written. Any error leaves the checkpoint where it was.
 pub async fn reconcile(
     pool: &PgPool,
     stripe: &impl ReconcileStripe,
     id_secret: &SecretString,
     now: Timestamp,
 ) -> Result<ReconcileReport, MoneyEventError> {
-    let charges = stripe
-        .list_charges(now - LOOKBACK)
-        .await
-        .map_err(|_| MoneyEventError::Stripe)?;
-    let mut report = ReconcileReport {
-        seen: charges.len(),
-        malformed: charges.iter().filter(|c| !c.is_well_formed()).count(),
-        ..ReconcileReport::default()
-    };
-    let mut known = Vec::new();
-    let listed: Vec<&StripeCharge> = charges.iter().filter(|c| c.is_well_formed()).collect();
-    for &charge in &listed {
-        let open = settle(
-            pool,
-            stripe,
-            id_secret,
-            (charge, now, false),
-            &mut report,
-            &mut known,
-        )
-        .await?;
-        record(pool, charge, open, now).await?;
+    let since = read_from(pool, now).await?;
+    let mut report = ReconcileReport::default();
+    let mut cursor: Option<String> = None;
+    loop {
+        let page = stripe
+            .list_charges_page(since, cursor.as_deref(), PAGE_SIZE)
+            .await
+            .map_err(|_| MoneyEventError::Stripe)?;
+        one_page(pool, stripe, id_secret, (&page.charges, now), &mut report).await?;
+        match page.next {
+            None => break,
+            Some(next) if cursor.as_deref() == Some(next.as_str()) => {
+                return Err(MoneyEventError::Stripe);
+            }
+            Some(next) => cursor = Some(next),
+        }
     }
-    let run = (now, &mut report, &mut known);
-    retry_open(pool, stripe, id_secret, &listed, run).await?;
+    let mut known = Vec::new();
+    retry_open(pool, stripe, id_secret, (now, &mut report, &mut known)).await?;
+    add_totals(pool, &known, &mut report).await?;
     report.open = alert_open(pool, now).await?;
-    report.stripe = MoneyTotals::of_stripe(&known);
-    report.ledger = ledger_totals(pool, &known).await?;
     if !report.matched() {
         alert(&mut *db(pool.acquire().await)?, MISMATCH_ALERT, None).await?;
     }
+    finish(pool, now).await?;
     Ok(report)
+}
+
+/// FEE-029, D-2304: the time this run reads from: the earlier of `now` less [`LOOKBACK`] and the
+/// last finished run's start less [`CATCH_UP_MARGIN`], with no cap. A gap since that start of over
+/// [`GAP_ALERT_AFTER`] raises one High [`RECONCILE_GAP_ALERT`], as information only.
+async fn read_from(pool: &PgPool, now: Timestamp) -> Result<Timestamp, MoneyEventError> {
+    let last = db(
+        sqlx::query_scalar!("SELECT run_started_at FROM payments.reconcile_checkpoint")
+            .fetch_optional(pool)
+            .await,
+    )?;
+    let window = now - LOOKBACK;
+    let Some(last) = last.map(|t| t.to_jiff()) else {
+        return Ok(window);
+    };
+    if now.duration_since(last) > GAP_ALERT_AFTER {
+        alert(&mut *db(pool.acquire().await)?, RECONCILE_GAP_ALERT, None).await?;
+    }
+    Ok(window.min(last - CATCH_UP_MARGIN))
+}
+
+/// D-2304: a finished run moves the checkpoint to its start, never backwards.
+async fn finish(pool: &PgPool, now: Timestamp) -> Result<(), MoneyEventError> {
+    db(sqlx::query!(
+        "INSERT INTO payments.reconcile_checkpoint (id, run_started_at) VALUES (true, $1)
+         ON CONFLICT (id) DO UPDATE SET run_started_at =
+           GREATEST(reconcile_checkpoint.run_started_at, EXCLUDED.run_started_at)",
+        now.to_sqlx() as _,
+    )
+    .execute(pool)
+    .await)?;
+    Ok(())
+}
+
+/// FEE-029, FEE-030, D-2304, D-3064: handles one page (at most [`PAGE_SIZE`] charges, each in its
+/// own short transaction) and folds its totals into `report`. A charge whose unsettled
+/// `payments.reconcile_open` row was first seen before `now` less [`LOOKBACK`] is only in the
+/// catch-up range; it is left out of the page and not counted in `seen`, and the retry settles it.
+async fn one_page(
+    pool: &PgPool,
+    stripe: &impl ReconcileStripe,
+    id_secret: &SecretString,
+    (charges, now): (&[StripeCharge], Timestamp),
+    report: &mut ReconcileReport,
+) -> Result<(), MoneyEventError> {
+    let well: Vec<&StripeCharge> = charges.iter().filter(|c| c.is_well_formed()).collect();
+    let carried = carried_over(pool, &well, now).await?;
+    report.malformed += charges.len() - well.len();
+    report.seen += charges.len() - carried.len();
+    let mut known = Vec::new();
+    for &charge in well.iter().filter(|c| !carried.contains(&c.id)) {
+        let attempt = (charge, now, false);
+        let open = settle(pool, stripe, id_secret, attempt, report, &mut known).await?;
+        record(pool, charge, open, now).await?;
+    }
+    add_totals(pool, &known, report).await
+}
+
+/// D-3064: the IDs among `charges` with an unsettled `payments.reconcile_open` row first seen
+/// before `now` less [`LOOKBACK`].
+async fn carried_over(
+    pool: &PgPool,
+    charges: &[&StripeCharge],
+    now: Timestamp,
+) -> Result<Vec<String>, MoneyEventError> {
+    let ids: Vec<String> = charges.iter().map(|c| c.id.clone()).collect();
+    db(sqlx::query_scalar!(
+        "SELECT stripe_charge_id FROM payments.reconcile_open
+          WHERE settled_at IS NULL AND first_seen < $2 AND stripe_charge_id = ANY($1)",
+        &ids,
+        (now - LOOKBACK).to_sqlx() as _,
+    )
+    .fetch_all(pool)
+    .await)
+}
+
+/// FEE-030, FEE-051, D-2304: adds Stripe's and the ledger's totals over `known` to the run's.
+async fn add_totals(
+    pool: &PgPool,
+    known: &[StripeCharge],
+    report: &mut ReconcileReport,
+) -> Result<(), MoneyEventError> {
+    if known.is_empty() {
+        return Ok(());
+    }
+    let sum = |a: MoneyTotals, b: MoneyTotals| MoneyTotals {
+        charged: a.charged + b.charged,
+        refunded: a.refunded + b.refunded,
+        disputed: a.disputed + b.disputed,
+    };
+    report.stripe = sum(report.stripe, MoneyTotals::of_stripe(known));
+    report.ledger = sum(report.ledger, ledger_totals(pool, known).await?);
+    Ok(())
 }
 
 /// Runs [`one_charge`] and says why the charge is still open, if it is: a failed write is counted,
@@ -307,8 +459,8 @@ async fn one_charge(
     };
     let open = match sent {
         Sent::Open(why) => Some(why),
-        Sent::Refunded => {
-            held.refunded_cents = held.amount_cents;
+        Sent::Refunded(cents) => {
+            held.refunded_cents = cents;
             None
         }
         Sent::Nothing => None,
@@ -473,7 +625,7 @@ async fn refund(
             Err(MoneyEventError::NothingCharged) => {}
             Ok(RefundOutcome::Refunded(_)) => {
                 report.refunded += 1;
-                return Ok(Sent::Refunded);
+                return Ok(Sent::Refunded(attempt.0.amount_cents));
             }
             Ok(RefundOutcome::Failed) => {
                 report.refund_failed += 1;
@@ -504,7 +656,8 @@ async fn failed_why(pool: &PgPool, pick: Uuid) -> Result<Sent, MoneyEventError> 
 /// on a lost answer shows as refunded in the next list and is not sent again. A failure raises
 /// [`REFUND_FAILED_ALERT`], except on a `retry` of a stored row, whose one alert is
 /// [`OPEN_CHARGE_ALERT`] (D-2364); the ledger `refund` entry follows Stripe's `succeeded` only, and a
-/// `pending` answer appends nothing and counts neither way (D-1555, D-1753).
+/// `pending` answer appends nothing and counts neither way (D-1555, D-1753). A `succeeded` refund
+/// is booked by [`own_booked`] (T334, D-2303, D-3065).
 async fn own_refund(
     pool: &PgPool,
     stripe: &impl ReconcileStripe,
@@ -519,46 +672,77 @@ async fn own_refund(
         RECONCILE_ACTION,
         &[&charge.id, why.code(), &night],
     );
-    let state = stripe
-        .refund(&key, &charge.payment_intent)
-        .await
-        .map(|r| r.state);
-    if matches!(
-        state,
-        Ok(RefundState::Pending | RefundState::RequiresAction)
-    ) {
-        return Ok(Sent::Open(OpenWhy::RefundPending));
-    }
-    if state != Ok(RefundState::Succeeded) {
-        report.refund_failed += 1;
-        if !retry {
-            let mut conn = db(pool.acquire().await)?;
-            alert(&mut conn, REFUND_FAILED_ALERT, pick.map(|p| p.pick)).await?;
+    let refund = match stripe.refund(&key, &charge.payment_intent).await {
+        Ok(r) if r.state == RefundState::Succeeded => r,
+        Ok(r) if matches!(r.state, RefundState::Pending | RefundState::RequiresAction) => {
+            return Ok(Sent::Open(OpenWhy::RefundPending));
         }
-        return Ok(Sent::Open(OpenWhy::RefundRefused));
-    }
+        _ => {
+            report.refund_failed += 1;
+            if !retry {
+                let mut conn = db(pool.acquire().await)?;
+                alert(&mut conn, REFUND_FAILED_ALERT, pick.map(|p| p.pick)).await?;
+            }
+            return Ok(Sent::Open(OpenWhy::RefundRefused));
+        }
+    };
     report.refunded += 1;
+    let (cents, flagged) = own_booked(&refund, charge.amount_cents);
+    let mut tx = db(pool.begin().await)?;
     if let Some(facts) = pick {
-        let mut tx = db(pool.begin().await)?;
         append(
             &mut tx,
             id_secret,
             charge,
             facts,
-            (EntryKind::Refund, charge.amount_cents),
+            (EntryKind::Refund, cents),
         )
         .await?;
-        db(tx.commit().await)?;
     }
-    Ok(Sent::Refunded)
+    if let Some(kind) = flagged {
+        flag_refund(&mut tx, kind, pick).await?;
+    }
+    db(tx.commit().await)?;
+    Ok(Sent::Refunded(cents))
 }
 
-/// A stored, unsettled charge as the run first read it (D-1872).
-async fn open_rows(pool: &PgPool) -> Result<Vec<StripeCharge>, MoneyEventError> {
+/// FEE-026, FEE-028, D-2303, D-3065: the cents the reconcile books for its own succeeded refund
+/// and the alert it raises, by T333's [`Refund::amount_against`]: another `usd` amount at Stripe's
+/// amount with [`REFUND_MISMATCH_ALERT`]; another currency at the charge, never the foreign
+/// figure, with [`REFUND_UNCONFIRMED_ALERT`]; the charge with none when full or not reported (the
+/// next night's list or retry compares the ledger's refund with Stripe's refunded amount).
+fn own_booked(refund: &Refund, charged: i64) -> (i64, Option<&'static str>) {
+    match refund.amount_against(charged) {
+        RefundAmount::Full | RefundAmount::Missing => (charged, None),
+        RefundAmount::Differs(cents) => (cents, Some(REFUND_MISMATCH_ALERT)),
+        RefundAmount::Foreign => (charged, Some(REFUND_UNCONFIRMED_ALERT)),
+    }
+}
+
+/// D-2303, D-3065: one High refund-amount alert: on a known pick only while none is open for it
+/// (as T333's), else with no subject.
+async fn flag_refund(
+    conn: &mut PgConnection,
+    kind: &'static str,
+    pick: Option<PickFacts>,
+) -> Result<(), MoneyEventError> {
+    let Some(facts) = pick else {
+        return alert(conn, kind, None).await;
+    };
+    raise_alert_once(conn, kind, Severity::High, (PICK_SUBJECT, facts.pick))
+        .await
+        .map(drop)
+        .map_err(|_| MoneyEventError::Database)
+}
+
+/// Each stored, unsettled charge not tried at `now`, as the run first read it (D-1872, D-3064).
+async fn open_rows(pool: &PgPool, now: Timestamp) -> Result<Vec<StripeCharge>, MoneyEventError> {
     let rows = db(sqlx::query!(
         "SELECT stripe_charge_id, stripe_intent_id, pick_id, amount_cents, refunded_cents,
                 fee_cents, balance_transaction
-           FROM payments.reconcile_open WHERE settled_at IS NULL ORDER BY first_seen, id"
+           FROM payments.reconcile_open WHERE settled_at IS NULL AND last_tried <> $1
+          ORDER BY first_seen, id",
+        now.to_sqlx() as _,
     )
     .fetch_all(pool)
     .await)?;
@@ -577,21 +761,17 @@ async fn open_rows(pool: &PgPool) -> Result<Vec<StripeCharge>, MoneyEventError> 
         .collect())
 }
 
-/// FEE-029, D-1872: retries every unsettled stored charge this run's list did not hold, whatever
-/// its age, from its stored facts with Stripe's current refund and dispute state, through the
-/// listed charges' own path and keys, and records what came of it.
+/// FEE-029, D-1872, D-3064: retries every unsettled stored charge this run's pages did not settle
+/// or store (its `last_tried` is not `now`), whatever its age, from its stored facts with
+/// Stripe's current refund and dispute state, through the listed charges' own path and keys, and
+/// records what came of it.
 async fn retry_open(
     pool: &PgPool,
     stripe: &impl ReconcileStripe,
     id_secret: &SecretString,
-    listed: &[&StripeCharge],
     (now, report, known): (Timestamp, &mut ReconcileReport, &mut Vec<StripeCharge>),
 ) -> Result<(), MoneyEventError> {
-    let stored = open_rows(pool).await?;
-    for charge in stored
-        .iter()
-        .filter(|s| listed.iter().all(|c| c.id != s.id))
-    {
+    for charge in &open_rows(pool, now).await? {
         report.retried += 1;
         let open = match stripe.fetch_charge(&charge.id).await {
             Err(_) => Some(OpenWhy::StripeUnreadable),
