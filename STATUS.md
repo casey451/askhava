@@ -1,18 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-11T11:03:04Z by runner 722416045b2b (actions).
+Updated 2026-11-11T11:14:37Z by runner ee153a16c726 (actions).
 
-**Building: T331 in progress since 10:45Z; 201 of 371 done; week 65% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T331 in progress since 10:45Z; 201 of 372 done; week 65% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 201 of 371 build tasks (owner gates not counted)
+- **Tasks done:** 201 of 372 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 3: T331 claimed 10:45Z, lease until 13:45Z
 - **Week:** 65% used, 61.4M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:02Z, 0 min before this update
+- **Last run:** 11:03Z, 11 min before this update
 - **Keeper:** last ran 11:03Z, next wake 13:48Z
 
 ## Needs attention
-- Strict plan check red: 11 problem(s) on tasks still to run (+19 on DONE tasks); first: T255: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 14 problem(s) on tasks still to run (+23 on DONE tasks); first: T255: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -52,6 +52,7 @@ Updated 2026-11-11T11:03:04Z by runner 722416045b2b (actions).
 | T292 | messaging and calls: every text, email and call takes the br | done | 1 | 21 min | 11:16Z |  |
 
 ### Plan and harness merges on main
+- 11:00Z Plan: sign-up reads the business's own state record — name check and identity contacts (T385, D-2954) (#475)
 - 10:38Z Plan: businesses give their public name at sign-up; T316 reads it (D-2943) (#473)
 - 09:54Z Harness: a planned file deletion is not a plan gap — 5 eligible tasks were held (D-2922) (#470)
 - 09:40Z Plan: split T164 — new T384 shows edited/withdrawn quotes in place; LIST numbers match picks (D-2912) (#468)
@@ -84,7 +85,7 @@ Updated 2026-11-11T11:03:04Z by runner 722416045b2b (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 208 of 733 (28.4%) · partial 344 · unstarted 181
-**Tasks merged (throughput only):** 201 of 371
+**Tasks merged (throughput only):** 201 of 372
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -119,7 +120,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 81 of 163 done
+- stage 4: 81 of 164 done
 - stage 5: 0 of 58 done
 - stage 6: 0 of 34 done
 - stage 7: 0 of 2 done
