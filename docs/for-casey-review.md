@@ -2167,3 +2167,9 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **What it found.** The step that proves the brand name can be switched in one place (T295) stopped because three files still spell out "Ask Hava": the two files that hold every text message (English and Spanish) and the homeowner's own page. No step was assigned to change them.
 - **What changed.** A new short step, T383, swaps those words for the brand setting, so every text and the page read exactly as today under "Ask Hava" and follow a new name automatically. T295 now waits for it. The Spanish texts stay Spanish, and no text is added or removed.
 - **Nothing needs you now.**
+
+## A fee check that tripped on two old tests (plan change, D-2832, November 11)
+
+- **What happened.** The step that makes sure a no-fee job can only unlock the job it was recorded for was built, but two older tests failed against it: they unlocked jobs without the stored fee record every real pick has. The step was not allowed to touch those tests.
+- **What changed.** The step may now add the missing fee records to those two tests, and only that: every check in them stays exactly as it was. It is now a harness step (the kind allowed to adjust earlier tests), and the Stripe charge-ID step that edits the same test file waits for it.
+- **Nothing needs you now.**
