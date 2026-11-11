@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-11T08:57:54Z by runner d963facb5c09 (actions).
+Updated 2026-11-11T08:58:11Z by runner d963facb5c09 (actions).
 
 **Building: T164 in progress since 08:48Z; 198 of 370 done; week 62% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 198 of 370 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T164 claimed 08:48Z, lease until 11:48Z; lane 2: T295 claimed 08:24Z, lease until 11:24Z; lane 3: T327 claimed 08:49Z, lease until 11:49Z
+- **Lane:** lane 1: T164 claimed 08:48Z, lease until 11:48Z; lane 3: T327 claimed 08:49Z, lease until 11:49Z
 - **Week:** 62% used, 62.8M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 08:50Z, 7 min before this update
 - **Keeper:** last ran 08:24Z, next wake 08:34Z
@@ -17,13 +17,14 @@ Updated 2026-11-11T08:57:54Z by runner d963facb5c09 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T295 | payments, ai, intake and picks take the brand from the brand | MERGE_PENDING | 4 | 33 min | 08:57Z | T295 blocked at step 3: tests/brand_literal_baseline.json still lists files T295 does not own: app/messaging/templates/e |
 | T212 | intake: photo asks with on-server checks and preview, inspir | done | 2 | 19 min | 08:12Z | Ci: failure; Coverage: failure; Checks: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned |
 | T337 | payments (harness): a $0 release proof is bound to the pick' | BLOCKED | 4 | 9 min | 08:05Z | PLAN GAP: app/server/tests/release_recovery.rs:572-576 (td_pick_50_a_zero_fee_releases_free_and_a_cancelled_pick_nothing |
 | T212 | intake: photo asks with on-server checks and preview, inspir | check_failed | 1 | 56 min | 07:20Z |  |
 | T383 | messaging and portals: the text templates and the homeowner  | done | 1 | 20 min | 05:39Z |  |
 | T337 | payments (harness): a $0 release proof is bound to the pick' | BLOCKED | 3 | 16 min | 05:11Z |  |
 | T209 | picks and payments: the optional auto-confirm-and-pay box wi | done | 1 | 115 min | 05:06Z |  |
-| T295 | payments, ai, intake and picks take the brand from the brand | BLOCKED | 3 | 0 min | 04:59Z | T295 blocked at step 3: tests/brand_literal_baseline.json still lists files T295 does not own: app/messaging/templates/e |
+| T295 | payments, ai, intake and picks take the brand from the brand | BLOCKED | 3 | 0 min | 04:59Z |  |
 | T337 | payments (harness): a $0 release proof is bound to the pick' | QUEUED | 2 | 25 min | 04:51Z |  |
 | T295 | payments, ai, intake and picks take the brand from the brand | QUEUED | 2 | 0 min | 04:49Z |  |
 | T295 | payments, ai, intake and picks take the brand from the brand | QUEUED | 1 | 1 min | 04:44Z |  |
@@ -121,8 +122,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T164 (lease until 2026-11-11T11:48:49Z)
-- lane 2: T295 (lease until 2026-11-11T11:24:16Z)
 - lane 3: T327 (lease until 2026-11-11T11:49:41Z)
 
 ## Last usage reading
-- {"task": "T212", "at": "2026-11-11T08:12:47Z", "input_tokens": 88, "cache_read_input_tokens": 1795092, "cache_creation_input_tokens": 228415, "output_tokens": 20111}
+- {"task": "T295", "at": "2026-11-11T08:57:53Z", "output_tokens": 123356, "cache_read_input_tokens": 24403408, "cache_creation_input_tokens": 539328, "input_tokens": 398}
