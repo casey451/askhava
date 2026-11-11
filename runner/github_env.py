@@ -2032,6 +2032,21 @@ class GitHubEnv:
         remote = self._remote_tip(branch) if main else None
         if not main or remote != reviewed:
             return {"status": "moved", "why": f"origin/{branch} is {str(remote)[:12]}, not the reviewed head {reviewed[:12]}"}
+        built = self._built_update(branch, reviewed, main)
+        if built["status"] != "built":
+            return built
+        sha = str(built["sha"])
+        if not self.push_branch(branch, sha):
+            return {"status": "push_failed", "why": self.last_rejection, "main": main}
+        self.log.append(f"update merge: main {main[:12]} merged into {branch} as {sha[:12]}")
+        return {"status": "pushed", "sha": sha, "main": main}
+
+    def _built_update(self, branch: str, reviewed: str, main: str) -> dict[str, Any]:
+        """The update merge of the main commit `main` into `reviewed`, built and checked but not pushed: the
+        one rule both stage C (`_update_branch`, D-620) and the hand-in (`hand_in_merge`, D-2798) use.
+        {"status": "current"} when main is already in it; "conflict" with `paths` and `main`; "error" when
+        the commit fails its own tree check (`is_update_merge` against exactly `reviewed` and `main`);
+        "built" with `sha` and `main`. RuntimeError when git fails."""
         if self._is_ancestor(main, reviewed):
             return {"status": "current"}
         sha, conflicts = self.updates.commit(reviewed, main, branch)
@@ -2039,10 +2054,29 @@ class GitHubEnv:
             return {"status": "conflict", "paths": conflicts, "main": main}
         if self.updates.is_update_merge(reviewed, sha) != (True, main):
             return {"status": "error", "why": f"the update merge {sha[:12]} failed its own tree check"}
-        if not self.push_branch(branch, sha):
-            return {"status": "push_failed", "why": self.last_rejection, "main": main}
-        self.log.append(f"update merge: main {main[:12]} merged into {branch} as {sha[:12]}")
-        return {"status": "pushed", "sha": sha, "main": main}
+        return {"status": "built", "sha": sha, "main": main}
+
+    def hand_in_merge(self, branch: str, reviewed: str) -> dict[str, Any]:
+        """The update merge of main into a reviewed head that is already behind main at hand-in, built
+        before the push so the one push carries the reviewed head and this merge and only the merged
+        head's checks run (D-2798). It is `_built_update`, the very commit stage C would build and check
+        later (same tree, parents, message, identity and dates), so the cycle adopts it as "the reviewed
+        work plus main" exactly as it adopts a stage-C merge. Nothing is pushed here. A conflict, a
+        failed tree check or a git error is logged, and the cycle then pushes the reviewed head unmerged
+        as before, for stage C to handle. A dry run builds nothing ("current")."""
+        if self.dry_run:
+            return {"status": "current"}
+        try:
+            main = self.main_head()
+            built = self._built_update(branch, reviewed, main) if main else {"status": "error", "why": "main is unreadable"}
+        except BEST_EFFORT_ERRORS as exc:
+            built = {"status": "error", "why": str(exc)[:200]}
+        if built["status"] == "built":
+            self.log.append(f"hand-in merge: main {built['main'][:12]} merged into {branch} as {built['sha'][:12]} before the push (D-2798)")
+        elif built["status"] != "current":
+            why = ", ".join(built.get("paths") or []) or str(built.get("why") or "")
+            self.log.append(f"hand-in merge of {branch} not made ({built['status']}: {why[:200]}); the reviewed head is pushed unmerged")
+        return built
 
     def update_merge_of(self, reviewed: str, head: str, number: int) -> bool | None:
         """Whether `head` is an update merge of the reviewed head: its parents are exactly the reviewed

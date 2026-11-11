@@ -137,6 +137,13 @@ class Env(Protocol):
         """Push the reviewed task branch (never force); called only after the review record is pushed."""
         ...
 
+    def hand_in_merge(self, branch: str, reviewed: str) -> dict[str, Any]:
+        """The update merge of main into a reviewed head that is behind main, built and checked as stage C
+        builds it but not pushed (D-2798): {"status": "built" (with "sha", "main") | "current" |
+        "conflict" (with "paths") | "error" (with "why")}. Optional: an Env without it pushes the reviewed
+        head unmerged, as before."""
+        ...
+
     def push_rejection(self) -> str:
         """The git output of the last rejected push_branch, '' when none or unknown (D-583)."""
         ...
@@ -1742,16 +1749,19 @@ def finish(
         final = st.with_task(final, tid, reviewed_sha=res.head_sha, branch=res.branch)
         final = _resolve_empty(final, env, tid, res.head_sha, now)[0]
     elif st.status(final, tid) == st.MERGE_PENDING:
-        reviewed = env.update_state(_review_record(tid, lane, cfg, res))
+        merge = _hand_in_merge(env, res)  # main merged in before the push when the head is behind (D-2798)
+        reviewed = env.update_state(_review_record(tid, lane, cfg, res, merge))
         if reviewed is None:
             return _lost_writes(cfg, env, tid, lane, "its review record")  # no review record, no branch push (D-515)
-        if not env.push_branch(res.branch, res.head_sha):
-            return _push_failed(cfg, env, reviewed, _ours_onto(state, final, reviewed), tid, (lane, res.head_sha))
-        merged = _auto_merge(reviewed, env, tid, res.head_sha)
-        review = {k: st.entry(reviewed, tid)[k] for k in ("reviewed_sha", "review_lease", "branch")}
+        pushed = str(st.entry(reviewed, tid)["reviewed_sha"])  # the reviewed head, or its adopted hand-in merge
+        if not env.push_branch(res.branch, pushed):
+            return _push_failed(cfg, env, reviewed, _ours_onto(state, final, reviewed), tid, (lane, pushed))
+        merged = _auto_merge(reviewed, env, tid, pushed)
+        entry = st.entry(reviewed, tid)
+        review = {k: entry[k] for k in ("reviewed_sha", "review_lease", "branch")}
         final = st.with_task(_ours_onto(state, final, reviewed), tid, **review, auto_merge=st.entry(merged, tid)["auto_merge"])
-        final = _without(final, tid, *UPDATE_KEYS)  # as the review record dropped them (D-620)
-        state = reviewed
+        final = st.with_task(_without(final, tid, *UPDATE_KEYS), tid, **{k: entry[k] for k in UPDATE_KEYS if k in entry})
+        state = reviewed  # the update-merge record is the review record's: none, or the hand-in merge (D-620, D-2798)
     elif st.status(final, tid) in (st.QUEUED, st.BLOCKED) and lane != st.LANE_ONE:
         final = lanes.clear_strikes(final, lane)  # a failure of the task's own work breaks a run of strikes (D-620)
     if st.status(final, tid) not in (st.RETRY_AFTER_RESET, st.RETRY_LATER):
@@ -1791,11 +1801,15 @@ def _drop_fallback_note(cfg: Config) -> None:
     (cfg.outbox_dir / "lanes-fallback.md").unlink(missing_ok=True)
 
 
-def _review_record(tid: str, lane: str, cfg: Config, res: WorkerResult) -> Callable[[State], State | None]:
+def _review_record(tid: str, lane: str, cfg: Config, res: WorkerResult,
+                   merge: dict[str, Any] | None = None) -> Callable[[State], State | None]:
     """The transform for the review record (update_state, D-515): `reviewed_sha`, the lease held and the
     branch go on the task only while, on the fresh state, this session holds the task's lane lease (live)
     and the task is IN_PROGRESS; otherwise nothing is written, so auto-merge can never accept a head
-    reviewed under a lease another session has since taken."""
+    reviewed under a lease another session has since taken. With a hand-in merge (`_hand_in_merge`,
+    D-2798) the same write then adopts it as stage C adopts its own (`_adopt_update`): `reviewed_sha`
+    becomes the merge and `update_merges` records the reviewed head it came from, so the state names the
+    pushed head before the push, as it does for any reviewed head."""
 
     def apply(fresh: State) -> State | None:
         held = st.live_lease(fresh, cfg.clock(), lane) or {}
@@ -1803,9 +1817,25 @@ def _review_record(tid: str, lane: str, cfg: Config, res: WorkerResult) -> Calla
             return None
         review = {"reviewed_sha": res.head_sha, "review_lease": copy.deepcopy(held), "branch": res.branch, "head_check_since": None}
         # A new review starts a new chain of update merges: an earlier attempt's never counts as reviewed (D-620).
-        return _without(st.with_task(fresh, tid, **review), tid, *UPDATE_KEYS)
+        recorded = _without(st.with_task(fresh, tid, **review), tid, *UPDATE_KEYS)
+        return _adopt_update(recorded, tid, merge, cfg.clock()) if merge else recorded
 
     return apply
+
+
+def _hand_in_merge(env: Env, res: WorkerResult) -> dict[str, Any] | None:
+    """The update-merge note (`_adopt_update`) of a hand-in whose reviewed head is behind main: the Env
+    built the merge stage C would build later and checked it by stage C's own rule (`is_update_merge`
+    against the reviewed head and main's head), so it is adopted exactly as a stage-C merge is (D-2798).
+    None, and the reviewed head is pushed unmerged as before, when the head already has main, the merge
+    conflicts (stage C's conflict path then takes it, D-891), or it cannot be built or fails its check.
+    No `checks` are kept: the reviewed head alone never runs them, so a red check on the merge counts as
+    the task's own (`_broken_by_main`)."""
+    build = getattr(env, "hand_in_merge", None)
+    done = build(res.branch, res.head_sha) if build and res.branch and res.head_sha else {}
+    if done.get("status") != "built" or not done.get("sha"):
+        return None
+    return {"from": res.head_sha, "to": str(done["sha"]), "main": str(done.get("main") or ""), "how": "hand-in"}
 
 
 UPDATE_KEYS = ("update_merges", "update_waiting_since", "update_push_failures")  # an attempt's update-merge record (D-620)
