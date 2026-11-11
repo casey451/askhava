@@ -5,7 +5,9 @@
     D-373). No name, phone or address is ever passed in (PICK-010). The status region is empty at
     first render; quote_page.ts writes one line per batch into it (A11Y-033). Every available card
     carries the PICK-041 "check it yourself" line (TD-PICK-18). The Pick form posts to this same
-    address (the pick step is T055's). -#}
+    address (the pick step is T055's). A withdrawn quote keeps its number with "Withdrawn by the
+    business" and no wording or Pick button; an edited one shows "Updated <time>" and carries the
+    edit time in data-updated, so quote_page.ts swaps it (PICK-051, T384). -#}
 {% block title %}Your quotes for request {{ request }}{% endblock %}
 {% block main %}
 <h1>Your quotes for request {{ request }}</h1>
@@ -21,13 +23,19 @@
 {% endif %}
 <ol id="quotes" data-live="{{ live }}">
 {% for q in quotes %}
-<li id="quote-{{ q.number }}" data-number="{{ q.number }}" data-available="{{ !q.quote.unavailable }}" data-pickable="{{ pick_open }}">
+<li id="quote-{{ q.number }}" data-number="{{ q.number }}" data-available="{{ !q.quote.unavailable }}" data-pickable="{{ pick_open }}" data-updated="{{ q.quote.updated_stamp() }}">
 <article aria-labelledby="quote-{{ q.number }}-title">
-{% if q.quote.unavailable %}
+{% if q.quote.withdrawn %}
+<h2 id="quote-{{ q.number }}-title">Quote #{{ q.number }}</h2>
+<p>Withdrawn by the business.</p>
+{% else if q.quote.unavailable %}
 <h2 id="quote-{{ q.number }}-title">Quote #{{ q.number }} (no longer available)</h2>
 <p>No longer available, so it can't be picked.</p>
 {% else %}
 <h2 id="quote-{{ q.number }}-title">Quote #{{ q.number }}</h2>
+{% if let Some(updated) = q.quote.updated_line() %}
+<p>{{ updated }}</p>
+{% endif %}
 <p>{{ askhava_core::api::brand().display_name() }} doesn't rank businesses; check it yourself.</p>
 <p>In their words:</p>
 <blockquote><p>{{ q.quote.original }}</p></blockquote>

@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT format, original, earliest_visit::text AS visit, visit_part FROM quotes.quote WHERE job_id = $1 AND business_id = $2 AND confirmed AND withdrawn_at IS NULL",
+  "query": "SELECT format, original, earliest_visit::text AS visit, visit_part, edited_at FROM quotes.quote WHERE job_id = $1 AND business_id = $2 AND confirmed AND withdrawn_at IS NULL",
   "describe": {
     "columns": [
       {
@@ -41,6 +41,17 @@
             "name": "visit_part"
           }
         }
+      },
+      {
+        "ordinal": 4,
+        "name": "edited_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "quotes.quote",
+            "name": "edited_at"
+          }
+        }
       }
     ],
     "parameters": {
@@ -53,8 +64,9 @@
       false,
       false,
       null,
+      true,
       true
     ]
   },
-  "hash": "720e3e49a40cac7c479b96bd171da8928db82b5b20bc075038ecfcc3451807a0"
+  "hash": "6ddf6eba34e404c0ce4faab37c66a5ebf5b75566d4c173928b395948b4e21c3f"
 }
