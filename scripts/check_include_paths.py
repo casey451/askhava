@@ -31,6 +31,10 @@ from pathlib import Path
 
 import yaml
 
+# libyaml's safe loader when PyYAML was built with it (the CI wheels are), about 10x faster on docs/catalog
+# with identical results; the pure-Python SafeLoader otherwise (D-2782).
+SAFE_LOADER = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
+
 RUST_DIRS = ("app", "tests/integration", "tests/security", "tests/recovery", "tests/fixtures")
 CI_FILE = ".github/workflows/ci.yml"
 GATE_FILE = "scripts/prehandin.sh"
@@ -48,7 +52,7 @@ SKIPPED = re.compile(r"//[^\n]*|/\*.*?\*/|\b(?:b|c)?r(#*)\".*?\"\1|\"(?:[^\"\\]|
 
 def read_rules(root: Path) -> dict[str, str]:
     """The three Rust path rules by name, read from ci.yml and prehandin.sh; a missing rule raises ValueError."""
-    ci = yaml.safe_load((root / CI_FILE).read_text(encoding="utf-8"))
+    ci = yaml.load((root / CI_FILE).read_text(encoding="utf-8"), Loader=SAFE_LOADER)
     rules: dict[str, str] = {}
     for job in RULE_JOBS:
         runs = [str(step.get("run", "")) for step in ci["jobs"][job]["steps"]]
