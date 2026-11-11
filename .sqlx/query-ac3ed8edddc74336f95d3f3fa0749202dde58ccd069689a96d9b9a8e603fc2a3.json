@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT google_url, yelp_url FROM businesses.review_link WHERE business_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "google_url",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "businesses.review_link",
+            "name": "google_url"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "yelp_url",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "businesses.review_link",
+            "name": "yelp_url"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      true,
+      true
+    ]
+  },
+  "hash": "ac3ed8edddc74336f95d3f3fa0749202dde58ccd069689a96d9b9a8e603fc2a3"
+}

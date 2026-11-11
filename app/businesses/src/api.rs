@@ -19,7 +19,8 @@
 //! `notice_addresses` adds (BIZ-042, BIZ-043; T149); the "Emergency emails at any hour" switch,
 //! its test emergency email, the after-hours tick's conditions and the covered night count
 //! (BIZ-007, BIZ-037, BIZ-042, INT-033; T150); the licensing holder read, [`holding`] (LIC-019,
-//! BIZ-049, CARD-001; T374).
+//! BIZ-049, CARD-001; T374); the business's own names and its checked Google and Yelp links
+//! (BIZ-022, BIZ-052, PICK-041, SEC-041; T165).
 
 use jiff::Timestamp;
 use secrecy::SecretString;
@@ -80,6 +81,12 @@ pub use crate::holding::{HANDYMAN_CATEGORY, Known, holding};
 pub use crate::identity::{
     Flag, IDENTITY_CODE_TRIES, RecordContacts, Step, approve, check_code, episode_letter_code,
     letter_code, next_step, record_match, send_code, send_code_seen, settle,
+};
+pub use crate::links::{
+    BusinessNames, CITY_LICENSE_MAX, GOOGLE_HOSTS, GOOGLE_SHAPES, GuardedOpener, LINK_MAX,
+    LinkOpener, LinkRefusal, LinksError, NAME_MAX, NameRefusal, ReviewLinks, ReviewSite,
+    YELP_HOSTS, YELP_SHAPES, business_names, check_links, on_site, review_links,
+    save_business_name, save_review_links, screen_names,
 };
 pub use crate::models::{Business, BusinessesError, Insurance};
 pub use crate::open_cards_times::{
