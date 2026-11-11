@@ -25,8 +25,9 @@ pub use crate::handlers::{
 };
 pub use crate::media_fetch::{
     CONCEPT_CHANGES, CONCEPT_LABEL, Concept, ConceptImageAdapter, DEFAULT_MIN_SHORT_SIDE,
-    MAX_PROJECT_FILE, PhotoKeys, PictureText, PictureTextMedia, ProjectFile, Taken as PhotoTaken,
-    fetch_twilio_media, make_concept, shorter_side, take_picture_text, take_upload,
+    MAX_PROJECT_FILE, MediaState, PhotoKeys, PictureText, PictureTextMedia, ProjectFile,
+    Taken as PhotoTaken, fetch_twilio_media, make_concept, shorter_side, take_picture_text,
+    take_upload,
 };
 pub use crate::models::{
     ContactDetails, Field, GRANTS, Grant, HoldSource, IndexPurpose, NewContact, OwnerPurpose,

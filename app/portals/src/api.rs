@@ -118,8 +118,8 @@ pub use crate::owner_auth::{
     require_owner_step_up, sign_out_everywhere,
 };
 pub use crate::photo_upload::{
-    HEIC_ERROR, PHOTO_UPLOAD_ROUTE, REASK_ERROR, TOO_BIG_ERROR, UploadScreen, photo_upload_page,
-    upload_screen,
+    HEIC_ERROR, PHOTO_UPLOAD_ROUTE, REASK_ERROR, TOO_BIG_ERROR, TOO_MANY_PIXELS_ERROR,
+    UploadScreen, photo_upload_page, upload_screen,
 };
 pub use crate::pick_flow::{
     CODE_ROUTE, PICK_ROUTE, PageLanguage, PickCodeKeys, VERIFY_DAILY_THRESHOLD, pick_flow_routes,

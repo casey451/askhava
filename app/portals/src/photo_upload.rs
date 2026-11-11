@@ -22,8 +22,11 @@ pub const PHOTO_UPLOAD_ROUTE: &str = "/h/requests/{job}/photos";
 pub const REASK_ERROR: &str = "We couldn't open that photo, or it's too small to see. Choose another photo, or skip it. No photo is fine too.";
 /// The PRIV-025 error for a HEIC file.
 pub const HEIC_ERROR: &str = "We can't open that kind of photo. Choose a JPEG or PNG photo.";
-/// The error for a file over the size or pixel limits (PRIV-025).
+/// The error for a file over the byte limit (PRIV-025).
 pub const TOO_BIG_ERROR: &str = "That photo is too big. Choose a photo under 15 MB.";
+/// The error for a file over the pixel limits: 8,000 pixels a side, 40 megapixels (PRIV-025).
+pub const TOO_MANY_PIXELS_ERROR: &str =
+    "That photo has too many pixels. Choose a smaller photo, under 8,000 pixels on each side.";
 
 /// What the page shows.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -43,6 +46,7 @@ pub fn upload_screen(taken: PhotoTaken, link: impl FnOnce() -> String) -> Upload
         PhotoTaken::ReAsk => UploadScreen::Ask(Some(REASK_ERROR)),
         PhotoTaken::Heic => UploadScreen::Ask(Some(HEIC_ERROR)),
         PhotoTaken::Refused => UploadScreen::Ask(Some(TOO_BIG_ERROR)),
+        PhotoTaken::TooManyPixels => UploadScreen::Ask(Some(TOO_MANY_PIXELS_ERROR)),
     }
 }
 

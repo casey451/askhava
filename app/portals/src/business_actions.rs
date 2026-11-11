@@ -183,7 +183,9 @@ pub struct JobPageLinks<'a> {
 /// CARD-023, INT-044 to INT-046, A11Y-027: the business job page: the approved card, every answer,
 /// later details, the sent and quote counts, the photos, the project file and any concept image
 /// with "AI-generated, not exact, may not be feasible" on its alt text and beside it. A concept
-/// link is shown only when the page names a concept image.
+/// link is shown only when the page names a concept image; photo links that do not match
+/// [`JobPage::photos`] one for one are not shown, so no image is ever shown as hers unchecked
+/// (D-2874).
 ///
 /// # Errors
 /// The template's render error.
@@ -196,7 +198,11 @@ pub fn job_details_page(page: &JobPage, links: &JobPageLinks<'_>) -> Result<Stri
         card_lines: page.card().text().lines().collect(),
         answers: page.answers(),
         later: page.later(),
-        photos: links.photos,
+        photos: if links.photos.len() == page.photos().len() {
+            links.photos
+        } else {
+            &[]
+        },
         project_file: page.project_file(),
         concept,
         sent: page.sent(),

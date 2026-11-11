@@ -51,17 +51,49 @@ pub enum Taken {
     ReAsk,
     /// A HEIC file: the plain reply asking for a JPEG or PNG (PRIV-025).
     Heic,
-    /// Over the size or pixel limits, or the fetch was refused (SEC-041): left off, no re-ask.
+    /// Over the byte limit, or the fetch was refused (SEC-041): left off, no re-ask.
     Refused,
+    /// Over the pixel limits (side, pixel count or decode memory, PRIV-025): left off, no re-ask.
+    TooManyPixels,
 }
 
-/// A picture text after [`take_picture_text`]: the photo and whether the provider's copy is gone.
+/// A picture text after [`take_picture_text`]: the photo and the provider's copy of the media.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct PictureText {
     /// What became of the photo.
     pub taken: Taken,
-    /// The media was deleted at the texting provider; `false` means the caller retries the delete.
-    pub media_deleted: bool,
+    /// What became of the media at the texting provider.
+    pub media: MediaState,
+}
+
+/// The provider's copy of a picture text's media after [`take_picture_text`] (INT-044, D-491).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum MediaState {
+    /// The fetch was refused before any request (a bad URL, a non-Twilio host, a private address
+    /// or a redirect off the rules, SEC-041): no delete is sent and none is to be retried.
+    NothingToDelete,
+    /// The media was deleted at the provider.
+    Deleted,
+    /// The media may still be at the provider (the Twilio host was reached or tried but the fetch
+    /// or the delete failed): the caller retries the delete.
+    DeletePending,
+}
+
+impl MediaState {
+    /// After a failed fetch: pending only when the URL passed the SEC-041 checks and the host was
+    /// tried; a refused URL leaves nothing to delete.
+    fn after_failed_fetch(error: &FetchError) -> Self {
+        match error {
+            FetchError::TooLarge
+            | FetchError::TimedOut
+            | FetchError::Status(_)
+            | FetchError::Failed => Self::DeletePending,
+            FetchError::BadUrl
+            | FetchError::HostNotAllowed
+            | FetchError::AddressRefused
+            | FetchError::TooManyRedirects => Self::NothingToDelete,
+        }
+    }
 }
 
 /// A picture text's media at the texting provider (INT-044, SEC-041, SEC-018, D-491).
@@ -112,7 +144,8 @@ pub async fn take_upload<S: StorageAdapter>(
         Ok(photo) => photo,
         Err(PhotoError::Undecodable | PhotoError::NotAPhoto) => return Ok(Taken::ReAsk),
         Err(PhotoError::Heic) => return Ok(Taken::Heic),
-        Err(PhotoError::TooLarge | PhotoError::TooManyPixels) => return Ok(Taken::Refused),
+        Err(PhotoError::TooLarge) => return Ok(Taken::Refused),
+        Err(PhotoError::TooManyPixels) => return Ok(Taken::TooManyPixels),
         Err(other) => return Err(other),
     };
     if shorter_side(&photo).is_none_or(|side| side < min_side) {
@@ -125,7 +158,9 @@ pub async fn take_upload<S: StorageAdapter>(
 
 /// INT-044, SEC-041, D-491: fetches a picture text's media at `url`, takes it as [`take_upload`]
 /// does, then deletes it at the provider, so no copy stays there once it is stored or refused. A
-/// refused fetch keeps nothing and deletes nothing.
+/// refused fetch keeps nothing and deletes nothing ([`MediaState::NothingToDelete`]); a fetch
+/// that reached or tried the Twilio host and failed, or a failed delete, is
+/// [`MediaState::DeletePending`] for the caller's retry.
 ///
 /// # Errors
 ///
@@ -137,21 +172,22 @@ pub async fn take_picture_text<S: StorageAdapter, M: PictureTextMedia>(
     (job, url): (Uuid, &str),
     (min_side, at): (u32, Timestamp),
 ) -> Result<PictureText, PhotoError> {
-    let Ok(bytes) = media.fetch_media(url).await else {
-        let taken = Taken::Refused;
-        return Ok(PictureText {
-            taken,
-            media_deleted: false,
-        });
+    let bytes = match media.fetch_media(url).await {
+        Ok(bytes) => bytes,
+        Err(error) => {
+            let media = MediaState::after_failed_fetch(&error);
+            let taken = Taken::Refused;
+            return Ok(PictureText { taken, media });
+        }
     };
     let taken = take_upload(db, keys, (job, bytes), min_side, at).await?;
     let job_id = job.simple().to_string();
     let key = IdempotencyKey::derive(keys.2, "picture_text.media_delete", &[&job_id, url]);
-    let media_deleted = media.delete_media(&key, url).await.is_ok();
-    Ok(PictureText {
-        taken,
-        media_deleted,
-    })
+    let media = match media.delete_media(&key, url).await {
+        Ok(()) => MediaState::Deleted,
+        Err(_) => MediaState::DeletePending,
+    };
+    Ok(PictureText { taken, media })
 }
 
 /// The written project file a concept image is made from: size, layout, style and finishes in
@@ -255,6 +291,36 @@ mod tests {
             .write_to(&mut Cursor::new(&mut png), ImageFormat::Png)
             .expect("png");
         shorter_side(&clean(png).await.expect("clean"))
+    }
+
+    /// TD-INT-27, D-491: a refused URL leaves nothing to delete; a Twilio host tried and failed
+    /// leaves the media pending for the delete retry.
+    #[test]
+    fn td_int_27_a_failed_fetch_names_the_media_state() {
+        let pending = [
+            FetchError::TooLarge,
+            FetchError::TimedOut,
+            FetchError::Status(500),
+            FetchError::Failed,
+        ];
+        for error in &pending {
+            assert_eq!(
+                MediaState::after_failed_fetch(error),
+                MediaState::DeletePending
+            );
+        }
+        let refused = [
+            FetchError::BadUrl,
+            FetchError::HostNotAllowed,
+            FetchError::AddressRefused,
+            FetchError::TooManyRedirects,
+        ];
+        for error in &refused {
+            assert_eq!(
+                MediaState::after_failed_fetch(error),
+                MediaState::NothingToDelete
+            );
+        }
     }
 
     /// TD-INT-27, INT-044: the shorter side is read after the re-encode, so 319 and 320 differ.

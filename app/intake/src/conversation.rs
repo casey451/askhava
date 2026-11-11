@@ -69,8 +69,8 @@ pub enum AfterQuestions {
 }
 
 /// INT-043, INT-044 to INT-046, D-433, D-446: the steps after the trade questions for a job in
-/// `category`. No photo ask while a 911 text waits for SAFE (`safe_hold`): the steps start again
-/// once she answers SAFE. The look steps come only in a `design: true` range category; the look
+/// `category`. No photo ask and no look-pictures ask while a 911 text waits for SAFE
+/// (`safe_hold`, INT-044): the steps start again once she answers SAFE. The look steps come only in a `design: true` range category; the look
 /// in a few words only until the AI may read photos (`ai_reads_photos`, AI-016); the concept image
 /// only while `concept_on`.
 #[must_use]
@@ -84,7 +84,9 @@ pub fn after_questions(
         steps.push(AfterQuestions::Photos);
     }
     if crate::design::is_design_category(category) {
-        steps.push(AfterQuestions::LookPictures);
+        if !safe_hold {
+            steps.push(AfterQuestions::LookPictures);
+        }
         if !ai_reads_photos {
             steps.push(AfterQuestions::DescribeLook);
         }

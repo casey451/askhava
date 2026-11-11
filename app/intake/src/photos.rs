@@ -91,7 +91,7 @@ pub fn after_photo(taken: PhotoTaken, reasked: bool) -> PhotoStep {
         PhotoTaken::Stored(id) => PhotoStep::Preview(id),
         PhotoTaken::ReAsk if !reasked => PhotoStep::ReAsk,
         PhotoTaken::Heic => PhotoStep::Heic,
-        PhotoTaken::ReAsk | PhotoTaken::Refused => PhotoStep::LeftOff,
+        PhotoTaken::ReAsk | PhotoTaken::Refused | PhotoTaken::TooManyPixels => PhotoStep::LeftOff,
     }
 }
 

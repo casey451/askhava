@@ -19,12 +19,13 @@ use askhava_intake::api::{
 use askhava_integration::set_app_role;
 use askhava_messaging::api::Language;
 use askhava_portals::api::{
-    JobPageLinks, REASK_ERROR, UploadScreen, job_details_page, photo_upload_page, upload_screen,
+    JobPageLinks, REASK_ERROR, TOO_BIG_ERROR, TOO_MANY_PIXELS_ERROR, UploadScreen,
+    job_details_page, photo_upload_page, upload_screen,
 };
 use askhava_privacy::api::{
     CONCEPT_LABEL, CleanPhoto, CommonWords, Concept, ConceptImageAdapter, DEFAULT_MIN_SHORT_SIDE,
-    Known, NameMemory, PhotoSeal, PhotoTaken, PictureTextMedia, ProjectFile, fetch_twilio_media,
-    issue_link, make_concept, open_link, scrub, take_picture_text, take_upload,
+    Known, MediaState, NameMemory, PhotoSeal, PhotoTaken, PictureTextMedia, ProjectFile,
+    fetch_twilio_media, issue_link, make_concept, open_link, scrub, take_picture_text, take_upload,
 };
 use askhava_quotes::api::{
     CardParts, CardPhotoOutcome, DEFAULT_MIN_WORDS, HomeownerAnswer, LeftOff, PageParts,
@@ -214,11 +215,16 @@ async fn td_int_27_the_photo_ask_follows_the_questions_with_at_most_three_asks(p
     assert!(body.contains(link));
 }
 
-/// TD-INT-27, INT-044: no photo ask while a 911 text waits for SAFE.
+/// TD-INT-27, INT-044: no photo ask, and no look-pictures ask in a design category, while a 911
+/// text waits for SAFE.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_int_27_no_photo_ask_during_a_911_list_situation(pool: PgPool) {
     assert!(
         !after_questions("plumbing_repair", true, (false, false)).contains(&AfterQuestions::Photos)
+    );
+    let held = after_questions("painting", true, (false, true));
+    assert!(
+        !held.contains(&AfterQuestions::Photos) && !held.contains(&AfterQuestions::LookPictures)
     );
     let mut db = pool.acquire().await.expect("connection");
     let secret = SecretString::from("test-only-id-secret-not-a-real-key");
@@ -245,7 +251,7 @@ async fn td_int_27_a_picture_text_and_an_upload_both_land_on_the_card(pool: PgPo
     let texted = take_picture_text(&mut conn, keys, &media, (JOB, MEDIA_URL), (320, at()))
         .await
         .expect("picture text");
-    assert!(texted.media_deleted);
+    assert_eq!(texted.media, MediaState::Deleted);
     assert_eq!(*media.deleted.lock().expect("deleted"), [MEDIA_URL]);
     let upload = take_upload(&mut conn, keys, (JOB, png(320, 640)), 320, at())
         .await
@@ -310,6 +316,7 @@ async fn td_sec_20_picture_text_media_from_another_host_is_refused(pool: PgPool)
         .await
         .expect("refused");
     assert_eq!(texted.taken, PhotoTaken::Refused);
+    assert_eq!(texted.media, MediaState::NothingToDelete);
     assert!(media.deleted.lock().expect("deleted").is_empty());
 }
 
@@ -422,7 +429,8 @@ async fn td_int_28_concept_image_from_the_project_file_only_three_rounds(pool: P
 }
 
 /// TD-CARD-12, CARD-023, INT-045, INT-046: the job page shows the photos, the project file and
-/// the concept image with its label beside it.
+/// the concept image with its label beside it; the page reads the concept image off the card
+/// without the caller naming it, and photo links that do not match its photos show none (D-2874).
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_card_12_the_job_page_shows_photos_project_file_and_labeled_concept(pool: PgPool) {
     let mut db = pool.acquire().await.expect("connection");
@@ -457,10 +465,26 @@ async fn td_card_12_the_job_page_shows_photos_project_file_and_labeled_concept(p
     let page = job_page(&mut db, (JOB, business), &parts)
         .await
         .expect("page");
-    let page = page
-        .expect("holder")
-        .with_design(Some("Standard bath, matte gray"), Some(concept));
-    assert_eq!(page.photos(), [photo]);
+    let page = page.expect("holder");
+    assert_eq!(
+        page.photos(),
+        [photo],
+        "the card itself names its concept image"
+    );
+    assert_eq!(page.concept(), Some((concept, CONCEPT_LABEL)));
+    let both = [
+        "/photos/fake-photo-token".to_owned(),
+        "/photos/fake-concept-token".to_owned(),
+    ];
+    let unsorted = JobPageLinks {
+        job_number: "1042",
+        photos: &both,
+        concept: None,
+    };
+    let html = job_details_page(&page, &unsorted).expect("render");
+    assert!(!html.contains("from the homeowner"), "{html}");
+    let page = page.with_design(Some("Standard bath, matte gray"), None);
+    assert_eq!(page.concept(), Some((concept, CONCEPT_LABEL)));
     let photos = ["/photos/fake-photo-token".to_owned()];
     let links = JobPageLinks {
         job_number: "1042",
@@ -478,8 +502,9 @@ async fn td_card_12_the_job_page_shows_photos_project_file_and_labeled_concept(p
 }
 
 /// TD-INT-27, TD-INT-28, PRIV-025, INT-046: a HEIC file gets the PRIV-025 reply, a file over the
-/// limits is left off, a broken decode gets the re-ask, a failed provider delete is reported for
-/// a retry, and a failed or unreadable concept image is no image; an empty project file is none.
+/// byte or pixel limits is left off with its own error, a broken decode gets the re-ask, a failed
+/// provider delete is pending for a retry, and a failed or unreadable concept image is no image;
+/// an empty project file is none.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_int_27_refusals_and_failures_keep_nothing(pool: PgPool) {
     let kit = kit("refusals");
@@ -495,17 +520,25 @@ async fn td_int_27_refusals_and_failures_keep_nothing(pool: PgPool) {
         PhotoTaken::Heic,
         PhotoTaken::ReAsk,
         PhotoTaken::Refused,
-        PhotoTaken::Refused,
+        PhotoTaken::TooManyPixels,
     ];
     for (bytes, want) in [heic, broken, huge, wide].into_iter().zip(want) {
         let taken = take_upload(&mut conn, keys, (JOB, bytes), 320, at()).await;
         assert_eq!(taken, Ok(want));
     }
     assert_eq!(after_photo(PhotoTaken::Heic, false), PhotoStep::Heic);
+    assert_eq!(
+        after_photo(PhotoTaken::TooManyPixels, false),
+        PhotoStep::LeftOff
+    );
+    let bytes = upload_screen(PhotoTaken::Refused, String::new);
+    let pixels = upload_screen(PhotoTaken::TooManyPixels, String::new);
+    assert_eq!(bytes, UploadScreen::Ask(Some(TOO_BIG_ERROR)));
+    assert_eq!(pixels, UploadScreen::Ask(Some(TOO_MANY_PIXELS_ERROR)));
     let media = FakeMedia::new(Some(png(400, 400)));
     let url = "https://api.twilio.com/fail-delete";
     let texted = take_picture_text(&mut conn, keys, &media, (JOB, url), (320, at())).await;
-    assert!(!texted.expect("taken").media_deleted);
+    assert_eq!(texted.expect("taken").media, MediaState::DeletePending);
     for maker in [
         BrokenImages(None),
         BrokenImages(Some(b"not an image".to_vec())),
