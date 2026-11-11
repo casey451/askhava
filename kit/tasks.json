@@ -12577,7 +12577,8 @@
     "T369",
     "T370",
     "T371",
-    "T372"
+    "T372",
+    "T374"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -16522,7 +16523,7 @@
    "id": "T236",
    "slug": "ai-call-budgets",
    "title": "AI-call budgets per conversation and per job, and no AI call before the area check",
-   "goal": "Credit-drain defense for the war games (D-1154): AI-021's global daily cap stays, and below it AI-028's per-step budgets apply: no AI call before the consent text and the area check; 2 readings per inbound message, 1 reword per bank question (at most 8), 1 follow-up, card and project file 1 each plus 1 per EDIT (at most 3), 4 concept prompts, 2 screening calls a photo for at most 3 photos; backstops of 40 calls per conversation per Arizona day and 60 per job, with the card call always reserved so no budget lands on it; a verified web-chat session shares its phone's budget and an unverified one makes no call; quote reads 3 per business per job, outside the job's budget; only the first 1,600 characters of a scrubbed message are sent, while the AI-off card keeps her full scrubbed words. Past a budget the step runs on the AI-off path (INT-021) with nothing said and an `ai.call_stat` row with outcome `budget`; `models::calls_today` (`app/ai/src/models.rs`) excludes `budget` rows as it excludes `daily_cap` rows, so refused calls never use up the AI-021 cap. `IntakeCall` carries the conversation, job, step and (for quote reads) business it is for; the caller in `intake` passes them; the budgets are settings in `AiConfig`; the migration adds the `budget` outcome and the conversation, job, step and business columns to `ai.call_stat`. The global daily cap (AI-021, D-811) becomes an atomic admission: before the provider call, one statement reserves a slot for this Arizona day (a counter row per day updated with `... WHERE used < cap RETURNING`, or an equivalent single-statement reservation) on its own short transaction, so concurrent calls past the cap never reach the transport; a retry of one logical call uses its reservation, an abandoned or timed-out reservation still counts for that day, and the `ai.daily_cap` alert is raised once a day under the same race (D-1757). No database connection or open transaction is held across an AI provider await (AI-029, D-2038): the entry the app calls takes the pool, reads the AI-008 switch and makes the admission and the budget reservations each on its own short connection and releases it, awaits the provider (up to AI-023's timeout, retries and backoff included) with no connection held, then takes a connection again to record the call. With no connection held, every AI-028 budget check is a single-statement reservation like the AI-021 admission (only while the budget has room), so concurrent readings of one message (a duplicate or replayed webhook) cannot pass its 2-reading limit, the 1-reword limit or the per-day and per-job backstops together; a refused reservation makes no call and records outcome `budget`. Intake has no caller that applies a reading yet (`app/intake/src/question_bank.rs` calls only `accept_question`), so this task builds the first one in `app/intake/src/service.rs`: it reads one inbound message through the gated `read_intake` and applies the reading only if the step is still current on the new connection, which means the conversation has no inbound message and no `intake.intake_answer` row newer than the message the call was made for; otherwise the reading is recorded and discarded. Calling that function from the text and web-chat paths is T299's (IC-23, D-2065); the AI writing calls are IC-53's (no owner yet). `app/ai/src/switch.rs` (the gated `read_intake`) is this task's for that change. Other tasks' tests call `read_intake` with a `&mut PgConnection` (`app/ai/src/tests/adapter_calls.rs`, `tests/integration/tests/ai_zero_retention.rs`, `tests/integration/tests/prop_prompt_injection.rs`) and are not this task's to change: keep that form compiling for them as a thin wrapper that no app code calls. AI-029's other half, the inbound-text webhook committing before any AI call, is T299's, which wires the AI reading into the text path (IC-23, D-2065); that path makes no AI call yet. Ordering only: runs after T370, which changes one call in `app/intake/src/service.rs` (D-2683); its migration is `0200_ai_call_budget.sql` (V9, D-2687).",
+   "goal": "Credit-drain defense for the war games (D-1154): AI-021's global daily cap stays, and below it AI-028's per-step budgets apply: no AI call before the consent text and the area check; 2 readings per inbound message, 1 reword per bank question (at most 8), 1 follow-up, card and project file 1 each plus 1 per EDIT (at most 3), 4 concept prompts, 2 screening calls a photo for at most 3 photos; backstops of 40 calls per conversation per Arizona day and 60 per job, with the card call always reserved so no budget lands on it; a verified web-chat session shares its phone's budget and an unverified one makes no call; quote reads 3 per business per job, outside the job's budget; only the first 1,600 characters of a scrubbed message are sent, while the AI-off card keeps her full scrubbed words. Past a budget the step runs on the AI-off path (INT-021) with nothing said and an `ai.call_stat` row with outcome `budget`; `models::calls_today` (`app/ai/src/models.rs`) excludes `budget` rows as it excludes `daily_cap` rows, so refused calls never use up the AI-021 cap. `IntakeCall` carries the conversation, job, step and (for quote reads) business it is for; the caller in `intake` passes them; the budgets are settings in `AiConfig`; the migration adds the `budget` outcome and the conversation, job, step and business columns to `ai.call_stat`. The global daily cap (AI-021, D-811) becomes an atomic admission: before the provider call, one statement reserves a slot for this Arizona day (a counter row per day updated with `... WHERE used < cap RETURNING`, or an equivalent single-statement reservation) on its own short transaction, so concurrent calls past the cap never reach the transport; a retry of one logical call uses its reservation, an abandoned or timed-out reservation still counts for that day, and the `ai.daily_cap` alert is raised once a day under the same race (D-1757). No database connection or open transaction is held across an AI provider await (AI-029, D-2038): the entry the app calls takes the pool, reads the AI-008 switch and makes the admission and the budget reservations each on its own short connection and releases it, awaits the provider (up to AI-023's timeout, retries and backoff included) with no connection held, then takes a connection again to record the call. With no connection held, every AI-028 budget check is a single-statement reservation like the AI-021 admission (only while the budget has room), so concurrent readings of one message (a duplicate or replayed webhook) cannot pass its 2-reading limit, the 1-reword limit or the per-day and per-job backstops together; a refused reservation makes no call and records outcome `budget`. Intake has no caller that applies a reading yet (`app/intake/src/question_bank.rs` calls only `accept_question`), so this task builds the first one in `app/intake/src/service.rs`: it reads one inbound message through the gated `read_intake` and applies the reading only if the step is still current on the new connection, which means the conversation has no inbound message and no `intake.intake_answer` row newer than the message the call was made for; otherwise the reading is recorded and discarded. Calling that function from the text and web-chat paths is T299's (IC-23, D-2065); the AI writing calls are IC-53's (no owner yet). `app/ai/src/switch.rs` (the gated `read_intake`) is this task's for that change. Other tasks' tests call `read_intake` with a `&mut PgConnection` (`app/ai/src/tests/adapter_calls.rs`, `tests/integration/tests/ai_zero_retention.rs`, `tests/integration/tests/prop_prompt_injection.rs`) and are not this task's to change: keep that form compiling for them as a thin wrapper that no app code calls. AI-029's other half, the inbound-text webhook committing before any AI call, is T299's, which wires the AI reading into the text path (IC-23, D-2065); that path makes no AI call yet. Ordering only: runs after T370, which changes one call in `app/intake/src/service.rs` (D-2703); its migration is `0200_ai_call_budget.sql` (V9, D-2707).",
    "type": "build",
    "phase": 2,
    "stage": "6",
@@ -16573,8 +16574,8 @@
     "D-1757",
     "D-1933",
     "D-2038",
-    "D-2683",
-    "D-2687"
+    "D-2703",
+    "D-2707"
    ],
    "cites": [
     "BUILD_BRIEF.md:196",
@@ -16756,7 +16757,7 @@
    "id": "T301",
    "slug": "action-links-served",
    "title": "server and portals: the email action links are served (the quote form, the Confirm review step, Hold, Away, Pause, Resume, Busy, link a phone, approve a phone, ask about a charge)",
-   "goal": "No task serves the email action links (D-2128): `portals::api` has `open_action_link`, `use_action_link`, `action_page`, `quote_form_page` and `ask_about_charge` and the route constant `ACTION_ROUTE` (`/b/a/{kind}/{object}/{token}`, T148, \"not served yet\", D-1955), and `quotes::api::job_page` supplies the job page's data, but `server::build_router` merges none of it, so J2's quote form \"opens from its link\" (T099) cannot run. (1) `app/server/src/action_links.rs` builds `GET` and `POST` on `ACTION_ROUTE` for every `ActionKind`: `GET` calls `open_action_link` and shows `action_page` or, for a Quote link, `quote_form_page` with the job page's data, and changes nothing however often it is opened (SEC-026); only the page's `POST` with its CSRF token calls `use_action_link` in the caller's transaction and acts once (D-1955); a token for another kind, object or person, an expired token or a removed member's token gets the one not-found answer and reads nothing; every response is `no_store`; the `POST` passes `refuse_cross_site` and a refusal is a security event (SEC-042, SEC-048); merged in the shared `app/server/src/lib.rs`. Later owners of `business_actions.rs` and `quotes::job_page` (T209, T212, T164, T214, T249, T158) keep the signatures this file calls, and T306 serves any page or action they add (D-2128). (2) Tests: `app/server/tests/action_links_route.rs` against the assembled router (TD-SEC-44) and `tests/e2e/action_links_served.spec.ts` with links seeded through `psql` as `tests/e2e/j1_reduced.spec.ts` seeds its token (the `portals.login_link` row holds the SHA-256 of `action:<kind>:<object>:<token>`, D-1955). Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. Fourth external audit F12 (D-2206, D-1951): the quote form's `POST` calls `portals::api::admit_quote` with the business and the client address first; a refused quote is not stored and the page says to try again later. Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. Nov 11 code review batch 3, F6 (D-2690; BIZ-049, D-2508 (3), D-2510): the quote form's `POST`, before `submit_quote`, calls `portals::api::largest_job_warning` with the business's stored largest job; a price whose top is above it is not sent but shown again with `quote_form_page_warned`, and goes through only when the posted `over_largest` equals the warned cents; a business with no capability row is never warned (TD-BIZ-50, in `app/server/tests/action_links_route.rs`).",
+   "goal": "No task serves the email action links (D-2128): `portals::api` has `open_action_link`, `use_action_link`, `action_page`, `quote_form_page` and `ask_about_charge` and the route constant `ACTION_ROUTE` (`/b/a/{kind}/{object}/{token}`, T148, \"not served yet\", D-1955), and `quotes::api::job_page` supplies the job page's data, but `server::build_router` merges none of it, so J2's quote form \"opens from its link\" (T099) cannot run. (1) `app/server/src/action_links.rs` builds `GET` and `POST` on `ACTION_ROUTE` for every `ActionKind`: `GET` calls `open_action_link` and shows `action_page` or, for a Quote link, `quote_form_page` with the job page's data, and changes nothing however often it is opened (SEC-026); only the page's `POST` with its CSRF token calls `use_action_link` in the caller's transaction and acts once (D-1955); a token for another kind, object or person, an expired token or a removed member's token gets the one not-found answer and reads nothing; every response is `no_store`; the `POST` passes `refuse_cross_site` and a refusal is a security event (SEC-042, SEC-048); merged in the shared `app/server/src/lib.rs`. Later owners of `business_actions.rs` and `quotes::job_page` (T209, T212, T164, T214, T249, T158) keep the signatures this file calls, and T306 serves any page or action they add (D-2128). (2) Tests: `app/server/tests/action_links_route.rs` against the assembled router (TD-SEC-44) and `tests/e2e/action_links_served.spec.ts` with links seeded through `psql` as `tests/e2e/j1_reduced.spec.ts` seeds its token (the `portals.login_link` row holds the SHA-256 of `action:<kind>:<object>:<token>`, D-1955). Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. Fourth external audit F12 (D-2206, D-1951): the quote form's `POST` calls `portals::api::admit_quote` with the business and the client address first; a refused quote is not stored and the page says to try again later. Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. Nov 11 code review batch 3, F6 (D-2710; BIZ-049, D-2508 (3), D-2510): the quote form's `POST`, before `submit_quote`, calls `portals::api::largest_job_warning` with the business's stored largest job; a price whose top is above it is not sent but shown again with `quote_form_page_warned`, and goes through only when the posted `over_largest` equals the warned cents; a business with no capability row is never warned (TD-BIZ-50, in `app/server/tests/action_links_route.rs`).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -16813,7 +16814,7 @@
     "D-2206",
     "D-1951",
     "D-2440",
-    "D-2690"
+    "D-2710"
    ],
    "cites": [],
    "budget": {
@@ -16834,7 +16835,7 @@
    "id": "T302",
    "slug": "business-signup-served",
    "title": "server and portals: business sign-up is served (every sign-up screen, the email check and the sample pick step)",
-   "goal": "No task serves business sign-up (D-2128): `portals::api` has `signup_page` with its `Screen`s and `done_facts`, and `email_check_page` and `sample_pick_page` (T193, T149), with the route constant `SIGNUP_ROUTE` (`/b/signup`), but `server::build_router` merges none of them, so J2 step 1 (T099) cannot run. (1) `app/server/src/business_signup.rs` builds `GET` and `POST` on `SIGNUP_ROUTE` for each screen in order, without a session (the pre-session CSRF cookie, SEC-042), through `businesses::api`'s sign-up, identity and email-verification calls, then the email check and sample-pick screens after the email is verified (BIZ-042); T089's sign-up limits hold through the route; a screen holding a record contact is `no_store`; a cross-site or wrong-CSRF `POST` is refused, changes nothing and is a security event (SEC-048); merged in the shared `app/server/src/lib.rs`. (2) Tests: `app/server/tests/business_signup_route.rs` against the assembled router (TD-SEC-45) and `tests/e2e/business_signup_served.spec.ts`, a fake R-37 sign-up on a fixture ROC record through activation, the identity code computed from the stand-in Verify's rule for the record's fake phone (`stand_ins/twilio.py` `start_verification`), and the sign-up email marked verified by setting that sign-up's `businesses.mailbox_check.verified_at` through `psql` on `DATABASE_URL` (the emailed code is an HMAC under `ASKHAVA_ID_SECRET`, which the web server's environment draws at random and the spec cannot read, and it is never stored, D-2128); the email code step itself is proved in the route test. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. Each sign-up `POST` calls `portals::api::admit_sign_up` first (D-1951; fourth external audit F12, D-2206). Nov 11 code review batch 3, F6 (D-2689; BIZ-049, BIZ-004, BIZ-007, D-2508 (2), D-2511): it also serves `portals::api::CAPABILITY_ROUTE` (`/b/signup/capability`), `GET` and `POST` for each capability screen (the one-page form and the guided sequence), after activation and before the done screen: the checklist from T368's entry point (the business's ROC classes, agency licenses, pest attestation and handyman standing, and the stored category switch), saved through `businesses::api::save_capability` (T369's after-hours rule); a tick outside the offer changes nothing and shows the form again; route cases in `app/server/tests/business_signup_route.rs` (TD-BIZ-49).",
+   "goal": "No task serves business sign-up (D-2128): `portals::api` has `signup_page` with its `Screen`s and `done_facts`, and `email_check_page` and `sample_pick_page` (T193, T149), with the route constant `SIGNUP_ROUTE` (`/b/signup`), but `server::build_router` merges none of them, so J2 step 1 (T099) cannot run. (1) `app/server/src/business_signup.rs` builds `GET` and `POST` on `SIGNUP_ROUTE` for each screen in order, without a session (the pre-session CSRF cookie, SEC-042), through `businesses::api`'s sign-up, identity and email-verification calls, then the email check and sample-pick screens after the email is verified (BIZ-042); T089's sign-up limits hold through the route; a screen holding a record contact is `no_store`; a cross-site or wrong-CSRF `POST` is refused, changes nothing and is a security event (SEC-048); merged in the shared `app/server/src/lib.rs`. (2) Tests: `app/server/tests/business_signup_route.rs` against the assembled router (TD-SEC-45) and `tests/e2e/business_signup_served.spec.ts`, a fake R-37 sign-up on a fixture ROC record through activation, the identity code computed from the stand-in Verify's rule for the record's fake phone (`stand_ins/twilio.py` `start_verification`), and the sign-up email marked verified by setting that sign-up's `businesses.mailbox_check.verified_at` through `psql` on `DATABASE_URL` (the emailed code is an HMAC under `ASKHAVA_ID_SECRET`, which the web server's environment draws at random and the spec cannot read, and it is never stored, D-2128); the email code step itself is proved in the route test. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. Each sign-up `POST` calls `portals::api::admit_sign_up` first (D-1951; fourth external audit F12, D-2206). Nov 11 code review batch 3, F6 (D-2709; BIZ-049, BIZ-004, BIZ-007, D-2508 (2), D-2511): it also serves `portals::api::CAPABILITY_ROUTE` (`/b/signup/capability`), `GET` and `POST` for each capability screen (the one-page form and the guided sequence); the path falls under `door()`'s Business rule (`tests/security/tests/auth_matrix.rs:109`), so it is served behind `portals::api::business_principal`: at activation the owner is sent the normal sign-in link to the verified sign-up email (link plus code, SEC-004; no session is started without it), and the first sign-in of an owner whose capability step is not saved lands on it; the checklist from T368's entry point (the business's ROC classes, agency licenses, pest attestation and handyman standing, and the stored category switch), saved through `businesses::api::save_capability` (T369's after-hours rule); a tick outside the offer changes nothing and shows the form again; route cases in `app/server/tests/business_signup_route.rs` (TD-BIZ-49). Nov 11 code review batch 3 (D-2711, D-2712): the sign-up `POST` stores what the holder read needs: a pest business's attestation, license number and record categories through `licensing::api::record_pest_attestation` (LIC-047), and an agency-category business's license number through `licensing::api::record_agency_license` (LIC-015, LIC-016; the number from T165's form field), both T374's; the Handyman category choice is already stored in `businesses.signup.trades` and is how T374 reads handyman standing; TD-BIZ-49 gains these cases.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -16851,7 +16852,8 @@
     "T268",
     "T294",
     "T368",
-    "T369"
+    "T369",
+    "T374"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -16897,7 +16899,9 @@
     "D-2128",
     "D-2206",
     "D-1951",
-    "D-2689"
+    "D-2709",
+    "D-2711",
+    "D-2712"
    ],
    "cites": [],
    "budget": {
@@ -17130,7 +17134,7 @@
    "id": "T306",
    "slug": "business-account-pages-served",
    "title": "server and portals: the complaints page, \"Why was I charged?\", the emergency-email switch and the job page's notice log are served",
-   "goal": "These business pages are built but no route serves them (D-2128): the complaints page and its reply (`complaints_page`, `reply_to_complaint`, `COMPLAINTS_ROUTE`, `COMPLAINT_REPLY_ROUTE`, T195), \"Why was I charged?\" (`why_charged_page`, `WHY_CHARGED_ROUTE` `/b/charges/{pick}`, T068), the emergency-email switch (`emergency_switch_page`, `post_step`, `EMERGENCY_SWITCH_ROUTE`, T150) and the job page's notice log (`notice_log_page`, T198); T158's \"Not a fit for us\" choice on the job page is served here too. (1) Extend T300's `app/server/src/business_portal.rs` and T301's `app/server/src/action_links.rs` (both owned after them): every page behind the business session (`portals::api::business_principal`; none gets a 4xx with a link to `/b/sign-in`); another business's pick, complaint or job and a role the page needs missing get the one not-found answer, reading nothing from the vault; the complaint reply box only within its 5 days (BIZ-029); the emergency switch only for the caller's own person; every response `no_store`; every `POST` passes `refuse_cross_site` and the CSRF check, a refusal a security event. (2) Tests: `app/server/tests/business_account_route.rs` (TD-SEC-49) and `tests/e2e/business_account_served.spec.ts`. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around.",
+   "goal": "These business pages are built but no route serves them (D-2128): the complaints page and its reply (`complaints_page`, `reply_to_complaint`, `COMPLAINTS_ROUTE`, `COMPLAINT_REPLY_ROUTE`, T195), \"Why was I charged?\" (`why_charged_page`, `WHY_CHARGED_ROUTE` `/b/charges/{pick}`, T068), the emergency-email switch (`emergency_switch_page`, `post_step`, `EMERGENCY_SWITCH_ROUTE`, T150) and the job page's notice log (`notice_log_page`, T198); T158's \"Not a fit for us\" choice on the job page is served here too. (1) Extend T300's `app/server/src/business_portal.rs` and T301's `app/server/src/action_links.rs` (both owned after them): every page behind the business session (`portals::api::business_principal`; none gets a 4xx with a link to `/b/sign-in`); another business's pick, complaint or job and a role the page needs missing get the one not-found answer, reading nothing from the vault; the complaint reply box only within its 5 days (BIZ-029); the emergency switch only for the caller's own person; every response `no_store`; every `POST` passes `refuse_cross_site` and the CSRF check, a refusal a security event. (2) Tests: `app/server/tests/business_account_route.rs` (TD-SEC-49) and `tests/e2e/business_account_served.spec.ts`. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. Nov 11 code review batch 3 (D-2702, D-2711): the emergency-switch POST also serves T369's after-hours step (`SwitchStep::AfterHours`), which calls `businesses::api::set_after_hours`; TD-SEC-49 gains a case.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -17150,7 +17154,8 @@
     "T164",
     "T214",
     "T249",
-    "T348"
+    "T348",
+    "T369"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -17194,7 +17199,8 @@
     "D-1955",
     "D-2117",
     "D-2128",
-    "D-2440"
+    "D-2440",
+    "D-2711"
    ],
    "cites": [],
    "budget": {
@@ -20538,10 +20544,76 @@
    "copy": true
   },
   {
+   "id": "T374",
+   "slug": "license-holder-read",
+   "title": "licensing and businesses: one read of everything a business holds for the license rules, and the sign-up writers for pest attestations and agency licenses",
+   "goal": "Nov 11 code review batch 3, plan review finding 1 (D-2712; LIC-006, LIC-011, LIC-012, LIC-015, LIC-016, LIC-019, LIC-047, LIC-048, BIZ-049, CARD-001): nothing in production reads or writes `licensing.business_license` (`migrations/0048_licensing_agency_rules.sql:18`: agency licenses and the pest attestation), and nothing builds a `licensing::api::Holder` (`app/licensing/src/models.rs:246`) for a real business, so T368's checklist, T302's capability step and T251's card pool have no holder to pass. Fix: (1) `app/licensing/src/holder.rs`: `licensing::api::record_pest_attestation` (license number, the wood-destroying and weed-control record categories, `self_attested`) and `record_agency_license` (agency and number, `agency_record`), each one row per business and agency, audited by field name only; and `holder_for(conn, business, inputs)`, which reads the business's agency rows and pest attestation, its classes on the latest ROC list for its ROC license number (`read_back`) and its city-list standing (`city_standing`) from the caller's names, and returns the `Holder` parts with `roc_covers` left per job type for the caller (`ClassMap::covers`); (2) `app/businesses/src/holding.rs`: `businesses::api::holding(conn, id)`, which supplies the license number, the names for the city list and the handyman standing (the business chose the Handyman category at sign-up: `handyman` in `businesses.signup.trades`, `migrations/0120_businesses_signup_resume.sql`) and calls `holder_for`; licensing never calls businesses (`kit/layers.json`). No new table. Tests in `tests/integration/tests/holder_read.rs` (TD-LIC-29), fake records: a pest attester with the wood-destroying category, a certified inspector, a septage hauler, an R-37 business, and a city-list handyman each read back with exactly their parts; a business with no rows reads as an empty holder; a second attestation for the same business replaces nothing silently (the unique index answers). Update the `licensing` and `businesses` `CLAUDE.md` files and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "licensing",
+   "deps": [
+    "T207",
+    "T075"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "licensing"
+   ],
+   "owns": [
+    "app/licensing/src/holder.rs",
+    "app/businesses/src/holding.rs",
+    "tests/integration/tests/holder_read.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/licensing.md",
+    "docs/spec/businesses.md",
+    "docs/spec/job-cards.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "LIC-006",
+    "LIC-011",
+    "LIC-012",
+    "LIC-015",
+    "LIC-016",
+    "LIC-019",
+    "LIC-047",
+    "LIC-048",
+    "BIZ-049",
+    "CARD-001"
+   ],
+   "tests": [
+    "TD-LIC-29"
+   ],
+   "decisions": [
+    "D-2712",
+    "D-2711",
+    "D-2700"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 400,
+    "context_pct": 10
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T374-license-holder-read",
+   "prompt": "kit/prompts/T374.md"
+  },
+  {
    "id": "T251",
    "slug": "intake-zip-and-cards-out",
    "title": "intake and quotes: the ZIP question, the job location, and the card-sending caller (every window-opened card goes out once, idempotent, quiet hours honoured)",
-   "goal": "Job cards never go out in production today (D-1521): nothing outside `quotes` calls `quotes::api::send_job_cards`, no code builds the `CardJob` and the business `Pool` it takes (both caller-filled, D-1013, D-1014), the `intake.cards_approved` event T208's approval step enqueues has no handler (D-1274, D-1277), nor has the `intake.emergency_released` event of INT-029, and no code asks the homeowner's ZIP or writes `intake.property` (only tests insert rows). Build the missing pieces. (1) The ZIP question (INT-049): `app/intake/src/zip_step.rs` asks the 5-digit ZIP of the home the job is at (new `zip_question` and `zip_again` templates in the shared English and Spanish template files, drafts for the copy panel, WORD-028), reads one 5-digit ZIP from the reply, maps it to its service-area town with `catalog::api::town_for_zip` (T248's market data, INT-048, including reviewed extra ZIPs with no centroid, which give no location), and stores the property with the ZIP and the town (`app/intake/src/models.rs`; `migrations/0165_intake_property_zip.sql` adds `intake.property.zip`, 5 digits, nullable for rows written before, PRIV-028); a ZIP in the Arizona centroid table but in no service-area town goes to `routing`'s out-of-area close (INT-022); any other reply (no ZIP, two ZIPs, or a well-formed ZIP Ask Hava does not know) asks once more (the twin's re-ask, `twin/app.py:521`, is the draft) and then waits for a usable reply without closing the request (INT-019's no-reply wait still applies). Its integration test asserts `intake.property` holds exactly the contact ID, the town and the ZIP, never an address (TD-PRIV-13's schema case). The ZIP goes into no AI call, card, log line or audit value. T162's intake order calls this step at step 4; this task adds the step and its tests, not the order. (2) The card pool (`app/quotes/src/card_pool.rs`, exported through the shared `app/quotes/src/api.rs`): build `Pool` for a job's towns and candidate trades from `businesses::api` (status, towns, ticked job types, the overflow switch), `licensing::api` (each business's classes and other licenses, and CARD-015's latest check for `verified`) and `ops::api::is_paused` (the owner pauses), never naming another module's tables. (3) The card sender (`app/intake/src/cards_out.rs`, its handlers registered in the shared `app/server/src/lib.rs`): on `intake.cards_approved` it sends only when T208's `approved_card` holds for the payload's digest, so the card the businesses get is the card she approved (TD-INT-23); on `intake.emergency_released` it sends at once (INT-029). It builds the `CardJob` from the request (the job's own town, the remaining candidate job types and the scrubbed text; neighbouring towns stay the caller's later choice, D-1014), calls `send_job_cards` in one transaction (idempotent: `ON CONFLICT DO NOTHING`, so a repeat or a retry records no second card), enqueues each new card's notice through T147's `app/quotes/src/card_notices.rs` (held whole by quiet hours, QH-005; each card's 24 hours start at the actual send, D-042, D-1021), and queues the homeowner's TXT-032 cards-out text through the homeowner-text steps T240 uses (`may_text`, `send_window` for quiet hours and opt-out, the outbox). Late cards (CARD-018, `send_late_cards`) keep their trigger with the tasks that make a business newly eligible. Tests: `app/intake/src/tests/zip_step.rs` (TD-INT-38) and `tests/integration/tests/cards_out.rs` (TD-CARD-14: approval and the end of the wait send once, a changed card is refused, a rerun sends nothing new, the emergency path, paused businesses skipped, night notices held, one TXT-032 text). Every existing test must still pass; if a done task's test breaks, stop and report. Update `app/intake/CLAUDE.md`, `app/quotes/CLAUDE.md` and `docs/architecture.md` section 10. The card pool holds only businesses for which `businesses::api::may_get_cards` is true at send time, beside `receives_cards` (D-1715, D-1760). On the emergency path (`intake.emergency_released`) each card's notice is queued through T150's `quotes::api::queue_emergency_card` (CARD-021: at once for the people with \"Emergency emails at any hour\" on at an after-hours business, at 8 a.m. for the rest, with the EMERGENCY subject and first line), not `queue_card_notice` (fourth external audit F42, D-2203). The card sender also writes the job's first facts row through T339's `jobs::api::record_job_facts`, in the transaction that sends the cards, on both the approval and the emergency path, so the fee at the pick can read it (seventh audit N7-01, D-2330): the category and exactly the candidate job types the cards went with. On the emergency path the category is always known at release (the trade check, step 5, comes before \"How soon?\" and the choice, INT-016, INT-030, and the choice is offered only with the category, `app/intake/src/service.rs:604`); the job type may not be, so the candidates are the ones intake still holds, which is every job type of the category when the trade questions have not narrowed it; later answers narrow the row (T162). Tested in TD-CARD-14. Nov 11 code review batch 3, F6 (a) (D-2688; CARD-001, BIZ-049, D-2507, D-2508 (1)): every pool this task builds goes through `quotes::api::capable_pool` before matching, so the largest-job and recurring-work answers skip a card: `cards_out.rs` fills `JobFit` from the job's stored size-band answer (`quotes::api::band_floor_cents`; none when unanswered) and whether any remaining candidate job type is recurring (`businesses::api::is_recurring`), and `card_pool.rs` reads the answers with `businesses::api::capabilities`. TD-CARD-14 gains, on the approval and the emergency path: a business whose largest job is below the band floor gets no card; one that said no to recurring work gets no card for a recurring job; a business with no capability row still does.",
+   "goal": "Job cards never go out in production today (D-1521): nothing outside `quotes` calls `quotes::api::send_job_cards`, no code builds the `CardJob` and the business `Pool` it takes (both caller-filled, D-1013, D-1014), the `intake.cards_approved` event T208's approval step enqueues has no handler (D-1274, D-1277), nor has the `intake.emergency_released` event of INT-029, and no code asks the homeowner's ZIP or writes `intake.property` (only tests insert rows). Build the missing pieces. (1) The ZIP question (INT-049): `app/intake/src/zip_step.rs` asks the 5-digit ZIP of the home the job is at (new `zip_question` and `zip_again` templates in the shared English and Spanish template files, drafts for the copy panel, WORD-028), reads one 5-digit ZIP from the reply, maps it to its service-area town with `catalog::api::town_for_zip` (T248's market data, INT-048, including reviewed extra ZIPs with no centroid, which give no location), and stores the property with the ZIP and the town (`app/intake/src/models.rs`; `migrations/0165_intake_property_zip.sql` adds `intake.property.zip`, 5 digits, nullable for rows written before, PRIV-028); a ZIP in the Arizona centroid table but in no service-area town goes to `routing`'s out-of-area close (INT-022); any other reply (no ZIP, two ZIPs, or a well-formed ZIP Ask Hava does not know) asks once more (the twin's re-ask, `twin/app.py:521`, is the draft) and then waits for a usable reply without closing the request (INT-019's no-reply wait still applies). Its integration test asserts `intake.property` holds exactly the contact ID, the town and the ZIP, never an address (TD-PRIV-13's schema case). The ZIP goes into no AI call, card, log line or audit value. T162's intake order calls this step at step 4; this task adds the step and its tests, not the order. (2) The card pool (`app/quotes/src/card_pool.rs`, exported through the shared `app/quotes/src/api.rs`): build `Pool` for a job's towns and candidate trades from `businesses::api` (status, towns, ticked job types, the overflow switch), `licensing::api` (each business's classes and other licenses, and CARD-015's latest check for `verified`) and `ops::api::is_paused` (the owner pauses), never naming another module's tables. (3) The card sender (`app/intake/src/cards_out.rs`, its handlers registered in the shared `app/server/src/lib.rs`): on `intake.cards_approved` it sends only when T208's `approved_card` holds for the payload's digest, so the card the businesses get is the card she approved (TD-INT-23); on `intake.emergency_released` it sends at once (INT-029). It builds the `CardJob` from the request (the job's own town, the remaining candidate job types and the scrubbed text; neighbouring towns stay the caller's later choice, D-1014), calls `send_job_cards` in one transaction (idempotent: `ON CONFLICT DO NOTHING`, so a repeat or a retry records no second card), enqueues each new card's notice through T147's `app/quotes/src/card_notices.rs` (held whole by quiet hours, QH-005; each card's 24 hours start at the actual send, D-042, D-1021), and queues the homeowner's TXT-032 cards-out text through the homeowner-text steps T240 uses (`may_text`, `send_window` for quiet hours and opt-out, the outbox). Late cards (CARD-018, `send_late_cards`) keep their trigger with the tasks that make a business newly eligible. Tests: `app/intake/src/tests/zip_step.rs` (TD-INT-38) and `tests/integration/tests/cards_out.rs` (TD-CARD-14: approval and the end of the wait send once, a changed card is refused, a rerun sends nothing new, the emergency path, paused businesses skipped, night notices held, one TXT-032 text). Every existing test must still pass; if a done task's test breaks, stop and report. Update `app/intake/CLAUDE.md`, `app/quotes/CLAUDE.md` and `docs/architecture.md` section 10. The card pool holds only businesses for which `businesses::api::may_get_cards` is true at send time, beside `receives_cards` (D-1715, D-1760). On the emergency path (`intake.emergency_released`) each card's notice is queued through T150's `quotes::api::queue_emergency_card` (CARD-021: at once for the people with \"Emergency emails at any hour\" on at an after-hours business, at 8 a.m. for the rest, with the EMERGENCY subject and first line), not `queue_card_notice` (fourth external audit F42, D-2203). The card sender also writes the job's first facts row through T339's `jobs::api::record_job_facts`, in the transaction that sends the cards, on both the approval and the emergency path, so the fee at the pick can read it (seventh audit N7-01, D-2330): the category and exactly the candidate job types the cards went with. On the emergency path the category is always known at release (the trade check, step 5, comes before \"How soon?\" and the choice, INT-016, INT-030, and the choice is offered only with the category, `app/intake/src/service.rs:604`); the job type may not be, so the candidates are the ones intake still holds, which is every job type of the category when the trade questions have not narrowed it; later answers narrow the row (T162). Tested in TD-CARD-14. Nov 11 code review batch 3, F6 (a) (D-2708; CARD-001, BIZ-049, D-2507, D-2508 (1)): every pool this task builds goes through `quotes::api::capable_pool` before matching, so the largest-job and recurring-work answers skip a card: `cards_out.rs` fills `JobFit` from the job's stored size-band answer (`quotes::api::band_floor_cents`; none when unanswered) and whether any remaining candidate job type is recurring (`businesses::api::is_recurring`), and `card_pool.rs` reads the answers with `businesses::api::capabilities`. TD-CARD-14 gains, on the approval and the emergency path: a business whose largest job is below the band floor gets no card; one that said no to recurring work gets no card for a recurring job; a business with no capability row still does. Each business's licensing `Holder` (classes, agency licenses, pest attestation, handyman and city-list standing) comes from T374's `businesses::api` holding read (D-2712).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -20556,7 +20628,8 @@
     "T045",
     "T240",
     "T247",
-    "T339"
+    "T339",
+    "T374"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -20614,7 +20687,8 @@
     "D-1760",
     "D-2203",
     "D-2330",
-    "D-2688"
+    "D-2708",
+    "D-2712"
    ],
    "cites": [],
    "budget": {
@@ -23306,7 +23380,7 @@
    "id": "T329",
    "slug": "business-event-emails",
    "title": "businesses: the eight business account events queued today (backup change, phone linked, sample card and pick, notice-address change and return, emergency test, after-hours off) are emailed",
-   "goal": "Fifth external audit AH-001 (D-2287; SEC-024, BIZ-033, BIZ-040, BIZ-042, BIZ-007; D-2011 (3)): `businesses` queues eight `core.task` kinds that no handler sends: `businesses.backup_changed` (`app/businesses/src/backup_address.rs:29`, words `backup_changed_words`; SEC-024), `businesses.phone_linked` (`app/businesses/src/complaints.rs:44`; BIZ-033's owner email with the Approve link), `businesses.sample_card` and `businesses.sample_pick` (`app/businesses/src/deliverability_check.rs:27`, :29, words `sample_card_words`, `sample_pick_words`; BIZ-042), `businesses.notice_address_changed` (`app/businesses/src/email_verification.rs:38`, the old address told, SEC-024) and `businesses.notice_address_returned` (:40, the owner's other verified addresses told, BIZ-040), `businesses.emergency_test` (`app/businesses/src/emergency_switch.rs:27`, words `emergency_test_words`; BIZ-042) and `businesses.after_hours_off` (:30, the owner told, with the re-test link when `reason` is suspended; BIZ-007). `app/businesses/src/notice_emails.rs` handles each: it renders that kind's words in the person's language and queues one email per recipient through `messaging::api`'s email outbox (the SEC-028 footer and sender, keyed per task so a retry stores nothing twice), using the action links `portals` already builds where the spec names one; registered in the shared `app/server/src/lib.rs`. A payload field a spec line does not explain is not invented: stop and report it. Tests in `tests/integration/tests/business_event_emails.rs` through the worker (TD-BIZ-45): each kind reaches the fake email provider once with its words, to the right people only, in English and Spanish; a repeat run sends nothing. Update the `businesses` `CLAUDE.md`, `docs/architecture.md` section 10 and `docs/decisions.md`. Nov 11 code review batch 3, F6 (b) (D-2686; BIZ-050, BIZ-018, D-2593, D-2596): it also handles `businesses.license_change` (`app/businesses/src/capability.rs`, `LICENSE_CHANGE_KIND`, words `license_change_words`): one email to the owner's account address in the owner's language, naming the removed and the newly offered job types and why; where the catalog has no Spanish job-type name the Spanish email gives the catalog name, and the gap is logged in `docs/for-casey-review.md` (D-2596 (2)); TD-BIZ-45 gains the kind.",
+   "goal": "Fifth external audit AH-001 (D-2287; SEC-024, BIZ-033, BIZ-040, BIZ-042, BIZ-007; D-2011 (3)): `businesses` queues eight `core.task` kinds that no handler sends: `businesses.backup_changed` (`app/businesses/src/backup_address.rs:29`, words `backup_changed_words`; SEC-024), `businesses.phone_linked` (`app/businesses/src/complaints.rs:44`; BIZ-033's owner email with the Approve link), `businesses.sample_card` and `businesses.sample_pick` (`app/businesses/src/deliverability_check.rs:27`, :29, words `sample_card_words`, `sample_pick_words`; BIZ-042), `businesses.notice_address_changed` (`app/businesses/src/email_verification.rs:38`, the old address told, SEC-024) and `businesses.notice_address_returned` (:40, the owner's other verified addresses told, BIZ-040), `businesses.emergency_test` (`app/businesses/src/emergency_switch.rs:27`, words `emergency_test_words`; BIZ-042) and `businesses.after_hours_off` (:30, the owner told, with the re-test link when `reason` is suspended; BIZ-007). `app/businesses/src/notice_emails.rs` handles each: it renders that kind's words in the person's language and queues one email per recipient through `messaging::api`'s email outbox (the SEC-028 footer and sender, keyed per task so a retry stores nothing twice), using the action links `portals` already builds where the spec names one; registered in the shared `app/server/src/lib.rs`. A payload field a spec line does not explain is not invented: stop and report it. Tests in `tests/integration/tests/business_event_emails.rs` through the worker (TD-BIZ-45): each kind reaches the fake email provider once with its words, to the right people only, in English and Spanish; a repeat run sends nothing. Update the `businesses` `CLAUDE.md`, `docs/architecture.md` section 10 and `docs/decisions.md`. Nov 11 code review batch 3, F6 (b) (D-2706; BIZ-050, BIZ-018, D-2593, D-2596): it also handles `businesses.license_change` (`app/businesses/src/capability.rs`, `LICENSE_CHANGE_KIND`, words `license_change_words`): one email to the owner's account address in the owner's language, naming the removed and the newly offered job types and why; where the catalog has no Spanish job-type name the Spanish email gives the catalog name, and the gap is logged in `docs/for-casey-review.md` (D-2596 (2)); TD-BIZ-45 gains the kind.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -23349,7 +23423,7 @@
    "decisions": [
     "D-2287",
     "D-2011",
-    "D-2686"
+    "D-2706"
    ],
    "cites": [],
    "budget": {
@@ -25415,7 +25489,7 @@
    "id": "T368",
    "slug": "capability-offer-all-licenses",
    "title": "businesses: the capability checklist offers every job type the business's licenses or handyman standing allow, and follows the stored category switch",
-   "goal": "Nov 11 code review batch 3, F1 and F5 (D-2681; BIZ-049, BIZ-004, BIZ-021, LIC-002, LIC-012, LIC-014, LIC-015, LIC-016, LIC-019, LIC-027, LIC-046, LIC-047). (F1) `checklist_offer` (`app/businesses/src/capability.rs:168`) offers only the job types `ClassMap::job_types` gives the ROC classes, plus the no-license categories, so a pest-management attester, a Board-certified home inspector or an ADEQ septage hauler is offered none of its own job types, and a handyman on the city list is never offered a handyman-allowed job type (faucet replacement, camera install), against `docs/catalog/matching_examples.yaml` M05 and M09; `save_capability` then refuses those ticks as `NotCovered` and stores nothing. (F5) sign-up's `category_list` (`app/businesses/src/signup.rs:109`) reads `ClassMap::opening` from the compiled categories file (`app/licensing/src/class_map.rs:373`, `:378`), and `checklist_offer` (`capability.rs:171`) and `license_change` (`:368`) read the file's `enabled` flag, while intake reads the stored switch (`catalog::api::is_enabled`, `app/intake/src/routing.rs:252`), so a category switched off in settings is still offered at sign-up, in the checklist and in a license-change email. Fix: (1) the checklist is built from everything the business holds (its ROC classes, its non-pest agency licenses, its pest attestation with its record categories, whether it signed up as a handyman, and its city-list standing): a job type is offered licensed and pre-ticked exactly when `licensing::api::eligibility` gives that holder a card for it; offered unticked as a handyman extra when it gives a handyman card and the job type itself is not gas, smoke-alarm, sprinkler or permit-type work (LIC-021, LIC-022); the no-license extras as today; so the checklist and the matching cannot disagree; (2) the enabled set is the stored switch (`catalog::api::enabled_categories`): a switched-off category leaves the sign-up list, the checklist and `reapply_license`'s offered job types; a stored-on category keeps the file's `launch_open` label. The existing pure functions keep their signatures and give the same answer for an ROC-only holder, so every TD-BIZ case passes unchanged; the new entry points (holder and stored set in, offer out) are what the served sign-up (T302) calls. Tests in `tests/integration/tests/capability_offer.rs` (TD-BIZ-46, TD-LIC-27), each failing on today's `main`: a septage hauler, a certified inspector and a pest attester (general pest service and scorpions; termites only with the wood-destroying organism record category) get their job types pre-ticked and `save_capability` stores them; a city-list handyman gets faucet replacement and camera install unticked, never gas line work or a gas pool heater, and saving them stores them; an R-37 business's offer is unchanged; a category switched off through `catalog::api::set_category_enabled` leaves `category_list`, the checklist and `reapply_license`'s offer, and switching it on brings it back. Update the `businesses` `CLAUDE.md` and `docs/decisions.md`.",
+   "goal": "Nov 11 code review batch 3, F1 and F5 (D-2701; BIZ-049, BIZ-004, BIZ-021, LIC-002, LIC-012, LIC-014, LIC-015, LIC-016, LIC-019, LIC-027, LIC-046, LIC-047). (F1) `checklist_offer` (`app/businesses/src/capability.rs:168`) offers only the job types `ClassMap::job_types` gives the ROC classes, plus the no-license categories, so a pest-management attester, a Board-certified home inspector or an ADEQ septage hauler is offered none of its own job types, and a handyman on the city list is never offered a handyman-allowed job type (faucet replacement, camera install), against `docs/catalog/matching_examples.yaml` M05 and M09; `save_capability` then refuses those ticks as `NotCovered` and stores nothing. (F5) sign-up's `category_list` (`app/businesses/src/signup.rs:109`) reads `ClassMap::opening` from the compiled categories file (`app/licensing/src/class_map.rs:373`, `:378`), and `checklist_offer` (`capability.rs:171`) and `license_change` (`:368`) read the file's `enabled` flag, while intake reads the stored switch (`catalog::api::is_enabled`, `app/intake/src/routing.rs:252`), so a category switched off in settings is still offered at sign-up, in the checklist and in a license-change email. Fix: (1) the checklist is built from everything the business holds (its ROC classes, its non-pest agency licenses, its pest attestation with its record categories, whether it signed up as a handyman, and its city-list standing): a job type of a category whose license kind is not `none` is offered licensed and pre-ticked exactly when `licensing::api::eligibility` gives that holder a card for it (eligibility gives `Card` for every no-license job type of a city-list business, `app/licensing/src/rules.rs:80`, so a no-license row is never pre-ticked); a job type is offered unticked as a handyman extra when eligibility gives a handyman card and the job type itself is not gas, smoke-alarm, sprinkler or permit-type work (LIC-021, LIC-022); the no-license extras stay unticked as today, except that any row for which eligibility gives `NotHandyman` or `RefusedJobType` is left out (the handyman category is license kind `none` and `handyman_allowed`, `docs/catalog/categories.yaml:165`, so only a handyman sees it); so the checklist and the matching cannot disagree; the holder comes from T374's `businesses::api` holding read; (2) the enabled set is the stored switch (`catalog::api::enabled_categories`): a switched-off category leaves the sign-up list, the checklist and `reapply_license`'s offered job types; a stored-on category keeps the file's `launch_open` label. The existing pure functions keep their signatures and give the same answer for an ROC-only holder, so every TD-BIZ case passes unchanged; the new entry points (holder and stored set in, offer out) are what the served sign-up (T302) calls. Tests in `tests/integration/tests/capability_offer.rs` (TD-BIZ-46, TD-LIC-27), each failing on today's `main`: a septage hauler, a certified inspector and a pest attester (general pest service and scorpions; termites only with the wood-destroying organism record category) get their job types pre-ticked and `save_capability` stores them; a city-list handyman gets faucet replacement and camera install unticked, never gas line work or a gas pool heater, and saving them stores them; an R-37 business's offer is unchanged; an R-11 business is not offered the handyman category; a city-list business with no license gets no pre-ticked row; a category switched off through `catalog::api::set_category_enabled` leaves `category_list`, the checklist and `reapply_license`'s offer, and switching it on brings it back. Update the `businesses` `CLAUDE.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -25462,9 +25536,10 @@
     "TD-LIC-27"
    ],
    "decisions": [
-    "D-2681",
-    "D-2680",
-    "D-2507"
+    "D-2701",
+    "D-2700",
+    "D-2507",
+    "D-2711"
    ],
    "cites": [],
    "budget": {
@@ -25484,7 +25559,7 @@
    "id": "T369",
    "slug": "after-hours-needs-cover",
    "title": "businesses: the sign-up after-hours answer ticks only while someone covers, and a suspension lasts until a new Yes",
-   "goal": "Nov 11 code review batch 3, F3 (sign-up half) and F4 (D-2682; BIZ-007, INT-033, D-2008, D-2010). (F3) `save_capability` (`app/businesses/src/capability.rs:259`) writes the after-hours answer through `set_ticks`, so a business answering yes at sign-up is ticked with nobody covering (no switch on, no test email, no Yes), against BIZ-007. (F4) `set_after_hours` (`app/businesses/src/emergency_switch.rs:163`) sets `after_hours_suspended_at` to NULL on every change, so unticking and re-ticking a suspended business clears the suspension without the new Yes BIZ-007 and D-2008 require. Fix: (1) `save_capability` stores the after-hours answer through the `emergency_switch` rule in its transaction: ticked only while `covered` at `now` with `EMERGENCY_YES_LIFE`, otherwise left unticked, and its result says the answer was held back so the page can tell the owner to turn on \"Emergency emails at any hour\" and answer the test email (no new customer words in this task); (2) `set_after_hours` never clears `after_hours_suspended_at`; only `record_alert_answer`'s Yes does. Tests in `tests/integration/tests/after_hours_cover.rs` (TD-BIZ-47), each failing on today's `main`: a capability save with after-hours yes and nobody covering leaves the tick false; with an owner who has the switch on, a sent test and a current Yes it is ticked; suspend, untick, re-tick leaves the business suspended and out of `covered_night_count` until a new Yes, after which it counts. TD-BIZ-24 and TD-BIZ-29 pass unchanged. Sonnet with an Opus reviewer: two small rule changes in one module, no money, privacy or security code. Update the `businesses` `CLAUDE.md` and `docs/decisions.md`.",
+   "goal": "Nov 11 code review batch 3, F3 (sign-up half) and F4 (D-2702; BIZ-007, INT-033, D-2008, D-2010). (F3) `save_capability` (`app/businesses/src/capability.rs:259`) writes the after-hours answer through `set_ticks`, so a business answering yes at sign-up is ticked with nobody covering (no switch on, no test email, no Yes), against BIZ-007. (F4) `set_after_hours` (`app/businesses/src/emergency_switch.rs:163`) sets `after_hours_suspended_at` to NULL on every change, so unticking and re-ticking a suspended business clears the suspension without the new Yes BIZ-007 and D-2008 require. Fix: (1) `save_capability` stores the after-hours answer through the `emergency_switch` rule in its transaction: ticked only while `covered` at `now` with `EMERGENCY_YES_LIFE`, otherwise left unticked, and its result says the answer was held back so the page can tell the owner to turn on \"Emergency emails at any hour\" and answer the test email (no new customer words in this task); (2) `set_after_hours` never clears `after_hours_suspended_at`; only `record_alert_answer`'s Yes does; (3) so the tick can be set at all in production (D-2010 (c); `set_after_hours` has no non-test caller): the emergency-switch page (`app/portals/src/emergency_switch_page.rs`, its template `app/portals/templates/emergency_test_email.html`, which renders the page) gains the BIZ-007 after-hours box with its spec words, shown to the owner or a \"Confirm and billing\" member, a new `SwitchStep::AfterHours(bool)` calling `set_after_hours` (a `NoCover` refusal shows the steps still missing), and the held-back sign-up answer links to that page; T306 serves the page and its POST. Tests in `tests/integration/tests/after_hours_cover.rs` (TD-BIZ-47), each failing on today's `main`: a capability save with after-hours yes and nobody covering leaves the tick false; with an owner who has the switch on, a sent test and a current Yes it is ticked; the switch page's after-hours step ticks once the owner's Yes is in and is refused before it, and its page has no axe-core violation; suspend, untick, re-tick leaves the business suspended and out of `covered_night_count` until a new Yes, after which it counts. TD-BIZ-24 and TD-BIZ-29 pass unchanged. Update the `businesses` and `portals` `CLAUDE.md` files and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -25492,21 +25567,26 @@
    "deps": [
     "T368"
    ],
-   "model": "claude-sonnet-5-5",
-   "effort": "medium",
+   "model": "claude-opus-5-5",
+   "effort": "high",
    "reviewer_model": "claude-opus-5-5",
-   "review_areas": [],
+   "review_areas": [
+    "security"
+   ],
    "owns": [
     "app/businesses/src/capability.rs",
     "app/businesses/src/emergency_switch.rs",
-    "tests/integration/tests/after_hours_cover.rs"
+    "tests/integration/tests/after_hours_cover.rs",
+    "app/portals/src/emergency_switch_page.rs",
+    "app/portals/templates/emergency_test_email.html"
    ],
    "reads": [
     "docs/architecture.md",
     "docs/code-docs.md",
     "docs/spec/businesses.md",
     "docs/spec/intake.md",
-    "docs/brains/rust-production.md"
+    "docs/brains/rust-production.md",
+    "docs/spec/accessibility.md"
    ],
    "requirements": [
     "BIZ-007",
@@ -25516,16 +25596,17 @@
     "TD-BIZ-47"
    ],
    "decisions": [
-    "D-2682",
-    "D-2680",
+    "D-2702",
+    "D-2700",
     "D-2008",
-    "D-2010"
+    "D-2010",
+    "D-2711"
    ],
    "cites": [],
    "budget": {
-    "files": 3,
-    "lines": 250,
-    "context_pct": 16
+    "files": 5,
+    "lines": 350,
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -25539,7 +25620,7 @@
    "id": "T370",
    "slug": "night-count-counts-covered",
    "title": "intake (harness): the night count the homeowner hears counts only covered, unsuspended after-hours businesses",
-   "goal": "Nov 11 code review batch 3, F3 (intake half; D-2683, finishing D-2010 (a) and (b); INT-033, BIZ-007). The night count comes from `businesses::api::night_count` (`app/intake/src/emergency_count.rs:62`, `app/businesses/src/models.rs:250`), which counts every ticked business, not `covered_night_count` (D-2010: not suspended, and someone who can confirm has the switch on and a current Yes), so a business nobody can reach at night, or one suspended after two missed night cards, is counted and the homeowner at 10 p.m. is told it takes emergencies. D-2010 left the switch to a harness change because TD-INT-13's fixture (`after_hours_business` in `tests/integration/tests/emergency_flow.rs`) ticks through `set_ticks` with nobody covering. Fix: (1) `emergency_count::count` takes the message time and calls `businesses::api::covered_night_count` with the Arizona clock and `EMERGENCY_YES_LIFE`; its one caller, `offer_choice` (`app/intake/src/service.rs:611`), passes `at`; (2) the fixture gives the business an owner with the switch on, a sent test email and a Yes, and ticks through `set_after_hours`, so TD-INT-12 and TD-INT-13 assert exactly what they assert today. New cases in the same file (TD-INT-41), failing on today's `main`: a business ticked through `set_ticks` with nobody covering, and a covered one suspended through `suspend_after_hours`, are not counted: at 22:42 the homeowner gets `night_count_none` and no choice. `api::night_count` and its done test stay. Harness: it rewrites a done task's fixture without weakening any assertion. Update the `intake` `CLAUDE.md` and `docs/decisions.md`.",
+   "goal": "Nov 11 code review batch 3, F3 (intake half; D-2703, finishing D-2010 (a) and (b); INT-033, BIZ-007). The night count comes from `businesses::api::night_count` (`app/intake/src/emergency_count.rs:62`, `app/businesses/src/models.rs:250`), which counts every ticked business, not `covered_night_count` (D-2010: not suspended, and someone who can confirm has the switch on and a current Yes), so a business nobody can reach at night, or one suspended after two missed night cards, is counted and the homeowner at 10 p.m. is told it takes emergencies. D-2010 left the switch to a harness change because TD-INT-13's fixture (`after_hours_business` in `tests/integration/tests/emergency_flow.rs`) ticks through `set_ticks` with nobody covering. Fix: (1) `emergency_count::count` takes the message time and calls `businesses::api::covered_night_count` with the Arizona clock and `EMERGENCY_YES_LIFE`; its one caller, `offer_choice` (`app/intake/src/service.rs:611`), passes `at`; (2) the fixture gives the business an owner with the switch on, a sent test email and a Yes, and ticks through `set_after_hours`, so TD-INT-12 and TD-INT-13 assert exactly what they assert today. New cases in the same file (TD-INT-41), failing on today's `main`: a business ticked through `set_ticks` with nobody covering, and a covered one suspended through `suspend_after_hours`, are not counted: at 22:42 the homeowner gets `night_count_none` and no choice. `api::night_count` and its done test stay. Harness: it rewrites a done task's fixture without weakening any assertion. Update the `intake` `CLAUDE.md` and `docs/decisions.md`.",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -25574,8 +25655,8 @@
     "TD-INT-41"
    ],
    "decisions": [
-    "D-2683",
-    "D-2680",
+    "D-2703",
+    "D-2700",
     "D-2010"
    ],
    "cites": [],
@@ -25596,7 +25677,7 @@
    "id": "T371",
    "slug": "daily-license-lists-run",
    "title": "licensing and server: the worker fetches and records the daily ROC and city license lists, and a failing list raises its alerts and runs the throttled lookups",
-   "goal": "Nov 11 code review batch 3, F6 (b), found while checking it (D-2684; LIC-006, LIC-007, LIC-008, LIC-010, LIC-039, CARD-015, D-230, D-942): nothing in production runs the daily lists: `licensing::api::import_roc_list` and `import_city_list` (`app/licensing/src/service.rs:74`, `:106`) have test callers only, `LicenseSource::fetch_daily_list` (`app/adapters/src/license_sources.rs:19`) is never called, and `list_failure_alerts`, `alert_list_failure` and `lookup_while_list_fails` (`app/licensing/src/handlers.rs`) wait for a caller that holds the failure start (its module docs); so verified statuses never update from the lists, a license that lapsed keeps its cards, and no re-apply (T372) can ever see a class change. T134 only puts the real sources behind the adapter. Fix: `app/licensing/src/daily_lists.rs`: a `licensing.daily_lists` task, registered in the shared worker and queued once a day at a fixed Arizona time (a setting) with tomorrow queued first (D-737), fetches each list through `LicenseSource` (the `file://` fixtures in the build), records it with the import function, and on a fetch or import failure keeps the failure start from licensing's own import records (no new table), raises `alert_list_failure`'s alerts once each, and runs `lookup_while_list_fails` for that list's active businesses at the throttle; a run that succeeds after failures ends the failure; a second run for the same list date records nothing new. Tests in `tests/integration/tests/daily_license_lists.rs` (TD-LIC-28), clock advanced: a fixture list is recorded once and a re-run adds nothing; a missing list for 12 hours raises the listed alert once and runs one lookup per active business at least the spacing apart; at 24 hours the push alert once; the next good list ends the failure. Update the `licensing` and `server` `CLAUDE.md` files and `docs/decisions.md`.",
+   "goal": "Nov 11 code review batch 3, F6 (b), found while checking it (D-2704; LIC-006, LIC-007, LIC-008, LIC-010, LIC-039, CARD-015, D-230, D-942): nothing in production runs the daily lists: `licensing::api::import_roc_list` and `import_city_list` (`app/licensing/src/service.rs:74`, `:106`) have test callers only, `LicenseSource::fetch_daily_list` (`app/adapters/src/license_sources.rs:19`) is never called, and `list_failure_alerts`, `alert_list_failure` and `lookup_while_list_fails` (`app/licensing/src/handlers.rs`) wait for a caller that holds the failure start (its module docs); so verified statuses never update from the lists, a license that lapsed keeps its cards, and no re-apply (T372) can ever see a class change. T134 only puts the real sources behind the adapter. Fix: `app/licensing/src/daily_lists.rs`: a `licensing.daily_lists` task, registered in the shared worker and queued once a day at a fixed Arizona time (a setting) with tomorrow queued first (D-737), fetches each list through `LicenseSource` (the `file://` fixtures in the build), records it with the import function, and on a fetch or import failure keeps the failure start from licensing's own import records (no new table), raises `alert_list_failure`'s alerts once each, and runs `lookup_while_list_fails` for that list's active businesses at the throttle, bounded per run (a capped batch, a setting, the rest on the next run); the (business, license number) pairs come from `businesses::api` through the server's handler wiring in the shared `app/server/src/lib.rs`, since licensing may not call businesses (`kit/layers.json`); while a list is failing the task re-queues itself on a short cadence (hourly, a setting) instead of daily, so the 12-hour alert fires on time; a run that succeeds after failures ends the failure; a second run for the same list date records nothing new. Tests in `tests/integration/tests/daily_license_lists.rs` (TD-LIC-28), clock advanced: a fixture list is recorded once and a re-run adds nothing; a missing list for 12 hours raises the listed alert once and runs the lookups at least the spacing apart and never more than the batch cap per run, the remainder on later runs; the hourly re-runs raise the 12-hour alert within the hour it falls due; at 24 hours the push alert once; the next good list ends the failure. Update the `licensing` and `server` `CLAUDE.md` files and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -25635,9 +25716,10 @@
     "TD-LIC-28"
    ],
    "decisions": [
-    "D-2684",
-    "D-2680",
-    "D-942"
+    "D-2704",
+    "D-2700",
+    "D-942",
+    "D-2711"
    ],
    "cites": [],
    "budget": {
@@ -25657,13 +25739,13 @@
    "id": "T372",
    "slug": "license-change-reapplied-daily",
    "title": "businesses and licensing: each recorded ROC list re-applies the license map to every business whose classes changed",
-   "goal": "Nov 11 code review batch 3, F6 (b) (D-2685; BIZ-050, LIC-043, D-393, D-2593, D-2596): `reapply_license` (`app/businesses/src/capability.rs:389`) has no production caller, so a class removed from a business's record keeps its job types and cards, and no `businesses.license_change` email is ever queued. Fix: (1) `app/licensing/src/class_changes.rs`: a read, through `licensing::api`, of each license number whose class set differs between a recorded ROC list and the one recorded before it, with the old and new classes; (2) `app/businesses/src/license_reapply.rs`: a daily `businesses.license_reapply` task, registered in the shared worker and queued once a day after the list time (tomorrow queued first), that, for the latest recorded list it has not yet applied, maps each changed license number to its businesses and calls `reapply_license` with the old and new classes and the list date, in bounded batches; a re-run for the same list does nothing new (D-2596's key). It does not depend on who records the lists (T371). Tests in `tests/integration/tests/license_reapply_daily.rs` (TD-BIZ-48), lists recorded with `import_roc_list`: an R-37 business whose class goes loses its plumbing job types, is paused for `no_covered_job_type` when nothing is left, and one `businesses.license_change` task is queued; a class added is offered, never ticked, and a switched-off category is not offered (T368); a business on an unchanged record is untouched; a re-run queues nothing. The email itself is T329's; resuming a business paused for `no_covered_job_type` waits on Casey (D-2596 (1)). Update the `businesses` and `licensing` `CLAUDE.md` files and `docs/decisions.md`.",
+   "goal": "Nov 11 code review batch 3, F6 (b) (D-2705; BIZ-050, LIC-043, D-393, D-2593, D-2596): `reapply_license` (`app/businesses/src/capability.rs:389`) has no production caller, so a class removed from a business's record keeps its job types and cards, and no `businesses.license_change` email is ever queued. Fix: (1) `app/licensing/src/class_changes.rs`: a read, through `licensing::api`, of each license number whose class set differs between a recorded ROC list and the one recorded before it, with the old and new classes; a number missing from the newer list is not a change (a truncated list must not strip and pause everyone; a lapsed license is CARD-015's and the lookup's, not this task's); (2) `app/businesses/src/license_reapply.rs`: a daily `businesses.license_reapply` task, registered in the shared worker and queued once a day after the list time (tomorrow queued first), that, applies each recorded list it has not yet applied, oldest first, each against the list before it (so a class removed on a day the task did not run is never lost), marking a list applied without a new table (a done task keyed per list date, or an audit row); for each list it maps each changed license number to its businesses and calls `reapply_license` with the old and new classes and the list date, in bounded batches; a re-run for the same list does nothing new (D-2596's key). It does not depend on who records the lists (T371). Tests in `tests/integration/tests/license_reapply_daily.rs` (TD-BIZ-48), lists recorded with `import_roc_list`: an R-37 business whose class goes loses its plumbing job types, is paused for `no_covered_job_type` when nothing is left, and one `businesses.license_change` task is queued; a class added is offered, never ticked, and a switched-off category is not offered (T368); a business on an unchanged record is untouched; a re-run queues nothing; two lists recorded on days the task did not run are applied in order, so a class removed on the first and not restored is removed; a license number missing from the newer list leaves its businesses untouched; a business paused for `no_covered_job_type` that saves a capability tick its license covers is resumed in that transaction, audited, and one with no covered tick stays paused. The email itself is T329's. Resume (D-2596 (1), decided here, D-2711): a `no_covered_job_type` pause lifts automatically when the business again holds a ticked job type its license covers, checked in the capability save (`capability.rs`); a later list that covers a job type only offers it (BIZ-050), so the owner's tick is what resumes; the email tells the owner so. Update the `businesses` and `licensing` `CLAUDE.md` files and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
    "module": "businesses",
    "deps": [
-    "T368",
+    "T369",
     "T036",
     "T056"
    ],
@@ -25676,7 +25758,8 @@
    "owns": [
     "app/businesses/src/license_reapply.rs",
     "app/licensing/src/class_changes.rs",
-    "tests/integration/tests/license_reapply_daily.rs"
+    "tests/integration/tests/license_reapply_daily.rs",
+    "app/businesses/src/capability.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -25693,16 +25776,17 @@
     "TD-BIZ-48"
    ],
    "decisions": [
-    "D-2685",
-    "D-2680",
+    "D-2705",
+    "D-2700",
     "D-2593",
-    "D-2596"
+    "D-2596",
+    "D-2711"
    ],
    "cites": [],
    "budget": {
-    "files": 3,
-    "lines": 400,
-    "context_pct": 12
+    "files": 4,
+    "lines": 450,
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -25716,7 +25800,7 @@
    "id": "T373",
    "slug": "phone-change-ends-consent",
    "title": "businesses: changing a phone's number ends that phone's texting consent until the box is ticked again for the new number",
-   "goal": "Nov 11 code review batch 3, F2 (D-2687; CON-019, BIZ-036, D-191): business texting consent is per number, but `change_phone` (`app/businesses/src/team.rs:503`) keeps the line's ID and `may_text` (`app/businesses/src/consent.rs:243`) looks consent up by line ID only, so after a number change job-card texts go to a number nobody consented for (the reviewer's probe: `may_text` true after `change_phone`); and the consent index (`migrations/0121_businesses_consent.sql`, one row per business, member, channel, line and wording version) would refuse a second box for the same line, so the new number could not consent either. Fix: the line keeps its ID (done tests link, change and unlink by it), and `migrations/0199_businesses_consent_per_number.sql` records which number setting a consent row was given for (a per-line number version, raised by `change_phone` in its transaction, and the same version on each text consent row, the unique index including it; existing rows keep version 1; the app role still cannot update or delete consent rows); `may_text` counts only a box ticked for the line's current version; `record_consent` stores the version current when the box was shown; nothing else about consent changes, and the old rows stay as history. Tests in `tests/integration/tests/phone_change_consent.rs` (TD-CON-35), each failing on today's `main`, fake numbers in the 555-01xx block: a consented line gives `may_text` true; after `change_phone` false; after `record_consent` for the new number true again; a change by a member without the right is refused and leaves consent as it was; the email channel is untouched. Every TD-BIZ and TD-CON case passes unchanged. Stage 5: it runs after T361 only so its migration number follows the serial order (V9, R-42). Update the `businesses` `CLAUDE.md`, `docs/architecture.md` (schema) and `docs/decisions.md`.",
+   "goal": "Nov 11 code review batch 3, F2 (D-2707; CON-019, BIZ-036, D-191): business texting consent is per number, but `change_phone` (`app/businesses/src/team.rs:503`) keeps the line's ID and `may_text` (`app/businesses/src/consent.rs:243`) looks consent up by line ID only, so after a number change job-card texts go to a number nobody consented for (the reviewer's probe: `may_text` true after `change_phone`); and the consent index (`migrations/0121_businesses_consent.sql`, one row per business, member, channel, line and wording version) would refuse a second box for the same line, so the new number could not consent either. Fix: the line keeps its ID (done tests link, change and unlink by it), and `migrations/0199_businesses_consent_per_number.sql` records which number setting a consent row was given for (a per-line number version, raised by `change_phone` in its transaction, and the same version on each text consent row, the unique index including it; existing rows keep version 1; the app role still cannot update or delete consent rows); `may_text` counts only a box ticked for the line's current version; `record_consent` gains a form that takes the phone version the box was shown for and refuses a mismatch (the number changed while the page was open), while the existing form, used by done tests, records against the current version; `change_phone` and `record_consent` both lock the `staff_phone` row (`FOR UPDATE`) before reading or raising the version; after a number change a business whose channel preference is text only gets its job cards and notices by email until the new number consents (BIZ-036's email default); nothing else about consent changes, and the old rows stay as history. Tests in `tests/integration/tests/phone_change_consent.rs` (TD-CON-35), each failing on today's `main`, fake numbers in the 555-01xx block: a consented line gives `may_text` true; after `change_phone` false; after `record_consent` for the new number true again; a box shown for the old version and posted after the change is refused; `change_phone` and `record_consent` racing on one line leave either the old consent ended or the new one recorded for the new version, never a consent for the old number counted on the new one; a text-only business's job card after the change goes by email; a change by a member without the right is refused and leaves consent as it was; the email channel is untouched. Every TD-BIZ and TD-CON case passes unchanged. Stage 5: it runs after T361 only so its migration number follows the serial order (V9, R-42). Update the `businesses` `CLAUDE.md`, `docs/architecture.md` (schema) and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -25755,9 +25839,10 @@
     "TD-CON-35"
    ],
    "decisions": [
-    "D-2687",
-    "D-2680",
-    "D-191"
+    "D-2707",
+    "D-2700",
+    "D-191",
+    "D-2711"
    ],
    "cites": [],
    "budget": {

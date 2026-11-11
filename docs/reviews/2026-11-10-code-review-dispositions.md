@@ -81,23 +81,37 @@
 | 9 T132's description | From `IntentText::description()`, never a literal; stripe-mock's `latest_charge` confirmed |
 - Migrations after the second re-review, in serial order: T354 0180, T355 0181, T356 0182, T359 0183, T353 0184; queued T103, T105, T320, T204, T151, T321, T109 and T110 move to 0185 to 0192; T361 0197; T236 0198 (V9).
 
-## Batch 3: businesses and catalog (D-2680 to D-2690)
+## Batch 3: businesses and catalog (D-2700 to D-2710)
 
 **Input:** one Opus code review of `main` at `2b62f938` (November 11), F1 to F6, F1 to F4 confirmed by the reviewer's probes on a local database. Each finding was read as untrusted input and checked by the plan builder against `main` at `5fd99b77`.
 
 | Item | Verdict | Evidence on `main` 5fd99b77 | Disposition | Owner | Decision |
 |---|---|---|---|---|---|
-| F1 (High) Licensed businesses can never tick their job types | Confirmed | `checklist_offer` (`app/businesses/src/capability.rs:168`) uses only `ClassMap::job_types` and no-license categories; `ClassMap` does not read the map's `agencies:` section; M05, M09 in `docs/catalog/matching_examples.yaml` | The checklist offers what `licensing::api::eligibility` gives the whole holder (agency, pest record categories, handyman extras unticked) | T368 (new, Opus) | D-2681 |
-| F2 (High) A changed phone number keeps the old number's texting consent | Confirmed | `change_phone` (`app/businesses/src/team.rs:503`) keeps the line ID; `may_text` (`consent.rs:243`) reads by line ID; the consent index (`migrations/0121_businesses_consent.sql`) blocks a second box | A per-line number version on consent; `may_text` reads the current one | T373 (new, Opus, stage 5, migration 0199) | D-2687 |
-| F3 (Med-High) Sign-up ticks after-hours with nobody covering, and intake counts it | Confirmed | `save_capability` sets the tick through `set_ticks` (`capability.rs:259`); `intake::emergency_count` calls `api::night_count` (`app/intake/src/emergency_count.rs:62`); D-2010's follow-up had no owner | Sign-up through the `covered` rule; intake to `covered_night_count` (harness: TD-INT-13's fixture) | T369 (new, Sonnet), T370 (new, harness) | D-2682, D-2683 |
-| F4 (Med) Untick and re-tick clears a suspension | Confirmed | `set_after_hours` writes `after_hours_suspended_at = NULL` (`emergency_switch.rs:174`) | Only a new Yes clears it | T369 | D-2682 |
-| F5 (Med) Sign-up and checklist ignore the stored category switch | Confirmed | `category_list` (`signup.rs:109`) and `ClassMap::opening` (`app/licensing/src/class_map.rs:373`); `capability.rs:171`, `:368`; intake reads `catalog::api::is_enabled` (`app/intake/src/routing.rs:252`) | The stored set at sign-up, in the checklist and in the re-apply offer | T368 | D-2681 |
-| F6 (a) (Med) The largest-job and recurring skips are unwired | Confirmed | `capable_pool` (`app/quotes/src/capability_match.rs:54`) and `capabilities` have no production caller; T251's goal did not say; `CAPABILITY_ROUTE` and the quote POST check unserved (D-2508 (2), (3)) | Folded: T251 filters the pool; T302 serves the capability step; T301 runs the largest-job check | T251, T302, T301 | D-2688, D-2689, D-2690 |
-| F6 (b) (Med) License changes are never re-applied or emailed | Confirmed, wider | `reapply_license` (`capability.rs:389`) has no caller; no sender for `businesses.license_change`; and nothing runs the daily lists at all (`import_roc_list`, `import_city_list` test-only; `fetch_daily_list` never called) | Daily re-apply task; the email in T329; a daily lists task | T372 (new), T329, T371 (new) | D-2685, D-2686, D-2684 |
-| F6 (b) Resume after a `no_covered_job_type` pause | Not a task | D-2596 (1) put it to Casey | Waits on his answer in `docs/for-casey-review.md` | - | D-2680 |
+| F1 (High) Licensed businesses can never tick their job types | Confirmed | `checklist_offer` (`app/businesses/src/capability.rs:168`) uses only `ClassMap::job_types` and no-license categories; `ClassMap` does not read the map's `agencies:` section; M05, M09 in `docs/catalog/matching_examples.yaml` | The checklist offers what `licensing::api::eligibility` gives the whole holder (agency, pest record categories, handyman extras unticked) | T368 (new, Opus) | D-2701 |
+| F2 (High) A changed phone number keeps the old number's texting consent | Confirmed | `change_phone` (`app/businesses/src/team.rs:503`) keeps the line ID; `may_text` (`consent.rs:243`) reads by line ID; the consent index (`migrations/0121_businesses_consent.sql`) blocks a second box | A per-line number version on consent; `may_text` reads the current one | T373 (new, Opus, stage 5, migration 0199) | D-2707 |
+| F3 (Med-High) Sign-up ticks after-hours with nobody covering, and intake counts it | Confirmed | `save_capability` sets the tick through `set_ticks` (`capability.rs:259`); `intake::emergency_count` calls `api::night_count` (`app/intake/src/emergency_count.rs:62`); D-2010's follow-up had no owner | Sign-up through the `covered` rule; intake to `covered_night_count` (harness: TD-INT-13's fixture) | T369 (new, Sonnet), T370 (new, harness) | D-2702, D-2703 |
+| F4 (Med) Untick and re-tick clears a suspension | Confirmed | `set_after_hours` writes `after_hours_suspended_at = NULL` (`emergency_switch.rs:174`) | Only a new Yes clears it | T369 | D-2702 |
+| F5 (Med) Sign-up and checklist ignore the stored category switch | Confirmed | `category_list` (`signup.rs:109`) and `ClassMap::opening` (`app/licensing/src/class_map.rs:373`); `capability.rs:171`, `:368`; intake reads `catalog::api::is_enabled` (`app/intake/src/routing.rs:252`) | The stored set at sign-up, in the checklist and in the re-apply offer | T368 | D-2701 |
+| F6 (a) (Med) The largest-job and recurring skips are unwired | Confirmed | `capable_pool` (`app/quotes/src/capability_match.rs:54`) and `capabilities` have no production caller; T251's goal did not say; `CAPABILITY_ROUTE` and the quote POST check unserved (D-2508 (2), (3)) | Folded: T251 filters the pool; T302 serves the capability step; T301 runs the largest-job check | T251, T302, T301 | D-2708, D-2709, D-2710 |
+| F6 (b) (Med) License changes are never re-applied or emailed | Confirmed, wider | `reapply_license` (`capability.rs:389`) has no caller; no sender for `businesses.license_change`; and nothing runs the daily lists at all (`import_roc_list`, `import_city_list` test-only; `fetch_daily_list` never called) | Daily re-apply task; the email in T329; a daily lists task | T372 (new), T329, T371 (new) | D-2705, D-2706, D-2704 |
+| F6 (b) Resume after a `no_covered_job_type` pause | Decided (plan review) | D-2596 (1) had put it to Casey; BUILD_BRIEF section 16 has Claude decide | Lifts automatically when a capability save holds a covered tick | T372 | D-2711 |
 
-- Order: T368 first (no queued dep); T369 after T368; T370 after T369, and T236 after T370; T372 after T368; T371 with no queued dep; T373 after T322 and T361 (stage 5); T302 after T368 and T369. T368 to T372 before T100; T373 before T126.
+- Order: T368 first (no queued dep); T369 after T368; T370 after T369, and T236 after T370; T372 after T369; T371 with no queued dep; T373 after T322 and T361 (stage 5); T302 after T368 and T369. T368 to T372 before T100; T373 before T126.
 - Migrations: T373 `0199`; queued T236 moves from 0198 to 0200 (V9).
 - TD-BIZ-46 to TD-BIZ-50, TD-LIC-27, TD-LIC-28, TD-INT-41, TD-CON-35 added; TD-CARD-14 and TD-BIZ-45 gain cases. IC-91 to IC-93 and R-43 added.
-- Also: `README.md` no longer says the repository is private (D-2680).
+- Also: `README.md` no longer says the repository is private (D-2700).
 - No task IN_PROGRESS or MERGE_PENDING was edited (T349 was MERGE_PENDING).
+
+### Plan review fix round (D-2711, D-2712)
+
+| Finding | Change |
+|---|---|
+| 0 Decision numbers too close to the claim counter (2666) | Renumbered D-2680 to D-2690 → D-2700 to D-2710; T207's budget change logged in D-2700 |
+| 1 (High) No production holder: nothing reads or writes `licensing.business_license`, and handyman standing is stored nowhere by name | New T374 (`holder_for`, `holding`, the pest attestation and agency license writers; handyman = the Handyman category in `businesses.signup.trades`); T302 writes at sign-up; T251 and T302 after T374; IC-94; TD-LIC-29 |
+| 2 (Med-High) T368 would pre-tick every no-license row of a city-list business | Pre-tick only licensed categories; leave out `NotHandyman` and `RefusedJobType` rows; R-11 and city-list tests |
+| 3 (Med-High) T373 consent race | Version-checked `record_consent`, row lock in both functions, race case, email fallback for a text-only business |
+| 4 (Med) After-hours could never be ticked in production | T369 (now Opus) adds the after-hours step to the emergency-switch page; T306 serves it after T369 |
+| 5 (Med) T372 could lose a missed day's removal or strip everyone on a truncated list | Every unapplied list in order; a missing number is no change; tests |
+| 6 (Med) T371 layering, cadence and bounds | Pairs through the server's wiring from `businesses::api`; hourly re-runs while failing; capped lookups per run |
+| 7 (Med) The resume left to Casey | Decided in T372 (D-2711); the for-casey item is informational |
+| 8 (Med) T302's capability route's door | Behind `business_principal`; the sign-in link at activation lands on the unsaved step |
