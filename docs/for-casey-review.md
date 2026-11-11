@@ -2213,3 +2213,10 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **Calls Claude made that you may want to check.** The record's qualifying party or owner name is never read or compared. A record phone that isn't marked as a landline gets a text first. If the state record can't be read, the business is asked to try again and you get one alert a day, with no details in it.
 - **Still open.** When a business says "That number is old" and fixes its record, nothing yet checks the daily lists for the new contact and restarts its sign-up; that needs an owner in a later plan change.
 - **Nothing needs you now.**
+
+## A late payment on a pick the system ended is refunded from the first check (plan change, D-2970, November 11)
+
+- **What happened.** The step that refunds a payment arriving after the system had already ended a pick stopped on its first try. Its plan changes the 30-minute payment check so that the check itself queues the refund and alerts you, but an older test expected the refund to be queued later, when the pick side reported the payment, so that test could not pass.
+- **What changed.** That one line of the older test now expects "already queued" at the later report. The test still checks that you get exactly one alert and exactly one refund job; only which step queues it first moved. Nothing else in that test changes, beyond the refund label change planned on November 9.
+- **Also fixed.** The November 9 note gave this step's database change number 0176; a later change already moved it to 0177, and the plan now says so.
+- **Nothing needs you now.**
