@@ -17,7 +17,10 @@
 //! body delete at Twilio (PRIV-027, D-1841, T276). It registers `privacy`'s sealed photo object
 //! delete and queues its daily orphan sweep over the same store (PRIV-009, D-1841, T276), and
 //! `messaging`'s paused-emergency follow-up with no email keys, so each homeowner goes on Casey's
-//! call list until a footer postal setting exists (TXT-023, D-2186, T279).
+//! call list until a footer postal setting exists (TXT-023, D-2186, T279). All of these
+//! registrations live in `askhava_server::worker_registry`, which the task-kind registry test
+//! builds too (TD-OPS-36), with the hourly no-handler check (OPS-004, D-2285, T327), whose first
+//! run `schedule_start` queues.
 
 use std::io;
 use std::sync::Arc;
@@ -46,29 +49,8 @@ async fn main() -> io::Result<()> {
     let confirm = askhava_picks::api::ConfirmSettings::from_pairs(std::env::vars())
         .map_err(io::Error::other)?;
     schedule_start(&pool, clock.now()).await?;
-    let (photos, id_secret) = (Arc::new(stream.storage.clone()), stream.id_secret.clone());
-    let mut registry = askhava_server::register_handlers(Arc::new(stream), texts, confirm);
-    let photo_clock = Arc::clone(&clock);
-    let secret = id_secret.clone();
-    askhava_privacy::api::register_photo_deletes(&mut registry, photos, secret, photo_clock);
-    let safety = Arc::new(askhava_messaging::api::SafetySender::call_list_only());
-    registry.register(
-        askhava_messaging::api::PAUSED_SAFETY_KIND,
-        move |pool, task| {
-            askhava_messaging::api::run_paused_safety(pool, Arc::clone(&safety), task)
-        },
-    );
-    if let Some(twilio) = twilio_config(&settings)? {
-        let (sms, _, _) =
-            askhava_adapters::api::twilio_clients(&twilio).map_err(io::Error::other)?;
-        let (sms, scan_clock) = (Arc::new(sms), Arc::clone(&clock));
-        askhava_messaging::api::register_body_deletes(&mut registry, sms, id_secret, scan_clock);
-        let masked = twilio.pool().clone();
-        let line_clock = Arc::clone(&clock);
-        registry.register(askhava_picks::api::LINE_RETRY_KIND, move |pool, task| {
-            askhava_picks::api::retry_line(pool, masked.clone(), task, line_clock.now())
-        });
-    }
+    let parts = (texts, confirm);
+    let registry = askhava_server::worker_registry(&settings, stream, parts, std::env::vars())?;
     let worker = Worker {
         pool,
         registry: Arc::new(registry),
@@ -83,7 +65,7 @@ async fn main() -> io::Result<()> {
 }
 
 /// Queues the daily tasks at start (the chain check, the retention sweep, the body cut, the
-/// photo orphan sweep and the day-31 body scan) and runs the intake golden set once.
+/// photo orphan sweep, the day-31 body scan and this hour's no-handler check) and runs the intake golden set once.
 async fn schedule_start(pool: &sqlx::PgPool, now: jiff::Timestamp) -> io::Result<()> {
     let mut conn = pool.acquire().await.map_err(io::Error::other)?;
     schedule_verify(&mut conn, now)
@@ -101,24 +83,11 @@ async fn schedule_start(pool: &sqlx::PgPool, now: jiff::Timestamp) -> io::Result
     askhava_messaging::api::schedule_body_scan(&mut conn, now)
         .await
         .map_err(io::Error::other)?;
+    askhava_server::no_handler_alert::schedule(&mut conn, now)
+        .await
+        .map_err(io::Error::other)?;
     askhava_intake::api::run_golden(&mut conn, now)
         .await
         .map(|_| ())
         .map_err(io::Error::other)
-}
-
-/// The Twilio settings the masked-line retry (its pool, CALL-001, CALL-017, D-1688) and the day-31
-/// body delete (PRIV-027) use; without them `None` in dev and CI (no handler, so those tasks wait)
-/// and an error in the test and live projects.
-fn twilio_config(
-    settings: &askhava_core::api::Settings,
-) -> io::Result<Option<askhava_adapters::api::TwilioConfig>> {
-    use askhava_core::api::Environment;
-    match askhava_adapters::api::TwilioConfig::from_settings(settings, std::env::vars()) {
-        Ok(config) => Ok(Some(config)),
-        Err(error) => match settings.environment() {
-            Environment::Dev | Environment::Ci => Ok(None),
-            Environment::Test | Environment::Live => Err(io::Error::other(error)),
-        },
-    }
 }

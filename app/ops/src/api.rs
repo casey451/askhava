@@ -256,3 +256,26 @@ pub async fn set_switch(
     tx.commit().await.map_err(|_| OpsError::Database)?;
     Ok(true)
 }
+
+/// OPS-004, D-2285: true while an alert of `kind` about `subject` is open (not resolved), so a
+/// check that runs again raises nothing new for the same thing (T327's no-handler check).
+///
+/// # Errors
+///
+/// [`OpsError::Database`].
+pub async fn alert_open(
+    db: &mut PgConnection,
+    kind: &str,
+    subject: (&str, Uuid),
+) -> Result<bool, OpsError> {
+    sqlx::query_scalar!(
+        r#"SELECT EXISTS (SELECT 1 FROM ops.alert WHERE kind = $1 AND subject_kind = $2
+           AND subject_id = $3 AND resolved_at IS NULL) AS "open!""#,
+        kind,
+        subject.0,
+        subject.1,
+    )
+    .fetch_one(db)
+    .await
+    .map_err(|_| OpsError::Database)
+}

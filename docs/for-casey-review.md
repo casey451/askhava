@@ -2185,3 +2185,9 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **What happened.** The no-fee check step tried again after this morning's fix and found one more older test it was not allowed to touch. That test lets two businesses quote the same job, then assumes the homeowner's first pick went to a particular one of them; really the page lists them in an order that comes out either way, so with the new check the test failed about half the time.
 - **What changed.** The step may now fix that test's setup so it uses the business the pick really went to, and only that: every check in it stays exactly as it was. The step that adds job details to the same test file now waits for it, so only one step edits the file at a time. No other test calls the no-fee check with a guessed business, so a fourth surprise of this kind is not expected.
 - **Nothing needs you now.**
+
+## Jobs that would fail quietly now raise an alert (T327, D-2849 to D-2851, November 11)
+
+- **What changed.** A build check now fails whenever the app can queue a background job that nothing runs, unless the job is on a short list naming the task that will build it. And once an hour, in the test and live projects, the system raises one high alert per kind of background job that failed because nothing runs it.
+- **Two gaps to know about.** The alert names the kind of job, but the count of failed jobs is only in the log, because alerts have no place for extra detail yet. And the "auto-confirm did not go through" notice to a business (D-2785) has no task assigned to build it; it is on the list under the task that created it until the plan names one.
+- **Nothing needs you now.**
