@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T08:06:14Z by runner 68d6b3ac2530 (actions).
+Updated 2026-11-11T08:06:23Z by runner 68d6b3ac2530 (actions).
 
 **Building: T212 in progress since 07:52Z; 197 of 370 done; week 62% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-11T08:06:14Z by runner 68d6b3ac2530 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T212 claimed 07:52Z, lease until 10:52Z; lane 3: T327 claimed 05:24Z, lease until 08:24Z
 - **Week:** 62% used, 63.9M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:05Z, 0 min before this update
-- **Keeper:** last ran 07:37Z, next wake 08:27Z
+- **Last run:** 08:06Z, 0 min before this update
+- **Keeper:** last ran 08:06Z, next wake 08:27Z
 
 ## Needs attention
 - BLOCKED T337: plan gap reported: PLAN GAP: app/server/tests/release_recovery.rs:572-576 (td_pick_50_a_zero_fee_releases_free_and_a_cancelled_pick_nothing) is owned by T254/T287/T343/T352, not T337 (kit/tasks.json; kit/prompts/T337.md and D-2832 cover only confirm_and_pay.rs). Quote order is by business_id (random uuid), so gone's pick_fee row names min(first, other); the test passes (first, replaced_job) and with TD-FEE-57's binding no_fee_release refuses about half the runs (panic at release_recovery.rs:344). Fix: let T337 own release_recovery.rs for a fixture-only change (use the pick's stored business via payments::api::pi; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T337 --plan-fix D-### --reason "..."` (D-2859)
