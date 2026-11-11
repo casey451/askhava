@@ -2039,3 +2039,4 @@
 - 2026-11-11T13:19:33Z runner 8eba59454470 (actions): {"T214": "IN_PROGRESS -> BLOCKED"}
 - 2026-11-11T13:22:22Z runner 8eba59454470 (actions): {}
 - 2026-11-11T13:22:45Z runner 8eba59454470 (actions): {}
+- 2026-11-11T13:35:32Z runner 6cc6ce4c5fb3 (actions): {"T332": "QUEUED -> IN_PROGRESS"}; T332 estimated 3.3M tokens (calibrated); five-hour window has 10.8M left, week 56.6M after 3.4M still running in another lane (session_reading 2026-11-11T13:22:22Z (week)); claimed
