@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-11T11:55:36Z by runner 285525e3134a (actions).
+Updated 2026-11-11T11:58:33Z by runner 285525e3134a (actions).
 
-**Building: T164 in progress since 11:43Z; 202 of 372 done; week 65% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T332 in progress since 11:58Z; 202 of 372 done; week 65% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 202 of 372 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T164 claimed 11:43Z, lease until 14:43Z
-- **Week:** 65% used, 64.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:55Z, 0 min before this update
+- **Lane:** lane 1: T332 claimed 11:58Z, lease until 14:58Z; lane 2: T164 claimed 11:43Z, lease until 14:43Z
+- **Week:** 65% used, 60.5M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Last run:** 11:58Z, 0 min before this update
 - **Keeper:** last ran 11:55Z, next wake 14:45Z
 
 ## Needs attention
@@ -114,7 +114,7 @@ Updated 2026-11-11T11:55:36Z by runner 285525e3134a (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-11T11:37:35Z (week)): five-hour: 11.0M used, 18.1M left, resets 2026-11-11T14:49:36Z; week: 130.0M used, 64.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-04T16:42:25Z.
+- Pacing (session_reading 2026-11-11T11:55:20Z (week)): five-hour: 14.5M used, 14.6M left, resets 2026-11-11T14:49:36Z; week: 133.5M used, 60.5M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-04T18:11:44Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -129,7 +129,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T332 (lease until 2026-11-11T14:58:29Z)
 - lane 2: T164 (lease until 2026-11-11T14:43:33Z)
 
 ## Last usage reading
