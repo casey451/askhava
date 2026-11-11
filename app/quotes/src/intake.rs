@@ -490,7 +490,7 @@ fn kept_breaks(pieces: &[(&str, bool)]) -> Vec<bool> {
 /// PICK-007, D-3022: a run is phone-shaped when it holds 3 or more number words, or any
 /// unbroken stretch of it adds up to 7, 10 or 11 digits (a local, a 10-digit or a 1 + 10-digit
 /// number; a number word counts as one digit). "24 36 48 60" (8) and "$450 $300 $120" (9) are
-/// not; "555 123 4567" (10) and "$1200 $450" (7) are: privacy wins over a list.
+/// not; a 3/3/4 split (10) and "$1200 $450" (7) are: privacy wins over a list.
 fn phone_shaped(run: &[Count]) -> bool {
     let weight = |c: &Count| match c {
         Count::Digits(n) => *n,
