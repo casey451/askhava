@@ -1,23 +1,24 @@
 # Ask Hava build status
 
-Updated 2026-11-11T21:47:09Z by runner 53eba4dfccb6 (manual).
+Updated 2026-11-11T21:47:27Z by runner 5576a5daaec3 (actions).
 
 **Building: T387 in progress since 20:19Z; 213 of 376 done; week 74% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 213 of 376 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T387 claimed 20:19Z, lease until 23:19Z; lane 3: T232 claimed 21:11Z, lease until 00:11Z; lane 5: T388 claimed 21:12Z, lease until 00:12Z
+- **Lane:** lane 1: T387 claimed 20:19Z, lease until 23:19Z; lane 3: T232 claimed 21:11Z, lease until 00:11Z
 - **Week:** 74% used, 41.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:22Z, 24 min before this update
+- **Last run:** 21:47Z, 0 min before this update
 - **Keeper:** last ran 21:22Z, next wake 23:22Z
 
 ## Needs attention
 - BLOCKED T345: plan gap reported: PLAN GAP: tests/test_runner_keeper.py:417,:426,:652; tests/test_runner_pre_smoke.py:263; tests/test_runner_smoke_reuse.py:402,:505 hard-code actions/cache/restore@v4, actions/cache/save@v4 and anthropics/claude-code-action@v1. No task owns these files (harness PRs #264, #359, #434); T345 owns no test file (kit/prompts/T345.md:68). Pinning to SHAs makes 5 tests fail (smoke.sh red). Reviewer confirmed pins are correct and the gap is real. Smallest fix: add the three test files to T345 owns and match on the action name before the @.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T345 --plan-fix D-### --reason "..."` (D-2859)
-- Strict plan check red: 28 problem(s) on tasks still to run (+58 on DONE tasks); first: T340: stored context_pct 35% but it measures 40%; regenerate
+- Strict plan check red: 29 problem(s) on tasks still to run (+61 on DONE tasks); first: T340: stored context_pct 35% but it measures 40%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T388 | picks, intake, messaging and portals: after a Confirm the ho | MERGE_PENDING | 1 | 34 min | 21:46Z |  |
 | T334 | payments: the nightly reconcile catches up after an outage f | QUEUED | 1 | 15 min | 21:21Z | Worker stopped with PLAN GAP: reconcile_open.rs:343 and :423 (T288 tests, night 0 then night 8) fail once the run reads  |
 | T228 | businesses: leaving Ask Hava, the optional reason and what h | MERGE_PENDING | 1 | 31 min | 19:59Z | merging main into the reviewed head conflicts in app/payments/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T228 | businesses: leaving Ask Hava, the optional reason and what h | resync | 1 | 77 min | 19:09Z |  |
@@ -153,7 +154,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T387 (lease until 2026-11-11T23:19:01Z)
 - lane 3: T232 (lease until 2026-11-12T00:11:40Z)
-- lane 5: T388 (lease until 2026-11-12T00:12:26Z)
 
 ## Last usage reading
-- {"task": "T334", "at": "2026-11-11T21:21:29Z", "cache_read_input_tokens": 5826122, "cache_creation_input_tokens": 363295, "input_tokens": 147, "output_tokens": 44422}
+- {"task": "T388", "at": "2026-11-11T21:46:56Z", "output_tokens": 156954, "cache_read_input_tokens": 42243270, "input_tokens": 402, "cache_creation_input_tokens": 823735}
