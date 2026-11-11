@@ -2294,3 +2294,9 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **What changed.** The sign-up form now asks the business name (needed), a trade name or DBA, the ROC, BTR and city license numbers it has, and an optional Google Business Profile link and Yelp link. A name with a phone number, a link or "find us on Google" is sent back with the reason and nothing is saved. A link is kept only if it is on Google's or Yelp's own site and the page opens. Saved links show on every quote card as two plain links, "Google" and "Yelp", with no stars or counts.
 - **One thing you may want changed.** Links are checked when they are saved, not again later; a page Google or Yelp takes down stays on the cards until the business changes it in the portal (a later task).
 - **Nothing needs you now.**
+
+## T228: leaving Ask Hava and the optional reason (D-3044 to D-3047)
+
+- **What changed.** A business owner can leave Ask Hava from the portal (the page is built; it goes live with the portal's routes). The page lists what leaving does before the one button: open quotes are withdrawn ("Withdrawn by the business."), a pick waiting for its Confirm ends with no fee and goes to the homeowner's backup, saved payment cards are removed, the team is signed out, and the charge and account records stay 7 years. It asks once, optionally, why, with "Busy for a while" first and a pointer to "Busy for a number of days"; a business paused more than 2 weeks is asked the same question once. The answer changes nothing about its jobs or fees.
+- **One thing you may want changed.** Until the sign-in checks for it, a member of a business that left could ask for a new sign-in link; nothing they could do there sends them jobs (D-3045).
+- **Nothing needs you now.**

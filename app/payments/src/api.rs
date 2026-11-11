@@ -86,6 +86,8 @@
 //! T209: [`charge_off_session`] is the one off-session charge, the PICK-048 auto-confirm charge,
 //! through an [`OffSessionStripe`], only when the caller found Stripe's written answer filed and
 //! only with the [`saved_card_of`] the business (PICK-048, PICK-056, FEE-014, D-401).
+//!
+//! T228: [`remove_saved_cards`] marks a leaving business's saved cards removed (BIZ-051).
 
 pub use crate::charge::{
     ATTEMPT_ACTION, ATTEMPT_SUBJECT, IN_FLIGHT, INTENT_ACTION, IntentStripe, confirm_and_pay,
@@ -168,3 +170,28 @@ pub use crate::service::{
 };
 pub use crate::status::{AttemptStatus, RefundStatus};
 pub use askhava_adapters::api::StripeRefund;
+
+/// BIZ-051, D-446 (T228): marks every saved card of `business` removed at `at`, inside the
+/// caller's transaction, and returns their `pm_…` IDs for the caller to detach at Stripe after the
+/// commit; [`saved_card_of`] then finds none, so no charge can use them. The rows, the ledger and
+/// the authorizations stay.
+///
+/// # Errors
+///
+/// [`CardError::Database`].
+pub async fn remove_saved_cards(
+    tx: &mut sqlx::PgConnection,
+    business: BusinessId,
+    at: jiff::Timestamp,
+) -> Result<Vec<String>, CardError> {
+    use jiff_sqlx::ToSqlx;
+    sqlx::query_scalar!(
+        "UPDATE payments.payment_method SET removed_at = $2 \
+         WHERE business_id = $1 AND removed_at IS NULL RETURNING stripe_payment_method_id",
+        business.0,
+        at.to_sqlx() as _,
+    )
+    .fetch_all(tx)
+    .await
+    .map_err(|_| CardError::Database)
+}

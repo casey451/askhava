@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{#- Leaving and the optional reason (T228; BIZ-051, BIZ-054, D-446, D-463). The leave screen says
+    what leaving does before its one button; the reason is asked once, optional, "Busy for a while"
+    first with the way to pause instead, nothing preselected, and a box beside "Something else".
+    The pause screen asks the same question once after a pause past 14 days. No homeowner detail. -#}
+{% block title %}{% if left %}You've left {{ name }}{% else if leaving %}Leave {{ name }}{% else %}You've been paused for over 2 weeks{% endif %}{% endblock %}
+{% block main %}
+{% if left %}
+<h1 id="left" tabindex="-1" autofocus>You've left {{ name }}</h1>
+<p>Your quotes on open jobs are withdrawn and your team is signed out. We've removed your saved payment cards. You won't get any more job cards or notices from us.</p>
+<p>To come back later, sign up again.</p>
+{% else %}
+{% if leaving %}<h1>Leave {{ name }}</h1>
+<p>When you leave:</p>
+<ul id="leave-effects">
+<li>Your quotes on jobs that are still open are withdrawn. The homeowner sees "Withdrawn by the business."</li>
+<li>If a homeowner picked you and you haven't confirmed yet, the pick ends and you aren't charged. If the homeowner chose a backup quote, the pick goes to that business.</li>
+<li>Your saved payment cards are removed.</li>
+<li>Everyone on your team is signed out.</li>
+<li>You stop getting job cards and notices.</li>
+<li>We keep a record of your charges and account changes for 7 years.</li>
+</ul>
+<p>You can't undo this. To come back later, sign up again.</p>
+{% else %}<h1>You've been paused for over 2 weeks</h1>
+<p>To get job cards again, use Resume.</p>
+{% endif %}<form method="post" action="{{ action }}" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+{% if ask %}<fieldset id="leave-reason">
+<legend>Can you tell us why? You don't have to answer.</legend>
+<p id="reason-hint">{% if leaving %}Your answer is only for us to learn from.{% else %}Your answer doesn't change which jobs you get or what you pay.{% endif %}</p>
+{% for r in reasons %}<p><input type="radio" id="reason-{{ r.0 }}" name="reason" value="{{ r.0 }}" aria-describedby="reason-hint"> <label for="reason-{{ r.0 }}">{{ r.1 }}</label></p>
+{% if loop.first %}<p id="busy-hint">{% if leaving %}If you just need a break, you don't have to leave. Use "Busy for a number of days" to stop job cards for 1 to 60 days.{% else %}Next time, try "Busy for a number of days". It stops job cards for 1 to 60 days, then starts them again.{% endif %}</p>
+{% endif %}{% endfor %}<p><label for="reason-other-words">Tell us more (optional)</label></p>
+<textarea id="reason-other-words" name="other" rows="4" maxlength="500"></textarea>
+</fieldset>
+{% endif %}<button type="submit">{% if leaving %}Leave {{ name }}{% else %}Send{% endif %}</button>
+</form>
+{% endif %}
+{% endblock %}
