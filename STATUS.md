@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-11T05:06:30Z by runner 2a2a0a36b139 (actions).
+Updated 2026-11-11T05:06:45Z by runner 2a2a0a36b139 (actions).
 
-**Building: T209 in progress since 03:10Z; 195 of 362 done; week 60% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T337 in progress since 04:55Z; 195 of 362 done; week 60% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 195 of 362 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T209 claimed 03:10Z, lease until 06:10Z; lane 3: T337 claimed 04:55Z, lease until 07:55Z
+- **Lane:** lane 3: T337 claimed 04:55Z, lease until 07:55Z
 - **Week:** 60% used, 67.6M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 04:59Z, 6 min before this update
 - **Keeper:** last ran 04:59Z, next wake 06:12Z
@@ -18,6 +18,7 @@ Updated 2026-11-11T05:06:30Z by runner 2a2a0a36b139 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T209 | picks and payments: the optional auto-confirm-and-pay box wi | MERGE_PENDING | 1 | 115 min | 05:06Z |  |
 | T295 | payments, ai, intake and picks take the brand from the brand | BLOCKED | 3 | 0 min | 04:59Z | T295 blocked at step 3: tests/brand_literal_baseline.json still lists files T295 does not own: app/messaging/templates/e |
 | T337 | payments: a $0 release proof is bound to the pick's own stor | QUEUED | 2 | 25 min | 04:51Z | T337 built and committed (53e675b1, cf42d54e); smoke/prehandin red on tests T337 does not own: confirm_and_pay.rs td_fee |
 | T295 | payments, ai, intake and picks take the brand from the brand | QUEUED | 2 | 0 min | 04:49Z |  |
@@ -111,8 +112,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T209 (lease until 2026-11-11T06:10:38Z)
+- nothing
 - lane 3: T337 (lease until 2026-11-11T07:55:48Z)
 
 ## Last usage reading
-- {"task": "T337", "at": "2026-11-11T04:51:04Z", "cache_creation_input_tokens": 197042, "cache_read_input_tokens": 6256865, "output_tokens": 38255, "input_tokens": 152}
+- {"task": "T209", "at": "2026-11-11T05:06:30Z", "cache_read_input_tokens": 80841812, "output_tokens": 291655, "input_tokens": 820, "cache_creation_input_tokens": 1193920}
