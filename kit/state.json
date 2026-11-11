@@ -22370,11 +22370,12 @@
      "result": "resync"
     }
    ],
-   "reviewed_sha": "32c401b8fac46cbb6c68858ec1327ceb826ed48c",
+   "reviewed_sha": "e988100a095028bc013491cacea2bd1f9214d205",
    "review_lease": {
     "task": "T228",
-    "session": "actions-43069449254",
-    "expires": "2026-11-11T20:51:50Z"
+    "session": "actions-43078437917",
+    "expires": "2026-11-11T22:28:10Z",
+    "lane": "4"
    },
    "branch": "claude/task/T228-businesses-leaving",
    "auto_merge": {
@@ -22406,9 +22407,19 @@
     }
    ],
    "last_failure": "merging main into the reviewed head conflicts in app/payments/CLAUDE.md; a resync merges it in on this attempt (D-891)",
+   "lane": "4",
+   "head_check_since": null,
+   "update_merges": [
+    {
+     "from": "d143271aaec446c930f3282bb442815b9d1c281d",
+     "to": "e988100a095028bc013491cacea2bd1f9214d205",
+     "main": "0ca2670042a7a07d046d30dae6ef2c5c36111035",
+     "how": "hand-in",
+     "at": "2026-11-11T19:59:15Z"
+    }
+   ],
    "update_waiting_since": null,
-   "update_push_failures": null,
-   "lane": "4"
+   "update_push_failures": null
   },
   {
    "id": "T215",
@@ -34496,7 +34507,7 @@
    }
   }
  },
- "updated_at": "2026-11-11T19:50:30Z",
+ "updated_at": "2026-11-11T19:59:15Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -34594,7 +34605,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "74e1f303a72d1efd315b7065e91b7174b04aa4ab",
+ "runner_sha": "0f5e8c3b0df68c4912eb1a475f3ad5fb6015b34b",
  "starter": "actions",
  "smoke_runs": [
   {

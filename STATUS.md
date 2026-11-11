@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T19:50:30Z by runner 74e1f303a72d (actions).
+Updated 2026-11-11T19:59:15Z by runner 0f5e8c3b0df6 (actions).
 
 **Building: T228 in progress since 19:28Z; 213 of 374 done; week 73% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,12 +8,12 @@ Updated 2026-11-11T19:50:30Z by runner 74e1f303a72d (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 4: T228 claimed 19:28Z, lease until 22:28Z
 - **Week:** 73% used, 45.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:50Z, 0 min before this update
+- **Last run:** 19:50Z, 8 min before this update
 - **Keeper:** last ran 19:50Z, next wake 22:30Z
 
 ## Needs attention
 - BLOCKED T345: plan gap reported: PLAN GAP: tests/test_runner_keeper.py:417,:426,:652; tests/test_runner_pre_smoke.py:263; tests/test_runner_smoke_reuse.py:402,:505 hard-code actions/cache/restore@v4, actions/cache/save@v4 and anthropics/claude-code-action@v1. No task owns these files (harness PRs #264, #359, #434); T345 owns no test file (kit/prompts/T345.md:68). Pinning to SHAs makes 5 tests fail (smoke.sh red). Reviewer confirmed pins are correct and the gap is real. Smallest fix: add the three test files to T345 owns and match on the action name before the @.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T345 --plan-fix D-### --reason "..."` (D-2859)
-- Strict plan check red: 28 problem(s) on tasks still to run (+58 on DONE tasks); first: T340: stored context_pct 35% but it measures 40%; regenerate
+- Strict plan check red: 31 problem(s) on tasks still to run (+60 on DONE tasks); first: T340: stored context_pct 35% but it measures 40%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -72,6 +72,7 @@ Updated 2026-11-11T19:50:30Z by runner 74e1f303a72d (actions).
 | T155 | businesses: sign-up capability setup pre-ticked from the lic | done | 1 | 57 min | 20:15Z |  |
 
 ### Plan and harness merges on main
+- 19:58Z Plan: pre-flight fixes for five queued tasks before they're claimed (D-3055) (#512)
 - 18:49Z Plan: five lanes (D-3043) (#504)
 - 18:37Z Plan: T387 steadies payments branch coverage and adds margin, claimed first (D-3049) (#507)
 - 15:44Z Plan: T214 owns the final-Pick share box end to end and ticks it in five finished tests (D-3032) (#495)
