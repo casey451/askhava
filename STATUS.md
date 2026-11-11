@@ -1,18 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-11T04:59:45Z by runner 18d7cc8f2592 (actions).
+Updated 2026-11-11T05:06:30Z by runner 2a2a0a36b139 (actions).
 
-**Building: T209 in progress since 03:10Z; 195 of 369 done; week 60% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T209 in progress since 03:10Z; 195 of 362 done; week 60% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 195 of 369 build tasks (owner gates not counted)
+- **Tasks done:** 195 of 362 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T209 claimed 03:10Z, lease until 06:10Z; lane 3: T337 claimed 04:55Z, lease until 07:55Z
 - **Week:** 60% used, 67.6M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:59Z, 0 min before this update
+- **Last run:** 04:59Z, 6 min before this update
 - **Keeper:** last ran 04:59Z, next wake 06:12Z
 
 ## Needs attention
 - BLOCKED T295: T295 blocked at step 3 (checked by the runner session, no worker run): tests/brand_literal_baseline.json still lists app/messaging/templates/en.json (96) and es.json (96), owned by T360, and app/portals/templates/homeowner_home.html (3), owned by T087; kit/tasks.json T295 owns none of them. A plan change must give these an owner before the guard is made strict. No code changed.
+- Strict plan check red: 4 problem(s) on tasks still to run (+15 on DONE tasks); first: T209: stored context_pct 24% but it measures 35%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -66,13 +67,13 @@ Updated 2026-11-11T04:59:45Z by runner 18d7cc8f2592 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 205 of 733 (28.0%) · partial 339 · unstarted 189
-**Tasks merged (throughput only):** 195 of 369
+**Requirements verified:** 206 of 733 (28.1%) · partial 338 · unstarted 189
+**Tasks merged (throughput only):** 195 of 362
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 15 | 13 | 7 | 35 |
-| ai | 7 | 17 | 5 | 29 |
+| ai | 8 | 16 | 5 | 29 |
 | businesses | 16 | 35 | 7 | 58 |
 | calls | 11 | 13 | 1 | 25 |
 | consent | 8 | 23 | 4 | 35 |
