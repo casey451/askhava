@@ -21,8 +21,10 @@
 //! (INT-041, CARD-007, T208); the sender of `jobs`' homeowner job texts with the two-zone send
 //! window (JOB-010 to JOB-012, TXT-042, QH-001, QH-006, QH-007, T240); the dispatcher of a reply
 //! inside an open request, [`receive_reply`] (TXT-031, INT-019, D-999, T241); the rate limits:
-//! [`admit_new_request`] and the shared [`admit`] (SEC-014, SEC-015, SEC-040, T089).
+//! [`admit_new_request`] and the shared [`admit`] (SEC-014, SEC-015, SEC-040, T089); the
+//! accepted-quote email after a Confirm, [`run_accepted_quote`] (PICK-042, T388).
 
+pub use crate::accepted_quote::run_accepted_quote;
 pub use crate::closing::{
     CLOSE_MENTION_TEMPLATE, CLOSE_WHICH_TEMPLATE, Closing, JOB_CLOSED_TEMPLATE,
     JOBS_CLOSED_TEMPLATE, answer_close, close_from_page,

@@ -2,6 +2,18 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## Linking a team phone by text gets an owner, and two waiting steps are trimmed (plan change, D-3079, November 11)
+
+- **What happened.** The outside review you shared found one security item with no step assigned: when someone on a business's team calls a homeowner's line from a phone the business has not added, nothing yet sends the business the "Reply LINK <PIN> to add this phone" message, and nothing handles that reply. The build cannot finish its current stage while that item has no owner. The review also found that two waiting steps were planned to load more than the allowed share of the AI's working memory.
+- **What changed.** Two new steps. T390 sends that message after such a call reaches the homeowner with the job PIN. T391, which follows it, adds the phone only when the reply comes from the business's main phone with the right PIN for one of its own open jobs, and only within 24 hours of the call. (They were one step; the independent review found it too big for one go, so it was split in two.) A wrong, reused or other business's PIN, or a reply 24 hours or more after the call, changes nothing, and after 3 wrong tries in a day that phone's LINK replies are ignored until the next day. The added phone's number is never stored, only a scrambled fingerprint of it, as for every linked phone today. Eight later steps had their database file numbers moved up by one to make room. The two oversized steps now update one line of the architecture notes instead of loading a whole section of it, and 26 other waiting steps had their memory figures re-measured.
+- **For later.** A short "This phone is now linked" text after a successful LINK would need new wording from you, so none is sent yet. Also found while checking: a phone added by a team member (not the owner) works for calls right away, though the rule says it should wait for the owner's Approve. It is now listed as an open security item (IC-95) with no step assigned yet; the next plan change will give it one.
+
+## Six more waiting steps fixed before they start (plan change, D-3083, November 11)
+
+- **What happened.** A second check of steps still waiting in line found six that would have stopped partway or misled the worker: older tests the step did not own, a check order that would trip an older test, a missing setting that would have crashed a test in development, and stale line numbers. Two of them had already stopped for this reason: T345 (pinning the GitHub Actions versions) and T317 (the limit on new requests by text); both go back in line once this change lands.
+- **What changed.** Each step now owns the few extra files it must touch, with strict limits on what it may change in them (only how a test builds its setup, or only the version text in a comparison), and its instructions name the exact code to use. No rule for homeowners or businesses changes and no test is loosened.
+- **Nothing needs you.**
+
 ## The runner's start-up smoke test runs less often, with every red-build guard kept (harness and plan change, D-3058, November 11)
 
 - **Who decided.** You told the overseer to let Fable make the decisions meant for you; Fable chose this one.
