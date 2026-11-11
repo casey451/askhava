@@ -1,23 +1,25 @@
 # Ask Hava build status
 
-Updated 2026-11-11T12:38:08Z by runner 790d4ec251b2 (actions).
+Updated 2026-11-11T12:40:38Z by runner a70f6e601017 (actions).
 
-**Building: T332 in progress since 12:37Z; 203 of 372 done; week 66% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T333 in progress since 12:24Z; 203 of 372 done; week 66% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 203 of 372 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T332 claimed 12:37Z, lease until 15:37Z; lane 3: T333 claimed 12:24Z, lease until 15:24Z
+- **Lane:** lane 3: T333 claimed 12:24Z, lease until 15:24Z
 - **Week:** 66% used, 59.1M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:37Z, 0 min before this update
+- **Last run:** 12:38Z, 2 min before this update
 - **Keeper:** last ran 12:16Z, next wake 12:36Z
 
 ## Needs attention
+- BLOCKED T332: plan gap reported: PLAN GAP: tests/integration/tests/confirm_and_pay.rs:393-413 (td_fee_25_an_ended_pick_is_never_cleared, TD-FEE-25, T189 DONE; also owned by T287, T337, T352; not T332) asserts paid_release on an ended pick with a verified success stores nothing (evidence empty line ~408, attempt stays "processing" line ~413). T332 goal part (2) and D-2290 require paid_release to store the success and evidence and call late_success, then answer PickEnded. No implementation passes both. D-2290 and D-2970 do not name confirm_and_pay.rs. Smallest plan change: T332 may also change only that test's two "stores nothi; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T332 --plan-fix D-### --reason "..."` (D-2859)
 - Strict plan check red: 18 problem(s) on tasks still to run (+25 on DONE tasks); first: T255: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T332 | payments (harness): a late success has its own refund trigge | BLOCKED | 1 | 11 min | 12:10Z | PLAN GAP: tests/integration/tests/late_success.rs:216 (T064's TD-FEE-12, DONE) clashes with T332's goal and D-2290 (the  |
+| T332 | payments (harness): a late success has its own refund trigge | BLOCKED | 2 | 2 min | 12:40Z | PLAN GAP: tests/integration/tests/confirm_and_pay.rs:393-413 (td_fee_25_an_ended_pick_is_never_cleared, TD-FEE-25, T189  |
+| T332 | payments (harness): a late success has its own refund trigge | BLOCKED | 1 | 11 min | 12:10Z |  |
 | T164 | quotes: one quote format per category, screened notes, and e | MERGE_PENDING | 3 | 19 min | 12:02Z | merging main into the reviewed head conflicts in app/quotes/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T331 | payments (harness): a payment success with no readable pick  | done | 1 | 49 min | 11:35Z |  |
 | T164 | quotes: one quote format per category, screened notes, and e | resync | 3 | 12 min | 11:31Z |  |
@@ -131,8 +133,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T332 (lease until 2026-11-11T15:37:45Z)
+- nothing
 - lane 3: T333 (lease until 2026-11-11T15:24:00Z)
 
 ## Last usage reading
-- {"task": "T332", "at": "2026-11-11T12:10:03Z", "output_tokens": 21484, "cache_creation_input_tokens": 179937, "input_tokens": 102, "cache_read_input_tokens": 2539013}
+- {"task": "T332", "at": "2026-11-11T12:40:38Z", "cache_read_input_tokens": 2286102, "output_tokens": 20434, "cache_creation_input_tokens": 211636, "input_tokens": 86}
