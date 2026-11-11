@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-11T11:31:37Z by runner 439e443016c7 (actions).
+Updated 2026-11-11T11:31:50Z by runner 439e443016c7 (actions).
 
-**Building: T164 in progress since 11:19Z; 201 of 372 done; week 65% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T331 in progress since 10:45Z; 201 of 372 done; week 65% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 201 of 372 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T164 claimed 11:19Z, lease until 14:19Z; lane 3: T331 claimed 10:45Z, lease until 13:45Z
+- **Lane:** lane 3: T331 claimed 10:45Z, lease until 13:45Z
 - **Week:** 65% used, 60.7M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 11:19Z, 12 min before this update
 - **Keeper:** last ran 11:17Z, next wake 13:48Z
@@ -17,7 +17,8 @@ Updated 2026-11-11T11:31:37Z by runner 439e443016c7 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T164 | quotes: one quote format per category, screened notes, and e | check_failed | 2 | 39 min | 11:00Z | Ci: failure; Checks: failure / Checks failed at step: Rust format and lint (clippy once, before the build, D-488) / Chec |
+| T164 | quotes: one quote format per category, screened notes, and e | MERGE_PENDING | 3 | 12 min | 11:31Z | Ci: failure; Checks: failure / Checks failed at step: Rust format and lint (clippy once, before the build, D-488) / Chec |
+| T164 | quotes: one quote format per category, screened notes, and e | check_failed | 2 | 39 min | 11:00Z |  |
 | T278 | quotes, intake and picks: the check-in, feedback and unreach | MERGE_PENDING | 1 | 29 min | 10:56Z |  |
 | T316 | businesses: one read of each business's public name for the  | BLOCKED | 1 | 2 min | 10:06Z | PLAN GAP: app/businesses/src/holding.rs:8 and migrations/0050_licensing_imports.sql:22-55: nothing links a business to a |
 | T337 | payments (harness): a $0 release proof is bound to the pick' | done | 5 | 23 min | 09:49Z | PLAN GAP: app/server/tests/release_recovery.rs:572-576 (td_pick_50_a_zero_fee_releases_free_and_a_cancelled_pick_nothing |
@@ -127,8 +128,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T164 (lease until 2026-11-11T14:19:08Z)
+- nothing
 - lane 3: T331 (lease until 2026-11-11T13:45:45Z)
 
 ## Last usage reading
-- {"task": "T164", "at": "2026-11-11T11:00:21Z", "input_tokens": 477, "cache_creation_input_tokens": 731684, "output_tokens": 199508, "cache_read_input_tokens": 27532660}
+- {"task": "T164", "at": "2026-11-11T11:31:36Z", "input_tokens": 69, "cache_creation_input_tokens": 194412, "cache_read_input_tokens": 933873, "output_tokens": 14280}
