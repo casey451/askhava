@@ -178,8 +178,8 @@ pub async fn record_reason(
     Ok(row.is_some())
 }
 
-/// BIZ-054: the pause question is due when the business is paused, has been for more than
-/// `after_days` days (strictly), and was never asked.
+/// BIZ-054: the pause question is due when the business paused itself (BIZ-010; not Casey or a
+/// rule), has been paused for more than `after_days` days (strictly), and was never asked.
 ///
 /// # Errors
 ///
@@ -193,7 +193,7 @@ pub async fn pause_ask_due(
     let row = models::read(conn, business).await?;
     let paused_for = now.duration_since(row.status_changed_at);
     let long = paused_for > SignedDuration::from_hours(after_days.saturating_mul(24));
-    if !row.status.asks_pause_reason() || !long {
+    if !row.status.asks_pause_reason(row.pause_reason) || !long {
         return Ok(false);
     }
     Ok(!reason_asked(conn, business).await?)

@@ -4,9 +4,11 @@
 //! A signed-in owner's business has a waiting pick on job A (her backup is quote 3), a waiting
 //! pick on job B (no backup), two saved cards, a ledger row and an unused sign-in link. Leaving
 //! without a fresh code changes nothing; with one it withdraws both quotes, moves pick A to the
-//! backup, returns job B to Quotes ready, removes and detaches both cards, uses up the link, ends
-//! the session and keeps the ledger row. The reason is asked once with "Busy for a while" first,
-//! on leaving or after a pause past 14 days, and the answer changes nothing else.
+//! backup, returns job B to Quotes ready, withdraws its quote on job C (past Confirm, so it cannot
+//! come back if job C returns to Quotes ready), removes and detaches both cards, uses up the link,
+//! ends the session and keeps the ledger row. The reason is asked once with "Busy for a while"
+//! first, on leaving or after the business's own pause past 14 days (never a pause by a rule), and
+//! the answer changes nothing else.
 
 use std::path::Path;
 use std::sync::Mutex;
@@ -181,14 +183,26 @@ async fn picked(db: &mut PgConnection, who: Acting) -> (Uuid, Uuid, Uuid) {
     (a, b, pick)
 }
 
+/// Job C with `who`'s quote, already past Confirm (Payment pending).
+async fn past_confirm(db: &mut PgConnection, who: Acting) -> Uuid {
+    let job = quoted(db, who.business).await;
+    sqlx::query("UPDATE jobs.job SET status = 'payment_pending' WHERE id = $1")
+        .bind(job)
+        .execute(&mut *db)
+        .await
+        .expect("past Confirm");
+    job
+}
+
 /// TD-BIZ-32 (BIZ-051, PICK-047, PICK-051, SEC-038, D-446): leaving needs a fresh code, then
-/// withdraws the open quotes, moves the waiting picks, removes the cards, ends sessions and links,
-/// and keeps the ledger; a second leave changes nothing.
+/// withdraws every quote (past Confirm too), moves the waiting picks, removes the cards, ends
+/// sessions and links, and keeps the ledger; a second leave changes nothing.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_biz_32_leaving_withdraws_moves_removes_and_ends(pool: PgPool) {
     let mut db = pool.acquire().await.expect("db");
     let (who, jar, principal) = signed_in(&mut db).await;
     let (a, b, pick) = picked(&mut db, who).await;
+    let c = past_confirm(&mut db, who).await;
     money_and_links(&mut db, who, a).await;
     let stripe = FakeDetach::default();
     let early = leave(&mut db, &principal, (None, &stripe), at(10)).await;
@@ -209,7 +223,7 @@ async fn td_biz_32_leaving_withdraws_moves_removes_and_ends(pool: PgPool) {
             .any(|p| matches!(p, (j, Backup::Moved(_)) if *j == a))
     );
     assert!(left.picks.contains(&(b, Backup::NoBackup)), "{left:?}");
-    assert_eq!((left.quotes, left.cards, left.detach_failed), (2, 2, 0));
+    assert_eq!((left.quotes, left.cards, left.detach_failed), (3, 2, 0));
     assert_eq!(left.sessions, 1);
     assert_eq!(
         *stripe.0.lock().expect("lock"),
@@ -237,6 +251,8 @@ async fn td_biz_32_leaving_withdraws_moves_removes_and_ends(pool: PgPool) {
         0,
         "quotes withdrawn"
     );
+    let on_c = "SELECT count(*) FROM quotes.quote WHERE job_id = $1 AND withdrawn_at IS NOT NULL";
+    assert_eq!(count(&mut db, on_c, c).await, 1, "past Confirm too");
     let saved = saved_card_of(&mut db, BusinessId(who.business))
         .await
         .expect("read");
@@ -320,8 +336,9 @@ fn td_biz_32_the_reason_is_optional_with_busy_first() {
     );
 }
 
-/// TD-BIZ-32 (BIZ-054): a pause asks only after more than 14 days, once; the answer changes no
-/// status or pause, a later leave keeps it, and no code but this task's reads it.
+/// TD-BIZ-32 (BIZ-054): only the business's own pause asks, only after more than 14 days, once (a
+/// pause for complaints never asks); the answer changes no status or pause, a later leave keeps
+/// it, and no code but this task's reads it.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_biz_32_a_long_pause_asks_once_and_changes_nothing(pool: PgPool) {
     let mut db = pool.acquire().await.expect("db");
@@ -333,6 +350,20 @@ async fn td_biz_32_a_long_pause_asks_once_and_changes_nothing(pool: PgPool) {
         .expect("active");
     let active = pause_reason(&mut db, &principal, None, at(30 * 24 * 60)).await;
     assert_eq!(active, Ok(false), "an active business is not asked");
+    let set = "UPDATE businesses.business SET status = $2, pause_reason = $3, \
+               status_changed_at = $4 WHERE id = $1";
+    for (status, reason) in [("paused", Some("complaints")), ("active", None)] {
+        sqlx::query(set)
+            .bind(who.business)
+            .bind(status)
+            .bind(reason)
+            .bind(at(0).to_sqlx())
+            .execute(&mut *db)
+            .await
+            .expect("status");
+        let ruled = pause_reason(&mut db, &principal, None, at(30 * 24 * 60)).await;
+        assert_eq!(ruled, Ok(false), "a pause by a rule, or none, is not asked");
+    }
     pause_self(&mut db, who.business, at(0))
         .await
         .expect("paused");

@@ -70,11 +70,13 @@ impl AccountStatus {
             }
         }
     }
-    /// Whether a long stay in this status asks the optional BIZ-054 reason: only `Paused` (T228).
+    /// Whether a long stay in this status, paused for `reason`, asks the optional BIZ-054 reason:
+    /// only the business's own pause (BIZ-010); a pause by Casey or a rule (complaints, the
+    /// license, no covered job type) is not the business's choice, so it is never asked (T228).
     #[must_use]
-    pub const fn asks_pause_reason(self) -> bool {
+    pub fn asks_pause_reason(self, reason: Option<PauseReason>) -> bool {
         match self {
-            Self::Paused => true,
+            Self::Paused => reason == Some(PauseReason::SelfPaused),
             Self::Pending | Self::Active | Self::Waitlist | Self::NeedsReview | Self::Removed => {
                 false
             }
