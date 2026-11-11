@@ -1,18 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-11T23:23:55Z by runner 53361d7bd279 (actions).
+Updated 2026-11-11T23:27:49Z by runner 6a4287611ebc (actions).
 
-**Building: T317 in progress since 23:23Z; 215 of 376 done; week 77% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T317 in progress since 23:23Z; 215 of 378 done; week 77% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 215 of 376 build tasks (owner gates not counted)
+- **Tasks done:** 215 of 378 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T317 claimed 23:23Z, lease until 02:23Z; lane 2: T334 claimed 22:00Z, lease until 01:00Z; lane 4: T348 claimed 22:48Z, lease until 01:48Z; lane 5: T228 claimed 23:21Z, lease until 02:21Z
 - **Week:** 77% used, 31.2M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:23Z, 0 min before this update
+- **Last run:** 23:24Z, 3 min before this update
 - **Keeper:** last ran 23:20Z, next wake 01:02Z
 
 ## Needs attention
-- Strict plan check red: 25 problem(s) on tasks still to run (+61 on DONE tasks); first: T340: stored context_pct 35% but it measures 40%; regenerate
+- Strict plan check red: 2 problem(s) on tasks still to run (+61 on DONE tasks); first: T348: stored context_pct 36% but it measures 40%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -111,15 +111,15 @@ Updated 2026-11-11T23:23:55Z by runner 53361d7bd279 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 222 of 733 (30.3%) · partial 337 · unstarted 174
-**Tasks merged (throughput only):** 215 of 376
+**Requirements verified:** 220 of 733 (30.0%) · partial 339 · unstarted 174
+**Tasks merged (throughput only):** 215 of 378
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 13 | 16 | 6 | 35 |
 | ai | 7 | 17 | 5 | 29 |
 | businesses | 16 | 36 | 6 | 58 |
-| calls | 11 | 13 | 1 | 25 |
+| calls | 9 | 15 | 1 | 25 |
 | consent | 8 | 23 | 4 | 35 |
 | fees | 12 | 39 | 1 | 52 |
 | intake | 22 | 15 | 6 | 43 |
@@ -147,7 +147,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 95 of 168 done
+- stage 4: 95 of 170 done
 - stage 5: 0 of 58 done
 - stage 6: 0 of 34 done
 - stage 7: 0 of 2 done

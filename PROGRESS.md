@@ -2298,3 +2298,4 @@
 - 2026-11-11T23:23:24Z runner 6a4287611ebc (manual): {}
 - 2026-11-11T23:23:46Z runner 53361d7bd279 (actions): {}
 - 2026-11-11T23:23:55Z runner 53361d7bd279 (actions): {"T317": "QUEUED -> IN_PROGRESS"}; T317 estimated 3.8M tokens (calibrated); week has 31.2M left (no five-hour budget, D-3056) after 8.8M still running in another lane (session_reading 2026-11-11T23:20:41Z (week)); claimed
+- 2026-11-11T23:27:49Z runner 6a4287611ebc (actions): {"T390": "None -> QUEUED", "T391": "None -> QUEUED"}
