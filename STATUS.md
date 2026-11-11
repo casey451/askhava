@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T18:53:44Z by runner 2acfed5c99d6 (actions).
+Updated 2026-11-11T18:55:19Z by runner 2acfed5c99d6 (actions).
 
 **Building: T228 in progress since 17:51Z; 211 of 373 done; week 72% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-11T18:53:44Z by runner 2acfed5c99d6 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T228 claimed 17:51Z, lease until 20:51Z; lane 4: T316 claimed 18:35Z, lease until 21:35Z
 - **Week:** 72% used, 42.6M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:47Z, 6 min before this update
+- **Last run:** 18:53Z, 1 min before this update
 - **Keeper:** last ran 18:45Z, next wake 20:53Z
 
 ## Needs attention
@@ -69,7 +69,6 @@ Updated 2026-11-11T18:53:44Z by runner 2acfed5c99d6 (actions).
 | T311 | calls and server: a voice read-back confirm connects only th | done | 2 | 33 min | 23:21Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T338 | adapters (harness): the refused-connection test holds its po | done | 1 | 24 min | 20:45Z |  |
 | T155 | businesses: sign-up capability setup pre-ticked from the lic | done | 1 | 57 min | 20:15Z |  |
-| T311 | calls and server: a voice read-back confirm connects only th | check_failed | 1 | 21 min | 18:54Z |  |
 
 ### Plan and harness merges on main
 - 18:49Z Plan: five lanes (D-3043) (#504)
