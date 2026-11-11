@@ -31262,7 +31262,7 @@
    }
   }
  },
- "updated_at": "2026-11-11T07:05:58Z",
+ "updated_at": "2026-11-11T07:12:24Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -31360,16 +31360,9 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "5d2ce844e8fa68898602358c6160d02f74185383",
+ "runner_sha": "4b70d894e350bfb3a5895ec4d49e1baa21f163bc",
  "starter": "actions",
  "smoke_runs": [
-  {
-   "sha": "f33177e317053a1d11ecccdf5b9c4d6f3de97675",
-   "ok": true,
-   "at": "2026-11-10T22:48:18Z",
-   "why": "start routine (pre-session)",
-   "seconds": 534
-  },
   {
    "sha": "f33177e317053a1d11ecccdf5b9c4d6f3de97675",
    "ok": true,
@@ -31502,6 +31495,13 @@
    "at": "2026-11-11T07:00:37Z",
    "why": "start routine (background)",
    "seconds": 238
+  },
+  {
+   "sha": "4b70d894e350bfb3a5895ec4d49e1baa21f163bc",
+   "ok": false,
+   "at": "2026-11-11T07:12:21Z",
+   "why": "start routine (pre-session)",
+   "seconds": 225
   }
  ],
  "main_red": null,
@@ -31572,11 +31572,6 @@
  ],
  "smoke_env_problems": [
   {
-   "sha": "6a92164fdcd6e282e136c82b5d1569b02c81f173",
-   "at": "2026-10-30T21:40:04Z",
-   "why": "smoke red while Ci, Twin and Ally were green on the head"
-  },
-  {
    "sha": "e3aa84d074c496313e59d278b64104f8ed887a2e",
    "at": "2026-10-31T00:00:00Z",
    "why": "smoke red while Ci, Twin and Ally were green on the head"
@@ -31619,6 +31614,11 @@
   {
    "sha": "4b70d894e350bfb3a5895ec4d49e1baa21f163bc",
    "at": "2026-11-11T07:00:37Z",
+   "why": "smoke red while Ci, Twin and Ally were green on the head"
+  },
+  {
+   "sha": "4b70d894e350bfb3a5895ec4d49e1baa21f163bc",
+   "at": "2026-11-11T07:12:21Z",
    "why": "smoke red while Ci, Twin and Ally were green on the head"
   }
  ],
