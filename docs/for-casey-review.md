@@ -2220,3 +2220,9 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **What changed.** That one line of the older test now expects "already queued" at the later report. The test still checks that you get exactly one alert and exactly one refund job; only which step queues it first moved. Nothing else in that test changes, beyond the refund label change planned on November 9.
 - **Also fixed.** The November 9 note gave this step's database change number 0176; a later change already moved it to 0177, and the plan now says so.
 - **Nothing needs you now.**
+
+## T164: quote formats, notes, and changing or withdrawing a quote (D-2897 to D-2901)
+
+- **What changed.** The quote form now shows only the price boxes for the job type's one format, with the same plain definition the homeowner sees. A price per visit must say how often (weekly, every two weeks, monthly, every 3 months or once a year), or the business picks "Other: enter the monthly amount". A note to the homeowner is limited to 300 characters and comes back with the reason if it holds a phone number, link, email, or a line like "text me", "Venmo" or "cash discount". Before any pick a business can change or withdraw its quote from the job page; after a pick it can't. A changed quote keeps its place in line.
+- **Still to come.** The homeowner seeing "Updated" or "Withdrawn by the business" is the next step (T384). The AI check on notes is ready to plug in but has no AI behind it yet.
+- **Nothing needs you now.**
