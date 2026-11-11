@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T11:14:37Z by runner ee153a16c726 (actions).
+Updated 2026-11-11T11:14:50Z by runner ee153a16c726 (actions).
 
 **Building: T331 in progress since 10:45Z; 201 of 372 done; week 65% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -17,7 +17,7 @@ Updated 2026-11-11T11:14:37Z by runner ee153a16c726 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T164 | quotes: one quote format per category, screened notes, and e | MERGE_PENDING | 2 | 39 min | 11:00Z | PLAN GAP: app/portals/src/tests/prop_arrival_order.rs:22 (T052) and app/quotes/src/notify.rs:179 / app/quotes/src/models |
+| T164 | quotes: one quote format per category, screened notes, and e | check_failed | 2 | 39 min | 11:00Z | Ci: failure; Checks: failure / Checks failed at step: Rust format and lint (clippy once, before the build, D-488) / Chec |
 | T278 | quotes, intake and picks: the check-in, feedback and unreach | MERGE_PENDING | 1 | 29 min | 10:56Z |  |
 | T316 | businesses: one read of each business's public name for the  | BLOCKED | 1 | 2 min | 10:06Z | PLAN GAP: app/businesses/src/holding.rs:8 and migrations/0050_licensing_imports.sql:22-55: nothing links a business to a |
 | T337 | payments (harness): a $0 release proof is bound to the pick' | done | 5 | 23 min | 09:49Z | PLAN GAP: app/server/tests/release_recovery.rs:572-576 (td_pick_50_a_zero_fee_releases_free_and_a_cancelled_pick_nothing |
