@@ -387,7 +387,10 @@ jobs:
         # saving (D-2007); it leaves `target/smoke-ran` itself only on a timeout. When the state read above records a
         # green smoke on that very head that the start routine may reuse (never while `main` is red, never after a
         # later red or timed-out run on the head, at most 6 hours old), it runs nothing: the ~9 minutes are saved and
-        # the session's start routine reuses the record, or smokes itself if anything changed meanwhile (D-2560).
+        # the session's start routine reuses the record, or smokes itself if anything changed meanwhile (D-2560). It
+        # also runs nothing when a real green on an ancestor of that head at most kit/runner.json `smoke_ancestry_reuse`
+        # first-parent commits back stands for it, every commit since being a DONE task's recorded squash merge with
+        # nothing in the state doubting it (`st.ancestry_smoke`); the session still checks the nightly and checks (D-3058).
         if: hashFiles('Cargo.lock') != ''
         continue-on-error: true
         timeout-minutes: 32

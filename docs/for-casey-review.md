@@ -2,6 +2,14 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## The runner's start-up smoke test runs less often, with every red-build guard kept (harness and plan change, D-3058, November 11)
+
+- **Who decided.** You told the overseer to let Fable make the decisions meant for you; Fable chose this one.
+- **What happened.** Between noon and 19:29Z today the runner spent 228 minutes on its start-up smoke test against 690 minutes of real work: 29 runs on 18 versions of the code (11 repeats of a version already tested, about 95 minutes), and 9 of 23 sessions stopped to wait for a smoke before they could start a task.
+- **What changed.** (1) When the only changes since the last real green smoke are up to 3 finished tasks, each already merged with all three required checks green, that smoke now stands for the newer code too. A real smoke still runs at least every 4 merges and at least every 6 hours, and any other kind of change in between (a plan or harness change), any failed smoke, failed nightly run or failed check on any of those versions, or anything the runner cannot read, makes it smoke again. The number is one setting in `kit/runner.json`; 0 turns it off. (2) When one lane is still smoking a version another lane has already smoked green, it stops its own unfinished run and uses that result. A finished result of its own, pass or fail, is always used.
+- **What is protected.** None of this ever applies while the build is marked broken; clearing a broken build still needs a brand-new green smoke; a failed smoke still marks the build broken and queues the fix exactly as before.
+- **Nothing needs you.**
+
 ## The build no longer pauses for a five-hour limit (plan change, D-3056, November 11)
 
 - **What happened.** The pacer also budgeted a five-hour token window, using a made-up 30M figure. By 19:10Z that figure was nearly used up, so it would have let only about four tasks run at once until 20:04Z, while the week still had tokens to spare.
