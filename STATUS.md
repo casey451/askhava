@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-11T16:25:21Z by runner 95bd16c85654 (actions).
+Updated 2026-11-11T16:25:34Z by runner 95bd16c85654 (actions).
 
-**Building: T165 in progress since 15:37Z; 206 of 373 done; week 69% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T214 in progress since 15:58Z; 206 of 373 done; week 69% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 206 of 373 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T165 claimed 15:37Z, lease until 18:37Z; lane 3: T214 claimed 15:58Z, lease until 18:58Z
+- **Lane:** lane 3: T214 claimed 15:58Z, lease until 18:58Z
 - **Week:** 69% used, 49.4M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:24Z, 0 min before this update
+- **Last run:** 16:24Z, 1 min before this update
 - **Keeper:** last ran 16:17Z, next wake 18:40Z
 
 ## Needs attention
@@ -33,6 +33,7 @@ Ci fai
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T165 | businesses: business name, Google and Yelp links and license | MERGE_PENDING | 1 | 47 min | 16:25Z |  |
 | T269 | portals: a business notice's signed link opens sign-in for t | MERGE_PENDING | 2 | 23 min | 16:14Z | merging main into the reviewed head conflicts in app/portals/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T269 | portals: a business notice's signed link opens sign-in for t | resync | 2 | 44 min | 15:46Z |  |
 | T384 | quotes and portals: the homeowner sees an edited quote as up | done | 2 | 18 min | 15:05Z | Ci: failure; E2e: failure; Ally: failure / E2e failed at step: Chromium and its system libraries / E: Failed to fetch ht |
@@ -161,8 +162,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T165 (lease until 2026-11-11T18:37:57Z)
+- nothing
 - lane 3: T214 (lease until 2026-11-11T18:58:29Z)
 
 ## Last usage reading
-- {"task": "T269", "at": "2026-11-11T16:14:59Z", "output_tokens": 21769, "cache_read_input_tokens": 2203093, "input_tokens": 123, "cache_creation_input_tokens": 139831}
+- {"task": "T165", "at": "2026-11-11T16:25:20Z", "input_tokens": 474, "cache_creation_input_tokens": 747436, "output_tokens": 178313, "cache_read_input_tokens": 28381507}
