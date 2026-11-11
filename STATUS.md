@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-11T16:15:00Z by runner 50aab06f647f (actions).
+Updated 2026-11-11T16:15:16Z by runner 50aab06f647f (actions).
 
 **Building: T165 in progress since 15:37Z; 206 of 373 done; week 69% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 206 of 373 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T165 claimed 15:37Z, lease until 18:37Z; lane 3: T214 claimed 15:58Z, lease until 18:58Z; lane 4: T269 claimed 15:51Z, lease until 18:51Z
+- **Lane:** lane 1: T165 claimed 15:37Z, lease until 18:37Z; lane 3: T214 claimed 15:58Z, lease until 18:58Z
 - **Week:** 69% used, 49.4M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:13Z, 1 min before this update
+- **Last run:** 16:13Z, 2 min before this update
 - **Keeper:** last ran 16:12Z, next wake 18:40Z
 
 ## Needs attention
@@ -33,7 +33,8 @@ Ci fai
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T269 | portals: a business notice's signed link opens sign-in for t | resync | 2 | 44 min | 15:46Z | merging main into the reviewed head conflicts in app/portals/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T269 | portals: a business notice's signed link opens sign-in for t | MERGE_PENDING | 2 | 23 min | 16:14Z | merging main into the reviewed head conflicts in app/portals/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T269 | portals: a business notice's signed link opens sign-in for t | resync | 2 | 44 min | 15:46Z |  |
 | T384 | quotes and portals: the homeowner sees an edited quote as up | done | 2 | 18 min | 15:05Z | Ci: failure; E2e: failure; Ally: failure / E2e failed at step: Chromium and its system libraries / E: Failed to fetch ht |
 | T214 | picks (harness): the homeowner's share box at the pick and t | BLOCKED | 2 | 3 min | 15:04Z | PLAN GAP: tests/integration/tests/page_pick.rs:131 and tests/security/tests/page_pick_privacy.rs:224 (both T246's; page_ |
 | T342 | quotes: a quote's contact check also reads the whole field w | done | 1 | 51 min | 14:31Z |  |
@@ -162,7 +163,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T165 (lease until 2026-11-11T18:37:57Z)
 - lane 3: T214 (lease until 2026-11-11T18:58:29Z)
-- lane 4: T269 (lease until 2026-11-11T18:51:12Z)
 
 ## Last usage reading
-- {"task": "T269", "at": "2026-11-11T15:46:33Z", "cache_read_input_tokens": 6211026, "output_tokens": 52812, "cache_creation_input_tokens": 345416, "input_tokens": 232}
+- {"task": "T269", "at": "2026-11-11T16:14:59Z", "output_tokens": 21769, "cache_read_input_tokens": 2203093, "input_tokens": 123, "cache_creation_input_tokens": 139831}
