@@ -28974,7 +28974,7 @@
     "T327",
     "T337"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 2,
    "slug": "late-success-trigger-and-ended-picks",
    "type": "harness",
@@ -28987,8 +28987,8 @@
     2958,
     2959
    ],
-   "reason": "plan gap reported: PLAN GAP: tests/integration/tests/confirm_and_pay.rs:393-413 (td_fee_25_an_ended_pick_is_never_cleared, TD-FEE-25, T189 DONE; also owned by T287, T337, T352; not T332) asserts paid_release on an ended pick with a verified success stores nothing (evidence empty line ~408, attempt stays \"processing\" line ~413). T332 goal part (2) and D-2290 require paid_release to store the success and evidence and call late_success, then answer PickEnded. No implementation passes both. D-2290 and D-2970 do not name confirm_and_pay.rs. Smallest plan change: T332 may also change only that test's two \"stores nothi; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T332 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: tests/integration/tests/confirm_and_pay.rs:393-413 (td_fee_25_an_ended_pick_is_never_cleared, TD-FEE-25, T189 DONE; also owned by T287, T337, T352; not T332) asserts paid_release on an ended pick with a verified success stores nothing (evidence empty line ~408, attempt stays \"processing\" line ~413). T332 goal part (2) and D-2290 require paid_release to store the success and evidence and call late_success, then answer PickEnded. No implementation passes both. D-2290 and D-2970 do not name confirm_and_pay.rs. Smallest plan change: T332 may also change only that test's two \"stores nothing\" assertions (evidence row exists, attempt succeeded, one payments.late_success_refund task and one payments.late_success alert; Err(PickEnded) stays) and its doc comment; also the late_success.rs:197-200 comment \"paid_release stores no success\". Keep T352 ordered after T332. Reviewer confirmed.",
+   "reason": null,
+   "last_failure": "PLAN GAP: tests/integration/tests/confirm_and_pay.rs:393-413 (td_fee_25_an_ended_pick_is_never_cleared, TD-FEE-25, T189 DONE; also owned by T287, T337, T352; not T332) asserts paid_release on an ended pick with a verified success stores nothing (evidence empty line ~408, attempt stays \"processing\" line ~413). T332 goal part (2) and D-2290 require paid_release to store the success and evidence and call late_success, then answer PickEnded. No implementation passes both. D-2290 and D-2970 do not name confirm_and_pay.rs. Smallest plan change: T332 may also change only that test's two \"stores nothing\" assertions (evidence row exists, attempt succeeded, one payments.late_success_refund task and one payments.late_success alert; Err(PickEnded) stays) and its doc comment; also the late_success.rs:197-200 comment \"paid_release stores no success\". Keep T352 ordered after T332. Reviewer confirmed.\nre-queued after plan fix D-3007: D-3007 lets T332 change the two 'stores nothing' assertions in td_fee_25_an_ended_pick_is_never_cleared so an ended pick with a verified success stores it and its evidence (D-2290)",
    "history": [
     {
      "attempt": 1,
@@ -29030,6 +29030,19 @@
      "plan_head": "a70f6e601017c41a759081af4d036079782b2ffe",
      "plan_then": "42e10d3c606462c441c79f49b110c8682206aece5e627e6f4b025b9e4fb542b2",
      "plan_now": "da22b880b96fa5a1cb5c1ade056ff1f05bd3f47f9047caec9cdebd1bfc78ac13"
+    },
+    {
+     "at": "2026-11-11T13:14:58Z",
+     "reason": "D-3007 lets T332 change the two 'stores nothing' assertions in td_fee_25_an_ended_pick_is_never_cleared so an ended pick with a verified success stores it and its evidence (D-2290)",
+     "by": "manual-5d7c3bf02181",
+     "was": "plan gap reported: PLAN GAP: tests/integration/tests/confirm_and_pay.rs:393-413 (td_fee_25_an_ended_pick_is_never_cleared, TD-FEE-25, T189 DONE; also owned by T287, T337, T352; not T332) asserts paid_release on an ended pick with a verified success stores nothing (evidence empty line ~408, attempt stays \"processing\" line ~413). T332 goal part (2) and D-2290 require paid_release to store the success and evidence and call late_success, then answer PickEnded. No implementation passes both. D-2290 and D-2970 do not name confirm_and_pay.rs. Smallest plan change: T332 may also change only that test's two \"stores nothi; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T332 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 2,
+     "plan_fix": "D-3007",
+     "plan_since": "2026-11-11T12:37:45Z",
+     "plan_base": "a70f6e601017c41a759081af4d036079782b2ffe",
+     "plan_head": "6cc6ce4c5fb34f5c27bd557aad6fbdbdc34e9e82",
+     "plan_then": "da22b880b96fa5a1cb5c1ade056ff1f05bd3f47f9047caec9cdebd1bfc78ac13",
+     "plan_now": "85600f903aa9203bdc200f0d885dd6d24c5392468a374c581c1d73e891e09a1d"
     }
    ]
   },
@@ -32621,7 +32634,7 @@
    }
   }
  },
- "updated_at": "2026-11-11T13:14:47Z",
+ "updated_at": "2026-11-11T13:15:12Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -32719,8 +32732,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "3c88e3069c4ae9343e482ca28fd201df3273f9be",
- "starter": "actions",
+ "runner_sha": "6cc6ce4c5fb34f5c27bd557aad6fbdbdc34e9e82",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "68d6b3ac2530c64a79450e73af0e09485ac05c54",
