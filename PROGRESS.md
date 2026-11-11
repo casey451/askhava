@@ -2080,3 +2080,4 @@
 - 2026-11-11T15:02:32Z runner 9e8ac4355245 (actions): {"T269": "QUEUED -> IN_PROGRESS"}; T269 estimated 2.9M tokens (calibrated); five-hour window has 21.7M left, week 50.6M after 7.4M still running in another lane (session_reading 2026-11-11T14:40:15Z (week)); claimed
 - 2026-11-11T15:02:43Z runner 9e8ac4355245 (actions): {}
 - 2026-11-11T15:02:56Z runner ee5cdf2ecfbe (manual): {"T333": "BLOCKED -> QUEUED"}
+- 2026-11-11T15:04:09Z runner 18c60bd6ee5c (actions): {"T214": "IN_PROGRESS -> BLOCKED"}
