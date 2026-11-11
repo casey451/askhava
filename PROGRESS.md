@@ -2013,3 +2013,4 @@
 - 2026-11-11T11:55:36Z runner 285525e3134a (actions): {}
 - 2026-11-11T11:58:33Z runner 285525e3134a (actions): {"T332": "QUEUED -> IN_PROGRESS"}; T332 estimated 3.2M tokens (calibrated); five-hour window has 14.6M left, week 60.5M after 3.5M still running in another lane (session_reading 2026-11-11T11:55:20Z (week)); claimed
 - 2026-11-11T12:02:42Z runner 755177170132 (actions): {}
+- 2026-11-11T12:02:57Z runner 755177170132 (actions): {"T164": "IN_PROGRESS -> MERGE_PENDING"}

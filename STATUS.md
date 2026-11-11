@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-11T12:02:42Z by runner 755177170132 (actions).
+Updated 2026-11-11T12:02:57Z by runner 755177170132 (actions).
 
 **Building: T332 in progress since 11:58Z; 202 of 372 done; week 65% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 202 of 372 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T332 claimed 11:58Z, lease until 14:58Z; lane 2: T164 claimed 11:43Z, lease until 14:43Z
+- **Lane:** lane 1: T332 claimed 11:58Z, lease until 14:58Z
 - **Week:** 65% used, 60.5M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 11:58Z, 4 min before this update
 - **Keeper:** last ran 11:55Z, next wake 14:45Z
@@ -17,8 +17,9 @@ Updated 2026-11-11T12:02:42Z by runner 755177170132 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T164 | quotes: one quote format per category, screened notes, and e | MERGE_PENDING | 3 | 19 min | 12:02Z | merging main into the reviewed head conflicts in app/quotes/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T331 | payments (harness): a payment success with no readable pick  | MERGE_PENDING | 1 | 49 min | 11:35Z |  |
-| T164 | quotes: one quote format per category, screened notes, and e | resync | 3 | 12 min | 11:31Z | merging main into the reviewed head conflicts in app/quotes/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T164 | quotes: one quote format per category, screened notes, and e | resync | 3 | 12 min | 11:31Z |  |
 | T164 | quotes: one quote format per category, screened notes, and e | check_failed | 2 | 39 min | 11:00Z |  |
 | T278 | quotes, intake and picks: the check-in, feedback and unreach | done | 1 | 29 min | 10:56Z |  |
 | T316 | businesses: one read of each business's public name for the  | BLOCKED | 1 | 2 min | 10:06Z | PLAN GAP: app/businesses/src/holding.rs:8 and migrations/0050_licensing_imports.sql:22-55: nothing links a business to a |
@@ -130,7 +131,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T332 (lease until 2026-11-11T14:58:29Z)
-- lane 2: T164 (lease until 2026-11-11T14:43:33Z)
 
 ## Last usage reading
-- {"task": "T331", "at": "2026-11-11T11:35:23Z", "input_tokens": 241, "output_tokens": 95918, "cache_creation_input_tokens": 431851, "cache_read_input_tokens": 9219060}
+- {"task": "T164", "at": "2026-11-11T12:02:41Z", "cache_creation_input_tokens": 57921, "input_tokens": 65, "cache_read_input_tokens": 775827, "output_tokens": 10838}
