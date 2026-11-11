@@ -69,8 +69,7 @@ use crate::models::{
 use crate::refund_state::{PickRefundState, refund_state};
 use crate::refund_stripe::{Refund, RefundAmount, RefundState, RefundStripe};
 use crate::refunds::{
-    REFUND_FAILED_ALERT, REFUND_MISMATCH_ALERT, REFUND_UNCONFIRMED_ALERT, last_refund,
-    request_refund,
+    REFUND_FAILED_ALERT, REFUND_MISMATCH_ALERT, REFUND_UNCONFIRMED_ALERT, request_refund,
 };
 use crate::service::CONFIRM_FEE_ACTION;
 
@@ -612,7 +611,7 @@ async fn first_seen(
 /// `Unchanged` (a try in flight) is [`OpenWhy::RefundPending`], as is a `Failed` answer whose
 /// refund row Stripe holds `pending` ([`refund_state`] `InFlight`, D-2364), and `Blocked`
 /// (disputed) owes nothing more (D-1872). T066's `Refunded` is held at the amount T066 booked (its
-/// latest refund entry, Stripe's own `usd` amount since T333), not the charge (D-3067).
+/// latest refund entry via [`booked_refund`], Stripe's own `usd` amount since T333), not the charge (D-3067).
 async fn refund(
     pool: &PgPool,
     stripe: &impl ReconcileStripe,
@@ -628,7 +627,7 @@ async fn refund(
             Ok(RefundOutcome::Refunded(_)) => {
                 report.refunded += 1;
                 let mut conn = db(pool.acquire().await)?;
-                let booked = last_refund(&mut conn, facts.pick).await?;
+                let booked = booked_refund(&mut conn, facts.pick).await?;
                 return Ok(Sent::Refunded(booked.unwrap_or(attempt.0.amount_cents)));
             }
             Ok(RefundOutcome::Failed) => {
@@ -641,6 +640,26 @@ async fn refund(
         }
     }
     own_refund(pool, stripe, id_secret, attempt, (pick, why), report).await
+}
+
+/// D-3067: the amount of the pick's latest `refund` entry (the one T066 just booked at Stripe's own
+/// `usd` amount), read the same way as T066's own lookup for a reversal (D-2303); `None` when
+/// there is none.
+async fn booked_refund(
+    conn: &mut PgConnection,
+    pick: Uuid,
+) -> Result<Option<i64>, MoneyEventError> {
+    db(sqlx::query_scalar!(
+        "SELECT amount_cents FROM payments.ledger_entry
+          WHERE kind = 'refund'
+            AND (idempotency_key = 'refund.' || $1::uuid::text
+                 OR idempotency_key LIKE 'refund.' || $1::uuid::text || '.%')
+          ORDER BY seq DESC
+          LIMIT 1",
+        pick,
+    )
+    .fetch_optional(conn)
+    .await)
 }
 
 /// D-2364: T066 answers `Failed` both for a refused refund and for one Stripe holds `pending`
