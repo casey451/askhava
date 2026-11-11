@@ -487,7 +487,8 @@ def reusable_smoke(state: State, head: str, now: datetime) -> Task | None:
     a head with any red of its own is always smoked afresh), and the green run it stands on (`reused`, else its own `at`) is at most
     SMOKE_REUSE_MAX_AGE old: the same commit gives the same verdict, but the job's image and services drift. The
     caller adds what this state cannot tell (the nightly and `main`'s own checks on the head, `cycle._start_smoke`);
-    clearing a red `main` never reuses (docs/governance.md 5.3)."""
+    clearing a red `main` never reuses (docs/governance.md 5.3). A last run that is itself an ancestry reuse (it names
+    a `base`, D-3058) is not reused here: `ancestry_smoke` judges the commits between again."""
     if not head or state.get("main_red"):
         return None
     if any(isinstance(r, dict) and r.get("sha") == head for r in state.get("main_red_history") or []):
@@ -495,7 +496,7 @@ def reusable_smoke(state: State, head: str, now: datetime) -> Task | None:
     if any(isinstance(n, dict) and n.get("sha") == head for n in state.get("smoke_env_problems") or []):
         return None
     runs = [r for r in state.get("smoke_runs") or [] if isinstance(r, dict) and r.get("sha") == head]
-    if not runs or runs[-1].get("ok") is not True or runs[-1].get("timed_out"):
+    if not runs or runs[-1].get("ok") is not True or runs[-1].get("timed_out") or runs[-1].get("base"):
         return None
     if any(r.get("ok") is not True and not r.get("timed_out") for r in runs):
         return None
@@ -505,3 +506,60 @@ def reusable_smoke(state: State, head: str, now: datetime) -> Task | None:
         return None
     last: Task = runs[-1]
     return last if timedelta(0) <= now - since <= SMOKE_REUSE_MAX_AGE else None
+
+
+def done_merges(state: State) -> set[str]:
+    """The squash SHAs on `main` the runner recorded for DONE tasks (`merged_sha`, written when `verify.check_done`
+    found Ci, Twin and Ally green on a head whose tree equals the squash commit): never FIX-MAIN's revert and never an
+    empty hand-in's (its `merged_sha` is another task's merge, D-551). What an ancestry reuse may step over (D-3058)."""
+    return {
+        str(t["merged_sha"]) for t in state.get("tasks", [])
+        if t.get("status") == DONE and t.get("merged_sha") and t.get("id") != FIX_MAIN and not t.get("empty_handin")
+    }
+
+
+def _real_green(run: Task) -> bool:
+    """A finished green run the runner smoked itself: not a reuse of any kind (`reused`, `base`), not timed out."""
+    return run.get("ok") is True and not run.get("timed_out") and not run.get("reused") and not run.get("base")
+
+
+def _clean_commit(state: State, sha: str) -> bool:
+    """Nothing in the state doubts `sha` (D-3058): it was never a red `main`'s SHA, no D-498 strike names it and no
+    run recorded on it is red or timed out."""
+    if any(isinstance(r, dict) and r.get("sha") == sha for r in state.get("main_red_history") or []):
+        return False
+    if any(isinstance(n, dict) and n.get("sha") == sha for n in state.get("smoke_env_problems") or []):
+        return False
+    runs = [r for r in state.get("smoke_runs") or [] if isinstance(r, dict) and r.get("sha") == sha]
+    return all(r.get("ok") is True and not r.get("timed_out") for r in runs)
+
+
+def ancestry_smoke(state: State, chain: list[str], merged: set[str], now: datetime, limit: int) -> tuple[str, Task] | None:
+    """The base of an ancestry reuse (D-3058): (the ancestor's SHA, its real green run), or None. `chain` is `main`'s
+    first-parent history from its head (`chain[0]`), `merged` the DONE tasks' squash SHAs (`done_merges`), `limit`
+    kit/runner.json "smoke_ancestry_reuse" (0 turns it off). The base is the nearest ancestor at most `limit` commits
+    back with a real green run (`_real_green`: never itself a reuse); it must pass `reusable_smoke` and its real run be
+    at most SMOKE_REUSE_MAX_AGE old. Every commit after it, the head included, must be a DONE task's squash commit with
+    nothing doubting it (`_clean_commit`) and no real run of its own (a head with one is `reusable_smoke`'s alone).
+    Never while `main` is red. The caller adds the nightly and `main`'s checks on those commits (`cycle._start_smoke`)."""
+    if limit < 1 or not chain or state.get("main_red"):
+        return None
+    runs = [r for r in state.get("smoke_runs") or [] if isinstance(r, dict)]
+    for distance, sha in enumerate(chain[: limit + 1]):
+        real = [r for r in runs if r.get("sha") == sha and _real_green(r)]
+        if distance and real:
+            return _ancestry_base(state, sha, real[-1], now)
+        if real or sha not in merged or not _clean_commit(state, sha):
+            return None
+    return None
+
+
+def _ancestry_base(state: State, sha: str, real: Task, now: datetime) -> tuple[str, Task] | None:
+    """(sha, real) when `sha` passes `reusable_smoke` and its real green run is at most SMOKE_REUSE_MAX_AGE old."""
+    if reusable_smoke(state, sha, now) is None:
+        return None
+    try:
+        since = parse(str(real.get("at") or ""))
+    except ValueError:
+        return None
+    return (sha, real) if timedelta(0) <= now - since <= SMOKE_REUSE_MAX_AGE else None
