@@ -11,7 +11,9 @@
 //! counts and the attestation, count a wrong try once per (CallSid, try) and store the call's
 //! start once per CallSid when they answer with the dial. The reply is `calls::api` TwiML: the
 //! PIN prompt, the read-back (A attestation only), the dial or a hang-up. It answers only the
-//! calling leg. No line ID, phone or PIN is logged or put in a URL (PRIV-016).
+//! calling leg. No line ID, phone or PIN is logged or put in a URL (PRIV-016): the confirm URL
+//! carries only the try number, and `voice_confirm` connects only the line stored with that try
+//! when it was read back, while still open and still the caller's business's (CALL-005, D-2201).
 
 use std::sync::Arc;
 
