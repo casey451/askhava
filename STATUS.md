@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T18:35:45Z by runner d413b0e8998f (actions).
+Updated 2026-11-11T18:36:05Z by runner 60a8d50b1c56 (actions).
 
 **Building: T228 in progress since 17:51Z; 211 of 373 done; week 71% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,12 @@ Updated 2026-11-11T18:35:45Z by runner d413b0e8998f (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T228 claimed 17:51Z, lease until 20:51Z; lane 2: T332 claimed 18:28Z, lease until 21:28Z; lane 4: T316 claimed 18:35Z, lease until 21:35Z
 - **Week:** 71% used, 45.7M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:30Z, 5 min before this update
+- **Last run:** 18:35Z, 0 min before this update
 - **Keeper:** last ran 18:12Z, next wake 20:54Z
 
 ## Needs attention
-- Strict plan check red: 27 problem(s) on tasks still to run (+55 on DONE tasks); first: T340: stored context_pct 35% but it measures 39%; regenerate
+- PLAN GAP T280 (since 2026-11-11T18:35:57Z, no attempt used; a plan change fixes it): T280: dependency T272 is DONE but its owned file migrations/0167_portals_code_tries.sql is not on main; T280: dependency T272 is DONE but its owned file tests/security/tests/signin_admission.rs is not on main
+- Strict plan check red: 27 problem(s) on tasks still to run (+54 on DONE tasks); first: T340: stored context_pct 35% but it measures 39%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |

@@ -27205,7 +27205,14 @@
    "attempts": 0,
    "slug": "business-signin-served",
    "type": "build",
-   "stage": "4"
+   "stage": "4",
+   "plan_gap": {
+    "at": "2026-11-11T18:35:57Z",
+    "problems": [
+     "T280: dependency T272 is DONE but its owned file migrations/0167_portals_code_tries.sql is not on main",
+     "T280: dependency T272 is DONE but its owned file tests/security/tests/signin_admission.rs is not on main"
+    ]
+   }
   },
   {
    "id": "T281",
@@ -34153,7 +34160,7 @@
    }
   }
  },
- "updated_at": "2026-11-11T18:35:45Z",
+ "updated_at": "2026-11-11T18:36:05Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -34251,7 +34258,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "d413b0e8998f2917b5f91fcdb522caa75dc57026",
+ "runner_sha": "60a8d50b1c568fba03f66e143749604ed7533432",
  "starter": "actions",
  "smoke_runs": [
   {
