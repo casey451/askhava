@@ -2178,3 +2178,4 @@
 - 2026-11-11T18:17:02Z runner 60a8d50b1c56 (manual): {}
 - 2026-11-11T18:21:01Z runner 60a8d50b1c56 (actions): {"T272": "MERGE_PENDING -> DONE", "T332": "MERGE_PENDING -> QUEUED"}
 - 2026-11-11T18:28:21Z runner 60a8d50b1c56 (actions): {}
+- 2026-11-11T18:30:23Z runner 60a8d50b1c56 (actions): {"T332": "QUEUED -> IN_PROGRESS"}; T332 estimated 3.4M tokens (calibrated); five-hour window has 8.7M left, week 49.1M after 2.9M still running in another lane (session_reading 2026-11-11T18:12:03Z (week)); claimed
