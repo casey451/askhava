@@ -303,6 +303,30 @@ pub async fn open_card_jobs(
     Ok(open)
 }
 
+/// JOB-015 (T278, D-1842): the start of `business`'s quote's earliest visit date on `job`, in
+/// Arizona time, for the day-3 check-in, which counts from the later of the release and this
+/// date; `None` when the quote gave no date or there is no such quote.
+///
+/// # Errors
+///
+/// [`QuotesError::Database`].
+pub async fn earliest_visit(
+    db: &mut sqlx::PgConnection,
+    (job, business): (Uuid, Uuid),
+) -> Result<Option<jiff::Timestamp>, QuotesError> {
+    let visit = sqlx::query_scalar!(
+        "SELECT earliest_visit::text FROM quotes.quote WHERE job_id = $1 AND business_id = $2",
+        job,
+        business
+    )
+    .fetch_optional(db)
+    .await
+    .map_err(|_| QuotesError::Database)?
+    .flatten();
+    let day = visit.and_then(|d| d.parse::<jiff::civil::Date>().ok());
+    Ok(day.and_then(|d| d.in_tz("America/Phoenix").ok().map(|z| z.timestamp())))
+}
+
 /// The pure matching rules, for the rules bridge and other crates' property tests.
 pub mod rules {
     pub use crate::rules::{card_for, card_under, coverage, match_job, match_job_held, recipients};
