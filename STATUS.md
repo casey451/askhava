@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-11T14:31:22Z by runner c0b0b3290a92 (actions).
+Updated 2026-11-11T14:31:38Z by runner c0b0b3290a92 (actions).
 
-**Building: T342 in progress since 13:39Z; 204 of 372 done; week 68% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 14:31Z; 204 of 372 done; week 68% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 204 of 372 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T342 claimed 13:39Z, lease until 16:39Z
+- **Lane:** idle since 14:31Z (no task in progress)
 - **Week:** 68% used, 54.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 14:29Z, 2 min before this update
 - **Keeper:** last ran 14:29Z, next wake 16:42Z
@@ -19,6 +19,7 @@ Updated 2026-11-11T14:31:22Z by runner c0b0b3290a92 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T342 | quotes: a quote's contact check also reads the whole field w | MERGE_PENDING | 1 | 51 min | 14:31Z |  |
 | T332 | payments (harness): a late success has its own refund trigge | MERGE_PENDING | 3 | 48 min | 14:24Z | PLAN GAP: tests/integration/tests/confirm_and_pay.rs:393-413 (td_fee_25_an_ended_pick_is_never_cleared, TD-FEE-25, T189  |
 | T269 | portals: a business notice's signed link opens sign-in for t | MERGE_PENDING | 1 | 20 min | 14:19Z |  |
 | T384 | quotes and portals: the homeowner sees an edited quote as up | check_failed | 1 | 40 min | 13:40Z | Ci: failure; E2e: failure; Ally: failure / E2e failed at step: Chromium and its system libraries / E: Failed to fetch ht |
@@ -140,7 +141,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T342 (lease until 2026-11-11T16:39:59Z)
 
 ## Last usage reading
-- {"task": "T332", "at": "2026-11-11T14:24:24Z", "input_tokens": 360, "cache_creation_input_tokens": 519233, "cache_read_input_tokens": 14207599, "output_tokens": 132519}
+- {"task": "T342", "at": "2026-11-11T14:31:21Z", "cache_creation_input_tokens": 528090, "input_tokens": 351, "cache_read_input_tokens": 10312420, "output_tokens": 139747}
