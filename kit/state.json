@@ -29893,7 +29893,7 @@
     "T089",
     "T262"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "inbound-text-limit-and-list-names",
    "type": "harness",
@@ -29907,8 +29907,8 @@
     3087,
     3088
    ],
-   "reason": "plan gap reported: PLAN GAP: tests/integration/tests/suspension_mode.rs:69-78 (owned by T279) and app/server/tests/voice_confirm_line.rs:95-104 (owned by T311) also build Webhooks by struct literal with names: Vec::new(); T317 owns neither, and goals (3) and (4) (remove names, add Environment) stop both compiling. Reviewer confirmed: all-public fields, no Default or constructor. Smallest fix: add both files to T317's owned files, say six done tests in goal (5) with the same construction-only rule, and raise the file budget from 7 to 9.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T317 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: tests/integration/tests/suspension_mode.rs:69-78 (owned by T279) and app/server/tests/voice_confirm_line.rs:95-104 (owned by T311) also build Webhooks by struct literal with names: Vec::new(); T317 owns neither, and goals (3) and (4) (remove names, add Environment) stop both compiling. Reviewer confirmed: all-public fields, no Default or constructor. Smallest fix: add both files to T317's owned files, say six done tests in goal (5) with the same construction-only rule, and raise the file budget from 7 to 9.",
+   "reason": null,
+   "last_failure": "PLAN GAP: tests/integration/tests/suspension_mode.rs:69-78 (owned by T279) and app/server/tests/voice_confirm_line.rs:95-104 (owned by T311) also build Webhooks by struct literal with names: Vec::new(); T317 owns neither, and goals (3) and (4) (remove names, add Environment) stop both compiling. Reviewer confirmed: all-public fields, no Default or constructor. Smallest fix: add both files to T317's owned files, say six done tests in goal (5) with the same construction-only rule, and raise the file budget from 7 to 9.\nre-queued after plan fix D-3083: Plan fixed by D-3083 (#524): T317 owns the two extra Webhooks-by-name tests and core rate_limit.rs; admit_new_request takes impl Acquire",
    "history": [
     {
      "attempt": 1,
@@ -29922,6 +29922,21 @@
      "started_at": "2026-11-11T22:29:38Z",
      "ended_at": "2026-11-11T22:34:34Z",
      "result": "BLOCKED"
+    }
+   ],
+   "requeues": [
+    {
+     "at": "2026-11-11T23:02:53Z",
+     "reason": "Plan fixed by D-3083 (#524): T317 owns the two extra Webhooks-by-name tests and core rate_limit.rs; admit_new_request takes impl Acquire",
+     "by": "manual-51b3a3af232b",
+     "was": "plan gap reported: PLAN GAP: tests/integration/tests/suspension_mode.rs:69-78 (owned by T279) and app/server/tests/voice_confirm_line.rs:95-104 (owned by T311) also build Webhooks by struct literal with names: Vec::new(); T317 owns neither, and goals (3) and (4) (remove names, add Environment) stop both compiling. Reviewer confirmed: all-public fields, no Default or constructor. Smallest fix: add both files to T317's owned files, say six done tests in goal (5) with the same construction-only rule, and raise the file budget from 7 to 9.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T317 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 1,
+     "plan_fix": "D-3083",
+     "plan_since": "2026-11-11T22:29:38Z",
+     "plan_base": "0137f98c1451ea9196534502adb25cbf8820360b",
+     "plan_head": "53361d7bd2797a688fd8a79ec891db15a06a0898",
+     "plan_then": "f1032e2f654c0b376f1bfce37136f06e8e66376d450e902014f4dce43eba8ebb",
+     "plan_now": "10b53d2b93ef0ac2dce3c086306ccaf9c360a4aacb54388343479a102521b076"
     }
    ]
   },
@@ -34971,7 +34986,7 @@
    }
   }
  },
- "updated_at": "2026-11-11T22:49:08Z",
+ "updated_at": "2026-11-11T23:02:53Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -35069,8 +35084,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "c816fbe4f270f89044771934ce621dfa1e1fc3ad",
- "starter": "actions",
+ "runner_sha": "53361d7bd2797a688fd8a79ec891db15a06a0898",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "d413b0e8998f2917b5f91fcdb522caa75dc57026",
