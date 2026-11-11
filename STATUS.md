@@ -1,25 +1,25 @@
 # Ask Hava build status
 
-Updated 2026-11-11T10:38:37Z by runner 9d873d469633 (manual).
+Updated 2026-11-11T10:45:48Z by runner ed6a569f223d (actions).
 
-**Building: T164 in progress since 10:21Z; 200 of 371 done; week 63% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T164 in progress since 10:21Z; 201 of 371 done; week 63% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 200 of 371 build tasks (owner gates not counted)
+- **Tasks done:** 201 of 371 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T164 claimed 10:21Z, lease until 13:21Z; lane 2: T278 claimed 10:27Z, lease until 13:27Z
 - **Week:** 63% used, 64.5M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:27Z, 11 min before this update
+- **Last run:** 10:38Z, 7 min before this update
 - **Keeper:** last ran 10:08Z, next wake 10:28Z
 
 ## Needs attention
-- Strict plan check red: 15 problem(s) on tasks still to run (+22 on DONE tasks); first: T255: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 15 problem(s) on tasks still to run (+23 on DONE tasks); first: T255: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T316 | businesses: one read of each business's public name for the  | BLOCKED | 1 | 2 min | 10:06Z | PLAN GAP: app/businesses/src/holding.rs:8 and migrations/0050_licensing_imports.sql:22-55: nothing links a business to a |
 | T337 | payments (harness): a $0 release proof is bound to the pick' | done | 5 | 23 min | 09:49Z | PLAN GAP: app/server/tests/release_recovery.rs:572-576 (td_pick_50_a_zero_fee_releases_free_and_a_cancelled_pick_nothing |
-| T327 | harness: every task kind the app queues has a handler in the | MERGE_PENDING | 1 | 48 min | 09:38Z |  |
+| T327 | harness: every task kind the app queues has a handler in the | done | 1 | 48 min | 09:38Z |  |
 | T164 | quotes: one quote format per category, screened notes, and e | BLOCKED | 1 | 14 min | 09:03Z | PLAN GAP: app/portals/src/tests/prop_arrival_order.rs:22 (T052) and app/quotes/src/notify.rs:179 / app/quotes/src/models |
 | T295 | payments, ai, intake and picks take the brand from the brand | done | 4 | 33 min | 08:57Z | T295 blocked at step 3: tests/brand_literal_baseline.json still lists files T295 does not own: app/messaging/templates/e |
 | T212 | intake: photo asks with on-server checks and preview, inspir | done | 2 | 19 min | 08:12Z | Ci: failure; Coverage: failure; Checks: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned |
@@ -81,8 +81,8 @@ Updated 2026-11-11T10:38:37Z by runner 9d873d469633 (manual).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 208 of 733 (28.4%) · partial 343 · unstarted 182
-**Tasks merged (throughput only):** 200 of 371
+**Requirements verified:** 208 of 733 (28.4%) · partial 344 · unstarted 181
+**Tasks merged (throughput only):** 201 of 371
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -97,7 +97,7 @@ Updated 2026-11-11T10:38:37Z by runner 9d873d469633 (manual).
 | licensing | 24 | 24 | 0 | 48 |
 | lifecycle | 18 | 10 | 0 | 28 |
 | messaging | 18 | 24 | 3 | 45 |
-| ops-recovery | 2 | 5 | 47 | 54 |
+| ops-recovery | 2 | 6 | 46 | 54 |
 | privacy | 6 | 23 | 2 | 31 |
 | quiet-hours | 4 | 5 | 0 | 9 |
 | quotes-pick | 25 | 24 | 7 | 56 |
@@ -117,7 +117,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 80 of 163 done
+- stage 4: 81 of 163 done
 - stage 5: 0 of 58 done
 - stage 6: 0 of 34 done
 - stage 7: 0 of 2 done
