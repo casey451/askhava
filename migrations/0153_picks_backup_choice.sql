@@ -7,10 +7,11 @@
 -- `pick_id`, and only the pick's latest bound row counts (D-2661). picks.backup_move: once per
 -- ended pick, whether it moved to the backup and the new pick, so a rerun moves nothing twice.
 -- Only quote numbers, hashes and IDs, no contact value (PRIV-002). Both are append-only for
--- askhava_app; both are new and empty.
+-- askhava_app; both are new and empty. `id` rises in insert order, so of two rows at one `set_at`
+-- the later insert counts.
 
 CREATE TABLE picks.backup_choice (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   job_id uuid NOT NULL,
   for_quote integer NOT NULL CHECK (for_quote > 0),
   backup_quote integer CHECK (backup_quote > 0 AND backup_quote <> for_quote),
