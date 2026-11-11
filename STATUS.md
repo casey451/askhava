@@ -1,17 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-11T10:04:18Z by runner 6b803a362f31 (actions).
+Updated 2026-11-11T10:06:24Z by runner 722416045b2b (actions).
 
-**Building: T316 in progress since 10:04Z; 199 of 371 done; week 63% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 10:06Z; 199 of 371 done; week 63% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 199 of 371 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T316 claimed 10:04Z, lease until 13:04Z
+- **Lane:** idle since 10:06Z (no task in progress)
 - **Week:** 63% used, 68.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:03Z, 0 min before this update
+- **Last run:** 10:04Z, 1 min before this update
 - **Keeper:** last ran 10:03Z, next wake 10:23Z
 
 ## Needs attention
+- BLOCKED T316: plan gap reported: PLAN GAP: app/businesses/src/holding.rs:8 and migrations/0050_licensing_imports.sql:22-55: nothing links a business to a stored record that holds a name. businesses.business and businesses.signup hold no name or license number; licensing.agency_record has no names (ROC import header is license_number,class,status,issued_on); licensing.city_license_entry has names but no business_id and city_standing does not store the match; licensing::api returns no name for a business ID. D-2206 assumed a link that D-2741 documents does not exist, and T316's no-storage rule forbids adding one. Reviewer confi; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T316 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T164 (since 2026-11-11T10:03:50Z, no attempt used; a plan change fixes it): T164: dependency T293 is DONE but its owned file tests/brand_literal_baseline.json is not on main; T164: dependency T294 is DONE but its owned file tests/brand_literal_baseline.json is not on main
 - PLAN GAP T269 (since 2026-11-11T09:25:53Z, no attempt used; a plan change fixes it): T269: dependency T294 is DONE but its owned file tests/brand_literal_baseline.json is not on main; T269: dependency T291 is DONE but its owned file tests/brand_literal_baseline.json is not on main
 - PLAN GAP T278 (since 2026-11-11T09:25:53Z, no attempt used; a plan change fixes it): T278: dependency T293 is DONE but its owned file tests/brand_literal_baseline.json is not on main; T278: dependency T295 is DONE but its owned file tests/brand_literal_baseline.json is not on main
@@ -24,6 +25,7 @@ Updated 2026-11-11T10:04:18Z by runner 6b803a362f31 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T316 | businesses: one read of each business's public name for the  | BLOCKED | 1 | 2 min | 10:06Z | PLAN GAP: app/businesses/src/holding.rs:8 and migrations/0050_licensing_imports.sql:22-55: nothing links a business to a |
 | T337 | payments (harness): a $0 release proof is bound to the pick' | MERGE_PENDING | 5 | 23 min | 09:49Z | PLAN GAP: app/server/tests/release_recovery.rs:572-576 (td_pick_50_a_zero_fee_releases_free_and_a_cancelled_pick_nothing |
 | T327 | harness: every task kind the app queues has a handler in the | MERGE_PENDING | 1 | 48 min | 09:38Z |  |
 | T164 | quotes: one quote format per category, screened notes, and e | BLOCKED | 1 | 14 min | 09:03Z | PLAN GAP: app/portals/src/tests/prop_arrival_order.rs:22 (T052) and app/quotes/src/notify.rs:179 / app/quotes/src/models |
@@ -131,7 +133,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T316 (lease until 2026-11-11T13:04:04Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T337", "at": "2026-11-11T09:49:36Z", "cache_creation_input_tokens": 241756, "cache_read_input_tokens": 6514201, "input_tokens": 180, "output_tokens": 57599}
+- {"task": "T316", "at": "2026-11-11T10:06:23Z", "output_tokens": 16507, "cache_creation_input_tokens": 145354, "input_tokens": 100, "cache_read_input_tokens": 1713839}

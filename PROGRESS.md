@@ -1973,3 +1973,4 @@
 - 2026-11-11T10:03:16Z runner 6b803a362f31 (actions): {}
 - 2026-11-11T10:03:57Z runner 6b803a362f31 (actions): {}
 - 2026-11-11T10:04:18Z runner 6b803a362f31 (actions): {"T316": "QUEUED -> IN_PROGRESS"}; T316 estimated 3.0M tokens (calibrated); five-hour window has 28.1M left, week 68.0M (session_reading 2026-11-11T10:02:58Z (week)); claimed
+- 2026-11-11T10:06:24Z runner 722416045b2b (actions): {"T316": "IN_PROGRESS -> BLOCKED"}
