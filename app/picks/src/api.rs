@@ -48,6 +48,11 @@
 //! by email to a [`ConversationEmail`] when texting is off (PICK-029); [`opted_out_yes`] takes an
 //! opted-out homeowner's "<number> YES" with no text back (PICK-030).
 //!
+//! T157: [`choose_backup`] stores the homeowner's backup on the pick review step; [`backup_choice`]
+//! moves an ended pick to it at once ([`Backup`], [`backup_target`]), and [`lapse`] and
+//! [`refused_at_confirm`] call it on a lapse and a refused Confirm; [`backup_text`] is her text
+//! (PICK-020, PICK-046, PICK-047, D-400).
+//!
 //! T191: [`decide_at_96_hours`] refunds through `payments` and closes the job (FEE-022, JOB-027);
 //! [`missed_call_text`] and [`queue_reminders`] send TXT-030 and TXT-026; [`no_call_at_72_hours`]
 //! returns a call-contact job (JOB-013); [`dispute_auto_submit`] (FEE-050) and [`fraud_warning`]
@@ -60,20 +65,22 @@ pub use crate::aftermath::{
     LossSettings, compare, live_pick_reply, loss_template, lost_notices, no_longer_active,
     refused_after_confirm,
 };
+pub use crate::backup_choice::{Backup, backup_choice, backup_target, backup_text, choose_backup};
 pub use crate::confirm::{
     BusinessWord, ConfirmReply, ConfirmSettings, EXPIRED_TEMPLATE, FEE_REPLY_TEMPLATE, FeeBasis,
     LicenseAtPick, PICK_NOTICE_EMERGENCY_TEMPLATE, PICK_NOTICE_TEMPLATE, Refusal, StoredFacts,
     WINDOW_KEY, business_reply, check_at_confirm, check_at_pick, confirm_by, fee_line,
     license_at_pick, read_business_word,
 };
-pub use crate::confirm::{EmailOutcome, bounce_grace};
+pub use crate::confirm::{EmailOutcome, bounce_grace, refused_at_confirm};
 pub use crate::confirm::{
     EmergencyPlan, HoldAsk, NightLine, TimeRefusal, TimeWord, WindowRules, away_for, away_until,
     emergency_fix_by, emergency_plan, hold, hold_allowed, read_time_word, window_start,
 };
 pub use crate::confirm_reminders::{
-    Extension, LapsePlan, Reminder, claim_reminder, emergency_reminders, extend_once, lapse_plan,
-    lapse_text, member_confirmed_line, owner_told, reminder_lines, reminders, window_open,
+    Extension, LapsePlan, Reminder, claim_reminder, emergency_reminders, extend_once, lapse,
+    lapse_plan, lapse_text, member_confirmed_line, owner_told, reminder_lines, reminders,
+    window_open,
 };
 pub use crate::email_code::{
     CodeRoute, ConversationEmail, EmailFrom, OptedOutYes, Texting, check_email_code, code_route,

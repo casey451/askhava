@@ -10,17 +10,21 @@
 //! [`extend_once`] stores a HOLD or the bounce grace once per pick
 //! (`migrations/0144_picks_confirm_reminder.sql`). [`lapse_plan`] decides the homeowner's
 //! PICK-046 text after a lapse, and [`owner_told`] whether the owner gets the BIZ-033 email.
-//! The wording is built here from the brand file, never a literal (D-1971).
+//! The wording is built here from the brand file, never a literal (D-1971). T157: [`lapse`] ends
+//! a lapsed pick and moves it at once to the homeowner's backup (PICK-047, D-491); with none,
+//! PICK-046's [`lapse_text`] applies.
 
 use askhava_core::api::{add_business_minutes, arizona_time, brand, is_business_hours};
 use askhava_messaging::api::Language;
+use askhava_ops::api::Actor;
 use jiff::Timestamp;
 use jiff_sqlx::ToSqlx;
 use sqlx::PgConnection;
 use sqlx::types::Uuid;
 
+use crate::backup_choice::{Backup, backup_choice};
 use crate::confirm::{EmergencyPlan, WindowRules, dollars};
-use crate::models::PicksError;
+use crate::models::{self, PicksError};
 
 /// The most reminders one window lists, a bound on a misconfigured setting.
 const MOST_REMINDERS: u32 = 64;
@@ -219,7 +223,7 @@ fn more_time(minutes: u32, language: Language) -> String {
     }
 }
 
-fn short(language: Language) -> &'static str {
+pub(crate) fn short(language: Language) -> &'static str {
     match language {
         Language::En => brand().short_name(),
         Language::Es => brand().es().short_name(),
@@ -289,6 +293,25 @@ pub fn lapse_plan(
             .map(|(n, _)| *n)
             .collect(),
     }
+}
+
+/// PICK-019, PICK-046, PICK-047, D-400, D-491: the lapse of pick `pick` at `at`, inside the
+/// caller's transaction: a pick still waiting expires, then it moves at once to the backup the
+/// homeowner named if that quote is still pickable ([`Backup::Moved`]: its own pick notice and
+/// window); [`Backup::NoBackup`] means the caller sends PICK-046's [`lapse_text`]. `paused` is
+/// the job's homeowner pause (CON-029). Safe to run twice.
+///
+/// # Errors
+///
+/// [`PicksError::Database`], [`PicksError::MovedOn`] (roll back) or the page pick's errors.
+pub async fn lapse(
+    tx: &mut PgConnection,
+    pick: Uuid,
+    paused: bool,
+    (actor, at): (Actor, Timestamp),
+) -> Result<Backup, PicksError> {
+    models::expire_pick(tx, pick, at).await?;
+    backup_choice(tx, pick, paused, (actor, at)).await
 }
 
 /// PICK-046, PICK-016, D-420: the lapse text naming `name`, with `lines` the TXT-031 lines of the
