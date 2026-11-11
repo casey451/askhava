@@ -17,15 +17,25 @@
 //! [`quote_form_page_warned`] warn before a quote above the business's largest-job answer is sent
 //! (BIZ-049, D-393); the send goes through only with the form's `over_largest` field equal to the
 //! warned amount in cents, so a raised price is warned again.
+//! T209: [`auto_confirm_box`] decides whether the quote form shows the unticked "Auto-confirm and
+//! pay if picked" box (PICK-048: Stripe's written answer filed, a saved card, the owner or a
+//! "Confirm and billing" member) and [`quote_form_page_full`] shows it with its authorization;
+//! [`set_auto_confirm`] stores a tick only after a fresh Verify code (SEC-038) through
+//! `quotes::api`, and an untick at any time before the pick (PICK-056).
 
 use askama::Template;
 use askhava_businesses::api::{Acting, LargestJob, offer_sample_pick};
 use askhava_core::api::{NewTask, brand, enqueue};
 use askhava_messaging::api::{notice_log, record_first_open};
 use askhava_payments::api::{
-    Fee, FeeError, FeeQuote, Period as FeePeriod, PeriodJob, Tier, fee_for, period_fee_for,
+    BusinessId, Fee, FeeError, FeeQuote, Period as FeePeriod, PeriodJob, Tier, fee_for,
+    period_fee_for, saved_card_of,
 };
-use askhava_quotes::api::{DayPart, Parts, Period, Permit, Price, QuoteFacts, Spanish, TripFee};
+use askhava_quotes::api::{
+    AUTO_CONFIRM_VERSION, AutoConfirmError as QuotesAutoError, AutoConfirmTick, DayPart, Parts,
+    Period, Permit, Price, QuoteFacts, Spanish, TripFee, Untick, auto_confirm_authorization,
+    auto_confirm_of, stripe_answer_filed, tick_auto_confirm, untick_auto_confirm,
+};
 use jiff::Timestamp;
 use jiff::civil::Date;
 use serde_json::json;
@@ -35,7 +45,8 @@ use sqlx::types::Uuid;
 use crate::action_links::{
     ActionKind, ActionLinkError, OPEN_IN_BROWSER_LINE, action_link_business,
 };
-use crate::business_auth::BusinessPrincipal;
+use crate::business_auth::{BusinessPrincipal, Need};
+use crate::business_portal::{SensitiveChange, StepUpError, require_step_up};
 use crate::confirm_pay::{FEE_FREE_LINE, money};
 use crate::email_check::{MailApp, sample_pick_page};
 use crate::session::PortalsError;
@@ -134,6 +145,7 @@ struct ActionsView<'a> {
     action: Option<ActionView<'a>>,
     form: Option<&'a QuoteFormFacts>,
     warning: Option<&'a LargestWarning>,
+    auto_box: Option<&'a AutoConfirmBox>,
     csrf: &'a str,
 }
 
@@ -169,6 +181,7 @@ pub fn action_page(facts: &ActionFacts<'_>) -> Result<String, askama::Error> {
         action: Some(action),
         form: None,
         warning: None,
+        auto_box: None,
         csrf: facts.csrf,
     }
     .render()
@@ -566,10 +579,26 @@ pub fn quote_form_page_warned(
     csrf: &str,
     warning: Option<&LargestWarning>,
 ) -> Result<String, askama::Error> {
+    quote_form_page_full(facts, csrf, warning, None)
+}
+
+/// PICK-048, BIZ-049: [`quote_form_page_warned`] with the auto-confirm box from
+/// [`auto_confirm_box`] after the fee lines, when it is shown: unticked unless the quote's box is
+/// ticked now, with its own authorization and the line saying a tick asks for a new code.
+///
+/// # Errors
+/// The template's render error.
+pub fn quote_form_page_full(
+    facts: &QuoteFormFacts,
+    csrf: &str,
+    warning: Option<&LargestWarning>,
+    auto_box: Option<&AutoConfirmBox>,
+) -> Result<String, askama::Error> {
     ActionsView {
         action: None,
         form: Some(facts),
         warning,
+        auto_box,
         csrf,
     }
     .render()
@@ -738,4 +767,129 @@ pub async fn sample_pick_on_open(
         .await
         .map_err(|_| PortalsError::Database)?;
     Ok(offered.then_some(page))
+}
+
+/// Where the auto-confirm tick is posted; served by T306, not by `server` (D-2128).
+pub const AUTO_CONFIRM_ROUTE: &str = "/b/quote/{job}/auto-confirm";
+
+/// The quote form's "Auto-confirm and pay if picked" box (PICK-048).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct AutoConfirmBox {
+    /// The box's own authorization with the fee shown (`quotes::api::auto_confirm_authorization`).
+    pub authorization: String,
+    /// The quote's box is ticked now.
+    pub ticked: bool,
+}
+
+/// PICK-048, FEE-014, D-401, D-491: the box for `principal`'s quote on `job` with the fee
+/// `fee_cents` (the one fee the form shows; `None` for none or more than one), or `None` when it
+/// is not shown: the person is not the owner or a "Confirm and billing" member, Stripe's written
+/// answer is not filed (`quotes::api::stripe_answer_filed`, D-2783), the business
+/// has no saved card, or the quote has no single fee. This route decides, never `quotes`.
+///
+/// # Errors
+/// [`PortalsError::Database`].
+pub async fn auto_confirm_box(
+    db: &mut PgConnection,
+    principal: &BusinessPrincipal,
+    (job, fee_cents): (Uuid, Option<u64>),
+) -> Result<Option<AutoConfirmBox>, PortalsError> {
+    let Some(fee) = fee_cents.filter(|c| *c > 0) else {
+        return Ok(None);
+    };
+    if box_card(db, principal).await?.is_none() {
+        return Ok(None);
+    }
+    let ticked = auto_confirm_of(db, (job, principal.business), None)
+        .await
+        .map_err(|_| PortalsError::Database)?
+        .is_some_and(|t| t.fee_cents == fee);
+    Ok(Some(AutoConfirmBox {
+        authorization: auto_confirm_authorization(fee),
+        ticked,
+    }))
+}
+
+/// The saved card the box would be ticked with, when the box may show for `principal`.
+async fn box_card(
+    db: &mut PgConnection,
+    principal: &BusinessPrincipal,
+) -> Result<Option<String>, PortalsError> {
+    if !principal.may(principal.business, Need::ConfirmAndBilling) {
+        return Ok(None);
+    }
+    let filed = stripe_answer_filed(db)
+        .await
+        .map_err(|_| PortalsError::Database)?;
+    if !filed {
+        return Ok(None);
+    }
+    saved_card_of(db, BusinessId(principal.business))
+        .await
+        .map_err(|_| PortalsError::Database)
+}
+
+/// Why a tick or untick was refused.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, thiserror::Error)]
+pub enum AutoConfirmBoxError {
+    /// Not the owner or a "Confirm and billing" member, no filed answer, no saved card, a $0 fee
+    /// or no live quote: the box is not offered.
+    #[error("the auto-confirm box is not offered")]
+    NotOffered,
+    /// No Verify code in the last 5 minutes (SEC-038); the refusal is logged.
+    #[error("ticking the box needs a fresh code")]
+    NeedsCode,
+    /// A statement failed.
+    #[error("the auto-confirm change could not be stored")]
+    Database,
+}
+
+/// PICK-048, PICK-056, SEC-038, SEC-048, D-480: ticks (`tick`) or unticks the box on
+/// `principal`'s quote for `job` with the fee shown, `fee_cents`. A tick needs the box offered
+/// ([`auto_confirm_box`]'s conditions) and then `require_step_up` (a Verify code in the last 5
+/// minutes, else refused and logged), and stores the member, the fee, the authorization version
+/// and the saved card; an untick needs only the role and may be made any time before the pick.
+///
+/// # Errors
+/// [`AutoConfirmBoxError`].
+pub async fn set_auto_confirm(
+    db: &mut PgConnection,
+    principal: &BusinessPrincipal,
+    (job, fee_cents, tick): (Uuid, u64, bool),
+    now: Timestamp,
+) -> Result<(), AutoConfirmBoxError> {
+    if !principal.may(principal.business, Need::ConfirmAndBilling) {
+        return Err(AutoConfirmBoxError::NotOffered);
+    }
+    let quote = (job, principal.business);
+    if !tick {
+        return untick_auto_confirm(db, quote, Untick::Business, now)
+            .await
+            .map(|_| ())
+            .map_err(|_| AutoConfirmBoxError::Database);
+    }
+    let card = box_card(db, principal)
+        .await
+        .map_err(|_| AutoConfirmBoxError::Database)?
+        .filter(|_| fee_cents > 0)
+        .ok_or(AutoConfirmBoxError::NotOffered)?;
+    let change = (SensitiveChange::AutoConfirm, AUTO_CONFIRM_ROUTE);
+    require_step_up(db, principal, change, now)
+        .await
+        .map_err(|e| match e {
+            StepUpError::NeedsCode => AutoConfirmBoxError::NeedsCode,
+            StepUpError::Database => AutoConfirmBoxError::Database,
+        })?;
+    let stored = AutoConfirmTick {
+        member: principal.member,
+        fee_cents,
+        authorization_version: AUTO_CONFIRM_VERSION,
+        payment_method: card,
+    };
+    tick_auto_confirm(db, quote, &stored, now)
+        .await
+        .map_err(|e| match e {
+            QuotesAutoError::NoQuote | QuotesAutoError::BadField => AutoConfirmBoxError::NotOffered,
+            QuotesAutoError::Database => AutoConfirmBoxError::Database,
+        })
 }

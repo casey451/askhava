@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE payments.pay_timer SET ended_at = $2\n         WHERE pick_id = $1 AND kind = 'card-fix' AND ended_at IS NULL\n           AND (SELECT press_id FROM payments.charge_attempt WHERE pick_id = $1\n                ORDER BY try_no DESC LIMIT 1) = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "abec0272011c3a64bf3b38193b768503800a3d3df6bbf8645a83382cf3249386"
+}

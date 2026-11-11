@@ -27,10 +27,13 @@
 //! (PICK-022, CALL-001, D-1688, D-1739).
 //! T157 added the homeowner's backup choice at the pick and the move to it when a pick ends
 //! without an acceptance (PICK-046, PICK-047).
+//! T209 added the PICK-048 auto-confirm: one off-session charge for a Verify-proven pick of a
+//! ticked quote, or the tick voided and the business told (PICK-048, PICK-056).
 //! Other crates reach it only through [`api`].
 
 mod aftermath;
 pub mod api;
+mod auto_confirm;
 mod backup_choice;
 mod confirm;
 mod confirm_reminders;

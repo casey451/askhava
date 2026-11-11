@@ -30,6 +30,7 @@
 //! Other crates reach it only through [`api`].
 
 pub mod api;
+mod auto_confirm_box;
 mod capability_match;
 mod card_notices;
 mod cards;
