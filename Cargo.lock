@@ -487,6 +487,7 @@ dependencies = [
  "jiff",
  "jiff-sqlx",
  "proptest",
+ "rustls",
  "secrecy",
  "serde_json",
  "sha1",
