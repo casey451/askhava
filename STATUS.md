@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T08:24:23Z by runner 68d6b3ac2530 (actions).
+Updated 2026-11-11T08:38:07Z by runner cf9b14cb7c73 (manual).
 
 **Building: T295 in progress since 08:24Z; 197 of 370 done; week 62% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,12 +8,11 @@ Updated 2026-11-11T08:24:23Z by runner 68d6b3ac2530 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T295 claimed 08:24Z, lease until 11:24Z; lane 3: T327 claimed 05:24Z, lease until 08:24Z
 - **Week:** 62% used, 67.5M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:24Z, 0 min before this update
+- **Last run:** 08:24Z, 13 min before this update
 - **Keeper:** last ran 08:24Z, next wake 08:34Z
 
 ## Needs attention
-- BLOCKED T337: plan gap reported: PLAN GAP: app/server/tests/release_recovery.rs:572-576 (td_pick_50_a_zero_fee_releases_free_and_a_cancelled_pick_nothing) is owned by T254/T287/T343/T352, not T337 (kit/tasks.json; kit/prompts/T337.md and D-2832 cover only confirm_and_pay.rs). Quote order is by business_id (random uuid), so gone's pick_fee row names min(first, other); the test passes (first, replaced_job) and with TD-FEE-57's binding no_fee_release refuses about half the runs (panic at release_recovery.rs:344). Fix: let T337 own release_recovery.rs for a fixture-only change (use the pick's stored business via payments::api::pi; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T337 --plan-fix D-### --reason "..."` (D-2859)
-- Strict plan check red: 6 problem(s) on tasks still to run (+13 on DONE tasks); first: T126: stored context_pct 56% but it measures 60%; regenerate
+- Strict plan check red: 12 problem(s) on tasks still to run (+17 on DONE tasks); first: T126: stored context_pct 56% but it measures 60%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -48,6 +47,7 @@ Updated 2026-11-11T08:24:23Z by runner 68d6b3ac2530 (actions).
 | T290 | worked examples: pin D-033 for one-cent-wide recurring range | QUEUED | 1 | 1 min | 09:07Z |  |
 
 ### Plan and harness merges on main
+- 08:37Z Plan: T337 also owns release_recovery.rs for a fixture-only fix (D-2896) (#464)
 - 07:43Z Harness: td_pick_09 asks on the fixed clock — test failing everywhere since 07:00Z (D-2886) (#461)
 - 06:32Z Harness: a worker's plan-gap report blocks the task instead of a retry on the same prompt (D-2859) (#458)
 - 06:12Z Harness: the state schema accepts the hand-in update merge — runner stopped with state_invalid (D-2870) (#459)
