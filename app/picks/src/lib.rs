@@ -29,12 +29,14 @@
 //! without an acceptance (PICK-046, PICK-047).
 //! T209 added the PICK-048 auto-confirm: one off-session charge for a Verify-proven pick of a
 //! ticked quote, or the tick voided and the business told (PICK-048, PICK-056).
+//! T214 added the share box's log at the pick and "Can't take it" (PICK-049, PICK-050).
 //! Other crates reach it only through [`api`].
 
 mod aftermath;
 pub mod api;
 mod auto_confirm;
 mod backup_choice;
+mod cant_take;
 mod confirm;
 mod confirm_reminders;
 mod email_code;
@@ -48,6 +50,7 @@ mod released_view;
 mod rules;
 mod service;
 mod settle;
+mod share_consent;
 mod status;
 mod unreachable_refund;
 
