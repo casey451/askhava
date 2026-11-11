@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T15:52:00Z by runner ee5cdf2ecfbe (actions).
+Updated 2026-11-11T15:58:30Z by runner 4ce9c9f7532d (actions).
 
 **Building: T165 in progress since 15:37Z; 205 of 373 done; week 69% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-11T15:52:00Z by runner ee5cdf2ecfbe (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T165 claimed 15:37Z, lease until 18:37Z; lane 4: T269 claimed 15:51Z, lease until 18:51Z
 - **Week:** 69% used, 52.3M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:51Z, 0 min before this update
+- **Last run:** 15:52Z, 6 min before this update
 - **Keeper:** last ran 15:49Z, next wake 18:40Z
 
 ## Needs attention
@@ -28,19 +28,19 @@ E2e failed at step: Chromium and its system libraries
 Error: Installation process exited with code: 100
 ##[error]Process completed with exit code 1.
 Ci fai
-- Strict plan check red: 19 problem(s) on tasks still to run (+32 on DONE tasks); first: T255: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 22 problem(s) on tasks still to run (+36 on DONE tasks); first: T340: stored context_pct 35% but it measures 39%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T269 | portals: a business notice's signed link opens sign-in for t | resync | 2 | 44 min | 15:46Z | merging main into the reviewed head conflicts in app/portals/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T384 | quotes and portals: the homeowner sees an edited quote as up | done | 2 | 18 min | 15:05Z | Ci: failure; E2e: failure; Ally: failure / E2e failed at step: Chromium and its system libraries / E: Failed to fetch ht |
-| T214 | picks: the homeowner's share box at the pick and the 'Can't  | BLOCKED | 2 | 3 min | 15:04Z | PLAN GAP: tests/integration/tests/page_pick.rs:131 and tests/security/tests/page_pick_privacy.rs:224 (both T246's; page_ |
+| T214 | picks (harness): the homeowner's share box at the pick and t | BLOCKED | 2 | 3 min | 15:04Z | PLAN GAP: tests/integration/tests/page_pick.rs:131 and tests/security/tests/page_pick_privacy.rs:224 (both T246's; page_ |
 | T342 | quotes: a quote's contact check also reads the whole field w | MERGE_PENDING | 1 | 51 min | 14:31Z |  |
 | T332 | payments (harness): a late success has its own refund trigge | check_failed | 3 | 48 min | 14:24Z | PLAN GAP: tests/integration/tests/confirm_and_pay.rs:393-413 (td_fee_25_an_ended_pick_is_never_cleared, TD-FEE-25, T189  |
 | T269 | portals: a business notice's signed link opens sign-in for t | check_failed | 1 | 20 min | 14:19Z |  |
 | T384 | quotes and portals: the homeowner sees an edited quote as up | check_failed | 1 | 40 min | 13:40Z |  |
-| T214 | picks: the homeowner's share box at the pick and the 'Can't  | BLOCKED | 1 | 15 min | 13:19Z |  |
+| T214 | picks (harness): the homeowner's share box at the pick and t | BLOCKED | 1 | 15 min | 13:19Z |  |
 | T333 | payments (harness): a succeeded refund is recorded at the am | BLOCKED | 1 | 50 min | 13:14Z | PLAN GAP: app/payments/src/routes.rs:412 (T259) and app/payments/src/refund_state.rs:34 (T270) / app/picks/src/unreachab |
 | T332 | payments (harness): a late success has its own refund trigge | BLOCKED | 2 | 2 min | 12:40Z |  |
 | T332 | payments (harness): a late success has its own refund trigge | BLOCKED | 1 | 11 min | 12:10Z |  |
@@ -76,7 +76,6 @@ Ci fai
 | T311 | calls and server: a voice read-back confirm connects only th | check_failed | 1 | 21 min | 18:54Z |  |
 | T294 | portals and site: every page takes the brand from the brand  | done | 1 | 42 min | 18:32Z |  |
 | T231 | portals (harness): the homeowner check-in email buttons and  | done | 2 | 26 min | 17:08Z | T231 built and committed (b2f7b11e, 26074ad1) but smoke red: tests/security/tests/auth_matrix.rs (T088, protected, no se |
-| T231 | portals (harness): the homeowner check-in email buttons and  | QUEUED | 1 | 28 min | 15:58Z |  |
 
 ### Plan and harness merges on main
 - 15:44Z Plan: T214 owns the final-Pick share box end to end and ticks it in five finished tests (D-3032) (#495)
@@ -117,12 +116,12 @@ Ci fai
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 212 of 733 (28.9%) · partial 343 · unstarted 178
+**Requirements verified:** 210 of 733 (28.6%) · partial 345 · unstarted 178
 **Tasks merged (throughput only):** 205 of 373
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 15 | 14 | 6 | 35 |
+| accessibility | 13 | 16 | 6 | 35 |
 | ai | 7 | 17 | 5 | 29 |
 | businesses | 16 | 35 | 7 | 58 |
 | calls | 11 | 13 | 1 | 25 |
