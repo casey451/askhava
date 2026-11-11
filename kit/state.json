@@ -29860,11 +29860,11 @@
     }
    ],
    "lane": "3",
-   "reviewed_sha": "4e0e751c81a15b1119ef7e395a044234f611183a",
+   "reviewed_sha": "8172b7a9cf12b136f6759d3b1a6e294aed3c961e",
    "review_lease": {
     "task": "T332",
-    "session": "actions-43017709756",
-    "expires": "2026-11-11T16:35:27Z",
+    "session": "actions-43062279967",
+    "expires": "2026-11-11T20:24:05Z",
     "lane": "3"
    },
    "branch": "claude/task/T332-late-success-trigger-and-ended-picks",
@@ -29873,20 +29873,10 @@
     "why": "auto-merge on #491 (gh pr merge)",
     "head": "4e0e751c81a15b1119ef7e395a044234f611183a"
    },
-   "update_merges": [
-    {
-     "from": "f74d5c4966e8fc7d0c7ede9218a21d79851bbd15",
-     "to": "4e0e751c81a15b1119ef7e395a044234f611183a",
-     "main": "da0eb3920737e45eddab74251968a878c3682abe",
-     "how": "hand-in",
-     "at": "2026-11-11T14:24:25Z"
-    }
-   ],
-   "update_waiting_since": null,
-   "update_push_failures": null,
    "runner_closed_prs": [
     491
-   ]
+   ],
+   "head_check_since": null
   },
   {
    "id": "T328",
@@ -34011,7 +34001,7 @@
    }
   }
  },
- "updated_at": "2026-11-11T18:09:54Z",
+ "updated_at": "2026-11-11T18:10:30Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -34109,7 +34099,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "60a8d50b1c568fba03f66e143749604ed7533432",
+ "runner_sha": "8172b7a9cf12b136f6759d3b1a6e294aed3c961e",
  "starter": "actions",
  "smoke_runs": [
   {
