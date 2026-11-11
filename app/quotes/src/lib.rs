@@ -27,6 +27,10 @@
 //! T091 added card photos in `photos`: a card photo is a screened copy of a cleaned photo the
 //! homeowner confirmed, AI-screened twice only after zero retention (AI-016, CARD-013, CARD-014).
 //!
+//! T164 added one quote format per job type and the form's price fields in `formats`, the notes
+//! check in `notes`, and the locked edit and withdrawal in `edit_withdraw` (PICK-051 to PICK-053,
+//! REC-010).
+//!
 //! Other crates reach it only through [`api`].
 
 pub mod api;
@@ -34,12 +38,15 @@ mod auto_confirm_box;
 mod capability_match;
 mod card_notices;
 mod cards;
+mod edit_withdraw;
 mod emergency_card_notice;
+mod formats;
 mod gate;
 mod handlers;
 mod intake;
 mod job_page;
 mod models;
+mod notes;
 mod notify;
 mod photos;
 mod quote_card;

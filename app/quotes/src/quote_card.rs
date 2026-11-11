@@ -382,6 +382,13 @@ impl Words {
     }
 }
 
+/// PICK-053 (T164): the English plain definition of `format`, the same line the quote card shows,
+/// set beside the quote form's price fields so every business reads what the homeowner reads.
+#[must_use]
+pub fn format_definition(format: Format) -> &'static str {
+    EN.definition(format)
+}
+
 const EN: Words = Words {
     check_yourself: "{brand} doesn't rank businesses; check it yourself.",
     independent: "Independent business, not affiliated with {brand}.",
