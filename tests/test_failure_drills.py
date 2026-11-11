@@ -1949,15 +1949,28 @@ GAP_REPORT = ("PLAN GAP: tests/fake_fixture.rs is owned by T002, not T001; the f
               "No assertion change; no code changed.")
 
 
+GOAL = "adding one needs a harness task, since the file is this task's test"  # a task goal's words (T327's), quoted
+
+
 @pytest.mark.parametrize(("outcome", "log", "want"), [
     ("tests_failed", GAP_REPORT, cycle.PLAN_GAP),
-    ("tests_failed", "  plan gap: the baseline lists files T001 does not own", cycle.PLAN_GAP),
-    ("tests_failed", "T001 blocked at step 3: the baseline lists files of T002. A plan change must give these an owner.", cycle.PLAN_GAP),
-    ("tests_failed", "smoke red on tests T001 does not own; no assertion change; needs a harness task (D-2714).", cycle.PLAN_GAP),
-    ("tests_failed", "red on tests T001 does not own; needs plan/harness fix", cycle.PLAN_GAP),
+    ("tests_failed", "  plan gap: tests/fake_baseline.json lists files of T002", cycle.PLAN_GAP),
+    ("tests_failed", "A plan change must give tests/fake_baseline.json an owner before T001 can pass. 2 failed.", cycle.PLAN_GAP),
+    ("tests_failed", "Smoke red on tests/fake_fixture.rs, owned by T002; T001 needs a harness task to add two rows.", cycle.PLAN_GAP),
+    ("tests_failed", "Red on tests/fake_fixture.rs owned by T002; needs plan/harness fix", cycle.PLAN_GAP),
     ("tests_failed", "2 failed", "tests_failed"),
     ("tests_failed", "app/x.rs: not owned by T001", "tests_failed"),  # verify's path problem is D-1058's, not this
     ("tests_failed", "the planner changed nothing; see PLAN GAP: below", "tests_failed"),  # the marker opens the log
+    # a denial, a doubt or a quoted task goal never matches (D-2859 review)
+    ("tests_failed", "T001 does not need a plan change; 2 tests fail in app/t001/x.rs", "tests_failed"),
+    ("tests_failed", "T001 does not need a harness task, it needs a fix in app/t001/x.rs", "tests_failed"),
+    ("tests_failed", "The worker thought it needs a plan change but the fixture is its own; 2 failed", "tests_failed"),
+    ("tests_failed", "No plan change must happen here; 2 failed", "tests_failed"),
+    ("tests_failed", f"2 tests fail in app/t001/x.rs; the goal says {GOAL}", "tests_failed"),
+    ("tests_failed", f'2 tests fail in app/t001/x.rs; "{GOAL}"', "tests_failed"),
+    ("tests_failed", f"2 tests fail in app/t001/x.rs; {GOAL}", "tests_failed"),
+    ("tests_failed", "2 tests fail in app/t001/x.rs. T001 needs a harness task.", "tests_failed"),  # first sentence only
+    ("tests_failed", "2 tests fail\nA plan change must give it an owner", "tests_failed"),  # first line only
     ("submitted", GAP_REPORT, "submitted"),
     ("usage_limit", GAP_REPORT, "usage_limit"),
 ])
@@ -1981,6 +1994,9 @@ def test_drill_a_reported_plan_gap_blocks_at_once_and_is_never_reclaimed_on_the_
     assert st.status(env.store, "T001") == st.BLOCKED
     attention = ge._attention(env.store, NOW)  # STATUS.md "Needs attention" names it and the way back
     assert any(line.startswith(f"- BLOCKED T001: {cycle.PLAN_GAP_REPORTED}: PLAN GAP:") and "--plan-fix" in line for line in attention)
+    item = (tmp_path / "T001-plan-gap.md").read_text(encoding="utf-8")  # and an outbox item, as an owned gap (D-1869)
+    assert "id: T001-plan-gap\ntitle: T001: plan gap reported, blocked for a plan fix\nkind: blocked\n" in item
+    assert GAP_REPORT in item and "--requeue T001 --plan-fix D-###" in item and "--requeue T001 --reason" in item
 
 
 def test_a_reported_plan_gap_keeps_a_long_report_whole_for_the_retry_and_short_in_the_reason() -> None:
@@ -2008,16 +2024,20 @@ def test_a_fix_mains_plan_gap_report_counts_as_an_ordinary_failure(tmp_path: Pat
     out = cycle._after_worker(state, {"id": st.FIX_MAIN}, res, config([], tmp_path), MODELS["opus"], NOW)
     fix = st.entry(out, st.FIX_MAIN)
     assert fix["status"] == st.QUEUED and fix["attempts"] == 1 and fix["last_failure"] == GAP_REPORT
+    assert not list(tmp_path.glob("*plan-gap.md"))
 
 
-def test_drill_a_reported_plan_gap_comes_back_only_through_a_plan_fix_with_its_attempts_left(tmp_path: Path) -> None:
+def test_an_ordinary_failure_writes_no_plan_gap_outbox_item(tmp_path: Path) -> None:
+    env = FakeEnv(lambda t, m, log: cycle.WorkerResult("tests_failed", log="2 failed"))
+    cycle.run_cycle(config([make_task("T001")], tmp_path), env, NOW)
+    assert not list(tmp_path.glob("*plan-gap.md"))
+
+
+def test_drill_a_reported_plan_gap_comes_back_through_a_plan_fix_with_its_attempts_left(tmp_path: Path) -> None:
     graph = [make_task("T001")]
     env, cfg = FakeEnv(lambda t, m, log: cycle.WorkerResult(cycle.PLAN_GAP, log=GAP_REPORT)), config(graph, tmp_path)
     cycle.run_cycle(cfg, env, NOW)
     blocked = env.store
-    assert cycle.requeue_refusal(blocked, "T001", NOW) == (
-        "T001 is BLOCKED on a plan gap its worker reported; once a plan fix has merged, use --plan-fix D-### (D-2859)")
-    assert cycle.requeue(blocked, "T001", "x", NOW, "m") is None
     since = cycle.plan_since(st.entry(blocked, "T001"))
     assert since and cycle.plan_fix_precheck(blocked, "T001", "D-677", NOW) == ""
     assert "unchanged on main" in cycle.plan_fix_refusal(blocked, "T001", "D-677", _evidence(since=since, plan_now="a" * 64), NOW)
@@ -2031,6 +2051,26 @@ def test_drill_a_reported_plan_gap_comes_back_only_through_a_plan_fix_with_its_a
     assert env.runs[-1] == ("T001", MODELS["opus"], f"{GAP_REPORT}\nre-queued after plan fix D-677: T001 now owns the fixture rows")
     assert st.entry(env.store, "T001")["attempts"] == 2
     assert cycle.plan_fix_precheck(env.store, "T001", "D-680", NOW) == "T001 is QUEUED, not BLOCKED"
+
+
+def test_a_mistaken_plan_gap_block_is_lifted_by_a_plain_requeue_with_the_attempt_counted(tmp_path: Path) -> None:
+    graph = [make_task("T001")]
+    env, cfg = FakeEnv(lambda t, m, log: cycle.WorkerResult(cycle.PLAN_GAP, log=GAP_REPORT)), config(graph, tmp_path)
+    cycle.run_cycle(cfg, env, NOW)
+    assert cycle.requeue_refusal(env.store, "T001", NOW) == ""
+    lease = {"task": "T002", "session": "s9", "expires": st.iso(NOW + timedelta(hours=1))}
+    assert cycle.requeue_refusal(st.with_lease(env.store, st.LANE_ONE, lease), "T001", NOW).startswith("a live lease is held")
+    reason = "the overseer checked: tests/fake_fixture.rs is T001's own; not a plan gap"
+    assert env.update_state(lambda s: cycle.requeue(s, "T001", reason, NOW, "manual-1")) is not None
+    t1 = st.entry(env.store, "T001")
+    assert t1["status"] == st.QUEUED and t1["attempts"] == 1 and t1["reason"] is None  # the attempt stays counted
+    assert t1["last_failure"] == f"{GAP_REPORT}\nre-queued: {reason}"
+    assert t1["requeues"] == [{"at": st.iso(NOW), "reason": reason, "by": "manual-1",
+                               "was": st.entry(env.store, "T001")["requeues"][0]["was"], "attempts": 1}]
+    assert t1["requeues"][0]["was"].startswith(cycle.PLAN_GAP_REPORTED)
+    env.worker = lambda t, m, log: good(t, m)
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=5)) == st.MERGE_PENDING
+    assert env.runs[-1] == ("T001", MODELS["opus"], f"{GAP_REPORT}\nre-queued: {reason}")
 
 
 def test_a_plan_gap_block_at_the_cap_is_lifted_by_one_plan_fix_as_before() -> None:
@@ -2057,6 +2097,27 @@ def test_after_hands_a_plan_gap_log_on_as_the_plan_gap_outcome(monkeypatch: pyte
                                   outcome=given, model_fallback="")
         assert entry.after(args, None, env) == want  # type: ignore[arg-type]  # reason: fakes for the config and env
     assert seen[0] == (cycle.PLAN_GAP, GAP_REPORT)
+
+
+def test_after_keeps_a_plan_gap_when_a_held_pre_hand_in_gate_is_appended(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A session whose hand-in was held for a red gate (D-1300) and then reports a plan gap: the outcome is read
+    from its own `--log` before the gate's output is appended, so it stays `plan_gap` and the log keeps both."""
+    seen: list[tuple[str, str]] = []
+
+    def collect(task: dict[str, Any], outcome: str, work: list[str], review: list[str], log: str) -> cycle.WorkerResult:
+        seen.append((outcome, log))
+        return cycle.WorkerResult(outcome, log=log)
+
+    gate = f"{ge.PREHANDIN_RED} on abc: FAILED: check_pr_change; T001 needs a harness task"
+    monkeypatch.setattr(entry, "read_handoff", lambda: {"prehandin_log": gate})
+    monkeypatch.setattr(cycle, "after_handoff", lambda cfg, env, res_for, hold, own_models: res_for({"id": "T001"}).outcome)
+    env = type("Env", (), {"collect_result": staticmethod(collect), "log": []})()
+    for log, want in ((GAP_REPORT, cycle.PLAN_GAP), ("2 failed", "tests_failed")):
+        args = argparse.Namespace(transcript=[], worker_agent=[], reviewer_transcript=[], reviewer_agent=[], log=log,
+                                  outcome="tests_failed", model_fallback="")
+        assert entry.after(args, None, env) == want  # type: ignore[arg-type]  # reason: fakes for the config and env
+    assert seen[0] == (cycle.PLAN_GAP, f"{GAP_REPORT}; the last pre-hand-in gate before it: {gate}")
+    assert seen[1][0] == "tests_failed", "a gate's own words never make a plan gap"
 
 
 @pytest.mark.parametrize("path", ["kit/prompts/TEMPLATE.md", ".github/workflows/backup-runner.yml", "BUILD_BRIEF.md"])

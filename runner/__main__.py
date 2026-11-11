@@ -15,14 +15,15 @@ line of JSON with what changed.
                                     review record (reviewed_sha and lease) pushed, branch pushed,
                                     MERGE_PENDING. `--outcome plan_gap --log "PLAN GAP: ..."` (also a
                                     tests_failed log opening with `PLAN GAP:`): the worker found only a
-                                    plan change can unblock the task; the attempt counts and the task is
-                                    BLOCKED until `--requeue --plan-fix` (D-2859)
+                                    plan change can unblock the task; the attempt counts, the task is
+                                    BLOCKED (outbox item T###-plan-gap) until `--requeue --plan-fix`, or a
+                                    plain `--requeue` for a mistaken report (D-2859)
   python3 -m runner --renew         renew this session's lease (every 30 minutes while working)
   python3 -m runner --record-proof N --evidence TEXT
                                     record stage N's named proof for scripts/stage_exit.py
   python3 -m runner --requeue T### --reason TEXT
                                     move a task BLOCKED outside its own work (push, no head,
-                                    permission, stage proof) back to QUEUED, attempts unchanged and
+                                    permission, stage proof, a mistaken plan-gap report) back to QUEUED, attempts unchanged and
                                     the reason as its last_failure (refused for a task out of attempts,
                                     or while any lease is live; recorded in `requeues`, D-583). FIX-MAIN
                                     only while main is red and FIX-MAIN is BLOCKED: it restarts with

@@ -62,13 +62,20 @@ REQUEUABLE = ("branch push rejected", "no head to push", "permission blocked", s
 PLAN_FIX_ID = re.compile(r"^D-\d{3,}$")
 # A worker's report that only a plan change can unblock its task (D-2859): the outcome `plan_gap`, which
 # `--after` also reads from a `tests_failed` log that opens with PLAN_GAP_MARKER (the line kit/prompts/TEMPLATE.md
-# has the worker write) or, as a narrow fallback, says so in one of PLAN_GAP_PHRASES. The attempt counts and the
-# task is BLOCKED with a reason opening with PLAN_GAP_REPORTED, which only `--requeue --plan-fix D-###` lifts.
+# has the worker write) or, as a narrow fallback, whose first sentence (up to the first ". " or line end) says
+# "a/the plan change must" or "<T###|it|this task|the task|;|:|,> needs a plan/harness change|task|fix" (or
+# "needs plan/harness fix") with no hedge in that sentence (PLAN_GAP_HEDGES: a negation, "but", "thought", "if",
+# "goal", "says", a quotation mark or backtick), so a denial, a doubt or a quoted task goal never matches. The attempt
+# counts and the task is BLOCKED with a reason opening with PLAN_GAP_REPORTED and an outbox item `T###-plan-gap`.
 PLAN_GAP = "plan_gap"
 PLAN_GAP_MARKER = "PLAN GAP:"
 PLAN_GAP_PHRASES = re.compile(
-    r"\b(?:a|the) plan change must\b|\bneeds? (?:a )?(?:plan|harness) (?:change|task|fix)\b|\bneeds? (?:a )?plan/harness fix\b",
+    r"\b(?:a|the) plan change must\b"
+    r"|(?:^|[;:,]\s*|\b(?:T\d{3,}|it|this task|the task)\s+)needs (?:a )?(?:(?:plan|harness) (?:change|task|fix)|plan/harness fix)\b",
     re.IGNORECASE)
+PLAN_GAP_HEDGES = re.compile(
+    r"\b(?:not|no|never|but|thought|thinks?|if|whether|maybe|might|goal|says|said)\b|n't\b|[\"`\u201c\u201d]", re.IGNORECASE)
+PLAN_GAP_SENTENCE_END = re.compile(r"\.(?:\s|$)|\n")
 PLAN_GAP_REPORTED = "plan gap reported"
 PLAN_GAP_KEPT = 600  # characters of the worker's report kept in the BLOCKED reason (the whole text goes to last_failure)
 
@@ -331,12 +338,16 @@ def record_failure(state: State, task_id: str, reason: str) -> State:
 
 def session_outcome(outcome: str, log: str) -> str:
     """The outcome `--after` hands on (D-2859): PLAN_GAP for a `tests_failed` whose log (the session's own
-    `--log`, never a gate's output or a stored failure) opens with PLAN_GAP_MARKER or matches PLAN_GAP_PHRASES;
-    any other outcome unchanged."""
+    `--log`, never a gate's output or a stored failure) opens with PLAN_GAP_MARKER, or whose first sentence
+    matches PLAN_GAP_PHRASES with no PLAN_GAP_HEDGES; any other outcome unchanged. RUNNER_WORKER_CMD's result
+    file does not pass through here: its command reports `plan_gap` itself (harmless: no session writes it)."""
     if outcome != "tests_failed":
         return outcome
     text = log.strip()
-    return PLAN_GAP if text.upper().startswith(PLAN_GAP_MARKER) or PLAN_GAP_PHRASES.search(text) else outcome
+    if text.upper().startswith(PLAN_GAP_MARKER):
+        return PLAN_GAP
+    first = PLAN_GAP_SENTENCE_END.split(text, maxsplit=1)[0]
+    return PLAN_GAP if PLAN_GAP_PHRASES.search(first) and not PLAN_GAP_HEDGES.search(first) else outcome
 
 
 def record_plan_gap(state: State, task_id: str, report: str) -> State:
@@ -344,9 +355,10 @@ def record_plan_gap(state: State, task_id: str, report: str) -> State:
 
     The attempt counts (the 3-attempt cap still holds), but the task is not put back on the same prompt:
     it is BLOCKED at once, with a reason opening with PLAN_GAP_REPORTED that STATUS.md lists under "Needs
-    attention", and the report kept whole as `last_failure` for the attempt after the fix. Only
-    `--requeue T### --plan-fix D-###` lifts it (plan_fix_precheck accepts it with attempts left), once
-    the plan fix has merged. A `resync` mark goes, as in record_failure."""
+    attention" (and an outbox item, _plan_gap_outbox), and the report kept whole as `last_failure` for the
+    attempt after the fix. `--requeue T### --plan-fix D-###` lifts it once the plan fix has merged
+    (plan_fix_precheck accepts it with attempts left); a plain `--requeue T### --reason` lifts a mistaken
+    block while attempts remain (requeue_refusal). A `resync` mark goes, as in record_failure."""
     state = _without(state, task_id, "resync") if st.entry(state, task_id).get("resync") else state
     attempts = int(st.entry(state, task_id).get("attempts", 0)) + 1
     text = report.strip() or PLAN_GAP
@@ -354,6 +366,18 @@ def record_plan_gap(state: State, task_id: str, report: str) -> State:
               f"decision in its `decisions` list), then run `python3 -m runner --requeue {task_id} --plan-fix D-### "
               '--reason "..."` (D-2859)')
     return st.with_task(state, task_id, status=st.BLOCKED, attempts=attempts, reason=reason, last_failure=text)
+
+
+def _plan_gap_outbox(cfg: Config, tid: str, report: str) -> None:
+    """The outbox item `T###-plan-gap` for a task BLOCKED by record_plan_gap, so the overseer hears of it in
+    the same cycle, as an owned gap is told (D-1869, D-2859)."""
+    body = (f"{tid}'s worker reported that only a plan change can unblock it; the task is BLOCKED and is not "
+            f"retried on its unchanged prompt.\n\n{report.strip()[:PLAN_GAP_KEPT * 3] or PLAN_GAP}\n\nCheck the "
+            f"cited file, owner or contradiction. If the plan is wrong, change it (the task's kit/tasks.json entry or "
+            f"prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue {tid} --plan-fix "
+            f'D-### --reason "..."`. If the report is mistaken, `python3 -m runner --requeue {tid} --reason "..."` '
+            "brings it back with the attempts it has left (D-2859).")
+    outbox.write_outbox(cfg.outbox_dir, f"{tid}-plan-gap", f"{tid}: plan gap reported, blocked for a plan fix", "blocked", body)
 
 
 NOT_OWNED = ": not owned by "  # the path-check problem of a file the plan did not list (verify.check_paths)
@@ -400,6 +424,7 @@ def _after_worker(
     if res.outcome == "permission_blocked":
         return st.with_task(state, tid, status=st.BLOCKED, reason=f"permission blocked: {res.log}")
     if res.outcome == PLAN_GAP and tid != st.FIX_MAIN:
+        _plan_gap_outbox(cfg, tid, res.log)
         return record_plan_gap(state, tid, res.log)
     if res.outcome != "submitted":
         return record_failure(state, tid, res.log or res.outcome)
@@ -2060,9 +2085,7 @@ def requeue_refusal(state: State, tid: str, now: datetime, cfg: Config | None = 
     if int(entry.get("attempts", 0)) >= MAX_ATTEMPTS:
         return (f"{tid} has used all {MAX_ATTEMPTS} attempts; it stays BLOCKED for the end-of-build list (BUILD_BRIEF.md:540) "
                 "unless a logged plan fix changed its task entry or prompt: then --plan-fix D-### gives one more (D-677)")
-    if _plan_gap_blocked(entry):
-        return f"{tid} is BLOCKED on a plan gap its worker reported; once a plan fix has merged, use --plan-fix D-### (D-2859)"
-    if not str(entry.get("reason") or "").startswith(REQUEUABLE):
+    if not str(entry.get("reason") or "").startswith(REQUEUABLE) and not _plan_gap_blocked(entry):
         return f"{tid} is BLOCKED for its own work ({str(entry.get('reason'))[:120]}), not for a push, permission or proof"
     held = _requeue_blockers(state, tid, now, cfg)
     if held:
@@ -2094,7 +2117,8 @@ def requeue(state: State, tid: str, reason: str, now: datetime, by: str, cfg: Co
     """BLOCKED to QUEUED with `reason` cleared (D-583); None when refused (requeue_refusal).
 
     Only a task blocked for a cause outside its own work (a rejected push, no head, a permission
-    block, a missing stage proof) with attempts left, and only while no lease that matters is live
+    block, a missing stage proof), or BLOCKED on a plan gap its worker reported that proved mistaken
+    (record_plan_gap, D-2859; that attempt already counted), with attempts left, and only while no lease that matters is live
     (any lease with one lane; with two, see requeue_refusal, D-620). `attempts` is
     left as it is, so the 3-attempt cap holds (BUILD_BRIEF.md:271, :540); the given reason is appended
     to `last_failure` as "re-queued: ...", so the retry sees both the earlier failure and why it was
