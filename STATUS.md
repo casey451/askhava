@@ -1,25 +1,27 @@
 # Ask Hava build status
 
-Updated 2026-11-11T07:55:59Z by runner 68d6b3ac2530 (actions).
+Updated 2026-11-11T08:05:50Z by runner 68d6b3ac2530 (actions).
 
 **Building: T212 in progress since 07:52Z; 197 of 370 done; week 62% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 197 of 370 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T212 claimed 07:52Z, lease until 10:52Z; lane 2: T337 claimed 07:55Z, lease until 10:55Z; lane 3: T327 claimed 05:24Z, lease until 08:24Z
+- **Lane:** lane 1: T212 claimed 07:52Z, lease until 10:52Z; lane 3: T327 claimed 05:24Z, lease until 08:24Z
 - **Week:** 62% used, 63.9M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:53Z, 2 min before this update
+- **Last run:** 07:56Z, 9 min before this update
 - **Keeper:** last ran 07:37Z, next wake 08:27Z
 
 ## Needs attention
+- BLOCKED T337: plan gap reported: PLAN GAP: app/server/tests/release_recovery.rs:572-576 (td_pick_50_a_zero_fee_releases_free_and_a_cancelled_pick_nothing) is owned by T254/T287/T343/T352, not T337 (kit/tasks.json; kit/prompts/T337.md and D-2832 cover only confirm_and_pay.rs). Quote order is by business_id (random uuid), so gone's pick_fee row names min(first, other); the test passes (first, replaced_job) and with TD-FEE-57's binding no_fee_release refuses about half the runs (panic at release_recovery.rs:344). Fix: let T337 own release_recovery.rs for a fixture-only change (use the pick's stored business via payments::api::pi; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T337 --plan-fix D-### --reason "..."` (D-2859)
 - Strict plan check red: 6 problem(s) on tasks still to run (+13 on DONE tasks); first: T126: stored context_pct 56% but it measures 60%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T337 | payments (harness): a $0 release proof is bound to the pick' | BLOCKED | 4 | 9 min | 08:05Z | PLAN GAP: app/server/tests/release_recovery.rs:572-576 (td_pick_50_a_zero_fee_releases_free_and_a_cancelled_pick_nothing |
 | T212 | intake: photo asks with on-server checks and preview, inspir | check_failed | 1 | 56 min | 07:20Z | Ci: failure; Coverage: failure; Checks: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned |
 | T383 | messaging and portals: the text templates and the homeowner  | done | 1 | 20 min | 05:39Z |  |
-| T337 | payments (harness): a $0 release proof is bound to the pick' | BLOCKED | 3 | 16 min | 05:11Z | T337 built and committed (53e675b1, cf42d54e); smoke/prehandin red on tests T337 does not own: confirm_and_pay.rs td_fee |
+| T337 | payments (harness): a $0 release proof is bound to the pick' | BLOCKED | 3 | 16 min | 05:11Z |  |
 | T209 | picks and payments: the optional auto-confirm-and-pay box wi | done | 1 | 115 min | 05:06Z |  |
 | T295 | payments, ai, intake and picks take the brand from the brand | BLOCKED | 3 | 0 min | 04:59Z | T295 blocked at step 3: tests/brand_literal_baseline.json still lists files T295 does not own: app/messaging/templates/e |
 | T337 | payments (harness): a $0 release proof is bound to the pick' | QUEUED | 2 | 25 min | 04:51Z |  |
@@ -118,8 +120,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T212 (lease until 2026-11-11T10:52:57Z)
-- lane 2: T337 (lease until 2026-11-11T10:55:56Z)
 - lane 3: T327 (lease until 2026-11-11T08:24:57Z)
 
 ## Last usage reading
-- {"task": "T212", "at": "2026-11-11T07:20:29Z", "cache_read_input_tokens": 46550701, "cache_creation_input_tokens": 899725, "output_tokens": 240141, "input_tokens": 639}
+- {"task": "T337", "at": "2026-11-11T08:05:50Z", "cache_creation_input_tokens": 220149, "output_tokens": 40243, "cache_read_input_tokens": 5133397, "input_tokens": 163}

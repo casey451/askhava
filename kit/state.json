@@ -28216,8 +28216,8 @@
    "deps": [
     "T287"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 3,
+   "status": "BLOCKED",
+   "attempts": 4,
    "slug": "no-fee-release-pick-bound",
    "type": "build",
    "stage": "4",
@@ -28229,7 +28229,7 @@
     2716,
     2717
    ],
-   "last_failure": "T337 built and committed (53e675b1, cf42d54e); smoke/prehandin red on tests T337 does not own: confirm_and_pay.rs td_fee_25_a_paid_pick_is_never_cleared_as_no_fee and td_fee_25_a_recorded_no_fee_decision_clears (need fix_fee_at_pick rows), and app/server/tests/release_recovery.rs td_pick_50_a_zero_fee_releases_free_and_a_cancelled_pick_nothing (random pick order; clear gone for the business its pick_fee row names). No assertion change; needs a harness task (D-2714).\nre-queued after plan fix D-2832: plan fixed by D-2832 (#453): T337 owns the confirm_and_pay.rs fixture rows (fixture-only, assertions unchanged) and keeps the paid-pick guard tested in no_fee_release_binding.rs",
+   "last_failure": "PLAN GAP: app/server/tests/release_recovery.rs:572-576 (td_pick_50_a_zero_fee_releases_free_and_a_cancelled_pick_nothing) is owned by T254/T287/T343/T352, not T337 (kit/tasks.json; kit/prompts/T337.md and D-2832 cover only confirm_and_pay.rs). Quote order is by business_id (random uuid), so gone's pick_fee row names min(first, other); the test passes (first, replaced_job) and with TD-FEE-57's binding no_fee_release refuses about half the runs (panic at release_recovery.rs:344). Fix: let T337 own release_recovery.rs for a fixture-only change (use the pick's stored business via payments::api::pick_fee). Reviewer confirmed.",
    "history": [
     {
      "attempt": 1,
@@ -28269,10 +28269,23 @@
      "started_at": "2026-11-11T04:55:48Z",
      "ended_at": "2026-11-11T05:11:51Z",
      "result": "BLOCKED"
+    },
+    {
+     "attempt": 4,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 67,
+     "head_sha": "68d6b3ac2530c64a79450e73af0e09485ac05c54",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-11T07:55:56Z",
+     "ended_at": "2026-11-11T08:05:50Z",
+     "result": "BLOCKED"
     }
    ],
    "lane": "2",
-   "reason": null,
+   "reason": "plan gap reported: PLAN GAP: app/server/tests/release_recovery.rs:572-576 (td_pick_50_a_zero_fee_releases_free_and_a_cancelled_pick_nothing) is owned by T254/T287/T343/T352, not T337 (kit/tasks.json; kit/prompts/T337.md and D-2832 cover only confirm_and_pay.rs). Quote order is by business_id (random uuid), so gone's pick_fee row names min(first, other); the test passes (first, replaced_job) and with TD-FEE-57's binding no_fee_release refuses about half the runs (panic at release_recovery.rs:344). Fix: let T337 own release_recovery.rs for a fixture-only change (use the pick's stored business via payments::api::pi; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T337 --plan-fix D-### --reason \"...\"` (D-2859)",
    "requeues": [
     {
      "at": "2026-11-11T05:26:31Z",
@@ -29509,12 +29522,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T212",
-   "at": "2026-11-11T07:20:29Z",
-   "cache_read_input_tokens": 46550701,
-   "cache_creation_input_tokens": 899725,
-   "output_tokens": 240141,
-   "input_tokens": 639
+   "task": "T337",
+   "at": "2026-11-11T08:05:50Z",
+   "cache_creation_input_tokens": 220149,
+   "output_tokens": 40243,
+   "cache_read_input_tokens": 5133397,
+   "input_tokens": 163
   },
   "source": "session_reading 2026-11-11T07:37:24Z (week)",
   "by_task": {
@@ -31276,10 +31289,10 @@
    "T337": {
     "estimated_bytes": 554147,
     "estimated_tokens": 2997762,
-    "cache_read_input_tokens": 17947070,
-    "input_tokens": 450,
-    "cache_creation_input_tokens": 600665,
-    "output_tokens": 115693,
+    "cache_read_input_tokens": 23080467,
+    "input_tokens": 613,
+    "cache_creation_input_tokens": 820814,
+    "output_tokens": 155936,
     "last_model": "claude-opus-5-5"
    },
    "T374": {
@@ -31335,11 +31348,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-11T04:44:28Z",
-    "tokens": 17947131
+    "tokens": 18721025
    },
    "week": {
     "start": "2026-11-05T19:01:47Z",
-    "tokens": 284158323
+    "tokens": 284932217
    }
   },
   "session_reading": {
@@ -31350,7 +31363,7 @@
    }
   }
  },
- "updated_at": "2026-11-11T07:55:59Z",
+ "updated_at": "2026-11-11T08:05:50Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
