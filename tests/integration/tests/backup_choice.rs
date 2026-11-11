@@ -19,7 +19,7 @@ use askhava_picks::api::{
 };
 use askhava_portals::api::{PRE_SESSION_COOKIE, pick_flow_routes};
 use axum::body::{Body, to_bytes};
-use axum::http::{Request, header};
+use axum::http::{Request, StatusCode, header};
 use jiff::{SignedDuration, Timestamp};
 use jiff_sqlx::ToSqlx;
 use secrecy::SecretString;
@@ -254,11 +254,9 @@ async fn td_pick_32_the_backup_can_change_until_the_pick_ends(pool: PgPool) {
     assert!(waiting(&mut db, job).await.is_empty());
 }
 
-/// TD-PICK-32 (PICK-047, D-400): the review step lists the other quotes in arrival order under
-/// "If the business for quote #1 can't take it, move my pick to:", with "No backup" selected and
-/// nothing else preselected.
-#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
-async fn td_pick_32_no_backup_is_the_default_on_the_review_step(pool: PgPool) {
+/// The page served for a same-origin POST of `body` to `/q/<token>{suffix}` on a picked job,
+/// without Verify keys: its status and words.
+async fn posted(pool: &PgPool, suffix: &str, body: &str) -> (StatusCode, String) {
     let mut db = pool.acquire().await.expect("db");
     let (job, _) = picked(&mut db).await;
     let secret = SecretString::from("test-only-id-secret-not-a-real-key-157".to_owned());
@@ -270,17 +268,38 @@ async fn td_pick_32_no_backup_is_the_default_on_the_review_step(pool: PgPool) {
         .iter()
         .map(|b| format!("{b:02x}"))
         .collect();
-    let request = Request::post(format!("/q/{}", token.as_str()))
+    let request = Request::post(format!("/q/{}{suffix}", token.as_str()))
         .header(header::HOST, "askhava.test")
         .header(header::ORIGIN, "https://askhava.test")
         .header("sec-fetch-site", "same-origin")
         .header(header::COOKIE, format!("{PRE_SESSION_COOKIE}={COOKIE}"))
         .header(header::CONTENT_TYPE, "application/x-www-form-urlencoded")
-        .body(Body::from(format!("csrf={csrf}&quote=1")))
+        .body(Body::from(format!("csrf={csrf}&{body}")))
         .expect("request");
     let response = app.oneshot(request).await.expect("response");
+    let status = response.status();
     let bytes = to_bytes(response.into_body(), 1 << 20).await.expect("body");
-    let page = String::from_utf8(bytes.to_vec()).expect("utf8");
+    (status, String::from_utf8(bytes.to_vec()).expect("utf8"))
+}
+
+/// TD-PICK-32 (PICK-047, D-2661): the review form, backup field and all, posted straight to the
+/// code step is the code step, not a refusal (the end-to-end and accessibility journeys reach it
+/// this way, D-1264).
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_pick_32_the_review_form_posted_to_the_code_step_is_accepted(pool: PgPool) {
+    for backup in ["", "2"] {
+        let (status, page) = posted(&pool, "/code", &format!("quote=1&backup={backup}")).await;
+        assert_eq!(status, StatusCode::OK, "{page}");
+        assert!(page.contains("Finish your pick for request"), "{page}");
+    }
+}
+
+/// TD-PICK-32 (PICK-047, D-400): the review step lists the other quotes in arrival order under
+/// "If the business for quote #1 can't take it, move my pick to:", with "No backup" selected and
+/// nothing else preselected.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_pick_32_no_backup_is_the_default_on_the_review_step(pool: PgPool) {
+    let (_, page) = posted(&pool, "", "quote=1").await;
     assert!(
         page.contains("If the business for quote #1 can't take it, move my pick to:"),
         "{page}"

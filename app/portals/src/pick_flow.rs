@@ -608,6 +608,10 @@ struct CodeForm {
     email: String,
     #[serde(default)]
     send: String,
+    /// The review form's backup choice, accepted so that form posted here is not refused
+    /// (PICK-047, D-2661) and never read: only the final Pick stores a backup.
+    #[serde(default, rename = "backup")]
+    _backup: String,
 }
 
 impl CsrfField for CodeForm {
@@ -704,6 +708,7 @@ impl CodeView {
             reach: String::new(),
             email: String::new(),
             send: String::new(),
+            _backup: String::new(),
         };
         Self::checked(request, token, csrf, form)
     }
