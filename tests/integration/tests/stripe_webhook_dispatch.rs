@@ -7,7 +7,12 @@
 //! a database error, or a Stripe that cannot be asked, answers 500 and the resend is handled; an
 //! event for an unknown object answers 200 and changes nothing but, for a refund, its event row; a
 //! closed dispute not yet recorded answers 500; a handled event the route cannot read raises one
-//! High alert per event ID (D-2073). All IDs are fake.
+//! High alert per event ID (D-2073). TD-FEE-53 (SEC-017, PICK-022; T331, D-2289): a success whose
+//! `metadata.pick_id` is missing, empty or not a UUID is recorded with one High unreadable alert
+//! and releases nothing. TD-FEE-54 (FEE-052, D-2289): an early fraud warning before its pick's
+//! evidence row answers 500 with one alert for the pick however often it is resent, then is acted
+//! on once the row exists; one matching no pick commits its event row with one alert. All IDs are
+//! fake.
 
 use std::collections::HashMap;
 use std::net::{IpAddr, SocketAddr};
@@ -19,9 +24,9 @@ use askhava_adapters::api::{
 };
 use askhava_core::api::{ClientIpPolicy, ManualClock};
 use askhava_payments::api::{
-    DISPUTE_CLOSED_ACTION, FRAUD_WARNING_KIND, Releasable, ReleaseError, ReleaseSink,
-    STRIPE_WEBHOOK_PATH, StripeAccount, StripeRefund, StripeWebhook, UNREADABLE_EVENT_ALERT,
-    stripe_webhook_routes,
+    DISPUTE_CLOSED_ACTION, FRAUD_WARNING_ALERT, FRAUD_WARNING_KIND, Releasable, ReleaseError,
+    ReleaseSink, STRIPE_WEBHOOK_PATH, StripeAccount, StripeRefund, StripeWebhook,
+    UNREADABLE_EVENT_ALERT, stripe_webhook_routes,
 };
 use axum::body::Body;
 use axum::extract::ConnectInfo;
@@ -154,9 +159,27 @@ async fn send(hooks: &Hooks, id: &str, kind: &str, object: Value) -> StatusCode 
 
 /// Paid pick `n` of $75 (PaymentIntent `pi_Fake<n>`), with a `pending` refund `re` when given.
 async fn charged(pool: &PgPool, n: u128, re: Option<&str>) {
-    let sqls = [
+    opened(pool, n).await;
+    paid(pool, n, re).await;
+}
+
+/// Pick `n`'s PaymentIntent `pi_Fake<n>` of $75, with no attempt or evidence row yet.
+async fn opened(pool: &PgPool, n: u128) {
+    sqlx::query(
         "INSERT INTO payments.pick_intent (pick_id, business_id, job_id, amount_cents,
            stripe_intent_id, emergency, created_at) VALUES ($1, $1, $1, 7500, $2, false, to_timestamp($3))",
+    )
+    .bind(pick_of(n))
+    .bind(format!("pi_Fake{n}"))
+    .bind(NOW - 86_400)
+    .execute(pool)
+    .await
+    .expect("seed");
+}
+
+/// Pick `n`'s succeeded attempt and evidence row, with a `pending` refund `re` when given.
+async fn paid(pool: &PgPool, n: u128, re: Option<&str>) {
+    let sqls = [
         "INSERT INTO payments.charge_attempt (pick_id, try_no, press_id, status, started_at,
            decided_at) VALUES ($1, 1, $1, 'succeeded', to_timestamp($3), to_timestamp($3))",
         "INSERT INTO payments.charge_evidence (pick_id, business_id, job_id, press_id, try_no,
@@ -420,8 +443,9 @@ async fn td_fee_43_a_database_error_is_resent_and_handled(pool: PgPool) {
 
 /// TD-FEE-43 (FEE-026, FEE-027, FEE-052, D-2073): events about a refund, dispute or charge
 /// `payments` does not know answer 200 and change nothing; a refund no row holds still records its
-/// event row (its handler ran and changed nothing). A closed dispute not yet recorded answers 500,
-/// so Stripe resends it.
+/// event row (its handler ran and changed nothing), and a fraud warning on a charge no pick made
+/// records its row with one alert (D-2289). A closed dispute not yet recorded answers 500, so
+/// Stripe resends it.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_fee_43_an_unknown_object_changes_nothing(pool: PgPool) {
     charged(&pool, 1, None).await;
@@ -466,8 +490,17 @@ async fn td_fee_43_an_unknown_object_changes_nothing(pool: PgPool) {
         "resent until recorded"
     );
     let after = snapshot(&pool).await;
-    assert_eq!(effects(&after), effects(&before));
-    assert!(has(&after, "events 2"), "U2 and U3 only: {after:?}");
+    let fraud = format!("alert {FRAUD_WARNING_ALERT} 1");
+    let changed: Vec<_> = effects(&after)
+        .into_iter()
+        .filter(|r| **r != fraud)
+        .collect();
+    assert_eq!(changed, effects(&before));
+    assert!(
+        has(&after, &fraud),
+        "the warning alerts (D-2289): {after:?}"
+    );
+    assert!(has(&after, "events 3"), "U2, U3 and U6 only: {after:?}");
 }
 
 /// TD-FEE-43 (FEE-027, D-2073): a handled event whose object lacks a field its handler needs (a
@@ -506,4 +539,119 @@ async fn td_fee_43_an_unreadable_event_alerts_casey_once(pool: PgPool) {
         .await
         .expect("severity");
     assert_eq!(severity, "high");
+}
+
+/// The kind, severity and subject of every alert, oldest first.
+async fn alerts(pool: &PgPool) -> Vec<(String, String, Option<Uuid>)> {
+    sqlx::query_as(
+        "SELECT kind, severity::text, subject_id FROM ops.alert ORDER BY raised_at, kind",
+    )
+    .fetch_all(pool)
+    .await
+    .expect("alerts")
+}
+
+/// TD-FEE-53 (SEC-017, PICK-022, D-2289): a signed success whose `metadata.pick_id` is missing,
+/// empty or not a UUID writes one event row and one High unreadable alert with no subject, answers
+/// 200 and releases nothing; its resends change nothing; a well-formed success still releases
+/// through the re-fetched PaymentIntent.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_fee_53_a_success_naming_no_pick_is_recorded_not_released(pool: PgPool) {
+    charged(&pool, 1, None).await;
+    let sink = Sink::default();
+    let hooks = hooks(pool.clone(), &[], sink.clone());
+    let unreadable = [
+        ("evt_FakeP1", json!({"id": "pi_Fake1"})),
+        (
+            "evt_FakeP2",
+            json!({"id": "pi_Fake1", "metadata": {"pick_id": ""}}),
+        ),
+        (
+            "evt_FakeP3",
+            json!({"id": "pi_Fake1", "metadata": {"pick_id": "not-a-pick"}}),
+        ),
+    ];
+    let mut first = Vec::new();
+    for round in 0..3 {
+        for (id, object) in &unreadable {
+            let status = send(&hooks, id, "payment_intent.succeeded", object.clone()).await;
+            assert_eq!(status, StatusCode::OK, "{id}");
+        }
+        if round == 0 {
+            first = snapshot(&pool).await;
+        }
+    }
+    let rows = snapshot(&pool).await;
+    assert_eq!(rows, first, "a resend changes nothing");
+    let line = format!("alert {UNREADABLE_EVENT_ALERT} 3");
+    assert!(has(&rows, &line) && has(&rows, "events 3"), "{rows:?}");
+    let high = (UNREADABLE_EVENT_ALERT.to_owned(), "high".to_owned(), None);
+    assert_eq!(alerts(&pool).await, vec![high.clone(), high.clone(), high]);
+    assert!(sink.0.lock().expect("lock").is_empty(), "nothing released");
+    let paid = json!({"id": "pi_Fake1", "metadata": {"pick_id": pick_of(1).to_string()}});
+    let status = send(&hooks, "evt_FakeP4", "payment_intent.succeeded", paid).await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(*sink.0.lock().expect("lock"), vec![pick_of(1)]);
+}
+
+/// TD-FEE-54 (FEE-052, SEC-017, D-2289): a warning whose PaymentIntent has a `pick_intent` row but
+/// no evidence row answers 500, writes no event row and raises one High alert for its pick; a
+/// second resend raises nothing new; once the evidence row exists the resend answers 200 and
+/// queues `picks.fraud_warning` once.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_fee_54_a_warning_before_its_evidence_row_is_resent(pool: PgPool) {
+    opened(&pool, 1).await;
+    let hooks = hooks(pool.clone(), &[], Sink::default());
+    let warning = json!({"id": "issfr_FakeE", "payment_intent": "pi_Fake1"});
+    let kind = "radar.early_fraud_warning.created";
+    let pick_alert = (
+        FRAUD_WARNING_ALERT.to_owned(),
+        "high".to_owned(),
+        Some(pick_of(1)),
+    );
+    for resend in 0..2 {
+        let status = send(&hooks, "evt_FakeW1", kind, warning.clone()).await;
+        assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR, "resend {resend}");
+        assert_eq!(
+            alerts(&pool).await,
+            vec![pick_alert.clone()],
+            "resend {resend}"
+        );
+        let rows = snapshot(&pool).await;
+        assert!(has(&rows, "events 0"), "no event row: {rows:?}");
+        assert!(!rows.iter().any(|r| r.starts_with("task ")), "{rows:?}");
+    }
+    paid(&pool, 1, None).await;
+    for _ in 0..2 {
+        let status = send(&hooks, "evt_FakeW1", kind, warning.clone()).await;
+        assert_eq!(status, StatusCode::OK);
+    }
+    let rows = snapshot(&pool).await;
+    let task = format!("task {FRAUD_WARNING_KIND} 1");
+    assert!(has(&rows, &task) && has(&rows, "events 1"), "{rows:?}");
+    assert_eq!(alerts(&pool).await, vec![pick_alert], "nothing new");
+}
+
+/// TD-FEE-54 (FEE-052, SEC-017, D-2289): a warning whose PaymentIntent matches no `pick_intent`
+/// answers 200, commits its event row with one High alert and queues nothing; its resends change
+/// nothing.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_fee_54_an_unmatched_warning_alerts_once_and_queues_nothing(pool: PgPool) {
+    charged(&pool, 1, None).await;
+    let hooks = hooks(pool.clone(), &[], Sink::default());
+    let warning = json!({"id": "issfr_FakeN", "payment_intent": "pi_FakeNone"});
+    for _ in 0..3 {
+        let status = send(
+            &hooks,
+            "evt_FakeN1",
+            "radar.early_fraud_warning.created",
+            warning.clone(),
+        );
+        assert_eq!(status.await, StatusCode::OK);
+    }
+    let rows = snapshot(&pool).await;
+    assert!(has(&rows, "events 1"), "{rows:?}");
+    assert!(!rows.iter().any(|r| r.starts_with("task ")), "{rows:?}");
+    let high = (FRAUD_WARNING_ALERT.to_owned(), "high".to_owned(), None);
+    assert_eq!(alerts(&pool).await, vec![high]);
 }
