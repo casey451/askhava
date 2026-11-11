@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T22:35:33Z by runner 0137f98c1451 (actions).
+Updated 2026-11-11T22:37:45Z by runner 0137f98c1451 (actions).
 
 **Building: T228 in progress since 22:22Z; 214 of 376 done; week 76% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-11T22:35:33Z by runner 0137f98c1451 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T228 claimed 22:22Z, lease until 01:22Z; lane 2: T334 claimed 22:00Z, lease until 01:00Z
 - **Week:** 76% used, 36.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:35Z, 0 min before this update
+- **Last run:** 22:35Z, 2 min before this update
 - **Keeper:** last ran 22:35Z, next wake 01:02Z
 
 ## Needs attention
@@ -77,6 +77,7 @@ Updated 2026-11-11T22:35:33Z by runner 0137f98c1451 (actions).
 | T311 | calls and server: a voice read-back confirm connects only th | done | 2 | 33 min | 23:21Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 
 ### Plan and harness merges on main
+- 22:35Z Harness: smoke ancestry reuse across DONE task merges and a running duplicate smoke yields (D-3058) (#516)
 - 21:48Z Harness: no five-hour pacing budget (D-3056) (#513)
 - 20:03Z Harness: the critical-path test checks what the runner can claim, not live in-flight work (D-3057) (#514)
 - 19:58Z Plan: pre-flight fixes for five queued tasks before they're claimed (D-3055) (#512)
