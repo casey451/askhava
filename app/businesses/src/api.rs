@@ -53,6 +53,9 @@ pub use crate::complaints::{
     complaints, for_casey, has_safety_word, list_closed, phone_linked_line, record_complaint,
     reply, run_box_closed,
 };
+pub use crate::confirm_terms::{
+    BUSINESS_TERMS_DOCUMENT, ConfirmTerms, confirm_assent_line, record_confirm_terms,
+};
 pub use crate::consent::{
     AUTO_REPLY_TEMPLATE, CONSENT_VERSION, CONTACT_CARD_PATH, ConsentBox, ConsentChannel,
     ConsentError, PHONE_STOPPED_KIND, RecruitingEmail, WELCOME_KIND, advertisement_line,

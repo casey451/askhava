@@ -37,6 +37,7 @@ mod capability;
 mod channel_preference;
 mod complaint_holds;
 mod complaints;
+mod confirm_terms;
 mod consent;
 mod deliverability_check;
 mod email_verification;
