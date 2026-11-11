@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T19:36:10Z by runner b2f1343b3d73 (actions).
+Updated 2026-11-11T19:37:27Z by runner 74e1f303a72d (actions).
 
 **Building: T228 in progress since 19:28Z; 213 of 374 done; week 73% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,13 +8,12 @@ Updated 2026-11-11T19:36:10Z by runner b2f1343b3d73 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 4: T228 claimed 19:28Z, lease until 22:28Z
 - **Week:** 73% used, 45.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:36Z, 0 min before this update
+- **Last run:** 19:36Z, 1 min before this update
 - **Keeper:** last ran 19:36Z, next wake 22:31Z
 
 ## Needs attention
 - BLOCKED T345: plan gap reported: PLAN GAP: tests/test_runner_keeper.py:417,:426,:652; tests/test_runner_pre_smoke.py:263; tests/test_runner_smoke_reuse.py:402,:505 hard-code actions/cache/restore@v4, actions/cache/save@v4 and anthropics/claude-code-action@v1. No task owns these files (harness PRs #264, #359, #434); T345 owns no test file (kit/prompts/T345.md:68). Pinning to SHAs makes 5 tests fail (smoke.sh red). Reviewer confirmed pins are correct and the gap is real. Smallest fix: add the three test files to T345 owns and match on the action name before the @.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T345 --plan-fix D-### --reason "..."` (D-2859)
-- PLAN GAP T317 (since 2026-11-11T19:21:01Z, no attempt used; a plan change fixes it): T317: dependency T316 is DONE but its owned file app/businesses/src/public_name.rs is not on main; T317: dependency T316 is DONE but its owned file tests/integration/tests/business_public_name.rs is not on main
-- Strict plan check red: 27 problem(s) on tasks still to run (+55 on DONE tasks); first: T340: stored context_pct 35% but it measures 39%; regenerate
+- Strict plan check red: 28 problem(s) on tasks still to run (+58 on DONE tasks); first: T340: stored context_pct 35% but it measures 40%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -137,7 +136,7 @@ Updated 2026-11-11T19:36:10Z by runner b2f1343b3d73 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-11T19:33:50Z (week)): five-hour: 28.2M used, 878k left, resets 2026-11-11T20:04:09Z; week: 149.0M used, 45.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-04T16:40:10Z; waiting until 2026-11-11T20:04:09Z.
+- Pacing (session_reading 2026-11-11T19:35:52Z (week)): five-hour: 28.2M used, 878k left, resets 2026-11-11T20:04:09Z; week: 149.0M used, 45.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-04T19:07:35Z; waiting until 2026-11-11T20:04:09Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
