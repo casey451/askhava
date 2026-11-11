@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-11T17:51:55Z by runner 7bf1bf2a7b54 (actions).
+Updated 2026-11-11T17:55:30Z by runner 7bf1bf2a7b54 (actions).
 
-**Building: T228 in progress since 17:51Z; 209 of 373 done; week 70% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T228 in progress since 17:51Z; 210 of 373 done; week 70% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 209 of 373 build tasks (owner gates not counted)
+- **Tasks done:** 210 of 373 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T228 claimed 17:51Z, lease until 20:51Z; lane 2: T272 claimed 17:45Z, lease until 20:45Z; lane 3: T332 claimed 17:24Z, lease until 20:24Z
 - **Week:** 70% used, 47.6M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:45Z, 6 min before this update
+- **Last run:** 17:52Z, 3 min before this update
 - **Keeper:** last ran 17:31Z, next wake 20:26Z
 
 ## Needs attention
@@ -17,7 +17,7 @@ Updated 2026-11-11T17:51:55Z by runner 7bf1bf2a7b54 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T333 | payments (harness): a succeeded refund is recorded at the am | MERGE_PENDING | 2 | 32 min | 17:20Z | PLAN GAP: app/payments/src/routes.rs:412 (T259) and app/payments/src/refund_state.rs:34 (T270) / app/picks/src/unreachab |
+| T333 | payments (harness): a succeeded refund is recorded at the am | done | 2 | 32 min | 17:20Z | PLAN GAP: app/payments/src/routes.rs:412 (T259) and app/payments/src/refund_state.rs:34 (T270) / app/picks/src/unreachab |
 | T272 | portals: the sign-in link cap and the code-try cap are atomi | resync | 1 | 27 min | 17:17Z | merging main into the reviewed head conflicts in app/portals/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T165 | businesses: business name, Google and Yelp links and license | done | 1 | 18 min | 17:05Z |  |
 | T214 | picks (harness): the homeowner's share box at the pick and t | done | 3 | 45 min | 16:44Z | PLAN GAP: tests/integration/tests/page_pick.rs:131 and tests/security/tests/page_pick_privacy.rs:224 (both T246's; page_ |
@@ -104,7 +104,7 @@ Updated 2026-11-11T17:51:55Z by runner 7bf1bf2a7b54 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 223 of 733 (30.4%) · partial 335 · unstarted 175
-**Tasks merged (throughput only):** 209 of 373
+**Tasks merged (throughput only):** 210 of 373
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -139,7 +139,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 89 of 165 done
+- stage 4: 90 of 165 done
 - stage 5: 0 of 58 done
 - stage 6: 0 of 34 done
 - stage 7: 0 of 2 done
