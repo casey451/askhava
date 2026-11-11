@@ -192,6 +192,27 @@ pub const fn awaits_confirm(status: JobStatus) -> bool {
     }
 }
 
+/// Whether a job in `status` still waits for the charge (FEE-041, FEE-018, FEE-020): an ended
+/// pick there moves to no backup until `payments`' caller returns the job to Quotes ready
+/// (PICK-047, D-2662).
+#[must_use]
+pub const fn awaits_charge(status: JobStatus) -> bool {
+    match status {
+        JobStatus::PaymentPending => true,
+        JobStatus::Intake
+        | JobStatus::Open
+        | JobStatus::NoQuotesYet
+        | JobStatus::QuotesReady
+        | JobStatus::AwaitingConfirm
+        | JobStatus::Connected
+        | JobStatus::Done
+        | JobStatus::Closed
+        | JobStatus::ClosedEarly
+        | JobStatus::NotCovered
+        | JobStatus::Cancelled => false,
+    }
+}
+
 /// Whether a waiting pick is dead because its job in `status` no longer waits for this pick's
 /// Confirm and no Confirm moved it on (PICK-019, PICK-044, D-1503): `jobs`' backstop or an
 /// emergency's 60 minutes returned it to Quotes ready, or it closed or was cancelled. Payment
