@@ -12588,7 +12588,8 @@
     "T374",
     "T376",
     "T377",
-    "T378"
+    "T378",
+    "T386"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -13171,7 +13172,8 @@
     "T165",
     "T232",
     "T230",
-    "T231"
+    "T231",
+    "T386"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -20094,7 +20096,7 @@
    "id": "T214",
    "slug": "picks-share-box-cant-take",
    "title": "picks: the homeowner's share box at the pick and the 'Can't take it' link",
-   "goal": "The pick review step shows the required share box, unticked at first (pressing Pick unticked shows an error and picks nothing), and logs its tick; no consent, sharing, charge or feedback box on any page starts ticked (PICK-049, D-492); the pick notice carries a \"Can't take it\" link that ends the pick at once with no fee (PICK-050), added to the pick notice composer `app/picks/src/confirm.rs` (T063's, extended here, D-493); the introduction-fee wording scan (WORD-026) is T203's; the share box goes on the pick review step (`pick_review.html`, `pick_flow.rs`) and the \"Can't take it\" action page on `business_actions.html` and `business_actions.rs`, extended here (D-491); the Confirm review step's link, the Confirm-page terms acceptance and the accepted-quote email are T232's (D-493). T301 serves the email action links (D-2128): keep the signatures `app/server/src/action_links.rs` calls; any page or action this task adds is served by T306, not by a `.route` in `server`.",
+   "goal": "The pick review step shows the required share box, unticked at first (pressing Pick unticked shows an error and picks nothing), and logs its tick; no consent, sharing, charge or feedback box on any page starts ticked (PICK-049, D-492); the pick notice carries a \"Can't take it\" link that ends the pick at once with no fee (PICK-050), added where the pick notice is composed, `run_pick_notice` in `app/picks/src/handlers.rs` (T063's, extended here, D-493, D-3024); the introduction-fee wording scan (WORD-026) is T203's; the share box goes on the pick review step (`pick_review.html`, `pick_flow.rs`) and the \"Can't take it\" action page on `business_actions.html` and `business_actions.rs`, extended here (D-491); the Confirm review step's link, the Confirm-page terms acceptance and the accepted-quote email are T232's (D-493). T301 serves the email action links (D-2128): keep the signatures `app/server/src/action_links.rs` calls; any page or action this task adds is served by T306, not by a `.route` in `server`. D-3024 (attempt 1 stopped, reviewer confirmed: the notice's values are built in `handlers.rs`, not in `confirm.rs`, which only names the template IDs): T214 owns `app/picks/src/handlers.rs` instead of `confirm.rs`. In it, `run_pick_notice` adds one value, `cant_take`, to the notice's `values` beside `job` and `window` (keys, template IDs, the dedupe key and everything else unchanged): the on-domain address of the \"Can't take it\" page this task adds for that pick, built from the pick ID alone, with no token, secret or homeowner detail (the page asks for a signed-in business member, as the Confirm page's link does). T214 does not change `app/messaging/templates/en.json` or `es.json`: a value the template does not name is ignored when it fills, so the value is safe alone, and T386 adds the words that show it. TD-PICK-43's pick-notice half here: the queued notice's `values.cant_take` names the pick's page and opening it and pressing \"Can't take it\" ends the pick at once with no fee; the rendered email line is T386's.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -20126,7 +20128,7 @@
     "app/portals/src/pick_flow.rs",
     "app/portals/templates/business_actions.html",
     "app/portals/src/business_actions.rs",
-    "app/picks/src/confirm.rs"
+    "app/picks/src/handlers.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -20152,13 +20154,14 @@
     "D-443",
     "D-444",
     "D-446",
-    "D-492"
+    "D-492",
+    "D-3024"
    ],
    "cites": [],
    "budget": {
     "files": 9,
     "lines": 350,
-    "context_pct": 27
+    "context_pct": 31
    },
    "checks": [
     "Ci",
@@ -26670,6 +26673,72 @@
    ],
    "branch": "claude/task/T385-signup-own-record-read",
    "prompt": "kit/prompts/T385.md"
+  },
+  {
+   "id": "T386",
+   "slug": "pick-notice-cant-take-words",
+   "title": "messaging (harness): the pick notice's \"Can't take it\" line in both languages",
+   "goal": "Plan change D-3024 (PICK-050, PICK-037, TXT-001, TXT-044; D-446, D-493, D-491): after T214 adds the `cant_take` value to the pick notice (`run_pick_notice`, `app/picks/src/handlers.rs`), the words show it. (1) In `app/messaging/templates/en.json`, `pick_notice` and `pick_notice_emergency` each gain, right after \"Accept by {time}.\", exactly \" Can't take it: {cant_take}\"; in `app/messaging/templates/es.json` the same two keys gain, after \"Acepte antes de {time}.\", exactly \" ¿No puede aceptarlo? {cant_take}\" (still `draft`), so every text kind keeps its Spanish template (TXT-001); each of the four entries' `segments` rises to what the registry's TXT-044 check counts; no other key changes and no key is added, removed or renamed. The email subject (the first sentence) is unchanged. (2) Five done tests that render these templates with a fixed value list change only by adding a fake `cant_take` value (an `example` address, never a real brand word or domain), every other line byte-identical, no assertion removed or loosened: `app/messaging/src/tests/template_registry.rs` (T026's) adds `(\"cant_take\", ...)` to its `VALUES`; `app/intake/src/tests/intake_timeouts.rs` (T048's) adds the same to its `VALUES`; `tests/integration/tests/business_notices.rs` (T147's) `td_biz_14_times_are_set_at_send_and_a_link_is_never_unsigned` adds `\"cant_take\"` to its two `pick_notice` payloads' `values`; `tests/integration/tests/brand_setting.rs` (T295's) `td_word_38_texts_take_the_fake_brand` adds a `(\"cant_take\", ...)` pair to its `values`; and `app/picks/src/tests/confirm.rs` (T063's) `td_pick_33_templates_equal_the_spec_text` expects the two English texts with the sentence appended (still exact equality). (3) TD-PICK-43's rendered half, in `tests/integration/tests/business_notices.rs` (one new test beside `td_biz_14`): a `pick_notice` and a `pick_notice_emergency` notice with a fake `cant_take` address are sent, and both the stored plain body and the HTML body hold the \"Can't take it:\" line and the address. The HTML email shows it as text inside the line's `<p>`, not as an `<a>` (only `{link}` is made a link, `app/messaging/src/business_notices.rs:263`); making it a link is a possible later change to `business_notices.rs` (T313's and T379's), not this task's. Update the `messaging` `CLAUDE.md` and `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "4",
+   "module": "messaging",
+   "deps": [
+    "T214",
+    "T295"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness",
+    "compliance",
+    "privacy"
+   ],
+   "owns": [
+    "app/messaging/templates/en.json",
+    "app/messaging/templates/es.json",
+    "app/picks/src/tests/confirm.rs",
+    "tests/integration/tests/business_notices.rs",
+    "tests/integration/tests/brand_setting.rs",
+    "app/messaging/src/tests/template_registry.rs",
+    "app/intake/src/tests/intake_timeouts.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/messaging.md",
+    "docs/spec/wording.md"
+   ],
+   "requirements": [
+    "PICK-050",
+    "PICK-037",
+    "TXT-001",
+    "TXT-044"
+   ],
+   "tests": [
+    "TD-PICK-43"
+   ],
+   "decisions": [
+    "D-446",
+    "D-493",
+    "D-3024"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 7,
+    "lines": 200,
+    "context_pct": 29
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T386-pick-notice-cant-take-words",
+   "prompt": "kit/prompts/T386.md",
+   "copy": true
   }
  ]
 }
