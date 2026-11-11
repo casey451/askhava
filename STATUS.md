@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-11T10:56:47Z by runner 2489c8271ae9 (actions).
+Updated 2026-11-11T10:57:02Z by runner 2489c8271ae9 (actions).
 
 **Building: T164 in progress since 10:21Z; 201 of 371 done; week 63% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 201 of 371 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T164 claimed 10:21Z, lease until 13:21Z; lane 2: T278 claimed 10:27Z, lease until 13:27Z; lane 3: T331 claimed 10:45Z, lease until 13:45Z
+- **Lane:** lane 1: T164 claimed 10:21Z, lease until 13:21Z; lane 3: T331 claimed 10:45Z, lease until 13:45Z
 - **Week:** 63% used, 61.4M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 10:53Z, 3 min before this update
 - **Keeper:** last ran 10:08Z, next wake 10:28Z
@@ -17,6 +17,7 @@ Updated 2026-11-11T10:56:47Z by runner 2489c8271ae9 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T278 | quotes, intake and picks: the check-in, feedback and unreach | MERGE_PENDING | 1 | 29 min | 10:56Z |  |
 | T316 | businesses: one read of each business's public name for the  | BLOCKED | 1 | 2 min | 10:06Z | PLAN GAP: app/businesses/src/holding.rs:8 and migrations/0050_licensing_imports.sql:22-55: nothing links a business to a |
 | T337 | payments (harness): a $0 release proof is bound to the pick' | done | 5 | 23 min | 09:49Z | PLAN GAP: app/server/tests/release_recovery.rs:572-576 (td_pick_50_a_zero_fee_releases_free_and_a_cancelled_pick_nothing |
 | T327 | harness: every task kind the app queues has a handler in the | done | 1 | 48 min | 09:38Z |  |
@@ -126,8 +127,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T164 (lease until 2026-11-11T13:21:20Z)
-- lane 2: T278 (lease until 2026-11-11T13:27:24Z)
 - lane 3: T331 (lease until 2026-11-11T13:45:45Z)
 
 ## Last usage reading
-- {"task": "T316", "at": "2026-11-11T10:06:23Z", "output_tokens": 16507, "cache_creation_input_tokens": 145354, "input_tokens": 100, "cache_read_input_tokens": 1713839}
+- {"task": "T278", "at": "2026-11-11T10:56:46Z", "output_tokens": 140292, "cache_creation_input_tokens": 656401, "input_tokens": 436, "cache_read_input_tokens": 34616434}
