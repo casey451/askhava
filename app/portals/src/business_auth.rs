@@ -18,9 +18,14 @@
 //! email to the member's own sign-in address, never by a call, and shows the code field; only a
 //! correct code uses the link and signs in, and marks the browser a known device for
 //! [`DEVICE_LIFE`] ([`DEVICE_COOKIE`]). Twilio ignores idempotency keys, so a link's one code is
-//! recorded server-side before it goes (a born-used marker row, D-1776): pressing again never
-//! sends a second. Each wrong code or failed check is an `auth_failed` event naming the link, and
-//! after [`CODE_TRIES`] of them the link is used up (D-1777). Each person signs in as themself
+//! reserved server-side before it goes (`portals.code_send`, D-1776, D-2349): pressing again,
+//! or twenty times at once, sends one; a failed send can be pressed again. A check needs that
+//! code sent, then reserves one of [`CODE_TRIES`] numbered tries (`portals.code_try`) before
+//! Verify is called; a try never finished still counts, and with none left the link is used up
+//! (D-1777, D-1837). Each wrong code or failed check is an `auth_failed` event naming the link.
+//! No transaction or pooled connection is held across a Verify call or the link email: the link
+//! cap's count and insert commit under the member's advisory lock first (T272, D-1837, D-2349,
+//! PT-04). Each person signs in as themself
 //! (BIZ-023): the link, the code and the session all name one team member. Without
 //! [`DeviceCodes`] the link alone signs in (T084's behaviour), so the composition must never serve
 //! the routes without [`SignIn::with_device_codes`] (D-1777).
@@ -104,8 +109,12 @@ pub const DEVICE_LIFE: SignedDuration = SignedDuration::from_hours(180 * 24);
 pub(crate) fn site() -> String {
     format!("https://{}", askhava_core::api::brand().domain())
 }
-/// Wrong codes (or failed checks) one link takes; the next try uses the link up (D-1777).
+/// Code tries one link takes, each reserved in `portals.code_try` before Verify is called; the
+/// next check uses the link up (D-1777, D-1837).
 pub const CODE_TRIES: i64 = 5;
+/// A code send left `pending` this long (the adapter's 15-second timeout plus a minute) was cut
+/// off by a crash, so a press may retake it (D-2349).
+const SEND_STALE: SignedDuration = SignedDuration::from_secs(75);
 
 /// One team member's sign-in address on file: the business and the address's opaque mailbox ID.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -679,7 +688,9 @@ pub async fn signin_request<M: SignInMail>(
 
 /// Stores and emails one link to the current member behind `to`, unless that member already got
 /// [`LINKS_PER_LIFE`] in the last 15 minutes (D-1725); a `next` job rides on the link as `?job=`
-/// (D-1761).
+/// (D-1761). The count and the insert commit together under the member's lock before the email
+/// goes, so simultaneous requests never pass the cap and no transaction waits on the mail call
+/// (SEC-014, D-1837).
 async fn send_one<M: SignInMail>(
     state: &SignIn<M>,
     db: &mut PgConnection,
@@ -695,14 +706,14 @@ async fn send_one<M: SignInMail>(
     let since = now
         .checked_sub(LINK_LIFE)
         .map_err(|_| PortalsError::BadLifetime)?;
-    if models::links_since(db, member.id, since).await? >= LINKS_PER_LIFE {
-        return Ok(());
-    }
     let expires = now
         .checked_add(LINK_LIFE)
         .map_err(|_| PortalsError::BadLifetime)?;
     let token = models::new_link_token()?;
-    models::insert_link(db, &token, (member.id, to.business), (now, expires)).await?;
+    let ids = (member.id, to.business);
+    if !models::admit_link(db, &token, ids, (now, expires, since), LINKS_PER_LIFE).await? {
+        return Ok(());
+    }
     let path = with_next(&token, next);
     let link = SecretString::from(format!("{}/b/sign-in/{path}", site()));
     state.mail.send_link(db, to, &link).await
@@ -780,17 +791,15 @@ pub async fn signin_post<M: SignInMail>(
         return notice_post(&state, jar, &q).await;
     }
     let next = next_job(&q);
-    let Ok(mut db) = state.pool.acquire().await else {
-        return failure("database");
-    };
     let now = state.clock.now();
+    let pool = &state.pool;
     let step = match (&state.codes, well_formed(&token)) {
         (_, false) => Ok(Step::Refused),
         (None, true) => Ok(Step::SignIn { remember: false }),
-        (Some(codes), true) => device_step(codes, &mut db, (&jar, &token), &form.code, now).await,
+        (Some(codes), true) => device_step(codes, pool, (&jar, &token), &form.code, now).await,
     };
     let signed = match step {
-        Ok(Step::SignIn { remember }) => start(&mut db, jar.clone(), &token, now, remember).await,
+        Ok(Step::SignIn { remember }) => start(pool, jar.clone(), &token, now, remember).await,
         Ok(Step::Refused) => Ok(None),
         Ok(Step::Code { phone, failed }) => {
             return code_page(jar, &with_next(&token, next), phone, failed);
@@ -802,7 +811,7 @@ pub async fn signin_post<M: SignInMail>(
             Some(job) => (jar, job_page(job)).into_response(),
             None => page(jar, "done", ("", ""), false),
         },
-        Ok(None) if auth_failed(&mut db, None, now).await => page(jar, "ended", ("", ""), false),
+        Ok(None) if auth_failed(pool, None, now).await => page(jar, "ended", ("", ""), false),
         Ok(None) => failure("security event"),
         Err(_) => failure("sign-in"),
     }
@@ -810,134 +819,142 @@ pub async fn signin_post<M: SignInMail>(
 
 /// Records one `auth_failed` event on the link route, naming the link's row ID when known (an
 /// opaque record ID, never the token); `false` when that failed (SEC-048, D-1777).
-async fn auth_failed(db: &mut PgConnection, link: Option<Uuid>, now: Timestamp) -> bool {
+async fn auth_failed(pool: &PgPool, link: Option<Uuid>, now: Timestamp) -> bool {
+    let Ok(mut db) = pool.acquire().await else {
+        return false;
+    };
     let event = SecurityEvent {
         kind: SecurityEventKind::AuthFailed,
         route: SIGNIN_LINK_ROUTE,
         request_id: None,
         actor_ref: link,
     };
-    record_security_event(db, &event, now).await.is_ok()
+    record_security_event(&mut db, &event, now).await.is_ok()
 }
 
 /// The new-device step for an open link: a known device signs in; otherwise an empty `code`
 /// sends the link's one Verify code ([`send_once`]) and a correct one signs in and is remembered;
 /// past [`CODE_TRIES`] the link is refused (SEC-004, TXT-038, D-1773, D-1774, D-1776, D-1777).
-/// The error names what failed.
+/// Each database step takes a pooled connection and gives it back before Verify is called, so
+/// a slow or hanging Verify holds no connection (PT-04, D-2349). The error names what failed.
 async fn device_step(
     codes: &DeviceCodes,
-    db: &mut PgConnection,
+    pool: &PgPool,
     (jar, token): (&CookieJar, &str),
     code: &str,
     now: Timestamp,
 ) -> Result<Step, &'static str> {
-    let Some((link, member)) = open_link(db, token, now).await.map_err(|_| "link read")? else {
-        return Ok(Step::Refused);
+    let (link, to) = {
+        let mut db = pool.acquire().await.map_err(|_| "database")?;
+        let Some((link, member)) = open_link(&mut db, token, now)
+            .await
+            .map_err(|_| "link read")?
+        else {
+            return Ok(Step::Refused);
+        };
+        if known_device(&mut db, jar, member, now)
+            .await
+            .map_err(|_| "device read")?
+        {
+            return Ok(Step::SignIn { remember: false });
+        }
+        let to = codes.to.code_to(&mut db, member).await;
+        (link, to.map_err(|_| "code address")?)
     };
-    if known_device(db, jar, member, now)
-        .await
-        .map_err(|_| "device read")?
-    {
-        return Ok(Step::SignIn { remember: false });
-    }
-    let to = codes
-        .to
-        .code_to(db, member)
-        .await
-        .map_err(|_| "code address")?;
     let phone = to.channel() == CodeChannel::Sms;
     let code = code.trim();
     if code.is_empty() {
-        send_once(codes, db, link, &to).await?;
+        send_once(codes, pool, link, &to, now).await?;
         return Ok(Step::Code {
             phone,
             failed: false,
         });
     }
-    Ok(match check_once(codes, db, (link, &to), code, now).await? {
-        None => Step::Refused,
-        Some(true) => Step::SignIn { remember: true },
-        Some(false) => Step::Code {
-            phone,
-            failed: true,
+    Ok(
+        match check_once(codes, pool, (link, &to), code, now).await? {
+            None => Step::Refused,
+            Some(true) => Step::SignIn { remember: true },
+            Some(false) => Step::Code {
+                phone,
+                failed: true,
+            },
         },
-    })
+    )
 }
 
 /// Sends `link`'s one code. Twilio ignores the idempotency key (`app/adapters/CLAUDE.md`), so the
-/// send is recorded first, in a transaction held across the call: a born-used `login_link` marker
-/// row whose hash is of `code-sent:<link ID>` (unique, so a second press or a racing one inserts
-/// nothing and sends nothing). It is backdated by [`LINK_LIFE`] so it never counts toward
-/// [`LINKS_PER_LIFE`], and lives under a day so it is never a known device. A failed send rolls the
-/// marker back, so the next press tries again (SEC-004, SEC-018, D-1776).
+/// send is reserved first in `portals.code_send`, in one committed statement: a second or racing
+/// press finds it reserved or sent and sends nothing. Verify is then called with no transaction
+/// and no connection held, and the outcome recorded: a failed send can be pressed again, and a
+/// reservation a crash left `pending` is retaken after [`SEND_STALE`] (SEC-004, SEC-018, D-1776,
+/// D-2349).
 async fn send_once(
     codes: &DeviceCodes,
-    db: &mut PgConnection,
+    pool: &PgPool,
     link: Uuid,
     to: &CodeTo,
+    now: Timestamp,
 ) -> Result<(), &'static str> {
-    let mut tx = sqlx::Connection::begin(&mut *db)
+    let stale = now.checked_sub(SEND_STALE).map_err(|_| "time")?;
+    if !models::reserve_code_send(pool, link, (now, stale))
         .await
-        .map_err(|_| "database")?;
-    let marked = sqlx::query!(
-        "INSERT INTO portals.login_link \
-         (token_sha256, member_id, business_id, created_at, expires_at, used_at) \
-         SELECT $1, member_id, business_id, created_at - interval '15 minutes', expires_at, \
-         created_at - interval '15 minutes' FROM portals.login_link WHERE id = $2 \
-         ON CONFLICT (token_sha256) DO NOTHING",
-        digest(&format!("code-sent:{link}")),
-        link,
-    )
-    .execute(&mut *tx)
-    .await
-    .map_err(|_| "code record")?;
-    if marked.rows_affected() == 0 {
+        .map_err(|_| "code record")?
+    {
         return Ok(());
     }
     let key = IdempotencyKey::derive(&codes.key, "verify.signin_code", &[&link.to_string()]);
-    if !codes.verify.send(&key, to).await {
-        return Err("code not sent");
-    }
-    tx.commit().await.map_err(|_| "database")
+    let sent = codes.verify.send(&key, to).await;
+    models::finish_code_send(pool, (link, now), sent)
+        .await
+        .map_err(|_| "code record")?;
+    if sent { Ok(()) } else { Err("code not sent") }
 }
 
-/// Checks `code` for `link`: `None` (and the link used up) once [`CODE_TRIES`] wrong codes or
-/// failed checks are on record; a wrong code or a failed check is an `auth_failed` event naming
-/// the link, then `Some(false)` or the error (SEC-004, SEC-048, D-1777).
+/// Checks `code` for `link`. A link whose code was not sent reaches no Verify and uses no try: it
+/// is an `auth_failed` event and `Some(false)` (PT-03, D-2349). Otherwise the next of
+/// [`CODE_TRIES`] numbered tries is reserved first (none left: the link is used up and `None`),
+/// Verify is called with nothing held, and the try's outcome recorded; a wrong code or a failed
+/// check is an `auth_failed` event naming the link, then `Some(false)` or the error. A try whose
+/// outcome was never recorded still counts (SEC-004, SEC-020, SEC-048, D-1777, D-1837).
 async fn check_once(
     codes: &DeviceCodes,
-    db: &mut PgConnection,
+    pool: &PgPool,
     (link, to): (Uuid, &CodeTo),
     code: &str,
     now: Timestamp,
 ) -> Result<Option<bool>, &'static str> {
-    let tries = sqlx::query_scalar!(
-        "SELECT count(*) FROM portals.security_event \
-         WHERE kind = 'auth_failed' AND route = $1 AND actor_ref = $2",
-        SIGNIN_LINK_ROUTE,
-        link,
-    )
-    .fetch_one(&mut *db)
-    .await
-    .map_err(|_| "tries read")?;
-    if tries.unwrap_or(0) >= CODE_TRIES {
-        sqlx::query!(
-            "UPDATE portals.login_link SET used_at = $2 WHERE id = $1 AND used_at IS NULL",
-            link,
-            now.to_sqlx(),
-        )
-        .execute(&mut *db)
+    if !models::code_sent(pool, link)
         .await
-        .map_err(|_| "link use")?;
-        return Ok(None);
+        .map_err(|_| "send read")?
+    {
+        return if auth_failed(pool, Some(link), now).await {
+            Ok(Some(false))
+        } else {
+            Err("security event")
+        };
     }
+    let reserved = models::reserve_try(pool, link, now, CODE_TRIES).await;
+    let Some(try_no) = reserved.map_err(|_| "try record")? else {
+        models::use_up_link(pool, link, now)
+            .await
+            .map_err(|_| "link use")?;
+        return Ok(None);
+    };
     let six = code.len() == 6 && code.bytes().all(|b| b.is_ascii_digit());
     let checked = if six {
         codes.verify.check(to, code).await
     } else {
         Some(false)
     };
-    if checked != Some(true) && !auth_failed(db, Some(link), now).await {
+    let outcome = match checked {
+        Some(true) => "right",
+        Some(false) => "wrong",
+        None => "abandoned",
+    };
+    models::finish_try(pool, (link, try_no), outcome)
+        .await
+        .map_err(|_| "try record")?;
+    if checked != Some(true) && !auth_failed(pool, Some(link), now).await {
         return Err("security event");
     }
     checked.map(Some).ok_or("code check")
@@ -1072,15 +1089,13 @@ fn code_page(jar: CookieJar, token: &str, phone: bool, failed: bool) -> Response
 /// session, names its business and, when `remember`, stores the known device. `None` (nothing
 /// changed) when any check fails.
 async fn start(
-    db: &mut PgConnection,
+    pool: &PgPool,
     jar: CookieJar,
     token: &str,
     now: Timestamp,
     remember: bool,
 ) -> Result<Option<CookieJar>, PortalsError> {
-    let mut tx = sqlx::Connection::begin(&mut *db)
-        .await
-        .map_err(|_| PortalsError::Database)?;
+    let mut tx = pool.begin().await.map_err(|_| PortalsError::Database)?;
     let Some((member, business)) = models::use_link(&mut tx, token, now).await? else {
         return Ok(None);
     };
