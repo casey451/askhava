@@ -1794,3 +1794,4 @@
 - 2026-11-10T23:40:14Z runner 8d1197507108 (actions): {}
 - 2026-11-10T23:40:27Z runner f33177e31705 (actions): {}
 - 2026-11-11T00:03:42Z runner 5a57f2e1b7f9 (actions): {"T311": "MERGE_PENDING -> DONE"}
+- 2026-11-11T00:03:52Z runner 5a57f2e1b7f9 (actions): {"T349": "QUEUED -> IN_PROGRESS"}; T349 estimated 2.3M tokens (calibrated); five-hour window has 26.6M left, week 88.0M (session_reading 2026-11-10T23:40:14Z (week)); claimed
