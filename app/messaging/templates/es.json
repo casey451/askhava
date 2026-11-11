@@ -582,5 +582,41 @@
     "draft": true,
     "segments": 2,
     "text": "{brand_short}: Su banco pide que apruebe el pago para el trabajo {job}. Todavía no se le cobró nada. Apruébelo aquí: {link}"
+  },
+  "check_in_day3": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 4,
+    "text": "{brand_short}: Responda LISTO, PROBLEMA o NO si nunca se comunicaron con usted. ¿Todavía no terminan? Responda MÁS TARDE. Más respuestas: responda MÁS.\nEs sobre el negocio que eligió para la solicitud {job}."
+  },
+  "check_in_day14": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 4,
+    "text": "{brand_short}: Responda LISTO, PROBLEMA o NO si nunca se comunicaron con usted. ¿Todavía no terminan? Responda MÁS TARDE. Más respuestas: responda MÁS.\nLe escribimos de nuevo sobre el negocio que eligió para la solicitud {job}."
+  },
+  "check_in_more": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 5,
+    "text": "{brand_short}: Respuestas para la solicitud {job}:\nLISTO: ya terminaron el trabajo.\nPROBLEMA: algo salió mal. Puede agregar unas palabras.\nNO: nunca se comunicaron con usted.\nMÁS TARDE: todavía no terminan.\nCONTINUO: empezó un servicio regular.\nOTRO: contrató a otra persona."
+  },
+  "feedback_request": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 3,
+    "text": "{brand_short}: Gracias por avisarnos sobre la solicitud {job}. ¿Cómo le fue? Cuéntenos aquí: {link} Lo que escriba queda privado a menos que marque la casilla para compartirlo."
+  },
+  "unreachable_closed": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 2,
+    "text": "{brand_short}: {business} no pudo comunicarse con usted. Escríbanos cuando quiera para empezar de nuevo."
+  },
+  "emailed_question": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 2,
+    "text": "{brand_short}: ¿{business} le mandó un correo electrónico y acordaron una hora? Responda SÍ o NO."
   }
 }
