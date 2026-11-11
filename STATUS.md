@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T21:47:38Z by runner 5576a5daaec3 (actions).
+Updated 2026-11-11T21:47:56Z by runner 53eba4dfccb6 (actions).
 
 **Building: T387 in progress since 20:19Z; 213 of 376 done; week 75% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -9,11 +9,11 @@ Updated 2026-11-11T21:47:38Z by runner 5576a5daaec3 (actions).
 - **Lane:** lane 1: T387 claimed 20:19Z, lease until 23:19Z; lane 3: T232 claimed 21:11Z, lease until 00:11Z
 - **Week:** 75% used, 41.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 21:47Z, 0 min before this update
-- **Keeper:** last ran 21:22Z, next wake 23:22Z
+- **Keeper:** last ran 21:47Z, next wake 23:21Z
 
 ## Needs attention
 - BLOCKED T345: plan gap reported: PLAN GAP: tests/test_runner_keeper.py:417,:426,:652; tests/test_runner_pre_smoke.py:263; tests/test_runner_smoke_reuse.py:402,:505 hard-code actions/cache/restore@v4, actions/cache/save@v4 and anthropics/claude-code-action@v1. No task owns these files (harness PRs #264, #359, #434); T345 owns no test file (kit/prompts/T345.md:68). Pinning to SHAs makes 5 tests fail (smoke.sh red). Reviewer confirmed pins are correct and the gap is real. Smallest fix: add the three test files to T345 owns and match on the action name before the @.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T345 --plan-fix D-### --reason "..."` (D-2859)
-- Strict plan check red: 29 problem(s) on tasks still to run (+61 on DONE tasks); first: T340: stored context_pct 35% but it measures 40%; regenerate
+- Strict plan check red: 28 problem(s) on tasks still to run (+58 on DONE tasks); first: T340: stored context_pct 35% but it measures 40%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
