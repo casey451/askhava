@@ -64,7 +64,7 @@ The layer-0 crate every module may call: settings, the database pool and guarded
 - Every grant is a plain top-level statement that fails alone on a missing role; never inside a `DO` block or behind a `pg_roles` lookup (D-701).
 - A new table in any schema gets SELECT, INSERT only for the app role; a table that needs UPDATE or DELETE gets an explicit `GRANT ... TO askhava_app` in the migration that creates it, and a new schema writes its default as `GRANT SELECT, INSERT ON TABLES` (D-1520): `tests/integration/tests/schema_grants.rs` (TD-SEC-34) pins every non-payments table's privileges, checks every schema's default and holds a later table to SELECT, INSERT plus its explicit GRANTs.
 
-- Customer-visible code never writes the brand: it reads `brand()` or a template token; `tests/docs/test_brand_literals.py` fails on a new literal under `app/` and `tests/brand_literal_baseline.json` only shrinks (D-1933).
+- Customer-visible code never writes the brand: it reads `brand()` or a template token; `tests/docs/test_brand_literals.py` fails on any literal under `app/`; since T295 there is no baseline, and a `tests/brand_literal_baseline.json` file fails the guard (D-1933, D-2833).
 - The brand file is a protected path: a rename is a harness change with its decision, and the legal drafts in `docs/legal/` must be re-issued under the new name (`scripts/check_legal_docs.py` fails until they are, TERMS-016).
 
 ## How to change
