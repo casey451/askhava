@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T17:55:30Z by runner 7bf1bf2a7b54 (actions).
+Updated 2026-11-11T17:58:48Z by runner 7bf1bf2a7b54 (actions).
 
 **Building: T228 in progress since 17:51Z; 210 of 373 done; week 70% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,10 +8,11 @@ Updated 2026-11-11T17:55:30Z by runner 7bf1bf2a7b54 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T228 claimed 17:51Z, lease until 20:51Z; lane 2: T272 claimed 17:45Z, lease until 20:45Z; lane 3: T332 claimed 17:24Z, lease until 20:24Z
 - **Week:** 70% used, 47.6M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:52Z, 3 min before this update
+- **Last run:** 17:52Z, 6 min before this update
 - **Keeper:** last ran 17:31Z, next wake 20:26Z
 
 ## Needs attention
+- PLAN GAP T334 (since 2026-11-11T17:55:26Z, no attempt used; a plan change fixes it): T334: dependency T333 is DONE but its owned file tests/integration/tests/refund_amounts.rs is not on main
 - Strict plan check red: 26 problem(s) on tasks still to run (+47 on DONE tasks); first: T340: stored context_pct 35% but it measures 39%; regenerate
 
 ## Last 24 hours

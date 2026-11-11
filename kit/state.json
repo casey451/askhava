@@ -30461,7 +30461,13 @@
    "attempts": 0,
    "slug": "reconcile-catch-up-and-paging",
    "type": "build",
-   "stage": "4"
+   "stage": "4",
+   "plan_gap": {
+    "at": "2026-11-11T17:55:26Z",
+    "problems": [
+     "T334: dependency T333 is DONE but its owned file tests/integration/tests/refund_amounts.rs is not on main"
+    ]
+   }
   },
   {
    "id": "T335",
@@ -34005,7 +34011,7 @@
    }
   }
  },
- "updated_at": "2026-11-11T17:55:30Z",
+ "updated_at": "2026-11-11T17:58:48Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -34106,13 +34112,6 @@
  "runner_sha": "7bf1bf2a7b54d3c0d728c3facd1aebdccf48cb07",
  "starter": "actions",
  "smoke_runs": [
-  {
-   "sha": "a70f6e601017c41a759081af4d036079782b2ffe",
-   "ok": true,
-   "at": "2026-11-11T12:37:45Z",
-   "why": "start routine (background)",
-   "seconds": 457
-  },
   {
    "sha": "8eba59454470d8ffc8b21fa996ae8b3d1496a694",
    "ok": true,
@@ -34245,6 +34244,13 @@
    "at": "2026-11-11T17:51:50Z",
    "why": "start routine (reused 2026-11-11T17:45:14Z)",
    "reused": "2026-11-11T17:45:14Z"
+  },
+  {
+   "sha": "60a8d50b1c568fba03f66e143749604ed7533432",
+   "ok": false,
+   "at": "2026-11-11T17:55:26Z",
+   "why": "start routine (background)",
+   "seconds": 182
   }
  ],
  "main_red": null,
@@ -34315,11 +34321,6 @@
  ],
  "smoke_env_problems": [
   {
-   "sha": "d145202dd72b2ebb6123c4d5de870768d8aade54",
-   "at": "2026-11-10T16:27:52Z",
-   "why": "smoke red while Ci, Twin and Ally were green on the head"
-  },
-  {
    "sha": "f33177e317053a1d11ecccdf5b9c4d6f3de97675",
    "at": "2026-11-10T22:18:18Z",
    "why": "smoke red while Ci, Twin and Ally were green on the head"
@@ -34362,6 +34363,11 @@
   {
    "sha": "ef7f7fc804232e7ded2fb112c6f77c7384c2c291",
    "at": "2026-11-11T16:24:17Z",
+   "why": "smoke red while Ci, Twin and Ally were green on the head"
+  },
+  {
+   "sha": "60a8d50b1c568fba03f66e143749604ed7533432",
+   "at": "2026-11-11T17:55:26Z",
    "why": "smoke red while Ci, Twin and Ally were green on the head"
   }
  ],
