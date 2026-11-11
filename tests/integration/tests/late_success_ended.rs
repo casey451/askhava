@@ -6,7 +6,9 @@
 //! `run_pay_timer`, then succeed: the success and its FEE-042 evidence are stored, nothing is
 //! released (`paid_release` answers `PickEnded`, so no `ReleaseProof` can be built), and exactly
 //! one `payments.late_success_refund` task and one `payments.late_success` alert exist, whether the
-//! success arrives by the webhook, by the charge check round, or by both in either order.
+//! success arrives by the webhook, by the charge check round, or by both in either order. A
+//! success on a pick still current is stored, cleared for release and queues no refund and no
+//! alert, by either path (FEE-021 applies only once the job moved on).
 //!
 //! Stripe is a scripted fake: each fetch takes the next answer, `"down"` meaning unreachable, and
 //! refunds are counted. The webhook is signed with a fake secret. All IDs are fake.
@@ -22,6 +24,7 @@ use askhava_payments::api::{
     LATE_KIND, LATE_SUCCESS_ALERT, LATE_TRIGGER, RefundTrigger, ReleaseError, StripeAccount,
     VerifiedStripeEvent, paid_release, run_charge_check, run_late_refund, run_pay_timer,
 };
+use askhava_privacy::api::ReleaseBasis;
 use hmac::{Hmac, KeyInit, Mac};
 use jiff::Timestamp;
 use secrecy::SecretString;
@@ -151,14 +154,9 @@ fn succeeded() -> VerifiedStripeEvent {
     VerifiedStripeEvent::from_webhook(&hook).expect("event")
 }
 
-/// One $75 pick whose one attempt is `sent` (no answer, the 4-hour release running) or
-/// `declined` (the card-fix window running), with that timer due a minute ago, as T062 writes
-/// them; then the timer's own handler ends the pick.
-async fn ended(pool: &PgPool, end: End) {
-    let (status, kind, answer) = match end {
-        End::FourHours => ("sent", "stripe-down", "down"),
-        End::CardFix => ("declined", "card-fix", "requires_payment_method"),
-    };
+/// One $75 pick whose one attempt has `status`, with its `kind` timer due a minute ago, as T062
+/// writes them; the pick is still current.
+async fn seed(pool: &PgPool, status: &str, kind: &str) {
     let sqls = [
         "INSERT INTO payments.customer (business_id, stripe_customer_id) VALUES ($2, 'cus_FakeT332')",
         "INSERT INTO payments.pick_intent (pick_id, business_id, job_id, amount_cents,
@@ -182,6 +180,17 @@ async fn ended(pool: &PgPool, end: End) {
             .await
             .expect("seed");
     }
+}
+
+/// One $75 pick whose one attempt is `sent` (no answer, the 4-hour release running) or
+/// `declined` (the card-fix window running), with that timer due a minute ago, as T062 writes
+/// them; then the timer's own handler ends the pick.
+async fn ended(pool: &PgPool, end: End) {
+    let (status, kind, answer) = match end {
+        End::FourHours => ("sent", "stripe-down", "down"),
+        End::CardFix => ("declined", "card-fix", "requires_payment_method"),
+    };
+    seed(pool, status, kind).await;
     let timer = json!({"pick": PICK, "kind": kind, "due": NOW - 60});
     run_pay_timer(pool, &fake(&[answer]), &timer, at(0))
         .await
@@ -291,6 +300,52 @@ async fn td_fee_56_card_fix_end_check_then_webhook(pool: PgPool) {
     assert_eq!(state(&pool).await, none);
     deliver(&pool, Path::Webhook, 60).await;
     assert_one_late_success(&pool).await;
+}
+
+/// A success on the still-current pick reaches `payments` by `path`; the webhook clears it.
+async fn deliver_current(pool: &PgPool, path: Path, offset: i64) {
+    let stripe = fake(&["succeeded"]);
+    match path {
+        Path::Webhook => {
+            let (account, event) = (account(), succeeded());
+            let cleared = paid_release(pool, &stripe, &account, &event, PICK, at(offset)).await;
+            let cleared = cleared.expect("a current pick is cleared");
+            assert_eq!(
+                (cleared.pick(), cleared.basis()),
+                (PICK, ReleaseBasis::PaidCharge)
+            );
+        }
+        Path::Check => {
+            let check = json!({"pick": PICK, "try": 1, "round": 0});
+            run_charge_check(pool, &stripe, &check, at(offset))
+                .await
+                .expect("check");
+        }
+    }
+}
+
+/// A success on a pick `payments` never ended is stored with its one evidence record and queues
+/// no late-success refund and no alert, by `paths` in order.
+async fn run_current(pool: &PgPool, paths: &[Path]) {
+    seed(pool, "sent", "stripe-down").await;
+    for (n, path) in (0_i64..).zip(paths) {
+        deliver_current(pool, *path, 60 * (n + 1)).await;
+        assert_eq!(state(pool).await, (1, "succeeded".to_owned(), 0, 0));
+    }
+}
+
+/// TD-FEE-56 (FEE-021, FEE-042): a success on a current pick by the webhook is cleared for
+/// release and refunds nothing.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_fee_56_current_pick_webhook_refunds_nothing(pool: PgPool) {
+    run_current(&pool, &[Path::Webhook]).await;
+}
+
+/// TD-FEE-56 (FEE-019, FEE-021, FEE-042): a success on a current pick recorded by the check round
+/// refunds nothing, and the webhook after it still clears the pick.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_fee_56_current_pick_check_refunds_nothing(pool: PgPool) {
+    run_current(&pool, &[Path::Check, Path::Webhook]).await;
 }
 
 /// TD-FEE-56 (FEE-021, FEE-026; D-2290): the queued task refunds once under `late-success`

@@ -11,8 +11,8 @@
 //! the latest attempt (with its FEE-042 evidence record) before the proof is made, and a pick that
 //! has ended, before or while the intent was fetched, is never cleared (D-1478): its verified
 //! success and evidence are still stored, and its one late-success refund is queued in that
-//! transaction, so it answers `PickEnded` with the money on its way back (FEE-021, D-2290). A redirect to
-//! a success page carries no verified event, so it can never make one (SEC-030).
+//! transaction, so it answers `PickEnded` with the money on its way back (FEE-021, D-2290). A
+//! redirect to a success page carries no verified event, so it can never make one (SEC-030).
 //! [`no_fee_release`] makes one from a recorded $0 decision only: a free first win, a
 //! repeat customer or a fee-free job type in the ledger (FEE-010, FEE-013, FEE-045), for the
 //! pick's own business and job as its `payments.pick_fee` row stores them (D-2302), never for a

@@ -5,9 +5,10 @@
 //! or bank approval opens the card-fix window (1 business hour, 60 clock minutes on an emergency
 //! job, PICK-044) and queues [`CARD_FIX_KIND`], which `picks::money_notices` turns into the
 //! business's notice (FEE-020, D-492); a success writes the pick's one FEE-042 evidence record
-//! ([`write_evidence`], D-1474) and, on a pick `payments` already ended, queues its one late-success
-//! refund and alert through `late_success` (FEE-021, D-2290); no answer from Stripe starts the 4-hour release (FEE-018);
-//! an undecided attempt queues [`CHECK_KIND`] for 30 minutes later (FEE-019). A timer is a
+//! ([`write_evidence`], D-1474) and, on a pick `payments` already ended, queues its one
+//! late-success refund and alert through `late_success` (FEE-021, D-2290); no answer from Stripe
+//! starts the 4-hour release (FEE-018); an undecided attempt queues [`CHECK_KIND`] for 30 minutes
+//! later (FEE-019). A timer is a
 //! `payments.pay_timer` row plus a [`TIMER_KIND`] task at its due time; [`run_pay_timer`] asks
 //! Stripe once more: the 4-hour release ends the pick only while Stripe still cannot be reached,
 //! the card-fix window only on Stripe's word that the card still needs fixing, a paid pick stays,
