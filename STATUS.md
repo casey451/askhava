@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T20:11:43Z by runner 0ca2670042a7 (actions).
+Updated 2026-11-11T20:15:48Z by runner 0ca2670042a7 (actions).
 
 **Idle since 19:59Z; 213 of 376 done; week 73% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-11T20:11:43Z by runner 0ca2670042a7 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 19:59Z (no task in progress)
 - **Week:** 73% used, 45.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:10Z, 1 min before this update
+- **Last run:** 20:15Z, 0 min before this update
 - **Keeper:** last ran 20:01Z, next wake 20:11Z
 
 ## Needs attention
@@ -70,7 +70,6 @@ Updated 2026-11-11T20:11:43Z by runner 0ca2670042a7 (actions).
 | T207 | businesses: re-apply the license map when a daily list chang | done | 1 | 41 min | 23:39Z |  |
 | T311 | calls and server: a voice read-back confirm connects only th | done | 2 | 33 min | 23:21Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T338 | adapters (harness): the refused-connection test holds its po | done | 1 | 24 min | 20:45Z |  |
-| T155 | businesses: sign-up capability setup pre-ticked from the lic | done | 1 | 57 min | 20:15Z |  |
 
 ### Plan and harness merges on main
 - 20:03Z Harness: the critical-path test checks what the runner can claim, not live in-flight work (D-3057) (#514)
