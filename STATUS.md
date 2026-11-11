@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-11T08:12:48Z by runner 8f6a6c319458 (actions).
+Updated 2026-11-11T08:13:01Z by runner 8f6a6c319458 (actions).
 
-**Building: T212 in progress since 07:52Z; 197 of 370 done; week 62% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T327 in progress since 05:24Z; 197 of 370 done; week 62% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 197 of 370 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T212 claimed 07:52Z, lease until 10:52Z; lane 3: T327 claimed 05:24Z, lease until 08:24Z
+- **Lane:** lane 3: T327 claimed 05:24Z, lease until 08:24Z
 - **Week:** 62% used, 63.9M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 08:06Z, 6 min before this update
 - **Keeper:** last ran 08:06Z, next wake 08:27Z
@@ -18,8 +18,9 @@ Updated 2026-11-11T08:12:48Z by runner 8f6a6c319458 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T212 | intake: photo asks with on-server checks and preview, inspir | MERGE_PENDING | 2 | 19 min | 08:12Z | Ci: failure; Coverage: failure; Checks: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned |
 | T337 | payments (harness): a $0 release proof is bound to the pick' | BLOCKED | 4 | 9 min | 08:05Z | PLAN GAP: app/server/tests/release_recovery.rs:572-576 (td_pick_50_a_zero_fee_releases_free_and_a_cancelled_pick_nothing |
-| T212 | intake: photo asks with on-server checks and preview, inspir | check_failed | 1 | 56 min | 07:20Z | Ci: failure; Coverage: failure; Checks: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned |
+| T212 | intake: photo asks with on-server checks and preview, inspir | check_failed | 1 | 56 min | 07:20Z |  |
 | T383 | messaging and portals: the text templates and the homeowner  | done | 1 | 20 min | 05:39Z |  |
 | T337 | payments (harness): a $0 release proof is bound to the pick' | BLOCKED | 3 | 16 min | 05:11Z |  |
 | T209 | picks and payments: the optional auto-confirm-and-pay box wi | done | 1 | 115 min | 05:06Z |  |
@@ -119,8 +120,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T212 (lease until 2026-11-11T10:52:57Z)
+- nothing
 - lane 3: T327 (lease until 2026-11-11T08:24:57Z)
 
 ## Last usage reading
-- {"task": "T337", "at": "2026-11-11T08:05:50Z", "cache_creation_input_tokens": 220149, "output_tokens": 40243, "cache_read_input_tokens": 5133397, "input_tokens": 163}
+- {"task": "T212", "at": "2026-11-11T08:12:47Z", "input_tokens": 88, "cache_read_input_tokens": 1795092, "cache_creation_input_tokens": 228415, "output_tokens": 20111}
