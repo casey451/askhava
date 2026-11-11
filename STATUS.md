@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-11T14:24:25Z by runner f74d5c4966e8 (actions).
+Updated 2026-11-11T14:24:42Z by runner f74d5c4966e8 (actions).
 
 **Building: T342 in progress since 13:39Z; 204 of 372 done; week 68% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 204 of 372 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T342 claimed 13:39Z, lease until 16:39Z; lane 3: T332 claimed 13:35Z, lease until 16:35Z
+- **Lane:** lane 2: T342 claimed 13:39Z, lease until 16:39Z
 - **Week:** 68% used, 54.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 14:20Z, 4 min before this update
 - **Keeper:** last ran 14:20Z, next wake 16:38Z
@@ -19,11 +19,12 @@ Updated 2026-11-11T14:24:25Z by runner f74d5c4966e8 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T332 | payments (harness): a late success has its own refund trigge | MERGE_PENDING | 3 | 48 min | 14:24Z | PLAN GAP: tests/integration/tests/confirm_and_pay.rs:393-413 (td_fee_25_an_ended_pick_is_never_cleared, TD-FEE-25, T189  |
 | T269 | portals: a business notice's signed link opens sign-in for t | MERGE_PENDING | 1 | 20 min | 14:19Z |  |
 | T384 | quotes and portals: the homeowner sees an edited quote as up | check_failed | 1 | 40 min | 13:40Z | Ci: failure; E2e: failure; Ally: failure / E2e failed at step: Chromium and its system libraries / E: Failed to fetch ht |
 | T214 | picks: the homeowner's share box at the pick and the 'Can't  | BLOCKED | 1 | 15 min | 13:19Z | PLAN GAP: app/picks/src/handlers.rs:73-76 (T063's) and the pick_notice / pick_notice_emergency keys in app/messaging/tem |
 | T333 | payments (harness): a succeeded refund is recorded at the am | BLOCKED | 1 | 50 min | 13:14Z | PLAN GAP: app/payments/src/routes.rs:412 (T259) and app/payments/src/refund_state.rs:34 (T270) / app/picks/src/unreachab |
-| T332 | payments (harness): a late success has its own refund trigge | BLOCKED | 2 | 2 min | 12:40Z | PLAN GAP: tests/integration/tests/confirm_and_pay.rs:393-413 (td_fee_25_an_ended_pick_is_never_cleared, TD-FEE-25, T189  |
+| T332 | payments (harness): a late success has its own refund trigge | BLOCKED | 2 | 2 min | 12:40Z |  |
 | T332 | payments (harness): a late success has its own refund trigge | BLOCKED | 1 | 11 min | 12:10Z |  |
 | T164 | quotes: one quote format per category, screened notes, and e | done | 3 | 19 min | 12:02Z | merging main into the reviewed head conflicts in app/quotes/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T331 | payments (harness): a payment success with no readable pick  | done | 1 | 49 min | 11:35Z |  |
@@ -140,7 +141,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T342 (lease until 2026-11-11T16:39:59Z)
-- lane 3: T332 (lease until 2026-11-11T16:35:27Z)
 
 ## Last usage reading
-- {"task": "T269", "at": "2026-11-11T14:19:22Z", "cache_creation_input_tokens": 448403, "input_tokens": 292, "cache_read_input_tokens": 16390555, "output_tokens": 113315}
+- {"task": "T332", "at": "2026-11-11T14:24:24Z", "input_tokens": 360, "cache_creation_input_tokens": 519233, "cache_read_input_tokens": 14207599, "output_tokens": 132519}
