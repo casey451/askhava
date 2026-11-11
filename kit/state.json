@@ -25064,8 +25064,8 @@
     "T294",
     "T291"
    ],
-   "status": "MERGE_PENDING",
-   "attempts": 0,
+   "status": "QUEUED",
+   "attempts": 1,
    "slug": "notice-signin-link",
    "type": "build",
    "stage": "4",
@@ -25084,13 +25084,54 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 117,
      "head_sha": "b1639f25d419ec5457e7a9e6a26a5394aa1ab0b6",
-     "pr": null,
-     "checks": null,
+     "pr": 490,
+     "checks": [
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "failure"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "failure"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "failure"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-11T13:58:53Z",
      "ended_at": "2026-11-11T14:19:22Z",
-     "result": "MERGE_PENDING"
+     "result": "check_failed"
     }
    ],
    "reviewed_sha": "b1639f25d419ec5457e7a9e6a26a5394aa1ab0b6",
@@ -25105,7 +25146,8 @@
     "enabled": true,
     "why": "auto-merge on #490 (gh pr merge)",
     "head": "b1639f25d419ec5457e7a9e6a26a5394aa1ab0b6"
-   }
+   },
+   "last_failure": "Ci: failure; E2e: failure; Ally: failure\nE2e failed at step: Chromium and its system libraries\nE: Failed to fetch https://security.ubuntu.com/ubuntu/pool/universe/u/unifont/fonts-unifont_16.0.04-1build1_all.deb  Temporary failure resolving 'security.ubuntu.com'\nE: Failed to fetch https://security.ubuntu.com/ubuntu/pool/universe/f/fonts-wqy-zenhei/fonts-wqy-zenhei_0.9.45-8build1_all.deb  Temporary failure resolving 'security.ubuntu.com'\nE: Failed to fetch https://security.ubuntu.com/ubuntu/pool/main/x/xfonts-encodings/xfonts-encodings_1.0.5-0ubuntu3_all.deb  Temporary failure resolving 'security.ubuntu.com'\nE: Failed to fetch https://security.ubuntu.com/ubuntu/pool/main/x/xfonts-utils/xfonts-utils_7.7%2b7build1_amd64v3.deb  Temporary failure resolving 'security.ubuntu.com'\nE: Failed to fetch https://security.ubuntu.com/ubuntu/pool/universe/x/xfonts-cyrillic/xfonts-cyrillic_1.0.5%2bnmu1build1_all.deb  Temporary failure resolving 'security.ubuntu.com'\nE: Failed to fetch https://security.ubuntu.com/ubuntu/pool/universe/x/xfonts-scalable/xfonts-scalable_1.0.3-1.3build1_all.deb  Temporary failure resolving 'security.ubuntu.com'\nE: Unable to fetch some archives, maybe run apt update or try with --fix-missing?\nFailed to install browsers\nError: Installation process exited with code: 100\n##[error]Process completed with exit code 1.\nAlly failed at step: Chromium and its system libraries\nError: Installation process exited with code: 100\n##[error]Process completed with exit code 1.\nCi fai"
   },
   {
    "id": "T261",
@@ -29028,8 +29070,8 @@
     "T327",
     "T337"
    ],
-   "status": "MERGE_PENDING",
-   "attempts": 2,
+   "status": "BLOCKED",
+   "attempts": 3,
    "slug": "late-success-trigger-and-ended-picks",
    "type": "harness",
    "stage": "4",
@@ -29041,7 +29083,7 @@
     2958,
     2959
    ],
-   "reason": null,
+   "reason": "Ci: failure; Ally: failure; E2e: failure\nAlly failed at step: Chromium and its system libraries\nE: Failed to fetch https://security.ubuntu.com/ubuntu/pool/universe/u/unifont/fonts-unifont_16.0.04-1build1_all.deb  Temporary failure resolving 'security.ubuntu.com'\nE: Failed to fetch https://security.ubuntu.com/ubuntu/pool/universe/f/fonts-wqy-zenhei/fonts-wqy-zenhei_0.9.45-8build1_all.deb  Temporary failure resolving 'security.ubuntu.com'\nE: Failed to fetch https://security.ubuntu.com/ubuntu/pool/main/x/xfonts-encodings/xfonts-encodings_1.0.5-0ubuntu3_all.deb  Temporary failure resolving 'security.ubuntu.com'\nE: Failed to fetch https://security.ubuntu.com/ubuntu/pool/main/x/xfonts-utils/xfonts-utils_7.7%2b7build1_amd64v3.deb  Temporary failure resolving 'security.ubuntu.com'\nE: Failed to fetch https://security.ubuntu.com/ubuntu/pool/universe/x/xfonts-cyrillic/xfonts-cyrillic_1.0.5%2bnmu1build1_all.deb  Temporary failure resolving 'security.ubuntu.com'\nE: Failed to fetch https://security.ubuntu.com/ubuntu/pool/universe/x/xfonts-scalable/xfonts-scalable_1.0.3-1.3build1_all.deb  Temporary failure resolving 'security.ubuntu.com'\nE: Unable to fetch some archives, maybe run apt update or try with --fix-missing?\nFailed to install browsers\nError: Installation process exited with code: 100\n##[error]Process completed with exit code 1.\nE2e failed at step: Chromium and its system libraries\nError: Installation process exited with code: 100\n##[error]Process completed with exit code 1.\nCi fai",
    "last_failure": "PLAN GAP: tests/integration/tests/confirm_and_pay.rs:393-413 (td_fee_25_an_ended_pick_is_never_cleared, TD-FEE-25, T189 DONE; also owned by T287, T337, T352; not T332) asserts paid_release on an ended pick with a verified success stores nothing (evidence empty line ~408, attempt stays \"processing\" line ~413). T332 goal part (2) and D-2290 require paid_release to store the success and evidence and call late_success, then answer PickEnded. No implementation passes both. D-2290 and D-2970 do not name confirm_and_pay.rs. Smallest plan change: T332 may also change only that test's two \"stores nothing\" assertions (evidence row exists, attempt succeeded, one payments.late_success_refund task and one payments.late_success alert; Err(PickEnded) stays) and its doc comment; also the late_success.rs:197-200 comment \"paid_release stores no success\". Keep T352 ordered after T332. Reviewer confirmed.\nre-queued after plan fix D-3007: D-3007 lets T332 change the two 'stores nothing' assertions in td_fee_25_an_ended_pick_is_never_cleared so an ended pick with a verified success stores it and its evidence (D-2290)",
    "history": [
     {
@@ -29075,13 +29117,54 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 140,
      "head_sha": "f74d5c4966e8fc7d0c7ede9218a21d79851bbd15",
-     "pr": null,
-     "checks": null,
+     "pr": 491,
+     "checks": [
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "failure"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "failure"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "failure"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-11T13:35:27Z",
      "ended_at": "2026-11-11T14:24:24Z",
-     "result": "MERGE_PENDING"
+     "result": "check_failed"
     }
    ],
    "requeues": [
@@ -29809,7 +29892,7 @@
      "result": "MERGE_PENDING"
     }
    ],
-   "reviewed_sha": "69e7a9af718ad76501b72f251b289b81953c5b36",
+   "reviewed_sha": "d424d8419269c317ec4fb26873db3df4c868fd7d",
    "review_lease": {
     "task": "T342",
     "session": "actions-43025174451",
@@ -29829,6 +29912,16 @@
      "main": "da0eb3920737e45eddab74251968a878c3682abe",
      "how": "hand-in",
      "at": "2026-11-11T14:31:22Z"
+    },
+    {
+     "from": "69e7a9af718ad76501b72f251b289b81953c5b36",
+     "to": "d424d8419269c317ec4fb26873db3df4c868fd7d",
+     "main": "9e8ac4355245a8481fa377e1a16ed80a2c4dd613",
+     "how": "runner",
+     "checks": {
+      "Twin": "success"
+     },
+     "at": "2026-11-11T14:39:43Z"
     }
    ],
    "update_waiting_since": null,
@@ -32893,7 +32986,7 @@
    }
   }
  },
- "updated_at": "2026-11-11T14:33:13Z",
+ "updated_at": "2026-11-11T14:39:58Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -32991,7 +33084,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "6cc6ce4c5fb34f5c27bd557aad6fbdbdc34e9e82",
+ "runner_sha": "da0eb3920737e45eddab74251968a878c3682abe",
  "starter": "actions",
  "smoke_runs": [
   {

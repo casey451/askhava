@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T14:33:13Z by runner 6cc6ce4c5fb3 (actions).
+Updated 2026-11-11T14:39:58Z by runner da0eb3920737 (actions).
 
 **Idle since 14:31Z; 204 of 372 done; week 68% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,27 @@ Updated 2026-11-11T14:33:13Z by runner 6cc6ce4c5fb3 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 14:31Z (no task in progress)
 - **Week:** 68% used, 54.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:33Z, 0 min before this update
+- **Last run:** 14:33Z, 6 min before this update
 - **Keeper:** last ran 14:33Z, next wake 14:53Z
 
 ## Needs attention
 - BLOCKED T214: plan gap reported: PLAN GAP: app/picks/src/handlers.rs:73-76 (T063's) and the pick_notice / pick_notice_emergency keys in app/messaging/templates/en.json:322 and es.json build the pick notice's words and values; T214 owns neither, and confirm.rs only exports template ID constants (confirm.rs:41-44). business_notices.rs:63 hardcodes PICK_TEMPLATES so a renamed template would break the Accept-by window. Smallest plan change: give T214 handlers.rs and let it add a {cant_take} value to the pick_notice and pick_notice_emergency templates in both languages, or move the notice-link part of PICK-050 / TD-PICK-43 to a ta; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T214 --plan-fix D-### --reason "..."` (D-2859)
+- BLOCKED T332: Ci: failure; Ally: failure; E2e: failure
+Ally failed at step: Chromium and its system libraries
+E: Failed to fetch https://security.ubuntu.com/ubuntu/pool/universe/u/unifont/fonts-unifont_16.0.04-1build1_all.deb  Temporary failure resolving 'security.ubuntu.com'
+E: Failed to fetch https://security.ubuntu.com/ubuntu/pool/universe/f/fonts-wqy-zenhei/fonts-wqy-zenhei_0.9.45-8build1_all.deb  Temporary failure resolving 'security.ubuntu.com'
+E: Failed to fetch https://security.ubuntu.com/ubuntu/pool/main/x/xfonts-encodings/xfonts-encodings_1.0.5-0ubuntu3_all.deb  Temporary failure resolving 'security.ubuntu.com'
+E: Failed to fetch https://security.ubuntu.com/ubuntu/pool/main/x/xfonts-utils/xfonts-utils_7.7%2b7build1_amd64v3.deb  Temporary failure resolving 'security.ubuntu.com'
+E: Failed to fetch https://security.ubuntu.com/ubuntu/pool/universe/x/xfonts-cyrillic/xfonts-cyrillic_1.0.5%2bnmu1build1_all.deb  Temporary failure resolving 'security.ubuntu.com'
+E: Failed to fetch https://security.ubuntu.com/ubuntu/pool/universe/x/xfonts-scalable/xfonts-scalable_1.0.3-1.3build1_all.deb  Temporary failure resolving 'security.ubuntu.com'
+E: Unable to fetch some archives, maybe run apt update or try with --fix-missing?
+Failed to install browsers
+Error: Installation process exited with code: 100
+##[error]Process completed with exit code 1.
+E2e failed at step: Chromium and its system libraries
+Error: Installation process exited with code: 100
+##[error]Process completed with exit code 1.
+Ci fai
 - BLOCKED T333: plan gap reported: PLAN GAP: app/payments/src/routes.rs:412 (T259) and app/payments/src/refund_state.rs:34 (T270) / app/picks/src/unreachable_refund.rs:306 (T191, T270). kit/prompts/T333.md:23-26 owns only refunds.rs, refund_stripe.rs, refund_lifecycle.rs, refund_amounts.rs. routes.rs calls refund_succeeded(pool, re, now) without the amount, so a webhook-driven success is booked at the full charge unchecked; picks sends the refunded email when refund_state reads Succeeded, so a mismatched or foreign-currency refund can still send the notice. Reviewer confirmed both lie in files T333 does not own. Rest of T333 co; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T333 --plan-fix D-### --reason "..."` (D-2859)
 - Strict plan check red: 21 problem(s) on tasks still to run (+31 on DONE tasks); first: T255: stored context_pct 34% but it measures 38%; regenerate
 
@@ -20,8 +36,8 @@ Updated 2026-11-11T14:33:13Z by runner 6cc6ce4c5fb3 (actions).
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T342 | quotes: a quote's contact check also reads the whole field w | MERGE_PENDING | 1 | 51 min | 14:31Z |  |
-| T332 | payments (harness): a late success has its own refund trigge | MERGE_PENDING | 3 | 48 min | 14:24Z | PLAN GAP: tests/integration/tests/confirm_and_pay.rs:393-413 (td_fee_25_an_ended_pick_is_never_cleared, TD-FEE-25, T189  |
-| T269 | portals: a business notice's signed link opens sign-in for t | MERGE_PENDING | 1 | 20 min | 14:19Z |  |
+| T332 | payments (harness): a late success has its own refund trigge | check_failed | 3 | 48 min | 14:24Z | PLAN GAP: tests/integration/tests/confirm_and_pay.rs:393-413 (td_fee_25_an_ended_pick_is_never_cleared, TD-FEE-25, T189  |
+| T269 | portals: a business notice's signed link opens sign-in for t | check_failed | 1 | 20 min | 14:19Z | Ci: failure; E2e: failure; Ally: failure / E2e failed at step: Chromium and its system libraries / E: Failed to fetch ht |
 | T384 | quotes and portals: the homeowner sees an edited quote as up | check_failed | 1 | 40 min | 13:40Z | Ci: failure; E2e: failure; Ally: failure / E2e failed at step: Chromium and its system libraries / E: Failed to fetch ht |
 | T214 | picks: the homeowner's share box at the pick and the 'Can't  | BLOCKED | 1 | 15 min | 13:19Z | PLAN GAP: app/picks/src/handlers.rs:73-76 (T063's) and the pick_notice / pick_notice_emergency keys in app/messaging/tem |
 | T333 | payments (harness): a succeeded refund is recorded at the am | BLOCKED | 1 | 50 min | 13:14Z | PLAN GAP: app/payments/src/routes.rs:412 (T259) and app/payments/src/refund_state.rs:34 (T270) / app/picks/src/unreachab |
@@ -62,6 +78,7 @@ Updated 2026-11-11T14:33:13Z by runner 6cc6ce4c5fb3 (actions).
 | T231 | portals (harness): the homeowner check-in email buttons and  | QUEUED | 1 | 28 min | 15:58Z |  |
 
 ### Plan and harness merges on main
+- 14:34Z Harness: browser setup survives an Ubuntu mirror outage (D-3030) (#492)
 - 13:45Z Plan: four lanes (D-2986) (#483)
 - 13:14Z Plan: T332 updates the ended-pick test — success stored, one refund queued, still never cleared (D-3007) (#484)
 - 12:26Z Plan: T332 may expect AlreadyQueued after its own check round queues the late success (D-2970) (#482)
