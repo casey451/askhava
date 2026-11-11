@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T06:24:16Z by runner 946202fb2ebb (actions).
+Updated 2026-11-11T06:43:41Z by runner 0116466d7c84 (actions).
 
 **Building: T212 in progress since 06:23Z; 196 of 370 done; week 60% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,11 @@ Updated 2026-11-11T06:24:16Z by runner 946202fb2ebb (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T212 claimed 06:23Z, lease until 09:23Z; lane 3: T327 claimed 05:24Z, lease until 08:24Z
 - **Week:** 60% used, 71.5M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:23Z, 0 min before this update
+- **Last run:** 06:24Z, 19 min before this update
 - **Keeper:** last ran 05:37Z, next wake 08:21Z
 
 ## Needs attention
-- Strict plan check red: 6 problem(s) on tasks still to run (+16 on DONE tasks); first: T100: stored context_pct 41% but it measures 45%; regenerate
+- Strict plan check red: 6 problem(s) on tasks still to run (+13 on DONE tasks); first: T126: stored context_pct 56% but it measures 60%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -43,9 +43,9 @@ Updated 2026-11-11T06:24:16Z by runner 946202fb2ebb (actions).
 | T290 | worked examples: pin D-033 for one-cent-wide recurring range | done | 2 | 39 min | 10:21Z | T290 blocked: any new recurring worked-example row breaks tests::worked_examples (fixed RECURRING list of 13 ids, worked |
 | T290 | worked examples: pin D-033 for one-cent-wide recurring range | QUEUED | 1 | 1 min | 09:07Z |  |
 | T289 | jobs tests: the refused-move test counts its one bug log the | done | 1 | 44 min | 07:52Z |  |
-| T288 | payments: a Stripe charge the nightly reconcile cannot settl | done | 1 | 60 min | 06:30Z |  |
 
 ### Plan and harness merges on main
+- 06:32Z Harness: a worker's plan-gap report blocks the task instead of a retry on the same prompt (D-2859) (#458)
 - 06:12Z Harness: the state schema accepts the hand-in update merge — runner stopped with state_invalid (D-2870) (#459)
 - 05:26Z Plan: T337 owns its confirm_and_pay fixture rows; paid-pick guard keeps a test (D-2832) (#453)
 - 05:08Z Plan: new T383 removes the brand words left in the text templates and homeowner page; T295 waits for it (D-2843) (#455)
