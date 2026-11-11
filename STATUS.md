@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T11:14:50Z by runner ee153a16c726 (actions).
+Updated 2026-11-11T11:17:29Z by runner ee153a16c726 (actions).
 
 **Building: T331 in progress since 10:45Z; 201 of 372 done; week 65% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-11T11:14:50Z by runner ee153a16c726 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 3: T331 claimed 10:45Z, lease until 13:45Z
 - **Week:** 65% used, 61.4M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:03Z, 11 min before this update
+- **Last run:** 11:14Z, 2 min before this update
 - **Keeper:** last ran 11:03Z, next wake 13:48Z
 
 ## Needs attention
@@ -49,7 +49,6 @@ Updated 2026-11-11T11:14:50Z by runner ee153a16c726 (actions).
 | T231 | portals (harness): the homeowner check-in email buttons and  | QUEUED | 1 | 28 min | 15:58Z |  |
 | T199 | portals: no automated call to a business, voice codes only o | done | 1 | 64 min | 14:22Z |  |
 | T293 | businesses and quotes: sign-up, consent, complaint and quote | done | 1 | 41 min | 12:35Z |  |
-| T292 | messaging and calls: every text, email and call takes the br | done | 1 | 21 min | 11:16Z |  |
 
 ### Plan and harness merges on main
 - 11:00Z Plan: sign-up reads the business's own state record — name check and identity contacts (T385, D-2954) (#475)
