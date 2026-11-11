@@ -220,7 +220,12 @@ def build(args: argparse.Namespace, outbox_dir: Path) -> tuple[cycle.Config, Git
                        plan_health=plan_health_checker(ROOT, kit), model_window=model_window.load(ROOT / "kit" / "runner.json"),
                        claim_first=claim_first(ROOT / "kit" / "runner.json"),
                        order=claim_order_setting(ROOT / "kit" / "runner.json"),
+<<<<<<< HEAD
                        prefer_disjoint_crates=prefer_disjoint_crates(ROOT / "kit" / "runner.json"))
+=======
+                       smoke_ancestry=smoke_ancestry(ROOT / "kit" / "runner.json"))
+    env.smoke_ancestry = cfg.smoke_ancestry  # the pre-session step's skip and the start routine agree (D-3058)
+>>>>>>> origin/main
     return cfg, env
 
 
@@ -307,6 +312,7 @@ def claim_order_setting(settings: Path) -> str:
     return cycle.CRITICAL_PATH if value == cycle.CRITICAL_PATH else "state"
 
 
+<<<<<<< HEAD
 def prefer_disjoint_crates(settings: Path) -> bool:
     """kit/runner.json "prefer_disjoint_crates" (D-3082): True only when the file says exactly `true`, so
     among claimable tasks of equal priority the cycle first tries one whose `app/` crates no task in flight
@@ -317,6 +323,18 @@ def prefer_disjoint_crates(settings: Path) -> bool:
     except (OSError, ValueError, AttributeError):
         return False
     return value is True
+=======
+def smoke_ancestry(settings: Path) -> int:
+    """kit/runner.json "smoke_ancestry_reuse" (D-3058): how many first-parent commits of `main` back the start
+    routine may stand on a real green smoke when every commit since is a DONE task's squash merge
+    (`cycle._ancestry_reuse`). 0 (off) when the file or key is missing or unreadable, or the value is not a whole
+    number of at least 0."""
+    try:
+        value = json.loads(settings.read_text(encoding="utf-8")).get("smoke_ancestry_reuse", 0)
+    except (OSError, ValueError, AttributeError):
+        return 0
+    return value if isinstance(value, int) and not isinstance(value, bool) and value >= 0 else 0
+>>>>>>> origin/main
 
 
 def owner_paths(codeowners: Path) -> tuple[str, ...]:
@@ -731,6 +749,7 @@ def pre_smoke(args: argparse.Namespace) -> int:
     the workflow step never fails the job: without a result the session's start routine runs the smoke itself."""
     env = GitHubEnv(ROOT, [], Path(tempfile.gettempdir()), repo=repo_name(), starter=starter_name(),
                     runner_sha=git_out("rev-parse", "HEAD"), dry_run=args.dry_run)
+    env.smoke_ancestry = smoke_ancestry(ROOT / "kit" / "runner.json")  # the step skips an ancestry reuse too (D-3058)
     try:
         line = env.pre_smoke()
     except Exception as exc:  # noqa: BLE001  # reason: a failed pre-session smoke only leaves the smoke to the session (D-2028)

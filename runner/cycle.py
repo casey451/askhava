@@ -260,10 +260,16 @@ class Config:
     # kit/runner.json "order" (D-2591): "critical_path" tries the claimable ids with the longest chain of
     # open dependents first (`chain_lengths`); anything else keeps the state order. Ordering only.
     order: str = "state"
+<<<<<<< HEAD
     # kit/runner.json "prefer_disjoint_crates" (D-3082): among claimable ids of equal priority, try first
     # the ones whose `app/` crates no task in flight shares (`lanes.crowded`). Ordering only; False keeps
     # the order without it.
     prefer_disjoint_crates: bool = False
+=======
+    # kit/runner.json "smoke_ancestry_reuse" (D-3058): how many first-parent commits back the start routine may
+    # stand on a real green smoke when every commit since is a DONE task's squash merge (`st.ancestry_smoke`); 0 off.
+    smoke_ancestry: int = 0
+>>>>>>> origin/main
 
 
 # Casey reviews code-owner PRs by day. Such a task is claimed only from 06:00 to 19:00 Arizona time
@@ -960,26 +966,66 @@ def _smoke_pending(env: Env) -> bool:
 SMOKE_PENDING = "smoke_pending"  # the cycle result while the smoke runs on in the background (D-2560)
 
 
-def _start_smoke(state: State, env: Env, now: datetime) -> tuple[State, bool, str]:
+def _start_smoke(state: State, env: Env, now: datetime, ancestry: int = 0) -> tuple[State, bool, str]:
     """The start routine's smoke (BUILD_BRIEF.md:240): a green run already recorded for main's very head is reused
     (`st.reusable_smoke`) when the nightly is not red on that head and `main`'s own checks on it are not red, and
     the reuse is recorded as a run of its own (`why` "start routine (reused <at>)", `reused` the green run's time,
     no `seconds`); otherwise the smoke runs (`_smoke`). Reuse is only ever green on a head that was smoked green,
     so `main_red` and FIX-MAIN are untouched by it (D-2560). When this job has its own smoke for the head (the real
-    Env's `own_smoke_for`: a pre-session or background result, or a background smoke still running), that is judged
-    and never replaced by a green another lane recorded, so a red of its own always counts (D-498, set_main_red)."""
+    Env's `own_smoke_for`: a pre-session or background result, or a background smoke still running), that is judged,
+    so a red of its own always counts (D-498, set_main_red); the one exception (D-3058) is an own smoke still running
+    with no verdict while a green on the head passes the reuse in full: the env stops it (`yield_own_smoke`, which
+    refuses once a result exists) and the green stands. With no own smoke and no same-head green, the last real green
+    on an ancestor at most `ancestry` first-parent commits back stands when every commit since is a DONE task's
+    squash merge that nothing doubts (`_ancestry_reuse`, D-3058); any doubt or error runs the smoke."""
     head = env.main_head()
     settle = getattr(env, "settle_background_smoke", None)
     if callable(settle):
         settle(head)  # a smoke of a head main has left is stopped first, so a reuse may stand (D-2560)
-    if _own_smoke_for(env, head):
-        return _smoke(state, env, now, "start routine")
+    own = _own_smoke_for(env, head)
     kept = st.reusable_smoke(state, head, now)
-    if kept is None or _head_doubted(env, head):
+    if kept is not None and _head_doubted(env, head):
+        kept = None
+    if own and not (kept is not None and _yield_own_smoke(env, head)):
         return _smoke(state, env, now, "start routine")
-    since = str(kept.get("reused") or kept.get("at"))
-    run = {"sha": head, "ok": True, "at": st.iso(now), "why": f"start routine (reused {since})", "reused": since}
+    if kept is not None:
+        since = str(kept.get("reused") or kept.get("at"))
+        run = {"sha": head, "ok": True, "at": st.iso(now), "why": f"start routine (reused {since})", "reused": since}
+        return dict(state, smoke_runs=[*state.get("smoke_runs", [])[-19:], run]), True, head
+    based = _ancestry_reuse(state, env, head, now, ancestry)
+    if based is None:
+        return _smoke(state, env, now, "start routine")
+    base, since = based
+    run = {"sha": head, "ok": True, "at": st.iso(now), "why": f"start routine (ancestry reuse of {base[:12]}, {since})",
+           "reused": since, "base": base}
     return dict(state, smoke_runs=[*state.get("smoke_runs", [])[-19:], run]), True, head
+
+
+def _yield_own_smoke(env: Env, head: str) -> bool:
+    """The env's `yield_own_smoke(head)` (D-3058): True when it stopped this job's own smoke of `head`, still running
+    with no result; an env without one (the drills' FakeEnv) never stops it."""
+    stop = getattr(env, "yield_own_smoke", None)
+    return bool(stop(head)) if callable(stop) else False
+
+
+def _ancestry_reuse(state: State, env: Env, head: str, now: datetime, limit: int) -> tuple[str, str] | None:
+    """(base SHA, its real green run's time) for an ancestry reuse (D-3058), or None (run the smoke). `main`'s
+    first-parent chain comes from the env's `main_first_parents` (absent: no reuse); `st.ancestry_smoke` judges the
+    state, then the nightly and `main`'s checks must doubt none of the commits after the base, nor the base
+    (`_head_doubted`). Any error is no reuse."""
+    parents = getattr(env, "main_first_parents", None)
+    if limit < 1 or not callable(parents):
+        return None
+    try:
+        chain = list(parents(head, limit + 1) or [])
+        if not chain or chain[0] != head:
+            return None
+        found = st.ancestry_smoke(state, chain, st.done_merges(state), now, limit)
+        if found is None or any(_head_doubted(env, sha) for sha in chain[: chain.index(found[0]) + 1]):
+            return None
+        return found[0], str(found[1]["at"])
+    except Exception:  # noqa: BLE001  # reason: an unreadable chain, state or check must run the smoke, never stop the cycle (D-3058)
+        return None
 
 
 def _own_smoke_for(env: Env, head: str) -> bool:
@@ -1379,7 +1425,7 @@ def _next_step(cfg: Config, env: Env, state: State, base: State, now: datetime, 
             return "lost_race"
         return "fix_main" if state.get("main_red") else (result or "idle")
     if ids[0] != st.FIX_MAIN:
-        state, ok, head = _start_smoke(state, env, now)  # BUILD_BRIEF.md:240; a recorded green may stand (D-2560)
+        state, ok, head = _start_smoke(state, env, now, cfg.smoke_ancestry)  # BUILD_BRIEF.md:240; D-2560, D-3058
         if not ok and _smoke_pending(env):
             return SMOKE_PENDING if state == base or env.push_state(state, base) else "lost_race"
         if not ok and _smoke_timed_out(env):
