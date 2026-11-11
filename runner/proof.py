@@ -2,7 +2,7 @@
 
 A stage's named proof (its row in docs/build-readiness.md section 3) must "have run in `Ci` or nightly
 on `main`". For a stage listed in MACHINE_PROOFS every clause of the row is a test in the suite that
-nightly-main runs (`Ci`'s Checks, Coverage and E2e jobs, `Twin`, `Ally`, the named-mutants job), so the
+nightly-main runs (`Ci`'s Checks, Python, Coverage and E2e jobs, `Twin`, `Ally`, the named-mutants job), so the
 runner records `stage_proofs[N]` itself, and only when all of these hold on the state and kit/nightly.json:
 
   1. every task of the stage is DONE (a gate may be SKIPPED), except the stage's cleanup task waiting
@@ -40,7 +40,7 @@ class Clause:
     `tests` are test files that must exist in the nightly commit with no skip path; `marks` are
     (path, text) pairs that must appear in that commit (a test or entry the clause needs, such as a
     mutant group or the axe widths); `jobs` are the kit/nightly.json `results` keys that must be
-    "success" (ci holds Checks, Coverage and E2e; a11y is Ally; named_mutants the nightly job).
+    "success" (ci holds Checks, Python, Coverage and E2e; a11y is Ally; named_mutants the nightly job).
 
     A mark is a text proxy that the clause's subject is in place, never the proof itself: `"floors"` in
     tests/coverage_floor.json says the floors exist, and the ci job's Coverage compare proves them held;
