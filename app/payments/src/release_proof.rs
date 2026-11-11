@@ -9,8 +9,10 @@
 //! intent is then re-fetched from Stripe and must say succeeded, in the same mode, for exactly
 //! the fee the server fixed, with metadata naming this pick (SEC-049). The success is stored on
 //! the latest attempt (with its FEE-042 evidence record) before the proof is made, and a pick that
-//! has ended, before or while the intent was fetched, is never cleared (D-1478). A redirect to
-//! a success page carries no verified event, so it can never make one (SEC-030).
+//! has ended, before or while the intent was fetched, is never cleared (D-1478): its verified
+//! success and evidence are still stored, and its one late-success refund is queued in that
+//! transaction, so it answers `PickEnded` with the money on its way back (FEE-021, D-2290). A
+//! redirect to a success page carries no verified event, so it can never make one (SEC-030).
 //! [`no_fee_release`] makes one from a recorded $0 decision only: a free first win, a
 //! repeat customer or a fee-free job type in the ledger (FEE-010, FEE-013, FEE-045), for the
 //! pick's own business and job as its `payments.pick_fee` row stores them (D-2302), never for a
@@ -25,6 +27,8 @@ use sqlx::{PgConnection, PgPool};
 
 use crate::charge::latest;
 use crate::handlers::record;
+use crate::late::late_success;
+use crate::models::PickNow;
 use crate::pick_fee::pick_fee;
 use crate::status::AttemptStatus;
 
@@ -188,7 +192,8 @@ impl Minter {
 
 /// Clears pick `pick` for a paid release from a verified success event, after re-fetching the
 /// intent and storing the success (PICK-022, SEC-030, SEC-039, SEC-049); see the module docs. No
-/// connection is held across the fetch.
+/// connection is held across the fetch. A pick that has ended gets its success stored and its
+/// late-success refund queued, then `PickEnded` (FEE-021, D-2290).
 ///
 /// # Errors
 /// The [`ReleaseError`] of the first check that fails; nothing is cleared.
@@ -201,7 +206,7 @@ pub async fn paid_release(
     at: Timestamp,
 ) -> Result<Releasable, ReleaseError> {
     check_event(event, account)?;
-    let (stored, cents) = open_intent(pool, pick).await?;
+    let (stored, cents, _) = pick_intent(pool, pick).await?;
     if stored != event.intent {
         return Err(ReleaseError::WrongIntent);
     }
@@ -211,7 +216,10 @@ pub async fn paid_release(
         .map_err(|_| ReleaseError::Stripe)?;
     check_intent(&fetched, account, cents, pick)?;
     store_success(pool, pick, at).await?;
-    open_intent(pool, pick).await?;
+    if pick_intent(pool, pick).await?.2 {
+        ended_late(pool, pick, at).await?;
+        return Err(ReleaseError::PickEnded);
+    }
     let basis = ReleaseBasis::PaidCharge;
     Ok(Releasable { pick, basis })
 }
@@ -300,9 +308,9 @@ fn check_intent(
     Ok(())
 }
 
-/// The pick's stored PaymentIntent and the fee it was made for, while the pick has not ended
+/// The pick's stored PaymentIntent, the fee it was made for and whether the pick has ended
 /// (FEE-018, FEE-020, FEE-041, D-1478).
-async fn open_intent(pool: &PgPool, pick: Uuid) -> Result<(String, i64), ReleaseError> {
+async fn pick_intent(pool: &PgPool, pick: Uuid) -> Result<(String, i64, bool), ReleaseError> {
     let row = sqlx::query!(
         "SELECT stripe_intent_id, amount_cents, ended_at IS NOT NULL AS \"ended!\"
          FROM payments.pick_intent WHERE pick_id = $1",
@@ -312,10 +320,19 @@ async fn open_intent(pool: &PgPool, pick: Uuid) -> Result<(String, i64), Release
     .await
     .map_err(|_| ReleaseError::Database)?
     .ok_or(ReleaseError::WrongIntent)?;
-    if row.ended {
-        return Err(ReleaseError::PickEnded);
-    }
-    Ok((row.stripe_intent_id, row.amount_cents))
+    Ok((row.stripe_intent_id, row.amount_cents, row.ended))
+}
+
+/// A verified success stored on a pick that has ended clears nothing; its one late-success refund
+/// and alert are queued (FEE-021, FEE-026, D-2290). `record` already did so in the transaction
+/// that stored the success when the pick had ended by then; this repeat, which writes nothing
+/// then, covers a pick that ended after that transaction read it.
+async fn ended_late(pool: &PgPool, pick: Uuid, at: Timestamp) -> Result<(), ReleaseError> {
+    let mut tx = pool.begin().await.map_err(|_| ReleaseError::Database)?;
+    late_success(&mut tx, pick, PickNow::Payable, at)
+        .await
+        .map_err(|_| ReleaseError::Database)?;
+    tx.commit().await.map_err(|_| ReleaseError::Database)
 }
 
 /// Stores the verified success on the pick's latest attempt, with its evidence record, when the

@@ -177,7 +177,7 @@ async fn td_fee_12_late_success_is_refunded_once_and_alerted_once(pool: PgPool) 
         "SELECT count(*) FROM payments.ledger_entry WHERE kind = 'refund' AND stripe_id = $1";
     assert_eq!(count(&pool, ledger, INTENT).await, 1);
     let row = "SELECT count(*) FROM payments.refund WHERE status = 'succeeded'
-                 AND stripe_refund_id = $1 AND trigger = 'charged-after-cancel'";
+                 AND stripe_refund_id = $1 AND trigger = 'late-success'";
     assert_eq!(count(&pool, row, "re_FakeT064").await, 1);
     assert_eq!(alerts(&pool).await, 1);
 }
@@ -195,7 +195,7 @@ async fn td_fee_12_current_pick_is_kept(pool: PgPool) {
 }
 
 /// TD-FEE-12 (FEE-021, FEE-018, FEE-019; D-1547), in the real order: `payments` ends the pick while
-/// its attempt is undecided, so `paid_release` stores no success and a report finds nothing
+/// its attempt is undecided and a report finds nothing
 /// charged; the 30-minute check then records Stripe's success, and the next report is a late
 /// success even though `picks` still says `Payable`.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
@@ -215,7 +215,7 @@ async fn td_fee_12_own_end_counts_once_the_check_records_the_success(pool: PgPoo
         .expect("check");
     assert_eq!(
         report(&pool, PickNow::Payable).await,
-        Ok(LateSuccess::Queued)
+        Ok(LateSuccess::AlreadyQueued)
     );
     assert_eq!((alerts(&pool).await, tasks(&pool).await), (1, 1));
 }
