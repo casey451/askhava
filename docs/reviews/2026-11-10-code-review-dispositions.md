@@ -65,3 +65,18 @@
 - New migrations in serial order: T354 0180, T356 0181, T359 0182, T353 0183, T361 0197; queued T236 moves to 0198 (V9).
 - IC-89 and IC-90 and risk R-42 added; R-40, R-41, IC-86 to IC-88 updated.
 - No task IN_PROGRESS or MERGE_PENDING was edited (T207 and T311 MERGE_PENDING; T349 QUEUED and unchanged).
+
+## Second re-review (D-2642)
+
+| Finding | Change |
+|---|---|
+| 1 T355 broke the no-show path | `end_pick` keeps its status-only guard; only the fraud path checks for a release row |
+| 2 The fraud refund went out before any lock | The fraud path locks the pick, checks for a release row and commits a `picks.fraud_hold` marker (new migration) before the refund; the claim refuses a held pick; TD-PICK-59 rewritten |
+| 3 `is_repeat` counted refunded, unreleased charges | T359 counts only charges that were introductions; TD-FEE-64 gains the late-success and fraud cases |
+| 4 T328's `payment_jobs.rs` | T352 runs after T328 and adopts it if it builds `PaymentIntent` |
+| 5 T357 needs T330's handler | T357 runs after T330 |
+| 6 `record_fee_at_confirm` | Stays, unused in production (done tests call it); T359 owns `service.rs` to say so |
+| 7 Migration order versus claim order | T353 after T354; the rest logged in R-42 for a later harness task |
+| 8 T360's dep on T356 | Dropped |
+| 9 T132's description | From `IntentText::description()`, never a literal; stripe-mock's `latest_charge` confirmed |
+- Migrations after the second re-review, in serial order: T354 0180, T355 0181, T356 0182, T359 0183, T353 0184; queued T103, T105, T320, T204, T151, T321, T109 and T110 move to 0185 to 0192; T361 0197; T236 0198 (V9).

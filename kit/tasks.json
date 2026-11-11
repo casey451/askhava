@@ -12217,7 +12217,7 @@
    "owns": [
     "app/messaging/src/help_requests.rs",
     "app/messaging/src/help_answers.rs",
-    "migrations/0188_help_requests.sql",
+    "migrations/0189_help_requests.sql",
     "tests/integration/tests/help_requests.rs",
     "app/ops/src/help_requests.rs",
     "app/portals/src/digest_flags.rs",
@@ -13066,7 +13066,7 @@
     "app/intake/src/web_chat.rs",
     "app/intake/src/conversation.rs",
     "tests/integration/tests/web_chat.rs",
-    "migrations/0184_intake_request_source.sql"
+    "migrations/0185_intake_request_source.sql"
    ],
    "reads": [
     "docs/architecture.md",
@@ -13396,7 +13396,7 @@
     "app/ops/src/alerts.rs",
     "app/ops/src/safe_mode.rs",
     "app/ops/src/models.rs",
-    "migrations/0185_ops_alerts_safe_mode.sql",
+    "migrations/0186_ops_alerts_safe_mode.sql",
     "tests/integration/tests/safe_mode.rs",
     "app/payments/src/safe_mode_check.rs",
     "app/picks/src/safe_mode_check.rs",
@@ -13468,7 +13468,7 @@
    "id": "T320",
    "slug": "ops-alert-open-once",
    "title": "ops: one open alert per kind and subject, so a check that runs on a schedule never raises the same alert again",
-   "goal": "Fourth external audit F30 (D-2207; OPS-004, SEC-051): `ops.alert` has no rule against a second open alert of the same kind and subject (`migrations/0021_ops_audit.sql:33`), so a check that runs on a schedule, such as `messaging::check_webhook_silence` (`app/messaging/src/email.rs:684`) once T204 schedules it, raises a new alert on every run while its condition lasts, and a pushing kind would push each time. (1) `migrations/0186_ops_alert_open_once.sql`: a unique index on `ops.alert (kind, subject_kind, subject_id)` over unresolved rows (`resolved_at IS NULL`, and T105's acknowledgement column if it adds one) with `NULLS NOT DISTINCT` (PostgreSQL 16), so a subject-less kind is open once too. (2) `raise_alert` (`app/ops/src/service.rs:96`) inserts with `ON CONFLICT DO NOTHING` and returns the open alert's ID when one exists (no new row, so no new push); a raise after it was resolved opens a new one. Read every caller of `raise_alert` (about 60): those that need one alert per event (each HELP request, each dispute, each failed purge) already carry a distinct subject; list in the decision any caller whose behaviour changes. Tests in `tests/integration/tests/alert_dedupe.rs` (TD-OPS-34): two raises of one kind and subject leave one open row and return its ID; after it is resolved a raise opens a new one; two subject-less raises of one kind leave one; two concurrent raises leave one. Every existing test that raises alerts passes unchanged; if one expects two open alerts of one kind and subject, stop and report. Update the `ops` `CLAUDE.md`, `docs/architecture.md` section 10 and `docs/decisions.md`.",
+   "goal": "Fourth external audit F30 (D-2207; OPS-004, SEC-051): `ops.alert` has no rule against a second open alert of the same kind and subject (`migrations/0021_ops_audit.sql:33`), so a check that runs on a schedule, such as `messaging::check_webhook_silence` (`app/messaging/src/email.rs:684`) once T204 schedules it, raises a new alert on every run while its condition lasts, and a pushing kind would push each time. (1) `migrations/0187_ops_alert_open_once.sql`: a unique index on `ops.alert (kind, subject_kind, subject_id)` over unresolved rows (`resolved_at IS NULL`, and T105's acknowledgement column if it adds one) with `NULLS NOT DISTINCT` (PostgreSQL 16), so a subject-less kind is open once too. (2) `raise_alert` (`app/ops/src/service.rs:96`) inserts with `ON CONFLICT DO NOTHING` and returns the open alert's ID when one exists (no new row, so no new push); a raise after it was resolved opens a new one. Read every caller of `raise_alert` (about 60): those that need one alert per event (each HELP request, each dispute, each failed purge) already carry a distinct subject; list in the decision any caller whose behaviour changes. Tests in `tests/integration/tests/alert_dedupe.rs` (TD-OPS-34): two raises of one kind and subject leave one open row and return its ID; after it is resolved a raise opens a new one; two subject-less raises of one kind leave one; two concurrent raises leave one. Every existing test that raises alerts passes unchanged; if one expects two open alerts of one kind and subject, stop and report. Update the `ops` `CLAUDE.md`, `docs/architecture.md` section 10 and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -13481,7 +13481,7 @@
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [],
    "owns": [
-    "migrations/0186_ops_alert_open_once.sql",
+    "migrations/0187_ops_alert_open_once.sql",
     "app/ops/src/service.rs",
     "tests/integration/tests/alert_dedupe.rs"
    ],
@@ -13549,7 +13549,7 @@
     "app/messaging/src/alert_emails.rs",
     "tests/integration/tests/alert_routing.rs",
     "app/portals/src/digest_flags.rs",
-    "migrations/0187_ops_owner_digest.sql",
+    "migrations/0188_ops_owner_digest.sql",
     "app/messaging/src/keywords.rs",
     "app/portals/src/business_portal.rs",
     "app/portals/templates/business_home.html",
@@ -13762,7 +13762,7 @@
    "id": "T321",
    "slug": "consent-five-year-purge",
    "title": "messaging, intake and privacy: consent records, keyword events and message logs go 5 years after a number's last message",
-   "goal": "Fourth external audit F32 (D-2208; CON-022, CON-036, D-079): CON-022 keeps consent records, opt-in wording versions, STOP/HELP/START events and message logs 5 years after the last message to that number, and the privacy policy promises the same (`docs/legal/privacy-policy.md:91`), but nothing ever deletes them: `intake.consent_record` and the `messaging` keyword and message-log rows are append-only (`migrations/0053_intake_tables.sql:62`) and `app/intake/src/purge.rs` says they are never deleted there. (1) A daily `messaging.consent_sweep` (registered in the shared `app/server/src/lib.rs`, queued once a day) finds each number whose last inbound or outbound message is more than 1,827 days old (5 years, never short by a leap day) and deletes, in one transaction per number: its rows of every table CON-022 names, through `app/messaging/src/consent_purge.rs` for `messaging`'s and `intake::api` (`app/intake/src/consent_purge.rs`) for `intake.consent_record`, each with one `ops` audit row of IDs only; `migrations/0189_consent_five_year_purge.sql` grants the app role DELETE on exactly those tables and nothing else (no UPDATE, so they stay append-only for every other change). (2) The opt-out is never weakened: a number on `messaging.suppression` keeps its suppression row, the `messaging.optout_event` row that row points to (`event_id`, `migrations/0044_messaging_optout.sql:33`; digest-only, no phone) and its locked phone in the vault, because the suppression digest is keyed `homeowner-phone|v<n>` and PRIV-024's key rotation rebuilds it from the vault plaintext (D-079), so clearing the phone would lose the opt-out at the next rotation; only its other CON-022 rows (consent records, keyword events, message logs) go at 5 years. A number not on suppression loses its CON-022 rows and then its locked vault phone, cleared through `privacy::api` (`app/privacy/src/consent_phone.rs`). The DELETE grant on `messaging.optout_event` is limited to rows no suppression row references (a policy or a trigger that refuses the rest). That an opted-out number's phone stays locked past 5 years is listed for Casey, with whether the privacy policy should say so (D-2208). (3) Tests in `tests/integration/tests/consent_purge.rs` (TD-CON-30): a number last messaged 1,826 days ago keeps everything; at 1,827 days a number not on suppression loses its rows and its vault phone, with audit rows of IDs only; an opted-out number keeps its suppression row, the opt-out event it points to and its locked phone, loses its other rows, and is still refused a text after the purge and after an index-key rotation; deleting an opt-out event a suppression row references is refused; a message in between restarts its clock. The rotation case builds its two-version `VAULT_INDEX_KEY` the way `tests/integration/tests/vault.rs` does (its `key(version, byte)` helper at line 32 and the v1-plus-v2 key set of `the_rotation_drill_moves_every_row_to_v2`, TD-PRIV-09) and rotates with `privacy::api::rotate_batch` as that test and `tests/integration/tests/inbound_scrub_context.rs` do; it is not skipped. Update the `messaging`, `intake` and `privacy` `CLAUDE.md` files, `docs/architecture.md` section 10 and `docs/decisions.md`.",
+   "goal": "Fourth external audit F32 (D-2208; CON-022, CON-036, D-079): CON-022 keeps consent records, opt-in wording versions, STOP/HELP/START events and message logs 5 years after the last message to that number, and the privacy policy promises the same (`docs/legal/privacy-policy.md:91`), but nothing ever deletes them: `intake.consent_record` and the `messaging` keyword and message-log rows are append-only (`migrations/0053_intake_tables.sql:62`) and `app/intake/src/purge.rs` says they are never deleted there. (1) A daily `messaging.consent_sweep` (registered in the shared `app/server/src/lib.rs`, queued once a day) finds each number whose last inbound or outbound message is more than 1,827 days old (5 years, never short by a leap day) and deletes, in one transaction per number: its rows of every table CON-022 names, through `app/messaging/src/consent_purge.rs` for `messaging`'s and `intake::api` (`app/intake/src/consent_purge.rs`) for `intake.consent_record`, each with one `ops` audit row of IDs only; `migrations/0190_consent_five_year_purge.sql` grants the app role DELETE on exactly those tables and nothing else (no UPDATE, so they stay append-only for every other change). (2) The opt-out is never weakened: a number on `messaging.suppression` keeps its suppression row, the `messaging.optout_event` row that row points to (`event_id`, `migrations/0044_messaging_optout.sql:33`; digest-only, no phone) and its locked phone in the vault, because the suppression digest is keyed `homeowner-phone|v<n>` and PRIV-024's key rotation rebuilds it from the vault plaintext (D-079), so clearing the phone would lose the opt-out at the next rotation; only its other CON-022 rows (consent records, keyword events, message logs) go at 5 years. A number not on suppression loses its CON-022 rows and then its locked vault phone, cleared through `privacy::api` (`app/privacy/src/consent_phone.rs`). The DELETE grant on `messaging.optout_event` is limited to rows no suppression row references (a policy or a trigger that refuses the rest). That an opted-out number's phone stays locked past 5 years is listed for Casey, with whether the privacy policy should say so (D-2208). (3) Tests in `tests/integration/tests/consent_purge.rs` (TD-CON-30): a number last messaged 1,826 days ago keeps everything; at 1,827 days a number not on suppression loses its rows and its vault phone, with audit rows of IDs only; an opted-out number keeps its suppression row, the opt-out event it points to and its locked phone, loses its other rows, and is still refused a text after the purge and after an index-key rotation; deleting an opt-out event a suppression row references is refused; a message in between restarts its clock. The rotation case builds its two-version `VAULT_INDEX_KEY` the way `tests/integration/tests/vault.rs` does (its `key(version, byte)` helper at line 32 and the v1-plus-v2 key set of `the_rotation_drill_moves_every_row_to_v2`, TD-PRIV-09) and rotates with `privacy::api::rotate_batch` as that test and `tests/integration/tests/inbound_scrub_context.rs` do; it is not skipped. Update the `messaging`, `intake` and `privacy` `CLAUDE.md` files, `docs/architecture.md` section 10 and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -13779,7 +13779,7 @@
     "compliance"
    ],
    "owns": [
-    "migrations/0189_consent_five_year_purge.sql",
+    "migrations/0190_consent_five_year_purge.sql",
     "app/messaging/src/consent_purge.rs",
     "app/intake/src/consent_purge.rs",
     "app/privacy/src/consent_phone.rs",
@@ -13999,7 +13999,7 @@
     "app/recovery/src/api.rs",
     "app/recovery/src/models.rs",
     "app/recovery/src/backup.rs",
-    "migrations/0190_recovery_backup_export.sql",
+    "migrations/0191_recovery_backup_export.sql",
     "tests/recovery/tests/export_restores.rs",
     "app/portals/src/digest_flags.rs",
     "app/portals/src/health_page.rs"
@@ -14071,7 +14071,7 @@
    "owns": [
     "app/recovery/src/replay.rs",
     "app/recovery/src/models.rs",
-    "migrations/0191_recovery_replay.sql",
+    "migrations/0192_recovery_replay.sql",
     "app/recovery/src/tests/replay_ids.rs"
    ],
    "reads": [
@@ -15598,7 +15598,7 @@
    "id": "T132",
    "slug": "sandbox-stripe",
    "title": "Stripe test mode behind the adapter; contract and webhook tests against it",
-   "goal": "The Stripe test-mode client sits behind the payments adapter, and the contract and webhook tests pass against it: cards only through Elements and the authorization stored, signed webhooks processed once, idempotency keys on every call, and the ledger reconciling to Stripe test mode (FEE-014, FEE-015, FEE-028 to FEE-030, FEE-032, FEE-036, SEC-016 to SEC-018). This task also retires `PaymentsAdapter::create_refund` (ID only), moving its remaining callers to T258's typed `RefundStripe` read, once the Stripe test-mode refund shapes are checked (D-1753). Nov 10 code review, payments F4, and the plan review's M1 (D-2624, D-1476; FEE-031, FEE-049): the PaymentIntent is created with no description and no statement-descriptor suffix (`create_unconfirmed_intent`, `app/adapters/src/payments.rs:227`), so the card statement shows no job number; D-1476 gave this to T132 and its goal never said so. `payments` holds no job number and may not depend on `jobs` (`kit/layers.json`), so the number comes from the Confirm route: `charge` gains `open_intent_described` (and `confirm_and_pay` a matching entry) taking `payments::api::IntentText`, the existing `open_intent` and `confirm_and_pay` keep their signatures and behaviour for the done tests, and `app/portals/src/confirm_pay.rs` (T261's, which runs first) builds `IntentText::for_job` from the job number it already shows and calls the described entry; `IntentStripe` gains a method with a default body carrying the text, so the done tests' fakes compile unchanged, and `intent_http.rs` overrides it; the create form sends `description` (\"Ask Hava introduction service, job <n>\") and `statement_descriptor_suffix` (\"JOB <n>\"); TD-FEE-38's stripe-mock case checks both fields.",
+   "goal": "The Stripe test-mode client sits behind the payments adapter, and the contract and webhook tests pass against it: cards only through Elements and the authorization stored, signed webhooks processed once, idempotency keys on every call, and the ledger reconciling to Stripe test mode (FEE-014, FEE-015, FEE-028 to FEE-030, FEE-032, FEE-036, SEC-016 to SEC-018). This task also retires `PaymentsAdapter::create_refund` (ID only), moving its remaining callers to T258's typed `RefundStripe` read, once the Stripe test-mode refund shapes are checked (D-1753). Nov 10 code review, payments F4, and the plan review's M1 (D-2624, D-1476; FEE-031, FEE-049): the PaymentIntent is created with no description and no statement-descriptor suffix (`create_unconfirmed_intent`, `app/adapters/src/payments.rs:227`), so the card statement shows no job number; D-1476 gave this to T132 and its goal never said so. `payments` holds no job number and may not depend on `jobs` (`kit/layers.json`), so the number comes from the Confirm route: `charge` gains `open_intent_described` (and `confirm_and_pay` a matching entry) taking `payments::api::IntentText`, the existing `open_intent` and `confirm_and_pay` keep their signatures and behaviour for the done tests, and `app/portals/src/confirm_pay.rs` (T261's, which runs first) builds `IntentText::for_job` from the job number it already shows and calls the described entry; `IntentStripe` gains a method with a default body carrying the text, so the done tests' fakes compile unchanged, and `intent_http.rs` overrides it; the create form sends `description` from `IntentText::description()` and `statement_descriptor_suffix` from `IntentText::statement_suffix()`, never a brand literal in the adapter (T295 makes brand literals fail); TD-FEE-38's stripe-mock case checks both fields, and the contract run also confirms stripe-mock returns `latest_charge` on a succeeded intent (T352's field).",
    "type": "harness",
    "phase": 2,
    "stage": "6",
@@ -20292,7 +20292,7 @@
    "budget": {
     "files": 6,
     "lines": 400,
-    "context_pct": 15
+    "context_pct": 19
    },
    "checks": [
     "Ci",
@@ -24350,7 +24350,7 @@
    "id": "T352",
    "slug": "payment-intent-latest-charge",
    "title": "adapters and stand-in (harness): the PaymentIntent carries Stripe's latest charge ID, and the done tests that build it say so",
-   "goal": "Nov 10 code review, payments F1 and F5, first half (D-2623; FEE-042, SEC-030): no code on the payment-success path has the Stripe charge (`ch_…`) ID, because the adapter's `PaymentIntent` (`app/adapters/src/payments.rs:32`) has no `latest_charge` and the stand-in returns none; T359 needs it to write the charge ledger entry and the evidence. This harness task adds `latest_charge: Option<String>` (`#[serde(default)]`, so a body without it still decodes; the release check that requires it on a succeeded intent is T359's) and makes `stand_ins/stripe.py` return a `ch_` ID on every succeeded intent (the confirm answer and the fetch), checked by `tests/contract/test_stripe_latest_charge.py` (TD-FEE-66). It adopts the done tests that build `PaymentIntent` by name, so the workspace compiles: `charge_attempts.rs`, `fee_limit_race.rs`, `stripe_webhook_dispatch.rs`, `confirm_and_pay.rs`, `fee_fixed_at_pick.rs`, `late_success.rs` (T332's, after it), `app/server/tests/request_timeout.rs` and `release_recovery.rs`: each literal gains `latest_charge: Some(\"ch_…\")` with a fake ID (or `None` where the intent has not succeeded), and nothing else in those files changes; no assertion is removed or weakened. No production behaviour changes here. Update the `adapters` `CLAUDE.md` and `docs/decisions.md`.",
+   "goal": "Nov 10 code review, payments F1 and F5, first half (D-2623; FEE-042, SEC-030): no code on the payment-success path has the Stripe charge (`ch_…`) ID, because the adapter's `PaymentIntent` (`app/adapters/src/payments.rs:32`) has no `latest_charge` and the stand-in returns none; T359 needs it to write the charge ledger entry and the evidence. This harness task adds `latest_charge: Option<String>` (`#[serde(default)]`, so a body without it still decodes; the release check that requires it on a succeeded intent is T359's) and makes `stand_ins/stripe.py` return a `ch_` ID on every succeeded intent (the confirm answer and the fetch), checked by `tests/contract/test_stripe_latest_charge.py` (TD-FEE-66). It adopts the done tests that build `PaymentIntent` by name, so the workspace compiles: `charge_attempts.rs`, `fee_limit_race.rs`, `stripe_webhook_dispatch.rs`, `confirm_and_pay.rs`, `fee_fixed_at_pick.rs`, `late_success.rs` (T332's, after it), `payment_jobs.rs` (T328's, after it, if it builds one), `app/server/tests/request_timeout.rs` and `release_recovery.rs`: each literal gains `latest_charge: Some(\"ch_…\")` with a fake ID (or `None` where the intent has not succeeded), and nothing else in those files changes; no assertion is removed or weakened. No production behaviour changes here. Update the `adapters` `CLAUDE.md` and `docs/decisions.md`.",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -24361,7 +24361,8 @@
     "T335",
     "T341",
     "T343",
-    "T286"
+    "T286",
+    "T328"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -24382,7 +24383,8 @@
     "tests/integration/tests/fee_fixed_at_pick.rs",
     "tests/integration/tests/late_success.rs",
     "app/server/tests/request_timeout.rs",
-    "app/server/tests/release_recovery.rs"
+    "app/server/tests/release_recovery.rs",
+    "tests/integration/tests/payment_jobs.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -24405,7 +24407,7 @@
    ],
    "cites": [],
    "budget": {
-    "files": 11,
+    "files": 12,
     "lines": 350,
     "context_pct": 40
    },
@@ -24421,7 +24423,7 @@
    "id": "T353",
    "slug": "dispute-won-recorded",
    "title": "payments: a won dispute records the countering fee's return and the disputed amount's return, and the reconcile compares only disputes not won",
-   "goal": "Nov 10 code review, payments F2 (D-2625; FEE-027 to FEE-030, FEE-050; D-1383, D-1753): `charge.dispute.closed` (`dispute_closed`, `app/payments/src/routes.rs:489`) only writes an audit row and a High alert; it never reads the event's `status` (`read_object` keeps only `/id`), and no code writes `EntryKind::CounteringFeeReturn` (`app/payments/src/ledger.rs:32`). So when Casey wins a $75 dispute whose evidence was submitted, the ledger keeps the `dispute` 9000 and the `countering-fee` 1500 as lost, `MoneyView::net()` understates by $90 for good, the money view keeps a dispute that was won, and the reconcile cannot see it because `MoneyTotals::of_stripe` counts a dispute whatever its status. D-1383 left \"how a won dispute's returned amount is recorded\" to the dispute tasks, and none took it. Fix: `dispute_closed` reads `status`; on `won`, in the event's transaction and once per dispute, it appends a `countering-fee-return` equal to the recorded countering fee (when one was recorded, FEE-050) and a `dispute-reversal` of the disputed amount (Stripe's $15 dispute fee itself stays a cost: `docs/brains/payments-stripe.md:102` returns only the countering fee on a win), the stored code made only by a `LedgerEntry` constructor and folded by every ledger reader as a negative dispute, as D-1753 did for `refund-reversal` (not an `EntryKind` variant, so `portals`' exhaustive statement match is untouched; `migrations/0183_payments_dispute_reversal.sql` adds the code to the ledger's `kind` check; FEE-028 lists it since D-2625); any other closing status changes nothing but the audit and alert as today. The reconcile compares the disputed amounts of disputes that are open or lost only, reading each dispute's status through T335's `DisputeStripe`. Tests in `tests/integration/tests/dispute_won.rs` (TD-FEE-65), each failing on today's `main`: after a submitted dispute, a `won` closure leaves `MoneyView.dispute_fees` equal to the dispute fee only and the net disputed amount 0; the same event again appends nothing; a `lost` closure changes no ledger row; a won dispute with no countering fee appends no `countering-fee-return`; the reconcile over a won dispute raises no difference. Money: 95% branch floor; the overseer runs an independent money review of the hand-in. Update the `payments` `CLAUDE.md` and `docs/decisions.md`. The business statement's wording for a won dispute is T204's (it owns `app/portals/src/business_portal.rs`); this task only folds the new code in the ledger readers it owns.",
+   "goal": "Nov 10 code review, payments F2 (D-2625; FEE-027 to FEE-030, FEE-050; D-1383, D-1753): `charge.dispute.closed` (`dispute_closed`, `app/payments/src/routes.rs:489`) only writes an audit row and a High alert; it never reads the event's `status` (`read_object` keeps only `/id`), and no code writes `EntryKind::CounteringFeeReturn` (`app/payments/src/ledger.rs:32`). So when Casey wins a $75 dispute whose evidence was submitted, the ledger keeps the `dispute` 9000 and the `countering-fee` 1500 as lost, `MoneyView::net()` understates by $90 for good, the money view keeps a dispute that was won, and the reconcile cannot see it because `MoneyTotals::of_stripe` counts a dispute whatever its status. D-1383 left \"how a won dispute's returned amount is recorded\" to the dispute tasks, and none took it. Fix: `dispute_closed` reads `status`; on `won`, in the event's transaction and once per dispute, it appends a `countering-fee-return` equal to the recorded countering fee (when one was recorded, FEE-050) and a `dispute-reversal` of the disputed amount (Stripe's $15 dispute fee itself stays a cost: `docs/brains/payments-stripe.md:102` returns only the countering fee on a win), the stored code made only by a `LedgerEntry` constructor and folded by every ledger reader as a negative dispute, as D-1753 did for `refund-reversal` (not an `EntryKind` variant, so `portals`' exhaustive statement match is untouched; `migrations/0184_payments_dispute_reversal.sql` adds the code to the ledger's `kind` check; FEE-028 lists it since D-2625); any other closing status changes nothing but the audit and alert as today. The reconcile compares the disputed amounts of disputes that are open or lost only, reading each dispute's status through T335's `DisputeStripe`. Tests in `tests/integration/tests/dispute_won.rs` (TD-FEE-65), each failing on today's `main`: after a submitted dispute, a `won` closure leaves `MoneyView.dispute_fees` equal to the dispute fee only and the net disputed amount 0; the same event again appends nothing; a `lost` closure changes no ledger row; a won dispute with no countering fee appends no `countering-fee-return`; the reconcile over a won dispute raises no difference. Money: 95% branch floor; the overseer runs an independent money review of the hand-in. Update the `payments` `CLAUDE.md` and `docs/decisions.md`. The business statement's wording for a won dispute is T204's (it owns `app/portals/src/business_portal.rs`); this task only folds the new code in the ledger readers it owns.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -24430,7 +24432,8 @@
     "T331",
     "T332",
     "T335",
-    "T359"
+    "T359",
+    "T354"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -24443,7 +24446,7 @@
     "app/payments/src/ledger.rs",
     "app/payments/src/models.rs",
     "app/payments/src/reconcile.rs",
-    "migrations/0183_payments_dispute_reversal.sql",
+    "migrations/0184_payments_dispute_reversal.sql",
     "tests/integration/tests/dispute_won.rs"
    ],
    "reads": [
@@ -24546,7 +24549,7 @@
    "id": "T355",
    "slug": "release-claim-locks-pick",
    "title": "picks: the release claim re-checks the pick under its row lock, and a fraud end refuses a pick already released",
-   "goal": "Nov 10 code review, privacy F3, as fixed by the plan review's H3 (D-2627; PICK-022, PRIV-005, FEE-052): the release claim reads its target unlocked (`show`, `app/picks/src/release.rs:282`, through `release_target`) and `record` (`:394`) inserts `picks.release` with `ON CONFLICT (pick_id)` only, while `fraud_warning` (`app/picks/src/unreachable_refund.rs:490`) decides on the caller's `released` snapshot and `end_pick` (`:439`) checks only `status = paid`. When a payment success and T281's early-fraud-warning task run together for one pick, the warning can refund and end the pick as `fraud_refunded` while the release commits its row and opens the name and address: the business gets the refund and the details (FEE-052 ends only an unreleased paid pick). A `FOR UPDATE` that one side takes and a `NOT EXISTS` read before the other side's wait do not close this, because a read made before the wait is not re-checked under READ COMMITTED. Fix, with one lock both sides take on the same row: `record` takes `SELECT … FROM picks.pick WHERE id = $1 FOR UPDATE` first in the claim's transaction, then checks in a separate statement that the pick still has the wanted status and no end, answering `MovedOn` before any vault read; `end_pick` and `fraud_warning` take the same `SELECT … FOR UPDATE` on the pick first, then, in a separate statement after the lock is held, read whether a `picks.release` row exists and refuse to end a released pick (it goes to Casey's decision list as FEE-052 says), whatever the caller's snapshot said. Tests in `tests/integration/tests/release_fraud_race.rs` (TD-PICK-59), two connections and row locks, no sleeps: (a) the claim inserts its release row and holds its transaction open; the fraud end, on the other connection, blocks on the pick lock; the claim commits; the fraud end then refuses and refunds nothing (fails today); (b) the fraud end holds the pick lock after ending the pick; the claim blocks; the fraud end commits; the claim answers `MovedOn`, writes no release row and no `vault_read.picks.release` audit row; (c) the plain release and the plain fraud end behave as before. Update the `picks` `CLAUDE.md` and `docs/decisions.md`.",
+   "goal": "Nov 10 code review, privacy F3, as fixed by the plan review's H3 and its re-review (D-2627; PICK-022, PRIV-005, FEE-052): the release claim reads its target unlocked (`show`, `app/picks/src/release.rs:282`, through `release_target`) and `record` (`:394`) inserts `picks.release` with `ON CONFLICT (pick_id)` only, while `fraud_warning` (`app/picks/src/unreachable_refund.rs:490`) first calls `payments::api::early_fraud_warning` (`app/payments/src/refunds.rs:140`) with the caller's `released` snapshot, before any lock, so the refund is sent while a racing release can still commit and open the name and address: the business gets the refund and the details (FEE-052 refunds only a charge whose details were not yet released). Fix, all in `picks`: (1) the fraud path first runs one short transaction that takes `SELECT … FROM picks.pick WHERE id = $1 FOR UPDATE`, then, in a separate statement under that lock, reads whether a `picks.release` row exists; if one exists the warning only alerts (the pick goes to Casey's decision list, as today); if none exists it inserts a durable marker, one `picks.fraud_hold` row for the pick (`migrations/0181_picks_fraud_hold.sql`: pick ID primary key, time; the app role may INSERT and SELECT only), and commits; only then does it call `early_fraud_warning` with `released` as read under that lock, so the refund goes out only for a pick that can no longer be released; the existing job move and `fraud_refunded` end follow as today once the refund is read as succeeded; (2) `record` takes the same `SELECT … FOR UPDATE` on the pick first in the claim's transaction, then, in a separate statement, checks that the pick still has the wanted status, no end and no `picks.fraud_hold` row, and answers `MovedOn` before any vault read otherwise; (3) `end_pick` (`:439`) keeps its status-only guard: `no_call_at_72_hours` (`:432`) and the other callers end released picks through it, and only the fraud path checks for a release row. This is a clarification consistent with FEE-052's order (alert; refund an unreleased charge at once; list a released one): \"not yet released\" is decided under the pick's lock and the release is then refused, never both. Tests in `tests/integration/tests/release_fraud_race.rs` (TD-PICK-59), two connections and row locks, no sleeps: (a) the claim locks the pick, inserts its release row and holds its transaction open; the fraud path blocks on the pick lock; the claim commits; the fraud path then finds the release row, writes no hold and sends no refund (the fake refund client is never called); (b) the fraud path commits its hold first; the claim then answers `MovedOn`, writes no release row and no `vault_read.picks.release` audit row, and the refund is sent once; (c) `no_call_at_72_hours` still ends a released, paid pick as a no-show; the plain release and the plain fraud end behave as before. Update the `picks` `CLAUDE.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -24565,6 +24568,7 @@
    "owns": [
     "app/picks/src/release.rs",
     "app/picks/src/unreachable_refund.rs",
+    "migrations/0181_picks_fraud_hold.sql",
     "tests/integration/tests/release_fraud_race.rs"
    ],
    "reads": [
@@ -24590,8 +24594,8 @@
    ],
    "cites": [],
    "budget": {
-    "files": 3,
-    "lines": 300,
+    "files": 4,
+    "lines": 400,
     "context_pct": 20
    },
    "checks": [
@@ -24606,7 +24610,7 @@
    "id": "T356",
    "slug": "outbox-sender-quiet-hours",
    "title": "messaging and server (harness): the worker sends queued texts once, re-checking quiet hours, the line and the suppression list at the moment of sending",
-   "goal": "Nov 10 code review, messaging F4 and batch 2 jobs F1, D-2188's unowned follow-up, and the plan review's M4 (D-2628; QH-001, QH-006, QH-008, TXT-011, TXT-014, TXT-021, CON-009, CON-030; D-558). Three defects in one path. (a) Nothing in production sends a `messaging.outbox` row: `send_on_line` (`app/messaging/src/mode.rs:225`) and `send_checked` (`app/messaging/src/optout.rs:310`) have only test callers, so no consent text, HELP reply, opt-out confirmation or job text reaches a phone. (b) The send path never checks quiet hours and the outbox has no not-before time, so once a sender drains rows as written, a row queued at night goes at once. (c) A text can go out twice: `claim` (`app/messaging/src/models.rs:211`) takes rows in `queued` or `sending`, and `send` (`app/messaging/src/service.rs:184`) resends a `sending` row under the same key, relying on carrier dedupe Twilio does not do (D-558; the done test `td_txt_04_a_killed_worker_resends_under_the_same_key_and_delivers_once` passes only because its fake carrier dedupes by key); it fails after an accept followed by a 15-second client timeout, the 120-second handler timeout, a kill during the drain, or a lost lease while a second worker reclaims the row. Fix: (1) `migrations/0181_messaging_outbox_not_before.sql` adds nullable `not_before` and `sending_since` columns and widens the outbox `status` check (`migrations/0042_messaging_outbox.sql:29`, and any later widening) to add `expired` and `unknown`; (2) `not_before` is set at enqueue from the row's message kind and `rules::decide` (`Hold { until }`), with no change to `NewText` or any struct done tests build by name; `send_checked` re-runs the quiet-hours rule for the row's kind at the send instant (QH-001, QH-008 for a retry) and on a hold sets `not_before` and leaves the row `queued` without reaching the carrier; the CON-018 HELP reply and the CON-009 confirmation keep their any-hour rule; (3) the fence: `claim` takes only a `queued` row whose `not_before` has passed, moving it to `sending` with `sending_since` in one statement, so two senders can never both hold it; the carrier call runs outside any transaction; a definite refusal (the vendor's 4xx, 21610 as today) moves the row back to `queued` for the TXT-014 retries or blocks it; an unknown outcome (timeout, connection lost after the request was sent) and any row still `sending` 5 minutes after `sending_since` (a crash) move to `unknown` and are never resent blind: an important text (TXT-014) goes to its email copy and portal line as after its last retry, and one Low `messaging.send_outcome_unknown` alert is raised per row with no body or phone; (4) `app/messaging/src/outbox_sender.rs`: a `messaging.send_due` worker task, registered in `app/server/src/bin/worker.rs` (shared) with the Twilio settings like `picks.line_retry`, claims due rows in bounded batches, sends each through `send_on_line`, sweeps stale `sending` rows to `unknown`, and re-queues itself; (5) a non-reply row queued while its line was paused, switched off or suspended is marked `expired` with one audit row and never sent (D-2188), and a CON-009 confirmation older than 5 minutes is never sent (CON-030). This is a harness task because it rewrites the done TD-TXT-04 test in `tests/integration/tests/outbox.rs`, whose premise (the carrier dedupes a resend) D-558 left unverified and is false for Twilio: the killed-worker case now asserts one carrier call and the row `unknown`, never two calls; every other assertion in that file is kept. The Twilio sent-log lookup that could settle an `unknown` row (OPS-017) is not built here. Tests in `tests/integration/tests/outbox_sender.rs` (TD-QH-05), through the worker with the stand-in Twilio and a fake carrier that does not dedupe: a `caller_missed` row queued at 21:30 Arizona time for a 928 number is not sent at 21:31 and is sent at 08:00; a consent text queued at 14:00 goes at once; a suppressed number gets only HELP; a row queued while the line was suspended is expired when it reopens; a confirmation goes within 5 minutes or never; a worker killed after the carrier accepted leaves one delivery and the row `unknown` after 5 minutes, never two deliveries; two workers racing for one row make one carrier call; a timeout gives `unknown`, the email copy for an important text, and one alert. Every other TD-TXT and TD-CON case and `suspension_mode.rs` pass unchanged. Update the `messaging` and `server` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`.",
+   "goal": "Nov 10 code review, messaging F4 and batch 2 jobs F1, D-2188's unowned follow-up, and the plan review's M4 (D-2628; QH-001, QH-006, QH-008, TXT-011, TXT-014, TXT-021, CON-009, CON-030; D-558). Three defects in one path. (a) Nothing in production sends a `messaging.outbox` row: `send_on_line` (`app/messaging/src/mode.rs:225`) and `send_checked` (`app/messaging/src/optout.rs:310`) have only test callers, so no consent text, HELP reply, opt-out confirmation or job text reaches a phone. (b) The send path never checks quiet hours and the outbox has no not-before time, so once a sender drains rows as written, a row queued at night goes at once. (c) A text can go out twice: `claim` (`app/messaging/src/models.rs:211`) takes rows in `queued` or `sending`, and `send` (`app/messaging/src/service.rs:184`) resends a `sending` row under the same key, relying on carrier dedupe Twilio does not do (D-558; the done test `td_txt_04_a_killed_worker_resends_under_the_same_key_and_delivers_once` passes only because its fake carrier dedupes by key); it fails after an accept followed by a 15-second client timeout, the 120-second handler timeout, a kill during the drain, or a lost lease while a second worker reclaims the row. Fix: (1) `migrations/0182_messaging_outbox_not_before.sql` adds nullable `not_before` and `sending_since` columns and widens the outbox `status` check (`migrations/0042_messaging_outbox.sql:29`, and any later widening) to add `expired` and `unknown`; (2) `not_before` is set at enqueue from the row's message kind and `rules::decide` (`Hold { until }`), with no change to `NewText` or any struct done tests build by name; `send_checked` re-runs the quiet-hours rule for the row's kind at the send instant (QH-001, QH-008 for a retry) and on a hold sets `not_before` and leaves the row `queued` without reaching the carrier; the CON-018 HELP reply and the CON-009 confirmation keep their any-hour rule; (3) the fence: `claim` takes only a `queued` row whose `not_before` has passed, moving it to `sending` with `sending_since` in one statement, so two senders can never both hold it; the carrier call runs outside any transaction; a definite refusal (the vendor's 4xx, 21610 as today) moves the row back to `queued` for the TXT-014 retries or blocks it; an unknown outcome (timeout, connection lost after the request was sent) and any row still `sending` 5 minutes after `sending_since` (a crash) move to `unknown` and are never resent blind: an important text (TXT-014) goes to its email copy and portal line as after its last retry, and one Low `messaging.send_outcome_unknown` alert is raised per row with no body or phone; (4) `app/messaging/src/outbox_sender.rs`: a `messaging.send_due` worker task, registered in `app/server/src/bin/worker.rs` (shared) with the Twilio settings like `picks.line_retry`, claims due rows in bounded batches, sends each through `send_on_line`, sweeps stale `sending` rows to `unknown`, and re-queues itself; (5) a non-reply row queued while its line was paused, switched off or suspended is marked `expired` with one audit row and never sent (D-2188), and a CON-009 confirmation older than 5 minutes is never sent (CON-030). This is a harness task because it rewrites the done TD-TXT-04 test in `tests/integration/tests/outbox.rs`, whose premise (the carrier dedupes a resend) D-558 left unverified and is false for Twilio: the killed-worker case now asserts one carrier call and the row `unknown`, never two calls; every other assertion in that file is kept. The Twilio sent-log lookup that could settle an `unknown` row (OPS-017) is not built here. Tests in `tests/integration/tests/outbox_sender.rs` (TD-QH-05), through the worker with the stand-in Twilio and a fake carrier that does not dedupe: a `caller_missed` row queued at 21:30 Arizona time for a 928 number is not sent at 21:31 and is sent at 08:00; a consent text queued at 14:00 goes at once; a suppressed number gets only HELP; a row queued while the line was suspended is expired when it reopens; a confirmation goes within 5 minutes or never; a worker killed after the carrier accepted leaves one delivery and the row `unknown` after 5 minutes, never two deliveries; two workers racing for one row make one carrier call; a timeout gives `unknown`, the email copy for an important text, and one alert. Every other TD-TXT and TD-CON case and `suspension_mode.rs` pass unchanged. Update the `messaging` and `server` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`.",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -24629,7 +24633,7 @@
     "app/messaging/src/optout.rs",
     "app/messaging/src/models.rs",
     "app/messaging/src/service.rs",
-    "migrations/0181_messaging_outbox_not_before.sql",
+    "migrations/0182_messaging_outbox_not_before.sql",
     "tests/integration/tests/outbox_sender.rs",
     "tests/integration/tests/outbox.rs"
    ],
@@ -24690,7 +24694,8 @@
    "deps": [
     "T336",
     "T356",
-    "T360"
+    "T360",
+    "T330"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -24810,7 +24815,7 @@
    "id": "T359",
    "slug": "charge-success-ledger-receipt",
    "title": "payments: a successful charge writes its own charge ledger entry with the charge ID, stores the ID and queues its receipt; a fee-free job type's $0 entry is written at Confirm",
-   "goal": "Nov 10 code review, payments F1, F3 and F5, second half, and the plan review's H2 and M2 (D-2623; FEE-013, FEE-028, FEE-030, FEE-031, FEE-042, FEE-045; D-1414, D-1419). After T352 (the charge ID on the adapter's `PaymentIntent`). A successful charge writes its attempt status and `payments.charge_evidence` (`write_evidence`, `app/payments/src/charge.rs:656`, from `effects`, `app/payments/src/handlers.rs:144`) but no `charge` ledger entry, since `record_fee_at_confirm` (`app/payments/src/service.rs:401`) has no caller. So a later job of the same customer is charged again (`free_wins::is_repeat` reads only ledger rows, FEE-013); the statement and money view show refunds with no charges (FEE-030); the reconcile would raise a High `payments.unknown_charge` alert for every charge; the evidence lacks the charge ID (FEE-042); and `queue_receipt` (`app/payments/src/receipts.rs:56`) has no caller, so no Ask Hava receipt is emailed (FEE-031). Also, for a fee-free job-type pick `waive_at_confirm` returns `NotWaived` and writes nothing (`app/payments/src/free_wins.rs:139`), so `no_fee_release` finds no $0 entry and the pick is never released (FEE-045). Fix: (1) the release proof's fresh fetch (`paid_release`, `app/payments/src/release_proof.rs:193`) requires a `ch_` `latest_charge` on a succeeded intent (missing: refused like any unreadable field, so Stripe's resend retries) and carries it to the success write; (2) in the transaction that writes the evidence (`migrations/0182_payments_charge_id.sql` adds a nullable `stripe_charge_id` to `payments.charge_evidence`, still append-only for the app role), the success path stores the charge ID, appends one `charge` ledger entry at the pick's stored fee (`payments.pick_fee`, equal to the checked intent amount) under a key derived from the pick, not from (job, business), so a second paid pick of the same business on the same job after a refund keeps its own entry; the reconcile's own-intent charge key (`key_and_id`, `app/payments/src/reconcile.rs:381`) uses the same per-pick key, so it converges instead of doubling or hiding a charge; and it calls `queue_receipt` when the evidence row was newly written; a replayed success writes nothing more; (3) `waive_at_confirm` writes the `fee-free-job-type` $0 entry (D-1419) when the pick's stored fee row says the pick is fee-free (FEE-045, fixed at the pick by T340), with no card and no `may_confirm` proof needed (FEE-036, BIZ-001), and answers so that `no_fee_release` clears it. T261's Confirm route keeps calling `waive_at_confirm` then `no_fee_release` and needs no change. Tests in `tests/integration/tests/charge_ledger_entry.rs` (TD-FEE-64), each failing on today's `main`: a stand-in success webhook leaves exactly one `charge` row with the `ch_` ID and the stored cents, the evidence row holds the same ID, and one `payments.receipt` task is queued; the replay adds nothing; a succeeded intent with no `ch_` ID releases nothing; `business_statement` totals equal the charges; a later pick of the same business on another job of the same customer is waived as `Repeat`; a charge, its full refund, a re-pick of the same business on the same job and a second charge leave two `charge` rows, and a reconcile over both appends nothing and raises no `payments.unknown_charge`; a fee-free job-type pick of a business with no saved card gets its `fee-free-job-type` entry from `waive_at_confirm` and `no_fee_release` clears it. Money: 95% branch floor; the overseer runs an independent money review of the hand-in. Update the `payments` `CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`.",
+   "goal": "Nov 10 code review, payments F1, F3 and F5, second half, and the plan review's H2 and M2 (D-2623; FEE-013, FEE-028, FEE-030, FEE-031, FEE-042, FEE-045; D-1414, D-1419). After T352 (the charge ID on the adapter's `PaymentIntent`). A successful charge writes its attempt status and `payments.charge_evidence` (`write_evidence`, `app/payments/src/charge.rs:656`, from `effects`, `app/payments/src/handlers.rs:144`) but no `charge` ledger entry, since `record_fee_at_confirm` (`app/payments/src/service.rs:401`) has no caller. So a later job of the same customer is charged again (`free_wins::is_repeat` reads only ledger rows, FEE-013); the statement and money view show refunds with no charges (FEE-030); the reconcile would raise a High `payments.unknown_charge` alert for every charge; the evidence lacks the charge ID (FEE-042); and `queue_receipt` (`app/payments/src/receipts.rs:56`) has no caller, so no Ask Hava receipt is emailed (FEE-031). Also, for a fee-free job-type pick `waive_at_confirm` returns `NotWaived` and writes nothing (`app/payments/src/free_wins.rs:139`), so `no_fee_release` finds no $0 entry and the pick is never released (FEE-045). Fix: (1) the release proof's fresh fetch (`paid_release`, `app/payments/src/release_proof.rs:193`) requires a `ch_` `latest_charge` on a succeeded intent (missing: refused like any unreadable field, so Stripe's resend retries) and carries it to the success write; (2) in the transaction that writes the evidence (`migrations/0183_payments_charge_id.sql` adds a nullable `stripe_charge_id` to `payments.charge_evidence`, still append-only for the app role), the success path stores the charge ID, appends one `charge` ledger entry at the pick's stored fee (`payments.pick_fee`, equal to the checked intent amount) under a key derived from the pick, not from (job, business), so a second paid pick of the same business on the same job after a refund keeps its own entry; the reconcile's own-intent charge key (`key_and_id`, `app/payments/src/reconcile.rs:381`) uses the same per-pick key, so it converges instead of doubling or hiding a charge; and it calls `queue_receipt` when the evidence row was newly written; a replayed success writes nothing more; (3) `waive_at_confirm` writes the `fee-free-job-type` $0 entry (D-1419) when the pick's stored fee row says the pick is fee-free (FEE-045, fixed at the pick by T340), with no card and no `may_confirm` proof needed (FEE-036, BIZ-001), and answers so that `no_fee_release` clears it. (4) `is_repeat` (`app/payments/src/free_wins.rs:186`) counts a charge on another of the customer's jobs only when that charge was an actual introduction (FEE-013): a charge whose pick was refunded before any release, a late success auto-refunded with nothing released (T332's trigger) or an unreleased fraud-warning refund (`fraud-warning`), is not counted; refunds after a release (unreachable, no-show) still count; (5) `record_fee_at_confirm` (`app/payments/src/service.rs:401`, its key over job and business at `:428`) stays as it is and unused in production: the success path writes the charge entry and `waive_at_confirm` the $0 ones, and four done tests call it (`fee_mode_switch.rs`, `ledger_1000_jobs.rs`, `fee_at_pick.rs`, `fee_fixed_at_pick.rs`), so its doc comment says it is not the production writer and must not be called for a charge, whose key is per pick (D-2623). T261's Confirm route keeps calling `waive_at_confirm` then `no_fee_release` and needs no change. Tests in `tests/integration/tests/charge_ledger_entry.rs` (TD-FEE-64), each failing on today's `main`: a stand-in success webhook leaves exactly one `charge` row with the `ch_` ID and the stored cents, the evidence row holds the same ID, and one `payments.receipt` task is queued; the replay adds nothing; a succeeded intent with no `ch_` ID releases nothing; `business_statement` totals equal the charges; after a released, paid pick a pick of the same business on another job of the same customer is waived as `Repeat`; after a late success auto-refunded with nothing released, or an unreleased pick refunded for a fraud warning, the next job is not waived; a charge, its full refund, a re-pick of the same business on the same job and a second charge leave two `charge` rows, and a reconcile over both appends nothing and raises no `payments.unknown_charge`; a fee-free job-type pick of a business with no saved card gets its `fee-free-job-type` entry from `waive_at_confirm` and `no_fee_release` clears it. Money: 95% branch floor; the overseer runs an independent money review of the hand-in. Update the `payments` `CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -24818,7 +24823,8 @@
    "deps": [
     "T352",
     "T334",
-    "T340"
+    "T340",
+    "T332"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -24831,8 +24837,9 @@
     "app/payments/src/handlers.rs",
     "app/payments/src/release_proof.rs",
     "app/payments/src/free_wins.rs",
+    "app/payments/src/service.rs",
     "app/payments/src/reconcile.rs",
-    "migrations/0182_payments_charge_id.sql",
+    "migrations/0183_payments_charge_id.sql",
     "tests/integration/tests/charge_ledger_entry.rs"
    ],
    "reads": [
@@ -24863,7 +24870,7 @@
    ],
    "cites": [],
    "budget": {
-    "files": 7,
+    "files": 8,
     "lines": 550,
     "context_pct": 29
    },
@@ -24886,7 +24893,7 @@
    "module": "messaging",
    "deps": [
     "T094",
-    "T356"
+    "T075"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
