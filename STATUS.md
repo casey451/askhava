@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-11T02:10:26Z by runner 64b049c1ac2a (actions).
+Updated 2026-11-11T02:10:39Z by runner 64b049c1ac2a (actions).
 
-**Building: T157 in progress since 01:03Z; 193 of 354 done; week 56% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 02:10Z; 193 of 354 done; week 56% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 193 of 354 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T157 claimed 01:03Z, lease until 04:03Z
+- **Lane:** idle since 02:10Z (no task in progress)
 - **Week:** 56% used, 80.3M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 02:08Z, 1 min before this update
 - **Keeper:** last ran 02:08Z, next wake 04:06Z
@@ -17,6 +17,7 @@ Updated 2026-11-11T02:10:26Z by runner 64b049c1ac2a (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T157 | picks: the homeowner's backup choice at the pick | MERGE_PENDING | 1 | 66 min | 02:10Z |  |
 | T337 | payments: a $0 release proof is bound to the pick's own stor | QUEUED | 1 | 31 min | 02:07Z | T337 code+tests done (commit 6b896e8f) but smoke/prehandin red: tests/integration/tests/confirm_and_pay.rs td_fee_25_a_p |
 | T349 | calls: a PIN draw fails only when the OS source fails, and o | done | 1 | 36 min | 00:40Z |  |
 | T207 | businesses: re-apply the license map when a daily list chang | done | 1 | 41 min | 23:39Z |  |
@@ -104,7 +105,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T157 (lease until 2026-11-11T04:03:53Z)
 
 ## Last usage reading
-- {"task": "T337", "at": "2026-11-11T02:07:02Z", "cache_read_input_tokens": 6104521, "input_tokens": 143, "cache_creation_input_tokens": 194584, "output_tokens": 35643}
+- {"task": "T157", "at": "2026-11-11T02:10:25Z", "cache_creation_input_tokens": 766269, "input_tokens": 569, "cache_read_input_tokens": 34806412, "output_tokens": 226752}
