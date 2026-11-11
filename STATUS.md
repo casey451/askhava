@@ -1,33 +1,33 @@
 # Ask Hava build status
 
-Updated 2026-11-11T05:39:39Z by runner 0a6c287a3c5c (actions).
+Updated 2026-11-11T06:24:05Z by runner 946202fb2ebb (actions).
 
-**Building: T327 in progress since 05:24Z; 195 of 370 done; week 60% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T327 in progress since 05:24Z; 196 of 370 done; week 60% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 195 of 370 build tasks (owner gates not counted)
+- **Tasks done:** 196 of 370 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 3: T327 claimed 05:24Z, lease until 08:24Z
 - **Week:** 60% used, 71.2M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:37Z, 2 min before this update
+- **Last run:** 06:23Z, 0 min before this update
 - **Keeper:** last ran 05:37Z, next wake 08:21Z
 
 ## Needs attention
-- nothing
+- Strict plan check red: 6 problem(s) on tasks still to run (+16 on DONE tasks); first: T100: stored context_pct 41% but it measures 45%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T383 | messaging and portals: the text templates and the homeowner  | MERGE_PENDING | 1 | 20 min | 05:39Z |  |
-| T337 | payments: a $0 release proof is bound to the pick's own stor | BLOCKED | 3 | 16 min | 05:11Z | T337 built and committed (53e675b1, cf42d54e); smoke/prehandin red on tests T337 does not own: confirm_and_pay.rs td_fee |
-| T209 | picks and payments: the optional auto-confirm-and-pay box wi | MERGE_PENDING | 1 | 115 min | 05:06Z |  |
+| T337 | payments (harness): a $0 release proof is bound to the pick' | BLOCKED | 3 | 16 min | 05:11Z | T337 built and committed (53e675b1, cf42d54e); smoke/prehandin red on tests T337 does not own: confirm_and_pay.rs td_fee |
+| T209 | picks and payments: the optional auto-confirm-and-pay box wi | done | 1 | 115 min | 05:06Z |  |
 | T295 | payments, ai, intake and picks take the brand from the brand | BLOCKED | 3 | 0 min | 04:59Z | T295 blocked at step 3: tests/brand_literal_baseline.json still lists files T295 does not own: app/messaging/templates/e |
-| T337 | payments: a $0 release proof is bound to the pick's own stor | QUEUED | 2 | 25 min | 04:51Z |  |
+| T337 | payments (harness): a $0 release proof is bound to the pick' | QUEUED | 2 | 25 min | 04:51Z |  |
 | T295 | payments, ai, intake and picks take the brand from the brand | QUEUED | 2 | 0 min | 04:49Z |  |
 | T295 | payments, ai, intake and picks take the brand from the brand | QUEUED | 1 | 1 min | 04:44Z |  |
 | T374 | licensing and businesses: one read of everything a business  | done | 1 | 45 min | 03:08Z |  |
 | T157 | picks: the homeowner's backup choice at the pick | done | 2 | 22 min | 02:41Z | E2e: failure; Ally: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-1 |
 | T157 | picks: the homeowner's backup choice at the pick | check_failed | 1 | 66 min | 02:10Z |  |
-| T337 | payments: a $0 release proof is bound to the pick's own stor | QUEUED | 1 | 31 min | 02:07Z |  |
+| T337 | payments (harness): a $0 release proof is bound to the pick' | QUEUED | 1 | 31 min | 02:07Z |  |
 | T349 | calls: a PIN draw fails only when the OS source fails, and o | done | 1 | 36 min | 00:40Z |  |
 | T207 | businesses: re-apply the license map when a daily list chang | done | 1 | 41 min | 23:39Z |  |
 | T311 | calls and server: a voice read-back confirm connects only th | done | 2 | 33 min | 23:21Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
@@ -46,6 +46,7 @@ Updated 2026-11-11T05:39:39Z by runner 0a6c287a3c5c (actions).
 | T288 | payments: a Stripe charge the nightly reconcile cannot settl | done | 1 | 60 min | 06:30Z |  |
 
 ### Plan and harness merges on main
+- 06:12Z Harness: the state schema accepts the hand-in update merge — runner stopped with state_invalid (D-2870) (#459)
 - 05:26Z Plan: T337 owns its confirm_and_pay fixture rows; paid-pick guard keeps a test (D-2832) (#453)
 - 05:08Z Plan: new T383 removes the brand words left in the text templates and homeowner page; T295 waits for it (D-2843) (#455)
 - 04:14Z Plan: three lanes (D-2810) (#451)
@@ -71,8 +72,8 @@ Updated 2026-11-11T05:39:39Z by runner 0a6c287a3c5c (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 204 of 733 (27.8%) · partial 340 · unstarted 189
-**Tasks merged (throughput only):** 195 of 370
+**Requirements verified:** 204 of 733 (27.8%) · partial 342 · unstarted 187
+**Tasks merged (throughput only):** 196 of 370
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -90,7 +91,7 @@ Updated 2026-11-11T05:39:39Z by runner 0a6c287a3c5c (actions).
 | ops-recovery | 2 | 5 | 47 | 54 |
 | privacy | 6 | 22 | 3 | 31 |
 | quiet-hours | 4 | 5 | 0 | 9 |
-| quotes-pick | 25 | 22 | 9 | 56 |
+| quotes-pick | 25 | 24 | 7 | 56 |
 | recurring | 5 | 3 | 3 | 11 |
 | security | 6 | 43 | 6 | 55 |
 | terms | 0 | 3 | 32 | 35 |
@@ -107,7 +108,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 75 of 162 done
+- stage 4: 76 of 162 done
 - stage 5: 0 of 58 done
 - stage 6: 0 of 34 done
 - stage 7: 0 of 2 done
