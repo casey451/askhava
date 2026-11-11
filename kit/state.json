@@ -28264,7 +28264,7 @@
    "deps": [
     "T193"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "business-public-names",
    "type": "build",
@@ -28277,8 +28277,8 @@
     2926,
     2927
    ],
-   "reason": "plan gap reported: PLAN GAP: app/businesses/src/holding.rs:8 and migrations/0050_licensing_imports.sql:22-55: nothing links a business to a stored record that holds a name. businesses.business and businesses.signup hold no name or license number; licensing.agency_record has no names (ROC import header is license_number,class,status,issued_on); licensing.city_license_entry has names but no business_id and city_standing does not store the match; licensing::api returns no name for a business ID. D-2206 assumed a link that D-2741 documents does not exist, and T316's no-storage rule forbids adding one. Reviewer confi; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T316 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: app/businesses/src/holding.rs:8 and migrations/0050_licensing_imports.sql:22-55: nothing links a business to a stored record that holds a name. businesses.business and businesses.signup hold no name or license number; licensing.agency_record has no names (ROC import header is license_number,class,status,issued_on); licensing.city_license_entry has names but no business_id and city_standing does not store the match; licensing::api returns no name for a business ID. D-2206 assumed a link that D-2741 documents does not exist, and T316's no-storage rule forbids adding one. Reviewer confirmed. A plan change must decide where the link comes from (e.g. store the matched record or names at sign-up in T302/T165) or have callers pass names in.",
+   "reason": null,
+   "last_failure": "PLAN GAP: app/businesses/src/holding.rs:8 and migrations/0050_licensing_imports.sql:22-55: nothing links a business to a stored record that holds a name. businesses.business and businesses.signup hold no name or license number; licensing.agency_record has no names (ROC import header is license_number,class,status,issued_on); licensing.city_license_entry has names but no business_id and city_standing does not store the match; licensing::api returns no name for a business ID. D-2206 assumed a link that D-2741 documents does not exist, and T316's no-storage rule forbids adding one. Reviewer confirmed. A plan change must decide where the link comes from (e.g. store the matched record or names at sign-up in T302/T165) or have callers pass names in.\nre-queued after plan fix D-2943: business public names now stored at sign-up by T165; T316 reads them (D-2943, #473)",
    "history": [
     {
      "attempt": 1,
@@ -28292,6 +28292,21 @@
      "started_at": "2026-11-11T10:04:04Z",
      "ended_at": "2026-11-11T10:06:23Z",
      "result": "BLOCKED"
+    }
+   ],
+   "requeues": [
+    {
+     "at": "2026-11-11T10:38:37Z",
+     "reason": "business public names now stored at sign-up by T165; T316 reads them (D-2943, #473)",
+     "by": "manual-d4e2019b8811",
+     "was": "plan gap reported: PLAN GAP: app/businesses/src/holding.rs:8 and migrations/0050_licensing_imports.sql:22-55: nothing links a business to a stored record that holds a name. businesses.business and businesses.signup hold no name or license number; licensing.agency_record has no names (ROC import header is license_number,class,status,issued_on); licensing.city_license_entry has names but no business_id and city_standing does not store the match; licensing::api returns no name for a business ID. D-2206 assumed a link that D-2741 documents does not exist, and T316's no-storage rule forbids adding one. Reviewer confi; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T316 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 1,
+     "plan_fix": "D-2943",
+     "plan_since": "2026-11-11T10:04:04Z",
+     "plan_base": "722416045b2b9a891585549e8cceddac03522190",
+     "plan_head": "9d873d46963308107bb9f1cfcfffa4ccc1795146",
+     "plan_then": "a6b11bde5942a91d9b1f8b13ce5d5a3a663286a3eec033a9d62009e568dd58b3",
+     "plan_now": "1e2d96f5b614ab0596be654d728f800f6b74b0c60bf075dafaf77a3b9a95308a"
     }
    ]
   },
@@ -31874,7 +31889,7 @@
    }
   }
  },
- "updated_at": "2026-11-11T10:27:27Z",
+ "updated_at": "2026-11-11T10:38:37Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -31972,8 +31987,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "015e158fafa5674c86cebb45d05f7dd81501488e",
- "starter": "actions",
+ "runner_sha": "9d873d46963308107bb9f1cfcfffa4ccc1795146",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "18d7cc8f25928eecd7091aa634c5a592dac77fc6",

@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T10:27:27Z by runner 015e158fafa5 (actions).
+Updated 2026-11-11T10:38:37Z by runner 9d873d469633 (manual).
 
 **Building: T164 in progress since 10:21Z; 200 of 371 done; week 63% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,12 +8,11 @@ Updated 2026-11-11T10:27:27Z by runner 015e158fafa5 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T164 claimed 10:21Z, lease until 13:21Z; lane 2: T278 claimed 10:27Z, lease until 13:27Z
 - **Week:** 63% used, 64.5M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:25Z, 2 min before this update
+- **Last run:** 10:27Z, 11 min before this update
 - **Keeper:** last ran 10:08Z, next wake 10:28Z
 
 ## Needs attention
-- BLOCKED T316: plan gap reported: PLAN GAP: app/businesses/src/holding.rs:8 and migrations/0050_licensing_imports.sql:22-55: nothing links a business to a stored record that holds a name. businesses.business and businesses.signup hold no name or license number; licensing.agency_record has no names (ROC import header is license_number,class,status,issued_on); licensing.city_license_entry has names but no business_id and city_standing does not store the match; licensing::api returns no name for a business ID. D-2206 assumed a link that D-2741 documents does not exist, and T316's no-storage rule forbids adding one. Reviewer confi; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T316 --plan-fix D-### --reason "..."` (D-2859)
-- Strict plan check red: 12 problem(s) on tasks still to run (+19 on DONE tasks); first: T255: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 15 problem(s) on tasks still to run (+22 on DONE tasks); first: T255: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -51,6 +50,7 @@ Updated 2026-11-11T10:27:27Z by runner 015e158fafa5 (actions).
 | T292 | messaging and calls: every text, email and call takes the br | done | 1 | 21 min | 11:16Z |  |
 
 ### Plan and harness merges on main
+- 10:38Z Plan: businesses give their public name at sign-up; T316 reads it (D-2943) (#473)
 - 09:54Z Harness: a planned file deletion is not a plan gap — 5 eligible tasks were held (D-2922) (#470)
 - 09:40Z Plan: split T164 — new T384 shows edited/withdrawn quotes in place; LIST numbers match picks (D-2912) (#468)
 - 08:37Z Plan: T337 also owns release_recovery.rs for a fixture-only fix (D-2896) (#464)
