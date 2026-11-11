@@ -26,6 +26,8 @@
 //!
 //! T374 added the licensing holder read in `holding` (LIC-019, BIZ-049, CARD-001, D-2712).
 //!
+//! T316 added the public business name read in `public_name` (PICK-041, BIZ-022, D-2943).
+//!
 //! Other crates reach it only through [`api`].
 
 mod about_us;
@@ -44,6 +46,7 @@ mod identity;
 mod links;
 mod models;
 mod open_cards_times;
+mod public_name;
 mod rules;
 mod service;
 mod signup;
