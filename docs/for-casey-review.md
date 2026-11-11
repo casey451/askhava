@@ -4,8 +4,16 @@ These are decisions Claude made on its own and logged so the build never waits (
 
 ## Six more waiting steps fixed before they start (plan change, D-3083, November 11)
 
-- **What happened.** A second check of steps still waiting in line found six that would have stopped partway or misled the worker: older tests the step did not own, a check order that would trip an older test, a missing setting that would have crashed a test in development, and stale line numbers. One of them (T345, pinning the GitHub Actions versions) had already stopped for this reason.
+- **What happened.** A second check of steps still waiting in line found six that would have stopped partway or misled the worker: older tests the step did not own, a check order that would trip an older test, a missing setting that would have crashed a test in development, and stale line numbers. Two of them had already stopped for this reason: T345 (pinning the GitHub Actions versions) and T317 (the limit on new requests by text); both go back in line once this change lands.
 - **What changed.** Each step now owns the few extra files it must touch, with strict limits on what it may change in them (only how a test builds its setup, or only the version text in a comparison), and its instructions name the exact code to use. No rule for homeowners or businesses changes and no test is loosened.
+- **Nothing needs you.**
+
+## The runner's start-up smoke test runs less often, with every red-build guard kept (harness and plan change, D-3058, November 11)
+
+- **Who decided.** You told the overseer to let Fable make the decisions meant for you; Fable chose this one.
+- **What happened.** Between noon and 19:29Z today the runner spent 228 minutes on its start-up smoke test against 690 minutes of real work: 29 runs on 18 versions of the code (11 repeats of a version already tested, about 95 minutes), and 9 of 23 sessions stopped to wait for a smoke before they could start a task.
+- **What changed.** (1) When the only changes since the last real green smoke are up to 3 finished tasks, each already merged with all three required checks green, that smoke now stands for the newer code too. A real smoke still runs at least every 4 merges and at least every 6 hours, and any other kind of change in between (a plan or harness change), any failed smoke, failed nightly run or failed check on any of those versions, or anything the runner cannot read, makes it smoke again. The number is one setting in `kit/runner.json`; 0 turns it off. (2) When one lane is still smoking a version another lane has already smoked green, it stops its own unfinished run and uses that result. A finished result of its own, pass or fail, is always used.
+- **What is protected.** None of this ever applies while the build is marked broken; clearing a broken build still needs a brand-new green smoke; a failed smoke still marks the build broken and queues the fix exactly as before.
 - **Nothing needs you.**
 
 ## The build no longer pauses for a five-hour limit (plan change, D-3056, November 11)
