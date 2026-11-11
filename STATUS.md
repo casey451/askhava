@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T09:35:48Z by runner ea7b57e0aac0 (actions).
+Updated 2026-11-11T09:36:02Z by runner ea7b57e0aac0 (actions).
 
 **Building: T337 in progress since 09:25Z; 199 of 370 done; week 63% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-11T09:35:48Z by runner ea7b57e0aac0 (actions).
 - **Lane:** lane 2: T337 claimed 09:25Z, lease until 12:25Z; lane 3: T327 claimed 08:49Z, lease until 11:49Z
 - **Week:** 63% used, 62.3M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 09:35Z, 0 min before this update
-- **Keeper:** last ran 09:30Z, next wake 11:52Z
+- **Keeper:** last ran 09:36Z, next wake 11:52Z
 
 ## Needs attention
 - BLOCKED T164: plan gap reported: PLAN GAP: app/portals/src/tests/prop_arrival_order.rs:22 (T052) and app/quotes/src/notify.rs:179 / app/quotes/src/models.rs:573 (T047). The homeowner side of T164 (quote page "Updated <time>"/"Withdrawn by the business", LIST reply) needs api.rs (page_quotes filters withdrawn_at, api.rs:116), PageQuote fields (api.rs:93, built field-by-field in the T052 test), notify.rs list_line/Listed and models.rs list_rows, none owned by T164. Reviewer confirmed (kit/tasks.json owns vs. those files; T361 covers part but depends on T164).; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T164 --plan-fix D-### --reason "..."` (D-2859)
