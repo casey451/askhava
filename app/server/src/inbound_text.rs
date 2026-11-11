@@ -253,7 +253,7 @@ async fn text(
         provider: ProviderKeyword::from_opt_out_type(field(hook, "OptOutType")),
         emergency,
     };
-    screen(h, db, &msg, (to, now)).await?;
+    let resubscribed = screen(h, db, &msg, (to, now)).await?;
     if relation == Relation::Business {
         return auto_reply(h, db, &msg).await;
     }
@@ -261,7 +261,7 @@ async fn text(
     if let Some(error) = unread {
         return Err(Halt::Failed("vault", error));
     }
-    intake(h, db, (&msg, &read), now).await
+    intake(h, db, (&msg, &read), (resubscribed, now)).await
 }
 
 /// TXT-021 to TXT-024, INT-004, WEB-007, CALL-019, D-1805, D-2187: a homeowner's emergency text
@@ -342,12 +342,14 @@ async fn owner_paused(db: &mut PgConnection) -> Step<bool> {
 /// Hands a homeowner's scrubbed text to `intake::api::receive_reply` (TXT-031, INT-019, D-999).
 /// With an open request, a LIST text gets its quoted businesses' public names read now
 /// ([`list_names`]); with none, SEC-014's new-request limit is counted first ([`admitted`]),
-/// except for a START text, which is never limited (D-2206, D-3083).
+/// except for a START that just took her number off the opt-out list (`resubscribed`, CON-015)
+/// and a 911-list text, which is never counted or refused, so the INT-002 safety text always
+/// runs (INT-002, INT-003, D-2206, D-3083, D-3087).
 async fn intake(
     h: &Webhooks,
     db: &mut PgConnection,
     (msg, read): (&InboundText<'_>, &Read),
-    now: Timestamp,
+    (resubscribed, now): (bool, Timestamp),
 ) -> Step<()> {
     let names = match open_request_jobs(db, msg.contact)
         .await
@@ -355,7 +357,7 @@ async fn intake(
     {
         Some(jobs) if list_ask(msg.text).is_some() => list_names(db, &jobs).await?,
         Some(_) => Vec::new(),
-        None if read.flags.start => Vec::new(),
+        None if resubscribed || msg.emergency => Vec::new(),
         None => {
             admitted(db, msg.contact, now).await?;
             Vec::new()
@@ -413,18 +415,19 @@ async fn list_names(db: &mut PgConnection, jobs: &[Uuid]) -> Step<Vec<(Uuid, Str
 /// the text; a listed number's text ends after the HELP reply, which reaches it too (D-131); a
 /// HELP text ends after its reply. `to` is the Ask Hava number Twilio delivered to; the HELP
 /// settings are built from it only for a HELP, INFO or AYUDA text (`keyword`), so a bad `To`
-/// never stops any other text (D-1311).
+/// never stops any other text (D-1311). A text that carries on answers whether it was the
+/// provider's START that just took the number off the list (`Outcome::Resubscribed`, D-3087).
 async fn screen(
     h: &Webhooks,
     db: &mut PgConnection,
     msg: &InboundText<'_>,
     (to, now): (&str, Timestamp),
-) -> Step<()> {
+) -> Step<bool> {
     let keys = (&h.id_secret, &h.vault);
-    let listed = match on_inbound_text(db, keys, msg, now)
+    let outcome = on_inbound_text(db, keys, msg, now)
         .await
-        .map_err(outbox_halt)?
-    {
+        .map_err(outbox_halt)?;
+    let listed = match outcome {
         Outcome::OptedOut { .. } => {
             if msg.relation == Relation::Business {
                 phone_stopped(db, msg.contact, msg.inbox_id, now)
@@ -452,7 +455,7 @@ async fn screen(
     match (replied, listed) {
         (Some(_), _) => Err(Halt::Ends("help")),
         (None, true) => Err(Halt::Ends("suppressed")),
-        (None, false) => Ok(()),
+        (None, false) => Ok(outcome == Outcome::Resubscribed),
     }
 }
 

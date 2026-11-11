@@ -7,9 +7,10 @@
 //! phone's sixth new request within an hour opens nothing, is answered by nothing and raises one
 //! Normal alert (the lowest severity `ops` has) with no subject, so no body or phone; Twilio's
 //! resend of that text is a repeat and counts once; a delivery rolled back by a database error
-//! counts nothing; a reply inside an open request and HELP, STOP and START are never limited; a
-//! LIST reply names each quoted business through `businesses::api::public_names`, read at the
-//! time of the text, and keeps D-1310's fallback for a business with no name. All data is fake.
+//! counts nothing; a reply inside an open request, HELP, STOP, a START that takes the number off
+//! the opt-out list and a 911-list text are never limited (D-3087); a LIST reply names each
+//! quoted business through `businesses::api::public_names`, read at the time of the text, and
+//! keeps D-1310's fallback for a business with no name. All data is fake.
 
 use std::sync::Arc;
 
@@ -256,6 +257,34 @@ async fn td_sec_52_replies_help_stop_and_start_are_never_limited(pool: PgPool) {
         assert_eq!(reply, StatusCode::OK);
     }
     assert_eq!(phone_hits(&pool).await, 6, "replies are not new requests");
+}
+
+/// TD-SEC-52 (SEC-014, INT-002, INT-003, CON-015, D-3087): a 911-list text from a phone at its
+/// limit is never counted or refused, so its safety text is queued; a START from a number that
+/// was never on the opt-out list is a new request like any other and is refused at the limit.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_sec_52_an_emergency_at_the_limit_still_gets_the_911_text(pool: PgPool) {
+    let h = hooks(&pool);
+    five_requests(&pool, &h).await;
+    let safety = "SELECT count(*) FROM messaging.outbox WHERE template_id = 'emergency_911'";
+    assert_eq!(count(&pool, safety).await, 0);
+    assert_eq!(text(&h, 6, HOME, "I smell gas").await, StatusCode::OK);
+    assert_eq!(count(&pool, safety).await, 1, "the 911 text is queued");
+    assert_eq!(phone_hits(&pool).await, 5, "an emergency counts nothing");
+    let alerts = "SELECT count(*) FROM ops.alert WHERE kind = 'intake.requests_per_phone'";
+    assert_eq!(count(&pool, alerts).await, 0, "an emergency is not refused");
+    close_all(&pool).await;
+    let requests = "SELECT count(*) FROM intake.conversation";
+    let opened = count(&pool, requests).await;
+    let start = text_with(&h, (7, HOME, "START"), &[("OptOutType", "START")]).await;
+    assert_eq!(start, StatusCode::OK);
+    assert_eq!(
+        phone_hits(&pool).await,
+        6,
+        "a START never listed is counted"
+    );
+    assert_eq!(count(&pool, requests).await, opened, "and refused");
+    assert_eq!(count(&pool, alerts).await, 1);
 }
 
 /// A request from `HOME` with one plumbing job, moved to Open, holding one shown $190 quote from

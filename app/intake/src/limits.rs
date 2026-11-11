@@ -14,8 +14,8 @@
 //! are [`admit_new_request`]'s: 5 new requests per phone per hour (SEC-014, a Normal alert), per
 //! IP, and all numbers together per hour, so a burst of 100 fake requests is blocked and alerted
 //! High (SEC-015). It counts on a connection the caller hands it, so the inbound text route counts
-//! inside the delivery's transaction (D-2206, D-3083). `portals` keeps the sign-in, code, sign-up and quote limits and runs them
-//! through [`admit`] (D-491).
+//! inside the delivery's transaction (D-2206, D-3083). `portals` keeps the sign-in, code,
+//! sign-up and quote limits and runs them through [`admit`] (D-491).
 
 use std::net::IpAddr;
 
