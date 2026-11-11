@@ -12,6 +12,12 @@
 //! ([`fee_numbers`]). The routes that read the sign-up and post its steps are wired with the
 //! business portal (D-1709).
 //!
+//! T165 added the business name and trade name, the license numbers (ROC, Board of Technical
+//! Registration, a no-license business's city license number) and the Google and Yelp links to
+//! the form; [`Screen::FormAgain`] shows the form again with what was typed ([`Entered`]) and the
+//! refused field's reason (BIZ-022, BIZ-052, LIC-011, PICK-041; D-2943, D-2954). The checks are
+//! `businesses::api::save_business_name` and `check_links`; the `POST` is T302's.
+//!
 //! T155 added the capability step (BIZ-049, BIZ-004, CARD-001; D-393, D-492): [`capability_page`]
 //! over `templates/capability_setup.html` shows the checklist `businesses::api::checklist_offer`
 //! builds from the license map (pre-ticked, untick any, no-license extras only), then towns,
@@ -201,6 +207,34 @@ pub enum Screen<'a> {
     Letter(&'a MaskedContact, u32),
     /// The done screen.
     Done(&'a DoneFacts),
+    /// The form again after a refused name, license number or link, with what was typed and the
+    /// reason by its field (BIZ-022, BIZ-052, D-2943).
+    FormAgain(&'a [(String, &'static str)], &'a Entered<'a>),
+}
+
+/// What the business typed into the form's name, license and link fields, shown again with the
+/// reason when one is refused (BIZ-022, BIZ-052, LIC-011, D-2943, D-2954). The fields post as
+/// `business_name`, `trade_name`, `roc_number`, `btr_number`, `city_license_number`,
+/// `google_link` and `yelp_link`; the server checks them, so none carries `required`.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct Entered<'a> {
+    /// The business name (required by the server, D-2943).
+    pub business_name: &'a str,
+    /// The trade name or DBA.
+    pub trade_name: &'a str,
+    /// The ROC license number.
+    pub roc_number: &'a str,
+    /// The Board of Technical Registration number.
+    pub btr_number: &'a str,
+    /// The city license number of a no-license business (LIC-011).
+    pub city_license_number: &'a str,
+    /// The Google Business Profile link (BIZ-052).
+    pub google_link: &'a str,
+    /// The Yelp page link (BIZ-052).
+    pub yelp_link: &'a str,
+    /// The refused field's form name and the reason, from `businesses::api::NameRefusal` or
+    /// `LinkRefusal`.
+    pub problem: Option<(&'static str, &'a str)>,
 }
 
 /// What every screen needs besides the screen itself.
@@ -231,6 +265,33 @@ struct SignupView<'a> {
     links: Vec<(String, String)>,
     buttons: Vec<(&'static str, &'static str)>,
     csrf: &'a str,
+    entered: Entered<'a>,
+}
+
+impl SignupView<'_> {
+    /// The reason shown by `field`, if it was the refused one (A11Y-030).
+    fn error_for(&self, field: &str) -> Option<&str> {
+        self.entered
+            .problem
+            .filter(|(f, _)| *f == field)
+            .map(|(_, r)| r)
+    }
+}
+
+/// BIZ-022, BIZ-030, LIC-047: the form's title, categories, pest fields and fee box; the title
+/// opens with "Error: " when a typed field was refused (A11Y-030).
+fn fill_form<'a>(v: &mut SignupView<'a>, categories: &[(String, &'static str)], parts: &Parts<'a>) {
+    v.title = if v.entered.problem.is_some() {
+        "Error: Sign up your business"
+    } else {
+        "Sign up your business"
+    };
+    v.categories = categories
+        .iter()
+        .map(|(c, l)| (c.clone(), category_name(c), *l))
+        .collect();
+    v.pest = categories.iter().any(|(c, _)| c == "pest_control");
+    v.fee_lines = fee_summary(&parts.fees);
 }
 
 /// BIZ-024, BIZ-026, BIZ-030, BIZ-031, LIC-047, WEB-024: the page for `screen`; see the module
@@ -249,14 +310,10 @@ pub fn signup_page(screen: Screen<'_>, parts: &Parts<'_>) -> Result<String, aska
         ..SignupView::default()
     };
     match screen {
-        Screen::Form(categories) => {
-            v.title = "Sign up your business";
-            v.categories = categories
-                .iter()
-                .map(|(c, l)| (c.clone(), category_name(c), *l))
-                .collect();
-            v.pest = categories.iter().any(|(c, _)| c == "pest_control");
-            v.fee_lines = fee_summary(&parts.fees);
+        Screen::Form(categories) => fill_form(&mut v, categories, parts),
+        Screen::FormAgain(categories, entered) => {
+            v.entered = *entered;
+            fill_form(&mut v, categories, parts);
         }
         Screen::Contact(to, landline) => {
             v.title = "Where your code goes";
