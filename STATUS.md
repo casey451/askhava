@@ -1,23 +1,25 @@
 # Ask Hava build status
 
-Updated 2026-11-11T13:17:21Z by runner 790d4ec251b2 (actions).
+Updated 2026-11-11T13:19:33Z by runner 8eba59454470 (actions).
 
 **Building: T384 in progress since 12:59Z; 204 of 372 done; week 67% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 204 of 372 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T384 claimed 12:59Z, lease until 15:59Z; lane 2: T214 claimed 13:03Z, lease until 16:03Z
+- **Lane:** lane 1: T384 claimed 12:59Z, lease until 15:59Z
 - **Week:** 67% used, 55.7M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:17Z, 0 min before this update
+- **Last run:** 13:17Z, 2 min before this update
 - **Keeper:** last ran 13:17Z, next wake 16:02Z
 
 ## Needs attention
+- BLOCKED T214: plan gap reported: PLAN GAP: app/picks/src/handlers.rs:73-76 (T063's) and the pick_notice / pick_notice_emergency keys in app/messaging/templates/en.json:322 and es.json build the pick notice's words and values; T214 owns neither, and confirm.rs only exports template ID constants (confirm.rs:41-44). business_notices.rs:63 hardcodes PICK_TEMPLATES so a renamed template would break the Accept-by window. Smallest plan change: give T214 handlers.rs and let it add a {cant_take} value to the pick_notice and pick_notice_emergency templates in both languages, or move the notice-link part of PICK-050 / TD-PICK-43 to a ta; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T214 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T333: plan gap reported: PLAN GAP: app/payments/src/routes.rs:412 (T259) and app/payments/src/refund_state.rs:34 (T270) / app/picks/src/unreachable_refund.rs:306 (T191, T270). kit/prompts/T333.md:23-26 owns only refunds.rs, refund_stripe.rs, refund_lifecycle.rs, refund_amounts.rs. routes.rs calls refund_succeeded(pool, re, now) without the amount, so a webhook-driven success is booked at the full charge unchecked; picks sends the refunded email when refund_state reads Succeeded, so a mismatched or foreign-currency refund can still send the notice. Reviewer confirmed both lie in files T333 does not own. Rest of T333 co; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T333 --plan-fix D-### --reason "..."` (D-2859)
-- Strict plan check red: 18 problem(s) on tasks still to run (+25 on DONE tasks); first: T255: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 21 problem(s) on tasks still to run (+31 on DONE tasks); first: T255: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T214 | picks: the homeowner's share box at the pick and the 'Can't  | BLOCKED | 1 | 15 min | 13:19Z | PLAN GAP: app/picks/src/handlers.rs:73-76 (T063's) and the pick_notice / pick_notice_emergency keys in app/messaging/tem |
 | T333 | payments (harness): a succeeded refund is recorded at the am | BLOCKED | 1 | 50 min | 13:14Z | PLAN GAP: app/payments/src/routes.rs:412 (T259) and app/payments/src/refund_state.rs:34 (T270) / app/picks/src/unreachab |
 | T332 | payments (harness): a late success has its own refund trigge | BLOCKED | 2 | 2 min | 12:40Z | PLAN GAP: tests/integration/tests/confirm_and_pay.rs:393-413 (td_fee_25_an_ended_pick_is_never_cleared, TD-FEE-25, T189  |
 | T332 | payments (harness): a late success has its own refund trigge | BLOCKED | 1 | 11 min | 12:10Z |  |
@@ -135,7 +137,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T384 (lease until 2026-11-11T15:59:44Z)
-- lane 2: T214 (lease until 2026-11-11T16:03:53Z)
 
 ## Last usage reading
-- {"task": "T333", "at": "2026-11-11T13:14:47Z", "input_tokens": 333, "cache_creation_input_tokens": 570378, "output_tokens": 117712, "cache_read_input_tokens": 15326493}
+- {"task": "T214", "at": "2026-11-11T13:19:32Z", "cache_read_input_tokens": 3765408, "cache_creation_input_tokens": 260975, "output_tokens": 27142, "input_tokens": 122}
