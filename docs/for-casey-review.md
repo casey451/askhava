@@ -2270,3 +2270,9 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **What changed.** When a business changes its quote before any pick, the homeowner's quote page and the quote card show "Updated Nov 3, 9:15 a.m. Arizona time", and the quote keeps its number. A withdrawn quote keeps its number and place, says "Withdrawn by the business" and has no Pick button; no one can pick it by page, by "2 YES" text or as a backup. The LIST text now numbers each line with the quote's page number, so "2 YES" always picks the quote shown as 2 (before, after a failed pick the list could renumber and "2 YES" could pick a different business).
 - **One thing you may want changed.** The LIST text ends "for example 2 YES" whatever quote 2 is, even when quote 2 was withdrawn. It is a fixed line from an earlier step; changing it to name a quote she can pick would be a small later task.
 - **Nothing needs you now.**
+
+## The "job confirmed" email's sign-in link now works (T269, D-3025 to D-3028, November 11)
+
+- **What it does.** The link in that email opens business sign-in for the person it was sent to. Pressing "Sign in" emails them the usual one-time sign-in link; after that link (and the new-device code, when asked) they land on that job's page. The link alone never signs anyone in or shows any job detail. A changed, expired or someone else's link just shows the normal sign-in form.
+- **One wording point for later.** The screen with the button reuses today's words, "Press the button to finish signing in.", although pressing it sends an email. A small copy change would fit better; this task was not allowed to write new wording.
+- **Nothing needs you now.**
