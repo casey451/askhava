@@ -331,6 +331,8 @@ async fn td_biz_32_a_long_pause_asks_once_and_changes_nothing(pool: PgPool) {
         .execute(&mut *db)
         .await
         .expect("active");
+    let active = pause_reason(&mut db, &principal, None, at(30 * 24 * 60)).await;
+    assert_eq!(active, Ok(false), "an active business is not asked");
     pause_self(&mut db, who.business, at(0))
         .await
         .expect("paused");
