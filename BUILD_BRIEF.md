@@ -206,7 +206,7 @@ Then the runner sends the **"Finished: ready for your review"** message (§16). 
 
 **Shape:**
 - a scheduled runner runs the **runner** code: the Actions runner first, the Appendix A routine as safety net (D-483);
-- the runner does **one task per session**, and at most `lanes` sessions at a time (`kit/runner.json`, locked: 1 unless a logged plan change sets more; 3 since D-2810, the most the drills cover), each holding its own lane's lease, plus FIX-MAIN on the reserved fix lane when no lane can take it while `main` is red (D-630); two tasks in flight never own the same file or sit in different stages, and a stage's cleanup task always runs alone (D-620);
+- the runner does **one task per session**, and at most `lanes` sessions at a time (`kit/runner.json`, locked: 1 unless a logged plan change sets more; 4 since D-2986, the most the drills cover), each holding its own lane's lease, plus FIX-MAIN on the reserved fix lane when no lane can take it while `main` is red (D-630); two tasks in flight never own the same file or sit in different stages, and a stage's cleanup task always runs alone (D-620);
 - beyond the lanes, parallelism exists only inside a session, as read-only review subagents.
 
 **What starts a runner session (D-483 swapped the first and third roles so the build acts under its own GitHub identity):**
