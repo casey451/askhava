@@ -2233,3 +2233,9 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **Cost.** About 62M tokens are left this week before Thursday's 17:00 UTC reset; four lanes will use them sooner, as you said is fine. With more branches open at once, tasks will more often need `main` merged in before they land.
 - **Undo.** Setting the lane count back to 3 is a one-line logged change.
 - **Nothing needs you now.**
+
+## A late payment on a pick the system ended is kept on record and refunded (plan change, D-3007, November 11)
+
+- **What happened.** The step that refunds a payment arriving after the system had already ended a pick stopped a second time. Its plan has the system keep a record of that payment and queue its refund, but an older test expected the system to keep no record of it at all, so no build could pass both.
+- **What changed.** That older test still checks that an ended pick is never handed to the business. Instead of "nothing is kept", it now checks that the payment and its record are kept, and that exactly one refund job and one alert to you are made. A stale comment in another test is corrected too. Every other test that touches these payments was checked; none other needs a change.
+- **Nothing needs you now.**
