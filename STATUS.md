@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-11T15:24:01Z by runner ee5cdf2ecfbe (actions).
+Updated 2026-11-11T15:36:00Z by runner ee5cdf2ecfbe (actions).
 
-**Building: T269 in progress since 15:02Z; 204 of 373 done; week 69% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T269 in progress since 15:02Z; 205 of 373 done; week 69% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 204 of 373 build tasks (owner gates not counted)
+- **Tasks done:** 205 of 373 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 3: T269 claimed 15:02Z, lease until 18:02Z
 - **Week:** 69% used, 50.6M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:23Z, 0 min before this update
+- **Last run:** 15:24Z, 11 min before this update
 - **Keeper:** last ran 15:24Z, next wake 18:05Z
 
 ## Needs attention
@@ -29,12 +29,12 @@ E2e failed at step: Chromium and its system libraries
 Error: Installation process exited with code: 100
 ##[error]Process completed with exit code 1.
 Ci fai
-- Strict plan check red: 20 problem(s) on tasks still to run (+31 on DONE tasks); first: T255: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 19 problem(s) on tasks still to run (+32 on DONE tasks); first: T255: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T384 | quotes and portals: the homeowner sees an edited quote as up | MERGE_PENDING | 2 | 18 min | 15:05Z | Ci: failure; E2e: failure; Ally: failure / E2e failed at step: Chromium and its system libraries / E: Failed to fetch ht |
+| T384 | quotes and portals: the homeowner sees an edited quote as up | done | 2 | 18 min | 15:05Z | Ci: failure; E2e: failure; Ally: failure / E2e failed at step: Chromium and its system libraries / E: Failed to fetch ht |
 | T214 | picks: the homeowner's share box at the pick and the 'Can't  | BLOCKED | 2 | 3 min | 15:04Z | PLAN GAP: tests/integration/tests/page_pick.rs:131 and tests/security/tests/page_pick_privacy.rs:224 (both T246's; page_ |
 | T342 | quotes: a quote's contact check also reads the whole field w | MERGE_PENDING | 1 | 51 min | 14:31Z |  |
 | T332 | payments (harness): a late success has its own refund trigge | check_failed | 3 | 48 min | 14:24Z | PLAN GAP: tests/integration/tests/confirm_and_pay.rs:393-413 (td_fee_25_an_ended_pick_is_never_cleared, TD-FEE-25, T189  |
@@ -117,7 +117,7 @@ Ci fai
 ## Progress (requirements verified)
 
 **Requirements verified:** 212 of 733 (28.9%) · partial 343 · unstarted 178
-**Tasks merged (throughput only):** 204 of 373
+**Tasks merged (throughput only):** 205 of 373
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -152,7 +152,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 84 of 165 done
+- stage 4: 85 of 165 done
 - stage 5: 0 of 58 done
 - stage 6: 0 of 34 done
 - stage 7: 0 of 2 done
