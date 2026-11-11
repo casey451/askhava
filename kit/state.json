@@ -31030,11 +31030,11 @@
      "result": "check_failed"
     }
    ],
-   "reviewed_sha": "5f8f1f2432e9415d41c84d8bb6ec53db77abd976",
+   "reviewed_sha": "8f6ef91ec2060900f9ec6f0aa5806e98d7192d70",
    "review_lease": {
     "task": "T384",
-    "session": "actions-43021093738",
-    "expires": "2026-11-11T15:59:44Z"
+    "session": "actions-43039859982",
+    "expires": "2026-11-11T17:46:40Z"
    },
    "branch": "claude/task/T384-quotes-shown-edits-withdrawals",
    "auto_merge": {
@@ -31042,32 +31042,22 @@
     "why": "auto-merge on #488 (gh pr merge)",
     "head": "8b03e49848a1165afb385b2f2f04b13e0d48c7c1"
    },
-   "update_merges": [
-    {
-     "from": "d99e76ffc042d3a68bad02242c87ceebf91c3fc8",
-     "to": "8b03e49848a1165afb385b2f2f04b13e0d48c7c1",
-     "main": "6cc6ce4c5fb34f5c27bd557aad6fbdbdc34e9e82",
-     "how": "hand-in",
-     "at": "2026-11-11T13:40:14Z"
-    },
-    {
-     "from": "8b03e49848a1165afb385b2f2f04b13e0d48c7c1",
-     "to": "5f8f1f2432e9415d41c84d8bb6ec53db77abd976",
-     "main": "da0eb3920737e45eddab74251968a878c3682abe",
-     "how": "runner",
-     "checks": {
-      "Ally": "success",
-      "Twin": "success"
-     },
-     "at": "2026-11-11T13:51:27Z"
-    }
-   ],
-   "update_waiting_since": null,
-   "update_push_failures": null,
    "last_failure": "Ci: failure; E2e: failure; Ally: failure\nE2e failed at step: Chromium and its system libraries\nE: Failed to fetch https://security.ubuntu.com/ubuntu/pool/universe/u/unifont/fonts-unifont_16.0.04-1build1_all.deb  Temporary failure resolving 'security.ubuntu.com'\nE: Failed to fetch https://security.ubuntu.com/ubuntu/pool/universe/f/fonts-wqy-zenhei/fonts-wqy-zenhei_0.9.45-8build1_all.deb  Temporary failure resolving 'security.ubuntu.com'\nE: Failed to fetch https://security.ubuntu.com/ubuntu/pool/main/x/xfonts-encodings/xfonts-encodings_1.0.5-0ubuntu3_all.deb  Temporary failure resolving 'security.ubuntu.com'\nE: Failed to fetch https://security.ubuntu.com/ubuntu/pool/main/x/xfonts-utils/xfonts-utils_7.7%2b7build1_amd64v3.deb  Temporary failure resolving 'security.ubuntu.com'\nE: Failed to fetch https://security.ubuntu.com/ubuntu/pool/universe/x/xfonts-cyrillic/xfonts-cyrillic_1.0.5%2bnmu1build1_all.deb  Temporary failure resolving 'security.ubuntu.com'\nE: Failed to fetch https://security.ubuntu.com/ubuntu/pool/universe/x/xfonts-scalable/xfonts-scalable_1.0.3-1.3build1_all.deb  Temporary failure resolving 'security.ubuntu.com'\nE: Unable to fetch some archives, maybe run apt update or try with --fix-missing?\nFailed to install browser dependencies\nError: Installation process exited with code: 100\n##[error]Process completed with exit code 1.\nAlly failed at step: Chromium and its system libraries\n##[error]Process completed with exit code 1.\nCi failed at step: All four jobs passed",
    "runner_closed_prs": [
     488
-   ]
+   ],
+   "head_check_since": null,
+   "update_merges": [
+    {
+     "from": "399858e112d9fb8d230c62ea306540823a9de1fa",
+     "to": "8f6ef91ec2060900f9ec6f0aa5806e98d7192d70",
+     "main": "ee5cdf2ecfbe49d582079f1efaa068a12e855f3d",
+     "how": "hand-in",
+     "at": "2026-11-11T15:05:28Z"
+    }
+   ],
+   "update_waiting_since": null,
+   "update_push_failures": null
   },
   {
    "id": "T385",
@@ -33046,7 +33036,7 @@
    }
   }
  },
- "updated_at": "2026-11-11T15:04:09Z",
+ "updated_at": "2026-11-11T15:05:28Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -33144,7 +33134,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "18c60bd6ee5c4a08c8a19e95b51d569f9ebfe650",
+ "runner_sha": "399858e112d9fb8d230c62ea306540823a9de1fa",
  "starter": "actions",
  "smoke_runs": [
   {
