@@ -1,7 +1,9 @@
 # Required check "Ci" (ruleset protect-main). Job name must stay exactly "Ci".
-# Four jobs: "Checks" (everything except coverage), "Coverage" (branch coverage against
-# tests/coverage_floor.json, D-694) and "E2e" (the Playwright journeys in tests/e2e against the app
-# with stand-ins, T173) run in parallel; "Ci" is the gate, green only when all three are.
+# Five jobs: "Checks" (everything except pytest and coverage), "Python" (the pytest suite, D-2782),
+# "Coverage" (branch coverage against tests/coverage_floor.json, D-694) and "E2e" (the Playwright journeys
+# in tests/e2e against the app with stand-ins, T173) run in parallel; "Ci" is the gate, green only when all
+# four are. Build caches are restored on every run and saved only on main (the nightly calls this workflow
+# there), so branch runs no longer evict main's entries from the 10 GB cache (D-2782).
 name: ci
 on:
   # Push only, no pull_request trigger (D-1087): exactly one run per head commit. A second,
@@ -126,10 +128,9 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Unit, contract and drill tests (pytest)
+      - name: PyYAML for the checks below (check_include_paths.py; pytest runs in the Python job, D-2782)
         run: |
-          python3 -m pip install --quiet pytest==9.1.1 PyYAML==6.0.1
-          python3 -m pytest tests -q -p no:cacheprovider
+          python3 -m pip install --quiet PyYAML==6.0.1
 
       - name: A check that exists on main cannot be skipped by deleting its inputs (D-479)
         run: |
@@ -186,6 +187,9 @@ jobs:
         with:
           shared-key: checks
           cache-directories: target/tests/trybuild
+          # Restored on every run, saved only on main (D-2782): a branch's entry is readable by that branch
+          # alone, and each one (about 1.5 GB) pushed main's entries out of the 10 GB cache.
+          save-if: ${{ github.ref == 'refs/heads/main' }}
 
       - name: The cache keeps target/tests/trybuild (a cold pass costs 400 s more without it, D-488)
         if: steps.rust-cache.outputs.cache-hit == 'true' && hashFiles('tests/security/ui/*.rs') != ''
@@ -236,7 +240,8 @@ jobs:
       - name: sqlx-cli (no release binaries exist upstream; built once, then restored from the cache, D-693)
         id: sqlx-cli-cache
         if: steps.changes.outputs.rust == 'true' && hashFiles('migrations/*.sql') != ''
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        # Restored on every run; saved by the step after the install, on main only (D-2782).
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: ~/.cargo/sqlx-cli
           key: sqlx-cli-0.9.0-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml') }}
@@ -245,6 +250,13 @@ jobs:
         if: steps.sqlx-cli-cache.outputs.cache-hit != 'true' && steps.changes.outputs.rust == 'true' && hashFiles('migrations/*.sql') != ''
         run: |
           cargo install sqlx-cli --version 0.9.0 --locked --no-default-features --features postgres,rustls,sqlx-toml --root ~/.cargo/sqlx-cli
+
+      - name: Save sqlx-cli to the cache (main only, D-2782)
+        if: github.ref == 'refs/heads/main' && steps.sqlx-cli-cache.outputs.cache-hit != 'true' && steps.changes.outputs.rust == 'true' && hashFiles('migrations/*.sql') != ''
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ~/.cargo/sqlx-cli
+          key: ${{ steps.sqlx-cli-cache.outputs.cache-primary-key }}
 
       - name: Put sqlx-cli on the path
         if: steps.changes.outputs.rust == 'true' && hashFiles('migrations/*.sql') != ''
@@ -308,6 +320,35 @@ jobs:
           else
             echo "npm checks skipped: no package-lock.json yet"
           fi
+
+  python:
+    # The pytest suite (unit, contract and drill tests; about 250 s) on its own runner, in parallel with Checks
+    # instead of ahead of every Rust step there (D-2782). Same checkout depth and the same read-only fetch of
+    # main as Checks: the brand-literal guard and other tests compare with origin/main. Nothing in Checks read
+    # what pytest left behind; Checks still installs PyYAML for check_include_paths.py.
+    name: "Python"
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+          fetch-depth: 200
+
+      - name: Fetch main (read-only, the job token masked in logs)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git fetch --no-tags --depth=200 "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}" main:refs/remotes/origin/main
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.12"
+
+      - name: Unit, contract and drill tests (pytest)
+        run: |
+          python3 -m pip install --quiet pytest==9.1.1 PyYAML==6.0.1
+          python3 -m pytest tests -q -p no:cacheprovider
 
   coverage:
     name: "Coverage"
@@ -382,6 +423,7 @@ jobs:
           shared-key: coverage
           key: ${{ env.NIGHTLY }}
           workspaces: ". -> target/llvm-cov-target"
+          save-if: ${{ github.ref == 'refs/heads/main' }}
 
       - name: Measuring toolchain and cargo-llvm-cov 0.9.1 (pinned nightly, pinned musl tarball)
         if: steps.changes.outputs.rust == 'true'
@@ -501,6 +543,7 @@ jobs:
         uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
         with:
           shared-key: e2e
+          save-if: ${{ github.ref == 'refs/heads/main' }}
 
       - name: Build server and worker with test-control (never the release build, SEC-035)
         if: steps.changes.outputs.run == 'true'
@@ -544,17 +587,19 @@ jobs:
           npx playwright test --config tests/e2e/playwright.config.ts tests/e2e
 
   ci:
-    # The required check. Green only when Checks, Coverage and E2e all are (a skipped step inside them is green).
+    # The required check. Green only when Checks, Python, Coverage and E2e all are (a skipped step inside them is
+    # green; a skipped, cancelled or failed job is not).
     name: "Ci"
-    needs: [checks, coverage, e2e]
+    needs: [checks, python, coverage, e2e]
     if: always()
     runs-on: ubuntu-latest
     steps:
-      - name: All three jobs passed
+      - name: All four jobs passed
         env:
           CHECKS: ${{ needs.checks.result }}
+          PYTHON: ${{ needs.python.result }}
           COVERAGE: ${{ needs.coverage.result }}
           E2E: ${{ needs.e2e.result }}
         run: |
-          echo "Checks: $CHECKS, Coverage: $COVERAGE, E2e: $E2E"
-          [ "$CHECKS" = "success" ] && [ "$COVERAGE" = "success" ] && [ "$E2E" = "success" ]
+          echo "Checks: $CHECKS, Python: $PYTHON, Coverage: $COVERAGE, E2e: $E2E"
+          [ "$CHECKS" = "success" ] && [ "$PYTHON" = "success" ] && [ "$COVERAGE" = "success" ] && [ "$E2E" = "success" ]

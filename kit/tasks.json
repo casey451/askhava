@@ -940,7 +940,7 @@
    "budget": {
     "files": 2,
     "lines": 600,
-    "context_pct": 16
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -5133,7 +5133,7 @@
    "budget": {
     "files": 3,
     "lines": 300,
-    "context_pct": 21
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -6063,7 +6063,7 @@
    "budget": {
     "files": 7,
     "lines": 350,
-    "context_pct": 20
+    "context_pct": 24
    },
    "checks": [
     "Ci",
@@ -6510,7 +6510,7 @@
    "budget": {
     "files": 6,
     "lines": 300,
-    "context_pct": 31
+    "context_pct": 35
    },
    "checks": [
     "Ci",
@@ -12578,7 +12578,10 @@
     "T370",
     "T371",
     "T372",
-    "T374"
+    "T374",
+    "T376",
+    "T377",
+    "T378"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -13829,7 +13832,7 @@
    "id": "T108",
    "slug": "owner-portal-tools",
    "title": "portals: owner tools for pauses, fee mode, categories and settings",
-   "goal": "The owner portal's pause switches, fee mode and category switches change behavior with no code change and each change is logged; sessions end after 30 minutes idle and sensitive changes need a fresh passkey or TOTP; and pushed alerts are listed (FEE-007, LIC-002, OPS-003, OPS-035, SEC-043); the owner home also shows each week's opt-out rate by audience from T107's counts (CON-024), offers \"Call from the Ask Hava number\" for a pushed critical safety alert through T080's `calls::api` bridge (OPS-028), records Stripe's written answer for the PICK-048 auto-confirm box (date, reference, answer) as the `catalog` setting T209 reads through `catalog::api`, and shows each needs-review sign-up with its 4-day decision target (BIZ-027, TD-BIZ-07) (D-491). The owner home also holds the homeowner-texting switch, the launch channel and the record of a Twilio number suspension and its restore, through T279's `messaging::api` store, and the status banner's off switch through `ops::api` (D-1843). The fee-mode switch calls `payments::api::switch_fee_mode`, which stores the terms in force in `payments.fee_terms` (T287, D-1871); the owner portal keeps no copy of its own. T310 serves these pages (D-2128): page functions and route constants only, no `.route` in `server`; the browser halves of TD-SEC-22 run in T303's spec and of TD-OPS-01, TD-BIZ-07 and TD-PICK-41 in T310's, and `tests/e2e/owner_tools.spec.ts` checks what an unserved page allows (a signed-out request gets no owner detail).",
+   "goal": "The owner portal's pause switches, fee mode and category switches change behavior with no code change and each change is logged; sessions end after 30 minutes idle and sensitive changes need a fresh passkey or TOTP; and pushed alerts are listed (FEE-007, LIC-002, OPS-003, OPS-035, SEC-043); the owner home also shows each week's opt-out rate by audience from T107's counts (CON-024), offers \"Call from the Ask Hava number\" for a pushed critical safety alert through T080's `calls::api` bridge (OPS-028), records Stripe's written answer for the PICK-048 auto-confirm box (date, reference, answer) as the `catalog` setting T209 reads through `catalog::api`, and shows each needs-review sign-up with its 4-day decision target (BIZ-027, TD-BIZ-07) (D-491). The owner home also holds the homeowner-texting switch, the launch channel and the record of a Twilio number suspension and its restore, through T279's `messaging::api` store, and the status banner's off switch through `ops::api` (D-1843). The fee-mode switch calls `payments::api::switch_fee_mode`, which stores the terms in force in `payments.fee_terms` (T287, D-1871); the owner portal keeps no copy of its own. T310 serves these pages (D-2128): page functions and route constants only, no `.route` in `server`; the browser halves of TD-SEC-22 run in T303's spec and of TD-OPS-01, TD-BIZ-07 and TD-PICK-41 in T310's, and `tests/e2e/owner_tools.spec.ts` checks what an unserved page allows (a signed-out request gets no owner detail). `ring_owner` takes the homeowner's number and the safety words and sends `owner_bridge_twiml` itself (T378, D-2762); this task calls that form.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -13838,7 +13841,8 @@
     "T106",
     "T107",
     "T279",
-    "T287"
+    "T287",
+    "T378"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -13891,7 +13895,8 @@
     "D-348",
     "D-480",
     "D-1843",
-    "D-1871"
+    "D-1871",
+    "D-2762"
    ],
    "cites": [],
    "budget": {
@@ -14059,13 +14064,14 @@
    "id": "T110",
    "slug": "recovery-replay",
    "title": "recovery: replay with derived IDs",
-   "goal": "After a restore, replay rebuilds messages, charges and events from the off-database records and the vendors' records with IDs derived from what each identifies, so nothing replayed sends or charges twice (OPS-015 to OPS-017).",
+   "goal": "After a restore, replay rebuilds messages, charges and events from the off-database records and the vendors' records with IDs derived from what each identifies, so nothing replayed sends or charges twice (OPS-015 to OPS-017). Nov 11 vendor-double review batch 4, F5 (D-2764): Twilio stores no custom key on a message and its Messages list filters only by `To`, `From` and `DateSent`, so OPS-017's \"nothing sent twice\" check never asks the sent log for the app's derived key (the stand-in's `MessageKey` filter is test-only, T377): it lists the messages sent from Ask Hava's numbers to the row's recipient over the row's send window (`To`, `From`, `DateSent>`/`DateSent<`) and matches an outbox row to a listed message by recipient, sender, a SHA-256 digest of the body (a body Twilio already redacted matches on recipient, sender and send time within the window, and an ambiguous match is not resent but listed for Casey) and send time; a matched row is marked sent with that SID, never resent. A test shows a message whose outbox row was lost in the restore is found and not resent without any key filter.",
    "type": "build",
    "phase": 1,
    "stage": "5",
    "module": "recovery",
    "deps": [
-    "T109"
+    "T109",
+    "T377"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -14097,7 +14103,8 @@
     "TD-OPS-04"
    ],
    "decisions": [
-    "D-156"
+    "D-156",
+    "D-2764"
    ],
    "cites": [],
    "budget": {
@@ -14286,7 +14293,7 @@
    "id": "T112",
    "slug": "privacy-sms-docs",
    "title": "Draft the privacy policy and SMS terms",
-   "goal": "`docs/legal/` holds the privacy policy and SMS terms drafts (what is collected and shared, the mobile-information line, 5-year consent records, the AI wording of AI-018, the one honest description of Ask Hava, and no claim that numbers are shared or sold), and a docs test finds each required line (TERMS-002 to TERMS-004, TERMS-006 to TERMS-015, TERMS-018, TERMS-020, TERMS-025, TERMS-027, WORD-018, WORD-023, AI-018, PRIV-027). The AI paragraph carries the AI-018 flagged-content wording, and the policy offers \"Download my data\" and verified requests (PRIV-031) (D-492).",
+   "goal": "`docs/legal/` holds the privacy policy and SMS terms drafts (what is collected and shared, the mobile-information line, 5-year consent records, the AI wording of AI-018, the one honest description of Ask Hava, and no claim that numbers are shared or sold), and a docs test finds each required line (TERMS-002 to TERMS-004, TERMS-006 to TERMS-015, TERMS-018, TERMS-020, TERMS-025, TERMS-027, WORD-018, WORD-023, AI-018, PRIV-027). The AI paragraph carries the AI-018 flagged-content wording, and the policy offers \"Download my data\" and verified requests (PRIV-031) (D-492). The vendor list names Twilio SendGrid, which receives the email addresses Twilio Verify sends codes to (TXT-038; D-2769, D-2771).",
    "type": "docs",
    "phase": 1,
    "stage": "5",
@@ -14367,7 +14374,9 @@
     "D-427",
     "D-480",
     "D-490",
-    "D-492"
+    "D-492",
+    "D-2769",
+    "D-2771"
    ],
    "cites": [],
    "budget": {
@@ -15033,7 +15042,7 @@
    "id": "T122",
    "slug": "account-checklist",
    "title": "docs/account-checklist.md: Part 1 test accounts, Part 2 business accounts",
-   "goal": "`docs/account-checklist.md` lists the Part 1 test accounts and the Part 2 business accounts, the key inventory, every OPS-042 hardware-key and break-glass item before any live key, and the OPS-043 release record Casey signs after an independent security review, and a docs test checks each item is there (PRIV-024, OPS-042, OPS-043). The checklist also holds the OPS-048 ADOR ruling-request item, the Railway usage email alert with no hard limit (OPS-042), the protected `release` branch (OPS-043), and the AI provider's flagged-content retention period and Console spend limit recorded before the AI switch first goes on (AI-008) (D-492). The checklist also says the texting campaign is registered only once the full site is live and after Casey has sent the written eligibility question and filed the answer, and keeps business texting off unless that answer is yes (TERMS-014, TD-WEB-12) (D-493).",
+   "goal": "`docs/account-checklist.md` lists the Part 1 test accounts and the Part 2 business accounts, the key inventory, every OPS-042 hardware-key and break-glass item before any live key, and the OPS-043 release record Casey signs after an independent security review, and a docs test checks each item is there (PRIV-024, OPS-042, OPS-043). The checklist also holds the OPS-048 ADOR ruling-request item, the Railway usage email alert with no hard limit (OPS-042), the protected `release` branch (OPS-043), and the AI provider's flagged-content retention period and Console spend limit recorded before the AI switch first goes on (AI-008) (D-492). The checklist also says the texting campaign is registered only once the full site is live and after Casey has sent the written eligibility question and filed the answer, and keeps business texting off unless that answer is yes (TERMS-014, TD-WEB-12) (D-493). Nov 11 vendor-double review batch 4 (D-2763, D-2769): (1) Twilio retries a webhook only on connection failures by default, once, and never on a 500 or a read timeout, so the inbound routes' \"roll back so Twilio sends it again\" (D-1307, D-1751) holds only with a connection override; the Twilio part of Part 1 (test number) and Part 2 (live number) says: set the incoming-message webhook to `/webhooks/twilio/sms` with a connection-override fragment asking for the most retries Twilio allows on 5xx responses, connection failures and read timeouts, in the syntax of Twilio's \"Webhooks connection overrides\" page (https://twilio.com/docs/usage/webhooks/webhooks-connection-overrides), or set the same through the Webhooks configuration API that page recommends; set the Fallback URL to the same route; the fragment is not signed, so nothing in the app changes; no console status-callback URL is needed (each text asks for its own, T377); and the same for the voice webhook. (2) Twilio Verify's email channel needs a Twilio SendGrid email integration on the Verify service (https://twilio.com/docs/verify/email): Part 1 and Part 2 list a SendGrid account, its domain authentication for the sending domain, an API key kept as a secret, the code email template and the Verify service's email integration, set before T131 checks the email channel and before Gate C; and SendGrid is listed with the other providers that receive personal data (email addresses), for the privacy notice's provider list. The docs test checks both items. The Stripe webhook endpoint's enabled events (Part 1 and Part 2) include `charge.dispute.updated` and `charge.dispute.funds_withdrawn` beside the events the app already handles (T381, D-2771).",
    "type": "docs",
    "phase": 1,
    "stage": "5",
@@ -15095,7 +15104,10 @@
     "D-480",
     "D-490",
     "D-492",
-    "D-1143"
+    "D-1143",
+    "D-2763",
+    "D-2769",
+    "D-2771"
    ],
    "cites": [
     "BUILD_BRIEF.md:180",
@@ -15428,7 +15440,7 @@
    "id": "T129",
    "slug": "sandbox-twilio-sms",
    "title": "Twilio messaging sandbox behind the adapter; contract tests against it",
-   "goal": "Phase 2 step 1-2: Twilio test credentials and magic numbers; any difference fixed in the adapter and stand-in together. This harness task also gives `tests/contract/` a sandbox mode (`CONTRACT_BASE_URL`, credentials from the environment, never printed) that the later sandbox tasks use (D-491). The sandbox check covers T275's `SmsBodyDelete` (D-1841).",
+   "goal": "Phase 2 step 1-2: Twilio test credentials and magic numbers; any difference fixed in the adapter and stand-in together. This harness task also gives `tests/contract/` a sandbox mode (`CONTRACT_BASE_URL`, credentials from the environment, never printed) that the later sandbox tasks use (D-491). The sandbox check covers T275's `SmsBodyDelete` (D-1841). Nov 11 vendor-double review batch 4, F2 (D-2761): in sandbox mode, a Messages create carrying T377's `StatusCallback` is accepted by Twilio's test credentials, and the adapter sends it on every create; the result is recorded in the decision.",
    "type": "harness",
    "phase": 2,
    "stage": "6",
@@ -15436,7 +15448,8 @@
    "deps": [
     "T127",
     "T275",
-    "T336"
+    "T336",
+    "T377"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -15475,7 +15488,8 @@
     "TD-TXT-04"
    ],
    "decisions": [
-    "D-1841"
+    "D-1841",
+    "D-2761"
    ],
    "cites": [
     "BUILD_BRIEF.md:189",
@@ -15540,7 +15554,7 @@
    "id": "T131",
    "slug": "sandbox-twilio-voice-verify",
    "title": "Twilio voice and Verify sandbox behind the adapters",
-   "goal": "The Twilio voice and Verify sandbox clients sit behind the same adapter traits as the stand-ins, so masked calls from the fixed pool (never recorded, never buying numbers) and Verify codes pass their contract tests against the sandbox (CALL-001, CALL-002, CALL-006, CALL-017).",
+   "goal": "The Twilio voice and Verify sandbox clients sit behind the same adapter traits as the stand-ins, so masked calls from the fixed pool (never recorded, never buying numbers) and Verify codes pass their contract tests against the sandbox (CALL-001, CALL-002, CALL-006, CALL-017). Nov 11 vendor-double review batch 4, F3 and F10 (D-2762, D-2769): (1) in sandbox mode, a Calls create with T378's script, `StatusCallback`, `StatusCallbackEvent` and detection parameters is accepted and one with none of `Url`, `Twiml`, `ApplicationSid` is refused, both recorded in the decision; (2) Verify fidelity (https://twilio.com/docs/verify/api): `stand_ins/twilio.py`'s `start_verification` (`stand_ins/twilio.py:286`) answers a send to the same `To` and channel while a pending verification is under 10 minutes old with that verification (same SID, same code, check attempts kept), refuses a sixth send of one verification with 60203 and a sixth check with 60202 (both 429), and refuses the email channel unless the stand-in's Verify service has an email integration (on by default, a control turns it off; the control goes in `stand_ins/server.py`'s `ROUTES` table, owned here because T133 and T134 also add routes there, D-2821); `app/adapters/src/verify.rs` maps 60202 and 60203 to a typed too-many-tries error that T382's callers turn into a cooldown (any other error unchanged); `tests/contract/test_sandbox_t131.py` records what the real Verify service does on a resend within 10 minutes and on the email channel without and, once Casey has set it up (T122's item), with the SendGrid integration; a case that cannot run yet is reported as not run, never as passed, and listed in `docs/for-casey-review.md`.",
    "type": "harness",
    "phase": 2,
    "stage": "6",
@@ -15548,7 +15562,8 @@
    "deps": [
     "T130",
     "T275",
-    "T336"
+    "T336",
+    "T378"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -15562,7 +15577,9 @@
     "app/adapters/src/twilio_verify.rs",
     "stand_ins/twilio.py",
     "app/adapters/src/voice.rs",
-    "tests/contract/test_sandbox_t131.py"
+    "tests/contract/test_sandbox_t131.py",
+    "app/adapters/src/verify.rs",
+    "stand_ins/server.py"
    ],
    "reads": [
     "docs/architecture.md",
@@ -15570,13 +15587,16 @@
     "docs/brains/email-deliverability.md",
     "docs/brains/payments-stripe.md",
     "docs/brains/rust-production.md",
-    "docs/brains/sms-compliance.md"
+    "docs/brains/sms-compliance.md",
+    "docs/spec/messaging.md"
    ],
    "requirements": [
     "CALL-001",
     "CALL-002",
     "CALL-006",
-    "CALL-017"
+    "CALL-017",
+    "TXT-038",
+    "CALL-022"
    ],
    "tests": [
     "TD-CALL-01",
@@ -15584,15 +15604,17 @@
    ],
    "decisions": [
     "D-160",
-    "D-1841"
+    "D-1841",
+    "D-2762",
+    "D-2769"
    ],
    "cites": [
     "BUILD_BRIEF.md:191"
    ],
    "budget": {
-    "files": 5,
+    "files": 7,
     "lines": 450,
-    "context_pct": 9
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -15606,18 +15628,18 @@
    "id": "T132",
    "slug": "sandbox-stripe",
    "title": "Stripe test mode behind the adapter; contract and webhook tests against it",
-   "goal": "The Stripe test-mode client sits behind the payments adapter, and the contract and webhook tests pass against it: cards only through Elements and the authorization stored, signed webhooks processed once, idempotency keys on every call, and the ledger reconciling to Stripe test mode (FEE-014, FEE-015, FEE-028 to FEE-030, FEE-032, FEE-036, SEC-016 to SEC-018). This task also retires `PaymentsAdapter::create_refund` (ID only), moving its remaining callers to T258's typed `RefundStripe` read, once the Stripe test-mode refund shapes are checked (D-1753). Nov 10 code review, payments F4, and the plan review's M1 (D-2624, D-1476; FEE-031, FEE-049): the PaymentIntent is created with no description and no statement-descriptor suffix (`create_unconfirmed_intent`, `app/adapters/src/payments.rs:227`), so the card statement shows no job number; D-1476 gave this to T132 and its goal never said so. `payments` holds no job number and may not depend on `jobs` (`kit/layers.json`), so the number comes from the Confirm route: `charge` gains `open_intent_described` (and `confirm_and_pay` a matching entry) taking `payments::api::IntentText`, the existing `open_intent` and `confirm_and_pay` keep their signatures and behaviour for the done tests, and `app/portals/src/confirm_pay.rs` (T261's, which runs first) builds `IntentText::for_job` from the job number it already shows and calls the described entry; `IntentStripe` gains a method with a default body carrying the text, so the done tests' fakes compile unchanged, and `intent_http.rs` overrides it; the create form sends `description` from `IntentText::description()` and `statement_descriptor_suffix` from `IntentText::statement_suffix()`, never a brand literal in the adapter (T295 makes brand literals fail); TD-FEE-38's stripe-mock case checks both fields, and the contract run also confirms stripe-mock returns `latest_charge` on a succeeded intent (T352's field).",
+   "goal": "The Stripe test-mode client sits behind the payments adapter, and the contract and webhook tests pass against it: cards only through Elements and the authorization stored, signed webhooks processed once, idempotency keys on every call, and the ledger reconciling to Stripe test mode (FEE-014, FEE-015, FEE-028 to FEE-030, FEE-032, FEE-036, SEC-016 to SEC-018). This task also retires `PaymentsAdapter::create_refund` (ID only), moving its remaining callers to T258's typed `RefundStripe` read, once the Stripe test-mode refund shapes are checked (D-1753). Nov 10 code review, payments F4, and the plan review's M1 (D-2624, D-1476; FEE-031, FEE-049): the PaymentIntent is created with no description and no statement-descriptor suffix (`create_unconfirmed_intent`, `app/adapters/src/payments.rs:227`), so the card statement shows no job number; D-1476 gave this to T132 and its goal never said so. `payments` holds no job number and may not depend on `jobs` (`kit/layers.json`), so the number comes from the Confirm route: `charge` gains `open_intent_described` (and `confirm_and_pay` a matching entry) taking `payments::api::IntentText`, the existing `open_intent` and `confirm_and_pay` keep their signatures and behaviour for the done tests, and `app/portals/src/confirm_pay.rs` (T261's, which runs first) builds `IntentText::for_job` from the job number it already shows and calls the described entry; `IntentStripe` gains a method with a default body carrying the text, so the done tests' fakes compile unchanged, and `intent_http.rs` overrides it; the create form sends `description` from `IntentText::description()` and `statement_descriptor_suffix` from `IntentText::statement_suffix()`, never a brand literal in the adapter (T295 makes brand literals fail); TD-FEE-38's stripe-mock case checks both fields, and the contract run also confirms stripe-mock returns `latest_charge` on a succeeded intent (T352's field). Nov 11 vendor-double review batch 4, F7 (D-2766): `confirm_intent` (`app/adapters/src/payments.rs:272`) confirms with `payment_method` only, while the page hands a `requires_action` intent to Stripe.js `handleNextAction` (`app/portals/static/confirm_pay.ts:95`), which needs the `use_stripe_sdk` next action that a server-side confirm gets only when it sends `use_stripe_sdk=true`; the fake answers `use_stripe_sdk` whatever is sent (`stand_ins/stripe.py:228`). The confirm sends `use_stripe_sdk=true`; the fake answers a 3-D Secure confirm without it with `next_action.type` `redirect_to_url`, so the adapter test fails before the fix; and in sandbox mode `tests/contract/test_sandbox_t132.py` confirms with a 3DS2 test card (https://docs.stripe.com/testing#regulatory-cards) and asserts `requires_action` with `next_action.type` `use_stripe_sdk`; any other answer is fixed in the adapter and the fake together and recorded in the decision.",
    "type": "harness",
    "phase": 2,
    "stage": "6",
    "module": "adapters",
    "deps": [
-    "T131",
     "T260",
     "T335",
     "T352",
     "T359",
-    "T261"
+    "T261",
+    "T129"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -15670,7 +15692,8 @@
     "D-401",
     "D-1753",
     "D-2624",
-    "D-1476"
+    "D-1476",
+    "D-2766"
    ],
    "cites": [
     "BUILD_BRIEF.md:191"
@@ -15692,13 +15715,13 @@
    "id": "T133",
    "slug": "sandbox-resend-lob",
    "title": "Resend and Lob test mode behind the adapters",
-   "goal": "The Resend and Lob test-mode clients sit behind their adapters with signed webhooks (Svix for Resend) and the signed inbound-email route into `privacy`, and the identity chain's email and letter steps and the email fallback for failed texts pass against them (BIZ-001 to BIZ-003, BIZ-016, TXT-014, TXT-015, SEC-039, PRIV-026). The fake Resend gains the suppression-list endpoints (list, and delete for one address), and the BIZ-056 re-verification calls the adapter's suppression removal (T176's) before writing its audit row; BIZ-056 moved here from T149 because the fake endpoint must exist first and T149 runs before this task (TD-BIZ-36, D-492). The call is added to `app/businesses/src/email_verification.rs` (T196's, extended here) and tested in `tests/integration/tests/email_reverify.rs` (D-493).",
+   "goal": "The Resend and Lob test-mode clients sit behind their adapters with signed webhooks (Svix for Resend) and the signed inbound-email route into `privacy`, and the identity chain's email and letter steps and the email fallback for failed texts pass against them (BIZ-001 to BIZ-003, BIZ-016, TXT-014, TXT-015, SEC-039, PRIV-026). The fake Resend gains the suppression-list endpoints (list, and delete for one address), routed with this task's controls in `stand_ins/server.py`'s `ROUTES` table (owned here, after T131 and before T134, which also add routes there, D-2821), and the BIZ-056 re-verification calls the adapter's suppression removal (T176's) before writing its audit row; BIZ-056 moved here from T149 because the fake endpoint must exist first and T149 runs before this task (TD-BIZ-36, D-492). The call is added to `app/businesses/src/email_verification.rs` (T196's, extended here) and tested in `tests/integration/tests/email_reverify.rs` (D-493). Nov 11 vendor-double review batch 4, F6 and the Lob note (D-2765, D-2770): (1) the fake Resend keeps a team-wide suppression list (`stand_ins/resend.py:110` has none): a send to a listed address is accepted (an ID returned) and emits `email.suppressed`, never `email.delivered`; a hard bounce lists the address; a control lists one; and a control makes a send emit `email.failed`; (2) in sandbox mode `tests/contract/test_sandbox_t133.py` records whether Resend's API offers removing one suppressed address, which BIZ-056's `DELETE /suppressions/{address}` (`app/adapters/src/email.rs:197`) assumes; if it does not, the adapter's removal returns a typed unsupported error, BIZ-056's re-verification raises one High alert asking Casey to remove the address in Resend's dashboard and writes no removal audit row it did not make, and the gap goes to `docs/for-casey-review.md`; (3) it records the unit of Lob's `Lob-Signature-Timestamp` (`app/adapters/src/signatures.rs` reads unix seconds) and, if Lob sends another unit, fixes the reader and the fake Lob together with a test that fails before the fix. T379 counts suppressed and failed emails as not reached.",
    "type": "harness",
    "phase": 2,
    "stage": "6",
    "module": "adapters",
    "deps": [
-    "T132",
+    "T131",
     "T293"
    ],
    "model": "claude-opus-5-5",
@@ -15716,7 +15739,9 @@
     "tests/contract/test_sandbox_t133.py",
     "stand_ins/lob.py",
     "app/businesses/src/email_verification.rs",
-    "tests/integration/tests/email_reverify.rs"
+    "tests/integration/tests/email_reverify.rs",
+    "app/adapters/src/signatures.rs",
+    "stand_ins/server.py"
    ],
    "reads": [
     "docs/architecture.md",
@@ -15755,15 +15780,17 @@
     "D-366",
     "D-480",
     "D-1143",
-    "D-1933"
+    "D-1933",
+    "D-2765",
+    "D-2770"
    ],
    "cites": [
     "BUILD_BRIEF.md:191"
    ],
    "budget": {
-    "files": 8,
+    "files": 10,
     "lines": 400,
-    "context_pct": 14
+    "context_pct": 19
    },
    "checks": [
     "Ci",
@@ -15927,7 +15954,8 @@
    "stage": "6",
    "module": null,
    "deps": [
-    "T135"
+    "T135",
+    "T132"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "low",
@@ -15972,13 +16000,14 @@
    "id": "T298",
    "slug": "ai-endpoint-client",
    "title": "adapters: the AI endpoint settings and the real Claude client, the stand-in by default",
-   "goal": "IC-23's first half (D-2065): the app has no AI endpoint setting (the only AI keys are `ASKHAVA_AI_MODEL`, `ASKHAVA_AI_TIMEOUT_SECONDS` and `ASKHAVA_AI_DAILY_CAP`, `app/core/src/settings.rs:68` to `:70`) and its only AI client, `StandInAi` (`app/adapters/src/ai.rs:35`), takes only an `http` base URL on a loopback IP literal and sends the fixed non-key `stand-in`, so the Railway test project cannot reach the real Claude API (AI-009, `BUILD_BRIEF.md:194`). In `app/adapters/src/ai.rs` add, beside `StandInAi`, the AI endpoint settings and one client for the real Claude Messages API, behind the existing `AiAdapter` trait so `ai::api::AdapterTransport` wraps either client unchanged. Settings, read from the same pairs `Settings::from_pairs` took, each key added to `KEYS` in `app/core/src/settings.rs` (shared): `ASKHAVA_ADAPTER_MODE_AI` (`stand_in` or `api`; default `stand_in` in dev, ci and test, `api` in live), `ASKHAVA_AI_BASE_URL` (default `http://127.0.0.1:4010/anthropic`, the stand-in server, in `stand_in` mode and `https://api.anthropic.com` in `api` mode) and `ASKHAVA_AI_API_KEY`. Rules: `stand_in` is refused in live (SEC-032) and takes only an `http` base URL on a loopback IP literal, as `StandInAi::new` does, so T297's fault proxy on a loopback port can stand in front of the stand-in; `api` is refused in dev and ci (AI-009: no real AI key before the Phase 2 Railway test project) and takes only `https://api.anthropic.com` (that scheme and host, port 443, no userinfo, path or query), so no setting can send scrubbed text to another host (AI-001); `api` needs the key and `stand_in` refuses one, except that in live a missing key never stops start-up: the settings then give an AI-off endpoint that names `ASKHAVA_AI_API_KEY` (no client, never a value), so an AI-off launch at Gate C starts and T299 runs every step on the AI-off path with a high alert (overseer's decision, D-2065); so a real key is never configured where only the stand-in may be reached (the stand-in also rejects any `sk-ant-` key, `stand_ins/server.py:92`). The key is a `SecretString` read from the app host's secret variables (SEC-001, `BUILD_BRIEF.md:64`): it is sent only as the `x-api-key` header to that one host through `VendorHttp` (no redirects, no proxy from the environment) and never appears in `Debug`, `Display`, an error, a log line, a span or Sentry; every error names the key, never the value. The real client posts only to `/v1/messages`, with the same `anthropic-version` header and idempotency key as `StandInAi` (AI-001, SEC-018). Keep `StandInAi::new` and the tests that call it (`app/adapters/src/tests/ssrf_guard.rs`, not this task's) working unchanged. No test reaches the real API or any non-loopback host (AI-009): the `api` mode is tested through its settings rules, the request it would send checked without leaving the machine (with a fake key sentinel that matches no secret-scanner rule), and the key's redaction. Nothing in the app calls the new client yet: T299 builds it at start-up and calls it from intake (IC-23's second half, D-2065). Update `app/adapters/CLAUDE.md` and the `ai` row of `docs/architecture.md` section 7 (both shared).",
+   "goal": "IC-23's first half (D-2065): the app has no AI endpoint setting (the only AI keys are `ASKHAVA_AI_MODEL`, `ASKHAVA_AI_TIMEOUT_SECONDS` and `ASKHAVA_AI_DAILY_CAP`, `app/core/src/settings.rs:68` to `:70`) and its only AI client, `StandInAi` (`app/adapters/src/ai.rs:35`), takes only an `http` base URL on a loopback IP literal and sends the fixed non-key `stand-in`, so the Railway test project cannot reach the real Claude API (AI-009, `BUILD_BRIEF.md:194`). In `app/adapters/src/ai.rs` add, beside `StandInAi`, the AI endpoint settings and one client for the real Claude Messages API, behind the existing `AiAdapter` trait so `ai::api::AdapterTransport` wraps either client unchanged. Settings, read from the same pairs `Settings::from_pairs` took, each key added to `KEYS` in `app/core/src/settings.rs` (shared): `ASKHAVA_ADAPTER_MODE_AI` (`stand_in` or `api`; default `stand_in` in dev, ci and test, `api` in live), `ASKHAVA_AI_BASE_URL` (default `http://127.0.0.1:4010/anthropic`, the stand-in server, in `stand_in` mode and `https://api.anthropic.com` in `api` mode) and `ASKHAVA_AI_API_KEY`. Rules: `stand_in` is refused in live (SEC-032) and takes only an `http` base URL on a loopback IP literal, as `StandInAi::new` does, so T297's fault proxy on a loopback port can stand in front of the stand-in; `api` is refused in dev and ci (AI-009: no real AI key before the Phase 2 Railway test project) and takes only `https://api.anthropic.com` (that scheme and host, port 443, no userinfo, path or query), so no setting can send scrubbed text to another host (AI-001); `api` needs the key and `stand_in` refuses one, except that in live a missing key never stops start-up: the settings then give an AI-off endpoint that names `ASKHAVA_AI_API_KEY` (no client, never a value), so an AI-off launch at Gate C starts and T299 runs every step on the AI-off path with a high alert (overseer's decision, D-2065); so a real key is never configured where only the stand-in may be reached (the stand-in also rejects any `sk-ant-` key, `stand_ins/server.py:92`). The key is a `SecretString` read from the app host's secret variables (SEC-001, `BUILD_BRIEF.md:64`): it is sent only as the `x-api-key` header to that one host through `VendorHttp` (no redirects, no proxy from the environment) and never appears in `Debug`, `Display`, an error, a log line, a span or Sentry; every error names the key, never the value. The real client posts only to `/v1/messages`, with the same `anthropic-version` header and idempotency key as `StandInAi` (AI-001, SEC-018). Keep `StandInAi::new` and the tests that call it (`app/adapters/src/tests/ssrf_guard.rs`, not this task's) working unchanged. No test reaches the real API or any non-loopback host (AI-009): the `api` mode is tested through its settings rules, the request it would send checked without leaving the machine (with a fake key sentinel that matches no secret-scanner rule), and the key's redaction. Nothing in the app calls the new client yet: T299 builds it at start-up and calls it from intake (IC-23's second half, D-2065). Update `app/adapters/CLAUDE.md` and the `ai` row of `docs/architecture.md` section 7 (both shared). The schema it sends is T376's (D-2760).",
    "type": "build",
    "phase": 2,
    "stage": "6",
    "module": "adapters",
    "deps": [
-    "T136"
+    "T376",
+    "T127"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -16012,7 +16041,8 @@
     "D-040",
     "D-453",
     "D-2054",
-    "D-2065"
+    "D-2065",
+    "D-2760"
    ],
    "cites": [
     "BUILD_BRIEF.md:194",
@@ -16036,7 +16066,7 @@
    "id": "T137",
    "slug": "real-ai-test",
    "title": "Real AI from the Railway test project, fake data only",
-   "goal": "From the Railway test project the real AI, on fake data only, returns schema-valid fields or nothing, has no tools, keeps the versioned instructions, and the prompt-injection suite still changes no routing, fee or disclosure; with the concept-image adapter chosen at the account checkpoint, the switch-on path T212 built runs against it (TD-INT-32, the live-adapter run only, D-491, D-492); the results are recorded in `docs/phase2/real-ai.md` (AI-005 to AI-007, AI-010, AI-015). Each run records model ID, instruction version, date, job-type accuracy by language, abstention rate, output-check fallbacks and the INT-039 skip threshold it supports (the lowest value with no more than 2% of skipped questions answered differently) (AI-027, D-492). The app's real AI client and its endpoint settings (`ASKHAVA_ADAPTER_MODE_AI=api` in the test project) are T298's (D-2065), so this run can use the same client, model and request the app sends.",
+   "goal": "From the Railway test project the real AI, on fake data only, returns schema-valid fields or nothing, has no tools, keeps the versioned instructions, and the prompt-injection suite still changes no routing, fee or disclosure; with the concept-image adapter chosen at the account checkpoint, the switch-on path T212 built runs against it (TD-INT-32, the live-adapter run only, D-491, D-492); the results are recorded in `docs/phase2/real-ai.md` (AI-005 to AI-007, AI-010, AI-015). Each run records model ID, instruction version, date, job-type accuracy by language, abstention rate, output-check fallbacks and the INT-039 skip threshold it supports (the lowest value with no more than 2% of skipped questions answered differently) (AI-027, D-492). The app's real AI client and its endpoint settings (`ASKHAVA_ADAPTER_MODE_AI=api` in the test project) are T298's (D-2065), so this run can use the same client, model and request the app sends. Nov 11 vendor-double review batch 4, F1 (D-2760): the run's first request sends the intake schema exactly as `intake_schema` sends it (T376) and records the API's answer; a 400 naming a schema keyword stops the run and is reported for a plan change, never worked around in this task.",
    "type": "build",
    "phase": 2,
    "stage": "6",
@@ -16084,7 +16114,8 @@
    "decisions": [
     "D-040",
     "D-492",
-    "D-2065"
+    "D-2065",
+    "D-2760"
    ],
    "cites": [
     "BUILD_BRIEF.md:194"
@@ -16112,7 +16143,7 @@
    "stage": "6",
    "module": null,
    "deps": [
-    "T137"
+    "T136"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -16163,7 +16194,8 @@
    "stage": "6",
    "module": "recovery",
    "deps": [
-    "T138"
+    "T138",
+    "T137"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -16530,9 +16562,10 @@
    "stage": "6",
    "module": "ai",
    "deps": [
-    "T235",
     "T295",
-    "T370"
+    "T370",
+    "T296",
+    "T243"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -17500,7 +17533,12 @@
    "deps": [
     "T236",
     "T297",
-    "T299"
+    "T299",
+    "T379",
+    "T380",
+    "T381",
+    "T382",
+    "T235"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -18926,7 +18964,7 @@
    "budget": {
     "files": 7,
     "lines": 300,
-    "context_pct": 30
+    "context_pct": 36
    },
    "checks": [
     "Ci",
@@ -18938,10 +18976,76 @@
    "copy": true
   },
   {
+   "id": "T383",
+   "slug": "brand-text-templates",
+   "title": "messaging and portals: the text templates and the homeowner page take the brand from the brand file",
+   "goal": "After T292 and T294 (D-2843; D-1932, D-1933, D-2387). T292's registry already fills the brand tokens from `core::api::brand()` while it builds (Spanish names for `es.json`) and checks the filled text, but `app/messaging/templates/en.json` and `es.json` kept their literal brand words because two tests of DONE tasks read the raw files (D-2387), and T087's `app/portals/templates/homeowner_home.html` came after T294 with three literals; `tests/brand_literal_baseline.json` still lists the three, so T295 cannot make the guard strict. (1) The two tests change only in how they reach the text: `tests/integration/tests/voice_calls.rs::td_call_06_no_route_lets_a_business_text_a_homeowner` and `tests/security/tests/no_phone_released.rs::td_pick_10_the_release_email_and_text_carry_no_homeowner_detail` fill the file text as read: one `askhava_core::api::brand().fill(&raw, lang == \"es\")` on the whole file string before their existing logic (`voice_calls.rs:238`, the whole file before the slot scan; `no_phone_released.rs:44`, before `serde_json::from_str`), with no per-entry rewrite; every slot list, expected literal (\"Ask Hava: Job {job} is confirmed. …\") and assertion stays byte-identical. (2) In both template files, in this order: \"Ask Hava LLC\" becomes `{brand_legal}`, each `askhava.com` `{domain}`, the opening \"Ask Hava:\" `{brand_short}:` and any other \"Ask Hava\" `{brand}`; no key is added or removed, every text kind keeps its Spanish template (TXT-001) and each Spanish text keeps its Spanish words and its `draft` mark. Before committing, a run over both files shows that filling every converted text under the embedded brand (`scripts/brand.py` `fill`, Spanish names for `es.json`) gives exactly the text it replaced, for every ID (the PR description gives the command and its result); so every text, segment count and test is unchanged under the brand as it is (D-1932). (3) `homeowner_home.html` names the brand through `{{ askhava_core::api::brand().display_name() }}`, as T294's pages do; the page is byte-identical under the embedded brand and Ally stays clean (WCAG 2.2 AA). (4) This task removes the three files' entries from `tests/brand_literal_baseline.json` (the baseline only shrinks), so it lists only T295's own files. Every other existing test passes unchanged. Update the `messaging` and `portals` `CLAUDE.md` files and `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "4",
+   "module": "messaging",
+   "deps": [
+    "T294",
+    "T087",
+    "T080",
+    "T069"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness",
+    "compliance",
+    "security"
+   ],
+   "owns": [
+    "app/messaging/templates/en.json",
+    "app/messaging/templates/es.json",
+    "app/portals/templates/homeowner_home.html",
+    "tests/integration/tests/voice_calls.rs",
+    "tests/security/tests/no_phone_released.rs",
+    "tests/brand_literal_baseline.json"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/wording.md",
+    "docs/spec/messaging.md"
+   ],
+   "requirements": [
+    "WORD-001",
+    "WORD-008",
+    "TXT-001"
+   ],
+   "tests": [
+    "TD-WORD-35"
+   ],
+   "decisions": [
+    "D-2843",
+    "D-2387",
+    "D-1932",
+    "D-1933"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 6,
+    "lines": 600,
+    "context_pct": 25
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T383-brand-text-templates",
+   "prompt": "kit/prompts/T383.md",
+   "acceptance": "TD-WORD-35 passes; `tests/brand_literal_baseline.json` lists none of the three files and `tests/docs/test_brand_literals.py` passes; every text in both files fills to exactly its old text under the embedded brand; every existing test passes with its expected text unchanged."
+  },
+  {
    "id": "T295",
    "slug": "brand-switch-proof",
    "title": "payments, ai, intake and picks take the brand from the brand file, and a test proves a switch changes every channel",
-   "goal": "After T292, T293 and T294 (D-1932, D-1933). (1) The last literals: `payments`' `STATEMENT_PREFIX` and the intent description (FEE-049; the prefix still has to match the Stripe account's setting, so the brand file's `statement_prefix` is the one place it is written, and `DESCRIPTOR_MAX` is still enforced), `ai`'s request prompt (`models.rs`) and the brand words `output_checks.rs` lets stay capitalised, `intake`'s question text opening (`question_bank.rs`, `<short_name>:`) and quote-page link (`job_texts.rs`, on `domain`), and `picks`' Terms line (`service.rs`, on `domain`, English and Spanish). `AUTHORIZATION_TEXT` and `app/ai/data/word_022_phrases.json` keep their words (T291's exemptions). (2) `tests/integration/tests/brand_setting.rs` (TD-WORD-38): its own test binary installs a fake brand before anything renders (`Testbrand`, `Testbrand for Business`, `Testbrand LLC`, `Testbrand L L C`, `testbrand.example`, `jobs@notify.testbrand.example`, prefix `TESTBRND`) and renders, through the crates' public functions: a homeowner text and a business text in English and Spanish from the template registry, a homeowner email and a business email (sender, subject, body, footer), the receipt email, the quote page and the site layout, the voice greeting, the intent description and statement descriptor, a question-bank text and a quote-card label; each holds the fake name or domain and none holds \"Ask Hava\", `askhava.com` or `ASKHAVA` as a whole word. A second test, on the embedded brand, checks that the compiled-in homeowner Terms (`docs/legal/homeowner-terms.md`), `AUTHORIZATION_TEXT` and the WORD-022 list each name its `legal_name` or `display_name`, so a switch fails `Ci` until those legal records are re-issued under a new version (TERMS-016); and it pins the SHA-256 of `AUTHORIZATION_TEXT` for the current `AUTHORIZATION_VERSION` in a table keyed by version, so rewording the authorization without raising the version fails. (3) First, if `tests/brand_literal_baseline.json` still lists a file this task does not own, stop and report it: a plan change gives that file an owner before the guard is made strict. Then the guard becomes strict: delete `tests/brand_literal_baseline.json` and the baseline code in `tests/docs/test_brand_literals.py`, keeping every other case; with no baseline any brand literal in a scanned file fails. A test of a DONE task named below may change only in how it reaches a text whose constant became a function (for example `NO_CALLS_LINE` to `no_calls_line()`); every expected literal, input and assertion stays byte-identical, so it still pins today's wording. Every other existing test passes unchanged. Update the `payments`, `ai`, `intake` and `picks` `CLAUDE.md` files and `docs/decisions.md`. Nov 10 code review batch 2, quotes F2 (D-2638; INT-039, CARD-007, AI-019, D-1269): with AI off the question bank skips a question when exactly one multi-word option appears in her words, even after a negation (`keyword_answer`, `app/intake/src/question_bank.rs:138`, used by `skip_reading`, `:255`): \"Water is not under a sink, it is dripping from the ceiling\" answers \"Under a sink\" and \"Not the water heater, my toilet keeps running\" answers \"Water heater\", so the card states a wrong fact. A match with a negation (not, no, isn't, never, no es, no está) within three words before it does not skip; the question is asked. TD-INT-21 gains both cases (each asks) and \"Swamp cooler pads are dry\" (still skips) in `app/intake/src/tests/question_bank.rs`, which this task now also owns (adding cases only).",
+   "goal": "After T292, T293 and T294 (D-1932, D-1933). (1) The last literals: `payments`' `STATEMENT_PREFIX` and the intent description (FEE-049; the prefix still has to match the Stripe account's setting, so the brand file's `statement_prefix` is the one place it is written, and `DESCRIPTOR_MAX` is still enforced), `ai`'s request prompt (`models.rs`) and the brand words `output_checks.rs` lets stay capitalised, `intake`'s question text opening (`question_bank.rs`, `<short_name>:`) and quote-page link (`job_texts.rs`, on `domain`), and `picks`' Terms line (`service.rs`, on `domain`, English and Spanish). `AUTHORIZATION_TEXT` and `app/ai/data/word_022_phrases.json` keep their words (T291's exemptions). (2) `tests/integration/tests/brand_setting.rs` (TD-WORD-38): its own test binary installs a fake brand before anything renders (`Testbrand`, `Testbrand for Business`, `Testbrand LLC`, `Testbrand L L C`, `tb.example`, `jobs@notify.tb.example`, prefix `TESTBRND`; it keeps every registry text within its recorded `segments`, since the registry refuses a filled text that needs more (TXT-044, as TD-WORD-35 shows; `testbrand.example` would push seven texts over, D-2843)) and renders, through the crates' public functions: a homeowner text and a business text in English and Spanish from the template registry, a homeowner email and a business email (sender, subject, body, footer), the receipt email, the quote page and the site layout, the voice greeting, the intent description and statement descriptor, a question-bank text and a quote-card label; each holds the fake name or domain and none holds \"Ask Hava\", `askhava.com` or `ASKHAVA` as a whole word. A second test, on the embedded brand, checks that the compiled-in homeowner Terms (`docs/legal/homeowner-terms.md`), `AUTHORIZATION_TEXT` and the WORD-022 list each name its `legal_name` or `display_name`, so a switch fails `Ci` until those legal records are re-issued under a new version (TERMS-016); and it pins the SHA-256 of `AUTHORIZATION_TEXT` for the current `AUTHORIZATION_VERSION` in a table keyed by version, so rewording the authorization without raising the version fails. (3) First, if `tests/brand_literal_baseline.json` still lists a file this task does not own, stop and report it: a plan change gives that file an owner before the guard is made strict (T383 cleared the two text-template files and the homeowner page, D-2843). Then the guard becomes strict: delete `tests/brand_literal_baseline.json` and the baseline code in `tests/docs/test_brand_literals.py`, keeping every other case; with no baseline any brand literal in a scanned file fails. A test of a DONE task named below may change only in how it reaches a text whose constant became a function (for example `NO_CALLS_LINE` to `no_calls_line()`); every expected literal, input and assertion stays byte-identical, so it still pins today's wording. Every other existing test passes unchanged. Update the `payments`, `ai`, `intake` and `picks` `CLAUDE.md` files and `docs/decisions.md`. Nov 10 code review batch 2, quotes F2 (D-2638; INT-039, CARD-007, AI-019, D-1269): with AI off the question bank skips a question when exactly one multi-word option appears in her words, even after a negation (`keyword_answer`, `app/intake/src/question_bank.rs:138`, used by `skip_reading`, `:255`): \"Water is not under a sink, it is dripping from the ceiling\" answers \"Under a sink\" and \"Not the water heater, my toilet keeps running\" answers \"Water heater\", so the card states a wrong fact. A match with a negation (not, no, isn't, never, no es, no está) within three words before it does not skip; the question is asked. TD-INT-21 gains both cases (each asks) and \"Swamp cooler pads are dry\" (still skips) in `app/intake/src/tests/question_bank.rs`, which this task now also owns (adding cases only).",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -18955,7 +19059,8 @@
     "T024",
     "T156",
     "T163",
-    "T240"
+    "T240",
+    "T383"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -19003,7 +19108,8 @@
     "D-1932",
     "D-1933",
     "D-490",
-    "D-2638"
+    "D-2638",
+    "D-2843"
    ],
    "cites": [],
    "budget": {
@@ -19030,7 +19136,7 @@
    "stage": "6",
    "module": "ai",
    "deps": [
-    "T139"
+    "T127"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -19376,7 +19482,7 @@
    "budget": {
     "files": 8,
     "lines": 400,
-    "context_pct": 14
+    "context_pct": 18
    },
    "checks": [
     "Ci",
@@ -19397,7 +19503,7 @@
    "stage": "6",
    "module": "intake",
    "deps": [
-    "T140"
+    "T239"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -22554,6 +22660,66 @@
    "prompt": "kit/prompts/T313.md"
   },
   {
+   "id": "T379",
+   "slug": "suppressed-email-not-reached",
+   "title": "messaging (harness): an email the provider suppressed or failed counts as not reached, and the notice log says so",
+   "goal": "Nov 11 vendor-double review batch 4, F6 (counting half; D-2765; CARD-019, BIZ-045, TXT-014). Resend skips a send to an address on its team-wide suppression list and reports `email.suppressed`, and reports `email.failed` for a send it could not make (`docs/brains/email-deliverability.md:58`, `:62`); `receive_email_event` stores both (`app/messaging/src/email.rs`), but `card_notice_accepted` (`app/messaging/src/business_notices.rs:497`) leaves out only `email.bounced`, so after one hard bounce every later card notice to that address counts as reached toward CARD-019's N, and `ProviderStatus::from_event` (`app/messaging/src/email_timing.rs:85`) maps neither, so BIZ-045's log shows nothing for them. After T133 (the fake Resend's suppression list) and T313 (owner of `business_notices.rs`): (1) `card_notice_accepted` treats an email with an `email.suppressed` or `email.failed` event like a bounced one (not reached); (2) `ProviderStatus` gains `Suppressed` and `Failed`, each with a BIZ-045 log line in English and Spanish that passes `scripts/check_copy.py` (for example \"Not sent: this address is blocked after an earlier bounce or spam report.\"), exhaustively matched; (3) the test `FakeMail` (`tests/integration/tests/text_retries.rs:60`) keeps a suppression list and answers a send to a listed address with `email.suppressed`. Tests in `tests/integration/tests/email_suppressed.rs`: a business whose only card email was suppressed, or failed, is not counted as reached (fails before the fix); a delivered one still is; the notice log shows the new lines. Update the `messaging` `CLAUDE.md` and `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 2,
+   "stage": "6",
+   "module": "messaging",
+   "deps": [
+    "T133",
+    "T313"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "harness"
+   ],
+   "owns": [
+    "app/messaging/src/business_notices.rs",
+    "app/messaging/src/email_timing.rs",
+    "tests/integration/tests/text_retries.rs",
+    "tests/integration/tests/email_suppressed.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/job-cards.md",
+    "docs/spec/businesses.md",
+    "docs/spec/messaging.md",
+    "docs/brains/email-deliverability.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "CARD-019",
+    "BIZ-045",
+    "TXT-014"
+   ],
+   "tests": [
+    "TD-TXT-37"
+   ],
+   "decisions": [
+    "D-2765"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 350,
+    "context_pct": 21
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T379-suppressed-email-not-reached",
+   "prompt": "kit/prompts/T379.md"
+  },
+  {
    "id": "T314",
    "slug": "dispute-submit-atomic",
    "title": "payments and picks: a dispute's auto-submit mark and its task, and an owner submission and its fee, commit together; a worker decides auto-submit",
@@ -23110,6 +23276,71 @@
    "prompt": "kit/prompts/T333.md"
   },
   {
+   "id": "T380",
+   "slug": "refund-key-expiry",
+   "title": "payments and stand-in (harness): a refund retried after Stripe forgot its key finds the refund already made",
+   "goal": "Nov 11 vendor-double review batch 4, F8 (D-2767; FEE-026, FEE-028, FEE-053). Stripe keeps an idempotency key for at least 24 hours and may drop it after; a refund retry that replays try n-1's key later than that (`send`, `app/payments/src/refunds.rs:356`) is a new request, and Stripe refuses a second refund of a refunded charge (`charge_already_refunded`), so the pick stays failed with no ledger refund although the money went back. Every fake keeps keys for ever (`IdempotencyStore`, `stand_ins/common.py:19`; the Rust fake in `tests/integration/tests/refund_lifecycle.rs:103`). After T132, T333 and T134 (the last sandbox task that adds stand-in routes to `stand_ins/server.py`, D-2821): (1) `stand_ins/common.py`: `IdempotencyStore` forgets a key 24 hours after first use by the stand-in clock (the control that moves the clock moves it); (2) `stand_ins/stripe.py` serves `GET /v1/refunds?payment_intent=` (Stripe's list filter) if it does not yet, its route in `stand_ins/server.py`'s `ROUTES` table (owned here, D-2821), and answers a second full refund with `charge_already_refunded`; (3) `app/adapters/src/payments.rs`: a typed read of a PaymentIntent's refunds; (4) every refund create sets `metadata[pick_id]`; `refunds.rs`: a refund answered `charge_already_refunded` lists that PaymentIntent's refunds and claims one only when it is the single refund that succeeded or is pending, for the full charged amount, and carries this pick's `metadata[pick_id]` where the refund has metadata; it then records it exactly as its own answer would have been (T333's checks apply); more than one candidate, an amount that differs or a metadata mismatch raises the refund alert and records nothing; (5) the Rust fake in `refund_lifecycle.rs` drops keys after 24 hours. Tests in `tests/integration/tests/refund_key_expiry.rs`: a refund whose first answer was lost, retried 25 hours later, records the refund once and moves the pick on (fails before the fix); try 1's answer lost, try 2's replay of key 1 lost, and try 2's new key refused with `charge_already_refunded` records the refund once (fails before the fix, with no key expiry); two candidate refunds, or one for a different amount, raise the alert and record nothing; retried within the hour, it replays as today; and in sandbox mode `tests/contract/test_sandbox_t132.py`'s companion case (in `tests/contract/test_stripe_refund_retry.py`, skipped without sandbox credentials) confirms Stripe test mode answers a second refund of a refunded charge with `charge_already_refunded` and lists the first. Update the `payments` `CLAUDE.md` and `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 2,
+   "stage": "6",
+   "module": "payments",
+   "deps": [
+    "T132",
+    "T333",
+    "T134"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "money",
+    "security",
+    "harness"
+   ],
+   "owns": [
+    "stand_ins/common.py",
+    "stand_ins/stripe.py",
+    "app/adapters/src/payments.rs",
+    "app/payments/src/refunds.rs",
+    "tests/integration/tests/refund_lifecycle.rs",
+    "tests/integration/tests/refund_key_expiry.rs",
+    "tests/contract/test_stripe_refund_retry.py",
+    "stand_ins/server.py"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/fees.md",
+    "docs/brains/payments-stripe.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "FEE-026",
+    "FEE-028",
+    "FEE-053"
+   ],
+   "tests": [
+    "TD-FEE-67"
+   ],
+   "decisions": [
+    "D-2767",
+    "D-2771"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 8,
+    "lines": 450,
+    "context_pct": 25
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T380-refund-key-expiry",
+   "prompt": "kit/prompts/T380.md"
+  },
+  {
    "id": "T334",
    "slug": "reconcile-catch-up-and-paging",
    "title": "payments: the nightly reconcile catches up after an outage from its last good run, reads Stripe in pages, and checks refund amounts",
@@ -23299,6 +23530,140 @@
    ],
    "branch": "claude/task/T336-inbound-text-bounded-retry",
    "prompt": "kit/prompts/T336.md"
+  },
+  {
+   "id": "T377",
+   "slug": "sms-status-callback-sent-log",
+   "title": "adapters and stand-in (harness): every text asks Twilio for status callbacks, and the fake sends them only when asked",
+   "goal": "Nov 11 vendor-double review batch 4, F2 and the stand-in half of F5 (D-2761, D-2764; TXT-013, TXT-014, CARD-019, SEC-016, OPS-017). `TwilioSms::send_text` posts only `To`, `From` and `Body` (`app/adapters/src/sms.rs:72`); Twilio posts a message's status only to the `StatusCallback` URL of its create request (or a Messaging Service's callback, which Ask Hava does not use), so in sandbox and live `POST /webhooks/twilio/status` (`STATUS_PATH`, `app/server/src/inbound_text.rs:74`) is never called and `messaging::api::receive_status` never runs: no delivery or failure is recorded, TXT-014's email fallback for a failed text and CARD-019's counts never see a failure, and `ErrorCode` paths are dead. The fake hides it: `status_callback` (`stand_ins/twilio.py:167`, control route `/_stand_in/twilio/status`, `stand_ins/server.py:295`) emits a callback for any message. And the fake's sent log filters by the app's own `MessageKey` (`stand_ins/server.py:121`), which Twilio cannot store. Fix: (1) `TwilioSms` (built in `app/adapters/src/base.rs:106`) carries the status URL, `<ASKHAVA_PUBLIC_BASE_URL>/webhooks/twilio/status` (Twilio signs the full callback URL, and `verify_webhook` checks the public base, path and query, `app/server/src/inbound_text.rs:143`, so the URL sent must be exactly the URL the route rebuilds), and `send_text` adds `StatusCallback` to every create; with no public base URL (dev and CI without webhooks) it sends none, as today. (2) `stand_ins/twilio.py`: `create_message` stores the `StatusCallback` it was given; `status_callback` for a message created without one refuses (the control route answers 409 and records no callback), and with one returns the URL with the params, so a test posts to the URL the app asked for. (3) The fake's Messages list honours Twilio's own filters `To`, `From`, `DateSent`, `DateSent<` and `DateSent>` (dates `YYYY-MM-DD`, UTC); `MessageKey` stays a stand-in-only filter, documented in `stand_ins/server.py` as test-only and used only by `core::test_control`, never by app code (T110 matches without it, D-2764). (4) Tests: `tests/integration/tests/sms_status_callback.rs` sends a text through the adapter against the served stand-in with a public base URL set and asserts the fake recorded `StatusCallback` equal to that URL plus `/webhooks/twilio/status` (fails before the fix), and that the route accepts the callback the fake then gives (signature over that URL); `tests/contract/test_twilio_contract.py` and `tests/contract/test_stand_in_server.py`: no callback for a message created without `StatusCallback`, one aimed at the given URL with it, and the `From` and `DateSent` filters. T129 checks the create parameter against Twilio's test credentials. Update `app/adapters/CLAUDE.md` (shared), `docs/architecture.md` section 7 and `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "4",
+   "module": "adapters",
+   "deps": [
+    "T336"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "harness"
+   ],
+   "owns": [
+    "app/adapters/src/sms.rs",
+    "app/adapters/src/base.rs",
+    "stand_ins/twilio.py",
+    "stand_ins/server.py",
+    "tests/contract/test_twilio_contract.py",
+    "tests/contract/test_stand_in_server.py",
+    "tests/integration/tests/sms_status_callback.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/messaging.md",
+    "docs/spec/job-cards.md",
+    "docs/spec/security.md",
+    "docs/spec/ops-recovery.md",
+    "docs/brains/sms-compliance.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "TXT-013",
+    "TXT-014",
+    "CARD-019",
+    "SEC-016",
+    "OPS-017"
+   ],
+   "tests": [
+    "TD-TXT-36"
+   ],
+   "decisions": [
+    "D-2761",
+    "D-2764",
+    "D-2771"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 7,
+    "lines": 450,
+    "context_pct": 24
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T377-sms-status-callback-sent-log",
+   "prompt": "kit/prompts/T377.md"
+  },
+  {
+   "id": "T378",
+   "slug": "voice-calls-carry-twiml-and-callbacks",
+   "title": "adapters, calls and stand-in (harness): every outbound call carries its TwiML and status callbacks, and the safety call's answer is received",
+   "goal": "Nov 11 vendor-double review batch 4, F3 (D-2762; CALL-006, CALL-022, OPS-028, INT-004, SEC-016). `TwilioVoice::open_call` posts only `To` and `From` (`app/adapters/src/voice.rs:55`); Twilio's Calls API needs one of `Url`, `Twiml` or `ApplicationSid` and refuses the create without one, and fetches the call's TwiML only from that parameter. So once T330 registers `place_safety_call` (`app/calls/src/voice.rs:346`) and T108 calls `ring_owner` (`:501`, whose comment expects `owner_bridge_twiml` to run on Casey's answered leg), every safety call and owner bridge fails at Twilio; and no call asks for status callbacks, so `safety_call_answered` (`:464`) is never called. The fake's `create_call` (`stand_ins/twilio.py:264`) takes `To` and `From` only and succeeds. Fix: (1) `open_call` takes the call's script as inline `Twiml` (at most 4,000 characters) for both call kinds, never a `Url` (the owner bridge's TwiML holds the homeowner's number, which must never sit in a URL, so no TwiML-serving route is added), a `StatusCallback` URL on the public base and its `StatusCallbackEvent` list; the safety call asks for Twilio's answering-machine detection with `MachineDetection`, `AsyncAmd=true` and `AsyncAmdStatusCallback` pointing at the same status route with the same alert query (the worker cites the Calls API page). (2) `place_safety_call` sends `safety_twiml` (with its `Gather` `action` an absolute URL on the public base, since inline TwiML has no document URL to resolve a relative one against) and `ring_owner` sends `owner_bridge_twiml` (its signature gains the homeowner's number and the safety words; T108, after this task, calls the new form); a script builder's `None` places no call and logs as today. (3) Two new signed routes in `app/server/src/voice_status.rs`, merged in the shared `app/server/src/lib.rs` like `inbound_voice` and verified like every Twilio webhook over the public base, path and query (SEC-016); each query carries only the alert ID. (a) `POST /webhooks/twilio/voice/status?alert=<id>`: with async detection Twilio posts `answered` before the detection result and without `AnsweredBy`, so the call is decided only by the detection result (`AnsweredBy` `human` to `Person`, `machine_start`, `machine_end_*` and `fax` to `Machine`, `unknown` to `Unknown`) or by a final `CallStatus` of `no-answer`, `busy`, `failed` or `canceled` (`Nobody`); `safety_call_answered` runs once per CallSid (the first deciding post wins); any other callback (`initiated`, `ringing`, `answered`, a `completed` after a decision) is acknowledged and changes nothing; an owner-bridge callback is acknowledged and changes nothing. (b) `POST /webhooks/twilio/voice/safety-key?alert=<id>`, the absolute `Gather` `action` that `safety_twiml` (`app/calls/src/voice.rs:226`) posts the key press to: it calls `safety_call_key` (`:411`; \"9\" puts her number on the suppression list, CON-035) and answers `hangup_twiml`; a repeat post for the same CallSid changes nothing. (4) `stand_ins/twilio.py`: `create_call` refuses a create with none of `Url`, `Twiml`, `ApplicationSid` with Twilio's 400 error shape, stores the callback URL and events, and a control emits callbacks only to the stored URLs, as Twilio does: `answered` without `AnsweredBy`, then, when detection was asked, the detection result as a separate post to the `AsyncAmdStatusCallback`, then `completed`. Tests: `tests/contract/test_twilio_voice_contract.py` (the refusal, the stored callback, no callback without one) and `tests/integration/tests/voice_call_plan.rs` (a safety call through the served stand-in carries its TwiML and callback, fails before the fix; a `human` detection result acknowledges the alert once; `answered` followed by `machine_end_beep` never acknowledges it (OPS-028); `no-answer` logs `nobody`; a repeat callback changes nothing; a key press of 9 on the safety-key route puts her number on the suppression list and answers hang-up TwiML, another key does not; the owner bridge carries `owner_bridge_twiml`). If T330 has registered `place_safety_call`, update its registration in the shared `app/server/src/bin/worker.rs`. T131 checks the parameters against Twilio. Update `app/calls/CLAUDE.md`, `app/adapters/CLAUDE.md`, `docs/architecture.md` (section 7 and the two rows in the section 13 route table) and `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "4",
+   "module": "calls",
+   "deps": [
+    "T377",
+    "T292"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "harness"
+   ],
+   "owns": [
+    "app/adapters/src/voice.rs",
+    "app/calls/src/voice.rs",
+    "stand_ins/twilio.py",
+    "app/server/src/voice_status.rs",
+    "tests/contract/test_twilio_voice_contract.py",
+    "tests/integration/tests/voice_call_plan.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/calls.md",
+    "docs/spec/ops-recovery.md",
+    "docs/spec/intake.md",
+    "docs/spec/security.md",
+    "docs/brains/rust-production.md",
+    "docs/spec/consent.md"
+   ],
+   "requirements": [
+    "CALL-006",
+    "CALL-022",
+    "OPS-028",
+    "INT-004",
+    "SEC-016",
+    "CON-035"
+   ],
+   "tests": [
+    "TD-CALL-22"
+   ],
+   "decisions": [
+    "D-2762",
+    "D-2771"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 6,
+    "lines": 650,
+    "context_pct": 15
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T378-voice-calls-carry-twiml-and-callbacks",
+   "prompt": "kit/prompts/T378.md"
   },
   {
    "id": "T328",
@@ -24069,6 +24434,69 @@
    "acceptance": "Every contract test passes over HTTP (`python3 -m pytest tests/contract -q -p no:cacheprovider`), and `tests/contract/test_stand_in_server.py` has no skip path (no `pytest.skip`, `skipif`, `importorskip`, `xfail` or `SkipTest`): the runner records stage 1's exit proof only from a green nightly run in which that file ran with no way to skip (D-551)."
   },
   {
+   "id": "T376",
+   "slug": "ai-schema-supported-keywords",
+   "title": "ai and stand-in (harness): the intake schema sent to Claude uses only keywords the API supports, and the stand-in refuses the others",
+   "goal": "Nov 11 vendor-double review batch 4, F1 (D-2760; AI-010, AI-021, AI-022, AI-023). The committed intake schema `schemas/intake_reading.json` is sent whole as `output_config.format` (`app/ai/src/service.rs:206`, through `intake_schema`, `app/ai/src/schemas.rs:26`) and gives `trade_confidence` and `job_type_confidence` `minimum` 0 and `maximum` 1 (`schemas/intake_reading.json:21`, `:23`). Claude's structured-outputs page lists `minimum` and `maximum` among the constraints the API does not support (https://platform.claude.com/docs/en/build-with-claude/structured-outputs), and `docs/brains/ai-intake.md:26` records a 400, which `:64` turns into no retry, an alert and the AI-off path: every real reading would fail. The stand-in never looks at the request's schema (`messages`, `stand_ins/ai.py:147`), so no test can see it. Fix: (1) `schemas/intake_reading.json`: drop `minimum` and `maximum` from the two confidences (each gets a `description` saying 0 to 1); the 0-to-1 check stays in code (`parse_reading`'s `in_range`, `app/ai/src/schemas.rs:168`). (2) `intake_schema` sends the file without its top-level `$schema` and `$id` (metadata the request does not need; harmless whichever way the API treats them); `app/ai/src/tests/schemas.rs` keeps its equality test against the file minus those two keys and adds: a reading with a confidence of 1.5 or -0.1 is discarded. (3) `stand_ins/ai.py`: a request whose `output_config.format.schema` uses, anywhere, a keyword `docs/brains/ai-intake.md:26` lists as unsupported (`minimum`, `maximum`, `exclusiveMinimum`, `exclusiveMaximum`, `multipleOf`, `minLength`, `maxLength`, `maxItems`, or `minItems` other than 0 or 1), or an object without `additionalProperties: false`, gets the API's 400 `invalid_request_error`; the stand-in's own output check keeps the 0-to-1 range for the two confidences in code, since the schema no longer holds it. (4) `tests/contract/test_stand_in_ai_contract.py`: a request with a `minimum` in its schema is refused (fails before the stand-in change); a request with the committed schema, as `intake_schema` sends it, is accepted (fails before the schema change); and a scan of `schemas/intake_reading.json` finds none of those keywords. The real API's answer is checked in T137 (D-2760). Update `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "4",
+   "module": "ai",
+   "deps": [
+    "T024",
+    "T167",
+    "T057",
+    "T075"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "harness"
+   ],
+   "owns": [
+    "schemas/intake_reading.json",
+    "app/ai/src/schemas.rs",
+    "app/ai/src/tests/schemas.rs",
+    "stand_ins/ai.py",
+    "tests/contract/test_stand_in_ai_contract.py"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/ai.md",
+    "docs/brains/ai-intake.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "AI-010",
+    "AI-021",
+    "AI-022",
+    "AI-023"
+   ],
+   "tests": [
+    "TD-AI-28"
+   ],
+   "decisions": [
+    "D-2760",
+    "D-2771"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 5,
+    "lines": 300,
+    "context_pct": 16
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T376-ai-schema-supported-keywords",
+   "prompt": "kit/prompts/T376.md"
+  },
+  {
    "id": "T168",
    "slug": "test-layer-crates",
    "title": "Test-layer crates: integration, security (with the compile-fail cases), recovery and fixtures, reached only through each module's api",
@@ -24580,6 +25008,67 @@
    "prompt": "kit/prompts/T353.md"
   },
   {
+   "id": "T381",
+   "slug": "dispute-inquiry",
+   "title": "payments and stand-in (harness): a card-network inquiry is not recorded as a chargeback",
+   "goal": "Nov 11 vendor-double review batch 4, F9 (D-2768; FEE-027, FEE-050). Stripe opens an inquiry (a dispute whose `status` is `warning_needs_response`) when a cardholder asks about a charge: no money is withdrawn, there is no dispute fee and a refund is still allowed; if it becomes a chargeback Stripe reports the new status. `record_dispute` (`app/payments/src/disputes.rs:73`) writes the disputed amount and the $15 fee and blocks refunds for every `charge.dispute.created`, and the fake only opens `needs_response` disputes (`stand_ins/stripe.py:274`). After T132, T314, T353 and T380 (owners of the same files): (1) the dispute event's `status` is read where the event is parsed (`app/payments/src/routes.rs`) and passed to `record_dispute`; an inquiry (`warning_needs_response`, `warning_under_review`) is stored as an audit row and a High alert for Casey, not a `payments.dispute` row (that table has no kind column and a unique dispute ID; no migration), with no ledger entry, no fee and no refund block; escalation arrives as `charge.dispute.updated` with a chargeback status (`needs_response` and after) and, where money moves, `charge.dispute.funds_withdrawn`; both are added to `HANDLED` (`app/payments/src/routes.rs:85`) and the first that shows a chargeback status records the dispute then, once, as `charge.dispute.created` does today; a `charge.dispute.closed` with `warning_closed` (or for an inquiry never recorded as a dispute) is acknowledged with its audit row and never takes `dispute_closed`'s not-recorded path that answers 500 (`:489`); (2) the fake opens an inquiry when asked (its own mode), sends the matching events, and can escalate it, through the dispute control in `stand_ins/server.py` (`control_dispute`, owned here, D-2821). Tests in `tests/integration/tests/dispute_inquiry.rs`: an inquiry writes no ledger entry and the pick can still be refunded (fails before the fix); escalation by `charge.dispute.updated` or `charge.dispute.funds_withdrawn` records the dispute and fee once; a `warning_closed` inquiry answers 200 and writes no money; and `tests/contract/test_stripe_inquiry.py` in sandbox mode (skipped without credentials) records which events and statuses Stripe test mode sends for its inquiry test card (https://docs.stripe.com/testing#disputes); any difference is fixed in the code and the fake together and recorded in the decision. Update the `payments` `CLAUDE.md` and `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 2,
+   "stage": "6",
+   "module": "payments",
+   "deps": [
+    "T380",
+    "T314",
+    "T353"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "money",
+    "harness"
+   ],
+   "owns": [
+    "app/payments/src/disputes.rs",
+    "app/payments/src/routes.rs",
+    "stand_ins/stripe.py",
+    "tests/integration/tests/dispute_inquiry.rs",
+    "tests/contract/test_stripe_inquiry.py",
+    "stand_ins/server.py"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/fees.md",
+    "docs/brains/payments-stripe.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "FEE-027",
+    "FEE-050"
+   ],
+   "tests": [
+    "TD-FEE-68"
+   ],
+   "decisions": [
+    "D-2768",
+    "D-2771"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 6,
+    "lines": 450,
+    "context_pct": 21
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T381-dispute-inquiry",
+   "prompt": "kit/prompts/T381.md"
+  },
+  {
    "id": "T354",
    "slug": "photo-reseal-on-rotation",
    "title": "privacy: key rotation re-seals stored photos too, so dropping the old vault key never makes a photo unreadable",
@@ -24978,7 +25467,7 @@
    "id": "T360",
    "slug": "optout-emails",
    "title": "messaging: the opt-out confirmation email while texting is off, and CON-016's email or owner count for a listed homeowner who writes again",
-   "goal": "Nov 10 code review, messaging F3 and CON-016, the email half (D-2629; CON-016, CON-030, CON-009, D-226). (1) CON-030: while texting is off or suspended an opt-out is confirmed by email if one is on file, never by a later text; no code sends that email. `app/messaging/src/optout_email.rs` adds `messaging::api::queue_optout_confirmation_email(db, vault, contact, language, event)`: it reads her email through the vault (never logged), and when one is on file queues one email under the opt-out event as its subject through T094's email outbox (`send_email`), with the CON-009 wording as an email (English and Spanish), once per event. (2) CON-016: a listed homeowner who writes without START is emailed if an email is on file, and otherwise is listed in Casey's weekly digest; `queue_optout_wrote_again(db, vault, contact, inbox, now)` queues at most one such email a day per homeowner (\"You opted out of texts from Ask Hava…\": how to text again with START, and that her open requests continue on the quote page and by email, CON-012), and with no email on file writes one `ops` audit row, action `messaging.optout_wrote_again`, subject the inbox row, IDs only, which T204's weekly digest counts (no new table, no migration). The new email templates go in `app/messaging/templates/en.json` and `es.json` through the cold read and the copy panel (WORD-028, WORD-029). The route that calls both is T357's. Tests in `tests/integration/tests/optout_emails.rs` (TD-CON-34): with an email on file one confirmation email per event and none on a repeat; none without an email; a listed homeowner's message gives one email, a second the same day gives none, the next day one; without an email one audit row per message and no email; no body, phone or email address in any audit row or log line. Update the `messaging` `CLAUDE.md` and `docs/decisions.md`.",
+   "goal": "Nov 10 code review, messaging F3 and CON-016, the email half (D-2629; CON-016, CON-030, CON-009, D-226). (1) CON-030: while texting is off or suspended an opt-out is confirmed by email if one is on file, never by a later text; no code sends that email. `app/messaging/src/optout_email.rs` adds `messaging::api::queue_optout_confirmation_email(db, vault, contact, language, event)`: it reads her email through the vault (never logged), and when one is on file queues one email under the opt-out event as its subject through T094's email outbox (`send_email`), with the CON-009 wording as an email (English and Spanish), once per event. (2) CON-016: a listed homeowner who writes without START is emailed if an email is on file, and otherwise is listed in Casey's weekly digest; `queue_optout_wrote_again(db, vault, contact, inbox, now)` queues at most one such email a day per homeowner (\"You opted out of texts from Ask Hava…\": how to text again with START, and that her open requests continue on the quote page and by email, CON-012), and with no email on file writes one `ops` audit row, action `messaging.optout_wrote_again`, subject the inbox row, IDs only, which T204's weekly digest counts (no new table, no migration). The new email templates go in `app/messaging/templates/en.json` and `es.json` through the cold read and the copy panel (WORD-028, WORD-029); their brand words are tokens, never literals (`{brand_short}:` to open, `{brand}`, `{domain}`; filled by the registry, D-1932, D-2843), since the brand-literal guard refuses a new literal line in either file. The route that calls both is T357's. Tests in `tests/integration/tests/optout_emails.rs` (TD-CON-34): with an email on file one confirmation email per event and none on a repeat; none without an email; a listed homeowner's message gives one email, a second the same day gives none, the next day one; without an email one audit row per message and no email; no body, phone or email address in any audit row or log line. Update the `messaging` `CLAUDE.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -25022,7 +25511,8 @@
    "decisions": [
     "D-2629",
     "D-2620",
-    "D-226"
+    "D-226",
+    "D-2843"
    ],
    "cites": [],
    "budget": {
@@ -25118,6 +25608,78 @@
    ],
    "branch": "claude/task/T361-pick-bound-to-business",
    "prompt": "kit/prompts/T361.md"
+  },
+  {
+   "id": "T382",
+   "slug": "verify-max-tries-cooldown",
+   "title": "picks, businesses and portals: Twilio Verify's \"too many tries\" is a cooldown, never an error page",
+   "goal": "Nov 11 vendor-double review batch 4, F10 (callers' half; D-2769; PICK-013, SEC-004, SEC-008, BIZ-002, TXT-038). A Verify resend within the code's 10-minute life reuses the pending verification and its check attempts, so after the app allows a new code's tries Twilio can answer a check with 60202 (HTTP 429, too many attempts), and a send with 60203; the app counts tries per code row (`CODE_TRIES`, `app/picks/src/rules.rs:13`; `app/portals/src/business_auth.rs:88`) and maps any check error to `PicksError::Verify` (`app/picks/src/service.rs:790`), so the homeowner or business sees an error, not \"try again in 15 minutes\". After T131 (whose adapter returns a typed too-many-tries error) and the queued owners of these files: each caller (`app/picks/src/service.rs` and `app/picks/src/email_code.rs` for the pick code, `app/businesses/src/identity.rs` for the identity code, `app/portals/src/business_auth.rs` for sign-in) maps that error to its own cooldown (`CodeCheck::CoolingDown(at + COOLDOWN)` for the pick code; the existing lock-out of the other two), which outlasts the 10-minute verification so the next send starts a fresh one; any other adapter error keeps today's answer. Tests in `tests/integration/tests/verify_max_tries.rs` against the served stand-in (T131's faithful attempts): three wrong tries, a resend, then two more wrong tries; the third check after the resend (Twilio's sixth attempt on that verification, 60202) answers the cooldown, not an error (fails before the fix), for each of the three flows. Update the `picks`, `businesses` and `portals` `CLAUDE.md` files and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 2,
+   "stage": "6",
+   "module": "picks",
+   "deps": [
+    "T131",
+    "T340",
+    "T341",
+    "T344",
+    "T295",
+    "T318",
+    "T361",
+    "T268",
+    "T269",
+    "T272"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "privacy"
+   ],
+   "owns": [
+    "app/picks/src/service.rs",
+    "app/picks/src/email_code.rs",
+    "app/businesses/src/identity.rs",
+    "app/portals/src/business_auth.rs",
+    "tests/integration/tests/verify_max_tries.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/security.md",
+    "docs/spec/businesses.md",
+    "docs/spec/messaging.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "PICK-013",
+    "SEC-004",
+    "SEC-008",
+    "BIZ-002",
+    "TXT-038"
+   ],
+   "tests": [
+    "TD-PICK-61"
+   ],
+   "decisions": [
+    "D-2769",
+    "D-2771"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 5,
+    "lines": 350,
+    "context_pct": 26
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T382-verify-max-tries-cooldown",
+   "prompt": "kit/prompts/T382.md"
   },
   {
    "id": "T362",

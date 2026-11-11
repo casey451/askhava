@@ -24,6 +24,10 @@ from typing import Any
 
 import yaml
 
+# libyaml's safe loader when PyYAML was built with it (the CI wheels are), about 10x faster on docs/catalog
+# with identical results; the pure-Python SafeLoader otherwise (D-2782).
+SAFE_LOADER = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
+
 LIST_FILE = Path("docs/ai_smell.yaml")
 ROW = re.compile(r"^- \*\*([A-Z0-9]+-\d+)\*\* (.*)$")
 QUOTED = re.compile(r"\"([^\"\n]{3,})\"|“([^”\n]{3,})”")
@@ -77,7 +81,7 @@ def pattern_rule(item: dict[str, Any]) -> Rule:
 
 
 def load_lists(root: Path) -> Lists:
-    data = yaml.safe_load((root / LIST_FILE).read_text(encoding="utf-8"))
+    data = yaml.load((root / LIST_FILE).read_text(encoding="utf-8"), Loader=SAFE_LOADER)
     text = [word_rule(w) for w in data["words"]] + [pattern_rule(p) for p in data["patterns"]]
     design = [pattern_rule(p) for p in data["design_patterns"]]
     allowed = tuple(a["phrase"] for a in data.get("allowed_phrases", []))
@@ -134,7 +138,7 @@ def strings_in(node: Any) -> Iterator[str]:
 def yaml_copy(lists: Lists, path: Path, rel: str) -> Iterator[Hit]:
     """Every string value in a YAML file of customer copy (line numbers by first appearance)."""
     source = path.read_text(encoding="utf-8")
-    for value in strings_in(yaml.safe_load(source)):
+    for value in strings_in(yaml.load(source, Loader=SAFE_LOADER)):
         if " " in value:
             line = next((i for i, raw in enumerate(source.splitlines(), 1) if value[:30] in raw), 0)
             yield from scan_text(lists, rel, line, value)
