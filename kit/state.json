@@ -1,7 +1,7 @@
 {
  "schema": 1,
  "phase": "kit",
- "current": "T333",
+ "current": "T272",
  "backup_runner": "on",
  "ruleset_verified": true,
  "lease": null,
@@ -26144,17 +26144,19 @@
     "T086",
     "T294"
    ],
-   "status": "QUEUED",
+   "status": "IN_PROGRESS",
    "attempts": 0,
    "slug": "signin-admission",
    "type": "build",
    "stage": "4",
-   "plan_gap": {
-    "at": "2026-11-11T16:47:34Z",
-    "problems": [
-     "T272: dependency T269 is DONE but its owned file tests/integration/tests/notice_signin_link.rs is not on main"
-    ]
-   }
+   "attempt_started_at": "2026-11-11T16:49:55Z",
+   "decision_ids": [
+    3038,
+    3039,
+    3040,
+    3041,
+    3042
+   ]
   },
   {
    "id": "T273",
@@ -33536,6 +33538,10 @@
     "output_tokens": 178313,
     "cache_read_input_tokens": 28381507,
     "last_model": "claude-opus-5-5"
+   },
+   "T272": {
+    "estimated_bytes": 545106,
+    "estimated_tokens": 2982996
    }
   },
   "windows": {
@@ -33556,7 +33562,7 @@
    }
   }
  },
- "updated_at": "2026-11-11T16:47:41Z",
+ "updated_at": "2026-11-11T16:50:01Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -33654,16 +33660,9 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "ef7f7fc804232e7ded2fb112c6f77c7384c2c291",
+ "runner_sha": "a7b2897013c1971bfeca2a68a96a1ab6bea5d87e",
  "starter": "actions",
  "smoke_runs": [
-  {
-   "sha": "ee153a16c726b4459e0ae4b0e532492b88071373",
-   "ok": true,
-   "at": "2026-11-11T11:19:08Z",
-   "why": "start routine (pre-session)",
-   "seconds": 331
-  },
   {
    "sha": "285525e3134a1c4255c19af0183bd4557347c503",
    "ok": true,
@@ -33796,30 +33795,37 @@
    "at": "2026-11-11T16:47:34Z",
    "why": "start routine (background)",
    "seconds": 666
+  },
+  {
+   "sha": "a7b2897013c1971bfeca2a68a96a1ab6bea5d87e",
+   "ok": true,
+   "at": "2026-11-11T16:49:55Z",
+   "why": "start routine (pre-session)",
+   "seconds": 530
   }
  ],
  "main_red": null,
  "pacing": {
-  "last": "T333 estimated 3.4M tokens (calibrated); five-hour window has 14.5M left, week 50.3M after 3.7M still running in another lane (session_reading 2026-11-11T16:45:43Z (week)); claimed",
-  "at": "2026-11-11T16:47:34Z",
+  "last": "T272 estimated 3.0M tokens (calibrated); five-hour window has 11.2M left, week 46.9M after 7.1M still running in another lane (session_reading 2026-11-11T16:45:43Z (week)); claimed",
+  "at": "2026-11-11T16:49:55Z",
   "decision": "claim",
   "waiting_until": null,
   "standing": {
    "five_hour": {
-    "used": 14568160,
+    "used": 17946542,
     "budget": 29100000,
-    "left": 14531840,
+    "left": 11153458,
     "resets_at": "2026-11-11T20:04:09Z"
    },
    "week": {
-    "used": 143735085,
+    "used": 147113467,
     "budget": 194000000,
-    "left": 50264915,
+    "left": 46886533,
     "resets_at": "2026-11-12T17:00:00Z"
    }
   },
-  "remaining_estimate": 642630953,
-  "projected_finish": "2026-12-04T21:17:52Z"
+  "remaining_estimate": 644479862,
+  "projected_finish": "2026-12-04T22:56:18Z"
  },
  "main_red_history": [
   {
@@ -33916,7 +33922,7 @@
    "why": "smoke red while Ci, Twin and Ally were green on the head"
   }
  ],
- "next_decision": 3038,
+ "next_decision": 3043,
  "stage_proofs": {
   "1": {
    "evidence": "Recorded by the runner (D-551): nightly-main green (Ci, Twin, Ally) on main 5d45d8ef0bee8d8e290462e58aa81c580bf57c1e, which contains every stage-1 merge (T002 739f29a31cec, T003 7161be09784c, T004 36b13e66ddf4, T172 189cfe54c716, T005 f55fa02095c0, T006 1e9c2dbb261b, T007 d57693ea8e79, T008 d57693ea8e79, T170 1cdbd960f712, T154 b4f7265f01d2, T167 5d45d8ef0bee); the exit row's tests ran in it (tests/twin/test_gate.py, tests/test_check_catalog.py, tests/test_matching_examples.py, tests/contract/test_stand_in_server.py); every requirement owned only by tasks of stage 1 or earlier is verified (OPS-053).",
