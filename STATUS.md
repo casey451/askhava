@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-11T18:53:30Z by runner 2acfed5c99d6 (actions).
+Updated 2026-11-11T18:53:44Z by runner 2acfed5c99d6 (actions).
 
 **Building: T228 in progress since 17:51Z; 211 of 373 done; week 72% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 211 of 373 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T228 claimed 17:51Z, lease until 20:51Z; lane 2: T332 claimed 18:28Z, lease until 21:28Z; lane 4: T316 claimed 18:35Z, lease until 21:35Z
+- **Lane:** lane 1: T228 claimed 17:51Z, lease until 20:51Z; lane 4: T316 claimed 18:35Z, lease until 21:35Z
 - **Week:** 72% used, 42.6M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 18:47Z, 6 min before this update
 - **Keeper:** last ran 18:45Z, next wake 20:53Z
@@ -19,8 +19,9 @@ Updated 2026-11-11T18:53:30Z by runner 2acfed5c99d6 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T332 | payments (harness): a late success has its own refund trigge | MERGE_PENDING | 4 | 25 min | 18:53Z | merging main into the reviewed head conflicts in app/payments/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T345 | harness: every external GitHub Actions `uses:` in every work | BLOCKED | 1 | 8 min | 18:44Z | PLAN GAP: tests/test_runner_keeper.py:417,:426,:652; tests/test_runner_pre_smoke.py:263; tests/test_runner_smoke_reuse.p |
-| T332 | payments (harness): a late success has its own refund trigge | resync | 4 | 46 min | 18:10Z | merging main into the reviewed head conflicts in app/payments/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T332 | payments (harness): a late success has its own refund trigge | resync | 4 | 46 min | 18:10Z |  |
 | T272 | portals: the sign-in link cap and the code-try cap are atomi | done | 1 | 20 min | 18:05Z |  |
 | T333 | payments (harness): a succeeded refund is recorded at the am | done | 2 | 32 min | 17:20Z | PLAN GAP: app/payments/src/routes.rs:412 (T259) and app/payments/src/refund_state.rs:34 (T270) / app/picks/src/unreachab |
 | T272 | portals: the sign-in link cap and the code-try cap are atomi | resync | 1 | 27 min | 17:17Z |  |
@@ -153,8 +154,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T228 (lease until 2026-11-11T20:51:50Z)
-- lane 2: T332 (lease until 2026-11-11T21:28:29Z)
 - lane 4: T316 (lease until 2026-11-11T21:35:41Z)
 
 ## Last usage reading
-- {"task": "T345", "at": "2026-11-11T18:44:13Z", "cache_creation_input_tokens": 90565, "input_tokens": 80, "output_tokens": 25924, "cache_read_input_tokens": 1226830}
+- {"task": "T332", "at": "2026-11-11T18:53:29Z", "output_tokens": 30755, "cache_read_input_tokens": 3077140, "input_tokens": 141, "cache_creation_input_tokens": 243188}
