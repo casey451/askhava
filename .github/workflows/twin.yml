@@ -37,6 +37,8 @@ jobs:
         uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
         with:
           shared-key: twin
+          # Restored on every run, saved only on main, where the nightly calls this workflow (D-2782).
+          save-if: ${{ github.ref == 'refs/heads/main' }}
       - name: Build rules_bridge from this commit (T074)
         run: cargo build -p askhava-server --bin rules_bridge --locked
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
