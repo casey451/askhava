@@ -260,16 +260,13 @@ class Config:
     # kit/runner.json "order" (D-2591): "critical_path" tries the claimable ids with the longest chain of
     # open dependents first (`chain_lengths`); anything else keeps the state order. Ordering only.
     order: str = "state"
-<<<<<<< HEAD
     # kit/runner.json "prefer_disjoint_crates" (D-3082): among claimable ids of equal priority, try first
     # the ones whose `app/` crates no task in flight shares (`lanes.crowded`). Ordering only; False keeps
     # the order without it.
     prefer_disjoint_crates: bool = False
-=======
     # kit/runner.json "smoke_ancestry_reuse" (D-3058): how many first-parent commits back the start routine may
     # stand on a real green smoke when every commit since is a DONE task's squash merge (`st.ancestry_smoke`); 0 off.
     smoke_ancestry: int = 0
->>>>>>> origin/main
 
 
 # Casey reviews code-owner PRs by day. Such a task is claimed only from 06:00 to 19:00 Arizona time
