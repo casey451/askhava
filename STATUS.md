@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T16:26:41Z by runner 95bd16c85654 (actions).
+Updated 2026-11-11T16:26:55Z by runner db6214706040 (actions).
 
 **Building: T214 in progress since 15:58Z; 206 of 373 done; week 69% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-11T16:26:41Z by runner 95bd16c85654 (actions).
 - **Lane:** lane 3: T214 claimed 15:58Z, lease until 18:58Z
 - **Week:** 69% used, 49.4M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 16:26Z, 0 min before this update
-- **Keeper:** last ran 16:26Z, next wake 19:01Z
+- **Keeper:** last ran 16:26Z, next wake 19:00Z
 
 ## Needs attention
 - BLOCKED T332: Ci: failure; Ally: failure; E2e: failure
@@ -28,7 +28,7 @@ E2e failed at step: Chromium and its system libraries
 Error: Installation process exited with code: 100
 ##[error]Process completed with exit code 1.
 Ci fai
-- Strict plan check red: 23 problem(s) on tasks still to run (+36 on DONE tasks); first: T340: stored context_pct 35% but it measures 39%; regenerate
+- Strict plan check red: 22 problem(s) on tasks still to run (+36 on DONE tasks); first: T340: stored context_pct 35% but it measures 39%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
