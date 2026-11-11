@@ -112,7 +112,7 @@ pub use crate::open_cards_email::{
 pub use crate::release::{
     ADDRESS_NEEDED_KIND, EMAIL_CHOSEN_FIELDS, RELEASE_FIELDS, RELEASE_LINE_FAILED_ALERT,
     RELEASE_NO_RECIPIENT_ALERT, RELEASE_TEMPLATE, RELEASE_TEXT_TEMPLATE, ReleaseFacts, ReleaseStep,
-    ReleaseView, Released, plan_release, release, release_notice,
+    ReleaseView, Released, check_ins_at_release, plan_release, release, release_notice,
 };
 pub use crate::released_view::{Seat, ViewAnswer, ViewFacts, may_view, released_view};
 pub use crate::service::{
@@ -125,9 +125,9 @@ pub use crate::service::{
 pub use crate::settle::{LINE_RETRY_KIND, Settled, retry_line, settle};
 pub use crate::unreachable_refund::{
     AtNinetySix, MISSED_CALL_TEMPLATE, REMINDER_EMAIL_TEMPLATE, REMINDER_TEMPLATE, REMINDERS_AFTER,
-    ReleasedPick, auto_submits, call_record, decide_at_96_hours, decision_template,
-    dispute_auto_submit, fraud_warning, missed_call_at, missed_call_text, no_call_at_72_hours,
-    queue_reminders, reminder_template, reminder_times, send_at,
+    ReleasedPick, UNREACHABLE_CLOSED_TEMPLATE, auto_submits, call_record, decide_at_96_hours,
+    decision_template, dispute_auto_submit, fraud_warning, missed_call_at, missed_call_text,
+    no_call_at_72_hours, queue_reminders, reminder_template, reminder_times, send_at,
 };
 
 /// The pure pick rules, for other crates and property tests.
