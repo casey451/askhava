@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T19:41:09Z by runner 08f1c85bd062 (actions).
+Updated 2026-11-11T19:42:15Z by runner 08f1c85bd062 (actions).
 
 **Building: T228 in progress since 19:28Z; 213 of 374 done; week 73% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-11T19:41:09Z by runner 08f1c85bd062 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 4: T228 claimed 19:28Z, lease until 22:28Z
 - **Week:** 73% used, 45.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:39Z, 1 min before this update
+- **Last run:** 19:41Z, 1 min before this update
 - **Keeper:** last ran 19:39Z, next wake 22:30Z
 
 ## Needs attention
@@ -104,7 +104,6 @@ Updated 2026-11-11T19:41:09Z by runner 08f1c85bd062 (actions).
 - 22:08Z Harness: report queued tasks that add to lists existing tests pin (D-2550) (#433)
 - 21:53Z Harness: reuse a recorded green smoke on main's head; fix the start-up smoke timeouts (D-2560) (#434)
 - 21:38Z Plan: claim the flaky-test fixes first — T338, then T311 and T349 (D-2540) (#431)
-- 19:42Z Plan: second tiering pass — 13 more tasks on Sonnet, T159 on Haiku, reviewer counterexample duty (D-2506) (#427)
 
 ## Progress (requirements verified)
 
