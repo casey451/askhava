@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T09:51:17Z by runner f8b6eca9a590 (actions).
+Updated 2026-11-11T09:51:31Z by runner ea7b57e0aac0 (actions).
 
 **Idle since 09:49Z; 199 of 370 done; week 63% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-11T09:51:17Z by runner f8b6eca9a590 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 09:49Z (no task in progress)
 - **Week:** 63% used, 62.3M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:49Z, 1 min before this update
-- **Keeper:** last ran 09:41Z, next wake 12:28Z
+- **Last run:** 09:51Z, 0 min before this update
+- **Keeper:** last ran 09:51Z, next wake 10:11Z
 
 ## Needs attention
 - PLAN GAP T269 (since 2026-11-11T09:25:53Z, no attempt used; a plan change fixes it): T269: dependency T294 is DONE but its owned file tests/brand_literal_baseline.json is not on main; T269: dependency T291 is DONE but its owned file tests/brand_literal_baseline.json is not on main
@@ -18,7 +18,7 @@ Updated 2026-11-11T09:51:17Z by runner f8b6eca9a590 (actions).
 - PLAN GAP T323 (since 2026-11-11T09:25:53Z, no attempt used; a plan change fixes it): T323: dependency T295 is DONE but its owned file tests/brand_literal_baseline.json is not on main
 - PLAN GAP T326 (since 2026-11-11T09:25:53Z, no attempt used; a plan change fixes it): T326: dependency T292 is DONE but its owned file tests/brand_literal_baseline.json is not on main
 - OWNED GAP T295 (DONE, since 2026-11-11T09:25:53Z; a later task or plan change must add it): T295: tests/brand_literal_baseline.json missing on main
-- Strict plan check red: 12 problem(s) on tasks still to run (+19 on DONE tasks); first: T255: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 11 problem(s) on tasks still to run (+19 on DONE tasks); first: T255: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
