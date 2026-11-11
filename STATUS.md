@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T16:50:41Z by runner 877da5613137 (manual).
+Updated 2026-11-11T16:53:50Z by runner a7b2897013c1 (actions).
 
 **Building: T272 in progress since 16:49Z; 207 of 373 done; week 70% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-11T16:50:41Z by runner 877da5613137 (manual).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T272 claimed 16:49Z, lease until 19:49Z; lane 2: T165 claimed 16:47Z, lease until 19:47Z; lane 4: T333 claimed 16:47Z, lease until 19:47Z
 - **Week:** 70% used, 46.9M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:50Z, 0 min before this update
+- **Last run:** 16:50Z, 2 min before this update
 - **Keeper:** last ran 16:45Z, next wake 17:05Z
 
 ## Needs attention
@@ -98,7 +98,6 @@ Updated 2026-11-11T16:50:41Z by runner 877da5613137 (manual).
 - 19:31Z Plan: PIN draws fail only when the OS source fails; one failed draw costs one draw (D-2451, T311) (#422)
 - 19:17Z Plan: no Fable window on Thursday — the D-2225 window closes before it opens (D-2485) (#425)
 - 18:21Z Plan: two lanes, and each queued task on the lowest model that can do it well (D-2462, D-2463) (#424)
-- 16:53Z Plan: matrix doors before the serving tasks — public, owner and action-link doors, HTTP probe for served realm routes (D-2440, T348) (#421)
 
 ## Progress (requirements verified)
 
