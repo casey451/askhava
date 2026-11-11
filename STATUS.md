@@ -1,18 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-11T23:21:33Z by runner 65ef6c584190 (actions).
+Updated 2026-11-11T23:23:24Z by runner 6a4287611ebc (manual).
 
-**Building: T334 in progress since 22:00Z; 215 of 376 done; week 77% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T334 in progress since 22:00Z; 215 of 378 done; week 77% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 215 of 376 build tasks (owner gates not counted)
+- **Tasks done:** 215 of 378 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T334 claimed 22:00Z, lease until 01:00Z; lane 4: T348 claimed 22:48Z, lease until 01:48Z; lane 5: T228 claimed 23:21Z, lease until 02:21Z
 - **Week:** 77% used, 34.2M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:21Z, 0 min before this update
+- **Last run:** 23:21Z, 1 min before this update
 - **Keeper:** last ran 23:20Z, next wake 01:02Z
 
 ## Needs attention
-- Strict plan check red: 29 problem(s) on tasks still to run (+61 on DONE tasks); first: T340: stored context_pct 35% but it measures 40%; regenerate
+- Strict plan check red: 2 problem(s) on tasks still to run (+61 on DONE tasks); first: T348: stored context_pct 36% but it measures 40%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -111,15 +111,15 @@ Updated 2026-11-11T23:21:33Z by runner 65ef6c584190 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 222 of 733 (30.3%) · partial 337 · unstarted 174
-**Tasks merged (throughput only):** 215 of 376
+**Requirements verified:** 220 of 733 (30.0%) · partial 339 · unstarted 174
+**Tasks merged (throughput only):** 215 of 378
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 13 | 16 | 6 | 35 |
 | ai | 7 | 17 | 5 | 29 |
 | businesses | 16 | 36 | 6 | 58 |
-| calls | 11 | 13 | 1 | 25 |
+| calls | 9 | 15 | 1 | 25 |
 | consent | 8 | 23 | 4 | 35 |
 | fees | 12 | 39 | 1 | 52 |
 | intake | 22 | 15 | 6 | 43 |
