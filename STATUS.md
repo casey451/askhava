@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-11T04:55:53Z by runner 18d7cc8f2592 (actions).
+Updated 2026-11-11T04:58:55Z by runner 18d7cc8f2592 (actions).
 
 **Building: T209 in progress since 03:10Z; 195 of 369 done; week 60% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 195 of 369 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T209 claimed 03:10Z, lease until 06:10Z; lane 3: T337 claimed 04:55Z, lease until 07:55Z
-- **Week:** 60% used, 70.5M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:51Z, 4 min before this update
+- **Lane:** lane 1: T209 claimed 03:10Z, lease until 06:10Z; lane 2: T295 claimed 04:58Z, lease until 07:58Z; lane 3: T337 claimed 04:55Z, lease until 07:55Z
+- **Week:** 60% used, 67.6M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Last run:** 04:56Z, 2 min before this update
 - **Keeper:** last ran 04:51Z, next wake 06:13Z
 
 ## Needs attention
@@ -40,7 +40,6 @@ Updated 2026-11-11T04:55:53Z by runner 18d7cc8f2592 (actions).
 | T290 | worked examples: pin D-033 for one-cent-wide recurring range | QUEUED | 1 | 1 min | 09:07Z |  |
 | T289 | jobs tests: the refused-move test counts its one bug log the | done | 1 | 44 min | 07:52Z |  |
 | T288 | payments: a Stripe charge the nightly reconcile cannot settl | done | 1 | 60 min | 06:30Z |  |
-| T286 | server: every request has a whole-request time limit, answer | done | 1 | 26 min | 04:57Z |  |
 
 ### Plan and harness merges on main
 - 04:14Z Plan: three lanes (D-2810) (#451)
@@ -95,7 +94,7 @@ Updated 2026-11-11T04:55:53Z by runner 18d7cc8f2592 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-11T04:51:22Z (week)): five-hour: 4.5M used, 24.6M left, resets 2026-11-11T09:44:28Z; week: 123.5M used, 70.5M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-04T04:42:52Z.
+- Pacing (session_reading 2026-11-11T04:51:22Z (week)): five-hour: 7.4M used, 21.7M left, resets 2026-11-11T09:44:28Z; week: 126.4M used, 67.6M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-04T04:45:54Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -111,6 +110,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T209 (lease until 2026-11-11T06:10:38Z)
+- lane 2: T295 (lease until 2026-11-11T07:58:50Z)
 - lane 3: T337 (lease until 2026-11-11T07:55:48Z)
 
 ## Last usage reading
