@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T00:27:44Z by runner 5a57f2e1b7f9 (actions).
+Updated 2026-11-11T00:40:36Z by runner 2401ae6b3316 (actions).
 
 **Building: T349 in progress since 00:03Z; 192 of 336 done; week 54% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-11T00:27:44Z by runner 5a57f2e1b7f9 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T349 claimed 00:03Z, lease until 03:03Z
 - **Week:** 54% used, 88.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:27Z, 0 min before this update
+- **Last run:** 00:27Z, 12 min before this update
 - **Keeper:** last ran 00:27Z, next wake 03:05Z
 
 ## Needs attention
@@ -36,9 +36,9 @@ Updated 2026-11-11T00:27:44Z by runner 5a57f2e1b7f9 (actions).
 | T285 | runner: a task closes with a visible mark when a file it own | done | 1 | 19 min | 03:45Z |  |
 | T284 | server: every route the architecture lists is wired in the r | done | 3 | 34 min | 03:02Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests / test tests::ssrf_g |
 | T284 | server: every route the architecture lists is wired in the r | check_failed | 2 | 21 min | 01:51Z |  |
-| T284 | server: every route the architecture lists is wired in the r | check_failed | 1 | 34 min | 00:32Z |  |
 
 ### Plan and harness merges on main
+- 00:36Z Plan: fix tasks from the Nov 10 code review — payments, privacy, texting, portals, calls, jobs (D-2620–D-2642) (#439)
 - 22:59Z Plan: claim the longest remaining dependency chain first (D-2591) (#436)
 - 22:08Z Harness: report queued tasks that add to lists existing tests pin (D-2550) (#433)
 - 21:53Z Harness: reuse a recorded green smoke on main's head; fix the start-up smoke timeouts (D-2560) (#434)
