@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T17:27:35Z by runner 50a51df4b7da (actions).
+Updated 2026-11-11T17:27:52Z by runner 50a51df4b7da (actions).
 
 **Building: T332 in progress since 17:24Z; 208 of 373 done; week 70% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-11T17:27:35Z by runner 50a51df4b7da (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 3: T332 claimed 17:24Z, lease until 20:24Z
 - **Week:** 70% used, 54.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:26Z, 1 min before this update
-- **Keeper:** last ran 17:22Z, next wake 17:42Z
+- **Last run:** 17:27Z, 0 min before this update
+- **Keeper:** last ran 17:27Z, next wake 20:26Z
 
 ## Needs attention
 - PLAN GAP T232 (since 2026-11-11T17:19:47Z, no attempt used; a plan change fixes it): T232: dependency T214 is DONE but its owned file app/picks/src/share_consent.rs is not on main; T232: dependency T214 is DONE but its owned file app/picks/src/cant_take.rs is not on main; T232: dependency T214 is DONE but its owned file tests/integration/tests/share_and_cant_take.rs is not on main; T232: dependency T214 is DONE but its owned file migrations/0158_picks_share_box.sql is not on main
