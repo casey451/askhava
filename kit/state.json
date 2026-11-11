@@ -21621,7 +21621,8 @@
     "T181",
     "T094",
     "T198",
-    "T294"
+    "T294",
+    "T384"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -21635,7 +21636,8 @@
     "T207",
     "T193",
     "T155",
-    "T164"
+    "T164",
+    "T384"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -23444,7 +23446,8 @@
     "T212",
     "T149",
     "T164",
-    "T251"
+    "T251",
+    "T384"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -28910,7 +28913,8 @@
     "T266",
     "T164",
     "T232",
-    "T294"
+    "T294",
+    "T384"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -29263,7 +29267,8 @@
     "T214",
     "T164",
     "T232",
-    "T308"
+    "T308",
+    "T384"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -29868,6 +29873,17 @@
     "tests/integration/tests/voice_calls.rs",
     "tests/security/tests/no_phone_released.rs"
    ]
+  },
+  {
+   "id": "T384",
+   "deps": [
+    "T164"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "quotes-shown-edits-withdrawals",
+   "type": "build",
+   "stage": "4"
   }
  ],
  "owner_waits": [],
@@ -31754,7 +31770,7 @@
    }
   }
  },
- "updated_at": "2026-11-11T09:51:31Z",
+ "updated_at": "2026-11-11T09:56:19Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -31852,7 +31868,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "ea7b57e0aac03c4061b9ec51fe0e3a7a51032554",
+ "runner_sha": "6b803a362f31833eb87d7ee62bdfcdc182f3b229",
  "starter": "actions",
  "smoke_runs": [
   {

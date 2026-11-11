@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-11T09:51:31Z by runner ea7b57e0aac0 (actions).
+Updated 2026-11-11T09:56:19Z by runner 6b803a362f31 (actions).
 
-**Idle since 09:49Z; 199 of 370 done; week 63% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 09:49Z; 199 of 371 done; week 63% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 199 of 370 build tasks (owner gates not counted)
+- **Tasks done:** 199 of 371 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 09:49Z (no task in progress)
 - **Week:** 63% used, 62.3M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:51Z, 0 min before this update
+- **Last run:** 09:51Z, 4 min before this update
 - **Keeper:** last ran 09:51Z, next wake 10:11Z
 
 ## Needs attention
@@ -56,6 +56,7 @@ Updated 2026-11-11T09:51:31Z by runner ea7b57e0aac0 (actions).
 | T290 | worked examples: pin D-033 for one-cent-wide recurring range | done | 2 | 39 min | 10:21Z | T290 blocked: any new recurring worked-example row breaks tests::worked_examples (fixed RECURRING list of 13 ids, worked |
 
 ### Plan and harness merges on main
+- 09:54Z Harness: a planned file deletion is not a plan gap — 5 eligible tasks were held (D-2922) (#470)
 - 09:40Z Plan: split T164 — new T384 shows edited/withdrawn quotes in place; LIST numbers match picks (D-2912) (#468)
 - 08:37Z Plan: T337 also owns release_recovery.rs for a fixture-only fix (D-2896) (#464)
 - 07:43Z Harness: td_pick_09 asks on the fixed clock — test failing everywhere since 07:00Z (D-2886) (#461)
@@ -86,7 +87,7 @@ Updated 2026-11-11T09:51:31Z by runner ea7b57e0aac0 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 208 of 733 (28.4%) · partial 343 · unstarted 182
-**Tasks merged (throughput only):** 199 of 370
+**Tasks merged (throughput only):** 199 of 371
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -121,7 +122,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 79 of 162 done
+- stage 4: 79 of 163 done
 - stage 5: 0 of 58 done
 - stage 6: 0 of 34 done
 - stage 7: 0 of 2 done
