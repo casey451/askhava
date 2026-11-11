@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T02:46:33Z by runner daef586a5cd2 (actions).
+Updated 2026-11-11T03:08:48Z by runner eb915eeec984 (actions).
 
 **Building: T374 in progress since 02:22Z; 193 of 362 done; week 57% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,11 @@ Updated 2026-11-11T02:46:33Z by runner daef586a5cd2 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T374 claimed 02:22Z, lease until 05:22Z
 - **Week:** 57% used, 78.3M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:46Z, 0 min before this update
+- **Last run:** 02:46Z, 22 min before this update
 - **Keeper:** last ran 02:46Z, next wake 05:25Z
 
 ## Needs attention
-- nothing
+- Strict plan check red: 1 problem(s) on tasks still to run (+2 on DONE tasks); first: T374: stored context_pct 10% but it measures 14%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -38,7 +38,6 @@ Updated 2026-11-11T02:46:33Z by runner daef586a5cd2 (actions).
 | T288 | payments: a Stripe charge the nightly reconcile cannot settl | done | 1 | 60 min | 06:30Z |  |
 | T286 | server: every request has a whole-request time limit, answer | done | 1 | 26 min | 04:57Z |  |
 | T285 | runner: a task closes with a visible mark when a file it own | done | 1 | 19 min | 03:45Z |  |
-| T284 | server: every route the architecture lists is wired in the r | done | 3 | 34 min | 03:02Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests / test tests::ssrf_g |
 
 ### Plan and harness merges on main
 - 01:56Z Harness: the test suite drops the live job's smoke switch and run ids (D-2660) (#441)
