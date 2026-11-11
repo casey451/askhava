@@ -43,7 +43,7 @@
   "kit/prompts/TEMPLATE.md": "548ad123a86cc006f856d8b9b5a72b44f2cac5fd6e7ccef4561b57b3a724bc5b",
   "kit/runner.json": "282349289d8f26b326bda2f7f46adb321755358615ebb2a2355fd0d90005ceac",
   "kit/sources.sha256": "853b7f37d6e04259ad9d7b64e16e6cb0111ee4499e37af46aeb3183748c7f335",
-  "kit/tasks.json": "b03503aa1b75828ae503e45cf5ab08414e34f37231c4a175fb92a0631eeedb95",
+  "kit/tasks.json": "d9d4945799706d56cc7b0a640923f72d4f38db7e480f1506ac0ac88d30f8dd5f",
   "scripts/brand.py": "13d78b9984835e09b072aa5386a2429ba9f65395a6c2ca03677f7ac8c1173d8d",
   "scripts/check_ai_smell.py": "52c625e72630922705b642a20c8a33e2a9a6a8501e32d4687733ec5fe71b40cb",
   "scripts/check_catalog.py": "22059b11f6cd4d8241344302857716a969dfc6434c298106646b8bdd648e86dd",
@@ -60,7 +60,7 @@
   "scripts/gen_prompts.py": "59e38965520e0d05134d26fc394dda3283033a2dd2254a7e6e225c4e6e39fb3e",
   "scripts/pacing.py": "db5efd714109d37de7566654f8c10fa90fb129ee9e119f0bbfbf050d2fe62aef",
   "scripts/pii_scan.py": "d3163ddad2e35bc435e0c468b0e241146c9827a7b9eae48d52d8251558324c60",
-  "scripts/plan_health.py": "46da5dd234ec2126c20abf7df2fe00ecd2be608f07ac2bfd2b07a257908a6a93",
+  "scripts/plan_health.py": "bb0c53896f6e617373d4df6bdde755457fdd34117298a898b784428d3adf42ef",
   "scripts/plan_pins.py": "582c52c071b58cdba5dc0933ff8e714855aa87ce4e6e623885f85d9c85cd61fb",
   "scripts/prehandin.sh": "32b00e405a944c7fe536b520ee12e266fdc8c7f65f963efbedee14d6195236a2",
   "scripts/progress.py": "6a31a132e709c974e5e71468a8e6fa8c212b753bad7501713250f39c0e5d08be",
@@ -69,7 +69,7 @@
   "scripts/smoke.sh": "1c976e493c877c2006b18f27aae5624c9f987ca1c1f4234561bde72a235c5a00",
   "scripts/stage_exit.py": "a7e2c2760b1651658e9e71d6af07f5920b9c8ee75c02b979e64e756ca9c03274",
   "scripts/trace_spec.py": "9956b2ffaa7f6e205e6f27338f65cddf7f573afa3c53de697f959adc96923439",
-  "scripts/validate_tasks.py": "1876f49687346a7409063750106966fdf06f2d94720766aef929db526541f18e"
+  "scripts/validate_tasks.py": "26b78ed44724a58ec119822246e81ea2605a2367d163ed2096e437527b2e316f"
  },
  "note": "Fingerprints of the approved blueprint; see scripts/check_plan_lock.py and docs/governance.md.",
  "schema": 1

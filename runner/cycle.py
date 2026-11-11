@@ -1555,10 +1555,12 @@ def owned_problems(env: Env, tid: str, sha: str, plan_sha: str) -> list[str] | N
 
 
 def _owns(plan_text: str, tid: str) -> list[str]:
-    """The `owns` list of `tid` in a kit/tasks.json text ([] when the task is not in it)."""
+    """The `owns` list of `tid` in a kit/tasks.json text ([] when the task is not in it), without the files
+    it lists under `deletes`: its goal removes them from main, so their absence is no gap (D-2922)."""
     tasks = json.loads(plan_text).get("tasks", [])
     found = next((t for t in tasks if t.get("id") == tid), {})
-    return [str(p) for p in found.get("owns") or []]
+    gone = set(found.get("deletes") or [])
+    return [str(p) for p in found.get("owns") or [] if p not in gone]
 
 
 def _present(path: str, files: list[str]) -> bool:

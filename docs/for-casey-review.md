@@ -2186,6 +2186,12 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **What changed.** The step may now fix that test's setup so it uses the business the pick really went to, and only that: every check in it stays exactly as it was. The step that adds job details to the same test file now waits for it, so only one step edits the file at a time. No other test calls the no-fee check with a guessed business, so a fourth surprise of this kind is not expected.
 - **Nothing needs you now.**
 
+## Showing an edited or withdrawn quote gets its own step (plan change, D-2912, November 11)
+
+- **What happened.** The step that lets a business edit or withdraw its quote before a pick stopped on its first try: showing the homeowner "Updated" or "Withdrawn by the business" needs the quote list, the LIST text and an older test, none of which that step was allowed to touch, and it was already at its size limit.
+- **What changed.** The business side (edit, withdraw, the notes check and quote formats) stays in that step. A new small step, T384, right after it, shows the change to the homeowner: an edited quote says "Updated" with the time, and a withdrawn one stays in its place with "Withdrawn by the business", so no other quote's number changes, and it can never be picked. The same step fixes a small mix-up found on the way: after a business couldn't take a pick, the LIST text could number quotes differently from the page, so "2 YES" might have picked a different business than line 2; now the LIST uses the page's numbers. One older test only gains the two new fields; every check in it stays exactly as it was. The later step that keeps quote numbers fixed once shown now waits for it.
+- **Nothing needs you now.**
+
 ## Jobs that would fail quietly now raise an alert (T327, D-2849 to D-2851, November 11)
 
 - **What changed.** A build check now fails whenever the app can queue a background job that nothing runs, unless the job is on a short list naming the task that will build it. And once an hour, in the test and live projects, the system raises one high alert per kind of background job that failed because nothing runs it.

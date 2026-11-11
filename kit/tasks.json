@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "description": "Ask Hava build task graph (K6). Only the runner marks a task done (BUILD_BRIEF.md:261). Checked by scripts/validate_tasks.py. Optional field 'acceptance': what done means when a task names no test entry (required then for build and harness tasks). budget.context_pct is derived, not guessed: scripts/gen_prompts.py writes it from the bytes of the prompt, the owned files and the reads that exist (D-485).",
+ "description": "Ask Hava build task graph (K6). Only the runner marks a task done (BUILD_BRIEF.md:261). Checked by scripts/validate_tasks.py. Optional field 'acceptance': what done means when a task names no test entry (required then for build and harness tasks). Optional field 'deletes': owned files the task's goal removes from main, so scripts/plan_health.py and the runner's owned-file check treat their absence as planned (D-2922). budget.context_pct is derived, not guessed: scripts/gen_prompts.py writes it from the bytes of the prompt, the owned files and the reads that exist (D-485).",
  "after_kit": "K9",
  "models": {
   "haiku": "claude-haiku-5-5",
@@ -10417,7 +10417,8 @@
     "T266",
     "T164",
     "T232",
-    "T294"
+    "T294",
+    "T384"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -19089,6 +19090,9 @@
     "tests/brand_literal_baseline.json",
     "app/intake/src/tests/question_bank.rs"
    ],
+   "deletes": [
+    "tests/brand_literal_baseline.json"
+   ],
    "reads": [
     "docs/architecture.md",
     "docs/code-docs.md",
@@ -19928,7 +19932,7 @@
    "id": "T164",
    "slug": "quotes-uniform-notes",
    "title": "quotes: one quote format per category, screened notes, and edit or withdraw before a pick",
-   "goal": "Every quote uses its category's `quote_format`; a quote's 300-character note goes back with the reason when it holds a contact detail or an off-platform phrase; and before any pick a business may edit (re-checked, shown as updated) or withdraw its quote (PICK-051 to PICK-053); the edit and withdraw controls and the format choice go on the business job page and quote form, rendered by the portals route `business_actions.rs` with `business_actions.html`, both extended here; `quotes::job_page` is data only (D-491, D-492). On the homeowner side an edited quote shows \"Updated <time>\" and a withdrawn one is replaced with \"Withdrawn by the business\" on the quote page (`quote_page.html`) and in the LIST reply and quote card text (`quote_card.rs`), both extended here (TD-PICK-34, D-492). T301 serves the email action links (D-2128): keep the signatures `app/server/src/action_links.rs` calls; any page or action this task adds is served by T306, not by a `.route` in `server`. Seventh audit N7-04 (D-2333; REC-010): the quote form asks a per-visit price's visit schedule (weekly, every two weeks, monthly, quarterly or yearly, the frequencies `payments::rules::Period` converts) and requires it; any other schedule (for example twice a week) is offered as \"Other: enter the monthly amount\", which makes the quote a monthly price, as D-1407 has the form convert it, and `migrations/0157_quotes_formats.sql` stores it with the quote; T342 parses and bounces, T341 prices it at the pick. Tested in `tests/integration/tests/quote_formats.rs` (TD-PICK-57).",
+   "goal": "Every quote uses its category's `quote_format`; a quote's 300-character note goes back with the reason when it holds a contact detail or an off-platform phrase; and before any pick a business may edit (re-checked, shown as updated) or withdraw its quote (PICK-051 to PICK-053); the edit and withdraw controls and the format choice go on the business job page and quote form, rendered by the portals route `business_actions.rs` with `business_actions.html`, both extended here; `quotes::job_page` is data only (D-491, D-492). On the homeowner side this task only stores the change (D-2912): an edit through the existing upsert (`edited_at`, `quotes::api::submit_quote` through `models::upsert_quote`, re-checked) and a withdrawal by setting `withdrawn_at` from `edit_withdraw.rs`, never deleting the row; both run in one transaction that first takes the job's row lock (a `SELECT ... FOR UPDATE` on the job row through a new public function of this task's in `jobs`' shared `api.rs`; a pick's status move updates that row, `app/jobs/src/service.rs:13`), then re-reads the status and `models::edit_facts` under it and refuses (`EditClosed`) once the job has left the statuses that take edits or any quote on it is marked unavailable, the edit calling `submit_quote` inside that same transaction and the withdrawal a guarded `UPDATE ... WHERE withdrawn_at IS NULL`, so neither can commit after a pick's move; a test shows a withdrawal and an edit after a pick's move refused, so the quote keeps its first `received_at` and its place; showing them to the homeowner (\"Updated <time>\" and \"Withdrawn by the business\" on the quote page, in the LIST reply and on the quote card) is T384's, which runs right after this task; `quote_card.rs` stays owned here only for this task's own format lines (TD-PICK-34's edit re-check, the withdrawal stored and no edit or withdrawal after a pick are tested here, D-492). T301 serves the email action links (D-2128): keep the signatures `app/server/src/action_links.rs` calls; any page or action this task adds is served by T306, not by a `.route` in `server`. Seventh audit N7-04 (D-2333; REC-010): the quote form asks a per-visit price's visit schedule (weekly, every two weeks, monthly, quarterly or yearly, the frequencies `payments::rules::Period` converts) and requires it; any other schedule (for example twice a week) is offered as \"Other: enter the monthly amount\", which makes the quote a monthly price, as D-1407 has the form convert it, and `migrations/0157_quotes_formats.sql` stores it with the quote; T342 parses and bounces, T341 prices it at the pick. Tested in `tests/integration/tests/quote_formats.rs` (TD-PICK-57).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -19960,7 +19964,6 @@
     "migrations/0157_quotes_formats.sql",
     "app/portals/templates/business_actions.html",
     "app/portals/src/business_actions.rs",
-    "app/portals/templates/quote_page.html",
     "app/quotes/src/quote_card.rs"
    ],
    "reads": [
@@ -19996,11 +19999,12 @@
     "D-490",
     "D-492",
     "D-1933",
-    "D-2333"
+    "D-2333",
+    "D-2912"
    ],
    "cites": [],
    "budget": {
-    "files": 10,
+    "files": 9,
     "lines": 550,
     "context_pct": 22
    },
@@ -20011,6 +20015,73 @@
    ],
    "branch": "claude/task/T164-quotes-uniform-notes",
    "prompt": "kit/prompts/T164.md",
+   "copy": true
+  },
+  {
+   "id": "T384",
+   "slug": "quotes-shown-edits-withdrawals",
+   "title": "quotes and portals: the homeowner sees an edited quote as updated and a withdrawn one in its place",
+   "goal": "Split from T164 (D-2912; PICK-051, D-446, D-084, D-492): the homeowner side of PICK-051, after T164 stores an edit (`edited_at`, through `quotes::api::submit_quote`'s upsert, `models::upsert_quote`) and a withdrawal (`withdrawn_at`, T164's `edit_withdraw.rs`). (1) `quotes::api::page_quotes` (`app/quotes/src/api.rs:110`) also returns a confirmed withdrawn quote, in its arrival place (same `ORDER BY received_at, business_id`), always with `unavailable: true`, so every caller that offers or takes a pick (`picks` `service.rs`, `email_code.rs`, `backup_choice.rs`, `rules.rs`'s `plan_text_pick`, `portals` `pick_flow.rs`, each gated on `!unavailable`) refuses it with no change to those files, and a withdrawal never moves a later quote's number (D-084); `PageQuote` gains `withdrawn: bool` and `updated_at: Option<jiff::Timestamp>` (from `edited_at`); for a withdrawn row `page_quotes` itself returns `original` as an empty string (the SQL never selects its wording or price into the row), so no template, now or later, can show it. (2) `quote_page.html` shows a withdrawn quote as \"Quote #<n>\" with \"Withdrawn by the business\" in place of its wording and no Pick button (`data-available` false), and an edited one with \"Updated <time>\" in Arizona time and a `data-updated` attribute (the edit time); `app/portals/static/quote_page.ts` also replaces a card whose `data-updated` changed, so an edited quote refreshes on the live page (its status line unchanged: an edit is not a new quote), and Ally stays clean. (3) The LIST reply (`notify.rs` `list_line`, `list_texts`; `models.rs` `list_rows`): each line carries the quote's page number, the number \"<n> YES\" picks (its place among the job's confirmed quotes in `page_quotes` order, withdrawn and unavailable ones counted), not its place in the LIST, fixing today's mismatch where `list_rows` skips unavailable quotes (`models.rs:581`) while the text pick counts them, so after a failed pick \"2 YES\" could pick a different business than the LIST's line 2; a quote marked unavailable is still left out, its number skipped; a withdrawn quote keeps its line, with its number and \"Withdrawn by the business\" (and its Spanish line, TXT-001) and no price or name. A withdrawn line needs no entry in `names` (only a pickable line looks its business up; today a missing name fails the whole list at `notify.rs:379` and `intake`'s `listed` drops the LIST, `app/intake/src/replies.rs:84`, D-1310). Withdrawn lines get their own item type (for example an enum of a `Listed` quote and a withdrawn number) passed to a numbered list builder, so the public `Listed` struct and `list_texts_from` keep their signatures and behaviour and T047's `app/quotes/src/tests/prop_quote_texts.rs` needs no change. When no line is pickable (every shown quote withdrawn), `list_texts` returns no text, as for a job with no quotes today, so no \"reply 2 YES\" line ever goes with nothing to pick. (4) The quote card (`quote_card.rs`, `models::stored_card`) adds \"Updated <time>\" for an edited quote, the same line in the business preview (PICK-005); an unedited card is unchanged. One done test changes only to build the new fields: `app/portals/src/tests/prop_arrival_order.rs` (T052) adds `withdrawn: false` and `updated_at: None` to the `PageQuote` literal in its `quote()` helper (line 22); its diff against `main` has 0 deleted lines (`git diff --numstat`) and each added line only builds a new field; no assertion, strategy, helper logic or expected value changes and no test is removed or weakened. Tests in `tests/integration/tests/quote_shown_changes.rs` (TD-PICK-34's homeowner part), fake data only: an edit before any pick shows \"Updated <time>\" on the quote page and the card and keeps the quote's number; with three quotes, #2 withdrawn shows \"Withdrawn by the business\" in place on the page and in the LIST reply (English and Spanish) with `names` omitting #2's business, #3 stays #3, #2 has no Pick button and no wording in `page_quotes`, `picks::api::page_pick` for #2 answers `Taken`, a \"2 YES\" text (`picks::api::text_pick`) plans `NoQuote`, and neither stores a pick, fee or notice; `picks::api::choose_backup` naming #2 stores \"No backup\"; with #1 marked unavailable the LIST's line for the second quote reads \"2.\" and \"2 YES\" picks that business; with every quote withdrawn `list_texts` returns no text; a form resubmission after the withdrawal (confirmed at once) comes back as #2 (an AI-read resubmission sets `confirmed = false` and `withdrawn_at = NULL`, so it leaves the list until its read-back: that case is T361's). Every existing test passes unchanged. Update the `quotes` and `portals` `CLAUDE.md` files.",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "quotes",
+   "deps": [
+    "T164"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "compliance",
+    "privacy",
+    "money",
+    "security"
+   ],
+   "owns": [
+    "app/quotes/src/api.rs",
+    "app/quotes/src/models.rs",
+    "app/quotes/src/notify.rs",
+    "app/quotes/src/quote_card.rs",
+    "app/portals/templates/quote_page.html",
+    "app/portals/static/quote_page.ts",
+    "app/portals/src/tests/prop_arrival_order.rs",
+    "tests/integration/tests/quote_shown_changes.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/wording.md",
+    "docs/spec/messaging.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "PICK-051"
+   ],
+   "tests": [
+    "TD-PICK-34"
+   ],
+   "decisions": [
+    "D-2912",
+    "D-446",
+    "D-084",
+    "D-492",
+    "D-1310"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 8,
+    "lines": 500,
+    "context_pct": 20
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T384-quotes-shown-edits-withdrawals",
+   "prompt": "kit/prompts/T384.md",
    "copy": true
   },
   {
@@ -20305,7 +20376,8 @@
     "T181",
     "T094",
     "T198",
-    "T294"
+    "T294",
+    "T384"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -20376,7 +20448,8 @@
     "T207",
     "T193",
     "T155",
-    "T164"
+    "T164",
+    "T384"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -21160,7 +21233,8 @@
     "T212",
     "T149",
     "T164",
-    "T251"
+    "T251",
+    "T384"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -25539,7 +25613,7 @@
    "id": "T361",
    "slug": "pick-bound-to-business",
    "title": "quotes, picks and portals: a quote keeps its number once shown, and a pick names the business it was reviewed for",
-   "goal": "Nov 10 code review batch 2, portals F1 (D-2632; PICK-008, PICK-016, TERMS-016, PRIV-005, D-084 \"a quote's number never changes\"): a pick is bound to a list position, not a business. `page_quotes` (`app/quotes/src/api.rs:103`) numbers quotes by their place in `confirmed AND withdrawn_at IS NULL ORDER BY received_at, business_id`, recomputed on every request; `page_pick` (`app/picks/src/service.rs:486`) takes `view.quotes[quote-1]`; the forms post only `quote=<n>` (`quote_page.html`, `pick_review.html`, `pick_code.html`); text picks (\"2 YES\", `quotes` `models::list_rows`, `:573`) share the ordering. An AI-read quote stays unconfirmed until its read-back (`app/quotes/src/models.rs:314`, `confirm_quote`, `:395`) but keeps its first `received_at`, so: A AI-read at 10:00 (hidden), B by form at 10:05 shows as #1; she reviews \"Pick #1\" and starts the code step; at 10:07 A is confirmed and becomes #1; her code then picks A, notifies A and fixes A's fee. An AI-read edit (the upsert sets `confirmed = false`) and a withdrawal (dropped from the list) shift later numbers the same way. Fix: (1) `migrations/0197_quotes_shown_number.sql` adds `quotes.quote.shown_number`, assigned once, under the job's row lock, when the quote is first shown (confirmed: `submit_quote`, `confirm_quote_at`, `app/quotes/src/intake.rs:487`, `:542`) as one more than the job's highest, never reassigned or cleared; `page_quotes` and `list_rows` order and number by it; a withdrawn quote keeps its place and number (shown as \"Withdrawn by the business\") and an unconfirmed edit keeps its number while it waits; (2) the review, pick and code forms carry the business the number was shown for (its ID, or an HMAC over job, number and business under the ID secret), and `page_pick` and the text pick answer `Taken` when the number no longer maps to that business, so nothing is stored, notified or charged for another business. Tests in `tests/integration/tests/pick_bound_business.rs` (TD-PICK-60), each failing on today's `main`: A AI-read at t0, B by form at t0+5m; review #1; confirm A; finish #1: the pick is B's (or refused), never A's; the same with an AI-read edit of an earlier quote, and with a withdrawal of #1 (B stays #2); a text \"2 YES\" after a reorder picks the business shown as #2. Every TD-PICK case passes unchanged. Update the `quotes`, `picks` and `portals` `CLAUDE.md` files and `docs/decisions.md`.",
+   "goal": "Nov 10 code review batch 2, portals F1 (D-2632; PICK-008, PICK-016, TERMS-016, PRIV-005, D-084 \"a quote's number never changes\"): a pick is bound to a list position, not a business. `page_quotes` (`app/quotes/src/api.rs:103`) numbers quotes by their place in `confirmed AND withdrawn_at IS NULL ORDER BY received_at, business_id`, recomputed on every request; `page_pick` (`app/picks/src/service.rs:486`) takes `view.quotes[quote-1]`; the forms post only `quote=<n>` (`quote_page.html`, `pick_review.html`, `pick_code.html`); text picks (\"2 YES\", `quotes` `models::list_rows`, `:573`) share the ordering. An AI-read quote stays unconfirmed until its read-back (`app/quotes/src/models.rs:314`, `confirm_quote`, `:395`) but keeps its first `received_at`, so: A AI-read at 10:00 (hidden), B by form at 10:05 shows as #1; she reviews \"Pick #1\" and starts the code step; at 10:07 A is confirmed and becomes #1; her code then picks A, notifies A and fixes A's fee. An AI-read edit (the upsert sets `confirmed = false`) and a withdrawal (dropped from the list) shift later numbers the same way. Fix: (1) `migrations/0197_quotes_shown_number.sql` adds `quotes.quote.shown_number`, assigned once, under the job's row lock, when the quote is first shown (confirmed: `submit_quote`, `confirm_quote_at`, `app/quotes/src/intake.rs:487`, `:542`) as one more than the job's highest, never reassigned or cleared; `page_quotes` and `list_rows` order and number by it (T384 already numbers each LIST line by its page number, the number a text pick uses, D-2912; this task changes only the order both share); a withdrawn quote keeps its place and number (shown as \"Withdrawn by the business\") (T384 already keeps it in place in `page_quotes` and the LIST reply, marked unavailable, D-2912) and an unconfirmed edit keeps its number while it waits; (2) the review, pick and code forms carry the business the number was shown for (its ID, or an HMAC over job, number and business under the ID secret), and `page_pick` and the text pick answer `Taken` when the number no longer maps to that business, so nothing is stored, notified or charged for another business. (3) `new_pick` (`app/picks/src/service.rs:360`) re-reads the quote after the status move and answers `Taken` when it is now unavailable or withdrawn, instead of relying only on its callers' earlier gating (a withdrawal can commit between a caller's check and the move, D-2912). Tests in `tests/integration/tests/pick_bound_business.rs` (TD-PICK-60), each failing on `main` before this task (the withdrawal case may already pass once T384 has run, D-2912): A AI-read at t0, B by form at t0+5m; review #1; confirm A; finish #1: the pick is B's (or refused), never A's; the same with an AI-read edit of an earlier quote, and with a withdrawal of #1 (B stays #2); a text \"2 YES\" after a reorder picks the business shown as #2. Every TD-PICK case passes unchanged. Update the `quotes`, `picks` and `portals` `CLAUDE.md` files and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -25557,7 +25631,8 @@
     "T214",
     "T164",
     "T232",
-    "T308"
+    "T308",
+    "T384"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -25600,7 +25675,8 @@
    "decisions": [
     "D-2632",
     "D-2631",
-    "D-084"
+    "D-084",
+    "D-2912"
    ],
    "cites": [],
    "budget": {

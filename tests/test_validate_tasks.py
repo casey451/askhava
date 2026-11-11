@@ -648,6 +648,21 @@ def test_v1_build_and_harness_need_tests_or_acceptance(tmp_path: Path) -> None:
     assert_error(errors_for(tmp_path, tasks), "'acceptance' must be str")
 
 
+def test_deletes_lists_only_the_tasks_own_files(tmp_path: Path) -> None:
+    """D-2922: 'deletes' is optional, a list of strings, and each entry is one of the task's owned files."""
+    tasks = valid_tasks()
+    own = task(tasks, "T001")["owns"][0]
+    task(tasks, "T001")["deletes"] = [own]
+    assert errors_for(tmp_path, tasks) == []
+    task(tasks, "T001")["deletes"] = [own, "tests/brand_literal_baseline.json"]
+    assert_error(errors_for(tmp_path, tasks),
+                 "T001 (fake-rules): deletes tests/brand_literal_baseline.json, which is not one of its owned files")
+    task(tasks, "T001")["deletes"] = "tests/brand_literal_baseline.json"
+    assert_error(errors_for(tmp_path, tasks), "'deletes' must be list")
+    task(tasks, "T001")["deletes"] = [7]
+    assert_error(errors_for(tmp_path, tasks), "'deletes' must list strings")
+
+
 def test_v5_goal_must_not_repeat_the_title(tmp_path: Path) -> None:
     tasks = valid_tasks()
     task(tasks, "T001")["goal"] = task(tasks, "T001")["title"]
