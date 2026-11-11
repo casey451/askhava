@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T05:07:52Z by runner 2a2a0a36b139 (actions).
+Updated 2026-11-11T05:08:08Z by runner fdd6e540e3c3 (actions).
 
 **Building: T337 in progress since 04:55Z; 195 of 362 done; week 60% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,12 +8,12 @@ Updated 2026-11-11T05:07:52Z by runner 2a2a0a36b139 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 3: T337 claimed 04:55Z, lease until 07:55Z
 - **Week:** 60% used, 67.6M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:06Z, 1 min before this update
-- **Keeper:** last ran 04:59Z, next wake 06:12Z
+- **Last run:** 05:08Z, 0 min before this update
+- **Keeper:** last ran 05:08Z, next wake 07:58Z
 
 ## Needs attention
 - BLOCKED T295: T295 blocked at step 3 (checked by the runner session, no worker run): tests/brand_literal_baseline.json still lists app/messaging/templates/en.json (96) and es.json (96), owned by T360, and app/portals/templates/homeowner_home.html (3), owned by T087; kit/tasks.json T295 owns none of them. A plan change must give these an owner before the guard is made strict. No code changed.
-- Strict plan check red: 4 problem(s) on tasks still to run (+15 on DONE tasks); first: T209: stored context_pct 24% but it measures 35%; regenerate
+- Strict plan check red: 1 problem(s) on tasks still to run (+4 on DONE tasks); first: T210: stored context_pct 14% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
