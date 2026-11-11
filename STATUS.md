@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-11T19:29:09Z by runner 08f1c85bd062 (actions).
+Updated 2026-11-11T19:32:54Z by runner b2f1343b3d73 (actions).
 
 **Building: T228 in progress since 19:28Z; 213 of 374 done; week 72% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 213 of 374 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 4: T228 claimed 19:28Z, lease until 22:28Z
-- **Week:** 72% used, 50.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:28Z, 1 min before this update
+- **Week:** 72% used, 47.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Last run:** 19:32Z, 0 min before this update
 - **Keeper:** last ran 19:11Z, next wake 19:31Z
 
 ## Needs attention
 - BLOCKED T345: plan gap reported: PLAN GAP: tests/test_runner_keeper.py:417,:426,:652; tests/test_runner_pre_smoke.py:263; tests/test_runner_smoke_reuse.py:402,:505 hard-code actions/cache/restore@v4, actions/cache/save@v4 and anthropics/claude-code-action@v1. No task owns these files (harness PRs #264, #359, #434); T345 owns no test file (kit/prompts/T345.md:68). Pinning to SHAs makes 5 tests fail (smoke.sh red). Reviewer confirmed pins are correct and the gap is real. Smallest fix: add the three test files to T345 owns and match on the action name before the @.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T345 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T317 (since 2026-11-11T19:21:01Z, no attempt used; a plan change fixes it): T317: dependency T316 is DONE but its owned file app/businesses/src/public_name.rs is not on main; T317: dependency T316 is DONE but its owned file tests/integration/tests/business_public_name.rs is not on main
-- Strict plan check red: 28 problem(s) on tasks still to run (+58 on DONE tasks); first: T340: stored context_pct 35% but it measures 40%; regenerate
+- Strict plan check red: 27 problem(s) on tasks still to run (+55 on DONE tasks); first: T340: stored context_pct 35% but it measures 39%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -105,7 +105,6 @@ Updated 2026-11-11T19:29:09Z by runner 08f1c85bd062 (actions).
 - 21:53Z Harness: reuse a recorded green smoke on main's head; fix the start-up smoke timeouts (D-2560) (#434)
 - 21:38Z Plan: claim the flaky-test fixes first — T338, then T311 and T349 (D-2540) (#431)
 - 19:42Z Plan: second tiering pass — 13 more tasks on Sonnet, T159 on Haiku, reviewer counterexample duty (D-2506) (#427)
-- 19:31Z Plan: PIN draws fail only when the OS source fails; one failed draw costs one draw (D-2451, T311) (#422)
 
 ## Progress (requirements verified)
 
@@ -138,7 +137,7 @@ Updated 2026-11-11T19:29:09Z by runner 08f1c85bd062 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-11T19:10:58Z (week)): five-hour: 25.3M used, 3.8M left, resets 2026-11-11T20:04:09Z; week: 144.0M used, 50.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-04T18:10:41Z.
+- Pacing (session_reading 2026-11-11T19:10:58Z (week)): five-hour: 28.2M used, 878k left, resets 2026-11-11T20:04:09Z; week: 147.0M used, 47.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-04T16:36:34Z; waiting until 2026-11-11T20:04:09Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
