@@ -2,6 +2,20 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## A flaky coverage check on the payments code gets a fix, first in line (plan change, D-3049, November 11)
+
+- **What happened.** The build requires at least 95% of the payments code's branches to be exercised by tests. After the last refund change it sits right on that line: the same code measured 95.07% on one run and 94.94% on another, so one test reaches a piece of payments code only some of the time, and the check now passes or fails by chance.
+- **What changed.** A new step, T387, finds that piece, makes the test reach it every time, and adds refund tests so payments has room above 95% (at least 95.5%). It only adds or fixes tests: no payments code changes, the 95% bar stays, and no existing check is loosened. It is the next step the build picks up.
+- **Nothing needs you.**
+
+## The build now works five tasks at once (plan change, D-3043, November 11)
+
+- **What changed.** You said not to worry about the token budget, just to use the tokens efficiently. The runner now works up to five tasks side by side instead of four.
+- **What can still slow it.** The five-hour and weekly usage limits still apply: when a window is nearly used up, the pacer holds the next task back, so five lanes may run as four or fewer. Each task still runs once, on its planned model.
+- **Safety net.** Two tasks side by side still never touch the same files or sit in different stages. If one extra lane fails twice in a row for a harness reason, the runner drops to one lane by itself and tells you why; the overseer reads the reasons before turning the lanes back on.
+- **GitHub's limit.** GitHub runs about 20 build jobs at a time, and one task's hand-in starts about eight. When several tasks hand in together, the extra jobs wait their turn; nothing is cancelled or failed, they just take a few minutes longer.
+- **Undo.** Setting the lane count back to 4 is a one-line logged change.
+
 ## Your call: a try lost to an outside outage is given back; T332 gets its try (plan change, D-3031, November 11)
 
 - **What happened.** T332's third and last try was failed by the Ubuntu download outage (D-3030): the step that sets up the test browser could not download, so its accessibility and journey tests never ran. The rules only gave a task an extra try when the plan itself was wrong, so you were asked, and you said "Give it back".
