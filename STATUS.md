@@ -1,15 +1,15 @@
 # Ask Hava build status
 
-Updated 2026-11-11T15:49:08Z by runner c440e418139a (actions).
+Updated 2026-11-11T15:49:26Z by runner 9e8ac4355245 (actions).
 
-**Building: T165 in progress since 15:37Z; 205 of 373 done; week 69% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T165 in progress since 15:37Z; 205 of 372 done; week 69% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 205 of 373 build tasks (owner gates not counted)
+- **Tasks done:** 205 of 372 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T165 claimed 15:37Z, lease until 18:37Z
 - **Week:** 69% used, 53.1M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:46Z, 2 min before this update
-- **Keeper:** last ran 15:24Z, next wake 18:05Z
+- **Last run:** 15:49Z, 0 min before this update
+- **Keeper:** last ran 15:49Z, next wake 18:40Z
 
 ## Needs attention
 - BLOCKED T332: Ci: failure; Ally: failure; E2e: failure
@@ -28,7 +28,7 @@ E2e failed at step: Chromium and its system libraries
 Error: Installation process exited with code: 100
 ##[error]Process completed with exit code 1.
 Ci fai
-- Strict plan check red: 23 problem(s) on tasks still to run (+35 on DONE tasks); first: T340: stored context_pct 35% but it measures 39%; regenerate
+- Strict plan check red: 20 problem(s) on tasks still to run (+32 on DONE tasks); first: T255: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -117,8 +117,8 @@ Ci fai
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 212 of 733 (28.9%) · partial 343 · unstarted 178
-**Tasks merged (throughput only):** 205 of 373
+**Requirements verified:** 213 of 733 (29.1%) · partial 342 · unstarted 178
+**Tasks merged (throughput only):** 205 of 372
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -136,7 +136,7 @@ Ci fai
 | ops-recovery | 2 | 6 | 46 | 54 |
 | privacy | 6 | 23 | 2 | 31 |
 | quiet-hours | 4 | 5 | 0 | 9 |
-| quotes-pick | 24 | 28 | 4 | 56 |
+| quotes-pick | 25 | 27 | 4 | 56 |
 | recurring | 6 | 2 | 3 | 11 |
 | security | 6 | 43 | 6 | 55 |
 | terms | 0 | 3 | 32 | 35 |
