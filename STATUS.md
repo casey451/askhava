@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-11T13:40:14Z by runner d99e76ffc042 (actions).
+Updated 2026-11-11T13:40:26Z by runner d99e76ffc042 (actions).
 
-**Building: T384 in progress since 12:59Z; 204 of 372 done; week 67% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T342 in progress since 13:39Z; 204 of 372 done; week 67% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 204 of 372 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T384 claimed 12:59Z, lease until 15:59Z; lane 2: T342 claimed 13:39Z, lease until 16:39Z; lane 3: T332 claimed 13:35Z, lease until 16:35Z
+- **Lane:** lane 2: T342 claimed 13:39Z, lease until 16:39Z; lane 3: T332 claimed 13:35Z, lease until 16:35Z
 - **Week:** 67% used, 53.3M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 13:40Z, 0 min before this update
 - **Keeper:** last ran 13:22Z, next wake 16:02Z
@@ -19,6 +19,7 @@ Updated 2026-11-11T13:40:14Z by runner d99e76ffc042 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T384 | quotes and portals: the homeowner sees an edited quote as up | MERGE_PENDING | 1 | 40 min | 13:40Z |  |
 | T214 | picks: the homeowner's share box at the pick and the 'Can't  | BLOCKED | 1 | 15 min | 13:19Z | PLAN GAP: app/picks/src/handlers.rs:73-76 (T063's) and the pick_notice / pick_notice_emergency keys in app/messaging/tem |
 | T333 | payments (harness): a succeeded refund is recorded at the am | BLOCKED | 1 | 50 min | 13:14Z | PLAN GAP: app/payments/src/routes.rs:412 (T259) and app/payments/src/refund_state.rs:34 (T270) / app/picks/src/unreachab |
 | T332 | payments (harness): a late success has its own refund trigge | BLOCKED | 2 | 2 min | 12:40Z | PLAN GAP: tests/integration/tests/confirm_and_pay.rs:393-413 (td_fee_25_an_ended_pick_is_never_cleared, TD-FEE-25, T189  |
@@ -136,9 +137,9 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T384 (lease until 2026-11-11T15:59:44Z)
+- nothing
 - lane 2: T342 (lease until 2026-11-11T16:39:59Z)
 - lane 3: T332 (lease until 2026-11-11T16:35:27Z)
 
 ## Last usage reading
-- {"task": "T214", "at": "2026-11-11T13:19:32Z", "cache_read_input_tokens": 3765408, "cache_creation_input_tokens": 260975, "output_tokens": 27142, "input_tokens": 122}
+- {"task": "T384", "at": "2026-11-11T13:40:02Z", "cache_read_input_tokens": 22433529, "input_tokens": 402, "output_tokens": 131749, "cache_creation_input_tokens": 597777}
