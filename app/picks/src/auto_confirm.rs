@@ -9,14 +9,14 @@
 //! [`auto_confirm`] reads those facts (the tick through `quotes::api`, the written answer, the
 //! saved card and the fee fixed at the pick through `payments::api`, the members through
 //! `businesses::api`) and either makes the one off-session charge through
-//! `payments::api::charge_off_session`, or voids the tick and tells the business by a notice to its
-//! money recipients ([`AUTO_CONFIRM_VOID_TEMPLATE`]). Anything but a charge leaves the pick waiting
-//! for the normal Confirm step and window (PICK-019) with the pick notice `place` already queued; a
-//! success is released, as for a press, only from Stripe's verified event (PICK-022).
+//! `payments::api::charge_off_session`, or voids the tick and queues the
+//! [`AUTO_CONFIRM_VOID_KIND`] event the business's notice is built from (D-2785). Anything but a
+//! charge leaves the pick waiting for the normal Confirm step and window (PICK-019) with the pick
+//! notice `place` already queued; a success is released, as for a press, only from Stripe's
+//! verified event (PICK-022).
 
-use askhava_businesses::api::{NoticePurpose, members, notice_addresses};
+use askhava_businesses::api::members;
 use askhava_core::api::{NewTask, enqueue};
-use askhava_jobs::api::job_number;
 use askhava_payments::api::{
     BusinessId, OffSessionCharge, OffSessionOutcome, OffSessionStripe, charge_off_session,
     pick_fee, saved_card_of, stripe_answer_filed,
@@ -31,11 +31,11 @@ use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
 
 use crate::models::PicksError;
-use crate::money_notices::BUSINESS_NOTICE_KIND;
 use crate::status::PickStatus;
 
-/// The template of the notice that a tick was voided, in `app/messaging/templates/` (en, es).
-pub const AUTO_CONFIRM_VOID_TEMPLATE: &str = "auto_confirm_void";
+/// The `core.task` kind of the event that a tick was voided at a pick (IDs and the reason only);
+/// the business's notice is built from it once its template exists (D-2785).
+pub const AUTO_CONFIRM_VOID_KIND: &str = "picks.auto_confirm_voided";
 
 /// How the homeowner proved the pick (PICK-056).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -97,6 +97,19 @@ pub enum Void {
     FeeChanged,
     /// The authorization version differs from the one shown at the tick.
     VersionChanged,
+}
+
+impl Void {
+    /// The reason's code in the [`AUTO_CONFIRM_VOID_KIND`] event.
+    #[must_use]
+    pub const fn code(self) -> &'static str {
+        match self {
+            Self::AuthorGone => "author_gone",
+            Self::CardChanged => "card_changed",
+            Self::FeeChanged => "fee_changed",
+            Self::VersionChanged => "version_changed",
+        }
+    }
 }
 
 /// What [`auto_confirm_plan`] says to do.
@@ -243,9 +256,9 @@ pub async fn auto_confirm(
     Ok(AutoConfirmed::Tried(outcome))
 }
 
-/// PICK-056: voids the business's tick on `job` and queues one notice to its money recipients
-/// (the owner and every "Confirm and billing" member) with the job number, in one transaction,
-/// once per pick.
+/// PICK-056, D-2785: voids the business's tick on `job` and queues one [`AUTO_CONFIRM_VOID_KIND`]
+/// event (IDs and the reason only), in one transaction, once per pick: the business is told from it
+/// once a notice template exists (D-2785).
 async fn void(
     pool: &PgPool,
     (pick, job, business): (Uuid, Uuid, Uuid),
@@ -256,21 +269,10 @@ async fn void(
     untick_auto_confirm(&mut tx, (job, business), Untick::Void, at)
         .await
         .map_err(|_| PicksError::Quotes)?;
-    let to = notice_addresses(&mut tx, business, NoticePurpose::Money)
-        .await
-        .map_err(|_| PicksError::Database)?;
-    let number = job_number(&mut tx, job)
-        .await
-        .map_err(|_| PicksError::Job)?;
-    let payload = json!({
-        "template": AUTO_CONFIRM_VOID_TEMPLATE, "business": business, "pick": pick, "to": to,
-        "values": {"job": number},
-    });
-    let mut notice = NewTask::new(BUSINESS_NOTICE_KIND, payload, at);
-    notice.dedupe_key = Some(format!(
-        "{BUSINESS_NOTICE_KIND}.{AUTO_CONFIRM_VOID_TEMPLATE}.{pick}"
-    ));
-    enqueue(&mut tx, &notice)
+    let payload = json!({"pick": pick, "job": job, "business": business, "why": why.code()});
+    let mut event = NewTask::new(AUTO_CONFIRM_VOID_KIND, payload, at);
+    event.dedupe_key = Some(format!("{AUTO_CONFIRM_VOID_KIND}.{pick}"));
+    enqueue(&mut tx, &event)
         .await
         .map_err(|_| PicksError::Outbox)?;
     tx.commit().await.map_err(|_| PicksError::Database)?;

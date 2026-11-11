@@ -301,8 +301,8 @@ impl World {
 
     async fn void_notices(&self) -> i64 {
         self.count(
-            "SELECT count(*) FROM core.task WHERE kind = 'messaging.business_notice' \
-             AND payload->>'template' = 'auto_confirm_void' AND payload->>'pick' = $1::text",
+            "SELECT count(*) FROM core.task WHERE kind = 'picks.auto_confirm_voided' \
+             AND payload->>'why' = 'card_changed' AND payload->>'pick' = $1::text",
         )
         .await
     }

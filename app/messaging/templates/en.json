@@ -478,10 +478,5 @@
     "audience": "business",
     "segments": 1,
     "text": "Ask Hava: Your bank wants you to approve the payment for job {job}. You haven't been charged yet. Approve it here: {link}"
-  },
-  "auto_confirm_void": {
-    "audience": "business",
-    "segments": 2,
-    "text": "{brand_short}: The homeowner picked your quote on job {job}, but auto-confirm didn't go through. Your card, the fee or who ticked the box changed since. Nothing was charged. To take the job, tap Confirm in the email we sent you."
   }
 }

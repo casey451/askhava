@@ -62,7 +62,7 @@
 //!
 //! T209: [`auto_confirm`] makes the PICK-048 off-session charge for a pick proven by a Verify code
 //! or a portal session ([`PickProof`]) of a ticked quote, by the pure [`auto_confirm_plan`], or
-//! voids the tick and tells the business ([`AUTO_CONFIRM_VOID_TEMPLATE`]) (PICK-048, PICK-056).
+//! voids the tick with its [`AUTO_CONFIRM_VOID_KIND`] event (PICK-048, PICK-056).
 
 pub use crate::aftermath::{
     Comparison, INACTIVE_TEMPLATE, LIVE_PICK_TEMPLATE, LOST_HIGHER_TEMPLATE, LOST_LOWER_TEMPLATE,
@@ -72,7 +72,7 @@ pub use crate::aftermath::{
     refused_after_confirm,
 };
 pub use crate::auto_confirm::{
-    AUTO_CONFIRM_VOID_TEMPLATE, AutoConfirmed, AutoFacts, AutoPlan, PickProof, Skip, Void,
+    AUTO_CONFIRM_VOID_KIND, AutoConfirmed, AutoFacts, AutoPlan, PickProof, Skip, Void,
     auto_confirm, auto_confirm_plan,
 };
 pub use crate::backup_choice::{
