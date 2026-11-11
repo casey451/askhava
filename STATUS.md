@@ -1,19 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-11T18:30:23Z by runner 60a8d50b1c56 (actions).
+Updated 2026-11-11T18:35:45Z by runner d413b0e8998f (actions).
 
 **Building: T228 in progress since 17:51Z; 211 of 373 done; week 71% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 211 of 373 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T228 claimed 17:51Z, lease until 20:51Z; lane 2: T332 claimed 18:28Z, lease until 21:28Z
-- **Week:** 71% used, 49.1M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:28Z, 1 min before this update
+- **Lane:** lane 1: T228 claimed 17:51Z, lease until 20:51Z; lane 2: T332 claimed 18:28Z, lease until 21:28Z; lane 4: T316 claimed 18:35Z, lease until 21:35Z
+- **Week:** 71% used, 45.7M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Last run:** 18:30Z, 5 min before this update
 - **Keeper:** last ran 18:12Z, next wake 20:54Z
 
 ## Needs attention
-- PLAN GAP T280 (since 2026-11-11T18:20:53Z, no attempt used; a plan change fixes it): T280: dependency T272 is DONE but its owned file migrations/0167_portals_code_tries.sql is not on main; T280: dependency T272 is DONE but its owned file tests/security/tests/signin_admission.rs is not on main
-- Strict plan check red: 27 problem(s) on tasks still to run (+54 on DONE tasks); first: T340: stored context_pct 35% but it measures 39%; regenerate
+- Strict plan check red: 27 problem(s) on tasks still to run (+55 on DONE tasks); first: T340: stored context_pct 35% but it measures 39%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -67,7 +66,6 @@ Updated 2026-11-11T18:30:23Z by runner 60a8d50b1c56 (actions).
 | T338 | adapters (harness): the refused-connection test holds its po | done | 1 | 24 min | 20:45Z |  |
 | T155 | businesses: sign-up capability setup pre-ticked from the lic | done | 1 | 57 min | 20:15Z |  |
 | T311 | calls and server: a voice read-back confirm connects only th | check_failed | 1 | 21 min | 18:54Z |  |
-| T294 | portals and site: every page takes the brand from the brand  | done | 1 | 42 min | 18:32Z |  |
 
 ### Plan and harness merges on main
 - 15:44Z Plan: T214 owns the final-Pick share box end to end and ticks it in five finished tests (D-3032) (#495)
@@ -134,7 +132,7 @@ Updated 2026-11-11T18:30:23Z by runner 60a8d50b1c56 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-11T18:12:03Z (week)): five-hour: 20.4M used, 8.7M left, resets 2026-11-11T20:04:09Z; week: 144.9M used, 49.1M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-04T18:58:17Z.
+- Pacing (session_reading 2026-11-11T18:12:03Z (week)): five-hour: 23.7M used, 5.4M left, resets 2026-11-11T20:04:09Z; week: 148.3M used, 45.7M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-04T20:33:24Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -151,6 +149,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T228 (lease until 2026-11-11T20:51:50Z)
 - lane 2: T332 (lease until 2026-11-11T21:28:29Z)
+- lane 4: T316 (lease until 2026-11-11T21:35:41Z)
 
 ## Last usage reading
 - {"task": "T332", "at": "2026-11-11T18:10:29Z", "cache_creation_input_tokens": 522119, "cache_read_input_tokens": 9112538, "output_tokens": 74891, "input_tokens": 285}
