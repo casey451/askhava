@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-11T21:49:18Z by runner 1e753dc9cf08 (actions).
+Updated 2026-11-11T21:49:36Z by runner 1e753dc9cf08 (actions).
 
-**Building: T387 in progress since 20:19Z; 213 of 376 done; week 75% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T232 in progress since 21:11Z; 213 of 376 done; week 75% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 213 of 376 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T387 claimed 20:19Z, lease until 23:19Z; lane 3: T232 claimed 21:11Z, lease until 00:11Z
+- **Lane:** lane 3: T232 claimed 21:11Z, lease until 00:11Z
 - **Week:** 75% used, 41.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 21:48Z, 1 min before this update
 - **Keeper:** last ran 21:47Z, next wake 23:21Z
@@ -18,6 +18,7 @@ Updated 2026-11-11T21:49:18Z by runner 1e753dc9cf08 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T387 | payments (harness): the branch that flaps payments coverage  | MERGE_PENDING | 1 | 90 min | 21:49Z |  |
 | T388 | picks, intake, messaging and portals: after a Confirm the ho | MERGE_PENDING | 1 | 34 min | 21:46Z |  |
 | T334 | payments: the nightly reconcile catches up after an outage f | QUEUED | 1 | 15 min | 21:21Z | Worker stopped with PLAN GAP: reconcile_open.rs:343 and :423 (T288 tests, night 0 then night 8) fail once the run reads  |
 | T228 | businesses: leaving Ask Hava, the optional reason and what h | MERGE_PENDING | 1 | 31 min | 19:59Z | merging main into the reviewed head conflicts in app/payments/CLAUDE.md; a resync merges it in on this attempt (D-891) |
@@ -153,8 +154,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T387 (lease until 2026-11-11T23:19:01Z)
+- nothing
 - lane 3: T232 (lease until 2026-11-12T00:11:40Z)
 
 ## Last usage reading
-- {"task": "T388", "at": "2026-11-11T21:46:56Z", "output_tokens": 156954, "cache_read_input_tokens": 42243270, "input_tokens": 402, "cache_creation_input_tokens": 823735}
+- {"task": "T387", "at": "2026-11-11T21:49:17Z", "output_tokens": 113438, "input_tokens": 339, "cache_read_input_tokens": 17563558, "cache_creation_input_tokens": 407013}
