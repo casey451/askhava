@@ -21191,7 +21191,10 @@
    ],
    "update_waiting_since": null,
    "update_push_failures": null,
-   "last_failure": "Ci: failure; Coverage: failure; Checks: failure\nCoverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly)\ntest td_pick_09_the_window_is_a_setting_and_stale_timers_do_nothing ... ok\ntest td_pick_15_the_notice_goes_to_the_owner_and_billing_members ... ok\nfailures:\n---- td_pick_09_license_at_the_pick_and_at_confirm stdout ----\nthread 'td_pick_09_license_at_the_pick_and_at_confirm' (15703) panicked at tests/integration/tests/confirm_window.rs:316:5:\nassertion `left == right` failed: the pick lookup is the stored result\n  left: Ok(Err(License))\n right: Ok(Ok(()))\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\n    td_pick_09_license_at_the_pick_and_at_confirm\ntest result: FAILED. 6 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.70s\nerror: test failed, to rerun pass `-p askhava-integration --test confirm_window`\nerror: process didn't exit successfully: `/home/runner/.rustup/toolchains/nightly-2026-10-15-x86_64-unknown-linux-gnu/bin/cargo test --tests --manifest-path /home/runner/work/askhava/askhava/Cargo.tom\n##[error]Process completed with exit code 101.\nChecks failed at step: Rust build (the one boundary build) and tests\n    td_pick_09_license_at_the_pick_and_at_confirm\ntest result: FAILED. 6 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.74s\nerror: test failed, to rerun pass `-p askhava-integration --test confirm_window`\n##[error]Process completed with exit code 101.\nCi "
+   "last_failure": "Ci: failure; Coverage: failure; Checks: failure\nCoverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly)\ntest td_pick_09_the_window_is_a_setting_and_stale_timers_do_nothing ... ok\ntest td_pick_15_the_notice_goes_to_the_owner_and_billing_members ... ok\nfailures:\n---- td_pick_09_license_at_the_pick_and_at_confirm stdout ----\nthread 'td_pick_09_license_at_the_pick_and_at_confirm' (15703) panicked at tests/integration/tests/confirm_window.rs:316:5:\nassertion `left == right` failed: the pick lookup is the stored result\n  left: Ok(Err(License))\n right: Ok(Ok(()))\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\n    td_pick_09_license_at_the_pick_and_at_confirm\ntest result: FAILED. 6 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.70s\nerror: test failed, to rerun pass `-p askhava-integration --test confirm_window`\nerror: process didn't exit successfully: `/home/runner/.rustup/toolchains/nightly-2026-10-15-x86_64-unknown-linux-gnu/bin/cargo test --tests --manifest-path /home/runner/work/askhava/askhava/Cargo.tom\n##[error]Process completed with exit code 101.\nChecks failed at step: Rust build (the one boundary build) and tests\n    td_pick_09_license_at_the_pick_and_at_confirm\ntest result: FAILED. 6 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.74s\nerror: test failed, to rerun pass `-p askhava-integration --test confirm_window`\n##[error]Process completed with exit code 101.\nCi ",
+   "runner_closed_prs": [
+    460
+   ]
   },
   {
    "id": "T163",
@@ -31347,7 +31350,7 @@
    }
   }
  },
- "updated_at": "2026-11-11T07:53:03Z",
+ "updated_at": "2026-11-11T07:53:15Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
