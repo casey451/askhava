@@ -69,7 +69,8 @@ use crate::models::{
 use crate::refund_state::{PickRefundState, refund_state};
 use crate::refund_stripe::{Refund, RefundAmount, RefundState, RefundStripe};
 use crate::refunds::{
-    REFUND_FAILED_ALERT, REFUND_MISMATCH_ALERT, REFUND_UNCONFIRMED_ALERT, request_refund,
+    REFUND_FAILED_ALERT, REFUND_MISMATCH_ALERT, REFUND_UNCONFIRMED_ALERT, last_refund,
+    request_refund,
 };
 use crate::service::CONFIRM_FEE_ACTION;
 
@@ -610,7 +611,8 @@ async fn first_seen(
 /// when T066 has the pick's evidence record; otherwise [`own_refund`] sends it. T066's
 /// `Unchanged` (a try in flight) is [`OpenWhy::RefundPending`], as is a `Failed` answer whose
 /// refund row Stripe holds `pending` ([`refund_state`] `InFlight`, D-2364), and `Blocked`
-/// (disputed) owes nothing more (D-1872).
+/// (disputed) owes nothing more (D-1872). T066's `Refunded` is held at the amount T066 booked (its
+/// latest refund entry, Stripe's own `usd` amount since T333), not the charge (D-3067).
 async fn refund(
     pool: &PgPool,
     stripe: &impl ReconcileStripe,
@@ -625,7 +627,9 @@ async fn refund(
             Err(MoneyEventError::NothingCharged) => {}
             Ok(RefundOutcome::Refunded(_)) => {
                 report.refunded += 1;
-                return Ok(Sent::Refunded(attempt.0.amount_cents));
+                let mut conn = db(pool.acquire().await)?;
+                let booked = last_refund(&mut conn, facts.pick).await?;
+                return Ok(Sent::Refunded(booked.unwrap_or(attempt.0.amount_cents)));
             }
             Ok(RefundOutcome::Failed) => {
                 report.refund_failed += 1;

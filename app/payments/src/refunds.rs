@@ -510,8 +510,12 @@ async fn held(conn: &mut PgConnection, pick: Uuid) -> Result<(i64, i64), MoneyEv
 }
 
 /// D-2303: the amount of the pick's latest `refund` entry, the one a reversal undoes (a refund
-/// booked at Stripe's own amount is reversed at that amount); `None` when there is none.
-async fn last_refund(conn: &mut PgConnection, pick: Uuid) -> Result<Option<i64>, MoneyEventError> {
+/// booked at Stripe's own amount is reversed at that amount) and the one the reconcile compares
+/// with Stripe after [`request_refund`] (D-3067); `None` when there is none.
+pub(crate) async fn last_refund(
+    conn: &mut PgConnection,
+    pick: Uuid,
+) -> Result<Option<i64>, MoneyEventError> {
     db(sqlx::query_scalar!(
         "SELECT amount_cents FROM payments.ledger_entry
           WHERE kind = 'refund'

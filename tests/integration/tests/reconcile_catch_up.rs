@@ -16,7 +16,7 @@ use std::sync::Mutex;
 
 use askhava_adapters::api::{AdapterError, Charge, IdempotencyKey, PaymentIntent, PaymentsAdapter};
 use askhava_payments::api::{
-    ChargePage, MoneyEventError, MoneyTotals, PAGE_SIZE, RECONCILE_GAP_ALERT,
+    ChargePage, MISMATCH_ALERT, MoneyEventError, MoneyTotals, PAGE_SIZE, RECONCILE_GAP_ALERT,
     REFUND_MISMATCH_ALERT, REFUND_UNCONFIRMED_ALERT, ReconcileReport, ReconcileStripe,
     StripeCharge, StripeRefund, reconcile,
 };
@@ -393,6 +393,47 @@ async fn td_fee_60_a_partial_refund_found_by_the_reconcile_alerts(pool: PgPool) 
     assert_eq!(alerts(&pool, REFUND_UNCONFIRMED_ALERT).await, 1);
     assert_eq!(alerts(&pool, REFUND_MISMATCH_ALERT).await, 1);
     assert_eq!(scalar(&pool, booked, "refund").await, 2500);
+}
+
+/// TD-FEE-60 (FEE-029, FEE-028, D-2303, D-3067): a partial refund the reconcile sends through
+/// T066 (the pick has its evidence record) is held at the $25 T066 booked, not the $75 charge, so
+/// the charge settles: nothing stays open, one refund-amount alert, no ledger-mismatch alert.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_fee_60_a_partial_t066_refund_found_by_the_reconcile_settles(pool: PgPool) {
+    picks(&pool, 1, true).await;
+    for sql in [
+        "INSERT INTO payments.charge_attempt (pick_id, try_no, press_id, status, started_at,
+           decided_at) VALUES (md5('t334p1')::uuid, 1, $1, 'succeeded', now(), now())",
+        "INSERT INTO payments.charge_evidence (pick_id, business_id, job_id, press_id, try_no,
+           idempotency_label, stripe_customer_id, stripe_intent_id, authorization_version,
+           amount_cents, pressed_at, charged_at) VALUES (md5('t334p1')::uuid, $1,
+           md5('t334j1')::uuid, $1, 1, 'pick-' || md5('t334p1')::uuid::text || '-try1', 'cus_FakeT334', 'pi_FakeT334p001', 1,
+           7500, now(), now())",
+    ] {
+        sqlx::query(sql)
+            .bind(BUSINESS)
+            .execute(&pool)
+            .await
+            .expect("seed");
+    }
+    let stripe = FakeStripe::default();
+    stripe.add(night(0).as_second(), own(1));
+    *stripe.refund_reports.lock().expect("lock") = Some((2500, "usd"));
+    let report = run(&pool, &stripe, night(0)).await;
+    assert_eq!((report.refunded, report.open), (1, 0), "{report:?}");
+    assert!(report.matched(), "{report:?}");
+    let t066 = "SELECT count(*) FROM payments.refund WHERE status = $1";
+    assert_eq!(
+        scalar(&pool, t066, "succeeded").await,
+        1,
+        "sent through T066"
+    );
+    let booked = "SELECT sum(amount_cents)::bigint FROM payments.ledger_entry WHERE kind = $1";
+    assert_eq!(scalar(&pool, booked, "refund").await, 2500);
+    assert_eq!(alerts(&pool, REFUND_MISMATCH_ALERT).await, 1);
+    assert_eq!(alerts(&pool, MISMATCH_ALERT).await, 0);
+    let open = "SELECT count(*) FROM payments.reconcile_open WHERE last_code = $1";
+    assert_eq!(scalar(&pool, open, "mismatch").await, 0);
 }
 
 /// TD-FEE-60 (FEE-029): a run that fails (Stripe down, the second page failing, a repeated
