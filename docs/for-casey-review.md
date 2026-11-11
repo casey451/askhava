@@ -2232,3 +2232,9 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **What happened.** The step that refunds a payment arriving after the system had already ended a pick stopped a second time. Its plan has the system keep a record of that payment and queue its refund, but an older test expected the system to keep no record of it at all, so no build could pass both.
 - **What changed.** That older test still checks that an ended pick is never handed to the business. Instead of "nothing is kept", it now checks that the payment and its record are kept, and that exactly one refund job and one alert to you are made. A stale comment in another test is corrected too. Every other test that touches these payments was checked; none other needs a change.
 - **Nothing needs you now.**
+
+## The pick email gets its "Can't take it" link (plan change, D-3029, November 11)
+
+- **What happened.** The step that adds the "Can't take it" link to the email a business gets when it is picked stopped on its first try. Its plan pointed it at the wrong file: the email's words and values are built somewhere it wasn't allowed to change, and adding the link there would also break three older tests that build the same email without it.
+- **What changed.** The step may now change exactly where the email is built and the two pick email texts (English and Spanish, regular and emergency), adding one line, "Can't take it:" and the link. The three older tests only gain that link in their sample data; every check they make stays the same. The link opens a page that asks the business to sign in, and it carries no homeowner details.
+- **Nothing needs you now.**
