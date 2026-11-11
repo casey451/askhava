@@ -6,6 +6,12 @@ These are decisions Claude made on its own and logged so the build never waits (
 
 - **What happened.** One of the runner's own checks before claiming a task compared the plan with the build's live progress and failed whenever a task already being worked sat at the head of the longest remaining chain. The build itself was fine, but the runner stopped without claiming anything five times today, and enough of these in a row could have wrongly marked the build broken and undone good work.
 - **What changed.** The check now only considers tasks the runner could actually pick up, so work already in progress no longer counts against it. It still catches the mistake it was written for, and a new test reproduces today's failure.
+
+## Five waiting steps fixed before they start (plan change, D-3055, November 11)
+
+- **What happened.** A check of five steps still waiting in line found that each would have stopped partway, because the plan asked for something the code or older tests do not allow.
+- **What changed.** The business's Confirm page step is split in two: one part records the business's agreement to the terms on the Confirm page and adds the extra code check for a shared inbox; a new step, T388, emails the homeowner a copy of the quote she accepted and shows it on her quote page. The business sign-in step may now change a few lines in an older test (only how it builds the app's router) so the new pages can be checked. Quiet hours for waiting texts are checked by the new text sender itself, so older tests stay as they are. The pest-license step keeps what it can do, and a new step, T389, pauses a pest business's pest jobs when a homeowner reports its license is wrong. The nightly payments check reads Stripe in pages through a new read, so older tests stay as they are.
+- **Still open.** Nothing yet lets a homeowner send the wrong-license report (no page or text keyword for it). And the pest quote card's line "This business told us it holds … license" is not built by any step. Both go in the next plan change.
 - **Nothing needs you.**
 
 ## A flaky coverage check on the payments code gets a fix, first in line (plan change, D-3049, November 11)
