@@ -9,17 +9,20 @@ import shutil
 import subprocess
 from pathlib import Path
 
+import json
+from collections.abc import Callable
+
 import check_plan_lock
 import check_pr_change
 import pytest
 
-from runner import __main__ as entry, github_env as ge
+from runner import __main__ as entry, cycle, github_env as ge, state as st, verify
 from runner.github_env import GitHubEnv
 from runner.update_merge import decisions_after_main, decisions_appended
 from test_runner_live import (  # noqa: F401  # reason: `repo` is the shared fixture
     SESSION, TASK, AutoMergeRunner, OfflineGh, am_env, claimed_env, commit_on, git, make_env, move_main, pushed_attempt, repo,
 )
-from test_runner_live import worker_commit  # noqa: E402
+from test_runner_live import NOW, live_config, origin_file, transcript, worker_commit  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 BRANCH = TASK["branch"]
@@ -592,3 +595,105 @@ def test_a_setext_heading_inside_an_insertion_stays_a_real_conflict_end_to_end(r
     forged = git(repo["b"], "commit-tree", f"{main2}^{{tree}}", "-p", reviewed, "-p", main2, "-m", "a hand-made merge")
     assert env.updates.is_update_merge(reviewed, forged) == (False, main2)
     assert env.update_branch(BRANCH, reviewed)["status"] == "conflict" and git(repo["origin"], "rev-parse", BRANCH) == reviewed
+
+
+# ---- the hand-in merge (D-2798): a head already behind main is pushed with stage C's merge on top
+
+
+def _handed_in(repo: dict[str, Path], tmp_path: Path, moves: Callable[[], str] | None,
+               build: Callable[[GitHubEnv], None] | None = None) -> tuple[GitHubEnv, str, list[str], list[str]]:
+    """K10 claimed and handed in through `--after` on clone a, with main moved by `moves` after the worker's
+    commit: (the runner, the reviewed head, the heads pushed, the heads auto-merge was asked for)."""
+    env = make_env(repo["a"], tmp_path)
+    env.smoke_main = lambda: (True, env.main_head())  # type: ignore[method-assign]  # reason: no smoke.sh in the fake repo
+    pushed: list[str] = []
+    merges: list[str] = []
+    real_push = env.push_branch
+    env.push_branch = lambda b, h: pushed.append(h) is None and real_push(b, h)  # type: ignore[method-assign]  # reason: count the pushes
+    env.enable_auto_merge = lambda b, h: merges.append(h) is None and (True, "fake")  # type: ignore[method-assign]  # reason: no GitHub API offline
+    cfg = live_config("session-a", tmp_path, env)
+    assert cycle.run_cycle(cfg, env, NOW) == "handed_off"
+    head = worker_commit(repo["a"], BRANCH, "docs/k10/note.md")
+    if moves:
+        moves()
+    if build:
+        build(env)
+    work, review = transcript(tmp_path, "w", "claude-sonnet-5-5"), transcript(tmp_path, "r", "claude-opus-5-5")
+    assert cycle.after_handoff(cfg, env, lambda t: env.collect_result(t, "submitted", [work], [review])) == st.MERGE_PENDING
+    return env, head, pushed, merges
+
+
+def _task_state(repo: dict[str, Path]) -> tuple[st.State, dict[str, object]]:
+    state = json.loads(origin_file(repo, "claude/kit-state", "kit/state.json"))
+    return state, st.entry(state, "K10")
+
+
+def test_a_hand_in_behind_main_pushes_the_reviewed_head_and_stage_cs_own_merge_in_one_push(repo: dict[str, Path], tmp_path: Path) -> None:
+    """T155, T294, T231, T199, T349, T338: main moved before the push, so the reviewed head's round of checks
+    could never be the one that merges. Now one push carries the reviewed head and the very merge stage C
+    would build later (same commit), adopted in the review record, so only the merged head's checks run."""
+    moved: list[str] = []
+    _, head, pushed, merges = _handed_in(repo, tmp_path, lambda: moved.append(move_main(repo, "fake repo, main moved\n")) or moved[0])
+    merge, main2 = git(repo["origin"], "rev-parse", BRANCH), moved[0]
+    assert pushed == [merge] and merges == [merge] and parents(repo["a"], merge) == [head, main2]
+    later = env_on(repo, tmp_path)  # another runner's stage C, after the push
+    assert later.updates.commit(head, main2, BRANCH) == (merge, [])  # deterministic: the commit stage C would build
+    assert later.update_branch(BRANCH, merge) == {"status": "current"}  # nothing left for stage C to do
+    state, task = _task_state(repo)
+    assert task["reviewed_sha"] == merge and task["review_lease"]["session"] == "session-a"  # type: ignore[index]
+    note = task["update_merges"][-1]  # type: ignore[index]
+    assert (note["from"], note["to"], note["main"], note["how"]) == (head, merge, main2, "hand-in")
+    lease = json.loads(origin_file(repo, "claude/lease", "lease.json"))["lease"]
+    assert verify.auto_merge_allowed(state, BRANCH, merge, lease) and not verify.auto_merge_allowed(state, BRANCH, head, lease)
+
+
+def test_a_hand_in_that_conflicts_with_main_pushes_the_reviewed_head_unmerged_as_before(repo: dict[str, Path], tmp_path: Path) -> None:
+    _, head, pushed, merges = _handed_in(repo, tmp_path, lambda: push_main(repo, "docs/k10/note.md", "main's own note\n"))
+    assert pushed == [head] and merges == [head] and git(repo["origin"], "rev-parse", BRANCH) == head
+    _, task = _task_state(repo)
+    assert task["reviewed_sha"] == head and "update_merges" not in task
+    done = env_on(repo, tmp_path).update_branch(BRANCH, head)  # stage C's conflict path takes it, as today (D-891)
+    assert done["status"] == "conflict" and done["paths"] == ["docs/k10/note.md"]
+
+
+def test_a_hand_in_not_behind_main_is_pushed_as_before(repo: dict[str, Path], tmp_path: Path) -> None:
+    env, head, pushed, merges = _handed_in(repo, tmp_path, None)
+    assert pushed == [head] and merges == [head] and env.hand_in_merge(BRANCH, head) == {"status": "current"}
+    _, task = _task_state(repo)
+    assert task["reviewed_sha"] == head and "update_merges" not in task
+
+
+def test_the_hand_in_merge_passes_the_same_reviewed_plus_main_checks_and_a_tampered_one_does_not(repo: dict[str, Path], tmp_path: Path) -> None:
+    """The merged head is accepted by stage C's own rules (`update_merge_of`, `reviewed_plus_main`) exactly as
+    a later update merge is; the same merge with one extra file in it is refused by both, and a build that
+    returns such a commit fails `_built_update`'s tree check, so the reviewed head is pushed unmerged."""
+    reviewed = pushed_attempt(repo)
+    main2 = move_main(repo, "fake repo, main moved\n")
+    env = env_on(repo, tmp_path)
+    built = env.hand_in_merge(BRANCH, reviewed)
+    assert built == {"status": "built", "sha": built["sha"], "main": main2}
+    assert git(repo["origin"], "rev-parse", BRANCH) == reviewed  # building pushes nothing
+    assert env.update_merge_of(reviewed, built["sha"], 0) is True and env.reviewed_plus_main(reviewed, built["sha"], 0) is True
+    b = repo["b"]
+    git(b, "read-tree", built["sha"])
+    blob = _blob(b, "added inside the merge\n")
+    git(b, "update-index", "--add", "--cacheinfo", f"100644,{blob},docs/k10/extra.md")
+    tampered = git(b, "commit-tree", git(b, "write-tree"), "-p", reviewed, "-p", main2, "-m", "Merge main (with an extra file)")
+    git(b, "read-tree", "HEAD")
+    assert env.update_merge_of(reviewed, tampered, 0) is False and env.reviewed_plus_main(reviewed, tampered, 0) is False
+    env.updates.commit = lambda r, m, br: (tampered, [])  # type: ignore[method-assign]  # reason: a build that slipped in a change
+    assert env.hand_in_merge(BRANCH, reviewed)["status"] == "error"
+
+
+def test_a_refused_hand_in_merge_leaves_the_push_to_the_reviewed_head(repo: dict[str, Path], tmp_path: Path) -> None:
+    def refuse(env: GitHubEnv) -> None:
+        env.updates.is_update_merge = lambda r, h: (False, "")  # type: ignore[method-assign]  # reason: the tree check refuses
+
+    env, head, pushed, merges = _handed_in(repo, tmp_path, lambda: move_main(repo, "fake repo, main moved\n"), refuse)
+    assert pushed == [head] and merges == [head] and any("hand-in merge of" in line and "error" in line for line in env.log)
+    _, task = _task_state(repo)
+    assert task["reviewed_sha"] == head and "update_merges" not in task
+
+
+def _blob(root: Path, text: str) -> str:
+    return subprocess.run(["git", "hash-object", "-w", "--stdin"], cwd=root, input=text, text=True, capture_output=True, check=True).stdout.strip()
