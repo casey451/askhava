@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-11T10:24:51Z by runner 722416045b2b (actions).
+Updated 2026-11-11T10:27:27Z by runner 015e158fafa5 (actions).
 
 **Building: T164 in progress since 10:21Z; 200 of 371 done; week 63% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 200 of 371 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T164 claimed 10:21Z, lease until 13:21Z
-- **Week:** 63% used, 68.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:21Z, 3 min before this update
+- **Lane:** lane 1: T164 claimed 10:21Z, lease until 13:21Z; lane 2: T278 claimed 10:27Z, lease until 13:27Z
+- **Week:** 63% used, 64.5M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Last run:** 10:25Z, 2 min before this update
 - **Keeper:** last ran 10:08Z, next wake 10:28Z
 
 ## Needs attention
 - BLOCKED T316: plan gap reported: PLAN GAP: app/businesses/src/holding.rs:8 and migrations/0050_licensing_imports.sql:22-55: nothing links a business to a stored record that holds a name. businesses.business and businesses.signup hold no name or license number; licensing.agency_record has no names (ROC import header is license_number,class,status,issued_on); licensing.city_license_entry has names but no business_id and city_standing does not store the match; licensing::api returns no name for a business ID. D-2206 assumed a link that D-2741 documents does not exist, and T316's no-storage rule forbids adding one. Reviewer confi; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T316 --plan-fix D-### --reason "..."` (D-2859)
-- Strict plan check red: 11 problem(s) on tasks still to run (+19 on DONE tasks); first: T255: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 12 problem(s) on tasks still to run (+19 on DONE tasks); first: T255: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -110,7 +110,7 @@ Updated 2026-11-11T10:24:51Z by runner 722416045b2b (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-11T10:07:56Z (week)): five-hour: 1.3M used, 27.8M left, resets 2026-11-11T14:49:36Z; week: 126.0M used, 68.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-04T11:36:32Z.
+- Pacing (session_reading 2026-11-11T10:07:56Z (week)): five-hour: 4.8M used, 24.3M left, resets 2026-11-11T14:49:36Z; week: 129.5M used, 64.5M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-04T12:35:43Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -126,6 +126,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T164 (lease until 2026-11-11T13:21:20Z)
+- lane 2: T278 (lease until 2026-11-11T13:27:24Z)
 
 ## Last usage reading
 - {"task": "T316", "at": "2026-11-11T10:06:23Z", "output_tokens": 16507, "cache_creation_input_tokens": 145354, "input_tokens": 100, "cache_read_input_tokens": 1713839}

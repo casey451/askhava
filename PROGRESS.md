@@ -1980,3 +1980,4 @@
 - 2026-11-11T10:13:58Z runner 722416045b2b (actions): {"T337": "MERGE_PENDING -> DONE"}
 - 2026-11-11T10:21:09Z runner 722416045b2b (actions): {}
 - 2026-11-11T10:24:51Z runner 722416045b2b (actions): {"T164": "QUEUED -> IN_PROGRESS"}; T164 estimated 3.5M tokens (calibrated); five-hour window has 27.8M left, week 68.0M (session_reading 2026-11-11T10:07:56Z (week)); claimed
+- 2026-11-11T10:27:27Z runner 015e158fafa5 (actions): {"T278": "QUEUED -> IN_PROGRESS"}; T278 estimated 3.2M tokens (calibrated); five-hour window has 24.3M left, week 64.5M after 3.5M still running in another lane (session_reading 2026-11-11T10:07:56Z (week)); claimed
