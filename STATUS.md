@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-11T10:13:43Z by runner 722416045b2b (actions).
+Updated 2026-11-11T10:13:58Z by runner 722416045b2b (actions).
 
-**Idle since 10:06Z; 199 of 371 done; week 63% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 10:09Z; 200 of 371 done; week 63% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 199 of 371 build tasks (owner gates not counted)
+- **Tasks done:** 200 of 371 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 10:06Z (no task in progress)
+- **Lane:** idle since 10:09Z (no task in progress)
 - **Week:** 63% used, 68.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 10:08Z, 5 min before this update
 - **Keeper:** last ran 10:08Z, next wake 10:28Z
@@ -25,7 +25,7 @@ Updated 2026-11-11T10:13:43Z by runner 722416045b2b (actions).
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T316 | businesses: one read of each business's public name for the  | BLOCKED | 1 | 2 min | 10:06Z | PLAN GAP: app/businesses/src/holding.rs:8 and migrations/0050_licensing_imports.sql:22-55: nothing links a business to a |
-| T337 | payments (harness): a $0 release proof is bound to the pick' | MERGE_PENDING | 5 | 23 min | 09:49Z | PLAN GAP: app/server/tests/release_recovery.rs:572-576 (td_pick_50_a_zero_fee_releases_free_and_a_cancelled_pick_nothing |
+| T337 | payments (harness): a $0 release proof is bound to the pick' | done | 5 | 23 min | 09:49Z | PLAN GAP: app/server/tests/release_recovery.rs:572-576 (td_pick_50_a_zero_fee_releases_free_and_a_cancelled_pick_nothing |
 | T327 | harness: every task kind the app queues has a handler in the | MERGE_PENDING | 1 | 48 min | 09:38Z |  |
 | T164 | quotes: one quote format per category, screened notes, and e | BLOCKED | 1 | 14 min | 09:03Z | PLAN GAP: app/portals/src/tests/prop_arrival_order.rs:22 (T052) and app/quotes/src/notify.rs:179 / app/quotes/src/models |
 | T295 | payments, ai, intake and picks take the brand from the brand | done | 4 | 33 min | 08:57Z | T295 blocked at step 3: tests/brand_literal_baseline.json still lists files T295 does not own: app/messaging/templates/e |
@@ -89,7 +89,7 @@ Updated 2026-11-11T10:13:43Z by runner 722416045b2b (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 208 of 733 (28.4%) · partial 343 · unstarted 182
-**Tasks merged (throughput only):** 199 of 371
+**Tasks merged (throughput only):** 200 of 371
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -124,7 +124,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 79 of 163 done
+- stage 4: 80 of 163 done
 - stage 5: 0 of 58 done
 - stage 6: 0 of 34 done
 - stage 7: 0 of 2 done
