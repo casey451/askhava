@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T10:08:14Z by runner 6b803a362f31 (actions).
+Updated 2026-11-11T10:13:43Z by runner 722416045b2b (actions).
 
 **Idle since 10:06Z; 199 of 371 done; week 63% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-11T10:08:14Z by runner 6b803a362f31 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 10:06Z (no task in progress)
 - **Week:** 63% used, 68.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:08Z, 0 min before this update
+- **Last run:** 10:08Z, 5 min before this update
 - **Keeper:** last ran 10:08Z, next wake 10:28Z
 
 ## Needs attention
@@ -19,7 +19,6 @@ Updated 2026-11-11T10:08:14Z by runner 6b803a362f31 (actions).
 - PLAN GAP T313 (since 2026-11-11T09:25:53Z, no attempt used; a plan change fixes it): T313: dependency T292 is DONE but its owned file tests/brand_literal_baseline.json is not on main
 - PLAN GAP T323 (since 2026-11-11T09:25:53Z, no attempt used; a plan change fixes it): T323: dependency T295 is DONE but its owned file tests/brand_literal_baseline.json is not on main
 - PLAN GAP T326 (since 2026-11-11T09:25:53Z, no attempt used; a plan change fixes it): T326: dependency T292 is DONE but its owned file tests/brand_literal_baseline.json is not on main
-- OWNED GAP T295 (DONE, since 2026-11-11T09:25:53Z; a later task or plan change must add it): T295: tests/brand_literal_baseline.json missing on main
 - Strict plan check red: 11 problem(s) on tasks still to run (+19 on DONE tasks); first: T255: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours

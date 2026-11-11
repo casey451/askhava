@@ -27787,13 +27787,7 @@
     "tests/brand_literal_baseline.json",
     "tests/docs/test_brand_literals.py",
     "tests/integration/tests/brand_setting.rs"
-   ],
-   "owned_gap": {
-    "at": "2026-11-11T09:25:53Z",
-    "problems": [
-     "T295: tests/brand_literal_baseline.json missing on main"
-    ]
-   }
+   ]
   },
   {
    "id": "T296",
@@ -31830,7 +31824,7 @@
    }
   }
  },
- "updated_at": "2026-11-11T10:08:14Z",
+ "updated_at": "2026-11-11T10:13:43Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -31928,7 +31922,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "6b803a362f31833eb87d7ee62bdfcdc182f3b229",
+ "runner_sha": "722416045b2b9a891585549e8cceddac03522190",
  "starter": "actions",
  "smoke_runs": [
   {
