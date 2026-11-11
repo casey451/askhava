@@ -22,7 +22,8 @@ pub const HANDYMAN_CATEGORY: &str = "handyman";
 /// one, and the business's own names for the city list (LIC-006, LIC-011). No `Debug` (PRIV-016).
 #[derive(Clone, Copy, Default)]
 pub struct Known<'a> {
-    /// The ROC license number; `None` uses the business's latest daily check's number.
+    /// The ROC license number for a business with no daily check yet; once checked, the latest
+    /// check's number is used instead (D-2744).
     pub roc_license: Option<&'a str>,
     /// The business's own names for the city-list match; `None` reads as `Pending`.
     pub city_names: Option<&'a CityRecord>,

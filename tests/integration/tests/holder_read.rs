@@ -94,7 +94,7 @@ async fn td_lic_29_pest_attester_reads_back_its_attestation(pool: sqlx::PgPool) 
 }
 
 /// TD-LIC-29 (LIC-015, LIC-016): a certified inspector and a septage hauler each hold exactly
-/// their agency; the pest agency and a blank number are refused as agency records.
+/// their agency; the pest agency and a blank or over-long number are refused as agency records.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_lic_29_inspector_and_hauler_hold_exactly_their_agency(pool: sqlx::PgPool) {
     let mut conn = app(&pool).await;
@@ -111,9 +111,11 @@ async fn td_lic_29_inspector_and_hauler_hold_exactly_their_agency(pool: sqlx::Pg
         let parts = read(&mut conn, id, Known::default()).await;
         assert_empty_except_agencies(&parts, &[agency]);
     }
+    let long = "N".repeat(65);
     for bad in [
         (Agency::PestManagement, "PM-1"),
         (Agency::AlarmBusiness, "  "),
+        (Agency::AlarmBusiness, long.as_str()),
     ] {
         let refused = record_agency_license(&mut conn, inspector, bad, Actor::System).await;
         assert_eq!(refused.err(), Some(HolderError::BadRecord));
@@ -157,6 +159,59 @@ async fn td_lic_29_r_37_business_reads_its_classes(pool: sqlx::PgPool) {
         .expect("check");
     let by_check = read(&mut conn, id, Known::default()).await;
     assert_eq!(by_check.classes, parts.classes, "the daily check's number");
+}
+
+const ROC_MIXED: &str = "license_number,class,status,issued_on\n\
+ROC900037,R-37,Active,2012-05-01\nROC900038,R-37,Suspended,2015-01-01\n\
+ROC900039,R-37,Active,2016-01-01\nROC900039,R-11,Expired,2016-01-01\n\
+ROC900040,R-11,Active,2018-06-01\n";
+
+/// D-2743 (LIC-007, CARD-015): an Inactive class is never held: a number with only an Inactive
+/// class holds no class and covers nothing, and a mixed number holds only its Active class.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn an_inactive_roc_class_is_never_held(pool: sqlx::PgPool) {
+    let mut conn = app(&pool).await;
+    let id = business(&mut conn, &["plumbing_repair"]).await;
+    import_roc_list(&mut conn, date(2026, 11, 10), ROC_MIXED)
+        .await
+        .expect("ROC list");
+    let known = |number: &'static str| Known {
+        roc_license: Some(number),
+        city_names: None,
+    };
+    let inactive = read(&mut conn, id, known("ROC900038")).await;
+    assert!(inactive.classes.is_empty(), "a suspended class is not held");
+    let map = ClassMap::shipped().expect("license map");
+    let job = inactive.for_job(map, "plumbing_repair", "water heater replacement");
+    assert!(!job.roc_covers);
+    let mixed = read(&mut conn, id, known("ROC900039")).await;
+    assert_eq!(mixed.classes, vec!["R-37".to_owned()]);
+}
+
+/// D-2744 (CARD-015): once the business has a daily check, its checked number wins over a
+/// different number from the caller; before any check the caller's number is read.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn the_daily_checked_number_wins_over_the_callers(pool: sqlx::PgPool) {
+    let mut conn = app(&pool).await;
+    let id = business(&mut conn, &["plumbing_repair"]).await;
+    import_roc_list(&mut conn, date(2026, 11, 10), ROC_MIXED)
+        .await
+        .expect("ROC list");
+    let known = Known {
+        roc_license: Some("ROC900037"),
+        city_names: None,
+    };
+    let unchecked = read(&mut conn, id, known).await;
+    assert_eq!(unchecked.classes, vec!["R-37".to_owned()], "no check yet");
+    check_license(&mut conn, id, "ROC900040")
+        .await
+        .expect("check");
+    let checked = read(&mut conn, id, known).await;
+    assert_eq!(
+        checked.classes,
+        vec!["R-11".to_owned()],
+        "the checked number"
+    );
 }
 
 /// TD-LIC-29 (LIC-011, LIC-019): a city-list business that chose Handyman reads as a matched

@@ -5,11 +5,13 @@
 //! [`record_agency_license`] an inspector, alarm or septage-hauler license (`agency_record`) in
 //! `licensing.business_license`, one row per business and agency (the unique index refuses a
 //! second), each with one audit row that names the agency as the field, never the number
-//! (PRIV-028). [`holder_for`] reads those rows, the classes on the latest ROC list for the
-//! business's ROC license number ([`read_back`]) and its city-list standing ([`city_standing`]) from
-//! the caller's names, and returns [`HolderParts`]: the [`Holder`] with `roc_covers` left false, set
-//! per job type by [`HolderParts::for_job`] through [`ClassMap::covers`] (LIC-043). Licensing never
-//! calls `businesses`; `businesses::api::holding` supplies the handyman standing (`kit/layers.json`).
+//! (PRIV-028). [`holder_for`] reads those rows, the Active classes on the latest ROC list for the
+//! business's ROC license number (its latest daily check's number before the caller's, D-2744) and
+//! its city-list standing ([`city_standing`]) from the caller's names, and returns [`HolderParts`]:
+//! the [`Holder`] with `roc_covers` left false, set per job type by [`HolderParts::for_job`] through
+//! [`ClassMap::covers`] (LIC-043). A holder never replaces `roc_check_allows_card` (CARD-015).
+//! Licensing never calls `businesses`; `businesses::api::holding` supplies the handyman standing
+//! (`kit/layers.json`).
 
 use askhava_ops::api::{Actor, AuditEntry, Change, audit};
 use sqlx::types::Uuid;
@@ -17,10 +19,10 @@ use sqlx::{Connection, PgConnection};
 use thiserror::Error;
 
 use crate::class_map::ClassMap;
-use crate::imports::ImportError;
+use crate::imports::{ImportError, normalise_license_number};
 use crate::models::PestRecordCategory::{WeedControl, WoodDestroying};
 use crate::models::{Agency, CityRecord, Holder, PestAttestation};
-use crate::service::{city_standing, read_back};
+use crate::service::city_standing;
 
 /// The longest agency-record license number the table keeps (D-859).
 const MAX_AGENCY_NUMBER_LEN: usize = 64;
@@ -48,7 +50,8 @@ pub enum HolderError {
 /// so the names never reach a log (PRIV-016).
 #[derive(Clone, Copy, Default)]
 pub struct HolderInputs<'a> {
-    /// The ROC license number; `None` reads the number of the business's latest daily check.
+    /// The ROC license number, used only when the business has no daily check yet; its latest
+    /// daily check's number wins over it (D-2744).
     pub roc_license: Option<&'a str>,
     /// The business's own names for the city-list match; `None` leaves it `Pending` (LIC-011).
     pub city_names: Option<&'a CityRecord>,
@@ -59,7 +62,8 @@ pub struct HolderInputs<'a> {
 /// A business's licenses read once: its ROC classes and the [`Holder`] with `roc_covers` false.
 #[derive(Debug, Clone, Default)]
 pub struct HolderParts {
-    /// The classes on the latest ROC list for its license number, sorted; empty when none.
+    /// The Active classes on the latest ROC list for its license number, sorted; empty when none
+    /// (an Inactive class is never held, D-2743).
     pub classes: Vec<String>,
     /// Agencies, pest attestation, handyman and city-list standing; `roc_covers` is false.
     pub holder: Holder,
@@ -168,9 +172,11 @@ async fn finish(
 
 /// LIC-006, LIC-011, LIC-012, LIC-015, LIC-016, LIC-047, LIC-048: reads everything `business`
 /// holds for the license rules: its agency rows and pest attestation (a reported one paused), its
-/// classes on the latest ROC list for `inputs.roc_license` (or its latest daily check's number),
-/// its city-list standing from `inputs.city_names` and the caller's handyman standing. No row and
-/// no list read as an empty holder.
+/// Active classes on the latest ROC list for its latest daily check's number, or `inputs.roc_license`
+/// before any check (D-2743, D-2744), its city-list standing from `inputs.city_names` and the
+/// caller's handyman standing. No row and no list read as an empty holder. The ROC classes say what
+/// the license map covers, not that a card may go: an ROC card still needs
+/// `roc_check_allows_card` (CARD-015).
 ///
 /// # Errors
 ///
@@ -186,19 +192,30 @@ pub async fn holder_for(
     if let Some(names) = inputs.city_names {
         holder.city_list = city_standing(conn, names).await.map_err(read_error)?;
     }
-    let number = match inputs.roc_license {
-        Some(n) => Some(n.to_owned()),
-        None => last_checked(conn, business).await?,
+    let number = match last_checked(conn, business).await? {
+        Some(checked) => Some(checked),
+        None => inputs.roc_license.map(normalise_license_number),
     };
     let classes = match number {
-        Some(n) => match read_back(conn, &n).await {
-            Ok(back) => back.map(|b| b.classes).unwrap_or_default(),
-            Err(ImportError::NoList) => Vec::new(),
-            Err(e) => return Err(read_error(e)),
-        },
+        Some(n) => active_classes(conn, &n).await?,
         None => Vec::new(),
     };
     Ok(HolderParts { classes, holder })
+}
+
+/// D-2743: the classes the latest ROC list shows Active for the normalised `number`, sorted; an
+/// Inactive class is never held, and no list or no Active class is none.
+async fn active_classes(conn: &mut PgConnection, number: &str) -> Result<Vec<String>, HolderError> {
+    sqlx::query_scalar!(
+        "SELECT class_code FROM licensing.agency_record \
+         WHERE import_id = (SELECT id FROM licensing.list_import WHERE source = 'roc' \
+                            ORDER BY list_date DESC LIMIT 1) \
+         AND license_number = $1 AND status = 'active' ORDER BY class_code",
+        number,
+    )
+    .fetch_all(&mut *conn)
+    .await
+    .map_err(|_| HolderError::Database)
 }
 
 fn read_error(_: ImportError) -> HolderError {
