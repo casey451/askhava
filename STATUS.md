@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-11T23:32:45Z by runner 0f57a83fc776 (actions).
+Updated 2026-11-11T23:33:02Z by runner 0f57a83fc776 (actions).
 
 **Building: T317 in progress since 23:23Z; 216 of 376 done; week 77% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 216 of 376 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T317 claimed 23:23Z, lease until 02:23Z; lane 2: T334 claimed 22:00Z, lease until 01:00Z; lane 3: T313 claimed 23:27Z, lease until 02:27Z; lane 4: T348 claimed 22:48Z, lease until 01:48Z; lane 5: T228 claimed 23:21Z, lease until 02:21Z
+- **Lane:** lane 1: T317 claimed 23:23Z, lease until 02:23Z; lane 2: T334 claimed 22:00Z, lease until 01:00Z; lane 3: T313 claimed 23:27Z, lease until 02:27Z; lane 5: T228 claimed 23:21Z, lease until 02:21Z
 - **Week:** 77% used, 27.4M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 23:28Z, 4 min before this update
 - **Keeper:** last ran 23:20Z, next wake 01:02Z
@@ -17,6 +17,7 @@ Updated 2026-11-11T23:32:45Z by runner 0f57a83fc776 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T348 | harness: the authorization matrix gets public, owner and act | MERGE_PENDING | 1 | 43 min | 23:32Z |  |
 | T228 | businesses: leaving Ask Hava, the optional reason and what h | resync | 2 | 41 min | 23:04Z | merging main into the reviewed head conflicts in app/picks/CLAUDE.md, app/quotes/src/api.rs; a resync merges it in on th |
 | T317 | server and intake: the inbound text route applies SEC-014's  | BLOCKED | 1 | 4 min | 22:34Z | PLAN GAP: tests/integration/tests/suspension_mode.rs:69-78 (owned by T279) and app/server/tests/voice_confirm_line.rs:95 |
 | T232 | portals and businesses: the Confirm step's "Can't take it" l | done | 1 | 51 min | 22:02Z |  |
@@ -158,8 +159,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - T317 (lease until 2026-11-12T02:23:46Z)
 - lane 2: T334 (lease until 2026-11-12T01:00:14Z)
 - lane 3: T313 (lease until 2026-11-12T02:27:47Z)
-- lane 4: T348 (lease until 2026-11-12T01:48:59Z)
 - lane 5: T228 (lease until 2026-11-12T02:21:29Z)
 
 ## Last usage reading
-- {"task": "T228", "at": "2026-11-11T23:04:11Z", "cache_creation_input_tokens": 228594, "output_tokens": 47358, "input_tokens": 185, "cache_read_input_tokens": 3749756}
+- {"task": "T348", "at": "2026-11-11T23:32:44Z", "cache_read_input_tokens": 21469657, "output_tokens": 204970, "input_tokens": 421, "cache_creation_input_tokens": 718894}
