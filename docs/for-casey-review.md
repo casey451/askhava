@@ -2,6 +2,13 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## A phone a team member adds now waits for your OK (plan change, D-3081, November 11)
+
+- **What happened.** The rules say a phone that someone on a business's team adds (not the owner) should work only after the owner approves it. Checking the code found that it works the moment it is added: it can call homeowners and text as the business before the owner says yes. This was listed last time as an open security item (IC-95) with no step assigned.
+- **What changed.** Two new steps. T396 keeps such a phone switched off until the owner approves it, for both calls and texts, and only the owner can approve (not even a team member with every permission). T397 gives the owner a page listing phones that are waiting, with an Approve and a Don't approve button, and makes the Approve link in the owner's email actually approve. Both buttons need the owner signed in with a fresh code, like other account changes. Don't approve removes the phone. Two older tests that expected the phone to work at once were updated to approve it first. Eight later steps had their database file numbers moved up by one again.
+- **For later.** The rules also let the owner approve by replying YES to a text. No owner text about a new phone is sent yet (only the email), so that path waits for its own step and wording from you; until then the phone simply waits for the email or page. A link to the waiting-phones page from the portal home page is also left for later.
+- **Nothing needs you.**
+
 ## Linking a team phone by text gets an owner, and two waiting steps are trimmed (plan change, D-3079, November 11)
 
 - **What happened.** The outside review you shared found one security item with no step assigned: when someone on a business's team calls a homeowner's line from a phone the business has not added, nothing yet sends the business the "Reply LINK <PIN> to add this phone" message, and nothing handles that reply. The build cannot finish its current stage while that item has no owner. The review also found that two waiting steps were planned to load more than the allowed share of the AI's working memory.
