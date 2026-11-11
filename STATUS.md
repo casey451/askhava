@@ -1,15 +1,15 @@
 # Ask Hava build status
 
-Updated 2026-11-11T15:06:16Z by runner 18c60bd6ee5c (actions).
+Updated 2026-11-11T15:06:23Z by runner 9e8ac4355245 (actions).
 
-**Building: T269 in progress since 15:02Z; 204 of 373 done; week 68% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T269 in progress since 15:02Z; 204 of 372 done; week 68% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 204 of 373 build tasks (owner gates not counted)
+- **Tasks done:** 204 of 372 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 3: T269 claimed 15:02Z, lease until 18:02Z
 - **Week:** 68% used, 50.6M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 15:06Z, 0 min before this update
-- **Keeper:** last ran 14:40Z, next wake 15:00Z
+- **Keeper:** last ran 15:06Z, next wake 18:05Z
 
 ## Needs attention
 - BLOCKED T214: plan gap reported: PLAN GAP: tests/integration/tests/page_pick.rs:131 and tests/security/tests/page_pick_privacy.rs:224 (both T246's; page_pick.rs also T343's) and tests/e2e/j1_homeowner.spec.ts:203 (T098's) press the final Pick without the share box, which PICK-049 now requires. Smallest plan change: give T214 those three test files for a fake-value change only (add ("share","yes") to each posted final Pick, and check the box before #final-pick in j1_homeowner), or move the server-side refusal to a harness task that owns them. Evidence: kit/tasks.json ownership (T214 owns none of the three); page_pick.rs:131 po; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T214 --plan-fix D-### --reason "..."` (D-2859)
@@ -29,7 +29,7 @@ E2e failed at step: Chromium and its system libraries
 Error: Installation process exited with code: 100
 ##[error]Process completed with exit code 1.
 Ci fai
-- Strict plan check red: 20 problem(s) on tasks still to run (+31 on DONE tasks); first: T255: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 21 problem(s) on tasks still to run (+31 on DONE tasks); first: T255: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -116,8 +116,8 @@ Ci fai
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 212 of 733 (28.9%) · partial 343 · unstarted 178
-**Tasks merged (throughput only):** 204 of 373
+**Requirements verified:** 213 of 733 (29.1%) · partial 342 · unstarted 178
+**Tasks merged (throughput only):** 204 of 372
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -135,7 +135,7 @@ Ci fai
 | ops-recovery | 2 | 6 | 46 | 54 |
 | privacy | 6 | 23 | 2 | 31 |
 | quiet-hours | 4 | 5 | 0 | 9 |
-| quotes-pick | 24 | 28 | 4 | 56 |
+| quotes-pick | 25 | 27 | 4 | 56 |
 | recurring | 6 | 2 | 3 | 11 |
 | security | 6 | 43 | 6 | 55 |
 | terms | 0 | 3 | 32 | 35 |
