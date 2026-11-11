@@ -20,7 +20,9 @@ attempt used and claim the next task instead. Three checks, each reusing the pla
     a later task's file (the deploy notes, the README) as background; that is no gap for this
     task, while a file no task will ever write is.
 (c) **Dependencies.** Every dependency is DONE or SKIPPED in kit/state.json, and every regular
-    file a DONE dependency owns is on disk (the runner's checkout of `main`).
+    file a DONE dependency owns is on disk (the runner's checkout of `main`), unless the plan deleted it:
+    a DONE task that owns it lists it under `deletes` and no DONE owner that depends on that task brings
+    it back (D-2922; T291 wrote tests/brand_literal_baseline.json, T295 deleted it as planned).
 
 (d) **Pinned lists (report-only, D-2550).** scripts/plan_pins.py: the task's goal adds rows to a data
     file, or serves a route, that an existing test pins by exact list or count (T290's `RECURRING` and
@@ -150,9 +152,26 @@ def decision_problems(root: Path, doc: dict[str, Any], src: gen_prompts.Sources,
     return out
 
 
+def planned_gone(graph: dict[str, dict[str, Any]], state: st.State, path: str) -> bool:
+    """A DONE task deleted `path` as planned (it owns it and lists it under `deletes`, D-2922), and no DONE
+    owner of `path` that depends on that task, directly or not, owns it without deleting it again."""
+    owners = [t for t in graph.values() if path in t.get("owns", []) and st.status(state, t["id"]) == st.DONE]
+    deleters = [t["id"] for t in owners if path in t.get("deletes", [])]
+    return any(
+        not any(d in ancestors(graph, t["id"]) and path not in t.get("deletes", []) for t in owners)
+        for d in deleters
+    )
+
+
+def missing_owned(root: Path, graph: dict[str, dict[str, Any]], state: st.State, tid: str) -> list[str]:
+    """The regular files `tid` owns that are not on disk and that the plan did not delete (D-2922)."""
+    owns = graph.get(tid, {}).get("owns", [])
+    return [o for o in owns if not o.endswith("/") and not (root / o).exists() and not planned_gone(graph, state, o)]
+
+
 def dep_problems(root: Path, doc: dict[str, Any], state: st.State, task: dict[str, Any], pending_ok: bool) -> list[str]:
     """(c) Each dependency DONE or SKIPPED (unless `pending_ok`: a survey of tasks not yet eligible), and
-    each regular file a DONE dependency owns on disk."""
+    each regular file a DONE dependency owns on disk, unless the plan deleted it (`missing_owned`, D-2922)."""
     graph = {t["id"]: t for t in doc["tasks"]}
     out: list[str] = []
     for dep in task.get("deps", []):
@@ -161,7 +180,7 @@ def dep_problems(root: Path, doc: dict[str, Any], state: st.State, task: dict[st
             out += [] if pending_ok else [f"{task['id']}: dependency {dep} is {status}, not DONE"]
             continue
         if status == st.DONE:
-            missing = [o for o in graph.get(dep, {}).get("owns", []) if not o.endswith("/") and not (root / o).exists()]
+            missing = missing_owned(root, graph, state, dep)
             out += [f"{task['id']}: dependency {dep} is DONE but its owned file {m} is not on main" for m in missing]
     return out
 
@@ -205,13 +224,14 @@ def chosen(args: argparse.Namespace, doc: dict[str, Any], state: st.State) -> li
 
 def done_file_problems(root: Path, doc: dict[str, Any], state: st.State) -> list[str]:
     """--all also lists every DONE task's owned regular file that is not on disk, whether or not a task
-    still waiting depends on it (a DONE task with no waiting dependent is no claim's gap, but is the plan's)."""
+    still waiting depends on it (a DONE task with no waiting dependent is no claim's gap, but is the plan's);
+    a file the plan deleted is no gap (`missing_owned`, D-2922)."""
+    graph = {t["id"]: t for t in doc["tasks"]}
     return [
         f"{t['id']}: DONE but its owned file {o} is not on main"
         for t in doc["tasks"]
         if st.status(state, t["id"]) == st.DONE
-        for o in t.get("owns", [])
-        if not o.endswith("/") and not (root / o).exists()
+        for o in missing_owned(root, graph, state, t["id"])
     ]
 
 

@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "description": "Ask Hava build task graph (K6). Only the runner marks a task done (BUILD_BRIEF.md:261). Checked by scripts/validate_tasks.py. Optional field 'acceptance': what done means when a task names no test entry (required then for build and harness tasks). budget.context_pct is derived, not guessed: scripts/gen_prompts.py writes it from the bytes of the prompt, the owned files and the reads that exist (D-485).",
+ "description": "Ask Hava build task graph (K6). Only the runner marks a task done (BUILD_BRIEF.md:261). Checked by scripts/validate_tasks.py. Optional field 'acceptance': what done means when a task names no test entry (required then for build and harness tasks). Optional field 'deletes': owned files the task's goal removes from main, so scripts/plan_health.py and the runner's owned-file check treat their absence as planned (D-2922). budget.context_pct is derived, not guessed: scripts/gen_prompts.py writes it from the bytes of the prompt, the owned files and the reads that exist (D-485).",
  "after_kit": "K9",
  "models": {
   "haiku": "claude-haiku-5-5",
@@ -19089,6 +19089,9 @@
     "tests/docs/test_brand_literals.py",
     "tests/brand_literal_baseline.json",
     "app/intake/src/tests/question_bank.rs"
+   ],
+   "deletes": [
+    "tests/brand_literal_baseline.json"
    ],
    "reads": [
     "docs/architecture.md",

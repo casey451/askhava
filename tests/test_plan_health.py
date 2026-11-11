@@ -107,6 +107,41 @@ def test_a_done_dependency_missing_its_file_and_an_unfinished_one_are_gaps(tmp_p
     assert problems(root, done("T001"), "T003", pending_ok=True) == found[:1]
 
 
+BASELINE = "tests/brand_literal_baseline.json"
+
+
+def brand_chain(deleter_deletes: list[str]) -> list[dict[str, Any]]:
+    """T291 writes the baseline, T292 shrinks it, T295 owns it and (with `deleter_deletes`) deletes it;
+    T313 waits on T292 and T295 (D-2922)."""
+    return [plan_task("T291", owns=[BASELINE]), plan_task("T292", ["T291"], owns=[BASELINE]),
+            plan_task("T295", ["T292"], owns=[BASELINE], deletes=deleter_deletes),
+            plan_task("T313", ["T292", "T295"], owns=["app/t313.rs"])]
+
+
+def test_a_file_a_done_task_deletes_as_planned_is_no_gap(tmp_path: Path, capsys: Any) -> None:
+    """D-2922: T295 deleted the brand baseline as its goal said; no dependent is held and --all is clean."""
+    root = make_repo(tmp_path, brand_chain([BASELINE]))
+    state = done("T291", "T292", "T295")
+    assert problems(root, state, "T313") == []
+    assert ph.main(["--root", str(root), "--state", str(write_state(root, state)), "--all", "--json"]) == 0
+    assert json.loads(capsys.readouterr().out) == {"T313": [], "DONE tasks": []}
+
+
+def test_a_missing_file_with_no_done_deleter_is_still_a_gap(tmp_path: Path) -> None:
+    """With no `deletes`, or with the deleter not yet DONE, or brought back by a later DONE owner, the
+    missing file stays a gap (D-2922)."""
+    root = make_repo(tmp_path / "none", brand_chain([]))
+    assert problems(root, done("T291", "T292", "T295"), "T313") == [
+        f"T313: dependency {d} is DONE but its owned file {BASELINE} is not on main" for d in ("T292", "T295")]
+    root = make_repo(tmp_path / "pending", brand_chain([BASELINE]))
+    assert problems(root, done("T291", "T292"), "T313", pending_ok=True) == [
+        f"T313: dependency T292 is DONE but its owned file {BASELINE} is not on main"]
+    later = plan_task("T400", ["T295"], owns=[BASELINE])
+    root = make_repo(tmp_path / "back", [*brand_chain([BASELINE]), later, plan_task("T401", ["T400"])])
+    assert problems(root, done("T291", "T292", "T295", "T400"), "T401") == [
+        f"T401: dependency T400 is DONE but its owned file {BASELINE} is not on main"]
+
+
 def test_a_context_over_the_limit_is_a_gap(tmp_path: Path) -> None:
     root = make_repo(tmp_path, [plan_task("T001")])
     (root / "app").mkdir()
