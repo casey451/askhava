@@ -1,23 +1,23 @@
 # Ask Hava build status
 
-Updated 2026-11-11T08:41:17Z by runner 51d43b98c1b2 (actions).
+Updated 2026-11-11T08:41:26Z by runner 51d43b98c1b2 (actions).
 
-**Building: T295 in progress since 08:24Z; 197 of 370 done; week 62% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T295 in progress since 08:24Z; 198 of 370 done; week 62% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 197 of 370 build tasks (owner gates not counted)
+- **Tasks done:** 198 of 370 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T295 claimed 08:24Z, lease until 11:24Z
 - **Week:** 62% used, 67.5M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:38Z, 2 min before this update
+- **Last run:** 08:38Z, 3 min before this update
 - **Keeper:** last ran 08:24Z, next wake 08:34Z
 
 ## Needs attention
-- Strict plan check red: 12 problem(s) on tasks still to run (+17 on DONE tasks); first: T126: stored context_pct 56% but it measures 60%; regenerate
+- Strict plan check red: 11 problem(s) on tasks still to run (+18 on DONE tasks); first: T126: stored context_pct 56% but it measures 60%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T212 | intake: photo asks with on-server checks and preview, inspir | MERGE_PENDING | 2 | 19 min | 08:12Z | Ci: failure; Coverage: failure; Checks: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned |
+| T212 | intake: photo asks with on-server checks and preview, inspir | done | 2 | 19 min | 08:12Z | Ci: failure; Coverage: failure; Checks: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned |
 | T337 | payments (harness): a $0 release proof is bound to the pick' | BLOCKED | 4 | 9 min | 08:05Z | PLAN GAP: app/server/tests/release_recovery.rs:572-576 (td_pick_50_a_zero_fee_releases_free_and_a_cancelled_pick_nothing |
 | T212 | intake: photo asks with on-server checks and preview, inspir | check_failed | 1 | 56 min | 07:20Z |  |
 | T383 | messaging and portals: the text templates and the homeowner  | done | 1 | 20 min | 05:39Z |  |
@@ -76,24 +76,24 @@ Updated 2026-11-11T08:41:17Z by runner 51d43b98c1b2 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 204 of 733 (27.8%) · partial 342 · unstarted 187
-**Tasks merged (throughput only):** 197 of 370
+**Requirements verified:** 208 of 733 (28.4%) · partial 343 · unstarted 182
+**Tasks merged (throughput only):** 198 of 370
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 15 | 13 | 7 | 35 |
+| accessibility | 15 | 14 | 6 | 35 |
 | ai | 7 | 17 | 5 | 29 |
 | businesses | 16 | 35 | 7 | 58 |
 | calls | 11 | 13 | 1 | 25 |
 | consent | 8 | 23 | 4 | 35 |
 | fees | 10 | 41 | 1 | 52 |
-| intake | 19 | 15 | 9 | 43 |
-| job-cards | 10 | 12 | 2 | 24 |
+| intake | 19 | 18 | 6 | 43 |
+| job-cards | 13 | 9 | 2 | 24 |
 | licensing | 24 | 24 | 0 | 48 |
-| lifecycle | 17 | 11 | 0 | 28 |
+| lifecycle | 18 | 10 | 0 | 28 |
 | messaging | 18 | 24 | 3 | 45 |
 | ops-recovery | 2 | 5 | 47 | 54 |
-| privacy | 6 | 22 | 3 | 31 |
+| privacy | 6 | 23 | 2 | 31 |
 | quiet-hours | 4 | 5 | 0 | 9 |
 | quotes-pick | 25 | 24 | 7 | 56 |
 | recurring | 5 | 3 | 3 | 11 |
@@ -112,7 +112,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 77 of 162 done
+- stage 4: 78 of 162 done
 - stage 5: 0 of 58 done
 - stage 6: 0 of 34 done
 - stage 7: 0 of 2 done
