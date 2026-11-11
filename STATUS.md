@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-11T12:16:27Z by runner 9826ef4c3b40 (actions).
+Updated 2026-11-11T12:24:05Z by runner 790d4ec251b2 (actions).
 
-**Idle since 12:10Z; 203 of 372 done; week 66% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T333 in progress since 12:24Z; 203 of 372 done; week 66% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 203 of 372 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 12:10Z (no task in progress)
-- **Week:** 66% used, 60.5M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:16Z, 0 min before this update
+- **Lane:** lane 3: T333 claimed 12:24Z, lease until 15:24Z
+- **Week:** 66% used, 62.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Last run:** 12:16Z, 7 min before this update
 - **Keeper:** last ran 12:16Z, next wake 12:36Z
 
 ## Needs attention
 - BLOCKED T332: plan gap reported: PLAN GAP: tests/integration/tests/late_success.rs:216 (T064's TD-FEE-12, DONE) clashes with T332's goal and D-2290 (the file changes only in the expected trigger). T332 requires run_charge_check to call late_success in its own round on an ended pick, so the later report call at line 216 answers AlreadyQueued, not Queued; the (1,1) count at line 220 stays. Reviewer confirmed (late.rs:62-102 dedupe key; test lines 202-222). Smallest plan change: T332 may also change that one assertion to Ok(LateSuccess::AlreadyQueued), logged in decisions. Also: D-2290 says migration 0176, the goal says 0177; ne; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T332 --plan-fix D-### --reason "..."` (D-2859)
-- Strict plan check red: 16 problem(s) on tasks still to run (+25 on DONE tasks); first: T255: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 18 problem(s) on tasks still to run (+25 on DONE tasks); first: T255: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -117,7 +117,7 @@ Updated 2026-11-11T12:16:27Z by runner 9826ef4c3b40 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-11T11:55:20Z (week)): five-hour: 14.5M used, 14.6M left, resets 2026-11-11T14:49:36Z; week: 133.5M used, 60.5M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-04T18:11:44Z.
+- Pacing (session_reading 2026-11-11T12:16:10Z (week)): five-hour: 11.6M used, 17.5M left, resets 2026-11-11T14:49:36Z; week: 132.0M used, 62.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-04T13:45:11Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -133,6 +133,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
+- lane 3: T333 (lease until 2026-11-11T15:24:00Z)
 
 ## Last usage reading
 - {"task": "T332", "at": "2026-11-11T12:10:03Z", "output_tokens": 21484, "cache_creation_input_tokens": 179937, "input_tokens": 102, "cache_read_input_tokens": 2539013}
