@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T21:47:56Z by runner 53eba4dfccb6 (actions).
+Updated 2026-11-11T21:49:18Z by runner 1e753dc9cf08 (actions).
 
 **Building: T387 in progress since 20:19Z; 213 of 376 done; week 75% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-11T21:47:56Z by runner 53eba4dfccb6 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T387 claimed 20:19Z, lease until 23:19Z; lane 3: T232 claimed 21:11Z, lease until 00:11Z
 - **Week:** 75% used, 41.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:47Z, 0 min before this update
+- **Last run:** 21:48Z, 1 min before this update
 - **Keeper:** last ran 21:47Z, next wake 23:21Z
 
 ## Needs attention
@@ -73,6 +73,7 @@ Updated 2026-11-11T21:47:56Z by runner 53eba4dfccb6 (actions).
 | T311 | calls and server: a voice read-back confirm connects only th | done | 2 | 33 min | 23:21Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 
 ### Plan and harness merges on main
+- 21:48Z Harness: no five-hour pacing budget (D-3056) (#513)
 - 20:03Z Harness: the critical-path test checks what the runner can claim, not live in-flight work (D-3057) (#514)
 - 19:58Z Plan: pre-flight fixes for five queued tasks before they're claimed (D-3055) (#512)
 - 18:49Z Plan: five lanes (D-3043) (#504)
