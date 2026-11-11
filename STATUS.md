@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-11T21:15:08Z by runner 53eba4dfccb6 (manual).
+Updated 2026-11-11T21:21:30Z by runner 53eba4dfccb6 (actions).
 
 **Building: T387 in progress since 20:19Z; 213 of 376 done; week 73% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 213 of 376 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T387 claimed 20:19Z, lease until 23:19Z; lane 2: T334 claimed 21:05Z, lease until 00:05Z; lane 3: T232 claimed 21:11Z, lease until 00:11Z; lane 5: T388 claimed 21:12Z, lease until 00:12Z
+- **Lane:** lane 1: T387 claimed 20:19Z, lease until 23:19Z; lane 3: T232 claimed 21:11Z, lease until 00:11Z; lane 5: T388 claimed 21:12Z, lease until 00:12Z
 - **Week:** 73% used, 41.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:15Z, 0 min before this update
+- **Last run:** 21:15Z, 6 min before this update
 - **Keeper:** last ran 20:16Z, next wake 20:36Z
 
 ## Needs attention
@@ -18,6 +18,7 @@ Updated 2026-11-11T21:15:08Z by runner 53eba4dfccb6 (manual).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T334 | payments: the nightly reconcile catches up after an outage f | QUEUED | 1 | 15 min | 21:21Z | Worker stopped with PLAN GAP: reconcile_open.rs:343 and :423 (T288 tests, night 0 then night 8) fail once the run reads  |
 | T228 | businesses: leaving Ask Hava, the optional reason and what h | MERGE_PENDING | 1 | 31 min | 19:59Z | merging main into the reviewed head conflicts in app/payments/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T228 | businesses: leaving Ask Hava, the optional reason and what h | resync | 1 | 77 min | 19:09Z |  |
 | T316 | businesses: one read of each business's public name for the  | done | 2 | 26 min | 19:02Z | PLAN GAP: app/businesses/src/holding.rs:8 and migrations/0050_licensing_imports.sql:22-55: nothing links a business to a |
@@ -152,9 +153,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T387 (lease until 2026-11-11T23:19:01Z)
-- lane 2: T334 (lease until 2026-11-12T00:05:40Z)
 - lane 3: T232 (lease until 2026-11-12T00:11:40Z)
 - lane 5: T388 (lease until 2026-11-12T00:12:26Z)
 
 ## Last usage reading
-- {"task": "T228", "at": "2026-11-11T19:59:14Z", "output_tokens": 24991, "cache_read_input_tokens": 2155726, "cache_creation_input_tokens": 111875, "input_tokens": 138}
+- {"task": "T334", "at": "2026-11-11T21:21:29Z", "cache_read_input_tokens": 5826122, "cache_creation_input_tokens": 363295, "input_tokens": 147, "output_tokens": 44422}
