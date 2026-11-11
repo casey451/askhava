@@ -1827,3 +1827,4 @@
 - 2026-11-11T02:19:19Z runner daef586a5cd2 (actions): {"T157": "MERGE_PENDING -> QUEUED"}
 - 2026-11-11T02:19:27Z runner daef586a5cd2 (actions): {"T157": "QUEUED -> IN_PROGRESS"}; T157 estimated 3.7M tokens (calibrated); five-hour window has 20.8M left, week 82.0M (session_reading 2026-11-11T02:10:52Z (week)); claimed
 - 2026-11-11T02:19:39Z runner daef586a5cd2 (actions): {}
+- 2026-11-11T02:22:55Z runner daef586a5cd2 (actions): {"T374": "QUEUED -> IN_PROGRESS"}; T374 estimated 2.7M tokens (calibrated); five-hour window has 17.1M left, week 78.3M after 3.7M still running in another lane (session_reading 2026-11-11T02:10:52Z (week)); claimed
