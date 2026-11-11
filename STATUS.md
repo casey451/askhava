@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-11T23:45:23Z by runner 6d1614532cc4 (actions).
+Updated 2026-11-11T23:45:39Z by runner 6d1614532cc4 (actions).
 
 **Building: T317 in progress since 23:23Z; 216 of 378 done; week 78% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 216 of 378 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T317 claimed 23:23Z, lease until 02:23Z; lane 3: T313 claimed 23:27Z, lease until 02:27Z; lane 5: T228 claimed 23:21Z, lease until 02:21Z
+- **Lane:** lane 1: T317 claimed 23:23Z, lease until 02:23Z; lane 3: T313 claimed 23:27Z, lease until 02:27Z
 - **Week:** 78% used, 27.4M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 23:43Z, 1 min before this update
 - **Keeper:** last ran 23:43Z, next wake 02:23Z
@@ -17,9 +17,10 @@ Updated 2026-11-11T23:45:23Z by runner 6d1614532cc4 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T228 | businesses: leaving Ask Hava, the optional reason and what h | MERGE_PENDING | 2 | 23 min | 23:45Z | merging main into the reviewed head conflicts in app/picks/CLAUDE.md, app/quotes/src/api.rs; a resync merges it in on th |
 | T334 | payments: the nightly reconcile catches up after an outage f | MERGE_PENDING | 2 | 96 min | 23:36Z | Worker stopped with PLAN GAP: reconcile_open.rs:343 and :423 (T288 tests, night 0 then night 8) fail once the run reads  |
 | T348 | harness: the authorization matrix gets public, owner and act | MERGE_PENDING | 1 | 43 min | 23:32Z |  |
-| T228 | businesses: leaving Ask Hava, the optional reason and what h | resync | 2 | 41 min | 23:04Z | merging main into the reviewed head conflicts in app/picks/CLAUDE.md, app/quotes/src/api.rs; a resync merges it in on th |
+| T228 | businesses: leaving Ask Hava, the optional reason and what h | resync | 2 | 41 min | 23:04Z |  |
 | T317 | server and intake: the inbound text route applies SEC-014's  | BLOCKED | 1 | 4 min | 22:34Z | PLAN GAP: tests/integration/tests/suspension_mode.rs:69-78 (owned by T279) and app/server/tests/voice_confirm_line.rs:95 |
 | T232 | portals and businesses: the Confirm step's "Can't take it" l | done | 1 | 51 min | 22:02Z |  |
 | T387 | payments (harness): the branch that flaps payments coverage  | done | 1 | 90 min | 21:49Z |  |
@@ -158,7 +159,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T317 (lease until 2026-11-12T02:23:46Z)
 - lane 3: T313 (lease until 2026-11-12T02:27:47Z)
-- lane 5: T228 (lease until 2026-11-12T02:21:29Z)
 
 ## Last usage reading
-- {"task": "T334", "at": "2026-11-11T23:36:27Z", "cache_creation_input_tokens": 635795, "input_tokens": 483, "output_tokens": 184034, "cache_read_input_tokens": 21124026}
+- {"task": "T228", "at": "2026-11-11T23:45:22Z", "cache_creation_input_tokens": 61922, "output_tokens": 9005, "cache_read_input_tokens": 652812, "input_tokens": 57}
