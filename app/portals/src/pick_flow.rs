@@ -37,6 +37,15 @@
 //! (PICK-016, TERMS-016), then the result page (PICK-045). From Payment pending on the page shows
 //! the confirmed line and stores nothing. The contact choice and email are checked and passed on
 //! unstored (PICK-018, D-1264).
+//!
+//! T157 (PICK-047, D-400): the review step lists the other available quotes in arrival order under
+//! "If the business for quote #<n> can't take it, move my pick to:", "No backup" selected and
+//! nothing else preselected.
+//! The final Pick stores what she asked for with `picks::api::choose_backup`, tied to her
+//! browser (the SHA256 of the page's CSRF token); it counts only once `store` binds it with
+//! `picks::api::bind_backup` in the pick's transaction after her code passed (D-2661). Pressing
+//! Pick again on the waiting quote with a different backup (`picks::api::backup_changed`) sends a
+//! code instead of the result, and the change counts after it passes. Ask Hava never fills it in.
 
 use std::sync::Arc;
 
@@ -53,8 +62,8 @@ use askhava_messaging::api::{Language, SendWindow, send_window};
 use askhava_ops::api::Actor;
 use askhava_picks::api::rules::{CodeVia, SendAsk, SendRefused, Stage, parse_code, stage};
 use askhava_picks::api::{
-    CodeCheck, CodeSent, PageCodeKeys, PagePick, check_page_code, page_pick, send_page_code,
-    waiting_quote,
+    Browser, CodeCheck, CodeSent, PageCodeKeys, PagePick, backup_changed, bind_backup,
+    check_page_code, choose_backup, page_pick, send_page_code, waiting_quote,
 };
 use askhava_privacy::api::Vault;
 use askhava_quotes::api::page_quotes;
@@ -66,6 +75,7 @@ use axum::response::{Html, IntoResponse, Redirect, Response};
 use axum::routing::post;
 use axum_extra::extract::cookie::CookieJar;
 use secrecy::SecretString;
+use sha2::{Digest, Sha256};
 use sqlx::PgPool;
 use sqlx::types::Uuid;
 
@@ -98,13 +108,16 @@ impl PageLanguage {
     }
 }
 
-/// The posted Pick form: the CSRF token and the quote's number on the page (PICK-008).
+/// The posted Pick form: the CSRF token, the quote's number on the page (PICK-008) and the
+/// backup's number, empty for "No backup" (PICK-047).
 #[derive(Debug, serde::Deserialize)]
 #[serde(deny_unknown_fields)]
 struct PickForm {
     #[serde(default)]
     csrf: String,
     quote: usize,
+    #[serde(default)]
+    backup: String,
 }
 
 impl CsrfField for PickForm {
@@ -134,6 +147,8 @@ pub(crate) struct ReviewView {
     pub(crate) not_open: bool,
     /// The result's acceptance end time, worded by the caller (PICK-045, T063's window).
     pub(crate) accept_by: Option<String>,
+    /// The other available quotes' numbers in arrival order, the backup's choices (PICK-047).
+    pub(crate) others: Vec<usize>,
 }
 
 impl ReviewView {
@@ -149,6 +164,7 @@ impl ReviewView {
             done: false,
             not_open: false,
             accept_by: None,
+            others: Vec::new(),
         }
     }
 
@@ -298,13 +314,17 @@ async fn review<V>(
     jar: CookieJar,
     CsrfForm(form): CsrfForm<PickForm>,
 ) -> Response {
-    let request = match pickable(&flow, &raw, form.quote).await {
-        Ok(Pickable::Open { request, .. }) => request,
+    let (request, others) = match pickable(&flow, &raw, form.quote).await {
+        Ok(Pickable::Open {
+            request, others, ..
+        }) => (request, others),
         Ok(Pickable::Confirmed { .. } | Pickable::No) => return back(&raw, form.quote),
         Err(status) => return status.into_response(),
     };
     let csrf = csrf_token(&jar).unwrap_or_default();
-    render(ReviewView::review(request, form.quote, raw, csrf))
+    let mut view = ReviewView::review(request, form.quote, raw, csrf);
+    view.others = others;
+    render(view)
 }
 
 /// `POST /q/{token}/pick`: the final Pick, the code step (PICK-013, D-1516). It re-checks the link
@@ -333,15 +353,42 @@ where
         };
     };
     let (job, request) = match found {
-        Ok(Pickable::Open { job, request }) => (job, request),
+        Ok(Pickable::Open { job, request, .. }) => (job, request),
         Ok(Pickable::Confirmed { request }) => {
             return render(CodeView::line_only(request, form.quote, raw, CONFIRMED));
         }
         Ok(Pickable::No) => return back(&raw, form.quote),
         Err(status) => return status.into_response(),
     };
+    let browser = browser(&csrf);
+    if let Err(status) = keep_backup(&flow, (job, form.quote), &form.backup, &browser).await {
+        return status.into_response();
+    }
     let view = CodeView::arrival(request, form.quote, raw, csrf);
     started(&flow, &keys, (job, form.quote), view).await
+}
+
+/// The browser a backup choice belongs to: the SHA256 of the page's CSRF token (D-2661).
+fn browser(csrf: &str) -> Browser {
+    Sha256::digest(csrf.as_bytes()).into()
+}
+
+/// PICK-047, D-400, D-2661: stores the backup posted with the final Pick of `quote` on `job`
+/// from `browser` (empty or unreadable is "No backup"; `choose_backup` keeps only another
+/// available quote); it counts only once bound after her code. A failed write is a bare 500,
+/// logged once with no value.
+async fn keep_backup<V>(
+    flow: &PickFlow<V>,
+    (job, quote): (Uuid, usize),
+    backup: &str,
+    browser: &Browser,
+) -> Result<(), StatusCode> {
+    let mut db = flow.pool.acquire().await.map_err(|_| failed("pool"))?;
+    let named = backup.trim().parse::<usize>().ok();
+    choose_backup(&mut db, (job, quote), (named, browser), flow.clock.now())
+        .await
+        .map(|_| ())
+        .map_err(|_| failed("backup"))
 }
 
 /// Starts the code for `quote` of `job` and renders what happened in `view`: the result page for
@@ -355,7 +402,8 @@ async fn started<V>(
 where
     V: VerifyAdapter + Send + Sync,
 {
-    match start_code(flow, keys, job, quote).await {
+    let browser = browser(&view.csrf);
+    match start_code(flow, keys, (job, quote), &browser).await {
         Ok(Start::Same) => done(view.request, quote, view.token),
         Ok(Start::Line(line, form)) => {
             view.line = Some(line);
@@ -374,24 +422,29 @@ enum Start {
     Line(PageLine, bool),
 }
 
-/// Sends the page code for `quote` of `job`, unless that quote already waits (no code), the
+/// Sends the page code for `quote` of `job`, unless that quote already waits with the backup
+/// `browser` last asked for (no code; a different backup needs one, D-2661), the
 /// homeowner paused the job (CON-029) or her number can't be texted (`send_window`): then a
 /// line saying nothing was picked and no form (PICK-013, PICK-055, D-1516). Failures are a bare
 /// 500, logged once with no value.
 async fn start_code<V>(
     flow: &PickFlow<V>,
     keys: &PickCodeKeys<V>,
-    job: Uuid,
-    quote: usize,
+    (job, quote): (Uuid, usize),
+    browser: &Browser,
 ) -> Result<Start, StatusCode>
 where
     V: VerifyAdapter + Send + Sync,
 {
     let mut db = flow.pool.acquire().await.map_err(|_| failed("pool"))?;
-    if waiting_quote(&mut db, job)
+    let same = waiting_quote(&mut db, job)
         .await
         .map_err(|_| failed("pick"))?
-        == Some(quote)
+        == Some(quote);
+    if same
+        && !backup_changed(&mut db, (job, quote), browser)
+            .await
+            .map_err(|_| failed("backup"))?
     {
         return Ok(Start::Same);
     }
@@ -470,6 +523,8 @@ enum Pickable {
         job: Uuid,
         /// Its request number.
         request: i64,
+        /// The other available quotes' numbers in arrival order (PICK-047's choices).
+        others: Vec<usize>,
     },
     /// The business already confirmed a pick (Payment pending on, before a final status).
     Confirmed {
@@ -507,16 +562,23 @@ async fn pickable<V>(flow: &PickFlow<V>, raw: &str, quote: usize) -> Result<Pick
     let quotes = page_quotes(&mut db, job)
         .await
         .map_err(|_| failed("quotes"))?;
-    let open = number_quotes(quotes)
+    let available: Vec<usize> = number_quotes(quotes)
         .iter()
-        .any(|q| q.number == quote && !q.quote.unavailable);
-    if !open {
+        .filter(|q| !q.quote.unavailable)
+        .map(|q| q.number)
+        .collect();
+    if !available.contains(&quote) {
         return Ok(Pickable::No);
     }
     let request = job_number(&mut db, job)
         .await
         .map_err(|_| failed("number"))?;
-    Ok(Pickable::Open { job, request })
+    let others = available.into_iter().filter(|&n| n != quote).collect();
+    Ok(Pickable::Open {
+        job,
+        request,
+        others,
+    })
 }
 
 /// Back to quote `quote`'s card on the quote page (a 303, so a reload never re-posts).
@@ -546,6 +608,10 @@ struct CodeForm {
     email: String,
     #[serde(default)]
     send: String,
+    /// The review form's backup choice, accepted so that form posted here is not refused
+    /// (PICK-047, D-2661) and never read: only the final Pick stores a backup.
+    #[serde(default, rename = "backup")]
+    _backup: String,
 }
 
 impl CsrfField for CodeForm {
@@ -642,6 +708,7 @@ impl CodeView {
             reach: String::new(),
             email: String::new(),
             send: String::new(),
+            _backup: String::new(),
         };
         Self::checked(request, token, csrf, form)
     }
@@ -767,7 +834,7 @@ where
     let csrf = csrf_token(&jar).unwrap_or_default();
     let quote = form.quote;
     let (job, request) = match (pickable(&flow, &raw, quote).await, flow.keys.is_some()) {
-        (Ok(Pickable::Open { job, request }), _) => (job, request),
+        (Ok(Pickable::Open { job, request, .. }), _) => (job, request),
         (Ok(Pickable::Confirmed { request }), true) => {
             return render(CodeView::line_only(request, quote, raw, CONFIRMED));
         }
@@ -825,7 +892,8 @@ where
         Err(_) => return failed("check").into_response(),
     }
     let (request, quote) = (view.request, view.quote);
-    match store(flow, keys, (job, quote), owner).await {
+    let browser = browser(&view.csrf);
+    match store(flow, keys, (job, quote), (owner, &browser)).await {
         Ok(true) => done(request, quote, view.token),
         Ok(false) => render(CodeView::line_only(request, quote, view.token, TAKEN)),
         Err(status) => status.into_response(),
@@ -836,12 +904,13 @@ where
 /// seen: CON-029, D-1602): the pause re-checked, the page pick, then the terms acceptance with
 /// channel `quote_page`, the line shown beside the final Pick and the published Terms (PICK-016,
 /// TERMS-016, D-1516). `false` when nothing could be picked (rolled back: the job moved, was
-/// paused or the quote went); a failed acceptance insert rolls the pick back too.
+/// paused or the quote went); a failed acceptance insert rolls the pick back too. The backup
+/// `browser` asked for is bound to the pick, new or kept, in the same transaction (D-2661).
 async fn store<V>(
     flow: &PickFlow<V>,
     keys: &PickCodeKeys<V>,
     (job, quote): (Uuid, usize),
-    owner: JobHomeowner,
+    (owner, browser): (JobHomeowner, &Browser),
 ) -> Result<bool, StatusCode> {
     let now = flow.clock.now();
     let mut tx = flow.pool.begin().await.map_err(|_| failed("begin"))?;
@@ -851,10 +920,19 @@ async fn store<V>(
     let actor = Actor::Homeowner(owner.contact);
     let pick = match page_pick(&mut tx, (job, paused), quote, actor, now).await {
         Ok(PagePick::Picked(pick)) => pick,
-        Ok(PagePick::Same(_)) => return Ok(true),
+        Ok(PagePick::Same(pick)) => {
+            bind_backup(&mut tx, pick, browser, now)
+                .await
+                .map_err(|_| failed("backup"))?;
+            tx.commit().await.map_err(|_| failed("commit"))?;
+            return Ok(true);
+        }
         Ok(PagePick::Taken) | Err(askhava_picks::api::PicksError::MovedOn) => return Ok(false),
         Err(_) => return Err(failed("pick")),
     };
+    bind_backup(&mut tx, pick, browser, now)
+        .await
+        .map_err(|_| failed("backup"))?;
     // The review step is shown in English only until the page reads the request's language
     // (D-1249), so the acceptance stores the English line it showed, not `owner.language`.
     let (_, lead, link) = PageLanguage::En.terms();

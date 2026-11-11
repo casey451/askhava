@@ -25,10 +25,13 @@
 //! T198 added the open-cards email's words and the missed-cards line (CARD-022, BIZ-044).
 //! T254 added the settle to paid or free on `payments`' clearance and the masked-line retry
 //! (PICK-022, CALL-001, D-1688, D-1739).
+//! T157 added the homeowner's backup choice at the pick and the move to it when a pick ends
+//! without an acceptance (PICK-046, PICK-047).
 //! Other crates reach it only through [`api`].
 
 mod aftermath;
 pub mod api;
+mod backup_choice;
 mod confirm;
 mod confirm_reminders;
 mod email_code;
