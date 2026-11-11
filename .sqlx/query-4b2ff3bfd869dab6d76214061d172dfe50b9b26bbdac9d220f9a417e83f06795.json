@@ -1,0 +1,24 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT COALESCE($2 = ANY (s.trades), false) AS \"handyman!\"\n           FROM businesses.business b LEFT JOIN businesses.signup s ON s.business_id = b.id\n           WHERE b.id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "handyman!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "4b2ff3bfd869dab6d76214061d172dfe50b9b26bbdac9d220f9a417e83f06795"
+}
