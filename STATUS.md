@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T13:58:59Z by runner da0eb3920737 (actions).
+Updated 2026-11-11T14:14:59Z by runner da0eb3920737 (actions).
 
 **Building: T342 in progress since 13:39Z; 204 of 372 done; week 67% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-11T13:58:59Z by runner da0eb3920737 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T342 claimed 13:39Z, lease until 16:39Z; lane 3: T332 claimed 13:35Z, lease until 16:35Z; lane 4: T269 claimed 13:58Z, lease until 16:58Z
 - **Week:** 67% used, 54.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:52Z, 6 min before this update
+- **Last run:** 13:59Z, 15 min before this update
 - **Keeper:** last ran 13:52Z, next wake 16:38Z
 
 ## Needs attention
@@ -19,7 +19,7 @@ Updated 2026-11-11T13:58:59Z by runner da0eb3920737 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T384 | quotes and portals: the homeowner sees an edited quote as up | MERGE_PENDING | 1 | 40 min | 13:40Z |  |
+| T384 | quotes and portals: the homeowner sees an edited quote as up | check_failed | 1 | 40 min | 13:40Z | Ci: failure; E2e: failure; Ally: failure / E2e failed at step: Chromium and its system libraries / E: Failed to fetch ht |
 | T214 | picks: the homeowner's share box at the pick and the 'Can't  | BLOCKED | 1 | 15 min | 13:19Z | PLAN GAP: app/picks/src/handlers.rs:73-76 (T063's) and the pick_notice / pick_notice_emergency keys in app/messaging/tem |
 | T333 | payments (harness): a succeeded refund is recorded at the am | BLOCKED | 1 | 50 min | 13:14Z | PLAN GAP: app/payments/src/routes.rs:412 (T259) and app/payments/src/refund_state.rs:34 (T270) / app/picks/src/unreachab |
 | T332 | payments (harness): a late success has its own refund trigge | BLOCKED | 2 | 2 min | 12:40Z | PLAN GAP: tests/integration/tests/confirm_and_pay.rs:393-413 (td_fee_25_an_ended_pick_is_never_cleared, TD-FEE-25, T189  |

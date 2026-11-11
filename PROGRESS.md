@@ -2050,3 +2050,4 @@
 - 2026-11-11T13:51:46Z runner 6cc6ce4c5fb3 (actions): {}
 - 2026-11-11T13:52:01Z runner 6cc6ce4c5fb3 (actions): {}
 - 2026-11-11T13:58:59Z runner da0eb3920737 (actions): {"T269": "QUEUED -> IN_PROGRESS"}; T269 estimated 2.9M tokens (calibrated); five-hour window has 5.2M left, week 54.0M after 6.0M still running in another lane (session_reading 2026-11-11T13:51:46Z (week)); claimed
+- 2026-11-11T14:14:59Z runner da0eb3920737 (actions): {"T384": "MERGE_PENDING -> QUEUED"}
