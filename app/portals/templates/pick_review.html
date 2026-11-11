@@ -9,8 +9,11 @@
     line follow (PICK-054). "Go back" carries an empty query ("?") because the review is the POST
     answer at the quote page's own address, where a bare "#quote-<n>" only scrolls (D-1251). No
     name, phone or address. T157 (PICK-047, D-400): before the final Pick, the backup choice:
-    "No backup" selected, the other available quotes in arrival order, none preselected. -#}
-{% block title %}{% if done %}Done: your pick for request {{ request }}{% else %}Check your pick for request {{ request }}{% endif %}{% endblock %}
+    "No backup" selected, the other available quotes in arrival order, none preselected. T214
+    (PICK-049, A11Y-011, A11Y-012, D-3032): the share box `#share` before the final Pick, never
+    rendered checked; a Pick with it unticked shows the review again with a focused error summary
+    linking to it, the error `#share-error` above it and her backup kept. -#}
+{% block title %}{% if share_error %}Error: {% endif %}{% if done %}Done: your pick for request {{ request }}{% else %}Check your pick for request {{ request }}{% endif %}{% endblock %}
 {% block main %}
 {% if done %}
 <h1 id="pick-result" tabindex="-1" autofocus>Done. The business has your pick.</h1>
@@ -19,7 +22,11 @@
 {% endif %}{% let brand = askhava_core::api::brand() %}<p><a href="data:text/vcard;charset=utf-8,BEGIN%3AVCARD%0D%0AVERSION%3A3.0%0D%0AFN%3A{{ brand.display_name()|urlencode_strict }}%0D%0AORG%3A{{ brand.legal_name()|urlencode_strict }}%0D%0AURL%3Ahttps%3A%2F%2F{{ brand.domain()|urlencode_strict }}%0D%0AEND%3AVCARD%0D%0A" download="{{ brand.display_name().to_lowercase().replace(' ', "-") }}.vcf">Add {{ brand.display_name() }} to your contacts</a></p>
 <p>Know someone who needs quotes? Send them {{ brand.domain() }}.</p>
 {% else %}
-{% if not_open %}<p id="pick-not-open" tabindex="-1" autofocus>Nothing was picked. Picking on this page isn't open yet, so no code was sent.</p>
+{% if share_error %}<div id="share-summary" role="alert" tabindex="-1" autofocus>
+<p>Your pick didn't go through. We haven't sent you a code.</p>
+<ul><li><a href="#share">{{ share_error_text() }}</a></li></ul>
+</div>
+{% endif %}{% if not_open %}<p id="pick-not-open" tabindex="-1" autofocus>Nothing was picked. Picking on this page isn't open yet, so no code was sent.</p>
 {% endif %}<h1>Check your pick: quote #{{ quote }}</h1>
 <h2>What happens next</h2>
 <ul>
@@ -34,10 +41,12 @@
 {% if !others.is_empty() %}<p><label for="backup">If the business for quote #{{ quote }} can't take it, move my pick to:</label></p>
 <p id="backup-hint">If they can't, your pick moves to that quote right away and we'll text you. To change your backup later, press Pick on quote #{{ quote }} again and type the new code we text you.</p>
 <p><select id="backup" name="backup" aria-describedby="backup-hint">
-<option value="" selected>No backup</option>
-{% for n in others %}<option value="{{ n }}">Quote #{{ n }}</option>
+<option value=""{% if backup.is_none() %} selected{% endif %}>No backup</option>
+{% for n in others %}<option value="{{ n }}"{% if chosen(n) %} selected{% endif %}>Quote #{{ n }}</option>
 {% endfor %}</select></p>
-{% endif %}<button type="submit" id="final-pick">Pick #{{ quote }}</button>
+{% endif %}{% if share_error %}<p id="share-error" class="field-error">Error: {{ share_error_text() }}</p>
+{% endif %}<p><input type="checkbox" id="share" name="share" value="yes"{% if share_error %} aria-describedby="share-error" aria-invalid="true"{% endif %}> <label for="share">{{ share_label() }}</label></p>
+<button type="submit" id="final-pick">Pick #{{ quote }}</button>
 <p id="terms-line" lang="{{ terms.0 }}">{{ terms.1 }} <a href="/terms">{{ terms.2 }}</a></p>
 </form>
 <p>or reply {{ quote }} YES</p>

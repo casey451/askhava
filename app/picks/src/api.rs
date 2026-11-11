@@ -63,6 +63,10 @@
 //! T209: [`auto_confirm`] makes the PICK-048 off-session charge for a pick proven by a Verify code
 //! or a portal session ([`PickProof`]) of a ticked quote, by the pure [`auto_confirm_plan`], or
 //! voids the tick with its [`AUTO_CONFIRM_VOID_KIND`] event (PICK-048, PICK-056).
+//!
+//! T214: [`tick_share`], [`share_ticked`] and [`bind_share`] log the PICK-049 share box;
+//! [`cant_take_job`] and [`cant_take`] end a pick at once with no fee, [`cant_take_link`] is its
+//! page (PICK-050).
 
 pub use crate::aftermath::{
     Comparison, INACTIVE_TEMPLATE, LIVE_PICK_TEMPLATE, LOST_HIGHER_TEMPLATE, LOST_LOWER_TEMPLATE,
@@ -79,6 +83,7 @@ pub use crate::backup_choice::{
     Backup, Browser, backup_changed, backup_choice, backup_target, backup_text, bind_backup,
     choose_backup,
 };
+pub use crate::cant_take::{cant_take, cant_take_job, cant_take_link};
 pub use crate::confirm::{
     BusinessWord, ConfirmReply, ConfirmSettings, EXPIRED_TEMPLATE, FEE_REPLY_TEMPLATE, FeeBasis,
     LicenseAtPick, PICK_NOTICE_EMERGENCY_TEMPLATE, PICK_NOTICE_TEMPLATE, Refusal, StoredFacts,
@@ -123,6 +128,7 @@ pub use crate::service::{
     terms_line_sent, text_pick, waiting_quote, withdraw_paused,
 };
 pub use crate::settle::{LINE_RETRY_KIND, Settled, retry_line, settle};
+pub use crate::share_consent::{bind_share, share_ticked, tick_share};
 pub use crate::unreachable_refund::{
     AtNinetySix, MISSED_CALL_TEMPLATE, REMINDER_EMAIL_TEMPLATE, REMINDER_TEMPLATE, REMINDERS_AFTER,
     ReleasedPick, UNREACHABLE_CLOSED_TEMPLATE, auto_submits, call_record, decide_at_96_hours,
