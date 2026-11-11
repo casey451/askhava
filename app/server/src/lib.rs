@@ -9,7 +9,9 @@
 use std::io;
 use std::sync::{Arc, OnceLock};
 
-use askhava_adapters::api::{StorageAdapter, TwilioConfig, TwilioVerify, twilio_clients};
+use askhava_adapters::api::{
+    LocalStorage, StorageAdapter, TwilioConfig, TwilioVerify, twilio_clients,
+};
 use askhava_core::api::{
     Brand, Environment, IdSecret, LogGuard, Registry, Settings, SystemClock, init_logging,
     install_brand, request_span,
@@ -31,6 +33,7 @@ use tower_http::trace::TraceLayer;
 pub mod checkin;
 pub mod inbound_text;
 pub mod inbound_voice;
+pub mod no_handler_alert;
 pub mod offdb_stream;
 pub mod release_sink;
 pub mod request_timeout;
@@ -192,8 +195,10 @@ where
 /// `docs/legal/homeowner-terms.md`, compiled in, whose second line names its version (TERMS-016).
 const HOMEOWNER_TERMS: &str = include_str!("../../../docs/legal/homeowner-terms.md");
 
-/// The version `HOMEOWNER_TERMS` names on its "Version <v>" line, or `unversioned`.
-fn terms_version() -> String {
+/// The version `HOMEOWNER_TERMS` names on its "Version <v>" line, or `unversioned`. `pub(crate)`
+/// so this file's own tests still find it when `tests/integration/tests/task_registry.rs` compiles
+/// the file in place (T327).
+pub(crate) fn terms_version() -> String {
     HOMEOWNER_TERMS
         .lines()
         .find_map(|l| l.strip_prefix("Version "))
@@ -428,6 +433,76 @@ where
         });
     }
     registry
+}
+
+/// The production worker's whole registry (T327, D-2285): [`register_handlers`], then what only
+/// the worker adds: `privacy`'s sealed photo delete over the stream's store (PRIV-009, T276),
+/// `messaging`'s paused-emergency follow-up on the call list (TXT-023, T279), the hourly
+/// no-handler check ([`no_handler_alert`], OPS-004) and, with the Twilio settings in `pairs`
+/// (required in test and live, D-1688), `messaging`'s day-31 body delete (PRIV-027) and `picks`'
+/// masked-line retry (CALL-001). `worker.rs` runs it and `tests/integration/tests/task_registry.rs`
+/// checks every queued kind against it (TD-OPS-36).
+///
+/// # Errors
+///
+/// A missing or bad Twilio setting in test or live, or a Twilio client that cannot be built,
+/// named, never its value.
+pub fn worker_registry<I>(
+    settings: &Settings,
+    stream: offdb_stream::OffDbStream<LocalStorage>,
+    (texts, confirm): (
+        Option<Arc<JobTextKeys>>,
+        askhava_picks::api::ConfirmSettings,
+    ),
+    pairs: I,
+) -> io::Result<Registry>
+where
+    I: IntoIterator<Item = (String, String)>,
+{
+    let clock = Arc::clone(&stream.clock);
+    let (photos, id_secret) = (Arc::new(stream.storage.clone()), stream.id_secret.clone());
+    let mut registry = register_handlers(Arc::new(stream), texts, confirm);
+    let photo_clock = Arc::clone(&clock);
+    askhava_privacy::api::register_photo_deletes(
+        &mut registry,
+        photos,
+        id_secret.clone(),
+        photo_clock,
+    );
+    let safety = Arc::new(askhava_messaging::api::SafetySender::call_list_only());
+    registry.register(
+        askhava_messaging::api::PAUSED_SAFETY_KIND,
+        move |pool, task| {
+            askhava_messaging::api::run_paused_safety(pool, Arc::clone(&safety), task)
+        },
+    );
+    no_handler_alert::register(&mut registry, settings.environment(), Arc::clone(&clock));
+    if let Some(twilio) = twilio_config(settings, pairs)? {
+        let (sms, _, _) = twilio_clients(&twilio).map_err(io::Error::other)?;
+        let (sms, scan_clock) = (Arc::new(sms), Arc::clone(&clock));
+        askhava_messaging::api::register_body_deletes(&mut registry, sms, id_secret, scan_clock);
+        let masked = twilio.pool().clone();
+        registry.register(askhava_picks::api::LINE_RETRY_KIND, move |pool, task| {
+            askhava_picks::api::retry_line(pool, masked.clone(), task, clock.now())
+        });
+    }
+    Ok(registry)
+}
+
+/// The Twilio settings the masked-line retry (its pool, CALL-001, CALL-017, D-1688) and the day-31
+/// body delete (PRIV-027) use; without them `None` in dev and CI (no handler, so those tasks wait)
+/// and an error in the test and live projects.
+fn twilio_config<I>(settings: &Settings, pairs: I) -> io::Result<Option<TwilioConfig>>
+where
+    I: IntoIterator<Item = (String, String)>,
+{
+    match TwilioConfig::from_settings(settings, pairs) {
+        Ok(config) => Ok(Some(config)),
+        Err(error) => match settings.environment() {
+            Environment::Dev | Environment::Ci => Ok(None),
+            Environment::Test | Environment::Live => Err(io::Error::other(error)),
+        },
+    }
 }
 
 /// The business-account handlers: the complaint box's close (BIZ-029, T083) and a removed
