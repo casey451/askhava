@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T03:58:24Z by runner 6e360d3647a6 (actions).
+Updated 2026-11-11T04:07:42Z by runner bb72f5b93761 (actions).
 
 **Building: T209 in progress since 03:10Z; 194 of 369 done; week 59% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-11T03:58:24Z by runner 6e360d3647a6 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T209 claimed 03:10Z, lease until 06:10Z
 - **Week:** 59% used, 80.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:58Z, 0 min before this update
+- **Last run:** 03:58Z, 9 min before this update
 - **Keeper:** last ran 03:58Z, next wake 06:13Z
 
 ## Needs attention
@@ -40,6 +40,7 @@ Updated 2026-11-11T03:58:24Z by runner 6e360d3647a6 (actions).
 | T286 | server: every request has a whole-request time limit, answer | done | 1 | 26 min | 04:57Z |  |
 
 ### Plan and harness merges on main
+- 04:04Z Plan: shorten the stage-6 critical path by removing ordering-only dependencies (D-2821) (#452)
 - 03:53Z Harness: merge main before the hand-in push when the head is behind (D-2798) (#450)
 - 03:41Z Plan: fix tasks from the Nov 11 vendor-double review (D-2760–D-2770) (#446)
 - 03:25Z Harness: CI speed — cache saves on main only, pytest in its own job, C YAML loader (D-2782) (#449)
