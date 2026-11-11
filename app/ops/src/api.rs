@@ -256,3 +256,63 @@ pub async fn set_switch(
     tx.commit().await.map_err(|_| OpsError::Database)?;
     Ok(true)
 }
+
+/// OPS-004, D-2285: true while an alert of `kind` about `subject` is open (not resolved), so a
+/// check that runs again raises nothing new for the same thing (T327's no-handler check).
+///
+/// # Errors
+///
+/// [`OpsError::Database`].
+pub async fn alert_open(
+    db: &mut PgConnection,
+    kind: &str,
+    subject: (&str, Uuid),
+) -> Result<bool, OpsError> {
+    sqlx::query_scalar!(
+        r#"SELECT EXISTS (SELECT 1 FROM ops.alert WHERE kind = $1 AND subject_kind = $2
+           AND subject_id = $3 AND resolved_at IS NULL) AS "open!""#,
+        kind,
+        subject.0,
+        subject.1,
+    )
+    .fetch_one(db)
+    .await
+    .map_err(|_| OpsError::Database)
+}
+
+/// OPS-004, D-2285, D-2852: raises a `kind` alert about `subject` unless one is open,
+/// checking and raising in one transaction under an advisory lock on the kind and subject (as
+/// [`audit_once`] does), so two checks at once raise one alert; returns the new alert's ID, or
+/// `None` when one was open. `ops.alert` has no unique index on an open alert, so the lock is what
+/// keeps it to one (T327's no-handler check, which the worker may run several of at once).
+///
+/// # Errors
+///
+/// [`OpsError::NotACodeName`] (nothing is written), or [`OpsError::Database`].
+pub async fn raise_alert_once(
+    db: &mut PgConnection,
+    kind: &'static str,
+    severity: Severity,
+    subject: (&'static str, Uuid),
+) -> Result<Option<Uuid>, OpsError> {
+    let alert = NewAlert {
+        kind,
+        severity,
+        subject: Some(subject),
+    };
+    let mut tx = db.begin().await.map_err(|_| OpsError::Database)?;
+    let key = format!("ops.alert:{kind}:{}:{}", subject.0, subject.1);
+    sqlx::query_scalar!(
+        r#"SELECT 1 AS "locked!" FROM (SELECT pg_advisory_xact_lock(hashtextextended($1::text, 21))) AS lock"#,
+        key,
+    )
+    .fetch_one(&mut *tx)
+    .await
+    .map_err(|_| OpsError::Database)?;
+    if alert_open(&mut tx, kind, subject).await? {
+        return Ok(None);
+    }
+    let id = raise_alert(&mut tx, &alert).await?;
+    tx.commit().await.map_err(|_| OpsError::Database)?;
+    Ok(Some(id))
+}
