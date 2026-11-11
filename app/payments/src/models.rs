@@ -29,6 +29,7 @@
 //! view and the FEE-030 match, built only from ledger entries.
 
 use askhava_adapters::api::IdempotencyKey;
+use askhava_core::api::brand;
 use jiff::Timestamp;
 use secrecy::SecretString;
 use sqlx::types::Uuid;
@@ -402,13 +403,18 @@ pub fn attempt_label(pick: Uuid, try_no: i32) -> String {
     format!("pick-{pick}-try{try_no}")
 }
 
-/// The account statement-descriptor prefix set once in the Stripe dashboard (FEE-049, D-490).
-pub const STATEMENT_PREFIX: &str = "ASKHAVA";
+/// The account statement-descriptor prefix set once in the Stripe dashboard: the brand file's
+/// `statement_prefix`, the one place it is written, so it must match the account's setting
+/// (FEE-049, D-490, D-1932).
+#[must_use]
+pub fn statement_prefix() -> &'static str {
+    brand().statement_prefix()
+}
 /// The longest statement descriptor a card statement shows (FEE-049).
 pub const DESCRIPTOR_MAX: usize = 22;
 
-/// What a pick's PaymentIntent says on the receipt and the card statement: the description "Ask
-/// Hava introduction service, job <n>" and the suffix "JOB <n>" after [`STATEMENT_PREFIX`]
+/// What a pick's PaymentIntent says on the receipt and the card statement: the description "<brand>
+/// introduction service, job <n>" and the suffix "JOB <n>" after [`statement_prefix`]
 /// (FEE-049, TD-FEE-38, D-491). The adapter form that sends them is T132's (D-1476).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct IntentText {
@@ -429,10 +435,11 @@ impl IntentText {
         Ok(text)
     }
 
-    /// "Ask Hava introduction service, job <n>" (D-491).
+    /// "<brand> introduction service, job <n>", the brand's display name first (D-491, D-1932).
     #[must_use]
     pub fn description(&self) -> String {
-        format!("Ask Hava introduction service, job {}", self.number)
+        let name = brand().display_name();
+        format!("{name} introduction service, job {}", self.number)
     }
 
     /// The statement-descriptor suffix "JOB <n>" (FEE-049).
@@ -441,10 +448,10 @@ impl IntentText {
         format!("JOB {}", self.number)
     }
 
-    /// The full descriptor as the card statement shows it, "ASKHAVA* JOB <n>" (FEE-049).
+    /// The full descriptor as the card statement shows it, "<prefix>* JOB <n>" (FEE-049).
     #[must_use]
     pub fn statement_descriptor(&self) -> String {
-        format!("{STATEMENT_PREFIX}* {}", self.statement_suffix())
+        format!("{}* {}", statement_prefix(), self.statement_suffix())
     }
 }
 
