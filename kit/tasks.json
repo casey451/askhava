@@ -14293,7 +14293,7 @@
    "id": "T112",
    "slug": "privacy-sms-docs",
    "title": "Draft the privacy policy and SMS terms",
-   "goal": "`docs/legal/` holds the privacy policy and SMS terms drafts (what is collected and shared, the mobile-information line, 5-year consent records, the AI wording of AI-018, the one honest description of Ask Hava, and no claim that numbers are shared or sold), and a docs test finds each required line (TERMS-002 to TERMS-004, TERMS-006 to TERMS-015, TERMS-018, TERMS-020, TERMS-025, TERMS-027, WORD-018, WORD-023, AI-018, PRIV-027). The AI paragraph carries the AI-018 flagged-content wording, and the policy offers \"Download my data\" and verified requests (PRIV-031) (D-492).",
+   "goal": "`docs/legal/` holds the privacy policy and SMS terms drafts (what is collected and shared, the mobile-information line, 5-year consent records, the AI wording of AI-018, the one honest description of Ask Hava, and no claim that numbers are shared or sold), and a docs test finds each required line (TERMS-002 to TERMS-004, TERMS-006 to TERMS-015, TERMS-018, TERMS-020, TERMS-025, TERMS-027, WORD-018, WORD-023, AI-018, PRIV-027). The AI paragraph carries the AI-018 flagged-content wording, and the policy offers \"Download my data\" and verified requests (PRIV-031) (D-492). The vendor list names Twilio SendGrid, which receives the email addresses Twilio Verify sends codes to (TXT-038; D-2769, D-2771).",
    "type": "docs",
    "phase": 1,
    "stage": "5",
@@ -14374,7 +14374,9 @@
     "D-427",
     "D-480",
     "D-490",
-    "D-492"
+    "D-492",
+    "D-2769",
+    "D-2771"
    ],
    "cites": [],
    "budget": {
@@ -15040,7 +15042,7 @@
    "id": "T122",
    "slug": "account-checklist",
    "title": "docs/account-checklist.md: Part 1 test accounts, Part 2 business accounts",
-   "goal": "`docs/account-checklist.md` lists the Part 1 test accounts and the Part 2 business accounts, the key inventory, every OPS-042 hardware-key and break-glass item before any live key, and the OPS-043 release record Casey signs after an independent security review, and a docs test checks each item is there (PRIV-024, OPS-042, OPS-043). The checklist also holds the OPS-048 ADOR ruling-request item, the Railway usage email alert with no hard limit (OPS-042), the protected `release` branch (OPS-043), and the AI provider's flagged-content retention period and Console spend limit recorded before the AI switch first goes on (AI-008) (D-492). The checklist also says the texting campaign is registered only once the full site is live and after Casey has sent the written eligibility question and filed the answer, and keeps business texting off unless that answer is yes (TERMS-014, TD-WEB-12) (D-493). Nov 11 vendor-double review batch 4 (D-2763, D-2769): (1) Twilio retries a webhook only on connection failures by default, once, and never on a 500 or a read timeout, so the inbound routes' \"roll back so Twilio sends it again\" (D-1307, D-1751) holds only with a connection override; the Twilio part of Part 1 (test number) and Part 2 (live number) says: set the incoming-message webhook to `/webhooks/twilio/sms` with a connection-override fragment asking for the most retries Twilio allows on 5xx responses, connection failures and read timeouts, in the syntax of Twilio's \"Webhooks connection overrides\" page (https://twilio.com/docs/usage/webhooks/webhooks-connection-overrides), or set the same through the Webhooks configuration API that page recommends; set the Fallback URL to the same route; the fragment is not signed, so nothing in the app changes; no console status-callback URL is needed (each text asks for its own, T377); and the same for the voice webhook. (2) Twilio Verify's email channel needs a Twilio SendGrid email integration on the Verify service (https://twilio.com/docs/verify/email): Part 1 and Part 2 list a SendGrid account, its domain authentication for the sending domain, an API key kept as a secret, the code email template and the Verify service's email integration, set before T131 checks the email channel and before Gate C; and SendGrid is listed with the other providers that receive personal data (email addresses), for the privacy notice's provider list. The docs test checks both items.",
+   "goal": "`docs/account-checklist.md` lists the Part 1 test accounts and the Part 2 business accounts, the key inventory, every OPS-042 hardware-key and break-glass item before any live key, and the OPS-043 release record Casey signs after an independent security review, and a docs test checks each item is there (PRIV-024, OPS-042, OPS-043). The checklist also holds the OPS-048 ADOR ruling-request item, the Railway usage email alert with no hard limit (OPS-042), the protected `release` branch (OPS-043), and the AI provider's flagged-content retention period and Console spend limit recorded before the AI switch first goes on (AI-008) (D-492). The checklist also says the texting campaign is registered only once the full site is live and after Casey has sent the written eligibility question and filed the answer, and keeps business texting off unless that answer is yes (TERMS-014, TD-WEB-12) (D-493). Nov 11 vendor-double review batch 4 (D-2763, D-2769): (1) Twilio retries a webhook only on connection failures by default, once, and never on a 500 or a read timeout, so the inbound routes' \"roll back so Twilio sends it again\" (D-1307, D-1751) holds only with a connection override; the Twilio part of Part 1 (test number) and Part 2 (live number) says: set the incoming-message webhook to `/webhooks/twilio/sms` with a connection-override fragment asking for the most retries Twilio allows on 5xx responses, connection failures and read timeouts, in the syntax of Twilio's \"Webhooks connection overrides\" page (https://twilio.com/docs/usage/webhooks/webhooks-connection-overrides), or set the same through the Webhooks configuration API that page recommends; set the Fallback URL to the same route; the fragment is not signed, so nothing in the app changes; no console status-callback URL is needed (each text asks for its own, T377); and the same for the voice webhook. (2) Twilio Verify's email channel needs a Twilio SendGrid email integration on the Verify service (https://twilio.com/docs/verify/email): Part 1 and Part 2 list a SendGrid account, its domain authentication for the sending domain, an API key kept as a secret, the code email template and the Verify service's email integration, set before T131 checks the email channel and before Gate C; and SendGrid is listed with the other providers that receive personal data (email addresses), for the privacy notice's provider list. The docs test checks both items. The Stripe webhook endpoint's enabled events (Part 1 and Part 2) include `charge.dispute.updated` and `charge.dispute.funds_withdrawn` beside the events the app already handles (T381, D-2771).",
    "type": "docs",
    "phase": 1,
    "stage": "5",
@@ -15104,7 +15106,8 @@
     "D-492",
     "D-1143",
     "D-2763",
-    "D-2769"
+    "D-2769",
+    "D-2771"
    ],
    "cites": [
     "BUILD_BRIEF.md:180",
@@ -23202,7 +23205,7 @@
    "id": "T380",
    "slug": "refund-key-expiry",
    "title": "payments and stand-in (harness): a refund retried after Stripe forgot its key finds the refund already made",
-   "goal": "Nov 11 vendor-double review batch 4, F8 (D-2767; FEE-026, FEE-028, FEE-053). Stripe keeps an idempotency key for at least 24 hours and may drop it after; a refund retry that replays try n-1's key later than that (`send`, `app/payments/src/refunds.rs:356`) is a new request, and Stripe refuses a second refund of a refunded charge (`charge_already_refunded`), so the pick stays failed with no ledger refund although the money went back. Every fake keeps keys for ever (`IdempotencyStore`, `stand_ins/common.py:19`; the Rust fake in `tests/integration/tests/refund_lifecycle.rs:103`). After T132 and T333: (1) `stand_ins/common.py`: `IdempotencyStore` forgets a key 24 hours after first use by the stand-in clock (the control that moves the clock moves it); (2) `stand_ins/stripe.py` serves `GET /v1/refunds?payment_intent=` (Stripe's list filter) if it does not yet, and answers a second full refund with `charge_already_refunded`; (3) `app/adapters/src/payments.rs`: a typed read of a PaymentIntent's refunds; (4) `refunds.rs`: a refund answered `charge_already_refunded` lists that PaymentIntent's refunds and, when one succeeded or is pending, records it exactly as its own answer would have been (T333's amount check applies), else stays failed with its alert; (5) the Rust fake in `refund_lifecycle.rs` drops keys after 24 hours. Tests in `tests/integration/tests/refund_key_expiry.rs`: a refund whose first answer was lost, retried 25 hours later, records the refund once and moves the pick on (fails before the fix); retried within the hour, it replays as today; and in sandbox mode `tests/contract/test_sandbox_t132.py`'s companion case (in `tests/contract/test_stripe_refund_retry.py`, skipped without sandbox credentials) confirms Stripe test mode answers a second refund of a refunded charge with `charge_already_refunded` and lists the first. Update the `payments` `CLAUDE.md` and `docs/decisions.md`.",
+   "goal": "Nov 11 vendor-double review batch 4, F8 (D-2767; FEE-026, FEE-028, FEE-053). Stripe keeps an idempotency key for at least 24 hours and may drop it after; a refund retry that replays try n-1's key later than that (`send`, `app/payments/src/refunds.rs:356`) is a new request, and Stripe refuses a second refund of a refunded charge (`charge_already_refunded`), so the pick stays failed with no ledger refund although the money went back. Every fake keeps keys for ever (`IdempotencyStore`, `stand_ins/common.py:19`; the Rust fake in `tests/integration/tests/refund_lifecycle.rs:103`). After T132 and T333: (1) `stand_ins/common.py`: `IdempotencyStore` forgets a key 24 hours after first use by the stand-in clock (the control that moves the clock moves it); (2) `stand_ins/stripe.py` serves `GET /v1/refunds?payment_intent=` (Stripe's list filter) if it does not yet, and answers a second full refund with `charge_already_refunded`; (3) `app/adapters/src/payments.rs`: a typed read of a PaymentIntent's refunds; (4) every refund create sets `metadata[pick_id]`; `refunds.rs`: a refund answered `charge_already_refunded` lists that PaymentIntent's refunds and claims one only when it is the single refund that succeeded or is pending, for the full charged amount, and carries this pick's `metadata[pick_id]` where the refund has metadata; it then records it exactly as its own answer would have been (T333's checks apply); more than one candidate, an amount that differs or a metadata mismatch raises the refund alert and records nothing; (5) the Rust fake in `refund_lifecycle.rs` drops keys after 24 hours. Tests in `tests/integration/tests/refund_key_expiry.rs`: a refund whose first answer was lost, retried 25 hours later, records the refund once and moves the pick on (fails before the fix); try 1's answer lost, try 2's replay of key 1 lost, and try 2's new key refused with `charge_already_refunded` records the refund once (fails before the fix, with no key expiry); two candidate refunds, or one for a different amount, raise the alert and record nothing; retried within the hour, it replays as today; and in sandbox mode `tests/contract/test_sandbox_t132.py`'s companion case (in `tests/contract/test_stripe_refund_retry.py`, skipped without sandbox credentials) confirms Stripe test mode answers a second refund of a refunded charge with `charge_already_refunded` and lists the first. Update the `payments` `CLAUDE.md` and `docs/decisions.md`.",
    "type": "harness",
    "phase": 2,
    "stage": "6",
@@ -23244,7 +23247,8 @@
     "TD-FEE-67"
    ],
    "decisions": [
-    "D-2767"
+    "D-2767",
+    "D-2771"
    ],
    "cites": [],
    "budget": {
@@ -23455,7 +23459,7 @@
    "id": "T377",
    "slug": "sms-status-callback-sent-log",
    "title": "adapters and stand-in (harness): every text asks Twilio for status callbacks, and the fake sends them only when asked",
-   "goal": "Nov 11 vendor-double review batch 4, F2 and the stand-in half of F5 (D-2761, D-2764; TXT-013, TXT-014, CARD-019, SEC-016, OPS-017). `TwilioSms::send_text` posts only `To`, `From` and `Body` (`app/adapters/src/sms.rs:72`); Twilio posts a message's status only to the `StatusCallback` URL of its create request (or a Messaging Service's callback, which Ask Hava does not use), so in sandbox and live `POST /webhooks/twilio/status` (`STATUS_PATH`, `app/server/src/inbound_text.rs:74`) is never called and `messaging::api::receive_status` never runs: no delivery or failure is recorded, TXT-014's email fallback for a failed text and CARD-019's counts never see a failure, and `ErrorCode` paths are dead. The fake hides it: `status_callback` (`stand_ins/twilio.py:167`, control route `/_stand_in/twilio/status`, `stand_ins/server.py:295`) emits a callback for any message. And the fake's sent log filters by the app's own `MessageKey` (`stand_ins/server.py:121`), which Twilio cannot store. Fix: (1) `TwilioSms` (built in `app/adapters/src/base.rs:106`) carries the status URL, `<ASKHAVA_PUBLIC_BASE_URL>/webhooks/twilio/status` with no query (so `verify_webhook`'s base-plus-path check matches what Twilio signs), and `send_text` adds `StatusCallback` to every create; with no public base URL (dev and CI without webhooks) it sends none, as today. (2) `stand_ins/twilio.py`: `create_message` stores the `StatusCallback` it was given; `status_callback` for a message created without one refuses (the control route answers 409 and records no callback), and with one returns the URL with the params, so a test posts to the URL the app asked for. (3) The fake's Messages list honours Twilio's own filters `To`, `From`, `DateSent`, `DateSent<` and `DateSent>` (dates `YYYY-MM-DD`, UTC); `MessageKey` stays a stand-in-only filter, documented in `stand_ins/server.py` as test-only and used only by `core::test_control`, never by app code (T110 matches without it, D-2764). (4) Tests: `tests/integration/tests/sms_status_callback.rs` sends a text through the adapter against the served stand-in with a public base URL set and asserts the fake recorded `StatusCallback` equal to that URL plus `/webhooks/twilio/status` (fails before the fix), and that the route accepts the callback the fake then gives (signature over that URL); `tests/contract/test_twilio_contract.py` and `tests/contract/test_stand_in_server.py`: no callback for a message created without `StatusCallback`, one aimed at the given URL with it, and the `From` and `DateSent` filters. T129 checks the create parameter against Twilio's test credentials. Update `app/adapters/CLAUDE.md` (shared), `docs/architecture.md` section 7 and `docs/decisions.md`.",
+   "goal": "Nov 11 vendor-double review batch 4, F2 and the stand-in half of F5 (D-2761, D-2764; TXT-013, TXT-014, CARD-019, SEC-016, OPS-017). `TwilioSms::send_text` posts only `To`, `From` and `Body` (`app/adapters/src/sms.rs:72`); Twilio posts a message's status only to the `StatusCallback` URL of its create request (or a Messaging Service's callback, which Ask Hava does not use), so in sandbox and live `POST /webhooks/twilio/status` (`STATUS_PATH`, `app/server/src/inbound_text.rs:74`) is never called and `messaging::api::receive_status` never runs: no delivery or failure is recorded, TXT-014's email fallback for a failed text and CARD-019's counts never see a failure, and `ErrorCode` paths are dead. The fake hides it: `status_callback` (`stand_ins/twilio.py:167`, control route `/_stand_in/twilio/status`, `stand_ins/server.py:295`) emits a callback for any message. And the fake's sent log filters by the app's own `MessageKey` (`stand_ins/server.py:121`), which Twilio cannot store. Fix: (1) `TwilioSms` (built in `app/adapters/src/base.rs:106`) carries the status URL, `<ASKHAVA_PUBLIC_BASE_URL>/webhooks/twilio/status` (Twilio signs the full callback URL, and `verify_webhook` checks the public base, path and query, `app/server/src/inbound_text.rs:143`, so the URL sent must be exactly the URL the route rebuilds), and `send_text` adds `StatusCallback` to every create; with no public base URL (dev and CI without webhooks) it sends none, as today. (2) `stand_ins/twilio.py`: `create_message` stores the `StatusCallback` it was given; `status_callback` for a message created without one refuses (the control route answers 409 and records no callback), and with one returns the URL with the params, so a test posts to the URL the app asked for. (3) The fake's Messages list honours Twilio's own filters `To`, `From`, `DateSent`, `DateSent<` and `DateSent>` (dates `YYYY-MM-DD`, UTC); `MessageKey` stays a stand-in-only filter, documented in `stand_ins/server.py` as test-only and used only by `core::test_control`, never by app code (T110 matches without it, D-2764). (4) Tests: `tests/integration/tests/sms_status_callback.rs` sends a text through the adapter against the served stand-in with a public base URL set and asserts the fake recorded `StatusCallback` equal to that URL plus `/webhooks/twilio/status` (fails before the fix), and that the route accepts the callback the fake then gives (signature over that URL); `tests/contract/test_twilio_contract.py` and `tests/contract/test_stand_in_server.py`: no callback for a message created without `StatusCallback`, one aimed at the given URL with it, and the `From` and `DateSent` filters. T129 checks the create parameter against Twilio's test credentials. Update `app/adapters/CLAUDE.md` (shared), `docs/architecture.md` section 7 and `docs/decisions.md`.",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -23501,7 +23505,8 @@
    ],
    "decisions": [
     "D-2761",
-    "D-2764"
+    "D-2764",
+    "D-2771"
    ],
    "cites": [],
    "budget": {
@@ -23521,7 +23526,7 @@
    "id": "T378",
    "slug": "voice-calls-carry-twiml-and-callbacks",
    "title": "adapters, calls and stand-in (harness): every outbound call carries its TwiML and status callbacks, and the safety call's answer is received",
-   "goal": "Nov 11 vendor-double review batch 4, F3 (D-2762; CALL-006, CALL-022, OPS-028, INT-004, SEC-016). `TwilioVoice::open_call` posts only `To` and `From` (`app/adapters/src/voice.rs:55`); Twilio's Calls API needs one of `Url`, `Twiml` or `ApplicationSid` and refuses the create without one, and fetches the call's TwiML only from that parameter. So once T330 registers `place_safety_call` (`app/calls/src/voice.rs:346`) and T108 calls `ring_owner` (`:501`, whose comment expects `owner_bridge_twiml` to run on Casey's answered leg), every safety call and owner bridge fails at Twilio; and no call asks for status callbacks, so `safety_call_answered` (`:464`) is never called. The fake's `create_call` (`stand_ins/twilio.py:264`) takes `To` and `From` only and succeeds. Fix: (1) `open_call` takes the call's script (inline `Twiml`, at most 4,000 characters, or a signed `Url` on the public base URL served by the app; the task picks one per call kind, states why in its decision, and never puts a phone number in a URL), a `StatusCallback` URL on the public base and its `StatusCallbackEvent` list; a call that must know who answered asks for Twilio's answering-machine detection as the Calls API page documents it (`MachineDetection`, with `AsyncAmd` and `AsyncAmdStatusCallback` or the documented equivalent; the worker reads the page and cites it). (2) `place_safety_call` sends `safety_twiml` (with its `Gather` `action` an absolute URL on the public base, since inline TwiML has no document URL to resolve a relative one against) and `ring_owner` sends `owner_bridge_twiml` (its signature gains the homeowner's number and the safety words; T108, after this task, calls the new form); a script builder's `None` places no call and logs as today. (3) A new signed route, `POST /webhooks/twilio/voice/status` (`app/server/src/voice_status.rs`, merged in the shared `app/server/src/lib.rs` like `inbound_voice`), verified like every Twilio webhook (SEC-016): for a safety call (its query carries only the alert ID), maps the answer to `AnsweredBy` (`human` to `Person`, `machine_*` and `fax` to `Machine`, `unknown` to `Unknown`; `no-answer`, `busy`, `failed` or `canceled` to `Nobody`) and calls `safety_call_answered` once per CallSid; other calls' callbacks are acknowledged and change nothing. (4) `stand_ins/twilio.py`: `create_call` refuses a create with none of `Url`, `Twiml`, `ApplicationSid` with Twilio's 400 error shape, stores the callback URL and events, and a control emits answered and completed callbacks (with `AnsweredBy` when detection was asked) only to the stored URL. Tests: `tests/contract/test_twilio_voice_contract.py` (the refusal, the stored callback, no callback without one) and `tests/integration/tests/voice_call_plan.rs` (a safety call through the served stand-in carries its TwiML and callback, fails before the fix; a `human` answer acknowledges the alert once; `no-answer` logs `nobody`; a repeat callback changes nothing; the owner bridge carries `owner_bridge_twiml`). If T330 has registered `place_safety_call`, update its registration in the shared `app/server/src/bin/worker.rs`. T131 checks the parameters against Twilio. Update `app/calls/CLAUDE.md`, `app/adapters/CLAUDE.md`, `docs/architecture.md` (section 7 and the route table) and `docs/decisions.md`.",
+   "goal": "Nov 11 vendor-double review batch 4, F3 (D-2762; CALL-006, CALL-022, OPS-028, INT-004, SEC-016). `TwilioVoice::open_call` posts only `To` and `From` (`app/adapters/src/voice.rs:55`); Twilio's Calls API needs one of `Url`, `Twiml` or `ApplicationSid` and refuses the create without one, and fetches the call's TwiML only from that parameter. So once T330 registers `place_safety_call` (`app/calls/src/voice.rs:346`) and T108 calls `ring_owner` (`:501`, whose comment expects `owner_bridge_twiml` to run on Casey's answered leg), every safety call and owner bridge fails at Twilio; and no call asks for status callbacks, so `safety_call_answered` (`:464`) is never called. The fake's `create_call` (`stand_ins/twilio.py:264`) takes `To` and `From` only and succeeds. Fix: (1) `open_call` takes the call's script as inline `Twiml` (at most 4,000 characters) for both call kinds, never a `Url` (the owner bridge's TwiML holds the homeowner's number, which must never sit in a URL, so no TwiML-serving route is added), a `StatusCallback` URL on the public base and its `StatusCallbackEvent` list; the safety call asks for Twilio's answering-machine detection with `MachineDetection`, `AsyncAmd=true` and `AsyncAmdStatusCallback` pointing at the same status route with the same alert query (the worker cites the Calls API page). (2) `place_safety_call` sends `safety_twiml` (with its `Gather` `action` an absolute URL on the public base, since inline TwiML has no document URL to resolve a relative one against) and `ring_owner` sends `owner_bridge_twiml` (its signature gains the homeowner's number and the safety words; T108, after this task, calls the new form); a script builder's `None` places no call and logs as today. (3) Two new signed routes in `app/server/src/voice_status.rs`, merged in the shared `app/server/src/lib.rs` like `inbound_voice` and verified like every Twilio webhook over the public base, path and query (SEC-016); each query carries only the alert ID. (a) `POST /webhooks/twilio/voice/status?alert=<id>`: with async detection Twilio posts `answered` before the detection result and without `AnsweredBy`, so the call is decided only by the detection result (`AnsweredBy` `human` to `Person`, `machine_start`, `machine_end_*` and `fax` to `Machine`, `unknown` to `Unknown`) or by a final `CallStatus` of `no-answer`, `busy`, `failed` or `canceled` (`Nobody`); `safety_call_answered` runs once per CallSid (the first deciding post wins); any other callback (`initiated`, `ringing`, `answered`, a `completed` after a decision) is acknowledged and changes nothing; an owner-bridge callback is acknowledged and changes nothing. (b) `POST /webhooks/twilio/voice/safety-key?alert=<id>`, the absolute `Gather` `action` that `safety_twiml` (`app/calls/src/voice.rs:226`) posts the key press to: it calls `safety_call_key` (`:411`; \"9\" puts her number on the suppression list, CON-035) and answers `hangup_twiml`; a repeat post for the same CallSid changes nothing. (4) `stand_ins/twilio.py`: `create_call` refuses a create with none of `Url`, `Twiml`, `ApplicationSid` with Twilio's 400 error shape, stores the callback URL and events, and a control emits callbacks only to the stored URLs, as Twilio does: `answered` without `AnsweredBy`, then, when detection was asked, the detection result as a separate post to the `AsyncAmdStatusCallback`, then `completed`. Tests: `tests/contract/test_twilio_voice_contract.py` (the refusal, the stored callback, no callback without one) and `tests/integration/tests/voice_call_plan.rs` (a safety call through the served stand-in carries its TwiML and callback, fails before the fix; a `human` detection result acknowledges the alert once; `answered` followed by `machine_end_beep` never acknowledges it (OPS-028); `no-answer` logs `nobody`; a repeat callback changes nothing; a key press of 9 on the safety-key route puts her number on the suppression list and answers hang-up TwiML, another key does not; the owner bridge carries `owner_bridge_twiml`). If T330 has registered `place_safety_call`, update its registration in the shared `app/server/src/bin/worker.rs`. T131 checks the parameters against Twilio. Update `app/calls/CLAUDE.md`, `app/adapters/CLAUDE.md`, `docs/architecture.md` (section 7 and the two rows in the section 13 route table) and `docs/decisions.md`.",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -23552,25 +23557,28 @@
     "docs/spec/ops-recovery.md",
     "docs/spec/intake.md",
     "docs/spec/security.md",
-    "docs/brains/rust-production.md"
+    "docs/brains/rust-production.md",
+    "docs/spec/consent.md"
    ],
    "requirements": [
     "CALL-006",
     "CALL-022",
     "OPS-028",
     "INT-004",
-    "SEC-016"
+    "SEC-016",
+    "CON-035"
    ],
    "tests": [
     "TD-CALL-22"
    ],
    "decisions": [
-    "D-2762"
+    "D-2762",
+    "D-2771"
    ],
    "cites": [],
    "budget": {
     "files": 6,
-    "lines": 550,
+    "lines": 650,
     "context_pct": 15
    },
    "checks": [
@@ -24364,7 +24372,7 @@
     "T057",
     "T075"
    ],
-   "model": "claude-sonnet-5-5",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -24395,7 +24403,8 @@
     "TD-AI-28"
    ],
    "decisions": [
-    "D-2760"
+    "D-2760",
+    "D-2771"
    ],
    "cites": [],
    "budget": {
@@ -24926,7 +24935,7 @@
    "id": "T381",
    "slug": "dispute-inquiry",
    "title": "payments and stand-in (harness): a card-network inquiry is not recorded as a chargeback",
-   "goal": "Nov 11 vendor-double review batch 4, F9 (D-2768; FEE-027, FEE-050). Stripe opens an inquiry (a dispute whose `status` is `warning_needs_response`) when a cardholder asks about a charge: no money is withdrawn, there is no dispute fee and a refund is still allowed; if it becomes a chargeback Stripe reports the new status. `record_dispute` (`app/payments/src/disputes.rs:73`) writes the disputed amount and the $15 fee and blocks refunds for every `charge.dispute.created`, and the fake only opens `needs_response` disputes (`stand_ins/stripe.py:274`). After T132, T314, T353 and T380 (owners of the same files): (1) the dispute event's `status` is read where the event is parsed (`app/payments/src/routes.rs`) and passed to `record_dispute`; an inquiry (`warning_needs_response`, `warning_under_review`) records an inquiry row and a High alert for Casey with no ledger entry, no fee and no refund block; a later event for the same dispute with a chargeback status (`needs_response` and after) records it then, once, as today; `warning_closed` ends the inquiry with no money; (2) the fake opens an inquiry when asked (its own mode), sends the matching events, and can escalate it. Tests in `tests/integration/tests/dispute_inquiry.rs`: an inquiry writes no ledger entry and the pick can still be refunded (fails before the fix); escalation records the dispute and fee once; a closed inquiry writes nothing; and `tests/contract/test_stripe_inquiry.py` in sandbox mode (skipped without credentials) records which events and statuses Stripe test mode sends for its inquiry test card (https://docs.stripe.com/testing#disputes); any difference is fixed in the code and the fake together and recorded in the decision. Update the `payments` `CLAUDE.md` and `docs/decisions.md`.",
+   "goal": "Nov 11 vendor-double review batch 4, F9 (D-2768; FEE-027, FEE-050). Stripe opens an inquiry (a dispute whose `status` is `warning_needs_response`) when a cardholder asks about a charge: no money is withdrawn, there is no dispute fee and a refund is still allowed; if it becomes a chargeback Stripe reports the new status. `record_dispute` (`app/payments/src/disputes.rs:73`) writes the disputed amount and the $15 fee and blocks refunds for every `charge.dispute.created`, and the fake only opens `needs_response` disputes (`stand_ins/stripe.py:274`). After T132, T314, T353 and T380 (owners of the same files): (1) the dispute event's `status` is read where the event is parsed (`app/payments/src/routes.rs`) and passed to `record_dispute`; an inquiry (`warning_needs_response`, `warning_under_review`) is stored as an audit row and a High alert for Casey, not a `payments.dispute` row (that table has no kind column and a unique dispute ID; no migration), with no ledger entry, no fee and no refund block; escalation arrives as `charge.dispute.updated` with a chargeback status (`needs_response` and after) and, where money moves, `charge.dispute.funds_withdrawn`; both are added to `HANDLED` (`app/payments/src/routes.rs:85`) and the first that shows a chargeback status records the dispute then, once, as `charge.dispute.created` does today; a `charge.dispute.closed` with `warning_closed` (or for an inquiry never recorded as a dispute) is acknowledged with its audit row and never takes `dispute_closed`'s not-recorded path that answers 500 (`:489`); (2) the fake opens an inquiry when asked (its own mode), sends the matching events, and can escalate it. Tests in `tests/integration/tests/dispute_inquiry.rs`: an inquiry writes no ledger entry and the pick can still be refunded (fails before the fix); escalation by `charge.dispute.updated` or `charge.dispute.funds_withdrawn` records the dispute and fee once; a `warning_closed` inquiry answers 200 and writes no money; and `tests/contract/test_stripe_inquiry.py` in sandbox mode (skipped without credentials) records which events and statuses Stripe test mode sends for its inquiry test card (https://docs.stripe.com/testing#disputes); any difference is fixed in the code and the fake together and recorded in the decision. Update the `payments` `CLAUDE.md` and `docs/decisions.md`.",
    "type": "harness",
    "phase": 2,
    "stage": "6",
@@ -24965,7 +24974,8 @@
     "TD-FEE-68"
    ],
    "decisions": [
-    "D-2768"
+    "D-2768",
+    "D-2771"
    ],
    "cites": [],
    "budget": {
@@ -25525,7 +25535,7 @@
    "id": "T382",
    "slug": "verify-max-tries-cooldown",
    "title": "picks, businesses and portals: Twilio Verify's \"too many tries\" is a cooldown, never an error page",
-   "goal": "Nov 11 vendor-double review batch 4, F10 (callers' half; D-2769; PICK-013, SEC-004, SEC-008, BIZ-002, TXT-038). A Verify resend within the code's 10-minute life reuses the pending verification and its check attempts, so after the app allows a new code's tries Twilio can answer a check with 60202 (HTTP 429, too many attempts), and a send with 60203; the app counts tries per code row (`CODE_TRIES`, `app/picks/src/rules.rs:13`; `app/portals/src/business_auth.rs:88`) and maps any check error to `PicksError::Verify` (`app/picks/src/service.rs:790`), so the homeowner or business sees an error, not \"try again in 15 minutes\". After T131 (whose adapter returns a typed too-many-tries error) and the queued owners of these files: each caller (`app/picks/src/service.rs` and `app/picks/src/email_code.rs` for the pick code, `app/businesses/src/identity.rs` for the identity code, `app/portals/src/business_auth.rs` for sign-in) maps that error to its own cooldown (`CodeCheck::CoolingDown(at + COOLDOWN)` for the pick code; the existing lock-out of the other two), which outlasts the 10-minute verification so the next send starts a fresh one; any other adapter error keeps today's answer. Tests in `tests/integration/tests/verify_max_tries.rs` against the served stand-in (T131's faithful attempts): three wrong tries, a resend, then two wrong tries give the cooldown, not an error (fails before the fix), for each of the three flows. Update the `picks`, `businesses` and `portals` `CLAUDE.md` files and `docs/decisions.md`.",
+   "goal": "Nov 11 vendor-double review batch 4, F10 (callers' half; D-2769; PICK-013, SEC-004, SEC-008, BIZ-002, TXT-038). A Verify resend within the code's 10-minute life reuses the pending verification and its check attempts, so after the app allows a new code's tries Twilio can answer a check with 60202 (HTTP 429, too many attempts), and a send with 60203; the app counts tries per code row (`CODE_TRIES`, `app/picks/src/rules.rs:13`; `app/portals/src/business_auth.rs:88`) and maps any check error to `PicksError::Verify` (`app/picks/src/service.rs:790`), so the homeowner or business sees an error, not \"try again in 15 minutes\". After T131 (whose adapter returns a typed too-many-tries error) and the queued owners of these files: each caller (`app/picks/src/service.rs` and `app/picks/src/email_code.rs` for the pick code, `app/businesses/src/identity.rs` for the identity code, `app/portals/src/business_auth.rs` for sign-in) maps that error to its own cooldown (`CodeCheck::CoolingDown(at + COOLDOWN)` for the pick code; the existing lock-out of the other two), which outlasts the 10-minute verification so the next send starts a fresh one; any other adapter error keeps today's answer. Tests in `tests/integration/tests/verify_max_tries.rs` against the served stand-in (T131's faithful attempts): three wrong tries, a resend, then two more wrong tries; the third check after the resend (Twilio's sixth attempt on that verification, 60202) answers the cooldown, not an error (fails before the fix), for each of the three flows. Update the `picks`, `businesses` and `portals` `CLAUDE.md` files and `docs/decisions.md`.",
    "type": "build",
    "phase": 2,
    "stage": "6",
@@ -25576,7 +25586,8 @@
     "TD-PICK-61"
    ],
    "decisions": [
-    "D-2769"
+    "D-2769",
+    "D-2771"
    ],
    "cites": [],
    "budget": {

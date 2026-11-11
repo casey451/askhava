@@ -146,3 +146,17 @@
 - TD-AI-28, TD-TXT-36, TD-TXT-37, TD-CALL-22, TD-FEE-67, TD-FEE-68 and TD-PICK-61 added.
 - Owner actions: the Twilio webhook connection override and Fallback URL, and the SendGrid integration for Verify email (T122's checklist; `docs/for-casey-review.md`).
 - No task IN_PROGRESS or MERGE_PENDING was edited (T157 was MERGE_PENDING).
+
+### Plan review (D-2771)
+
+| Finding | Change |
+|---|---|
+| 1 (High) T378: `answered` arrives before the detection result and without `AnsweredBy` | Decide only on the detection result or a final no-answer/busy/failed/canceled; other callbacks change nothing; fake posts them separately; `answered` then `machine_end_beep` test |
+| 2 (High) T378: nothing receives the safety call's key presses | Signed `/webhooks/twilio/voice/safety-key` calls `safety_call_key`; CON-035; press-9 test; route rows; 650 lines |
+| 3 (Med) T378: script by URL could carry a number | Inline `Twiml` for both call kinds |
+| 4 (Med) T380: claiming any listed refund | Only the single full-amount succeeded/pending refund (and `metadata[pick_id]` where present); else alert; the lost-replay test without expiry |
+| 5 (Med) T381: escalation events and storage | `charge.dispute.updated`/`funds_withdrawn` handled and enabled (T122); inquiry as audit row plus alert; no 500 on `warning_closed` |
+| 6 (Low-Med) T376 model | Opus, medium effort |
+| 7 (Low) T382 test wording | Third check after the resend answers the cooldown |
+| 8 (Low) D-2761 "no query" rationale | Corrected; the check covers path and query |
+| 9 (Low) SendGrid in the privacy policy | Folded into T112 |
