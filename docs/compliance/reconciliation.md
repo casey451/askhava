@@ -126,3 +126,5 @@ Every row needs a plan change to `kit/tasks.json` (locked) with a decision entry
 
 - **A-01** (TECH-05, F-03): T139's record states measured restore time, data-loss window, the snapshot restored and the no-double-send/charge result, against Casey's RTO/RPO once set (`owner-actions.md` P0).
 - **A-02** (TECH-14, TECH-16): T141's handover pack gains a one-page release record template: source SHA, `Ci`/`Twin`/`Ally` run IDs, migrations, rollback or no-rollback decision, open vulnerabilities, secret scope, health check, and Casey's go.
+
+**Taken up by D-3080 (November 11, 2026):** N-02 is task T392 (stage 6, after T136 and T137, before T140; a marker outside its allowed place blocks Gate C); A-01 is in T139's goal; A-02 is in T141's goal (`docs/release-record.md`); Gate C's preconditions, these included, are checked by T395 (`scripts/gate_c_ready.py`). N-01, N-03 and N-04 stay proposals.
