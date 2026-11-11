@@ -2227,6 +2227,12 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **Still to come.** The homeowner seeing "Updated" or "Withdrawn by the business" is the next step (T384). The AI check on notes is ready to plug in but has no AI behind it yet.
 - **Nothing needs you now.**
 
+## A late payment on a pick the system ended is kept on record and refunded (plan change, D-3007, November 11)
+
+- **What happened.** The step that refunds a payment arriving after the system had already ended a pick stopped a second time. Its plan has the system keep a record of that payment and queue its refund, but an older test expected the system to keep no record of it at all, so no build could pass both.
+- **What changed.** That older test still checks that an ended pick is never handed to the business. Instead of "nothing is kept", it now checks that the payment and its record are kept, and that exactly one refund job and one alert to you are made. A stale comment in another test is corrected too. Every other test that touches these payments was checked; none other needs a change.
+- **Nothing needs you now.**
+
 ## T384: the homeowner sees a changed or withdrawn quote (D-2987 to D-2990)
 
 - **What changed.** When a business changes its quote before any pick, the homeowner's quote page and the quote card show "Updated Nov 3, 9:15 a.m. Arizona time", and the quote keeps its number. A withdrawn quote keeps its number and place, says "Withdrawn by the business" and has no Pick button; no one can pick it by page, by "2 YES" text or as a backup. The LIST text now numbers each line with the quote's page number, so "2 YES" always picks the quote shown as 2 (before, after a failed pick the list could renumber and "2 YES" could pick a different business).
