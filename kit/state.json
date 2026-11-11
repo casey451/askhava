@@ -27248,7 +27248,7 @@
     "T163",
     "T240"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 3,
    "slug": "brand-switch-proof",
    "type": "harness",
@@ -27262,7 +27262,7 @@
     2836,
     2837
    ],
-   "last_failure": "T295 blocked at step 3: tests/brand_literal_baseline.json still lists files T295 does not own: app/messaging/templates/en.json (96) and es.json (96), owned by T360, and app/portals/templates/homeowner_home.html (3), owned by T087. A plan change must give these an owner before the guard is made strict. No code changed.",
+   "last_failure": "T295 blocked at step 3: tests/brand_literal_baseline.json still lists files T295 does not own: app/messaging/templates/en.json (96) and es.json (96), owned by T360, and app/portals/templates/homeowner_home.html (3), owned by T087. A plan change must give these an owner before the guard is made strict. No code changed.\nre-queued after plan fix D-2843: plan fixed by D-2843 (#455): new T383 removes the template/homeowner-page brand literals first; T295 waits for it and uses a fake brand that fits recorded segments",
    "history": [
     {
      "attempt": 1,
@@ -27304,7 +27304,22 @@
      "result": "BLOCKED"
     }
    ],
-   "reason": "T295 blocked at step 3 (checked by the runner session, no worker run): tests/brand_literal_baseline.json still lists app/messaging/templates/en.json (96) and es.json (96), owned by T360, and app/portals/templates/homeowner_home.html (3), owned by T087; kit/tasks.json T295 owns none of them. A plan change must give these an owner before the guard is made strict. No code changed."
+   "reason": null,
+   "requeues": [
+    {
+     "at": "2026-11-11T05:09:12Z",
+     "reason": "plan fixed by D-2843 (#455): new T383 removes the template/homeowner-page brand literals first; T295 waits for it and uses a fake brand that fits recorded segments",
+     "by": "manual-cae03dfc27e8",
+     "was": "T295 blocked at step 3 (checked by the runner session, no worker run): tests/brand_literal_baseline.json still lists app/messaging/templates/en.json (96) and es.json (96), owned by T360, and app/portals/templates/homeowner_home.html (3), owned by T087; kit/tasks.json T295 owns none of them. A plan change must give these an owner before the guard is made strict. No code changed.",
+     "attempts": 3,
+     "plan_fix": "D-2843",
+     "plan_since": "2026-11-11T04:58:50Z",
+     "plan_base": "18d7cc8f25928eecd7091aa634c5a592dac77fc6",
+     "plan_head": "89fd85f4a8a06259c6c7d90474372d3914d5752e",
+     "plan_then": "1935ad717df39631357d16235b4f071a21c0403dba952b7c7c9cfd21d250c631",
+     "plan_now": "06594e141fdcbe7e5cf2ddb9428415a0a4a4ebb9c6c1b0fb3f8820305fe8bb80"
+    }
+   ]
   },
   {
    "id": "T296",
@@ -30915,7 +30930,7 @@
    }
   }
  },
- "updated_at": "2026-11-11T05:08:08Z",
+ "updated_at": "2026-11-11T05:09:12Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -31013,8 +31028,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "fdd6e540e3c349d42a42ae2d412624a550b3dbec",
- "starter": "actions",
+ "runner_sha": "89fd85f4a8a06259c6c7d90474372d3914d5752e",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "fbfe8c8cd68fb6fe2f231354f28b782260f1f9d8",

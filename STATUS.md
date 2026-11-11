@@ -1,10 +1,10 @@
 # Ask Hava build status
 
-Updated 2026-11-11T05:08:08Z by runner fdd6e540e3c3 (actions).
+Updated 2026-11-11T05:09:12Z by runner 89fd85f4a8a0 (manual).
 
-**Building: T337 in progress since 04:55Z; 195 of 362 done; week 60% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T337 in progress since 04:55Z; 195 of 370 done; week 60% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 195 of 362 build tasks (owner gates not counted)
+- **Tasks done:** 195 of 370 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 3: T337 claimed 04:55Z, lease until 07:55Z
 - **Week:** 60% used, 67.6M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
@@ -12,8 +12,7 @@ Updated 2026-11-11T05:08:08Z by runner fdd6e540e3c3 (actions).
 - **Keeper:** last ran 05:08Z, next wake 07:58Z
 
 ## Needs attention
-- BLOCKED T295: T295 blocked at step 3 (checked by the runner session, no worker run): tests/brand_literal_baseline.json still lists app/messaging/templates/en.json (96) and es.json (96), owned by T360, and app/portals/templates/homeowner_home.html (3), owned by T087; kit/tasks.json T295 owns none of them. A plan change must give these an owner before the guard is made strict. No code changed.
-- Strict plan check red: 1 problem(s) on tasks still to run (+4 on DONE tasks); first: T210: stored context_pct 14% but it measures 18%; regenerate
+- nothing
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -45,6 +44,7 @@ Updated 2026-11-11T05:08:08Z by runner fdd6e540e3c3 (actions).
 | T288 | payments: a Stripe charge the nightly reconcile cannot settl | done | 1 | 60 min | 06:30Z |  |
 
 ### Plan and harness merges on main
+- 05:08Z Plan: new T383 removes the brand words left in the text templates and homeowner page; T295 waits for it (D-2843) (#455)
 - 04:14Z Plan: three lanes (D-2810) (#451)
 - 04:04Z Plan: shorten the stage-6 critical path by removing ordering-only dependencies (D-2821) (#452)
 - 03:53Z Harness: merge main before the hand-in push when the head is behind (D-2798) (#450)
@@ -68,13 +68,13 @@ Updated 2026-11-11T05:08:08Z by runner fdd6e540e3c3 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 206 of 733 (28.1%) · partial 338 · unstarted 189
-**Tasks merged (throughput only):** 195 of 362
+**Requirements verified:** 204 of 733 (27.8%) · partial 340 · unstarted 189
+**Tasks merged (throughput only):** 195 of 370
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 15 | 13 | 7 | 35 |
-| ai | 8 | 16 | 5 | 29 |
+| ai | 7 | 17 | 5 | 29 |
 | businesses | 16 | 35 | 7 | 58 |
 | calls | 11 | 13 | 1 | 25 |
 | consent | 8 | 23 | 4 | 35 |
@@ -83,7 +83,7 @@ Updated 2026-11-11T05:08:08Z by runner fdd6e540e3c3 (actions).
 | job-cards | 10 | 12 | 2 | 24 |
 | licensing | 24 | 24 | 0 | 48 |
 | lifecycle | 17 | 11 | 0 | 28 |
-| messaging | 19 | 23 | 3 | 45 |
+| messaging | 18 | 24 | 3 | 45 |
 | ops-recovery | 2 | 5 | 47 | 54 |
 | privacy | 6 | 22 | 3 | 31 |
 | quiet-hours | 4 | 5 | 0 | 9 |
