@@ -2,6 +2,11 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## The share box at the pick is required, and five older tests tick it (plan change, D-3032, November 11)
+
+- **What happened.** The step that adds the homeowner's "Share my first name and the job address" box at the pick stopped a second time. Pressing Pick without ticking the box must now show an error and pick nothing, but five older tests press Pick without the box, and that step was not allowed to change them.
+- **What changed.** The same step may now change those five tests, and only to tick the box before pressing Pick; every check they make stays the same. Because it now changes finished tests, it runs as a harness step with the stricter review. One queued step that also edits one of those tests now waits for it.
+- **Nothing needs you.**
 
 ## Browser setup survives an Ubuntu mirror outage (harness change, D-3030, November 11)
 
