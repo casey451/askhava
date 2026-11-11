@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T20:10:03Z by runner 53eba4dfccb6 (manual).
+Updated 2026-11-11T20:11:28Z by runner 0ca2670042a7 (actions).
 
 **Idle since 19:59Z; 213 of 376 done; week 73% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-11T20:10:03Z by runner 53eba4dfccb6 (manual).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 19:59Z (no task in progress)
 - **Week:** 73% used, 45.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:01Z, 8 min before this update
+- **Last run:** 20:10Z, 1 min before this update
 - **Keeper:** last ran 20:01Z, next wake 20:11Z
 
 ## Needs attention
@@ -145,7 +145,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 93 of 166 done
+- stage 4: 93 of 168 done
 - stage 5: 0 of 58 done
 - stage 6: 0 of 34 done
 - stage 7: 0 of 2 done
