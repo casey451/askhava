@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-11T20:20:42Z by runner 0ca2670042a7 (actions).
+Updated 2026-11-11T21:05:46Z by runner 53eba4dfccb6 (actions).
 
 **Building: T387 in progress since 20:19Z; 213 of 376 done; week 73% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 213 of 376 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T387 claimed 20:19Z, lease until 23:19Z
-- **Week:** 73% used, 48.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:18Z, 1 min before this update
+- **Lane:** lane 1: T387 claimed 20:19Z, lease until 23:19Z; lane 2: T334 claimed 21:05Z, lease until 00:05Z
+- **Week:** 73% used, 47.1M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Last run:** 20:20Z, 44 min before this update
 - **Keeper:** last ran 20:16Z, next wake 20:36Z
 
 ## Needs attention
@@ -69,7 +69,6 @@ Updated 2026-11-11T20:20:42Z by runner 0ca2670042a7 (actions).
 | T349 | calls: a PIN draw fails only when the OS source fails, and o | done | 1 | 36 min | 00:40Z |  |
 | T207 | businesses: re-apply the license map when a daily list chang | done | 1 | 41 min | 23:39Z |  |
 | T311 | calls and server: a voice read-back confirm connects only th | done | 2 | 33 min | 23:21Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
-| T338 | adapters (harness): the refused-connection test holds its po | done | 1 | 24 min | 20:45Z |  |
 
 ### Plan and harness merges on main
 - 20:03Z Harness: the critical-path test checks what the runner can claim, not live in-flight work (D-3057) (#514)
@@ -137,7 +136,7 @@ Updated 2026-11-11T20:20:42Z by runner 0ca2670042a7 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-11T20:15:48Z (week)): five-hour: 0k used, 29.1M left, resets on first use; week: 146.0M used, 48.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-05T00:54:30Z.
+- Pacing (session_reading 2026-11-11T20:15:48Z (week)): five-hour: 881k used, 28.2M left, resets on first use; week: 146.9M used, 47.1M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-05T01:41:09Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -153,6 +152,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T387 (lease until 2026-11-11T23:19:01Z)
+- lane 2: T334 (lease until 2026-11-12T00:05:40Z)
 
 ## Last usage reading
 - {"task": "T228", "at": "2026-11-11T19:59:14Z", "output_tokens": 24991, "cache_read_input_tokens": 2155726, "cache_creation_input_tokens": 111875, "input_tokens": 138}
