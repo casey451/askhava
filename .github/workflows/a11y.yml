@@ -88,13 +88,41 @@ jobs:
           key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
 
       - name: Chromium and its system libraries
+        timeout-minutes: 15
         env:
           CACHE_HIT: ${{ steps.browsers.outputs.cache-hit }}
         run: |
-          if [ "$CACHE_HIT" = "true" ]; then
-            npx playwright install-deps chromium
-          else
-            npx playwright install --with-deps chromium
+          # An Ubuntu mirror outage must not fail the suite before it starts (D-3030): apt waits are bounded,
+          # install-deps is tried three times, and if the mirrors stay down the step goes on with the runner
+          # image's own libraries, but only once Chromium is proven to launch and render a page below.
+          printf '%s\n' 'Acquire::Retries "2";' 'Acquire::http::Timeout "20";' 'Acquire::https::Timeout "20";' \
+            'DPkg::Lock::Timeout "120";' | sudo tee /etc/apt/apt.conf.d/99-askhava-bounded >/dev/null
+          if [ "$CACHE_HIT" != "true" ]; then
+            npx playwright install chromium
+          fi
+          deps=false
+          for pause in 15 45 0; do
+            if timeout --kill-after=15s 150s npx playwright install-deps chromium; then
+              deps=true
+              break
+            fi
+            sudo pkill -x apt-get || true
+            if [ "$pause" -gt 0 ]; then
+              echo "install-deps failed; trying again in ${pause}s"
+              sleep "$pause"
+            fi
+          done
+          node -e "
+            const { chromium } = require('@playwright/test');
+            (async () => {
+              const browser = await chromium.launch();
+              const page = await browser.newPage();
+              await page.setContent('<p>Ask Hava</p>');
+              await browser.close();
+            })().catch((err) => { console.error(err); process.exit(1); });
+          "
+          if [ "$deps" != "true" ]; then
+            echo "::warning title=Chromium system libraries::apt could not reach the Ubuntu mirrors; Chromium launched with the runner image's libraries, without the optional fonts Playwright lists (D-3030)"
           fi
 
       - name: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing)
