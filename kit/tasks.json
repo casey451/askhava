@@ -24212,74 +24212,6 @@
    "prompt": "kit/prompts/T331.md"
   },
   {
-   "id": "T360",
-   "slug": "optout-emails",
-   "title": "messaging: the opt-out confirmation email while texting is off, and CON-016's email or owner count for a listed homeowner who writes again",
-   "goal": "Nov 10 code review, messaging F3 and CON-016, the email half (D-2629; CON-016, CON-030, CON-009, D-226). (1) CON-030: while texting is off or suspended an opt-out is confirmed by email if one is on file, never by a later text; no code sends that email. `app/messaging/src/optout_email.rs` adds `messaging::api::queue_optout_confirmation_email(db, vault, contact, language, event)`: it reads her email through the vault (never logged), and when one is on file queues one email under the opt-out event as its subject through T094's email outbox (`messaging::api::queue_email`, `app/messaging/src/email.rs:343`, then `send_email`, `:454`; `queue_email` takes the key secret and the footer postal address, `(secret, postal)`, so both new functions' signatures may take them too), with the CON-009 wording as an email (English and Spanish), once per event. (2) CON-016: a listed homeowner who writes without START is emailed if an email is on file, and otherwise is listed in Casey's weekly digest; `queue_optout_wrote_again(db, vault, contact, inbox, now)` queues at most one such email a day per homeowner (\"You opted out of texts from Ask Hava…\": how to text again with START, and that her open requests continue on the quote page and by email, CON-012), and with no email on file writes one `ops` audit row, action `messaging.optout_wrote_again`, subject the inbox row, IDs only, which T204's weekly digest counts (no new table, no migration). The new email templates go in `app/messaging/templates/en.json` and `es.json` through the cold read and the copy panel (WORD-028, WORD-029); their brand words are tokens, never literals (`{brand_short}:` to open, `{brand}`, `{domain}`; filled by the registry, D-1932, D-2843), since the brand-literal guard refuses a new literal line in either file; their other placeholders are only those in the sample VALUES lists of the done, unowned registry tests (`app/messaging/src/tests/template_registry.rs:8`, `app/intake/src/tests/intake_timeouts.rs:53`: `job`, `count`, `trade`, `link`, `quoted`, `business`, `number`, `time`, `reply_time`), so the quote-page link is `{link}`, or those tests fail with `MissingValue`. Each new homeowner template id is added once to `NOT_UPDATE_TEXTS` in `app/quotes/src/update_texts.rs` (opt-out wording, outside TXT-040's scan; entries added only, the array length raised to match, nothing else in the file changed), since the done TD-TXT-25 test (`app/quotes/src/tests/update_texts.rs:133`) fails on a homeowner template in neither list (D-3094). The route that calls both is T357's. Tests in `tests/integration/tests/optout_emails.rs` (TD-CON-34): with an email on file one confirmation email per event and none on a repeat; none without an email; a listed homeowner's message gives one email, a second the same day gives none, the next day one; without an email one audit row per message and no email; no body, phone or email address in any audit row or log line. Update the `messaging` `CLAUDE.md` and `docs/decisions.md`.",
-   "type": "build",
-   "phase": 1,
-   "stage": "4",
-   "module": "messaging",
-   "deps": [
-    "T094",
-    "T075",
-    "T278"
-   ],
-   "model": "claude-opus-5-5",
-   "effort": "high",
-   "reviewer_model": "claude-opus-5-5",
-   "review_areas": [
-    "privacy",
-    "compliance"
-   ],
-   "owns": [
-    "app/messaging/src/optout_email.rs",
-    "app/messaging/templates/en.json",
-    "app/messaging/templates/es.json",
-    "tests/integration/tests/optout_emails.rs",
-    "app/quotes/src/update_texts.rs"
-   ],
-   "reads": [
-    "docs/architecture.md",
-    "docs/code-docs.md",
-    "docs/spec/consent.md",
-    "docs/spec/messaging.md",
-    "docs/spec/wording.md",
-    "docs/copy/copy-panel.md",
-    "docs/brains/email-deliverability.md",
-    "docs/brains/sms-compliance.md",
-    "docs/brains/rust-production.md"
-   ],
-   "requirements": [
-    "CON-016",
-    "CON-030",
-    "CON-009"
-   ],
-   "tests": [
-    "TD-CON-34"
-   ],
-   "decisions": [
-    "D-2629",
-    "D-2620",
-    "D-226",
-    "D-2843",
-    "D-3094"
-   ],
-   "cites": [],
-   "budget": {
-    "files": 5,
-    "lines": 350,
-    "context_pct": 25
-   },
-   "checks": [
-    "Ci",
-    "Twin",
-    "Ally"
-   ],
-   "branch": "claude/task/T360-optout-emails",
-   "prompt": "kit/prompts/T360.md"
-  },
-  {
    "id": "T318",
    "slug": "whos-calling-text",
    "title": "calls, picks and quotes: the who's-calling text goes out at release, and a missing job view is an error, never another job's",
@@ -24292,8 +24224,7 @@
     "T316",
     "T281",
     "T293",
-    "T295",
-    "T360"
+    "T295"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -24335,8 +24266,7 @@
     "D-1687",
     "D-1293",
     "D-213",
-    "D-440",
-    "D-3094"
+    "D-440"
    ],
    "cites": [],
    "budget": {
@@ -25812,6 +25742,70 @@
    ],
    "branch": "claude/task/T359-charge-success-ledger-receipt",
    "prompt": "kit/prompts/T359.md"
+  },
+  {
+   "id": "T360",
+   "slug": "optout-emails",
+   "title": "messaging: the opt-out confirmation email while texting is off, and CON-016's email or owner count for a listed homeowner who writes again",
+   "goal": "Nov 10 code review, messaging F3 and CON-016, the email half (D-2629; CON-016, CON-030, CON-009, D-226). (1) CON-030: while texting is off or suspended an opt-out is confirmed by email if one is on file, never by a later text; no code sends that email. `app/messaging/src/optout_email.rs` adds `messaging::api::queue_optout_confirmation_email(db, vault, contact, language, event)`: it reads her email through the vault (never logged), and when one is on file queues one email under the opt-out event as its subject, once per event, through T094's email outbox: `messaging::api::queue_email` (`app/messaging/src/email.rs:343`, unowned) with `Notice::OptedOut` (`:153`), which already renders the CON-009 text in her language (`:245`), so no template is added for it; `queue_email` takes the key secret and the footer postal address, `(secret, postal)`, so the signature may take them too. (2) CON-016: a listed homeowner who writes without START is emailed if an email is on file, and otherwise is listed in Casey's weekly digest; `queue_optout_wrote_again(db, vault, contact, inbox, now)` queues at most one such email a day per homeowner (\"You opted out of texts from Ask Hava…\": how to text again with START, and that her open requests continue on the quote page and by email, CON-012), and with no email on file writes one `ops` audit row, action `messaging.optout_wrote_again`, subject the inbox row, IDs only, which T204's weekly digest counts (no new table, no migration). `queue_email` renders only its fixed `Notice` list (`email.rs:149`) and `email.rs` is not T360's, so the wrote-again email renders and stores itself in `optout_email.rs`, as `queue_check_in_email` does (`app/messaging/src/checkin_email.rs:208`): its English and Spanish words (drafts through the cold read and the copy panel, WORD-028, WORD-029) are built in Rust with the crate's `short_name` and `legal_name` (no brand literal, D-1932, D-2843), rendered in the shared email layout, and inserted through `models::insert_email` (`app/messaging/src/models.rs:525`) under an `email.send` key over the template, contact and Arizona day; T094's `send_email` sends it. Nothing is added to `en.json` or `es.json`, so the registry tests and TD-TXT-25's homeowner-template scan (`app/quotes/src/tests/update_texts.rs:133`) are untouched (D-3094). The route that calls both is T357's. Tests in `tests/integration/tests/optout_emails.rs` (TD-CON-34): with an email on file one confirmation email per event and none on a repeat; none without an email; a listed homeowner's message gives one email, a second the same day gives none, the next day one; without an email one audit row per message and no email; no body, phone or email address in any audit row or log line. Update the `messaging` `CLAUDE.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "messaging",
+   "deps": [
+    "T094",
+    "T075"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "compliance"
+   ],
+   "owns": [
+    "app/messaging/src/optout_email.rs",
+    "tests/integration/tests/optout_emails.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/consent.md",
+    "docs/spec/messaging.md",
+    "docs/spec/wording.md",
+    "docs/copy/copy-panel.md",
+    "docs/brains/email-deliverability.md",
+    "docs/brains/sms-compliance.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "CON-016",
+    "CON-030",
+    "CON-009"
+   ],
+   "tests": [
+    "TD-CON-34"
+   ],
+   "decisions": [
+    "D-2629",
+    "D-2620",
+    "D-226",
+    "D-2843",
+    "D-3094"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 350,
+    "context_pct": 20
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T360-optout-emails",
+   "prompt": "kit/prompts/T360.md"
   },
   {
    "id": "T361",

@@ -4,8 +4,9 @@ These are decisions Claude made on its own and logged so the build never waits (
 
 ## Six more waiting steps fixed before they start (plan change, D-3094, November 11)
 
-- **What happened.** A third check of steps still waiting in line found six that would have stopped partway or misled the worker: new homeowner emails that an older test would reject unless they are listed as outside the update-text check, a category switch that would have broken an older license-change test, a test case that already passes today and so proves nothing, and three steps told to use code they cannot reach.
-- **What changed.** Each step's instructions now name the right file or case: the opt-out emails step (T360) may add its emails to that list and runs before the "who's calling" step (T318), which also edits it; a category never stored falls back to the catalog file's on/off setting, while a switch you make always wins. No rule for homeowners or businesses changes and no test is loosened.
+- **What happened.** A third check of steps still waiting in line found six that would have stopped partway or misled the worker: new homeowner emails that an older test would reject, a category switch that would have broken an older license-change test, a test case that already passes today and so proves nothing, and three steps told to use code they cannot reach.
+- **What changed.** Each step's instructions now name the right file or case: the opt-out emails step (T360) reuses the existing opt-out confirmation email and builds its one new email in code, as the check-in email does, so no older test is touched; a category never stored falls back to the catalog file's on/off setting, while a switch you make always wins. No rule for homeowners or businesses changes and no test is loosened.
+- **Open item for the next plan change.** Nothing loads the catalog into the database when the app starts, so on a fresh deployment the stored category switches are empty and the text intake treats every category as switched off, while the sign-up checklist would fall back to the catalog file. The fix (load the catalog at start-up) is left for a follow-up step.
 - **Nothing needs you.**
 
 ## Linking a team phone by text gets an owner, and two waiting steps are trimmed (plan change, D-3079, November 11)
