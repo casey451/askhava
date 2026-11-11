@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T09:05:38Z by runner 51d43b98c1b2 (actions).
+Updated 2026-11-11T09:25:55Z by runner ea7b57e0aac0 (actions).
 
 **Building: T327 in progress since 08:49Z; 198 of 370 done; week 63% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,12 +8,12 @@ Updated 2026-11-11T09:05:38Z by runner 51d43b98c1b2 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 3: T327 claimed 08:49Z, lease until 11:49Z
 - **Week:** 63% used, 62.8M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:05Z, 0 min before this update
+- **Last run:** 09:05Z, 20 min before this update
 - **Keeper:** last ran 09:05Z, next wake 11:52Z
 
 ## Needs attention
 - BLOCKED T164: plan gap reported: PLAN GAP: app/portals/src/tests/prop_arrival_order.rs:22 (T052) and app/quotes/src/notify.rs:179 / app/quotes/src/models.rs:573 (T047). The homeowner side of T164 (quote page "Updated <time>"/"Withdrawn by the business", LIST reply) needs api.rs (page_quotes filters withdrawn_at, api.rs:116), PageQuote fields (api.rs:93, built field-by-field in the T052 test), notify.rs list_line/Listed and models.rs list_rows, none owned by T164. Reviewer confirmed (kit/tasks.json owns vs. those files; T361 covers part but depends on T164).; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T164 --plan-fix D-### --reason "..."` (D-2859)
-- Strict plan check red: 11 problem(s) on tasks still to run (+18 on DONE tasks); first: T126: stored context_pct 56% but it measures 60%; regenerate
+- Strict plan check red: 12 problem(s) on tasks still to run (+18 on DONE tasks); first: T255: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -47,7 +47,6 @@ Updated 2026-11-11T09:05:38Z by runner 51d43b98c1b2 (actions).
 | T293 | businesses and quotes: sign-up, consent, complaint and quote | done | 1 | 41 min | 12:35Z |  |
 | T292 | messaging and calls: every text, email and call takes the br | done | 1 | 21 min | 11:16Z |  |
 | T290 | worked examples: pin D-033 for one-cent-wide recurring range | done | 2 | 39 min | 10:21Z | T290 blocked: any new recurring worked-example row breaks tests::worked_examples (fixed RECURRING list of 13 ids, worked |
-| T290 | worked examples: pin D-033 for one-cent-wide recurring range | QUEUED | 1 | 1 min | 09:07Z |  |
 
 ### Plan and harness merges on main
 - 08:37Z Plan: T337 also owns release_recovery.rs for a fixture-only fix (D-2896) (#464)
