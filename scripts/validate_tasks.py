@@ -216,7 +216,7 @@ MAX_TESTS = 6
 # Harness, docs, audit and cleanup work keeps the D-119 limits; the P-1 limits above bind build tasks,
 # the ones a single worker session writes application code for (D-485).
 NON_BUILD_LIMITS = {"owns": 14, "files": 14, "lines": 800, "requirements": 25}
-OPTIONAL_KEYS: dict[str, type] = {"acceptance": str, "gate": dict}
+OPTIONAL_KEYS: dict[str, type] = {"acceptance": str, "gate": dict, "deletes": list}
 # cargo-mutants targets (docs/test-design.md section 4): their owners need an Opus reviewer (V6).
 MUTANT_RULE_MODULES = ("payments", "catalog", "licensing", "quotes", "messaging", "intake")
 MUTANTS_FILE = "tests/mutation/mutants.toml"
@@ -292,6 +292,7 @@ def check_shape(task: Task) -> list[str]:
         "decisions",
         "cites",
         "checks",
+        "deletes",
     ):
         if isinstance(task.get(key), list) and not all(isinstance(v, str) for v in task[key]):
             errors.append(f"{where(task)}: '{key}' must list strings")
@@ -480,6 +481,17 @@ def check_goal(task: Task) -> list[str]:
     return []
 
 
+def check_deletes(task: Task) -> list[str]:
+    """D-2922: each file a task lists under the optional 'deletes' (files its goal removes from main, so
+    scripts/plan_health.py and the runner's owned-file check do not call their absence a gap) is one of
+    its own owned files, never a folder."""
+    return [
+        f"{where(task)}: deletes {path}, which is not one of its owned files"
+        for path in task.get("deletes", [])
+        if path.endswith("/") or path not in task["owns"]
+    ]
+
+
 def check_rules_reviewer(task: Task) -> list[str]:
     """V6: the owner of a cargo-mutants rules file has an Opus reviewer."""
     targets = [f"app/{m}/src/rules.rs" for m in MUTANT_RULE_MODULES]
@@ -503,6 +515,7 @@ def check_task(task: Task) -> list[str]:
         check_coverage_fields,
         check_done_defined,
         check_goal,
+        check_deletes,
         check_rules_reviewer,
     ):
         errors += check(task)
