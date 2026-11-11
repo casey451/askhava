@@ -1,6 +1,6 @@
 //! A quote's contact check reads the whole field as well as each line, and a per-visit price
 //! carries its visit schedule (T342; TD-PICK-58: PICK-007, REC-010; D-2334, D-2333, D-3019,
-//! D-3020). Fake numbers, made-up domains and made-up prices only.
+//! D-3020, D-3021, D-3022). Fake numbers, made-up domains and made-up prices only.
 //!
 //! The card gate reads line by line, so "555\n123\n4567" passed a quote's check; `text_bounce`
 //! now also gates the field with every whitespace run folded to one space. Ordinary measures and
@@ -88,6 +88,11 @@ fn td_pick_58_split_email_or_domain_bounces() {
         "Visit example-pools\r\n.com",
         "pools at example\ndot com",
         "pools\nat example\tdot com",
+        "examplepools.\ncom",
+        "examplepools\n.\ncom",
+        "examplepools.c\nom",
+        "Visit\nexamplepools\n.c\nom",
+        "Visit examplepools.\r\nnet now",
     ] {
         for place in PLACES {
             assert_eq!(
@@ -110,9 +115,36 @@ fn td_pick_58_measures_and_short_numbers_still_pass() {
         "Basic\tplan",
         "Two visits\r\nParts included",
         "Pump replaced.\nParts included.\n...\nDone",
+        "Pump replaced.\nParts included",
+        "Prices:\n$450\n$300\n$120",
+        "Sizes\n24\n36\n48\n60",
+        "Sizes\r\n24\r\n36\r\n48\r\n60",
     ] {
         for place in PLACES {
             assert_eq!(check(text, place), Ok(()), "{place:?} {text:?}");
+        }
+    }
+}
+
+/// TD-PICK-58 (PICK-007, D-3022): a list of numbers keeps its line breaks only while no
+/// stretch of it is phone-shaped (7, 10 or 11 digits, number words counting one, or 3 number
+/// words), so a phone number padded with other numbers or words still bounces, and a list whose
+/// neighbours add up to 7 digits bounces too: privacy wins over the list.
+#[test]
+fn td_pick_58_phone_shaped_number_lists_bounce() {
+    for text in [
+        "Call 55\n51\n23\n4567",
+        "Sizes\n24\n555\n123\n4567\n99",
+        "555\n123\n45\nsix\nseven",
+        "five\nfive\nfive",
+        "Prices:\n$1200\n$450",
+    ] {
+        for place in PLACES {
+            assert_eq!(
+                check(text, place),
+                Err(Bounce::Contact),
+                "{place:?} {text:?}"
+            );
         }
     }
 }
