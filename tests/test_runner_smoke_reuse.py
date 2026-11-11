@@ -626,3 +626,374 @@ def test_a_smoke_of_the_head_itself_still_running_is_never_claimed_beside(job: P
     env.smoke_main = smoke  # type: ignore[method-assign]  # reason: carries smoke_pending
     env.store = dict(env.store, smoke_runs=[_run(HEAD)])
     assert cycle.run_cycle(cfg, env, NOW) == cycle.SMOKE_PENDING and env.runs == []
+
+
+# ---- D-3058: a real green on an ancestor stands across DONE tasks' squash merges, and a duplicate smoke yields
+
+CHAIN = [c * 40 for c in "0123456789"]  # main's first-parent history, head first: CHAIN[0] is the head
+
+
+def _merged(*shas: str, **extra: Any) -> list[dict[str, Any]]:
+    """DONE tasks whose recorded squash commits (`merged_sha`) are `shas`."""
+    return [dict(make_task(f"T{900 + i}"), status=st.DONE, attempts=1, merged_sha=sha, merged_at=st.iso(NOW), **extra)
+            for i, sha in enumerate(shas)]
+
+
+def _ancestry_state(distance: int, *runs: dict[str, Any], **extra: Any) -> st.State:
+    """A real green run on CHAIN[distance] 30 minutes ago and DONE task merges on CHAIN[0] to CHAIN[distance - 1]."""
+    base = _run(CHAIN[distance], at=NOW - timedelta(minutes=30))
+    return dict(_state(base, *runs), tasks=_merged(*CHAIN[:distance]), **extra)
+
+
+class AncestryEnv(FakeEnv):
+    """A FakeEnv on CHAIN[0] that answers `main_first_parents` from CHAIN and `main`'s checks per commit."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.head, self.chain, self.checks_by_sha = CHAIN[0], list(CHAIN), {}
+        self.asked: list[tuple[str, int]] = []
+
+    def main_first_parents(self, head: str, count: int) -> list[str] | None:
+        self.asked.append((head, count))
+        return self.chain[:count]
+
+    def main_checks_green(self, head: str) -> bool | None:
+        return self.checks_by_sha.get(head, self.checks_green)
+
+
+@pytest.mark.parametrize("distance", [1, 2, 3])
+def test_an_ancestors_real_green_stands_within_n_merges_and_is_recorded(distance: int) -> None:
+    env = AncestryEnv()
+    env.smoke_green = False  # would turn main red if it ran
+    state = _ancestry_state(distance)
+    out, ok, head = cycle._start_smoke(state, env, NOW, 3)
+    since = st.iso(NOW - timedelta(minutes=30))
+    assert (ok, head, env.smokes, env.asked) == (True, CHAIN[0], [], [(CHAIN[0], 4)])
+    assert out["smoke_runs"][-1] == {"sha": CHAIN[0], "ok": True, "at": st.iso(NOW), "reused": since, "base": CHAIN[distance],
+                                     "why": f"start routine (ancestry reuse of {CHAIN[distance][:12]}, {since})"}
+
+
+def test_in_the_cycle_an_ancestry_reuse_claims_and_the_setting_off_smokes(tmp_path: Path) -> None:
+    env, cfg = AncestryEnv(), config([make_task("T001")], tmp_path)
+    env.store = _ancestry_state(2)
+    cfg.smoke_ancestry = 3
+    assert cycle.run_cycle(cfg, env, NOW) == st.MERGE_PENDING and env.smokes == [] and env.runs[0][0] == "T001"
+    assert env.store["smoke_runs"][-1]["base"] == CHAIN[2]
+    off = AncestryEnv()
+    _, ok, _ = cycle._start_smoke(_ancestry_state(1), off, NOW, 0)
+    assert ok is True and off.smokes == [CHAIN[0]] and off.asked == [], "N=0 turns it off: the smoke runs"
+    cycle._start_smoke(_ancestry_state(1), off, NOW)
+    assert off.smokes == [CHAIN[0]] * 2, "and so does a caller that passes no N"
+
+
+@pytest.mark.parametrize("limit", [1, 2, 3])
+def test_one_merge_past_n_runs_a_fresh_smoke(limit: int) -> None:
+    env = AncestryEnv()
+    out, ok, _ = cycle._start_smoke(_ancestry_state(limit + 1), env, NOW, limit)
+    assert ok is True and env.smokes == [CHAIN[0]] and out["smoke_runs"][-1]["why"] == "start routine"
+    assert st.ancestry_smoke(_ancestry_state(limit + 1), CHAIN, set(CHAIN), NOW, limit) is None
+    assert st.ancestry_smoke(_ancestry_state(limit), CHAIN, set(CHAIN), NOW, limit) is not None
+
+
+@pytest.mark.parametrize("gap", ["not_a_task", "fix_main", "empty_handin", "not_done"])
+@pytest.mark.parametrize("where", [0, 1])
+def test_a_commit_in_between_that_is_not_a_done_tasks_squash_merge_forces_a_smoke(gap: str, where: int) -> None:
+    env = AncestryEnv()
+    state = _ancestry_state(2)
+    task = state["tasks"][where]
+    if gap == "not_a_task":
+        task["merged_sha"] = "f" * 40  # a plan or harness merge on main is no task's
+    elif gap == "fix_main":
+        task["id"] = st.FIX_MAIN
+    elif gap == "empty_handin":
+        task["empty_handin"] = True
+    else:
+        task["status"] = st.MERGE_PENDING
+    cycle._start_smoke(state, env, NOW, 3)
+    assert env.smokes == [CHAIN[0]]
+
+
+def _doubt(state: st.State, env: AncestryEnv, kind: str, sha: str) -> None:
+    red = {"check": "smoke", "sha": sha, "task": "", "revert_sha": "", "files": [], "set_at": st.iso(NOW)}
+    if kind == "red_run":
+        state["smoke_runs"].append(_run(sha, ok=False))
+    elif kind == "timed_out_run":
+        state["smoke_runs"].append(_run(sha, ok=False, timed_out=True))
+    elif kind == "strike":
+        state["smoke_env_problems"] = [{"sha": sha, "at": st.iso(NOW), "why": "smoke red while the checks were green"}]
+    elif kind == "main_red_history":
+        state["main_red_history"] = [dict(red, cleared_at=st.iso(NOW), cleared_on="x")]
+    elif kind == "nightly_red":
+        env.nightly = {"sha": sha, "conclusion": "failure"}
+    else:
+        env.checks_by_sha[sha] = False
+
+
+DOUBTS = ["red_run", "timed_out_run", "strike", "main_red_history", "nightly_red", "checks_red"]
+
+
+@pytest.mark.parametrize("kind", DOUBTS)
+@pytest.mark.parametrize("where", [0, 1, 2])
+def test_any_doubt_on_the_head_an_in_between_commit_or_the_base_forces_a_smoke(kind: str, where: int) -> None:
+    env, state = AncestryEnv(), _ancestry_state(2)
+    _doubt(state, env, kind, CHAIN[where])
+    out, _, _ = cycle._start_smoke(state, env, NOW, 3)
+    assert env.smokes == [CHAIN[0]] and "base" not in out["smoke_runs"][-1]
+
+
+@pytest.mark.parametrize("kind", DOUBTS)
+def test_a_doubt_on_a_commit_older_than_the_base_changes_nothing(kind: str) -> None:
+    env, state = AncestryEnv(), _ancestry_state(2)
+    _doubt(state, env, kind, CHAIN[5])
+    _, ok, _ = cycle._start_smoke(state, env, NOW, 3)
+    assert ok is True and env.smokes == []
+
+
+def test_never_while_main_is_red() -> None:
+    red = {"check": "nightly", "sha": CHAIN[0], "task": "T900", "revert_sha": CHAIN[0], "files": [], "set_at": st.iso(NOW)}
+    state = _ancestry_state(1, main_red=red)
+    assert st.ancestry_smoke(state, CHAIN, set(CHAIN), NOW, 3) is None
+    env = AncestryEnv()
+    cycle._start_smoke(state, env, NOW, 3)
+    assert env.smokes == [CHAIN[0]]
+
+
+def test_the_base_must_be_a_real_run_so_a_real_smoke_comes_every_n_plus_one_merges() -> None:
+    since = st.iso(NOW - timedelta(minutes=30))
+    chained = [_run(CHAIN[d], why="start routine (ancestry reuse)", reused=since, base=CHAIN[3]) for d in (1, 2)]
+    state = _ancestry_state(3, *chained)
+    assert st.ancestry_smoke(state, CHAIN, set(CHAIN), NOW, 3) == (CHAIN[3], state["smoke_runs"][0])
+    assert st.ancestry_smoke(state, CHAIN, set(CHAIN), NOW, 2) is None, "reuses never become a base"
+    same_head = _run(CHAIN[1], reused=since)  # a same-head reuse (D-2560) is no real run either
+    assert st.ancestry_smoke(dict(_state(same_head), tasks=_merged(CHAIN[0])), CHAIN, set(CHAIN), NOW, 3) is None
+    env = AncestryEnv()
+    cycle._start_smoke(state, env, NOW, 2)
+    assert env.smokes == [CHAIN[0]]
+
+
+def test_the_base_obeys_the_six_hour_cap_and_every_d2560_rule() -> None:
+    old = dict(_state(_run(CHAIN[1], at=NOW - timedelta(hours=6, seconds=1))), tasks=_merged(CHAIN[0]))
+    assert st.ancestry_smoke(old, CHAIN, set(CHAIN), NOW, 3) is None
+    edge = dict(_state(_run(CHAIN[1], at=NOW - st.SMOKE_REUSE_MAX_AGE)), tasks=_merged(CHAIN[0]))
+    assert st.ancestry_smoke(edge, CHAIN, set(CHAIN), NOW, 3) is not None
+    refreshed = dict(old, smoke_runs=[*old["smoke_runs"], _run(CHAIN[1], reused=st.iso(NOW))])
+    assert st.ancestry_smoke(refreshed, CHAIN, set(CHAIN), NOW, 3) is None, "the real run's age counts, not a later reuse"
+    later_red = _ancestry_state(1, _run(CHAIN[1], ok=False))
+    assert st.ancestry_smoke(later_red, CHAIN, set(CHAIN), NOW, 3) is None
+    future = dict(_state(_run(CHAIN[1], at=NOW + timedelta(minutes=5))), tasks=_merged(CHAIN[0]))
+    assert st.ancestry_smoke(future, CHAIN, set(CHAIN), NOW, 3) is None
+
+
+def test_a_head_with_a_real_run_of_its_own_is_left_to_the_same_head_rule() -> None:
+    stale = _ancestry_state(1, _run(CHAIN[0], at=NOW - timedelta(hours=7)))
+    assert st.reusable_smoke(stale, CHAIN[0], NOW) is None
+    assert st.ancestry_smoke(stale, CHAIN, set(CHAIN), NOW, 3) is None, "an old green on the head is never bridged around"
+
+
+def test_an_ancestry_reuse_on_the_head_is_judged_again_not_reused_as_is() -> None:
+    env, state = AncestryEnv(), _ancestry_state(2)
+    out, ok, _ = cycle._start_smoke(state, env, NOW, 3)
+    assert ok is True and st.reusable_smoke(out, CHAIN[0], NOW) is None, "it names a base: the same-head rule passes"
+    out, ok, _ = cycle._start_smoke(out, env, NOW + timedelta(minutes=1), 3)
+    assert ok is True and env.smokes == [] and out["smoke_runs"][-1]["base"] == CHAIN[2]
+    env.checks_by_sha[CHAIN[1]] = False
+    cycle._start_smoke(out, env, NOW + timedelta(minutes=2), 3)
+    assert env.smokes == [CHAIN[0]], "a doubt that arrived since is seen"
+
+
+@pytest.mark.parametrize("fault", ["raises", "none", "other_head", "missing", "bad_time", "bad_runs"])
+def test_any_error_or_unreadable_answer_falls_back_to_a_fresh_smoke(fault: str) -> None:
+    env, state = AncestryEnv(), _ancestry_state(1)
+    if fault == "raises":
+        env.main_first_parents = lambda head, count: (_ for _ in ()).throw(RuntimeError("git"))  # type: ignore[method-assign]
+    elif fault == "none":
+        env.main_first_parents = lambda head, count: None  # type: ignore[method-assign]
+    elif fault == "other_head":
+        env.chain = CHAIN[1:]
+    elif fault == "missing":
+        env = FakeEnv()  # type: ignore[assignment]  # reason: an env with no first-parent reader
+        env.head = CHAIN[0]
+    elif fault == "bad_time":
+        state["smoke_runs"][0]["at"] = "not a time"
+    else:
+        state["smoke_runs"] = "garbage"
+    cycle._start_smoke(state, env, NOW, 3)
+    assert env.smokes == [CHAIN[0]]
+
+
+def test_clearing_a_red_main_never_takes_an_ancestry_reuse(tmp_path: Path, monkeypatch: Any) -> None:
+    env, cfg = go_red(tmp_path)
+    cfg.smoke_ancestry = 3
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=10)) == "fix_main"
+    env.prs[st.FIX_MAIN] = green_pr(sha="revert01", tree="t-revert")
+    env.head = "main0002"
+    monkeypatch.setattr(st, "ancestry_smoke", lambda *a: pytest.fail("clear_main_red asked for an ancestry reuse"))
+    env.smoke_green = False
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=15)) == "main_red" and env.smokes[-1] == "main0002"
+    env.smoke_green = True
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=20)) == "main_cleared"
+
+
+# ---- D-3058: the pre-session step skips on an ancestry reuse too
+
+
+def _with_chain(env: Any, chain: list[str] | None) -> None:
+    """The fake git answers `git rev-list --first-parent` with `chain` (None: git fails)."""
+    plain = env._run
+
+    def run(a: list[str], i: str | None, c: Path) -> tuple[int, str, str]:
+        if a[:3] == ["git", "rev-list", "--first-parent"]:
+            return (0, "\n".join(chain) + "\n", "") if chain is not None else (128, "", "fatal: bad object")
+        return plain(a, i, c)
+
+    env._run = run
+
+
+def test_the_step_skips_on_an_ancestry_reuse_when_the_setting_allows_it(job: Path, tmp_path: Path, monkeypatch: Any) -> None:
+    env, _ = _env(tmp_path)
+    env.clock, env.smoke_ancestry = (lambda: NOW), 3
+    seen = _pre(env)
+    _with_chain(env, [HEAD, *CHAIN[1:4]])
+    since = st.iso(NOW - timedelta(minutes=30))
+    _state_file(tmp_path, monkeypatch, dict(_state(_run(CHAIN[2], at=since)), tasks=_merged(HEAD, CHAIN[1])))
+    assert env.pre_smoke() == (f"pre-session smoke skipped on {HEAD[:12]}: the green smoke of {CHAIN[2][:12]} ({since}), "
+                               "2 DONE task merge(s) back, stands for it (D-3058); the session reuses it")
+    assert seen == [] and not (job / ge.SMOKE_PRE).exists()
+
+
+@pytest.mark.parametrize("why", ["off", "not_a_task", "too_far", "git_fails", "red_between"])
+def test_the_step_smokes_when_no_ancestry_reuse_is_allowed(job: Path, tmp_path: Path, monkeypatch: Any, why: str) -> None:
+    env, _ = _env(tmp_path)
+    env.clock, env.smoke_ancestry = (lambda: NOW), (0 if why == "off" else 1 if why == "too_far" else 3)
+    seen = _pre(env)
+    _with_chain(env, None if why == "git_fails" else [HEAD, *CHAIN[1:4]])
+    tasks = _merged(HEAD) if why == "not_a_task" else _merged(HEAD, CHAIN[1])
+    runs = [_run(CHAIN[2]), *([_run(CHAIN[1], ok=False)] if why == "red_between" else [])]
+    _state_file(tmp_path, monkeypatch, dict(_state(*runs), tasks=tasks))
+    assert env.pre_smoke().startswith(f"pre-session smoke on {HEAD[:12]}: exit 0;") and len(seen) == 1
+
+
+def test_main_first_parents_reads_git_and_refuses_an_answer_not_from_the_head(tmp_path: Path) -> None:
+    env, _ = _env(tmp_path)
+    _with_chain(env, [HEAD, CHAIN[1]])
+    assert env.main_first_parents(HEAD, 4) == [HEAD, CHAIN[1]]
+    assert env.main_first_parents(CHAIN[3], 4) is None
+    _with_chain(env, None)
+    assert env.main_first_parents(HEAD, 4) is None
+
+
+def test_the_setting_is_read_from_kit_runner_json_fails_safe_and_is_wired(tmp_path: Path) -> None:
+    import inspect
+
+    from runner import __main__ as entry
+
+    f = tmp_path / "runner.json"
+    assert entry.smoke_ancestry(f) == 0
+    for raw, want in (("{not json", 0), ('{"lanes": 2}', 0), ('{"smoke_ancestry_reuse": 0}', 0),
+                      ('{"smoke_ancestry_reuse": 2}', 2), ('{"smoke_ancestry_reuse": -1}', 0),
+                      ('{"smoke_ancestry_reuse": true}', 0), ('{"smoke_ancestry_reuse": "3"}', 0), ("[]", 0)):
+        f.write_text(raw)
+        assert entry.smoke_ancestry(f) == want, raw
+    assert entry.smoke_ancestry(Path(__file__).resolve().parent.parent / "kit" / "runner.json") == 3, "D-3058 ships N=3"
+    assert 'smoke_ancestry=smoke_ancestry(ROOT / "kit" / "runner.json")' in inspect.getsource(entry.build)
+    assert "env.smoke_ancestry = cfg.smoke_ancestry" in inspect.getsource(entry.build)
+    assert 'env.smoke_ancestry = smoke_ancestry(ROOT / "kit" / "runner.json")' in inspect.getsource(entry.pre_smoke)
+    assert "cfg.smoke_ancestry" in inspect.getsource(cycle._next_step)
+
+
+# ---- D-3058: an own smoke still running yields to a fully reusable green another lane recorded on the head
+
+
+class YieldingEnv(SettlingEnv):
+    """SettlingEnv that also offers the real `yield_own_smoke` and carries `smoke_pending`, as the session's env does."""
+
+    def yield_own_smoke(self, head: str) -> bool:
+        return bool(self.real.yield_own_smoke(head))
+
+    def smoke_main(self) -> tuple[bool, str]:
+        ok, head = self.real.smoke_main()
+        self.smoke_timed_out, self.smoke_pending = self.real.smoke_timed_out, self.real.smoke_pending
+        return ok, head
+
+
+def _running_own(job: Path, tmp_path: Path, stop_writes: dict[str, Any] | None = None) -> tuple[YieldingEnv, Any, list[str]]:
+    """This job's background smoke of HEAD still running with no result; `bg_stop` stops it (writing `stop_writes`
+    first when given, as a smoke that finished while being stopped)."""
+    real, _ = _env(tmp_path)
+    real.smoke_background, real.smoke_wait = True, 0
+    job.mkdir(parents=True, exist_ok=True)
+    (job / ge.SMOKE_BG).write_text(json.dumps({"sha": HEAD, "job": "77-1", "pid": 4242}))
+    running, stops = [True], []
+    real.bg_alive = lambda pid: running[0]  # type: ignore[assignment]  # reason: no real process
+
+    def stop() -> str:
+        stops.append("stop")
+        if stop_writes is not None:
+            ge.write_pre_smoke(stop_writes)
+        running[0] = False
+        return "stopped"
+
+    real.bg_stop = stop  # type: ignore[assignment]  # reason: no real process
+    real.bg_start = lambda head, root: pytest.fail("no second smoke beside the first")  # type: ignore[assignment]
+    env, cfg = YieldingEnv(real), config([make_task("T001")], tmp_path)
+    return env, cfg, stops
+
+
+def test_a_running_own_smoke_stops_for_another_lanes_fully_reusable_green(job: Path, tmp_path: Path) -> None:
+    env, cfg, stops = _running_own(job, tmp_path)
+    since = st.iso(NOW - timedelta(minutes=3))
+    env.store = dict(env.store, smoke_runs=[_run(HEAD, at=since, why="start routine (background)")])
+    assert cycle.run_cycle(cfg, env, NOW) == st.MERGE_PENDING and env.runs[0][0] == "T001" and stops == ["stop"]
+    assert env.store["smoke_runs"][-1]["reused"] == since and not (job / ge.SMOKE_BG).exists()
+    assert f"the background smoke of {HEAD[:12]} stopped: a green smoke another lane recorded on it stands (D-3058)" in env.real.log
+
+
+@pytest.mark.parametrize("why", ["checks_red", "nightly_unfinished", "later_red", "strike", "too_old", "no_green", "ancestry_only"])
+def test_a_running_own_smoke_is_never_stopped_for_a_green_that_is_not_fully_reusable(job: Path, tmp_path: Path, why: str) -> None:
+    env, cfg, stops = _running_own(job, tmp_path)
+    runs = {"later_red": [_run(HEAD), _run(HEAD, ok=False)], "too_old": [_run(HEAD, at=NOW - timedelta(hours=7))],
+            "no_green": [], "ancestry_only": [_run(CHAIN[1]), _run(HEAD, reused=st.iso(NOW), base=CHAIN[1])]}.get(why, [_run(HEAD)])
+    env.store = dict(env.store, smoke_runs=runs)
+    if why == "checks_red":
+        env.checks_green = False
+    elif why == "nightly_unfinished":
+        env.nightly = {"sha": HEAD, "conclusion": None}  # a red one turns main red before any claim, never reaching here
+    elif why == "strike":
+        env.store["smoke_env_problems"] = [{"sha": HEAD, "at": st.iso(NOW), "why": "smoke red while the checks were green"}]
+    elif why == "ancestry_only":
+        env.store["tasks"] = [*env.store.get("tasks", []), *_merged(HEAD)]
+        cfg.smoke_ancestry = 3
+    assert cycle.run_cycle(cfg, env, NOW) == cycle.SMOKE_PENDING and env.runs == [] and stops == []
+
+
+def test_a_finished_own_result_is_always_judged_never_yielded(job: Path, tmp_path: Path) -> None:
+    env, cfg = _own_red(job, tmp_path)
+    yields: list[str] = []
+    env.yield_own_smoke = lambda head: yields.append(head) or False  # type: ignore[attr-defined]  # reason: counts asks
+    assert cycle.run_cycle(cfg, env, NOW) == "main_red" and env.runs == [] and env.store["main_red"]["sha"] == HEAD
+    real, _ = _env(tmp_path)
+    assert real.yield_own_smoke(HEAD) is False, "a result of this job for the head is never stopped"
+
+
+def test_a_smoke_that_finishes_while_being_stopped_is_judged(job: Path, tmp_path: Path) -> None:
+    env, cfg, stops = _running_own(job, tmp_path, stop_writes=_bg_result(code=101))
+    env.store = dict(env.store, smoke_runs=[_run(HEAD, at=NOW - timedelta(minutes=3))])
+    assert env.real.yield_own_smoke(HEAD) is False and stops == ["stop"]
+    assert cycle.run_cycle(cfg, env, NOW) == "main_red" and env.runs == [] and env.store["smoke_runs"][-1]["ok"] is False
+
+
+def test_yield_own_smoke_only_stops_this_jobs_live_smoke_of_the_head(job: Path, tmp_path: Path) -> None:
+    real, _ = _env(tmp_path)
+    real.bg_stop = lambda: pytest.fail("nothing to stop")  # type: ignore[assignment]
+    real.bg_alive = lambda pid: True  # type: ignore[assignment]
+    assert real.yield_own_smoke(HEAD) is False, "no background smoke"
+    job.mkdir(parents=True, exist_ok=True)
+    for record in ({"sha": OLD, "job": "77-1", "pid": 4242}, {"sha": HEAD, "job": "78-1", "pid": 4242}, {"sha": HEAD, "job": "77-1"}):
+        (job / ge.SMOKE_BG).write_text(json.dumps(record))
+        assert real.yield_own_smoke(HEAD) is False, record
+    (job / ge.SMOKE_BG).write_text(json.dumps({"sha": HEAD, "job": "77-1", "pid": 4242}))
+    real.bg_alive = lambda pid: False  # type: ignore[assignment]
+    assert real.yield_own_smoke(HEAD) is False, "an ended smoke is judged as before (D-2560)"
+    real.bg_alive = lambda pid: True  # type: ignore[assignment]
+    ge.write_pre_smoke(_bg_result())
+    assert real.yield_own_smoke(HEAD) is False, "still running, but its result is written: it is judged"
