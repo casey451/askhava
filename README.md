@@ -1,6 +1,6 @@
 # Ask Hava
 
-Private build repository for Ask Hava (askhava.com), a local quote service for Lake Havasu City.
+Build repository for Ask Hava (askhava.com), a local quote service for Lake Havasu City. The repository is public until the build is done, by Casey's decision of November 2, 2026; it holds fake data only and no secrets.
 
 - **Start here:** `BUILD_BRIEF.md` explains how Claude Code builds the app.
 - **Owner setup:** `PHONE_SETUP.md`.
