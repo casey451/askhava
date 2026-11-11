@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T09:35:19Z by runner ea7b57e0aac0 (actions).
+Updated 2026-11-11T09:35:35Z by runner ea7b57e0aac0 (actions).
 
 **Building: T337 in progress since 09:25Z; 199 of 370 done; week 63% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-11T09:35:19Z by runner ea7b57e0aac0 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T337 claimed 09:25Z, lease until 12:25Z; lane 3: T327 claimed 08:49Z, lease until 11:49Z
 - **Week:** 63% used, 62.3M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:30Z, 4 min before this update
+- **Last run:** 09:35Z, 0 min before this update
 - **Keeper:** last ran 09:30Z, next wake 11:52Z
 
 ## Needs attention
@@ -113,7 +113,7 @@ Updated 2026-11-11T09:35:19Z by runner ea7b57e0aac0 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-11T09:30:03Z (week)): five-hour: 28.6M used, 527k left, resets 2026-11-11T09:44:28Z; week: 131.7M used, 62.3M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-04T10:07:00Z; waiting until 2026-11-11T09:44:28Z.
+- Pacing (session_reading 2026-11-11T09:30:03Z (week)): five-hour: 28.6M used, 527k left, resets 2026-11-11T09:44:28Z; week: 131.7M used, 62.3M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-04T10:07:16Z; waiting until 2026-11-11T09:44:28Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
