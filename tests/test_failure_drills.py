@@ -69,6 +69,8 @@ class FakeEnv:
         self.updates: list[tuple[str, str]] = []
         self.update_merge = False  # whether a differing head is an update merge of the reviewed one (D-620)
         self.checks_of: dict[str, dict[str, str]] = {}  # checks_on answers by commit (D-630)
+        self.hand_in: dict[str, Any] = {"status": "current"}  # what hand_in_merge reports (D-2798)
+        self.hand_ins: list[tuple[str, str]] = []
 
     def read_state(self) -> st.State:
         return copy.deepcopy(self.store)
@@ -159,6 +161,10 @@ class FakeEnv:
 
     def update_merge_of(self, reviewed: str, head: str, number: int) -> bool | None:
         return self.update_merge
+
+    def hand_in_merge(self, branch: str, reviewed: str) -> dict[str, Any]:
+        self.hand_ins.append((branch, reviewed))
+        return copy.deepcopy(self.hand_in)
 
     def checks_on(self, sha: str) -> dict[str, str] | None:
         return copy.deepcopy(self.checks_of.get(sha))
@@ -1936,3 +1942,91 @@ def test_drill_plan_fix_requeue_runs_one_opus_attempt_and_blocks_again(tmp_path:
     assert "unchanged on main" in cycle.plan_fix_refusal(env.store, "T001", "D-680", unchanged, NOW)
 
 
+
+
+# ---- the hand-in merge: main merged in before the push when the reviewed head is behind (D-2798)
+
+
+def test_drill_a_head_behind_main_is_pushed_once_with_the_merge_adopted_before_the_push(tmp_path: Path) -> None:
+    """The review record names the merge before the push (the reviewed head is recorded as its `from`), so
+    the one push, auto-merge, the PR-head check and a crash-adoption all see one reviewed head."""
+    env = FakeEnv(lambda t, m, log: reviewed(t, m, head="good0001"))
+    env.hand_in = {"status": "built", "sha": "merge001", "main": "main0002"}
+    cfg = config([make_task("T001")], tmp_path)
+    states: list[st.State] = []
+    real_push = env.push_branch
+    env.push_branch = lambda b, h: states.append(copy.deepcopy(env.store)) or real_push(b, h)  # type: ignore[method-assign]  # reason: the state at push time
+    assert cycle.run_cycle(cfg, env, NOW) == st.MERGE_PENDING
+    task = st.entry(env.store, "T001")
+    assert env.hand_ins == [("claude/task/T001-x", "good0001")] and env.branch_pushes == [("claude/task/T001-x", "merge001")]
+    assert st.entry(states[0], "T001")["reviewed_sha"] == "merge001"  # recorded before the push
+    assert task["reviewed_sha"] == "merge001" and task["update_merges"][-1]["from"] == "good0001"
+    assert {k: task["update_merges"][-1][k] for k in ("to", "main", "how")} == {"to": "merge001", "main": "main0002", "how": "hand-in"}
+    assert env.auto_merges == [("claude/task/T001-x", "merge001")] and task["auto_merge"]["enabled"] is True
+    env.prs["T001"] = dict(green_pr("good0001", merged=False), number=7)  # GitHub still shows the reviewed head
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=5)) == "merge_pending" and env.head_checks == []
+    env.prs["T001"] = green_pr("merge001")
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=20)) == "done"
+
+
+@pytest.mark.parametrize("answer", [{"status": "current"}, {"status": "conflict", "paths": ["README.md"], "main": "main0002"},
+                                    {"status": "error", "why": "the update merge failed its own tree check"}, {"status": "built"}])
+def test_drill_a_hand_in_without_a_built_merge_pushes_the_reviewed_head_as_before(tmp_path: Path, answer: dict[str, Any]) -> None:
+    """Not behind, a conflict (stage C's conflict path takes it, D-891), a refused merge or a malformed answer:
+    exactly today's hand-in, with no update-merge record."""
+    env = FakeEnv(lambda t, m, log: reviewed(t, m, head="good0001"))
+    env.hand_in = answer
+    assert cycle.run_cycle(config([make_task("T001")], tmp_path), env, NOW) == st.MERGE_PENDING
+    task = st.entry(env.store, "T001")
+    assert env.branch_pushes == [("claude/task/T001-x", "good0001")] and env.auto_merges == [("claude/task/T001-x", "good0001")]
+    assert task["reviewed_sha"] == "good0001" and "update_merges" not in task
+
+
+def test_drill_a_rejected_push_of_the_hand_in_merge_fails_the_attempt_as_any_rejected_push(tmp_path: Path) -> None:
+    env = FakeEnv(lambda t, m, log: reviewed(t, m, head="good0001"))
+    env.hand_in = {"status": "built", "sha": "merge001", "main": "main0002"}
+    env.push_branch = lambda b, h: env.branch_pushes.append((b, h)) and False  # type: ignore[method-assign]  # reason: origin refuses
+    env.rejection = "! refs/heads/claude/task/T001-x [rejected] (non-fast-forward)"
+    assert cycle.run_cycle(config([make_task("T001")], tmp_path), env, NOW) == "push_failed"
+    assert env.branch_pushes == [("claude/task/T001-x", "merge001")] and env.auto_merges == []
+    assert st.status(env.store, "T001") == st.QUEUED
+    assert st.entry(env.store, "T001")["last_failure"] == cycle.PUSH_NOT_FAST_FORWARD
+
+
+def test_drill_an_env_without_a_hand_in_merge_pushes_the_reviewed_head(tmp_path: Path) -> None:
+    class Older(FakeEnv):
+        hand_in_merge = None  # type: ignore[assignment]  # reason: an Env written before D-2798
+
+    env = Older(lambda t, m, log: reviewed(t, m, head="good0001"))
+    assert cycle.run_cycle(config([make_task("T001")], tmp_path), env, NOW) == st.MERGE_PENDING
+    assert env.branch_pushes == [("claude/task/T001-x", "good0001")]
+
+
+def test_drill_main_turning_red_while_the_task_is_in_flight_gives_an_unmerged_push(tmp_path: Path) -> None:
+    """Stage C merges nothing into a task while `main` is red (D-620), so neither does the hand-in: the review
+    record's write sees `main_red` on the fresh state and adopts no merge, and the reviewed head is pushed."""
+    env = FakeEnv()
+    env.hand_in = {"status": "built", "sha": "merge001", "main": "main0002"}
+
+    def red_meanwhile(task: dict[str, Any], model: str, log: str) -> cycle.WorkerResult:
+        env.store = dict(env.store, main_red={"check": "smoke", "sha": "main0002"})
+        return reviewed(task, model, head="good0001")
+
+    env.worker = red_meanwhile
+    assert cycle.run_cycle(config([make_task("T001")], tmp_path), env, NOW) == st.MERGE_PENDING
+    task = st.entry(env.store, "T001")
+    assert env.branch_pushes == [("claude/task/T001-x", "good0001")] and env.auto_merges == [("claude/task/T001-x", "good0001")]
+    assert task["reviewed_sha"] == "good0001" and "update_merges" not in task
+    assert env.hand_ins == [("claude/task/T001-x", "good0001")]  # built from the state before, refused in the write
+
+
+def test_drill_a_red_main_at_finish_builds_no_hand_in_merge(tmp_path: Path) -> None:
+    env = FakeEnv()
+    env.hand_in = {"status": "built", "sha": "merge001", "main": "main0002"}
+    cfg = config([make_task("T001")], tmp_path)
+    env.store = st.claim(st.sync_graph(env.store, cfg.graph), "T001", cfg.session, NOW)
+    env.store = dict(env.store, main_red={"check": "smoke", "sha": "main0002"})
+    task = cfg.graph[0]
+    assert cycle.finish(cfg, env, env.read_state(), task, reviewed(task, MODELS["sonnet"], head="good0001"), MODELS["sonnet"], NOW) == st.MERGE_PENDING
+    assert env.hand_ins == [] and env.branch_pushes == [("claude/task/T001-x", "good0001")]
+    assert "update_merges" not in st.entry(env.store, "T001")
