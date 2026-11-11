@@ -305,8 +305,10 @@ async fn td_pick_09_license_at_the_pick_and_at_confirm(pool: PgPool) {
     let at_pick = check_at_pick(&mut db, &up, (business, NUMBER), az(9, 10, 0)).await;
     assert_eq!(at_pick, Ok(LicenseAtPick::Eligible));
     assert_eq!(up.calls.load(Ordering::SeqCst), 1, "one live lookup");
-    let later = check_at_pick(&mut db, &down, (business, NUMBER), Timestamp::now()).await;
-    let window = (Timestamp::now(), az(30, 12, 0));
+    // One hour after the pick lookup, on the same fixed clock (D-2886): Timestamp::now() here made the
+    // test pass only until Nov 11 00:00 Arizona time, a day after the fixed Nov 9 lookup.
+    let later = check_at_pick(&mut db, &down, (business, NUMBER), az(9, 11, 0)).await;
+    let window = (az(9, 11, 0), az(30, 12, 0));
     let ok = check_at_confirm(
         &mut db,
         (business, NUMBER),
