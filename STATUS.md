@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T02:19:07Z by runner daef586a5cd2 (actions).
+Updated 2026-11-11T02:19:19Z by runner daef586a5cd2 (actions).
 
 **Idle since 02:10Z; 193 of 362 done; week 56% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-11T02:19:07Z by runner daef586a5cd2 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 02:10Z (no task in progress)
 - **Week:** 56% used, 80.3M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:11Z, 7 min before this update
+- **Last run:** 02:11Z, 8 min before this update
 - **Keeper:** last ran 02:11Z, next wake 02:31Z
 
 ## Needs attention
@@ -17,7 +17,7 @@ Updated 2026-11-11T02:19:07Z by runner daef586a5cd2 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T157 | picks: the homeowner's backup choice at the pick | MERGE_PENDING | 1 | 66 min | 02:10Z |  |
+| T157 | picks: the homeowner's backup choice at the pick | check_failed | 1 | 66 min | 02:10Z | E2e: failure; Ally: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-1 |
 | T337 | payments: a $0 release proof is bound to the pick's own stor | QUEUED | 1 | 31 min | 02:07Z | T337 code+tests done (commit 6b896e8f) but smoke/prehandin red: tests/integration/tests/confirm_and_pay.rs td_fee_25_a_p |
 | T349 | calls: a PIN draw fails only when the OS source fails, and o | done | 1 | 36 min | 00:40Z |  |
 | T207 | businesses: re-apply the license map when a daily list chang | done | 1 | 41 min | 23:39Z |  |
