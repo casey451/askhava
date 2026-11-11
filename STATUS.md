@@ -1,19 +1,17 @@
 # Ask Hava build status
 
-Updated 2026-11-11T17:45:25Z by runner 7bf1bf2a7b54 (actions).
+Updated 2026-11-11T17:45:35Z by runner 7bf1bf2a7b54 (actions).
 
-**Building: T332 in progress since 17:24Z; 209 of 373 done; week 70% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T272 in progress since 17:45Z; 209 of 373 done; week 70% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 209 of 373 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 3: T332 claimed 17:24Z, lease until 20:24Z
-- **Week:** 70% used, 54.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 2: T272 claimed 17:45Z, lease until 20:45Z; lane 3: T332 claimed 17:24Z, lease until 20:24Z
+- **Week:** 70% used, 50.6M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 17:31Z, 14 min before this update
 - **Keeper:** last ran 17:31Z, next wake 20:26Z
 
 ## Needs attention
-- PLAN GAP T232 (since 2026-11-11T17:19:47Z, no attempt used; a plan change fixes it): T232: dependency T214 is DONE but its owned file app/picks/src/share_consent.rs is not on main; T232: dependency T214 is DONE but its owned file app/picks/src/cant_take.rs is not on main; T232: dependency T214 is DONE but its owned file tests/integration/tests/share_and_cant_take.rs is not on main; T232: dependency T214 is DONE but its owned file migrations/0158_picks_share_box.sql is not on main
-- PLAN GAP T386 (since 2026-11-11T17:19:47Z, no attempt used; a plan change fixes it): T386: dependency T214 is DONE but its owned file app/picks/src/share_consent.rs is not on main; T386: dependency T214 is DONE but its owned file app/picks/src/cant_take.rs is not on main; T386: dependency T214 is DONE but its owned file tests/integration/tests/share_and_cant_take.rs is not on main; T386: dependency T214 is DONE but its owned file migrations/0158_picks_share_box.sql is not on main
 - Strict plan check red: 26 problem(s) on tasks still to run (+47 on DONE tasks); first: T340: stored context_pct 35% but it measures 39%; regenerate
 
 ## Last 24 hours
@@ -134,7 +132,7 @@ Updated 2026-11-11T17:45:25Z by runner 7bf1bf2a7b54 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-11T17:21:50Z (week)): five-hour: 15.6M used, 13.5M left, resets 2026-11-11T20:04:09Z; week: 140.0M used, 54.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-04T20:05:32Z.
+- Pacing (session_reading 2026-11-11T17:30:49Z (week)): five-hour: 19.0M used, 10.1M left, resets 2026-11-11T20:04:09Z; week: 143.4M used, 50.6M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-04T22:02:52Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -150,6 +148,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
+- lane 2: T272 (lease until 2026-11-11T20:45:14Z)
 - lane 3: T332 (lease until 2026-11-11T20:24:05Z)
 
 ## Last usage reading
