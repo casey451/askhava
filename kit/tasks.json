@@ -15288,7 +15288,8 @@
     "T361",
     "T363",
     "T364",
-    "T373"
+    "T373",
+    "T375"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -25739,7 +25740,7 @@
    "id": "T372",
    "slug": "license-change-reapplied-daily",
    "title": "businesses and licensing: each recorded ROC list re-applies the license map to every business whose classes changed",
-   "goal": "Nov 11 code review batch 3, F6 (b) (D-2705; BIZ-050, LIC-043, D-393, D-2593, D-2596): `reapply_license` (`app/businesses/src/capability.rs:389`) has no production caller, so a class removed from a business's record keeps its job types and cards, and no `businesses.license_change` email is ever queued. Fix: (1) `app/licensing/src/class_changes.rs`: a read, through `licensing::api`, of each license number whose class set differs between a recorded ROC list and the one recorded before it, with the old and new classes; a number missing from the newer list is not a change (a truncated list must not strip and pause everyone; a lapsed license is CARD-015's and the lookup's, not this task's); (2) `app/businesses/src/license_reapply.rs`: a daily `businesses.license_reapply` task, registered in the shared worker and queued once a day after the list time (tomorrow queued first), that, applies each recorded list it has not yet applied, oldest first, each against the list before it (so a class removed on a day the task did not run is never lost), marking a list applied without a new table (a done task keyed per list date, or an audit row); for each list it maps each changed license number to its businesses and calls `reapply_license` with the old and new classes and the list date, in bounded batches; a re-run for the same list does nothing new (D-2596's key). It does not depend on who records the lists (T371). Tests in `tests/integration/tests/license_reapply_daily.rs` (TD-BIZ-48), lists recorded with `import_roc_list`: an R-37 business whose class goes loses its plumbing job types, is paused for `no_covered_job_type` when nothing is left, and one `businesses.license_change` task is queued; a class added is offered, never ticked, and a switched-off category is not offered (T368); a business on an unchanged record is untouched; a re-run queues nothing; two lists recorded on days the task did not run are applied in order, so a class removed on the first and not restored is removed; a license number missing from the newer list leaves its businesses untouched; a business paused for `no_covered_job_type` that saves a capability tick its license covers is resumed in that transaction, audited, and one with no covered tick stays paused. The email itself is T329's. Resume (D-2596 (1), decided here, D-2711): a `no_covered_job_type` pause lifts automatically when the business again holds a ticked job type its license covers, checked in the capability save (`capability.rs`); a later list that covers a job type only offers it (BIZ-050), so the owner's tick is what resumes; the email tells the owner so. Update the `businesses` and `licensing` `CLAUDE.md` files and `docs/decisions.md`.",
+   "goal": "Nov 11 code review batch 3, F6 (b) (D-2705; BIZ-050, LIC-043, D-393, D-2593, D-2596): `reapply_license` (`app/businesses/src/capability.rs:389`) has no production caller, so a class removed from a business's record keeps its job types and cards, and no `businesses.license_change` email is ever queued. Fix: (1) `app/licensing/src/class_changes.rs`: a read, through `licensing::api`, of each license number whose class set differs between a recorded ROC list and the one recorded before it, with the old and new classes; a number missing from the newer list is not a change (a truncated list must not strip and pause everyone; a lapsed license is CARD-015's and the lookup's, not this task's); (2) `app/businesses/src/license_reapply.rs`: a daily `businesses.license_reapply` task, registered in the shared worker and queued once a day after the list time (tomorrow queued first), that, applies each recorded list it has not yet applied, oldest first, each against the list before it (so a class removed on a day the task did not run is never lost), marking a list applied without a new table (a done task keyed per list date, or an audit row); for each list it maps each changed license number to its businesses and calls `reapply_license` with the old and new classes and the list date, in bounded batches; a re-run for the same list does nothing new (D-2596's key). It does not depend on who records the lists (T371). Tests in `tests/integration/tests/license_reapply_daily.rs` (TD-BIZ-48), lists recorded with `import_roc_list`: an R-37 business whose class goes loses its plumbing job types, is paused for `no_covered_job_type` when nothing is left, and one `businesses.license_change` task is queued; a class added is offered, never ticked, and a switched-off category is not offered (T368); a business on an unchanged record is untouched; a re-run queues nothing; two lists recorded on days the task did not run are applied in order, so a class removed on the first and not restored is removed; a license number missing from the newer list leaves its businesses untouched; a business paused for `no_covered_job_type` that saves a capability tick its license covers is resumed in that transaction, audited, and one with no covered tick stays paused. The email itself is T329's. Resume (D-2596 (1), decided here; D-2711 as narrowed by D-2730): (a) `businesses::api::save_job_types` (in `capability.rs`) stores a business's job-type ticks later, after sign-up: in one transaction it locks the business row, rebuilds the offer from T374's `businesses::api::holding` and the stored category switch (T368), and stores only ticks that offer allows (never the caller's offer); `save_capability` keeps its signature for the done tests, but its lift check also uses the rebuilt offer; (b) a `no_covered_job_type` pause lifts only when, in that same transaction, the rebuilt offer and the stored ticks share a licensed job type, and every other pause rule is re-run first: the complaint count (`app/businesses/src/complaints.rs`, the rule `record_complaint` applies over `PAUSE_WINDOW_DAYS`), a pest license reported wrong (LIC-047, `licensing.business_license.paused_at`) and any license or insurance standing rule the code has (CARD-015's latest check); if one holds, the business stays paused with that rule's reason (audited), never active; (c) when the license pause replaced the owner's own pause (`replace_self_pause`, D-969, D-970: its audit row is the `pause_reason` field change, not a status change), the lift returns the business to paused by itself, never active; (d) otherwise it becomes active, audited. A later list that covers a job type only offers it (BIZ-050), so the owner's tick is the resume; the license-change email says so. TD-BIZ-48 gains a case each: a covered tick lifts the pause; a business that crossed the complaint limit while paused stays paused for complaints; a pest business reported wrong stays paused; a business self-paused before the license pause returns to paused by itself; a tick posted outside the rebuilt offer is refused and lifts nothing. Update the `businesses` and `licensing` `CLAUDE.md` files and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -25747,7 +25748,8 @@
    "deps": [
     "T369",
     "T036",
-    "T056"
+    "T056",
+    "T374"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -25766,11 +25768,15 @@
     "docs/code-docs.md",
     "docs/spec/businesses.md",
     "docs/spec/licensing.md",
+    "docs/spec/job-cards.md",
     "docs/brains/rust-production.md"
    ],
    "requirements": [
     "BIZ-050",
-    "LIC-043"
+    "LIC-043",
+    "BIZ-009",
+    "LIC-047",
+    "CARD-015"
    ],
    "tests": [
     "TD-BIZ-48"
@@ -25780,13 +25786,14 @@
     "D-2700",
     "D-2593",
     "D-2596",
-    "D-2711"
+    "D-2711",
+    "D-2730"
    ],
    "cites": [],
    "budget": {
     "files": 4,
-    "lines": 450,
-    "context_pct": 15
+    "lines": 550,
+    "context_pct": 16
    },
    "checks": [
     "Ci",
@@ -25857,6 +25864,68 @@
    ],
    "branch": "claude/task/T373-phone-change-ends-consent",
    "prompt": "kit/prompts/T373.md"
+  },
+  {
+   "id": "T375",
+   "slug": "job-types-page-served",
+   "title": "portals and server: the business's Job types page lets the owner change job-type ticks after sign-up",
+   "goal": "Nov 11 code review batch 3, plan re-review (D-2730; BIZ-004, BIZ-049, BIZ-050, SEC-004): after sign-up no page lets the owner change job types: T302's capability step opens only before its first save and T306 serves no job-types page, so the license-change email's \"Job types page\" (`app/businesses/src/capability.rs:518`) and T372's resume of a `no_covered_job_type` pause are unreachable. (1) `app/portals/src/job_types_page.rs` and `app/portals/templates/job_types.html`: the checklist as the capability step shows it (T368's offer from `businesses::api::holding`, licensed rows first, the stored ticks checked), the job types removed by a license change not offered, with a save button; words through the copy panel (WORD-028); (2) served in `app/server/src/business_portal.rs` (after T306) at a `/b/` route behind `portals::api::business_principal`, owner or \"Confirm and billing\" only, CSRF and `refuse_cross_site` on the POST, `no_store`; the POST calls T372's `businesses::api::save_job_types` (offer rebuilt server-side, the resume rule in the same transaction) and shows the page again with the result; another business's ticks are never read; a section 13 row (T348's probe). Tests: `app/server/tests/job_types_route.rs` (TD-BIZ-51): signed out the route sends to sign-in; a \"Cards and quotes\" member gets the not-found page; the owner sees the offer and saves a tick; a tick outside the offer changes nothing; a business paused for `no_covered_job_type` that saves a covered tick is active again; the page has no axe-core violation (its `PAGE_STATES` entry in the shared `tests/a11y/page_states.ts`). Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` (section 13) and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "portals",
+   "deps": [
+    "T306",
+    "T372",
+    "T374"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security"
+   ],
+   "owns": [
+    "app/portals/src/job_types_page.rs",
+    "app/portals/templates/job_types.html",
+    "app/server/src/business_portal.rs",
+    "app/server/tests/job_types_route.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/businesses.md",
+    "docs/spec/security.md",
+    "docs/spec/accessibility.md",
+    "docs/brains/accessibility-forms.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "BIZ-004",
+    "BIZ-049",
+    "BIZ-050",
+    "SEC-004"
+   ],
+   "tests": [
+    "TD-BIZ-51"
+   ],
+   "decisions": [
+    "D-2730",
+    "D-2711"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 450,
+    "context_pct": 15
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T375-job-types-page-served",
+   "prompt": "kit/prompts/T375.md"
   }
  ]
 }

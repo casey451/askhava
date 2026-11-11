@@ -115,3 +115,11 @@
 | 6 (Med) T371 layering, cadence and bounds | Pairs through the server's wiring from `businesses::api`; hourly re-runs while failing; capped lookups per run |
 | 7 (Med) The resume left to Casey | Decided in T372 (D-2711); the for-casey item is informational |
 | 8 (Med) T302's capability route's door | Behind `business_principal`; the sign-in link at activation lands on the unsaved step |
+
+### Plan re-review (D-2730)
+
+| Finding | Change |
+|---|---|
+| Blocker: the resume could lose a second rule pause, erase the owner's own pause, and trusted the caller's offer | T372's lift only in `save_job_types` with the offer rebuilt from T374's holding read in the same transaction; every other pause rule re-run first; a replaced self pause returns to self; T372 after T374; TD-BIZ-48 cases |
+| No page lets the owner change job types after sign-up | New T375 (stage 5): the Job types page, served behind the business session, saving through `save_job_types`; TD-BIZ-51 |
+
