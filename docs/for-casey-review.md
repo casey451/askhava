@@ -2247,6 +2247,18 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **What changed.** That older test still checks that an ended pick is never handed to the business. Instead of "nothing is kept", it now checks that the payment and its record are kept, and that exactly one refund job and one alert to you are made. A stale comment in another test is corrected too. Every other test that touches these payments was checked; none other needs a change.
 - **Nothing needs you now.**
 
+## The pick email gets its "Can't take it" link (plan change, D-3024, November 11)
+
+- **What happened.** The step that adds the "Can't take it" link to the email a business gets when it is picked stopped on its first try. Its plan pointed it at the wrong file, and the email's words are shared texts it wasn't allowed to change. Adding the link to those texts also breaks five older tests that build the same email or every text with a fixed list of sample values.
+- **What changed.** The work is split in two. The first step now puts the link's address in where the email is built. A new follow-up step (T386) adds the line to both pick emails (regular and emergency) in English, "Can't take it:" and the link, and in Spanish, "¿No puede aceptarlo?" and the link. The five older tests only gain a sample address; every check they make stays the same. The link opens a page that asks the business to sign in, and it carries no homeowner details. The full journey test of the business side waits for the new step.
+- **Calls Claude made that you may want to check.** In the email the address shows as plain text, not a button; making it clickable is a small later change.
+
+## A partial or foreign-currency refund is checked on every path, and the business is not told "refunded" (plan change, D-3018, November 11)
+
+- **What happened.** The step that checks how much Stripe actually refunded stopped: two of the places it has to reach belonged to earlier, finished steps. A refund confirmed by Stripe's later notification skipped the check, and the "your introduction fee is refunded" message to the business is sent by another part of the system that didn't know about the check.
+- **What changed.** The same step may now change exactly those two places. A refund confirmed later is checked the same way as one confirmed at once. If Stripe refunded less than the full fee, or in a currency other than US dollars, the job still closes as before, you get the alert, and the business does not get the "refunded" message; you decide what to tell them. If Stripe simply didn't say the amount or the currency, the message goes as today, because the system only ever asks for full refunds. If the system can't reach Stripe to check before sending the message, it closes nothing yet and tries again on its next run, so an unchecked refund is never announced. No other step and no test written by another step changes.
+- **Nothing needs you now.**
+
 ## T384: the homeowner sees a changed or withdrawn quote (D-2987 to D-2990)
 
 - **What changed.** When a business changes its quote before any pick, the homeowner's quote page and the quote card show "Updated Nov 3, 9:15 a.m. Arizona time", and the quote keeps its number. A withdrawn quote keeps its number and place, says "Withdrawn by the business" and has no Pick button; no one can pick it by page, by "2 YES" text or as a backup. The LIST text now numbers each line with the quote's page number, so "2 YES" always picks the quote shown as 2 (before, after a failed pick the list could renumber and "2 YES" could pick a different business).
