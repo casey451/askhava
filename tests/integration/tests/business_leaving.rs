@@ -6,7 +6,8 @@
 //! without a fresh code changes nothing; with one it withdraws both quotes, moves pick A to the
 //! backup, returns job B to Quotes ready, withdraws its quote on job C (past Confirm, so it cannot
 //! come back if job C returns to Quotes ready), removes and detaches both cards, uses up the link,
-//! ends the session and keeps the ledger row. The reason is asked once with "Busy for a while"
+//! ends the session and keeps the ledger row; a second, staying business keeps its card, session
+//! and link. The reason is asked once with "Busy for a while"
 //! first, on leaving or after the business's own pause past 14 days (never a pause by a rule), and
 //! the answer changes nothing else.
 
@@ -33,6 +34,7 @@ use sqlx::{PgConnection, PgPool};
 
 const DAY: &str = "2026-11-04T17:00:00Z";
 const CARDS: [&str; 2] = ["pm_FakeLeave1", "pm_FakeLeave2"];
+const STAY_CARD: &str = "pm_FakeStay1";
 
 fn at(minutes: i64) -> Timestamp {
     DAY.parse::<Timestamp>().expect("instant") + SignedDuration::from_mins(minutes)
@@ -93,9 +95,9 @@ async fn quoted(db: &mut PgConnection, first: Uuid) -> Uuid {
 }
 
 /// A business, its owner's member ID, the owner's session cookie and principal.
-async fn signed_in(db: &mut PgConnection) -> (Acting, CookieJar, BusinessPrincipal) {
+async fn signed_in(db: &mut PgConnection, owner: u128) -> (Acting, CookieJar, BusinessPrincipal) {
     let business = create(db, false, at(0)).await.expect("business");
-    let member = add_owner(db, business, Uuid::from_u128(0x228d1), at(0))
+    let member = add_owner(db, business, Uuid::from_u128(owner), at(0))
         .await
         .expect("owner");
     let jar = start_session(
@@ -162,6 +164,51 @@ async fn money_and_links(db: &mut PgConnection, who: Acting, job: Uuid) {
     .expect("link");
 }
 
+/// A second business that stays: signed in, one saved card and one unused sign-in link.
+async fn staying(db: &mut PgConnection) -> (Acting, CookieJar) {
+    let (stay, jar, _) = signed_in(db, 0x228d2).await;
+    sqlx::query("INSERT INTO payments.customer (business_id, stripe_customer_id) VALUES ($1, $2)")
+        .bind(stay.business)
+        .bind("cus_FakeT228Stay")
+        .execute(&mut *db)
+        .await
+        .expect("customer");
+    let card = SavedCard::new(STAY_CARD, "card", "visa", "4242").expect("card");
+    save_card(db, BusinessId(stay.business), &card, at(4))
+        .await
+        .expect("saved");
+    sqlx::query(
+        "INSERT INTO portals.login_link (token_sha256, member_id, business_id, created_at, \
+         expires_at) VALUES ($1, $2, $3, $4, $5)",
+    )
+    .bind(vec![9_u8; 32])
+    .bind(stay.member)
+    .bind(stay.business)
+    .bind(at(8).to_sqlx())
+    .bind(at(30).to_sqlx())
+    .execute(&mut *db)
+    .await
+    .expect("link");
+    (stay, jar)
+}
+
+/// The staying business still has its saved card, its unused link and its session.
+async fn untouched(db: &mut PgConnection, stay: Acting, jar: &CookieJar) {
+    let saved = saved_card_of(db, BusinessId(stay.business))
+        .await
+        .expect("read");
+    assert_eq!(saved.as_deref(), Some(STAY_CARD), "the other card stays");
+    let links =
+        "SELECT count(*) FROM portals.login_link WHERE business_id = $1 AND used_at IS NULL";
+    assert_eq!(
+        count(db, links, stay.business).await,
+        1,
+        "the other link stays"
+    );
+    let kept = business_principal(db, jar, at(12)).await.expect("read");
+    assert!(kept.is_some(), "the other business stays signed in");
+}
+
 /// Job A with a waiting pick of `who` and her backup on quote 3; job B with a waiting pick and no
 /// backup.
 async fn picked(db: &mut PgConnection, who: Acting) -> (Uuid, Uuid, Uuid) {
@@ -196,14 +243,16 @@ async fn past_confirm(db: &mut PgConnection, who: Acting) -> Uuid {
 
 /// TD-BIZ-32 (BIZ-051, PICK-047, PICK-051, SEC-038, D-446): leaving needs a fresh code, then
 /// withdraws every quote (past Confirm too), moves the waiting picks, removes the cards, ends
-/// sessions and links, and keeps the ledger; a second leave changes nothing.
+/// sessions and links, and keeps the ledger; another business's card, session and link stay; a
+/// second leave changes nothing.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_biz_32_leaving_withdraws_moves_removes_and_ends(pool: PgPool) {
     let mut db = pool.acquire().await.expect("db");
-    let (who, jar, principal) = signed_in(&mut db).await;
+    let (who, jar, principal) = signed_in(&mut db, 0x228d1).await;
     let (a, b, pick) = picked(&mut db, who).await;
     let c = past_confirm(&mut db, who).await;
     money_and_links(&mut db, who, a).await;
+    let (stay, stay_jar) = staying(&mut db).await;
     let stripe = FakeDetach::default();
     let early = leave(&mut db, &principal, (None, &stripe), at(10)).await;
     assert_eq!(early, Err(LeaveError::NeedsCode));
@@ -280,6 +329,7 @@ async fn td_biz_32_leaving_withdraws_moves_removes_and_ends(pool: PgPool) {
         .await
         .expect("read");
     assert!(gone.is_none(), "signed out");
+    untouched(&mut db, stay, &stay_jar).await;
     let status = "SELECT count(*) FROM businesses.business WHERE id = $1 AND status = 'removed'";
     assert_eq!(count(&mut db, status, who.business).await, 1);
     let choice: Option<String> =
@@ -342,7 +392,7 @@ fn td_biz_32_the_reason_is_optional_with_busy_first() {
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_biz_32_a_long_pause_asks_once_and_changes_nothing(pool: PgPool) {
     let mut db = pool.acquire().await.expect("db");
-    let (who, _, principal) = signed_in(&mut db).await;
+    let (who, _, principal) = signed_in(&mut db, 0x228d1).await;
     sqlx::query("UPDATE businesses.business SET status = 'active' WHERE id = $1")
         .bind(who.business)
         .execute(&mut *db)
