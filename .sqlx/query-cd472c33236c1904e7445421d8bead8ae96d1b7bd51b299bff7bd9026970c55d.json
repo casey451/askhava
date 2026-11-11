@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE quotes.auto_confirm SET unticked_at = greatest($2, ticked_at), untick_reason = $3\n         WHERE quote_id = $1 AND unticked_at IS NULL",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "cd472c33236c1904e7445421d8bead8ae96d1b7bd51b299bff7bd9026970c55d"
+}
