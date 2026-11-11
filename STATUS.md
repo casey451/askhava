@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T09:40:57Z by runner b33f1140a01b (actions).
+Updated 2026-11-11T09:41:12Z by runner 51d43b98c1b2 (actions).
 
 **Building: T337 in progress since 09:25Z; 199 of 370 done; week 63% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-11T09:40:57Z by runner b33f1140a01b (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T337 claimed 09:25Z, lease until 12:25Z
 - **Week:** 63% used, 62.3M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:38Z, 1 min before this update
-- **Keeper:** last ran 09:36Z, next wake 11:52Z
+- **Last run:** 09:41Z, 0 min before this update
+- **Keeper:** last ran 09:41Z, next wake 12:28Z
 
 ## Needs attention
 - BLOCKED T164: plan gap reported: PLAN GAP: app/portals/src/tests/prop_arrival_order.rs:22 (T052) and app/quotes/src/notify.rs:179 / app/quotes/src/models.rs:573 (T047). The homeowner side of T164 (quote page "Updated <time>"/"Withdrawn by the business", LIST reply) needs api.rs (page_quotes filters withdrawn_at, api.rs:116), PageQuote fields (api.rs:93, built field-by-field in the T052 test), notify.rs list_line/Listed and models.rs list_rows, none owned by T164. Reviewer confirmed (kit/tasks.json owns vs. those files; T361 covers part but depends on T164).; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T164 --plan-fix D-### --reason "..."` (D-2859)
@@ -19,7 +19,7 @@ Updated 2026-11-11T09:40:57Z by runner b33f1140a01b (actions).
 - PLAN GAP T323 (since 2026-11-11T09:25:53Z, no attempt used; a plan change fixes it): T323: dependency T295 is DONE but its owned file tests/brand_literal_baseline.json is not on main
 - PLAN GAP T326 (since 2026-11-11T09:25:53Z, no attempt used; a plan change fixes it): T326: dependency T292 is DONE but its owned file tests/brand_literal_baseline.json is not on main
 - OWNED GAP T295 (DONE, since 2026-11-11T09:25:53Z; a later task or plan change must add it): T295: tests/brand_literal_baseline.json missing on main
-- Strict plan check red: 13 problem(s) on tasks still to run (+21 on DONE tasks); first: T255: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 10 problem(s) on tasks still to run (+19 on DONE tasks); first: T126: stored context_pct 56% but it measures 60%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
