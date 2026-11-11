@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-11T12:30:19Z by runner 790d4ec251b2 (actions).
+Updated 2026-11-11T12:38:08Z by runner 790d4ec251b2 (actions).
 
-**Building: T333 in progress since 12:24Z; 203 of 372 done; week 66% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T332 in progress since 12:37Z; 203 of 372 done; week 66% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 203 of 372 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 3: T333 claimed 12:24Z, lease until 15:24Z
-- **Week:** 66% used, 62.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:26Z, 3 min before this update
+- **Lane:** lane 1: T332 claimed 12:37Z, lease until 15:37Z; lane 3: T333 claimed 12:24Z, lease until 15:24Z
+- **Week:** 66% used, 59.1M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Last run:** 12:37Z, 0 min before this update
 - **Keeper:** last ran 12:16Z, next wake 12:36Z
 
 ## Needs attention
@@ -52,7 +52,6 @@ Updated 2026-11-11T12:30:19Z by runner 790d4ec251b2 (actions).
 | T231 | portals (harness): the homeowner check-in email buttons and  | done | 2 | 26 min | 17:08Z | T231 built and committed (b2f7b11e, 26074ad1) but smoke red: tests/security/tests/auth_matrix.rs (T088, protected, no se |
 | T231 | portals (harness): the homeowner check-in email buttons and  | QUEUED | 1 | 28 min | 15:58Z |  |
 | T199 | portals: no automated call to a business, voice codes only o | done | 1 | 64 min | 14:22Z |  |
-| T293 | businesses and quotes: sign-up, consent, complaint and quote | done | 1 | 41 min | 12:35Z |  |
 
 ### Plan and harness merges on main
 - 12:26Z Plan: T332 may expect AlreadyQueued after its own check round queues the late success (D-2970) (#482)
@@ -117,7 +116,7 @@ Updated 2026-11-11T12:30:19Z by runner 790d4ec251b2 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-11T12:16:10Z (week)): five-hour: 11.6M used, 17.5M left, resets 2026-11-11T14:49:36Z; week: 132.0M used, 62.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-04T13:45:11Z.
+- Pacing (session_reading 2026-11-11T12:16:10Z (week)): five-hour: 14.5M used, 14.6M left, resets 2026-11-11T14:49:36Z; week: 134.9M used, 59.1M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-04T13:58:56Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -132,7 +131,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T332 (lease until 2026-11-11T15:37:45Z)
 - lane 3: T333 (lease until 2026-11-11T15:24:00Z)
 
 ## Last usage reading
