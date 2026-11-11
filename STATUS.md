@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-11T20:01:04Z by runner 08f1c85bd062 (actions).
+Updated 2026-11-11T20:10:03Z by runner 53eba4dfccb6 (manual).
 
-**Waiting for tokens until 20:04Z; 213 of 374 done; week 73% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 19:59Z; 213 of 376 done; week 73% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 213 of 374 build tasks (owner gates not counted)
+- **Tasks done:** 213 of 376 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 19:59Z (no task in progress)
 - **Week:** 73% used, 45.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:00Z, 0 min before this update
+- **Last run:** 20:01Z, 8 min before this update
 - **Keeper:** last ran 20:01Z, next wake 20:11Z
 
 ## Needs attention
@@ -73,6 +73,7 @@ Updated 2026-11-11T20:01:04Z by runner 08f1c85bd062 (actions).
 | T155 | businesses: sign-up capability setup pre-ticked from the lic | done | 1 | 57 min | 20:15Z |  |
 
 ### Plan and harness merges on main
+- 20:03Z Harness: the critical-path test checks what the runner can claim, not live in-flight work (D-3057) (#514)
 - 19:58Z Plan: pre-flight fixes for five queued tasks before they're claimed (D-3055) (#512)
 - 18:49Z Plan: five lanes (D-3043) (#504)
 - 18:37Z Plan: T387 steadies payments branch coverage and adds margin, claimed first (D-3049) (#507)
@@ -109,7 +110,7 @@ Updated 2026-11-11T20:01:04Z by runner 08f1c85bd062 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 221 of 733 (30.2%) · partial 337 · unstarted 175
-**Tasks merged (throughput only):** 213 of 374
+**Tasks merged (throughput only):** 213 of 376
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
