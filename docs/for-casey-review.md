@@ -3,6 +3,12 @@
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
 
+
+## T332 gets back the attempt the outage took (plan change, D-3031, November 11)
+
+- **What happened.** T332's third and last attempt was failed by the Ubuntu download outage (D-3030), before any of its tests ran, so it ran out of attempts.
+- **What changed.** Only a note on T332's plan, which lets the runner give it one more try on Opus. Its work and its tests are unchanged.
+- **Nothing needs you.**
 ## Browser setup survives an Ubuntu mirror outage (harness change, D-3030, November 11)
 
 - **What happened.** From about 13:48Z the build servers could not reach Ubuntu's download mirrors. The step that prepares the test browser waited 12 minutes for some optional fonts and then failed, so the accessibility and journey tests never ran and T384 lost an attempt.
