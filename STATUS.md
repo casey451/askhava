@@ -1,22 +1,24 @@
 # Ask Hava build status
 
-Updated 2026-11-11T12:05:38Z by runner ee153a16c726 (actions).
+Updated 2026-11-11T12:10:03Z by runner 9826ef4c3b40 (actions).
 
-**Building: T332 in progress since 11:58Z; 202 of 372 done; week 65% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 12:10Z; 202 of 372 done; week 65% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 202 of 372 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T332 claimed 11:58Z, lease until 14:58Z
+- **Lane:** idle since 12:10Z (no task in progress)
 - **Week:** 65% used, 60.5M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:05Z, 0 min before this update
+- **Last run:** 12:05Z, 4 min before this update
 - **Keeper:** last ran 12:05Z, next wake 15:00Z
 
 ## Needs attention
-- Strict plan check red: 13 problem(s) on tasks still to run (+24 on DONE tasks); first: T255: stored context_pct 34% but it measures 38%; regenerate
+- BLOCKED T332: plan gap reported: PLAN GAP: tests/integration/tests/late_success.rs:216 (T064's TD-FEE-12, DONE) clashes with T332's goal and D-2290 (the file changes only in the expected trigger). T332 requires run_charge_check to call late_success in its own round on an ended pick, so the later report call at line 216 answers AlreadyQueued, not Queued; the (1,1) count at line 220 stays. Reviewer confirmed (late.rs:62-102 dedupe key; test lines 202-222). Smallest plan change: T332 may also change that one assertion to Ok(LateSuccess::AlreadyQueued), logged in decisions. Also: D-2290 says migration 0176, the goal says 0177; ne; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T332 --plan-fix D-### --reason "..."` (D-2859)
+- Strict plan check red: 16 problem(s) on tasks still to run (+25 on DONE tasks); first: T255: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T332 | payments (harness): a late success has its own refund trigge | BLOCKED | 1 | 11 min | 12:10Z | PLAN GAP: tests/integration/tests/late_success.rs:216 (T064's TD-FEE-12, DONE) clashes with T332's goal and D-2290 (the  |
 | T164 | quotes: one quote format per category, screened notes, and e | MERGE_PENDING | 3 | 19 min | 12:02Z | merging main into the reviewed head conflicts in app/quotes/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T331 | payments (harness): a payment success with no readable pick  | MERGE_PENDING | 1 | 49 min | 11:35Z |  |
 | T164 | quotes: one quote format per category, screened notes, and e | resync | 3 | 12 min | 11:31Z |  |
@@ -130,7 +132,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T332 (lease until 2026-11-11T14:58:29Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T164", "at": "2026-11-11T12:02:41Z", "cache_creation_input_tokens": 57921, "input_tokens": 65, "cache_read_input_tokens": 775827, "output_tokens": 10838}
+- {"task": "T332", "at": "2026-11-11T12:10:03Z", "output_tokens": 21484, "cache_creation_input_tokens": 179937, "input_tokens": 102, "cache_read_input_tokens": 2539013}
