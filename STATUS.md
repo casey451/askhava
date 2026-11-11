@@ -1,18 +1,17 @@
 # Ask Hava build status
 
-Updated 2026-11-11T14:46:57Z by runner 9e8ac4355245 (actions).
+Updated 2026-11-11T14:49:06Z by runner 18c60bd6ee5c (manual).
 
-**Building: T384 in progress since 14:46Z; 204 of 372 done; week 68% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T384 in progress since 14:46Z; 204 of 373 done; week 68% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 204 of 372 build tasks (owner gates not counted)
+- **Tasks done:** 204 of 373 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T384 claimed 14:46Z, lease until 17:46Z
 - **Week:** 68% used, 58.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:40Z, 6 min before this update
+- **Last run:** 14:47Z, 2 min before this update
 - **Keeper:** last ran 14:40Z, next wake 15:00Z
 
 ## Needs attention
-- BLOCKED T214: plan gap reported: PLAN GAP: app/picks/src/handlers.rs:73-76 (T063's) and the pick_notice / pick_notice_emergency keys in app/messaging/templates/en.json:322 and es.json build the pick notice's words and values; T214 owns neither, and confirm.rs only exports template ID constants (confirm.rs:41-44). business_notices.rs:63 hardcodes PICK_TEMPLATES so a renamed template would break the Accept-by window. Smallest plan change: give T214 handlers.rs and let it add a {cant_take} value to the pick_notice and pick_notice_emergency templates in both languages, or move the notice-link part of PICK-050 / TD-PICK-43 to a ta; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T214 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T332: Ci: failure; Ally: failure; E2e: failure
 Ally failed at step: Chromium and its system libraries
 E: Failed to fetch https://security.ubuntu.com/ubuntu/pool/universe/u/unifont/fonts-unifont_16.0.04-1build1_all.deb  Temporary failure resolving 'security.ubuntu.com'
@@ -30,7 +29,7 @@ Error: Installation process exited with code: 100
 ##[error]Process completed with exit code 1.
 Ci fai
 - BLOCKED T333: plan gap reported: PLAN GAP: app/payments/src/routes.rs:412 (T259) and app/payments/src/refund_state.rs:34 (T270) / app/picks/src/unreachable_refund.rs:306 (T191, T270). kit/prompts/T333.md:23-26 owns only refunds.rs, refund_stripe.rs, refund_lifecycle.rs, refund_amounts.rs. routes.rs calls refund_succeeded(pool, re, now) without the amount, so a webhook-driven success is booked at the full charge unchecked; picks sends the refunded email when refund_state reads Succeeded, so a mismatched or foreign-currency refund can still send the notice. Reviewer confirmed both lie in files T333 does not own. Rest of T333 co; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T333 --plan-fix D-### --reason "..."` (D-2859)
-- Strict plan check red: 21 problem(s) on tasks still to run (+31 on DONE tasks); first: T255: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 20 problem(s) on tasks still to run (+31 on DONE tasks); first: T255: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -78,6 +77,7 @@ Ci fai
 | T231 | portals (harness): the homeowner check-in email buttons and  | QUEUED | 1 | 28 min | 15:58Z |  |
 
 ### Plan and harness merges on main
+- 14:48Z Plan: T214 builds the pick notice's "Can't take it" value; new T386 adds the line to both languages (D-3024) (#489)
 - 14:34Z Harness: browser setup survives an Ubuntu mirror outage (D-3030) (#492)
 - 13:45Z Plan: four lanes (D-2986) (#483)
 - 13:14Z Plan: T332 updates the ended-pick test — success stored, one refund queued, still never cleared (D-3007) (#484)
@@ -113,8 +113,8 @@ Ci fai
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 213 of 733 (29.1%) · partial 342 · unstarted 178
-**Tasks merged (throughput only):** 204 of 372
+**Requirements verified:** 212 of 733 (28.9%) · partial 343 · unstarted 178
+**Tasks merged (throughput only):** 204 of 373
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -132,7 +132,7 @@ Ci fai
 | ops-recovery | 2 | 6 | 46 | 54 |
 | privacy | 6 | 23 | 2 | 31 |
 | quiet-hours | 4 | 5 | 0 | 9 |
-| quotes-pick | 25 | 27 | 4 | 56 |
+| quotes-pick | 24 | 28 | 4 | 56 |
 | recurring | 6 | 2 | 3 | 11 |
 | security | 6 | 43 | 6 | 55 |
 | terms | 0 | 3 | 32 | 35 |

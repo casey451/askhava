@@ -21864,7 +21864,7 @@
     "T148",
     "T198"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "picks-share-box-cant-take",
    "type": "build",
@@ -21878,8 +21878,8 @@
     2995,
     2996
    ],
-   "reason": "plan gap reported: PLAN GAP: app/picks/src/handlers.rs:73-76 (T063's) and the pick_notice / pick_notice_emergency keys in app/messaging/templates/en.json:322 and es.json build the pick notice's words and values; T214 owns neither, and confirm.rs only exports template ID constants (confirm.rs:41-44). business_notices.rs:63 hardcodes PICK_TEMPLATES so a renamed template would break the Accept-by window. Smallest plan change: give T214 handlers.rs and let it add a {cant_take} value to the pick_notice and pick_notice_emergency templates in both languages, or move the notice-link part of PICK-050 / TD-PICK-43 to a ta; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T214 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: app/picks/src/handlers.rs:73-76 (T063's) and the pick_notice / pick_notice_emergency keys in app/messaging/templates/en.json:322 and es.json build the pick notice's words and values; T214 owns neither, and confirm.rs only exports template ID constants (confirm.rs:41-44). business_notices.rs:63 hardcodes PICK_TEMPLATES so a renamed template would break the Accept-by window. Smallest plan change: give T214 handlers.rs and let it add a {cant_take} value to the pick_notice and pick_notice_emergency templates in both languages, or move the notice-link part of PICK-050 / TD-PICK-43 to a task that owns handlers.rs. Reviewer confirmed.",
+   "reason": null,
+   "last_failure": "PLAN GAP: app/picks/src/handlers.rs:73-76 (T063's) and the pick_notice / pick_notice_emergency keys in app/messaging/templates/en.json:322 and es.json build the pick notice's words and values; T214 owns neither, and confirm.rs only exports template ID constants (confirm.rs:41-44). business_notices.rs:63 hardcodes PICK_TEMPLATES so a renamed template would break the Accept-by window. Smallest plan change: give T214 handlers.rs and let it add a {cant_take} value to the pick_notice and pick_notice_emergency templates in both languages, or move the notice-link part of PICK-050 / TD-PICK-43 to a task that owns handlers.rs. Reviewer confirmed.\nre-queued after plan fix D-3024: D-3024: T214 owns handlers.rs and adds the cant_take value; new harness task T386 adds the Can't-take-it line to both languages and the five fixtures",
    "history": [
     {
      "attempt": 1,
@@ -21893,6 +21893,21 @@
      "started_at": "2026-11-11T13:03:53Z",
      "ended_at": "2026-11-11T13:19:32Z",
      "result": "BLOCKED"
+    }
+   ],
+   "requeues": [
+    {
+     "at": "2026-11-11T14:49:06Z",
+     "reason": "D-3024: T214 owns handlers.rs and adds the cant_take value; new harness task T386 adds the Can't-take-it line to both languages and the five fixtures",
+     "by": "manual-22c1a1033d8c",
+     "was": "plan gap reported: PLAN GAP: app/picks/src/handlers.rs:73-76 (T063's) and the pick_notice / pick_notice_emergency keys in app/messaging/templates/en.json:322 and es.json build the pick notice's words and values; T214 owns neither, and confirm.rs only exports template ID constants (confirm.rs:41-44). business_notices.rs:63 hardcodes PICK_TEMPLATES so a renamed template would break the Accept-by window. Smallest plan change: give T214 handlers.rs and let it add a {cant_take} value to the pick_notice and pick_notice_emergency templates in both languages, or move the notice-link part of PICK-050 / TD-PICK-43 to a ta; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T214 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 1,
+     "plan_fix": "D-3024",
+     "plan_since": "2026-11-11T13:03:53Z",
+     "plan_base": "8eba59454470d8ffc8b21fa996ae8b3d1496a694",
+     "plan_head": "18c60bd6ee5c4a08c8a19e95b51d569f9ebfe650",
+     "plan_then": "72e05070692d8e539f55fc60ce3b1b913f9cd3cd742e10d0f6f0d1e8ca149d8e",
+     "plan_now": "b2aecf84674edf0043728058073f76d5a2ec62c4853a228e58b8a68ad7a39292"
     }
    ]
   },
@@ -32989,7 +33004,7 @@
    }
   }
  },
- "updated_at": "2026-11-11T14:46:57Z",
+ "updated_at": "2026-11-11T14:49:06Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -33087,8 +33102,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "9e8ac4355245a8481fa377e1a16ed80a2c4dd613",
- "starter": "actions",
+ "runner_sha": "18c60bd6ee5c4a08c8a19e95b51d569f9ebfe650",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "ea7b57e0aac03c4061b9ec51fe0e3a7a51032554",
