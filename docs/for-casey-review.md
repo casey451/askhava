@@ -6,6 +6,7 @@ These are decisions Claude made on its own and logged so the build never waits (
 
 - **What happened.** The step that adds the homeowner's "Share my first name and the job address" box at the pick stopped a second time. Pressing Pick without ticking the box must now show an error and pick nothing, but five older tests press Pick without the box, and that step was not allowed to change them.
 - **What changed.** The same step may now change those five tests, and only to tick the box before pressing Pick; every check they make stays the same. Because it now changes finished tests, it runs as a harness step with the stricter review. One queued step that also edits one of those tests now waits for it.
+- **Also pinned.** The tick is saved in its own small record and attached to the pick only once the homeowner's code checks out. If she forgets the box, the page says so at the top, takes her to the box, and keeps the backup quote she had chosen. The box's Spanish wording is left to that step, which logs it.
 - **Nothing needs you.**
 
 ## Browser setup survives an Ubuntu mirror outage (harness change, D-3030, November 11)
