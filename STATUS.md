@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-11T18:05:48Z by runner 113172ac00c2 (actions).
+Updated 2026-11-11T18:06:02Z by runner 113172ac00c2 (actions).
 
 **Building: T228 in progress since 17:51Z; 210 of 373 done; week 71% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 210 of 373 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T228 claimed 17:51Z, lease until 20:51Z; lane 2: T272 claimed 17:45Z, lease until 20:45Z; lane 3: T332 claimed 17:24Z, lease until 20:24Z
+- **Lane:** lane 1: T228 claimed 17:51Z, lease until 20:51Z; lane 3: T332 claimed 17:24Z, lease until 20:24Z
 - **Week:** 71% used, 47.6M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 18:00Z, 5 min before this update
 - **Keeper:** last ran 18:00Z, next wake 20:26Z
@@ -18,8 +18,9 @@ Updated 2026-11-11T18:05:48Z by runner 113172ac00c2 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T272 | portals: the sign-in link cap and the code-try cap are atomi | MERGE_PENDING | 1 | 20 min | 18:05Z | merging main into the reviewed head conflicts in app/portals/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T333 | payments (harness): a succeeded refund is recorded at the am | done | 2 | 32 min | 17:20Z | PLAN GAP: app/payments/src/routes.rs:412 (T259) and app/payments/src/refund_state.rs:34 (T270) / app/picks/src/unreachab |
-| T272 | portals: the sign-in link cap and the code-try cap are atomi | resync | 1 | 27 min | 17:17Z | merging main into the reviewed head conflicts in app/portals/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T272 | portals: the sign-in link cap and the code-try cap are atomi | resync | 1 | 27 min | 17:17Z |  |
 | T165 | businesses: business name, Google and Yelp links and license | done | 1 | 18 min | 17:05Z |  |
 | T214 | picks (harness): the homeowner's share box at the pick and t | done | 3 | 45 min | 16:44Z | PLAN GAP: tests/integration/tests/page_pick.rs:131 and tests/security/tests/page_pick_privacy.rs:224 (both T246's; page_ |
 | T165 | businesses: business name, Google and Yelp links and license | resync | 1 | 47 min | 16:25Z |  |
@@ -149,8 +150,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T228 (lease until 2026-11-11T20:51:50Z)
-- lane 2: T272 (lease until 2026-11-11T20:45:14Z)
 - lane 3: T332 (lease until 2026-11-11T20:24:05Z)
 
 ## Last usage reading
-- {"task": "T333", "at": "2026-11-11T17:20:10Z", "cache_read_input_tokens": 18699527, "output_tokens": 117906, "cache_creation_input_tokens": 453119, "input_tokens": 300}
+- {"task": "T272", "at": "2026-11-11T18:05:47Z", "output_tokens": 19133, "cache_read_input_tokens": 1513076, "cache_creation_input_tokens": 94605, "input_tokens": 112}
