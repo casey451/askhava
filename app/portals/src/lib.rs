@@ -50,6 +50,7 @@ mod models;
 mod notice_log;
 mod notice_settings;
 mod owner_auth;
+mod photo_upload;
 mod pick_flow;
 mod quote_page;
 mod receipts_page;

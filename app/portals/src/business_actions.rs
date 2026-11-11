@@ -22,6 +22,10 @@
 //! "Confirm and billing" member) and [`quote_form_page_full`] shows it with its authorization;
 //! [`set_auto_confirm`] stores a tick only after a fresh Verify code (SEC-038) through
 //! `quotes::api`, and an untick at any time before the pick (PICK-056).
+//! T212: [`job_details_page`] renders `quotes::api::JobPage` (CARD-023): the card, every answer,
+//! the photos through their short-lived links, the project file and the concept image with its
+//! label on and beside it (INT-044 to INT-046, D-491); the route that serves it is T306's and adds
+//! `no_store` (SEC-034).
 
 use askama::Template;
 use askhava_businesses::api::{Acting, LargestJob, offer_sample_pick};
@@ -32,8 +36,8 @@ use askhava_payments::api::{
     period_fee_for, saved_card_of,
 };
 use askhava_quotes::api::{
-    AUTO_CONFIRM_VERSION, AutoConfirmError as QuotesAutoError, AutoConfirmTick, DayPart, Parts,
-    Period, Permit, Price, QuoteFacts, Spanish, TripFee, Untick, auto_confirm_authorization,
+    AUTO_CONFIRM_VERSION, AutoConfirmError as QuotesAutoError, AutoConfirmTick, DayPart, JobPage,
+    Parts, Period, Permit, Price, QuoteFacts, Spanish, TripFee, Untick, auto_confirm_authorization,
     auto_confirm_of, stripe_answer_filed, tick_auto_confirm, untick_auto_confirm,
 };
 use jiff::Timestamp;
@@ -146,7 +150,73 @@ struct ActionsView<'a> {
     form: Option<&'a QuoteFormFacts>,
     warning: Option<&'a LargestWarning>,
     auto_box: Option<&'a AutoConfirmBox>,
+    page: Option<JobView<'a>>,
     csrf: &'a str,
+}
+
+/// What the business job page shows of one job (CARD-023), already gated by `quotes`.
+struct JobView<'a> {
+    job_number: &'a str,
+    card_lines: Vec<&'a str>,
+    answers: &'a [(String, String)],
+    later: &'a [String],
+    photos: &'a [String],
+    project_file: Option<&'a str>,
+    concept: Option<(&'a str, &'static str)>,
+    sent: u32,
+    quoted: u32,
+}
+
+/// The links a job page needs beside its data: each photo's `/photos/<token>` path, in
+/// [`JobPage::photos`] order, and the concept image's, each from `privacy::api::issue_link`
+/// (PRIV-014, PRIV-028).
+#[derive(Debug, Clone, Copy)]
+pub struct JobPageLinks<'a> {
+    /// The job number shown in the heading.
+    pub job_number: &'a str,
+    /// One link per photo, in the page's photo order.
+    pub photos: &'a [String],
+    /// The concept image's link, when the page has one.
+    pub concept: Option<&'a str>,
+}
+
+/// CARD-023, INT-044 to INT-046, A11Y-027: the business job page: the approved card, every answer,
+/// later details, the sent and quote counts, the photos, the project file and any concept image
+/// with "AI-generated, not exact, may not be feasible" on its alt text and beside it. A concept
+/// link is shown only when the page names a concept image; photo links that do not match
+/// [`JobPage::photos`] one for one are not shown, so no image is ever shown as hers unchecked
+/// (D-2874).
+///
+/// # Errors
+/// The template's render error.
+pub fn job_details_page(page: &JobPage, links: &JobPageLinks<'_>) -> Result<String, askama::Error> {
+    let concept = page
+        .concept()
+        .and_then(|(_, label)| links.concept.map(|link| (link, label)));
+    let view = JobView {
+        job_number: links.job_number,
+        card_lines: page.card().text().lines().collect(),
+        answers: page.answers(),
+        later: page.later(),
+        photos: if links.photos.len() == page.photos().len() {
+            links.photos
+        } else {
+            &[]
+        },
+        project_file: page.project_file(),
+        concept,
+        sent: page.sent(),
+        quoted: page.quoted(),
+    };
+    ActionsView {
+        action: None,
+        form: None,
+        warning: None,
+        auto_box: None,
+        page: Some(view),
+        csrf: "",
+    }
+    .render()
 }
 
 struct ActionView<'a> {
@@ -182,6 +252,7 @@ pub fn action_page(facts: &ActionFacts<'_>) -> Result<String, askama::Error> {
         form: None,
         warning: None,
         auto_box: None,
+        page: None,
         csrf: facts.csrf,
     }
     .render()
@@ -599,6 +670,7 @@ pub fn quote_form_page_full(
         form: Some(facts),
         warning,
         auto_box,
+        page: None,
         csrf,
     }
     .render()
