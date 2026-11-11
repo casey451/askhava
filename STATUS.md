@@ -1,18 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-11T11:37:49Z by runner ed6a569f223d (actions).
+Updated 2026-11-11T11:46:42Z by runner ee153a16c726 (actions).
 
-**Idle since 11:35Z; 202 of 371 done; week 65% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T164 in progress since 11:43Z; 202 of 372 done; week 65% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 202 of 371 build tasks (owner gates not counted)
+- **Tasks done:** 202 of 372 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 11:35Z (no task in progress)
-- **Week:** 65% used, 60.7M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:37Z, 0 min before this update
+- **Lane:** lane 2: T164 claimed 11:43Z, lease until 14:43Z
+- **Week:** 65% used, 64.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Last run:** 11:43Z, 3 min before this update
 - **Keeper:** last ran 11:37Z, next wake 11:57Z
 
 ## Needs attention
-- Strict plan check red: 14 problem(s) on tasks still to run (+24 on DONE tasks); first: T255: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 13 problem(s) on tasks still to run (+24 on DONE tasks); first: T255: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -86,7 +86,7 @@ Updated 2026-11-11T11:37:49Z by runner ed6a569f223d (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 208 of 733 (28.4%) · partial 344 · unstarted 181
-**Tasks merged (throughput only):** 202 of 371
+**Tasks merged (throughput only):** 202 of 372
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -114,7 +114,7 @@ Updated 2026-11-11T11:37:49Z by runner ed6a569f223d (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-11T11:17:29Z (week)): five-hour: 12.5M used, 16.6M left, resets 2026-11-11T14:49:36Z; week: 133.3M used, 60.7M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-04T16:17:46Z.
+- Pacing (session_reading 2026-11-11T11:37:35Z (week)): five-hour: 11.0M used, 18.1M left, resets 2026-11-11T14:49:36Z; week: 130.0M used, 64.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-04T16:42:25Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -130,6 +130,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
+- lane 2: T164 (lease until 2026-11-11T14:43:33Z)
 
 ## Last usage reading
 - {"task": "T331", "at": "2026-11-11T11:35:23Z", "input_tokens": 241, "output_tokens": 95918, "cache_creation_input_tokens": 431851, "cache_read_input_tokens": 9219060}
