@@ -2232,3 +2232,9 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **What happened.** The step that refunds a payment arriving after the system had already ended a pick stopped a second time. Its plan has the system keep a record of that payment and queue its refund, but an older test expected the system to keep no record of it at all, so no build could pass both.
 - **What changed.** That older test still checks that an ended pick is never handed to the business. Instead of "nothing is kept", it now checks that the payment and its record are kept, and that exactly one refund job and one alert to you are made. A stale comment in another test is corrected too. Every other test that touches these payments was checked; none other needs a change.
 - **Nothing needs you now.**
+
+## A partial or foreign-currency refund is checked on every path, and the business is not told "refunded" (plan change, D-3018, November 11)
+
+- **What happened.** The step that checks how much Stripe actually refunded stopped: two of the places it has to reach belonged to earlier, finished steps. A refund confirmed by Stripe's later notification skipped the check, and the "your introduction fee is refunded" message to the business is sent by another part of the system that didn't know about the check.
+- **What changed.** The same step may now change exactly those two places. A refund confirmed later is checked the same way as one confirmed at once. If Stripe refunded less than the full fee, or in a currency other than US dollars, the job still closes as before, you get the alert, and the business does not get the "refunded" message; you decide what to tell them. If Stripe simply didn't say the amount, the message goes as today, because the system only ever asks for full refunds. No other step and no test written by another step changes.
+- **Nothing needs you now.**
