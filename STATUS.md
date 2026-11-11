@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-11T07:37:40Z by runner 4b70d894e350 (actions).
+Updated 2026-11-11T07:53:03Z by runner 68d6b3ac2530 (actions).
 
-**Building: T327 in progress since 05:24Z; 197 of 370 done; week 62% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T212 in progress since 07:52Z; 197 of 370 done; week 62% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 197 of 370 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 3: T327 claimed 05:24Z, lease until 08:24Z
-- **Week:** 62% used, 71.5M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:37Z, 0 min before this update
+- **Lane:** lane 1: T212 claimed 07:52Z, lease until 10:52Z; lane 3: T327 claimed 05:24Z, lease until 08:24Z
+- **Week:** 62% used, 67.5M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Last run:** 07:37Z, 15 min before this update
 - **Keeper:** last ran 07:37Z, next wake 08:27Z
 
 ## Needs attention
@@ -43,9 +43,9 @@ Updated 2026-11-11T07:37:40Z by runner 4b70d894e350 (actions).
 | T292 | messaging and calls: every text, email and call takes the br | done | 1 | 21 min | 11:16Z |  |
 | T290 | worked examples: pin D-033 for one-cent-wide recurring range | done | 2 | 39 min | 10:21Z | T290 blocked: any new recurring worked-example row breaks tests::worked_examples (fixed RECURRING list of 13 ids, worked |
 | T290 | worked examples: pin D-033 for one-cent-wide recurring range | QUEUED | 1 | 1 min | 09:07Z |  |
-| T289 | jobs tests: the refused-move test counts its one bug log the | done | 1 | 44 min | 07:52Z |  |
 
 ### Plan and harness merges on main
+- 07:43Z Harness: td_pick_09 asks on the fixed clock — test failing everywhere since 07:00Z (D-2886) (#461)
 - 06:32Z Harness: a worker's plan-gap report blocks the task instead of a retry on the same prompt (D-2859) (#458)
 - 06:12Z Harness: the state schema accepts the hand-in update merge — runner stopped with state_invalid (D-2870) (#459)
 - 05:26Z Plan: T337 owns its confirm_and_pay fixture rows; paid-pick guard keeps a test (D-2832) (#453)
@@ -102,7 +102,7 @@ Updated 2026-11-11T07:37:40Z by runner 4b70d894e350 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-11T05:37:03Z (week)): five-hour: 14.6M used, 14.5M left, resets 2026-11-11T09:44:28Z; week: 122.5M used, 71.5M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-04T10:05:18Z.
+- Pacing (session_reading 2026-11-11T07:37:24Z (week)): five-hour: 20.4M used, 8.7M left, resets 2026-11-11T09:44:28Z; week: 126.5M used, 67.5M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-04T10:30:49Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -117,7 +117,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T212 (lease until 2026-11-11T10:52:57Z)
 - lane 3: T327 (lease until 2026-11-11T08:24:57Z)
 
 ## Last usage reading
