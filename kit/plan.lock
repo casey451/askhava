@@ -1,6 +1,6 @@
 {
  "items": {
-  "BUILD_BRIEF.md": "01aee44a887d9c48a4ce5a8dda4af6d504900f23d46eb35af2f610825b1345e3",
+  "BUILD_BRIEF.md": "e9eeca692b56ea4fe3ed32f71bf01329e9f5b6dc016758dabdbcf3f742de8809",
   "CLAUDE.md": "b0583382f0e224518f101e0d18a294635ccce76569297b6c9333896b56d44ad1",
   "docs/architecture.md#3": "c97b1036703c1b8e23718cbbef01ae3f51b8540468dd7b702c4abab73e13b6a7",
   "docs/architecture.md#4": "310b91ad3d6c776b1531bee08d7f743aa3b69905b786cba5d201a028e7926258",
@@ -15,7 +15,7 @@
   "docs/catalog/worked_examples.yaml": "e763c4aa2e06478bdf2c52bcdaba25672298626b7b578e5ca491f6fda15cc365",
   "docs/code-docs.md": "550dd9871eb6c4d94a26398055d18115152b21cabd9ddc605a1e15c8b1ae9307",
   "docs/constitution.md": "b403848751c9fd8365c88f5891c93d1c30eec58e6103f41b49f26564afcc3a45",
-  "docs/governance.md": "2d55d6e30d648c21c6406ce7c7b9bd594f4848c9180f8d3884cb61a510e48042",
+  "docs/governance.md": "ad2e5d91e4fedd8e9bc2249286264db75c51f40637dd8833fcfc1a9c7f1bb95d",
   "docs/sources.md": "5743830df7c2e8527ffa122e3a013411009b653290d04b93eac20720e5629003",
   "docs/spec/accessibility.md": "6c79d880396f086eff6319c505390b23c5f33749806b8244364da19a92b62d50",
   "docs/spec/ai.md": "7fccb0766b866d116c5ccf0a9126effa9fd09968ac9ab2a82c712bcefb4af632",
@@ -41,7 +41,7 @@
   "docs/test-design.md": "375962547e2969069142a571d326771758c47eeba66a43fd0db48909717a4970",
   "docs/threat-model.md": "f42b7fa58e2dccd9fda2e968823f75b3c6143b1ee8d5da126aa231d7b7ec9b16",
   "kit/prompts/TEMPLATE.md": "548ad123a86cc006f856d8b9b5a72b44f2cac5fd6e7ccef4561b57b3a724bc5b",
-  "kit/runner.json": "a8179f96477735845decfc88458953d561683877e810c9d036afa38f55f1347a",
+  "kit/runner.json": "126ea01607a930433661360161ec53fe45f67476b1bb174152ca9de2dd5b4c4f",
   "kit/sources.sha256": "853b7f37d6e04259ad9d7b64e16e6cb0111ee4499e37af46aeb3183748c7f335",
   "kit/tasks.json": "d60d29b8e42a8df259eb9706cc827612e391c2848bb5ba8ab5c7ff3eb07de2d9",
   "scripts/brand.py": "13d78b9984835e09b072aa5386a2429ba9f65395a6c2ca03677f7ac8c1173d8d",
