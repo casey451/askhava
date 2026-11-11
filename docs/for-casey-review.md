@@ -15,7 +15,6 @@ These are decisions Claude made on its own and logged so the build never waits (
 - **Also pinned.** The tick is saved in its own small record and attached to the pick only once the homeowner's code checks out. If she forgets the box, the page says so at the top, takes her to the box, and keeps the backup quote she had chosen. The box's Spanish wording is left to that step, which logs it.
 - **Nothing needs you.**
 
-
 ## Browser setup survives an Ubuntu mirror outage (harness change, D-3030, November 11)
 
 - **What happened.** From about 13:48Z the build servers could not reach Ubuntu's download mirrors. The step that prepares the test browser waited 12 minutes for some optional fonts and then failed, so the accessibility and journey tests never ran and T384 lost an attempt.
