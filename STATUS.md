@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T03:17:52Z by runner fdd6e540e3c3 (actions).
+Updated 2026-11-11T03:35:47Z by runner 24f3182faebb (actions).
 
 **Building: T209 in progress since 03:10Z; 194 of 362 done; week 58% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,11 @@ Updated 2026-11-11T03:17:52Z by runner fdd6e540e3c3 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T209 claimed 03:10Z, lease until 06:10Z
 - **Week:** 58% used, 80.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:17Z, 0 min before this update
+- **Last run:** 03:18Z, 17 min before this update
 - **Keeper:** last ran 03:17Z, next wake 06:12Z
 
 ## Needs attention
-- Strict plan check red: 1 problem(s) on tasks still to run (+4 on DONE tasks); first: T210: stored context_pct 14% but it measures 18%; regenerate
+- Strict plan check red: 1 problem(s) on tasks still to run (+6 on DONE tasks); first: T210: stored context_pct 14% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -41,6 +41,7 @@ Updated 2026-11-11T03:17:52Z by runner fdd6e540e3c3 (actions).
 | T285 | runner: a task closes with a visible mark when a file it own | done | 1 | 19 min | 03:45Z |  |
 
 ### Plan and harness merges on main
+- 03:25Z Harness: CI speed — cache saves on main only, pytest in its own job, C YAML loader (D-2782) (#449)
 - 01:56Z Harness: the test suite drops the live job's smoke switch and run ids (D-2660) (#441)
 - 01:46Z Plan: fix tasks from the Nov 11 businesses and catalog review (D-2700–D-2712) (#442)
 - 00:36Z Plan: fix tasks from the Nov 10 code review — payments, privacy, texting, portals, calls, jobs (D-2620–D-2642) (#439)
@@ -56,7 +57,6 @@ Updated 2026-11-11T03:17:52Z by runner fdd6e540e3c3 (actions).
 - 16:29Z Plan: T231 extends the authorization matrix to /c/{token}/{answer} as a harness task (D-2429) (#420)
 - 13:07Z Plan: no handyman split-job check — each job judged by its own price (Casey's ruling; D-2407, D-2408, T347) (#416)
 - 09:36Z Plan: T290 may update the two tests that pin recurring rows by data; nearest reachable bases (D-2386) (#413)
-- 03:30Z Plan: pentest assessment — Actions pinned, purpose-bound codes, Verify sends outside transactions (D-2346–D-2350, T345–T346) (#407)
 
 ## Progress (requirements verified)
 
