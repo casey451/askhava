@@ -74,8 +74,9 @@ pub use crate::business_signup::{
 };
 pub use crate::checkin::{CHECK_IN_ROUTE, checkin_routes};
 pub use crate::confirm_pay::{
-    ConfirmFacts, FEE_FREE_LINE, NoFee, PORTAL_LINK, PressReply, REFUND_LINE, confirm_page,
-    may_confirm, press_reply,
+    CodeCheck, CodeSent, CodeStep, ConfirmCodes, ConfirmFacts, FEE_FREE_LINE, NoFee, PORTAL_LINK,
+    PressReply, REFUND_LINE, check_confirm_code, confirm_code_needed, confirm_page,
+    confirm_page_with_code, may_confirm, open_confirm_page, press_reply, send_confirm_code,
 };
 pub use crate::data_download::{
     ANSWER_WITHIN, Acted, DATA_CODE_ROUTE, DATA_REQUEST_ROUTE, DOWNLOAD_ROUTE, DataRequest,
