@@ -2294,3 +2294,4 @@
 - 2026-11-11T23:11:52Z runner 65ef6c584190 (actions): {"T228": "MERGE_PENDING -> QUEUED", "T388": "MERGE_PENDING -> DONE"}
 - 2026-11-11T23:20:41Z runner 65ef6c584190 (actions): {}
 - 2026-11-11T23:20:59Z runner 65ef6c584190 (actions): {}
+- 2026-11-11T23:21:33Z runner 65ef6c584190 (actions): {"T228": "QUEUED -> IN_PROGRESS"}; T228 estimated 3.0M tokens (calibrated); week has 34.2M left (no five-hour budget, D-3056) after 5.8M still running in another lane (session_reading 2026-11-11T23:20:41Z (week)); claimed

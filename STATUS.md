@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-11T23:20:59Z by runner 65ef6c584190 (actions).
+Updated 2026-11-11T23:21:33Z by runner 65ef6c584190 (actions).
 
 **Building: T334 in progress since 22:00Z; 215 of 376 done; week 77% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 215 of 376 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T334 claimed 22:00Z, lease until 01:00Z; lane 4: T348 claimed 22:48Z, lease until 01:48Z
-- **Week:** 77% used, 34.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:20Z, 0 min before this update
+- **Lane:** lane 2: T334 claimed 22:00Z, lease until 01:00Z; lane 4: T348 claimed 22:48Z, lease until 01:48Z; lane 5: T228 claimed 23:21Z, lease until 02:21Z
+- **Week:** 77% used, 34.2M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Last run:** 23:21Z, 0 min before this update
 - **Keeper:** last ran 23:20Z, next wake 01:02Z
 
 ## Needs attention
@@ -73,7 +73,6 @@ Updated 2026-11-11T23:20:59Z by runner 65ef6c584190 (actions).
 | T337 | payments (harness): a $0 release proof is bound to the pick' | QUEUED | 1 | 31 min | 02:07Z |  |
 | T349 | calls: a PIN draw fails only when the OS source fails, and o | done | 1 | 36 min | 00:40Z |  |
 | T207 | businesses: re-apply the license map when a daily list chang | done | 1 | 41 min | 23:39Z |  |
-| T311 | calls and server: a voice read-back confirm connects only th | done | 2 | 33 min | 23:21Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 
 ### Plan and harness merges on main
 - 23:07Z Plan: IC-74 owners T390/T391, migration renumber, budget refresh, IC-95 logged (D-3079) (#517)
@@ -141,7 +140,7 @@ Updated 2026-11-11T23:20:59Z by runner 65ef6c584190 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-11T22:38:06Z (week)): week: 160.0M used, 34.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-05T05:28:09Z.
+- Pacing (session_reading 2026-11-11T23:20:41Z (week)): week: 159.8M used, 34.2M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-05T07:22:42Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -159,6 +158,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 - lane 2: T334 (lease until 2026-11-12T01:00:14Z)
 - lane 4: T348 (lease until 2026-11-12T01:48:59Z)
+- lane 5: T228 (lease until 2026-11-12T02:21:29Z)
 
 ## Last usage reading
 - {"task": "T228", "at": "2026-11-11T23:04:11Z", "cache_creation_input_tokens": 228594, "output_tokens": 47358, "input_tokens": 185, "cache_read_input_tokens": 3749756}
