@@ -404,7 +404,8 @@
                   "type": "string",
                   "enum": [
                     "runner",
-                    "adopted"
+                    "adopted",
+                    "hand-in"
                   ]
                 },
                 "at": {
