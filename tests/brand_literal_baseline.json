@@ -3,9 +3,6 @@
   "app/ai/src/output_checks.rs": 1,
   "app/intake/src/job_texts.rs": 1,
   "app/intake/src/question_bank.rs": 1,
-  "app/messaging/templates/en.json": 96,
-  "app/messaging/templates/es.json": 96,
   "app/payments/src/models.rs": 2,
-  "app/picks/src/service.rs": 2,
-  "app/portals/templates/homeowner_home.html": 3
+  "app/picks/src/service.rs": 2
 }
