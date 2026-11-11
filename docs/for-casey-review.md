@@ -6,6 +6,12 @@ These are decisions Claude made on its own and logged so the build never waits (
 
 - **What happened.** The pacer also budgeted a five-hour token window, using a made-up 30M figure. By 19:10Z that figure was nearly used up, so it would have let only about four tasks run at once until 20:04Z, while the week still had tokens to spare.
 - **What changed.** You said you don't have a five-hour window, so the pacer now ignores it and only watches the week. If a real usage reading ever says some limit is at 100%, the build still stops until that limit resets; it never pays per use.
+
+## Five waiting steps fixed before they start (plan change, D-3055, November 11)
+
+- **What happened.** A check of five steps still waiting in line found that each would have stopped partway, because the plan asked for something the code or older tests do not allow.
+- **What changed.** The business's Confirm page step is split in two: one part records the business's agreement to the terms on the Confirm page and adds the extra code check for a shared inbox; a new step, T388, emails the homeowner a copy of the quote she accepted and shows it on her quote page. The business sign-in step may now change a few lines in an older test (only how it builds the app's router) so the new pages can be checked. Quiet hours for waiting texts are checked by the new text sender itself, so older tests stay as they are. The pest-license step keeps what it can do, and a new step, T389, pauses a pest business's pest jobs when a homeowner reports its license is wrong. The nightly payments check reads Stripe in pages through a new read, so older tests stay as they are.
+- **Still open.** Nothing yet lets a homeowner send the wrong-license report (no page or text keyword for it). And the pest quote card's line "This business told us it holds … license" is not built by any step. Both go in the next plan change.
 - **Nothing needs you.**
 
 ## A flaky coverage check on the payments code gets a fix, first in line (plan change, D-3049, November 11)
@@ -2313,4 +2319,10 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 
 - **What changed.** The sign-up form now asks the business name (needed), a trade name or DBA, the ROC, BTR and city license numbers it has, and an optional Google Business Profile link and Yelp link. A name with a phone number, a link or "find us on Google" is sent back with the reason and nothing is saved. A link is kept only if it is on Google's or Yelp's own site and the page opens. Saved links show on every quote card as two plain links, "Google" and "Yelp", with no stars or counts.
 - **One thing you may want changed.** Links are checked when they are saved, not again later; a page Google or Yelp takes down stays on the cards until the business changes it in the portal (a later task).
+- **Nothing needs you now.**
+
+## T316: one read of each business's public name (D-2923)
+
+- **What changed.** The app can now look up the name to show for a business: its trade name (DBA) if it gave one at sign-up, otherwise its business name, checked again for phone numbers, links and "find us on" wording. The LIST reply and the "who's calling" text will use it once their own steps are built (T317, T318).
+- **Worth a look.** A business whose stored name fails that check, or that has no name stored, is left out of the list and you get one digest alert naming only the business, not the name. A business can't edit its name in the portal yet.
 - **Nothing needs you now.**
