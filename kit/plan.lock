@@ -1,6 +1,6 @@
 {
  "items": {
-  "BUILD_BRIEF.md": "e9eeca692b56ea4fe3ed32f71bf01329e9f5b6dc016758dabdbcf3f742de8809",
+  "BUILD_BRIEF.md": "e70b8b5bf32a4e9f4d68c41f1cb4600861ec592fb7258c4661b54bccf5ca0a80",
   "CLAUDE.md": "b0583382f0e224518f101e0d18a294635ccce76569297b6c9333896b56d44ad1",
   "docs/architecture.md#3": "c97b1036703c1b8e23718cbbef01ae3f51b8540468dd7b702c4abab73e13b6a7",
   "docs/architecture.md#4": "310b91ad3d6c776b1531bee08d7f743aa3b69905b786cba5d201a028e7926258",
@@ -41,7 +41,7 @@
   "docs/test-design.md": "f66d807582769644cdfe14b2a54674ddf4e1ebe3e76d3a7fb4018bfc788f92a2",
   "docs/threat-model.md": "f42b7fa58e2dccd9fda2e968823f75b3c6143b1ee8d5da126aa231d7b7ec9b16",
   "kit/prompts/TEMPLATE.md": "548ad123a86cc006f856d8b9b5a72b44f2cac5fd6e7ccef4561b57b3a724bc5b",
-  "kit/runner.json": "126ea01607a930433661360161ec53fe45f67476b1bb174152ca9de2dd5b4c4f",
+  "kit/runner.json": "4d5dc0e16aa3be0fdd2591c15a34489c39fb89c79e54622593f1e1bcd0c864cc",
   "kit/sources.sha256": "853b7f37d6e04259ad9d7b64e16e6cb0111ee4499e37af46aeb3183748c7f335",
   "kit/tasks.json": "ce798e13aa9b2e27ee148cebffe4ac359f40681b0e0f6f711abdcd7a01cb423f",
   "scripts/brand.py": "13d78b9984835e09b072aa5386a2429ba9f65395a6c2ca03677f7ac8c1173d8d",
@@ -58,7 +58,7 @@
   "scripts/check_state.py": "eb0afa5a32a4648d2a0bf24bc972e00ff6d2347c7f0be81aff384b39f9df0393",
   "scripts/coverage_floor.py": "a1c2a7fcfea10a6a873b76111e7b05cf4a8419281b182b3667a46fabb576354b",
   "scripts/gen_prompts.py": "59e38965520e0d05134d26fc394dda3283033a2dd2254a7e6e225c4e6e39fb3e",
-  "scripts/pacing.py": "db5efd714109d37de7566654f8c10fa90fb129ee9e119f0bbfbf050d2fe62aef",
+  "scripts/pacing.py": "0a24b865317e59b3c7412ec6bb143dbeb9f1d808a00879a7666bc47326fe99d3",
   "scripts/pii_scan.py": "d3163ddad2e35bc435e0c468b0e241146c9827a7b9eae48d52d8251558324c60",
   "scripts/plan_health.py": "bb0c53896f6e617373d4df6bdde755457fdd34117298a898b784428d3adf42ef",
   "scripts/plan_pins.py": "582c52c071b58cdba5dc0933ff8e714855aa87ce4e6e623885f85d9c85cd61fb",

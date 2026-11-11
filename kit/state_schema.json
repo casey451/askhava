@@ -718,6 +718,15 @@
           },
           "at": {
             "type": "string"
+          },
+          "reused": {
+            "$comment": "Optional: a reuse's entry (no smoke ran), the time of the real green run it stands on (D-2560).",
+            "type": "string"
+          },
+          "base": {
+            "$comment": "Optional: an ancestry reuse's entry, the SHA of the ancestor whose real green run stands for this head (D-3058).",
+            "type": "string",
+            "minLength": 1
           }
         }
       }

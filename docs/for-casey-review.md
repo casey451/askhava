@@ -9,6 +9,19 @@ These are decisions Claude made on its own and logged so the build never waits (
 - **For later.** A short "This phone is now linked" text after a successful LINK would need new wording from you, so none is sent yet. Also found while checking: a phone added by a team member (not the owner) works for calls right away, though the rule says it should wait for the owner's Approve. It is now listed as an open security item (IC-95) with no step assigned yet; the next plan change will give it one.
 - **Nothing needs you.**
 
+## The runner's start-up smoke test runs less often, with every red-build guard kept (harness and plan change, D-3058, November 11)
+
+- **Who decided.** You told the overseer to let Fable make the decisions meant for you; Fable chose this one.
+- **What happened.** Between noon and 19:29Z today the runner spent 228 minutes on its start-up smoke test against 690 minutes of real work: 29 runs on 18 versions of the code (11 repeats of a version already tested, about 95 minutes), and 9 of 23 sessions stopped to wait for a smoke before they could start a task.
+- **What changed.** (1) When the only changes since the last real green smoke are up to 3 finished tasks, each already merged with all three required checks green, that smoke now stands for the newer code too. A real smoke still runs at least every 4 merges and at least every 6 hours, and any other kind of change in between (a plan or harness change), any failed smoke, failed nightly run or failed check on any of those versions, or anything the runner cannot read, makes it smoke again. The number is one setting in `kit/runner.json`; 0 turns it off. (2) When one lane is still smoking a version another lane has already smoked green, it stops its own unfinished run and uses that result. A finished result of its own, pass or fail, is always used.
+- **What is protected.** None of this ever applies while the build is marked broken; clearing a broken build still needs a brand-new green smoke; a failed smoke still marks the build broken and queues the fix exactly as before.
+- **Nothing needs you.**
+
+## The build no longer pauses for a five-hour limit (plan change, D-3056, November 11)
+
+- **What happened.** The pacer also budgeted a five-hour token window, using a made-up 30M figure. By 19:10Z that figure was nearly used up, so it would have let only about four tasks run at once until 20:04Z, while the week still had tokens to spare.
+- **What changed.** You said you don't have a five-hour window, so the pacer now ignores it and only watches the week. If a real usage reading ever says some limit is at 100%, the build still stops until that limit resets; it never pays per use.
+
 ## A runner self-check no longer trips on work in progress (harness change, D-3057, November 11)
 
 - **What happened.** One of the runner's own checks before claiming a task compared the plan with the build's live progress and failed whenever a task already being worked sat at the head of the longest remaining chain. The build itself was fine, but the runner stopped without claiming anything five times today, and enough of these in a row could have wrongly marked the build broken and undone good work.
