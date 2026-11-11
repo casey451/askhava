@@ -10,15 +10,20 @@
 //! a visit-fee quote), then the business's own words and, only when the "AI quote summaries"
 //! setting is on and the summary passed [`check_summary`], the summary with its label. Nothing
 //! here holds a phone, an address or the "minutes this quote took" field.
+//!
+//! T384 (PICK-051): [`ShownCard`] (read by [`shown_card`]) adds "Updated <time>" in Arizona time
+//! after the business's own words for an edited quote, on the homeowner's card and the preview.
 
 use askhava_core::api::brand;
 use askhava_licensing::api::{CardLanguage, CardLine};
+use jiff::Timestamp;
 use jiff::civil::Date;
 use sqlx::PgConnection;
 use sqlx::types::Uuid;
 
 use crate::intake::{DayPart, Format};
 use crate::models::{self, QuotesError};
+use crate::notify::updated_line;
 
 /// "Trip fee counts toward the repair" (PICK-040).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -296,12 +301,23 @@ pub async fn quote_card(
     let Some(stored) = models::stored_card(db, job, business).await? else {
         return Ok(None);
     };
+    card_of(db, business, stored, source).await.map(Some)
+}
+
+/// The card of `business`'s `stored` quote, with its after-hours tick read from `businesses::api`
+/// (BIZ-007, PICK-044).
+async fn card_of(
+    db: &mut PgConnection,
+    business: Uuid,
+    stored: models::StoredCard,
+    source: CardSource,
+) -> Result<QuoteCard, QuotesError> {
     let record = askhava_businesses::api::business(db, business)
         .await
         .map_err(|_| QuotesError::Business)?;
     let mut facts = source.facts;
     facts.earliest_visit = stored.earliest_visit.unwrap_or(facts.earliest_visit);
-    Ok(Some(QuoteCard {
+    Ok(QuoteCard {
         business_name: source.business_name,
         license_lines: source.license_lines,
         after_hours: record.after_hours,
@@ -309,7 +325,56 @@ pub async fn quote_card(
         facts,
         original: stored.original,
         summary: None,
-    }))
+    })
+}
+
+/// A shown quote's card with its last edit time (PICK-051): what the homeowner sees and the
+/// business previews (PICK-005), so an edited quote reads "Updated <time>" on both.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ShownCard {
+    /// The card itself.
+    pub card: QuoteCard,
+    /// When the business last edited the quote; none if never edited.
+    pub updated_at: Option<Timestamp>,
+}
+
+impl ShownCard {
+    /// PICK-005, PICK-051: [`QuoteCard::lines`] and, for an edited quote, "Updated <time>" in
+    /// Arizona time right after the business's own words; an unedited card is unchanged.
+    #[must_use]
+    pub fn lines(&self, language: CardLanguage) -> Vec<CardLine> {
+        let mut out = self.card.lines(language);
+        if let Some(at) = self.updated_at {
+            let es = language == CardLanguage::Spanish;
+            let line = CardLine {
+                text: format!("{}.", updated_line(at, es)),
+                link: None,
+            };
+            let after_words = out.len() - usize::from(self.card.summary.is_some());
+            out.insert(after_words, line);
+        }
+        out
+    }
+}
+
+/// PICK-003, PICK-005, PICK-051: [`quote_card`] with the quote's last edit time, the card both the
+/// homeowner and the business's preview show; none when the business has no confirmed, unwithdrawn
+/// quote on `job`.
+///
+/// # Errors
+///
+/// [`QuotesError::Database`] or [`QuotesError::Business`].
+pub async fn shown_card(
+    db: &mut PgConnection,
+    (job, business): (Uuid, Uuid),
+    source: CardSource,
+) -> Result<Option<ShownCard>, QuotesError> {
+    let Some(stored) = models::stored_card(db, job, business).await? else {
+        return Ok(None);
+    };
+    let updated_at = stored.edited_at;
+    let card = card_of(db, business, stored, source).await?;
+    Ok(Some(ShownCard { card, updated_at }))
 }
 
 /// `text` with its `{brand}` token filled from the brand file, Spanish names when `spanish`

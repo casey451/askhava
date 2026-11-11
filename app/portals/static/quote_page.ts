@@ -1,8 +1,8 @@
 // The quote page's live list (PICK-009, A11Y-033, D-492). While the job is live it fetches this
 // same page every 30 seconds, adds each quote it has not shown yet at the end of the list, swaps a
-// card that became "no longer available" or whose Pick form came or went, and writes one short
-// line per batch into the status region (new quotes and quotes no longer available together),
-// never one line per quote. Every word it writes comes from the page's own data attributes, so
+// card that became "no longer available", whose Pick form came or went or whose quote was edited
+// or withdrawn (PICK-051), and writes one short line per batch into the status region (new quotes
+// and quotes no longer available together), never one line per quote. Every word it writes comes from the page's own data attributes, so
 // the words stay in the template. Without JavaScript the page works the same on a reload.
 
 const POLL_MS = 30_000;
@@ -23,10 +23,11 @@ interface Batch {
   gone: number;
 }
 
-// A card is replaced when its quote became unavailable or its Pick form came or went
-// (data-pickable), so a closed job loses its Pick buttons on the same fetch.
+// A card is replaced when its quote became unavailable or withdrawn, its Pick form came or went
+// (data-pickable), so a closed job loses its Pick buttons on the same fetch, or the business
+// edited it (data-updated, PICK-051). An edit is not a new quote, so it adds nothing to the status.
 function changed(old: Element, item: Element): boolean {
-  return ["data-available", "data-pickable"].some(
+  return ["data-available", "data-pickable", "data-updated"].some(
     (name) => old.getAttribute(name) !== item.getAttribute(name),
   );
 }
