@@ -10336,7 +10336,7 @@
    "budget": {
     "files": 3,
     "lines": 600,
-    "context_pct": 35
+    "context_pct": 40
    },
    "checks": [
     "Ci",
@@ -10644,7 +10644,7 @@
    "budget": {
     "files": 5,
     "lines": 550,
-    "context_pct": 36
+    "context_pct": 40
    },
    "checks": [
     "Ci",
@@ -10712,7 +10712,7 @@
    "budget": {
     "files": 6,
     "lines": 350,
-    "context_pct": 35
+    "context_pct": 39
    },
    "checks": [
     "Ci",
@@ -10777,7 +10777,7 @@
    "budget": {
     "files": 3,
     "lines": 800,
-    "context_pct": 36
+    "context_pct": 40
    },
    "checks": [
     "Ci",
@@ -10895,7 +10895,7 @@
    "budget": {
     "files": 5,
     "lines": 500,
-    "context_pct": 34
+    "context_pct": 40
    },
    "checks": [
     "Ci",
@@ -12226,7 +12226,7 @@
    "owns": [
     "app/messaging/src/help_requests.rs",
     "app/messaging/src/help_answers.rs",
-    "migrations/0189_help_requests.sql",
+    "migrations/0190_help_requests.sql",
     "tests/integration/tests/help_requests.rs",
     "app/ops/src/help_requests.rs",
     "app/portals/src/digest_flags.rs",
@@ -12363,7 +12363,7 @@
    "budget": {
     "files": 7,
     "lines": 300,
-    "context_pct": 20
+    "context_pct": 24
    },
    "checks": [
     "Ci",
@@ -12594,7 +12594,8 @@
     "T377",
     "T378",
     "T386",
-    "T387"
+    "T387",
+    "T390"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -13088,7 +13089,7 @@
     "app/intake/src/web_chat.rs",
     "app/intake/src/conversation.rs",
     "tests/integration/tests/web_chat.rs",
-    "migrations/0185_intake_request_source.sql"
+    "migrations/0186_intake_request_source.sql"
    ],
    "reads": [
     "docs/architecture.md",
@@ -13420,7 +13421,7 @@
     "app/ops/src/alerts.rs",
     "app/ops/src/safe_mode.rs",
     "app/ops/src/models.rs",
-    "migrations/0186_ops_alerts_safe_mode.sql",
+    "migrations/0187_ops_alerts_safe_mode.sql",
     "tests/integration/tests/safe_mode.rs",
     "app/payments/src/safe_mode_check.rs",
     "app/picks/src/safe_mode_check.rs",
@@ -13492,7 +13493,7 @@
    "id": "T320",
    "slug": "ops-alert-open-once",
    "title": "ops: one open alert per kind and subject, so a check that runs on a schedule never raises the same alert again",
-   "goal": "Fourth external audit F30 (D-2207; OPS-004, SEC-051): `ops.alert` has no rule against a second open alert of the same kind and subject (`migrations/0021_ops_audit.sql:33`), so a check that runs on a schedule, such as `messaging::check_webhook_silence` (`app/messaging/src/email.rs:684`) once T204 schedules it, raises a new alert on every run while its condition lasts, and a pushing kind would push each time. (1) `migrations/0187_ops_alert_open_once.sql`: a unique index on `ops.alert (kind, subject_kind, subject_id)` over unresolved rows (`resolved_at IS NULL`, and T105's acknowledgement column if it adds one) with `NULLS NOT DISTINCT` (PostgreSQL 16), so a subject-less kind is open once too. (2) `raise_alert` (`app/ops/src/service.rs:96`) inserts with `ON CONFLICT DO NOTHING` and returns the open alert's ID when one exists (no new row, so no new push); a raise after it was resolved opens a new one. Read every caller of `raise_alert` (about 60): those that need one alert per event (each HELP request, each dispute, each failed purge) already carry a distinct subject; list in the decision any caller whose behaviour changes. Tests in `tests/integration/tests/alert_dedupe.rs` (TD-OPS-34): two raises of one kind and subject leave one open row and return its ID; after it is resolved a raise opens a new one; two subject-less raises of one kind leave one; two concurrent raises leave one. Every existing test that raises alerts passes unchanged; if one expects two open alerts of one kind and subject, stop and report. Update the `ops` `CLAUDE.md`, `docs/architecture.md` section 10 and `docs/decisions.md`.",
+   "goal": "Fourth external audit F30 (D-2207; OPS-004, SEC-051): `ops.alert` has no rule against a second open alert of the same kind and subject (`migrations/0021_ops_audit.sql:33`), so a check that runs on a schedule, such as `messaging::check_webhook_silence` (`app/messaging/src/email.rs:684`) once T204 schedules it, raises a new alert on every run while its condition lasts, and a pushing kind would push each time. (1) `migrations/0188_ops_alert_open_once.sql`: a unique index on `ops.alert (kind, subject_kind, subject_id)` over unresolved rows (`resolved_at IS NULL`, and T105's acknowledgement column if it adds one) with `NULLS NOT DISTINCT` (PostgreSQL 16), so a subject-less kind is open once too. (2) `raise_alert` (`app/ops/src/service.rs:96`) inserts with `ON CONFLICT DO NOTHING` and returns the open alert's ID when one exists (no new row, so no new push); a raise after it was resolved opens a new one. Read every caller of `raise_alert` (about 60): those that need one alert per event (each HELP request, each dispute, each failed purge) already carry a distinct subject; list in the decision any caller whose behaviour changes. Tests in `tests/integration/tests/alert_dedupe.rs` (TD-OPS-34): two raises of one kind and subject leave one open row and return its ID; after it is resolved a raise opens a new one; two subject-less raises of one kind leave one; two concurrent raises leave one. Every existing test that raises alerts passes unchanged; if one expects two open alerts of one kind and subject, stop and report. Update the `ops` `CLAUDE.md`, `docs/architecture.md` section 10 and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -13505,7 +13506,7 @@
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [],
    "owns": [
-    "migrations/0187_ops_alert_open_once.sql",
+    "migrations/0188_ops_alert_open_once.sql",
     "app/ops/src/service.rs",
     "tests/integration/tests/alert_dedupe.rs"
    ],
@@ -13532,7 +13533,7 @@
    "budget": {
     "files": 3,
     "lines": 300,
-    "context_pct": 31
+    "context_pct": 36
    },
    "checks": [
     "Ci",
@@ -13573,7 +13574,7 @@
     "app/messaging/src/alert_emails.rs",
     "tests/integration/tests/alert_routing.rs",
     "app/portals/src/digest_flags.rs",
-    "migrations/0188_ops_owner_digest.sql",
+    "migrations/0189_ops_owner_digest.sql",
     "app/messaging/src/keywords.rs",
     "app/portals/src/business_portal.rs",
     "app/portals/templates/business_home.html",
@@ -13786,7 +13787,7 @@
    "id": "T321",
    "slug": "consent-five-year-purge",
    "title": "messaging, intake and privacy: consent records, keyword events and message logs go 5 years after a number's last message",
-   "goal": "Fourth external audit F32 (D-2208; CON-022, CON-036, D-079): CON-022 keeps consent records, opt-in wording versions, STOP/HELP/START events and message logs 5 years after the last message to that number, and the privacy policy promises the same (`docs/legal/privacy-policy.md:91`), but nothing ever deletes them: `intake.consent_record` and the `messaging` keyword and message-log rows are append-only (`migrations/0053_intake_tables.sql:62`) and `app/intake/src/purge.rs` says they are never deleted there. (1) A daily `messaging.consent_sweep` (registered in the shared `app/server/src/lib.rs`, queued once a day) finds each number whose last inbound or outbound message is more than 1,827 days old (5 years, never short by a leap day) and deletes, in one transaction per number: its rows of every table CON-022 names, through `app/messaging/src/consent_purge.rs` for `messaging`'s and `intake::api` (`app/intake/src/consent_purge.rs`) for `intake.consent_record`, each with one `ops` audit row of IDs only; `migrations/0190_consent_five_year_purge.sql` grants the app role DELETE on exactly those tables and nothing else (no UPDATE, so they stay append-only for every other change). (2) The opt-out is never weakened: a number on `messaging.suppression` keeps its suppression row, the `messaging.optout_event` row that row points to (`event_id`, `migrations/0044_messaging_optout.sql:33`; digest-only, no phone) and its locked phone in the vault, because the suppression digest is keyed `homeowner-phone|v<n>` and PRIV-024's key rotation rebuilds it from the vault plaintext (D-079), so clearing the phone would lose the opt-out at the next rotation; only its other CON-022 rows (consent records, keyword events, message logs) go at 5 years. A number not on suppression loses its CON-022 rows and then its locked vault phone, cleared through `privacy::api` (`app/privacy/src/consent_phone.rs`). The DELETE grant on `messaging.optout_event` is limited to rows no suppression row references (a policy or a trigger that refuses the rest). That an opted-out number's phone stays locked past 5 years is listed for Casey, with whether the privacy policy should say so (D-2208). (3) Tests in `tests/integration/tests/consent_purge.rs` (TD-CON-30): a number last messaged 1,826 days ago keeps everything; at 1,827 days a number not on suppression loses its rows and its vault phone, with audit rows of IDs only; an opted-out number keeps its suppression row, the opt-out event it points to and its locked phone, loses its other rows, and is still refused a text after the purge and after an index-key rotation; deleting an opt-out event a suppression row references is refused; a message in between restarts its clock. The rotation case builds its two-version `VAULT_INDEX_KEY` the way `tests/integration/tests/vault.rs` does (its `key(version, byte)` helper at line 32 and the v1-plus-v2 key set of `the_rotation_drill_moves_every_row_to_v2`, TD-PRIV-09) and rotates with `privacy::api::rotate_batch` as that test and `tests/integration/tests/inbound_scrub_context.rs` do; it is not skipped. Update the `messaging`, `intake` and `privacy` `CLAUDE.md` files, `docs/architecture.md` section 10 and `docs/decisions.md`.",
+   "goal": "Fourth external audit F32 (D-2208; CON-022, CON-036, D-079): CON-022 keeps consent records, opt-in wording versions, STOP/HELP/START events and message logs 5 years after the last message to that number, and the privacy policy promises the same (`docs/legal/privacy-policy.md:91`), but nothing ever deletes them: `intake.consent_record` and the `messaging` keyword and message-log rows are append-only (`migrations/0053_intake_tables.sql:62`) and `app/intake/src/purge.rs` says they are never deleted there. (1) A daily `messaging.consent_sweep` (registered in the shared `app/server/src/lib.rs`, queued once a day) finds each number whose last inbound or outbound message is more than 1,827 days old (5 years, never short by a leap day) and deletes, in one transaction per number: its rows of every table CON-022 names, through `app/messaging/src/consent_purge.rs` for `messaging`'s and `intake::api` (`app/intake/src/consent_purge.rs`) for `intake.consent_record`, each with one `ops` audit row of IDs only; `migrations/0191_consent_five_year_purge.sql` grants the app role DELETE on exactly those tables and nothing else (no UPDATE, so they stay append-only for every other change). (2) The opt-out is never weakened: a number on `messaging.suppression` keeps its suppression row, the `messaging.optout_event` row that row points to (`event_id`, `migrations/0044_messaging_optout.sql:33`; digest-only, no phone) and its locked phone in the vault, because the suppression digest is keyed `homeowner-phone|v<n>` and PRIV-024's key rotation rebuilds it from the vault plaintext (D-079), so clearing the phone would lose the opt-out at the next rotation; only its other CON-022 rows (consent records, keyword events, message logs) go at 5 years. A number not on suppression loses its CON-022 rows and then its locked vault phone, cleared through `privacy::api` (`app/privacy/src/consent_phone.rs`). The DELETE grant on `messaging.optout_event` is limited to rows no suppression row references (a policy or a trigger that refuses the rest). That an opted-out number's phone stays locked past 5 years is listed for Casey, with whether the privacy policy should say so (D-2208). (3) Tests in `tests/integration/tests/consent_purge.rs` (TD-CON-30): a number last messaged 1,826 days ago keeps everything; at 1,827 days a number not on suppression loses its rows and its vault phone, with audit rows of IDs only; an opted-out number keeps its suppression row, the opt-out event it points to and its locked phone, loses its other rows, and is still refused a text after the purge and after an index-key rotation; deleting an opt-out event a suppression row references is refused; a message in between restarts its clock. The rotation case builds its two-version `VAULT_INDEX_KEY` the way `tests/integration/tests/vault.rs` does (its `key(version, byte)` helper at line 32 and the v1-plus-v2 key set of `the_rotation_drill_moves_every_row_to_v2`, TD-PRIV-09) and rotates with `privacy::api::rotate_batch` as that test and `tests/integration/tests/inbound_scrub_context.rs` do; it is not skipped. Update the `messaging`, `intake` and `privacy` `CLAUDE.md` files, `docs/architecture.md` section 10 and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -13803,7 +13804,7 @@
     "compliance"
    ],
    "owns": [
-    "migrations/0190_consent_five_year_purge.sql",
+    "migrations/0191_consent_five_year_purge.sql",
     "app/messaging/src/consent_purge.rs",
     "app/intake/src/consent_purge.rs",
     "app/privacy/src/consent_phone.rs",
@@ -13833,7 +13834,7 @@
    "budget": {
     "files": 5,
     "lines": 500,
-    "context_pct": 31
+    "context_pct": 36
    },
    "checks": [
     "Ci",
@@ -14025,7 +14026,7 @@
     "app/recovery/src/api.rs",
     "app/recovery/src/models.rs",
     "app/recovery/src/backup.rs",
-    "migrations/0191_recovery_backup_export.sql",
+    "migrations/0192_recovery_backup_export.sql",
     "tests/recovery/tests/export_restores.rs",
     "app/portals/src/digest_flags.rs",
     "app/portals/src/health_page.rs"
@@ -14098,7 +14099,7 @@
    "owns": [
     "app/recovery/src/replay.rs",
     "app/recovery/src/models.rs",
-    "migrations/0192_recovery_replay.sql",
+    "migrations/0193_recovery_replay.sql",
     "app/recovery/src/tests/replay_ids.rs"
    ],
    "reads": [
@@ -15356,7 +15357,7 @@
    "budget": {
     "files": 3,
     "lines": 400,
-    "context_pct": 56
+    "context_pct": 62
    },
    "checks": [
     "Ci",
@@ -16661,7 +16662,8 @@
     "T317",
     "T325",
     "T336",
-    "T357"
+    "T357",
+    "T390"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -18011,7 +18013,7 @@
    "budget": {
     "files": 2,
     "lines": 400,
-    "context_pct": 41
+    "context_pct": 47
    },
    "checks": [
     "Ci",
@@ -19434,7 +19436,7 @@
    "budget": {
     "files": 10,
     "lines": 400,
-    "context_pct": 22
+    "context_pct": 28
    },
    "checks": [
     "Ci",
@@ -20194,7 +20196,7 @@
    "id": "T266",
    "slug": "pick-contact-choice",
    "title": "portals, picks and privacy: the homeowner's contact choice and shared email are stored for the release",
-   "goal": "At the page pick the homeowner chooses a masked call or an email she shares (PICK-018), but `app/portals/src/pick_flow.rs` checks the choice and the email and passes them on unstored (`pick_flow.rs:38`, D-1264), so the release can only ever be a masked call (`email_chosen` false, D-1740 (2)) and PICK-042's accepted-quote email has no address (D-1761). (1) `migrations/0166_picks_contact_choice.sql`: `picks.contact_choice` (pick ID, `call` or `email`, decided time; one row per pick, app role SELECT and INSERT). (2) `app/privacy/src/vault.rs`: `privacy::api::store_shared_email(conn, vault, contact, email)` seals the email into the contact's vault `email` field (field-bound encryption, a new version, one audit row naming the actor and purpose `shared_at_pick`; no plaintext returned), so the email is stored only in the vault (PRIV-001, PRIV-002). (3) `app/picks/src/contact_choice.rs`: `picks::api::record_contact_choice` (in the page pick's transaction, after `page_pick`) and `picks::api::contact_choice(conn, pick)` for the release's caller. (4) `pick_flow.rs` stores both in the transaction that records the pick; an error keeps her choices on the page as now; a text pick (no page) stays a masked call. (5) `app/server/src/release_sink.rs` (T254's sink, extended by T255) passes `picks::api::contact_choice` as `email_chosen` instead of D-1740 (2)'s masked-call default, on the first release and on T255's re-release (D-1761). No email reaches a log, task payload or business page. Update the `picks`, `privacy` and `portals` `CLAUDE.md` files, `docs/architecture.md` section 10 and `docs/decisions.md`.",
+   "goal": "At the page pick the homeowner chooses a masked call or an email she shares (PICK-018), but `app/portals/src/pick_flow.rs` checks the choice and the email and passes them on unstored (`pick_flow.rs:38`, D-1264), so the release can only ever be a masked call (`email_chosen` false, D-1740 (2)) and PICK-042's accepted-quote email has no address (D-1761). (1) `migrations/0166_picks_contact_choice.sql`: `picks.contact_choice` (pick ID, `call` or `email`, decided time; one row per pick, app role SELECT and INSERT). (2) `app/privacy/src/vault.rs`: `privacy::api::store_shared_email(conn, vault, contact, email)` seals the email into the contact's vault `email` field (field-bound encryption, a new version, one audit row naming the actor and purpose `shared_at_pick`; no plaintext returned), so the email is stored only in the vault (PRIV-001, PRIV-002). (3) `app/picks/src/contact_choice.rs`: `picks::api::record_contact_choice` (in the page pick's transaction, after `page_pick`) and `picks::api::contact_choice(conn, pick)` for the release's caller. (4) `pick_flow.rs` stores both in the transaction that records the pick; an error keeps her choices on the page as now; a text pick (no page) stays a masked call. (5) `app/server/src/release_sink.rs` (T254's sink, extended by T255) passes `picks::api::contact_choice` as `email_chosen` instead of D-1740 (2)'s masked-call default, on the first release and on T255's re-release (D-1761). No email reaches a log, task payload or business page. Update the `picks`, `privacy` and `portals` `CLAUDE.md` files, the off-database records and recovery notes of `docs/architecture.md` (one line, found by grep, never loaded whole; D-3079) and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -20248,7 +20250,7 @@
    "budget": {
     "files": 7,
     "lines": 400,
-    "context_pct": 40
+    "context_pct": 27
    },
    "checks": [
     "Ci",
@@ -20872,7 +20874,7 @@
    "budget": {
     "files": 10,
     "lines": 600,
-    "context_pct": 34
+    "context_pct": 41
    },
    "checks": [
     "Ci",
@@ -21035,7 +21037,7 @@
    "budget": {
     "files": 7,
     "lines": 600,
-    "context_pct": 36
+    "context_pct": 41
    },
    "checks": [
     "Ci",
@@ -21190,7 +21192,7 @@
    "budget": {
     "files": 5,
     "lines": 600,
-    "context_pct": 41
+    "context_pct": 45
    },
    "checks": [
     "Ci",
@@ -21383,7 +21385,7 @@
    "id": "T249",
    "slug": "quotes-radius-matching",
    "title": "quotes and portals: radius matching by ZIP centroid, the coverage count by the same rule, and the radius in the business portal",
-   "goal": "Radius matching (CARD-024, D-1519): `quotes`' matching is pure and caller-filled (D-1013, D-1014). Add the job's location (`CardJob`: its ZIP centroid from `catalog::api::zip_location`, or none) and each business's reach (`CardBusiness`: its base ZIP centroid and radius from T248's `businesses.service_area`, or none) in `app/quotes/src/models.rs`, and change `rules::card_for`'s town test (`app/quotes/src/rules.rs`) to: serves an offered Arizona town (CARD-002, INT-022), or the job has a location, the business has a reach and `catalog::api::miles_between(base, job)` is at most the radius (inclusive). Every other CARD-001 test (active, verified, licensed for every candidate job type as the license map says for the job's place, a ticked job type, the BIZ-049 skips), \"jobs nobody else covers\" (CARD-004) and the owner pauses are unchanged, so a business serving the job's town keeps the card and a radius only adds reach; a business whose base ZIP has no location matches by its towns served alone, and only Arizona towns match (INT-022). `coverage` (the count intake tells the homeowner, INT-017, INT-032, D-1022) uses the same test, so the count and the recipients agree, and `send_job_cards` and `send_late_cards` (`app/quotes/src/service.rs`) carry the new fields. T251's card sender (`app/intake/src/cards_out.rs`) and card pool (`app/quotes/src/card_pool.rs`) build `CardJob` and `Pool`; this task fills the job's location there from the ZIP T251 stores on `intake.property` and each business's reach from `businesses.service_area` (D-1521); a job with no stored ZIP matches by towns only. The portal edit (BIZ-010, BIZ-058): the business portal's settings (`app/portals/src/business_actions.rs`, `app/portals/templates/business_actions.html`) let the owner change the base ZIP and radius with sign-up's checks and accessible errors, audited by field name only (draft wording through the copy panel, WORD-028). Tests: `app/quotes/src/tests/radius_matching.rs` (TD-CARD-13's pure cases with fixture centroids, including a Phoenix metro fixture of several towns: a card crossing a town line and one not, overlapping radii, the inclusive boundary, a business in reach without the license for a candidate job type, no location meaning towns only, the coverage count equal to the recipients) and `tests/integration/tests/radius_matching.rs` (`send_job_cards` sending to a business in reach in another town; TD-BIZ-38's portal edit). No geocoding service and no new crate. Update `app/quotes/CLAUDE.md`, `app/portals/CLAUDE.md` and `docs/architecture.md` section 10. T301 serves the email action links (D-2128): keep the signatures `app/server/src/action_links.rs` calls; any page or action this task adds is served by T306, not by a `.route` in `server`.",
+   "goal": "Radius matching (CARD-024, D-1519): `quotes`' matching is pure and caller-filled (D-1013, D-1014). Add the job's location (`CardJob`: its ZIP centroid from `catalog::api::zip_location`, or none) and each business's reach (`CardBusiness`: its base ZIP centroid and radius from T248's `businesses.service_area`, or none) in `app/quotes/src/models.rs`, and change `rules::card_for`'s town test (`app/quotes/src/rules.rs`) to: serves an offered Arizona town (CARD-002, INT-022), or the job has a location, the business has a reach and `catalog::api::miles_between(base, job)` is at most the radius (inclusive). Every other CARD-001 test (active, verified, licensed for every candidate job type as the license map says for the job's place, a ticked job type, the BIZ-049 skips), \"jobs nobody else covers\" (CARD-004) and the owner pauses are unchanged, so a business serving the job's town keeps the card and a radius only adds reach; a business whose base ZIP has no location matches by its towns served alone, and only Arizona towns match (INT-022). `coverage` (the count intake tells the homeowner, INT-017, INT-032, D-1022) uses the same test, so the count and the recipients agree, and `send_job_cards` and `send_late_cards` (`app/quotes/src/service.rs`) carry the new fields. T251's card sender (`app/intake/src/cards_out.rs`) and card pool (`app/quotes/src/card_pool.rs`) build `CardJob` and `Pool`; this task fills the job's location there from the ZIP T251 stores on `intake.property` and each business's reach from `businesses.service_area` (D-1521); a job with no stored ZIP matches by towns only. The portal edit (BIZ-010, BIZ-058): the business portal's settings (`app/portals/src/business_actions.rs`, `app/portals/templates/business_actions.html`) let the owner change the base ZIP and radius with sign-up's checks and accessible errors, audited by field name only (draft wording through the copy panel, WORD-028). Tests: `app/quotes/src/tests/radius_matching.rs` (TD-CARD-13's pure cases with fixture centroids, including a Phoenix metro fixture of several towns: a card crossing a town line and one not, overlapping radii, the inclusive boundary, a business in reach without the license for a candidate job type, no location meaning towns only, the coverage count equal to the recipients) and `tests/integration/tests/radius_matching.rs` (`send_job_cards` sending to a business in reach in another town; TD-BIZ-38's portal edit). No geocoding service and no new crate. Update `app/quotes/CLAUDE.md`, `app/portals/CLAUDE.md` and add this task's line to the off-database records and recovery notes of `docs/architecture.md` (found by grep, never loaded whole; D-3079). T301 serves the email action links (D-2128): keep the signatures `app/server/src/action_links.rs` calls; any page or action this task adds is served by T306, not by a `.route` in `server`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -21450,7 +21452,7 @@
    "budget": {
     "files": 9,
     "lines": 600,
-    "context_pct": 39
+    "context_pct": 26
    },
    "checks": [
     "Ci",
@@ -21643,7 +21645,7 @@
    "budget": {
     "files": 2,
     "lines": 350,
-    "context_pct": 29
+    "context_pct": 35
    },
    "checks": [
     "Ci",
@@ -22894,7 +22896,7 @@
    "budget": {
     "files": 2,
     "lines": 450,
-    "context_pct": 33
+    "context_pct": 39
    },
    "checks": [
     "Ci",
@@ -23079,7 +23081,7 @@
    "budget": {
     "files": 5,
     "lines": 500,
-    "context_pct": 32
+    "context_pct": 37
    },
    "checks": [
     "Ci",
@@ -23324,7 +23326,7 @@
    "budget": {
     "files": 6,
     "lines": 300,
-    "context_pct": 38
+    "context_pct": 43
    },
    "checks": [
     "Ci",
@@ -23587,7 +23589,7 @@
    "budget": {
     "files": 8,
     "lines": 450,
-    "context_pct": 25
+    "context_pct": 29
    },
    "checks": [
     "Ci",
@@ -23990,7 +23992,7 @@
    "budget": {
     "files": 4,
     "lines": 600,
-    "context_pct": 32
+    "context_pct": 38
    },
    "checks": [
     "Ci",
@@ -24053,7 +24055,7 @@
    "budget": {
     "files": 2,
     "lines": 500,
-    "context_pct": 31
+    "context_pct": 36
    },
    "checks": [
     "Ci",
@@ -24122,7 +24124,7 @@
    "budget": {
     "files": 3,
     "lines": 500,
-    "context_pct": 31
+    "context_pct": 36
    },
    "checks": [
     "Ci",
@@ -24322,7 +24324,7 @@
    "budget": {
     "files": 6,
     "lines": 550,
-    "context_pct": 22
+    "context_pct": 26
    },
    "checks": [
     "Ci",
@@ -25317,7 +25319,7 @@
    "budget": {
     "files": 6,
     "lines": 450,
-    "context_pct": 21
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -25714,7 +25716,7 @@
    "budget": {
     "files": 8,
     "lines": 550,
-    "context_pct": 29
+    "context_pct": 33
    },
    "checks": [
     "Ci",
@@ -25863,7 +25865,7 @@
    "budget": {
     "files": 10,
     "lines": 600,
-    "context_pct": 32
+    "context_pct": 36
    },
    "checks": [
     "Ci",
@@ -26964,6 +26966,74 @@
    "branch": "claude/task/T387-payments-coverage-margin",
    "prompt": "kit/prompts/T387.md",
    "acceptance": "The decision entry names the flapping branch with per-run evidence; five consecutive scoped runs on the hand-in head (`cargo +nightly-2026-10-15 llvm-cov --branch -p askhava-payments -p askhava-integration-tests` with the Coverage job's other flags, excludes and `--ignore-filename-regex`) each report `app/payments/` at or above 95.5% with the same covered-branch count; `tests/coverage_floor.json`, `scripts/coverage_floor.py` and every file under `app/payments/src/` are unchanged, except the new `tests/coverage_margin.rs` and the single `mod coverage_margin;` line in the shared `app/payments/src/tests/mod.rs`; no existing assertion in `free_wins.rs` is changed or removed; Ci's Coverage job passes; no test pins `refunds.rs` behaviour T380 changes."
+  },
+  {
+   "id": "T390",
+   "slug": "link-request-and-reply",
+   "title": "calls and server: a blocked staff call queues the LINK notice, and the main phone's \"LINK <PIN>\" reply links that phone, failing closed",
+   "goal": "Register row IC-74 (D-3079; CALL-011, CALL-003, CALL-012, CALL-025; D-1696, D-2247, D-078, D-311, D-1755): nothing in production calls `request_link` (`app/calls/src/lifecycle.rs:279`, exported by `calls::api`), and no code handles the business's \"LINK <PIN>\" reply (the inbound text route sends a business phone's text only to `phone_stopped` or the auto-reply, `app/server/src/inbound_text.rs:246`), so the LINK notice of CALL-011 is never sent and a reply to it would do nothing. After T326 (the notice names the line's stored PIN) and T357 (the last stage-4 owner of `inbound_text.rs`). Which call is \"blocked\": an unlinked phone made to enter the PIN (D-078: \"the blocked caller hears the PIN prompt\"). Its business is known only once the PIN it entered connects a line, so only then is a notice queued; a call that connects no line queues nothing, because a business picked any other way could be told the last 4 digits of another business's caller. (1) `app/calls/src/link_reply.rs` (new), through `calls::api`: `link_after_dial(db, vault, call_sid, caller, now)`, which the voice route (`answer` in `app/server/src/inbound_voice.rs`) calls after a turn answered with the dial: when the caller's party is `Party::Unlinked` (`routing::party_of`) and the CallSid's stored call start (`models::call_start`) names a line, it calls `request_link` for that line and, in the same transaction, when a notice was queued, stores one pending link for the line in `calls.link_request`: the line, its business, the caller's keyed digests under the vault's `sender-dir` index (`Vault::blind_index`, as `messaging.sender_directory` stores a linked phone), the request time and an expiry 24 hours later; never the number, its last 4 digits or the PIN (PRIV-002, D-1696). A homeowner, a linked business phone, a wrong-PIN hang-up and a repeat on the same line (`request_link`'s once-per-line rule) store nothing. A failure here is one log line naming no number, line or PIN and never changes the TwiML: the dial still answers. (2) `link_reply(conn, vault, (business, from), pin, now)`, which the inbound text route calls in the delivery's transaction for a text from a linked business phone (`Relation::Business`) that is exactly `LINK` and 4 digits (any case, surrounding spaces; any other text keeps today's path). It links only when the replying phone is the business's main phone (the owner's, CALL-012; any other phone of the business is refused) and a live pending link on an open line of that same business has a stored PIN (`pins::stored_pin`) equal to the 4 digits. Then, in one transaction: a new `businesses.staff_phone`, linked as by the owner so it works at once (BIZ-033), through `businesses::api` (`app/businesses/src/reply_link.rs`, new; one `businesses.phone_linked` audit row naming IDs only); the pending digests put in the sender directory for that phone through `messaging::api` (`app/messaging/src/sender_pending.rs`, new; a digest another phone already holds refuses the link); and the pending link used up, its digests deleted. Everything else fails closed with no change and the same outcome: a wrong PIN, the PIN of another business's line (the lookup is by the replying business), an expired or used pending link (so a replayed LINK), a closed line, no pending link. At most 3 refused LINK replies per replying phone per Arizona day (the per-call PIN count of CALL-025), counted by the phone's keyed digest, never its number; past that, every LINK from it that day is refused without the PIN being compared, so the reply is no PIN oracle. Expired and used rows are deleted when met. A LINK text gets no auto-reply and no text answer (no new customer copy; a confirmation text is listed for Casey, D-3079). (3) `migrations/0185_calls_link_request.sql` (new): the pending links and the refused-reply counts, with no number column; the app role gets only the grants the two functions use. The email's \"Link this phone\" page (`ActionKind::LinkPhone`, T148's) can call the same link step later; wiring its button is not this task's. Tests in `tests/integration/tests/link_reply.rs` (TD-CALL-23) through the served voice and inbound text routes with signed fake Twilio requests and fake numbers only. Update the `calls`, `businesses`, `messaging` and `server` `CLAUDE.md` files and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "calls",
+   "deps": [
+    "T326",
+    "T357",
+    "T311"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "privacy"
+   ],
+   "owns": [
+    "app/calls/src/link_reply.rs",
+    "app/businesses/src/reply_link.rs",
+    "app/messaging/src/sender_pending.rs",
+    "app/server/src/inbound_voice.rs",
+    "app/server/src/inbound_text.rs",
+    "migrations/0185_calls_link_request.sql",
+    "tests/integration/tests/link_reply.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/calls.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "CALL-011",
+    "CALL-003",
+    "CALL-012",
+    "CALL-025"
+   ],
+   "tests": [
+    "TD-CALL-23"
+   ],
+   "decisions": [
+    "D-3079",
+    "D-1696",
+    "D-2247",
+    "D-078",
+    "D-311",
+    "D-1755"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 7,
+    "lines": 600,
+    "context_pct": 15
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T390-link-request-and-reply",
+   "prompt": "kit/prompts/T390.md",
+   "acceptance": "TD-CALL-23 passes against PostgreSQL through the served routes; each of its cases fails on today's `main`; every TD-CALL-14, TD-CALL-17, TD-CALL-18, TD-BIZ-39 and other existing voice and inbound text case passes unchanged; no table, log line, task payload or audit row holds a blocked number, its last 4 digits outside the notice, or a PIN."
   }
  ]
 }
