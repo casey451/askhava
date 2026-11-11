@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-11T07:20:31Z by runner 018d8ddfceb1 (actions).
+Updated 2026-11-11T07:20:46Z by runner 018d8ddfceb1 (actions).
 
-**Building: T212 in progress since 06:23Z; 197 of 370 done; week 61% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T327 in progress since 05:24Z; 197 of 370 done; week 61% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 197 of 370 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T212 claimed 06:23Z, lease until 09:23Z; lane 3: T327 claimed 05:24Z, lease until 08:24Z
+- **Lane:** lane 3: T327 claimed 05:24Z, lease until 08:24Z
 - **Week:** 61% used, 71.5M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 07:13Z, 7 min before this update
 - **Keeper:** last ran 07:12Z, next wake 08:27Z
@@ -17,6 +17,7 @@ Updated 2026-11-11T07:20:31Z by runner 018d8ddfceb1 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T212 | intake: photo asks with on-server checks and preview, inspir | MERGE_PENDING | 1 | 56 min | 07:20Z |  |
 | T383 | messaging and portals: the text templates and the homeowner  | done | 1 | 20 min | 05:39Z |  |
 | T337 | payments (harness): a $0 release proof is bound to the pick' | BLOCKED | 3 | 16 min | 05:11Z | T337 built and committed (53e675b1, cf42d54e); smoke/prehandin red on tests T337 does not own: confirm_and_pay.rs td_fee |
 | T209 | picks and payments: the optional auto-confirm-and-pay box wi | done | 1 | 115 min | 05:06Z |  |
@@ -116,8 +117,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T212 (lease until 2026-11-11T09:23:57Z)
+- nothing
 - lane 3: T327 (lease until 2026-11-11T08:24:57Z)
 
 ## Last usage reading
-- {"task": "T383", "at": "2026-11-11T05:39:25Z", "output_tokens": 45137, "cache_creation_input_tokens": 198030, "input_tokens": 205, "cache_read_input_tokens": 5150445}
+- {"task": "T212", "at": "2026-11-11T07:20:29Z", "cache_read_input_tokens": 46550701, "cache_creation_input_tokens": 899725, "output_tokens": 240141, "input_tokens": 639}
