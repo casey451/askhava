@@ -17,7 +17,7 @@
 <p><a href="/b">Go back</a></p>
 {% else %}
 {% if let Some(step) = code %}{% if let Some(message) = step.error %}<div id="error-summary" role="alert" tabindex="-1" autofocus>
-<h2>Fix this to confirm</h2>
+<h2>Fix this before you confirm</h2>
 <p><a href="#code">{{ message }}</a></p>
 </div>
 {% endif %}{% endif %}<h2>Before you confirm</h2>
@@ -28,8 +28,8 @@
 <li id="terms-version">You're agreeing to business terms version {{ terms_version }}. <a href="/terms/business">Read the business terms</a></li>
 <li>{{ askhava_core::api::brand().display_name() }} is not a contractor and does not perform, bid on or supervise work.</li>
 </ul>
-{% if let Some(step) = code %}<h2>Your code</h2>
-<p id="code-why">This inbox is shared, so each Confirm needs a new code. We text it to your own phone.</p>
+{% if let Some(step) = code %}<h2>Only you can confirm this job</h2>
+<p id="code-why">This inbox is shared, so others may see this page. Each time you confirm, we text a new code to your own phone.</p>
 {% if let Some(line) = step.line %}<p id="code-sent" role="status">{{ line }}</p>
 {% endif %}<form method="post" action="/b/picks/{{ pick }}/confirm/code" id="code-form" novalidate>
 <input type="hidden" name="csrf" value="{{ csrf }}">
@@ -40,7 +40,7 @@
 <input type="hidden" name="press" value="{{ press }}">
 <input type="hidden" name="payment_method" value="">
 {% if let Some(step) = code %}<p><label for="code">6-digit code</label></p>
-<p id="code-hint">Type or paste the code from our text, or your phone may fill it in. It works for 10 minutes.</p>
+<p id="code-hint">Type the code from our text. Your phone may fill it in for you. It's good for 10 minutes.</p>
 {% if let Some(message) = step.error %}<p id="code-error">Error: {{ message }}</p>
 {% endif %}<p><input type="text" id="code" name="code" value="" inputmode="numeric" autocomplete="one-time-code" aria-describedby="code-why code-hint{% if step.error.is_some() %} code-error{% endif %}"{% if step.error.is_some() %} aria-invalid="true"{% endif %}></p>
 {% endif %}<h2>Card</h2>

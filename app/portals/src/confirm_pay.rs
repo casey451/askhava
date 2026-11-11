@@ -377,11 +377,13 @@ impl CodeSent {
     #[must_use]
     pub const fn line(self) -> &'static str {
         match self {
-            Self::Sent => "We texted a code to your phone.",
+            Self::Sent => "We texted a code to your phone. Type it below.",
             Self::NoPhone => {
-                "We can't text you a code. Link a phone that gets texts in your portal first."
+                "We can't text you a code, so you can't confirm yet. In your portal, link a phone that gets texts."
             }
-            Self::Limited => "You've asked for a lot of codes. Wait a while, then try again.",
+            Self::Limited => {
+                "You've asked for too many codes. Try again in an hour, or tomorrow if you see this again."
+            }
             Self::Failed => "We couldn't send the code. Press \"Text me a code\" again.",
         }
     }
@@ -446,10 +448,10 @@ impl CodeCheck {
             Self::Right => None,
             Self::Missing => Some("Type the 6-digit code from our text."),
             Self::Wrong => Some("That code isn't right. Check the text and type it again."),
-            Self::Ended => {
-                Some("That code doesn't work anymore. Press \"Text me a code\" for a new one.")
-            }
-            Self::Limited => Some("Too many tries. Wait an hour, then try again."),
+            Self::Ended => Some("That code has run out. Press \"Text me a code\" for a new one."),
+            Self::Limited => Some(
+                "Too many wrong codes. Wait an hour, then press \"Text me a code\" for a new one.",
+            ),
         }
     }
 }
