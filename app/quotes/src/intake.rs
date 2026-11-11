@@ -373,7 +373,35 @@ pub fn parse_quote(form: QuoteForm, rules: &QuoteRules) -> Result<Quote, Bounce>
 
 /// PICK-007: a text bounces when the card gate (CARD-008) would cut any word of it, or when it
 /// holds a carrier-restricted phrase (CARD-010); one gate decides both, so cards and quotes agree.
+/// The gate reads line by line, so each check runs twice: on the text as written and on the
+/// whole field with every whitespace run (line feed, carriage return, tab, no-break space)
+/// folded to one space, and either view bounces (D-2334): "555\n123\n4567" is a phone number.
 pub(crate) fn text_bounce(text: &str) -> Result<(), Bounce> {
+    for view in [text, folded(text).as_str()] {
+        view_bounce(view)?;
+    }
+    Ok(())
+}
+
+/// PICK-007, D-2334, D-3019: `text` with every whitespace run folded to one space, except a run
+/// before a dot and a letter, which goes, so "example\n.com" reads as the domain it is; no
+/// sentence starts with ".c", so ordinary text never joins.
+fn folded(text: &str) -> String {
+    let mut out = String::with_capacity(text.len());
+    for piece in text.split_whitespace() {
+        let mut chars = piece.chars();
+        let dotted = chars.next() == Some('.') && chars.next().is_some_and(char::is_alphabetic);
+        if !out.is_empty() && !dotted {
+            out.push(' ');
+        }
+        out.push_str(piece);
+    }
+    out
+}
+
+/// PICK-007, CARD-008, CARD-010: one view of a quote's text against the restricted list and the
+/// card gate; bounces when the gate would cut any word of it.
+fn view_bounce(text: &str) -> Result<(), Bounce> {
     if askhava_catalog::api::restricted_match(text).is_some() {
         return Err(Bounce::Restricted);
     }
