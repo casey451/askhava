@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-11T09:41:27Z by runner 6b803a362f31 (manual).
+Updated 2026-11-11T09:49:37Z by runner f8b6eca9a590 (actions).
 
-**Building: T337 in progress since 09:25Z; 199 of 371 done; week 63% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T337 in progress since 09:25Z; 199 of 370 done; week 63% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 199 of 371 build tasks (owner gates not counted)
+- **Tasks done:** 199 of 370 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T337 claimed 09:25Z, lease until 12:25Z
 - **Week:** 63% used, 62.3M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:41Z, 0 min before this update
+- **Last run:** 09:41Z, 8 min before this update
 - **Keeper:** last ran 09:41Z, next wake 12:28Z
 
 ## Needs attention
@@ -18,7 +18,7 @@ Updated 2026-11-11T09:41:27Z by runner 6b803a362f31 (manual).
 - PLAN GAP T323 (since 2026-11-11T09:25:53Z, no attempt used; a plan change fixes it): T323: dependency T295 is DONE but its owned file tests/brand_literal_baseline.json is not on main
 - PLAN GAP T326 (since 2026-11-11T09:25:53Z, no attempt used; a plan change fixes it): T326: dependency T292 is DONE but its owned file tests/brand_literal_baseline.json is not on main
 - OWNED GAP T295 (DONE, since 2026-11-11T09:25:53Z; a later task or plan change must add it): T295: tests/brand_literal_baseline.json missing on main
-- Strict plan check red: 11 problem(s) on tasks still to run (+19 on DONE tasks); first: T255: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 12 problem(s) on tasks still to run (+19 on DONE tasks); first: T255: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -85,7 +85,7 @@ Updated 2026-11-11T09:41:27Z by runner 6b803a362f31 (manual).
 ## Progress (requirements verified)
 
 **Requirements verified:** 208 of 733 (28.4%) · partial 343 · unstarted 182
-**Tasks merged (throughput only):** 199 of 371
+**Tasks merged (throughput only):** 199 of 370
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
