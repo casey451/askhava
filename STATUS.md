@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-11T15:05:28Z by runner 399858e112d9 (actions).
+Updated 2026-11-11T15:05:44Z by runner 399858e112d9 (actions).
 
-**Building: T384 in progress since 14:46Z; 204 of 372 done; week 68% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T269 in progress since 15:02Z; 204 of 372 done; week 68% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 204 of 372 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T384 claimed 14:46Z, lease until 17:46Z; lane 3: T269 claimed 15:02Z, lease until 18:02Z
+- **Lane:** lane 3: T269 claimed 15:02Z, lease until 18:02Z
 - **Week:** 68% used, 50.6M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 15:04Z, 1 min before this update
 - **Keeper:** last ran 14:40Z, next wake 15:00Z
@@ -34,11 +34,12 @@ Ci fai
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T384 | quotes and portals: the homeowner sees an edited quote as up | MERGE_PENDING | 2 | 18 min | 15:05Z | Ci: failure; E2e: failure; Ally: failure / E2e failed at step: Chromium and its system libraries / E: Failed to fetch ht |
 | T214 | picks: the homeowner's share box at the pick and the 'Can't  | BLOCKED | 2 | 3 min | 15:04Z | PLAN GAP: tests/integration/tests/page_pick.rs:131 and tests/security/tests/page_pick_privacy.rs:224 (both T246's; page_ |
 | T342 | quotes: a quote's contact check also reads the whole field w | MERGE_PENDING | 1 | 51 min | 14:31Z |  |
 | T332 | payments (harness): a late success has its own refund trigge | check_failed | 3 | 48 min | 14:24Z | PLAN GAP: tests/integration/tests/confirm_and_pay.rs:393-413 (td_fee_25_an_ended_pick_is_never_cleared, TD-FEE-25, T189  |
 | T269 | portals: a business notice's signed link opens sign-in for t | check_failed | 1 | 20 min | 14:19Z | Ci: failure; E2e: failure; Ally: failure / E2e failed at step: Chromium and its system libraries / E: Failed to fetch ht |
-| T384 | quotes and portals: the homeowner sees an edited quote as up | check_failed | 1 | 40 min | 13:40Z | Ci: failure; E2e: failure; Ally: failure / E2e failed at step: Chromium and its system libraries / E: Failed to fetch ht |
+| T384 | quotes and portals: the homeowner sees an edited quote as up | check_failed | 1 | 40 min | 13:40Z |  |
 | T214 | picks: the homeowner's share box at the pick and the 'Can't  | BLOCKED | 1 | 15 min | 13:19Z |  |
 | T333 | payments (harness): a succeeded refund is recorded at the am | BLOCKED | 1 | 50 min | 13:14Z | PLAN GAP: app/payments/src/routes.rs:412 (T259) and app/payments/src/refund_state.rs:34 (T270) / app/picks/src/unreachab |
 | T332 | payments (harness): a late success has its own refund trigge | BLOCKED | 2 | 2 min | 12:40Z |  |
@@ -159,8 +160,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T384 (lease until 2026-11-11T17:46:40Z)
+- nothing
 - lane 3: T269 (lease until 2026-11-11T18:02:25Z)
 
 ## Last usage reading
-- {"task": "T214", "at": "2026-11-11T15:04:09Z", "input_tokens": 92, "cache_creation_input_tokens": 266858, "output_tokens": 26777, "cache_read_input_tokens": 3088357}
+- {"task": "T384", "at": "2026-11-11T15:05:27Z", "cache_read_input_tokens": 2960348, "input_tokens": 119, "output_tokens": 23149, "cache_creation_input_tokens": 244078}
