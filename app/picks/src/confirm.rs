@@ -15,6 +15,9 @@
 //! T197 added the bounce grace (PICK-019, D-345): [`bounce_grace`] adds 1 business hour, once, to
 //! a non-emergency pick whose notice emails all bounced or failed ([`EmailOutcome`]); a delivery
 //! to a spam folder counts as sent. The reminders live in `confirm_reminders`.
+//!
+//! T157 added [`refused_at_confirm`]: a Confirm refused by the re-check ends the pick and moves
+//! it at once to the homeowner's backup (PICK-020, PICK-047, D-400).
 
 use askhava_adapters::api::LicenseSource;
 use askhava_businesses::api::{AccountStatus, Roles};
@@ -24,12 +27,15 @@ use askhava_licensing::api::{
     Freshness, LookupOutcome, arizona_day, end_date_pauses, lookup_at_pick, roc_check_allows_card,
 };
 use askhava_messaging::api::Language;
+use askhava_ops::api::Actor;
 use jiff::civil::Date;
 use jiff::{SignedDuration, Timestamp};
 use sqlx::PgConnection;
 use sqlx::types::Uuid;
 
-use crate::models::PicksError;
+use crate::backup_choice::{Backup, backup_choice};
+use crate::confirm_reminders::lapse;
+use crate::models::{self, PicksError};
 use crate::status::account_confirms;
 
 /// The pick notice's email subject (PICK-037), in `app/messaging/templates/` (en, es).
@@ -210,6 +216,31 @@ pub async fn check_at_confirm(
         return Ok(Err(Refusal::License));
     }
     Ok(Ok(()))
+}
+
+/// PICK-020, PICK-035, PICK-047, D-400: ends waiting pick `pick` after [`check_at_confirm`]
+/// refused its Confirm for `refusal`, inside the caller's transaction, and moves it at once to
+/// the homeowner's backup when still pickable. An ended window is the lapse
+/// ([`crate::confirm_reminders::lapse`]); an account or license refusal cancels the pick as
+/// `ineligible`. [`Backup::NoBackup`] means the caller sends PICK-046's text; a pick no longer
+/// waiting is [`Backup::Done`]. `paused` is the job's homeowner pause (CON-029).
+///
+/// # Errors
+///
+/// [`PicksError::Database`], [`PicksError::MovedOn`] (roll back) or the page pick's errors.
+pub async fn refused_at_confirm(
+    tx: &mut PgConnection,
+    (pick, refusal): (Uuid, Refusal),
+    paused: bool,
+    by: (Actor, Timestamp),
+) -> Result<Backup, PicksError> {
+    if refusal == Refusal::Expired {
+        return lapse(tx, pick, paused, by).await;
+    }
+    if !models::end_pick(tx, pick, "ineligible", by.1).await? {
+        return Ok(Backup::Done);
+    }
+    backup_choice(tx, pick, paused, by).await
 }
 
 /// How a recurring service's fee was set (PICK-034, FEE-039, D-196).
