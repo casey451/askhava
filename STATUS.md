@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-11T11:35:24Z by runner 48de7e61157b (actions).
+Updated 2026-11-11T11:35:38Z by runner 48de7e61157b (actions).
 
-**Building: T331 in progress since 10:45Z; 201 of 371 done; week 65% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 11:35Z; 201 of 371 done; week 65% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 201 of 371 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 3: T331 claimed 10:45Z, lease until 13:45Z
+- **Lane:** idle since 11:35Z (no task in progress)
 - **Week:** 65% used, 60.7M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 11:34Z, 1 min before this update
 - **Keeper:** last ran 11:33Z, next wake 13:47Z
@@ -17,6 +17,7 @@ Updated 2026-11-11T11:35:24Z by runner 48de7e61157b (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T331 | payments (harness): a payment success with no readable pick  | MERGE_PENDING | 1 | 49 min | 11:35Z |  |
 | T164 | quotes: one quote format per category, screened notes, and e | MERGE_PENDING | 3 | 12 min | 11:31Z | Ci: failure; Checks: failure / Checks failed at step: Rust format and lint (clippy once, before the build, D-488) / Chec |
 | T164 | quotes: one quote format per category, screened notes, and e | check_failed | 2 | 39 min | 11:00Z |  |
 | T278 | quotes, intake and picks: the check-in, feedback and unreach | MERGE_PENDING | 1 | 29 min | 10:56Z |  |
@@ -129,7 +130,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 3: T331 (lease until 2026-11-11T13:45:45Z)
 
 ## Last usage reading
-- {"task": "T164", "at": "2026-11-11T11:31:36Z", "input_tokens": 69, "cache_creation_input_tokens": 194412, "cache_read_input_tokens": 933873, "output_tokens": 14280}
+- {"task": "T331", "at": "2026-11-11T11:35:23Z", "input_tokens": 241, "output_tokens": 95918, "cache_creation_input_tokens": 431851, "cache_read_input_tokens": 9219060}
