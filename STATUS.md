@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-11T21:51:06Z by runner 0ca2670042a7 (actions).
+Updated 2026-11-11T22:00:31Z by runner 4755bac9f62a (actions).
 
 **Building: T232 in progress since 21:11Z; 213 of 376 done; week 75% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-11T21:51:06Z by runner 0ca2670042a7 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 3: T232 claimed 21:11Z, lease until 00:11Z
 - **Week:** 75% used, 41.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:50Z, 0 min before this update
+- **Last run:** 21:51Z, 9 min before this update
 - **Keeper:** last ran 21:51Z, next wake 00:14Z
 
 ## Needs attention
@@ -106,7 +106,6 @@ Updated 2026-11-11T21:51:06Z by runner 0ca2670042a7 (actions).
 - 00:36Z Plan: fix tasks from the Nov 10 code review — payments, privacy, texting, portals, calls, jobs (D-2620–D-2642) (#439)
 - 22:59Z Plan: claim the longest remaining dependency chain first (D-2591) (#436)
 - 22:08Z Harness: report queued tasks that add to lists existing tests pin (D-2550) (#433)
-- 21:53Z Harness: reuse a recorded green smoke on main's head; fix the start-up smoke timeouts (D-2560) (#434)
 
 ## Progress (requirements verified)
 
