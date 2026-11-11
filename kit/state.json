@@ -28558,7 +28558,8 @@
     "T341",
     "T343",
     "T286",
-    "T328"
+    "T328",
+    "T337"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -31015,7 +31016,7 @@
    }
   }
  },
- "updated_at": "2026-11-11T05:26:31Z",
+ "updated_at": "2026-11-11T05:36:47Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -31114,7 +31115,7 @@
   ]
  },
  "runner_sha": "d4ae3ec32f11fcbe7e4149f8289df888c5bfc336",
- "starter": "manual",
+ "starter": "actions",
  "smoke_runs": [
   {
    "sha": "f33177e317053a1d11ecccdf5b9c4d6f3de97675",
