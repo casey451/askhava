@@ -2,6 +2,12 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## Six more waiting steps fixed before they start (plan change, D-3083, November 11)
+
+- **What happened.** A second check of steps still waiting in line found six that would have stopped partway or misled the worker: older tests the step did not own, a check order that would trip an older test, a missing setting that would have crashed a test in development, and stale line numbers. Two of them had already stopped for this reason: T345 (pinning the GitHub Actions versions) and T317 (the limit on new requests by text); both go back in line once this change lands.
+- **What changed.** Each step now owns the few extra files it must touch, with strict limits on what it may change in them (only how a test builds its setup, or only the version text in a comparison), and its instructions name the exact code to use. No rule for homeowners or businesses changes and no test is loosened.
+- **Nothing needs you.**
+
 ## The runner's start-up smoke test runs less often, with every red-build guard kept (harness and plan change, D-3058, November 11)
 
 - **Who decided.** You told the overseer to let Fable make the decisions meant for you; Fable chose this one.
