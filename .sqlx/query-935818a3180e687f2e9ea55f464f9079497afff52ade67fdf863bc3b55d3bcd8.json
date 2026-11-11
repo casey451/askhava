@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT visit_schedule FROM quotes.quote WHERE job_id = $1 AND business_id = $2",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "visit_schedule",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "quotes.quote",
+            "name": "visit_schedule"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "935818a3180e687f2e9ea55f464f9079497afff52ade67fdf863bc3b55d3bcd8"
+}

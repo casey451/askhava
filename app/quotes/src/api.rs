@@ -40,6 +40,11 @@
 //! T209: [`tick_auto_confirm`], [`untick_auto_confirm`] and [`auto_confirm_of`] store and read the
 //! quote's "Auto-confirm and pay if picked" tick, worded by [`auto_confirm_authorization`];
 //! [`stripe_answer_filed`] reads the owner's filed Stripe answer (PICK-048, PICK-056, D-401).
+//! T164: [`format_for`] names a job type's quote format and [`parse_price`] reads the form's
+//! [`PriceFields`] for it, a per-visit price with its [`VisitSchedule`] (PICK-053, REC-010);
+//! [`check_note`] and [`screen_note`] send a note back with its reason (PICK-052);
+//! [`save_quote`] and [`withdraw_quote`] store a quote, an edit or a withdrawal under the job's
+//! row lock, never after a pick (PICK-051, D-2912); [`format_definition`] is the plain definition.
 
 use sqlx::types::Uuid;
 
@@ -54,8 +59,13 @@ pub use crate::card_notices::{
     CardNotice, QUOTE_HOURS, card_payload, job_page_prefix, queue_card_notice, sent_count,
 };
 pub use crate::cards::{CardParts, DEFAULT_MIN_WORDS, Danger, JobCard, Place, Timing, build_card};
+pub use crate::edit_withdraw::{Saved, Withdrawal, save_quote, withdraw_quote};
 pub use crate::emergency_card_notice::{
     CardTiming, EMERGENCY_FIRST_LINE, emergency_card_subject, queue_emergency_card, split,
+};
+pub use crate::formats::{
+    OTHER_SCHEDULE, PriceFields, PriceProblem, VisitSchedule, format_for, parse_price,
+    visit_schedule_of,
 };
 pub use crate::gate::final_gate;
 pub use crate::handlers::{WINDOWS_KIND, WindowsCheck, run_windows_end, windows_ended};
@@ -69,6 +79,9 @@ pub use crate::models::{
     CardBusiness, CardDecision, CardJob, CardLines, Coverage, OfferTown, OwnerPauses, Pool, Pooled,
     QuotesError, Recipient, Skip,
 };
+pub use crate::notes::{
+    NOTE_LIMIT, NoteFlag, NoteProblem, NoteScreener, OFF_PLATFORM, check_note, screen_note,
+};
 pub use crate::notify::{
     CardsOut, Counts, LIST_PAGE, Listed, Notice, Reader, SLOW_AT_MOST, Sent, UPDATE_GAP,
     arizona_time, cards_out_text, first_quote_text, list_texts, list_texts_from, notice,
@@ -80,7 +93,8 @@ pub use crate::photos::{
 };
 pub use crate::quote_card::{
     CardSource, POLICY_SUMMARY_SENTENCE, Parts, Permit, QuoteCard, QuoteFacts, Spanish, Summary,
-    SummarySetting, SwitchRefused, TripFee, check_summary, quote_card, switch_on,
+    SummarySetting, SwitchRefused, TripFee, check_summary, format_definition, quote_card,
+    switch_on,
 };
 pub use crate::service::{card_holders, coverage, send_cards, send_job_cards, send_late_cards};
 pub use crate::update_texts::{
