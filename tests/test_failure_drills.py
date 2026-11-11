@@ -2000,3 +2000,33 @@ def test_drill_an_env_without_a_hand_in_merge_pushes_the_reviewed_head(tmp_path:
     env = Older(lambda t, m, log: reviewed(t, m, head="good0001"))
     assert cycle.run_cycle(config([make_task("T001")], tmp_path), env, NOW) == st.MERGE_PENDING
     assert env.branch_pushes == [("claude/task/T001-x", "good0001")]
+
+
+def test_drill_main_turning_red_while_the_task_is_in_flight_gives_an_unmerged_push(tmp_path: Path) -> None:
+    """Stage C merges nothing into a task while `main` is red (D-620), so neither does the hand-in: the review
+    record's write sees `main_red` on the fresh state and adopts no merge, and the reviewed head is pushed."""
+    env = FakeEnv()
+    env.hand_in = {"status": "built", "sha": "merge001", "main": "main0002"}
+
+    def red_meanwhile(task: dict[str, Any], model: str, log: str) -> cycle.WorkerResult:
+        env.store = dict(env.store, main_red={"check": "smoke", "sha": "main0002"})
+        return reviewed(task, model, head="good0001")
+
+    env.worker = red_meanwhile
+    assert cycle.run_cycle(config([make_task("T001")], tmp_path), env, NOW) == st.MERGE_PENDING
+    task = st.entry(env.store, "T001")
+    assert env.branch_pushes == [("claude/task/T001-x", "good0001")] and env.auto_merges == [("claude/task/T001-x", "good0001")]
+    assert task["reviewed_sha"] == "good0001" and "update_merges" not in task
+    assert env.hand_ins == [("claude/task/T001-x", "good0001")]  # built from the state before, refused in the write
+
+
+def test_drill_a_red_main_at_finish_builds_no_hand_in_merge(tmp_path: Path) -> None:
+    env = FakeEnv()
+    env.hand_in = {"status": "built", "sha": "merge001", "main": "main0002"}
+    cfg = config([make_task("T001")], tmp_path)
+    env.store = st.claim(st.sync_graph(env.store, cfg.graph), "T001", cfg.session, NOW)
+    env.store = dict(env.store, main_red={"check": "smoke", "sha": "main0002"})
+    task = cfg.graph[0]
+    assert cycle.finish(cfg, env, env.read_state(), task, reviewed(task, MODELS["sonnet"], head="good0001"), MODELS["sonnet"], NOW) == st.MERGE_PENDING
+    assert env.hand_ins == [] and env.branch_pushes == [("claude/task/T001-x", "good0001")]
+    assert "update_merges" not in st.entry(env.store, "T001")

@@ -432,15 +432,26 @@ def _lane_outcome(state: State, tid: str, lane: str, result: str, now: datetime,
     reviewed head before it (main's change broke it, `_broken_by_main`, which reads a check that was
     still running at the update again through `reread`), or an update merge that conflicted or could
     not be pushed for good, is a strike; any other failed check is the task's own and clears them. A
-    merge still waiting never strikes. Lane "1" and the "fix" lane never strike."""
+    merge still waiting never strikes, and neither does a failed check on a hand-in merge, which also leaves
+    the strikes as they are (`_unjudged_hand_in`, D-2798). Lane "1" and the "fix" lane never strike."""
     if lane in (st.LANE_ONE, st.FIX_LANE):
         return state
+    if result == "check_failed" and _unjudged_hand_in(st.entry(state, tid)):
+        return state  # no earlier round to tell main's change from the task's: neither strike nor clear (D-2798)
     if result == "done" or (result == "check_failed" and not _broken_by_main(st.entry(state, tid), reread)):
         return lanes.clear_strikes(state, lane)
     if result in ("check_failed", "update_conflict", "update_push_failed"):
         why = str(st.entry(state, tid).get("last_failure") or st.entry(state, tid).get("reason") or result)
         return lanes.strike(state, lane, f"{tid} {result}: {why[:200]}", now)
     return state
+
+
+def _unjudged_hand_in(task: dict[str, Any]) -> bool:
+    """Whether the attempt's last update merge is a hand-in merge with no checks kept (D-2798): the reviewed
+    head never ran a round of its own, so a check that failed on the merge cannot be told apart from one
+    main brought in, and `_lane_outcome` neither strikes the lane nor clears its strikes."""
+    updates = task.get("update_merges") or []
+    return bool(updates) and updates[-1].get("how") == "hand-in" and not updates[-1].get("checks")
 
 
 FAILED = ("failure", "cancelled", "timed_out")
@@ -1749,7 +1760,7 @@ def finish(
         final = st.with_task(final, tid, reviewed_sha=res.head_sha, branch=res.branch)
         final = _resolve_empty(final, env, tid, res.head_sha, now)[0]
     elif st.status(final, tid) == st.MERGE_PENDING:
-        merge = _hand_in_merge(env, res)  # main merged in before the push when the head is behind (D-2798)
+        merge = None if _main_red_for(state, tid) else _hand_in_merge(env, res)  # main merged in when behind (D-2798)
         reviewed = env.update_state(_review_record(tid, lane, cfg, res, merge))
         if reviewed is None:
             return _lost_writes(cfg, env, tid, lane, "its review record")  # no review record, no branch push (D-515)
@@ -1818,9 +1829,16 @@ def _review_record(tid: str, lane: str, cfg: Config, res: WorkerResult,
         review = {"reviewed_sha": res.head_sha, "review_lease": copy.deepcopy(held), "branch": res.branch, "head_check_since": None}
         # A new review starts a new chain of update merges: an earlier attempt's never counts as reviewed (D-620).
         recorded = _without(st.with_task(fresh, tid, **review), tid, *UPDATE_KEYS)
-        return _adopt_update(recorded, tid, merge, cfg.clock()) if merge else recorded
+        if not merge or _main_red_for(fresh, tid):
+            return recorded  # a red main is never merged into a task, as stage C refuses it (D-620, D-2798)
+        return _adopt_update(recorded, tid, merge, cfg.clock())
 
     return apply
+
+
+def _main_red_for(state: State, tid: str) -> bool:
+    """Whether `main` is red for this task: every task but FIX-MAIN gets no update merge then (D-620)."""
+    return bool(state.get("main_red")) and tid != st.FIX_MAIN
 
 
 def _hand_in_merge(env: Env, res: WorkerResult) -> dict[str, Any] | None:
@@ -1829,8 +1847,8 @@ def _hand_in_merge(env: Env, res: WorkerResult) -> dict[str, Any] | None:
     against the reviewed head and main's head), so it is adopted exactly as a stage-C merge is (D-2798).
     None, and the reviewed head is pushed unmerged as before, when the head already has main, the merge
     conflicts (stage C's conflict path then takes it, D-891), or it cannot be built or fails its check.
-    No `checks` are kept: the reviewed head alone never runs them, so a red check on the merge counts as
-    the task's own (`_broken_by_main`)."""
+    No `checks` are kept: the reviewed head alone never runs them, so a red check on the merge neither
+    strikes the lane nor clears its strikes (`_unjudged_hand_in`). The caller skips it while `main` is red."""
     build = getattr(env, "hand_in_merge", None)
     done = build(res.branch, res.head_sha) if build and res.branch and res.head_sha else {}
     if done.get("status") != "built" or not done.get("sha"):
