@@ -41041,7 +41041,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T14:08:49Z",
+ "updated_at": "2026-11-12T14:14:37Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -41142,14 +41142,6 @@
  "runner_sha": "87abedec7b6ea0d48edf5747ef107cbd878ee14a",
  "starter": "actions",
  "smoke_runs": [
-  {
-   "sha": "54ea2ca4035a3699174ce306701879a84231cb43",
-   "ok": true,
-   "at": "2026-11-12T12:19:06Z",
-   "why": "start routine (ancestry reuse of 4b1e8df76c3d, 2026-11-12T12:11:25Z)",
-   "reused": "2026-11-12T12:11:25Z",
-   "base": "4b1e8df76c3d667f99ea5796f84c723b1b04c5b6"
-  },
   {
    "sha": "54ea2ca4035a3699174ce306701879a84231cb43",
    "ok": true,
@@ -41301,6 +41293,13 @@
    "why": "start routine (ancestry reuse of 4b1e8df76c3d, 2026-11-12T12:11:25Z)",
    "reused": "2026-11-12T12:11:25Z",
    "base": "4b1e8df76c3d667f99ea5796f84c723b1b04c5b6"
+  },
+  {
+   "sha": "87abedec7b6ea0d48edf5747ef107cbd878ee14a",
+   "ok": false,
+   "at": "2026-11-12T14:14:34Z",
+   "why": "start routine (background)",
+   "seconds": 335
   }
  ],
  "main_red": null,
@@ -41365,11 +41364,6 @@
  ],
  "smoke_env_problems": [
   {
-   "sha": "5fd99b77318810999dc350af1e1e5d7c240c2266",
-   "at": "2026-11-11T00:43:17Z",
-   "why": "smoke red while Ci, Twin and Ally were green on the head"
-  },
-  {
    "sha": "f8231346d80a9d1cc25a67f29bdf036771cce969",
    "at": "2026-11-11T01:11:55Z",
    "why": "smoke red while Ci, Twin and Ally were green on the head"
@@ -41412,6 +41406,11 @@
   {
    "sha": "b2f1343b3d73572398fb9b424aea773a70290a52",
    "at": "2026-11-11T18:55:47Z",
+   "why": "smoke red while Ci, Twin and Ally were green on the head"
+  },
+  {
+   "sha": "87abedec7b6ea0d48edf5747ef107cbd878ee14a",
+   "at": "2026-11-12T14:14:34Z",
    "why": "smoke red while Ci, Twin and Ally were green on the head"
   }
  ],
