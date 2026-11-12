@@ -1,10 +1,10 @@
 # Ask Hava build status
 
-Updated 2026-11-12T13:11:28Z by runner 919ab4941c81 (actions).
+Updated 2026-11-12T13:12:17Z by runner 87abedec7b6e (actions).
 
-**Building: T362 in progress since 12:56Z; 244 of 397 done; week 94% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T362 in progress since 12:56Z; 245 of 397 done; week 94% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 244 of 397 build tasks (owner gates not counted)
+- **Tasks done:** 245 of 397 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T362 claimed 12:56Z, lease until 15:56Z; lane 3: T385 claimed 12:57Z, lease until 15:57Z
 - **Week:** 94% used, -0.5M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
@@ -15,12 +15,12 @@ Updated 2026-11-12T13:11:28Z by runner 919ab4941c81 (actions).
 - BLOCKED T280: plan gap reported: PLAN GAP: app/portals/src/business_auth.rs:130 (SignInMail::addresses) and :176 (CodeAddress::code_to) have nothing to look up. No module stores a business member's sign-in email or texting phone in a readable/searchable form, and no task in kit/tasks.json builds one. Evidence: privacy.contact_index only ever written for HomeownerPhone (app/privacy/src/vault.rs:398,409); email_index (app/privacy/src/reader.rs:321) only computes a digest and nothing calls it; migrations/0056_businesses_team_members.sql:5-11 says email/phone is never stored there; Reader list (app/privacy/src/models.rs:89-102) h; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T280 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T251 (since 2026-11-12T11:06:16Z, no attempt used; a plan change fixes it): T251: measures 46% of the context window, over its 45% limit
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 25 problem(s) on tasks still to run (+114 on DONE tasks); first: T396: stored context_pct 39% but it measures 46%; regenerate
+- Strict plan check red: 25 problem(s) on tasks still to run (+115 on DONE tasks); first: T396: stored context_pct 39% but it measures 46%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T369 | businesses: the sign-up after-hours answer ticks only while  | MERGE_PENDING | 1 | 50 min | 12:41Z |  |
+| T369 | businesses: the sign-up after-hours answer ticks only while  | done | 1 | 50 min | 12:41Z |  |
 | T378 | adapters, calls and stand-in (harness): every outbound call  | done | 1 | 45 min | 12:34Z |  |
 | T323 | ai: a new capitalized name at the start of a sentence counts | done | 1 | 24 min | 11:47Z |  |
 | T404 | harness: the door probe's fixtures hold a charged pick and t | done | 1 | 27 min | 11:46Z |  |
@@ -129,7 +129,7 @@ Updated 2026-11-12T13:11:28Z by runner 919ab4941c81 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 209 of 733 (28.5%) · partial 355 · unstarted 169
-**Tasks merged (throughput only):** 244 of 397
+**Tasks merged (throughput only):** 245 of 397
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -164,7 +164,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 124 of 179 done
+- stage 4: 125 of 179 done
 - stage 5: 0 of 64 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
