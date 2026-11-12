@@ -26,6 +26,7 @@ const ALLOW_LIST_TEST: &str = "ASKHAVA_ALLOW_LIST_TEST";
 const ALLOW_LIST_LIVE: &str = "ASKHAVA_ALLOW_LIST_LIVE";
 const PUBLIC_BASE_URL: &str = "ASKHAVA_PUBLIC_BASE_URL";
 const REQUEST_TIMEOUT_SECS: &str = "ASKHAVA_REQUEST_TIMEOUT_SECS";
+const POSTAL_ADDRESS: &str = "ASKHAVA_POSTAL_ADDRESS";
 
 /// Every key the parser accepts; any other `ASKHAVA_*` key stops startup (D-493).
 const KEYS: &[&str] = &[
@@ -42,6 +43,8 @@ const KEYS: &[&str] = &[
     PUBLIC_BASE_URL,
     // The web process's whole-request time limit (T286, D-1870).
     REQUEST_TIMEOUT_SECS,
+    // The business email footer's postal line, checked by `messaging` (T313, SEC-028, D-3095).
+    POSTAL_ADDRESS,
     "ASKHAVA_TWILIO_ACCOUNT_SID",
     "ASKHAVA_STRIPE_ACCOUNT_ID",
     "ASKHAVA_RESEND_DOMAIN",
@@ -240,6 +243,7 @@ pub struct Settings {
     accounts: HashMap<Vendor, String>,
     public_base_url: Option<String>,
     request_timeout_secs: u64,
+    postal_address: Option<String>,
 }
 
 impl Settings {
@@ -277,6 +281,7 @@ impl Settings {
             accounts,
             public_base_url,
             request_timeout_secs: request_timeout_secs(raw.remove(REQUEST_TIMEOUT_SECS))?,
+            postal_address: raw.remove(POSTAL_ADDRESS).map(|p| p.trim().to_owned()),
         })
     }
 
@@ -348,6 +353,19 @@ impl Settings {
     #[must_use]
     pub fn request_timeout_secs(&self) -> u64 {
         self.request_timeout_secs
+    }
+
+    /// The email footer's postal line (`ASKHAVA_POSTAL_ADDRESS`, trimmed): a P.O. box or private
+    /// mailbox, checked by `messaging::api::PostalAddress` where a sender is built (SEC-028,
+    /// D-3095).
+    ///
+    /// # Errors
+    ///
+    /// [`SettingsError::Missing`] when the key is absent or blank.
+    pub fn postal_address(&self) -> Result<&str, SettingsError> {
+        self.postal_address
+            .as_deref()
+            .ok_or(SettingsError::Missing(POSTAL_ADDRESS))
     }
 }
 
