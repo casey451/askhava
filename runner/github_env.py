@@ -2390,7 +2390,7 @@ def role_reading(paths: Iterable[str], usage: dict[str, int]) -> dict[str, int]:
     return {"tokens": sum(int(v) for v in usage.values()), "turns": turns}
 
 
-AGENT_ID =re.compile(r"^[0-9a-z]+$")
+AGENT_ID = re.compile(r"^[0-9a-z]+$")
 
 
 def agent_id_list(agent_ids: Iterable[str]) -> list[str]:
