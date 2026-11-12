@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-12T07:42:20Z by runner d64c061b0892 (actions).
+Updated 2026-11-12T07:42:34Z by runner d64c061b0892 (actions).
 
-**Building: T360 in progress since 06:59Z; 229 of 394 done; week 90% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 07:42Z; 229 of 394 done; week 90% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 229 of 394 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T360 claimed 06:59Z, lease until 09:59Z
+- **Lane:** idle since 07:42Z (no task in progress)
 - **Week:** 90% used, 5.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 07:40Z, 1 min before this update
 - **Keeper:** last ran 07:40Z, next wake 10:01Z
@@ -18,6 +18,7 @@ Updated 2026-11-12T07:42:20Z by runner d64c061b0892 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T360 | messaging: the opt-out confirmation email while texting is o | MERGE_PENDING | 1 | 43 min | 07:42Z |  |
 | T336 | server, adapters and stand-in (harness): a text stopped by a | MERGE_PENDING | 2 | 47 min | 07:35Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
 | T390 | calls and server: a blocked staff call that connects a line  | MERGE_PENDING | 1 | 29 min | 07:34Z |  |
 | T401 | server (harness): the door probe's fixture gains a released  | MERGE_PENDING | 2 | 37 min | 07:33Z | PLAN GAP: tests/security/tests/no_homeowner_charge.rs:17-27,123 (TD-FEE-07, not T401's) fails any app/ file naming a hom |
@@ -167,7 +168,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T360 (lease until 2026-11-12T09:59:04Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T336", "at": "2026-11-12T07:35:47Z", "cache_creation_input_tokens": 164580, "input_tokens": 184, "cache_read_input_tokens": 2991822, "output_tokens": 32755}
+- {"task": "T360", "at": "2026-11-12T07:42:19Z", "cache_creation_input_tokens": 470944, "output_tokens": 97878, "input_tokens": 324, "cache_read_input_tokens": 12206486}
