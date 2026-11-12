@@ -8,7 +8,7 @@ use std::path::PathBuf;
 
 use askhava_core::api::Settings;
 use askhava_server::request_timeout::RequestTimeout;
-use askhava_server::static_files::{IMAGE_DIR, StaticRoot, content_hashed};
+use askhava_server::static_files::{StaticRoot, content_hashed, image_dir};
 use askhava_server::{Hooks, build_router};
 use axum::Router;
 use axum::body::{Body, to_bytes};
@@ -177,11 +177,7 @@ fn td_sec_62_the_folder_comes_from_the_setting_or_the_environment() {
     );
     for env in ["test", "live"] {
         let root = StaticRoot::from_settings(&settings(env, None));
-        assert_eq!(
-            root.folder("portals"),
-            PathBuf::from(IMAGE_DIR).join("portals"),
-            "{env}"
-        );
+        assert_eq!(root.folder("portals"), image_dir().join("portals"), "{env}");
     }
     for env in ["dev", "ci"] {
         let root = StaticRoot::from_settings(&settings(env, None));
@@ -191,8 +187,5 @@ fn td_sec_62_the_folder_comes_from_the_setting_or_the_environment() {
             "{env}"
         );
     }
-    assert_eq!(
-        StaticRoot::default(),
-        StaticRoot::Built(PathBuf::from(IMAGE_DIR))
-    );
+    assert_eq!(StaticRoot::default(), StaticRoot::Built(image_dir()));
 }

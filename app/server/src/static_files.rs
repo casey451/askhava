@@ -22,8 +22,14 @@ use axum::middleware::Next;
 use axum::response::Response;
 use tower_http::services::ServeDir;
 
-/// The image's folder of built files, one `<crate>/` folder each (the Dockerfile, D-1281).
-pub const IMAGE_DIR: &str = "/srv/askhava/static";
+/// The image's folder of built files, `/srv/<internal name>/static`, one `<crate>/` folder each
+/// (the Dockerfile, D-1281). The internal name is this crate's package name before `-server`,
+/// so no brand literal is written here (`tests/docs/test_brand_literals.py`, D-1933, D-3242).
+#[must_use]
+pub fn image_dir() -> PathBuf {
+    let internal = env!("CARGO_PKG_NAME").trim_end_matches("-server");
+    PathBuf::from("/srv").join(internal).join("static")
+}
 
 /// The crates whose built files are served; a crate that adds a `static/` script adds its name.
 pub const CRATES: [&str; 1] = ["portals"];
@@ -44,13 +50,13 @@ pub enum StaticRoot {
 }
 
 impl StaticRoot {
-    /// `ASKHAVA_STATIC_DIR` when set; else [`IMAGE_DIR`] in test and live, and the working
+    /// `ASKHAVA_STATIC_DIR` when set; else [`image_dir`] in test and live, and the working
     /// directory's repository layout in dev and CI (D-2633).
     #[must_use]
     pub fn from_settings(settings: &Settings) -> Self {
         match (settings.static_dir(), settings.environment()) {
             (Some(dir), _) => Self::Built(PathBuf::from(dir)),
-            (None, Environment::Test | Environment::Live) => Self::Built(PathBuf::from(IMAGE_DIR)),
+            (None, Environment::Test | Environment::Live) => Self::Built(image_dir()),
             (None, Environment::Dev | Environment::Ci) => Self::Repo(PathBuf::from(".")),
         }
     }
@@ -66,9 +72,9 @@ impl StaticRoot {
 }
 
 impl Default for StaticRoot {
-    /// The image's folder, [`IMAGE_DIR`].
+    /// The image's folder, [`image_dir`].
     fn default() -> Self {
-        Self::Built(PathBuf::from(IMAGE_DIR))
+        Self::Built(image_dir())
     }
 }
 
