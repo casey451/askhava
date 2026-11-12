@@ -28379,7 +28379,7 @@
     "T267",
     "T284"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "business-signin-served",
    "type": "build",
@@ -28392,8 +28392,8 @@
     3219,
     3220
    ],
-   "reason": "plan gap reported: PLAN GAP: app/portals/src/business_auth.rs:130 (SignInMail::addresses) and :176 (CodeAddress::code_to) have nothing to look up. No module stores a business member's sign-in email or texting phone in a readable/searchable form, and no task in kit/tasks.json builds one. Evidence: privacy.contact_index only ever written for HomeownerPhone (app/privacy/src/vault.rs:398,409); email_index (app/privacy/src/reader.rs:321) only computes a digest and nothing calls it; migrations/0056_businesses_team_members.sql:5-11 says email/phone is never stored there; Reader list (app/privacy/src/models.rs:89-102) h; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T280 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: app/portals/src/business_auth.rs:130 (SignInMail::addresses) and :176 (CodeAddress::code_to) have nothing to look up. No module stores a business member's sign-in email or texting phone in a readable/searchable form, and no task in kit/tasks.json builds one. Evidence: privacy.contact_index only ever written for HomeownerPhone (app/privacy/src/vault.rs:398,409); email_index (app/privacy/src/reader.rs:321) only computes a digest and nothing calls it; migrations/0056_businesses_team_members.sql:5-11 says email/phone is never stored there; Reader list (app/privacy/src/models.rs:89-102) has no business sign-in reader; D-1724 (docs/decisions.md:1243) names the prerequisite but assigns it to no task; T397 rests on the same missing lookup. Reviewer confirmed. Smallest fix: a task before T280 (privacy+businesses) storing each member's sign-in address and phone in the vault keyed by mailbox_id / staff phone line ID, with an address-to-mailboxes lookup and a read grant for business sign-in; T280 and T397 depend on it.",
+   "reason": null,
+   "last_failure": "PLAN GAP: app/portals/src/business_auth.rs:130 (SignInMail::addresses) and :176 (CodeAddress::code_to) have nothing to look up. No module stores a business member's sign-in email or texting phone in a readable/searchable form, and no task in kit/tasks.json builds one. Evidence: privacy.contact_index only ever written for HomeownerPhone (app/privacy/src/vault.rs:398,409); email_index (app/privacy/src/reader.rs:321) only computes a digest and nothing calls it; migrations/0056_businesses_team_members.sql:5-11 says email/phone is never stored there; Reader list (app/privacy/src/models.rs:89-102) has no business sign-in reader; D-1724 (docs/decisions.md:1243) names the prerequisite but assigns it to no task; T397 rests on the same missing lookup. Reviewer confirmed. Smallest fix: a task before T280 (privacy+businesses) storing each member's sign-in address and phone in the vault keyed by mailbox_id / staff phone line ID, with an address-to-mailboxes lookup and a read grant for business sign-in; T280 and T397 depend on it.\nre-queued after plan fix D-3262: Plan gap fixed by #596 (D-3262): new T412/T415 store business sign-in addresses and phones; T280 now depends on T412",
    "history": [
     {
      "attempt": 1,
@@ -28407,6 +28407,21 @@
      "started_at": "2026-11-12T11:06:16Z",
      "ended_at": "2026-11-12T11:14:18Z",
      "result": "BLOCKED"
+    }
+   ],
+   "requeues": [
+    {
+     "at": "2026-11-12T15:45:46Z",
+     "reason": "Plan gap fixed by #596 (D-3262): new T412/T415 store business sign-in addresses and phones; T280 now depends on T412",
+     "by": "manual-33ea2955fe0e",
+     "was": "plan gap reported: PLAN GAP: app/portals/src/business_auth.rs:130 (SignInMail::addresses) and :176 (CodeAddress::code_to) have nothing to look up. No module stores a business member's sign-in email or texting phone in a readable/searchable form, and no task in kit/tasks.json builds one. Evidence: privacy.contact_index only ever written for HomeownerPhone (app/privacy/src/vault.rs:398,409); email_index (app/privacy/src/reader.rs:321) only computes a digest and nothing calls it; migrations/0056_businesses_team_members.sql:5-11 says email/phone is never stored there; Reader list (app/privacy/src/models.rs:89-102) h; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T280 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 1,
+     "plan_fix": "D-3262",
+     "plan_since": "2026-11-12T11:06:16Z",
+     "plan_base": "b513c7d4ca377a8b3642387f50521c27540cafb6",
+     "plan_head": "7ad0dc77b70a20fa8cf52d0f12c76950bdfe3285",
+     "plan_then": "4007d2a48edf6d42c5bf12cfc9543c801ad36a7c69ee7915ff37f98c53ddac31",
+     "plan_now": "3e29f4f804657c4a074a2100464c0d2becfc538d1a6290b2e8b4f71bf839495f"
     }
    ]
   },
@@ -41289,7 +41304,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T15:31:15Z",
+ "updated_at": "2026-11-12T15:45:46Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -41387,8 +41402,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "e2c37a7d0cadd117b412f6c0c3aa24dc1d5808fd",
- "starter": "actions",
+ "runner_sha": "7ad0dc77b70a20fa8cf52d0f12c76950bdfe3285",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "87abedec7b6ea0d48edf5747ef107cbd878ee14a",

@@ -1,21 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-12T15:31:15Z by runner e2c37a7d0cad (actions).
+Updated 2026-11-12T15:45:46Z by runner 7ad0dc77b70a (manual).
 
-**Building: T315 in progress since 15:12Z; 245 of 397 done; week 96% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T315 in progress since 15:12Z; 245 of 399 done; week 96% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 245 of 397 build tasks (owner gates not counted)
+- **Tasks done:** 245 of 399 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T315 claimed 15:12Z, lease until 18:12Z
 - **Week:** 96% used, 0.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:31Z, 0 min before this update
+- **Last run:** 15:31Z, 14 min before this update
 - **Keeper:** last ran 15:31Z, next wake 18:15Z
 
 ## Needs attention
-- BLOCKED T280: plan gap reported: PLAN GAP: app/portals/src/business_auth.rs:130 (SignInMail::addresses) and :176 (CodeAddress::code_to) have nothing to look up. No module stores a business member's sign-in email or texting phone in a readable/searchable form, and no task in kit/tasks.json builds one. Evidence: privacy.contact_index only ever written for HomeownerPhone (app/privacy/src/vault.rs:398,409); email_index (app/privacy/src/reader.rs:321) only computes a digest and nothing calls it; migrations/0056_businesses_team_members.sql:5-11 says email/phone is never stored there; Reader list (app/privacy/src/models.rs:89-102) h; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T280 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T362: plan gap reported: PLAN GAP: tests/a11y/j1_keyboard.spec.ts:171-172 (owned by T098/T214, protected, not in T362's files) presses Tab before the Go back page's load event. Since T362 serves /static/portals/quote_page.js (404 before), page load waits for the script, so Tab starts at control 0 instead of quote #2 (index 3): "Tab from "" ... Expected: 3, Received: 0" at 320/768/1280 px. Evidence: with the built .js the 3 tests fail; with the .js removed they pass; with await page.waitForLoadState("load") added after the heading check at :171 they pass. T362's own tests pass (static_files_route 5 passed, static_serve; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T362 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 24 problem(s) on tasks still to run (+115 on DONE tasks); first: T396: stored context_pct 39% but it measures 46%; regenerate
+- Strict plan check red: 23 problem(s) on tasks still to run (+116 on DONE tasks); first: T396: stored context_pct 39% but it measures 46%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -93,6 +92,7 @@ Updated 2026-11-12T15:31:15Z by runner e2c37a7d0cad (actions).
 | T269 | portals: a business notice's signed link opens sign-in for t | resync | 2 | 44 min | 15:46Z |  |
 
 ### Plan and harness merges on main
+- 15:45Z Plan: new T412/T415 store business sign-in addresses and phones in the vault for T280, T397, T302 and T364 (D-3262) (#596)
 - 14:48Z Plan: trim T251 to its context limit (D-3256) (#590)
 - 09:36Z Plan: pre-flight fixes round 9 — stage 5: T303, T151, T321, T110, T210, T109, T116; new T409, T410 (D-3155) (#559)
 - 09:22Z Plan: T345 owns the runner tests that hard-code action tags (D-3200) (#572)
@@ -119,12 +119,11 @@ Updated 2026-11-12T15:31:15Z by runner e2c37a7d0cad (actions).
 - 19:58Z Plan: pre-flight fixes for five queued tasks before they're claimed (D-3055) (#512)
 - 18:49Z Plan: five lanes (D-3043) (#504)
 - 18:37Z Plan: T387 steadies payments branch coverage and adds margin, claimed first (D-3049) (#507)
-- 15:44Z Plan: T214 owns the final-Pick share box end to end and ticks it in five finished tests (D-3032) (#495)
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 209 of 733 (28.5%) · partial 355 · unstarted 169
-**Tasks merged (throughput only):** 245 of 397
+**Requirements verified:** 208 of 733 (28.4%) · partial 356 · unstarted 169
+**Tasks merged (throughput only):** 245 of 399
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -140,7 +139,7 @@ Updated 2026-11-12T15:31:15Z by runner e2c37a7d0cad (actions).
 | lifecycle | 18 | 10 | 0 | 28 |
 | messaging | 17 | 25 | 3 | 45 |
 | ops-recovery | 2 | 7 | 45 | 54 |
-| privacy | 7 | 22 | 2 | 31 |
+| privacy | 6 | 23 | 2 | 31 |
 | quiet-hours | 4 | 5 | 0 | 9 |
 | quotes-pick | 30 | 25 | 1 | 56 |
 | recurring | 6 | 2 | 3 | 11 |
