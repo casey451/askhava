@@ -35564,7 +35564,7 @@
     "T173",
     "T214"
    ],
-   "status": "IN_PROGRESS",
+   "status": "MERGE_PENDING",
    "attempts": 2,
    "slug": "serve-static-files",
    "type": "build",
@@ -35648,6 +35648,19 @@
      "started_at": "2026-11-12T14:45:29Z",
      "ended_at": "2026-11-12T15:06:45Z",
      "result": "BLOCKED"
+    },
+    {
+     "attempt": 3,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 32,
+     "head_sha": "dc66658ca5eb9418db7c47fbdf468ae660e90d93",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": true,
+     "started_at": "2026-11-12T18:36:22Z",
+     "ended_at": "2026-11-12T19:03:13Z",
+     "result": "MERGE_PENDING"
     }
    ],
    "reviewed_sha": "e622eb90f6d5ca2a5ca9003a25b2c0f282ecef6e",
@@ -35660,8 +35673,8 @@
    "branch": "claude/task/T362-serve-static-files",
    "auto_merge": {
     "enabled": true,
-    "why": "auto-merge on #586 (gh pr merge)",
-    "head": "a1a1ba84f355a1b498829f0a2022511b653788ea"
+    "why": "auto-merge on #611 (gh pr merge)",
+    "head": "e622eb90f6d5ca2a5ca9003a25b2c0f282ecef6e"
    },
    "last_failure": "PLAN GAP: tests/a11y/j1_keyboard.spec.ts:171-172 (owned by T098/T214, protected, not in T362's files) presses Tab before the Go back page's load event. Since T362 serves /static/portals/quote_page.js (404 before), page load waits for the script, so Tab starts at control 0 instead of quote #2 (index 3): \"Tab from \"\" ... Expected: 3, Received: 0\" at 320/768/1280 px. Evidence: with the built .js the 3 tests fail; with the .js removed they pass; with await page.waitForLoadState(\"load\") added after the heading check at :171 they pass. T362's own tests pass (static_files_route 5 passed, static_served.spec 1 passed). Reviewer confirmed ownership and cause. Fix: a harness task adds that one line.\nre-queued after plan fix D-3270: Plan gap fixed by D-3270 (#601): T362 owns the j1_keyboard load wait",
    "runner_closed_prs": [
@@ -35684,7 +35697,6 @@
     }
    ],
    "lane": "2",
-   "head_check_since": null,
    "update_merges": [
     {
      "from": "dc66658ca5eb9418db7c47fbdf468ae660e90d93",
@@ -40029,12 +40041,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T346",
-   "at": "2026-11-12T18:57:03Z",
-   "cache_read_input_tokens": 22323817,
-   "output_tokens": 152346,
-   "input_tokens": 373,
-   "cache_creation_input_tokens": 449714
+   "task": "T362",
+   "at": "2026-11-12T19:03:13Z",
+   "cache_creation_input_tokens": 223162,
+   "input_tokens": 142,
+   "output_tokens": 32804,
+   "cache_read_input_tokens": 3902504
   },
   "source": "session_reading 2026-11-12T18:57:47Z (week)",
   "by_task": {
@@ -42273,10 +42285,10 @@
    "T362": {
     "estimated_bytes": 637499,
     "estimated_tokens": 3371323,
-    "output_tokens": 136856,
-    "cache_creation_input_tokens": 732547,
-    "input_tokens": 473,
-    "cache_read_input_tokens": 16002684,
+    "output_tokens": 169660,
+    "cache_creation_input_tokens": 955709,
+    "input_tokens": 615,
+    "cache_read_input_tokens": 19905188,
     "last_model": "claude-opus-5-5"
    },
    "T385": {
@@ -42359,11 +42371,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-12T17:52:25Z",
-    "tokens": 18075864
+    "tokens": 18722222
    },
    "week": {
-    "start": "2026-11-05T19:01:47Z",
-    "tokens": 453427107
+    "start": "2026-11-12T19:03:13Z",
+    "tokens": 646358
    }
   },
   "session_reading": {
@@ -42374,7 +42386,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T19:03:14Z",
+ "updated_at": "2026-11-12T19:03:29Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",

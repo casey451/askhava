@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-12T19:03:14Z by runner dc66658ca5eb (actions).
+Updated 2026-11-12T19:03:29Z by runner dc66658ca5eb (actions).
 
 **Building: T251 in progress since 19:00Z; 250 of 400 done; week 3% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 250 of 400 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T251 claimed 19:00Z, lease until 22:00Z; lane 2: T362 claimed 18:36Z, lease until 21:36Z; lane 4: T414 claimed 18:56Z, lease until 21:56Z; lane 5: T350 claimed 17:26Z, lease until 21:35Z
+- **Lane:** lane 1: T251 claimed 19:00Z, lease until 22:00Z; lane 4: T414 claimed 18:56Z, lease until 21:56Z; lane 5: T350 claimed 17:26Z, lease until 21:35Z
 - **Week:** 3% used, 180.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 19:01Z, 1 min before this update
 - **Keeper:** last ran 18:58Z, next wake 21:38Z
@@ -18,6 +18,7 @@ Updated 2026-11-12T19:03:14Z by runner dc66658ca5eb (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T362 | server: the built static files are served at /static/<crate> | MERGE_PENDING | 3 | 26 min | 19:03Z | PLAN GAP: tests/a11y/j1_keyboard.spec.ts:171-172 (owned by T098/T214, protected, not in T362's files) presses Tab before |
 | T346 | portals: every homeowner Verify code is bound to its purpose | MERGE_PENDING | 1 | 40 min | 18:57Z |  |
 | T251 | intake and quotes: the ZIP question, the job location, and t | resync | 2 | 87 min | 18:46Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T376 | ai and stand-in (harness): the intake schema sent to Claude  | done | 1 | 35 min | 18:40Z |  |
@@ -27,7 +28,7 @@ Updated 2026-11-12T19:03:14Z by runner dc66658ca5eb (actions).
 | T315 | jobs and portals: feedback words are blanked by the 3-year p | done | 1 | 66 min | 16:18Z |  |
 | T370 | intake (harness): the night count the homeowner hears counts | done | 2 | 22 min | 15:30Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 | T389 | licensing: a homeowner's wrong-license report pauses a pest  | done | 1 | 31 min | 15:11Z |  |
-| T362 | server: the built static files are served at /static/<crate> | BLOCKED | 2 | 21 min | 15:06Z | PLAN GAP: tests/a11y/j1_keyboard.spec.ts:171-172 (owned by T098/T214, protected, not in T362's files) presses Tab before |
+| T362 | server: the built static files are served at /static/<crate> | BLOCKED | 2 | 21 min | 15:06Z |  |
 | T385 | adapters, licensing and businesses (harness): the sign-up re | check_failed | 1 | 38 min | 14:42Z |  |
 | T370 | intake (harness): the night count the homeowner hears counts | check_failed | 1 | 22 min | 14:29Z |  |
 | T385 | adapters, licensing and businesses (harness): the sign-up re | resync | 1 | 60 min | 13:57Z |  |
@@ -164,9 +165,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T251 (lease until 2026-11-12T22:00:53Z)
-- lane 2: T362 (lease until 2026-11-12T21:36:22Z)
 - lane 4: T414 (lease until 2026-11-12T21:56:19Z)
 - lane 5: T350 (lease until 2026-11-12T21:35:54Z)
 
 ## Last usage reading
-- {"task": "T346", "at": "2026-11-12T18:57:03Z", "cache_read_input_tokens": 22323817, "output_tokens": 152346, "input_tokens": 373, "cache_creation_input_tokens": 449714}
+- {"task": "T362", "at": "2026-11-12T19:03:13Z", "cache_creation_input_tokens": 223162, "input_tokens": 142, "output_tokens": 32804, "cache_read_input_tokens": 3902504}
