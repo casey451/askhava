@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T21:38:22Z by runner dee8a64123a9 (actions).
+Updated 2026-11-12T21:38:34Z by runner dee8a64123a9 (actions).
 
 **Building: T162 in progress since 21:35Z; 256 of 403 done; week 4% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -13,6 +13,7 @@ Updated 2026-11-12T21:38:22Z by runner dee8a64123a9 (actions).
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
+- PLAN GAP T417 (since 2026-11-12T21:38:14Z, no attempt used; a plan change fixes it): T417: dependency T416 is DONE but its owned file app/core/src/db_metrics.rs is not on main; T417: dependency T416 is DONE but its owned file tests/integration/tests/db_metrics.rs is not on main; T417: dependency T416 is DONE but its owned file tests/integration/tests/perf_zip_scale.rs is not on main; T417: dependency T416 is DONE but its owned file tests/security/tests/perf_db_route.rs is not on main
 - Strict plan check red: 22 problem(s) on tasks still to run (+126 on DONE tasks); first: T340: stored context_pct 40% but it measures 45%; regenerate
 
 ## Last 24 hours

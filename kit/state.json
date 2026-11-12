@@ -40697,7 +40697,16 @@
    "attempts": 0,
    "slug": "perf-route-bench",
    "type": "harness",
-   "stage": "4"
+   "stage": "4",
+   "plan_gap": {
+    "at": "2026-11-12T21:38:14Z",
+    "problems": [
+     "T417: dependency T416 is DONE but its owned file app/core/src/db_metrics.rs is not on main",
+     "T417: dependency T416 is DONE but its owned file tests/integration/tests/db_metrics.rs is not on main",
+     "T417: dependency T416 is DONE but its owned file tests/integration/tests/perf_zip_scale.rs is not on main",
+     "T417: dependency T416 is DONE but its owned file tests/security/tests/perf_db_route.rs is not on main"
+    ]
+   }
   },
   {
    "id": "T418",
@@ -43108,7 +43117,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T21:38:22Z",
+ "updated_at": "2026-11-12T21:38:34Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
