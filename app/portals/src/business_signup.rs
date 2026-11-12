@@ -37,8 +37,10 @@
 //! `businesses::api::consent_box` for [`signup_channels`] (email, and texts when the business chose
 //! them), never ticked; [`submit_signup`] refuses a form without the tick before anything is stored
 //! ([`SignupRefusal::NoConsent`], shown as [`CONSENT_MISSING`] by the box through
-//! [`Entered::problem`] on the `consent` field), then signs up and, in one transaction, records the
-//! owner, links a chosen text phone and stores one consent row per channel.
+//! [`Entered::problem`] on the `consent` field, [`refusal_problem`]) and a text box with no phone
+//! ([`SignupRefusal::NoTextPhone`], [`TEXT_PHONE_MISSING`]), then signs up and, in one
+//! transaction, records the owner, links a chosen text phone and stores one consent row per
+//! channel.
 
 use std::collections::BTreeSet;
 
@@ -336,7 +338,7 @@ pub struct Entered<'a> {
     /// The Yelp page link (BIZ-052).
     pub yelp_link: &'a str,
     /// The refused field's form name and the reason, from `businesses::api::NameRefusal` or
-    /// `LinkRefusal`, or `consent` with [`CONSENT_MISSING`] (CON-019).
+    /// `LinkRefusal`, or `consent` with [`refusal_problem`]'s message (CON-019).
     pub problem: Option<(&'static str, &'a str)>,
     /// The business chose texts (BIZ-036), so the consent box names texts too.
     pub text_chosen: bool,
@@ -344,6 +346,10 @@ pub struct Entered<'a> {
 
 /// CON-019, A11Y-030: the error beside the consent box when the form came without its tick.
 pub const CONSENT_MISSING: &str = "Tick the box to agree to get notices. We send job requests by email, so we can't sign you up without it.";
+
+/// CON-019, CALL-012, A11Y-030: the error beside the consent box when texts were chosen but no
+/// phone came with the form (the box was ticked, so [`CONSENT_MISSING`] would mislead).
+pub const TEXT_PHONE_MISSING: &str = "Add the phone number for job texts, or choose email only.";
 
 /// CON-019, BIZ-036, TXT-035: the channels the sign-up's consent box covers: email, plus texts
 /// when the business chose them while business texting is on.
@@ -372,6 +378,9 @@ pub struct SignupConsent<'a, L> {
 pub enum SignupRefusal {
     /// The box was not ticked: nothing is stored ([`CONSENT_MISSING`]).
     NoConsent,
+    /// The box was ticked for texts but no phone came with it: nothing is stored
+    /// ([`TEXT_PHONE_MISSING`]).
+    NoTextPhone,
     /// The sign-up itself was refused (nothing stored) or failed.
     Signup(SignupError),
     /// The owner or the phone could not be stored.
@@ -395,8 +404,11 @@ pub async fn submit_signup<L: SenderLink>(
     now: Timestamp,
 ) -> Result<SignedUp, SignupRefusal> {
     let text = consent.channels.contains(&ConsentChannel::Text);
-    if !consent.ticked || consent.channels.is_empty() || (text && consent.text_phone.is_none()) {
+    if !consent.ticked || consent.channels.is_empty() {
         return Err(SignupRefusal::NoConsent);
+    }
+    if text && consent.text_phone.is_none() {
+        return Err(SignupRefusal::NoTextPhone);
     }
     let up = sign_up(pool, (stripe, id_secret), map, form, now)
         .await
@@ -426,6 +438,17 @@ pub async fn submit_signup<L: SenderLink>(
         .map_err(SignupRefusal::Consent)?;
     tx.commit().await.map_err(db)?;
     Ok(up)
+}
+
+/// A11Y-030, CON-019: the form field and message [`Entered::problem`] shows for a refusal that
+/// stored nothing, or `None` for one the form cannot fix (a sign-up, team or consent failure).
+#[must_use]
+pub fn refusal_problem(refusal: &SignupRefusal) -> Option<(&'static str, &'static str)> {
+    match refusal {
+        SignupRefusal::NoConsent => Some(("consent", CONSENT_MISSING)),
+        SignupRefusal::NoTextPhone => Some(("consent", TEXT_PHONE_MISSING)),
+        SignupRefusal::Signup(_) | SignupRefusal::Team(_) | SignupRefusal::Consent(_) => None,
+    }
 }
 
 /// What every screen needs besides the screen itself.

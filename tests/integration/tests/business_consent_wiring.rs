@@ -8,9 +8,10 @@ use askhava_adapters::api::{
     AdapterError, Charge, Email, EmailAdapter, IdempotencyKey, PaymentIntent, PaymentsAdapter,
 };
 use askhava_businesses::api::{
-    AccountDirectory, AccountMailer, ConsentChannel, Flag, PHONE_STOPPED_KIND, SenderLink,
-    SignUpForm, TeamError, WELCOME_KIND, approve, consent_box, may_get_cards, phone_stopped,
-    record_match, run_phone_stopped, run_welcome, welcome_card_line,
+    AccountDirectory, AccountMailer, Acting, ConsentChannel, Flag, PHONE_STOPPED_KIND, Roles,
+    SenderLink, SignUpForm, TeamError, WELCOME_KIND, add_member, approve, consent_box,
+    may_get_cards, phone_stopped, record_consent, record_match, run_phone_stopped, run_welcome,
+    welcome_card_line,
 };
 use askhava_core::api::{Claimed, HandlerError, SystemClock};
 use askhava_licensing::api::ClassMap;
@@ -18,7 +19,7 @@ use askhava_messaging::api::{DailyLimit, MailboxKind};
 use askhava_picks::api::{ConfirmSettings, WindowRules};
 use askhava_portals::api::{
     CONSENT_MISSING, Entered, PageLanguage, Parts, Screen, SignupConsent, SignupRefusal,
-    fee_numbers, signup_channels, signup_page, submit_signup,
+    TEXT_PHONE_MISSING, fee_numbers, refusal_problem, signup_channels, signup_page, submit_signup,
 };
 use jiff::Timestamp;
 use secrecy::SecretString;
@@ -29,6 +30,10 @@ use sqlx::{PgConnection, PgPool};
 use ConsentChannel::{Email as ByEmail, Text};
 
 const OWNER_ADDRESS: &str = "owner@example.test";
+const MEMBER_ADDRESS: &str = "member@example.test";
+const OWNER_MAILBOX: Uuid = Uuid::from_u128(0xe1);
+const MEMBER_MAILBOX: Uuid = Uuid::from_u128(0xe2);
+const FULL_NUMBER: &str = "+15555550142";
 const CATS: &str = "categories:
   - {id: plumbing_repair, enabled: true, launch_open: true, job_types: [leak repair]}
 ";
@@ -68,11 +73,20 @@ impl SenderLink for AnyPhone {
     }
 }
 
-/// The fake provider: refuses while `down`, else records (to, plain text) per provider key.
+/// One email the fake provider took: its provider key, recipient, subject and plain text.
+#[derive(Clone)]
+struct Took {
+    key: String,
+    to: String,
+    subject: String,
+    text: String,
+}
+
+/// The fake provider: refuses while `down`, else records each email it took.
 #[derive(Default)]
 struct FakeMail {
     down: Mutex<bool>,
-    sent: Mutex<Vec<(String, String, String)>>,
+    sent: Mutex<Vec<Took>>,
 }
 
 impl EmailAdapter for FakeMail {
@@ -88,7 +102,12 @@ impl EmailAdapter for FakeMail {
             });
         }
         let mut sent = self.sent.lock().expect("lock");
-        sent.push((key.as_str().to_owned(), e.to.to_owned(), e.text.to_owned()));
+        sent.push(Took {
+            key: key.as_str().to_owned(),
+            to: e.to.to_owned(),
+            subject: e.subject.to_owned(),
+            text: e.text.to_owned(),
+        });
         Ok(format!("re_{:08}", sent.len()))
     }
     async fn remove_suppression(&self, _: &IdempotencyKey, _: &str) -> Result<(), AdapterError> {
@@ -96,29 +115,42 @@ impl EmailAdapter for FakeMail {
     }
 }
 
-/// The composition's directory: every mailbox is the fake owner address, every phone ends 0142.
-struct FakeDirectory;
+/// The composition's directory: the owner's and a member's mailbox each have their own fake
+/// address (any other has none); the stopped phone's "last 4" is whatever `digits` holds, so a
+/// directory that hands back the whole number can be tried.
+struct FakeDirectory {
+    digits: &'static str,
+}
 
 impl AccountDirectory for FakeDirectory {
     async fn address(
         &self,
         _: &mut PgConnection,
-        _: Uuid,
+        mailbox: Uuid,
     ) -> Result<Option<SecretString>, HandlerError> {
-        Ok(Some(SecretString::from(OWNER_ADDRESS.to_owned())))
+        let found = match mailbox {
+            OWNER_MAILBOX => Some(OWNER_ADDRESS),
+            MEMBER_MAILBOX => Some(MEMBER_ADDRESS),
+            _ => None,
+        };
+        Ok(found.map(|a| SecretString::from(a.to_owned())))
     }
     async fn last4(
         &self,
         _: &mut PgConnection,
         _: (Uuid, Uuid),
     ) -> Result<Option<String>, HandlerError> {
-        Ok(Some("0142".to_owned()))
+        Ok(Some(self.digits.to_owned()))
     }
 }
 
 type Mailer = Arc<AccountMailer<FakeMail, FakeDirectory>>;
 
 fn mailer() -> Mailer {
+    mailer_with("0142")
+}
+
+fn mailer_with(digits: &'static str) -> Mailer {
     Arc::new(AccountMailer {
         secret: SecretString::from("fake-id-secret-for-tests-only-0123456789".to_owned()),
         postal: (
@@ -127,7 +159,7 @@ fn mailer() -> Mailer {
         ),
         provider: FakeMail::default(),
         limit: DailyLimit::new(1000, 80).expect("limit"),
-        directory: FakeDirectory,
+        directory: FakeDirectory { digits },
         clock: Arc::new(SystemClock),
     })
 }
@@ -139,7 +171,7 @@ fn at(minute: i64) -> Timestamp {
 fn form() -> SignUpForm {
     SignUpForm {
         categories: vec!["plumbing_repair".to_owned()],
-        mailbox_id: Some(Uuid::from_u128(0xe1)),
+        mailbox_id: Some(OWNER_MAILBOX),
         heard_from: None,
         g_code: None,
     }
@@ -226,6 +258,39 @@ fn td_con_29_the_form_shows_the_box_unticked_for_the_chosen_channels() {
     );
 }
 
+/// TD-CON-29 (CON-019, A11Y-030): each refusal that stored nothing names its own fix by the box:
+/// no tick asks for the tick, a ticked text box with no phone asks for the phone, never the tick.
+#[test]
+fn td_con_29_each_refusal_says_its_own_fix() {
+    assert_eq!(
+        refusal_problem(&SignupRefusal::NoConsent),
+        Some(("consent", CONSENT_MISSING))
+    );
+    assert_eq!(
+        refusal_problem(&SignupRefusal::NoTextPhone),
+        Some(("consent", TEXT_PHONE_MISSING))
+    );
+    assert_ne!(CONSENT_MISSING, TEXT_PHONE_MISSING);
+    assert!(!TEXT_PHONE_MISSING.contains("Tick"));
+    let failed = SignupRefusal::Team(TeamError::Database);
+    assert_eq!(refusal_problem(&failed), None, "not a form problem");
+    let parts = Parts {
+        texting_on: true,
+        language: PageLanguage::En,
+        csrf: "fake-csrf",
+        fees: fee_numbers(ConfirmSettings::default(), WindowRules::default()),
+    };
+    let cats = [("plumbing_repair".to_owned(), "Open now")];
+    let shown = Entered {
+        problem: refusal_problem(&SignupRefusal::NoTextPhone),
+        text_chosen: true,
+        ..Entered::default()
+    };
+    let page = signup_page(Screen::FormAgain(&cats, &shown), &parts).expect("form");
+    assert!(page.contains(&format!("class=\"error\">Error: {TEXT_PHONE_MISSING}")));
+    assert!(!page.contains(CONSENT_MISSING));
+}
+
 /// TD-CON-29 (CON-019): without the tick, or a text box with no phone, nothing is stored; with
 /// it, one consent row per channel beside the owner, and a repeat of the rows adds none.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
@@ -239,7 +304,7 @@ async fn td_con_29_signup_stores_consent_only_with_the_tick(pool: PgPool) {
     };
     assert!(matches!(
         signup(&pool, no_phone).await,
-        Err(SignupRefusal::NoConsent)
+        Err(SignupRefusal::NoTextPhone)
     ));
     let mut db = pool.acquire().await.expect("conn");
     assert_eq!(
@@ -275,6 +340,26 @@ async fn td_con_29_signup_stores_consent_only_with_the_tick(pool: PgPool) {
     );
     let owners = "SELECT count(*) FROM businesses.team_member WHERE is_owner";
     assert_eq!(count(&mut db, owners).await, 1);
+    repeat_adds_no_consent_row(&mut db, b).await;
+}
+
+/// Records the same owner's email and text consent again for the same phone: no new row.
+async fn repeat_adds_no_consent_row(db: &mut PgConnection, b: Uuid) {
+    let (owner, line): (Uuid, Uuid) = sqlx::query_as(
+        "SELECT member_id, line_id FROM businesses.esign_consent \
+         WHERE business_id = $1 AND channel = 'text'",
+    )
+    .bind(b)
+    .fetch_one(&mut *db)
+    .await
+    .expect("text row");
+    for _ in 0..2 {
+        record_consent(db, (b, owner, Some(line)), &[ByEmail, Text], true, at(5))
+            .await
+            .expect("repeat");
+    }
+    let all = "SELECT count(*) FROM businesses.esign_consent";
+    assert_eq!(count(db, all).await, 2, "a repeat adds no consent row");
 }
 
 async fn signed_up_with_code(pool: &PgPool, db: &mut PgConnection) -> Uuid {
@@ -319,8 +404,8 @@ async fn td_con_29_activation_sends_one_welcome(pool: PgPool) {
     assert!(may_get_cards(&mut db, b).await.expect("gate"));
     let sent = m.provider.sent.lock().expect("lock").clone();
     assert_eq!(sent.len(), 1, "one welcome");
-    assert_eq!(sent[0].1, OWNER_ADDRESS);
-    assert!(sent[0].2.contains(&welcome_card_line()));
+    assert_eq!(sent[0].to, OWNER_ADDRESS);
+    assert!(sent[0].text.contains(&welcome_card_line()));
     let texts = "SELECT count(*) FROM messaging.outbox";
     assert_eq!(count(&mut db, texts).await, 0, "never a text");
     let none = run_welcome::<FakeMail, FakeDirectory>(pool.clone(), None, task).await;
@@ -368,7 +453,138 @@ async fn td_con_29_phone_stop_emails_the_owner_once(pool: PgPool) {
     }
     let sent = m.provider.sent.lock().expect("lock").clone();
     assert_eq!(sent.len(), 1, "one email");
-    assert_eq!(sent[0].1, OWNER_ADDRESS);
-    assert!(sent[0].2.contains("the phone ending 0142"));
-    assert!(!sent[0].2.contains("5550142"), "only the last 4 digits");
+    assert_eq!(sent[0].to, OWNER_ADDRESS);
+    assert!(sent[0].text.contains("the phone ending 0142"));
+    assert!(!sent[0].text.contains("5550142"), "only the last 4 digits");
+}
+
+/// TD-CON-29 (CON-020, SEC-018): a crash after the provider took the welcome but before it was
+/// marked sent leaves `sent_at` empty; the retry finds the same outbox row and provider key and
+/// sends nothing more, then marks it. A random key per run would send a second welcome.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_con_29_a_retry_after_a_crash_sends_no_second_welcome(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("conn");
+    let b = signed_up_with_code(&pool, &mut db).await;
+    record_match(&mut db, b, Some(true), None, at(1))
+        .await
+        .expect("match");
+    let (m, task) = (mailer(), claimed(WELCOME_KIND, json!({"business": b})));
+    run_welcome(pool.clone(), Some(Arc::clone(&m)), task.clone())
+        .await
+        .expect("sent");
+    sqlx::query("UPDATE businesses.welcome SET sent_at = NULL WHERE business_id = $1")
+        .bind(b)
+        .execute(&mut *db)
+        .await
+        .expect("crash before the mark");
+    assert!(!may_get_cards(&mut db, b).await.expect("gate"));
+    run_welcome(pool.clone(), Some(Arc::clone(&m)), task)
+        .await
+        .expect("retried");
+    assert!(may_get_cards(&mut db, b).await.expect("gate"), "marked now");
+    let sent = m.provider.sent.lock().expect("lock").clone();
+    assert_eq!(sent.len(), 1, "the provider took one welcome");
+    let rows = "SELECT count(*) FROM messaging.email_outbox";
+    assert_eq!(count(&mut db, rows).await, 1, "one outbox row");
+}
+
+/// TD-CON-29 (CON-020, D-964): with another member on the account, the welcome goes to the
+/// owner's account address only, never the member's.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_con_29_the_welcome_goes_to_the_owner_not_a_member(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("conn");
+    let b = signed_up_with_code(&pool, &mut db).await;
+    let owner: Uuid = sqlx::query_scalar(
+        "SELECT id FROM businesses.team_member WHERE business_id = $1 AND is_owner",
+    )
+    .bind(b)
+    .fetch_one(&mut *db)
+    .await
+    .expect("owner");
+    let by = Acting {
+        business: b,
+        member: owner,
+    };
+    let roles = Roles::new(true, true).expect("roles");
+    add_member(&mut db, by, MEMBER_MAILBOX, roles, at(1))
+        .await
+        .expect("member");
+    record_match(&mut db, b, Some(true), None, at(2))
+        .await
+        .expect("match");
+    let m = mailer();
+    run_welcome(
+        pool.clone(),
+        Some(Arc::clone(&m)),
+        claimed(WELCOME_KIND, json!({"business": b})),
+    )
+    .await
+    .expect("sent");
+    let sent = m.provider.sent.lock().expect("lock").clone();
+    let to: Vec<&str> = sent.iter().map(|t| t.to.as_str()).collect();
+    assert_eq!(to, vec![OWNER_ADDRESS], "the owner alone");
+}
+
+/// TD-CON-29 (CON-020, D-3188): the activation and the welcome request commit together: when
+/// the welcome request fails, the business stays pending with no status move recorded; once it
+/// works, the same checks activate and queue one welcome.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_con_29_a_failed_welcome_request_rolls_back_the_activation(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("conn");
+    let b = signed_up_with_code(&pool, &mut db).await;
+    for sql in [
+        "CREATE FUNCTION pg_temp.no_welcome() RETURNS trigger LANGUAGE plpgsql AS \
+         $$BEGIN RAISE EXCEPTION 'injected welcome failure'; END$$",
+        "CREATE TRIGGER no_welcome BEFORE INSERT ON businesses.welcome \
+         FOR EACH ROW EXECUTE FUNCTION pg_temp.no_welcome()",
+    ] {
+        sqlx::query(sql).execute(&mut *db).await.expect("inject");
+    }
+    let failed = record_match(&mut db, b, Some(true), None, at(1)).await;
+    assert!(failed.is_err(), "the welcome request failed");
+    let status: String = sqlx::query_scalar("SELECT status FROM businesses.business WHERE id = $1")
+        .bind(b)
+        .fetch_one(&mut *db)
+        .await
+        .expect("status");
+    assert_eq!(status, "pending", "the activation rolled back with it");
+    assert_eq!(tasks(&mut db, WELCOME_KIND).await, 0);
+    sqlx::query("DROP TRIGGER no_welcome ON businesses.welcome")
+        .execute(&mut *db)
+        .await
+        .expect("heal");
+    let s = record_match(&mut db, b, Some(true), None, at(2))
+        .await
+        .expect("match");
+    assert_eq!(s.code(), "active");
+    assert_eq!(tasks(&mut db, WELCOME_KIND).await, 1);
+}
+
+/// TD-CON-29 (BIZ-017, PRIV-001): a directory that hands back the whole number gets no email
+/// out at all, so the full number never reaches a subject, a body or the outbox.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_con_29_a_full_number_never_reaches_the_stop_email(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("conn");
+    let b = signup(&pool, email_only(true)).await.expect("signed up");
+    let inbox = Uuid::from_u128(0x1b1);
+    phone_stopped(&mut db, b, inbox, at(1))
+        .await
+        .expect("stopped");
+    let task = claimed(PHONE_STOPPED_KIND, json!({"business": b, "inbox": inbox}));
+    let leaky = mailer_with(FULL_NUMBER);
+    let refused = run_phone_stopped(pool.clone(), Some(Arc::clone(&leaky)), task.clone()).await;
+    assert!(refused.is_err(), "only 4 digits are sent");
+    assert!(leaky.provider.sent.lock().expect("lock").is_empty());
+    let rows = "SELECT count(*) FROM messaging.email_outbox";
+    assert_eq!(count(&mut db, rows).await, 0, "nothing stored");
+    let m = mailer();
+    run_phone_stopped(pool.clone(), Some(Arc::clone(&m)), task)
+        .await
+        .expect("sent");
+    let sent = m.provider.sent.lock().expect("lock").clone();
+    assert_eq!(sent.len(), 1);
+    for words in [&sent[0].subject, &sent[0].text, &sent[0].key] {
+        assert!(!words.contains("5550142"), "never more than 4 digits");
+    }
+    assert!(sent[0].subject.ends_with("ending 0142 are off"));
 }
