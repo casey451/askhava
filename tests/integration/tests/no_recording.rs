@@ -7,7 +7,7 @@ use std::io::{BufRead, BufReader, Read, Write};
 use std::net::TcpListener;
 use std::sync::mpsc::Receiver;
 
-use askhava_adapters::api::{IdempotencyKey, TwilioConfig, VoiceAdapter, twilio_clients};
+use askhava_adapters::api::{CallPlan, IdempotencyKey, TwilioConfig, VoiceAdapter, twilio_clients};
 use askhava_calls::api::{
     AnsweredBy, Caller, Connected, FinishedCall, assign_number, call_log, dial_twiml,
     log_finished_call,
@@ -91,7 +91,12 @@ async fn td_call_03_no_call_request_asks_for_recording() {
     let (_, voice, _) = twilio_clients(&config).expect("clients");
     let key = IdempotencyKey::derive(&SecretString::from("fake-id-secret"), "call.open", &["l"]);
     let from = &config.pool().numbers()[0];
-    voice.open_call(&key, HER_PHONE, from).await.expect("open");
+    let script = SecretString::from("<Response><Hangup/></Response>");
+    let plan = CallPlan::new(script, "https://hooks.example.test/status".to_owned()).expect("plan");
+    voice
+        .open_call(&key, HER_PHONE, from, &plan)
+        .await
+        .expect("open");
     voice.end_call(&key, SID).await.expect("end");
     for _ in 0..2 {
         let request = requests.recv().expect("request").to_ascii_lowercase();

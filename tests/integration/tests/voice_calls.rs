@@ -7,7 +7,8 @@
 use std::sync::Mutex;
 
 use askhava_adapters::api::{
-    AdapterError, CallState, IdempotencyKey, MaskedPool, PoolNumber, TwilioConfig, VoiceAdapter,
+    AdapterError, CallPlan, CallState, IdempotencyKey, MaskedPool, PoolNumber, TwilioConfig,
+    VoiceAdapter,
 };
 use askhava_calls::api::{
     AnsweredBy, Approval, CallGate, Conditions, PIN_PROMPT, Party, PinHeard, PinWait,
@@ -93,6 +94,7 @@ impl VoiceAdapter for FakeVoice {
         _key: &IdempotencyKey,
         to: &str,
         caller_id: &PoolNumber,
+        _plan: &CallPlan,
     ) -> Result<CallState, AdapterError> {
         let mut calls = self.0.lock().expect("calls");
         calls.push((to.to_owned(), caller_id.as_str().to_owned()));
@@ -121,6 +123,7 @@ impl VoiceAdapter for RefusingVoice {
         _key: &IdempotencyKey,
         _to: &str,
         _caller_id: &PoolNumber,
+        _plan: &CallPlan,
     ) -> Result<CallState, AdapterError> {
         *self.0.lock().expect("tries") += 1;
         Err(AdapterError::InvalidId)
@@ -385,7 +388,12 @@ async fn ops_028_the_owner_bridge_rings_caseys_phone_from_the_ask_hava_number() 
     let (voice, from) = (FakeVoice::default(), pool_number());
     let casey = SecretString::from(CASEY.to_owned());
     let ids = (Uuid::from_u128(7), Uuid::from_u128(8));
-    let sid = ring_owner(&voice, &secret(), (&casey, &from), ids)
+    let (her, words) = (
+        SecretString::from(HER_PHONE.to_owned()),
+        "Ask Hava: leave now.",
+    );
+    let base = "https://hooks.example.test";
+    let sid = ring_owner(&voice, &secret(), (&casey, &from), ids, (&her, words), base)
         .await
         .expect("rung");
     assert!(sid.starts_with("CA"));
@@ -493,6 +501,7 @@ async fn td_call_09_one_safety_call_from_a_non_main_number_and_press_9_stops_cal
         main: MAIN,
         switch: SafetySwitch::off(),
         secret: &key,
+        public_base: "https://hooks.example.test",
     };
     let now = ts() + SignedDuration::from_mins(5);
     let off = place_safety_call(&mut db, &vault(), &dialer, &call, now).await;
@@ -603,6 +612,7 @@ async fn td_call_09_each_safety_call_is_claimed_once_and_every_key_and_result_is
         main: MAIN,
         switch: switched_on(),
         secret: &key,
+        public_base: "https://hooks.example.test",
     };
     let call = SafetyCall {
         contact,

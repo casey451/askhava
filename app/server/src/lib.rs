@@ -41,6 +41,7 @@ pub mod no_handler_alert;
 pub mod offdb_stream;
 pub mod release_sink;
 pub mod request_timeout;
+pub mod voice_status;
 
 use request_timeout::RequestTimeout;
 
@@ -120,7 +121,8 @@ impl From<(Hooks, RequestTimeout)> for RouterParts {
 /// private feedback page after Done is `/f/{token}` (`feedback`, T230); the check-in answer page
 /// the emailed check-in's buttons open is `/c/{token}/{answer}` ([`checkin`], T231).
 /// `webhooks` ([`webhooks`]) adds Twilio's signature-checked inbound-text and status routes
-/// (`inbound_text`, SEC-016, SEC-039, T241); `None` adds none. `voice` ([`voice_hooks`]) adds the
+/// (`inbound_text`, SEC-016, SEC-039, T241) and the placed calls' status and safety-key routes
+/// (`voice_status`, CALL-022, OPS-028, T378); `None` adds none. `voice` ([`voice_hooks`]) adds the
 /// pool numbers' signature-checked voice webhook (`inbound_voice`, SEC-016, SEC-017, T262).
 /// `pick_keys` ([`pick_code_keys`])
 /// let the page pick send its code and store the pick (T246, D-1516); `None` keeps the page's
@@ -137,6 +139,9 @@ pub fn build_router(pool: PgPool, test_control: Router, parts: impl Into<RouterP
     let pick_flow = pick_flow_routes(pool.clone(), Arc::new(SystemClock), pick_keys);
     let feedback = feedback_routes(pool.clone(), Arc::new(SystemClock));
     let checkin = checkin::routes(pool.clone());
+    let calls = webhooks
+        .clone()
+        .map_or_else(Router::new, voice_status::routes);
     let twilio = webhooks.map_or_else(Router::new, inbound_text::routes);
     let voice = voice.map_or_else(Router::new, inbound_voice::routes);
     let stripe = stripe.map_or_else(Router::new, stripe_webhook_routes);
@@ -149,6 +154,7 @@ pub fn build_router(pool: PgPool, test_control: Router, parts: impl Into<RouterP
         .merge(checkin)
         .merge(twilio)
         .merge(voice)
+        .merge(calls)
         .merge(stripe)
         .layer(request_timeout::catch_panic())
         .layer(axum::middleware::from_fn_with_state(

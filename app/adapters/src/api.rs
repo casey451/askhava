@@ -30,4 +30,4 @@ pub use crate::sms::{
 };
 pub use crate::storage::{LocalStorage, StorageAdapter, StorageDelete};
 pub use crate::verify::{CodeChannel, TwilioVerify, VerifyAdapter};
-pub use crate::voice::{CallState, TwilioVoice, VoiceAdapter};
+pub use crate::voice::{CALL_EVENTS, CallPlan, CallState, MAX_TWIML, TwilioVoice, VoiceAdapter};
