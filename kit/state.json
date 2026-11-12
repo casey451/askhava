@@ -19121,7 +19121,10 @@
     "T393",
     "T400",
     "T396",
-    "T398"
+    "T398",
+    "T416",
+    "T417",
+    "T418"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -23497,7 +23500,8 @@
    "id": "T234",
    "deps": [
     "T139",
-    "T243"
+    "T243",
+    "T416"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -30251,7 +30255,8 @@
   {
    "id": "T297",
    "deps": [
-    "T234"
+    "T234",
+    "T416"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -39723,6 +39728,49 @@
    "slug": "business-contact-composition",
    "type": "build",
    "stage": "4"
+  },
+  {
+   "id": "T416",
+   "deps": [
+    "T009",
+    "T011",
+    "T012",
+    "T020",
+    "T057",
+    "T075"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "perf-db-metrics",
+   "type": "harness",
+   "stage": "4"
+  },
+  {
+   "id": "T417",
+   "deps": [
+    "T416"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "perf-route-bench",
+   "type": "harness",
+   "stage": "4"
+  },
+  {
+   "id": "T418",
+   "deps": [
+    "T417",
+    "T056",
+    "T169",
+    "T173",
+    "T283",
+    "T020"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "perf-vitals-ci-report",
+   "type": "harness",
+   "stage": "4"
   }
  ],
  "owner_waits": [],
@@ -42090,7 +42138,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T18:47:23Z",
+ "updated_at": "2026-11-12T18:56:20Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -42188,7 +42236,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "5e739fa972c532608cfbfa047d3590c42bee2329",
+ "runner_sha": "c5c20728e51e1a83051f2633584ec1ad69ab8e30",
  "starter": "actions",
  "smoke_runs": [
   {

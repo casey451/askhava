@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-12T18:47:23Z by runner 5e739fa972c5 (actions).
+Updated 2026-11-12T18:56:20Z by runner c5c20728e51e (actions).
 
-**Building: T362 in progress since 18:36Z; 249 of 400 done; week 3% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T362 in progress since 18:36Z; 249 of 403 done; week 3% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 249 of 400 build tasks (owner gates not counted)
+- **Tasks done:** 249 of 403 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T362 claimed 18:36Z, lease until 21:36Z; lane 5: T350 claimed 17:26Z, lease until 21:35Z; lane 7: T346 claimed 18:16Z, lease until 21:16Z
 - **Week:** 3% used, 177.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:47Z, 0 min before this update
+- **Last run:** 18:47Z, 8 min before this update
 - **Keeper:** last ran 18:47Z, next wake 21:19Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 24 problem(s) on tasks still to run (+120 on DONE tasks); first: T340: stored context_pct 40% but it measures 45%; regenerate
+- Strict plan check red: 20 problem(s) on tasks still to run (+121 on DONE tasks); first: T340: stored context_pct 40% but it measures 45%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -84,7 +84,6 @@ Updated 2026-11-12T18:47:23Z by runner 5e739fa972c5 (actions).
 | T228 | businesses: leaving Ask Hava, the optional reason and what h | check_failed | 1 | 31 min | 19:59Z |  |
 | T228 | businesses: leaving Ask Hava, the optional reason and what h | resync | 1 | 77 min | 19:09Z |  |
 | T316 | businesses: one read of each business's public name for the  | done | 2 | 26 min | 19:02Z | PLAN GAP: app/businesses/src/holding.rs:8 and migrations/0050_licensing_imports.sql:22-55: nothing links a business to a |
-| T332 | payments (harness): a late success has its own refund trigge | done | 4 | 25 min | 18:53Z | merging main into the reviewed head conflicts in app/payments/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 
 ### Plan and harness merges on main
 - 18:44Z Plan: performance track — measurement harness T416–T418, goals as non-blocking (D-3292) (#607)
@@ -117,12 +116,11 @@ Updated 2026-11-12T18:47:23Z by runner 5e739fa972c5 (actions).
 - 21:48Z Harness: no five-hour pacing budget (D-3056) (#513)
 - 20:03Z Harness: the critical-path test checks what the runner can claim, not live in-flight work (D-3057) (#514)
 - 19:58Z Plan: pre-flight fixes for five queued tasks before they're claimed (D-3055) (#512)
-- 18:49Z Plan: five lanes (D-3043) (#504)
 
 ## Progress (requirements verified)
 
 **Requirements verified:** 230 of 733 (31.4%) · partial 334 · unstarted 169
-**Tasks merged (throughput only):** 249 of 400
+**Tasks merged (throughput only):** 249 of 403
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -157,7 +155,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 129 of 182 done
+- stage 4: 129 of 185 done
 - stage 5: 0 of 64 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
