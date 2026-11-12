@@ -10220,7 +10220,7 @@
    "id": "T396",
    "slug": "phone-approval-hold",
    "title": "businesses and messaging (harness): a phone a member links or changes is held out of the sender directory until the owner approves it",
-   "goal": "Register row IC-95, the hold (D-3081; BIZ-033, CALL-012; D-311, D-288, D-963, D-1695, D-3079). BIZ-033 and CALL-012 say a phone linked by a team member other than the owner works only after the owner approves it, but nothing holds it back: `team::link_phone` (`app/businesses/src/team.rs:439`) and `team::change_phone` (`:503`) put the number's digests in `messaging.sender_directory` at once, so `messaging::api::sender_business` (the inbound text route's lookup) and `calls::routing::party_of` treat the phone as the business; `businesses.staff_phone` (`migrations/0056_businesses_team_members.sql:32`) has no approval column; and two DONE tests, `td_biz_34_a_staff_phone_follows_into_the_directory` in `tests/integration/tests/sender_directory_sync.rs` and the member-link case in `tests/integration/tests/team_members.rs`, assert the opposite of BIZ-033. After T391 (the last earlier owner of `app/businesses/src/reply_link.rs`, which adds the blocked phone on the main phone's LINK reply) and T322 (of `team.rs`). (1) `migrations/0186_businesses_phone_approval.sql` (new, headed `-- businesses (T396)`): `businesses.staff_phone.approved_at timestamptz DEFAULT now()` (a row inserted without naming it is approved, so the DONE tests that insert a staff phone row directly, `tests/integration/tests/business_notices.rs:135` and `business_consent.rs:62`, keep today's answer; every link by a member who is not the owner writes NULL explicitly, and TD-BIZ-52 asserts it, D-3263), `number_set_at timestamptz` and `number_set_by uuid` (when and by which member the current number was set; every link and number change writes both, so an approval can name the exact number it approves), and `number_end char(4)` (the number's last 4 digits, staff data the owner needs to know which phone to approve, as the LINK notice already names them, D-078; never the whole number); every row that exists when it runs gets `approved_at = linked_at`, `number_set_at = linked_at` and `number_set_by = linked_by` (those phones were linked under the earlier rule, and no row exists outside a test database before Gate C); and `migrations/0187_messaging_sender_held.sql` (new, headed `-- messaging (T396)`, a file of its own because a migration may name only its own module's schema, `tests/integration/tests/architecture_migrations.rs`, D-3263): `messaging.sender_held` (line ID, index version, digest, business; unique on index version and digest; no number) with the app role's SELECT, INSERT and DELETE and nothing more. A phone's standing is `approved_at IS NOT NULL` alone. (2) `app/messaging/src/sender_held.rs` (new), through `messaging::api`: `sender_hold(db, line)` moves that line's directory digests into `sender_held` (a digest another waiting phone already holds is `SenderTaken`); `sender_release(db, line)` moves them back (a digest another phone now holds in the directory is `SenderTaken` and nothing moves); `sender_drop_held(db, line)`; and `sender_line(db, vault, phone)`, the directory's business and line for a number by the same `sender-dir` digests `sender_business` uses (for T398). Nothing logs a digest. (3) `app/businesses/src/team.rs`: every link and number change stores `number_end`, `number_set_at` (`now`; `change_phone` takes `now`) and `number_set_by`. The owner's link (the main phone always) stores `approved_at = now` and works at once. A link by any other member (`team_member.is_owner` false, even one holding both roles) stores `approved_at` NULL and, after `SenderLink::link`, calls `sender_hold` in the same transaction (`SenderTaken` is `PhoneTaken`), so the phone is in no directory lookup until approved. `change_phone` first calls `sender_drop_held` (so no old number stays held), then relinks: by the owner it sets `approved_at = now` and the new number works; by any other member it sets `approved_at` NULL and holds the new number, whether the phone was waiting, approved or linked by the owner, so a member can never put a working number in place by changing one. `unlink_phone` and `remove_member` also call `sender_drop_held`. `app/businesses/src/reply_link.rs`: the phone the main phone's LINK reply adds stores `approved_at = now` (the main phone's reply is the owner's act, CALL-012) and its `number_end` if it inserts the row itself; TD-CALL-24 passes unchanged. (4) `app/businesses/src/phone_approval.rs` (new), through `businesses::api`: `approve_phone(conn, by, (line, number_set_at), now)` and `reject_phone(conn, by, (line, number_set_at), now)`, where `number_set_at` is the value the owner was shown (a mismatch, because a member changed the number since, is a new `TeamError::NumberChanged` and nothing changes, so the owner never approves a number they did not see), owner only (any other member, a \"Confirm and billing\" member holding both roles included, is `NotAllowed`), each only on a waiting phone of the owner's own business (another business's line, an unknown line and a declined one are `UnknownPhone`; an approved one is a new `TeamError::NotWaiting`), in one transaction with one audit row of IDs only (`businesses.phone_approved`, `businesses.phone_rejected`). Approve sets `approved_at` and calls `sender_release` (`SenderTaken` is `PhoneTaken`: nothing changes and the phone stays waiting); reject deletes the staff phone row and its held digests, so it can never work, and a later link of the same number is a new waiting phone. Also `phone_standing(conn, line) -> Option<bool>` (whether `approved_at` is set; `None` for no such phone) for T398, and `waiting_phones(conn, business)` (line, the member who set the number, `number_end`, `number_set_at`) for T397's page. The SEC-038 step-up is the route's (T397, T399); the owner's email for a member's number change and the notice-recipient filter are T398's. (5) Tests in `tests/integration/tests/phone_approval.rs` (TD-BIZ-52) through `businesses::api` and `messaging::api::sender_business`, fake numbers only (555-01xx); the call and text routes are T398's. (6) The two DONE tests change only where BIZ-033 decides (TD-BIZ-34 as D-3081 rewords it): each phone a member links is first asserted absent from `sender_business`, then the owner approves it with `approve_phone`; in `td_biz_34_a_staff_phone_follows_into_the_directory` the member's `change_phone` leaves the new number absent too (and the old one absent) until the owner approves again, after which the existing assertions follow; every other input, expected value and assertion is unchanged. `app/businesses/src/tests/team.rs` changes only by the `now` argument `change_phone` gains. This is a harness task only because those three files belong to T220 (DONE). Update the `businesses` and `messaging` `CLAUDE.md` files, one line in `docs/architecture.md` section 10 found by grep (never the section whole), and `docs/decisions.md`. The owner's YES text (BIZ-033's text path) is not this task's (D-3081).",
+   "goal": "Register row IC-95, the hold (D-3081; BIZ-033, CALL-012; D-311, D-288, D-963, D-1695, D-3079). BIZ-033 and CALL-012 say a phone linked by a team member other than the owner works only after the owner approves it, but nothing holds it back: `team::link_phone` (`app/businesses/src/team.rs:439`) and `team::change_phone` (`:503`) put the number's digests in `messaging.sender_directory` at once, so `messaging::api::sender_business` (the inbound text route's lookup) and `calls::routing::party_of` treat the phone as the business; `businesses.staff_phone` (`migrations/0056_businesses_team_members.sql:32`) has no approval column; and two DONE tests, `td_biz_34_a_staff_phone_follows_into_the_directory` in `tests/integration/tests/sender_directory_sync.rs` and the member-link case in `tests/integration/tests/team_members.rs`, assert the opposite of BIZ-033. After T391 (the last earlier owner of `app/businesses/src/reply_link.rs`, which adds the blocked phone on the main phone's LINK reply) and T322 (of `team.rs`). (1) `migrations/0186_businesses_phone_approval.sql` (new, headed `-- businesses (T396)`): `businesses.staff_phone.approved_at timestamptz DEFAULT now()` (a row inserted without naming it is approved, so the DONE tests that insert a staff phone row directly, `tests/integration/tests/business_notices.rs:135` and `business_consent.rs:62`, keep today's answer; every link by a member who is not the owner writes NULL explicitly, as the migration's comment says, and TD-BIZ-52 asserts it, D-3263), `number_set_at timestamptz` and `number_set_by uuid` (when and by which member the current number was set; every link and number change writes both, so an approval can name the exact number it approves), and `number_end char(4)` (the number's last 4 digits, staff data the owner needs to know which phone to approve, as the LINK notice already names them, D-078; never the whole number); every row that exists when it runs gets `approved_at = linked_at`, `number_set_at = linked_at` and `number_set_by = linked_by` (those phones were linked under the earlier rule, and no row exists outside a test database before Gate C); and `migrations/0187_messaging_sender_held.sql` (new, headed `-- messaging (T396)`, a file of its own because a migration may name only its own module's schema, `tests/integration/tests/architecture_migrations.rs`, D-3263): `messaging.sender_held` (line ID, index version, digest, business; unique on index version and digest; no number) with the app role's SELECT, INSERT and DELETE and nothing more. A phone's standing is `approved_at IS NOT NULL` alone. (2) `app/messaging/src/sender_held.rs` (new), through `messaging::api`: `sender_hold(db, line)` moves that line's directory digests into `sender_held` (a digest another waiting phone already holds is `SenderTaken`); `sender_release(db, line)` moves them back (a digest another phone now holds in the directory is `SenderTaken` and nothing moves); `sender_drop_held(db, line)`; and `sender_line(db, vault, phone)`, the directory's business and line for a number by the same `sender-dir` digests `sender_business` uses (for T398). Nothing logs a digest. (3) `app/businesses/src/team.rs`: every link and number change stores `number_end`, `number_set_at` (`now`; `change_phone` takes `now`) and `number_set_by`. The owner's link (the main phone always) stores `approved_at = now` and works at once. A link by any other member (`team_member.is_owner` false, even one holding both roles) stores `approved_at` NULL and, after `SenderLink::link`, calls `sender_hold` in the same transaction (`SenderTaken` is `PhoneTaken`), so the phone is in no directory lookup until approved. `change_phone` first calls `sender_drop_held` (so no old number stays held), then relinks: by the owner it sets `approved_at = now` and the new number works; by any other member it sets `approved_at` NULL and holds the new number, whether the phone was waiting, approved or linked by the owner, so a member can never put a working number in place by changing one. `unlink_phone` and `remove_member` also call `sender_drop_held`. `app/businesses/src/reply_link.rs`: the phone the main phone's LINK reply adds stores `approved_at = now` (the main phone's reply is the owner's act, CALL-012) and its `number_end` if it inserts the row itself; TD-CALL-24 passes unchanged. (4) `app/businesses/src/phone_approval.rs` (new), through `businesses::api`: `approve_phone(conn, by, (line, number_set_at), now)` and `reject_phone(conn, by, (line, number_set_at), now)`, where `number_set_at` is the value the owner was shown (a mismatch, because a member changed the number since, is a new `TeamError::NumberChanged` and nothing changes, so the owner never approves a number they did not see), owner only (any other member, a \"Confirm and billing\" member holding both roles included, is `NotAllowed`), each only on a waiting phone of the owner's own business (another business's line, an unknown line and a declined one are `UnknownPhone`; an approved one is a new `TeamError::NotWaiting`), in one transaction with one audit row of IDs only (`businesses.phone_approved`, `businesses.phone_rejected`). Approve sets `approved_at` and calls `sender_release` (`SenderTaken` is `PhoneTaken`: nothing changes and the phone stays waiting); reject deletes the staff phone row and its held digests, so it can never work, and a later link of the same number is a new waiting phone. Also `phone_standing(conn, line) -> Option<bool>` (whether `approved_at` is set; `None` for no such phone) for T398, and `waiting_phones(conn, business)` (line, the member who set the number, `number_end`, `number_set_at`) for T397's page. The SEC-038 step-up is the route's (T397, T399); the owner's email for a member's number change and the notice-recipient filter are T398's. (5) Tests in `tests/integration/tests/phone_approval.rs` (TD-BIZ-52) through `businesses::api` and `messaging::api::sender_business`, fake numbers only (555-01xx); the call and text routes are T398's. (6) The two DONE tests change only where BIZ-033 decides (TD-BIZ-34 as D-3081 rewords it): each phone a member links is first asserted absent from `sender_business`, then the owner approves it with `approve_phone`; in `td_biz_34_a_staff_phone_follows_into_the_directory` the member's `change_phone` leaves the new number absent too (and the old one absent) until the owner approves again, after which the existing assertions follow; every other input, expected value and assertion is unchanged. `app/businesses/src/tests/team.rs` changes only by the `now` argument `change_phone` gains. This is a harness task only because those three files belong to T220 (DONE). Update the `businesses` and `messaging` `CLAUDE.md` files, one line in `docs/architecture.md` section 10 found by grep (never the section whole), and `docs/decisions.md`. The owner's YES text (BIZ-033's text path) is not this task's (D-3081).",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -13889,7 +13889,7 @@
    "id": "T222",
    "slug": "journeys-full-variants",
    "title": "Journeys J1 and J2, the full variants: web chat, photos, question order, quote formats, share box, review links",
-   "goal": "J1 and J2 run end to end with every feature the stage-4 slices (T098, T099) left out: the web-chat path with the consent text first (CON-025), INT-043's question order, INT-039's skips, the INT-044 photo check, the INT-041 card confirmation and TXT-018's email option, PICK-053's quote formats with a note, PICK-049's share box, PICK-050's 'Can't take it', and BIZ-052's review links; keyboard-only variants included; both journeys green on the stand-ins is the stage-5 exit evidence. The web-and-email runs of J1 and J2 (TD-TXT-15) are T413's, after T310 serves the launch-channel switch and T414 lets a spec read sent emails (D-3263). J1's run also carries the J1 half of TD-BIZ-22's and TD-BIZ-25's sweeps: the fake voice provider records no call to a business phone except masked calls a person placed (D-492).",
+   "goal": "J1 and J2 run end to end with every feature the stage-4 slices (T098, T099) left out: the web-chat path with the consent text first (CON-025), INT-043's question order, INT-039's skips, the INT-044 photo check, the INT-041 card confirmation and TXT-018's email option, PICK-053's quote formats with a note, PICK-049's share box, PICK-050's 'Can't take it', and BIZ-052's review links; keyboard-only variants included; both journeys green on the stand-ins is the stage-5 exit evidence. The web-and-email runs of J1 and J2 (TD-TXT-15's J1 and J2 half, D-3263) go in `tests/e2e/j1_j2_web_email.spec.ts`: signed in as the owner as T310's spec does, the spec sets the launch channel to web-and-email on the served owner settings page (`messaging::api::set_launch_channel`, `app/messaging/src/mode_state.rs:198`, has no other caller), then runs J1 and J2 with web-chat consent and intake, the safety text on screen, the pick code by email through Twilio Verify's email channel (`app/picks/src/email_code.rs:113`, read with the stand-in's `GET /_stand_in/twilio/code`, `stand_ins/server.py:344`), no call-window or who-lets-in question anywhere (D-440), a portal quote, Confirm, HOLD, Away, PAUSE and BUSY in the business portal, and the stand-in carrier listing zero texts at the end of each journey. TD-TXT-15's Resend email checks (the safety email, quote, job-card and check-in emails) are parked: nothing in the app sends email to Resend yet (the server builds no `ResendEmail`, `app/server/src/lib.rs:724`, and no task drains the email outbox to a provider), so they wait for a future email-sender wiring task (D-3186's account mailer and the outbox send handler, with the e2e app pointed at the stand-in), which reads them with T414's `control.sentEmails`; this task neither builds that sender nor waits for it. J1's run also carries the J1 half of TD-BIZ-22's and TD-BIZ-25's sweeps: the fake voice provider records no call to a business phone except masked calls a person placed (D-492).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -13909,7 +13909,8 @@
     "T388",
     "T230",
     "T231",
-    "T386"
+    "T386",
+    "T310"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -13920,7 +13921,8 @@
    "owns": [
     "tests/e2e/j1_full.spec.ts",
     "tests/e2e/j2_full.spec.ts",
-    "tests/a11y/j_full_keyboard.spec.ts"
+    "tests/a11y/j_full_keyboard.spec.ts",
+    "tests/e2e/j1_j2_web_email.spec.ts"
    ],
    "reads": [
     "docs/architecture.md",
@@ -13929,19 +13931,26 @@
     "docs/spec/intake.md",
     "docs/spec/quotes-pick.md",
     "docs/brains/accessibility-forms.md",
-    "docs/spec/consent.md"
+    "docs/spec/consent.md",
+    "tests/e2e/fixtures.ts",
+    "docs/spec/messaging.md",
+    "docs/spec/website.md"
    ],
    "requirements": [
     "CON-025",
     "INT-043",
     "PICK-053",
-    "PICK-049"
+    "PICK-049",
+    "TXT-021",
+    "TXT-034",
+    "WEB-009"
    ],
    "tests": [
     "J1",
     "J2",
     "TD-BIZ-22",
-    "TD-BIZ-25"
+    "TD-BIZ-25",
+    "TD-TXT-15"
    ],
    "decisions": [
     "D-491",
@@ -13950,8 +13959,8 @@
    ],
    "cites": [],
    "budget": {
-    "files": 3,
-    "lines": 500,
+    "files": 4,
+    "lines": 600,
     "context_pct": 7
    },
    "checks": [
@@ -14227,7 +14236,7 @@
    "id": "T408",
    "slug": "safe-mode-release-hold",
    "title": "payments and server: a release waits while safe mode is on and goes ahead after the FEE-017 check when it ends",
-   "goal": "Plan change D-3144 (OPS-001, OPS-024, FEE-017, FEE-021, PICK-022, SEC-030; D-133, D-491): safe mode pauses releases as well as charges, but every release goes through `server`'s `PickReleaser` (`app/server/src/release_sink.rs:61`), which no switch reaches, and T105, which builds safe mode, owns none of the release files. (1) While `ops::api::safe_mode_on` (T105) is true, `PickReleaser` settles and releases nothing for a cleared pick: it queues one held-release task (the pick ID only, deduplicated per pick) and answers success, so the Stripe route answers 200 and Stripe sends nothing again. (2) The task (`app/server/src/release_hold.rs`, registered in `worker_registry`, `app/server/src/lib.rs:456`, which has the settings the releaser and its Stripe client are built from, on every path so `tests/integration/tests/task_registry.rs` finds its kind) while safe mode lasts enqueues the next run 15 minutes later and finishes: a handler cannot move its own `core.task` row (`core::api` exports no defer, and `server` may not write `core` tables), so the payload carries the pick ID and the run's due time, and the next run is `core::api::enqueue`d due 15 minutes after that time under the dedupe key `<kind>.<pick>.<run_at in microseconds>` (`core.task.dedupe_key` stays unique after a task is done, so the first held-release task's per-pick key is never reused, and a rerun of the same run enqueues the same key, which is refused, D-3263) and, once safe mode has ended, clears the pick again through a new `payments::api::held_release(pool, stripe, account, pick)` in `app/payments/src/release_proof.rs`. A stored attempt status cannot tell a verified event's success from a press's or the reconcile's (`store_success`, `app/payments/src/charge.rs:232` and `app/payments/src/reconcile.rs:236`, `:612` all write through the same `handlers::record`), so for a paid pick `held_release` re-fetches the pick's stored intent from Stripe and runs `check_intent` (succeeded, mode, the server's fee, `metadata.pick_id`), as `paid_release` does (`release_proof.rs:212` to `:216`), and for a $0 pick keeps `no_fee_release`'s ledger check; nothing else makes a `Releasable` (SEC-030). Then the sink's normal settle and release run; the settle moves nothing for a pick no longer awaiting confirm (FEE-017), so a job cancelled or a pick ended meanwhile releases nothing, and a paid pick that ended gets the one late-success refund `paid_release` queues for an ended pick (FEE-021, D-2290). A second event for a held pick and a rerun of the task release once at most (the release row is the once, PICK-022); a pick released before safe mode began is untouched. Tests in `app/server/tests/safe_mode_release.rs` (TD-OPS-40), fake data only. Update the `server` and `payments` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-3144 (OPS-001, OPS-024, FEE-017, FEE-021, PICK-022, SEC-030; D-133, D-491): safe mode pauses releases as well as charges, but every release goes through `server`'s `PickReleaser` (`app/server/src/release_sink.rs:61`), which no switch reaches, and T105, which builds safe mode, owns none of the release files. (1) While `ops::api::safe_mode_on` (T105) is true, `PickReleaser` settles and releases nothing for a cleared pick: it queues one held-release task (its payload the pick ID and its due time, since a claimed task carries no run time, `app/core/src/tasks.rs:100`; deduplicated per pick) and answers success, so the Stripe route answers 200 and Stripe sends nothing again. (2) The task (`app/server/src/release_hold.rs`, registered in `worker_registry`, `app/server/src/lib.rs:456`, which has the settings the releaser and its Stripe client are built from, on every path so `tests/integration/tests/task_registry.rs` finds its kind) while safe mode lasts enqueues the next run 15 minutes later and finishes: a handler cannot move its own `core.task` row (`core::api` exports no defer, and `server` may not write `core` tables), so the payload carries the pick ID and the run's due time, and the next run is `core::api::enqueue`d due 15 minutes after that time under the dedupe key `<kind>.<pick>.<run_at in microseconds>` (`core.task.dedupe_key` stays unique after a task is done, so the first held-release task's per-pick key is never reused, and a rerun of the same run enqueues the same key, which is refused, D-3263) and, once safe mode has ended, clears the pick again through a new `payments::api::held_release(pool, stripe, account, pick)` in `app/payments/src/release_proof.rs`. A stored attempt status cannot tell a verified event's success from a press's or the reconcile's (`store_success`, `app/payments/src/charge.rs:232` and `app/payments/src/reconcile.rs:236`, `:612` all write through the same `handlers::record`), so for a paid pick `held_release` re-fetches the pick's stored intent from Stripe and runs `check_intent` (succeeded, mode, the server's fee, `metadata.pick_id`), as `paid_release` does (`release_proof.rs:212` to `:216`), and for a $0 pick keeps `no_fee_release`'s ledger check; nothing else makes a `Releasable` (SEC-030). Then the sink's normal settle and release run; the settle moves nothing for a pick no longer awaiting confirm (FEE-017), so a job cancelled or a pick ended meanwhile releases nothing, and a paid pick that ended gets the one late-success refund `paid_release` queues for an ended pick (FEE-021, D-2290). A second event for a held pick and a rerun of the task release once at most (the release row is the once, PICK-022); a pick released before safe mode began is untouched. Tests in `app/server/tests/safe_mode_release.rs` (TD-OPS-40), fake data only. Update the `server` and `payments` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -15024,7 +15033,7 @@
    "id": "T111",
    "slug": "terms-homeowner-business",
    "title": "Draft homeowner and business terms with every required clause",
-   "goal": "`docs/legal/` holds plain-English drafts of the homeowner and business terms with every required clause (18 or older, Arizona law, no arbitration, not an emergency service, the not-a-contractor statements, warranty disclaimer, non-discrimination, card authorization and handyman certification, refunds as coded, the introduction-fee wording), plus the business terms summary in English and its Spanish draft (`docs/legal/business-terms-summary-es.md`, TD-TERMS-03), and a docs test finds each clause (TERMS-001 to TERMS-004, TERMS-006 to TERMS-009, TERMS-011, TERMS-013 to TERMS-016, TERMS-018, TERMS-022, TERMS-024, TERMS-026 to TERMS-028, FEE-002, FEE-006, BIZ-030). The homeowner terms describe both ways of picking (the quote page and a \"<number> YES\" text pick, TERMS-001); both terms end with the TERMS-035 General section (severability, entire agreement, no waiver, transfer, notices, the 14-day business change notice and the homeowner rule that a change applies only to later requests), and the business terms add the 30-day write-first step and the TERMS-036 account-ending clause and no-promise sentence (D-492). The new summary file fails `scripts/check_legal_docs.py` until it is listed (`DOCUMENTS`, `:45`; any other `.md` under `docs/legal/` is an error, `:460`), so this task adds `business-terms-summary-es.md` to `DOCUMENTS` and to `BUSINESS_DOCUMENTS`, and moves `tests/test_check_legal_docs.py:53`'s count from 9 to 10; no other line of either changes. It is a harness task because the script is locked (`kit/plan.lock`, rewritten with its decision entry) and DONE T291's, and the test belongs to no task (D-3263).",
+   "goal": "`docs/legal/` holds plain-English drafts of the homeowner and business terms with every required clause (18 or older, Arizona law, no arbitration, not an emergency service, the not-a-contractor statements, warranty disclaimer, non-discrimination, card authorization and handyman certification, refunds as coded, the introduction-fee wording), plus the business terms summary in English and its Spanish draft (`docs/legal/business-terms-summary-es.md`, TD-TERMS-03), and a docs test finds each clause (TERMS-001 to TERMS-004, TERMS-006 to TERMS-009, TERMS-011, TERMS-013 to TERMS-016, TERMS-018, TERMS-022, TERMS-024, TERMS-026 to TERMS-028, FEE-002, FEE-006, BIZ-030). The homeowner terms describe both ways of picking (the quote page and a \"<number> YES\" text pick, TERMS-001); both terms end with the TERMS-035 General section (severability, entire agreement, no waiver, transfer, notices, the 14-day business change notice and the homeowner rule that a change applies only to later requests), and the business terms add the 30-day write-first step and the TERMS-036 account-ending clause and no-promise sentence (D-492). The new summary file fails `scripts/check_legal_docs.py` until it is listed (`DOCUMENTS`, `:45`; any other `.md` under `docs/legal/` is an error, `:460`), so this task adds `business-terms-summary-es.md` to `DOCUMENTS` and to `BUSINESS_DOCUMENTS`, and moves `tests/test_check_legal_docs.py:53`'s count from 9 to 10; no other line of either changes. It is a harness task because the script is locked (`kit/plan.lock`, rewritten with its decision entry) and DONE T291's, and the test belongs to no task (D-3263). The summary starts, as every draft does, with the English draft note line and a version line naming an English month (`check_header`, `scripts/check_legal_docs.py:360`), its body in Spanish.",
    "type": "harness",
    "phase": 1,
    "stage": "5",
@@ -16160,8 +16169,7 @@
     "T375",
     "T397",
     "T399",
-    "T407",
-    "T413"
+    "T407"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -16193,8 +16201,7 @@
    "decisions": [
     "D-1678",
     "D-2290",
-    "D-3134",
-    "D-3263"
+    "D-3134"
    ],
    "cites": [
     "BUILD_BRIEF.md:488",
@@ -17585,7 +17592,7 @@
    "id": "T300",
    "slug": "business-portal-served",
    "title": "server and portals: the business portal is served behind the business session (home, a released job's page, billing and statements, notice settings)",
-   "goal": "No task serves the business portal (D-2116, D-2117): `server::build_router` merges no `/b` page, and `portals` exports the portal home, the released job's page, billing with its CSV statement and notice settings only as page functions with route constants (D-1728, D-1848, D-1896). (1) `app/server/src/business_portal.rs` builds the routes `GET /b` (`business_home_page`), `POST /b/open-cards` (`save_open_cards_times`), `GET /b/picks/{pick}` (`job_release_page`, which reads `picks::api::released_view` on every load with the session proof from `server::session_minter()`, D-1739), `GET /b/billing` (`billing_page`) and `GET /b/billing/statement.csv` (`statement_csv`), and `GET` and `POST /b/notices` (`notice_settings_page`, `change_channel`; the addresses read from the vault in `server`, D-1848), each page's facts built through each module's `api`; it merges them in the shared `app/server/src/lib.rs` and composes them in `main.rs`. Every route reads the person with `portals::api::business_principal`: no business person (signed out, a homeowner or owner session, a removed member) gets a 4xx answer with a link to `/b/sign-in` and no homeowner detail, so T085's signed-out checks in `tests/e2e/business_portal.spec.ts` stay true; a refusal (another business's pick, a role the page needs missing, an unknown ID) is the one not-found answer; every response is `no_store` (SEC-034); both `POST`s pass `refuse_cross_site` and the CSRF check (SEC-009, SEC-042), and a refusal is a security event (SEC-048). (2) Each served `GET` page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788), and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. (3) Tests: `app/server/tests/business_portal_route.rs` against the assembled router (TD-SEC-43 and the router half of TD-BIZ-42) and `tests/e2e/business_portal_served.spec.ts` (the browser half of TD-BIZ-42; T085's spec is not changed, D-2117). In that spec the fake owner signs in through the served sign-in pages with no read of any email: the spec seeds, through `psql` on `DATABASE_URL` as `tests/e2e/j1_reduced.spec.ts` seeds its quote token, the active business, its owner with a linked fake phone (555-01xx) that takes texts, and a `portals.login_link` row whose `token_sha256` is the SHA-256 of a token the spec chose, then opens `/b/sign-in/{token}`; the new-device code is the one the stand-in Verify issues for that phone, computed in the spec from its rule in `stand_ins/twilio.py` (`start_verification`: the sum of the E.164 number's character codes modulo 1,000,000, six digits); no test-control route, stand-in change or email read is needed (`/__test/messages` lists texts only and the Resend stand-in has no read route). The complaints page, the \"Why was I charged?\" page, the emergency-email switch and the job page's notice log are T306's, the action links T301's and business sign-up T302's (D-2128). Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. `GET /b/picks/{pick}` answers 200 only for a released pick (`picks::api::released_view`), so its row is probed with the released pick T401 adds to the probe's fixture; every other `{pick}` keeps the fixture's waiting pick. Keep each `.route(` call on one line (`tests/security/tests/auth_matrix.rs:289` expects it; rustfmt may wrap a long call, so bind the handler to a short local name first) (plan change D-3106).",
+   "goal": "No task serves the business portal (D-2116, D-2117): `server::build_router` merges no `/b` page, and `portals` exports the portal home, the released job's page, billing with its CSV statement and notice settings only as page functions with route constants (D-1728, D-1848, D-1896). (1) `app/server/src/business_portal.rs` builds the routes `GET /b` (`business_home_page`), `POST /b/open-cards` (`save_open_cards_times`), `GET /b/picks/{pick}` (`job_release_page`, which reads `picks::api::released_view` on every load with the session proof from `server::session_minter()`, D-1739), `GET /b/billing` (`billing_page`) and `GET /b/billing/statement.csv` (`statement_csv`), and `GET` and `POST /b/notices` (`notice_settings_page`, `change_channel`; the addresses read from the vault in `server`, D-1848), each page's facts built through each module's `api`; it merges them in the shared `app/server/src/lib.rs` and composes them in `main.rs`. Every route reads the person with `portals::api::business_principal`: no business person (signed out, a homeowner or owner session, a removed member) gets a 4xx answer with a link to `/b/sign-in` and no homeowner detail, so T085's signed-out checks in `tests/e2e/business_portal.spec.ts` stay true; a refusal (another business's pick, a role the page needs missing, an unknown ID) is the one not-found answer; every response is `no_store` (SEC-034); both `POST`s pass `refuse_cross_site` and the CSRF check (SEC-009, SEC-042), and a refusal is a security event (SEC-048). (2) Each served `GET` page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788), and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. (3) Tests: `app/server/tests/business_portal_route.rs` against the assembled router (TD-SEC-43 and the router half of TD-BIZ-42) and `tests/e2e/business_portal_served.spec.ts` (the browser half of TD-BIZ-42; T085's spec is not changed, D-2117). In that spec the fake owner signs in through the served sign-in pages with no read of any email: the spec seeds, through `psql` on `DATABASE_URL` as `tests/e2e/j1_reduced.spec.ts` seeds its quote token, the active business, its owner with a linked fake phone (555-01xx) that takes texts, and a `portals.login_link` row whose `token_sha256` is the SHA-256 of a token the spec chose, then opens `/b/sign-in/{token}`; the new-device code is the one the stand-in Verify issues for that phone, computed in the spec from its rule in `stand_ins/twilio.py` (`start_verification`: the sum of the E.164 number's character codes modulo 1,000,000, six digits); no test-control route, stand-in change or email read is needed. The complaints page, the \"Why was I charged?\" page, the emergency-email switch and the job page's notice log are T306's, the action links T301's and business sign-up T302's (D-2128). Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. `GET /b/picks/{pick}` answers 200 only for a released pick (`picks::api::released_view`), so its row is probed with the released pick T401 adds to the probe's fixture; every other `{pick}` keeps the fixture's waiting pick. Keep each `.route(` call on one line (`tests/security/tests/auth_matrix.rs:289` expects it; rustfmt may wrap a long call, so bind the handler to a short local name first) (plan change D-3106).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -17647,13 +17654,14 @@
     "D-1896",
     "D-2117",
     "D-2440",
-    "D-3106"
+    "D-3106",
+    "D-3263"
    ],
    "cites": [],
    "budget": {
     "files": 3,
     "lines": 600,
-    "context_pct": 14
+    "context_pct": 19
    },
    "checks": [
     "Ci",
@@ -25152,7 +25160,7 @@
    "id": "T414",
    "slug": "stand-in-sent-emails",
    "title": "Stand-ins (harness): end-to-end specs can read the emails the fake Resend accepted",
-   "goal": "Plan change D-3263 (TXT-021, TXT-034; D-491, D-2821). An end-to-end spec can read the texts the fake carrier accepted (`control.sentTexts`, `tests/e2e/fixtures.ts`) but no email: the stand-in serves only `POST /resend/emails` (`stand_ins/server.py:356`), though `FakeResend` keeps every accepted send in `sent` (`stand_ins/resend.py:55`), so TD-TXT-15's web-and-email journeys (T413, T118, T119) cannot check a quote email, the pick code by email or a job-card email. (1) `stand_ins/server.py`: a control route `GET /_stand_in/resend/emails` (no credentials, like the other `/_stand_in/` paths) answering `{\"emails\": [...]}` from `FakeResend.sent`, oldest first, each with `id`, `from`, `to`, `subject`, `text` and `html`, filtered by an optional `to` query (an address in the list); `stand_ins/resend.py` is not changed. The route goes in the `ROUTES` table, owned here before T131 and T335, which also add routes there (D-2821). (2) `tests/e2e/fixtures.ts`: `control.sentEmails({ to? })`, reading that route at the stand-in's origin (`http://127.0.0.1:4010`, the port `tests/e2e/webserver.ts` starts it on, named once as a constant with that note), typed as `SentEmail`; `sentTexts` and the clock calls are unchanged. (3) `tests/contract/test_stand_in_sent_emails.py`: a send through the stand-in is listed once with its fields, a replayed idempotent send is not listed twice, the `to` filter keeps only that address's emails, and an empty log answers an empty list. Fake addresses only (`example.com`). A harness task because `stand_ins/` is protected and `tests/e2e/fixtures.ts` is DONE T020's. Update `docs/decisions.md`.",
+   "goal": "Plan change D-3263 (TXT-021, TXT-034; D-491, D-2821). An end-to-end spec can read the texts the fake carrier accepted (`control.sentTexts`, `tests/e2e/fixtures.ts`) but no email: the stand-in serves only `POST /resend/emails` (`stand_ins/server.py:356`), though `FakeResend` keeps every accepted send in `sent` (`stand_ins/resend.py:55`), so TD-TXT-15's web-and-email journeys (T222, T118, T119) cannot check a quote, safety or job-card email. (The pick code by email is not a Resend email: it goes through Twilio Verify's email channel, `app/picks/src/email_code.rs:113`, and a spec reads it with `GET /_stand_in/twilio/code`, `stand_ins/server.py:344`.) Those email checks also wait for a task that wires outbound email sending, which no task does yet (D-3186); this task only makes them readable once one exists. (1) `stand_ins/server.py`: a control route `GET /_stand_in/resend/emails` (no credentials, like the other `/_stand_in/` paths) answering `{\"emails\": [...]}` from `FakeResend.sent`, oldest first, each with `id`, `from`, `to`, `subject`, `text` and `html`, filtered by an optional `to` query (an address in the list); `stand_ins/resend.py` is not changed. The route goes in the `ROUTES` table, owned here before T131 and T335, which also add routes there (D-2821). (2) `tests/e2e/fixtures.ts`: `control.sentEmails({ to? })`, reading that route at the stand-in's origin (`http://127.0.0.1:4010`, the port `tests/e2e/webserver.ts` starts it on, named once as a constant with that note), typed as `SentEmail`; `sentTexts` and the clock calls are unchanged. (3) `tests/contract/test_stand_in_sent_emails.py`: a send through the stand-in is listed once with its fields, a replayed idempotent send is not listed twice, the `to` filter keeps only that address's emails, and an empty log answers an empty list. Fake addresses only (`example.com`). A harness task because `stand_ins/` is protected and `tests/e2e/fixtures.ts` is DONE T020's. Update `docs/decisions.md`.",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -25175,7 +25183,8 @@
     "docs/code-docs.md",
     "docs/test-design.md",
     "docs/spec/messaging.md",
-    "stand_ins/resend.py"
+    "stand_ins/resend.py",
+    "tests/e2e/webserver.ts"
    ],
    "requirements": [
     "TXT-021",
@@ -28860,68 +28869,6 @@
    "branch": "claude/task/T415-business-contact-composition",
    "prompt": "kit/prompts/T415.md",
    "acceptance": "TD-PRIV-29 passes against PostgreSQL (a removed member's mailbox kept 30 days then forgotten, a left business's contacts forgotten, a mailbox named by an unsent business email kept, a mailbox touched in the last 2 days kept, an unlinked line's number forgotten, a rerun changing nothing); every existing sender-directory and team test passes unchanged."
-  },
-  {
-   "id": "T413",
-   "slug": "journeys-web-email",
-   "title": "Journeys J1 and J2 in web-and-email mode: zero texts, every message by email or on screen",
-   "goal": "Plan change D-3263 (TXT-021, TXT-034, WEB-009; D-440, D-491, D-493): TD-TXT-15's J1 and J2 half, moved out of T222 because the launch channel is set only through `messaging::api::set_launch_channel` (`app/messaging/src/mode_state.rs:198`), whose callers are the owner settings page T108 builds and T310 serves, neither in T222's dependencies, and no spec could read a sent email before T414. `tests/e2e/j1_j2_web_email.spec.ts`: signed in as the owner as T310's spec does, the spec sets the launch channel to web-and-email on the served owner settings page, then runs J1 and J2 end to end on the stand-ins: web-chat consent and intake, the safety text on screen and by email, quote emails, the pick code by email to the address given in the chat, no call-window or who-lets-in question anywhere (D-440), check-in buttons by email (TD-TXT-31's link, T231), job-card emails and a portal quote, Confirm, HOLD, Away, PAUSE and BUSY in the business portal; each email is read with T414's `control.sentEmails`, and `control.sentTexts` lists zero texts at the end of each journey. The J3 and J4 halves stay T118's and T119's. Fake data only. Update `docs/decisions.md`.",
-   "type": "build",
-   "phase": 1,
-   "stage": "5",
-   "module": null,
-   "deps": [
-    "T222",
-    "T310",
-    "T414"
-   ],
-   "model": "claude-sonnet-5-5",
-   "effort": "medium",
-   "reviewer_model": "claude-opus-5-5",
-   "review_areas": [
-    "privacy"
-   ],
-   "owns": [
-    "tests/e2e/j1_j2_web_email.spec.ts"
-   ],
-   "reads": [
-    "docs/architecture.md",
-    "docs/code-docs.md",
-    "docs/test-design.md",
-    "docs/spec/messaging.md",
-    "docs/spec/website.md",
-    "docs/spec/intake.md",
-    "docs/spec/quotes-pick.md",
-    "docs/spec/consent.md"
-   ],
-   "requirements": [
-    "TXT-021",
-    "TXT-034",
-    "WEB-009"
-   ],
-   "tests": [
-    "TD-TXT-15"
-   ],
-   "decisions": [
-    "D-3263",
-    "D-440",
-    "D-491",
-    "D-493"
-   ],
-   "cites": [],
-   "budget": {
-    "files": 1,
-    "lines": 300,
-    "context_pct": 6
-   },
-   "checks": [
-    "Ci",
-    "Twin",
-    "Ally"
-   ],
-   "branch": "claude/task/T413-journeys-web-email",
-   "prompt": "kit/prompts/T413.md",
-   "acceptance": "J1 and J2 complete in web-and-email mode on the stand-ins with zero texts recorded and each named email read through `control.sentEmails`; T222's J1 and J2 specs and every other e2e and Ally spec pass unchanged."
   }
  ]
 }
