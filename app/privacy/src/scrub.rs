@@ -10,6 +10,8 @@
 //! five", "555-O1l2"); emails, "at"/"dot" spelled emails, @handles, links and bare domains; street
 //! numbers with their street names or a capitalised name ("2150 Mesquite"); gate codes;
 //! sign-off names; and the vault name and every name the person stated earlier (AI-003, AI-020).
+//! No word of `messaging`'s opt-out, HELP and START lists ([`NEVER_A_NAME`]) is ever cut, kept or
+//! removed as a name, so an opt-out after a name is still heard (CON-010, D-2621).
 //! [`ScrubbedText`] has a private field and no public constructor, so only this crate can make one
 //! and `ai` never receives unscrubbed text (AI-004; `tests/security/ui/forge_scrubbed_text.rs`).
 
@@ -205,6 +207,57 @@ const TRIGGERS: &[&[&str]] = &[
     &["soy"],
     &["me", "llamo"],
     &["mi", "nombre", "es"],
+];
+/// Words never cut as a stated or sign-off name, remembered as one or removed as one, a vault name
+/// word included (CON-010, CON-013, CON-035, AI-020, D-2621): every word of `messaging`'s opt-out
+/// phrases and of its sole opt-out, HELP and START words, English and Spanish, folded (lower case,
+/// no accents, no apostrophes). `privacy` may not depend on `messaging`, so the list is kept here;
+/// `tests/integration/tests/optout_after_name.rs` fails when a word of messaging's lists is missing.
+pub const NEVER_A_NAME: &[&str] = &[
+    "stop",
+    "stopall",
+    "unsubscribe",
+    "cancel",
+    "end",
+    "revoke",
+    "optout",
+    "quit",
+    "parar",
+    "alto",
+    "cancelar",
+    "baja",
+    "opt",
+    "out",
+    "start",
+    "unstop",
+    "help",
+    "info",
+    "ayuda",
+    "texting",
+    "messaging",
+    "sending",
+    "dont",
+    "do",
+    "not",
+    "text",
+    "texts",
+    "me",
+    "no",
+    "more",
+    "remove",
+    "take",
+    "off",
+    "escriban",
+    "manden",
+    "mensajes",
+    "ya",
+    "quiero",
+    "dejen",
+    "de",
+    "escribirme",
+    "quitenme",
+    "la",
+    "lista",
 ];
 const SIGN_OFFS: &[&str] = &[
     "thanks",
@@ -670,17 +723,14 @@ fn mark_stated(tokens: &[Token], common: &CommonWords, cut: &mut [bool]) -> Vec<
         let Some(n) = after.filter(|&n| n < tokens.len()) else {
             continue;
         };
-        if !is_wordish(&tokens[n].key, common) {
+        let nameish = |key: &str| is_wordish(key, common) && !never_a_name(key);
+        if !nameish(&tokens[n].key) {
             continue;
         }
         cut[n] = true;
         names.push(tokens[n].key.clone());
         let ends_clause = tokens[n].text.ends_with(|c: char| !c.is_alphanumeric());
-        if !ends_clause
-            && tokens
-                .get(n + 1)
-                .is_some_and(|t| is_wordish(&t.key, common))
-        {
+        if !ends_clause && tokens.get(n + 1).is_some_and(|t| nameish(&t.key)) {
             cut[n + 1] = true;
             names.push(tokens[n + 1].key.clone());
         }
@@ -699,8 +749,32 @@ fn sign_off(tokens: &[Token], i: usize) -> Option<usize> {
     (cue && (1..=2).contains(&left)).then_some(i + 1)
 }
 
-/// Every word of the vault name, common words too ("Joy Early"), and of each remembered name
-/// (AI-003, AI-020).
+/// Whether `key` (a scrubber key or a remembered name), folded like `messaging`'s detector (lower
+/// case, accents off, apostrophes dropped, other marks splitting it), holds a [`NEVER_A_NAME`]
+/// word, so "stop", "Don't" and "stop-texting" are never names (CON-010, AI-020, D-2621).
+fn never_a_name(key: &str) -> bool {
+    let folded: String = key
+        .to_lowercase()
+        .chars()
+        .filter(|&c| c != '\'')
+        .map(|c| match c {
+            'á' | 'à' | 'ä' | 'â' => 'a',
+            'é' | 'è' | 'ë' | 'ê' => 'e',
+            'í' | 'ì' | 'ï' | 'î' => 'i',
+            'ó' | 'ò' | 'ö' | 'ô' => 'o',
+            'ú' | 'ù' | 'ü' | 'û' => 'u',
+            'ñ' => 'n',
+            c => c,
+        })
+        .collect();
+    folded
+        .split(|c: char| !c.is_alphanumeric())
+        .any(|part| NEVER_A_NAME.contains(&part))
+}
+
+/// Every word of the vault name, common words too ("Joy Early"), and of each remembered name, but
+/// never a [`NEVER_A_NAME`] word, so a name stored before D-2621 that is one is ignored (AI-003,
+/// AI-020, CON-010).
 fn mark_known(tokens: &[Token], known: &Known<'_>, memory: &NameMemory, cut: &mut [bool]) {
     let vault = known.vault_name.map(|n| n.expose_secret().to_owned());
     let mut names: Vec<String> = vault
@@ -713,7 +787,7 @@ fn mark_known(tokens: &[Token], known: &Known<'_>, memory: &NameMemory, cut: &mu
         })
         .collect();
     names.extend(memory.names.iter().map(|n| n.expose_secret().to_owned()));
-    names.retain(|n| n.chars().count() >= 2);
+    names.retain(|n| n.chars().count() >= 2 && !never_a_name(n));
     for (i, t) in tokens.iter().enumerate() {
         let bare = t.key.strip_suffix("'s").unwrap_or(&t.key);
         if names.iter().any(|n| n == bare) {
