@@ -1,10 +1,10 @@
 # Ask Hava build status
 
-Updated 2026-11-12T02:32:17Z by runner 25014a67ca15 (actions).
+Updated 2026-11-12T02:32:37Z by runner 25014a67ca15 (actions).
 
-**Building: T248 in progress since 01:49Z; 219 of 390 done; week 81% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T248 in progress since 01:49Z; 220 of 390 done; week 81% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 219 of 390 build tasks (owner gates not counted)
+- **Tasks done:** 220 of 390 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T248 claimed 01:49Z, lease until 04:49Z
 - **Week:** 81% used, 24.2M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
@@ -18,7 +18,7 @@ Updated 2026-11-12T02:32:17Z by runner 25014a67ca15 (actions).
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T334 | payments: the nightly reconcile catches up after an outage f | MERGE_PENDING | 2 | 41 min | 02:25Z | merging main into the reviewed head conflicts in app/payments/CLAUDE.md; a resync merges it in on this attempt (D-891) |
-| T313 | messaging and server: an EMERGENCY card notice goes at night | MERGE_PENDING | 1 | 19 min | 02:07Z | merging main into the reviewed head conflicts in app/quotes/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T313 | messaging and server: an EMERGENCY card notice goes at night | done | 1 | 19 min | 02:07Z |  |
 | T368 | businesses (harness): the capability checklist offers every  | MERGE_PENDING | 1 | 17 min | 02:06Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T325 | server: an inbound text stopped by a module error raises a b | MERGE_PENDING | 1 | 30 min | 01:42Z |  |
 | T368 | businesses (harness): the capability checklist offers every  | resync | 1 | 25 min | 01:13Z |  |
@@ -121,7 +121,7 @@ Updated 2026-11-12T02:32:17Z by runner 25014a67ca15 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 211 of 733 (28.8%) · partial 350 · unstarted 172
-**Tasks merged (throughput only):** 219 of 390
+**Tasks merged (throughput only):** 220 of 390
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -156,7 +156,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 99 of 176 done
+- stage 4: 100 of 176 done
 - stage 5: 0 of 60 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
