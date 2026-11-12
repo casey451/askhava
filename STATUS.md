@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T06:10:54Z by runner 34fb4c03a8fb (actions).
+Updated 2026-11-12T06:18:07Z by runner 72993ab86164 (actions).
 
 **Idle since 06:06Z; 225 of 393 done; week 88% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,12 +8,12 @@ Updated 2026-11-12T06:10:54Z by runner 34fb4c03a8fb (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 06:06Z (no task in progress)
 - **Week:** 88% used, 13.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:10Z, 0 min before this update
+- **Last run:** 06:11Z, 7 min before this update
 - **Keeper:** last ran 06:10Z, next wake 06:30Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 9 problem(s) on tasks still to run (+89 on DONE tasks); first: T396: stored context_pct 39% but it measures 44%; regenerate
+- Strict plan check red: 8 problem(s) on tasks still to run (+84 on DONE tasks); first: T396: stored context_pct 39% but it measures 43%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -117,7 +117,6 @@ Updated 2026-11-12T06:10:54Z by runner 34fb4c03a8fb (actions).
 - 08:37Z Plan: T337 also owns release_recovery.rs for a fixture-only fix (D-2896) (#464)
 - 07:43Z Harness: td_pick_09 asks on the fixed clock — test failing everywhere since 07:00Z (D-2886) (#461)
 - 06:32Z Harness: a worker's plan-gap report blocks the task instead of a retry on the same prompt (D-2859) (#458)
-- 06:12Z Harness: the state schema accepts the hand-in update merge — runner stopped with state_invalid (D-2870) (#459)
 
 ## Progress (requirements verified)
 
