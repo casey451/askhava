@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T00:39:06Z by runner 162c61d4f51a (actions).
+Updated 2026-11-12T00:44:36Z by runner 162c61d4f51a (actions).
 
 **Idle since 00:21Z; 217 of 382 done; week 79% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-12T00:39:06Z by runner 162c61d4f51a (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 00:21Z (no task in progress)
 - **Week:** 79% used, 27.4M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:38Z, 0 min before this update
+- **Last run:** 00:43Z, 1 min before this update
 - **Keeper:** last ran 00:38Z, next wake 00:58Z
 
 ## Needs attention
@@ -76,7 +76,6 @@ Updated 2026-11-12T00:39:06Z by runner 162c61d4f51a (actions).
 | T157 | picks: the homeowner's backup choice at the pick | done | 2 | 22 min | 02:41Z | E2e: failure; Ally: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-1 |
 | T157 | picks: the homeowner's backup choice at the pick | check_failed | 1 | 66 min | 02:10Z |  |
 | T337 | payments (harness): a $0 release proof is bound to the pick' | QUEUED | 1 | 31 min | 02:07Z |  |
-| T349 | calls: a PIN draw fails only when the OS source fails, and o | done | 1 | 36 min | 00:40Z |  |
 
 ### Plan and harness merges on main
 - 00:38Z Plan: T261 pre-flight fix and catalog loaded at start-up (T400, IC-96) (D-3100) (#534)
