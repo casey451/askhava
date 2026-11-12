@@ -1,4 +1,4 @@
-//! The hourly no-handler check (T327, D-2285; OPS-004, JOB-006, IC-27).
+//! The hourly dead-letter check (T327, D-2285, T366, D-2640; OPS-004, JOB-006, IC-27).
 //!
 //! `core` fails a task whose kind has no registered handler with `NO_HANDLER` and dead-letters it
 //! after its attempts; `core` may not call `ops`, so it raises nothing. This worker task does,
@@ -13,24 +13,42 @@
 //! ([`kind_id`]), so one kind is one subject; the count goes on the alert's one error log line,
 //! with the kind and never a payload. Each run first queues the next hour's run under the hour's
 //! dedupe key, so a restart, a repeat or the worker's start-up seed ([`schedule`]) never doubles it.
+//!
+//! Every other dead letter alerts too (T366, D-2640; a job timer, text or check-in that ran out of
+//! attempts): each run reads the dead letters of the last [`LOOK_BACK`] by kind and UTC day of
+//! death (`core::api::dead_by_kind_since`, which leaves `NO_HANDLER` ones to the alert above) and
+//! raises one High [`DEAD_ALERT`] per kind and day, subject the kind with [`day_id`]. The once is a
+//! [`DEAD_ALERTED`] audit row on the same subject (`ops::api::audit_once`, in the alert's
+//! transaction), so a resolved alert is not raised again for that day; the count goes on the error
+//! log line, never a payload.
 
 use std::collections::BTreeSet;
 use std::sync::{Arc, Mutex, OnceLock};
 
 use askhava_core::api::{
-    Clock, Environment, HandlerError, NewTask, Registry, TaskError, dead_without_handler, enqueue,
+    Clock, Environment, HandlerError, NewTask, Registry, TaskError, dead_by_kind_since,
+    dead_without_handler, enqueue,
 };
-use askhava_ops::api::{Severity, is_code_name, raise_alert_once};
+use askhava_ops::api::{
+    Actor, AuditEntry, Change, Severity, audit_once, is_code_name, raise_alert_once,
+};
 use jiff::{SignedDuration, Timestamp};
 use serde_json::json;
 use sha2::{Digest, Sha256};
 use sqlx::types::Uuid;
-use sqlx::{PgConnection, PgPool};
+use sqlx::{Connection, PgConnection, PgPool};
 
 /// The `core.task` kind of the hourly check.
 pub const CHECK_KIND: &str = "ops.no_handler_check";
 /// The High alert raised once per kind with a `NO_HANDLER` dead letter (OPS-004).
 pub const ALERT: &str = "core.task_no_handler";
+/// The High alert raised once per kind and day with any other dead letter (OPS-004, T366).
+pub const DEAD_ALERT: &str = "core.task_dead_letter";
+/// The audit action that marks a kind and day as alerted, so it alerts once (T366).
+pub const DEAD_ALERTED: &str = "ops.dead_letter_alerted";
+/// How far back each run reads dead letters: two days, so one dead just before midnight is still
+/// read by the first run after it.
+const LOOK_BACK: SignedDuration = SignedDuration::from_hours(48);
 /// How often the check runs.
 const EVERY: SignedDuration = SignedDuration::from_hours(1);
 /// The handler's failure when the queue or the alert table cannot be reached.
@@ -79,7 +97,58 @@ pub async fn run_check(
     for (kind, count) in dead {
         alert_kind(&mut conn, &kind, count).await?;
     }
+    let since = now.checked_sub(LOOK_BACK).map_err(|_| DB_FAILED)?;
+    let dead = dead_by_kind_since(&mut conn, since)
+        .await
+        .map_err(|_| DB_FAILED)?;
+    for (kind, day, count) in dead {
+        alert_dead_day(&mut conn, &kind, day, count).await?;
+    }
     Ok(())
+}
+
+/// OPS-004, D-2640: raises one High [`DEAD_ALERT`] for `kind`'s dead letters of UTC day `day`
+/// unless that kind and day was alerted before ([`DEAD_ALERTED`]); logs the kind and `count`.
+async fn alert_dead_day(
+    db: &mut PgConnection,
+    kind: &str,
+    day: i64,
+    count: i64,
+) -> Result<(), HandlerError> {
+    let Some(name) = intern(kind) else {
+        tracing::error!("a dead-lettered task kind is not a code name");
+        return Ok(());
+    };
+    let subject = (name, day_id(name, day));
+    let mark = AuditEntry {
+        actor: Actor::System,
+        action: DEAD_ALERTED,
+        subject_kind: subject.0,
+        subject_id: subject.1,
+        change: Change::Action,
+    };
+    let mut tx = db.begin().await.map_err(|_| DB_FAILED)?;
+    if !audit_once(&mut tx, &mark).await.map_err(|_| DB_FAILED)? {
+        return Ok(());
+    }
+    raise_alert_once(&mut tx, DEAD_ALERT, Severity::High, subject)
+        .await
+        .map_err(|_| DB_FAILED)?;
+    tx.commit().await.map_err(|_| DB_FAILED)?;
+    tracing::error!(
+        task_kind = name,
+        day,
+        count,
+        "dead-lettered tasks of a kind"
+    );
+    Ok(())
+}
+
+/// The [`DEAD_ALERT`] subject ID of a task kind and UTC day number: [`kind_id`] of `<kind>.<day>`,
+/// so one kind and day is one subject.
+#[must_use]
+pub fn day_id(kind: &str, day: i64) -> Uuid {
+    kind_id(&format!("{kind}.{day}"))
 }
 
 /// Raises the alert for `kind` unless one is open; logs the kind and `count` when it does.

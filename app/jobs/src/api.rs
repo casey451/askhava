@@ -10,7 +10,9 @@
 //! JOB-011, TXT-016, D-1517); the day-3 and day-14 check-ins, their answers, the PROBLEM listing
 //! and the feedback request after Done (JOB-015, JOB-016, JOB-028, TXT-029, T097); a job's category
 //! and candidate job type codes as append-only narrowing rows (INT-018, FEE-005, T339); blanking
-//! a job's feedback words at the 3-year purge and on "Delete my data" (PRIV-009, PRIV-011, T315).
+//! a job's feedback words at the 3-year purge and on "Delete my data" (PRIV-009, PRIV-011, T315);
+//! the daily timer backstop that revives a dead or missing job timer (JOB-003, JOB-006, OPS-004,
+//! PRIV-007, T366).
 
 use askhava_core::api::Guarded;
 use askhava_ops::api::Actor;
@@ -37,6 +39,10 @@ pub use crate::service::{
     TIMER_KIND, create, job_number, move_to, raise_number_floor, restart_timer, run_timer,
 };
 pub use crate::status::JobStatus;
+pub use crate::timer_backstop::{
+    BACKSTOP_KIND, BATCH, Backstop, MOST_REVIVALS, TIMER_DEAD_ALERT, TIMER_REVIVED, revive_timers,
+    run_backstop, schedule_backstop,
+};
 
 /// Quote-page link tokens (SEC-037, PICK-028, D-491).
 pub mod quote_token {
