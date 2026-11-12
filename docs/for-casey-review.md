@@ -2416,3 +2416,10 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **What changed.** A phone can open at most 5 new requests by text in an hour (and all phones together have an hourly cap); a 6th is not answered and you get one alert with no phone or words in it. Replies inside an open request, HELP, STOP and START after a STOP are never limited. A LIST reply now names each business that quoted.
 - **One thing you may want changed.** A text that matches the 911 list (for example "I smell gas") is never limited, so the homeowner always gets the 911 safety text, even at her limit. The cost: someone sending many such texts from many phones would get past the hourly cap. If you want a separate cap on emergency texts, say so; it needs a spec change.
 - **Nothing needs you now.**
+
+## T248: markets as data, ZIP locations, and each business's travel radius (D-3113 to D-3116)
+
+- **What changed.** The towns Ask Hava covers now live in one reviewed file, `docs/catalog/markets.yaml`, with one market today: Lake Havasu City (ZIPs 86403, 86404 and 86406 from the Census, plus 86405, the PO-box ZIP). No market has a launch date; recording one is your later action. Each ZIP's location is the Census point for that ZIP, never a street address. Sign-up now asks a business for its base ZIP and how many miles it will travel (1 to 100), and sign-up can't finish without them. Matching by distance comes later (T249).
+- **Draft wording to approve.** "How many miles will you travel for a job?" Spanish draft: "¿Cuántas millas viajaría para un trabajo?" Hint: "Whole miles from 1 to 100, measured in a straight line from your base ZIP."
+- **Worth a look.** 86404 also covers Crystal Beach and Desert Hills; it counts as Lake Havasu City. 86515 (Window Rock) is left out of the location table because the Census puts its point in New Mexico, so a job there has no location yet.
+- **Nothing needs you now.**

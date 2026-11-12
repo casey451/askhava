@@ -7,7 +7,10 @@
     control (LIC-047). The done screen also offers the homeowner calls contact card (T199;
     BIZ-046, D-344), its name and line from `business_portal`. T165 (BIZ-022, BIZ-052, LIC-011,
     D-2943, D-2954): the business name and trade name, the license numbers and the Google and Yelp
-    links; a refused one shows again with its reason and a focused summary (A11Y-030). -#}
+    links; a refused one shows again with its reason and a focused summary (A11Y-030). T248
+    (BIZ-058, BIZ-049, A11Y-010 to A11Y-013, D-3116): the service-area screen asks the base ZIP and
+    the radius beside towns served; a refusal keeps both values, opens the title with "Error: ",
+    focuses a summary of links and repeats each message by its field. -#}
 {% block title %}{{ title }}{% endblock %}
 {% block main %}
 <h1>{{ title }}</h1>
@@ -85,6 +88,27 @@
 </section>
 <p id="terms-link"><a href="/terms/business">Read the business terms</a></p>
 <button type="submit">Next: get your code</button>
+</form>
+{% endif %}
+{% if let Some(area) = area %}
+<form method="post" action="{{ crate::business_signup::SERVICE_AREA_ROUTE }}" id="service-area-form" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+{% for (name, value) in area.carried %}<input type="hidden" name="{{ name }}" value="{{ value }}">
+{% endfor %}
+{% if !area.problems.is_empty() %}<div id="error-summary" role="alert" tabindex="-1" autofocus>
+<h2>Fix these to continue</h2>
+<ul>{% for p in area.problems %}<li><a href="#{{ crate::business_signup::area_field(**p).replace('_', "-") }}">{{ crate::business_signup::area_message(**p) }}</a></li>{% endfor %}</ul>
+</div>
+{% endif %}
+<p><label for="base-zip">Base ZIP code</label>
+<span id="base-zip-hint">The ZIP code you usually start from, like your shop or home. We measure each job's distance from it.</span>
+{% if let Some(m) = area.error_for("base_zip") %}<span id="base-zip-error" class="error">Error: {{ m }}</span>{% endif %}
+<input type="text" id="base-zip" name="base_zip" inputmode="numeric" autocomplete="postal-code" aria-describedby="base-zip-hint{% if area.error_for("base_zip").is_some() %} base-zip-error{% endif %}" value="{{ area.base_zip }}"{% if area.error_for("base_zip").is_some() %} aria-invalid="true"{% endif %}></p>
+<p><label for="radius">{{ crate::business_signup::RADIUS_QUESTION }}</label>
+<span id="radius-hint">Whole miles from 1 to 100, measured in a straight line from your base ZIP.</span>
+{% if let Some(m) = area.error_for("radius") %}<span id="radius-error" class="error">Error: {{ m }}</span>{% endif %}
+<input type="text" id="radius" name="radius" inputmode="numeric" aria-describedby="radius-hint{% if area.error_for("radius").is_some() %} radius-error{% endif %}" value="{{ area.radius }}"{% if area.error_for("radius").is_some() %} aria-invalid="true"{% endif %}></p>
+<button type="submit">Next</button>
 </form>
 {% endif %}
 {% for (action, label) in buttons %}

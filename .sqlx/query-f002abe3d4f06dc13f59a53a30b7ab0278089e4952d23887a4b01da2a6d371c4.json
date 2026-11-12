@@ -1,0 +1,18 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO catalog.market (id, name, state, time_zone, identity_sources)\n             VALUES ($1, $2, $3, $4, $5) ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name,\n             state = EXCLUDED.state, time_zone = EXCLUDED.time_zone,\n             identity_sources = EXCLUDED.identity_sources",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "TextArray"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "f002abe3d4f06dc13f59a53a30b7ab0278089e4952d23887a4b01da2a6d371c4"
+}

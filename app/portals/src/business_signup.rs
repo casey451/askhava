@@ -25,10 +25,20 @@
 //! or one question per guided screen; [`CapabilityValues`] reads either post the same way and
 //! [`capability_summary`] reads the answers back on the check screen. Saving is
 //! `businesses::api::save_capability`; the route waits with the rest of sign-up (D-1709).
+//!
+//! T248 added the service area beside towns served (BIZ-058, BIZ-049, A11Y-010 to A11Y-013;
+//! D-1518, D-3116): [`Screen::ServiceArea`] asks the base ZIP and [`RADIUS_QUESTION`] on their own
+//! screen after the towns question, with every typed value kept and a focused error summary;
+//! `businesses::api::ServiceArea::parse` checks them. [`CapabilityValues`] carries both as hidden
+//! fields, so the check screen reads them back ([`service_area_lines`], BIZ-030), and
+//! [`signup_can_finish`] is false until a business has towns and a service area.
 
 use std::collections::BTreeSet;
 
 use askama::Template;
+use askhava_businesses::api::{
+    BusinessesError, ServiceArea, ServiceAreaProblem, service_area, towns as stored_towns,
+};
 use askhava_businesses::api::{
     Capability, CapabilityAnswers, JobTypeChoice, LargestJob, TradeOffer, kept_ticks, pre_ticked,
 };
@@ -210,6 +220,77 @@ pub enum Screen<'a> {
     /// The form again after a refused name, license number or link, with what was typed and the
     /// reason by its field (BIZ-022, BIZ-052, D-2943).
     FormAgain(&'a [(String, &'static str)], &'a Entered<'a>),
+    /// The base ZIP and service radius, after the towns question (BIZ-058, BIZ-049).
+    ServiceArea(&'a AreaEntered<'a>),
+}
+
+/// BIZ-058: the service-area screen posts here; the route waits with the rest of sign-up (D-1709).
+pub const SERVICE_AREA_ROUTE: &str = "/b/signup/service-area";
+/// BIZ-058, WORD-028: the radius question, draft copy for the copy panel; its Spanish draft is in
+/// `docs/for-casey-review.md` (D-3116).
+pub const RADIUS_QUESTION: &str = "How many miles will you travel for a job?";
+
+/// BIZ-058, A11Y-030: the form field a service-area problem links to.
+#[must_use]
+pub const fn area_field(p: ServiceAreaProblem) -> &'static str {
+    match p {
+        ServiceAreaProblem::BaseZip => "base_zip",
+        ServiceAreaProblem::Radius => "radius",
+    }
+}
+
+/// BIZ-058, A11Y-030: what to do about a service-area problem, in the summary and by the field.
+#[must_use]
+pub const fn area_message(p: ServiceAreaProblem) -> &'static str {
+    match p {
+        ServiceAreaProblem::BaseZip => "Enter your base ZIP code as 5 numbers.",
+        ServiceAreaProblem::Radius => "Enter the miles as a whole number from 1 to 100, like 25.",
+    }
+}
+
+/// What the service-area screen shows (BIZ-058, A11Y-012): the typed values, kept after a
+/// refusal, the problems from `ServiceArea::parse`, and the other sign-up answers as hidden
+/// fields ([`CapabilityValues::carried`]).
+#[derive(Debug, Clone, Copy, Default)]
+pub struct AreaEntered<'a> {
+    /// The typed base ZIP.
+    pub base_zip: &'a str,
+    /// The typed radius.
+    pub radius: &'a str,
+    /// The refused fields, in page order; empty at first render.
+    pub problems: &'a [ServiceAreaProblem],
+    /// The other answers, posted again as hidden fields.
+    pub carried: &'a [(&'static str, String)],
+}
+
+impl AreaEntered<'_> {
+    /// The message by `field`, if it was refused (A11Y-030).
+    fn error_for(&self, field: &str) -> Option<&'static str> {
+        let found = self.problems.iter().find(|p| area_field(**p) == field);
+        found.map(|p| area_message(*p))
+    }
+}
+
+/// BIZ-030, BIZ-058: the service area read back on the check screen.
+#[must_use]
+pub fn service_area_lines(area: &ServiceArea) -> [String; 2] {
+    [
+        format!("Base ZIP code: {}", area.base_zip()),
+        format!("Miles you travel for a job: {}", area.radius_miles()),
+    ]
+}
+
+/// BIZ-058, BIZ-049: sign-up can finish only once the business has towns served and a base ZIP
+/// with a radius stored.
+///
+/// # Errors
+/// `BusinessesError::Database`.
+pub async fn signup_can_finish(
+    db: &mut PgConnection,
+    business: Uuid,
+) -> Result<bool, BusinessesError> {
+    let has_towns = !stored_towns(db, business).await?.is_empty();
+    Ok(has_towns && service_area(db, business).await?.is_some())
 }
 
 /// What the business typed into the form's name, license and link fields, shown again with the
@@ -266,6 +347,7 @@ struct SignupView<'a> {
     buttons: Vec<(&'static str, &'static str)>,
     csrf: &'a str,
     entered: Entered<'a>,
+    area: Option<AreaEntered<'a>>,
 }
 
 impl SignupView<'_> {
@@ -292,6 +374,16 @@ fn fill_form<'a>(v: &mut SignupView<'a>, categories: &[(String, &'static str)], 
         .collect();
     v.pest = categories.iter().any(|(c, _)| c == "pest_control");
     v.fee_lines = fee_summary(&parts.fees);
+}
+
+/// BIZ-058, A11Y-030: the service-area screen's title, opening with "Error: " after a refusal.
+fn fill_area<'a>(v: &mut SignupView<'a>, area: &AreaEntered<'a>) {
+    v.title = if area.problems.is_empty() {
+        "How far do you travel for jobs?"
+    } else {
+        "Error: How far do you travel for jobs?"
+    };
+    v.area = Some(*area);
 }
 
 /// BIZ-024, BIZ-026, BIZ-030, BIZ-031, LIC-047, WEB-024: the page for `screen`; see the module
@@ -344,6 +436,7 @@ pub fn signup_page(screen: Screen<'_>, parts: &Parts<'_>) -> Result<String, aska
             v.title = "You're signed up";
             (v.lines, v.links) = done_lines(facts);
         }
+        Screen::ServiceArea(area) => fill_area(&mut v, area),
     }
     v.render()
 }
@@ -470,6 +563,10 @@ pub struct CapabilityValues {
     pub recurring: String,
     /// `yes` or `no` for after-hours emergency jobs.
     pub after_hours: String,
+    /// The typed base ZIP, carried from the service-area screen (BIZ-058).
+    pub base_zip: String,
+    /// The typed radius in miles, carried from the service-area screen (BIZ-058).
+    pub radius: String,
 }
 
 /// A job type's form value, "category:job type".
@@ -501,6 +598,8 @@ impl CapabilityValues {
                 "largest_amount" => v.amount.clone_from(value),
                 "recurring" => v.recurring.clone_from(value),
                 "after_hours" => v.after_hours.clone_from(value),
+                "base_zip" => v.base_zip.clone_from(value),
+                "radius" => v.radius.clone_from(value),
                 _ => {}
             }
         }
@@ -527,7 +626,17 @@ impl CapabilityValues {
             .into_iter()
             .filter(|(s, _, v)| *s != step && !v.is_empty());
         out.extend(kept.map(|(_, n, v)| (n, v.clone())));
+        out.extend(self.area_fields());
         out
+    }
+
+    /// The typed base ZIP and radius as hidden fields, on every capability screen, the one-page
+    /// form included (BIZ-058, A11Y-012).
+    #[must_use]
+    pub fn area_fields(&self) -> Vec<(&'static str, String)> {
+        let pairs = [("base_zip", &self.base_zip), ("radius", &self.radius)];
+        let typed = pairs.into_iter().filter(|(_, v)| !v.is_empty());
+        typed.map(|(n, v)| (n, v.clone())).collect()
     }
 
     /// BIZ-049: the answers, or every problem in page order.
@@ -663,6 +772,15 @@ impl CapabilityView<'_> {
     }
 }
 
+/// BIZ-030, BIZ-058: the check screen's lines: the capability answers, then the carried base ZIP
+/// and radius when they parse.
+fn check_summary(page: &CapabilityPage<'_>, answers: &CapabilityAnswers) -> Vec<String> {
+    let area = ServiceArea::parse(&page.values.base_zip, &page.values.radius);
+    let area_lines = area.iter().flat_map(service_area_lines);
+    let lines = capability_summary(page.offer, page.towns, answers);
+    lines.into_iter().chain(area_lines).collect()
+}
+
 /// BIZ-049, BIZ-004, BIZ-007, BIZ-010, BIZ-030, A11Y-012, A11Y-030: the capability step's page
 /// over `templates/capability_setup.html`: the checklist pre-ticked from the license, the
 /// no-license extras, towns, largest job, recurring work and after-hours, all on one page or one
@@ -694,7 +812,7 @@ pub fn capability_page(page: &CapabilityPage<'_>) -> Result<String, askama::Erro
     ]
     .map(|s| all || s == step);
     let summary = match (step, answers) {
-        (S::Check, Ok(a)) => capability_summary(page.offer, page.towns, &a),
+        (S::Check, Ok(a)) => check_summary(page, &a),
         _ => Vec::new(),
     };
     let (title, button) = match step {
@@ -703,7 +821,7 @@ pub fn capability_page(page: &CapabilityPage<'_>) -> Result<String, askama::Erro
         _ => ("Pick the jobs we send you", "Next"),
     };
     let carried = if all {
-        Vec::new()
+        page.values.area_fields()
     } else {
         page.values.carried(step)
     };
