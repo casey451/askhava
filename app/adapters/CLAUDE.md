@@ -14,7 +14,7 @@ The layer-1 crate that talks to outside vendors. Each vendor has one trait and o
 - `src/ai.rs`: `AiAdapter`, `StandInAi`.
 - `src/email.rs`: `EmailAdapter`, `ResendEmail`, `Email` (with `remove_suppression`, BIZ-056).
 - `src/letters.rs`: `LettersAdapter`, `LobLetters`, `SentLetter`.
-- `src/license_sources.rs`: `LicenseSource`, `LicenseLists`.
+- `src/license_sources.rs`: `LicenseSource`, `LicenseLists`; `LicenseRecords` (`lookup_record(list, number)`, `<base>/record/<list>/<number>`, a missing fixture file a 404; T385, D-2954), implemented by `LicenseLists` and by `Option<T>` (`None` is `BadConfig`: no `ASKHAVA_LICENSE_BASE_URL`, every read unreadable, D-3247). `LicenseSource` is unchanged, so its fakes need no new method.
 - `src/storage.rs`: `StorageAdapter`, `StorageDelete` (T275: `delete_object`, `list_objects`), `LocalStorage`, and the crate-private `write_once_observed` and `Step` the competing-writer tests synchronize on.
 - `src/sms.rs`: `SmsAdapter`, `SmsBodyDelete` (T275: `delete_message_body`), `TwilioSms` (T377, D-2761, D-3211: `with_status_callback(url)`, after which every `send_text` carries `StatusCallback`; `server` sets it to `ASKHAVA_PUBLIC_BASE_URL` plus `/webhooks/twilio/status`, none without a public base URL), `SentText`; T336 (D-2307, D-3136, D-3173): `SmsBodyRead` (`fetch_message_body`, `fetch_message_from`), `TwilioMessageReader` (`new(&TwilioConfig)`), `MessageBody` (`Body`, `Gone`), `ReadMessage` (`from`, `to`, `body` as a `SecretString`).
 - `src/voice.rs`: `VoiceAdapter`, `TwilioVoice`, `CallState`; T378 (D-2762, D-3233): `CallPlan` (`new(twiml, status_callback)`, `detecting_machine`, `twiml`, `status_callback`, `detects_machine`), `MAX_TWIML` (4,000), `CALL_EVENTS`.

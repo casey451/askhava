@@ -527,6 +527,7 @@ dependencies = [
  "jiff",
  "jiff-sqlx",
  "proptest",
+ "secrecy",
  "serde",
  "serde-saphyr",
  "sqlx",

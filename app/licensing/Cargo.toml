@@ -11,6 +11,7 @@ askhava-adapters = { workspace = true }
 askhava-ops = { workspace = true }
 jiff = { workspace = true }
 jiff-sqlx = { workspace = true, features = ["postgres"] }
+secrecy = { workspace = true }
 serde = { workspace = true }
 serde-saphyr = { workspace = true }
 sqlx = { workspace = true }

@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT trades FROM businesses.signup WHERE business_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "trades",
+        "type_info": "TextArray",
+        "origin": {
+          "Table": {
+            "table": "businesses.signup",
+            "name": "trades"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "3e2fa46e000907cf9198129c50ab2add1509965e7d836d2d0eb8f2700e2f4dd0"
+}
