@@ -44,13 +44,7 @@
           <p class="hint" id="job-hint">For example: the AC runs but blows warm air.</p>
           <textarea id="job" name="job" rows="3" aria-describedby="job-hint"></textarea>
         </div>
-        <div class="request-row">
-          <div class="field zip">
-            <label for="zip">Job ZIP code</label>
-            <input id="zip" name="zip" type="text" inputmode="numeric" autocomplete="postal-code" maxlength="5" pattern="[0-9]{5}">
-          </div>
-          <button class="button" type="submit">Get quotes</button>
-        </div>
+        <button class="button button-wide" type="submit">Get quotes</button>
         <p class="cost small soft">Free for you. The business you pick pays <span class="nowrap">Laftly</span> a set introduction fee.</p>
       </form>
       <p class="hero-more"><a href="#how">See how it works</a></p>
@@ -90,7 +84,7 @@
         <p class="example-label"><span>Example: weekly pool cleaning</span><span>Not real quotes</span></p>
         <div class="example-grid">
           <article class="card quote" aria-label="Example quote 1">
-            <p class="quote-top"><span class="no">No. 1</span><span>Received 9:12 a.m.</span></p>
+            <p class="quote-top"><span class="no">#1</span><span>Received 9:12 a.m.</span></p>
             <h3 class="quote-name">Sample Pool Co.</h3>
             <p class="quote-price"><span class="amount">$140</span><span class="format">a month, weekly visits</span></p>
             <dl class="facts">
@@ -100,7 +94,7 @@
             </dl>
           </article>
           <article class="card quote" aria-label="Example quote 2">
-            <p class="quote-top"><span class="no">No. 2</span><span>Received 10:40 a.m.</span></p>
+            <p class="quote-top"><span class="no">#2</span><span>Received 10:40 a.m.</span></p>
             <h3 class="quote-name">Sample Pool Service</h3>
             <p class="quote-price"><span class="amount">$165</span><span class="format">a month, weekly visits</span></p>
             <dl class="facts">
@@ -129,9 +123,9 @@
     <div class="biz-grid">
       <div class="biz-text">
         <p class="kicker">For businesses</p>
-        <h2 class="section-title mt-12" id="biz-title">Quote for free. Pay only if a homeowner picks you.</h2>
+        <h2 class="section-title mt-12" id="biz-title">Quote for free. Pay only when you confirm a pick.</h2>
         <p class="soft mt-16">When a homeowner sends a job you do, we email you the details and you decide whether to quote. Every card says how many businesses got it. You quote once. No bidding rounds, no paid placement.</p>
-        <p class="soft">If the homeowner picks you, you pay a fixed introduction fee by job size, never a share of the job.</p>
+        <p class="soft">When you confirm a pick, you pay one fixed introduction fee by job size. It's not a share of the job.</p>
         <p class="mt-16"><a href="#business">Read the business page</a></p>
       </div>
       <div class="card fee-card">
@@ -141,6 +135,8 @@
           <div><dt>$500 to $1,500</dt><dd>$75</dd></div>
           <div><dt>Over $1,500</dt><dd>$199</dd></div>
         </dl>
+        <p class="small soft">A visit-fee quote (a visit fee, then an estimate on site) is $25.</p>
+        <p class="small soft">A repeating service, such as weekly pool cleaning, is sized at 4 months of its price and is never more than $75. The $140 a month example above is $560 over 4 months, so its fee is $75.</p>
         <p class="small soft">Job requests and picks come by email. We don't text or call businesses.</p>
       </div>
     </div>
@@ -150,6 +146,10 @@
     <div>
       <h2 class="section-title" id="who-title">Who runs Laftly</h2>
       <p class="soft mt-12">Laftly is run by Laftly LLC, a Lake Havasu City business. Its owner lives in Havasu. The owner has a full-time day job. Sign-up reviews are usually answered within 4 days, help and charge questions usually within 2 days, and this page shows when the owner is away.</p>
+      <dl class="who-facts mt-16">
+        <div><dt>Mailing address</dt><dd>[Laftly LLC mailing address: registered agent or PO box, from settings]</dd></div>
+        <div><dt>Help email</dt><dd>[help email, from settings]</dd></div>
+      </dl>
     </div>
     <aside class="note-911" aria-labelledby="note-911-title">
       <h2 id="note-911-title">In an emergency, call 911</h2>
