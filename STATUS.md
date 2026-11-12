@@ -1,18 +1,17 @@
 # Ask Hava build status
 
-Updated 2026-11-12T18:16:54Z by runner 0e36bfe8ac65 (actions).
+Updated 2026-11-12T18:17:19Z by runner 0e36bfe8ac65 (actions).
 
 **Building: T251 in progress since 17:19Z; 248 of 400 done; week 2% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 248 of 400 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T251 claimed 17:19Z, lease until 20:19Z; lane 3: T385 claimed 17:26Z, lease until 20:26Z; lane 5: T350 claimed 17:26Z, lease until 20:26Z; lane 6: T376 claimed 18:05Z, lease until 21:05Z
-- **Week:** 2% used, 180.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 1: T251 claimed 17:19Z, lease until 20:19Z; lane 3: T385 claimed 17:26Z, lease until 20:26Z; lane 5: T350 claimed 17:26Z, lease until 20:26Z; lane 6: T376 claimed 18:05Z, lease until 21:05Z; lane 7: T346 claimed 18:16Z, lease until 21:16Z
+- **Week:** 2% used, 177.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 18:12Z, 4 min before this update
 - **Keeper:** last ran 18:12Z, next wake 20:22Z
 
 ## Needs attention
-- PLAN GAP T346 (since 2026-11-12T17:11:48Z, no attempt used; a plan change fixes it): T346: measures 46% of the context window, over its 45% limit
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - Strict plan check red: 21 problem(s) on tasks still to run (+120 on DONE tasks); first: T340: stored context_pct 40% but it measures 45%; regenerate
 
@@ -149,7 +148,7 @@ Updated 2026-11-12T18:16:54Z by runner 0e36bfe8ac65 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-12T18:00:41Z (week)): week: 14.0M used, 180.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-06T05:22:39Z.
+- Pacing (session_reading 2026-11-12T18:11:48Z (week)): week: 17.0M used, 177.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-06T05:39:02Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -168,6 +167,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 3: T385 (lease until 2026-11-12T20:26:04Z)
 - lane 5: T350 (lease until 2026-11-12T20:26:39Z)
 - lane 6: T376 (lease until 2026-11-12T21:05:05Z)
+- lane 7: T346 (lease until 2026-11-12T21:16:45Z)
 
 ## Last usage reading
 - {"task": "T366", "at": "2026-11-12T17:53:37Z", "output_tokens": 111072, "cache_creation_input_tokens": 387441, "input_tokens": 245, "cache_read_input_tokens": 11802697}
