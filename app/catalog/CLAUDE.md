@@ -12,12 +12,12 @@ The layer-2 crate that loads `docs/catalog/categories.yaml` (the K2b list) into 
 - `src/restricted_words.rs`: `RESTRICTED_WORDS`, `restricted_match` (pure; `api` re-exports them for `quotes` and `ai`).
 - `src/service.rs`: the SQL: `load`, reads, `set_enabled`.
 - `src/models.rs`: file types (`Catalog`, `CategoryDef`, `LicenseRule`), `Category`, `CatalogError`.
-- `src/markets.rs` (T248): `docs/catalog/markets.yaml` and `data/zcta_centroids_az.csv` compiled in; `parse_markets`, `parse_centroids`, `embedded`, `centroids` (parsed once, `LazyLock`), `miles_between`, `store` (the sync's upserts). Migration `0162_catalog_markets.sql`: `catalog.market` (no app-role UPDATE of `launched_at`), `market_town` (code is the key, so one market per town), `zcta_centroid`.
+- `src/markets.rs` (T248): `docs/catalog/markets.yaml` and `data/zcta_centroids_az.csv` compiled in; `parse_markets`, `parse_centroids`, `embedded`, `centroids` (parsed once, `LazyLock`), `miles_between`, `store` (the sync's upserts). Migration `0162_catalog_markets.sql`: `catalog.market` (column-level INSERT and UPDATE grants leave out `launched_at`), `market_town` (code is the key, so one market per town), `zcta_centroid`.
 - Migration `0027_catalog_module.sql`: `catalog.category`, `job_type`, `license_rule`, `fee_rule`, `not_offered`.
 
 ## Rules it enforces
 
-- INT-048, INT-022, D-382: `parse_markets` refuses a duplicate market ID, a town in two markets, a ZIP under two towns, an unknown IANA time zone, a market with no towns and a state other than AZ without a `D-` decision ID; a reviewed extra ZIP gives a town and no location; `zip_location` is the Census ZCTA internal point or none.
+- INT-048, INT-022, D-382: `parse_markets` refuses a duplicate market ID, a town in two markets, a ZIP under two towns, an unknown IANA time zone, a market with no towns and a state other than AZ without a decision ID (`D-` then digits only); a reviewed extra ZIP gives a town and no location; `zip_location` is the Census ZCTA internal point or none.
 
 - LIC-001: each category stores job types (with one-time, fee-free, kind and format), license rule, recurring flag, fee tier, after-hours flag and keywords.
 - LIC-002: `set_category_enabled` updates the one column and writes an `ops` audit row (`catalog.category_switched`, subject `catalog.category`) in one transaction; no code change is needed to switch.
@@ -30,7 +30,7 @@ The layer-2 crate that loads `docs/catalog/categories.yaml` (the K2b list) into 
 
 ## Never break
 
-- INT-048, D-1515: no code names a market or hard-codes its towns, ZIPs, state or time zone; a new market is a data change to `markets.yaml` with a decision entry (the file is in `kit/plan.lock`, D-3114). The Phoenix metro market lives only in `src/tests/markets.rs`. Coordinates are copied from the Census file by script, never typed; 86515 is left out on purpose (its point is in New Mexico, D-3115). `launched_at` is never written by the sync.
+- INT-048, D-1515: no code names a market or hard-codes its towns, ZIPs, state or time zone; a new market is a data change to `markets.yaml` with a decision entry (the file is in `kit/plan.lock`, D-3114). The Phoenix metro market lives only in `src/tests/markets.rs`. Coordinates are copied from the Census file by script, never typed; 86515 is left out on purpose (its point is in New Mexico, D-3115). `launched_at` is never written by the sync. The sync only adds and updates rows (the app role has no DELETE on the market tables), so a town, market or centroid removed from the files stays in `catalog.market`, `market_town` and `zcta_centroid`; read markets, towns and locations only through the compiled-in API (`markets`, `service_area_towns`, `town_for_zip`, `zip_location`), never from those tables.
 
 - Loading again never switches a category on; it switches off, with a system audit row, one now not offered, ROC with no classes, or dropped from the file (D-747): `an_unresolved_class_and_a_non_owner_cannot_switch_on`, `a_reload_with_no_classes_switches_a_roc_category_off`, `a_reload_applies_a_changed_not_offered_list`, `a_category_dropped_from_the_file_is_switched_off`.
 - A repeat switch writes no audit row: `switching_a_category_is_logged`.

@@ -77,11 +77,16 @@ fn td_biz_37_bad_values_are_refused() {
 }
 
 /// TD-BIZ-37, A11Y-010 to A11Y-013: a refusal shows an "Error: " title, a focused summary linking
-/// to each field, the message by each field and both typed values kept.
+/// to each field, the message by each field and both typed values kept; a carried base ZIP or
+/// radius is never posted a second time as a hidden field.
 #[test]
 fn td_biz_37_errors_are_accessible_and_values_kept() {
     let problems = ServiceArea::parse("8640", "2.5").expect_err("refused");
-    let carried = [("town", "fake_town".to_owned())];
+    let carried = [
+        ("town", "fake_town".to_owned()),
+        ("base_zip", "00000".to_owned()),
+        ("radius", "99".to_owned()),
+    ];
     let html = page(&AreaEntered {
         base_zip: "8640",
         radius: "2.5",
@@ -95,6 +100,16 @@ fn td_biz_37_errors_are_accessible_and_values_kept() {
     assert!(html.contains(r#"value="8640" aria-invalid="true""#));
     assert!(html.contains(r#"value="2.5" aria-invalid="true""#));
     assert!(html.contains(r#"<input type="hidden" name="town" value="fake_town">"#));
+    assert_eq!(
+        html.matches(r#"name="base_zip""#).count(),
+        1,
+        "base ZIP posted once"
+    );
+    assert_eq!(
+        html.matches(r#"name="radius""#).count(),
+        1,
+        "radius posted once"
+    );
 }
 
 /// TD-BIZ-37, BIZ-030: the check screen reads the base ZIP and radius back, and every capability
@@ -270,7 +285,7 @@ async fn td_biz_37_the_table_holds_the_rules(pool: sqlx::PgPool) {
 }
 
 /// TD-INT-37: the sync stores every market with no launch time and the centroids, twice safely,
-/// and the app role cannot set a launch time.
+/// and the app role cannot set a launch time, by update or by insert.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_int_37_sync_stores_markets_with_no_launch(pool: sqlx::PgPool) {
     let mut db = pool.acquire().await.expect("db");
@@ -304,6 +319,16 @@ async fn td_int_37_sync_stores_markets_with_no_launch(pool: sqlx::PgPool) {
     assert!(
         launch.is_err(),
         "a launch is an owner action, never the app's"
+    );
+    let insert_launched = sqlx::query(
+        "INSERT INTO catalog.market (id, name, state, time_zone, identity_sources, launched_at)
+         VALUES ('fake-market', 'Fake', 'AZ', 'America/Phoenix', ARRAY['city'], now())",
+    )
+    .execute(&mut *db)
+    .await;
+    assert!(
+        insert_launched.is_err(),
+        "the app role cannot insert a market with a launch time"
     );
 }
 

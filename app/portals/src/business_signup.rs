@@ -269,6 +269,13 @@ impl AreaEntered<'_> {
         let found = self.problems.iter().find(|p| area_field(**p) == field);
         found.map(|p| area_message(*p))
     }
+
+    /// The carried answers to post again as hidden fields, less `base_zip` and `radius`, which
+    /// this screen posts as its own inputs, so neither is ever posted twice (BIZ-058).
+    fn hidden(&self) -> impl Iterator<Item = &(&'static str, String)> {
+        let own = |n: &str| n == "base_zip" || n == "radius";
+        self.carried.iter().filter(move |(n, _)| !own(n))
+    }
 }
 
 /// BIZ-030, BIZ-058: the service area read back on the check screen.

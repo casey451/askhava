@@ -93,7 +93,7 @@
 {% if let Some(area) = area %}
 <form method="post" action="{{ crate::business_signup::SERVICE_AREA_ROUTE }}" id="service-area-form" novalidate>
 <input type="hidden" name="csrf" value="{{ csrf }}">
-{% for (name, value) in area.carried %}<input type="hidden" name="{{ name }}" value="{{ value }}">
+{% for (name, value) in area.hidden() %}<input type="hidden" name="{{ name }}" value="{{ value }}">
 {% endfor %}
 {% if !area.problems.is_empty() %}<div id="error-summary" role="alert" tabindex="-1" autofocus>
 <h2>Fix these to continue</h2>

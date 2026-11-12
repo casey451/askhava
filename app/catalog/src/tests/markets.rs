@@ -127,6 +127,26 @@ fn td_int_37_the_loader_refuses_bad_markets() {
     assert_eq!(refused(&[short]), MarketRefused::Malformed);
 }
 
+/// TD-INT-37, INT-048: a state other than AZ needs a decision ID of `D-` and digits only.
+#[test]
+fn td_int_37_a_decision_id_is_d_and_digits() {
+    let nevada = market(
+        "m",
+        "NV",
+        "America/Los_Angeles",
+        "\n      - {code: kingman_fixture, name: Kingman, zips: ['86401']}",
+    );
+    for bad in ["'D-'", "'D-x'", "'D-15x'", "'d-1515'", "'1515'"] {
+        let with = nevada.replace("    towns:", &format!("    decision: {bad}\n    towns:"));
+        assert_eq!(
+            parse_markets(&file(&[with])).expect_err(bad),
+            MarketRefused::StateNeedsDecision
+        );
+    }
+    let good = nevada.replace("    towns:", "    decision: 'D-1515'\n    towns:");
+    assert!(parse_markets(&file(&[good])).is_ok());
+}
+
 /// TD-INT-37: every centroid row has a 5-digit code and a point inside Arizona; the header names
 /// the Census source and vintage; a malformed row is refused.
 #[test]

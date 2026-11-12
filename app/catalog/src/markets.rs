@@ -223,11 +223,17 @@ fn check_market(m: &MarketDef) -> Result<(), MarketRefused> {
     if m.towns.is_empty() {
         return Err(MarketRefused::NoTowns);
     }
-    let reviewed = m.decision.as_deref().is_some_and(|d| d.starts_with("D-"));
+    let reviewed = m.decision.as_deref().is_some_and(is_decision_id);
     if m.state != REVIEWED_STATE && !reviewed {
         return Err(MarketRefused::StateNeedsDecision);
     }
     Ok(())
+}
+
+/// A decision ID: `D-` then one or more ASCII digits, such as `D-1515` (INT-048).
+fn is_decision_id(d: &str) -> bool {
+    d.strip_prefix("D-")
+        .is_some_and(|n| !n.is_empty() && n.bytes().all(|b| b.is_ascii_digit()))
 }
 
 /// One town's own rules.

@@ -4,7 +4,8 @@
 -- catalog.market, catalog.market_town and catalog.zcta_centroid hold what the catalog sync
 -- (`markets::store`) copies from docs/catalog/markets.yaml and app/catalog/data/zcta_centroids_az.csv.
 -- A town code belongs to one market (its primary key); a market's launch time stays empty until a
--- later owner action records a launch, so the app role may not update `launched_at`. No foreign
+-- later owner action records a launch, so the app role may neither insert nor update `launched_at`
+-- (both grants on catalog.market name their columns). No foreign
 -- key to or from another schema's tables: businesses and intake hold town codes and ZIPs as text.
 
 CREATE TABLE catalog.market (
@@ -31,7 +32,12 @@ CREATE TABLE catalog.zcta_centroid (
   lon double precision NOT NULL CHECK (lon BETWEEN -180 AND 180)
 );
 
-GRANT SELECT, INSERT ON catalog.market, catalog.market_town, catalog.zcta_centroid TO askhava_app;
+-- The schema's default privileges (0110) give table-wide INSERT; take it back so only the
+-- column-level grant below applies.
+REVOKE INSERT ON catalog.market FROM askhava_app;
+GRANT SELECT ON catalog.market TO askhava_app;
+GRANT INSERT (id, name, state, time_zone, identity_sources) ON catalog.market TO askhava_app;
+GRANT SELECT, INSERT ON catalog.market_town, catalog.zcta_centroid TO askhava_app;
 GRANT UPDATE (name, state, time_zone, identity_sources) ON catalog.market TO askhava_app;
 GRANT UPDATE ON catalog.market_town, catalog.zcta_centroid TO askhava_app;
 REVOKE DELETE, TRUNCATE ON catalog.market, catalog.market_town, catalog.zcta_centroid FROM askhava_app;
