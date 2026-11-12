@@ -24,6 +24,15 @@ These are decisions Claude made on its own and logged so the build never waits (
 - **What changed.** Those merges now count too, but only when GitHub shows that the exact same code already passed all three checks (Ci, Twin, Ally) before it merged. If the code differs at all, a check failed or is missing, or GitHub can't be read, the lane runs the full check as before. A full check still runs at least every 6 merges and every 6 hours, and nothing about how a broken main line is caught or fixed changed.
 - **Nothing needs you now.**
 
+## Twenty-two waiting steps fixed before they start, and two new steps (plan change, D-3155, November 12)
+
+- **What changed.** A ninth read-only check of queued steps (mostly owner-portal, help, backup and website steps) found plans a worker could not have finished as written; they were corrected before any started. Two small steps were added: T409 lets the automatic door check sign in as you the real way, so your owner pages can be checked at all, and T410 puts the "Get help" link on the business pages.
+- **Calls made for you, all reversible (put to a Fable agent under your Nov 11 standing rule):**
+  - The monthly report's "quotes that said the business needed more information" counts a quote whose "confirm on site" box is ticked or that is a paid diagnostic visit. Nothing reads the business's free-text notes. If you would rather have an explicit "I need more information" choice on the quote form, that is a small later addition.
+  - The "Get help" link shows only on pages a signed-in business sees, never on homeowner pages, your owner pages or the public site, and not on the business sign-in and sign-up pages (the form needs the business signed in).
+- **Also decided:** the five-year consent clock counts a number's last text either way, so the app now notes which number each incoming text came from; your owner settings page gets a box to record "stop texting this number" requests you receive another way (phone call, in person), as the consent rules require; the "Call from the Ask Hava number" button queues the call for the background worker, which holds the phone settings.
+- **Nothing needs you now.**
+
 ## The test machines keep their saved builds again (D-3143, November 12)
 
 - **What happened.** GitHub keeps 10 GB of saved builds for the project. The runner saved about 7 GB more after every merge, which pushed out the builds the checks reuse, so every check run since last night built from scratch (0 of 36 reuses hit today).
