@@ -2423,6 +2423,12 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **One thing you may want changed.** A text that matches the 911 list (for example "I smell gas") is never limited, so the homeowner always gets the 911 safety text, even at her limit. The cost: someone sending many such texts from many phones would get past the hourly cap. If you want a separate cap on emergency texts, say so; it needs a spec change.
 - **Nothing needs you now.**
 
+## Pre-flight fixes, round 4 (D-3106)
+
+- **What changed.** A read-only check of the queued tasks against the code found plans a worker could not have finished as written; the plans were corrected before any of them started. One queued task (T365, the phone read-back fix) was dropped because an earlier task already built and tested that fix. Three small tasks were added: T401 lets the security probe check the released job's page in the business portal, and T402 and T403 let emergency-job texts (including the who's-calling and missed-call texts) and quick replies go out at night as the quiet-hours rules allow, once the new text sender is in.
+- **Worth knowing.** Until T402 and T403 land, a text about an emergency job or a reply to a homeowner's text that is queued between 8 p.m. and 8 a.m. waits until 8 a.m. The 911 safety text, STOP/HELP replies and pick codes are not affected: they go at any hour as before.
+- **Nothing needs you now.**
+
 ## Runner: lanes now prefer different parts of the app (D-3082)
 
 - **What changed.** When several tasks are equally urgent, the runner now starts first one that works in a part of the app no other lane is working in. Two lanes in the same part both edit its notes file, and the second then needs an extra session to merge; that happened 6 times today (3 in portals, 2 in payments, 1 in quotes).

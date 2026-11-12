@@ -12586,7 +12586,6 @@
     "T359",
     "T360",
     "T362",
-    "T365",
     "T366",
     "T367",
     "T368",
@@ -12639,7 +12638,7 @@
    "budget": {
     "files": 3,
     "lines": 400,
-    "context_pct": 45
+    "context_pct": 49
    },
    "checks": [
     "Ci",
@@ -16746,7 +16745,7 @@
    "id": "T300",
    "slug": "business-portal-served",
    "title": "server and portals: the business portal is served behind the business session (home, a released job's page, billing and statements, notice settings)",
-   "goal": "No task serves the business portal (D-2116, D-2117): `server::build_router` merges no `/b` page, and `portals` exports the portal home, the released job's page, billing with its CSV statement and notice settings only as page functions with route constants (D-1728, D-1848, D-1896). (1) `app/server/src/business_portal.rs` builds the routes `GET /b` (`business_home_page`), `POST /b/open-cards` (`save_open_cards_times`), `GET /b/picks/{pick}` (`job_release_page`, which reads `picks::api::released_view` on every load with the session proof from `server::session_minter()`, D-1739), `GET /b/billing` (`billing_page`) and `GET /b/billing/statement.csv` (`statement_csv`), and `GET` and `POST /b/notices` (`notice_settings_page`, `change_channel`; the addresses read from the vault in `server`, D-1848), each page's facts built through each module's `api`; it merges them in the shared `app/server/src/lib.rs` and composes them in `main.rs`. Every route reads the person with `portals::api::business_principal`: no business person (signed out, a homeowner or owner session, a removed member) gets a 4xx answer with a link to `/b/sign-in` and no homeowner detail, so T085's signed-out checks in `tests/e2e/business_portal.spec.ts` stay true; a refusal (another business's pick, a role the page needs missing, an unknown ID) is the one not-found answer; every response is `no_store` (SEC-034); both `POST`s pass `refuse_cross_site` and the CSRF check (SEC-009, SEC-042), and a refusal is a security event (SEC-048). (2) Each served `GET` page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788), and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. (3) Tests: `app/server/tests/business_portal_route.rs` against the assembled router (TD-SEC-43 and the router half of TD-BIZ-42) and `tests/e2e/business_portal_served.spec.ts` (the browser half of TD-BIZ-42; T085's spec is not changed, D-2117). In that spec the fake owner signs in through the served sign-in pages with no read of any email: the spec seeds, through `psql` on `DATABASE_URL` as `tests/e2e/j1_reduced.spec.ts` seeds its quote token, the active business, its owner with a linked fake phone (555-01xx) that takes texts, and a `portals.login_link` row whose `token_sha256` is the SHA-256 of a token the spec chose, then opens `/b/sign-in/{token}`; the new-device code is the one the stand-in Verify issues for that phone, computed in the spec from its rule in `stand_ins/twilio.py` (`start_verification`: the sum of the E.164 number's character codes modulo 1,000,000, six digits); no test-control route, stand-in change or email read is needed (`/__test/messages` lists texts only and the Resend stand-in has no read route). The complaints page, the \"Why was I charged?\" page, the emergency-email switch and the job page's notice log are T306's, the action links T301's and business sign-up T302's (D-2128). Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around.",
+   "goal": "No task serves the business portal (D-2116, D-2117): `server::build_router` merges no `/b` page, and `portals` exports the portal home, the released job's page, billing with its CSV statement and notice settings only as page functions with route constants (D-1728, D-1848, D-1896). (1) `app/server/src/business_portal.rs` builds the routes `GET /b` (`business_home_page`), `POST /b/open-cards` (`save_open_cards_times`), `GET /b/picks/{pick}` (`job_release_page`, which reads `picks::api::released_view` on every load with the session proof from `server::session_minter()`, D-1739), `GET /b/billing` (`billing_page`) and `GET /b/billing/statement.csv` (`statement_csv`), and `GET` and `POST /b/notices` (`notice_settings_page`, `change_channel`; the addresses read from the vault in `server`, D-1848), each page's facts built through each module's `api`; it merges them in the shared `app/server/src/lib.rs` and composes them in `main.rs`. Every route reads the person with `portals::api::business_principal`: no business person (signed out, a homeowner or owner session, a removed member) gets a 4xx answer with a link to `/b/sign-in` and no homeowner detail, so T085's signed-out checks in `tests/e2e/business_portal.spec.ts` stay true; a refusal (another business's pick, a role the page needs missing, an unknown ID) is the one not-found answer; every response is `no_store` (SEC-034); both `POST`s pass `refuse_cross_site` and the CSRF check (SEC-009, SEC-042), and a refusal is a security event (SEC-048). (2) Each served `GET` page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788), and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. (3) Tests: `app/server/tests/business_portal_route.rs` against the assembled router (TD-SEC-43 and the router half of TD-BIZ-42) and `tests/e2e/business_portal_served.spec.ts` (the browser half of TD-BIZ-42; T085's spec is not changed, D-2117). In that spec the fake owner signs in through the served sign-in pages with no read of any email: the spec seeds, through `psql` on `DATABASE_URL` as `tests/e2e/j1_reduced.spec.ts` seeds its quote token, the active business, its owner with a linked fake phone (555-01xx) that takes texts, and a `portals.login_link` row whose `token_sha256` is the SHA-256 of a token the spec chose, then opens `/b/sign-in/{token}`; the new-device code is the one the stand-in Verify issues for that phone, computed in the spec from its rule in `stand_ins/twilio.py` (`start_verification`: the sum of the E.164 number's character codes modulo 1,000,000, six digits); no test-control route, stand-in change or email read is needed (`/__test/messages` lists texts only and the Resend stand-in has no read route). The complaints page, the \"Why was I charged?\" page, the emergency-email switch and the job page's notice log are T306's, the action links T301's and business sign-up T302's (D-2128). Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. `GET /b/picks/{pick}` answers 200 only for a released pick (`picks::api::released_view`), so its row is probed with the released pick T401 adds to the probe's fixture; every other `{pick}` keeps the fixture's waiting pick. Keep each `.route(` call on one line (`tests/security/tests/auth_matrix.rs:289` expects it; rustfmt may wrap a long call, so bind the handler to a short local name first) (plan change D-3106).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -16758,7 +16757,8 @@
     "T195",
     "T196",
     "T199",
-    "T348"
+    "T348",
+    "T401"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -16806,7 +16806,8 @@
     "D-1848",
     "D-1896",
     "D-2117",
-    "D-2440"
+    "D-2440",
+    "D-3106"
    ],
    "cites": [],
    "budget": {
@@ -16827,7 +16828,7 @@
    "id": "T301",
    "slug": "action-links-served",
    "title": "server and portals: the email action links are served (the quote form, the Confirm review step, Hold, Away, Pause, Resume, Busy, link a phone, approve a phone, ask about a charge)",
-   "goal": "No task serves the email action links (D-2128): `portals::api` has `open_action_link`, `use_action_link`, `action_page`, `quote_form_page` and `ask_about_charge` and the route constant `ACTION_ROUTE` (`/b/a/{kind}/{object}/{token}`, T148, \"not served yet\", D-1955), and `quotes::api::job_page` supplies the job page's data, but `server::build_router` merges none of it, so J2's quote form \"opens from its link\" (T099) cannot run. (1) `app/server/src/action_links.rs` builds `GET` and `POST` on `ACTION_ROUTE` for every `ActionKind`: `GET` calls `open_action_link` and shows `action_page` or, for a Quote link, `quote_form_page` with the job page's data, and changes nothing however often it is opened (SEC-026); only the page's `POST` with its CSRF token calls `use_action_link` in the caller's transaction and acts once (D-1955); a token for another kind, object or person, an expired token or a removed member's token gets the one not-found answer and reads nothing; every response is `no_store`; the `POST` passes `refuse_cross_site` and a refusal is a security event (SEC-042, SEC-048); merged in the shared `app/server/src/lib.rs`. Later owners of `business_actions.rs` and `quotes::job_page` (T209, T212, T164, T214, T249, T158) keep the signatures this file calls, and T306 serves any page or action they add (D-2128). (2) Tests: `app/server/tests/action_links_route.rs` against the assembled router (TD-SEC-44) and `tests/e2e/action_links_served.spec.ts` with links seeded through `psql` as `tests/e2e/j1_reduced.spec.ts` seeds its token (the `portals.login_link` row holds the SHA-256 of `action:<kind>:<object>:<token>`, D-1955). Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. Fourth external audit F12 (D-2206, D-1951): the quote form's `POST` calls `portals::api::admit_quote` with the business and the client address first; a refused quote is not stored and the page says to try again later. Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. Nov 11 code review batch 3, F6 (D-2710; BIZ-049, D-2508 (3), D-2510): the quote form's `POST`, before `submit_quote`, calls `portals::api::largest_job_warning` with the business's stored largest job; a price whose top is above it is not sent but shown again with `quote_form_page_warned`, and goes through only when the posted `over_largest` equals the warned cents; a business with no capability row is never warned (TD-BIZ-50, in `app/server/tests/action_links_route.rs`).",
+   "goal": "No task serves the email action links (D-2128): `portals::api` has `open_action_link`, `use_action_link`, `action_page`, `quote_form_page` and `ask_about_charge` and the route constant `ACTION_ROUTE` (`/b/a/{kind}/{object}/{token}`, T148, \"not served yet\", D-1955), and `quotes::api::job_page` supplies the job page's data, but `server::build_router` merges none of it, so J2's quote form \"opens from its link\" (T099) cannot run. (1) `app/server/src/action_links.rs` builds `GET` and `POST` on `ACTION_ROUTE` for every `ActionKind`: `GET` calls `open_action_link` and shows `action_page` or, for a Quote link, `quote_form_page` with the job page's data, and changes nothing however often it is opened (SEC-026); only the page's `POST` with its CSRF token calls `use_action_link` in the caller's transaction and acts once (D-1955); a token for another kind, object or person, an expired token or a removed member's token gets the one not-found answer and reads nothing; every response is `no_store`; the `POST` passes `refuse_cross_site` and a refusal is a security event (SEC-042, SEC-048); merged in the shared `app/server/src/lib.rs`. Later owners of `business_actions.rs` and `quotes::job_page` (T209, T212, T164, T214, T249, T158) keep the signatures this file calls, and T306 serves any page or action they add (D-2128). (2) Tests: `app/server/tests/action_links_route.rs` against the assembled router (TD-SEC-44) and `tests/e2e/action_links_served.spec.ts` with links seeded through `psql` as `tests/e2e/j1_reduced.spec.ts` seeds its token (the `portals.login_link` row holds the SHA-256 of `action:<kind>:<object>:<token>`, D-1955). Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. Fourth external audit F12 (D-2206, D-1951): the quote form's `POST` calls `portals::api::admit_quote` with the business and the client address first; a refused quote is not stored and the page says to try again later. Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. Keep each `.route(` call on one line (`tests/security/tests/auth_matrix.rs:289` expects it; rustfmt may wrap a long call, so bind the handler to a short local name first) (plan change D-3106). Nov 11 code review batch 3, F6 (D-2710; BIZ-049, D-2508 (3), D-2510): the quote form's `POST`, before `submit_quote`, calls `portals::api::largest_job_warning` with the business's stored largest job; a price whose top is above it is not sent but shown again with `quote_form_page_warned`, and goes through only when the posted `over_largest` equals the warned cents; a business with no capability row is never warned (TD-BIZ-50, in `app/server/tests/action_links_route.rs`).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -16884,7 +16885,8 @@
     "D-2206",
     "D-1951",
     "D-2440",
-    "D-2710"
+    "D-2710",
+    "D-3106"
    ],
    "cites": [],
    "budget": {
@@ -17582,7 +17584,9 @@
     "T381",
     "T382",
     "T235",
-    "T394"
+    "T394",
+    "T402",
+    "T403"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -18011,7 +18015,9 @@
     "T239",
     "T392",
     "T394",
-    "T395"
+    "T395",
+    "T402",
+    "T403"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -23329,7 +23335,7 @@
    "id": "T326",
    "slug": "link-notice-stored-pin",
    "title": "calls (harness): the LINK notice names the line's stored PIN, and the ID-derived job_pin is deleted",
-   "goal": "Round 24 audit R24-1 (D-2247; CALL-011, CALL-003; D-2091, D-1696): since T262 a line's PIN is the stored random `calls.number_pool.pin` (`pins::stored_pin`), but `request_link` (`app/calls/src/lifecycle.rs:288`) still builds the `link_this_phone` notice's `{job}` from `job_pin(line).digits()`, the line ID modulo 10,000, so the \"Reply LINK <PIN>\" text and email name a number the voice route no longer accepts. Latent (`request_link` has no production caller and the LINK reply handler is not built) and it fails closed, but D-2091 left the move to a harness task that no task owned. After T292 (which owns `lifecycle.rs` and `line_lifecycle.rs` for the brand): (1) `request_link` reads the line's PIN with `pins::stored_pin` in its transaction and names exactly those four digits; a line with no stored PIN (one opened before migration 0151) queues no notice and answers `false`. (2) `job_pin` and `route` (which routes caller-built `RoutedLine`s on `job_pin`) are deleted from `app/calls/src/routing.rs` and `calls::api` (a shared path); the pure TD-CALL-02 and TD-CALL-11 cases in `tests/integration/tests/pin_routing.rs` call `route_with` with an explicit PIN per line instead, every input, expected step and assertion otherwise byte-identical, and the case that pinned the ID-modulo rule itself (`job_pin(...).digits() == \"1234\"`) goes with the rule; `tests/integration/tests/line_lifecycle.rs` asserts the notice's `job` equals the line's stored PIN; `tests/integration/tests/call_pins.rs` keeps TD-CALL-13's \"not the ID-derived PIN\" count by computing the ID modulo 10,000 in the test. This is a harness task only because those three tests belong to DONE tasks (T077, T079, T262; D-2091). (3) Tests in `tests/integration/tests/link_pin.rs` (TD-CALL-18). The LINK reply handler and `request_link`'s caller are not built here (register row IC-74). Update `app/calls/CLAUDE.md` (the `job_pin` line) and `docs/architecture.md` section 10 (the T262 and CALL-003 lines naming `job_pin`) and `docs/decisions.md`.",
+   "goal": "Round 24 audit R24-1 (D-2247; CALL-011, CALL-003; D-2091, D-1696): since T262 a line's PIN is the stored random `calls.number_pool.pin` (`pins::stored_pin`), but `request_link` (`app/calls/src/lifecycle.rs:288`) still builds the `link_this_phone` notice's `{job}` from `job_pin(line).digits()`, the line ID modulo 10,000, so the \"Reply LINK <PIN>\" text and email name a number the voice route no longer accepts. Latent (`request_link` has no production caller and the LINK reply handler is not built) and it fails closed, but D-2091 left the move to a harness task that no task owned. After T292 (which owns `lifecycle.rs` and `line_lifecycle.rs` for the brand): (1) `request_link` reads the line's PIN with `pins::stored_pin` in its transaction and names exactly those four digits; a line with no stored PIN (one opened before migration 0151) queues no notice and answers `false`. (2) `job_pin` and `route` (which routes caller-built `RoutedLine`s on `job_pin`) are deleted from `app/calls/src/routing.rs` and `calls::api` (a shared path); the pure TD-CALL-02 and TD-CALL-11 cases in `tests/integration/tests/pin_routing.rs` call `route_with` with an explicit PIN per line instead, every input, expected step and assertion otherwise byte-identical, and the case that pinned the ID-modulo rule itself (`job_pin(...).digits() == \"1234\"`) goes with the rule; `tests/integration/tests/line_lifecycle.rs` asserts the notice's `job` equals the line's stored PIN; `tests/integration/tests/call_pins.rs` keeps TD-CALL-13's \"not the ID-derived PIN\" count by computing the ID modulo 10,000 in the test. This is a harness task only because those three tests belong to DONE tasks (T077, T079, T262; D-2091). (3) Tests in `tests/integration/tests/link_pin.rs` (TD-CALL-18). The LINK reply handler and `request_link`'s caller are not built here (register row IC-74). Update `app/calls/CLAUDE.md` (the `job_pin` line) and `docs/architecture.md` section 10 (the T262 and CALL-003 lines naming `job_pin`) and `docs/decisions.md`. Plan change D-3106: T365 left the graph because T311 already binds the read-back confirm to the stored read-back line (`calls.pin_call.readback_line`, `migrations/0174_calls_readback_line.sql`; `voice_confirm` connects only that line while it is still bound, `app/calls/src/pins.rs:477` to `:481`), so its row TD-CALL-21 is TD-CALL-17's cases in `app/server/tests/voice_confirm_line.rs` (`:294`, `:313`): this task's change to `routing.rs` keeps the read-back as T311 left it and every one of those cases passes unchanged.",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -23364,13 +23370,15 @@
     "CALL-003"
    ],
    "tests": [
-    "TD-CALL-18"
+    "TD-CALL-18",
+    "TD-CALL-21"
    ],
    "decisions": [
     "D-2247",
     "D-2091",
     "D-1696",
-    "D-1755"
+    "D-1755",
+    "D-3106"
    ],
    "cites": [],
    "budget": {
@@ -25506,7 +25514,7 @@
    "id": "T356",
    "slug": "outbox-sender-quiet-hours",
    "title": "messaging and server (harness): the worker sends queued texts once, re-checking quiet hours, the line and the suppression list at the moment of sending",
-   "goal": "Nov 10 code review, messaging F4 and batch 2 jobs F1, D-2188's unowned follow-up, and the plan review's M4 (D-2628; QH-001, QH-006, QH-008, TXT-011, TXT-014, TXT-021, CON-009, CON-030; D-558). Three defects in one path. (a) Nothing in production sends a `messaging.outbox` row: `send_on_line` (`app/messaging/src/mode.rs:225`) and `send_checked` (`app/messaging/src/optout.rs:310`) have only test callers, so no consent text, HELP reply, opt-out confirmation or job text reaches a phone. (b) The send path never checks quiet hours and the outbox has no not-before time, so once a sender drains rows as written, a row queued at night goes at once. (c) A text can go out twice: `claim` (`app/messaging/src/models.rs:211`) takes rows in `queued` or `sending`, and `send` (`app/messaging/src/service.rs:184`) resends a `sending` row under the same key, relying on carrier dedupe Twilio does not do (D-558; the done test `td_txt_04_a_killed_worker_resends_under_the_same_key_and_delivers_once` passes only because its fake carrier dedupes by key); it fails after an accept followed by a 15-second client timeout, the 120-second handler timeout, a kill during the drain, or a lost lease while a second worker reclaims the row. Fix: (1) `migrations/0182_messaging_outbox_not_before.sql` adds nullable `not_before` and `sending_since` columns and widens the outbox `status` check (`migrations/0042_messaging_outbox.sql:29`, and any later widening) to add `expired` and `unknown`; (2) `not_before` is set at enqueue from the row's message kind and `rules::decide` (`Hold { until }`), with no change to `NewText` or any struct done tests build by name; the quiet-hours recheck at the send instant lives in the sender, not in `send_checked` or `claim` (plan change D-3055): before each send, `outbox_sender.rs` re-runs the quiet-hours rule at that instant (QH-001, QH-008 for a retry) with the QH-004 exemption decided when the row was queued, not from the kind alone: the outbox row records no emergency flag and no inbound time (`migrations/0042_messaging_outbox.sql:21` to `:34`), so `migrations/0182_messaging_outbox_not_before.sql` (this task's) also adds a nullable `quiet_exempt_until`, written at enqueue from the facts `rules::decide` reads (`rules::Outgoing`, `app/messaging/src/rules.rs:180`): `infinity` for an any-hour kind (the 911 text, keyword replies, pick codes, the after-hours notice) and for an emergency job's quote, quote-count, question and pick-step texts; the person's inbound time plus 15 minutes for a direct reply; empty otherwise (the business-email exemption is email, not the outbox). The facts come through a new enqueue entry point beside `enqueue`, which records no exemption, so `NewText` is unchanged; at send the row goes when the instant is inside the window or before `quiet_exempt_until` (a direct reply sent after its 15 minutes waits for the window, as `rules::retry` says), and on a hold sets `not_before` and leaves the row `queued` without reaching the carrier; `send_checked` and `send_on_line` keep their consent, suppression and line checks and gain no clock rule, because done tests call `send_checked` directly at night for ordinary `first_quote` rows and expect them to go (`tests/integration/tests/help_start.rs:191` and `:207`, T030's, at `NIGHT`, 23:00 Arizona time; `tests/integration/tests/optout_flow.rs:198` and `:448`, T029's, at `NOW`, 00:33 Arizona time); the sender is their only production caller (defect (a)), and no other production code may call them for a row of a quiet-hours kind; the CON-018 HELP reply and the CON-009 confirmation keep their any-hour rule; (3) the fence: `claim` takes only a `queued` row, moving it to `sending` with `sending_since` in one statement, so two senders can never both hold it; the sender's own due query picks only rows whose `not_before` has passed, and `claim` does not read `not_before`, for the same done tests; the carrier call runs outside any transaction; a definite refusal (the vendor's 4xx, 21610 as today) moves the row back to `queued` for the TXT-014 retries or blocks it; an unknown outcome (timeout, connection lost after the request was sent) and any row still `sending` 5 minutes after `sending_since` (a crash) move to `unknown` and are never resent blind: an important text (TXT-014) goes to its email copy and portal line as after its last retry, and one Low `messaging.send_outcome_unknown` alert is raised per row with no body or phone; (4) `app/messaging/src/outbox_sender.rs`: a `messaging.send_due` worker task, registered in `app/server/src/bin/worker.rs` (shared) with the Twilio settings like `picks.line_retry`, claims due rows in bounded batches, sends each through `send_on_line`, sweeps stale `sending` rows to `unknown`, and re-queues itself; (5) a non-reply row queued while its line was paused, switched off or suspended is marked `expired` with one audit row and never sent (D-2188), and a CON-009 confirmation older than 5 minutes is never sent (CON-030). This is a harness task because it rewrites the done TD-TXT-04 test in `tests/integration/tests/outbox.rs`, whose premise (the carrier dedupes a resend) D-558 left unverified and is false for Twilio: the killed-worker case now asserts one carrier call and the row `unknown`, never two calls; every other assertion in that file is kept. The Twilio sent-log lookup that could settle an `unknown` row (OPS-017) is not built here. Tests in `tests/integration/tests/outbox_sender.rs` (TD-QH-05), through the worker with the stand-in Twilio and a fake carrier that does not dedupe: a `caller_missed` row queued at 21:30 Arizona time for a 928 number is not sent at 21:31 and is sent at 08:00; a consent text queued at 14:00 goes at once; a suppressed number gets only HELP; a row queued while the line was suspended is expired when it reopens; a confirmation goes within 5 minutes or never; a worker killed after the carrier accepted leaves one delivery and the row `unknown` after 5 minutes, never two deliveries; two workers racing for one row make one carrier call; a timeout gives `unknown`, the email copy for an important text, and one alert. Every other TD-TXT and TD-CON case and `suspension_mode.rs` pass unchanged. Update the `messaging` and `server` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`.",
+   "goal": "Nov 10 code review, messaging F4 and batch 2 jobs F1, D-2188's unowned follow-up, and the plan review's M4 (D-2628; QH-001, QH-006, QH-008, TXT-011, TXT-014, TXT-021, CON-009, CON-030; D-558). Three defects in one path. (a) Nothing in production sends a `messaging.outbox` row: `send_on_line` (`app/messaging/src/mode.rs:225`) and `send_checked` (`app/messaging/src/optout.rs:310`) have only test callers, so no consent text, HELP reply, opt-out confirmation or job text reaches a phone. (b) The send path never checks quiet hours and the outbox has no not-before time, so once a sender drains rows as written, a row queued at night goes at once. (c) A text can go out twice: `claim` (`app/messaging/src/models.rs:211`) takes rows in `queued` or `sending`, and `send` (`app/messaging/src/service.rs:184`) resends a `sending` row under the same key, relying on carrier dedupe Twilio does not do (D-558; the done test `td_txt_04_a_killed_worker_resends_under_the_same_key_and_delivers_once` passes only because its fake carrier dedupes by key); it fails after an accept followed by a 15-second client timeout, the 120-second handler timeout, a kill during the drain, or a lost lease while a second worker reclaims the row. Fix: (1) `migrations/0182_messaging_outbox_not_before.sql` adds nullable `not_before` and `sending_since` columns and widens the outbox `status` check (`migrations/0042_messaging_outbox.sql:29`, and any later widening) to add `expired` and `unknown`; (2) `not_before` is set at enqueue from the row's message kind and `rules::decide` (`Hold { until }`), with no change to `NewText` or any struct done tests build by name; the quiet-hours recheck at the send instant lives in the sender, not in `send_checked` or `claim` (plan change D-3055): before each send, `outbox_sender.rs` re-runs the quiet-hours rule at that instant (QH-001, QH-008 for a retry) with the QH-004 exemption decided when the row was queued, not from the kind alone: the outbox row records no emergency flag and no inbound time (`migrations/0042_messaging_outbox.sql:21` to `:34`), so `migrations/0182_messaging_outbox_not_before.sql` (this task's) also adds a nullable `quiet_exempt_until`, written at enqueue from the facts `rules::decide` reads (`rules::Outgoing`, `app/messaging/src/rules.rs:180`): `infinity` for an any-hour kind (the 911 text, keyword replies, pick codes, the after-hours notice) and for an emergency job's quote, quote-count, question and pick-step texts; the person's inbound time plus 15 minutes for a direct reply; empty otherwise (the business-email exemption is email, not the outbox). Plain `enqueue` (`app/messaging/src/service.rs:141`, this task's) writes `infinity` itself for an any-hour kind, read from the row's template ID, so no producer of those kinds needs a change; the two facts a template ID cannot show (an emergency job, a direct reply's inbound time) come through a new entry point beside it, `enqueue_exempt`, so `NewText` is unchanged. No producer file is changed here: every production producer calls plain `enqueue` (`app/picks/src/service.rs:195`, `app/intake/src/routing.rs:516`, `conversation.rs:438`, `service.rs:301`, `closing.rs:209`, `handlers.rs:360`, `job_texts.rs:358`, `app/server/src/inbound_text.rs:541`), and T402 moves those that queue an emergency job's texts or a direct reply to `enqueue_exempt`; until then such a text queued at night waits for 8 a.m., the safe side of QH-004 (plan change D-3106); at send the row goes when the instant is inside the window or before `quiet_exempt_until` (a direct reply sent after its 15 minutes waits for the window, as `rules::retry` says), and on a hold sets `not_before` and leaves the row `queued` without reaching the carrier; `send_checked` and `send_on_line` keep their consent, suppression and line checks and gain no clock rule, because done tests call `send_checked` directly at night for ordinary `first_quote` rows and expect them to go (`tests/integration/tests/help_start.rs:191` and `:207`, T030's, at `NIGHT`, 23:00 Arizona time; `tests/integration/tests/optout_flow.rs:198` and `:448`, T029's, at `NOW`, 00:33 Arizona time); the sender is their only production caller (defect (a)), and no other production code may call them for a row of a quiet-hours kind; the CON-018 HELP reply and the CON-009 confirmation keep their any-hour rule; (3) the fence: `claim` takes only a `queued` row, moving it to `sending` with `sending_since` in one statement, so two senders can never both hold it; the sender's own due query picks only rows whose `not_before` has passed, and `claim` does not read `not_before`, for the same done tests; the carrier call runs outside any transaction; a definite refusal (the vendor's 4xx, 21610 as today) moves the row back to `queued` for the TXT-014 retries or blocks it, inside `service::send` itself (`app/messaging/src/service.rs:185`), not in the sender: the done `tests/integration/tests/text_retries.rs` (`:157` to `:159`) calls `send_checked` four times on one row with a carrier answering `AdapterError::NotSent` and expects `Err(Carrier)` each time, so the row is `queued` again before `send` returns (`AdapterError::OutcomeUnknown` is the unknown outcome); an unknown outcome (timeout, connection lost after the request was sent) and any row still `sending` 5 minutes after `sending_since` (a crash) move to `unknown` and are never resent blind, the move dropping the row's body in the same statement (`retention::cut_bodies`, `app/messaging/src/retention.rs:129`, cuts only `queued` and `sending` rows, so `0182` also widens `outbox_body_check`, `migrations/0089_messaging_retries_email.sql:24`, to let `unknown` and `expired` rows hold no body; a row marked `expired` drops its body the same way): an important text (TXT-014) goes to its email copy and portal line as after its last retry, and one Low `messaging.send_outcome_unknown` alert is raised per row with no body or phone; (4) `app/messaging/src/outbox_sender.rs`: a `messaging.send_due` worker task, registered in `worker_registry` in the shared `app/server/src/lib.rs` (T327, D-2849; `bin/worker.rs` only calls it) with the Twilio settings like `picks.line_retry`, claims due rows in bounded batches, sends each through `send_on_line`, sweeps stale `sending` rows to `unknown`, and re-queues itself; (5) a non-reply row queued while its line was paused, switched off or suspended is marked `expired` with one audit row and never sent (D-2188), and a CON-009 confirmation older than 5 minutes is never sent (CON-030). This is a harness task because it rewrites the done TD-TXT-04 test in `tests/integration/tests/outbox.rs`, whose premise (the carrier dedupes a resend) D-558 left unverified and is false for Twilio: the killed-worker case now asserts one carrier call and the row `unknown`, never two calls; every other assertion in that file is kept. The Twilio sent-log lookup that could settle an `unknown` row (OPS-017) is not built here. Tests in `tests/integration/tests/outbox_sender.rs` (TD-QH-05), through the worker with the stand-in Twilio and a fake carrier that does not dedupe: a `caller_missed` row queued at 21:30 Arizona time for a 928 number is not sent at 21:31 and is sent at 08:00; a consent text queued at 14:00 goes at once; a suppressed number gets only HELP; a row queued while the line was suspended is expired when it reopens; a confirmation goes within 5 minutes or never; a worker killed after the carrier accepted leaves one delivery and the row `unknown` after 5 minutes, never two deliveries; two workers racing for one row make one carrier call; a timeout gives `unknown`, the email copy for an important text, and one alert. Every other TD-TXT and TD-CON case and `suspension_mode.rs` pass unchanged. Update the `messaging` and `server` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`.",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -25563,7 +25571,8 @@
     "D-2188",
     "D-1302",
     "D-558",
-    "D-3055"
+    "D-3055",
+    "D-3106"
    ],
    "cites": [],
    "budget": {
@@ -26004,7 +26013,7 @@
    "id": "T362",
    "slug": "serve-static-files",
    "title": "server: the built static files are served at /static/<crate>/ under the security headers",
-   "goal": "Nov 10 code review batch 2, portals F2 (D-2633; PICK-009, A11Y-033, SEC-012; D-1281, D-1235): nothing serves `/static/`, so the quote page's live updates (`app/portals/templates/quote_page.html:49` loads `/static/portals/quote_page.js`) never run in production, and the Confirm page's `confirm_pay.js` (T261) and the owner sign-in's `passkey.js` (T303) would not load either; `build_router` (`app/server/src/lib.rs:126`) has no static route, and `docs/architecture.md` section 3 still says \"no route serves `/static/` yet\". `app/server/src/static_files.rs` serves the image's built files at `/srv/askhava/static/<crate>/` (in dev and CI, the repo's `app/<crate>/static/` after `npm run build`) at `/static/<crate>/` with tower-http's `ServeDir` (the `fs` feature is already on), merged in `build_router` (shared) under the same security headers as every page, with the right MIME type (`.js` as JavaScript, `.css`, fonts, images), no directory listing, no path escape, and a long cache only for content-hashed names; the matrix gets a section 13 `Public` row for the door (T348's probe). Tests: `app/server/tests/static_files_route.rs` (TD-SEC-62): `/static/portals/quote_page.js` answers 200 as JavaScript with the security headers; `/static/../Cargo.toml`, an encoded traversal and a directory answer 404; an unknown crate answers 404; `tests/e2e/static_served.spec.ts`: the quote page's script loads with no console error, and where the quote page is served, a quote added after load gives \"1 new quote added below.\" in its status line. Update `app/server/CLAUDE.md`, `docs/architecture.md` (section 3 and the section 13 row) and `docs/decisions.md`.",
+   "goal": "Nov 10 code review batch 2, portals F2 (D-2633; PICK-009, A11Y-033, SEC-012; D-1281, D-1235): nothing serves `/static/`, so the quote page's live updates (`app/portals/templates/quote_page.html:49` loads `/static/portals/quote_page.js`) never run in production, and the Confirm page's `confirm_pay.js` (T261) and the owner sign-in's `passkey.js` (T303) would not load either; `build_router` (`app/server/src/lib.rs:126`) has no static route, and `docs/architecture.md` section 3 still says \"no route serves `/static/` yet\". `app/server/src/static_files.rs` serves the image's built files at `/srv/askhava/static/<crate>/` (in dev and CI, the repo's `app/<crate>/static/` after `npm run build`) at `/static/<crate>/` with tower-http's `ServeDir` (the `fs` feature is already on), merged in `build_router` (shared) under the same security headers as every page; the folder is a setting (read in the shared `app/core/src/settings.rs`) handed to `static_files::router(root)`, so the test points it at a temporary folder holding a fake `portals/quote_page.js` it writes itself (`Ci` runs `cargo test --workspace` at `.github/workflows/ci.yml:290` with no `npm run build`, and only the `.ts` sources are committed in `app/portals/static/`); it is mounted with `Router::nest_service`, never `.route(`, and no `*_PATH` or `*_ROUTE` constant names the folder path, because `tests/security/tests/auth_matrix.rs` (T348's, done) reads every one-line `.route(` call and every `/`-prefixed `*_PATH` or `*_ROUTE` constant as a route (`:276` to `:300`); T230's `/static/portals/feedback.css` (`FEEDBACK_CSS_ROUTE`) keeps its own route and answer (plan change D-3106); with the right MIME type (`.js` as JavaScript, `.css`, fonts, images), no directory listing, no path escape, and a long cache only for content-hashed names; `docs/architecture.md` section 13 gets a `yes` row `GET /static/portals/quote_page.js` (module `server`; `auth_matrix.rs`'s `door()` gives `/static` the `Asset` door, which `app/server/tests/door_matrix.rs` does not probe). Tests: `app/server/tests/static_files_route.rs` (TD-SEC-62): with the folder set to its temporary folder, `/static/portals/quote_page.js` answers 200 as JavaScript with the security headers; `/static/../Cargo.toml`, an encoded traversal and a directory answer 404; an unknown crate answers 404; `tests/e2e/static_served.spec.ts`: the quote page's script loads with no console error, and where the quote page is served, a quote added after load gives \"1 new quote added below.\" in its status line. Update `app/server/CLAUDE.md`, `docs/architecture.md` (section 3 and the section 13 row) and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -26045,7 +26054,8 @@
     "D-2633",
     "D-2631",
     "D-1281",
-    "D-1235"
+    "D-1235",
+    "D-3106"
    ],
    "cites": [],
    "budget": {
@@ -26181,64 +26191,6 @@
    "prompt": "kit/prompts/T364.md"
   },
   {
-   "id": "T365",
-   "slug": "readback-confirm-same-line",
-   "title": "calls: the read-back confirm connects only the line that was read back",
-   "goal": "Nov 10 code review batch 2, calls F3 (D-2639; CALL-005, PRIV-005): the read-back confirm can connect a different line than the one read back: at the second wrong try the read-back names the first name and street of `mine.last()` (`app/calls/src/routing.rs:202`), but the line ID is never stored or signed, and `voice_confirm` (`app/calls/src/pins.rs:347`) re-reads `lines_on` and connects the newest line, so a line opened between the two requests is connected to a caller who confirmed someone else's details. Fix: the read-back line's ID is stored with the call's (CallSid, try) row (or signed into the `confirm=N` URL under the ID secret), and `voice_confirm` connects only that line, and only while it is still open; otherwise it answers as for a wrong PIN. After T349 and T326 (the queued owners of `pins.rs` and `routing.rs`); T311's read-back and T349's draws are kept. Tests in `tests/integration/tests/readback_confirm_line.rs` (TD-CALL-21): a second line opened on the number after the read-back is not connected by the confirm (fails today); a line closed after the read-back is not connected; the plain read-back and confirm still connect the line read back; TD-CALL-13 and TD-CALL-20 pass unchanged. Update the `calls` `CLAUDE.md` and `docs/decisions.md`.",
-   "type": "build",
-   "phase": 1,
-   "stage": "4",
-   "module": "calls",
-   "deps": [
-    "T349",
-    "T326"
-   ],
-   "model": "claude-opus-5-5",
-   "effort": "high",
-   "reviewer_model": "claude-opus-5-5",
-   "review_areas": [
-    "privacy",
-    "security"
-   ],
-   "owns": [
-    "app/calls/src/pins.rs",
-    "app/calls/src/routing.rs",
-    "tests/integration/tests/readback_confirm_line.rs"
-   ],
-   "reads": [
-    "docs/architecture.md",
-    "docs/code-docs.md",
-    "docs/spec/calls.md",
-    "docs/spec/privacy.md",
-    "docs/brains/rust-production.md"
-   ],
-   "requirements": [
-    "CALL-005",
-    "PRIV-005"
-   ],
-   "tests": [
-    "TD-CALL-21"
-   ],
-   "decisions": [
-    "D-2639",
-    "D-2631",
-    "D-2451"
-   ],
-   "cites": [],
-   "budget": {
-    "files": 3,
-    "lines": 250,
-    "context_pct": 15
-   },
-   "checks": [
-    "Ci",
-    "Twin",
-    "Ally"
-   ],
-   "branch": "claude/task/T365-readback-confirm-same-line",
-   "prompt": "kit/prompts/T365.md"
-  },
-  {
    "id": "T366",
    "slug": "dead-letters-and-timer-backstop",
    "title": "jobs and server: every dead-lettered task alerts, and a daily backstop revives job timers that died so no job is stuck",
@@ -26305,7 +26257,7 @@
    "id": "T367",
    "slug": "purge-sweeps-schedule-first",
    "title": "jobs, messaging, privacy, intake and payments: the daily sweeps queue tomorrow's run first, alert when a run dies, read only what is due, and use the worker's clock",
-   "goal": "Nov 10 code review batch 2, jobs F3 and F4 (D-2641; PRIV-007 to PRIV-009, TXT-020; D-1799, D-737, D-491, SEC-035). (1) The daily purge sweep stops for good after one dead-lettered run, with no alert: `run_sweep` (`app/jobs/src/purge_events.rs:97`) calls `sweep_closed` first and `schedule_sweep` after, so a run that fails 5 times never queues tomorrow's; its registration (`app/server/src/lib.rs:451`) has no `alert_if_last`; and each run reloads every final job ever with three inserts per job inside the 120-second handler limit, so it eventually always times out. The same order is in `messaging::retention::run_cut` (`app/messaging/src/retention.rs:189`) and `app/messaging/src/purge.rs:139`. Each now queues tomorrow's run first (as `offdb_stream::schedule_verify` does, D-737), is registered with `alert_if_last` (shared `app/server/src/lib.rs`), and reads only final jobs with a purge stage not yet queued, in bounded pages. (2) Those sweeps read the wall clock, not the worker's injected clock: `purge_events.rs:100`, `retention.rs:192`, `app/privacy/src/handlers.rs:53`, `:88`, `:137`, `app/intake/src/purge.rs:284`, `:327`, `:347`, `app/payments/src/purge.rs:66` and the pause kind's registration; each handler takes the clock as `register_body_deletes` and `register_photo_deletes` do (SEC-035). Tests in `tests/integration/tests/purge_sweeps.rs` (TD-PRIV-25): a sweep handler that fails every attempt still leaves the next day's sweep row and raises one `privacy.purge_failed` alert; a run over 5,000 final jobs with stages already queued reads none of them again; with a `ManualClock` advanced 31 days in a worker run the stages are queued (fails today: the wall clock is read). Every TD-PRIV and TD-TXT purge case passes unchanged. Update the `jobs`, `messaging`, `privacy`, `intake` and `payments` `CLAUDE.md` files and `docs/decisions.md`.",
+   "goal": "Nov 10 code review batch 2, jobs F3 and F4 (D-2641; PRIV-007 to PRIV-009, TXT-020; D-1799, D-737, D-491, SEC-035). (1) The daily purge sweep stops for good after one dead-lettered run, with no alert: `run_sweep` (`app/jobs/src/purge_events.rs:97`) calls `sweep_closed` first and `schedule_sweep` after, so a run that fails 5 times never queues tomorrow's; its registration (`register_purge_handlers` in `app/server/src/lib.rs`) has no `alert_if_last`; and each run reloads every final job ever with three inserts per job inside the 120-second handler limit, so it eventually always times out. The same order is in `messaging::retention::run_cut` (`app/messaging/src/retention.rs:189`) and `app/messaging/src/purge.rs:139`. Each now queues tomorrow's run first (as `offdb_stream::schedule_verify` does, D-737), is registered with `alert_if_last` (shared `app/server/src/lib.rs`), and reads only final jobs with a purge stage not yet queued, in bounded pages. (2) Those sweeps read the wall clock, not the worker's injected clock: `purge_events.rs:100`, `retention.rs:192`, `app/privacy/src/handlers.rs:53`, `:88`, `:137`, `app/intake/src/purge.rs:284`, `:327`, `:347`, `app/payments/src/purge.rs:66` and the pause kind's registration. Each `(pool, task)` handler (`run_sweep`, `run_cut`, `run_request_sweep`, `run_purge`, `run_request_purge`, `run_purge_due`, `run_purge_due_after`, `run_complaint_hold`, `run_dispute_holds`) keeps its signature and behaviour, because done tests call them directly with `(pool, task)` (`tests/integration/tests/retention_purge.rs`, T094's, `:218` to `:516`) and register `run_purge` and `run_request_purge` as plain handlers (`tests/integration/tests/retention_purge_races.rs` `:146`, `:147`, `:509`, `:510`); each gains a twin taking the instant (`now`), which the plain one calls with the wall clock, and a clock-taking builder (`register_*(registry, clock)`, as `register_body_deletes` and `register_photo_deletes` take the clock, SEC-035) that `worker_registry`'s purge registrations in the shared `app/server/src/lib.rs` call instead of registering the plain handlers (plan change D-3106). Tests in `tests/integration/tests/purge_sweeps.rs` (TD-PRIV-25): a sweep handler that fails every attempt still leaves the next day's sweep row and raises one `privacy.purge_failed` alert; a run over 5,000 final jobs with stages already queued reads none of them again; with a `ManualClock` advanced 31 days in a worker run the stages are queued (fails today: the wall clock is read). Every TD-PRIV and TD-TXT purge case passes unchanged. Update the `jobs`, `messaging`, `privacy`, `intake` and `payments` `CLAUDE.md` files and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -26352,7 +26304,8 @@
     "D-2631",
     "D-1799",
     "D-737",
-    "D-491"
+    "D-491",
+    "D-3106"
    ],
    "cites": [],
    "budget": {
@@ -26446,7 +26399,7 @@
    "id": "T369",
    "slug": "after-hours-needs-cover",
    "title": "businesses: the sign-up after-hours answer ticks only while someone covers, and a suspension lasts until a new Yes",
-   "goal": "Nov 11 code review batch 3, F3 (sign-up half) and F4 (D-2702; BIZ-007, INT-033, D-2008, D-2010). (F3) `save_capability` (`app/businesses/src/capability.rs:259`) writes the after-hours answer through `set_ticks`, so a business answering yes at sign-up is ticked with nobody covering (no switch on, no test email, no Yes), against BIZ-007. (F4) `set_after_hours` (`app/businesses/src/emergency_switch.rs:163`) sets `after_hours_suspended_at` to NULL on every change, so unticking and re-ticking a suspended business clears the suspension without the new Yes BIZ-007 and D-2008 require. Fix: (1) `save_capability` stores the after-hours answer through the `emergency_switch` rule in its transaction: ticked only while `covered` at `now` with `EMERGENCY_YES_LIFE`, otherwise left unticked, and its result says the answer was held back so the page can tell the owner to turn on \"Emergency emails at any hour\" and answer the test email (no new customer words in this task); (2) `set_after_hours` never clears `after_hours_suspended_at`; only `record_alert_answer`'s Yes does; (3) so the tick can be set at all in production (D-2010 (c); `set_after_hours` has no non-test caller): the emergency-switch page (`app/portals/src/emergency_switch_page.rs`, its template `app/portals/templates/emergency_test_email.html`, which renders the page) gains the BIZ-007 after-hours box with its spec words, shown to the owner or a \"Confirm and billing\" member, a new `SwitchStep::AfterHours(bool)` calling `set_after_hours` (a `NoCover` refusal shows the steps still missing), and the held-back sign-up answer links to that page; T306 serves the page and its POST. Tests in `tests/integration/tests/after_hours_cover.rs` (TD-BIZ-47), each failing on today's `main`: a capability save with after-hours yes and nobody covering leaves the tick false; with an owner who has the switch on, a sent test and a current Yes it is ticked; the switch page's after-hours step ticks once the owner's Yes is in and is refused before it, and its page has no axe-core violation; suspend, untick, re-tick leaves the business suspended and out of `covered_night_count` until a new Yes, after which it counts. TD-BIZ-24 and TD-BIZ-29 pass unchanged. Update the `businesses` and `portals` `CLAUDE.md` files and `docs/decisions.md`.",
+   "goal": "Nov 11 code review batch 3, F3 (sign-up half) and F4 (D-2702; BIZ-007, INT-033, D-2008, D-2010). (F3) `save_capability` (`app/businesses/src/capability.rs:259`) writes the after-hours answer through `set_ticks`, so a business answering yes at sign-up is ticked with nobody covering (no switch on, no test email, no Yes), against BIZ-007. (F4) `set_after_hours` (`app/businesses/src/emergency_switch.rs:163`) sets `after_hours_suspended_at` to NULL on every change, so unticking and re-ticking a suspended business clears the suspension without the new Yes BIZ-007 and D-2008 require. Fix: (1) `save_capability` stores the after-hours answer through the `emergency_switch` rule in its transaction: ticked only while `covered` at `now` with `EMERGENCY_YES_LIFE`, otherwise left unticked, and its result says the answer was held back so the page can tell the owner to turn on \"Emergency emails at any hour\" and answer the test email (no new customer words in this task); (2) `set_after_hours` never clears `after_hours_suspended_at`; only `record_alert_answer`'s Yes does; (3) so the tick can be set at all in production (D-2010 (c); `set_after_hours` has no non-test caller): the emergency-switch page (`app/portals/src/emergency_switch_page.rs`, its template `app/portals/templates/emergency_test_email.html`, which renders the page) gains the BIZ-007 after-hours box with its spec words, shown to the owner or a \"Confirm and billing\" member, a new `SwitchStep::AfterHours(bool)` calling `set_after_hours` (a `NoCover` refusal shows the steps still missing), and the held-back sign-up answer links to that page; T306 serves the page and its POST. Tests in `tests/integration/tests/after_hours_cover.rs` (TD-BIZ-47), each failing on today's `main`: a capability save with after-hours yes and nobody covering leaves the tick false; with an owner who has the switch on, a sent test and a current Yes it is ticked; the switch page's after-hours step ticks once the owner's Yes is in and is refused before it; the page has no axe-core violation: `td_biz_47_write_pages_for_axe` in `after_hours_cover.rs` writes the switch page with the after-hours box (unticked, ticked, and the `NoCover` refusal listing the missing steps) into the folder `EMERGENCY_SWITCH_HTML_DIR` names, and `tests/e2e/emergency_switch_after_hours.spec.ts` renders them through that test and scans each with axe at 320, 768 and 1280 px, as T155's `tests/integration/tests/capability_setup.rs` and `tests/e2e/capability_setup.spec.ts` do, since the page is not served until T306 (plan change D-3106); suspend, untick, re-tick leaves the business suspended and out of `covered_night_count` until a new Yes, after which it counts. TD-BIZ-24 and TD-BIZ-29 pass unchanged. Update the `businesses` and `portals` `CLAUDE.md` files and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -26465,7 +26418,8 @@
     "app/businesses/src/emergency_switch.rs",
     "tests/integration/tests/after_hours_cover.rs",
     "app/portals/src/emergency_switch_page.rs",
-    "app/portals/templates/emergency_test_email.html"
+    "app/portals/templates/emergency_test_email.html",
+    "tests/e2e/emergency_switch_after_hours.spec.ts"
    ],
    "reads": [
     "docs/architecture.md",
@@ -26487,11 +26441,12 @@
     "D-2700",
     "D-2008",
     "D-2010",
-    "D-2711"
+    "D-2711",
+    "D-3106"
    ],
    "cites": [],
    "budget": {
-    "files": 5,
+    "files": 6,
     "lines": 350,
     "context_pct": 20
    },
@@ -26564,7 +26519,7 @@
    "id": "T371",
    "slug": "daily-license-lists-run",
    "title": "licensing and server: the worker fetches and records the daily ROC and city license lists, and a failing list raises its alerts and runs the throttled lookups",
-   "goal": "Nov 11 code review batch 3, F6 (b), found while checking it (D-2704; LIC-006, LIC-007, LIC-008, LIC-010, LIC-039, CARD-015, D-230, D-942): nothing in production runs the daily lists: `licensing::api::import_roc_list` and `import_city_list` (`app/licensing/src/service.rs:74`, `:106`) have test callers only, `LicenseSource::fetch_daily_list` (`app/adapters/src/license_sources.rs:19`) is never called, and `list_failure_alerts`, `alert_list_failure` and `lookup_while_list_fails` (`app/licensing/src/handlers.rs`) wait for a caller that holds the failure start (its module docs); so verified statuses never update from the lists, a license that lapsed keeps its cards, and no re-apply (T372) can ever see a class change. T134 only puts the real sources behind the adapter. Fix: `app/licensing/src/daily_lists.rs`: a `licensing.daily_lists` task, registered in the shared worker and queued once a day at a fixed Arizona time (a setting) with tomorrow queued first (D-737), fetches each list through `LicenseSource` (the `file://` fixtures in the build), records it with the import function, and on a fetch or import failure keeps the failure start from licensing's own import records (no new table), raises `alert_list_failure`'s alerts once each, and runs `lookup_while_list_fails` for that list's active businesses at the throttle, bounded per run (a capped batch, a setting, the rest on the next run); the (business, license number) pairs come from `businesses::api` through the server's handler wiring in the shared `app/server/src/lib.rs`, since licensing may not call businesses (`kit/layers.json`); while a list is failing the task re-queues itself on a short cadence (hourly, a setting) instead of daily, so the 12-hour alert fires on time; a run that succeeds after failures ends the failure; a second run for the same list date records nothing new. Tests in `tests/integration/tests/daily_license_lists.rs` (TD-LIC-28), clock advanced: a fixture list is recorded once and a re-run adds nothing; a missing list for 12 hours raises the listed alert once and runs the lookups at least the spacing apart and never more than the batch cap per run, the remainder on later runs; the hourly re-runs raise the 12-hour alert within the hour it falls due; at 24 hours the push alert once; the next good list ends the failure. Update the `licensing` and `server` `CLAUDE.md` files and `docs/decisions.md`. Plan change D-2954: the license source's base URL is the setting `ASKHAVA_LICENSE_BASE_URL` (T385 adds the key; required in `test` and `live`), and the list names are `roc` and `city`, the names of T385's e2e fixture lists.",
+   "goal": "Nov 11 code review batch 3, F6 (b), found while checking it (D-2704; LIC-006, LIC-007, LIC-008, LIC-010, LIC-039, CARD-015, D-230, D-942): nothing in production runs the daily lists: `licensing::api::import_roc_list` and `import_city_list` (`app/licensing/src/service.rs:74`, `:106`) have test callers only, `LicenseSource::fetch_daily_list` (`app/adapters/src/license_sources.rs:19`) is never called, and `list_failure_alerts`, `alert_list_failure` and `lookup_while_list_fails` (`app/licensing/src/handlers.rs`) wait for a caller that holds the failure start (its module docs); so verified statuses never update from the lists, a license that lapsed keeps its cards, and no re-apply (T372) can ever see a class change. T134 only puts the real sources behind the adapter. Fix: `app/licensing/src/daily_lists.rs`: a `licensing.daily_lists` task, registered in the shared worker and queued once a day at a fixed Arizona time (a setting) with tomorrow queued first (D-737), fetches each list through `LicenseSource` (the `file://` fixtures in the build), records it with the import function, and on a fetch or import failure takes the failure start from licensing's own import records when the list was imported before (`licensing.list_import` stores successful imports only, `app/licensing/src/service.rs:149`); a list never imported has no such start and nothing stores when the alerts last ran, so the failure start and the last run time travel in the re-queued task's payload (no new table; plan change D-3106), and it raises `alert_list_failure`'s alerts once each, and runs `lookup_while_list_fails` for that list's active businesses at the throttle, bounded per run (a capped batch, a setting, the rest on the next run); the (business, license number) pairs come from `businesses::api` through the server's handler wiring in the shared `app/server/src/lib.rs`, since licensing may not call businesses (`kit/layers.json`); while a list is failing the task re-queues itself on a short cadence (hourly, a setting) instead of daily, so the 12-hour alert fires on time; a run that succeeds after failures ends the failure; a second run for the same list date records nothing new. Tests in `tests/integration/tests/daily_license_lists.rs` (TD-LIC-28), clock advanced: a fixture list is recorded once and a re-run adds nothing; a missing list for 12 hours raises the listed alert once and runs the lookups at least the spacing apart and never more than the batch cap per run, the remainder on later runs; the hourly re-runs raise the 12-hour alert within the hour it falls due; at 24 hours the push alert once; the next good list ends the failure. Update the `licensing` and `server` `CLAUDE.md` files and `docs/decisions.md`. Plan change D-2954: the license source's base URL is the setting `ASKHAVA_LICENSE_BASE_URL` (T385 adds the key; required in `test` and `live`), and the list names are `roc` and `city`, the names of T385's e2e fixture lists.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -26608,7 +26563,8 @@
     "D-2700",
     "D-942",
     "D-2711",
-    "D-2954"
+    "D-2954",
+    "D-3106"
    ],
    "cites": [],
    "budget": {
@@ -27554,17 +27510,17 @@
    "id": "T398",
    "slug": "phone-approval-gate",
    "title": "calls, server and businesses: calls, texts and notice texts act for the business only through an approved phone, and a member's number change emails the owner again",
-   "goal": "Register row IC-95, the gate behind the hold (D-3081; BIZ-033, CALL-012; D-1695, D-3079). After T396 (`messaging::api::sender_line`, `businesses::api::phone_standing`, `staff_phone.approved_at` and `number_set_at`), T365 (the last earlier owner of `app/calls/src/routing.rs`), T391 (of `app/server/src/inbound_text.rs`), T147 (of `app/businesses/src/channel_preference.rs`) and T293 (of `app/businesses/src/complaints.rs`). T396 keeps a waiting phone's digests out of the sender directory; this task makes both routes check the phone's standing as well, so a digest left in the directory by any path still cannot act as the business, and gives the pure `calls::lifecycle::phone_works` and `gate` (`app/calls/src/lifecycle.rs:241`, `:248`, today called only by tests) their production caller. (1) `app/calls/src/routing.rs`: `party_of` (`:419`, the one party lookup of routing and both PIN paths) resolves a directory hit through `sender_line`, reads `phone_standing` and applies `gate` with `PhoneStanding { linked_by_owner: false, owner_approved }` (`owner_approved` is that standing; the owner's links are stored approved, so one fact decides): a phone with no staff phone row or not approved is `Party::Unlinked` and hears the PIN prompt. (2) `app/server/src/inbound_text.rs`: a text whose sender the directory names is the business's (`Relation::Business`: `phone_stopped`, the auto-reply, T391's LINK reply) only when `phone_standing` is `Some(true)`; otherwise it takes the path of an unknown number, so a waiting phone's STOP, LINK or other text never acts for the business. Read in the delivery's transaction; a database error is 500 and the delivery rolls back, as today. (3) `app/businesses/src/channel_preference.rs`: `notice_recipients` (`:142`, the one list every business notice text reads its phones from, `quotes::card_notices` and `quotes::emergency_card_notice` among them) lists only phones with `approved_at` set, so a waiting phone gets no job card or other notice text and a member whose only phones are waiting gets the email instead (its `email` flag follows the filtered list). (4) `app/businesses/src/complaints.rs`: `phone_link_notice` (`:502`) keys its task by phone and `number_set_at` (`businesses.phone_linked.<line>.<number_set_at in microseconds>`, was the phone alone, `:521`) and adds `number_set_at` to the payload, and `businesses::api::change_phone` (the shared `api.rs`) wraps `team::change_phone` as `api::link_phone` wraps the link: a number change by a member who is not the owner queues a fresh owner email in the same transaction, so the owner is told of every number they are asked to approve. (5) Tests: `tests/integration/tests/phone_approval_routes.rs` (TD-CALL-25), signed fake Twilio voice and text requests through the served routes and `calls::api::answer_call`, and `tests/integration/tests/phone_approval_notices.rs` (TD-BIZ-53) through `businesses::api` and `quotes`' card notice step, fake numbers only. Update the `calls`, `server` and `businesses` `CLAUDE.md` files and `docs/decisions.md`.",
+   "goal": "Register row IC-95, the gate behind the hold (D-3081; BIZ-033, CALL-012; D-1695, D-3079). After T396 (`messaging::api::sender_line`, `businesses::api::phone_standing`, `staff_phone.approved_at` and `number_set_at`), T326 (the last earlier owner of `app/calls/src/routing.rs`; T365 left the graph, D-3106), T391 (of `app/server/src/inbound_text.rs`), T147 (of `app/businesses/src/channel_preference.rs`) and T293 (of `app/businesses/src/complaints.rs`). T396 keeps a waiting phone's digests out of the sender directory; this task makes both routes check the phone's standing as well, so a digest left in the directory by any path still cannot act as the business, and gives the pure `calls::lifecycle::phone_works` and `gate` (`app/calls/src/lifecycle.rs:241`, `:248`, today called only by tests) their production caller. (1) `app/calls/src/routing.rs`: `party_of` (`:419`, the one party lookup of routing and both PIN paths) resolves a directory hit through `sender_line`, reads `phone_standing` and applies `gate` with `PhoneStanding { linked_by_owner: false, owner_approved }` (`owner_approved` is that standing; the owner's links are stored approved, so one fact decides): a phone with no staff phone row or not approved is `Party::Unlinked` and hears the PIN prompt. (2) `app/server/src/inbound_text.rs`: a text whose sender the directory names is the business's (`Relation::Business`: `phone_stopped`, the auto-reply, T391's LINK reply) only when `phone_standing` is `Some(true)`; otherwise it takes the path of an unknown number, so a waiting phone's STOP, LINK or other text never acts for the business. Read in the delivery's transaction; a database error is 500 and the delivery rolls back, as today. (3) `app/businesses/src/channel_preference.rs`: `notice_recipients` (`:142`, the one list every business notice text reads its phones from, `quotes::card_notices` and `quotes::emergency_card_notice` among them) lists only phones with `approved_at` set, so a waiting phone gets no job card or other notice text and a member whose only phones are waiting gets the email instead (its `email` flag follows the filtered list). (4) `app/businesses/src/complaints.rs`: `phone_link_notice` (`:502`) keys its task by phone and `number_set_at` (`businesses.phone_linked.<line>.<number_set_at in microseconds>`, was the phone alone, `:521`) and adds `number_set_at` to the payload, and `businesses::api::change_phone` (the shared `api.rs`) wraps `team::change_phone` as `api::link_phone` wraps the link: a number change by a member who is not the owner queues a fresh owner email in the same transaction, so the owner is told of every number they are asked to approve. (5) Tests: `tests/integration/tests/phone_approval_routes.rs` (TD-CALL-25), signed fake Twilio voice and text requests through the served routes and `calls::api::answer_call`, and `tests/integration/tests/phone_approval_notices.rs` (TD-BIZ-53) through `businesses::api` and `quotes`' card notice step, fake numbers only. Update the `calls`, `server` and `businesses` `CLAUDE.md` files and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
    "module": "calls",
    "deps": [
     "T396",
-    "T365",
     "T391",
     "T147",
-    "T293"
+    "T293",
+    "T326"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -27600,7 +27556,8 @@
    "decisions": [
     "D-3081",
     "D-1695",
-    "D-3079"
+    "D-3079",
+    "D-3106"
    ],
    "cites": [],
    "budget": {
@@ -27750,6 +27707,203 @@
    "branch": "claude/task/T399-approve-link",
    "prompt": "kit/prompts/T399.md",
    "acceptance": "TD-SEC-66 passes against the assembled router; TD-SEC-44 and every other action link case passes unchanged."
+  },
+  {
+   "id": "T401",
+   "slug": "door-probe-released-pick",
+   "title": "server (harness): the door probe's fixture gains a released pick, so the released job's page can be probed",
+   "goal": "Plan change D-3106 (SEC-019, SEC-034, PICK-024; D-2440, D-1739, D-3090): `app/server/tests/door_matrix.rs` (T348's, done) fills every `{pick}` with each side's page pick, which is picked but never released (`side`, `:771`), while T300's `GET /b/picks/{pick}` reads `picks::api::released_view`, which answers not found for a pick with no `picks.release` row, so the probe's own-record check (a `GET` outside the owner door must answer 200, `:403` to `:411`) would fail T300's row. (1) Each side's fixture also gets a second carded and quoted job of the same business with its own page pick, released through module APIs only: the $0 path, as the done `tests/integration/tests/no_fee_release_binding.rs` and `tests/integration/tests/confirm_and_pay.rs` reach it (the business's free first win stored by `payments`, `payments::api::no_fee_release(conn, pick, (business, job))` for the `ReleaseProof` (its proof taken with `askhava_server::release_minter()`, as `build_router` does, never `privacy::release_mint()`, which panics when taken a second time in one process), then `picks::api::release` with the fake masked pool the probe's router already uses); (2) `fill` gives the exact path `/b/picks/{pick}` that side's released pick and every other `{pick}` the waiting pick, as today, so T261's Confirm rows and T306's \"Can't take it\" rows keep a pick that can still be confirmed; the cross-business check uses the other side's pick of the same kind; (3) one new case asserts that `released_view` gives each side's business its released pick and the other side's business not found, so the fixture is proved before any route serves it. Every other case, judgement, actor and assertion stays byte-identical, nothing is loosened, and `tests/security/door_cases.txt` is unchanged. A harness task only because the file is a done task's test (`scripts/validate_tasks.py`, T348). Update `app/server/CLAUDE.md` (the door probe line) and `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "4",
+   "module": "server",
+   "deps": [
+    "T348",
+    "T253",
+    "T337"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness",
+    "security",
+    "privacy"
+   ],
+   "owns": [
+    "app/server/tests/door_matrix.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/security.md",
+    "docs/spec/quotes-pick.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [],
+   "tests": [],
+   "decisions": [
+    "D-2440",
+    "D-1739",
+    "D-3106"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 1,
+    "lines": 200,
+    "context_pct": 20
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T401-door-probe-released-pick",
+   "prompt": "kit/prompts/T401.md",
+   "acceptance": "`app/server/tests/door_matrix.rs` passes against PostgreSQL with each side's released pick filling `/b/picks/{pick}` and the waiting pick every other `{pick}`; the new `released_view` case passes; every other case is byte-identical and `tests/security/door_cases.txt` unchanged."
+  },
+  {
+   "id": "T402",
+   "slug": "quiet-exempt-producers",
+   "title": "intake, picks and server: texts QH-004 lets go at any hour for a fact (an emergency job, a direct reply) are queued with that fact",
+   "goal": "Plan change D-3106 (QH-004, QH-001; D-2628, D-3055): after T356 the outbox sender holds a row outside 8 a.m. to 8 p.m. unless its `quiet_exempt_until` lets it go; plain `messaging::api::enqueue` sets that itself for the any-hour kinds (the 911 text, keyword replies, pick codes, the after-hours notice), but an emergency job's texts and a direct reply are exempt only through `enqueue_exempt`, which no producer calls, so at night they wait for 8 a.m. Each producer here that queues such a text passes its fact through `enqueue_exempt`: an emergency job's quote texts (the first-quote text and quote-count updates), the questions INT-029 asks after the cards, and the homeowner's pick, confirm and connect texts (including the INT-033 texts; the who's-calling and missed-call texts are T403's) carry the job's emergency choice; a reply to her own inbound text carries that text's received time, so it goes at any hour only within 15 minutes of it. The facts are read where the producer already has them (the job row, the inbound delivery), never guessed from words. A producer whose texts are never exempt by a fact keeps plain `enqueue` and is not changed; a producer found outside these files is reported, not worked around. Tests in `tests/integration/tests/quiet_exempt_producers.rs` (TD-QH-07). Every TD-QH, TD-TXT and TD-INT case passes unchanged. Update the `intake`, `picks` and `server` `CLAUDE.md` files and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 2,
+   "stage": "6",
+   "module": "intake",
+   "deps": [
+    "T356",
+    "T340",
+    "T341",
+    "T344",
+    "T361",
+    "T382",
+    "T215",
+    "T255",
+    "T103",
+    "T162",
+    "T236",
+    "T370",
+    "T151",
+    "T299",
+    "T317",
+    "T325",
+    "T336",
+    "T357",
+    "T391"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "compliance",
+    "privacy"
+   ],
+   "owns": [
+    "app/intake/src/routing.rs",
+    "app/intake/src/conversation.rs",
+    "app/intake/src/service.rs",
+    "app/intake/src/closing.rs",
+    "app/intake/src/handlers.rs",
+    "app/intake/src/job_texts.rs",
+    "app/picks/src/service.rs",
+    "app/server/src/inbound_text.rs",
+    "tests/integration/tests/quiet_exempt_producers.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/quiet-hours.md",
+    "docs/spec/messaging.md",
+    "docs/brains/sms-compliance.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "QH-004",
+    "QH-001"
+   ],
+   "tests": [
+    "TD-QH-07"
+   ],
+   "decisions": [
+    "D-2628",
+    "D-3055",
+    "D-3106"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 9,
+    "lines": 400,
+    "context_pct": 40
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T402-quiet-exempt-producers",
+   "prompt": "kit/prompts/T402.md"
+  },
+  {
+   "id": "T403",
+   "slug": "quiet-exempt-call-texts",
+   "title": "calls and picks: the who's-calling and missed-call texts of an emergency job are queued with that fact",
+   "goal": "Plan change D-3106, review round (QH-004, QH-001; D-2628, D-3055): split from T402. After T356 the outbox sender holds a row outside 8 a.m. to 8 p.m. unless its `quiet_exempt_until` lets it go, and an emergency job's texts are exempt only through `messaging::api::enqueue_exempt`. Two producers queue such texts with plain `enqueue`: the who's-calling text TXT-027 (`app/calls/src/whos_calling.rs`, T318's) and the missed-call text TXT-030 (`caller_missed`, `app/picks/src/unreachable_refund.rs:214`, T355's; `rules::Kind::PickStep`, `app/messaging/src/rules.rs:168`). Each passes the job's emergency choice through `enqueue_exempt`, read where the producer already has it (the job row), so on an emergency job either text goes at any hour and on a regular job it waits for the window; nothing else in either file changes. Tests in `tests/integration/tests/quiet_exempt_call_texts.rs` (TD-QH-08). Every TD-QH, TD-TXT, TD-CALL and TD-FEE case passes unchanged. Update the `calls` and `picks` `CLAUDE.md` files and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 2,
+   "stage": "6",
+   "module": "calls",
+   "deps": [
+    "T356",
+    "T318",
+    "T355",
+    "T402"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "compliance",
+    "privacy"
+   ],
+   "owns": [
+    "app/calls/src/whos_calling.rs",
+    "app/picks/src/unreachable_refund.rs",
+    "tests/integration/tests/quiet_exempt_call_texts.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/quiet-hours.md",
+    "docs/spec/messaging.md",
+    "docs/brains/sms-compliance.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "QH-004",
+    "QH-001"
+   ],
+   "tests": [
+    "TD-QH-08"
+   ],
+   "decisions": [
+    "D-2628",
+    "D-3055",
+    "D-3106"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 200,
+    "context_pct": 13
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T403-quiet-exempt-call-texts",
+   "prompt": "kit/prompts/T403.md"
   }
  ]
 }
