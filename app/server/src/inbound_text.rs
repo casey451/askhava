@@ -8,7 +8,8 @@
 //! is answered 200 whatever the outcome, except 500 on a database error, so Twilio retries only
 //! then; the whole delivery is one transaction, so a retry finds nothing half done. Any other
 //! module error that stops a text is logged at warn with the step and the error's variant name
-//! only (D-1311).
+//! only (D-1311), and raises one High [`FAILED_ALERT`] about its inbox row in the delivery's
+//! transaction, the step in the alert's audit row, never a body, phone or error text (D-2207).
 //!
 //! An inbound text runs, in order and once per MessageSid: `messaging::api::receive_inbound`
 //! (a repeat stops here), the sender's lookup (blind index only), `privacy::api::read_inbound_for`
@@ -58,7 +59,10 @@ use askhava_messaging::api::{
     on_inbound_text, queue_paused_safety, raise_emergency, receive_inbound, receive_status, render,
     reply_to_help, sender_business,
 };
-use askhava_ops::api::{BannerBy, OpsError, Switch, is_paused, show_banner};
+use askhava_ops::api::{
+    Actor, AuditEntry, BannerBy, Change, NewAlert, OpsError, Severity, Switch, audit, is_paused,
+    raise_alert, show_banner,
+};
 use askhava_privacy::api::{
     CommonWords, Inbound as Read, InboundWords, Known, NameMemory, NewContact, Vault, VaultError,
     find_by_phone, read_inbound, read_inbound_for, store_contact,
@@ -78,6 +82,8 @@ use sqlx::{Connection, PgConnection, PgPool};
 pub const INBOUND_PATH: &str = "/webhooks/twilio/sms";
 /// Where Twilio posts a sent text's status callback.
 pub const STATUS_PATH: &str = "/webhooks/twilio/status";
+/// The High alert, and its audit action, for a text a module error stopped (D-2207).
+pub const FAILED_ALERT: &str = "messaging.inbound_text_failed";
 /// The HELP reply times until an owner setting holds them: 2 days, 24 hours if urgent (D-887).
 const HELP_TIMES: (u32, u32) = (2, 24);
 /// The sole-word HELP words the reader flags (CON-018).
@@ -235,6 +241,45 @@ async fn text(
         .await
         .map_err(inbox_halt)?
         .ok_or(Halt::Ends("repeat"))?;
+    let done = handle(h, db, hook, (inbox_id, now)).await;
+    if let Err(Halt::Failed(step, _)) = &done {
+        failure_alert(db, inbox_id, step).await?;
+    }
+    done
+}
+
+/// TXT-012, D-801, D-1311, D-2207 (fourth audit F25): a text stopped by a module error after the
+/// repeat check (`Halt::Failed`) is answered 200, so Twilio never resends it, and its body is not
+/// kept; one High [`FAILED_ALERT`] about its inbox row, with one system audit row (subject the
+/// alert, field the failed step's code name), lets Casey see it and ask the sender to write again.
+/// Both commit in the delivery's transaction; a resend stops at the repeat check and raises none.
+/// Neither holds a body, phone, address or error text (PRIV-016, PRIV-028). A write that fails is
+/// `Halt::Database`: the delivery rolls back and Twilio resends, so no failure is left unseen.
+async fn failure_alert(db: &mut PgConnection, inbox_id: Uuid, step: &'static str) -> Step<()> {
+    let alert = NewAlert {
+        kind: FAILED_ALERT,
+        severity: Severity::High,
+        subject: Some(("messaging.inbox", inbox_id)),
+    };
+    let id = raise_alert(db, &alert).await.map_err(|_| Halt::Database)?;
+    let entry = AuditEntry {
+        actor: Actor::System,
+        action: FAILED_ALERT,
+        subject_kind: "ops.alert",
+        subject_id: id,
+        change: Change::Field(step),
+    };
+    audit(db, &entry).await.map_err(|_| Halt::Database)?;
+    Ok(())
+}
+
+/// The steps after the repeat check for inbox row `inbox_id`, in order.
+async fn handle(
+    h: &Webhooks,
+    db: &mut PgConnection,
+    hook: &VerifiedWebhook,
+    (inbox_id, now): (Uuid, Timestamp),
+) -> Step<()> {
     let (from, to) = match (field(hook, "From"), field(hook, "To")) {
         (Some(from), Some(to)) => (from, to),
         _ => return Err(Halt::Ends("no_number")),
