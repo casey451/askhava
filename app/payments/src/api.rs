@@ -91,6 +91,10 @@
 //! only with the [`saved_card_of`] the business (PICK-048, PICK-056, FEE-014, D-401).
 //!
 //! T228: [`remove_saved_cards`] marks a leaving business's saved cards removed (BIZ-051).
+//!
+//! T405 (D-3118): [`record_three_ds`] stores once, through a [`ThreeDsStripe`], whether a charged
+//! pick's payment was 3-D Secure authenticated; [`three_ds_authenticated`] is `true` only for a
+//! stored `true` (FEE-050, FEE-027).
 
 pub use crate::charge::{
     ATTEMPT_ACTION, ATTEMPT_SUBJECT, IN_FLIGHT, INTENT_ACTION, IntentStripe, confirm_and_pay,
@@ -172,7 +176,8 @@ pub use crate::service::{
     may_confirm, record_fee_at_confirm, save_card, switch_fee_mode,
 };
 pub use crate::status::{AttemptStatus, RefundStatus};
-pub use askhava_adapters::api::StripeRefund;
+pub use crate::three_ds::{ThreeDsStripe, record_three_ds, three_ds_authenticated};
+pub use askhava_adapters::api::{StripeRefund, ThreeDs};
 
 /// BIZ-051, D-446, D-3046 (T228): marks every saved card of `business` removed, at the
 /// transaction's own time (this file names no date type, TD-FEE-41), inside the caller's

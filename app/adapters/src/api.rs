@@ -18,7 +18,7 @@ pub use crate::letters::{LettersAdapter, LobLetters, SentLetter};
 pub use crate::license_sources::{LicenseLists, LicenseSource};
 pub use crate::payments::{
     Charge, ConfirmedIntent, IntentMetadata, PaymentIntent, PaymentsAdapter, StripePayments,
-    StripeRefund, UnconfirmedIntent,
+    StripeRefund, ThreeDs, UnconfirmedIntent,
 };
 pub use crate::signatures::{
     Delivery, REJECTED_STATUS, SignatureError, VerifiedWebhook, WEBHOOK_TOLERANCE_SECS,
