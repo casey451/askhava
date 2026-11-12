@@ -1,24 +1,24 @@
 # Ask Hava build status
 
-Updated 2026-11-12T05:00:09Z by runner eff652fbdcdb (manual).
+Updated 2026-11-12T05:03:00Z by runner 3aa549cf9ed3 (actions).
 
-**Building: T356 in progress since 04:05Z; 224 of 393 done; week 86% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T356 in progress since 04:05Z; 224 of 391 done; week 86% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 224 of 393 build tasks (owner gates not counted)
+- **Tasks done:** 224 of 391 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T356 claimed 04:05Z, lease until 07:05Z; lane 5: T336 claimed 04:54Z, lease until 07:54Z
 - **Week:** 86% used, 15.2M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:58Z, 1 min before this update
+- **Last run:** 05:00Z, 2 min before this update
 - **Keeper:** last ran 04:58Z, next wake 07:08Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 7 problem(s) on tasks still to run (+83 on DONE tasks); first: T396: stored context_pct 39% but it measures 43%; regenerate
+- Strict plan check red: 7 problem(s) on tasks still to run (+82 on DONE tasks); first: T396: stored context_pct 39% but it measures 43%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T405 | payments and adapters (harness): each charged pick's 3-D Sec | MERGE_PENDING | 1 | 33 min | 04:56Z |  |
+| T405 | payments and adapters (harness): each charged pick's 3-D Sec | resync | 1 | 33 min | 04:56Z | merging main into the reviewed head conflicts in app/payments/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T326 | calls (harness): the LINK notice names the line's stored PIN | done | 1 | 25 min | 03:37Z |  |
 | T336 | server, adapters and stand-in (harness): a text stopped by a | QUEUED | 1 | 5 min | 03:27Z | Worker stopped before building with a PLAN GAP claim (messaging.inbox has no sender/handled columns; T336 owns no migrat |
 | T248 | catalog and businesses: markets as reviewed data, Arizona ZI | MERGE_PENDING | 1 | 12 min | 03:22Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
@@ -120,8 +120,8 @@ Updated 2026-11-12T05:00:09Z by runner eff652fbdcdb (manual).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 210 of 733 (28.6%) · partial 351 · unstarted 172
-**Tasks merged (throughput only):** 224 of 393
+**Requirements verified:** 212 of 733 (28.9%) · partial 349 · unstarted 172
+**Tasks merged (throughput only):** 224 of 391
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -135,11 +135,11 @@ Updated 2026-11-12T05:00:09Z by runner eff652fbdcdb (manual).
 | job-cards | 12 | 10 | 2 | 24 |
 | licensing | 20 | 28 | 0 | 48 |
 | lifecycle | 18 | 10 | 0 | 28 |
-| messaging | 17 | 25 | 3 | 45 |
+| messaging | 18 | 24 | 3 | 45 |
 | ops-recovery | 2 | 6 | 46 | 54 |
 | privacy | 7 | 22 | 2 | 31 |
 | quiet-hours | 4 | 5 | 0 | 9 |
-| quotes-pick | 30 | 25 | 1 | 56 |
+| quotes-pick | 31 | 24 | 1 | 56 |
 | recurring | 6 | 2 | 3 | 11 |
 | security | 6 | 43 | 6 | 55 |
 | terms | 0 | 3 | 32 | 35 |
