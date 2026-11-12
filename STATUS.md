@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-12T03:40:05Z by runner fe14fd0d43a4 (actions).
+Updated 2026-11-12T03:46:03Z by runner fe14fd0d43a4 (actions).
 
-**Idle since 03:37Z; 222 of 390 done; week 83% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 03:37Z; 222 of 390 done; week 84% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 222 of 390 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 03:37Z (no task in progress)
-- **Week:** 83% used, 21.3M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:39Z, 0 min before this update
+- **Week:** 84% used, 21.3M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Last run:** 03:44Z, 1 min before this update
 - **Keeper:** last ran 03:39Z, next wake 03:59Z
 
 ## Needs attention
@@ -121,7 +121,6 @@ Updated 2026-11-12T03:40:05Z by runner fe14fd0d43a4 (actions).
 - 04:14Z Plan: three lanes (D-2810) (#451)
 - 04:04Z Plan: shorten the stage-6 critical path by removing ordering-only dependencies (D-2821) (#452)
 - 03:53Z Harness: merge main before the hand-in push when the head is behind (D-2798) (#450)
-- 03:41Z Plan: fix tasks from the Nov 11 vendor-double review (D-2760–D-2770) (#446)
 
 ## Progress (requirements verified)
 
