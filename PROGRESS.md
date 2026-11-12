@@ -2880,3 +2880,4 @@
 - 2026-11-12T15:07:13Z runner 74c3a7dc4728 (actions): {}
 - 2026-11-12T15:07:25Z runner 87abedec7b6e (actions): {}
 - 2026-11-12T15:07:57Z runner e2c37a7d0cad (actions): {"T385": "MERGE_PENDING -> QUEUED"}
+- 2026-11-12T15:08:15Z runner e2c37a7d0cad (actions): {"T370": "QUEUED -> IN_PROGRESS"}; T370 estimated 1.1M tokens (calibrated); week has 1.3M left (no five-hour budget, D-3056) after 2.7M still running in another lane (session_reading 2026-11-12T15:07:05Z (week)); claimed
