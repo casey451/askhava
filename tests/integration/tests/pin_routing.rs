@@ -1,12 +1,15 @@
 //! PIN routing and the paid-business read-back on a fresh database (TD-CALL-02: CALL-003,
 //! CALL-004, CALL-005; TD-CALL-11: CALL-025; TD-CALL-12: INT-029, CALL-001; D-026, D-480, D-491,
 //! D-1684 to D-1688). TD-TXT-29 and TD-QH-04 (TXT-027) wait for the who's-calling template
-//! (D-1687). Fake numbers (555-01xx and the 500-555 test range), fake names and IDs only.
+//! (D-1687). The pure cases route with `route_with` on an explicit PIN per line, as the voice
+//! route does on each line's stored `calls.number_pool.pin`; the database cases read that stored
+//! PIN (D-2091, D-2247). Fake numbers (555-01xx and the 500-555 test range), fake names and IDs
+//! only.
 
 use askhava_adapters::api::{MaskedPool, TwilioConfig};
 use askhava_calls::api::{
     Answer, Attestation, CallTurn, Connected, IncomingCall, JobPin, Line, PIN_ALERT, Party,
-    RoutedLine, Step, answer_call, assign_number, job_pin, route,
+    RoutedLine, Step, answer_call, assign_number, route_with, stored_pin,
 };
 use askhava_core::api::Settings;
 use askhava_messaging::api::sender_add;
@@ -93,18 +96,37 @@ fn turn(attestation: Attestation, tries: (u8, u8), entered: Option<JobPin>) -> C
     }
 }
 
-/// A PIN that is none of `lines`' PINs, whatever their digits (0000 included).
-fn wrong_for(lines: &[Uuid]) -> Option<JobPin> {
-    let rights: Vec<String> = lines.iter().map(|l| job_pin(*l).digits()).collect();
+/// A PIN that is none of `rights`, whatever their digits (0000 included).
+fn wrong_for(rights: &[JobPin]) -> Option<JobPin> {
+    let rights: Vec<String> = rights.iter().map(|p| p.digits()).collect();
     let other = (0..10_000_u16)
         .map(|n| format!("{n:04}"))
         .find(|p| !rights.contains(p))?;
     JobPin::parse(&other)
 }
 
-/// A PIN that is not `line`'s.
-fn wrong(line: Uuid) -> Option<JobPin> {
-    wrong_for(&[line])
+/// A PIN that is not `right`.
+fn wrong(right: JobPin) -> Option<JobPin> {
+    wrong_for(&[right])
+}
+
+/// The PIN each pure case's lines hold: `pins[i]` is `lines[i]`'s, as a stored
+/// `calls.number_pool.pin` is a line's (D-2247); a line not listed has no PIN.
+fn pins_of(lines: &[RoutedLine], pins: &[&str]) -> impl Fn(&RoutedLine) -> Option<JobPin> + use<> {
+    let table: Vec<(Uuid, Option<JobPin>)> = lines
+        .iter()
+        .zip(pins)
+        .map(|(l, p)| (l.line, JobPin::parse(p)))
+        .collect();
+    move |l| table.iter().find(|(id, _)| *id == l.line).and_then(|t| t.1)
+}
+
+/// The stored PIN of the database line `line` (CALL-003).
+async fn pin(db: &mut PgConnection, line: Uuid) -> JobPin {
+    stored_pin(db, line)
+        .await
+        .expect("read")
+        .expect("stored pin")
 }
 
 fn routed(line: u128, homeowner: Uuid, business: Uuid) -> RoutedLine {
@@ -128,21 +150,21 @@ async fn count(db: &mut PgConnection, sql: &'static str, bind: &str) -> i64 {
 #[test]
 fn td_call_02_an_unlinked_phone_needs_the_pin_and_a_wrong_one_is_refused() {
     let l = routed(1_234, Uuid::from_u128(1), Uuid::from_u128(2));
+    let (pin_of, right) = (pins_of(&[l], &["1234"]), JobPin::parse("1234"));
     let a = Attestation::A;
     assert_eq!(
-        route(Party::Unlinked, &[l], turn(a, (0, 0), None)),
+        route_with(Party::Unlinked, &[l], turn(a, (0, 0), None), &pin_of),
         Step::AskPin
     );
+    let bad = right.and_then(wrong);
     assert_eq!(
-        route(Party::Unlinked, &[l], turn(a, (0, 0), wrong(l.line))),
+        route_with(Party::Unlinked, &[l], turn(a, (0, 0), bad), &pin_of),
         Step::WrongPin
     );
-    let right = Some(job_pin(l.line));
     assert_eq!(
-        route(Party::Unlinked, &[l], turn(a, (0, 0), right)),
+        route_with(Party::Unlinked, &[l], turn(a, (0, 0), right), &pin_of),
         Step::Connect(l.line)
     );
-    assert_eq!(job_pin(l.line).digits(), "1234");
     for bad in ["123", "12345", "12a4", "１２３４"] {
         assert_eq!(JobPin::parse(bad), None);
     }
@@ -154,16 +176,18 @@ fn td_call_02_an_unlinked_phone_needs_the_pin_and_a_wrong_one_is_refused() {
 fn td_call_02_two_jobs_on_one_number_are_routed_only_by_pin() {
     let (h, b) = (Uuid::from_u128(1), Uuid::from_u128(2));
     let lines = [routed(1_111, h, b), routed(2_222, h, b)];
+    let pin_of = pins_of(&lines, &["1111", "2222"]);
     let a = Attestation::A;
     for party in [Party::Homeowner(h), Party::Business(b)] {
-        assert_eq!(route(party, &lines, turn(a, (0, 0), None)), Step::AskPin);
-        let pin = Some(job_pin(lines[1].line));
+        let ask = route_with(party, &lines, turn(a, (0, 0), None), &pin_of);
+        assert_eq!(ask, Step::AskPin);
+        let pin = JobPin::parse("2222");
         assert_eq!(
-            route(party, &lines, turn(a, (0, 0), pin)),
+            route_with(party, &lines, turn(a, (0, 0), pin), &pin_of),
             Step::Connect(lines[1].line)
         );
         assert_eq!(
-            route(party, &lines[..1], turn(a, (0, 0), None)),
+            route_with(party, &lines[..1], turn(a, (0, 0), None), &pin_of),
             Step::Connect(lines[0].line)
         );
     }
@@ -175,13 +199,18 @@ fn td_call_02_two_jobs_on_one_number_are_routed_only_by_pin() {
 #[test]
 fn td_call_11_ten_wrong_pins_never_connect_and_the_7th_of_the_day_is_refused() {
     let l = routed(5_555, Uuid::from_u128(1), Uuid::from_u128(2));
+    let (pin_of, bad) = (
+        pins_of(&[l], &["5555"]),
+        JobPin::parse("5555").and_then(wrong),
+    );
     let (mut today, mut made, mut hang_ups) = (0_u8, 0, 0);
     'calls: while made < 10 {
         for call_try in 0..3_u8 {
-            match route(
+            match route_with(
                 Party::Unlinked,
                 &[l],
-                turn(Attestation::A, (call_try, today), wrong(l.line)),
+                turn(Attestation::A, (call_try, today), bad),
+                &pin_of,
             ) {
                 Step::Refuse => break 'calls,
                 Step::Connect(_) | Step::ReadBack(_) => panic!("a wrong PIN went through"),
@@ -196,7 +225,12 @@ fn td_call_11_ten_wrong_pins_never_connect_and_the_7th_of_the_day_is_refused() {
     }
     assert_eq!((today, hang_ups), (6, 2));
     assert_eq!(
-        route(Party::Unlinked, &[l], turn(Attestation::A, (0, 6), None)),
+        route_with(
+            Party::Unlinked,
+            &[l],
+            turn(Attestation::A, (0, 6), None),
+            &pin_of
+        ),
         Step::Refuse
     );
 }
@@ -208,21 +242,19 @@ fn td_call_11_ten_wrong_pins_never_connect_and_the_7th_of_the_day_is_refused() {
 fn td_call_11_only_attestation_a_gets_the_read_back() {
     let (h, b) = (Uuid::from_u128(1), Uuid::from_u128(2));
     let lines = [routed(1_111, h, b), routed(2_222, h, b)];
+    let pin_of = pins_of(&lines, &["1111", "2222"]);
+    let route = |party, turn| route_with(party, &lines, turn, &pin_of);
     let bad = JobPin::parse("9999");
     let linked = Party::Business(b);
-    let a = route(
-        linked,
-        &lines,
-        turn(Attestation::parse(Some("A")), (1, 1), bad),
-    );
+    let a = route(linked, turn(Attestation::parse(Some("A")), (1, 1), bad));
     assert_eq!(a, Step::ReadBack(lines[1].line));
     for other in [Some("B"), Some("C"), None] {
-        let step = route(linked, &lines, turn(Attestation::parse(other), (1, 1), bad));
+        let step = route(linked, turn(Attestation::parse(other), (1, 1), bad));
         assert_eq!(step, Step::WrongPin);
     }
-    let stranger = route(Party::Unlinked, &lines, turn(Attestation::A, (1, 1), bad));
+    let stranger = route(Party::Unlinked, turn(Attestation::A, (1, 1), bad));
     assert_eq!(stranger, Step::WrongPin);
-    let first = route(linked, &lines, turn(Attestation::A, (0, 0), bad));
+    let first = route(linked, turn(Attestation::A, (0, 0), bad));
     assert_eq!(first, Step::WrongPin);
 }
 
@@ -241,7 +273,11 @@ async fn td_call_02_the_read_back_goes_only_to_the_paid_business(db: PgPool) {
     sender_add(&mut db, &vault, (business, Uuid::new_v4()), BUSINESS_PHONE)
         .await
         .expect("link");
-    let bad = wrong_for(&[first.id(), second.id()]);
+    let rights = [
+        pin(&mut db, first.id()).await,
+        pin(&mut db, second.id()).await,
+    ];
+    let bad = wrong_for(&rights);
     assert!(bad.is_some());
     let ask = |phone: &'static str| (SecretString::from(phone.to_owned()), bad);
     let (phone, pin) = ask(BUSINESS_PHONE);
@@ -289,18 +325,13 @@ async fn td_call_11_a_hang_up_raises_one_alert(db: PgPool) {
     let (pool, vault) = (one_number_pool(), vault());
     let contact = her(&mut db).await;
     let l = line(&mut db, &pool, (contact, Uuid::new_v4())).await;
+    let bad = wrong(pin(&mut db, l.id()).await);
     let phone = SecretString::from(STRANGER_PHONE.to_owned());
     let call = IncomingCall {
         pool_number: l.number().as_str(),
         caller: &phone,
     };
-    let heard = answer_call(
-        &mut db,
-        &vault,
-        &call,
-        turn(Attestation::A, (2, 2), wrong(l.id())),
-    )
-    .await;
+    let heard = answer_call(&mut db, &vault, &call, turn(Attestation::A, (2, 2), bad)).await;
     assert!(matches!(heard, Ok(Answer::Step(Step::HangUp))));
     let alerts = "SELECT count(*) FROM ops.alert WHERE kind = $1";
     assert_eq!(count(&mut db, alerts, PIN_ALERT).await, 1);
