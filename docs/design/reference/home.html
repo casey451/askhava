@@ -3,16 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Ask Hava home</title>
-<link rel="stylesheet" href="askhava-v6.css">
+<title>Laftly home</title>
+<link rel="stylesheet" href="laftly-v6.css">
 </head>
 <body>
 <!-- V6 reference home page (D-3331). Static HTML and CSS, no JavaScript. Fake data only.
-     In the build the brand words come from app/core/data/brand.json; the mark is the candidate mark. -->
+     In the build the brand words come from app/core/data/brand.json. -->
 <a class="skip-link" href="#main">Skip to main content</a>
 <header class="site-header">
   <div class="shell header-row">
-    <a class="brand" href="home.html"><img src="../brand/mark-candidate.png" width="30" height="27" alt="">Ask Hava</a>
+    <a class="brand" href="home.html"><img src="../brand/mark.svg" width="30" height="27" alt="">Laftly</a>
     <nav class="site-nav" aria-label="Main">
       <a class="header-link" href="#how">How it works</a>
       <a class="header-link" href="#cover">What we cover</a>
@@ -35,15 +35,23 @@
 <main id="main">
   <section class="hero shell" aria-labelledby="hero-title">
     <div class="hero-text">
-      <p class="kicker place"><span>Lake Havasu City</span><span class="sep" aria-hidden="true">·</span><a href="#zip">Set your ZIP</a></p>
+      <p class="kicker">Lake Havasu City, Arizona</p>
       <h1 class="display" id="hero-title">Get local quotes without giving out your number.</h1>
       <p class="lede">Tell us what needs doing. We'll ask Havasu businesses that do that work and show you their quotes on one page.</p>
       <form class="request" action="#chat" method="post" novalidate>
-        <label for="job">What needs doing?</label>
-        <p class="hint" id="job-hint">For example: the AC runs but blows warm air.</p>
-        <textarea id="job" name="job" rows="3" aria-describedby="job-hint"></textarea>
-        <button class="button button-wide" type="submit">Get quotes</button>
-        <p class="cost small soft">Free for you. The business you pick pays <span class="nowrap">Ask Hava</span> a set introduction fee.</p>
+        <div class="field">
+          <label for="job">What needs doing?</label>
+          <p class="hint" id="job-hint">For example: the AC runs but blows warm air.</p>
+          <textarea id="job" name="job" rows="3" aria-describedby="job-hint"></textarea>
+        </div>
+        <div class="request-row">
+          <div class="field zip">
+            <label for="zip">Job ZIP code</label>
+            <input id="zip" name="zip" type="text" inputmode="numeric" autocomplete="postal-code" maxlength="5" pattern="[0-9]{5}">
+          </div>
+          <button class="button" type="submit">Get quotes</button>
+        </div>
+        <p class="cost small soft">Free for you. The business you pick pays <span class="nowrap">Laftly</span> a set introduction fee.</p>
       </form>
       <p class="hero-more"><a href="#how">See how it works</a></p>
     </div>
@@ -52,14 +60,14 @@
     </figure>
   </section>
 
-  <section class="cover" id="cover" aria-labelledby="cover-title">
-    <div class="shell">
+  <section class="tint cover" id="cover" aria-labelledby="cover-title">
+    <div class="shell cover-grid">
       <h2 class="section-title" id="cover-title">Pools, AC, boats, yards and more</h2>
-      <p class="cover-list soft">We're adding more. Send us any job and we'll tell you if we cover it. <a href="#cover">See the full list</a></p>
+      <p>We're adding more. Send us any job and we'll tell you if we cover it. <a href="#cover">See the full list</a></p>
     </div>
   </section>
 
-  <section class="section shell how" id="how" aria-labelledby="how-title">
+  <section class="section shell" id="how" aria-labelledby="how-title">
     <div class="section-head">
       <h2 class="section-title" id="how-title">How it works</h2>
       <p class="soft">Start in the chat on this site. You don't need to know which trade to ask for.</p>
@@ -71,17 +79,17 @@
     </ol>
   </section>
 
-  <section class="section cover" aria-labelledby="example-title">
+  <section class="section tint" aria-labelledby="example-title">
     <div class="shell example">
       <div class="section-head">
         <p class="kicker">Example</p>
         <h2 class="section-title" id="example-title">Each quote lists the same details, so they're easy to compare.</h2>
         <p class="soft">These two are made up. Real quotes show in the order they came in, and no business can pay to be first.</p>
       </div>
-      <div class="card">
-        <p class="example-label"><span>Weekly pool cleaning</span><span class="soft">Not real quotes</span></p>
+      <div>
+        <p class="example-label"><span>Example: weekly pool cleaning</span><span>Not real quotes</span></p>
         <div class="example-grid">
-          <article class="quote" aria-label="Example quote 1">
+          <article class="card quote" aria-label="Example quote 1">
             <p class="quote-top"><span class="no">No. 1</span><span>Received 9:12 a.m.</span></p>
             <h3 class="quote-name">Sample Pool Co.</h3>
             <p class="quote-price"><span class="amount">$140</span><span class="format">a month, weekly visits</span></p>
@@ -91,7 +99,7 @@
               <div><dt>Earliest start</dt><dd>Next week</dd></div>
             </dl>
           </article>
-          <article class="quote" aria-label="Example quote 2">
+          <article class="card quote" aria-label="Example quote 2">
             <p class="quote-top"><span class="no">No. 2</span><span>Received 10:40 a.m.</span></p>
             <h3 class="quote-name">Sample Pool Service</h3>
             <p class="quote-price"><span class="amount">$165</span><span class="format">a month, weekly visits</span></p>
@@ -111,36 +119,41 @@
       <h2 class="section-title" id="fair-title">How we keep it fair</h2>
       <ul class="fair-list">
         <li><h3>Your number stays with us.</h3><p class="soft">Businesses see the job, not you. Your number is never shared. Your first name and address go only to the business you pick.</p></li>
-        <li><h3>Nobody pays to be first.</h3><p class="soft">Quotes show in the order they came in. Ask Hava doesn't rank or rate businesses, and no business can pay for a better spot.</p></li>
-        <li><h3>Asking costs you nothing.</h3><p class="soft">Ask Hava is a quote-request service; the business you choose pays Ask Hava a set introduction fee. That's $25, $75 or $199, by quote size. You pay Ask Hava nothing. If no quote fits, close the request.</p></li>
+        <li><h3>Nobody pays to be first.</h3><p class="soft">Quotes show in the order they came in. Laftly doesn't rank or rate businesses, and no business can pay for a better spot.</p></li>
+        <li><h3>Asking costs you nothing.</h3><p class="soft">Laftly is a quote-request service; the business you choose pays Laftly a set introduction fee. That's $25, $75 or $199, by quote size. You pay Laftly nothing. If no quote fits, close the request.</p></li>
       </ul>
     </div>
   </section>
 
-  <section class="section shell biz" id="business" aria-labelledby="biz-title">
-    <div class="section-head">
-      <p class="kicker">For businesses</p>
-      <h2 class="section-title" id="biz-title">Quote for free. Pay only if a homeowner picks you.</h2>
-      <p class="soft">When a homeowner sends a job you do, we email you the details and you decide whether to quote. Every card says how many businesses got it. You quote once. No bidding rounds, no paid placement.</p>
-      <p class="soft">If the homeowner picks you, you pay a fixed introduction fee by job size, never a share of the job.</p>
-      <ul class="fees">
-        <li>$25 for a quote under $500</li>
-        <li>$75 for $500 to $1,500</li>
-        <li>$199 for over $1,500</li>
-      </ul>
-      <p class="small soft mt-16">Job requests and picks come by email. We don't text or call businesses.</p>
-      <p class="mt-16"><a href="#business">Read the business page</a></p>
+  <section class="section shell" id="business" aria-labelledby="biz-title">
+    <div class="biz-grid">
+      <div class="biz-text">
+        <p class="kicker">For businesses</p>
+        <h2 class="section-title mt-12" id="biz-title">Quote for free. Pay only if a homeowner picks you.</h2>
+        <p class="soft mt-16">When a homeowner sends a job you do, we email you the details and you decide whether to quote. Every card says how many businesses got it. You quote once. No bidding rounds, no paid placement.</p>
+        <p class="soft">If the homeowner picks you, you pay a fixed introduction fee by job size, never a share of the job.</p>
+        <p class="mt-16"><a href="#business">Read the business page</a></p>
+      </div>
+      <div class="card fee-card">
+        <h3>Introduction fee by job size</h3>
+        <dl>
+          <div><dt>A quote under $500</dt><dd>$25</dd></div>
+          <div><dt>$500 to $1,500</dt><dd>$75</dd></div>
+          <div><dt>Over $1,500</dt><dd>$199</dd></div>
+        </dl>
+        <p class="small soft">Job requests and picks come by email. We don't text or call businesses.</p>
+      </div>
     </div>
   </section>
 
   <section class="section shell who" id="help" aria-labelledby="who-title">
     <div>
-      <h2 class="section-title" id="who-title">Who runs Ask Hava</h2>
-      <p class="soft mt-12">Ask Hava is run by Ask Hava LLC, a Lake Havasu City business. Its owner lives in Havasu. The owner has a full-time day job. Sign-up reviews are usually answered within 4 days, help and charge questions usually within 2 days, and this page shows when the owner is away.</p>
+      <h2 class="section-title" id="who-title">Who runs Laftly</h2>
+      <p class="soft mt-12">Laftly is run by Laftly LLC, a Lake Havasu City business. Its owner lives in Havasu. The owner has a full-time day job. Sign-up reviews are usually answered within 4 days, help and charge questions usually within 2 days, and this page shows when the owner is away.</p>
     </div>
     <aside class="note-911" aria-labelledby="note-911-title">
       <h2 id="note-911-title">In an emergency, call 911</h2>
-      <p>Ask Hava isn't an emergency service and doesn't judge what needs an emergency response. If your message mentions gas, smoke, fire, a CO alarm going off or a downed power line, we send one automatic reminder to call 911. Don't rely on Ask Hava in an emergency: call 911.</p>
+      <p>Laftly isn't an emergency service and doesn't judge what needs an emergency response. If your message mentions gas, smoke, fire, a CO alarm going off or a downed power line, we send one automatic reminder to call 911. Don't rely on Laftly in an emergency: call 911.</p>
     </aside>
   </section>
 
@@ -151,22 +164,34 @@
 </main>
 
 <footer class="site-footer">
-  <div class="shell footer-grid">
-    <div>
-      <p class="footer-brand">Ask Hava</p>
-      <p class="soft">Local quotes. Your choice.</p>
-      <p class="small soft mt-16">Ask Hava is not a contractor and does not perform, bid on or supervise work. We pass along your request and show you quotes from independent local businesses, as they wrote them. You choose, and you hire the business directly.</p>
+  <div class="shell">
+    <div class="footer-grid">
+      <div>
+        <p class="footer-brand"><img src="../brand/mark.svg" width="30" height="27" alt="">Laftly</p>
+        <p class="footer-line">Local quotes. Your choice.</p>
+        <p class="small soft footer-statement">Laftly is not a contractor and does not perform, bid on or supervise work. We pass along your request and show you quotes from independent local businesses, as they wrote them. You choose, and you hire the business directly.</p>
+      </div>
+      <nav aria-label="Homeowners">
+        <p class="footer-heading">Homeowners</p>
+        <ul class="footer-links">
+          <li><a href="#how">How it works</a></li>
+          <li><a href="#cover">Services</a></li>
+          <li><a href="#job">Get quotes</a></li>
+          <li><a href="#help">Help</a></li>
+        </ul>
+      </nav>
+      <nav aria-label="Laftly">
+        <p class="footer-heading">Laftly</p>
+        <ul class="footer-links">
+          <li><a href="#business">For businesses</a></li>
+          <li><a href="#es" lang="es" hreflang="es">Español</a></li>
+          <li><a href="#terms">Terms</a></li>
+          <li><a href="#privacy">Privacy</a></li>
+          <li><a href="#accessibility">Accessibility</a></li>
+        </ul>
+      </nav>
     </div>
-    <nav aria-label="Homeowners">
-      <p class="footer-heading">Homeowners</p>
-      <ul class="footer-links">
-        <li><a href="#how">How it works</a></li>
-        <li><a href="#cover">Services</a></li>
-        <li><a href="#job">Get quotes</a></li>
-        <li><a href="#help">Help</a></li>
-        <li><a href="#es" lang="es" hreflang="es">Español</a></li>
-      </ul>
-    </nav>
+    <p class="footer-base">Lake Havasu City, Arizona</p>
   </div>
 </footer>
 </body>
