@@ -1,19 +1,21 @@
 # Ask Hava build status
 
-Updated 2026-11-12T11:06:01Z by runner b6463cba40ab (actions).
+Updated 2026-11-12T11:06:27Z by runner 02bdd8d2621e (actions).
 
-**Building: T377 in progress since 10:47Z; 238 of 397 done; week 92% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T280 in progress since 11:06Z; 238 of 397 done; week 92% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 238 of 397 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T377 claimed 10:47Z, lease until 13:47Z; lane 3: T345 claimed 10:49Z, lease until 13:49Z
-- **Week:** 92% used, 0.4M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:05Z, 0 min before this update
+- **Lane:** lane 1: T280 claimed 11:06Z, lease until 14:06Z; lane 2: T377 claimed 10:47Z, lease until 13:47Z; lane 3: T345 claimed 10:49Z, lease until 13:49Z
+- **Week:** 92% used, 4.3M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Last run:** 11:06Z, 0 min before this update
 - **Keeper:** last ran 11:06Z, next wake 13:50Z
 
 ## Needs attention
+- PLAN GAP T251 (since 2026-11-12T11:06:16Z, no attempt used; a plan change fixes it): T251: measures 46% of the context window, over its 45% limit; T251: dependency T411 is DONE but its owned file migrations/0154_quotes_job_text.sql is not on main; T251: dependency T411 is DONE but its owned file app/quotes/src/job_text.rs is not on main; T251: dependency T411 is DONE but its owned file tests/integration/tests/job_text_store.rs is not on main
+- PLAN GAP T315 (since 2026-11-12T11:06:16Z, no attempt used; a plan change fixes it): T315: dependency T411 is DONE but its owned file migrations/0154_quotes_job_text.sql is not on main; T315: dependency T411 is DONE but its owned file app/quotes/src/job_text.rs is not on main; T315: dependency T411 is DONE but its owned file tests/integration/tests/job_text_store.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 20 problem(s) on tasks still to run (+101 on DONE tasks); first: T396: stored context_pct 39% but it measures 45%; regenerate
+- Strict plan check red: 20 problem(s) on tasks still to run (+102 on DONE tasks); first: T396: stored context_pct 39% but it measures 45%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -154,7 +156,7 @@ Updated 2026-11-12T11:06:01Z by runner b6463cba40ab (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-12T10:46:46Z (week)): week: 193.6M used, 446k left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-07T01:12:21Z; waiting until 2026-11-12T17:00:00Z.
+- Pacing (session_reading 2026-11-12T11:05:43Z (week)): week: 189.7M used, 4.3M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-06T19:40:41Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -169,7 +171,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T280 (lease until 2026-11-12T14:06:16Z)
 - lane 2: T377 (lease until 2026-11-12T13:47:28Z)
 - lane 3: T345 (lease until 2026-11-12T13:49:13Z)
 
