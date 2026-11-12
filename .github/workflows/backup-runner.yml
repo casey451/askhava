@@ -247,8 +247,10 @@ jobs:
         # The worker's own cargo runs reuse the build; Cargo's fingerprints decide what rebuilds. Only `target/debug`:
         # the smoke's own build (`target/smoke`, D-1890) is the next step's entry, and an exclusion such as
         # `!target/smoke` does not reach inside a listed folder, so this entry carried both builds (D-1911).
+        # Restore only (D-3143): "Rust build cache, save" at the end of the job saves it, cut to its dependencies.
+        id: rust-cache
         if: hashFiles('Cargo.lock') != ''
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: |
             ~/.cargo/registry/index
@@ -259,7 +261,8 @@ jobs:
           # One entry per commit of main (D-1178): actions/cache never updates an existing key, so a key
           # by Cargo.lock alone froze the target directory at the last dependency change and every cycle
           # rebuilt everything since, until the smoke test outran the runner's timeout. The restore keys
-          # take the newest snapshot of the same lock, then any.
+          # take the newest snapshot of the same lock, then any. Since D-3143 the family keeps only its newest
+          # entry, saved from main's ref only, holding the registry and the dependency artifacts.
           key: rust-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}-${{ github.sha }}
           restore-keys: |
             rust-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}-
@@ -474,16 +477,63 @@ jobs:
           stopped="$(python3 -c 'from runner.github_env import stop_background_smoke; print(stop_background_smoke())' 2>/dev/null || true)"
           echo "background smoke: ${stopped:-unknown}"
           echo "stopped=${stopped}" >> "$GITHUB_OUTPUT"
+      - name: Drop the superseded smoke build entries (D-3143)
+        # Each smoke entry is about 3.9 GB of GitHub's 10 GB repository cache, and the restore keys only ever take the
+        # newest, so the entries this job's save replaces (key prefix rust-smoke-<os>-, created before this job
+        # started; any ref) are deleted first and the family holds one entry. An entry another job saved since this
+        # one started is kept. Under exactly the save's condition; a failure only leaves them for GitHub's eviction.
+        if: always() && github.ref == 'refs/heads/main' && hashFiles('target/smoke-ran') != '' && steps.smoke-cache.outputs.cache-primary-key != '' && steps.bg-smoke.outputs.stopped != 'stopped'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PREFIX: rust-smoke-${{ runner.os }}-
+        run: |
+          cd "$RUNNER_TEMP/keeper" && python3 -m runner.cache drop --repo "$GITHUB_REPOSITORY" --prefix "$PREFIX" --before "${JOB_START:-}"
       - name: Smoke build cache, save (D-1911)
         # Only when this job's runner ran the smoke (`target/smoke-ran`, written by `smoke_main`, by the warm-up when it
         # compiled and by the pre-session smoke when it timed out, D-2007, D-2028; outside both
         # entries), whatever the session's outcome: the manifest is written before Cargo runs, so even a red or
-        # timed-out smoke leaves a target dir that matches it.
-        if: always() && hashFiles('target/smoke-ran') != '' && steps.smoke-cache.outputs.cache-primary-key != '' && steps.bg-smoke.outputs.stopped != 'stopped'
+        # timed-out smoke leaves a target dir that matches it. Only from main's ref (D-3143): a run started by a
+        # pull_request event saves under refs/pull/<n>/merge, which no later run can restore.
+        if: always() && github.ref == 'refs/heads/main' && hashFiles('target/smoke-ran') != '' && steps.smoke-cache.outputs.cache-primary-key != '' && steps.bg-smoke.outputs.stopped != 'stopped'
         uses: actions/cache/save@v4
         with:
           path: target/smoke
           key: ${{ steps.smoke-cache.outputs.cache-primary-key }}
+      - name: Cut the worker build to its dependencies before the save (D-3143)
+        # Where actions/cache used to save the whole `target/debug` at the job's end (about 3.4 GB per commit of main),
+        # only the dependency artifacts are kept: a fresh checkout gives every workspace file a new mtime, so Cargo
+        # rebuilds every member whatever the entry holds, and the smoke seed copies the same dependency set (D-1890).
+        # Only when the restore missed its exact key, from main's ref; without the workspace's members the step
+        # prints pruned=no and nothing is saved, so a whole target never goes back into the cache. Run from the
+        # worktree of main this job made at its start (as the keeper steps are), since the session may leave a task
+        # branch checked out whose runner/ predates runner/cache.py.
+        id: rust-prune
+        if: always() && github.ref == 'refs/heads/main' && steps.rust-cache.outputs.cache-primary-key != '' && steps.rust-cache.outputs.cache-hit != 'true'
+        continue-on-error: true
+        run: |
+          cd "$RUNNER_TEMP/keeper" && python3 -m runner.cache prune --root "$GITHUB_WORKSPACE" --target "$GITHUB_WORKSPACE/target/debug" | tee -a "$GITHUB_OUTPUT"
+      - name: Drop the superseded worker build entries (D-3143)
+        # As for the smoke entries: the older entries of this family (key prefix rust-<os>-, created before this job
+        # started) are deleted just before the newer one is saved. The prefix never matches a rust-smoke- key.
+        if: always() && steps.rust-prune.outputs.pruned == 'yes'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PREFIX: rust-${{ runner.os }}-
+        run: |
+          cd "$RUNNER_TEMP/keeper" && python3 -m runner.cache drop --repo "$GITHUB_REPOSITORY" --prefix "$PREFIX" --before "${JOB_START:-}"
+      - name: Rust build cache, save (D-514, D-3143)
+        if: always() && steps.rust-prune.outputs.pruned == 'yes'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+            ~/.cargo/bin
+            target/debug
+          key: ${{ steps.rust-cache.outputs.cache-primary-key }}
       - name: Keep the plan usage the session reported, for pacing (D-1155)
         if: always()
         env:
