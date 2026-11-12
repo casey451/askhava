@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-12T15:45:46Z by runner 7ad0dc77b70a (manual).
+Updated 2026-11-12T16:18:36Z by runner cbca633c7528 (actions).
 
-**Building: T315 in progress since 15:12Z; 245 of 399 done; week 96% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T315 in progress since 15:12Z; 245 of 397 done; week 96% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 245 of 399 build tasks (owner gates not counted)
+- **Tasks done:** 245 of 397 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T315 claimed 15:12Z, lease until 18:12Z
 - **Week:** 96% used, 0.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:31Z, 14 min before this update
+- **Last run:** 15:46Z, 32 min before this update
 - **Keeper:** last ran 15:31Z, next wake 18:15Z
 
 ## Needs attention
 - BLOCKED T362: plan gap reported: PLAN GAP: tests/a11y/j1_keyboard.spec.ts:171-172 (owned by T098/T214, protected, not in T362's files) presses Tab before the Go back page's load event. Since T362 serves /static/portals/quote_page.js (404 before), page load waits for the script, so Tab starts at control 0 instead of quote #2 (index 3): "Tab from "" ... Expected: 3, Received: 0" at 320/768/1280 px. Evidence: with the built .js the 3 tests fail; with the .js removed they pass; with await page.waitForLoadState("load") added after the heading check at :171 they pass. T362's own tests pass (static_files_route 5 passed, static_serve; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T362 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 23 problem(s) on tasks still to run (+116 on DONE tasks); first: T396: stored context_pct 39% but it measures 46%; regenerate
+- Strict plan check red: 28 problem(s) on tasks still to run (+118 on DONE tasks); first: T396: stored context_pct 39% but it measures 46%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -88,10 +88,9 @@ Updated 2026-11-12T15:45:46Z by runner 7ad0dc77b70a (manual).
 | T165 | businesses: business name, Google and Yelp links and license | done | 1 | 18 min | 17:05Z |  |
 | T214 | picks (harness): the homeowner's share box at the pick and t | done | 3 | 45 min | 16:44Z | PLAN GAP: tests/integration/tests/page_pick.rs:131 and tests/security/tests/page_pick_privacy.rs:224 (both T246's; page_ |
 | T165 | businesses: business name, Google and Yelp links and license | resync | 1 | 47 min | 16:25Z |  |
-| T269 | portals: a business notice's signed link opens sign-in for t | done | 2 | 23 min | 16:14Z | merging main into the reviewed head conflicts in app/portals/CLAUDE.md; a resync merges it in on this attempt (D-891) |
-| T269 | portals: a business notice's signed link opens sign-in for t | resync | 2 | 44 min | 15:46Z |  |
 
 ### Plan and harness merges on main
+- 16:10Z Plan: pre-flight fixes round 10 — T396, T398, T111, T113, T408, T222; new T414 (D-3263) (#597)
 - 15:45Z Plan: new T412/T415 store business sign-in addresses and phones in the vault for T280, T397, T302 and T364 (D-3262) (#596)
 - 14:48Z Plan: trim T251 to its context limit (D-3256) (#590)
 - 09:36Z Plan: pre-flight fixes round 9 — stage 5: T303, T151, T321, T110, T210, T109, T116; new T409, T410 (D-3155) (#559)
@@ -122,8 +121,8 @@ Updated 2026-11-12T15:45:46Z by runner 7ad0dc77b70a (manual).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 208 of 733 (28.4%) · partial 356 · unstarted 169
-**Tasks merged (throughput only):** 245 of 399
+**Requirements verified:** 209 of 733 (28.5%) · partial 355 · unstarted 169
+**Tasks merged (throughput only):** 245 of 397
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -139,7 +138,7 @@ Updated 2026-11-12T15:45:46Z by runner 7ad0dc77b70a (manual).
 | lifecycle | 18 | 10 | 0 | 28 |
 | messaging | 17 | 25 | 3 | 45 |
 | ops-recovery | 2 | 7 | 45 | 54 |
-| privacy | 6 | 23 | 2 | 31 |
+| privacy | 7 | 22 | 2 | 31 |
 | quiet-hours | 4 | 5 | 0 | 9 |
 | quotes-pick | 30 | 25 | 1 | 56 |
 | recurring | 6 | 2 | 3 | 11 |
