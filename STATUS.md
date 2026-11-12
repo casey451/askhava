@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-12T19:09:56Z by runner 7fee52203d5e (actions).
+Updated 2026-11-12T19:10:13Z by runner 7fee52203d5e (actions).
 
 **Building: T251 in progress since 19:00Z; 250 of 400 done; week 3% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 250 of 400 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T251 claimed 19:00Z, lease until 22:00Z; lane 4: T414 claimed 18:56Z, lease until 21:56Z; lane 5: T350 claimed 17:26Z, lease until 21:35Z; lane 6: T416 claimed 19:04Z, lease until 22:04Z
+- **Lane:** lane 1: T251 claimed 19:00Z, lease until 22:00Z; lane 4: T414 claimed 18:56Z, lease until 21:56Z; lane 6: T416 claimed 19:04Z, lease until 22:04Z
 - **Week:** 3% used, 180.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 19:09Z, 0 min before this update
 - **Keeper:** last ran 19:09Z, next wake 21:38Z
@@ -18,6 +18,7 @@ Updated 2026-11-12T19:09:56Z by runner 7fee52203d5e (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T350 | privacy: an opt-out, HELP or START word is never taken or re | MERGE_PENDING | 1 | 103 min | 19:09Z |  |
 | T362 | server: the built static files are served at /static/<crate> | MERGE_PENDING | 3 | 26 min | 19:03Z | PLAN GAP: tests/a11y/j1_keyboard.spec.ts:171-172 (owned by T098/T214, protected, not in T362's files) presses Tab before |
 | T346 | portals: every homeowner Verify code is bound to its purpose | MERGE_PENDING | 1 | 40 min | 18:57Z |  |
 | T251 | intake and quotes: the ZIP question, the job location, and t | resync | 2 | 87 min | 18:46Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
@@ -165,8 +166,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T251 (lease until 2026-11-12T22:00:53Z)
 - lane 4: T414 (lease until 2026-11-12T21:56:19Z)
-- lane 5: T350 (lease until 2026-11-12T21:35:54Z)
 - lane 6: T416 (lease until 2026-11-12T22:04:45Z)
 
 ## Last usage reading
-- {"task": "T362", "at": "2026-11-12T19:03:13Z", "cache_creation_input_tokens": 223162, "input_tokens": 142, "output_tokens": 32804, "cache_read_input_tokens": 3902504}
+- {"task": "T350", "at": "2026-11-12T19:09:54Z", "input_tokens": 362, "cache_read_input_tokens": 10761998, "output_tokens": 106105, "cache_creation_input_tokens": 464888}
