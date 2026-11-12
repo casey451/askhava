@@ -2566,3 +2566,7 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 ## T362: one test waits for the quote page to finish loading (D-3270)
 
 - **What changed.** Once the quote page's live-update script is served, one keyboard test pressed Tab before the page finished loading; T362 may now add a single "wait for the page to load" line to that test, with every check in it unchanged.
+
+## Pre-flight fixes, round 11 (D-3286)
+
+- **What changed.** Five queued tasks got small wording fixes so they can run as written: two no longer load a large document they only add one line to, one uses the existing Spanish "we continue in English" text instead of adding a second copy, one has a corrected line reference, and two have their size estimates refreshed; no product rule changed.
