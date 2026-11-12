@@ -7,7 +7,8 @@
 //! only (PRIV-028). [`service_area`] reads it back with the base ZIP's centroid from the catalog's
 //! reviewed table, or no location for a ZIP the table lacks (an out-of-state base): its radius is
 //! then unused and its towns served alone decide its cards (BIZ-058). Matching by radius and the
-//! portal edit are T249's.
+//! portal edit are T249's. [`businesses_in_towns`] lists the businesses serving any of a job's
+//! towns, the card pool's first read (T251, CARD-001, BIZ-010).
 
 use askhava_catalog::api::{Centroid, is_zip, zip_location};
 use askhava_ops::api::{Actor, AuditEntry, Change, audit};
@@ -157,4 +158,21 @@ pub async fn service_area(
         },
         location,
     }))
+}
+
+/// CARD-001, BIZ-010: the businesses serving any of `towns` (town codes), each once, sorted by
+/// ID; whatever their status, which the card pool checks next (T251).
+///
+/// # Errors
+/// `Database`.
+pub async fn businesses_in_towns(
+    conn: &mut PgConnection,
+    towns: &[String],
+) -> Result<Vec<Uuid>, BusinessesError> {
+    db(sqlx::query_scalar!(
+        "SELECT DISTINCT business_id FROM businesses.town WHERE town = ANY($1) ORDER BY business_id",
+        towns
+    )
+    .fetch_all(conn)
+    .await)
 }

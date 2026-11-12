@@ -2,7 +2,9 @@
 //!
 //! One row type per table; T181 added the consent and terms records (`0054_intake_terms_acceptance.sql`);
 //! T039, T040 and T043 add their queries here. T040 keeps a request's jobs as `intake_answer` rows
-//! (no new table, D-993); T050 adds the homeowner pause (`0076_intake_optout_jobs.sql`, CON-029).
+//! (no new table, D-993); T050 adds the homeowner pause (`0076_intake_optout_jobs.sql`, CON-029);
+//! T251 adds the property's ZIP (`0165_intake_property_zip.sql`, INT-049) and the card sender's
+//! reads ([`insert_property`], [`property_town`]).
 //! Every row holds IDs, codes
 //! and times only, never a contact value or homeowner text (PRIV-001, PRIV-028).
 
@@ -50,6 +52,9 @@ pub enum IntakeError {
     /// The `ops` alert could not be raised (INT-023's call-back).
     #[error("intake could not raise an alert")]
     Alert,
+    /// The card sender found no stored card to send, so its task fails and retries (T251, D-3189).
+    #[error("intake found no stored card to send")]
+    NoStoredCard,
 }
 
 /// `intake.homeowner`: one person by vault contact ID.
@@ -63,7 +68,7 @@ pub struct HomeownerRow {
     pub created_at: Timestamp,
 }
 
-/// `intake.property`: only the vault contact ID and the town (PRIV-028).
+/// `intake.property`: only the vault contact ID, the town and the 5-digit ZIP (PRIV-028, INT-049).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PropertyRow {
     /// Row ID.
@@ -74,6 +79,8 @@ pub struct PropertyRow {
     pub contact_id: Uuid,
     /// The catalog town code.
     pub town: String,
+    /// The 5-digit ZIP of the home; none on rows written before the ZIP question (T251).
+    pub zip: Option<String>,
     /// When it was recorded.
     pub created_at: Timestamp,
 }
@@ -976,4 +983,44 @@ pub(crate) async fn golden_rows(
             ran_at: r.ran_at.to_jiff(),
         })
         .collect())
+}
+
+/// INT-049, PRIV-028: stores the homeowner's property with the vault contact, the town and the
+/// 5-digit ZIP; never an address.
+pub(crate) async fn insert_property(
+    db: &mut PgConnection,
+    (homeowner, contact): (Uuid, Uuid),
+    (town, zip): (&str, &str),
+    at: Timestamp,
+) -> Result<(), IntakeError> {
+    sqlx::query!(
+        "INSERT INTO intake.property (homeowner_id, contact_id, town, zip, created_at) \
+         VALUES ($1, $2, $3, $4, $5)",
+        homeowner,
+        contact,
+        town,
+        zip,
+        at.to_sqlx() as _
+    )
+    .execute(db)
+    .await
+    .map(|_| ())
+    .map_err(|_| IntakeError::Database)
+}
+
+/// INT-049, CARD-001: the town of the newest property of request `conversation`'s homeowner,
+/// the job's own town for its cards; `None` before the ZIP and area check.
+pub(crate) async fn property_town(
+    db: &mut PgConnection,
+    conversation: Uuid,
+) -> Result<Option<String>, IntakeError> {
+    sqlx::query_scalar!(
+        "SELECT p.town FROM intake.property p JOIN intake.conversation c \
+         ON c.homeowner_id = p.homeowner_id WHERE c.id = $1 \
+         ORDER BY p.created_at DESC, p.id DESC LIMIT 1",
+        conversation
+    )
+    .fetch_optional(db)
+    .await
+    .map_err(|_| IntakeError::Database)
 }

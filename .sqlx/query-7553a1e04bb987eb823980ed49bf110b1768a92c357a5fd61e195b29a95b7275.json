@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT p.town FROM intake.property p JOIN intake.conversation c ON c.homeowner_id = p.homeowner_id WHERE c.id = $1 ORDER BY p.created_at DESC, p.id DESC LIMIT 1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "town",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "intake.property",
+            "name": "town"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "7553a1e04bb987eb823980ed49bf110b1768a92c357a5fd61e195b29a95b7275"
+}

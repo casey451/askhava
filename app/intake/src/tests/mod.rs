@@ -16,3 +16,4 @@ mod safety_text;
 mod summary_step;
 mod trade_question;
 mod twin_warnings_regression;
+mod zip_step;

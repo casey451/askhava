@@ -25,6 +25,7 @@
 
 mod accepted_quote;
 pub mod api;
+mod cards_out;
 mod closing;
 mod conversation;
 mod design;
@@ -47,6 +48,7 @@ mod safety_text;
 mod service;
 mod status;
 mod summary_step;
+mod zip_step;
 
 #[cfg(test)]
 mod tests;
