@@ -19118,7 +19118,8 @@
     "T386",
     "T387",
     "T390",
-    "T391"
+    "T391",
+    "T393"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19791,7 +19792,8 @@
   {
    "id": "T140",
    "deps": [
-    "T239"
+    "T239",
+    "T392"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19844,7 +19846,10 @@
     "T236",
     "T237",
     "T238",
-    "T239"
+    "T239",
+    "T392",
+    "T394",
+    "T395"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19877,7 +19882,8 @@
   {
    "id": "T145",
    "deps": [
-    "T144"
+    "T144",
+    "T395"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -23377,7 +23383,8 @@
     "T380",
     "T381",
     "T382",
-    "T235"
+    "T235",
+    "T394"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -33352,6 +33359,56 @@
    "slug": "link-reply",
    "type": "build",
    "stage": "4"
+  },
+  {
+   "id": "T392",
+   "deps": [
+    "T136",
+    "T137"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "vendor-leak-check",
+   "type": "build",
+   "stage": "6"
+  },
+  {
+   "id": "T393",
+   "deps": [
+    "T316",
+    "T341",
+    "T374"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "quote-page-cards",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T394",
+   "deps": [
+    "T299",
+    "T236"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "ai-writing-calls",
+   "type": "harness",
+   "stage": "6"
+  },
+  {
+   "id": "T395",
+   "deps": [
+    "T141",
+    "T392",
+    "T139"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "gate-c-preconditions",
+   "type": "harness",
+   "stage": "6"
   }
  ],
  "owner_waits": [],
@@ -35414,7 +35471,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T00:03:53Z",
+ "updated_at": "2026-11-12T00:07:34Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -35512,7 +35569,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "6a4287611ebce5519b55ecee9945283ac5e7bc58",
+ "runner_sha": "ce92afb8a8caf6cf218f55cba20ab20b5d4347f7",
  "starter": "actions",
  "smoke_runs": [
   {
