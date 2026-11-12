@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE messaging.outbox SET status = 'blocked', body = NULL WHERE id = $1 AND status IN ('queued', 'sending')",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "fb98ff7732806094ab5dca40b8dfa45cf141734516abe97b9d1ae6c561298673"
+}
