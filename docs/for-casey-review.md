@@ -5,7 +5,7 @@ These are decisions Claude made on its own and logged so the build never waits (
 ## The test machines keep their saved builds again (D-3143, November 12)
 
 - **What happened.** GitHub keeps 10 GB of saved builds for the project. The runner saved about 7 GB more after every merge, which pushed out the builds the checks reuse, so every check run since last night built from scratch (0 of 36 reuses hit today).
-- **What changed.** The runner now keeps just one copy of each of its two saved builds, cuts the larger one down to the part that is reused, and saves only from the main line. The browser download the page tests use is saved the same way. Nothing about what is tested changed.
+- **What changed.** The runner now keeps just one copy of each of its two saved builds, stops saving the part of one that its other build already holds, and saves only from the main line. The browser download the page tests use is saved the same way. Nothing about what is tested changed.
 - **Expected.** The check runs reuse their builds again, which saves several minutes per run (about 7 on the longest job).
 - **Nothing needs you now.**
 

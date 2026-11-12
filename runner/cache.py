@@ -4,17 +4,20 @@ GitHub keeps at most 10 GB of Actions cache per repository and evicts entries on
 backup job used to save the worker's whole `target/debug` with the registry (about 3.4 GB) once per commit of
 `main`, and a job that compiled the smoke saved `target/smoke` (about 3.9 GB), so each merge added about 7.3 GB
 and pushed `Ci`'s `main`-only entries (D-2782) out within hours: on November 12, 0 of 36 Rust restores and 0 of
-12 sqlx-cli restores in 12 `ci` runs hit. Two steps of `backup-runner.yml` call this module before those saves:
+12 sqlx-cli restores in 12 `ci` runs hit. `backup-runner.yml` calls this module at four points:
 
-- `prune`: cut `target/debug` down to its dependency artifacts (`github_env.seed_files`, the set the smoke seed
-  already copies, D-1890). A fresh checkout gives every workspace file a new mtime, so Cargo rebuilds every
-  member whatever the cache holds; only the dependencies ever carry over, and they are what the entry keeps.
-- `drop`: delete this family's older entries (key prefix, created before the job started) just before the job
-  saves its newer one, so the family holds one entry instead of one per commit of `main`.
+- `seed`: after the smoke warm-up and before the session, give the worker's empty `target/debug` the smoke build's
+  dependency artifacts (`github_env.seed_files`, the set the smoke seed copies the other way, D-1890). A fresh
+  checkout gives every workspace file a new mtime, so Cargo rebuilds every member of the worker's build whatever
+  it held; only dependencies ever carried over, and the smoke's entry already holds them for `main`'s head.
+- `clear`: before the worker entry is saved, empty `target/debug`, so that entry holds the registry alone.
+- `drop`: delete a family's older entries (key prefix, created before the job started) just before the job saves
+  its newer one, so the family holds one entry; it answers `save=no` when another job has saved a newer entry of
+  the family since this one started, so two lanes never keep two smoke entries.
 
-Standard library only; `python3 -m runner.cache prune --target DIR` prints `pruned=yes|no` for `$GITHUB_OUTPUT`;
-`python3 -m runner.cache drop --prefix KEY_PREFIX --before ISO` deletes through `gh api` with the job token.
-Neither ever fails the job: a failure only leaves the cache as it was.
+Standard library only. Only `key=value` lines go to standard output (the workflow appends them to
+`$GITHUB_OUTPUT`, which refuses any other line); messages go to standard error. Nothing here ever fails the
+job: a failure only leaves the cache or the worker's build as it was.
 """
 
 from __future__ import annotations
@@ -28,7 +31,7 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
-from runner.github_env import SEED_DIRS, _member_names, seed_files
+from runner.github_env import SEED_MARGIN, _member_names, _tree_size, copy_seed, seed_files
 
 Run = Callable[[list[str]], tuple[int, str]]
 PAGE = 100  # GitHub's largest page of the cache list
@@ -44,25 +47,53 @@ def run_command(args: list[str]) -> tuple[int, str]:
     return done.returncode, done.stdout
 
 
-def prune_target(debug: Path, members: set[str]) -> tuple[int, int]:
-    """Remove from `debug` (a profile folder such as `target/debug`) everything but the dependency artifacts in
-    SEED_DIRS: member artifacts, test binaries, `incremental`, examples and top-level outputs. (kept, removed)."""
-    keep = set(seed_files(debug, members))
-    removed = 0
-    for entry in sorted(debug.iterdir()) if debug.is_dir() else []:
-        inner = sorted(entry.iterdir()) if entry.name in SEED_DIRS and entry.is_dir() and not entry.is_symlink() else [entry]
-        for item in inner:
-            if item not in keep:
-                _remove(item)
-                removed += 1
-    return len(keep), removed
+def note(text: str) -> None:
+    """A message for the job log, on standard error so `$GITHUB_OUTPUT` never sees it."""
+    print(text, file=sys.stderr)
 
 
-def _remove(path: Path) -> None:
-    if path.is_dir() and not path.is_symlink():
-        shutil.rmtree(path)
-    else:
-        path.unlink(missing_ok=True)
+def members_of(root: Path, run: Run = run_command) -> set[str]:
+    """The workspace's package and target names (`cargo metadata --no-deps --offline` in `root`); empty when
+    cargo cannot say, which makes `seed` copy nothing."""
+    code, out = run(["cargo", "metadata", "--no-deps", "--format-version", "1", "--offline", "--manifest-path",
+                     str(root / "Cargo.toml")])
+    try:
+        return _member_names(json.loads(out)) if code == 0 else set()
+    except (ValueError, KeyError, TypeError):
+        return set()
+
+
+def seed(root: Path, smoke: Path, debug: Path, run: Run = run_command) -> str:
+    """Copy the dependency artifacts of `smoke` (the smoke build's profile folder) into `debug` (the worker's)
+    when `debug` holds no dependency build yet and the disk has room; what happened, in one line."""
+    if any((debug / "deps").glob("*")):
+        return "worker build not seeded: it already holds a build"
+    if not (smoke / "deps").is_dir():
+        return "worker build not seeded: the smoke build has no deps folder"
+    members = members_of(root, run)
+    if not members:
+        return "worker build not seeded: the workspace members are unknown"
+    entries = seed_files(smoke, members)
+    need, free = _tree_size(entries), shutil.disk_usage(debug.parent if debug.parent.exists() else root).free
+    if free <= need + SEED_MARGIN:
+        return f"worker build not seeded: {need >> 20} MB needed, {free >> 20} MB free"
+    copy_seed(smoke, debug, entries)
+    return f"worker build seeded from the smoke build: {len(entries)} entries, {need >> 20} MB"
+
+
+def clear(debug: Path) -> str:
+    """Empty `debug` before the worker entry is saved, so it holds the registry alone: `pruned=yes`, or
+    `pruned=no` when it could not be emptied (the workflow then saves nothing)."""
+    try:
+        if debug.is_symlink():
+            debug.unlink()
+        elif debug.exists():
+            shutil.rmtree(debug)
+    except OSError as exc:
+        note(f"worker build not emptied: {str(exc)[:200]}")
+        return "pruned=no"
+    note("worker build emptied: the worker entry holds the registry alone")
+    return "pruned=yes"
 
 
 def superseded(caches: list[dict[str, Any]], prefix: str, before: str) -> list[int]:
@@ -76,6 +107,12 @@ def superseded(caches: list[dict[str, Any]], prefix: str, before: str) -> list[i
         if key.startswith(prefix) and len(created) >= STAMP and created[:STAMP] < before[:STAMP] and isinstance(row.get("id"), int):
             out.append(int(row["id"]))
     return out
+
+
+def newer(caches: list[dict[str, Any]], prefix: str, before: str) -> bool:
+    """Whether an entry of the family was created at or after `before`: another job saved since this one began."""
+    return any(str(r.get("key") or "").startswith(prefix) and str(r.get("created_at") or "")[:STAMP] >= before[:STAMP]
+               for r in caches)
 
 
 def list_caches(repo: str, prefix: str, run: Run = run_command) -> list[dict[str, Any]] | None:
@@ -97,57 +134,48 @@ def list_caches(repo: str, prefix: str, run: Run = run_command) -> list[dict[str
 
 
 def drop(repo: str, prefix: str, before: str, run: Run = run_command) -> str:
-    """Delete the entries `superseded` names; one line saying what happened."""
+    """Delete the entries `superseded` names, unless a newer entry exists; the `save=` line for the save step
+    (`save=no` only when another job saved a newer entry since `before`; an unreadable list says `save=yes`,
+    the behaviour before D-3143)."""
     rows = list_caches(repo, prefix, run)
     if rows is None:
-        return f"cache entries under {prefix} not listed; none dropped"
+        note(f"cache entries under {prefix} not listed; none dropped")
+        return "save=yes"
+    if newer(rows, prefix, before):
+        note(f"a newer entry under {prefix} was saved since this job started: nothing dropped, nothing saved")
+        return "save=no"
     ids = superseded(rows, prefix, before)
     gone = [i for i in ids if run(["gh", "api", "-X", "DELETE", f"repos/{repo}/actions/caches/{i}"])[0] == 0]
-    return f"dropped {len(gone)} of {len(ids)} superseded entries under {prefix} ({len(rows)} listed)"
-
-
-def members_of(root: Path, run: Run = run_command) -> set[str]:
-    """The workspace's package and target names (`cargo metadata --no-deps --offline` in `root`); empty when
-    cargo cannot say, which makes `prune` keep everything and say so."""
-    code, out = run(["cargo", "metadata", "--no-deps", "--format-version", "1", "--offline", "--manifest-path",
-                     str(root / "Cargo.toml")])
-    try:
-        return _member_names(json.loads(out)) if code == 0 else set()
-    except (ValueError, KeyError, TypeError):
-        return set()
-
-
-def prune(root: Path, target: Path, run: Run = run_command) -> list[str]:
-    """`prune`: the lines to print; the last is `pruned=yes` only when the target was cut to its dependencies."""
-    members = members_of(root, run)
-    if not members or not (target / "deps").is_dir():
-        why = "the workspace members are unknown" if not members else f"{target} has no deps folder"
-        return [f"worker build not pruned: {why}", "pruned=no"]
-    try:
-        kept, removed = prune_target(target, members)
-    except OSError as exc:
-        return [f"worker build not pruned: {str(exc)[:200]}", "pruned=no"]
-    return [f"worker build pruned to its dependencies: {kept} entries kept, {removed} removed", "pruned=yes"]
+    note(f"dropped {len(gone)} of {len(ids)} superseded entries under {prefix} ({len(rows)} listed)")
+    return "save=yes"
 
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="python3 -m runner.cache")
     sub = ap.add_subparsers(dest="cmd", required=True)
-    p = sub.add_parser("prune")
-    p.add_argument("--target", type=Path, default=Path("target/debug"))
-    p.add_argument("--root", type=Path, default=Path("."))
+    s = sub.add_parser("seed")
+    s.add_argument("--root", type=Path, default=Path("."))
+    s.add_argument("--smoke", type=Path, default=Path("target/smoke/debug"))
+    s.add_argument("--target", type=Path, default=Path("target/debug"))
+    c = sub.add_parser("clear")
+    c.add_argument("--target", type=Path, default=Path("target/debug"))
     d = sub.add_parser("drop")
     d.add_argument("--prefix", required=True)
     d.add_argument("--before", required=True)
     d.add_argument("--repo", default="")
     args = ap.parse_args(argv)
-    if args.cmd == "prune":
-        print("\n".join(prune(args.root, args.target)))
-        return 0
-    if not args.repo or len(args.before) < STAMP:
-        print("cache entries not dropped: no repository or start time")
-        return 0
-    print(drop(args.repo, args.prefix, args.before))
+    if args.cmd == "seed":
+        try:
+            note(seed(args.root, args.smoke, args.target))
+        except OSError as exc:
+            note(f"worker build not seeded: {str(exc)[:200]}")
+    elif args.cmd == "clear":
+        print(clear(args.target))
+    elif not args.repo or len(args.before) < STAMP:
+        note("cache entries not dropped: no repository or start time")
+        print("save=yes")
+    else:
+        print(drop(args.repo, args.prefix, args.before))
     return 0
 
 
