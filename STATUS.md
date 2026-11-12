@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T07:19:46Z by runner f7b75537c7de (actions).
+Updated 2026-11-12T07:33:27Z by runner 5f2efdc68444 (actions).
 
 **Building: T360 in progress since 06:59Z; 228 of 394 done; week 89% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,12 +8,12 @@ Updated 2026-11-12T07:19:46Z by runner f7b75537c7de (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T360 claimed 06:59Z, lease until 09:59Z; lane 2: T401 claimed 06:56Z, lease until 09:56Z; lane 3: T390 claimed 07:05Z, lease until 10:05Z; lane 5: T336 claimed 06:48Z, lease until 09:48Z
 - **Week:** 89% used, 5.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:19Z, 0 min before this update
+- **Last run:** 07:19Z, 13 min before this update
 - **Keeper:** last ran 07:16Z, next wake 09:50Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 16 problem(s) on tasks still to run (+94 on DONE tasks); first: T396: stored context_pct 39% but it measures 44%; regenerate
+- Strict plan check red: 13 problem(s) on tasks still to run (+92 on DONE tasks); first: T396: stored context_pct 39% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -81,7 +81,6 @@ Updated 2026-11-12T07:19:46Z by runner f7b75537c7de (actions).
 | T295 | payments, ai, intake and picks take the brand from the brand | done | 4 | 33 min | 08:57Z | T295 blocked at step 3: tests/brand_literal_baseline.json still lists files T295 does not own: app/messaging/templates/e |
 | T212 | intake: photo asks with on-server checks and preview, inspir | done | 2 | 19 min | 08:12Z | Ci: failure; Coverage: failure; Checks: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned |
 | T337 | payments (harness): a $0 release proof is bound to the pick' | BLOCKED | 4 | 9 min | 08:05Z |  |
-| T212 | intake: photo asks with on-server checks and preview, inspir | check_failed | 1 | 56 min | 07:20Z |  |
 
 ### Plan and harness merges on main
 - 07:12Z Harness: close merged tasks before the smoke so their lanes free ~20 min sooner (D-3141) (#552)
