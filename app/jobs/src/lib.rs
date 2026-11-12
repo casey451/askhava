@@ -8,6 +8,7 @@
 pub mod api;
 mod followups;
 mod handlers;
+mod job_facts;
 mod models;
 mod purge_events;
 mod quote_token;

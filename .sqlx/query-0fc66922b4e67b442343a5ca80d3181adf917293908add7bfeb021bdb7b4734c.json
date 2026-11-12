@@ -1,0 +1,64 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT seq, category, job_types, set_at FROM jobs.job_facts WHERE job_id = $1 ORDER BY seq DESC LIMIT 1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "seq",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "jobs.job_facts",
+            "name": "seq"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "category",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "jobs.job_facts",
+            "name": "category"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "job_types",
+        "type_info": "TextArray",
+        "origin": {
+          "Table": {
+            "table": "jobs.job_facts",
+            "name": "job_types"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "set_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "jobs.job_facts",
+            "name": "set_at"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "0fc66922b4e67b442343a5ca80d3181adf917293908add7bfeb021bdb7b4734c"
+}
