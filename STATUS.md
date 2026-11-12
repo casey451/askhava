@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-12T19:04:10Z by runner ef5a3860ab5e (actions).
+Updated 2026-11-12T19:04:53Z by runner bae443e54064 (actions).
 
-**Building: T251 in progress since 19:00Z; 250 of 400 done; week 3% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T251 in progress since 19:00Z; 250 of 403 done; week 3% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 250 of 400 build tasks (owner gates not counted)
+- **Tasks done:** 250 of 403 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T251 claimed 19:00Z, lease until 22:00Z; lane 4: T414 claimed 18:56Z, lease until 21:56Z; lane 5: T350 claimed 17:26Z, lease until 21:35Z
-- **Week:** 3% used, 180.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 1: T251 claimed 19:00Z, lease until 22:00Z; lane 4: T414 claimed 18:56Z, lease until 21:56Z; lane 5: T350 claimed 17:26Z, lease until 21:35Z; lane 6: T416 claimed 19:04Z, lease until 22:04Z
+- **Week:** 3% used, 180.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 19:04Z, 0 min before this update
 - **Keeper:** last ran 19:04Z, next wake 21:38Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 21 problem(s) on tasks still to run (+121 on DONE tasks); first: T340: stored context_pct 40% but it measures 45%; regenerate
+- Strict plan check red: 20 problem(s) on tasks still to run (+122 on DONE tasks); first: T340: stored context_pct 40% but it measures 45%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -121,7 +121,7 @@ Updated 2026-11-12T19:04:10Z by runner ef5a3860ab5e (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 230 of 733 (31.4%) · partial 334 · unstarted 169
-**Tasks merged (throughput only):** 250 of 400
+**Tasks merged (throughput only):** 250 of 403
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -149,7 +149,7 @@ Updated 2026-11-12T19:04:10Z by runner ef5a3860ab5e (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-12T18:57:47Z (week)): week: 13.4M used, 180.6M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-06T01:34:30Z.
+- Pacing (session_reading 2026-11-12T19:03:53Z (week)): week: 13.6M used, 180.4M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-06T01:53:26Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -167,6 +167,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - T251 (lease until 2026-11-12T22:00:53Z)
 - lane 4: T414 (lease until 2026-11-12T21:56:19Z)
 - lane 5: T350 (lease until 2026-11-12T21:35:54Z)
+- lane 6: T416 (lease until 2026-11-12T22:04:45Z)
 
 ## Last usage reading
 - {"task": "T362", "at": "2026-11-12T19:03:13Z", "cache_creation_input_tokens": 223162, "input_tokens": 142, "output_tokens": 32804, "cache_read_input_tokens": 3902504}
