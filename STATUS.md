@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-12T22:17:49Z by runner 98235571b291 (actions).
+Updated 2026-11-12T22:18:02Z by runner 98235571b291 (actions).
 
 **Building: T419 in progress since 22:12Z; 256 of 403 done; week 5% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 256 of 403 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T419 claimed 22:12Z, lease until 01:12Z; lane 3: T385 claimed 21:36Z, lease until 00:36Z; lane 6: T417 claimed 21:46Z, lease until 00:46Z; lane 7: T351 claimed 21:36Z, lease until 00:36Z
+- **Lane:** lane 1: T419 claimed 22:12Z, lease until 01:12Z; lane 6: T417 claimed 21:46Z, lease until 00:46Z; lane 7: T351 claimed 21:36Z, lease until 00:36Z
 - **Week:** 5% used, 177.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 22:16Z, 1 min before this update
 - **Keeper:** last ran 22:06Z, next wake 00:38Z
@@ -18,6 +18,7 @@ Updated 2026-11-12T22:17:49Z by runner 98235571b291 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T385 | adapters, licensing and businesses (harness): the sign-up re | MERGE_PENDING | 3 | 40 min | 22:16Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
 | T162 | intake: the one intake order for the five paths and the Span | MERGE_PENDING | 1 | 22 min | 21:57Z |  |
 | T414 | Stand-ins (harness): end-to-end specs can read the emails th | done | 3 | 28 min | 20:57Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T251 | intake and quotes: the ZIP question, the job location, and t | done | 2 | 82 min | 20:23Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
@@ -28,7 +29,7 @@ Updated 2026-11-12T22:17:49Z by runner 98235571b291 (actions).
 | T346 | portals: every homeowner Verify code is bound to its purpose | done | 1 | 40 min | 18:57Z |  |
 | T251 | intake and quotes: the ZIP question, the job location, and t | resync | 2 | 87 min | 18:46Z |  |
 | T376 | ai and stand-in (harness): the intake schema sent to Claude  | done | 1 | 35 min | 18:40Z |  |
-| T385 | adapters, licensing and businesses (harness): the sign-up re | check_failed | 2 | 60 min | 18:26Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
+| T385 | adapters, licensing and businesses (harness): the sign-up re | check_failed | 2 | 60 min | 18:26Z |  |
 | T366 | jobs and server: every dead-lettered task alerts, and a dail | done | 1 | 26 min | 17:53Z |  |
 | T414 | Stand-ins (harness): end-to-end specs can read the emails th | check_failed | 1 | 32 min | 17:52Z |  |
 | T315 | jobs and portals: feedback words are blanked by the 3-year p | done | 1 | 66 min | 16:18Z |  |
@@ -166,9 +167,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T419 (lease until 2026-11-13T01:12:59Z)
-- lane 3: T385 (lease until 2026-11-13T00:36:10Z)
 - lane 6: T417 (lease until 2026-11-13T00:46:33Z)
 - lane 7: T351 (lease until 2026-11-13T00:36:46Z)
 
 ## Last usage reading
-- {"task": "T162", "at": "2026-11-12T21:57:37Z", "cache_creation_input_tokens": 438137, "cache_read_input_tokens": 10983707, "input_tokens": 251, "output_tokens": 94011}
+- {"task": "T385", "at": "2026-11-12T22:16:57Z", "output_tokens": 49563, "cache_creation_input_tokens": 282940, "cache_read_input_tokens": 5790886, "input_tokens": 200}

@@ -38092,7 +38092,7 @@
     "T081",
     "T227"
    ],
-   "status": "IN_PROGRESS",
+   "status": "MERGE_PENDING",
    "attempts": 2,
    "slug": "signup-own-record-read",
    "type": "harness",
@@ -38273,6 +38273,29 @@
      "started_at": "2026-11-12T17:26:04Z",
      "ended_at": "2026-11-12T18:26:50Z",
      "result": "check_failed"
+    },
+    {
+     "attempt": 3,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 50,
+     "head_sha": "98235571b291fac596a2d4614859689d01b046d6",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": true,
+     "started_at": "2026-11-12T21:36:10Z",
+     "ended_at": "2026-11-12T22:16:57Z",
+     "result": "MERGE_PENDING",
+     "usage": {
+      "worker": {
+       "tokens": 2935342,
+       "turns": 33
+      },
+      "reviewer": {
+       "tokens": 3188247,
+       "turns": 28
+      }
+     }
     }
    ],
    "reviewed_sha": "bcb3bd9db02fab4b7124ece49bb9e4c3a8f96d3f",
@@ -38285,8 +38308,8 @@
    "branch": "claude/task/T385-signup-own-record-read-a3",
    "auto_merge": {
     "enabled": true,
-    "why": "auto-merge on #606 (gh pr merge)",
-    "head": "7721cfb8b5d1c43d30a4d79ccb117dbcd690ff7c"
+    "why": "auto-merge on #625 (gh pr merge)",
+    "head": "bcb3bd9db02fab4b7124ece49bb9e4c3a8f96d3f"
    },
    "runner_closed_prs": [
     587
@@ -38303,7 +38326,6 @@
     }
    ],
    "last_failure": "Ci: failure; Coverage: failure\nCoverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered floor (D-694)\napp/licensing: 94.96402877697842\napp/messaging: 88.46153846153847\napp/ops: 94.11764705882354\napp/payments: 95.5719557195572\napp/picks: 87.18446601941747\napp/portals: 59.479553903345725\napp/privacy: 96.34146341463415\napp/quotes: 90.1453957996769\napp/server: 21.666666666666668\ntotal: 84.27978829924189 (floor 82.0)\napp/payments/: 95.5719557195572 (floor 95.0)\napp/privacy/: 96.34146341463415 (floor 95.0)\napp/licensing/: 94.96402877697842 (floor 95.0)\nFAIL: app/licensing/ 94.96 is below the floor 95.0\n##[error]Process completed with exit code 1.\nCi failed at step: All five jobs passed\nChecks: success, Lint and slow tests: success, Python: success, Coverage: failure, E2e: success\n##[error]Process completed with exit code 1.",
-   "head_check_since": null,
    "update_merges": [
     {
      "from": "98235571b291fac596a2d4614859689d01b046d6",
@@ -40822,12 +40844,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T162",
-   "at": "2026-11-12T21:57:37Z",
-   "cache_creation_input_tokens": 438137,
-   "cache_read_input_tokens": 10983707,
-   "input_tokens": 251,
-   "output_tokens": 94011
+   "task": "T385",
+   "at": "2026-11-12T22:16:57Z",
+   "output_tokens": 49563,
+   "cache_creation_input_tokens": 282940,
+   "cache_read_input_tokens": 5790886,
+   "input_tokens": 200
   },
   "source": "session_reading 2026-11-12T22:06:38Z (week)",
   "by_task": {
@@ -43075,11 +43097,15 @@
    "T385": {
     "estimated_bytes": 610993,
     "estimated_tokens": 3136808,
-    "cache_read_input_tokens": 29774979,
-    "input_tokens": 714,
-    "output_tokens": 226190,
-    "cache_creation_input_tokens": 1061497,
-    "last_model": "claude-opus-5-5"
+    "cache_read_input_tokens": 35565865,
+    "input_tokens": 914,
+    "output_tokens": 275753,
+    "cache_creation_input_tokens": 1344437,
+    "last_model": "claude-opus-5-5",
+    "worker_tokens": 2935342,
+    "worker_turns": 33,
+    "reviewer_tokens": 3188247,
+    "reviewer_turns": 28
    },
    "T350": {
     "estimated_bytes": 604844,
@@ -43191,11 +43217,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-12T17:52:25Z",
-    "tokens": 25269834
+    "tokens": 26181625
    },
    "week": {
     "start": "2026-11-12T19:03:13Z",
-    "tokens": 7193970
+    "tokens": 8105761
    }
   },
   "session_reading": {
@@ -43206,7 +43232,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T22:17:49Z",
+ "updated_at": "2026-11-12T22:18:02Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
