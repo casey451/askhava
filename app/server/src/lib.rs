@@ -510,31 +510,50 @@ where
 const HOMEOWNER_NUMBER: &str = "ASKHAVA_HOMEOWNER_NUMBER";
 
 /// `messaging`'s outbox sender (T356, D-2628): the `ID_SECRET` and vault, the Twilio texting
-/// client, the configured homeowner number from `pairs` (unset: the line has no sender, so rows
-/// wait, TXT-022), the footer's postal line when set (else no email copy) and the worker's clock.
+/// client, the configured homeowner number from `pairs`, the footer's postal line when set (else
+/// no email copy) and the worker's clock. The number is required in test and live, as the Twilio
+/// and postal settings are (D-1688, D-3095): unset there the worker refuses to start naming the
+/// key, since a line with no sender texts nothing and every CON-009 confirmation would expire
+/// unsent (D-3149); unset in dev and CI the line has no sender and rows wait (TXT-022).
 ///
 /// # Errors
 ///
-/// A homeowner number that is not `+1` and ten digits, or a broken area-code table, named.
+/// A missing number in test or live, a number that is not `+1` and ten digits, or a broken
+/// area-code table, named.
 fn outbox_sender(
     settings: &Settings,
     keys: (SecretString, Vault),
     sms: askhava_adapters::api::TwilioSms,
     (pairs, clock): (&[(String, String)], Arc<dyn askhava_core::api::Clock>),
 ) -> io::Result<askhava_messaging::api::OutboxSender<askhava_adapters::api::TwilioSms>> {
-    use askhava_messaging::api::{MailboxKind, OutboxSender, PostalAddress, SendingNumber};
-    let number = match pairs.iter().rev().find(|(k, _)| k == HOMEOWNER_NUMBER) {
-        Some((_, raw)) => Some(SendingNumber::parse(raw.trim()).map_err(|_| {
-            io::Error::other("setting ASKHAVA_HOMEOWNER_NUMBER has an invalid value")
-        })?),
-        None => None,
-    };
+    use askhava_messaging::api::{MailboxKind, OutboxSender, PostalAddress};
+    let number = homeowner_number(settings, pairs)?;
     let postal = settings.postal_address().ok().and_then(|line| {
         PostalAddress::new(line, MailboxKind::PoBox)
             .or_else(|_| PostalAddress::new(line, MailboxKind::PrivateMailbox))
             .ok()
     });
     OutboxSender::new(keys, sms, (number, postal), clock).map_err(io::Error::other)
+}
+
+/// `ASKHAVA_HOMEOWNER_NUMBER` from `pairs` (the last one wins): `None` when unset in dev and CI,
+/// an error naming the key when unset in test and live (D-3149) or not `+1` and ten digits.
+fn homeowner_number(
+    settings: &Settings,
+    pairs: &[(String, String)],
+) -> io::Result<Option<askhava_messaging::api::SendingNumber>> {
+    use askhava_messaging::api::SendingNumber;
+    match pairs.iter().rev().find(|(k, _)| k == HOMEOWNER_NUMBER) {
+        Some((_, raw)) => SendingNumber::parse(raw.trim())
+            .map(Some)
+            .map_err(|_| io::Error::other("setting ASKHAVA_HOMEOWNER_NUMBER has an invalid value")),
+        None => match settings.environment() {
+            Environment::Dev | Environment::Ci => Ok(None),
+            Environment::Test | Environment::Live => Err(io::Error::other(
+                "missing required setting ASKHAVA_HOMEOWNER_NUMBER",
+            )),
+        },
+    }
 }
 
 /// The Twilio settings the masked-line retry (its pool, CALL-001, CALL-017, D-1688) and the day-31
@@ -1088,6 +1107,40 @@ mod tests {
         let all = pairs(env, &[lists.as_slice(), extra.as_slice()].concat());
         let settings = Settings::from_pairs(all).expect("settings");
         super::notice_senders(&settings, &id_secret()).map(|s| s.is_some())
+    }
+
+    /// T356 (D-3149): without `ASKHAVA_HOMEOWNER_NUMBER` dev and CI have no homeowner sender and
+    /// the test and live projects refuse to start naming the key; a `+1` ten-digit number is
+    /// taken in every project, and any other value is refused naming the key.
+    #[test]
+    fn the_homeowner_number_is_required_in_test_and_live() {
+        let number = |env: &str, value: Option<&str>| {
+            let lists = settings_pairs(env);
+            let settings = Settings::from_pairs(pairs(env, &lists)).expect("settings");
+            let extra: Vec<(String, String)> = value
+                .map(|v| (super::HOMEOWNER_NUMBER.to_owned(), v.to_owned()))
+                .into_iter()
+                .collect();
+            super::homeowner_number(&settings, &extra).map(|n| n.is_some())
+        };
+        for env in ["dev", "ci"] {
+            assert!(!number(env, None).expect("no number"), "{env}");
+        }
+        for env in ["test", "live"] {
+            let refused = number(env, None).expect_err("refused").to_string();
+            assert_eq!(
+                refused, "missing required setting ASKHAVA_HOMEOWNER_NUMBER",
+                "{env}"
+            );
+        }
+        for env in ["dev", "ci", "test", "live"] {
+            assert!(number(env, Some("+19285550100")).expect("number"), "{env}");
+            let bad = number(env, Some("555-0100")).expect_err("bad").to_string();
+            assert_eq!(
+                bad, "setting ASKHAVA_HOMEOWNER_NUMBER has an invalid value",
+                "{env}"
+            );
+        }
     }
 
     /// T313 (D-3095, D-1826 (1)): without the postal setting dev and CI build no business-notice

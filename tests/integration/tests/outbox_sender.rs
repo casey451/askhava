@@ -9,7 +9,9 @@
 //! sent, when it reopens; a CON-009 confirmation goes within 5 minutes or never; with a fake
 //! carrier that does not dedupe, a worker killed after the carrier accepted leaves one delivery and
 //! the row `unknown` after 5 minutes, two workers racing for one row make one carrier call, and a
-//! timeout gives `unknown`, the email copy of an important text and one alert. All data is fake.
+//! timeout gives `unknown`, the email copy of an important text and one alert; a refused row is
+//! retried at 10 minutes; a row whose recipient cannot be read is expired and the next row goes; a
+//! direct reply goes at night within 15 minutes of her text only. All data is fake.
 
 use std::io::{BufRead, BufReader};
 use std::process::{Child, Command, Stdio};
@@ -25,9 +27,10 @@ use askhava_core::api::{
 };
 use askhava_integration::set_app_role;
 use askhava_messaging::api::{
-    Audience, MailboxKind, NewText, OutboxSender, PostalAddress, Relation, RevokeChannel,
-    SEND_DUE_KIND, SEND_OUTCOME_UNKNOWN_ALERT, SendingNumber, enqueue, record_restore,
-    record_suspension, register_send_due, schedule_send_due, suppress, switch_on,
+    Audience, Exemption, MailboxKind, NewText, OutboxSender, PostalAddress, Relation,
+    RevokeChannel, SEND_DUE_KIND, SEND_OUTCOME_UNKNOWN_ALERT, SendingNumber, enqueue,
+    enqueue_exempt, record_restore, record_suspension, register_send_due, schedule_send_due,
+    suppress, switch_on,
 };
 use askhava_privacy::api::{NewContact, Vault, store_contact};
 use base64::Engine as _;
@@ -178,15 +181,30 @@ async fn world<C: SmsAdapter + Send + Sync + 'static>(
 
 /// Queues `template` for her about `job`, recorded as queued at `at`.
 async fn queue(w: &World, template: &str, job: u128, at: Timestamp) -> Uuid {
+    queue_as(w, (w.her, None), (template, job), at).await
+}
+
+/// Queues `template` about `job` for `recipient`, with the QH-004 `exemption` when given, recorded
+/// as queued at `at`.
+async fn queue_as(
+    w: &World,
+    (recipient, exemption): (Uuid, Option<Exemption>),
+    (template, job): (&str, u128),
+    at: Timestamp,
+) -> Uuid {
     let text = NewText {
         template_id: template,
         subject: &[Uuid::from_u128(job)],
-        recipient: w.her,
+        recipient,
         relation: Relation::OpenRequest,
         body: "Ask Hava: fake body",
     };
     let mut db = w.app.acquire().await.expect("connection");
-    let (id, _) = enqueue(&mut db, &secret(), &text).await.expect("queued");
+    let (id, _) = match exemption {
+        Some(exemption) => enqueue_exempt(&mut db, &secret(), &text, exemption).await,
+        None => enqueue(&mut db, &secret(), &text).await,
+    }
+    .expect("queued");
     sqlx::query("UPDATE messaging.outbox SET created_at = $2 WHERE id = $1")
         .bind(id)
         .bind(at.to_sqlx())
@@ -474,8 +492,9 @@ async fn td_qh_05_a_timeout_gives_unknown_the_email_copy_and_one_alert(pool: PgP
     );
 }
 
-/// TD-QH-05 (TXT-014, QH-008): a definite refusal puts the row back to `queued` for its retry
-/// 10 minutes on, and the retry is sent.
+/// TD-QH-05 (TXT-014, QH-008): a definite refusal puts the row back to `queued` with its retry
+/// 10 minutes on (`not_before`); nothing goes before then, and at 10 minutes the retry is made
+/// (refused again, its next retry 20 minutes from the first failure).
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_qh_05_a_refused_send_is_retried_later(pool: PgPool) {
     let stand_in = stand_in();
@@ -502,6 +521,82 @@ async fn td_qh_05_a_refused_send_is_retried_later(pool: PgPool) {
     )
     .await;
     assert_eq!(retries, 1);
+    assert_eq!(not_before(&w, id).await, Some(az(15, 10, 10)));
+    w.clock.set(az(15, 10, 9));
+    run_due(&w).await;
+    assert_eq!(attempts(&w, id).await, 1, "no retry before 10 minutes");
+    w.clock.set(az(15, 10, 10));
+    run_due(&w).await;
+    assert_eq!(attempts(&w, id).await, 2, "the retry is made at 10 minutes");
+    assert_eq!(status(&w, id).await, "queued");
+    assert_eq!(not_before(&w, id).await, Some(az(15, 10, 20)));
+}
+
+/// D-3149 (TXT-011): a row whose recipient cannot be read is expired with one audit row, never
+/// left at the head of the queue, and the good row behind it is sent in the same run.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_qh_05_an_unreadable_recipient_is_expired_and_the_next_row_goes(pool: PgPool) {
+    let carrier = fake(Mode::Accept);
+    let w = world(&pool, carrier.clone(), az(15, 10, 0)).await;
+    let nobody = Uuid::from_u128(0xdead);
+    let unreadable = queue_as(&w, (nobody, None), ("first_quote", 13), az(15, 9, 0)).await;
+    let good = queue(&w, "first_quote", 14, az(15, 9, 30)).await;
+    run_due(&w).await;
+    assert_eq!(status(&w, unreadable).await, "expired");
+    assert_eq!(status(&w, good).await, "sent", "the row behind it goes");
+    assert_eq!(carrier.calls(), 1);
+    let audits = count(
+        &w,
+        "SELECT count(*) FROM ops.audit_log WHERE action = 'messaging.text_expired'",
+    )
+    .await;
+    assert_eq!(audits, 1);
+}
+
+/// TD-QH-05 (QH-004, D-3146): a direct reply queued with `enqueue_exempt` goes at night within 15
+/// minutes of her own text, and after 15 minutes it is held to 8 a.m.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_qh_05_a_direct_reply_goes_at_night_within_fifteen_minutes_only(pool: PgPool) {
+    let carrier = fake(Mode::Accept);
+    let w = world(&pool, carrier.clone(), az(15, 22, 5)).await;
+    let reply = Some(Exemption::DirectReply {
+        inbound_at: az(15, 22, 0),
+    });
+    let soon = queue_as(&w, (w.her, reply), ("first_quote", 15), az(15, 22, 1)).await;
+    run_due(&w).await;
+    assert_eq!(
+        status(&w, soon).await,
+        "sent",
+        "within 15 minutes, at night"
+    );
+    let late = Some(Exemption::DirectReply {
+        inbound_at: az(15, 22, 10),
+    });
+    let held = queue_as(&w, (w.her, late), ("first_quote", 16), az(15, 22, 11)).await;
+    w.clock.set(az(15, 22, 26));
+    run_due(&w).await;
+    assert_eq!(status(&w, held).await, "queued", "not after 15 minutes");
+    assert_eq!(not_before(&w, held).await, Some(az(16, 8, 0)));
+    assert_eq!(carrier.calls(), 1);
+}
+
+async fn not_before(w: &World, id: Uuid) -> Option<Timestamp> {
+    sqlx::query_scalar::<_, Option<jiff_sqlx::Timestamp>>(
+        "SELECT not_before FROM messaging.outbox WHERE id = $1",
+    )
+    .bind(id)
+    .fetch_one(&w.app)
+    .await
+    .expect("row")
+    .map(|t| t.to_jiff())
+}
+
+async fn attempts(w: &World, id: Uuid) -> i32 {
+    sqlx::query_scalar("SELECT attempts FROM messaging.outbox WHERE id = $1")
+        .bind(id)
+        .fetch_one(&w.app)
+        .await
+        .expect("row")
 }
 
 /// The stand-in server on a port it picked itself (its first line names it); killed on drop.

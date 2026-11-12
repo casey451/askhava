@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "WITH old AS (SELECT id, body FROM messaging.outbox WHERE id = $1 AND status = 'sending' AND ($2::timestamptz IS NULL OR sending_since IS NULL OR sending_since < $2) FOR UPDATE) UPDATE messaging.outbox o SET status = 'unknown', body = NULL FROM old WHERE o.id = old.id RETURNING o.recipient_id, o.recipient_kind, o.template_id, o.subject_ids, old.body AS \"body!\"",
+  "query": "WITH old AS (SELECT id, body FROM messaging.outbox WHERE id = $1 AND status = 'sending' AND ($2::timestamptz IS NULL OR sending_since IS NULL OR sending_since < $2) FOR UPDATE) UPDATE messaging.outbox o SET status = 'unknown', body = NULL FROM old WHERE o.id = old.id RETURNING o.recipient_id, o.recipient_kind, o.template_id, o.subject_ids, o.language, old.body AS \"body!\"",
   "describe": {
     "columns": [
       {
@@ -49,6 +49,17 @@
       },
       {
         "ordinal": 4,
+        "name": "language",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "messaging.outbox",
+            "name": "language"
+          }
+        }
+      },
+      {
+        "ordinal": 5,
         "name": "body!",
         "type_info": "Text",
         "origin": {
@@ -70,8 +81,9 @@
       false,
       false,
       false,
+      true,
       true
     ]
   },
-  "hash": "d3d4a766eda38ce7433258b4b99323d62fb25c21d305cc6a24d9c84618c92877"
+  "hash": "5a866b57f60fc4218efd6a645f43ddea87c419d5ce8469d9cefc2d97193640ae"
 }

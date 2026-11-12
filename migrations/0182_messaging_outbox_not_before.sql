@@ -28,5 +28,7 @@ ALTER TABLE messaging.outbox
 ALTER TABLE messaging.outbox VALIDATE CONSTRAINT outbox_status_check;
 ALTER TABLE messaging.outbox VALIDATE CONSTRAINT outbox_body_check;
 
+-- Plain (not CONCURRENTLY) index builds: the outbox is a small table before launch, so the brief
+-- write lock while they build is harmless, and a migration runs in one transaction.
 CREATE INDEX outbox_due_idx ON messaging.outbox (not_before) WHERE status = 'queued';
 CREATE INDEX outbox_sending_idx ON messaging.outbox (sending_since) WHERE status = 'sending';

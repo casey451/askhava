@@ -22,7 +22,7 @@ use std::sync::Arc;
 use askhava_adapters::api::SmsAdapter;
 use askhava_core::api::{Claimed, Clock, HandlerError, NewTask, Registry, TaskError, enqueue};
 use askhava_ops::api::{Actor, AuditEntry, Change, NewAlert, Severity, audit, raise_alert};
-use askhava_privacy::api::Vault;
+use askhava_privacy::api::{Field, Purpose, Reader, Vault, VaultError, read_contact};
 use jiff::{SignedDuration, Timestamp};
 use secrecy::{ExposeSecret, SecretString};
 use serde_json::json;
@@ -32,7 +32,7 @@ use sqlx::{Connection, PgConnection, PgPool};
 use crate::email::{
     EmailClass, NewEmail, Notice, PostalAddress, Recipient, homeowner_email, queue_email,
 };
-use crate::mode::{LineSendError, Lines, SendingNumber, send_on_line};
+use crate::mode::{LineSendError, Lines, SendingNumber, send_on_line_as};
 use crate::mode_state::load_lines;
 use crate::models::{self, Due, OutboxError};
 use crate::retries::{
@@ -42,7 +42,7 @@ use crate::rules::{
     self, AreaCodes, CONFIRM_WITHIN, CONFIRMATION_TEMPLATE, Channel, Decision, HELP_TEMPLATE, Kind,
     Outgoing, QuietHoursError,
 };
-use crate::service::{self, Relation, To};
+use crate::service::{Relation, To};
 use crate::templates::{Audience, Language};
 
 /// The `core.task` kind of the outbox sender; each run queues the next (D-2628).
@@ -119,13 +119,15 @@ pub async fn schedule_send_due(db: &mut PgConnection, run_at: Timestamp) -> Resu
     enqueue(db, &task).await.map(|_| ())
 }
 
-/// The [`SEND_DUE_KIND`] handler: the stale sweep, the due sends and the next run, at the clock's
-/// now (TXT-011, QH-001, QH-006, QH-008, D-2628). Safe to run twice or on two workers at once: a
-/// row is claimed only from `queued`, in one statement.
+/// The [`SEND_DUE_KIND`] handler: the next run, then the stale sweep and the due sends, at the
+/// clock's now (TXT-011, QH-001, QH-006, QH-008, D-2628). The next run is queued first, so a failed
+/// run never ends the loop; a row whose step fails is logged by ID, held [`RETRY_LAST`] and
+/// skipped, never aborting the batch (D-3149). Safe to run twice or on two workers at once: a row
+/// is claimed only from `queued`, in one statement.
 ///
 /// # Errors
 ///
-/// A fixed [`HandlerError`] when a database call fails.
+/// A fixed [`HandlerError`] when the connection, the next run's insert or a batch query fails.
 pub async fn run_send_due<C: SmsAdapter + Sync>(
     pool: PgPool,
     sender: Arc<OutboxSender<C>>,
@@ -133,13 +135,19 @@ pub async fn run_send_due<C: SmsAdapter + Sync>(
 ) -> Result<(), HandlerError> {
     let now = sender.clock.now();
     let mut conn = pool.acquire().await.map_err(|_| FAILED)?;
+    schedule_send_due(&mut conn, now + SEND_EVERY)
+        .await
+        .map_err(|_| FAILED)?;
     for id in models::stale_sending(&mut conn, now - STALE_AFTER, BATCH)
         .await
         .map_err(|_| FAILED)?
     {
-        settle_unknown(&mut conn, &sender, (id, Some(now - STALE_AFTER)), now)
+        if settle_unknown(&mut conn, &sender, (id, Some(now - STALE_AFTER)), now)
             .await
-            .map_err(|_| FAILED)?;
+            .is_err()
+        {
+            tracing::warn!(outbox_id = %id, "an unknown-outcome row could not be settled");
+        }
     }
     let lines = load_lines(&mut conn, (sender.number.clone(), None))
         .await
@@ -148,16 +156,19 @@ pub async fn run_send_due<C: SmsAdapter + Sync>(
         .await
         .map_err(|_| FAILED)?
     {
-        send_one(&mut conn, &sender, (&lines, &row), now)
+        if send_one(&mut conn, &sender, (&lines, &row), now)
             .await
-            .map_err(|_| FAILED)?;
+            .is_err()
+        {
+            tracing::warn!(outbox_id = %row.id, "an outbox row failed to send; held and skipped");
+            let _held = models::hold(&mut conn, row.id, now + RETRY_LAST).await;
+        }
     }
-    schedule_send_due(&mut conn, now + SEND_EVERY)
-        .await
-        .map_err(|_| FAILED)
+    Ok(())
 }
 
 /// One due row (D-2188, CON-030, QH-001, QH-008, TXT-021): expired, held, or sent on its line.
+/// Her phone is read from the vault once, here, and handed to the send (D-3149).
 async fn send_one<C: SmsAdapter + Sync>(
     db: &mut PgConnection,
     s: &OutboxSender<C>,
@@ -167,22 +178,42 @@ async fn send_one<C: SmsAdapter + Sync>(
     if must_expire(db, row, now).await? {
         return expire(db, row.id).await;
     }
-    let to = To::Homeowner {
-        vault: &s.vault,
-        relation: Relation::OpenRequest,
-    };
-    let Ok(phone) = service::recipient_phone(db, to, row.recipient).await else {
-        return Ok(());
+    let phone = match homeowner_phone(db, &s.vault, row.recipient).await {
+        Ok(Some(phone)) => phone,
+        Ok(None) => return expire(db, row.id).await,
+        Err(()) => return models::hold(db, row.id, now + RETRY_LAST).await,
     };
     match quiet_hours(&s.areas, phone.expose_secret(), row.exempt, now) {
         Ok(Decision::Send) => {}
         Ok(Decision::Hold { until }) => return models::hold(db, row.id, until).await,
         Err(_) => return expire(db, row.id).await,
     }
+    let to = To::Homeowner {
+        vault: &s.vault,
+        relation: Relation::OpenRequest,
+    };
     let keys = (&s.secret, &s.carrier, &s.vault);
-    match send_on_line(db, keys, lines, (row.id, to), now).await {
+    let sent = send_on_line_as(db, keys, lines, (row.id, to), (now, Some(&phone))).await;
+    match sent {
         Ok(_) | Err(LineSendError::Paused) => Ok(()),
         Err(LineSendError::Outbox(e)) => after_error(db, s, row, e, now).await,
+    }
+}
+
+/// D-3149: her phone under the send grant. `None` when it can never be read (no such contact, no
+/// phone on file, a number not `+1` and ten digits, a sealed value that will not open): the row
+/// is expired, never left at the head of the queue. `Err` for a failure that may pass (the
+/// database, the audit write): the row is held [`RETRY_LAST`].
+async fn homeowner_phone(
+    db: &mut PgConnection,
+    vault: &Vault,
+    recipient: Uuid,
+) -> Result<Option<SecretString>, ()> {
+    let grant = (Reader::Messaging, Purpose::Send);
+    match read_contact(db, vault, grant, recipient, &[Field::Phone]).await {
+        Ok(contact) => Ok(contact.phone),
+        Err(VaultError::NotFound | VaultError::BadPhone | VaultError::Sealed) => Ok(None),
+        Err(_) => Err(()),
     }
 }
 
@@ -243,8 +274,10 @@ async fn expire(db: &mut PgConnection, id: Uuid) -> Result<(), OutboxError> {
     tx.commit().await.map_err(|_| OutboxError::Database)
 }
 
-/// What a failed send leaves: a listed number's row expires (CON-013); a refusal waits for its
-/// TXT-014 retry or is given up; an unknown outcome is settled; the rest stay for the next run.
+/// What a failed send leaves: a listed number's row expires (CON-013), and so does a row whose
+/// recipient cannot be read or is of the wrong kind (D-3149), so no row stays at the head of the
+/// queue; a refusal waits for its TXT-014 retry or is given up; an unknown outcome is settled; a
+/// row gone, blocked (21610) or already claimed needs nothing.
 async fn after_error<C>(
     db: &mut PgConnection,
     s: &OutboxSender<C>,
@@ -253,7 +286,11 @@ async fn after_error<C>(
     now: Timestamp,
 ) -> Result<(), OutboxError> {
     match error {
-        OutboxError::Suppressed => expire(db, row.id).await,
+        OutboxError::Suppressed
+        | OutboxError::Recipient
+        | OutboxError::RecipientKind
+        | OutboxError::BadPhone
+        | OutboxError::PastCustomer => expire(db, row.id).await,
         OutboxError::Carrier => refused(db, s, row, now).await,
         OutboxError::OutcomeUnknown => settle_unknown(db, s, (row.id, None), now).await,
         OutboxError::Database => Err(OutboxError::Database),
@@ -321,7 +358,7 @@ async fn settle_unknown<C>(
         && s.postal.is_some()
         && matches!(homeowner_email(db, &s.vault, recipient).await, Ok(Some(_)));
     let mut tx = db.begin().await.map_err(|_| OutboxError::Database)?;
-    let Some(text) = models::mark_unknown(&mut tx, id, stale_before).await? else {
+    let Some((text, language)) = models::mark_unknown(&mut tx, id, stale_before).await? else {
         return Ok(());
     };
     if important {
@@ -334,7 +371,7 @@ async fn settle_unknown<C>(
             class: EmailClass::Notice,
             notice: Notice::TextFailed(&text.body),
         };
-        let to = email_to(text.recipient, None);
+        let to = email_to(text.recipient, language.as_deref());
         queue_email(&mut tx, (&s.secret, postal), &to, &email, now)
             .await
             .map_err(|_| OutboxError::Database)?;

@@ -29,7 +29,7 @@ use sqlx::types::Uuid;
 use thiserror::Error;
 
 use crate::models::OutboxError;
-use crate::optout::send_checked;
+use crate::optout::send_checked_as;
 use crate::service::To;
 use crate::templates::Audience;
 
@@ -224,10 +224,22 @@ pub enum LineSendError {
 /// [`LineSendError::Paused`], or any error of `send_checked` as [`LineSendError::Outbox`].
 pub async fn send_on_line(
     db: &mut PgConnection,
+    keys: (&SecretString, &(impl SmsAdapter + Sync), &Vault),
+    lines: &Lines,
+    row: (Uuid, To<'_>),
+    now: Timestamp,
+) -> Result<Option<SentText>, LineSendError> {
+    send_on_line_as(db, keys, lines, row, (now, None)).await
+}
+
+/// [`send_on_line`] with the recipient's number when the caller already read it from the vault
+/// for row `id` (the outbox sender, D-3149), passed on to `optout::send_checked_as`.
+pub(crate) async fn send_on_line_as(
+    db: &mut PgConnection,
     (secret, carrier, vault): (&SecretString, &(impl SmsAdapter + Sync), &Vault),
     lines: &Lines,
     (id, to): (Uuid, To<'_>),
-    now: Timestamp,
+    (now, phone): (Timestamp, Option<&SecretString>),
 ) -> Result<Option<SentText>, LineSendError> {
     let audience = match to {
         To::Homeowner { .. } => Audience::Homeowner,
@@ -243,7 +255,8 @@ pub async fn send_on_line(
         }
     }
     let from = from.as_str();
-    Ok(send_checked(db, (secret, carrier, vault), id, (to, from), now).await?)
+    let dest = (to, from);
+    Ok(send_checked_as(db, (secret, carrier, vault), id, dest, (now, phone)).await?)
 }
 
 /// How one update reaches a person (TXT-021, TXT-022, TXT-023, TXT-034).

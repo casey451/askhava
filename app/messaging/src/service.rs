@@ -258,16 +258,18 @@ pub async fn send(
     id: Uuid,
     dest: (To<'_>, &str),
 ) -> Result<Option<SentText>, OutboxError> {
-    send_at(db, keys, id, dest, None).await
+    send_at(db, keys, id, dest, (None, None)).await
 }
 
-/// [`send`], recording the claim at `at` (the caller's clock) when given, else the database's now.
+/// [`send`], recording the claim at `at` (the caller's clock) when given, else the database's now;
+/// `phone` is the recipient's number when the caller already read it from the vault for this row
+/// (the outbox sender, D-3149), else it is read here after the claim.
 pub(crate) async fn send_at(
     db: &mut PgConnection,
     (secret, carrier): (&SecretString, &impl SmsAdapter),
     id: Uuid,
     (to, from): (To<'_>, &str),
-    at: Option<Timestamp>,
+    (at, phone): (Option<Timestamp>, Option<&SecretString>),
 ) -> Result<Option<SentText>, OutboxError> {
     if let To::Homeowner { relation, .. } = to
         && !may_text(relation)
@@ -277,7 +279,11 @@ pub(crate) async fn send_at(
     let Some(claim) = models::claim(db, id, to.kind(), at).await? else {
         return Ok(None);
     };
-    let number = match recipient_phone(db, to, claim.recipient).await {
+    let read = match phone {
+        Some(phone) => Ok(phone.clone()),
+        None => recipient_phone(db, to, claim.recipient).await,
+    };
+    let number = match read {
         Ok(number) => number,
         Err(e) => {
             models::release(db, id).await?;

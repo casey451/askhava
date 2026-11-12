@@ -307,31 +307,34 @@ pub(crate) async fn release(db: &mut PgConnection, id: Uuid) -> Result<(), Outbo
 }
 
 /// Moves row `id` from `sending` to `unknown` and drops its body in the same statement, returning
-/// what it was; with `stale_before`, only a row claimed before then (a crash). `None` when the row
-/// is no longer `sending` (TXT-011, SEC-037, D-558, D-2628).
+/// what it was and its `language`; with `stale_before`, only a row claimed before then (a crash).
+/// `None` when the row is no longer `sending` (TXT-011, SEC-037, D-558, D-2628).
 pub(crate) async fn mark_unknown(
     db: &mut PgConnection,
     id: Uuid,
     stale_before: Option<Timestamp>,
-) -> Result<Option<FailedText>, OutboxError> {
+) -> Result<Option<(FailedText, Option<String>)>, OutboxError> {
     let row = sqlx::query!(
         "WITH old AS (SELECT id, body FROM messaging.outbox WHERE id = $1 AND status = 'sending' \
          AND ($2::timestamptz IS NULL OR sending_since IS NULL OR sending_since < $2) FOR UPDATE) \
          UPDATE messaging.outbox o SET status = 'unknown', body = NULL FROM old \
          WHERE o.id = old.id RETURNING o.recipient_id, o.recipient_kind, o.template_id, \
-         o.subject_ids, old.body AS \"body!\"",
+         o.subject_ids, o.language, old.body AS \"body!\"",
         id,
         stale_before.map(|t| t.to_sqlx()) as _
     )
     .fetch_optional(db)
     .await
     .map_err(|_| OutboxError::Database)?;
-    Ok(row.map(|r| FailedText {
-        recipient: r.recipient_id,
-        kind: r.recipient_kind,
-        template_id: r.template_id,
-        subject: r.subject_ids,
-        body: r.body,
+    Ok(row.map(|r| {
+        let text = FailedText {
+            recipient: r.recipient_id,
+            kind: r.recipient_kind,
+            template_id: r.template_id,
+            subject: r.subject_ids,
+            body: r.body,
+        };
+        (text, r.language)
     }))
 }
 

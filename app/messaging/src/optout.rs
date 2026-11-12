@@ -312,20 +312,31 @@ async fn record(
 /// [`OutboxError::BadPhone`], [`OutboxError::Recipient`] or any error of `service::send`.
 pub async fn send_checked(
     db: &mut PgConnection,
+    keys: (&SecretString, &(impl SmsAdapter + Sync), &Vault),
+    id: Uuid,
+    dest: (To<'_>, &str),
+    now: Timestamp,
+) -> Result<Option<SentText>, OutboxError> {
+    send_checked_as(db, keys, id, dest, (now, None)).await
+}
+
+/// [`send_checked`] with the recipient's number when the caller already read it from the vault
+/// for row `id` (the outbox sender, D-3149), so the vault is read once per send.
+pub(crate) async fn send_checked_as(
+    db: &mut PgConnection,
     (secret, carrier, vault): (&SecretString, &(impl SmsAdapter + Sync), &Vault),
     id: Uuid,
     (to, from): (To<'_>, &str),
-    now: Timestamp,
+    (now, phone): (Timestamp, Option<&SecretString>),
 ) -> Result<Option<SentText>, OutboxError> {
     let (recipient, template, subject) = models::outbox_target(db, id)
         .await?
         .ok_or(OutboxError::NotFound)?;
-    let digests = digests(
-        vault,
-        service::recipient_phone(db, to, recipient)
-            .await?
-            .expose_secret(),
-    )?;
+    let number = match phone {
+        Some(phone) => phone.clone(),
+        None => service::recipient_phone(db, to, recipient).await?,
+    };
+    let digests = digests(vault, number.expose_secret())?;
     let listing = models::listing(db, &digests).await?;
     if !rules::may_send_to(listing, &template, &subject, now) {
         return Err(OutboxError::Suppressed);
@@ -334,7 +345,14 @@ pub async fn send_checked(
         carrier,
         opted_out: AtomicBool::new(false),
     };
-    let sent = service::send_at(db, (secret, &watch), id, (to, from), Some(now)).await;
+    let sent = service::send_at(
+        db,
+        (secret, &watch),
+        id,
+        (to, from),
+        (Some(now), Some(&number)),
+    )
+    .await;
     if sent != Err(OutboxError::Carrier) || !watch.opted_out.load(Ordering::Relaxed) {
         return sent;
     }
