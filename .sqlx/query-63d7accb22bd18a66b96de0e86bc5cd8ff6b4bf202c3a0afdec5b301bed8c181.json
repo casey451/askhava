@@ -1,0 +1,62 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT e.business_name, e.trade_name, e.owner_name, e.license_number FROM licensing.city_license_entry e WHERE e.import_id = (SELECT id FROM licensing.list_import WHERE source = 'city' ORDER BY list_date DESC LIMIT 1)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "business_name",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "licensing.city_license_entry",
+            "name": "business_name"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "trade_name",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "licensing.city_license_entry",
+            "name": "trade_name"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "owner_name",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "licensing.city_license_entry",
+            "name": "owner_name"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "license_number",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "licensing.city_license_entry",
+            "name": "license_number"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "63d7accb22bd18a66b96de0e86bc5cd8ff6b4bf202c3a0afdec5b301bed8c181"
+}
