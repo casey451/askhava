@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-12T03:55:34Z by runner fe14fd0d43a4 (actions).
+Updated 2026-11-12T03:58:11Z by runner b3d1efa47fba (manual).
 
-**Idle since 03:37Z; 222 of 390 done; week 84% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 03:37Z; 222 of 391 done; week 84% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 222 of 390 build tasks (owner gates not counted)
+- **Tasks done:** 222 of 391 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 03:37Z (no task in progress)
 - **Week:** 84% used, 21.3M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:55Z, 0 min before this update
+- **Last run:** 03:55Z, 2 min before this update
 - **Keeper:** last ran 03:55Z, next wake 04:15Z
 
 ## Needs attention
 - BLOCKED T401: plan gap reported: PLAN GAP: tests/security/tests/no_homeowner_charge.rs:17-27,123 (TD-FEE-07, not T401's) fails any app/ file naming a homeowner mark (door_matrix.rs already names Realm::Homeowner at ~969/979) plus askhava_payments/payments::api; T401 needs payments::api::no_fee_release in door_matrix.rs (kit/prompts/T401.md:9). Evidence: cargo test -p askhava-security --test no_homeowner_charge -> td_fee_07_no_homeowner_route_reaches_payments FAILED: door_matrix.rs: homeowner-realm code reaches payments. Reviewer confirmed; no legitimate workaround. Smallest plan change: give T401 a second owned file (e.g. app; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T401 --plan-fix D-### --reason "..."` (D-2859)
-- Strict plan check red: 8 problem(s) on tasks still to run (+80 on DONE tasks); first: T396: stored context_pct 39% but it measures 43%; regenerate
+- Strict plan check red: 7 problem(s) on tasks still to run (+80 on DONE tasks); first: T396: stored context_pct 39% but it measures 43%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -125,7 +125,7 @@ Updated 2026-11-12T03:55:34Z by runner fe14fd0d43a4 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 211 of 733 (28.8%) · partial 350 · unstarted 172
-**Tasks merged (throughput only):** 222 of 390
+**Tasks merged (throughput only):** 222 of 391
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
