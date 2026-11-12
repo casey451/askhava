@@ -21,7 +21,8 @@ to be "the reviewed work plus main" (`reviewed_plus_main`, D-584):
    every conflict in it is a pure insertion on both sides at the same place (git's diff3 view holds
    no base line between them, `insertions_after_main`): both inserted blocks are kept verbatim, main's
    first and the branch's after, as for docs/decisions.md; when main's block opens a section (a
-   heading or a TOML table) the branch's must open its own. No side's file may hold a line whose first
+   heading or a TOML table) the branch's must open its own, and a Markdown table row may not meet a
+   non-row across the join (D-3269). No side's file may hold a line whose first
    word is a 40-character conflict marker (`marker_shaped`), which could be misread as git's own. A
    resolved Cargo.toml must still parse as TOML (a key both sides added twice does not) and no inserted
    line may assign a dotted key (`dotted_key`), and every locked section of a resolved
@@ -30,6 +31,7 @@ to be "the reviewed work plus main" (`reviewed_plus_main`, D-584):
    on November 12 was one of these) is resolved by the same pure-insertion rule, then checked again: a
    crate CLAUDE.md must still pass scripts/check_code_docs.py's crate-doc check (`check_crate_doc`: the
    120-line limit and the six headings in order) from the runner's own checkout; an api.rs only when
+   no non-blank line is inserted by both sides (`joinable`'s `distinct`), and an api.rs only when
    every line either side inserted is a one-line `pub use`/`pub mod` re-export (`REEXPORT`), no name
    is exported twice by the inserted lines (`exported`), and `rustfmt` (the edition in the runner's
    Cargo.toml) leaves the merged file unchanged, so `cargo fmt --check` and the build stay green.
@@ -130,22 +132,37 @@ def opens_section(line: str) -> bool:
     return line.startswith(("#", "["))
 
 
-def joinable(branch: list[str], base: list[str], main: list[str]) -> bool:
+def table_row(line: str) -> bool:
+    """A Markdown table row: its text starts with `|` (review round 1, D-3269)."""
+    return line.lstrip().startswith("|")
+
+
+def joinable(branch: list[str], base: list[str], main: list[str], distinct: bool = False) -> bool:
     """Whether one conflict is two pure insertions that can stand one after the other: no base line
     between the markers, each block ending in a newline, and, when main's block opens a section, the
-    branch's block opening its own (else the branch's lines would move into main's new section)."""
+    branch's block opening its own (else the branch's lines would move into main's new section). Since
+    D-3269 also refused: main's block ending in a Markdown table row with the branch's not starting with
+    one (the branch's text would be read as part of main's table, or end it), or the branch's block
+    starting with a row main's does not end with (the row would no longer follow the table it was written
+    after); and, with `distinct`, a non-blank line both blocks hold (the same bullet or re-export twice)."""
     if base or any(b and not b[-1].endswith("\n") for b in (branch, main)):
         return False
     first = next((line for line in branch if line.strip()), "")
+    last = next((line for line in reversed(main) if line.strip()), "")
+    if table_row(last) != table_row(first) and first and last:
+        return False
+    if distinct and {line for line in branch if line.strip()} & {line for line in main if line.strip()}:
+        return False
     return not any(opens_section(line) for line in main) or opens_section(first)
 
 
-def insertions_after_main(merged: str, sources: tuple[str, ...] = (), inserted: list[str] | None = None) -> str | None:
+def insertions_after_main(merged: str, sources: tuple[str, ...] = (), inserted: list[str] | None = None,
+                          distinct: bool = False) -> str | None:
     """A `git merge-file -p --diff3 --marker-size=MARK <branch> <base> <main>` result with each conflict
     replaced by main's lines and then the branch's (D-891); None when any of the `sources` (the three
     texts merged) has a line shaped like a conflict marker (`marker_shaped`: it would be read as git's
-    own), any conflict is not `joinable`, or the markers do not close. Each line a conflict inserted is
-    appended to `inserted` when given."""
+    own), any conflict is not `joinable` (with `distinct`, D-3269), or the markers do not close. Each line a
+    conflict inserted is appended to `inserted` when given."""
     if any(marker_shaped(text) for text in sources):
         return None
     out: list[str] = []
@@ -157,7 +174,7 @@ def insertions_after_main(merged: str, sources: tuple[str, ...] = (), inserted: 
         if mark in opens and (part or mark == "<" * MARK):
             part = opens[mark]
         elif mark == ">" * MARK and part == "theirs":
-            if not joinable(block["ours"], block["base"], block["theirs"]):
+            if not joinable(block["ours"], block["base"], block["theirs"], distinct):
                 return None
             out += block["theirs"] + block["ours"]
             kept += block["theirs"] + block["ours"]
@@ -212,7 +229,8 @@ def exported(line: str) -> list[str]:
         return [path.rsplit(" as ", 1)[1].strip()]
     items = path[path.index("{") + 1:-1].split(",") if "{" in path else [path]
     names = [item.rsplit(" as ", 1)[1] if " as " in item else item.rsplit("::", 1)[-1] for item in items if item.strip()]
-    return [n.strip() for n in names if n.strip() != "self"]
+    module = path.split("::{", 1)[0].rsplit("::", 1)[-1]  # `a::{self, B}` brings in `a` itself
+    return [module if n.strip() == "self" else n.strip() for n in names]
 
 
 def reexports_only(inserted: list[str]) -> bool:
@@ -319,7 +337,8 @@ class UpdateMerge:
                 Path(name).write_text(str(text), encoding="utf-8")
             code, out, _ = self._run(["git", "merge-file", "-p", "--diff3", f"--marker-size={MARK}", *names], None, self.root)
         inserted: list[str] = []
-        text = insertions_after_main(out, tuple(str(t) for t in texts), inserted) if 0 <= code < 128 else None
+        crate = bool(CRATE_DOC.fullmatch(path) or CRATE_API.fullmatch(path))  # no line added twice there (D-3269)
+        text = insertions_after_main(out, tuple(str(t) for t in texts), inserted, crate) if 0 <= code < 128 else None
         if text is None or not toml_ok(path, text, inserted) or not self._crate_ok(path, text, inserted):
             return None
         if path == ARCHITECTURE and not self._sections_kept(text, str(texts[0]), str(texts[2])):

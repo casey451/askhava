@@ -3,7 +3,7 @@ count kit/runner.json holds is a count the drills cover (tests/test_runner_lanes
 non-overlapping tasks and an eighth run claiming nothing, the lane check against six tasks in flight, refill
 naming up to seven lanes, a strike on lane 7 falling back to one lane and `restore` giving all seven back,
 MERGE_PENDING in six lanes, the gate's pick, the same seven claims with exclusive crates on, and a lost-race
-storm at seven lanes retried once per other lane with no strike.
+storm at seven lanes, origin's state moving meanwhile, retried once per other lane with no strike.
 
 Drills run over test_failure_drills.FakeEnv. Fake data only.
 """
@@ -117,12 +117,14 @@ def test_the_gate_picks_the_seventh_lane_when_six_hold_tasks(tmp_path: Path) -> 
     assert _pick(tmp_path, six, 6, "7") == ["1", "6", "-"]  # lane 7 is not served while the setting is 6
 
 
-def test_a_lost_race_storm_at_seven_lanes_is_retried_once_per_other_lane_and_never_strikes(
+def test_a_lost_race_storm_at_seven_lanes_is_retried_once_per_other_lane_and_no_strike_while_origin_moved(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("RUNNER_WORKER_CMD", raising=False)
     env = FakeEnv()
     waits: list[float] = []
     env.sleep = waits.append  # type: ignore[attr-defined]  # reason: record the waits instead of sleeping
+    heads = iter([("s1", "l1"), ("s7", "l7")])
+    env.state_refs = lambda: next(heads)  # type: ignore[attr-defined]  # reason: the other six lanes wrote meanwhile
     results: list[str] = []
     monkeypatch.setattr(cycle, "run_cycle", lambda cfg, e, now: results.append("lost_race") or "lost_race")
     assert entry.lost_race_retries(2) == entry.LOST_RACE_RETRIES == 2 and entry.lost_race_retries(7) == 6

@@ -706,21 +706,43 @@ def cycle_with_retries(cfg: cycle.Config, env: GitHubEnv) -> str:
     runs started together collide) is tried again from a fresh read, up to `lost_race_retries` times after
     a random wait that widens with the lane count, so the other lanes still claim. Only when the worker is
     handed off (RUNNER_WORKER_CMD unset, as in backup-runner.yml), where a cycle never runs a worker, so a
-    retry can never start a second task in one session. A storm that outlasts the retries is not a strike
-    (D-3269, was D-620): every write in it lost to another lane's good write, which is contention, not a
-    harness failure, and on November 12 at five lanes one such storm alone dropped the runner to one lane.
-    The run ends `lost_race`, its lane is free and the winners' refill runs and the keeper fill it."""
+    retry can never start a second task in one session. A storm that outlasts the retries is a strike on
+    this run's lane (D-620) only when origin's state and lease refs did not move during it (`raced`): then
+    every push failed for some other reason (a token, a rule, the network), which no retry fixes. When they
+    moved, the storm was contention, not a harness failure, and is not a strike (D-3269): on November 12 at
+    five lanes one such storm alone dropped the runner to one lane. The run ends `lost_race` either way."""
     result = cycle.run_cycle(cfg, env, now_utc())
-    if cfg.lanes < 2 or os.environ.get("RUNNER_WORKER_CMD"):
+    if cfg.lanes < 2 or os.environ.get("RUNNER_WORKER_CMD") or result != "lost_race":
         return result
+    before = state_refs(env)
     for _ in range(lost_race_retries(cfg.lanes)):
-        if result != "lost_race":
-            return result
         env.sleep(random.uniform(1.0, 1.0 + 2.0 * cfg.lanes))
         result = cycle.run_cycle(cfg, env, now_utc())
-    if result == "lost_race":
-        print(f"runner: lane {cfg.lane_hint}: {lost_race_retries(cfg.lanes) + 1} lost races in a row in one run; not a strike (D-3269)")
+        if result != "lost_race":
+            return result
+    tries = lost_race_retries(cfg.lanes) + 1
+    if raced(before, state_refs(env)):
+        print(f"runner: lane {cfg.lane_hint}: {tries} lost races in a row in one run, origin's state moved meanwhile; not a strike (D-3269)")
+    else:
+        cycle.record_strike(cfg, env, cfg.lane_hint, f"lane {cfg.lane_hint}: {tries} lost races in a row in one run and origin's state never moved")
     return result
+
+
+def state_refs(env: GitHubEnv) -> tuple[str | None, str | None] | None:
+    """origin's state and lease heads (`GitHubEnv.state_refs`); None when they cannot be read (D-3269)."""
+    try:
+        return env.state_refs()
+    except Exception as exc:  # noqa: BLE001  # reason: an unread ref only means the storm is judged a strike, as before D-3269
+        print(f"runner: state refs not read: {str(exc)[:200]}")
+        return None
+
+
+def raced(before: tuple[str | None, str | None] | None, after: tuple[str | None, str | None] | None) -> bool:
+    """Whether a lost-race storm met real contention (D-3269): both readings complete and different, so another
+    writer (or this run's own successful write, which shows pushing works) moved origin's state or lease."""
+    if before is None or after is None or None in before or None in after:
+        return False
+    return before != after
 
 
 def refill(cfg: cycle.Config, env: GitHubEnv, own: str | None = None) -> list[str]:

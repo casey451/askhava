@@ -6,6 +6,7 @@ and, for the rustfmt step, over a fake command runner. Fake data only.
 
 from __future__ import annotations
 
+import os
 import shutil
 from pathlib import Path
 
@@ -22,6 +23,11 @@ HEADS = ("Purpose", "What it owns", "Rules it enforces", "Never break", "How to 
 DOC = "# app/pay\n\n" + "".join(f"## {h}\n\n- {h.lower()}\n\n" for h in HEADS)
 API = "//! The public face of a fake crate.\n\npub use crate::a::A;\npub use crate::c::C;\n\n/// Does nothing.\npub fn f() {}\n"
 RUSTFMT = shutil.which("rustfmt") is not None
+
+
+def test_ci_has_rustfmt_for_the_api_tests() -> None:
+    """ci.yml's Python job sets REQUIRE_RUSTFMT, so the two real-git api.rs tests below can never skip there."""
+    assert RUSTFMT or not os.environ.get("REQUIRE_RUSTFMT"), "REQUIRE_RUSTFMT is set but rustfmt is not installed"
 
 
 def padded(lines: int) -> str:
@@ -100,7 +106,7 @@ def test_without_the_code_docs_check_a_crate_doc_conflict_stays_a_conflict(repo:
 # ---- the crate api.rs
 
 
-@pytest.mark.skipif(not RUSTFMT, reason="rustfmt is not installed; the fake-runner tests below cover the rule")
+@pytest.mark.skipif(not RUSTFMT and not os.environ.get("REQUIRE_RUSTFMT"), reason="rustfmt is not installed; the fake-runner tests below cover the rule")
 def test_api_reexports_both_sides_added_in_rustfmt_order_are_resolved(repo: dict[str, Path], tmp_path: Path) -> None:
     ours = API.replace("pub use crate::a::A;\n", "pub use crate::a::A;\npub use crate::bb::Bb;\n")
     theirs = API.replace("pub use crate::a::A;\n", "pub use crate::a::A;\npub use crate::b::{B, B1 as B2};\n")
@@ -111,7 +117,7 @@ def test_api_reexports_both_sides_added_in_rustfmt_order_are_resolved(repo: dict
     assert "pub use crate::a::A;\npub use crate::b::{B, B1 as B2};\npub use crate::bb::Bb;\npub use crate::c::C;" in merged
 
 
-@pytest.mark.skipif(not RUSTFMT, reason="rustfmt is not installed; the fake-runner tests below cover the rule")
+@pytest.mark.skipif(not RUSTFMT and not os.environ.get("REQUIRE_RUSTFMT"), reason="rustfmt is not installed; the fake-runner tests below cover the rule")
 def test_api_reexports_out_of_rustfmt_order_stay_a_conflict(repo: dict[str, Path], tmp_path: Path) -> None:
     ours = API.replace("pub use crate::a::A;\n", "pub use crate::a::A;\npub use crate::b::B;\n")
     theirs = API.replace("pub use crate::a::A;\n", "pub use crate::a::A;\npub use crate::bz::Bz;\n")
@@ -136,8 +142,9 @@ def test_api_one_side_edited_a_line_stays_a_conflict(repo: dict[str, Path], tmp_
 
 def test_reexport_lines_and_their_names() -> None:
     assert exported("pub use crate::a::B;") == ["B"] and exported("pub mod x;") == ["x"]
-    assert exported("pub use crate::a::{B, c::D as E, self};") == ["B", "E"] and exported("pub use crate::a::*;") == []
-    assert exported("pub use crate::a::B as C;") == ["C"]
+    assert exported("pub use crate::a::{B, c::D as E};") == ["B", "E"] and exported("pub use crate::a::*;") == []
+    assert exported("pub use crate::a::B as C;") == ["C"] and exported("pub use crate::m::{self, B};") == ["m", "B"]
+    assert not reexports_only(["pub mod m;\n", "pub use crate::m::{self, X};\n"])  # `m` twice
     assert reexports_only(["pub use crate::a::B;\n", "pub mod x;\n", "pub use crate::c::{D, E};\n"])
     assert not reexports_only([])  # nothing inserted is not a re-export conflict
     assert not reexports_only(["pub use crate::a::B;\n", "\n"])  # a blank line would start a new rustfmt group
@@ -175,3 +182,30 @@ def test_the_api_check_needs_rustfmt_to_leave_the_file_unchanged(tmp_path: Path)
     never = UpdateMerge(FakeRun((0, None)), tmp_path, dict)
     assert never._crate_ok(API_PATH, API, ["pub fn g() {}\n"]) is False and never._run.calls == []  # type: ignore[attr-defined]  # reason: as above
     assert UpdateMerge(FakeRun((0, None)), tmp_path / "none", dict)._edition() == "2024"  # no Cargo.toml: the workspace's edition
+
+
+# ---- review round 1 (D-3269): a table row across the join, and a line both sides added
+
+
+def test_a_table_row_never_meets_a_non_row_across_the_join(tmp_path: Path) -> None:
+    from runner.update_merge import insertions_after_main  # noqa: PLC0415  # reason: beside its sibling helpers
+    from test_runner_update_merge import _ours_base_main  # noqa: PLC0415  # reason: the diff3 helper of the D-891 tests
+    base = "# Notes\n\nText.\n"
+    table = base + "\n| a | b |\n|---|---|\n| 1 | 2 |\n"
+    assert insertions_after_main(_ours_base_main(tmp_path, base, base + "\nMore text.\n", table)) is None  # main ends in a row
+    assert insertions_after_main(_ours_base_main(tmp_path, base, base + "| 3 | 4 |\n", base + "\nMore text.\n")) is None
+    rows = insertions_after_main(_ours_base_main(tmp_path, table, table + "| 5 | 6 |\n", table + "| 3 | 4 |\n"))
+    assert rows == table + "| 3 | 4 |\n| 5 | 6 |\n"  # rows after rows stay one table
+
+
+def test_a_line_both_sides_added_to_a_crate_doc_stays_a_conflict(repo: dict[str, Path], tmp_path: Path) -> None:
+    ours = DOC.replace("- what it owns\n", "- what it owns\n- shared\n- branch\n")
+    theirs = DOC.replace("- what it owns\n", "- what it owns\n- shared\n- main\n")
+    reviewed, _ = two_sides(repo, DOC_PATH, DOC, ours, theirs)
+    assert update(repo, tmp_path, reviewed)["paths"] == [DOC_PATH]
+    from runner.update_merge import insertions_after_main  # noqa: PLC0415  # reason: the rule for other files is unchanged
+    from test_runner_update_merge import _ours_base_main  # noqa: PLC0415  # reason: as above
+    review = "# Review\n\n## One\n\n- Nothing needs you now.\n"
+    merged = insertions_after_main(_ours_base_main(tmp_path, review, review + "\n## Two\n\n- Nothing needs you now.\n",
+                                                   review + "\n## Three\n\n- Nothing needs you now.\n"))
+    assert merged is not None and merged.count("- Nothing needs you now.") == 3  # for-casey-review items repeat a line by design

@@ -1425,8 +1425,9 @@ def refill_lanes(cfg: Config, state: State, now: datetime, own: str | None = Non
     if not free or state.get("main_red") or _pacer_waiting(state, now):
         return []
     ids = _by_day(cfg, st.eligible(state, now, _passed(cfg, state), cfg.proof_stages), now)
-    ready = _compatible(cfg, state, ids, now)
-    if cfg.exclusive_crates:  # two candidates of one crate fill one lane, not two (D-3269)
+    ready = lanes.compatible_ids(ids, state, now, lambda tid: _task_def(cfg, state, tid), cfg.locked, cfg.proof_stages)
+    if cfg.exclusive_crates:  # the claim's own exclusion, then two candidates of one crate fill one lane, not two (D-3269)
+        ready = lanes.exclusive_ids(_claim_ordered(cfg, state, ready, now), state, now, lambda tid: _task_def(cfg, state, tid))
         ready = lanes.crate_disjoint(ready, lambda tid: _task_def(cfg, state, tid))
     if own in free:
         free, ready = [lane for lane in free if lane != own], ready[1:]
@@ -1473,8 +1474,9 @@ def _next_step(cfg: Config, env: Env, state: State, base: State, now: datetime, 
     if opened is not None:
         return "gate_open" if env.push_state(opened, base) else "lost_race"
     ids = _by_day(cfg, st.eligible(state, now, _passed(cfg, state), cfg.proof_stages), now)
-    ids = _compatible(cfg, state, ids, now)  # with exclusive crates, none whose crate a task in flight writes (D-3269)
+    ids = lanes.compatible_ids(ids, state, now, lambda tid: _task_def(cfg, state, tid), cfg.locked, cfg.proof_stages)
     ids = _claim_ordered(cfg, state, ids, now)  # resync, `claim_first`, chain, disjoint crates (D-3082)
+    ids = _exclusive(cfg, state, ids, now)  # with exclusive crates, none whose crate a task in flight writes (D-3269)
     ids, state = plan_health_pass(cfg, state, ids, now)
     if not ids:
         if state != base and not env.push_state(state, base):
@@ -1517,12 +1519,13 @@ def _next_step(cfg: Config, env: Env, state: State, base: State, now: datetime, 
     return "fix_main" if task["id"] == st.FIX_MAIN and done not in ("lost_race", "handed_off") else done
 
 
-def _compatible(cfg: Config, state: State, ids: list[str], now: datetime) -> list[str]:
-    """`lanes.compatible_ids` with this cycle's settings: the lane check (D-620) and, with kit/runner.json
-    "exclusive_crates", the crate exclusion (D-3269). When every candidate collides the list is empty and the
-    cycle ends as with nothing eligible (`idle`): no strike, the lane stays, and no refill run is started."""
-    return lanes.compatible_ids(ids, state, now, lambda tid: _task_def(cfg, state, tid), cfg.locked, cfg.proof_stages,
-                                exclusive=cfg.exclusive_crates)
+def _exclusive(cfg: Config, state: State, ids: list[str], now: datetime) -> list[str]:
+    """With kit/runner.json "exclusive_crates", `lanes.exclusive_ids` over the ordered ids (D-3269); else the ids.
+    When every candidate collides the list is empty and the cycle ends as with nothing eligible (`idle`): no
+    strike, the lane stays, and no refill run is started."""
+    if not cfg.exclusive_crates:
+        return ids
+    return lanes.exclusive_ids(ids, state, now, lambda tid: _task_def(cfg, state, tid))
 
 
 def _claim_ordered(cfg: Config, state: State, ids: list[str], now: datetime) -> list[str]:

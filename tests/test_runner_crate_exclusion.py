@@ -65,14 +65,14 @@ def test_crate_clash_names_the_task_in_flight_and_exempts_fix_main() -> None:
     assert lanes.crate_clash(make_task(st.FIX_MAIN, owns=["app/pay/src/a.rs"]), [t1]) == ""
 
 
-def test_compatible_ids_refuses_a_shared_crate_only_when_exclusive() -> None:
+def test_exclusive_ids_refuses_a_shared_crate() -> None:
     tasks = graph()
     ids = ["T002", "T003", "T004", "T005"]
     for status in (st.IN_PROGRESS, st.MERGE_PENDING):  # in flight on any lane, leased or merge-pending
         s = flying(tasks, status)
-        assert lanes.compatible_ids(ids, s, NOW, by_id(tasks), None, exclusive=True) == ["T004", "T005"]
-        assert lanes.compatible_ids(ids, s, NOW, by_id(tasks), None) == ids  # off: as before D-3269
-    assert lanes.compatible_ids(["T001"], flying(tasks), NOW, by_id(tasks), None, exclusive=True) == ["T001"]  # never its own neighbour
+        assert lanes.exclusive_ids(["T004", "T005", "T002", "T003"], s, NOW, by_id(tasks)) == ["T004", "T005"]
+        assert lanes.compatible_ids(ids, s, NOW, by_id(tasks), None) == ids  # the lane check alone: as before D-3269
+    assert lanes.exclusive_ids(["T001"], flying(tasks), NOW, by_id(tasks)) == ["T001"]  # never its own neighbour
 
 
 def test_a_non_colliding_task_is_claimed_even_when_a_colliding_one_comes_first(tmp_path: Path) -> None:
@@ -134,3 +134,22 @@ def test_the_repository_turns_it_on_beside_the_preference_and_the_entry_point_pa
     assert "D-3269" in raw["exclusive_crates_note"]
     assert 'exclusive_crates=exclusive_crates(ROOT / "kit" / "runner.json")' in inspect.getsource(entry.build)
     assert config([], Path(".")).exclusive_crates is False
+
+
+def test_a_wide_task_first_in_line_reserves_its_crates_and_is_not_overtaken(tmp_path: Path) -> None:
+    """Review round 1: T010 (top of the critical path) writes `pay` and `site`; T001 holds `pay`. Without the
+    reservation T004 (narrower, in `site`) would take `site`, then the next `pay` task, and so on for ever."""
+    tasks = [*graph(), make_task("T010", owns=["app/pay/src/w.rs", "app/site/src/w.rs"]), make_task("T011", owns=["app/web/x.rs"])]
+    s = flying(tasks)
+    order = ["T010", "T004", "T002", "T011", "T005"]
+    assert lanes.exclusive_ids(order, s, NOW, by_id(tasks)) == ["T011", "T005"]  # T004 would take `site`
+    assert lanes.exclusive_ids(["T004", "T010", "T011"], s, NOW, by_id(tasks)) == ["T004", "T011"]  # only the first reserves
+    env = FakeEnv(handed_off)
+    env.store = s
+    assert cycle.run_cycle(lane_two(tasks, tmp_path, claim_first=("T010",)), env, NOW) == "handed_off"
+    assert env.runs[0][0] == "T005"  # not T004 (`site` is reserved); a task outside the reserved crates still claims
+    done = st.with_task(st.sync_graph(st.new_state(), tasks), "T001", status=st.DONE)
+    env = FakeEnv(handed_off)
+    env.store = done
+    assert cycle.run_cycle(lane_two(tasks, tmp_path, claim_first=("T010",)), env, NOW) == "handed_off"
+    assert env.runs[0][0] == "T010"  # the holder finished: the wide task claims at once

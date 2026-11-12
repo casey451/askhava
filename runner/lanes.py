@@ -27,11 +27,12 @@ Occupancy lives in runner/state.py (`in_flight`: a live lease, or MERGE_PENDING 
   kit/runner.json "prefer_disjoint_crates" true, `cycle.claim_order` tries them after the others of the
   same priority (ordering only), since both tasks would edit that crate's `CLAUDE.md` and the second
   needs a resync.
-- `crate_clash` (D-3269): with kit/runner.json "exclusive_crates" true, `compatible_ids` drops a task
+- `crate_clash` (D-3269): with kit/runner.json "exclusive_crates" true, `exclusive_ids` drops a task
   that writes an `app/` crate (`task_crates`: its owned paths under `app/<crate>/` and its `module`) a
   task in flight (IN_PROGRESS under a live lease or MERGE_PENDING, any lane) also writes; a task is
   never checked against itself, so a resync of the task holding the crate is not blocked by it, and
-  FIX-MAIN is exempt. The run then claims something else or ends `idle` (no strike, the lane stays),
+  FIX-MAIN is exempt; when the highest-ranked id is refused only for that, its crates are reserved for it,
+  so narrower tasks cannot keep taking them (review round 1). The run then claims something else or ends `idle` (no strike, the lane stays),
   and `cycle.refill_lanes` counts only tasks that could be claimed together (`crate_disjoint`), so it
   starts no run that could only collide.
 """
@@ -141,18 +142,29 @@ def compatible_ids(
     task_def: Callable[[str], dict[str, Any]],
     locked: Locked | None,
     proof_stages: frozenset[str] = frozenset(),
-    exclusive: bool = False,
 ) -> list[str]:
-    """The eligible ids that may be claimed now, beside the tasks in flight, in order (D-620, D-1127); with
-    `exclusive` (kit/runner.json "exclusive_crates", D-3269) also none that writes a crate one of them writes."""
+    """The eligible ids that may be claimed now, beside the tasks in flight, in order (D-620, D-1127)."""
     flying = [task_def(tid) for tid in st.in_flight(state, now)]
     done = {t["id"] for t in state["tasks"] if t.get("status") in st.SATISFIED}
     early = {t["id"]: str(t.get("stage")) for t in state["tasks"] if st.awaits_proof(t) and str(t.get("stage")) in proof_stages}
-    out = []
-    for i in ids:
-        task, others = task_def(i), [t for t in flying if t["id"] != i]
-        if not refusal(task, others, done, locked, early) and not (exclusive and crate_clash(task, others)):
-            out.append(i)
+    return [i for i in ids if not refusal(task_def(i), [t for t in flying if t["id"] != i], done, locked, early)]
+
+
+def exclusive_ids(ids: list[str], state: State, now: datetime, task_def: Callable[[str], dict[str, Any]]) -> list[str]:
+    """kit/runner.json "exclusive_crates" (D-3269) over `ids`, compatible and in claim order: none that writes a crate
+    a task in flight writes (`crate_clash`). When the first, highest-ranked id is refused only for that, its crates
+    are reserved for it: no later id that writes one of them is kept either, so a wide task high on the critical
+    path claims as soon as the holders finish instead of narrower tasks taking its crates one after another for
+    ever (review round 1). Other lanes still claim ids in other crates."""
+    flying = [task_def(tid) for tid in st.in_flight(state, now)]
+    out: list[str] = []
+    reserved: frozenset[str] = frozenset()
+    for n, tid in enumerate(ids):
+        task = task_def(tid)
+        if crate_clash(task, [t for t in flying if t["id"] != tid]):
+            reserved = task_crates(task) if n == 0 else reserved
+        elif not (reserved & task_crates(task)):
+            out.append(tid)
     return out
 
 
