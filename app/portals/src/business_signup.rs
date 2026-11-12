@@ -243,8 +243,8 @@ pub const fn area_field(p: ServiceAreaProblem) -> &'static str {
 #[must_use]
 pub const fn area_message(p: ServiceAreaProblem) -> &'static str {
     match p {
-        ServiceAreaProblem::BaseZip => "Enter your base ZIP code as 5 numbers.",
-        ServiceAreaProblem::Radius => "Enter the miles as a whole number from 1 to 100, like 25.",
+        ServiceAreaProblem::BaseZip => "Enter your 5-digit base ZIP code.",
+        ServiceAreaProblem::Radius => "Enter a number of miles from 1 to 100, like 25.",
     }
 }
 

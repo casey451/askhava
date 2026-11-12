@@ -101,11 +101,11 @@
 </div>
 {% endif %}
 <p><label for="base-zip">Base ZIP code</label>
-<span id="base-zip-hint">The ZIP code you usually start from, like your shop or home. We measure each job's distance from it.</span>
+<span id="base-zip-hint">The ZIP code you usually start from, like your shop or home. We use it to see how far away each job is.</span>
 {% if let Some(m) = area.error_for("base_zip") %}<span id="base-zip-error" class="error">Error: {{ m }}</span>{% endif %}
 <input type="text" id="base-zip" name="base_zip" inputmode="numeric" autocomplete="postal-code" aria-describedby="base-zip-hint{% if area.error_for("base_zip").is_some() %} base-zip-error{% endif %}" value="{{ area.base_zip }}"{% if area.error_for("base_zip").is_some() %} aria-invalid="true"{% endif %}></p>
 <p><label for="radius">{{ crate::business_signup::RADIUS_QUESTION }}</label>
-<span id="radius-hint">Whole miles from 1 to 100, measured in a straight line from your base ZIP.</span>
+<span id="radius-hint">Any whole number from 1 to 100, like 25. We count straight-line miles, not road miles, so the drive may be longer.</span>
 {% if let Some(m) = area.error_for("radius") %}<span id="radius-error" class="error">Error: {{ m }}</span>{% endif %}
 <input type="text" id="radius" name="radius" inputmode="numeric" aria-describedby="radius-hint{% if area.error_for("radius").is_some() %} radius-error{% endif %}" value="{{ area.radius }}"{% if area.error_for("radius").is_some() %} aria-invalid="true"{% endif %}></p>
 <button type="submit">Next</button>
