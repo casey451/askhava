@@ -23112,7 +23112,16 @@
     3334,
     3335,
     3336
-   ]
+   ],
+   "reviewed_sha": "e5edba19585b4c324456fcf244a49f620cb004ad",
+   "review_lease": {
+    "task": "T215",
+    "session": "actions-43319210977",
+    "expires": "2026-11-13T01:29:12Z",
+    "lane": "5"
+   },
+   "branch": "claude/task/T215-pest-identity-coverage-email",
+   "head_check_since": null
   },
   {
    "id": "T166",
@@ -44046,7 +44055,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T23:32:17Z",
+ "updated_at": "2026-11-12T23:43:09Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -44144,7 +44153,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "0b4b84f933928b54b26ed374e5e8310eee009180",
+ "runner_sha": "e5edba19585b4c324456fcf244a49f620cb004ad",
  "starter": "actions",
  "smoke_runs": [
   {
