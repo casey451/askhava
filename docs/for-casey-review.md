@@ -2562,3 +2562,7 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **What changed.** Five queued tasks would have failed an existing check or could not be built from what came before them. The phone-approval database change is split into two files, so 14 queued database changes move up one number (none had started). Calls and texts from a team member's phone that is waiting for your approval are still refused. The two new legal drafts (the Spanish business terms summary and the Twilio campaign description) now also add themselves to the legal-document check. The safe-mode release hold checks again every 15 minutes in a way the task system supports.
 - **One new task.** T414 lets the end-to-end tests read the emails the fake email service received. The journey test with texts turned off (web and email only) now runs inside T222 and checks that no text is sent; its checks of the emails themselves wait (see below).
 - **Worth a look: no task sends email yet.** No task in the plan yet wires the app to send its emails through Resend (job-card, quote, safety and account emails, D-3186). A future task must build that sender; until then those emails are not sent and the tests that read them wait.
+
+## T362: one test waits for the quote page to finish loading (D-3270)
+
+- **What changed.** Once the quote page's live-update script is served, one keyboard test pressed Tab before the page finished loading; T362 may now add a single "wait for the page to load" line to that test, with every check in it unchanged.
