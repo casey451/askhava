@@ -133,6 +133,30 @@ def usage_in_transcript(lines: Iterable[str]) -> dict[str, int]:
     return totals
 
 
+def turns_in_transcript(lines: Iterable[str]) -> int:
+    """Model calls in a session transcript, for usage.by_task's `*_turns` (D-3305).
+
+    Each call re-reads the whole context, so cache reads grow with turns times context size. Claude
+    Code writes one line per content block of a reply, each repeating the reply's `message.id` and
+    `usage`, so a call is a distinct `message.id` among the lines with `usage`; a line without an id
+    counts once on its own."""
+    seen: set[str] = set()
+    anonymous = 0
+    for line in lines:
+        try:
+            record = json.loads(line)
+        except ValueError:
+            continue
+        message = record.get("message") if isinstance(record, dict) else None
+        if not isinstance(message, dict) or not isinstance(message.get("usage"), dict):
+            continue
+        if isinstance(message.get("id"), str):
+            seen.add(message["id"])
+        else:
+            anonymous += 1
+    return len(seen) + anonymous
+
+
 TASK_BRANCH = re.compile(r"^claude/task/(FIX-MAIN|[A-Za-z]+\d+[A-Za-z]?)(?:-[A-Za-z0-9._-]*)?$")
 LIVE_STATUSES = ("IN_PROGRESS", "MERGE_PENDING")
 

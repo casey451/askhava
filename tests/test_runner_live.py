@@ -220,6 +220,10 @@ def test_rehearsal_handoff_lease_live_after_and_review_gate(repo: dict[str, Path
     assert task["reviewed_sha"] == head and task["review_lease"]["session"] == "session-a"
     assert task["history"][-1]["path_check_ok"] is True and task["history"][-1]["model_evidence_count"] == 1
     assert state["usage"]["by_task"]["K10"]["output_tokens"] == 10  # worker 5 + reviewer 5 (pacing counts both)
+    split = {"worker": {"tokens": 15, "turns": 1}, "reviewer": {"tokens": 15, "turns": 1}}  # D-3305
+    assert task["history"][-1]["usage"] == split
+    assert {k: state["usage"]["by_task"]["K10"][k] for k in ("worker_tokens", "worker_turns", "reviewer_tokens", "reviewer_turns")} == {
+        "worker_tokens": 15, "worker_turns": 1, "reviewer_tokens": 15, "reviewer_turns": 1}
     lease = json.loads(origin_file(repo, "claude/lease", "lease.json"))["lease"]
     assert verify.auto_merge_allowed(state, TASK["branch"], head, lease)
     assert merges == [(TASK["branch"], head)] and task["auto_merge"]["enabled"] is True
@@ -1044,6 +1048,19 @@ def test_transcripts_found_by_agent_id_and_read_for_models_and_tokens(tmp_path: 
     assert len(paths) == 1
     models, usage = read_transcripts(paths)
     assert models == [MODELS["haiku"]] and usage["cache_read_input_tokens"] == 5 and usage["output_tokens"] == 4
+
+
+def test_turns_count_each_model_call_once_and_roles_read_their_own_transcripts(tmp_path: Path) -> None:
+    """D-3305: Claude Code repeats a reply's `message.id` and `usage` on every content-block line, so a turn is a
+    distinct id; a line without an id is one turn; lines without usage, and bad JSON, are none."""
+    reply = {"message": {"id": "msg_1", "usage": {"input_tokens": 2, "output_tokens": 3}}}
+    lines = [json.dumps(reply), json.dumps(reply), json.dumps({"message": {"id": "msg_2", "usage": {"output_tokens": 1}}}),
+             json.dumps({"message": {"usage": {"output_tokens": 1}}}), json.dumps({"message": {"id": "msg_3"}}), "not json", "[]"]
+    assert verify.turns_in_transcript(lines) == 3
+    path = tmp_path / "w.jsonl"
+    path.write_text("\n".join(lines) + "\n")
+    assert ge.role_reading([str(path), str(path)], {"output_tokens": 7, "input_tokens": 4}) == {"tokens": 11, "turns": 6}
+    assert ge.role_reading([], {}) == {"tokens": 0, "turns": 0}
 
 
 def test_transcripts_found_when_agent_ids_are_joined_in_one_flag(tmp_path: Path) -> None:
