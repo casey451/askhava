@@ -1,7 +1,7 @@
 //! The license-source adapter: the agencies' daily lists and the one live
 //! lookup behind one trait (SEC-032).
 //!
-//! Both calls only read, so they take no idempotency key (`fetch_`, `lookup_`
+//! Every call only reads, so they take no idempotency key (`fetch_`, `lookup_`
 //! prefixes, D-596); the throttle on live lookups is `licensing`'s. The base
 //! URL is a setting: `file://` reads the fixture lists from a directory (the
 //! Phase 1 stand-in), `http(s)` reads the public lists (verification only).
@@ -28,8 +28,22 @@ pub trait LicenseSource {
     ) -> impl Future<Output = Result<Vec<u8>, AdapterError>> + Send;
 }
 
+/// Reading one business's own public record at sign-up (read-only, D-2954).
+///
+/// A second trait so that [`LicenseSource`] and its test fakes stay as they
+/// are; the caller is `licensing::api::read_own_record` (BIZ-002, BIZ-016).
+pub trait LicenseRecords {
+    /// The raw answer for license `number` on list `list` (`roc` or `city`).
+    fn lookup_record(
+        &self,
+        list: &str,
+        number: &str,
+    ) -> impl Future<Output = Result<Vec<u8>, AdapterError>> + Send;
+}
+
 /// The license-source client: `file://` fixtures (`<dir>/<list>`,
-/// `<dir>/lookup/<number>`) or the public lists under one base URL, same paths.
+/// `<dir>/lookup/<number>`, `<dir>/record/<list>/<number>`; a missing file
+/// is a 404) or the public lists under one base URL, same paths.
 #[derive(Debug, Clone)]
 pub struct LicenseLists(Lists);
 
@@ -83,5 +97,23 @@ impl LicenseSource for LicenseLists {
 
     async fn lookup_license(&self, number: &str) -> Result<Vec<u8>, AdapterError> {
         self.read(&["lookup", number]).await
+    }
+}
+
+impl LicenseRecords for LicenseLists {
+    async fn lookup_record(&self, list: &str, number: &str) -> Result<Vec<u8>, AdapterError> {
+        self.read(&["record", list, number]).await
+    }
+}
+
+/// No license source configured (`ASKHAVA_LICENSE_BASE_URL` absent in `ci` or `dev`, D-2954):
+/// every record read fails with [`AdapterError::BadConfig`], which `licensing` reads as
+/// unreadable, so nothing ever counts as found.
+impl<T: LicenseRecords + Sync> LicenseRecords for Option<T> {
+    async fn lookup_record(&self, list: &str, number: &str) -> Result<Vec<u8>, AdapterError> {
+        match self {
+            Some(source) => source.lookup_record(list, number).await,
+            None => Err(AdapterError::BadConfig),
+        }
     }
 }
