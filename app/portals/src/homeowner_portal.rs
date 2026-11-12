@@ -4,8 +4,11 @@
 //!
 //! [`send_sign_in_code`] texts a Verify code only to a number on file and answers the same either
 //! way (a failed vault read is logged and is an error, never "not on file"); the code page carries
-//! the typed number back to [`HOMEOWNER_CODE_ROUTE`], where [`finish_sign_in`] starts the 30-day homeowner session only after Verify says the code is
-//! right (a wrong code is an `auth_failed` event). Her record is read only through [`OnFile::read`],
+//! the typed number back to [`HOMEOWNER_CODE_ROUTE`], where [`finish_sign_in`] starts the 30-day
+//! homeowner session only after Verify says the code is right (a wrong code is an `auth_failed`
+//! event). Both keep the code bound to sign-in by her contact's local challenge
+//! (`crate::code_challenge`, SEC-055, T346): a check with no live challenge or no try left never
+//! reaches Verify, and both take the pool and hold no connection across Verify. Her record is read only through [`OnFile::read`],
 //! which takes her session's `HomeownerSessionProof` and opens her own contact alone (SEC-046).
 //! [`turn_texts_off`] puts her number on the one suppression list at once, logged with channel
 //! `portal` and the time, and [`TEXTS_OFF_LINE`] confirms it on screen, never by text (CON-035).
@@ -26,9 +29,10 @@ use askhava_privacy::api::{
 use axum_extra::extract::cookie::CookieJar;
 use jiff::{SignedDuration, Timestamp};
 use secrecy::{ExposeSecret, SecretString};
-use sqlx::PgConnection;
 use sqlx::types::Uuid;
+use sqlx::{PgConnection, PgPool};
 
+use crate::code_challenge::{Purpose, open_challenge, reserve_try, use_challenge};
 use crate::data_download::DataRequestKind;
 use crate::security::{SecurityEvent, SecurityEventKind, record_security_event};
 use crate::session::{Realm, start_session};
@@ -48,10 +52,6 @@ pub const TEXTS_OFF_ROUTE: &str = "/h/texts-off";
 
 /// A homeowner session lasts 30 days on its device (SEC-008).
 pub const HOMEOWNER_SESSION_LIFE: SignedDuration = SignedDuration::from_hours(30 * 24);
-
-/// One Verify send key per contact and ten minutes (the code's life), so a double submit reuses
-/// the key (R13).
-const SEND_WINDOW_SECONDS: i64 = 600;
 
 /// The on-screen confirmation of the texts-off switch (CON-035: never by text).
 pub const TEXTS_OFF_LINE: &str = "Texts are off. We won't text you again unless you text START.";
@@ -130,23 +130,37 @@ async fn contact_of(
     }
 }
 
-/// SEC-008: texts a Verify code to `phone` when it is a homeowner number on file; a number not on
-/// file gets nothing and the same answer, so the page never says whether it is on file. The send
-/// key is the contact and the ten-minute window of `now`.
+/// The contact holding `phone`, on a connection held only for the read.
+async fn contact_on_file(
+    pool: &PgPool,
+    vault: &Vault,
+    phone: &str,
+) -> Result<Option<Uuid>, HomeownerError> {
+    let mut db = pool.acquire().await.map_err(|_| HomeownerError::Database)?;
+    contact_of(&mut db, vault, phone).await
+}
+
+/// SEC-008, SEC-055: texts a Verify code to `phone` when it is a homeowner number on file; a
+/// number not on file gets nothing and the same answer, so the page never says whether it is on
+/// file. The sign-in challenge of her contact is opened or reused and committed first
+/// ([`open_challenge`]); the send key is that challenge. No connection is held across Verify.
 ///
 /// # Errors
 /// [`HomeownerError::Verify`] or [`HomeownerError::Database`].
 pub async fn send_sign_in_code<V: VerifyAdapter>(
-    db: &mut PgConnection,
+    pool: &PgPool,
     (vault, verify, key): (&Vault, &V, &SecretString),
     phone: &str,
     now: Timestamp,
 ) -> Result<(), HomeownerError> {
-    let Some(contact) = contact_of(db, vault, phone).await? else {
+    let Some(contact) = contact_on_file(pool, vault, phone).await? else {
         return Ok(());
     };
-    let window = now.as_second().div_euclid(SEND_WINDOW_SECONDS).to_string();
-    let ids = [contact.to_string(), window];
+    let subject = (Purpose::HomeownerSignin, contact);
+    let challenge = open_challenge(pool, subject, now)
+        .await
+        .map_err(|_| HomeownerError::Database)?;
+    let ids = [contact.to_string(), challenge.to_string()];
     let idem = IdempotencyKey::derive(key, "verify.homeowner_signin", &[&ids[0], &ids[1]]);
     verify
         .send_code(&idem, phone, CodeChannel::Sms)
@@ -155,44 +169,70 @@ pub async fn send_sign_in_code<V: VerifyAdapter>(
         .map_err(|_| HomeownerError::Verify)
 }
 
-/// SEC-008, SEC-042: starts the 30-day homeowner session on her contact only after Verify says
-/// `code` is the one sent to `phone`; anything else is [`HomeownerError::Refused`], logged as an
-/// `auth_failed` event with the contact's ID (never the phone) when the number is on file.
+/// SEC-008, SEC-042, SEC-055: starts the 30-day homeowner session on her contact only after a try
+/// is reserved against her live sign-in challenge ([`reserve_try`]; none, and Verify is never
+/// called) and Verify says `code` is the one sent to `phone`; the challenge is used in the
+/// session's transaction, so two right checks start one session. Anything else is
+/// [`HomeownerError::Refused`], logged as an `auth_failed` event with the contact's ID (never the
+/// phone) when the number is on file. No connection is held across Verify.
 ///
 /// # Errors
 /// [`HomeownerError`].
 pub async fn finish_sign_in<V: VerifyAdapter>(
-    db: &mut PgConnection,
+    pool: &PgPool,
     (vault, verify): (&Vault, &V),
     (jar, phone, code): (CookieJar, &str, &str),
     now: Timestamp,
 ) -> Result<CookieJar, HomeownerError> {
-    let Some(contact) = contact_of(db, vault, phone).await? else {
+    let Some(contact) = contact_on_file(pool, vault, phone).await? else {
         return Err(HomeownerError::Refused);
     };
-    let right = match parse_code(code) {
-        Some(code) => verify.check_code(phone, code.digits()).await,
-        None => Ok(false),
+    let Some(code) = parse_code(code) else {
+        return Err(refuse(pool, contact, now).await);
     };
-    match right {
-        Ok(true) => {}
-        Ok(false) => return Err(refuse(db, contact, now).await),
-        Err(_) => return Err(HomeownerError::Verify),
+    let subject = (Purpose::HomeownerSignin, contact);
+    let reserved = reserve_try(pool, subject, now).await;
+    let Some(challenge) = reserved.map_err(|_| HomeownerError::Database)? else {
+        return Err(refuse(pool, contact, now).await);
+    };
+    match verify.check_code(phone, code.digits()).await {
+        Ok(true) => start(pool, (jar, contact, challenge), now).await,
+        Ok(false) => Err(refuse(pool, contact, now).await),
+        Err(_) => Err(HomeownerError::Verify),
     }
-    let login = (Realm::Homeowner, contact);
-    start_session(db, jar, login, HOMEOWNER_SESSION_LIFE, now)
-        .await
-        .map_err(|_| HomeownerError::Database)
 }
 
-async fn refuse(db: &mut PgConnection, contact: Uuid, now: Timestamp) -> HomeownerError {
+/// SEC-055: uses `challenge` and starts her session in one transaction; a challenge another
+/// right check used first rolls back and is [`HomeownerError::Refused`].
+async fn start(
+    pool: &PgPool,
+    (jar, contact, challenge): (CookieJar, Uuid, i64),
+    now: Timestamp,
+) -> Result<CookieJar, HomeownerError> {
+    let db = |_| HomeownerError::Database;
+    let mut tx = pool.begin().await.map_err(db)?;
+    if !use_challenge(&mut tx, challenge, now).await.map_err(db)? {
+        return Err(HomeownerError::Refused);
+    }
+    let login = (Realm::Homeowner, contact);
+    let jar = start_session(&mut tx, jar, login, HOMEOWNER_SESSION_LIFE, now)
+        .await
+        .map_err(|_| HomeownerError::Database)?;
+    tx.commit().await.map_err(db)?;
+    Ok(jar)
+}
+
+async fn refuse(pool: &PgPool, contact: Uuid, now: Timestamp) -> HomeownerError {
     let event = SecurityEvent {
         kind: SecurityEventKind::AuthFailed,
         route: HOMEOWNER_SIGNIN_ROUTE,
         request_id: None,
         actor_ref: Some(contact),
     };
-    match record_security_event(db, &event, now).await {
+    let Ok(mut db) = pool.acquire().await else {
+        return HomeownerError::Database;
+    };
+    match record_security_event(&mut db, &event, now).await {
         Ok(_) => HomeownerError::Refused,
         Err(_) => HomeownerError::Database,
     }
@@ -328,7 +368,7 @@ mod tests {
 
     use super::{
         HomeFacts, HomeownerError, OnFile, PortalScreen, finish_sign_in, homeowner_page,
-        turn_texts_off,
+        send_sign_in_code, turn_texts_off,
     };
     use crate::data_download::DataRequestKind;
     use crate::session::{Realm, current_session};
@@ -476,7 +516,8 @@ mod tests {
         assert_eq!(turn_texts_off(&mut db, &vault, &her, now).await, Ok(false));
     }
 
-    /// SEC-008: only the right code signs her in, to her own contact in the homeowner realm.
+    /// SEC-008, SEC-055: only the right code, after a sign-in send, signs her in, to her own
+    /// contact in the homeowner realm.
     #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
     async fn only_the_right_code_signs_her_in(pool: PgPool) {
         let (mut db, vault) = (pool.acquire().await.expect("db"), vault());
@@ -488,11 +529,14 @@ mod tests {
         store_contact(&mut db, &vault, &new).await.expect("contact");
         let now = Timestamp::from_second(1_800_000_000).expect("time");
         let parts = (&vault, &FakeVerify);
+        let key = SecretString::from("fake-key-for-tests".to_owned());
+        let send = send_sign_in_code(&pool, (&vault, &FakeVerify, &key), PHONE, now).await;
+        assert_eq!(send, Ok(()));
         for (phone, code) in [(PHONE, "654321"), (PHONE, "12"), ("+19285550199", "123456")] {
-            let refused = finish_sign_in(&mut db, parts, (CookieJar::new(), phone, code), now);
+            let refused = finish_sign_in(&pool, parts, (CookieJar::new(), phone, code), now);
             assert_eq!(refused.await.err(), Some(HomeownerError::Refused));
         }
-        let signed = finish_sign_in(&mut db, parts, (CookieJar::new(), PHONE, "123456"), now);
+        let signed = finish_sign_in(&pool, parts, (CookieJar::new(), PHONE, "123456"), now);
         let jar = signed.await.expect("signed in");
         let session = current_session(&mut db, &jar, now).await.expect("db");
         assert_eq!(session.map(|s| s.realm()), Some(Realm::Homeowner));
