@@ -1,21 +1,21 @@
 # Ask Hava build status
 
-Updated 2026-11-12T11:19:19Z by runner b513c7d4ca37 (actions).
+Updated 2026-11-12T11:20:56Z by runner 9a0cfc9ec6a1 (actions).
 
-**Building: T404 in progress since 11:19Z; 238 of 397 done; week 93% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T404 in progress since 11:19Z; 239 of 397 done; week 93% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 238 of 397 build tasks (owner gates not counted)
+- **Tasks done:** 239 of 397 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 5: T404 claimed 11:19Z, lease until 14:19Z
 - **Week:** 93% used, 8.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:17Z, 1 min before this update
+- **Last run:** 11:19Z, 1 min before this update
 - **Keeper:** last ran 11:17Z, next wake 16:57Z
 
 ## Needs attention
 - BLOCKED T280: plan gap reported: PLAN GAP: app/portals/src/business_auth.rs:130 (SignInMail::addresses) and :176 (CodeAddress::code_to) have nothing to look up. No module stores a business member's sign-in email or texting phone in a readable/searchable form, and no task in kit/tasks.json builds one. Evidence: privacy.contact_index only ever written for HomeownerPhone (app/privacy/src/vault.rs:398,409); email_index (app/privacy/src/reader.rs:321) only computes a digest and nothing calls it; migrations/0056_businesses_team_members.sql:5-11 says email/phone is never stored there; Reader list (app/privacy/src/models.rs:89-102) h; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T280 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T251 (since 2026-11-12T11:06:16Z, no attempt used; a plan change fixes it): T251: measures 46% of the context window, over its 45% limit
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 25 problem(s) on tasks still to run (+103 on DONE tasks); first: T396: stored context_pct 39% but it measures 46%; regenerate
+- Strict plan check red: 24 problem(s) on tasks still to run (+108 on DONE tasks); first: T396: stored context_pct 39% but it measures 46%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -23,7 +23,7 @@ Updated 2026-11-12T11:19:19Z by runner b513c7d4ca37 (actions).
 | T345 | harness: every external GitHub Actions `uses:` in every work | MERGE_PENDING | 3 | 27 min | 11:16Z | PLAN GAP: tests/test_runner_cache.py:207,:214 and tests/test_runner_merge_early.py:212,:213 hard-code actions/cache/rest |
 | T377 | adapters and stand-in (harness): every text asks Twilio for  | MERGE_PENDING | 1 | 28 min | 11:15Z |  |
 | T280 | server and messaging (harness): the business sign-in pages a | BLOCKED | 1 | 8 min | 11:14Z | PLAN GAP: app/portals/src/business_auth.rs:130 (SignInMail::addresses) and :176 (CodeAddress::code_to) have nothing to l |
-| T268 | portals, businesses and messaging: the sign-up consent box,  | MERGE_PENDING | 1 | 24 min | 11:05Z | merging main into the reviewed head conflicts in app/messaging/src/api.rs; a resync merges it in on this attempt (D-891) |
+| T268 | portals, businesses and messaging: the sign-up consent box,  | done | 1 | 24 min | 11:05Z |  |
 | T411 | quotes: the scrubbed job description and the shown and appro | done | 1 | 28 min | 10:36Z |  |
 | T343 | harness: the DONE pick tests' fixtures record each job's fac | done | 1 | 24 min | 10:23Z |  |
 | T411 | quotes: the scrubbed job description and the shown and appro | resync | 1 | 30 min | 10:00Z |  |
@@ -131,7 +131,7 @@ Updated 2026-11-12T11:19:19Z by runner b513c7d4ca37 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 209 of 733 (28.5%) · partial 354 · unstarted 170
-**Tasks merged (throughput only):** 238 of 397
+**Tasks merged (throughput only):** 239 of 397
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -166,7 +166,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 118 of 179 done
+- stage 4: 119 of 179 done
 - stage 5: 0 of 64 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
