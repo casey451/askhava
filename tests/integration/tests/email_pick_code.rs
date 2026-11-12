@@ -13,7 +13,7 @@ use std::sync::{Arc, Mutex};
 use askhava_adapters::api::{AdapterError, CodeChannel, IdempotencyKey, VerifyAdapter};
 use askhava_intake::api::rules::{Inbound, Settings};
 use askhava_intake::api::{JobStart, Opened, TextIn, begin_job, receive_text};
-use askhava_jobs::api::{JobStatus, current, move_to};
+use askhava_jobs::api::{JobStatus, current, move_to, record_job_facts};
 use askhava_ops::api::Actor;
 use askhava_picks::api::rules::SendRefused;
 use askhava_picks::api::{
@@ -116,6 +116,7 @@ async fn ready(db: &mut PgConnection) -> (Uuid, Uuid) {
     let Ok(Opened::Created(job)) = begin_job(db, &start).await else {
         panic!("a new job");
     };
+    facts(db, job).await;
     for step in [
         (JobStatus::Intake, JobStatus::Open),
         (JobStatus::Open, JobStatus::QuotesReady),
@@ -127,6 +128,18 @@ async fn ready(db: &mut PgConnection) -> (Uuid, Uuid) {
         quote(db, job, n).await;
     }
     (her, job)
+}
+
+/// Stores the catalog and records `job`'s facts, plumbing repair and leak repair: not fee-free,
+/// the default visit tier, one-time (FEE-005, D-2331, D-3112).
+async fn facts(db: &mut PgConnection, job: Uuid) {
+    askhava_catalog::api::load_embedded(db)
+        .await
+        .expect("catalog");
+    let types = ["leak repair".to_owned()];
+    record_job_facts(db, job, "plumbing_repair", &types)
+        .await
+        .expect("job facts");
 }
 
 /// Business `n` quotes on `job`, confirmed, arriving `n` minutes in (fake wording).
