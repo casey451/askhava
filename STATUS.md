@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T15:19:00Z by runner e2c37a7d0cad (actions).
+Updated 2026-11-12T15:19:18Z by runner e2c37a7d0cad (actions).
 
 **Building: T315 in progress since 15:12Z; 245 of 397 done; week 95% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-12T15:19:00Z by runner e2c37a7d0cad (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T315 claimed 15:12Z, lease until 18:12Z; lane 4: T370 claimed 15:07Z, lease until 18:07Z
 - **Week:** 95% used, 0.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:18Z, 0 min before this update
+- **Last run:** 15:19Z, 0 min before this update
 - **Keeper:** last ran 15:18Z, next wake 18:09Z
 
 ## Needs attention
@@ -168,6 +168,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T315 (lease until 2026-11-12T18:12:30Z)
 - lane 4: T370 (lease until 2026-11-12T18:07:53Z)
+- one lane only since 2026-11-12T15:19:18Z (lane fall back; `python3 -m runner --restore-lanes`)
 
 ## Last usage reading
 - {"task": "T389", "at": "2026-11-12T15:11:18Z", "output_tokens": 53812, "cache_creation_input_tokens": 252017, "cache_read_input_tokens": 6019959, "input_tokens": 196}
