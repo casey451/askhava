@@ -13,16 +13,17 @@
 //! is a scope plus an IP or a record ID, never a phone or email (PRIV-002). Intake's own limits
 //! are [`admit_new_request`]'s: 5 new requests per phone per hour (SEC-014, a Normal alert), per
 //! IP, and all numbers together per hour, so a burst of 100 fake requests is blocked and alerted
-//! High (SEC-015). `portals` keeps the sign-in, code, sign-up and quote limits and runs them
-//! through [`admit`] (D-491).
+//! High (SEC-015). It counts on a connection the caller hands it, so the inbound text route counts
+//! inside the delivery's transaction (D-2206, D-3083). `portals` keeps the sign-in, code,
+//! sign-up and quote limits and runs them through [`admit`] (D-491).
 
 use std::net::IpAddr;
 
-use askhava_core::api::{RateDecision, ip_bucket, rate_limit_hit};
+use askhava_core::api::{RateDecision, ip_bucket, rate_limit_hit, rate_limit_hit_on};
 use askhava_ops::api::{NewAlert, Severity, raise_alert};
 use jiff::{SignedDuration, Timestamp};
-use sqlx::PgPool;
 use sqlx::types::Uuid;
+use sqlx::{Acquire, Connection, PgConnection, PgPool, Postgres};
 use thiserror::Error;
 
 /// New requests one phone (her vault contact) may open per hour (SEC-014); its refusal is one
@@ -128,21 +129,40 @@ fn bucket(limit: Limit, key: Key) -> String {
     }
 }
 
-/// The counter call for `window`: an Arizona day is the UTC day of `now` moved back 7 hours.
+/// The counter's `(at, size)` for `window`: an Arizona day is the UTC day of `now` moved back 7
+/// hours.
+fn span(now: Timestamp, window: Window) -> (Timestamp, SignedDuration) {
+    match window {
+        Window::Hour => (now, SignedDuration::from_hours(1)),
+        Window::ArizonaDay => (
+            now - SignedDuration::from_hours(7),
+            SignedDuration::from_hours(24),
+        ),
+    }
+}
+
+/// The counter call for `window` on the pool.
 async fn count(
     pool: &PgPool,
     bucket: &str,
     (now, window): (Timestamp, Window),
     max: i32,
 ) -> Result<RateDecision, LimitError> {
-    let (at, size) = match window {
-        Window::Hour => (now, SignedDuration::from_hours(1)),
-        Window::ArizonaDay => (
-            now - SignedDuration::from_hours(7),
-            SignedDuration::from_hours(24),
-        ),
-    };
+    let (at, size) = span(now, window);
     rate_limit_hit(pool, bucket, at, size, max)
+        .await
+        .map_err(|_| LimitError::Counter)
+}
+
+/// The counter call for `window` on the caller's connection (D-2206).
+async fn count_on(
+    conn: &mut PgConnection,
+    bucket: &str,
+    (now, window): (Timestamp, Window),
+    max: i32,
+) -> Result<RateDecision, LimitError> {
+    let (at, size) = span(now, window);
+    rate_limit_hit_on(conn, bucket, at, size, max)
         .await
         .map_err(|_| LimitError::Counter)
 }
@@ -206,20 +226,65 @@ async fn write_alert(pool: &PgPool, alert: &NewAlert) -> Result<(), LimitError> 
         .map_err(|_| LimitError::Alert)
 }
 
-/// SEC-014, SEC-015, SEC-040: admits a new request from `contact` (her vault contact), from
-/// `ip` when it came by the web: 5 per phone per hour, [`REQUESTS_PER_IP`], then
-/// [`REQUESTS_ALL`]. A refused request opens nothing and gets no reply.
+/// SEC-014, SEC-015, SEC-040, D-2206, D-3083: admits a new request from `contact` (her vault
+/// contact), from `ip` when it came by the web: 5 per phone per hour, [`REQUESTS_PER_IP`], then
+/// [`REQUESTS_ALL`] last. Every count, the alert marker and the alert run on the one connection
+/// acquired from `db`, inside a transaction (a savepoint when `db` is already in one), so the
+/// caller's delivery transaction holds them: a rolled-back delivery counts nothing and raises
+/// nothing, and a resent one counts once. The `REQUESTS_ALL` row stays locked until the caller
+/// commits, so the caller counts as its last step and waits on no network call before the commit.
+/// A refused request opens nothing and gets no reply.
 ///
 /// # Errors
 ///
-/// As [`admit`].
-pub async fn admit_new_request(
-    pool: &PgPool,
+/// [`LimitError::Counter`] when the connection or a count fails, [`LimitError::Alert`] when the
+/// alert cannot be written; on either nothing of this call is kept.
+pub fn admit_new_request<'a, A>(
+    db: A,
     (contact, ip): (Uuid, Option<IpAddr>),
     now: Timestamp,
-) -> Result<Admission, LimitError> {
+) -> impl Future<Output = Result<Admission, LimitError>> + Send + 'a
+where
+    A: Acquire<'a, Database = Postgres> + Send + 'a,
+{
     let mut checks = vec![(REQUESTS_PER_PHONE, Key::Record(contact))];
     checks.extend(ip.map(|ip| (REQUESTS_PER_IP, Key::Ip(ip))));
     checks.push((REQUESTS_ALL, Key::All));
-    admit(pool, &checks, now).await
+    async move {
+        let mut conn = db.acquire().await.map_err(|_| LimitError::Counter)?;
+        let mut tx = Connection::begin(&mut *conn)
+            .await
+            .map_err(|_| LimitError::Counter)?;
+        let admission = admit_on(&mut tx, &checks, now).await?;
+        tx.commit().await.map_err(|_| LimitError::Counter)?;
+        Ok(admission)
+    }
+}
+
+/// [`admit`] on one connection: the counts, the `<scope>:alerted` marker and the one alert all
+/// commit or roll back together, so the alert needs no retry and a lost alert leaves no marker
+/// (SEC-014, SEC-015, D-2206).
+async fn admit_on(
+    conn: &mut PgConnection,
+    checks: &[(Limit, Key)],
+    now: Timestamp,
+) -> Result<Admission, LimitError> {
+    for &(limit, key) in checks {
+        let decision = count_on(conn, &bucket(limit, key), (now, limit.window), limit.max).await?;
+        if decision == RateDecision::Limited {
+            let flag = format!("{}:alerted", limit.scope);
+            if count_on(conn, &flag, (now, limit.window), 1).await? != RateDecision::Limited {
+                let alert = NewAlert {
+                    kind: limit.scope,
+                    severity: limit.alert,
+                    subject: None,
+                };
+                raise_alert(conn, &alert)
+                    .await
+                    .map_err(|_| LimitError::Alert)?;
+            }
+            return Ok(Admission::Refused(limit));
+        }
+    }
+    Ok(Admission::Admitted)
 }

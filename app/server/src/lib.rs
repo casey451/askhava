@@ -315,7 +315,7 @@ where
         auth_token: twilio.auth_token().clone(),
         id_secret,
         vault,
-        names: Vec::new(),
+        environment: settings.environment(),
         intake: askhava_intake::api::rules::Settings::default(),
     })))
 }
