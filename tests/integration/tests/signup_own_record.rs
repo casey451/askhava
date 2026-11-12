@@ -35,26 +35,32 @@ const SPARSE: &str = "ROC100002,Sample Drains LLC,,928-555-0143,,,,,";
 const LANDLINE: &str =
     "ROC100003,Fake Heat Inc,,928-555-0144,landline,heat@example.test,,Lake Havasu City,86404";
 const BARE: &str = "ROC100004,Placeholder Air Co,,,,,,,";
+const LANDLINE_ONLY: &str = "ROC100005,Fake Cool Co,,928-555-0145,landline,,,,";
 const CITY_RECORD: &str = "CL-100001,Sample Yard Care LLC,Sample Yards,928-555-0150,mobile,,,,";
 
 const ROC_LIST: &str = "license_number,class,status,issued_on\n\
 ROC100001,R-37,Active,2015-06-01\nROC100002,R-37,Active,2016-01-02\n\
-ROC100003,R-37,Active,2016-08-09\nROC100004,R-37,Active,2017-03-04\n";
+ROC100003,R-37,Active,2016-08-09\nROC100004,R-37,Active,2017-03-04\n\
+ROC100005,R-37,Active,2018-04-05\n";
 
 const CITY_LIST: &str = "license_number,business_name,trade_name,owner_name,issued_on\n\
-CL-100001,Sample Yard Care LLC,Sample Yards,,2020-02-03\n\
+CL-100001,Sample Yard Care LLC,Sample Yards,Fake Owner Person,2020-02-03\n\
 CL-100002,Example Window Wash,,,2021-07-08\n\
 CL-100003,Example Window Wash,,,2022-01-01\n\
 ,Fake Pool Folks,,,2019-05-05\n";
 
 /// Every value a log line or error must never hold.
-const SECRETS: [&str; 6] = [
+const SECRETS: [&str; 10] = [
     "Example Plumbing Co",
     "Sample Pipes",
     "555-0142",
     "office@example.test",
     "Sample Way",
     "ROC100001",
+    "Sample Yard Care",
+    "Sample Yards",
+    "555-0150",
+    "CL-100001",
 ];
 
 /// A temporary fixture directory holding `record/<list>/<number>` files.
@@ -67,7 +73,7 @@ impl Fixtures {
             std::fs::create_dir_all(dir.join("record").join(list)).expect("fixture dir");
         }
         let fixtures = Self(dir);
-        for row in [FULL, SPARSE, LANDLINE, BARE] {
+        for row in [FULL, SPARSE, LANDLINE, BARE, LANDLINE_ONLY] {
             fixtures.record("roc", &row[..9], &format!("{RECORD_HEADER}\n{row}\n"));
         }
         fixtures.record(
@@ -91,6 +97,9 @@ impl Fixtures {
             .replace("ROC100001", "ROC200004")
             .replace("mobile", "pager");
         fixtures.record("roc", "ROC200004", &format!("{RECORD_HEADER}\n{pager}\n"));
+        let renamed = RECORD_HEADER.replace("trade_name", "dba");
+        let valid = FULL.replace("ROC100001", "ROC200005");
+        fixtures.record("roc", "ROC200005", &format!("{renamed}\n{valid}\n"));
         fixtures
     }
 
@@ -206,6 +215,7 @@ async fn td_lic_30_unreadable_reads_raise_one_alert_a_day(pool: PgPool) {
         "ROC200002",
         "ROC200003",
         "ROC200004",
+        "ROC200005",
     ] {
         let got = read(&mut conn, &source, number).await;
         assert!(
@@ -221,6 +231,42 @@ async fn td_lic_30_unreadable_reads_raise_one_alert_a_day(pool: PgPool) {
     ));
     assert_eq!(unreadable_alerts(&pool).await, 1);
     lines.assert_clean();
+}
+
+/// Seeds one Normal subject-less unreadable alert `offset` (an SQL interval) from the start of
+/// today's Arizona day (UTC-7, by the database clock).
+async fn seed_alert(pool: &PgPool, offset: &str) {
+    sqlx::query(
+        "INSERT INTO ops.alert (kind, severity, raised_at) SELECT $1, 'normal', \
+           ((date_trunc('day', (now() AT TIME ZONE 'UTC') - interval '7 hours') \
+             + interval '7 hours') AT TIME ZONE 'UTC') + $2::interval",
+    )
+    .bind(RECORD_UNREADABLE_ALERT)
+    .bind(offset)
+    .execute(pool)
+    .await
+    .expect("seeded alert");
+}
+
+/// TD-LIC-30 (LIC-008): the one-a-day limit follows the Arizona day: an alert from the previous
+/// Arizona day, or from 06:00 UTC on today's Arizona date (still the day before in Arizona), lets
+/// a new one be raised; one from earlier the same Arizona day suppresses it.
+#[sqlx::test(migrator = "MIGRATOR")]
+async fn td_lic_30_unreadable_alert_follows_the_arizona_day(pool: PgPool) {
+    let (fixtures, mut conn) = (Fixtures::new(), app(&pool).await);
+    let source = fixtures.source();
+    let cases = [("-12 hours", 2), ("-1 hour", 2), ("0 seconds", 1)];
+    for (at, want) in cases {
+        sqlx::query("DELETE FROM ops.alert WHERE kind = $1")
+            .bind(RECORD_UNREADABLE_ALERT)
+            .execute(&pool)
+            .await
+            .expect("clear alerts");
+        seed_alert(&pool, at).await;
+        let got = read(&mut conn, &source, "ROC200002").await;
+        assert!(matches!(got, RecordRead::Unreadable), "{at}");
+        assert_eq!(unreadable_alerts(&pool).await, want, "{at}");
+    }
 }
 
 /// TD-LIC-30 (BIZ-016, LIC-011): a given name equal to the record's name or DBA, case and
@@ -249,6 +295,7 @@ async fn td_lic_30_city_match_number(pool: PgPool) {
     let cases = [
         (yard, Some("CL-100001"), number("CL-100001")),
         (yard, Some("CL-999999"), None),
+        (yard, Some("CL-100003"), None),
         (yard, None, number("CL-100001")),
         (("Example Window Wash", None), None, None),
         (
@@ -395,6 +442,35 @@ async fn td_lic_30_no_contact_and_a_city_business(pool: PgPool) {
     ));
 }
 
+/// TD-LIC-30 (BIZ-016, LIC-011, LIC-048): a city-list business matched by its owner name, which
+/// agrees with neither the record's business name nor its DBA, still gets no name flag.
+#[sqlx::test(migrator = "MIGRATOR")]
+async fn td_lic_30_city_business_gets_no_name_flag(pool: PgPool) {
+    let fixtures = Fixtures::new();
+    let mut conn = catalog_and_lists(&pool).await;
+    let owner = business(&mut conn, &["house_cleaning"], Some("Fake Owner Person")).await;
+    let SignupRecord::Read(found) = signup(&mut conn, &fixtures.source(), owner).await else {
+        panic!("city record read");
+    };
+    assert_eq!(found.flag(), None);
+    assert_eq!(found.masked().expect("masked").shown(), "(•••) •••-0150");
+}
+
+/// TD-LIC-30 (BIZ-002, D-366, D-3249): a record whose only contact is a landline has no usable
+/// contact, since a landline is never texted or called: `NoContact`.
+#[sqlx::test(migrator = "MIGRATOR")]
+async fn td_lic_30_landline_only_record_is_no_contact(pool: PgPool) {
+    let fixtures = Fixtures::new();
+    let mut conn = catalog_and_lists(&pool).await;
+    let id = business(&mut conn, &["plumbing_repair"], Some("Fake Cool Co")).await;
+    check_license(&mut conn, id, "ROC100005")
+        .await
+        .expect("check");
+    let read = signup(&mut conn, &fixtures.source(), id).await;
+    assert_eq!(read.flag(), Some(Flag::NoRecordContact));
+    assert!(matches!(read, SignupRecord::NoContact));
+}
+
 /// TD-LIC-30 (D-366, BIZ-026): a landline-only record shows the landline before any step.
 #[sqlx::test(migrator = "MIGRATOR")]
 async fn td_lic_30_landline_record_shows_the_landline(pool: PgPool) {
@@ -489,7 +565,7 @@ async fn td_lic_30_reads_write_nothing_and_log_no_value(pool: PgPool) {
     lines.assert_clean();
 }
 
-/// Every log line's fields, for the test's thread.
+/// Every log line's and span's fields, for the test's thread.
 #[derive(Clone, Default)]
 struct Lines(Arc<Mutex<Vec<String>>>);
 
@@ -517,10 +593,17 @@ impl Subscriber for Lines {
     fn enabled(&self, _: &Metadata<'_>) -> bool {
         true
     }
-    fn new_span(&self, _: &Attributes<'_>) -> Id {
+    fn new_span(&self, attributes: &Attributes<'_>) -> Id {
+        let mut line = String::new();
+        attributes.record(&mut Line(&mut line));
+        self.0.lock().expect("lines").push(line);
         Id::from_u64(1)
     }
-    fn record(&self, _: &Id, _: &Record<'_>) {}
+    fn record(&self, _: &Id, values: &Record<'_>) {
+        let mut line = String::new();
+        values.record(&mut Line(&mut line));
+        self.0.lock().expect("lines").push(line);
+    }
     fn record_follows_from(&self, _: &Id, _: &Id) {}
     fn event(&self, event: &Event<'_>) {
         let mut line = String::new();
