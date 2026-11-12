@@ -243,6 +243,24 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Close merged tasks before the smoke (D-3141)
+        # The run a merge starts used to close that merge only in the session's cycle, after the steps below: T388
+        # merged at 22:53Z on November 11 and held its lane and its dependents as MERGE_PENDING until 23:19Z. Here,
+        # within a minute of the job's start, the runner closes every MERGE_PENDING task whose pull request has merged
+        # with its checks finished, by the cycle's own rule (DONE only from Ci, Twin and Ally green on the merged head
+        # and equal trees; otherwise a red main), and with two or more lanes starts a run for each other lane that
+        # frees. Nothing else: open pull requests, the inbox, the smoke and claims stay the session's. A failure only
+        # leaves the merge to the session's cycle, as before.
+        continue-on-error: true
+        timeout-minutes: 5
+        env:
+          RUNNER_STARTER: actions
+          RUNNER_LANE: ${{ needs.gate.outputs.lane }}
+          GH_TOKEN: ${{ github.token }}
+          RUNNER_CHECKS_TOKEN: ${{ github.token }}
+          RUNNER_PUSH_TOKEN: ${{ secrets.RUNNER_PUSH_TOKEN }}
+        run: |
+          python3 -m runner --resolve-merges 2>&1 | grep '^runner: ' || true
       - name: Rust build cache (D-514)
         # The worker's own cargo runs reuse the build; Cargo's fingerprints decide what rebuilds. Only `target/debug`:
         # the smoke's own build (`target/smoke`, D-1890) is the next step's entry, and an exclusion such as
@@ -602,6 +620,9 @@ jobs:
           # A row moved a task by its result, or by the tasks it changed: a run whose own lane still waits
           # (merge_pending) may have resolved the merge of another lane and freed that lane (D-723).
           went = last.get("result") in moved or bool((last.get("changed") or {}).get("tasks"))
+          # The merges this job closed before its smoke (merges_resolved, D-3141) moved tasks too, though the later
+          # row of the session no longer shows them: its own lane, left out then, is refilled if still free.
+          went = went or any(r.get("result") == "merges_resolved" for r in mine)
           lanes = [str(n) for n in last.get("refill") or [] if str(n).isdigit()] if went else []
           print(" ".join(lanes))
           ' 2>/dev/null || true)"

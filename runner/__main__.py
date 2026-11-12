@@ -52,6 +52,13 @@ line of JSON with what changed.
                                     the smoke's own tree, seed and pinned mtimes; its result beside the
                                     smoke target is the start routine's smoke for that head in this job
                                     only; no state, lease or log written; always exit 0 (D-2028)
+  python3 -m runner --resolve-merges
+                                    close every MERGE_PENDING task whose pull request already merged
+                                    with its checks finished, by the cycle's own rule (DONE only from
+                                    Ci, Twin and Ally green on the merged head and equal trees; else a
+                                    red main), before the smoke warm-up (backup-runner.yml); with two
+                                    or more lanes it starts refill runs for the other freed lanes at
+                                    once; nothing else; no log row when nothing merged (D-3141)
   python3 -m runner --usage-reading FILE
                                     keep the plan usage the action reported about itself (the last
                                     `rate_limit_event` in its execution file) as usage.session_reading,
@@ -148,6 +155,7 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
     ap.add_argument("--keeper-armed", type=int, help="minutes until the keeper just dispatched wakes (D-1451)")
     ap.add_argument("--warm-smoke", action="store_true", help="build the smoke's cargo artifacts before the session (D-2007)")
     ap.add_argument("--pre-smoke", action="store_true", help="run the start routine's smoke before the session (D-2028)")
+    ap.add_argument("--resolve-merges", action="store_true", help="close already-merged MERGE_PENDING tasks before the smoke (D-3141)")
     ap.add_argument("--model-fallback", default="", help="with --after: the window's model was refused; the error line (D-2225)")
     ap.add_argument("--session-model", nargs="?", const="", default=None, metavar="STATE_FILE",
                     help="print the orchestrating session's model; STATE_FILE: kit/state.json as read from claude/kit-state (D-2225)")
@@ -570,6 +578,8 @@ def run(args: argparse.Namespace, cfg: cycle.Config, env: GitHubEnv) -> str:
         return model_refused(args.model_refused, cfg, env)
     if args.keeper_armed is not None:
         return keeper_armed(args.keeper_armed, env)
+    if args.resolve_merges:
+        return cycle.resolve_merged(cfg, env, now_utc())
     return cycle_with_retries(cfg, env)
 
 
@@ -626,6 +636,8 @@ def model_refused(path: Path, cfg: cycle.Config, env: GitHubEnv) -> str:
 # `--model-refused` results that change nothing: no kit/runner_log.jsonl row, so the session's own row stays the
 # last one the keeper and the chain step read (D-2225).
 MODEL_WINDOW_SILENT = ("model_window_inactive", "model_window_ok", "model_window_unread")
+# Every result that writes no log row: those above, and `--resolve-merges` finding nothing to close (D-3141).
+SILENT = (*MODEL_WINDOW_SILENT, cycle.NO_MERGED)
 
 
 def session_model(args: argparse.Namespace) -> int:
@@ -692,16 +704,31 @@ def cycle_with_retries(cfg: cycle.Config, env: GitHubEnv) -> str:
     return result
 
 
-def refill(cfg: cycle.Config, env: GitHubEnv) -> list[str]:
+def refill(cfg: cycle.Config, env: GitHubEnv, own: str | None = None) -> list[str]:
     """The lanes the backup-runner chain step should start a run for (D-620), from the last state this
-    run saw; [] with one lane (the chain then works exactly as before) or when it cannot be worked out."""
+    run saw; [] with one lane (the chain then works exactly as before) or when it cannot be worked out.
+    `own` is left out (`cycle.refill_lanes`, D-3141)."""
     if cfg.lanes < 2 or not env.last_state:
         return []
     try:
-        return cycle.refill_lanes(cfg, env.last_state, now_utc())
+        return cycle.refill_lanes(cfg, env.last_state, now_utc(), own)
     except Exception as exc:  # noqa: BLE001  # reason: a failed outlook must never change the cycle's result (D-620)
         print(f"runner: refill lanes not worked out: {str(exc)[:200]}")
         return []
+
+
+def lane_report(cfg: cycle.Config, env: GitHubEnv, result: str, dry_run: bool) -> dict[str, Any]:
+    """The lane keys of a report with two or more lanes: the run's lane and the refill lanes (D-620); a hand-off
+    starts their runs at once (D-723). So does `--resolve-merges` (D-3141), whose job runs the warm-up, the
+    pre-session smoke and a session before it ends: it leaves out its own lane, which that session claims on,
+    and keeps in `refill` only the lanes it could not start, for the chain step should the session leave no row."""
+    early = result == cycle.MERGES_RESOLVED
+    out: dict[str, Any] = {"lane": cfg.lane_hint, "refill": refill(cfg, env, cfg.lane_hint if early else None)}
+    if result in ("handed_off", cycle.MERGES_RESOLVED) and not dry_run:
+        out["dispatched"] = start_refill(out["refill"], env)
+        if early:
+            out["refill"] = [lane for lane in out["refill"] if lane not in out["dispatched"]]
+    return out
 
 
 def start_refill(lanes: list[str], env: GitHubEnv) -> list[str]:
@@ -778,11 +805,9 @@ def main(argv: list[str] | None = None) -> int:
         if args.after and not args.dry_run:
             close_handoff(result)
         if cfg.lanes >= 2:
-            report["lane"], report["refill"] = cfg.lane_hint, refill(cfg, env)
-            if result == "handed_off" and not args.dry_run:
-                report["dispatched"] = start_refill(report["refill"], env)
+            report.update(lane_report(cfg, env, result, args.dry_run))
         try:
-            if result not in MODEL_WINDOW_SILENT:
+            if result not in SILENT:
                 env.write_cycle_log({k: v for k, v in report.items() if k != "handoff"})
         except Exception as exc:  # noqa: BLE001  # reason: a lost log line must never change the cycle's result (D-499)
             print(f"runner: cycle log not written: {exc}")
