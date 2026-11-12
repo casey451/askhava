@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-12T15:11:19Z by runner 1ee0fd56a376 (actions).
+Updated 2026-11-12T15:11:38Z by runner 1ee0fd56a376 (actions).
 
-**Building: T389 in progress since 14:39Z; 245 of 397 done; week 95% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T370 in progress since 15:07Z; 245 of 397 done; week 95% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 245 of 397 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T389 claimed 14:39Z, lease until 17:39Z; lane 4: T370 claimed 15:07Z, lease until 18:07Z
+- **Lane:** lane 4: T370 claimed 15:07Z, lease until 18:07Z
 - **Week:** 95% used, 1.3M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 15:10Z, 0 min before this update
 - **Keeper:** last ran 15:07Z, next wake 17:41Z
@@ -20,6 +20,7 @@ Updated 2026-11-12T15:11:19Z by runner 1ee0fd56a376 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T389 | licensing: a homeowner's wrong-license report pauses a pest  | MERGE_PENDING | 1 | 31 min | 15:11Z |  |
 | T362 | server: the built static files are served at /static/<crate> | BLOCKED | 2 | 21 min | 15:06Z | PLAN GAP: tests/a11y/j1_keyboard.spec.ts:171-172 (owned by T098/T214, protected, not in T362's files) presses Tab before |
 | T385 | adapters, licensing and businesses (harness): the sign-up re | check_failed | 1 | 38 min | 14:42Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T370 | intake (harness): the night count the homeowner hears counts | check_failed | 1 | 22 min | 14:29Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
@@ -166,8 +167,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T389 (lease until 2026-11-12T17:39:19Z)
 - lane 4: T370 (lease until 2026-11-12T18:07:53Z)
 
 ## Last usage reading
-- {"task": "T362", "at": "2026-11-12T15:06:45Z", "input_tokens": 171, "output_tokens": 37086, "cache_read_input_tokens": 3689580, "cache_creation_input_tokens": 233608}
+- {"task": "T389", "at": "2026-11-12T15:11:18Z", "output_tokens": 53812, "cache_creation_input_tokens": 252017, "cache_read_input_tokens": 6019959, "input_tokens": 196}
