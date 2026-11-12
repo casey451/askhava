@@ -1,5 +1,5 @@
-//! A backup notice address is never a person's main address, also when a mailbox changes role
-//! between steps: an address that became a member's main address after the backup request is
+//! A backup notice address is checked against main addresses again when a mailbox changes role
+//! between steps (the main-address change path is a known gap, D-3177): an address that became a member's main address after the backup request is
 //! refused at confirmation; a mailbox that is a current member's verified backup cannot be added
 //! as a member (D-3174); and `notice_addresses` lists each mailbox once (TD-BIZ-44: BIZ-043;
 //! T322, D-2209). All IDs are fake.
