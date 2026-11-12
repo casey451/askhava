@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T03:01:05Z by runner 976906dd37c9 (actions).
+Updated 2026-11-12T03:01:21Z by runner 976906dd37c9 (actions).
 
 **Building: T401 in progress since 02:54Z; 221 of 390 done; week 82% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-12T03:01:05Z by runner 976906dd37c9 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T401 claimed 02:54Z, lease until 05:54Z; lane 4: T400 claimed 02:45Z, lease until 05:45Z
 - **Week:** 82% used, 25.4M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:00Z, 0 min before this update
-- **Keeper:** last ran 02:58Z, next wake 05:47Z
+- **Last run:** 03:01Z, 0 min before this update
+- **Keeper:** last ran 03:01Z, next wake 05:47Z
 
 ## Needs attention
 - PLAN GAP T336 (since 2026-11-12T02:54:52Z, no attempt used; a plan change fixes it): T336: dependency T325 is DONE but its owned file tests/integration/tests/inbound_text_failures.rs is not on main
