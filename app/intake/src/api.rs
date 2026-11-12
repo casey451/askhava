@@ -25,6 +25,10 @@
 //! accepted-quote email after a Confirm, [`run_accepted_quote`] (PICK-042, T388).
 
 pub use crate::accepted_quote::run_accepted_quote;
+pub use crate::cards_out::{
+    CARDS_OUT_TEMPLATE, CardsOutKeys, CardsSent, HOLD_RECHECK, run_cards_approved,
+    run_emergency_released, send_approved, send_emergency,
+};
 pub use crate::closing::{
     CLOSE_MENTION_TEMPLATE, CLOSE_WHICH_TEMPLATE, Closing, JOB_CLOSED_TEMPLATE,
     JOBS_CLOSED_TEMPLATE, answer_close, close_from_page,
@@ -113,6 +117,10 @@ pub use crate::summary_step::{
     CARD_SHOWN_TEMPLATE, CARD_SLOT, CARD_TIMER_KIND, CARDS_APPROVED_KIND, CardReply, CardStep,
     CardTimer, MAX_CARD_SEGMENTS, Preview, RECHECK_AFTER, Shown, answer_card, approved_card,
     card_digest, card_reply, card_timer_step, preview_text, run_card_timer, show_card,
+};
+pub use crate::zip_step::{
+    ZIP_AGAIN_TEMPLATE, ZIP_QUESTION_TEMPLATE, ZipPlace, ZipStep, answer_zip, ask_zip, place_zip,
+    read_zip, zip_body,
 };
 
 /// The pure first-reply rules, for the rules bridge and other crates' property tests.

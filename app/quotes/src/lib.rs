@@ -41,6 +41,7 @@ mod auto_confirm_box;
 mod business_left;
 mod capability_match;
 mod card_notices;
+mod card_pool;
 mod cards;
 mod edit_withdraw;
 mod emergency_card_notice;

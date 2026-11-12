@@ -1,0 +1,21 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT column_name::text AS \"name!\" FROM information_schema.columns\n           WHERE table_schema = 'intake' AND table_name = 'property' ORDER BY 1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "name!",
+        "type_info": "Text",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "0eca93656f5d1cca6ec04a4b35b50bc2ed49a991a86202e91e37d299609bfc3b"
+}
