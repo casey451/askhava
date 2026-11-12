@@ -1,10 +1,10 @@
 # Ask Hava build status
 
-Updated 2026-11-12T09:16:43Z by runner 7450ca237d55 (actions).
+Updated 2026-11-12T09:17:01Z by runner fbe1e137ffb3 (actions).
 
-**Building: T358 in progress since 08:52Z; 233 of 394 done; week 92% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T358 in progress since 08:52Z; 233 of 395 done; week 92% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 233 of 394 build tasks (owner gates not counted)
+- **Tasks done:** 233 of 395 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 3: T358 claimed 08:52Z, lease until 11:52Z
 - **Week:** 92% used, 0.7M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
@@ -14,7 +14,7 @@ Updated 2026-11-12T09:16:43Z by runner 7450ca237d55 (actions).
 ## Needs attention
 - BLOCKED T345: plan gap reported: PLAN GAP: tests/test_runner_cache.py:207,:214 and tests/test_runner_merge_early.py:212,:213 hard-code actions/cache/restore@v4, actions/cache/save@v4, anthropics/claude-code-action@v1 and actions/setup-python@v5; no task owns them (added after D-3083 in harness PRs #553 (D-3143) and #552 (D-3141)). Reviewer confirmed: lines exist on main, T345 owns list excludes both files, and with the pins applied the two tests fail (2 failed, 35 passed). Smallest fix: add both files to T345 owns under the D-3083 rule (only action-ref matches change, comparing the name before @); owns and files budget 10 -> ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T345 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 18 problem(s) on tasks still to run (+98 on DONE tasks); first: T396: stored context_pct 39% but it measures 45%; regenerate
+- Strict plan check red: 15 problem(s) on tasks still to run (+98 on DONE tasks); first: T396: stored context_pct 39% but it measures 45%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -127,8 +127,8 @@ Updated 2026-11-12T09:16:43Z by runner 7450ca237d55 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 210 of 733 (28.6%) · partial 353 · unstarted 170
-**Tasks merged (throughput only):** 233 of 394
+**Requirements verified:** 209 of 733 (28.5%) · partial 354 · unstarted 170
+**Tasks merged (throughput only):** 233 of 395
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -139,7 +139,7 @@ Updated 2026-11-12T09:16:43Z by runner 7450ca237d55 (actions).
 | consent | 8 | 23 | 4 | 35 |
 | fees | 12 | 39 | 1 | 52 |
 | intake | 21 | 17 | 5 | 43 |
-| job-cards | 12 | 10 | 2 | 24 |
+| job-cards | 11 | 11 | 2 | 24 |
 | licensing | 20 | 28 | 0 | 48 |
 | lifecycle | 18 | 10 | 0 | 28 |
 | messaging | 17 | 25 | 3 | 45 |
@@ -163,7 +163,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 113 of 178 done
+- stage 4: 113 of 179 done
 - stage 5: 0 of 62 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
