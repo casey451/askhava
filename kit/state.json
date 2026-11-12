@@ -21117,7 +21117,7 @@
     "T339",
     "T411"
    ],
-   "status": "IN_PROGRESS",
+   "status": "MERGE_PENDING",
    "attempts": 0,
    "slug": "intake-photos-design",
    "type": "build",
@@ -21131,6 +21131,31 @@
     3312,
     3313
    ],
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 88,
+     "head_sha": "387bb4ca82636468bd807a97c1017fcd299e5e1d",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": true,
+     "started_at": "2026-11-12T21:35:14Z",
+     "ended_at": "2026-11-12T21:57:37Z",
+     "result": "MERGE_PENDING",
+     "usage": {
+      "worker": {
+       "tokens": 8805952,
+       "turns": 50
+      },
+      "reviewer": {
+       "tokens": 2710154,
+       "turns": 21
+      }
+     }
+    }
+   ],
    "reviewed_sha": "ac1837f6700ace21690c78a70d73eff70b5f8740",
    "review_lease": {
     "task": "T162",
@@ -21139,7 +21164,11 @@
     "lane": "2"
    },
    "branch": "claude/task/T162-intake-photos-design",
-   "head_check_since": null,
+   "auto_merge": {
+    "enabled": true,
+    "why": "auto-merge on #624 (gh pr merge)",
+    "head": "ac1837f6700ace21690c78a70d73eff70b5f8740"
+   },
    "update_merges": [
     {
      "from": "387bb4ca82636468bd807a97c1017fcd299e5e1d",
@@ -40770,12 +40799,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T414",
-   "at": "2026-11-12T20:57:15Z",
-   "cache_creation_input_tokens": 157110,
-   "output_tokens": 26149,
-   "input_tokens": 106,
-   "cache_read_input_tokens": 1578856
+   "task": "T162",
+   "at": "2026-11-12T21:57:37Z",
+   "cache_creation_input_tokens": 438137,
+   "cache_read_input_tokens": 10983707,
+   "input_tokens": 251,
+   "output_tokens": 94011
   },
   "source": "session_reading 2026-11-12T21:41:48Z (week)",
   "by_task": {
@@ -43112,7 +43141,16 @@
    },
    "T162": {
     "estimated_bytes": 744075,
-    "estimated_tokens": 3820045
+    "estimated_tokens": 3820045,
+    "cache_creation_input_tokens": 438137,
+    "cache_read_input_tokens": 10983707,
+    "input_tokens": 251,
+    "output_tokens": 94011,
+    "worker_tokens": 8805952,
+    "worker_turns": 50,
+    "reviewer_tokens": 2710154,
+    "reviewer_turns": 21,
+    "last_model": "claude-opus-5-5"
    },
    "T351": {
     "estimated_bytes": 589727,
@@ -43126,11 +43164,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-12T17:52:25Z",
-    "tokens": 23639065
+    "tokens": 25269834
    },
    "week": {
     "start": "2026-11-12T19:03:13Z",
-    "tokens": 5563201
+    "tokens": 7193970
    }
   },
   "session_reading": {
@@ -43141,7 +43179,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T21:57:38Z",
+ "updated_at": "2026-11-12T21:57:54Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",

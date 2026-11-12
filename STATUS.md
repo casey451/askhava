@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-12T21:57:38Z by runner 387bb4ca8263 (actions).
+Updated 2026-11-12T21:57:54Z by runner 387bb4ca8263 (actions).
 
-**Building: T162 in progress since 21:35Z; 256 of 403 done; week 5% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T385 in progress since 21:36Z; 256 of 403 done; week 5% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 256 of 403 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T162 claimed 21:35Z, lease until 00:35Z; lane 3: T385 claimed 21:36Z, lease until 00:36Z; lane 6: T417 claimed 21:46Z, lease until 00:46Z; lane 7: T351 claimed 21:36Z, lease until 00:36Z
+- **Lane:** lane 3: T385 claimed 21:36Z, lease until 00:36Z; lane 6: T417 claimed 21:46Z, lease until 00:46Z; lane 7: T351 claimed 21:36Z, lease until 00:36Z
 - **Week:** 5% used, 174.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:53Z, 3 min before this update
+- **Last run:** 21:53Z, 4 min before this update
 - **Keeper:** last ran 21:52Z, next wake 00:37Z
 
 ## Needs attention
@@ -18,6 +18,7 @@ Updated 2026-11-12T21:57:38Z by runner 387bb4ca8263 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T162 | intake: the one intake order for the five paths and the Span | MERGE_PENDING | 1 | 22 min | 21:57Z |  |
 | T414 | Stand-ins (harness): end-to-end specs can read the emails th | done | 3 | 28 min | 20:57Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T251 | intake and quotes: the ZIP question, the job location, and t | done | 2 | 82 min | 20:23Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T416 | Performance: database pool and query measurements (PERF-004) | done | 1 | 54 min | 19:59Z |  |
@@ -164,10 +165,9 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T162 (lease until 2026-11-13T00:35:14Z)
 - lane 3: T385 (lease until 2026-11-13T00:36:10Z)
 - lane 6: T417 (lease until 2026-11-13T00:46:33Z)
 - lane 7: T351 (lease until 2026-11-13T00:36:46Z)
 
 ## Last usage reading
-- {"task": "T414", "at": "2026-11-12T20:57:15Z", "cache_creation_input_tokens": 157110, "output_tokens": 26149, "input_tokens": 106, "cache_read_input_tokens": 1578856}
+- {"task": "T162", "at": "2026-11-12T21:57:37Z", "cache_creation_input_tokens": 438137, "cache_read_input_tokens": 10983707, "input_tokens": 251, "output_tokens": 94011}
