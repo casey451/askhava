@@ -2563,6 +2563,12 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **One new task.** T414 lets the end-to-end tests read the emails the fake email service received. The journey test with texts turned off (web and email only) now runs inside T222 and checks that no text is sent; its checks of the emails themselves wait (see below).
 - **Worth a look: no task sends email yet.** No task in the plan yet wires the app to send its emails through Resend (job-card, quote, safety and account emails, D-3186). A future task must build that sender; until then those emails are not sent and the tests that read them wait.
 
+<<<<<<< HEAD
 ## Pre-flight fixes, round 11 (D-3286)
 
 - **What changed.** Five queued tasks got small wording fixes so they can run as written: two no longer load a large document they only add one line to, one uses the existing Spanish "we continue in English" text instead of adding a second copy, one has a corrected line reference, and two have their size estimates refreshed; no product rule changed.
+=======
+## T362: one test waits for the quote page to finish loading (D-3270)
+
+- **What changed.** Once the quote page's live-update script is served, one keyboard test pressed Tab before the page finished loading; T362 may now add a single "wait for the page to load" line to that test, with every check in it unchanged.
+>>>>>>> origin/main
