@@ -34,7 +34,7 @@ def test_a_replayed_idempotent_send_is_listed_once(base: str) -> None:
     assert len(call(base, "GET", LOG)[1]["emails"]) == 1
 
 
-def test_missing_text_or_html_lists_as_empty_text(base: str) -> None:
+def test_missing_html_lists_as_empty_html(base: str) -> None:
     body = {"from": "hello@example.com", "to": ["ann@example.com"], "subject": "S", "text": "Only text"}
     assert call(base, "POST", "/resend/emails", body=body, **AUTH)[0] == 200
     assert call(base, "GET", LOG)[1]["emails"][0]["html"] == ""
@@ -47,4 +47,5 @@ def test_to_filter_keeps_only_that_address_oldest_first(base: str) -> None:
     mine = call(base, "GET", LOG + "?to=ann@example.com")[1]["emails"]
     assert [e["subject"] for e in mine] == ["First", "Third"]
     assert call(base, "GET", LOG + "?to=none@example.com")[1] == {"emails": []}
+    assert call(base, "GET", LOG + "?to=example.com")[1] == {"emails": []}
     assert len(call(base, "GET", LOG)[1]["emails"]) == 3
