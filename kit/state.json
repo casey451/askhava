@@ -40220,7 +40220,8 @@
    },
    "last_failure": "Ci: failure; Coverage: failure\nCoverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly)\ntest td_call_23_a_second_unlinked_phone_on_the_line_stores_nothing ... ok\ntest td_call_23_a_wrong_pin_hang_up_queues_and_stores_nothing ... ok\nfailures:\n---- td_call_23_a_blocked_call_that_connects_queues_one_notice_and_one_pending_link stdout ----\nthread 'td_call_23_a_blocked_call_that_connects_queues_one_notice_and_one_pending_link' (20309) panicked at tests/integration/tests/link_request.rs:324:13:\nassertion `left == right` failed: calls.link_request_digest holds a value\n  left: 1\n right: 0\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\n    td_call_23_a_blocked_call_that_connects_queues_one_notice_and_one_pending_link\ntest result: FAILED. 4 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.91s\nerror: test failed, to rerun pass `-p askhava-integration --test link_request`\nerror: process didn't exit successfully: `/home/runner/.rustup/toolchains/nightly-2026-10-15-x86_64-unknown-linux-gnu/bin/cargo test --tests --manifest-path /home/runner/work/askhava/askhava/Cargo.tom\n##[error]Process completed with exit code 101.\nCi failed at step: All five jobs passed\nChecks: success, Lint and slow tests: success, Python: success, Coverage: failure, E2e: success\n##[error]Process completed with exit code 1.",
    "runner_closed_prs": [
-    602
+    602,
+    613
    ],
    "update_merges": [
     {
@@ -42777,7 +42778,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T20:28:58Z",
+ "updated_at": "2026-11-12T20:29:09Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
