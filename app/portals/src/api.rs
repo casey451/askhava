@@ -78,8 +78,10 @@ pub use crate::business_signup::{
     capability_page, capability_summary,
 };
 pub use crate::business_signup::{
-    DoneError, DoneFacts, Entered, NOTICE_OFF, PEST_ATTESTATION, Parts, SIGNUP_ROUTE, Screen,
-    done_facts, done_lines, fee_numbers, notice_line, notice_on, signup_page,
+    CONSENT_MISSING, DoneError, DoneFacts, Entered, NOTICE_OFF, PEST_ATTESTATION, Parts,
+    SIGNUP_ROUTE, Screen, SignupConsent, SignupRefusal, TEXT_PHONE_MISSING, done_facts, done_lines,
+    fee_numbers, notice_line, notice_on, refusal_problem, signup_channels, signup_page,
+    submit_signup,
 };
 pub use crate::checkin::{CHECK_IN_ROUTE, checkin_routes};
 pub use crate::confirm_pay::{
