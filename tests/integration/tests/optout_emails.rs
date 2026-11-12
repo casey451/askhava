@@ -183,6 +183,48 @@ async fn td_con_34_wrote_again_without_an_email_is_listed_per_message(pool: PgPo
     );
 }
 
+/// TD-CON-34 (CON-016, TXT-003): a Spanish speaker with an email on file gets the wrote-again
+/// email in Spanish, START's instruction included, and nothing of hers is in it.
+#[sqlx::test(migrator = "MIGRATOR")]
+async fn td_con_34_wrote_again_in_spanish_with_an_email(pool: PgPool) {
+    let contact = her(&pool, true).await;
+    let mut db = pool.acquire().await.expect("db");
+    let to = (contact, Language::Es);
+    let done = queue_optout_wrote_again(&mut db, &sender(), to, Uuid::new_v4(), at(0)).await;
+    assert_eq!(done.expect("handled"), WroteAgain::Emailed(true));
+    let rows = emails(&pool, OPTOUT_WROTE_AGAIN_EMAIL, contact).await;
+    assert_eq!(rows.len(), 1);
+    assert!(rows[0].contains("Ask Hava: Usted canceló los mensajes de texto"));
+    assert!(rows[0].contains("envíe START al número al que escribió"));
+    assert!(!rows[0].contains("You opted out"));
+    for secret in [PHONE, &PHONE[2..], EMAIL, "Dana"] {
+        assert!(!rows[0].contains(secret), "{secret} leaked");
+    }
+}
+
+/// D-3165 (CON-016, CON-030): a contact that can never be read counts as no email: the message
+/// is listed once for the digest, no confirmation or email is stored, and nothing fails.
+#[sqlx::test(migrator = "MIGRATOR")]
+async fn td_con_34_an_unreadable_contact_is_listed_not_retried(pool: PgPool) {
+    let gone = Uuid::new_v4();
+    let mut db = pool.acquire().await.expect("db");
+    let to = (gone, Language::En);
+    let sent = queue_optout_confirmation_email(&mut db, &sender(), to, Uuid::new_v4(), at(0)).await;
+    assert!(!sent.expect("no contact is no email"));
+    let inbox = Uuid::new_v4();
+    let done = queue_optout_wrote_again(&mut db, &sender(), to, inbox, at(0)).await;
+    assert_eq!(
+        done.expect("no contact is listed"),
+        WroteAgain::Listed(true)
+    );
+    let rows = listed(&pool).await;
+    assert_eq!(rows.len(), 1);
+    assert!(rows[0].contains(&inbox.to_string()));
+    for template in [OPTOUT_CONFIRMATION_EMAIL, OPTOUT_WROTE_AGAIN_EMAIL] {
+        assert!(emails(&pool, template, gone).await.is_empty());
+    }
+}
+
 /// Every log line's fields, for the test's thread.
 #[derive(Clone, Default)]
 struct Lines(Arc<Mutex<Vec<String>>>);

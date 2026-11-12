@@ -21,7 +21,7 @@ use askama::Template;
 use askhava_adapters::api::IdempotencyKey;
 use askhava_core::api::arizona_time;
 use askhava_ops::api::{Actor, AuditEntry, Change, audit_once};
-use askhava_privacy::api::Vault;
+use askhava_privacy::api::{Field, Purpose, Reader, Vault, VaultError, read_contact};
 use jiff::Timestamp;
 use secrecy::SecretString;
 use sqlx::PgConnection;
@@ -29,7 +29,7 @@ use sqlx::types::Uuid;
 
 use crate::email::{
     EMAIL_ACTION, EmailClass, MailboxKind, NewEmail, Notice, OnDomain, PostalAddress, Recipient,
-    Rendered, audience_kind, footer_lines, homeowner_email, legal_name, queue_email, short_name,
+    Rendered, audience_kind, footer_lines, legal_name, queue_email, short_name,
 };
 use crate::models::{self, EmailError};
 use crate::templates::{Audience, Language};
@@ -82,13 +82,32 @@ pub enum WroteAgain {
     Listed(bool),
 }
 
+/// D-3165: whether homeowner `contact` has an email on file, read under the send grant outside
+/// any transaction (the address is dropped at once). A contact that can never be read (no such
+/// contact, a sealed value that will not open) counts as none, so she is listed rather than lost,
+/// as `outbox_sender::homeowner_phone` does (D-3149); only a failure that may pass (the database,
+/// the audit write) is [`EmailError::NoAddress`], which the caller retries.
+async fn email_on_file(
+    db: &mut PgConnection,
+    vault: &Vault,
+    contact: Uuid,
+) -> Result<bool, EmailError> {
+    let grant = (Reader::Messaging, Purpose::Send);
+    match read_contact(db, vault, grant, contact, &[Field::Email]).await {
+        Ok(found) => Ok(found.email.is_some()),
+        Err(VaultError::NotFound | VaultError::Sealed) => Ok(false),
+        Err(_) => Err(EmailError::NoAddress),
+    }
+}
+
 /// CON-030, CON-009, SEC-018: queues the CON-009 confirmation by email for homeowner `contact`
 /// in `language`, under opt-out `event` as its subject; `true` when stored now, `false` when she
-/// has no email on file (nothing stored) or this event's email was stored before. Never a text.
+/// has no email on file or her contact can never be read (nothing stored), or this event's email
+/// was stored before. Never a text.
 ///
 /// # Errors
-/// [`EmailError::NoAddress`] when the vault read fails (the caller retries), [`EmailError::Template`]
-/// or a database error from the outbox insert.
+/// [`EmailError::NoAddress`] when the vault read fails in a way that may pass (the caller
+/// retries), [`EmailError::Template`] or a database error from the outbox insert.
 pub async fn queue_optout_confirmation_email(
     db: &mut PgConnection,
     sender: &OptOutEmailSender,
@@ -96,7 +115,7 @@ pub async fn queue_optout_confirmation_email(
     event: Uuid,
     now: Timestamp,
 ) -> Result<bool, EmailError> {
-    if homeowner_email(db, &sender.vault, contact).await?.is_none() {
+    if !email_on_file(db, &sender.vault, contact).await? {
         return Ok(false);
     }
     let manage = MANAGE.to_string();
@@ -131,7 +150,8 @@ struct WroteAgainView<'a> {
     postal: &'a str,
 }
 
-/// CON-016, CON-012: the subject and message in `language` (Spanish is a draft, TXT-003): she is
+/// CON-016, CON-012: the subject and message in `language` (Spanish is a draft, TXT-003; the
+/// caller has already applied TXT-039, so Spanish comes here only when allowed): she is
 /// opted out, START texts again, and her open requests go on on the quote page and by email.
 fn wrote_again_words(language: Language) -> (String, String) {
     let short = short_name(language);
@@ -185,15 +205,19 @@ pub fn render_wrote_again(
     })
 }
 
-/// CON-016, CON-012, SEC-018, JOB-006: listed homeowner `contact` (language `language`) wrote
-/// inbox message `inbox` without START at `now`. With an email on file it stores the wrote-again
-/// email at most once per Arizona day (key over template, contact and day; the first message's
-/// inbox ID is its subject); with none it writes one `ops` audit row [`WROTE_AGAIN_ACTION`] on
-/// the inbox row, once per message, for the weekly digest. No call-back either way (D-226).
+/// CON-016, CON-012, SEC-018, JOB-006: listed homeowner `contact` wrote inbox message `inbox`
+/// without START at `now`. `language` must be the caller's TXT-039-resolved choice, as
+/// `email::Recipient::language` is: while Spanish conversations are off every homeowner email but
+/// the CON-009 confirmation is English, so the caller passes [`Language::Es`] only while the
+/// setting is on and she chose Spanish; this function does not check the setting. With an email
+/// on file it stores the wrote-again email at most once per Arizona day (key over template,
+/// contact and day; the first message's inbox ID is its subject); with none, or a contact that can
+/// never be read (D-3165), it writes one `ops` audit row [`WROTE_AGAIN_ACTION`] on the inbox row,
+/// once per message, for the weekly digest. No call-back either way (D-226).
 ///
 /// # Errors
-/// [`EmailError::NoAddress`] when the vault read fails (the caller retries), [`EmailError::Template`]
-/// or [`EmailError::Database`].
+/// [`EmailError::NoAddress`] when the vault read fails in a way that may pass (the caller
+/// retries), [`EmailError::Template`] or [`EmailError::Database`].
 pub async fn queue_optout_wrote_again(
     db: &mut PgConnection,
     sender: &OptOutEmailSender,
@@ -201,7 +225,7 @@ pub async fn queue_optout_wrote_again(
     inbox: Uuid,
     now: Timestamp,
 ) -> Result<WroteAgain, EmailError> {
-    if homeowner_email(db, &sender.vault, contact).await?.is_none() {
+    if !email_on_file(db, &sender.vault, contact).await? {
         let entry = AuditEntry {
             actor: Actor::System,
             action: WROTE_AGAIN_ACTION,
