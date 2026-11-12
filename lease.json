@@ -4,10 +4,15 @@
   "1": null,
   "2": null,
   "3": null,
-  "4": null,
+  "4": {
+   "task": "T322",
+   "session": "actions-43171125034",
+   "expires": "2026-11-12T11:00:31Z",
+   "lane": "4"
+  },
   "5": null
  },
- "seq": 2525,
- "runner_sha": "dcd485b408b2bb7b8e8dfd44f338be01ab246db2",
+ "seq": 2526,
+ "runner_sha": "5cbddc23fd8cf6e8e0a613861c89a8283725200c",
  "starter": "actions"
 }
