@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-12T23:24:48Z by runner fced7ec2477d (actions).
+Updated 2026-11-12T23:24:59Z by runner 763c166487ef (actions).
 
-**Building: T347 in progress since 22:32Z; 259 of 404 done; week 8% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T215 in progress since 22:29Z; 259 of 404 done; week 8% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 259 of 404 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T347 claimed 22:32Z, lease until 01:32Z; lane 5: T215 claimed 22:29Z, lease until 01:29Z; lane 6: T418 claimed 22:34Z, lease until 01:34Z; lane 7: T351 claimed 22:49Z, lease until 01:49Z
+- **Lane:** lane 5: T215 claimed 22:29Z, lease until 01:29Z; lane 6: T418 claimed 22:34Z, lease until 01:34Z; lane 7: T351 claimed 22:49Z, lease until 01:49Z
 - **Week:** 8% used, 165.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 23:24Z, 0 min before this update
 - **Keeper:** last ran 23:20Z, next wake 01:31Z
@@ -14,11 +14,12 @@ Updated 2026-11-12T23:24:48Z by runner fced7ec2477d (actions).
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T371 (since 2026-11-12T23:24:01Z, no attempt used; a plan change fixes it): T371: dependency T385 is DONE but its owned file app/licensing/src/own_record.rs is not on main; T371: dependency T385 is DONE but its owned file app/businesses/src/signup_record.rs is not on main; T371: dependency T385 is DONE but its owned file tests/integration/tests/signup_own_record.rs is not on main; T371: dependency T385 is DONE but its owned file tests/fixtures/license_source/record/roc/ROC100001 is not on main; T371: dependency T385 is DONE but its owned file tests/fixtures/license_source/roc is not on main; T371: dependency T385 is DONE but its owned file tests/fixtures/license_source/city is not on main
-- Strict plan check red: 22 problem(s) on tasks still to run (+134 on DONE tasks); first: T320: stored context_pct 41% but it measures 45%; regenerate
+- Strict plan check red: 21 problem(s) on tasks still to run (+134 on DONE tasks); first: T320: stored context_pct 41% but it measures 45%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T347 | licensing (harness): remove the handyman split-job check; ea | MERGE_PENDING | 1 | 52 min | 23:24Z |  |
 | T162 | intake: the one intake order for the five paths and the Span | MERGE_PENDING | 1 | 36 min | 23:01Z | merging main into the reviewed head conflicts in app/intake/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T385 | adapters, licensing and businesses (harness): the sign-up re | done | 3 | 30 min | 22:57Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T419 | calls (harness): TD-CALL-23's no-plaintext scan reads only t | done | 1 | 24 min | 22:37Z |  |
@@ -168,10 +169,9 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T347 (lease until 2026-11-13T01:32:05Z)
 - lane 5: T215 (lease until 2026-11-13T01:29:12Z)
 - lane 6: T418 (lease until 2026-11-13T01:34:16Z)
 - lane 7: T351 (lease until 2026-11-13T01:49:37Z)
 
 ## Last usage reading
-- {"task": "T162", "at": "2026-11-12T23:01:49Z", "cache_read_input_tokens": 1734719, "cache_creation_input_tokens": 158444, "input_tokens": 139, "output_tokens": 26364}
+- {"task": "T347", "at": "2026-11-12T23:24:28Z", "input_tokens": 165, "cache_creation_input_tokens": 250066, "output_tokens": 50030, "cache_read_input_tokens": 3717866}
