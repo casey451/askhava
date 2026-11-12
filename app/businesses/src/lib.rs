@@ -44,6 +44,7 @@ mod email_verification;
 mod emergency_switch;
 mod holding;
 mod identity;
+mod leaving;
 mod links;
 mod models;
 mod open_cards_times;
