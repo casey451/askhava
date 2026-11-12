@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-12T22:22:41Z by runner 899ef75bb26b (actions).
+Updated 2026-11-12T22:23:00Z by runner 899ef75bb26b (actions).
 
 **Building: T419 in progress since 22:12Z; 256 of 403 done; week 6% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 256 of 403 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T419 claimed 22:12Z, lease until 01:12Z; lane 6: T417 claimed 21:46Z, lease until 00:46Z; lane 7: T351 claimed 21:36Z, lease until 00:36Z
+- **Lane:** lane 1: T419 claimed 22:12Z, lease until 01:12Z; lane 7: T351 claimed 21:36Z, lease until 00:36Z
 - **Week:** 6% used, 177.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:20Z, 1 min before this update
+- **Last run:** 22:20Z, 2 min before this update
 - **Keeper:** last ran 22:20Z, next wake 00:39Z
 
 ## Needs attention
@@ -18,6 +18,7 @@ Updated 2026-11-12T22:22:41Z by runner 899ef75bb26b (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T417 | Performance: seeded fake-data route benchmark and the first  | MERGE_PENDING | 1 | 36 min | 22:22Z |  |
 | T385 | adapters, licensing and businesses (harness): the sign-up re | MERGE_PENDING | 3 | 40 min | 22:16Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
 | T162 | intake: the one intake order for the five paths and the Span | MERGE_PENDING | 1 | 22 min | 21:57Z |  |
 | T414 | Stand-ins (harness): end-to-end specs can read the emails th | done | 3 | 28 min | 20:57Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
@@ -167,8 +168,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T419 (lease until 2026-11-13T01:12:59Z)
-- lane 6: T417 (lease until 2026-11-13T00:46:33Z)
 - lane 7: T351 (lease until 2026-11-13T00:36:46Z)
 
 ## Last usage reading
-- {"task": "T385", "at": "2026-11-12T22:16:57Z", "output_tokens": 49563, "cache_creation_input_tokens": 282940, "cache_read_input_tokens": 5790886, "input_tokens": 200}
+- {"task": "T417", "at": "2026-11-12T22:22:39Z", "cache_creation_input_tokens": 495759, "output_tokens": 135630, "cache_read_input_tokens": 25649222, "input_tokens": 429}
