@@ -10818,8 +10818,8 @@
   {
    "id": "T404",
    "slug": "door-matrix-charged-pick-and-facts",
-   "title": "harness: the door probe's fixtures hold a charged pick and the job's facts, before T306 and T340",
-   "goal": "Plan change D-3112 (SEC-019, FEE-031, FEE-005; D-2440, D-2331). `app/server/tests/door_matrix.rs` (T348's) is the HTTP door probe every serving task must pass unchanged. Two later tasks would fail it with no file of their own to fix it in. (a) T306 serves \"Why was I charged?\" at `/b/charges/{pick}`; the probe demands a 200 on the caller's own record for an admitted `GET` (`:403` to `:411`), but `why_charged_page` reads `payments.charge_evidence` (`payments::api::receipt_for`, `app/payments/src/receipts.rs:84`), which only a succeeded charge writes (`write_evidence`, `app/payments/src/charge.rs:656`), and each side's fixture pick (`side`, `:758`) is never charged. (b) T340 refuses a pick of a non-emergency job with no facts row, and `side` picks its job through `picks::api::page_pick` (`:771`) without one. Fix, fixtures only: (1) Before each `page_pick` of the fixture (every job it picks, including any a later plan adds to `side`), it records that job's facts row through T339's `jobs::api::record_job_facts`, with a category and job type whose catalog resolution gives the facts the fixture already assumes, after storing the catalog once (`catalog::api::load_embedded`), as T343 does for the other pick fixtures. (2) Each side gets a second job of its business, quoted and picked as the first, then confirmed and charged through `payments::api::confirm_and_pay` with a test-local fake `IntentStripe` answering `succeeded` (as `tests/integration/tests/confirm_and_pay.rs` does, with the saved customer and card that call needs), so `charge_evidence` holds that pick's record and no vendor is reached; the `{pick}` fill of the `/b/charges/{pick}` row only is that charged pick, every other row keeps the fill it has, and the other side's charged pick is the foreign one: the fixture keeps the charged picks beside `ids` (`:245`) and the fill choice (`fill`, `:252`, and its two calls at `:933` and `:940`) takes the charged pick for that one template; this fill choice is the only non-fixture change allowed. If T401 (open plan PR #536, D-3106) is on `main` first, this task runs after it and builds on its `side`. Until T306 serves the row the probe skips it as today. Otherwise no assertion, judging rule, planted case or expected value changes, none is removed and no case is added. Fake data only. Update the `server` `CLAUDE.md` and `docs/decisions.md`. Harness: an Opus review.",
+   "title": "harness: the door probe's fixtures hold a charged pick and the job's facts, and the emailed-code test's job its facts, before T306 and T340",
+   "goal": "Plan change D-3112 (SEC-019, FEE-031, FEE-005; D-2440, D-2331). `app/server/tests/door_matrix.rs` (T348's) is the HTTP door probe every serving task must pass unchanged. Two later tasks would fail it with no file of their own to fix it in. (a) T306 serves \"Why was I charged?\" at `/b/charges/{pick}`; the probe demands a 200 on the caller's own record for an admitted `GET` (`:403` to `:411`), but `why_charged_page` reads `payments.charge_evidence` (`payments::api::receipt_for`, `app/payments/src/receipts.rs:84`), which only a succeeded charge writes (`write_evidence`, `app/payments/src/charge.rs:656`), and each side's fixture pick (`side`, `:758`) is never charged. (b) T340 refuses a pick of a non-emergency job with no facts row, and `side` picks its job through `picks::api::page_pick` (`:771`) without one; so does `tests/integration/tests/email_pick_code.rs` (T095; D-3118): its `ready` fixture (`:84` to `:124`) creates a plumbing job with no facts row and `td_pick_13_two_yes_from_an_opted_out_phone_still_picks` (`:244` to `:256`) picks it through `opted_out_yes`, which calls `page_pick` (`app/picks/src/email_code.rs:241`). Fix, fixtures only: (0) In `email_pick_code.rs`, `ready` stores the catalog once (`catalog::api::load_embedded`) and records the job's facts row through `jobs::api::record_job_facts` with a plumbing category and job type whose catalog resolution gives the facts the test already assumes (not fee-free, one-time); nothing else in that file changes. (1) Before each `page_pick` of the door probe's fixture (every job it picks, including any a later plan adds to `side`), it records that job's facts row through T339's `jobs::api::record_job_facts`, with a category and job type whose catalog resolution gives the facts the fixture already assumes, after storing the catalog once (`catalog::api::load_embedded`), as T343 does for the other pick fixtures. (2) Each side gets a second job of its business, quoted and picked as the first, then confirmed and charged through `payments::api::confirm_and_pay` with a test-local fake `IntentStripe` answering `succeeded` (as `tests/integration/tests/confirm_and_pay.rs` does, with the saved customer and card that call needs), so `charge_evidence` holds that pick's record and no vendor is reached; the `{pick}` fill of the `/b/charges/{pick}` row only is that charged pick, every other row keeps the fill it has, and the other side's charged pick is the foreign one: the fixture keeps the charged picks beside `ids` (`:245`) and the fill choice (`fill`, `:252`, and its two calls at `:933` and `:940`) takes the charged pick for that one template; this fill choice is the only non-fixture change allowed. If T401 (open plan PR #536, D-3106) is on `main` first, this task runs after it and builds on its `side`. Until T306 serves the row the probe skips it as today. Otherwise no assertion, judging rule, planted case or expected value changes, none is removed and no case is added. Fake data only. Update the `server` `CLAUDE.md` and `docs/decisions.md`. Harness: an Opus review.",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -10830,7 +10830,8 @@
     "T337",
     "T214",
     "T068",
-    "T401"
+    "T401",
+    "T095"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -10841,7 +10842,8 @@
     "harness"
    ],
    "owns": [
-    "app/server/tests/door_matrix.rs"
+    "app/server/tests/door_matrix.rs",
+    "tests/integration/tests/email_pick_code.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -10860,12 +10862,13 @@
    "decisions": [
     "D-3112",
     "D-2440",
-    "D-2331"
+    "D-2331",
+    "D-3118"
    ],
    "cites": [],
    "budget": {
-    "files": 1,
-    "lines": 250,
+    "files": 2,
+    "lines": 300,
     "context_pct": 20
    },
    "checks": [
@@ -10875,13 +10878,13 @@
    ],
    "branch": "claude/task/T404-door-matrix-charged-pick-and-facts",
    "prompt": "kit/prompts/T404.md",
-   "acceptance": "Every case of `app/server/tests/door_matrix.rs` passes with its assertions, judging rules and planted cases unchanged; each side's job holds a facts row and each side holds a charged pick with its `payments.charge_evidence` row; the diff shows only fixture lines and the fill choice for the `/b/charges/{pick}` row; T306 and T340 must keep it passing."
+   "acceptance": "Every case of `app/server/tests/door_matrix.rs` and `tests/integration/tests/email_pick_code.rs` passes with its assertions, judging rules and planted cases unchanged; each side's job and the `ready` fixture's job hold a facts row and each side holds a charged pick with its `payments.charge_evidence` row; the diff shows only fixture lines and the fill choice for the `/b/charges/{pick}` row; T306 and T340 must keep them passing."
   },
   {
    "id": "T340",
    "slug": "fee-facts-at-pick",
    "title": "picks and payments: the fee at the pick uses the job's latest stored category and job types resolved from the catalog; a fee-free job type is never charged; an emergency pick is never refused for unsettled facts",
-   "goal": "Seventh audit N7-01 (D-2331; FEE-045, FEE-005, FEE-004, FEE-007; sets aside only D-2210's default facts and closes its known gap). Today `fee_inputs` (`app/picks/src/service.rs:396`) prices every pick with default facts: not fee-free, `VisitTier::DEFAULT`, `RecurringCap::DEFAULT`, recurring when the quote has a period. So a buyer inspection (a `fee_free_job_types` entry, `docs/catalog/categories.yaml:665`) is charged, against FEE-045. After T339 and T251 (which record each job's codes), T343 (the DONE tests' fixtures record facts) and T295 and T318 (the queued owners of `service.rs`): (1) `picks` reads the job's latest facts row through `jobs::api::job_facts` and passes the codes with the chosen quote to `payments`; `app/payments/src/fee_facts.rs` resolves them from `catalog::api` (payments may call catalog; picks may not): the category's set visit tier, whether the pick is fee-free and whether it is one-time or recurring. (2) Several candidates (INT-040's \"Job type not certain\", or an emergency job whose type has not settled; D-2331): the category decides the visit tier; if any remaining candidate is fee-free, the pick is fee-free ($0, a `fee-free job type` ledger entry, no free first win used), never charged; the pick is one-time only if every remaining candidate is one-time, otherwise the quote's period decides as today. (3) A non-emergency job with no row, an unknown code, or candidates spanning more than one category is refused at the pick (`PicksError::Quotes`), storing nothing (fail closed). (4) An emergency job (`jobs::api::current`'s `emergency`) is never refused for its facts: with no row, an unknown code or candidates spanning categories, the pick proceeds on the catalog's default facts for a one-time job (`VisitTier::DEFAULT`, not fee-free, one-time) and raises one High alert `picks.fee_facts_unsettled` per pick through `ops::api::raise_alert`, naming the job number and the pick only, never homeowner details. The money reasoning (D-2331): Confirm (T261) charges exactly the fee stored at the pick and nothing recomputes it (D-1871), so the alert is the control that lets the owner check that fee before the business confirms. Tests in `tests/integration/tests/fee_facts_at_pick.rs` through the real page-pick and text-pick paths with a catalog fixture (TD-FEE-62). Money: the overseer runs an independent money review of the hand-in. Update the `picks` and `payments` `CLAUDE.md` files, `docs/architecture.md` section 10 and `docs/decisions.md`.",
+   "goal": "Seventh audit N7-01 (D-2331; FEE-045, FEE-005, FEE-004, FEE-007; sets aside only D-2210's default facts and closes its known gap). Today `fee_inputs` (`app/picks/src/service.rs:408`) prices every pick with default facts: not fee-free, `VisitTier::DEFAULT`, `RecurringCap::DEFAULT`, recurring when the quote has a period. So a buyer inspection (a `fee_free_job_types` entry, `docs/catalog/categories.yaml:665`) is charged, against FEE-045. After T339 and T251 (which record each job's codes), T343 and T404 (the DONE tests' fixtures record facts; D-3118 gave T404 the facts row of `tests/integration/tests/email_pick_code.rs`, T095's, whose `ready` fixture (`:84` to `:124`) records none and whose `opted_out_yes` case (`:244` to `:256`) picks a non-emergency job through `page_pick` (`app/picks/src/email_code.rs:241`)) and T295 and T318 (the queued owners of `service.rs`): (1) `picks` reads the job's latest facts row through `jobs::api::job_facts` and passes the codes with the chosen quote to `payments`; `app/payments/src/fee_facts.rs` resolves them from `catalog::api` (payments may call catalog; picks may not): the category's set visit tier, whether the pick is fee-free and whether it is one-time or recurring. (2) Several candidates (INT-040's \"Job type not certain\", or an emergency job whose type has not settled; D-2331): the category decides the visit tier; if any remaining candidate is fee-free, the pick is fee-free ($0, a `fee-free job type` ledger entry, no free first win used), never charged; the pick is one-time only if every remaining candidate is one-time, otherwise the quote's period decides as today. (3) A non-emergency job with no row, an unknown code, or candidates spanning more than one category is refused at the pick (`PicksError::Quotes`), storing nothing (fail closed). (4) An emergency job (`jobs::api::current`'s `emergency`) is never refused for its facts: with no row, an unknown code or candidates spanning categories, the pick proceeds on the catalog's default facts for a one-time job (`VisitTier::DEFAULT`, not fee-free, one-time) and raises one High alert `picks.fee_facts_unsettled` per pick through `ops::api::raise_alert`, naming the job number and the pick only, never homeowner details. The money reasoning (D-2331): Confirm (T261) charges exactly the fee stored at the pick and nothing recomputes it (D-1871), so the alert is the control that lets the owner check that fee before the business confirms. Tests in `tests/integration/tests/fee_facts_at_pick.rs` through the real page-pick and text-pick paths with a catalog fixture (TD-FEE-62). Money: the overseer runs an independent money review of the hand-in. Update the `picks` and `payments` `CLAUDE.md` files, `docs/architecture.md` section 10 and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -10931,7 +10934,8 @@
     "D-2210",
     "D-1871",
     "D-403",
-    "D-3112"
+    "D-3112",
+    "D-3118"
    ],
    "cites": [],
    "budget": {
@@ -11006,7 +11010,7 @@
    "id": "T341",
    "slug": "tier-and-visit-schedule-at-pick",
    "title": "picks and portals (harness): the homeowner picks a tier of a tiers quote, and a per-visit price with its schedule gets its fee",
-   "goal": "Seventh audit N7-02 and N7-04's pick side (D-2332, D-2333; PICK-053, PICK-038, PICK-039, PICK-021, REC-010, REC-011; sets aside only D-2210's refusals of a tiered quote and a per-visit period). After T340 and T342: (1) Tiers: the quote page's Pick for a tiers quote names one tier (one button or radio per tier, `app/portals/templates/quote_page.html` and `app/portals/src/pick_flow.rs`); `migrations/0179_picks_chosen_tier.sql` adds the chosen tier's index and name to `picks.pick`, written in the pick's transaction; `fee_inputs` uses that tier's price and no default tier exists; a missing or stale tier (the quote edited since) is a validation error that shows the choices again and stores nothing; the Confirm page (`app/portals/templates/confirm_pay.html`) shows the chosen tier with the fee basis (PICK-021). The text pick (`<n> YES`, PICK-015) names no tier and the spec gives no text syntax for one, so a text pick of a tiers quote stores nothing and replies with the quote-page link to choose the package; the syntax is listed for Casey (D-2332). (2) Per-visit: `fee_period` (`service.rs:439`) maps a per-visit price with its stored visit schedule (T342, T164) to the matching fee period (weekly 52/12, every two weeks 26/12, and so on, as `app/payments/src/rules.rs:198` already converts); a per-visit quote without a schedule cannot exist after T342, and one from before is refused. (3) `tests/integration/tests/fee_fixed_at_pick.rs`'s tiered-pick case changes only as D-2332 records: the refusal is for a pick with no tier. Tests in `tests/integration/tests/tier_and_visit_pick.rs` (TD-FEE-63). Money: the overseer runs an independent money review of the hand-in. Update the `picks` and `portals` `CLAUDE.md` files and `docs/decisions.md`.",
+   "goal": "Seventh audit N7-02 and N7-04's pick side (D-2332, D-2333; PICK-053, PICK-038, PICK-039, PICK-021, REC-010, REC-011; sets aside only D-2210's refusals of a tiered quote and a per-visit period). After T340 and T342: (1) Tiers: the quote page's Pick for a tiers quote names one tier (one button or radio per tier, `app/portals/templates/quote_page.html` and `app/portals/src/pick_flow.rs`); `migrations/0179_picks_chosen_tier.sql` adds the chosen tier's index and name to `picks.pick`, written in the pick's transaction; `fee_inputs` uses that tier's price and no default tier exists; a missing or stale tier (the quote edited since) is a validation error that shows the choices again and stores nothing; the Confirm page (`app/portals/templates/confirm_pay.html`) shows the chosen tier with the fee basis (PICK-021). The text pick (`<n> YES`, PICK-015) names no tier and the spec gives no text syntax for one, so a text pick of a tiers quote stores nothing and replies with the quote-page link to choose the package; the syntax is listed for Casey (D-2332). (2) Per-visit: `fee_period` (`service.rs:452`) maps a per-visit price with its stored visit schedule (T342, T164) to the matching fee period (weekly 52/12, every two weeks 26/12, and so on, as `app/payments/src/rules.rs:198` already converts); a per-visit quote without a schedule cannot exist after T342, and one from before is refused. (D-3118) Shapes that done code and tests build stay as they are: no new field on `quotes::api::PageQuote` (`app/quotes/src/api.rs:115`, which holds only the original text and is built by literal in `app/portals/src/tests/prop_arrival_order.rs:22`), on `PageView` or `Numbered` (`app/portals/src/quote_page.rs:117`, `:50`; `PageView` built by literal at `prop_arrival_order.rs:99`) or on `ConfirmFacts` (`app/portals/src/confirm_pay.rs:69`, built by literal in `tests/integration/tests/confirm_terms.rs:89` and `:120`). So: `quote_page.rs` (owned here) reads each tiers quote's tier names from `quotes::api::quoted_prices` and carries them beside the view the way `ShownPage` carries the accepted quote (D-3078: a field on `ShownPage`, a method on `PageView` answering none); the Confirm page takes the chosen tier through a new render entry point in `confirm_pay.rs` (owned here) beside `confirm_page_with_code`, whose existing callers pass no tier, and a field on the private `ConfirmView` (`:92`); and `page_pick` keeps its signature (its callers include done tests and `opted_out_yes` and `backup_choice`): the tier comes through a new entry point beside it that the code step calls, while `page_pick` with no tier refuses a tiers quote as today. T261 and T132 (the later owners of `confirm_pay.rs`) and T308 and T393 (of `quote_page.rs`) already depend on this task. (3) `tests/integration/tests/fee_fixed_at_pick.rs`'s tiered-pick case changes only as D-2332 records: the refusal is for a pick with no tier. Tests in `tests/integration/tests/tier_and_visit_pick.rs` (TD-FEE-63). Money: the overseer runs an independent money review of the hand-in. Update the `picks` and `portals` `CLAUDE.md` files and `docs/decisions.md`.",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -11037,6 +11041,8 @@
     "app/picks/src/service.rs",
     "app/portals/src/pick_flow.rs",
     "app/portals/templates/quote_page.html",
+    "app/portals/src/confirm_pay.rs",
+    "app/portals/src/quote_page.rs",
     "app/portals/templates/confirm_pay.html",
     "tests/integration/tests/fee_fixed_at_pick.rs",
     "tests/integration/tests/tier_and_visit_pick.rs"
@@ -11063,13 +11069,14 @@
    "decisions": [
     "D-2332",
     "D-2333",
-    "D-2210"
+    "D-2210",
+    "D-3118"
    ],
    "cites": [],
    "budget": {
-    "files": 7,
+    "files": 9,
     "lines": 700,
-    "context_pct": 27
+    "context_pct": 36
    },
    "checks": [
     "Ci",
@@ -11449,7 +11456,7 @@
    "id": "T255",
    "slug": "emergency-address-rerelease",
    "title": "intake, payments and server: ask again for an emergency address and release once it arrives",
-   "goal": "On an emergency job a release that comes before the address stores one `picks.address_wait` row and queues one `picks.address_needed` event (T069, TD-INT-34), but nothing handles the event, and nothing releases once the address arrives: the proof was consumed and `paid_release` needs a new Stripe event (D-1563). Build both (D-1739). (1) `app/intake/src/address_wait.rs`: the `picks.address_needed` handler, registered in the shared `app/server/src/bin/worker.rs`, asks the homeowner the name-and-address question again at once through `intake::api::ask_name_address` (INT-027, INT-029), once per pick; and `address_arrived`, which `conversation.rs` (T040's, extended by T162) calls after `take_name_address` stores an address for a job with a waiting pick, queueing one `intake.address_in` event. (2) `app/payments/src/reclear.rs`: `payments::api::reclear_release(conn, pick)` returns a `Releasable` only from the pick's stored charge success (the succeeded PaymentIntent T189's `paid_release` checked) or its recorded $0 decision (`no_fee_release`'s rule), never from a redirect, the homeowner's message or a new event (SEC-030). (3) The `intake.address_in` handler in `app/server/src/release_sink.rs` (T254's) re-clears, settles and releases through the same sink, so the masked line opens then (TD-CALL-12's database path); a pick that left paid or free before the address arrived releases nothing, and a second address message releases nothing again. Tests in `app/server/tests/address_rerelease.rs` (TD-INT-39; only `server` may mint). Update `docs/architecture.md` section 10 and the `intake`, `payments` and `server` `CLAUDE.md` files. The re-clear uses `no_fee_release`'s pick-bound rule from T337 (the pick's own `payments.pick_fee` business and job, D-2302), never a pair its caller passes.",
+   "goal": "On an emergency job a release that comes before the address stores one `picks.address_wait` row and queues one `picks.address_needed` event (T069, TD-INT-34), but nothing handles the event, and nothing releases once the address arrives: the proof was consumed and `paid_release` needs a new Stripe event (D-1563). Build both (D-1739). (1) `app/intake/src/address_wait.rs`: the `picks.address_needed` handler, registered in `register_handlers` in the shared `app/server/src/lib.rs` (`:382`; not `bin/worker.rs`, D-3118), asks the homeowner the name-and-address question again at once through `intake::api::ask_name_address` (INT-027, INT-029), once per pick; and `address_arrived`, which `conversation.rs` (T040's, extended by T162) calls after `take_name_address` stores an address for a job with a waiting pick, queueing one `intake.address_in` event. (2) `app/payments/src/reclear.rs`: `payments::api::reclear_release(conn, pick)` returns a `Releasable` only from the pick's stored charge success (the succeeded PaymentIntent T189's `paid_release` checked) or its recorded $0 decision (`no_fee_release`'s rule), never from a redirect, the homeowner's message or a new event (SEC-030). (3) The `intake.address_in` handler in `app/server/src/release_sink.rs` (T254's) re-clears, settles and releases through the same sink, so the masked line opens then (TD-CALL-12's database path); a pick that left paid or free before the address arrived releases nothing, and a second address message releases nothing again. Tests in `app/server/tests/address_rerelease.rs` (TD-INT-39; only `server` may mint). Update `docs/architecture.md` section 10 and the `intake`, `payments` and `server` `CLAUDE.md` files. The re-clear uses `no_fee_release`'s pick-bound rule from T337 (the pick's own `payments.pick_fee` business and job, D-2302), never a pair its caller passes. Once T340 is on `main`, a page pick of a non-emergency job with no `jobs.job_facts` row is refused, so any non-emergency job this task's own tests pick records its facts row first (`jobs::api::record_job_facts`, with the catalog stored once through `catalog::api::load_embedded`) (D-3118).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -11495,7 +11502,8 @@
     "D-1563",
     "D-1564",
     "D-1739",
-    "D-2302"
+    "D-2302",
+    "D-3118"
    ],
    "cites": [],
    "budget": {
@@ -20845,7 +20853,7 @@
    "id": "T266",
    "slug": "pick-contact-choice",
    "title": "portals, picks and privacy: the homeowner's contact choice and shared email are stored for the release",
-   "goal": "At the page pick the homeowner chooses a masked call or an email she shares (PICK-018), but `app/portals/src/pick_flow.rs` checks the choice and the email and passes them on unstored (`pick_flow.rs:38`, D-1264), so the release can only ever be a masked call (`email_chosen` false, D-1740 (2)) and PICK-042's accepted-quote email has no address (D-1761). (1) `migrations/0166_picks_contact_choice.sql`: `picks.contact_choice` (pick ID, `call` or `email`, decided time; one row per pick, app role SELECT and INSERT). (2) `app/privacy/src/vault.rs`: `privacy::api::store_shared_email(conn, vault, contact, email)` seals the email into the contact's vault `email` field (field-bound encryption, a new version, one audit row naming the actor and purpose `shared_at_pick`; no plaintext returned), so the email is stored only in the vault (PRIV-001, PRIV-002). (3) `app/picks/src/contact_choice.rs`: `picks::api::record_contact_choice` (in the page pick's transaction, after `page_pick`) and `picks::api::contact_choice(conn, pick)` for the release's caller. (4) `pick_flow.rs` stores both in the transaction that records the pick; an error keeps her choices on the page as now; a text pick (no page) stays a masked call. (5) `app/server/src/release_sink.rs` (T254's sink, extended by T255) passes `picks::api::contact_choice` as `email_chosen` instead of D-1740 (2)'s masked-call default, on the first release and on T255's re-release (D-1761). No email reaches a log, task payload or business page. Update the `picks`, `privacy` and `portals` `CLAUDE.md` files, the off-database records and recovery notes of `docs/architecture.md` (one line, found by grep, never loaded whole; D-3079) and `docs/decisions.md`.",
+   "goal": "At the page pick the homeowner chooses a masked call or an email she shares (PICK-018), but `app/portals/src/pick_flow.rs` checks the choice and the email and passes them on unstored (`pick_flow.rs:38`, D-1264), so the release can only ever be a masked call (`email_chosen` false, D-1740 (2)) and PICK-042's accepted-quote email has no address (D-1761). (1) `migrations/0166_picks_contact_choice.sql`: `picks.contact_choice` (pick ID, `call` or `email`, decided time; one row per pick, app role SELECT and INSERT). (2) `app/privacy/src/vault.rs`: `privacy::api::store_shared_email(conn, vault, contact, email)` seals the email into the contact's vault `email` field (field-bound encryption, a new version, one audit row naming the actor and purpose `shared_at_pick`; no plaintext returned), so the email is stored only in the vault (PRIV-001, PRIV-002). (3) `app/picks/src/contact_choice.rs`: `picks::api::record_contact_choice` (in the page pick's transaction, after `page_pick`) and `picks::api::contact_choice(conn, pick)` for the release's caller. (4) `pick_flow.rs` stores both in the transaction that records the pick; an error keeps her choices on the page as now; a text pick (no page) stays a masked call. (5) `app/server/src/release_sink.rs` (T254's sink, extended by T255) passes `picks::api::contact_choice` as `email_chosen` instead of D-1740 (2)'s masked-call default, on the first release and on T255's re-release (D-1761). No email reaches a log, task payload or business page. Once T340 is on `main`, a page pick of a non-emergency job with no `jobs.job_facts` row is refused, so any non-emergency job this task's own tests pick records its facts row first (`jobs::api::record_job_facts`, with the catalog stored once through `catalog::api::load_embedded`) (D-3118). Update the `picks`, `privacy` and `portals` `CLAUDE.md` files, the off-database records and recovery notes of `docs/architecture.md` (one line, found by grep, never loaded whole; D-3079) and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -20893,7 +20901,8 @@
    ],
    "decisions": [
     "D-1761",
-    "D-1264"
+    "D-1264",
+    "D-3118"
    ],
    "cites": [],
    "budget": {
@@ -22039,7 +22048,7 @@
    "id": "T249",
    "slug": "quotes-radius-matching",
    "title": "quotes and portals: radius matching by ZIP centroid, the coverage count by the same rule, and the radius in the business portal",
-   "goal": "Radius matching (CARD-024, D-1519): `quotes`' matching is pure and caller-filled (D-1013, D-1014). Add the job's location (`CardJob`: its ZIP centroid from `catalog::api::zip_location`, or none) and each business's reach (`CardBusiness`: its base ZIP centroid and radius from T248's `businesses.service_area`, or none) in `app/quotes/src/models.rs`, and change `rules::card_for`'s town test (`app/quotes/src/rules.rs`) to: serves an offered Arizona town (CARD-002, INT-022), or the job has a location, the business has a reach and `catalog::api::miles_between(base, job)` is at most the radius (inclusive). Every other CARD-001 test (active, verified, licensed for every candidate job type as the license map says for the job's place, a ticked job type, the BIZ-049 skips), \"jobs nobody else covers\" (CARD-004) and the owner pauses are unchanged, so a business serving the job's town keeps the card and a radius only adds reach; a business whose base ZIP has no location matches by its towns served alone, and only Arizona towns match (INT-022). `coverage` (the count intake tells the homeowner, INT-017, INT-032, D-1022) uses the same test, so the count and the recipients agree, and `send_job_cards` and `send_late_cards` (`app/quotes/src/service.rs`) carry the new fields. T251's card sender (`app/intake/src/cards_out.rs`) and card pool (`app/quotes/src/card_pool.rs`) build `CardJob` and `Pool`; this task fills the job's location there from the ZIP T251 stores on `intake.property` and each business's reach from `businesses.service_area` (D-1521); a job with no stored ZIP matches by towns only. The portal edit (BIZ-010, BIZ-058): the business portal's settings (`app/portals/src/business_actions.rs`, `app/portals/templates/business_actions.html`) let the owner change the base ZIP and radius with sign-up's checks and accessible errors, audited by field name only (draft wording through the copy panel, WORD-028). Tests: `app/quotes/src/tests/radius_matching.rs` (TD-CARD-13's pure cases with fixture centroids, including a Phoenix metro fixture of several towns: a card crossing a town line and one not, overlapping radii, the inclusive boundary, a business in reach without the license for a candidate job type, no location meaning towns only, the coverage count equal to the recipients) and `tests/integration/tests/radius_matching.rs` (`send_job_cards` sending to a business in reach in another town; TD-BIZ-38's portal edit). No geocoding service and no new crate. Update `app/quotes/CLAUDE.md`, `app/portals/CLAUDE.md` and add this task's line to the off-database records and recovery notes of `docs/architecture.md` (found by grep, never loaded whole; D-3079). T301 serves the email action links (D-2128): keep the signatures `app/server/src/action_links.rs` calls; any page or action this task adds is served by T306, not by a `.route` in `server`.",
+   "goal": "Radius matching (CARD-024, D-1519): `quotes`' matching is pure and caller-filled (D-1013, D-1014). Add the job's location (its ZIP centroid from `catalog::api::zip_location`, or none) and each business's reach (its base ZIP centroid and radius from T248's `businesses.service_area`, or none) as one new `Reach` value in `app/quotes/src/models.rs`, and give matching an in-reach town test (`app/quotes/src/rules.rs`): D-3118: `CardJob` and `CardBusiness` (`models.rs:71`, `:82`, no `Default`) are built by struct literal in done files this task does not own (`app/server/src/bin/rules_bridge.rs:172`, `:189`; `app/server/tests/release_recovery.rs:208`, `:220`; `app/server/tests/door_matrix.rs:619`, `:643`; `app/quotes/src/tests/prop_matching_props.rs`, `overflow.rs`, `matching_examples.rs`; `tests/integration/tests/capability_setup.rs`, `routing_confidence.rs`, `accepted_quote_email.rs`, `card_late_eligible.rs`, `check_in_texts.rs`), and `rules::coverage`, `coverage` and the send functions are called with today's arguments in `app/quotes/src/tests/overflow.rs:216`, `:265` and `tests/integration/tests/card_late_eligible.rs:134` to `:373`, so neither struct gains a field and no existing signature changes: `Reach` goes to parallel functions (`card_for`, `coverage`, `send_job_cards` and `send_late_cards` each gain an in-reach twin), the existing ones meaning no reach (towns only) by calling their twin with an empty `Reach`. The in-reach test is: serves an offered Arizona town (CARD-002, INT-022), or the job has a location, the business has a reach and `catalog::api::miles_between(base, job)` is at most the radius (inclusive). Every other CARD-001 test (active, verified, licensed for every candidate job type as the license map says for the job's place, a ticked job type, the BIZ-049 skips), \"jobs nobody else covers\" (CARD-004) and the owner pauses are unchanged, so a business serving the job's town keeps the card and a radius only adds reach; a business whose base ZIP has no location matches by its towns served alone, and only Arizona towns match (INT-022). `coverage` (the count intake tells the homeowner, INT-017, INT-032, D-1022) uses the same test, so the count and the recipients agree, and the in-reach twins of `send_job_cards` and `send_late_cards` (`app/quotes/src/service.rs`) carry the `Reach`. T251's card sender (`app/intake/src/cards_out.rs`) and card pool (`app/quotes/src/card_pool.rs`) build `CardJob` and `Pool`; this task builds the `Reach` there and calls the in-reach twins, filling the job's location from the ZIP T251 stores on `intake.property` and each business's reach from `businesses.service_area` (D-1521); a job with no stored ZIP matches by towns only. The portal edit (BIZ-010, BIZ-058): the business portal's settings (`app/portals/src/business_actions.rs`, `app/portals/templates/business_actions.html`) let the owner change the base ZIP and radius with sign-up's checks and accessible errors, audited by field name only (draft wording through the copy panel, WORD-028). Tests: `app/quotes/src/tests/radius_matching.rs` (TD-CARD-13's pure cases with fixture centroids, including a Phoenix metro fixture of several towns: a card crossing a town line and one not, overlapping radii, the inclusive boundary, a business in reach without the license for a candidate job type, no location meaning towns only, the coverage count equal to the recipients) and `tests/integration/tests/radius_matching.rs` (`send_job_cards` sending to a business in reach in another town; TD-BIZ-38's portal edit). No geocoding service and no new crate. Update `app/quotes/CLAUDE.md`, `app/portals/CLAUDE.md` and add this task's line to the off-database records and recovery notes of `docs/architecture.md` (found by grep, never loaded whole; D-3079). T301 serves the email action links (D-2128): keep the signatures `app/server/src/action_links.rs` calls; any page or action this task adds is served by T306, not by a `.route` in `server`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -22100,7 +22109,8 @@
     "D-1013",
     "D-1014",
     "D-1022",
-    "D-1521"
+    "D-1521",
+    "D-3118"
    ],
    "cites": [],
    "budget": {
@@ -22250,27 +22260,37 @@
   {
    "id": "T271",
    "slug": "call-status-route",
-   "title": "server and calls: the dialed leg's status callbacks are served, so each call's start and finish are logged once",
-   "goal": "No route serves the dialed leg's status callbacks, so nothing in production calls `calls::api::log_finished_call` or T282's `call_start_confirmed`, and no call log exists for the refund rules, the TXT-026 reminders, the no-show, or the business portal's call log (D-1814's caller \"not wired yet\"; second external audit B06, D-1836). `app/server/src/call_status.rs`: the status-callback route that T282's `dial_twiml` names, checked with `X-Twilio-Signature` (SEC-016) and merged in the shared `app/server/src/lib.rs`: an `initiated` event records the dialed leg against the start T262's webhook stored, by `ParentCallSid`, through `call_start_confirmed` (creating the start at the callback's time when the webhook's write was lost); a final event logs the call through `finished_call` and `log_finished_call`, its start joined by the dialed SID, the party taken from the line as T262's voice route resolves it; each is applied once per CallSid and event (SEC-017), a repeated or out-of-order callback changing nothing; after a business call is logged the route enqueues T281's `picks.unreachable_step` check for the line's pick (deduped per call). A forged signature gets 403 and changes nothing; no phone number is stored or logged (PRIV-016), and the request log shows the route template only. Tests in `app/server/tests/call_status.rs` through the real route with signed fake Twilio requests. Update `docs/architecture.md` section 10, the `server` and `calls` `CLAUDE.md` files and `docs/decisions.md`.",
-   "type": "build",
+   "title": "server and calls (harness): the dialed leg asks for status callbacks and they are served, so each call's start and finish are logged once",
+   "goal": "No route serves the dialed leg's status callbacks, so nothing in production calls `calls::api::log_finished_call` or T282's `call_start_confirmed`, and no call log exists for the refund rules, the TXT-026 reminders, the no-show, or the business portal's call log (D-1814's caller \"not wired yet\"; second external audit B06, D-1836). D-3118: `dial_twiml` asks for no status callback today (`app/calls/src/handlers.rs:29` to `:40`; D-2129 (4) left that to this task or a harness task), because the done `tests/integration/tests/no_recording.rs` (T078) pins its exact `<Number machineDetection=\"Enable\">` tag (`:116`). So first, as a harness change: `dial_twiml` gains the absolute status-callback URL as a parameter and writes `statusCallback` (that URL), `statusCallbackMethod=\"POST\"` and `statusCallbackEvent=\"initiated completed\"` on `<Number>`, keeping `do-not-record`, `machineDetection` and no whisper `url`; TD-CALL-03's `<Number>` tag assertion becomes the exact new tag and its calls pass the URL, every other assertion byte-identical; `tests/integration/tests/voice_calls.rs:368` (TD-CALL-09) passes the URL, its call only; the URL is the composition's public base (`ASKHAVA_PUBLIC_BASE_URL`, `app/server/src/lib.rs:288`) plus this route's path, reaching `connect` (`app/calls/src/pins.rs:489`, its production caller at `:512`) through new entry points beside `voice_turn` and `voice_confirm` that `app/server/src/inbound_voice.rs` calls, because `VoiceKeys` (`pins.rs:201`) is built by literal in done tests (`tests/integration/tests/call_pins.rs:101`, `app/server/tests/voice_confirm_line.rs:397`, `app/server/tests/inbound_voice.rs:257`) and keeps its fields. Then `app/server/src/call_status.rs`: the status-callback route that `dial_twiml` now names, checked with `X-Twilio-Signature` (SEC-016) and merged in the shared `app/server/src/lib.rs`: an `initiated` event records the dialed leg against the start T262's webhook stored, by `ParentCallSid`, through `call_start_confirmed` (creating the start at the callback's time when the webhook's write was lost); a final event logs the call through `finished_call` and `log_finished_call`, its start joined by the dialed SID, the party taken from the line as T262's voice route resolves it; each is applied once per CallSid and event (SEC-017), a repeated or out-of-order callback changing nothing; after a business call is logged the route enqueues T281's `picks.unreachable_step` check for the line's pick (deduped per call). A forged signature gets 403 and changes nothing; no phone number is stored or logged (PRIV-016), and the request log shows the route template only. Tests in `app/server/tests/call_status.rs` through the real route with signed fake Twilio requests. Update `docs/architecture.md` section 10, the `server` and `calls` `CLAUDE.md` files and `docs/decisions.md`. Harness: an Opus review.",
+   "type": "harness",
    "phase": 1,
    "stage": "4",
    "module": "server",
    "deps": [
     "T282",
     "T262",
-    "T281"
+    "T281",
+    "T378",
+    "T390",
+    "T311",
+    "T349"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
     "security",
-    "money"
+    "money",
+    "harness"
    ],
    "owns": [
     "app/server/src/call_status.rs",
-    "app/server/tests/call_status.rs"
+    "app/server/tests/call_status.rs",
+    "app/calls/src/handlers.rs",
+    "app/calls/src/pins.rs",
+    "app/server/src/inbound_voice.rs",
+    "tests/integration/tests/no_recording.rs",
+    "tests/integration/tests/voice_calls.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -22293,13 +22313,14 @@
    "decisions": [
     "D-1836",
     "D-1814",
-    "D-1690"
+    "D-1690",
+    "D-3118"
    ],
    "cites": [],
    "budget": {
-    "files": 2,
-    "lines": 350,
-    "context_pct": 35
+    "files": 7,
+    "lines": 500,
+    "context_pct": 46
    },
    "checks": [
     "Ci",
@@ -22308,7 +22329,7 @@
    ],
    "branch": "claude/task/T271-call-status-route",
    "prompt": "kit/prompts/T271.md",
-   "acceptance": "TD-CALL-16 passes against PostgreSQL through the served route; every TD-CALL-04 and TD-CALL-14 case still passes."
+   "acceptance": "TD-CALL-16 passes against PostgreSQL through the served route; every TD-CALL-04 and TD-CALL-14 case still passes; in `tests/integration/tests/no_recording.rs` and `tests/integration/tests/voice_calls.rs` the diff shows only the `dial_twiml` calls and TD-CALL-03's exact `<Number>` tag, every other assertion unchanged."
   },
   {
    "id": "T272",
@@ -22381,7 +22402,7 @@
    "id": "T273",
    "slug": "photo-open-audit",
    "title": "privacy: a photo's plaintext is returned only after its open audit has committed on its own",
-   "goal": "`privacy::api::open_link` (`app/privacy/src/photos.rs:427`) decrypts the photo, writes its `privacy.photo_opened` audit row on the caller's connection and returns the bytes, so a caller inside a transaction (an SQLx transaction or a raw `BEGIN`) can hold the plaintext and roll the audit back (second external audit B02, D-1838). The contact vault already refuses this with `ensure_bare` (`app/privacy/src/vault.rs:411`, D-753). `open_link` refuses a connection inside a transaction with the same probe (moved to a `pub(crate)` helper both files use, so there is one copy) and a new `PhotoError::InTransaction`, and returns plaintext only after the audit row has committed by itself; an audit-write failure returns no bytes. Link expiry, AES-GCM under the vault key, `no_store` and the `LinkDead` 404 stay as they are; no route is added (D-1791 leaves the photo route to the first task that shows a photo). Tests in `tests/integration/tests/photo_open_audit.rs`. Update the `privacy` `CLAUDE.md` and `docs/decisions.md`.",
+   "goal": "`privacy::api::open_link` (`app/privacy/src/photos.rs:427`) decrypts the photo, writes its `privacy.photo_opened` audit row on the caller's connection and returns the bytes, so a caller inside a transaction (an SQLx transaction or a raw `BEGIN`) can hold the plaintext and roll the audit back (second external audit B02, D-1838). The contact vault already refuses this with `ensure_bare` (`app/privacy/src/vault.rs:475`, D-753). `open_link` refuses a connection inside a transaction with the same probe (moved to a `pub(crate)` helper both files use, so there is one copy) and a new `PhotoError::InTransaction` (the enum is in `app/privacy/src/models.rs:418`, owned here for that variant only, D-3118), and returns plaintext only after the audit row has committed by itself; an audit-write failure returns no bytes. Link expiry, AES-GCM under the vault key, `no_store` and the `LinkDead` 404 stay as they are; no route is added (D-1791 leaves the photo route to the first task that shows a photo). Tests in `tests/integration/tests/photo_open_audit.rs`. Update the `privacy` `CLAUDE.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -22400,6 +22421,7 @@
    "owns": [
     "app/privacy/src/photos.rs",
     "app/privacy/src/vault.rs",
+    "app/privacy/src/models.rs",
     "tests/integration/tests/photo_open_audit.rs"
    ],
    "reads": [
@@ -22421,13 +22443,14 @@
    "decisions": [
     "D-1838",
     "D-753",
-    "D-1791"
+    "D-1791",
+    "D-3118"
    ],
    "cites": [],
    "budget": {
-    "files": 3,
+    "files": 4,
     "lines": 300,
-    "context_pct": 16
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -22637,7 +22660,7 @@
    "id": "T277",
    "slug": "check-in-replies",
    "title": "intake and privacy: a check-in reply reaches its job, and a PROBLEM's scrubbed words are stored before the text is acknowledged",
-   "goal": "D-1810 says the owner digest reads a PROBLEM reply's scrubbed words from `messaging.inbox`, but that table holds only the Twilio SID and time (D-1801); `jobs::followups::Inbound` carries the inbox ID and the safety flag, and nothing calls `answer_check_in` (D-1811 (3)), so a PROBLEM's words would be acknowledged and lost (second external audit B04, D-1840). (1) `migrations/0171_privacy_message_body.sql` builds `privacy.message_body`, the table `docs/architecture.md` section 3 already names (D-801): one row per inbound text kept for a reason (here a check-in PROBLEM), the `messaging.inbox` row ID unique, the job ID, the scrubbed words only (never raw text, never a contact field), the safety flag and the created time; app role SELECT, INSERT and DELETE. (2) `app/privacy/src/message_body.rs`: `keep_problem_words(conn, inbox, job, &ScrubbedText, safety)` (it takes only a `ScrubbedText`, which only the scrubber makes, so raw words cannot be stored) and `problem_words(conn, &OwnerSessionProof, inbox)`, the owner-only read that the weekly digest (T204) and the owner portal use; no business or homeowner read exists; rows are deleted 30 days after they are made by a daily step registered in the shared worker (TXT-020) and with the job's PRIV-008 text stage. (3) `app/intake/src/check_in_replies.rs`, called from `receive_reply` (`app/intake/src/replies.rs`) inside its transaction for a reply on a Connected job with a check-in due: `jobs::api::parse_answer`, `businesses::api::has_safety_word`, then for a PROBLEM `keep_problem_words` before `answer_check_in`, all in the delivery's transaction, so the route answers Twilio only after the words are stored; a day-3 NO under email contact enqueues T281's `picks.unreachable_step` for the pick, due now and deduped per pick and answer, in the same transaction (`intake` may not call `calls`, whose call log the no-show needs, `kit/layers.json`), and T281's step records the no-show (FEE-035). The alert's subject stays the inbox row (D-1810), and the digest finds the words through it. `jobs`' `Inbound` and T097's tests are unchanged. Tests in `tests/integration/tests/check_in_replies.rs` through the real inbound route with fictional texts. Update the `intake` and `privacy` `CLAUDE.md` files and `docs/decisions.md`.",
+   "goal": "D-1810 says the owner digest reads a PROBLEM reply's scrubbed words from `messaging.inbox`, but that table holds only the Twilio SID and time (D-1801); `jobs::followups::Inbound` carries the inbox ID and the safety flag, and nothing calls `answer_check_in` (D-1811 (3)), so a PROBLEM's words would be acknowledged and lost (second external audit B04, D-1840). (1) `migrations/0171_privacy_message_body.sql` builds `privacy.message_body`, the table `docs/architecture.md` section 3 already names (D-801): one row per inbound text kept for a reason (here a check-in PROBLEM), the `messaging.inbox` row ID unique, the job ID, the scrubbed words only (never raw text, never a contact field), the safety flag and the created time; app role SELECT, INSERT and DELETE. (2) `app/privacy/src/message_body.rs`: `keep_problem_words(conn, inbox, job, &ScrubbedText, safety)` (it takes only a `ScrubbedText`, which only the scrubber makes, so raw words cannot be stored) and `problem_words(conn, &OwnerSessionProof, inbox)`, the owner-only read that the weekly digest (T204) and the owner portal use; no business or homeowner read exists; rows are deleted 30 days after they are made by a daily step registered in the shared worker (TXT-020) and with the job's PRIV-008 text stage. (3) `app/intake/src/check_in_replies.rs`, called from `receive_reply` (`app/intake/src/replies.rs`) inside its transaction for a reply on a Connected job with a check-in due: `jobs::api::parse_answer`, `businesses::api::has_safety_word`, then for a PROBLEM `keep_problem_words` before `answer_check_in`, all in the delivery's transaction, so the route answers Twilio only after the words are stored; a day-3 NO under email contact enqueues T281's `picks.unreachable_step` for the pick, due now and deduped per pick and answer, in the same transaction (`intake` may not call `calls`, whose call log the no-show needs, `kit/layers.json`), and T281's step records the no-show (FEE-035). The alert's subject stays the inbox row (D-1810), and the digest finds the words through it. `jobs`' `Inbound` and T097's tests are unchanged. D-3118: `keep_problem_words` takes a `ScrubbedText`, which only `privacy::api::scrub` makes (`app/privacy/src/scrub.rs:320`, `:383`), while `receive_reply` gets the words as `&str` (`TextIn`, `app/intake/src/service.rs:51`), already scrubbed by the inbound route with her vault name and stated names (`app/server/src/inbound_text.rs:342`); the check-in path makes its `ScrubbedText` by scrubbing those words again with `privacy::api::scrub` (the common words, no vault name, a fresh `NameMemory`), which can only remove more, so the stored words are never less scrubbed than what `intake` was handed; no route, `TextIn` or `receive_reply` signature changes. Tests in `tests/integration/tests/check_in_replies.rs` through the real inbound route with fictional texts. Update the `intake` and `privacy` `CLAUDE.md` files and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -22688,7 +22711,8 @@
     "D-1810",
     "D-1811",
     "D-1801",
-    "D-801"
+    "D-801",
+    "D-3118"
    ],
    "cites": [],
    "budget": {
@@ -22986,6 +23010,73 @@
    "branch": "claude/task/T281-unreachable-steps-run",
    "prompt": "kit/prompts/T281.md",
    "acceptance": "TD-JOB-14 passes against PostgreSQL with the clock advanced; every T191, T270 and T278 case still passes."
+  },
+  {
+   "id": "T405",
+   "slug": "payment-three-ds-result",
+   "title": "payments and adapters (harness): each charged pick's 3-D Secure result is read from Stripe and stored, so a dispute can use FEE-050's 3DS condition",
+   "goal": "Plan change D-3118 (FEE-050, FEE-027; D-2204; owner call). FEE-050 auto-submits a dispute's evidence only when the charge has a recorded release and a call attempt or a 3DS-authenticated payment, but nothing records whether a payment was 3DS-authenticated: `adapters::api::PaymentIntent` (`app/adapters/src/payments.rs:32`) has no such field and no table holds it. `PaymentIntent` is built by struct literal in ten done test files (`app/server/tests/release_recovery.rs:416`, `app/server/tests/request_timeout.rs:183`, `tests/integration/tests/auto_confirm.rs`, `charge_attempts.rs`, `confirm_and_pay.rs`, `fee_fixed_at_pick.rs`, `fee_limit_race.rs`, `late_success.rs`, `late_success_ended.rs`, `stripe_webhook_dispatch.rs`) and returned by the `PaymentsAdapter` trait that their fakes implement, so neither the struct nor the trait changes: the result is a separate read. (1) `app/adapters/src/payments.rs`: a new inherent method on `StripePayments` (`:195`), not on any trait, fetches `GET /v1/payment_intents/{id}?expand[]=latest_charge` through the existing vendor client and returns a new `ThreeDs` value from `latest_charge.payment_method_details.card.three_d_secure.result`: `Authenticated` only for `authenticated`; every other value (`attempt_acknowledged`, `exempted`, `failed`, `not_supported`, `processing_error`), a missing `three_d_secure`, a missing or unexpanded `latest_charge` or a card-less method is `NotAuthenticated`; a fetch error is an `AdapterError` as today. (2) The stand-in follows real Stripe: `stand_ins/stripe.py` stores, on each succeeded intent, `latest_charge` as a `ch_` ID string and a charge object under that ID with `payment_method_details.card.three_d_secure` (`result` `authenticated` after `authenticate(..., passed=True)` (`:235`), and none for a card that never asked for 3-D Secure); `stripe_fetch` (`stand_ins/server.py:250` to `:254`, which today returns the stored object whatever the query) expands `latest_charge` to that charge object only when the query asks `expand[]=latest_charge`, and otherwise returns the ID string, so a plain fetch keeps decoding and T352's later `latest_charge: Option<String>` (D-2623) reads the same stored ID; `tests/contract/test_stripe_three_ds.py` checks the plain fetch (a `ch_` string), the expanded fetch with and without `three_d_secure`, and the confirm answer (a string). (3) `migrations/0172_payments_three_ds.sql`: `payments.charge_three_ds` (pick ID primary key, `authenticated` boolean, recorded time; app role SELECT and INSERT only). (4) `app/payments/src/three_ds.rs`, through `payments::api`: `record_three_ds(conn, source, pick)` reads the pick's `stripe_intent_id` from `payments.charge_evidence`, asks a small trait the module defines (implemented for `StripePayments`, as `IntentStripe` is, `app/payments/src/intent_http.rs:15`, so tests can fake it) and inserts the row once (`ON CONFLICT DO NOTHING`); a pick with no charge evidence or a fetch error stores nothing and returns the error to the caller; `three_ds_authenticated(conn, pick)` is `true` only for a stored `true` row: no row, an unknown or a missing result reads as `false` (the rule FEE-050's check relies on). Callers: T314's dispute handler records it, then reads it. No card data, cardholder name or homeowner detail is stored or logged; only the pick ID and the boolean. Tests in `tests/integration/tests/three_ds_record.rs` (TD-FEE-69) with a fake source: an authenticated, an `attempt_acknowledged` and a no-3DS payment store true, false and false; a second record changes nothing; a pick with no row reads false; no charge evidence stores nothing. `payments` is money code: its 95% branch floor holds. Update the `payments` and `adapters` `CLAUDE.md` files, add this task's line to the `payments` module notes of `docs/architecture.md` (found by grep, never loaded whole; D-3079; section 3's `payments` row already names the table, D-3118) and `docs/decisions.md`. Harness (adapter and stand-in paths): an Opus review.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "4",
+   "module": "payments",
+   "deps": [
+    "T260",
+    "T176",
+    "T258",
+    "T075",
+    "T275"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "money",
+    "security",
+    "harness"
+   ],
+   "owns": [
+    "app/adapters/src/payments.rs",
+    "stand_ins/stripe.py",
+    "stand_ins/server.py",
+    "tests/contract/test_stripe_three_ds.py",
+    "migrations/0172_payments_three_ds.sql",
+    "app/payments/src/three_ds.rs",
+    "tests/integration/tests/three_ds_record.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/fees.md",
+    "docs/brains/payments-stripe.md",
+    "docs/brains/postgres-operations.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "FEE-050",
+    "FEE-027"
+   ],
+   "tests": [
+    "TD-FEE-69"
+   ],
+   "decisions": [
+    "D-3118",
+    "D-2204"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 7,
+    "lines": 450,
+    "context_pct": 20
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T405-payment-three-ds-result",
+   "prompt": "kit/prompts/T405.md",
+   "acceptance": "TD-FEE-69 passes against PostgreSQL and the stand-in contract test passes; a plain fetch of a succeeded intent from the stand-in returns `latest_charge` as a `ch_` string; every test that builds `PaymentIntent` or implements `PaymentsAdapter` compiles and passes unchanged, and every existing stand-in contract test passes unchanged; the `app/payments/` 95% floor holds."
   },
   {
    "id": "T283",
@@ -23625,13 +23716,14 @@
    "id": "T314",
    "slug": "dispute-submit-atomic",
    "title": "payments and picks: a dispute's auto-submit mark and its task, and an owner submission and its fee, commit together; a worker decides auto-submit",
-   "goal": "Fourth external audit F44 (D-2204; FEE-027, FEE-050): `payments::mark_auto_submit` (`app/payments/src/disputes.rs:169`) commits the `auto_submit` mark and only then queues the submit task, and `record_owner_submission` (`:197`) commits `submitted_at` and only then appends the $15 countering fee, each on whatever connection its caller passes; a failure between the two leaves the mark or `submitted_at` set, every retry answers `false`, and the submit task or the fee is lost for good. Nothing calls `picks::dispute_auto_submit` (`app/picks/src/unreachable_refund.rs:467`) outside tests, so no dispute is ever auto-submitted. (1) In `disputes.rs` both functions open one transaction on the connection they are given (`Acquire::begin`, a savepoint inside a caller's transaction) for their two writes, so the mark and its task, and `submitted_at` and its fee, commit together or not at all; `record_dispute` queues one `picks.dispute_opened` `core.task` (dedupe key per dispute) in the transaction that records a new dispute. (2) `app/picks/src/dispute_steps.rs` holds the `picks.dispute_opened` handler, registered in the shared `app/server/src/lib.rs`: it reads whether the disputed charge's pick was released, its call attempts (`calls::api::call_log` through T270's `call_record`) and whether the payment was 3DS-authenticated, and calls `dispute_auto_submit` in one transaction; a failed run is retried by the queue and a repeat marks nothing twice. FEE-050 is judged again at the due date less `SUBMIT_BEFORE` (2 days): `record_dispute` also queues a second `picks.dispute_opened` run for that time (its own dedupe key), so a call attempt or release recorded after the dispute opened still marks it before the submit task runs; an already-marked or submitted dispute is unchanged. (3) Tests in `tests/integration/tests/dispute_submit.rs` (TD-FEE-51): a failure injected between the mark and its task, and between `submitted_at` and its fee, leaves neither, and the retry marks, queues or records once; a released, called dispute is marked through the worker and its evidence submitted 2 days before the due date; a dispute whose first call attempt is logged after it opened is marked by the run at due less 2 days; an unreleased one waits for Casey; Casey's own submission (T205's page, T304's route) records the fee once and stops the auto-submit. `payments` is money code: its 95% branch floor holds; the overseer runs an independent money review of the hand-in (D-2204). Update the `payments` and `picks` `CLAUDE.md` files and `docs/decisions.md`.",
+   "goal": "Fourth external audit F44 (D-2204; FEE-027, FEE-050): `payments::mark_auto_submit` (`app/payments/src/disputes.rs:169`) commits the `auto_submit` mark and only then queues the submit task, and `record_owner_submission` (`:197`) commits `submitted_at` and only then appends the $15 countering fee, each on whatever connection its caller passes; a failure between the two leaves the mark or `submitted_at` set, every retry answers `false`, and the submit task or the fee is lost for good. Nothing calls `picks::dispute_auto_submit` (`app/picks/src/unreachable_refund.rs:510`) outside tests, so no dispute is ever auto-submitted. (1) In `disputes.rs` both functions open one transaction on the connection they are given (`Acquire::begin`, a savepoint inside a caller's transaction) for their two writes, so the mark and its task, and `submitted_at` and its fee, commit together or not at all; `record_dispute` queues one `picks.dispute_opened` `core.task` (dedupe key per dispute) in the transaction that records a new dispute. (2) `app/picks/src/dispute_steps.rs` holds the `picks.dispute_opened` handler, registered in the shared `app/server/src/lib.rs`: it reads whether the disputed charge's pick was released, its call attempts (`calls::api::call_log` through T270's `call_record`), and whether the payment was 3DS-authenticated: it first calls T405's `payments::api::record_three_ds` for the disputed pick (with a `StripePayments` client that `worker_registry` in the shared `app/server/src/lib.rs` (`:456`) builds from the settings as `release_sink.rs`'s private `stripe_client` (`:226`) does: the secret key, the mode's base URL and the SEC-032 base-URL check, built in `lib.rs` without editing `release_sink.rs`; worker_registry builds no Stripe client today; the handler is registered on every path: with no Stripe key (dev and CI) it records nothing and reads only what is stored, which is false when nothing is, and in test and live a missing key is a start-up error naming it, as `notice_senders` does; a fetch error is retried by the queue), then reads `payments::api::three_ds_authenticated`, where no stored row or an unknown result reads as `false` (D-3118); and calls `dispute_auto_submit` in one transaction; a failed run is retried by the queue and a repeat marks nothing twice. FEE-050 is judged again at the due date less `SUBMIT_BEFORE` (2 days): `record_dispute` also queues a second `picks.dispute_opened` run for that time (its own dedupe key), so a call attempt or release recorded after the dispute opened still marks it before the submit task runs; an already-marked or submitted dispute is unchanged. (3) Tests in `tests/integration/tests/dispute_submit.rs` (TD-FEE-51): a failure injected between the mark and its task, and between `submitted_at` and its fee, leaves neither, and the retry marks, queues or records once; a released, called dispute is marked through the worker; a released dispute with no call attempt is marked only when its stored 3DS result is authenticated (T405's fake source), and waits for Casey when it is not or is unknown; and its evidence submitted 2 days before the due date; a dispute whose first call attempt is logged after it opened is marked by the run at due less 2 days; an unreleased one waits for Casey; Casey's own submission (`record_owner_submission` called directly: T205's page and T304's route depend on this task, so they come later) records the fee once and stops the auto-submit. `payments` is money code: its 95% branch floor holds; the overseer runs an independent money review of the hand-in (D-2204). Update the `payments` and `picks` `CLAUDE.md` files and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
    "module": "picks",
    "deps": [
-    "T281"
+    "T281",
+    "T405"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -23664,7 +23756,8 @@
     "D-2204",
     "D-229",
     "D-1545",
-    "D-2071"
+    "D-2071",
+    "D-3118"
    ],
    "cites": [],
    "budget": {
@@ -24390,7 +24483,7 @@
    "id": "T336",
    "slug": "inbound-text-bounded-retry",
    "title": "server, adapters and stand-in (harness): a text stopped by a module error is retried a bounded number of times from Twilio's copy of its body, never stored",
-   "goal": "Sixth audit U-06 (D-2307; TXT-012, TXT-020, CON-008, CON-018; D-801): a text stopped by a non-database module error (`Halt::Failed`) is answered 200 and, after T325, raises an alert, but nothing processes it again; D-2284's reason (no body to replay) was incomplete: Twilio keeps the body until the app redacts it on day 31 (`app/messaging/src/purge.rs:3`) and the inbox row holds the MessageSid. After T325: (1) `app/server/src/inbound_text.rs`: a `Halt::Failed` text also queues one `messaging.inbound_retry` task in the delivery's transaction (payload the inbox row ID only; dedupe per inbox row), retried at most 3 times with backoff (5 minutes, 30 minutes, 2 hours); the last failure leaves T325's alert open and adds nothing. (2) `app/adapters/src/sms.rs`: `SmsBodyRead::fetch_message_body(sid)` (GET Messages/{sid}.json) answers the body, or `Gone` for a redacted or unknown message; `stand_ins/twilio.py` already serves that GET (D-2156) and gains only what the contract test needs. (3) `app/server/src/inbound_retry.rs` (registered in the shared `app/server/src/bin/worker.rs` under the Twilio settings): it reads the inbox row, fetches the body, runs it through the same scrubbing reader (`privacy::api::read_inbound_for`) and then the same steps in the same order as the route, skipping the inbox insert; it never stores or logs the body (D-801). Three rules: (a) opt-out and HELP always run (CON-008, CON-018); (b) if a newer inbox row from the same sender has already been processed, the retry does only (a) and closes, so stale content never overrides what she said since, and T325's alert stays as the record; (c) anything the retry sends goes through the normal outbound path under quiet hours (8 a.m. to 8 p.m. in the stricter of Arizona and the area code's time, QH-001), never as an immediate reply outside them. Before building, read how a `Halt::Failed` delivery commits the steps that ran before the failure and state it: each step is either keyed once per inbox row or MessageSid, so a repeat changes nothing, or the retry starts after the last committed step; a step that cannot be made safe to repeat stops this task, and it is reported instead. `Gone` (redacted on day 31, or by `Delete my data`) closes the task with no error. Permanent classes are not retried: a delivery refused as `BadWebhook`, a sender on the suppression list, and a step that answered a known refusal (`Halt::Ends`). Tests in `tests/integration/tests/inbound_text_retry.rs` (TD-TXT-35, including a STOP retried after a newer text, a retry after a newer processed text doing only opt-out and HELP, and a retry at 22:00 whose reply waits for 8 a.m.) and `tests/contract/test_twilio_message_read.py`. A harness task because `stand_ins/` is protected. Privacy and security: the overseer runs an independent review of the hand-in. T299 and T129 run after it. Update the `server` and `adapters` `CLAUDE.md` files and `docs/decisions.md`.",
+   "goal": "Sixth audit U-06 (D-2307; TXT-012, TXT-020, CON-008, CON-018; D-801): a text stopped by a non-database module error (`Halt::Failed`) is answered 200 and, after T325, raises an alert, but nothing processes it again; D-2284's reason (no body to replay) was incomplete: Twilio keeps the body until the app redacts it on day 31 (`app/messaging/src/purge.rs:3`) and the inbox row holds the MessageSid. After T325: (1) `app/server/src/inbound_text.rs`: a `Halt::Failed` text also queues one `messaging.inbound_retry` task in the delivery's transaction (payload the inbox row ID only; dedupe per inbox row), retried at most 3 times with backoff (5 minutes, 30 minutes, 2 hours); the last failure leaves T325's alert open and adds nothing. (2) `app/adapters/src/sms.rs`: `SmsBodyRead::fetch_message_body(sid)` (GET Messages/{sid}.json) answers the body, or `Gone` for a redacted or unknown message; `stand_ins/twilio.py` already serves that GET (D-2156) and gains only what the contract test needs. (3) `app/server/src/inbound_retry.rs` (registered in `worker_registry` in the shared `app/server/src/lib.rs` (`:456`) under the Twilio settings; not `bin/worker.rs`, D-3118): it reads the inbox row, fetches the body, runs it through the same scrubbing reader (`privacy::api::read_inbound_for`) and then the same steps in the same order as the route, skipping the inbox insert; it never stores or logs the body (D-801). Three rules: (a) opt-out and HELP always run (CON-008, CON-018); (b) if a newer inbox row from the same sender has already been processed, the retry does only (a) and closes, so stale content never overrides what she said since, and T325's alert stays as the record; (c) anything the retry sends goes through the normal outbound path under quiet hours (8 a.m. to 8 p.m. in the stricter of Arizona and the area code's time, QH-001), never as an immediate reply outside them. Before building, read how a `Halt::Failed` delivery commits the steps that ran before the failure and state it: each step is either keyed once per inbox row or MessageSid, so a repeat changes nothing, or the retry starts after the last committed step; a step that cannot be made safe to repeat stops this task, and it is reported instead. `Gone` (redacted on day 31, or by `Delete my data`) closes the task with no error. Permanent classes are not retried: a delivery refused as `BadWebhook`, a sender on the suppression list, and a step that answered a known refusal (`Halt::Ends`). Tests in `tests/integration/tests/inbound_text_retry.rs` (TD-TXT-35, including a STOP retried after a newer text, a retry after a newer processed text doing only opt-out and HELP, and a retry at 22:00 whose reply waits for 8 a.m.) and `tests/contract/test_twilio_message_read.py`. A harness task because `stand_ins/` is protected. Privacy and security: the overseer runs an independent review of the hand-in. T299 and T129 run after it. Update the `server` and `adapters` `CLAUDE.md` files and `docs/decisions.md`.",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -24438,7 +24531,8 @@
    "decisions": [
     "D-2307",
     "D-801",
-    "D-2156"
+    "D-2156",
+    "D-3118"
    ],
    "cites": [],
    "budget": {
@@ -24464,7 +24558,8 @@
    "stage": "4",
    "module": "adapters",
    "deps": [
-    "T336"
+    "T336",
+    "T405"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -24506,7 +24601,8 @@
     "D-2761",
     "D-2764",
     "D-2771",
-    "D-3112"
+    "D-3112",
+    "D-3118"
    ],
    "cites": [],
    "budget": {
@@ -24876,7 +24972,7 @@
    "id": "T318",
    "slug": "whos-calling-text",
    "title": "calls, picks and quotes: the who's-calling text goes out at release, and a missing job view is an error, never another job's",
-   "goal": "TXT-027's who's-calling text has no owner (D-1687 took it out of T077; TD-TXT-29 and TD-QH-04 stay open), and `picks::release` says so (`app/picks/src/release.rs:31`) (fourth external audit F17, D-2206). Build it from D-1687's design. (1) Templates `whos_calling` and `whos_calling_email` in English and Spanish in the shared template files (drafts through the copy panel, WORD-028), with TXT-027's words, the picked business's public name from T316's `businesses::api::public_names` (a business with none gets the generic wording the copy panel approves) and the masked number; each listed once in `quotes`' `UPDATE_TEXTS` or `NOT_UPDATE_TEXTS` (`app/quotes/src/update_texts.rs`) and in `messaging`'s `IMPORTANT_TEMPLATES` (`app/messaging/src/retries.rs`), so TD-TXT-25's scan covers them and the text is retried as an important text. (2) `app/calls/src/whos_calling.rs`: `send_whos_calling` sends at once on an emergency job (QH-004), else in `messaging::api::send_window`'s window, else queues a `calls.whos_calling` task at the window's start, run by a handler registered in the shared `app/server/src/lib.rs`; an email-contact pick (PICK-018) gets the email words instead. (3) The release (`release.rs`, after T281) calls it in its transaction once the line is open, once per pick. (4) Fourth audit F23: `picks::service::find` (`app/picks/src/service.rs:223`) falls back to the first view (another job's number) when the job is not among the views and panics on an empty list; it returns `Option` and each caller treats a missing view as an error. Tests in `tests/integration/tests/whos_calling.rs` (TD-TXT-29, TD-QH-04) and `app/picks/src/tests/find_view.rs` (TD-PICK-53). Update the `calls`, `picks` and `quotes` `CLAUDE.md` files and `docs/decisions.md`.",
+   "goal": "TXT-027's who's-calling text has no owner (D-1687 took it out of T077; TD-TXT-29 and TD-QH-04 stay open), and `picks::release` says so (`app/picks/src/release.rs:31`) (fourth external audit F17, D-2206). Build it from D-1687's design. (1) Templates `whos_calling` and `whos_calling_email` in English and Spanish in the shared template files (drafts through the copy panel, WORD-028), with TXT-027's words, the picked business's public name from T316's `businesses::api::public_names` (a business with none gets the generic wording the copy panel approves) and the masked number; each listed once in `quotes`' `UPDATE_TEXTS` or `NOT_UPDATE_TEXTS` (`app/quotes/src/update_texts.rs`) and in `messaging`'s `IMPORTANT_TEMPLATES` (`app/messaging/src/retries.rs`), so TD-TXT-25's scan covers them and the text is retried as an important text. (2) `app/calls/src/whos_calling.rs`: `send_whos_calling` sends at once on an emergency job (QH-004), else in `messaging::api::send_window`'s window, else queues a `calls.whos_calling` task at the window's start, run by a handler registered in the shared `app/server/src/lib.rs`; an email-contact pick (PICK-018) gets the email words instead. (3) The release (`release.rs`, after T281) calls it after `open_line` succeeds (`:217`), not in the claim's transaction: `record` commits the claim first (`:428`) and `release` opens the line after (`:209` to `:221`); the send is deduplicated per pick (one dedupe key per pick), so a repeated release or a later line retry sends it once (D-3118). (4) Fourth audit F23: `picks::service::find` (`app/picks/src/service.rs:240`) falls back to the first view (another job's number) when the job is not among the views and panics on an empty list; it returns `Option` and each caller treats a missing view as an error. Tests in `tests/integration/tests/whos_calling.rs` (TD-TXT-29, TD-QH-04) and `app/picks/src/tests/find_view.rs` (TD-PICK-53). Update the `calls`, `picks` and `quotes` `CLAUDE.md` files and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -24927,7 +25023,8 @@
     "D-1687",
     "D-1293",
     "D-213",
-    "D-440"
+    "D-440",
+    "D-3118"
    ],
    "cites": [],
    "budget": {
@@ -25807,7 +25904,7 @@
    "id": "T352",
    "slug": "payment-intent-latest-charge",
    "title": "adapters and stand-in (harness): the PaymentIntent carries Stripe's latest charge ID, and the done tests that build it say so",
-   "goal": "Nov 10 code review, payments F1 and F5, first half (D-2623; FEE-042, SEC-030): no code on the payment-success path has the Stripe charge (`ch_…`) ID, because the adapter's `PaymentIntent` (`app/adapters/src/payments.rs:32`) has no `latest_charge` and the stand-in returns none; T359 needs it to write the charge ledger entry and the evidence. This harness task adds `latest_charge: Option<String>` (`#[serde(default)]`, so a body without it still decodes; the release check that requires it on a succeeded intent is T359's) and makes `stand_ins/stripe.py` return a `ch_` ID on every succeeded intent (the confirm answer and the fetch), checked by `tests/contract/test_stripe_latest_charge.py` (TD-FEE-66). It adopts the done tests that build `PaymentIntent` by name, so the workspace compiles: `charge_attempts.rs`, `fee_limit_race.rs`, `stripe_webhook_dispatch.rs`, `confirm_and_pay.rs`, `fee_fixed_at_pick.rs`, `late_success.rs` (T332's, after it), `payment_jobs.rs` (T328's, after it, if it builds one), `app/server/tests/request_timeout.rs` and `release_recovery.rs`: each literal gains `latest_charge: Some(\"ch_…\")` with a fake ID (or `None` where the intent has not succeeded), and nothing else in those files changes; no assertion is removed or weakened. No production behaviour changes here. Update the `adapters` `CLAUDE.md` and `docs/decisions.md`.",
+   "goal": "Nov 10 code review, payments F1 and F5, first half (D-2623; FEE-042, SEC-030): no code on the payment-success path has the Stripe charge (`ch_…`) ID, because the adapter's `PaymentIntent` (`app/adapters/src/payments.rs:32`) has no `latest_charge` and the stand-in returns none; T359 needs it to write the charge ledger entry and the evidence. This harness task adds `latest_charge: Option<String>` (`#[serde(default)]`, so a body without it still decodes; the release check that requires it on a succeeded intent is T359's) and makes `stand_ins/stripe.py` return a `ch_` ID on every succeeded intent (the confirm answer and the fetch; D-3118: T405, before this task, already stores `latest_charge` as a `ch_` ID string and `stand_ins/server.py` expands it to the charge object only on `expand[]=latest_charge`, so this task keeps that stored ID and that expand behaviour and only checks the ID reaches the adapter), checked by `tests/contract/test_stripe_latest_charge.py` (TD-FEE-66). It adopts the done tests that build `PaymentIntent` by name, so the workspace compiles: `charge_attempts.rs`, `fee_limit_race.rs`, `stripe_webhook_dispatch.rs`, `confirm_and_pay.rs`, `fee_fixed_at_pick.rs`, `late_success.rs` (T332's, after it), `payment_jobs.rs` (T328's, after it, if it builds one), `app/server/tests/request_timeout.rs` and `release_recovery.rs`: each literal gains `latest_charge: Some(\"ch_…\")` with a fake ID (or `None` where the intent has not succeeded), and nothing else in those files changes; no assertion is removed or weakened. No production behaviour changes here. Update the `adapters` `CLAUDE.md` and `docs/decisions.md`.",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -25861,7 +25958,8 @@
    ],
    "decisions": [
     "D-2623",
-    "D-2620"
+    "D-2620",
+    "D-3118"
    ],
    "cites": [],
    "budget": {
@@ -26068,7 +26166,7 @@
    "id": "T355",
    "slug": "release-claim-locks-pick",
    "title": "picks: the release claim re-checks the pick under its row lock, and a fraud end refuses a pick already released",
-   "goal": "Nov 10 code review, privacy F3, as fixed by the plan review's H3 and its re-review (D-2627; PICK-022, PRIV-005, FEE-052): the release claim reads its target unlocked (`show`, `app/picks/src/release.rs:282`, through `release_target`) and `record` (`:394`) inserts `picks.release` with `ON CONFLICT (pick_id)` only, while `fraud_warning` (`app/picks/src/unreachable_refund.rs:490`) first calls `payments::api::early_fraud_warning` (`app/payments/src/refunds.rs:140`) with the caller's `released` snapshot, before any lock, so the refund is sent while a racing release can still commit and open the name and address: the business gets the refund and the details (FEE-052 refunds only a charge whose details were not yet released). Fix, all in `picks`: (1) the fraud path first runs one short transaction that takes `SELECT … FROM picks.pick WHERE id = $1 FOR UPDATE`, then, in a separate statement under that lock, reads whether a `picks.release` row exists; if one exists the warning only alerts (the pick goes to Casey's decision list, as today); if none exists it inserts a durable marker, one `picks.fraud_hold` row for the pick (`migrations/0181_picks_fraud_hold.sql`: pick ID primary key, time; the app role may INSERT and SELECT only), and commits; only then does it call `early_fraud_warning` with `released` as read under that lock, so the refund goes out only for a pick that can no longer be released; the existing job move and `fraud_refunded` end follow as today once the refund is read as succeeded; (2) `record` takes the same `SELECT … FOR UPDATE` on the pick first in the claim's transaction, then, in a separate statement, checks that the pick still has the wanted status, no end and no `picks.fraud_hold` row, and answers `MovedOn` before any vault read otherwise; (3) `end_pick` (`:439`) keeps its status-only guard: `no_call_at_72_hours` (`:432`) and the other callers end released picks through it, and only the fraud path checks for a release row. This is a clarification consistent with FEE-052's order (alert; refund an unreleased charge at once; list a released one): \"not yet released\" is decided under the pick's lock and the release is then refused, never both. Tests in `tests/integration/tests/release_fraud_race.rs` (TD-PICK-59), two connections and row locks, no sleeps: (a) the claim locks the pick, inserts its release row and holds its transaction open; the fraud path blocks on the pick lock; the claim commits; the fraud path then finds the release row, writes no hold and sends no refund (the fake refund client is never called); (b) the fraud path commits its hold first; the claim then answers `MovedOn`, writes no release row and no `vault_read.picks.release` audit row, and the refund is sent once; (c) `no_call_at_72_hours` still ends a released, paid pick as a no-show; the plain release and the plain fraud end behave as before. Update the `picks` `CLAUDE.md` and `docs/decisions.md`.",
+   "goal": "Nov 10 code review, privacy F3, as fixed by the plan review's H3 and its re-review (D-2627; PICK-022, PRIV-005, FEE-052): the release claim reads its target unlocked (`show`, `app/picks/src/release.rs:287`, through `release_target`) and `record` (`:428`) inserts `picks.release` with `ON CONFLICT (pick_id)` only, while `fraud_warning` (`app/picks/src/unreachable_refund.rs:533`) first calls `payments::api::early_fraud_warning` (`app/payments/src/refunds.rs:152`) with the caller's `released` snapshot, before any lock, so the refund is sent while a racing release can still commit and open the name and address: the business gets the refund and the details (FEE-052 refunds only a charge whose details were not yet released). Fix, all in `picks`: (1) the fraud path first runs one short transaction that takes `SELECT … FROM picks.pick WHERE id = $1 FOR UPDATE`, then, in a separate statement under that lock, reads whether a `picks.release` row exists; the pick counts as released when that row exists or the caller's `released` flag already says so (stricter only: a caller's `true` is never read as `false`, D-3118; the done `tests/integration/tests/unreachable_refund.rs` (T191, T282) passes `true` for a pick with no release row at `:487`, expects `Ok(false)` and, at `:500`, exactly one succeeded refund for that pick, from its later `false` call); if it counts as released the warning only alerts (the pick goes to Casey's decision list, as today); if none exists it inserts a durable marker, one `picks.fraud_hold` row for the pick (`migrations/0181_picks_fraud_hold.sql`: pick ID primary key, time; the app role may INSERT and SELECT only), idempotently (`ON CONFLICT (pick_id) DO NOTHING`, since the fraud path may run again for the same pick: the done `unreachable_refund.rs` calls it at `:489` to `:493` with a failing refund client and again at `:497` with a working one, which must then refund), and commits; only then does it call `early_fraud_warning` with `released` as decided under that lock (false here), so the refund goes out only for a pick that can no longer be released; the existing job move and `fraud_refunded` end follow as today once the refund is read as succeeded; (2) `record` takes the same `SELECT … FOR UPDATE` on the pick first in the claim's transaction, then, in a separate statement, checks that the pick still has the wanted status, no end and no `picks.fraud_hold` row, and answers `MovedOn` otherwise: on a regular job (`claim_then_read`, `:322`) that is before any vault read; an emergency job reads the vault before it claims (`read_then_claim`, `:340`, INT-029), so there the refused claim follows a read but shows and releases nothing; (3) `end_pick` (`:482`) keeps its status-only guard: `no_call_at_72_hours` (`:451`) and the other callers end released picks through it, and only the fraud path checks for a release row. This is a clarification consistent with FEE-052's order (alert; refund an unreleased charge at once; list a released one): \"not yet released\" is decided under the pick's lock and the release is then refused, never both. Tests in `tests/integration/tests/release_fraud_race.rs` (TD-PICK-59), two connections and row locks, no sleeps: (a) the claim locks the pick, inserts its release row and holds its transaction open; the fraud path blocks on the pick lock; the claim commits; the fraud path then finds the release row, writes no hold and sends no refund (the fake refund client is never called); (b) on a regular (non-emergency) job, the fraud path commits its hold first; the claim then answers `MovedOn`, writes no release row and no `vault_read.picks.release` audit row, and the refund is sent once; (c) `no_call_at_72_hours` still ends a released, paid pick as a no-show; the plain release and the plain fraud end behave as before. Update the `picks` `CLAUDE.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -26110,7 +26208,8 @@
    ],
    "decisions": [
     "D-2627",
-    "D-2620"
+    "D-2620",
+    "D-3118"
    ],
    "cites": [],
    "budget": {
@@ -26208,7 +26307,7 @@
    "id": "T357",
    "slug": "inbound-optout-start-followups",
    "title": "server, messaging and intake: START into an open request restarts with the consent text, an opt-out while texting is off is confirmed by email, CANCEL pauses the job, and a listed homeowner who writes is followed up",
-   "goal": "Nov 10 code review, messaging F2, F3 and F5 and CON-016, the route half (D-2629; CON-001, CON-015, CON-016, CON-028, CON-029, CON-030; D-1229). After T336 (the last earlier owner of `inbound_text.rs`), T356 and T360 (the emails). (1) START into a still-open request: the route treats `Outcome::Resubscribed` like `Open` (`app/server/src/inbound_text.rs:387`) and passes \"START\" to `intake::receive_reply`, whose rules send no consent text once one was sent (`app/intake/src/rules.rs:100`), so a homeowner who opted out and texts START later gets no consent text and \"START\" is heard as an answer (CON-015, CON-001). Now the route calls a new `intake::api::restart_after_start` (`app/intake/src/resubscribe.rs`), which queues the existing consent text again under the START inbox row as its subject, records it as sent, and passes nothing to the open question. (2) An opt-out while the homeowner line is switched off, suspended or restored and waiting gets no confirmation: `confirm` (`app/messaging/src/optout.rs:195`) answers \"email instead\" only for the ops pause and never reads `messaging.mode_state`, and the route drops the `email` flag (`inbound_text.rs:372`). Now `confirm` decides \"paused\" from the same facts `send_on_line` uses and queues no text then, and the route calls T360's `queue_optout_confirmation_email`. (3) D-1229 named the inbound route to call `intake::api::on_opt_out` after `Outcome::OptedOut`; no task did, and T330 builds only the `intake.opted_out_live_job` handler that `on_opt_out` queues (it owns no route file), so a sole CANCEL while a pick waits for Confirm neither pauses the job nor withdraws the pick; the route now calls `on_opt_out` in the delivery's transaction, and T330's handler does the rest. (4) CON-016: on `Outcome::Suppressed` with no START the route calls T360's `queue_optout_wrote_again`; the CON-017 emergency alert is unchanged. No new customer copy here (the consent text exists; the emails are T360's). Tests in `tests/integration/tests/optout_followups.rs` (TD-CON-33) through the served route, each failing on today's `main`: open request, STOP, then START with `OptOutType=START` gives one `consent` outbox row for the START inbox row and no intake answer holding \"START\"; a suspended line, a phrase opt-out and an email on file give one queued confirmation email and no outbox text; CANCEL with a waiting pick gives an `intake.homeowner_pause` row and one queued `intake.opted_out_live_job`; a listed homeowner's plain text gives one queued email (email on file) or one `messaging.optout_wrote_again` audit row. Every TD-TXT, TD-CON and TD-SEC-52 case passes unchanged. Update the `server` and `intake` `CLAUDE.md` files and `docs/decisions.md`.",
+   "goal": "Nov 10 code review, messaging F2, F3 and F5 and CON-016, the route half (D-2629; CON-001, CON-015, CON-016, CON-028, CON-029, CON-030; D-1229). After T336 (the last earlier owner of `inbound_text.rs`), T356 and T360 (the emails). (1) START into a still-open request: the route treats `Outcome::Resubscribed` like `Open` (`app/server/src/inbound_text.rs:387`) and passes \"START\" to `intake::receive_reply`, whose rules send no consent text once one was sent (`app/intake/src/rules.rs:100`), so a homeowner who opted out and texts START later gets no consent text and \"START\" is heard as an answer (CON-015, CON-001). Now the route calls a new `intake::api::restart_after_start` (`app/intake/src/resubscribe.rs`), which queues the existing consent text again under the START inbox row as its subject, records it as sent, and passes nothing to the open question. (2) An opt-out while the homeowner line is switched off, suspended or restored and waiting gets no confirmation: `confirm` (`app/messaging/src/optout.rs:195`) answers \"email instead\" only for the ops pause and never reads `messaging.mode_state`, and the route drops the `email` flag (`inbound_text.rs:372`). Now `confirm` decides \"paused\" from the same facts `send_on_line` uses and queues no text then, and the route queues one follow-up task (below) for the confirmation email. (3) D-1229 named the inbound route to call `intake::api::on_opt_out` after `Outcome::OptedOut`; no task did, and T330 builds only the `intake.opted_out_live_job` handler that `on_opt_out` queues (it owns no route file), so a sole CANCEL while a pick waits for Confirm neither pauses the job nor withdraws the pick; the route now calls `on_opt_out` in the delivery's transaction, and T330's handler does the rest. (4) CON-016: on `Outcome::Suppressed` with no START the route queues one follow-up task for T360's `queue_optout_wrote_again`; the CON-017 emergency alert is unchanged. The follow-up (D-3118): T360's functions take the key secret and the footer postal address, `Webhooks` (`inbound_text.rs:87`) holds no postal address and is built by literal in seven done test files, and `Outcome::OptedOut` (`app/messaging/src/optout.rs:109`) carries no event ID or language and is matched field by field in `tests/integration/tests/optout_flow.rs` (`:160`, `:340`, `:389`, `:414`), so neither changes: in the delivery's transaction the route queues one `core.task` of a new kind (payload: the inbox row ID, her contact ID, her language code and which follow-up; IDs and codes only; dedupe key per inbox row and follow-up), and its handler, in `optout.rs`, finds the opt-out event by its `inbox_id` (`messaging.optout_event`, migration 0128), reads her email through the vault only (never logged or put in a payload) and calls T360's function. It is registered in `worker_registry` in the shared `app/server/src/lib.rs` (`:456`) beside `register_notice_senders` (`:582`), built from the `ID_SECRET` and `Settings::postal_address` (`app/core/src/settings.rs:365`, T313, D-3098) as `notice_senders` (`:556`) reads it, not in `register_handlers` (`:382`), which takes no settings; it is registered on every path so `tests/integration/tests/task_registry.rs` (TD-OPS-36) finds the kind: with no postal address (dev and CI) it sends nothing and ends done, and the tests run it with a fixture postal address. No new customer copy here (the consent text exists; the emails are T360's). Tests in `tests/integration/tests/optout_followups.rs` (TD-CON-33) through the served route, each failing on today's `main`: open request, STOP, then START with `OptOutType=START` gives one `consent` outbox row for the START inbox row and no intake answer holding \"START\"; a suspended line, a phrase opt-out and an email on file give one queued follow-up task and, once its handler runs, one queued confirmation email, and no outbox text; CANCEL with a waiting pick gives an `intake.homeowner_pause` row and one queued `intake.opted_out_live_job`; a listed homeowner's plain text gives, once the follow-up runs, one queued email (email on file) or one `messaging.optout_wrote_again` audit row. Every TD-TXT, TD-CON and TD-SEC-52 case passes unchanged. Update the `server` and `intake` `CLAUDE.md` files and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -26257,7 +26356,8 @@
     "D-2620",
     "D-1229",
     "D-2188",
-    "D-2288"
+    "D-2288",
+    "D-3118"
    ],
    "cites": [],
    "budget": {
