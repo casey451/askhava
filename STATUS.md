@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T14:30:37Z by runner 87abedec7b6e (actions).
+Updated 2026-11-12T14:31:50Z by runner 87abedec7b6e (actions).
 
 **Building: T385 in progress since 14:03Z; 245 of 397 done; week 94% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-12T14:30:37Z by runner 87abedec7b6e (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 3: T385 claimed 14:03Z, lease until 17:03Z
 - **Week:** 94% used, 1.8M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:30Z, 0 min before this update
+- **Last run:** 14:30Z, 1 min before this update
 - **Keeper:** last ran 14:30Z, next wake 17:05Z
 
 ## Needs attention
@@ -89,7 +89,6 @@ Updated 2026-11-12T14:30:37Z by runner 87abedec7b6e (actions).
 | T269 | portals: a business notice's signed link opens sign-in for t | resync | 2 | 44 min | 15:46Z |  |
 | T384 | quotes and portals: the homeowner sees an edited quote as up | done | 2 | 18 min | 15:05Z | Ci: failure; E2e: failure; Ally: failure / E2e failed at step: Chromium and its system libraries / E: Failed to fetch ht |
 | T214 | picks (harness): the homeowner's share box at the pick and t | BLOCKED | 2 | 3 min | 15:04Z |  |
-| T342 | quotes: a quote's contact check also reads the whole field w | done | 1 | 51 min | 14:31Z |  |
 
 ### Plan and harness merges on main
 - 09:36Z Plan: pre-flight fixes round 9 — stage 5: T303, T151, T321, T110, T210, T109, T116; new T409, T410 (D-3155) (#559)
