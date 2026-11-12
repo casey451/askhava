@@ -25985,8 +25985,8 @@
     "T162",
     "T337"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "BLOCKED",
+   "attempts": 1,
    "slug": "emergency-address-rerelease",
    "type": "build",
    "stage": "4",
@@ -25998,6 +25998,33 @@
     3350,
     3351,
     3352
+   ],
+   "reason": "plan gap reported: PLAN GAP: Releasable in app/payments/src/release_proof.rs:153 has private fields and no constructor; T255's owned reclear.rs cannot build one (lib.rs declares mod release_proof as a sibling; CLAUDE.md of payments forbids a public constructor). release_proof.rs is owned by T189, T337, T408, T332, T359, not T255. paid_release needs a VerifiedStripeEvent and an adapter, so it cannot serve a (conn, pick) re-clear without a new event (SEC-030). Smallest fix: give T255 release_proof.rs to add a pub(crate) constructor from the stored success, or declare reclear as a child module inside release_proof.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T255 --plan-fix D-### --reason \"...\"` (D-2859)",
+   "last_failure": "PLAN GAP: Releasable in app/payments/src/release_proof.rs:153 has private fields and no constructor; T255's owned reclear.rs cannot build one (lib.rs declares mod release_proof as a sibling; CLAUDE.md of payments forbids a public constructor). release_proof.rs is owned by T189, T337, T408, T332, T359, not T255. paid_release needs a VerifiedStripeEvent and an adapter, so it cannot serve a (conn, pick) re-clear without a new event (SEC-030). Smallest fix: give T255 release_proof.rs to add a pub(crate) constructor from the stored success, or declare reclear as a child module inside release_proof.rs. Reviewer confirmed.",
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 36,
+     "head_sha": "dae8c6443b4f29a2b72d558ac349c5d778388eb3",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-12T23:45:41Z",
+     "ended_at": "2026-11-12T23:48:10Z",
+     "result": "BLOCKED",
+     "usage": {
+      "worker": {
+       "tokens": 2738423,
+       "turns": 22
+      },
+      "reviewer": {
+       "tokens": 440187,
+       "turns": 6
+      }
+     }
+    }
    ]
   },
   {
@@ -41734,12 +41761,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T351",
-   "at": "2026-11-12T23:46:42Z",
-   "cache_read_input_tokens": 3075676,
-   "output_tokens": 28674,
-   "input_tokens": 135,
-   "cache_creation_input_tokens": 167496
+   "task": "T255",
+   "at": "2026-11-12T23:48:10Z",
+   "output_tokens": 18261,
+   "cache_read_input_tokens": 2887666,
+   "input_tokens": 101,
+   "cache_creation_input_tokens": 272582
   },
   "source": "session_reading 2026-11-12T23:43:53Z (week)",
   "by_task": {
@@ -44171,7 +44198,16 @@
    },
    "T255": {
     "estimated_bytes": 712352,
-    "estimated_tokens": 3700550
+    "estimated_tokens": 3700550,
+    "output_tokens": 18261,
+    "cache_read_input_tokens": 2887666,
+    "input_tokens": 101,
+    "cache_creation_input_tokens": 272582,
+    "worker_tokens": 2738423,
+    "worker_turns": 22,
+    "reviewer_tokens": 440187,
+    "reviewer_turns": 6,
+    "last_model": "claude-opus-5-5"
    },
    "T372": {
     "estimated_bytes": 632809,
@@ -44181,11 +44217,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-12T22:57:10Z",
-    "tokens": 8871724
+    "tokens": 9451434
    },
    "week": {
     "start": "2026-11-12T19:03:13Z",
-    "tokens": 22207518
+    "tokens": 22787228
    }
   },
   "session_reading": {
@@ -44196,7 +44232,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T23:48:08Z",
+ "updated_at": "2026-11-12T23:48:18Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -44294,7 +44330,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "9a870b31c9114f645b81f830f2a76dece2a62894",
+ "runner_sha": "dae8c6443b4f29a2b72d558ac349c5d778388eb3",
  "starter": "actions",
  "smoke_runs": [
   {
