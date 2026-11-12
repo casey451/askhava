@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-12T17:53:38Z by runner ea451cc9e463 (actions).
+Updated 2026-11-12T17:53:56Z by runner ea451cc9e463 (actions).
 
 **Building: T251 in progress since 17:19Z; 248 of 400 done; week 0% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 248 of 400 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T251 claimed 17:19Z, lease until 20:19Z; lane 2: T366 claimed 17:26Z, lease until 20:26Z; lane 3: T385 claimed 17:26Z, lease until 20:26Z; lane 5: T350 claimed 17:26Z, lease until 20:26Z
+- **Lane:** lane 1: T251 claimed 17:19Z, lease until 20:19Z; lane 3: T385 claimed 17:26Z, lease until 20:26Z; lane 5: T350 claimed 17:26Z, lease until 20:26Z
 - **Week:** 0% used, 183.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:52Z, 0 min before this update
+- **Last run:** 17:52Z, 1 min before this update
 - **Keeper:** last ran 17:12Z, next wake 19:07Z
 
 ## Needs attention
@@ -20,6 +20,7 @@ Updated 2026-11-12T17:53:38Z by runner ea451cc9e463 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T366 | jobs and server: every dead-lettered task alerts, and a dail | MERGE_PENDING | 1 | 26 min | 17:53Z |  |
 | T414 | Stand-ins (harness): end-to-end specs can read the emails th | MERGE_PENDING | 1 | 32 min | 17:52Z |  |
 | T315 | jobs and portals: feedback words are blanked by the 3-year p | done | 1 | 66 min | 16:18Z |  |
 | T370 | intake (harness): the night count the homeowner hears counts | done | 2 | 22 min | 15:30Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
@@ -164,9 +165,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T251 (lease until 2026-11-12T20:19:06Z)
-- lane 2: T366 (lease until 2026-11-12T20:26:57Z)
 - lane 3: T385 (lease until 2026-11-12T20:26:04Z)
 - lane 5: T350 (lease until 2026-11-12T20:26:39Z)
 
 ## Last usage reading
-- {"task": "T414", "at": "2026-11-12T17:52:25Z", "cache_read_input_tokens": 1627476, "output_tokens": 24490, "cache_creation_input_tokens": 114604, "input_tokens": 107}
+- {"task": "T366", "at": "2026-11-12T17:53:37Z", "output_tokens": 111072, "cache_creation_input_tokens": 387441, "input_tokens": 245, "cache_read_input_tokens": 11802697}
