@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T12:26:09Z by runner 54ea2ca4035a (actions).
+Updated 2026-11-12T12:27:02Z by runner 54ea2ca4035a (actions).
 
 **Building: T369 in progress since 11:51Z; 243 of 397 done; week 93% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-12T12:26:09Z by runner 54ea2ca4035a (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T369 claimed 11:51Z, lease until 14:51Z; lane 3: T378 claimed 11:49Z, lease until 14:49Z
 - **Week:** 93% used, 0.4M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:25Z, 0 min before this update
+- **Last run:** 12:26Z, 0 min before this update
 - **Keeper:** last ran 12:19Z, next wake 14:51Z
 
 ## Needs attention
@@ -124,7 +124,6 @@ Updated 2026-11-12T12:26:09Z by runner 54ea2ca4035a (actions).
 - 14:34Z Harness: browser setup survives an Ubuntu mirror outage (D-3030) (#492)
 - 13:45Z Plan: four lanes (D-2986) (#483)
 - 13:14Z Plan: T332 updates the ended-pick test — success stored, one refund queued, still never cleared (D-3007) (#484)
-- 12:26Z Plan: T332 may expect AlreadyQueued after its own check round queues the late success (D-2970) (#482)
 
 ## Progress (requirements verified)
 
