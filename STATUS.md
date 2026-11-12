@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T22:01:54Z by runner 46f5fc54dbd7 (actions).
+Updated 2026-11-12T22:05:47Z by runner 46f5fc54dbd7 (actions).
 
 **Building: T385 in progress since 21:36Z; 256 of 403 done; week 5% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-12T22:01:54Z by runner 46f5fc54dbd7 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 3: T385 claimed 21:36Z, lease until 00:36Z; lane 6: T417 claimed 21:46Z, lease until 00:46Z; lane 7: T351 claimed 21:36Z, lease until 00:36Z
 - **Week:** 5% used, 174.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:01Z, 0 min before this update
+- **Last run:** 22:02Z, 3 min before this update
 - **Keeper:** last ran 22:01Z, next wake 00:38Z
 
 ## Needs attention
@@ -85,7 +85,6 @@ Updated 2026-11-12T22:01:54Z by runner 46f5fc54dbd7 (actions).
 | T348 | harness: the authorization matrix gets public, owner and act | done | 1 | 43 min | 23:32Z |  |
 | T228 | businesses: leaving Ask Hava, the optional reason and what h | resync | 2 | 41 min | 23:04Z |  |
 | T317 | server and intake: the inbound text route applies SEC-014's  | BLOCKED | 1 | 4 min | 22:34Z |  |
-| T232 | portals and businesses: the Confirm step's "Can't take it" l | done | 1 | 51 min | 22:02Z |  |
 
 ### Plan and harness merges on main
 - 22:01Z plan: T419 fixes the flaky TD-CALL-23 no-plaintext scan, claimed first (D-3324) (#622)
