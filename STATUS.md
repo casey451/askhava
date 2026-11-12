@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-12T18:26:51Z by runner 33560091de32 (actions).
+Updated 2026-11-12T18:27:09Z by runner 33560091de32 (actions).
 
 **Building: T251 in progress since 17:19Z; 248 of 400 done; week 2% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 248 of 400 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T251 claimed 17:19Z, lease until 20:19Z; lane 3: T385 claimed 17:26Z, lease until 20:26Z; lane 5: T350 claimed 17:26Z, lease until 20:26Z; lane 6: T376 claimed 18:05Z, lease until 21:05Z; lane 7: T346 claimed 18:16Z, lease until 21:16Z
+- **Lane:** lane 1: T251 claimed 17:19Z, lease until 20:19Z; lane 5: T350 claimed 17:26Z, lease until 20:26Z; lane 6: T376 claimed 18:05Z, lease until 21:05Z; lane 7: T346 claimed 18:16Z, lease until 21:16Z
 - **Week:** 2% used, 177.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 18:17Z, 9 min before this update
 - **Keeper:** last ran 18:12Z, next wake 20:22Z
@@ -18,13 +18,14 @@ Updated 2026-11-12T18:26:51Z by runner 33560091de32 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T385 | adapters, licensing and businesses (harness): the sign-up re | MERGE_PENDING | 2 | 60 min | 18:26Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T366 | jobs and server: every dead-lettered task alerts, and a dail | MERGE_PENDING | 1 | 26 min | 17:53Z |  |
 | T414 | Stand-ins (harness): end-to-end specs can read the emails th | MERGE_PENDING | 1 | 32 min | 17:52Z |  |
 | T315 | jobs and portals: feedback words are blanked by the 3-year p | done | 1 | 66 min | 16:18Z |  |
 | T370 | intake (harness): the night count the homeowner hears counts | done | 2 | 22 min | 15:30Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 | T389 | licensing: a homeowner's wrong-license report pauses a pest  | done | 1 | 31 min | 15:11Z |  |
 | T362 | server: the built static files are served at /static/<crate> | BLOCKED | 2 | 21 min | 15:06Z | PLAN GAP: tests/a11y/j1_keyboard.spec.ts:171-172 (owned by T098/T214, protected, not in T362's files) presses Tab before |
-| T385 | adapters, licensing and businesses (harness): the sign-up re | check_failed | 1 | 38 min | 14:42Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
+| T385 | adapters, licensing and businesses (harness): the sign-up re | check_failed | 1 | 38 min | 14:42Z |  |
 | T370 | intake (harness): the night count the homeowner hears counts | check_failed | 1 | 22 min | 14:29Z |  |
 | T385 | adapters, licensing and businesses (harness): the sign-up re | resync | 1 | 60 min | 13:57Z |  |
 | T362 | server: the built static files are served at /static/<crate> | check_failed | 1 | 38 min | 13:35Z |  |
@@ -164,10 +165,9 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T251 (lease until 2026-11-12T20:19:06Z)
-- lane 3: T385 (lease until 2026-11-12T20:26:04Z)
 - lane 5: T350 (lease until 2026-11-12T20:26:39Z)
 - lane 6: T376 (lease until 2026-11-12T21:05:05Z)
 - lane 7: T346 (lease until 2026-11-12T21:16:45Z)
 
 ## Last usage reading
-- {"task": "T366", "at": "2026-11-12T17:53:37Z", "output_tokens": 111072, "cache_creation_input_tokens": 387441, "input_tokens": 245, "cache_read_input_tokens": 11802697}
+- {"task": "T385", "at": "2026-11-12T18:26:50Z", "output_tokens": 37009, "cache_creation_input_tokens": 249789, "input_tokens": 174, "cache_read_input_tokens": 3611192}
