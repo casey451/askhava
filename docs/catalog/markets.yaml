@@ -1,0 +1,26 @@
+# Markets as reviewed data (INT-048, INT-022, LIC-011; D-1515, D-1518, D-1521, D-3113).
+#
+# Each market: an ID, a name, its two-letter state, its IANA time zone, the identity sources for
+# its no-license categories (LIC-011; `city` is the licensing import source of the city
+# business-license list) and its towns. A town's code is the service-area town code (INT-022) that
+# intake routes on and businesses tick as towns served. `zips` are the ZCTAs the US Census
+# 2020 ZCTA-to-place relationship file links to the town's place, copied from
+# https://www2.census.gov/geo/docs/maps-data/data/rel2020/zcta520/tab20_zcta520_place20_natl.txt
+# (downloaded 2026-11-12), never typed from memory. `extra_zips` are reviewed ZIPs with no ZCTA
+# centroid (such as a PO-box-only ZIP): they give the town but no location. A ZIP belongs to one
+# town only. A state other than AZ needs `decision`, the ID of the logged legal review (D-382).
+# `launched_at` is not set here: a launch is a later owner action. Loaded and checked by
+# app/catalog/src/markets.rs; adding a market is a data change with a docs/decisions.md entry.
+markets:
+  - id: lake-havasu-city
+    name: Lake Havasu City
+    state: AZ
+    time_zone: America/Phoenix
+    identity_sources: [city]
+    towns:
+      - code: lake_havasu_city
+        name: Lake Havasu City
+        # Census place 0439370 (Lake Havasu City city).
+        zips: ["86403", "86404", "86406"]
+        # The city's PO-box ZIP: no ZCTA, so no centroid (D-3113).
+        extra_zips: ["86405"]

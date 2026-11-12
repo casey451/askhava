@@ -398,6 +398,7 @@ name = "askhava-catalog"
 version = "0.1.0"
 dependencies = [
  "askhava-ops",
+ "jiff",
  "serde",
  "serde-saphyr",
  "sqlx",

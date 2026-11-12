@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO businesses.service_area (business_id, base_zip, radius_miles, changed_at)\n         VALUES ($1, $2, $3, $4) ON CONFLICT (business_id) DO UPDATE SET\n         base_zip = EXCLUDED.base_zip, radius_miles = EXCLUDED.radius_miles,\n         changed_at = EXCLUDED.changed_at",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Int2",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "f9b452ee65ba42d2ec740900576088ea6566a0dc315b2240b48a3fae8928971f"
+}
