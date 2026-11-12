@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T05:29:35Z by runner 72a65e123c88 (actions).
+Updated 2026-11-12T05:31:52Z by runner 72a65e123c88 (actions).
 
 **Building: T356 in progress since 04:05Z; 224 of 391 done; week 87% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-12T05:29:35Z by runner 72a65e123c88 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T356 claimed 04:05Z, lease until 08:29Z; lane 3: T405 claimed 05:14Z, lease until 08:14Z; lane 5: T336 claimed 04:54Z, lease until 07:54Z
 - **Week:** 87% used, 13.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:23Z, 5 min before this update
+- **Last run:** 05:29Z, 2 min before this update
 - **Keeper:** last ran 05:23Z, next wake 07:07Z
 
 ## Needs attention
@@ -81,6 +81,9 @@ Updated 2026-11-12T05:29:35Z by runner 72a65e123c88 (actions).
 | T383 | messaging and portals: the text templates and the homeowner  | done | 1 | 20 min | 05:39Z |  |
 
 ### Plan and harness merges on main
+- 05:28Z Harness: stop backup-runner caches evicting CI's Rust caches (D-3143) (#553)
+- 05:16Z Harness: run lint and the slow compile-fail/prompt-injection tests in a parallel CI job (D-3142) (#550)
+- 04:59Z Plan: pre-flight fixes round 7 — T352, T335, T353, T330, T393, T359, T401 plan gap; new T406, T407 (D-3134) (#548)
 - 03:50Z Plan: pre-flight fixes round 6 — T355, T340, T341, T249, T273, T271, T277, T357, T314; new T405 (D-3118) (#542)
 - 03:24Z Harness: claim order prefers tasks in crates no other lane is writing (D-3082) (#523)
 - 02:11Z Plan: pre-flight fixes round 5 — T378, T343, T268, T329, T306; new T404 (D-3112) (#538)
