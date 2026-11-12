@@ -1114,7 +1114,10 @@ def _main_with(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, result: str, lan
 def test_a_cycle_that_hands_off_starts_its_refill_runs_at_once(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     env, rows = _main_with(monkeypatch, tmp_path, "handed_off", 2, [])
     assert env.calls == ["2"] and rows[-1]["dispatched"] == ["2"] and rows[-1]["refill"] == ["2"]
-    for result in ("merge_pending", "idle", st.MERGE_PENDING):  # these end the job within minutes: the chain step refills
+    for result in ("merge_pending", st.MERGE_PENDING):  # every result starts them now, not only a hand-off (D-3140)
+        env, rows = _main_with(monkeypatch, tmp_path, result, 2, [])
+        assert env.calls == ["2"] and rows[-1]["dispatched"] == ["2"]
+    for result in ("idle",):  # a run that claimed nothing starts nothing, so this cannot loop (D-3140)
         env, rows = _main_with(monkeypatch, tmp_path, result, 2, [])
         assert env.calls == [] and "dispatched" not in rows[-1]
     env, rows = _main_with(monkeypatch, tmp_path, "handed_off", 1, [])
