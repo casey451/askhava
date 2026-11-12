@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T08:20:35Z by runner 3926dabcc377 (actions).
+Updated 2026-11-12T08:21:03Z by runner d9515904bc86 (manual).
 
 **Building: T336 in progress since 08:04Z; 232 of 394 done; week 90% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -14,7 +14,7 @@ Updated 2026-11-12T08:20:35Z by runner 3926dabcc377 (actions).
 ## Needs attention
 - BLOCKED T251: plan gap reported: PLAN GAP: app/intake/src/summary_step.rs:415 and app/intake/src/service.rs:672 (T208/T039 files, not T251's). The card sender has nowhere to read the approved card text, category, remaining candidate job types or scrubbed text. Approval payload is only {job, conversation, card digest} (summary_step.rs:415); approved_card (summary_step.rs:345) needs the full JobCard, which only quotes::api::build_card makes. Emergency payload is only {conversation} (service.rs:672). No table stores card text/category/candidates/scrubbed text (quotes.job_card 0067, jobs.job 0031, intake tables 0053; jobs.job_fac; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T251 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 14 problem(s) on tasks still to run (+94 on DONE tasks); first: T396: stored context_pct 39% but it measures 45%; regenerate
+- Strict plan check red: 18 problem(s) on tasks still to run (+96 on DONE tasks); first: T396: stored context_pct 39% but it measures 45%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
