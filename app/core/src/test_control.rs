@@ -15,6 +15,9 @@
 //! read the same "now" (D-740). Delivered messages are read from the Twilio
 //! stand-in's own sent log (`GET .../Messages.json`, T167), never from the
 //! `messaging` tables, so a test sees what the carrier received (D-491).
+//! `GET /__test/perf/db` answers the process's database metrics snapshot, numbers only
+//! (statements, acquire waits and buckets, pool size), for the route benchmark and the war games
+//! (D-3292, D-3298).
 
 use std::sync::Arc;
 
@@ -125,6 +128,7 @@ mod enabled {
 
     use super::{TestControl, TestControlError};
     use crate::clock::Clock;
+    use crate::db_metrics::DbSnapshot;
     use crate::settings::{Environment, Settings, SettingsError, Vendor, check_base_url};
 
     const SECRET: &str = "ASKHAVA_TEST_CONTROL_SECRET";
@@ -223,6 +227,7 @@ mod enabled {
             .route("/__test/clock", get(now))
             .route("/__test/clock/advance", post(advance))
             .route("/__test/messages", get(messages))
+            .route("/__test/perf/db", get(perf_db))
             .route("/__test/{*rest}", any(|| async { StatusCode::NOT_FOUND }))
             .layer(middleware::from_fn_with_state(Arc::clone(&control), bearer))
             .with_state(control)
@@ -314,6 +319,11 @@ mod enabled {
         let body: Value = reply.json().await.map_err(|_| StatusCode::BAD_GATEWAY)?;
         let sent = body.get("messages").cloned().unwrap_or_else(|| json!([]));
         Ok(Json(json!({ "messages": sent })))
+    }
+
+    /// The database metrics snapshot, numbers only; a caller takes two and subtracts (D-3292, D-3298).
+    async fn perf_db() -> Json<DbSnapshot> {
+        Json(crate::db_metrics::global().snapshot())
     }
 
     /// Percent-encodes a query value (so `+1…` stays a plus).
