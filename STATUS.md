@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-12T09:32:52Z by runner 20e531db374f (actions).
+Updated 2026-11-12T09:33:11Z by runner 20e531db374f (actions).
 
-**Building: T358 in progress since 08:52Z; 233 of 394 done; week 92% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T268 in progress since 09:17Z; 233 of 394 done; week 92% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 233 of 394 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 3: T358 claimed 08:52Z, lease until 11:52Z; lane 4: T268 claimed 09:17Z, lease until 12:17Z; lane 5: T411 claimed 09:29Z, lease until 12:29Z
+- **Lane:** lane 4: T268 claimed 09:17Z, lease until 12:17Z; lane 5: T411 claimed 09:29Z, lease until 12:29Z
 - **Week:** 92% used, 5.1M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 09:30Z, 2 min before this update
 - **Keeper:** last ran 09:16Z, next wake 11:54Z
@@ -18,6 +18,7 @@ Updated 2026-11-12T09:32:52Z by runner 20e531db374f (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T358 | messaging: the Canadian area codes for the HELP roaming line | MERGE_PENDING | 1 | 40 min | 09:32Z |  |
 | T268 | portals, businesses and messaging: the sign-up consent box,  | resync | 1 | 58 min | 09:12Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md, app/messaging/CLAUDE.md; a resync merges it i |
 | T406 | quotes: a quote's PICK-040 facts are stored with it and read | MERGE_PENDING | 1 | 41 min | 09:05Z |  |
 | T336 | server, adapters and stand-in (harness): a text stopped by a | MERGE_PENDING | 2 | 56 min | 09:00Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
@@ -172,9 +173,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 3: T358 (lease until 2026-11-12T11:52:02Z)
 - lane 4: T268 (lease until 2026-11-12T12:17:01Z)
 - lane 5: T411 (lease until 2026-11-12T12:29:44Z)
 
 ## Last usage reading
-- {"task": "T268", "at": "2026-11-12T09:12:44Z", "output_tokens": 181406, "cache_read_input_tokens": 38642398, "input_tokens": 546, "cache_creation_input_tokens": 897894}
+- {"task": "T358", "at": "2026-11-12T09:32:51Z", "cache_read_input_tokens": 2854691, "cache_creation_input_tokens": 208126, "input_tokens": 175, "output_tokens": 47431}
