@@ -30139,7 +30139,8 @@
     "T100",
     "T086",
     "T294",
-    "T362"
+    "T362",
+    "T409"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -30242,7 +30243,8 @@
     "T100",
     "T300",
     "T200",
-    "T348"
+    "T348",
+    "T410"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -30278,7 +30280,8 @@
    "id": "T321",
    "deps": [
     "T107",
-    "T276"
+    "T276",
+    "T357"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -34543,7 +34546,8 @@
     "T300",
     "T348",
     "T204",
-    "T362"
+    "T362",
+    "T200"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -35081,7 +35085,8 @@
    "deps": [
     "T306",
     "T372",
-    "T374"
+    "T374",
+    "T200"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -36907,7 +36912,8 @@
     "T205",
     "T310",
     "T398",
-    "T361"
+    "T361",
+    "T151"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -36956,6 +36962,33 @@
     3204,
     3205
    ]
+  },
+  {
+   "id": "T410",
+   "deps": [
+    "T200",
+    "T158",
+    "T364",
+    "T375"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "business-get-help-link",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T409",
+   "deps": [
+    "T404",
+    "T086",
+    "T100"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "door-probe-owner-session",
+   "type": "harness",
+   "stage": "5"
   }
  ],
  "owner_waits": [],
@@ -39179,7 +39212,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T09:39:13Z",
+ "updated_at": "2026-11-12T09:40:39Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -39277,7 +39310,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "fbe1e137ffb38adf6ef63968b9f931f116e02cb1",
+ "runner_sha": "fc0f375db487b5425f82c090ae91e95db8e1c0d5",
  "starter": "actions",
  "smoke_runs": [
   {
