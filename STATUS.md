@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-12T08:36:18Z by runner 3aa1c4c2c870 (actions).
+Updated 2026-11-12T08:36:34Z by runner 3aa1c4c2c870 (actions).
 
 **Building: T406 in progress since 08:23Z; 232 of 394 done; week 91% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 232 of 394 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T406 claimed 08:23Z, lease until 11:23Z; lane 2: T336 claimed 08:04Z, lease until 11:04Z; lane 4: T322 claimed 08:00Z, lease until 11:00Z; lane 5: T268 claimed 08:14Z, lease until 11:14Z
+- **Lane:** lane 1: T406 claimed 08:23Z, lease until 11:23Z; lane 2: T336 claimed 08:04Z, lease until 11:04Z; lane 5: T268 claimed 08:14Z, lease until 11:14Z
 - **Week:** 91% used, 0.7M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:31Z, 4 min before this update
+- **Last run:** 08:31Z, 5 min before this update
 - **Keeper:** last ran 08:31Z, next wake 11:03Z
 
 ## Needs attention
@@ -19,6 +19,7 @@ Updated 2026-11-12T08:36:18Z by runner 3aa1c4c2c870 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T322 | businesses: a backup notice address is checked again at conf | MERGE_PENDING | 1 | 35 min | 08:36Z |  |
 | T251 | intake and quotes: the ZIP question, the job location, and t | BLOCKED | 1 | 3 min | 08:17Z | PLAN GAP: app/intake/src/summary_step.rs:415 and app/intake/src/service.rs:672 (T208/T039 files, not T251's). The card s |
 | T360 | messaging: the opt-out confirmation email while texting is o | done | 1 | 43 min | 07:42Z |  |
 | T336 | server, adapters and stand-in (harness): a text stopped by a | resync | 2 | 47 min | 07:35Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
@@ -170,8 +171,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T406 (lease until 2026-11-12T11:23:34Z)
 - lane 2: T336 (lease until 2026-11-12T11:04:06Z)
-- lane 4: T322 (lease until 2026-11-12T11:00:31Z)
 - lane 5: T268 (lease until 2026-11-12T11:14:04Z)
 
 ## Last usage reading
-- {"task": "T251", "at": "2026-11-12T08:17:31Z", "output_tokens": 33995, "input_tokens": 168, "cache_creation_input_tokens": 341884, "cache_read_input_tokens": 4786071}
+- {"task": "T322", "at": "2026-11-12T08:36:17Z", "cache_read_input_tokens": 6199142, "output_tokens": 64570, "cache_creation_input_tokens": 284250, "input_tokens": 230}
