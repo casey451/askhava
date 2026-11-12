@@ -11150,7 +11150,7 @@
    "id": "T345",
    "slug": "pin-every-workflow-action",
    "title": "harness: every external GitHub Actions `uses:` in every workflow is pinned to a full commit SHA",
-   "goal": "Pentest PT-01 (D-2347; SEC-045): 15 external `uses:` lines are pinned to mutable tags, against SEC-045 (\"every GitHub Actions `uses:`\"), and no decision allows a tag: `backup-runner.yml` :64, :231 and :663 (`actions/checkout@v4`), :243 (`actions/setup-python@v5`), :251 (`actions/cache@v4`), :274 (`actions/cache/restore@v4`), :413 (`anthropics/claude-code-action@v1`, on the job that holds the Claude OAuth token, the conditional push token and contents, pull-requests, issues, id-token and actions write), :483 (`actions/cache/save@v4`); `nightly-main.yml:170`, `twin.yml:29`, `auto-pr.yml:30`, `governance.yml:47`, `inbox.yml:39` and `notify.yml:25` (`actions/checkout@v4`); `twin.yml:53` (`actions/upload-artifact@v4`). Pin each to the full 40-character commit SHA its tag resolves to when this task runs (read from the action's public repository, never guessed), with the version in a trailing comment as `ci.yml` does (`# v4.4.0`), and record every action, tag, resolved version and SHA in this task's `docs/decisions.md` entry. Before hand-in, confirm each SHA equals the tag's dereferenced commit (`refs/tags/<tag>^{}`, or the tag ref itself when it is lightweight) in the action's own repository, and put that check's output in the hand-in report; the overseer watches the first runner cycle after the merge. Behaviour is unchanged: each pin is the commit the tag named. Nothing else in the workflows changes (permissions and tokens stay as they are; trimming them is not this task). `.github/dependabot.yml` already watches the `github-actions` ecosystem, so the pins get update pull requests. Proof for the runner pin: the next runner cycle after the merge completes on fake data; the hand-in report says how to revert (the one-line pin back to `@v1` in `backup-runner.yml`, by a harness pull request) if it does not. Line numbers as of `main` after PR #516 (D-3083). Three done runner tests hard-code the tags being pinned (D-3083): `tests/test_runner_keeper.py:417`, `:426` and `:652`, `tests/test_runner_pre_smoke.py:263` and `tests/test_runner_smoke_reuse.py:402` and `:505` (`actions/cache/restore@v4`, `actions/cache/save@v4`, `anthropics/claude-code-action@v1`); in those files only these action-ref matches change, so each compares the action name before `@`, and no other assertion, input or expected value changes (`tests/test_runner_live.py:777`, a fake log line, and `tests/test_runner_two_lanes.py:712`, a prefix match, need none). The repository-wide test that keeps every workflow pinned is T121's (TD-SEC-24). Harness: an Opus review.",
+   "goal": "Pentest PT-01 (D-2347; SEC-045): 16 external `uses:` lines are pinned to mutable tags, against SEC-045 (\"every GitHub Actions `uses:`\"), and no decision allows a tag: `backup-runner.yml` :64, :231 and :756 (`actions/checkout@v4`), :243 (`actions/setup-python@v5`), :271 and :296 (`actions/cache/restore@v4`), :450 (`anthropics/claude-code-action@v1`, on the job that holds the Claude OAuth token, the conditional push token and contents, pull-requests, issues, id-token and actions write), :535 and :566 (`actions/cache/save@v4`); `nightly-main.yml:170`, `twin.yml:29`, `auto-pr.yml:30`, `governance.yml:47`, `inbox.yml:39` and `notify.yml:25` (`actions/checkout@v4`); `twin.yml:55` (`actions/upload-artifact@v4`). Pin each to the full 40-character commit SHA its tag resolves to when this task runs (read from the action's public repository, never guessed), with the version in a trailing comment as `ci.yml` does (`# v4.4.0`), and record every action, tag, resolved version and SHA in this task's `docs/decisions.md` entry. Before hand-in, confirm each SHA equals the tag's dereferenced commit (`refs/tags/<tag>^{}`, or the tag ref itself when it is lightweight) in the action's own repository, and put that check's output in the hand-in report; the overseer watches the first runner cycle after the merge. Behaviour is unchanged: each pin is the commit the tag named. Nothing else in the workflows changes (permissions and tokens stay as they are; trimming them is not this task). `.github/dependabot.yml` already watches the `github-actions` ecosystem, so the pins get update pull requests. Proof for the runner pin: the next runner cycle after the merge completes on fake data; the hand-in report says how to revert (the one-line pin back to `@v1` in `backup-runner.yml`, by a harness pull request) if it does not. Line numbers as of `main` 7450ca23, after PR #567 (D-3200; `backup-runner.yml` no longer has a combined `actions/cache@v4` step since PR #553). Five done runner tests hard-code the tags being pinned (D-3083, D-3200): `tests/test_runner_keeper.py:417`, `:426` and `:652`, `tests/test_runner_pre_smoke.py:263`, `tests/test_runner_smoke_reuse.py:402` and `:505`, `tests/test_runner_cache.py:207` and `:214`, and `tests/test_runner_merge_early.py:212` and `:213` (`actions/cache/restore@v4`, `actions/cache/save@v4`, `anthropics/claude-code-action@v1`, `actions/setup-python@v5`); in those files only these action-ref matches change, so each compares the action name before `@`, and no other assertion, input or expected value changes (`tests/test_runner_live.py:777`, a fake log line, and the prefix matches `tests/test_runner_two_lanes.py:712` and `tests/test_runner_cache.py:221`, `:245`, `:260` and `:263`, need none). The repository-wide test that keeps every workflow pinned is T121's (TD-SEC-24). Harness: an Opus review.",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -11177,7 +11177,9 @@
     ".github/workflows/notify.yml",
     "tests/test_runner_keeper.py",
     "tests/test_runner_pre_smoke.py",
-    "tests/test_runner_smoke_reuse.py"
+    "tests/test_runner_smoke_reuse.py",
+    "tests/test_runner_cache.py",
+    "tests/test_runner_merge_early.py"
    ],
    "reads": [
     "docs/spec/security.md",
@@ -11191,13 +11193,14 @@
    "decisions": [
     "D-2347",
     "D-480",
-    "D-3083"
+    "D-3083",
+    "D-3200"
    ],
    "cites": [],
    "budget": {
-    "files": 10,
+    "files": 12,
     "lines": 160,
-    "context_pct": 28
+    "context_pct": 38
    },
    "checks": [
     "Ci",
