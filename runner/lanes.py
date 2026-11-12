@@ -187,8 +187,10 @@ def within_limits(ids: list[str], flying: list[dict[str, Any]], task_def: Callab
 def takes_last_slot(task: dict[str, Any], others: list[dict[str, Any]], reserved: frozenset[str], limit: Limit) -> bool:
     """Whether claiming `task` beside `others` would leave a `reserved` crate no free slot for the blocked
     highest-ranked id (D-3303): the crate would then hold its tasks in flight, this one and that one over its
-    limit. With a limit of 1 every reserved crate counts, as under D-3269's reservation."""
-    return any(len(held) + 2 > limit(crate, len(held)) for crate in reserved & task_crates(task)
+    limit. The limit is read with this one counted among the holders (review round 2): a crate whose `CLAUDE.md`
+    this claim would fill has no slot left for the reserved one. With a limit of 1 every reserved crate counts,
+    as under D-3269's reservation."""
+    return any(len(held) + 2 > limit(crate, len(held) + 1) for crate in reserved & task_crates(task)
                for held in [holders(crate, others)])
 
 

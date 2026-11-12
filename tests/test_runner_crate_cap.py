@@ -200,3 +200,17 @@ def test_the_repository_sets_a_cap_of_two_with_the_guardrail_and_the_entry_point
     assert "D-3303" in raw["crate_cap_note"] and "1 merge in 5" in raw["crate_cap_note"]
     source = inspect.getsource(entry.build)
     assert 'crate_cap=crate_cap(ROOT / "kit" / "runner.json")' in source and "crate_full=crate_doc_full(ROOT)" in source
+
+
+def test_the_reservation_reads_the_limit_with_the_later_task_counted(tmp_path: Path) -> None:
+    """Review round 2: `pay` is at 119 lines with nothing in flight. T002 taking it would make it full (119 + 1),
+    leaving no slot for the blocked T010 (its `web` is full and held by T020), so T002 is refused; `site` still claims."""
+    most = check_code_docs.MAX_CRATE_DOC_LINES
+    for name, count in (("pay", most - 1), ("web", most), ("site", 10)):
+        (tmp_path / "app" / name).mkdir(parents=True)
+        (tmp_path / "app" / name / "CLAUDE.md").write_text("line\n" * count, encoding="utf-8")
+    tasks = graph()
+    capped_limit = lanes.crate_limit(2, entry.crate_doc_full(tmp_path))
+    s = holding(tasks, "T020")
+    assert lanes.exclusive_ids(["T010", "T002", "T004"], s, NOW, by_id(tasks), capped_limit) == ["T004"]
+    assert lanes.exclusive_ids(["T002", "T004"], s, NOW, by_id(tasks), capped_limit) == ["T002", "T004"]  # no reservation: it may
