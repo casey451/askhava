@@ -2456,3 +2456,10 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **What did not change.** Resyncs, your "claim first" list and the longest-chain order still come first, and every lane still fills: if every waiting task overlaps, the runner claims as before.
 - **To turn it off.** Set `prefer_disjoint_crates` to `false` in `kit/runner.json`.
 - **Nothing needs you now.**
+
+## Runner: a free lane is filled after every run, not only after a claim (D-3140)
+
+- **What happened.** Late on November 11 lane 4 sat empty for about 15 minutes with 20 tasks ready: the runs that noticed it were not hand-offs, and only a hand-off started a run for a free lane. For most of the rest of that hour lanes 1, 3 and 5 had no worker but each still held a finished task waiting for its merge, which by design keeps the lane busy; one merged task waited 26 minutes for the runner to notice, behind the start-of-run smoke test.
+- **What changed.** Every run that ends now starts a run for each free lane with a task ready, except a run that itself found nothing to claim, so it cannot loop. Nothing starts while main is red or the usage pacer waits, and never more lanes than are in use.
+- **Still open.** Noticing a merged task sooner (before the smoke test) would save about 25 minutes per merge; that is a separate runner change for later.
+- **Nothing needs you now.**

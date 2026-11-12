@@ -148,23 +148,56 @@ def test_refill_leaves_out_the_own_lane_and_the_task_it_will_take(tmp_path: Path
     assert cycle.refill_lanes(cfg, state, NOW, own="9") == ["1", "2", "3"]  # a lane not free changes nothing
 
 
-def test_the_report_starts_the_other_lanes_and_keeps_only_unstarted_ones_for_the_chain(tmp_path: Path,
-                                                                                       monkeypatch: pytest.MonkeyPatch) -> None:
-    cfg = dataclasses.replace(config([], tmp_path), lanes=3, lane_hint="2")
-    asked: list[str | None] = []
+class _Log:
+    """The GitHubEnv surface `lane_report` uses: dispatches and this job's log rows."""
+
+    def __init__(self, rows: list[dict[str, Any]] | None = None, refuse: str = "") -> None:
+        self.rows, self.refuse, self.calls = list(rows or []), refuse, []
+
+    def dispatch_lane(self, lane: str) -> bool:
+        self.calls.append(lane)
+        return lane != self.refuse
+
+    def read_cycle_log(self) -> list[dict[str, Any]]:
+        return self.rows
+
+
+def _report(monkeypatch: pytest.MonkeyPatch, cfg: cycle.Config, env: _Log, result: str, dry: bool = False) -> tuple[dict[str, Any], list[Any]]:
+    asked: list[Any] = []
 
     def refill(c: cycle.Config, e: Any, own: str | None = None) -> list[str]:
         asked.append(own)
         return ["1", "3"]
 
     monkeypatch.setattr(entry, "refill", refill)
-    env = SimpleNamespace(dispatch_lane=lambda lane: lane == "1")
-    out = entry.lane_report(cfg, env, cycle.MERGES_RESOLVED, dry_run=False)  # type: ignore[arg-type]
-    assert asked == ["2"] and out == {"lane": "2", "refill": ["3"], "dispatched": ["1"]}
-    out = entry.lane_report(cfg, env, "smoke_pending", dry_run=False)  # type: ignore[arg-type]
-    assert asked[-1] is None and out == {"lane": "2", "refill": ["1", "3"]}
-    out = entry.lane_report(cfg, env, cycle.MERGES_RESOLVED, dry_run=True)  # type: ignore[arg-type]
-    assert out == {"lane": "2", "refill": ["1", "3"]}
+    report: dict[str, Any] = {}
+    entry.lane_report(SimpleNamespace(dry_run=dry), cfg, env, result, report)  # type: ignore[arg-type]
+    return report, asked
+
+
+def test_the_early_report_starts_the_other_lanes_and_keeps_only_unstarted_ones_for_the_chain(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    cfg = dataclasses.replace(config([], tmp_path, "actions-77"), lanes=3, lane_hint="2")
+    env = _Log(refuse="3")
+    report, asked = _report(monkeypatch, cfg, env, cycle.MERGES_RESOLVED)
+    assert asked == ["2"] and report == {"lane": "2", "refill": ["3"], "dispatched": ["1"]} and env.calls == ["1", "3"]
+    report, asked = _report(monkeypatch, cfg, _Log(), cycle.MERGES_RESOLVED, dry=True)
+    assert report == {"lane": "2", "refill": ["1", "3"]}
+    report, asked = _report(monkeypatch, cfg, _Log(), "merge_pending")
+    assert asked == [None] and report["dispatched"] == ["1", "3"]  # D-3140: every run that ends refills
+
+
+def test_a_lane_the_early_step_started_is_not_started_again_by_the_sessions_hand_off(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    cfg = dataclasses.replace(config([], tmp_path, "actions-77"), lanes=3, lane_hint="2")
+    early = {"at": "2026-11-01T12:01:00", "session": "actions-77", "result": cycle.MERGES_RESOLVED, "dispatched": ["1"]}
+    other = {"at": "2026-11-01T12:02:00", "session": "actions-88", "result": "handed_off", "dispatched": ["3"]}
+    env = _Log([early, other])
+    report, _ = _report(monkeypatch, cfg, env, "handed_off")
+    assert env.calls == ["3"] and report["dispatched"] == ["3"]  # lane 1 is on its way; another job's start is not this job's
+    env = _Log([early, dict(early, result="usage_reading_recorded: week 1%", dispatched=["3"])])
+    _report(monkeypatch, cfg, env, "handed_off")
+    assert env.calls == []
 
 
 def test_nothing_to_close_writes_no_log_row() -> None:
@@ -191,3 +224,27 @@ def test_the_chain_refills_after_an_early_close_even_when_the_session_row_moved_
     assert _refill([session]) == ""  # without the early close the rule is as before
     assert _refill([early]) == ""  # the early row alone: every lane it found was started already
     assert _refill([dict(early, refill=["3"])]) == "3"  # a lane it could not start is left to the chain
+    # The session's row lists lane 3 again, which the early row started: not started twice (D-3141).
+    assert _refill([dict(early, dispatched=["3"]), dict(session, refill=["2", "3"])]) == "2"
+    moved = dict(session, result="MERGE_PENDING", refill=["2", "3"])
+    assert _refill([dict(early, dispatched=["3"], session="actions-88"), moved]) == "2 3"  # another job's start
+
+
+def test_an_earlier_attempts_merged_pr_beside_an_empty_hand_in_is_left_alone(tmp_path: Path) -> None:
+    """The task's reviewed head is already on main (an empty hand-in) and the branch's latest PR carries another
+    head: the cycle resolves it without that PR (`_without_pr`, D-584), and so the early step leaves it alone."""
+    env, cfg = _pending(tmp_path)
+    env.main_commits.add(HEAD)
+    env.prs["T001"] = dict(any_green_pr("old0001"), merged_sha="sq0000")
+    env.update_merges = False
+    before = copy.deepcopy(env.store)
+    assert cycle.resolve_merged(cfg, env, NOW) == cycle.NO_MERGED and env.store == before
+
+
+def test_a_cleanup_task_waiting_for_its_stage_proof_is_left_to_the_cycle(tmp_path: Path) -> None:
+    env, cfg = _pending(tmp_path, [make_task("T001", type="cleanup", stage="2")])
+    env.prs["T001"] = green_pr()
+    before = copy.deepcopy(env.store)
+    assert cycle.resolve_merged(cfg, env, NOW) == cycle.NO_MERGED and env.store == before
+    env.store["stage_proofs"] = {"2": {"evidence": "nightly run 1 green"}}
+    assert cycle.resolve_merged(cfg, env, NOW) == cycle.MERGES_RESOLVED and st.status(env.store, "T001") == st.DONE

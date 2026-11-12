@@ -524,6 +524,8 @@ def resolve_merged(cfg: Config, env: Env, now: datetime) -> str:
         tid, pr = task["id"], env.pr_for(task["id"])
         if pr is None or not pr.get("merged") or verify.checks_state(pr) == "pending" or _earlier_pr(task, pr, env):
             continue
+        if not _proof_ok(state, tid):
+            continue  # a cleanup task whose stage proof the cycle records first (`record_proofs`, D-551)
         resolved, result = _resolve_pr(state, env, cfg, now, tid, pr)
         if result == "merge_pending":
             continue  # a merged head not placed yet: its wait is the cycle's to start (D-584)
@@ -1405,10 +1407,13 @@ def refill_lanes(cfg: Config, state: State, now: datetime, own: str | None = Non
     """The free lanes a new run should be started for, at most one per task that could be claimed beside
     the tasks in flight; the backup-runner chain step dispatches one run per lane (D-620). None while the
     pacer's last decision is still a wait (`pacing.waiting_until` in the future): nothing fits the usage
-    windows then, so a started run would only report `paced` (D-723). `own`, a lane this very run's
-    session is about to claim on (`--resolve-merges`, D-3141), is left out and takes one of the tasks."""
+    windows then, so a started run would only report `paced` (D-723). None while `main` is red: only
+    FIX-MAIN may be claimed then, and the gate's lane pick (`state.run_lane`, the "fix" lane) places it,
+    so every run that ends can start these without ever adding a run beside a red main (D-3140). `own`, a
+    lane this very run's session is about to claim on (`--resolve-merges`, D-3141), is left out and takes one
+    of the tasks."""
     free = lanes.free_lanes(cfg.lanes, state, now)
-    if not free or _pacer_waiting(state, now):
+    if not free or state.get("main_red") or _pacer_waiting(state, now):
         return []
     ids = _by_day(cfg, st.eligible(state, now, _passed(cfg, state), cfg.proof_stages), now)
     ready = lanes.compatible_ids(ids, state, now, lambda tid: _task_def(cfg, state, tid), cfg.locked, cfg.proof_stages)
