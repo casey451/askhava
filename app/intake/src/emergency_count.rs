@@ -4,10 +4,9 @@
 //! Between 8 p.m. and 8 a.m. Arizona time the homeowner first gets the count of businesses in the
 //! trade that get emergency requests at night, then the choice; with a count of 0 the choice is
 //! not offered and the job runs as regular. By day only the choice goes. The count is
-//! `businesses::api::night_count(trade, town)`; which businesses it counts (the after-hours tick
-//! now, the per-person switch and the alert test later) is `businesses`' alone (T150, D-491).
+//! `businesses::api::covered_night_count`; which businesses it counts (the tick, the suspension, the switch and the Yes) is `businesses`' alone (T150, D-491).
 
-use askhava_businesses::api::night_count;
+use askhava_businesses::api::{EMERGENCY_YES_LIFE, covered_night_count};
 use askhava_core::api::{BUSINESS_CLOSE_HOUR, BUSINESS_OPEN_HOUR, arizona_time};
 use jiff::Timestamp;
 use sqlx::PgConnection;
@@ -52,14 +51,19 @@ pub fn offer(at: Timestamp, count: u32) -> Offer {
     Offer { templates, offered }
 }
 
-/// The INT-033 count N for catalog category `trade` in `town`, from
-/// `businesses::api::night_count` (BIZ-007, D-491).
+/// The INT-033 count N at `at` for catalog category `trade` in `town`, from
+/// `businesses::api::covered_night_count` (BIZ-007, D-491, D-2010, D-2703): active, ticked,
+/// not suspended, and someone who can confirm has the switch on and a Yes under 90 days.
 ///
 /// # Errors
 ///
 /// [`IntakeError::Database`].
-pub async fn count(db: &mut PgConnection, trade: &str, town: &str) -> Result<u32, IntakeError> {
-    night_count(db, trade, town)
+pub async fn count(
+    db: &mut PgConnection,
+    (trade, town): (&str, &str),
+    at: Timestamp,
+) -> Result<u32, IntakeError> {
+    covered_night_count(db, (trade, town), (at, EMERGENCY_YES_LIFE))
         .await
         .map_err(|_| IntakeError::Database)
 }
