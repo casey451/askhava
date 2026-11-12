@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T17:27:04Z by runner 5e739fa972c5 (actions).
+Updated 2026-11-12T17:52:26Z by runner ecdade4c9369 (actions).
 
 **Building: T251 in progress since 17:19Z; 248 of 400 done; week 0% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-12T17:27:04Z by runner 5e739fa972c5 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T251 claimed 17:19Z, lease until 20:19Z; lane 2: T366 claimed 17:26Z, lease until 20:26Z; lane 3: T385 claimed 17:26Z, lease until 20:26Z; lane 4: T414 claimed 17:19Z, lease until 20:19Z; lane 5: T350 claimed 17:26Z, lease until 20:26Z
 - **Week:** 0% used, 183.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:26Z, 0 min before this update
+- **Last run:** 17:27Z, 25 min before this update
 - **Keeper:** last ran 17:12Z, next wake 19:07Z
 
 ## Needs attention
@@ -118,28 +118,28 @@ Updated 2026-11-12T17:27:04Z by runner 5e739fa972c5 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 208 of 733 (28.4%) · partial 356 · unstarted 169
+**Requirements verified:** 230 of 733 (31.4%) · partial 334 · unstarted 169
 **Tasks merged (throughput only):** 248 of 400
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 13 | 16 | 6 | 35 |
+| accessibility | 15 | 14 | 6 | 35 |
 | ai | 7 | 17 | 5 | 29 |
-| businesses | 15 | 40 | 3 | 58 |
+| businesses | 16 | 39 | 3 | 58 |
 | calls | 10 | 14 | 1 | 25 |
-| consent | 8 | 23 | 4 | 35 |
-| fees | 12 | 39 | 1 | 52 |
-| intake | 21 | 17 | 5 | 43 |
-| job-cards | 11 | 11 | 2 | 24 |
-| licensing | 20 | 28 | 0 | 48 |
-| lifecycle | 18 | 10 | 0 | 28 |
-| messaging | 17 | 25 | 3 | 45 |
+| consent | 11 | 20 | 4 | 35 |
+| fees | 13 | 38 | 1 | 52 |
+| intake | 22 | 16 | 5 | 43 |
+| job-cards | 12 | 10 | 2 | 24 |
+| licensing | 25 | 23 | 0 | 48 |
+| lifecycle | 19 | 9 | 0 | 28 |
+| messaging | 18 | 24 | 3 | 45 |
 | ops-recovery | 2 | 7 | 45 | 54 |
 | privacy | 6 | 23 | 2 | 31 |
-| quiet-hours | 4 | 5 | 0 | 9 |
-| quotes-pick | 30 | 25 | 1 | 56 |
+| quiet-hours | 7 | 2 | 0 | 9 |
+| quotes-pick | 31 | 24 | 1 | 56 |
 | recurring | 6 | 2 | 3 | 11 |
-| security | 6 | 43 | 6 | 55 |
+| security | 8 | 41 | 6 | 55 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 3 | 25 | 28 |
 | wording | 2 | 5 | 25 | 32 |
