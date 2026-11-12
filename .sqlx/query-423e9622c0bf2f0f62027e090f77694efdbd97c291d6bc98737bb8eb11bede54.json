@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT id, job_id, body FROM jobs.feedback WHERE share AND removed_reason IS NULL AND author_kind IS NULL ORDER BY received_at DESC, id",
+  "query": "SELECT id, job_id, body FROM jobs.feedback WHERE share AND removed_reason IS NULL AND author_kind IS NULL AND body_purged_at IS NULL ORDER BY received_at DESC, id",
   "describe": {
     "columns": [
       {
@@ -46,5 +46,5 @@
       false
     ]
   },
-  "hash": "af685d119ac610d64d678d7514da4d18fcb1556e52cc52b52ab9a9fb5e973b39"
+  "hash": "423e9622c0bf2f0f62027e090f77694efdbd97c291d6bc98737bb8eb11bede54"
 }
