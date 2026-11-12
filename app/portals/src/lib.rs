@@ -39,6 +39,7 @@ mod business_left;
 mod business_portal;
 mod business_signup;
 mod checkin;
+mod code_challenge;
 mod confirm_pay;
 mod data_download;
 mod email_check;
