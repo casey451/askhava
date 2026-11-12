@@ -2827,3 +2827,4 @@
 - 2026-11-12T14:03:35Z runner 87abedec7b6e (actions): {"T362": "MERGE_PENDING -> QUEUED", "T385": "MERGE_PENDING -> QUEUED"}
 - 2026-11-12T14:03:55Z runner 87abedec7b6e (actions): {"T385": "QUEUED -> IN_PROGRESS"}; T385 estimated 3.2M tokens (calibrated); week has 6.0M left (no five-hour budget, D-3056) (session_reading 2026-11-12T13:58:22Z (week)); claimed
 - 2026-11-12T14:07:35Z runner 87abedec7b6e (actions): {"T370": "QUEUED -> IN_PROGRESS"}; T370 estimated 1.1M tokens (calibrated); week has 2.8M left (no five-hour budget, D-3056) after 3.2M still running in another lane (session_reading 2026-11-12T13:58:22Z (week)); claimed
+- 2026-11-12T14:08:20Z runner 87abedec7b6e (actions): {}; T362 estimated 3.3M tokens (calibrated); week has 1.8M left (no five-hour budget, D-3056) after 4.2M still running in another lane (session_reading 2026-11-12T13:58:22Z (week)); waiting until 2026-11-12T17:00:00Z
