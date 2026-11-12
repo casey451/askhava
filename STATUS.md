@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T03:18:12Z by runner ec8a9684671f (actions).
+Updated 2026-11-12T03:18:28Z by runner ec8a9684671f (actions).
 
 **Building: T248 in progress since 03:10Z; 222 of 390 done; week 83% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-12T03:18:12Z by runner ec8a9684671f (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T248 claimed 03:10Z, lease until 06:10Z; lane 3: T326 claimed 03:12Z, lease until 06:12Z
 - **Week:** 83% used, 23.1M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:17Z, 0 min before this update
-- **Keeper:** last ran 03:15Z, next wake 06:12Z
+- **Last run:** 03:18Z, 0 min before this update
+- **Keeper:** last ran 03:18Z, next wake 06:12Z
 
 ## Needs attention
 - BLOCKED T401: plan gap reported: PLAN GAP: tests/security/tests/no_homeowner_charge.rs:17-27,123 (TD-FEE-07, not T401's) fails any app/ file naming a homeowner mark (door_matrix.rs already names Realm::Homeowner at ~969/979) plus askhava_payments/payments::api; T401 needs payments::api::no_fee_release in door_matrix.rs (kit/prompts/T401.md:9). Evidence: cargo test -p askhava-security --test no_homeowner_charge -> td_fee_07_no_homeowner_route_reaches_payments FAILED: door_matrix.rs: homeowner-realm code reaches payments. Reviewer confirmed; no legitimate workaround. Smallest plan change: give T401 a second owned file (e.g. app; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T401 --plan-fix D-### --reason "..."` (D-2859)
