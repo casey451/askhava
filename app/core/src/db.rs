@@ -15,9 +15,9 @@ use std::str::FromStr;
 use std::time::Duration;
 
 use secrecy::SecretString;
-use sqlx::PgPool;
 use sqlx::migrate::{MigrateError, Migrator};
 use sqlx::postgres::{PgConnectOptions, PgPoolOptions};
+use sqlx::{ConnectOptions, PgPool};
 use thiserror::Error;
 
 use crate::settings::{Settings, expose};
@@ -28,6 +28,15 @@ pub static MIGRATOR: Migrator = sqlx::migrate!("../../migrations");
 
 /// How long a request waits for a free pooled connection before it fails.
 const ACQUIRE_TIMEOUT: Duration = Duration::from_secs(5);
+
+/// An acquire waiting longer than this logs sqlx's one slow-acquire WARN line, which holds the
+/// wait and this threshold in seconds and nothing else (D-3298).
+pub const ACQUIRE_SLOW_THRESHOLD: Duration = Duration::from_millis(250);
+
+/// The level of sqlx's per-statement and per-acquire events, which only the metrics layer's
+/// filter lets through (D-3298). sqlx takes `log` levels; parsing the name keeps `log` out of
+/// the direct dependencies (`kit/allowed_crates.txt`).
+const METRICS_EVENT_LEVEL: &str = "debug";
 
 /// Why the database could not be reached or migrated. No variant carries the URL or the
 /// driver's message, which can quote it (SEC-001, PRIV-016).
@@ -91,15 +100,26 @@ impl<T> Guarded<T> {
 /// pool connects on first use, so a down database fails requests, not startup. Call it inside
 /// the Tokio runtime.
 ///
+/// It also turns on sqlx's statement and acquire-time events and registers the pool with the
+/// process's database metrics, so a snapshot reads its size and idle count (D-3292, D-3298); the
+/// maximum and the acquire timeout are not touched by that.
+///
 /// # Errors
 ///
 /// [`DbError::BadUrl`] when `ASKHAVA_DATABASE_URL` does not parse.
 pub fn app_pool(settings: &Settings) -> Result<PgPool, DbError> {
-    let options = connect_options(settings.database_url())?;
-    Ok(PgPoolOptions::new()
+    let mut options = connect_options(settings.database_url())?;
+    let mut pool = PgPoolOptions::new()
         .max_connections(settings.db_pool_max())
         .acquire_timeout(ACQUIRE_TIMEOUT)
-        .connect_lazy_with(options))
+        .acquire_slow_threshold(ACQUIRE_SLOW_THRESHOLD);
+    if let Ok(level) = METRICS_EVENT_LEVEL.parse() {
+        options = options.log_statements(level);
+        pool = pool.acquire_time_level(level);
+    }
+    let pool = pool.connect_lazy_with(options);
+    crate::db_metrics::global().register_pool(&pool);
+    Ok(pool)
 }
 
 /// Applies every migration not yet applied, in number order, over one connection as the
