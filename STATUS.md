@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T09:16:26Z by runner 7450ca237d55 (actions).
+Updated 2026-11-12T09:16:43Z by runner 7450ca237d55 (actions).
 
 **Building: T358 in progress since 08:52Z; 233 of 394 done; week 92% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-12T09:16:26Z by runner 7450ca237d55 (actions).
 - **Lane:** lane 3: T358 claimed 08:52Z, lease until 11:52Z
 - **Week:** 92% used, 0.7M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 09:16Z, 0 min before this update
-- **Keeper:** last ran 09:13Z, next wake 11:54Z
+- **Keeper:** last ran 09:16Z, next wake 11:54Z
 
 ## Needs attention
 - BLOCKED T345: plan gap reported: PLAN GAP: tests/test_runner_cache.py:207,:214 and tests/test_runner_merge_early.py:212,:213 hard-code actions/cache/restore@v4, actions/cache/save@v4, anthropics/claude-code-action@v1 and actions/setup-python@v5; no task owns them (added after D-3083 in harness PRs #553 (D-3143) and #552 (D-3141)). Reviewer confirmed: lines exist on main, T345 owns list excludes both files, and with the pins applied the two tests fail (2 failed, 35 passed). Smallest fix: add both files to T345 owns under the D-3083 rule (only action-ref matches change, comparing the name before @); owns and files budget 10 -> ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T345 --plan-fix D-### --reason "..."` (D-2859)
