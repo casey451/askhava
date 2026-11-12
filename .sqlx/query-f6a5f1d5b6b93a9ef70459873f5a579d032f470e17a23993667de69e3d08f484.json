@@ -1,0 +1,27 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO businesses.leave_reason (business_id, asked_by, choice, other_words, answered_at) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (business_id) DO NOTHING RETURNING true",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "?column?",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Text",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "f6a5f1d5b6b93a9ef70459873f5a579d032f470e17a23993667de69e3d08f484"
+}

@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE quotes.quote SET withdrawn_at = $3 WHERE job_id = $1 AND business_id = $2 AND withdrawn_at IS NULL",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "f71ec9766170f9cffb431c2fa93cd29f6d9731ed020cca03d74fe97b798c13d0"
+}
