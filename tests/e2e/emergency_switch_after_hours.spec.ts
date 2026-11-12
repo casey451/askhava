@@ -5,8 +5,8 @@
 // The page is not served until T306, so no browser can reach it through a session. The pages are
 // the template as rendered: the integration test `td_biz_47_write_pages_for_axe`
 // (tests/integration/tests/after_hours_cover.rs) writes the switch page with the after-hours box
-// unticked, ticked, and after a refused tick listing the steps still missing into a temporary
-// folder, and each is loaded here and scanned with axe at 320, 768 and 1280 px. Who may tick and
+// unticked, ticked, ticked but suspended (D-3239), and after a refused tick listing the steps
+// still missing into a temporary folder, and each is loaded here and scanned with axe at 320, 768 and 1280 px. Who may tick and
 // when is checked in that integration test. Fake data only.
 import { spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
@@ -15,7 +15,7 @@ import { join } from "node:path";
 import { axeScan, WIDTHS } from "../a11y/fixtures";
 import { test, expect } from "./fixtures";
 
-const PAGES = ["unticked", "ticked", "refused"];
+const PAGES = ["unticked", "ticked", "suspended", "refused"];
 const REPO_ROOT = join(import.meta.dirname, "..", "..");
 
 /** Renders the switch page's after-hours states through the integration test and returns the folder. */
@@ -30,7 +30,7 @@ function renderPages(): string {
   return dir;
 }
 
-test("TD-BIZ-47 (axe part): the after-hours box unticked, ticked and refused passes axe at 320, 768 and 1280 px", async ({ page }) => {
+test("TD-BIZ-47 (axe part): the after-hours box unticked, ticked, suspended and refused passes axe at 320, 768 and 1280 px", async ({ page }) => {
   test.setTimeout(600_000);
   const dir = renderPages();
   try {
@@ -49,6 +49,9 @@ test("TD-BIZ-47 (axe part): the after-hours box unticked, ticked and refused pas
     await expect(page.getByRole("alert")).toContainText("Send a test emergency email.");
     await page.setContent(readFileSync(join(dir, "ticked.html"), "utf8"));
     await expect(page.getByRole("button", { name: "Stop taking emergency jobs at night" })).toHaveCount(1);
+    await page.setContent(readFileSync(join(dir, "suspended.html"), "utf8"));
+    await expect(page.locator("#after-hours-suspended")).toContainText("paused");
+    await expect(page.locator("#after-hours-on")).toHaveCount(0);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

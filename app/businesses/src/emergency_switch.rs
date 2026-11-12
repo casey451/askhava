@@ -6,7 +6,7 @@
 //! business when they can confirm (the owner or "Confirm and billing"), are current, have the
 //! switch on and a Yes younger than the life given (90 days, [`EMERGENCY_YES_LIFE`]).
 //! [`set_after_hours`] ticks after-hours only while someone covers and never ends a suspension
-//! (T369, D-2702); [`after_hours_box`] is who may tick it; [`recheck_after_hours`]
+//! (T369, D-2702); [`after_hours_box`] is who may tick it and what the box shows; [`recheck_after_hours`]
 //! removes the tick and queues the owner's email ([`AFTER_HOURS_OFF_KIND`]) when the last person
 //! who had the switch on turns it off, answers No or is removed; [`queue_emergency_retests`]
 //! clears a Yes at 90 days and queues the re-test, and the business stops counting until a new
@@ -186,19 +186,32 @@ pub async fn set_after_hours(
     db(tx.commit().await)
 }
 
-/// BIZ-007 (T369): the after-hours tick of `by`'s business when `by` is a current owner or
-/// "Confirm and billing" member, who alone see and change the box; `None` for anyone else.
+/// BIZ-007, INT-033 (T369): the after-hours box's facts for the owner or a "Confirm and billing"
+/// member.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub struct AfterHoursTick {
+    /// The business is ticked for after-hours emergencies.
+    pub ticked: bool,
+    /// After-hours is suspended ([`suspend_after_hours`]): out of the night count until a new Yes,
+    /// ticked or not (D-3237).
+    pub suspended: bool,
+}
+
+/// BIZ-007, INT-033 (T369, D-3239): the after-hours tick and suspension of `by`'s business when
+/// `by` is a current owner or "Confirm and billing" member, who alone see and change the box;
+/// `None` for anyone else.
 ///
 /// # Errors
 /// [`SwitchError::Database`].
 pub async fn after_hours_box(
     conn: &mut PgConnection,
     by: Acting,
-) -> Result<Option<bool>, SwitchError> {
-    let q = sqlx::query_scalar!(
-        "SELECT b.after_hours FROM businesses.business b JOIN businesses.team_member m \
-         ON m.business_id = b.id WHERE b.id = $1 AND m.id = $2 AND m.removed_at IS NULL \
-         AND m.confirm_and_billing",
+) -> Result<Option<AfterHoursTick>, SwitchError> {
+    let q = sqlx::query_as!(
+        AfterHoursTick,
+        "SELECT b.after_hours AS ticked, b.after_hours_suspended_at IS NOT NULL AS \"suspended!\" \
+         FROM businesses.business b JOIN businesses.team_member m ON m.business_id = b.id \
+         WHERE b.id = $1 AND m.id = $2 AND m.removed_at IS NULL AND m.confirm_and_billing",
         by.business,
         by.member
     );

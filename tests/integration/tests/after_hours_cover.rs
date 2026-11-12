@@ -2,9 +2,10 @@
 //! ticks only while someone covers, and a suspension lasts until a new Yes. A capability save
 //! with after-hours yes and nobody covering leaves the tick false and says it was held back; with
 //! an owner who has the switch on, a sent test and a current Yes it is ticked; suspend, untick,
-//! re-tick leaves the business suspended and out of `covered_night_count` until a new Yes; the
-//! emergency-switch page's after-hours step ticks once the owner's Yes is in and is refused
-//! before it, listing the steps still missing. With `EMERGENCY_SWITCH_HTML_DIR` set,
+//! re-tick leaves the business suspended and out of `covered_night_count` until a new Yes, and the
+//! switch page then shows it as suspended, never as taking jobs (D-3239); the emergency-switch
+//! page's after-hours step ticks once the owner's Yes is in and is refused before it, listing the
+//! steps still missing. With `EMERGENCY_SWITCH_HTML_DIR` set,
 //! `td_biz_47_write_pages_for_axe` writes the page with the box for
 //! `tests/e2e/emergency_switch_after_hours.spec.ts`. Every ID and mailbox is fake.
 
@@ -18,8 +19,8 @@ use askhava_businesses::api::{
 };
 use askhava_ops::api::Actor;
 use askhava_portals::api::{
-    AfterHoursBox, SwitchStep, after_hours_line, emergency_switch_page_with_box, held_back_link,
-    post_step,
+    AfterHoursBox, SUSPENDED_LINE, SwitchStep, after_hours_line, emergency_switch_page_with_box,
+    held_back_link, post_step,
 };
 use jiff::Timestamp;
 use sqlx::types::Uuid;
@@ -171,6 +172,16 @@ async fn td_biz_47_signup_yes_with_a_covering_owner_ticks(pool: PgPool) {
     assert!(!saved.after_hours_held);
     assert!(ticked(&mut db, b).await);
     assert_eq!(night(&mut db, az("23:00:00")).await, 1);
+    let no = save_capability(
+        &mut db,
+        b,
+        &offer(),
+        &answers(false),
+        (Actor::System, az("10:10:00")),
+    )
+    .await;
+    assert!(!no.expect("saved").after_hours_held);
+    assert!(!ticked(&mut db, b).await, "a later no unticks");
 }
 
 /// TD-BIZ-47 (BIZ-007, INT-033, D-2008): suspend, untick, re-tick leaves the business suspended
@@ -244,6 +255,38 @@ async fn td_biz_47_switch_page_ticks_only_after_the_owners_yes(pool: PgPool) {
     );
 }
 
+/// TD-BIZ-47 (BIZ-007, INT-033, D-3239): a suspended business that is still ticked sees the
+/// suspended line on the switch page, never that it is taking emergency jobs at night; a new Yes
+/// ends the suspension and the page says it is taking them again.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_biz_47_switch_page_says_a_suspended_business_is_not_taking_jobs(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("conn");
+    let [owner, _] = business(&mut db, 0x4740).await;
+    let (b, t) = (owner.business, az("10:00:00"));
+    covers(&mut db, owner, t).await;
+    let tick = (SwitchStep::AfterHours(true), "tok");
+    let on = post_step(&mut db, owner, tick, t).await.expect("page");
+    assert!(on.contains(r#"id="after-hours-on""#));
+    assert!(!on.contains(SUSPENDED_LINE));
+    assert!(
+        suspend_after_hours(&mut db, b, az("23:30:00"))
+            .await
+            .expect("suspend")
+    );
+    let page = post_step(&mut db, owner, (SwitchStep::Switch(true), "tok"), t).await;
+    let page = page.expect("page");
+    assert!(ticked(&mut db, b).await);
+    assert!(page.contains(r#"id="after-hours-suspended""#));
+    assert!(page.contains(SUSPENDED_LINE));
+    assert!(!page.contains(r#"id="after-hours-on""#));
+    assert!(!page.contains("You're taking emergency jobs"));
+    let yes = (SwitchStep::Answer(true), "tok");
+    let again = post_step(&mut db, owner, yes, az("23:45:00")).await;
+    let again = again.expect("page");
+    assert!(again.contains(r#"id="after-hours-on""#));
+    assert!(!again.contains(SUSPENDED_LINE));
+}
+
 /// The e2e axe scan's pages: written only when `EMERGENCY_SWITCH_HTML_DIR` is set.
 #[test]
 fn td_biz_47_write_pages_for_axe() {
@@ -268,6 +311,16 @@ fn td_biz_47_write_pages_for_axe() {
             AfterHoursBox {
                 ticked: true,
                 refused: false,
+                suspended: false,
+            },
+        ),
+        (
+            "suspended",
+            done,
+            AfterHoursBox {
+                ticked: true,
+                refused: false,
+                suspended: true,
             },
         ),
         (
@@ -276,6 +329,7 @@ fn td_biz_47_write_pages_for_axe() {
             AfterHoursBox {
                 ticked: false,
                 refused: true,
+                suspended: false,
             },
         ),
     ];

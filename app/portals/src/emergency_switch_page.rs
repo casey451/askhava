@@ -12,7 +12,8 @@
 //! T369 (BIZ-007, D-2702, D-2010 (c)): for the owner or a "Confirm and billing" member the page
 //! also shows the after-hours box ([`AfterHoursBox`]) with [`AFTER_HOURS_LINE`];
 //! [`SwitchStep::AfterHours`] calls `set_after_hours`, and a `NoCover` refusal shows the person's
-//! own steps still missing. [`held_back_link`] is the link a held-back sign-up answer shows.
+//! own steps still missing; a suspended business sees [`SUSPENDED_LINE`] instead of the "taking"
+//! line (D-3239). [`held_back_link`] is the link a held-back sign-up answer shows.
 
 use askama::Template;
 use askhava_businesses::api::{
@@ -64,7 +65,14 @@ pub struct AfterHoursBox {
     pub ticked: bool,
     /// A tick was just refused (`NoCover`): the page lists the person's steps still missing.
     pub refused: bool,
+    /// After-hours is suspended until a new Yes (INT-033, D-3237): the page shows
+    /// [`SUSPENDED_LINE`], never that the business is taking jobs at night (D-3239).
+    pub suspended: bool,
 }
+
+/// BIZ-007, INT-033, D-3239: the after-hours box's line while the business is suspended.
+pub const SUSPENDED_LINE: &str = "Emergency jobs at night are paused for your business. They \
+     start again once someone who can confirm sends a test emergency email and answers Yes.";
 
 /// BIZ-042: the missing-step line for the Yes to [`ALERT_QUESTION`].
 const ANSWER_YES_STEP: &str =
@@ -116,6 +124,7 @@ impl SwitchView<'_> {
             "dnd" => DND_LINE,
             "test" => TEST_BUTTON,
             "warn" => OFF_WARNING,
+            "suspended" => SUSPENDED_LINE,
             _ => ALERT_QUESTION,
         }
     }
@@ -220,9 +229,11 @@ pub async fn post_step(
     let state = switch_state(conn, by, (now, EMERGENCY_YES_LIFE)).await?;
     let warns = state.on && switch_off_warns(conn, by).await?;
     let show_steps = step == SwitchStep::Answer(false);
-    let after_hours = after_hours_box(conn, by)
-        .await?
-        .map(|ticked| AfterHoursBox { ticked, refused });
+    let after_hours = after_hours_box(conn, by).await?.map(|t| AfterHoursBox {
+        ticked: t.ticked,
+        refused,
+        suspended: t.suspended,
+    });
     emergency_switch_page_with_box(state, (warns, show_steps), after_hours, csrf)
         .map_err(|_| SwitchError::Database)
 }
