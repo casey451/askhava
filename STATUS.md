@@ -1,24 +1,24 @@
 # Ask Hava build status
 
-Updated 2026-11-12T11:00:01Z by runner d33f2ffc254d (actions).
+Updated 2026-11-12T11:02:16Z by runner b513c7d4ca37 (actions).
 
-**Building: T377 in progress since 10:47Z; 237 of 397 done; week 92% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T377 in progress since 10:47Z; 238 of 397 done; week 92% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 237 of 397 build tasks (owner gates not counted)
+- **Tasks done:** 238 of 397 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T377 claimed 10:47Z, lease until 13:47Z; lane 3: T345 claimed 10:49Z, lease until 13:49Z; lane 4: T268 claimed 10:41Z, lease until 13:41Z
 - **Week:** 92% used, 0.4M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:59Z, 0 min before this update
+- **Last run:** 11:00Z, 2 min before this update
 - **Keeper:** last ran 11:00Z, next wake 13:44Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 20 problem(s) on tasks still to run (+101 on DONE tasks); first: T396: stored context_pct 39% but it measures 45%; regenerate
+- Strict plan check red: 25 problem(s) on tasks still to run (+103 on DONE tasks); first: T396: stored context_pct 39% but it measures 46%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T411 | quotes: the scrubbed job description and the shown and appro | MERGE_PENDING | 1 | 28 min | 10:36Z | merging main into the reviewed head conflicts in app/quotes/src/api.rs; a resync merges it in on this attempt (D-891) |
+| T411 | quotes: the scrubbed job description and the shown and appro | done | 1 | 28 min | 10:36Z |  |
 | T343 | harness: the DONE pick tests' fixtures record each job's fac | done | 1 | 24 min | 10:23Z |  |
 | T411 | quotes: the scrubbed job description and the shown and appro | resync | 1 | 30 min | 10:00Z |  |
 | T268 | portals, businesses and messaging: the sign-up consent box,  | resync | 1 | 21 min | 09:38Z | merging main into the reviewed head conflicts in app/messaging/src/api.rs; a resync merges it in on this attempt (D-891) |
@@ -87,7 +87,6 @@ Updated 2026-11-12T11:00:01Z by runner d33f2ffc254d (actions).
 | T164 | quotes: one quote format per category, screened notes, and e | done | 3 | 19 min | 12:02Z | merging main into the reviewed head conflicts in app/quotes/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T331 | payments (harness): a payment success with no readable pick  | done | 1 | 49 min | 11:35Z |  |
 | T164 | quotes: one quote format per category, screened notes, and e | resync | 3 | 12 min | 11:31Z |  |
-| T164 | quotes: one quote format per category, screened notes, and e | check_failed | 2 | 39 min | 11:00Z |  |
 
 ### Plan and harness merges on main
 - 09:36Z Plan: pre-flight fixes round 9 — stage 5: T303, T151, T321, T110, T210, T109, T116; new T409, T410 (D-3155) (#559)
@@ -122,12 +121,11 @@ Updated 2026-11-12T11:00:01Z by runner d33f2ffc254d (actions).
 - 13:45Z Plan: four lanes (D-2986) (#483)
 - 13:14Z Plan: T332 updates the ended-pick test — success stored, one refund queued, still never cleared (D-3007) (#484)
 - 12:26Z Plan: T332 may expect AlreadyQueued after its own check round queues the late success (D-2970) (#482)
-- 11:00Z Plan: sign-up reads the business's own state record — name check and identity contacts (T385, D-2954) (#475)
 
 ## Progress (requirements verified)
 
 **Requirements verified:** 209 of 733 (28.5%) · partial 354 · unstarted 170
-**Tasks merged (throughput only):** 237 of 397
+**Tasks merged (throughput only):** 238 of 397
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -162,7 +160,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 117 of 179 done
+- stage 4: 118 of 179 done
 - stage 5: 0 of 64 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
