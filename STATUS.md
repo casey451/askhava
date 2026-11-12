@@ -1,18 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-12T04:23:31Z by runner 47a83212b95f (actions).
+Updated 2026-11-12T04:23:41Z by runner 47a83212b95f (actions).
 
 **Building: T356 in progress since 04:05Z; 223 of 391 done; week 84% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 223 of 391 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T356 claimed 04:05Z, lease until 07:05Z
-- **Week:** 84% used, 26.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 1: T356 claimed 04:05Z, lease until 07:05Z; lane 3: T405 claimed 04:23Z, lease until 07:23Z
+- **Week:** 84% used, 22.4M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 04:07Z, 15 min before this update
 - **Keeper:** last ran 03:55Z, next wake 04:15Z
 
 ## Needs attention
 - BLOCKED T401: plan gap reported: PLAN GAP: tests/security/tests/no_homeowner_charge.rs:17-27,123 (TD-FEE-07, not T401's) fails any app/ file naming a homeowner mark (door_matrix.rs already names Realm::Homeowner at ~969/979) plus askhava_payments/payments::api; T401 needs payments::api::no_fee_release in door_matrix.rs (kit/prompts/T401.md:9). Evidence: cargo test -p askhava-security --test no_homeowner_charge -> td_fee_07_no_homeowner_route_reaches_payments FAILED: door_matrix.rs: homeowner-realm code reaches payments. Reviewer confirmed; no legitimate workaround. Smallest plan change: give T401 a second owned file (e.g. app; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T401 --plan-fix D-### --reason "..."` (D-2859)
+- PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - Strict plan check red: 7 problem(s) on tasks still to run (+80 on DONE tasks); first: T396: stored context_pct 39% but it measures 43%; regenerate
 
 ## Last 24 hours
@@ -151,7 +152,7 @@ Updated 2026-11-12T04:23:31Z by runner 47a83212b95f (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-12T03:55:20Z (week)): week: 168.0M used, 26.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-06T19:30:33Z.
+- Pacing (session_reading 2026-11-12T03:55:20Z (week)): week: 171.6M used, 22.4M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-06T21:16:12Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -167,6 +168,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T356 (lease until 2026-11-12T07:05:41Z)
+- lane 3: T405 (lease until 2026-11-12T07:23:07Z)
 
 ## Last usage reading
 - {"task": "T326", "at": "2026-11-12T03:37:50Z", "cache_read_input_tokens": 7140662, "cache_creation_input_tokens": 264672, "output_tokens": 58268, "input_tokens": 220}
