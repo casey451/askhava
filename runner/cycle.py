@@ -265,7 +265,8 @@ class Config:
     # the order without it.
     prefer_disjoint_crates: bool = False
     # kit/runner.json "smoke_ancestry_reuse" (D-3058): how many first-parent commits back the start routine may
-    # stand on a real green smoke when every commit since is a DONE task's squash merge (`st.ancestry_smoke`); 0 off.
+    # stand on a real green smoke when every commit since is a DONE task's squash merge or a merge whose identical
+    # tree passed Ci, Twin and Ally (D-3156; `st.ancestry_smoke`); 0 off.
     smoke_ancestry: int = 0
 
 
@@ -974,7 +975,8 @@ def _start_smoke(state: State, env: Env, now: datetime, ancestry: int = 0) -> tu
     with no verdict while a green on the head passes the reuse in full: the env stops it (`yield_own_smoke`, which
     refuses once a result exists) and the green stands. With no own smoke and no same-head green, the last real green
     on an ancestor at most `ancestry` first-parent commits back stands when every commit since is a DONE task's
-    squash merge that nothing doubts (`_ancestry_reuse`, D-3058); any doubt or error runs the smoke."""
+    squash merge, or a merge whose identical tree passed `Ci`, `Twin` and `Ally` (D-3156), that nothing doubts
+    (`_ancestry_reuse`, D-3058); any doubt or error runs the smoke."""
     head = env.main_head()
     settle = getattr(env, "settle_background_smoke", None)
     if callable(settle):
@@ -1009,15 +1011,18 @@ def _ancestry_reuse(state: State, env: Env, head: str, now: datetime, limit: int
     """(base SHA, its real green run's time) for an ancestry reuse (D-3058), or None (run the smoke). `main`'s
     first-parent chain comes from the env's `main_first_parents` (absent: no reuse); `st.ancestry_smoke` judges the
     state, then the nightly and `main`'s checks must doubt none of the commits after the base, nor the base
-    (`_head_doubted`). Any error is no reuse."""
+    (`_head_doubted`). A commit that is no DONE task's squash merge may stand in the chain when the env's
+    `green_twin_tree` says a commit with its identical tree passed `Ci`, `Twin` and `Ally` (D-3156); an env without
+    one (the drills' FakeEnv) proves nothing. Any error is no reuse."""
     parents = getattr(env, "main_first_parents", None)
     if limit < 1 or not callable(parents):
         return None
+    twin = getattr(env, "green_twin_tree", None)
     try:
         chain = list(parents(head, limit + 1) or [])
         if not chain or chain[0] != head:
             return None
-        found = st.ancestry_smoke(state, chain, st.done_merges(state), now, limit)
+        found = st.ancestry_smoke(state, chain, st.done_merges(state), now, limit, twin if callable(twin) else None)
         if found is None or any(_head_doubted(env, sha) for sha in chain[: chain.index(found[0]) + 1]):
             return None
         return found[0], str(found[1]["at"])

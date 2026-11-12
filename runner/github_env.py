@@ -146,6 +146,9 @@ BEST_EFFORT_ERRORS = (RuntimeError, ValueError, TypeError, AttributeError, KeyEr
 NOT_BUILT_ON = ("the hand-in does not build on origin/{branch}: the remote task branch has commits this attempt "
                 "did not build on, so its push cannot fast-forward (D-583)")
 JOB_TOKEN_READS = ("/check-runs", "/actions/jobs/")  # REST reads that need the job token (D-502, D-582)
+# The reads of `green_twin_tree` (D-3156): a commit's pulls and a git commit object, by full SHA. The job token reads
+# them so the pre-session step, which has no other token, can prove a merge too; the job has pull-requests and contents.
+TWIN_TREE_READS = re.compile(r"^repos/[^/]+/[^/]+/(?:commits/[0-9a-f]{40}/pulls|git/commits/[0-9a-f]{40})$")
 PLAN_MERGE = re.compile(r"^\S+ (?:[Pp]lan|[Hh]arness):")  # plan and harness merge subjects (D-1462)
 RUNNER_WORKFLOW = "backup-runner.yml"  # the workflow a refill run is dispatched on, one run per lane (D-723)
 # The comments on a pull request the runner closes while preparing a retry's branch (D-583). They are
@@ -565,8 +568,11 @@ def _long_token_args(args: list[str]) -> list[str] | None:
 
 
 def _job_token_read(args: list[str]) -> bool:
-    """A `gh api` read of check runs (D-502) or of an Actions job and its log (D-582)."""
-    return args[:2] == ["gh", "api"] and any(part in args[-1] for part in JOB_TOKEN_READS)
+    """A `gh api` read of check runs (D-502), of an Actions job and its log (D-582), or one of `green_twin_tree`'s
+    reads of a commit's pulls and tree (D-3156)."""
+    if args[:2] != ["gh", "api"]:
+        return False
+    return any(part in args[-1] for part in JOB_TOKEN_READS) or bool(TWIN_TREE_READS.match(args[-1]))
 
 
 def _job_token_call(args: list[str]) -> bool:
@@ -1429,20 +1435,22 @@ class GitHubEnv:
 
     def _ancestry_line(self, state: State, head: str) -> str:
         """The step's line when `st.ancestry_smoke` finds a real green on an ancestor of `head` at most `smoke_ancestry`
-        first-parent commits back with only DONE tasks' squash merges since (D-3058), else "" (off, git or the state
-        unreadable, nothing found). The session's start routine still checks the nightly and `main`'s checks."""
+        first-parent commits back with only DONE tasks' squash merges (D-3058) or merges whose identical tree passed
+        `Ci`, `Twin` and `Ally` (`green_twin_tree`, D-3156) since, else "" (off, git, the API or the state unreadable,
+        nothing found). The session's start routine still checks the nightly and `main`'s checks."""
         if self.smoke_ancestry < 1:
             return ""
         try:
             chain = self.main_first_parents(head, self.smoke_ancestry + 1) or []
-            found = st.ancestry_smoke(state, chain, st.done_merges(state), self.clock(), self.smoke_ancestry) if chain else None
+            found = (st.ancestry_smoke(state, chain, st.done_merges(state), self.clock(), self.smoke_ancestry,
+                                       self.green_twin_tree) if chain else None)
         except Exception:  # noqa: BLE001  # reason: an odd state or git failure only means the step smokes (D-3058)
             return ""
         if found is None:
             return ""
         base, run = found
         return (f"pre-session smoke skipped on {head[:12]}: the green smoke of {base[:12]} ({run.get('at')}), "
-                f"{chain.index(base)} DONE task merge(s) back, stands for it (D-3058); the session reuses it")
+                f"{chain.index(base)} proven merge(s) back, stands for it (D-3058, D-3156); the session reuses it")
 
     def _pre_smoke_run(self, tree: Path, out: Path) -> tuple[int, bool, int]:
         """smoke.sh through `pre_run` in `tree`: (exit, timed out, seconds); a timeout is exit 124 as in-session."""
@@ -1583,6 +1591,40 @@ class GitHubEnv:
         if not merged:
             return None
         return self._required_checks(str(merged[0]["head"]["sha"]))
+
+    def green_twin_tree(self, sha: str) -> bool:
+        """Whether a commit on `main` is already proven green for the smoke's ancestry reuse (D-3156): exactly one
+        merged pull request names `sha` as its merge commit (`commits/<sha>/pulls`), that PR's head has the identical
+        tree (`git/commits/<sha>`'s `tree.sha`, both read through REST) and every run of `Ci`, `Twin` and `Ally` on that
+        head concluded success, at least one of each (`verify.check_done`'s rule, as for a DONE task). The check
+        workflows run on pushes only, so `main`'s own commits carry no runs; an up-to-date PR's squash commit has its
+        head's tree. False on anything else: no or several such PRs, a tree that differs (the PR was behind `main`),
+        a missing, failed, cancelled or running check, a check-run list longer than one page, any API error."""
+        try:
+            head = self._merged_pr_head(sha)
+            if not head:
+                return False
+            trees = [self._tree_sha(c) for c in (sha, head)]
+            answer = self.gh_json(f"repos/{self.repo}/commits/{head}/check-runs?per_page=100")
+            runs = answer["check_runs"]
+            if int(answer.get("total_count", len(runs))) > len(runs):
+                return False
+            checks = [{"name": r.get("name"), "sha": r.get("head_sha"), "conclusion": r.get("conclusion")} for r in runs]
+        except (RuntimeError, ValueError, KeyError, TypeError, AttributeError) as exc:
+            self.log.append(f"identical-tree checks for {sha[:12]} unreadable: {str(exc)[:200]}")
+            return False
+        pr = {"merged": True, "head_sha": head, "checks": checks}
+        return not verify.check_done(pr, trees[1], trees[0])
+
+    def _merged_pr_head(self, sha: str) -> str:
+        """The head SHA of the one merged pull request whose merge commit is `sha`, else "" (D-3156)."""
+        pulls = self.gh_json(f"repos/{self.repo}/commits/{sha}/pulls")
+        merged = [p for p in pulls if str(p.get("merge_commit_sha") or "") == sha and p.get("merged_at")]
+        return str(merged[0]["head"]["sha"] or "") if len(merged) == 1 else ""
+
+    def _tree_sha(self, sha: str) -> str:
+        """The tree SHA of a commit, read through REST so a PR head no longer on any branch is still found (D-3156)."""
+        return str(self.gh_json(f"repos/{self.repo}/git/commits/{sha}")["tree"]["sha"] or "")
 
     def checks_on(self, sha: str) -> dict[str, str] | None:
         """{check name: conclusion, or "running"} for the required checks on a commit, each from its

@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import copy
 import re
+from collections.abc import Callable
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
@@ -534,14 +535,18 @@ def _clean_commit(state: State, sha: str) -> bool:
     return all(r.get("ok") is True and not r.get("timed_out") for r in runs)
 
 
-def ancestry_smoke(state: State, chain: list[str], merged: set[str], now: datetime, limit: int) -> tuple[str, Task] | None:
+def ancestry_smoke(state: State, chain: list[str], merged: set[str], now: datetime, limit: int,
+                   proven: Callable[[str], bool] | None = None) -> tuple[str, Task] | None:
     """The base of an ancestry reuse (D-3058): (the ancestor's SHA, its real green run), or None. `chain` is `main`'s
     first-parent history from its head (`chain[0]`), `merged` the DONE tasks' squash SHAs (`done_merges`), `limit`
     kit/runner.json "smoke_ancestry_reuse" (0 turns it off). The base is the nearest ancestor at most `limit` commits
     back with a real green run (`_real_green`: never itself a reuse); it must pass `reusable_smoke` and its real run be
-    at most SMOKE_REUSE_MAX_AGE old. Every commit after it, the head included, must be a DONE task's squash commit with
-    nothing doubting it (`_clean_commit`) and no real run of its own (a head with one is `reusable_smoke`'s alone).
-    Never while `main` is red. The caller adds the nightly and `main`'s checks on those commits (`cycle._start_smoke`)."""
+    at most SMOKE_REUSE_MAX_AGE old. Every commit after it, the head included, must have nothing doubting it
+    (`_clean_commit`), no real run of its own (a head with one is `reusable_smoke`'s alone) and be either a DONE
+    task's squash commit or, D-3156, a commit `proven` says has an identical tree with `Ci`, `Twin` and `Ally` all
+    green (the env's `green_twin_tree`, asked only after the cheaper tests; None: only DONE merges count, as before).
+    Never while `main` is red. The caller adds the nightly and `main`'s checks on those commits (`cycle._start_smoke`);
+    an exception from `proven` reaches the caller, which runs the smoke."""
     if limit < 1 or not chain or state.get("main_red"):
         return None
     runs = [r for r in state.get("smoke_runs") or [] if isinstance(r, dict)]
@@ -549,7 +554,9 @@ def ancestry_smoke(state: State, chain: list[str], merged: set[str], now: dateti
         real = [r for r in runs if r.get("sha") == sha and _real_green(r)]
         if distance and real:
             return _ancestry_base(state, sha, real[-1], now)
-        if real or sha not in merged or not _clean_commit(state, sha):
+        if real or distance >= limit or not _clean_commit(state, sha):
+            return None
+        if sha not in merged and not (proven is not None and proven(sha) is True):
             return None
     return None
 

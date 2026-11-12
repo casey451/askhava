@@ -2,6 +2,12 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## Lanes stop waiting for a fresh 10-minute check after plan and notes merges (D-3156, November 12)
+
+- **What happened.** Before taking new work, a lane checks that the main line is healthy (about 10 minutes). Since yesterday it could skip that when only finished tasks had merged since the last check, but a plan change, a runner fix or a hand-off note merging still made every lane run the full check again. This morning that left lanes idle for about 35 minutes while 20 tasks were ready.
+- **What changed.** Those merges now count too, but only when GitHub shows that the exact same code already passed all three checks (Ci, Twin, Ally) before it merged. If the code differs at all, a check failed or is missing, or GitHub can't be read, the lane runs the full check as before. A full check still runs at least every 6 merges and every 6 hours, and nothing about how a broken main line is caught or fixed changed.
+- **Nothing needs you now.**
+
 ## The test machines keep their saved builds again (D-3143, November 12)
 
 - **What happened.** GitHub keeps 10 GB of saved builds for the project. The runner saved about 7 GB more after every merge, which pushed out the builds the checks reuse, so every check run since last night built from scratch (0 of 36 reuses hit today).

@@ -857,7 +857,7 @@ def test_the_step_skips_on_an_ancestry_reuse_when_the_setting_allows_it(job: Pat
     since = st.iso(NOW - timedelta(minutes=30))
     _state_file(tmp_path, monkeypatch, dict(_state(_run(CHAIN[2], at=since)), tasks=_merged(HEAD, CHAIN[1])))
     assert env.pre_smoke() == (f"pre-session smoke skipped on {HEAD[:12]}: the green smoke of {CHAIN[2][:12]} ({since}), "
-                               "2 DONE task merge(s) back, stands for it (D-3058); the session reuses it")
+                               "2 proven merge(s) back, stands for it (D-3058, D-3156); the session reuses it")
     assert seen == [] and not (job / ge.SMOKE_PRE).exists()
 
 
@@ -894,7 +894,7 @@ def test_the_setting_is_read_from_kit_runner_json_fails_safe_and_is_wired(tmp_pa
                       ('{"smoke_ancestry_reuse": true}', 0), ('{"smoke_ancestry_reuse": "3"}', 0), ("[]", 0)):
         f.write_text(raw)
         assert entry.smoke_ancestry(f) == want, raw
-    assert entry.smoke_ancestry(Path(__file__).resolve().parent.parent / "kit" / "runner.json") == 3, "D-3058 ships N=3"
+    assert entry.smoke_ancestry(Path(__file__).resolve().parent.parent / "kit" / "runner.json") == 5, "D-3058 shipped N=3; D-3156 raised it to 5"
     assert 'smoke_ancestry=smoke_ancestry(ROOT / "kit" / "runner.json")' in inspect.getsource(entry.build)
     assert "env.smoke_ancestry = cfg.smoke_ancestry" in inspect.getsource(entry.build)
     assert 'env.smoke_ancestry = smoke_ancestry(ROOT / "kit" / "runner.json")' in inspect.getsource(entry.pre_smoke)
@@ -997,3 +997,205 @@ def test_yield_own_smoke_only_stops_this_jobs_live_smoke_of_the_head(job: Path, 
     real.bg_alive = lambda pid: True  # type: ignore[assignment]
     ge.write_pre_smoke(_bg_result())
     assert real.yield_own_smoke(HEAD) is False, "still running, but its result is written: it is judged"
+
+
+# ---- D-3156: a merge that is no DONE task's (a plan, harness or docs PR) stands in the chain when a commit with its
+# identical tree passed Ci, Twin and Ally
+
+
+class TwinEnv(AncestryEnv):
+    """AncestryEnv whose `green_twin_tree` proves the commits in `twins` (a set) and records every question."""
+
+    def __init__(self, twins: set[str] | None = None) -> None:
+        super().__init__()
+        self.twins = set(twins or ())
+        self.proved: list[str] = []
+
+    def green_twin_tree(self, sha: str) -> bool:
+        self.proved.append(sha)
+        return sha in self.twins
+
+
+def _plan_merges(state: st.State, *where: int) -> st.State:
+    """The DONE tasks recorded on CHAIN[where] get another task's SHA: those commits are plan merges, no task's."""
+    for i in where:
+        state["tasks"][i]["merged_sha"] = f"{i:x}" * 39 + "f"
+    return state
+
+
+def test_a_plan_squash_whose_identical_tree_is_green_stands_in_the_chain() -> None:
+    env = TwinEnv({CHAIN[0], CHAIN[1]})
+    env.smoke_green = False  # would turn main red if it ran
+    out, ok, _ = cycle._start_smoke(_plan_merges(_ancestry_state(2), 0), env, NOW, 3)
+    assert ok is True and env.smokes == [] and out["smoke_runs"][-1]["base"] == CHAIN[2]
+    assert env.proved == [CHAIN[0]], "only the commit that is no DONE task's is asked about, and the base never"
+
+
+@pytest.mark.parametrize("where", [0, 1])
+def test_a_plan_squash_not_proven_green_forces_a_smoke(where: int) -> None:
+    env = TwinEnv()  # the env answers False: the PR was behind main (a different tree), or a check failed or is missing
+    out, _, _ = cycle._start_smoke(_plan_merges(_ancestry_state(2), where), env, NOW, 3)
+    assert env.smokes == [CHAIN[0]] and "base" not in out["smoke_runs"][-1] and env.proved == [CHAIN[where]]
+
+
+def test_an_env_without_the_prover_or_one_that_raises_forces_a_smoke() -> None:
+    bare = AncestryEnv()
+    cycle._start_smoke(_plan_merges(_ancestry_state(2), 0), bare, NOW, 3)
+    assert bare.smokes == [CHAIN[0]], "the drills' env proves nothing"
+    env = TwinEnv()
+    env.green_twin_tree = lambda sha: (_ for _ in ()).throw(RuntimeError("api"))  # type: ignore[method-assign]
+    cycle._start_smoke(_plan_merges(_ancestry_state(2), 0), env, NOW, 3)
+    assert env.smokes == [CHAIN[0]]
+    odd = TwinEnv()
+    odd.green_twin_tree = lambda sha: "yes"  # type: ignore[method-assign,assignment,return-value]
+    cycle._start_smoke(_plan_merges(_ancestry_state(2), 0), odd, NOW, 3)
+    assert odd.smokes == [CHAIN[0]], "only a real True proves"
+
+
+@pytest.mark.parametrize("limit, smokes", [(4, []), (5, []), (3, [CHAIN[0]])])
+def test_a_mixed_chain_of_task_and_plan_merges_within_the_limit_reuses(limit: int, smokes: list[str]) -> None:
+    env = TwinEnv({CHAIN[1], CHAIN[3]})
+    state = _plan_merges(_ancestry_state(4), 1, 3)  # head T, plan, T, plan, base
+    out, ok, _ = cycle._start_smoke(state, env, NOW, limit)
+    assert ok is True and env.smokes == smokes
+    assert ("base" in out["smoke_runs"][-1]) is (not smokes)
+
+
+@pytest.mark.parametrize("kind", DOUBTS)
+def test_any_doubt_on_a_proven_plan_merge_still_forces_a_smoke(kind: str) -> None:
+    env, state = TwinEnv({CHAIN[1]}), _plan_merges(_ancestry_state(2), 1)
+    _doubt(state, env, kind, CHAIN[1])
+    cycle._start_smoke(state, env, NOW, 3)
+    assert env.smokes == [CHAIN[0]]
+
+
+def test_a_proven_plan_merge_never_bridges_a_red_main() -> None:
+    red = {"check": "smoke", "sha": CHAIN[0], "task": "", "revert_sha": "", "files": [], "set_at": st.iso(NOW)}
+    state = _plan_merges(_ancestry_state(1, main_red=red), 0)
+    assert st.ancestry_smoke(state, CHAIN, set(), NOW, 3, lambda sha: True) is None
+    env = TwinEnv({CHAIN[0]})
+    cycle._start_smoke(state, env, NOW, 3)
+    assert env.smokes == [CHAIN[0]] and env.proved == []
+
+
+def test_the_prover_is_never_asked_past_the_limit_nor_about_a_doubted_commit() -> None:
+    asked: list[str] = []
+    state = _plan_merges(_ancestry_state(4), 0, 1, 2, 3)
+    assert st.ancestry_smoke(state, CHAIN, set(), NOW, 3, lambda sha: asked.append(sha) or True) is None
+    assert asked == CHAIN[:3], "the commit at the limit cannot be stepped over, so it is not asked about"
+    asked.clear()
+    state["smoke_runs"].append(_run(CHAIN[0], ok=False))
+    assert st.ancestry_smoke(state, CHAIN, set(), NOW, 3, lambda sha: asked.append(sha) or True) is None and asked == []
+
+
+# ---- D-3156: the real env's `green_twin_tree` (REST: the merged PR, both trees, the PR head's check runs)
+
+TWIN_HEAD = "a" * 40
+MAIN_C = "c" * 40
+
+
+def _green_runs(head: str = TWIN_HEAD) -> list[dict[str, Any]]:
+    return [{"name": n, "head_sha": head, "conclusion": "success", "status": "completed"} for n in ("Ci", "Twin", "Ally")]
+
+
+def _twin_answers(main: str = MAIN_C, **over: Any) -> dict[str, Any]:
+    """REST answers, by path, for `main` squash-merged from a PR whose head is TWIN_HEAD with the same tree."""
+    answers: dict[str, Any] = {
+        f"repos/o/r/commits/{main}/pulls": [{"number": 7, "merge_commit_sha": main, "merged_at": "2026-11-12T05:40:00Z",
+                                             "head": {"sha": TWIN_HEAD}}],
+        f"repos/o/r/git/commits/{main}": {"tree": {"sha": "1" * 40}},
+        f"repos/o/r/git/commits/{TWIN_HEAD}": {"tree": {"sha": "1" * 40}},
+        f"repos/o/r/commits/{TWIN_HEAD}/check-runs?per_page=100": {"total_count": 3, "check_runs": _green_runs()},
+    }
+    answers.update(over)
+    return answers
+
+
+def _with_api(env: Any, answers: dict[str, Any]) -> list[str]:
+    """The fake gh answers `gh api <path>` from `answers` (an Exception value: gh fails); records the paths asked."""
+    plain, asked = env._run, []
+
+    def run(a: list[str], i: str | None, c: Path) -> tuple[int, str, str]:
+        if a[:2] == ["gh", "api"]:
+            asked.append(a[-1])
+            got = answers.get(a[-1], RuntimeError("404"))
+            return (1, "", "HTTP 404") if isinstance(got, Exception) else (0, json.dumps(got), "")
+        return plain(a, i, c)
+
+    env._run = run
+    return asked
+
+
+def test_green_twin_tree_proves_a_squash_whose_up_to_date_pr_head_passed_every_check(tmp_path: Path) -> None:
+    env, _ = _env(tmp_path)
+    asked = _with_api(env, _twin_answers())
+    assert env.green_twin_tree(MAIN_C) is True
+    assert asked[0] == f"repos/o/r/commits/{MAIN_C}/pulls"
+
+
+def _check_runs(runs: list[dict[str, Any]], total: int | None = None) -> dict[str, Any]:
+    return {f"repos/o/r/commits/{TWIN_HEAD}/check-runs?per_page=100": {"total_count": len(runs) if total is None else total,
+                                                                       "check_runs": runs}}
+
+
+def _rerun(name: str, conclusion: str | None) -> list[dict[str, Any]]:
+    return [*_green_runs(), {"name": name, "head_sha": TWIN_HEAD, "conclusion": conclusion, "status": "completed"}]
+
+
+NOT_PROVEN = {
+    "tree_differs": {f"repos/o/r/git/commits/{TWIN_HEAD}": {"tree": {"sha": "2" * 40}}},  # the PR was behind main
+    "no_tree": {f"repos/o/r/git/commits/{TWIN_HEAD}": {"tree": {"sha": ""}}},
+    "ci_missing": _check_runs(_green_runs()[1:]),
+    "twin_missing": _check_runs([r for r in _green_runs() if r["name"] != "Twin"]),
+    "ally_missing": _check_runs(_green_runs()[:2]),
+    "ci_failed": _check_runs([dict(_green_runs()[0], conclusion="failure"), *_green_runs()[1:]]),
+    "twin_rerun_failed": _check_runs(_rerun("Twin", "failure")),
+    "ally_cancelled": _check_runs(_rerun("Ally", "cancelled")),
+    "ci_running": _check_runs(_rerun("Ci", None)),
+    "run_on_another_sha": _check_runs([dict(r, head_sha="b" * 40) for r in _green_runs()]),
+    "more_than_a_page": _check_runs(_green_runs(), total=101),
+    "no_merged_pr": {f"repos/o/r/commits/{MAIN_C}/pulls": [{"merge_commit_sha": "b" * 40, "merged_at": "x", "head": {"sha": TWIN_HEAD}}]},
+    "unmerged_pr": {f"repos/o/r/commits/{MAIN_C}/pulls": [{"merge_commit_sha": MAIN_C, "merged_at": None, "head": {"sha": TWIN_HEAD}}]},
+    "two_prs": {f"repos/o/r/commits/{MAIN_C}/pulls": [{"merge_commit_sha": MAIN_C, "merged_at": "x", "head": {"sha": TWIN_HEAD}}] * 2},
+    "pulls_error": {f"repos/o/r/commits/{MAIN_C}/pulls": RuntimeError("500")},
+    "tree_error": {f"repos/o/r/git/commits/{MAIN_C}": RuntimeError("403")},
+    "checks_error": {f"repos/o/r/commits/{TWIN_HEAD}/check-runs?per_page=100": RuntimeError("403")},
+    "garbage": {f"repos/o/r/commits/{MAIN_C}/pulls": {"message": "odd"}},
+    "null_checks": {f"repos/o/r/commits/{TWIN_HEAD}/check-runs?per_page=100": None},
+}
+
+
+@pytest.mark.parametrize("why", sorted(NOT_PROVEN))
+def test_green_twin_tree_proves_nothing_on_a_different_tree_a_check_short_of_green_or_any_error(tmp_path: Path, why: str) -> None:
+    env, _ = _env(tmp_path)
+    _with_api(env, _twin_answers(**NOT_PROVEN[why]))
+    assert env.green_twin_tree(MAIN_C) is False
+
+
+def test_the_twin_reads_use_the_job_token_and_nothing_else_moves_to_it() -> None:
+    for path in (f"repos/o/r/commits/{MAIN_C}/pulls", f"repos/o/r/git/commits/{MAIN_C}",
+                 f"repos/o/r/commits/{TWIN_HEAD}/check-runs?per_page=100"):
+        assert ge._job_token_read(["gh", "api", "-H", "Accept: application/vnd.github+json", path]), path
+    for path in ("repos/o/r/pulls?head=o:claude/task/T001&state=all&per_page=20", "repos/o/r/pulls/7",
+                 f"repos/o/r/commits/{MAIN_C}/pulls/extra", "repos/o/r/git/commits/HEAD", f"repos/o/r/commits/{MAIN_C}"):
+        assert not ge._job_token_read(["gh", "api", "-H", "Accept: application/vnd.github+json", path]), path
+    flow = (Path(__file__).resolve().parent.parent / ".github" / "workflows" / "backup-runner.yml").read_text()
+    step = flow.split("- name: Run the start-routine smoke before the session (D-2028)")[1].split("- name:")[0]
+    assert "RUNNER_CHECKS_TOKEN: ${{ github.token }}" in step, "the pre-session step can prove a merge too"
+
+
+def test_the_step_skips_across_a_plan_merge_proven_green_and_smokes_when_not(job: Path, tmp_path: Path, monkeypatch: Any) -> None:
+    for proven, want_skip in ((True, True), (False, False)):
+        env, _ = _env(tmp_path)
+        env.clock, env.smoke_ancestry = (lambda: NOW), 5
+        seen = _pre(env)
+        _with_chain(env, [HEAD, CHAIN[1], CHAIN[2]])  # main's head is a plan merge, then a DONE task's, then the base
+        _with_api(env, _twin_answers(HEAD) if proven else _twin_answers(HEAD, **NOT_PROVEN["tree_differs"]))
+        since = st.iso(NOW - timedelta(minutes=30))
+        _state_file(tmp_path, monkeypatch, dict(_state(_run(CHAIN[2], at=since)), tasks=_merged(CHAIN[1])))
+        line = env.pre_smoke()
+        if want_skip:
+            assert line == (f"pre-session smoke skipped on {HEAD[:12]}: the green smoke of {CHAIN[2][:12]} ({since}), "
+                            "2 proven merge(s) back, stands for it (D-3058, D-3156); the session reuses it") and seen == []
+        else:
+            assert line.startswith(f"pre-session smoke on {HEAD[:12]}:") and len(seen) == 1

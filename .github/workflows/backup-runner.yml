@@ -395,11 +395,15 @@ jobs:
         # also runs nothing when a real green on an ancestor of that head at most kit/runner.json `smoke_ancestry_reuse`
         # first-parent commits back stands for it, every commit since being a DONE task's recorded squash merge with
         # nothing in the state doubting it (`st.ancestry_smoke`); the session still checks the nightly and checks (D-3058).
+        # A plan, harness or docs merge may also stand in that chain when the one merged PR naming it as its merge
+        # commit has a head with the identical tree and every Ci, Twin and Ally run green on it (`green_twin_tree`,
+        # D-3156); the job token reads those (REST, read only), as the session does; without it nothing is proven.
         if: hashFiles('Cargo.lock') != ''
         continue-on-error: true
         timeout-minutes: 32
         env:
           RUNNER_PRE_SMOKE_STATE: ${{ runner.temp }}/pre_smoke_state.json
+          RUNNER_CHECKS_TOKEN: ${{ github.token }}
         run: python3 -m runner --pre-smoke
       - name: Give the worker the smoke build's dependencies (D-3143)
         # The worker entry no longer carries `target/debug` (see "Empty the worker build before the save"): the smoke
