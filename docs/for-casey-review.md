@@ -7,6 +7,12 @@ These are decisions Claude made on its own and logged so the build never waits (
 - **What happened.** GitHub keeps 10 GB of saved builds for the project. The runner saved about 7 GB more after every merge, which pushed out the builds the checks reuse, so every check run since last night built from scratch (0 of 36 reuses hit today).
 - **What changed.** The runner now keeps just one copy of each of its two saved builds, stops saving the part of one that its other build already holds, and saves only from the main line. The browser download the page tests use is saved the same way. Nothing about what is tested changed.
 - **Expected.** The check runs reuse their builds again, which saves several minutes per run (about 7 on the longest job).
+
+## Nine more waiting steps fixed before they start, and two new steps (plan change, D-3134, November 12)
+
+- **What happened.** A seventh check of steps still waiting in line found nine that would have stopped partway: some would have broken older tests they may not touch, the Stripe stand-in step could not add the pages it was asked to serve, the won-dispute step relied on a Stripe read nobody builds, the charge-ID step only wrote the ID on a path that usually runs second, and two needs had no storage at all.
+- **What changed.** Each step's instructions now name the right files and an approach that leaves every older test as it is. Two new steps fill the storage gaps. T406 stores the quote facts a business fills in on the quote form (trip fee, parts, permit, "price may change", Spanish), so every quote card can show them as the rules require and "Same as last time" can pre-fill them; until then nothing kept those answers. T407 stores the owner-portal "safety voice call" switch with the attorney approval date and reference, and adds the switch to your settings page.
+- **Decided for you.** The safety voice call stays off at launch, exactly as before: T407 only builds the place to turn it on later, and it refuses unless every CALL-022 safeguard is built and tested, you have entered the attorney's approval, and you have just re-entered your second factor. The consent text's call sentence appears only while the switch is on. A quote stored before T406 (or a text quote confirmed without facts) shows in the list without a card rather than with made-up facts.
 - **Nothing needs you now.**
 
 ## Nine more waiting steps fixed before they start, and one new step (plan change, D-3118, November 12)
