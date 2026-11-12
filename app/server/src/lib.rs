@@ -507,9 +507,10 @@ where
     Ok(registry)
 }
 
-/// T336 (D-2307, D-3137): registers `messaging.inbound_retry` over the Twilio Messages reader
-/// and the vault from both vault keys in `pairs` (required with the Twilio settings, as for the
-/// webhooks), with the worker's `ID_SECRET` and clock.
+/// T336 (D-2307, D-3137, D-3142): registers `messaging.inbound_retry` over the Twilio Messages
+/// reader and the vault from both vault keys in `pairs`, with the worker's `ID_SECRET` and clock.
+/// Without both vault keys it registers nothing in dev and CI (as before T336) and is an error in
+/// test and live.
 fn register_inbound_retry(
     registry: &mut Registry,
     settings: &Settings,
@@ -517,9 +518,12 @@ fn register_inbound_retry(
     pairs: Vec<(String, String)>,
 ) -> io::Result<()> {
     let (Some(seal), Some(index)) = vault_keys(pairs) else {
-        return Err(io::Error::other(
-            "the inbound retry needs VAULT_KEY and VAULT_INDEX_KEY",
-        ));
+        return match settings.environment() {
+            Environment::Dev | Environment::Ci => Ok(()),
+            Environment::Test | Environment::Live => Err(io::Error::other(
+                "the inbound retry needs VAULT_KEY and VAULT_INDEX_KEY",
+            )),
+        };
     };
     let vault = Vault::new(&seal, &index, settings.database_url()).map_err(io::Error::other)?;
     let reader = TwilioMessageReader::new(twilio).map_err(io::Error::other)?;

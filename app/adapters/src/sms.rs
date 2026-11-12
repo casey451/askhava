@@ -141,6 +141,14 @@ pub trait SmsBodyRead {
         &self,
         sid: &str,
     ) -> impl Future<Output = Result<MessageBody, AdapterError>> + Send;
+
+    /// The same GET, keeping only the message's `From` (the body is never parsed into a value, so
+    /// another person's text never becomes one, D-3141); `None` for a 404 with code 20404. For
+    /// the retry's "did she write again" check (D-2307).
+    fn fetch_message_from(
+        &self,
+        sid: &str,
+    ) -> impl Future<Output = Result<Option<String>, AdapterError>> + Send;
 }
 
 /// The Message resource's fields the read needs; never logged.
@@ -149,6 +157,12 @@ struct MessageResource {
     from: Option<String>,
     to: Option<String>,
     body: Option<String>,
+}
+
+/// The Message resource's `From` only: no `body` field, so the body is skipped unparsed (D-3141).
+#[derive(serde::Deserialize)]
+struct MessageSender {
+    from: Option<String>,
 }
 
 /// Twilio's error body, for its code.
@@ -205,6 +219,26 @@ impl SmsBodyRead for TwilioMessageReader {
     /// TXT-020, D-2307, SEC-032: the SID is checked before it reaches the path; the answer's body
     /// goes only into [`ReadMessage::body`].
     async fn fetch_message_body(&self, sid: &str) -> Result<MessageBody, AdapterError> {
+        let (status, bytes) = self.get_message(sid).await?;
+        read_answer(status, &bytes)
+    }
+
+    /// D-2307, D-3141: the `From` alone; a 404 with 20404 is `None`, any other error `Vendor`.
+    async fn fetch_message_from(&self, sid: &str) -> Result<Option<String>, AdapterError> {
+        let (status, bytes) = self.get_message(sid).await?;
+        if let Some(gone) = error_answer(status, &bytes) {
+            return gone.map(|_| None);
+        }
+        let found: MessageSender =
+            serde_json::from_slice(&bytes).map_err(|_| AdapterError::Decode)?;
+        found.from.map(Some).ok_or(AdapterError::Decode)
+    }
+}
+
+impl TwilioMessageReader {
+    /// GET `Messages/{sid}.json` (SID checked first, `InvalidId`): the status and the raw answer,
+    /// which the caller parses and drops (SEC-032).
+    async fn get_message(&self, sid: &str) -> Result<(u16, Vec<u8>), AdapterError> {
         if !(is_sid(sid, "SM") || is_sid(sid, "MM")) {
             return Err(AdapterError::InvalidId);
         }
@@ -220,26 +254,36 @@ impl SmsBodyRead for TwilioMessageReader {
                 AdapterError::OutcomeUnknown
             }
         })?;
-        let status = response.status();
+        let status = response.status().as_u16();
         let bytes = response
             .bytes()
             .await
             .map_err(|_| AdapterError::OutcomeUnknown)?;
-        read_answer(status.as_u16(), &bytes)
+        Ok((status, bytes.to_vec()))
     }
 }
 
+/// An error status: `Ok(())` for 404 with 20404 (an unknown message), else `Vendor`; `None` for
+/// a success status.
+fn error_answer(status: u16, bytes: &[u8]) -> Option<Result<(), AdapterError>> {
+    if (200..300).contains(&status) {
+        return None;
+    }
+    let code = serde_json::from_slice::<ErrorCode>(bytes)
+        .ok()
+        .and_then(|e| e.code);
+    Some(match (status, code) {
+        (404, Some(20404)) => Ok(()),
+        _ => Err(AdapterError::Vendor { status, code }),
+    })
+}
+
 /// Sorts Twilio's answer to the read: 404 with 20404 is `Gone`, any other error status is
-/// `Vendor`, an empty body is `Gone`, and a resource without its numbers is `Decode`.
+/// `Vendor`, an empty body is `Gone` (also a photo-only MMS, which has no words to retry, D-3142),
+/// and a resource without its numbers is `Decode`.
 fn read_answer(status: u16, bytes: &[u8]) -> Result<MessageBody, AdapterError> {
-    if !(200..300).contains(&status) {
-        let code = serde_json::from_slice::<ErrorCode>(bytes)
-            .ok()
-            .and_then(|e| e.code);
-        return match (status, code) {
-            (404, Some(20404)) => Ok(MessageBody::Gone),
-            _ => Err(AdapterError::Vendor { status, code }),
-        };
+    if let Some(gone) = error_answer(status, bytes) {
+        return gone.map(|()| MessageBody::Gone);
     }
     let found: MessageResource = serde_json::from_slice(bytes).map_err(|_| AdapterError::Decode)?;
     let body = found.body.unwrap_or_default();

@@ -340,7 +340,7 @@ async fn text(
     match &done {
         Err(Halt::Failed(step, _)) => {
             failure_alert(db, inbox_id, step).await?;
-            queue_retry(db, inbox_id, now).await?;
+            queue_retry(db, (inbox_id, fields.provider), now).await?;
         }
         Err(Halt::Settled(step, _)) => failure_alert(db, inbox_id, step).await?,
         _ => {}
@@ -349,21 +349,37 @@ async fn text(
 }
 
 /// TXT-012, D-801, D-2307: one [`RETRY_KIND`] task for inbox row `inbox_id`, due after the first
-/// wait, in the delivery's transaction; its payload is the row ID only and its dedupe key
-/// [`retry_key`] `(inbox_id, 1)`, so a row is queued once. An insert error is `Halt::Database`.
-async fn queue_retry(db: &mut PgConnection, inbox_id: Uuid, now: Timestamp) -> Step<()> {
-    queue_try(db, inbox_id, (1, now + RETRY_WAITS[0]))
+/// wait, in the delivery's transaction; its payload is the row ID and the webhook's `OptOutType`
+/// code (no body text, D-3140) and its dedupe key [`retry_key`] `(inbox_id, 1)`, so a row is
+/// queued once. An insert error is `Halt::Database`.
+async fn queue_retry(
+    db: &mut PgConnection,
+    inbox: (Uuid, ProviderKeyword),
+    now: Timestamp,
+) -> Step<()> {
+    queue_try(db, inbox, (1, now + RETRY_WAITS[0]))
         .await
         .map(|_| ())
+}
+
+/// CON-030, D-866, D-3140: a retry's payload: the inbox row ID and, when Twilio's Advanced
+/// Opt-Out matched, its `OptOutType` (`STOP` or `START`), so the retry never re-matches the body.
+#[must_use]
+pub fn retry_payload(inbox_id: Uuid, provider: ProviderKeyword) -> serde_json::Value {
+    match provider {
+        ProviderKeyword::OptOut => json!({ "inbox": inbox_id, "opt_out_type": "STOP" }),
+        ProviderKeyword::Start => json!({ "inbox": inbox_id, "opt_out_type": "START" }),
+        ProviderKeyword::None => json!({ "inbox": inbox_id }),
+    }
 }
 
 /// Queues try `n` of inbox row `inbox_id` at `at`; true when it was new (D-2307).
 async fn queue_try(
     db: &mut PgConnection,
-    inbox_id: Uuid,
+    (inbox_id, provider): (Uuid, ProviderKeyword),
     (n, at): (usize, Timestamp),
 ) -> Step<bool> {
-    let mut task = NewTask::new(RETRY_KIND, json!({ "inbox": inbox_id }), at);
+    let mut task = NewTask::new(RETRY_KIND, retry_payload(inbox_id, provider), at);
     task.max_attempts = RETRY_CLAIMS;
     task.dedupe_key = Some(retry_key(inbox_id, n));
     enqueue_task(db, &task)
@@ -383,8 +399,8 @@ pub fn retry_key(inbox_id: Uuid, n: usize) -> String {
 }
 
 /// D-2307: after a failed try, queues the next one (try 2 after 30 minutes, try 3 after 2 hours
-/// from `now`), the first whose dedupe key is free; false when try 3 already exists, so the last
-/// failure adds nothing and T325's alert stays the record.
+/// from `now`, its payload as [`retry_payload`]), the first whose dedupe key is free; false when
+/// try 3 already exists, so the last failure adds nothing and T325's alert stays the record.
 ///
 /// # Errors
 ///
@@ -395,11 +411,11 @@ pub fn retry_key(inbox_id: Uuid, n: usize) -> String {
 )]
 pub async fn queue_next_try(
     db: &mut PgConnection,
-    inbox_id: Uuid,
+    inbox: (Uuid, ProviderKeyword),
     now: Timestamp,
 ) -> Result<bool, Rerun> {
     for n in 2..=RETRY_WAITS.len() {
-        let queued = queue_try(db, inbox_id, (n, now + RETRY_WAITS[n - 1])).await;
+        let queued = queue_try(db, inbox, (n, now + RETRY_WAITS[n - 1])).await;
         match queued {
             Ok(true) => return Ok(true),
             Ok(false) => {}
@@ -421,10 +437,10 @@ pub async fn queue_next_try(
 )]
 pub async fn queue_held(
     db: &mut PgConnection,
-    inbox_id: Uuid,
+    (inbox_id, provider): (Uuid, ProviderKeyword),
     until: Timestamp,
 ) -> Result<bool, Rerun> {
-    let mut task = NewTask::new(RETRY_KIND, json!({ "inbox": inbox_id }), until);
+    let mut task = NewTask::new(RETRY_KIND, retry_payload(inbox_id, provider), until);
     task.max_attempts = RETRY_CLAIMS;
     task.dedupe_key = Some(format!("{RETRY_KIND}:{inbox_id}:held"));
     enqueue_task(db, &task)

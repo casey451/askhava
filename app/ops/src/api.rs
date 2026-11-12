@@ -209,6 +209,28 @@ pub async fn audit_once(db: &mut PgConnection, entry: &AuditEntry) -> Result<boo
     Ok(true)
 }
 
+/// JOB-006, D-2307, D-3140 (T336): true when an audit row with `action` about `subject` exists,
+/// the read side of a mark [`audit_once`] writes (the inbound retry's "handled" mark per inbox row).
+///
+/// # Errors
+///
+/// [`OpsError::Database`].
+pub async fn audited(
+    db: &mut PgConnection,
+    action: &str,
+    subject: (&str, Uuid),
+) -> Result<bool, OpsError> {
+    sqlx::query_scalar!(
+        r#"SELECT EXISTS (SELECT 1 FROM ops.audit_log WHERE subject_kind = $1 AND subject_id = $2 AND action = $3) AS "seen!""#,
+        subject.0,
+        subject.1,
+        action,
+    )
+    .fetch_one(db)
+    .await
+    .map_err(|_| OpsError::Database)
+}
+
 /// The ID of the newest audit row below `id`, the row the off-database chain links `id` to
 /// (PRIV-029, D-735); none when `id` is the first. One indexed lookup, however far below it is.
 ///

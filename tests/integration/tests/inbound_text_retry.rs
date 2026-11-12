@@ -29,7 +29,7 @@ use axum::http::{Request, StatusCode};
 use base64::Engine as _;
 use base64::engine::general_purpose::STANDARD;
 use hmac::{Hmac, KeyInit, Mac};
-use inbound_retry::{RetryKeys, register};
+use inbound_retry::{HANDLED, RetryKeys, register};
 use inbound_text::{FAILED_ALERT, INBOUND_PATH, RETRY_KIND, Webhooks, retry_key, routes};
 use jiff::{SignedDuration, Timestamp};
 use secrecy::SecretString;
@@ -551,7 +551,13 @@ async fn td_txt_35_a_stop_retried_after_a_newer_text_is_applied(pool: PgPool) {
     let route = hooks(&pool, &clock, SEAL);
     let stop = deliver_unreadable_sender(&route, server.1, "STOP").await;
     let id = inbox(&pool, &stop).await;
-    assert_eq!(retries(&pool).await.len(), 1);
+    let tasks = retries(&pool).await;
+    assert_eq!(tasks.len(), 1);
+    assert_eq!(
+        tasks[0].1,
+        json!({ "inbox": id, "opt_out_type": "STOP" }),
+        "the webhook's OptOutType rides in the payload, never re-matched (CON-030, D-3140)"
+    );
     clock.advance(SignedDuration::from_mins(1));
     deliver(&route, server.1, "my sink drips").await;
     let listed = "SELECT count(*) FROM messaging.optout_event WHERE inbox_id = $1";
@@ -653,4 +659,136 @@ async fn td_txt_35_a_retry_at_22_00_waits_for_8_a_m(pool: PgPool) {
             .expect("outbox");
     assert_eq!(consent, 1, "the reply is her consent text");
     assert!(retries(&pool).await.iter().all(|t| t.3));
+}
+
+/// Counts the [`HANDLED`] marks about inbox row `id` (D-3140).
+async fn handled(pool: &PgPool, id: Uuid) -> i64 {
+    sqlx::query_scalar("SELECT count(*) FROM ops.audit_log WHERE action = $1 AND subject_id = $2")
+        .bind(HANDLED)
+        .bind(id)
+        .fetch_one(pool)
+        .await
+        .expect("marks")
+}
+
+/// Moves try 1 of inbox row `id` an hour later, as a claim that failed once would.
+async fn delay_first_try(pool: &PgPool, id: Uuid) {
+    sqlx::query("UPDATE core.task SET run_at = run_at + interval '1 hour' WHERE dedupe_key = $1")
+        .bind(retry_key(id, 1))
+        .execute(pool)
+        .await
+        .expect("delay");
+}
+
+async fn template_rows(pool: &PgPool, template: &str) -> i64 {
+    sqlx::query_scalar("SELECT count(*) FROM messaging.outbox WHERE template_id = $1")
+        .bind(template)
+        .fetch_one(pool)
+        .await
+        .expect("outbox")
+}
+
+/// TD-TXT-35 (CON-008, CON-018, D-2307, D-3140): a newer text that failed and was then handled by
+/// its own retry counts as processed (its T325 alert stays open, its `HANDLED` mark says so), so
+/// the older text's later retry runs only the opt-out and HELP steps and queues nothing.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_txt_35_a_newer_text_handled_by_its_own_retry_makes_an_older_retry_stale(pool: PgPool) {
+    let (server, clock) = (stand_in(), clock_at(MORNING));
+    let route = hooks(&pool, &clock, SEAL);
+    let older = deliver_unreadable_sender(&route, server.1, "my tap drips").await;
+    clock.advance(SignedDuration::from_mins(1));
+    let newer = deliver_unreadable_sender(&route, server.1, "my sink leaks too").await;
+    let (older, newer) = (inbox(&pool, &older).await, inbox(&pool, &newer).await);
+    delay_first_try(&pool, older).await;
+    clock.advance(SignedDuration::from_mins(5));
+    let retry = worker(server.1, &clock, SEAL);
+    run_due(&pool, &retry, &clock).await;
+    assert_eq!(
+        template_rows(&pool, "consent").await,
+        1,
+        "the newer text ran every step"
+    );
+    assert_eq!(handled(&pool, newer).await, 1, "and is marked handled");
+    let open = "SELECT count(*) FROM ops.alert WHERE subject_id = $1 AND resolved_at IS NULL";
+    assert_eq!(
+        count(&pool, open, newer).await,
+        1,
+        "its alert stays the record"
+    );
+    let before = outbox_rows(&pool).await;
+    clock.advance(SignedDuration::from_hours(1));
+    run_due(&pool, &retry, &clock).await;
+    assert_eq!(
+        outbox_rows(&pool).await,
+        before,
+        "the stale text changes nothing"
+    );
+    assert_eq!(
+        handled(&pool, older).await,
+        0,
+        "a stale retry is not marked handled"
+    );
+    assert_eq!(count(&pool, open, older).await, 1);
+    let tasks = retries(&pool).await;
+    assert!(tasks.iter().all(|t| t.3), "both close: {tasks:?}");
+}
+
+/// TD-TXT-35 (CON-008, CON-018, CON-030, QH-001, QH-004, D-2307): a HELP and a STOP whose retries
+/// run at 22:00 Arizona time are applied at once (the HELP reply is an any-hour text; Twilio sent
+/// the STOP's one confirmation), and nothing is held for 8 a.m. or queued besides the HELP reply.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_txt_35_a_help_or_stop_retried_at_22_00_runs_now_and_sends_nothing_else(pool: PgPool) {
+    let (server, clock) = (stand_in(), clock_at("2026-11-13T04:55:00Z"));
+    let route = hooks(&pool, &clock, SEAL);
+    let help = deliver_unreadable_sender(&route, server.1, "HELP").await;
+    let stop = deliver_unreadable_sender(&route, server.1, "STOP").await;
+    let (help, stop) = (inbox(&pool, &help).await, inbox(&pool, &stop).await);
+    let before = outbox_rows(&pool).await;
+    clock.advance(SignedDuration::from_mins(5));
+    run_due(&pool, &worker(server.1, &clock, SEAL), &clock).await;
+    let replies = "SELECT count(*) FROM messaging.outbox WHERE template_id = 'help_reply' \
+                   AND $1 = ANY(subject_ids)";
+    assert_eq!(
+        count(&pool, replies, help).await,
+        1,
+        "HELP answered at 22:00"
+    );
+    let listed = "SELECT count(*) FROM messaging.optout_event WHERE inbox_id = $1";
+    assert_eq!(count(&pool, listed, stop).await, 1, "STOP applied at 22:00");
+    assert_eq!(template_rows(&pool, "opt_out_confirmation").await, 0);
+    assert_eq!(outbox_rows(&pool).await, before + 1, "only the HELP reply");
+    let tasks = retries(&pool).await;
+    assert!(
+        tasks.iter().all(|t| t.3 && !t.0.ends_with(":held")),
+        "{tasks:?}"
+    );
+}
+
+/// TD-TXT-35 (QH-001, QH-004, INT-004, D-2307): an emergency text whose retry runs at 22:00
+/// Arizona time runs every step at once (its 911 text is an any-hour text) and holds nothing.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_txt_35_an_emergency_retried_at_night_runs_every_step(pool: PgPool) {
+    let (server, clock) = (stand_in(), clock_at("2026-11-13T04:55:00Z"));
+    let route = hooks(&pool, &clock, SEAL);
+    let sid = deliver_unreadable_sender(&route, server.1, "I smell gas in my kitchen").await;
+    let id = inbox(&pool, &sid).await;
+    let before = outbox_rows(&pool).await;
+    clock.advance(SignedDuration::from_mins(5));
+    run_due(&pool, &worker(server.1, &clock, SEAL), &clock).await;
+    let events = "SELECT count(*) FROM intake.emergency_event WHERE inbox_id = $1";
+    assert_eq!(
+        count(&pool, events, id).await,
+        1,
+        "the emergency step ran at night"
+    );
+    assert!(
+        outbox_rows(&pool).await > before,
+        "its any-hour text is queued"
+    );
+    assert_eq!(handled(&pool, id).await, 1);
+    let tasks = retries(&pool).await;
+    assert!(
+        tasks.iter().all(|t| t.3 && !t.0.ends_with(":held")),
+        "{tasks:?}"
+    );
 }
