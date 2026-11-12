@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-12T17:19:45Z by runner 5e739fa972c5 (actions).
+Updated 2026-11-12T17:26:11Z by runner 5e739fa972c5 (actions).
 
 **Building: T251 in progress since 17:19Z; 248 of 400 done; week 0% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 248 of 400 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T251 claimed 17:19Z, lease until 20:19Z; lane 4: T414 claimed 17:19Z, lease until 20:19Z
-- **Week:** 0% used, 190.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:19Z, 0 min before this update
+- **Lane:** lane 1: T251 claimed 17:19Z, lease until 20:19Z; lane 3: T385 claimed 17:26Z, lease until 20:26Z; lane 4: T414 claimed 17:19Z, lease until 20:19Z
+- **Week:** 0% used, 189.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 17:19Z, 6 min before this update
 - **Keeper:** last ran 17:12Z, next wake 19:07Z
 
 ## Needs attention
@@ -85,7 +85,6 @@ Updated 2026-11-12T17:19:45Z by runner 5e739fa972c5 (actions).
 | T345 | harness: every external GitHub Actions `uses:` in every work | BLOCKED | 1 | 8 min | 18:44Z |  |
 | T332 | payments (harness): a late success has its own refund trigge | resync | 4 | 46 min | 18:10Z |  |
 | T272 | portals: the sign-in link cap and the code-try cap are atomi | done | 1 | 20 min | 18:05Z |  |
-| T333 | payments (harness): a succeeded refund is recorded at the am | done | 2 | 32 min | 17:20Z | PLAN GAP: app/payments/src/routes.rs:412 (T259) and app/payments/src/refund_state.rs:34 (T270) / app/picks/src/unreachab |
 
 ### Plan and harness merges on main
 - 16:10Z Plan: pre-flight fixes round 10 — T396, T398, T111, T113, T408, T222; new T414 (D-3263) (#597)
@@ -148,7 +147,7 @@ Updated 2026-11-12T17:19:45Z by runner 5e739fa972c5 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-12T17:12:15Z (week)): week: 3.6M used, 190.4M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-06T03:21:06Z.
+- Pacing (session_reading 2026-11-12T17:12:15Z (week)): week: 4.4M used, 189.6M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-06T03:27:36Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -164,6 +163,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T251 (lease until 2026-11-12T20:19:06Z)
+- lane 3: T385 (lease until 2026-11-12T20:26:04Z)
 - lane 4: T414 (lease until 2026-11-12T20:19:33Z)
 
 ## Last usage reading
