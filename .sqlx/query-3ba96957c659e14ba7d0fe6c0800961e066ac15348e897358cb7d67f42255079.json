@@ -1,0 +1,30 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id FROM portals.code_challenge\n           WHERE id = (SELECT max(id) FROM portals.code_challenge WHERE purpose = $1 AND subject_id = $2)\n             AND used_at IS NULL AND sent_at > $3",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "portals.code_challenge",
+            "name": "id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "3ba96957c659e14ba7d0fe6c0800961e066ac15348e897358cb7d67f42255079"
+}
