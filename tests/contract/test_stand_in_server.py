@@ -11,6 +11,7 @@ import json
 import urllib.error
 import urllib.request
 from collections.abc import Iterator
+from datetime import UTC, datetime
 from typing import Any
 from urllib.parse import urlencode, urlsplit
 
@@ -178,10 +179,46 @@ def test_verify_wrong_code_and_attempt_limit_over_http(base: str) -> None:
     assert tw(base, "POST", VERIFY + "/Verifications", {"To": "928", "Channel": "sms"})[1]["code"] == 60200
 
 
+HOOK = "https://hooks.example.test/webhooks/twilio/status"
+
+
 def test_status_callback_control(base: str) -> None:
-    sid = tw(base, "POST", MSGS, {"To": HOMEOWNER, "From": OURS, "Body": "hi"})[1]["sid"]
-    params = call(base, "POST", "/_stand_in/twilio/status", body={"sid": sid, "status": "delivered"})[1]["params"]
-    assert params == {"MessageSid": sid, "MessageStatus": "delivered", "To": HOMEOWNER, "From": OURS}
+    """TD-TXT-36 (TXT-013, SEC-016, D-2761): the callback is aimed at the create's StatusCallback
+    and signed over that URL; a message created without one gets 409 and no callback."""
+    form = {"To": HOMEOWNER, "From": OURS, "Body": "hi", "StatusCallback": HOOK}
+    sid = tw(base, "POST", MSGS, form)[1]["sid"]
+    status, got, _ = call(base, "POST", "/_stand_in/twilio/status", body={"sid": sid, "status": "delivered"})
+    assert status == 200 and got["url"] == HOOK
+    assert got["params"] == {"MessageSid": sid, "MessageStatus": "delivered", "To": HOMEOWNER, "From": OURS}
+    assert twilio.validate_signature("fake-auth-token", HOOK, got["params"], got["signature"])
+    bare = tw(base, "POST", MSGS, {"To": HOMEOWNER, "From": OURS, "Body": "hi"})[1]["sid"]
+    status, refused, _ = call(base, "POST", "/_stand_in/twilio/status", body={"sid": bare, "status": "failed"})
+    assert status == 409 and "params" not in refused
+    assert tw(base, "GET", MSGS.removesuffix(".json") + f"/{bare}.json")[1]["status"] == "queued"
+
+
+def test_td_txt_36_list_filters_from_and_date_sent_over_http() -> None:
+    """TD-TXT-36 (OPS-017, D-2764): Twilio's From, DateSent, DateSent< and DateSent> list filters."""
+    state = server.StandIns()
+    srv = server.serve(state=state)
+    base = f"http://127.0.0.1:{srv.server_address[1]}"
+    try:
+        for day in (10, 11, 12):
+            state.twilio.clock = lambda day=day: datetime(2026, 11, day, 0, 0, 5, tzinfo=UTC)
+            tw(base, "POST", MSGS, {"To": HOMEOWNER, "From": OURS, "Body": f"Ask Hava: fake {day}"})
+
+        def bodies(query: str) -> list[str]:
+            return [m["body"][-2:] for m in tw(base, "GET", f"{MSGS}?{query}")[1]["messages"]]
+
+        assert bodies("DateSent=2026-11-11") == ["11"]
+        assert bodies("DateSent%3E=2026-11-11") == ["11", "12"]
+        assert bodies("DateSent<=2026-11-11&From=%2B15005550006") == ["10", "11"]
+        assert bodies("From=%2B19285550199") == []
+        assert tw(base, "GET", f"{MSGS}?DateSent=11-11-2026")[0] == 400
+        assert tw(base, "GET", f"{MSGS}?DateSent=2026-11-11&DateSent%3C=2026-11-12")[0] == 400
+    finally:
+        srv.shutdown()
+        srv.server_close()
 
 
 def stripe_post(base: str, kind: str, form: dict[str, Any], key: str = "", auth: str = "sk_test_fake") -> Reply:

@@ -13,9 +13,13 @@ would do on its own (an inbound text, the code on the phone, a status callback, 
 letter's next tracking step, a signed webhook for an event), and so does Stripe's
 `/v1/payment_intents/{id}/stand_in_authenticate` (the bank's 3-D Secure answer, D-1754); a real
 vendor has none of them. The
-derived key of a text travels in the `X-Askhava-Message-Key` header and the sent log is
-`GET .../Messages.json?MessageKey=` (OPS-017); the provider's own opt-out replies are listed only
-with `Direction=outbound-reply`. It binds to 127.0.0.1 only and holds fake data only.
+derived key of a text travels in the `X-Askhava-Message-Key` header; the Messages list takes
+Twilio's own filters `To`, `From`, `DateSent`, `DateSent<` and `DateSent>` (`YYYY-MM-DD`, UTC,
+inclusive), which recovery matches on (OPS-017, D-2764), and the test-only `MessageKey`, which
+Twilio cannot store: only `core::test_control` uses it, never app code. The provider's own opt-out
+replies are listed only with `Direction=outbound-reply`. A create's `StatusCallback` is kept, and
+`/_stand_in/twilio/status` answers 409 (nothing recorded) for a message created without one, else
+the URL, params and signature Twilio would post there (D-2761). It binds to 127.0.0.1 only and holds fake data only.
 
 Usage: python3 -m stand_ins.server [--port 4010]; `--port 0` binds a free port, and the
 "listening" line names the port actually bound, so a test can start it without a port race.
@@ -31,6 +35,7 @@ import threading
 import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
+from datetime import date
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any
 from urllib.parse import parse_qsl, urlsplit
@@ -115,13 +120,29 @@ def stripe_params(pairs: dict[str, str]) -> dict[str, Any]:
 def twilio_send(s: StandIns, req: Request, m: re.Match[str]) -> Out:
     f = req.form()
     key = req.headers.get("x-askhava-message-key")
-    return (*s.twilio.create_message(f.get("To", ""), f.get("From", ""), f.get("Body", ""), key), {})
+    to, frm, body = f.get("To", ""), f.get("From", ""), f.get("Body", "")
+    return (*s.twilio.create_message(to, frm, body, key, f.get("StatusCallback")), {})
+
+
+def _day(text: str | None) -> date | None:
+    """A `DateSent` filter's `YYYY-MM-DD`; anything else raises ValueError, answered 400."""
+    if text is None:
+        return None
+    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", text):
+        raise ValueError("bad DateSent")
+    return date.fromisoformat(text)
 
 
 def twilio_list(s: StandIns, req: Request, m: re.Match[str]) -> Out:
-    """App sends only; `Direction=outbound-reply` lists the provider's opt-out replies (D-561)."""
-    replies = req.query.get("Direction") == "outbound-reply"
-    sent = s.twilio.sent_log(req.query.get("MessageKey"), req.query.get("To"), replies)
+    """App sends only, by Twilio's `To`, `From` and `DateSent` filters and the test-only
+    `MessageKey` (D-2764); `Direction=outbound-reply` lists the provider's opt-out replies (D-561)."""
+    q = req.query
+    replies = q.get("Direction") == "outbound-reply"
+    on, before, after = _day(q.get("DateSent")), _day(q.get("DateSent<")), _day(q.get("DateSent>"))
+    if on is not None and (before, after) != (None, None):
+        raise ValueError("DateSent with DateSent< or DateSent>")
+    window = (on, on) if on is not None else (after, before)
+    sent = s.twilio.sent_log(q.get("MessageKey"), q.get("To"), replies, q.get("From"), window)
     return 200, {"messages": sent, "page": 0, "page_size": 50, "next_page_uri": None}, {}
 
 
@@ -176,8 +197,15 @@ def control_code(s: StandIns, req: Request, m: re.Match[str]) -> Out:
 
 
 def control_status(s: StandIns, req: Request, m: re.Match[str]) -> Out:
+    """Twilio moves a message's status: 409 for a message created without `StatusCallback` (no
+    callback recorded), else the URL its create gave, the params and their X-Twilio-Signature (D-2761)."""
     b = req.json()
-    return 200, {"params": s.twilio.status_callback(b["sid"], b["status"], b.get("error_code"))}, {}
+    found = s.twilio.status_callback(b["sid"], b["status"], b.get("error_code"))
+    if found is None:
+        return 409, {"error": "message created without StatusCallback; Twilio posts no status"}, {}
+    url, params = found
+    signature = twilio.compute_signature(s.twilio.auth_token, url, params)
+    return 200, {"url": url, "params": params, "signature": signature}, {}
 
 
 def _stamp(body: dict[str, Any]) -> int:

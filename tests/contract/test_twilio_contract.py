@@ -5,6 +5,7 @@ from __future__ import annotations
 import base64
 import hashlib
 import hmac
+from datetime import UTC, date, datetime
 
 from stand_ins import twilio
 
@@ -75,13 +76,40 @@ def test_opt_out_is_exact_word_only() -> None:
     assert fake.create_message(HOMEOWNER, OURS, "x")[0] == 201
 
 
+HOOK = "https://hooks.example.test/webhooks/twilio/status"
+
+
 def test_status_callback_params() -> None:
+    """TD-TXT-36 (TXT-013, SEC-016, D-2761): the callback goes to the create's StatusCallback."""
+    fake = twilio.FakeTwilio()
+    sid = fake.create_message(HOMEOWNER, OURS, "hi", status_callback=HOOK)[1]["sid"]
+    url, params = fake.status_callback(sid, "delivered") or ("", {})
+    assert url == HOOK and params["MessageStatus"] == "delivered" and params["MessageSid"] == sid
+    _, failed = fake.status_callback(sid, "undelivered", 30003) or ("", {})
+    assert failed["ErrorCode"] == "30003"
+
+
+def test_td_txt_36_no_status_callback_without_one_on_create() -> None:
+    """TD-TXT-36 (TXT-013, TXT-014, D-2761): Twilio posts no status for a message created without
+    StatusCallback, so the fake records none and leaves the message as it was."""
     fake = twilio.FakeTwilio()
     sid = fake.create_message(HOMEOWNER, OURS, "hi")[1]["sid"]
-    params = fake.status_callback(sid, "delivered")
-    assert params["MessageStatus"] == "delivered" and params["MessageSid"] == sid
-    failed = fake.status_callback(sid, "undelivered", 30003)
-    assert failed["ErrorCode"] == "30003"
+    assert fake.status_callback(sid, "failed", 30008) is None
+    assert fake.callbacks == [] and fake.message(sid)[1]["status"] == "queued"
+
+
+def test_td_txt_36_list_filters_from_and_date_sent() -> None:
+    """TD-TXT-36 (OPS-017, D-2764): Twilio's From and DateSent window (UTC days, inclusive)."""
+    fake = twilio.FakeTwilio()
+    for day in (10, 11, 12):
+        fake.clock = lambda day=day: datetime(2026, 11, day, 23, 30, tzinfo=UTC)
+        fake.create_message(HOMEOWNER, OURS, f"Ask Hava: fake text {day}")
+    assert fake.sent_log()[0]["date_sent"] == "Tue, 10 Nov 2026 23:30:00 +0000"
+    days = [m["body"][-2:] for m in fake.sent_log(sent=(date(2026, 11, 11), date(2026, 11, 11)))]
+    assert days == ["11"]
+    assert len(fake.sent_log(sent=(date(2026, 11, 11), None))) == 2
+    assert len(fake.sent_log(sent=(None, date(2026, 11, 11)))) == 2
+    assert len(fake.sent_log(frm=OURS)) == 3 and fake.sent_log(frm="+19285550199") == []
 
 
 def test_inbound_webhook_fields() -> None:
