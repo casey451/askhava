@@ -1,19 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-12T22:28:48Z by runner 4aa3c92a5fa0 (actions).
+Updated 2026-11-12T22:29:29Z by runner 47b884064356 (actions).
 
 **Building: T419 in progress since 22:12Z; 257 of 404 done; week 6% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 257 of 404 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T419 claimed 22:12Z, lease until 01:12Z; lane 3: T385 claimed 22:26Z, lease until 01:26Z; lane 4: T162 claimed 22:25Z, lease until 01:25Z; lane 7: T351 claimed 21:36Z, lease until 00:36Z
-- **Week:** 6% used, 174.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:27Z, 1 min before this update
+- **Lane:** lane 1: T419 claimed 22:12Z, lease until 01:12Z; lane 3: T385 claimed 22:26Z, lease until 01:26Z; lane 4: T162 claimed 22:25Z, lease until 01:25Z; lane 5: T215 claimed 22:29Z, lease until 01:29Z; lane 7: T351 claimed 21:36Z, lease until 00:36Z
+- **Week:** 6% used, 171.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 22:29Z, 0 min before this update
 - **Keeper:** last ran 22:23Z, next wake 00:39Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 21 problem(s) on tasks still to run (+134 on DONE tasks); first: T320: stored context_pct 41% but it measures 45%; regenerate
+- PLAN GAP T418 (since 2026-11-12T22:29:12Z, no attempt used; a plan change fixes it): T418: dependency T417 is DONE but its owned file perf/seed.py is not on main; T418: dependency T417 is DONE but its owned file perf/bench.py is not on main; T418: dependency T417 is DONE but its owned file tests/perf/test_bench.py is not on main; T418: dependency T417 is DONE but its owned file docs/audit/perf-baseline.json is not on main; T418: dependency T417 is DONE but its owned file docs/audit/perf-baseline.md is not on main
+- Strict plan check red: 21 problem(s) on tasks still to run (+133 on DONE tasks); first: T320: stored context_pct 41% but it measures 45%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -152,7 +153,7 @@ Updated 2026-11-12T22:28:48Z by runner 4aa3c92a5fa0 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-12T22:23:22Z (week)): week: 19.4M used, 174.6M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-05T18:11:21Z.
+- Pacing (session_reading 2026-11-12T22:23:22Z (week)): week: 22.6M used, 171.4M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-06T00:09:51Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -170,6 +171,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - T419 (lease until 2026-11-13T01:12:59Z)
 - lane 3: T385 (lease until 2026-11-13T01:26:42Z)
 - lane 4: T162 (lease until 2026-11-13T01:25:32Z)
+- lane 5: T215 (lease until 2026-11-13T01:29:12Z)
 - lane 7: T351 (lease until 2026-11-13T00:36:46Z)
 
 ## Last usage reading
