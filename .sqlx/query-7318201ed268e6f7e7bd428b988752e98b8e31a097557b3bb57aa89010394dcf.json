@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT b.id, b.requested_by, b.sent_at, b.tries FROM businesses.backup_address b JOIN businesses.team_member m ON m.id = b.member_id AND m.removed_at IS NULL WHERE b.business_id = $1 AND b.member_id = $2 AND b.verified_at IS NULL AND b.removed_at IS NULL FOR UPDATE OF b",
+  "query": "SELECT b.id, b.mailbox_id, b.requested_by, b.sent_at, b.tries FROM businesses.backup_address b JOIN businesses.team_member m ON m.id = b.member_id AND m.removed_at IS NULL WHERE b.business_id = $1 AND b.member_id = $2 AND b.verified_at IS NULL AND b.removed_at IS NULL FOR UPDATE OF b",
   "describe": {
     "columns": [
       {
@@ -16,6 +16,17 @@
       },
       {
         "ordinal": 1,
+        "name": "mailbox_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "businesses.backup_address",
+            "name": "mailbox_id"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
         "name": "requested_by",
         "type_info": "Uuid",
         "origin": {
@@ -26,7 +37,7 @@
         }
       },
       {
-        "ordinal": 2,
+        "ordinal": 3,
         "name": "sent_at",
         "type_info": "Timestamptz",
         "origin": {
@@ -37,7 +48,7 @@
         }
       },
       {
-        "ordinal": 3,
+        "ordinal": 4,
         "name": "tries",
         "type_info": "Int4",
         "origin": {
@@ -58,8 +69,9 @@
       false,
       false,
       false,
+      false,
       false
     ]
   },
-  "hash": "42f06081789ea92c4567a7cac3d74e18377ae1fb789534fd31d5e08acf23bca9"
+  "hash": "7318201ed268e6f7e7bd428b988752e98b8e31a097557b3bb57aa89010394dcf"
 }

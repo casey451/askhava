@@ -1,0 +1,24 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT EXISTS (SELECT 1 FROM businesses.backup_address b JOIN businesses.team_member m ON m.id = b.member_id AND m.removed_at IS NULL WHERE b.business_id = $1 AND b.mailbox_id = $2 AND b.verified_at IS NOT NULL AND b.removed_at IS NULL) AS \"backup!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "backup!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "9fd5b682b01862ad2c983448434a72d7ed1b9106cf380f654e0236e44bfc4e24"
+}

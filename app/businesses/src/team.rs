@@ -71,6 +71,11 @@ pub enum TeamError {
     /// A current member already signs in with that email.
     #[error("that email already belongs to a member")]
     MailboxTaken,
+    /// The email is the verified backup notice address of a current member of the business, so it
+    /// may not also be a main address (BIZ-043, D-3174); that person or the owner removes the backup
+    /// first.
+    #[error("that email is a member's backup address")]
+    MailboxIsBackup,
     /// The acting member may not make this change: only the owner manages members (BIZ-023); only
     /// the owner or a "Confirm and billing" member links, changes or unlinks a phone, and only the
     /// owner the main phone (CALL-012); or the acting member is not a current member of the
@@ -90,6 +95,40 @@ pub enum TeamError {
 
 fn db<T>(r: Result<T, sqlx::Error>) -> Result<T, TeamError> {
     r.map_err(|_| TeamError::Database)
+}
+
+/// BIZ-043, D-3174: holds `mailbox` of `business` to the end of the caller's transaction, so
+/// [`add_member`] and `backup_address::confirm_backup` never both pass their check on one mailbox.
+pub(crate) async fn lock_mailbox(
+    tx: &mut PgConnection,
+    business: Uuid,
+    mailbox: Uuid,
+) -> Result<(), sqlx::Error> {
+    sqlx::query!(
+        "SELECT pg_advisory_xact_lock(hashtextextended($1::text, 43))",
+        format!("{business}.{mailbox}")
+    )
+    .execute(tx)
+    .await
+    .map(|_| ())
+}
+
+/// BIZ-043, D-3174: whether `mailbox` is the verified backup of a current member of `business`.
+async fn is_backup(
+    tx: &mut PgConnection,
+    business: Uuid,
+    mailbox: Uuid,
+) -> Result<bool, TeamError> {
+    db(sqlx::query_scalar!(
+        "SELECT EXISTS (SELECT 1 FROM businesses.backup_address b \
+         JOIN businesses.team_member m ON m.id = b.member_id AND m.removed_at IS NULL \
+         WHERE b.business_id = $1 AND b.mailbox_id = $2 AND b.verified_at IS NOT NULL \
+         AND b.removed_at IS NULL) AS \"backup!\"",
+        business,
+        mailbox
+    )
+    .fetch_one(tx)
+    .await)
 }
 
 fn insert_error(e: &sqlx::Error) -> TeamError {
@@ -311,11 +350,12 @@ pub async fn add_owner(
 }
 
 /// Adds a member of `by.business` signing in with email `mailbox`, holding `roles`; only the
-/// owner may (BIZ-023). Audited.
+/// owner may (BIZ-023). Audited. Refused when `mailbox` is the verified backup of a current
+/// member of the business (BIZ-043, D-3174), checked under [`lock_mailbox`].
 ///
 /// # Errors
 ///
-/// [`TeamError::NotAllowed`], `MailboxTaken`, `Database` or `Audit`.
+/// [`TeamError::NotAllowed`], `MailboxTaken`, `MailboxIsBackup`, `Database` or `Audit`.
 pub async fn add_member(
     conn: &mut PgConnection,
     by: Acting,
@@ -325,6 +365,10 @@ pub async fn add_member(
 ) -> Result<Uuid, TeamError> {
     let mut tx = db(conn.begin().await)?;
     acting_owner(&mut tx, by).await?;
+    db(lock_mailbox(&mut tx, by.business, mailbox).await)?;
+    if is_backup(&mut tx, by.business, mailbox).await? {
+        return Err(TeamError::MailboxIsBackup);
+    }
     let id = insert_member(&mut tx, (by.business, mailbox), (false, roles), now).await?;
     db(tx.commit().await)?;
     Ok(id)
