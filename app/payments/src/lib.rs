@@ -42,6 +42,9 @@
 //! T068 added the IDs-only receipt event of each charge and the charge facts its "Why was I
 //! charged?" page reads, [`api::queue_receipt`], and the pure just-under-a-tier flag,
 //! [`api::tier_edge_flag`] (FEE-031, FEE-033, FEE-053).
+//!
+//! T405 added each charged pick's 3-D Secure result, read once from Stripe and stored,
+//! [`api::record_three_ds`] and [`api::three_ds_authenticated`] (FEE-050, FEE-027, D-3118).
 
 pub mod api;
 mod charge;
@@ -67,6 +70,7 @@ mod routes;
 mod rules;
 mod service;
 mod status;
+mod three_ds;
 
 #[cfg(test)]
 mod tests;

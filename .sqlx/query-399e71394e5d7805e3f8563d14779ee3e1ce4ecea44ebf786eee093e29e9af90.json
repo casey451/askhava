@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT authenticated FROM payments.charge_three_ds WHERE pick_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "authenticated",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "payments.charge_three_ds",
+            "name": "authenticated"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "399e71394e5d7805e3f8563d14779ee3e1ce4ecea44ebf786eee093e29e9af90"
+}
