@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-12T11:05:08Z by runner 95c0a4277830 (actions).
+Updated 2026-11-12T11:05:25Z by runner 95c0a4277830 (actions).
 
 **Building: T377 in progress since 10:47Z; 238 of 397 done; week 92% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 238 of 397 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T377 claimed 10:47Z, lease until 13:47Z; lane 3: T345 claimed 10:49Z, lease until 13:49Z; lane 4: T268 claimed 10:41Z, lease until 13:41Z
+- **Lane:** lane 2: T377 claimed 10:47Z, lease until 13:47Z; lane 3: T345 claimed 10:49Z, lease until 13:49Z
 - **Week:** 92% used, 0.4M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:02Z, 2 min before this update
+- **Last run:** 11:02Z, 3 min before this update
 - **Keeper:** last ran 11:00Z, next wake 13:44Z
 
 ## Needs attention
@@ -18,10 +18,11 @@ Updated 2026-11-12T11:05:08Z by runner 95c0a4277830 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T268 | portals, businesses and messaging: the sign-up consent box,  | MERGE_PENDING | 1 | 24 min | 11:05Z | merging main into the reviewed head conflicts in app/messaging/src/api.rs; a resync merges it in on this attempt (D-891) |
 | T411 | quotes: the scrubbed job description and the shown and appro | done | 1 | 28 min | 10:36Z |  |
 | T343 | harness: the DONE pick tests' fixtures record each job's fac | done | 1 | 24 min | 10:23Z |  |
 | T411 | quotes: the scrubbed job description and the shown and appro | resync | 1 | 30 min | 10:00Z |  |
-| T268 | portals, businesses and messaging: the sign-up consent box,  | resync | 1 | 21 min | 09:38Z | merging main into the reviewed head conflicts in app/messaging/src/api.rs; a resync merges it in on this attempt (D-891) |
+| T268 | portals, businesses and messaging: the sign-up consent box,  | resync | 1 | 21 min | 09:38Z |  |
 | T358 | messaging: the Canadian area codes for the HELP roaming line | done | 1 | 40 min | 09:32Z |  |
 | T268 | portals, businesses and messaging: the sign-up consent box,  | resync | 1 | 58 min | 09:12Z |  |
 | T406 | quotes: a quote's PICK-040 facts are stored with it and read | done | 1 | 41 min | 09:05Z |  |
@@ -171,7 +172,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 - lane 2: T377 (lease until 2026-11-12T13:47:28Z)
 - lane 3: T345 (lease until 2026-11-12T13:49:13Z)
-- lane 4: T268 (lease until 2026-11-12T13:41:05Z)
 
 ## Last usage reading
-- {"task": "T411", "at": "2026-11-12T10:36:25Z", "output_tokens": 25083, "cache_creation_input_tokens": 200157, "input_tokens": 135, "cache_read_input_tokens": 2420022}
+- {"task": "T268", "at": "2026-11-12T11:05:07Z", "output_tokens": 17145, "cache_creation_input_tokens": 133864, "input_tokens": 98, "cache_read_input_tokens": 1587326}
