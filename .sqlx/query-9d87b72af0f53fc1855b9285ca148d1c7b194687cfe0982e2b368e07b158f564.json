@@ -1,0 +1,43 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT kind, floor(extract(epoch FROM dead_at) / 86400)::bigint AS \"day!\",\n                  count(*) AS \"count!\"\n           FROM core.task WHERE dead_at >= $1 AND (last_error IS NULL OR last_error <> $2)\n           GROUP BY 1, 2 ORDER BY 1, 2",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "kind",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "core.task",
+            "name": "kind"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "day!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 2,
+        "name": "count!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Timestamptz",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      null,
+      null
+    ]
+  },
+  "hash": "9d87b72af0f53fc1855b9285ca148d1c7b194687cfe0982e2b368e07b158f564"
+}

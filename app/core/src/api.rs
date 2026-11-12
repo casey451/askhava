@@ -3,7 +3,7 @@
 //! Settings (SEC-001, SEC-002, SEC-003, SEC-036), the clock and business clock
 //! (JOB-007), the database pool, migrations and the guarded-update outcome
 //! (JOB-004, D-092), and logging with `Redacted` contact values and the Sentry
-//! scrubber (PRIV-016, PRIV-017, PRIV-028), the task queue and its `unfinished` read (JOB-006, PRIV-007) and the rate-limit counters with
+//! scrubber (PRIV-016, PRIV-017, PRIV-028), the task queue and its `unfinished` read (JOB-006, PRIV-007), its dead-letter reads and one-row revive (OPS-004, JOB-006, T327, T366) and the rate-limit counters with
 //! the client IP they are keyed on (SEC-014, SEC-040), and the test-control router and clock,
 //! whose routes exist only under the `test-control` feature (SEC-035), derived IDs and link tokens
 //! (CARD-017, PICK-028, SEC-037) and the webhook dedupe outcome and event key (SEC-017, SEC-039), and
@@ -56,4 +56,88 @@ pub async fn dead_without_handler(
     .await
     .map_err(|_| TaskError::Db)?;
     Ok(rows.into_iter().map(|r| (r.kind, r.count)).collect())
+}
+
+/// OPS-004, JOB-006, D-2640: each task kind with tasks dead-lettered at or after `since` whose
+/// last error is not [`NO_HANDLER`] (that check is [`dead_without_handler`]'s), with the UTC day
+/// number (`dead_at` seconds / 86,400) and how many died that day, in kind and day order. Kinds,
+/// days and counts only, never a payload; the server's hourly check reads it (T366).
+///
+/// # Errors
+/// [`TaskError::Db`] when the read fails.
+pub async fn dead_by_kind_since(
+    db: &mut sqlx::PgConnection,
+    since: jiff::Timestamp,
+) -> Result<Vec<(String, i64, i64)>, TaskError> {
+    use jiff_sqlx::ToSqlx;
+    let rows = sqlx::query!(
+        r#"SELECT kind, floor(extract(epoch FROM dead_at) / 86400)::bigint AS "day!",
+                  count(*) AS "count!"
+           FROM core.task WHERE dead_at >= $1 AND (last_error IS NULL OR last_error <> $2)
+           GROUP BY 1, 2 ORDER BY 1, 2"#,
+        since.to_sqlx() as _,
+        NO_HANDLER,
+    )
+    .fetch_all(db)
+    .await
+    .map_err(|_| TaskError::Db)?;
+    Ok(rows.into_iter().map(|r| (r.kind, r.day, r.count)).collect())
+}
+
+/// What [`revive_dead`] found for a dedupe key (JOB-006, D-2640).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Revival {
+    /// The dead task was revived; how many times it has been revived now.
+    Revived(i64),
+    /// The task is dead and has been revived the most times allowed already; it stays dead.
+    Exhausted,
+    /// The task is waiting, running or done; nothing changed.
+    Alive,
+    /// No task holds the key.
+    Missing,
+}
+
+/// JOB-006, D-2640: revives the dead-lettered task holding `dedupe_key` in one statement on its
+/// row: `dead_at` and `last_error` cleared, attempts back to 0, due at `now`, and the payload's
+/// `revived` count raised by one, unless it has already been revived `most` times. Answers what
+/// it found; the jobs timer backstop (T366) calls it in its audit row's transaction.
+///
+/// # Errors
+/// [`TaskError::Db`] when a statement fails.
+pub async fn revive_dead(
+    db: &mut sqlx::PgConnection,
+    dedupe_key: &str,
+    now: jiff::Timestamp,
+    most: i64,
+) -> Result<Revival, TaskError> {
+    use jiff_sqlx::ToSqlx;
+    let revived = sqlx::query_scalar!(
+        r#"UPDATE core.task SET dead_at = NULL, last_error = NULL, attempts = 0, run_at = $2,
+             payload = jsonb_set(payload, '{revived}',
+               to_jsonb(COALESCE((payload->>'revived')::bigint, 0) + 1))
+           WHERE dedupe_key = $1 AND dead_at IS NOT NULL
+             AND COALESCE((payload->>'revived')::bigint, 0) < $3
+           RETURNING (payload->>'revived')::bigint AS "revived!""#,
+        dedupe_key,
+        now.to_sqlx() as _,
+        most,
+    )
+    .fetch_optional(&mut *db)
+    .await
+    .map_err(|_| TaskError::Db)?;
+    if let Some(times) = revived {
+        return Ok(Revival::Revived(times));
+    }
+    let dead = sqlx::query_scalar!(
+        r#"SELECT dead_at IS NOT NULL AS "dead!" FROM core.task WHERE dedupe_key = $1"#,
+        dedupe_key,
+    )
+    .fetch_optional(db)
+    .await
+    .map_err(|_| TaskError::Db)?;
+    Ok(match dead {
+        Some(true) => Revival::Exhausted,
+        Some(false) => Revival::Alive,
+        None => Revival::Missing,
+    })
 }

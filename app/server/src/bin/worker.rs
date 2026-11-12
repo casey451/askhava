@@ -66,7 +66,8 @@ async fn main() -> io::Result<()> {
 }
 
 /// Queues the daily tasks at start (the chain check, the retention sweep, the body cut, the
-/// photo orphan sweep, the day-31 body scan, this hour's no-handler check and the outbox sender's
+/// photo orphan sweep, the day-31 body scan, this hour's dead-letter check, the job timer
+/// backstop and the outbox sender's
 /// first run) and runs the intake golden set once.
 async fn schedule_start(pool: &sqlx::PgPool, now: jiff::Timestamp) -> io::Result<()> {
     let mut conn = pool.acquire().await.map_err(io::Error::other)?;
@@ -86,6 +87,9 @@ async fn schedule_start(pool: &sqlx::PgPool, now: jiff::Timestamp) -> io::Result
         .await
         .map_err(io::Error::other)?;
     askhava_server::no_handler_alert::schedule(&mut conn, now)
+        .await
+        .map_err(io::Error::other)?;
+    askhava_jobs::api::schedule_backstop(&mut conn, now)
         .await
         .map_err(io::Error::other)?;
     askhava_messaging::api::schedule_send_due(&mut conn, now)

@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE core.task SET dead_at = NULL, last_error = NULL, attempts = 0, run_at = $2,\n             payload = jsonb_set(payload, '{revived}',\n               to_jsonb(COALESCE((payload->>'revived')::bigint, 0) + 1))\n           WHERE dedupe_key = $1 AND dead_at IS NOT NULL\n             AND COALESCE((payload->>'revived')::bigint, 0) < $3\n           RETURNING (payload->>'revived')::bigint AS \"revived!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "revived!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Timestamptz",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "148a767fbac1c6f23d31f630e05e0649d30d6cee339205b11648db44d3cb2e21"
+}
