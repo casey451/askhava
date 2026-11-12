@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T10:55:01Z by runner 02bdd8d2621e (actions).
+Updated 2026-11-12T10:56:52Z by runner 02bdd8d2621e (actions).
 
 **Building: T377 in progress since 10:47Z; 237 of 397 done; week 92% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-12T10:55:01Z by runner 02bdd8d2621e (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T377 claimed 10:47Z, lease until 13:47Z; lane 3: T345 claimed 10:49Z, lease until 13:49Z; lane 4: T268 claimed 10:41Z, lease until 13:41Z
 - **Week:** 92% used, 0.4M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:49Z, 5 min before this update
+- **Last run:** 10:55Z, 1 min before this update
 - **Keeper:** last ran 10:47Z, next wake 13:44Z
 
 ## Needs attention
@@ -88,7 +88,6 @@ Updated 2026-11-12T10:55:01Z by runner 02bdd8d2621e (actions).
 | T331 | payments (harness): a payment success with no readable pick  | done | 1 | 49 min | 11:35Z |  |
 | T164 | quotes: one quote format per category, screened notes, and e | resync | 3 | 12 min | 11:31Z |  |
 | T164 | quotes: one quote format per category, screened notes, and e | check_failed | 2 | 39 min | 11:00Z |  |
-| T278 | quotes, intake and picks: the check-in, feedback and unreach | done | 1 | 29 min | 10:56Z |  |
 
 ### Plan and harness merges on main
 - 09:36Z Plan: pre-flight fixes round 9 — stage 5: T303, T151, T321, T110, T210, T109, T116; new T409, T410 (D-3155) (#559)
