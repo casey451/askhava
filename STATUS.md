@@ -1,13 +1,13 @@
 # Ask Hava build status
 
-Updated 2026-11-12T23:44:45Z by runner 9a870b31c911 (actions).
+Updated 2026-11-12T23:45:25Z by runner 0b4b84f93392 (actions).
 
-**Building: T351 in progress since 22:49Z; 260 of 404 done; week 8% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T215 in progress since 23:45Z; 260 of 404 done; week 8% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 260 of 404 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 7: T351 claimed 22:49Z, lease until 01:49Z
-- **Week:** 8% used, 165.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 1: T215 claimed 23:45Z, lease until 02:45Z; lane 7: T351 claimed 22:49Z, lease until 01:49Z
+- **Week:** 8% used, 174.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 23:44Z, 0 min before this update
 - **Keeper:** last ran 23:44Z, next wake 01:52Z
 
@@ -15,7 +15,7 @@ Updated 2026-11-12T23:44:45Z by runner 9a870b31c911 (actions).
 - PLAN GAP T255 (since 2026-11-12T23:31:56Z, no attempt used; a plan change fixes it): T255: dependency T162 is DONE but its owned file app/intake/src/order.rs is not on main; T255: dependency T162 is DONE but its owned file tests/integration/tests/intake_order.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T371 (since 2026-11-12T23:24:01Z, no attempt used; a plan change fixes it): T371: dependency T385 is DONE but its owned file app/licensing/src/own_record.rs is not on main; T371: dependency T385 is DONE but its owned file app/businesses/src/signup_record.rs is not on main; T371: dependency T385 is DONE but its owned file tests/integration/tests/signup_own_record.rs is not on main; T371: dependency T385 is DONE but its owned file tests/fixtures/license_source/record/roc/ROC100001 is not on main; T371: dependency T385 is DONE but its owned file tests/fixtures/license_source/roc is not on main; T371: dependency T385 is DONE but its owned file tests/fixtures/license_source/city is not on main
-- Strict plan check red: 21 problem(s) on tasks still to run (+135 on DONE tasks); first: T320: measures 46% of the window, over its 45% limit; trim its reads or split it
+- Strict plan check red: 21 problem(s) on tasks still to run (+134 on DONE tasks); first: T320: stored context_pct 41% but it measures 45%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -91,7 +91,6 @@ Updated 2026-11-12T23:44:45Z by runner 9a870b31c911 (actions).
 | T368 | businesses (harness): the capability checklist offers every  | resync | 1 | 25 min | 01:13Z |  |
 | T317 | server and intake: the inbound text route applies SEC-014's  | done | 2 | 53 min | 00:16Z | PLAN GAP: tests/integration/tests/suspension_mode.rs:69-78 (owned by T279) and app/server/tests/voice_confirm_line.rs:95 |
 | T313 | messaging and server: an EMERGENCY card notice goes at night | resync | 1 | 35 min | 00:03Z |  |
-| T228 | businesses: leaving Ask Hava, the optional reason and what h | done | 2 | 23 min | 23:45Z | merging main into the reviewed head conflicts in app/picks/CLAUDE.md, app/quotes/src/api.rs; a resync merges it in on th |
 
 ### Plan and harness merges on main
 - 22:08Z Plan: T340, T271, T126 under their context limits (D-3325) (#623)
@@ -154,7 +153,7 @@ Updated 2026-11-12T23:44:45Z by runner 9a870b31c911 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-12T22:44:44Z (week)): week: 28.4M used, 165.6M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-06T00:35:28Z.
+- Pacing (session_reading 2026-11-12T23:43:53Z (week)): week: 19.1M used, 174.9M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-05T12:52:30Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -169,7 +168,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T215 (lease until 2026-11-13T02:45:19Z)
 - lane 7: T351 (lease until 2026-11-13T01:49:37Z)
 
 ## Last usage reading
