@@ -1,0 +1,45 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "WITH n AS (\n             SELECT license_number, array_agg(DISTINCT class_code ORDER BY class_code) AS classes\n             FROM licensing.agency_record\n             WHERE import_id = $2 AND status = 'active' AND license_number > $3\n             GROUP BY license_number),\n           o AS (\n             SELECT license_number, array_agg(DISTINCT class_code ORDER BY class_code) AS classes\n             FROM licensing.agency_record\n             WHERE import_id = $1 AND status = 'active' AND license_number > $3\n             GROUP BY license_number)\n           SELECT n.license_number AS \"number!\",\n                  COALESCE(o.classes, '{}'::text[]) AS \"old!\",\n                  n.classes AS \"new!\"\n           FROM n LEFT JOIN o USING (license_number)\n           WHERE n.classes IS DISTINCT FROM COALESCE(o.classes, '{}'::text[])\n           ORDER BY n.license_number LIMIT $4",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "number!",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "licensing.agency_record",
+            "name": "license_number"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "old!",
+        "type_info": "TextArray",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 2,
+        "name": "new!",
+        "type_info": "TextArray",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Text",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      null,
+      null
+    ]
+  },
+  "hash": "16bfa5c2a2c65a2eff5d725ef9680f50c4190dbb829b4f0c1986641e161722be"
+}

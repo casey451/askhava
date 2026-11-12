@@ -18,6 +18,11 @@
 //! ([`stored_enabled`]), so the checklist and matching cannot disagree; [`reapply_license`] offers
 //! only stored-on categories. [`checklist_offer`] (classes only, the file's flag) is kept for the
 //! ROC-only callers and tests.
+//!
+//! T372 (D-2705, D-2730): [`save_job_types`] stores ticks later, after sign-up, against the offer
+//! rebuilt in its locked transaction, and it and [`save_capability`] lift a `no_covered_job_type`
+//! pause through `license_reapply::lift_no_cover`; the daily `businesses.license_reapply` task
+//! calls [`reapply_license`] for each business whose recorded ROC classes changed.
 
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -38,10 +43,11 @@ use sqlx::{Connection, PgConnection};
 
 use crate::emergency_switch::{EMERGENCY_YES_LIFE, SwitchError, set_after_hours};
 use crate::holding::{Known, holding};
+use crate::license_reapply::{lift_no_cover, shipped};
 use crate::models::{self, BusinessesError, db};
 use crate::rules::JobTypeChoice;
 use crate::service::{Ticks, pause_for_rule, set_job_types, set_ticks, set_towns};
-use crate::status::PauseReason;
+use crate::status::{AccountStatus, PauseReason};
 
 /// The largest typed amount accepted, in cents ($10,000,000); a larger one does not parse
 /// ([`LargestJob::parse`] gives `None`, the form's error), so "no limit" must be chosen.
@@ -372,12 +378,14 @@ pub fn kept_ticks(offer: &[TradeOffer], answers: &CapabilityAnswers) -> Vec<JobT
 /// one transaction with their audit rows: the ticks ([`kept_ticks`]) allowed only from `offer`,
 /// the towns, the after-hours answer through `set_after_hours` at `now` with
 /// [`EMERGENCY_YES_LIFE`] (a "yes" ticks only while `covered`, else it is held back and the tick
-/// left as stored, T369), then the largest job and recurring answer.
+/// left as stored, T369), then the largest job and recurring answer. Last, against the offer
+/// rebuilt server-side (never `offer`), a `no_covered_job_type` pause is lifted as in
+/// [`save_job_types`] (D-2730).
 ///
 /// # Errors
 ///
 /// [`BusinessesError::NotCovered`] for a tick outside `offer` (nothing is stored), `BadCode`,
-/// `UnknownBusiness`, `Database` or `Audit`.
+/// `UnknownBusiness`, `MovedOn`, `Refused`, `Database` or `Audit`.
 pub async fn save_capability(
     conn: &mut PgConnection,
     id: Uuid,
@@ -392,6 +400,7 @@ pub async fn save_capability(
     let kept = kept_ticks(offer, answers);
     let towns: Vec<&str> = answers.towns.iter().map(String::as_str).collect();
     let mut tx = db(conn.begin().await)?;
+    lock(&mut tx, id).await?;
     set_job_types(&mut tx, id, &kept, &allowed, actor).await?;
     set_towns(&mut tx, id, &towns, actor).await?;
     let b = models::read(&mut tx, id).await?;
@@ -414,11 +423,69 @@ pub async fn save_capability(
     audit(&mut tx, &entry)
         .await
         .map_err(|_| BusinessesError::Audit)?;
+    let (offer, parts) = rebuilt(&mut tx, id, Known::default(), shipped()?).await?;
+    lift_no_cover(&mut tx, id, (&offer, &parts), now).await?;
     db(tx.commit().await)?;
     Ok(CapabilitySaved {
         ticks: kept,
         after_hours_held,
     })
+}
+
+/// BIZ-049, BIZ-050, LIC-043, D-2596, D-2711, D-2730: stores business `id`'s job-type ticks
+/// after sign-up, in one transaction: locks the business row, rebuilds the offer from
+/// [`holding`] (with what the caller `known`s) and the stored category switch, stores `ticks`
+/// only when that offer allows every one (never the caller's offer), then lifts a
+/// `no_covered_job_type` pause when a stored tick is a job type the license covers and no other
+/// pause rule holds (`license_reapply::lift_no_cover`). Returns the business's status after.
+///
+/// # Errors
+///
+/// [`BusinessesError::NotCovered`] for a tick outside the rebuilt offer (nothing stored, nothing
+/// lifted), `BadCode`, `UnknownBusiness`, `MovedOn`, `Refused`, `Database` or `Audit`.
+pub async fn save_job_types(
+    conn: &mut PgConnection,
+    id: Uuid,
+    known: Known<'_>,
+    maps: (&ClassMap, &Catalog),
+    ticks: &[JobTypeChoice],
+    (actor, now): (Actor, Timestamp),
+) -> Result<AccountStatus, BusinessesError> {
+    let mut tx = db(conn.begin().await)?;
+    lock(&mut tx, id).await?;
+    let (offer, parts) = rebuilt(&mut tx, id, known, maps).await?;
+    let allowed: BTreeSet<JobTypeChoice> = offer
+        .iter()
+        .flat_map(|t| t.rows.iter().map(|r| r.choice.clone()))
+        .collect();
+    set_job_types(&mut tx, id, ticks, &allowed, actor).await?;
+    lift_no_cover(&mut tx, id, (&offer, &parts), now).await?;
+    let status = models::read(&mut tx, id).await?.status;
+    db(tx.commit().await)?;
+    Ok(status)
+}
+
+/// Locks business `id`'s row for the transaction (BIZ-009, D-2596).
+async fn lock(tx: &mut PgConnection, id: Uuid) -> Result<(), BusinessesError> {
+    let lock = sqlx::query!(
+        "SELECT id FROM businesses.business WHERE id = $1 FOR UPDATE",
+        id
+    );
+    db(lock.fetch_optional(&mut *tx).await)?.ok_or(BusinessesError::UnknownBusiness)?;
+    Ok(())
+}
+
+/// D-2730: the offer rebuilt server-side from what business `id` holds and the stored switch,
+/// with the holder it was built from.
+async fn rebuilt(
+    tx: &mut PgConnection,
+    id: Uuid,
+    known: Known<'_>,
+    (map, catalog): (&ClassMap, &Catalog),
+) -> Result<(Vec<TradeOffer>, HolderParts), BusinessesError> {
+    let parts = holding(tx, id, known).await?;
+    let enabled = stored_enabled(tx).await?;
+    Ok((holder_offer(map, catalog, &parts, &enabled), parts))
 }
 
 /// BIZ-007, D-2702: the after-hours answer through the switch rule; true when a "yes" was held
@@ -564,11 +631,7 @@ pub async fn reapply_license(
     (list, now): (Date, Timestamp),
 ) -> Result<Reapplied, BusinessesError> {
     let mut tx = db(conn.begin().await)?;
-    let lock = sqlx::query!(
-        "SELECT id FROM businesses.business WHERE id = $1 FOR UPDATE",
-        id
-    );
-    db(lock.fetch_optional(&mut *tx).await)?.ok_or(BusinessesError::UnknownBusiness)?;
+    lock(&mut tx, id).await?;
     let ticks = models::job_types(&mut tx, id).await?;
     let stored = stored_enabled(&mut tx).await?;
     let on = |c: &str| stored.contains(c) && catalog.categories.iter().any(|d| d.id == c);
