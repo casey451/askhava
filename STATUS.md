@@ -1,18 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-12T00:50:59Z by runner 5cf1428bd66b (actions).
+Updated 2026-11-12T00:51:29Z by runner 2f7ee2336488 (actions).
 
-**Building: T368 in progress since 00:48Z; 217 of 383 done; week 79% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T368 in progress since 00:48Z; 217 of 382 done; week 79% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 217 of 383 build tasks (owner gates not counted)
+- **Tasks done:** 217 of 382 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 4: T368 claimed 00:48Z, lease until 03:48Z
 - **Week:** 79% used, 36.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:50Z, 0 min before this update
+- **Last run:** 00:51Z, 0 min before this update
 - **Keeper:** last ran 00:50Z, next wake 03:50Z
 
 ## Needs attention
-- Strict plan check red: 4 problem(s) on tasks still to run (+67 on DONE tasks); first: T106: stored context_pct 15% but it measures 19%; regenerate
+- Strict plan check red: 5 problem(s) on tasks still to run (+67 on DONE tasks); first: T106: stored context_pct 15% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -116,8 +116,8 @@ Updated 2026-11-12T00:50:59Z by runner 5cf1428bd66b (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 212 of 733 (28.9%) · partial 347 · unstarted 174
-**Tasks merged (throughput only):** 217 of 383
+**Requirements verified:** 214 of 733 (29.2%) · partial 345 · unstarted 174
+**Tasks merged (throughput only):** 217 of 382
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -129,7 +129,7 @@ Updated 2026-11-12T00:50:59Z by runner 5cf1428bd66b (actions).
 | fees | 12 | 39 | 1 | 52 |
 | intake | 21 | 16 | 6 | 43 |
 | job-cards | 12 | 10 | 2 | 24 |
-| licensing | 20 | 28 | 0 | 48 |
+| licensing | 22 | 26 | 0 | 48 |
 | lifecycle | 18 | 10 | 0 | 28 |
 | messaging | 18 | 24 | 3 | 45 |
 | ops-recovery | 2 | 6 | 46 | 54 |
