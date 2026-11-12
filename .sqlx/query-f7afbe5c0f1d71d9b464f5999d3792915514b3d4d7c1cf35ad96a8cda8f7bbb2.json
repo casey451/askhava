@@ -1,0 +1,137 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT request_id, job_id, digest, card_text, town, place, photo_ids, category,\n           candidates, emergency FROM quotes.shown_card WHERE job_id = $1 AND digest = $2\n         ORDER BY recorded_at DESC, id LIMIT 1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "request_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "quotes.shown_card",
+            "name": "request_id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "job_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "quotes.shown_card",
+            "name": "job_id"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "digest",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "quotes.shown_card",
+            "name": "digest"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "card_text",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "quotes.shown_card",
+            "name": "card_text"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "town",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "quotes.shown_card",
+            "name": "town"
+          }
+        }
+      },
+      {
+        "ordinal": 5,
+        "name": "place",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "quotes.shown_card",
+            "name": "place"
+          }
+        }
+      },
+      {
+        "ordinal": 6,
+        "name": "photo_ids",
+        "type_info": "UuidArray",
+        "origin": {
+          "Table": {
+            "table": "quotes.shown_card",
+            "name": "photo_ids"
+          }
+        }
+      },
+      {
+        "ordinal": 7,
+        "name": "category",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "quotes.shown_card",
+            "name": "category"
+          }
+        }
+      },
+      {
+        "ordinal": 8,
+        "name": "candidates",
+        "type_info": "TextArray",
+        "origin": {
+          "Table": {
+            "table": "quotes.shown_card",
+            "name": "candidates"
+          }
+        }
+      },
+      {
+        "ordinal": 9,
+        "name": "emergency",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "quotes.shown_card",
+            "name": "emergency"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "f7afbe5c0f1d71d9b464f5999d3792915514b3d4d7c1cf35ad96a8cda8f7bbb2"
+}

@@ -1,0 +1,136 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT request_id AS \"request_id!\", job_id AS \"job_id!\", digest AS \"digest!\",\n             card_text AS \"card_text!\", town AS \"town!\", place AS \"place!\",\n             photo_ids AS \"photo_ids!\", category AS \"category!\", candidates AS \"candidates!\",\n             emergency AS \"emergency!\"\n           FROM (SELECT DISTINCT ON (s.job_id) s.*,\n                   min(s.recorded_at) OVER (PARTITION BY s.job_id) AS first_at\n                 FROM quotes.shown_card s WHERE s.request_id = $1\n                   AND NOT EXISTS (SELECT 1 FROM quotes.shown_card t\n                                   WHERE t.job_id = s.job_id AND t.sent_at IS NOT NULL)\n                 ORDER BY s.job_id, s.recorded_at DESC, s.id) newest\n           ORDER BY first_at, job_id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "request_id!",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "quotes.shown_card",
+            "name": "request_id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "job_id!",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "quotes.shown_card",
+            "name": "job_id"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "digest!",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "quotes.shown_card",
+            "name": "digest"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "card_text!",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "quotes.shown_card",
+            "name": "card_text"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "town!",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "quotes.shown_card",
+            "name": "town"
+          }
+        }
+      },
+      {
+        "ordinal": 5,
+        "name": "place!",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "quotes.shown_card",
+            "name": "place"
+          }
+        }
+      },
+      {
+        "ordinal": 6,
+        "name": "photo_ids!",
+        "type_info": "UuidArray",
+        "origin": {
+          "Table": {
+            "table": "quotes.shown_card",
+            "name": "photo_ids"
+          }
+        }
+      },
+      {
+        "ordinal": 7,
+        "name": "category!",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "quotes.shown_card",
+            "name": "category"
+          }
+        }
+      },
+      {
+        "ordinal": 8,
+        "name": "candidates!",
+        "type_info": "TextArray",
+        "origin": {
+          "Table": {
+            "table": "quotes.shown_card",
+            "name": "candidates"
+          }
+        }
+      },
+      {
+        "ordinal": 9,
+        "name": "emergency!",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "quotes.shown_card",
+            "name": "emergency"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "3cfe10e056fa693961c1594e2eb00fb7fac83f976f13b029a0cd1d569c806a96"
+}
