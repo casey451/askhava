@@ -16,7 +16,9 @@
 //! read a message log entry and cut bodies kept 30 days (`retention`, TXT-019, TXT-020); keep each
 //! job's notice log (`email_timing`, BIZ-045, OPS-037) and decide the open-cards and missed-cards
 //! emails (`open_cards_digest`, CARD-022; `missed_cards`, BIZ-044); store the homeowner's copy of
-//! the quote she accepted (`accepted_quote_email`, PICK-042, PICK-054).
+//! the quote she accepted (`accepted_quote_email`, PICK-042, PICK-054); email an opted-out
+//! homeowner her confirmation while texting is off, or how to text again when she writes without
+//! START, else list her for the weekly digest (`optout_email`, CON-030, CON-016).
 
 pub use crate::accepted_quote_email::{
     ACCEPTED_QUOTE_TEMPLATE, AcceptedQuoteFacts, AcceptedQuoteSender, queue_accepted_quote,
@@ -62,6 +64,10 @@ pub use crate::models::{EmailError, EmailLog, InboxError, OutboxError};
 pub use crate::open_cards_digest::{DigestFacts, MIN_LEFT, digest_goes, listable, slot_due};
 pub use crate::optout::{
     InboundText, Outcome, RevokeChannel, on_inbound_text, send_checked, suppress,
+};
+pub use crate::optout_email::{
+    OPTOUT_CONFIRMATION_EMAIL, OPTOUT_WROTE_AGAIN_EMAIL, OptOutEmailSender, WROTE_AGAIN_ACTION,
+    WroteAgain, queue_optout_confirmation_email, queue_optout_wrote_again, render_wrote_again,
 };
 pub use crate::outbox_sender::{
     EXPIRED_ACTION, OUTCOME_UNKNOWN_ALERT as SEND_OUTCOME_UNKNOWN_ALERT, OutboxSender,
