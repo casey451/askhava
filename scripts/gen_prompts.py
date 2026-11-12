@@ -376,6 +376,8 @@ def test_command(path: str) -> str | None:
         return f"cargo test -p {package} --test {layer['name']}"
     if re.match(r"^tests/a11y/.+\.spec\.ts$", path):
         return f"npx playwright test --config tests/a11y/playwright.config.ts {path}"
+    if re.match(r"^tests/perf/.+\.spec\.ts$", path):  # T418's lab Web Vitals spec has its own config (D-3292)
+        return f"npx playwright test --config tests/perf/playwright.config.ts {path}"
     if re.match(r"^tests/.+\.spec\.ts$", path):
         return f"npx playwright test --config tests/e2e/playwright.config.ts {path}"
     if re.match(r"^tests/.+\.py$", path) and Path(path).name.startswith("test_"):
