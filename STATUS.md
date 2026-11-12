@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-12T09:00:25Z by runner e65c6beca317 (actions).
+Updated 2026-11-12T09:00:42Z by runner e65c6beca317 (actions).
 
 **Building: T406 in progress since 08:23Z; 233 of 394 done; week 91% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 233 of 394 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T406 claimed 08:23Z, lease until 11:23Z; lane 2: T336 claimed 08:04Z, lease until 11:04Z; lane 3: T358 claimed 08:52Z, lease until 11:52Z; lane 5: T268 claimed 08:14Z, lease until 11:14Z
+- **Lane:** lane 1: T406 claimed 08:23Z, lease until 11:23Z; lane 3: T358 claimed 08:52Z, lease until 11:52Z; lane 5: T268 claimed 08:14Z, lease until 11:14Z
 - **Week:** 91% used, 0.7M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 08:53Z, 6 min before this update
 - **Keeper:** last ran 08:53Z, next wake 11:06Z
@@ -20,11 +20,12 @@ Updated 2026-11-12T09:00:25Z by runner e65c6beca317 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T336 | server, adapters and stand-in (harness): a text stopped by a | MERGE_PENDING | 2 | 56 min | 09:00Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T345 | harness: every external GitHub Actions `uses:` in every work | BLOCKED | 2 | 4 min | 08:47Z | PLAN GAP: tests/test_runner_cache.py:207,:214 and tests/test_runner_merge_early.py:212,:213 hard-code actions/cache/rest |
 | T322 | businesses: a backup notice address is checked again at conf | done | 1 | 35 min | 08:36Z |  |
 | T251 | intake and quotes: the ZIP question, the job location, and t | BLOCKED | 1 | 3 min | 08:17Z | PLAN GAP: app/intake/src/summary_step.rs:415 and app/intake/src/service.rs:672 (T208/T039 files, not T251's). The card s |
 | T360 | messaging: the opt-out confirmation email while texting is o | done | 1 | 43 min | 07:42Z |  |
-| T336 | server, adapters and stand-in (harness): a text stopped by a | resync | 2 | 47 min | 07:35Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T336 | server, adapters and stand-in (harness): a text stopped by a | resync | 2 | 47 min | 07:35Z |  |
 | T390 | calls and server: a blocked staff call that connects a line  | done | 1 | 29 min | 07:34Z |  |
 | T401 | server (harness): the door probe's fixture gains a released  | done | 2 | 37 min | 07:33Z | PLAN GAP: tests/security/tests/no_homeowner_charge.rs:17-27,123 (TD-FEE-07, not T401's) fails any app/ file naming a hom |
 | T339 | jobs: each job keeps its category code and remaining candida | done | 1 | 18 min | 07:13Z |  |
@@ -170,9 +171,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T406 (lease until 2026-11-12T11:23:34Z)
-- lane 2: T336 (lease until 2026-11-12T11:04:06Z)
 - lane 3: T358 (lease until 2026-11-12T11:52:02Z)
 - lane 5: T268 (lease until 2026-11-12T11:14:04Z)
 
 ## Last usage reading
-- {"task": "T345", "at": "2026-11-12T08:47:01Z", "cache_read_input_tokens": 1201334, "output_tokens": 20526, "cache_creation_input_tokens": 95601, "input_tokens": 80}
+- {"task": "T336", "at": "2026-11-12T09:00:24Z", "output_tokens": 17041, "cache_read_input_tokens": 1299832, "input_tokens": 79, "cache_creation_input_tokens": 162032}
