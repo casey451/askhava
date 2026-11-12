@@ -2599,3 +2599,12 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 ## Three held tasks under their size limits (D-3325)
 
 - T340, T271 and T126 now find their line in the big architecture notes by search instead of loading that whole section, so the build can run them; nothing they must do changed.
+
+## The new look, built from your guide (D-3331, November 12)
+
+- **What changed.** Your light, photo-first homepage guide is now the design every page, portal screen and email follows ("V6", in `docs/design/DESIGN_SPEC.md`), replacing the dark plaster and brass look. Warm ivory, evergreen buttons, a real photo on the first phone screen and one box to describe the job, as in your guide.
+- **What we improved.** All text is at least 16 px (the guide went down to 10 to 13 px). The focus outline is darker so keyboard users can see it everywhere. "Near Havasu?" became "Set your ZIP": the site never guesses where someone is. The arrow on the button and the example buttons that needed scripts are gone. All words were rewritten in the Ask Hava voice, with the required lines (free for you, not a contractor, the 911 note) in place.
+- **Name stays Ask Hava.** "Laftly" appears nowhere. Your connected-form mark is saved as a candidate, used only if you decide on a rename.
+- **Before launch.** The kitchen photo is a concept image from your guide. It must be replaced with licensed photos before the site goes live.
+- **Pictures to look at:** `docs/design/mockups/` (phone home page, phone full page, desktop home page, phone quote page).
+- **Next.** A separate plan change updates the three website build steps that still mention plaster, brass and the old fonts. Nothing needs you now.
