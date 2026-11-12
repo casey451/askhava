@@ -2585,9 +2585,18 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 ## Crate notes condensed for room (D-3304)
 
 - Four module notes (messaging, payments, picks, portals) were shortened from 120 to about 90 lines by joining related lines, with nothing removed, so later tasks have room to add to them.
+- Three more module notes (businesses, intake, quotes) were shortened the same way to about 90 lines each, with nothing removed (D-3308).
 
 ## Fewer tokens per task: output rules and a per-role count (D-3305)
 
 - **What changed (your instruction, November 12).** Every task prompt now has a short "Output discipline" section: workers never read a long file whole, send test and build output to a log and show only the failures and the summary, look at a summary of a change before the whole change, and write one report at the end. The reviewer and the fix-round workers get the same rules. Each prompt grew by about 265 tokens.
 - **What is now measured.** For each task the build records the worker's tokens and number of turns separately from the reviewer's, and the same split for each attempt, so the next look at token use can see whether the long sessions are shrinking.
 - **Worth a look.** The token counts the build records count each reply once per piece of the reply, so in the transcripts checked here they read about 1.8 times higher than the real use (the CI sessions have not been checked); this change keeps them as they are, so they stay comparable with earlier tasks, and the turn counts are exact. Correcting the totals is a separate decision, because the pacer's limits were learned from the higher numbers.
+
+## A privacy test that failed by chance gets a fix, first in line (plan change, D-3324, November 12)
+
+- **What happened.** A test that checks no stored row holds a blocked caller's number, its last 4 digits or the PIN searched whole rows as text, so a random code in a row sometimes contained the same 4 digits by chance (about 1 run in 250) and failed a pull request that changed only documents. A new step, T419, makes the test look only where text is stored and adds a case for the chance match; no check is loosened and no app code changes. It is the next step the build picks up. Nothing needs you.
+
+## Three held tasks under their size limits (D-3325)
+
+- T340, T271 and T126 now find their line in the big architecture notes by search instead of loading that whole section, so the build can run them; nothing they must do changed.
