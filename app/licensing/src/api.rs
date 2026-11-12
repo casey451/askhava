@@ -34,6 +34,11 @@
 //! The holder (T374, D-2712): [`record_pest_attestation`] and [`record_agency_license`] store a
 //! business's other-agency licenses at sign-up (LIC-047, LIC-015, LIC-016); [`holder_for`] reads
 //! them with its ROC classes and city-list standing into [`HolderParts`] (LIC-006, LIC-011).
+//!
+//! The pest report (T389, D-3055): [`report_pest_license_wrong`] pauses a pest business's pest
+//! jobs on a homeowner's wrong-license report and raises [`PEST_LICENSE_REPORTED_ALERT`];
+//! [`replace_pest_number`] stores the number found on the Department's search and clears the
+//! pause (LIC-047).
 
 pub use crate::class_map::{
     ClassMap, ClassMapError, JobTypeKey, Opening, ProjectLimitRefusal, RequestIntake,
@@ -63,6 +68,10 @@ pub use crate::lines::{
 pub use crate::models::{
     Agency, CityListStanding, CityRecord, Eligibility, Holder, InspectionFee, Job, LicenseKind,
     LicensingError, NoCardReason, PestAttestation, PestRecordCategory, SaleAnswer,
+};
+pub use crate::pest_report::{
+    PEST_LICENSE_REPORTED_ALERT, PestReplacement, PestReport, replace_pest_number,
+    report_pest_license_wrong,
 };
 pub use crate::rules::{city_list_standing, eligibility, eligibility_for_request, inspection_fee};
 pub use crate::service::{
