@@ -27,10 +27,13 @@ pub enum OutboxError {
     /// The phone is already linked to another business (D-492).
     #[error("the phone is linked to another business")]
     SenderTaken,
-    /// The carrier refused the send or its outcome is unknown; the row stays unsent and a resend
-    /// carries the same key (TXT-011).
+    /// The carrier refused the send outright; the row is `queued` again for a retry (TXT-014).
     #[error("the carrier did not confirm the send")]
     Carrier,
+    /// The carrier may have taken the send (a timeout or a lost answer); the row stays `sending`
+    /// and is never resent blind: the sender moves it to `unknown` (TXT-011, D-558, D-2628).
+    #[error("the carrier's answer to the send is unknown")]
+    OutcomeUnknown,
     /// The homeowner's number could not be read from the vault for the row's recipient (D-849).
     #[error("the recipient's number could not be read")]
     Recipient,
@@ -166,19 +169,26 @@ pub(crate) struct Claim {
 /// Inserts a queued text for a recipient of `kind` (`homeowner` or `business`) unless its key is
 /// taken; returns the row's ID either way and whether it is new (TXT-011, D-849). The row is the
 /// message log entry: the vault reference, never the number, and the body's language, read from
-/// the body against the template (`retention::language_of`, TXT-019, D-1851).
+/// the body against the template (`retention::language_of`, TXT-019, D-1851). `exempt` is the
+/// QH-004 exemption stored as `quiet_exempt_until` (D-2628).
 pub(crate) async fn insert_text(
     db: &mut PgConnection,
-    key: &str,
+    (key, kind): (&str, &str),
     (template_id, recipient, subject): (&str, Uuid, &[Uuid]),
-    kind: &str,
     body: &str,
+    exempt: QuietExempt,
 ) -> Result<(Uuid, bool), OutboxError> {
     let language = retention::language_of(template_id, body);
+    let (forever, until) = match exempt {
+        QuietExempt::None => (false, None),
+        QuietExempt::Always => (true, None),
+        QuietExempt::Until(at) => (false, Some(at.to_sqlx())),
+    };
     let new = sqlx::query_scalar!(
         "INSERT INTO messaging.outbox \
-         (idempotency_key, template_id, recipient_id, recipient_kind, subject_ids, body, language) \
-         VALUES ($1, $2, $3, $4, $5, $6, $7) \
+         (idempotency_key, template_id, recipient_id, recipient_kind, subject_ids, body, language, \
+         quiet_exempt_until) \
+         VALUES ($1, $2, $3, $4, $5, $6, $7, CASE WHEN $8 THEN 'infinity'::timestamptz ELSE $9 END) \
          ON CONFLICT (idempotency_key) DO NOTHING RETURNING id",
         key,
         template_id,
@@ -186,7 +196,9 @@ pub(crate) async fn insert_text(
         kind,
         subject,
         body,
-        language
+        language,
+        forever,
+        until as _
     )
     .fetch_optional(&mut *db)
     .await
@@ -204,21 +216,37 @@ pub(crate) async fn insert_text(
     Ok((id, false))
 }
 
-/// Claims row `id` for one attempt unless it was already sent or blocked, or was queued for
-/// another recipient `kind`: counts the attempt and returns the key's IDs and the body; `None` when
-/// it is sent or blocked, so a 21610 refusal is never retried (TXT-011, CON-014). A kind mismatch
-/// is [`OutboxError::RecipientKind`] and changes nothing (D-849).
+/// The QH-004 exemption a row is queued with (D-2628): none, at any hour, or until an instant.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum QuietExempt {
+    /// Held by quiet hours like any text.
+    None,
+    /// Sent at any hour (`infinity`).
+    Always,
+    /// Sent at any hour before this instant (a direct reply's inbound time plus 15 minutes).
+    Until(Timestamp),
+}
+
+/// Claims queued row `id` for one attempt unless it was queued for another recipient `kind`:
+/// moves it to `sending` with `sending_since` (`at`, else the database's now) and counts the
+/// attempt in one statement, so two senders can never both hold it, and returns the key's IDs and
+/// the body; `None` when it is not `queued` (sent, being sent, blocked, unknown, expired), so a
+/// row is never handed to the carrier twice (TXT-011, CON-014, D-558, D-2628). It does not read
+/// `not_before`. A kind mismatch is [`OutboxError::RecipientKind`] and changes nothing (D-849).
 pub(crate) async fn claim(
     db: &mut PgConnection,
     id: Uuid,
     kind: &str,
+    at: Option<Timestamp>,
 ) -> Result<Option<Claim>, OutboxError> {
     let row = sqlx::query!(
-        "UPDATE messaging.outbox SET status = 'sending', attempts = attempts + 1 \
-         WHERE id = $1 AND status IN ('queued', 'sending') AND recipient_kind = $2 \
+        "UPDATE messaging.outbox SET status = 'sending', attempts = attempts + 1, \
+         sending_since = COALESCE($3, now()) \
+         WHERE id = $1 AND status = 'queued' AND recipient_kind = $2 \
          RETURNING template_id, recipient_id, subject_ids, body",
         id,
-        kind
+        kind,
+        at.map(|t| t.to_sqlx()) as _
     )
     .fetch_optional(&mut *db)
     .await
@@ -262,6 +290,160 @@ pub(crate) async fn mark_sent(
     .await
     .map(|_| ())
     .map_err(|_| OutboxError::Database)
+}
+
+/// Moves row `id` from `sending` back to `queued`: the carrier refused it outright or the number
+/// could not be read, so nothing reached a phone and a retry is safe (TXT-014, D-2628).
+pub(crate) async fn release(db: &mut PgConnection, id: Uuid) -> Result<(), OutboxError> {
+    sqlx::query!(
+        "UPDATE messaging.outbox SET status = 'queued', sending_since = NULL \
+         WHERE id = $1 AND status = 'sending'",
+        id
+    )
+    .execute(db)
+    .await
+    .map(|_| ())
+    .map_err(|_| OutboxError::Database)
+}
+
+/// Moves row `id` from `sending` to `unknown` and drops its body in the same statement, returning
+/// what it was and its `language`; with `stale_before`, only a row claimed before then (a crash).
+/// `None` when the row is no longer `sending` (TXT-011, SEC-037, D-558, D-2628).
+pub(crate) async fn mark_unknown(
+    db: &mut PgConnection,
+    id: Uuid,
+    stale_before: Option<Timestamp>,
+) -> Result<Option<(FailedText, Option<String>)>, OutboxError> {
+    let row = sqlx::query!(
+        "WITH old AS (SELECT id, body FROM messaging.outbox WHERE id = $1 AND status = 'sending' \
+         AND ($2::timestamptz IS NULL OR sending_since IS NULL OR sending_since < $2) FOR UPDATE) \
+         UPDATE messaging.outbox o SET status = 'unknown', body = NULL FROM old \
+         WHERE o.id = old.id RETURNING o.recipient_id, o.recipient_kind, o.template_id, \
+         o.subject_ids, o.language, old.body AS \"body!\"",
+        id,
+        stale_before.map(|t| t.to_sqlx()) as _
+    )
+    .fetch_optional(db)
+    .await
+    .map_err(|_| OutboxError::Database)?;
+    Ok(row.map(|r| {
+        let text = FailedText {
+            recipient: r.recipient_id,
+            kind: r.recipient_kind,
+            template_id: r.template_id,
+            subject: r.subject_ids,
+            body: r.body,
+        };
+        (text, r.language)
+    }))
+}
+
+/// The rows still `sending` that were claimed before `before` (or with no claim time), at most
+/// `limit`, oldest first: a sender died or lost its answer (D-2628).
+pub(crate) async fn stale_sending(
+    db: &mut PgConnection,
+    before: Timestamp,
+    limit: i64,
+) -> Result<Vec<Uuid>, OutboxError> {
+    sqlx::query_scalar!(
+        "SELECT id FROM messaging.outbox WHERE status = 'sending' \
+         AND (sending_since IS NULL OR sending_since < $1) ORDER BY sending_since LIMIT $2",
+        before.to_sqlx() as _,
+        limit
+    )
+    .fetch_all(db)
+    .await
+    .map_err(|_| OutboxError::Database)
+}
+
+/// One homeowner row the sender may try now: its ID, template, queue time and language, and
+/// whether its QH-004 exemption still holds at the instant asked about.
+pub(crate) struct Due {
+    pub(crate) id: Uuid,
+    pub(crate) template_id: String,
+    pub(crate) recipient: Uuid,
+    pub(crate) queued_at: Timestamp,
+    pub(crate) exempt: bool,
+    pub(crate) language: Option<String>,
+}
+
+/// The queued homeowner rows whose `not_before` has passed at `now` (or is unset), at most
+/// `limit`, oldest first (QH-006, D-2628). Business rows wait: their phone is not resolved here.
+pub(crate) async fn due(
+    db: &mut PgConnection,
+    now: Timestamp,
+    limit: i64,
+) -> Result<Vec<Due>, OutboxError> {
+    let rows = sqlx::query!(
+        "SELECT id, template_id, recipient_id, created_at, language, \
+         COALESCE(quiet_exempt_until > $1, false) AS \"exempt!\" FROM messaging.outbox \
+         WHERE status = 'queued' AND recipient_kind = 'homeowner' \
+         AND (not_before IS NULL OR not_before <= $1) ORDER BY created_at LIMIT $2",
+        now.to_sqlx() as _,
+        limit
+    )
+    .fetch_all(db)
+    .await
+    .map_err(|_| OutboxError::Database)?;
+    Ok(rows
+        .into_iter()
+        .map(|r| Due {
+            id: r.id,
+            template_id: r.template_id,
+            recipient: r.recipient_id,
+            queued_at: r.created_at.to_jiff(),
+            exempt: r.exempt,
+            language: r.language,
+        })
+        .collect())
+}
+
+/// Sets queued row `id`'s `not_before` to `until`: held by quiet hours or waiting for a retry
+/// (QH-006, QH-008, TXT-014).
+pub(crate) async fn hold(
+    db: &mut PgConnection,
+    id: Uuid,
+    until: Timestamp,
+) -> Result<(), OutboxError> {
+    sqlx::query!(
+        "UPDATE messaging.outbox SET not_before = $2 WHERE id = $1 AND status = 'queued'",
+        id,
+        until.to_sqlx() as _
+    )
+    .execute(db)
+    .await
+    .map(|_| ())
+    .map_err(|_| OutboxError::Database)
+}
+
+/// Marks queued row `id` `expired` and drops its body; true when it moved (D-2188, CON-030).
+pub(crate) async fn expire(db: &mut PgConnection, id: Uuid) -> Result<bool, OutboxError> {
+    sqlx::query!(
+        "UPDATE messaging.outbox SET status = 'expired', body = NULL \
+         WHERE id = $1 AND status = 'queued'",
+        id
+    )
+    .execute(db)
+    .await
+    .map(|r| r.rows_affected() > 0)
+    .map_err(|_| OutboxError::Database)
+}
+
+/// Whether the homeowner line was paused (switched off, suspended or restored but not yet on) at
+/// `at`, by its latest `messaging.mode_state` row then; none means on (TXT-021, D-2188).
+pub(crate) async fn homeowner_paused_at(
+    db: &mut PgConnection,
+    at: Timestamp,
+) -> Result<bool, OutboxError> {
+    let open = sqlx::query_scalar!(
+        "SELECT texting_on AND line_state = 'working' FROM messaging.mode_state \
+         WHERE audience = 'homeowner' AND changed_at <= $1 ORDER BY changed_at DESC, seq DESC LIMIT 1",
+        at.to_sqlx() as _
+    )
+    .fetch_optional(db)
+    .await
+    .map_err(|_| OutboxError::Database)?;
+    Ok(open.flatten() == Some(false))
 }
 
 /// Replaces phone `phone_ref`'s digests with `digests`, linked to `business` (D-492). A digest
@@ -448,7 +630,7 @@ pub(crate) async fn outbox_target(
 pub(crate) async fn block(db: &mut PgConnection, id: Uuid) -> Result<(), OutboxError> {
     sqlx::query!(
         "UPDATE messaging.outbox SET status = 'blocked', body = NULL \
-         WHERE id = $1 AND status = 'sending'",
+         WHERE id = $1 AND status IN ('queued', 'sending')",
         id
     )
     .execute(db)

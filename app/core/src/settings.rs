@@ -57,6 +57,9 @@ const KEYS: &[&str] = &[
     "ASKHAVA_TWILIO_VERIFY_SERVICE_SID",
     "ASKHAVA_MASKED_POOL_SIZE",
     "ASKHAVA_MASKED_NUMBERS",
+    // The homeowner line's one configured number, parsed by `askhava_server` for `messaging`'s
+    // outbox sender (T356, TXT-022, D-2628).
+    "ASKHAVA_HOMEOWNER_NUMBER",
     // Parsed by `rate_limit::ClientIpPolicy::from_pairs` (T013, SEC-040).
     "ASKHAVA_CLIENT_IP_HEADER",
     "ASKHAVA_PROXIED_HOSTS",
