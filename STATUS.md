@@ -1,23 +1,25 @@
 # Ask Hava build status
 
-Updated 2026-11-12T08:15:56Z by runner d9515904bc86 (actions).
+Updated 2026-11-12T08:17:32Z by runner 3926dabcc377 (actions).
 
 **Building: T336 in progress since 08:04Z; 232 of 394 done; week 90% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 232 of 394 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T336 claimed 08:04Z, lease until 11:04Z; lane 3: T251 claimed 08:13Z, lease until 11:13Z; lane 4: T322 claimed 08:00Z, lease until 11:00Z; lane 5: T268 claimed 08:14Z, lease until 11:14Z
+- **Lane:** lane 2: T336 claimed 08:04Z, lease until 11:04Z; lane 4: T322 claimed 08:00Z, lease until 11:00Z; lane 5: T268 claimed 08:14Z, lease until 11:14Z
 - **Week:** 90% used, 4.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:14Z, 1 min before this update
+- **Last run:** 08:16Z, 1 min before this update
 - **Keeper:** last ran 08:13Z, next wake 11:03Z
 
 ## Needs attention
+- BLOCKED T251: plan gap reported: PLAN GAP: app/intake/src/summary_step.rs:415 and app/intake/src/service.rs:672 (T208/T039 files, not T251's). The card sender has nowhere to read the approved card text, category, remaining candidate job types or scrubbed text. Approval payload is only {job, conversation, card digest} (summary_step.rs:415); approved_card (summary_step.rs:345) needs the full JobCard, which only quotes::api::build_card makes. Emergency payload is only {conversation} (service.rs:672). No table stores card text/category/candidates/scrubbed text (quotes.job_card 0067, jobs.job 0031, intake tables 0053; jobs.job_fac; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T251 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 18 problem(s) on tasks still to run (+96 on DONE tasks); first: T396: stored context_pct 39% but it measures 45%; regenerate
+- Strict plan check red: 14 problem(s) on tasks still to run (+94 on DONE tasks); first: T396: stored context_pct 39% but it measures 45%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T251 | intake and quotes: the ZIP question, the job location, and t | BLOCKED | 1 | 3 min | 08:17Z | PLAN GAP: app/intake/src/summary_step.rs:415 and app/intake/src/service.rs:672 (T208/T039 files, not T251's). The card s |
 | T360 | messaging: the opt-out confirmation email while texting is o | done | 1 | 43 min | 07:42Z |  |
 | T336 | server, adapters and stand-in (harness): a text stopped by a | resync | 2 | 47 min | 07:35Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T390 | calls and server: a blocked staff call that connects a line  | done | 1 | 29 min | 07:34Z |  |
@@ -167,9 +169,8 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T336 (lease until 2026-11-12T11:04:06Z)
-- lane 3: T251 (lease until 2026-11-12T11:13:43Z)
 - lane 4: T322 (lease until 2026-11-12T11:00:31Z)
 - lane 5: T268 (lease until 2026-11-12T11:14:04Z)
 
 ## Last usage reading
-- {"task": "T360", "at": "2026-11-12T07:42:19Z", "cache_creation_input_tokens": 470944, "output_tokens": 97878, "input_tokens": 324, "cache_read_input_tokens": 12206486}
+- {"task": "T251", "at": "2026-11-12T08:17:31Z", "output_tokens": 33995, "input_tokens": 168, "cache_creation_input_tokens": 341884, "cache_read_input_tokens": 4786071}
