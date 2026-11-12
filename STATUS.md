@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-12T09:44:19Z by runner fc0f375db487 (actions).
+Updated 2026-11-12T09:52:24Z by runner e0aae0369e90 (actions).
 
-**Building: T411 in progress since 09:29Z; 233 of 397 done; week 92% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T411 in progress since 09:29Z; 234 of 397 done; week 92% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 233 of 397 build tasks (owner gates not counted)
+- **Tasks done:** 234 of 397 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 5: T411 claimed 09:29Z, lease until 12:29Z
 - **Week:** 92% used, 5.1M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:44Z, 0 min before this update
+- **Last run:** 09:44Z, 7 min before this update
 - **Keeper:** last ran 09:44Z, next wake 12:32Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 12 problem(s) on tasks still to run (+99 on DONE tasks); first: T396: stored context_pct 39% but it measures 45%; regenerate
+- Strict plan check red: 16 problem(s) on tasks still to run (+99 on DONE tasks); first: T396: stored context_pct 39% but it measures 45%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -21,7 +21,7 @@ Updated 2026-11-12T09:44:19Z by runner fc0f375db487 (actions).
 | T268 | portals, businesses and messaging: the sign-up consent box,  | MERGE_PENDING | 1 | 21 min | 09:38Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md, app/messaging/CLAUDE.md; a resync merges it i |
 | T358 | messaging: the Canadian area codes for the HELP roaming line | MERGE_PENDING | 1 | 40 min | 09:32Z |  |
 | T268 | portals, businesses and messaging: the sign-up consent box,  | resync | 1 | 58 min | 09:12Z |  |
-| T406 | quotes: a quote's PICK-040 facts are stored with it and read | MERGE_PENDING | 1 | 41 min | 09:05Z |  |
+| T406 | quotes: a quote's PICK-040 facts are stored with it and read | done | 1 | 41 min | 09:05Z |  |
 | T336 | server, adapters and stand-in (harness): a text stopped by a | MERGE_PENDING | 2 | 56 min | 09:00Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T345 | harness: every external GitHub Actions `uses:` in every work | BLOCKED | 2 | 4 min | 08:47Z | PLAN GAP: tests/test_runner_cache.py:207,:214 and tests/test_runner_merge_early.py:212,:213 hard-code actions/cache/rest |
 | T322 | businesses: a backup notice address is checked again at conf | done | 1 | 35 min | 08:36Z |  |
@@ -87,7 +87,6 @@ Updated 2026-11-12T09:44:19Z by runner fc0f375db487 (actions).
 | T164 | quotes: one quote format per category, screened notes, and e | check_failed | 2 | 39 min | 11:00Z |  |
 | T278 | quotes, intake and picks: the check-in, feedback and unreach | done | 1 | 29 min | 10:56Z |  |
 | T316 | businesses: one read of each business's public name for the  | BLOCKED | 1 | 2 min | 10:06Z |  |
-| T337 | payments (harness): a $0 release proof is bound to the pick' | done | 5 | 23 min | 09:49Z | PLAN GAP: app/server/tests/release_recovery.rs:572-576 (td_pick_50_a_zero_fee_releases_free_and_a_cancelled_pick_nothing |
 
 ### Plan and harness merges on main
 - 09:36Z Plan: pre-flight fixes round 9 — stage 5: T303, T151, T321, T110, T210, T109, T116; new T409, T410 (D-3155) (#559)
@@ -129,7 +128,7 @@ Updated 2026-11-12T09:44:19Z by runner fc0f375db487 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 209 of 733 (28.5%) · partial 354 · unstarted 170
-**Tasks merged (throughput only):** 233 of 397
+**Tasks merged (throughput only):** 234 of 397
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -164,7 +163,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 113 of 179 done
+- stage 4: 114 of 179 done
 - stage 5: 0 of 64 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
