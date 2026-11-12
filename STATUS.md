@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-12T19:59:07Z by runner 63e12c8a4b38 (actions).
+Updated 2026-11-12T19:59:26Z by runner 63e12c8a4b38 (actions).
 
 **Building: T251 in progress since 19:00Z; 253 of 403 done; week 3% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 253 of 403 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T251 claimed 19:00Z, lease until 22:00Z; lane 6: T416 claimed 19:04Z, lease until 22:04Z
+- **Lane:** lane 1: T251 claimed 19:00Z, lease until 22:00Z
 - **Week:** 3% used, 180.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 19:57Z, 2 min before this update
 - **Keeper:** last ran 19:56Z, next wake 22:03Z
@@ -18,6 +18,7 @@ Updated 2026-11-12T19:59:07Z by runner 63e12c8a4b38 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T416 | Performance: database pool and query measurements (PERF-004) | MERGE_PENDING | 1 | 54 min | 19:59Z |  |
 | T414 | Stand-ins (harness): end-to-end specs can read the emails th | MERGE_PENDING | 2 | 15 min | 19:11Z | Twin: failure / Twin failed at step: Build rules_bridge from this commit (T074) / ##[error]Command failed: rustc -vV |
 | T350 | privacy: an opt-out, HELP or START word is never taken or re | done | 1 | 103 min | 19:09Z |  |
 | T362 | server: the built static files are served at /static/<crate> | done | 3 | 26 min | 19:03Z | PLAN GAP: tests/a11y/j1_keyboard.spec.ts:171-172 (owned by T098/T214, protected, not in T362's files) presses Tab before |
@@ -85,7 +86,6 @@ Updated 2026-11-12T19:59:07Z by runner 63e12c8a4b38 (actions).
 | T387 | payments (harness): the branch that flaps payments coverage  | done | 1 | 90 min | 21:49Z |  |
 | T388 | picks, intake, messaging and portals: after a Confirm the ho | done | 1 | 34 min | 21:46Z |  |
 | T334 | payments: the nightly reconcile catches up after an outage f | QUEUED | 1 | 15 min | 21:21Z |  |
-| T228 | businesses: leaving Ask Hava, the optional reason and what h | check_failed | 1 | 31 min | 19:59Z |  |
 
 ### Plan and harness merges on main
 - 18:44Z Plan: performance track — measurement harness T416–T418, goals as non-blocking (D-3292) (#607)
@@ -165,7 +165,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T251 (lease until 2026-11-12T22:00:53Z)
-- lane 6: T416 (lease until 2026-11-12T22:04:45Z)
 
 ## Last usage reading
-- {"task": "T414", "at": "2026-11-12T19:11:54Z", "cache_read_input_tokens": 1428299, "cache_creation_input_tokens": 104305, "input_tokens": 94, "output_tokens": 19883}
+- {"task": "T416", "at": "2026-11-12T19:59:05Z", "cache_read_input_tokens": 19336811, "output_tokens": 151466, "input_tokens": 348, "cache_creation_input_tokens": 430819}
