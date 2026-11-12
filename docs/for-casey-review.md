@@ -2,6 +2,16 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## Runner: seven lanes, and two lanes never work in the same part of the app at once (D-3269, November 12)
+
+- **What you asked.** "Okay, so go ahead and do whatever we need to do to make that all work properly", for running seven tasks at once without the merge collisions.
+- **What changed.** The runner now works up to seven tasks at a time (it was five). It no longer starts a task in a part of the app (a crate) that another running or merging task is already changing; it picks a task elsewhere, or that lane simply waits. Before, it only preferred another part, and about 1 task in 5 still needed an extra session to merge, nearly always over the same two shared files: each crate's notes file and its list of public names.
+- **Also.** When two tasks each only added lines at the same spot of one of those shared files, the runner now keeps both additions itself instead of sending the task back for an extra session, but only if the notes file stays within its 120-line limit and, for the list of public names, only for plain re-export lines that Rust's formatter leaves as they are. Anything else goes to the extra session as before.
+- **And.** Seven lanes writing the runner's shared record at the same moment collide more often. A run that keeps losing that race now just ends and lets the lane be refilled; it no longer counts as a fault, so busy moments alone can't drop the runner back to one lane (that happened at 15:19 UTC today).
+- **Worth knowing.** Because tasks in the same part of the app now wait for each other, seven lanes will sometimes run as fewer when most ready work is in one or two parts (payments and portals have the most). The usage limits still apply as before.
+- **To undo.** Set `exclusive_crates` to `false` or `lanes` back to 5 in `kit/runner.json`.
+- **Nothing needs you now.**
+
 ## Job cards had nowhere to keep the card she approved; it is now stored for 3 years (plan change, D-3189, November 12)
 
 - **What happened.** The step that sends job cards to businesses (T251) stopped and reported a planning gap: once a homeowner approves her card, or the 30-minute wait ends, nothing in the app still holds the card text or her description (Ask Hava deliberately never stores the raw texts). The business job page and the quote form had the same problem.

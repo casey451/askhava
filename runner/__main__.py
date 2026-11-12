@@ -230,6 +230,7 @@ def build(args: argparse.Namespace, outbox_dir: Path) -> tuple[cycle.Config, Git
                        claim_first=claim_first(ROOT / "kit" / "runner.json"),
                        order=claim_order_setting(ROOT / "kit" / "runner.json"),
                        prefer_disjoint_crates=prefer_disjoint_crates(ROOT / "kit" / "runner.json"),
+                       exclusive_crates=exclusive_crates(ROOT / "kit" / "runner.json"),
                        smoke_ancestry=smoke_ancestry(ROOT / "kit" / "runner.json"))
     env.smoke_ancestry = cfg.smoke_ancestry  # the pre-session step's skip and the start routine agree (D-3058)
     return cfg, env
@@ -325,6 +326,17 @@ def prefer_disjoint_crates(settings: Path) -> bool:
     or any other value. Ordering only, after a resync, `claim_first` and the critical path."""
     try:
         value = json.loads(settings.read_text(encoding="utf-8")).get("prefer_disjoint_crates")
+    except (OSError, ValueError, AttributeError):
+        return False
+    return value is True
+
+
+def exclusive_crates(settings: Path) -> bool:
+    """kit/runner.json "exclusive_crates" (D-3269): True only when the file says exactly `true`, so the cycle
+    never claims a task that writes an `app/` crate a task in flight also writes (`lanes.crate_clash`); False
+    (claims as before D-3269) when the file or key is missing, unreadable or any other value."""
+    try:
+        value = json.loads(settings.read_text(encoding="utf-8")).get("exclusive_crates")
     except (OSError, ValueError, AttributeError):
         return False
     return value is True
@@ -680,26 +692,34 @@ def keeper_armed(minutes: int, env: GitHubEnv) -> str:
     return f"keeper_armed: {keeper_mod.clamp(str(minutes))} minutes"
 
 
-LOST_RACE_RETRIES = 2  # extra cycles after a lost race, with two lanes and a handed-off worker (D-620)
+LOST_RACE_RETRIES = 2  # the fewest extra cycles after a lost race, with two lanes and a handed-off worker (D-620)
+
+
+def lost_race_retries(lanes: int) -> int:
+    """Extra cycles after a lost race (D-3269): one per other lane that could have written first, at least
+    LOST_RACE_RETRIES, so seven lanes started together still each get a turn at the state."""
+    return max(LOST_RACE_RETRIES, lanes - 1)
 
 
 def cycle_with_retries(cfg: cycle.Config, env: GitHubEnv) -> str:
     """One cycle; with two or more lanes a lost race (another lane's run wrote first, the usual way two
-    runs started together collide) is tried again from a fresh read, up to LOST_RACE_RETRIES times after
-    a short random wait, so the second lane still claims. Only when the worker is handed off
-    (RUNNER_WORKER_CMD unset, as in backup-runner.yml), where a cycle never runs a worker, so a retry can
-    never start a second task in one session. A storm that outlasts the retries is a strike on this
-    run's lane (D-620)."""
+    runs started together collide) is tried again from a fresh read, up to `lost_race_retries` times after
+    a random wait that widens with the lane count, so the other lanes still claim. Only when the worker is
+    handed off (RUNNER_WORKER_CMD unset, as in backup-runner.yml), where a cycle never runs a worker, so a
+    retry can never start a second task in one session. A storm that outlasts the retries is not a strike
+    (D-3269, was D-620): every write in it lost to another lane's good write, which is contention, not a
+    harness failure, and on November 12 at five lanes one such storm alone dropped the runner to one lane.
+    The run ends `lost_race`, its lane is free and the winners' refill runs and the keeper fill it."""
     result = cycle.run_cycle(cfg, env, now_utc())
     if cfg.lanes < 2 or os.environ.get("RUNNER_WORKER_CMD"):
         return result
-    for _ in range(LOST_RACE_RETRIES):
+    for _ in range(lost_race_retries(cfg.lanes)):
         if result != "lost_race":
             return result
-        env.sleep(random.uniform(1.0, 5.0))
+        env.sleep(random.uniform(1.0, 1.0 + 2.0 * cfg.lanes))
         result = cycle.run_cycle(cfg, env, now_utc())
     if result == "lost_race":
-        cycle.record_strike(cfg, env, cfg.lane_hint, f"lane {cfg.lane_hint}: {LOST_RACE_RETRIES + 1} lost races in a row in one run")
+        print(f"runner: lane {cfg.lane_hint}: {lost_race_retries(cfg.lanes) + 1} lost races in a row in one run; not a strike (D-3269)")
     return result
 
 

@@ -27,6 +27,13 @@ Occupancy lives in runner/state.py (`in_flight`: a live lease, or MERGE_PENDING 
   kit/runner.json "prefer_disjoint_crates" true, `cycle.claim_order` tries them after the others of the
   same priority (ordering only), since both tasks would edit that crate's `CLAUDE.md` and the second
   needs a resync.
+- `crate_clash` (D-3269): with kit/runner.json "exclusive_crates" true, `compatible_ids` drops a task
+  that writes an `app/` crate (`task_crates`: its owned paths under `app/<crate>/` and its `module`) a
+  task in flight (IN_PROGRESS under a live lease or MERGE_PENDING, any lane) also writes; a task is
+  never checked against itself, so a resync of the task holding the crate is not blocked by it, and
+  FIX-MAIN is exempt. The run then claims something else or ends `idle` (no strike, the lane stays),
+  and `cycle.refill_lanes` counts only tasks that could be claimed together (`crate_disjoint`), so it
+  starts no run that could only collide.
 """
 
 from __future__ import annotations
@@ -134,18 +141,59 @@ def compatible_ids(
     task_def: Callable[[str], dict[str, Any]],
     locked: Locked | None,
     proof_stages: frozenset[str] = frozenset(),
+    exclusive: bool = False,
 ) -> list[str]:
-    """The eligible ids that may be claimed now, beside the tasks in flight, in order (D-620, D-1127)."""
+    """The eligible ids that may be claimed now, beside the tasks in flight, in order (D-620, D-1127); with
+    `exclusive` (kit/runner.json "exclusive_crates", D-3269) also none that writes a crate one of them writes."""
     flying = [task_def(tid) for tid in st.in_flight(state, now)]
     done = {t["id"] for t in state["tasks"] if t.get("status") in st.SATISFIED}
     early = {t["id"]: str(t.get("stage")) for t in state["tasks"] if st.awaits_proof(t) and str(t.get("stage")) in proof_stages}
-    return [i for i in ids if not refusal(task_def(i), [t for t in flying if t["id"] != i], done, locked, early)]
+    out = []
+    for i in ids:
+        task, others = task_def(i), [t for t in flying if t["id"] != i]
+        if not refusal(task, others, done, locked, early) and not (exclusive and crate_clash(task, others)):
+            out.append(i)
+    return out
 
 
 def crates(paths: Iterable[str]) -> frozenset[str]:
     """The `app/` crates a task's owned paths fall in ("app/payments/src/x.rs" is "payments"), D-3082."""
     split = (str(p).split("/") for p in paths)
     return frozenset(parts[1] for parts in split if len(parts) >= 3 and parts[0] == "app" and parts[1])
+
+
+def task_crates(task: dict[str, Any]) -> frozenset[str]:
+    """The `app/` crates a task writes (D-3269): those its owned paths fall in (`crates`) and its `module`,
+    whose crate `CLAUDE.md` and `src/api.rs` (shared paths every task may edit) it updates by
+    docs/code-docs.md section 2 even when it owns no file there."""
+    module = task.get("module")
+    extra = {module} if isinstance(module, str) and module else set()
+    return crates(task.get("owns") or []) | extra
+
+
+def crate_clash(task: dict[str, Any], others: list[dict[str, Any]]) -> str:
+    """Why `task` must wait for a task in flight `others` that writes one of its crates (D-3269); '' when none
+    does, or for FIX-MAIN, which must never wait."""
+    if task.get("id") == st.FIX_MAIN:
+        return ""
+    mine = task_crates(task)
+    for other in others:
+        shared = sorted(mine & task_crates(other))
+        if shared:
+            return f"writes app/{shared[0]}/, which {other['id']} in flight also writes (D-3269)"
+    return ""
+
+
+def crate_disjoint(ids: list[str], task_def: Callable[[str], dict[str, Any]]) -> list[str]:
+    """The ids, in order, that could all be claimed together with exclusive crates (D-3269): each one kept
+    shares no crate with one kept before it. `cycle.refill_lanes` counts these, so it starts no run for a
+    lane whose only candidates share a crate with another candidate a run is already started for."""
+    kept: list[dict[str, Any]] = []
+    for tid in ids:
+        task = task_def(tid)
+        if not crate_clash(task, kept):
+            kept.append(task)
+    return [str(t["id"]) for t in kept]
 
 
 def crowded(ids: list[str], state: State, now: datetime, task_def: Callable[[str], dict[str, Any]]) -> frozenset[str]:

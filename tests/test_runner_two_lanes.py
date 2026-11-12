@@ -526,7 +526,9 @@ def test_drill_an_attempt_that_loses_its_writes_on_lane_two_is_a_strike(tmp_path
     assert not env.branch_pushes
 
 
-def test_a_lost_claim_race_is_retried_and_a_storm_is_a_strike(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_a_lost_claim_race_is_retried_and_a_storm_is_not_a_strike(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """D-3269 (was D-620's "a storm is a strike"): every lost race is another lane's good write, so a storm that
+    outlasts the retries ends the run `lost_race` but never counts towards a fall back to one lane."""
     monkeypatch.delenv("RUNNER_WORKER_CMD", raising=False)
     env = FakeEnv()
     env.sleep = lambda seconds: None  # type: ignore[attr-defined]  # reason: no real wait between tries
@@ -542,7 +544,7 @@ def test_a_lost_claim_race_is_retried_and_a_storm_is_a_strike(tmp_path: Path, mo
     results.clear()
     scripted(["lost_race"] * 3)
     assert entry.cycle_with_retries(two_lane(graph, tmp_path, "s1", "2"), env) == "lost_race" and len(results) == 3  # type: ignore[arg-type]  # reason: as above
-    assert env.store["lane_strikes"]["2"]["count"] == 1 and "3 lost races in a row" in env.store["lane_strikes"]["2"]["last"][0]["why"]
+    assert not env.store.get("lane_strikes") and not env.store.get("lanes_fallback")
     results.clear()
     scripted(["lost_race"])
     assert entry.cycle_with_retries(config(graph, tmp_path), env) == "lost_race" and len(results) == 1  # type: ignore[arg-type]  # reason: one lane never retries
