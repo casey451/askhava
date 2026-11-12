@@ -1,27 +1,27 @@
 # Ask Hava build status
 
-Updated 2026-11-12T23:25:58Z by runner 4aa3c92a5fa0 (actions).
+Updated 2026-11-12T23:29:56Z by runner dae8c6443b4f (actions).
 
-**Building: T215 in progress since 22:29Z; 259 of 404 done; week 8% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T215 in progress since 22:29Z; 260 of 404 done; week 8% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 259 of 404 build tasks (owner gates not counted)
+- **Tasks done:** 260 of 404 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 5: T215 claimed 22:29Z, lease until 01:29Z; lane 7: T351 claimed 22:49Z, lease until 01:49Z
 - **Week:** 8% used, 165.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:25Z, 0 min before this update
+- **Last run:** 23:25Z, 3 min before this update
 - **Keeper:** last ran 23:25Z, next wake 01:31Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T371 (since 2026-11-12T23:24:01Z, no attempt used; a plan change fixes it): T371: dependency T385 is DONE but its owned file app/licensing/src/own_record.rs is not on main; T371: dependency T385 is DONE but its owned file app/businesses/src/signup_record.rs is not on main; T371: dependency T385 is DONE but its owned file tests/integration/tests/signup_own_record.rs is not on main; T371: dependency T385 is DONE but its owned file tests/fixtures/license_source/record/roc/ROC100001 is not on main; T371: dependency T385 is DONE but its owned file tests/fixtures/license_source/roc is not on main; T371: dependency T385 is DONE but its owned file tests/fixtures/license_source/city is not on main
-- Strict plan check red: 21 problem(s) on tasks still to run (+134 on DONE tasks); first: T320: stored context_pct 41% but it measures 45%; regenerate
+- Strict plan check red: 21 problem(s) on tasks still to run (+136 on DONE tasks); first: T320: measures 46% of the window, over its 45% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T418 | Performance: lab Core Web Vitals and Ci's warn-only performa | MERGE_PENDING | 1 | 50 min | 23:24Z |  |
 | T347 | licensing (harness): remove the handyman split-job check; ea | MERGE_PENDING | 1 | 52 min | 23:24Z |  |
-| T162 | intake: the one intake order for the five paths and the Span | MERGE_PENDING | 1 | 36 min | 23:01Z | merging main into the reviewed head conflicts in app/intake/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T162 | intake: the one intake order for the five paths and the Span | done | 1 | 36 min | 23:01Z |  |
 | T385 | adapters, licensing and businesses (harness): the sign-up re | done | 3 | 30 min | 22:57Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T419 | calls (harness): TD-CALL-23's no-plaintext scan reads only t | done | 1 | 24 min | 22:37Z |  |
 | T351 | privacy and quotes: spaced gate codes, lower-case street add | resync | 1 | 58 min | 22:35Z | merging main into the reviewed head conflicts in app/quotes/CLAUDE.md; a resync merges it in on this attempt (D-891) |
@@ -125,8 +125,8 @@ Updated 2026-11-12T23:25:58Z by runner 4aa3c92a5fa0 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 230 of 733 (31.4%) · partial 337 · unstarted 166
-**Tasks merged (throughput only):** 259 of 404
+**Requirements verified:** 232 of 733 (31.7%) · partial 337 · unstarted 164
+**Tasks merged (throughput only):** 260 of 404
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -136,11 +136,11 @@ Updated 2026-11-12T23:25:58Z by runner 4aa3c92a5fa0 (actions).
 | calls | 10 | 14 | 1 | 25 |
 | consent | 11 | 20 | 4 | 35 |
 | fees | 13 | 38 | 1 | 52 |
-| intake | 22 | 17 | 4 | 43 |
+| intake | 22 | 18 | 3 | 43 |
 | job-cards | 12 | 11 | 1 | 24 |
 | licensing | 25 | 23 | 0 | 48 |
 | lifecycle | 19 | 9 | 0 | 28 |
-| messaging | 18 | 24 | 3 | 45 |
+| messaging | 20 | 23 | 2 | 45 |
 | ops-recovery | 2 | 7 | 45 | 54 |
 | privacy | 6 | 23 | 2 | 31 |
 | quiet-hours | 7 | 2 | 0 | 9 |
@@ -161,7 +161,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 139 of 186 done
+- stage 4: 140 of 186 done
 - stage 5: 0 of 64 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
