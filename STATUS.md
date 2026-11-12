@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T05:57:51Z by runner 72993ab86164 (actions).
+Updated 2026-11-12T06:05:53Z by runner 8827e01ab817 (actions).
 
 **Building: T405 in progress since 05:14Z; 225 of 393 done; week 88% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,12 +8,12 @@ Updated 2026-11-12T05:57:51Z by runner 72993ab86164 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 3: T405 claimed 05:14Z, lease until 08:14Z; lane 5: T336 claimed 04:54Z, lease until 07:54Z
 - **Week:** 88% used, 13.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:57Z, 0 min before this update
+- **Last run:** 06:03Z, 2 min before this update
 - **Keeper:** last ran 05:57Z, next wake 07:56Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 8 problem(s) on tasks still to run (+84 on DONE tasks); first: T396: stored context_pct 39% but it measures 43%; regenerate
+- Strict plan check red: 9 problem(s) on tasks still to run (+85 on DONE tasks); first: T396: stored context_pct 39% but it measures 43%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -81,6 +81,7 @@ Updated 2026-11-12T05:57:51Z by runner 72993ab86164 (actions).
 | T212 | intake: photo asks with on-server checks and preview, inspir | check_failed | 1 | 56 min | 07:20Z |  |
 
 ### Plan and harness merges on main
+- 06:05Z Plan: pre-flight fixes round 8 — stage 5: T101, T102, T105, T202, T320, T106, T364; new T408 (D-3144) (#551)
 - 05:28Z Harness: stop backup-runner caches evicting CI's Rust caches (D-3143) (#553)
 - 05:16Z Harness: run lint and the slow compile-fail/prompt-injection tests in a parallel CI job (D-3142) (#550)
 - 04:59Z Plan: pre-flight fixes round 7 — T352, T335, T353, T330, T393, T359, T401 plan gap; new T406, T407 (D-3134) (#548)
