@@ -723,7 +723,7 @@ def lane_report(cfg: cycle.Config, env: GitHubEnv, result: str, dry_run: bool) -
     pre-session smoke and a session before it ends: it leaves out its own lane, which that session claims on,
     and keeps in `refill` only the lanes it could not start, for the chain step should the session leave no row."""
     early = result == cycle.MERGES_RESOLVED
-    out: dict[str, Any] = {"lane": cfg.lane_hint, "refill": refill(cfg, env, cfg.lane_hint if early else None)}
+    out: dict[str, Any] = {"lane": cfg.lane_hint, "refill": refill(cfg, env, cfg.lane_hint) if early else refill(cfg, env)}
     if result in ("handed_off", cycle.MERGES_RESOLVED) and not dry_run:
         out["dispatched"] = start_refill(out["refill"], env)
         if early:
