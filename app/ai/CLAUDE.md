@@ -36,7 +36,8 @@ The layer-3 crate every AI call goes through (`docs/architecture.md` section 3).
 ## Never break
 
 - No request ever carries tools: `tests/no_tools.rs::requests_carry_no_tools_and_tool_use_is_discarded`.
-- The schema file, `FIELDS` and `output_config` stay equal: `tests/schemas.rs::rust_types_output_config_and_schema_file_are_equal`, `rust_reading_type_takes_exactly_the_schema_fields`.
+- The schema file (minus `$schema` and `$id`), `FIELDS` and `output_config` stay equal: `tests/schemas.rs::rust_types_output_config_and_schema_file_are_equal`, `rust_reading_type_takes_exactly_the_schema_fields`.
+- The schema file holds no keyword the Claude API refuses (`minimum`, `maximum`, length and array limits; `docs/brains/ai-intake.md` section 2): ranges and caps live in `parse_reading`; the stand-in answers such a schema with the API's 400 (`tests/contract/test_stand_in_ai_contract.py`, `tests/schemas.rs::confidence_out_of_zero_to_one_is_discarded`, TD-AI-28, D-2760).
 - `ai` depends on no crate that sends, charges or releases: `tests/no_tools.rs::output_never_sends_charges_or_releases`.
 - No transaction is open during a network call; the call row and its alert commit together after it (R11).
 - `ai.call_stat` holds no text, only codes and IDs (PRIV-016).
@@ -63,7 +64,7 @@ The layer-3 crate every AI call goes through (`docs/architecture.md` section 3).
 
 ## Tests that guard it
 
-- `src/tests/schemas.rs` (TD-AI-02, TD-AI-13, TD-AI-15): the schema triangle, reading checks, instruction versions, model setting and paths, `AdapterTransport` sending only `Messages` with a job-keyed ID, the `missing_info` cap and screen, the tag-escaping property for both tags.
+- `src/tests/schemas.rs` (TD-AI-02, TD-AI-13, TD-AI-15, TD-AI-28): the schema triangle, reading checks, instruction versions, model setting and paths, `AdapterTransport` sending only `Messages` with a job-keyed ID, the `missing_info` cap and screen, the tag-escaping property for both tags.
 - `src/tests/no_tools.rs` (TD-AI-02, TD-AI-06, TD-AI-10): no tools, no send or release, no quote summary, the AI-021 screen (links with paths, disguised text) and the CARD-010 list.
 - `src/tests/prop_ai_output_limits.rs` (TD-AI-08, TD-AI-10): planted prices, cause words (Spanish, capitals, accents), WORD-022 phrases, claims, business names and contact details fall back for all three kinds with their own `CheckHit`; fee, charge, quote and Spanish budget words are prices; digits in any script count; outputs from her words pass; added numbers and names fall back; carrier-filtered words, links and 600 characters send the template.
 - `src/tests/adds_fact_openers.rs` (TD-AI-26): a new name starting a sentence or as a label is an added fact unless she named it; "The", "Note:" and "¿Cuándo" pass; the bank's and card's fixed texts never trip it; no brand or market name is an opener.

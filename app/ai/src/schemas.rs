@@ -1,10 +1,11 @@
 //! What `ai` sends and what it accepts back (AI-005, AI-010, AI-021, AI-022, AI-025).
 //!
 //! The intake reading's shape comes from one file, `schemas/intake_reading.json` (T167's, D-493):
-//! the request's `output_config` sends it as committed, [`FIELDS`] lists it for the Rust type and
-//! `tests/schemas.rs` fails on any difference among the three (AI-022). A reply is used only when
-//! it parses into exactly those fields (serde `deny_unknown_fields`), its confidences lie in 0 to
-//! 1, and its trimmed, lower-cased trade and job type are open in the catalog (AI-005). Every
+//! the request's `output_config` sends it without `$schema` and `$id` (D-2760), [`FIELDS`] lists
+//! it for the Rust type and `tests/schemas.rs` fails on any difference among the three (AI-022).
+//! The file holds no keyword the Claude API refuses, so ranges live in code (D-2760). A reply is
+//! used only when it parses into exactly those fields (serde `deny_unknown_fields`), its
+//! confidences lie in 0 to 1, and its trimmed, lower-cased trade and job type are open in the catalog (AI-005). Every
 //! AI-written text passes [`screen_text`] before use, or the caller's fixed template goes instead
 //! (AI-021). Homeowner and quote text go inside one fixed tag with that tag's name escaped in
 //! the text (AI-025).
@@ -22,9 +23,20 @@ use unicode_normalization::UnicodeNormalization;
 /// The committed schema file, compiled in (AI-022).
 pub(crate) const SCHEMA_FILE: &str = include_str!("../../../schemas/intake_reading.json");
 
-/// The schema sent as `output_config.format.schema`: the file as committed (AI-022, D-812).
+/// The file's top-level metadata keys, which the request does not send (D-2760).
+pub(crate) const METADATA_KEYS: [&str; 2] = ["$schema", "$id"];
+
+/// The schema sent as `output_config.format.schema`: the file as committed without its
+/// [`METADATA_KEYS`] (AI-010, AI-022, AI-023, D-812, D-2760). The file uses only keywords the
+/// Claude API supports, so the 0-to-1 confidence range is checked in [`parse_reading`].
 pub(crate) fn intake_schema() -> Value {
-    serde_json::from_str(SCHEMA_FILE).unwrap_or(Value::Null)
+    let mut schema: Value = serde_json::from_str(SCHEMA_FILE).unwrap_or(Value::Null);
+    if let Some(object) = schema.as_object_mut() {
+        for key in METADATA_KEYS {
+            object.remove(key);
+        }
+    }
+    schema
 }
 
 /// The JSON-schema shape of one field of the Rust reading type (AI-022).
@@ -44,7 +56,10 @@ impl FieldKind {
     pub(crate) fn schema(self) -> Value {
         match self {
             Self::Text => json!({"type": "string"}),
-            Self::Confidence => json!({"type": "number", "minimum": 0, "maximum": 1}),
+            Self::Confidence => json!({
+                "type": "number",
+                "description": "A confidence from 0 to 1; the range is checked in code, not here (D-2760)."
+            }),
             Self::Flag => json!({"type": "boolean"}),
             Self::Language => json!({"type": "string", "enum": ["en", "es"]}),
             Self::TextList => json!({"type": "array", "items": {"type": "string"}}),
