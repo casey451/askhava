@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-12T10:23:02Z by runner 86a5963c3216 (actions).
+Updated 2026-11-12T10:23:17Z by runner 86a5963c3216 (actions).
 
-**Building: T343 in progress since 09:58Z; 235 of 397 done; week 92% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T411 in progress since 10:08Z; 235 of 397 done; week 92% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 235 of 397 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T343 claimed 09:58Z, lease until 12:58Z; lane 5: T411 claimed 10:08Z, lease until 13:08Z
+- **Lane:** lane 5: T411 claimed 10:08Z, lease until 13:08Z
 - **Week:** 92% used, 3.8M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 10:15Z, 7 min before this update
 - **Keeper:** last ran 10:15Z, next wake 13:00Z
@@ -18,6 +18,7 @@ Updated 2026-11-12T10:23:02Z by runner 86a5963c3216 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T343 | harness: the DONE pick tests' fixtures record each job's fac | MERGE_PENDING | 1 | 24 min | 10:23Z |  |
 | T411 | quotes: the scrubbed job description and the shown and appro | resync | 1 | 30 min | 10:00Z | merging main into the reviewed head conflicts in app/quotes/src/api.rs; a resync merges it in on this attempt (D-891) |
 | T268 | portals, businesses and messaging: the sign-up consent box,  | resync | 1 | 21 min | 09:38Z | merging main into the reviewed head conflicts in app/messaging/src/api.rs; a resync merges it in on this attempt (D-891) |
 | T358 | messaging: the Canadian area codes for the HELP roaming line | MERGE_PENDING | 1 | 40 min | 09:32Z |  |
@@ -170,8 +171,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T343 (lease until 2026-11-12T12:58:11Z)
+- nothing
 - lane 5: T411 (lease until 2026-11-12T13:08:15Z)
 
 ## Last usage reading
-- {"task": "T411", "at": "2026-11-12T10:00:23Z", "input_tokens": 286, "output_tokens": 105351, "cache_read_input_tokens": 18169228, "cache_creation_input_tokens": 555093}
+- {"task": "T343", "at": "2026-11-12T10:23:00Z", "cache_read_input_tokens": 10332537, "cache_creation_input_tokens": 294001, "input_tokens": 300, "output_tokens": 62467}
