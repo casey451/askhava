@@ -100,6 +100,25 @@ def test_td_ops_43_the_summary_holds_only_figures_names_and_goals(tmp_path, monk
     assert "| quote_page | INP ms (lab stand-in) (lab, not field) | not measured | 200 | 150 |" in summary
 
 
+def test_td_ops_43_a_digits_only_route_key_is_never_shown(tmp_path, monkeypatch, capsys) -> None:
+    digits = "928" + "441" + "7302"
+    planted = bench(10.0)
+    planted["routes"][digits] = {"1": {"p95_ms": 5.0}}
+    planted["routes"]["9" + "28"] = "not exposed"
+    code, summary, warnings = run(tmp_path, monkeypatch, capsys, planted, vitals(), stored(10.0))
+    assert code == 0 and digits not in summary and "| 928 |" not in summary and digits not in "".join(warnings)
+    assert "| home | - | not measured |" in summary and "| quote_page | 1 | 10 |" in summary
+
+
+def test_td_ops_43_a_unicode_digit_user_count_keeps_the_summary(tmp_path, monkeypatch, capsys) -> None:
+    planted = bench(10.0)
+    for users in ("\u00b2", "\u0663", "12345"):
+        planted["routes"]["quote_page"][users] = {"p95_ms": 7.0}
+    code, summary, warnings = run(tmp_path, monkeypatch, capsys, planted, vitals(), stored(10.0))
+    assert code == 0 and warnings == [] and "| quote_page | 1 | 10 |" in summary
+    assert "\u00b2" not in summary and "\u0663" not in summary and "12345" not in summary
+
+
 def test_td_ops_43_every_vital_is_labelled_lab_not_field(tmp_path, monkeypatch, capsys) -> None:
     _, summary, _ = run(tmp_path, monkeypatch, capsys, bench(10.0), vitals(), None)
     vital_rows = [line for line in summary.splitlines() if line.count("|") == 8 and not line.startswith(("| Page", "|---"))]

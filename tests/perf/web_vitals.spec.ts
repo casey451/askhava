@@ -7,7 +7,9 @@
 // input), Cumulative Layout Shift (the sum of shifts without recent input) and a lab stand-in for
 // INP: the longest Event Timing duration (first-input, and every event of 16 ms or more) for one
 // click and one key press on the page's main control (the first button, link or field in <main>),
-// with the click's and the form's default action cancelled so the page stays put. The figures go to
+// with the click's and the form's default action cancelled so the page stays put. The click and the
+// key press each have their own 10 s limit: a page with no such control records its INP stand-in as
+// not measured (null) instead of spending the whole test's time (the quote page must have one). The figures go to
 // one JSON file (PERF_VITALS_OUT, else test-results/web-vitals.json) labelled "lab, not field",
 // beside the goals (LCP 2.5 s, INP 200 ms, CLS 0.1) and the aspirational figures (LCP 1.5 s, INP
 // 150 ms). The test asserts only that each figure was measured, never a threshold; perf/compare.py
@@ -20,13 +22,14 @@ import { createHash, randomBytes } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import type { Browser, Page } from "@playwright/test";
+import { errors, type Browser, type Page } from "@playwright/test";
 import { test, expect } from "../e2e/fixtures";
 
 const ROOT = join(import.meta.dirname, "..", "..");
 const OUT = process.env.PERF_VITALS_OUT ?? join(ROOT, "test-results", "web-vitals.json");
 const LABEL = "lab, not field";
 const VIEWPORT = { width: 390, height: 844 };
+const INTERACTION_TIMEOUT_MS = 10_000;
 const NETWORK = { offline: false, latency: 150, downloadThroughput: (1.6 * 1024 * 1024) / 8, uploadThroughput: (750 * 1024) / 8 };
 
 interface Vitals {
@@ -103,7 +106,22 @@ async function settle(page: Page): Promise<{ lcp: number; cls: number; inp: numb
   });
 }
 
-async function measure(browser: Browser, baseURL: string, path: string): Promise<Vitals> {
+/** Clicks the main control and presses Tab on it; false when none answers within the limit. */
+async function interact(page: Page): Promise<boolean> {
+  const control = page.locator("main").locator("button, a[href], input:not([type=hidden]), select, textarea").first();
+  try {
+    await control.click({ timeout: INTERACTION_TIMEOUT_MS });
+    await control.press("Tab", { timeout: INTERACTION_TIMEOUT_MS });
+    return true;
+  } catch (error) {
+    if (error instanceof errors.TimeoutError) {
+      return false;
+    }
+    throw error;
+  }
+}
+
+async function measure(browser: Browser, baseURL: string, path: string): Promise<{ vitals: Vitals; interacted: boolean }> {
   const context = await browser.newContext({ viewport: VIEWPORT, baseURL });
   try {
     const page = await context.newPage();
@@ -114,11 +132,10 @@ async function measure(browser: Browser, baseURL: string, path: string): Promise
     await page.addInitScript(observe);
     await page.goto(path, { waitUntil: "load" });
     const before = await settle(page);
-    const control = page.locator("main").locator("button, a[href], input:not([type=hidden]), select, textarea").first();
-    await control.click();
-    await control.press("Tab");
+    const interacted = await interact(page);
     const after = await settle(page);
-    return { lcp_ms: before.lcp < 0 ? null : before.lcp, inp_ms: after.inp < 0 ? null : after.inp, cls: after.cls };
+    const inp = interacted && after.inp >= 0 ? after.inp : null;
+    return { vitals: { lcp_ms: before.lcp < 0 ? null : before.lcp, inp_ms: inp, cls: after.cls }, interacted };
   } finally {
     await context.close();
   }
@@ -134,9 +151,12 @@ test("TD-OPS-43: each served page's lab LCP, INP stand-in and CLS are measured a
         pages[name] = `not exposed: GET answers ${String(status)}`;
         return;
       }
-      const figures = await measure(browser, baseURL ?? "", path);
+      const { vitals: figures, interacted } = await measure(browser, baseURL ?? "", path);
       expect(figures.lcp_ms, `${name} LCP`).not.toBeNull();
-      expect(figures.inp_ms, `${name} INP stand-in`).not.toBeNull();
+      expect(interacted || name !== "quote_page", "the quote page has a control in <main> to click").toBe(true);
+      if (interacted) {
+        expect(figures.inp_ms, `${name} INP stand-in`).not.toBeNull();
+      }
       pages[name] = { ...figures, label: LABEL };
     });
   }

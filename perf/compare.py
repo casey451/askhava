@@ -8,7 +8,8 @@ for each p95 more than 25% above its baseline and each goal missed, and always e
 fails a build on time (D-3292). A missing or empty baseline compares nothing and says so; an
 unreadable input gives one warning and its section reads "not available". The summary and the
 warnings hold only figures, route and page names and goals (TD-OPS-43): a text value from an input
-(a "not exposed" reason) is shown as "not measured", and a name outside NAME is left out.
+(a "not exposed" reason) is shown as "not measured", and a name outside NAME (a
+lower-case letter first, so a digits-only key such as a phone number never shows) is left out.
 `--write-baseline` writes the figures alone in the baseline's shape, for the first green `main` run.
 """
 
@@ -26,7 +27,7 @@ GOALS = {"lcp_ms": 2500.0, "inp_ms": 200.0, "cls": 0.1}
 ASPIRATIONAL = {"lcp_ms": 1500.0, "inp_ms": 150.0}
 VITAL_NAMES = {"lcp_ms": "LCP ms", "inp_ms": "INP ms (lab stand-in)", "cls": "CLS"}
 P95_SLACK = 0.25
-NAME = re.compile(r"^[a-z0-9_.%]{1,48}$")
+NAME = re.compile(r"^[a-z][a-z0-9_.%]{0,47}$")
 BASELINE = Path(__file__).resolve().parent.parent / "docs/audit/perf-baseline-ci.json"
 
 
@@ -60,6 +61,11 @@ def names(table: object) -> list[str]:
     return sorted(k for k in table if isinstance(k, str) and NAME.match(k)) if isinstance(table, dict) else []
 
 
+def is_user_count(key: object) -> bool:
+    """A short ASCII digit string ("1", "10"); Unicode digits such as "²" would make int() raise."""
+    return isinstance(key, str) and key.isascii() and key.isdigit() and len(key) <= 4
+
+
 def load(path: Path | None) -> dict:
     """The JSON object at `path`; raises OSError or ValueError when it is missing or not an object."""
     if path is None:
@@ -77,7 +83,7 @@ def route_rows(routes: object, base: object, warnings: list[str]) -> list[str]:
         if not isinstance(runs, dict):
             rows.append(f"| {route} | - | not measured | none | no baseline | not measured |")
             continue
-        for users in sorted((u for u in runs if isinstance(u, str) and u.isdigit()), key=int):
+        for users in sorted((u for u in runs if is_user_count(u)), key=int):
             entry = runs[users] if isinstance(runs[users], dict) else {}
             p95, queries = figure(entry.get("p95_ms")), figure(entry.get("mean_queries"))
             old = base.get(route) if isinstance(base, dict) else None
@@ -151,7 +157,7 @@ def baseline_record(bench: dict | None, vitals: dict | None) -> dict:
     routes: dict = {}
     for route in names((bench or {}).get("routes")):
         runs = bench["routes"][route]
-        for users in names(runs) if isinstance(runs, dict) else []:
+        for users in [u for u in runs if is_user_count(u)] if isinstance(runs, dict) else []:
             entry = runs[users] if isinstance(runs[users], dict) else {}
             kept = {k: figure(entry.get(k)) for k in ("p95_ms", "mean_queries") if figure(entry.get(k)) is not None}
             routes.setdefault(route, {})[users] = kept
