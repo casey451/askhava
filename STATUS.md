@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T12:03:58Z by runner fd946f4ebc08 (actions).
+Updated 2026-11-12T12:16:17Z by runner fd946f4ebc08 (actions).
 
 **Building: T369 in progress since 11:51Z; 242 of 397 done; week 93% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-12T12:03:58Z by runner fd946f4ebc08 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T369 claimed 11:51Z, lease until 14:51Z; lane 3: T378 claimed 11:49Z, lease until 14:49Z
 - **Week:** 93% used, 0.4M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:02Z, 1 min before this update
+- **Last run:** 12:11Z, 4 min before this update
 - **Keeper:** last ran 11:59Z, next wake 14:51Z
 
 ## Needs attention
@@ -91,7 +91,6 @@ Updated 2026-11-12T12:03:58Z by runner fd946f4ebc08 (actions).
 | T214 | picks (harness): the homeowner's share box at the pick and t | BLOCKED | 1 | 15 min | 13:19Z |  |
 | T333 | payments (harness): a succeeded refund is recorded at the am | BLOCKED | 1 | 50 min | 13:14Z |  |
 | T332 | payments (harness): a late success has its own refund trigge | BLOCKED | 2 | 2 min | 12:40Z |  |
-| T332 | payments (harness): a late success has its own refund trigge | BLOCKED | 1 | 11 min | 12:10Z |  |
 
 ### Plan and harness merges on main
 - 09:36Z Plan: pre-flight fixes round 9 — stage 5: T303, T151, T321, T110, T210, T109, T116; new T409, T410 (D-3155) (#559)
@@ -158,7 +157,7 @@ Updated 2026-11-12T12:03:58Z by runner fd946f4ebc08 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-12T11:58:06Z (week)): week: 193.6M used, 362k left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-06T14:40:34Z; waiting until 2026-11-12T17:00:00Z.
+- Pacing (session_reading 2026-11-12T11:59:10Z (week)): week: 193.6M used, 362k left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-06T10:00:43Z; waiting until 2026-11-12T17:00:00Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
