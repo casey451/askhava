@@ -1,0 +1,18 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO quotes.job_description (request_id, job_id, message_id, words, recorded_at)\n         VALUES ($1, $2, $3, $4, $5) ON CONFLICT (message_id, job_id) DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Uuid",
+        "Text",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "f62510e1b9a19a1d29593b69ff0179368d6b62086b47af3b53b789c9abd6e566"
+}

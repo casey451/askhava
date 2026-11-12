@@ -46,6 +46,7 @@ mod gate;
 mod handlers;
 mod intake;
 mod job_page;
+mod job_text;
 mod models;
 mod notes;
 mod notify;

@@ -52,6 +52,11 @@
 //! T388: [`accepted_quote`] reads the quote a homeowner accepted as an [`AcceptedQuote`] (its page
 //! number, type, amount, earliest visit and the business's own words) for her accepted-quote email
 //! and quote page (PICK-042, D-3075).
+//! T411: [`keep_description`] and [`description`] store and read a job's scrubbed words;
+//! [`keep_card`], [`stored_card`], [`unsent_cards`], [`mark_card_sent`] and [`sent_card`] the card
+//! shown, approved and sent under its [`card_digest`] (CARD-007, CARD-023, INT-041);
+//! [`run_text_purge`] (the PRIV-008 text stage) and [`forget_requests`] ("Delete my data",
+//! PRIV-011) delete them (D-3189).
 
 use sqlx::types::Uuid;
 
@@ -83,6 +88,11 @@ pub use crate::intake::{
     window_open,
 };
 pub use crate::job_page::{JobPage, PageParts, job_page};
+pub use crate::job_text::{
+    CardFacts, JobDescription, KeptCard, StoredCard, card_digest, description, forget_requests,
+    keep_card, keep_description, mark_card_sent, purge_job_text, run_text_purge, sent_card,
+    stored_card, unsent_cards,
+};
 pub use crate::models::{
     CardBusiness, CardDecision, CardJob, CardLines, Coverage, OfferTown, OwnerPauses, Pool, Pooled,
     QuotesError, Recipient, Skip,

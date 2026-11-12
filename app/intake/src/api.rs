@@ -152,6 +152,26 @@ pub async fn jobs_of_contact(
     .map_err(|_| IntakeError::Database)
 }
 
+/// PRIV-011, D-3189: every request (open or closed) of the homeowner whose vault contact is
+/// `contact`, so "Delete my data" deletes the job text stored under each (T411).
+///
+/// # Errors
+///
+/// [`IntakeError::Database`].
+pub async fn conversations_of_contact(
+    db: &mut sqlx::PgConnection,
+    contact: sqlx::types::Uuid,
+) -> Result<Vec<sqlx::types::Uuid>, IntakeError> {
+    sqlx::query_scalar!(
+        "SELECT c.id FROM intake.conversation c JOIN intake.homeowner h ON h.id = c.homeowner_id
+         WHERE h.contact_id = $1 ORDER BY c.opened_at, c.id",
+        contact,
+    )
+    .fetch_all(db)
+    .await
+    .map_err(|_| IntakeError::Database)
+}
+
 /// SEC-014, TXT-031, D-2206, D-3084: the jobs of the open request of the homeowner whose vault
 /// contact is `contact` (its first job and every job it linked), or `None` when she has no open
 /// request. The inbound text route counts SEC-014's new-request limit only on `None`, and reads
