@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T08:04:34Z by runner dcd485b408b2 (actions).
+Updated 2026-11-12T08:12:55Z by runner dcd485b408b2 (actions).
 
 **Building: T336 in progress since 08:04Z; 231 of 394 done; week 90% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-12T08:04:34Z by runner dcd485b408b2 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T336 claimed 08:04Z, lease until 11:04Z; lane 4: T322 claimed 08:00Z, lease until 11:00Z
 - **Week:** 90% used, 11.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:03Z, 0 min before this update
+- **Last run:** 08:09Z, 2 min before this update
 - **Keeper:** last ran 08:03Z, next wake 11:03Z
 
 ## Needs attention
@@ -84,8 +84,6 @@ Updated 2026-11-12T08:04:34Z by runner dcd485b408b2 (actions).
 | T327 | harness: every task kind the app queues has a handler in the | done | 1 | 48 min | 09:38Z |  |
 | T164 | quotes: one quote format per category, screened notes, and e | BLOCKED | 1 | 14 min | 09:03Z |  |
 | T295 | payments, ai, intake and picks take the brand from the brand | done | 4 | 33 min | 08:57Z | T295 blocked at step 3: tests/brand_literal_baseline.json still lists files T295 does not own: app/messaging/templates/e |
-| T212 | intake: photo asks with on-server checks and preview, inspir | done | 2 | 19 min | 08:12Z | Ci: failure; Coverage: failure; Checks: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned |
-| T337 | payments (harness): a $0 release proof is bound to the pick' | BLOCKED | 4 | 9 min | 08:05Z |  |
 
 ### Plan and harness merges on main
 - 07:12Z Harness: close merged tasks before the smoke so their lanes free ~20 min sooner (D-3141) (#552)
