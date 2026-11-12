@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T19:56:54Z by runner b2a7162807db (actions).
+Updated 2026-11-12T19:59:07Z by runner 63e12c8a4b38 (actions).
 
 **Building: T251 in progress since 19:00Z; 253 of 403 done; week 3% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,12 +8,12 @@ Updated 2026-11-12T19:56:54Z by runner b2a7162807db (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T251 claimed 19:00Z, lease until 22:00Z; lane 6: T416 claimed 19:04Z, lease until 22:04Z
 - **Week:** 3% used, 180.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:56Z, 0 min before this update
+- **Last run:** 19:57Z, 2 min before this update
 - **Keeper:** last ran 19:56Z, next wake 22:03Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 22 problem(s) on tasks still to run (+126 on DONE tasks); first: T340: stored context_pct 40% but it measures 45%; regenerate
+- Strict plan check red: 21 problem(s) on tasks still to run (+122 on DONE tasks); first: T340: stored context_pct 40% but it measures 45%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -117,7 +117,6 @@ Updated 2026-11-12T19:56:54Z by runner b2a7162807db (actions).
 - 22:35Z Harness: smoke ancestry reuse across DONE task merges and a running duplicate smoke yields (D-3058) (#516)
 - 21:48Z Harness: no five-hour pacing budget (D-3056) (#513)
 - 20:03Z Harness: the critical-path test checks what the runner can claim, not live in-flight work (D-3057) (#514)
-- 19:58Z Plan: pre-flight fixes for five queued tasks before they're claimed (D-3055) (#512)
 
 ## Progress (requirements verified)
 
