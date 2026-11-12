@@ -1,16 +1,16 @@
 //! The handyman limits (TD-LIC-08, TD-LIC-09, TD-LIC-10; AI-012, LIC-019 to LIC-025, LIC-036):
 //! every worked example in `docs/catalog/worked_examples.yaml` through `check_quote`, the
-//! certification box, the card line, the gas list against the catalog file and the split-job
-//! window edges. Every business, address and price is fake.
+//! certification box, the card line, the gas list against the catalog file, the request-text
+//! blocks and the two-jobs case that shows no split-job check exists (LIC-023, D-2407). Every business, address and price is fake.
 
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeMap;
 
 use serde::Deserialize;
 
 use crate::api::{
-    CityListStanding, Eligibility, HANDYMAN_CARD_LINE, HandymanJob, Holder, Job, JobRequest,
-    LicenseKind, NeverHandyman, NoCardReason, QuotePrice, QuoteRefusal, QuoteSubmission,
-    SPLIT_JOB_WINDOW_DAYS, check_quote, eligibility_for_request, never_handyman, split_job,
+    CityListStanding, Eligibility, HANDYMAN_CARD_LINE, Holder, Job, JobRequest, LicenseKind,
+    NeverHandyman, NoCardReason, QuotePrice, QuoteRefusal, QuoteSubmission, check_quote,
+    eligibility_for_request, never_handyman,
 };
 use crate::handyman::parse_gas;
 
@@ -255,39 +255,58 @@ fn never_handyman_job_types_block_the_handyman_card() {
     );
 }
 
-const DAY: i64 = 86_400;
-
-fn prior(job_type: &str, cents: u64, at: i64) -> HandymanJob {
-    HandymanJob {
-        job_types: BTreeSet::from([job_type.to_owned()]),
-        price: QuotePrice::Fixed(cents),
-        submitted_at: at,
+/// TD-LIC-09 (LIC-021, LIC-022, D-2637): smoke detectors, fire sprinklers and a wall removal
+/// written only in the request text block a handyman whatever the candidates; a lawn sprinkler
+/// does not.
+#[test]
+fn request_text_alone_blocks_smoke_sprinkler_and_permit_work() {
+    let door = vec!["door repair".to_owned()];
+    let drywall = vec!["drywall patch".to_owned()];
+    let cases = [
+        (
+            "Install hardwired smoke detectors by the bedroom door",
+            &door,
+            Some(NeverHandyman::SmokeAlarm),
+        ),
+        (
+            "fire sprinkler head leaking by the garage door",
+            &door,
+            Some(NeverHandyman::Sprinkler),
+        ),
+        (
+            "remove the wall between kitchen and den, then drywall",
+            &drywall,
+            Some(NeverHandyman::PermitType),
+        ),
+        ("lawn sprinkler head broke by the fence", &door, None),
+    ];
+    for (text, candidates, expected) in cases {
+        assert_eq!(
+            never_handyman(&request(text, candidates)),
+            expected,
+            "{text}"
+        );
     }
 }
 
-/// TD-LIC-10 (LIC-023, D-027, D-081, D-154): checked when the second quote is submitted.
+/// TD-LIC-10 (LIC-023, LIC-019, D-2407, D-2408): no split-job check. Two handyman jobs of one
+/// business at one address on the same day, sharing a job type, $600 and $500, are each accepted
+/// on their own price; the single-job edges stay TD-LIC-08's.
 #[test]
-fn split_job_check_window_and_totals() {
-    let first = prior("door repair", 40_000, 1_000_000);
-    let edge = 1_000_000 + 30 * DAY - 60;
-    let same_type = prior("door repair", 30_000, edge);
+fn each_handyman_job_is_judged_only_by_its_own_price() {
+    for cents in [60_000, 50_000] {
+        assert_eq!(
+            check_quote(&handyman_quote(QuotePrice::Fixed(cents), true)),
+            Ok(()),
+            "{cents}"
+        );
+    }
     assert_eq!(
-        split_job(
-            &same_type,
-            std::slice::from_ref(&first),
-            SPLIT_JOB_WINDOW_DAYS
-        ),
-        Err(QuoteRefusal::SplitJob)
+        check_quote(&handyman_quote(QuotePrice::Fixed(99_999), true)),
+        Ok(())
     );
-    let small = prior("shelves", 50_000, edge);
-    assert_eq!(split_job(&small, &[first], SPLIT_JOB_WINDOW_DAYS), Ok(()));
-    let six = prior("fence repair", 60_000, 1_000_000);
-    let four = prior("shelves", 40_000, 1_000_000 + DAY);
     assert_eq!(
-        split_job(&four, std::slice::from_ref(&six), SPLIT_JOB_WINDOW_DAYS),
-        Err(QuoteRefusal::SplitJob)
+        check_quote(&handyman_quote(QuotePrice::Fixed(100_000), true)),
+        Err(QuoteRefusal::OverHandymanLimit)
     );
-    let later = prior("fence repair", 60_000, 1_000_000 + 30 * DAY);
-    assert_eq!(split_job(&later, &[six], SPLIT_JOB_WINDOW_DAYS), Ok(()));
-    assert_eq!(split_job(&later, &[], SPLIT_JOB_WINDOW_DAYS), Ok(()));
 }
