@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T11:36:51Z by runner 391d544314ba (actions).
+Updated 2026-11-12T11:39:06Z by runner 391d544314ba (actions).
 
 **Building: T323 in progress since 11:23Z; 240 of 397 done; week 93% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-12T11:36:51Z by runner 391d544314ba (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T323 claimed 11:23Z, lease until 14:23Z; lane 5: T404 claimed 11:19Z, lease until 14:19Z
 - **Week:** 93% used, 0.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:36Z, 0 min before this update
+- **Last run:** 11:37Z, 2 min before this update
 - **Keeper:** last ran 11:36Z, next wake 14:21Z
 
 ## Needs attention
@@ -157,7 +157,7 @@ Updated 2026-11-12T11:36:51Z by runner 391d544314ba (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-12T11:31:35Z (week)): week: 194.0M used, 11k left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-06T19:19:50Z; waiting until 2026-11-12T17:00:00Z.
+- Pacing (session_reading 2026-11-12T11:36:32Z (week)): week: 194.0M used, 11k left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-06T19:24:59Z; waiting until 2026-11-12T17:00:00Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
