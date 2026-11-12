@@ -1,10 +1,10 @@
 # Ask Hava build status
 
-Updated 2026-11-12T19:44:37Z by runner 3328b4e80835 (actions).
+Updated 2026-11-12T19:45:00Z by runner 3328b4e80835 (actions).
 
-**Building: T251 in progress since 19:00Z; 252 of 403 done; week 3% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T251 in progress since 19:00Z; 253 of 403 done; week 3% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 252 of 403 build tasks (owner gates not counted)
+- **Tasks done:** 253 of 403 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T251 claimed 19:00Z, lease until 22:00Z; lane 6: T416 claimed 19:04Z, lease until 22:04Z
 - **Week:** 3% used, 180.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
@@ -19,7 +19,7 @@ Updated 2026-11-12T19:44:37Z by runner 3328b4e80835 (actions).
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T414 | Stand-ins (harness): end-to-end specs can read the emails th | MERGE_PENDING | 2 | 15 min | 19:11Z | Twin: failure / Twin failed at step: Build rules_bridge from this commit (T074) / ##[error]Command failed: rustc -vV |
-| T350 | privacy: an opt-out, HELP or START word is never taken or re | MERGE_PENDING | 1 | 103 min | 19:09Z |  |
+| T350 | privacy: an opt-out, HELP or START word is never taken or re | done | 1 | 103 min | 19:09Z |  |
 | T362 | server: the built static files are served at /static/<crate> | done | 3 | 26 min | 19:03Z | PLAN GAP: tests/a11y/j1_keyboard.spec.ts:171-172 (owned by T098/T214, protected, not in T362's files) presses Tab before |
 | T346 | portals: every homeowner Verify code is bound to its purpose | done | 1 | 40 min | 18:57Z |  |
 | T251 | intake and quotes: the ZIP question, the job location, and t | resync | 2 | 87 min | 18:46Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
@@ -122,7 +122,7 @@ Updated 2026-11-12T19:44:37Z by runner 3328b4e80835 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 230 of 733 (31.4%) · partial 335 · unstarted 168
-**Tasks merged (throughput only):** 252 of 403
+**Tasks merged (throughput only):** 253 of 403
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -157,7 +157,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 132 of 185 done
+- stage 4: 133 of 185 done
 - stage 5: 0 of 64 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
