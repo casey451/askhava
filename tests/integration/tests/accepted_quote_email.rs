@@ -12,7 +12,7 @@ use askhava_core::api::{Claimed, IdSecret, LinkToken, MIGRATOR, ManualClock};
 use askhava_intake::api::rules::{Inbound, Settings as IntakeSettings};
 use askhava_intake::api::{Answer, TextIn, receive_text, record_answer, run_accepted_quote};
 use askhava_jobs::api::quote_token::issue;
-use askhava_jobs::api::{JobStatus, create, move_to};
+use askhava_jobs::api::{JobStatus, create, move_to, record_job_facts};
 use askhava_licensing::api::{ClassMap, Holder, Job, LicenseKind};
 use askhava_messaging::api::{AcceptedQuoteSender, MailboxKind};
 use askhava_ops::api::Actor;
@@ -159,6 +159,7 @@ async fn picked(pool: &PgPool, her: (Option<&str>, bool)) -> (Uuid, Uuid, Uuid) 
     let job = create(&mut db, now(), false, Actor::System)
         .await
         .expect("job");
+    facts(&mut db, job).await;
     let open = (JobStatus::Intake, JobStatus::Open);
     let _ = move_to(&mut db, job, open, now(), Actor::System)
         .await
@@ -198,6 +199,18 @@ async fn picked(pool: &PgPool, her: (Option<&str>, bool)) -> (Uuid, Uuid, Uuid) 
     .expect("entry");
     ledger_append(&mut db, &entry).await.expect("ledger");
     (job, pick, business)
+}
+
+/// Stores the catalog and records `job`'s facts as its card's candidate, hvac repair and AC not
+/// cooling: not fee-free, the default visit tier, one-time (FEE-005, D-2331).
+async fn facts(db: &mut sqlx::PgConnection, job: Uuid) {
+    askhava_catalog::api::load_embedded(db)
+        .await
+        .expect("catalog");
+    let types = ["AC not cooling".to_owned()];
+    record_job_facts(db, job, "hvac_repair", &types)
+        .await
+        .expect("job facts");
 }
 
 /// The Confirm: the settle on the pick's $0 clearing, committed.

@@ -19,7 +19,7 @@ use askhava_businesses::api::{
     Acting, LeaveReason, ReasonAnswer, add_owner, create, pause_self, reason_asked, record_step_up,
 };
 use askhava_core::api::Guarded;
-use askhava_jobs::api::{JobStatus, current, move_to};
+use askhava_jobs::api::{JobStatus, current, move_to, record_job_facts};
 use askhava_ops::api::Actor;
 use askhava_payments::api::{BusinessId, SavedCard, save_card, saved_card_of};
 use askhava_picks::api::{Backup, PagePick, bind_backup, choose_backup, page_pick};
@@ -67,6 +67,13 @@ async fn quoted(db: &mut PgConnection, first: Uuid) -> Uuid {
     let job = askhava_jobs::api::create(db, at(0), false, Actor::System)
         .await
         .expect("job");
+    askhava_catalog::api::load_embedded(db)
+        .await
+        .expect("catalog");
+    let types = ["leak repair".to_owned()];
+    record_job_facts(db, job, "plumbing_repair", &types)
+        .await
+        .expect("job facts");
     for step in [
         (JobStatus::Intake, JobStatus::Open),
         (JobStatus::Open, JobStatus::QuotesReady),

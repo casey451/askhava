@@ -14,7 +14,8 @@ use askhava_intake::api::{
     answer_text_pick, begin_job, job_text_step, parse_job_text, receive_text,
 };
 use askhava_jobs::api::{
-    JobRow, JobStatus, TEXT_KIND, TIMER_KIND, create, current, move_to, restart_timer, run_timer,
+    JobRow, JobStatus, TEXT_KIND, TIMER_KIND, create, current, move_to, record_job_facts,
+    restart_timer, run_timer,
 };
 use askhava_licensing::api::LicenseKind;
 use askhava_ops::api::Actor;
@@ -337,6 +338,13 @@ async fn her_open_job(db: &mut PgConnection, phone: &str, sent: Timestamp) -> (U
     let Ok(Opened::Created(job)) = begin_job(db, &start).await else {
         panic!("a new job");
     };
+    askhava_catalog::api::load_embedded(db)
+        .await
+        .expect("catalog");
+    let types = ["leak repair".to_owned()];
+    record_job_facts(db, job, "plumbing_repair", &types)
+        .await
+        .expect("job facts");
     let step = (JobStatus::Intake, JobStatus::Open);
     let moved = move_to(db, job, step, ts(DAY), Actor::System).await;
     assert_eq!(moved.expect("open"), Guarded::Applied(()));
