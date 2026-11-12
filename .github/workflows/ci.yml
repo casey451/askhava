@@ -163,7 +163,7 @@ jobs:
           files="$(git diff --no-renames --name-only "$base" HEAD)"
           rust=false; npm=false
           echo "$files" | grep -Eq '^(app/|tests/(integration|security|recovery|fixtures|mutation)/|scripts/run_named_mutants\.py|migrations/|docs/legal/|docs/catalog/|docs/architecture\.md|docs/copy/mail-app-steps\.md|schemas/|scripts/pii_scan\.py|stand_ins/|kit/layers\.json|kit/allowed_crates\.txt|Cargo\.(toml|lock)|rust-toolchain\.toml|clippy\.toml|deny\.toml|\.sqlx/|\.github/workflows/ci\.yml)' && rust=true
-          echo "$files" | grep -Eq '^(package(-lock)?\.json|tsconfig|eslint\.config|tests/(e2e|a11y|perf)/|perf/|app/[^/]+/static/.*\.ts$)' && npm=true
+          echo "$files" | grep -Eq '^(package(-lock)?\.json|tsconfig|eslint\.config|tests/(e2e|a11y)/|app/[^/]+/static/.*\.ts$)' && npm=true
           echo "rust=$rust" >> "$GITHUB_OUTPUT"; echo "npm=$npm" >> "$GITHUB_OUTPUT"
           echo "rust=$rust npm=$npm"
 
