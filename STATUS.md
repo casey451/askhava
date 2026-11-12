@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-12T22:34:33Z by runner 4aa3c92a5fa0 (actions).
+Updated 2026-11-12T22:35:40Z by runner 543620a30635 (actions).
 
-**Building: T419 in progress since 22:12Z; 257 of 404 done; week 6% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T419 in progress since 22:12Z; 257 of 403 done; week 6% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 257 of 404 build tasks (owner gates not counted)
+- **Tasks done:** 257 of 403 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T419 claimed 22:12Z, lease until 01:12Z; lane 2: T347 claimed 22:32Z, lease until 01:32Z; lane 3: T385 claimed 22:26Z, lease until 01:26Z; lane 4: T162 claimed 22:25Z, lease until 01:25Z; lane 5: T215 claimed 22:29Z, lease until 01:29Z; lane 6: T418 claimed 22:34Z, lease until 01:34Z; lane 7: T351 claimed 21:36Z, lease until 00:36Z
 - **Week:** 6% used, 164.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:32Z, 1 min before this update
+- **Last run:** 22:34Z, 0 min before this update
 - **Keeper:** last ran 22:23Z, next wake 00:39Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 21 problem(s) on tasks still to run (+134 on DONE tasks); first: T320: stored context_pct 41% but it measures 45%; regenerate
+- Strict plan check red: 24 problem(s) on tasks still to run (+130 on DONE tasks); first: T340: measures 46% of the window, over its 45% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -86,7 +86,6 @@ Updated 2026-11-12T22:34:33Z by runner 4aa3c92a5fa0 (actions).
 | T334 | payments: the nightly reconcile catches up after an outage f | resync | 2 | 96 min | 23:36Z |  |
 | T348 | harness: the authorization matrix gets public, owner and act | done | 1 | 43 min | 23:32Z |  |
 | T228 | businesses: leaving Ask Hava, the optional reason and what h | resync | 2 | 41 min | 23:04Z |  |
-| T317 | server and intake: the inbound text route applies SEC-014's  | BLOCKED | 1 | 4 min | 22:34Z |  |
 
 ### Plan and harness merges on main
 - 22:08Z Plan: T340, T271, T126 under their context limits (D-3325) (#623)
@@ -124,7 +123,7 @@ Updated 2026-11-12T22:34:33Z by runner 4aa3c92a5fa0 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 230 of 733 (31.4%) · partial 337 · unstarted 166
-**Tasks merged (throughput only):** 257 of 404
+**Tasks merged (throughput only):** 257 of 403
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
