@@ -209,7 +209,7 @@ pub async fn audit_once(db: &mut PgConnection, entry: &AuditEntry) -> Result<boo
     Ok(true)
 }
 
-/// JOB-006, D-2307, D-3140 (T336): true when an audit row with `action` about `subject` exists,
+/// JOB-006, D-2307, D-3172 (T336): true when an audit row with `action` about `subject` exists,
 /// the read side of a mark [`audit_once`] writes (the inbound retry's "handled" mark per inbox row).
 ///
 /// # Errors

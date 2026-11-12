@@ -350,7 +350,7 @@ async fn text(
 
 /// TXT-012, D-801, D-2307: one [`RETRY_KIND`] task for inbox row `inbox_id`, due after the first
 /// wait, in the delivery's transaction; its payload is the row ID and the webhook's `OptOutType`
-/// code (no body text, D-3140) and its dedupe key [`retry_key`] `(inbox_id, 1)`, so a row is
+/// code (no body text, D-3172) and its dedupe key [`retry_key`] `(inbox_id, 1)`, so a row is
 /// queued once. An insert error is `Halt::Database`.
 async fn queue_retry(
     db: &mut PgConnection,
@@ -362,7 +362,7 @@ async fn queue_retry(
         .map(|_| ())
 }
 
-/// CON-030, D-866, D-3140: a retry's payload: the inbox row ID and, when Twilio's Advanced
+/// CON-030, D-866, D-3172: a retry's payload: the inbox row ID and, when Twilio's Advanced
 /// Opt-Out matched, its `OptOutType` (`STOP` or `START`), so the retry never re-matches the body.
 #[must_use]
 pub fn retry_payload(inbox_id: Uuid, provider: ProviderKeyword) -> serde_json::Value {

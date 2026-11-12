@@ -143,7 +143,7 @@ pub trait SmsBodyRead {
     ) -> impl Future<Output = Result<MessageBody, AdapterError>> + Send;
 
     /// The same GET, keeping only the message's `From` (the body is never parsed into a value, so
-    /// another person's text never becomes one, D-3141); `None` for a 404 with code 20404. For
+    /// another person's text never becomes one, D-3173); `None` for a 404 with code 20404. For
     /// the retry's "did she write again" check (D-2307).
     fn fetch_message_from(
         &self,
@@ -159,7 +159,7 @@ struct MessageResource {
     body: Option<String>,
 }
 
-/// The Message resource's `From` only: no `body` field, so the body is skipped unparsed (D-3141).
+/// The Message resource's `From` only: no `body` field, so the body is skipped unparsed (D-3173).
 #[derive(serde::Deserialize)]
 struct MessageSender {
     from: Option<String>,
@@ -223,7 +223,7 @@ impl SmsBodyRead for TwilioMessageReader {
         read_answer(status, &bytes)
     }
 
-    /// D-2307, D-3141: the `From` alone; a 404 with 20404 is `None`, any other error `Vendor`.
+    /// D-2307, D-3173: the `From` alone; a 404 with 20404 is `None`, any other error `Vendor`.
     async fn fetch_message_from(&self, sid: &str) -> Result<Option<String>, AdapterError> {
         let (status, bytes) = self.get_message(sid).await?;
         if let Some(gone) = error_answer(status, &bytes) {
@@ -279,7 +279,7 @@ fn error_answer(status: u16, bytes: &[u8]) -> Option<Result<(), AdapterError>> {
 }
 
 /// Sorts Twilio's answer to the read: 404 with 20404 is `Gone`, any other error status is
-/// `Vendor`, an empty body is `Gone` (also a photo-only MMS, which has no words to retry, D-3141),
+/// `Vendor`, an empty body is `Gone` (also a photo-only MMS, which has no words to retry, D-3173),
 /// and a resource without its numbers is `Decode`.
 fn read_answer(status: u16, bytes: &[u8]) -> Result<MessageBody, AdapterError> {
     if let Some(gone) = error_answer(status, bytes) {

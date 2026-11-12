@@ -556,7 +556,7 @@ async fn td_txt_35_a_stop_retried_after_a_newer_text_is_applied(pool: PgPool) {
     assert_eq!(
         tasks[0].1,
         json!({ "inbox": id, "opt_out_type": "STOP" }),
-        "the webhook's OptOutType rides in the payload, never re-matched (CON-030, D-3140)"
+        "the webhook's OptOutType rides in the payload, never re-matched (CON-030, D-3172)"
     );
     clock.advance(SignedDuration::from_mins(1));
     deliver(&route, server.1, "my sink drips").await;
@@ -661,7 +661,7 @@ async fn td_txt_35_a_retry_at_22_00_waits_for_8_a_m(pool: PgPool) {
     assert!(retries(&pool).await.iter().all(|t| t.3));
 }
 
-/// Counts the [`HANDLED`] marks about inbox row `id` (D-3140).
+/// Counts the [`HANDLED`] marks about inbox row `id` (D-3172).
 async fn handled(pool: &PgPool, id: Uuid) -> i64 {
     sqlx::query_scalar("SELECT count(*) FROM ops.audit_log WHERE action = $1 AND subject_id = $2")
         .bind(HANDLED)
@@ -688,7 +688,7 @@ async fn template_rows(pool: &PgPool, template: &str) -> i64 {
         .expect("outbox")
 }
 
-/// TD-TXT-35 (CON-008, CON-018, D-2307, D-3140): a newer text that failed and was then handled by
+/// TD-TXT-35 (CON-008, CON-018, D-2307, D-3172): a newer text that failed and was then handled by
 /// its own retry counts as processed (its T325 alert stays open, its `HANDLED` mark says so), so
 /// the older text's later retry runs only the opt-out and HELP steps and queues nothing.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
