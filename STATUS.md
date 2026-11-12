@@ -1,18 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-12T02:40:57Z by runner 25014a67ca15 (actions).
+Updated 2026-11-12T02:45:19Z by runner 0852169ea543 (actions).
 
 **Building: T248 in progress since 01:49Z; 220 of 390 done; week 82% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 220 of 390 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T248 claimed 01:49Z, lease until 04:49Z
-- **Week:** 82% used, 24.2M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:40Z, 0 min before this update
+- **Lane:** lane 2: T248 claimed 01:49Z, lease until 04:49Z; lane 4: T400 claimed 02:45Z, lease until 05:45Z
+- **Week:** 82% used, 26.3M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Last run:** 02:41Z, 4 min before this update
 - **Keeper:** last ran 02:40Z, next wake 04:51Z
 
 ## Needs attention
-- Strict plan check red: 7 problem(s) on tasks still to run (+71 on DONE tasks); first: T396: stored context_pct 39% but it measures 43%; regenerate
+- Strict plan check red: 8 problem(s) on tasks still to run (+76 on DONE tasks); first: T396: stored context_pct 39% but it measures 43%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -78,7 +78,6 @@ Updated 2026-11-12T02:40:57Z by runner 25014a67ca15 (actions).
 | T295 | payments, ai, intake and picks take the brand from the brand | QUEUED | 2 | 0 min | 04:49Z |  |
 | T295 | payments, ai, intake and picks take the brand from the brand | QUEUED | 1 | 1 min | 04:44Z |  |
 | T374 | licensing and businesses: one read of everything a business  | done | 1 | 45 min | 03:08Z |  |
-| T157 | picks: the homeowner's backup choice at the pick | done | 2 | 22 min | 02:41Z | E2e: failure; Ally: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-1 |
 
 ### Plan and harness merges on main
 - 02:11Z Plan: pre-flight fixes round 5 — T378, T343, T268, T329, T306; new T404 (D-3112) (#538)
@@ -149,7 +148,7 @@ Updated 2026-11-12T02:40:57Z by runner 25014a67ca15 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-12T01:43:58Z (week)): week: 169.8M used, 24.2M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-05T23:32:34Z.
+- Pacing (session_reading 2026-11-12T02:40:39Z (week)): week: 167.7M used, 26.3M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-06T22:00:19Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -166,6 +165,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T248 (lease until 2026-11-12T04:49:36Z)
+- lane 4: T400 (lease until 2026-11-12T05:45:10Z)
 
 ## Last usage reading
 - {"task": "T334", "at": "2026-11-12T02:25:03Z", "output_tokens": 18430, "cache_creation_input_tokens": 78177, "input_tokens": 106, "cache_read_input_tokens": 1405523}
