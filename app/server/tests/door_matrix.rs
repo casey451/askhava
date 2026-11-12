@@ -1102,12 +1102,13 @@ async fn td_sec_61_each_released_pick_opens_to_its_own_business_only(pool: PgPoo
             let proof = askhava_server::session_minter().business(team.member, team.business);
             let pick = w.fx.released[side];
             let answer = released_view(&pool, &vault(), &proof, pick).await;
-            let shown = matches!(answer.expect("view"), ViewAnswer::Shown(_));
-            assert_eq!(
-                shown,
-                viewer == side,
-                "released pick {side} to business {viewer}"
-            );
+            let answer = answer.expect("view");
+            let right = if viewer == side {
+                matches!(answer, ViewAnswer::Shown(_))
+            } else {
+                matches!(answer, ViewAnswer::NotFound)
+            };
+            assert!(right, "released pick {side} to business {viewer}");
         }
         assert_eq!(w.fx.ids_on(RELEASED_PAGE, side).0, w.fx.released[side]);
         assert_eq!(w.fx.ids_on("/b/picks/{pick}/confirm", side), w.fx.ids(side));
