@@ -255,8 +255,8 @@ fn never_handyman_job_types_block_the_handyman_card() {
     );
 }
 
-/// TD-LIC-09 (LIC-021, LIC-022, D-2637): smoke detectors, fire sprinklers and a wall removal
-/// written only in the request text block a handyman whatever the candidates; a lawn sprinkler
+/// TD-LIC-09 (LIC-021, LIC-022, D-2637): smoke detectors, fire sprinklers, a wall removal and a
+/// re-roof written only in the request text block a handyman whatever the candidates; a lawn sprinkler
 /// does not.
 #[test]
 fn request_text_alone_blocks_smoke_sprinkler_and_permit_work() {
@@ -276,6 +276,11 @@ fn request_text_alone_blocks_smoke_sprinkler_and_permit_work() {
         (
             "remove the wall between kitchen and den, then drywall",
             &drywall,
+            Some(NeverHandyman::PermitType),
+        ),
+        (
+            "re-roof the garage, then fix the door",
+            &door,
             Some(NeverHandyman::PermitType),
         ),
         ("lawn sprinkler head broke by the fence", &door, None),

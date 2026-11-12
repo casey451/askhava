@@ -28,7 +28,7 @@ const GAS_WORDS: [&str; 8] = [
 
 /// Smoke-alarm, fire-sprinkler and permit phrases as a homeowner might write them (LIC-021,
 /// LIC-022, D-2637).
-const BLOCKED_PHRASES: [&str; 10] = [
+const BLOCKED_PHRASES: [&str; 11] = [
     "smoke alarm",
     "Smoke Detectors",
     "hardwired smoke detector",
@@ -39,6 +39,7 @@ const BLOCKED_PHRASES: [&str; 10] = [
     "wall removal",
     "panel upgrade",
     "new circuit",
+    "re-roof",
 ];
 
 /// Job types never sent to a handyman (LIC-021, LIC-022).
