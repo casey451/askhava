@@ -8,7 +8,8 @@
 //! point and the Connected check-in reply (JOB-010 to JOB-015, JOB-025, JOB-026, TXT-042); the
 //! first-quote move to Quotes ready that `quotes` calls in the quote's transaction (JOB-009,
 //! JOB-011, TXT-016, D-1517); the day-3 and day-14 check-ins, their answers, the PROBLEM listing
-//! and the feedback request after Done (JOB-015, JOB-016, JOB-028, TXT-029, T097).
+//! and the feedback request after Done (JOB-015, JOB-016, JOB-028, TXT-029, T097); a job's category
+//! and candidate job type codes as append-only narrowing rows (INT-018, FEE-005, T339).
 
 use askhava_core::api::Guarded;
 use askhava_ops::api::Actor;
@@ -22,6 +23,7 @@ pub use crate::followups::{
     check_in_times, parse_answer, run_check_in, schedule_check_ins,
 };
 pub use crate::handlers::{TEXT_KIND, all_windows_ended, connected_reply, text_due};
+pub use crate::job_facts::{FactsError, JobFacts, Recorded, job_facts, record_job_facts};
 pub use crate::models::{JobRow, JobsError};
 pub use crate::purge_events::{
     PURGE_DUE_KIND, PURGE_STAGES, SWEEP_KIND, enqueue_purge, run_sweep, schedule_sweep,
