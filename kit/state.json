@@ -35277,7 +35277,7 @@
      }
     }
    ],
-   "reviewed_sha": "d1169fa6f14e4addefb208ed14a06646923e61a3",
+   "reviewed_sha": "07d2113778a89d594c86c27d7a38ed93d37f6a46",
    "review_lease": {
     "task": "T347",
     "session": "actions-43319888614",
@@ -35308,6 +35308,12 @@
       "Ally": "success"
      },
      "at": "2026-11-12T23:31:56Z"
+    },
+    {
+     "from": "d1169fa6f14e4addefb208ed14a06646923e61a3",
+     "to": "07d2113778a89d594c86c27d7a38ed93d37f6a46",
+     "how": "adopted",
+     "at": "2026-11-12T23:51:18Z"
     }
    ],
    "update_waiting_since": null,
@@ -41528,7 +41534,7 @@
     "T283",
     "T020"
    ],
-   "status": "MERGE_PENDING",
+   "status": "DONE",
    "attempts": 0,
    "slug": "perf-vitals-ci-report",
    "type": "harness",
@@ -41548,13 +41554,70 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 132,
      "head_sha": "fced7ec2477dee1bfc043c3b90c7e2492565510a",
-     "pr": null,
-     "checks": null,
+     "pr": 634,
+     "checks": [
+      {
+       "name": "backup",
+       "conclusion": null
+      },
+      {
+       "name": "keeper",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "gate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-12T22:34:16Z",
      "ended_at": "2026-11-12T23:24:37Z",
-     "result": "MERGE_PENDING",
+     "result": "done",
      "usage": {
       "worker": {
        "tokens": 9330072,
@@ -41601,7 +41664,21 @@
     }
    ],
    "update_waiting_since": null,
-   "update_push_failures": null
+   "update_push_failures": null,
+   "merged_sha": "85f85991bd6fdaab571d2d6fa6771366d5c543a7",
+   "merged_at": "2026-11-12T23:46:27Z",
+   "files": [
+    ".github/workflows/ci.yml",
+    "docs/architecture.md",
+    "docs/audit/perf-baseline-ci.json",
+    "docs/decisions.md",
+    "docs/for-casey-review.md",
+    "perf/compare.py",
+    "tests/perf/playwright.config.ts",
+    "tests/perf/test_compare.py",
+    "tests/perf/web_vitals.spec.ts",
+    "tsconfig.json"
+   ]
   },
   {
    "id": "T419",
@@ -44232,7 +44309,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T23:51:05Z",
+ "updated_at": "2026-11-12T23:51:24Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",

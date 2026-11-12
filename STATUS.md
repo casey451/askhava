@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-12T23:51:05Z by runner dae8c6443b4f (actions).
+Updated 2026-11-12T23:51:24Z by runner dae8c6443b4f (actions).
 
-**Building: T215 in progress since 23:45Z; 260 of 404 done; week 8% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T215 in progress since 23:45Z; 261 of 404 done; week 8% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 260 of 404 build tasks (owner gates not counted)
+- **Tasks done:** 261 of 404 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T215 claimed 23:45Z, lease until 02:45Z; lane 3: T372 claimed 23:46Z, lease until 02:46Z
 - **Week:** 8% used, 167.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:50Z, 0 min before this update
+- **Last run:** 23:51Z, 0 min before this update
 - **Keeper:** last ran 23:51Z, next wake 02:48Z
 
 ## Needs attention
@@ -23,7 +23,7 @@ Updated 2026-11-12T23:51:05Z by runner dae8c6443b4f (actions).
 | T255 | intake, payments and server: ask again for an emergency addr | BLOCKED | 1 | 2 min | 23:48Z | PLAN GAP: Releasable in app/payments/src/release_proof.rs:153 has private fields and no constructor; T255's owned reclea |
 | T351 | privacy and quotes: spaced gate codes, lower-case street add | MERGE_PENDING | 1 | 57 min | 23:46Z | merging main into the reviewed head conflicts in app/quotes/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T215 | businesses and ops: pest identity by the city list plus atte | resync | 1 | 73 min | 23:43Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
-| T418 | Performance: lab Core Web Vitals and Ci's warn-only performa | MERGE_PENDING | 1 | 50 min | 23:24Z |  |
+| T418 | Performance: lab Core Web Vitals and Ci's warn-only performa | done | 1 | 50 min | 23:24Z |  |
 | T347 | licensing (harness): remove the handyman split-job check; ea | MERGE_PENDING | 1 | 52 min | 23:24Z |  |
 | T162 | intake: the one intake order for the five paths and the Span | done | 1 | 36 min | 23:01Z |  |
 | T385 | adapters, licensing and businesses (harness): the sign-up re | done | 3 | 30 min | 22:57Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
@@ -126,7 +126,7 @@ Updated 2026-11-12T23:51:05Z by runner dae8c6443b4f (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 232 of 733 (31.7%) · partial 337 · unstarted 164
-**Tasks merged (throughput only):** 260 of 404
+**Tasks merged (throughput only):** 261 of 404
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -161,7 +161,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 140 of 186 done
+- stage 4: 141 of 186 done
 - stage 5: 0 of 64 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
