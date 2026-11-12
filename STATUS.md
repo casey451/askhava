@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T08:36:54Z by runner 3aa1c4c2c870 (actions).
+Updated 2026-11-12T08:37:10Z by runner 5cbddc23fd8c (actions).
 
 **Building: T406 in progress since 08:23Z; 232 of 394 done; week 91% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,13 +8,13 @@ Updated 2026-11-12T08:36:54Z by runner 3aa1c4c2c870 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T406 claimed 08:23Z, lease until 11:23Z; lane 2: T336 claimed 08:04Z, lease until 11:04Z; lane 5: T268 claimed 08:14Z, lease until 11:14Z
 - **Week:** 91% used, 0.7M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:36Z, 0 min before this update
-- **Keeper:** last ran 08:31Z, next wake 11:03Z
+- **Last run:** 08:37Z, 0 min before this update
+- **Keeper:** last ran 08:37Z, next wake 11:06Z
 
 ## Needs attention
 - BLOCKED T251: plan gap reported: PLAN GAP: app/intake/src/summary_step.rs:415 and app/intake/src/service.rs:672 (T208/T039 files, not T251's). The card sender has nowhere to read the approved card text, category, remaining candidate job types or scrubbed text. Approval payload is only {job, conversation, card digest} (summary_step.rs:415); approved_card (summary_step.rs:345) needs the full JobCard, which only quotes::api::build_card makes. Emergency payload is only {conversation} (service.rs:672). No table stores card text/category/candidates/scrubbed text (quotes.job_card 0067, jobs.job 0031, intake tables 0053; jobs.job_fac; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T251 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 13 problem(s) on tasks still to run (+92 on DONE tasks); first: T396: stored context_pct 39% but it measures 45%; regenerate
+- Strict plan check red: 12 problem(s) on tasks still to run (+92 on DONE tasks); first: T396: stored context_pct 39% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
