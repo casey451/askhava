@@ -1,18 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-12T01:44:15Z by runner fe7a56647b29 (actions).
+Updated 2026-11-12T01:48:23Z by runner 8bc6d03cfc3c (actions).
 
-**Building: T334 in progress since 01:43Z; 219 of 383 done; week 80% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T313 in progress since 01:48Z; 219 of 383 done; week 80% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 219 of 383 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 5: T334 claimed 01:43Z, lease until 04:43Z
-- **Week:** 80% used, 34.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:44Z, 0 min before this update
+- **Lane:** lane 4: T313 claimed 01:48Z, lease until 04:48Z; lane 5: T334 claimed 01:43Z, lease until 04:43Z
+- **Week:** 80% used, 30.9M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Last run:** 01:44Z, 3 min before this update
 - **Keeper:** last ran 01:44Z, next wake 04:46Z
 
 ## Needs attention
-- Strict plan check red: 5 problem(s) on tasks still to run (+67 on DONE tasks); first: T100: stored context_pct 45% but it measures 49%; regenerate
+- Strict plan check red: 7 problem(s) on tasks still to run (+71 on DONE tasks); first: T341: stored context_pct 27% but it measures 31%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -114,7 +114,6 @@ Updated 2026-11-12T01:44:15Z by runner fe7a56647b29 (actions).
 - 03:41Z Plan: fix tasks from the Nov 11 vendor-double review (D-2760–D-2770) (#446)
 - 03:25Z Harness: CI speed — cache saves on main only, pytest in its own job, C YAML loader (D-2782) (#449)
 - 01:56Z Harness: the test suite drops the live job's smoke switch and run ids (D-2660) (#441)
-- 01:46Z Plan: fix tasks from the Nov 11 businesses and catalog review (D-2700–D-2712) (#442)
 
 ## Progress (requirements verified)
 
@@ -147,7 +146,7 @@ Updated 2026-11-12T01:44:15Z by runner fe7a56647b29 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-12T01:24:30Z (week)): week: 160.0M used, 34.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-05T23:26:11Z.
+- Pacing (session_reading 2026-11-12T01:43:58Z (week)): week: 163.1M used, 30.9M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-05T23:31:12Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -163,6 +162,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
+- lane 4: T313 (lease until 2026-11-12T04:48:15Z)
 - lane 5: T334 (lease until 2026-11-12T04:43:13Z)
 
 ## Last usage reading
