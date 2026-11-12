@@ -204,10 +204,16 @@ pub async fn restart_timer(
     Ok(Guarded::Applied(()))
 }
 
+/// The dedupe key of job `id`'s timer at `version` and timer version `timer` (JOB-006): the
+/// timer backstop finds a job's current timer by it (T366, D-2640).
+pub(crate) fn timer_key(id: Uuid, version: i32, timer: i32) -> String {
+    format!("{TIMER_KIND}.{id}.{version}.{timer}")
+}
+
 /// Queues the timeout of `status` counted from `from`, if it waits for anything (JOB-003,
 /// JOB-006). The dedupe key names the job, version and timer version, so a retry never queues it
 /// twice.
-async fn queue_timer(
+pub(crate) async fn queue_timer(
     db: &mut PgConnection,
     id: Uuid,
     status: JobStatus,
@@ -219,7 +225,7 @@ async fn queue_timer(
     };
     let payload = json!({"job": id, "status": status.code(), "version": version, "timer": timer});
     let mut task = NewTask::new(TIMER_KIND, payload, due.at);
-    task.dedupe_key = Some(format!("{TIMER_KIND}.{id}.{version}.{timer}"));
+    task.dedupe_key = Some(timer_key(id, version, timer));
     enqueue(db, &task).await.map_err(|_| JobsError::Database)?;
     Ok(())
 }
