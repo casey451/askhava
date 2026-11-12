@@ -371,8 +371,9 @@ where
 /// no-reply reminder and close (INT-019), the card approval auto-send (INT-041); `picks` the FEE-020
 /// card-fix notice on `payments`' event (D-492), and with `confirm` (read once from
 /// `ASKHAVA_PICK_CONFIRM_WINDOW_MINUTES`) the pick notice (PICK-037, D-1503) and the Confirm
-/// window's end (PICK-019); `intake` the accepted-quote email after a Confirm, with no sender until
-/// the footer postal setting exists, so it sends nothing yet (PICK-042, D-3077); `payments` the pause watch that stops and resumes
+/// window's end (PICK-019); `intake` the accepted-quote email after a Confirm, still with no sender
+/// although the footer postal setting now exists, so it sends nothing until a follow-up builds
+/// one (PICK-042, D-3077, D-3098 (2)); `payments` the pause watch that stops and resumes
 /// the payment timers with the charging pause (FEE-038, D-1427); and, with
 /// `texts` ([`job_text_keys`]), the homeowner job texts `jobs` queues (JOB-010 to JOB-012,
 /// TXT-042, D-1030 (A)). It takes the release mint first, through [`release_minter`], so a second
