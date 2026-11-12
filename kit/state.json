@@ -24962,7 +24962,7 @@
     "T339",
     "T374"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "intake-zip-and-cards-out",
    "type": "build",
@@ -24976,8 +24976,8 @@
     3182,
     3183
    ],
-   "reason": "plan gap reported: PLAN GAP: app/intake/src/summary_step.rs:415 and app/intake/src/service.rs:672 (T208/T039 files, not T251's). The card sender has nowhere to read the approved card text, category, remaining candidate job types or scrubbed text. Approval payload is only {job, conversation, card digest} (summary_step.rs:415); approved_card (summary_step.rs:345) needs the full JobCard, which only quotes::api::build_card makes. Emergency payload is only {conversation} (service.rs:672). No table stores card text/category/candidates/scrubbed text (quotes.job_card 0067, jobs.job 0031, intake tables 0053; jobs.job_fac; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T251 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: app/intake/src/summary_step.rs:415 and app/intake/src/service.rs:672 (T208/T039 files, not T251's). The card sender has nowhere to read the approved card text, category, remaining candidate job types or scrubbed text. Approval payload is only {job, conversation, card digest} (summary_step.rs:415); approved_card (summary_step.rs:345) needs the full JobCard, which only quotes::api::build_card makes. Emergency payload is only {conversation} (service.rs:672). No table stores card text/category/candidates/scrubbed text (quotes.job_card 0067, jobs.job 0031, intake tables 0053; jobs.job_facts 0164 is written by the sender itself, D-2330). intake_answer holds codes only (0053:68). matching::candidates is unwired (D-999, intake/CLAUDE.md:5). T162 depends on T251 in kit/tasks.json, so the in-memory holder comes later. Job ID on the emergency path is recoverable from intake rows (conversation.rs:143, models.rs:792). Reviewer confirmed. Fix options: (a) an earlier task stores card text/category/candidates/scrubbed text per job (privacy decision), or (b) move the two handlers to T162 and keep T251 to ZIP step, card pool and a sender function taking these as arguments. Also businesses::api has no list-businesses-serving-a-town function.",
+   "reason": null,
+   "last_failure": "PLAN GAP: app/intake/src/summary_step.rs:415 and app/intake/src/service.rs:672 (T208/T039 files, not T251's). The card sender has nowhere to read the approved card text, category, remaining candidate job types or scrubbed text. Approval payload is only {job, conversation, card digest} (summary_step.rs:415); approved_card (summary_step.rs:345) needs the full JobCard, which only quotes::api::build_card makes. Emergency payload is only {conversation} (service.rs:672). No table stores card text/category/candidates/scrubbed text (quotes.job_card 0067, jobs.job 0031, intake tables 0053; jobs.job_facts 0164 is written by the sender itself, D-2330). intake_answer holds codes only (0053:68). matching::candidates is unwired (D-999, intake/CLAUDE.md:5). T162 depends on T251 in kit/tasks.json, so the in-memory holder comes later. Job ID on the emergency path is recoverable from intake rows (conversation.rs:143, models.rs:792). Reviewer confirmed. Fix options: (a) an earlier task stores card text/category/candidates/scrubbed text per job (privacy decision), or (b) move the two handlers to T162 and keep T251 to ZIP step, card pool and a sender function taking these as arguments. Also businesses::api has no list-businesses-serving-a-town function.\nre-queued after plan fix D-3189: Plan gap fixed by #568 (D-3189): new T411 stores the scrubbed description and shown card; T251 reads them",
    "history": [
     {
      "attempt": 1,
@@ -24991,6 +24991,21 @@
      "started_at": "2026-11-12T08:13:43Z",
      "ended_at": "2026-11-12T08:17:31Z",
      "result": "BLOCKED"
+    }
+   ],
+   "requeues": [
+    {
+     "at": "2026-11-12T09:14:07Z",
+     "reason": "Plan gap fixed by #568 (D-3189): new T411 stores the scrubbed description and shown card; T251 reads them",
+     "by": "manual-f20a7ca4b0a5",
+     "was": "plan gap reported: PLAN GAP: app/intake/src/summary_step.rs:415 and app/intake/src/service.rs:672 (T208/T039 files, not T251's). The card sender has nowhere to read the approved card text, category, remaining candidate job types or scrubbed text. Approval payload is only {job, conversation, card digest} (summary_step.rs:415); approved_card (summary_step.rs:345) needs the full JobCard, which only quotes::api::build_card makes. Emergency payload is only {conversation} (service.rs:672). No table stores card text/category/candidates/scrubbed text (quotes.job_card 0067, jobs.job 0031, intake tables 0053; jobs.job_fac; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T251 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 1,
+     "plan_fix": "D-3189",
+     "plan_since": "2026-11-12T08:13:43Z",
+     "plan_base": "3926dabcc377ad5e086712a3dcd7bd510389db93",
+     "plan_head": "fbe1e137ffb38adf6ef63968b9f931f116e02cb1",
+     "plan_then": "ab456a22e0a582af927fbaec7a6e259a38c8b6d5f1819183b86fdc33be6e8110",
+     "plan_now": "34e90cc602845d6c255eb4d1d544e44cd7d928f2d0cf075c668686b1155cea48"
     }
    ]
   },
@@ -38914,7 +38929,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T09:13:48Z",
+ "updated_at": "2026-11-12T09:14:07Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -39012,8 +39027,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "3926dabcc377ad5e086712a3dcd7bd510389db93",
- "starter": "actions",
+ "runner_sha": "fbe1e137ffb38adf6ef63968b9f931f116e02cb1",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "ec8a9684671f2d718b79acae014df8181c8c2abc",
