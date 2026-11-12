@@ -2436,6 +2436,13 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **Worth knowing.** Until T402 and T403 land, a text about an emergency job or a reply to a homeowner's text that is queued between 8 p.m. and 8 a.m. waits until 8 a.m. The 911 safety text, STOP/HELP replies and pick codes are not affected: they go at any hour as before.
 - **Nothing needs you now.**
 
+## Runner: lanes now prefer different parts of the app (D-3082)
+
+- **What changed.** When several tasks are equally urgent, the runner now starts first one that works in a part of the app no other lane is working in. Two lanes in the same part both edit its notes file, and the second then needs an extra session to merge; that happened 6 times today (3 in portals, 2 in payments, 1 in quotes).
+- **What did not change.** Resyncs, your "claim first" list and the longest-chain order still come first, and every lane still fills: if every waiting task overlaps, the runner claims as before.
+- **To turn it off.** Set `prefer_disjoint_crates` to `false` in `kit/runner.json`.
+- **Nothing needs you now.**
+
 ## T248: markets as data, ZIP locations, and each business's travel radius (D-3113 to D-3116)
 
 - **What changed.** The towns Ask Hava covers now live in one reviewed file, `docs/catalog/markets.yaml`, with one market today: Lake Havasu City (ZIPs 86403, 86404 and 86406 from the Census, plus 86405, the PO-box ZIP). No market has a launch date; recording one is your later action. Each ZIP's location is the Census point for that ZIP, never a street address. Sign-up now asks a business for its base ZIP and how many miles it will travel (1 to 100), and sign-up can't finish without them. Matching by distance comes later (T249).
