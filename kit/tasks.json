@@ -13310,7 +13310,8 @@
     "T398",
     "T416",
     "T417",
-    "T418"
+    "T418",
+    "T419"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -29073,6 +29074,65 @@
    "branch": "claude/task/T418-perf-vitals-ci-report",
    "prompt": "kit/prompts/T418.md",
    "acceptance": "`python3 -m pytest tests/perf/test_compare.py` passes; `npx playwright test --config tests/perf/playwright.config.ts` runs green locally against the test-control build and writes every figure; `npx eslint .` and `npx tsc -p tsconfig.json` pass with `tests/perf/` included; the E2e job's feature-on test step passes and its performance step runs on this task's branch and its failure cannot fail `Ci` (`continue-on-error: true`); `tests/test_ci_workflow.py` and every other workflow test pass unchanged."
+  },
+  {
+   "id": "T419",
+   "slug": "link-request-flaky-scan",
+   "title": "calls (harness): TD-CALL-23's no-plaintext scan reads only text columns, so a digest or uuid never matches a 4-digit needle by chance",
+   "goal": "Flaky test (D-3324; CALL-011, CALL-003, PRIV-002; D-2540, D-3049, BUILD_BRIEF.md:272): `td_call_23_a_blocked_call_that_connects_queues_one_notice_and_one_pending_link` in `tests/integration/tests/link_request.rs` (T390, DONE) failed on docs-only PR #621 (job 131511326334) at line 324, \"calls.link_request_digest holds a value\", left 1, right 0. Cause: `rows_holding` (line 217) counts rows whose whole row text (`t::text LIKE '%' || needle || '%'`) holds the needle, and two of the three needles are 4-digit runs (the blocked number's last 4 digits and the line's random 4-digit PIN), so a row's random uuid or bytea hex (`\\\\x` plus 64 hex digits) holds one by chance: about 78 four-character hex windows per digest row, two needles, (1/16)^4 each, about 1 run in 420 for the digest table alone and about 1 in 620 for `calls.link_request` (three uuids; a PIN of 2026 also matches its timestamps). No production code changes; nothing is weakened. (1) Make the plaintext-absence check deterministic: scan only the text-typed columns (text, varchar, char, json, jsonb, read from `information_schema.columns` or `pg_attribute`, or listed by name) of each scanned table and of the `core.task` subquery, so a uuid, bytea, timestamp or number column can no longer match by chance; a scanned table or subquery with no text column counts 0 for the text scan. (2) The digest table must still be proven to hold no plaintext: assert that no text column of `calls.link_request_digest` holds any needle, that every stored `digest` differs from each needle's own bytes (and from the needle's bytes zero-padded to 32), and keep the existing count of 1 digest row. (3) Every other assertion of the file stays exactly as it is (the notice payload, the pending link's times, the counts, the log-line scan, the `core.task` checks for the full number, every other TD-CALL-23 case). (4) Add a deterministic regression test in the same file: insert by hand (fake data only) a `calls.link_request` row and a `calls.link_request_digest` row whose 32 digest bytes are chosen so the row's hex text contains a 4-digit needle (for example bytes 0x01 0x87 for `0187`), assert that the old whole-row scan would count it (so the case really reproduces the flake) and that the new check counts 0 and passes. A harness task because it changes T390's finished test file, which is protected. Claimed first (`kit/runner.json` `claim_first`, D-2540, D-3049). Update `docs/decisions.md` with what changed and why.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "4",
+   "module": "calls",
+   "deps": [
+    "T390",
+    "T326",
+    "T311"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "harness"
+   ],
+   "owns": [
+    "tests/integration/tests/link_request.rs"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "docs/spec/calls.md",
+    "docs/brains/rust-production.md",
+    "migrations/0185_calls_link_request.sql",
+    "app/calls/src/link_request.rs"
+   ],
+   "requirements": [
+    "CALL-011",
+    "CALL-003"
+   ],
+   "tests": [
+    "TD-CALL-23"
+   ],
+   "decisions": [
+    "D-3324",
+    "D-2540",
+    "D-3049",
+    "D-3079"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 1,
+    "lines": 200,
+    "context_pct": 8
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T419-link-request-flaky-scan",
+   "prompt": "kit/prompts/T419.md",
+   "acceptance": "`cargo test -p askhava-integration --test link_request` passes; the plaintext-absence check scans only text-typed columns; the digest table is proven to hold no needle in a text column and no digest equal to a needle's bytes; the new regression case, a digest whose hex holds a 4-digit needle, fails under the old whole-row scan and passes under the new check; every other assertion in the file is unchanged; no file outside `tests/integration/tests/link_request.rs` changes except `docs/decisions.md`."
   }
  ]
 }
