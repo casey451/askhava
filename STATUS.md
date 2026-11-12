@@ -1,18 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-11T23:59:01Z by runner 49e840f96747 (actions).
+Updated 2026-11-12T00:00:59Z by runner 4f3341fd59e7 (manual).
 
-**Building: T317 in progress since 23:23Z; 216 of 378 done; week 78% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T317 in progress since 23:23Z; 216 of 382 done; week 78% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 216 of 378 build tasks (owner gates not counted)
+- **Tasks done:** 216 of 382 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T317 claimed 23:23Z, lease until 02:23Z; lane 3: T313 claimed 23:27Z, lease until 02:27Z
 - **Week:** 78% used, 27.4M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:58Z, 0 min before this update
+- **Last run:** 23:59Z, 1 min before this update
 - **Keeper:** last ran 23:59Z, next wake 02:26Z
 
 ## Needs attention
-- Strict plan check red: 6 problem(s) on tasks still to run (+64 on DONE tasks); first: T348: stored context_pct 36% but it measures 41%; regenerate
+- Strict plan check red: 5 problem(s) on tasks still to run (+64 on DONE tasks); first: T348: stored context_pct 36% but it measures 41%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -77,6 +77,7 @@ Updated 2026-11-11T23:59:01Z by runner 49e840f96747 (actions).
 | T349 | calls: a PIN draw fails only when the OS source fails, and o | done | 1 | 36 min | 00:40Z |  |
 
 ### Plan and harness merges on main
+- 00:00Z Plan: pre-flight fixes round 3 — T360, T368, T350, T358, T366, T385 (D-3094) (#528)
 - 23:50Z Plan: Gate C preconditions, vendor-leak check, quote cards, AI writing calls (D-3080) (#518)
 - 23:07Z Plan: IC-74 owners T390/T391, migration renumber, budget refresh, IC-95 logged (D-3079) (#517)
 - 23:02Z Plan: pre-flight fixes for T317, T323, T313, T315, T347 and the T345 gap (D-3083) (#524)
@@ -114,8 +115,8 @@ Updated 2026-11-11T23:59:01Z by runner 49e840f96747 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 220 of 733 (30.0%) · partial 339 · unstarted 174
-**Tasks merged (throughput only):** 216 of 378
+**Requirements verified:** 214 of 733 (29.2%) · partial 345 · unstarted 174
+**Tasks merged (throughput only):** 216 of 382
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -125,15 +126,15 @@ Updated 2026-11-11T23:59:01Z by runner 49e840f96747 (actions).
 | calls | 9 | 15 | 1 | 25 |
 | consent | 8 | 23 | 4 | 35 |
 | fees | 12 | 39 | 1 | 52 |
-| intake | 22 | 15 | 6 | 43 |
-| job-cards | 13 | 9 | 2 | 24 |
-| licensing | 25 | 23 | 0 | 48 |
+| intake | 21 | 16 | 6 | 43 |
+| job-cards | 12 | 10 | 2 | 24 |
+| licensing | 22 | 26 | 0 | 48 |
 | lifecycle | 18 | 10 | 0 | 28 |
 | messaging | 18 | 24 | 3 | 45 |
 | ops-recovery | 2 | 6 | 46 | 54 |
 | privacy | 7 | 22 | 2 | 31 |
 | quiet-hours | 4 | 5 | 0 | 9 |
-| quotes-pick | 32 | 23 | 1 | 56 |
+| quotes-pick | 31 | 24 | 1 | 56 |
 | recurring | 6 | 2 | 3 | 11 |
 | security | 6 | 43 | 6 | 55 |
 | terms | 0 | 3 | 32 | 35 |
