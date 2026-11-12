@@ -2,11 +2,28 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## The test machines keep their saved builds again (D-3143, November 12)
+
+- **What happened.** GitHub keeps 10 GB of saved builds for the project. The runner saved about 7 GB more after every merge, which pushed out the builds the checks reuse, so every check run since last night built from scratch (0 of 36 reuses hit today).
+- **What changed.** The runner now keeps just one copy of each of its two saved builds, stops saving the part of one that its other build already holds, and saves only from the main line. The browser download the page tests use is saved the same way. Nothing about what is tested changed.
+- **Expected.** The check runs reuse their builds again, which saves several minutes per run (about 7 on the longest job).
+
 ## Nine more waiting steps fixed before they start, and two new steps (plan change, D-3134, November 12)
 
 - **What happened.** A seventh check of steps still waiting in line found nine that would have stopped partway: some would have broken older tests they may not touch, the Stripe stand-in step could not add the pages it was asked to serve, the won-dispute step relied on a Stripe read nobody builds, the charge-ID step only wrote the ID on a path that usually runs second, and two needs had no storage at all.
 - **What changed.** Each step's instructions now name the right files and an approach that leaves every older test as it is. Two new steps fill the storage gaps. T406 stores the quote facts a business fills in on the quote form (trip fee, parts, permit, "price may change", Spanish), so every quote card can show them as the rules require and "Same as last time" can pre-fill them; until then nothing kept those answers. T407 stores the owner-portal "safety voice call" switch with the attorney approval date and reference, and adds the switch to your settings page.
 - **Decided for you.** The safety voice call stays off at launch, exactly as before: T407 only builds the place to turn it on later, and it refuses unless every CALL-022 safeguard is built and tested, you have entered the attorney's approval, and you have just re-entered your second factor. The consent text's call sentence appears only while the switch is on. A quote stored before T406 (or a text quote confirmed without facts) shows in the list without a card rather than with made-up facts.
+- **Nothing needs you now.**
+
+## Seventeen more waiting steps fixed before they start, and one new step (plan change, D-3144, November 12)
+
+- **What changed.** A read-only check of the queued website, alert and safety tasks found plans a worker could not have finished as written; they were corrected before any started. One small task was added: T408 makes a release (the homeowner's details going to the business) wait while safe mode is on and go ahead once it ends, if the job is still waiting for it.
+- **Calls made for you, all reversible:**
+  - The "Texting is temporarily unavailable" banner shows on the askhava.com pages (home, help, terms and so on), not inside the quote page or the business portal. WEB-007 says "the site has a status banner"; showing it on the portal pages too would need every portal page changed.
+  - Old directory links: `/categories` and `/events` (the only old addresses the project files record) show the Ask Hava home page. Any other old address (for example a single listing's page) shows the normal "not found" page, although the rule says old directory addresses show an Ask Hava page. Google Search Console (still verified) lists the old addresses that still get visits; send any that matter and they can be added.
+  - `askhava.com/terms` shows the homeowner terms and then the business terms on one page, each with its own heading.
+  - The record of published legal versions starts empty and gets its first entries when you give the go to publish the terms and privacy policy.
+  - The uptime check (`/healthz`) treats the background worker as down only when work has waited more than 10 minutes, so a quiet worker is not reported as an outage.
 - **Nothing needs you now.**
 
 ## Nine more waiting steps fixed before they start, and one new step (plan change, D-3118, November 12)
@@ -2463,3 +2480,11 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **What did not change.** Every test, lint and check still runs on every task head, with the same commands, and `Ci` is green only when all of them pass. The check names you see (Ci, Twin, Ally, Governance) are the same.
 - **Worth knowing.** The measurement found that none of the build caches were being reused: what the nightly saves is pushed out of GitHub's 10 GB cache within hours, so every run builds from scratch. That is a separate fix, to be measured first. The new job uses about 6 more runner-minutes per run; the repository is public, so this costs nothing.
 - **Nothing needs you now.**
+
+## Texts now actually go out, once, and never at night by mistake (T356, D-3145 to D-3149)
+
+- **What changed.** A new worker job sends the texts the app queues for homeowners. Just before each one goes it checks the 8 a.m. to 8 p.m. window again, the texting switch and the opt-out list. A text queued at night waits for 8 a.m. If Twilio's answer is lost (a timeout or a crash mid-send), the text is never sent a second time: it is marked "unknown", an important one goes to her by email, and you get one low-priority alert. A text queued while the homeowner line was off or suspended is dropped, not sent late, and an opt-out confirmation older than 5 minutes is never sent.
+- **Worth knowing.** Texts to businesses are not sent by this job yet; they wait in the outbox for a later task.
+- **Needs you at the account checkpoint.** A new setting, `ASKHAVA_HOMEOWNER_NUMBER`, names the homeowner texting number. The test and live projects refuse to start without it, because with no number nothing is texted and every opt-out confirmation text would quietly expire (D-3149).
+- **A gap still open: texts to businesses have no sender (D-3149).** Job-card and pick notices to a business are queued as texts and counted as texted, so no email goes in their place, but nothing sends them yet. The plan needs a task that sends business texts from the business line; until then a business that would have been texted a notice gets neither the text nor the email for it. Nothing needs you now; the next plan change should add that task.
+- **Other fixes from review.** One unreadable text can no longer jam the queue (it is dropped and logged), a failing text never stops the minute-by-minute sender, and a text's email copy is in the person's own language.

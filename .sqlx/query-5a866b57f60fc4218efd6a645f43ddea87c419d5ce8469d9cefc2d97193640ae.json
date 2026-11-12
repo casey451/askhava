@@ -1,0 +1,89 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "WITH old AS (SELECT id, body FROM messaging.outbox WHERE id = $1 AND status = 'sending' AND ($2::timestamptz IS NULL OR sending_since IS NULL OR sending_since < $2) FOR UPDATE) UPDATE messaging.outbox o SET status = 'unknown', body = NULL FROM old WHERE o.id = old.id RETURNING o.recipient_id, o.recipient_kind, o.template_id, o.subject_ids, o.language, old.body AS \"body!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "recipient_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "messaging.outbox",
+            "name": "recipient_id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "recipient_kind",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "messaging.outbox",
+            "name": "recipient_kind"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "template_id",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "messaging.outbox",
+            "name": "template_id"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "subject_ids",
+        "type_info": "UuidArray",
+        "origin": {
+          "Table": {
+            "table": "messaging.outbox",
+            "name": "subject_ids"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "language",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "messaging.outbox",
+            "name": "language"
+          }
+        }
+      },
+      {
+        "ordinal": 5,
+        "name": "body!",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "messaging.outbox",
+            "name": "body"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      true
+    ]
+  },
+  "hash": "5a866b57f60fc4218efd6a645f43ddea87c419d5ce8469d9cefc2d97193640ae"
+}

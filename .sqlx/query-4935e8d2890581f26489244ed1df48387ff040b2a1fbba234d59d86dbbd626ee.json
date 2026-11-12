@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "UPDATE messaging.outbox SET status = 'sending', attempts = attempts + 1 WHERE id = $1 AND status IN ('queued', 'sending') AND recipient_kind = $2 RETURNING template_id, recipient_id, subject_ids, body",
+  "query": "UPDATE messaging.outbox SET status = 'sending', attempts = attempts + 1, sending_since = COALESCE($3, now()) WHERE id = $1 AND status = 'queued' AND recipient_kind = $2 RETURNING template_id, recipient_id, subject_ids, body",
   "describe": {
     "columns": [
       {
@@ -51,7 +51,8 @@
     "parameters": {
       "Left": [
         "Uuid",
-        "Text"
+        "Text",
+        "Timestamptz"
       ]
     },
     "nullable": [
@@ -61,5 +62,5 @@
       true
     ]
   },
-  "hash": "7b9192bf5c1f383a1a43e1fafe64ccdc70e86a10ef0b617ab6bbbfa38005bdd7"
+  "hash": "4935e8d2890581f26489244ed1df48387ff040b2a1fbba234d59d86dbbd626ee"
 }
