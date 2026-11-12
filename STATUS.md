@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T07:42:34Z by runner d64c061b0892 (actions).
+Updated 2026-11-12T07:44:09Z by runner 5cbddc23fd8c (actions).
 
 **Idle since 07:42Z; 229 of 394 done; week 90% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,12 +8,14 @@ Updated 2026-11-12T07:42:34Z by runner d64c061b0892 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 07:42Z (no task in progress)
 - **Week:** 90% used, 5.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:40Z, 1 min before this update
+- **Last run:** 07:42Z, 1 min before this update
 - **Keeper:** last ran 07:40Z, next wake 10:01Z
 
 ## Needs attention
+- PLAN GAP T251 (since 2026-11-12T07:44:00Z, no attempt used; a plan change fixes it): T251: dependency T339 is DONE but its owned file migrations/0164_jobs_job_facts.sql is not on main; T251: dependency T339 is DONE but its owned file app/jobs/src/job_facts.rs is not on main; T251: dependency T339 is DONE but its owned file tests/integration/tests/job_facts.rs is not on main
+- PLAN GAP T343 (since 2026-11-12T07:44:00Z, no attempt used; a plan change fixes it): T343: dependency T339 is DONE but its owned file migrations/0164_jobs_job_facts.sql is not on main; T343: dependency T339 is DONE but its owned file app/jobs/src/job_facts.rs is not on main; T343: dependency T339 is DONE but its owned file tests/integration/tests/job_facts.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 13 problem(s) on tasks still to run (+94 on DONE tasks); first: T396: stored context_pct 39% but it measures 44%; regenerate
+- Strict plan check red: 12 problem(s) on tasks still to run (+92 on DONE tasks); first: T396: stored context_pct 39% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -120,7 +122,6 @@ Updated 2026-11-12T07:42:34Z by runner d64c061b0892 (actions).
 - 09:54Z Harness: a planned file deletion is not a plan gap — 5 eligible tasks were held (D-2922) (#470)
 - 09:40Z Plan: split T164 — new T384 shows edited/withdrawn quotes in place; LIST numbers match picks (D-2912) (#468)
 - 08:37Z Plan: T337 also owns release_recovery.rs for a fixture-only fix (D-2896) (#464)
-- 07:43Z Harness: td_pick_09 asks on the fixed clock — test failing everywhere since 07:00Z (D-2886) (#461)
 
 ## Progress (requirements verified)
 
