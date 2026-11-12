@@ -48,6 +48,7 @@
 //! T384: [`page_quotes`] keeps a withdrawn quote in its place, never pickable and without its
 //! words, with each edit's time; [`list_texts`] numbers its lines by quote-page number with a
 //! withdrawn line in place; [`shown_card`] adds "Updated <time>" ([`updated_line`]) (PICK-051).
+//! T228: [`withdraw_for_leaving`] withdraws a leaving business's open quotes (BIZ-051, PICK-051).
 //! T388: [`accepted_quote`] reads the quote a homeowner accepted as an [`AcceptedQuote`] (its page
 //! number, type, amount, earliest visit and the business's own words) for her accepted-quote email
 //! and quote page (PICK-042, D-3075).
@@ -58,6 +59,7 @@ pub use crate::auto_confirm_box::{
     AUTO_CONFIRM_VERSION, AutoConfirmError, AutoConfirmTick, Untick, auto_confirm_authorization,
     auto_confirm_of, stripe_answer_filed, tick_auto_confirm, untick_auto_confirm,
 };
+pub use crate::business_left::withdraw_for_leaving;
 pub use crate::capability_match::{
     CapabilitySkip, JobFit, band_floor_cents, capability_skip, capable_pool,
 };

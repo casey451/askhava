@@ -67,6 +67,9 @@
 //! T214: [`tick_share`], [`share_ticked`] and [`bind_share`] log the PICK-049 share box;
 //! [`cant_take_job`] and [`cant_take`] end a pick at once with no fee, [`cant_take_link`] is its
 //! page (PICK-050).
+//!
+//! T228: [`waiting_picks_of`] and [`end_for_leaving`] end a leaving business's waiting picks with
+//! no fee and move each to the homeowner's backup (BIZ-051, PICK-047).
 
 pub use crate::aftermath::{
     Comparison, INACTIVE_TEMPLATE, LIVE_PICK_TEMPLATE, LOST_HIGHER_TEMPLATE, LOST_LOWER_TEMPLATE,
@@ -83,6 +86,7 @@ pub use crate::backup_choice::{
     Backup, Browser, backup_changed, backup_choice, backup_target, backup_text, bind_backup,
     choose_backup,
 };
+pub use crate::business_left::{end_for_leaving, waiting_picks_of};
 pub use crate::cant_take::{cant_take, cant_take_job, cant_take_link};
 pub use crate::confirm::{
     BusinessWord, ConfirmReply, ConfirmSettings, EXPIRED_TEMPLATE, FEE_REPLY_TEMPLATE, FeeBasis,
