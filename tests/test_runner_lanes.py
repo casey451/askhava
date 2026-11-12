@@ -202,8 +202,9 @@ def test_lanes_setting_defaults_to_one(tmp_path: Path) -> None:
         f.write_text(raw)
         assert entry.lanes(f) == want
     repo_settings = Path(__file__).resolve().parent.parent / "kit" / "runner.json"
-    # Casey's switch (D-620): 1 to 5, the lane counts the drills cover (three since D-2810,
+    # Casey's switch (D-620): 1 to 7, the lane counts the drills cover (three since D-2810,
     # tests/test_runner_three_lanes.py; four since D-2986, tests/test_runner_four_lanes.py; five since
-    # D-3043, tests/test_runner_five_lanes.py), written as a number so it can never fall back to 1 unnoticed.
-    assert json.loads(repo_settings.read_text(encoding="utf-8"))["lanes"] in (1, 2, 3, 4, 5)
-    assert entry.lanes(repo_settings) in (1, 2, 3, 4, 5)
+    # D-3043, tests/test_runner_five_lanes.py; six and seven since D-3269, tests/test_runner_seven_lanes.py),
+    # written as a number so it can never fall back to 1 unnoticed.
+    assert json.loads(repo_settings.read_text(encoding="utf-8"))["lanes"] in (1, 2, 3, 4, 5, 6, 7)
+    assert entry.lanes(repo_settings) in (1, 2, 3, 4, 5, 6, 7)

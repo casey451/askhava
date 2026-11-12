@@ -454,7 +454,17 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: rustfmt for the update-merge tests (D-3269)
+        # tests/test_runner_crate_merge.py runs rustfmt over a resolved api.rs in a temporary repository, as the
+        # runner does; the pinned toolchain is made the default so that repository (no rust-toolchain.toml) uses it.
+        run: |
+          channel="$(sed -n 's/^channel *= *"\(.*\)"/\1/p' rust-toolchain.toml)"
+          rustup toolchain install "$channel" --profile minimal -c rustfmt
+          rustup default "$channel"
+
       - name: Unit, contract and drill tests (pytest)
+        env:
+          REQUIRE_RUSTFMT: "1"  # the api.rs update-merge tests must run here, never skip (D-3269)
         run: |
           python3 -m pip install --quiet pytest==9.1.1 PyYAML==6.0.1
           python3 -m pytest tests -q -p no:cacheprovider
