@@ -8,22 +8,66 @@
 use askhava_ops::api::Actor;
 use sqlx::PgConnection;
 
-use crate::{loader, service};
+use crate::{loader, markets, service};
 
 pub use crate::loader::{normalize, parse};
+pub use crate::markets::{
+    Centroid, MarketDef, MarketRefused, MarketTown, Markets, TownDef, is_zip, miles_between,
+    parse_centroids, parse_markets,
+};
 pub use crate::models::{Catalog, CatalogError, Category, JobType};
 pub use crate::question_bank::{AskIf, Question, QuestionBank, QuestionSet};
 pub use crate::restricted_words::{RESTRICTED_WORDS, restricted_match};
 
 /// Parses the catalog file compiled into the build and stores it (LIC-001). Run it at start-up and
 /// after the file changes; it is safe to run again and never changes an existing category's switch,
-/// so a category the owner turned on or off keeps that state (LIC-002).
+/// so a category the owner turned on or off keeps that state (LIC-002). It also writes the
+/// markets, their towns and the ZCTA centroids, never a launch time (INT-048, T248).
 ///
 /// # Errors
 ///
 /// [`CatalogError::Invalid`] or [`CatalogError::Database`].
 pub async fn load_embedded(db: &mut PgConnection) -> Result<(), CatalogError> {
-    service::load(db, &loader::embedded()?).await
+    service::load(db, &loader::embedded()?).await?;
+    markets::store(db, markets::embedded()?, markets::centroids()?).await
+}
+
+/// The reviewed markets file compiled into the build, checked (INT-048).
+///
+/// # Errors
+///
+/// [`CatalogError::Invalid`].
+pub fn markets() -> Result<&'static Markets, CatalogError> {
+    markets::embedded()
+}
+
+/// The service-area towns INT-022 checks, read from the markets file, each with its market and
+/// state (INT-048, INT-022).
+///
+/// # Errors
+///
+/// [`CatalogError::Invalid`].
+pub fn service_area_towns() -> Result<Vec<MarketTown>, CatalogError> {
+    Ok(markets::embedded()?.towns())
+}
+
+/// The town a 5-digit ZIP belongs to, or none (INT-048, D-1521).
+///
+/// # Errors
+///
+/// [`CatalogError::Invalid`].
+pub fn town_for_zip(zip: &str) -> Result<Option<MarketTown>, CatalogError> {
+    Ok(markets::embedded()?.town_for_zip(zip))
+}
+
+/// A ZIP's location, its Census ZCTA centroid, or none for a ZIP the reviewed table lacks, such
+/// as a PO-box-only or out-of-state ZIP (INT-048, BIZ-058). Never a street address or a geocoder.
+///
+/// # Errors
+///
+/// [`CatalogError::Invalid`].
+pub fn zip_location(zip: &str) -> Result<Option<Centroid>, CatalogError> {
+    Ok(markets::centroids()?.get(zip.trim()).copied())
 }
 
 /// The question bank compiled into the build, checked against the compiled-in catalog: every enabled
