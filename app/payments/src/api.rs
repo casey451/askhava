@@ -82,6 +82,11 @@
 //! and retried every night until it settles; one open [`OPEN_ALERT_AFTER`] raises one
 //! [`OPEN_CHARGE_ALERT`].
 //!
+//! T334 (D-2304): each run reads every charge back to the last finished run's start less
+//! [`CATCH_UP_MARGIN`] (`payments.reconcile_checkpoint`), raises [`RECONCILE_GAP_ALERT`] after a
+//! gap over [`GAP_ALERT_AFTER`], and reads [`ChargePage`]s of at most [`PAGE_SIZE`] through
+//! `ReconcileStripe::list_charges_page`.
+//!
 //! T068: [`queue_receipt`] raises a charge's [`RECEIPT_KIND`] event (IDs only) and [`receipt_for`]
 //! reads its [`ChargeReceipt`] for the "Why was I charged?" page (FEE-031, FEE-053);
 //! [`tier_edge_flag`] applies the [`TierEdgeRule`] to a business's latest fee bases (FEE-033).
@@ -140,8 +145,9 @@ pub use crate::pick_fee::{
 pub use crate::purge::{DISPUTE_OPEN_AFTER_DUE, place_dispute_holds, run_dispute_holds};
 pub use crate::receipts::{ChargeReceipt, RECEIPT_KIND, queue_receipt, receipt_for, tier_of_fee};
 pub use crate::reconcile::{
-    CHARGE_FAILED_ALERT, LOOKBACK, MISMATCH_ALERT, OPEN_ALERT_AFTER, OPEN_CHARGE_ALERT, OpenWhy,
-    RECONCILE_ACTION, RECONCILE_EVERY, RECONCILE_KIND, ReconcileReport, ReconcileStripe, Statement,
+    CATCH_UP_MARGIN, CHARGE_FAILED_ALERT, ChargePage, GAP_ALERT_AFTER, LOOKBACK, MISMATCH_ALERT,
+    OPEN_ALERT_AFTER, OPEN_CHARGE_ALERT, OpenWhy, PAGE_SIZE, RECONCILE_ACTION, RECONCILE_EVERY,
+    RECONCILE_GAP_ALERT, RECONCILE_KIND, ReconcileReport, ReconcileStripe, Statement,
     StatementLine, UNKNOWN_CHARGE_ALERT, business_statement, money_view, reconcile, run_reconcile,
 };
 pub use crate::refund_rules::{

@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT stripe_charge_id FROM payments.reconcile_open\n          WHERE settled_at IS NULL AND first_seen < $2 AND stripe_charge_id = ANY($1)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "stripe_charge_id",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "payments.reconcile_open",
+            "name": "stripe_charge_id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "TextArray",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "85e06bbf22aab1163114fdca33b5a9cd7d37763106a8ad042bc0a1bdecc858a6"
+}
