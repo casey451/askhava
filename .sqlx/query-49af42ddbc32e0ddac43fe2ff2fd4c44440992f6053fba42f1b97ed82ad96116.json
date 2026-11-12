@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO jobs.job_facts (job_id, seq, category, job_types, set_at) VALUES ($1, $2, $3, $4, now())",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Int4",
+        "Text",
+        "TextArray"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "49af42ddbc32e0ddac43fe2ff2fd4c44440992f6053fba42f1b97ed82ad96116"
+}
