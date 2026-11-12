@@ -39912,11 +39912,11 @@
      "result": "check_failed"
     }
    ],
-   "reviewed_sha": "0ef4016f093eea3768a3f4d8fff64cffd502d486",
+   "reviewed_sha": "72b829f588b1ac8f7e86adaef5f69a9490407bb5",
    "review_lease": {
     "task": "T414",
-    "session": "actions-43266871612",
-    "expires": "2026-11-12T20:19:33Z",
+    "session": "actions-43282870195",
+    "expires": "2026-11-12T21:56:19Z",
     "lane": "4"
    },
    "branch": "claude/task/T414-stand-in-sent-emails",
@@ -39925,60 +39925,22 @@
     "why": "auto-merge on #602 (gh pr merge)",
     "head": "ecdade4c9369ac8f3de42e7ddd13029427bf9fbe"
    },
-   "update_merges": [
-    {
-     "from": "ecdade4c9369ac8f3de42e7ddd13029427bf9fbe",
-     "to": "f396a8c4a70d4157e50f9182ba0952f6fe708c0c",
-     "main": "15f027539e25a77d8e54bc7f8f4ad451ead917c6",
-     "how": "runner",
-     "checks": {
-      "Twin": "success",
-      "Ally": "success"
-     },
-     "at": "2026-11-12T17:59:43Z"
-    },
-    {
-     "from": "f396a8c4a70d4157e50f9182ba0952f6fe708c0c",
-     "to": "5a1e941a7865b21df8dc8f956759849d654eddf8",
-     "main": "cc4a31e70ecdcf8741605ee799a84012261be252",
-     "how": "runner",
-     "checks": {
-      "Ci": "success",
-      "Twin": "success",
-      "Ally": "success"
-     },
-     "at": "2026-11-12T18:11:18Z"
-    },
-    {
-     "from": "5a1e941a7865b21df8dc8f956759849d654eddf8",
-     "to": "4db3eb89ba35cad7c8e36a2923abadec1e9c34ca",
-     "main": "0e36bfe8ac65173273d57ed1f11345f5d1c04f92",
-     "how": "runner",
-     "checks": {
-      "Ally": "success",
-      "Twin": "success"
-     },
-     "at": "2026-11-12T18:16:45Z"
-    },
-    {
-     "from": "4db3eb89ba35cad7c8e36a2923abadec1e9c34ca",
-     "to": "0ef4016f093eea3768a3f4d8fff64cffd502d486",
-     "main": "ef5a3860ab5e7ec8a777d83d5d0f0d7cc3fb8184",
-     "how": "runner",
-     "checks": {
-      "Ci": "success",
-      "Ally": "success",
-      "Twin": "success"
-     },
-     "at": "2026-11-12T18:35:26Z"
-    }
-   ],
-   "update_waiting_since": null,
-   "update_push_failures": null,
    "last_failure": "Twin: failure\nTwin failed at step: Build rules_bridge from this commit (T074)\n##[error]Command failed: rustc -vV",
    "runner_closed_prs": [
     602
-   ]
+   ],
+   "head_check_since": null,
+   "update_merges": [
+    {
+     "from": "d3f12fcde1e0cacaa736054dbbe14a9ecc9efc24",
+     "to": "72b829f588b1ac8f7e86adaef5f69a9490407bb5",
+     "main": "bae443e54064bf67f05c184df83fe257c497087c",
+     "how": "hand-in",
+     "at": "2026-11-12T19:11:56Z"
+    }
+   ],
+   "update_waiting_since": null,
+   "update_push_failures": null
   },
   {
    "id": "T412",
@@ -42443,7 +42405,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T19:10:51Z",
+ "updated_at": "2026-11-12T19:11:56Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -42541,7 +42503,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "5e739fa972c532608cfbfa047d3590c42bee2329",
+ "runner_sha": "d3f12fcde1e0cacaa736054dbbe14a9ecc9efc24",
  "starter": "actions",
  "smoke_runs": [
   {
