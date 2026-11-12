@@ -1,27 +1,27 @@
 # Ask Hava build status
 
-Updated 2026-11-12T06:51:41Z by runner 3b8cd1274abe (actions).
+Updated 2026-11-12T06:55:07Z by runner 643b878dd6de (actions).
 
-**Building: T336 in progress since 06:48Z; 227 of 394 done; week 88% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T336 in progress since 06:48Z; 228 of 394 done; week 88% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 227 of 394 build tasks (owner gates not counted)
+- **Tasks done:** 228 of 394 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 5: T336 claimed 06:48Z, lease until 09:48Z
 - **Week:** 88% used, 18.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:48Z, 3 min before this update
+- **Last run:** 06:51Z, 3 min before this update
 - **Keeper:** last ran 06:37Z, next wake 06:57Z
 
 ## Needs attention
 - PLAN GAP T268 (since 2026-11-12T06:40:33Z, no attempt used; a plan change fixes it): T268: dependency T248 is DONE but its owned file docs/catalog/markets.yaml is not on main; T268: dependency T248 is DONE but its owned file app/catalog/src/markets.rs is not on main; T268: dependency T248 is DONE but its owned file app/catalog/data/zcta_centroids_az.csv is not on main; T268: dependency T248 is DONE but its owned file migrations/0162_catalog_markets.sql is not on main; T268: dependency T248 is DONE but its owned file app/catalog/src/tests/markets.rs is not on main; T268: dependency T248 is DONE but its owned file migrations/0163_businesses_service_area.sql is not on main; T268: dependency T248 is DONE but its owned file app/businesses/src/service_area.rs is not on main; T268: dependency T248 is DONE but its owned file tests/integration/tests/service_area.rs is not on main
 - PLAN GAP T339 (since 2026-11-12T06:40:33Z, no attempt used; a plan change fixes it): T339: dependency T248 is DONE but its owned file docs/catalog/markets.yaml is not on main; T339: dependency T248 is DONE but its owned file app/catalog/src/markets.rs is not on main; T339: dependency T248 is DONE but its owned file app/catalog/data/zcta_centroids_az.csv is not on main; T339: dependency T248 is DONE but its owned file migrations/0162_catalog_markets.sql is not on main; T339: dependency T248 is DONE but its owned file app/catalog/src/tests/markets.rs is not on main; T339: dependency T248 is DONE but its owned file migrations/0163_businesses_service_area.sql is not on main; T339: dependency T248 is DONE but its owned file app/businesses/src/service_area.rs is not on main; T339: dependency T248 is DONE but its owned file tests/integration/tests/service_area.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 8 problem(s) on tasks still to run (+89 on DONE tasks); first: T396: stored context_pct 39% but it measures 44%; regenerate
+- Strict plan check red: 10 problem(s) on tasks still to run (+91 on DONE tasks); first: T396: stored context_pct 39% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T336 | server, adapters and stand-in (harness): a text stopped by a | resync | 2 | 71 min | 06:06Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
-| T405 | payments and adapters (harness): each charged pick's 3-D Sec | MERGE_PENDING | 1 | 51 min | 06:05Z | merging main into the reviewed head conflicts in app/payments/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T405 | payments and adapters (harness): each charged pick's 3-D Sec | done | 1 | 51 min | 06:05Z |  |
 | T356 | messaging and server (harness): the worker sends queued text | done | 1 | 86 min | 05:31Z |  |
 | T405 | payments and adapters (harness): each charged pick's 3-D Sec | resync | 1 | 33 min | 04:56Z |  |
 | T326 | calls (harness): the LINK notice names the line's stored PIN | done | 1 | 25 min | 03:37Z |  |
@@ -122,7 +122,7 @@ Updated 2026-11-12T06:51:41Z by runner 3b8cd1274abe (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 210 of 733 (28.6%) · partial 353 · unstarted 170
-**Tasks merged (throughput only):** 227 of 394
+**Tasks merged (throughput only):** 228 of 394
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -157,7 +157,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 107 of 178 done
+- stage 4: 108 of 178 done
 - stage 5: 0 of 62 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
