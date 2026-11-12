@@ -116,6 +116,7 @@ from runner.github_env import PREHANDIN_RED, SMOKE_PRE_LOG, GitHubEnv, alias_for
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 
+import check_code_docs  # scripts/, standard library only
 import check_plan_lock  # scripts/, standard library only
 import check_state
 import pacing
@@ -231,6 +232,7 @@ def build(args: argparse.Namespace, outbox_dir: Path) -> tuple[cycle.Config, Git
                        order=claim_order_setting(ROOT / "kit" / "runner.json"),
                        prefer_disjoint_crates=prefer_disjoint_crates(ROOT / "kit" / "runner.json"),
                        exclusive_crates=exclusive_crates(ROOT / "kit" / "runner.json"),
+                       crate_cap=crate_cap(ROOT / "kit" / "runner.json"), crate_full=crate_doc_full(ROOT),
                        smoke_ancestry=smoke_ancestry(ROOT / "kit" / "runner.json"))
     env.smoke_ancestry = cfg.smoke_ancestry  # the pre-session step's skip and the start routine agree (D-3058)
     return cfg, env
@@ -340,6 +342,48 @@ def exclusive_crates(settings: Path) -> bool:
     except (OSError, ValueError, AttributeError):
         return False
     return value is True
+
+
+def crate_cap(settings: Path) -> int:
+    """kit/runner.json "crate_cap" (D-3303): with "exclusive_crates", the most tasks in flight one `app/` crate may
+    hold; a whole number of at least 1, else 1 (D-3269's hard exclusion, the safer reading) when the file or key is
+    missing, unreadable or any other value."""
+    try:
+        value = json.loads(settings.read_text(encoding="utf-8")).get("crate_cap")
+    except (OSError, ValueError, AttributeError):
+        return 1
+    return value if isinstance(value, int) and not isinstance(value, bool) and value >= 1 else 1
+
+
+def crate_doc_full(root: Path) -> Callable[[str, int], bool]:
+    """Whether `app/<crate>/CLAUDE.md` on origin's `main` (`crate_doc_text`), with `held` tasks in flight in the
+    crate, would reach scripts/check_code_docs.py's line limit (`MAX_CRATE_DOC_LINES`, counted as that check
+    counts), read at each claim (D-3303): each task in flight adds at least a line, so its line count plus
+    `held` at the limit leaves no room for another, and the crate keeps one task in flight. A file that is
+    missing or unreadable counts as full, the safer reading."""
+    def full(crate: str, held: int) -> bool:
+        text = crate_doc_text(root, crate)
+        if text is None:
+            return True
+        return len(text.splitlines()) + held >= check_code_docs.MAX_CRATE_DOC_LINES
+    return full
+
+
+def crate_doc_text(root: Path, crate: str) -> str | None:
+    """A crate's `CLAUDE.md` as origin's `main` has it (`git show origin/main:app/<crate>/CLAUDE.md`), so claim
+    and the end-of-run refill read the same text even when a task branch is checked out in `root` (review
+    round 1, D-3303); the file in `root` when git cannot show it; None when neither can be read."""
+    try:
+        shown = subprocess.run(["git", "-C", str(root), "show", f"origin/main:app/{crate}/CLAUDE.md"],
+                               capture_output=True, text=True, encoding="utf-8", timeout=30, check=False)
+        if shown.returncode == 0:
+            return shown.stdout
+    except (OSError, subprocess.SubprocessError, UnicodeDecodeError):
+        pass
+    try:
+        return (root / "app" / crate / "CLAUDE.md").read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        return None
 
 
 def smoke_ancestry(settings: Path) -> int:
