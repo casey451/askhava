@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-12T16:18:36Z by runner cbca633c7528 (actions).
+Updated 2026-11-12T16:19:05Z by runner cbca633c7528 (actions).
 
-**Building: T315 in progress since 15:12Z; 245 of 397 done; week 96% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Waiting for tokens until 17:00Z; 245 of 397 done; week 96% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 245 of 397 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T315 claimed 15:12Z, lease until 18:12Z
+- **Lane:** idle since 16:18Z (no task in progress)
 - **Week:** 96% used, 0.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:46Z, 32 min before this update
+- **Last run:** 15:46Z, 33 min before this update
 - **Keeper:** last ran 15:31Z, next wake 18:15Z
 
 ## Needs attention
@@ -19,6 +19,7 @@ Updated 2026-11-12T16:18:36Z by runner cbca633c7528 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T315 | jobs and portals: feedback words are blanked by the 3-year p | MERGE_PENDING | 1 | 66 min | 16:18Z |  |
 | T370 | intake (harness): the night count the homeowner hears counts | MERGE_PENDING | 2 | 22 min | 15:30Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 | T389 | licensing: a homeowner's wrong-license report pauses a pest  | MERGE_PENDING | 1 | 31 min | 15:11Z |  |
 | T362 | server: the built static files are served at /static/<crate> | BLOCKED | 2 | 21 min | 15:06Z | PLAN GAP: tests/a11y/j1_keyboard.spec.ts:171-172 (owned by T098/T214, protected, not in T362's files) presses Tab before |
@@ -165,8 +166,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T315 (lease until 2026-11-12T18:12:30Z)
+- nothing
 - one lane only since 2026-11-12T15:19:18Z (lane fall back; `python3 -m runner --restore-lanes`)
 
 ## Last usage reading
-- {"task": "T370", "at": "2026-11-12T15:30:26Z", "input_tokens": 110, "cache_read_input_tokens": 2223289, "cache_creation_input_tokens": 146003, "output_tokens": 23955}
+- {"task": "T315", "at": "2026-11-12T16:18:35Z", "cache_creation_input_tokens": 835690, "input_tokens": 438, "cache_read_input_tokens": 25610747, "output_tokens": 139875}

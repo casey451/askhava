@@ -30895,7 +30895,7 @@
     "T087",
     "T411"
    ],
-   "status": "IN_PROGRESS",
+   "status": "MERGE_PENDING",
    "attempts": 0,
    "slug": "feedback-purge-and-export-mask",
    "type": "build",
@@ -30908,6 +30908,21 @@
     3267,
     3268
    ],
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 187,
+     "head_sha": "cbca633c75284b530fd7f72b238b7897b6c73d07",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": true,
+     "started_at": "2026-11-12T15:12:30Z",
+     "ended_at": "2026-11-12T16:18:35Z",
+     "result": "MERGE_PENDING"
+    }
+   ],
    "reviewed_sha": "a2b5d378775ded2bdd1109371f3615f7f9a9eddf",
    "review_lease": {
     "task": "T315",
@@ -30915,7 +30930,11 @@
     "expires": "2026-11-12T18:12:30Z"
    },
    "branch": "claude/task/T315-feedback-purge-and-export-mask",
-   "head_check_since": null,
+   "auto_merge": {
+    "enabled": true,
+    "why": "auto-merge on #599 (gh pr merge)",
+    "head": "a2b5d378775ded2bdd1109371f3615f7f9a9eddf"
+   },
    "update_merges": [
     {
      "from": "cbca633c75284b530fd7f72b238b7897b6c73d07",
@@ -39019,12 +39038,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T370",
-   "at": "2026-11-12T15:30:26Z",
-   "input_tokens": 110,
-   "cache_read_input_tokens": 2223289,
-   "cache_creation_input_tokens": 146003,
-   "output_tokens": 23955
+   "task": "T315",
+   "at": "2026-11-12T16:18:35Z",
+   "cache_creation_input_tokens": 835690,
+   "input_tokens": 438,
+   "cache_read_input_tokens": 25610747,
+   "output_tokens": 139875
   },
   "source": "session_reading 2026-11-12T15:14:31Z (week)",
   "by_task": {
@@ -41284,7 +41303,12 @@
    },
    "T315": {
     "estimated_bytes": 550276,
-    "estimated_tokens": 2921062
+    "estimated_tokens": 2921062,
+    "cache_creation_input_tokens": 835690,
+    "input_tokens": 438,
+    "cache_read_input_tokens": 25610747,
+    "output_tokens": 139875,
+    "last_model": "claude-opus-5-5"
    },
    "T370": {
     "estimated_bytes": 633349,
@@ -41308,11 +41332,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-12T12:34:26Z",
-    "tokens": 13242064
+    "tokens": 16779141
    },
    "week": {
     "start": "2026-11-05T19:01:47Z",
-    "tokens": 431814166
+    "tokens": 435351243
    }
   },
   "session_reading": {
@@ -41323,7 +41347,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T16:18:36Z",
+ "updated_at": "2026-11-12T16:19:05Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
