@@ -10,7 +10,7 @@
 
 use askhava_core::api::{Guarded, IdSecret, ManualClock};
 use askhava_jobs::api::quote_token::issue;
-use askhava_jobs::api::{JobStatus, current, move_to};
+use askhava_jobs::api::{JobStatus, current, move_to, record_job_facts};
 use askhava_messaging::api::Language;
 use askhava_ops::api::Actor;
 use askhava_picks::api::{
@@ -52,6 +52,13 @@ async fn picked_job(db: &mut PgConnection, emergency: bool) -> (Uuid, Uuid) {
     let job = askhava_jobs::api::create(db, at(0), emergency, Actor::System)
         .await
         .expect("job");
+    askhava_catalog::api::load_embedded(db)
+        .await
+        .expect("catalog");
+    let types = ["leak repair".to_owned()];
+    record_job_facts(db, job, "plumbing_repair", &types)
+        .await
+        .expect("job facts");
     for step in [
         (JobStatus::Intake, JobStatus::Open),
         (JobStatus::Open, JobStatus::QuotesReady),

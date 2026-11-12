@@ -13,7 +13,7 @@ use askhava_intake::api::{
     JobStart, Opened, PublishedTerms, TextIn, answer_text_pick, begin_job, on_opt_out,
     receive_text, terms_acceptances,
 };
-use askhava_jobs::api::{JobStatus, current, job_number, move_to};
+use askhava_jobs::api::{JobStatus, current, job_number, move_to, record_job_facts};
 use askhava_ops::api::Actor;
 use askhava_picks::api::rules::Plan;
 use askhava_picks::api::{
@@ -66,6 +66,10 @@ async fn jobs_ready(db: &mut Db, her: Uuid, trades: &[&str], quotes: u128) -> (U
     );
     let handled = receive_text(db, &secret(), &first, Settings::default()).await;
     let id = handled.expect("open").conversation.expect("request");
+    askhava_catalog::api::load_embedded(db)
+        .await
+        .expect("catalog");
+    let types = ["leak repair".to_owned()];
     let mut jobs = Vec::new();
     for trade in trades {
         let start = JobStart {
@@ -78,6 +82,9 @@ async fn jobs_ready(db: &mut Db, her: Uuid, trades: &[&str], quotes: u128) -> (U
         let Ok(Opened::Created(job)) = begin_job(db, &start).await else {
             panic!("a new job");
         };
+        record_job_facts(db, job, "plumbing_repair", &types)
+            .await
+            .expect("job facts");
         for step in [
             (JobStatus::Intake, JobStatus::Open),
             (JobStatus::Open, JobStatus::QuotesReady),

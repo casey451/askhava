@@ -16,6 +16,7 @@ use askhava_adapters::api::{
     AdapterError, Charge, IdempotencyKey, IntentMetadata, PaymentIntent, PaymentsAdapter,
 };
 use askhava_businesses::api::{Acting, add_owner, create, record_step_up};
+use askhava_jobs::api::record_job_facts;
 use askhava_ops::api::Actor;
 use askhava_payments::api::{
     ATTEMPT_ACTION, BusinessId, CardFixWindow, ChargeOutcome, IntentStripe, OffSessionOutcome,
@@ -245,6 +246,13 @@ async fn seed_job(db: &mut PgConnection, (job, business): (Uuid, Uuid)) {
             .await
             .expect(sql);
     }
+    askhava_catalog::api::load_embedded(db)
+        .await
+        .expect("catalog");
+    let types = ["leak repair".to_owned()];
+    record_job_facts(db, job, "plumbing_repair", &types)
+        .await
+        .expect("job facts");
 }
 
 async fn file_answer(pool: &PgPool, allows: bool, when: Timestamp) {
