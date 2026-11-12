@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T22:37:54Z by runner be513076a525 (actions).
+Updated 2026-11-12T22:44:23Z by runner 4aa3c92a5fa0 (actions).
 
 **Building: T347 in progress since 22:32Z; 257 of 404 done; week 6% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,18 +8,18 @@ Updated 2026-11-12T22:37:54Z by runner be513076a525 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T347 claimed 22:32Z, lease until 01:32Z; lane 3: T385 claimed 22:26Z, lease until 01:26Z; lane 4: T162 claimed 22:25Z, lease until 01:25Z; lane 5: T215 claimed 22:29Z, lease until 01:29Z; lane 6: T418 claimed 22:34Z, lease until 01:34Z
 - **Week:** 6% used, 164.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:37Z, 0 min before this update
+- **Last run:** 22:38Z, 6 min before this update
 - **Keeper:** last ran 22:37Z, next wake 01:27Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 24 problem(s) on tasks still to run (+133 on DONE tasks); first: T340: measures 46% of the window, over its 45% limit; trim its reads or split it
+- Strict plan check red: 21 problem(s) on tasks still to run (+134 on DONE tasks); first: T320: stored context_pct 41% but it measures 45%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T419 | calls (harness): TD-CALL-23's no-plaintext scan reads only t | MERGE_PENDING | 1 | 24 min | 22:37Z |  |
-| T351 | privacy and quotes: spaced gate codes, lower-case street add | MERGE_PENDING | 1 | 58 min | 22:35Z |  |
+| T351 | privacy and quotes: spaced gate codes, lower-case street add | resync | 1 | 58 min | 22:35Z | merging main into the reviewed head conflicts in app/quotes/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T417 | Performance: seeded fake-data route benchmark and the first  | done | 1 | 36 min | 22:22Z |  |
 | T385 | adapters, licensing and businesses (harness): the sign-up re | resync | 3 | 40 min | 22:16Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T162 | intake: the one intake order for the five paths and the Span | resync | 1 | 22 min | 21:57Z | merging main into the reviewed head conflicts in app/intake/CLAUDE.md; a resync merges it in on this attempt (D-891) |
