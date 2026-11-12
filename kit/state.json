@@ -26300,7 +26300,20 @@
    "attempts": 0,
    "slug": "business-consent-wiring",
    "type": "build",
-   "stage": "4"
+   "stage": "4",
+   "plan_gap": {
+    "at": "2026-11-12T06:40:33Z",
+    "problems": [
+     "T268: dependency T248 is DONE but its owned file docs/catalog/markets.yaml is not on main",
+     "T268: dependency T248 is DONE but its owned file app/catalog/src/markets.rs is not on main",
+     "T268: dependency T248 is DONE but its owned file app/catalog/data/zcta_centroids_az.csv is not on main",
+     "T268: dependency T248 is DONE but its owned file migrations/0162_catalog_markets.sql is not on main",
+     "T268: dependency T248 is DONE but its owned file app/catalog/src/tests/markets.rs is not on main",
+     "T268: dependency T248 is DONE but its owned file migrations/0163_businesses_service_area.sql is not on main",
+     "T268: dependency T248 is DONE but its owned file app/businesses/src/service_area.rs is not on main",
+     "T268: dependency T248 is DONE but its owned file tests/integration/tests/service_area.rs is not on main"
+    ]
+   }
   },
   {
    "id": "T269",
@@ -32873,7 +32886,20 @@
    "attempts": 0,
    "slug": "job-category-and-types-stored",
    "type": "build",
-   "stage": "4"
+   "stage": "4",
+   "plan_gap": {
+    "at": "2026-11-12T06:40:33Z",
+    "problems": [
+     "T339: dependency T248 is DONE but its owned file docs/catalog/markets.yaml is not on main",
+     "T339: dependency T248 is DONE but its owned file app/catalog/src/markets.rs is not on main",
+     "T339: dependency T248 is DONE but its owned file app/catalog/data/zcta_centroids_az.csv is not on main",
+     "T339: dependency T248 is DONE but its owned file migrations/0162_catalog_markets.sql is not on main",
+     "T339: dependency T248 is DONE but its owned file app/catalog/src/tests/markets.rs is not on main",
+     "T339: dependency T248 is DONE but its owned file migrations/0163_businesses_service_area.sql is not on main",
+     "T339: dependency T248 is DONE but its owned file app/businesses/src/service_area.rs is not on main",
+     "T339: dependency T248 is DONE but its owned file tests/integration/tests/service_area.rs is not on main"
+    ]
+   }
   },
   {
    "id": "T343",
@@ -37935,7 +37961,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T06:40:42Z",
+ "updated_at": "2026-11-12T06:40:54Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
