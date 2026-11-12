@@ -35359,7 +35359,10 @@
    ],
    "update_waiting_since": null,
    "update_push_failures": null,
-   "last_failure": "Ally: failure\nAlly failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing)\n    >  99 |   expect(at.index, `Tab from \"${before.name}\" reaches the next control in source order`).toBe(before.next);\n          |                                                                                          ^\n      100 |   expect(at.problems).toEqual([]);\n      101 |   return at;\n      102 | }\n        at tab (/home/runner/work/askhava/askhava/tests/a11y/j1_keyboard.spec.ts:99:90)\n        at tabTo (/home/runner/work/askhava/askhava/tests/a11y/j1_keyboard.spec.ts:107:20)\n        at /home/runner/work/askhava/askhava/tests/a11y/j1_keyboard.spec.ts:172:5\n    Error Context: test-results/a11y/j1_keyboard-A11Y-005-A11Y--f2164--Pick-code-step-axe-on-each/error-context.md\n  3 failed\n    tests/a11y/j1_keyboard.spec.ts:159:3 \u203a A11Y-005 A11Y-021 J1 steps 5 and 6 keyboard-only at 320 px: quote page, Pick #2, Go back, Pick #2 again, final Pick, code step; axe on each \n    tests/a11y/j1_keyboard.spec.ts:159:3 \u203a A11Y-005 A11Y-021 J1 steps 5 and 6 keyboard-only at 768 px: quote page, Pick #2, Go back, Pick #2 again, final Pick, code step; axe on each \n    tests/a11y/j1_keyboard.spec.ts:159:3 \u203a A11Y-005 A11Y-021 J1 steps 5 and 6 keyboard-only at 1280 px: quote page, Pick #2, Go back, Pick #2 again, final Pick, code step; axe on each \n  171 passed (50.6s)\n##[error]Process completed with exit code 1."
+   "last_failure": "Ally: failure\nAlly failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing)\n    >  99 |   expect(at.index, `Tab from \"${before.name}\" reaches the next control in source order`).toBe(before.next);\n          |                                                                                          ^\n      100 |   expect(at.problems).toEqual([]);\n      101 |   return at;\n      102 | }\n        at tab (/home/runner/work/askhava/askhava/tests/a11y/j1_keyboard.spec.ts:99:90)\n        at tabTo (/home/runner/work/askhava/askhava/tests/a11y/j1_keyboard.spec.ts:107:20)\n        at /home/runner/work/askhava/askhava/tests/a11y/j1_keyboard.spec.ts:172:5\n    Error Context: test-results/a11y/j1_keyboard-A11Y-005-A11Y--f2164--Pick-code-step-axe-on-each/error-context.md\n  3 failed\n    tests/a11y/j1_keyboard.spec.ts:159:3 \u203a A11Y-005 A11Y-021 J1 steps 5 and 6 keyboard-only at 320 px: quote page, Pick #2, Go back, Pick #2 again, final Pick, code step; axe on each \n    tests/a11y/j1_keyboard.spec.ts:159:3 \u203a A11Y-005 A11Y-021 J1 steps 5 and 6 keyboard-only at 768 px: quote page, Pick #2, Go back, Pick #2 again, final Pick, code step; axe on each \n    tests/a11y/j1_keyboard.spec.ts:159:3 \u203a A11Y-005 A11Y-021 J1 steps 5 and 6 keyboard-only at 1280 px: quote page, Pick #2, Go back, Pick #2 again, final Pick, code step; axe on each \n  171 passed (50.6s)\n##[error]Process completed with exit code 1.",
+   "runner_closed_prs": [
+    586
+   ]
   },
   {
    "id": "T363",
@@ -41155,7 +41158,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T14:45:38Z",
+ "updated_at": "2026-11-12T14:45:46Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
