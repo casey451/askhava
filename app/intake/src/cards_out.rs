@@ -8,8 +8,17 @@
 //! approved digest, sent only while `approved_card` holds (a changed card is
 //! [`CardsSent::Refused`]); on `intake.emergency_released` ([`send_emergency`]) it is the first
 //! of `quotes::api::unsent_cards` carrying the emergency mark, never a regular job's card waiting
-//! in its approval window (one release per request: D-3189's known issue). No stored card (or no
-//! town) is [`IntakeError::NoStoredCard`]: nothing is sent and the task fails, so it retries.
+//! in its approval window (one release per request: D-3189's known issue); once that card is sent,
+//! a rerun takes the request's sent emergency card again, so a retry after the commit still sends
+//! TXT-032 once (D-3182). No stored card (or no town) is [`IntakeError::NoStoredCard`]: nothing is
+//! sent and the task fails, so it retries.
+//!
+//! Gates first, on both paths and every retry (D-3182): no consent record (`card_allowed`) sends
+//! nothing ([`CardsSent::Stopped`]); a 911 text waiting for SAFE (`safe_hold`, INT-005) sends
+//! nothing ([`CardsSent::Held`]) and the handler queues the same event again [`HOLD_RECHECK`] later.
+//! In the transaction the job's row is locked first (`jobs::api::lock_for_quote_change`): a job in
+//! Intake moves to Open (JOB-008, `move_to`), Open and No quotes yet go on (a rerun), and any other
+//! status (a job cancelled by CLOSE, closed, not covered) sends nothing ([`CardsSent::Stopped`]).
 //!
 //! One transaction marks the card sent, builds the pool (`quotes::api::card_pool`, the job's own
 //! town from `intake.property`, the band floor from the `band.<job>` answer T162 stores), records
@@ -23,16 +32,17 @@
 
 use std::sync::Arc;
 
-use askhava_core::api::{Claimed, HandlerError};
-use askhava_jobs::api::{job_number, record_job_facts};
+use askhava_core::api::{Claimed, Guarded, HandlerError, NewTask, enqueue};
+use askhava_jobs::api::{JobStatus, job_number, lock_for_quote_change, move_to, record_job_facts};
 use askhava_messaging::api::{SendWindow, held_until, send_window};
+use askhava_ops::api::Actor;
 use askhava_privacy::api::Vault;
 use askhava_quotes::api::{
     CardLines, CardNotice, CardPool, CardsOut, Pool, Reader, Recipient, SLOW_AT_MOST, StoredCard,
     band_floor_cents, card_holders, card_pool, cards_out_text, description, mark_card_sent,
-    queue_card_notice, queue_emergency_card, send_job_cards, stored_card, unsent_cards,
+    queue_card_notice, queue_emergency_card, send_job_cards, sent_card, stored_card, unsent_cards,
 };
-use jiff::Timestamp;
+use jiff::{SignedDuration, Timestamp};
 use secrecy::SecretString;
 use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection, PgPool};
@@ -40,8 +50,10 @@ use sqlx::{Connection, PgConnection, PgPool};
 use crate::handlers::queue_body;
 use crate::models::{self, IntakeError};
 use crate::rules::language_from_code;
-use crate::service::{Queued, how_soon, may_text};
-use crate::summary_step::approved_card;
+use crate::service::{
+    EMERGENCY_RELEASED_KIND, Queued, card_allowed, how_soon, may_text, safe_hold,
+};
+use crate::summary_step::{CARDS_APPROVED_KIND, approved_card};
 
 /// TXT-032's template ID, the cards-out text's first sentence.
 pub const CARDS_OUT_TEMPLATE: &str = "request_out";
@@ -51,6 +63,9 @@ const TODAY: &str = "today";
 const BUSINESS_TEXTING_ON: bool = false;
 const BAD_PAYLOAD: &str = "bad intake card sender payload";
 const FAILED: &str = "the intake card sender failed";
+/// INT-005, D-3182: how long a card event held by a 911 text waiting for SAFE waits before it runs
+/// again; it repeats until SAFE comes or the job leaves Intake (INT-019's close ends it).
+pub const HOLD_RECHECK: SignedDuration = SignedDuration::from_mins(5);
 
 /// What the sender needs and never logs: the outbox key and the vault `messaging` reads her number
 /// from for the send window (SEC-018, PRIV-004).
@@ -79,6 +94,12 @@ pub enum CardsSent {
     },
     /// The stored card is not the one the homeowner approved (CARD-007): nothing is sent.
     Refused,
+    /// A 911 text of the request waits for SAFE (INT-005): nothing is sent; the handler queues the
+    /// event again [`HOLD_RECHECK`] later.
+    Held,
+    /// No consent record (CON-007), or the job's status takes no cards (JOB-008: cancelled,
+    /// closed, not covered or past the first quote): nothing is sent and the task is done.
+    Stopped,
 }
 
 /// The `intake.cards_approved` handler `server` registers: [`send_approved`] at `now()`.
@@ -102,15 +123,9 @@ pub async fn run_cards_approved(
         return Err(HandlerError(BAD_PAYLOAD));
     };
     let mut db = pool.acquire().await.map_err(|_| HandlerError(FAILED))?;
-    send_approved(
-        &mut db,
-        &keys,
-        (conversation, job, &digest),
-        Timestamp::now(),
-    )
-    .await
-    .map(|_| ())
-    .map_err(|_| HandlerError(FAILED))
+    let now = Timestamp::now();
+    let sent = send_approved(&mut db, &keys, (conversation, job, &digest), now).await;
+    settle(&mut db, (CARDS_APPROVED_KIND, &task), sent, now).await
 }
 
 /// The `intake.emergency_released` handler `server` registers: [`send_emergency`] at `now()`.
@@ -128,15 +143,48 @@ pub async fn run_emergency_released(
         .and_then(|v| v.parse::<Uuid>().ok())
         .ok_or(HandlerError(BAD_PAYLOAD))?;
     let mut db = pool.acquire().await.map_err(|_| HandlerError(FAILED))?;
-    send_emergency(&mut db, &keys, conversation, Timestamp::now())
-        .await
-        .map(|_| ())
-        .map_err(|_| HandlerError(FAILED))
+    let now = Timestamp::now();
+    let sent = send_emergency(&mut db, &keys, conversation, now).await;
+    settle(&mut db, (EMERGENCY_RELEASED_KIND, &task), sent, now).await
+}
+
+/// INT-005, D-3182: a held run queues `kind` with the same payload [`HOLD_RECHECK`] from `now`,
+/// keyed by `task`'s row ID (a second run of the same task queues nothing more); an error fails
+/// the task so it retries; anything else finishes it.
+async fn settle(
+    db: &mut PgConnection,
+    (kind, task): (&'static str, &Claimed),
+    sent: Result<CardsSent, IntakeError>,
+    now: Timestamp,
+) -> Result<(), HandlerError> {
+    match sent {
+        Ok(CardsSent::Held) => {
+            let mut again = NewTask::new(kind, task.payload.clone(), now + HOLD_RECHECK);
+            again.dedupe_key = Some(format!("{kind}:after:{}", task.id));
+            enqueue(db, &again)
+                .await
+                .map(|_| ())
+                .map_err(|_| HandlerError(FAILED))
+        }
+        Ok(_) => Ok(()),
+        Err(_) => Err(HandlerError(FAILED)),
+    }
+}
+
+/// CON-007, INT-005: `Some` when request `conversation` may not get cards now: no consent record
+/// ([`CardsSent::Stopped`]) or a 911 text waiting for SAFE ([`CardsSent::Held`]).
+async fn gate(db: &mut PgConnection, conversation: Uuid) -> Result<Option<CardsSent>, IntakeError> {
+    if !card_allowed(db, conversation).await? {
+        return Ok(Some(CardsSent::Stopped));
+    }
+    Ok(safe_hold(db, conversation)
+        .await?
+        .then_some(CardsSent::Held))
 }
 
 /// CARD-025, INT-041, CARD-007: sends job `job`'s card approved under `digest` in request
-/// `conversation`, only while `approved_card` holds for it. Safe to run twice. Call it outside a
-/// transaction (the vault read).
+/// `conversation`, only while `approved_card` holds for it and the gates pass (module comment).
+/// Safe to run twice. Call it outside a transaction (the vault read).
 ///
 /// # Errors
 ///
@@ -147,6 +195,9 @@ pub async fn send_approved(
     (conversation, job, digest): (Uuid, Uuid, &str),
     now: Timestamp,
 ) -> Result<CardsSent, IntakeError> {
+    if let Some(stop) = gate(db, conversation).await? {
+        return Ok(stop);
+    }
     let stored = stored_card(db, job, digest)
         .await
         .map_err(|_| IntakeError::Quotes)?
@@ -158,25 +209,43 @@ pub async fn send_approved(
 }
 
 /// INT-029, CARD-021, CARD-025: sends at once the first unsent stored card of request
-/// `conversation` that carries the emergency mark; a regular job's card is never sent here.
+/// `conversation` that carries the emergency mark, the gates passing; a regular job's card is never
+/// sent here. With none unsent it reruns the request's sent emergency card, which records nothing
+/// new and sends the TXT-032 text a failed run left unsent, once (D-3182).
 ///
 /// # Errors
 ///
-/// [`IntakeError::NoStoredCard`] when no unsent emergency card is stored; otherwise as
-/// [`send_stored`].
+/// [`IntakeError::NoStoredCard`] when no emergency card is stored; otherwise as [`send_stored`].
 pub async fn send_emergency(
     db: &mut PgConnection,
     keys: &CardsOutKeys,
     conversation: Uuid,
     now: Timestamp,
 ) -> Result<CardsSent, IntakeError> {
-    let stored = unsent_cards(db, conversation)
-        .await
-        .map_err(|_| IntakeError::Quotes)?
-        .into_iter()
-        .find(|c| c.facts.emergency)
-        .ok_or(IntakeError::NoStoredCard)?;
+    if let Some(stop) = gate(db, conversation).await? {
+        return Ok(stop);
+    }
+    let stored = emergency_card(db, conversation).await?;
     send_stored(db, keys, (conversation, &stored), now).await
+}
+
+/// The first unsent emergency card of `conversation`, else its first sent one (D-3182).
+async fn emergency_card(
+    db: &mut PgConnection,
+    conversation: Uuid,
+) -> Result<StoredCard, IntakeError> {
+    let quotes = |_| IntakeError::Quotes;
+    let unsent = unsent_cards(db, conversation).await.map_err(quotes)?;
+    if let Some(card) = unsent.into_iter().find(|c| c.facts.emergency) {
+        return Ok(card);
+    }
+    for job in models::request_jobs(db, conversation).await? {
+        let sent = sent_card(db, job).await.map_err(quotes)?;
+        if let Some(card) = sent.filter(|c| c.facts.emergency && c.request == conversation) {
+            return Ok(card);
+        }
+    }
+    Err(IntakeError::NoStoredCard)
 }
 
 /// The send itself, then the TXT-032 text (module comment).
@@ -201,11 +270,14 @@ async fn send_stored(
         .map(|d| d.text())
         .unwrap_or_default();
     let mut tx = db.begin().await.map_err(|_| IntakeError::Database)?;
+    if !takes_cards(&mut tx, stored.job, now).await? {
+        return Ok(CardsSent::Stopped);
+    }
     let floor = band.as_deref().and_then(band_floor_cents);
+    let quotes = |_| IntakeError::Quotes;
     let pool = card_pool(&mut tx, (&town, &stored.facts), text, floor)
         .await
-        .map_err(|_| IntakeError::Quotes)?;
-    let quotes = |_| IntakeError::Quotes;
+        .map_err(quotes)?;
     mark_card_sent(&mut tx, stored.job, &stored.digest, now)
         .await
         .map_err(quotes)?;
@@ -231,6 +303,24 @@ async fn send_stored(
         recipients: new,
         text,
     })
+}
+
+/// JOB-008, D-3182: locks job `job`'s row in the caller's transaction, then the guarded move
+/// from Intake to Open (its cards go now; under the lock it applies only to a job in Intake);
+/// Open and No quotes yet go on (a rerun or retry), any other status takes no cards.
+async fn takes_cards(
+    tx: &mut PgConnection,
+    job: Uuid,
+    now: Timestamp,
+) -> Result<bool, IntakeError> {
+    let status = lock_for_quote_change(tx, job)
+        .await
+        .map_err(|_| IntakeError::Job)?;
+    let arrow = (JobStatus::Intake, JobStatus::Open);
+    let moved = move_to(tx, job, arrow, now, Actor::System)
+        .await
+        .map_err(|_| IntakeError::Job)?;
+    Ok(matches!(moved, Guarded::Applied(())) || status.takes_late_cards())
 }
 
 /// The `intake_answer` question T162 stores the size or budget band floor under (BIZ-049).

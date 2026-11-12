@@ -16,21 +16,25 @@ use askhava_businesses::api::{
     save_business_name, set_job_types, set_towns, welcome_sent,
 };
 use askhava_catalog::api::{category, load_embedded};
+use askhava_core::api::{Claimed, Guarded};
 use askhava_intake::api::rules::{Inbound, Settings};
 use askhava_intake::api::{
-    AUTO_SEND_AFTER, CardStep, CardTimer, CardsOutKeys, CardsSent, IntakeError, JobStart, Opened,
-    Preview, Shown, TextIn, ZIP_AGAIN_TEMPLATE, ZIP_QUESTION_TEMPLATE, ZipStep, answer_card,
-    answer_zip, ask_zip, begin_job, card_timer_step, receive_text, send_approved, send_emergency,
-    show_card, zip_body,
+    AUTO_SEND_AFTER, CardStep, CardTimer, CardsOutKeys, CardsSent, EMERGENCY_RELEASED_KIND,
+    HOLD_RECHECK, IntakeError, JobStart, Opened, Preview, Shown, TextIn, ZIP_AGAIN_TEMPLATE,
+    ZIP_QUESTION_TEMPLATE, ZipStep, answer_card, answer_zip, ask_zip, begin_job, card_timer_step,
+    receive_text, run_emergency_released, safe_hold, send_approved, send_emergency, show_card,
+    zip_body,
 };
 use askhava_integration::set_app_role;
-use askhava_jobs::api::job_facts;
+use askhava_jobs::api::{JobStatus, current, job_facts, move_to};
 use askhava_licensing::api::import_city_list;
 use askhava_messaging::api::{Language, held_until};
 use askhava_ops::api::{Actor, Switch, set_switch};
 use askhava_privacy::api::{
     CommonWords, Known, NameMemory, NewContact, Vault, scrub, store_contact,
 };
+use std::sync::Arc;
+
 use askhava_quotes::api::{
     CardFacts, CardParts, DEFAULT_MIN_WORDS, JobCard, Place, build_card, card_digest, keep_card,
     keep_description, sent_card,
@@ -75,6 +79,14 @@ fn secret() -> SecretString {
 
 fn keys() -> CardsOutKeys {
     CardsOutKeys::new(secret(), vault())
+}
+
+/// Keys whose vault cannot open her number, so the TXT-032 step fails after the cards committed.
+fn broken_keys() -> CardsOutKeys {
+    let key = |b: u8| SecretString::from(format!("1:{}", STANDARD.encode([b; 32])));
+    let url = SecretString::from("postgres://askhava_app@db.invalid/askhava".to_owned());
+    let other = Vault::new(&key(0x52), &key(0x62), &url).expect("vault");
+    CardsOutKeys::new(secret(), other)
 }
 
 fn text<'a>(contact: Uuid, words: &'a str, at: Timestamp) -> TextIn<'a> {
@@ -478,11 +490,128 @@ async fn td_card_14_an_emergency_release_sends_at_once(pool: PgPool) {
     assert_facts(&mut db, urgent).await;
     assert_eq!(cards_out_texts(&mut db, r.her).await.len(), 1);
     let again = send_emergency(&mut db, &keys(), r.conversation, later(DAY, 2)).await;
-    assert_eq!(
-        again,
-        Err(IntakeError::NoStoredCard),
-        "nothing left to release"
-    );
+    let Ok(CardsSent::Sent { recipients, text }) = again else {
+        panic!("a rerun");
+    };
+    assert!(recipients.is_empty() && text.is_some(), "nothing new");
+    assert_eq!(counts(&mut db, urgent).await, (1, 1));
+    assert_eq!(cards_out_texts(&mut db, r.her).await.len(), 1);
+    let status = current(&mut db, urgent).await.expect("job").status;
+    assert!(status.code() == "open", "JOB-008: its cards went first");
+}
+
+/// TD-CARD-14 (INT-029, TXT-032, D-3182): when the emergency send fails after its cards committed
+/// (here the vault cannot open her number), the retry records nothing new and sends the one
+/// TXT-032 text the failed run left unsent; a further rerun adds no second text.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_card_14_an_emergency_retry_still_sends_the_text(pool: PgPool) {
+    let mut db = setup(&pool).await;
+    business(&mut db, 1, Shape::default()).await;
+    let r = request(&mut db, "+19285550161", ts(DAY)).await;
+    store(&mut db, r, r.job, true).await;
+    let failed = send_emergency(&mut db, &broken_keys(), r.conversation, ts(DAY)).await;
+    assert!(failed.is_err(), "the text step failed: {failed:?}");
+    assert_eq!(counts(&mut db, r.job).await, (1, 1), "the cards committed");
+    assert!(cards_out_texts(&mut db, r.her).await.is_empty());
+    for minute in [1, 2] {
+        let retry = send_emergency(&mut db, &keys(), r.conversation, later(DAY, minute)).await;
+        let Ok(CardsSent::Sent { recipients, text }) = retry else {
+            panic!("the retry: {retry:?}");
+        };
+        assert!(recipients.is_empty() && text.is_some());
+        assert_eq!(counts(&mut db, r.job).await, (1, 1));
+        assert_eq!(cards_out_texts(&mut db, r.her).await.len(), 1, "one text");
+    }
+}
+
+/// TD-CARD-14 (INT-005, D-3182): while a 911 text waits for SAFE neither path sends a card, a
+/// notice or a text, and the handler queues the event again `HOLD_RECHECK` later; after SAFE the
+/// approved card goes and the job moves to Open (JOB-008).
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_card_14_a_safe_hold_sends_nothing(pool: PgPool) {
+    let mut db = setup(&pool).await;
+    business(&mut db, 1, Shape::default()).await;
+    let r = request(&mut db, "+19285550162", ts(DAY)).await;
+    let card = store(&mut db, r, r.job, false).await;
+    show(&mut db, r, &card, ts(DAY)).await;
+    send_word(&mut db, r, later(DAY, 1)).await;
+    let urgent = job(&mut db, r.conversation, "landscape_maintenance", ts(DAY)).await;
+    store(&mut db, r, urgent, true).await;
+    let gas = text(r.her, "I smell gas by the furnace", later(DAY, 2));
+    receive_text(&mut db, &secret(), &gas, Settings::default())
+        .await
+        .expect("heard");
+    assert!(safe_hold(&mut db, r.conversation).await.expect("hold"));
+    let digest = card_digest(card.text());
+    let ids = (r.conversation, r.job, digest.as_str());
+    let held = send_approved(&mut db, &keys(), ids, later(DAY, 3)).await;
+    assert_eq!(held, Ok(CardsSent::Held));
+    let held = send_emergency(&mut db, &keys(), r.conversation, later(DAY, 3)).await;
+    assert_eq!(held, Ok(CardsSent::Held));
+    let task = Claimed {
+        id: 251,
+        kind: EMERGENCY_RELEASED_KIND.to_owned(),
+        payload: serde_json::json!({ "conversation": r.conversation }),
+        attempts: 1,
+    };
+    let ran = run_emergency_released(pool.clone(), Arc::new(keys()), task).await;
+    assert!(ran.is_ok(), "a held run finishes and queues itself again");
+    let wait = format!("{} seconds", HOLD_RECHECK.as_secs() - 60);
+    let after: Vec<bool> = sqlx::query_scalar(
+        "SELECT run_at > now() + $3::interval FROM core.task WHERE kind = $1 AND dedupe_key = $2",
+    )
+    .bind(EMERGENCY_RELEASED_KIND)
+    .bind(format!("{EMERGENCY_RELEASED_KIND}:after:251"))
+    .bind(wait)
+    .fetch_all(&mut db)
+    .await
+    .expect("again");
+    assert_eq!(after, [true], "queued again about HOLD_RECHECK later");
+    for job in [r.job, urgent] {
+        assert_eq!(counts(&mut db, job).await, (0, 0));
+        let status = current(&mut db, job).await.expect("job").status;
+        assert!(status.code() == "intake");
+    }
+    assert!(cards_out_texts(&mut db, r.her).await.is_empty());
+    let safe = text(r.her, "SAFE", later(DAY, 4));
+    receive_text(&mut db, &secret(), &safe, Settings::default())
+        .await
+        .expect("safe");
+    let sent = send_approved(&mut db, &keys(), ids, later(DAY, 5)).await;
+    assert!(matches!(sent, Ok(CardsSent::Sent { .. })), "{sent:?}");
+    assert_eq!(counts(&mut db, r.job).await, (1, 1));
+    let status = current(&mut db, r.job).await.expect("job").status;
+    assert!(status.code() == "open");
+}
+
+/// TD-CARD-14 (JOB-008, JOB-018, D-3182): a job cancelled after its card was approved gets no
+/// card, notice or text on either path; the task is done.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_card_14_a_cancelled_job_gets_no_cards(pool: PgPool) {
+    let mut db = setup(&pool).await;
+    business(&mut db, 1, Shape::default()).await;
+    for (phone, emergency) in [("+19285550163", false), ("+19285550164", true)] {
+        let r = request(&mut db, phone, ts(DAY)).await;
+        let card = store(&mut db, r, r.job, emergency).await;
+        if !emergency {
+            show(&mut db, r, &card, ts(DAY)).await;
+            send_word(&mut db, r, later(DAY, 1)).await;
+        }
+        let arrow = (JobStatus::Intake, JobStatus::Cancelled);
+        let moved = move_to(&mut db, r.job, arrow, later(DAY, 2), Actor::System).await;
+        assert!(matches!(moved, Ok(Guarded::Applied(()))), "cancelled");
+        let sent = if emergency {
+            send_emergency(&mut db, &keys(), r.conversation, later(DAY, 3)).await
+        } else {
+            let digest = card_digest(card.text());
+            let ids = (r.conversation, r.job, digest.as_str());
+            send_approved(&mut db, &keys(), ids, later(DAY, 3)).await
+        };
+        assert_eq!(sent, Ok(CardsSent::Stopped), "emergency: {emergency}");
+        assert_eq!(counts(&mut db, r.job).await, (0, 0));
+        assert!(sent_card(&mut db, r.job).await.expect("read").is_none());
+        assert!(cards_out_texts(&mut db, r.her).await.is_empty());
+    }
 }
 
 /// TD-CARD-14 and TD-BIZ-41 (CARD-001, CARD-016, BIZ-049, CON-020, D-2708, D-1715): on both paths
