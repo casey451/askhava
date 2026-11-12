@@ -25090,8 +25090,8 @@
    "branch": "claude/task/T251-intake-zip-and-cards-out",
    "auto_merge": {
     "enabled": true,
-    "why": "auto-merge on #617 (gh pr merge)",
-    "head": "173e3b65cc26cf9ee4d053bcd05ff81381653c92"
+    "why": "merging main into the task branch conflicts in docs/decisions.md; its auto-merge could not be turned off in time, so it waits and any merge is judged",
+    "head": "82712ea32f54e1930e82c37ac01f60f7cdd96d8e"
    },
    "runner_closed_prs": [
     609
@@ -40245,7 +40245,7 @@
      "result": "MERGE_PENDING"
     }
    ],
-   "reviewed_sha": "1f7e5de74b85278a28a8e4c71a1596ba2b1abfa3",
+   "reviewed_sha": "c5784acbe61dfe65d67a4ba6d6a9f9fb07406b26",
    "review_lease": {
     "task": "T414",
     "session": "actions-43299932933",
@@ -40270,6 +40270,18 @@
      "main": "dee8a64123a95b1a045286e3a571579ad1bc8225",
      "how": "hand-in",
      "at": "2026-11-12T20:57:16Z"
+    },
+    {
+     "from": "1f7e5de74b85278a28a8e4c71a1596ba2b1abfa3",
+     "to": "c5784acbe61dfe65d67a4ba6d6a9f9fb07406b26",
+     "main": "cb0cac64657927f5f4b1cf28c86c21c8970ced8b",
+     "how": "runner",
+     "checks": {
+      "Ci": "success",
+      "Ally": "success",
+      "Twin": "success"
+     },
+     "at": "2026-11-12T21:11:20Z"
     }
    ],
    "update_waiting_since": null,
@@ -40345,7 +40357,7 @@
      "result": "MERGE_PENDING"
     }
    ],
-   "reviewed_sha": "4329932d7a112346a9d259a622a2e591bcf4eb05",
+   "reviewed_sha": "1768f656b22cbb30a827a54670bf93e6597ed39c",
    "review_lease": {
     "task": "T416",
     "session": "actions-43285260609",
@@ -40401,6 +40413,17 @@
       "Ally": "success"
      },
      "at": "2026-11-12T21:00:57Z"
+    },
+    {
+     "from": "4329932d7a112346a9d259a622a2e591bcf4eb05",
+     "to": "1768f656b22cbb30a827a54670bf93e6597ed39c",
+     "main": "cb0cac64657927f5f4b1cf28c86c21c8970ced8b",
+     "how": "runner",
+     "checks": {
+      "Twin": "success",
+      "Ally": "success"
+     },
+     "at": "2026-11-12T21:11:20Z"
     }
    ],
    "update_waiting_since": null,
@@ -42818,7 +42841,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T21:01:39Z",
+ "updated_at": "2026-11-12T21:11:33Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -42916,7 +42939,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "861e4f79adf63edeae7a5209a38e97fa4eded7ba",
+ "runner_sha": "dee8a64123a95b1a045286e3a571579ad1bc8225",
  "starter": "actions",
  "smoke_runs": [
   {
