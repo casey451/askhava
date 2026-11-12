@@ -21,11 +21,22 @@ to be "the reviewed work plus main" (`reviewed_plus_main`, D-584):
    every conflict in it is a pure insertion on both sides at the same place (git's diff3 view holds
    no base line between them, `insertions_after_main`): both inserted blocks are kept verbatim, main's
    first and the branch's after, as for docs/decisions.md; when main's block opens a section (a
-   heading or a TOML table) the branch's must open its own. No side's file may hold a line whose first
+   heading or a TOML table) the branch's must open its own, and a Markdown table row may not meet a
+   non-row across the join (D-3269). No side's file may hold a line whose first
    word is a 40-character conflict marker (`marker_shaped`), which could be misread as git's own. A
    resolved Cargo.toml must still parse as TOML (a key both sides added twice does not) and no inserted
    line may assign a dotted key (`dotted_key`), and every locked section of a resolved
-   docs/architecture.md (scripts/check_plan_lock.py) must be the branch's or main's (D-891).
+   docs/architecture.md (scripts/check_plan_lock.py) must be the branch's or main's (D-891);
+5. a conflicting crate `app/<crate>/CLAUDE.md` or `app/<crate>/src/api.rs` (D-3269: nearly every resync
+   on November 12 was one of these) is resolved by the same pure-insertion rule, then checked again: a
+   crate CLAUDE.md must still pass scripts/check_code_docs.py's crate-doc check (`check_crate_doc`: the
+   120-line limit and the six headings in order) from the runner's own checkout; an api.rs only when
+   no non-blank line is inserted by both sides (`joinable`'s `distinct`), and an api.rs only when
+   every line either side inserted is a one-line `pub use`/`pub mod` re-export (`REEXPORT`), no name
+   is exported twice by the inserted lines (`exported`), and `rustfmt` (the edition in the runner's
+   Cargo.toml) leaves the merged file unchanged, so `cargo fmt --check` and the build stay green.
+   A check that fails, or cannot run (no tool, no rustfmt), is a real conflict. A crate CLAUDE.md both
+   sides changed that git merged without a conflict is checked the same way (`_docs_broken`).
 Any other conflicting path is a real conflict: nothing is resolved by guesswork. The cycle then hands
 the branch to a worker on the same attempt to merge main in itself (a resync, runner/cycle.py, D-891).
 
@@ -44,6 +55,8 @@ update make the same commit and the second push is a no-op instead of a rejected
 from __future__ import annotations
 
 import importlib.util
+import re
+import subprocess
 import tempfile
 import tomllib
 from collections.abc import Callable
@@ -60,6 +73,12 @@ LOCK_TREES = ("docs/", "scripts/", "kit/")  # where locked files live; root file
 ARCHITECTURE = "docs/architecture.md"
 # Shared files where two tasks finishing close together each insert lines at the same place (D-891).
 INSERT_ONLY = ("docs/for-casey-review.md", ARCHITECTURE, "Cargo.toml")
+CODE_DOCS_TOOL = "scripts/check_code_docs.py"
+CRATE_DOC = re.compile(r"app/[a-z0-9_-]+/CLAUDE\.md")  # a crate's CLAUDE.md (docs/code-docs.md section 2, D-3269)
+CRATE_API = re.compile(r"app/[a-z0-9_-]+/src/api\.rs")  # a crate's public face (D-481, D-3269)
+# A one-line re-export: `pub mod name;`, `pub use a::b::C;`, `pub use a::b::C as D;`, `pub use a::{B, C as D};`
+# or `pub use a::*;` (D-3269). Anything else an api.rs side inserted is a real conflict.
+REEXPORT = re.compile(r"pub mod \w+;|pub use [\w:]+(?:::\{[\w, :]*\}|::\*)?(?: as \w+)?;")
 MARK = 40  # conflict marker size for `git merge-file`; a file with a line shaped like one is never resolved
 MARKERS = tuple(c * MARK for c in "<|=>")  # the four marker lines of a `--diff3` conflict (D-891)
 
@@ -113,22 +132,37 @@ def opens_section(line: str) -> bool:
     return line.startswith(("#", "["))
 
 
-def joinable(branch: list[str], base: list[str], main: list[str]) -> bool:
+def table_row(line: str) -> bool:
+    """A Markdown table row: its text starts with `|` (review round 1, D-3269)."""
+    return line.lstrip().startswith("|")
+
+
+def joinable(branch: list[str], base: list[str], main: list[str], distinct: bool = False) -> bool:
     """Whether one conflict is two pure insertions that can stand one after the other: no base line
     between the markers, each block ending in a newline, and, when main's block opens a section, the
-    branch's block opening its own (else the branch's lines would move into main's new section)."""
+    branch's block opening its own (else the branch's lines would move into main's new section). Since
+    D-3269 also refused: main's block ending in a Markdown table row with the branch's not starting with
+    one (the branch's text would be read as part of main's table, or end it), or the branch's block
+    starting with a row main's does not end with (the row would no longer follow the table it was written
+    after); and, with `distinct`, a non-blank line both blocks hold (the same bullet or re-export twice)."""
     if base or any(b and not b[-1].endswith("\n") for b in (branch, main)):
         return False
     first = next((line for line in branch if line.strip()), "")
+    last = next((line for line in reversed(main) if line.strip()), "")
+    if table_row(last) != table_row(first) and first and last:
+        return False
+    if distinct and {line for line in branch if line.strip()} & {line for line in main if line.strip()}:
+        return False
     return not any(opens_section(line) for line in main) or opens_section(first)
 
 
-def insertions_after_main(merged: str, sources: tuple[str, ...] = (), inserted: list[str] | None = None) -> str | None:
+def insertions_after_main(merged: str, sources: tuple[str, ...] = (), inserted: list[str] | None = None,
+                          distinct: bool = False) -> str | None:
     """A `git merge-file -p --diff3 --marker-size=MARK <branch> <base> <main>` result with each conflict
     replaced by main's lines and then the branch's (D-891); None when any of the `sources` (the three
     texts merged) has a line shaped like a conflict marker (`marker_shaped`: it would be read as git's
-    own), any conflict is not `joinable`, or the markers do not close. Each line a conflict inserted is
-    appended to `inserted` when given."""
+    own), any conflict is not `joinable` (with `distinct`, D-3269), or the markers do not close. Each line a
+    conflict inserted is appended to `inserted` when given."""
     if any(marker_shaped(text) for text in sources):
         return None
     out: list[str] = []
@@ -140,7 +174,7 @@ def insertions_after_main(merged: str, sources: tuple[str, ...] = (), inserted: 
         if mark in opens and (part or mark == "<" * MARK):
             part = opens[mark]
         elif mark == ">" * MARK and part == "theirs":
-            if not joinable(block["ours"], block["base"], block["theirs"]):
+            if not joinable(block["ours"], block["base"], block["theirs"], distinct):
                 return None
             out += block["theirs"] + block["ours"]
             kept += block["theirs"] + block["ours"]
@@ -177,8 +211,35 @@ def dotted_key(line: str) -> bool:
 
 
 def insert_only(path: str) -> bool:
-    """Whether a conflict in `path` may be resolved as insertions on both sides (D-891)."""
-    return path in INSERT_ONLY or path.endswith("/Cargo.toml")
+    """Whether a conflict in `path` may be resolved as insertions on both sides (D-891; a crate's
+    CLAUDE.md and api.rs since D-3269, each then checked again by `UpdateMerge._crate_ok`)."""
+    return path in INSERT_ONLY or path.endswith("/Cargo.toml") or bool(CRATE_DOC.fullmatch(path) or CRATE_API.fullmatch(path))
+
+
+def exported(line: str) -> list[str]:
+    """The names one `REEXPORT` line brings into scope: a module's name, an alias, each braced item's last
+    segment or alias, or a path's last segment; none for a glob (D-3269)."""
+    body = line.strip().removesuffix(";")
+    if body.startswith("pub mod "):
+        return [body.removeprefix("pub mod ").strip()]
+    path = body.removeprefix("pub use ").strip()
+    if path.endswith("*"):
+        return []
+    if "{" in path and not path.endswith("}"):
+        return [path.rsplit(" as ", 1)[1].strip()]
+    items = path[path.index("{") + 1:-1].split(",") if "{" in path else [path]
+    names = [item.rsplit(" as ", 1)[1] if " as " in item else item.rsplit("::", 1)[-1] for item in items if item.strip()]
+    module = path.split("::{", 1)[0].rsplit("::", 1)[-1]  # `a::{self, B}` brings in `a` itself
+    return [module if n.strip() == "self" else n.strip() for n in names]
+
+
+def reexports_only(inserted: list[str]) -> bool:
+    """Whether every inserted line is a one-line re-export and no name is exported by two of them (D-3269):
+    `pub use a::X;` from one side and `pub use b::X;` from the other merge cleanly as text but do not compile."""
+    if not inserted or not all(REEXPORT.fullmatch(line.strip()) for line in inserted):
+        return False
+    names = [name for line in inserted for name in exported(line)]
+    return len(names) == len(set(names))
 
 
 def toml_ok(path: str, text: str, inserted: list[str]) -> bool:
@@ -201,7 +262,7 @@ class UpdateMerge:
 
     def __init__(self, run: Runner, root: Path, identity: Callable[[], dict[str, str]]) -> None:
         self._run, self.root, self.identity = run, root, identity
-        self._lock_module: ModuleType | None = None
+        self._modules: dict[str, ModuleType] = {}
 
     def _git(self, *args: str, stdin: str | None = None, env: dict[str, str] | None = None) -> tuple[int, str, str]:
         prefix = ["env", *[f"{k}={v}" for k, v in env.items()]] if env else []
@@ -249,6 +310,9 @@ class UpdateMerge:
         if conflicts - {PLAN_LOCK}:
             return None, sorted(conflicts)
         merged = self._replace(merged, writes)
+        broken = self._docs_broken(base, (reviewed, main), merged)
+        if broken:
+            return None, broken  # a crate CLAUDE.md both sides grew is over its limit once merged (D-3269)
         if PLAN_LOCK in conflicts or PLAN_LOCK in both:
             if self._changed(base, reviewed, LOCK_TOOL) or self._changed(base, main, LOCK_TOOL):
                 return None, [PLAN_LOCK]  # the lock tool itself changed: the runner's copy cannot speak for the merge
@@ -273,12 +337,63 @@ class UpdateMerge:
                 Path(name).write_text(str(text), encoding="utf-8")
             code, out, _ = self._run(["git", "merge-file", "-p", "--diff3", f"--marker-size={MARK}", *names], None, self.root)
         inserted: list[str] = []
-        text = insertions_after_main(out, tuple(str(t) for t in texts), inserted) if 0 <= code < 128 else None
-        if text is None or not toml_ok(path, text, inserted):
+        crate = bool(CRATE_DOC.fullmatch(path) or CRATE_API.fullmatch(path))  # no line added twice there (D-3269)
+        text = insertions_after_main(out, tuple(str(t) for t in texts), inserted, crate) if 0 <= code < 128 else None
+        if text is None or not toml_ok(path, text, inserted) or not self._crate_ok(path, text, inserted):
             return None
         if path == ARCHITECTURE and not self._sections_kept(text, str(texts[0]), str(texts[2])):
             return None
         return text
+
+    def _docs_broken(self, base: str, sides: tuple[str, str], merged: str) -> list[str]:
+        """The crate CLAUDE.md files both sides changed whose merged text fails `_doc_problems` (D-3269): git
+        merges two additions at different places without a conflict, and two lines under the 120-line limit on
+        each side can be over it together, which would fail `Ci` on the update merge. [] when none."""
+        changed = [set(self._ok("diff", "--name-only", base, side).splitlines()) for side in sides]
+        docs = sorted(p for p in changed[0] & changed[1] if CRATE_DOC.fullmatch(p))
+        return [p for p in docs if self._file(merged, p) is not None and self._doc_problems(p, str(self._file(merged, p)))]
+
+    def _crate_ok(self, path: str, text: str, inserted: list[str]) -> bool:
+        """A resolved crate file still passes its checks (D-3269): a crate CLAUDE.md scripts/check_code_docs.py's
+        `check_crate_doc` (the line limit and headings); an api.rs only re-export lines (`reexports_only`) and
+        rustfmt leaving it as it is. Any other file passes."""
+        if CRATE_API.fullmatch(path):
+            return reexports_only(inserted) and self._rustfmt_clean(text)
+        if CRATE_DOC.fullmatch(path):
+            return not self._doc_problems(path, text)
+        return True
+
+    def _doc_problems(self, path: str, text: str) -> list[str]:
+        """scripts/check_code_docs.py's crate-doc problems for `text` as `path` (the runner's own copy of the
+        check, as for the plan lock); a refusal when the check cannot be loaded. The check's "named in
+        docs/architecture.md" part is about that file, not this one, so the crate's path stands in for it."""
+        tool = self._tool("runner_update_code_docs", CODE_DOCS_TOOL)
+        if tool is None:
+            return [f"{CODE_DOCS_TOOL} is not in the runner's checkout"]
+        crate = path.rsplit("/", 1)[0]
+        with tempfile.TemporaryDirectory() as tmp:
+            (Path(tmp) / crate).mkdir(parents=True)
+            (Path(tmp) / path).write_text(text, encoding="utf-8")
+            return list(tool.check_crate_doc(Path(tmp), Path(tmp) / crate, crate))
+
+    def _rustfmt_clean(self, text: str) -> bool:
+        """Whether rustfmt, in the edition of the runner's Cargo.toml, leaves `text` unchanged: two sides' `pub use`
+        lines kept main's first may be out of rustfmt's order, which `cargo fmt --check` would fail (D-3269).
+        False when rustfmt cannot run."""
+        try:
+            code, out, _ = self._run(["rustfmt", "--edition", self._edition(), "--emit", "stdout"], text, self.root)
+        except (OSError, subprocess.SubprocessError):
+            return False
+        return code == 0 and out == text
+
+    def _edition(self) -> str:
+        """The workspace's Rust edition from the runner's Cargo.toml (`[workspace.package] edition`), "2024"
+        when it cannot be read (the edition the workspace is on, docs/architecture.md section 11)."""
+        try:
+            doc = tomllib.loads((self.root / "Cargo.toml").read_text(encoding="utf-8"))
+            return str(doc["workspace"]["package"]["edition"])
+        except (OSError, tomllib.TOMLDecodeError, KeyError, TypeError):
+            return "2024"
 
     def _sections_kept(self, merged: str, ours: str, theirs: str) -> bool:
         """Whether each locked section of docs/architecture.md (scripts/check_plan_lock.py) in the merged
@@ -338,15 +453,19 @@ class UpdateMerge:
 
     def _lock_tool(self) -> ModuleType | None:
         """scripts/check_plan_lock.py of the runner's own checkout (main), loaded once; None when absent."""
-        if self._lock_module is None:
-            path = self.root / "scripts" / "check_plan_lock.py"
-            spec = importlib.util.spec_from_file_location("runner_update_plan_lock", path)
+        return self._tool("runner_update_plan_lock", LOCK_TOOL)
+
+    def _tool(self, name: str, rel: str) -> ModuleType | None:
+        """A script of the runner's own checkout (main) loaded as a module once; None when absent."""
+        if name not in self._modules:
+            path = self.root / rel
+            spec = importlib.util.spec_from_file_location(name, path)
             if spec is None or spec.loader is None or not path.is_file():
                 return None
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
-            self._lock_module = module
-        return self._lock_module
+            self._modules[name] = module
+        return self._modules[name]
 
     def commit(self, reviewed: str, main: str, branch: str) -> tuple[str | None, list[str]]:
         """(the merge commit of main into the reviewed head, []) or (None, the conflicting paths)."""
