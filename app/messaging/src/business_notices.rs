@@ -13,7 +13,10 @@
 //! and `page` (the signed-in job page; never image bytes, PRIV-027).
 //!
 //! [`business_notice`] holds the whole notice, email and text together, outside 8 a.m. to 8 p.m.
-//! Arizona time by queueing itself again at 8 a.m. (QH-005). In the window `{time}` is set at the
+//! Arizona time by queueing itself again at 8 a.m. (QH-005), except an EMERGENCY job card: a
+//! payload with `emergency: true` carries its own `subject` and `first_line` (CARD-021) and is
+//! sent when it is due, since `quotes::queue_emergency_card` already chose who gets it at night
+//! (QH-004, BIZ-037) and queued the rest for 8 a.m. (T313, D-2203). In the window `{time}` is set at the
 //! send (D-1828): a card's `quote_hours` from now, a pick's "Accept by" from the composition's
 //! [`SendChecks::accept_by`], a null time by the notice's `_untimed` variant. Each text candidate is
 //! checked through [`SendChecks::may_text`] (`businesses::api::may_text`, read now, D-1715,
@@ -21,29 +24,35 @@
 //! that person the email instead (BIZ-019). A `{link}` is a per-recipient signed sign-in link
 //! ([`sign_in_link`], D-1761); a notice with `{link}` and no job number fails, never falling back
 //! to the shared portal address. [`card_notice_accepted`] is what `quotes`' sent count reads
-//! (CARD-019, TD-TXT-22).
+//! (CARD-019, TD-TXT-22). [`run_business_notice`] is the worker's handler: it loads the stored
+//! [`Lines`] (T279) and runs [`business_notice`] in one transaction at the worker clock's now.
 //!
 //! Not here yet (D-1826): TXT-045's List-Unsubscribe and List-Unsubscribe-Post headers on card
 //! emails (the email outbox stores no headers), the portal copy of each notice, Spanish business
-//! emails (BIZ-018), the CARD-021 night emergency emails, and the send of a stored business text
-//! (no business phone number is stored anywhere yet, D-492).
+//! emails (BIZ-018), and the send of a stored business text (no business phone number is
+//! configured anywhere yet, D-492, so the handler's business line has no sender and every text
+//! candidate gets the email).
 
 use std::future::Future;
+use std::sync::Arc;
 
 use askama::Template;
 use askhava_adapters::api::IdempotencyKey;
-use askhava_core::api::{IdSecret, LinkKind, LinkSalt, NewTask, link_token};
+use askhava_core::api::{
+    Claimed, Clock, HandlerError, IdSecret, LinkKind, LinkSalt, NewTask, link_token,
+};
 use jiff::{SignedDuration, Timestamp};
 use secrecy::SecretString;
 use serde_json::Value;
-use sqlx::PgConnection;
 use sqlx::types::Uuid;
+use sqlx::{PgConnection, PgPool};
 
 use crate::email::{
     EMAIL_ACTION, MailboxKind, OnDomain, PostalAddress, Rendered, audience_kind, footer_lines,
     legal_name, short_name,
 };
 use crate::mode::Lines;
+use crate::mode_state::load_lines;
 use crate::models::{self, EmailError};
 use crate::service::{NewText, Relation, enqueue};
 use crate::templates::{Audience, Language, Registry};
@@ -185,6 +194,8 @@ struct Parsed {
     texts: Vec<(Uuid, Uuid)>,
     values: Vec<(String, String)>,
     card: Option<[String; 3]>,
+    /// CARD-021: an EMERGENCY card's own subject and first line; such a notice is never held.
+    emergency: Option<[String; 2]>,
 }
 
 fn ids(v: &Value) -> Option<Vec<Uuid>> {
@@ -239,6 +250,17 @@ fn parse(p: &Value) -> Option<Parsed> {
         [Some(a), Some(b), Some(c)] => Some([a, b, c]),
         _ => None,
     };
+    let emergency = match p["emergency"].as_bool() {
+        Some(true) => {
+            Some([&p["subject"], &p["first_line"]].map(|v| v.as_str().map(str::to_owned)))
+        }
+        _ => None,
+    };
+    let emergency = match emergency {
+        Some([Some(subject), Some(first)]) => Some([subject, first]),
+        Some(_) => return None,
+        None => None,
+    };
     Some(Parsed {
         text_template: p["text_template"].as_str().unwrap_or(&template).to_owned(),
         template,
@@ -253,6 +275,7 @@ fn parse(p: &Value) -> Option<Parsed> {
         texts,
         values: values(&p["values"]),
         card,
+        emergency,
     })
 }
 
@@ -302,10 +325,25 @@ fn card_subject(n: &Parsed) -> String {
     format!("{short}: New {trade} job in {town}. Quote by {time}.")
 }
 
-/// BIZ-019, CARD-020, PRIV-027, SEC-028: the email to `person`: the notice's words, its `{link}`
-/// as a link of its own below them (and, for a card, the card, the WORD-002 statement and one link
-/// to the signed-in job page; no image), in the layout with the business footer. Subject: the
-/// card's CARD-020 subject, else the first sentence.
+/// CARD-021, CARD-020: an EMERGENCY card's own subject, else the card's CARD-020 subject, else
+/// the first sentence of `body`.
+fn subject_of(n: &Parsed, body: &str) -> String {
+    match (&n.emergency, &n.card) {
+        (Some([subject, _]), _) => subject.clone(),
+        (None, Some(_)) => card_subject(n),
+        (None, None) => body
+            .split_inclusive(". ")
+            .next()
+            .unwrap_or(body)
+            .trim()
+            .to_owned(),
+    }
+}
+
+/// BIZ-019, CARD-020, CARD-021, PRIV-027, SEC-028: the email to `person`: an EMERGENCY card's
+/// first line, the notice's words, its `{link}` as a link of its own below them (and, for a card,
+/// the card, the WORD-002 statement and one link to the signed-in job page; no image), in the
+/// layout with the business footer, under [`subject_of`].
 fn render(sender: &NoticeSender, n: &Parsed, link: Option<&str>) -> Result<Rendered, EmailError> {
     const MARK: &str = "\u{1}";
     let marked = words(n, &n.template, Some(MARK))?;
@@ -313,16 +351,9 @@ fn render(sender: &NoticeSender, n: &Parsed, link: Option<&str>) -> Result<Rende
         return Err(EmailError::Template);
     }
     let body = marked.replace(MARK, "").trim_end().to_owned();
-    let subject = match &n.card {
-        Some(_) => card_subject(n),
-        None => body
-            .split_inclusive(". ")
-            .next()
-            .unwrap_or(&body)
-            .trim()
-            .to_owned(),
-    };
-    let mut lines = vec![body];
+    let subject = subject_of(n, &body);
+    let mut lines: Vec<String> = n.emergency.iter().map(|[_, f]| f.clone()).collect();
+    lines.push(body);
     let mut page = link.filter(|_| marked.contains(MARK));
     if let Some([card, statement, url]) = &n.card {
         lines.extend([card.clone(), statement.clone()]);
@@ -453,11 +484,13 @@ fn untimed(n: &mut Parsed) -> Result<(), EmailError> {
     Ok(())
 }
 
-/// The [`BUSINESS_NOTICE_KIND`] handler at `now` (see the module docs): held as a whole at night,
-/// otherwise every text and email stored in one transaction; safe to run twice (JOB-006, SEC-018).
+/// The [`BUSINESS_NOTICE_KIND`] notice at `now` (see the module docs): held as a whole at night
+/// unless it is an EMERGENCY card (CARD-021, QH-004, QH-005, BIZ-037), otherwise every text and
+/// email stored; safe to run twice (JOB-006, SEC-018).
 ///
 /// # Errors
-/// [`EmailError::Template`] for a malformed payload or render, [`EmailError::Database`] otherwise.
+/// [`EmailError::Template`] for a malformed payload (an `emergency: true` one without its
+/// `subject` or `first_line` included) or render, [`EmailError::Database`] otherwise.
 pub async fn business_notice(
     db: &mut PgConnection,
     (sender, gate, lines): (&NoticeSender, &impl SendChecks, &Lines),
@@ -465,7 +498,9 @@ pub async fn business_notice(
     now: Timestamp,
 ) -> Result<NoticeOutcome, EmailError> {
     let mut n = parse(payload).ok_or(EmailError::Template)?;
-    if let Some(until) = held_until(now) {
+    if n.emergency.is_none()
+        && let Some(until) = held_until(now)
+    {
         let mut again = NewTask::new(BUSINESS_NOTICE_KIND, payload.clone(), until);
         again.dedupe_key = Some(format!("{BUSINESS_NOTICE_KIND}.held.{task_id}"));
         askhava_core::api::enqueue(db, &again)
@@ -486,6 +521,44 @@ pub async fn business_notice(
         emails: people.len(),
         texts,
     })
+}
+
+/// What the worker's [`BUSINESS_NOTICE_KIND`] handler holds: the sender, the composition's
+/// [`SendChecks`] and the worker's clock (D-1826 (1), D-2203).
+pub struct NoticeWorker<C> {
+    /// The keys and the footer's checked postal line.
+    pub sender: NoticeSender,
+    /// `businesses::api::may_text` and `picks::api::notice_sent`, supplied by `server`.
+    pub checks: C,
+    /// The worker's clock; its now is the send time (`{time}`, the night rule).
+    pub clock: Arc<dyn Clock>,
+}
+
+/// BIZ-019, CARD-020, CARD-021, QH-005, TXT-035 (T313, D-2203): the [`BUSINESS_NOTICE_KIND`]
+/// handler: the stored [`Lines`] (`load_lines`, with no configured number, D-492) and
+/// [`business_notice`] at the clock's now, in one transaction; a retry stores nothing twice.
+///
+/// # Errors
+/// A fixed sentence for a malformed notice or a failed statement; the queue tries again.
+pub async fn run_business_notice<C: SendChecks>(
+    pool: PgPool,
+    worker: Arc<NoticeWorker<C>>,
+    task: Claimed,
+) -> Result<(), HandlerError> {
+    const FAILED: HandlerError = HandlerError("business notice could not be stored");
+    let now = worker.clock.now();
+    let mut tx = pool.begin().await.map_err(|_| FAILED)?;
+    let lines = load_lines(&mut tx, (None, None))
+        .await
+        .map_err(|_| FAILED)?;
+    let parts = (&worker.sender, &worker.checks, &lines);
+    business_notice(&mut tx, parts, (task.id, &task.payload), now)
+        .await
+        .map_err(|e| match e {
+            EmailError::Template => HandlerError("business notice is malformed"),
+            _ => FAILED,
+        })?;
+    tx.commit().await.map_err(|_| FAILED)
 }
 
 /// CARD-019, TD-TXT-22: whether `business`'s card notice for `job` was accepted by the email
