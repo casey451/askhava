@@ -7,7 +7,8 @@
 //! `data/word_022_phrases.json` (kept equal to `scripts/trace_spec.py` by
 //! `tests/docs/test_word_022_phrases.py`), the WORD-003 claims, the business names the caller
 //! passes (D-493: `ai` cannot call `businesses`), a fact absent from her own words (a number or a
-//! capitalized name), and last the CARD-008 contact shapes. Any hit refuses the whole text; the
+//! capitalized name, a sentence-start word too unless it is an ordinary opener of
+//! `data/sentence_openers.json`), and last the CARD-008 contact shapes. Any hit refuses the whole text; the
 //! writer then uses the fixed template or her scrubbed words (D-988).
 
 use std::collections::HashSet;
@@ -22,6 +23,8 @@ use crate::schemas::{ScreenHit, Screened, TextKind, screen_text};
 
 /// The WORD-022 phrase file, compiled in (WORD-022, D-493).
 const WORD_022_FILE: &str = include_str!("../data/word_022_phrases.json");
+/// The ordinary sentence openers, compiled in (AI-019, D-2209, D-3083).
+const OPENERS_FILE: &str = include_str!("../data/sentence_openers.json");
 
 /// Dollar and price words, folded (AI-019).
 const PRICE_WORDS: &[&str] = &[
@@ -279,8 +282,11 @@ pub(crate) fn word_022() -> Option<&'static [String]> {
         .as_deref()
 }
 
-/// AI-019's "adds no fact": a digit run (any script), or a capitalized word not starting a sentence, that her
-/// words, answers and photo notes do not hold (D-988).
+/// AI-019's "adds no fact": a digit run (any script), or a capitalized word, that her words,
+/// answers and photo notes do not hold (D-988). A word starting a line or following `.`, `!`, `?`
+/// or `:` (a label such as "Note:" too) counts unless it is an ordinary opener ([`is_opener`]), so
+/// "Rheem unit is leaking." and "Rheem: unit is leaking." add a fact (D-2209, D-3083). A word
+/// joined by `-` or `'` is known when each part is, as her words are split there ("Wi-Fi", D-3227).
 fn adds_fact(text: &str, sources: &[&str]) -> bool {
     let known: HashSet<String> = sources
         .iter()
@@ -300,14 +306,33 @@ fn adds_fact(text: &str, sources: &[&str]) -> bool {
         let mut starts = true;
         line.split_whitespace().any(|token| {
             let word = token.trim_matches(|c: char| !is_word(c));
-            let named = !starts
-                && word.chars().next().is_some_and(char::is_uppercase)
+            let named = word.chars().next().is_some_and(char::is_uppercase)
                 && word != "I"
+                && !(starts && is_opener(word))
                 && !is_brand_word(word);
             starts = token.ends_with(['.', '!', '?', ':']);
-            named && unknown(word)
+            named && word.split(|c| !is_word(c)).any(unknown)
         })
     })
+}
+
+/// Whether `word` is on the ordinary-opener list of `data/sentence_openers.json`, folded (AI-019,
+/// D-2209). The list is read once; a broken file leaves it empty, so every unknown capitalized
+/// sentence start counts (fail closed).
+pub(crate) fn is_opener(word: &str) -> bool {
+    static OPENERS: OnceLock<HashSet<String>> = OnceLock::new();
+    OPENERS
+        .get_or_init(|| {
+            serde_json::from_str::<OpenerFile>(OPENERS_FILE)
+                .map(|file| file.openers.iter().map(|w| fold(w)).collect())
+                .unwrap_or_default()
+        })
+        .contains(&fold(word))
+}
+
+#[derive(Deserialize)]
+struct OpenerFile {
+    openers: Vec<String>,
 }
 
 /// A word of the brand's display or short name, English or Spanish, which a question may name
