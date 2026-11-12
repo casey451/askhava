@@ -2,6 +2,13 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## Nine more waiting steps fixed before they start (plan change, D-3118, November 12)
+
+- **What happened.** A sixth check of steps still waiting in line found nine that would have stopped partway, mostly because their change would have broken an older test they may not touch, or because they named code that does not exist where they said. One more older test (the emailed pick code) also needed its job's facts once the fee reads them.
+- **What changed.** Each step's instructions now name the right files and an approach that leaves every older test as it is: the fraud-warning fix keeps honouring "already released" from its caller; the radius-matching, package-pick and opt-out-follow-up steps add new entry points beside the old ones instead of changing them; the call-status step also makes the masked call ask for its status reports, as a reviewed harness change. No rule for homeowners or businesses changes.
+- **Worth knowing.** Nothing records yet whether a business's card payment passed the bank's 3-D Secure check. Until a later step stores it, Ask Hava treats every payment as not checked, so a disputed charge is sent to the bank automatically only when the job was released and a call was made; every other dispute waits for your decision in the portal. That is the cautious side: nothing is submitted that the rule would not allow. If you would rather have the 3-D Secure result recorded so those disputes can also go automatically, say so and it becomes its own step.
+- **Nothing needs you now.**
+
 ## A phone a team member adds now waits for your OK (plan change, D-3081, November 11)
 
 - **What happened.** The rules say a phone that someone on a business's team adds (not the owner) should work only after the owner approves it. Checking the code found that it works the moment it is added: it can call homeowners and text as the business before the owner says yes. A team member could also change an approved phone to a new number that worked at once. This was listed last time as an open security item (IC-95) with no step assigned.
