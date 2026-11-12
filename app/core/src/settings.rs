@@ -27,6 +27,7 @@ const ALLOW_LIST_LIVE: &str = "ASKHAVA_ALLOW_LIST_LIVE";
 const PUBLIC_BASE_URL: &str = "ASKHAVA_PUBLIC_BASE_URL";
 const REQUEST_TIMEOUT_SECS: &str = "ASKHAVA_REQUEST_TIMEOUT_SECS";
 const POSTAL_ADDRESS: &str = "ASKHAVA_POSTAL_ADDRESS";
+const LICENSE_BASE_URL: &str = "ASKHAVA_LICENSE_BASE_URL";
 
 /// Every key the parser accepts; any other `ASKHAVA_*` key stops startup (D-493).
 const KEYS: &[&str] = &[
@@ -45,6 +46,9 @@ const KEYS: &[&str] = &[
     REQUEST_TIMEOUT_SECS,
     // The business email footer's postal line, checked by `messaging` (T313, SEC-028, D-3095).
     POSTAL_ADDRESS,
+    // The license lists' and records' base URL, optional here; the composition that builds the
+    // license source requires it in `test` and `live` (T385, SEC-032, D-2954).
+    LICENSE_BASE_URL,
     "ASKHAVA_TWILIO_ACCOUNT_SID",
     "ASKHAVA_STRIPE_ACCOUNT_ID",
     "ASKHAVA_RESEND_DOMAIN",
@@ -247,6 +251,7 @@ pub struct Settings {
     public_base_url: Option<String>,
     request_timeout_secs: u64,
     postal_address: Option<String>,
+    license_base_url: Option<String>,
 }
 
 impl Settings {
@@ -273,6 +278,10 @@ impl Settings {
         }
         let accounts = check_accounts(environment, &mut raw)?;
         let public_base_url = public_base_url(environment, raw.remove(PUBLIC_BASE_URL))?;
+        let license_base_url = raw.remove(LICENSE_BASE_URL);
+        if let Some(url) = &license_base_url {
+            check_base_url(environment, LICENSE_BASE_URL, url)?;
+        }
         Ok(Self {
             environment,
             database_url: required(&mut raw, DATABASE_URL)?.into(),
@@ -285,6 +294,7 @@ impl Settings {
             public_base_url,
             request_timeout_secs: request_timeout_secs(raw.remove(REQUEST_TIMEOUT_SECS))?,
             postal_address: raw.remove(POSTAL_ADDRESS).map(|p| p.trim().to_owned()),
+            license_base_url,
         })
     }
 
@@ -369,6 +379,15 @@ impl Settings {
         self.postal_address
             .as_deref()
             .ok_or(SettingsError::Missing(POSTAL_ADDRESS))
+    }
+
+    /// The license lists' and records' base URL (`ASKHAVA_LICENSE_BASE_URL`, checked by
+    /// [`check_base_url`]): `file://` fixtures or the public lists (SEC-032, D-2954). Optional
+    /// here; the composition that builds the license source requires it in `test` and `live`, and
+    /// in `ci` and `dev` its absence makes every sign-up record read unreadable.
+    #[must_use]
+    pub fn license_base_url(&self) -> Option<&str> {
+        self.license_base_url.as_deref()
     }
 }
 

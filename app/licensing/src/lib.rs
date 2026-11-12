@@ -20,6 +20,9 @@
 //! of a business's holder (LIC-006, LIC-011, LIC-012, LIC-015, LIC-016, LIC-047, LIC-048) in
 //! `holder`.
 //!
+//! T385 added the sign-up read of a business's own record, its name check and the numbers it is
+//! read under (BIZ-002, BIZ-016, LIC-008, LIC-010, LIC-011, LIC-048) in `own_record`.
+//!
 //! Other crates reach it only through [`api`].
 
 pub mod api;
@@ -30,6 +33,7 @@ mod holder;
 mod imports;
 mod lines;
 mod models;
+mod own_record;
 mod rules;
 mod service;
 

@@ -54,6 +54,7 @@ mod rules;
 mod service;
 mod service_area;
 mod signup;
+mod signup_record;
 mod status;
 mod team;
 

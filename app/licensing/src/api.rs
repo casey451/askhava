@@ -34,6 +34,11 @@
 //! The holder (T374, D-2712): [`record_pest_attestation`] and [`record_agency_license`] store a
 //! business's other-agency licenses at sign-up (LIC-047, LIC-015, LIC-016); [`holder_for`] reads
 //! them with its ROC classes and city-list standing into [`HolderParts`] (LIC-006, LIC-011).
+//!
+//! The own record (T385, D-2954): [`read_own_record`] reads a business's own ROC or city record
+//! once at sign-up into [`OwnRecord`], nothing kept (BIZ-002, LIC-008, LIC-010); [`names_agree`]
+//! is BIZ-016's name check; [`city_match_number`] and [`bound_roc_number`] give the number it is
+//! read under (LIC-011, LIC-048).
 
 pub use crate::class_map::{
     ClassMap, ClassMapError, JobTypeKey, Opening, ProjectLimitRefusal, RequestIntake,
@@ -63,6 +68,10 @@ pub use crate::lines::{
 pub use crate::models::{
     Agency, CityListStanding, CityRecord, Eligibility, Holder, InspectionFee, Job, LicenseKind,
     LicensingError, NoCardReason, PestAttestation, PestRecordCategory, SaleAnswer,
+};
+pub use crate::own_record::{
+    OwnRecord, RECORD_HEADER, RECORD_UNREADABLE_ALERT, RecordList, RecordRead, bound_roc_number,
+    city_match_number, names_agree, read_own_record,
 };
 pub use crate::rules::{city_list_standing, eligibility, eligibility_for_request, inspection_fee};
 pub use crate::service::{
