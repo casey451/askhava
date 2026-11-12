@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-12T07:34:57Z by runner 900aea8bf416 (actions).
+Updated 2026-11-12T07:35:14Z by runner 900aea8bf416 (actions).
 
 **Building: T360 in progress since 06:59Z; 228 of 394 done; week 89% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 228 of 394 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T360 claimed 06:59Z, lease until 09:59Z; lane 3: T390 claimed 07:05Z, lease until 10:05Z; lane 5: T336 claimed 06:48Z, lease until 09:48Z
+- **Lane:** lane 1: T360 claimed 06:59Z, lease until 09:59Z; lane 5: T336 claimed 06:48Z, lease until 09:48Z
 - **Week:** 89% used, 5.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 07:33Z, 1 min before this update
 - **Keeper:** last ran 07:16Z, next wake 09:50Z
@@ -18,6 +18,7 @@ Updated 2026-11-12T07:34:57Z by runner 900aea8bf416 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T390 | calls and server: a blocked staff call that connects a line  | MERGE_PENDING | 1 | 29 min | 07:34Z |  |
 | T401 | server (harness): the door probe's fixture gains a released  | MERGE_PENDING | 2 | 37 min | 07:33Z | PLAN GAP: tests/security/tests/no_homeowner_charge.rs:17-27,123 (TD-FEE-07, not T401's) fails any app/ file naming a hom |
 | T339 | jobs: each job keeps its category code and remaining candida | MERGE_PENDING | 1 | 18 min | 07:13Z |  |
 | T336 | server, adapters and stand-in (harness): a text stopped by a | resync | 2 | 71 min | 06:06Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
@@ -166,8 +167,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T360 (lease until 2026-11-12T09:59:04Z)
-- lane 3: T390 (lease until 2026-11-12T10:05:48Z)
 - lane 5: T336 (lease until 2026-11-12T09:48:38Z)
 
 ## Last usage reading
-- {"task": "T401", "at": "2026-11-12T07:33:26Z", "cache_read_input_tokens": 6971496, "cache_creation_input_tokens": 331399, "input_tokens": 205, "output_tokens": 57932}
+- {"task": "T390", "at": "2026-11-12T07:34:56Z", "output_tokens": 92391, "input_tokens": 298, "cache_creation_input_tokens": 396352, "cache_read_input_tokens": 16085145}
