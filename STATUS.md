@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-12T14:29:47Z by runner cf538681c314 (actions).
+Updated 2026-11-12T14:30:05Z by runner cf538681c314 (actions).
 
 **Building: T385 in progress since 14:03Z; 245 of 397 done; week 94% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 245 of 397 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 3: T385 claimed 14:03Z, lease until 17:03Z; lane 4: T370 claimed 14:07Z, lease until 17:07Z
+- **Lane:** lane 3: T385 claimed 14:03Z, lease until 17:03Z
 - **Week:** 94% used, 1.8M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 14:26Z, 3 min before this update
 - **Keeper:** last ran 14:24Z, next wake 17:06Z
@@ -20,6 +20,7 @@ Updated 2026-11-12T14:29:47Z by runner cf538681c314 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T370 | intake (harness): the night count the homeowner hears counts | MERGE_PENDING | 1 | 22 min | 14:29Z |  |
 | T385 | adapters, licensing and businesses (harness): the sign-up re | resync | 1 | 60 min | 13:57Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T362 | server: the built static files are served at /static/<crate> | check_failed | 1 | 38 min | 13:35Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T369 | businesses: the sign-up after-hours answer ticks only while  | done | 1 | 50 min | 12:41Z |  |
@@ -169,7 +170,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 3: T385 (lease until 2026-11-12T17:03:28Z)
-- lane 4: T370 (lease until 2026-11-12T17:07:25Z)
 
 ## Last usage reading
-- {"task": "T385", "at": "2026-11-12T13:57:41Z", "cache_read_input_tokens": 23905750, "input_tokens": 421, "output_tokens": 168562, "cache_creation_input_tokens": 655813}
+- {"task": "T370", "at": "2026-11-12T14:29:47Z", "input_tokens": 90, "cache_read_input_tokens": 1643333, "cache_creation_input_tokens": 160903, "output_tokens": 22976}
