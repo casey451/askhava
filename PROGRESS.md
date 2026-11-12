@@ -2634,3 +2634,4 @@
 - 2026-11-12T09:16:26Z runner 7450ca237d55 (actions): {}
 - 2026-11-12T09:16:43Z runner 7450ca237d55 (actions): {}
 - 2026-11-12T09:17:01Z runner fbe1e137ffb3 (actions): {"T411": "None -> QUEUED"}
+- 2026-11-12T09:17:23Z runner fbe1e137ffb3 (actions): {"T268": "QUEUED -> IN_PROGRESS"}; T268 estimated 3.8M tokens (calibrated); week has 8.9M left (no five-hour budget, D-3056) after 1.1M still running in another lane (session_reading 2026-11-12T09:16:26Z (week)); claimed
