@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-12T14:31:50Z by runner 87abedec7b6e (actions).
+Updated 2026-11-12T14:41:57Z by runner 87abedec7b6e (actions).
 
-**Building: T385 in progress since 14:03Z; 245 of 397 done; week 94% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T389 in progress since 14:39Z; 245 of 397 done; week 94% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 245 of 397 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 3: T385 claimed 14:03Z, lease until 17:03Z
-- **Week:** 94% used, 1.8M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:30Z, 1 min before this update
+- **Lane:** lane 2: T389 claimed 14:39Z, lease until 17:39Z; lane 3: T385 claimed 14:03Z, lease until 17:03Z
+- **Week:** 94% used, 2.8M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Last run:** 14:39Z, 2 min before this update
 - **Keeper:** last ran 14:30Z, next wake 17:05Z
 
 ## Needs attention
@@ -119,7 +119,6 @@ Updated 2026-11-12T14:31:50Z by runner 87abedec7b6e (actions).
 - 15:44Z Plan: T214 owns the final-Pick share box end to end and ticks it in five finished tests (D-3032) (#495)
 - 15:02Z Plan: T333 may book the webhook refund amount and hold the refunded notice on an unchecked refund (D-3018) (#487)
 - 14:48Z Plan: T214 builds the pick notice's "Can't take it" value; new T386 adds the line to both languages (D-3024) (#489)
-- 14:34Z Harness: browser setup survives an Ubuntu mirror outage (D-3030) (#492)
 
 ## Progress (requirements verified)
 
@@ -152,7 +151,7 @@ Updated 2026-11-12T14:31:50Z by runner 87abedec7b6e (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-12T14:17:06Z (week)): week: 192.2M used, 1.8M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-05T21:01:02Z; waiting until 2026-11-12T17:00:00Z.
+- Pacing (session_reading 2026-11-12T14:30:20Z (week)): week: 191.2M used, 2.8M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-05T21:16:43Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -168,6 +167,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
+- lane 2: T389 (lease until 2026-11-12T17:39:19Z)
 - lane 3: T385 (lease until 2026-11-12T17:03:28Z)
 
 ## Last usage reading
