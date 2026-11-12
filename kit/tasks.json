@@ -10893,7 +10893,7 @@
    "id": "T340",
    "slug": "fee-facts-at-pick",
    "title": "picks and payments: the fee at the pick uses the job's latest stored category and job types resolved from the catalog; a fee-free job type is never charged; an emergency pick is never refused for unsettled facts",
-   "goal": "Seventh audit N7-01 (D-2331; FEE-045, FEE-005, FEE-004, FEE-007; sets aside only D-2210's default facts and closes its known gap). Today `fee_inputs` (`app/picks/src/service.rs:408`) prices every pick with default facts: not fee-free, `VisitTier::DEFAULT`, `RecurringCap::DEFAULT`, recurring when the quote has a period. So a buyer inspection (a `fee_free_job_types` entry, `docs/catalog/categories.yaml:665`) is charged, against FEE-045. After T339 and T251 (which record each job's codes), T343 and T404 (the DONE tests' fixtures record facts; D-3118 gave T404 the facts row of `tests/integration/tests/email_pick_code.rs`, T095's, whose `ready` fixture (`:84` to `:124`) records none and whose `opted_out_yes` case (`:244` to `:256`) picks a non-emergency job through `page_pick` (`app/picks/src/email_code.rs:241`)) and T295 and T318 (the queued owners of `service.rs`): (1) `picks` reads the job's latest facts row through `jobs::api::job_facts` and passes the codes with the chosen quote to `payments`; `app/payments/src/fee_facts.rs` resolves them from `catalog::api` (payments may call catalog; picks may not): the category's set visit tier, whether the pick is fee-free and whether it is one-time or recurring. (2) Several candidates (INT-040's \"Job type not certain\", or an emergency job whose type has not settled; D-2331): the category decides the visit tier; if any remaining candidate is fee-free, the pick is fee-free ($0, a `fee-free job type` ledger entry, no free first win used), never charged; the pick is one-time only if every remaining candidate is one-time, otherwise the quote's period decides as today. (3) A non-emergency job with no row, an unknown code, or candidates spanning more than one category is refused at the pick (`PicksError::Quotes`), storing nothing (fail closed). (4) An emergency job (`jobs::api::current`'s `emergency`) is never refused for its facts: with no row, an unknown code or candidates spanning categories, the pick proceeds on the catalog's default facts for a one-time job (`VisitTier::DEFAULT`, not fee-free, one-time) and raises one High alert `picks.fee_facts_unsettled` per pick through `ops::api::raise_alert`, naming the job number and the pick only, never homeowner details. The money reasoning (D-2331): Confirm (T261) charges exactly the fee stored at the pick and nothing recomputes it (D-1871), so the alert is the control that lets the owner check that fee before the business confirms. Tests in `tests/integration/tests/fee_facts_at_pick.rs` through the real page-pick and text-pick paths with a catalog fixture (TD-FEE-62). Money: the overseer runs an independent money review of the hand-in. Update the `picks` and `payments` `CLAUDE.md` files, `docs/architecture.md` section 10 and `docs/decisions.md`. Any test this task writes that builds an `adapters::api::PaymentIntent` (a fake `IntentStripe` or `PaymentsAdapter` answering an intent) builds it with `serde_json::from_value` (the type derives `Deserialize`), never a struct literal, and gives a succeeded intent a fake `ch_` `latest_charge`, so T352's new field (`#[serde(default)]`) breaks no file T352 does not own (D-3134).",
+   "goal": "Seventh audit N7-01 (D-2331; FEE-045, FEE-005, FEE-004, FEE-007; sets aside only D-2210's default facts and closes its known gap). Today `fee_inputs` (`app/picks/src/service.rs:408`) prices every pick with default facts: not fee-free, `VisitTier::DEFAULT`, `RecurringCap::DEFAULT`, recurring when the quote has a period. So a buyer inspection (a `fee_free_job_types` entry, `docs/catalog/categories.yaml:665`) is charged, against FEE-045. After T339 and T251 (which record each job's codes), T343 and T404 (the DONE tests' fixtures record facts; D-3118 gave T404 the facts row of `tests/integration/tests/email_pick_code.rs`, T095's, whose `ready` fixture (`:84` to `:124`) records none and whose `opted_out_yes` case (`:244` to `:256`) picks a non-emergency job through `page_pick` (`app/picks/src/email_code.rs:241`)) and T295 and T318 (the queued owners of `service.rs`): (1) `picks` reads the job's latest facts row through `jobs::api::job_facts` and passes the codes with the chosen quote to `payments`; `app/payments/src/fee_facts.rs` resolves them from `catalog::api` (payments may call catalog; picks may not): the category's set visit tier, whether the pick is fee-free and whether it is one-time or recurring. (2) Several candidates (INT-040's \"Job type not certain\", or an emergency job whose type has not settled; D-2331): the category decides the visit tier; if any remaining candidate is fee-free, the pick is fee-free ($0, a `fee-free job type` ledger entry, no free first win used), never charged; the pick is one-time only if every remaining candidate is one-time, otherwise the quote's period decides as today. (3) A non-emergency job with no row, an unknown code, or candidates spanning more than one category is refused at the pick (`PicksError::Quotes`), storing nothing (fail closed). (4) An emergency job (`jobs::api::current`'s `emergency`) is never refused for its facts: with no row, an unknown code or candidates spanning categories, the pick proceeds on the catalog's default facts for a one-time job (`VisitTier::DEFAULT`, not fee-free, one-time) and raises one High alert `picks.fee_facts_unsettled` per pick through `ops::api::raise_alert`, naming the job number and the pick only, never homeowner details. The money reasoning (D-2331): Confirm (T261) charges exactly the fee stored at the pick and nothing recomputes it (D-1871), so the alert is the control that lets the owner check that fee before the business confirms. Tests in `tests/integration/tests/fee_facts_at_pick.rs` through the real page-pick and text-pick paths with a catalog fixture (TD-FEE-62). Money: the overseer runs an independent money review of the hand-in. Update the `picks` and `payments` `CLAUDE.md` files and `docs/decisions.md`, and add this task's line to the off-database records and recovery notes of `docs/architecture.md` (found by grep, never loaded whole). Any test this task writes that builds an `adapters::api::PaymentIntent` (a fake `IntentStripe` or `PaymentsAdapter` answering an intent) builds it with `serde_json::from_value` (the type derives `Deserialize`), never a struct literal, and gives a succeeded intent a fake `ch_` `latest_charge`, so T352's new field (`#[serde(default)]`) breaks no file T352 does not own (D-3134).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -10945,13 +10945,14 @@
     "D-403",
     "D-3112",
     "D-3118",
-    "D-3134"
+    "D-3134",
+    "D-3325"
    ],
    "cites": [],
    "budget": {
     "files": 3,
     "lines": 600,
-    "context_pct": 40
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -16118,7 +16119,7 @@
    "id": "T126",
    "slug": "cleanup-stage5",
    "title": "Stage 5 cleanup: dead code, duplicates, docs up to date (end of Phase 1)",
-   "goal": "Scan-driven cleanup, fixing only what the tools flag: an unused-dependency check (`cargo machete` is not pinned, so `cargo tree` plus `python3 scripts/check_crates.py`), a duplicate-function scan, `python3 scripts/check_rust_rules.py`, `python3 scripts/check_code_docs.py`, a grep for commented-out code, and docs/architecture.md sections 7 to 12 brought up to date with the stage's merges. Done means every scan prints zero findings in the task report and the stage's exit test in docs/build-readiness.md section 3 is recorded as passed with its evidence (D-479). `tests/task_kinds_deferred.json` (T327) must hold, at this stage's end, only kinds whose owner task is still queued, each with its reason; any other entry is reported in the task report for the next plan change to remove or justify (D-2290).",
+   "goal": "Scan-driven cleanup, fixing only what the tools flag: an unused-dependency check (`cargo machete` is not pinned, so `cargo tree` plus `python3 scripts/check_crates.py`), a duplicate-function scan, `python3 scripts/check_rust_rules.py`, `python3 scripts/check_code_docs.py`, a grep for commented-out code, and docs/architecture.md sections 7, 8, 9, 11 and 12 and its off-database records and recovery notes (found by grep, never loaded whole) brought up to date with the stage's merges. Done means every scan prints zero findings in the task report and the stage's exit test in docs/build-readiness.md section 3 is recorded as passed with its evidence (D-479). `tests/task_kinds_deferred.json` (T327) must hold, at this stage's end, only kinds whose owner task is still queued, each with its reason; any other entry is reported in the task report for the next plan change to remove or justify (D-2290).",
    "type": "cleanup",
    "phase": 1,
    "stage": "5",
@@ -16208,7 +16209,8 @@
    "decisions": [
     "D-1678",
     "D-2290",
-    "D-3134"
+    "D-3134",
+    "D-3325"
    ],
    "cites": [
     "BUILD_BRIEF.md:488",
@@ -16217,7 +16219,7 @@
    "budget": {
     "files": 3,
     "lines": 400,
-    "context_pct": 62
+    "context_pct": 39
    },
    "checks": [
     "Ci",
@@ -22665,7 +22667,7 @@
    "id": "T271",
    "slug": "call-status-route",
    "title": "server and calls (harness): the dialed leg asks for status callbacks and they are served, so each call's start and finish are logged once",
-   "goal": "No route serves the dialed leg's status callbacks, so nothing in production calls `calls::api::log_finished_call` or T282's `call_start_confirmed`, and no call log exists for the refund rules, the TXT-026 reminders, the no-show, or the business portal's call log (D-1814's caller \"not wired yet\"; second external audit B06, D-1836). D-3118: `dial_twiml` asks for no status callback today (`app/calls/src/handlers.rs:29` to `:40`; D-2129 (4) left that to this task or a harness task), because the done `tests/integration/tests/no_recording.rs` (T078) pins its exact `<Number machineDetection=\"Enable\">` tag (`:116`). So first, as a harness change: `dial_twiml` gains the absolute status-callback URL as a parameter and writes `statusCallback` (that URL), `statusCallbackMethod=\"POST\"` and `statusCallbackEvent=\"initiated completed\"` on `<Number>`, keeping `do-not-record`, `machineDetection` and no whisper `url`; TD-CALL-03's `<Number>` tag assertion becomes the exact new tag and its calls pass the URL, every other assertion byte-identical; `tests/integration/tests/voice_calls.rs:368` (TD-CALL-09) passes the URL, its call only; the URL is the composition's public base (`ASKHAVA_PUBLIC_BASE_URL`, `app/server/src/lib.rs:288`) plus this route's path, reaching `connect` (`app/calls/src/pins.rs:489`, its production caller at `:512`) through new entry points beside `voice_turn` and `voice_confirm` that `app/server/src/inbound_voice.rs` calls, because `VoiceKeys` (`pins.rs:201`) is built by literal in done tests (`tests/integration/tests/call_pins.rs:101`, `app/server/tests/voice_confirm_line.rs:397`, `app/server/tests/inbound_voice.rs:257`) and keeps its fields. Then `app/server/src/call_status.rs`: the status-callback route that `dial_twiml` now names, checked with `X-Twilio-Signature` (SEC-016) and merged in the shared `app/server/src/lib.rs`: an `initiated` event records the dialed leg against the start T262's webhook stored, by `ParentCallSid`, through `call_start_confirmed` (creating the start at the callback's time when the webhook's write was lost); a final event logs the call through `finished_call` and `log_finished_call`, its start joined by the dialed SID, the party taken from the line as T262's voice route resolves it; each is applied once per CallSid and event (SEC-017), a repeated or out-of-order callback changing nothing; after a business call is logged the route enqueues T281's `picks.unreachable_step` check for the line's pick (deduped per call). A forged signature gets 403 and changes nothing; no phone number is stored or logged (PRIV-016), and the request log shows the route template only. Tests in `app/server/tests/call_status.rs` through the real route with signed fake Twilio requests. Update `docs/architecture.md` section 10, the `server` and `calls` `CLAUDE.md` files and `docs/decisions.md`. Harness: an Opus review.",
+   "goal": "No route serves the dialed leg's status callbacks, so nothing in production calls `calls::api::log_finished_call` or T282's `call_start_confirmed`, and no call log exists for the refund rules, the TXT-026 reminders, the no-show, or the business portal's call log (D-1814's caller \"not wired yet\"; second external audit B06, D-1836). D-3118: `dial_twiml` asks for no status callback today (`app/calls/src/handlers.rs:29` to `:40`; D-2129 (4) left that to this task or a harness task), because the done `tests/integration/tests/no_recording.rs` (T078) pins its exact `<Number machineDetection=\"Enable\">` tag (`:116`). So first, as a harness change: `dial_twiml` gains the absolute status-callback URL as a parameter and writes `statusCallback` (that URL), `statusCallbackMethod=\"POST\"` and `statusCallbackEvent=\"initiated completed\"` on `<Number>`, keeping `do-not-record`, `machineDetection` and no whisper `url`; TD-CALL-03's `<Number>` tag assertion becomes the exact new tag and its calls pass the URL, every other assertion byte-identical; `tests/integration/tests/voice_calls.rs:368` (TD-CALL-09) passes the URL, its call only; the URL is the composition's public base (`ASKHAVA_PUBLIC_BASE_URL`, `app/server/src/lib.rs:288`) plus this route's path, reaching `connect` (`app/calls/src/pins.rs:489`, its production caller at `:512`) through new entry points beside `voice_turn` and `voice_confirm` that `app/server/src/inbound_voice.rs` calls, because `VoiceKeys` (`pins.rs:201`) is built by literal in done tests (`tests/integration/tests/call_pins.rs:101`, `app/server/tests/voice_confirm_line.rs:397`, `app/server/tests/inbound_voice.rs:257`) and keeps its fields. Then `app/server/src/call_status.rs`: the status-callback route that `dial_twiml` now names, checked with `X-Twilio-Signature` (SEC-016) and merged in the shared `app/server/src/lib.rs`: an `initiated` event records the dialed leg against the start T262's webhook stored, by `ParentCallSid`, through `call_start_confirmed` (creating the start at the callback's time when the webhook's write was lost); a final event logs the call through `finished_call` and `log_finished_call`, its start joined by the dialed SID, the party taken from the line as T262's voice route resolves it; each is applied once per CallSid and event (SEC-017), a repeated or out-of-order callback changing nothing; after a business call is logged the route enqueues T281's `picks.unreachable_step` check for the line's pick (deduped per call). A forged signature gets 403 and changes nothing; no phone number is stored or logged (PRIV-016), and the request log shows the route template only. Tests in `app/server/tests/call_status.rs` through the real route with signed fake Twilio requests. Update the `server` and `calls` `CLAUDE.md` files and `docs/decisions.md`, and add this task's line to the off-database records and recovery notes of `docs/architecture.md` (found by grep, never loaded whole). Harness: an Opus review.",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -22718,13 +22720,14 @@
     "D-1836",
     "D-1814",
     "D-1690",
-    "D-3118"
+    "D-3118",
+    "D-3325"
    ],
    "cites": [],
    "budget": {
     "files": 7,
     "lines": 500,
-    "context_pct": 46
+    "context_pct": 27
    },
    "checks": [
     "Ci",
