@@ -37386,7 +37386,18 @@
    "attempts": 0,
    "slug": "daily-license-lists-run",
    "type": "build",
-   "stage": "4"
+   "stage": "4",
+   "plan_gap": {
+    "at": "2026-11-12T23:24:01Z",
+    "problems": [
+     "T371: dependency T385 is DONE but its owned file app/licensing/src/own_record.rs is not on main",
+     "T371: dependency T385 is DONE but its owned file app/businesses/src/signup_record.rs is not on main",
+     "T371: dependency T385 is DONE but its owned file tests/integration/tests/signup_own_record.rs is not on main",
+     "T371: dependency T385 is DONE but its owned file tests/fixtures/license_source/record/roc/ROC100001 is not on main",
+     "T371: dependency T385 is DONE but its owned file tests/fixtures/license_source/roc is not on main",
+     "T371: dependency T385 is DONE but its owned file tests/fixtures/license_source/city is not on main"
+    ]
+   }
   },
   {
    "id": "T372",
@@ -43819,7 +43830,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T23:20:20Z",
+ "updated_at": "2026-11-12T23:24:06Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
