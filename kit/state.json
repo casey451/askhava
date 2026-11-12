@@ -34981,7 +34981,7 @@
     "T253",
     "T337"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "door-probe-released-pick",
    "type": "harness",
@@ -34994,8 +34994,8 @@
     3127,
     3128
    ],
-   "reason": "plan gap reported: PLAN GAP: tests/security/tests/no_homeowner_charge.rs:17-27,123 (TD-FEE-07, not T401's) fails any app/ file naming a homeowner mark (door_matrix.rs already names Realm::Homeowner at ~969/979) plus askhava_payments/payments::api; T401 needs payments::api::no_fee_release in door_matrix.rs (kit/prompts/T401.md:9). Evidence: cargo test -p askhava-security --test no_homeowner_charge -> td_fee_07_no_homeowner_route_reaches_payments FAILED: door_matrix.rs: homeowner-realm code reaches payments. Reviewer confirmed; no legitimate workaround. Smallest plan change: give T401 a second owned file (e.g. app; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T401 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: tests/security/tests/no_homeowner_charge.rs:17-27,123 (TD-FEE-07, not T401's) fails any app/ file naming a homeowner mark (door_matrix.rs already names Realm::Homeowner at ~969/979) plus askhava_payments/payments::api; T401 needs payments::api::no_fee_release in door_matrix.rs (kit/prompts/T401.md:9). Evidence: cargo test -p askhava-security --test no_homeowner_charge -> td_fee_07_no_homeowner_route_reaches_payments FAILED: door_matrix.rs: homeowner-realm code reaches payments. Reviewer confirmed; no legitimate workaround. Smallest plan change: give T401 a second owned file (e.g. app/server/tests/door_matrix/released_pick.rs) holding only the release seeding, size budget 2 files. Patch saved at /tmp/T401-plan-gap.patch.",
+   "reason": null,
+   "last_failure": "PLAN GAP: tests/security/tests/no_homeowner_charge.rs:17-27,123 (TD-FEE-07, not T401's) fails any app/ file naming a homeowner mark (door_matrix.rs already names Realm::Homeowner at ~969/979) plus askhava_payments/payments::api; T401 needs payments::api::no_fee_release in door_matrix.rs (kit/prompts/T401.md:9). Evidence: cargo test -p askhava-security --test no_homeowner_charge -> td_fee_07_no_homeowner_route_reaches_payments FAILED: door_matrix.rs: homeowner-realm code reaches payments. Reviewer confirmed; no legitimate workaround. Smallest plan change: give T401 a second owned file (e.g. app/server/tests/door_matrix/released_pick.rs) holding only the release seeding, size budget 2 files. Patch saved at /tmp/T401-plan-gap.patch.\nre-queued after plan fix D-3134: TD-FEE-07 plan gap fixed (D-3134): release seeding moves to the door_matrix/released_pick.rs submodule that names no homeowner mark",
    "history": [
     {
      "attempt": 1,
@@ -35009,6 +35009,21 @@
      "started_at": "2026-11-12T02:54:52Z",
      "ended_at": "2026-11-12T03:13:52Z",
      "result": "BLOCKED"
+    }
+   ],
+   "requeues": [
+    {
+     "at": "2026-11-12T05:00:09Z",
+     "reason": "TD-FEE-07 plan gap fixed (D-3134): release seeding moves to the door_matrix/released_pick.rs submodule that names no homeowner mark",
+     "by": "manual-5083e2945784",
+     "was": "plan gap reported: PLAN GAP: tests/security/tests/no_homeowner_charge.rs:17-27,123 (TD-FEE-07, not T401's) fails any app/ file naming a homeowner mark (door_matrix.rs already names Realm::Homeowner at ~969/979) plus askhava_payments/payments::api; T401 needs payments::api::no_fee_release in door_matrix.rs (kit/prompts/T401.md:9). Evidence: cargo test -p askhava-security --test no_homeowner_charge -> td_fee_07_no_homeowner_route_reaches_payments FAILED: door_matrix.rs: homeowner-realm code reaches payments. Reviewer confirmed; no legitimate workaround. Smallest plan change: give T401 a second owned file (e.g. app; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T401 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 1,
+     "plan_fix": "D-3134",
+     "plan_since": "2026-11-12T02:54:52Z",
+     "plan_base": "976906dd37c95df63822ab553ea562c768e6aca9",
+     "plan_head": "eff652fbdcdb58fb671c2ace7f72d3c5393199db",
+     "plan_then": "396d408f61f43928e73654b97635e171b6341fb6e5421330430a8dcb4b890c78",
+     "plan_now": "65b5dee205a82a9f95f0d6f0a56b124a79233b0942bfa4f4c05125ce6a8d5b47"
     }
    ]
   },
@@ -37256,7 +37271,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T04:58:15Z",
+ "updated_at": "2026-11-12T05:00:09Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -37354,8 +37369,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "47a83212b95ffbe5cbbef28c44394dfe945266cb",
- "starter": "actions",
+ "runner_sha": "eff652fbdcdb58fb671c2ace7f72d3c5393199db",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "0137f98c1451ea9196534502adb25cbf8820360b",
