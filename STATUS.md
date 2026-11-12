@@ -1,18 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-12T02:09:33Z by runner 8bc6d03cfc3c (actions).
+Updated 2026-11-12T02:14:30Z by runner be4ca34c8eb1 (actions).
 
-**Building: T248 in progress since 01:49Z; 219 of 383 done; week 81% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T248 in progress since 01:49Z; 219 of 387 done; week 81% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 219 of 383 build tasks (owner gates not counted)
+- **Tasks done:** 219 of 387 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T248 claimed 01:49Z, lease until 04:49Z; lane 5: T334 claimed 01:43Z, lease until 04:43Z
 - **Week:** 81% used, 24.2M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:09Z, 0 min before this update
+- **Last run:** 02:09Z, 4 min before this update
 - **Keeper:** last ran 02:09Z, next wake 04:45Z
 
 ## Needs attention
-- Strict plan check red: 7 problem(s) on tasks still to run (+71 on DONE tasks); first: T341: stored context_pct 27% but it measures 31%; regenerate
+- Strict plan check red: 8 problem(s) on tasks still to run (+71 on DONE tasks); first: T341: stored context_pct 27% but it measures 31%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -78,9 +78,9 @@ Updated 2026-11-12T02:09:33Z by runner 8bc6d03cfc3c (actions).
 | T295 | payments, ai, intake and picks take the brand from the brand | QUEUED | 1 | 1 min | 04:44Z |  |
 | T374 | licensing and businesses: one read of everything a business  | done | 1 | 45 min | 03:08Z |  |
 | T157 | picks: the homeowner's backup choice at the pick | done | 2 | 22 min | 02:41Z | E2e: failure; Ally: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-1 |
-| T157 | picks: the homeowner's backup choice at the pick | check_failed | 1 | 66 min | 02:10Z |  |
 
 ### Plan and harness merges on main
+- 02:11Z Plan: pre-flight fixes round 5 — T378, T343, T268, T329, T306; new T404 (D-3112) (#538)
 - 02:03Z Plan: pre-flight fixes round 4 — T356, T362, T365, T367, T300, T369; new T401–T403 (D-3106) (#536)
 - 01:55Z Plan: owner approval before a team-linked phone works (BIZ-033, IC-95) — T396–T399 (D-3081) (#531)
 - 00:38Z Plan: T261 pre-flight fix and catalog loaded at start-up (T400, IC-96) (D-3100) (#534)
@@ -119,14 +119,14 @@ Updated 2026-11-12T02:09:33Z by runner 8bc6d03cfc3c (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 212 of 733 (28.9%) · partial 349 · unstarted 172
-**Tasks merged (throughput only):** 219 of 383
+**Requirements verified:** 211 of 733 (28.8%) · partial 350 · unstarted 172
+**Tasks merged (throughput only):** 219 of 387
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 13 | 16 | 6 | 35 |
 | ai | 7 | 17 | 5 | 29 |
-| businesses | 16 | 38 | 4 | 58 |
+| businesses | 15 | 39 | 4 | 58 |
 | calls | 9 | 15 | 1 | 25 |
 | consent | 8 | 23 | 4 | 35 |
 | fees | 12 | 39 | 1 | 52 |
@@ -155,8 +155,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 99 of 172 done
-- stage 5: 0 of 58 done
+- stage 4: 99 of 174 done
+- stage 5: 0 of 60 done
 - stage 6: 0 of 37 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
