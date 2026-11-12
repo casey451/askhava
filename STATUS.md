@@ -1,24 +1,24 @@
 # Ask Hava build status
 
-Updated 2026-11-12T10:01:17Z by runner fbe1e137ffb3 (actions).
+Updated 2026-11-12T10:05:01Z by runner e0aae0369e90 (actions).
 
-**Building: T343 in progress since 09:58Z; 234 of 395 done; week 92% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T343 in progress since 09:58Z; 234 of 397 done; week 92% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 234 of 395 build tasks (owner gates not counted)
+- **Tasks done:** 234 of 397 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T343 claimed 09:58Z, lease until 12:58Z
 - **Week:** 92% used, 6.8M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:01Z, 0 min before this update
+- **Last run:** 10:01Z, 3 min before this update
 - **Keeper:** last ran 10:01Z, next wake 13:00Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 15 problem(s) on tasks still to run (+98 on DONE tasks); first: T396: stored context_pct 39% but it measures 45%; regenerate
+- Strict plan check red: 16 problem(s) on tasks still to run (+99 on DONE tasks); first: T396: stored context_pct 39% but it measures 45%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T411 | quotes: the scrubbed job description and the shown and appro | MERGE_PENDING | 1 | 30 min | 10:00Z |  |
+| T411 | quotes: the scrubbed job description and the shown and appro | resync | 1 | 30 min | 10:00Z | merging main into the reviewed head conflicts in app/quotes/src/api.rs; a resync merges it in on this attempt (D-891) |
 | T268 | portals, businesses and messaging: the sign-up consent box,  | MERGE_PENDING | 1 | 21 min | 09:38Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md, app/messaging/CLAUDE.md; a resync merges it i |
 | T358 | messaging: the Canadian area codes for the HELP roaming line | MERGE_PENDING | 1 | 40 min | 09:32Z |  |
 | T268 | portals, businesses and messaging: the sign-up consent box,  | resync | 1 | 58 min | 09:12Z |  |
@@ -128,7 +128,7 @@ Updated 2026-11-12T10:01:17Z by runner fbe1e137ffb3 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 209 of 733 (28.5%) · partial 354 · unstarted 170
-**Tasks merged (throughput only):** 234 of 395
+**Tasks merged (throughput only):** 234 of 397
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
