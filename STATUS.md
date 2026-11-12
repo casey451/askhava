@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T08:53:43Z by runner a070309d52e6 (actions).
+Updated 2026-11-12T09:00:25Z by runner e65c6beca317 (actions).
 
 **Building: T406 in progress since 08:23Z; 233 of 394 done; week 91% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,14 +8,14 @@ Updated 2026-11-12T08:53:43Z by runner a070309d52e6 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T406 claimed 08:23Z, lease until 11:23Z; lane 2: T336 claimed 08:04Z, lease until 11:04Z; lane 3: T358 claimed 08:52Z, lease until 11:52Z; lane 5: T268 claimed 08:14Z, lease until 11:14Z
 - **Week:** 91% used, 0.7M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:53Z, 0 min before this update
+- **Last run:** 08:53Z, 6 min before this update
 - **Keeper:** last ran 08:53Z, next wake 11:06Z
 
 ## Needs attention
 - BLOCKED T251: plan gap reported: PLAN GAP: app/intake/src/summary_step.rs:415 and app/intake/src/service.rs:672 (T208/T039 files, not T251's). The card sender has nowhere to read the approved card text, category, remaining candidate job types or scrubbed text. Approval payload is only {job, conversation, card digest} (summary_step.rs:415); approved_card (summary_step.rs:345) needs the full JobCard, which only quotes::api::build_card makes. Emergency payload is only {conversation} (service.rs:672). No table stores card text/category/candidates/scrubbed text (quotes.job_card 0067, jobs.job 0031, intake tables 0053; jobs.job_fac; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T251 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T345: plan gap reported: PLAN GAP: tests/test_runner_cache.py:207,:214 and tests/test_runner_merge_early.py:212,:213 hard-code actions/cache/restore@v4, actions/cache/save@v4, anthropics/claude-code-action@v1 and actions/setup-python@v5; no task owns them (added after D-3083 in harness PRs #553 (D-3143) and #552 (D-3141)). Reviewer confirmed: lines exist on main, T345 owns list excludes both files, and with the pins applied the two tests fail (2 failed, 35 passed). Smallest fix: add both files to T345 owns under the D-3083 rule (only action-ref matches change, comparing the name before @); owns and files budget 10 -> ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T345 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 18 problem(s) on tasks still to run (+98 on DONE tasks); first: T396: stored context_pct 39% but it measures 45%; regenerate
+- Strict plan check red: 24 problem(s) on tasks still to run (+100 on DONE tasks); first: T396: stored context_pct 39% but it measures 45%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -87,7 +87,6 @@ Updated 2026-11-12T08:53:43Z by runner a070309d52e6 (actions).
 | T337 | payments (harness): a $0 release proof is bound to the pick' | done | 5 | 23 min | 09:49Z | PLAN GAP: app/server/tests/release_recovery.rs:572-576 (td_pick_50_a_zero_fee_releases_free_and_a_cancelled_pick_nothing |
 | T327 | harness: every task kind the app queues has a handler in the | done | 1 | 48 min | 09:38Z |  |
 | T164 | quotes: one quote format per category, screened notes, and e | BLOCKED | 1 | 14 min | 09:03Z |  |
-| T295 | payments, ai, intake and picks take the brand from the brand | done | 4 | 33 min | 08:57Z | T295 blocked at step 3: tests/brand_literal_baseline.json still lists files T295 does not own: app/messaging/templates/e |
 
 ### Plan and harness merges on main
 - 08:32Z Harness: smoke ancestry reuse accepts squash commits whose identical tree passed Ci, Twin and Ally (D-3156) (#560)
