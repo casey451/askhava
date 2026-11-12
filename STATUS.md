@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-12T06:30:06Z by runner 72993ab86164 (actions).
+Updated 2026-11-12T06:33:01Z by runner 3b8cd1274abe (actions).
 
-**Idle since 06:06Z; 225 of 393 done; week 88% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 06:06Z; 225 of 394 done; week 88% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 225 of 393 build tasks (owner gates not counted)
+- **Tasks done:** 225 of 394 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 06:06Z (no task in progress)
 - **Week:** 88% used, 13.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:29Z, 0 min before this update
+- **Last run:** 06:32Z, 0 min before this update
 - **Keeper:** last ran 06:30Z, next wake 06:50Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 8 problem(s) on tasks still to run (+84 on DONE tasks); first: T396: stored context_pct 39% but it measures 43%; regenerate
+- Strict plan check red: 8 problem(s) on tasks still to run (+89 on DONE tasks); first: T396: stored context_pct 39% but it measures 44%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -116,12 +116,11 @@ Updated 2026-11-12T06:30:06Z by runner 72993ab86164 (actions).
 - 09:40Z Plan: split T164 — new T384 shows edited/withdrawn quotes in place; LIST numbers match picks (D-2912) (#468)
 - 08:37Z Plan: T337 also owns release_recovery.rs for a fixture-only fix (D-2896) (#464)
 - 07:43Z Harness: td_pick_09 asks on the fixed clock — test failing everywhere since 07:00Z (D-2886) (#461)
-- 06:32Z Harness: a worker's plan-gap report blocks the task instead of a retry on the same prompt (D-2859) (#458)
 
 ## Progress (requirements verified)
 
 **Requirements verified:** 210 of 733 (28.6%) · partial 351 · unstarted 172
-**Tasks merged (throughput only):** 225 of 393
+**Tasks merged (throughput only):** 225 of 394
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
