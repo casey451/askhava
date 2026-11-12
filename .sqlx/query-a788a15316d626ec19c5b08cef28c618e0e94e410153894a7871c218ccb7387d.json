@@ -1,0 +1,35 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id, paused_at IS NOT NULL AS \"paused!\" FROM licensing.business_license\n           WHERE business_id = $1 AND agency = 'pest_management' FOR UPDATE",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "licensing.business_license",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "paused!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      null
+    ]
+  },
+  "hash": "a788a15316d626ec19c5b08cef28c618e0e94e410153894a7871c218ccb7387d"
+}
