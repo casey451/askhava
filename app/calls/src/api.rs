@@ -16,6 +16,8 @@
 //! the stored per-day PIN tries and the inbound voice turn ([`voice_turn`], [`voice_confirm`],
 //! [`readback_twiml`], [`hangup_twiml`]) (CALL-003 to CALL-005, CALL-025, SEC-017, D-1755).
 //! T282: [`call_start_confirmed`] and each logged call's `started_at` (FEE-022, D-1836).
+//! T390: [`link_after_dial`], the LINK notice and one pending link after a blocked call connected
+//! a line, and [`LINK_REQUEST_LIFE`] (CALL-011, CALL-003, D-3079).
 
 pub use crate::handlers::{
     FinishedCall, LoggedCall, call_log, call_start_confirmed, dial_twiml, finished_call,
@@ -26,6 +28,7 @@ pub use crate::lifecycle::{
     PhoneStanding, close_expired, close_line, expired, gate, greeting_en, greeting_es,
     greeting_twiml, last4, phone_works, request_link,
 };
+pub use crate::link_request::{LINK_REQUEST_LIFE, link_after_dial};
 pub use crate::models::CallsError;
 pub use crate::pins::{
     PIN_DRAWS, PIN_TRY_LABEL, VoiceCall, VoiceKeys, VoiceReply, arizona_day, call_start,

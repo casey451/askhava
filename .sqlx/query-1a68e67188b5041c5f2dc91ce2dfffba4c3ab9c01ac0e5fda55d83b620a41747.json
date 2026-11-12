@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO calls.link_request_digest (request_id, index_version, digest) SELECT $1, v::smallint, d FROM unnest($2::int4[], $3::bytea[]) AS k(v, d)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Int4Array",
+        "ByteaArray"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "1a68e67188b5041c5f2dc91ce2dfffba4c3ab9c01ac0e5fda55d83b620a41747"
+}

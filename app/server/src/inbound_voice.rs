@@ -14,6 +14,9 @@
 //! calling leg. No line ID, phone or PIN is logged or put in a URL (PRIV-016): the confirm URL
 //! carries only the try number, and `voice_confirm` connects only the line stored with that try
 //! when it was read back, while still open and still the caller's business's (CALL-005, D-2201).
+//! T390 (CALL-011, D-3079, D-3169): after a turn answered with the dial, `calls::api::link_after_dial`
+//! queues the LINK notice and stores one pending link when the caller was an unlinked phone; its
+//! failure is one warn line naming the error variant only and never changes the dial.
 
 use std::sync::Arc;
 
@@ -22,7 +25,8 @@ use askhava_adapters::api::{
 };
 use askhava_calls::api::{
     Attestation, CallsError, IncomingCall, JobPin, PinWait, TRIES_PER_CALL, VoiceCall, VoiceKeys,
-    VoiceReply, hangup_twiml, pin_prompt_twiml, readback_twiml, voice_confirm, voice_turn,
+    VoiceReply, hangup_twiml, link_after_dial, pin_prompt_twiml, readback_twiml, voice_confirm,
+    voice_turn,
 };
 use axum::Router;
 use axum::body::Bytes;
@@ -189,7 +193,23 @@ async fn answer(v: &VoiceHooks, hook: &VerifiedWebhook, turn: Turn) -> Result<St
         }
         Turn::First | Turn::Try(_) => voice_turn(&mut db, vault, &keys, &call, now).await?,
     };
+    if matches!(reply, VoiceReply::Dial(_)) {
+        after_dial(&mut db, vault, (sid, &caller), now).await;
+    }
     Ok(render(v.wait, turn, reply))
+}
+
+/// CALL-011, D-3079: the LINK step after a dial; a failure is one log line naming the error variant
+/// only (no number, line or PIN) and the dial still answers.
+async fn after_dial(
+    db: &mut sqlx::PgConnection,
+    vault: &askhava_privacy::api::Vault,
+    (sid, caller): (&str, &SecretString),
+    now: jiff::Timestamp,
+) {
+    if let Err(e) = link_after_dial(db, vault, sid, caller, now).await {
+        tracing::warn!(error = ?e, "twilio voice link step failed; the call was dialed");
+    }
 }
 
 /// The reply's TwiML; a prompt posts the next try, a read-back its confirm.
