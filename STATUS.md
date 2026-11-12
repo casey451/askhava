@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-12T22:06:58Z by runner 46f5fc54dbd7 (actions).
+Updated 2026-11-12T22:13:02Z by runner be513076a525 (actions).
 
-**Building: T385 in progress since 21:36Z; 256 of 403 done; week 5% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T385 in progress since 21:36Z; 256 of 404 done; week 5% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 256 of 403 build tasks (owner gates not counted)
+- **Tasks done:** 256 of 404 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 3: T385 claimed 21:36Z, lease until 00:36Z; lane 6: T417 claimed 21:46Z, lease until 00:46Z; lane 7: T351 claimed 21:36Z, lease until 00:36Z
 - **Week:** 5% used, 174.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:06Z, 0 min before this update
+- **Last run:** 22:07Z, 5 min before this update
 - **Keeper:** last ran 22:06Z, next wake 00:38Z
 
 ## Needs attention
@@ -87,6 +87,7 @@ Updated 2026-11-12T22:06:58Z by runner 46f5fc54dbd7 (actions).
 | T317 | server and intake: the inbound text route applies SEC-014's  | BLOCKED | 1 | 4 min | 22:34Z |  |
 
 ### Plan and harness merges on main
+- 22:08Z Plan: T340, T271, T126 under their context limits (D-3325) (#623)
 - 22:01Z plan: T419 fixes the flaky TD-CALL-23 no-plaintext scan, claimed first (D-3324) (#622)
 - 20:49Z Harness: worker output discipline and per-role usage recording (D-3305) (#618)
 - 20:07Z Harness: up to 2 tasks per crate; one only where the crate's CLAUDE.md is full (D-3303) (#615)
@@ -121,7 +122,7 @@ Updated 2026-11-12T22:06:58Z by runner 46f5fc54dbd7 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 230 of 733 (31.4%) · partial 337 · unstarted 166
-**Tasks merged (throughput only):** 256 of 403
+**Tasks merged (throughput only):** 256 of 404
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -156,7 +157,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 136 of 185 done
+- stage 4: 136 of 186 done
 - stage 5: 0 of 64 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
