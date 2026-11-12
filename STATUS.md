@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-12T10:49:22Z by runner d33f2ffc254d (actions).
+Updated 2026-11-12T10:55:01Z by runner 02bdd8d2621e (actions).
 
 **Building: T377 in progress since 10:47Z; 237 of 397 done; week 92% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 237 of 397 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T377 claimed 10:47Z, lease until 13:47Z; lane 3: T345 claimed 10:49Z, lease until 13:49Z; lane 4: T268 claimed 10:41Z, lease until 13:41Z
-- **Week:** 92% used, 2.2M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:47Z, 1 min before this update
+- **Week:** 92% used, 0.4M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Last run:** 10:49Z, 5 min before this update
 - **Keeper:** last ran 10:47Z, next wake 13:44Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 20 problem(s) on tasks still to run (+101 on DONE tasks); first: T396: stored context_pct 39% but it measures 45%; regenerate
+- Strict plan check red: 20 problem(s) on tasks still to run (+102 on DONE tasks); first: T396: stored context_pct 39% but it measures 45%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -156,7 +156,7 @@ Updated 2026-11-12T10:49:22Z by runner d33f2ffc254d (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-12T10:46:46Z (week)): week: 191.8M used, 2.2M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-07T01:02:50Z.
+- Pacing (session_reading 2026-11-12T10:46:46Z (week)): week: 193.6M used, 446k left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-07T01:12:21Z; waiting until 2026-11-12T17:00:00Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
