@@ -770,8 +770,11 @@ fn register_purge_handlers(registry: &mut Registry) {
         askhava_privacy::api::run_complaint_hold,
     );
     registry.register(askhava_privacy::api::PURGE_KIND, |pool, task| async move {
-        let outcome = askhava_intake::api::run_purge(pool.clone(), task.clone()).await;
-        alert_if_last(&pool, &task, outcome).await
+        let outcome = async {
+            askhava_intake::api::run_purge(pool.clone(), task.clone()).await?;
+            askhava_quotes::api::run_text_purge(pool.clone(), task.clone()).await
+        };
+        alert_if_last(&pool, &task, outcome.await).await
     });
     registry.register(
         askhava_intake::api::REQUEST_PURGE_KIND,
