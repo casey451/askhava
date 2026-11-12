@@ -5,7 +5,8 @@
 //! last Yes to "Did your phone alert you with Do Not Disturb or Sleep on?". A person *covers* the
 //! business when they can confirm (the owner or "Confirm and billing"), are current, have the
 //! switch on and a Yes younger than the life given (90 days, [`EMERGENCY_YES_LIFE`]).
-//! [`set_after_hours`] ticks after-hours only while someone covers; [`recheck_after_hours`]
+//! [`set_after_hours`] ticks after-hours only while someone covers and never ends a suspension
+//! (T369, D-2702); [`after_hours_box`] is who may tick it; [`recheck_after_hours`]
 //! removes the tick and queues the owner's email ([`AFTER_HOURS_OFF_KIND`]) when the last person
 //! who had the switch on turns it off, answers No or is removed; [`queue_emergency_retests`]
 //! clears a Yes at 90 days and queues the re-test, and the business stops counting until a new
@@ -54,6 +55,9 @@ pub enum SwitchError {
     /// BIZ-042: a Yes without a test emergency email sent first.
     #[error("no test emergency email was sent")]
     NoTest,
+    /// BIZ-007: only the owner or a "Confirm and billing" member ticks after-hours (T369).
+    #[error("only the owner or a confirm and billing member may do this")]
+    NotAllowed,
 }
 
 fn db<T>(r: Result<T, sqlx::Error>) -> Result<T, SwitchError> {
@@ -155,8 +159,9 @@ pub async fn covered(
     db(q.fetch_one(conn).await)
 }
 
-/// BIZ-007: ticks or unticks after-hours emergencies; ticking is refused unless [`covered`]. A
-/// "Cards and quotes" member alone never covers.
+/// BIZ-007, D-2008, D-2702: ticks or unticks after-hours emergencies; ticking is refused unless
+/// [`covered`]. A "Cards and quotes" member alone never covers. A suspension is never cleared
+/// here, so an untick and re-tick stays suspended until [`record_alert_answer`]'s Yes.
 ///
 /// # Errors
 /// [`SwitchError::NoCover`] or `Database`.
@@ -171,8 +176,7 @@ pub async fn set_after_hours(
         return Err(SwitchError::NoCover);
     }
     let q = sqlx::query!(
-        "UPDATE businesses.business SET after_hours = $2, after_hours_suspended_at = NULL \
-         WHERE id = $1 AND after_hours <> $2",
+        "UPDATE businesses.business SET after_hours = $2 WHERE id = $1 AND after_hours <> $2",
         business,
         on
     );
@@ -180,6 +184,25 @@ pub async fn set_after_hours(
         log(&mut tx, business, "businesses.after_hours_set").await?;
     }
     db(tx.commit().await)
+}
+
+/// BIZ-007 (T369): the after-hours tick of `by`'s business when `by` is a current owner or
+/// "Confirm and billing" member, who alone see and change the box; `None` for anyone else.
+///
+/// # Errors
+/// [`SwitchError::Database`].
+pub async fn after_hours_box(
+    conn: &mut PgConnection,
+    by: Acting,
+) -> Result<Option<bool>, SwitchError> {
+    let q = sqlx::query_scalar!(
+        "SELECT b.after_hours FROM businesses.business b JOIN businesses.team_member m \
+         ON m.business_id = b.id WHERE b.id = $1 AND m.id = $2 AND m.removed_at IS NULL \
+         AND m.confirm_and_billing",
+        by.business,
+        by.member
+    );
+    db(q.fetch_optional(conn).await)
 }
 
 /// BIZ-007: when the business is ticked and nobody who can confirm has the switch on any more

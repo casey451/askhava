@@ -1,7 +1,9 @@
 {% extends "base.html" %}
 {#- The "Emergency emails at any hour" switch and its test emergency email (T150; BIZ-007, BIZ-037,
     BIZ-042, D-346, D-362). The Do Not Disturb steps come from docs/copy/mail-app-steps.md through
-    emergency_switch_page::dnd_steps. No homeowner detail. -#}
+    emergency_switch_page::dnd_steps. T369 (D-2702): the after-hours box for the owner or a
+    "Confirm and billing" member, with the steps still missing after a refused tick. No homeowner
+    detail. -#}
 {% block title %}{{ self.line("switch") }}{% endblock %}
 {% block main %}
 <h1>{{ self.line("switch") }}</h1>
@@ -35,5 +37,19 @@
 <button type="submit" name="step" value="send_test">Send the test again</button>
 </form>{% endif %}
 {% endif %}
+{% if let Some(box_) = after_hours %}<section aria-labelledby="after-hours-title">
+<h2 id="after-hours-title">Emergency jobs from 8 p.m. to 8 a.m.</h2>
+<p id="after-hours-line">{{ self.after_hours_line() }}</p>
+{% if !missing.is_empty() %}<div id="after-hours-refused" role="alert">
+<p>You can't take emergency jobs at night yet. First:</p>
+<ol>{% for m in missing %}<li>{{ m }}</li>{% endfor %}</ol>
+</div>{% endif %}
+<form method="post" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+{% if box_.ticked %}<p id="after-hours-on">You're taking emergency jobs from 8 p.m. to 8 a.m. If everyone who can confirm turns emergency emails off, this stops and we email the owner.</p>
+<button type="submit" name="step" value="after_hours_off">Stop taking emergency jobs at night</button>
+{% else %}<button type="submit" name="step" value="after_hours_on">Take emergency jobs at night</button>
+{% endif %}</form>
+</section>{% endif %}
 <p><a href="/b">Back to your account</a></p>
 {% endblock %}
