@@ -2925,3 +2925,4 @@
 - 2026-11-12T17:12:16Z runner eccfd35b9e3a (actions): {}
 - 2026-11-12T17:12:37Z runner eccfd35b9e3a (actions): {}
 - 2026-11-12T17:13:02Z runner 5e739fa972c5 (actions): {"T370": "MERGE_PENDING -> DONE"}
+- 2026-11-12T17:19:16Z runner 5e739fa972c5 (actions): {"T251": "QUEUED -> IN_PROGRESS"}; T251 estimated 3.6M tokens (calibrated); week has 194.0M left (no five-hour budget, D-3056) (session_reading 2026-11-12T17:12:15Z (week)); claimed

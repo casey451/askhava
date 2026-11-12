@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-12T17:13:02Z by runner 5e739fa972c5 (actions).
+Updated 2026-11-12T17:19:16Z by runner 5e739fa972c5 (actions).
 
-**Waiting for tokens until 19:01Z; 248 of 400 done; week 0% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T251 in progress since 17:19Z; 248 of 400 done; week 0% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 248 of 400 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 17:11Z (no task in progress)
-- **Week:** 0% used, -241.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:12Z, 0 min before this update
+- **Lane:** lane 1: T251 claimed 17:19Z, lease until 20:19Z
+- **Week:** 0% used, 194.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 17:13Z, 6 min before this update
 - **Keeper:** last ran 17:12Z, next wake 19:07Z
 
 ## Needs attention
@@ -86,7 +86,6 @@ Updated 2026-11-12T17:13:02Z by runner 5e739fa972c5 (actions).
 | T332 | payments (harness): a late success has its own refund trigge | resync | 4 | 46 min | 18:10Z |  |
 | T272 | portals: the sign-in link cap and the code-try cap are atomi | done | 1 | 20 min | 18:05Z |  |
 | T333 | payments (harness): a succeeded refund is recorded at the am | done | 2 | 32 min | 17:20Z | PLAN GAP: app/payments/src/routes.rs:412 (T259) and app/payments/src/refund_state.rs:34 (T270) / app/picks/src/unreachab |
-| T272 | portals: the sign-in link cap and the code-try cap are atomi | resync | 1 | 27 min | 17:17Z |  |
 
 ### Plan and harness merges on main
 - 16:10Z Plan: pre-flight fixes round 10 — T396, T398, T111, T113, T408, T222; new T414 (D-3263) (#597)
@@ -149,7 +148,7 @@ Updated 2026-11-12T17:13:02Z by runner 5e739fa972c5 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (ledger; quota_probe: no token: CLAUDE_CODE_OAUTH_TOKEN unset and no credentials file): week: 435.4M used, -241.4M left, resets 2026-11-12T19:01:47Z; projected finish 2026-12-06T05:07:25Z; waiting until 2026-11-12T19:01:47Z.
+- Pacing (session_reading 2026-11-12T17:12:15Z (week)): week: 0k used, 194.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-06T03:20:38Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -164,7 +163,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T251 (lease until 2026-11-12T20:19:06Z)
 
 ## Last usage reading
 - {"task": "T315", "at": "2026-11-12T16:18:35Z", "cache_creation_input_tokens": 835690, "input_tokens": 438, "cache_read_input_tokens": 25610747, "output_tokens": 139875}
