@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T09:52:24Z by runner e0aae0369e90 (actions).
+Updated 2026-11-12T09:58:24Z by runner e0aae0369e90 (actions).
 
 **Building: T411 in progress since 09:29Z; 234 of 397 done; week 92% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-12T09:52:24Z by runner e0aae0369e90 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 5: T411 claimed 09:29Z, lease until 12:29Z
 - **Week:** 92% used, 5.1M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:44Z, 7 min before this update
+- **Last run:** 09:52Z, 5 min before this update
 - **Keeper:** last ran 09:44Z, next wake 12:32Z
 
 ## Needs attention
@@ -123,7 +123,6 @@ Updated 2026-11-12T09:52:24Z by runner e0aae0369e90 (actions).
 - 12:26Z Plan: T332 may expect AlreadyQueued after its own check round queues the late success (D-2970) (#482)
 - 11:00Z Plan: sign-up reads the business's own state record — name check and identity contacts (T385, D-2954) (#475)
 - 10:38Z Plan: businesses give their public name at sign-up; T316 reads it (D-2943) (#473)
-- 09:54Z Harness: a planned file deletion is not a plan gap — 5 eligible tasks were held (D-2922) (#470)
 
 ## Progress (requirements verified)
 
