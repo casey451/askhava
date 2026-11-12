@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T23:02:28Z by runner 309c3404e3c1 (actions).
+Updated 2026-11-12T23:02:46Z by runner 47b884064356 (actions).
 
 **Building: T347 in progress since 22:32Z; 258 of 404 done; week 7% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,11 +9,11 @@ Updated 2026-11-12T23:02:28Z by runner 309c3404e3c1 (actions).
 - **Lane:** lane 2: T347 claimed 22:32Z, lease until 01:32Z; lane 5: T215 claimed 22:29Z, lease until 01:29Z; lane 6: T418 claimed 22:34Z, lease until 01:34Z; lane 7: T351 claimed 22:49Z, lease until 01:49Z
 - **Week:** 7% used, 165.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 23:02Z, 0 min before this update
-- **Keeper:** last ran 22:58Z, next wake 01:28Z
+- **Keeper:** last ran 23:02Z, next wake 01:31Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 22 problem(s) on tasks still to run (+133 on DONE tasks); first: T320: measures 46% of the window, over its 45% limit; trim its reads or split it
+- Strict plan check red: 21 problem(s) on tasks still to run (+133 on DONE tasks); first: T320: stored context_pct 41% but it measures 45%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -121,7 +121,6 @@ Updated 2026-11-12T23:02:28Z by runner 309c3404e3c1 (actions).
 - 00:00Z Plan: pre-flight fixes round 3 — T360, T368, T350, T358, T366, T385 (D-3094) (#528)
 - 23:50Z Plan: Gate C preconditions, vendor-leak check, quote cards, AI writing calls (D-3080) (#518)
 - 23:07Z Plan: IC-74 owners T390/T391, migration renumber, budget refresh, IC-95 logged (D-3079) (#517)
-- 23:02Z Plan: pre-flight fixes for T317, T323, T313, T315, T347 and the T345 gap (D-3083) (#524)
 
 ## Progress (requirements verified)
 
