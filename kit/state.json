@@ -43227,7 +43227,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T22:13:30Z",
+ "updated_at": "2026-11-12T22:16:08Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -43325,8 +43325,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "be513076a5252ff222c8778e3eaeb9a134e6b457",
- "starter": "actions",
+ "runner_sha": "3982b891e7e5472ce96e596ad6f680e7aba8a458",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "e2c37a7d0cadd117b412f6c0c3aa24dc1d5808fd",
@@ -43596,7 +43596,7 @@
    "why": "smoke red while Ci, Twin and Ally were green on the head"
   }
  ],
- "next_decision": 3331,
+ "next_decision": 3332,
  "stage_proofs": {
   "1": {
    "evidence": "Recorded by the runner (D-551): nightly-main green (Ci, Twin, Ally) on main 5d45d8ef0bee8d8e290462e58aa81c580bf57c1e, which contains every stage-1 merge (T002 739f29a31cec, T003 7161be09784c, T004 36b13e66ddf4, T172 189cfe54c716, T005 f55fa02095c0, T006 1e9c2dbb261b, T007 d57693ea8e79, T008 d57693ea8e79, T170 1cdbd960f712, T154 b4f7265f01d2, T167 5d45d8ef0bee); the exit row's tests ran in it (tests/twin/test_gate.py, tests/test_check_catalog.py, tests/test_matching_examples.py, tests/contract/test_stand_in_server.py); every requirement owned only by tasks of stage 1 or earlier is verified (OPS-053).",
@@ -43901,6 +43901,12 @@
    "at": "2026-11-12T21:53:41Z",
    "reason": "Context gaps after D-3305 prompt growth: T340 46%>45%, T271 51%>50% (and T126 70%>65%) \u2014 trim per D-3079 pattern",
    "session": "manual-234041cfd163"
+  },
+  {
+   "number": 3331,
+   "at": "2026-11-12T22:16:08Z",
+   "reason": "Casey's V5 photography-first design (Nov 12): adopt as the design direction (improved V6), replacing D-451 Plaster and brass; brand stays Ask Hava until a rename is approved",
+   "session": "manual-df23870a0aa4"
   }
  ],
  "lanes_fallback_history": [
