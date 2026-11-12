@@ -13703,7 +13703,7 @@
    "id": "T103",
    "slug": "site-web-chat",
    "title": "site: web chat with the consent text first, typing a verified mobile number is the opt-in",
-   "goal": "A homeowner can start a request by web chat as well as by text: the consent text sits above the chat box with no agree button, the opt-in is typing a mobile number and then its code (no AI call before the code), business-intent messages are detected on both paths (the text path's check lives in `app/intake/src/conversation.rs`, extended here), and a `g` link code is recorded with the request and nothing else tracked (CON-025, INT-001, INT-020, INT-047, AI-021). While the AI-008 switch is on, the chat page shows \"An AI service helps word our questions.\" above the chat box (AI-026, D-492). The request page shows the full consent text (WEB-014's request-page clause; the legal pages are T221's) (D-493). This task's migration adds the request source column INT-047 records (the `g` link code, or 'text' for a request started by text), which T158's scorecard reads (D-493). The WEB-006 Spanish consent draft sits above the English consent text on the request page (D-493). A web-chat request that would open a new request calls `intake::api::admit_new_request` first, on the connection of the transaction that opens it, with her vault contact and the client IP (SEC-014, D-1951; T317 changed it to take a connection, D-2206); a refused one opens nothing and the page says to try again later. It adds one row per method and path the web chat and request page serve to section 13 (module `site`, Wired `yes`; the Public door, D-2440). Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. Plan change D-3144: `site` and `intake` may not call `adapters` (`kit/layers.json`), where Verify is (`adapters::api::VerifyAdapter`, `app/adapters/src/verify.rs:40`), so the chat's code step uses a trait in `app/intake/src/web_chat.rs` (send a code to a number, check it) that the composition implements over the Verify adapter in the new `app/server/src/chat_codes.rs` and hands to the chat router when `build_router` merges it, as `businesses::api::SenderLink` is implemented in `server` (D-963); AI-026's line reads the switch through T221's `intake::api::ai_on`; the chat and request pages extend T101's `site_layout.html` and fill `banner_shown`.",
+   "goal": "A homeowner can start a request by web chat as well as by text: the consent text sits above the chat box with no agree button, the opt-in is typing a mobile number and then its code (no AI call before the code), business-intent messages are detected on both paths (the text path's check lives in `app/intake/src/conversation.rs`, extended here), and a `g` link code is recorded with the request and nothing else tracked (CON-025, INT-001, INT-020, INT-047, AI-021). While the AI-008 switch is on, the chat page shows \"An AI service helps word our questions.\" above the chat box (AI-026, D-492). The request page shows the full consent text (WEB-014's request-page clause; the legal pages are T221's) (D-493). This task's migration adds the request source column INT-047 records (the `g` link code, or 'text' for a request started by text), which T158's scorecard reads (D-493). The WEB-006 Spanish consent draft sits above the English consent text on the request page (D-493). A web-chat request that would open a new request calls `intake::api::admit_new_request` first, on the connection of the transaction that opens it, with her vault contact and the client IP (SEC-014, D-1951; T317 changed it to take a connection, D-2206); a refused one opens nothing and the page says to try again later. It adds one row per method and path the web chat and request page serve to section 13 (module `site`, Wired `yes`; the Public door, D-2440). Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. Plan change D-3144: `site` and `intake` may not call `adapters` (`kit/layers.json`), where Verify is (`adapters::api::VerifyAdapter`, `app/adapters/src/verify.rs:40`), so the chat's code step uses a trait in `app/intake/src/web_chat.rs` (send a code to a number, check it) that the composition implements over the Verify adapter in the new `app/server/src/chat_codes.rs` and hands to the chat router when `build_router` merges it, as `businesses::api::SenderLink` is implemented in `server` (D-963); AI-026's line reads the switch through T221's `intake::api::ai_on`; the chat and request pages extend T101's `site_layout.html` and fill `banner_shown`. Plan change D-3189 (PRIV-008): each web-chat message whose words describe a job goes to `quotes::api::keep_description` (T411) with one UUID per chat message as its message ID (since web chat has no inbox row), preferably a key the page sends with the message so a retried POST stores nothing twice, as T162's order does for texts.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -13782,7 +13782,8 @@
     "D-1951",
     "D-2440",
     "D-3144",
-    "D-963"
+    "D-963",
+    "D-3189"
    ],
    "cites": [],
    "budget": {
@@ -17536,7 +17537,7 @@
    "id": "T301",
    "slug": "action-links-served",
    "title": "server and portals: the email action links are served (the quote form, the Confirm review step, Hold, Away, Pause, Resume, Busy, link a phone, approve a phone, ask about a charge)",
-   "goal": "No task serves the email action links (D-2128): `portals::api` has `open_action_link`, `use_action_link`, `action_page`, `quote_form_page` and `ask_about_charge` and the route constant `ACTION_ROUTE` (`/b/a/{kind}/{object}/{token}`, T148, \"not served yet\", D-1955), and `quotes::api::job_page` supplies the job page's data, but `server::build_router` merges none of it, so J2's quote form \"opens from its link\" (T099) cannot run. (1) `app/server/src/action_links.rs` builds `GET` and `POST` on `ACTION_ROUTE` for every `ActionKind`: `GET` calls `open_action_link` and shows `action_page` or, for a Quote link, `quote_form_page` with the job page's data, and changes nothing however often it is opened (SEC-026); only the page's `POST` with its CSRF token calls `use_action_link` in the caller's transaction and acts once (D-1955); a token for another kind, object or person, an expired token or a removed member's token gets the one not-found answer and reads nothing; every response is `no_store`; the `POST` passes `refuse_cross_site` and a refusal is a security event (SEC-042, SEC-048); merged in the shared `app/server/src/lib.rs`. Later owners of `business_actions.rs` and `quotes::job_page` (T209, T212, T164, T214, T249, T158) keep the signatures this file calls, and T306 serves any page or action they add (D-2128). (2) Tests: `app/server/tests/action_links_route.rs` against the assembled router (TD-SEC-44) and `tests/e2e/action_links_served.spec.ts` with links seeded through `psql` as `tests/e2e/j1_reduced.spec.ts` seeds its token (the `portals.login_link` row holds the SHA-256 of `action:<kind>:<object>:<token>`, D-1955). Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. Fourth external audit F12 (D-2206, D-1951): the quote form's `POST` calls `portals::api::admit_quote` with the business and the client address first; a refused quote is not stored and the page says to try again later. Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. Keep each `.route(` call on one line (`tests/security/tests/auth_matrix.rs:289` expects it; rustfmt may wrap a long call, so bind the handler to a short local name first) (plan change D-3106). Nov 11 code review batch 3, F6 (D-2710; BIZ-049, D-2508 (3), D-2510): the quote form's `POST`, before `submit_quote`, calls `portals::api::largest_job_warning` with the business's stored largest job; a price whose top is above it is not sent but shown again with `quote_form_page_warned`, and goes through only when the posted `over_largest` equals the warned cents; a business with no capability row is never warned (TD-BIZ-50, in `app/server/tests/action_links_route.rs`). Quote facts (D-3134; PICK-040): the quote form's `GET` pre-fills from `portals::api::prefill(quotes::api::last_facts(..))` (the business's last answers for the job's type, T406), and its `POST` parses them with `portals::api::parse_facts` (problems show the form again with their messages, nothing stored) and stores the quote with `quotes::api::submit_quote_with_facts` (T406) instead of `submit_quote`, so the quote and its facts commit together. The AI read-back confirm (`QuoteFormFacts.read_back`) stores through `submit_quote_with_facts` too, so a read-back quote also gets its facts and therefore its card (T393).",
+   "goal": "No task serves the email action links (D-2128): `portals::api` has `open_action_link`, `use_action_link`, `action_page`, `quote_form_page` and `ask_about_charge` and the route constant `ACTION_ROUTE` (`/b/a/{kind}/{object}/{token}`, T148, \"not served yet\", D-1955), and `quotes::api::job_page` supplies the job page's data, but `server::build_router` merges none of it, so J2's quote form \"opens from its link\" (T099) cannot run. (1) `app/server/src/action_links.rs` builds `GET` and `POST` on `ACTION_ROUTE` for every `ActionKind`: `GET` calls `open_action_link` and shows `action_page` or, for a Quote link, `quote_form_page` with the job page's data, and changes nothing however often it is opened (SEC-026); only the page's `POST` with its CSRF token calls `use_action_link` in the caller's transaction and acts once (D-1955); a token for another kind, object or person, an expired token or a removed member's token gets the one not-found answer and reads nothing; every response is `no_store`; the `POST` passes `refuse_cross_site` and a refusal is a security event (SEC-042, SEC-048); merged in the shared `app/server/src/lib.rs`. Later owners of `business_actions.rs` and `quotes::job_page` (T209, T212, T164, T214, T249, T158) keep the signatures this file calls, and T306 serves any page or action they add (D-2128). (2) Tests: `app/server/tests/action_links_route.rs` against the assembled router (TD-SEC-44) and `tests/e2e/action_links_served.spec.ts` with links seeded through `psql` as `tests/e2e/j1_reduced.spec.ts` seeds its token (the `portals.login_link` row holds the SHA-256 of `action:<kind>:<object>:<token>`, D-1955). Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. Fourth external audit F12 (D-2206, D-1951): the quote form's `POST` calls `portals::api::admit_quote` with the business and the client address first; a refused quote is not stored and the page says to try again later. Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. Keep each `.route(` call on one line (`tests/security/tests/auth_matrix.rs:289` expects it; rustfmt may wrap a long call, so bind the handler to a short local name first) (plan change D-3106). Nov 11 code review batch 3, F6 (D-2710; BIZ-049, D-2508 (3), D-2510): the quote form's `POST`, before `submit_quote`, calls `portals::api::largest_job_warning` with the business's stored largest job; a price whose top is above it is not sent but shown again with `quote_form_page_warned`, and goes through only when the posted `over_largest` equals the warned cents; a business with no capability row is never warned (TD-BIZ-50, in `app/server/tests/action_links_route.rs`). Quote facts (D-3134; PICK-040): the quote form's `GET` pre-fills from `portals::api::prefill(quotes::api::last_facts(..))` (the business's last answers for the job's type, T406), and its `POST` parses them with `portals::api::parse_facts` (problems show the form again with their messages, nothing stored) and stores the quote with `quotes::api::submit_quote_with_facts` (T406) instead of `submit_quote`, so the quote and its facts commit together. The AI read-back confirm (`QuoteFormFacts.read_back`) stores through `submit_quote_with_facts` too, so a read-back quote also gets its facts and therefore its card (T393). Plan change D-3189 (CARD-023): the job page's data takes the card she approved (`PageParts.card`, `app/quotes/src/job_page.rs:33`); the quote form reads it with `quotes::api::sent_card(conn, job)` (T411), and a job with no sent card (none went out, or its text was deleted by \"Delete my data\" or the 3-year purge) gets the one not-found answer.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -17548,7 +17549,8 @@
     "T199",
     "T155",
     "T348",
-    "T406"
+    "T406",
+    "T411"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -17596,13 +17598,14 @@
     "D-2440",
     "D-2710",
     "D-3106",
-    "D-3134"
+    "D-3134",
+    "D-3189"
    ],
    "cites": [],
    "budget": {
     "files": 3,
     "lines": 600,
-    "context_pct": 14
+    "context_pct": 18
    },
    "checks": [
     "Ci",
@@ -19969,6 +19972,81 @@
    "acceptance": "TD-AI-14 (with its new values) and TD-AI-22 pass; `AiConfig::from_pairs([])` gives a 3-second timeout; `ASKHAVA_AI_TIMEOUT_SECONDS=6` is refused; every other existing `ai` test passes unchanged."
   },
   {
+   "id": "T411",
+   "slug": "job-text-store",
+   "title": "quotes: the scrubbed job description and the shown and approved job card are stored per job for 3 years (PRIV-008), for the card sender, the card build and the job page",
+   "goal": "Plan change D-3189 (PRIV-008, PRIV-011, CARD-007, CARD-023, INT-041; D-801, D-1521, D-1274, D-2330, D-3118), the plan fix for BLOCKED T251's reported gap (D-2859). The homeowner's scrubbed job description and the card she approved are stored nowhere: `messaging.inbox` keeps only the provider ID and time (D-801), a sent text's body is cleared (`migrations/0042_messaging_outbox.sql:34`), `intake.intake_answer` holds codes only (`migrations/0053_intake_tables.sql:68`) and `quotes.job_card` holds IDs only (`migrations/0067_quotes_job_card.sql:13`), while the approval event carries only the card digest (`app/intake/src/summary_step.rs:415`), the emergency release only the request (`app/intake/src/service.rs:672`) and the business job page needs the card she approved from its caller (`app/quotes/src/job_page.rs:33`); so T251's card sender, T162's card build (step 12 needs the words of step 1) and T301's quote form have nothing to read. PRIV-008 keeps job text, with contact details removed, for 3 years; this task is that store (owner call under Casey's Nov 11 standing rule, D-3189). Raw inbound bodies are still never stored (D-801) and the outbox still clears a sent body. (1) `migrations/0154_quotes_job_text.sql`: `quotes.job_description`, one row per inbound text whose scrubbed words describe a job (request ID, job ID, a message ID typed `uuid`, the words, the recorded time; unique on message ID and job ID together, since a SPLIT opens a second job from the same text, `app/intake/src/routing.rs:423` to `:443`; the message ID is the `messaging.inbox` row ID for a text and the chat message's own ID for web chat, which has no inbox row, `migrations/0053_intake_tables.sql:54` to `:59`; no foreign key to `messaging.inbox`, so a later inbox purge is never blocked), and `quotes.shown_card`, one row per card shown or released for a job (request ID, job ID and the 32-hex card digest, unique together and checked by pattern; the card text, town, place code and photo IDs exactly as `build_card` made them; the category code and the remaining candidate job type codes; an `emergency` mark, true only for a card stored on the INT-029 emergency path; the recorded time; `sent_at`, null until the card sender marks it); no name, phone, email, street address or contact column; app role SELECT, INSERT and DELETE on both, and UPDATE of `shown_card.sent_at` only. The number is the free 0154: this task depends on the done T157 (0153) and sits just before T287 (0155) in `kit/tasks.json`, so its number rises in the runner's serial order (V9). (2) `app/quotes/src/job_text.rs`, through the shared `quotes::api`: `keep_description(conn, (request, job), message, &ScrubbedText, at)` takes only the scrubber's `ScrubbedText` (`app/privacy/src/scrub.rs:320`, made only by `privacy::api`), so raw words cannot be stored (T277's rule, D-3118), and a repeat for the same message and job stores nothing; `description(conn, job)` gives the job's stored words in time order, or `None`; `keep_card(conn, (request, job), digest, &JobCard, (category, candidates, emergency), at)` stores a card only when `digest` is its text's card digest, which `quotes` computes itself with the workspace `sha2` (added to the shared `app/quotes/Cargo.toml`; `quotes` may not call `intake`, `kit/layers.json`): the first 32 hex digits of the SHA-256 of `JobCard::text`, the value `intake::api::card_digest` gives and approval stores, the test asserting the two agree, refuses any other digest without writing, and stores nothing on a repeat; `stored_card(conn, job, digest)` gives that card (rebuilt through a new crate-private constructor in `app/quotes/src/cards.rs`; `build_card` stays the only public way to make one; `JobCard`'s derived `Debug` (`cards.rs:108`) becomes a hand-written one that hides the text, as `CardParts`' does, `:89` to `:102`), its category and candidates, only while the stored text's digest still equals `digest` (checked on every read, so the card sent is the card approved, CARD-007); `unsent_cards(conn, request)` gives, for each job of the request with no card sent, its newest stored card with its `emergency` mark, oldest job first (the emergency path, which has no approval step and sends only marked cards, T251); `mark_card_sent(conn, job, digest, at)` sets `sent_at` once; `sent_card(conn, job)` gives the card that went out, for the business job page and the quote form (CARD-023). Access: the words and card text are read only by the card sender (T251), the intake order that builds and shows the card (T162) and the quote form with the job page's data (T301); every returned type's `Debug` hides the words and the card text, nothing here logs them, and nothing here sends them to an AI call. (3) Retention and deletion: `quotes::api::run_text_purge(pool, task)` deletes a job's rows on `privacy`'s decided PRIV-008 text stage (3 years after close, holds applied) and does nothing on the other stages, safe to run twice; it is called in the shared `app/server/src/lib.rs` `privacy::api::PURGE_KIND` registration after `intake::api::run_purge`, as T315 does for feedback; \"Delete my data\" (`confirm_request`, `app/portals/src/data_download.rs:239`) deletes the rows of every request of hers in the transaction of `privacy::api::delete_my_data` (PRIV-011), by request ID, through a new `conversations_of_contact(conn, contact)` in the shared `app/intake/src/api.rs` (her requests through `intake.homeowner.contact_id`, open or closed): job links cannot be used, since `jobs_of_contact` (`app/intake/src/api.rs:140`) returns only each request's first job (`intake.conversation.job_id`, set once, `app/intake/src/models.rs:798`) and closing a request deletes its `job.%` links (`close_request`, `models.rs:711` to `:729`). Before deleting them it reads the jobs those rows name and adds them to the jobs it passes to `delete_my_data`, so a later job's photos go too (every job T162 opens stores its opening words; the photo gap of `jobs_of_contact` is closed here, D-3189). The text stage deletes by job ID, which every row still holds. Tests in `tests/integration/tests/job_text_store.rs` (TD-PRIV-27), fake data only; `job_text.rs` is privacy code and its tests reach at least 95% branch coverage (`BUILD_BRIEF.md:481`); every existing purge, data-download, card and job-page test passes unchanged. Update the `quotes` and `portals` `CLAUDE.md` files, `docs/architecture.md` (plan change D-3189 already names both tables in section 3) and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "4",
+   "module": "quotes",
+   "deps": [
+    "T157",
+    "T044",
+    "T045",
+    "T185",
+    "T208",
+    "T023",
+    "T087",
+    "T092"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "security"
+   ],
+   "owns": [
+    "migrations/0154_quotes_job_text.sql",
+    "app/quotes/src/job_text.rs",
+    "app/quotes/src/cards.rs",
+    "app/portals/src/data_download.rs",
+    "tests/integration/tests/job_text_store.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/privacy.md",
+    "docs/spec/job-cards.md",
+    "docs/spec/intake.md",
+    "docs/brains/postgres-operations.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "PRIV-008",
+    "PRIV-011",
+    "PRIV-006",
+    "CARD-007",
+    "CARD-023",
+    "INT-041"
+   ],
+   "tests": [
+    "TD-PRIV-27"
+   ],
+   "decisions": [
+    "D-3189",
+    "D-801",
+    "D-3118",
+    "D-1521",
+    "D-2205"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 5,
+    "lines": 550,
+    "context_pct": 20
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T411-job-text-store",
+   "prompt": "kit/prompts/T411.md",
+   "acceptance": "TD-PRIV-27 passes against PostgreSQL (including a request with two jobs, a request closed before the delete and a SPLIT's two jobs from one text); `job_text.rs` at or above 95% branch coverage; every existing purge, data-download, card and job-page test passes unchanged."
+  },
+  {
    "id": "T287",
    "slug": "fee-fixed-at-pick",
    "title": "payments and picks: the fee fixed at the pick is stored by payments, a press must match it, and a fee-mode switch after the pick is refused before any charge",
@@ -20419,7 +20497,7 @@
    "id": "T162",
    "slug": "intake-photos-design",
    "title": "intake: the one intake order for the five paths and the Spanish 'we continue in English' line",
-   "goal": "With the photo and design steps of T212 in place (steps 9 and 10), every intake path in INT-043's \"Intake order\" table (regular, urgent, 911 list, night and web chat) follows the INT-043 order, with a golden test per text path here and the web-chat golden test in T103 (TD-INT-30, which runs later, D-491), and a Spanish homeowner with Spanish conversations off gets the \"we continue in English\" line (INT-043, TXT-041). `order.rs` holds the order and `conversation.rs` (T040's, extended here; T103 extends it later) calls it in place of its own step sequence; the TXT-041 Spanish line is a fixed template key this task adds (D-492). Step 4 (the ZIP and area check) calls T251's `zip_step` (INT-049, D-1521). Whenever a later answer settles or narrows the job type (the trade questions of step 8, on the ordinary path and on the emergency path where they follow the cards, INT-029), the order writes a narrowing row through `jobs::api::record_job_facts` with the same category and the remaining candidates, in the answer's transaction; a refused write (not a narrowing) is logged without homeowner text and changes nothing (seventh audit fix round, D-2330; TD-INT-26).",
+   "goal": "With the photo and design steps of T212 in place (steps 9 and 10), every intake path in INT-043's \"Intake order\" table (regular, urgent, 911 list, night and web chat) follows the INT-043 order, with a golden test per text path here and the web-chat golden test in T103 (TD-INT-30, which runs later, D-491), and a Spanish homeowner with Spanish conversations off gets the \"we continue in English\" line (INT-043, TXT-041). `order.rs` holds the order and `conversation.rs` (T040's, extended here; T103 extends it later) calls it in place of its own step sequence; the TXT-041 Spanish line is a fixed template key this task adds (D-492). Step 4 (the ZIP and area check) calls T251's `zip_step` (INT-049, D-1521). Whenever a later answer settles or narrows the job type (the trade questions of step 8, on the ordinary path and on the emergency path where they follow the cards, INT-029), the order writes a narrowing row through `jobs::api::record_job_facts` with the same category and the remaining candidates, in the answer's transaction; a refused write (not a narrowing) is logged without homeowner text and changes nothing (seventh audit fix round, D-2330; TD-INT-26). Plan change D-3189 (PRIV-008, INT-041, CARD-007; D-3118): the order is where the card's facts exist, so it writes them to T411's store and builds the card from it: every inbound text whose words describe the job (the text that opens it, and an EDIT's \"what should change\" reply) goes to `quotes::api::keep_description` (with the request and job IDs and the inbox row ID as its message ID; a SPLIT's second job stores the same text under its own job) with a `ScrubbedText` made by scrubbing the already-scrubbed words again with `privacy::api::scrub` (which can only remove more, D-3118); at step 12 the card is built with `quotes::api::build_card` from `quotes::api::description` and the stored answers, and stored with `quotes::api::keep_card` (its digest from `intake::api::card_digest`, its category and the remaining candidates) in the same transaction before `show_card` shows it, so every shown digest has a stored card when SEND or the auto-send approves it; on the emergency path the card is built and stored the same way, with `keep_card`'s `emergency` mark set only when the reply is the Emergency choice (`rules::choice`), before `answer_choice` is called (so the stored card exists inside its releasing transaction, `app/intake/src/service.rs:644` to `:648`) or `release_emergency` can release the job (T251's handler sends it from `unsent_cards`, INT-029). No raw words are stored, and none go into a log line.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -20429,7 +20507,8 @@
     "T091",
     "T212",
     "T251",
-    "T339"
+    "T339",
+    "T411"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -20470,12 +20549,13 @@
     "D-460",
     "D-490",
     "D-1521",
-    "D-2330"
+    "D-2330",
+    "D-3189"
    ],
    "cites": [],
    "budget": {
     "files": 3,
-    "lines": 300,
+    "lines": 450,
     "context_pct": 20
    },
    "checks": [
@@ -21716,7 +21796,7 @@
    "id": "T251",
    "slug": "intake-zip-and-cards-out",
    "title": "intake and quotes: the ZIP question, the job location, and the card-sending caller (every window-opened card goes out once, idempotent, quiet hours honoured)",
-   "goal": "Job cards never go out in production today (D-1521): nothing outside `quotes` calls `quotes::api::send_job_cards`, no code builds the `CardJob` and the business `Pool` it takes (both caller-filled, D-1013, D-1014), the `intake.cards_approved` event T208's approval step enqueues has no handler (D-1274, D-1277), nor has the `intake.emergency_released` event of INT-029, and no code asks the homeowner's ZIP or writes `intake.property` (only tests insert rows). Build the missing pieces. (1) The ZIP question (INT-049): `app/intake/src/zip_step.rs` asks the 5-digit ZIP of the home the job is at (new `zip_question` and `zip_again` templates in the shared English and Spanish template files, drafts for the copy panel, WORD-028), reads one 5-digit ZIP from the reply, maps it to its service-area town with `catalog::api::town_for_zip` (T248's market data, INT-048, including reviewed extra ZIPs with no centroid, which give no location), and stores the property with the ZIP and the town (`app/intake/src/models.rs`; `migrations/0165_intake_property_zip.sql` adds `intake.property.zip`, 5 digits, nullable for rows written before, PRIV-028); a ZIP in the Arizona centroid table but in no service-area town goes to `routing`'s out-of-area close (INT-022); any other reply (no ZIP, two ZIPs, or a well-formed ZIP Ask Hava does not know) asks once more (the twin's re-ask, `twin/app.py:541` to `:543`, is the draft) and then waits for a usable reply without closing the request (INT-019's no-reply wait still applies). Its integration test asserts `intake.property` holds exactly the contact ID, the town and the ZIP, never an address (TD-PRIV-13's schema case). The ZIP goes into no AI call, card, log line or audit value. T162's intake order calls this step at step 4; this task adds the step and its tests, not the order. (2) The card pool (`app/quotes/src/card_pool.rs`, exported through the shared `app/quotes/src/api.rs`): build `Pool` for a job's towns and candidate trades from `businesses::api` (status, towns, ticked job types, the overflow switch), `licensing::api` (each business's classes and other licenses, and CARD-015's latest check for `verified`) and `ops::api::is_paused` (the owner pauses), never naming another module's tables. (3) The card sender (`app/intake/src/cards_out.rs`, its handlers registered in the shared `app/server/src/lib.rs`): on `intake.cards_approved` it sends only when T208's `approved_card` holds for the payload's digest, so the card the businesses get is the card she approved (TD-INT-23); on `intake.emergency_released` it sends at once (INT-029). It builds the `CardJob` from the request (the job's own town, the remaining candidate job types and the scrubbed text; neighbouring towns stay the caller's later choice, D-1014), calls `send_job_cards` in one transaction (idempotent: `ON CONFLICT DO NOTHING`, so a repeat or a retry records no second card), enqueues each new card's notice through T147's `app/quotes/src/card_notices.rs` (held whole by quiet hours, QH-005; each card's 24 hours start at the actual send, D-042, D-1021), and queues the homeowner's TXT-032 cards-out text through the homeowner-text steps T240 uses (`may_text`, `send_window` for quiet hours and opt-out, the outbox). Late cards (CARD-018, `send_late_cards`) keep their trigger with the tasks that make a business newly eligible. Tests: `app/intake/src/tests/zip_step.rs` (TD-INT-38) and `tests/integration/tests/cards_out.rs` (TD-CARD-14: approval and the end of the wait send once, a changed card is refused, a rerun sends nothing new, the emergency path, paused businesses skipped, night notices held, one TXT-032 text). Every existing test must still pass; if a done task's test breaks, stop and report. Update `app/intake/CLAUDE.md`, `app/quotes/CLAUDE.md` and `docs/architecture.md` section 10. The card pool holds only businesses for which `businesses::api::may_get_cards` is true at send time, beside `receives_cards` (D-1715, D-1760). On the emergency path (`intake.emergency_released`) each card's notice is queued through T150's `quotes::api::queue_emergency_card` (CARD-021: at once for the people with \"Emergency emails at any hour\" on at an after-hours business, at 8 a.m. for the rest, with the EMERGENCY subject and first line), not `queue_card_notice` (fourth external audit F42, D-2203). The card sender also writes the job's first facts row through T339's `jobs::api::record_job_facts`, in the transaction that sends the cards, on both the approval and the emergency path, so the fee at the pick can read it (seventh audit N7-01, D-2330): the category and exactly the candidate job types the cards went with. On the emergency path the category is always known at release (the trade check, step 5, comes before \"How soon?\" and the choice, INT-016, INT-030, and the choice is offered only with the category, `app/intake/src/service.rs:604`); the job type may not be, so the candidates are the ones intake still holds, which is every job type of the category when the trade questions have not narrowed it; later answers narrow the row (T162). Tested in TD-CARD-14. Nov 11 code review batch 3, F6 (a) (D-2708; CARD-001, BIZ-049, D-2507, D-2508 (1)): every pool this task builds goes through `quotes::api::capable_pool` before matching, so the largest-job and recurring-work answers skip a card: `cards_out.rs` fills `JobFit` from the job's stored size-band answer (`quotes::api::band_floor_cents`; none when unanswered) and whether any remaining candidate job type is recurring (`businesses::api::is_recurring`), and `card_pool.rs` reads the answers with `businesses::api::capabilities`. TD-CARD-14 gains, on the approval and the emergency path: a business whose largest job is below the band floor gets no card; one that said no to recurring work gets no card for a recurring job; a business with no capability row still does. Each business's licensing `Holder` (classes, agency licenses, pest attestation, handyman and city-list standing) comes from T374's `businesses::api` holding read (D-2712). Plan change D-2943: for a no-license business the `Known.city_names` it passes to `holding` are the business's stored names (`businesses.business_name`, T165: business name and trade name, no owner name); without them `holding` reads its city-list standing as `Pending` and the business gets no card.",
+   "goal": "Job cards never go out in production today (D-1521): nothing outside `quotes` calls `quotes::api::send_job_cards`, no code builds the `CardJob` and the business `Pool` it takes (both caller-filled, D-1013, D-1014), the `intake.cards_approved` event T208's approval step enqueues has no handler (D-1274, D-1277), nor has the `intake.emergency_released` event of INT-029, and no code asks the homeowner's ZIP or writes `intake.property` (only tests insert rows). Build the missing pieces. (1) The ZIP question (INT-049): `app/intake/src/zip_step.rs` asks the 5-digit ZIP of the home the job is at (new `zip_question` and `zip_again` templates in the shared English and Spanish template files, drafts for the copy panel, WORD-028), reads one 5-digit ZIP from the reply, maps it to its service-area town with `catalog::api::town_for_zip` (T248's market data, INT-048, including reviewed extra ZIPs with no centroid, which give no location), and stores the property with the ZIP and the town (`app/intake/src/models.rs`; `migrations/0165_intake_property_zip.sql` adds `intake.property.zip`, 5 digits, nullable for rows written before, PRIV-028); a ZIP in the Arizona centroid table but in no service-area town goes to `routing`'s out-of-area close (INT-022); any other reply (no ZIP, two ZIPs, or an unknown well-formed ZIP) asks once more (draft: the twin's re-ask, `twin/app.py:541`) and then waits for a usable reply without closing the request (INT-019's wait applies). Its integration test asserts `intake.property` holds exactly the contact ID, the town and the ZIP, never an address (TD-PRIV-13's schema case). The ZIP goes into no AI call, card, log line or audit value. T162's intake order calls this step at step 4; this task adds the step and its tests, not the order. (2) The card pool (`app/quotes/src/card_pool.rs`, exported through the shared `app/quotes/src/api.rs`): build `Pool` for a job's towns and candidate trades from `businesses::api` (status, towns, ticked job types, the overflow switch; the businesses serving the towns from a new `businesses_in_towns(conn, towns)` in `app/businesses/src/service_area.rs`), `licensing::api` (each business's classes and other licenses, and CARD-015's latest check for `verified`) and `ops::api::is_paused` (the owner pauses), never naming another module's tables. (3) The card sender (`app/intake/src/cards_out.rs`, its handlers registered in the shared `app/server/src/lib.rs`) reads every fact from T411's store (D-3189). On `intake.cards_approved` it sends `quotes::api::stored_card(conn, job, digest)` only when T208's `approved_card` holds (TD-INT-23); on `intake.emergency_released` it sends at once (INT-029) the first of `quotes::api::unsent_cards(conn, request)` with its `emergency` mark (INT-029's choice, not `jobs.job.emergency`), never a regular job's card (INT-041; one release per request: known issue, D-3189). No stored card: nothing is sent and the task fails to retry. The `CardJob` is the job's own town (`intake.property`), the stored candidates and `quotes::api::description` as the scrubbed text (neighbouring towns stay the caller's later choice, D-1014); it marks it sent (`mark_card_sent`), calls `send_job_cards` in one transaction (idempotent, `ON CONFLICT DO NOTHING`: a repeat or retry records no second card), enqueues each new card's notice through T147's `app/quotes/src/card_notices.rs` (held whole by quiet hours, QH-005; each card's 24 hours start at the actual send, D-042, D-1021), and queues the homeowner's TXT-032 cards-out text through the homeowner-text steps T240 uses (`may_text`, `send_window` for quiet hours and opt-out, the outbox). Late cards (CARD-018, `send_late_cards`) keep their trigger with the tasks that make a business newly eligible. Tests: `app/intake/src/tests/zip_step.rs` (TD-INT-38) and `tests/integration/tests/cards_out.rs` (TD-CARD-14: approval and the end of the wait send once, a changed card is refused, a rerun sends nothing new, the emergency path, paused businesses skipped, night notices held, one TXT-032 text). Every existing test must still pass; if a done task's test breaks, stop and report. Update `app/intake/CLAUDE.md`, `app/quotes/CLAUDE.md` and `docs/architecture.md` section 10. The card pool holds only businesses for which `businesses::api::may_get_cards` is true at send time, beside `receives_cards` (D-1715, D-1760). On the emergency path (`intake.emergency_released`) each card's notice is queued through T150's `quotes::api::queue_emergency_card` (CARD-021: its own timing and EMERGENCY wording), not `queue_card_notice` (D-2203). The card sender also writes the job's first facts row through T339's `jobs::api::record_job_facts`, in the transaction that sends the cards, on both the approval and the emergency path, so the fee at the pick can read it (D-2330): the category and exactly the candidate job types the cards went with. On both paths the category and candidates are the stored card's (on the emergency path every job type of the category until the trade questions narrow it); later answers narrow the row (T162). Tested in TD-CARD-14. D-2708 (CARD-001, BIZ-049): every pool this task builds goes through `quotes::api::capable_pool` before matching, so the largest-job and recurring-work answers skip a card: `cards_out.rs` fills `JobFit` from the job's stored size-band answer (`quotes::api::band_floor_cents`; none when unanswered) and whether any remaining candidate job type is recurring (`businesses::api::is_recurring`), and `card_pool.rs` reads the answers with `businesses::api::capabilities`. TD-CARD-14 gains, on the approval and the emergency path: a business whose largest job is below the band floor gets no card; one that said no to recurring work gets no card for a recurring job; a business with no capability row still does. Each business's licensing `Holder` (classes, agency licenses, pest attestation, handyman and city-list standing) comes from T374's `businesses::api` holding read (D-2712). Plan change D-2943: for a no-license business the `Known.city_names` it passes to `holding` are the business's stored names (`businesses.business_name`, T165, never an owner name); without them `holding` reads its city-list standing as `Pending` and the business gets no card.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -21732,7 +21812,8 @@
     "T240",
     "T247",
     "T339",
-    "T374"
+    "T374",
+    "T411"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -21746,6 +21827,7 @@
     "app/intake/src/cards_out.rs",
     "app/intake/src/models.rs",
     "app/quotes/src/card_pool.rs",
+    "app/businesses/src/service_area.rs",
     "migrations/0165_intake_property_zip.sql",
     "app/intake/src/tests/zip_step.rs",
     "tests/integration/tests/cards_out.rs"
@@ -21793,13 +21875,14 @@
     "D-2708",
     "D-2712",
     "D-2943",
-    "D-3112"
+    "D-3112",
+    "D-3189"
    ],
    "cites": [],
    "budget": {
-    "files": 7,
+    "files": 8,
     "lines": 600,
-    "context_pct": 41
+    "context_pct": 45
    },
    "checks": [
     "Ci",
@@ -23941,14 +24024,15 @@
    "id": "T315",
    "slug": "feedback-purge-and-export-mask",
    "title": "jobs and portals: feedback words are blanked by the 3-year purge and by \"Delete my data\", and the data download masks bare domains",
-   "goal": "Fourth external audit F31 and F34 (D-2205; PRIV-009, PRIV-011, PRIV-031, JOB-017; D-1821 (4)): the homeowner's feedback words in `jobs.feedback` (her own unscrubbed text, up to 2,000 characters, shown on askhava.com when ticked) outlive both \"Delete my data\" and the 3-year text purge, because the app role has no UPDATE or DELETE on the body (`migrations/0139_jobs_feedback.sql:31`) and neither `privacy` nor `intake` may name a `jobs` table; and the \"Download my data\" masking (`app/portals/src/data_download.rs:313`) misses a bare domain (\"acmeplumbing.example\") and a phone number split across lines. (1) `migrations/0175_jobs_feedback_purge.sql` adds `body_purged_at` to `jobs.feedback`, lets the app role clear the body once (a column-scoped `UPDATE (body, body_purged_at)` grant; the existing `CHECK (char_length(btrim(body)) BETWEEN 1 AND 2000)` (`0139_jobs_feedback.sql:20`) is dropped and replaced by one that keeps that rule while `body_purged_at` is null and requires an empty body once it is set) and adds a trigger that refuses any other change to the body, so a purged body never comes back. (2) `app/jobs/src/feedback_purge.rs`, through `jobs::api`: `purge_feedback(job)` blanks the body, sets `body_purged_at` and writes one `ops` audit row (IDs only), once; `feedback::shown` never returns purged feedback, so it leaves askhava.com at once (its query in the shared `app/jobs/src/api.rs`, `:298` to `:304`, gains only that filter; D-3083). It runs on the text stage in the purge composition (the shared `app/server/src/lib.rs`, in the handler that runs `privacy`'s decided text stage, so complaint and dispute holds apply to it as to the job text) and in the PRIV-011 path: `data_download.rs`'s confirmed delete calls it for her own jobs in the transaction of `privacy::api::delete_my_data`. (3) `data_download.rs` also masks a bare domain (two or more dot-separated labels ending in 2 to 24 letters, never a decimal number such as \"3.5\") and a run of 7 or more digits broken only by line breaks and the separators it already allows. Tests: `tests/integration/tests/feedback_purge.rs` (TD-PRIV-22) and `app/portals/src/tests/data_download_mask.rs` (TD-PRIV-23); every existing T087, T230 and purge test passes unchanged. The overseer runs an independent privacy review of the hand-in (D-2205). Update the `jobs` and `portals` `CLAUDE.md` files, `docs/architecture.md` section 10 and `docs/decisions.md`.",
+   "goal": "Fourth external audit F31 and F34 (D-2205; PRIV-009, PRIV-011, PRIV-031, JOB-017; D-1821 (4)): the homeowner's feedback words in `jobs.feedback` (her own unscrubbed text, up to 2,000 characters, shown on askhava.com when ticked) outlive both \"Delete my data\" and the 3-year text purge, because the app role has no UPDATE or DELETE on the body (`migrations/0139_jobs_feedback.sql:31`) and neither `privacy` nor `intake` may name a `jobs` table; and the \"Download my data\" masking (`app/portals/src/data_download.rs:313`) misses a bare domain (\"acmeplumbing.example\") and a phone number split across lines. (1) `migrations/0175_jobs_feedback_purge.sql` adds `body_purged_at` to `jobs.feedback`, lets the app role clear the body once (a column-scoped `UPDATE (body, body_purged_at)` grant; the existing `CHECK (char_length(btrim(body)) BETWEEN 1 AND 2000)` (`0139_jobs_feedback.sql:20`) is dropped and replaced by one that keeps that rule while `body_purged_at` is null and requires an empty body once it is set) and adds a trigger that refuses any other change to the body, so a purged body never comes back. (2) `app/jobs/src/feedback_purge.rs`, through `jobs::api`: `purge_feedback(job)` blanks the body, sets `body_purged_at` and writes one `ops` audit row (IDs only), once; `feedback::shown` never returns purged feedback, so it leaves askhava.com at once (its query in the shared `app/jobs/src/api.rs`, `:298` to `:304`, gains only that filter; D-3083). It runs on the text stage in the purge composition (the shared `app/server/src/lib.rs`, in the handler that runs `privacy`'s decided text stage, so complaint and dispute holds apply to it as to the job text) and in the PRIV-011 path: `data_download.rs`'s confirmed delete calls it for her own jobs in the transaction of `privacy::api::delete_my_data`. (3) `data_download.rs` also masks a bare domain (two or more dot-separated labels ending in 2 to 24 letters, never a decimal number such as \"3.5\") and a run of 7 or more digits broken only by line breaks and the separators it already allows. Tests: `tests/integration/tests/feedback_purge.rs` (TD-PRIV-22) and `app/portals/src/tests/data_download_mask.rs` (TD-PRIV-23); every existing T087, T230 and purge test passes unchanged. The overseer runs an independent privacy review of the hand-in (D-2205). Update the `jobs` and `portals` `CLAUDE.md` files, `docs/architecture.md` section 10 and `docs/decisions.md`. Plan change D-3189: T411 also owns `data_download.rs` (its confirmed delete deletes her jobs' stored job text) and runs first, so this task depends on it and keeps its delete call.",
    "type": "build",
    "phase": 1,
    "stage": "4",
    "module": "jobs",
    "deps": [
     "T276",
-    "T087"
+    "T087",
+    "T411"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -23988,13 +24072,14 @@
     "D-1823",
     "D-214",
     "D-1799",
-    "D-3083"
+    "D-3083",
+    "D-3189"
    ],
    "cites": [],
    "budget": {
     "files": 5,
     "lines": 500,
-    "context_pct": 37
+    "context_pct": 41
    },
    "checks": [
     "Ci",

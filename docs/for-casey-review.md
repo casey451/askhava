@@ -2,6 +2,15 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## Job cards had nowhere to keep the card she approved; it is now stored for 3 years (plan change, D-3189, November 12)
+
+- **What happened.** The step that sends job cards to businesses (T251) stopped and reported a planning gap: once a homeowner approves her card, or the 30-minute wait ends, nothing in the app still holds the card text or her description (Ask Hava deliberately never stores the raw texts). The business job page and the quote form had the same problem.
+- **What changed.** A new step, T411, stores for each job her description with contact details already removed and each card she was shown, for 3 years, which is what the existing rule "job text is kept with contact details removed, for 3 years" (PRIV-008) already asks for. It is deleted after 3 years and by "Delete my data". The cards step (T251) and the intake order (T162) now read and write it, and the quote form shows the approved card from it. The raw texts are still never stored.
+- **Gap found on the way, now fixed in the same step.** "Delete my data" removed photos only from the first job of each conversation; T411 now deletes the stored text and the photos of every job in every conversation of hers, open or closed.
+- **Known gaps, not fixed yet, no owner.** If one conversation turns into two emergency jobs, only the first is released to businesses at once. And a job the homeowner chose as an emergency without a 911 word (a burst pipe, say) gets the regular pick windows instead of the 60-minute emergency ones, because those read a different flag. Both are logged in D-3189. (The cards themselves now go out at once for any emergency she chose.)
+- **Decided for you (by the Fable agent under your Nov 11 standing rule).** Store it, with these limits: only text the scrubber has already cleaned can be saved; a card goes out only if it matches, character for character, the one she approved; only the card sender, the intake steps and the business job page read it; it never appears in logs.
+- **Nothing needs you now.**
+
 ## Runner: a finished task frees its lane about 25 minutes sooner (D-3141, November 12)
 
 - **What happened.** When a task's change merged, the runner only marked it done after warming up and running the start-up smoke test, about 25 minutes later (T388: merged 22:53, marked done 23:19 UTC on November 11). Meanwhile its lane and every task waiting on it sat idle.
