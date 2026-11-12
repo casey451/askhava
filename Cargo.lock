@@ -712,6 +712,7 @@ version = "0.1.0"
 dependencies = [
  "askhava-adapters",
  "askhava-businesses",
+ "askhava-catalog",
  "askhava-core",
  "askhava-fixtures",
  "askhava-intake",

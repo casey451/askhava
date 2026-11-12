@@ -18,7 +18,7 @@ use askhava_core::api::{IdSecret, LinkToken, ManualClock};
 use askhava_intake::api::rules::{Inbound, Settings};
 use askhava_intake::api::{JobStart, Opened, PublishedTerms, TextIn, begin_job, receive_text};
 use askhava_jobs::api::quote_token::issue;
-use askhava_jobs::api::{JobStatus, move_to};
+use askhava_jobs::api::{JobStatus, move_to, record_job_facts};
 use askhava_licensing::api::{CardLanguage, CardLine, LicenseKind};
 use askhava_messaging::api::Language;
 use askhava_ops::api::Actor;
@@ -124,6 +124,13 @@ async fn three_quotes(db: &mut Db) -> (Uuid, [Uuid; 3]) {
     let Ok(Opened::Created(job)) = begin_job(db, &start).await else {
         panic!("a new job");
     };
+    askhava_catalog::api::load_embedded(db)
+        .await
+        .expect("catalog");
+    let types = ["leak repair".to_owned()];
+    record_job_facts(db, job, "plumbing_repair", &types)
+        .await
+        .expect("job facts");
     let open = (JobStatus::Intake, JobStatus::Open);
     let _ = move_to(db, job, open, at("02T20:02:00"), Actor::System)
         .await
