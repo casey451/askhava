@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T23:49:22Z by runner 9a870b31c911 (actions).
+Updated 2026-11-12T23:50:50Z by runner dae8c6443b4f (actions).
 
 **Building: T215 in progress since 23:45Z; 260 of 404 done; week 8% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,14 +8,14 @@ Updated 2026-11-12T23:49:22Z by runner 9a870b31c911 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T215 claimed 23:45Z, lease until 02:45Z; lane 3: T372 claimed 23:46Z, lease until 02:46Z
 - **Week:** 8% used, 167.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:49Z, 0 min before this update
+- **Last run:** 23:49Z, 1 min before this update
 - **Keeper:** last ran 23:49Z, next wake 02:48Z
 
 ## Needs attention
 - BLOCKED T255: plan gap reported: PLAN GAP: Releasable in app/payments/src/release_proof.rs:153 has private fields and no constructor; T255's owned reclear.rs cannot build one (lib.rs declares mod release_proof as a sibling; CLAUDE.md of payments forbids a public constructor). release_proof.rs is owned by T189, T337, T408, T332, T359, not T255. paid_release needs a VerifiedStripeEvent and an adapter, so it cannot serve a (conn, pick) re-clear without a new event (SEC-030). Smallest fix: give T255 release_proof.rs to add a pub(crate) constructor from the stored success, or declare reclear as a child module inside release_proof.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T255 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T371 (since 2026-11-12T23:46:03Z, no attempt used; a plan change fixes it): T371: dependency T385 is DONE but its owned file app/licensing/src/own_record.rs is not on main; T371: dependency T385 is DONE but its owned file app/businesses/src/signup_record.rs is not on main; T371: dependency T385 is DONE but its owned file tests/integration/tests/signup_own_record.rs is not on main; T371: dependency T385 is DONE but its owned file tests/fixtures/license_source/record/roc/ROC100001 is not on main; T371: dependency T385 is DONE but its owned file tests/fixtures/license_source/roc is not on main; T371: dependency T385 is DONE but its owned file tests/fixtures/license_source/city is not on main
-- Strict plan check red: 21 problem(s) on tasks still to run (+135 on DONE tasks); first: T320: measures 46% of the window, over its 45% limit; trim its reads or split it
+- Strict plan check red: 21 problem(s) on tasks still to run (+136 on DONE tasks); first: T320: measures 46% of the window, over its 45% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -122,7 +122,6 @@ Updated 2026-11-12T23:49:22Z by runner 9a870b31c911 (actions).
 - 01:55Z Plan: owner approval before a team-linked phone works (BIZ-033, IC-95) — T396–T399 (D-3081) (#531)
 - 00:38Z Plan: T261 pre-flight fix and catalog loaded at start-up (T400, IC-96) (D-3100) (#534)
 - 00:00Z Plan: pre-flight fixes round 3 — T360, T368, T350, T358, T366, T385 (D-3094) (#528)
-- 23:50Z Plan: Gate C preconditions, vendor-leak check, quote cards, AI writing calls (D-3080) (#518)
 
 ## Progress (requirements verified)
 
