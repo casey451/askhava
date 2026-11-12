@@ -21,8 +21,7 @@ use std::sync::Arc;
 
 use askhava_adapters::api::{Delivery, VerifiedWebhook, WebhookVendor, refuse, verify_webhook};
 use askhava_calls::api::{
-    CallsError, SAFETY_KEY_PATH, SAFETY_STATUS_PATH, SafetyCall, hangup_twiml, safety_call_status,
-    safety_key_once,
+    CallsError, SafetyCall, hangup_twiml, safety_call_status, safety_key_once,
 };
 use axum::Router;
 use axum::body::Bytes;
@@ -33,10 +32,11 @@ use axum::routing::post;
 
 use crate::inbound_text::Webhooks;
 
-/// Where Twilio posts a placed call's progress and detection result.
-pub const STATUS_PATH: &str = SAFETY_STATUS_PATH;
-/// Where the safety call's `Gather` posts the key pressed.
-pub const KEY_PATH: &str = SAFETY_KEY_PATH;
+/// Where Twilio posts a placed call's progress and detection result: `calls`'
+/// `SAFETY_STATUS_PATH`, written out so the route-table scan reads it (TD-SEC-01).
+pub const STATUS_PATH: &str = "/webhooks/twilio/voice/status";
+/// Where the safety call's `Gather` posts the key pressed: `calls`' `SAFETY_KEY_PATH`.
+pub const KEY_PATH: &str = "/webhooks/twilio/voice/safety-key";
 
 /// The two routes over the shared Twilio webhook state, for `build_router` to merge (SEC-016).
 pub fn routes(h: Arc<Webhooks>) -> Router {

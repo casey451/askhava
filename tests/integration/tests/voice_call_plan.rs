@@ -14,9 +14,9 @@ use std::sync::Arc;
 
 use askhava_adapters::api::{TwilioConfig, TwilioVoice, twilio_clients};
 use askhava_calls::api::{
-    Approval, AutomatedCall, CallGate, Conditions, SAFETY_RESULT_ACTION, SafetyCall, SafetyDialer,
-    SafetyOutcome, SafetySwitch, automated_call_gate, hangup_twiml, owner_bridge_twiml,
-    place_safety_call, ring_owner,
+    Approval, AutomatedCall, CallGate, Conditions, SAFETY_KEY_PATH, SAFETY_RESULT_ACTION,
+    SAFETY_STATUS_PATH, SafetyCall, SafetyDialer, SafetyOutcome, SafetySwitch, automated_call_gate,
+    hangup_twiml, owner_bridge_twiml, place_safety_call, ring_owner,
 };
 use askhava_core::api::{Environment, ManualClock, Settings};
 use askhava_intake::api::rules::Settings as IntakeSettings;
@@ -313,6 +313,10 @@ async fn resolved(pool: &PgPool, alert: Uuid) -> bool {
 /// unsigned callback is refused.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_call_22_a_safety_call_carries_its_twiml_and_a_person_acknowledges_once(pool: PgPool) {
+    assert_eq!(
+        (voice_status::STATUS_PATH, voice_status::KEY_PATH),
+        (SAFETY_STATUS_PATH, SAFETY_KEY_PATH)
+    );
     let fake = stand_in();
     let mut db = pool.acquire().await.expect("connection");
     let call = emergency(&mut db, "+19285550171").await;
