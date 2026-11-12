@@ -43121,7 +43121,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T21:46:41Z",
+ "updated_at": "2026-11-12T21:48:12Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -43220,7 +43220,7 @@
   ]
  },
  "runner_sha": "46f5fc54dbd7d222593288d643f1993a69dbc88c",
- "starter": "actions",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "e2c37a7d0cadd117b412f6c0c3aa24dc1d5808fd",
@@ -43490,7 +43490,7 @@
    "why": "smoke red while Ci, Twin and Ally were green on the head"
   }
  ],
- "next_decision": 3324,
+ "next_decision": 3325,
  "stage_proofs": {
   "1": {
    "evidence": "Recorded by the runner (D-551): nightly-main green (Ci, Twin, Ally) on main 5d45d8ef0bee8d8e290462e58aa81c580bf57c1e, which contains every stage-1 merge (T002 739f29a31cec, T003 7161be09784c, T004 36b13e66ddf4, T172 189cfe54c716, T005 f55fa02095c0, T006 1e9c2dbb261b, T007 d57693ea8e79, T008 d57693ea8e79, T170 1cdbd960f712, T154 b4f7265f01d2, T167 5d45d8ef0bee); the exit row's tests ran in it (tests/twin/test_gate.py, tests/test_check_catalog.py, tests/test_matching_examples.py, tests/contract/test_stand_in_server.py); every requirement owned only by tasks of stage 1 or earlier is verified (OPS-053).",
@@ -43783,6 +43783,12 @@
    "at": "2026-11-12T21:12:42Z",
    "reason": "Condense businesses, intake, quotes CLAUDE.md to ~90 lines (join bullets, no content lost), as D-3304",
    "session": "manual-fe8e5bc9cd78"
+  },
+  {
+   "number": 3324,
+   "at": "2026-11-12T21:48:12Z",
+   "reason": "Flaky TD-CALL-23 test: rows_holding LIKE needle matches digest/timestamp text by chance; queue a harness test-fix task claimed first (D-2540/D-3049 precedent)",
+   "session": "manual-a253066beaa1"
   }
  ],
  "lanes_fallback_history": [

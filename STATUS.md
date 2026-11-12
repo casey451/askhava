@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T21:46:41Z by runner 46f5fc54dbd7 (actions).
+Updated 2026-11-12T21:48:12Z by runner 46f5fc54dbd7 (manual).
 
 **Building: T162 in progress since 21:35Z; 256 of 403 done; week 5% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-12T21:46:41Z by runner 46f5fc54dbd7 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T162 claimed 21:35Z, lease until 00:35Z; lane 3: T385 claimed 21:36Z, lease until 00:36Z; lane 6: T417 claimed 21:46Z, lease until 00:46Z; lane 7: T351 claimed 21:36Z, lease until 00:36Z
 - **Week:** 5% used, 174.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:42Z, 4 min before this update
+- **Last run:** 21:46Z, 1 min before this update
 - **Keeper:** last ran 21:42Z, next wake 00:38Z
 
 ## Needs attention
@@ -86,7 +86,6 @@ Updated 2026-11-12T21:46:41Z by runner 46f5fc54dbd7 (actions).
 | T317 | server and intake: the inbound text route applies SEC-014's  | BLOCKED | 1 | 4 min | 22:34Z |  |
 | T232 | portals and businesses: the Confirm step's "Can't take it" l | done | 1 | 51 min | 22:02Z |  |
 | T387 | payments (harness): the branch that flaps payments coverage  | done | 1 | 90 min | 21:49Z |  |
-| T388 | picks, intake, messaging and portals: after a Confirm the ho | done | 1 | 34 min | 21:46Z |  |
 
 ### Plan and harness merges on main
 - 20:49Z Harness: worker output discipline and per-role usage recording (D-3305) (#618)
@@ -118,7 +117,6 @@ Updated 2026-11-12T21:46:41Z by runner 46f5fc54dbd7 (actions).
 - 23:07Z Plan: IC-74 owners T390/T391, migration renumber, budget refresh, IC-95 logged (D-3079) (#517)
 - 23:02Z Plan: pre-flight fixes for T317, T323, T313, T315, T347 and the T345 gap (D-3083) (#524)
 - 22:35Z Harness: smoke ancestry reuse across DONE task merges and a running duplicate smoke yields (D-3058) (#516)
-- 21:48Z Harness: no five-hour pacing budget (D-3056) (#513)
 
 ## Progress (requirements verified)
 
