@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T16:34:54Z by runner 2a3903cde744 (actions).
+Updated 2026-11-12T16:55:15Z by runner 2a3903cde744 (actions).
 
 **Waiting for tokens until 17:00Z; 247 of 400 done; week 96% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-12T16:34:54Z by runner 2a3903cde744 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 16:33Z (no task in progress)
 - **Week:** 96% used, 0.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:29Z, 5 min before this update
+- **Last run:** 16:35Z, 20 min before this update
 - **Keeper:** last ran 16:29Z, next wake 17:06Z
 
 ## Needs attention
@@ -87,7 +87,6 @@ Updated 2026-11-12T16:34:54Z by runner 2a3903cde744 (actions).
 | T333 | payments (harness): a succeeded refund is recorded at the am | done | 2 | 32 min | 17:20Z | PLAN GAP: app/payments/src/routes.rs:412 (T259) and app/payments/src/refund_state.rs:34 (T270) / app/picks/src/unreachab |
 | T272 | portals: the sign-in link cap and the code-try cap are atomi | resync | 1 | 27 min | 17:17Z |  |
 | T165 | businesses: business name, Google and Yelp links and license | done | 1 | 18 min | 17:05Z |  |
-| T214 | picks (harness): the homeowner's share box at the pick and t | done | 3 | 45 min | 16:44Z | PLAN GAP: tests/integration/tests/page_pick.rs:131 and tests/security/tests/page_pick_privacy.rs:224 (both T246's; page_ |
 
 ### Plan and harness merges on main
 - 16:10Z Plan: pre-flight fixes round 10 — T396, T398, T111, T113, T408, T222; new T414 (D-3263) (#597)
