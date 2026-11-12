@@ -35976,7 +35976,16 @@
    "attempts": 0,
    "slug": "door-matrix-charged-pick-and-facts",
    "type": "harness",
-   "stage": "4"
+   "stage": "4",
+   "plan_gap": {
+    "at": "2026-11-12T07:50:16Z",
+    "problems": [
+     "T404: dependency T339 is DONE but its owned file migrations/0164_jobs_job_facts.sql is not on main",
+     "T404: dependency T339 is DONE but its owned file app/jobs/src/job_facts.rs is not on main",
+     "T404: dependency T339 is DONE but its owned file tests/integration/tests/job_facts.rs is not on main",
+     "T404: dependency T401 is DONE but its owned file app/server/tests/door_matrix/released_pick.rs is not on main"
+    ]
+   }
   },
   {
    "id": "T405",
@@ -38427,7 +38436,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T07:50:30Z",
+ "updated_at": "2026-11-12T07:51:52Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
