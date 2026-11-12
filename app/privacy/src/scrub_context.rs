@@ -134,3 +134,53 @@ async fn store(
     .map_err(db_err)?;
     Ok(())
 }
+
+/// TD-CON-32 (D-2621, D-3278): a stated-name row sealed before the never-a-name rule that holds an
+/// opt-out word is ignored, so her later opt-out keeps its words. Here, not under `tests/`, because
+/// only this module may seal a stated name. Every name and phone is fictional.
+#[cfg(test)]
+mod tests {
+    use base64::Engine as _;
+    use base64::engine::general_purpose::STANDARD;
+    use secrecy::SecretString;
+    use sqlx::PgPool;
+
+    use super::{Vault, read_inbound_for, store};
+    use crate::api::{InboundWords, NewContact, store_contact};
+
+    const WORDS: InboundWords<'static> = InboundWords {
+        emergency: &[],
+        opt_out: &["stop"],
+        help: &["help"],
+        start: &["start"],
+    };
+
+    fn vault() -> Vault {
+        let key = |byte: u8| format!("1:{}", STANDARD.encode([byte; 32])).into();
+        let url = SecretString::from("postgres://askhava_app@db.invalid/askhava".to_owned());
+        Vault::new(&key(0x3c), &key(0x4d), &url).expect("vault")
+    }
+
+    #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+    async fn td_con_32_a_stored_stated_name_that_is_an_opt_out_word_is_ignored(pool: PgPool) {
+        let vault = vault();
+        let mut db = pool.acquire().await.expect("connection");
+        sqlx::query!("SET ROLE askhava_app")
+            .execute(&mut *db)
+            .await
+            .expect("app role");
+        let new = NewContact {
+            phone: Some(SecretString::from("+19285550193".to_owned())),
+            ..NewContact::default()
+        };
+        let her = store_contact(&mut db, &vault, &new).await.expect("contact");
+        for word in ["stop", "zorba"] {
+            store(&mut db, &vault, her, word).await.expect("seal");
+        }
+        let raw = "Zorba says stop texting me";
+        let read = read_inbound_for(&mut db, &vault, her, raw, &WORDS)
+            .await
+            .expect("read");
+        assert_eq!(read.text.as_str(), "[removed] says stop texting me");
+    }
+}
