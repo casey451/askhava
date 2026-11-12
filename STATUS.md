@@ -1,25 +1,25 @@
 # Ask Hava build status
 
-Updated 2026-11-12T05:33:32Z by runner 72a65e123c88 (actions).
+Updated 2026-11-12T05:33:48Z by runner fe14fd0d43a4 (actions).
 
-**Building: T405 in progress since 05:14Z; 224 of 391 done; week 87% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T405 in progress since 05:14Z; 224 of 390 done; week 87% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 224 of 391 build tasks (owner gates not counted)
+- **Tasks done:** 224 of 390 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 3: T405 claimed 05:14Z, lease until 08:14Z; lane 5: T336 claimed 04:54Z, lease until 07:54Z
 - **Week:** 87% used, 13.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:32Z, 1 min before this update
-- **Keeper:** last ran 05:23Z, next wake 07:07Z
+- **Last run:** 05:33Z, 0 min before this update
+- **Keeper:** last ran 05:33Z, next wake 07:56Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 9 problem(s) on tasks still to run (+85 on DONE tasks); first: T396: stored context_pct 39% but it measures 43%; regenerate
+- Strict plan check red: 8 problem(s) on tasks still to run (+80 on DONE tasks); first: T396: stored context_pct 39% but it measures 43%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T356 | messaging and server (harness): the worker sends queued text | MERGE_PENDING | 1 | 86 min | 05:31Z |  |
-| T405 | payments and adapters (harness): each charged pick's 3-D Sec | resync | 1 | 33 min | 04:56Z | merging main into the reviewed head conflicts in app/payments/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T405 |  | resync | 1 | 33 min | 04:56Z | merging main into the reviewed head conflicts in app/payments/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T326 | calls (harness): the LINK notice names the line's stored PIN | done | 1 | 25 min | 03:37Z |  |
 | T336 | server, adapters and stand-in (harness): a text stopped by a | QUEUED | 1 | 5 min | 03:27Z | Worker stopped before building with a PLAN GAP claim (messaging.inbox has no sender/handled columns; T336 owns no migrat |
 | T248 | catalog and businesses: markets as reviewed data, Arizona ZI | MERGE_PENDING | 1 | 12 min | 03:22Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
@@ -120,7 +120,7 @@ Updated 2026-11-12T05:33:32Z by runner 72a65e123c88 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 212 of 733 (28.9%) · partial 349 · unstarted 172
-**Tasks merged (throughput only):** 224 of 391
+**Tasks merged (throughput only):** 224 of 390
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
