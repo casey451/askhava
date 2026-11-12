@@ -37380,11 +37380,11 @@
      "resync": true
     }
    ],
-   "reviewed_sha": "c22b406889159c61c764830952c669552048aed2",
+   "reviewed_sha": "7721cfb8b5d1c43d30a4d79ccb117dbcd690ff7c",
    "review_lease": {
     "task": "T385",
-    "session": "actions-43222642838",
-    "expires": "2026-11-12T17:03:28Z",
+    "session": "actions-43268211353",
+    "expires": "2026-11-12T20:26:04Z",
     "lane": "3"
    },
    "branch": "claude/task/T385-signup-own-record-read-a2",
@@ -37408,24 +37408,14 @@
     }
    ],
    "last_failure": "Ci: failure; Coverage: failure\nCoverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly)\ntest td_call_23_a_homeowner_or_linked_business_phone_stores_nothing ... ok\ntest td_call_23_a_wrong_pin_hang_up_queues_and_stores_nothing ... ok\nfailures:\n---- td_call_23_a_blocked_call_that_connects_queues_one_notice_and_one_pending_link stdout ----\nthread 'td_call_23_a_blocked_call_that_connects_queues_one_notice_and_one_pending_link' (20024) panicked at tests/integration/tests/link_request.rs:324:13:\nassertion `left == right` failed: ops.audit_log holds a value\n  left: 1\n right: 0\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\n    td_call_23_a_blocked_call_that_connects_queues_one_notice_and_one_pending_link\ntest result: FAILED. 4 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.56s\nerror: test failed, to rerun pass `-p askhava-integration --test link_request`\nerror: process didn't exit successfully: `/home/runner/.rustup/toolchains/nightly-2026-10-15-x86_64-unknown-linux-gnu/bin/cargo test --tests --manifest-path /home/runner/work/askhava/askhava/Cargo.tom\n##[error]Process completed with exit code 101.\nCi failed at step: All five jobs passed\nChecks: success, Lint and slow tests: success, Python: success, Coverage: failure, E2e: success\n##[error]Process completed with exit code 1.",
+   "head_check_since": null,
    "update_merges": [
     {
-     "from": "389664ca02cb055c9d300e1b306bdd64104d69fc",
-     "to": "7786d32c2e3286464203f6549ffe67a18fd239a4",
-     "main": "f2ec2c57dae946b04470c9acd41dd2da385a7e50",
+     "from": "33560091de3263f8a4af693a6599d18db3207194",
+     "to": "7721cfb8b5d1c43d30a4d79ccb117dbcd690ff7c",
+     "main": "0e36bfe8ac65173273d57ed1f11345f5d1c04f92",
      "how": "hand-in",
-     "at": "2026-11-12T14:42:15Z"
-    },
-    {
-     "from": "7786d32c2e3286464203f6549ffe67a18fd239a4",
-     "to": "c22b406889159c61c764830952c669552048aed2",
-     "main": "e2c37a7d0cadd117b412f6c0c3aa24dc1d5808fd",
-     "how": "runner",
-     "checks": {
-      "Twin": "success",
-      "Ally": "success"
-     },
-     "at": "2026-11-12T14:49:09Z"
+     "at": "2026-11-12T18:26:51Z"
     }
    ],
    "update_waiting_since": null,
@@ -41856,7 +41846,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T18:17:19Z",
+ "updated_at": "2026-11-12T18:26:51Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -41954,7 +41944,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "0e36bfe8ac65173273d57ed1f11345f5d1c04f92",
+ "runner_sha": "33560091de3263f8a4af693a6599d18db3207194",
  "starter": "actions",
  "smoke_runs": [
   {
