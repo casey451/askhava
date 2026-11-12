@@ -1,22 +1,14 @@
-"""Route benchmark over seeded fake data: lab numbers, judged against D-3292's goals (T417, D-3292).
+"""Route benchmark over seeded fake data: lab numbers, judged against D-3292's goals (T417, D-3319).
 
-`python3 -m perf.bench [--quick] --out <file> [--baseline]` builds the test-control `server` and
-`worker`, starts them and the stand-in server the way tests/e2e/webserver.ts does (with the
-fake keys tests/e2e/j1_homeowner.spec.ts adds so the Twilio route and the page pick are
-served) against a database of its own on DATABASE_URL's server (created, migrated with `server
-migrate` and dropped at the end, so the CI database is untouched and every run starts from the
-same rows), seeds (perf/seed.py), then for each route in ROUTES runs a
-warm-up and 1, 10 and 50 concurrent users (`--quick`: 1 and 10, fewer requests) for a fixed
-request count, recording each request's wall time, status and response bytes. At 1 user it
-reads `GET /__test/perf/db` (T416) before and after each request for its statements; acquire
-waits come from the bucket differences of the snapshots around each phase. A figure the app
-does not expose is the string "not exposed: <reason>". Goals are met or missed, never a
-failure: the run exits 0 whatever the numbers. The full run also runs T416's `perf_zip_scale`.
-
-Secrets (the control secret, ID secret, vault keys, Twilio token) are random per run, kept in
-memory and in the children's environment, never printed or written. The output is checked by
-scripts/pii_scan.py's rules before it is written (TD-OPS-42); only `--baseline` writes under
-the repository (docs/audit/perf-baseline.json).
+`python3 -m perf.bench [--quick] --out <file> [--baseline]` starts the test-control `server`, the
+`worker` and the stand-ins as tests/e2e/webserver.ts does (plus j1_homeowner.spec.ts's fake keys)
+on a database of its own on DATABASE_URL's server (created, migrated, seeded by perf/seed.py,
+dropped at the end), then times each route in ROUTES at 1, 10 and 50 users (`--quick`: 1 and 10,
+fewer requests). Queries per request come from `GET /__test/perf/db` (T416) at 1 user; acquire
+waits from snapshot bucket differences. An unexposed figure is "not exposed: <reason>"; a missed
+goal never fails the run. The full run adds `perf_zip_scale`. Secrets are random per run and never
+printed or written; the output passes scripts/pii_scan.py's rules before it is written
+(TD-OPS-42); only `--baseline` writes under the repository.
 """
 
 from __future__ import annotations

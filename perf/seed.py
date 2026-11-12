@@ -1,18 +1,12 @@
-"""Seeded fake-data background and route objects for the route benchmark (T417, D-3292, D-453).
+"""Seeded fake-data background and route objects for the route benchmark (T417, D-3319, D-453).
 
-`seed_background` writes, in one transaction through psql on DATABASE_URL (after `server
-migrate`), a deterministic Phoenix-metro-size background: BUSINESSES active businesses spread
-over the catalog's towns (docs/catalog/markets.yaml) and launch-open trades
-(docs/catalog/categories.yaml), JOBS past jobs with their numbers and facts, QUOTES quotes and
-one paid page pick per Done job. IDs are md5 of a fixed label, times are fixed, so two runs
-write the same rows; a database that already holds them is left as it is. Rows follow the
-migrations on `main`; the tables in SKIPPED are not seeded and the report names them.
-
-`quote_pages` makes the objects the measured routes need the way tests/e2e/pick_flow.spec.ts
-does: a job in Quotes ready with three quotes and a quote-page link token (for the final Pick
-also linked to a homeowner request, as j1_homeowner.spec.ts does), whose raw token is
-kept in memory only. Fake data only (BUILD_BRIEF.md:66, PRIV-019): no name, phone, email or
-street is written at all. The database URL is never printed.
+`seed_background` writes in one psql transaction on DATABASE_URL a deterministic background
+(md5 IDs, fixed times): BUSINESSES active businesses over the catalog's towns and launch-open
+trades, JOBS past jobs with numbers and facts, QUOTES quotes and one paid page pick per Done job.
+Rows follow the migrations on `main`; the tables in SKIPPED are not seeded and the report names
+them. `quote_pages` makes the measured routes' objects as tests/e2e/pick_flow.spec.ts does (for
+the final Pick linked to a homeowner request, as j1_homeowner.spec.ts does); raw tokens stay in
+memory. Fake data only (BUILD_BRIEF.md:66, PRIV-019); the database URL is never printed.
 """
 
 from __future__ import annotations

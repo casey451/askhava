@@ -1,9 +1,5 @@
-"""Offline checks of the route benchmark's arithmetic and fake-data guard (T417, TD-OPS-42, D-3292).
-
-No app and no database: planted timings, planted `/__test/perf/db` snapshots and planted
-records. Fake data only; the non-fake values below are assembled at run time so the repository
-never holds one.
-"""
+"""Offline checks of the route benchmark (T417, TD-OPS-42, D-3292): planted timings, snapshots and
+records; no app, no database. Non-fake values are assembled at run time, never stored."""
 
 from __future__ import annotations
 
