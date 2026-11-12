@@ -2470,6 +2470,14 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **Worth knowing.** The measurement found that none of the build caches were being reused: what the nightly saves is pushed out of GitHub's 10 GB cache within hours, so every run builds from scratch. That is a separate fix, to be measured first. The new job uses about 6 more runner-minutes per run; the repository is public, so this costs nothing.
 - **Nothing needs you now.**
 
+## Texts now actually go out, once, and never at night by mistake (T356, D-3145 to D-3149)
+
+- **What changed.** A new worker job sends the texts the app queues for homeowners. Just before each one goes it checks the 8 a.m. to 8 p.m. window again, the texting switch and the opt-out list. A text queued at night waits for 8 a.m. If Twilio's answer is lost (a timeout or a crash mid-send), the text is never sent a second time: it is marked "unknown", an important one goes to her by email, and you get one low-priority alert. A text queued while the homeowner line was off or suspended is dropped, not sent late, and an opt-out confirmation older than 5 minutes is never sent.
+- **Worth knowing.** Texts to businesses are not sent by this job yet; they wait in the outbox for a later task.
+- **Needs you at the account checkpoint.** A new setting, `ASKHAVA_HOMEOWNER_NUMBER`, names the homeowner texting number. The test and live projects refuse to start without it, because with no number nothing is texted and every opt-out confirmation text would quietly expire (D-3149).
+- **A gap still open: texts to businesses have no sender (D-3149).** Job-card and pick notices to a business are queued as texts and counted as texted, so no email goes in their place, but nothing sends them yet. The plan needs a task that sends business texts from the business line; until then a business that would have been texted a notice gets neither the text nor the email for it. Nothing needs you now; the next plan change should add that task.
+- **Other fixes from review.** One unreadable text can no longer jam the queue (it is dropped and logged), a failing text never stops the minute-by-minute sender, and a text's email copy is in the person's own language.
+
 ## T248: markets as data, ZIP locations, and each business's travel radius (D-3113 to D-3116)
 
 - **What changed.** The towns Ask Hava covers now live in one reviewed file, `docs/catalog/markets.yaml`, with one market today: Lake Havasu City (ZIPs 86403, 86404 and 86406 from the Census, plus 86405, the PO-box ZIP). No market has a launch date; recording one is your later action. Each ZIP's location is the Census point for that ZIP, never a street address. Sign-up now asks a business for its base ZIP and how many miles it will travel (1 to 100), and sign-up can't finish without them. Matching by distance comes later (T249).

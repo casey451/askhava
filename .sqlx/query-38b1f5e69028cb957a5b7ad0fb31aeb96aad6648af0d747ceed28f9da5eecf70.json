@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT texting_on AND line_state = 'working' FROM messaging.mode_state WHERE audience = 'homeowner' AND changed_at <= $1 ORDER BY changed_at DESC, seq DESC LIMIT 1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "?column?",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "38b1f5e69028cb957a5b7ad0fb31aeb96aad6648af0d747ceed28f9da5eecf70"
+}

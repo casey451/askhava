@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "INSERT INTO messaging.outbox (idempotency_key, template_id, recipient_id, recipient_kind, subject_ids, body, language) VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (idempotency_key) DO NOTHING RETURNING id",
+  "query": "INSERT INTO messaging.outbox (idempotency_key, template_id, recipient_id, recipient_kind, subject_ids, body, language, quiet_exempt_until) VALUES ($1, $2, $3, $4, $5, $6, $7, CASE WHEN $8 THEN 'infinity'::timestamptz ELSE $9 END) ON CONFLICT (idempotency_key) DO NOTHING RETURNING id",
   "describe": {
     "columns": [
       {
@@ -23,12 +23,14 @@
         "Text",
         "UuidArray",
         "Text",
-        "Text"
+        "Text",
+        "Bool",
+        "Timestamptz"
       ]
     },
     "nullable": [
       false
     ]
   },
-  "hash": "6a606494aa3ab4313864f0cefc05b38c2f1444fc9c2154d410742d9d026c845e"
+  "hash": "a8da9a154c14ea0a15eac7027b0d96d9642ddd48b91876ccd4e7642cdea56722"
 }
