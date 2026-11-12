@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-12T08:37:10Z by runner 5cbddc23fd8c (actions).
+Updated 2026-11-12T08:44:49Z by runner d9515904bc86 (actions).
 
 **Building: T406 in progress since 08:23Z; 232 of 394 done; week 91% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 232 of 394 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T406 claimed 08:23Z, lease until 11:23Z; lane 2: T336 claimed 08:04Z, lease until 11:04Z; lane 5: T268 claimed 08:14Z, lease until 11:14Z
-- **Week:** 91% used, 0.7M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:37Z, 0 min before this update
+- **Lane:** lane 1: T406 claimed 08:23Z, lease until 11:23Z; lane 2: T336 claimed 08:04Z, lease until 11:04Z; lane 3: T345 claimed 08:42Z, lease until 11:42Z; lane 5: T268 claimed 08:14Z, lease until 11:14Z
+- **Week:** 91% used, 1.8M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Last run:** 08:42Z, 2 min before this update
 - **Keeper:** last ran 08:37Z, next wake 11:06Z
 
 ## Needs attention
 - BLOCKED T251: plan gap reported: PLAN GAP: app/intake/src/summary_step.rs:415 and app/intake/src/service.rs:672 (T208/T039 files, not T251's). The card sender has nowhere to read the approved card text, category, remaining candidate job types or scrubbed text. Approval payload is only {job, conversation, card digest} (summary_step.rs:415); approved_card (summary_step.rs:345) needs the full JobCard, which only quotes::api::build_card makes. Emergency payload is only {conversation} (service.rs:672). No table stores card text/category/candidates/scrubbed text (quotes.job_card 0067, jobs.job 0031, intake tables 0053; jobs.job_fac; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T251 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 12 problem(s) on tasks still to run (+92 on DONE tasks); first: T396: stored context_pct 39% but it measures 44%; regenerate
+- Strict plan check red: 18 problem(s) on tasks still to run (+96 on DONE tasks); first: T396: stored context_pct 39% but it measures 45%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -121,7 +121,6 @@ Updated 2026-11-12T08:37:10Z by runner 5cbddc23fd8c (actions).
 - 10:38Z Plan: businesses give their public name at sign-up; T316 reads it (D-2943) (#473)
 - 09:54Z Harness: a planned file deletion is not a plan gap — 5 eligible tasks were held (D-2922) (#470)
 - 09:40Z Plan: split T164 — new T384 shows edited/withdrawn quotes in place; LIST numbers match picks (D-2912) (#468)
-- 08:37Z Plan: T337 also owns release_recovery.rs for a fixture-only fix (D-2896) (#464)
 
 ## Progress (requirements verified)
 
@@ -154,7 +153,7 @@ Updated 2026-11-12T08:37:10Z by runner 5cbddc23fd8c (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-12T08:20:14Z (week)): week: 193.3M used, 734k left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-07T01:02:30Z; waiting until 2026-11-12T17:00:00Z.
+- Pacing (session_reading 2026-11-12T08:36:53Z (week)): week: 192.2M used, 1.8M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-07T01:15:53Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -171,6 +170,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T406 (lease until 2026-11-12T11:23:34Z)
 - lane 2: T336 (lease until 2026-11-12T11:04:06Z)
+- lane 3: T345 (lease until 2026-11-12T11:42:50Z)
 - lane 5: T268 (lease until 2026-11-12T11:14:04Z)
 
 ## Last usage reading
