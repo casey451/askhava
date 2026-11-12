@@ -36972,7 +36972,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T03:58:11Z",
+ "updated_at": "2026-11-12T04:03:27Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -37331,7 +37331,7 @@
    "why": "smoke red while Ci, Twin and Ally were green on the head"
   }
  ],
- "next_decision": 3144,
+ "next_decision": 3145,
  "stage_proofs": {
   "1": {
    "evidence": "Recorded by the runner (D-551): nightly-main green (Ci, Twin, Ally) on main 5d45d8ef0bee8d8e290462e58aa81c580bf57c1e, which contains every stage-1 merge (T002 739f29a31cec, T003 7161be09784c, T004 36b13e66ddf4, T172 189cfe54c716, T005 f55fa02095c0, T006 1e9c2dbb261b, T007 d57693ea8e79, T008 d57693ea8e79, T170 1cdbd960f712, T154 b4f7265f01d2, T167 5d45d8ef0bee); the exit row's tests ran in it (tests/twin/test_gate.py, tests/test_check_catalog.py, tests/test_matching_examples.py, tests/contract/test_stand_in_server.py); every requirement owned only by tasks of stage 1 or earlier is verified (OPS-053).",
@@ -37523,6 +37523,12 @@
    "at": "2026-11-12T03:58:11Z",
    "reason": "CI cache eviction: per-commit backup-runner caches push the Rust/sqlx-cli caches out of the 10 GB limit (0/36 hits); keep the shared CI caches alive",
    "session": "manual-2ec4053be6bf"
+  },
+  {
+   "number": 3144,
+   "at": "2026-11-12T04:03:27Z",
+   "reason": "plan-preflight-8: stage-5 gaps T101 T166 T216 T102 T202 T105 T320 T106 T364 (+tidies) from pre-flight round 8",
+   "session": "manual-3623b9ec4881"
   }
  ],
  "lease_on": "claude/lease"
