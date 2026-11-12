@@ -38,6 +38,9 @@ const WINDOWS: (&str, &str) = ("window_cleaning", "inside and outside windows");
 
 /// An active R-11 business with every electrical job type ticked, plus `extra` if given.
 async fn r11_business(db: &mut PgConnection, extra: Option<(&str, &str)>) -> Uuid {
+    askhava_catalog::api::load(db, &catalog())
+        .await
+        .expect("catalog stored");
     let id = create(db, false, now()).await.expect("business");
     let offer = checklist_offer(map(), &catalog(), &["R-11"]);
     let mut ticked = pre_ticked(&offer);
