@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T13:36:19Z by runner 919ab4941c81 (actions).
+Updated 2026-11-12T13:57:42Z by runner 620855379afc (actions).
 
 **Building: T385 in progress since 12:57Z; 245 of 397 done; week 94% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,14 +8,14 @@ Updated 2026-11-12T13:36:19Z by runner 919ab4941c81 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 3: T385 claimed 12:57Z, lease until 15:57Z
 - **Week:** 94% used, -0.5M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:36Z, 0 min before this update
+- **Last run:** 13:36Z, 21 min before this update
 - **Keeper:** last ran 13:36Z, next wake 16:00Z
 
 ## Needs attention
 - BLOCKED T280: plan gap reported: PLAN GAP: app/portals/src/business_auth.rs:130 (SignInMail::addresses) and :176 (CodeAddress::code_to) have nothing to look up. No module stores a business member's sign-in email or texting phone in a readable/searchable form, and no task in kit/tasks.json builds one. Evidence: privacy.contact_index only ever written for HomeownerPhone (app/privacy/src/vault.rs:398,409); email_index (app/privacy/src/reader.rs:321) only computes a digest and nothing calls it; migrations/0056_businesses_team_members.sql:5-11 says email/phone is never stored there; Reader list (app/privacy/src/models.rs:89-102) h; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T280 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T251 (since 2026-11-12T11:06:16Z, no attempt used; a plan change fixes it): T251: measures 47% of the context window, over its 45% limit
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 25 problem(s) on tasks still to run (+114 on DONE tasks); first: T396: stored context_pct 39% but it measures 46%; regenerate
+- Strict plan check red: 26 problem(s) on tasks still to run (+115 on DONE tasks); first: T396: stored context_pct 39% but it measures 46%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -90,7 +90,6 @@ Updated 2026-11-12T13:36:19Z by runner 919ab4941c81 (actions).
 | T342 | quotes: a quote's contact check also reads the whole field w | done | 1 | 51 min | 14:31Z |  |
 | T332 | payments (harness): a late success has its own refund trigge | check_failed | 3 | 48 min | 14:24Z |  |
 | T269 | portals: a business notice's signed link opens sign-in for t | check_failed | 1 | 20 min | 14:19Z |  |
-| T384 | quotes and portals: the homeowner sees an edited quote as up | check_failed | 1 | 40 min | 13:40Z |  |
 
 ### Plan and harness merges on main
 - 09:36Z Plan: pre-flight fixes round 9 — stage 5: T303, T151, T321, T110, T210, T109, T116; new T409, T410 (D-3155) (#559)
@@ -122,7 +121,6 @@ Updated 2026-11-12T13:36:19Z by runner 919ab4941c81 (actions).
 - 15:02Z Plan: T333 may book the webhook refund amount and hold the refunded notice on an unchecked refund (D-3018) (#487)
 - 14:48Z Plan: T214 builds the pick notice's "Can't take it" value; new T386 adds the line to both languages (D-3024) (#489)
 - 14:34Z Harness: browser setup survives an Ubuntu mirror outage (D-3030) (#492)
-- 13:45Z Plan: four lanes (D-2986) (#483)
 
 ## Progress (requirements verified)
 
