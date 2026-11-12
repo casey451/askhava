@@ -1,0 +1,96 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT f.trip_fee, f.parts, f.permit, f.may_change, f.spanish, q.earliest_visit::text AS visit, q.visit_part FROM quotes.quote_facts f JOIN quotes.quote q USING (job_id, business_id) WHERE f.business_id = $1 AND f.job_type = $2 AND q.earliest_visit IS NOT NULL AND q.visit_part IS NOT NULL ORDER BY f.recorded_at DESC, f.job_id DESC LIMIT 1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "trip_fee",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "quotes.quote_facts",
+            "name": "trip_fee"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "parts",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "quotes.quote_facts",
+            "name": "parts"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "permit",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "quotes.quote_facts",
+            "name": "permit"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "may_change",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "quotes.quote_facts",
+            "name": "may_change"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "spanish",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "quotes.quote_facts",
+            "name": "spanish"
+          }
+        }
+      },
+      {
+        "ordinal": 5,
+        "name": "visit",
+        "type_info": "Text",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 6,
+        "name": "visit_part",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "quotes.quote",
+            "name": "visit_part"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      null,
+      true
+    ]
+  },
+  "hash": "4fa3e77aa241570594c7e559f91d7b3c112d00681d593f22263f94703a1b1307"
+}

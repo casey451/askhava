@@ -1,0 +1,22 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO quotes.quote_facts (job_id, business_id, trip_fee, parts, permit, may_change, spanish, job_type, recorded_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) ON CONFLICT (job_id, business_id) DO UPDATE SET trip_fee = EXCLUDED.trip_fee, parts = EXCLUDED.parts, permit = EXCLUDED.permit, may_change = EXCLUDED.may_change, spanish = EXCLUDED.spanish, job_type = EXCLUDED.job_type, recorded_at = EXCLUDED.recorded_at",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Text",
+        "Text",
+        "Text",
+        "Bool",
+        "Text",
+        "Text",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "46424751ce90585155d6b3d9a44a0cdc509f89104dbfbcb2935d58ead6fac0b1"
+}
