@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-12T09:05:33Z by runner 9aa267aa182e (actions).
+Updated 2026-11-12T09:05:48Z by runner 9aa267aa182e (actions).
 
-**Building: T406 in progress since 08:23Z; 233 of 394 done; week 92% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T358 in progress since 08:52Z; 233 of 394 done; week 92% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 233 of 394 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T406 claimed 08:23Z, lease until 11:23Z; lane 3: T358 claimed 08:52Z, lease until 11:52Z; lane 5: T268 claimed 08:14Z, lease until 11:14Z
+- **Lane:** lane 3: T358 claimed 08:52Z, lease until 11:52Z; lane 5: T268 claimed 08:14Z, lease until 11:14Z
 - **Week:** 92% used, 0.7M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 09:02Z, 2 min before this update
 - **Keeper:** last ran 09:02Z, next wake 11:16Z
@@ -20,6 +20,7 @@ Updated 2026-11-12T09:05:33Z by runner 9aa267aa182e (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T406 | quotes: a quote's PICK-040 facts are stored with it and read | MERGE_PENDING | 1 | 41 min | 09:05Z |  |
 | T336 | server, adapters and stand-in (harness): a text stopped by a | MERGE_PENDING | 2 | 56 min | 09:00Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T345 | harness: every external GitHub Actions `uses:` in every work | BLOCKED | 2 | 4 min | 08:47Z | PLAN GAP: tests/test_runner_cache.py:207,:214 and tests/test_runner_merge_early.py:212,:213 hard-code actions/cache/rest |
 | T322 | businesses: a backup notice address is checked again at conf | done | 1 | 35 min | 08:36Z |  |
@@ -169,9 +170,9 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T406 (lease until 2026-11-12T11:23:34Z)
+- nothing
 - lane 3: T358 (lease until 2026-11-12T11:52:02Z)
 - lane 5: T268 (lease until 2026-11-12T11:14:04Z)
 
 ## Last usage reading
-- {"task": "T336", "at": "2026-11-12T09:00:24Z", "output_tokens": 17041, "cache_read_input_tokens": 1299832, "input_tokens": 79, "cache_creation_input_tokens": 162032}
+- {"task": "T406", "at": "2026-11-12T09:05:32Z", "output_tokens": 83762, "cache_creation_input_tokens": 413955, "cache_read_input_tokens": 12730652, "input_tokens": 290}
