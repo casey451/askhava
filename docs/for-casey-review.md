@@ -2,6 +2,12 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## Nine more waiting steps fixed before they start, and one small new step (plan change, D-3112, November 12)
+
+- **What happened.** A fifth check of steps still waiting in line found five that would have stopped partway: the safety-call step would have had to change older tests it was not allowed to touch; the step that adds job facts to older pick tests missed eight test files; the business welcome-email step put its code where the module rules forbid it; the business event emails needed an Approve link they could not make; and the "Why was I charged?" page could never pass the security door test, because no test business had ever been charged. Three more steps pointed at old line numbers or at a locked section of the architecture notes.
+- **What changed.** Each step's instructions now name the right place and files: the safety-call step may make signature-only edits to three older tests; the job-facts step covers fourteen files; the welcome and event emails live in the businesses module and get their links and phone digits through the app's assembly code. A new small step, T404, gives each test business in the door test a charged pick (fake payments only) so the "Why was I charged?" page can be checked. No rule for homeowners or businesses changes, and no test is loosened.
+- **Nothing needs you.**
+
 ## The catalog is stored when the app starts, and the Confirm step is fixed before it starts (plan change, D-3100, November 12)
 
 - **What happened.** The open item from D-3094 was real: nothing stores the catalog in the database when the app starts, so on a fresh deployment every category would read as switched off. Separately, the waiting step that serves the business's Confirm and pay page (T261) named an old form of one payment call and a type that does not exist, was planned to load slightly more than the allowed share of the AI's working memory, and would have broken an older browser test of the bank-approval step that it was told to leave alone.
