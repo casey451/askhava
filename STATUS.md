@@ -1,13 +1,13 @@
 # Ask Hava build status
 
-Updated 2026-11-12T18:36:47Z by runner ef5a3860ab5e (actions).
+Updated 2026-11-12T18:37:26Z by runner ef5a3860ab5e (actions).
 
-**Building: T251 in progress since 17:19Z; 249 of 400 done; week 2% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T251 in progress since 17:19Z; 249 of 400 done; week 3% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 249 of 400 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T251 claimed 17:19Z, lease until 20:19Z; lane 2: T362 claimed 18:36Z, lease until 21:36Z; lane 5: T350 claimed 17:26Z, lease until 21:35Z; lane 6: T376 claimed 18:05Z, lease until 21:05Z; lane 7: T346 claimed 18:16Z, lease until 21:16Z
-- **Week:** 2% used, 177.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Week:** 3% used, 177.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 18:36Z, 0 min before this update
 - **Keeper:** last ran 18:27Z, next wake 20:21Z
 
@@ -116,7 +116,6 @@ Updated 2026-11-12T18:36:47Z by runner ef5a3860ab5e (actions).
 - 20:03Z Harness: the critical-path test checks what the runner can claim, not live in-flight work (D-3057) (#514)
 - 19:58Z Plan: pre-flight fixes for five queued tasks before they're claimed (D-3055) (#512)
 - 18:49Z Plan: five lanes (D-3043) (#504)
-- 18:37Z Plan: T387 steadies payments branch coverage and adds margin, claimed first (D-3049) (#507)
 
 ## Progress (requirements verified)
 
