@@ -12,6 +12,9 @@ older off-session shape the contract tests pin). confirm_payment_intent (on-sess
 FEE-016) needs an idempotency key: the success card succeeds, a decline card answers 402, and
 the 3-D Secure card answers requires_action with the client_secret, which the stand-in-only
 authenticate then settles (succeeded, or requires_payment_method on a failed approval).
+A succeeded intent names its charge in latest_charge (a ch_ ID string, as Stripe sends it
+unexpanded); the charge object, stored under that ID, carries payment_method_details.card.
+three_d_secure: result authenticated after a passed approval, null for a card never asked (D-3118).
 Webhook header: Stripe-Signature: t=<unix>,v1=<hex HMAC-SHA256(secret, "<t>.<payload>")>.
 """
 
@@ -189,8 +192,27 @@ class FakeStripe:
         decline = DECLINES.get(method)
         return (200, self._succeed(pi)) if decline is None else self._decline(pi, decline)
 
-    def _succeed(self, pi: dict[str, Any]) -> dict[str, Any]:
-        pi.update(status="succeeded", amount_received=pi["amount"], next_action=None, last_payment_error=None)
+    def _succeed(self, pi: dict[str, Any], three_d_secure: dict[str, Any] | None = None) -> dict[str, Any]:
+        """Pays the intent: its charge is stored under its own `ch_` ID, which `latest_charge`
+        names; `card.three_d_secure` is null unless the bank's 3-D Secure step ran (D-3118)."""
+        charge_id = "ch_" + pi["id"].removeprefix("pi_")
+        card = {"brand": "visa", "last4": "4242", "three_d_secure": three_d_secure}
+        self.objects[charge_id] = {
+            "id": charge_id,
+            "object": "charge",
+            "payment_intent": pi["id"],
+            "amount": pi["amount"],
+            "currency": pi["currency"],
+            "status": "succeeded",
+            "payment_method_details": {"type": "card", "card": card},
+        }
+        pi.update(
+            status="succeeded",
+            amount_received=pi["amount"],
+            next_action=None,
+            last_payment_error=None,
+            latest_charge=charge_id,
+        )
         self._event("payment_intent.succeeded", pi)
         return dict(pi)
 
@@ -242,7 +264,8 @@ class FakeStripe:
             return error(
                 "invalid_request_error", "payment_intent_unexpected_state", "This PaymentIntent needs no approval."
             )
-        status, body = (200, self._succeed(pi)) if passed else self._decline(pi, AUTH_FAILED)
+        authenticated = {"result": "authenticated", "version": "2.2.0"}
+        status, body = (200, self._succeed(pi, authenticated)) if passed else self._decline(pi, AUTH_FAILED)
         payload, signature = self.webhook(self.events[-1], timestamp)
         settled = body if status == 200 else body["error"]["payment_intent"]
         return 200, {"payment_intent": settled, "payload": payload, "headers": {"stripe-signature": signature}}

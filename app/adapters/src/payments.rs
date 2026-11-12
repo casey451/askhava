@@ -15,6 +15,10 @@
 //! `confirm=false`, and [`StripePayments::confirm_payment_intent`] confirms it on-session with
 //! one attempt's key. Both hold the client secret only as a [`SecretString`], so it never reaches
 //! `Debug` or a log line; it goes to the page only for a bank approval (`requires_action`).
+//!
+//! T405 (FEE-050, D-3118): [`StripePayments::fetch_three_ds`] reads whether a payment was 3-D
+//! Secure authenticated as a separate [`ThreeDs`] value, so neither [`PaymentIntent`] nor
+//! [`PaymentsAdapter`] changes.
 
 use std::future::Future;
 use std::sync::Arc;
@@ -90,6 +94,39 @@ pub struct ConfirmedIntent {
     pub intent: PaymentIntent,
     /// `Some` only when `intent.status` is `requires_action`.
     pub client_secret: Option<SecretString>,
+}
+
+/// Whether a payment was 3-D Secure authenticated (FEE-050, D-3118), read apart from
+/// [`PaymentIntent`] by [`StripePayments::fetch_three_ds`]; anything Stripe did not report as
+/// `authenticated` is [`ThreeDs::NotAuthenticated`], never unknown-as-yes.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ThreeDs {
+    /// The card's bank authenticated the payment (`three_d_secure.result` `authenticated`).
+    Authenticated,
+    /// Any other result, no 3-D Secure, or nothing readable.
+    NotAuthenticated,
+}
+
+impl ThreeDs {
+    /// FEE-050, D-3118: Stripe's `three_d_secure.result`, `None` when the charge had none; only
+    /// `authenticated` is [`ThreeDs::Authenticated`].
+    #[must_use]
+    pub fn from_result(result: Option<&str>) -> Self {
+        if result == Some("authenticated") {
+            Self::Authenticated
+        } else {
+            Self::NotAuthenticated
+        }
+    }
+
+    /// FEE-050, D-3118: reads an intent fetched with `latest_charge` expanded.
+    fn of_intent(intent: &serde_json::Value) -> Self {
+        Self::from_result(
+            intent
+                .pointer("/latest_charge/payment_method_details/card/three_d_secure/result")
+                .and_then(serde_json::Value::as_str),
+        )
+    }
 }
 
 /// An unconfirmed create's answer, read once; the secret is wrapped at once.
@@ -251,6 +288,31 @@ impl StripePayments {
         })
     }
 
+    /// FEE-050, FEE-027, D-3118: whether the PaymentIntent `pi_…` was paid with 3-D Secure, read
+    /// from `GET /v1/payment_intents/{id}?expand[]=latest_charge`. Only a
+    /// `latest_charge.payment_method_details.card.three_d_secure.result` of `authenticated` is
+    /// [`ThreeDs::Authenticated`]; every other result, no `three_d_secure`, a missing or
+    /// unexpanded `latest_charge` and a card-less method are [`ThreeDs::NotAuthenticated`].
+    /// Nothing else of the answer (card data included) is kept.
+    ///
+    /// # Errors
+    /// [`AdapterError::InvalidId`] for an ID not `pi_…` (nothing sent); the HTTP errors.
+    pub async fn fetch_three_ds(&self, id: &str) -> Result<ThreeDs, AdapterError> {
+        if !is_vendor_id(id, "pi_") {
+            return Err(AdapterError::InvalidId);
+        }
+        let path = ["v1", "payment_intents", id];
+        let (client, request) = self.http.request(Method::GET, &path, None).build_split();
+        let mut request = request.map_err(|_| AdapterError::NotSent)?;
+        request
+            .url_mut()
+            .query_pairs_mut()
+            .append_pair("expand[]", "latest_charge");
+        let builder = reqwest::RequestBuilder::from_parts(client, request);
+        let answer: serde_json::Value = self.http.json(builder).await?;
+        Ok(ThreeDs::of_intent(&answer))
+    }
+
     /// FEE-014, FEE-016, D-1754: confirms `intent` on-session with `payment_method` under one
     /// attempt's key (`pick-<id>-try<n>`); a repeat of the key gets Stripe's first answer, and
     /// nothing here retries. A decline is Stripe's 402, returned as [`AdapterError::Vendor`].
@@ -368,7 +430,7 @@ mod tests {
 
     use secrecy::{ExposeSecret, SecretString};
 
-    use super::StripePayments;
+    use super::{StripePayments, ThreeDs};
     use crate::base::{AdapterError, IdempotencyKey};
 
     /// A client for a vendor that answers one request with `answer` and hands back the request
@@ -485,5 +547,58 @@ mod tests {
         let request = got.recv().expect("request");
         assert!(request.starts_with("POST /stripe/v1/payment_intents/pi_fake1/confirm "));
         assert!(request.contains("payment_method=pm_card_visa"), "{request}");
+    }
+
+    /// FEE-050, D-3118: only `authenticated` is authenticated; every other result, no 3-D Secure,
+    /// a missing or unexpanded `latest_charge` and a card-less method are not.
+    #[test]
+    fn only_an_authenticated_result_reads_as_authenticated() {
+        let charge = |card: &str| {
+            format!(r#"{{"latest_charge":{{"payment_method_details":{{"card":{card}}}}}}}"#)
+        };
+        let result = |r: &str| charge(&format!(r#"{{"three_d_secure":{{"result":"{r}"}}}}"#));
+        assert_eq!(read(&result("authenticated")), ThreeDs::Authenticated);
+        let others = [
+            "attempt_acknowledged",
+            "exempted",
+            "failed",
+            "not_supported",
+            "processing_error",
+        ];
+        let mut not = others.map(result).to_vec();
+        not.extend([
+            charge(r#"{"three_d_secure":null}"#),
+            charge("{}"),
+            r#"{"latest_charge":"ch_fake1"}"#.to_owned(),
+            r#"{"latest_charge":null}"#.to_owned(),
+            "{}".to_owned(),
+            r#"{"latest_charge":{"payment_method_details":{"type":"us_bank_account"}}}"#.to_owned(),
+        ]);
+        for body in not {
+            assert_eq!(read(&body), ThreeDs::NotAuthenticated, "{body}");
+        }
+    }
+
+    fn read(body: &str) -> ThreeDs {
+        ThreeDs::of_intent(&serde_json::from_str(body).expect("json"))
+    }
+
+    /// FEE-050, D-3118: the read asks `expand[]=latest_charge` on a GET with no key, and refuses
+    /// an ID not `pi_…` unsent.
+    #[tokio::test]
+    async fn the_three_ds_read_expands_the_latest_charge() {
+        let answer = r#"{"id":"pi_fake1","latest_charge":{"payment_method_details":{"card":{"three_d_secure":{"result":"authenticated"}}}}}"#;
+        let (stripe, got) = scripted(answer);
+        let read = stripe.fetch_three_ds("pi_fake1").await.expect("read");
+        assert_eq!(read, ThreeDs::Authenticated);
+        let request = got.recv().expect("request");
+        assert!(
+            request
+                .starts_with("GET /stripe/v1/payment_intents/pi_fake1?expand%5B%5D=latest_charge "),
+            "{request}"
+        );
+        assert!(!request.to_ascii_lowercase().contains("idempotency-key"));
+        let refused = stripe.fetch_three_ds("ch_fake1").await;
+        assert!(matches!(refused, Err(AdapterError::InvalidId)));
     }
 }
