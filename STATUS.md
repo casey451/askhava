@@ -1,23 +1,24 @@
 # Ask Hava build status
 
-Updated 2026-11-12T18:46:27Z by runner ef5a3860ab5e (actions).
+Updated 2026-11-12T18:46:39Z by runner 9a2c76690403 (actions).
 
-**Building: T251 in progress since 17:19Z; 249 of 400 done; week 3% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T362 in progress since 18:36Z; 249 of 400 done; week 3% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 249 of 400 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T251 claimed 17:19Z, lease until 20:19Z; lane 2: T362 claimed 18:36Z, lease until 21:36Z; lane 5: T350 claimed 17:26Z, lease until 21:35Z; lane 7: T346 claimed 18:16Z, lease until 21:16Z
+- **Lane:** lane 2: T362 claimed 18:36Z, lease until 21:36Z; lane 5: T350 claimed 17:26Z, lease until 21:35Z; lane 7: T346 claimed 18:16Z, lease until 21:16Z
 - **Week:** 3% used, 177.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 18:46Z, 0 min before this update
 - **Keeper:** last ran 18:46Z, next wake 20:21Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 21 problem(s) on tasks still to run (+121 on DONE tasks); first: T340: stored context_pct 40% but it measures 45%; regenerate
+- Strict plan check red: 27 problem(s) on tasks still to run (+123 on DONE tasks); first: T340: stored context_pct 40% but it measures 45%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T251 | intake and quotes: the ZIP question, the job location, and t | MERGE_PENDING | 2 | 87 min | 18:46Z | PLAN GAP: app/intake/src/summary_step.rs:415 and app/intake/src/service.rs:672 (T208/T039 files, not T251's). The card s |
 | T376 | ai and stand-in (harness): the intake schema sent to Claude  | MERGE_PENDING | 1 | 35 min | 18:40Z |  |
 | T385 | adapters, licensing and businesses (harness): the sign-up re | MERGE_PENDING | 2 | 60 min | 18:26Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T366 | jobs and server: every dead-lettered task alerts, and a dail | done | 1 | 26 min | 17:53Z |  |
@@ -48,7 +49,7 @@ Updated 2026-11-12T18:46:27Z by runner ef5a3860ab5e (actions).
 | T336 | server, adapters and stand-in (harness): a text stopped by a | done | 2 | 56 min | 09:00Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T345 | harness: every external GitHub Actions `uses:` in every work | BLOCKED | 2 | 4 min | 08:47Z |  |
 | T322 | businesses: a backup notice address is checked again at conf | done | 1 | 35 min | 08:36Z |  |
-| T251 | intake and quotes: the ZIP question, the job location, and t | BLOCKED | 1 | 3 min | 08:17Z | PLAN GAP: app/intake/src/summary_step.rs:415 and app/intake/src/service.rs:672 (T208/T039 files, not T251's). The card s |
+| T251 | intake and quotes: the ZIP question, the job location, and t | BLOCKED | 1 | 3 min | 08:17Z |  |
 | T360 | messaging: the opt-out confirmation email while texting is o | done | 1 | 43 min | 07:42Z |  |
 | T336 | server, adapters and stand-in (harness): a text stopped by a | resync | 2 | 47 min | 07:35Z |  |
 | T390 | calls and server: a blocked staff call that connects a line  | done | 1 | 29 min | 07:34Z |  |
@@ -164,10 +165,10 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T251 (lease until 2026-11-12T20:19:06Z)
+- nothing
 - lane 2: T362 (lease until 2026-11-12T21:36:22Z)
 - lane 5: T350 (lease until 2026-11-12T21:35:54Z)
 - lane 7: T346 (lease until 2026-11-12T21:16:45Z)
 
 ## Last usage reading
-- {"task": "T376", "at": "2026-11-12T18:40:28Z", "output_tokens": 62774, "cache_read_input_tokens": 5262473, "cache_creation_input_tokens": 279729, "input_tokens": 217}
+- {"task": "T251", "at": "2026-11-12T18:46:09Z", "output_tokens": 345815, "cache_creation_input_tokens": 1253616, "cache_read_input_tokens": 101426441, "input_tokens": 942}
