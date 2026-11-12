@@ -27,6 +27,11 @@
 //! [`released_pick`]); the exact path [`RELEASED_PAGE`] is filled with it, every other `{pick}`
 //! with the waiting pick, so Confirm and "Can't take it" rows keep a pick that can be confirmed.
 //! This file names no item of the fee crate (TD-FEE-07); the seeding lives in the submodule.
+//!
+//! T404 (D-3112, D-3134; FEE-031, FEE-005, SEC-019): every job the fixture picks first gets its
+//! facts row (the card's hvac repair and AC not cooling, from the catalog stored once), and each
+//! side has a third quoted job of the same business, page-picked and charged by
+//! [`released_pick::charge`]; the exact path [`CHARGES_PAGE`] is filled with that charged pick.
 
 #[path = r"door_matrix/released_pick.rs"]
 mod released_pick;
@@ -38,11 +43,12 @@ use std::sync::{Arc, Mutex, PoisonError};
 use askhava_businesses::api::{
     AccountStatus, NewComplaint, add_owner, create as create_business, record_complaint,
 };
+use askhava_catalog::api::load_embedded;
 use askhava_core::api::{Guarded, IdSecret, Settings, SystemClock, TestControl};
 use askhava_intake::api::rules::{Inbound, Settings as IntakeSettings};
 use askhava_intake::api::{Answer, TextIn, receive_text, record_answer};
 use askhava_jobs::api::quote_token::issue;
-use askhava_jobs::api::{JobStatus, create, job_number, move_to};
+use askhava_jobs::api::{JobStatus, create, job_number, move_to, record_job_facts};
 use askhava_licensing::api::{ClassMap, Holder, Job, LicenseKind};
 use askhava_ops::api::Actor as AuditActor;
 use askhava_picks::api::{PagePick, ViewAnswer, page_pick, released_view};
@@ -80,6 +86,8 @@ const DOOR_CASES: &str = include_str!("../../../tests/security/door_cases.txt");
 const FILLS: [&str; 5] = ["{pick}", "{complaint}", "{kind}", "{object}", "{token}"];
 /// T300's released-job page, whose `{pick}` is the side's released pick (PICK-024, D-3106).
 const RELEASED_PAGE: &str = "/b/picks/{pick}";
+/// T306's "Why was I charged?" page, whose `{pick}` is the side's charged pick (FEE-031, D-3112).
+const CHARGES_PAGE: &str = "/b/charges/{pick}";
 /// A well-formed link token nobody was given.
 const UNISSUED: &str = "0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f";
 /// A base URL nothing listens on, for every vendor client, so no probe reaches a vendor.
@@ -237,6 +245,7 @@ struct Fixtures {
     tokens: [String; 2],
     picks: [Uuid; 2],
     released: [Uuid; 2],
+    charged: [Uuid; 2],
     complaints: [Uuid; 2],
     links: [Minted; 2],
 }
@@ -259,13 +268,14 @@ impl Fixtures {
     }
 
     /// The ids `template` is filled with for `side`: [`RELEASED_PAGE`] takes the released pick,
-    /// every other template the waiting one (SEC-019, PICK-024, D-3106).
+    /// [`CHARGES_PAGE`] the charged one, every other template the waiting one (SEC-019, PICK-024,
+    /// FEE-031, D-3106, D-3112).
     fn ids_on(&self, template: &str, side: usize) -> (Uuid, Uuid) {
         let (pick, complaint) = self.ids(side);
-        if template == RELEASED_PAGE {
-            (self.released[side], complaint)
-        } else {
-            (pick, complaint)
+        match template {
+            RELEASED_PAGE => (self.released[side], complaint),
+            CHARGES_PAGE => (self.charged[side], complaint),
+            _ => (pick, complaint),
         }
     }
 }
@@ -777,12 +787,20 @@ struct Side {
     token: String,
     pick: Uuid,
     released: Uuid,
+    charged: Uuid,
     complaint: Uuid,
     link: Minted,
 }
 
-/// The page pick of the one quote on `job` (PICK-012).
+/// The page pick of the one quote on `job` (PICK-012), after `job`'s facts row: its card's
+/// candidate, hvac repair and AC not cooling, so not fee-free, the default visit tier, one-time
+/// (FEE-005, D-2331, D-3112).
 async fn picked(pool: &PgPool, job: Uuid, now: Timestamp) -> Uuid {
+    let mut db = pool.acquire().await.expect("db");
+    let types = ["AC not cooling".to_owned()];
+    let facts = record_job_facts(&mut db, job, "hvac_repair", &types).await;
+    facts.expect("job facts");
+    drop(db);
     let mut tx = pool.begin().await.expect("tx");
     let picked = page_pick(&mut tx, (job, false), 1, AuditActor::System, now).await;
     tx.commit().await.expect("commit");
@@ -794,7 +812,8 @@ async fn picked(pool: &PgPool, job: Uuid, now: Timestamp) -> Uuid {
 
 /// Side `side`: a business with its owner, her job it quoted, her request and page pick of the
 /// quote, the job's quote token and number, a complaint and a Quote action link; and a second
-/// job of the business, quoted, page-picked and released to her contact on the $0 path (D-3106).
+/// job of the business, quoted, page-picked and released to her contact on the $0 path (D-3106);
+/// and a third, quoted, page-picked and charged (D-3112).
 async fn side(pool: &PgPool, side: usize, now: Timestamp) -> Side {
     let mut db = pool.acquire().await.expect("db");
     let business = create_business(&mut db, false, now)
@@ -825,6 +844,9 @@ async fn side(pool: &PgPool, side: usize, now: Timestamp) -> Side {
     let second = quoted_job(&mut db, business, now).await;
     let free = picked(pool, second, now).await;
     released_pick::release_free(pool, &vault(), (business, second, free), contact, now).await;
+    let third = quoted_job(&mut db, business, now).await;
+    let paid = picked(pool, third, now).await;
+    released_pick::charge(pool, (business, third, paid), now).await;
     Side {
         contact,
         team,
@@ -833,6 +855,7 @@ async fn side(pool: &PgPool, side: usize, now: Timestamp) -> Side {
         token: token.as_str().to_owned(),
         pick,
         released: free,
+        charged: paid,
         complaint: complaint.expect("complaint").id,
         link,
     }
@@ -935,6 +958,9 @@ async fn signed_in(pool: &PgPool, actor: Actor, sides: &[Side; 2], now: Timestam
 /// Both sides' records, the six actors and the router `main` builds, over `pool`.
 async fn world(pool: &PgPool) -> World {
     let now = Timestamp::now();
+    let mut db = pool.acquire().await.expect("db");
+    load_embedded(&mut db).await.expect("catalog");
+    drop(db);
     let sides = [side(pool, 0, now).await, side(pool, 1, now).await];
     let mut who = Vec::new();
     for actor in ACTORS {
@@ -948,6 +974,7 @@ async fn world(pool: &PgPool) -> World {
         tokens: [a.token, b.token],
         picks: [a.pick, b.pick],
         released: [a.released, b.released],
+        charged: [a.charged, b.charged],
         complaints: [a.complaint, b.complaint],
         links: [a.link, b.link],
     };
@@ -1176,6 +1203,7 @@ fn planted_fixtures() -> Fixtures {
         tokens: ["a".repeat(64), "b".repeat(64)],
         picks: [Uuid::from_u128(11), Uuid::from_u128(12)],
         released: [Uuid::from_u128(31), Uuid::from_u128(32)],
+        charged: [Uuid::from_u128(41), Uuid::from_u128(42)],
         complaints: [Uuid::from_u128(21), Uuid::from_u128(22)],
         links: [link(1, "c"), link(2, "d")],
     }
