@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-12T04:56:30Z by runner 00fd261d540a (actions).
+Updated 2026-11-12T04:56:49Z by runner 00fd261d540a (actions).
 
 **Building: T356 in progress since 04:05Z; 224 of 391 done; week 86% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 224 of 391 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T356 claimed 04:05Z, lease until 07:05Z; lane 3: T405 claimed 04:23Z, lease until 07:23Z; lane 5: T336 claimed 04:54Z, lease until 07:54Z
+- **Lane:** lane 1: T356 claimed 04:05Z, lease until 07:05Z; lane 5: T336 claimed 04:54Z, lease until 07:54Z
 - **Week:** 86% used, 15.2M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 04:55Z, 1 min before this update
 - **Keeper:** last ran 04:36Z, next wake 07:08Z
@@ -19,6 +19,7 @@ Updated 2026-11-12T04:56:30Z by runner 00fd261d540a (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T405 | payments and adapters (harness): each charged pick's 3-D Sec | MERGE_PENDING | 1 | 33 min | 04:56Z |  |
 | T326 | calls (harness): the LINK notice names the line's stored PIN | done | 1 | 25 min | 03:37Z |  |
 | T336 | server, adapters and stand-in (harness): a text stopped by a | QUEUED | 1 | 5 min | 03:27Z | Worker stopped before building with a PLAN GAP claim (messaging.inbox has no sender/handled columns; T336 owns no migrat |
 | T248 | catalog and businesses: markets as reviewed data, Arizona ZI | MERGE_PENDING | 1 | 12 min | 03:22Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
@@ -165,8 +166,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T356 (lease until 2026-11-12T07:05:41Z)
-- lane 3: T405 (lease until 2026-11-12T07:23:07Z)
 - lane 5: T336 (lease until 2026-11-12T07:54:33Z)
 
 ## Last usage reading
-- {"task": "T326", "at": "2026-11-12T03:37:50Z", "cache_read_input_tokens": 7140662, "cache_creation_input_tokens": 264672, "output_tokens": 58268, "input_tokens": 220}
+- {"task": "T405", "at": "2026-11-12T04:56:29Z", "cache_read_input_tokens": 15994381, "cache_creation_input_tokens": 388175, "output_tokens": 110072, "input_tokens": 322}
