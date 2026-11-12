@@ -25,8 +25,9 @@ CREATE TABLE quotes.quote_facts (
 -- The "Same as last time" read: a business's latest answers on one job type.
 CREATE INDEX quote_facts_last_idx ON quotes.quote_facts (business_id, job_type, recorded_at DESC);
 
--- The schema default gives SELECT and INSERT; an edit may update the answers, the type and the
--- time only; no row is deleted.
+-- The schema default (0067) gives SELECT, INSERT, UPDATE and DELETE; an edit may update the
+-- answers, the type and the time only, so table-wide UPDATE, DELETE and TRUNCATE are revoked and
+-- UPDATE is granted back on those columns; no row is deleted.
 REVOKE UPDATE, DELETE, TRUNCATE ON quotes.quote_facts FROM askhava_app;
 GRANT SELECT, INSERT ON quotes.quote_facts TO askhava_app;
 GRANT UPDATE (trip_fee, parts, permit, may_change, spanish, job_type, recorded_at)
