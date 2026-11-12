@@ -54,10 +54,10 @@ STRIKES_TO_FALL_BACK = 2  # consecutive harness-type failures on a lane above 1 
 STRIKES_KEPT = 5  # the last strikes kept per lane as evidence
 PLAN_LOCK = "kit/plan.lock"
 Locked = Callable[[str], bool]
-Limit = Callable[[str], int]  # a crate's most tasks in flight (D-3303)
+Limit = Callable[[str, int], int]  # a crate's most tasks in flight, given how many it holds now (D-3303)
 
 
-def hard(_crate: str) -> int:
+def hard(_crate: str, _held: int = 0) -> int:
     """D-3269's limit: one task in flight per crate."""
     return 1
 
@@ -188,15 +188,17 @@ def takes_last_slot(task: dict[str, Any], others: list[dict[str, Any]], reserved
     """Whether claiming `task` beside `others` would leave a `reserved` crate no free slot for the blocked
     highest-ranked id (D-3303): the crate would then hold its tasks in flight, this one and that one over its
     limit. With a limit of 1 every reserved crate counts, as under D-3269's reservation."""
-    return any(len(holders(crate, others)) + 2 > limit(crate) for crate in reserved & task_crates(task))
+    return any(len(held) + 2 > limit(crate, len(held)) for crate in reserved & task_crates(task)
+               for held in [holders(crate, others)])
 
 
-def crate_limit(cap: int, full: Callable[[str], bool] | None) -> Limit:
-    """How many tasks in flight a crate may hold (D-3303): kit/runner.json "crate_cap" (at least 1), but 1 in a
-    crate `full` says is at its `CLAUDE.md` line limit, where a second task's line could not fit and both tasks
-    would edit the same lines. `full` None counts no crate as full."""
+def crate_limit(cap: int, full: Callable[[str, int], bool] | None) -> Limit:
+    """How many tasks in flight a crate may hold, given how many it holds now (D-3303): kit/runner.json
+    "crate_cap" (at least 1), but 1 in a crate `full(crate, held)` says has no room left under its `CLAUDE.md`
+    line limit, where a second task's line could not fit and both tasks would edit the same lines. `full` None
+    counts no crate as full."""
     top = max(int(cap), 1)
-    return lambda crate: 1 if top == 1 or (full is not None and full(crate)) else top
+    return lambda crate, held=0: 1 if top == 1 or (full is not None and full(crate, held)) else top
 
 
 def holders(crate: str, others: list[dict[str, Any]]) -> list[str]:
@@ -225,7 +227,8 @@ def crate_clash(task: dict[str, Any], others: list[dict[str, Any]], limit: Limit
     if task.get("id") == st.FIX_MAIN:
         return ""
     for crate in sorted(task_crates(task)):
-        held, most = holders(crate, others), limit(crate)
+        held = holders(crate, others)
+        most = limit(crate, len(held))
         if len(held) >= most:
             verb = "writes" if len(held) == 1 else "write"
             return f"writes app/{crate}/, which {', '.join(held)} in flight also {verb} (at most {most} there; D-3269, D-3303)"

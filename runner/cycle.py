@@ -269,10 +269,10 @@ class Config:
     # at once. False claims as before (the D-3082 preference still orders).
     exclusive_crates: bool = False
     # kit/runner.json "crate_cap" (D-3303): with exclusive crates, the most tasks in flight one crate may hold;
-    # 1 is D-3269's hard exclusion. `crate_full(crate)` says the crate's `CLAUDE.md` is at its line limit,
+    # 1 is D-3269's hard exclusion. `crate_full(crate, held)` says the crate's `CLAUDE.md` has no room left,
     # which holds that crate to 1 whatever the cap (`lanes.crate_limit`); None counts no crate as full.
     crate_cap: int = 1
-    crate_full: Callable[[str], bool] | None = None
+    crate_full: Callable[[str, int], bool] | None = None
     # kit/runner.json "smoke_ancestry_reuse" (D-3058): how many first-parent commits back the start routine may
     # stand on a real green smoke when every commit since is a DONE task's squash merge or a merge whose identical
     # tree passed Ci, Twin and Ally (D-3156; `st.ancestry_smoke`); 0 off.

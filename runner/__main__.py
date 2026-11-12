@@ -355,18 +355,35 @@ def crate_cap(settings: Path) -> int:
     return value if isinstance(value, int) and not isinstance(value, bool) and value >= 1 else 1
 
 
-def crate_doc_full(root: Path) -> Callable[[str], bool]:
-    """Whether an `app/<crate>/CLAUDE.md` in the runner's checkout of `main` is at scripts/check_code_docs.py's
-    line limit (`MAX_CRATE_DOC_LINES`, counted as that check counts), read at each claim (D-3303): such a crate
-    keeps one task in flight, since a second task's line cannot fit and both would rewrite the same lines. A
-    file that is missing or unreadable counts as full, the safer reading."""
-    def full(crate: str) -> bool:
-        try:
-            count = len((root / "app" / crate / "CLAUDE.md").read_text(encoding="utf-8").splitlines())
-        except (OSError, UnicodeDecodeError):
+def crate_doc_full(root: Path) -> Callable[[str, int], bool]:
+    """Whether `app/<crate>/CLAUDE.md` on origin's `main` (`crate_doc_text`), with `held` tasks in flight in the
+    crate, would reach scripts/check_code_docs.py's line limit (`MAX_CRATE_DOC_LINES`, counted as that check
+    counts), read at each claim (D-3303): each task in flight adds at least a line, so its line count plus
+    `held` at the limit leaves no room for another, and the crate keeps one task in flight. A file that is
+    missing or unreadable counts as full, the safer reading."""
+    def full(crate: str, held: int) -> bool:
+        text = crate_doc_text(root, crate)
+        if text is None:
             return True
-        return count >= check_code_docs.MAX_CRATE_DOC_LINES
+        return len(text.splitlines()) + held >= check_code_docs.MAX_CRATE_DOC_LINES
     return full
+
+
+def crate_doc_text(root: Path, crate: str) -> str | None:
+    """A crate's `CLAUDE.md` as origin's `main` has it (`git show origin/main:app/<crate>/CLAUDE.md`), so claim
+    and the end-of-run refill read the same text even when a task branch is checked out in `root` (review
+    round 1, D-3303); the file in `root` when git cannot show it; None when neither can be read."""
+    try:
+        shown = subprocess.run(["git", "-C", str(root), "show", f"origin/main:app/{crate}/CLAUDE.md"],
+                               capture_output=True, text=True, encoding="utf-8", timeout=30, check=False)
+        if shown.returncode == 0:
+            return shown.stdout
+    except (OSError, subprocess.SubprocessError, UnicodeDecodeError):
+        pass
+    try:
+        return (root / "app" / crate / "CLAUDE.md").read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        return None
 
 
 def smoke_ancestry(settings: Path) -> int:

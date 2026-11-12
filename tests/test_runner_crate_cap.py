@@ -12,6 +12,7 @@ from __future__ import annotations
 import dataclasses
 import inspect
 import json
+import subprocess
 from datetime import timedelta
 from pathlib import Path
 from typing import Any
@@ -53,12 +54,12 @@ def holding(tasks: list[dict[str, Any]], *ids: str) -> st.State:
 def capped(tasks: list[dict[str, Any]], tmp_path: Path, lane: str, full: frozenset[str] = NEVER_FULL, **kw: Any) -> cycle.Config:
     """A Config with exclusive crates, a cap of 2 and `full` crates at their CLAUDE.md line limit."""
     cfg = dataclasses.replace(config(tasks, tmp_path, f"s{lane}"), lanes=7, lane_hint=lane, exclusive_crates=True,
-                              crate_cap=2, crate_full=lambda crate: crate in full)
+                              crate_cap=2, crate_full=lambda crate, held: crate in full)
     return dataclasses.replace(cfg, **kw)
 
 
 def limit(full: frozenset[str] = NEVER_FULL) -> lanes.Limit:
-    return lanes.crate_limit(2, lambda crate: crate in full)
+    return lanes.crate_limit(2, lambda crate, held: crate in full)
 
 
 def test_cap_two_allows_a_second_task_in_a_crate_under_its_line_limit_and_refuses_a_third(tmp_path: Path) -> None:
@@ -151,10 +152,46 @@ def test_a_crate_is_full_at_the_code_docs_line_limit_read_from_the_checkout(tmp_
     for name, count, want in (("under", most - 1, False), ("at", most, True), ("over", most + 1, True)):
         (tmp_path / "app" / name).mkdir(parents=True)
         (tmp_path / "app" / name / "CLAUDE.md").write_text("line\n" * count, encoding="utf-8")
-        assert full(name) is want, name
-    assert full("missing") is True  # unreadable counts as full, the safer reading
+        assert full(name, 0) is want, name
+    assert full("missing", 0) is True  # unreadable counts as full, the safer reading
     (tmp_path / "app" / "under" / "CLAUDE.md").write_text("line\n" * most, encoding="utf-8")
-    assert full("under") is True  # read at each claim, never cached
+    assert full("under", 0) is True  # read at each claim, never cached
+
+
+def test_a_crate_is_full_when_its_lines_and_its_tasks_in_flight_reach_the_limit(tmp_path: Path) -> None:
+    """Review round 1: each task in flight adds at least a line, so 119 lines and one task in flight leave no room."""
+    most = check_code_docs.MAX_CRATE_DOC_LINES
+    for name, count in (("pay", most - 1), ("site", most - 2)):
+        (tmp_path / "app" / name).mkdir(parents=True)
+        (tmp_path / "app" / name / "CLAUDE.md").write_text("line\n" * count, encoding="utf-8")
+    full = entry.crate_doc_full(tmp_path)
+    assert (full("pay", 0), full("pay", 1), full("site", 1), full("site", 2)) == (False, True, False, True)
+    tasks = graph()[:5]
+    capped_limit = lanes.crate_limit(2, full)
+    assert lanes.exclusive_ids(["T002", "T004"], st.sync_graph(st.new_state(), tasks), NOW, by_id(tasks), capped_limit) == ["T002", "T004"]
+    assert lanes.exclusive_ids(["T002", "T004"], holding(tasks, "T001"), NOW, by_id(tasks), capped_limit) == ["T004"]
+
+
+def git(root: Path, *args: str) -> None:
+    subprocess.run(["git", "-C", str(root), *args], check=True, capture_output=True)
+
+
+def test_the_line_count_is_read_from_origin_main_not_the_checked_out_branch(tmp_path: Path) -> None:
+    """Review round 1: the end-of-run refill may run with a task branch checked out; claim and refill must agree."""
+    most = check_code_docs.MAX_CRATE_DOC_LINES
+    doc = tmp_path / "app" / "pay" / "CLAUDE.md"
+    doc.parent.mkdir(parents=True)
+    doc.write_text("line\n" * most, encoding="utf-8")
+    full = entry.crate_doc_full(tmp_path)
+    assert full("pay", 0) is True  # not a git checkout: the file in the checkout stands in
+    git(tmp_path, "init", "-q")
+    git(tmp_path, "-c", "user.name=t", "-c", "user.email=t@example.invalid", "commit", "-q", "--allow-empty", "-m", "base")
+    doc.write_text("line\n" * 10, encoding="utf-8")
+    git(tmp_path, "add", "-A")
+    git(tmp_path, "-c", "user.name=t", "-c", "user.email=t@example.invalid", "commit", "-q", "-m", "main")
+    git(tmp_path, "update-ref", "refs/remotes/origin/main", "HEAD")
+    doc.write_text("line\n" * most, encoding="utf-8")  # a task branch's copy at the limit
+    assert full("pay", 0) is False and entry.crate_doc_text(tmp_path, "pay") == "line\n" * 10
 
 
 def test_the_repository_sets_a_cap_of_two_with_the_guardrail_and_the_entry_point_passes_it() -> None:
