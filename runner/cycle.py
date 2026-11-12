@@ -1365,9 +1365,11 @@ def refill_lanes(cfg: Config, state: State, now: datetime) -> list[str]:
     """The free lanes a new run should be started for, at most one per task that could be claimed beside
     the tasks in flight; the backup-runner chain step dispatches one run per lane (D-620). None while the
     pacer's last decision is still a wait (`pacing.waiting_until` in the future): nothing fits the usage
-    windows then, so a started run would only report `paced` (D-723)."""
+    windows then, so a started run would only report `paced` (D-723). None while `main` is red: only
+    FIX-MAIN may be claimed then, and the gate's lane pick (`state.run_lane`, the "fix" lane) places it,
+    so every run that ends can start these without ever adding a run beside a red main (D-3140)."""
     free = lanes.free_lanes(cfg.lanes, state, now)
-    if not free or _pacer_waiting(state, now):
+    if not free or state.get("main_red") or _pacer_waiting(state, now):
         return []
     ids = _by_day(cfg, st.eligible(state, now, _passed(cfg, state), cfg.proof_stages), now)
     ready = lanes.compatible_ids(ids, state, now, lambda tid: _task_def(cfg, state, tid), cfg.locked, cfg.proof_stages)

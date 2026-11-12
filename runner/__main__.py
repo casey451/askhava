@@ -72,8 +72,9 @@ line of JSON with what changed.
                                     refused, with an outbox item (D-2225)
   RUNNER_LANE                       the lane a backup-runner run serves (its gate picks it): the run
                                     claims only on that lane; unset, the first free lane (D-620);
-                                    with two or more lanes a cycle that hands off starts one run
-                                    per refill lane at once, with the job token (D-723)
+                                    with two or more lanes every run that ends, whatever its result,
+                                    starts one run per refill lane at once, with the job token, unless
+                                    its own cycle found nothing it could claim (D-723, D-3140)
   --dry-run                         compute everything, push nothing, run no smoke test or worker
   --session ID                      the lease's session (default: the hand-off file, RUNNER_SESSION,
                                     or <starter>-<GITHUB_RUN_ID or random>)
@@ -102,7 +103,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path, PurePosixPath
 from typing import Any
 
-from runner import cycle, lanes as lane_policy, model_window, outbox as outbox_mod, proof, state as st
+from runner import cycle, keeper as keeper_mod, lanes as lane_policy, model_window, outbox as outbox_mod, proof, state as st
 from runner.github_env import PREHANDIN_RED, SMOKE_PRE_LOG, GitHubEnv, alias_for, find_transcripts, smoke_target_dir, state_diff
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -661,8 +662,6 @@ def window_ended_note(window: model_window.Window | None, why: str, env: GitHubE
 def keeper_armed(minutes: int, env: GitHubEnv) -> str:
     """`--keeper-armed N`: record `keeper` {last_run_at: now, next_wake_at: now + N minutes} in the state
     once backup-runner.yml's arm step has dispatched a keeper (D-1451), for STATUS.md's keeper line (D-1462)."""
-    from runner import keeper as keeper_mod
-
     now = now_utc()
     if env.update_state(lambda fresh: keeper_mod.record(fresh, minutes, now)) is None:
         return "lost_race"
@@ -704,15 +703,70 @@ def refill(cfg: cycle.Config, env: GitHubEnv) -> list[str]:
         return []
 
 
-def start_refill(lanes: list[str], env: GitHubEnv) -> list[str]:
-    """Start one backup-runner run per refill lane now, when this cycle handed a task off (D-723).
+# Results after which a new run would find what this one found: nothing it could claim now (no lane,
+# the pacer, the smoke, a red main, a lost race) or nothing changed (a refused requeue). A run ending
+# with one starts no refill run, and neither do the rows its job writes after it (D-3140).
+REFILL_STOP = frozenset({"idle", "paced", cycle.NO_FREE_LANE, "lease_live", "lost_race", "state_invalid",
+                         cycle.SMOKE_PENDING, "smoke_timeout", "smoke_env", "main_red", "fix_main",
+                         cycle.FIX_MAIN_BLOCKED, "requeue_refused"})
 
-    The chain step starts refill runs only when its job ends, and a handed-off job ends only after its
-    worker's whole session, so a lane freed by this cycle's resolved merges (or left free beside the
-    claim) would sit idle that long. Only a hand-off starts runs here: every other result ends the job
-    within minutes and the chain step refills. The refill lanes never include this run's own lane (its
-    new lease holds it), and a started run that claims nothing reports a result that starts nothing,
-    so this cannot loop. Returns the lanes started; a failed start never changes the result."""
+
+def tells(result: str) -> bool:
+    """Whether a result says something of the cycle (keeper.last_result's test): not a renewal, a usage
+    reading, a keeper record, a model-window note or an `--after` status answer ("T057 is MERGE_PENDING")."""
+    return bool(result) and not result.startswith(keeper_mod.QUIET) and not keeper_mod.STATUS_ONLY.fullmatch(result)
+
+
+def job_row(env: GitHubEnv, session: str) -> dict[str, Any]:
+    """This job's last kit/runner_log.jsonl row that `tells` (its own session); {} when there is none or the
+    log cannot be read, which starts nothing (D-3140)."""
+    try:
+        rows = env.read_cycle_log()
+    except Exception as exc:  # noqa: BLE001  # reason: an unread log only means no refill run from a bookkeeping row (D-3140)
+        print(f"runner: cycle log not read: {str(exc)[:200]}")
+        return {}
+    mine = [r for r in rows if r.get("session") == session and tells(str(r.get("result", "")))]
+    return mine[-1] if mine else {}
+
+
+def refill_starts(result: str, refill_lanes: list[str], prior: Callable[[], dict[str, Any]]) -> list[str] | None:
+    """The refill lanes this run starts now (D-3140); None to start none and record no `dispatched`.
+
+    Every result starts them, not only a hand-off (D-723): a run whose own lane waits on its merge, a
+    hand-in, a requeue or a plan-fix requeue each leave the other free lanes to fill, and on November 11
+    lane 4 sat free from 22:34 to 22:49 behind such rows. A result in REFILL_STOP starts none, so a run
+    that claims nothing never starts another and this cannot loop. A bookkeeping row (a usage reading, the
+    keeper's record) follows `prior`, this job's last row that tells: none after a REFILL_STOP result or
+    when there is no such row, else only the lanes that row did not start already."""
+    if tells(result):
+        return None if result.split(":", 1)[0] in REFILL_STOP else list(refill_lanes)
+    row = prior()
+    told = str(row.get("result", ""))
+    if not tells(told) or told.split(":", 1)[0] in REFILL_STOP:
+        return None
+    sent = {str(n) for n in row.get("dispatched") or []}
+    return [n for n in refill_lanes if n not in sent] or None
+
+
+def lane_report(args: argparse.Namespace, cfg: cycle.Config, env: GitHubEnv, result: str, report: dict[str, Any]) -> None:
+    """With two or more lanes: the run's lane, its `refill` and the refill runs it started (`dispatched`)."""
+    report["lane"], report["refill"] = cfg.lane_hint, refill(cfg, env)
+    if args.dry_run:
+        return
+    start = refill_starts(result, report["refill"], lambda: job_row(env, cfg.session))
+    if start is not None:
+        report["dispatched"] = start_refill(start, env)
+
+
+def start_refill(lanes: list[str], env: GitHubEnv) -> list[str]:
+    """Start one backup-runner run per lane now (D-723, D-3140): `refill_starts` names them.
+
+    The chain step starts refill runs only when its job ends, and only after a row that moved a task, so
+    a lane that was free while a run's own lane waited on its merge, or that a hand-in or requeue freed,
+    sat idle until an event, the keeper or the hourly tick. A run's own lane is in its refill only once
+    its task has left it; a second start for a lane whose run is still on its way adds at most one
+    waiting job in that lane's concurrency group, whose run then claims or reports `no_free_lane`. Returns
+    the lanes started; a failed start never changes the result."""
     started = []
     for lane in lanes:
         try:
@@ -778,9 +832,7 @@ def main(argv: list[str] | None = None) -> int:
         if args.after and not args.dry_run:
             close_handoff(result)
         if cfg.lanes >= 2:
-            report["lane"], report["refill"] = cfg.lane_hint, refill(cfg, env)
-            if result == "handed_off" and not args.dry_run:
-                report["dispatched"] = start_refill(report["refill"], env)
+            lane_report(args, cfg, env, result, report)
         try:
             if result not in MODEL_WINDOW_SILENT:
                 env.write_cycle_log({k: v for k, v in report.items() if k != "handoff"})
