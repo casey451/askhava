@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-12T04:36:35Z by runner 47a83212b95f (actions).
+Updated 2026-11-12T04:54:44Z by runner 3aa549cf9ed3 (actions).
 
-**Building: T356 in progress since 04:05Z; 223 of 391 done; week 86% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T356 in progress since 04:05Z; 224 of 391 done; week 86% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 223 of 391 build tasks (owner gates not counted)
+- **Tasks done:** 224 of 391 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T356 claimed 04:05Z, lease until 07:05Z; lane 3: T405 claimed 04:23Z, lease until 07:23Z
 - **Week:** 86% used, 22.4M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:36Z, 0 min before this update
+- **Last run:** 04:36Z, 18 min before this update
 - **Keeper:** last ran 04:36Z, next wake 07:08Z
 
 ## Needs attention
 - BLOCKED T401: plan gap reported: PLAN GAP: tests/security/tests/no_homeowner_charge.rs:17-27,123 (TD-FEE-07, not T401's) fails any app/ file naming a homeowner mark (door_matrix.rs already names Realm::Homeowner at ~969/979) plus askhava_payments/payments::api; T401 needs payments::api::no_fee_release in door_matrix.rs (kit/prompts/T401.md:9). Evidence: cargo test -p askhava-security --test no_homeowner_charge -> td_fee_07_no_homeowner_route_reaches_payments FAILED: door_matrix.rs: homeowner-realm code reaches payments. Reviewer confirmed; no legitimate workaround. Smallest plan change: give T401 a second owned file (e.g. app; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T401 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 7 problem(s) on tasks still to run (+80 on DONE tasks); first: T396: stored context_pct 39% but it measures 43%; regenerate
+- Strict plan check red: 7 problem(s) on tasks still to run (+82 on DONE tasks); first: T396: stored context_pct 39% but it measures 43%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -25,7 +25,7 @@ Updated 2026-11-12T04:36:35Z by runner 47a83212b95f (actions).
 | T401 | server (harness): the door probe's fixture gains a released  | BLOCKED | 1 | 19 min | 03:13Z | PLAN GAP: tests/security/tests/no_homeowner_charge.rs:17-27,123 (TD-FEE-07, not T401's) fails any app/ file naming a hom |
 | T400 | server: the web process stores the catalog file at start-up, | MERGE_PENDING | 1 | 21 min | 03:07Z |  |
 | T248 | catalog and businesses: markets as reviewed data, Arizona ZI | resync | 1 | 67 min | 02:56Z |  |
-| T334 | payments: the nightly reconcile catches up after an outage f | MERGE_PENDING | 2 | 41 min | 02:25Z | merging main into the reviewed head conflicts in app/payments/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T334 | payments: the nightly reconcile catches up after an outage f | done | 2 | 41 min | 02:25Z | merging main into the reviewed head conflicts in app/payments/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T313 | messaging and server: an EMERGENCY card notice goes at night | done | 1 | 19 min | 02:07Z |  |
 | T368 | businesses (harness): the capability checklist offers every  | done | 1 | 17 min | 02:06Z |  |
 | T325 | server: an inbound text stopped by a module error raises a b | done | 1 | 30 min | 01:42Z |  |
@@ -82,9 +82,6 @@ Updated 2026-11-12T04:36:35Z by runner 47a83212b95f (actions).
 | T337 | payments (harness): a $0 release proof is bound to the pick' | BLOCKED | 3 | 16 min | 05:11Z |  |
 | T209 | picks and payments: the optional auto-confirm-and-pay box wi | done | 1 | 115 min | 05:06Z |  |
 | T295 | payments, ai, intake and picks take the brand from the brand | BLOCKED | 3 | 0 min | 04:59Z |  |
-| T337 | payments (harness): a $0 release proof is bound to the pick' | QUEUED | 2 | 25 min | 04:51Z |  |
-| T295 | payments, ai, intake and picks take the brand from the brand | QUEUED | 2 | 0 min | 04:49Z |  |
-| T295 | payments, ai, intake and picks take the brand from the brand | QUEUED | 1 | 1 min | 04:44Z |  |
 
 ### Plan and harness merges on main
 - 03:50Z Plan: pre-flight fixes round 6 — T355, T340, T341, T249, T273, T271, T277, T357, T314; new T405 (D-3118) (#542)
@@ -124,7 +121,7 @@ Updated 2026-11-12T04:36:35Z by runner 47a83212b95f (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 212 of 733 (28.9%) · partial 349 · unstarted 172
-**Tasks merged (throughput only):** 223 of 391
+**Tasks merged (throughput only):** 224 of 391
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -159,7 +156,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 103 of 177 done
+- stage 4: 104 of 177 done
 - stage 5: 0 of 60 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
