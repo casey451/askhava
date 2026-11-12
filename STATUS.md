@@ -1,25 +1,25 @@
 # Ask Hava build status
 
-Updated 2026-11-12T21:12:42Z by runner cb0cac646579 (manual).
+Updated 2026-11-12T21:13:15Z by runner cb0cac646579 (actions).
 
-**Idle since 20:57Z; 253 of 403 done; week 4% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 21:11Z; 254 of 403 done; week 4% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 253 of 403 build tasks (owner gates not counted)
+- **Tasks done:** 254 of 403 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 20:57Z (no task in progress)
+- **Lane:** idle since 21:11Z (no task in progress)
 - **Week:** 4% used, 186.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 21:12Z, 0 min before this update
 - **Keeper:** last ran 21:12Z, next wake 21:32Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 24 problem(s) on tasks still to run (+128 on DONE tasks); first: T340: measures 46% of the window, over its 45% limit; trim its reads or split it
+- Strict plan check red: 23 problem(s) on tasks still to run (+129 on DONE tasks); first: T340: measures 46% of the window, over its 45% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T414 | Stand-ins (harness): end-to-end specs can read the emails th | MERGE_PENDING | 3 | 28 min | 20:57Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
-| T251 | intake and quotes: the ZIP question, the job location, and t | MERGE_PENDING | 2 | 82 min | 20:23Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T251 | intake and quotes: the ZIP question, the job location, and t | done | 2 | 82 min | 20:23Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T416 | Performance: database pool and query measurements (PERF-004) | MERGE_PENDING | 1 | 54 min | 19:59Z |  |
 | T414 | Stand-ins (harness): end-to-end specs can read the emails th | check_failed | 2 | 15 min | 19:11Z |  |
 | T350 | privacy: an opt-out, HELP or START word is never taken or re | done | 1 | 103 min | 19:09Z |  |
@@ -113,34 +113,41 @@ Updated 2026-11-12T21:12:42Z by runner cb0cac646579 (manual).
 - 02:11Z Plan: pre-flight fixes round 5 — T378, T343, T268, T329, T306; new T404 (D-3112) (#538)
 - 02:03Z Plan: pre-flight fixes round 4 — T356, T362, T365, T367, T300, T369; new T401–T403 (D-3106) (#536)
 - 01:55Z Plan: owner approval before a team-linked phone works (BIZ-033, IC-95) — T396–T399 (D-3081) (#531)
+- 00:38Z Plan: T261 pre-flight fix and catalog loaded at start-up (T400, IC-96) (D-3100) (#534)
+- 00:00Z Plan: pre-flight fixes round 3 — T360, T368, T350, T358, T366, T385 (D-3094) (#528)
+- 23:50Z Plan: Gate C preconditions, vendor-leak check, quote cards, AI writing calls (D-3080) (#518)
+- 23:07Z Plan: IC-74 owners T390/T391, migration renumber, budget refresh, IC-95 logged (D-3079) (#517)
+- 23:02Z Plan: pre-flight fixes for T317, T323, T313, T315, T347 and the T345 gap (D-3083) (#524)
+- 22:35Z Harness: smoke ancestry reuse across DONE task merges and a running duplicate smoke yields (D-3058) (#516)
+- 21:48Z Harness: no five-hour pacing budget (D-3056) (#513)
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 1 of 733 (0.1%) · partial 564 · unstarted 168
-**Tasks merged (throughput only):** 253 of 403
+**Requirements verified:** 230 of 733 (31.4%) · partial 337 · unstarted 166
+**Tasks merged (throughput only):** 254 of 403
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 0 | 29 | 6 | 35 |
-| ai | 0 | 24 | 5 | 29 |
-| businesses | 0 | 55 | 3 | 58 |
-| calls | 0 | 24 | 1 | 25 |
-| consent | 0 | 31 | 4 | 35 |
-| fees | 0 | 51 | 1 | 52 |
-| intake | 1 | 37 | 5 | 43 |
-| job-cards | 0 | 22 | 2 | 24 |
-| licensing | 0 | 48 | 0 | 48 |
-| lifecycle | 0 | 28 | 0 | 28 |
-| messaging | 0 | 42 | 3 | 45 |
-| ops-recovery | 0 | 9 | 45 | 54 |
-| privacy | 0 | 29 | 2 | 31 |
-| quiet-hours | 0 | 9 | 0 | 9 |
-| quotes-pick | 0 | 55 | 1 | 56 |
-| recurring | 0 | 8 | 3 | 11 |
-| security | 0 | 50 | 5 | 55 |
+| accessibility | 15 | 14 | 6 | 35 |
+| ai | 7 | 17 | 5 | 29 |
+| businesses | 16 | 39 | 3 | 58 |
+| calls | 10 | 14 | 1 | 25 |
+| consent | 11 | 20 | 4 | 35 |
+| fees | 13 | 38 | 1 | 52 |
+| intake | 22 | 17 | 4 | 43 |
+| job-cards | 12 | 11 | 1 | 24 |
+| licensing | 25 | 23 | 0 | 48 |
+| lifecycle | 19 | 9 | 0 | 28 |
+| messaging | 18 | 24 | 3 | 45 |
+| ops-recovery | 2 | 7 | 45 | 54 |
+| privacy | 6 | 23 | 2 | 31 |
+| quiet-hours | 7 | 2 | 0 | 9 |
+| quotes-pick | 31 | 24 | 1 | 56 |
+| recurring | 6 | 2 | 3 | 11 |
+| security | 8 | 42 | 5 | 55 |
 | terms | 0 | 3 | 32 | 35 |
 | website | 0 | 3 | 25 | 28 |
-| wording | 0 | 7 | 25 | 32 |
+| wording | 2 | 5 | 25 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
@@ -152,7 +159,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 133 of 185 done
+- stage 4: 134 of 185 done
 - stage 5: 0 of 64 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
