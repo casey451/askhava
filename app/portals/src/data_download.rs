@@ -11,8 +11,10 @@
 //! [`ANSWER_WITHIN`] and a correct code, so a code alone (the sign-in one included) acts on
 //! nothing. A delete ([`delete_her_data`]) clears only her own jobs' photos
 //! (`intake::api::jobs_of_contact`) and the job text and cards stored under every request of hers
-//! (`quotes::api::forget_requests`, T411, PRIV-008, PRIV-011), in one transaction with its
-//! confirmed audit row (R11). Each request is due [`ANSWER_WITHIN`] (30 days)
+//! (`quotes::api::forget_requests`, T411, PRIV-008, PRIV-011) and blanks those jobs' feedback
+//! words (`jobs::api::purge_feedback`, T315, JOB-017, D-2205), in one transaction with its
+//! confirmed audit row (R11). The masking also catches a bare domain and a phone number split
+//! across lines (T315, D-3265). Each request is due [`ANSWER_WITHIN`] (30 days)
 //! after its stored received time ([`DataRequest::due_at`]). The number on file comes only from a
 //! realm-checked vault read ([`OnFile`], SEC-046). Requests by email or the help form are T200's
 //! (D-493). The routes wait on homeowner sign-in being served (D-1934).
@@ -21,6 +23,7 @@ use std::fmt;
 
 use askhava_adapters::api::{CodeChannel, IdempotencyKey, VerifyAdapter};
 use askhava_intake::api::{conversations_of_contact, jobs_of_contact};
+use askhava_jobs::api::purge_feedback;
 use askhava_ops::api::{Actor, AuditEntry, Change, audit, audit_once, export_audit};
 use askhava_picks::api::rules::parse_code;
 use askhava_privacy::api::delete_my_data;
@@ -249,8 +252,10 @@ pub async fn confirm_request<V: VerifyAdapter>(
 
 /// PRIV-011, PRIV-008, D-3189: "Delete my data" on the caller's transaction: the stored job text
 /// and cards of every request of hers (open or closed, `intake::api::conversations_of_contact`;
-/// T411), then `privacy::api::delete_my_data` over her jobs (`intake::api::jobs_of_contact`) and
-/// every job those rows named, so a later job's photos go too. Returns the confirmation sentence.
+/// T411), then her feedback words on each of those jobs (`jobs::api::purge_feedback`, audited as
+/// her, JOB-017, T315), then `privacy::api::delete_my_data` over her jobs
+/// (`intake::api::jobs_of_contact`) and every job those rows named, so a later job's photos go
+/// too. Returns the confirmation sentence.
 ///
 /// # Errors
 /// [`DeleteError`] naming the step that failed.
@@ -270,6 +275,11 @@ pub async fn delete_her_data(
     jobs.extend(named);
     jobs.sort_unstable();
     jobs.dedup();
+    for job in &jobs {
+        purge_feedback(db, *job, Actor::Homeowner(contact))
+            .await
+            .map_err(|_| DeleteError::Jobs)?;
+    }
     delete_my_data(db, contact, &jobs)
         .await
         .map_err(|_| DeleteError::Privacy)
@@ -284,6 +294,9 @@ pub enum DeleteError {
     /// Deleting the stored job text failed.
     #[error("deleting the job text failed")]
     Quotes,
+    /// Blanking her feedback words failed.
+    #[error("blanking the feedback failed")]
+    Jobs,
     /// The vault and photo delete failed.
     #[error("the vault delete failed")]
     Privacy,
@@ -349,12 +362,13 @@ impl fmt::Debug for HeldItem {
 /// What stands in for a masked contact detail.
 const MASKED: &str = "[removed]";
 
-/// PRIV-031: `words` with every run of 7 or more digits (with spaces, dots, dashes, brackets or a
-/// plus between them), every word holding `@` and every web address masked.
-fn mask_contact_details(words: &str) -> String {
+/// PRIV-031: `words` with every run of 7 or more digits (with spaces, line breaks, dots, dashes,
+/// brackets or a plus between them), every word holding `@`, every web address and every bare
+/// domain masked (T315, D-3265).
+pub(crate) fn mask_contact_details(words: &str) -> String {
     let (mut out, mut run) = (String::new(), String::new());
     for ch in words.chars() {
-        if ch.is_ascii_digit() || "()+-. ".contains(ch) {
+        if ch.is_ascii_digit() || "()+-. \n\r".contains(ch) {
             run.push(ch);
         } else {
             flush_run(&mut out, &mut run);
@@ -362,15 +376,42 @@ fn mask_contact_details(words: &str) -> String {
         }
     }
     flush_run(&mut out, &mut run);
-    let web = |w: &str| {
-        let lower = w.to_ascii_lowercase();
-        w.contains('@') || lower.starts_with("http") || lower.starts_with("www.")
-    };
-    let masked: Vec<&str> = out
-        .split(' ')
-        .map(|w| if web(w) { MASKED } else { w })
-        .collect();
-    masked.join(" ")
+    let (mut masked, mut word) = (String::new(), String::new());
+    for ch in out.chars() {
+        if ch.is_whitespace() {
+            masked.push_str(if is_web(&word) { MASKED } else { &word });
+            masked.push(ch);
+            word.clear();
+        } else {
+            word.push(ch);
+        }
+    }
+    masked.push_str(if is_web(&word) { MASKED } else { &word });
+    masked
+}
+
+/// Whether one word is an email, a web address or a bare domain.
+fn is_web(word: &str) -> bool {
+    let lower = word.to_ascii_lowercase();
+    word.contains('@') || lower.starts_with("http") || lower.starts_with("www.") || is_domain(word)
+}
+
+/// PRIV-031, D-3265: two or more dot-separated labels of letters, digits or dashes whose last is 2
+/// to 24 letters, after any wrapping punctuation and path; "3.5", "$1,250.00" and "Dr." are not.
+fn is_domain(word: &str) -> bool {
+    let host = word
+        .trim_matches(|c: char| !c.is_ascii_alphanumeric())
+        .split('/')
+        .next()
+        .unwrap_or_default();
+    let labels: Vec<&str> = host.split('.').collect();
+    let last = labels.last().copied().unwrap_or_default();
+    labels.len() >= 2
+        && labels
+            .iter()
+            .all(|l| !l.is_empty() && l.chars().all(|c| c.is_ascii_alphanumeric() || c == '-'))
+        && (2..=24).contains(&last.len())
+        && last.chars().all(|c| c.is_ascii_alphabetic())
 }
 
 fn flush_run(out: &mut String, run: &mut String) {
