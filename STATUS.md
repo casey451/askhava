@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-12T22:37:03Z by runner 7157f077422e (actions).
+Updated 2026-11-12T22:37:19Z by runner 7157f077422e (actions).
 
-**Building: T419 in progress since 22:12Z; 257 of 404 done; week 6% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T347 in progress since 22:32Z; 257 of 404 done; week 6% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 257 of 404 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T419 claimed 22:12Z, lease until 01:12Z; lane 2: T347 claimed 22:32Z, lease until 01:32Z; lane 3: T385 claimed 22:26Z, lease until 01:26Z; lane 4: T162 claimed 22:25Z, lease until 01:25Z; lane 5: T215 claimed 22:29Z, lease until 01:29Z; lane 6: T418 claimed 22:34Z, lease until 01:34Z
+- **Lane:** lane 2: T347 claimed 22:32Z, lease until 01:32Z; lane 3: T385 claimed 22:26Z, lease until 01:26Z; lane 4: T162 claimed 22:25Z, lease until 01:25Z; lane 5: T215 claimed 22:29Z, lease until 01:29Z; lane 6: T418 claimed 22:34Z, lease until 01:34Z
 - **Week:** 6% used, 164.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 22:36Z, 0 min before this update
 - **Keeper:** last ran 22:36Z, next wake 01:15Z
@@ -18,6 +18,7 @@ Updated 2026-11-12T22:37:03Z by runner 7157f077422e (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T419 | calls (harness): TD-CALL-23's no-plaintext scan reads only t | MERGE_PENDING | 1 | 24 min | 22:37Z |  |
 | T351 | privacy and quotes: spaced gate codes, lower-case street add | MERGE_PENDING | 1 | 58 min | 22:35Z |  |
 | T417 | Performance: seeded fake-data route benchmark and the first  | done | 1 | 36 min | 22:22Z |  |
 | T385 | adapters, licensing and businesses (harness): the sign-up re | resync | 3 | 40 min | 22:16Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
@@ -166,7 +167,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T419 (lease until 2026-11-13T01:12:59Z)
+- nothing
 - lane 2: T347 (lease until 2026-11-13T01:32:05Z)
 - lane 3: T385 (lease until 2026-11-13T01:26:42Z)
 - lane 4: T162 (lease until 2026-11-13T01:25:32Z)
@@ -174,4 +175,4 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 6: T418 (lease until 2026-11-13T01:34:16Z)
 
 ## Last usage reading
-- {"task": "T351", "at": "2026-11-12T22:35:39Z", "cache_creation_input_tokens": 476243, "cache_read_input_tokens": 10192782, "input_tokens": 331, "output_tokens": 125150}
+- {"task": "T419", "at": "2026-11-12T22:37:02Z", "cache_creation_input_tokens": 138790, "cache_read_input_tokens": 2335512, "output_tokens": 39826, "input_tokens": 124}
