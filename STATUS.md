@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-12T07:33:27Z by runner 5f2efdc68444 (actions).
+Updated 2026-11-12T07:33:42Z by runner 5f2efdc68444 (actions).
 
 **Building: T360 in progress since 06:59Z; 228 of 394 done; week 89% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 228 of 394 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T360 claimed 06:59Z, lease until 09:59Z; lane 2: T401 claimed 06:56Z, lease until 09:56Z; lane 3: T390 claimed 07:05Z, lease until 10:05Z; lane 5: T336 claimed 06:48Z, lease until 09:48Z
+- **Lane:** lane 1: T360 claimed 06:59Z, lease until 09:59Z; lane 3: T390 claimed 07:05Z, lease until 10:05Z; lane 5: T336 claimed 06:48Z, lease until 09:48Z
 - **Week:** 89% used, 5.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 07:19Z, 13 min before this update
 - **Keeper:** last ran 07:16Z, next wake 09:50Z
@@ -18,6 +18,7 @@ Updated 2026-11-12T07:33:27Z by runner 5f2efdc68444 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T401 | server (harness): the door probe's fixture gains a released  | MERGE_PENDING | 2 | 37 min | 07:33Z | PLAN GAP: tests/security/tests/no_homeowner_charge.rs:17-27,123 (TD-FEE-07, not T401's) fails any app/ file naming a hom |
 | T339 | jobs: each job keeps its category code and remaining candida | MERGE_PENDING | 1 | 18 min | 07:13Z |  |
 | T336 | server, adapters and stand-in (harness): a text stopped by a | resync | 2 | 71 min | 06:06Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
 | T405 | payments and adapters (harness): each charged pick's 3-D Sec | done | 1 | 51 min | 06:05Z |  |
@@ -26,7 +27,7 @@ Updated 2026-11-12T07:33:27Z by runner 5f2efdc68444 (actions).
 | T326 | calls (harness): the LINK notice names the line's stored PIN | done | 1 | 25 min | 03:37Z |  |
 | T336 | server, adapters and stand-in (harness): a text stopped by a | QUEUED | 1 | 5 min | 03:27Z |  |
 | T248 | catalog and businesses: markets as reviewed data, Arizona ZI | done | 1 | 12 min | 03:22Z |  |
-| T401 | server (harness): the door probe's fixture gains a released  | BLOCKED | 1 | 19 min | 03:13Z | PLAN GAP: tests/security/tests/no_homeowner_charge.rs:17-27,123 (TD-FEE-07, not T401's) fails any app/ file naming a hom |
+| T401 | server (harness): the door probe's fixture gains a released  | BLOCKED | 1 | 19 min | 03:13Z |  |
 | T400 | server: the web process stores the catalog file at start-up, | done | 1 | 21 min | 03:07Z |  |
 | T248 | catalog and businesses: markets as reviewed data, Arizona ZI | resync | 1 | 67 min | 02:56Z |  |
 | T334 | payments: the nightly reconcile catches up after an outage f | done | 2 | 41 min | 02:25Z | merging main into the reviewed head conflicts in app/payments/CLAUDE.md; a resync merges it in on this attempt (D-891) |
@@ -165,9 +166,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T360 (lease until 2026-11-12T09:59:04Z)
-- lane 2: T401 (lease until 2026-11-12T09:56:06Z)
 - lane 3: T390 (lease until 2026-11-12T10:05:48Z)
 - lane 5: T336 (lease until 2026-11-12T09:48:38Z)
 
 ## Last usage reading
-- {"task": "T339", "at": "2026-11-12T07:13:37Z", "output_tokens": 54949, "cache_read_input_tokens": 4465637, "input_tokens": 174, "cache_creation_input_tokens": 209679}
+- {"task": "T401", "at": "2026-11-12T07:33:26Z", "cache_read_input_tokens": 6971496, "cache_creation_input_tokens": 331399, "input_tokens": 205, "output_tokens": 57932}
