@@ -20,6 +20,7 @@ use std::fmt;
 
 use secrecy::{ExposeSecret, SecretString};
 use unicode_normalization::UnicodeNormalization;
+use unicode_normalization::char::is_combining_mark;
 
 /// What replaces each removed run of words.
 pub const REMOVED: &str = "[removed]";
@@ -750,22 +751,13 @@ fn sign_off(tokens: &[Token], i: usize) -> Option<usize> {
 }
 
 /// Whether `key` (a scrubber key or a remembered name), folded like `messaging`'s detector (lower
-/// case, accents off, apostrophes dropped, other marks splitting it), holds a [`NEVER_A_NAME`]
-/// word, so "stop", "Don't" and "stop-texting" are never names (CON-010, AI-020, D-2621).
+/// case, accents off by NFD and dropping combining marks, apostrophes dropped, other marks
+/// splitting it), holds a [`NEVER_A_NAME`] word, so "stop", "Don't" and "stop-texting" are never names (CON-010, AI-020, D-2621).
 fn never_a_name(key: &str) -> bool {
     let folded: String = key
         .to_lowercase()
-        .chars()
-        .filter(|&c| c != '\'')
-        .map(|c| match c {
-            'á' | 'à' | 'ä' | 'â' => 'a',
-            'é' | 'è' | 'ë' | 'ê' => 'e',
-            'í' | 'ì' | 'ï' | 'î' => 'i',
-            'ó' | 'ò' | 'ö' | 'ô' => 'o',
-            'ú' | 'ù' | 'ü' | 'û' => 'u',
-            'ñ' => 'n',
-            c => c,
-        })
+        .nfd()
+        .filter(|&c| c != '\'' && !is_combining_mark(c))
         .collect();
     folded
         .split(|c: char| !c.is_alphanumeric())
