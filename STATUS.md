@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-12T19:01:18Z by runner c5c20728e51e (actions).
+Updated 2026-11-12T19:03:14Z by runner dc66658ca5eb (actions).
 
-**Building: T251 in progress since 19:00Z; 250 of 403 done; week 3% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T251 in progress since 19:00Z; 250 of 400 done; week 3% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 250 of 403 build tasks (owner gates not counted)
+- **Tasks done:** 250 of 400 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T251 claimed 19:00Z, lease until 22:00Z; lane 2: T362 claimed 18:36Z, lease until 21:36Z; lane 4: T414 claimed 18:56Z, lease until 21:56Z; lane 5: T350 claimed 17:26Z, lease until 21:35Z
 - **Week:** 3% used, 180.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:59Z, 1 min before this update
+- **Last run:** 19:01Z, 1 min before this update
 - **Keeper:** last ran 18:58Z, next wake 21:38Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 20 problem(s) on tasks still to run (+121 on DONE tasks); first: T340: stored context_pct 40% but it measures 45%; regenerate
+- Strict plan check red: 21 problem(s) on tasks still to run (+123 on DONE tasks); first: T340: stored context_pct 40% but it measures 45%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -84,7 +84,6 @@ Updated 2026-11-12T19:01:18Z by runner c5c20728e51e (actions).
 | T334 | payments: the nightly reconcile catches up after an outage f | QUEUED | 1 | 15 min | 21:21Z |  |
 | T228 | businesses: leaving Ask Hava, the optional reason and what h | check_failed | 1 | 31 min | 19:59Z |  |
 | T228 | businesses: leaving Ask Hava, the optional reason and what h | resync | 1 | 77 min | 19:09Z |  |
-| T316 | businesses: one read of each business's public name for the  | done | 2 | 26 min | 19:02Z | PLAN GAP: app/businesses/src/holding.rs:8 and migrations/0050_licensing_imports.sql:22-55: nothing links a business to a |
 
 ### Plan and harness merges on main
 - 18:44Z Plan: performance track — measurement harness T416–T418, goals as non-blocking (D-3292) (#607)
@@ -121,7 +120,7 @@ Updated 2026-11-12T19:01:18Z by runner c5c20728e51e (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 230 of 733 (31.4%) · partial 334 · unstarted 169
-**Tasks merged (throughput only):** 250 of 403
+**Tasks merged (throughput only):** 250 of 400
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|

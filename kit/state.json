@@ -35650,11 +35650,12 @@
      "result": "BLOCKED"
     }
    ],
-   "reviewed_sha": "a1a1ba84f355a1b498829f0a2022511b653788ea",
+   "reviewed_sha": "e622eb90f6d5ca2a5ca9003a25b2c0f282ecef6e",
    "review_lease": {
     "task": "T362",
-    "session": "actions-43221295629",
-    "expires": "2026-11-12T15:56:41Z"
+    "session": "actions-43279175706",
+    "expires": "2026-11-12T21:36:22Z",
+    "lane": "2"
    },
    "branch": "claude/task/T362-serve-static-files",
    "auto_merge": {
@@ -35662,17 +35663,6 @@
     "why": "auto-merge on #586 (gh pr merge)",
     "head": "a1a1ba84f355a1b498829f0a2022511b653788ea"
    },
-   "update_merges": [
-    {
-     "from": "9bb0f409340caa69b857baf24f6ef83a2eb90586",
-     "to": "a1a1ba84f355a1b498829f0a2022511b653788ea",
-     "main": "87abedec7b6ea0d48edf5747ef107cbd878ee14a",
-     "how": "hand-in",
-     "at": "2026-11-12T13:35:27Z"
-    }
-   ],
-   "update_waiting_since": null,
-   "update_push_failures": null,
    "last_failure": "PLAN GAP: tests/a11y/j1_keyboard.spec.ts:171-172 (owned by T098/T214, protected, not in T362's files) presses Tab before the Go back page's load event. Since T362 serves /static/portals/quote_page.js (404 before), page load waits for the script, so Tab starts at control 0 instead of quote #2 (index 3): \"Tab from \"\" ... Expected: 3, Received: 0\" at 320/768/1280 px. Evidence: with the built .js the 3 tests fail; with the .js removed they pass; with await page.waitForLoadState(\"load\") added after the heading check at :171 they pass. T362's own tests pass (static_files_route 5 passed, static_served.spec 1 passed). Reviewer confirmed ownership and cause. Fix: a harness task adds that one line.\nre-queued after plan fix D-3270: Plan gap fixed by D-3270 (#601): T362 owns the j1_keyboard load wait",
    "runner_closed_prs": [
     586
@@ -35693,7 +35683,19 @@
      "plan_now": "78d1176bc20c3ea717bfbb1becd14dcaf5058c51e9fd6ae7691162dba0ca984a"
     }
    ],
-   "lane": "2"
+   "lane": "2",
+   "head_check_since": null,
+   "update_merges": [
+    {
+     "from": "dc66658ca5eb9418db7c47fbdf468ae660e90d93",
+     "to": "e622eb90f6d5ca2a5ca9003a25b2c0f282ecef6e",
+     "main": "bae443e54064bf67f05c184df83fe257c497087c",
+     "how": "hand-in",
+     "at": "2026-11-12T19:03:14Z"
+    }
+   ],
+   "update_waiting_since": null,
+   "update_push_failures": null
   },
   {
    "id": "T363",
@@ -42372,7 +42374,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T19:01:18Z",
+ "updated_at": "2026-11-12T19:03:14Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -42470,7 +42472,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "c5c20728e51e1a83051f2633584ec1ad69ab8e30",
+ "runner_sha": "dc66658ca5eb9418db7c47fbdf468ae660e90d93",
  "starter": "actions",
  "smoke_runs": [
   {
