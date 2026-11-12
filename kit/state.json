@@ -33200,12 +33200,12 @@
      "result": "resync"
     }
    ],
-   "reviewed_sha": "4f8a3fff7263453e1b8a20c08a67aac169febc7a",
+   "reviewed_sha": "cebed83a38494a6fde36085fa0d02b6cbb3bbfdc",
    "review_lease": {
     "task": "T368",
-    "session": "actions-43126651765",
-    "expires": "2026-11-12T03:48:23Z",
-    "lane": "4"
+    "session": "actions-43134698404",
+    "expires": "2026-11-12T04:49:19Z",
+    "lane": "3"
    },
    "branch": "claude/task/T368-capability-offer-all-licenses",
    "auto_merge": {
@@ -33213,17 +33213,6 @@
     "why": "auto-merge on #535 (gh pr merge)",
     "head": "4f8a3fff7263453e1b8a20c08a67aac169febc7a"
    },
-   "update_merges": [
-    {
-     "from": "7eda8c087e52fc6e3d3e07befc327501525cacd5",
-     "to": "4f8a3fff7263453e1b8a20c08a67aac169febc7a",
-     "main": "fe7a56647b29e78ab467a799951025f1a196d6d7",
-     "how": "hand-in",
-     "at": "2026-11-12T01:13:32Z"
-    }
-   ],
-   "update_waiting_since": null,
-   "update_push_failures": null,
    "runner_closed_prs": [
     535
    ],
@@ -33247,7 +33236,19 @@
      "at": "2026-11-12T01:43:13Z"
     }
    ],
-   "last_failure": "merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891)"
+   "last_failure": "merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891)",
+   "head_check_since": null,
+   "update_merges": [
+    {
+     "from": "96a816a9edaa523f855c225ab43468c4c6c28b80",
+     "to": "cebed83a38494a6fde36085fa0d02b6cbb3bbfdc",
+     "main": "00d214c9e37e1d160047b8f2682ddc89d6287972",
+     "how": "hand-in",
+     "at": "2026-11-12T02:06:28Z"
+    }
+   ],
+   "update_waiting_since": null,
+   "update_push_failures": null
   },
   {
    "id": "T369",
@@ -36261,7 +36262,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T01:52:45Z",
+ "updated_at": "2026-11-12T02:06:28Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -36359,7 +36360,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "8bc6d03cfc3c72267e7813bc8bc51b41c5995902",
+ "runner_sha": "96a816a9edaa523f855c225ab43468c4c6c28b80",
  "starter": "actions",
  "smoke_runs": [
   {

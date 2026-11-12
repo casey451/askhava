@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T01:52:45Z by runner 8bc6d03cfc3c (actions).
+Updated 2026-11-12T02:06:28Z by runner 96a816a9edaa (actions).
 
 **Building: T248 in progress since 01:49Z; 219 of 383 done; week 81% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-12T01:52:45Z by runner 8bc6d03cfc3c (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T248 claimed 01:49Z, lease until 04:49Z; lane 3: T368 claimed 01:49Z, lease until 04:49Z; lane 4: T313 claimed 01:48Z, lease until 04:48Z; lane 5: T334 claimed 01:43Z, lease until 04:43Z
 - **Week:** 81% used, 24.2M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:52Z, 0 min before this update
+- **Last run:** 01:52Z, 13 min before this update
 - **Keeper:** last ran 01:52Z, next wake 04:45Z
 
 ## Needs attention
@@ -80,6 +80,8 @@ Updated 2026-11-12T01:52:45Z by runner 8bc6d03cfc3c (actions).
 | T337 | payments (harness): a $0 release proof is bound to the pick' | QUEUED | 1 | 31 min | 02:07Z |  |
 
 ### Plan and harness merges on main
+- 02:03Z Plan: pre-flight fixes round 4 — T356, T362, T365, T367, T300, T369; new T401–T403 (D-3106) (#536)
+- 01:55Z Plan: owner approval before a team-linked phone works (BIZ-033, IC-95) — T396–T399 (D-3081) (#531)
 - 00:38Z Plan: T261 pre-flight fix and catalog loaded at start-up (T400, IC-96) (D-3100) (#534)
 - 00:00Z Plan: pre-flight fixes round 3 — T360, T368, T350, T358, T366, T385 (D-3094) (#528)
 - 23:50Z Plan: Gate C preconditions, vendor-leak check, quote cards, AI writing calls (D-3080) (#518)
@@ -113,7 +115,6 @@ Updated 2026-11-12T01:52:45Z by runner 8bc6d03cfc3c (actions).
 - 03:53Z Harness: merge main before the hand-in push when the head is behind (D-2798) (#450)
 - 03:41Z Plan: fix tasks from the Nov 11 vendor-double review (D-2760–D-2770) (#446)
 - 03:25Z Harness: CI speed — cache saves on main only, pytest in its own job, C YAML loader (D-2782) (#449)
-- 01:56Z Harness: the test suite drops the live job's smoke switch and run ids (D-2660) (#441)
 
 ## Progress (requirements verified)
 
