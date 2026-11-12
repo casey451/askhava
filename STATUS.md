@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-12T20:23:38Z by runner 173e3b65cc26 (actions).
+Updated 2026-11-12T20:23:56Z by runner 173e3b65cc26 (actions).
 
-**Building: T251 in progress since 19:00Z; 253 of 403 done; week 3% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 20:23Z; 253 of 403 done; week 3% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 253 of 403 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T251 claimed 19:00Z, lease until 22:00Z
+- **Lane:** idle since 20:23Z (no task in progress)
 - **Week:** 3% used, 180.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 20:20Z, 3 min before this update
 - **Keeper:** last ran 20:06Z, next wake 22:03Z
@@ -18,12 +18,13 @@ Updated 2026-11-12T20:23:38Z by runner 173e3b65cc26 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T251 | intake and quotes: the ZIP question, the job location, and t | MERGE_PENDING | 2 | 82 min | 20:23Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T416 | Performance: database pool and query measurements (PERF-004) | MERGE_PENDING | 1 | 54 min | 19:59Z |  |
 | T414 | Stand-ins (harness): end-to-end specs can read the emails th | check_failed | 2 | 15 min | 19:11Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T350 | privacy: an opt-out, HELP or START word is never taken or re | done | 1 | 103 min | 19:09Z |  |
 | T362 | server: the built static files are served at /static/<crate> | done | 3 | 26 min | 19:03Z | PLAN GAP: tests/a11y/j1_keyboard.spec.ts:171-172 (owned by T098/T214, protected, not in T362's files) presses Tab before |
 | T346 | portals: every homeowner Verify code is bound to its purpose | done | 1 | 40 min | 18:57Z |  |
-| T251 | intake and quotes: the ZIP question, the job location, and t | resync | 2 | 87 min | 18:46Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T251 | intake and quotes: the ZIP question, the job location, and t | resync | 2 | 87 min | 18:46Z |  |
 | T376 | ai and stand-in (harness): the intake schema sent to Claude  | done | 1 | 35 min | 18:40Z |  |
 | T385 | adapters, licensing and businesses (harness): the sign-up re | check_failed | 2 | 60 min | 18:26Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
 | T366 | jobs and server: every dead-lettered task alerts, and a dail | done | 1 | 26 min | 17:53Z |  |
@@ -164,7 +165,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T251 (lease until 2026-11-12T22:00:53Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T416", "at": "2026-11-12T19:59:05Z", "cache_read_input_tokens": 19336811, "output_tokens": 151466, "input_tokens": 348, "cache_creation_input_tokens": 430819}
+- {"task": "T251", "at": "2026-11-12T20:23:37Z", "cache_creation_input_tokens": 78254, "cache_read_input_tokens": 591199, "output_tokens": 7191, "input_tokens": 50}
