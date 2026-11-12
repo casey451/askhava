@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T11:10:32Z by runner b513c7d4ca37 (actions).
+Updated 2026-11-12T11:10:48Z by runner b513c7d4ca37 (actions).
 
 **Building: T280 in progress since 11:06Z; 238 of 397 done; week 93% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-12T11:10:32Z by runner b513c7d4ca37 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T280 claimed 11:06Z, lease until 14:06Z; lane 2: T377 claimed 10:47Z, lease until 13:47Z; lane 3: T345 claimed 10:49Z, lease until 13:49Z
 - **Week:** 93% used, 1.4M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:08Z, 1 min before this update
-- **Keeper:** last ran 11:06Z, next wake 13:50Z
+- **Last run:** 11:10Z, 0 min before this update
+- **Keeper:** last ran 11:10Z, next wake 13:49Z
 
 ## Needs attention
 - PLAN GAP T251 (since 2026-11-12T11:06:16Z, no attempt used; a plan change fixes it): T251: measures 46% of the context window, over its 45% limit
