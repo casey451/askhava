@@ -16,6 +16,7 @@ mod quote_token;
 mod rules;
 mod service;
 mod status;
+mod timer_backstop;
 
 #[cfg(test)]
 mod tests;
