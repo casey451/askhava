@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT EXISTS (SELECT 1 FROM ops.alert WHERE kind = $1 AND subject_kind IS NULL\n           AND ((raised_at AT TIME ZONE 'UTC') - interval '7 hours')::date\n             = ((now() AT TIME ZONE 'UTC') - interval '7 hours')::date) AS \"raised!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "raised!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "0fc23a7abd258ce3c6cf575f94493e83139118ab583bd377dfdaf145eeff2576"
+}
