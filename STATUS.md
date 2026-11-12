@@ -1,18 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-12T00:20:29Z by runner 4f3341fd59e7 (actions).
+Updated 2026-11-12T00:22:55Z by runner 4f3341fd59e7 (actions).
 
-**Idle since 00:16Z; 216 of 382 done; week 79% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 00:21Z; 217 of 382 done; week 79% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 216 of 382 build tasks (owner gates not counted)
+- **Tasks done:** 217 of 382 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 00:16Z (no task in progress)
+- **Lane:** idle since 00:21Z (no task in progress)
 - **Week:** 79% used, 27.4M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:20Z, 0 min before this update
+- **Last run:** 00:20Z, 2 min before this update
 - **Keeper:** last ran 00:20Z, next wake 00:40Z
 
 ## Needs attention
-- Strict plan check red: 5 problem(s) on tasks still to run (+64 on DONE tasks); first: T348: stored context_pct 36% but it measures 41%; regenerate
+- Strict plan check red: 4 problem(s) on tasks still to run (+65 on DONE tasks); first: T106: stored context_pct 15% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -21,7 +21,7 @@ Updated 2026-11-12T00:20:29Z by runner 4f3341fd59e7 (actions).
 | T313 | messaging and server: an EMERGENCY card notice goes at night | MERGE_PENDING | 1 | 35 min | 00:03Z |  |
 | T228 | businesses: leaving Ask Hava, the optional reason and what h | MERGE_PENDING | 2 | 23 min | 23:45Z | merging main into the reviewed head conflicts in app/picks/CLAUDE.md, app/quotes/src/api.rs; a resync merges it in on th |
 | T334 | payments: the nightly reconcile catches up after an outage f | MERGE_PENDING | 2 | 96 min | 23:36Z | Worker stopped with PLAN GAP: reconcile_open.rs:343 and :423 (T288 tests, night 0 then night 8) fail once the run reads  |
-| T348 | harness: the authorization matrix gets public, owner and act | MERGE_PENDING | 1 | 43 min | 23:32Z |  |
+| T348 | harness: the authorization matrix gets public, owner and act | done | 1 | 43 min | 23:32Z |  |
 | T228 | businesses: leaving Ask Hava, the optional reason and what h | resync | 2 | 41 min | 23:04Z |  |
 | T317 | server and intake: the inbound text route applies SEC-014's  | BLOCKED | 1 | 4 min | 22:34Z |  |
 | T232 | portals and businesses: the Confirm step's "Can't take it" l | done | 1 | 51 min | 22:02Z |  |
@@ -118,7 +118,7 @@ Updated 2026-11-12T00:20:29Z by runner 4f3341fd59e7 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 214 of 733 (29.2%) · partial 345 · unstarted 174
-**Tasks merged (throughput only):** 216 of 382
+**Tasks merged (throughput only):** 217 of 382
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -153,7 +153,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 96 of 171 done
+- stage 4: 97 of 171 done
 - stage 5: 0 of 58 done
 - stage 6: 0 of 37 done
 - stage 7: 0 of 2 done
