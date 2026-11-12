@@ -1,7 +1,7 @@
 {
  "schema": 1,
  "phase": "kit",
- "current": "T370",
+ "current": "T315",
  "backup_runner": "on",
  "ruleset_verified": true,
  "lease": null,
@@ -30880,11 +30880,19 @@
     "T087",
     "T411"
    ],
-   "status": "QUEUED",
+   "status": "IN_PROGRESS",
    "attempts": 0,
    "slug": "feedback-purge-and-export-mask",
    "type": "build",
-   "stage": "4"
+   "stage": "4",
+   "attempt_started_at": "2026-11-12T15:12:30Z",
+   "decision_ids": [
+    3264,
+    3265,
+    3266,
+    3267,
+    3268
+   ]
   },
   {
    "id": "T316",
@@ -38972,7 +38980,7 @@
    "cache_read_input_tokens": 6019959,
    "input_tokens": 196
   },
-  "source": "session_reading 2026-11-12T15:07:05Z (week)",
+  "source": "session_reading 2026-11-12T15:11:58Z (week)",
   "by_task": {
    "FIX-MAIN": {
     "estimated_bytes": 1552047,
@@ -41269,7 +41277,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T15:12:18Z",
+ "updated_at": "2026-11-12T15:12:46Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -41367,17 +41375,9 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "87abedec7b6ea0d48edf5747ef107cbd878ee14a",
+ "runner_sha": "e2c37a7d0cadd117b412f6c0c3aa24dc1d5808fd",
  "starter": "actions",
  "smoke_runs": [
-  {
-   "sha": "87abedec7b6ea0d48edf5747ef107cbd878ee14a",
-   "ok": true,
-   "at": "2026-11-12T13:19:37Z",
-   "why": "start routine (ancestry reuse of 4b1e8df76c3d, 2026-11-12T12:11:25Z)",
-   "reused": "2026-11-12T12:11:25Z",
-   "base": "4b1e8df76c3d667f99ea5796f84c723b1b04c5b6"
-  },
   {
    "sha": "87abedec7b6ea0d48edf5747ef107cbd878ee14a",
    "ok": true,
@@ -41523,24 +41523,32 @@
    "why": "start routine (ancestry reuse of f2ec2c57dae9, 2026-11-12T14:39:19Z)",
    "reused": "2026-11-12T14:39:19Z",
    "base": "f2ec2c57dae946b04470c9acd41dd2da385a7e50"
+  },
+  {
+   "sha": "e2c37a7d0cadd117b412f6c0c3aa24dc1d5808fd",
+   "ok": true,
+   "at": "2026-11-12T15:12:30Z",
+   "why": "start routine (ancestry reuse of f2ec2c57dae9, 2026-11-12T14:39:19Z)",
+   "reused": "2026-11-12T14:39:19Z",
+   "base": "f2ec2c57dae946b04470c9acd41dd2da385a7e50"
   }
  ],
  "main_red": null,
  "pacing": {
-  "last": "T370 estimated 1.1M tokens (calibrated); week has 1.3M left (no five-hour budget, D-3056) after 2.7M still running in another lane (session_reading 2026-11-12T15:07:05Z (week)); claimed",
-  "at": "2026-11-12T15:07:53Z",
+  "last": "T315 estimated 2.9M tokens (calibrated); week has 2.9M left (no five-hour budget, D-3056) after 1.1M still running in another lane (session_reading 2026-11-12T15:11:58Z (week)); claimed",
+  "at": "2026-11-12T15:12:30Z",
   "decision": "claim",
   "waiting_until": null,
   "standing": {
    "week": {
-    "used": 192655628,
+    "used": 191073436,
     "budget": 194000000,
-    "left": 1344372,
+    "left": 2926564,
     "resets_at": "2026-11-12T17:00:00Z"
    }
   },
   "remaining_estimate": 645082076,
-  "projected_finish": "2026-12-05T21:45:33Z"
+  "projected_finish": "2026-12-05T21:50:10Z"
  },
  "main_red_history": [
   {
@@ -41637,7 +41645,7 @@
    "why": "smoke red while Ci, Twin and Ally were green on the head"
   }
  ],
- "next_decision": 3264,
+ "next_decision": 3269,
  "stage_proofs": {
   "1": {
    "evidence": "Recorded by the runner (D-551): nightly-main green (Ci, Twin, Ally) on main 5d45d8ef0bee8d8e290462e58aa81c580bf57c1e, which contains every stage-1 merge (T002 739f29a31cec, T003 7161be09784c, T004 36b13e66ddf4, T172 189cfe54c716, T005 f55fa02095c0, T006 1e9c2dbb261b, T007 d57693ea8e79, T008 d57693ea8e79, T170 1cdbd960f712, T154 b4f7265f01d2, T167 5d45d8ef0bee); the exit row's tests ran in it (tests/twin/test_gate.py, tests/test_check_catalog.py, tests/test_matching_examples.py, tests/contract/test_stand_in_server.py); every requirement owned only by tasks of stage 1 or earlier is verified (OPS-053).",

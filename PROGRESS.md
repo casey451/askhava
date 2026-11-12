@@ -2887,3 +2887,4 @@
 - 2026-11-12T15:11:38Z runner 1ee0fd56a376 (actions): {"T389": "IN_PROGRESS -> MERGE_PENDING"}
 - 2026-11-12T15:11:58Z runner 1ee0fd56a376 (actions): {}
 - 2026-11-12T15:12:18Z runner 87abedec7b6e (actions): {}
+- 2026-11-12T15:12:46Z runner e2c37a7d0cad (actions): {"T315": "QUEUED -> IN_PROGRESS"}; T315 estimated 2.9M tokens (calibrated); week has 2.9M left (no five-hour budget, D-3056) after 1.1M still running in another lane (session_reading 2026-11-12T15:11:58Z (week)); claimed
