@@ -127,6 +127,55 @@ fn td_con_32_a_stated_name_is_still_removed() {
     );
 }
 
+/// TD-CON-32 (D-3277): a hyphenated name with a list word in it is still a name; only a word made
+/// wholly of list words ("stop-texting") is never one.
+#[test]
+fn td_con_32_a_hyphenated_name_with_a_list_word_is_still_removed() {
+    for (raw, want) in [
+        (
+            "This is Ya-Ting, sink leaking",
+            "This is [removed] sink leaking",
+        ),
+        (
+            "This is Do-Hyun Kim, sink leaking",
+            "This is [removed] sink leaking",
+        ),
+        ("Soy Maria De-La-Cruz, gotea", "Soy [removed] gotea"),
+    ] {
+        assert_eq!(scrubbed(raw), want, "{raw:?}");
+    }
+    let out = scrubbed("This is Bob stop-texting me");
+    assert_eq!(out, "This is [removed] stop-texting me");
+    assert!(detect_opt_out(&out).is_some(), "{out:?}");
+    let common = CommonWords::default();
+    for (name, raw) in [
+        ("Maria Ortiz-de-la-Rosa", "Ortiz-de-la-Rosa called"),
+        ("Ya-Ting Chen", "Ya-Ting called"),
+    ] {
+        let name = SecretString::from(name.to_owned());
+        let known = Known {
+            common: &common,
+            vault_name: Some(&name),
+        };
+        let out = scrub(raw, &known, &mut NameMemory::default());
+        assert_eq!(out.as_str(), "[removed] called", "{raw:?}");
+    }
+}
+
+/// TD-CON-32 (D-3277): a list word first after the name phrase is kept, but the second word is
+/// still taken as the name.
+#[test]
+fn td_con_32_a_list_word_first_still_lets_the_second_word_go() {
+    assert_eq!(
+        scrubbed("This is Do Nguyen, sink leaking"),
+        "This is Do [removed] sink leaking"
+    );
+    assert_eq!(
+        scrubbed("This is stop texting me"),
+        "This is stop texting me"
+    );
+}
+
 /// TD-CON-32: "This is Bob stop texting me" then "Stop texting me please" from one number: "stop"
 /// is never remembered as her name, so the second text is an opt-out too.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]

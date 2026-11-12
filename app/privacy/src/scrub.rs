@@ -707,7 +707,9 @@ fn mark_codes(tokens: &[Token], cut: &mut [bool]) {
 }
 
 /// Names after the AI-002 phrases (up to two words, the first not a common word, D-146) and after
-/// a sign-off at the message's end (AI-020); returns every word removed, lower-cased.
+/// a sign-off at the message's end (AI-020); a [`NEVER_A_NAME`] word is never taken, but a first
+/// one does not stop the second ("This is Do Nguyen" still cuts "Nguyen", D-3277). Returns every
+/// word removed, lower-cased.
 fn mark_stated(tokens: &[Token], common: &CommonWords, cut: &mut [bool]) -> Vec<String> {
     let mut names = Vec::new();
     for i in 0..tokens.len() {
@@ -724,12 +726,14 @@ fn mark_stated(tokens: &[Token], common: &CommonWords, cut: &mut [bool]) -> Vec<
         let Some(n) = after.filter(|&n| n < tokens.len()) else {
             continue;
         };
-        let nameish = |key: &str| is_wordish(key, common) && !never_a_name(key);
-        if !nameish(&tokens[n].key) {
+        if !is_wordish(&tokens[n].key, common) {
             continue;
         }
-        cut[n] = true;
-        names.push(tokens[n].key.clone());
+        let nameish = |key: &str| is_wordish(key, common) && !never_a_name(key);
+        if nameish(&tokens[n].key) {
+            cut[n] = true;
+            names.push(tokens[n].key.clone());
+        }
         let ends_clause = tokens[n].text.ends_with(|c: char| !c.is_alphanumeric());
         if !ends_clause && tokens.get(n + 1).is_some_and(|t| nameish(&t.key)) {
             cut[n + 1] = true;
@@ -752,16 +756,20 @@ fn sign_off(tokens: &[Token], i: usize) -> Option<usize> {
 
 /// Whether `key` (a scrubber key or a remembered name), folded like `messaging`'s detector (lower
 /// case, accents off by NFD and dropping combining marks, apostrophes dropped, other marks
-/// splitting it), holds a [`NEVER_A_NAME`] word, so "stop", "Don't" and "stop-texting" are never names (CON-010, AI-020, D-2621).
+/// splitting it), is made only of [`NEVER_A_NAME`] words, so "stop", "Don't" and "stop-texting"
+/// are never names while "Ya-Ting" and "Ortiz-de-la-Rosa" still are (CON-010, AI-020, D-2621,
+/// D-3277).
 fn never_a_name(key: &str) -> bool {
     let folded: String = key
         .to_lowercase()
         .nfd()
         .filter(|&c| c != '\'' && !is_combining_mark(c))
         .collect();
-    folded
+    let mut parts = folded
         .split(|c: char| !c.is_alphanumeric())
-        .any(|part| NEVER_A_NAME.contains(&part))
+        .filter(|part| !part.is_empty())
+        .peekable();
+    parts.peek().is_some() && parts.all(|part| NEVER_A_NAME.contains(&part))
 }
 
 /// Every word of the vault name, common words too ("Joy Early"), and of each remembered name, but
