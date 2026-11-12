@@ -1,22 +1,23 @@
 # Ask Hava build status
 
-Updated 2026-11-12T02:25:20Z by runner 00d214c9e37e (actions).
+Updated 2026-11-12T02:25:33Z by runner 348dd46df0d7 (actions).
 
-**Building: T248 in progress since 01:49Z; 219 of 389 done; week 81% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T248 in progress since 01:49Z; 219 of 383 done; week 81% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 219 of 389 build tasks (owner gates not counted)
+- **Tasks done:** 219 of 383 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T248 claimed 01:49Z, lease until 04:49Z; lane 5: T334 claimed 01:43Z, lease until 04:43Z
+- **Lane:** lane 2: T248 claimed 01:49Z, lease until 04:49Z
 - **Week:** 81% used, 24.2M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 02:25Z, 0 min before this update
 - **Keeper:** last ran 02:25Z, next wake 04:45Z
 
 ## Needs attention
-- Strict plan check red: 7 problem(s) on tasks still to run (+71 on DONE tasks); first: T341: stored context_pct 27% but it measures 31%; regenerate
+- Strict plan check red: 8 problem(s) on tasks still to run (+73 on DONE tasks); first: T341: stored context_pct 27% but it measures 31%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T334 | payments: the nightly reconcile catches up after an outage f | MERGE_PENDING | 2 | 41 min | 02:25Z | merging main into the reviewed head conflicts in app/payments/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T313 | messaging and server: an EMERGENCY card notice goes at night | MERGE_PENDING | 1 | 19 min | 02:07Z | merging main into the reviewed head conflicts in app/quotes/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T368 | businesses (harness): the capability checklist offers every  | MERGE_PENDING | 1 | 17 min | 02:06Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T325 | server: an inbound text stopped by a module error raises a b | MERGE_PENDING | 1 | 30 min | 01:42Z |  |
@@ -24,7 +25,7 @@ Updated 2026-11-12T02:25:20Z by runner 00d214c9e37e (actions).
 | T317 | server and intake: the inbound text route applies SEC-014's  | done | 2 | 53 min | 00:16Z | PLAN GAP: tests/integration/tests/suspension_mode.rs:69-78 (owned by T279) and app/server/tests/voice_confirm_line.rs:95 |
 | T313 | messaging and server: an EMERGENCY card notice goes at night | resync | 1 | 35 min | 00:03Z |  |
 | T228 | businesses: leaving Ask Hava, the optional reason and what h | done | 2 | 23 min | 23:45Z | merging main into the reviewed head conflicts in app/picks/CLAUDE.md, app/quotes/src/api.rs; a resync merges it in on th |
-| T334 | payments: the nightly reconcile catches up after an outage f | resync | 2 | 96 min | 23:36Z | merging main into the reviewed head conflicts in app/payments/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T334 | payments: the nightly reconcile catches up after an outage f | resync | 2 | 96 min | 23:36Z |  |
 | T348 | harness: the authorization matrix gets public, owner and act | done | 1 | 43 min | 23:32Z |  |
 | T228 | businesses: leaving Ask Hava, the optional reason and what h | resync | 2 | 41 min | 23:04Z |  |
 | T317 | server and intake: the inbound text route applies SEC-014's  | BLOCKED | 1 | 4 min | 22:34Z |  |
@@ -119,14 +120,14 @@ Updated 2026-11-12T02:25:20Z by runner 00d214c9e37e (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 211 of 733 (28.8%) · partial 350 · unstarted 172
-**Tasks merged (throughput only):** 219 of 389
+**Requirements verified:** 212 of 733 (28.9%) · partial 349 · unstarted 172
+**Tasks merged (throughput only):** 219 of 383
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 13 | 16 | 6 | 35 |
 | ai | 7 | 17 | 5 | 29 |
-| businesses | 15 | 39 | 4 | 58 |
+| businesses | 16 | 38 | 4 | 58 |
 | calls | 9 | 15 | 1 | 25 |
 | consent | 8 | 23 | 4 | 35 |
 | fees | 12 | 39 | 1 | 52 |
@@ -165,7 +166,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T248 (lease until 2026-11-12T04:49:36Z)
-- lane 5: T334 (lease until 2026-11-12T04:43:13Z)
 
 ## Last usage reading
-- {"task": "T313", "at": "2026-11-12T02:07:38Z", "input_tokens": 119, "cache_read_input_tokens": 2088613, "cache_creation_input_tokens": 128254, "output_tokens": 21287}
+- {"task": "T334", "at": "2026-11-12T02:25:03Z", "output_tokens": 18430, "cache_creation_input_tokens": 78177, "input_tokens": 106, "cache_read_input_tokens": 1405523}
