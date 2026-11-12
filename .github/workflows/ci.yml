@@ -674,7 +674,9 @@ jobs:
       - name: Playwright browser cache (keyed by package-lock.json, which pins @playwright/test)
         id: browsers
         if: steps.changes.outputs.run == 'true'
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        # Restored on every run; saved by the step after the install, on main only (D-3143, as D-2782 did for the
+        # Rust caches): a branch's entry is readable by that branch alone.
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
@@ -717,6 +719,13 @@ jobs:
           if [ "$deps" != "true" ]; then
             echo "::warning title=Chromium system libraries::apt could not reach the Ubuntu mirrors; Chromium launched with the runner image's libraries, without the optional fonts Playwright lists (D-3030)"
           fi
+
+      - name: Save the Playwright browsers to the cache (main only, D-3143)
+        if: github.ref == 'refs/heads/main' && steps.browsers.outputs.cache-hit != 'true' && steps.changes.outputs.run == 'true'
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ steps.browsers.outputs.cache-primary-key }}
 
       - name: The journeys (npx playwright test tests/e2e)
         if: steps.changes.outputs.run == 'true'
