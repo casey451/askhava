@@ -220,6 +220,7 @@ def build(args: argparse.Namespace, outbox_dir: Path) -> tuple[cycle.Config, Git
                        plan_health=plan_health_checker(ROOT, kit), model_window=model_window.load(ROOT / "kit" / "runner.json"),
                        claim_first=claim_first(ROOT / "kit" / "runner.json"),
                        order=claim_order_setting(ROOT / "kit" / "runner.json"),
+                       prefer_disjoint_crates=prefer_disjoint_crates(ROOT / "kit" / "runner.json"),
                        smoke_ancestry=smoke_ancestry(ROOT / "kit" / "runner.json"))
     env.smoke_ancestry = cfg.smoke_ancestry  # the pre-session step's skip and the start routine agree (D-3058)
     return cfg, env
@@ -306,6 +307,18 @@ def claim_order_setting(settings: Path) -> str:
     except (OSError, ValueError, AttributeError):
         return "state"
     return cycle.CRITICAL_PATH if value == cycle.CRITICAL_PATH else "state"
+
+
+def prefer_disjoint_crates(settings: Path) -> bool:
+    """kit/runner.json "prefer_disjoint_crates" (D-3082): True only when the file says exactly `true`, so
+    among claimable tasks of equal priority the cycle first tries one whose `app/` crates no task in flight
+    shares (`lanes.crowded`); False (the order before D-3082) when the file or key is missing, unreadable
+    or any other value. Ordering only, after a resync, `claim_first` and the critical path."""
+    try:
+        value = json.loads(settings.read_text(encoding="utf-8")).get("prefer_disjoint_crates")
+    except (OSError, ValueError, AttributeError):
+        return False
+    return value is True
 
 
 def smoke_ancestry(settings: Path) -> int:
