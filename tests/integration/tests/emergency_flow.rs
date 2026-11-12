@@ -1,5 +1,5 @@
 //! The urgent and 911-list emergency flows end to end in the database (TD-INT-12, TD-INT-13,
-//! TD-INT-15, TD-INT-16: INT-004 to INT-006, INT-029, INT-030, INT-033, D-164, D-436, D-491).
+//! TD-INT-15, TD-INT-16, TD-INT-41: INT-004 to INT-006, INT-029, INT-030, INT-033, D-164, D-436, D-491).
 //!
 //! Each case runs `intake::api` on a fresh database with fake IDs only: the first text with its
 //! consent record, the ZIP and area check stood in by an `intake.property` row (T040's step), the
@@ -10,7 +10,9 @@
 use std::collections::BTreeSet;
 
 use askhava_businesses::api::{
-    Checks, Event, JobTypeChoice, Ticks, apply, create, set_job_types, set_ticks, set_towns,
+    Acting, Checks, EMERGENCY_YES_LIFE, Event, JobTypeChoice, Ticks, add_owner, apply, create,
+    record_alert_answer, send_emergency_test, set_after_hours, set_emergency_emails, set_job_types,
+    set_ticks, set_towns, suspend_after_hours,
 };
 use askhava_intake::api::rules::{Inbound, Settings};
 use askhava_intake::api::{
@@ -60,8 +62,8 @@ fn templates(texts: &[askhava_intake::api::Queued]) -> Vec<&'static str> {
     texts.iter().map(|q| q.template).collect()
 }
 
-/// One active HVAC business in the town with the after-hours tick (BIZ-007).
-async fn after_hours_business(db: &mut Db) {
+/// One active HVAC business in the town with an owner (a fake mailbox) and no tick (BIZ-007).
+async fn hvac_business(db: &mut Db) -> Acting {
     let id = create(db, false, az("09:00")).await.expect("create");
     let done = Checks {
         code_done: true,
@@ -71,20 +73,54 @@ async fn after_hours_business(db: &mut Db) {
     apply(db, id, Event::Checked(done), Actor::System, az("09:01"))
         .await
         .expect("active");
-    let ticks = Ticks {
-        overflow_on: false,
-        speaks_spanish: false,
-        insurance: None,
-        after_hours: true,
-    };
+    let member = add_owner(db, id, Uuid::from_u128(0x39F), az("09:02"))
+        .await
+        .expect("owner");
     let actor = Actor::Business(id);
-    set_ticks(db, id, ticks, actor).await.expect("ticks");
     set_towns(db, id, &[TOWN], actor).await.expect("towns");
     let job = JobTypeChoice::new("hvac_repair", "no cooling");
     let allowed: BTreeSet<_> = [job.clone()].into();
     set_job_types(db, id, &[job], &allowed, actor)
         .await
         .expect("job types");
+    Acting {
+        business: id,
+        member,
+    }
+}
+
+/// The owner turns the switch on, sends the test and answers Yes (D-2010).
+async fn owner_covers(db: &mut Db, owner: Acting) {
+    let at = az("09:03");
+    set_emergency_emails(db, owner, true, at).await.expect("on");
+    send_emergency_test(db, owner, at).await.expect("test");
+    record_alert_answer(db, owner, true, at).await.expect("yes");
+}
+
+/// One active HVAC business in the town that nobody covers, ticked through `set_ticks`.
+async fn ticked_uncovered_business(db: &mut Db) {
+    let owner = hvac_business(db).await;
+    let ticks = Ticks {
+        overflow_on: false,
+        speaks_spanish: false,
+        insurance: None,
+        after_hours: true,
+    };
+    let actor = Actor::Business(owner.business);
+    set_ticks(db, owner.business, ticks, actor)
+        .await
+        .expect("ticks");
+}
+
+/// One active HVAC business in the town with the after-hours tick, covered by its owner (BIZ-007).
+async fn after_hours_business(db: &mut Db) -> Acting {
+    let owner = hvac_business(db).await;
+    owner_covers(db, owner).await;
+    let life = (az("09:04"), EMERGENCY_YES_LIFE);
+    set_after_hours(db, owner.business, true, life)
+        .await
+        .expect("tick");
+    owner
 }
 
 /// The ZIP and area check's stored town (T040's step, stood in here).
@@ -275,4 +311,36 @@ async fn td_int_16_no_choice_before_safe_and_answer_four_after_a_match(mut db: D
     assert!(!four.choice_after_safe);
     let two = how(&mut db, &text(day, az("14:03"), 0x25, "2"), id).await;
     assert_eq!(templates(&two.texts), [CHOICE_TEMPLATE]);
+}
+
+/// Opens an urgent request at 22:40 and answers "1" at 22:42; returns the "How soon?" result.
+async fn urgent_at_night(db: &mut Db, contact: Uuid) -> Answered {
+    let opened = first(db, contact, az("22:40"), "AC died, 92 inside").await;
+    let id = opened.conversation.expect("request");
+    area_done(db, id, az("22:41")).await;
+    how(db, &text(contact, az("22:42"), 1, "1"), id).await
+}
+
+/// TD-INT-41 (INT-033, BIZ-007, D-2010, D-2703): a business ticked through `set_ticks` that nobody
+/// covers is not counted: at 22:42 the homeowner gets the zero text and no choice.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_int_41_a_ticked_business_nobody_covers_is_not_counted(mut db: Db) {
+    ticked_uncovered_business(&mut db).await;
+    let asked = urgent_at_night(&mut db, Uuid::from_u128(0x3A8)).await;
+    assert_eq!(templates(&asked.texts), [NIGHT_NONE_TEMPLATE]);
+    assert_eq!(released(&mut db).await, 0);
+}
+
+/// TD-INT-41 (INT-033, BIZ-007, D-2010, D-2703): a covered business suspended after two missed
+/// night cards is not counted: at 22:42 the homeowner gets the zero text and no choice.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_int_41_a_suspended_business_is_not_counted(mut db: Db) {
+    let owner = after_hours_business(&mut db).await;
+    let newly = suspend_after_hours(&mut db, owner.business, az("20:00"))
+        .await
+        .expect("suspend");
+    assert!(newly);
+    let asked = urgent_at_night(&mut db, Uuid::from_u128(0x3A9)).await;
+    assert_eq!(templates(&asked.texts), [NIGHT_NONE_TEMPLATE]);
+    assert_eq!(released(&mut db).await, 0);
 }
