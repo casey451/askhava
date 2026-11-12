@@ -1,10 +1,10 @@
 # Ask Hava build status
 
-Updated 2026-11-12T04:23:09Z by runner 47a83212b95f (actions).
+Updated 2026-11-12T04:23:31Z by runner 47a83212b95f (actions).
 
-**Building: T356 in progress since 04:05Z; 222 of 391 done; week 84% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T356 in progress since 04:05Z; 223 of 391 done; week 84% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 222 of 391 build tasks (owner gates not counted)
+- **Tasks done:** 223 of 391 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T356 claimed 04:05Z, lease until 07:05Z
 - **Week:** 84% used, 26.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
@@ -18,7 +18,7 @@ Updated 2026-11-12T04:23:09Z by runner 47a83212b95f (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T326 | calls (harness): the LINK notice names the line's stored PIN | MERGE_PENDING | 1 | 25 min | 03:37Z |  |
+| T326 | calls (harness): the LINK notice names the line's stored PIN | done | 1 | 25 min | 03:37Z |  |
 | T336 | server, adapters and stand-in (harness): a text stopped by a | QUEUED | 1 | 5 min | 03:27Z | Worker stopped before building with a PLAN GAP claim (messaging.inbox has no sender/handled columns; T336 owns no migrat |
 | T248 | catalog and businesses: markets as reviewed data, Arizona ZI | MERGE_PENDING | 1 | 12 min | 03:22Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T401 | server (harness): the door probe's fixture gains a released  | BLOCKED | 1 | 19 min | 03:13Z | PLAN GAP: tests/security/tests/no_homeowner_charge.rs:17-27,123 (TD-FEE-07, not T401's) fails any app/ file naming a hom |
@@ -122,15 +122,15 @@ Updated 2026-11-12T04:23:09Z by runner 47a83212b95f (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 211 of 733 (28.8%) · partial 350 · unstarted 172
-**Tasks merged (throughput only):** 222 of 391
+**Requirements verified:** 212 of 733 (28.9%) · partial 349 · unstarted 172
+**Tasks merged (throughput only):** 223 of 391
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 13 | 16 | 6 | 35 |
 | ai | 7 | 17 | 5 | 29 |
 | businesses | 15 | 39 | 4 | 58 |
-| calls | 9 | 15 | 1 | 25 |
+| calls | 10 | 14 | 1 | 25 |
 | consent | 8 | 23 | 4 | 35 |
 | fees | 12 | 39 | 1 | 52 |
 | intake | 21 | 16 | 6 | 43 |
@@ -158,7 +158,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 102 of 177 done
+- stage 4: 103 of 177 done
 - stage 5: 0 of 60 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
