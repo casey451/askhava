@@ -217,6 +217,12 @@
     "segments": 2,
     "text": "{brand_short}: Todavía no cubrimos trabajos de {trade}. Anotamos su solicitud para poder agregar negocios. Escríbanos cuando quiera."
   },
+  "pest_switched_off": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 4,
+    "text": "{brand_short}: Por ahora no tomamos trabajos de control de plagas. Para encontrar un negocio de control de plagas con licencia, busque la lista de licencias del Departamento de Agricultura de Arizona. No le cobramos nada. Escríbanos para otros trabajos de su casa."
+  },
   "out_of_area": {
     "audience": "homeowner",
     "draft": true,

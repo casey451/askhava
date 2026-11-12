@@ -796,10 +796,15 @@ fn register_notice_senders(
 /// emails (CON-020, BIZ-017, T268), which have no sender yet: no Resend client is built and no
 /// business mailbox address or phone number can be read (the sender directory keeps digests
 /// only), so each such task fails with `NO_ACCOUNT_SENDER` and is tried again, and a welcome is
-/// never marked sent without its email (D-3186).
+/// never marked sent without its email (D-3186). The OPS-041 owner-inbox email of a not-covered
+/// request (`intake.not_covered`, T215) has no sender either until a Resend client and the
+/// owner-inbox address exist, so it fails and is tried again the same way (D-3334).
 fn register_business_handlers(registry: &mut Registry) {
     use askhava_adapters::api::ResendEmail;
-    use askhava_businesses::api::{run_phone_stopped, run_welcome};
+    use askhava_businesses::api::{run_coverage_notice, run_phone_stopped, run_welcome};
+    registry.register(askhava_intake::api::NOT_COVERED_KIND, |pool, task| {
+        run_coverage_notice::<ResendEmail>(pool, None, task)
+    });
     registry.register(
         askhava_businesses::api::BOX_CLOSED_KIND,
         askhava_businesses::api::run_box_closed,

@@ -90,10 +90,11 @@ pub use crate::question_bank::{
 };
 pub use crate::replies::{Reply, receive_reply};
 pub use crate::routing::{
-    COUNT_MANY_TEMPLATE, COUNT_ONE_TEMPLATE, NOT_COVERED_TEMPLATE, OUT_OF_AREA_TEMPLATE, Outcome,
-    Request, Routing, SPLIT_TEMPLATE, Town, TownRefused, Why, apply as apply_routing,
-    asks_property_management, check_towns, is_split_reply, move_refused, recruiting_demand, route,
-    split_request, tell_coverage, trade_is_open,
+    COUNT_MANY_TEMPLATE, COUNT_ONE_TEMPLATE, NOT_COVERED_KIND, NOT_COVERED_TEMPLATE,
+    OUT_OF_AREA_TEMPLATE, Outcome, PEST_CONTROL, PEST_OFF_TEMPLATE, Request, Routing,
+    SPLIT_TEMPLATE, Town, TownRefused, Why, apply as apply_routing, asks_property_management,
+    check_towns, is_split_reply, move_refused, recruiting_demand, route, split_request,
+    tell_coverage, trade_is_open,
 };
 pub use crate::routing_confidence::{
     Decision, HIGH_CONFIDENCE, NOT_CERTAIN, Outgoing, Scored, UnsureReach, after_fit, decide,

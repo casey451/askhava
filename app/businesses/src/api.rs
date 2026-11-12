@@ -67,6 +67,9 @@ pub use crate::consent::{
     no_calls_line, phone_stopped, record_consent, recruiting_email, request_welcome,
     stop_recruiting, stopped_email_line, welcome_card_line, welcome_lines, welcome_sent,
 };
+pub use crate::coverage_notice::{
+    BAD_COVERAGE_PAYLOAD, CoverageMailer, NO_COVERAGE_SENDER, run_coverage_notice,
+};
 pub use crate::deliverability_check::{
     EmailCheck, InboxAnswer, PICK_ALERT_YES_LIFE, SAMPLE_CARD_KIND, SAMPLE_PICK_KIND, email_check,
     offer_sample_pick, queue_pick_retests, record_inbox_answer, record_ok_reply, record_pick_alert,
@@ -105,6 +108,7 @@ pub use crate::models::{Business, BusinessesError, Insurance};
 pub use crate::open_cards_times::{
     OpenCardsTime, OpenCardsTimes, open_cards_times, set_open_cards_times,
 };
+pub use crate::pest_identity::{PestIdentity, pest_identity, record_pest_match};
 pub use crate::public_name::{PUBLIC_NAME_ALERT, public_names};
 pub use crate::rules::JobTypeChoice;
 pub use crate::rules::{Checks, Event, OwnHours, Widens};
