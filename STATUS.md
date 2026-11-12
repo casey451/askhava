@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-12T05:23:51Z by runner eff652fbdcdb (actions).
+Updated 2026-11-12T05:29:35Z by runner 72a65e123c88 (actions).
 
-**Building: T356 in progress since 04:05Z; 224 of 393 done; week 87% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T356 in progress since 04:05Z; 224 of 391 done; week 87% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 224 of 393 build tasks (owner gates not counted)
+- **Tasks done:** 224 of 391 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T356 claimed 04:05Z, lease until 07:05Z; lane 3: T405 claimed 05:14Z, lease until 08:14Z; lane 5: T336 claimed 04:54Z, lease until 07:54Z
+- **Lane:** lane 1: T356 claimed 04:05Z, lease until 08:29Z; lane 3: T405 claimed 05:14Z, lease until 08:14Z; lane 5: T336 claimed 04:54Z, lease until 07:54Z
 - **Week:** 87% used, 13.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:23Z, 0 min before this update
+- **Last run:** 05:23Z, 5 min before this update
 - **Keeper:** last ran 05:23Z, next wake 07:07Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 7 problem(s) on tasks still to run (+83 on DONE tasks); first: T396: stored context_pct 39% but it measures 43%; regenerate
+- Strict plan check red: 9 problem(s) on tasks still to run (+85 on DONE tasks); first: T396: stored context_pct 39% but it measures 43%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -81,8 +81,6 @@ Updated 2026-11-12T05:23:51Z by runner eff652fbdcdb (actions).
 | T383 | messaging and portals: the text templates and the homeowner  | done | 1 | 20 min | 05:39Z |  |
 
 ### Plan and harness merges on main
-- 05:16Z Harness: run lint and the slow compile-fail/prompt-injection tests in a parallel CI job (D-3142) (#550)
-- 04:59Z Plan: pre-flight fixes round 7 — T352, T335, T353, T330, T393, T359, T401 plan gap; new T406, T407 (D-3134) (#548)
 - 03:50Z Plan: pre-flight fixes round 6 — T355, T340, T341, T249, T273, T271, T277, T357, T314; new T405 (D-3118) (#542)
 - 03:24Z Harness: claim order prefers tasks in crates no other lane is writing (D-3082) (#523)
 - 02:11Z Plan: pre-flight fixes round 5 — T378, T343, T268, T329, T306; new T404 (D-3112) (#538)
@@ -114,12 +112,11 @@ Updated 2026-11-12T05:23:51Z by runner eff652fbdcdb (actions).
 - 07:43Z Harness: td_pick_09 asks on the fixed clock — test failing everywhere since 07:00Z (D-2886) (#461)
 - 06:32Z Harness: a worker's plan-gap report blocks the task instead of a retry on the same prompt (D-2859) (#458)
 - 06:12Z Harness: the state schema accepts the hand-in update merge — runner stopped with state_invalid (D-2870) (#459)
-- 05:26Z Plan: T337 owns its confirm_and_pay fixture rows; paid-pick guard keeps a test (D-2832) (#453)
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 210 of 733 (28.6%) · partial 351 · unstarted 172
-**Tasks merged (throughput only):** 224 of 393
+**Requirements verified:** 212 of 733 (28.9%) · partial 349 · unstarted 172
+**Tasks merged (throughput only):** 224 of 391
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -133,11 +130,11 @@ Updated 2026-11-12T05:23:51Z by runner eff652fbdcdb (actions).
 | job-cards | 12 | 10 | 2 | 24 |
 | licensing | 20 | 28 | 0 | 48 |
 | lifecycle | 18 | 10 | 0 | 28 |
-| messaging | 17 | 25 | 3 | 45 |
+| messaging | 18 | 24 | 3 | 45 |
 | ops-recovery | 2 | 6 | 46 | 54 |
 | privacy | 7 | 22 | 2 | 31 |
 | quiet-hours | 4 | 5 | 0 | 9 |
-| quotes-pick | 30 | 25 | 1 | 56 |
+| quotes-pick | 31 | 24 | 1 | 56 |
 | recurring | 6 | 2 | 3 | 11 |
 | security | 6 | 43 | 6 | 55 |
 | terms | 0 | 3 | 32 | 35 |
@@ -162,7 +159,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T356 (lease until 2026-11-12T07:05:41Z)
+- T356 (lease until 2026-11-12T08:29:35Z)
 - lane 3: T405 (lease until 2026-11-12T08:14:00Z)
 - lane 5: T336 (lease until 2026-11-12T07:54:33Z)
 
