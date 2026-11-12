@@ -4,8 +4,9 @@
 //! gate is the last, plain-code check before a business sees it. In each sentence, the first word
 //! shaped like a contact removes that word and the rest of the sentence: a name after "ask for",
 //! "talk to", "I'm", "this is" or a contact verb; a contact phrase ("text me", "my number"); an
-//! email, link, domain or spelled email; a street number; three number words in a row; or 7 or
-//! more digits, however spaced. Lines stay lines, so each card field is gated on its own line.
+//! email, link, domain or spelled email; a street number; three number words in a row; 7 or
+//! more digits, however spaced; or a code cue ("gate code", "pin") with a run of 3 or more digits
+//! within three words after it, however spaced ("Gate code is 4 4 1 2", D-2622). Lines stay lines, so each card field is gated on its own line.
 //! The gate repeats until nothing changes, so running it twice changes nothing (TD-CARD-11).
 //!
 //! Each pass then removes every phrase on `catalog`'s carrier-restricted list (whole words, any
@@ -40,6 +41,10 @@ const ROLES: &str =
     "owner manager tenant husband wife son daughter neighbor neighbour roommate landlord caretaker";
 const STREET_WORDS: &str = "st street ave avenue dr drive rd road ln lane blvd way ct court pl place cir circle pkwy hwy highway trl trail ter loop box calle avenida camino";
 const NUMBER_WORDS: &str = "zero oh o one two three four five six seven eight nine ten eleven twelve twenty thirty forty fifty sixty seventy eighty ninety hundred thousand double triple cero uno dos tres cuatro cinco seis siete ocho nueve diez";
+/// Words that put a gate or door code next (CARD-008, D-2622).
+const CODE_CUES: &str = "code codigo código gate pin clave portón";
+/// Words after a [`CODE_CUES`] cue within which the code's digits may start.
+const CODE_REACH: usize = 3;
 /// Words after which a `.` never ends a sentence: titles and street directions ("1234 N. Lake").
 const NO_STOP: &str = "mr mrs ms dr sr sra n s e w ne nw se sw";
 
@@ -237,6 +242,30 @@ fn hit(words: &[&str], keys: &[String], i: usize) -> bool {
         || spelled
         || street(words, keys, i)
         || number_run(keys, i)
+        || code_run(keys, i)
+}
+
+/// A code cue at word `i` followed, within [`CODE_REACH`] words, by a run of digit-only words
+/// holding 3 or more digits ("gate code 44 12"; "error code 41" and "code E4" stay) (CARD-008,
+/// D-2622).
+fn code_run(keys: &[String], i: usize) -> bool {
+    let digits = |k: &String| {
+        let numeric = !k.is_empty() && k.chars().all(|c| c.is_ascii_digit() || "-./#".contains(c));
+        if numeric {
+            k.chars().filter(char::is_ascii_digit).count()
+        } else {
+            0
+        }
+    };
+    if !listed(CODE_CUES, &keys[i]) {
+        return false;
+    }
+    let rest = &keys[i + 1..];
+    let Some(first) = rest.iter().take(CODE_REACH).position(|k| digits(k) > 0) else {
+        return false;
+    };
+    let run = rest[first..].iter().map(digits).take_while(|&d| d > 0);
+    run.sum::<usize>() >= 3
 }
 
 /// A name after a name cue, a self-introduction, a title or a contact verb (CARD-005).
