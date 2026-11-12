@@ -14,7 +14,8 @@
 //! live projects) it registers `intake`'s homeowner job-text sender (D-1302). With the Twilio
 //! settings (required in the test and live projects) it registers `picks`' masked-line retry,
 //! `picks.line_retry`, over the masked pool (CALL-001, D-1688, T254), and `messaging`'s day-31
-//! body delete at Twilio (PRIV-027, D-1841, T276). It registers `privacy`'s sealed photo object
+//! body delete at Twilio (PRIV-027, D-1841, T276), and with the vault keys too `messaging`'s outbox
+//! sender, `messaging.send_due`, whose first run `schedule_start` queues (D-2628, T356). It registers `privacy`'s sealed photo object
 //! delete and queues its daily orphan sweep over the same store (PRIV-009, D-1841, T276), and
 //! `messaging`'s paused-emergency follow-up with no email keys, so each homeowner goes on Casey's
 //! call list until a footer postal setting exists (TXT-023, D-2186, T279). All of these
@@ -65,7 +66,8 @@ async fn main() -> io::Result<()> {
 }
 
 /// Queues the daily tasks at start (the chain check, the retention sweep, the body cut, the
-/// photo orphan sweep, the day-31 body scan and this hour's no-handler check) and runs the intake golden set once.
+/// photo orphan sweep, the day-31 body scan, this hour's no-handler check and the outbox sender's
+/// first run) and runs the intake golden set once.
 async fn schedule_start(pool: &sqlx::PgPool, now: jiff::Timestamp) -> io::Result<()> {
     let mut conn = pool.acquire().await.map_err(io::Error::other)?;
     schedule_verify(&mut conn, now)
@@ -84,6 +86,9 @@ async fn schedule_start(pool: &sqlx::PgPool, now: jiff::Timestamp) -> io::Result
         .await
         .map_err(io::Error::other)?;
     askhava_server::no_handler_alert::schedule(&mut conn, now)
+        .await
+        .map_err(io::Error::other)?;
+    askhava_messaging::api::schedule_send_due(&mut conn, now)
         .await
         .map_err(io::Error::other)?;
     askhava_intake::api::run_golden(&mut conn, now)

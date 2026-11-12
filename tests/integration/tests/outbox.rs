@@ -1,21 +1,26 @@
 //! The text outbox and the sender directory (TD-TXT-03, TD-TXT-04; TXT-009, TXT-011, D-492).
 //!
 //! Proves on fresh databases that a worker killed after the carrier accepted a text but before
-//! the row was marked leaves it unsent, and the resend carries the same key, so the fake carrier
-//! delivers it once; that the same text queued twice is one row and a sent row never reaches the
+//! the row was marked is never resent blind: a second send makes no carrier call, and 5 minutes
+//! on the outbox sender marks the row `unknown` after exactly one call and emails the important
+//! text (T356, D-558, D-2628); that the same text queued twice is one row and a sent row never reaches the
 //! carrier again; that no text is queued to a past customer unless she wrote after her request
 //! closed, nor sent to one; that a homeowner's number comes from the vault and a sent row keeps no
 //! body (D-849, D-850); that a row goes only to the recipient kind it was queued for and the
 //! order of its subject IDs does not change its key; and that the sender directory matches a
 //! linked business phone by its blind index only.
-//! The fake carrier keeps Twilio's rule for a repeated `Idempotency-Key`. All data is fake.
+//! The fake carrier hands back the first SID for a repeated key, a dedupe Twilio does not do
+//! (D-558), so a second call would show in its call count. All data is fake.
 
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
 use askhava_adapters::api::{AdapterError, IdempotencyKey, SentText, SmsAdapter};
+use askhava_core::api::{Clock, Lease, ManualClock, Registry, WorkerId, claim};
 use askhava_messaging::api::{
-    NewText, OutboxError, Relation, To, enqueue, send, sender_add, sender_business, sender_remove,
+    MailboxKind, NewText, OutboxError, OutboxSender, PostalAddress, Relation,
+    SEND_OUTCOME_UNKNOWN_ALERT, SendingNumber, To, enqueue, register_send_due, schedule_send_due,
+    send, sender_add, sender_business, sender_remove,
 };
 use askhava_privacy::api::{NewContact, Vault, store_contact};
 use base64::Engine as _;
@@ -108,11 +113,20 @@ async fn status(pool: &PgPool, id: Uuid) -> (String, i32) {
         .expect("row")
 }
 
-/// TD-TXT-04, TXT-011: a worker killed after the carrier accepted, before the mark; the resend
-/// carries the same key and the fake carrier delivers once.
+/// TD-TXT-04, TXT-011 (rewritten by T356, D-2628): a worker killed after the carrier accepted,
+/// before the mark. Twilio does not dedupe by key (D-558), so the row is never resent blind: a
+/// second send makes no carrier call, and 5 minutes on the outbox sender marks it `unknown`, the
+/// carrier having seen exactly one call, and the important text goes by email with one alert.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
-async fn td_txt_04_a_killed_worker_resends_under_the_same_key_and_delivers_once(pool: PgPool) {
-    let (id, _) = queue(&pool, Relation::Business, Uuid::from_u128(1))
+async fn td_txt_04_a_killed_worker_never_resends_blind_and_the_row_is_unknown_after_five_minutes(
+    pool: PgPool,
+) {
+    let (vault, worker_vault) = (vault(), vault());
+    let mut db = pool.acquire().await.expect("connection");
+    let her = store_contact(&mut db, &vault, &with_email())
+        .await
+        .expect("contact");
+    let (id, _) = queue_to(&pool, (her, Relation::OpenRequest), &[Uuid::from_u128(1)])
         .await
         .expect("queued");
     let dying = FakeCarrier {
@@ -122,7 +136,11 @@ async fn td_txt_04_a_killed_worker_resends_under_the_same_key_and_delivers_once(
     let (worker_pool, carrier) = (pool.clone(), dying.clone());
     let killed = tokio::spawn(async move {
         let mut db = worker_pool.acquire().await.expect("connection");
-        send(&mut db, (&secret(), &carrier), id, (To::Business(TO), FROM)).await
+        let to = To::Homeowner {
+            vault: &worker_vault,
+            relation: Relation::OpenRequest,
+        };
+        send(&mut db, (&secret(), &carrier), id, (to, FROM)).await
     });
     assert!(killed.await.is_err(), "the first worker dies mid-send");
     assert_eq!(status(&pool, id).await, ("sending".to_owned(), 1));
@@ -130,20 +148,85 @@ async fn td_txt_04_a_killed_worker_resends_under_the_same_key_and_delivers_once(
         die_after_accept: false,
         ..dying
     };
-    let mut db = pool.acquire().await.expect("connection");
-    let sent = send(&mut db, (&secret(), &carrier), id, (To::Business(TO), FROM))
+    let to = To::Homeowner {
+        vault: &vault,
+        relation: Relation::OpenRequest,
+    };
+    let again = send(&mut db, (&secret(), &carrier), id, (to, FROM))
         .await
-        .expect("resend");
-    assert_eq!(sent.map(|s| s.sid), Some(format!("SM{:032}", 1)));
-    let calls = carrier.calls.lock().expect("lock").clone();
-    assert_eq!(calls.len(), 2);
-    assert_eq!(calls[0], calls[1], "the resend carries the same key");
+        .expect("no resend");
+    assert!(again.is_none(), "a row being sent is never resent blind");
+    drop(db);
+    sweep(
+        &pool,
+        carrier.clone(),
+        Timestamp::now() + SignedDuration::from_mins(1),
+    )
+    .await;
+    assert_eq!(status(&pool, id).await, ("sending".to_owned(), 1));
+    sweep(
+        &pool,
+        carrier.clone(),
+        Timestamp::now() + SignedDuration::from_mins(6),
+    )
+    .await;
+    assert_eq!(status(&pool, id).await, ("unknown".to_owned(), 1));
     assert_eq!(
-        carrier.delivered.lock().expect("lock").len(),
+        carrier.calls.lock().expect("lock").len(),
         1,
-        "delivered once"
+        "exactly one call"
     );
-    assert_eq!(status(&pool, id).await, ("sent".to_owned(), 2));
+    let emailed: i64 = sqlx::query_scalar(
+        "SELECT count(*) FROM messaging.email_outbox WHERE template_id = 'text_failed'",
+    )
+    .fetch_one(&pool)
+    .await
+    .expect("emails");
+    assert_eq!(emailed, 1, "the important text goes by email");
+    let alerts: i64 = sqlx::query_scalar("SELECT count(*) FROM ops.alert WHERE kind = $1")
+        .bind(SEND_OUTCOME_UNKNOWN_ALERT)
+        .fetch_one(&pool)
+        .await
+        .expect("alerts");
+    assert_eq!(alerts, 1);
+}
+
+/// A fake homeowner with a phone and an email on file.
+fn with_email() -> NewContact {
+    NewContact {
+        name: Some(SecretString::from("Zelda Canary".to_owned())),
+        phone: Some(SecretString::from("928-555-0142".to_owned())),
+        email: Some(SecretString::from("zelda.canary@example.com".to_owned())),
+        address: None,
+        onsite_contact: None,
+    }
+}
+
+/// Runs the outbox sender's `messaging.send_due` task once at `at`, as the worker would.
+async fn sweep(pool: &PgPool, carrier: FakeCarrier, at: Timestamp) {
+    let clock = Arc::new(ManualClock::new(at));
+    let postal = PostalAddress::new(
+        "PO Box 4417, Lake Havasu City, AZ 86405",
+        MailboxKind::PoBox,
+    )
+    .expect("postal");
+    let worker_clock: Arc<dyn Clock> = clock.clone();
+    let parts = (SendingNumber::parse(FROM).ok(), Some(postal));
+    let sender =
+        OutboxSender::new((secret(), vault()), carrier, parts, worker_clock).expect("sender");
+    let mut registry = Registry::new();
+    register_send_due(&mut registry, Arc::new(sender));
+    let mut db = pool.acquire().await.expect("connection");
+    schedule_send_due(&mut db, at).await.expect("schedule");
+    drop(db);
+    let owner = WorkerId::new(pool).await.expect("worker");
+    let lease = SignedDuration::from_secs(60);
+    for task in claim(pool, owner, at, lease, 10).await.expect("claim") {
+        registry
+            .run(pool, clock.as_ref(), owner, task, Lease::WORKER)
+            .await
+            .expect("run");
+    }
 }
 
 /// TD-TXT-04, TXT-011: the same text queued twice is one row; a sent row never reaches the carrier.
