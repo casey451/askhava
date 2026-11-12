@@ -1,18 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-12T00:18:32Z by runner a8ea584ed302 (actions).
+Updated 2026-11-12T00:18:49Z by runner 53361d7bd279 (actions).
 
-**Idle since 00:16Z; 216 of 378 done; week 79% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 00:16Z; 216 of 376 done; week 79% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 216 of 378 build tasks (owner gates not counted)
+- **Tasks done:** 216 of 376 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 00:16Z (no task in progress)
 - **Week:** 79% used, 27.4M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:17Z, 0 min before this update
-- **Keeper:** last ran 00:17Z, next wake 00:37Z
+- **Last run:** 00:18Z, 0 min before this update
+- **Keeper:** last ran 00:18Z, next wake 00:38Z
 
 ## Needs attention
-- Strict plan check red: 2 problem(s) on tasks still to run (+61 on DONE tasks); first: T348: stored context_pct 36% but it measures 41%; regenerate
+- Strict plan check red: 25 problem(s) on tasks still to run (+61 on DONE tasks); first: T340: stored context_pct 35% but it measures 40%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -117,15 +117,15 @@ Updated 2026-11-12T00:18:32Z by runner a8ea584ed302 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 220 of 733 (30.0%) · partial 339 · unstarted 174
-**Tasks merged (throughput only):** 216 of 378
+**Requirements verified:** 222 of 733 (30.3%) · partial 337 · unstarted 174
+**Tasks merged (throughput only):** 216 of 376
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 13 | 16 | 6 | 35 |
 | ai | 7 | 17 | 5 | 29 |
 | businesses | 16 | 36 | 6 | 58 |
-| calls | 9 | 15 | 1 | 25 |
+| calls | 11 | 13 | 1 | 25 |
 | consent | 8 | 23 | 4 | 35 |
 | fees | 12 | 39 | 1 | 52 |
 | intake | 22 | 15 | 6 | 43 |
