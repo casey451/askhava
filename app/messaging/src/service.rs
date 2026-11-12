@@ -1,30 +1,31 @@
 //! The text outbox and the sender directory (TXT-009, TXT-011, D-492; rust brain R11, R13).
 //!
 //! [`enqueue`] checks TXT-009, derives the text's idempotency key from the template ID, the
-//! recipient ID and the record IDs it is about, and stores it once with those IDs: a second
-//! enqueue of the same text finds the first row. [`send`] claims the row in one short statement,
-//! calls the carrier outside any transaction with the key re-derived from the stored IDs (D-847),
-//! then marks it sent and clears its body (D-850). A worker killed between the carrier's acceptance
-//! and the mark leaves it `sending`, and the resend carries the same key, which the carrier delivers
-//! once (TXT-011). A sent row is never handed to the carrier again. A homeowner's number is read
-//! from the vault at send time for the row's recipient ID, never taken from the caller (D-849);
-//! each row records whether it was queued for a homeowner or a business, and a send naming the
-//! other kind is refused, so a homeowner's row never skips the vault read or the TXT-009 check.
-//! A send refused before the claim (TXT-009, wrong kind) leaves the row `queued`; a failed vault
-//! read or carrier call leaves it `sending`. Neither is ever made terminal here: the retry task
-//! (TXT-014, TXT-015) decides when an unsent row is given up. [`delivery_status`] gives a text's
-//! status from its row and the status callbacks recorded for its provider SID (TXT-013).
+//! recipient ID and the record IDs it is about, and stores it once with those IDs and its QH-004
+//! exemption (an any-hour template, or [`enqueue_exempt`]'s emergency job or direct reply): a
+//! second enqueue of the same text finds the first row. [`send`] claims a `queued` row in one
+//! short statement (`sending`, `sending_since`), calls the carrier outside any transaction with
+//! the key re-derived from the stored IDs (D-847), then marks it sent and clears its body (D-850).
+//! Twilio does not dedupe by key (D-558), so a row is never resent blind: a definite refusal puts
+//! it back to `queued` for the TXT-014 retries, an unknown outcome leaves it `sending`, and
+//! `outbox_sender` moves it, and any row a dead worker left `sending`, to `unknown` (D-2628).
+//! A homeowner's number is read from the vault at send time for the row's recipient ID, never
+//! taken from the caller (D-849); each row records whether it was queued for a homeowner or a
+//! business, and a send naming the other kind is refused, so a homeowner's row never skips the
+//! vault read or the TXT-009 check. A send refused before the claim (TXT-009, wrong kind) leaves
+//! the row `queued`; a failed vault read puts it back to `queued`. [`delivery_status`] gives a
+//! text's status from its row and the status callbacks recorded for its provider SID (TXT-013).
 
-use askhava_adapters::api::{IdempotencyKey, SentText, SmsAdapter};
+use askhava_adapters::api::{AdapterError, IdempotencyKey, SentText, SmsAdapter};
 use askhava_privacy::api::{
     Field, IndexPurpose, Purpose, Reader, Vault, normalize_phone, read_contact,
 };
-use jiff::Timestamp;
+use jiff::{SignedDuration, Timestamp};
 use secrecy::{ExposeSecret, SecretString};
 use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection};
 
-use crate::models::{self, OutboxError};
+use crate::models::{self, OutboxError, QuietExempt};
 use crate::status::DeliveryStatus;
 
 /// The action name every text's idempotency key is derived under (SEC-018).
@@ -132,8 +133,10 @@ pub fn may_text(relation: Relation) -> bool {
 
 /// Queues `text` once (TXT-009, TXT-011): refused for a past customer who has not written first;
 /// otherwise stored under its derived key, `secret` being the `ID_SECRET`, with the recipient kind
-/// its `relation` implies (D-849). Returns the row ID and whether this call created it (`false`:
-/// the same text was already queued).
+/// its `relation` implies (D-849). A template in [`ANY_HOUR_TEMPLATES`] is stored exempt from
+/// quiet hours at any hour (QH-004); every other row waits for the window at send time unless it
+/// came through [`enqueue_exempt`] (D-2628, D-3106). Returns the row ID and whether this call
+/// created it (`false`: the same text was already queued).
 ///
 /// # Errors
 ///
@@ -143,12 +146,78 @@ pub async fn enqueue(
     secret: &SecretString,
     text: &NewText<'_>,
 ) -> Result<(Uuid, bool), OutboxError> {
+    let exempt = if ANY_HOUR_TEMPLATES.contains(&text.template_id) {
+        QuietExempt::Always
+    } else {
+        QuietExempt::None
+    };
+    insert(db, secret, text, exempt).await
+}
+
+/// The text kinds QH-004 lets go at any hour, by template ID: the INT-004 911 text, the STOP,
+/// HELP and START replies and the INT-033 after-hours notice (D-2628). [`enqueue`] stores them
+/// exempt, so no producer passes anything.
+pub const ANY_HOUR_TEMPLATES: [&str; 7] = [
+    "emergency_911",
+    "help_reply",
+    "opt_out_confirmation",
+    "start_reply",
+    "night_count_many",
+    "night_count_one",
+    "night_count_none",
+];
+
+/// The QH-004 facts a template ID cannot show (D-2628, D-3106).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Exemption {
+    /// An emergency job's quote, quote-count, question or pick-step text: any hour.
+    EmergencyJob,
+    /// A direct reply to the person's own text that arrived at `inbound_at`: any hour for 15
+    /// minutes from then, after that only in the window (`rules::retry`).
+    DirectReply {
+        /// When her own text arrived.
+        inbound_at: Timestamp,
+    },
+}
+
+/// Queues `text` as [`enqueue`] does, with the QH-004 exemption `exemption` stored on the row, so
+/// the sender lets it go outside the window (QH-004, D-2628). `NewText` is unchanged.
+///
+/// # Errors
+///
+/// As [`enqueue`].
+pub async fn enqueue_exempt(
+    db: &mut PgConnection,
+    secret: &SecretString,
+    text: &NewText<'_>,
+    exemption: Exemption,
+) -> Result<(Uuid, bool), OutboxError> {
+    let exempt = match exemption {
+        Exemption::EmergencyJob => QuietExempt::Always,
+        Exemption::DirectReply { inbound_at } => {
+            QuietExempt::Until(inbound_at + SignedDuration::from_mins(REPLY_MINUTES))
+        }
+    };
+    insert(db, secret, text, exempt).await
+}
+
+/// How long a direct reply may go outside the window after the person's own text (QH-004).
+const REPLY_MINUTES: i64 = 15;
+
+/// TXT-009, TXT-011: the shared insert of [`enqueue`] and [`enqueue_exempt`].
+async fn insert(
+    db: &mut PgConnection,
+    secret: &SecretString,
+    text: &NewText<'_>,
+    exempt: QuietExempt,
+) -> Result<(Uuid, bool), OutboxError> {
     if !may_text(text.relation) {
         return Err(OutboxError::PastCustomer);
     }
     let ids = (text.template_id, text.recipient, text.subject);
     let key = text_key(secret, ids);
-    models::insert_text(db, key.as_str(), ids, text.relation.kind(), text.body).await
+    let keys = (key.as_str(), text.relation.kind());
+    models::insert_text(db, keys, ids, text.body, exempt).await
 }
 
 /// The key of a text: [`SEND_ACTION`] over the template ID, the recipient ID and the subject IDs,
@@ -170,43 +239,86 @@ fn text_key(
 }
 
 /// Sends outbox row `id` from `from` to `to` through `carrier` under the key re-derived from the
-/// row's stored IDs, so every attempt carries the same key (TXT-011). A homeowner is checked again
-/// against TXT-009 before the row is claimed, and her number read from the vault; `to` must name
-/// the recipient kind the row was queued for (D-849). Returns `None` when the row was already sent:
-/// the carrier is not called again. No transaction is open during the call (R11). No error makes
-/// the row terminal; the retry task decides when to give it up (TXT-014, TXT-015).
+/// row's stored IDs (TXT-011). A homeowner is checked again against TXT-009 before the row is
+/// claimed, and her number read from the vault; `to` must name the recipient kind the row was
+/// queued for (D-849). Only a `queued` row is claimed, so a row already sent, being sent or in an
+/// unknown state is never handed to the carrier again: `None` (D-558, D-2628). No transaction is
+/// open during the call (R11).
 ///
 /// # Errors
 ///
 /// [`OutboxError::PastCustomer`] and [`OutboxError::RecipientKind`] (the row is left as it was,
 /// normally `queued`), [`OutboxError::NotFound`], [`OutboxError::Recipient`] and
-/// [`OutboxError::Carrier`] (the row stays `sending`; a resend carries the same key) or
-/// [`OutboxError::Database`].
+/// [`OutboxError::Carrier`] (a definite refusal: the row is `queued` again for the TXT-014
+/// retries), [`OutboxError::OutcomeUnknown`] (the carrier may have taken it: the row stays
+/// `sending` and is never resent blind) or [`OutboxError::Database`].
 pub async fn send(
+    db: &mut PgConnection,
+    keys: (&SecretString, &impl SmsAdapter),
+    id: Uuid,
+    dest: (To<'_>, &str),
+) -> Result<Option<SentText>, OutboxError> {
+    send_at(db, keys, id, dest, (None, None)).await
+}
+
+/// [`send`], recording the claim at `at` (the caller's clock) when given, else the database's now;
+/// `phone` is the recipient's number when the caller already read it from the vault for this row
+/// (`optout::send_checked`, D-3149), else it is read here after the claim.
+pub(crate) async fn send_at(
     db: &mut PgConnection,
     (secret, carrier): (&SecretString, &impl SmsAdapter),
     id: Uuid,
     (to, from): (To<'_>, &str),
+    (at, phone): (Option<Timestamp>, Option<&SecretString>),
 ) -> Result<Option<SentText>, OutboxError> {
     if let To::Homeowner { relation, .. } = to
         && !may_text(relation)
     {
         return Err(OutboxError::PastCustomer);
     }
-    let Some(claim) = models::claim(db, id, to.kind()).await? else {
+    let Some(claim) = models::claim(db, id, to.kind(), at).await? else {
         return Ok(None);
     };
-    let number = recipient_phone(db, to, claim.recipient).await?;
+    let read = match phone {
+        Some(phone) => Ok(phone.clone()),
+        None => recipient_phone(db, to, claim.recipient).await,
+    };
+    let number = match read {
+        Ok(number) => number,
+        Err(e) => {
+            models::release(db, id).await?;
+            return Err(e);
+        }
+    };
     let key = text_key(
         secret,
         (&claim.template_id, claim.recipient, &claim.subject),
     );
-    let sent = carrier
+    match carrier
         .send_text(&key, number.expose_secret(), from, &claim.body)
         .await
-        .map_err(|_| OutboxError::Carrier)?;
-    models::mark_sent(db, id, &sent.sid).await?;
-    Ok(Some(sent))
+    {
+        Ok(sent) => {
+            models::mark_sent(db, id, &sent.sid).await?;
+            Ok(Some(sent))
+        }
+        Err(e) if refused(&e) => {
+            models::release(db, id).await?;
+            Err(OutboxError::Carrier)
+        }
+        Err(_) => Err(OutboxError::OutcomeUnknown),
+    }
+}
+
+/// TXT-011, D-558: whether the carrier's error proves nothing was sent: the request never left, or
+/// the vendor answered with a 4xx refusal. A timeout, a lost or unreadable answer and a 5xx may
+/// hide an accepted send, so they are an unknown outcome.
+fn refused(error: &AdapterError) -> bool {
+    match error {
+        AdapterError::NotSent | AdapterError::InvalidId | AdapterError::BadConfig => true,
+        AdapterError::Vendor { status, .. } => (400..500).contains(status),
+        _ => false,
+    }
 }
 
 /// The delivery status of outbox row `id` (TXT-013): `Queued` or `Sending` while the row is, and

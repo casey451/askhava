@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id FROM messaging.outbox WHERE status = 'sending' AND (sending_since IS NULL OR sending_since < $1) ORDER BY sending_since LIMIT $2",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "messaging.outbox",
+            "name": "id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Timestamptz",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "50afcd4d9d138fbe35f8718cbd8a5db95da1d2988498bb8767f1ede22f63cbf9"
+}
