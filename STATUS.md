@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T17:08:12Z by runner eccfd35b9e3a (manual).
+Updated 2026-11-12T17:08:46Z by runner eccfd35b9e3a (manual).
 
 **Idle since 16:33Z; 247 of 400 done; week 96% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-12T17:08:12Z by runner eccfd35b9e3a (manual).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 16:33Z (no task in progress)
 - **Week:** 96% used, 0.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:57Z, 10 min before this update
+- **Last run:** 17:08Z, 0 min before this update
 - **Keeper:** last ran 16:57Z, next wake 17:07Z
 
 ## Needs attention
@@ -88,7 +88,23 @@ Updated 2026-11-12T17:08:12Z by runner eccfd35b9e3a (manual).
 | T272 | portals: the sign-in link cap and the code-try cap are atomi | resync | 1 | 27 min | 17:17Z |  |
 
 ### Plan and harness merges on main
-- none
+- 16:10Z Plan: pre-flight fixes round 10 — T396, T398, T111, T113, T408, T222; new T414 (D-3263) (#597)
+- 15:45Z Plan: new T412/T415 store business sign-in addresses and phones in the vault for T280, T397, T302 and T364 (D-3262) (#596)
+- 14:48Z Plan: trim T251 to its context limit (D-3256) (#590)
+- 09:36Z Plan: pre-flight fixes round 9 — stage 5: T303, T151, T321, T110, T210, T109, T116; new T409, T410 (D-3155) (#559)
+- 09:22Z Plan: T345 owns the runner tests that hard-code action tags (D-3200) (#572)
+- 09:13Z Plan: store the scrubbed job description and shown card so T251 can send approved cards (D-3189) (#568)
+- 08:32Z Harness: smoke ancestry reuse accepts squash commits whose identical tree passed Ci, Twin and Ally (D-3156) (#560)
+- 07:12Z Harness: close merged tasks before the smoke so their lanes free ~20 min sooner (D-3141) (#552)
+- 06:05Z Plan: pre-flight fixes round 8 — stage 5: T101, T102, T105, T202, T320, T106, T364; new T408 (D-3144) (#551)
+- 05:28Z Harness: stop backup-runner caches evicting CI's Rust caches (D-3143) (#553)
+- 05:16Z Harness: run lint and the slow compile-fail/prompt-injection tests in a parallel CI job (D-3142) (#550)
+- 04:59Z Plan: pre-flight fixes round 7 — T352, T335, T353, T330, T393, T359, T401 plan gap; new T406, T407 (D-3134) (#548)
+- 03:50Z Plan: pre-flight fixes round 6 — T355, T340, T341, T249, T273, T271, T277, T357, T314; new T405 (D-3118) (#542)
+- 03:24Z Harness: claim order prefers tasks in crates no other lane is writing (D-3082) (#523)
+- 02:11Z Plan: pre-flight fixes round 5 — T378, T343, T268, T329, T306; new T404 (D-3112) (#538)
+- 02:03Z Plan: pre-flight fixes round 4 — T356, T362, T365, T367, T300, T369; new T401–T403 (D-3106) (#536)
+- 01:55Z Plan: owner approval before a team-linked phone works (BIZ-033, IC-95) — T396–T399 (D-3081) (#531)
 
 ## Progress (requirements verified)
 
