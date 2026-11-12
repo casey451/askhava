@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-12T14:42:15Z by runner 389664ca02cb (actions).
+Updated 2026-11-12T14:42:30Z by runner 389664ca02cb (actions).
 
 **Building: T389 in progress since 14:39Z; 245 of 397 done; week 94% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 245 of 397 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T389 claimed 14:39Z, lease until 17:39Z; lane 3: T385 claimed 14:03Z, lease until 17:03Z
+- **Lane:** lane 2: T389 claimed 14:39Z, lease until 17:39Z
 - **Week:** 94% used, 2.8M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 14:42Z, 0 min before this update
 - **Keeper:** last ran 14:30Z, next wake 17:05Z
@@ -20,8 +20,9 @@ Updated 2026-11-12T14:42:15Z by runner 389664ca02cb (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T385 | adapters, licensing and businesses (harness): the sign-up re | MERGE_PENDING | 1 | 38 min | 14:42Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T370 | intake (harness): the night count the homeowner hears counts | MERGE_PENDING | 1 | 22 min | 14:29Z |  |
-| T385 | adapters, licensing and businesses (harness): the sign-up re | resync | 1 | 60 min | 13:57Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T385 | adapters, licensing and businesses (harness): the sign-up re | resync | 1 | 60 min | 13:57Z |  |
 | T362 | server: the built static files are served at /static/<crate> | check_failed | 1 | 38 min | 13:35Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T369 | businesses: the sign-up after-hours answer ticks only while  | done | 1 | 50 min | 12:41Z |  |
 | T378 | adapters, calls and stand-in (harness): every outbound call  | done | 1 | 45 min | 12:34Z |  |
@@ -168,7 +169,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T389 (lease until 2026-11-12T17:39:19Z)
-- lane 3: T385 (lease until 2026-11-12T17:03:28Z)
 
 ## Last usage reading
-- {"task": "T370", "at": "2026-11-12T14:29:47Z", "input_tokens": 90, "cache_read_input_tokens": 1643333, "cache_creation_input_tokens": 160903, "output_tokens": 22976}
+- {"task": "T385", "at": "2026-11-12T14:42:14Z", "cache_read_input_tokens": 2258037, "output_tokens": 20619, "input_tokens": 119, "cache_creation_input_tokens": 155895}

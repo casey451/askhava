@@ -2848,3 +2848,4 @@
 - 2026-11-12T14:31:50Z runner 87abedec7b6e (actions): {}
 - 2026-11-12T14:41:57Z runner 87abedec7b6e (actions): {"T389": "QUEUED -> IN_PROGRESS"}; T389 estimated 2.7M tokens (calibrated); week has 2.8M left (no five-hour budget, D-3056) after 3.2M still running in another lane (session_reading 2026-11-12T14:30:20Z (week)); claimed
 - 2026-11-12T14:42:15Z runner 389664ca02cb (actions): {}
+- 2026-11-12T14:42:30Z runner 389664ca02cb (actions): {"T385": "IN_PROGRESS -> MERGE_PENDING"}
