@@ -114,7 +114,7 @@ pub use crate::service::{
 };
 pub use crate::service_area::{
     MAX_RADIUS_MILES, MIN_RADIUS_MILES, ServiceArea, ServiceAreaProblem, StoredServiceArea,
-    save_service_area, service_area,
+    businesses_in_towns, save_service_area, service_area,
 };
 pub use crate::signup::{
     ContactKind, EntityValues, FeeNumbers, HeardFrom, LIST_DELAY_KEY, MaskedContact,

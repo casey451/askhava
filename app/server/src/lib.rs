@@ -456,7 +456,8 @@ where
 /// no-handler check ([`no_handler_alert`], OPS-004) and, with the Twilio settings in `pairs`
 /// (required in test and live, D-1688), `messaging`'s day-31 body delete (PRIV-027), `picks`'
 /// masked-line retry (CALL-001) and, with the vault keys too, `messaging`'s outbox sender
-/// (`messaging.send_due`, [`outbox_sender`], T356, D-2628). `worker.rs` runs it and `tests/integration/tests/task_registry.rs`
+/// (`messaging.send_due`, [`outbox_sender`], T356, D-2628); with both vault keys, `intake`'s card
+/// sender ([`register_card_sender`], T251). `worker.rs` runs it and `tests/integration/tests/task_registry.rs`
 /// checks every queued kind against it (TD-OPS-36).
 ///
 /// # Errors
@@ -498,6 +499,7 @@ where
     );
     no_handler_alert::register(&mut registry, settings.environment(), Arc::clone(&clock));
     let pairs: Vec<(String, String)> = pairs.into_iter().collect();
+    register_card_sender(&mut registry, settings, &id_secret, pairs.clone())?;
     if let Some(twilio) = twilio_config(settings, pairs.clone())? {
         register_inbound_retry(
             &mut registry,
@@ -520,6 +522,39 @@ where
         });
     }
     Ok(registry)
+}
+
+/// T251 (D-3180; CARD-025, INT-029, TXT-032): with both vault keys, `intake`'s card sender on
+/// `intake.cards_approved` and `intake.emergency_released`, with the `ID_SECRET` as outbox key and
+/// the vault for the cards-out text's send window; without them (dev and CI) nothing is
+/// registered and the events wait, as `vault_from` allows.
+fn register_card_sender(
+    registry: &mut Registry,
+    settings: &Settings,
+    id_secret: &SecretString,
+    pairs: Vec<(String, String)>,
+) -> io::Result<()> {
+    let Some(vault) = vault_from(settings, pairs)? else {
+        return Ok(());
+    };
+    let keys = Arc::new(askhava_intake::api::CardsOutKeys::new(
+        id_secret.clone(),
+        vault,
+    ));
+    let approved = Arc::clone(&keys);
+    registry.register(
+        askhava_intake::api::CARDS_APPROVED_KIND,
+        move |pool, task| {
+            askhava_intake::api::run_cards_approved(pool, Arc::clone(&approved), task)
+        },
+    );
+    registry.register(
+        askhava_intake::api::EMERGENCY_RELEASED_KIND,
+        move |pool, task| {
+            askhava_intake::api::run_emergency_released(pool, Arc::clone(&keys), task)
+        },
+    );
+    Ok(())
 }
 
 /// T377 (D-2761; TXT-013, SEC-016): the texting client asking Twilio for status callbacks at
