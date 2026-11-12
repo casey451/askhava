@@ -2577,3 +2577,7 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **Nothing blocks the build on speed before launch.** Each check run reports the speed of the main pages and warns if one gets more than 25% slower; it never fails a change for time. Before launch, at the war games and at Gate C, the goals are checked once on measured numbers and then become real requirements.
 - **Three new tasks, measurement only.** T416 adds counters for database work (how many queries a page makes, how long a request waits for a database connection), T417 builds a benchmark on fake data the size of the Phoenix metro and writes the first report, and T418 adds the phone-page lab test and the warning in each check run. They run beside the current work. No fix is made until the numbers show it is needed, and no speed fix may weaken privacy, sign-in checks, duplicate-charge protection or payments.
 - **Worth a look.** The three tasks are in the current stage, so the stage cannot finish until they are done; they depend on nothing still in progress, so this should cost no time unless one of them gets stuck.
+
+## Crate notes condensed for room (D-3304)
+
+- Four module notes (messaging, payments, picks, portals) were shortened from 120 to about 90 lines by joining related lines, with nothing removed, so later tasks have room to add to them.
