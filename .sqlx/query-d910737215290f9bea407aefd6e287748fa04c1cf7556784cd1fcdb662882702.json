@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT stripe_charge_id, stripe_intent_id, pick_id, amount_cents, refunded_cents,\n                fee_cents, balance_transaction\n           FROM payments.reconcile_open WHERE settled_at IS NULL ORDER BY first_seen, id",
+  "query": "SELECT stripe_charge_id, stripe_intent_id, pick_id, amount_cents, refunded_cents,\n                fee_cents, balance_transaction\n           FROM payments.reconcile_open WHERE settled_at IS NULL AND last_tried <> $1\n          ORDER BY first_seen, id",
   "describe": {
     "columns": [
       {
@@ -82,7 +82,9 @@
       }
     ],
     "parameters": {
-      "Left": []
+      "Left": [
+        "Timestamptz"
+      ]
     },
     "nullable": [
       false,
@@ -94,5 +96,5 @@
       false
     ]
   },
-  "hash": "b4835601727eebb8debe34e5fbc091f7e3727caadac5e24021ca308b8883e9d6"
+  "hash": "d910737215290f9bea407aefd6e287748fa04c1cf7556784cd1fcdb662882702"
 }
