@@ -471,7 +471,8 @@ async fn td_lic_30_landline_only_record_is_no_contact(pool: PgPool) {
     assert!(matches!(read, SignupRecord::NoContact));
 }
 
-/// TD-LIC-30 (D-366, BIZ-026): a landline-only record shows the landline before any step.
+/// TD-LIC-30 (D-366, BIZ-026): a record whose only phone is a landline shows the landline before
+/// any step, and never offers it as a texting phone.
 #[sqlx::test(migrator = "MIGRATOR")]
 async fn td_lic_30_landline_record_shows_the_landline(pool: PgPool) {
     let fixtures = Fixtures::new();

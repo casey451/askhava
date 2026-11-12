@@ -14,7 +14,7 @@
 
 use askhava_adapters::api::{AdapterError, LicenseRecords};
 use askhava_ops::api::{Severity, raise_alert_once_a_day};
-use secrecy::SecretString;
+use secrecy::{ExposeSecret, SecretString};
 use sqlx::PgConnection;
 use sqlx::types::Uuid;
 
@@ -64,7 +64,7 @@ pub struct OwnRecord {
     phone: Option<SecretString>,
     landline: bool,
     email: Option<SecretString>,
-    street: Option<String>,
+    street: Option<SecretString>,
     town: String,
     zip: String,
 }
@@ -106,7 +106,7 @@ impl OwnRecord {
     /// without one there is no letter step (BIZ-002).
     #[must_use]
     pub fn mailing_address(&self) -> Option<SecretString> {
-        let street = self.street.as_deref()?;
+        let street = self.street.as_ref()?.expose_secret();
         let line = format!("{street}, {} {}", self.town, self.zip);
         Some(SecretString::from(line.trim().to_owned()))
     }
@@ -190,7 +190,7 @@ fn parse_record(list: RecordList, number: &str, answer: &[u8]) -> Option<OwnReco
         phone: given(phone).map(SecretString::from),
         landline,
         email: given(email).map(SecretString::from),
-        street: given(street),
+        street: given(street).map(SecretString::from),
         town: town.trim().to_owned(),
         zip: zip.trim().to_owned(),
     })
