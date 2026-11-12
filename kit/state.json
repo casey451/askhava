@@ -19225,7 +19225,8 @@
     "T388",
     "T230",
     "T231",
-    "T386"
+    "T386",
+    "T310"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19478,7 +19479,8 @@
     "T205",
     "T303",
     "T304",
-    "T310"
+    "T310",
+    "T414"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -19687,7 +19689,8 @@
     "T130",
     "T275",
     "T336",
-    "T378"
+    "T378",
+    "T414"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -28377,7 +28380,8 @@
    "deps": [
     "T272",
     "T267",
-    "T284"
+    "T284",
+    "T412"
    ],
    "status": "QUEUED",
    "attempts": 1,
@@ -30313,7 +30317,9 @@
     "T369",
     "T374",
     "T385",
-    "T400"
+    "T400",
+    "T412",
+    "T415"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -33250,7 +33256,8 @@
     "T334",
     "T314",
     "T260",
-    "T378"
+    "T378",
+    "T414"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -35453,7 +35460,8 @@
     "T348",
     "T204",
     "T362",
-    "T200"
+    "T200",
+    "T412"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -38044,7 +38052,8 @@
    "id": "T397",
    "deps": [
     "T396",
-    "T364"
+    "T364",
+    "T412"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -39082,6 +39091,48 @@
    "slug": "door-probe-owner-session",
    "type": "harness",
    "stage": "5"
+  },
+  {
+   "id": "T414",
+   "deps": [
+    "T378"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "stand-in-sent-emails",
+   "type": "harness",
+   "stage": "4"
+  },
+  {
+   "id": "T412",
+   "deps": [
+    "T022",
+    "T023",
+    "T257",
+    "T273"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "business-contact-store",
+   "type": "build",
+   "stage": "4"
+  },
+  {
+   "id": "T415",
+   "deps": [
+    "T412",
+    "T220",
+    "T149",
+    "T196",
+    "T228",
+    "T268",
+    "T322"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "business-contact-composition",
+   "type": "build",
+   "stage": "4"
   }
  ],
  "owner_waits": [],
@@ -41418,7 +41469,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T16:21:11Z",
+ "updated_at": "2026-11-12T16:27:24Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",

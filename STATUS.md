@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T16:21:11Z by runner c65dd22c83d5 (actions).
+Updated 2026-11-12T16:27:24Z by runner c65dd22c83d5 (actions).
 
 **Waiting for tokens until 17:00Z; 246 of 400 done; week 96% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-12T16:21:11Z by runner c65dd22c83d5 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 16:18Z (no task in progress)
 - **Week:** 96% used, 0.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:20Z, 1 min before this update
+- **Last run:** 16:21Z, 6 min before this update
 - **Keeper:** last ran 16:19Z, next wake 17:05Z
 
 ## Needs attention
@@ -88,7 +88,6 @@ Updated 2026-11-12T16:21:11Z by runner c65dd22c83d5 (actions).
 | T272 | portals: the sign-in link cap and the code-try cap are atomi | resync | 1 | 27 min | 17:17Z |  |
 | T165 | businesses: business name, Google and Yelp links and license | done | 1 | 18 min | 17:05Z |  |
 | T214 | picks (harness): the homeowner's share box at the pick and t | done | 3 | 45 min | 16:44Z | PLAN GAP: tests/integration/tests/page_pick.rs:131 and tests/security/tests/page_pick_privacy.rs:224 (both T246's; page_ |
-| T165 | businesses: business name, Google and Yelp links and license | resync | 1 | 47 min | 16:25Z |  |
 
 ### Plan and harness merges on main
 - 16:10Z Plan: pre-flight fixes round 10 — T396, T398, T111, T113, T408, T222; new T414 (D-3263) (#597)
@@ -158,7 +157,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 126 of 179 done
+- stage 4: 126 of 182 done
 - stage 5: 0 of 64 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
