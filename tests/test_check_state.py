@@ -121,3 +121,29 @@ def test_every_smoke_run_kind_the_runner_writes_is_valid() -> None:
         assert cs.check(dict(base(), smoke_runs=[run])) == [], run
     for bad in ({"base": 7}, {"base": ""}, {"reused": True}):
         assert any("smoke_runs[0]" in p for p in cs.check(dict(base(), smoke_runs=[dict(kinds[2], **bad)]))), bad
+
+
+def test_usage_split_the_runner_writes_is_valid() -> None:
+    """D-3305: `_record_usage` adds `worker_tokens`, `worker_turns`, `reviewer_tokens`, `reviewer_turns` to
+    usage.by_task and `_history_entry` an attempt's `usage` split; both must validate (D-2870), a wrong type not."""
+    from datetime import datetime, timezone
+    from types import SimpleNamespace
+
+    from runner import cycle
+
+    split = {"worker": {"tokens": 30, "turns": 2}, "reviewer": {"tokens": 12, "turns": 1}}
+    res = cycle.WorkerResult("submitted", usage={"output_tokens": 42}, usage_split=split)
+    at = datetime(2026, 11, 12, 12, 0, tzinfo=timezone.utc)
+    state = cycle._record_usage(base(), "T001", "claude-opus-5-5", res, at, SimpleNamespace(on_usage=None))
+    entry = state["usage"]["by_task"]["T001"]
+    assert (entry["worker_tokens"], entry["worker_turns"], entry["reviewer_tokens"], entry["reviewer_turns"]) == (30, 2, 12, 1)
+    history = {"attempt": 1, "model": "m", "model_evidence_count": 1, "head_sha": "a1", "pr": None, "checks": None,
+               "reviewer_model": None, "path_check_ok": True, "started_at": None, "ended_at": "2026-11-12T12:00:00Z",
+               "result": "submitted", "usage": split}
+    state["tasks"][0]["history"] = [history]
+    assert cs.check(state) == []
+    entry["worker_turns"] = "2"
+    history["usage"] = {"worker": {"tokens": 30}}
+    problems = cs.check(state)
+    assert "state.usage.by_task.T001.worker_turns: expected integer, got str" in problems
+    assert "state.tasks[0].history[0].usage.worker: missing turns" in problems

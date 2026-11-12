@@ -2256,9 +2256,10 @@ class GitHubEnv:
         changed = self.git("diff", "--no-renames", "--name-only", f"{base}...{head}", check=False) if head else ""
         evidence, usage = read_transcripts(transcripts)
         review, review_usage = read_transcripts(reviewer_transcripts)
+        split = {"worker": role_reading(transcripts, usage), "reviewer": role_reading(reviewer_transcripts, review_usage)}
         usage = {k: usage.get(k, 0) + review_usage.get(k, 0) for k in {*usage, *review_usage}}  # both count (pacing)
         return WorkerResult(outcome, [p for p in changed.splitlines() if p], evidence, reset_at, log, branch, head, review, usage,
-                            self._commits_ahead(base, head))
+                            self._commits_ahead(base, head), split)
 
     def prehandin(self, branch: str, head: str, main: str) -> str:
         """'' when main's scripts/prehandin.sh --quick passes on `head` against `main`, else the failure log
@@ -2382,7 +2383,14 @@ def read_transcripts(paths: Iterable[str]) -> tuple[list[str], dict[str, int]]:
     return models, totals
 
 
-AGENT_ID = re.compile(r"^[0-9a-z]+$")
+def role_reading(paths: Iterable[str], usage: dict[str, int]) -> dict[str, int]:
+    """One role's share of an attempt (D-3305): its token total, counted as `usage` counts them, and its
+    model calls (verify.turns_in_transcript) over its transcripts; zeros when it has none."""
+    turns = sum(verify.turns_in_transcript(Path(p).read_text(encoding="utf-8").splitlines()) for p in paths)
+    return {"tokens": sum(int(v) for v in usage.values()), "turns": turns}
+
+
+AGENT_ID =re.compile(r"^[0-9a-z]+$")
 
 
 def agent_id_list(agent_ids: Iterable[str]) -> list[str]:
