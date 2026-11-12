@@ -51,6 +51,7 @@ mod open_cards_times;
 mod public_name;
 mod rules;
 mod service;
+mod service_area;
 mod signup;
 mod status;
 mod team;
