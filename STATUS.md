@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-12T15:30:27Z by runner a530d4cfa9cb (actions).
+Updated 2026-11-12T15:30:43Z by runner a530d4cfa9cb (actions).
 
 **Building: T315 in progress since 15:12Z; 245 of 397 done; week 95% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 245 of 397 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T315 claimed 15:12Z, lease until 18:12Z; lane 4: T370 claimed 15:07Z, lease until 18:07Z
+- **Lane:** lane 1: T315 claimed 15:12Z, lease until 18:12Z
 - **Week:** 95% used, 0.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 15:20Z, 10 min before this update
 - **Keeper:** last ran 15:19Z, next wake 18:10Z
@@ -20,10 +20,11 @@ Updated 2026-11-12T15:30:27Z by runner a530d4cfa9cb (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T370 | intake (harness): the night count the homeowner hears counts | MERGE_PENDING | 2 | 22 min | 15:30Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 | T389 | licensing: a homeowner's wrong-license report pauses a pest  | MERGE_PENDING | 1 | 31 min | 15:11Z |  |
 | T362 | server: the built static files are served at /static/<crate> | BLOCKED | 2 | 21 min | 15:06Z | PLAN GAP: tests/a11y/j1_keyboard.spec.ts:171-172 (owned by T098/T214, protected, not in T362's files) presses Tab before |
 | T385 | adapters, licensing and businesses (harness): the sign-up re | check_failed | 1 | 38 min | 14:42Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
-| T370 | intake (harness): the night count the homeowner hears counts | check_failed | 1 | 22 min | 14:29Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
+| T370 | intake (harness): the night count the homeowner hears counts | check_failed | 1 | 22 min | 14:29Z |  |
 | T385 | adapters, licensing and businesses (harness): the sign-up re | resync | 1 | 60 min | 13:57Z |  |
 | T362 | server: the built static files are served at /static/<crate> | check_failed | 1 | 38 min | 13:35Z |  |
 | T369 | businesses: the sign-up after-hours answer ticks only while  | done | 1 | 50 min | 12:41Z |  |
@@ -167,8 +168,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T315 (lease until 2026-11-12T18:12:30Z)
-- lane 4: T370 (lease until 2026-11-12T18:07:53Z)
 - one lane only since 2026-11-12T15:19:18Z (lane fall back; `python3 -m runner --restore-lanes`)
 
 ## Last usage reading
-- {"task": "T389", "at": "2026-11-12T15:11:18Z", "output_tokens": 53812, "cache_creation_input_tokens": 252017, "cache_read_input_tokens": 6019959, "input_tokens": 196}
+- {"task": "T370", "at": "2026-11-12T15:30:26Z", "input_tokens": 110, "cache_read_input_tokens": 2223289, "cache_creation_input_tokens": 146003, "output_tokens": 23955}
