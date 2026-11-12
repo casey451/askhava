@@ -445,8 +445,9 @@ where
 /// postal setting (required in test and live) `messaging`'s business notices and charge receipts
 /// ([`register_notice_senders`], T313), the hourly
 /// no-handler check ([`no_handler_alert`], OPS-004) and, with the Twilio settings in `pairs`
-/// (required in test and live, D-1688), `messaging`'s day-31 body delete (PRIV-027) and `picks`'
-/// masked-line retry (CALL-001). `worker.rs` runs it and `tests/integration/tests/task_registry.rs`
+/// (required in test and live, D-1688), `messaging`'s day-31 body delete (PRIV-027), `picks`'
+/// masked-line retry (CALL-001) and, with the vault keys too, `messaging`'s outbox sender
+/// (`messaging.send_due`, [`outbox_sender`], T356, D-2628). `worker.rs` runs it and `tests/integration/tests/task_registry.rs`
 /// checks every queued kind against it (TD-OPS-36).
 ///
 /// # Errors
@@ -487,8 +488,14 @@ where
         },
     );
     no_handler_alert::register(&mut registry, settings.environment(), Arc::clone(&clock));
-    if let Some(twilio) = twilio_config(settings, pairs)? {
+    let pairs: Vec<(String, String)> = pairs.into_iter().collect();
+    if let Some(twilio) = twilio_config(settings, pairs.clone())? {
         let (sms, _, _) = twilio_clients(&twilio).map_err(io::Error::other)?;
+        if let Some(vault) = vault_from(settings, pairs.clone())? {
+            let keys = (id_secret.clone(), vault);
+            let sender = outbox_sender(settings, keys, sms.clone(), (&pairs, Arc::clone(&clock)))?;
+            askhava_messaging::api::register_send_due(&mut registry, Arc::new(sender));
+        }
         let (sms, scan_clock) = (Arc::new(sms), Arc::clone(&clock));
         askhava_messaging::api::register_body_deletes(&mut registry, sms, id_secret, scan_clock);
         let masked = twilio.pool().clone();
@@ -497,6 +504,37 @@ where
         });
     }
     Ok(registry)
+}
+
+/// The homeowner line's configured number, `ASKHAVA_HOMEOWNER_NUMBER` (TXT-022, D-2628).
+const HOMEOWNER_NUMBER: &str = "ASKHAVA_HOMEOWNER_NUMBER";
+
+/// `messaging`'s outbox sender (T356, D-2628): the `ID_SECRET` and vault, the Twilio texting
+/// client, the configured homeowner number from `pairs` (unset: the line has no sender, so rows
+/// wait, TXT-022), the footer's postal line when set (else no email copy) and the worker's clock.
+///
+/// # Errors
+///
+/// A homeowner number that is not `+1` and ten digits, or a broken area-code table, named.
+fn outbox_sender(
+    settings: &Settings,
+    keys: (SecretString, Vault),
+    sms: askhava_adapters::api::TwilioSms,
+    (pairs, clock): (&[(String, String)], Arc<dyn askhava_core::api::Clock>),
+) -> io::Result<askhava_messaging::api::OutboxSender<askhava_adapters::api::TwilioSms>> {
+    use askhava_messaging::api::{MailboxKind, OutboxSender, PostalAddress, SendingNumber};
+    let number = match pairs.iter().rev().find(|(k, _)| k == HOMEOWNER_NUMBER) {
+        Some((_, raw)) => Some(SendingNumber::parse(raw.trim()).map_err(|_| {
+            io::Error::other("setting ASKHAVA_HOMEOWNER_NUMBER has an invalid value")
+        })?),
+        None => None,
+    };
+    let postal = settings.postal_address().ok().and_then(|line| {
+        PostalAddress::new(line, MailboxKind::PoBox)
+            .or_else(|_| PostalAddress::new(line, MailboxKind::PrivateMailbox))
+            .ok()
+    });
+    OutboxSender::new(keys, sms, (number, postal), clock).map_err(io::Error::other)
 }
 
 /// The Twilio settings the masked-line retry (its pool, CALL-001, CALL-017, D-1688) and the day-31

@@ -2449,3 +2449,9 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **What did not change.** Resyncs, your "claim first" list and the longest-chain order still come first, and every lane still fills: if every waiting task overlaps, the runner claims as before.
 - **To turn it off.** Set `prefer_disjoint_crates` to `false` in `kit/runner.json`.
 - **Nothing needs you now.**
+
+## Texts now actually go out, once, and never at night by mistake (T356, D-3145 to D-3148)
+
+- **What changed.** A new worker job sends the texts the app queues for homeowners. Just before each one goes it checks the 8 a.m. to 8 p.m. window again, the texting switch and the opt-out list. A text queued at night waits for 8 a.m. If Twilio's answer is lost (a timeout or a crash mid-send), the text is never sent a second time: it is marked "unknown", an important one goes to her by email, and you get one low-priority alert. A text queued while the homeowner line was off or suspended is dropped, not sent late, and an opt-out confirmation older than 5 minutes is never sent.
+- **Worth knowing.** Texts to businesses are not sent by this job yet; they wait in the outbox for a later task.
+- **Needs you at the account checkpoint.** A new setting, `ASKHAVA_HOMEOWNER_NUMBER`, names the homeowner texting number. Until it is set, nothing is texted and rows just wait.
