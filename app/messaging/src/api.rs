@@ -23,8 +23,9 @@ pub use crate::accepted_quote_email::{
     render_accepted_quote,
 };
 pub use crate::business_notices::{
-    BUSINESS_NOTICE_KIND, JOB_CARD_TEMPLATE, LINK_LIFE, NoticeOutcome, NoticeSender, SIGN_IN_URL,
-    SendChecks, business_notice, card_notice_accepted, held_until, sign_in_link,
+    BUSINESS_NOTICE_KIND, JOB_CARD_TEMPLATE, LINK_LIFE, NoticeOutcome, NoticeSender, NoticeWorker,
+    SIGN_IN_URL, SendChecks, business_notice, card_notice_accepted, held_until,
+    run_business_notice, sign_in_link,
 };
 pub use crate::checkin_email::{
     CHECK_IN_ANSWERS, CHECK_IN_DAYS, CHECK_IN_EMAIL_TEMPLATE, CHECK_IN_PREFIX, CheckInFacts,
