@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-12T03:38:02Z by runner d0ad4131880a (actions).
+Updated 2026-11-12T03:38:11Z by runner d0ad4131880a (actions).
 
-**Building: T326 in progress since 03:12Z; 222 of 390 done; week 83% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 03:37Z; 222 of 390 done; week 83% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 222 of 390 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 3: T326 claimed 03:12Z, lease until 06:12Z
+- **Lane:** idle since 03:37Z (no task in progress)
 - **Week:** 83% used, 21.3M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 03:37Z, 0 min before this update
 - **Keeper:** last ran 03:27Z, next wake 06:14Z
@@ -18,6 +18,7 @@ Updated 2026-11-12T03:38:02Z by runner d0ad4131880a (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T326 | calls (harness): the LINK notice names the line's stored PIN | MERGE_PENDING | 1 | 25 min | 03:37Z |  |
 | T336 | server, adapters and stand-in (harness): a text stopped by a | QUEUED | 1 | 5 min | 03:27Z | Worker stopped before building with a PLAN GAP claim (messaging.inbox has no sender/handled columns; T336 owns no migrat |
 | T248 | catalog and businesses: markets as reviewed data, Arizona ZI | MERGE_PENDING | 1 | 12 min | 03:22Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T401 | server (harness): the door probe's fixture gains a released  | BLOCKED | 1 | 19 min | 03:13Z | PLAN GAP: tests/security/tests/no_homeowner_charge.rs:17-27,123 (TD-FEE-07, not T401's) fails any app/ file naming a hom |
@@ -169,7 +170,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 3: T326 (lease until 2026-11-12T06:12:28Z)
 
 ## Last usage reading
-- {"task": "T336", "at": "2026-11-12T03:27:15Z", "input_tokens": 147, "cache_creation_input_tokens": 249232, "output_tokens": 48677, "cache_read_input_tokens": 4342780}
+- {"task": "T326", "at": "2026-11-12T03:37:50Z", "cache_read_input_tokens": 7140662, "cache_creation_input_tokens": 264672, "output_tokens": 58268, "input_tokens": 220}
