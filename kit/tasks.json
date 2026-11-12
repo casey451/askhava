@@ -17580,7 +17580,8 @@
     "T382",
     "T235",
     "T394",
-    "T402"
+    "T402",
+    "T403"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -18010,7 +18011,8 @@
     "T392",
     "T394",
     "T395",
-    "T402"
+    "T402",
+    "T403"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -27434,7 +27436,7 @@
    "id": "T401",
    "slug": "door-probe-released-pick",
    "title": "server (harness): the door probe's fixture gains a released pick, so the released job's page can be probed",
-   "goal": "Plan change D-3106 (SEC-019, SEC-034, PICK-024; D-2440, D-1739, D-3090): `app/server/tests/door_matrix.rs` (T348's, done) fills every `{pick}` with each side's page pick, which is picked but never released (`side`, `:771`), while T300's `GET /b/picks/{pick}` reads `picks::api::released_view`, which answers not found for a pick with no `picks.release` row, so the probe's own-record check (a `GET` outside the owner door must answer 200, `:403` to `:411`) would fail T300's row. (1) Each side's fixture also gets a second carded and quoted job of the same business with its own page pick, released through module APIs only: the $0 path, as the done `tests/integration/tests/no_fee_release_binding.rs` and `tests/integration/tests/confirm_and_pay.rs` reach it (the business's free first win stored by `payments`, `payments::api::no_fee_release(conn, pick, (business, job))` for the `ReleaseProof`, then `picks::api::release` with the fake masked pool the probe's router already uses); (2) `fill` gives the exact path `/b/picks/{pick}` that side's released pick and every other `{pick}` the waiting pick, as today, so T261's Confirm rows and T306's \"Can't take it\" rows keep a pick that can still be confirmed; the cross-business check uses the other side's pick of the same kind; (3) one new case asserts that `released_view` gives each side's business its released pick and the other side's business not found, so the fixture is proved before any route serves it. Every other case, judgement, actor and assertion stays byte-identical, nothing is loosened, and `tests/security/door_cases.txt` is unchanged. A harness task only because the file is a done task's test (`scripts/validate_tasks.py`, T348). Update `app/server/CLAUDE.md` (the door probe line) and `docs/decisions.md`.",
+   "goal": "Plan change D-3106 (SEC-019, SEC-034, PICK-024; D-2440, D-1739, D-3090): `app/server/tests/door_matrix.rs` (T348's, done) fills every `{pick}` with each side's page pick, which is picked but never released (`side`, `:771`), while T300's `GET /b/picks/{pick}` reads `picks::api::released_view`, which answers not found for a pick with no `picks.release` row, so the probe's own-record check (a `GET` outside the owner door must answer 200, `:403` to `:411`) would fail T300's row. (1) Each side's fixture also gets a second carded and quoted job of the same business with its own page pick, released through module APIs only: the $0 path, as the done `tests/integration/tests/no_fee_release_binding.rs` and `tests/integration/tests/confirm_and_pay.rs` reach it (the business's free first win stored by `payments`, `payments::api::no_fee_release(conn, pick, (business, job))` for the `ReleaseProof` (its proof taken with `askhava_server::release_minter()`, as `build_router` does, never `privacy::release_mint()`, which panics when taken a second time in one process), then `picks::api::release` with the fake masked pool the probe's router already uses); (2) `fill` gives the exact path `/b/picks/{pick}` that side's released pick and every other `{pick}` the waiting pick, as today, so T261's Confirm rows and T306's \"Can't take it\" rows keep a pick that can still be confirmed; the cross-business check uses the other side's pick of the same kind; (3) one new case asserts that `released_view` gives each side's business its released pick and the other side's business not found, so the fixture is proved before any route serves it. Every other case, judgement, actor and assertion stays byte-identical, nothing is loosened, and `tests/security/door_cases.txt` is unchanged. A harness task only because the file is a done task's test (`scripts/validate_tasks.py`, T348). Update `app/server/CLAUDE.md` (the door probe line) and `docs/decisions.md`.",
    "type": "harness",
    "phase": 1,
    "stage": "4",
@@ -27487,15 +27489,14 @@
   {
    "id": "T402",
    "slug": "quiet-exempt-producers",
-   "title": "intake, picks, calls and server: texts QH-004 lets go at any hour for a fact (an emergency job, a direct reply) are queued with that fact",
-   "goal": "Plan change D-3106 (QH-004, QH-001; D-2628, D-3055): after T356 the outbox sender holds a row outside 8 a.m. to 8 p.m. unless its `quiet_exempt_until` lets it go; plain `messaging::api::enqueue` sets that itself for the any-hour kinds (the 911 text, keyword replies, pick codes, the after-hours notice), but an emergency job's texts and a direct reply are exempt only through `enqueue_exempt`, which no producer calls, so at night they wait for 8 a.m. Each producer here that queues such a text passes its fact through `enqueue_exempt`: an emergency job's quote texts (the first-quote text and quote-count updates), the questions INT-029 asks after the cards, and the homeowner's pick, confirm and connect texts (including the who's-calling text of `app/calls/src/whos_calling.rs`, T318's, and the INT-033 texts) carry the job's emergency choice; a reply to her own inbound text carries that text's received time, so it goes at any hour only within 15 minutes of it. The facts are read where the producer already has them (the job row, the inbound delivery), never guessed from words. A producer whose texts are never exempt by a fact keeps plain `enqueue` and is not changed; a producer found outside these files is reported, not worked around. Tests in `tests/integration/tests/quiet_exempt_producers.rs` (TD-QH-07). Every TD-QH, TD-TXT and TD-INT case passes unchanged. Update the `intake`, `picks`, `calls` and `server` `CLAUDE.md` files and `docs/decisions.md`.",
+   "title": "intake, picks and server: texts QH-004 lets go at any hour for a fact (an emergency job, a direct reply) are queued with that fact",
+   "goal": "Plan change D-3106 (QH-004, QH-001; D-2628, D-3055): after T356 the outbox sender holds a row outside 8 a.m. to 8 p.m. unless its `quiet_exempt_until` lets it go; plain `messaging::api::enqueue` sets that itself for the any-hour kinds (the 911 text, keyword replies, pick codes, the after-hours notice), but an emergency job's texts and a direct reply are exempt only through `enqueue_exempt`, which no producer calls, so at night they wait for 8 a.m. Each producer here that queues such a text passes its fact through `enqueue_exempt`: an emergency job's quote texts (the first-quote text and quote-count updates), the questions INT-029 asks after the cards, and the homeowner's pick, confirm and connect texts (including the INT-033 texts; the who's-calling and missed-call texts are T403's) carry the job's emergency choice; a reply to her own inbound text carries that text's received time, so it goes at any hour only within 15 minutes of it. The facts are read where the producer already has them (the job row, the inbound delivery), never guessed from words. A producer whose texts are never exempt by a fact keeps plain `enqueue` and is not changed; a producer found outside these files is reported, not worked around. Tests in `tests/integration/tests/quiet_exempt_producers.rs` (TD-QH-07). Every TD-QH, TD-TXT and TD-INT case passes unchanged. Update the `intake`, `picks` and `server` `CLAUDE.md` files and `docs/decisions.md`.",
    "type": "build",
    "phase": 2,
    "stage": "6",
    "module": "intake",
    "deps": [
     "T356",
-    "T318",
     "T340",
     "T341",
     "T344",
@@ -27530,7 +27531,6 @@
     "app/intake/src/handlers.rs",
     "app/intake/src/job_texts.rs",
     "app/picks/src/service.rs",
-    "app/calls/src/whos_calling.rs",
     "app/server/src/inbound_text.rs",
     "tests/integration/tests/quiet_exempt_producers.rs"
    ],
@@ -27556,7 +27556,7 @@
    ],
    "cites": [],
    "budget": {
-    "files": 10,
+    "files": 9,
     "lines": 400,
     "context_pct": 40
    },
@@ -27567,6 +27567,67 @@
    ],
    "branch": "claude/task/T402-quiet-exempt-producers",
    "prompt": "kit/prompts/T402.md"
+  },
+  {
+   "id": "T403",
+   "slug": "quiet-exempt-call-texts",
+   "title": "calls and picks: the who's-calling and missed-call texts of an emergency job are queued with that fact",
+   "goal": "Plan change D-3106, review round (QH-004, QH-001; D-2628, D-3055): split from T402. After T356 the outbox sender holds a row outside 8 a.m. to 8 p.m. unless its `quiet_exempt_until` lets it go, and an emergency job's texts are exempt only through `messaging::api::enqueue_exempt`. Two producers queue such texts with plain `enqueue`: the who's-calling text TXT-027 (`app/calls/src/whos_calling.rs`, T318's) and the missed-call text TXT-030 (`caller_missed`, `app/picks/src/unreachable_refund.rs:214`, T355's; `rules::Kind::PickStep`, `app/messaging/src/rules.rs:168`). Each passes the job's emergency choice through `enqueue_exempt`, read where the producer already has it (the job row), so on an emergency job either text goes at any hour and on a regular job it waits for the window; nothing else in either file changes. Tests in `tests/integration/tests/quiet_exempt_call_texts.rs` (TD-QH-08). Every TD-QH, TD-TXT, TD-CALL and TD-FEE case passes unchanged. Update the `calls` and `picks` `CLAUDE.md` files and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 2,
+   "stage": "6",
+   "module": "calls",
+   "deps": [
+    "T356",
+    "T318",
+    "T355",
+    "T402"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "compliance",
+    "privacy"
+   ],
+   "owns": [
+    "app/calls/src/whos_calling.rs",
+    "app/picks/src/unreachable_refund.rs",
+    "tests/integration/tests/quiet_exempt_call_texts.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/quiet-hours.md",
+    "docs/spec/messaging.md",
+    "docs/brains/sms-compliance.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "QH-004",
+    "QH-001"
+   ],
+   "tests": [
+    "TD-QH-08"
+   ],
+   "decisions": [
+    "D-2628",
+    "D-3055",
+    "D-3106"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 200,
+    "context_pct": 13
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T403-quiet-exempt-call-texts",
+   "prompt": "kit/prompts/T403.md"
   }
  ]
 }
