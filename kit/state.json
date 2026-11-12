@@ -35924,7 +35924,14 @@
    "attempts": 0,
    "slug": "night-count-counts-covered",
    "type": "harness",
-   "stage": "4"
+   "stage": "4",
+   "plan_gap": {
+    "at": "2026-11-12T13:13:06Z",
+    "problems": [
+     "T370: dependency T369 is DONE but its owned file tests/integration/tests/after_hours_cover.rs is not on main",
+     "T370: dependency T369 is DONE but its owned file tests/e2e/emergency_switch_after_hours.spec.ts is not on main"
+    ]
+   }
   },
   {
    "id": "T371",
@@ -35950,7 +35957,14 @@
    "attempts": 0,
    "slug": "license-change-reapplied-daily",
    "type": "build",
-   "stage": "4"
+   "stage": "4",
+   "plan_gap": {
+    "at": "2026-11-12T13:13:06Z",
+    "problems": [
+     "T372: dependency T369 is DONE but its owned file tests/integration/tests/after_hours_cover.rs is not on main",
+     "T372: dependency T369 is DONE but its owned file tests/e2e/emergency_switch_after_hours.spec.ts is not on main"
+    ]
+   }
   },
   {
    "id": "T373",
@@ -38574,7 +38588,7 @@
    "cache_creation_input_tokens": 629909,
    "input_tokens": 381
   },
-  "source": "session_reading 2026-11-12T13:08:14Z (week)",
+  "source": "session_reading 2026-11-12T13:11:08Z (week)",
   "by_task": {
    "FIX-MAIN": {
     "estimated_bytes": 1552047,
@@ -40819,6 +40833,10 @@
    "T350": {
     "estimated_bytes": 599820,
     "estimated_tokens": 3214449
+   },
+   "T315": {
+    "estimated_bytes": 548990,
+    "estimated_tokens": 2914235
    }
   },
   "windows": {
@@ -40839,7 +40857,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T13:12:17Z",
+ "updated_at": "2026-11-12T13:13:19Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -40937,17 +40955,9 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "87abedec7b6ea0d48edf5747ef107cbd878ee14a",
+ "runner_sha": "919ab4941c8176478b66cb734004e925d089ea44",
  "starter": "actions",
  "smoke_runs": [
-  {
-   "sha": "b513c7d4ca377a8b3642387f50521c27540cafb6",
-   "ok": true,
-   "at": "2026-11-12T11:19:06Z",
-   "why": "start routine (ancestry reuse of d33f2ffc254d, 2026-11-12T10:41:05Z)",
-   "reused": "2026-11-12T10:41:05Z",
-   "base": "d33f2ffc254da185779c444de14c21e6425d84ca"
-  },
   {
    "sha": "9a0cfc9ec6a1f4557630992debad1254b9acadbb",
    "ok": true,
@@ -41098,12 +41108,20 @@
    "why": "start routine (ancestry reuse of 4b1e8df76c3d, 2026-11-12T12:11:25Z)",
    "reused": "2026-11-12T12:11:25Z",
    "base": "4b1e8df76c3d667f99ea5796f84c723b1b04c5b6"
+  },
+  {
+   "sha": "87abedec7b6ea0d48edf5747ef107cbd878ee14a",
+   "ok": true,
+   "at": "2026-11-12T13:13:06Z",
+   "why": "start routine (ancestry reuse of 4b1e8df76c3d, 2026-11-12T12:11:25Z)",
+   "reused": "2026-11-12T12:11:25Z",
+   "base": "4b1e8df76c3d667f99ea5796f84c723b1b04c5b6"
   }
  ],
  "main_red": null,
  "pacing": {
-  "last": "T350 estimated 3.2M tokens (calibrated); week has -494k left (no five-hour budget, D-3056) after 6.5M still running in another lane (session_reading 2026-11-12T13:08:14Z (week)); waiting until 2026-11-12T17:00:00Z",
-  "at": "2026-11-12T13:10:39Z",
+  "last": "T315 estimated 2.9M tokens (calibrated); week has -494k left (no five-hour budget, D-3056) after 6.5M still running in another lane (session_reading 2026-11-12T13:11:08Z (week)); waiting until 2026-11-12T17:00:00Z",
+  "at": "2026-11-12T13:13:06Z",
   "decision": "wait",
   "waiting_until": "2026-11-12T17:00:00Z",
   "standing": {
@@ -41114,8 +41132,8 @@
     "resets_at": "2026-11-12T17:00:00Z"
    }
   },
-  "remaining_estimate": 652932127,
-  "projected_finish": "2026-12-06T02:36:11Z"
+  "remaining_estimate": 643554663,
+  "projected_finish": "2026-12-05T18:31:25Z"
  },
  "main_red_history": [
   {
