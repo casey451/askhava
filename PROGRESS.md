@@ -2702,3 +2702,4 @@
 - 2026-11-12T11:05:44Z runner 95c0a4277830 (actions): {}
 - 2026-11-12T11:06:01Z runner b6463cba40ab (actions): {}
 - 2026-11-12T11:06:27Z runner 02bdd8d2621e (actions): {"T280": "QUEUED -> IN_PROGRESS"}; T280 estimated 2.9M tokens (calibrated); week has 4.3M left (no five-hour budget, D-3056) after 5.7M still running in another lane (session_reading 2026-11-12T11:05:43Z (week)); claimed
+- 2026-11-12T11:08:40Z runner b513c7d4ca37 (actions): {}; T404 estimated 5.3M tokens (calibrated); week has 1.4M left (no five-hour budget, D-3056) after 8.6M still running in another lane (session_reading 2026-11-12T11:05:43Z (week)); waiting until 2026-11-12T17:00:00Z
