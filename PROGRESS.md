@@ -2606,3 +2606,4 @@
 - 2026-11-12T08:47:02Z runner a070309d52e6 (actions): {"T345": "IN_PROGRESS -> BLOCKED"}
 - 2026-11-12T08:48:22Z runner a070309d52e6 (actions): {}
 - 2026-11-12T08:48:36Z runner d9515904bc86 (actions): {}
+- 2026-11-12T08:52:13Z runner a070309d52e6 (actions): {"T358": "QUEUED -> IN_PROGRESS"}; T358 estimated 1.1M tokens (calibrated); week has 1.8M left (no five-hour budget, D-3056) after 10.2M still running in another lane (session_reading 2026-11-12T08:48:21Z (week)); claimed
