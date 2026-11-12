@@ -2585,6 +2585,7 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 ## Crate notes condensed for room (D-3304)
 
 - Four module notes (messaging, payments, picks, portals) were shortened from 120 to about 90 lines by joining related lines, with nothing removed, so later tasks have room to add to them.
+- Three more module notes (businesses, intake, quotes) were shortened the same way to about 90 lines each, with nothing removed (D-3308).
 
 ## Fewer tokens per task: output rules and a per-role count (D-3305)
 
