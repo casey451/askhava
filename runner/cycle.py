@@ -101,6 +101,8 @@ class WorkerResult:
     reviewer_evidence: list[str] = field(default_factory=list)
     usage: dict[str, int] = field(default_factory=dict)
     commits_ahead: int | None = None
+    # usage split by role (D-3305): {"worker": {"tokens", "turns"}, "reviewer": {...}}; empty when not read.
+    usage_split: dict[str, dict[str, int]] = field(default_factory=dict)
 
 
 class Env(Protocol):
@@ -1927,11 +1929,15 @@ def _history_entry(state: State, task: dict[str, Any], res: WorkerResult, model:
         "path_check_ok": path_ok, "started_at": entry.get("attempt_started_at"), "ended_at": st.iso(cfg.clock()),
         "result": res.outcome,
     }
+    if res.usage_split:
+        record["usage"] = copy.deepcopy(res.usage_split)  # this attempt's worker and reviewer share (D-3305)
     return {**record, "resync": True} if entry.get("resync") else record  # the same attempt, resumed to merge main (D-891)
 
 
 def _record_usage(state: State, tid: str, model: str, res: WorkerResult, now: datetime, cfg: Config) -> State:
-    """Add the attempt's transcript token totals to usage.by_task and the pacing windows (BUILD_BRIEF.md:510)."""
+    """Add the attempt's transcript token totals to usage.by_task and the pacing windows (BUILD_BRIEF.md:510),
+    and each role's tokens and model calls as `worker_tokens`, `worker_turns`, `reviewer_tokens` and
+    `reviewer_turns` (D-3305; the pacing windows take only the token fields)."""
     if not res.usage:
         return state
     if cfg.on_usage is not None:
@@ -1940,6 +1946,9 @@ def _record_usage(state: State, tid: str, model: str, res: WorkerResult, now: da
     mine = usage.setdefault("by_task", {}).setdefault(tid, {})
     for key, value in res.usage.items():
         mine[key] = int(mine.get(key, 0)) + int(value)
+    for role, reading in res.usage_split.items():
+        for kind in ("tokens", "turns"):
+            mine[f"{role}_{kind}"] = int(mine.get(f"{role}_{kind}", 0)) + int(reading.get(kind, 0))
     mine["last_model"] = model
     usage["last_reading"] = {"task": tid, "at": st.iso(now), **res.usage}
     return dict(state, usage=usage)

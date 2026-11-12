@@ -343,6 +343,41 @@
                 },
                 "result": {
                   "type": "string"
+                },
+                "usage": {
+                  "type": "object",
+                  "properties": {
+                    "worker": {
+                      "type": "object",
+                      "required": [
+                        "tokens",
+                        "turns"
+                      ],
+                      "properties": {
+                        "tokens": {
+                          "type": "integer"
+                        },
+                        "turns": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "reviewer": {
+                      "type": "object",
+                      "required": [
+                        "tokens",
+                        "turns"
+                      ],
+                      "properties": {
+                        "tokens": {
+                          "type": "integer"
+                        },
+                        "turns": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -591,7 +626,21 @@
         "by_task": {
           "type": "object",
           "additionalProperties": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+              "worker_tokens": {
+                "type": "integer"
+              },
+              "worker_turns": {
+                "type": "integer"
+              },
+              "reviewer_tokens": {
+                "type": "integer"
+              },
+              "reviewer_turns": {
+                "type": "integer"
+              }
+            }
           }
         },
         "source": {
