@@ -44,7 +44,8 @@ async fn main() -> io::Result<()> {
         askhava_server::release_sink::stripe_webhook(&settings, pool.clone(), std::env::vars())?;
     let limit = askhava_server::request_timeout::RequestTimeout::from_settings(&settings);
     let hooks = (webhooks, voice, pick_keys, stripe);
-    let app = askhava_server::build_router(pool, control.router(), (hooks, limit));
+    let statics = askhava_server::static_files::StaticRoot::from_settings(&settings);
+    let app = askhava_server::build_router(pool, control.router(), (hooks, limit, statics));
     axum::serve(
         listener,
         app.into_make_service_with_connect_info::<std::net::SocketAddr>(),
