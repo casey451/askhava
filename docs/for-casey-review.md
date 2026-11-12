@@ -2377,3 +2377,9 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 - **What changed.** A phone can open at most 5 new requests by text in an hour (and all phones together have an hourly cap); a 6th is not answered and you get one alert with no phone or words in it. Replies inside an open request, HELP, STOP and START after a STOP are never limited. A LIST reply now names each business that quoted.
 - **One thing you may want changed.** A text that matches the 911 list (for example "I smell gas") is never limited, so the homeowner always gets the 911 safety text, even at her limit. The cost: someone sending many such texts from many phones would get past the hourly cap. If you want a separate cap on emergency texts, say so; it needs a spec change.
 - **Nothing needs you now.**
+
+## Pre-flight fixes, round 4 (D-3106)
+
+- **What changed.** A read-only check of the queued tasks against the code found plans a worker could not have finished as written; the plans were corrected before any of them started. One queued task (T365, the phone read-back fix) was dropped because an earlier task already built and tested that fix. Two small tasks were added: T401 lets the security probe check the released job's page in the business portal, and T402 lets emergency-job texts and quick replies go out at night as the quiet-hours rules allow, once the new text sender is in.
+- **Worth knowing.** Until T402 lands, a text about an emergency job or a reply to a homeowner's text that is queued between 8 p.m. and 8 a.m. waits until 8 a.m. The 911 safety text, STOP/HELP replies and pick codes are not affected: they go at any hour as before.
+- **Nothing needs you now.**
