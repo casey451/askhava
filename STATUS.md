@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T14:43:18Z by runner 87abedec7b6e (actions).
+Updated 2026-11-12T14:44:41Z by runner f2ec2c57dae9 (actions).
 
 **Building: T389 in progress since 14:39Z; 245 of 397 done; week 94% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-12T14:43:18Z by runner 87abedec7b6e (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T389 claimed 14:39Z, lease until 17:39Z
 - **Week:** 94% used, 2.8M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:43Z, 0 min before this update
+- **Last run:** 14:43Z, 1 min before this update
 - **Keeper:** last ran 14:43Z, next wake 17:42Z
 
 ## Needs attention
@@ -21,7 +21,7 @@ Updated 2026-11-12T14:43:18Z by runner 87abedec7b6e (actions).
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T385 | adapters, licensing and businesses (harness): the sign-up re | MERGE_PENDING | 1 | 38 min | 14:42Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
-| T370 | intake (harness): the night count the homeowner hears counts | MERGE_PENDING | 1 | 22 min | 14:29Z |  |
+| T370 | intake (harness): the night count the homeowner hears counts | check_failed | 1 | 22 min | 14:29Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 | T385 | adapters, licensing and businesses (harness): the sign-up re | resync | 1 | 60 min | 13:57Z |  |
 | T362 | server: the built static files are served at /static/<crate> | check_failed | 1 | 38 min | 13:35Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T369 | businesses: the sign-up after-hours answer ticks only while  | done | 1 | 50 min | 12:41Z |  |
