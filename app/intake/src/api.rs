@@ -152,6 +152,24 @@ pub async fn jobs_of_contact(
     .map_err(|_| IntakeError::Database)
 }
 
+/// SEC-014, TXT-031, D-2206, D-3084: the jobs of the open request of the homeowner whose vault
+/// contact is `contact` (its first job and every job it linked), or `None` when she has no open
+/// request. The inbound text route counts SEC-014's new-request limit only on `None`, and reads
+/// the LIST names of these jobs' quoted businesses otherwise; on the caller's connection.
+///
+/// # Errors
+///
+/// [`IntakeError::Database`].
+pub async fn open_request_jobs(
+    db: &mut sqlx::PgConnection,
+    contact: sqlx::types::Uuid,
+) -> Result<Option<Vec<sqlx::types::Uuid>>, IntakeError> {
+    match crate::models::open_conversation(db, contact).await? {
+        Some(request) => crate::models::request_jobs(db, request).await.map(Some),
+        None => Ok(None),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     //! PRIV-011, PRIV-031 (TD-PRIV-15, D-1939): `jobs_of_contact` names only her own jobs. Fake
