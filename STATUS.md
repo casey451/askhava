@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-12T17:12:37Z by runner eccfd35b9e3a (actions).
+Updated 2026-11-12T17:13:02Z by runner 5e739fa972c5 (actions).
 
-**Waiting for tokens until 19:01Z; 247 of 400 done; week 0% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Waiting for tokens until 19:01Z; 248 of 400 done; week 0% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 247 of 400 build tasks (owner gates not counted)
+- **Tasks done:** 248 of 400 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 16:33Z (no task in progress)
+- **Lane:** idle since 17:11Z (no task in progress)
 - **Week:** 0% used, -241.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 17:12Z, 0 min before this update
 - **Keeper:** last ran 17:12Z, next wake 19:07Z
@@ -21,7 +21,7 @@ Updated 2026-11-12T17:12:37Z by runner eccfd35b9e3a (actions).
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T315 | jobs and portals: feedback words are blanked by the 3-year p | done | 1 | 66 min | 16:18Z |  |
-| T370 | intake (harness): the night count the homeowner hears counts | MERGE_PENDING | 2 | 22 min | 15:30Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
+| T370 | intake (harness): the night count the homeowner hears counts | done | 2 | 22 min | 15:30Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 | T389 | licensing: a homeowner's wrong-license report pauses a pest  | done | 1 | 31 min | 15:11Z |  |
 | T362 | server: the built static files are served at /static/<crate> | BLOCKED | 2 | 21 min | 15:06Z | PLAN GAP: tests/a11y/j1_keyboard.spec.ts:171-172 (owned by T098/T214, protected, not in T362's files) presses Tab before |
 | T385 | adapters, licensing and businesses (harness): the sign-up re | check_failed | 1 | 38 min | 14:42Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
@@ -121,7 +121,7 @@ Updated 2026-11-12T17:12:37Z by runner eccfd35b9e3a (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 208 of 733 (28.4%) · partial 356 · unstarted 169
-**Tasks merged (throughput only):** 247 of 400
+**Tasks merged (throughput only):** 248 of 400
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -156,7 +156,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 127 of 182 done
+- stage 4: 128 of 182 done
 - stage 5: 0 of 64 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
