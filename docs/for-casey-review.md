@@ -2,6 +2,17 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## Seventeen more waiting steps fixed before they start, and one new step (plan change, D-3144, November 12)
+
+- **What changed.** A read-only check of the queued website, alert and safety tasks found plans a worker could not have finished as written; they were corrected before any started. One small task was added: T408 makes a release (the homeowner's details going to the business) wait while safe mode is on and go ahead once it ends, if the job is still waiting for it.
+- **Calls made for you, all reversible:**
+  - The "Texting is temporarily unavailable" banner shows on the askhava.com pages (home, help, terms and so on), not inside the quote page or the business portal. WEB-007 says "the site has a status banner"; showing it on the portal pages too would need every portal page changed.
+  - Old directory links: `/categories`, `/events` and `/seniors` (the old site's main links) show the Ask Hava home page. Any other old address (for example a single listing's page) shows the normal "not found" page. If you know other old addresses that get traffic, send them and they can be added.
+  - `askhava.com/terms` shows the homeowner terms and then the business terms on one page, each with its own heading.
+  - The record of published legal versions starts empty and gets its first entries when you give the go to publish the terms and privacy policy.
+  - The uptime check (`/healthz`) treats the background worker as down only when work has waited more than 10 minutes, so a quiet worker is not reported as an outage.
+- **Nothing needs you now.**
+
 ## Nine more waiting steps fixed before they start, and one new step (plan change, D-3118, November 12)
 
 - **What happened.** A sixth check of steps still waiting in line found nine that would have stopped partway, mostly because their change would have broken an older test they may not touch, or because they named code that does not exist where they said. One more older test (the emailed pick code) also needed its job's facts once the fee reads them.
