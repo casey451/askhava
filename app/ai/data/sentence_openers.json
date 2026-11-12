@@ -1,0 +1,26 @@
+{
+  "about": "Ordinary sentence openers for AI-019's added-fact check (T323, D-2209, D-3083, D-3226): a capitalized word starting a sentence, or a label ending in a colon, adds no fact when it is on this list. English and Spanish function words and pronouns, labels, and the first words of the question bank's questions and the job card's fixed lines. Never add a brand, business, product, place or market name. Compared folded (accents dropped, lower case).",
+  "openers": [
+    "a", "an", "the", "this", "that", "these", "those", "it", "its", "it's", "i", "i'm", "i've",
+    "you", "your", "we", "our", "they", "their", "he", "she", "his", "her", "there", "here",
+    "and", "but", "or", "so", "if", "also", "then", "yes", "no", "not", "please",
+    "what", "what's", "when", "where", "which", "who", "whose", "why", "how",
+    "is", "are", "was", "were", "do", "does", "did", "has", "have", "had",
+    "can", "could", "will", "would", "should", "may", "might",
+    "about", "after", "before", "since", "in", "on", "at", "for", "from", "to", "with", "without",
+    "under", "over", "inside", "outside", "any", "anything", "some", "something", "each", "every",
+    "all", "both", "one", "one-time", "new", "add", "describe", "install",
+    "homeowner", "sent", "needed", "example", "today",
+    "note", "notes",
+    "el", "la", "los", "las", "un", "una", "unos", "unas", "lo", "este", "esta", "estos", "estas",
+    "ese", "esa", "eso", "esto", "yo", "tú", "usted", "ustedes", "él", "ella", "ellos", "ellas",
+    "nosotros", "su", "sus", "mi", "mis", "nuestro", "nuestra",
+    "y", "o", "pero", "si", "sí", "también", "ya", "hay", "es", "son", "está", "están", "fue",
+    "tiene", "tienen", "puede", "pueden",
+    "qué", "cuál", "cuándo", "dónde", "quién", "cómo", "cuánto", "cuánta", "cuántos", "cuántas",
+    "por", "para", "con", "sin", "de", "del", "en", "sobre", "desde", "después", "antes",
+    "algo", "alguno", "alguna", "cada", "todo", "todos", "más", "nuevo", "nueva",
+    "agregar", "describa", "instalar", "instalación", "muestra",
+    "nota", "notas"
+  ]
+}

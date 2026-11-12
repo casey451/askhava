@@ -1,6 +1,7 @@
 //! In-crate tests for `askhava-ai`.
 
 mod adapter_calls;
+mod adds_fact_openers;
 mod no_tools;
 mod prop_ai_output_limits;
 mod schemas;
