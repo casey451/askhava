@@ -16,7 +16,8 @@ use askhava_businesses::api::{
 use askhava_intake::api::rules::{Inbound, Settings};
 use askhava_intake::api::{
     JobStart, NOT_COVERED_KIND, Opened, Outcome, PEST_CONTROL, PEST_OFF_TEMPLATE, Request, Routing,
-    TextIn, Why, apply_routing, begin_job, receive_text, recruiting_demand, route, trade_is_open,
+    TextIn, Why, apply_routing, begin_job, pest_off_body, receive_text, recruiting_demand, route,
+    trade_is_open,
 };
 use askhava_integration::set_app_role;
 use askhava_licensing::api::{
@@ -268,9 +269,21 @@ async fn td_lic_22_switched_off_pest_request_closes_early_with_the_pointer(
         .await
         .expect("tasks");
     assert_eq!(tasks, 0, "no owner email for a switched-off trade");
-    let body = askhava_messaging::api::render(PEST_OFF_TEMPLATE, routing.language, false, &[])
-        .expect("render")
-        .body;
-    assert!(body.contains("Arizona Department of Agriculture's license list"));
-    assert!(!body.contains('$') && !body.to_lowercase().contains("fee"));
+    let sent: String = sqlx::query_scalar("SELECT body FROM messaging.outbox WHERE id = $1")
+        .bind(queued.outbox_id)
+        .fetch_one(&mut *db)
+        .await
+        .expect("queued body");
+    assert_eq!(sent, pest_off_body(routing.language, false));
+    assert!(
+        sent.starts_with("Ask Hava: ") && sent.contains("Department of Agriculture's license list")
+    );
+    assert!(
+        !sent.contains("http") && !sent.contains('$'),
+        "no link, no fee"
+    );
+    let spanish = pest_off_body(askhava_messaging::api::Language::Es, true);
+    assert!(spanish.contains("Departamento de Agricultura de Arizona"));
+    let off = pest_off_body(askhava_messaging::api::Language::Es, false);
+    assert_eq!(off, sent, "English while Spanish conversations are off");
 }

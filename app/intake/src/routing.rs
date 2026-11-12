@@ -22,7 +22,7 @@
 //! license search ([`Why::PestSwitchedOff`], [`PEST_OFF_TEMPLATE`]), logging no demand.
 
 use askhava_catalog::api::is_enabled;
-use askhava_core::api::{NewTask, arizona, enqueue as enqueue_task};
+use askhava_core::api::{NewTask, arizona, brand, enqueue as enqueue_task};
 use askhava_jobs::api::{JobStatus, current, job_number, move_to};
 use askhava_messaging::api::{Language, NewText, Relation, enqueue, render};
 use askhava_ops::api::{Actor, AuditEntry, Change, audit};
@@ -56,6 +56,17 @@ pub const NOT_COVERED_KIND: &str = "intake.not_covered";
 pub const PEST_OFF_TEMPLATE: &str = "pest_switched_off";
 /// The catalog code of pest control (LIC-012).
 pub const PEST_CONTROL: &str = "pest_control";
+/// The [`PEST_OFF_TEMPLATE`] words after the brand's opening, English then draft Spanish. Fixed
+/// here, not in the template files, whose homeowner-text registry `quotes`' update-text scan
+/// lists in full (D-3333, as `zip_step`'s texts, D-3179); no link: texts carry none off-domain.
+const PEST_OFF_WORDS: (&str, &str) = (
+    "We aren't taking pest control jobs right now. To find a licensed pest control business, \
+     search online for the Arizona Department of Agriculture's license list. No charge from us. \
+     Text us for any other home job.",
+    "Por ahora no tomamos trabajos de control de plagas. Para encontrar un negocio de control de \
+     plagas con licencia, busque la lista de licencias del Departamento de Agricultura de \
+     Arizona. No le cobramos nada. Escríbanos para otros trabajos de su casa.",
+);
 /// The moving category a LIC-017 state check applies to.
 const MOVING: &str = "local_moving";
 /// The catalog's refused moving job type (`docs/catalog/categories.yaml`, LIC-017).
@@ -574,6 +585,35 @@ async fn leave_intake(
         .map_err(|_| IntakeError::Job)
 }
 
+/// LIC-012, D-402, D-3333: the pest-switched-off reply in `language` (Spanish only while Spanish
+/// conversations are on), opening with the brand's short name: the fee-free pointer to the
+/// Department of Agriculture's license list.
+#[must_use]
+pub fn pest_off_body(language: Language, spanish_on: bool) -> String {
+    if language == Language::Es && spanish_on {
+        format!("{}: {}", brand().es().short_name(), PEST_OFF_WORDS.1)
+    } else {
+        format!("{}: {}", brand().short_name(), PEST_OFF_WORDS.0)
+    }
+}
+
+/// The reply body of `template`: [`pest_off_body`] for [`PEST_OFF_TEMPLATE`], else the template
+/// rendered with `{trade}` and `{count}` when given (TXT-004).
+fn reply_body(
+    template: &str,
+    routing: &Routing<'_>,
+    count: Option<&str>,
+) -> Result<String, IntakeError> {
+    if template == PEST_OFF_TEMPLATE {
+        return Ok(pest_off_body(routing.language, routing.spanish_on));
+    }
+    let mut values = vec![("trade", routing.label)];
+    values.extend(count.map(|n| ("count", n)));
+    render(template, routing.language, routing.spanish_on, &values)
+        .map(|r| r.body)
+        .map_err(|_| IntakeError::Template)
+}
+
 /// Renders and queues the reply of `template`, with `{count}` when given (TXT-011).
 async fn queue(
     db: &mut PgConnection,
@@ -582,11 +622,7 @@ async fn queue(
     routing: &Routing<'_>,
     count: Option<&str>,
 ) -> Result<Queued, IntakeError> {
-    let mut values = vec![("trade", routing.label)];
-    values.extend(count.map(|n| ("count", n)));
-    let body = render(template, routing.language, routing.spanish_on, &values)
-        .map_err(|_| IntakeError::Template)?
-        .body;
+    let body = reply_body(template, routing, count)?;
     let subject = [routing.conversation, routing.msg.inbox_id];
     let text = NewText {
         template_id: template,
