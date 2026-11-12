@@ -17,6 +17,8 @@ The layer-4 crate that owns every job's one status and the only code that change
 - Migration `0032_jobs_quote_tokens.sql`: `jobs.quote_token` (salt 16 bytes, `key_version`, unique `token_hash` 32 bytes, `issued_at`, `revoked_at`; partial unique index: one live token per job).
 - Migration `0034_jobs_numbers.sql` (T179, D-851): `jobs.job_number` (number from 1001 as primary key, `job_id` unique, append-only for the app role) and the one-row counter `jobs.job_number_next`.
 - Migration `0139_jobs_feedback.sql` (T230): `jobs.feedback` (one per job: `body`, `share` default false, `received_at`; `removed_reason` of the four JOB-017 reasons, only on ticked rows, with `removed_at`; `author_kind`; the app role updates only those three and never deletes; the `feedback_marks_stay` trigger keeps a removal once set and never clears an author mark, D-1823).
+- `src/job_facts.rs` (T339, D-3157): `JobFacts`, `Recorded`, `FactsError`, `record_job_facts` (locks the `jobs.job` row, then appends a first or narrowing row) and `job_facts` (the latest row or none), with the pure `narrow` rule.
+- Migration `0164_jobs_job_facts.sql` (T339): `jobs.job_facts` (`job_id` + `seq` primary key, `category`, non-empty `job_types` array, `set_at`; append-only for the app role).
 - Migration `0031_jobs_state_machine.sql`: the `jobs` schema and grants, `jobs.job` (status `CHECK` of the twelve codes, `version`, `emergency`, `status_at`, `timer_from`, `timer_version`), `jobs.status_history` (append-only).
 - `sqlx.toml`: `'TIMESTAMPTZ'` reads as `jiff_sqlx::Timestamp`.
 - `src/purge_events.rs` (T092, D-1799): `PURGE_DUE_KIND`, `SWEEP_KIND`, `PURGE_STAGES`, `enqueue_purge`, `sweep_closed`, `schedule_sweep`, `run_sweep`: the daily sweep queues each final job's photo, contact and text purge stages for `privacy` at `status_at` plus 30, 180 and 1,096 days for every final job (no look-back limit), deduped by job and stage (PRIV-007 to PRIV-009; `tests/integration/tests/retention_purge.rs`).
@@ -45,6 +47,8 @@ The layer-4 crate that owns every job's one status and the only code that change
 
 - JOB-017 (D-1820): `feedback::store` writes only for a Done job, once; `shown` is ticked, not removed and not author-marked, with no other filter (there is no rating column); `remove` takes only the four reasons, once, on ticked rows, with a `feedback_removed_<reason>` audit row; `mark_author` audits `feedback_author_marked`.
 
+- INT-018, FEE-005 (D-2330, D-3157): `job_facts::record_job_facts` stores codes only; a later row keeps the category and narrows the set; the same set writes nothing; anything else is refused with `FactsError` and writes nothing. Fee facts derived from the codes are read from the catalog at the pick (T340), never stored here.
+
 ## Never break
 
 - The arrows equal the hand-written oracle of section 6: `src/tests/prop_job_machine.rs::the_arrows_are_the_architectures`.
@@ -61,6 +65,7 @@ The layer-4 crate that owns every job's one status and the only code that change
 - A job number is never reused, a restore included: `tests/integration/tests/job_numbers.rs::td_job_06_a_texted_number_is_not_reused_after_a_restore`.
 - A token is never stored, logged or audited; only its hash and salt: `tests/integration/tests/webhook_dedupe.rs::td_sec_16_reissue_and_revoke_and_replay`.
 - Only ticked feedback is shown, a negative one too; a removal only for the four reasons, logged; never the owner's, a relative's or a business's: `app/portals/src/feedback.rs` `tests` (TD-JOB-10).
+- `jobs.job_facts` is append-only and only ever narrows; two narrowings at once apply in turn: `tests/integration/tests/job_facts.rs` (TD-JOB-17).
 - `JobsError` never carries a value or the database's message (PRIV-016).
 
 - A check-in or feedback text never goes after the job left Connected or for an earlier connection, a PROBLEM is listed once, and OTHER never records a no-show: `tests/integration/tests/followups.rs`.
@@ -83,5 +88,6 @@ The layer-4 crate that owns every job's one status and the only code that change
 - `tests/integration/tests/job_numbers.rs` (TD-JOB-06: numbers from 1001 kept after cancel, concurrent creates, the app role cannot rewrite or re-issue one, a simulated restore and the raised floor; JOB-024).
 - `tests/integration/tests/job_races.rs` (TD-JOB-02: a cancel and a Confirm, a Stripe notice and the payment deadline, a pick and the 3-day close, two picks, each staged in both orders behind a held row lock, plus unstaged races; JOB-004): `cargo test -p askhava-integration --test job_races`.
 - `tests/integration/tests/followups.rs` (TD-JOB-04, TD-JOB-08, TD-JOB-09, TD-TXT-13: reply words in both languages, the check-in times, LATER, ONGOING, OTHER, PROBLEM digest and safety alerts, the TXT-029 text; JOB-015, JOB-016, JOB-028, TXT-029): `cargo test -p askhava-integration --test followups`.
+- `tests/integration/tests/job_facts.rs` (TD-JOB-17: first row, same set, narrowing, refusals, append-only, the concurrent narrowing, no rows, the emergency narrowing; INT-018): `cargo test -p askhava-integration --test job_facts`.
 - `tests/security/tests/status_enums.rs` (TD-SEC-12: the scan is clean, fails on each planted shape, every `status.rs` denies wildcard arms; SEC-031).
 - `tests/integration/tests/webhook_dedupe.rs` (TD-SEC-16: re-issue, revoke, replay from the stored salt, one audit row each, a revoke stamped before the issue, the concurrent-issue race; SEC-037).
