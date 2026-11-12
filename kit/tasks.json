@@ -23273,7 +23273,7 @@
    "id": "T325",
    "slug": "inbound-text-failure-alert",
    "title": "server: an inbound text stopped by a module error raises a body-free owner alert instead of vanishing",
-   "goal": "Fourth external audit F25 (D-2207; TXT-012, D-801, D-1311): a text stopped by a module error other than a database error (`Halt::Failed`, `app/server/src/inbound_text.rs:125`, answered in `answer` at `:185`) is answered 200, so Twilio never resends it, and its body is never stored (D-801), so today it is lost with one warn line. After T279 and T317 (the earlier owners of `inbound_text.rs`): the route raises one High `messaging.inbound_text_failed` alert per inbox row, in the delivery's transaction (which commits on `Halt::Failed`), its subject the inbox row and the failed step recorded in its `ops` audit row, with no body, phone, address or error text anywhere in the alert or audit row, so Casey sees it in the owner portal and digest and can ask the sender to write again; a resend of the same MessageSid stops at the repeat check and raises nothing. Add no field to `Webhooks`: the done tests that build it by name are T317's (D-2206). Tests in `tests/integration/tests/inbound_text_failures.rs` through the served route (TD-TXT-34); every TD-TXT-12, TD-TXT-16, TD-TXT-32, TD-TXT-33, TD-SEC-52 and TD-AI-19 case passes unchanged. Update `app/server/CLAUDE.md` and `docs/decisions.md`.",
+   "goal": "Fourth external audit F25 (D-2207; TXT-012, D-801, D-1311): a text stopped by a module error other than a database error (`Halt::Failed`, `app/server/src/inbound_text.rs:164`) is answered 200, so Twilio never resends it, and its body is never stored (D-801), so today it is lost with one warn line. After T279 and T317 (the earlier owners of `inbound_text.rs`): the route raises one High `messaging.inbound_text_failed` alert per inbox row, in the delivery's transaction (which commits on `Halt::Failed`), its subject the inbox row and the failed step recorded in its `ops` audit row, with no body, phone, address or error text anywhere in the alert or audit row, so Casey sees it in the owner portal and digest and can ask the sender to write again; a resend of the same MessageSid stops at the repeat check and raises nothing. Add no field to `Webhooks`: the done tests that build it by name are T317's (D-2206). Tests in `tests/integration/tests/inbound_text_failures.rs` through the served route (TD-TXT-34); every TD-TXT-12, TD-TXT-16, TD-TXT-32, TD-TXT-33, TD-SEC-52 and TD-AI-19 case passes unchanged. Update `app/server/CLAUDE.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -23309,8 +23309,7 @@
    "decisions": [
     "D-2207",
     "D-801",
-    "D-1311",
-    "D-3106"
+    "D-1311"
    ],
    "cites": [],
    "budget": {
