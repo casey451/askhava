@@ -1,5 +1,5 @@
-//! The schema triangle, the reading checks and the tag escaping (TD-AI-02, TD-AI-13, TD-AI-15;
-//! AI-001, AI-005, AI-010, AI-015, AI-022, AI-024, AI-025).
+//! The schema triangle, the reading checks and the tag escaping (TD-AI-02, TD-AI-13, TD-AI-15,
+//! TD-AI-28; AI-001, AI-005, AI-010, AI-015, AI-022, AI-024, AI-025).
 
 use std::sync::{Arc, Mutex};
 
@@ -15,8 +15,8 @@ use crate::models::{
     MODEL_KEY, Transport,
 };
 use crate::schemas::{
-    Discard, FIELDS, FieldKind, Language, MAX_MISSING_INFO, OpenTrades, SCHEMA_FILE, Tag,
-    intake_schema, parse_reading, wrap,
+    Discard, FIELDS, FieldKind, Language, MAX_MISSING_INFO, METADATA_KEYS, OpenTrades, SCHEMA_FILE,
+    Tag, intake_schema, parse_reading, wrap,
 };
 use crate::service::intake_request;
 
@@ -53,11 +53,15 @@ pub(crate) fn reply_fields() -> Map<String, Value> {
     fields
 }
 
-/// TD-AI-13 (AI-022, D-493): the schema file, the Rust field list and the request's
-/// `output_config` are equal; a planted extra field in any one of them fails here.
+/// TD-AI-13 (AI-022, D-493, D-2760): the schema file, the Rust field list and the request's
+/// `output_config` are equal, the file minus its `$schema` and `$id` being what is sent; a
+/// planted extra field in any one of them fails here.
 #[test]
 fn rust_types_output_config_and_schema_file_are_equal() {
-    let file: Value = serde_json::from_str(SCHEMA_FILE).unwrap();
+    let mut file: Value = serde_json::from_str(SCHEMA_FILE).unwrap();
+    for key in METADATA_KEYS {
+        assert!(file.as_object_mut().unwrap().remove(key).is_some(), "{key}");
+    }
     let properties: Map<String, Value> = FIELDS
         .iter()
         .map(|(n, k)| ((*n).to_owned(), k.schema()))
@@ -74,6 +78,30 @@ fn rust_types_output_config_and_schema_file_are_equal() {
     assert_eq!(request["output_config"]["format"]["type"], "json_schema");
     assert_eq!(request["output_config"]["format"]["schema"], file);
     assert_eq!(intake_schema(), file);
+}
+
+/// TD-AI-28 (AI-010, AI-021, AI-022, AI-023, D-2760): the schema no longer holds the 0-to-1
+/// range, so code does: a confidence of 1.5 or -0.1, for trade or job type, is discarded.
+#[test]
+fn confidence_out_of_zero_to_one_is_discarded() {
+    for name in ["trade_confidence", "job_type_confidence"] {
+        for bad in [json!(1.5), json!(-0.1)] {
+            let mut fields = reply_fields();
+            fields.insert(name.to_owned(), bad.clone());
+            let text = Value::Object(fields).to_string();
+            assert_eq!(
+                parse_reading(&text, &open()),
+                Err(Discard::Schema),
+                "{name} {bad}"
+            );
+        }
+        for good in [json!(0), json!(1)] {
+            let mut fields = reply_fields();
+            fields.insert(name.to_owned(), good);
+            let text = Value::Object(fields).to_string();
+            assert!(parse_reading(&text, &open()).is_ok(), "{name}");
+        }
+    }
 }
 
 /// TD-AI-13, TD-AI-02 (AI-022, AI-005): the Rust type takes exactly [`FIELDS`]: each one missing

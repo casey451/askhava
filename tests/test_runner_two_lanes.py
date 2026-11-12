@@ -526,7 +526,10 @@ def test_drill_an_attempt_that_loses_its_writes_on_lane_two_is_a_strike(tmp_path
     assert not env.branch_pushes
 
 
-def test_a_lost_claim_race_is_retried_and_a_storm_is_a_strike(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_a_lost_claim_race_is_retried_and_a_storm_strikes_only_when_origin_never_moved(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """D-620's storm strike, narrowed by D-3269: a storm while origin's state or lease ref moved is contention
+    (another lane's good write) and no strike; one with the refs still, or unreadable, means every push failed
+    for another reason (a token, a rule, the network), which stays a strike."""
     monkeypatch.delenv("RUNNER_WORKER_CMD", raising=False)
     env = FakeEnv()
     env.sleep = lambda seconds: None  # type: ignore[attr-defined]  # reason: no real wait between tries
@@ -540,9 +543,20 @@ def test_a_lost_claim_race_is_retried_and_a_storm_is_a_strike(tmp_path: Path, mo
     scripted(["lost_race", "handed_off"])
     assert entry.cycle_with_retries(two_lane(graph, tmp_path, "s1", "2"), env) == "handed_off" and len(results) == 2  # type: ignore[arg-type]  # reason: FakeEnv stands in for GitHubEnv
     results.clear()
+    heads = iter([("s1", "l1"), ("s2", "l1")])
+    env.state_refs = lambda: next(heads)  # type: ignore[attr-defined]  # reason: origin's state moved during the storm
     scripted(["lost_race"] * 3)
     assert entry.cycle_with_retries(two_lane(graph, tmp_path, "s1", "2"), env) == "lost_race" and len(results) == 3  # type: ignore[arg-type]  # reason: as above
-    assert env.store["lane_strikes"]["2"]["count"] == 1 and "3 lost races in a row" in env.store["lane_strikes"]["2"]["last"][0]["why"]
+    assert not env.store.get("lane_strikes") and not env.store.get("lanes_fallback")
+    results.clear()
+    env.state_refs = lambda: ("s2", "l1")  # type: ignore[attr-defined]  # reason: a push that fails with nothing moving
+    scripted(["lost_race"] * 3)
+    assert entry.cycle_with_retries(two_lane(graph, tmp_path, "s1", "2"), env) == "lost_race" and len(results) == 3  # type: ignore[arg-type]  # reason: as above
+    assert env.store["lane_strikes"]["2"]["count"] == 1 and "origin's state never moved" in env.store["lane_strikes"]["2"]["last"][0]["why"]
+    assert entry.raced(("a", "b"), ("a", "c")) and not entry.raced(("a", "b"), ("a", "b"))
+    assert not entry.raced(None, ("a", "b")) and not entry.raced(("a", None), ("b", None))  # unreadable: judged a strike
+    del env.state_refs  # type: ignore[attr-defined]  # reason: an Env with no reader is judged as before D-3269
+    assert entry.state_refs(env) is None  # type: ignore[arg-type]  # reason: as above
     results.clear()
     scripted(["lost_race"])
     assert entry.cycle_with_retries(config(graph, tmp_path), env) == "lost_race" and len(results) == 1  # type: ignore[arg-type]  # reason: one lane never retries

@@ -11220,7 +11220,7 @@
    "id": "T346",
    "slug": "code-purpose-challenges",
    "title": "portals: every homeowner Verify code is bound to its purpose by a local challenge with a try cap",
-   "goal": "Pentest PT-03 and the PT-02 gap beyond the report (D-2348; SEC-055, SEC-008, PRIV-031). One Twilio Verify service serves every purpose and `VerifyAdapter::check_code(to, code)` (`app/adapters/src/verify.rs:50`, :86) is not bound to one, so `confirm_request` (`app/portals/src/data_download.rs:210`) acts on any of her open requests (up to 30 days old) after any passing code for her phone, the sign-in code included, and homeowner sign-in (`finish_sign_in`, `app/portals/src/homeowner_portal.rs:164`) keeps no local challenge; neither has an app-side try cap. Build: (1) `migrations/0176_portals_code_challenge.sql` adds `portals.code_challenge` (ID, purpose `homeowner_signin`, `data_copy` or `data_delete`, subject ID (her contact for sign-in, the request for copy and delete), sent at, used at, tries; app role SELECT, INSERT and UPDATE of `tries` and `used_at` only). (2) `app/portals/src/code_challenge.rs`: the rule (SEC-055): a challenge lives as long as the Verify code (10 minutes from its first send, the `SEND_WINDOW_SECONDS` both files use); a send (`send_sign_in_code`, `open_request` and a new `resend_request_code` for an open request) made while an unused challenge of that purpose and subject is still alive reuses it and does not reset its tries or its send time, because Twilio keeps one pending code per number for its life, so the cap is truly 5 per code; a send after the newest challenge expired or was used opens a new one; each is written in a short committed transaction before Verify is called. A check is refused before Verify is called unless the newest unused, unexpired challenge of that purpose and subject exists; it reserves a try against that challenge by one atomic `UPDATE ... SET tries = tries + 1 WHERE id = $1 AND used_at IS NULL AND tries < CODE_TRIES RETURNING`, committed before the Verify call (the cap is `business_auth::CODE_TRIES`, the same constant as T272; a reservation never comes back, so a crash or a timeout uses a try); a right code then uses the challenge with a conditional `UPDATE ... SET used_at = $2 WHERE id = $1 AND used_at IS NULL` in the same transaction as the action it confirms (the session start, or the confirmed audit row with the copy or the delete), and when no row changes (a second right check got there first) the action rolls back and nothing is done twice. No pooled connection, transaction or reservation is held across the Verify await (pentest PT-04's availability side, D-2349): `send_sign_in_code`, `finish_sign_in`, `open_request`, `confirm_request` and `resend_request_code` take `&PgPool` in place of `&mut PgConnection` and acquire a connection only for each short database step, releasing it before Verify is called; T307 calls them with the router's pool. Picks' codes and business sign-in keep their own rows (T272 binds the business code to its sent challenge). (3) No change to `stand_ins/twilio.py`: it keys a verification by `to` only, which is the shared-service model these tests need. Tests in `tests/security/tests/code_purpose.rs` (TD-SEC-60): a code sent for one purpose is refused for another before Verify is called (a sign-in code cannot confirm a delete whose own challenge expired or was used; a pick code cannot sign in); 20 simultaneous wrong checks reach Verify at most 5 times and the sixth is refused; a used challenge is refused; a right code and the action commit together; a re-send inside the code's life reuses the challenge and gives no more tries, and one after expiry or use opens a new one; two simultaneous right checks act once; with a fake Verify that hangs, 30 concurrent sends and checks leave a pool of 5 connections able to serve another request (the matrix's AVAIL-01). Update the `portals` `CLAUDE.md`, `docs/architecture.md` section 10 and `docs/decisions.md`.",
+   "goal": "Pentest PT-03 and the PT-02 gap beyond the report (D-2348; SEC-055, SEC-008, PRIV-031). One Twilio Verify service serves every purpose and `VerifyAdapter::check_code(to, code)` (`app/adapters/src/verify.rs:50`, :86) is not bound to one, so `confirm_request` (`app/portals/src/data_download.rs:210`) acts on any of her open requests (up to 30 days old) after any passing code for her phone, the sign-in code included, and homeowner sign-in (`finish_sign_in`, `app/portals/src/homeowner_portal.rs:164`) keeps no local challenge; neither has an app-side try cap. Build: (1) `migrations/0176_portals_code_challenge.sql` adds `portals.code_challenge` (ID, purpose `homeowner_signin`, `data_copy` or `data_delete`, subject ID (her contact for sign-in, the request for copy and delete), sent at, used at, tries; app role SELECT, INSERT and UPDATE of `tries` and `used_at` only). (2) `app/portals/src/code_challenge.rs`: the rule (SEC-055): a challenge lives as long as the Verify code (10 minutes from its first send, the `SEND_WINDOW_SECONDS` both files use); a send (`send_sign_in_code`, `open_request` and a new `resend_request_code` for an open request) made while an unused challenge of that purpose and subject is still alive reuses it and does not reset its tries or its send time, because Twilio keeps one pending code per number for its life, so the cap is truly 5 per code; a send after the newest challenge expired or was used opens a new one; each is written in a short committed transaction before Verify is called. A check is refused before Verify is called unless the newest unused, unexpired challenge of that purpose and subject exists; it reserves a try against that challenge by one atomic `UPDATE ... SET tries = tries + 1 WHERE id = $1 AND used_at IS NULL AND tries < CODE_TRIES RETURNING`, committed before the Verify call (the cap is `business_auth::CODE_TRIES`, the same constant as T272; a reservation never comes back, so a crash or a timeout uses a try); a right code then uses the challenge with a conditional `UPDATE ... SET used_at = $2 WHERE id = $1 AND used_at IS NULL` in the same transaction as the action it confirms (the session start, or the confirmed audit row with the copy or the delete), and when no row changes (a second right check got there first) the action rolls back and nothing is done twice. No pooled connection, transaction or reservation is held across the Verify await (pentest PT-04's availability side, D-2349): `send_sign_in_code`, `finish_sign_in`, `open_request`, `confirm_request` and `resend_request_code` take `&PgPool` in place of `&mut PgConnection` and acquire a connection only for each short database step, releasing it before Verify is called; T307 calls them with the router's pool. Picks' codes and business sign-in keep their own rows (T272 binds the business code to its sent challenge). (3) No change to `stand_ins/twilio.py`: it keys a verification by `to` only, which is the shared-service model these tests need. Tests in `tests/security/tests/code_purpose.rs` (TD-SEC-60): a code sent for one purpose is refused for another before Verify is called (a sign-in code cannot confirm a delete whose own challenge expired or was used; a pick code cannot sign in); 20 simultaneous wrong checks reach Verify at most 5 times and the sixth is refused; a used challenge is refused; a right code and the action commit together; a re-send inside the code's life reuses the challenge and gives no more tries, and one after expiry or use opens a new one; two simultaneous right checks act once; with a fake Verify that hangs, 30 concurrent sends and checks leave a pool of 5 connections able to serve another request (the matrix's AVAIL-01). Update the `portals` `CLAUDE.md` and `docs/decisions.md`, and add this task's line to the off-database records and recovery notes of `docs/architecture.md` (found by grep, never loaded whole; D-3079, D-3286).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -11265,13 +11265,14 @@
    "decisions": [
     "D-2348",
     "D-1837",
-    "D-1934"
+    "D-1934",
+    "D-3286"
    ],
    "cites": [],
    "budget": {
     "files": 5,
     "lines": 550,
-    "context_pct": 40
+    "context_pct": 24
    },
    "checks": [
     "Ci",
@@ -11334,13 +11335,14 @@
     "D-2408",
     "D-035",
     "D-2637",
-    "D-3083"
+    "D-3083",
+    "D-3286"
    ],
    "cites": [],
    "budget": {
     "files": 6,
     "lines": 350,
-    "context_pct": 40
+    "context_pct": 44
    },
    "checks": [
     "Ci",
@@ -11471,7 +11473,7 @@
    "id": "T255",
    "slug": "emergency-address-rerelease",
    "title": "intake, payments and server: ask again for an emergency address and release once it arrives",
-   "goal": "On an emergency job a release that comes before the address stores one `picks.address_wait` row and queues one `picks.address_needed` event (T069, TD-INT-34), but nothing handles the event, and nothing releases once the address arrives: the proof was consumed and `paid_release` needs a new Stripe event (D-1563). Build both (D-1739). (1) `app/intake/src/address_wait.rs`: the `picks.address_needed` handler, registered in `register_handlers` in the shared `app/server/src/lib.rs` (`:382`; not `bin/worker.rs`, D-3118), asks the homeowner the name-and-address question again at once through `intake::api::ask_name_address` (INT-027, INT-029), once per pick; and `address_arrived`, which `conversation.rs` (T040's, extended by T162) calls after `take_name_address` stores an address for a job with a waiting pick, queueing one `intake.address_in` event. (2) `app/payments/src/reclear.rs`: `payments::api::reclear_release(conn, pick)` returns a `Releasable` only from the pick's stored charge success (the succeeded PaymentIntent T189's `paid_release` checked) or its recorded $0 decision (`no_fee_release`'s rule), never from a redirect, the homeowner's message or a new event (SEC-030). (3) The `intake.address_in` handler in `app/server/src/release_sink.rs` (T254's) re-clears, settles and releases through the same sink, so the masked line opens then (TD-CALL-12's database path); a pick that left paid or free before the address arrived releases nothing, and a second address message releases nothing again. Tests in `app/server/tests/address_rerelease.rs` (TD-INT-39; only `server` may mint). Update `docs/architecture.md` section 10 and the `intake`, `payments` and `server` `CLAUDE.md` files. The re-clear uses `no_fee_release`'s pick-bound rule from T337 (the pick's own `payments.pick_fee` business and job, D-2302), never a pair its caller passes. Once T340 is on `main`, a page pick of a non-emergency job with no `jobs.job_facts` row is refused, so any non-emergency job this task's own tests pick records its facts row first (`jobs::api::record_job_facts`, with the catalog stored once through `catalog::api::load_embedded`) (D-3118). Any test this task writes that builds an `adapters::api::PaymentIntent` (a fake `IntentStripe` or `PaymentsAdapter` answering an intent) builds it with `serde_json::from_value` (the type derives `Deserialize`), never a struct literal, and gives a succeeded intent a fake `ch_` `latest_charge`, so T352's new field (`#[serde(default)]`) breaks no file T352 does not own (D-3134).",
+   "goal": "On an emergency job a release that comes before the address stores one `picks.address_wait` row and queues one `picks.address_needed` event (T069, TD-INT-34), but nothing handles the event, and nothing releases once the address arrives: the proof was consumed and `paid_release` needs a new Stripe event (D-1563). Build both (D-1739). (1) `app/intake/src/address_wait.rs`: the `picks.address_needed` handler, registered in `register_handlers` in the shared `app/server/src/lib.rs` (`:382`; not `bin/worker.rs`, D-3118), asks the homeowner the name-and-address question again at once through `intake::api::ask_name_address` (INT-027, INT-029), once per pick; and `address_arrived`, which `conversation.rs` (T040's, extended by T162) calls after `take_name_address` stores an address for a job with a waiting pick, queueing one `intake.address_in` event. (2) `app/payments/src/reclear.rs`: `payments::api::reclear_release(conn, pick)` returns a `Releasable` only from the pick's stored charge success (the succeeded PaymentIntent T189's `paid_release` checked) or its recorded $0 decision (`no_fee_release`'s rule), never from a redirect, the homeowner's message or a new event (SEC-030). (3) The `intake.address_in` handler in `app/server/src/release_sink.rs` (T254's) re-clears, settles and releases through the same sink, so the masked line opens then (TD-CALL-12's database path); a pick that left paid or free before the address arrived releases nothing, and a second address message releases nothing again. Tests in `app/server/tests/address_rerelease.rs` (TD-INT-39; only `server` may mint). Update the `intake`, `payments` and `server` `CLAUDE.md` files and add this task's line to the off-database records and recovery notes of `docs/architecture.md` (found by grep, never loaded whole; D-3079, D-3286). The re-clear uses `no_fee_release`'s pick-bound rule from T337 (the pick's own `payments.pick_fee` business and job, D-2302), never a pair its caller passes. Once T340 is on `main`, a page pick of a non-emergency job with no `jobs.job_facts` row is refused, so any non-emergency job this task's own tests pick records its facts row first (`jobs::api::record_job_facts`, with the catalog stored once through `catalog::api::load_embedded`) (D-3118). Any test this task writes that builds an `adapters::api::PaymentIntent` (a fake `IntentStripe` or `PaymentsAdapter` answering an intent) builds it with `serde_json::from_value` (the type derives `Deserialize`), never a struct literal, and gives a succeeded intent a fake `ch_` `latest_charge`, so T352's new field (`#[serde(default)]`) breaks no file T352 does not own (D-3134).",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -11519,13 +11521,14 @@
     "D-1739",
     "D-2302",
     "D-3118",
-    "D-3134"
+    "D-3134",
+    "D-3286"
    ],
    "cites": [],
    "budget": {
     "files": 5,
     "lines": 500,
-    "context_pct": 40
+    "context_pct": 19
    },
    "checks": [
     "Ci",
@@ -13304,7 +13307,10 @@
     "T393",
     "T400",
     "T396",
-    "T398"
+    "T398",
+    "T416",
+    "T417",
+    "T418"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -13338,7 +13344,7 @@
    "budget": {
     "files": 3,
     "lines": 400,
-    "context_pct": 49
+    "context_pct": 54
    },
    "checks": [
     "Ci",
@@ -17244,14 +17250,15 @@
    "id": "T234",
    "slug": "wargames-harness",
    "title": "War games harness: persona library, scenario runner and chaos injectors",
-   "goal": "Phase 2 war games (Casey, October 31, D-1154), part 1: `wargames/` (Python, standard library only) drives the Railway test site through its real entry points (signed inbound texts and status callbacks to the texting webhook, the web intake and web chat, signed inbound business email replies, the homeowner, business and owner portal pages) and, for faults the sandboxes cannot make, a local lane (`--target local`: the stand-ins and the test-control router, as `Ci`'s journeys run). A persona library (`wargames/personas.py`) holds both sides: ordinary, confused and vanishing homeowners; Spanish speakers; tenants; STOP and START mid-job; pranksters and AI-credit drainers (photo spam, bursts of requests, endless rambling intake, re-entry loops, opt-out and opt-in churn, one- and two-word messages); people posing as businesses; contractors gaming quotes (bounced contact details, edits, double picks, after-hours claims, never confirming). Chaos injectors (`wargames/chaos.py`): duplicate and replayed webhooks, out-of-order texts, the clock at the 8 a.m. and 8 p.m. quiet-hour edges and at the 24-hour and 4-business-hour timer edges (local lane), a vendor outage mid-flow and the AI returning junk (local lane, through the stand-ins' fault and plant headers). The campaign session plays personas live too, improvising beyond the library, and adds each new one to it. Fake data only (BUILD_BRIEF.md:66, PRIV-019): every persona's name, phone (555-0100 to 555-0199), email (example.com) and street comes from the fixture generator, and no real number, key or person is ever used; signing secrets and test keys are read the way T129's sandbox mode reads its credentials (from the build environment's secrets, never printed, logged or committed); an entry point whose secret this session cannot reach runs on the local lane only and the run log says so; timers on the test site are shortened only through settings, as T136 does, and each simulated business day is recorded with its wall-clock span. `wargames/anomalies.py` checks after every step, from outside effects only (docs/test-design.md section 1 rule 1): no duplicate outbound text, email or charge; consent text first on every path; an opt-out word stops every text; no text outside quiet hours; no homeowner contact detail outside the vault or on any text to a business; every status change has an audit row; and every anomaly is logged as one JSON line with the request, job and message IDs (`wargames/runs/<run>.jsonl`, fake IDs only). The tests under `tests/wargames/` run offline in `Ci` (no test site, no network, the stand-ins at most) and run logs `wargames/runs/*.jsonl` are git-ignored (`.gitignore`), so only the reports carry results; persona addresses use fake street names such as \"1 Test Way\", since `scripts/pii_scan.py` scans `wargames/`. On the test site the AI-008 switch is on during the money run and the rounds, so real Claude calls are made on fake data from the test project's Console key (T137's), and the campaign's AI spend is capped at $40 in all (a test-project daily AI-call cap, AI-021, of 600 calls, and the Console spend limit Casey set at the account checkpoint, whichever is lower); outbound texts use Twilio's test credentials and magic numbers only, so no real phone receives anything (BUILD_BRIEF.md:190). Latency (D-2038, from Casey's shared intake-latency review, November 8, 2026): every scenario step records, on fake data only, the time from a homeowner's web submit or inbound text to the next question shown on the page or sent as a text, measured from outside (the request the harness sent, the reply it saw), and, where the app or the stand-ins expose them, the AI call time and the database pool wait for that step (otherwise the record says \"not exposed\", never a guess); a timing record holds the run, scenario, persona class, step kind, lane, fake request ID and milliseconds, and never a message body, name, phone, email or address; each run ends with a table of p50 and p95 (nearest rank) per scenario for each measure, with how many turns fell back on the AI budget (AI-023's reply budget ran out and the fixed question went instead), ready for the round's results in `docs/phase2/war-games.md`. The concurrency and overload scenario is T297's (D-2054): it imports this task's drivers, chaos injectors and latency recorder from `wargames/`, so each stays usable on its own (a driver per entry point, the recorder independent of any one scenario). `wargames/scenarios.py` maps each of the 38 cases of the pentest matrix (`docs/reviews/war-games-inputs/2026-11-09-pentest-matrix.md`) to a scenario or a stated skip with its reason, and `tests/wargames/test_wargames.py` fails when a case ID has neither (D-2350); every case runs in the isolated environment only, with synthetic accounts and no production key, outreach, real message or payment.",
+   "goal": "Phase 2 war games (Casey, October 31, D-1154), part 1: `wargames/` (Python, standard library only) drives the Railway test site through its real entry points (signed inbound texts and status callbacks to the texting webhook, the web intake and web chat, signed inbound business email replies, the homeowner, business and owner portal pages) and, for faults the sandboxes cannot make, a local lane (`--target local`: the stand-ins and the test-control router, as `Ci`'s journeys run). A persona library (`wargames/personas.py`) holds both sides: ordinary, confused and vanishing homeowners; Spanish speakers; tenants; STOP and START mid-job; pranksters and AI-credit drainers (photo spam, bursts of requests, endless rambling intake, re-entry loops, opt-out and opt-in churn, one- and two-word messages); people posing as businesses; contractors gaming quotes (bounced contact details, edits, double picks, after-hours claims, never confirming). Chaos injectors (`wargames/chaos.py`): duplicate and replayed webhooks, out-of-order texts, the clock at the 8 a.m. and 8 p.m. quiet-hour edges and at the 24-hour and 4-business-hour timer edges (local lane), a vendor outage mid-flow and the AI returning junk (local lane, through the stand-ins' fault and plant headers). The campaign session plays personas live too, improvising beyond the library, and adds each new one to it. Fake data only (BUILD_BRIEF.md:66, PRIV-019): every persona's name, phone (555-0100 to 555-0199), email (example.com) and street comes from the fixture generator, and no real number, key or person is ever used; signing secrets and test keys are read the way T129's sandbox mode reads its credentials (from the build environment's secrets, never printed, logged or committed); an entry point whose secret this session cannot reach runs on the local lane only and the run log says so; timers on the test site are shortened only through settings, as T136 does, and each simulated business day is recorded with its wall-clock span. `wargames/anomalies.py` checks after every step, from outside effects only (docs/test-design.md section 1 rule 1): no duplicate outbound text, email or charge; consent text first on every path; an opt-out word stops every text; no text outside quiet hours; no homeowner contact detail outside the vault or on any text to a business; every status change has an audit row; and every anomaly is logged as one JSON line with the request, job and message IDs (`wargames/runs/<run>.jsonl`, fake IDs only). The tests under `tests/wargames/` run offline in `Ci` (no test site, no network, the stand-ins at most) and run logs `wargames/runs/*.jsonl` are git-ignored (`.gitignore`), so only the reports carry results; persona addresses use fake street names such as \"1 Test Way\", since `scripts/pii_scan.py` scans `wargames/`. On the test site the AI-008 switch is on during the money run and the rounds, so real Claude calls are made on fake data from the test project's Console key (T137's), and the campaign's AI spend is capped at $40 in all (a test-project daily AI-call cap, AI-021, of 600 calls, and the Console spend limit Casey set at the account checkpoint, whichever is lower); outbound texts use Twilio's test credentials and magic numbers only, so no real phone receives anything (BUILD_BRIEF.md:190). Latency (D-2038, from Casey's shared intake-latency review, November 8, 2026): every scenario step records, on fake data only, the time from a homeowner's web submit or inbound text to the next question shown on the page or sent as a text, measured from outside (the request the harness sent, the reply it saw), and, where the app or the stand-ins expose them, the AI call time and the database pool wait for that step (on the local lane the pool wait and statement count from T416's `GET /__test/perf/db` snapshot, D-3292) (otherwise the record says \"not exposed\", never a guess); a timing record holds the run, scenario, persona class, step kind, lane, fake request ID and milliseconds, and never a message body, name, phone, email or address; each run ends with a table of p50 and p95 (nearest rank) per scenario for each measure, with how many turns fell back on the AI budget (AI-023's reply budget ran out and the fixed question went instead), ready for the round's results in `docs/phase2/war-games.md`. The concurrency and overload scenario is T297's (D-2054): it imports this task's drivers, chaos injectors and latency recorder from `wargames/`, so each stays usable on its own (a driver per entry point, the recorder independent of any one scenario). `wargames/scenarios.py` maps each of the 38 cases of the pentest matrix (`docs/reviews/war-games-inputs/2026-11-09-pentest-matrix.md`) to a scenario or a stated skip with its reason, and `tests/wargames/test_wargames.py` fails when a case ID has neither (D-2350); every case runs in the isolated environment only, with synthetic accounts and no production key, outreach, real message or payment.",
    "type": "harness",
    "phase": 2,
    "stage": "6",
    "module": null,
    "deps": [
     "T139",
-    "T243"
+    "T243",
+    "T416"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -17287,7 +17294,8 @@
     "D-1473",
     "D-2038",
     "D-2054",
-    "D-2350"
+    "D-2350",
+    "D-3292"
    ],
    "cites": [
     "BUILD_BRIEF.md:196",
@@ -17311,13 +17319,14 @@
    "id": "T297",
    "slug": "wargames-overload",
    "title": "War games overload scenario: concurrent conversations, replayed webhooks and AI faults",
-   "goal": "War games concurrency and overload (D-2054, from Casey's shared AI-capacity review, November 8, 2026): `wargames/overload.py` (Python, standard library only) runs one scenario on T234's local lane only (the stand-ins and fake data, so no real AI call and nothing of D-1154's $40 AI cap is spent), reusing T234's drivers, chaos injectors and latency recorder: at least 100 intake conversations at once, mixed web chat and inbound texts, with duplicate and replayed inbound webhooks among them, against at least 2 web processes and 2 worker processes (`app/server/src/bin/worker.rs`) sharing one database when the environment allows it (otherwise the summary records the process counts used and why). AI faults: the module starts a fault proxy on a loopback address in front of the whole stand-in server (`stand_ins/server.py`); every path passes through unchanged except the AI path (`/anthropic/v1/messages`), where, in bursts, it delays the reply or adds the stand-in's `x-stand-in-fault` header for a 429 with and without `retry-after`, a 529, a 500 or a 504, so no stand-in file changes. The app reaches the proxy through T298's `ASKHAVA_AI_BASE_URL` (D-2065), pointed at the proxy instead of the stand-in server (the stand-in client takes only an `http` loopback base URL, `app/adapters/src/ai.rs`, which the proxy keeps). T299 builds the AI client at start-up and calls it from the text and web-chat paths (IC-23, D-2065), and T237, which runs this scenario, waits for it; until T299 is on `main`, the AI-fault part and the AI figures are reported \"not reachable\" with that reason (as D-2030 (2) records what J1 cannot reach), and the rest of the scenario still runs on the AI-off path. Each run reports: the most AI calls in flight at once and the AI calls that reached the provider (both counted at the proxy) against the calls refused on a budget (outcome `budget` in `ai.call_stat`); turns that fell back on the AI-023 reply budget; p50, p95 and p99 (nearest rank) of the time to the next question; the database pool's highest use and p95 acquire wait; the task-queue depth and oldest task age (`core.task`); and every duplicate outbound text and every duplicate AI call, both of which must be zero, any other count being an anomaly logged as T234 logs one (a duplicate AI call is an AI call caused by a duplicate or replayed delivery (TXT-012 de-duplicates by Twilio's message ID): per Twilio message ID, the AI calls beyond those its first delivery made, never counting an AI-023 retry or AI-011's second reading; calls are tied to their message through the call records' `subject_id`, or the count is \"not exposed\"). A figure the app does not expose is reported \"not exposed\", never guessed (T242 lists the smallest instrumentation for each). Fake data only (BUILD_BRIEF.md:66, PRIV-019): no record holds a homeowner message body, name, phone, email or address; run logs go under the git-ignored `wargames/runs/`; the tests run offline in `Ci`.",
+   "goal": "War games concurrency and overload (D-2054, from Casey's shared AI-capacity review, November 8, 2026): `wargames/overload.py` (Python, standard library only) runs one scenario on T234's local lane only (the stand-ins and fake data, so no real AI call and nothing of D-1154's $40 AI cap is spent), reusing T234's drivers, chaos injectors and latency recorder: at least 100 intake conversations at once, mixed web chat and inbound texts, with duplicate and replayed inbound webhooks among them, against at least 2 web processes and 2 worker processes (`app/server/src/bin/worker.rs`) sharing one database when the environment allows it (otherwise the summary records the process counts used and why). AI faults: the module starts a fault proxy on a loopback address in front of the whole stand-in server (`stand_ins/server.py`); every path passes through unchanged except the AI path (`/anthropic/v1/messages`), where, in bursts, it delays the reply or adds the stand-in's `x-stand-in-fault` header for a 429 with and without `retry-after`, a 529, a 500 or a 504, so no stand-in file changes. The app reaches the proxy through T298's `ASKHAVA_AI_BASE_URL` (D-2065), pointed at the proxy instead of the stand-in server (the stand-in client takes only an `http` loopback base URL, `app/adapters/src/ai.rs`, which the proxy keeps). T299 builds the AI client at start-up and calls it from the text and web-chat paths (IC-23, D-2065), and T237, which runs this scenario, waits for it; until T299 is on `main`, the AI-fault part and the AI figures are reported \"not reachable\" with that reason (as D-2030 (2) records what J1 cannot reach), and the rest of the scenario still runs on the AI-off path. Each run reports: the most AI calls in flight at once and the AI calls that reached the provider (both counted at the proxy) against the calls refused on a budget (outcome `budget` in `ai.call_stat`); turns that fell back on the AI-023 reply budget; p50, p95 and p99 (nearest rank) of the time to the next question; the database pool's highest use and p95 acquire wait (from T416's `GET /__test/perf/db` snapshot, one per process: the scenario adds up the snapshots of all its web processes, D-3292); the task-queue depth and oldest task age (`core.task`); and every duplicate outbound text and every duplicate AI call, both of which must be zero, any other count being an anomaly logged as T234 logs one (a duplicate AI call is an AI call caused by a duplicate or replayed delivery (TXT-012 de-duplicates by Twilio's message ID): per Twilio message ID, the AI calls beyond those its first delivery made, never counting an AI-023 retry or AI-011's second reading; calls are tied to their message through the call records' `subject_id`, or the count is \"not exposed\"). A figure the app does not expose is reported \"not exposed\", never guessed (T242 lists the smallest instrumentation for each). Fake data only (BUILD_BRIEF.md:66, PRIV-019): no record holds a homeowner message body, name, phone, email or address; run logs go under the git-ignored `wargames/runs/`; the tests run offline in `Ci`.",
    "type": "harness",
    "phase": 2,
    "stage": "6",
    "module": null,
    "deps": [
-    "T234"
+    "T234",
+    "T416"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -17343,7 +17352,8 @@
     "D-1154",
     "D-2038",
     "D-2054",
-    "D-2065"
+    "D-2065",
+    "D-3292"
    ],
    "cites": [
     "BUILD_BRIEF.md:196",
@@ -20703,7 +20713,7 @@
    "id": "T162",
    "slug": "intake-photos-design",
    "title": "intake: the one intake order for the five paths and the Spanish 'we continue in English' line",
-   "goal": "With the photo and design steps of T212 in place (steps 9 and 10), every intake path in INT-043's \"Intake order\" table (regular, urgent, 911 list, night and web chat) follows the INT-043 order, with a golden test per text path here and the web-chat golden test in T103 (TD-INT-30, which runs later, D-491), and a Spanish homeowner with Spanish conversations off gets the \"we continue in English\" line (INT-043, TXT-041). `order.rs` holds the order and `conversation.rs` (T040's, extended here; T103 extends it later) calls it in place of its own step sequence; the TXT-041 Spanish line is a fixed template key this task adds (D-492). Step 4 (the ZIP and area check) calls T251's `zip_step` (INT-049, D-1521). Whenever a later answer settles or narrows the job type (the trade questions of step 8, on the ordinary path and on the emergency path where they follow the cards, INT-029), the order writes a narrowing row through `jobs::api::record_job_facts` with the same category and the remaining candidates, in the answer's transaction; a refused write (not a narrowing) is logged without homeowner text and changes nothing (seventh audit fix round, D-2330; TD-INT-26). Plan change D-3189 (PRIV-008, INT-041, CARD-007; D-3118): the order is where the card's facts exist, so it writes them to T411's store and builds the card from it: every inbound text whose words describe the job (the text that opens it, and an EDIT's \"what should change\" reply) goes to `quotes::api::keep_description` (with the request and job IDs and the inbox row ID as its message ID; a SPLIT's second job stores the same text under its own job) with a `ScrubbedText` made by scrubbing the already-scrubbed words again with `privacy::api::scrub` (which can only remove more, D-3118); at step 12 the card is built with `quotes::api::build_card` from `quotes::api::description` and the stored answers, and stored with `quotes::api::keep_card` (its digest from `intake::api::card_digest`, its category and the remaining candidates) in the same transaction before `show_card` shows it, so every shown digest has a stored card when SEND or the auto-send approves it; on the emergency path the card is built and stored the same way, with `keep_card`'s `emergency` mark set only when the reply is the Emergency choice (`rules::choice`), before `answer_choice` is called (so the stored card exists inside its releasing transaction, `app/intake/src/service.rs:644` to `:648`) or `release_emergency` can release the job (T251's handler sends it from `unsent_cards`, INT-029). No raw words are stored, and none go into a log line.",
+   "goal": "With the photo and design steps of T212 in place (steps 9 and 10), every intake path in INT-043's \"Intake order\" table (regular, urgent, 911 list, night and web chat) follows the INT-043 order, with a golden test per text path here and the web-chat golden test in T103 (TD-INT-30, which runs later, D-491), and a Spanish homeowner with Spanish conversations off gets the \"we continue in English\" line (INT-043, TXT-041). `order.rs` holds the order and `conversation.rs` (T040's, extended here; T103 extends it later) calls it in place of its own step sequence; the TXT-041 Spanish line is the existing `spanish_not_yet` template (`app/messaging/templates/en.json:52`, `app/messaging/templates/es.json:68`, already in the stay-on list of `app/messaging/src/tests/template_registry.rs:81`), which this task sends and never duplicates with a new key (D-492, D-3286). Step 4 (the ZIP and area check) calls T251's `zip_step` (INT-049, D-1521). Whenever a later answer settles or narrows the job type (the trade questions of step 8, on the ordinary path and on the emergency path where they follow the cards, INT-029), the order writes a narrowing row through `jobs::api::record_job_facts` with the same category and the remaining candidates, in the answer's transaction; a refused write (not a narrowing) is logged without homeowner text and changes nothing (seventh audit fix round, D-2330; TD-INT-26). Plan change D-3189 (PRIV-008, INT-041, CARD-007; D-3118): the order is where the card's facts exist, so it writes them to T411's store and builds the card from it: every inbound text whose words describe the job (the text that opens it, and an EDIT's \"what should change\" reply) goes to `quotes::api::keep_description` (with the request and job IDs and the inbox row ID as its message ID; a SPLIT's second job stores the same text under its own job) with a `ScrubbedText` made by scrubbing the already-scrubbed words again with `privacy::api::scrub` (which can only remove more, D-3118); at step 12 the card is built with `quotes::api::build_card` from `quotes::api::description` and the stored answers, and stored with `quotes::api::keep_card` (its digest from `intake::api::card_digest`, its category and the remaining candidates) in the same transaction before `show_card` shows it, so every shown digest has a stored card when SEND or the auto-send approves it; on the emergency path the card is built and stored the same way, with `keep_card`'s `emergency` mark set only when the reply is the Emergency choice (`rules::choice`), before `answer_choice` is called (so the stored card exists inside its releasing transaction, `app/intake/src/service.rs:644` to `:648`) or `release_emergency` can release the job (T251's handler sends it from `unsent_cards`, INT-029). No raw words are stored, and none go into a log line.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -20756,7 +20766,8 @@
     "D-490",
     "D-1521",
     "D-2330",
-    "D-3189"
+    "D-3189",
+    "D-3286"
    ],
    "cites": [],
    "budget": {
@@ -27341,25 +27352,28 @@
    "id": "T362",
    "slug": "serve-static-files",
    "title": "server: the built static files are served at /static/<crate>/ under the security headers",
-   "goal": "Nov 10 code review batch 2, portals F2 (D-2633; PICK-009, A11Y-033, SEC-012; D-1281, D-1235): nothing serves `/static/`, so the quote page's live updates (`app/portals/templates/quote_page.html:49` loads `/static/portals/quote_page.js`) never run in production, and the Confirm page's `confirm_pay.js` (T261) and the owner sign-in's `passkey.js` (T303) would not load either; `build_router` (`app/server/src/lib.rs:126`) has no static route, and `docs/architecture.md` section 3 still says \"no route serves `/static/` yet\". `app/server/src/static_files.rs` serves the image's built files at `/srv/askhava/static/<crate>/` (in dev and CI, the repo's `app/<crate>/static/` after `npm run build`) at `/static/<crate>/` with tower-http's `ServeDir` (the `fs` feature is already on), merged in `build_router` (shared) under the same security headers as every page; the folder is a setting (read in the shared `app/core/src/settings.rs`) handed to `static_files::router(root)`, so the test points it at a temporary folder holding a fake `portals/quote_page.js` it writes itself (`Ci` runs `cargo test --workspace` at `.github/workflows/ci.yml:290` with no `npm run build`, and only the `.ts` sources are committed in `app/portals/static/`); it is mounted with `Router::nest_service`, never `.route(`, and no `*_PATH` or `*_ROUTE` constant names the folder path, because `tests/security/tests/auth_matrix.rs` (T348's, done) reads every one-line `.route(` call and every `/`-prefixed `*_PATH` or `*_ROUTE` constant as a route (`:276` to `:300`); T230's `/static/portals/feedback.css` (`FEEDBACK_CSS_ROUTE`) keeps its own route and answer (plan change D-3106); with the right MIME type (`.js` as JavaScript, `.css`, fonts, images), no directory listing, no path escape, and a long cache only for content-hashed names; `docs/architecture.md` section 13 gets a `yes` row `GET /static/portals/quote_page.js` (module `server`; `auth_matrix.rs`'s `door()` gives `/static` the `Asset` door, which `app/server/tests/door_matrix.rs` does not probe). Tests: `app/server/tests/static_files_route.rs` (TD-SEC-62): with the folder set to its temporary folder, `/static/portals/quote_page.js` answers 200 as JavaScript with the security headers; `/static/../Cargo.toml`, an encoded traversal and a directory answer 404; an unknown crate answers 404; `tests/e2e/static_served.spec.ts`: the quote page's script loads with no console error, and where the quote page is served, a quote added after load gives \"1 new quote added below.\" in its status line. Update `app/server/CLAUDE.md`, `docs/architecture.md` (section 3 and the section 13 row) and `docs/decisions.md`. Plan change D-3144: the `nest_service` call gets a reasoned `NOT_PAGES` line in the shared `tests/a11y/fixtures.ts`, because its A11Y-002 scan lists every `nest_service` call as an entry that fails until it has page states or such a line (`:64`); T101 later mounts the site's embedded files at `/static/site/` beside this route.",
-   "type": "build",
+   "goal": "Nov 10 code review batch 2, portals F2 (D-2633; PICK-009, A11Y-033, SEC-012; D-1281, D-1235): nothing serves `/static/`, so the quote page's live updates (`app/portals/templates/quote_page.html:49` loads `/static/portals/quote_page.js`) never run in production, and the Confirm page's `confirm_pay.js` (T261) and the owner sign-in's `passkey.js` (T303) would not load either; `build_router` (`app/server/src/lib.rs:126`) has no static route, and `docs/architecture.md` section 3 still says \"no route serves `/static/` yet\". `app/server/src/static_files.rs` serves the image's built files at `/srv/askhava/static/<crate>/` (in dev and CI, the repo's `app/<crate>/static/` after `npm run build`) at `/static/<crate>/` with tower-http's `ServeDir` (the `fs` feature is already on), merged in `build_router` (shared) under the same security headers as every page; the folder is a setting (read in the shared `app/core/src/settings.rs`) handed to `static_files::router(root)`, so the test points it at a temporary folder holding a fake `portals/quote_page.js` it writes itself (`Ci` runs `cargo test --workspace` at `.github/workflows/ci.yml:290` with no `npm run build`, and only the `.ts` sources are committed in `app/portals/static/`); it is mounted with `Router::nest_service`, never `.route(`, and no `*_PATH` or `*_ROUTE` constant names the folder path, because `tests/security/tests/auth_matrix.rs` (T348's, done) reads every one-line `.route(` call and every `/`-prefixed `*_PATH` or `*_ROUTE` constant as a route (`:276` to `:300`); T230's `/static/portals/feedback.css` (`FEEDBACK_CSS_ROUTE`) keeps its own route and answer (plan change D-3106); with the right MIME type (`.js` as JavaScript, `.css`, fonts, images), no directory listing, no path escape, and a long cache only for content-hashed names; `docs/architecture.md` section 13 gets a `yes` row `GET /static/portals/quote_page.js` (module `server`; `auth_matrix.rs`'s `door()` gives `/static` the `Asset` door, which `app/server/tests/door_matrix.rs` does not probe). Tests: `app/server/tests/static_files_route.rs` (TD-SEC-62): with the folder set to its temporary folder, `/static/portals/quote_page.js` answers 200 as JavaScript with the security headers; `/static/../Cargo.toml`, an encoded traversal and a directory answer 404; an unknown crate answers 404; `tests/e2e/static_served.spec.ts`: the quote page's script loads with no console error, and where the quote page is served, a quote added after load gives \"1 new quote added below.\" in its status line. Update `app/server/CLAUDE.md`, `docs/architecture.md` (section 3 and the section 13 row) and `docs/decisions.md`. Plan change D-3144: the `nest_service` call gets a reasoned `NOT_PAGES` line in the shared `tests/a11y/fixtures.ts`, because its A11Y-002 scan lists every `nest_service` call as an entry that fails until it has page states or such a line (`:64`); T101 later mounts the site's embedded files at `/static/site/` beside this route. Plan change D-3270 (attempt 2 stopped on a `PLAN GAP:` report, confirmed): once `/static/portals/quote_page.js` is served (404 before), the quote page's load event waits for the script, and `tests/a11y/j1_keyboard.spec.ts` (T098's, T214's) presses Tab at `:172` after \"Go back\" (`:170`) before that load, so focus starts at the first control instead of quote #2 and `tab()` fails at 320, 768 and 1280 px; T362 is therefore a harness task (Opus with an Opus reviewer) and also owns that test for one change only: one line `await page.waitForLoadState(\"load\");` directly after the heading check at `:171`, every other line byte-identical, no assertion, input or expected value added, removed or loosened (a timing fix: the test checks exactly what it checks today, after the page has loaded as `open()` already waits for on `page.goto`). No other test needs it: every other Tab press in `tests/a11y/` and `tests/e2e/` follows `open()`, which waits for load, and no keyboard step in `j1_keyboard.spec.ts` lands on `confirm_pay.html` or `owner_signin.html`, the other pages that load a `/static/` script.",
+   "type": "harness",
    "phase": 1,
    "stage": "4",
    "module": "server",
    "deps": [
     "T348",
-    "T173"
+    "T173",
+    "T214"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
-    "security"
+    "security",
+    "harness"
    ],
    "owns": [
     "app/server/src/static_files.rs",
     "app/server/tests/static_files_route.rs",
-    "tests/e2e/static_served.spec.ts"
+    "tests/e2e/static_served.spec.ts",
+    "tests/a11y/j1_keyboard.spec.ts"
    ],
    "reads": [
     "docs/architecture.md",
@@ -27384,13 +27398,14 @@
     "D-1281",
     "D-1235",
     "D-3106",
-    "D-3144"
+    "D-3144",
+    "D-3270"
    ],
    "cites": [],
    "budget": {
-    "files": 3,
+    "files": 4,
     "lines": 300,
-    "context_pct": 18
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -27920,7 +27935,7 @@
    "id": "T372",
    "slug": "license-change-reapplied-daily",
    "title": "businesses and licensing: each recorded ROC list re-applies the license map to every business whose classes changed",
-   "goal": "Nov 11 code review batch 3, F6 (b) (D-2705; BIZ-050, LIC-043, D-393, D-2593, D-2596): `reapply_license` (`app/businesses/src/capability.rs:389`) has no production caller, so a class removed from a business's record keeps its job types and cards, and no `businesses.license_change` email is ever queued. Fix: (1) `app/licensing/src/class_changes.rs`: a read, through `licensing::api`, of each license number whose class set differs between a recorded ROC list and the one recorded before it, with the old and new classes; a number missing from the newer list is not a change (a truncated list must not strip and pause everyone; a lapsed license is CARD-015's and the lookup's, not this task's); (2) `app/businesses/src/license_reapply.rs`: a daily `businesses.license_reapply` task, registered in the shared worker and queued once a day after the list time (tomorrow queued first), that, applies each recorded list it has not yet applied, oldest first, each against the list before it (so a class removed on a day the task did not run is never lost), marking a list applied without a new table (a done task keyed per list date, or an audit row); for each list it maps each changed license number to its businesses and calls `reapply_license` with the old and new classes and the list date, in bounded batches; a re-run for the same list does nothing new (D-2596's key). It does not depend on who records the lists (T371). Tests in `tests/integration/tests/license_reapply_daily.rs` (TD-BIZ-48), lists recorded with `import_roc_list`: an R-37 business whose class goes loses its plumbing job types, is paused for `no_covered_job_type` when nothing is left, and one `businesses.license_change` task is queued; a class added is offered, never ticked, and a switched-off category is not offered (T368); a business on an unchanged record is untouched; a re-run queues nothing; two lists recorded on days the task did not run are applied in order, so a class removed on the first and not restored is removed; a license number missing from the newer list leaves its businesses untouched; a business paused for `no_covered_job_type` that saves a capability tick its license covers is resumed in that transaction, audited, and one with no covered tick stays paused. The email itself is T329's. Resume (D-2596 (1), decided here; D-2711 as narrowed by D-2730): (a) `businesses::api::save_job_types` (in `capability.rs`) stores a business's job-type ticks later, after sign-up: in one transaction it locks the business row, rebuilds the offer from T374's `businesses::api::holding` and the stored category switch (T368), and stores only ticks that offer allows (never the caller's offer); `save_capability` keeps its signature for the done tests, but its lift check also uses the rebuilt offer; (b) a `no_covered_job_type` pause lifts only when, in that same transaction, the rebuilt offer and the stored ticks share a licensed job type, and every other pause rule is re-run first: the complaint count (`app/businesses/src/complaints.rs`, the rule `record_complaint` applies over `PAUSE_WINDOW_DAYS`), a pest license reported wrong (LIC-047, `licensing.business_license.paused_at`) and any license or insurance standing rule the code has (CARD-015's latest check); if one holds, the business stays paused with that rule's reason (audited), never active; (c) when the license pause replaced the owner's own pause (`replace_self_pause`, D-969, D-970: its audit row is the `pause_reason` field change, not a status change), the lift returns the business to paused by itself, never active; (d) otherwise it becomes active, audited. A later list that covers a job type only offers it (BIZ-050), so the owner's tick is the resume; the license-change email says so. TD-BIZ-48 gains a case each: a covered tick lifts the pause; a business that crossed the complaint limit while paused stays paused for complaints; a pest business reported wrong stays paused; a business self-paused before the license pause returns to paused by itself; a tick posted outside the rebuilt offer is refused and lifts nothing. Update the `businesses` and `licensing` `CLAUDE.md` files and `docs/decisions.md`.",
+   "goal": "Nov 11 code review batch 3, F6 (b) (D-2705; BIZ-050, LIC-043, D-393, D-2593, D-2596): `reapply_license` (`app/businesses/src/capability.rs:559`) has no production caller, so a class removed from a business's record keeps its job types and cards, and no `businesses.license_change` email is ever queued. Fix: (1) `app/licensing/src/class_changes.rs`: a read, through `licensing::api`, of each license number whose class set differs between a recorded ROC list and the one recorded before it, with the old and new classes; a number missing from the newer list is not a change (a truncated list must not strip and pause everyone; a lapsed license is CARD-015's and the lookup's, not this task's); (2) `app/businesses/src/license_reapply.rs`: a daily `businesses.license_reapply` task, registered in the shared worker and queued once a day after the list time (tomorrow queued first), that, applies each recorded list it has not yet applied, oldest first, each against the list before it (so a class removed on a day the task did not run is never lost), marking a list applied without a new table (a done task keyed per list date, or an audit row); for each list it maps each changed license number to its businesses and calls `reapply_license` with the old and new classes and the list date, in bounded batches; a re-run for the same list does nothing new (D-2596's key). It does not depend on who records the lists (T371). Tests in `tests/integration/tests/license_reapply_daily.rs` (TD-BIZ-48), lists recorded with `import_roc_list`: an R-37 business whose class goes loses its plumbing job types, is paused for `no_covered_job_type` when nothing is left, and one `businesses.license_change` task is queued; a class added is offered, never ticked, and a switched-off category is not offered (T368); a business on an unchanged record is untouched; a re-run queues nothing; two lists recorded on days the task did not run are applied in order, so a class removed on the first and not restored is removed; a license number missing from the newer list leaves its businesses untouched; a business paused for `no_covered_job_type` that saves a capability tick its license covers is resumed in that transaction, audited, and one with no covered tick stays paused. The email itself is T329's. Resume (D-2596 (1), decided here; D-2711 as narrowed by D-2730): (a) `businesses::api::save_job_types` (in `capability.rs`) stores a business's job-type ticks later, after sign-up: in one transaction it locks the business row, rebuilds the offer from T374's `businesses::api::holding` and the stored category switch (T368), and stores only ticks that offer allows (never the caller's offer); `save_capability` keeps its signature for the done tests, but its lift check also uses the rebuilt offer; (b) a `no_covered_job_type` pause lifts only when, in that same transaction, the rebuilt offer and the stored ticks share a licensed job type, and every other pause rule is re-run first: the complaint count (`app/businesses/src/complaints.rs`, the rule `record_complaint` applies over `PAUSE_WINDOW_DAYS`), a pest license reported wrong (LIC-047, `licensing.business_license.paused_at`) and any license or insurance standing rule the code has (CARD-015's latest check); if one holds, the business stays paused with that rule's reason (audited), never active; (c) when the license pause replaced the owner's own pause (`replace_self_pause`, D-969, D-970: its audit row is the `pause_reason` field change, not a status change), the lift returns the business to paused by itself, never active; (d) otherwise it becomes active, audited. A later list that covers a job type only offers it (BIZ-050), so the owner's tick is the resume; the license-change email says so. TD-BIZ-48 gains a case each: a covered tick lifts the pause; a business that crossed the complaint limit while paused stays paused for complaints; a pest business reported wrong stays paused; a business self-paused before the license pause returns to paused by itself; a tick posted outside the rebuilt offer is refused and lifts nothing. Update the `businesses` and `licensing` `CLAUDE.md` files and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "4",
@@ -27967,7 +27982,8 @@
     "D-2593",
     "D-2596",
     "D-2711",
-    "D-2730"
+    "D-2730",
+    "D-3286"
    ],
    "cites": [],
    "budget": {
@@ -28869,6 +28885,194 @@
    "branch": "claude/task/T415-business-contact-composition",
    "prompt": "kit/prompts/T415.md",
    "acceptance": "TD-PRIV-29 passes against PostgreSQL (a removed member's mailbox kept 30 days then forgotten, a left business's contacts forgotten, a mailbox named by an unsent business email kept, a mailbox touched in the last 2 days kept, an unlinked line's number forgotten, a rerun changing nothing); every existing sender-directory and team test passes unchanged."
+  },
+  {
+   "id": "T416",
+   "slug": "perf-db-metrics",
+   "title": "Performance: database pool and query measurements (PERF-004) and the national-size ZIP lookup measurement",
+   "goal": "Performance track (D-3292, from Casey's performance review `docs/audit/performance-review-2026-11-12.md`), part 1: the database measurements the route benchmark (T417) and the war games (T234, T297) read, metrics only (PERF-004), and the national-size ZIP lookup measurement (PERF-003, measure only, no fix). Nothing here changes how a request behaves. (1) `app/core/src/db_metrics.rs`: a `tracing_subscriber` layer that keeps only numbers from sqlx 0.9's own events: each executed statement (target `sqlx::query`, turned on by `log_statements` on the app pool's connect options) adds one to a statement counter, and each pool acquire (target `sqlx::pool::acquire`, its `acquired_after_secs` field, turned on by `acquire_time_level`; count both of sqlx's acquire events, since an acquire over `acquire_slow_threshold` emits only the \"exceeded slow threshold\" event and not the ordinary one) adds to an acquire count, a wait sum, a wait maximum and fixed log-scale wait buckets from 0.1 ms to 5 s, so a reader can take a nearest-rank p95 from two snapshots' bucket differences. The layer never reads, stores or logs the SQL text, a bind value, the database URL or any field other than those numbers (SEC-001, PRIV-016); no `sqlx::query` event of any level reaches the JSON log layer: sqlx logs a slow statement at WARN by default with the full SQL text in `db.statement`, and the JSON layer passes INFO today, so the JSON layer's own per-layer filter drops the whole `sqlx::query` target and the metrics layer gets a separate per-layer filter (a global filter would hide the events from it too); per-acquire events stay out of the JSON layer as well. A slow acquire over 250 ms (`acquire_slow_threshold`) logs one WARN line through the existing JSON layer holding only the wait seconds. (2) `app/core/src/db.rs` `app_pool` turns those on and registers the pool so a snapshot can read its size, idle count and maximum (`PgPool::size`, `num_idle`); `max_connections`, `ASKHAVA_DB_POOL_MAX` and `ACQUIRE_TIMEOUT` stay exactly as they are (no pool-size change). `app/core/src/logging.rs` installs the layer; `app/core/src/lib.rs` declares the module. (3) `GET /__test/perf/db` on the test-control router (`app/core/src/test_control.rs`, under the same feature, environment and bearer-secret rules as its other routes and the same 404 without them, SEC-035) is added inside `routes()` under the existing bearer `route_layer` (never beside it) and answers a JSON snapshot: statements, acquires, wait sum, maximum and bucket counts in microseconds, pool size, idle and maximum, and `\"acquire_timeouts\": \"not exposed\"` (sqlx emits no event for a timed-out acquire; the benchmark's error rate covers it). A caller takes two snapshots and subtracts; with one request in flight the statement difference is that request's queries. Its tests are `tests/security/tests/perf_db_route.rs`, in `control_router_absent.rs`'s early-return pattern so both builds pass: in the default build (what `Ci` runs) `/__test/perf/db` is 404 under every `APP_ENV`, even with the bearer; with the feature (`cargo test -p askhava-security --test perf_db_route --features askhava-core/test-control`, run in the session under \"Run your tests\") it answers the snapshot with the bearer, 404 without it, and the router refuses `test` and `live`. The default-build case proves in `Ci` that the release build has no such route; the feature-on cases run in `Ci` once T418 adds its E2e step for them (`ci.yml` is T418's), and T417 and T418's benchmark exercises the route end to end. (4) `tests/integration/tests/db_metrics.rs` against the CI Postgres: a known handful of statements moves the counter by exactly that many; with a pool of 1 and a held connection a second acquire's wait lands in the right bucket and the maximum; a slow-acquire WARN line and every log line written during the test hold no SQL text, no URL and no planted fake value (TD-OPS-41). (5) `tests/integration/tests/perf_zip_scale.rs` (PERF-003): builds a synthetic national-size markets file that passes `askhava_catalog::api::parse_markets` (the `markets` module is private) (about 41,000 ZIP codes over about 30,000 towns, made-up codes and town names) and times `town_for_zip` for the first, middle and last ZIP and an unknown one over a fixed number of calls, printing one JSON line with p50 and p95 per lookup in microseconds; it fails only when a lookup returns the wrong town or a town for the unknown ZIP, never on time (the targets are goals, D-3292), and is `#[ignore]` so `Ci` stays fast (T417 runs it). Update the `core` `CLAUDE.md`, the performance-measurement note in `docs/architecture.md` (found by grep for D-3292, never loaded whole) and `docs/decisions.md`. A harness task so the measurement layer is reviewed by Opus before anything is tuned from it.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "4",
+   "module": null,
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "requirements": [],
+   "cites": [
+    "BUILD_BRIEF.md:66"
+   ],
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "deps": [
+    "T009",
+    "T011",
+    "T012",
+    "T020",
+    "T057",
+    "T075"
+   ],
+   "review_areas": [
+    "harness",
+    "security",
+    "privacy"
+   ],
+   "owns": [
+    "app/core/src/db_metrics.rs",
+    "app/core/src/db.rs",
+    "app/core/src/logging.rs",
+    "app/core/src/test_control.rs",
+    "app/core/src/lib.rs",
+    "tests/integration/tests/db_metrics.rs",
+    "tests/integration/tests/perf_zip_scale.rs",
+    "tests/security/tests/perf_db_route.rs"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "app/catalog/src/markets.rs",
+    "tests/security/tests/control_router_absent.rs"
+   ],
+   "tests": [
+    "TD-OPS-41"
+   ],
+   "decisions": [
+    "D-3292",
+    "D-491",
+    "D-453"
+   ],
+   "budget": {
+    "files": 8,
+    "lines": 600,
+    "context_pct": 9
+   },
+   "branch": "claude/task/T416-perf-db-metrics",
+   "prompt": "kit/prompts/T416.md",
+   "acceptance": "`tests/integration/tests/db_metrics.rs` passes on the CI Postgres, including the check that no SQL text reaches the JSON log; `cargo test -p askhava-security --test perf_db_route` passes in the default build (route 404) and with `--features askhava-core/test-control` (snapshot with the bearer, 404 without it and in test and live); `cargo test -p askhava-integration --test perf_zip_scale -- --ignored` passes and prints its JSON line; every existing test passes unchanged and the pool's size and timeout are unchanged."
+  },
+  {
+   "id": "T417",
+   "slug": "perf-route-bench",
+   "title": "Performance: seeded fake-data route benchmark and the first baseline report",
+   "goal": "Performance track (D-3292), part 2: `perf/` (Python, standard library only, D-453), a seeded fake-data benchmark of the app's main routes, and its first baseline. Fake data only (BUILD_BRIEF.md:66, PRIV-019): names from a fixed fake list, phones 555-0100 to 555-0199, emails at `example.com`, streets such as \"1 Test Way\"; `scripts/pii_scan.py` scans `perf/` and `docs/audit/`. (1) `perf/seed.py` seeds, against the CI Postgres (`DATABASE_URL`, after `server migrate`), a deterministic Phoenix-metro-size background in one transaction: about 1,500 businesses across the open trades and the catalog's towns, 20,000 past jobs, 50,000 quotes and their picks (the exact counts are constants the report prints). Rows follow the migrations as they are on `main`; a table it cannot seed faithfully is skipped and named in the report, never guessed. The objects each measured route needs (a job with quotes and its quote-page link, a signed-in business, a pick awaiting Confirm) are made through the app's real entry points the way `tests/e2e/fixtures.ts` does, links read through the test-control routes. (2) `perf/bench.py` boots the stand-in server and the test-control build of `server` and `worker` the way `tests/e2e/webserver.ts` does (random per-run secrets, kept in memory, never printed), seeds, then for each route (home, ZIP lookup, intake acknowledgement, matching (the results step, AI off), quote page and its polling refresh request, pick and Confirm (the paying request only against the stand-ins, once per pick, with its idempotency key), business dashboard) runs a warm-up and then 1, 10 and 50 concurrent users for a fixed request count, recording per request the wall time, status and response bytes; at 1 user it reads T416's `GET /__test/perf/db` before and after each request for queries per request and pool acquire wait. Per route and concurrency it reports p50, p95 and p99 (nearest rank), mean queries per request, p95 and maximum acquire wait, median payload bytes and the error rate (5xx and timeouts, expected 4xx excluded), each a number or \"not exposed\" with the reason, judged against D-3292's goals (ZIP lookup p95 under 100 ms, matching p95 under 250 ms, error rate under 0.1%) as met or missed, never as a failure; the full run also runs T416's `perf_zip_scale` test and records its national-size p95. `--quick` (1 and 10 users, fewer requests, under 3 minutes, never `perf_zip_scale`) is for `Ci`'s report (T418). `--out` names the JSON file; nothing is written under the repository except by `--baseline`. (3) `tests/perf/test_bench.py` runs offline (no app, no database): the nearest-rank p50, p95 and p99 on planted timings (1 to 100 ms give 50, 95 and 99), the bucket-difference p95 on planted snapshots, the error-rate rule (a 404 is not an error, a 500 and a timeout are), the goal verdicts at and just over each goal, and a record holding a planted non-fake phone, email or street is refused before it is written (TD-OPS-42). (4) The first baseline, measured in the task's session against the CI-shaped Postgres: `docs/audit/perf-baseline.json` (one entry per route and concurrency, plus the machine, Postgres version, data counts and git SHA) and `docs/audit/perf-baseline.md`, a short report: the method (lab numbers on a build machine, not production and not field data), the table, the goal verdicts, and for each of PERF-001 to PERF-005 confirmed, rejected or not yet measurable with the numbers behind it; no fix is made or claimed (fixes are later tasks, each with before and after numbers, D-3292). Update `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "4",
+   "module": null,
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "requirements": [],
+   "cites": [
+    "BUILD_BRIEF.md:66"
+   ],
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "deps": [
+    "T416"
+   ],
+   "review_areas": [
+    "harness",
+    "privacy"
+   ],
+   "owns": [
+    "perf/seed.py",
+    "perf/bench.py",
+    "tests/perf/test_bench.py",
+    "docs/audit/perf-baseline.json",
+    "docs/audit/perf-baseline.md"
+   ],
+   "reads": [
+    "docs/audit/performance-review-2026-11-12.md",
+    "tests/e2e/webserver.ts",
+    "tests/e2e/fixtures.ts",
+    "app/core/src/db_metrics.rs"
+   ],
+   "tests": [
+    "TD-OPS-42"
+   ],
+   "decisions": [
+    "D-3292",
+    "D-453",
+    "D-2038"
+   ],
+   "budget": {
+    "files": 5,
+    "lines": 700,
+    "context_pct": 6
+   },
+   "branch": "claude/task/T417-perf-route-bench",
+   "prompt": "kit/prompts/T417.md",
+   "acceptance": "`python3 -m pytest tests/perf/test_bench.py` passes offline; `python3 -m perf.bench --quick --out <tmp>` exits 0 against the CI Postgres with every route and figure present (a number or \"not exposed\" with its reason); `docs/audit/perf-baseline.json` and `docs/audit/perf-baseline.md` come from a full run in the session; `scripts/pii_scan.py` passes on `perf/`, `tests/perf/` and both reports."
+  },
+  {
+   "id": "T418",
+   "slug": "perf-vitals-ci-report",
+   "title": "Performance: lab Core Web Vitals and Ci's warn-only performance report",
+   "goal": "Performance track (D-3292), part 3: lab Core Web Vitals and `Ci`'s performance report, which warns and never fails a build on time. (1) `tests/perf/web_vitals.spec.ts` with its own `tests/perf/playwright.config.ts` (globalSetup reused from `tests/e2e/webserver.ts`, objects made as `tests/e2e/fixtures.ts` makes them, fake data only, BUILD_BRIEF.md:66): in Chromium at a 390x844 viewport with CPU throttled 4x and a slow mobile network through the DevTools protocol, it loads the home page, a ZIP result, the first intake step, the quote page, the Confirm page and the business dashboard, and reads LCP and CLS through `PerformanceObserver` (buffered) and a lab stand-in for INP (the longest Event Timing duration for one click and one key press on the page's main control). Each figure is written to one JSON file labelled \"lab, not field\" with the goal (LCP 2.5 s, INP 200 ms, CLS 0.1) and the aspirational figure (LCP 1.5 s, INP 150 ms) beside it; the spec asserts only that each figure was measured, never a threshold. (2) `perf/compare.py` reads T417's JSON (from `perf/bench.py --quick`), this JSON and the stored `Ci` baseline `docs/audit/perf-baseline-ci.json`, writes a Markdown table to `$GITHUB_STEP_SUMMARY` (per route p95 and queries per request, each vital, and the change from the baseline), prints a `::warning::` line for each p95 more than 25% above its baseline and each goal missed, and always exits 0; a missing or empty baseline compares nothing and says so. (3) In `.github/workflows/ci.yml`'s E2e job, after the journeys, one step runs the quick benchmark, the vitals spec (`npx playwright test --config tests/perf/playwright.config.ts`; `tests/e2e/playwright.config.ts` would find none of them) and the comparison with `continue-on-error: true` and a 6-minute timeout, reusing the binaries and the Playwright browser already there; no new `uses:`. A second short E2e step (not `continue-on-error`) runs the feature-on test-control tests, which no `Ci` step ran before: `cargo test -p askhava-security --test perf_db_route --test control_router_absent --features askhava-core/test-control`. The two change filters (the Checks job's `npm` rule and the E2e job's `run` rule) also match `perf/` and `tests/perf/`; no other step changes. `tsconfig.json`'s `include` gains `tests/perf/**/*.ts`, since `npx eslint .` type-checks every `.ts` file through its project service and would otherwise fail on the new spec. (4) `tests/perf/test_compare.py` (offline): a p95 25% above baseline gives no warning and 26% gives one; a missed goal gives one; a missing baseline compares nothing and exits 0; a malformed input exits 0 with one warning; the summary holds no value outside the figures (TD-OPS-43). (5) `docs/audit/perf-baseline-ci.json` holds this task's own E2e run's figures when the session can read that run's step summary, otherwise `{\"routes\": {}, \"vitals\": {}}` with a note that the first green `main` run sets it. No hard failure on any measure: a deterministic gate (queries per request, payload bytes) waits for a later decision with a baseline-refresh path (D-3292). Update `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "4",
+   "module": null,
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "requirements": [],
+   "cites": [
+    "BUILD_BRIEF.md:66"
+   ],
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "deps": [
+    "T417",
+    "T056",
+    "T169",
+    "T173",
+    "T283",
+    "T020"
+   ],
+   "review_areas": [
+    "harness",
+    "privacy"
+   ],
+   "owns": [
+    "tests/perf/web_vitals.spec.ts",
+    "tests/perf/playwright.config.ts",
+    "perf/compare.py",
+    "tests/perf/test_compare.py",
+    ".github/workflows/ci.yml",
+    "docs/audit/perf-baseline-ci.json",
+    "tsconfig.json"
+   ],
+   "reads": [
+    "tests/e2e/playwright.config.ts",
+    "tests/e2e/webserver.ts",
+    "tests/e2e/fixtures.ts",
+    "perf/bench.py"
+   ],
+   "tests": [
+    "TD-OPS-43"
+   ],
+   "decisions": [
+    "D-3292",
+    "D-3142"
+   ],
+   "budget": {
+    "files": 7,
+    "lines": 480,
+    "context_pct": 9
+   },
+   "branch": "claude/task/T418-perf-vitals-ci-report",
+   "prompt": "kit/prompts/T418.md",
+   "acceptance": "`python3 -m pytest tests/perf/test_compare.py` passes; `npx playwright test --config tests/perf/playwright.config.ts` runs green locally against the test-control build and writes every figure; `npx eslint .` and `npx tsc -p tsconfig.json` pass with `tests/perf/` included; the E2e job's feature-on test step passes and its performance step runs on this task's branch and its failure cannot fail `Ci` (`continue-on-error: true`); `tests/test_ci_workflow.py` and every other workflow test pass unchanged."
   }
  ]
 }

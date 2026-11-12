@@ -448,12 +448,22 @@ where
     registry
 }
 
+/// Registers `jobs`' daily timer backstop (`jobs.timer_backstop`) on the worker clock: it revives
+/// a non-final job's dead or missing timer (JOB-003, JOB-006, OPS-004, PRIV-007, T366, D-2640).
+fn register_timer_backstop(registry: &mut Registry, clock: Arc<dyn Clock>) {
+    registry.register(askhava_jobs::api::BACKSTOP_KIND, move |pool, _task| {
+        let now = clock.now();
+        async move { askhava_jobs::api::run_backstop(&pool, now).await }
+    });
+}
+
 /// The production worker's whole registry (T327, D-2285): [`register_handlers`], then what only
 /// the worker adds: `privacy`'s sealed photo delete over the stream's store (PRIV-009, T276),
 /// `messaging`'s paused-emergency follow-up on the call list (TXT-023, T279), with the footer
 /// postal setting (required in test and live) `messaging`'s business notices and charge receipts
 /// ([`register_notice_senders`], T313), the hourly
-/// no-handler check ([`no_handler_alert`], OPS-004) and, with the Twilio settings in `pairs`
+/// dead-letter check ([`no_handler_alert`], OPS-004), `jobs`' daily timer backstop
+/// ([`register_timer_backstop`], T366) and, with the Twilio settings in `pairs`
 /// (required in test and live, D-1688), `messaging`'s day-31 body delete (PRIV-027), `picks`'
 /// masked-line retry (CALL-001) and, with the vault keys too, `messaging`'s outbox sender
 /// (`messaging.send_due`, [`outbox_sender`], T356, D-2628); with both vault keys, `intake`'s card
@@ -498,6 +508,7 @@ where
         },
     );
     no_handler_alert::register(&mut registry, settings.environment(), Arc::clone(&clock));
+    register_timer_backstop(&mut registry, Arc::clone(&clock));
     let pairs: Vec<(String, String)> = pairs.into_iter().collect();
     register_card_sender(&mut registry, settings, &id_secret, pairs.clone())?;
     if let Some(twilio) = twilio_config(settings, pairs.clone())? {
