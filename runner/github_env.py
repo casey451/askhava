@@ -211,11 +211,22 @@ def _redact_gate_row(row: str) -> str:
     return row
 
 
+SMOKE_DROPPED_ENV = ("RUNNER_CHECKS_TOKEN", "RUNNER_PUSH_TOKEN", "GH_TOKEN", "GITHUB_TOKEN")  # never in smoke.sh (D-3156)
+
+
 def _smoke_env() -> dict[str, str]:
     """The smoke test's environment: CARGO_TARGET_DIR is the smoke's own target dir (`smoke_target_dir`), and
     CARGO_INCREMENTAL is 0 as in `Ci`, since the cache keeps that dir and rustc's incremental data was about a
-    third of it (4.7 of 15 GB measured, D-1890)."""
-    return {**os.environ, "CARGO_TARGET_DIR": str(smoke_target_dir()), "CARGO_INCREMENTAL": "0"}
+    third of it (4.7 of 15 GB measured, D-1890). The job's tokens (SMOKE_DROPPED_ENV) are left out: smoke.sh
+    needs none, and it runs plan scripts, third-party build scripts and npm (D-3156)."""
+    kept = {k: v for k, v in os.environ.items() if k not in SMOKE_DROPPED_ENV}
+    return {**kept, "CARGO_TARGET_DIR": str(smoke_target_dir()), "CARGO_INCREMENTAL": "0"}
+
+
+def _actions_run(run: Any) -> bool:
+    """A check run GitHub Actions made (`app.slug` "github-actions"), the only kind `green_twin_tree` counts (D-3156)."""
+    app = run.get("app") if isinstance(run, dict) else None
+    return isinstance(app, dict) and app.get("slug") == "github-actions"
 
 
 def smoke_target_dir() -> Path:
@@ -1596,7 +1607,9 @@ class GitHubEnv:
         """Whether a commit on `main` is already proven green for the smoke's ancestry reuse (D-3156): exactly one
         merged pull request names `sha` as its merge commit (`commits/<sha>/pulls`), that PR's head has the identical
         tree (`git/commits/<sha>`'s `tree.sha`, both read through REST) and every run of `Ci`, `Twin` and `Ally` on that
-        head concluded success, at least one of each (`verify.check_done`'s rule, as for a DONE task). The check
+        head, re-runs included (`filter=all`; the default `latest` hides an earlier red), made by GitHub Actions
+        (`app.slug` "github-actions", so no other app's run of the same name counts), concluded success, at least
+        one of each (`verify.check_done`'s rule, as for a DONE task). The check
         workflows run on pushes only, so `main`'s own commits carry no runs; an up-to-date PR's squash commit has its
         head's tree. False on anything else: no or several such PRs, a tree that differs (the PR was behind `main`),
         a missing, failed, cancelled or running check, a check-run list longer than one page, any API error."""
@@ -1605,11 +1618,12 @@ class GitHubEnv:
             if not head:
                 return False
             trees = [self._tree_sha(c) for c in (sha, head)]
-            answer = self.gh_json(f"repos/{self.repo}/commits/{head}/check-runs?per_page=100")
+            answer = self.gh_json(f"repos/{self.repo}/commits/{head}/check-runs?per_page=100&filter=all")
             runs = answer["check_runs"]
-            if int(answer.get("total_count", len(runs))) > len(runs):
+            if int(answer.get("total_count", len(runs))) > len(runs) or not all(isinstance(r, dict) for r in runs):
                 return False
-            checks = [{"name": r.get("name"), "sha": r.get("head_sha"), "conclusion": r.get("conclusion")} for r in runs]
+            checks = [{"name": r.get("name"), "sha": r.get("head_sha"), "conclusion": r.get("conclusion")}
+                      for r in runs if _actions_run(r)]
         except (RuntimeError, ValueError, KeyError, TypeError, AttributeError) as exc:
             self.log.append(f"identical-tree checks for {sha[:12]} unreadable: {str(exc)[:200]}")
             return False

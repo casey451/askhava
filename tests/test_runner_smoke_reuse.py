@@ -1092,10 +1092,12 @@ def test_the_prover_is_never_asked_past_the_limit_nor_about_a_doubted_commit() -
 
 TWIN_HEAD = "a" * 40
 MAIN_C = "c" * 40
+ACTIONS = {"slug": "github-actions"}
 
 
 def _green_runs(head: str = TWIN_HEAD) -> list[dict[str, Any]]:
-    return [{"name": n, "head_sha": head, "conclusion": "success", "status": "completed"} for n in ("Ci", "Twin", "Ally")]
+    return [{"name": n, "head_sha": head, "conclusion": "success", "status": "completed", "app": ACTIONS}
+            for n in ("Ci", "Twin", "Ally")]
 
 
 def _twin_answers(main: str = MAIN_C, **over: Any) -> dict[str, Any]:
@@ -1105,7 +1107,7 @@ def _twin_answers(main: str = MAIN_C, **over: Any) -> dict[str, Any]:
                                              "head": {"sha": TWIN_HEAD}}],
         f"repos/o/r/git/commits/{main}": {"tree": {"sha": "1" * 40}},
         f"repos/o/r/git/commits/{TWIN_HEAD}": {"tree": {"sha": "1" * 40}},
-        f"repos/o/r/commits/{TWIN_HEAD}/check-runs?per_page=100": {"total_count": 3, "check_runs": _green_runs()},
+        f"repos/o/r/commits/{TWIN_HEAD}/check-runs?per_page=100&filter=all": {"total_count": 3, "check_runs": _green_runs()},
     }
     answers.update(over)
     return answers
@@ -1131,15 +1133,29 @@ def test_green_twin_tree_proves_a_squash_whose_up_to_date_pr_head_passed_every_c
     asked = _with_api(env, _twin_answers())
     assert env.green_twin_tree(MAIN_C) is True
     assert asked[0] == f"repos/o/r/commits/{MAIN_C}/pulls"
+    assert f"repos/o/r/commits/{TWIN_HEAD}/check-runs?per_page=100&filter=all" in asked, "every run, not only the latest"
+    stray = [*_green_runs(), dict(_green_runs()[0], app={"slug": "some-bot"}, conclusion="failure")]
+    _with_api(env, _twin_answers(**_check_runs(stray)))
+    assert env.green_twin_tree(MAIN_C) is True, "another app's run named Ci neither proves nor refuses"
+
+
+def test_the_smoke_never_gets_the_jobs_tokens(monkeypatch: Any) -> None:
+    for name in ("RUNNER_CHECKS_TOKEN", "RUNNER_PUSH_TOKEN", "GH_TOKEN", "GITHUB_TOKEN"):
+        monkeypatch.setenv(name, "fake-not-a-token")
+    monkeypatch.setenv("SOME_OTHER", "kept")
+    env = ge._smoke_env()
+    assert not set(ge.SMOKE_DROPPED_ENV) & set(env) and env["SOME_OTHER"] == "kept" and env["CARGO_INCREMENTAL"] == "0"
+    smoke = (Path(__file__).resolve().parent.parent / "scripts" / "smoke.sh").read_text()
+    assert not any(name in smoke for name in ge.SMOKE_DROPPED_ENV), "smoke.sh needs none of them"
 
 
 def _check_runs(runs: list[dict[str, Any]], total: int | None = None) -> dict[str, Any]:
-    return {f"repos/o/r/commits/{TWIN_HEAD}/check-runs?per_page=100": {"total_count": len(runs) if total is None else total,
+    return {f"repos/o/r/commits/{TWIN_HEAD}/check-runs?per_page=100&filter=all": {"total_count": len(runs) if total is None else total,
                                                                        "check_runs": runs}}
 
 
 def _rerun(name: str, conclusion: str | None) -> list[dict[str, Any]]:
-    return [*_green_runs(), {"name": name, "head_sha": TWIN_HEAD, "conclusion": conclusion, "status": "completed"}]
+    return [*_green_runs(), {"name": name, "head_sha": TWIN_HEAD, "conclusion": conclusion, "status": "completed", "app": ACTIONS}]
 
 
 NOT_PROVEN = {
@@ -1159,9 +1175,12 @@ NOT_PROVEN = {
     "two_prs": {f"repos/o/r/commits/{MAIN_C}/pulls": [{"merge_commit_sha": MAIN_C, "merged_at": "x", "head": {"sha": TWIN_HEAD}}] * 2},
     "pulls_error": {f"repos/o/r/commits/{MAIN_C}/pulls": RuntimeError("500")},
     "tree_error": {f"repos/o/r/git/commits/{MAIN_C}": RuntimeError("403")},
-    "checks_error": {f"repos/o/r/commits/{TWIN_HEAD}/check-runs?per_page=100": RuntimeError("403")},
+    "checks_error": {f"repos/o/r/commits/{TWIN_HEAD}/check-runs?per_page=100&filter=all": RuntimeError("403")},
     "garbage": {f"repos/o/r/commits/{MAIN_C}/pulls": {"message": "odd"}},
-    "null_checks": {f"repos/o/r/commits/{TWIN_HEAD}/check-runs?per_page=100": None},
+    "null_checks": {f"repos/o/r/commits/{TWIN_HEAD}/check-runs?per_page=100&filter=all": None},
+    "ci_from_another_app": _check_runs([dict(_green_runs()[0], app={"slug": "some-bot"}), *_green_runs()[1:]]),
+    "twin_with_no_app": _check_runs([r if r["name"] != "Twin" else {k: v for k, v in r.items() if k != "app"} for r in _green_runs()]),
+    "a_run_not_an_object": _check_runs([*_green_runs(), "Ci"]),  # type: ignore[list-item]
 }
 
 
@@ -1174,7 +1193,7 @@ def test_green_twin_tree_proves_nothing_on_a_different_tree_a_check_short_of_gre
 
 def test_the_twin_reads_use_the_job_token_and_nothing_else_moves_to_it() -> None:
     for path in (f"repos/o/r/commits/{MAIN_C}/pulls", f"repos/o/r/git/commits/{MAIN_C}",
-                 f"repos/o/r/commits/{TWIN_HEAD}/check-runs?per_page=100"):
+                 f"repos/o/r/commits/{TWIN_HEAD}/check-runs?per_page=100&filter=all"):
         assert ge._job_token_read(["gh", "api", "-H", "Accept: application/vnd.github+json", path]), path
     for path in ("repos/o/r/pulls?head=o:claude/task/T001&state=all&per_page=20", "repos/o/r/pulls/7",
                  f"repos/o/r/commits/{MAIN_C}/pulls/extra", "repos/o/r/git/commits/HEAD", f"repos/o/r/commits/{MAIN_C}"):
