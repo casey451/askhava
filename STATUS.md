@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T14:45:56Z by runner f2ec2c57dae9 (actions).
+Updated 2026-11-12T14:49:18Z by runner f2ec2c57dae9 (actions).
 
 **Building: T362 in progress since 14:45Z; 245 of 397 done; week 94% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-12T14:45:56Z by runner f2ec2c57dae9 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T362 claimed 14:45Z, lease until 17:45Z; lane 2: T389 claimed 14:39Z, lease until 17:39Z
 - **Week:** 94% used, 3.3M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:45Z, 0 min before this update
+- **Last run:** 14:45Z, 3 min before this update
 - **Keeper:** last ran 14:45Z, next wake 17:41Z
 
 ## Needs attention
@@ -92,6 +92,7 @@ Updated 2026-11-12T14:45:56Z by runner f2ec2c57dae9 (actions).
 | T214 | picks (harness): the homeowner's share box at the pick and t | BLOCKED | 2 | 3 min | 15:04Z |  |
 
 ### Plan and harness merges on main
+- 14:48Z Plan: trim T251 to its context limit (D-3256) (#590)
 - 09:36Z Plan: pre-flight fixes round 9 — stage 5: T303, T151, T321, T110, T210, T109, T116; new T409, T410 (D-3155) (#559)
 - 09:22Z Plan: T345 owns the runner tests that hard-code action tags (D-3200) (#572)
 - 09:13Z Plan: store the scrubbed job description and shown card so T251 can send approved cards (D-3189) (#568)
@@ -119,7 +120,6 @@ Updated 2026-11-12T14:45:56Z by runner f2ec2c57dae9 (actions).
 - 18:37Z Plan: T387 steadies payments branch coverage and adds margin, claimed first (D-3049) (#507)
 - 15:44Z Plan: T214 owns the final-Pick share box end to end and ticks it in five finished tests (D-3032) (#495)
 - 15:02Z Plan: T333 may book the webhook refund amount and hold the refunded notice on an unchecked refund (D-3018) (#487)
-- 14:48Z Plan: T214 builds the pick notice's "Can't take it" value; new T386 adds the line to both languages (D-3024) (#489)
 
 ## Progress (requirements verified)
 
