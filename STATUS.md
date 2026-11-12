@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T18:11:48Z by runner cc4a31e70ecd (actions).
+Updated 2026-11-12T18:12:07Z by runner cc4a31e70ecd (actions).
 
 **Building: T251 in progress since 17:19Z; 248 of 400 done; week 2% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-12T18:11:48Z by runner cc4a31e70ecd (actions).
 - **Lane:** lane 1: T251 claimed 17:19Z, lease until 20:19Z; lane 3: T385 claimed 17:26Z, lease until 20:26Z; lane 5: T350 claimed 17:26Z, lease until 20:26Z; lane 6: T376 claimed 18:05Z, lease until 21:05Z
 - **Week:** 2% used, 180.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 18:11Z, 0 min before this update
-- **Keeper:** last ran 18:06Z, next wake 20:21Z
+- **Keeper:** last ran 18:12Z, next wake 20:22Z
 
 ## Needs attention
 - PLAN GAP T346 (since 2026-11-12T17:11:48Z, no attempt used; a plan change fixes it): T346: measures 46% of the context window, over its 45% limit
@@ -86,6 +86,7 @@ Updated 2026-11-12T18:11:48Z by runner cc4a31e70ecd (actions).
 | T345 | harness: every external GitHub Actions `uses:` in every work | BLOCKED | 1 | 8 min | 18:44Z |  |
 
 ### Plan and harness merges on main
+- 18:11Z Plan: pre-flight fixes round 11 — T346 context gap, T162 template key, T372 cite, T255/T347 budgets (D-3286) (#605)
 - 18:06Z Plan: T362 takes the keyboard test's load wait (D-3270) (#601)
 - 17:59Z Harness: seven lanes without merge collisions — crate exclusion, add-only conflict resolution, lanes 5→7 (D-3269) (#603)
 - 16:10Z Plan: pre-flight fixes round 10 — T396, T398, T111, T113, T408, T222; new T414 (D-3263) (#597)
