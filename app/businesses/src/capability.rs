@@ -6,9 +6,11 @@
 //! ticked: [`save_capability`] stores the ticks through `service::set_job_types` with only the
 //! offer allowed, so a licensed job type outside the license is refused (`NotCovered`). A
 //! recurring-work "no" drops the recurring job types (a recurring category's job types that are
-//! not one-time) before storing. The towns, the after-hours tick and the two answers matching
+//! not one-time) before storing. The towns, the after-hours answer and the two answers matching
 //! reads, the largest job ([`LargestJob`]) and recurring work, are stored in the same transaction
 //! (`businesses.capability`, migration 0150); `quotes::capability_match` skips a card by them.
+//! The after-hours "yes" goes through `emergency_switch::set_after_hours` (T369, D-2702): it ticks
+//! only while someone covers, else it is held back ([`CapabilitySaved::after_hours_held`]).
 //!
 //! T368 (D-2701, D-3101): [`holder_offer`] and [`offer_for`] build the checklist from everything
 //! the business holds (ROC classes, agency licenses, pest attestation, handyman and city-list
@@ -34,6 +36,7 @@ use sha2::{Digest, Sha256};
 use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection};
 
+use crate::emergency_switch::{EMERGENCY_YES_LIFE, SwitchError, set_after_hours};
 use crate::holding::{Known, holding};
 use crate::models::{self, BusinessesError, db};
 use crate::rules::JobTypeChoice;
@@ -341,6 +344,17 @@ pub struct CapabilityAnswers {
     pub after_hours: bool,
 }
 
+/// What [`save_capability`] stored (BIZ-049, BIZ-007).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CapabilitySaved {
+    /// The stored ticks ([`kept_ticks`]).
+    pub ticks: Vec<JobTypeChoice>,
+    /// BIZ-007, D-2702: the after-hours "yes" was held back, not ticked, since nobody covers yet;
+    /// the page links the owner to the emergency-switch page to turn on "Emergency emails at any
+    /// hour" and answer the test email.
+    pub after_hours_held: bool,
+}
+
 /// BIZ-049: the ticks to store: a recurring-work "no" drops the offer's recurring rows.
 #[must_use]
 pub fn kept_ticks(offer: &[TradeOffer], answers: &CapabilityAnswers) -> Vec<JobTypeChoice> {
@@ -356,8 +370,9 @@ pub fn kept_ticks(offer: &[TradeOffer], answers: &CapabilityAnswers) -> Vec<JobT
 
 /// BIZ-049, BIZ-004, BIZ-007, BIZ-010, LIC-043: stores the step's answers for business `id` in
 /// one transaction with their audit rows: the ticks ([`kept_ticks`]) allowed only from `offer`,
-/// the towns, the after-hours tick, then the largest job and recurring answer. Returns the stored
-/// ticks.
+/// the towns, the after-hours answer through `set_after_hours` at `now` with
+/// [`EMERGENCY_YES_LIFE`] (a "yes" ticks only while `covered`, else it is held back and the tick
+/// left as stored, T369), then the largest job and recurring answer.
 ///
 /// # Errors
 ///
@@ -369,7 +384,7 @@ pub async fn save_capability(
     offer: &[TradeOffer],
     answers: &CapabilityAnswers,
     (actor, now): (Actor, Timestamp),
-) -> Result<Vec<JobTypeChoice>, BusinessesError> {
+) -> Result<CapabilitySaved, BusinessesError> {
     let allowed: BTreeSet<JobTypeChoice> = offer
         .iter()
         .flat_map(|t| t.rows.iter().map(|r| r.choice.clone()))
@@ -384,9 +399,10 @@ pub async fn save_capability(
         overflow_on: b.overflow_on,
         speaks_spanish: b.speaks_spanish,
         insurance: b.insurance,
-        after_hours: answers.after_hours,
+        after_hours: b.after_hours,
     };
     set_ticks(&mut tx, id, ticks, actor).await?;
+    let after_hours_held = store_after_hours(&mut tx, id, answers.after_hours, now).await?;
     store(&mut tx, id, answers.capability, now).await?;
     let entry = AuditEntry {
         actor,
@@ -399,7 +415,25 @@ pub async fn save_capability(
         .await
         .map_err(|_| BusinessesError::Audit)?;
     db(tx.commit().await)?;
-    Ok(kept)
+    Ok(CapabilitySaved {
+        ticks: kept,
+        after_hours_held,
+    })
+}
+
+/// BIZ-007, D-2702: the after-hours answer through the switch rule; true when a "yes" was held
+/// back because nobody covers at `now`.
+async fn store_after_hours(
+    tx: &mut PgConnection,
+    id: Uuid,
+    on: bool,
+    now: Timestamp,
+) -> Result<bool, BusinessesError> {
+    match set_after_hours(tx, id, on, (now, EMERGENCY_YES_LIFE)).await {
+        Ok(()) => Ok(false),
+        Err(SwitchError::NoCover) => Ok(true),
+        Err(_) => Err(BusinessesError::Database),
+    }
 }
 
 /// Writes or replaces the business's capability row.
