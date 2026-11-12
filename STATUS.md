@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T16:56:44Z by runner 2a3903cde744 (actions).
+Updated 2026-11-12T16:57:05Z by runner 2a3903cde744 (actions).
 
 **Waiting for tokens until 17:00Z; 247 of 400 done; week 96% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-12T16:56:44Z by runner 2a3903cde744 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 16:33Z (no task in progress)
 - **Week:** 96% used, 0.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:55Z, 1 min before this update
-- **Keeper:** last ran 16:29Z, next wake 17:06Z
+- **Last run:** 16:56Z, 0 min before this update
+- **Keeper:** last ran 16:57Z, next wake 17:07Z
 
 ## Needs attention
 - BLOCKED T362: plan gap reported: PLAN GAP: tests/a11y/j1_keyboard.spec.ts:171-172 (owned by T098/T214, protected, not in T362's files) presses Tab before the Go back page's load event. Since T362 serves /static/portals/quote_page.js (404 before), page load waits for the script, so Tab starts at control 0 instead of quote #2 (index 3): "Tab from "" ... Expected: 3, Received: 0" at 320/768/1280 px. Evidence: with the built .js the 3 tests fail; with the .js removed they pass; with await page.waitForLoadState("load") added after the heading check at :171 they pass. T362's own tests pass (static_files_route 5 passed, static_serve; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T362 --plan-fix D-### --reason "..."` (D-2859)
