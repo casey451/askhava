@@ -27,6 +27,7 @@ const ALLOW_LIST_LIVE: &str = "ASKHAVA_ALLOW_LIST_LIVE";
 const PUBLIC_BASE_URL: &str = "ASKHAVA_PUBLIC_BASE_URL";
 const REQUEST_TIMEOUT_SECS: &str = "ASKHAVA_REQUEST_TIMEOUT_SECS";
 const POSTAL_ADDRESS: &str = "ASKHAVA_POSTAL_ADDRESS";
+const STATIC_DIR: &str = "ASKHAVA_STATIC_DIR";
 
 /// Every key the parser accepts; any other `ASKHAVA_*` key stops startup (D-493).
 const KEYS: &[&str] = &[
@@ -45,6 +46,8 @@ const KEYS: &[&str] = &[
     REQUEST_TIMEOUT_SECS,
     // The business email footer's postal line, checked by `messaging` (T313, SEC-028, D-3095).
     POSTAL_ADDRESS,
+    // The folder of built browser files the web process serves at `/static/` (T362, D-2633).
+    STATIC_DIR,
     "ASKHAVA_TWILIO_ACCOUNT_SID",
     "ASKHAVA_STRIPE_ACCOUNT_ID",
     "ASKHAVA_RESEND_DOMAIN",
@@ -247,6 +250,7 @@ pub struct Settings {
     public_base_url: Option<String>,
     request_timeout_secs: u64,
     postal_address: Option<String>,
+    static_dir: Option<String>,
 }
 
 impl Settings {
@@ -285,6 +289,7 @@ impl Settings {
             public_base_url,
             request_timeout_secs: request_timeout_secs(raw.remove(REQUEST_TIMEOUT_SECS))?,
             postal_address: raw.remove(POSTAL_ADDRESS).map(|p| p.trim().to_owned()),
+            static_dir: raw.remove(STATIC_DIR).map(|d| d.trim().to_owned()),
         })
     }
 
@@ -369,6 +374,15 @@ impl Settings {
         self.postal_address
             .as_deref()
             .ok_or(SettingsError::Missing(POSTAL_ADDRESS))
+    }
+
+    /// The folder of built browser files, one `<crate>/` folder each (`ASKHAVA_STATIC_DIR`,
+    /// trimmed), that `server` serves at `/static/<crate>/`; `None` while unset, when `server`
+    /// picks the image's folder in test and live and the repository's `app/<crate>/static/` in
+    /// dev and CI (PICK-009, A11Y-033, T362, D-2633).
+    #[must_use]
+    pub fn static_dir(&self) -> Option<&str> {
+        self.static_dir.as_deref()
     }
 }
 
