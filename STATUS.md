@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-12T18:40:29Z by runner ba3d1884471a (actions).
+Updated 2026-11-12T18:40:47Z by runner ba3d1884471a (actions).
 
 **Building: T251 in progress since 17:19Z; 249 of 400 done; week 3% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 249 of 400 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T251 claimed 17:19Z, lease until 20:19Z; lane 2: T362 claimed 18:36Z, lease until 21:36Z; lane 5: T350 claimed 17:26Z, lease until 21:35Z; lane 6: T376 claimed 18:05Z, lease until 21:05Z; lane 7: T346 claimed 18:16Z, lease until 21:16Z
+- **Lane:** lane 1: T251 claimed 17:19Z, lease until 20:19Z; lane 2: T362 claimed 18:36Z, lease until 21:36Z; lane 5: T350 claimed 17:26Z, lease until 21:35Z; lane 7: T346 claimed 18:16Z, lease until 21:16Z
 - **Week:** 3% used, 177.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 18:37Z, 2 min before this update
 - **Keeper:** last ran 18:37Z, next wake 20:21Z
@@ -18,6 +18,7 @@ Updated 2026-11-12T18:40:29Z by runner ba3d1884471a (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T376 | ai and stand-in (harness): the intake schema sent to Claude  | MERGE_PENDING | 1 | 35 min | 18:40Z |  |
 | T385 | adapters, licensing and businesses (harness): the sign-up re | MERGE_PENDING | 2 | 60 min | 18:26Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T366 | jobs and server: every dead-lettered task alerts, and a dail | done | 1 | 26 min | 17:53Z |  |
 | T414 | Stand-ins (harness): end-to-end specs can read the emails th | MERGE_PENDING | 1 | 32 min | 17:52Z |  |
@@ -166,8 +167,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - T251 (lease until 2026-11-12T20:19:06Z)
 - lane 2: T362 (lease until 2026-11-12T21:36:22Z)
 - lane 5: T350 (lease until 2026-11-12T21:35:54Z)
-- lane 6: T376 (lease until 2026-11-12T21:05:05Z)
 - lane 7: T346 (lease until 2026-11-12T21:16:45Z)
 
 ## Last usage reading
-- {"task": "T385", "at": "2026-11-12T18:26:50Z", "output_tokens": 37009, "cache_creation_input_tokens": 249789, "input_tokens": 174, "cache_read_input_tokens": 3611192}
+- {"task": "T376", "at": "2026-11-12T18:40:28Z", "output_tokens": 62774, "cache_read_input_tokens": 5262473, "cache_creation_input_tokens": 279729, "input_tokens": 217}
