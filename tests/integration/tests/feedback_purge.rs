@@ -179,6 +179,19 @@ async fn td_priv_22_a_hold_keeps_the_words_until_released(pool: PgPool) {
     assert_eq!(purge_audits(&pool, id).await.len(), 1);
 }
 
+/// TD-PRIV-22 (PRIV-009): a held job with no feedback words left queues no ask-again.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_priv_22_a_held_job_without_words_queues_nothing(pool: PgPool) {
+    let stage = feedback_text_stage(&mut app(&pool).await, (JOB, true), Timestamp::now()).await;
+    assert_eq!(stage.expect("feedback step"), FeedbackStage::Nothing);
+    let queued: i64 = sqlx::query_scalar("SELECT count(*) FROM core.task WHERE kind = $1")
+        .bind(FEEDBACK_PURGE_KIND)
+        .fetch_one(&pool)
+        .await
+        .expect("ask again");
+    assert_eq!(queued, 0);
+}
+
 /// A homeowner with a fake vault contact and a closed request for each of `jobs`; returns the
 /// contact.
 async fn homeowner(pool: &PgPool, phone: &str, jobs: &[Uuid]) -> Uuid {

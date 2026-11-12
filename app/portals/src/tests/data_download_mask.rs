@@ -26,6 +26,28 @@ fn td_priv_23_a_bare_domain_is_masked() {
     }
 }
 
+/// TD-PRIV-23: a web address wrapped in brackets or quotes, after a label, with a possessive, a
+/// port or a query is masked whole.
+#[test]
+fn td_priv_23_a_wrapped_or_suffixed_address_is_masked() {
+    for words in [
+        "(https://acmeplumbing.example)",
+        "\"https://acmeplumbing.example\"",
+        "Site:acmeplumbing.example",
+        "acmeplumbing.example's",
+        "acmeplumbing.example\u{2019}s",
+        "acmeplumbing.example:8080",
+        "acmeplumbing.example?ref=1",
+        "https://acmeplumbing.example/quotes#top",
+    ] {
+        assert_eq!(mask_contact_details(words), "[removed]", "{words}");
+    }
+    assert_eq!(
+        mask_contact_details("See (https://acmeplumbing.example) by 5 p.m."),
+        "See [removed] by 5 p.m."
+    );
+}
+
 /// TD-PRIV-23: a phone number broken by line breaks (with or without the separators already
 /// allowed) is masked, and the line breaks around it stay.
 #[test]

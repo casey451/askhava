@@ -364,7 +364,7 @@ const MASKED: &str = "[removed]";
 
 /// PRIV-031: `words` with every run of 7 or more digits (with spaces, line breaks, dots, dashes,
 /// brackets or a plus between them), every word holding `@`, every web address and every bare
-/// domain masked (T315, D-3265).
+/// domain masked (T315, D-3265, D-3266).
 pub(crate) fn mask_contact_details(words: &str) -> String {
     let (mut out, mut run) = (String::new(), String::new());
     for ch in words.chars() {
@@ -392,18 +392,25 @@ pub(crate) fn mask_contact_details(words: &str) -> String {
 
 /// Whether one word is an email, a web address or a bare domain.
 fn is_web(word: &str) -> bool {
-    let lower = word.to_ascii_lowercase();
-    word.contains('@') || lower.starts_with("http") || lower.starts_with("www.") || is_domain(word)
+    word.contains('@') || word.contains("://") || is_domain(word)
 }
 
-/// PRIV-031, D-3265: two or more dot-separated labels of letters, digits or dashes whose last is 2
-/// to 24 letters, after any wrapping punctuation and path; "3.5", "$1,250.00" and "Dr." are not.
+/// Where a host ends or a scheme, label or wrapper sits around one (D-3266).
+const HOST_CUTS: &[char] = &[
+    ':', '/', '?', '#', '\'', '"', '(', ')', '<', '>', '[', ']', '\u{2018}', '\u{2019}',
+    '\u{201c}', '\u{201d}',
+];
+
+/// PRIV-031, D-3265, D-3266: some piece of the word, cut at a scheme, port, path, query, fragment,
+/// apostrophe or wrapping bracket or quote, is two or more dot-separated labels of letters, digits
+/// or dashes whose last is 2 to 24 letters; "3.5", "$1,250.00", "Dr.", "e.g." and "p.m." are not.
 fn is_domain(word: &str) -> bool {
-    let host = word
-        .trim_matches(|c: char| !c.is_ascii_alphanumeric())
-        .split('/')
-        .next()
-        .unwrap_or_default();
+    word.split(HOST_CUTS).any(is_host)
+}
+
+/// Whether `piece`, without wrapping punctuation, is a host name of two or more labels.
+fn is_host(piece: &str) -> bool {
+    let host = piece.trim_matches(|c: char| !c.is_ascii_alphanumeric());
     let labels: Vec<&str> = host.split('.').collect();
     let last = labels.last().copied().unwrap_or_default();
     labels.len() >= 2

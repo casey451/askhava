@@ -73,16 +73,18 @@ const HELD_WAIT: SignedDuration = SignedDuration::from_hours(24);
 pub enum FeedbackStage {
     /// The words were blanked now.
     Blanked,
-    /// Nothing to blank: no feedback, or already blanked.
+    /// Nothing to blank: no feedback, or already blanked (held or not; a held job then queues no
+    /// ask-again).
     Nothing,
     /// The job is held; the words stay and [`FEEDBACK_PURGE_KIND`] asks again in a day.
     Held,
 }
 
 /// PRIV-009, PRIV-007, JOB-017: the text stage's feedback step for job `job`, given `held` from
-/// `privacy::api::is_held` read by the caller: unheld, [`purge_feedback`] as the system; held, the
-/// words stay and one [`FEEDBACK_PURGE_KIND`] task is queued for `now` plus a day (deduped by
-/// job and day, so a rerun queues nothing more). Safe to run twice (JOB-006).
+/// `privacy::api::is_held` read by the caller: unheld, [`purge_feedback`] as the system; held with
+/// unpurged words, they stay and one [`FEEDBACK_PURGE_KIND`] task is queued for `now` plus a day
+/// (deduped by job and day, so a rerun queues nothing more); held with no unpurged words,
+/// [`FeedbackStage::Nothing`] and nothing queued (D-3266). Safe to run twice (JOB-006).
 ///
 /// # Errors
 /// [`JobsError::Database`].
@@ -98,6 +100,17 @@ pub async fn feedback_text_stage(
         } else {
             FeedbackStage::Nothing
         });
+    }
+    let unpurged = sqlx::query_scalar!(
+        "SELECT EXISTS (SELECT 1 FROM jobs.feedback WHERE job_id = $1 AND body_purged_at IS NULL) \
+         AS \"unpurged!\"",
+        job,
+    )
+    .fetch_one(&mut *db)
+    .await
+    .map_err(|_| JobsError::Database)?;
+    if !unpurged {
+        return Ok(FeedbackStage::Nothing);
     }
     let at = now + HELD_WAIT;
     let mut again = NewTask::new(FEEDBACK_PURGE_KIND, json!({ "job": job }), at);
