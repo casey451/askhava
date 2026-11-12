@@ -30602,7 +30602,7 @@
     "T279",
     "T317"
    ],
-   "status": "MERGE_PENDING",
+   "status": "DONE",
    "attempts": 0,
    "slug": "inbound-text-failure-alert",
    "type": "build",
@@ -30621,13 +30621,66 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 72,
      "head_sha": "18bfe8a6c0fd52cdf62b0ce7affbac4c4e748e27",
-     "pr": null,
-     "checks": null,
+     "pr": 537,
+     "checks": [
+      {
+       "name": "backup",
+       "conclusion": "cancelled"
+      },
+      {
+       "name": "keeper",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "gate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-12T01:11:52Z",
      "ended_at": "2026-11-12T01:42:23Z",
-     "result": "MERGE_PENDING"
+     "result": "done"
     }
    ],
    "reviewed_sha": "29911eca35a45a7473ae8cfa709b3ba82a123eed",
@@ -30676,7 +30729,16 @@
     }
    ],
    "update_waiting_since": null,
-   "update_push_failures": null
+   "update_push_failures": null,
+   "merged_sha": "976906dd37c95df63822ab553ea562c768e6aca9",
+   "merged_at": "2026-11-12T02:51:18Z",
+   "files": [
+    "app/server/CLAUDE.md",
+    "app/server/src/inbound_text.rs",
+    "docs/architecture.md",
+    "docs/decisions.md",
+    "tests/integration/tests/inbound_text_failures.rs"
+   ]
   },
   {
    "id": "T318",
@@ -31916,7 +31978,7 @@
      "resync": true
     }
    ],
-   "reviewed_sha": "1dc43b74040755124d37e21fb33937e9ebb0c5bb",
+   "reviewed_sha": "b9bfb358a9f39c768a01c5e2a90bda50f6232308",
    "review_lease": {
     "task": "T334",
     "session": "actions-43134334367",
@@ -31961,6 +32023,18 @@
       "Twin": "success"
      },
      "at": "2026-11-12T02:32:14Z"
+    },
+    {
+     "from": "1dc43b74040755124d37e21fb33937e9ebb0c5bb",
+     "to": "b9bfb358a9f39c768a01c5e2a90bda50f6232308",
+     "main": "976906dd37c95df63822ab553ea562c768e6aca9",
+     "how": "runner",
+     "checks": {
+      "Ci": "success",
+      "Ally": "success",
+      "Twin": "success"
+     },
+     "at": "2026-11-12T02:51:51Z"
     }
    ],
    "update_waiting_since": null,
@@ -33243,7 +33317,7 @@
      "resync": true
     }
    ],
-   "reviewed_sha": "1a9203528d5081d895bbd720f77a8a5616d4af73",
+   "reviewed_sha": "a83e7d85889385943f77c1a4512386ca45be3c8f",
    "review_lease": {
     "task": "T368",
     "session": "actions-43134698404",
@@ -33301,6 +33375,18 @@
       "Ally": "success"
      },
      "at": "2026-11-12T02:32:14Z"
+    },
+    {
+     "from": "1a9203528d5081d895bbd720f77a8a5616d4af73",
+     "to": "a83e7d85889385943f77c1a4512386ca45be3c8f",
+     "main": "976906dd37c95df63822ab553ea562c768e6aca9",
+     "how": "runner",
+     "checks": {
+      "Ci": "success",
+      "Ally": "success",
+      "Twin": "success"
+     },
+     "at": "2026-11-12T02:51:51Z"
     }
    ],
    "update_waiting_since": null,
@@ -36459,7 +36545,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T02:45:19Z",
+ "updated_at": "2026-11-12T02:52:02Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
