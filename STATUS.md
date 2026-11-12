@@ -1,25 +1,26 @@
 # Ask Hava build status
 
-Updated 2026-11-12T09:38:32Z by runner e0a2ab2aa1b4 (actions).
+Updated 2026-11-12T09:38:44Z by runner efe17f6f1a2f (actions).
 
-**Building: T268 in progress since 09:17Z; 233 of 395 done; week 92% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T411 in progress since 09:29Z; 233 of 395 done; week 92% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 233 of 395 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 4: T268 claimed 09:17Z, lease until 12:17Z; lane 5: T411 claimed 09:29Z, lease until 12:29Z
+- **Lane:** lane 5: T411 claimed 09:29Z, lease until 12:29Z
 - **Week:** 92% used, 5.1M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 09:38Z, 0 min before this update
 - **Keeper:** last ran 09:38Z, next wake 12:19Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 14 problem(s) on tasks still to run (+98 on DONE tasks); first: T396: stored context_pct 39% but it measures 45%; regenerate
+- Strict plan check red: 17 problem(s) on tasks still to run (+100 on DONE tasks); first: T396: stored context_pct 39% but it measures 45%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T268 | portals, businesses and messaging: the sign-up consent box,  | MERGE_PENDING | 1 | 21 min | 09:38Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md, app/messaging/CLAUDE.md; a resync merges it i |
 | T358 | messaging: the Canadian area codes for the HELP roaming line | MERGE_PENDING | 1 | 40 min | 09:32Z |  |
-| T268 | portals, businesses and messaging: the sign-up consent box,  | resync | 1 | 58 min | 09:12Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md, app/messaging/CLAUDE.md; a resync merges it i |
+| T268 | portals, businesses and messaging: the sign-up consent box,  | resync | 1 | 58 min | 09:12Z |  |
 | T406 | quotes: a quote's PICK-040 facts are stored with it and read | MERGE_PENDING | 1 | 41 min | 09:05Z |  |
 | T336 | server, adapters and stand-in (harness): a text stopped by a | MERGE_PENDING | 2 | 56 min | 09:00Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T345 | harness: every external GitHub Actions `uses:` in every work | BLOCKED | 2 | 4 min | 08:47Z | PLAN GAP: tests/test_runner_cache.py:207,:214 and tests/test_runner_merge_early.py:212,:213 hard-code actions/cache/rest |
@@ -87,7 +88,6 @@ Updated 2026-11-12T09:38:32Z by runner e0a2ab2aa1b4 (actions).
 | T278 | quotes, intake and picks: the check-in, feedback and unreach | done | 1 | 29 min | 10:56Z |  |
 | T316 | businesses: one read of each business's public name for the  | BLOCKED | 1 | 2 min | 10:06Z |  |
 | T337 | payments (harness): a $0 release proof is bound to the pick' | done | 5 | 23 min | 09:49Z | PLAN GAP: app/server/tests/release_recovery.rs:572-576 (td_pick_50_a_zero_fee_releases_free_and_a_cancelled_pick_nothing |
-| T327 | harness: every task kind the app queues has a handler in the | done | 1 | 48 min | 09:38Z |  |
 
 ### Plan and harness merges on main
 - 09:36Z Plan: pre-flight fixes round 9 — stage 5: T303, T151, T321, T110, T210, T109, T116; new T409, T410 (D-3155) (#559)
@@ -174,8 +174,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 4: T268 (lease until 2026-11-12T12:17:01Z)
 - lane 5: T411 (lease until 2026-11-12T12:29:44Z)
 
 ## Last usage reading
-- {"task": "T358", "at": "2026-11-12T09:32:51Z", "cache_read_input_tokens": 2854691, "cache_creation_input_tokens": 208126, "input_tokens": 175, "output_tokens": 47431}
+- {"task": "T268", "at": "2026-11-12T09:38:14Z", "cache_read_input_tokens": 1030979, "input_tokens": 79, "cache_creation_input_tokens": 71228, "output_tokens": 16299}
