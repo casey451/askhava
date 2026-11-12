@@ -1,28 +1,28 @@
 # Ask Hava build status
 
-Updated 2026-11-12T03:08:44Z by runner 0852169ea543 (actions).
+Updated 2026-11-12T03:10:39Z by runner 976906dd37c9 (actions).
 
-**Building: T401 in progress since 02:54Z; 221 of 390 done; week 82% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T401 in progress since 02:54Z; 222 of 390 done; week 82% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 221 of 390 build tasks (owner gates not counted)
+- **Tasks done:** 222 of 390 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T401 claimed 02:54Z, lease until 05:54Z
 - **Week:** 82% used, 25.4M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:08Z, 0 min before this update
+- **Last run:** 03:08Z, 1 min before this update
 - **Keeper:** last ran 03:08Z, next wake 05:57Z
 
 ## Needs attention
 - PLAN GAP T336 (since 2026-11-12T02:54:52Z, no attempt used; a plan change fixes it): T336: dependency T325 is DONE but its owned file tests/integration/tests/inbound_text_failures.rs is not on main
-- Strict plan check red: 8 problem(s) on tasks still to run (+76 on DONE tasks); first: T396: stored context_pct 39% but it measures 43%; regenerate
+- Strict plan check red: 8 problem(s) on tasks still to run (+78 on DONE tasks); first: T396: stored context_pct 39% but it measures 43%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T400 | server: the web process stores the catalog file at start-up, | MERGE_PENDING | 1 | 21 min | 03:07Z |  |
-| T248 | catalog and businesses: markets as reviewed data, Arizona ZI | MERGE_PENDING | 1 | 67 min | 02:56Z |  |
+| T248 | catalog and businesses: markets as reviewed data, Arizona ZI | resync | 1 | 67 min | 02:56Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T334 | payments: the nightly reconcile catches up after an outage f | MERGE_PENDING | 2 | 41 min | 02:25Z | merging main into the reviewed head conflicts in app/payments/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T313 | messaging and server: an EMERGENCY card notice goes at night | done | 1 | 19 min | 02:07Z |  |
-| T368 | businesses (harness): the capability checklist offers every  | MERGE_PENDING | 1 | 17 min | 02:06Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T368 | businesses (harness): the capability checklist offers every  | done | 1 | 17 min | 02:06Z |  |
 | T325 | server: an inbound text stopped by a module error raises a b | done | 1 | 30 min | 01:42Z |  |
 | T368 | businesses (harness): the capability checklist offers every  | resync | 1 | 25 min | 01:13Z |  |
 | T317 | server and intake: the inbound text route applies SEC-014's  | done | 2 | 53 min | 00:16Z | PLAN GAP: tests/integration/tests/suspension_mode.rs:69-78 (owned by T279) and app/server/tests/voice_confirm_line.rs:95 |
@@ -80,7 +80,6 @@ Updated 2026-11-12T03:08:44Z by runner 0852169ea543 (actions).
 | T337 | payments (harness): a $0 release proof is bound to the pick' | QUEUED | 2 | 25 min | 04:51Z |  |
 | T295 | payments, ai, intake and picks take the brand from the brand | QUEUED | 2 | 0 min | 04:49Z |  |
 | T295 | payments, ai, intake and picks take the brand from the brand | QUEUED | 1 | 1 min | 04:44Z |  |
-| T374 | licensing and businesses: one read of everything a business  | done | 1 | 45 min | 03:08Z |  |
 
 ### Plan and harness merges on main
 - 02:11Z Plan: pre-flight fixes round 5 — T378, T343, T268, T329, T306; new T404 (D-3112) (#538)
@@ -123,7 +122,7 @@ Updated 2026-11-12T03:08:44Z by runner 0852169ea543 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 211 of 733 (28.8%) · partial 350 · unstarted 172
-**Tasks merged (throughput only):** 221 of 390
+**Tasks merged (throughput only):** 222 of 390
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -158,7 +157,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 101 of 176 done
+- stage 4: 102 of 176 done
 - stage 5: 0 of 60 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
