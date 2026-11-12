@@ -103,7 +103,10 @@ pub fn twilio_clients(
 ) -> Result<(TwilioSms, TwilioVoice, TwilioVerify), AdapterError> {
     let http = TwilioHttp::new(config)?;
     Ok((
-        TwilioSms { http: http.clone() },
+        TwilioSms {
+            http: http.clone(),
+            status_callback: None,
+        },
         TwilioVoice { http: http.clone() },
         TwilioVerify { http },
     ))

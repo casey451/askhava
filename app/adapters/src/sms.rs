@@ -2,8 +2,11 @@
 //!
 //! Sends one rendered text; consent, quiet hours, the suppression list and the
 //! template choice are `messaging`'s work before it calls here. The derived key
-//! rides in `X-Askhava-Message-Key` so the sent log can be matched after a
-//! restore (OPS-017). [`SmsBodyDelete`] redacts a text's body at Twilio for
+//! rides in `X-Askhava-Message-Key`, a stand-in-only marker Twilio ignores
+//! (OPS-017; recovery matches Twilio's list by `To`, `From` and `DateSent`,
+//! D-2764). With a status URL set ([`TwilioSms::with_status_callback`]) every
+//! create carries `StatusCallback`, the only way Twilio posts a message's
+//! delivery status (TXT-013, TXT-014, CARD-019, SEC-016, D-2761). [`SmsBodyDelete`] redacts a text's body at Twilio for
 //! the day-31 purge (PRIV-027, TXT-020, D-1841). [`SmsBodyRead`] reads an
 //! inbound text's body back from Twilio's copy for the bounded retry of a text
 //! a module error stopped, which never stores it (TXT-012, TXT-020, D-801,
@@ -65,9 +68,26 @@ struct RedactedText {
 #[derive(Debug, Clone)]
 pub struct TwilioSms {
     pub(crate) http: TwilioHttp,
+    /// The `StatusCallback` URL each create carries; `None` sends none (D-2761).
+    pub(crate) status_callback: Option<String>,
+}
+
+impl TwilioSms {
+    /// The same client with every create asking Twilio to post the message's status to `url`
+    /// (TXT-013, TXT-014, CARD-019, D-2761). The composition passes `ASKHAVA_PUBLIC_BASE_URL`
+    /// plus the status route's path, exactly the URL that route rebuilds to check Twilio's
+    /// signature (SEC-016); without a public base URL it is never called and no callback is
+    /// asked for.
+    #[must_use]
+    pub fn with_status_callback(mut self, url: String) -> Self {
+        self.status_callback = Some(url);
+        self
+    }
 }
 
 impl SmsAdapter for TwilioSms {
+    /// POST `Messages.json` with `To`, `From`, `Body` and, when set, `StatusCallback`
+    /// (TXT-013, D-2761); the derived key rides as the sent-log marker (SEC-018).
     async fn send_text(
         &self,
         idempotency: &IdempotencyKey,
@@ -76,7 +96,10 @@ impl SmsAdapter for TwilioSms {
         body: &str,
     ) -> Result<SentText, AdapterError> {
         let url = format!("{}/Messages.json", self.http.account_url());
-        let form = [("To", to), ("From", from), ("Body", body)];
+        let mut form = vec![("To", to), ("From", from), ("Body", body)];
+        if let Some(callback) = &self.status_callback {
+            form.push(("StatusCallback", callback));
+        }
         self.http.post_form(&url, &form, Some(idempotency)).await
     }
 }
