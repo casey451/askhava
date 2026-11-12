@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-12T06:33:01Z by runner 3b8cd1274abe (actions).
+Updated 2026-11-12T06:33:25Z by runner 3b8cd1274abe (actions).
 
-**Idle since 06:06Z; 225 of 394 done; week 88% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 06:27Z; 226 of 394 done; week 88% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 225 of 394 build tasks (owner gates not counted)
+- **Tasks done:** 226 of 394 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** idle since 06:06Z (no task in progress)
+- **Lane:** idle since 06:27Z (no task in progress)
 - **Week:** 88% used, 13.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 06:32Z, 0 min before this update
 - **Keeper:** last ran 06:30Z, next wake 06:50Z
@@ -24,7 +24,7 @@ Updated 2026-11-12T06:33:01Z by runner 3b8cd1274abe (actions).
 | T405 | payments and adapters (harness): each charged pick's 3-D Sec | resync | 1 | 33 min | 04:56Z |  |
 | T326 | calls (harness): the LINK notice names the line's stored PIN | done | 1 | 25 min | 03:37Z |  |
 | T336 | server, adapters and stand-in (harness): a text stopped by a | QUEUED | 1 | 5 min | 03:27Z |  |
-| T248 | catalog and businesses: markets as reviewed data, Arizona ZI | MERGE_PENDING | 1 | 12 min | 03:22Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T248 | catalog and businesses: markets as reviewed data, Arizona ZI | done | 1 | 12 min | 03:22Z |  |
 | T401 | server (harness): the door probe's fixture gains a released  | BLOCKED | 1 | 19 min | 03:13Z | PLAN GAP: tests/security/tests/no_homeowner_charge.rs:17-27,123 (TD-FEE-07, not T401's) fails any app/ file naming a hom |
 | T400 | server: the web process stores the catalog file at start-up, | MERGE_PENDING | 1 | 21 min | 03:07Z |  |
 | T248 | catalog and businesses: markets as reviewed data, Arizona ZI | resync | 1 | 67 min | 02:56Z |  |
@@ -119,18 +119,18 @@ Updated 2026-11-12T06:33:01Z by runner 3b8cd1274abe (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 210 of 733 (28.6%) · partial 351 · unstarted 172
-**Tasks merged (throughput only):** 225 of 394
+**Requirements verified:** 210 of 733 (28.6%) · partial 353 · unstarted 170
+**Tasks merged (throughput only):** 226 of 394
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 13 | 16 | 6 | 35 |
 | ai | 7 | 17 | 5 | 29 |
-| businesses | 15 | 39 | 4 | 58 |
+| businesses | 15 | 40 | 3 | 58 |
 | calls | 10 | 14 | 1 | 25 |
 | consent | 8 | 23 | 4 | 35 |
 | fees | 12 | 39 | 1 | 52 |
-| intake | 21 | 16 | 6 | 43 |
+| intake | 21 | 17 | 5 | 43 |
 | job-cards | 12 | 10 | 2 | 24 |
 | licensing | 20 | 28 | 0 | 48 |
 | lifecycle | 18 | 10 | 0 | 28 |
@@ -155,7 +155,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 105 of 178 done
+- stage 4: 106 of 178 done
 - stage 5: 0 of 62 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
