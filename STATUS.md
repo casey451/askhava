@@ -1,22 +1,24 @@
 # Ask Hava build status
 
-Updated 2026-11-12T03:12:43Z by runner ec8a9684671f (actions).
+Updated 2026-11-12T03:13:52Z by runner 976906dd37c9 (actions).
 
-**Building: T401 in progress since 02:54Z; 222 of 390 done; week 82% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T248 in progress since 03:10Z; 222 of 390 done; week 82% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 222 of 390 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 1: T401 claimed 02:54Z, lease until 05:54Z; lane 2: T248 claimed 03:10Z, lease until 06:10Z; lane 3: T326 claimed 03:12Z, lease until 06:12Z
+- **Lane:** lane 2: T248 claimed 03:10Z, lease until 06:10Z; lane 3: T326 claimed 03:12Z, lease until 06:12Z
 - **Week:** 82% used, 23.1M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:11Z, 1 min before this update
+- **Last run:** 03:12Z, 0 min before this update
 - **Keeper:** last ran 03:08Z, next wake 05:57Z
 
 ## Needs attention
-- Strict plan check red: 8 problem(s) on tasks still to run (+79 on DONE tasks); first: T396: stored context_pct 39% but it measures 43%; regenerate
+- BLOCKED T401: plan gap reported: PLAN GAP: tests/security/tests/no_homeowner_charge.rs:17-27,123 (TD-FEE-07, not T401's) fails any app/ file naming a homeowner mark (door_matrix.rs already names Realm::Homeowner at ~969/979) plus askhava_payments/payments::api; T401 needs payments::api::no_fee_release in door_matrix.rs (kit/prompts/T401.md:9). Evidence: cargo test -p askhava-security --test no_homeowner_charge -> td_fee_07_no_homeowner_route_reaches_payments FAILED: door_matrix.rs: homeowner-realm code reaches payments. Reviewer confirmed; no legitimate workaround. Smallest plan change: give T401 a second owned file (e.g. app; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T401 --plan-fix D-### --reason "..."` (D-2859)
+- Strict plan check red: 8 problem(s) on tasks still to run (+78 on DONE tasks); first: T396: stored context_pct 39% but it measures 43%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T401 | server (harness): the door probe's fixture gains a released  | BLOCKED | 1 | 19 min | 03:13Z | PLAN GAP: tests/security/tests/no_homeowner_charge.rs:17-27,123 (TD-FEE-07, not T401's) fails any app/ file naming a hom |
 | T400 | server: the web process stores the catalog file at start-up, | MERGE_PENDING | 1 | 21 min | 03:07Z |  |
 | T248 | catalog and businesses: markets as reviewed data, Arizona ZI | resync | 1 | 67 min | 02:56Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T334 | payments: the nightly reconcile catches up after an outage f | MERGE_PENDING | 2 | 41 min | 02:25Z | merging main into the reviewed head conflicts in app/payments/CLAUDE.md; a resync merges it in on this attempt (D-891) |
@@ -164,7 +166,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T401 (lease until 2026-11-12T05:54:52Z)
+- nothing
 - lane 2: T248 (lease until 2026-11-12T06:10:23Z)
 - lane 3: T326 (lease until 2026-11-12T06:12:28Z)
 
