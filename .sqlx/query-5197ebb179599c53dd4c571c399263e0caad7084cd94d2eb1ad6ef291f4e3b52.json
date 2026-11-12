@@ -1,0 +1,24 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO quotes.shown_card (request_id, job_id, digest, card_text, town, place,\n           photo_ids, category, candidates, emergency, recorded_at)\n         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)\n         ON CONFLICT (request_id, job_id, digest) DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "UuidArray",
+        "Text",
+        "TextArray",
+        "Bool",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "5197ebb179599c53dd4c571c399263e0caad7084cd94d2eb1ad6ef291f4e3b52"
+}

@@ -103,9 +103,29 @@ impl std::fmt::Debug for CardParts {
     }
 }
 
-/// A built job card. Its fields are private and [`build_card`] is the only way to make one, so
-/// every card has passed the final gate (CARD-005, CARD-008, PRIV-006).
-#[derive(Debug, Clone, PartialEq, Eq)]
+impl Place {
+    /// The place's stored code in `quotes.shown_card` (T411, CARD-006).
+    pub(crate) fn code(self) -> &'static str {
+        match self {
+            Self::House => "house",
+            Self::Marina => "marina",
+            Self::StorageLot => "storage_lot",
+            Self::Ramp => "ramp",
+        }
+    }
+
+    /// The place a stored code names, if any (T411, CARD-006).
+    pub(crate) fn from_code(code: &str) -> Option<Self> {
+        [Self::House, Self::Marina, Self::StorageLot, Self::Ramp]
+            .into_iter()
+            .find(|p| p.code() == code)
+    }
+}
+
+/// A built job card. Its fields are private and [`build_card`] is the only public way to make one,
+/// so every card has passed the final gate (CARD-005, CARD-008, PRIV-006). Its `Debug` hides the
+/// text, as [`CardParts`]' does, so a log never holds her words (PRIV-006, T411).
+#[derive(Clone, PartialEq, Eq)]
 pub struct JobCard {
     town: String,
     place: Place,
@@ -113,7 +133,30 @@ pub struct JobCard {
     text: String,
 }
 
+impl std::fmt::Debug for JobCard {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("JobCard")
+            .field("town", &self.town)
+            .field("place", &self.place)
+            .field("photos", &self.photos.len())
+            .field("text", &"<hidden>")
+            .finish()
+    }
+}
+
 impl JobCard {
+    /// CARD-007, T411: the card exactly as [`build_card`] made it and `quotes.shown_card` stored
+    /// it; only `job_text` calls it, after checking the text's digest, so the public way to make a
+    /// card stays [`build_card`].
+    pub(crate) fn from_stored(town: String, place: Place, photos: Vec<Uuid>, text: String) -> Self {
+        Self {
+            town,
+            place,
+            photos,
+            text,
+        }
+    }
+
     /// The town shown on the card (CARD-006).
     #[must_use]
     pub fn town(&self) -> &str {
