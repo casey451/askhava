@@ -19119,7 +19119,8 @@
     "T387",
     "T390",
     "T391",
-    "T393"
+    "T393",
+    "T400"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -29526,7 +29527,8 @@
     "T368",
     "T369",
     "T374",
-    "T385"
+    "T385",
+    "T400"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -33672,6 +33674,19 @@
    "slug": "gate-c-preconditions",
    "type": "harness",
    "stage": "6"
+  },
+  {
+   "id": "T400",
+   "deps": [
+    "T021",
+    "T009",
+    "T075"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "catalog-load-at-start",
+   "type": "build",
+   "stage": "4"
   }
  ],
  "owner_waits": [],
@@ -35738,7 +35753,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T00:48:31Z",
+ "updated_at": "2026-11-12T00:50:21Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -35836,7 +35851,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "162c61d4f51a3efe8f42c8f3ea5430543bfb5709",
+ "runner_sha": "5cf1428bd66b2cf00fa87bb110bd43ba60bf2f8c",
  "starter": "actions",
  "smoke_runs": [
   {
