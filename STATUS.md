@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T09:02:20Z by runner 7450ca237d55 (actions).
+Updated 2026-11-12T09:02:39Z by runner 7450ca237d55 (actions).
 
 **Building: T406 in progress since 08:23Z; 233 of 394 done; week 92% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-12T09:02:20Z by runner 7450ca237d55 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T406 claimed 08:23Z, lease until 11:23Z; lane 3: T358 claimed 08:52Z, lease until 11:52Z; lane 5: T268 claimed 08:14Z, lease until 11:14Z
 - **Week:** 92% used, 0.7M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:01Z, 0 min before this update
-- **Keeper:** last ran 09:01Z, next wake 11:16Z
+- **Last run:** 09:02Z, 0 min before this update
+- **Keeper:** last ran 09:02Z, next wake 11:16Z
 
 ## Needs attention
 - BLOCKED T251: plan gap reported: PLAN GAP: app/intake/src/summary_step.rs:415 and app/intake/src/service.rs:672 (T208/T039 files, not T251's). The card sender has nowhere to read the approved card text, category, remaining candidate job types or scrubbed text. Approval payload is only {job, conversation, card digest} (summary_step.rs:415); approved_card (summary_step.rs:345) needs the full JobCard, which only quotes::api::build_card makes. Emergency payload is only {conversation} (service.rs:672). No table stores card text/category/candidates/scrubbed text (quotes.job_card 0067, jobs.job 0031, intake tables 0053; jobs.job_fac; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T251 --plan-fix D-### --reason "..."` (D-2859)
