@@ -20,6 +20,9 @@
 //! of a business's holder (LIC-006, LIC-011, LIC-012, LIC-015, LIC-016, LIC-047, LIC-048) in
 //! `holder`.
 //!
+//! T389 added the wrong-license report that pauses a pest business and the replacement number
+//! that clears it (LIC-047, D-3055) in `pest_report`.
+//!
 //! Other crates reach it only through [`api`].
 
 pub mod api;
@@ -30,6 +33,7 @@ mod holder;
 mod imports;
 mod lines;
 mod models;
+mod pest_report;
 mod rules;
 mod service;
 

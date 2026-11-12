@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE licensing.business_license SET license_number = $2, recorded_at = $3, paused_at = NULL WHERE id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "b7580d3eb687cfc091869c76598ab1d4b6078745e6d2286049adb751ad6f50e5"
+}
