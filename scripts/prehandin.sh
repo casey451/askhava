@@ -109,7 +109,7 @@ quick_part() {
   secret_scan
   step "Plan, wording and source rules (as Ci runs them)"
   local check
-  for check in pii_scan trace_spec validate_tasks check_catalog check_legal_docs check_ai_smell check_copy check_code_docs check_rust_rules check_crates check_include_paths check_plan_lock; do
+  for check in pii_scan trace_spec validate_tasks check_catalog check_legal_docs check_ai_smell check_copy check_code_docs check_rust_rules check_crates check_include_paths check_conflict_markers check_plan_lock; do
     if [ ! -f "scripts/${check}.py" ]; then
       # A check main added after this branch was made: Ci on the branch would not run it either. Merging
       # origin/main into the branch (a plain merge, never a reset or rebase) brings it (D-1300).

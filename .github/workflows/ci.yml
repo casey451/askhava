@@ -121,6 +121,10 @@ jobs:
         run: |
           python3 scripts/pii_scan.py
 
+      - name: No git conflict markers in tracked files (D-3307)
+        run: |
+          python3 scripts/check_conflict_markers.py
+
       - name: Plan lock and change rules (docs/governance.md)
         env:
           HEAD_BRANCH: ${{ github.head_ref || github.ref_name }}
