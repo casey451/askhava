@@ -2825,3 +2825,4 @@
 - 2026-11-12T13:58:23Z runner 620855379afc (actions): {}
 - 2026-11-12T13:58:45Z runner 919ab4941c81 (actions): {}
 - 2026-11-12T14:03:35Z runner 87abedec7b6e (actions): {"T362": "MERGE_PENDING -> QUEUED", "T385": "MERGE_PENDING -> QUEUED"}
+- 2026-11-12T14:03:55Z runner 87abedec7b6e (actions): {"T385": "QUEUED -> IN_PROGRESS"}; T385 estimated 3.2M tokens (calibrated); week has 6.0M left (no five-hour budget, D-3056) (session_reading 2026-11-12T13:58:22Z (week)); claimed
