@@ -31,6 +31,9 @@
 //! check in `notes`, and the locked edit and withdrawal in `edit_withdraw` (PICK-051 to PICK-053,
 //! REC-010).
 //!
+//! T406 added `quote_facts`: a quote's PICK-040 facts stored with it (`quotes.quote_facts`), read
+//! back for its card and for the quote form's "Same as last time" pre-fill (PICK-040, PICK-051).
+//!
 //! Other crates reach it only through [`api`].
 
 pub mod api;
@@ -52,6 +55,7 @@ mod notes;
 mod notify;
 mod photos;
 mod quote_card;
+mod quote_facts;
 mod rules;
 mod service;
 mod update_texts;
