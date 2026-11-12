@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T20:16:45Z by runner e87fb24734ec (manual).
+Updated 2026-11-12T20:19:42Z by runner e87fb24734ec (manual).
 
 **Building: T251 in progress since 19:00Z; 253 of 403 done; week 3% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-12T20:16:45Z by runner e87fb24734ec (manual).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T251 claimed 19:00Z, lease until 22:00Z
 - **Week:** 3% used, 180.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:06Z, 10 min before this update
+- **Last run:** 20:16Z, 2 min before this update
 - **Keeper:** last ran 20:06Z, next wake 22:03Z
 
 ## Needs attention
@@ -88,6 +88,7 @@ Updated 2026-11-12T20:16:45Z by runner e87fb24734ec (manual).
 | T334 | payments: the nightly reconcile catches up after an outage f | QUEUED | 1 | 15 min | 21:21Z |  |
 
 ### Plan and harness merges on main
+- 20:07Z Harness: up to 2 tasks per crate; one only where the crate's CLAUDE.md is full (D-3303) (#615)
 - 18:44Z Plan: performance track — measurement harness T416–T418, goals as non-blocking (D-3292) (#607)
 - 18:11Z Plan: pre-flight fixes round 11 — T346 context gap, T162 template key, T372 cite, T255/T347 budgets (D-3286) (#605)
 - 18:06Z Plan: T362 takes the keyboard test's load wait (D-3270) (#601)
