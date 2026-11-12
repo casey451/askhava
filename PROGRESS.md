@@ -2583,3 +2583,4 @@
 - 2026-11-12T08:00:41Z runner 5cbddc23fd8c (actions): {"T322": "QUEUED -> IN_PROGRESS"}; T322 estimated 3.0M tokens (calibrated); week has 14.0M left (no five-hour budget, D-3056) (session_reading 2026-11-12T07:59:57Z (week)); claimed
 - 2026-11-12T08:03:05Z runner dcd485b408b2 (actions): {}
 - 2026-11-12T08:03:23Z runner dcd485b408b2 (actions): {}
+- 2026-11-12T08:04:20Z runner dcd485b408b2 (actions): {"T336": "MERGE_PENDING -> QUEUED", "T390": "MERGE_PENDING -> DONE"}

@@ -1,10 +1,10 @@
 # Ask Hava build status
 
-Updated 2026-11-12T08:03:23Z by runner dcd485b408b2 (actions).
+Updated 2026-11-12T08:04:20Z by runner dcd485b408b2 (actions).
 
-**Building: T322 in progress since 08:00Z; 230 of 394 done; week 90% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T322 in progress since 08:00Z; 231 of 394 done; week 90% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 230 of 394 build tasks (owner gates not counted)
+- **Tasks done:** 231 of 394 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 4: T322 claimed 08:00Z, lease until 11:00Z
 - **Week:** 90% used, 14.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
@@ -22,8 +22,8 @@ Updated 2026-11-12T08:03:23Z by runner dcd485b408b2 (actions).
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T360 | messaging: the opt-out confirmation email while texting is o | MERGE_PENDING | 1 | 43 min | 07:42Z |  |
-| T336 | server, adapters and stand-in (harness): a text stopped by a | MERGE_PENDING | 2 | 47 min | 07:35Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
-| T390 | calls and server: a blocked staff call that connects a line  | MERGE_PENDING | 1 | 29 min | 07:34Z |  |
+| T336 | server, adapters and stand-in (harness): a text stopped by a | resync | 2 | 47 min | 07:35Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T390 | calls and server: a blocked staff call that connects a line  | done | 1 | 29 min | 07:34Z |  |
 | T401 | server (harness): the door probe's fixture gains a released  | done | 2 | 37 min | 07:33Z | PLAN GAP: tests/security/tests/no_homeowner_charge.rs:17-27,123 (TD-FEE-07, not T401's) fails any app/ file naming a hom |
 | T339 | jobs: each job keeps its category code and remaining candida | done | 1 | 18 min | 07:13Z |  |
 | T336 | server, adapters and stand-in (harness): a text stopped by a | resync | 2 | 71 min | 06:06Z |  |
@@ -127,7 +127,7 @@ Updated 2026-11-12T08:03:23Z by runner dcd485b408b2 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 210 of 733 (28.6%) · partial 353 · unstarted 170
-**Tasks merged (throughput only):** 230 of 394
+**Tasks merged (throughput only):** 231 of 394
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -162,7 +162,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 110 of 178 done
+- stage 4: 111 of 178 done
 - stage 5: 0 of 62 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
