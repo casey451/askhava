@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-12T22:49:55Z by runner 4aa3c92a5fa0 (actions).
+Updated 2026-11-12T22:51:49Z by runner 0b4b84f93392 (actions).
 
-**Building: T347 in progress since 22:32Z; 257 of 404 done; week 7% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T347 in progress since 22:32Z; 258 of 404 done; week 7% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 257 of 404 build tasks (owner gates not counted)
+- **Tasks done:** 258 of 404 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T347 claimed 22:32Z, lease until 01:32Z; lane 3: T385 claimed 22:26Z, lease until 01:26Z; lane 4: T162 claimed 22:25Z, lease until 01:25Z; lane 5: T215 claimed 22:29Z, lease until 01:29Z; lane 6: T418 claimed 22:34Z, lease until 01:34Z; lane 7: T351 claimed 22:49Z, lease until 01:49Z
 - **Week:** 7% used, 165.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:45Z, 4 min before this update
+- **Last run:** 22:50Z, 1 min before this update
 - **Keeper:** last ran 22:45Z, next wake 01:28Z
 
 ## Needs attention
@@ -18,7 +18,7 @@ Updated 2026-11-12T22:49:55Z by runner 4aa3c92a5fa0 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T419 | calls (harness): TD-CALL-23's no-plaintext scan reads only t | MERGE_PENDING | 1 | 24 min | 22:37Z |  |
+| T419 | calls (harness): TD-CALL-23's no-plaintext scan reads only t | done | 1 | 24 min | 22:37Z |  |
 | T351 | privacy and quotes: spaced gate codes, lower-case street add | resync | 1 | 58 min | 22:35Z | merging main into the reviewed head conflicts in app/quotes/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T417 | Performance: seeded fake-data route benchmark and the first  | done | 1 | 36 min | 22:22Z |  |
 | T385 | adapters, licensing and businesses (harness): the sign-up re | resync | 3 | 40 min | 22:16Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
@@ -124,7 +124,7 @@ Updated 2026-11-12T22:49:55Z by runner 4aa3c92a5fa0 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 230 of 733 (31.4%) · partial 337 · unstarted 166
-**Tasks merged (throughput only):** 257 of 404
+**Tasks merged (throughput only):** 258 of 404
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -159,7 +159,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 137 of 186 done
+- stage 4: 138 of 186 done
 - stage 5: 0 of 64 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
