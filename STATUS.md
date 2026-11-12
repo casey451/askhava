@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-12T13:57:42Z by runner 620855379afc (actions).
+Updated 2026-11-12T13:58:00Z by runner 620855379afc (actions).
 
-**Building: T385 in progress since 12:57Z; 245 of 397 done; week 94% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Waiting for tokens until 17:00Z; 245 of 397 done; week 94% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 245 of 397 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 3: T385 claimed 12:57Z, lease until 15:57Z
+- **Lane:** idle since 13:57Z (no task in progress)
 - **Week:** 94% used, -0.5M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 13:36Z, 21 min before this update
 - **Keeper:** last ran 13:36Z, next wake 16:00Z
@@ -20,6 +20,7 @@ Updated 2026-11-12T13:57:42Z by runner 620855379afc (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T385 | adapters, licensing and businesses (harness): the sign-up re | MERGE_PENDING | 1 | 60 min | 13:57Z |  |
 | T362 | server: the built static files are served at /static/<crate> | MERGE_PENDING | 1 | 38 min | 13:35Z |  |
 | T369 | businesses: the sign-up after-hours answer ticks only while  | done | 1 | 50 min | 12:41Z |  |
 | T378 | adapters, calls and stand-in (harness): every outbound call  | done | 1 | 45 min | 12:34Z |  |
@@ -169,7 +170,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 3: T385 (lease until 2026-11-12T15:57:41Z)
 
 ## Last usage reading
-- {"task": "T362", "at": "2026-11-12T13:35:26Z", "output_tokens": 99770, "cache_creation_input_tokens": 498939, "input_tokens": 302, "cache_read_input_tokens": 12313104}
+- {"task": "T385", "at": "2026-11-12T13:57:41Z", "cache_read_input_tokens": 23905750, "input_tokens": 421, "output_tokens": 168562, "cache_creation_input_tokens": 655813}
