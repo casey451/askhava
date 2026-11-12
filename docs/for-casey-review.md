@@ -2595,3 +2595,7 @@ You said the name may change from Ask Hava (likely to Laftly) before launch. Not
 ## A privacy test that failed by chance gets a fix, first in line (plan change, D-3324, November 12)
 
 - **What happened.** A test that checks no stored row holds a blocked caller's number, its last 4 digits or the PIN searched whole rows as text, so a random code in a row sometimes contained the same 4 digits by chance (about 1 run in 250) and failed a pull request that changed only documents. A new step, T419, makes the test look only where text is stored and adds a case for the chance match; no check is loosened and no app code changes. It is the next step the build picks up. Nothing needs you.
+
+## Three held tasks under their size limits (D-3325)
+
+- T340, T271 and T126 now find their line in the big architecture notes by search instead of loading that whole section, so the build can run them; nothing they must do changed.
