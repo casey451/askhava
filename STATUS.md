@@ -1,25 +1,25 @@
 # Ask Hava build status
 
-Updated 2026-11-12T18:27:51Z by runner 5e739fa972c5 (actions).
+Updated 2026-11-12T18:28:51Z by runner ef5a3860ab5e (actions).
 
-**Building: T251 in progress since 17:19Z; 248 of 400 done; week 2% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T251 in progress since 17:19Z; 249 of 400 done; week 2% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 248 of 400 build tasks (owner gates not counted)
+- **Tasks done:** 249 of 400 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 1: T251 claimed 17:19Z, lease until 20:19Z; lane 5: T350 claimed 17:26Z, lease until 20:26Z; lane 6: T376 claimed 18:05Z, lease until 21:05Z; lane 7: T346 claimed 18:16Z, lease until 21:16Z
 - **Week:** 2% used, 177.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:27Z, 0 min before this update
+- **Last run:** 18:28Z, 0 min before this update
 - **Keeper:** last ran 18:27Z, next wake 20:21Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 24 problem(s) on tasks still to run (+120 on DONE tasks); first: T340: stored context_pct 40% but it measures 45%; regenerate
+- Strict plan check red: 21 problem(s) on tasks still to run (+121 on DONE tasks); first: T340: stored context_pct 40% but it measures 45%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T385 | adapters, licensing and businesses (harness): the sign-up re | MERGE_PENDING | 2 | 60 min | 18:26Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
-| T366 | jobs and server: every dead-lettered task alerts, and a dail | MERGE_PENDING | 1 | 26 min | 17:53Z |  |
+| T366 | jobs and server: every dead-lettered task alerts, and a dail | done | 1 | 26 min | 17:53Z |  |
 | T414 | Stand-ins (harness): end-to-end specs can read the emails th | MERGE_PENDING | 1 | 32 min | 17:52Z |  |
 | T315 | jobs and portals: feedback words are blanked by the 3-year p | done | 1 | 66 min | 16:18Z |  |
 | T370 | intake (harness): the night count the homeowner hears counts | done | 2 | 22 min | 15:30Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
@@ -121,7 +121,7 @@ Updated 2026-11-12T18:27:51Z by runner 5e739fa972c5 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 230 of 733 (31.4%) · partial 334 · unstarted 169
-**Tasks merged (throughput only):** 248 of 400
+**Tasks merged (throughput only):** 249 of 400
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -156,7 +156,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 1: 11 of 11 done
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
-- stage 4: 128 of 182 done
+- stage 4: 129 of 182 done
 - stage 5: 0 of 64 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
