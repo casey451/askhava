@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-12T10:36:26Z by runner 951438d2e02b (actions).
+Updated 2026-11-12T10:36:45Z by runner 951438d2e02b (actions).
 
-**Building: T411 in progress since 10:08Z; 236 of 397 done; week 92% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Idle since 10:36Z; 236 of 397 done; week 92% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 236 of 397 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 5: T411 claimed 10:08Z, lease until 13:08Z
+- **Lane:** idle since 10:36Z (no task in progress)
 - **Week:** 92% used, 3.8M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
 - **Last run:** 10:32Z, 4 min before this update
 - **Keeper:** last ran 10:23Z, next wake 13:10Z
@@ -18,8 +18,9 @@ Updated 2026-11-12T10:36:26Z by runner 951438d2e02b (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T411 | quotes: the scrubbed job description and the shown and appro | MERGE_PENDING | 1 | 28 min | 10:36Z | merging main into the reviewed head conflicts in app/quotes/src/api.rs; a resync merges it in on this attempt (D-891) |
 | T343 | harness: the DONE pick tests' fixtures record each job's fac | MERGE_PENDING | 1 | 24 min | 10:23Z |  |
-| T411 | quotes: the scrubbed job description and the shown and appro | resync | 1 | 30 min | 10:00Z | merging main into the reviewed head conflicts in app/quotes/src/api.rs; a resync merges it in on this attempt (D-891) |
+| T411 | quotes: the scrubbed job description and the shown and appro | resync | 1 | 30 min | 10:00Z |  |
 | T268 | portals, businesses and messaging: the sign-up consent box,  | resync | 1 | 21 min | 09:38Z | merging main into the reviewed head conflicts in app/messaging/src/api.rs; a resync merges it in on this attempt (D-891) |
 | T358 | messaging: the Canadian area codes for the HELP roaming line | done | 1 | 40 min | 09:32Z |  |
 | T268 | portals, businesses and messaging: the sign-up consent box,  | resync | 1 | 58 min | 09:12Z |  |
@@ -172,7 +173,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 5: T411 (lease until 2026-11-12T13:08:15Z)
 
 ## Last usage reading
-- {"task": "T343", "at": "2026-11-12T10:23:00Z", "cache_read_input_tokens": 10332537, "cache_creation_input_tokens": 294001, "input_tokens": 300, "output_tokens": 62467}
+- {"task": "T411", "at": "2026-11-12T10:36:25Z", "output_tokens": 25083, "cache_creation_input_tokens": 200157, "input_tokens": 135, "cache_read_input_tokens": 2420022}
