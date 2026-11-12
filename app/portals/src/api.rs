@@ -70,6 +70,10 @@ pub use crate::business_portal::{
     statement_csv,
 };
 pub use crate::business_signup::{
+    AreaEntered, RADIUS_QUESTION, SERVICE_AREA_ROUTE, area_field, area_message, service_area_lines,
+    signup_can_finish,
+};
+pub use crate::business_signup::{
     CAPABILITY_ROUTE, CapabilityPage, CapabilityProblem, CapabilityStep, CapabilityValues,
     capability_page, capability_summary,
 };

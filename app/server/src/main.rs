@@ -34,6 +34,7 @@ async fn main() -> io::Result<()> {
     let port = port_from_env()?;
     let listener = TcpListener::bind((Ipv4Addr::UNSPECIFIED, port)).await?;
     let pool = askhava_core::api::app_pool(&settings).map_err(io::Error::other)?;
+    askhava_server::catalog_start::store_catalog(&pool).await?;
     let control =
         TestControl::from_settings(&settings, std::env::vars()).map_err(io::Error::other)?;
     let webhooks = askhava_server::webhooks(&settings, pool.clone(), std::env::vars())?;

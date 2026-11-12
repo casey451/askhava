@@ -6,6 +6,7 @@
 
 pub mod api;
 mod loader;
+mod markets;
 mod models;
 mod question_bank;
 mod restricted_words;

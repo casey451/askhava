@@ -63,6 +63,10 @@ pub use crate::open_cards_digest::{DigestFacts, MIN_LEFT, digest_goes, listable,
 pub use crate::optout::{
     InboundText, Outcome, RevokeChannel, on_inbound_text, send_checked, suppress,
 };
+pub use crate::outbox_sender::{
+    EXPIRED_ACTION, OUTCOME_UNKNOWN_ALERT as SEND_OUTCOME_UNKNOWN_ALERT, OutboxSender,
+    SEND_DUE_KIND, SEND_EVERY, STALE_AFTER, register_send_due, run_send_due, schedule_send_due,
+};
 pub use crate::purge::{
     BODY_DELETE_AFTER, DELETE_FAILED_ALERT as BODY_DELETE_FAILED_ALERT,
     DELETE_KIND as BODY_DELETE_KIND, SCAN_KIND as BODY_SCAN_KIND, queue_body_deletes,
@@ -87,8 +91,8 @@ pub use crate::rules::{
 };
 pub use crate::send_window::{SendWindow, send_window, window};
 pub use crate::service::{
-    NewText, Relation, SEND_ACTION, To, delivery_status, enqueue, may_text, send, sender_add,
-    sender_business, sender_remove,
+    ANY_HOUR_TEMPLATES, Exemption, NewText, Relation, SEND_ACTION, To, delivery_status, enqueue,
+    enqueue_exempt, may_text, send, sender_add, sender_business, sender_remove,
 };
 pub use crate::status::DeliveryStatus;
 pub use crate::templates::{
