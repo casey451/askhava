@@ -6,7 +6,9 @@
 // the per-run bearer secret; without it the router answers 404 like an absent route. The secret is
 // the `controlSecret` option, which T227's playwright.config.ts sets from the value it gave the
 // web binary as ASKHAVA_TEST_CONTROL_SECRET; requests go to the config's `baseURL`. Specs import
-// `test` and `expect` from here instead of from @playwright/test. Fake data only.
+// `test` and `expect` from here instead of from @playwright/test. `sentEmails` alone goes to the
+// Python stand-in's own origin (STAND_IN_ORIGIN, its /_stand_in/resend/emails route) and sends no
+// bearer secret. Fake data only.
 import { test as base, expect, type APIRequestContext } from "@playwright/test";
 
 /** One text the Twilio stand-in accepted, as its Messages list returns it. */
@@ -104,7 +106,10 @@ function makeControl(request: APIRequestContext, secret: string): Control {
       const params: Record<string, string> = {};
       if (filter.to !== undefined) params.to = filter.to;
       const reply = await request.get(`${STAND_IN_ORIGIN}/_stand_in/resend/emails`, { params });
-      return (await readJson<EmailLog>(reply, "stand-in emails")).emails;
+      if (!reply.ok()) {
+        throw new Error(`stand-in /_stand_in/resend/emails answered ${String(reply.status())}; is the Python stand-in (stand_ins/server.py) running on ${STAND_IN_ORIGIN}?`);
+      }
+      return ((await reply.json()) as EmailLog).emails;
     },
   };
 }

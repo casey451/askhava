@@ -49,3 +49,21 @@ def test_to_filter_keeps_only_that_address_oldest_first(base: str) -> None:
     assert call(base, "GET", LOG + "?to=none@example.com")[1] == {"emails": []}
     assert call(base, "GET", LOG + "?to=example.com")[1] == {"emails": []}
     assert len(call(base, "GET", LOG)[1]["emails"]) == 3
+
+
+def test_to_filter_matches_the_address_inside_a_display_name(base: str) -> None:
+    send(base, "Ann Example <ann@example.com>")
+    mine = call(base, "GET", LOG + "?to=ann@example.com")[1]["emails"]
+    assert [e["to"] for e in mine] == [["Ann Example <ann@example.com>"]]
+
+
+def test_to_filter_ignores_case(base: str) -> None:
+    send(base, "Bob@Example.com")
+    assert len(call(base, "GET", LOG + "?to=bob@example.com")[1]["emails"]) == 1
+    assert len(call(base, "GET", LOG + "?to=BOB@EXAMPLE.COM")[1]["emails"]) == 1
+
+
+def test_empty_to_filter_lists_every_email(base: str) -> None:
+    send(base, "ann@example.com")
+    send(base, "bob@example.com")
+    assert len(call(base, "GET", LOG + "?to=")[1]["emails"]) == 2
