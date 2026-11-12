@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T07:59:57Z by runner dcd485b408b2 (actions).
+Updated 2026-11-12T08:00:16Z by runner dcd485b408b2 (actions).
 
 **Idle since 07:47Z; 230 of 394 done; week 90% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-12T07:59:57Z by runner dcd485b408b2 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 07:47Z (no task in progress)
 - **Week:** 90% used, 5.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:59Z, 0 min before this update
-- **Keeper:** last ran 07:45Z, next wake 08:05Z
+- **Last run:** 08:00Z, 0 min before this update
+- **Keeper:** last ran 08:00Z, next wake 08:20Z
 
 ## Needs attention
 - PLAN GAP T251 (since 2026-11-12T07:44:00Z, no attempt used; a plan change fixes it): T251: dependency T339 is DONE but its owned file migrations/0164_jobs_job_facts.sql is not on main; T251: dependency T339 is DONE but its owned file app/jobs/src/job_facts.rs is not on main; T251: dependency T339 is DONE but its owned file tests/integration/tests/job_facts.rs is not on main
