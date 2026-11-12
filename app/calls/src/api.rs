@@ -3,7 +3,7 @@
 //! The masked-number pool (CALL-001, CALL-002, CALL-017): [`assign_number`] gives a connected
 //! job its [`Line`] from the fixed pool in settings, built on standard programmable voice only
 //! (CALL-021); and [`automated_call_gate`], the suppression-list check before an automated call
-//! (CON-035, CALL-014). T077: [`route`] and [`answer_call`], PIN routing and the paid-business
+//! (CON-035, CALL-014). T077: [`route_with`] and [`answer_call`], PIN routing and the paid-business
 //! read-back (CALL-003 to CALL-005, CALL-025). T078: [`dial_twiml`], never recorded (CALL-006);
 //! [`finished_call`], [`log_finished_call`] and [`call_log`], the call log, and the pure
 //! [`talked`] and [`business_attempt`] rules (CALL-007, CALL-008). T079: [`close_line`] and
@@ -34,8 +34,8 @@ pub use crate::pins::{
 pub use crate::routing::{
     Answer, Attestation, CallTurn, IncomingCall, JobPin, PIN_ALERT, PIN_GOODBYE, PIN_PROMPT,
     PIN_WAIT_KEY, PIN_WAIT_MIN, Party, PinHeard, PinWait, READBACK_AFTER, READBACK_CONFIRM,
-    RoutedLine, Step, TRIES_PER_CALL, TRIES_PER_DAY, answer_call, hangup_twiml, job_pin, pin_heard,
-    pin_prompt_twiml, readback_twiml, route,
+    RoutedLine, Step, TRIES_PER_CALL, TRIES_PER_DAY, answer_call, hangup_twiml, pin_heard,
+    pin_prompt_twiml, readback_twiml, route_with,
 };
 pub use crate::rules::{
     AnsweredBy, Caller, REPORT_MARK, answered_by, business_attempt, reached_report_mark, talked,
