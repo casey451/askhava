@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T23:43:53Z by runner e5edba19585b (actions).
+Updated 2026-11-12T23:44:12Z by runner 47b884064356 (actions).
 
 **Building: T351 in progress since 22:49Z; 260 of 404 done; week 8% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,14 +8,14 @@ Updated 2026-11-12T23:43:53Z by runner e5edba19585b (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 7: T351 claimed 22:49Z, lease until 01:49Z
 - **Week:** 8% used, 165.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:43Z, 0 min before this update
-- **Keeper:** last ran 23:25Z, next wake 01:31Z
+- **Last run:** 23:44Z, 0 min before this update
+- **Keeper:** last ran 23:44Z, next wake 01:52Z
 
 ## Needs attention
 - PLAN GAP T255 (since 2026-11-12T23:31:56Z, no attempt used; a plan change fixes it): T255: dependency T162 is DONE but its owned file app/intake/src/order.rs is not on main; T255: dependency T162 is DONE but its owned file tests/integration/tests/intake_order.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T371 (since 2026-11-12T23:24:01Z, no attempt used; a plan change fixes it): T371: dependency T385 is DONE but its owned file app/licensing/src/own_record.rs is not on main; T371: dependency T385 is DONE but its owned file app/businesses/src/signup_record.rs is not on main; T371: dependency T385 is DONE but its owned file tests/integration/tests/signup_own_record.rs is not on main; T371: dependency T385 is DONE but its owned file tests/fixtures/license_source/record/roc/ROC100001 is not on main; T371: dependency T385 is DONE but its owned file tests/fixtures/license_source/roc is not on main; T371: dependency T385 is DONE but its owned file tests/fixtures/license_source/city is not on main
-- Strict plan check red: 23 problem(s) on tasks still to run (+136 on DONE tasks); first: T320: measures 46% of the window, over its 45% limit; trim its reads or split it
+- Strict plan check red: 21 problem(s) on tasks still to run (+133 on DONE tasks); first: T320: stored context_pct 41% but it measures 45%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
