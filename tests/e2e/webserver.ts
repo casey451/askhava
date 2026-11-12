@@ -63,6 +63,8 @@ function appEnv(scratch: string): NodeJS.ProcessEnv {
     ASKHAVA_STORAGE_BASE_URL: `file://${join(scratch, "storage")}`,
     ASKHAVA_ID_SECRET: randomBytes(24).toString("hex"),
     ASKHAVA_TEST_CONTROL_CLOCK_FILE: join(scratch, "clock"),
+    // The license lists and the sign-up record reads come from the fake fixture directory (T385, D-2954).
+    ASKHAVA_LICENSE_BASE_URL: `file://${join(REPO_ROOT, "tests", "fixtures", "license_source")}`,
     [SECRET_KEY]: controlSecret(),
   };
 }
