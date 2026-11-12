@@ -24971,7 +24971,7 @@
     "T374",
     "T411"
    ],
-   "status": "MERGE_PENDING",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "intake-zip-and-cards-out",
    "type": "build",
@@ -24986,7 +24986,7 @@
     3183
    ],
    "reason": null,
-   "last_failure": "PLAN GAP: app/intake/src/summary_step.rs:415 and app/intake/src/service.rs:672 (T208/T039 files, not T251's). The card sender has nowhere to read the approved card text, category, remaining candidate job types or scrubbed text. Approval payload is only {job, conversation, card digest} (summary_step.rs:415); approved_card (summary_step.rs:345) needs the full JobCard, which only quotes::api::build_card makes. Emergency payload is only {conversation} (service.rs:672). No table stores card text/category/candidates/scrubbed text (quotes.job_card 0067, jobs.job 0031, intake tables 0053; jobs.job_facts 0164 is written by the sender itself, D-2330). intake_answer holds codes only (0053:68). matching::candidates is unwired (D-999, intake/CLAUDE.md:5). T162 depends on T251 in kit/tasks.json, so the in-memory holder comes later. Job ID on the emergency path is recoverable from intake rows (conversation.rs:143, models.rs:792). Reviewer confirmed. Fix options: (a) an earlier task stores card text/category/candidates/scrubbed text per job (privacy decision), or (b) move the two handlers to T162 and keep T251 to ZIP step, card pool and a sender function taking these as arguments. Also businesses::api has no list-businesses-serving-a-town function.\nre-queued after plan fix D-3189: Plan gap fixed by #568 (D-3189): new T411 stores the scrubbed description and shown card; T251 reads them",
+   "last_failure": "merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891)",
    "history": [
     {
      "attempt": 1,
@@ -25006,13 +25006,50 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 412,
      "head_sha": "9a2c76690403656d1632f5212713a4a53c110967",
-     "pr": null,
-     "checks": null,
+     "pr": 609,
+     "checks": [
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": null
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-12T17:19:06Z",
      "ended_at": "2026-11-12T18:46:09Z",
-     "result": "MERGE_PENDING"
+     "result": "resync"
     }
    ],
    "requeues": [
@@ -25041,7 +25078,32 @@
     "enabled": true,
     "why": "auto-merge on #609 (gh pr merge)",
     "head": "9a2c76690403656d1632f5212713a4a53c110967"
-   }
+   },
+   "runner_closed_prs": [
+    609
+   ],
+   "resync": {
+    "attempt": 2,
+    "from": "9a2c76690403656d1632f5212713a4a53c110967",
+    "main": "c5c20728e51e1a83051f2633584ec1ad69ab8e30",
+    "paths": [
+     "app/server/CLAUDE.md"
+    ],
+    "at": "2026-11-12T18:56:19Z"
+   },
+   "resyncs": [
+    {
+     "attempt": 2,
+     "from": "9a2c76690403656d1632f5212713a4a53c110967",
+     "main": "c5c20728e51e1a83051f2633584ec1ad69ab8e30",
+     "paths": [
+      "app/server/CLAUDE.md"
+     ],
+     "at": "2026-11-12T18:56:19Z"
+    }
+   ],
+   "update_waiting_since": null,
+   "update_push_failures": null
   },
   {
    "id": "T249",
@@ -42138,7 +42200,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T18:56:20Z",
+ "updated_at": "2026-11-12T18:56:42Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",

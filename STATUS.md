@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T18:56:20Z by runner c5c20728e51e (actions).
+Updated 2026-11-12T18:56:42Z by runner c5c20728e51e (actions).
 
 **Building: T362 in progress since 18:36Z; 249 of 403 done; week 3% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-12T18:56:20Z by runner c5c20728e51e (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 2: T362 claimed 18:36Z, lease until 21:36Z; lane 5: T350 claimed 17:26Z, lease until 21:35Z; lane 7: T346 claimed 18:16Z, lease until 21:16Z
 - **Week:** 3% used, 177.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:47Z, 8 min before this update
+- **Last run:** 18:47Z, 9 min before this update
 - **Keeper:** last ran 18:47Z, next wake 21:19Z
 
 ## Needs attention
@@ -18,7 +18,7 @@ Updated 2026-11-12T18:56:20Z by runner c5c20728e51e (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T251 | intake and quotes: the ZIP question, the job location, and t | MERGE_PENDING | 2 | 87 min | 18:46Z | PLAN GAP: app/intake/src/summary_step.rs:415 and app/intake/src/service.rs:672 (T208/T039 files, not T251's). The card s |
+| T251 | intake and quotes: the ZIP question, the job location, and t | resync | 2 | 87 min | 18:46Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T376 | ai and stand-in (harness): the intake schema sent to Claude  | MERGE_PENDING | 1 | 35 min | 18:40Z |  |
 | T385 | adapters, licensing and businesses (harness): the sign-up re | MERGE_PENDING | 2 | 60 min | 18:26Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T366 | jobs and server: every dead-lettered task alerts, and a dail | done | 1 | 26 min | 17:53Z |  |
