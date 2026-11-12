@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T19:08:43Z by runner bae443e54064 (actions).
+Updated 2026-11-12T19:09:06Z by runner bae443e54064 (actions).
 
 **Building: T251 in progress since 19:00Z; 250 of 403 done; week 3% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-12T19:08:43Z by runner bae443e54064 (actions).
 - **Lane:** lane 1: T251 claimed 19:00Z, lease until 22:00Z; lane 4: T414 claimed 18:56Z, lease until 21:56Z; lane 5: T350 claimed 17:26Z, lease until 21:35Z; lane 6: T416 claimed 19:04Z, lease until 22:04Z
 - **Week:** 3% used, 180.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 19:08Z, 0 min before this update
-- **Keeper:** last ran 19:07Z, next wake 21:38Z
+- **Keeper:** last ran 19:09Z, next wake 21:38Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
@@ -84,7 +84,6 @@ Updated 2026-11-12T19:08:43Z by runner bae443e54064 (actions).
 | T388 | picks, intake, messaging and portals: after a Confirm the ho | done | 1 | 34 min | 21:46Z |  |
 | T334 | payments: the nightly reconcile catches up after an outage f | QUEUED | 1 | 15 min | 21:21Z |  |
 | T228 | businesses: leaving Ask Hava, the optional reason and what h | check_failed | 1 | 31 min | 19:59Z |  |
-| T228 | businesses: leaving Ask Hava, the optional reason and what h | resync | 1 | 77 min | 19:09Z |  |
 
 ### Plan and harness merges on main
 - 18:44Z Plan: performance track — measurement harness T416–T418, goals as non-blocking (D-3292) (#607)
