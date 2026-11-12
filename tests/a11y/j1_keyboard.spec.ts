@@ -169,6 +169,7 @@ for (const width of WIDTHS) {
     await axeClean(page, "the review step");
     await page.keyboard.press("Enter");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(/^Your quotes for request \d+$/);
+    await page.waitForLoadState("load");
     await tabTo(page, /^Pick #2$/);
     await page.keyboard.press("Space");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Check your pick: quote #2");
