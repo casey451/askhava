@@ -36972,7 +36972,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T03:54:09Z",
+ "updated_at": "2026-11-12T03:54:25Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -37370,8 +37370,8 @@
   }
  },
  "keeper": {
-  "last_run_at": "2026-11-12T03:46:21Z",
-  "next_wake_at": "2026-11-12T04:06:21Z"
+  "last_run_at": "2026-11-12T03:54:24Z",
+  "next_wake_at": "2026-11-12T04:14:24Z"
  },
  "plan_reservations": [
   {
