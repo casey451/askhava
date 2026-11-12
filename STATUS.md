@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-12T13:58:45Z by runner 919ab4941c81 (actions).
+Updated 2026-11-12T14:03:35Z by runner 87abedec7b6e (actions).
 
 **Waiting for tokens until 17:00Z; 245 of 397 done; week 94% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
@@ -8,20 +8,20 @@ Updated 2026-11-12T13:58:45Z by runner 919ab4941c81 (actions).
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** idle since 13:57Z (no task in progress)
 - **Week:** 94% used, -0.5M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:58Z, 0 min before this update
+- **Last run:** 13:58Z, 4 min before this update
 - **Keeper:** last ran 13:58Z, next wake 17:05Z
 
 ## Needs attention
 - BLOCKED T280: plan gap reported: PLAN GAP: app/portals/src/business_auth.rs:130 (SignInMail::addresses) and :176 (CodeAddress::code_to) have nothing to look up. No module stores a business member's sign-in email or texting phone in a readable/searchable form, and no task in kit/tasks.json builds one. Evidence: privacy.contact_index only ever written for HomeownerPhone (app/privacy/src/vault.rs:398,409); email_index (app/privacy/src/reader.rs:321) only computes a digest and nothing calls it; migrations/0056_businesses_team_members.sql:5-11 says email/phone is never stored there; Reader list (app/privacy/src/models.rs:89-102) h; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T280 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T251 (since 2026-11-12T11:06:16Z, no attempt used; a plan change fixes it): T251: measures 47% of the context window, over its 45% limit
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 25 problem(s) on tasks still to run (+114 on DONE tasks); first: T396: stored context_pct 39% but it measures 46%; regenerate
+- Strict plan check red: 25 problem(s) on tasks still to run (+115 on DONE tasks); first: T396: stored context_pct 39% but it measures 46%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T385 | adapters, licensing and businesses (harness): the sign-up re | MERGE_PENDING | 1 | 60 min | 13:57Z |  |
-| T362 | server: the built static files are served at /static/<crate> | MERGE_PENDING | 1 | 38 min | 13:35Z |  |
+| T385 | adapters, licensing and businesses (harness): the sign-up re | resync | 1 | 60 min | 13:57Z | merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T362 | server: the built static files are served at /static/<crate> | check_failed | 1 | 38 min | 13:35Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T369 | businesses: the sign-up after-hours answer ticks only while  | done | 1 | 50 min | 12:41Z |  |
 | T378 | adapters, calls and stand-in (harness): every outbound call  | done | 1 | 45 min | 12:34Z |  |
 | T323 | ai: a new capitalized name at the start of a sentence counts | done | 1 | 24 min | 11:47Z |  |

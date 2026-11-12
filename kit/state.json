@@ -35263,8 +35263,8 @@
     "T348",
     "T173"
    ],
-   "status": "MERGE_PENDING",
-   "attempts": 0,
+   "status": "QUEUED",
+   "attempts": 1,
    "slug": "serve-static-files",
    "type": "build",
    "stage": "4",
@@ -35282,13 +35282,58 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 112,
      "head_sha": "9bb0f409340caa69b857baf24f6ef83a2eb90586",
-     "pr": null,
-     "checks": null,
+     "pr": 586,
+     "checks": [
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "failure"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-12T12:56:41Z",
      "ended_at": "2026-11-12T13:35:26Z",
-     "result": "MERGE_PENDING"
+     "result": "check_failed"
     }
    ],
    "reviewed_sha": "a1a1ba84f355a1b498829f0a2022511b653788ea",
@@ -35313,7 +35358,8 @@
     }
    ],
    "update_waiting_since": null,
-   "update_push_failures": null
+   "update_push_failures": null,
+   "last_failure": "Ally: failure\nAlly failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing)\n    >  99 |   expect(at.index, `Tab from \"${before.name}\" reaches the next control in source order`).toBe(before.next);\n          |                                                                                          ^\n      100 |   expect(at.problems).toEqual([]);\n      101 |   return at;\n      102 | }\n        at tab (/home/runner/work/askhava/askhava/tests/a11y/j1_keyboard.spec.ts:99:90)\n        at tabTo (/home/runner/work/askhava/askhava/tests/a11y/j1_keyboard.spec.ts:107:20)\n        at /home/runner/work/askhava/askhava/tests/a11y/j1_keyboard.spec.ts:172:5\n    Error Context: test-results/a11y/j1_keyboard-A11Y-005-A11Y--f2164--Pick-code-step-axe-on-each/error-context.md\n  3 failed\n    tests/a11y/j1_keyboard.spec.ts:159:3 \u203a A11Y-005 A11Y-021 J1 steps 5 and 6 keyboard-only at 320 px: quote page, Pick #2, Go back, Pick #2 again, final Pick, code step; axe on each \n    tests/a11y/j1_keyboard.spec.ts:159:3 \u203a A11Y-005 A11Y-021 J1 steps 5 and 6 keyboard-only at 768 px: quote page, Pick #2, Go back, Pick #2 again, final Pick, code step; axe on each \n    tests/a11y/j1_keyboard.spec.ts:159:3 \u203a A11Y-005 A11Y-021 J1 steps 5 and 6 keyboard-only at 1280 px: quote page, Pick #2, Go back, Pick #2 again, final Pick, code step; axe on each \n  171 passed (50.6s)\n##[error]Process completed with exit code 1."
   },
   {
    "id": "T363",
@@ -36737,7 +36783,7 @@
     "T081",
     "T227"
    ],
-   "status": "MERGE_PENDING",
+   "status": "QUEUED",
    "attempts": 0,
    "slug": "signup-own-record-read",
    "type": "harness",
@@ -36757,13 +36803,50 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 175,
      "head_sha": "620855379afc780f397e495b016e8c436df591ac",
-     "pr": null,
-     "checks": null,
+     "pr": 587,
+     "checks": [
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": null
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": null
+      },
+      {
+       "name": "Coverage",
+       "conclusion": null
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-12T12:57:41Z",
      "ended_at": "2026-11-12T13:57:41Z",
-     "result": "MERGE_PENDING"
+     "result": "resync"
     }
    ],
    "reviewed_sha": "620855379afc780f397e495b016e8c436df591ac",
@@ -36778,7 +36861,33 @@
     "enabled": true,
     "why": "auto-merge on #587 (gh pr merge)",
     "head": "620855379afc780f397e495b016e8c436df591ac"
-   }
+   },
+   "runner_closed_prs": [
+    587
+   ],
+   "resync": {
+    "attempt": 1,
+    "from": "620855379afc780f397e495b016e8c436df591ac",
+    "main": "87abedec7b6ea0d48edf5747ef107cbd878ee14a",
+    "paths": [
+     "app/businesses/CLAUDE.md"
+    ],
+    "at": "2026-11-12T14:03:28Z"
+   },
+   "resyncs": [
+    {
+     "attempt": 1,
+     "from": "620855379afc780f397e495b016e8c436df591ac",
+     "main": "87abedec7b6ea0d48edf5747ef107cbd878ee14a",
+     "paths": [
+      "app/businesses/CLAUDE.md"
+     ],
+     "at": "2026-11-12T14:03:28Z"
+    }
+   ],
+   "last_failure": "merging main into the reviewed head conflicts in app/businesses/CLAUDE.md; a resync merges it in on this attempt (D-891)",
+   "update_waiting_since": null,
+   "update_push_failures": null
   },
   {
    "id": "T386",
@@ -40919,7 +41028,7 @@
    }
   }
  },
- "updated_at": "2026-11-12T13:58:45Z",
+ "updated_at": "2026-11-12T14:03:35Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -41017,7 +41126,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "919ab4941c8176478b66cb734004e925d089ea44",
+ "runner_sha": "87abedec7b6ea0d48edf5747ef107cbd878ee14a",
  "starter": "actions",
  "smoke_runs": [
   {
