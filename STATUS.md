@@ -1,19 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-12T09:34:02Z by runner a070309d52e6 (actions).
+Updated 2026-11-12T09:38:01Z by runner e0a2ab2aa1b4 (actions).
 
-**Building: T268 in progress since 09:17Z; 233 of 394 done; week 92% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T268 in progress since 09:17Z; 233 of 395 done; week 92% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 233 of 394 build tasks (owner gates not counted)
+- **Tasks done:** 233 of 395 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
 - **Lane:** lane 4: T268 claimed 09:17Z, lease until 12:17Z; lane 5: T411 claimed 09:29Z, lease until 12:29Z
 - **Week:** 92% used, 5.1M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:33Z, 0 min before this update
+- **Last run:** 09:34Z, 3 min before this update
 - **Keeper:** last ran 09:34Z, next wake 12:20Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- Strict plan check red: 18 problem(s) on tasks still to run (+98 on DONE tasks); first: T396: stored context_pct 39% but it measures 45%; regenerate
+- Strict plan check red: 14 problem(s) on tasks still to run (+98 on DONE tasks); first: T396: stored context_pct 39% but it measures 45%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -90,6 +90,7 @@ Updated 2026-11-12T09:34:02Z by runner a070309d52e6 (actions).
 | T327 | harness: every task kind the app queues has a handler in the | done | 1 | 48 min | 09:38Z |  |
 
 ### Plan and harness merges on main
+- 09:36Z Plan: pre-flight fixes round 9 — stage 5: T303, T151, T321, T110, T210, T109, T116; new T409, T410 (D-3155) (#559)
 - 09:22Z Plan: T345 owns the runner tests that hard-code action tags (D-3200) (#572)
 - 09:13Z Plan: store the scrubbed job description and shown card so T251 can send approved cards (D-3189) (#568)
 - 08:32Z Harness: smoke ancestry reuse accepts squash commits whose identical tree passed Ci, Twin and Ally (D-3156) (#560)
@@ -128,8 +129,8 @@ Updated 2026-11-12T09:34:02Z by runner a070309d52e6 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 210 of 733 (28.6%) · partial 353 · unstarted 170
-**Tasks merged (throughput only):** 233 of 394
+**Requirements verified:** 209 of 733 (28.5%) · partial 354 · unstarted 170
+**Tasks merged (throughput only):** 233 of 395
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -140,7 +141,7 @@ Updated 2026-11-12T09:34:02Z by runner a070309d52e6 (actions).
 | consent | 8 | 23 | 4 | 35 |
 | fees | 12 | 39 | 1 | 52 |
 | intake | 21 | 17 | 5 | 43 |
-| job-cards | 12 | 10 | 2 | 24 |
+| job-cards | 11 | 11 | 2 | 24 |
 | licensing | 20 | 28 | 0 | 48 |
 | lifecycle | 18 | 10 | 0 | 28 |
 | messaging | 17 | 25 | 3 | 45 |
