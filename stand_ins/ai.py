@@ -10,7 +10,10 @@ Over HTTP (`stand_ins/server.py`) it answers the Claude Messages API: POST /v1/m
 or without `retry-after`, 400 spend limit, 401, 403, a `refusal` or `max_tokens` stop) and
 `x-stand-in-plant` a planted output (a carrier-restricted word, a URL, 600 characters), so
 TD-AI-14 and TD-AI-10 run against it (D-493); an unknown value in either header is a 400
-`invalid_request_error`, so a typo in a test never passes as a normal reply.
+`invalid_request_error`, so a typo in a test never passes as a normal reply. A request whose
+`output_config.format.schema` uses a keyword the Claude API does not support (`docs/brains/
+ai-intake.md` section 2: number and length limits, array limits beyond `minItems` 0 or 1) or
+an object without `additionalProperties: false` gets the API's 400 (AI-022, AI-023, D-2760).
 """
 
 from __future__ import annotations
@@ -49,6 +52,11 @@ PLANTS = {
     "url": "Ask Hava: See https://example.com/offer for details.",
     "long": "Ask Hava: " + "x" * 590,
 }
+UNSUPPORTED = (
+    "minimum", "maximum", "exclusiveMinimum", "exclusiveMaximum", "multipleOf",
+    "minLength", "maxLength", "maxItems",
+)
+CONFIDENCES = ("trade_confidence", "job_type_confidence")
 Answer = tuple[int, dict[str, Any], dict[str, str]]
 
 
@@ -66,7 +74,7 @@ def _check_value(name: str, rule: dict[str, Any], value: Any) -> None:
         raise SchemaError(f"{name} has the wrong type")
     if "enum" in rule and value not in rule["enum"]:
         raise SchemaError(f"{name} is outside the allowed list")
-    if not rule.get("minimum", value) <= value <= rule.get("maximum", value):
+    if name in CONFIDENCES and not 0 <= value <= 1:
         raise SchemaError(f"{name} is out of range")
     if "items" in rule:
         for item in value:
@@ -105,6 +113,36 @@ def read_request(text: ScrubbedText, tools: list[Any] | None = None) -> dict[str
         "missing_info": [] if known else ["trade"],
     }
     return validate(reading)
+
+
+def unsupported_keyword(schema: Any) -> str | None:
+    """The first keyword in `schema`, at any depth, that the Claude API refuses with a 400, or an
+    object without `additionalProperties: false`; None when the schema is accepted (D-2760)."""
+    if isinstance(schema, list):
+        return next((k for k in map(unsupported_keyword, schema) if k), None)
+    if not isinstance(schema, dict):
+        return None
+    for key in UNSUPPORTED:
+        if key in schema:
+            return key
+    if schema.get("minItems", 0) not in (0, 1):
+        return "minItems"
+    if schema.get("type") == "object" and schema.get("additionalProperties") is not False:
+        return "additionalProperties"
+    nested = [list(v.values()) if k in ("properties", "$defs") and isinstance(v, dict) else v
+              for k, v in schema.items() if k not in ("enum", "const", "description", "title")]
+    return next((k for k in map(unsupported_keyword, nested) if k), None)
+
+
+def _schema_refusal(body: dict[str, Any]) -> Answer | None:
+    """The API's 400 for a structured request whose schema it does not support (D-2760)."""
+    config = body.get("output_config")
+    fmt = config.get("format") if isinstance(config, dict) else None
+    schema = fmt.get("schema") if isinstance(fmt, dict) else None
+    keyword = unsupported_keyword(schema)
+    if keyword is None:
+        return None
+    return api_error(400, "invalid_request_error", f"output_config.format.schema: '{keyword}' is not supported")
 
 
 def api_error(status: int, kind: str, message: str) -> Answer:
@@ -159,6 +197,9 @@ def messages(body: dict[str, Any], fault: str = "", plant: str = "") -> Answer:
         return api_error(400, "invalid_request_error", "message content must be text or a list of blocks")
     if body.get("tools"):
         return api_error(400, "invalid_request_error", "the stand-in AI has no tools")
+    refusal = _schema_refusal(body)
+    if refusal:
+        return refusal
     text = _user_text(body)
     if body.get("output_config"):
         text = json.dumps(read_request(ScrubbedText(text)), sort_keys=True)

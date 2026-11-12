@@ -1,7 +1,9 @@
 """Contract tests for the stand-in AI: schema-validated fixed fields, no tools (AI-005, AI-006, AI-010, AI-022).
 
 TD-SEC-13: the reading validates against `schemas/intake_reading.json`, carries trade and job-type
-confidences and no `rental` field (D-492, D-493).
+confidences and no `rental` field (D-492, D-493). TD-AI-28 (AI-010, AI-021, AI-022, AI-023,
+D-2760): a request schema with a keyword the Claude API does not support gets its 400; the
+committed schema, as `intake_schema` sends it, holds none and is accepted.
 """
 
 from __future__ import annotations
@@ -89,4 +91,68 @@ def test_committed_schema_is_the_ai_010_fields_and_two_confidences() -> None:
     assert schema == ai.SCHEMA and schema["additionalProperties"] is False
     assert set(schema["required"]) == set(schema["properties"]) == set(ai.FIELDS)
     for name in ("trade_confidence", "job_type_confidence"):
-        assert schema["properties"][name] == {"type": "number", "minimum": 0, "maximum": 1}
+        assert schema["properties"][name]["type"] == "number"
+        assert "0 to 1" in schema["properties"][name]["description"]
+
+
+SCHEMA_PATH = Path(__file__).resolve().parents[2] / "schemas" / "intake_reading.json"
+UNSUPPORTED = (
+    "minimum", "maximum", "exclusiveMinimum", "exclusiveMaximum", "multipleOf",
+    "minLength", "maxLength", "maxItems",
+)
+
+
+def sent_schema() -> dict[str, Any]:
+    """The committed schema as `intake_schema` sends it: without `$schema` and `$id` (D-2760)."""
+    schema = json.loads(SCHEMA_PATH.read_text())
+    return {k: v for k, v in schema.items() if k not in ("$schema", "$id")}
+
+
+def structured(schema: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "model": "claude-haiku-5-5",
+        "max_tokens": 300,
+        "messages": [{"role": "user", "content": "my sink leaks"}],
+        "output_config": {"format": {"type": "json_schema", "schema": schema}},
+    }
+
+
+def _keys(node: Any) -> list[str]:
+    if isinstance(node, list):
+        return [k for item in node for k in _keys(item)]
+    if not isinstance(node, dict):
+        return []
+    return [*node, *(k for v in node.values() for k in _keys(v))]
+
+
+def test_schema_with_an_unsupported_keyword_gets_the_api_400() -> None:
+    """TD-AI-28: `minimum` anywhere, every other unsupported keyword, `minItems` above 1 and an
+    object without `additionalProperties: false` are refused as the API does."""
+    planted = sent_schema()
+    planted["properties"] = {**planted["properties"], "trade_confidence": {"type": "number", "minimum": 0}}
+    cases = [planted, {**sent_schema(), "additionalProperties": True}]
+    for key in UNSUPPORTED:
+        cases.append({**sent_schema(), "properties": {"x": {"type": "string", key: 1}}})
+    cases.append({**sent_schema(), "properties": {"x": {"type": "array", "minItems": 2}}})
+    cases.append({**sent_schema(), "properties": {"x": {"type": "object", "properties": {}}}})
+    for schema in cases:
+        status, body, _ = ai.messages(structured(schema))
+        assert status == 400, schema
+        assert body["error"]["type"] == "invalid_request_error"
+
+
+def test_committed_schema_as_sent_is_accepted() -> None:
+    """TD-AI-28: the committed schema, as `intake_schema` sends it, gets a reading; `minItems` 0
+    or 1 and a property named like a keyword are allowed."""
+    status, body, _ = ai.messages(structured(sent_schema()))
+    assert status == 200 and body["stop_reason"] == "end_turn"
+    assert ai.validate(json.loads(body["content"][0]["text"]))["trade"] == "plumbing"
+    named = {**sent_schema(), "properties": {"minimum": {"type": "array", "minItems": 1}}}
+    assert ai.messages(structured(named))[0] == 200
+
+
+def test_committed_schema_holds_no_unsupported_keyword() -> None:
+    """TD-AI-28: a scan of `schemas/intake_reading.json` finds none of the refused keywords."""
+    keys = _keys(json.loads(SCHEMA_PATH.read_text()))
+    assert not set(keys) & {*UNSUPPORTED, "minItems"}
+    assert ai.unsupported_keyword(sent_schema()) is None
