@@ -245,6 +245,27 @@ def control_stripe_webhook(s: StandIns, req: Request, m: re.Match[str]) -> Out:
     return 200, {"payload": payload, "headers": {"stripe-signature": signature}}, {}
 
 
+def _bare_address(value: str) -> str:
+    """The address inside `Name <addr>` (as stand_ins/resend.py reads it), lower-cased for matching."""
+    match = re.search(r"<([^>]+)>", value)
+    return (match.group(1) if match else value).strip().lower()
+
+
+def control_resend_emails(s: StandIns, req: Request, m: re.Match[str]) -> Out:
+    """The emails the fake Resend accepted, oldest first, optionally only those sent to the `to` address.
+
+    The filter compares bare addresses case-insensitively against `to` only (not cc or bcc); an
+    empty `?to=` is dropped by the query parser and lists every email (D-3272).
+    """
+    want = req.query.get("to")
+    emails = []
+    for sent in s.resend.sent:
+        to = [sent["to"]] if isinstance(sent["to"], str) else list(sent["to"])
+        if want is None or _bare_address(want) in {_bare_address(str(r)) for r in to}:
+            emails.append({**{k: sent.get(k, "") for k in ("id", "from", "subject", "text", "html")}, "to": to})
+    return 200, {"emails": emails}, {}
+
+
 def control_resend_webhooks(s: StandIns, req: Request, m: re.Match[str]) -> Out:
     """Svix-signed deliveries of every event of one email (the test addresses drive bounce and complaint)."""
     b = req.json()
@@ -346,6 +367,7 @@ ROUTES: list[tuple[str, re.Pattern[str], Handler]] = [
         ("POST", r"/_stand_in/twilio/call-progress", control_call_progress),
         ("POST", r"/_stand_in/stripe/disputes", control_dispute),
         ("POST", r"/_stand_in/stripe/webhook", control_stripe_webhook),
+        ("GET", r"/_stand_in/resend/emails", control_resend_emails),
         ("POST", r"/_stand_in/resend/webhooks", control_resend_webhooks),
         ("POST", r"/_stand_in/lob/advance", control_lob_advance),
         ("POST", r"/_stand_in/lob/webhooks", control_lob_webhooks),
