@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-12T08:21:03Z by runner d9515904bc86 (manual).
+Updated 2026-11-12T08:23:43Z by runner d9515904bc86 (actions).
 
-**Building: T336 in progress since 08:04Z; 232 of 394 done; week 90% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
+**Building: T406 in progress since 08:23Z; 232 of 394 done; week 90% used, resets Thu 2026-11-12 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 232 of 394 build tasks (owner gates not counted)
 - **Stage:** stage 4; stage proofs recorded: 1, 2, 3
-- **Lane:** lane 2: T336 claimed 08:04Z, lease until 11:04Z; lane 4: T322 claimed 08:00Z, lease until 11:00Z; lane 5: T268 claimed 08:14Z, lease until 11:14Z
-- **Week:** 90% used, 4.0M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:20Z, 0 min before this update
+- **Lane:** lane 1: T406 claimed 08:23Z, lease until 11:23Z; lane 2: T336 claimed 08:04Z, lease until 11:04Z; lane 4: T322 claimed 08:00Z, lease until 11:00Z; lane 5: T268 claimed 08:14Z, lease until 11:14Z
+- **Week:** 90% used, 3.7M tokens left; resets Thu 2026-11-12 17:00Z (10:00 am Phoenix)
+- **Last run:** 08:21Z, 2 min before this update
 - **Keeper:** last ran 08:20Z, next wake 11:02Z
 
 ## Needs attention
@@ -152,7 +152,7 @@ Updated 2026-11-12T08:21:03Z by runner d9515904bc86 (manual).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-12T08:12:55Z (week)): week: 190.0M used, 4.0M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-07T03:35:32Z.
+- Pacing (session_reading 2026-11-12T08:20:14Z (week)): week: 190.3M used, 3.7M left, resets 2026-11-12T17:00:00Z; projected finish 2026-12-07T00:56:36Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -167,7 +167,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T406 (lease until 2026-11-12T11:23:34Z)
 - lane 2: T336 (lease until 2026-11-12T11:04:06Z)
 - lane 4: T322 (lease until 2026-11-12T11:00:31Z)
 - lane 5: T268 (lease until 2026-11-12T11:14:04Z)

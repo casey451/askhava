@@ -2594,3 +2594,4 @@
 - 2026-11-12T08:20:15Z runner 3926dabcc377 (actions): {}
 - 2026-11-12T08:20:35Z runner 3926dabcc377 (actions): {}
 - 2026-11-12T08:21:03Z runner d9515904bc86 (manual): {}
+- 2026-11-12T08:23:43Z runner d9515904bc86 (actions): {"T406": "QUEUED -> IN_PROGRESS"}; T406 estimated 3.0M tokens (calibrated); week has 3.7M left (no five-hour budget, D-3056) after 10.3M still running in another lane (session_reading 2026-11-12T08:20:14Z (week)); claimed
